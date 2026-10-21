@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { animalsFor, emptierPen, enter, fairBell, fairNeeds, fleeSpeed, FOLLOW_SPEED, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, pensFull, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, usesBell, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted, type Kind } from './logic';
+import { animalsFor, sizeScale, emptierPen, enter, fairBell, fairNeeds, fleeSpeed, FOLLOW_SPEED, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, pensFull, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, usesBell, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted, type Kind } from './logic';
 
 describe('Roundup', () => {
   it('Fill it up starts short of 4 or 5 with 1–3 home and six loose, for every seed', () => {
@@ -138,13 +138,13 @@ describe('Roundup', () => {
             expect(pen.target).toBeGreaterThanOrEqual(plan.min!);
           }
         }
-        expect(herd.pens.length).toBe(plan.mode.startsWith('sort') || plan.mode === 'fair' ? 2 : 1);
+        expect(herd.pens.length).toBe(plan.mode.startsWith('sort') || plan.mode === 'fair' || plan.mode === 'size' ? 2 : 1);
       }
     }
   });
 
   it('uses every kind in one-pen rounds and every distinct pen pair in sorting rounds', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'sortStay' && p.mode !== 'fair')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'sortStay' && p.mode !== 'fair' && p.mode !== 'size')) {
       const pairs = new Set<string>();
       const kinds = new Set<string>();
       for (let seed = 1; seed <= 300; seed++) {
@@ -313,4 +313,30 @@ describe('Roundup', () => {
       expect(fairNeeds(herd, [n / 2 + 1, 1])).toBe(1);
     }
   });
+});
+
+it('sorts one kind by size, with balanced solvable herds and size-specific completion', () => {
+  const plan = planFor(12);
+  expect(plan.mode).toBe('size');
+  expect(usesBell(plan)).toBe(false);
+  // Big is at least one third larger, and little is at least one third smaller to rounding.
+  expect(sizeScale('big') / sizeScale('little')).toBeGreaterThan(4 / 3);
+  expect(sizeScale('little') / sizeScale('big')).toBeLessThan(0.7);
+  for (let seed = 1; seed <= 100; seed++) {
+    const herd = makeHerd(plan, new Rng(seed));
+    expect(makeHerd(plan, new Rng(seed))).toEqual(herd);
+    expect(new Set(herd.animals).size).toBe(1);
+    expect(herd.sizes).toHaveLength(herd.animals.length);
+    expect(herd.pens.map((p) => wanted(herd, p))).toEqual([3, 3]);
+    herd.animals.forEach((kind, i) => {
+      const destinations = herd.pens.filter((p) => enter(p, kind, herd.sizes![i]) === 'in');
+      expect(destinations).toHaveLength(1);
+      expect(destinations[0].size).toBe(herd.sizes![i]);
+    });
+    expect(enter(herd.pens[0], 'pig', 'little')).toBe('wrong-pen');
+    expect(enter(herd.pens[1], 'pig', 'big')).toBe('wrong-pen');
+    expect(pensFull(herd, [3, 2])).toBe(false);
+    expect(pensFull(herd, [2, 3])).toBe(false);
+    expect(pensFull(herd, [3, 3])).toBe(true);
+  }
 });

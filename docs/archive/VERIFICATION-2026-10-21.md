@@ -160,3 +160,11 @@
 - Ran at the branch tip (Vite http://localhost:5226): `npm run typecheck`; `npx vitest run src/games/size-parade src/content src/games/registry` (141 tests pass); `BROWSER_SUITE=expansion EXPANSION_ONLY=size SIZE_LEVELS=1,7 SIZE_PORTRAIT=1` passed (misses/hints [2,1], one sticker each; level 7 portrait screenshot reviewed, five friends and no overlap); `BROWSER_SUITE=fingerdemo FINGER_ONLY=size-parade FINGER_LEVELS=7` finished in 13.5 s.
 - Not run: build (no shared files or assets), the full unit suite, other suites.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): iPad touch feel, device speech for the new lines, and whether a child hears big-low as natural.
+
+## 2026-10-21 — Chain Reaction level 9 Two marbles
+
+- Built on `claude/chain-reaction-two-marbles` ([PR #715](https://github.com/rjdunlap/neo/pull/715)): a red and a blue marble on one 5x4 board, both must ring their own bell (`works()`), free one-marble experiments with both trails, counted hint, school order `[3, 4, 5, 6, 9]`, new `chain.two-*` voice lines and how-to steps, a `chainPlay` level-9 case and `CHAIN_LEVELS` default 1,6,7,8,9.
+- Ran at commit dfe5ce1c (Vite http://localhost:5583): `npm run typecheck`; vitest for chain-reaction (14 tests, two new level-9 rule tests over 300 and 120 seeds), `src/content`, `src/games/registry` and `src/progress` (266 pass); `BROWSER_SUITE=machines CHAIN_LEVELS=9` passed (free experiment with both trails, counted hint, both machines, one sticker, score [0,1], portrait fit; landscape and portrait screenshots reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=chain-reaction FINGER_LEVELS=9` clean in 26.5 s.
+- Regression (the refactor touches run, trail, replay, hint and bot at every level): `CHAIN_LEVELS=1,6,7,8` passed, `fingerdemo` at levels 1 and 6 clean in 14.0 s and 24.1 s, full `npm test` 200 files / 2309 tests passed.
+- Not run: build, other suites, offline, an iPad, a child.
+- Open: whether a school child tells the two marbles and bells apart (color plus dot) and follows both runs; pre-K opening for level 9 stays an open choice.

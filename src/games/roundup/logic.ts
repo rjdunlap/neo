@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * from your finger, so you shoo them through a gate into their pen. Nobody escapes for good,
  * and a wrong pen just means a hop back out.
  */
-export type HerdMode = 'tap' | 'follow' | 'shoo' | 'sort' | 'sortStay' | 'count' | 'sortCount' | 'fair';
+export type HerdMode = 'tap' | 'follow' | 'shoo' | 'sort' | 'sortStay' | 'count' | 'sortCount' | 'fair' | 'size';
 export const KINDS = ['pig', 'bunny', 'cow', 'duck', 'dog'] as const;
 export type Kind = (typeof KINDS)[number];
 
@@ -50,9 +50,10 @@ export const PLANS: HerdPlan[] = [
   { mode: 'count', animals: 6, min: 4, max: 5, prefilled: true, name: 'Fill a pen asking 4 or 5, starting with 1 to 3 already inside' },
   SHOO_ONE,
   COME_ALONG,
+  { mode: 'size', animals: 6, name: 'Sort big and little pigs into pens with matching-sized pictures' },
 ];
 
-export const planFor = (level: number) => level === 10 ? SHOO_ONE : level === 11 ? COME_ALONG : PLANS[Math.min(9, Math.max(1, level)) - 1];
+export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export const PLURAL: Record<Kind, string> = { pig: 'pigs', bunny: 'bunnies', cow: 'cows', duck: 'ducks', dog: 'dogs' };
 /** What each pen's floor is, for "three pigs in the mud". */
@@ -61,7 +62,11 @@ export const PLACE: Record<Kind, string> = { pig: 'mud', bunny: 'carrots', cow: 
 /** The animal word for a count: "1 pig", "3 pigs". */
 export const animalsFor = (kind: Kind, n: number) => (n === 1 ? kind : PLURAL[kind]);
 
+export type Size = 'big' | 'little';
+export const sizeScale = (size?: Size) => size === 'little' ? 0.22 : 0.32;
+
 export interface Pen {
+  size?: Size;
   kind: Kind;
   /** How many belong here; undefined means all of that kind. */
   target?: number;
@@ -71,6 +76,8 @@ export interface Pen {
 
 export interface Herd {
   animals: Kind[];
+  /** Parallel to animals, only for size sorting. */
+  sizes?: Size[];
   pens: Pen[];
   /** This kind belongs on the grass, outside both pens. */
   stay?: Kind;
@@ -80,6 +87,10 @@ export interface Herd {
 
 export function makeHerd(plan: HerdPlan, rng: Rng): Herd {
   const n = plan.maxAnimals === undefined ? plan.animals : rng.int(plan.animals, plan.maxAnimals);
+  if (plan.mode === 'size') {
+    const sizes = rng.shuffle<Size>(['big', 'big', 'big', 'little', 'little', 'little']);
+    return { animals: sizes.map(() => 'pig'), sizes, pens: [{ kind: 'pig', size: 'big' }, { kind: 'pig', size: 'little' }] };
+  }
   if (plan.mode === 'sortStay') {
     return { animals: rng.shuffle(['pig', 'pig', 'bunny', 'bunny', 'cow', 'cow'] as Kind[]), pens: [{ kind: 'pig' }, { kind: 'bunny' }], stay: 'cow' };
   }
@@ -127,8 +138,8 @@ export function signDots(n: number, gap = 26): { x: number; y: number }[] {
 export type EnterResult = 'in' | 'wrong-pen';
 
 /** An animal of `kind` steps through the gate of `pen`. Counting pens take any number; the bell checks. */
-export function enter(pen: Pen, kind: Kind): EnterResult {
-  return pen.kind === kind ? 'in' : 'wrong-pen';
+export function enter(pen: Pen, kind: Kind, size?: Size): EnterResult {
+  return pen.kind === kind && (pen.size === undefined || pen.size === size) ? 'in' : 'wrong-pen';
 }
 
 /** Counting levels end on the bell: for each pen, how many too many or too few are inside. */
@@ -165,7 +176,7 @@ export function fairNeeds(herd: Herd, inside: number[]): number {
 /** How many each pen needs before the round is done. */
 export function wanted(herd: Herd, pen: Pen): number {
   if (herd.fair) return herd.animals.length / 2;
-  return pen.target ?? herd.animals.filter((k) => k === pen.kind).length;
+  return pen.target ?? herd.animals.filter((k, i) => k === pen.kind && (pen.size === undefined || herd.sizes?.[i] === pen.size)).length;
 }
 
 /** All requested animals are home; outsiders are deliberately absent from these totals. */

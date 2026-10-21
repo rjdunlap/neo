@@ -11,14 +11,14 @@ import { PLACES } from '../content/places';
 import { REGION_IDS } from '../content/world';
 
 describe('game registry', () => {
-  it('extends Roundup only to pre-K 9 and preserves existing levels and pins', () => {
+  it('extends Roundup only to pre-K 12 and preserves existing levels and pins', () => {
     const g = gameById('roundup')!;
-    expect(g.levels('prek')).toEqual({ min: 3, max: 9 });
+    expect(g.levels('prek')).toEqual({ min: 3, max: 12, order: [3, 4, 5, 6, 7, 8, 9, 12] });
     expect(stepLevel(6, 1, g.levels('prek'))).toBe(7);
     expect(stepLevel(7, 1, g.levels('prek'))).toBe(8);
     expect(stepLevel(8, 1, g.levels('prek'))).toBe(9);
-    expect(stepLevel(9, 1, g.levels('prek'))).toBe(9);
-    for (const level of [3, 4, 5, 6, 7, 8, 9]) expect(landing(level, g.levels('prek'), g.entryLevels)).toBe(level);
+    expect(stepLevel(9, 1, g.levels('prek'))).toBe(12);
+    for (const level of [3, 4, 5, 6, 7, 8, 9, 12]) expect(landing(level, g.levels('prek'), g.entryLevels)).toBe(level);
     expect(g.levels('preschool')).toEqual({ min: 2, max: 5 });
     expect(levelsInOrder(g.levels('lap'))).toEqual([1, 11]);
     expect(levelsInOrder(g.levels('toddler'))).toEqual([1, 11, 10, 2, 3]);

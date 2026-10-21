@@ -5203,13 +5203,18 @@ async function arcade() {
       await kit.sleep(200);
     };
   });
-  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 11, 10, 2, 3, 4, 5, 6, 7, 8, 9];
+  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 11, 10, 2, 3, 4, 5, 6, 7, 8, 9, 12];
   // Come along plays twice: led by a finger at lap, then left alone at toddler so the drift brings the herd home.
   const roundupPlays = roundupLevels.flatMap((level) => level === 11 ? [[11, 'lap'], [11, 'toddler']] : [[level]]);
   for (const [level, playBand] of (!only || only === 'roundup') ? roundupPlays : []) {
     await launch('roundup', level, 'Mia', playBand);
     const stickersBefore = await page.evaluate(() => kit.store.data.stickers.length);
     await page.waitForTimeout(600);
+    if (level === 12) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+      await screenshot('roundup-12-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    }
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     await page.evaluate(async () => {
       const g = neo.scene.game;
@@ -5225,7 +5230,7 @@ async function arcade() {
       const { PLURAL, PLACE, animalsFor } = await import('/src/games/roundup/logic.ts');
       for (const { pen } of g.pens) {
         const word = g.plan.sequential ? pen.kind : pen.target === undefined ? PLURAL[pen.kind] : animalsFor(pen.kind, pen.target);
-        if (!spoken.includes(word) || (g.pens.length === 2 && !g.herd.fair && !spoken.includes(PLACE[pen.kind]))) throw new Error(`Wrong instruction: ${spoken}`);
+        if (!spoken.includes(word) || (g.pens.length === 2 && !g.herd.fair && !pen.size && !spoken.includes(PLACE[pen.kind]))) throw new Error(`Wrong instruction: ${spoken}`);
       }
       if (g.plan.mode === 'tap') {
         // A lap tap on the grass or the sign answers, and is never a miss or a hint.
@@ -5277,6 +5282,29 @@ async function arcade() {
           }
           if (g.misses !== 2 || g.hints < 1) throw new Error(`Wrong pens: ${g.misses} ${g.hints}`);
           if (speech.find((s) => s.id === 'herd.wrongpen')?.values.pen !== g.pens[1].pen.kind) throw new Error('Wrong-pen speech names another kind');
+        }
+        if (g.plan.mode === 'size') {
+          if (g.bell.visible || g.animals.length !== 6 || !spoken.includes('Big pigs') || !spoken.includes('Little pigs')) throw new Error('Size instruction or cast missing');
+          for (const a of g.animals) {
+            const scale = a.size === 'little' ? 0.22 : 0.32;
+            if (Math.abs(a.critter.scale.y - scale) > 0.001 || Math.abs(a.critter.hitArea.radius * scale - 85) > 0.001 || a.critter.hitArea.y !== -120) throw new Error('Size scale or centred forgiving hit area missing');
+            if (g.pens[g.needs(a)].pen.size !== a.size) throw new Error('Hint/bot targeted wrong size');
+          }
+          // Two actual wrong gate crossings; keep neighbours out of the route.
+          const wrong = loose().find((a) => a.size === 'big');
+          for (let k = 0; k < 2; k++) {
+            for (const a of loose()) { a.critter.x = 280; a.wander.next = 20; a.wander.x = 280; }
+            const r = g.pens[1].rect;
+            wrong.critter.position.set(r.x - 60, r.y + r.h / 2);
+            wrong.vx = wrong.vy = 0;
+            await kit.sleep(60);
+            await herdInto(wrong, 1);
+            await kit.until(() => wrong.state === 'loose', 3000);
+            await kit.sleep(2100);
+          }
+          if (g.misses !== 2 || g.hints !== 1 || g.pens.some((p) => p.inside)) throw new Error('Size rejection or hint accounting incorrect');
+          if (!speech.some((s) => s.id === 'herd.wrongsize' && s.values.size === 'little' && s.values.needed === 'big') || !speech.some((s) => s.id === 'herd.sizehint')) throw new Error('Size feedback missing');
+          if (!loose().every((a) => a.glow.visible) || !g.pens.every((p) => p.glow.context.instructions.length)) throw new Error('Size hint glows missing');
         }
         if (g.plan.mode === 'sortStay') {
           if (!spoken.includes('cows stay on the grass') || g.bell.visible) throw new Error('Outsider instruction or finish rule missing');
@@ -5404,6 +5432,7 @@ async function arcade() {
     log(`Roundup ${level} (${mode}): score ${r}`);
     // Herding speed varies, so an idle hint may add to the two wrong-pen misses' hint.
     if (mode === 'sort') assert.ok(r[0] === 2 && r[1] >= 1, `roundup sort score ${r}`);
+    if (mode === 'size') assert.ok(r[0] >= 2 && r[1] >= 1, `roundup size score ${r}`);
     if (mode === 'sortStay') assert.ok(r[0] >= 2 && r[1] >= 1, `roundup outsiders score ${r}`);
     if (mode === 'count') assert.ok(r[0] >= 1, 'roundup count misses');
     if (mode === 'fair') assert.ok(r[0] >= 2 && r[1] >= 1, `roundup fair score ${r}`);

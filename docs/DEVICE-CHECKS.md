@@ -22,6 +22,8 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 - [ ] **Welcome a New Friend, slice 1 (RW07, 2026-10-21, #712).** On an iPad at preschool and pre-K, does a child understand the invitation and the two step cards (tap a card to hear its ask, then the green Play arrow), and do the asks and done lines (`welcome.invite`, `welcome.ask.*`, `welcome.done.*`, `welcome.soon`, `home.continue`) sound right in device speech?
 
+- [ ] **Roundup Big and little (level 12, slice 8, 2026-10-21, #736).** On iPad, are little pigs and the two sign sizes clearly distinguishable, and does a pre-K child match size after hearing the instruction and wrong-size feedback? Portrait Chrome review passed; device speech and child play remain unobserved.
+
 - [ ] **Roundup Fill it up (level 9, slice 7, 2026-10-21, #731).** On an iPad, can a pre-K child count the animals already home, hear each count and the missing part clearly, and understand adding only the remainder before ringing? Device speech and child play remain unobserved.
 
 - [ ] **Roundup Come along (level 11, slice 4, 2026-10-20, #688).** On an iPad at lap and toddler, does a one-year-old read the gathering herd as "they come with me", drag slowly enough for them to keep up, and understand the glow and drift when stuck? Child play remains unobserved.
