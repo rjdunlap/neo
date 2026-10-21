@@ -71,7 +71,7 @@ export const trayTotal = (board: Board, mask: number) => tray(board, mask).reduc
 /** The pieces in the tray (taken, and their kind not yet popped). */
 export function trayPieces(board: Board, mask: number): number[] {
   const t = tray(board, mask);
-  return board.kinds.map((k, i) => i).filter((i) => !present(mask, i) && t[board.kinds[i]] > 0);
+  return board.kinds.map((_, i) => i).filter((i) => !present(mask, i) && t[board.kinds[i]] > 0);
 }
 
 export type Refusal = 'gone' | 'covered' | 'wrong-kind' | 'full';
