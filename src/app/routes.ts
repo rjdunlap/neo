@@ -40,6 +40,8 @@ export function createRoutes(app: App): Routes {
     },
     picnic: (from) => void app.show(new PicnicScene(app, from)),
     woodland: (from) => void app.show(new WoodlandScene(app, from)),
+    // Welcome a New Friend lives at the root only (src/rework.ts); the island has no project page.
+    project: () => void app.show(new MapScene(app)),
     stickers: () => void app.show(new StickerBookScene(app)),
     room: () => void app.show(new RoomScene(app)),
     friends: (previewId) => void app.show(new FriendsScene(app, previewId)),

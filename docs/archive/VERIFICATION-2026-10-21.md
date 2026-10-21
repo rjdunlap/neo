@@ -29,3 +29,11 @@
 - `npm run typecheck` clean; roundup, content and registry unit tests passed (130). Full `npm test` had two unrelated timing failures under load (ferry-jam "hint is quick in biggest harbor", fluffy-salon "slowest frame rate") that pass alone (22/22): known load flakes.
 - `BROWSER_SUITE=arcade ARCADE_ONLY=roundup ARCADE_LEVELS=11` at `http://localhost:5328` passed: lap led by a real finger (0 misses, 0 hints), toddler left idle so the drift brings everyone home (0 misses, 1 hint); one sticker each. `BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=11,10` clean: level 11 (lap) 4.3 s, level 10 (toddler) 7.4 s. One portrait (768×1024) screenshot of level 11 mid-lead reviewed: herd, ring and wide gate clear of the pet and corner buttons.
 - Not run: build (no shared assets), full arcade suite, world, offline, device/child checks. Whether a one-year-old reads the herd as following and drags slowly enough is open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-10-21 — Attic Finds levels 1–2
+
+- Built on `claude/attic-finds` ([PR #693](https://github.com/rjdunlap/neo/pull/693), base `origin/main` 7fd14b76, tested commit e7bde7dc): new game `attic-finds` in Story Grove (now 11 games), levels 1–2; the "rub along it" crank gesture and tap-then-slot-tap for a looked chip are not built ([definition](../definitions/attic-finds.md)).
+- `npm run typecheck` clean; `npm test` 194 files, 2125 tests passed (19 new rule tests: objects, evidence, trials, 500-seed rounds, accounting, layout at four views). `npm run build` passed.
+- Dev server http://localhost:5575: `BROWSER_SUITE=atticfinds` passed (level 1 free prediction then two wrong picks = 0 misses, 1 hint; level 2 empty Check free, door Check = 1 miss, requested hint twice = 1 hint; portrait level 2 screenshot with the rod in the magnifier, layout clear). `BROWSER_SUITE=fingerdemo FINGER_ONLY=attic-finds FINGER_LEVELS=1,2` passed (22.7 s, 24.5 s).
+- Not run: the offline check, `world`, any iPad or child.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): crank and Turn readable for a three-year-old, the back-side rod reading as connected, device speech of the clue lines.

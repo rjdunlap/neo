@@ -624,6 +624,25 @@ describe('her friends (RW05)', () => {
     expect(store.companion?.name).toBe('Pebble');
   });
 
+  it('writes a welcome step at once with its picture, and a reset clears the project but keeps the friends (RW07)', async () => {
+    const store = make();
+    await store.load();
+    store.meet('sprout', 'Mochi', 'pink', 'start');
+    expect(store.beginWelcome('preschool')).toBe(true);
+    expect(savedAs('neo.save').projects.welcome).toMatchObject({ band: 'preschool', newcomer: 'river' });
+    const picture = { kind: 'picture' as const, stamps: [{ kind: 'star' as const, color: 'pink' as const, x: 0.5, y: 0.5, size: 1, turns: 0 }] };
+    expect(store.completeWelcomeStep('pretty', picture)).toBe(true);
+    store.flush();
+    await Promise.resolve();
+    expect(savedAs('neo.save').projects.welcome.results.pretty).toEqual(picture);
+    expect(store.data.creations.picture.current).toBeNull();
+    store.reset();
+    expect(store.welcome).toEqual({ band: null, steps: [], results: {}, newcomer: null, ended: false });
+    expect(store.companion?.name).toBe('Mochi');
+    expect(store.undo()).toBe(true);
+    expect(store.welcome.steps).toEqual(['pretty']);
+  });
+
   it('keeps each profile\'s friends to itself', async () => {
     const store = make();
     await store.load();

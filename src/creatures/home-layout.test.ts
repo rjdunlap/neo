@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
 import { BOARD, PLAQUE } from '../ui/creation-art';
 import { BACK } from './friends-layout';
-import { ACTION_RADIUS, BALL_RADIUS, BASKET, CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, exploreLayout, GUIDE_CORNER, HOME_BUTTON, homeLayout, LINK_CORNER, playLayout, type Floor } from './home-layout';
+import { ACTION_RADIUS, BALL_RADIUS, BASKET, CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, exploreLayout, GUIDE_CORNER, HOME_BUTTON, homeLayout, LINK_CORNER, NEWCOMER_REACH, playLayout, PROJECT_CARD, PROJECT_PLAY_RADIUS, projectLayout, type Floor } from './home-layout';
 
 /** An iPad sideways and upright, a phone sideways, one with a notch, and a wide laptop. */
 const VIEWS = [
@@ -47,12 +47,13 @@ describe('the root Home layout', () => {
     expect(ACTION_RADIUS * 2).toBeGreaterThanOrEqual(120);
     expect(CORNER_RADIUS * 2).toBeGreaterThanOrEqual(100);
     for (const v of VIEWS) {
-      for (const young of [true, false]) {
-        const l = homeLayout(v, young);
-        const where = `${v.w}×${v.h}, ${young ? 'lap/toddler' : 'preschool+'}`;
+      for (const [young, project] of [[true, false], [true, true], [false, false], [false, true]]) {
+        const l = homeLayout(v, young, project);
+        const where = `${v.w}×${v.h}, ${young ? 'lap/toddler' : 'preschool+'}${project ? ', welcome open' : ''}`;
         expect(l.play === null, where).toBe(young);
+        expect(l.continue !== null, where).toBe(!young && project);
         expect(l.ball === null, where).toBe(!young);
-        const buttons = [disc(l.who, CORNER_RADIUS, 'who'), disc(l.explore, ACTION_RADIUS, 'explore'), ...(l.play ? [disc(l.play, ACTION_RADIUS, 'play')] : [])];
+        const buttons = [disc(l.who, CORNER_RADIUS, 'who'), disc(l.explore, ACTION_RADIUS, 'explore'), ...(l.play ? [disc(l.play, ACTION_RADIUS, 'play')] : []), ...(l.continue ? [disc(l.continue, ACTION_RADIUS, 'continue')] : [])];
         const targets = [...buttons, body(l.stage), ...(l.ball ? [disc(l.ball, BALL_RADIUS, 'ball')] : [])];
         check(v, targets, [floorBox(l.floor)], where);
         const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
@@ -108,5 +109,28 @@ describe('the Explore picker layout', () => {
       }
     }
     expect(() => exploreLayout(VIEWS[0], EXPLORE_MAX + 1)).toThrow();
+  });
+});
+
+describe('the welcome project page layout', () => {
+  it('fits Back, Home, the newcomer and every step card with its Play arrow apart, clear of the corners', () => {
+    expect(PROJECT_CARD).toBeGreaterThanOrEqual(150);
+    expect(PROJECT_PLAY_RADIUS * 2).toBeGreaterThanOrEqual(120);
+    for (const v of VIEWS) {
+      for (const n of [2, 3]) {
+        const l = projectLayout(v, n);
+        const where = `${v.w}×${v.h}, ${n} cards`;
+        const targets = [
+          disc(l.back, CORNER_RADIUS, 'back'),
+          disc(l.home, CORNER_RADIUS, 'home'),
+          disc(l.basket, NEWCOMER_REACH, 'newcomer'),
+          ...l.cards.map((c, i) => rect(c, PROJECT_CARD, PROJECT_CARD, `card ${i}`)),
+          ...l.plays.map((p, i) => disc(p, PROJECT_PLAY_RADIUS, `play ${i}`)),
+        ];
+        check(v, targets, [], where);
+        const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
+        for (const t of targets.slice(2)) expect(overlap(t, link), `${t.what} under the link, ${where}`).toBe(false);
+      }
+    }
   });
 });

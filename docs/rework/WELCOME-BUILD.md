@@ -7,7 +7,7 @@ Defined 2026-10-21 for [RW07](WORK-ITEMS.md#rw07-welcome-adventure-and-visible-r
 - **Where it lives:** the site root only (`app.creatureWorld`). Classic's island never shows the project, and its picnics are untouched.
 - **Who sees it:** profiles at `preschool` and `prek`, as RW04 says. Lap, toddler, school and grown-up profiles get no Continue and no project, and their Home is unchanged.
 - **What it adds:** a saved `projects.welcome` record, a project round beside today's story rounds, a `ProjectScene` reached from Home's **Continue**, an ending in which the newcomer is named and joins her collection, and the newcomer's basket bed in creature play. The bed shows her picture over it and plays her tune.
-- **Three slices.** Slice 1 is ready: the record, the page, Continue, and the `pretty` and `yummy` steps. Slice 2, the `song` step, waits on the open [hello-song decision](../WAITING-ON-DEVELOPER.md#decisions-that-block-work). Slice 3, the ending, adoption and bed, comes after slice 2, because the ending needs all three results.
+- **Three slices.** Slice 1 is built (2026-10-21, #712): the record, the page, Continue, and the `pretty` and `yummy` steps. Slice 2, the `song` step, waits on the open [hello-song decision](../WAITING-ON-DEVELOPER.md#decisions-that-block-work). Slice 3, the ending, adoption and bed, comes after slice 2, because the ending needs all three results.
 
 ## What the code offers now (audit at `f43ae313`)
 
@@ -94,7 +94,7 @@ Recorded in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md#defaults-in-use-bl
 
 ## Build slices, in order
 
-**Slice 1: the project record, the page, Continue, `pretty` and `yummy`.** Shell, save and navigation tier.
+**Slice 1: the project record, the page, Continue, `pretty` and `yummy`.** Shell, save and navigation tier. **Built 2026-10-21 (#712)**; `BROWSER_SUITE=welcome` is `welcomeFlow`. A finished replay replaces the picture, but a replay that ends with an empty or non-stamp picture keeps the old one (the default chosen).
 - `projects.welcome` with defaults, repair and tests: unknown steps, a result without its step, band and newcomer, backup and `PreviousSave`, and reset. `store.completeWelcomeStep` with tests: a step completes once, a replay replaces a result, an empty or dirty picture is dropped, and band and newcomer are fixed by the first launch.
 - `WELCOME_PLAN` in `src/content/welcome.ts`: each step's game, levels per band and voice lines. A test asserts that every level is inside the game's band range (the song row is absent until slice 2). A second test asserts that Pet Kitchen 2 at preschool and 5 at pre-K still mean four quarter plates and `recipe(5) = [1,1]`.
 - The `StoryRound` member, `GameScene`'s two branches, `go.project`, `ProjectScene` with two cards (the song card is not drawn yet), Continue in `homeLayout` with its layout test in five views at both bands (three 120-unit actions, clear of the link and guide corners), and cleanup on destroy.
