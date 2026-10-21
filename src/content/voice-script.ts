@@ -887,6 +887,7 @@ export const SCRIPT = {
   'go.is.yellow': ['Yellow! Slow down!'],
   'go.is.green': ['Green! Go!'],
   'go.done': ['Great driving! Everyone got there safely.'],
+  'go.done.walk': ['You made it to the flag! Great stopping and going.'],
   'rhyme.match': ['{prompt}! Which one rhymes with {prompt}? {list}?'],
   'rhyme.pair': ['Find the two that rhyme: {list}.'],
   'rhyme.odd': ['Which one does not rhyme? {list}.'],

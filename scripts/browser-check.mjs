@@ -6902,13 +6902,29 @@ async function woodsBatch() {
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const lightIs = (l) => page.waitForFunction((l) => neo.scene.game.light.light === l, l, { timeout: 15000 });
     await page.waitForTimeout(500);
-    if (mode === 'toy') for (let k = 0; k < 8; k++) { await tap('neo.scene.game.light'); await page.waitForTimeout(260); }
+    if (mode === 'toy') {
+      // The car answers too: a tap on it counts as one of the eight touches.
+      await tap('neo.scene.game.cars[0]'); await page.waitForTimeout(300);
+      assert.equal(await page.evaluate(() => neo.scene.game.done), 1, 'a car tap counts at the toy level');
+      for (let k = 0; k < 7; k++) { await tap('neo.scene.game.light'); await page.waitForTimeout(260); }
+    }
     else if (mode === 'send' || mode === 'walk') {
       const act = mode === 'send' ? 'neo.scene.game.cars[0]' : 'neo.scene.game.step';
       // Going on red: two gentle misses, then the light glows when it turns green.
       await lightIs('red'); await page.waitForTimeout(300);
       await tap(act); await page.waitForTimeout(450); await tap(act);
       assert.deepEqual(await counts(), [2, 1]);
+      if (mode === 'send') {
+        // A car further back only toots: neither a send nor a miss.
+        await tap('neo.scene.game.cars[1]'); await page.waitForTimeout(300);
+        assert.deepEqual(await counts(), [2, 1], 'a back car is not a miss');
+      }
+      // The glow sits on the thing to touch, once the light is green.
+      await lightIs('green'); await page.waitForTimeout(100);
+      assert.ok(await page.evaluate((send) => {
+        const g = neo.scene.game.glow.getBounds(), b = (send ? neo.scene.game.cars[0] : neo.scene.game.step).getBounds();
+        return g.width > 0 && Math.abs(g.x + g.width / 2 - (b.x + b.width / 2)) < 20;
+      }, mode === 'send'), 'the hint glows on the car or the feet on green');
       // The game's own flag: the light stops once the round's ending begins.
       for (let k = 0; k < 40 && !(await page.evaluate(() => neo.scene.game.finished)); k++) {
         await lightIs('green');
