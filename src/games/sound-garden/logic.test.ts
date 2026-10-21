@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { CHOICES, echoRest, GAP_SECONDS, judgeEcho, LEVEL_IDS, makeQuestions, makeRhythms, MIN_APART, planFor, PLANS, RHYTHMS, SINGERS, singerToTap, tileFor, type Gap, type Question, type Sound } from './logic';
+import { CHOICES, echoRest, GAP_SECONDS, judgeEcho, LEVEL_IDS, makeQuestions, makeRhythms, MIN_APART, planFor, PLANS, RHYTHMS, SINGERS, singerToTap, makeCast, songFor, CAST_SIZE, FAST_BEATS, SLOW_BEATS, TEMPO_SPAN, tileFor, type Gap, type Question, type Sound } from './logic';
 
 /** Tap times for a rhythm, with each gap stretched by a factor (a child's wobble). */
 const play = (r: Gap[], wobble: number[] = []) => {
@@ -44,8 +44,11 @@ describe('Sound Garden', () => {
 
   it('touches every singer in free play, and the tile that shows the answer in the listening levels', () => {
     const free = PLANS[1];
-    const heard = new Set(Array.from({ length: free.rounds }, (_, i) => singerToTap(i)));
-    expect([...heard].sort()).toEqual([...SINGERS].sort());
+    for (let seed = 1; seed <= 100; seed++) {
+      const cast = makeCast(new Rng(seed));
+      const heard = new Set(Array.from({ length: free.rounds }, (_, i) => singerToTap(cast, i)));
+      expect([...heard].sort()).toEqual([...cast].sort());
+    }
     for (const plan of Object.values(PLANS)) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const q of makeQuestions(plan, new Rng(seed))) expect(CHOICES[q.ask][tileFor(q)]).toBe(q.answer);
@@ -136,5 +139,44 @@ describe('Sound Garden', () => {
     const lows = new Set(qs.filter((q) => q.ask === 'highlow').map((q) => q.sounds.low.notes[0].step));
     expect(highs.size).toBeGreaterThan(3);
     expect(lows.size).toBeGreaterThan(3);
+  });
+
+  it('stands a seeded five of the six singers in the garden, every singer standing over a few rounds', () => {
+    const seen = new Set<string>();
+    const orders = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const cast = makeCast(new Rng(seed));
+      expect(cast).toHaveLength(CAST_SIZE);
+      expect(new Set(cast).size).toBe(CAST_SIZE);
+      for (const s of cast) expect(SINGERS).toContain(s);
+      cast.forEach((s) => seen.add(s));
+      orders.add(cast.join());
+      expect(makeCast(new Rng(seed))).toEqual(cast);
+    }
+    expect([...seen].sort()).toEqual([...SINGERS].sort());
+    expect(orders.size).toBeGreaterThan(20);
+  });
+
+  it('has each singer sing its listening role: the bird high, the frog low, the bunny fast, the turtle slow', () => {
+    for (let tap = 0; tap < 12; tap++) {
+      for (const s of SINGERS) {
+        const song = songFor(s, tap);
+        expect(song.beats[0].at).toBe(0);
+        for (const b of song.beats) expect(Number.isInteger(b.step)).toBe(true);
+      }
+      const bird = songFor('bird', tap).beats[0].step;
+      const frog = songFor('frog', tap).beats[0].step;
+      expect(bird - frog).toBeGreaterThanOrEqual(MIN_APART);
+      expect(bird).toBeGreaterThanOrEqual(6);
+      expect(frog).toBeLessThanOrEqual(2);
+    }
+    const gaps = (s: 'bunny' | 'turtle') => songFor(s, 0).beats.slice(1).map((b, i, rest) => b.at - (i ? rest[i - 1].at : 0));
+    const bunny = songFor('bunny', 0).beats;
+    const turtle = songFor('turtle', 0).beats;
+    expect(bunny.length).toBeGreaterThan(turtle.length);
+    for (const g of gaps('bunny')) expect(g).toBeCloseTo(TEMPO_SPAN / FAST_BEATS);
+    for (const g of gaps('turtle')) expect(g).toBeCloseTo(TEMPO_SPAN / SLOW_BEATS);
+    // Same span, more beats: the fast-or-slow level's cue, not a shorter clip.
+    expect(bunny.length * (TEMPO_SPAN / FAST_BEATS)).toBeCloseTo(turtle.length * (TEMPO_SPAN / SLOW_BEATS));
   });
 });

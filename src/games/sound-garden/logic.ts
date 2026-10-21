@@ -157,11 +157,57 @@ export function judgeEcho(pattern: Gap[], taps: number[]): boolean {
   return true;
 }
 
-/** The singers in free play, in the order they stand. */
-export const SINGERS = ['bird', 'frog', 'bunny', 'bell', 'woodpecker'] as const;
+/** Every singer that can stand in the free-play garden: the four answer pictures of the listening levels, the bell and the woodpecker. */
+export const SINGERS = ['bird', 'frog', 'bunny', 'turtle', 'bell', 'woodpecker'] as const;
+export type Singer = (typeof SINGERS)[number];
+/** How many singers stand in the garden each round. */
+export const CAST_SIZE = 5;
 
-/** The singer the demonstration touches for the next tap: each in turn, so the garden is heard whole. */
-export const singerToTap = (played: number) => SINGERS[played % SINGERS.length];
+/** A round's garden: a seeded five of the six, in a seeded standing order, so the garden changes but every answer picture is met over a few rounds. */
+export const makeCast = (rng: Rng): Singer[] => rng.shuffle([...SINGERS]).slice(0, CAST_SIZE);
+
+/** The singer the demonstration touches for the next tap: each of the round's cast in turn, so the garden is heard whole. */
+export const singerToTap = (cast: readonly Singer[], played: number) => cast[played % cast.length];
+
+/** The sound a singer makes: a bird's chirp, a pitched ribbit, a drum beat, a wooden tock, a bell or a woodpecker's knock. */
+export type Call = 'chirp' | 'ribbit' | 'drum' | 'tock' | 'bell' | 'knock';
+
+/** What a singer sings on one tap: its call at each beat (seconds from the touch) on a pentatonic step, unpitched calls keeping step 0. */
+export interface Song {
+  call: Call;
+  beats: { at: number; step: number }[];
+}
+
+/** The bell's little tune, one note a tap. */
+export const BELL_STEPS = [5, 7, 9, 7, 10];
+/** The frog's low steps, alternating, well under the bird's 10–13 as in the high-or-low level. */
+export const FROG_STEPS = [-3, -4];
+/** The bunny pats four quick beats and the turtle plods two slow ones over the same second, the fast-or-slow level's tempos. */
+export const PATTER_BEATS = 4;
+export const PLOD_BEATS = 2;
+
+const beats = (count: number, gap: number, step = 0) => Array.from({ length: count }, (_, i) => ({ at: i * gap, step }));
+
+/**
+ * Each singer sings its listening role, so the answer pictures of levels 2 and 3 are heard before they are asked about: the bird high,
+ * the frog low, the bunny fast and the turtle slow (the same beat gaps as the fast-or-slow level's).
+ */
+export function songFor(singer: Singer, tap: number): Song {
+  switch (singer) {
+    case 'bird':
+      return { call: 'chirp', beats: beats(1, 0, 10 + (tap % 4)) };
+    case 'frog':
+      return { call: 'ribbit', beats: beats(1, 0, FROG_STEPS[tap % FROG_STEPS.length]) };
+    case 'bunny':
+      return { call: 'drum', beats: beats(PATTER_BEATS, TEMPO_SPAN / FAST_BEATS) };
+    case 'turtle':
+      return { call: 'tock', beats: beats(PLOD_BEATS, TEMPO_SPAN / SLOW_BEATS) };
+    case 'bell':
+      return { call: 'bell', beats: beats(1, 0, BELL_STEPS[tap % BELL_STEPS.length]) };
+    default:
+      return { call: 'knock', beats: beats(1, 0) };
+  }
+}
 
 /** Which of the two answer tiles shows the answer (the tiles show the two choices in order). */
 export const tileFor = (q: Question): 0 | 1 => (CHOICES[q.ask][0] === q.answer ? 0 : 1);

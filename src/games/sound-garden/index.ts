@@ -13,7 +13,7 @@ import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { CHOICES, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, planFor, SINGERS, singerToTap, tileFor, type Answer, type Gap, type GardenPlan, type Note, type Question, type Sound } from './logic';
+import { CHOICES, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, makeCast, planFor, singerToTap, songFor, tileFor, type Singer, type Song, type Answer, type Gap, type GardenPlan, type Note, type Question, type Sound } from './logic';
 import { MIN_TAP_GAP } from '../../engine/ghost';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
@@ -124,6 +124,16 @@ function voice(n: Note) {
   else sfx.marimba(n.step, 0.5);
 }
 
+/** A singer's call on one beat. */
+function call(c: Song['call'], step: number) {
+  if (c === 'chirp') sfx.chirp(step);
+  else if (c === 'ribbit') sfx.ribbit(step);
+  else if (c === 'drum') sfx.drum(0.4);
+  else if (c === 'tock') sfx.drum(0.75);
+  else if (c === 'bell') sfx.bell(step, 0.35);
+  else sfx.knock();
+}
+
 const PICTURE: Record<Answer, Kind> = { high: 'bird', low: 'frog', fast: 'bunny', slow: 'turtle', up: 'up', down: 'down' };
 
 class SoundGarden implements Game {
@@ -131,7 +141,9 @@ class SoundGarden implements Game {
   readonly questions: Question[];
   readonly rhythms: Gap[][];
   readonly tiles: Tile[];
-  readonly singers: { kind: Kind; node: Container; taps: number }[] = [];
+  readonly singers: { kind: Singer; node: Container; taps: number }[] = [];
+  /** Free play's garden this round: five of the six singers, in a seeded order. */
+  readonly cast: Singer[] = [];
   readonly bush = new Container();
   readonly drum: Container;
   readonly woodpecker: Container;
@@ -194,7 +206,8 @@ class SoundGarden implements Game {
     ctx.stage.addChild(this.woodpecker, this.drum, this.rhythmHint);
 
     if (this.plan.mode === 'play') {
-      for (const kind of SINGERS as readonly Kind[]) {
+      this.cast.push(...makeCast(ctx.rng));
+      for (const kind of this.cast) {
         const node = art(kind);
         const s = { kind, node, taps: 0 };
         node.hitArea = new Circle(0, 0, 100);
@@ -255,7 +268,7 @@ class SoundGarden implements Game {
    */
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
-    if (this.plan.mode === 'play') return { tap: { on: this.singers.find((s) => s.kind === singerToTap(this.played))!.node } };
+    if (this.plan.mode === 'play') return { tap: { on: this.singers.find((s) => s.kind === singerToTap(this.cast, this.played))!.node } };
     if (this.busy) return null;
     if (this.plan.mode === 'echo') {
       const r = this.rhythms[this.index];
@@ -273,30 +286,23 @@ class SoundGarden implements Game {
 
   // Free play -----------------------------------------------------------------------------
 
-  private sing(s: { kind: Kind; node: Container; taps: number }) {
+  private async sing(s: { kind: Singer; node: Container; taps: number }) {
     if (this.finished) return;
+    const song = songFor(s.kind, s.taps);
     s.taps++;
     this.played++;
-    const steps = [5, 7, 9, 7, 10];
-    switch (s.kind) {
-      case 'bird':
-        sfx.chirp(10 + (s.taps % 4));
-        break;
-      case 'frog':
-        sfx.croak();
-        break;
-      case 'bunny':
-        sfx.drum();
-        break;
-      case 'bell':
-        sfx.bell(steps[s.taps % steps.length], 0.35);
-        break;
-      default:
-        sfx.knock();
-    }
-    void this.ctx.tw.to(s.node.scale, { x: 1.15, y: 0.88 }, { duration: 0.08 }).then(() => this.ctx.tw.to(s.node.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
     this.ctx.particles.burst(s.node.x, s.node.y - 60, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 4, speed: [40, 120], gravity: -40, size: [0.3, 0.45] });
     if (this.played >= this.plan.rounds) void this.finale();
+    // The first beat sounds on touch-down; a patter or a plod bounces once per beat.
+    const gap = song.beats[1]?.at ?? 0.5;
+    const back = Math.min(0.25, gap * 0.6);
+    let at = 0;
+    for (const beat of song.beats) {
+      if (beat.at > at) await this.ctx.tw.wait(beat.at - at);
+      at = beat.at;
+      call(song.call, beat.step);
+      void this.ctx.tw.to(s.node.scale, { x: 1.15, y: 0.88 }, { duration: 0.08 }).then(() => this.ctx.tw.to(s.node.scale, { x: 1, y: 1 }, { duration: back, ease: ease.outBack }));
+    }
   }
 
   // Listening questions -------------------------------------------------------------------
