@@ -73,6 +73,7 @@ import { oppositesGame } from './opposites';
 import { shapeBuddies } from './shape-buddies';
 import { dayByDay } from './day-by-day';
 import { orchardRows } from './orchard-rows';
+import { boltBoards } from './bolt-boards';
 import { pictureGraph } from './picture-graph';
 import { inchworm } from './inchworm';
 import { blockTower } from './block-tower';
@@ -173,6 +174,7 @@ export const GAMES: GameModule[] = [
   oppositesGame,
   pictureGraph,
   orchardRows,
+  boltBoards,
   dayByDay,
   shapeBuddies,
   inchworm,

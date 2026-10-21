@@ -152,6 +152,17 @@ export const sfx = {
     [0, 0.06, 0.13].forEach((d, i) => tone(o.ctx, o.dest, 'sine', 500 + i * 180, o.t + d, 0.15, 0.003, 0.08, 1100 + i * 200));
   },
 
+  /** A bolt spinning out: a ratchet's clicks climbing four pentatonic steps from `step`. */
+  ratchet(step = 3) {
+    const o = out();
+    if (!o) return;
+    for (let k = 0; k < 4; k++) {
+      const t = o.t + k * 0.055;
+      noise(o.ctx, o.dest, t, 0.025, 0.22, { type: 'bandpass', hz: 3200, q: 2 });
+      tone(o.ctx, o.dest, 'triangle', stepHz(step + k), t, 0.12, 0.002, 0.05);
+    }
+  },
+
   /** A clean little squeak, rising with `step`. */
   squeak(step = 8) {
     const o = out();
