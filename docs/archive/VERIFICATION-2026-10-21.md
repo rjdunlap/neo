@@ -153,3 +153,10 @@
 - Ran at `2eb18d2c` (dev http://localhost:5254, preview http://localhost:5949): typecheck; `npm test` 200 files, 2302 tests; build; `BROWSER_SUITE=welcome`, `home` and `picnic` passed; `npm run test:offline` passed. Landscape and portrait welcome page and Home with Continue reviewed by screenshot.
 - Not run: `world` (classic only gained a `project` to map stub), device speech, iPad, a child.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a child understands the invitation and step cards; how the asks and done lines sound.
+
+## 2026-10-21 — Size Parade: support truth (slice 1)
+
+- Built on `claude/size-parade-support-truth` ([PR #714](https://github.com/rjdunlap/neo/pull/714)): comparative words at two friends (`size.wrong.pick`), every touch answered (sky or ground hop and repeat; `size.spot` for a friend on the wrong spot), pitch inverted so big is low, `paradeLayout()` with a no-overlap test (the portrait-overlap gap was a misreading: the logical view is at least 1024 wide), pinned size steps, the card's wording, and `SIZE_LEVELS`/`SIZE_PORTRAIT` filters.
+- Ran at the branch tip (Vite http://localhost:5226): `npm run typecheck`; `npx vitest run src/games/size-parade src/content src/games/registry` (141 tests pass); `BROWSER_SUITE=expansion EXPANSION_ONLY=size SIZE_LEVELS=1,7 SIZE_PORTRAIT=1` passed (misses/hints [2,1], one sticker each; level 7 portrait screenshot reviewed, five friends and no overlap); `BROWSER_SUITE=fingerdemo FINGER_ONLY=size-parade FINGER_LEVELS=7` finished in 13.5 s.
+- Not run: build (no shared files or assets), the full unit suite, other suites.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): iPad touch feel, device speech for the new lines, and whether a child hears big-low as natural.
