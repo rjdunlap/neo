@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
-import { pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir, type Shell, HEN_SHELLS, HEN_NOTES, SHELL } from './logic';
+import { laneChoice, pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir, type Shell, HEN_SHELLS, HEN_NOTES, SHELL } from './logic';
 
 describe('Egg Catch', () => {
   it('lays eggs in changing lanes, with white eggs only where asked and never three in a row', () => {
@@ -12,7 +12,7 @@ describe('Egg Catch', () => {
         eggs.slice(1).forEach((e, i) => expect(e.lane).not.toBe(eggs[i].lane));
         const mixes = plan.mode === 'brown' || plan.mode === 'sort';
         if (mixes) expect(eggs.every((e) => e.shell === 'brown' || e.shell === 'white')).toBe(true);
-        else if (plan.mode === 'tap' || plan.mode === 'catch') expect(eggs.every((e) => e.shell === HEN_SHELLS[e.lane])).toBe(true);
+        else if (plan.mode === 'tap' || plan.mode === 'lane' || plan.mode === 'catch') expect(eggs.every((e) => e.shell === HEN_SHELLS[e.lane])).toBe(true);
         else expect(eggs.every((e) => e.shell === 'brown')).toBe(true);
         eggs.slice(2).forEach((e, i) => expect(e.shell === 'white' && eggs[i].shell === 'white' && eggs[i + 1].shell === 'white').toBe(false));
         expect(eggs.filter((e) => e.shell !== 'white').length).toBeGreaterThanOrEqual(plan.eggs);
@@ -278,5 +278,28 @@ it('deals solvable unsolved two-hen boards, with hints that fix a needed gate', 
       }
       expect(pairExits(gates as [boolean, boolean, boolean], b.whiteBranch)).toEqual([b.basket, b.nest]);
     }
+  }
+});
+
+it('Under the hen deals five changing cues and accepts a forgiving tap only under the calling hen', () => {
+  const plan = PLANS[7];
+  expect(plan.mode).toBe('lane');
+  expect(plan.eggs).toBe(5);
+  for (const width of [1024, 1365]) {
+    const lanes = spread(LANES, 150, width - 40, 220);
+    for (let seed = 1; seed <= 100; seed++) {
+      const eggs = makeEggs(plan, new Rng(seed), plan.eggs);
+      expect(eggs).toEqual(makeEggs(plan, new Rng(seed), plan.eggs));
+      eggs.slice(1).forEach((e, i) => expect(e.lane).not.toBe(eggs[i].lane));
+      for (const egg of eggs) {
+        for (let lane = 0; lane < LANES; lane++) {
+          for (const offset of [-95, 0, 95]) {
+            expect(laneChoice(lanes[lane] + offset, lanes, egg.lane)).toEqual({ lane, lay: lane === egg.lane });
+          }
+        }
+      }
+    }
+    expect(laneChoice(-200, lanes, 0)).toEqual({ lane: 0, lay: true });
+    expect(laneChoice(width + 200, lanes, 3)).toEqual({ lane: 3, lay: true });
   }
 });

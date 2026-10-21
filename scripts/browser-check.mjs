@@ -6051,14 +6051,42 @@ async function batch() {
   }
 
   // Egg Catch: a finger steers the basket under falling eggs; route levels flip the gates.
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 5) && (!only || only === 'eggs'); level++) {
+  for (const level of [1, 2, 3, 4, 5, 8].filter((n) => n >= Number(process.env.FROM_LEVEL || 1) && n <= Number(process.env.TO_LEVEL || 8) && (!only || only === 'eggs'))) {
+    if (level === 8) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('egg-catch', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (mode === 'lane') {
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const first = g.callingLane;
+        await kit.sleep(1800);
+        if (g.falling.length || g.misses || g.callingLane !== first) throw new Error('hen did not wait for a lane choice');
+        const wrong = (first + 1) % 4;
+        const x = g.laneX(wrong);
+        // Wide targets: tap well away from the centre, first on the shelf, then near the hay.
+        const a = g.touch.toGlobal({ x: x + 85, y: 110 }); kit.tap(a.x, a.y);
+        await kit.sleep(250);
+        if (g.basket.x !== x || g.falling.length || g.misses !== 1) throw new Error('wrong lane must hop, teach once and keep the egg');
+        const b = g.touch.toGlobal({ x: x - 85, y: g.floor - 40 }); kit.tap(b.x, b.y);
+        await kit.sleep(250);
+        if (g.misses !== 2 || g.hints !== 1 || !g.hinting || !g.laneGlow.context.instructions.length) throw new Error('two wrong lanes must light one hint');
+      });
+      await screenshot('egg-catch-8-hint-portrait');
+    }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       const canvas = document.querySelector('canvas');
       const touch = (type, x, y) => canvas.dispatchEvent(new PointerEvent(type, { clientX: x, clientY: y, pointerId: 9, pointerType: 'touch', isPrimary: true, bubbles: true, cancelable: true, buttons: type === 'pointerup' ? 0 : 1 }));
+      if (g.plan.mode === 'lane') {
+        for (let i = 0; i < 5; i++) {
+          const lane = g.callingLane;
+          const p = g.touch.toGlobal({ x: g.laneX(lane) + (i % 2 ? -85 : 85), y: g.floor - 40 }); kit.tap(p.x, p.y);
+          await kit.until(() => g.caughtCount > i, 5000);
+          if (g.caughtCount < 5 && g.callingLane === lane) throw new Error('calling hen repeated');
+        }
+        return;
+      }
       if (g.plan.mode === 'tap') {
         for (let i = 0; i < g.plan.eggs; i++) {
           await kit.until(() => !g.falling.some((f) => !f.done), 8000);
@@ -6117,6 +6145,7 @@ async function batch() {
     if (mode === 'tap') assert.deepEqual(r, [0, 0], 'eggs tap score');
     else assert.ok(r[0] >= 2 && r[1] === 1, `eggs ${level} score ${r}`);
     log(`Egg Catch ${level} (${mode}): eggs, basket, gates, hatching, hint, saved score and sticker passed`);
+    if (level === 8) await page.setViewportSize({ width: 1024, height: 768 });
   }
 
   // Mail Carrier: deliver each letter; a wrong mailbox hands it back.

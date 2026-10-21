@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * hens lay eggs that roll gently down to a basket. Missed eggs land in soft hay and hatch,
  * so nothing breaks. Later levels route eggs through chutes with flip gates.
  */
-export type EggMode = 'tap' | 'catch' | 'brown' | 'route' | 'sort' | 'predict' | 'pair';
+export type EggMode = 'tap' | 'lane' | 'catch' | 'brown' | 'route' | 'sort' | 'predict' | 'pair';
 
 export interface EggPlan {
   mode: EggMode;
@@ -24,6 +24,7 @@ export const PLANS: EggPlan[] = [
   { mode: 'sort', eggs: 5, fall: 0, name: 'Route brown eggs to the basket and white eggs to the nest' },
   { mode: 'predict', eggs: 5, fall: 0, name: 'The gates are set: tap where the egg will land, then watch it roll' },
   { mode: 'pair', eggs: 3, fall: 0, name: 'Set the gates once for two eggs: brown to the basket, white to the nest' },
+  { mode: 'lane', eggs: 5, fall: 1.2, name: 'Under the hen: tap a lane to hop under the clucking hen' },
 ];
 
 /** Predict levels: gate settings for each egg, never landing in the same place twice running. */
@@ -64,7 +65,7 @@ export function makeEggs(plan: EggPlan, rng: Rng, count = 30): Egg[] {
   for (let i = 0; i < count; i++) {
     let lane = rng.int(0, LANES - 1);
     if (lane === out[i - 1]?.lane) lane = (lane + rng.int(1, LANES - 1)) % LANES;
-    let shell: Shell = plan.mode === 'brown' || plan.mode === 'sort' ? (rng.chance(0.55) ? 'brown' : 'white') : plan.mode === 'tap' || plan.mode === 'catch' ? HEN_SHELLS[lane] : 'brown';
+    let shell: Shell = plan.mode === 'brown' || plan.mode === 'sort' ? (rng.chance(0.55) ? 'brown' : 'white') : plan.mode === 'tap' || plan.mode === 'lane' || plan.mode === 'catch' ? HEN_SHELLS[lane] : 'brown';
     if (shell === 'white' && out.slice(-2).length === 2 && out.slice(-2).every((e) => e.shell === 'white')) shell = 'brown';
     out.push({ lane, shell });
   }
@@ -226,4 +227,11 @@ export function glowLane(air: readonly { lane: number; shell: Shell; t: number }
     if (e.shell !== 'white') return e.lane;
   }
   return eggs[next % eggs.length].lane;
+}
+
+/** A forgiving lane tap, including beyond the outer hens: the nearest lane wins.
+ * Only the calling hen lays, once the basket has hopped directly under her. */
+export function laneChoice(x: number, lanes: readonly number[], calling: number) {
+  const lane = lanes.reduce((best, at, i) => Math.abs(at - x) < Math.abs(lanes[best] - x) ? i : best, 0);
+  return { lane, lay: lane === calling };
 }
