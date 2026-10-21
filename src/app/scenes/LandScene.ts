@@ -58,6 +58,8 @@ export interface LandOptions {
   host?: () => LandHost;
   /** Where Home (and Backspace or B) goes: the island map by default. */
   home?: () => void;
+  /** The picture on that button: the island by default (a location at the root draws a Back arrow). */
+  homeIcon?: () => Container;
   /** Scenery drawn over the backdrop and under the field on every resize, kept clear of the field's touch areas. */
   scenery?: (g: Graphics, layout: LandLayout, view: View, ground: number) => void;
   /** A backdrop in place of the land's own (a location's night sky), and the heading's colour over it. */
@@ -125,6 +127,10 @@ export class LandScene extends Scene {
     this.hostCritter = host.critter;
     this.hostHit = host.hitArea;
     this.sign = olderIn(this.land, this.band, GAMES).length ? new Signpost() : null;
+    if (options.homeIcon) {
+      this.home.removeChildAt(1).destroy();
+      this.home.addChild(options.homeIcon());
+    }
   }
 
   init() {

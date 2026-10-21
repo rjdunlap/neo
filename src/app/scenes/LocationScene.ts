@@ -2,6 +2,7 @@ import { Companion } from '../../creatures/companion';
 import { SPECIES, type SpeciesId } from '../../creatures/species';
 import type { LandId, LandLayout } from '../../content/lands';
 import type { Graphics } from 'pixi.js';
+import { arrowIcon } from '../../ui/icons';
 import type { BackdropStyle } from '../../art/scenery';
 import type { View } from '../../engine/view';
 import type { App } from '../App';
@@ -66,7 +67,8 @@ export class LocationScene extends LandScene {
   /** The illustrated resident, or null where the land's code-drawn host still stands in. */
   readonly resident: Companion | null;
 
-  constructor(app: App, id: LandId) {
+  /** `back`, at the root (RW08), turns the corner button into a Back arrow to Explore's Places. */
+  constructor(app: App, id: LandId, back?: () => void) {
     const place = LOCATIONS[id];
     if (!place) throw new Error(`${id} is not a location yet`);
     let resident: Companion | null = null;
@@ -82,6 +84,7 @@ export class LocationScene extends LandScene {
       backdrop: place.backdrop,
       headingColor: place.headingColor,
       hostSaysLine: true,
+      ...(back ? { home: back, homeIcon: () => arrowIcon(-1) } : {}),
     });
     this.resident = resident;
   }
