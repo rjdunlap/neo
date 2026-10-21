@@ -22,3 +22,10 @@
 - Dev server http://localhost:5436: `BROWSER_SUITE=puddlegobble` passed six runs in a row after two fixes the browser play found (a let-go thing landing back under the puddle stayed disarmed, so the hint looped; a game-moved target and pass-over soaks were counted as aimed misses): level 1 by taps, level 8 with a too-big touch (no miss), a refused overshoot and a requested hint, and a level 4 portrait screenshot (`test-results/browser/puddle-gobble-4-portrait.png`). `BROWSER_SUITE=fingerdemo FINGER_ONLY=puddle-gobble` passed at level 1 (14.0 s) and level 8 (11.1 s).
 - Not run: the offline check, the `world` suite, any device or child.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): tap-to-lead without help for a toddler, tier 1 versus tier 2 with dots on an iPad, and whether the spoken "Too big yet" while steering feels like a scold.
+
+## 2026-10-21 — Roundup level 11 Come along (slice 4)
+
+- [PR #688](https://github.com/rjdunlap/neo/pull/688), `claude/roundup-come-along`, code commit `80a3ccda` on base `531324d7`: the follow mode for lap and toddler, 80% gate, fifteen-second drift and one hint, thirty-second trot-home kept; lap `[1, 11]`, toddler `[1, 11, 10, 2, 3]`.
+- `npm run typecheck` clean; roundup, content and registry unit tests passed (130). Full `npm test` had two unrelated timing failures under load (ferry-jam "hint is quick in biggest harbor", fluffy-salon "slowest frame rate") that pass alone (22/22): known load flakes.
+- `BROWSER_SUITE=arcade ARCADE_ONLY=roundup ARCADE_LEVELS=11` at `http://localhost:5328` passed: lap led by a real finger (0 misses, 0 hints), toddler left idle so the drift brings everyone home (0 misses, 1 hint); one sticker each. `BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=11,10` clean: level 11 (lap) 4.3 s, level 10 (toddler) 7.4 s. One portrait (768×1024) screenshot of level 11 mid-lead reviewed: herd, ring and wide gate clear of the pet and corner buttons.
+- Not run: build (no shared assets), full arcade suite, world, offline, device/child checks. Whether a one-year-old reads the herd as following and drags slowly enough is open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
