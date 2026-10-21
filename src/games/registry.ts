@@ -91,6 +91,7 @@ import { swingPals } from './swing-pals';
 import { liftIt } from './lift-it';
 import { atticFinds } from './attic-finds';
 import { fossilDig } from './fossil-dig';
+import { lostLayers } from './lost-layers';
 import { critterCrossing } from './critter-crossing';
 import { sudokuGarden } from './sudoku-garden';
 import { pondConga } from './pond-conga';
@@ -198,6 +199,7 @@ export const GAMES: GameModule[] = [
   liftIt,
   atticFinds,
   fossilDig,
+  lostLayers,
   critterCrossing,
   clapSyllables,
   chainReaction,

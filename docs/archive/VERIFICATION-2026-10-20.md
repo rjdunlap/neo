@@ -323,3 +323,10 @@
 - `npm run typecheck`, full `npm test` (185 files, 1978 tests, three new Mail Carrier rule tests) and `npm run build` passed. Server http://localhost:5919.
 - `BROWSER_SUITE=batch BATCH_ONLY=mail` levels 1–5 passed (now asserts the level 1 wiggle/wave and idle invitation with no misses or hints); `BROWSER_SUITE=woods WOODS_ONLY=mailmap FROM_LEVEL=8`, `BROWSER_SUITE=fingerdemo FINGER_ONLY=mail-carrier FINGER_LEVELS=1` (clean, 15.5 s) and `BROWSER_SUITE=woodland` passed.
 - Not run: portrait screenshot, offline check. Open: the counted phrase's spoken quality on an iPad's device speech and a child's reaction.
+
+## 2026-10-20 — Stop and Go: every touch counts and the hint on the car (slice 1)
+
+- [PR #678](https://github.com/rjdunlap/neo/pull/678), `claude/stop-and-go-every-touch`, tested `379e8508` plus follow-up `22f616d8` (a red tap squashes the car without a competing hop; no rule change): the level 1 car toots and hops on any tap and counts as one of the 8 touches, a back car at level 2 toots and hops (not a send, not a miss), the hint glow rings the front car or the feet button and only while the light is green, level 3 clears wrongs and the glow after a good step, per-state cues (red rumble bob, green tick and headlight blink), `go.done.walk` ends level 3.
+- `npm run typecheck`, `npx vitest run src/games/stop-and-go src/content` (107 tests, four new rule tests) and `npm run build` passed.
+- `GAME_URL=http://localhost:5205 BROWSER_SUITE=woods WOODS_ONLY=go` levels 1–4 passed (new asserts: level 1 car tap counts, level 2 back-car tap is no miss, glow centred on the car or feet on green); `BROWSER_SUITE=fingerdemo FINGER_ONLY=stop-and-go FINGER_LEVELS=1,2` clean (12.2 s and 11.5 s).
+- Not run: iPad or device, child reaction, portrait screenshot, offline check, full suites, and the restore-old-rule check that the glow assertion fails on the old light ring.

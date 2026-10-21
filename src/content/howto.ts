@@ -1335,6 +1335,22 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: 'Brushing, looking and swapping a leaf are never counted against her. A wrong flag or a wrong leaf counts as a miss; after two the right one glows, which counts as a hint. Both leaves have the same shape here; only the edge, teeth or smooth, tells them apart. The leaves and the cliff are made up for the island; nothing here is a real fossil, a real place or advice about digging.' },
     ],
   },
+  'lost-layers': {
+    goal: 'Slide the broken cliff\'s pieces beside the whole one until the fossils line up, then say what the rocks can tell.',
+    steps: [
+      'Drag a piece up or down: green ties mean each fossil sits by its twin.',
+      "Leave a layer's room at each wavy line, where the sea took rock.",
+      { from: 1, to: 1, text: 'When all is green, tap It fits to keep that story. Find every way it fits.' },
+      { from: 1, to: 1, text: "Then tap the story the rocks show, or Can't tell if both fit." },
+      { from: 2, to: 2, text: 'Drag the look that could tell the stories apart into the slot and tap Look.' },
+      { from: 2, to: 2, text: 'Then tap the story card that still fits.' },
+    ],
+    finish: "The rocks' answer is given, even when it is Can't tell.",
+    note: [
+      { from: 1, to: 1, text: "Sliding is free. It fits with something red, or one story while two fit, is a miss; after two the answer glows (a hint). Two stories fit, so Can't tell is right. The cliffs and rules are made up; real rocks tilt and hide more." },
+      { from: 2, to: 2, text: 'Sliding and tapping a look are free. A look that cannot help, or a ruled-out story, is a miss; after two the answer glows (a hint). The dark stripe fell everywhere in one day. The cliffs and rules are made up; real rocks tilt and hide more.' },
+    ],
+  },
   'block-garden': {
     goal: 'Plant shapes until every bud blooms.',
     steps: [
