@@ -146,3 +146,78 @@ describe('Little surprises stop cards (D3)', () => {
     expect(back.sheet).toBeNull();
   });
 });
+
+describe('Make my mix (D5a) on the home spot', () => {
+  const make = () => {
+    vi.stubGlobal('window', new EventTarget());
+    const launched: unknown[][] = [];
+    const app = { go: { game: (...args: unknown[]) => launched.push(args) } };
+    const view = () => ({ w: 1024, h: 768, scale: 1 });
+    const host = new MixHost(app as never, 'lap', new Container(), view as never, new Tweener(), ['bubble-pop', 'peekaboo-barn', 'sing-along-barn', 'fill-dump']);
+    return { host, launched };
+  };
+  beforeEach(() => { store.data.settings.howToCards = true; mixMemory.forget(); });
+
+  it('a hold of 0.6 s opens the table with no session, and its lift is consumed; a shorter press is an ordinary tap', () => {
+    const { host } = make();
+    const node = new Container();
+    host.holdStart(node, 0, 0, 40);
+    host.update(0.4);
+    expect([host.table, host.consumeHold()]).toEqual([null, false]);
+    host.holdStart(node, 0, 0, 40);
+    host.update(0.35); host.update(0.3);
+    expect(host.table).not.toBeNull();
+    expect(mixMemory.live(store.data)).toBeUndefined();
+    expect(host.consumeHold()).toBe(true);
+    expect(host.consumeHold()).toBe(false);
+  });
+  it('a swipe or cancel before 0.6 s opens nothing', () => {
+    const { host } = make();
+    host.holdStart(new Container(), 0, 0, 40);
+    host.update(0.5); host.holdCancel(); host.update(0.5);
+    expect(host.table).toBeNull();
+  });
+  it('edits change the held lineup at once and speak; Play starts that lineup, and the spot replays it after the session ends', async () => {
+    const { voice } = await import('../audio/voice');
+    const { host, launched } = make();
+    host.openTable();
+    const actions = (host.table as unknown as { actions: Record<string, (...a: unknown[]) => unknown> }).actions;
+    actions.add('peekaboo-barn'); actions.add('bubble-pop');
+    expect(vi.mocked(voice.say)).toHaveBeenLastCalledWith('mix.in', { title: expect.any(String) });
+    actions.add('fill-dump');
+    expect(vi.mocked(voice.say)).toHaveBeenLastCalledWith('mix.full');
+    expect(host.table!.lineup).toEqual(['bubble-pop', 'sing-along-barn', 'fill-dump', 'peekaboo-barn', 'bubble-pop']);
+    actions.move(4, 0);
+    expect(actions.remove(2)).toBe(true);
+    expect(host.table!.lineup).toEqual(['bubble-pop', 'bubble-pop', 'fill-dump', 'peekaboo-barn']);
+    actions.play();
+    expect(host.table).toBeNull();
+    expect(mixMemory.live(store.data)!.ids).toEqual(['bubble-pop', 'bubble-pop', 'fill-dump', 'peekaboo-barn']);
+    expect(launched).toEqual([['bubble-pop', 'lap', undefined, false, { place: 'lap' }]]);
+    mixMemory.end();
+    make().host.start();
+    expect(mixMemory.live(store.data)!.ids).toEqual(['bubble-pop', 'bubble-pop', 'fill-dump', 'peekaboo-barn']);
+  });
+  it('the last stop cannot leave, Reset brings back Little surprises, and a forgotten player starts from it', async () => {
+    const { voice } = await import('../audio/voice');
+    const { host } = make();
+    host.openTable();
+    const actions = (host.table as unknown as { actions: Record<string, (...a: unknown[]) => unknown> }).actions;
+    actions.remove(0); actions.remove(0);
+    expect(actions.remove(0)).toBe(false);
+    expect(vi.mocked(voice.say)).toHaveBeenLastCalledWith('mix.one');
+    expect(host.table!.lineup).toEqual(['fill-dump']);
+    actions.reset();
+    expect(host.table!.lineup).toEqual(['bubble-pop', 'sing-along-barn', 'fill-dump']);
+    actions.remove(1); actions.back();
+    expect([host.table, mixMemory.live(store.data)]).toEqual([null, undefined]);
+    mixMemory.forget();
+    make().host.start();
+    expect(mixMemory.live(store.data)!.ids).toEqual(['bubble-pop', 'sing-along-barn', 'fill-dump']);
+  });
+  it('a held game that left the pool is dropped when the spot starts a mix', () => {
+    mixMemory.hold(store.data, 'lap', ['teddy-doctor-not-here', 'fill-dump']);
+    make().host.start();
+    expect(mixMemory.live(store.data)!.ids).toEqual(['fill-dump']);
+  });
+});

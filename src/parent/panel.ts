@@ -94,6 +94,7 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
         <input id="p-howto" type="checkbox" />
       </div>
       <p class="muted">A card with the goal and how to play, a demonstration for some games, and a big Play button. Holding the ? in a game opens it again.</p>
+      <p class="muted">Hold the picnic blanket on a little one's home spot to choose its games.</p>
 
       <h2>Finding games</h2>
       <div class="parent__row">

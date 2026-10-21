@@ -81,6 +81,8 @@ export class MixTable extends Container {
   private lineupMods: readonly GameModule[] = [];
   private pool: readonly GameModule[] = [];
   private view: View | null = null;
+  /** The page size the pool tiles were built for: a turn of the screen changes it. */
+  private builtPer = 0;
   page = 0;
   private dragging = -1;
   private cancelled = false;
@@ -133,7 +135,7 @@ export class MixTable extends Container {
   private buildPool() {
     for (const t of this.poolTiles) this.release(t.tile);
     const view = this.view!;
-    const n = perPage(view);
+    const n = this.builtPer = perPage(view);
     const shown = this.pool.slice(this.page * n, this.page * n + n);
     const ids = this.lineup;
     this.poolTiles = shown.map(mod => {
@@ -210,6 +212,10 @@ export class MixTable extends Container {
 
   layout(view: View) {
     this.view = view;
+    if (this.builtPer && perPage(view) !== this.builtPer) {
+      this.page = Math.min(this.page, this.pageCount - 1);
+      this.buildPool();
+    }
     const L = tableLayout(view);
     const { ox, rowY } = L;
     this.scrim.clear().rect(0, 0, view.w, view.h).fill({ color: wood.light, alpha: 0.92 });
