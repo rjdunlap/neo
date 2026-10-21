@@ -1,0 +1,28 @@
+name: Check pull request
+
+# Deploy runs the same tests only after a merge to main, so a slice whose tests
+# pass on its own base but break against another merged slice (a pinned level
+# list, say) used to fail the deploy. This runs them on the PR's merge commit first.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
