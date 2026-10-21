@@ -46,12 +46,13 @@ export const planFor = (level: number): FillPlan => FILL_PLANS[Math.min(FILL_PLA
 export const targetFor = (plan: FillPlan, rng: Rng): number | null => (plan.count ? rng.int(plan.count[0], plan.count[1]) : null);
 
 /** What each level ID plays: the one basket (tip-out and counting), the jug, or a full and an empty basket to tell apart. */
-export type FillKind = 'basket' | 'pour' | 'pair';
-export const FILL_LEVELS: Readonly<Record<number, FillKind>> = { 1: 'basket', 2: 'basket', 3: 'basket', 4: 'basket', 5: 'pour', 6: 'pair' };
+export type FillKind = 'basket' | 'pour' | 'pair' | 'capacity';
+export const FILL_LEVELS: Readonly<Record<number, FillKind>> = { 1: 'basket', 2: 'basket', 3: 'basket', 4: 'basket', 5: 'pour', 6: 'pair', 7: 'capacity' };
 export const kindFor = (level: number): FillKind => FILL_LEVELS[level] ?? 'basket';
 
 export const describeFill = (level: number): string => {
   const kind = kindFor(level);
+  if (kind === 'capacity') return 'Guess which holds more, pour to test, then answer from the evidence: three pairs';
   if (kind === 'pour') return 'Tip the jug to fill three cups to their lines; catch and reuse spills';
   if (kind === 'pair') return `Full and empty: ${PAIR_REQUESTS} times, tip out the full basket or fill the empty one`;
   const p = planFor(level);
@@ -278,20 +279,20 @@ export function startPour(rng: Rng): PourState {
 }
 /** Amount follows the furthest rightward movement in a gesture, not time held or pointer-event frequency. */
 export const pourAmount = (dx: number) => Math.max(0, Math.min(3, dx / POUR_DISTANCE));
-export function pour(s: PourState, amount: number) {
+export function pour(s: Pick<PourState, 'jug' | 'cup' | 'tray' | 'done'>, amount: number, capacity = 1) {
   if (s.done || !Number.isFinite(amount)) return;
   const moved = Math.min(s.jug, Math.max(0, amount));
-  const intoCup = Math.min(1 - s.cup, moved);
+  const intoCup = Math.min(capacity - s.cup, moved);
   s.jug -= moved;
   s.cup += intoCup;
   s.tray += moved - intoCup;
 }
-export function emptyCup(s: PourState) {
+export function emptyCup(s: Pick<PourState, 'jug' | 'cup' | 'tray' | 'done'>) {
   if (s.done) return;
   s.tray += s.cup;
   s.cup = 0;
 }
-export function recoverTray(s: PourState) {
+export function recoverTray(s: Pick<PourState, 'jug' | 'cup' | 'tray' | 'done'>) {
   if (s.done) return;
   s.jug += s.tray;
   s.tray = 0;
@@ -415,4 +416,69 @@ export function pairLayout(w: number, h: number): PairLayout {
   // A tipped basket's fruit land in front of it, toward its outer side and clear of the pile.
   const land = (x: number, out: number) => [-110, -35, 40].map((ox) => ({ x: x + ox * out, y: feetY + 90 }));
   return { feetY, xs, pile, landing: [land(xs[0], 1), land(xs[1], -1)] };
+}
+
+// ---- Which holds more (level 7): prediction is free; only an answer after evidence is judged -----------------------
+export const CAPACITY_VESSELS = {
+  bowl: { capacity: 2, width: 240 },
+  cup: { capacity: 1, width: 100 },
+  bucket: { capacity: 1.8, width: 180 },
+  mug: { capacity: 1, width: 100 },
+} as const;
+export type Vessel = keyof typeof CAPACITY_VESSELS;
+export interface CapacityPair { left: Vessel; right: Vessel }
+/** The first pair is always the obvious full bowl and empty cup; the other two vary in order. */
+export function capacityPairs(rng: Rng): CapacityPair[] {
+  return [{ left: 'bowl', right: 'cup' }, ...rng.shuffle<CapacityPair>([
+    { left: 'cup', right: 'bucket' }, { left: 'bucket', right: 'mug' },
+  ])];
+}
+export interface CapacityState {
+  pairs: CapacityPair[];
+  round: number;
+  phase: 'guess' | 'pour' | 'answer';
+  guess: 0 | 1 | null;
+  jug: number; cup: number; tray: number;
+  misses: number; hints: number; roundMisses: number; helped: boolean; done: boolean;
+}
+export const capacityPair = (s: CapacityState) => s.pairs[Math.min(s.round, s.pairs.length - 1)];
+export const capacityMore = (p: CapacityPair): 0 | 1 => CAPACITY_VESSELS[p.left].capacity > CAPACITY_VESSELS[p.right].capacity ? 0 : 1;
+export function startCapacity(rng: Rng): CapacityState {
+  const pairs = capacityPairs(rng);
+  return { pairs, round: 0, phase: 'guess', guess: null, jug: CAPACITY_VESSELS[pairs[0].left].capacity, cup: 0, tray: 0,
+    misses: 0, hints: 0, roundMisses: 0, helped: false, done: false };
+}
+export function capacityPour(s: CapacityState, amount: number) {
+  if (s.phase === 'pour') pour(s, amount, CAPACITY_VESSELS[capacityPair(s).right].capacity);
+}
+/** No scoring for a partial pour or checking before the source is empty. */
+export function capacityEvidence(s: CapacityState): boolean {
+  if (s.done || s.phase !== 'pour' || s.jug > 1e-9) return false;
+  s.phase = 'answer'; return true;
+}
+/** Recover all the water for another experiment with this same pair, at any point after guessing. */
+export function capacityRepour(s: CapacityState) {
+  if (s.done || s.phase === 'guess') return;
+  emptyCup(s); recoverTray(s); s.phase = 'pour';
+}
+export function capacityTap(s: CapacityState, side: 0 | 1): 'ignored' | 'guess' | 'wrong' | 'next' | 'done' {
+  if (s.done || s.phase === 'pour') return 'ignored';
+  if (s.phase === 'guess') { s.guess = side; s.phase = 'pour'; return 'guess'; }
+  if (side !== capacityMore(capacityPair(s))) {
+    s.misses++; s.roundMisses++;
+    if (s.roundMisses >= 2 && !s.helped) { s.helped = true; s.hints++; }
+    return 'wrong';
+  }
+  s.round++;
+  if (s.round === s.pairs.length) { s.done = true; return 'done'; }
+  s.phase = 'guess'; s.guess = null; s.roundMisses = 0; s.helped = false;
+  // Return this pair's water, then set out the next full source. No water disappears within an experiment.
+  s.jug = CAPACITY_VESSELS[capacityPair(s).left].capacity; s.cup = s.tray = 0;
+  return 'next';
+}
+/** Straight-sided model: a unit occupies 12,000 square logical units; height = volume / width. */
+export const capacityHeight = (v: Vessel, volume: number = CAPACITY_VESSELS[v].capacity) => volume * 12000 / CAPACITY_VESSELS[v].width;
+export function capacityLayout(w: number, h: number) {
+  return { left: { x: w * 0.30, y: h * 0.53 }, right: { x: w * 0.70, y: h * 0.53 },
+    tray: { x: w * 0.70, y: h * 0.53 + 100 }, tick: { x: w * 0.30, y: h * 0.53 + 150 } };
 }

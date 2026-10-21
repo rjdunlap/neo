@@ -2034,6 +2034,13 @@ export const SCRIPT = {
   'duck.hidingCount': ['I can see {visible}. Let’s count on to {total}.'],
   'duck.hidingFound': ['{hidden} were hiding! {visible} and {hidden} make {total}!'],
 
+  'fill.capacity.guess': ['Which holds more? Tap your guess. Any guess is welcome!'],
+  'fill.capacity.pour': ['Pull the full container to the right to pour it all into the other one. Then tap the check.'],
+  'fill.capacity.answer': ['Tap the one that holds more. Tap the tray if you want to pour again.'],
+  'fill.capacity.spill': ['Look — the water spilled over. The one we poured from holds more!'],
+  'fill.capacity.room': ['Look — there is room left. The one we poured into holds more!'],
+  'fill.capacity.repour': ['All the water is back. Pull right to pour again, then tap the check.'],
+  'fill.capacity.done': ['Three pairs explored! Pouring showed which holds more!'],
   'fill.pour': ['Pull the jug to the right to pour. Lift to stop at the purple line. Then tap the check!'],
   'fill.nextcup': ['Just right! Fill the next cup to its purple line.'],
   'fill.empty': ['The cup tips into the tray. Tap the tray to put the water back in the jug.'],

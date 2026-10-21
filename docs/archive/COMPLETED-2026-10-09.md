@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Fill and Dump level 7, Which holds more? (2026-10-21)
+
+[PR #727](https://github.com/rjdunlap/neo/pull/727), slice 4 of the [deep dive](../deep-dives/fill-dump.md#build-slices-in-order): preschool top `[1, 2, 6, 3, 4, 5, 7]`; free prediction → displacement-controlled pour → supported answer over bowl/cup, cup/bucket and bucket/mug. Straight sides show volume ÷ width, capacity ratios ≥1.6; overflow and empty space provide evidence. Guesses, spills, partial checks and re-pours stay unscored; two post-evidence misses glow the evidence once per pair. The tray restores the same water, and the finger plays through three pairs for one sticker. Other levels, band openings and gated pouring feel are unchanged. [Verification](../VERIFICATION.md#2026-10-21--fill-and-dump-level-7-which-holds-more).
+
+
 
 ### Song Maker slice 3, authored motifs (2026-10-21)
 

@@ -6443,7 +6443,7 @@ async function originals() {
   }
 
   // Fill and Dump: a basket tipped out and scooped back by taps; then filled to a stated number, a wrong check twice, and the glow.
-  const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5,6').split(',').map(Number);
+  const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5,6,7').split(',').map(Number);
   for (const level of (!only || only === 'fill' ? fillLevels : [])) {
     if (level === 4) await portrait(true);
     await launch('fill-dump', level);
@@ -6483,6 +6483,49 @@ async function originals() {
       assert.deepEqual(await score('fill-dump'), [2, 1]);
       await portrait(false);
       log('Fill and Dump 5: pour displacement, caught overflow, two wrong checks, one hint, resize, recovery, three cups and one sticker passed');
+      continue;
+    }
+    if (level === 7) {
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const hit = async (on, y = 0) => { kit.tapOn(on, 0, y); await kit.sleep(300); };
+        const pull = async (amount) => {
+          const a = g.jug.toGlobal({ x: 0, y: -60 });
+          const b = g.jug.toGlobal({ x: amount * 240 + 1, y: -60 });
+          await kit.drag(kit.line([a.x, a.y], [b.x, b.y])); await kit.sleep(150);
+        };
+        await hit(g.cup, -60); // A smaller-container guess is free.
+        if (g.state.misses || g.state.phase !== 'pour') throw new Error('Capacity guess must be free');
+        await pull(0.4); await hit(g.tick);
+        if (g.state.phase !== 'pour' || g.state.misses) throw new Error('Partial experiments are free');
+        await hit(g.tray); // Return the partial experiment.
+        await pull(2);
+        if (Math.abs(g.state.cup - 1) > 0.001 || Math.abs(g.state.tray - 1) > 0.001) throw new Error('Capacity spill evidence');
+        await hit(g.tick);
+        await hit(g.cup, -60); await hit(g.cup, -60);
+        if (g.state.misses !== 2 || g.state.hints !== 1 || !g.state.helped) throw new Error('Capacity supported answer accounting');
+        // A re-pour preserves both the water and the existing one-hint accounting.
+        await hit(g.tray); await pull(2); await hit(g.tick);
+        if (g.state.hints !== 1 || Math.abs(g.state.jug + g.state.cup + g.state.tray - 2) > 0.001) throw new Error('Capacity re-pour conservation');
+      });
+      await portrait(true); await screenshot('fill-dump-7-portrait'); await portrait(false);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        for (let guard = 0; guard < 16 && !g.state.done; guard++) {
+          const intent = g.autotouch();
+          if (intent?.tap) kit.tapOn(intent.tap.on, intent.tap.x || 0, intent.tap.y || 0);
+          else if (intent?.drag) {
+            const a = intent.drag.on.toGlobal({ x: intent.drag.x || 0, y: intent.drag.y || 0 });
+            const b = intent.to.on.toGlobal({ x: intent.to.x || 0, y: intent.to.y || 0 });
+            await kit.drag(kit.line([a.x, a.y], [b.x, b.y]));
+          }
+          await kit.sleep(300);
+        }
+        if (!g.state.done || g.state.round !== 3) throw new Error('Capacity three-pair completion');
+      });
+      await finished('fill-dump');
+      assert.deepEqual(await score('fill-dump'), [2, 1]);
+      log('Fill and Dump 7: free prediction/partial pour/re-pour, conserved spill, two wrong answers, one evidence hint, portrait and three pairs passed');
       continue;
     }
     if (level === 6) {

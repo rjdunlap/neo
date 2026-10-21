@@ -1,3 +1,4 @@
+import { CapacityGame } from './compare';
 import { PairGame } from './pair';
 import { PourGame } from './pour';
 import { Circle, Container, Graphics, Sprite } from 'pixi.js';
@@ -37,7 +38,7 @@ import {
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
   toddler: { min: 1, max: 6, order: [1, 2, 6, 3, 4] },
-  preschool: { min: 1, max: 6, order: [1, 2, 6, 3, 4, 5] },
+  preschool: { min: 1, max: 7, order: [1, 2, 6, 3, 4, 5, 7] },
 };
 
 import { BASKET_SCALE, BODY_H, Basket, FRUITS, GROUND_SCALE, fillPiece, line } from './basket';
@@ -567,6 +568,6 @@ export const fillDump: GameModule = {
   sticker,
   create: (ctx) => {
     const kind = kindFor(ctx.level);
-    return kind === 'pour' ? new PourGame(ctx) : kind === 'pair' ? new PairGame(ctx) : new FillDump(ctx);
+    return kind === 'capacity' ? new CapacityGame(ctx) : kind === 'pour' ? new PourGame(ctx) : kind === 'pair' ? new PairGame(ctx) : new FillDump(ctx);
   },
 };
