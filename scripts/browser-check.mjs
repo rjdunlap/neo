@@ -5215,6 +5215,41 @@ async function arcade() {
       await screenshot('roundup-12-portrait');
       await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
     }
+    if (level === 3) {
+      // Two shepherds: two fingers each shoo with their own ring; a cancelled touch and a palm add no stray shoo.
+      const two = await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const canvas = document.querySelector('canvas');
+        const fire = (type, id, p, on = canvas) => on.dispatchEvent(new PointerEvent(type, { clientX: p.x, clientY: p.y, pointerId: id, pointerType: 'touch', bubbles: true, cancelable: true, buttons: type === 'pointerdown' || type === 'pointermove' ? 1 : 0 }));
+        const toScreen = (x, y) => g.touch.parent.toGlobal({ x, y });
+        const a = g.animals.find((x) => x.state === 'loose');
+        const far = { x: g.field().x0 + 20, y: g.field().y1 - 10 };
+        // Finger 21 parks far away; finger 22 lands just left of the animal, so only the second finger can move it.
+        fire('pointerdown', 21, toScreen(far.x, far.y));
+        const near = { x: a.critter.x - 70, y: a.critter.y - 30 };
+        fire('pointerdown', 22, toScreen(near.x, near.y));
+        await kit.sleep(60);
+        fire('pointermove', 22, toScreen(near.x + 2, near.y));
+        await kit.sleep(60);
+        const tracked = g.fingers.size, positioned = [...g.fingers.values()].filter(Boolean).length;
+        const rings = g.fingerRing.context.instructions.filter((i) => i.action === 'stroke').length;
+        const x0 = a.critter.x;
+        await kit.sleep(400);
+        const moved = a.critter.x - x0;
+        // A cancelled touch is dropped (Pixi never forwards pointercancel), and lifting one finger leaves the other shooing.
+        window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 21, pointerType: 'touch' }));
+        fire('pointercancel', 21, toScreen(far.x, far.y));
+        const afterCancel = g.fingers.size;
+        // A palm: three more contacts make four on the glass, and the fourth is ignored.
+        for (const id of [31, 32, 33]) fire('pointerdown', id, toScreen(far.x + id, far.y - 40));
+        const withPalm = g.fingers.size;
+        for (const id of [22, 31, 32, 33]) fire('pointerup', id, toScreen(far.x, far.y));
+        await kit.sleep(60);
+        return { tracked, positioned, rings, moved, afterCancel, withPalm, left: g.fingers.size };
+      });
+      if (two.tracked !== 2 || two.positioned !== 2 || two.rings !== 2 || !(two.moved > 20) || two.afterCancel !== 1 || two.withPalm !== 3 || two.left !== 0) throw new Error(`Roundup two shepherds: ${JSON.stringify(two)}`);
+      log(`roundup two shepherds: ${JSON.stringify(two)}`);
+    }
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     await page.evaluate(async () => {
       const g = neo.scene.game;

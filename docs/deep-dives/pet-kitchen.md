@@ -137,4 +137,4 @@ Each slice that touches `voice-script.ts` or `howto.ts` runs `npm run build`; sl
 
 ## What was built in this session
 
-Slice 1 (support truth, 2026-10-21, [PR #716](https://github.com/rjdunlap/neo/pull/716)) is built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#pet-kitchen-support-truth-slice-1-2026-10-21), the checks in [VERIFICATION](../VERIFICATION.md#2026-10-21--pet-kitchen-support-truth-slice-1). The deep dive session itself was research and ideation only. Ran `node scripts/check-links.mjs` and `git diff --check`.
+Slice 1 (support truth, 2026-10-21, [PR #716](https://github.com/rjdunlap/neo/pull/716)) is built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#pet-kitchen-support-truth-slice-1-2026-10-21), the checks in [VERIFICATION](../archive/VERIFICATION-2026-10-21.md#2026-10-21--pet-kitchen-support-truth-slice-1). The deep dive session itself was research and ideation only. Ran `node scripts/check-links.mjs` and `git diff --check`.

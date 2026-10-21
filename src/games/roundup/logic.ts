@@ -192,6 +192,32 @@ export function fleeSpeed(d: number, radius: number, top: number): number {
   return top * (0.35 + 0.65 * t);
 }
 
+/**
+ * Two shepherds: every finger on the grass pushes an animal at `at` away by its own `fleeSpeed`, the pushes add,
+ * and the sum is capped at `top`, so two fingers steer together but never make an animal faster than one finger.
+ */
+export function fleeFrom(at: { x: number; y: number }, fingers: readonly { x: number; y: number }[], radius: number, top: number): { x: number; y: number } {
+  let x = 0;
+  let y = 0;
+  for (const f of fingers) {
+    const dx = at.x - f.x;
+    const dy = at.y - f.y;
+    const d = Math.hypot(dx, dy) || 1;
+    const s = fleeSpeed(d, radius, top);
+    x += (dx / d) * s;
+    y += (dy / d) * s;
+  }
+  const s = Math.hypot(x, y);
+  return s > top ? { x: (x / s) * top, y: (y / s) * top } : { x, y };
+}
+
+/** The finger nearest `at`, which a following animal goes to; null with no finger down. */
+export function nearestFinger<P extends { x: number; y: number }>(at: { x: number; y: number }, fingers: readonly P[]): P | null {
+  let near: P | null = null;
+  for (const f of fingers) if (!near || Math.hypot(f.x - at.x, f.y - at.y) < Math.hypot(near.x - at.x, near.y - at.y)) near = f;
+  return near;
+}
+
 /** How fast an animal runs from a finger at its closest. */
 export const SHOO_SPEED = 330;
 /** Following: how near the finger the herd gathers, and its top speed (always below a fleeing animal's). */

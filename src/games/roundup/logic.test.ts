@@ -1,8 +1,35 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { animalsFor, sizeScale, emptierPen, enter, fairBell, fairNeeds, fleeSpeed, FOLLOW_SPEED, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, pensFull, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, usesBell, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted, type Kind } from './logic';
+import { animalsFor, sizeScale, emptierPen, enter, fairBell, fairNeeds, fleeFrom, fleeSpeed, FOLLOW_SPEED, nearestFinger, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, pensFull, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, usesBell, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted, type Kind } from './logic';
 
 describe('Roundup', () => {
+  it('two shepherds: pushes add, capped at one finger\'s top speed, and one finger is unchanged', () => {
+    const at = { x: 500, y: 400 };
+    // One finger: exactly the old single-pointer flee.
+    const one = fleeFrom(at, [{ x: 400, y: 400 }], 190, SHOO_SPEED);
+    expect(one.x).toBeCloseTo(fleeSpeed(100, 190, SHOO_SPEED));
+    expect(one.y).toBeCloseTo(0);
+    // Nobody in range: no push.
+    expect(fleeFrom(at, [{ x: 100, y: 100 }, { x: 900, y: 700 }], 190, SHOO_SPEED)).toEqual({ x: 0, y: 0 });
+    expect(fleeFrom(at, [], 190, SHOO_SPEED)).toEqual({ x: 0, y: 0 });
+    // Two fingers on the same side never make it faster than one finger can.
+    const both = fleeFrom(at, [{ x: 450, y: 400 }, { x: 455, y: 410 }], 190, SHOO_SPEED);
+    expect(Math.hypot(both.x, both.y)).toBeLessThanOrEqual(SHOO_SPEED + 1e-9);
+    expect(both.x).toBeGreaterThan(0);
+    // Two fingers either side: the pushes cancel along that line, never NaN; a third finger below sends it up.
+    const pinched = fleeFrom(at, [{ x: 400, y: 400 }, { x: 600, y: 400 }], 190, SHOO_SPEED);
+    expect(Number.isFinite(pinched.x) && Number.isFinite(pinched.y)).toBe(true);
+    expect(Math.abs(pinched.x)).toBeLessThan(1e-9);
+    const squeezed = fleeFrom(at, [{ x: 400, y: 400 }, { x: 600, y: 400 }, { x: 500, y: 480 }], 190, SHOO_SPEED);
+    expect(squeezed.y).toBeLessThan(0);
+    // A finger right on the animal still pushes it somewhere, never NaN.
+    const on = fleeFrom(at, [at], 190, SHOO_SPEED);
+    expect(Number.isFinite(on.x) && Number.isFinite(on.y)).toBe(true);
+    // Following: each animal goes to its own nearest finger.
+    expect(nearestFinger(at, [])).toBeNull();
+    expect(nearestFinger(at, [{ x: 900, y: 400 }, { x: 520, y: 380 }])).toEqual({ x: 520, y: 380 });
+  });
+
   it('Fill it up starts short of 4 or 5 with 1–3 home and six loose, for every seed', () => {
     const plan = planFor(9);
     expect(plan).toMatchObject({ mode: 'count', prefilled: true, animals: 6, min: 4, max: 5 });

@@ -12,7 +12,7 @@ import { label } from '../../ui/text';
 import { RoundButton } from '../../ui/buttons';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { animalsFor, emptierPen, enter, fairBell, fairNeeds, fleeSpeed, FOLLOW_SPEED, followSpeed, inRect, leadGoal, makeHerd, PLACE, pensFull, planFor, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect, type Size, sizeScale } from './logic';
+import { animalsFor, emptierPen, enter, fairBell, fairNeeds, fleeFrom, FOLLOW_SPEED, nearestFinger, followSpeed, inRect, leadGoal, makeHerd, PLACE, pensFull, planFor, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect, type Size, sizeScale } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -67,7 +67,8 @@ class Roundup implements Game {
   readonly herd: Herd;
   readonly animals: Animal[] = [];
   readonly pens: PenView[] = [];
-  finger: { x: number; y: number } | null = null;
+  /** Two shepherds: every finger down on the grass, by pointer ID; null until it moves again after a pause (a bell, a recount). */
+  readonly fingers = new Map<number, { x: number; y: number } | null>();
   readonly bell: RoundButton;
   busy = false;
   misses = 0;
@@ -86,7 +87,6 @@ class Roundup implements Game {
   /** An invisible moving target keeps the demonstration finger behind the animal it is shooing. */
   private readonly autoSpot = new Container();
   private view: View;
-  private pointer: number | null = null;
   private clock = 0;
   private lastMiss = -10;
   private wrongs = 0;
@@ -151,19 +151,17 @@ class Roundup implements Game {
     // Shooing listens on top of everything; the lap level taps animals instead.
     if (this.plan.mode !== 'tap') {
       this.touch.eventMode = 'static';
+      // Every finger on the grass shoos (a grown-up can be the second shepherd); a resting palm adds none.
       this.touch.on('pointerdown', (e: FederatedPointerEvent) => {
         if (palmOnGlass()) return;
-        this.pointer = e.pointerId;
+        this.fingers.set(e.pointerId, null);
         this.point(e);
       });
-      this.touch.on('globalpointermove', (e: FederatedPointerEvent) => e.pointerId === this.pointer && this.point(e));
-      const up = (e: { pointerId: number }) => {
-        if (e.pointerId !== this.pointer) return;
-        this.pointer = null;
-        this.finger = null;
-      };
-      this.touch.on('pointerup', up);
-      this.touch.on('pointerupoutside', up);
+      this.touch.on('globalpointermove', (e: FederatedPointerEvent) => this.fingers.has(e.pointerId) && this.point(e));
+      this.touch.on('pointerup', this.lift);
+      this.touch.on('pointerupoutside', this.lift);
+      // Pixi does not forward a cancelled touch; without this a lost finger would shoo forever.
+      window.addEventListener('pointercancel', this.lift, true);
     } else {
       // Lap: a tap on the grass or a pen makes the nearest loose animal hop and speak. Never a miss or a hint.
       onTap(this.backdrop, (e) => this.nudge(this.ctx.stage.toLocal(e.global)), { cooldown: 500 });
@@ -211,7 +209,19 @@ class Roundup implements Game {
   private point(e: FederatedPointerEvent) {
     if (this.finished || this.recounting) return;
     const p = this.ctx.stage.toLocal(e.global);
-    this.finger = { x: p.x, y: p.y };
+    this.fingers.set(e.pointerId, { x: p.x, y: p.y });
+  }
+
+  private readonly lift = (e: { pointerId: number }) => void this.fingers.delete(e.pointerId);
+
+  /** Where the fingers on the grass are now. */
+  private down(): { x: number; y: number }[] {
+    return [...this.fingers.values()].filter((f): f is { x: number; y: number } => !!f);
+  }
+
+  /** A pause (the bell, a recount, the next animal) stills every finger until it moves again. */
+  private still() {
+    for (const id of this.fingers.keys()) this.fingers.set(id, null);
   }
 
   private field() {
@@ -343,7 +353,7 @@ class Roundup implements Game {
     this.world.children.sort((p, q) => p.y - q.y);
 
     this.fingerRing.clear();
-    if (this.finger) this.fingerRing.circle(this.finger.x, this.finger.y, 60 + 6 * Math.sin(this.clock * 8)).stroke({ width: 6, color: 0xffffff, alpha: 0.6 });
+    for (const f of this.down()) this.fingerRing.circle(f.x, f.y, 60 + 6 * Math.sin(this.clock * 8)).stroke({ width: 6, color: 0xffffff, alpha: 0.6 });
 
     if (!this.finished && !(this.plan.prefilled && (this.busy || this.recounting)) && this.animals.some((a) => a.state === 'loose')) {
       this.sinceProgress += dt;
@@ -452,27 +462,29 @@ class Roundup implements Game {
       ty = ((a.wander.y - c.y) / wd) * WANDER_SPEED;
     }
     const home = this.pens[this.penFor(a)]?.rect;
-    if (this.plan.mode === 'follow' && home && (this.finger || this.drifting)) {
+    const fingers = this.down();
+    // Following: each animal goes to the finger nearest it, so two shepherds can each lead some of the herd.
+    const finger = this.plan.mode === 'follow' ? nearestFinger(c, fingers) : null;
+    if (this.plan.mode === 'follow' && home && (finger || this.drifting)) {
       // A finger past the gate line, or the drift, leads to the gate's mouth first, so nobody presses into the fence.
-      const toGate = c.x < home.x && (!this.finger || this.finger.x > home.x - 40);
-      const goal = toGate ? leadGoal(c, home) : { x: this.finger!.x, y: this.finger!.y + 30 };
+      const toGate = c.x < home.x && (!finger || finger.x > home.x - 40);
+      const goal = toGate ? leadGoal(c, home) : { x: finger!.x, y: finger!.y + 30 };
       const dx = goal.x - c.x;
       const dy = goal.y - c.y;
       const d = Math.hypot(dx, dy) || 1;
-      const s = !this.finger ? DRIFT_SPEED : toGate ? FOLLOW_SPEED : followSpeed(d);
+      const s = !finger ? DRIFT_SPEED : toGate ? FOLLOW_SPEED : followSpeed(d);
       tx = (dx / d) * s;
       ty = (dy / d) * s;
       a.wander.next = 1.5;
       a.wander.x = c.x + tx * 0.3;
       a.wander.y = c.y + ty * 0.3;
-    } else if (this.finger && this.plan.mode !== 'follow') {
-      const dx = c.x - this.finger.x;
-      const dy = c.y - 30 - this.finger.y;
-      const d = Math.hypot(dx, dy) || 1;
-      const s = fleeSpeed(d, this.plan.fleeRadius ?? SHOO_R, SHOO_SPEED);
+    } else if (fingers.length && this.plan.mode !== 'follow') {
+      // Every finger pushes; together they never make an animal faster than one finger does.
+      const push = fleeFrom({ x: c.x, y: c.y - 30 }, fingers, this.plan.fleeRadius ?? SHOO_R, SHOO_SPEED);
+      const s = Math.hypot(push.x, push.y);
       if (s > 0) {
-        tx = (dx / d) * s;
-        ty = (dy / d) * s;
+        tx = push.x;
+        ty = push.y;
         // Near home, a shooed animal heads for its gate: the finger only has to get it close.
         if (home) {
           const gx = home.x + 20 - c.x;
@@ -581,7 +593,7 @@ class Roundup implements Game {
     if (next) {
       // A new animal arrives only after the first success; the penned friend stays home.
       this.busy = true;
-      this.finger = null;
+      this.still();
       await this.ctx.tw.wait(0.8);
       next.state = 'loose';
       next.critter.visible = true;
@@ -619,7 +631,7 @@ class Roundup implements Game {
   private async ring() {
     if (this.busy || this.recounting || this.finished || !usesBell(this.plan)) return;
     this.busy = true;
-    this.finger = null;
+    this.still();
     this.sinceProgress = 0;
     if (this.herd.fair) return this.ringFair();
     const result = ringBell(this.herd, this.pens.map((p) => p.inside));
@@ -686,7 +698,7 @@ class Roundup implements Game {
   private async countPen(i: number) {
     if (this.recounting) return;
     this.recounting = true;
-    this.finger = null;
+    this.still();
     const p = this.pens[i];
     const home = this.animals.filter((a) => a.state === 'penned' && a.pen === i);
     for (let n = 1; n <= home.length; n++) {
@@ -746,7 +758,7 @@ class Roundup implements Game {
   private async finale(counted = false) {
     if (this.finished) return;
     this.finished = true;
-    this.finger = null;
+    this.still();
     const totals = this.pens.map((p) => ({ n: p.inside, animals: animalsFor(p.pen.kind, p.inside), place: PLACE[p.pen.kind] }));
     for (const a of this.animals) if (a.state === 'penned') a.critter.cheer();
     sfx.tada();
@@ -767,6 +779,8 @@ class Roundup implements Game {
 
   destroy() {
     this.touch.removeAllListeners();
+    window.removeEventListener('pointercancel', this.lift, true);
+    this.fingers.clear();
   }
 }
 
@@ -827,7 +841,7 @@ export const roundup: GameModule = {
   entryLevels: [10, 11],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'Help {name} send the animals home: lead the ones that follow a finger, and wiggle a finger behind the ones that run from it.',
+  coplayHint: 'Be the second shepherd: put your own finger on the grass beside {name}\'s. Every finger counts, so stand on the far side and turn runaways back toward the gate, or lead some of the herd while {name} leads the rest.',
   offScreen: 'Herd stuffed animals into a laundry-basket "pen", counting each one in.',
   hubIcon: () => new RoundupIcon(),
   sticker,

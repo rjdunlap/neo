@@ -168,3 +168,11 @@
 - Regression (the refactor touches run, trail, replay, hint and bot at every level): `CHAIN_LEVELS=1,6,7,8` passed, `fingerdemo` at levels 1 and 6 clean in 14.0 s and 24.1 s, full `npm test` 200 files / 2309 tests passed.
 - Not run: build, other suites, offline, an iPad, a child.
 - Open: whether a school child tells the two marbles and bells apart (color plus dot) and follows both runs; pre-K opening for level 9 stays an open choice.
+
+## 2026-10-21 — Pet Kitchen: support truth (slice 1)
+
+- Built on `claude/pet-kitchen-support-truth` ([PR #716](https://github.com/rjdunlap/neo/pull/716)): `serveTrouble` names why a serve missed (too few pieces `kitchen.short` before empty plates `kitchen.empty`, else the existing lines; two serves before the cut glow the cut that works), a touch on the uncut food wiggles it and repeats the instruction, the cut buttons bounce after six quiet seconds, level 7's fair serve counts the pieces aloud (`kitchen.fraction-count`), and the how-to's open ranges close.
+- Ran (Vite http://localhost:5522): `npm run typecheck`; `npm test` (200 files, 2311 tests pass, two new rule tests for `serveTrouble` and `countAloud`); `npm run build` (before the ordering fix, which touched only game files); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-kitchen FINGER_LEVELS=1,7` clean (level 1 toddler 8.4 s, level 7 school 5.8 s).
+- Tested commit `3cfbba55`. One-off Playwright probe (`test-results/pk-probe.mjs`, not committed), rerun on that commit: level 1 two uncut serves glowed the visible halves button with no `kitchen.recut` (2/1); level 2 poke free with wiggle and instruction, cut button bounced after quiet, halves on empty plates said `kitchen.short` as the first miss, the second miss said only `kitchen.recut` (misses/hints 2/1, no `kitchen.fair`); level 7 empty serve said `kitchen.empty`, a three-quarters serve was counted aloud and finished with a sticker, no page errors.
+- Not run: the `creative` suite's kitchen case, a portrait screenshot, device speech of the counted line.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): a toddler's reaction to the wiggle and bounce, and the counted line's speech on an iPad.
