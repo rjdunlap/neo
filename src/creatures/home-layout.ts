@@ -157,7 +157,9 @@ export interface ProjectLayout {
 }
 
 export function projectLayout(v: { w: number; h: number }, n: number): ProjectLayout {
-  const basket = { x: Math.round(Math.max(GUIDE_CORNER.w + 20, v.w * 0.24)), y: Math.round(Math.min(v.h * 0.52, v.h - GUIDE_CORNER.h - NEWCOMER_REACH - 20)) };
+  const backdrop = backdropFit(v);
+  // As low as the guide corner allows, towards the grass.
+  const basket = { x: Math.round(Math.max(GUIDE_CORNER.w + 20, v.w * 0.24)), y: Math.round(Math.min(v.h - GUIDE_CORNER.h - NEWCOMER_REACH - 20, backdrop.floorTop - 70)) };
   const step = PROJECT_CARD + 70;
   const left = basket.x + NEWCOMER_REACH + 40 + PROJECT_CARD / 2;
   const span = (n - 1) * step;
@@ -165,5 +167,5 @@ export function projectLayout(v: { w: number; h: number }, n: number): ProjectLa
   const y = Math.round(Math.max(BACK.y + BACK.r + 40 + PROJECT_CARD / 2, v.h * 0.36));
   const cards = Array.from({ length: n }, (_, i) => ({ x: Math.round(cx - span / 2 + i * step), y }));
   const plays = cards.map((c) => ({ x: c.x, y: c.y + PROJECT_CARD / 2 + 30 + PROJECT_PLAY_RADIUS }));
-  return { backdrop: backdropFit(v), back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, basket, cards, plays };
+  return { backdrop, back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, basket, cards, plays };
 }
