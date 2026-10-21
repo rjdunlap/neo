@@ -1,6 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
 
+### Roundup slice 4, Level 11 Come along (2026-10-20)
+
+[PR #688](https://github.com/rjdunlap/neo/pull/688): the `follow` mode (`COME_ALONG` in `logic.ts`). Three animals of one kind gather to a finger (follow speed 0 inside an 85-unit ring, capped at 190, under the 330 flee speed; shared `spreadApart` 70-unit spacing) and are led through an 80% gate into one pen, in any order; no misses. "The {animals} want to follow you! Lead them to the pen." Fifteen seconds without an animal getting home make the herd glow and drift toward the gate for the rest of the round (one hint, counted once); the thirty-second trot-home stays as a safety (another hint). `leadGoal` leads to the gate mouth, then inside. Lap `order [1, 11]`, toddler `order [1, 11, 10, 2, 3]`, `entryLevels: [10, 11]`; preschool and pre-K unchanged. Level-scoped how-to lines; the co-play tip now suits every level; the ghost-finger bot leads from 160 units in front. Browser harness `launch()` takes a band; `ARCADE_LEVELS=11` plays lap (led) and toddler (idle, drift). [Verification](../VERIFICATION.md#2026-10-21--roundup-level-11-come-along-slice-4).
+
 ### Roundup slice 3, Level 10 Shoo one (2026-10-20)
 
 [PR #686](https://github.com/rjdunlap/neo/pull/686): two successive single-animal successes, one loose animal at a time near an 80%-open gate, ordinary flee steering, fresh 10/20-second glow/trot-home support (one hint each), zero misses, one round/sticker. Toddler order `[1,10,2,3]`, `entryLevels: [10]`; other bands and IDs unchanged. Singular spoken instruction and level-scoped how-to. Level 11 and other slices remain open. [Verification](../VERIFICATION.md#2026-10-20--roundup-level-10-shoo-one-slice-3).
@@ -1237,7 +1241,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-20.md#2026-10-20--shape-sorter
 
 Level 6 `EVENTS` 4 → 8 (rain → sad, butterfly → surprised landing clear of the face, lullaby → sleepy with falling bell notes and no night overlay, ball → happy); a round draws four different happenings. Level 8 `CARE_SCENARIOS` 2 → 5: balloon → hug, moon → pillow, plus `CARE_ONLY` happenings that never appear at level 6 (ice cream off a cone → sad → hug, snow → cold → scarf, empty picnic basket → hungry → apple). Deviation from the dive: it said 4 scenarios with a test of four distinct helpers, which is impossible because balloon and ice cream are both hug; the dive's optional picnic basket was added, so the five cover every helper and a round shows four different happenings and at least three helpers. `FRIENDS` 6 → 8 (pip, duck) for level 7 and the sticker. Voice: `feel.hug` is the pet's own preference ("{pet} loves a hug!" / "A big hug! {pet} likes that."), `feel.need-sad`, `feel.helped` and second variants for `feel.that`/`feel.how`, seven `feel.event-*` lines. A tap on a happening prop wobbles it (rotation driven from update, so an event's tween survives) and replays its sound, never a miss; props draw in a `front` layer above the big pet; clearProps kills a prop's tweens before destroying it. How-to: friends step scoped to level 7, new "Tap the pet to hear the question again." step at 2–6 and 8, finish per level (lap level 1 "Free play ends by itself after a few taps, with a sticker.", from 2 "Four questions, then a sticker."). `scripts/browser-check.mjs` `feelings8` takes `FEELINGS_LEVEL=6|8`.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-20--feelings-faces-pools-the-pets-own-hug-and-scenery-that-answers).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-20.md#2026-10-20--feelings-faces-pools-the-pets-own-hug-and-scenery-that-answers).
 
 ### Garden Grow slice 1: true how-to and spoken gaps (2026-10-20, [PR #674](https://github.com/rjdunlap/neo/pull/674))
 

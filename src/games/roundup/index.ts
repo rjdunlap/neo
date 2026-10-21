@@ -12,12 +12,12 @@ import { label } from '../../ui/text';
 import { RoundButton } from '../../ui/buttons';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { animalsFor, enter, fleeSpeed, inRect, makeHerd, PLACE, planFor, PLURAL, ringBell, shooPoint, signDots, startSpots, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect } from './logic';
+import { animalsFor, enter, fleeSpeed, FOLLOW_SPEED, followSpeed, inRect, leadGoal, makeHerd, PLACE, planFor, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 10, order: [1, 10, 2, 3] },
+  lap: { min: 1, max: 11, order: [1, 11] },
+  toddler: { min: 1, max: 11, order: [1, 11, 10, 2, 3] },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
 };
@@ -25,7 +25,8 @@ const LEVELS: BandLevels = {
 const SCALE = 0.32;
 /** How far from the finger animals start to scoot, and their top speed. */
 const SHOO_R = 190;
-const SHOO_SPEED = 330;
+/** Come along: once the drift has started, every loose animal ambles toward its gate this fast. */
+const DRIFT_SPEED = 70;
 const WANDER_SPEED = 30;
 const BODY = 34;
 /** How much of a pen's left fence is open gate. */
@@ -90,6 +91,8 @@ class Roundup implements Game {
   private sinceProgress = 0;
   private hinting = false;
   private helped = false;
+  /** Come along's help: the herd drifts toward the gate for the rest of the round. */
+  private drifting = false;
   private placed = false;
   private autoAnimal: Animal | null = null;
 
@@ -173,6 +176,8 @@ class Roundup implements Game {
     switch (this.plan.mode) {
       case 'tap':
         return void this.ctx.instruct('herd.tap', { animals });
+      case 'follow':
+        return void this.ctx.instruct('herd.follow', { animals });
       case 'shoo':
         return void this.ctx.instruct(this.plan.sequential ? 'herd.shooone' : 'herd.shoo', this.plan.sequential ? { animal: a.kind } : { animals });
       case 'sort':
@@ -300,7 +305,7 @@ class Roundup implements Game {
 
     if (!this.finished && this.animals.some((a) => a.state === 'loose')) {
       this.sinceProgress += dt;
-      if (this.sinceProgress >= (this.plan.hintAfter ?? 15) && !this.hinting) this.showHint();
+      if (this.sinceProgress >= (this.plan.hintAfter ?? 15) && !this.hinting && !this.drifting) this.showHint();
       // Still stuck: the nearest one trots home by itself, so no round gets stuck.
       if (this.sinceProgress >= (this.plan.helpAfter ?? 30) && !this.helped) {
         this.helped = true;
@@ -319,6 +324,16 @@ class Roundup implements Game {
     const a = this.autoAnimal;
     if (!a || a.state !== 'loose') return;
     const i = this.needs(a);
+    if (this.plan.mode === 'follow' && i >= 0) {
+      // Lead from in front: the finger stays beyond the herd's gathering ring, on the way to the gate, so it reaches the gate first.
+      const goal = leadGoal(a.critter, this.pens[i].rect);
+      const dx = goal.x - a.critter.x;
+      const dy = goal.y - a.critter.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const ahead = 160;
+      this.autoSpot.position.set(a.critter.x + (dx / d) * ahead, a.critter.y - 30 + (dy / d) * ahead);
+      return;
+    }
     if (i < 0) {
       // A counted spare stays in the meadow, clear of another animal's route to its gate.
       const p = shooPoint({ x: a.critter.x, y: a.critter.y - 30 }, { x: this.field().x0 + 40, y: a.critter.y - 30 });
@@ -389,7 +404,21 @@ class Roundup implements Game {
       tx = ((a.wander.x - c.x) / wd) * WANDER_SPEED;
       ty = ((a.wander.y - c.y) / wd) * WANDER_SPEED;
     }
-    if (this.finger) {
+    const home = this.pens[this.penFor(a)]?.rect;
+    if (this.plan.mode === 'follow' && home && (this.finger || this.drifting)) {
+      // A finger past the gate line, or the drift, leads to the gate's mouth first, so nobody presses into the fence.
+      const toGate = c.x < home.x && (!this.finger || this.finger.x > home.x - 40);
+      const goal = toGate ? leadGoal(c, home) : { x: this.finger!.x, y: this.finger!.y + 30 };
+      const dx = goal.x - c.x;
+      const dy = goal.y - c.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const s = !this.finger ? DRIFT_SPEED : toGate ? FOLLOW_SPEED : followSpeed(d);
+      tx = (dx / d) * s;
+      ty = (dy / d) * s;
+      a.wander.next = 1.5;
+      a.wander.x = c.x + tx * 0.3;
+      a.wander.y = c.y + ty * 0.3;
+    } else if (this.finger && this.plan.mode !== 'follow') {
       const dx = c.x - this.finger.x;
       const dy = c.y - 30 - this.finger.y;
       const d = Math.hypot(dx, dy) || 1;
@@ -398,7 +427,6 @@ class Roundup implements Game {
         tx = (dx / d) * s;
         ty = (dy / d) * s;
         // Near home, a shooed animal heads for its gate: the finger only has to get it close.
-        const home = this.pens[this.penFor(a)]?.rect;
         if (home) {
           const gx = home.x + 20 - c.x;
           const gy = home.y + home.h / 2 - c.y;
@@ -465,21 +493,7 @@ class Roundup implements Game {
   /** Loose animals don't pile up on top of each other. */
   private separate() {
     const loose = this.animals.filter((a) => a.state === 'loose');
-    for (let i = 0; i < loose.length; i++) {
-      for (let j = i + 1; j < loose.length; j++) {
-        const [p, q] = [loose[i].critter, loose[j].critter];
-        const dx = q.x - p.x;
-        const dy = q.y - p.y;
-        const d = Math.hypot(dx, dy);
-        if (d > 0 && d < 70) {
-          const push = (70 - d) / 2;
-          p.x -= (dx / d) * push;
-          p.y -= (dy / d) * push;
-          q.x += (dx / d) * push;
-          q.y += (dy / d) * push;
-        }
-      }
-    }
+    spreadApart(loose.map((a) => a.critter));
     // Jostling never pushes anyone through a fence: back out the way they came.
     for (const a of loose) {
       for (const p of this.pens) {
@@ -589,6 +603,8 @@ class Roundup implements Game {
     this.hints++;
     this.wrongs = 0;
     this.hinting = true;
+    // Come along: one hint starts a drift that lasts the rest of the round, rather than one per animal.
+    if (this.plan.mode === 'follow') this.drifting = true;
   }
 
   private drawGlows() {
@@ -596,11 +612,12 @@ class Roundup implements Game {
     // Counting levels with every pen right: the bell is what's left to do.
     const bellTime = usesBell(this.plan) && ringBell(this.herd, this.pens.map((p) => p.inside)).every((r) => !r.extra && !r.short);
     this.bell.rotation = this.hinting && bellTime ? 0.25 * Math.sin(this.clock * 10) : 0;
+    const lit = this.hinting || this.drifting;
     for (const a of this.animals) {
       const target = a.state === 'loose' ? this.needs(a) : -1;
-      a.glow.visible = this.hinting && target >= 0;
+      a.glow.visible = lit && target >= 0;
       if (a.glow.visible) a.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 7);
-      if (this.hinting && target >= 0) {
+      if (lit && target >= 0) {
         const r = this.pens[target].rect;
         this.pens[target].glow.clear().ellipse(r.x, r.y + r.h / 2, 46, r.h * 0.34 + 4 * Math.sin(this.clock * 7)).fill({ color: 0xfff3a0, alpha: 0.8 });
       }
@@ -696,10 +713,10 @@ export const roundup: GameModule = {
   skills: ['motor-planning', 'sorting', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [10],
+  entryLevels: [10, 11],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'Show {name} how to wiggle a finger behind the animals to send them home.',
+  coplayHint: 'Help {name} send the animals home: lead the ones that follow a finger, and wiggle a finger behind the ones that run from it.',
   offScreen: 'Herd stuffed animals into a laundry-basket "pen", counting each one in.',
   hubIcon: () => new RoundupIcon(),
   sticker,

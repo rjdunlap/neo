@@ -41,20 +41,20 @@ const tap = async (expression) => {
   await page.waitForTimeout(180);
 };
 const screenshot = (name) => page.screenshot({ path: `${output}/${name}.png` });
-async function launch(id, level, childName = 'Mia') {
+async function launch(id, level, childName = 'Mia', playBand) {
   await ready();
-  await page.evaluate(async ({ id, level, childName }) => {
+  await page.evaluate(async ({ id, level, childName, playBand }) => {
     const { gameById } = await import('/src/games/registry.ts');
     const { levelsInOrder } = await import('/src/progress/difficulty.ts');
     const mod = gameById(id);
     // A band's levels are the ones in its order (which may skip IDs), not everything from min to max.
-    const band = mod.bands.find((candidate) => levelsInOrder(mod.levels(candidate)).includes(level));
+    const band = playBand ?? mod.bands.find((candidate) => levelsInOrder(mod.levels(candidate)).includes(level));
     kit.store.entry.birth = null; kit.store.entry.startBand = band;
     kit.store.data.profile.band = band;
     kit.store.data.profile.name = childName;
     kit.store.stats(id).pinned = level;
     neo.go.game(id, band);
-  }, { id, level, childName });
+  }, { id, level, childName, playBand });
   await page.waitForFunction(({ id, level }) => !neo.switching && neo.scene.mod?.id === id && neo.scene.level === level && !neo.scene.finished, { id, level });
 }
 async function finished(id) {
@@ -4393,10 +4393,31 @@ async function arcade() {
       if (down) { const f = neo.scene.game.touch.parent.toGlobal({ x: 200, y: 200 }); touch('pointerup', f.x, f.y); }
       await kit.sleep(200);
     };
+    /** Come along: hold a finger just ahead of the herd and walk it to the gate, then inside. */
+    window.leadHerd = async (ms = 20000) => {
+      const g = neo.scene.game;
+      const { leadGoal } = await import('/src/games/roundup/logic.ts');
+      const r = g.pens[0].rect;
+      const t0 = performance.now();
+      let down = false;
+      for (let L; (L = g.animals.filter((a) => a.state === 'loose')).length && performance.now() - t0 < ms;) {
+        const c = { x: L.reduce((s, a) => s + a.critter.x, 0) / L.length, y: L.reduce((s, a) => s + a.critter.y, 0) / L.length };
+        const goal = leadGoal(c, r);
+        const dx = goal.x - c.x, dy = goal.y - c.y, d = Math.hypot(dx, dy) || 1, ahead = 160;
+        const f = g.touch.parent.toGlobal({ x: c.x + (dx / d) * ahead, y: c.y - 30 + (dy / d) * ahead });
+        touch(down ? 'pointermove' : 'pointerdown', f.x, f.y);
+        down = true;
+        await kit.sleep(30);
+      }
+      if (down) { const f = g.touch.parent.toGlobal({ x: 200, y: 200 }); touch('pointerup', f.x, f.y); }
+      await kit.sleep(200);
+    };
   });
-  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 10, 2, 3, 4, 5, 6];
-  for (const level of (!only || only === 'roundup') ? roundupLevels : []) {
-    await launch('roundup', level);
+  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 11, 10, 2, 3, 4, 5, 6];
+  // Come along plays twice: led by a finger at lap, then left alone at toddler so the drift brings the herd home.
+  const roundupPlays = roundupLevels.flatMap((level) => level === 11 ? [[11, 'lap'], [11, 'toddler']] : [[level]]);
+  for (const [level, playBand] of (!only || only === 'roundup') ? roundupPlays : []) {
+    await launch('roundup', level, 'Mia', playBand);
     const stickersBefore = await page.evaluate(() => kit.store.data.stickers.length);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -4427,6 +4448,19 @@ async function arcade() {
           const n = loose().length;
           kit.tapOn(loose()[0].critter, 0, -40);
           await kit.until(() => loose().length < n && g.animals.every((a) => a.state !== 'hopping'), 4000);
+        }
+      } else if (g.plan.mode === 'follow') {
+        if (g.animals.length !== 3 || loose().length !== 3 || g.pens.length !== 1 || g.plan.gate !== 0.8) throw new Error('Come along must start with three loose animals and one wide pen');
+        if (g.ctx.band === 'lap') {
+          await leadHerd();
+          if (!g.finished && loose().length) throw new Error(`Come along: ${loose().length} still loose after leading`);
+        } else {
+          // Nobody touches: fifteen idle seconds start the drift, which brings everyone home for one hint.
+          g.sinceProgress = 14.8;
+          await kit.until(() => g.drifting && g.hinting, 1500);
+          if (g.hints !== 1 || !loose()[0].glow.visible) throw new Error('Come along drift hint missing');
+          await kit.until(() => g.finished, 25000);
+          if (g.pens[0].inside !== 3 || g.misses || g.hints !== 1) throw new Error(`Come along drift finish: ${g.pens[0].inside}/${g.misses}/${g.hints}`);
         }
       } else if (g.plan.sequential) {
         if (g.animals.length !== 2 || loose().length !== 1 || g.animals[1].critter.visible) throw new Error('Shoo one must start with exactly one visible loose animal');
@@ -4475,7 +4509,7 @@ async function arcade() {
       }
       if (!await kit.until(() => g.finished, 8000)) throw new Error(`Roundup unfinished: ${g.pens.map((p) => p.inside).join(',')}`);
     });
-    await screenshot(`roundup-${level}`);
+    await screenshot(`roundup-${level}${playBand ? `-${playBand}` : ''}`);
     await finished('roundup');
     assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickersBefore + 1, 'one Roundup sticker per whole round');
     const r = await page.evaluate(() => { const r = kit.store.stats('roundup').history.at(-1); return [r.misses, r.hints]; });
@@ -4485,6 +4519,7 @@ async function arcade() {
     if (mode === 'count') assert.ok(r[0] >= 1, 'roundup count misses');
     if (mode === 'tap') assert.deepEqual(r, [0, 0], 'roundup tap score');
     if (level === 10) assert.deepEqual(r, [0, 2], 'roundup Shoo one supported score');
+    if (level === 11) assert.deepEqual(r, playBand === 'lap' ? [0, 0] : [0, 1], `roundup Come along ${playBand} score`);
     log(`Roundup ${level} (${mode}): herding, gates, pens, saved score and sticker passed`);
   }
 

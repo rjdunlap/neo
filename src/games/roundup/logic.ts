@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * from your finger, so you shoo them through a gate into their pen. Nobody escapes for good,
  * and a wrong pen just means a hop back out.
  */
-export type HerdMode = 'tap' | 'shoo' | 'sort' | 'count' | 'sortCount';
+export type HerdMode = 'tap' | 'follow' | 'shoo' | 'sort' | 'count' | 'sortCount';
 export const KINDS = ['pig', 'bunny', 'cow', 'duck', 'dog'] as const;
 export type Kind = (typeof KINDS)[number];
 
@@ -31,6 +31,11 @@ export const SHOO_ONE: HerdPlan = {
   hintAfter: 10, helpAfter: 20, name: 'Shoo one animal at a time into a wide gate, twice',
 };
 
+/** Lap and toddler: the herd gathers to the finger and comes along, so leading replaces getting behind a runner. */
+export const COME_ALONG: HerdPlan = {
+  mode: 'follow', animals: 3, gate: 0.8, hintAfter: 15, name: 'Lead three animals that follow your finger into a wide pen',
+};
+
 export const PLANS: HerdPlan[] = [
   { mode: 'tap', animals: 3, name: 'Tap an animal and it hops into its pen' },
   { mode: 'shoo', animals: 3, name: 'Shoo three animals into the pen with a finger' },
@@ -39,9 +44,10 @@ export const PLANS: HerdPlan[] = [
   { mode: 'count', animals: 6, min: 2, max: 4, name: 'Put an exact number in the pen (2 to 4)' },
   { mode: 'sortCount', animals: 7, min: 1, max: 3, name: 'Sort two kinds and put the requested number in each pen' },
   SHOO_ONE,
+  COME_ALONG,
 ];
 
-export const planFor = (level: number) => level === 10 ? SHOO_ONE : PLANS[Math.min(6, Math.max(1, level)) - 1];
+export const planFor = (level: number) => level === 10 ? SHOO_ONE : level === 11 ? COME_ALONG : PLANS[Math.min(6, Math.max(1, level)) - 1];
 
 export const PLURAL: Record<Kind, string> = { pig: 'pigs', bunny: 'bunnies', cow: 'cows', duck: 'ducks', dog: 'dogs' };
 /** What each pen's floor is, for "three pigs in the mud". */
@@ -131,6 +137,40 @@ export function fleeSpeed(d: number, radius: number, top: number): number {
   return top * (0.35 + 0.65 * t);
 }
 
+/** How fast an animal runs from a finger at its closest. */
+export const SHOO_SPEED = 330;
+/** Following: how near the finger the herd gathers, and its top speed (always below a fleeing animal's). */
+export const FOLLOW_STOP = 85;
+export const FOLLOW_SPEED = 190;
+
+/**
+ * How fast a following animal `d` units from the finger comes toward it: nothing inside `stop`, so the herd
+ * gathers round the finger instead of under it, rising gently to `top` farther out.
+ */
+export function followSpeed(d: number, stop = FOLLOW_STOP, top = FOLLOW_SPEED): number {
+  if (d <= stop) return 0;
+  return Math.min(top, (d - stop) * 2.2);
+}
+
+/** Loose animals push apart to at least `min` units, so a gathered herd never piles onto one point. */
+export function spreadApart(points: { x: number; y: number }[], min = 70) {
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i + 1; j < points.length; j++) {
+      const [p, q] = [points[i], points[j]];
+      const dx = q.x - p.x;
+      const dy = q.y - p.y;
+      const d = Math.hypot(dx, dy);
+      if (d > 0 && d < min) {
+        const push = (min - d) / 2;
+        p.x -= (dx / d) * push;
+        p.y -= (dy / d) * push;
+        q.x += (dx / d) * push;
+        q.y += (dy / d) * push;
+      }
+    }
+  }
+}
+
 export interface Rect {
   x: number;
   y: number;
@@ -146,6 +186,16 @@ export function shooPoint(animal: { x: number; y: number }, gate: { x: number; y
   const dy = gate.y - animal.y;
   const d = Math.hypot(dx, dy) || 1;
   return { x: animal.x - (dx / d) * distance, y: animal.y - (dy / d) * distance };
+}
+
+/**
+ * Where to lead an animal next on its way into pen `r`: the middle of the gate's mouth outside, then, once it is
+ * lined up with the gate, inside. The demonstration's finger and the gentle drift both use it.
+ */
+export function leadGoal(animal: { x: number; y: number }, r: Rect): { x: number; y: number } {
+  const mid = r.y + r.h / 2;
+  const aligned = Math.abs(animal.y - mid) < r.h * 0.25;
+  return aligned && animal.x > r.x - 140 ? { x: r.x + 90, y: mid } : { x: r.x - 90, y: mid };
 }
 
 /** Pens open on their left side, across the middle of that wall. */

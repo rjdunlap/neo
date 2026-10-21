@@ -1,6 +1,6 @@
 # Roundup deep dive
 
-*ID `roundup` · bands lap, toddler, preschool, pre-K · levels 1–6 on 2026-10-18 · session `claude/dive-roundup` ([PR #580](https://github.com/rjdunlap/neo/pull/580))*
+*ID `roundup` · bands lap, toddler, preschool, pre-K · levels 1–6 on 2026-10-18 (10–11 built) · session `claude/dive-roundup` ([PR #580](https://github.com/rjdunlap/neo/pull/580))*
 
 Research and ideation only: nothing under `src/` changed. Roundup is the island's one flee-steering game (Duckling Parade steers a leader; here the herd runs *away* from the finger), so this dive keeps that feel and grows what the pens ask for: more kinds, sorting by more than kind, equal shares, a missing part, and two gentler rungs for the youngest hands.
 
@@ -10,7 +10,7 @@ Research and ideation only: nothing under `src/` changed. Roundup is the island'
 
 **Learning purpose.** Motor planning (getting behind a moving target and steering it), sorting by kind, counting out an exact number and reading a numeral. Skills `motor-planning`, `sorting`, `counting`; land Barnyard; music `STYLES.hub`.
 
-**The ladder** (`PLANS` in `logic.ts`; windows lap 1, toddler 1–3, preschool 2–5, pre-K 3–6; no `order` or `entryLevels`):
+**The ladder** (`PLANS` in `logic.ts`; windows lap 1, toddler 1–3, preschool 2–5, pre-K 3–6; no `order` or `entryLevels` when this dive was written; levels 10 and 11 have since been built with them, see slices 3 and 4):
 
 | Level | Mode | Bands whose window holds it | What she decides |
 | --- | --- | --- | --- |
@@ -124,7 +124,7 @@ Each has a default below; the build proceeds on it.
 1. **Support truth** (built; existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 5): the trot-home counts a hint, a count sign with dots at 5–6, a lap tap on grass or sign answered without a miss, the total spoken at the bell, a seeded layout per round, and the how-to note. IDs and windows unchanged.
 2. **Kinds and pens** (built; [PR #672](https://github.com/rjdunlap/neo/pull/672); logic tier plus one filtered play of 4 and 6, `fingerdemo` at 6): duck and dog, pens drawn from the pool, dynamic voice lines, varied casts at 4; level 6 retains exactly one spare per pen.
 3. **Level 10 *Shoo one*** (built; [PR #686](https://github.com/rjdunlap/neo/pull/686); new levels tier): two successive one-animal successes, 80% gate, unchanged 190-unit flee radius, a short near-gate meadow, ten-second glow and twenty-second trot-home (each counts one hint, fresh per animal); no misses. Toddler `order [1, 10, 2, 3]`, `entryLevels: [10]`. Level 11 remains unbuilt.
-4. **Level 11 *Come along*** (new interaction tier: typecheck, units, one scripted play of 11 at lap and toddler, one portrait screenshot, `fingerdemo` at 11): the follow mode, lap `order [1, 11]`, toddler `order [1, 11, 10, 2, 3]`, `entryLevels: [10, 11]`.
+4. **Level 11 *Come along*** (built; [PR #688](https://github.com/rjdunlap/neo/pull/688); new interaction tier: typecheck, units, one scripted play of 11 at lap and toddler, one portrait screenshot, `fingerdemo` at 11): the follow mode (`COME_ALONG`: three animals of one kind gather to the finger at a capped 190-unit follow speed, led through an 80% gate into one pen, no misses; fifteen idle seconds start a drift and one hint, the thirty-second trot-home stays), lap `order [1, 11]`, toddler `order [1, 11, 10, 2, 3]`, `entryLevels: [10, 11]`.
 5. **Level 7 *Leave the cows*** (new levels tier): pre-K 3–7.
 6. **Level 8 *Make it fair*** (new levels tier, with the seesaw sound): pre-K 3–8.
 7. **Level 9 *Fill it up*** (new levels tier): pre-K 3–9.
