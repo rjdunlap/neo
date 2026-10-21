@@ -176,3 +176,11 @@
 - Tested commit `3cfbba55`. One-off Playwright probe (`test-results/pk-probe.mjs`, not committed), rerun on that commit: level 1 two uncut serves glowed the visible halves button with no `kitchen.recut` (2/1); level 2 poke free with wiggle and instruction, cut button bounced after quiet, halves on empty plates said `kitchen.short` as the first miss, the second miss said only `kitchen.recut` (misses/hints 2/1, no `kitchen.fair`); level 7 empty serve said `kitchen.empty`, a three-quarters serve was counted aloud and finished with a sticker, no page errors.
 - Not run: the `creative` suite's kitchen case, a portrait screenshot, device speech of the counted line.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): a toddler's reaction to the wiggle and bounce, and the counted line's speech on an iPad.
+
+## 2026-10-21 — Fluffy Salon: support truth (slice 1)
+
+- Built on `claude/fluffy-salon-support-truth` ([PR #717](https://github.com/rjdunlap/neo/pull/717), tested commit `5d47d40b`, base `ac153189`): level 3's hint counts time without progress (`helps`, `QUIET_HINT = 15`), a touch off the fur giggles, the pet asks for the mirror in free play (`salon.mirror`), the mirror no longer appears at level 3 (a latent bug that counted a miss), "a little more" with the old-colour glow (`salon.more-color`), a true how-to.
+- Ran (Vite http://localhost:5345): `npm run typecheck`; `npx vitest run src/games/fluffy-salon src/content` 118 passed (new tests for `moreLine`, `oldStrands`, `helps`); `BROWSER_SUITE=batch BATCH_ONLY=salon TO_LEVEL=3` levels 1-3 passed (level 3 no-mirror assertion seen failing with the old reveal restored; level 3 play 22 s, was about 80 s); `BROWSER_SUITE=fingerdemo FINGER_ONLY=fluffy-salon FINGER_LEVELS=3` clean in 18.9 s.
+- One-off probe (`test-results/salon-glow-probe.mjs`, not a suite): level 4 with 16 of 26 strands in the asked colour and the mirror tapped gave misses 1, hints 0, glow set; a screenshot showed the glow.
+- Not run: `npm run build`, levels 4-5 in the suite, other suites.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): the giggle, device speech of the two new lines, the glow on an iPad.

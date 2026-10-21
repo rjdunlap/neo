@@ -145,4 +145,4 @@ Gated: the style coming home (decision 2, after RW05/RW06), accessories (decisio
 
 ## What was built in this session
 
-Slice 1 (support truth, 2026-10-21, [PR #717](https://github.com/rjdunlap/neo/pull/717)) is built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#fluffy-salon-support-truth-slice-1-2026-10-21), the checks in [VERIFICATION](../VERIFICATION.md#2026-10-21--fluffy-salon-support-truth-slice-1). It also found and fixed a bug the audit missed: the mirror appeared at level 3, which has no mirror, and a tap on it counted a miss. The deep dive session itself was research and ideation only.
+Slice 1 (support truth, 2026-10-21, [PR #717](https://github.com/rjdunlap/neo/pull/717)) is built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#fluffy-salon-support-truth-slice-1-2026-10-21), the checks in [VERIFICATION](../archive/VERIFICATION-2026-10-21.md#2026-10-21--fluffy-salon-support-truth-slice-1). It also found and fixed a bug the audit missed: the mirror appeared at level 3, which has no mirror, and a tap on it counted a miss. The deep dive session itself was research and ideation only.
