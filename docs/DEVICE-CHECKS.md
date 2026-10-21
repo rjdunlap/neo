@@ -3,7 +3,7 @@
 
 ## One iPad session (about fifteen minutes)
 
-The 111 items below are mostly the same five checks asked once per game: device speech, target size for a small hand, both orientations, frame rate, and what a child actually does. Most of them can be covered in one sitting with the iPad, in this order; tick every item a step covers, and write what was wrong in the item rather than here.
+The 112 items below are mostly the same five checks asked once per game: device speech, target size for a small hand, both orientations, frame rate, and what a child actually does. Most of them can be covered in one sitting with the iPad, in this order; tick every item a step covers, and write what was wrong in the item rather than here.
 
 1. **Sound and speech (2 min).** Open the installed app from the Home Screen with the silent switch on, then off. Does the first tap unlock sound, does the pet speak at all, and which voice is it? In Settings, is an Enhanced or Premium English voice downloaded (chunk 29's V0)? Say the names "Hazel", "trapezoid" and "pentatonic" through any game that uses them.
 2. **The front door (2 min).** On "Who's playing?", does a tap on a card open the island, and does a small hand's tap land? Hold the gear two seconds: does the grown-ups' page open and is nothing else reachable by accident?
@@ -21,6 +21,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 - [ ] **Feelings Faces pools (levels 6 and 8, 2026-10-20, #673).** On an iPad: do the butterfly on the pet's head and the rain cloud read as surprise and sadness to a preschooler; does the wobble invite a tap on a happening's prop; is the prop reachable over the big pet; do the new spoken lines ("{pet} loves a hug!") sound right in device speech.
 - [ ] **Block Garden (levels 1–8, 2026-10-20, #655).** On an iPad: can a pre-K child carry a piece with the 40-unit lift; are the 72-unit squares at levels 7–8 usable for a grown-up on a phone; is the landing shadow read without being explained; how long does the off-plan hint search take at level 8 (about 320 ms on Node; the definition aimed under 150 ms); device speech of the `block-garden.*` lines.
+- [ ] **Bolt Boards (levels 1–7, 2026-10-20, #681).** On an iPad: does a toddler connect the bolt to the drop at levels 1–2; does a partly covered bolt head read as covered; is undo found at level 6.
 - [ ] **Pile Match (levels 1–8, 2026-10-20, #680).** On an iPad: does a three-year-old read the dimmed pieces as underneath others; is each piece legible at 24 pieces; is put-back discovered without the hint.
 - [ ] **Fruit Slice (levels 1–8, 2026-10-20, #667).** On an iPad: does a toddler's swipe register with palm and wrist contact on the glass; does the 1.6 s hang feel calm or slow; does the level 7 straight line read to a six-year-old.
 - [ ] **Domino Run (levels 1–8, 2026-10-20, #659).** On an iPad: does a toddler find tap-to-hop at level 2 without help; is the stall ring read as "here is the gap"; are three dot faces enough to tell sizes apart.
