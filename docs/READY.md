@@ -10,7 +10,7 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`egg-catch`, level 9 One gate** (new level): preschool and pre-K entry before 4. [Slice 5](deep-dives/egg-catch.md#new-levels-on-top)
 - **`egg-catch`, level 10 Fix the run** (new interaction): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
 - **`egg-catch`, level 11 Flip-flop gate** (new interaction; after *Fix the run*): a gate that flips itself, two eggs, one setting; school. [Slice 7](deep-dives/egg-catch.md#new-levels-on-top)
-- **`feelings-faces`, lap entry 9 *Poke a feeling*** (new level, one-target interaction, with the `order`/`entryLevels` conversion): tap the pet, it shows the next feeling and says the word; a sad pet gets a hug; lap `[9, 1, 2]`. [Slice 2](deep-dives/feelings-faces.md#new-levels-on-top)
+- **`feelings-faces`, toddler 10 *Hug or pillow*** (new level on the help interaction): two helper cards for sad, sleepy or hungry; toddler `[2, 10, 3, 4]`. [Slice 3](deep-dives/feelings-faces.md#new-levels-on-top)
 
 ## Queued
 
@@ -21,7 +21,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 
 
-- **`feelings-faces`, toddler 10 *Hug or pillow*** (new level on the help interaction): two helper cards for sad, sleepy or hungry; toddler `[2, 10, 3, 4]`. [Slice 3](deep-dives/feelings-faces.md#new-levels-on-top)
 - **`feelings-faces`, level 11 *Two friends, one happening*** (new interaction): one happening, two friends with two different faces, a question for each; pre-K top and the school entry. [Slice 4](deep-dives/feelings-faces.md#new-levels-on-top)
 - **`feelings-faces`, level 13 *What happened?*** (new level; after 11): a face and a leftover clue, three happening cards; school. [Slice 5](deep-dives/feelings-faces.md#new-levels-on-top)
 - **`feelings-faces`, level 12 *Ask first*** (new interaction; after 11): tap the friend to hear what it wants, then give that, quiet time included; school. [Slice 6](deep-dives/feelings-faces.md#new-levels-on-top)

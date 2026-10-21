@@ -12,9 +12,10 @@ import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
+import { rangeFor } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bouncyBall, butterfly, drawSpring, emptyBasket, faceCard, feelingBubble, feelingCritter, feelingsSticker, FRIENDS, helperCard, iceCream, jackBox, moonAndStars, musicNote, present, windowCloud } from './art';
-import { bubbleToTap, CARE_SCENARIOS, FACE_PARTS, choiceToTap, FEELINGS, feelingPlan, feelingRound, playDone, type CareEvent, type Feeling, type FeelingEvent, type FeelingPlan, type Happening, type Helper, type Need, type Question } from './logic';
+import { bubbleToTap, CARE_SCENARIOS, LEVELS, pokeAfter, pokeDone, type PokeStep, FACE_PARTS, choiceToTap, FEELINGS, feelingPlan, feelingRound, playDone, type CareEvent, type Feeling, type FeelingEvent, type FeelingPlan, type Happening, type Helper, type Need, type Question } from './logic';
 
 const PET_SCALE = 0.85;
 
@@ -42,6 +43,8 @@ class FeelingsFaces implements Game {
   /** Free play: which feelings have been shown, and how many taps. */
   readonly tried = new Set<Feeling>();
   taps = 0;
+  /** Level 9: the last thing a poke showed, null before the first. */
+  poked: PokeStep | null = null;
   q = 0;
   wrong = 0;
   misses = 0;
@@ -93,7 +96,8 @@ class FeelingsFaces implements Game {
       // The pet is the star here, so the corner guide steps out; tapping the big pet repeats instead.
       ctx.pet.visible = false;
       const pet = ctx.companion();
-      pet.setMood(this.plan.mode === 'why' ? 'calm' : 'happy');
+      // Level 9's pet waits calm, so the first poke's happy face is a change she sees.
+      pet.setMood(this.plan.mode === 'why' || this.plan.mode === 'poke' ? 'calm' : 'happy');
       const b = pet.getLocalBounds();
       this.grow = Math.max(1, Math.min(2.2, 270 / b.height, 440 / b.width));
       this.middle = b.x + b.width / 2;
@@ -118,6 +122,7 @@ class FeelingsFaces implements Game {
 
   start() {
     if (this.plan.mode === 'play') this.instruct('feel.play');
+    else if (this.plan.mode === 'poke') this.instruct('feel.poke');
     else void this.ask();
   }
 
@@ -146,6 +151,7 @@ class FeelingsFaces implements Game {
 
   private tapPet() {
     const pet = this.pet!;
+    if (this.plan.mode === 'poke') return this.poke(pet);
     if (this.plan.mode !== 'play') {
       pet.poke();
       if (this.instruction && !this.busy) void this.ctx.say(this.instruction.id, this.instruction.vars);
@@ -170,9 +176,35 @@ class FeelingsFaces implements Game {
     this.checkPlayDone();
   }
 
+  /** Level 9: each tap anywhere on the pet shows the next feeling in the cycle, and a sad pet's next tap is a hug. */
+  private poke(pet: CompanionRig) {
+    if (this.done) return;
+    this.taps++;
+    const step = pokeAfter(this.poked);
+    this.poked = step;
+    this.clearProps();
+    if (step === 'hug') {
+      // The same hug as free play: the rain cloud goes, hearts rise and the pet is happy again.
+      pet.poke();
+      pet.setMood('happy');
+      sfx.giggle();
+      const at = this.headAt();
+      this.hearts(at.x, at.y);
+      void this.ctx.say('feel.hug');
+    } else {
+      pet.setMood(step);
+      pet.hop(0.5);
+      feelingSound(step);
+      void this.ctx.say(`feel.${step}`);
+      this.feelingBurst(step);
+    }
+    this.checkPlayDone();
+  }
+
   private checkPlayDone() {
     // Every feeling seen, or plenty of happy tapping on favorites: either way the round ends with a sticker.
-    if (playDone(this.tried, this.taps) && !this.done) {
+    const over = this.plan.mode === 'poke' ? pokeDone(this.taps) : playDone(this.tried, this.taps);
+    if (over && !this.done) {
       this.done = true;
       void this.ctx.tw.wait(2).then(() => {
         this.pet?.setMood('happy');
@@ -738,6 +770,10 @@ class FeelingsFaces implements Game {
    */
   autotouch(): TouchIntent | null {
     if (this.done) return null;
+    if (this.plan.mode === 'poke') {
+      const t = this.pet?.touch;
+      return this.pet && t ? { tap: { on: this.pet, x: t.x, y: t.y } } : null;
+    }
     if (this.plan.mode === 'play') {
       const bubble = this.options.find((o) => o.value === bubbleToTap(this.tried, this.taps));
       return bubble ? { tap: { on: bubble.node } } : null;
@@ -764,7 +800,8 @@ export const feelingsFaces: GameModule = {
   region: 'cozy-village',
   skills: ['emotions', 'empathy', 'vocabulary'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (b) => (b === 'prek' ? { min: 5, max: 8 } : b === 'preschool' ? { min: 3, max: 6 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
+  levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [9],
   describeLevel: (l) => feelingPlan(l).name,
   music: STYLES.paint,
   coplayHint: 'Make the same face as the pet with {name}, and name the feeling together.',

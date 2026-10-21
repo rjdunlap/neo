@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { restPoints } from '../../creatures/companion';
 import { SPECIES_IDS } from '../../creatures/species';
-import { bubbleToTap, CARE_ONLY, CARE_SCENARIOS, choiceToTap, EVENTS, FACE_MAX_GROW, FACE_PARTS, faceFrame, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, NEEDS, playDone, type Feeling } from './logic';
+import { bubbleToTap, CARE_ONLY, CARE_SCENARIOS, choiceToTap, EVENTS, FACE_MAX_GROW, FACE_PARTS, faceFrame, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, LEVELS, NEEDS, playDone, pokeAfter, pokeDone, POKE_TAPS, type Feeling, type PokeStep } from './logic';
+import { landing, levelsInOrder, nextLevel } from '../../progress/difficulty';
 
 describe('Feelings Faces questions', () => {
   it('always offer the answer once among distinct choices, without repeating a prompt back to back', () => {
@@ -126,5 +127,38 @@ describe('Feelings Faces cards frame the companion’s face (RW05 slice 2)', () 
         expect(span, `${s} ${size}`).toBeGreaterThan(size / 3);
       }
     }
+  });
+});
+
+describe('Feelings Faces level 9 Poke a feeling', () => {
+  const cycle = (taps: number) => {
+    const out: PokeStep[] = [];
+    let prev: PokeStep | null = null;
+    for (let i = 0; i < taps; i++) out.push((prev = pokeAfter(prev)));
+    return out;
+  };
+
+  it('shows every feeling within five taps, and the hug follows sad exactly once a cycle', () => {
+    expect(new Set(cycle(5).filter((s) => s !== 'hug'))).toEqual(new Set(FEELINGS));
+    const long = cycle(40);
+    long.forEach((s, i) => expect(s === 'hug').toBe(i > 0 && long[i - 1] === 'sad'));
+    // After the hug leaves the pet happy, the next poke changes its face rather than repeating happy.
+    long.forEach((s, i) => { if (s === 'hug') expect(long[i + 1] ?? 'surprised').toBe('surprised'); });
+  });
+
+  it('ends after six taps with a whole cycle and its hug shown', () => {
+    expect(pokeDone(POKE_TAPS - 1)).toBe(false);
+    expect(pokeDone(POKE_TAPS)).toBe(true);
+    expect(cycle(POKE_TAPS)).toEqual(['happy', 'surprised', 'sleepy', 'sad', 'hug', 'surprised']);
+  });
+
+  it('is a question-free plan and lap’s entry, keeping every saved level 1–8', () => {
+    expect(FEELING_PLANS[8].mode).toBe('poke');
+    expect(feelingRound(FEELING_PLANS[8], new Rng(1))).toEqual([]);
+    expect(LEVELS.lap!.order).toEqual([9, 1, 2]);
+    expect(levelsInOrder(LEVELS.lap!)).toEqual([9, 1, 2]);
+    expect(nextLevel(0, [], LEVELS.lap!)).toBe(9);
+    for (const band of ['toddler', 'preschool', 'prek'] as const) expect(landing(9, LEVELS[band]!, [9])).toBe(LEVELS[band]!.min);
+    for (const level of [1, 2]) expect(landing(level, LEVELS.lap!, [9])).toBe(level);
   });
 });

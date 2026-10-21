@@ -2188,6 +2188,7 @@ export const SCRIPT = {
   'paint.finished': ['What a picture!', 'All colored in!'],
 
   'feel.play': ['Tap a bubble! How does {pet} feel?'],
+  'feel.poke': ['Tap {pet}! How does {pet} feel?', 'Give {pet} a tap and see a feeling!'],
   'feel.happy': ['Happy!', '{pet} feels happy!'],
   'feel.sad': ['Sad. Aww.', '{pet} feels sad.'],
   'feel.sleepy': ['Sleepy... yawn!', '{pet} feels sleepy.'],
