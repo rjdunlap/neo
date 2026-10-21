@@ -780,13 +780,17 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'little-helpers': {
     goal: 'Send the right number of helpers to carry fruit.',
     steps: [
-      { to: 1, text: 'Tap a fruit and a helper carries it home.' },
+      { to: 1, text: 'Tap anywhere and a helper runs to carry the fruit home.' },
       { from: 2, to: 2, text: 'Tap a fruit to send a helper; tap again for more. The dots show how many it needs.' },
       { from: 3, to: 4, text: 'Tap a fruit to send helpers until you have sent the number asked for, then blow the whistle.' },
       { from: 5, to: 5, text: 'Some helpers are already there: send as many more as are needed, then blow the whistle.' },
       { from: 6, text: 'Every fruit needs the same team: send a team to each fruit, then blow the whistle.' },
     ],
     finish: 'The round ends when the fruit has been carried home.',
+    note: [
+      { text: 'Every touch gets an answer: a helper hops, waves or shrugs when everyone is busy. None of these is counted.' },
+      { from: 3, text: 'Only a whistle with too few or too many helpers is counted; a whistle before any are sent is just a reminder.' },
+    ],
   },
   'egg-catch': {
     goal: 'Get the eggs into the basket.',

@@ -1548,6 +1548,8 @@ export const SCRIPT = {
   'helpers.groups.total': ['{n} groups of {m} make {total}!'],
   'helpers.lift': ['Heave ho!', 'Lift!'],
   'helpers.done': ['All the fruit is home! Thank you, helpers!'],
+  'helpers.busy': ['Everyone is busy helping!', 'All the helpers are already helping!'],
+  'helpers.whistle.empty': ['Send some helpers first! Tap the fruit.'],
   'sg.play': ['Tap the garden friends to hear them sing!'],
   'sg.highlow': ['Listen! Is it high like the bird, or low like the frog?'],
   'sg.fastslow': ['Listen! Is it fast like the bunny, or slow like the turtle?'],
