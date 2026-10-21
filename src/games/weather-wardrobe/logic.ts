@@ -29,6 +29,21 @@ export const ITEM_WORDS: Record<Item, string> = {
   mittens: 'Mittens are',
 };
 
+/** Each item's name, said when she touches it on the pet at level 1. */
+export const ITEM_NAMES: Record<Item, string> = {
+  sunhat: 'A sun hat',
+  sunglasses: 'Sunglasses',
+  raincoat: 'A raincoat',
+  umbrella: 'An umbrella',
+  boots: 'Rain boots',
+  beanie: 'A warm hat',
+  scarf: 'A scarf',
+  mittens: 'Mittens',
+};
+
+/** What the grass does when she touches it at level 1: a puddle splashes, snow crunches, a flower pops up. */
+export const GROUND_TOUCH = { sunny: 'flower', rainy: 'splash', snowy: 'crunch' } as const satisfies Record<Weather, string>;
+
 export type WardrobeMode = 'play' | 'pick' | 'all' | 'trip' | 'change';
 
 export interface WardrobePlan {
