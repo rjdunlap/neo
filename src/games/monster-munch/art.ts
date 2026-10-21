@@ -52,6 +52,10 @@ export class Monster extends Container {
   private delight = 0;
   private blinkIn = 2;
   private blinkT = 0;
+  private leanT = 0;
+  private leanDir = 0;
+  /** The tummy icon being counted along, ringed; -1 for none. */
+  private lit = -1;
   private clock = Math.random() * 10;
 
   constructor(color: ColorName) {
@@ -122,6 +126,18 @@ export class Monster extends Container {
     this.shake = 1;
   }
 
+  /** A curious lean towards a point in the parent's coordinates: "hm?". */
+  lean(x: number) {
+    this.leanDir = Math.sign(x - this.x) || 1;
+    this.leanT = 1;
+  }
+
+  /** Rings tummy icon `i` while it is counted aloud; -1 clears it. */
+  light(i: number) {
+    this.lit = i;
+    this.drawTummy();
+  }
+
   /** Happy squinting eyes for a moment. */
   beam(seconds = 1.5) {
     this.delight = seconds;
@@ -143,6 +159,8 @@ export class Monster extends Container {
     this.body.scale.set(1 + this.squash - breathe * 0.5, 1 - this.squash + breathe);
     this.shake = Math.max(0, this.shake - dt * 1.8);
     this.body.x = Math.sin(this.shake * 30) * 14 * this.shake;
+    this.leanT = Math.max(0, this.leanT - dt * 1.4);
+    this.body.rotation = this.leanDir * 0.14 * Math.sin(this.leanT * Math.PI);
     if (this.delight > 0) {
       this.delight -= dt;
       if (this.delight <= 0) this.drawEyes();
@@ -203,6 +221,7 @@ export class Monster extends Container {
       const y = -88 + row * 34;
       if (food === 'apple') g.circle(x, y, 13).fill(swatch.red.fill).stroke(line(swatch.red.line, 3));
       else g.circle(x, y, 13).fill(wood.fill).stroke(line(wood.line, 3)).circle(x - 4, y - 3, 3).circle(x + 5, y + 3, 3).fill(swatch.brown.line);
+      if (i === this.lit) g.circle(x, y, 19).stroke(line(swatch.yellow.line, 5));
     });
   }
 

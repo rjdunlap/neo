@@ -15,12 +15,14 @@ export interface MunchPlan {
   dots?: boolean;
   /** each and share: how many monsters in each round. */
   monsters?: number[];
+  /** tap and count: how many cookies in each round, a short round first. */
+  amounts?: number[];
   name: string;
 }
 
 export const MUNCH_PLANS: MunchPlan[] = [
-  { mode: 'tap', rounds: 1, min: 6, max: 6, name: 'Tap cookies to feed the monster' },
-  { mode: 'count', rounds: 1, min: 5, max: 5, name: 'Feed five cookies while the monster counts them' },
+  { mode: 'tap', rounds: 2, min: 4, max: 6, amounts: [4, 6], name: 'Tap cookies (or the monster) to feed it while it counts them' },
+  { mode: 'count', rounds: 2, min: 3, max: 5, amounts: [3, 5], name: 'Feed three, then five cookies while the monster counts them' },
   { mode: 'each', rounds: 2, min: 1, max: 1, monsters: [2, 3], name: 'Give each monster one cookie' },
   { mode: 'exact', rounds: 3, min: 1, max: 4, dots: true, name: 'Feed 1 to 4 cookies (number and dots), then ring the bell' },
   { mode: 'exact', rounds: 3, min: 3, max: 7, name: 'Feed 3 to 7 cookies (number only), then ring the bell' },
@@ -52,9 +54,11 @@ export function munchRounds(plan: MunchPlan, rng: Rng): MunchRound[] {
     const monsters = plan.monsters?.[r % plan.monsters.length] ?? 1;
     switch (plan.mode) {
       case 'tap':
-      case 'count':
-        rounds.push({ monsters, want: order(plan.max), tray: order(plan.max) });
+      case 'count': {
+        const n = plan.amounts?.[r] ?? plan.max;
+        rounds.push({ monsters, want: order(n), tray: order(n) });
         break;
+      }
       case 'each':
         // One spare cookie, so giving out cookies is a choice.
         rounds.push({ monsters, want: order(1), tray: order(monsters + 1) });
@@ -176,4 +180,19 @@ export function munchTouch(plan: MunchPlan, t: MunchTable): MunchTouch | null {
       return i < 0 ? null : { give: i, to };
     }
   }
+}
+
+/** Where the glow after two misses points, so the hint line can name it. */
+export type MunchHint = 'food' | 'bell' | 'monster' | 'pad';
+
+/** The thing that glows after two misses: the same next useful thing `munchTouch` would touch. Tapping levels have no misses. */
+export function munchHint(plan: MunchPlan, t: MunchTable): MunchHint | null {
+  if (plan.mode === 'tap' || plan.mode === 'count') return null;
+  if (t.pads.length) return 'pad';
+  if (plan.mode === 'exact' || plan.mode === 'two') {
+    const need = missing(t.want, t.fed[0]);
+    return need.cookie + need.apple === 0 ? 'bell' : 'food';
+  }
+  if (plan.mode === 'leftover' && t.fed.every((f) => f.cookie >= t.want.cookie)) return 'bell';
+  return 'monster';
 }
