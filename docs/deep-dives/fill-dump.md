@@ -120,7 +120,7 @@ Build one Fill and Dump slice at a time, in this order: slices 3 and 4 both rewr
 2. **Lap reach and idle invitation** (built 2026-10-20, [PR #666](https://github.com/rjdunlap/neo/pull/666)). Levels 1–2 only; ground tips or scoops the nearest fruit and six idle seconds invite an unscored wiggle. Tier: typecheck, rule tests (ground taps in the any-taps test), `ORIGINALS_ONLY=fill` once and `fingerdemo` at level 1.
 3. **Level 6, Full and empty**, with the plan table keyed by ID (built 2026-10-20, [PR #683](https://github.com/rjdunlap/neo/pull/683)). Tier: new level on an existing interaction: typecheck, rule tests, the how-to and difficulty tests, one browser play of level 6 and `fingerdemo` at 6.
 4. **Level 7, Which holds more?** (ready). Tier: new interaction: typecheck, unit tests, one scripted play of level 7 (one wrong answer, one hint), one portrait screenshot, `fingerdemo` at 7.
-5. **Things to put away** (ready). Tier: content: typecheck, rule tests, one screenshot per new set.
+5. **Things to put away** (claimed: `codex/fill-dump-things`, worker `01a15cee-9461-7411-9a05-3a03de01bc67`; draft PR pending). Expected files: `src/games/fill-dump/{logic,basket,index}.ts`, rule tests, voice/how-to and game/roadmap/verification docs. Only seeded sets at levels 1–4; no new levels or pouring changes. Tier: content: typecheck, rule tests, one screenshot per new set.
 6. **Pouring feel** (after the V3 definition). Tier: rule tests unchanged, one filtered play of level 5, `fingerdemo` at 5, landscape and portrait screenshots.
 7. **Busy-window acknowledgment** (after V2's person check). Tier: rule tests, a rapid-tap regression play.
 8. **Levels 8–9** (decisions 1–2), then the toddler pour rung (decision 3) and Two jugs (decision 4).
