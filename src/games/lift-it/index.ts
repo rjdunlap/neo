@@ -46,7 +46,7 @@ const FRIEND_SCALE = 0.4;
 /** Visual spacing of the knots along the rope. */
 const KNOT_GAP = 46;
 /** The ghost finger's stroke. */
-const STROKE = 150;
+const STROKE = 190;
 
 function voice(f: Friend) {
   if (f === 'duck') sfx.animal('quack');
