@@ -3,6 +3,7 @@ import { cream, swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
+import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { spread, type View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
@@ -10,7 +11,7 @@ import { againIcon, arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { doubled, fair, fairCut, fractionCut, fractionRequest, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, plateAt, recipe, servesFraction } from './logic';
+import { countAloud, doubled, fair, fairCut, fractionCut, fractionRequest, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, plateAt, recipe, servesFraction, serveTrouble } from './logic';
 
 function sandwich(parts = 1) {
   if (parts === 3) {
@@ -66,15 +67,20 @@ class PetKitchen implements Game {
   private wrong = 0;
   private assisted = false;
   private clock = 0;
+  /** Seconds since the last touch while the food waits uncut; at six the cut buttons bounce. */
+  private idle = 0;
+  private lastPoke = -Infinity;
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan=planFor(ctx.level); this.base=recipe(ctx.level,ctx.rng); this.request=fractionRequest(ctx.rng);
     ctx.stage.addChild(this.background,this.food,this.recipeCard,this.meal,this.glow,this.pieceLayer); this.glow.eventMode='none';
+    // Any touch on the counter counts as someone playing, so the cut buttons only bounce after real quiet.
+    this.background.eventMode='static';this.background.on('pointerdown',()=>{this.idle=0;});
     this.serve=new RoundButton(arrowIcon(1),swatch.green,48,()=>this.check());
     this.undo=new RoundButton(arrowIcon(-1),swatch.white,48,()=>{
       const last=this.additions.pop(); if(last!==undefined) {this.made[last]--;this.drawMeal();this.drawHint();}
     });
-    this.recut=new RoundButton(againIcon(),swatch.white,48,()=>{if(this.done)return;this.clearPieces();this.split=0;this.resize(this.view);this.instruction();});
+    this.recut=new RoundButton(againIcon(),swatch.white,48,()=>{if(this.done)return;this.clearPieces();this.split=0;this.idle=0;this.resize(this.view);this.instruction();});
     ctx.stage.addChild(this.serve,this.undo,this.recut);
     if(this.plan.mode==='share'||this.plan.mode==='fraction') {
       for(let i=0;i<this.plan.friends;i++) {
@@ -110,6 +116,7 @@ class PetKitchen implements Game {
   private cut(parts:number){
     if(this.done||this.split)return;
     this.split=parts;sfx.squish();
+    for(const b of this.cuts){this.ctx.tw.kill(b.scale);b.scale.set(1);}
     for(let i=0;i<parts*this.plan.wholes;i++) {
       const node=new Container();node.addChild(sandwich(parts));node.hitArea=new Circle(0,0,55);this.pieceLayer.addChild(node);
       const piece:Piece={node,plate:-1,drag:null!};
@@ -131,10 +138,28 @@ class PetKitchen implements Game {
   private check(){
     if(this.done)return;
     const ok=this.plan.mode==='share'?fair(this.counts(),this.pieces.length):this.plan.mode==='fraction'?servesFraction(this.request,this.split,this.counts()[0]):this.plan.mode==='half-recipe'?halved(this.base,this.made):doubled(this.base,this.made);
-    if(ok){this.done=true;this.pieces.forEach(p=>p.drag.enabled=false);this.glow.clear();sfx.sparkle();void this.ctx.say('kitchen.done');void this.ctx.tw.wait(1.1).then(()=>this.ctx.finish({misses:this.misses,hints:this.hints}));return;}
+    if(ok){
+      this.done=true;this.pieces.forEach(p=>p.drag.enabled=false);this.glow.clear();sfx.sparkle();
+      const finish=()=>this.ctx.finish({misses:this.misses,hints:this.hints});
+      if(this.plan.mode==='fraction'){
+        // Count the served pieces aloud, each one hopping as it is named: "one quarter, two quarters: one half".
+        const served=this.pieces.filter(p=>p.plate===0);
+        served.forEach((p,i)=>void this.ctx.tw.wait(0.15+i*0.55).then(()=>{sfx.pop(4+i);return this.ctx.tw.to(p.node.scale,{x:1.2,y:1.2},{duration:0.15});}).then(()=>this.ctx.tw.to(p.node.scale,{x:1,y:1},{duration:0.2})));
+        void this.ctx.say('kitchen.fraction-count',{count:countAloud(this.split,served.length),amount:this.request.name}).then(()=>this.ctx.tw.wait(0.4)).then(finish);
+      } else {void this.ctx.say('kitchen.done');void this.ctx.tw.wait(1.1).then(finish);}
+      return;
+    }
     this.misses++;this.wrong++;sfx.boing();
-    void this.ctx.say(this.plan.mode==='share'?'kitchen.fair':this.plan.mode==='fraction'?'kitchen.fraction-hint':this.plan.mode==='half-recipe'?'kitchen.half-hint':'kitchen.double-hint');
-    if(this.wrong===2){this.assisted=true;this.hints++;}this.drawHint();
+    if(this.wrong===2){this.assisted=true;this.hints++;}
+    if(this.plan.mode==='share'||this.plan.mode==='fraction'){
+      const trouble=serveTrouble(this.counts(),this.pieces.length);
+      if(trouble==='uncut')this.instruction();
+      else if(trouble==='empty')void this.ctx.say('kitchen.empty');
+      // The glow that comes with a second miss says the recut line itself.
+      else if(trouble==='short'){if(!this.assisted||this.wrong!==2)void this.ctx.say('kitchen.short');}
+      else void this.ctx.say(this.plan.mode==='share'?'kitchen.fair':'kitchen.fraction-hint');
+    } else void this.ctx.say(this.plan.mode==='half-recipe'?'kitchen.half-hint':'kitchen.double-hint');
+    this.drawHint();
   }
   private drawHint(){
     this.glow.clear();if(!this.assisted||this.done)return;
@@ -169,6 +194,13 @@ class PetKitchen implements Game {
     else if(this.plan.mode==='fraction')void this.ctx.instruct(this.split?'kitchen.fraction-share':'kitchen.fraction',{amount:this.request.name});
     else void this.ctx.instruct(this.split?'kitchen.share':'kitchen.cut',{n:this.plan.friends});
   }
+  /** A touch on the uncut food: it wiggles and the cut instruction comes again. Free, never a miss. */
+  private poke(f:Container){
+    if(this.done||this.split)return;
+    this.idle=0;sfx.squish();this.ctx.tw.kill(f);f.rotation=0;
+    void this.ctx.tw.to(f,{rotation:0.12},{duration:0.08}).then(()=>this.ctx.tw.to(f,{rotation:-0.12},{duration:0.12})).then(()=>this.ctx.tw.to(f,{rotation:0},{duration:0.1}));
+    if(this.clock-this.lastPoke>3){this.lastPoke=this.clock;this.instruction();}
+  }
   start(){this.instruction();}
   resize(v:View){
   this.view=v;
@@ -177,15 +209,21 @@ class PetKitchen implements Game {
     this.undo.visible=this.plan.mode==='recipe'||this.plan.mode==='half-recipe';this.recut.visible=(this.plan.mode==='share'||this.plan.mode==='fraction')&&this.split>0;
     const px=spread(this.plates.length,180,v.w-50,185);
     this.plates.forEach((p,i)=>{p.position.set(px[i],Math.max(310,v.h*0.36));p.visible=this.split>0;});
-    for(const c of this.food.removeChildren())c.destroy({children:true});
-    if(!this.split&&(this.plan.mode==='share'||this.plan.mode==='fraction'))for(let i=0;i<this.plan.wholes;i++){const f=this.ctx.level===9?pizza():sandwich();f.scale.set(1.2);f.position.set(v.w/2+(i-(this.plan.wholes-1)/2)*240,v.h*0.4);this.food.addChild(f);}
+    for(const c of this.food.removeChildren()){this.ctx.tw.kill(c);c.destroy({children:true});}
+    if(!this.split&&(this.plan.mode==='share'||this.plan.mode==='fraction'))for(let i=0;i<this.plan.wholes;i++){const f=this.ctx.level===9?pizza():sandwich();f.scale.set(1.2);f.position.set(v.w/2+(i-(this.plan.wholes-1)/2)*240,v.h*0.4);onTap(f,()=>this.poke(f),{radius:90});this.food.addChild(f);}
     const xs=spread(this.cuts.length,250,v.w-180,200);this.cuts.forEach((b,i)=>{b.position.set(xs[i],v.h-110);b.visible=!this.split;});
     this.recipeCard.position.set(v.w/2,215);this.meal.position.set(v.w/2,v.h*0.5);
     this.ingredients.forEach((b,i)=>b.position.set(v.w/2+(i?110:-110),v.h-95));
     if(this.plan.mode==='recipe'||this.plan.mode==='half-recipe')this.background.ellipse(v.w/2,v.h*0.5+30,245,110).fill(swatch.white.fill).stroke({width:7,color:swatch.blue.line});
     this.layoutPieces();this.drawHint();
   }
-  update(dt:number){this.clock+=dt;this.glow.alpha=0.7+0.3*Math.sin(this.clock*3);if(this.done)this.meal.rotation=Math.sin(this.clock*7)*0.04;}
+  update(dt:number){
+    this.clock+=dt;
+    if(!this.done&&!this.split&&this.cuts.length&&(this.idle+=dt)>=6){
+      this.idle=0;
+      this.cuts.forEach((b,i)=>void this.ctx.tw.to(b.scale,{x:1.18,y:1.18},{duration:0.18,delay:i*0.12}).then(()=>this.ctx.tw.to(b.scale,{x:1,y:1},{duration:0.25})));
+    }
+    this.glow.alpha=0.7+0.3*Math.sin(this.clock*3);if(this.done)this.meal.rotation=Math.sin(this.clock*7)*0.04;}
   /** The ghost finger on the how-to card: cut fairly, give each plate a piece in turn, serve; or add fruit until the recipe is doubled, serve. */
   autotouch():TouchIntent|null{
     if(this.done)return null;

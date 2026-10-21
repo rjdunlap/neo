@@ -54,3 +54,22 @@ export function plateAt(plates: readonly { x: number; y: number }[], x: number, 
 export function fairCut(plan: { wholes: number; friends: number; cuts: readonly number[] }): number | undefined {
   return [...plan.cuts].sort((a, b) => a - b).find((c) => (plan.wholes * c) % plan.friends === 0);
 }
+
+/**
+ * Why a share or fraction serve missed, so the first line says what is really wrong: nothing cut yet, nothing on any
+ * plate, too few pieces for every friend to have one (the round arrow and a finer cut fix it), or plates that differ.
+ */
+export type ServeTrouble = 'uncut' | 'empty' | 'short' | 'unequal';
+export function serveTrouble(plates: readonly number[], pieces: number): ServeTrouble {
+  if (pieces === 0) return 'uncut';
+  if (plates.every((n) => n === 0)) return 'empty';
+  if (pieces < plates.length) return 'short';
+  return 'unequal';
+}
+const NUMBER_WORDS = ['one', 'two', 'three', 'four'];
+const PIECE_WORDS: Record<number, [string, string]> = { 2: ['half', 'halves'], 3: ['third', 'thirds'], 4: ['quarter', 'quarters'] };
+/** The served pieces counted aloud: "one quarter, two quarters". */
+export function countAloud(cut: number, served: number): string {
+  const [one, many] = PIECE_WORDS[cut] ?? ['piece', 'pieces'];
+  return Array.from({ length: served }, (_, i) => `${NUMBER_WORDS[i] ?? i + 1} ${i ? many : one}`).join(', ');
+}
