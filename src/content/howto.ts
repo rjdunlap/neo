@@ -1306,6 +1306,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { text: 'The rope follows the ideal rule: two ropes holding the crate halve the pull and double the rope, and nothing rubs or weighs anything. Real ropes and wheels lose a little to friction.' },
     ],
   },
+  'attic-finds': {
+    goal: 'Look an attic thing over, turn it and crank it, then show what it does.',
+    steps: [
+      'Tap the parts to see them up close. Tap Turn to see the back.',
+      { from: 1, to: 1, text: 'Tap a picture to try it, or tap the crank. Watch what really happens.' },
+      { from: 1, to: 1, text: 'Then tap the picture of what it did.' },
+      { from: 2, to: 2, text: "Tap each round chip to look at its part, then drag the part that proves the crank moves it into the card's slot and tap Check." },
+      'Crank it again any time to watch.',
+    ],
+    finish: 'Both things sit on the shelf.',
+    note: [
+      { from: 1, to: 1, text: 'Looking, turning and trying are never counted against her, and a guess before the crank turns is never a miss. After two wrong picks the right picture glows, which counts as a hint. Everything in the attic is made up for the island; nothing here is a real old thing.' },
+      { from: 2, to: 2, text: 'Looking, turning and swapping parts are never counted against her. A Check with a part that does not move the bird or fish counts as a miss; after two the right part glows, which counts as a hint. Everything in the attic is made up for the island; nothing here is a real old thing.' },
+    ],
+  },
   'block-garden': {
     goal: 'Plant shapes until every bud blooms.',
     steps: [
