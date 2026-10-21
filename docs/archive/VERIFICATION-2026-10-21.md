@@ -86,3 +86,11 @@
 - Dev server http://localhost:5250: `BROWSER_SUITE=cutalong` passed: level 1 by taps (0 misses, 0 hints), level 3 two strays (two misses, glow, one hint, progress kept), level 5 a circle counterclockwise then clockwise in a second round, level 6 portrait screenshot reviewed (`test-results/browser/cut-along-6-portrait.png`), level 8 a wrong outline (one miss, slit closed) then the fitting outlines; stickers awarded, no page errors. `BROWSER_SUITE=fingerdemo FINGER_ONLY=cut-along` passed at levels 1 and 7 (7.9 s, 9.8 s) and 5 and 8 (11.7 s, 10.7 s).
 - Not run: other suites, the offline check, any iPad or child.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): the corridor floor for a toddler's finger, whether the scissors hide the line ahead, whether level 8's choice reads to a five-year-old.
+
+## 2026-10-21 — Little Helpers: every touch answers (slice 1)
+
+- Built on `claude/little-helpers-every-touch` ([PR #703](https://github.com/rjdunlap/neo/pull/703), base `b61395ce` plus the branch commit `7bce1c06`): a full-screen touch sends a helper at level 1, a hop and squeak while busy, a grass wave at 2–6, a shrug and `helpers.busy` with no helpers left, a zero-helper whistle as a nudge not a miss, every bunch fruit into the basket.
+- `npm run typecheck` clean; vitest on `src/content`, `src/games/little-helpers` and `src/games/registry` (12 files, 128 tests) passed; `npm run build` passed.
+- Dev server http://localhost:5692: `BROWSER_SUITE=batch BATCH_ONLY=helpers` levels 1–5 passed (sky tap at 1, touches while busy, whistle with nobody sent and a grass tap, no miss); `BROWSER_SUITE=woods WOODS_ONLY=helpers` level 6 passed (every bunch fruit in the basket); `BROWSER_SUITE=fingerdemo FINGER_ONLY=little-helpers FINGER_LEVELS=1` clean in 23.3 s. A landscape screenshot of level 5's basket was reviewed.
+- Not run: the full unit suite, other browser suites, a portrait screenshot, the offline check.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a one-year-old notices the hop and wave, and whether the shrug reads; not established by automation.
