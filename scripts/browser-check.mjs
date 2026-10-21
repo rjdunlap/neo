@@ -4080,8 +4080,27 @@ async function stickerBook() {
 async function expansion() {
   const only = process.env.EXPANSION_ONLY;
   // Both the smallest supported band and the upper ladder are exercised through real pointer events.
+  const sizeLevels = (process.env.SIZE_LEVELS || '1,2,3,4,5,6,7,8').split(',').map(Number);
   for (let level = 1; level <= 8 && (!only || only === 'size'); level++) {
+    if (!sizeLevels.includes(level)) continue;
+    if (process.env.SIZE_PORTRAIT) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('size-parade', level);
+    // A tap on the sky hops the friends and repeats the ask; a right friend on a later spot is told "This spot first!". Neither is a miss.
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      await kit.until(() => !g.busy);
+      kit.tapOn(g.choices[0].node, 0, -300 * neo.view.scale); await kit.sleep(400);
+      if (g.lastGroundTap === -Infinity) throw new Error('The sky tap went unanswered');
+      if (g.plan.mode === 'line') {
+        const right = g.choices.find((c) => c.rank === g.order[g.step]);
+        const p = g.slots[g.slots.length - 1].getGlobalPosition();
+        await kit.dragTo(right.node, { x: p.x, y: p.y + 40 * neo.view.scale });
+        if (!(g.pulse > 0)) throw new Error('A friend on a later spot went unanswered');
+        await kit.sleep(550);
+        if (g.step !== 0 || right.placed) throw new Error('A friend on a later spot was placed');
+      }
+      if (g.misses !== 0 || g.hints !== 0) throw new Error(`Free touches counted: ${g.misses} misses, ${g.hints} hints`);
+    });
     await page.evaluate(async () => {
       const g = neo.scene.game;
       const act = async (choice) => {
@@ -4093,7 +4112,7 @@ async function expansion() {
     });
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, `size ${level} hint`);
     if (level === 4 || level === 8) await screenshot(`size-parade-${level}`);
-    if (level === 8) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot('size-parade-portrait'); }
+    if (level === 8 || (process.env.SIZE_PORTRAIT && level === 7)) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot(`size-parade-portrait-${level}`); }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       for (let step = 0; !g.done && step < 10; step++) {
