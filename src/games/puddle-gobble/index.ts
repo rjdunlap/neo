@@ -169,8 +169,10 @@ interface Item {
   node: Container;
   place: Placed;
   where: 'sand' | 'moving' | 'in';
-  /** A too-big or refused touch disarms it until the puddle has moved away. */
+  /** A too-big or refused touch disarms it until the puddle has moved away or changed size. */
   armed: boolean;
+  /** The puddle's size when it was disarmed. */
+  disarmedAt: number;
   /** The puddle size it last said "too big yet" at. */
   saidAt: number;
   missed: boolean;
@@ -222,6 +224,8 @@ class PuddleGobble implements Game {
   /** A glow already counted since her last soak: the next one is free. */
   private glowCounted = false;
   private aimedAt = -1;
+  /** When something last slid in: a refusal after that, before her finger aims again, came from the way there, not her choice. */
+  private soakedAt = -2;
   private tokens: { id: number; node: Container }[] = [];
 
   constructor(private readonly ctx: GameContext) {
@@ -250,7 +254,7 @@ class PuddleGobble implements Game {
 
     for (const t of this.board.things) {
       const node = thingNode(this.plan, t);
-      this.items.push({ thing: t, node, place: layout.find((p) => p.id === t.id)!, where: 'sand', armed: true, saidAt: -1, missed: false, wobble: 0 });
+      this.items.push({ thing: t, node, place: layout.find((p) => p.id === t.id)!, where: 'sand', armed: true, disarmedAt: 0, saidAt: -1, missed: false, wobble: 0 });
       this.world.addChild(node);
     }
     this.world.addChild(this.puddle);
@@ -492,8 +496,8 @@ class PuddleGobble implements Game {
       if (it.where !== 'sand') continue;
       const d = Math.hypot(it.node.x - this.puddle.x, it.node.y - this.puddle.y);
       if (!it.armed) {
-        if (d > R + REARM) it.armed = true;
-        continue;
+        if (d > R + REARM || this.state.puddle !== it.disarmedAt) it.armed = true;
+        else continue;
       }
       if (d >= R) continue;
       const why = refusal(this.board, this.state, it.thing.id);
@@ -506,12 +510,13 @@ class PuddleGobble implements Game {
   private aimed(it: Item) {
     const near = (x: Item) => Math.hypot(this.target.x - x.node.x, this.target.y - x.node.y);
     const r = thingDiameter(this.plan, it.thing) / 2;
-    if (this.aimedAt < 0 || near(it) > r + 50) return false;
+    if (this.aimedAt < 0 || this.aimedAt < this.soakedAt || near(it) > r + 50) return false;
     return !this.items.some((x) => x !== it && x.where === 'sand' && near(x) < near(it) && refusal(this.board, this.state, x.thing.id) === null);
   }
 
   private refuse(it: Item, why: 'too-big' | 'order' | 'too-much') {
     it.armed = false;
+    it.disarmedAt = this.state.puddle;
     it.wobble = 0.6;
     const aimed = this.aimed(it);
     if (why === 'too-big') {
@@ -556,6 +561,7 @@ class PuddleGobble implements Game {
     const r = soak(this.board, this.state, it.thing.id);
     if (!r.ok) return;
     this.state = r.state;
+    this.soakedAt = this.clock;
     this.tooBigs = 0;
     this.missesSince = 0;
     this.glowCounted = false;
@@ -599,10 +605,25 @@ class PuddleGobble implements Game {
     it.icon = undefined;
     it.where = 'moving';
     it.armed = false;
+    it.disarmedAt = this.state.puddle;
     it.node.visible = true;
     it.node.scale.set(0.5);
     it.node.position.set(from.x, from.y);
     const home = placeOn(this.field, it.place);
+    // The puddle steps off its spot, so it lands on the sand rather than straight back in.
+    const r = thingDiameter(this.plan, it.thing) / 2;
+    const away = puddleDiameter(this.plan, this.state.puddle) / 2 + r + REARM + 12;
+    const dx = this.puddle.x - home.x, dy = this.puddle.y - home.y;
+    if (Math.hypot(dx, dy) < away) {
+      const f = this.field;
+      const dirs = [Math.atan2(dy, dx), Math.atan2(dy, dx) + Math.PI / 2, Math.atan2(dy, dx) - Math.PI / 2, Math.atan2(dy, dx) + Math.PI];
+      const spot = dirs.map((a) => ({ x: home.x + Math.cos(Number.isFinite(a) ? a : -Math.PI / 2) * away, y: home.y + Math.sin(Number.isFinite(a) ? a : -Math.PI / 2) * away }))
+        .find((q) => q.x >= f.x0 && q.x <= f.x1 && q.y >= f.y0 && q.y <= f.y1) ?? { x: this.clampX(home.x), y: this.clampY(home.y - away) };
+      this.target.x = spot.x;
+      this.target.y = spot.y;
+      // The game moved it, not her finger: nothing it passes is her choice.
+      this.aimedAt = -1;
+    }
     sfx.pop(5);
     void this.ctx.tw.to(it.node.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
     void this.ctx.tw.to(it.node, { x: home.x, y: home.y }, { duration: 0.45, ease: ease.outQuad }).then(() => {
