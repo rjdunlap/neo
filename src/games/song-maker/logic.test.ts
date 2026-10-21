@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { beadToTap, freeSong, key, makeSong, PATTERNS, ROW_STEPS, SONG_PLANS, songLayout } from './logic';
+import { SCRIPT } from '../../content/voice-script';
 
 describe('Song Maker songs', () => {
   it('fit the grid, use one note per beat, and never sit on a single pitch', () => {
@@ -28,6 +29,23 @@ describe('Song Maker songs', () => {
       expect(song.given).toEqual(song.notes.slice(0, 4));
       for (const n of song.notes.slice(4)) expect(n.row).toBe(song.given[n.col % 4].row);
     }
+  });
+
+  it('offers ten distinct, named pattern shapes, each with a spoken line, and every one comes up', () => {
+    const plan = SONG_PLANS.find((p) => p.mode === 'pattern')!;
+    expect(PATTERNS).toHaveLength(10);
+    for (const p of PATTERNS) {
+      expect(p.rows).toHaveLength(4);
+      expect(new Set(p.rows).size).toBeGreaterThanOrEqual(2);
+      for (const row of p.rows) expect(row).toBeGreaterThanOrEqual(0);
+      expect(SCRIPT[`song.pattern.${p.id}`]?.length).toBeGreaterThan(0);
+    }
+    expect(new Set(PATTERNS.map((p) => p.rows.join())).size).toBe(PATTERNS.length);
+    expect(new Set(PATTERNS.map((p) => p.name)).size).toBe(PATTERNS.length);
+    expect(new Set(PATTERNS.map((p) => p.id)).size).toBe(PATTERNS.length);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) seen.add(makeSong(plan, new Rng(seed)).pattern!);
+    expect(seen.size).toBe(PATTERNS.length);
   });
 
   it('keeps higher rows higher in pitch', () => {

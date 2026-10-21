@@ -17,7 +17,7 @@ export const SONG_PLANS: SongPlan[] = [
   { mode: 'ghost', cols: 4, rows: 3, notes: 3, name: 'Copy a 3-note song by tapping its shadows' },
   { mode: 'ghost', cols: 6, rows: 4, notes: 5, name: 'Copy a 5-note song by tapping its shadows' },
   { mode: 'card', cols: 6, rows: 4, notes: 5, name: 'Copy a 5-note song from a little card' },
-  { mode: 'pattern', cols: 8, rows: 5, notes: 4, name: 'Continue a song pattern: stairs, hops and zigzags' },
+  { mode: 'pattern', cols: 8, rows: 5, notes: 4, name: 'Continue a named song pattern: stairs, hops, zigzags, arches and leaps' },
   { mode: 'listen', cols: 4, rows: 3, notes: 4, name: 'Listen, then find each note of a 4-note tune by ear' },
 ];
 
@@ -38,21 +38,28 @@ export interface Note {
 
 export const key = (n: Note) => `${n.col}:${n.row}`;
 
-/** Repeating shapes for the pattern level, one row per beat of a 4-beat bar (row 0 = top). */
-export const PATTERNS: { name: string; rows: number[] }[] = [
-  { name: 'stairs up', rows: [4, 3, 2, 1] },
-  { name: 'stairs down', rows: [0, 1, 2, 3] },
-  { name: 'zigzag', rows: [4, 2, 4, 2] },
-  { name: 'hop', rows: [3, 1, 3, 1] },
-  { name: 'twins', rows: [4, 4, 1, 1] },
-];
+/** Repeating shapes for the pattern level, one row per beat of a 4-beat bar (row 0 = top). Each is named aloud before play (`song.pattern.<id>`). */
+export const PATTERNS = [
+  { id: 'stairs-up', name: 'stairs up', rows: [4, 3, 2, 1] },
+  { id: 'stairs-down', name: 'stairs down', rows: [0, 1, 2, 3] },
+  { id: 'zigzag', name: 'zigzag', rows: [4, 2, 4, 2] },
+  { id: 'hop', name: 'hop', rows: [3, 1, 3, 1] },
+  { id: 'twins', name: 'twins', rows: [4, 4, 1, 1] },
+  { id: 'arch', name: 'arch', rows: [4, 2, 0, 2] },
+  { id: 'valley', name: 'valley', rows: [0, 2, 4, 2] },
+  { id: 'climb-rest', name: 'climb and rest', rows: [4, 3, 2, 2] },
+  { id: 'big-leap', name: 'big leap', rows: [4, 0, 4, 0] },
+  { id: 'step-back', name: 'step back', rows: [4, 3, 4, 2] },
+] as const;
+export type PatternId = (typeof PATTERNS)[number]['id'];
 
 export interface Song {
   /** The whole song. */
   notes: Note[];
   /** Notes already placed for her (the first bar of a pattern). */
   given: Note[];
-  pattern?: string;
+  /** The pattern level's shape, named aloud before play. */
+  pattern?: PatternId;
 }
 
 /** A song for one round. Every note has its own column, and a song never sits on a single pitch. */
@@ -61,7 +68,7 @@ export function makeSong(plan: SongPlan, rng: Rng): Song {
   if (plan.mode === 'pattern') {
     const p = rng.pick(PATTERNS);
     const notes = Array.from({ length: plan.cols }, (_, col) => ({ col, row: p.rows[col % p.rows.length] }));
-    return { notes, given: notes.slice(0, 4), pattern: p.name };
+    return { notes, given: notes.slice(0, 4), pattern: p.id };
   }
   const count = plan.mode === 'listen' ? plan.cols : plan.notes;
   for (;;) {
