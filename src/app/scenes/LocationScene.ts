@@ -61,7 +61,8 @@ export const isLocation = (id: LandId) => id in LOCATIONS;
  * RW13: a land as a location at the site root. It is the land's scene (its games and signpost from `landLayout`, the
  * same suggestions, the same `{ land }` origin, so Home from a game comes back here) with the location's ecosystem drawn
  * over the backdrop and its illustrated resident standing where the host stands. Tapping the resident pokes it, says
- * the location's line and suggests a game. Home goes to the root's entry scene (`go.hub()` at the root).
+ * the location's line and suggests a game. Built with `back` (the root, RW08), its corner button is a Back arrow to
+ * Explore's Places; without it, Home goes to `go.hub()`.
  */
 export class LocationScene extends LandScene {
   /** The illustrated resident, or null where the land's code-drawn host still stands in. */
