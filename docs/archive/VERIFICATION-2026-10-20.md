@@ -376,3 +376,11 @@
 - Dev server http://localhost:5333: `BROWSER_SUITE=swingpals` passed twice (level 1 by taps; level 6 with one wrong hook (one miss) and a requested glow (one hint); level 3 portrait screenshot; about 1 min). `BROWSER_SUITE=fingerdemo FINGER_ONLY=swing-pals FINGER_LEVELS=2,6` passed (level 2 30.0 s, level 6 29.8 s). `npm run build` passed.
 - Not run: the offline check, `world`, any iPad or child.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): lap tap-to-push link, the waiting push at level 2 reading as waiting, the parting swings at levels 4–6 on an iPad.
+
+## 2026-10-20 — Fill and Dump things to put away (slice 5)
+
+- [PR #691](https://github.com/rjdunlap/neo/pull/691), `codex/fill-dump-things`, tested base `df59c0ac` plus slice diff: seeded sets in levels 1–4, container-aware speech, distinct tip-out designs, identical counting pieces and set-specific pentatonic landing pitches.
+- Passed `npm run typecheck`; `npx vitest run src/games/fill-dump/logic.test.ts src/content/howto.test.ts` (44 tests). Seeds cover every set at every 1–4 level, distinct designs, one-kind counting, truthful speech and clean supported completion.
+- Isolated Chromium probe `test-results/fill-sets.mjs`, Vite http://localhost:5186: actual level-2 tip-out per new set, four distinct pieces, zero misses/hints and no page errors. Inspected `test-results/browser/fill-{balls,blocks,ducks}.png`: landscape, one per set.
+- Initial probe lacked a hatched profile; corrected to the browser harness’s isolated profile setup. No game fix required.
+- Not run: build, full/browser regression suites, fingerdemo, offline, portrait, device speech and child play (content tier). Existing interactions and level 5/6 evidence retained.

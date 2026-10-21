@@ -8560,6 +8560,88 @@ async function woodsBatch() {
     log(`Seesaw Balance ${level} (${level === 8 ? 'box and blocks' : level === 9 ? 'boxes on both sides' : 'two-box sharing'}): same off both sides, tips explained without misses, glow, putting back, visible block groups, saved score and sticker passed`);
   }
 
+  // Seesaw Balance 11: read the square box, then take the same off both sides, the tagged box worth its number.
+  if (!only || only === 'twoboxes') {
+    await launch('seesaw-balance', 11);
+    await page.setViewportSize({ width: 768, height: 1024 });
+    const rounds = await page.evaluate(() => neo.scene.game.rounds.length);
+    assert.equal(rounds, 4, 'two pairs of a reading and a weighing');
+    // Drag a thing (picked by where it is and what it is) to the grass or onto a tray, then wait for the pet.
+    const move = (pick, to) => page.evaluate(async ({ pick, to }) => {
+      const g = neo.scene.game; const fs = g.round.fixedSide; const os = fs === 'left' ? 'right' : 'left';
+      const side = { fixed: fs, other: os, grass: null }[pick.side];
+      const item = g.items.find((i) => i.side === side && (pick.shape ? i.thing.shape === pick.shape : i.thing.kind === 'block'));
+      const s = neo.view.scale; const r = document.querySelector('canvas').getBoundingClientRect();
+      const at = to === 'grass' ? { x: neo.view.w / 2, y: neo.view.h - 20 } : (() => { const t = g.trayTop(to === 'fixed' ? fs : os); return { x: t.x, y: t.y + 10 }; })();
+      await kit.dragTo(item.node, { x: r.left + at.x * s, y: r.top + at.y * s }, 10);
+      await kit.sleep(250);
+      await kit.until(() => !g.busy, 8000);
+      await kit.sleep(900);
+    }, { pick, to });
+    const state = () => page.evaluate(() => { const g = neo.scene.game; const sq = g.items.find((i) => i.thing.shape === 'square'); const rd = g.items.find((i) => i.thing.shape === 'round'); return { misses: g.misses, hints: g.hints, tips: g.tips, glow: !!g.hintItem, square: sq?.sign.text, round: rd?.sign.text, pads: g.pads.length }; });
+    let burst = false;
+    for (let n = 0; n < rounds; n++) {
+      await idle(n);
+      const phase = await page.evaluate(() => neo.scene.game.round.phase);
+      if (phase === 'read') {
+        // The reading shows its pads at once; nothing on the trays drags.
+        await page.waitForFunction(() => neo.scene.game.pads.length === 3, null, { timeout: 15000 });
+        assert.equal(await page.evaluate(() => neo.scene.game.items.every((i) => !i.drag)), true, 'nothing drags on the reading');
+        if (n === 0) {
+          await tap('neo.scene.game.pads.find((p) => p.value !== neo.scene.game.round.answer)');
+          await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
+          assert.deepEqual(await counts(), [1, 0]);
+        }
+        await tap('neo.scene.game.pads.find((p) => p.value === neo.scene.game.round.answer)');
+        await page.waitForFunction(() => neo.scene.game.items.find((i) => i.thing.shape === 'square')?.sign.text !== '?', null, { timeout: 8000 });
+        continue;
+      }
+      const { s, k } = await page.evaluate(() => { const r = neo.scene.game.round; return { s: r.fixed.find((t) => t.shape === 'square').weight, k: r.fixed.filter((t) => t.kind === 'block').length }; });
+      let st = await state();
+      assert.equal(st.square, String(s), 'the square box wears its number on the weighing');
+      assert.equal(st.round, '?');
+      if (n === 1) {
+        // The round box stays: a touch wiggles it and is free.
+        await tap('neo.scene.game.items.find((i) => i.thing.shape === "round").node');
+        await page.waitForTimeout(400);
+        assert.equal(await page.evaluate(() => { const g = neo.scene.game; const rd = g.items.find((i) => i.thing.shape === 'round'); return rd.side === g.round.fixedSide; }), true);
+        // Two blocks off one side: two tips, never a miss, then one glow.
+        await move({ side: 'other' }, 'grass');
+        await move({ side: 'other' }, 'grass');
+        st = await state();
+        assert.deepEqual([st.misses, st.hints, st.tips, st.glow], [1, 1, 2, true]);
+        await screenshot('seesaw-balance-11-glow');
+        await move({ side: 'grass' }, 'other');
+        await move({ side: 'grass' }, 'other');
+        st = await state();
+        assert.deepEqual([st.tips, st.glow], [0, false]);
+      }
+      for (let j = 0; j < k; j++) { await move({ side: 'fixed' }, 'grass'); await move({ side: 'other' }, 'grass'); }
+      // The square box off, then its number of blocks off the other side: one tip, then closer and level.
+      await move({ side: 'fixed', shape: 'square' }, 'grass');
+      if (s >= 3 && !burst) {
+        burst = true;
+        // Two blocks off in a quick burst are judged once, as one narrowing change: no tip, no glow.
+        const before = await state();
+        await page.evaluate(() => { const g = neo.scene.game; const os = g.round.fixedSide === 'left' ? 'right' : 'left'; for (const item of g.items.filter((i) => i.side === os && i.thing.kind === 'block').slice(0, 2)) g.takeOff(item, true); });
+        await page.waitForTimeout(1500);
+        const after = await state();
+        assert.deepEqual([after.tips, after.hints], [0, before.hints], 'a quick burst of right moves is not a tip');
+        for (let j = 2; j < s; j++) await move({ side: 'other' }, 'grass');
+      } else for (let j = 0; j < s; j++) await move({ side: 'other' }, 'grass');
+      await page.waitForFunction(() => neo.scene.game.pads.length === 3 && !neo.scene.game.busy, null, { timeout: 15000 });
+      assert.equal(await page.evaluate(() => { const g = neo.scene.game; return g.items.filter((i) => i.side && i.thing.kind === 'block').length === g.round.answer; }), true, 'the blocks across weigh the round box');
+      if (n === 1) await screenshot('seesaw-balance-11');
+      await tap('neo.scene.game.pads.find((p) => p.value === neo.scene.game.round.answer)');
+      await page.waitForFunction(() => { const g = neo.scene.game; return g.finished || g.items.find((i) => i.thing.shape === 'round')?.sign.text !== '?'; }, null, { timeout: 8000 });
+      if (!(await page.evaluate(() => neo.scene.game.finished))) assert.equal((await state()).square, String(s), 'the round answer leaves the square box tag alone');
+    }
+    await finished('seesaw-balance');
+    assert.deepEqual(await score('seesaw-balance'), [1, 1]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log(`Seesaw Balance 11 (two boxes): ${burst ? 'quick burst judged once, ' : 'no square box of 3 or more, so the quick burst was not tried, '}` + 'readings tag the square box, round box stays, tips free with one glow, putting back, the square box worth its number, round box weighed, saved score and sticker passed');
+  }
+
   // Mail Carrier 6–8: Hazel's picture map, two planned stops, and a shorter-route choice.
   if (!only || only === 'mailmap') for (let level = Math.max(6, fromLevel); level <= 8; level++) {
     await launch('mail-carrier', level);

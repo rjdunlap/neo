@@ -20,9 +20,12 @@ import {
   makeRounds,
   numberChoices,
   other,
+  pairHint,
+  progress,
   planFor,
   seesawTouch,
   shareSide,
+  stays,
   tilt,
   total,
   weigh,
@@ -40,7 +43,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 7 },
-  school: { min: 6, max: 10 },
+  school: { min: 6, max: 11 },
 };
 
 /** From the middle of the seesaw to each tray's post. */
@@ -147,6 +150,25 @@ function thingNode(thing: Thing, index: number): { node: Container; width: numbe
       return { node, width: 96, height: 76 };
     }
     case 'box': {
+      if (thing.shape === 'round') {
+        // Level 11's round box: an orange hatbox with a lid, the same footprint as the square box.
+        const sw = swatch.orange;
+        const g = new Graphics()
+          .roundRect(-46, -80, 92, 80, 30)
+          .fill(sw.fill)
+          .stroke(line(sw.line, 6))
+          .ellipse(0, -80, 52, 16)
+          .fill(sw.light)
+          .stroke(line(sw.line, 6))
+          .moveTo(-46, -62)
+          .quadraticCurveTo(0, -48, 46, -62)
+          .stroke(line(sw.line, 4));
+        const sign = label('?', 56, sw.line);
+        sign.y = -34;
+        node.addChild(g, sign);
+        node.hitArea = new Rectangle(-55, -105, 110, 115);
+        return { node, width: 104, height: 96, sign };
+      }
       const g = new Graphics()
         .roundRect(-50, -92, 100, 92, 10)
         .fill(wood.light)
@@ -204,6 +226,11 @@ class SeesawBalance implements Game {
   /** The thing that glows to help after two tips. */
   hintItem: Item | null = null;
   private lastOff: { item: Item; from: Side } | null = null;
+  /** Level 11: the gap between the trays after the last change, and whether this pair's glow has been given. */
+  private gap = 0;
+  private glowUsed = false;
+  /** Level 11: changes so far, so a quick burst of moves is judged once, as one change. */
+  private changes = 0;
   private spin = 0;
   /** Presents already compared on a tray during the how-to demonstration. */
   private readonly demoTested = new Set<Item>();
@@ -447,12 +474,17 @@ class SeesawBalance implements Game {
     this.tips = 0;
     this.hintItem = null;
     this.lastOff = null;
+    this.gap = 0;
+    this.glowUsed = false;
     this.demoTested.clear();
     const r = this.round;
     const same = this.plan.mode === 'same' || this.plan.mode === 'share';
-    // On the take-the-same-off levels everything starts on the trays, and anything can come off.
-    r.fixed.forEach((thing, i) => this.addItem(thing, i, !same, r.fixedSide));
-    r.across?.forEach((thing, i) => this.addItem(thing, i, false, other(r.fixedSide)));
+    // On the take-the-same-off levels everything starts on the trays, and anything can come off. Level 11's
+    // reading only shows the square box against its blocks, and the round box never comes off.
+    const reading = r.phase === 'read';
+    const held = (thing: Thing) => (this.plan.mode === 'pair' ? reading || stays(thing) : !same);
+    r.fixed.forEach((thing, i) => this.addItem(thing, i, held(thing), r.fixedSide));
+    r.across?.forEach((thing, i) => this.addItem(thing, i, reading, other(r.fixedSide)));
     r.offered.forEach((thing, i) => this.addItem(thing, i, false, null));
     this.layoutGround();
     for (const item of this.items) {
@@ -469,7 +501,14 @@ class SeesawBalance implements Game {
     else if (mode === 'parts') await this.ctx.instruct('seesaw.parts', { n: r.answer });
     else if (mode === 'same') await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.same-boxes' : 'seesaw.same');
     else if (mode === 'share') await this.ctx.instruct('seesaw.share');
-    else await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.twins' : 'seesaw.mystery');
+    else if (mode === 'pair') {
+      const square = r.fixed.find((t) => t.shape === 'square')!;
+      if (reading) {
+        await this.ctx.instruct('seesaw.pair-first');
+        return this.showPads();
+      }
+      await this.ctx.instruct('seesaw.pair', { n: square.weight });
+    } else await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.twins' : 'seesaw.mystery');
     this.busy = false;
   }
 
@@ -477,6 +516,9 @@ class SeesawBalance implements Game {
     const made = thingNode(thing, i);
     const item: Item = { thing, ...made, fixed, side, ground: { x: 0, y: 0 }, settling: false, inWagon: false };
     if (made.critter) this.ctx.track(made.critter);
+    // The square box keeps the number it was given on the reading for the rest of its pair.
+    if (thing.shape === 'square' && this.round.phase === 'pair') made.sign!.text = String(thing.weight);
+    if (stays(thing)) onTap(made.node, () => this.roundStays(made.node), { cooldown: 800 });
     if (!fixed) {
       item.drag = draggable(made.node, this.ctx.tw, {
         onPick: () => {
@@ -489,6 +531,14 @@ class SeesawBalance implements Game {
     this.layer.addChild(made.node);
     this.items.push(item);
     if (side) made.node.position.set(this.slotFor(item).x, this.slotFor(item).y);
+  }
+
+  /** A touch on the round box: a wiggle and a reminder, never a miss. */
+  private roundStays(node: Container) {
+    if (this.finished) return;
+    sfx.tick();
+    void this.ctx.tw.to(node, { rotation: 0.12 }, { duration: 0.08 }).then(() => this.ctx.tw.to(node, { rotation: -0.12 }, { duration: 0.12 })).then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.08 }));
+    if (!this.pads.length) void this.ctx.say('seesaw.round-stays');
   }
 
   private trayAt(x: number, y: number): Side | null {
@@ -567,7 +617,7 @@ class SeesawBalance implements Game {
     const mode = this.plan.mode;
     const r = this.round;
     if (mode === 'heaviest') return;
-    if (mode === 'same' || mode === 'share') return this.checkSame();
+    if (mode === 'same' || mode === 'share' || mode === 'pair') return this.checkSame();
     if (mode === 'up' || mode === 'heavy') {
       this.busy = true;
       await this.ctx.tw.wait(0.7);
@@ -603,7 +653,7 @@ class SeesawBalance implements Game {
   private async removed() {
     if (this.busy || this.finished) return;
     const mode = this.plan.mode;
-    if (mode === 'same' || mode === 'share') return this.checkSame();
+    if (mode === 'same' || mode === 'share' || mode === 'pair') return this.checkSame();
     if (mode !== 'level' && mode !== 'parts' && mode !== 'mystery') return;
     const side = other(this.round.fixedSide);
     const added = total(this.items.filter((i) => i.side === side).map((i) => i.thing));
@@ -616,9 +666,12 @@ class SeesawBalance implements Game {
    */
   private async checkSame() {
     if (this.busy || this.finished) return;
+    const change = ++this.changes;
     await this.ctx.tw.wait(0.5);
     if (this.busy || this.finished) return;
+    if (this.plan.mode === 'pair' && change !== this.changes) return;
     const { left, right } = this.weights;
+    if (this.plan.mode === 'pair') return this.checkPair(Math.abs(left - right));
     if (left !== right) {
       this.tips++;
       await this.ctx.say('seesaw.tipped');
@@ -638,6 +691,50 @@ class SeesawBalance implements Game {
     void this.ctx.say('seesaw.still-level');
   }
 
+  /**
+   * Level 11: a change that narrows the gap is free and resets the tips; one that widens it, or tips a level
+   * seesaw, is a tip (said aloud, never a miss). When the tagged square box leaves, the pet says what it is worth.
+   */
+  private async checkPair(after: number) {
+    const step = progress(this.gap, after);
+    this.gap = after;
+    const sides = { left: this.items.filter((i) => i.side === 'left').map((i) => i.thing), right: this.items.filter((i) => i.side === 'right').map((i) => i.thing) };
+    if (step === 'level') {
+      this.tips = 0;
+      this.hintItem = null;
+      if (aloneSide(sides)) return this.balanced();
+      void this.ctx.say('seesaw.still-level');
+      return;
+    }
+    // The glow follows the gap: once its thing has moved, it goes out.
+    if (this.hintItem && this.hintItem !== this.hintAt()) this.hintItem = null;
+    if (step === 'closer') {
+      this.tips = 0;
+      void this.ctx.say('seesaw.closer');
+      return;
+    }
+    this.tips++;
+    const off = this.lastOff?.item;
+    const swapped = off && off.side === null && off.thing.shape === 'square';
+    await this.ctx.say(swapped ? 'seesaw.swap-tipped' : 'seesaw.tipped', { n: off?.thing.weight ?? 0 });
+    if (this.busy || this.finished) return;
+    if (this.tips >= 2 && !this.glowUsed) {
+      this.hintItem = this.hintAt();
+      if (this.hintItem) {
+        this.glowUsed = true;
+        this.hints++;
+        void this.ctx.say('seesaw.same-hint');
+      }
+    }
+  }
+
+  /** Level 11's glow: the thing that narrows the gap now. */
+  private hintAt(): Item | null {
+    const off = this.lastOff ? this.items.indexOf(this.lastOff.item) : -1;
+    const pick = pairHint(this.items.map((item) => ({ thing: item.thing, fixed: item.fixed, side: item.side })), off < 0 ? null : off);
+    return pick === null ? null : this.items[pick];
+  }
+
   /** Something that makes it level again: the same kind of thing from the heavy side, or the last thing back on. */
   private suggest(): Item | null {
     const { left, right } = this.weights;
@@ -654,15 +751,21 @@ class SeesawBalance implements Game {
   private async balanced() {
     this.busy = true;
     await this.ctx.tw.wait(0.6);
-    if (this.plan.mode !== 'mystery' && this.plan.mode !== 'same' && this.plan.mode !== 'share') {
+    if (this.plan.mode !== 'mystery' && this.plan.mode !== 'same' && this.plan.mode !== 'share' && this.plan.mode !== 'pair') {
       await this.ctx.say('seesaw.balanced');
       return this.won();
     }
     // How heavy is the box? The blocks tell us.
     this.hintItem = null;
     if (this.plan.mode === 'same') await this.ctx.instruct('seesaw.alone');
+    else if (this.plan.mode === 'pair') await this.ctx.instruct('seesaw.round-alone');
     else if (this.plan.mode === 'share') await this.ctx.instruct('seesaw.share-answer');
     else await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.each' : 'seesaw.how-many', { n: total(this.round.fixed) });
+    this.showPads();
+  }
+
+  /** The three number pads; the things on the trays stay put and the spares on the grass fade away. */
+  private showPads() {
     this.pads = numberChoices(this.ctx.rng, this.round.answer).map((n) => {
       const pad = this.ctx.track(new Pad(n));
       onTap(pad, () => void this.answer(pad), { cooldown: 400 });
@@ -681,12 +784,15 @@ class SeesawBalance implements Game {
   private async answer(pad: Pad) {
     if (this.busy || this.finished || !this.pads.length) return;
     this.busy = true;
-    const boxes = this.items.filter((i) => i.thing.kind === 'box');
+    // Level 11 names only the box being weighed: the square box on the reading, the round box after.
+    const pair = this.plan.mode === 'pair';
+    const reading = this.round.phase === 'read';
+    const boxes = this.items.filter((i) => i.thing.kind === 'box' && (!pair || i.thing.shape === (reading ? 'square' : 'round')));
     if (pad.value === this.round.answer) {
       pad.glowing = true;
       sfx.bell(8, 0.3);
       boxes.forEach(box => { box.sign!.text = String(this.round.answer); });
-      await this.ctx.say('seesaw.box', { n: this.round.answer });
+      await this.ctx.say(reading ? 'seesaw.pair-tag' : 'seesaw.box', { n: this.round.answer });
       return this.won();
     }
     this.miss();
