@@ -4607,7 +4607,20 @@ async function batch() {
         await kit.drag([[p.x, p.y], [q.x, q.y]], 1, 30);
         await kit.until(() => g.ball, 2000); await done();
       };
-      if (g.plan.mode === 'drop') { for (let i = 0; i < g.plan.count; i++) await drop(60 + i * 110); return; }
+      if (g.plan.mode === 'drop') {
+        // A tap in the sea beside the board drops a pearl from the nearest ledge point, and a tap while it falls is the next pearl.
+        const sea = screen(-120, 300);
+        kit.tap(sea.x, sea.y);
+        await kit.until(() => g.ball, 2000);
+        if (g.ball.x !== BOARD.ball) throw new Error(`Peg sea tap at ${g.ball.x}`);
+        const mid = screen(BOARD.w / 2, 30);
+        kit.tap(mid.x, mid.y);
+        await kit.sleep(100);
+        if (g.queued !== BOARD.w / 2) throw new Error(`Peg queued ${g.queued}`);
+        await kit.until(() => g.shots >= 1 && g.ball, 15000);
+        for (let i = 2; i < g.plan.count; i++) await drop(60 + i * 110);
+        return;
+      }
       if (g.plan.mode === 'bloom') {
         for (let guard = 0; guard < 40 && !g.finished; guard++) { const b = g.buds.find((b) => !b.bloomed); if (!b) break; await drop(b.x); }
         return;
@@ -4618,6 +4631,8 @@ async function batch() {
         const far = [...g.buds].filter((b) => b.spot.kind === 'plain').sort((a, b) => Math.min(...specials.map((s) => Math.abs(s.x - b.x))) - Math.min(...specials.map((s) => Math.abs(s.x - a.x))));
         for (let k = 0; k < 12 && !g.hinting && !g.finished; k++) await drop(far[k % 3].x);
         if (!g.finished && (!g.hinting || g.hints !== 1)) throw new Error(`Peg color hint: ${g.misses} ${g.hints}`);
+        // The hint shows where to act: a ring on the ledge, and a tap anywhere lets the pearl go there; a tap while it falls adds nothing.
+        if (!g.finished && g.hintX === null) throw new Error('Peg color hint has no ledge ring');
         for (let guard = 0; guard < 40 && !g.finished; guard++) { const b = g.buds.find((b) => b.spot.kind === 'special' && !b.bloomed); if (!b) break; await drop(b.x); }
         return;
       }

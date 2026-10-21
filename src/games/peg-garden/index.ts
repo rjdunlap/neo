@@ -11,7 +11,7 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, Spot, TouchIntent } from '../types';
 import { idle, type CouchControls } from '../../engine/controller';
-import { AIM_LIMIT, aimAt, aimVelocity, BOARD, DRIFT, dropAt, makeBoard, planFor, STALL_AT, targets, type PegPlan, type PegSpot } from './logic';
+import { AIM_LIMIT, aimAt, aimVelocity, BOARD, driftOf, dropAt, guided, ledgeX, makeBoard, planFor, targets, type PegPlan, type PegSpot } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -82,6 +82,9 @@ class Bud extends Container {
   }
 }
 
+/** The pearl's fixed physics step: the ball engine's substep, so a shot in play is the simulated shot. */
+const STEP = 1 / 240;
+
 /** Where along the ledge each drop is made on the first level, as a fraction of the board: all over, not one place. */
 const DROP_AT = [0.5, 0.2, 0.8, 0.35, 0.65, 0.1];
 
@@ -112,9 +115,17 @@ class PegGarden implements Game {
   private wrongs = 0;
   private clock = 0;
   private ballAge = 0;
-  /** Pearls in a row that woke no new flower on the bloom level. */
+  private stepLeft = 0;
+  /** Pearls in a row that woke no new wanted flower on the bloom and colour levels. */
   private stalled = 0;
   private freshThisShot = 0;
+  private freshSpecial = 0;
+  /** Whether the pearl in play was let go over a waiting flower rather than where she tapped. */
+  private guidedShot = false;
+  /** The first level's next pearl, tapped while one was still falling (at most one waits). */
+  private queued: number | null = null;
+  /** The colour level's hint: the place on the ledge whose pearl reaches a waiting orange flower. */
+  private hintX: number | null = null;
   private lastChime = 0;
   // Couch play: the stick sweeps the launcher, the bottom button lets go. `shots` is the face-off score (fewer is better).
   private couchOn = false;
@@ -139,6 +150,7 @@ class PegGarden implements Game {
     this.touch.on('globalpointermove', (e: FederatedPointerEvent) => e.pointerId === this.aiming && this.steerAim(e));
     this.touch.on('pointerup', (e: FederatedPointerEvent) => this.up(e));
     this.touch.on('pointerupoutside', (e: FederatedPointerEvent) => this.up(e));
+    this.touch.on('pointercancel', (e: FederatedPointerEvent) => this.cancel(e));
   }
 
   private get aimed() {
@@ -170,6 +182,8 @@ class PegGarden implements Game {
     const s = Math.min(1, (v.h - 60) / (BOARD.h + 30), (v.w - 220) / BOARD.w);
     this.board.scale.set(s);
     this.board.position.set(Math.max(180, (v.w - BOARD.w * s) / 2), (v.h - BOARD.h * s) / 2 + 10);
+    // The whole screen takes touches, the sea beside the board too.
+    this.touch.hitArea = new Rectangle(-this.board.x / s, -this.board.y / s, v.w / s, v.h / s);
     const f = this.frame.clear();
     f.roundRect(-14, -14, BOARD.w + 28, BOARD.h + 28, 30).fill({ color: 0xffffff, alpha: 0.18 }).stroke({ width: 8, color: 0xffffff, alpha: 0.6 });
     // Sand and seaweed along the bottom, where pearls roll away.
@@ -184,7 +198,10 @@ class PegGarden implements Game {
     const b = this.ball;
     if (!b) return;
     this.ballAge += dt;
-    for (const i of stepBall(b, this.world, dt)) this.touchBud(i);
+    // Fixed steps, as the rules' simulation takes them, so a pearl goes exactly where the hint and the ghost finger expect
+    // whatever the frame rate. A long frame slows the pearl rather than changing its path.
+    this.stepLeft = Math.min(this.stepLeft + dt, 0.25);
+    for (; this.stepLeft >= STEP; this.stepLeft -= STEP) for (const i of stepBall(b, this.world, STEP)) this.touchBud(i);
     this.pearl.position.set(b.x, b.y);
     if (b.y - b.r > BOARD.h || this.ballAge > 10) void this.shotOver();
   }
@@ -248,7 +265,8 @@ class PegGarden implements Game {
     }
     if (mode === 'drop') return { tap: { on: this.touch, x: BOARD.w * DROP_AT[this.shots % DROP_AT.length], y: 40 } };
     // The pearl drifts a little as it is let go; the bot looks at the draw the game is about to make.
-    const drift = this.ctx.rng.clone().range(-DRIFT, DRIFT);
+    const spread = driftOf(mode);
+    const drift = spread ? this.ctx.rng.clone().range(-spread, spread) : 0;
     const { x } = dropAt(this.world, (i) => !this.buds[i].bloomed && (mode !== 'color' || this.buds[i].spot.kind === 'special'), drift, mode === 'color');
     return { tap: { on: this.touch, x, y: 40 } };
   }
@@ -260,14 +278,20 @@ class PegGarden implements Game {
   }
 
   private down(e: FederatedPointerEvent) {
-    if (this.ball || this.finished || palmOnGlass()) return;
+    if (this.finished || palmOnGlass()) return;
     const p = this.local(e);
     if (!this.aimed) {
-      // Tapping one spot again and again must still finish: after two pearls that woke nothing new, the third is let go over a waiting flower.
-      const x = this.plan.mode === 'bloom' && this.stalled >= STALL_AT ? dropAt(this.world, (i) => !this.buds[i].bloomed, this.ctx.rng.clone().range(-DRIFT, DRIFT)).x : p.x;
-      this.fire({ x: Math.max(BOARD.ball, Math.min(BOARD.w - BOARD.ball, x)), y: 40, vx: this.ctx.rng.range(-DRIFT, DRIFT), vy: 60, r: BOARD.ball });
+      this.bubbles(e);
+      if (this.ball) {
+        // A touch while a pearl falls still answers; on the first level it is the next pearl, so a lap child's tap is never lost.
+        if (this.plan.mode === 'drop' && this.queued === null && this.shots + 2 <= this.plan.count) this.queued = ledgeX(p.x);
+        else sfx.pop(2);
+        return;
+      }
+      this.drop(p.x);
       return;
     }
+    if (this.ball) return;
     this.aiming = e.pointerId;
     this.steerAim(e);
   }
@@ -277,6 +301,36 @@ class PegGarden implements Game {
     const dx = p.x - BOARD.w / 2;
     const dy = Math.max(10, p.y - 40);
     this.aim = Math.max(-AIM_LIMIT, Math.min(AIM_LIMIT, Math.atan2(dx, dy)));
+    this.drawLauncher();
+  }
+
+  /**
+   * Let a pearl go above `x`. Tapping one spot again and again must still finish: after two pearls that woke nothing wanted,
+   * or while the colour level's hint is on, it is let go over a waiting flower instead.
+   */
+  private drop(x: number) {
+    const mode = this.plan.mode;
+    const spread = driftOf(mode);
+    this.guidedShot = guided(mode, this.stalled, this.hinting);
+    if (this.guidedShot) x = mode === 'color' && this.hintX !== null ? this.hintX : dropAt(this.world, (i) => this.wanted(i), spread ? this.ctx.rng.clone().range(-spread, spread) : 0, mode === 'color').x;
+    this.fire({ x: ledgeX(x), y: 40, vx: spread ? this.ctx.rng.range(-spread, spread) : 0, vy: 60, r: BOARD.ball });
+  }
+
+  private wanted(i: number) {
+    return !this.buds[i].bloomed && (this.plan.mode !== 'color' || this.buds[i].spot.kind === 'special');
+  }
+
+  /** A ring of bubbles rises where a finger lands on a dropping level. */
+  private bubbles(e: FederatedPointerEvent) {
+    const p = this.ctx.stage.toLocal(e.global);
+    this.ctx.particles.burst(p.x, p.y, { kind: 'ring', colors: [0xffffff, 0xd8f3ff], count: 7, speed: [40, 110], gravity: -120, size: [0.25, 0.5], life: [0.5, 0.9] });
+  }
+
+  /** A cancelled aim (a system gesture, a palm) lets nothing go. */
+  private cancel(e: FederatedPointerEvent) {
+    if (e.pointerId !== this.aiming) return;
+    this.aiming = null;
+    this.guide.clear();
     this.drawLauncher();
   }
 
@@ -294,8 +348,10 @@ class PegGarden implements Game {
   fire(b: Ball) {
     this.ball = b;
     this.ballAge = 0;
+    this.stepLeft = 0;
     this.lit = [];
     this.freshThisShot = 0;
+    this.freshSpecial = 0;
     this.pearl.visible = true;
     this.pearl.position.set(b.x, b.y);
     sfx.pop(9);
@@ -312,6 +368,7 @@ class PegGarden implements Game {
     }
     if (!fresh) return;
     this.freshThisShot++;
+    if (bud.spot.kind === 'special') this.freshSpecial++;
     const g = this.board.toGlobal(bud.position);
     const p = this.ctx.stage.toLocal(g);
     this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 6, speed: [60, 160], gravity: 0, size: [0.3, 0.45], life: [0.4, 0.7] });
@@ -326,9 +383,13 @@ class PegGarden implements Game {
     this.shots++;
     const lit = this.lit.map((i) => this.buds[i]);
     switch (this.plan.mode) {
-      case 'drop':
+      case 'drop': {
         if (this.shots >= this.plan.count) return void this.finale();
+        const next = this.queued;
+        this.queued = null;
+        if (next !== null) this.drop(next);
         return;
+      }
       case 'bloom':
         if (this.buds.every((b) => b.bloomed)) return void this.finale();
         this.stalled = this.freshThisShot > 0 ? 0 : this.stalled + 1;
@@ -336,11 +397,12 @@ class PegGarden implements Game {
       case 'color': {
         const specials = this.buds.filter((b) => b.spot.kind === 'special');
         if (specials.every((b) => b.bloomed)) return void this.finale();
-        if (lit.some((b) => b.spot.kind === 'special')) {
-          this.wrongs = 0;
-          return;
-        }
-        this.miss('peg.miss');
+        this.stalled = this.freshSpecial > 0 ? 0 : this.stalled + 1;
+        if (this.freshSpecial > 0) this.hinting = false;
+        if (lit.some((b) => b.spot.kind === 'special')) this.wrongs = 0;
+        // A pearl let go over a waiting flower for her is not her choice of spot, so it is never a miss.
+        else if (!this.guidedShot) this.miss('peg.miss');
+        this.hintX = this.hinting ? dropAt(this.world, (i) => this.wanted(i), 0, true).x : null;
         return;
       }
       default: {
@@ -406,6 +468,11 @@ class PegGarden implements Game {
     if (this.plan.mode === 'color') bud = this.buds.find((b) => b.spot.kind === 'special' && !b.bloomed);
     else if (this.target !== undefined) bud = this.buds.find((b) => b.spot.kind === this.target);
     if (!bud) return;
+    if (this.hintX !== null) {
+      // Where to act: a glowing ring on the ledge over the place whose pearl reaches the waiting flower.
+      const pulse = 1 + 0.08 * Math.sin(this.clock * 5);
+      g.circle(this.hintX, 40, 30 * pulse).fill({ color: swatch.yellow.light, alpha: 0.45 }).stroke({ width: 6, color: swatch.yellow.line });
+    }
     const y = bud.y - 44 - 8 * Math.abs(Math.sin(this.clock * 4));
     g.poly([bud.x - 16, y - 20, bud.x + 16, y - 20, bud.x, y]).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
   }
