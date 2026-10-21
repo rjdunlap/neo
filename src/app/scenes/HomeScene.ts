@@ -1,6 +1,7 @@
-import { swatch } from '../../art/palette';
+import { RAINBOW, swatch } from '../../art/palette';
 import { homeBackdrop } from '../../art/home/backdrop';
 import { music, STYLES } from '../../audio/music';
+import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import { makeCompanion, type Companion } from '../../creatures/companion';
@@ -8,9 +9,12 @@ import { ACTION_RADIUS, CORNER_RADIUS, homeLayout } from '../../creatures/home-l
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import { openParentPanel } from '../../parent/panel';
+import { birthdayDue, settleWorldBand } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { showsContinue } from '../../content/welcome';
 import { RoundButton } from '../../ui/buttons';
+import { gearButton } from '../../ui/grownups';
 import { basketIcon, meadowIcon, peopleIcon, playWithIcon } from '../../ui/icons';
 import type { App } from '../App';
 import { Scene } from '../Scene';
@@ -24,6 +28,8 @@ export const youngHome = () => store.data.profile.band === 'lap' || store.data.p
  * backdrop and RW03's per-band exits. Lap and toddler: the companion, the ball and Explore. Preschool and older: Play
  * with {pet} and Explore, and Continue above them while Welcome a New Friend is open (RW07; never drawn empty). Who's playing sits top left; Home has no Back. The
  * companion only idles and never asks for anything. Explore opens RW08's four entries (`ExploreScene`). Nothing here is a round: no sticker, no stats.
+ * The grown-ups' gear is top right, held two seconds, and her birthday (her band went up) is thrown here once, as the
+ * island's map throws it (RW08 slice 2).
  */
 export class HomeScene extends Scene {
   private readonly backdrop = homeBackdrop();
@@ -35,6 +41,17 @@ export class HomeScene extends Scene {
   readonly play: RoundButton | null = this.young ? null : new RoundButton(playWithIcon(), swatch.yellow, ACTION_RADIUS, () => this.leave('home.play', () => this.app.go.room()));
   readonly explore = new RoundButton(meadowIcon(), swatch.green, ACTION_RADIUS, () => this.leave('home.explore', () => this.app.go.explore()));
   readonly toy: BallPlay | null = this.young ? this.track(new BallPlay(this.pet, new Rng(), () => void voice.say('play.fetch'))) : null;
+  /** Grown-ups' way in: hold the gear (the iPad has no Esc key, so this is the way in once a child is playing). */
+  private readonly gear = gearButton({
+    onOpen: () => {
+      if (this.leaving) return;
+      voice.stop();
+      openParentPanel(() => (store.data.creatures.owned.length > 0 ? this.app.go.hub() : this.app.go.hatch()), () => this.app.go.start());
+    },
+    onShort: () => void voice.say('parent.ask'),
+  });
+  /** Her band went up since the world last saw her: a party, once. */
+  readonly birthday = birthdayDue(store.data.world, store.data.profile.band);
   private leaving = false;
 
   constructor(app: App) {
@@ -51,12 +68,16 @@ export class HomeScene extends Scene {
     for (const b of [this.who, this.cont, this.play, this.explore]) if (b) this.ui.addChild(b);
     // The icon art is drawn about 60 units across; the 120-unit pictures carry it larger.
     for (const b of [this.cont, this.play, this.explore]) b?.children[1]?.scale.set(1.35);
+    settleWorldBand(store.data.world, store.data.profile.band);
+    store.save();
+    document.body.appendChild(this.gear.el);
   }
 
   /** A picture's line, a hop, then the way out; a second tap while leaving does nothing. */
   private async leave(line: LineId, go: () => void) {
     if (this.leaving) return;
     this.leaving = true;
+    this.gear.hide(true);
     this.pet.cheer();
     await Promise.race([voice.say(line), this.tw.wait(0.9)]);
     if (this.app.scene !== this) return;
@@ -88,6 +109,21 @@ export class HomeScene extends Scene {
 
   enter() {
     music.play(STYLES.hub);
-    void voice.say('home.hello');
+    if (this.birthday) void this.party();
+    else void voice.say('home.hello');
+  }
+
+  /** Her birthday, with the island's line: confetti and a cheer. */
+  private async party() {
+    await this.tw.wait(0.7);
+    void voice.say('map.birthday');
+    sfx.tada();
+    this.pet.cheer();
+    this.particles.burst(this.view.w / 2, this.view.h * 0.5, { kind: 'confetti', colors: RAINBOW.map((c) => swatch[c].fill), count: 70, speed: [200, 500], gravity: 160 });
+  }
+
+  destroy() {
+    this.gear.destroy();
+    super.destroy();
   }
 }

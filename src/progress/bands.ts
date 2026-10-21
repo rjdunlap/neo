@@ -36,3 +36,13 @@ export function playBand(bands: readonly Band[], person: Band): Band {
 
 /** The youngest band a game plays in: a land shows the game to everyone at that age or older. */
 export const lowestBand = (bands: readonly Band[]): Band => bands.reduce((a, b) => (bandRank(b) < bandRank(a) ? b : a));
+
+/**
+ * The birthday rule, one for the island's map and the root's Home (RW08 slice 2): her band went up since the world last
+ * saw her. `settleWorldBand` then records her band, so the party is thrown once; a band moved down never throws one.
+ */
+export const birthdayDue = (world: { band: Band | null }, band: Band) => world.band !== null && bandRank(band) > bandRank(world.band);
+
+export function settleWorldBand(world: { band: Band | null }, band: Band) {
+  if (world.band === null || bandRank(band) > bandRank(world.band)) world.band = band;
+}

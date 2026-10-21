@@ -3,7 +3,7 @@ import { BACK, type Spot } from './friends-layout';
 /**
  * Where the root's Home and creature play put things (RW06 slice 2, docs/rework/HOME.md#creature-play-and-home). Both
  * stand on the R06 day backdrop, cover-scaled and anchored at its bottom so the grass is always under the companion.
- * The bottom-left guide corner and, on Home, the top-right corner of the page's island-games link stay clear. A target
+ * The bottom-left guide corner and, on Home, the top-right corner of the grown-ups' gear and the page's island-games link stay clear. A target
  * never shrinks: the actions are 120 units, the ball 120, Back and Home 100 and 130 apart.
  */
 
@@ -21,6 +21,8 @@ export const BASKET = { w: 124, h: 120 };
 /** Kept clear: the bottom-left corner where a guide stands, and the island-games link's corner (CSS pixels over a scaled view, so generous). */
 export const GUIDE_CORNER = { w: 200, h: 200 };
 export const LINK_CORNER = { w: 300, h: 100 };
+/** Home's top-right corner: the grown-ups' gear, with the island-games link below it until RW08's cutover. */
+export const GEAR_CORNER = { w: 300, h: 150 };
 
 export interface Floor {
   x0: number;
@@ -63,7 +65,7 @@ export interface HomeLayout {
 export function homeLayout(v: { w: number; h: number }, young: boolean, project = false): HomeLayout {
   const backdrop = backdropFit(v);
   const right = v.w - 50 - ACTION_RADIUS;
-  const mid = Math.max(LINK_CORNER.h + ACTION_RADIUS + 20, v.h * 0.42);
+  const mid = Math.max(GEAR_CORNER.h + ACTION_RADIUS + 20, v.h * 0.42);
   const stage = { x: Math.round(v.w * 0.4), y: v.h - 60, scale: 1.2 };
   const row = 2 * ACTION_RADIUS + 40;
   const cont = !young && project ? { x: right, y: mid } : null;

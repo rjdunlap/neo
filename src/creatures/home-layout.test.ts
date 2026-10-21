@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
 import { BOARD, PLAQUE } from '../ui/creation-art';
 import { BACK } from './friends-layout';
-import { ACTION_RADIUS, BALL_RADIUS, BASKET, CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, exploreGridLayout, exploreLayout, PAGE_ARROW_RADIUS, GUIDE_CORNER, HOME_BUTTON, homeLayout, LINK_CORNER, NEWCOMER_REACH, playLayout, PROJECT_CARD, PROJECT_PLAY_RADIUS, projectLayout, type Floor } from './home-layout';
+import { ACTION_RADIUS, BALL_RADIUS, BASKET, CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, exploreGridLayout, exploreLayout, PAGE_ARROW_RADIUS, GEAR_CORNER, GUIDE_CORNER, HOME_BUTTON, homeLayout, LINK_CORNER, NEWCOMER_REACH, playLayout, PROJECT_CARD, PROJECT_PLAY_RADIUS, projectLayout, type Floor } from './home-layout';
 
 /** An iPad sideways and upright, a phone sideways, one with a notch, and a wide laptop. */
 const VIEWS = [
@@ -43,7 +43,7 @@ function check(v: { w: number; h: number }, targets: Box[], extra: Box[], where:
 }
 
 describe('the root Home layout', () => {
-  it('fits every exit for each band layout, clear of the guide and link corners, the ball landing clear of them', () => {
+  it('fits every exit for each band layout, clear of the guide corner and the gear and link corner, the ball landing clear of them', () => {
     expect(ACTION_RADIUS * 2).toBeGreaterThanOrEqual(120);
     expect(CORNER_RADIUS * 2).toBeGreaterThanOrEqual(100);
     for (const v of VIEWS) {
@@ -56,8 +56,9 @@ describe('the root Home layout', () => {
         const buttons = [disc(l.who, CORNER_RADIUS, 'who'), disc(l.explore, ACTION_RADIUS, 'explore'), ...(l.play ? [disc(l.play, ACTION_RADIUS, 'play')] : []), ...(l.continue ? [disc(l.continue, ACTION_RADIUS, 'continue')] : [])];
         const targets = [...buttons, body(l.stage), ...(l.ball ? [disc(l.ball, BALL_RADIUS, 'ball')] : [])];
         check(v, targets, [floorBox(l.floor)], where);
-        const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
-        for (const t of targets) expect(overlap(t, link), `${t.what} under the link, ${where}`).toBe(false);
+        // The grown-ups' gear, with the island-games link below it.
+        const gear: Box = { x0: v.w - GEAR_CORNER.w, y0: 0, x1: v.w, y1: GEAR_CORNER.h, what: 'gear corner' };
+        for (const t of targets) expect(overlap(t, gear), `${t.what} under the gear or the link, ${where}`).toBe(false);
         for (const b of buttons) expect(overlap(b, floorBox(l.floor)), `the ball can land on ${b.what}, ${where}`).toBe(false);
         expect(l.floor.x1, where).toBeGreaterThan(l.floor.x0 + 200);
         expect(l.floor.y1, where).toBeGreaterThanOrEqual(l.floor.y0);

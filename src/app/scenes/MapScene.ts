@@ -13,7 +13,7 @@ import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { GAMES } from '../../games/registry';
 import { openParentPanel } from '../../parent/panel';
-import { bandRank, type Band } from '../../progress/bands';
+import { birthdayDue, settleWorldBand, type Band } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { gearButton } from '../../ui/grownups';
@@ -75,7 +75,7 @@ export class MapScene extends Scene {
   constructor(app: App) {
     super(app);
     const { world, profile } = store.data;
-    this.birthday = world.band !== null && bandRank(profile.band) > bandRank(world.band);
+    this.birthday = birthdayDue(world, profile.band);
     this.homeBand = this.birthday ? world.band! : profile.band;
     this.petAt = this.birthday ? 'home' : (lastLand() ?? 'home');
   }
@@ -117,7 +117,7 @@ export class MapScene extends Scene {
     onTap(this.picnic, () => void this.visitPicnic(), { radius: MAP_RADIUS });
     this.map.addChild(this.picnic);
 
-    if (world.band === null || bandRank(profile.band) > bandRank(world.band)) world.band = profile.band;
+    settleWorldBand(world, profile.band);
     store.save();
     // The pet only decorates the map: it stands beside a spot, so it must never take a tap meant for one.
     this.pip.scale.set(0.3);
