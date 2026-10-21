@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** The feelings a face can show. Each has its own critter mood, sound, and color. */
 export const FEELINGS = ['happy', 'sad', 'sleepy', 'surprised'] as const;
@@ -43,7 +44,7 @@ export const CARE_SCENARIOS = {
 } as const satisfies Partial<Record<Happening, { need: Need; helper: Helper }>>;
 export type CareEvent = keyof typeof CARE_SCENARIOS;
 
-export type FeelingMode = 'play' | 'mirror' | 'name' | 'help' | 'why' | 'friends' | 'care';
+export type FeelingMode = 'play' | 'poke' | 'mirror' | 'name' | 'help' | 'why' | 'friends' | 'care';
 
 export interface FeelingPlan {
   mode: FeelingMode;
@@ -65,7 +66,17 @@ export const FEELING_PLANS: FeelingPlan[] = [
   { mode: 'why', choices: 3, feelings: FEELINGS, rounds: 4, name: 'Watch what happens, then choose how the pet feels' },
   { mode: 'friends', choices: 4, feelings: FEELINGS, rounds: 4, name: 'Find the friend who feels a named feeling' },
   { mode: 'care', choices: 4, feelings: FEELINGS, rounds: 4, name: 'Watch what happens, then choose how to help the pet feel better' },
+  // Level 9, lap's entry (`entryLevels`): the pet alone, no bubbles; each tap shows the next feeling (`pokeAfter`).
+  { mode: 'poke', choices: 0, feelings: FEELINGS, rounds: 0, name: 'Tap the pet to see it show one feeling after another' },
 ];
+
+/** Level 9 Poke a feeling is lap's entry, placed first by `order` so levels 1–8 keep their IDs and pins. */
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 9, order: [9, 1, 2] },
+  toddler: { min: 2, max: 4 },
+  preschool: { min: 3, max: 6 },
+  prek: { min: 5, max: 8 },
+};
 
 export const feelingPlan = (level: number) => FEELING_PLANS[Math.max(0, Math.min(FEELING_PLANS.length - 1, level - 1))];
 
@@ -106,6 +117,7 @@ export function questions<P extends string, O extends string>(
 export function feelingRound(plan: FeelingPlan, rng: Rng): Question<string, string>[] {
   switch (plan.mode) {
     case 'play':
+    case 'poke':
       return [];
     case 'help':
       return questions(rng, plan.rounds, NEEDS, Object.values(HELPERS), (n) => HELPERS[n], plan.choices);
@@ -124,6 +136,20 @@ export function feelingRound(plan: FeelingPlan, rng: Rng): Question<string, stri
  * Either way the round ends with a sticker; nothing she taps is ever wrong.
  */
 export const playDone = (tried: ReadonlySet<Feeling>, taps: number) => (tried.size === FEELINGS.length && taps >= 6) || taps >= 12;
+
+/** What a poke shows at level 9: a feeling, or the hug that answers a sad pet before the cycle goes on. */
+export type PokeStep = Feeling | 'hug';
+
+/**
+ * Level 9's fixed cycle: happy, surprised, sleepy, sad, then the hug (which leaves the pet happy), then round again from
+ * surprised. `prev` is the last step shown, or null before the first tap.
+ */
+export const pokeAfter = (prev: PokeStep | null): PokeStep =>
+  prev === null ? 'happy' : prev === 'happy' ? 'surprised' : prev === 'surprised' ? 'sleepy' : prev === 'sleepy' ? 'sad' : prev === 'sad' ? 'hug' : 'surprised';
+
+/** Level 9 ends after six pokes, as free play does at the least: happy, surprised, sleepy, sad, the hug, surprised. */
+export const POKE_TAPS = 6;
+export const pokeDone = (taps: number) => taps >= POKE_TAPS;
 
 /** The feeling bubble a capable child taps next in free play: one she has not seen the pet show yet, then each in turn. */
 export const bubbleToTap = (tried: ReadonlySet<Feeling>, taps: number): Feeling => FEELINGS.find((f) => !tried.has(f)) ?? FEELINGS[taps % FEELINGS.length];
