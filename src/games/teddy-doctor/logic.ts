@@ -50,7 +50,7 @@ export const AIM_PARTS: Part[] = ['head', 'ear', 'nose', 'tummy', 'feet'];
 export type Ailment = 'scrape' | 'bump' | 'sniffles' | 'tummy' | 'cold';
 export const AILMENTS: Ailment[] = ['scrape', 'bump', 'sniffles', 'tummy', 'cold'];
 export type Cure = 'bandage' | 'ice' | 'tissue' | 'bottle' | 'socks';
-export type Check = 'stethoscope' | 'thermometer' | 'flashlight';
+export type Check = 'stethoscope' | 'thermometer' | 'flashlight' | 'scale' | 'height';
 export type Tool = Cure | Check;
 
 /** What helps each ailment, and where it goes (a scrape's place varies). */
@@ -62,9 +62,14 @@ export const CURE: Record<Ailment, { tool: Cure; part: Part | null }> = {
   cold: { tool: 'socks', part: 'feet' },
 };
 
-/** The check-up steps and where each tool goes. */
-export const CHECKS: Check[] = ['stethoscope', 'thermometer', 'flashlight'];
-export const CHECK_PART: Record<Check, Part> = { stethoscope: 'tummy', thermometer: 'mouth', flashlight: 'ear' };
+/**
+ * The check-up steps and where each tool goes. A check-up is three of the five: the scale and the height chart measure,
+ * they treat nothing.
+ */
+export const CHECKS: Check[] = ['stethoscope', 'thermometer', 'flashlight', 'scale', 'height'];
+export const CHECK_PART: Record<Check, Part> = { stethoscope: 'tummy', thermometer: 'mouth', flashlight: 'ear', scale: 'feet', height: 'head' };
+/** Steps in one check-up. */
+export const CHECKUP_STEPS = 3;
 
 /**
  * Body spots in the critter's own units (feet at 0, about 250 tall). Ears differ by kind. A boo-boo or bandage is drawn
@@ -148,11 +153,13 @@ export function makeRounds(plan: DoctorPlan, rng: Rng): DoctorRound[] {
       }
       case 'card':
       case 'told': {
-        let steps = rng.shuffle([...CHECKS]);
-        for (let tries = 0; steps.join() === lastSteps && tries < 10; tries++) steps = rng.shuffle([...CHECKS]);
+        // Three of the five steps, never the same set in the same order as the patient before.
+        let steps = rng.shuffle([...CHECKS]).slice(0, CHECKUP_STEPS);
+        if (steps.join() === lastSteps) steps = [steps[1], steps[0], steps[2]];
         lastSteps = steps.join();
         round.steps = steps;
-        round.tools = rng.shuffle([...CHECKS]);
+        // Only this check-up's tools are on the tray, as before: the choice stays one of three.
+        round.tools = rng.shuffle([...steps]);
         break;
       }
     }

@@ -6789,6 +6789,8 @@ async function next() {
     await launch('teddy-doctor', level);
     await page.waitForTimeout(400);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    // Check-ups are three of five steps (the scale and the height chart among them); the log names the ones played.
+    const steps = await page.evaluate(() => neo.scene.game.rounds.map((r) => r.steps.join('>')).filter(Boolean).join(', '));
     await page.evaluate(async () => {
       const g = neo.scene.game;
       const { CURE, CHECK_PART } = await import('/src/games/teddy-doctor/logic.ts');
@@ -6840,7 +6842,7 @@ async function next() {
     await finished('teddy-doctor');
     assert.deepEqual(await score('teddy-doctor'), mode === 'play' ? [0, 0] : [2, 1], `doctor ${level} score`);
     if (level === 4 || level === 5) await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Teddy Doctor ${level} (${mode}): boo-boos, body parts, tools, check-ups, mistakes, hint, saved score and sticker passed`);
+    log(`Teddy Doctor ${level} (${mode}${steps ? `: ${steps}` : ''}): boo-boos, body parts, tools, check-ups, mistakes, hint, saved score and sticker passed`);
   }
 
   // Bumper Garden: launching, then flipping like a finger: tap a side as the ladybug comes down to it.

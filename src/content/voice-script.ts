@@ -744,6 +744,8 @@ export const SCRIPT = {
   'doctor.heart': ['Thump thump! A strong heart.'],
   'doctor.temp': ['Beep! Just right.'],
   'doctor.ears': ['Nice clean ears!'],
+  'doctor.weigh': ['Up on the scale. Just right!', 'Hop on the scale. Just right for me!'],
+  'doctor.tall': ['Look how tall I am!', 'Up to the star. So tall!'],
   'doctor.better': ['All better! Thank you, doctor!', 'I feel much better!'],
   'doctor.done': ['Everyone feels better. What a kind doctor!'],
   'game.bumper-garden': ['Bumper garden!'],
