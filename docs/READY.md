@@ -114,7 +114,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`little-helpers`, level 7 Everyone helps** (new interaction): split a crowd of 4–7 between two fruits; pre-K top and school. [Slice 6](deep-dives/little-helpers.md#new-levels-on-top)
 - **`little-helpers`, level 8 Strong helpers** (new interaction): big helpers count two, every exact mix right; school. [Slice 7](deep-dives/little-helpers.md#new-levels-on-top)
 
-- **`monster-munch`, a truthful card, counted bites and a wrong pad that counts** (existing-game bug fix): count aloud at 1 and 4–6, no bell on the level-7 card, a wrong pad counts one tummy, hint lines per target, monster taps feed at 1, two rounds at 1–2, a short drop answers. [Slice 1](deep-dives/monster-munch.md#build-slices-in-order) Claimed 2026-10-21 on `claude/monster-munch-truthful-card`.
 - **`monster-munch`, foods, monsters and places** (content): five foods (two kinds at 6), monster variants, three backdrops, the sticker pool. [Slice 2](deep-dives/monster-munch.md#fresh-content-inside-existing-levels)
 - **`monster-munch`, level 9 Big bites** (new lap entry): three big cookies, the monster itself feeds, the belly grows; `BandLevels`, lap order 9, 1, 2, `entryLevels: [9, 10]`. [Slice 3](deep-dives/monster-munch.md#younger-band-openings)
 - **`monster-munch`, level 10 One of each** (new level, after *Big bites*): a cookie and an apple for each monster; toddler order 2, 3, 10, 4. [Slice 4](deep-dives/monster-munch.md#easier-entries-and-levels-between-existing-ones)

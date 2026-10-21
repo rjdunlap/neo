@@ -23,7 +23,7 @@ A code-drawn monster on a beach gapes, chews, burps and shows what it has eaten 
 
 **Level resolution, verified in `src/progress/difficulty.ts`.** The game uses a plain `levels()` function, so each band is numeric `min..max`. A `LevelRange` may carry an `order` (stepping follows it; a saved ID left out lands on the nearest listed ID) and `GameModule.entryLevels` lists easy high IDs that `landing()` sends to a band's easiest level when that band does not list them. So any appended ID below the top of the ladder needs an explicit `order` in every band whose `min..max` would otherwise swallow it, and an `entryLevels` declaration if a birthday could carry it into a band without it.
 
-**Known gaps found reading the code (not fixed: docs-only session).**
+**Known gaps found reading the code.** Gaps 1–6 and 9 are fixed (slice 1, built); 7 and 8 stay open.
 
 1. **The card says the monster counts aloud when it does not.** The card's step for levels 1–2 says "it counts aloud" and for 4–5 "it counts aloud". Only `count` mode (2) says `count` per bite; `tap` mode says a random "Yum!" half the time, and `exact`/`two` (4–6) say nothing per bite.
 2. **The level-7 card tells her to ring the bell.** `bell.visible` is false in `share` mode; the check runs by itself when the tray empties.
@@ -126,7 +126,7 @@ The [short-ladder audit](../archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#shor
 
 ## Build slices, in order
 
-1. **Truthful card, counted bites and a wrong pad that counts** (existing-game bug fix; gaps 1–6, 9): count aloud at 1 and 4–6, the level-7 card without the bell, `munch.each-no` lights and counts one tummy, hint lines per target, monster taps feed at level 1, two rounds at 1–2, the short-drop "hm?". Checks: typecheck, the rule tests, one filtered regression play (levels 1, 4 and 7, one wrong pad), `fingerdemo` at 1.
+1. **Built.** **Truthful card, counted bites and a wrong pad that counts** (existing-game bug fix; gaps 1–6, 9): count aloud at 1 and 4–6, the level-7 card without the bell, `munch.each-no` lights and counts one tummy, hint lines per target, monster taps feed at level 1, two rounds at 1–2, the short-drop "hm?". Checks: typecheck, the rule tests, one filtered regression play (levels 1, 4 and 7, one wrong pad), `fingerdemo` at 1.
 2. **Foods, monsters and places** (content in existing levels): the `FOODS` pool, two kinds per round at 6, monster variants, three backdrops, the sticker pool; rule tests that every food reads in `orderWords` and the tray fits. Checks: typecheck, rule tests, one browser play of level 6 and `fingerdemo` at 6.
 3. **Lap entry 9 *Big bites*** with the `BandLevels` conversion and `entryLevels` (new interaction): belly growth, rumble, monster-tap feeding; the birthday-landing test. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
 4. **Toddler 10 *One of each*** (new level on 3's interaction): toddler order `[2, 3, 10, 4]`. Checks: typecheck, rule tests, play of 10, `fingerdemo` at 10.
@@ -138,4 +138,4 @@ The [short-ladder audit](../archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#shor
 
 ## What was built in this session
 
-Nothing: a deep dive session is research and ideation only. Links (`node scripts/check-links.mjs`) and `git diff --check` ran.
+The deep dive session itself built nothing. Slice 1 is built (PR #705, `claude/monster-munch-truthful-card`; build note in the [archive](../archive/COMPLETED-2026-10-09.md)); slices 2–6 are ready. Links (`node scripts/check-links.mjs`) and `git diff --check` ran.
