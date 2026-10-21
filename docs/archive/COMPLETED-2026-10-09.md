@@ -1196,7 +1196,7 @@ Idea row moved here from the notebook's candidates:
 
 | **Domino Run** (dominoes; The Incredible Machine; **recalled**) | Stand dominoes so the chain reaches the bell; a gap too wide stops it, a branch lights two bells, color patterns set an order. Spacing, cause and effect, counting. A stalled chain stands up again | **Defined, ready (now built):** a 1D tipping rule, exactly testable, no physics engine; color patterns stay a proposal (Pattern Train owns patterns) | S–M |
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-20--domino-run-levels-18).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-20.md#2026-10-20--domino-run-levels-18).
 
 ## Teddy Doctor slice 1, the whole patient counts (2026-10-20)
 
@@ -1245,3 +1245,8 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-20--garden-grow-true-how
 ## Mail Carrier: support truth, slice 1 (2026-10-20)
 
 [PR #677](https://github.com/rjdunlap/neo/pull/677), `claude/mail-carrier-support-truth`. Level 1 (drop mode): a touch anywhere off a house wiggles the envelope and waves the nearest mailbox's flag, free of misses and hints; six seconds without a touch while a letter waits (`INVITE_AFTER`, `shouldInvite`, `nearestHouse` in `logic.ts`) replays the `mail.drop` instruction with a flag wave. Every street-level house scales to 1.04 on touch-down and returns on release or cancel. Levels 3 (dots) and 5 (count) say the new `mail.counted` line after a delivery ("One, two, three, four. Number 4!", from `countsAloud` and `countedAloud`); level 4 keeps `mail.number`. `mail.thanks` gains two variants. The how-to's level 7 step gains `to: 7`. IDs and level windows unchanged. Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-20--mail-carrier-support-truth-slice-1).
+
+
+## Stop and Go: every touch counts, slice 1 (2026-10-20)
+
+[PR #678](https://github.com/rjdunlap/neo/pull/678), `claude/stop-and-go-every-touch`. Level 1 (toy): a tap on the car toots a two-note horn and hops it (on green it also drives round) and counts as one of the round's eight touches, like a light tap; the toy light going red squashes the waiting car. Level 2 (send): a tap on a car behind the front one toots and hops, neither a send nor a miss; yellow on the front car toots with the spoken nudge; red squashes the car and is the miss. Levels 2 and 3: the hint glow (after two misses) rings the front car or the feet button, and only while the light is green (it was the light); level 3 now clears misses and the glow after a good step, as level 2 does after a send. Cars rumble with a small bob on red, and on green a tick sounds and every waiting car blinks its headlight. New line `go.done.walk` ("You made it to the flag! Great stopping and going.") ends level 3 instead of "Great driving!". Rules are in `logic.ts` (`carTap`, `touchCounts`, `hintOn`, `doneLine`) with four tests; the how-to's level 1 step mentions the car and levels 1–4 gain misses/hints notes. Closes dive gaps 1–6; 7 and 8 remain. Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-20--stop-and-go-every-touch-counts-and-the-hint-on-the-car-slice-1).

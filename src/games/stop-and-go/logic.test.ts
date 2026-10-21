@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CYCLE, crossTouch, GO_TARGET, judgeGo, lightAt, nextLight, PLANS, rightNow, safe, type Light, type Road } from './logic';
+import { carTap, CYCLE, crossTouch, doneLine, GO_TARGET, hintOn, judgeGo, lightAt, nextLight, PLANS, rightNow, safe, touchCounts, type Light, type Road } from './logic';
 
 describe('Stop and Go', () => {
   it('cycles green, yellow, red, and back, with greens and reds long enough to wait for', () => {
@@ -88,5 +88,40 @@ describe('Stop and Go', () => {
     expect(crossTouch({ ew: 'red', ns: 'red' }, { ew: 1, ns: 2 })).toBe('ns');
     expect(crossTouch({ ew: 'red', ns: 'red' }, { ew: 2, ns: 2 })).toBe('ew');
     expect(crossTouch({ ew: 'green', ns: 'green' }, { ew: 1, ns: 2 })).toBe('ew');
+  });
+});
+
+describe('Stop and Go: every touch answers', () => {
+  const lights: Light[] = ['green', 'yellow', 'red'];
+
+  it('lets the lap car answer every touch and counts it, with nothing to get wrong', () => {
+    for (const light of lights) {
+      const a = carTap('toy', light, true);
+      expect(a).toBe(light === 'green' ? 'drive' : 'toot');
+      expect(touchCounts('toy', a)).toBe(true);
+    }
+    expect(touchCounts('toy', 'light')).toBe(true);
+  });
+
+  it('never counts a tap on a back car as a send or a miss', () => {
+    for (const light of lights) expect(carTap('send', light, false)).toBe('toot');
+    expect(lights.map((l) => carTap('send', l, true))).toEqual(['send', 'nudge', 'miss']);
+    for (const a of ['send', 'nudge', 'miss', 'toot'] as const) expect(touchCounts('send', a)).toBe(false);
+  });
+
+  it('puts the hint on the thing to touch, and only on green', () => {
+    expect(hintOn('send', 'green')).toBe('car');
+    expect(hintOn('walk', 'green')).toBe('step');
+    for (const mode of ['send', 'walk'] as const) for (const l of ['yellow', 'red'] as Light[]) expect(hintOn(mode, l)).toBeNull();
+    // The hint target is what the demonstration's hand touches.
+    expect(hintOn('send', 'green')).toBe(GO_TARGET.send);
+    expect(hintOn('walk', 'green')).toBe(GO_TARGET.walk);
+    expect(hintOn('toy', 'green')).toBeNull();
+    expect(hintOn('cross', 'green')).toBeNull();
+  });
+
+  it('ends the walk at the flag, not with the cars', () => {
+    expect(doneLine('walk')).toBe('go.done.walk');
+    for (const m of ['toy', 'send', 'cross'] as const) expect(doneLine(m)).toBe('go.done');
   });
 });

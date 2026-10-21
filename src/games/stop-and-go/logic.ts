@@ -88,3 +88,30 @@ export function crossTouch(lights: Crossing, waiting: Record<Road, number>): Roa
   if (waiting.ew === 0 && waiting.ns === 0) return null;
   return waiting.ns > waiting.ew ? 'ns' : 'ew';
 }
+
+/**
+ * What a tap on a car does. Every touch answers: at the toy level the car toots, and on green drives round (both count
+ * as one of the round's touches, as a light tap does); at the send level a car behind the front one toots and is
+ * neither a send nor a miss, and the front car goes on green, gets a nudge on yellow and is the one miss on red.
+ */
+export type CarAnswer = 'drive' | 'toot' | 'send' | 'nudge' | 'miss';
+
+export function carTap(mode: GoMode, light: Light, front: boolean): CarAnswer {
+  if (mode === 'toy') return light === 'green' ? 'drive' : 'toot';
+  if (mode !== 'send' || !front) return 'toot';
+  const j = judgeGo(light);
+  return j === 'go' ? 'send' : j === 'wait' ? 'nudge' : 'miss';
+}
+
+/** At the toy level a touch on the light or a car counts toward the round; elsewhere only a send or a step does. */
+export const touchCounts = (mode: GoMode, answer: CarAnswer | 'light') => mode === 'toy' && (answer === 'light' || answer === 'drive' || answer === 'toot');
+
+/**
+ * Where the hint glow sits once two misses have turned it on: on the thing to touch, and only while touching it is
+ * right (green), so the glow leads to the action. The crossing's glow is on a light instead (`null` here).
+ */
+export const hintOn = (mode: GoMode, light: Light): 'car' | 'step' | null =>
+  mode === 'send' && light === 'green' ? 'car' : mode === 'walk' && light === 'green' ? 'step' : null;
+
+/** The line said when the round is done: the walk ends at the flag, the other levels with the cars. */
+export const doneLine = (mode: GoMode) => (mode === 'walk' ? 'go.done.walk' : 'go.done');
