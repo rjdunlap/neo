@@ -16,6 +16,8 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 ## Open items
 
+- [ ] **Roundup Come along (level 11, slice 4, 2026-10-20, #688).** On an iPad at lap and toddler, does a one-year-old read the gathering herd as "they come with me", drag slowly enough for them to keep up, and understand the glow and drift when stuck? Child play remains unobserved.
+
 - [ ] **Roundup Shoo one (level 10, slice 3, 2026-10-20, #686).** On an iPad, does a toddler understand getting behind one animal, does the wide gate feel forgiving, and is the second arrival clear? Check the singular spoken instruction and ghost-finger gesture. Child play remains unobserved.
 
 - [ ] **Little surprises mix (D2b, 2026-10-20).** On an iPad at a lap or toddler band: can a small hand reach the picnic-blanket spot and the preview sheet's Play, Skip and Back; does device speech read `mix.offer/stop/next/skip/last/end` clearly; does a child understand Next stop and Skip, and does a corner Home returning to the preview feel like a comfortable stop? Chrome automation has not shown any of this.

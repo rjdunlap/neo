@@ -1,6 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
 
+### Roundup slice 4, Level 11 Come along (2026-10-20)
+
+[PR #688](https://github.com/rjdunlap/neo/pull/688): the `follow` mode (`COME_ALONG` in `logic.ts`). Three animals of one kind gather to a finger (follow speed 0 inside an 85-unit ring, capped at 190, under the 330 flee speed; shared `spreadApart` 70-unit spacing) and are led through an 80% gate into one pen, in any order; no misses. "The {animals} want to follow you! Lead them to the pen." Fifteen seconds without an animal getting home make the herd glow and drift toward the gate for the rest of the round (one hint, counted once); the thirty-second trot-home stays as a safety (another hint). `leadGoal` leads to the gate mouth, then inside. Lap `order [1, 11]`, toddler `order [1, 11, 10, 2, 3]`, `entryLevels: [10, 11]`; preschool and pre-K unchanged. Level-scoped how-to lines; the co-play tip now suits every level; the ghost-finger bot leads from 160 units in front. Browser harness `launch()` takes a band; `ARCADE_LEVELS=11` plays lap (led) and toddler (idle, drift). [Verification](../VERIFICATION.md#2026-10-20--roundup-level-11-come-along-slice-4).
+
 ### Roundup slice 3, Level 10 Shoo one (2026-10-20)
 
 [PR #686](https://github.com/rjdunlap/neo/pull/686): two successive single-animal successes, one loose animal at a time near an 80%-open gate, ordinary flee steering, fresh 10/20-second glow/trot-home support (one hint each), zero misses, one round/sticker. Toddler order `[1,10,2,3]`, `entryLevels: [10]`; other bands and IDs unchanged. Singular spoken instruction and level-scoped how-to. Level 11 and other slices remain open. [Verification](../VERIFICATION.md#2026-10-20--roundup-level-10-shoo-one-slice-3).
