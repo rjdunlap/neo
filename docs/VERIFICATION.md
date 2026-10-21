@@ -3,9 +3,9 @@
 ## 2026-10-21 — Draw the Pattern levels 1–8
 
 - Built on `claude/draw-the-pattern` ([PR #704](https://github.com/rjdunlap/neo/pull/704), base `bd885a39` plus the branch): new game `draw-the-pattern` in Painted Canyon (6 games), lap 1–2 to pre-K 5–8; a shared change to `canyonPlan` (a 0.75-size spring when the full one finds no room) is covered by `canyon.test.ts` but not visually checked. Levels 7–8 candidate pairs changed from the definition to one-up, one-down pairs.
-- `npm run typecheck` clean; `npm test` 199 files, 2276 tests passed before the last fix, and the game's 27 rule tests passed after it (including a test that undecided ways wait at `forkOf`); `npm run build` passed.
+- `npm run typecheck` clean; `npm test` 199 files, 2277 tests passed on the final code (the game's 27 rule tests include one that undecided ways wait at `forkOf`); `npm run build` passed.
 - Dev server http://localhost:5848: `BROWSER_SUITE=drawpattern` passed: level 1 by marks and a pat, level 3 two strays (one miss, then glow and one hint, progress kept), level 4 a circle counterclockwise and clockwise, level 5 portrait screenshot (`test-results/browser/draw-the-pattern-5-portrait.png`), level 8 a wrong candidate (one miss, stroke resets) then finished with misses 1, hints 0; no page errors. `BROWSER_SUITE=fingerdemo FINGER_ONLY=draw-the-pattern FINGER_LEVELS=1,7` passed (20.9 s, 19.3 s).
-- Not run: world suite, the offline check, a full unit run after the last fix, a visual check of the canyon's smaller spring.
+- Not run: world suite, the offline check, a visual check of the canyon's smaller spring.
 - Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): the 30-unit corridor on a two-year-old's zigzag, whether the crayon hides the dashes, level 5's stepping stones for a three-year-old, whether level 7's faint candidates read as a choice, level 8's narrow units for a four-year-old's finger.
 
 ## 2026-10-21 — Little Helpers: every touch answers (slice 1)
