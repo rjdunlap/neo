@@ -973,20 +973,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'pet-kitchen': {
     goal: 'Share food fairly with friends.',
     steps: [
-      { to: 4, text: 'Tap a cutting picture to cut the food into equal pieces.' },
+      { to: 4, text: 'Tap a cutting picture to cut the food into equal pieces. Touching the food says what to do again.' },
       { to: 4, text: 'Move pieces between plates until everyone has the same.' },
       { from: 5, to: 6, text: 'Look at the recipe card and double it: put in two fruits for each fruit on the card.' },
       { from: 7, to: 7, text: 'Listen to the amount your friend asks for, cut equal pieces, then put that fraction on their plate.' },
-      { from: 8, text: 'Look at the recipe card and halve it: put in one fruit for every two fruits on the card.' },
-      { from: 9, text: 'Cut the pizza into three equal slices, then give one slice to each friend.' },
+      { from: 8, to: 8, text: 'Look at the recipe card and halve it: put in one fruit for every two fruits on the card.' },
+      { from: 9, to: 9, text: 'Cut the pizza into three equal slices, then give one slice to each friend.' },
       'Tap the green arrow to serve.',
     ],
     finish: 'The round ends when the food is served fairly.',
     note: [
-      { to: 4, text: 'If the pieces are not equal the kitchen asks to cut again; nothing is lost.' },
+      { to: 4, text: 'If a friend has less, or there are too few pieces, the kitchen says so; the round arrow puts the food back to cut again, and nothing is lost.' },
       { from: 5, to: 6, text: 'The back arrow takes the last fruit out; nothing is lost.' },
-      { from: 7, text: 'Two quarters count as one half, and the round arrow lets you cut again; nothing is lost.' },
-      { from: 8, text: 'The back arrow takes the last fruit out; nothing is lost.' },
+      { from: 7, to: 7, text: 'Two quarters count as one half, and the round arrow lets you cut again; nothing is lost. A good serve is counted aloud.' },
+      { from: 8, to: 8, text: 'The back arrow takes the last fruit out; nothing is lost.' },
+      { from: 9, to: 9, text: 'The round arrow puts the pizza back together to cut again; nothing is lost.' },
     ],
   },
   'tangram-town': {

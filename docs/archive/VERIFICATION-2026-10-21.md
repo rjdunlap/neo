@@ -53,3 +53,11 @@
 - Dev server http://localhost:5554: `BROWSER_SUITE=lostlayers` passed (level 1 red It fits = 1 miss, Can't tell hidden then free, one-story claim = 2nd miss with the other fit stamped, requested hint twice = 1 hint, bot 2/1; level 2 free preview, wavy look = 1 miss, bot 1/0; portrait level 2 with the lens open and landscape screenshots). `BROWSER_SUITE=fingerdemo FINGER_ONLY=lost-layers FINGER_LEVELS=1,2` passed (12.1 s, 10.0 s).
 - Not run: the offline check, `world`, any iPad or child.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): wavy line read as missing rock, Can't tell as honest, dragging a 180x100 piece, device speech of creature names and "Shell Cove".
+
+## 2026-10-21 — Roundup level 7 Leave the cows (slice 5)
+
+- [PR #698](https://github.com/rjdunlap/neo/pull/698), branch `codex/roundup-leave-cows`; tested base `13304503` plus slice diff, upstream `0223d869`. Two pigs/mud and two bunnies/carrots are penned; two cows stay out. Pre-K 3–7, truthful instruction/rejection/finish speech and needed-only hints.
+- `npm run typecheck` passed; 65 focused tests passed across Roundup rules, how-to, difficulty and registry (300 seeded outsider herds; completion ignores outsiders; preserved bands/pins).
+- http://localhost:5187: `BROWSER_SUITE=arcade ARCADE_ONLY=roundup ARCADE_LEVELS=7` passed with saved `[2,1]`, both pens full, cows loose, needed animals/gates glowing after two misses, cow-specific speech and one sticker. First attempt checked a cow during its hop-out; a small transition probe confirmed loose after 0.8 seconds, and the assertion now waits for that correction.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=7` passed cleanly in 16.1 seconds, no misses/hints/page errors. Landscape screenshot reviewed.
+- Not run: build, full units, other browser levels/suites, offline, portrait, iPad speech or child play (new-level tier). No save/assets/navigation changes; unrelated Peg Garden timeout remains out of scope.

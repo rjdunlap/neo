@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, PLANS, plateAt, PLATE_REACH, recipe, servesFraction } from './logic';
+import { doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, PLANS, plateAt, PLATE_REACH, recipe, servesFraction, serveTrouble, countAloud } from './logic';
 it('can share every meal fairly and accepts alternative equal cuts',()=>{
  for(const p of PLANS.filter(p=>p.mode==='share')) {
    expect(p.cuts.some(c=>p.wholes*c%p.friends===0)).toBe(true);
@@ -73,4 +73,22 @@ it('level 9 cuts one pizza into exactly three equal shares for three friends',()
  const plates=Array(plan.friends).fill(0); for(let i=0;i<plan.wholes*cut!;i++) plates[nextPlate(plates)]++;
  expect(plates).toEqual([1,1,1]); expect(fair(plates,3)).toBe(true);
  expect(planFor(9)).toBe(plan);
+});
+it('names the real trouble with a serve: nothing cut, too few pieces, nothing served, or plates that differ',()=>{
+ expect(serveTrouble([0,0],0)).toBe('uncut');
+ expect(serveTrouble([0,0,0,0],2)).toBe('short');
+ expect(serveTrouble([0,0,0,0],8)).toBe('empty');
+ // Level 2 cut in halves: two friends could have a piece, two never can.
+ expect(serveTrouble([1,1,0,0],2)).toBe('short');
+ expect(serveTrouble([1,0,0,0],2)).toBe('short');
+ expect(serveTrouble([2,0],4)).toBe('unequal');
+ expect(serveTrouble([0],4)).toBe('empty');
+ // Every fair share is a pieces count at least the friends, so 'short' never names a cut that could share out.
+ for(const p of PLANS.filter(p=>p.mode==='share')) for(const c of p.cuts) if((p.wholes*c)%p.friends===0) expect(p.wholes*c).toBeGreaterThanOrEqual(p.friends);
+});
+it('counts served pieces aloud in their own fraction words',()=>{
+ expect(countAloud(4,2)).toBe('one quarter, two quarters');
+ expect(countAloud(4,3)).toBe('one quarter, two quarters, three quarters');
+ expect(countAloud(2,1)).toBe('one half');
+ for(const r of FRACTIONS){const cut=fractionCut(r,[2,4])!;const n=cut*r.numerator/r.denominator;expect(countAloud(cut,n).split(', ')).toHaveLength(n);}
 });
