@@ -97,6 +97,7 @@ import { islandBridges } from './island-bridges';
 import { lemonadeStand } from './lemonade-stand';
 import { habitatHelpers } from './habitat-helpers';
 import { fillDump } from './fill-dump';
+import { pileMatch } from './pile-match';
 import { numberTrails } from './number-trails';
 import { fruitSums } from './fruit-sums';
 import { readDo } from './read-do';
@@ -208,6 +209,7 @@ export const GAMES: GameModule[] = [
   numberNook,
   pyramidSolitaire,
   brainBreak,
+  pileMatch,
 ];
 
 export const gameById = (id: string) => GAMES.find((g) => g.id === id);

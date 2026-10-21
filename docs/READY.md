@@ -90,7 +90,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`stop-and-go`, level 5 Whose light? and the pre-K window** (new level): two lanes with their own lights, send the one whose light is green; preschool 2–5, pre-K 3–5. [Slice 4](deep-dives/stop-and-go.md#new-levels-on-top)
 - **`stop-and-go`, level 6 Busy crossing** (new level): cars arrive on both roads, she hands over one road at a time; an idle point helps level 4 too; pre-K 3–6. [Slice 5](deep-dives/stop-and-go.md#new-levels-on-top)
 
-- **`pile-match`, build levels 1–8** (new-game tier): tap things on top of a layered heap into a tray; three of a kind pop into the basket until the grass is clear; asked kinds with a 3-slot basket at 1–2, a free 5-slot tray from 3 that can fill from 4, free put-back, kinds assigned along a clearing route so nothing dead-ends; Counting Cove. [Definition](definitions/pile-match.md)
 
 - **`bolt-boards`, build levels 1–7** (new-game tier): tap bolts out of boards on the barn wall; two bolts hold a board, one makes it swing and hang, none lets it slide down and free the fruit or friend behind; a covered bolt waits; exact analytic poses (no physics), levels 1–5 never dead-end, open-hole parking at 6–7 with a solver hint and free undo; covered taps count from 4; Barnyard. [Definition](definitions/bolt-boards.md)
 
