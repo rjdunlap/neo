@@ -243,3 +243,11 @@
 - `BROWSER_SUITE=arcade ARCADE_ONLY=scoop` (Vite http://localhost:5680) passed levels 1–6, twice (before and after the served-cone fix, at `073dc9fa`); the case now also checks that a customer tap at levels 1–5 counts nothing and a second tub tap during a flight adds no scoop. `BROWSER_SUITE=fingerdemo FINGER_ONLY=scoop-shop FINGER_LEVELS=4` clean in 25.0 s.
 - One-off probe screenshots of the level-4 count card with five scoops, landscape 1024×768 and portrait 768×1024: numeral and row read cleanly, no page errors (not committed).
 - Not run: full `npm test`, `npm run build` (no shared files or assets changed), `world`, the offline check, an iPad. Open: flight wait, tub wobble and the count row with a child ([device check](../DEVICE-CHECKS.md)).
+
+## 2026-10-20 — Fill and Dump lap reach and idle invitation (slice 2)
+
+- [PR #666](https://github.com/rjdunlap/neo/pull/666), tested `659bbfa6` plus the slice working diff, base `c4585d7a`: levels 1–2 ground taps tip or scoop the nearest outside fruit; six ready/idle seconds invite a basket or fruit wiggle without scoring. Levels 3–5 and busy-tip behavior unchanged.
+- `npm run typecheck`, `npx vitest run src/games/fill-dump/logic.test.ts src/content/howto.test.ts` (37 tests) and `npm run build` passed. Rule proof includes 200 seeds per lap level with random target/ground taps, nearest outside choice, done/counting rejection and existing counting/pour accounting.
+- `GAME_URL=http://localhost:5177 BROWSER_SUITE=originals ORIGINALS_ONLY=fill npm run test:browser` passed levels 1–5: real ground taps, unscored idle basket/fruit invitations, nearest scoop, counting ground rejection, existing two-miss/one-hint counts, pouring and one sticker per round. The first attempt was interrupted by a source-edit Vite reload after level 1; the frozen-source rerun passed without page errors.
+- `GAME_URL=http://localhost:5177 BROWSER_SUITE=fingerdemo FINGER_ONLY=fill-dump FINGER_LEVELS=1 npm run test:browser` passed, clean in 10.3 s.
+- Not run: full unit suite, `world`, offline, iPad or child observation. No persistence/assets/navigation changed. The person-gated busy-window acknowledgment and pouring redesign remain excluded; whether a one-year-old notices the invitation is not established by automation.

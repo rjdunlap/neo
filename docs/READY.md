@@ -92,7 +92,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 
 
-- **`weather-wardrobe`, every touch counts at level 1 and the level-7 card** (existing-game fix): the grass answers per weather, worn items wiggle and are named, the pack step stops at 6, the dead undress line goes. [Slice 1](deep-dives/weather-wardrobe.md#build-slices-in-order)
 - **`weather-wardrobe`, more items, one slot each** (content, levels 1–7): sandals, rain hat, earmuffs, puffy coat, a slot map so an outfit never doubles a slot, level 5 always three, sticker pool pinned. [Slice 2](deep-dives/weather-wardrobe.md#build-slices-in-order)
 - **`weather-wardrobe`, a miss that shows why** (existing-game change): a wrong item goes on for a moment, shows its cold, hot, wet or blown consequence and hops back; accounting unchanged. [Slice 3](deep-dives/weather-wardrobe.md#build-slices-in-order)
 - **`weather-wardrobe`, lap entry 8 Try it on** (new level, after *a miss that shows why*): anything goes on, the fitting item stops the weather, no misses; lap order 1, 8, 2, `entryLevels: [8]`. [Slice 4](deep-dives/weather-wardrobe.md#build-slices-in-order)

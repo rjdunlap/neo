@@ -18,19 +18,19 @@ Sun, rain or snow fills a big sky over grass; the pet (large, centre stage, the 
 
 **Content pools.** Three weathers (`WEATHERS`) and eight items, each belonging to exactly one weather (`ITEMS`): sunny 2 (sun hat, sunglasses), rainy 3 (raincoat, umbrella, rain boots), snowy 3 (warm hat, scarf, mittens). Distractors always come from other weathers; consecutive rounds never repeat a weather (rule-tested). One grass backdrop that changes with the weather, one pet. The sticker (`wardrobeArt`) picks a weather and one of its items from the same pools.
 
-**Accounting.** Level 1 has no misses. Levels 2–7: a wrong item is a miss with a boing, a nudge and the spoken reason ("A scarf is for snowy days. Try another!"); the second wrong in a row counts one hint, says "Try the glowing one!" and rings a fitting item; a right choice resets the count. At level 7 the tray is hidden while she undresses, so the `weather.change.remove.first` line ("First, take off…") can never play (gap 9).
+**Accounting.** Level 1 has no misses. Levels 2–7: a wrong item is a miss with a boing, a nudge and the spoken reason ("A scarf is for snowy days. Try another!"); the second wrong in a row counts one hint, says "Try the glowing one!" and rings a fitting item; a right choice resets the count. At level 7 the tray is hidden while she undresses, so the `weather.change.remove.first` line ("First, take off…") could never play; slice 1 removed it (gap 9).
 
-**Known gaps found reading the code (not fixed: docs-only session).**
+**Known gaps found reading the code (1, 4 and 9 fixed by slice 1, 2026-10-21; the rest not fixed).**
 
-1. **The level-7 card is wrong.** The how-to's pack step is `{ from: 6, … }` with no `to`, so the level-7 card also says to pack for a trip. It should be `{ from: 6, to: 6 }`.
+1. **(Fixed in slice 1.) The level-7 card was wrong.** The how-to's pack step is `{ from: 6, … }` with no `to`, so the level-7 card also says to pack for a trip. It should be `{ from: 6, to: 6 }`.
 2. **Level 7 has no real decision when undressing.** Every worn item belongs to the old weather, so "take off the clothes that do not fit" always means take off everything. A real "keep what still fits" round needs an item that suits two weathers (rain boots in snow), which breaks the one-weather-per-item rule and its tests (decision 1).
 3. **The lap window holds level 2,** a two-choice round with boings and counted misses. For a child about one, the only lap level without a wrong answer is the sky toy.
-4. **Level 1 ignores most touches.** Only the sky above 62% of the height answers. The grass and the worn clothes do nothing, and the pet only giggles and repeats the instruction. Nothing is named when she touches it, so the vocabulary goal rests on the weather words alone.
+4. **(Fixed in slice 1.) Level 1 ignored most touches.** Only the sky above 62% of the height answers. The grass and the worn clothes do nothing, and the pet only giggles and repeats the instruction. Nothing is named when she touches it, so the vocabulary goal rests on the weather words alone.
 5. **A miss does not show why.** The boing and the spoken rule are the whole consequence; nothing on screen shows what a sun hat does in snow.
 6. **The trip never pays off.** At level 6 items go into the suitcase and the round ends; the pet never goes on the trip or uses them.
 7. **"Everything" means different amounts.** At level 5 sunny has only two items, so "find everything" is two in sunny rounds and three otherwise; the pools are small enough that rounds repeat quickly.
 8. **The grown-ups' page shows `{name}`** in this game's `offScreen` line: already recorded as a shell bug in the [off-screen study](subjects/off-screen-companions.md); not re-diagnosed here.
-9. **A dead voice line.** `ask()` hides the tray tiles in change mode and `resize()` skips the tray during undressing, so the `choose()` branch for the remove phase is unreachable; slice 1 drops it or shows a dimmed tray that answers with it.
+9. **(Fixed in slice 1: line and branch removed.) A dead voice line.** `ask()` hides the tray tiles in change mode and `resize()` skips the tray during undressing, so the `choose()` branch for the remove phase is unreachable; slice 1 drops it or shows a dimmed tray that answers with it.
 
 **Couch, journal, picnic.** Not in couch play, no journal entry, no story step. Recorded checks: `wardrobe7` and `fingerdemo` (2026-10-10, [coverage summary](../VERIFICATION.md#coverage-summary)). Person checks: none recorded. `weatherIcon` is imported by Lemonade Stand (`src/games/lemonade-stand/art.ts`), which draws its own cloudy icon.
 
@@ -123,7 +123,7 @@ Fog (its clothing rule is "be seen", a safety claim the subject studies keep out
 
 ## Build slices, in order
 
-1. **Every touch counts at level 1, and the level-7 card** (existing-game fix): grass per weather, worn items named, `{ from: 6, to: 6 }` on the pack step, the dead remove-phase line dropped or wired (gap 9). Checks: typecheck, the rule and how-to tests, one filtered play (`BROWSER_SUITE=fourth FOURTH_ONLY=weather`), `fingerdemo` at 1. *(Claimed 2026-10-21 by `claude/weather-wardrobe-every-touch`.)*
+1. **Every touch counts at level 1, and the level-7 card** (existing-game fix): grass per weather, worn items named, `{ from: 6, to: 6 }` on the pack step, the dead remove-phase line dropped or wired (gap 9). Checks: typecheck, the rule and how-to tests, one filtered play (`BROWSER_SUITE=fourth FOURTH_ONLY=weather`), `fingerdemo` at 1. *(Built 2026-10-21, [PR #682](https://github.com/rjdunlap/neo/pull/682): the grass answers per weather, worn items wiggle and are named, the pack step is `{ from: 6, to: 6 }`, the dead remove-phase line was dropped; closes gaps 1, 4 and 9. Build note in the [archive](../archive/COMPLETED-2026-10-09.md#weather-wardrobe-every-touch-counts-at-level-1-and-the-level-7-card-slice-1-2026-10-21).)*
 2. **More items, one slot each, sticker pinned** (content in existing levels): sandals, rain hat, earmuffs, puffy coat, `SLOTS`, level 5 always three. Checks: typecheck, rule tests, one screenshot of each new item worn, `fingerdemo` at 5.
 3. **A miss that shows why** (existing-game change on the same interaction): misfit consequences, the item hops back; accounting unchanged. Checks: typecheck, rule tests, one filtered play with one wrong answer at 2 and 7 (`wardrobe7`).
 4. **Lap entry 8 *Try it on*** (new level, needs 3): order `[1, 8, 2]`, `entryLevels: [8]`. Checks: new-interaction tier (scripted play at 8 and 1, one portrait screenshot), `fingerdemo` at 8.
