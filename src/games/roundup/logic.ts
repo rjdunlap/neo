@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * from your finger, so you shoo them through a gate into their pen. Nobody escapes for good,
  * and a wrong pen just means a hop back out.
  */
-export type HerdMode = 'tap' | 'follow' | 'shoo' | 'sort' | 'sortStay' | 'count' | 'sortCount';
+export type HerdMode = 'tap' | 'follow' | 'shoo' | 'sort' | 'sortStay' | 'count' | 'sortCount' | 'fair';
 export const KINDS = ['pig', 'bunny', 'cow', 'duck', 'dog'] as const;
 export type Kind = (typeof KINDS)[number];
 
@@ -44,11 +44,12 @@ export const PLANS: HerdPlan[] = [
   { mode: 'count', animals: 6, min: 2, max: 4, name: 'Put an exact number in the pen (2 to 4)' },
   { mode: 'sortCount', animals: 7, min: 1, max: 3, name: 'Sort two kinds and put the requested number in each pen' },
   { mode: 'sortStay', animals: 6, name: 'Sort pigs and bunnies into their pens; leave the cows on the grass' },
+  { mode: 'fair', animals: 6, maxAnimals: 8, name: 'Put the same number of one kind in each of two pens, then ring the bell' },
   SHOO_ONE,
   COME_ALONG,
 ];
 
-export const planFor = (level: number) => level === 10 ? SHOO_ONE : level === 11 ? COME_ALONG : PLANS[Math.min(7, Math.max(1, level)) - 1];
+export const planFor = (level: number) => level === 10 ? SHOO_ONE : level === 11 ? COME_ALONG : PLANS[Math.min(8, Math.max(1, level)) - 1];
 
 export const PLURAL: Record<Kind, string> = { pig: 'pigs', bunny: 'bunnies', cow: 'cows', duck: 'ducks', dog: 'dogs' };
 /** What each pen's floor is, for "three pigs in the mud". */
@@ -68,12 +69,19 @@ export interface Herd {
   pens: Pen[];
   /** This kind belongs on the grass, outside both pens. */
   stay?: Kind;
+  /** Make it fair: two pens of one kind; the bell asks only for the same non-zero number in each. */
+  fair?: boolean;
 }
 
 export function makeHerd(plan: HerdPlan, rng: Rng): Herd {
   const n = plan.maxAnimals === undefined ? plan.animals : rng.int(plan.animals, plan.maxAnimals);
   if (plan.mode === 'sortStay') {
     return { animals: rng.shuffle(['pig', 'pig', 'bunny', 'bunny', 'cow', 'cow'] as Kind[]), pens: [{ kind: 'pig' }, { kind: 'bunny' }], stay: 'cow' };
+  }
+  if (plan.mode === 'fair') {
+    // Always an even herd (6 or 8), so all of them can be shared out; fewer each with some left loose is fair too.
+    const kind = rng.pick(KINDS);
+    return { animals: Array(n % 2 ? n + 1 : n).fill(kind), pens: [{ kind }, { kind }], fair: true };
   }
   if (plan.mode === 'sort' || plan.mode === 'sortCount') {
     const pens: Pen[] = rng.shuffle([...KINDS]).slice(0, 2).map((kind) => ({ kind }));
@@ -126,10 +134,31 @@ export function ringBell(herd: Herd, inside: number[]): { extra: number; short: 
 }
 
 /** Whether filling the pens finishes the round by itself (the counting levels wait for the bell). */
-export const usesBell = (plan: HerdPlan) => plan.mode === 'count' || plan.mode === 'sortCount';
+export const usesBell = (plan: HerdPlan) => plan.mode === 'count' || plan.mode === 'sortCount' || plan.mode === 'fair';
+
+/** The pen with fewer inside (the first when they are level). */
+export const emptierPen = (inside: number[]) => (inside[1] < inside[0] ? 1 : 0);
+
+/**
+ * Make it fair's bell: the same number in each pen, and not none. Otherwise it names the fuller and the emptier pen,
+ * and how many hop out of the fuller one to make it fair; nobody hops out when the emptier pen is still empty.
+ */
+export function fairBell(inside: number[]): { fair: boolean; more: number; less: number; extra: number } {
+  const less = emptierPen(inside);
+  const more = 1 - less;
+  const fair = inside[0] === inside[1] && inside[0] > 0;
+  return { fair, more, less, extra: fair || inside[less] === 0 ? 0 : inside[more] - inside[less] };
+}
+
+/** Make it fair's demonstration and help aim for half each: the emptier pen, until both hold half. */
+export function fairNeeds(herd: Herd, inside: number[]): number {
+  const i = emptierPen(inside);
+  return inside[i] < herd.animals.length / 2 ? i : -1;
+}
 
 /** How many each pen needs before the round is done. */
 export function wanted(herd: Herd, pen: Pen): number {
+  if (herd.fair) return herd.animals.length / 2;
   return pen.target ?? herd.animals.filter((k) => k === pen.kind).length;
 }
 

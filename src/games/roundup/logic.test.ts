@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { animalsFor, enter, fleeSpeed, FOLLOW_SPEED, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, pensFull, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted } from './logic';
+import { animalsFor, emptierPen, enter, fairBell, fairNeeds, fleeSpeed, FOLLOW_SPEED, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, pensFull, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, usesBell, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted, type Kind } from './logic';
 
 describe('Roundup', () => {
   it('gives Shoo one two successes, ordinary flee steering and a wider accepting gate', () => {
@@ -23,6 +23,7 @@ describe('Roundup', () => {
     // Existing IDs retain their plans.
     expect(planFor(6)).toBe(PLANS[5]);
     expect(planFor(7)).toBe(PLANS[6]);
+    expect(planFor(8).mode).toBe('fair');
   });
 
   it('leaves cows outside while both nonempty pens can be completed, for every seed', () => {
@@ -107,13 +108,13 @@ describe('Roundup', () => {
             expect(pen.target).toBeGreaterThanOrEqual(plan.min!);
           }
         }
-        expect(herd.pens.length).toBe(plan.mode.startsWith('sort') ? 2 : 1);
+        expect(herd.pens.length).toBe(plan.mode.startsWith('sort') || plan.mode === 'fair' ? 2 : 1);
       }
     }
   });
 
   it('uses every kind in one-pen rounds and every distinct pen pair in sorting rounds', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'sortStay')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'sortStay' && p.mode !== 'fair')) {
       const pairs = new Set<string>();
       const kinds = new Set<string>();
       for (let seed = 1; seed <= 300; seed++) {
@@ -220,5 +221,66 @@ describe('Roundup', () => {
   it('says one pig, two pigs', () => {
     expect(animalsFor('pig', 1)).toBe('pig');
     expect(animalsFor('bunny', 3)).toBe('bunnies');
+  });
+
+  it('Make it fair: an even herd of 6 or 8 of one kind, two pens of that kind, and a bell', () => {
+    const plan = planFor(8);
+    expect(usesBell(plan)).toBe(true);
+    const sizes = new Set<number>();
+    const kinds = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const herd = makeHerd(plan, new Rng(seed));
+      expect(herd.fair).toBe(true);
+      expect([6, 8]).toContain(herd.animals.length);
+      sizes.add(herd.animals.length);
+      expect(herd.pens).toHaveLength(2);
+      expect(herd.pens[0].kind).toBe(herd.pens[1].kind);
+      expect(herd.pens.every((p) => p.target === undefined)).toBe(true);
+      expect(herd.animals.every((k) => k === herd.pens[0].kind)).toBe(true);
+      for (const pen of herd.pens) expect(enter(pen, herd.pens[0].kind)).toBe('in');
+      kinds.add(herd.pens[0].kind);
+    }
+    expect([...sizes].sort()).toEqual([6, 8]);
+    expect(kinds.size).toBe(KINDS.length);
+  });
+
+  it('Make it fair: the bell accepts any equal non-zero split and names the fuller and emptier pen', () => {
+    for (let a = 0; a <= 8; a++) {
+      for (let b = 0; a + b <= 8; b++) {
+        const bell = fairBell([a, b]);
+        expect(bell.fair).toBe(a === b && a > 0);
+        if (a !== b) {
+          expect([a, b][bell.less]).toBe(Math.min(a, b));
+          expect([a, b][bell.more]).toBe(Math.max(a, b));
+          expect(bell.less).toBe(emptierPen([a, b]));
+          // The extras leave the fuller pen level with the other, unless that would empty both.
+          expect(bell.extra).toBe(Math.min(a, b) === 0 ? 0 : Math.abs(a - b));
+          if (bell.extra) expect(fairBell(bell.more === 0 ? [a - bell.extra, b] : [a, b - bell.extra]).fair).toBe(true);
+        } else expect(bell.extra).toBe(0);
+      }
+    }
+    // 2 and 2 with two loose is fair; 3 and 3 is fair; an empty pen is never "the same".
+    expect(fairBell([2, 2]).fair).toBe(true);
+    expect(fairBell([3, 3]).fair).toBe(true);
+    expect(fairBell([0, 0]).fair).toBe(false);
+    expect(fairBell([4, 0]).fair).toBe(false);
+  });
+
+  it('Make it fair: help and the demonstration fill the emptier pen up to half each', () => {
+    for (const n of [6, 8]) {
+      const herd = { animals: Array<Kind>(n).fill('pig'), pens: [{ kind: 'pig' as Kind }, { kind: 'pig' as Kind }], fair: true };
+      const inside = [0, 0];
+      // Following the help one animal at a time always ends level at half each.
+      for (let step = 0; step < n; step++) {
+        const i = fairNeeds(herd, inside);
+        if (i < 0) break;
+        expect(inside[i]).toBeLessThanOrEqual(inside[1 - i]);
+        inside[i]++;
+      }
+      expect(inside).toEqual([n / 2, n / 2]);
+      expect(fairNeeds(herd, inside)).toBe(-1);
+      expect(fairBell(inside).fair).toBe(true);
+      expect(fairNeeds(herd, [n / 2 + 1, 1])).toBe(1);
+    }
   });
 });

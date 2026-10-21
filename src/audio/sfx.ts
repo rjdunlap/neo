@@ -115,6 +115,14 @@ export const sfx = {
     [10, 12, 14].forEach((s) => bell(o.ctx, o.dest, o.t + 0.42, stepHz(s), 0.16, 1.6));
   },
 
+  /** A seesaw on the marimba: teetering high and low, then level (the same note twice) or tipping down. */
+  seesaw(level: boolean) {
+    const o = out();
+    if (!o) return;
+    const steps = level ? [9, 5, 8, 6, 7, 7] : [7, 6, 5, 3, 2];
+    steps.forEach((s, i) => marimba(o.ctx, o.dest, o.t + i * 0.13, stepHz(s), 0.4));
+  },
+
   /** A soft UI tap. */
   tick() {
     const o = out();

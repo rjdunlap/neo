@@ -1,6 +1,6 @@
 # Roundup deep dive
 
-*ID `roundup` · bands lap, toddler, preschool, pre-K · levels 1–7, 10–11 built · session `claude/dive-roundup` ([PR #580](https://github.com/rjdunlap/neo/pull/580))*
+*ID `roundup` · bands lap, toddler, preschool, pre-K · levels 1–8, 10–11 built · session `claude/dive-roundup` ([PR #580](https://github.com/rjdunlap/neo/pull/580))*
 
 Research and ideation only: nothing under `src/` changed. Roundup is the island's one flee-steering game (Duckling Parade steers a leader; here the herd runs *away* from the finger), so this dive keeps that feel and grows what the pens ask for: more kinds, sorting by more than kind, equal shares, a missing part, and two gentler rungs for the youngest hands.
 
@@ -126,7 +126,7 @@ Each has a default below; the build proceeds on it.
 3. **Level 10 *Shoo one*** (built; [PR #686](https://github.com/rjdunlap/neo/pull/686); new levels tier): two successive one-animal successes, 80% gate, unchanged 190-unit flee radius, a short near-gate meadow, ten-second glow and twenty-second trot-home (each counts one hint, fresh per animal); no misses. Toddler `order [1, 10, 2, 3]`, `entryLevels: [10]`. Level 11 remains unbuilt.
 4. **Level 11 *Come along*** (built; [PR #688](https://github.com/rjdunlap/neo/pull/688); new interaction tier: typecheck, units, one scripted play of 11 at lap and toddler, one portrait screenshot, `fingerdemo` at 11): the follow mode (`COME_ALONG`: three animals of one kind gather to the finger at a capped 190-unit follow speed, led through an 80% gate into one pen, no misses; fifteen idle seconds start a drift and one hint, the thirty-second trot-home stays), lap `order [1, 11]`, toddler `order [1, 11, 10, 2, 3]`, `entryLevels: [10, 11]`.
 5. **Level 7 *Leave the cows*** (built; [PR #698](https://github.com/rjdunlap/neo/pull/698); new levels tier): two pigs and two bunnies go into their pens; two cows stay outside. Outsider-specific instruction, miss and finish speech; only needed animals/gates glow; completion ignores outsiders. Pre-K 3–7.
-6. **Level 8 *Make it fair*** (new levels tier, with the seesaw sound): pre-K 3–8.
+6. **Level 8 *Make it fair*** (built; [PR #709](https://github.com/rjdunlap/neo/pull/709); new levels tier, with the seesaw sound): an even herd of 6 or 8 of one kind and two pens of that kind; the bell accepts any equal non-zero split (loose animals allowed), a wrong bell is one miss that names the counts and levels the fuller pen, two wrong bells give one hint (glow on the emptier pen), `sfx.seesaw` on every bell. Pre-K 3–8.
 7. **Level 9 *Fill it up*** (new levels tier): pre-K 3–9.
 8. **Level 12 *Big and little*** (new levels tier, plus a portrait screenshot for the small pig's size): pre-K `order [3, 4, 5, 6, 7, 8, 9, 12]`.
 9. **Two shepherds** (existing-game interaction change: typecheck, one filtered play with two scripted pointers, `fingerdemo` at 3): every active pointer repels, palm rejection kept, both rings drawn; the card's co-play line becomes a role.
