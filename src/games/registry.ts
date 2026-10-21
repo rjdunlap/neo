@@ -108,6 +108,7 @@ import { pictureLogic } from './picture-logic';
 import { wordSearch } from './word-search';
 import { pondTyping } from './pond-typing';
 import { islandBridges } from './island-bridges';
+import { speciesComeback } from './species-comeback';
 import { lemonadeStand } from './lemonade-stand';
 import { habitatHelpers } from './habitat-helpers';
 import { fillDump } from './fill-dump';
@@ -244,6 +245,7 @@ export const GAMES: GameModule[] = [
   pondTyping,
   islandBridges,
   pondConga,
+  speciesComeback,
   numberNook,
   pyramidSolitaire,
   brainBreak,

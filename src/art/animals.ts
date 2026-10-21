@@ -33,12 +33,13 @@ export function penguinArt(): Container {
   return c;
 }
 
-export function turtleArt(size: number): Graphics {
+/** Mossy Path's turtle; Species Comeback passes other shell colors. */
+export function turtleArt(size: number, shell: Swatch = swatch.teal): Graphics {
   const u = size / 100, g = new Graphics();
   for (const x of [-22, 22]) for (const y of [-24, 24]) g.ellipse(x * u, y * u, 12 * u, 9 * u).fill(swatch.green.fill);
   g.circle(0, -36 * u, 15 * u).fill(swatch.green.light).stroke({ width: 2 * u, color: swatch.green.line });
-  g.ellipse(0, 0, 30 * u, 34 * u).fill(swatch.teal.fill).stroke({ width: 3 * u, color: swatch.teal.line });
-  g.poly([-15 * u, -9 * u, 0, -20 * u, 15 * u, -9 * u, 15 * u, 9 * u, 0, 20 * u, -15 * u, 9 * u]).stroke({ width: 2 * u, color: swatch.teal.line });
+  g.ellipse(0, 0, 30 * u, 34 * u).fill(shell.fill).stroke({ width: 3 * u, color: shell.line });
+  g.poly([-15 * u, -9 * u, 0, -20 * u, 15 * u, -9 * u, 15 * u, 9 * u, 0, 20 * u, -15 * u, 9 * u]).stroke({ width: 2 * u, color: shell.line });
   g.circle(-5 * u, -39 * u, 2.5 * u).circle(5 * u, -39 * u, 2.5 * u).fill(ink);
   g.eventMode = 'none'; return g;
 }
