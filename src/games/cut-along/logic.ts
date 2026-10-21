@@ -262,9 +262,13 @@ export function chooseOrder(cut: Cut, order: number | null, progress: number, fr
   }
   const a = advanceTrace(cut.orders[0], progress, from, to, tol);
   const b = advanceTrace(cut.orders[1], progress, from, to, tol);
-  // Coming up the lead-in, both ways can creep a checkpoint past the joint together; that picks nothing yet.
-  if (a === b || (a <= cut.lead && b <= cut.lead)) return { order: null, progress: Math.min(cut.lead, Math.max(a, b)) };
-  return a > b ? { order: 0, progress: a } : { order: 1, progress: b };
+  // Coming up the lead-in, either way can creep a checkpoint or two past the joint (a hair of sideways wobble is enough).
+  // Only a cut that has clearly left the joint along one side picks it.
+  const joint = cut.orders[0][cut.lead];
+  const away = (pts: Point[], i: number) => (i > cut.lead ? Math.hypot(pts[i][0] - joint[0], pts[i][1] - joint[1]) : 0);
+  const da = away(cut.orders[0], a), db = away(cut.orders[1], b);
+  if (Math.max(da, db) <= 1.5 * tol || da === db) return { order: null, progress: Math.min(cut.lead, Math.max(a, b)) };
+  return da > db ? { order: 0, progress: a } : { order: 1, progress: b };
 }
 
 /** The points she has to reach: the chosen order, or the first one while undecided. */

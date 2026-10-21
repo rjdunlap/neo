@@ -194,6 +194,22 @@ describe('Cut Along cuts', () => {
     }
   });
 
+  it('does not pick a way round from a wobble coming up the lead-in', () => {
+    for (const cut of [cutsFor(6, new Rng(1))[1], boardsFor(new Rng(4))[2].cuts[0], cutsFor(5, new Rng(1))[2]]) {
+      const tol = 0.072, pts = cut.orders[0];
+      for (const wobble of [-0.004, 0.004]) {
+        let state: { order: number | null; progress: number } = { order: null, progress: 0 }, prev = pts[0];
+        for (let k = 1; k <= cut.lead; k++) {
+          const to: Point = [pts[k][0] + wobble, pts[k][1]];
+          state = chooseOrder(cut, state.order, state.progress, prev, to, tol);
+          prev = to;
+        }
+        expect(state.order, cut.kind).toBe(null);
+        expect(state.progress).toBe(cut.lead);
+      }
+    }
+  });
+
   it('gives the same paper for the same seed', () => {
     for (let l = 2; l <= 7; l++) expect(cutsFor(l, new Rng(42))).toEqual(cutsFor(l, new Rng(42)));
     expect(boardsFor(new Rng(9))).toEqual(boardsFor(new Rng(9)));
