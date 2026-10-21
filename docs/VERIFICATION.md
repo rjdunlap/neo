@@ -6,7 +6,7 @@
 - Passed `npm run typecheck`; `npx vitest run src/games/egg-catch src/content/howto.test.ts src/content/voice-script.test.ts`: 31 tests (13 Egg Catch / 18 how-to; no separate voice-script test file). Includes 200-seed bot timing with coloured shells, catchable hint lanes, distance from white, and brown/white-only rule streams.
 - `node test-results/egg-colours-probe.mjs`, isolated Chromium at `http://localhost:5197/classic/`, portrait 768×1024: real level-2 touches, six gathered eggs, zero misses/hints, one saved sticker, no page errors. Inspected `test-results/browser/egg-colours-level2-portrait.png` and `egg-colours-ending-portrait.png`: blue-green falling shell and six peeping chicks/cracked shells, pet clear.
 - Probe setup corrected logical-to-screen touch scaling; interrupted attempts were not game failures. Source frozen for final successful run. Comments added after the unit pass do not change its evidence.
-- Not run: build, broad/browser suites, offline, physical iPad/audio/speech/child play (content tier). Existing device checks remain open; route/pair endings share the finale, but no separate route/pair browser play was run.
+- Local build, broad/browser suites, offline, physical iPad/audio/speech/child play not run (content tier). Upstream `8ca0ac75` adds PR tests/build and an AGENTS wait-for-pass rule only; integrated as `4f72a733`, gameplay proof reused. Required CI result follows in the worker chat before merge. Existing device checks remain open; route/pair endings share the finale, but no separate route/pair browser play was run.
 
 ## 2026-10-21 — Shape Sorter level 9, Tap and in it goes (slice 2)
 
