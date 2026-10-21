@@ -4306,9 +4306,10 @@ async function arcade() {
       await kit.sleep(200);
     };
   });
-  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 2, 3, 4, 5, 6];
+  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 10, 2, 3, 4, 5, 6];
   for (const level of (!only || only === 'roundup') ? roundupLevels : []) {
     await launch('roundup', level);
+    const stickersBefore = await page.evaluate(() => kit.store.data.stickers.length);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     await page.evaluate(async () => {
@@ -4324,7 +4325,7 @@ async function arcade() {
       const spoken = SCRIPT[instruction.id][0].replace(/\{(\w+)\}/g, (_, key) => instruction.values[key]);
       const { PLURAL, PLACE, animalsFor } = await import('/src/games/roundup/logic.ts');
       for (const { pen } of g.pens) {
-        const word = pen.target === undefined ? PLURAL[pen.kind] : animalsFor(pen.kind, pen.target);
+        const word = g.plan.sequential ? pen.kind : pen.target === undefined ? PLURAL[pen.kind] : animalsFor(pen.kind, pen.target);
         if (!spoken.includes(word) || (g.pens.length === 2 && !spoken.includes(PLACE[pen.kind]))) throw new Error(`Wrong instruction: ${spoken}`);
       }
       if (g.plan.mode === 'tap') {
@@ -4339,6 +4340,20 @@ async function arcade() {
           kit.tapOn(loose()[0].critter, 0, -40);
           await kit.until(() => loose().length < n && g.animals.every((a) => a.state !== 'hopping'), 4000);
         }
+      } else if (g.plan.sequential) {
+        if (g.animals.length !== 2 || loose().length !== 1 || g.animals[1].critter.visible) throw new Error('Shoo one must start with exactly one visible loose animal');
+        if (g.plan.gate !== 0.8 || g.plan.fleeRadius !== 190) throw new Error('Shoo one gate/steering changed');
+        await herdInto(loose()[0], 0);
+        if (g.finished || g.pens[0].inside !== 1 || g.misses || g.hints) throw new Error('First success finished early or added support');
+        await kit.until(() => loose().length === 1 && !g.busy, 3000);
+        if (g.animals[0].state !== 'penned' || !g.animals[1].critter.visible || g.sinceProgress > 1) throw new Error('Second animal did not get fresh support');
+        // Advance idle time only; the real update loop must show and account for both forms of help.
+        g.sinceProgress = 9.8;
+        await kit.until(() => g.hinting, 1500);
+        if (g.hints !== 1 || !loose()[0].glow.visible || !g.pens[0].glow.context.instructions.length) throw new Error('Ten-second animal/gate glow missing');
+        g.sinceProgress = 19.8;
+        await kit.until(() => g.finished, 5000);
+        if (g.pens[0].inside !== 2 || g.misses !== 0 || g.hints !== 2) throw new Error(`Shoo one supported finish: ${g.pens[0].inside}/${g.misses}/${g.hints}`);
       } else {
         if (g.plan.mode === 'sort') {
           // Twice into the wrong pen: two gentle misses and a glow.
@@ -4374,12 +4389,14 @@ async function arcade() {
     });
     await screenshot(`roundup-${level}`);
     await finished('roundup');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickersBefore + 1, 'one Roundup sticker per whole round');
     const r = await page.evaluate(() => { const r = kit.store.stats('roundup').history.at(-1); return [r.misses, r.hints]; });
     log(`Roundup ${level} (${mode}): score ${r}`);
     // Herding speed varies, so an idle hint may add to the two wrong-pen misses' hint.
     if (mode === 'sort') assert.ok(r[0] === 2 && r[1] >= 1, `roundup sort score ${r}`);
     if (mode === 'count') assert.ok(r[0] >= 1, 'roundup count misses');
     if (mode === 'tap') assert.deepEqual(r, [0, 0], 'roundup tap score');
+    if (level === 10) assert.deepEqual(r, [0, 2], 'roundup Shoo one supported score');
     log(`Roundup ${level} (${mode}): herding, gates, pens, saved score and sticker passed`);
   }
 

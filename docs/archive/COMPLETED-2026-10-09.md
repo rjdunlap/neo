@@ -1,6 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
 
+### Roundup slice 3, Level 10 Shoo one (2026-10-20)
+
+[PR #686](https://github.com/rjdunlap/neo/pull/686): two successive single-animal successes, one loose animal at a time near an 80%-open gate, ordinary flee steering, fresh 10/20-second glow/trot-home support (one hint each), zero misses, one round/sticker. Toddler order `[1,10,2,3]`, `entryLevels: [10]`; other bands and IDs unchanged. Singular spoken instruction and level-scoped how-to. Level 11 and other slices remain open. [Verification](../VERIFICATION.md#2026-10-20--roundup-level-10-shoo-one-slice-3).
+
+
 ### Discovery D2b, the Little surprises mix (2026-10-20)
 
 Built on `claude/little-surprises-mix` from the [definition](../definitions/little-surprises.md): `src/content/mix.ts` (frozen pool, eligibility, pure `step()` reducer, 11 tests), `MixMemory` in `src/app/discovery.ts` bound to the save object, `Scene.holdsMix()` with `App.show` ending the mix, `src/app/mix.ts` `MixHost` and `src/ui/mix.ts` `MixSheet` (preview and ending), the mix entry in both home-spot layouts, `GameScene` Next stop/Skip/All done and a pause-sheet skip, eight `mix.*` voice lines, and `mix-flow.test.ts` (5 tests). Deviation recorded: All done goes to the home spot where the ending sheet opens. Browser flow `DISCOVERY_ONLY=mix`; offline harness follows the Little surprises card leading toddler page one.
@@ -1226,7 +1231,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-20.md#2026-10-20--fruit-slice-
 
 [PR #669](https://github.com/rjdunlap/neo/pull/669), `claude/shape-sorter-support-truth`, [deep dive](../deep-dives/shape-sorter.md) build slice 1 (gaps 2, 4, 6 and 8). Level 1 (plan flag `everyTouch`): a tap on the box gulps and giggles, a tap on the floor or the wall wiggles the nearest waiting piece and names it, and a piece let go far from the hole plops (`sfx.pop`) while the box leans toward it; no misses or hints. Help rule (`wrongDrop`/`startHelp` in `logic.ts`): every second miss since the last glow lights the right hole (one hint each), whichever pieces were tried, and a piece going in does not reset the count. Judgement against the dive's "two wrongs in a row anywhere": streaks that a success resets could pass six misses without a glow at 6–8 pieces, which the dive's own test property forbids, so the count runs since the last glow (this also matches "a glow after two misses"). The three-second speech throttle stays; the boing and shake always happen. Level 8: a shape dropped in its own hole that is not the one asked for is named by `shape.find.notyet.{circle,square,triangle,star,heart,hexagon}` ("That's the {shape}! We're looking for the shape with …"), said every time; it is still one miss and bounces (decision 3 default). `CLASSIC` pins levels 7–8 to the six classic kinds instead of `SHAPES`; `boxTopFor`, `BOX_FRONT` and `FLOOR_AT` in `logic.ts` with a test that every plan's lid stands on the floor, at least 40 from the top and inside the width, in four views. How-to card: the level-7 step is bounded `to: 7` (it said "tilted" at 8), the level-8 step says one colour, and the notes are per level (1, 2–7, 8). IDs, windows and the dead `lap` row unchanged (slice 2 handles lap). `scripts/browser-check.mjs` `originals` shapes case: level 1 checks that a box tap, a floor wiggle and a far drop are free; level 8 drops a fitting but unasked shape first (one miss, it comes back), then the asked hole (glow).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-20--shape-sorter-support-truth-slice-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-20.md#2026-10-20--shape-sorter-support-truth-slice-1).
 
 ### Feelings Faces slice 1: pools, the pet's own hug and scenery that answers (2026-10-20, [PR #673](https://github.com/rjdunlap/neo/pull/673))
 
