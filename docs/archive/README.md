@@ -54,3 +54,5 @@ Dot Link level 11 closeout rotated the five oldest live verification entries (Sh
 IDEAS.md's short-ladder audit (2026-10-09), round two and round three moved to [IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md](IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md) on 2026-10-17; the game deep dives superseded them. The same day the subject recommendation packets left the roadmap for [deep-dives/subjects/RECOMMENDATIONS.md](../deep-dives/subjects/RECOMMENDATIONS.md) (not an archive: they are live proposals).
 
 RW06 slice 2 closeout rotated the oldest live verification entry (Ramp Race truthful support, inquiry Q2) into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
+
+Puddle Gobble closeout rotated the oldest live verification entry into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
