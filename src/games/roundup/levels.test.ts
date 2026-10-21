@@ -28,7 +28,7 @@ it('places Shoo one between tap and shoo three without renumbering other bands',
   expect(nextLevelOffer(10, toddler)).toBe(2);
   expect(stepLevel(2, -1, toddler)).toBe(10);
   expect(levelsInOrder(roundup.levels('preschool'))).toEqual([2, 3, 4, 5]);
-  expect(levelsInOrder(roundup.levels('prek'))).toEqual([3, 4, 5, 6, 7, 8]);
+  expect(levelsInOrder(roundup.levels('prek'))).toEqual([3, 4, 5, 6, 7, 8, 9]);
   expect(landing(10, roundup.levels('preschool'), roundup.entryLevels)).toBe(2);
   const card = howToFor(roundup, 10)!;
   expect(JSON.stringify(card)).toContain('wide gate');
@@ -36,12 +36,22 @@ it('places Shoo one between tap and shoo three without renumbering other bands',
   expect(JSON.stringify(card)).not.toContain('ring the bell');
 });
 
-it('tops pre-K with Make it fair, a bell level with no number on the sign', () => {
-  expect(roundup.levels('prek').max).toBe(8);
+it('keeps Make it fair below Fill it up, with no number on its sign', () => {
+  expect(roundup.levels('prek').max).toBe(9);
   expect(roundup.levels('preschool').max).toBe(5);
   const card = JSON.stringify(howToFor(roundup, 8)!);
   expect(card).toContain('same number');
   expect(card).toContain('ring the bell');
   expect(card).toContain('empty pen');
   expect(card).not.toContain('cows');
+});
+
+
+it('offers Fill it up after Make it fair with a remainder-specific card', () => {
+  expect(nextLevelOffer(8, roundup.levels('prek'))).toBe(9);
+  expect(stepLevel(9, 1, roundup.levels('prek'))).toBe(9);
+  const card = JSON.stringify(howToFor(roundup, 9)!);
+  expect(card).toContain('already holds');
+  expect(card).toContain('exactly its requested total');
+  expect(card).toContain('recount');
 });
