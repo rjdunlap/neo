@@ -92,6 +92,7 @@ import { liftIt } from './lift-it';
 import { atticFinds } from './attic-finds';
 import { fossilDig } from './fossil-dig';
 import { lostLayers } from './lost-layers';
+import { trackwayTales } from './trackway-tales';
 import { critterCrossing } from './critter-crossing';
 import { sudokuGarden } from './sudoku-garden';
 import { pondConga } from './pond-conga';
@@ -200,6 +201,7 @@ export const GAMES: GameModule[] = [
   atticFinds,
   fossilDig,
   lostLayers,
+  trackwayTales,
   critterCrossing,
   clapSyllables,
   chainReaction,

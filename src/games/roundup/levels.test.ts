@@ -28,7 +28,7 @@ it('places Shoo one between tap and shoo three without renumbering other bands',
   expect(nextLevelOffer(10, toddler)).toBe(2);
   expect(stepLevel(2, -1, toddler)).toBe(10);
   expect(levelsInOrder(roundup.levels('preschool'))).toEqual([2, 3, 4, 5]);
-  expect(levelsInOrder(roundup.levels('prek'))).toEqual([3, 4, 5, 6]);
+  expect(levelsInOrder(roundup.levels('prek'))).toEqual([3, 4, 5, 6, 7]);
   expect(landing(10, roundup.levels('preschool'), roundup.entryLevels)).toBe(2);
   const card = howToFor(roundup, 10)!;
   expect(JSON.stringify(card)).toContain('wide gate');
