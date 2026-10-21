@@ -30,7 +30,11 @@ export function launchDiscovery(go: Pick<Routes, 'game'>, id: string, band: Band
 }
 
 /** A round launched by the mix: which session, which stop, which round. Only the scene that claimed it is in the mix. */
-export interface MixRound { session: number; p: number; round: number }
+export interface MixRound {
+  session: number; p: number; round: number;
+  /** What the stop card says before the stop's title: a hop over the stop before it (D3). */
+  lead?: 'mix.skip';
+}
 interface MixSession { owner: object; id: number; place: Band; state: MixState }
 
 /**
@@ -65,11 +69,11 @@ export class MixMemory {
     return s?.state;
   }
   /** A new round at stop `p`: the next GameScene built claims it. */
-  launch(owner: object, p: number): MixRound | undefined {
+  launch(owner: object, p: number, lead?: MixRound['lead']): MixRound | undefined {
     const s = this.own(owner);
     if (!s) return undefined;
     s.state = step(s.state, { type: 'launch', p });
-    return this.pending = { session: s.id, p, round: s.state.round };
+    return this.pending = { session: s.id, p, round: s.state.round, ...(lead ? { lead } : {}) };
   }
   claim(owner: object): MixRound | undefined {
     const r = this.pending;

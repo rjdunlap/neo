@@ -77,33 +77,34 @@ export interface SheetActions {
 
 const TILE = 220;
 
-/** One stop on the sheet: its picture, bright when next or still to come, a sticker copy once played, dimmed with a hop once passed. */
-class StopTile extends Container {
+/** One stop on the sheet (220 across) or a stop card's row (100): bright when next or still to come, a sticker copy once played, dimmed with a hop once passed. */
+export class StopTile extends Container {
   private readonly face = new Container();
   private clock = 0;
   bobbing = false;
-  constructor(readonly mod: GameModule, readonly item: MixItem, next: boolean, onPress: () => void) {
+  constructor(readonly mod: GameModule, readonly item: MixItem, next: boolean, onPress: () => void, readonly size = TILE) {
     super();
-    this.hitArea = new Rectangle(-TILE / 2, -TILE / 2, TILE, TILE);
+    const k = size / TILE;
+    this.hitArea = new Rectangle(-size / 2, -size / 2, size, size);
     const passed = item.state === 'skipped' || item.state === 'unavailable';
     const color = next ? swatch.yellow : swatch.blue;
-    this.face.addChild(new Graphics().roundRect(-TILE / 2, -TILE / 2, TILE, TILE, 28).fill(color.light).stroke({ width: next ? 8 : 4, color: color.line }), picture(mod, 0, 0, 150));
+    this.face.addChild(new Graphics().roundRect(-size / 2, -size / 2, size, size, 28 * k).fill(color.light).stroke({ width: (next ? 8 : 4) * Math.max(k, 0.6), color: color.line }), picture(mod, 0, 0, 150 * k));
     this.face.eventMode = 'none';
     this.addChild(this.face);
     if (passed) {
       this.face.alpha = 0.4;
-      const hop = hopIcon(ink, 1.2);
-      hop.position.set(0, -70);
+      const hop = hopIcon(ink, 1.2 * k);
+      hop.position.set(0, -70 * k);
       hop.eventMode = 'none';
       this.addChild(hop);
     }
     if (item.state === 'played' && item.seed !== undefined) {
-      const copy = stickerize(mod.sticker(item.seed), 34);
-      copy.position.set(TILE / 2 - 30, -TILE / 2 + 30);
+      const copy = stickerize(mod.sticker(item.seed), 34 * Math.max(k, 0.7));
+      copy.position.set(size / 2 - 30 * k, -size / 2 + 30 * k);
       copy.eventMode = 'none';
       this.addChild(copy);
     }
-    this.bobbing = next;
+    this.bobbing = next && size === TILE;
     onTap(this, () => {
       this.face.scale.set(1.06);
       onPress();

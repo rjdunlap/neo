@@ -14,7 +14,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 ## Queued
 
-- **Discovery D3, the stop card** (shell and navigation tier: typecheck, unit tests, build, `BROWSER_SUITE=discovery` with `DISCOVERY_ONLY=mix` and `direct-next`, `world`, the offline check): with cards on, Little surprises' next-up stop card carries the stop row and Skip, one Play; cards off keeps the sheet. [Definition](definitions/combined-preview.md)
 - **Rework RW05 slice 2b, Splish Splash and Weather Wardrobe on `CompanionRig`, then drop `ctx.petSpec`** (status `decision`; waiting on the [misfit decision](WAITING-ON-DEVELOPER.md#decisions-that-block-work), so no routine picks it up; shell tier plus one filtered regression and `fingerdemo` per game): slice 2 landed in part in [#642](https://github.com/rjdunlap/neo/pull/642) with the other eight large-pet games. [Packet](rework/CREATURE-COLLECTION.md#built-slice-2-in-part-2026-10-20)
 
 - **`roundup`, level 12 *Big and little*, slice 8** (new levels, plus a portrait screenshot): pre-K `order [3, 4, 5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/roundup.md#new-levels-on-top)

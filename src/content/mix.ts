@@ -70,3 +70,15 @@ export function nextUp(s: MixState): number | null {
 export function endingLine(s: MixState): 'mix.end' | 'mix.end.quiet' {
   return s.items.some(it => it.state === 'played') ? 'mix.end' : 'mix.end.quiet';
 }
+
+export type MixReturn = { kind: 'stop'; p: number } | { kind: 'ending' } | { kind: 'sheet' };
+
+/**
+ * Where a Home inside a live mix goes (D3). With how-to cards on, the next-up stop's own card is the preview; with them off,
+ * the sheet on the home spot is. Once nothing is upcoming, both go to the ending.
+ */
+export function mixReturn(s: MixState, cardsOn: boolean): MixReturn {
+  const p = nextUp(s);
+  if (p === null) return { kind: 'ending' };
+  return cardsOn ? { kind: 'stop', p } : { kind: 'sheet' };
+}

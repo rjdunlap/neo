@@ -36,15 +36,19 @@ export class MixHost {
   start() {
     if (!this.mods || this.launching) return;
     mixMemory.start(store.data, this.band);
+    // With how-to cards on, the first stop's own card is the preview (D3): it offers the mix and carries the stops and Skip.
+    if (store.data.settings.howToCards) return this.launch(0);
     this.open();
     void voice.say('mix.offer').then(() => this.sayNext('mix.stop'));
   }
 
-  /** Back from a stop (its corner Home, the card's Back, the result's Home): the sheet again, at the next stop or the ending. */
+  /** Back from a stop (its corner Home, the card's Back, the result's Home): the sheet again, at the next stop or the ending (only the ending with cards on). */
   resume() {
     if (!this.live) return;
-    this.open();
     const state = mixMemory.at(store.data, this.band)!;
+    // With cards on, a stop still to come is shown on its own card, so the home spot only ever opens the ending.
+    if (store.data.settings.howToCards && nextUp(state) !== null) return;
+    this.open();
     if (nextUp(state) === null) void voice.say(endingLine(state));
     else this.sayNext('mix.next');
   }
@@ -105,7 +109,8 @@ export class MixHost {
     if (!mixMemory.launch(store.data, p)) return;
     this.launching = true;
     voice.stop();
-    void voice.say(now[p].titleLine);
+    // With cards on, the stop's card speaks its own opening.
+    if (!store.data.settings.howToCards) void voice.say(now[p].titleLine);
     this.app.go.game(now[p].id, store.data.profile.band, undefined, false, { place: this.band });
   }
 

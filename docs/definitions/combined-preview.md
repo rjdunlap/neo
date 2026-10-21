@@ -1,6 +1,6 @@
 # The stop card: a mix preview that is the game's own introduction (definition D3)
 
-*Defined 2026-10-21 · docs only · source audit `22a52828` · chunk 19, [discovery action D3](../ROADMAP.md#discovery-actions).* This packet says what a D3 build session does. Nothing here is built yet. The research behind it is [Introductions: reduce duplication without losing support](../DISCOVERY.md#introductions-reduce-duplication-without-losing-support).
+*Defined 2026-10-21, **built 2026-10-21 ([PR #701](https://github.com/rjdunlap/neo/pull/701))**; the wide fallback below is in use at 1024×768 (landscape overflowed by up to 116 without it) · originally docs only · source audit `22a52828` · chunk 19, [discovery action D3](../ROADMAP.md#discovery-actions).* This packet says what a D3 build session does. The packet below is the build brief and is now built. The research behind it is [Introductions: reduce duplication without losing support](../DISCOVERY.md#introductions-reduce-duplication-without-losing-support).
 
 ## What it changes, and what it does not
 
