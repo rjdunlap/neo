@@ -59,4 +59,6 @@ Puddle Gobble closeout rotated the oldest live verification entry into [Verifica
 
 Swing Pals closeout rotated the oldest live verification entry (Garden Grow, slice 1) into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
 
-Little Helpers slice 1 closeout rotated the oldest live verification entry (Weather Wardrobe, slice 1) into [Verification 2026-10-21](VERIFICATION-2026-10-21.md), leaving fifteen dated entries live.
+Cut Along closeout rotated the oldest live verification entry (Weather Wardrobe, slice 1) into [Verification 2026-10-21](VERIFICATION-2026-10-21.md), leaving fifteen dated entries live.
+
+Little Helpers slice 1 closeout rotated the oldest live verification entry (Fill and Dump level 6) into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.

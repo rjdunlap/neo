@@ -25,7 +25,7 @@ Built on `claude/little-surprises-mix` from the [definition](../definitions/litt
 
 ### Fill and Dump slice 3, Level 6 Full and empty (2026-10-20)
 
-[PR #683](https://github.com/rjdunlap/neo/pull/683): toddler and preschool level 6, placed after 2 by `order` (toddler [1, 2, 6, 3, 4], preschool [1, 2, 6, 3, 4, 5]; lap unchanged). Routing reads a plan table keyed by level ID (`FILL_LEVELS`, `kindFor`: 1–4 basket, 5 pour, 6 pair); `PairGame` is in `src/games/fill-dump/pair.ts` and `Basket` moved to `basket.ts` (a size added). Four alternating tip-or-fill requests between a full and an empty basket; the wrong basket is one miss, a glow and one hint after the second miss on a request. Nine `fill.pair.*` voice lines, level-5 how-to lines bounded `to: 5`, a bot that taps the right basket. [Verification](../VERIFICATION.md#2026-10-20--fill-and-dump-level-6-full-and-empty-slice-3).
+[PR #683](https://github.com/rjdunlap/neo/pull/683): toddler and preschool level 6, placed after 2 by `order` (toddler [1, 2, 6, 3, 4], preschool [1, 2, 6, 3, 4, 5]; lap unchanged). Routing reads a plan table keyed by level ID (`FILL_LEVELS`, `kindFor`: 1–4 basket, 5 pour, 6 pair); `PairGame` is in `src/games/fill-dump/pair.ts` and `Basket` moved to `basket.ts` (a size added). Four alternating tip-or-fill requests between a full and an empty basket; the wrong basket is one miss, a glow and one hint after the second miss on a request. Nine `fill.pair.*` voice lines, level-5 how-to lines bounded `to: 5`, a bot that taps the right basket. [Verification](VERIFICATION-2026-10-20.md#2026-10-20--fill-and-dump-level-6-full-and-empty-slice-3).
 
 ### Stamp Studio slice 4, Play the picture (2026-10-17)
 
@@ -1365,6 +1365,16 @@ Deviation from the definition: the home land is Story Grove, not Bubble Beach (d
 ## Roundup level 7 Leave the cows (2026-10-21)
 
 [PR #698](https://github.com/rjdunlap/neo/pull/698): slice 5 adds two pigs/mud, two bunnies/carrots and two cows that stay on grass. Outsiders are rejected from either pen, never selected by hints or trot-home, and excluded from completion. Cow-specific instruction/miss/finish speech; pre-K 3–7. Other levels and decisions unchanged.
+
+## Cut Along levels 1–8 (2026-10-21)
+
+[PR #702](https://github.com/rjdunlap/neo/pull/702), `claude/cut-along`, built from its [definition](../definitions/cut-along.md). New game `cut-along` in Painted Canyon (5 games, land id `treehouse`), region `treehouse`, skills fine-motor, shapes and spatial reasoning, music `STYLES.paint`; toddler 1–2, preschool 2–5, pre-K 4–7, school 6–8, no lap level. Snips at 1, a thick line at 2, straight lines at 3, zigzags and waves at 4, curves and a circle at 5, a square and a triangle at 6, picture outlines at 7, and choosing the outline that fits a gap at 8. Reuses Letter Trails' `sampleStroke`, `advanceTrace`, `offTrail`, `showTheWay` and `tuneStep`; rules, corridor, boards and the bot route in `logic.ts`; `sfx.snip()`; `cutalong` browser suite. Every open decision shipped at its default (no Fold & Snip, collage not saved, no lap level, the land's music). Differences from the definition: the way round a closed shape is chosen only once the cut has left the joint by more than 1.5 corridor half-widths (found by the browser check; unit test shown failing on the old rule); the ghost-finger route is thinned to corners plus a point about every 0.15 paper units.
+
+Idea row moved here from the notebook's candidates:
+
+| **Cut Along / toddler–school** (scissor skills; opened 2026-10-13: occupational-therapy sources agree on the order, with ages varying: single snips at about 2, forward along a thick line at 3, a 10 cm line, a curve and a rough circle at 4, a square and a triangle at 5) | Follow a dashed line on paper to cut out a shape. Toddler: tap along thick dashes (snips). Preschool: straight lines, then zigzags and curves. Pre-K: circle, square, triangle. School: **Fold & Snip**: cut notches in folded paper and unfold it to see a symmetric snowflake or heart, later predicting the unfolded result first | Letter Trails' tracer (`advanceTrace`, `traceWaypoints`) already enforces a corridor; straying only pauses the scissors, two strays glow the line, and partial progress is kept. The cut-out can be kept as a treehouse creation | M |
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--cut-along-levels-18).
 
 ## Little Helpers: every touch answers and the empty crowd shrugs, slice 1 (2026-10-21)
 
