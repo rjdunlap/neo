@@ -192,3 +192,18 @@
 - After review, fixed a resize during a fruit's hop leaving the round busy (the pieces are placed again when it lands) and made a system `pointercancel` put a carried fruit back; added a long-wander hint timing test (11 rule tests; worst hint 10 ms, no undo fallback); `jarsort` re-passed on http://localhost:5612.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=jar-sort` at levels 1 and 8 (16.6 s, 49.8 s, before the one-board demonstration change) and at level 4 after it (25.1 s).
 - Not run: the offline check, `world`, the phone suites. Open on a device ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): fruit legibility at capacity 4, whether a preschooler reads lit jars, whether undo is found unprompted.
+
+## 2026-10-20 — Egg Catch: roll when ready at levels 4–5
+
+- Built on `claude/egg-catch-roll-when-ready` (PR #652, code commit `dac8f977`, base `31d5129c`): the egg at levels 4–5 waits for the green arrow instead of rolling on a clock; `routeTouch` bot moves, `egg.route`/`egg.sort` lines, how-to steps and note, `eggs` browser case.
+- Ran `npm run typecheck` (clean) and `npm test` (181 files, 1680 tests pass, including the new `routeTouch` rule test).
+- `BROWSER_SUITE=batch BATCH_ONLY=eggs FROM_LEVEL=4 TO_LEVEL=5` (Vite http://localhost:5795) passed: 2 misses and 1 hint at each level, the egg still waiting after 4.5 s, no page errors. `BROWSER_SUITE=fingerdemo FINGER_ONLY=egg-catch FINGER_LEVELS=4,5` clean in 30.5 s and 36.8 s.
+- Portrait probe at level 5 (768×1024): egg still held after 5 s, arrow clear of Home and the pet, no page errors.
+- Not run: `npm run build`, `world`, the offline check, couch (uses only levels 2–3, untouched). Open: an iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-20 — Block Garden levels 1–8
+
+- Built on `claude/block-garden` (PR #655, tested commit `0448a289`, base `c2206318`; `blockgarden` rerun at `c6cfd607` after a fix: a tap on a tall piece's slot upright had counted as a refused drop, now free and asserted): new game `block-garden` in Rainbow Meadow, levels 1–8, new `blockgarden` browser case, runtime-generated gardens at 1–4 and frozen solver-checked gardens at 5–8, a drag-bot demonstration.
+- Ran `npm run typecheck` (clean), `npx vitest run src/games/block-garden` (33 rule tests pass) and full `npm test` (1713 tests pass on rerun; the first run had one failure in a creature rig test, "pins the face and body … never tears the picture", in untouched code; it passed alone and on rerun, recorded as a flake). The worst level-8 off-plan hint search measured about 320 ms on Node.
+- `BROWSER_SUITE=blockgarden` (Vite http://localhost:5856) passed: levels 1 and 8 planted by drags with no misses or hints and a sticker each, two refused drops at level 3 (two misses, one hint), the hinted piece planted, undo, level 6 portrait screenshot `test-results/browser/block-garden-6-portrait.png`. `BROWSER_SUITE=fingerdemo FINGER_ONLY=block-garden` passed at level 1 (prek, 3.9 s) and level 8 (grownup, 23.2 s). `npm run build` passed.
+- Not run: `world`, the offline check, an iPad. Open: carrying a piece with the 40-unit lift, 72-unit squares on a phone, the shadow, and the level 8 hint search time on a device ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
