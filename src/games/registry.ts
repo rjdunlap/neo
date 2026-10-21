@@ -90,6 +90,7 @@ import { puddleGobble } from './puddle-gobble';
 import { swingPals } from './swing-pals';
 import { liftIt } from './lift-it';
 import { atticFinds } from './attic-finds';
+import { fossilDig } from './fossil-dig';
 import { critterCrossing } from './critter-crossing';
 import { sudokuGarden } from './sudoku-garden';
 import { pondConga } from './pond-conga';
@@ -196,6 +197,7 @@ export const GAMES: GameModule[] = [
   swingPals,
   liftIt,
   atticFinds,
+  fossilDig,
   critterCrossing,
   clapSyllables,
   chainReaction,
