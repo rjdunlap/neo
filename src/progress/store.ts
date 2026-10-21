@@ -25,6 +25,7 @@ import type { SpeciesId } from '../creatures/species';
 import { changeWorn, type WearableId } from '../art/creatures/wear-slots';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
+import { beginWelcome, completeWelcome, type WelcomeBand, type WelcomeProject, type WelcomeStep } from '../content/welcome';
 import { isNew, toggleFavorite } from '../content/shelf';
 import { STORY_STEPS, type PetColor, type RoomItemId, type StoryId, type StoryStep } from '../content/world';
 import { companionOf, defaults, HISTORY_LENGTH, meetIn, migrate, remember, repairPrevious, swapWithPrevious, type GameStats, type Individual, type PreviousSave, type RoundRecord, type SaveData, type StoryProgress } from './save';
@@ -283,6 +284,29 @@ export class Store {
     p.steps = [];
     p.ended = false;
     this.save();
+  }
+
+  // ---- Welcome a New Friend (RW07) -------------------------------------------------------------------------------
+
+  get welcome(): WelcomeProject {
+    return this.data.projects.welcome;
+  }
+
+  /** A step was launched: the first launch fixes the project's band and who is coming. Written at once. */
+  beginWelcome(band: WelcomeBand): boolean {
+    const changed = beginWelcome(this.data.projects.welcome, band, this.data.creatures.owned);
+    if (changed) {
+      this.save();
+      this.flush();
+    }
+    return changed;
+  }
+
+  /** A finished round completes its step and keeps what she made for it (a stamped picture), in one write. */
+  completeWelcomeStep(step: WelcomeStep, made: Creation | null): boolean {
+    const done = completeWelcome(this.data.projects.welcome, step, made);
+    if (done) this.save();
+    return done;
   }
 
   get room() {

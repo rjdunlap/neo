@@ -5,6 +5,7 @@ import { cleanCreations, emptyCreations, type CreationsSave } from '../content/c
 import { cleanJournal, emptyJournal, type JournalSave } from '../content/journal';
 import { cleanFavorites } from '../content/shelf';
 import { isSpecies, SPECIES, type SpeciesId } from '../creatures/species';
+import { cleanWelcome, emptyWelcome, type WelcomeProject } from '../content/welcome';
 import { cleanWorn, type WearableId } from '../art/creatures/wear-slots';
 
 export interface StickerPlacement {
@@ -99,6 +100,8 @@ export interface SaveData {
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
   stories: { picnic: StoryProgress<'picnic'>; woodland: StoryProgress<'woodland'> };
+  /** The root's projects (RW07): Welcome a New Friend, its steps and what she made for it. Never the treehouse's slots. */
+  projects: { welcome: WelcomeProject };
   room: RoomSave;
   /** Games she has hearted, oldest first: the island's favorites shelf. Bounded; never a way to lock a game. */
   favorites: string[];
@@ -121,6 +124,7 @@ export function defaults(): SaveData {
     games: {},
     stickers: [],
     stories: { picnic: { steps: [], ended: false, keepsake: false }, woodland: { steps: [], ended: false, keepsake: false } },
+    projects: { welcome: emptyWelcome() },
     room: starterRoom(),
     favorites: [],
     creations: emptyCreations(),
@@ -271,6 +275,7 @@ export function migrate(raw: unknown): SaveData {
     games,
     stickers,
     stories: { picnic: story('picnic', stories.picnic), woodland: story('woodland', stories.woodland) },
+    projects: { welcome: cleanWelcome(isObj(raw.projects) ? raw.projects.welcome : undefined) },
     room: room(raw.room),
     favorites: cleanFavorites(raw.favorites),
     creations: cleanCreations(raw.creations),
