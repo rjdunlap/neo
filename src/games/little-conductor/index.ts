@@ -287,7 +287,8 @@ class LittleConductor implements Game {
       this.score = r.score;
       for (const e of r.events) this.voice(e);
     }
-    if (this.ready && this.score.pace === null && !this.invited) {
+    // Not at level 3: a turtle pulse there would point at an answer the sign may not ask for.
+    if (this.ready && !this.sign && this.score.pace === null && !this.invited) {
       this.idle += step;
       // An invitation, never a hint: the turtle pad pulses once after six quiet seconds.
       if (this.idle > 6) {
