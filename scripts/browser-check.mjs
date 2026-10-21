@@ -13319,8 +13319,8 @@ async function chainPlay() {
     for (let piece = 0; piece < layout.length; piece++) await put(piece, layout[piece]);
   };
 
-  // CHAIN_LEVELS=7 plays only tap-to-turn; the default plays 1, 6, 7 and 8.
-  const chainLevels = (process.env.CHAIN_LEVELS ?? '1,6,7,8').split(',').map(Number);
+  // CHAIN_LEVELS=7 plays only tap-to-turn; the default plays 1, 6, 7, 8 and 9.
+  const chainLevels = (process.env.CHAIN_LEVELS ?? '1,6,7,8,9').split(',').map(Number);
   const tapBell = (col) => page.evaluate(async (col) => {
     const g = neo.scene.game, b = g.bellNodes.find((n) => n.col === col).node.getGlobalPosition();
     await kit.tap(b.x, b.y - 10); await kit.sleep(150);
@@ -13410,6 +13410,58 @@ async function chainPlay() {
     await screenshot('chain-reaction-8-portrait');
     await page.setViewportSize({ width: 1024, height: 768 });
     log('Chain Reaction 8: run-before-predicting prompt, uncounted follow-the-marble help, a different bell rang without a miss and kept its trail, three predicted machines, one sticker, portrait fit passed');
+  }
+
+  if (chainLevels.includes(9)) {
+    const stickers = await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length);
+    await launch('chain-reaction', 9);
+    const machines = await page.evaluate(() => neo.scene.game.boards.length);
+    assert.equal(machines, 2);
+    for (let index = 0; index < machines; index++) {
+      await readyMachine(index);
+      assert.ok(await page.evaluate(() => { const m = neo.scene.game.machine; return !!m.blue && m.blue.target !== m.target && neo.scene.game.blueBell !== null; }), 'two marbles, two bells');
+      if (index === 0) {
+        // A placement that rings one marble's bell while the other misses is a free experiment that leaves both trails.
+        const oneOnly = await page.evaluate(async () => {
+          const g = neo.scene.game, { traces } = await import('/src/games/chain-reaction/logic.ts');
+          const n = g.machine.sockets.length;
+          for (let a = 0; a < n; a++) for (let b = 0; b < n; b++) {
+            if (a === b) continue;
+            const t = traces(g.machine, [a, b]);
+            if (t[0].success !== t[1].success) return [a, b];
+          }
+          return null;
+        });
+        assert.ok(oneOnly, 'a one-marble placement exists');
+        await arrange(oneOnly);
+        await tap('neo.scene.game.runButton');
+        await page.waitForFunction(() => neo.scene.game.busy, null, { timeout: 5000 });
+        await readyMachine(index);
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 0], 'a one-marble run is not a miss');
+        assert.equal(await page.evaluate(() => neo.scene.game.lastTraces.length), 2, 'both marbles ran');
+        assert.ok(await page.evaluate(() => neo.scene.game.trail.bounds.width > 0), 'the miss leaves its trails');
+        await tap('neo.scene.game.helpButton');
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, !!neo.scene.game.hinted]), [0, 1, true]);
+        await screenshot('chain-reaction-9');
+      }
+      const solution = await page.evaluate(() => neo.scene.game.machine.solution.slice());
+      await arrange(solution);
+      assert.equal(await page.evaluate(async () => { const g = neo.scene.game, { works } = await import('/src/games/chain-reaction/logic.ts'); return works(g.machine, g.placement); }), true);
+      await tap('neo.scene.game.runButton');
+      await page.waitForFunction((index) => neo.scene.finished || neo.scene.game.index > index, index, { timeout: 30000 });
+    }
+    await finished('chain-reaction');
+    assert.deepEqual(await score(), [0, 1]);
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'chain-reaction').length), stickers + 1);
+    await launch('chain-reaction', 9); await readyMachine(0);
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+    assert.ok(await page.evaluate(() => {
+      const g = neo.scene.game;
+      return [...g.parts.map((p) => p.node), g.runButton, g.helpButton, g.targetBell, g.blueBell, g.startCup].every((node) => { const b = node.getBounds(); return b.x >= 0 && b.y >= 0 && b.x + b.width <= innerWidth && b.y + b.height <= innerHeight; });
+    }), 'portrait cups, bells, tray and controls fit');
+    await screenshot('chain-reaction-9-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log('Chain Reaction 9: one-marble experiment is free with both trails, a counted hint, both machines ring both bells, one sticker, portrait fit passed');
   }
 
   for (const level of [1, 6].filter((l) => chainLevels.includes(l))) {
