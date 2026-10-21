@@ -170,3 +170,46 @@ export function pairBoards(rng: Rng, count: number): PairBoard[] {
     return board;
   });
 }
+
+/**
+ * Catching levels (2–3): hens lay only while someone is playing, so a look-away costs nothing. Eggs are numbered as they
+ * are laid; `play()` (a touch, a held finger or couch input) marks every egg laid so far as played over. An egg that lands
+ * with nobody playing since it was laid settles the hens: no more eggs until the next play, and that landing is no miss.
+ * A second egg in the air also waits for play since the last one, so a round left alone lays one egg and stops.
+ */
+export class HenPace {
+  private laid = 0;
+  private playedUpTo = 0;
+  awake = true;
+  play() {
+    this.playedUpTo = this.laid;
+    this.awake = true;
+  }
+  canLay(inAir: number) {
+    return this.awake && (inAir === 0 || this.playedUpTo >= this.laid);
+  }
+  /** The new egg's number, for `land`. */
+  lay() {
+    return ++this.laid;
+  }
+  /** Whether anyone played while egg `k` was in the air; when nobody did, the hens settle. */
+  land(k: number) {
+    const played = this.playedUpTo >= k;
+    if (!played) this.awake = false;
+    return played;
+  }
+}
+
+/**
+ * The hint after two misses at levels 2–3: the lane of the next brown egg, glowing on the hay. That is the brown egg in the
+ * air that lands first (`air` is ordered by how far each has fallen, `t`), else the next brown one the hens will lay.
+ */
+export function glowLane(air: readonly { lane: number; shell: Shell; t: number }[], eggs: readonly Egg[], next: number): number {
+  const falling = [...air].sort((a, b) => b.t - a.t).find((e) => e.shell === 'brown');
+  if (falling) return falling.lane;
+  for (let i = 0; i < eggs.length; i++) {
+    const e = eggs[(next + i) % eggs.length];
+    if (e.shell === 'brown') return e.lane;
+  }
+  return eggs[next % eggs.length].lane;
+}

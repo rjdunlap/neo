@@ -820,6 +820,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: [
       { from: 7, text: 'The gates lock while both eggs roll, one at a time. A missed pair stays for revision; two misses light the needed gate directions.' },
       { from: 2, to: 5, text: 'A missed egg only hatches in the hay.' },
+      { from: 2, to: 3, text: 'After two missed eggs, the hay under the next brown egg glows and the eggs fall slower. The hens rest when nobody is playing and lay again at the next touch.' },
       { from: 4, to: 5, text: 'Each egg waits at the top until the green arrow, so there is time to look. Gates can still be flipped while it rolls.' },
       { from: 6, to: 6, text: 'A wrong guess shows how the gates send the egg; follow them and try again.' },
     ],

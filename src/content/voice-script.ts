@@ -1632,6 +1632,7 @@ export const SCRIPT = {
   'egg.pairretry': ['Let us try that pair again. Follow both paths: brown to the basket, white to the nest.'],
   'egg.sort': ['Brown eggs go in the basket. White eggs go to the nest. Tap the gates, then tap the green arrow!'],
   'egg.white': ['Oops, that one is white! White eggs hatch in the hay.'],
+  'egg.peep': ['Peep! Slide under the next one.'],
   'egg.wrongway': ['Oops! It rolled the other way. Peep!'],
   'egg.predict': ['The gates are already set. Where will the egg land? Tap the hay, then watch it roll!'],
   'egg.predictwrong': ['It went another way! Follow the gates: each one sends the egg the way it points.'],
