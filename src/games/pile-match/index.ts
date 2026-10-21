@@ -137,6 +137,10 @@ class PileMatch implements Game {
   private botCache: { key: string; hint: Hint | null } | null = null;
   private botFallback = false;
   private popped = 0;
+  /** The screen changed size during a flight: everything is placed again when it lands (killing its tween would leave the round busy). */
+  private relayout = false;
+  /** Start again was asked for during a flight: it runs when the flight lands. */
+  private pendingRestart = false;
 
   private readonly hitLayer = new Graphics();
   private readonly trayLayer = new Container();
@@ -172,7 +176,7 @@ class PileMatch implements Game {
     this.resize(this.ctx.view);
     this.pieceLayer.alpha = 0;
     void this.ctx.tw.to(this.pieceLayer, { alpha: 1 }, { duration: 0.3 }).then(() => {
-      this.busy = false;
+      this.settle();
     });
     void this.ctx.instruct(this.instruction());
   }
@@ -200,7 +204,21 @@ class PileMatch implements Game {
       this.tagArt = null;
       this.drawTag();
     }
-    this.placeAll();
+    if (this.busy) this.relayout = true;
+    else this.placeAll();
+  }
+
+  /** A flight or put-back has landed: catch up on a resize or a Start again that came during it. */
+  private settle() {
+    this.busy = false;
+    if (this.relayout) {
+      this.relayout = false;
+      this.placeAll();
+    }
+    if (this.pendingRestart) {
+      this.pendingRestart = false;
+      this.restart();
+    }
   }
 
   update(dt: number) {
@@ -229,6 +247,10 @@ class PileMatch implements Game {
   /** Start again: every piece back on the heap. Misses and hints already made still count. */
   restart() {
     if (this.finished) return;
+    if (this.busy) {
+      this.pendingRestart = true;
+      return;
+    }
     for (const p of this.pieces) this.ctx.tw.kill(p);
     this.mask = fullMask(this.board.cells.length) & ~this.poppedMask();
     this.trayOrder = [];
@@ -445,8 +467,9 @@ class PileMatch implements Game {
     p.zIndex = 100;
     sfx.marimba(NOTES[kind] + before, 0.4);
     if (pop !== null) await this.pop(pop);
-    this.busy = false;
+    this.settle();
     this.botCache = null;
+    if (this.finished) return;
     if (!this.mask) return void this.done();
     if (pop !== null && this.plan.asked) {
       this.drawTag();
@@ -495,7 +518,7 @@ class PileMatch implements Game {
     void this.ctx.tw.to(p.scale, { x: this.layout.scale, y: this.layout.scale }, { duration: 0.25 });
     void this.ctx.tw.to(p, home, { duration: 0.25, ease: ease.outQuad }).then(() => {
       p.zIndex = this.board.cells[i].z * 10;
-      this.busy = false;
+      this.settle();
       this.shade();
       if (this.plan.id >= 4 && ++this.putBacks >= 3) this.showHint();
     });

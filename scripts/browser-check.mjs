@@ -878,6 +878,12 @@ async function pileMatchPlay() {
   await tapPiece(wrong);
   let st = await state();
   assert.deepEqual([st.misses, st.mask, st.tray], [1, full, 0], 'a shell when apples are asked is one miss and stays on the grass');
+  // The screen turns while a piece is in flight: it still lands and the round goes on.
+  const apple = await page.evaluate(async () => { const L = await import('/src/games/pile-match/logic.ts'), g = neo.scene.game; return L.hintFor(g.board, g.mask, 3, { asked: L.askedKind(g.board, g.mask) }).take; });
+  const p1 = await page.evaluate((i) => neo.scene.game.hitLayer.toGlobal(neo.scene.game.layout.pieces[i]), apple);
+  await page.evaluate(({ x, y }) => { kit.tap(x, y); neo.scene.game.resize(neo.view); }, p1);
+  await page.waitForTimeout(150); await idle();
+  assert.equal((await state()).tray, 1, 'a resize mid-flight lands the piece and leaves the round answering');
   await solveAll();
   st = await state(); assert.deepEqual([st.misses, st.hints], [1, 0], 'level 1 solved with the one miss');
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers, { timeout: 15000 });
