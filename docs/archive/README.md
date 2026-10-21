@@ -58,3 +58,5 @@ RW06 slice 2 closeout rotated the oldest live verification entry (Ramp Race trut
 Puddle Gobble closeout rotated the oldest live verification entry into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
 
 Swing Pals closeout rotated the oldest live verification entry (Garden Grow, slice 1) into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
+
+Little Helpers slice 1 closeout rotated the oldest live verification entry (Weather Wardrobe, slice 1) into [Verification 2026-10-21](VERIFICATION-2026-10-21.md), leaving fifteen dated entries live.

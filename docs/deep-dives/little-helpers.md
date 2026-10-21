@@ -21,7 +21,7 @@ A fruit drops onto the meadow; tapping it sends the nearest of seven leaf-topped
 
 **Bot.** `autotouch()` taps the fruit (the middle fruit of a bunch) until `helperTouch` says the team is complete, then taps the whistle. A rule test walks every seeded fruit at every level with it.
 
-**Known gaps found reading the code (not fixed: docs-only session).**
+**Known gaps found reading the code.** Gaps 1, 6 and 7 are fixed (slice 1, built); the rest stay open.
 
 1. **Many touches get no answer at the lap and toddler levels.** `send()` returns while `busy`, which covers the fruit's drop-in, the whole lift and carry (about three seconds) and the praise line; taps on the sky and grass have no listener; a tap on a waiting helper reaches `recall()`, which needs `slot >= 0`, so nothing happens. At level 1 a one-year-old's taps between fruits are mostly silent.
 2. **Level 6 asks for a total, not groups.** Every tap on the bunch fills the next slot, and `slotAt()` assigns teams by index, so the teams are always equal by construction; she can never make an unequal team, and the ghost finger's choice of fruit means nothing. The equal-groups claim lives in the drawing, not in her action.
@@ -29,9 +29,9 @@ A fruit drops onto the meadow; tapping it sends the nearest of seven leaf-topped
 4. **The dots never fill.** The badge is a static picture of the need; arriving helpers do not light a dot, which is the cheapest one-to-one cue there is (Pikmin's carrying/needed counter does exactly this).
 5. **Predictable needs at level 2.** `makeFruits` redraws a need equal to the previous one; with a range of 1–2 that makes every level 2 round alternate 1, 2, 1, 2.
 6. **Only one fruit of a bunch reaches the basket.** `lift()` moves `children[0]` into the pile; the other fruits of a bunch vanish when the next fruit clears `fruitNode`.
-7. **An empty crowd sounds like a mistake.** With all seven sent, a fruit tap plays `boing` (not counted), the same sound as a wrong whistle.
+7. **An empty crowd sounds like a mistake.** *Fixed (slice 1):* with all seven sent, a fruit tap makes the helpers shrug and the pet say `helpers.busy`; it was a `boing`, the same sound as a wrong whistle.
 8. **The 2→3 step changes three things at once:** the whistle appears, extras become misses, and the range widens to 4.
-9. **Accounting edge cases (decisions, not defects):** a whistle with no helpers at all counts as a miss; quick double taps at level 2 can send one more than needed and the fruit still lifts.
+9. **Accounting edge cases (decisions, not defects):** a whistle with no helpers at all counted as a miss (now a nudge, `helpers.whistle.empty`, decision 2's default, built in slice 1); quick double taps at level 2 can send one more than needed and the fruit still lifts.
 10. **Plans are indexed by array position.** `planFor()` clamps any unknown level to 6, so a level placed by `order` needs the plans keyed by ID first.
 11. **Helper hit areas overlap.** Each helper's hit circle has radius 50, at 58-unit spacing in the carrying row and 62 in the crowd, so which helper a recall tap reaches depends on draw order. Harmless while helpers are interchangeable; it matters once a team means something (level 6 teams she builds, two fruits at 7), so nearest-helper resolution comes with those slices.
 12. **Pet-corner clearance is unchecked.** The waiting crowd stands at x 190–420, y `h − 210` and `h − 120`; check it in a portrait screenshot when a slice touches the layout (no assertion exists).
@@ -137,7 +137,7 @@ This separates the whistle from exactness (gap 8): at 9 the whistle means "done"
 
 ## Build slices, in order
 
-1. **Every touch answers and the empty crowd shrugs** (existing-game bug fix tier: typecheck, rule tests, one filtered regression play, `fingerdemo` at level 1): level 1 whole-screen send, hop/squeak on taps while busy, grass wave, the no-helpers shrug instead of `boing`, a zero-helper whistle as a nudge (decision 2's default), the whole bunch into the basket. Gaps 1, 6, 7.
+1. **Built (2026-10-21): Every touch answers and the empty crowd shrugs** (existing-game bug fix tier: typecheck, rule tests, one filtered regression play, `fingerdemo` at level 1): level 1 whole-screen send, hop/squeak on taps while busy, grass wave, the no-helpers shrug instead of `boing`, a zero-helper whistle as a nudge (decision 2's default), the whole bunch into the basket. Gaps 1, 6, 7. Built: a full-screen `field` layer sends a helper at level 1; while busy any touch hops and squeaks the nearest helper; at levels 2–6 a sky or grass tap makes the nearest waiting helper wave; a fruit tap with no helpers left shrugs and says `helpers.busy`; a zero-helper whistle is a nudge, not a miss (`fieldTouch`, `whistleFor`/`whistleMisses`, `pileSpot`, `BASKET_HALF` in `logic.ts`, three rule tests); every fruit of a bunch lands in the basket. How-to step and notes updated. Still open: whether a one-year-old notices the hop and wave, and whether the shrug reads (device check).
 2. **The badge fills, needs vary, and level 2 opens to lap** (existing-game change, rule tests, one screenshot, `fingerdemo` at 2): fill-as-they-arrive rings at 2–6, the gap named at 5, extras outside the frame, seeded non-alternating needs, lap window 1–2. Gaps 3, 4, 5.
 3. **Things to carry and three places** (content tier: rule tests, one screenshot per backdrop): pumpkin, watermelon, acorn, pinecone, toy boat; orchard, beach and woods with their destinations.
 4. **Level 6 teams she builds** (existing-game change on a changed interaction: nearest-helper taps, rule tests, one filtered play at 6, `fingerdemo` at 6, how-to step update). Gaps 2, 11.
