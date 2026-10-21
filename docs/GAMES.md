@@ -50,7 +50,7 @@ Each seeded round chooses a Meadow arch, Pond columns or Hive ring. Pond bumpers
 
 ### Sound Garden
 
-*lap–pre-K · after Electroplankton.* Garden creatures sing when touched. Listening questions follow, with seeded sounds that differ between questions: high or low (bird or frog; the two tiles sing their notes as they appear), fast or slow (bunny or turtle; same note and span, twice the beats), does the tune go up or down (a 3–5 note tune, down being up reversed), then echoing a woodpecker's rhythm on a drum, judged forgivingly for wobble but not for the wrong rhythm. The background loop is silenced, so the garden's own sounds are the only music and a fast-or-slow question is not blurred by a tempo underneath.
+*lap–pre-K · after Electroplankton.* Garden creatures sing when touched: each round seats a seeded five of six (bird, frog, bunny, turtle, bell, woodpecker) in a seeded order, and each sings its listening role (a high chirp, a low pitched ribbit, four quick drum beats for the bunny, two slow tocks for the turtle, the bell's tune, the woodpecker's knock), so the pictures have been heard before the questions; level 1 ends after twelve songs. Listening questions follow, with seeded sounds that differ between questions: high or low (bird or frog; the two tiles sing their notes as they appear), fast or slow (bunny or turtle; same note and span, twice the beats), does the tune go up or down (a 3–5 note tune, down being up reversed), then echoing a woodpecker's rhythm on a drum, judged forgivingly for wobble but not for the wrong rhythm. The background loop is silenced, so the garden's own sounds are the only music and a fast-or-slow question is not blurred by a tempo underneath.
 
 ### Little Conductor
 

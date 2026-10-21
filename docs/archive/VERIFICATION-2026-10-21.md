@@ -117,3 +117,10 @@
 - `npm run typecheck` clean; `npm test` 199 files, 2278 tests passed; `npm run build` passed.
 - Dev server http://localhost:5240: `BROWSER_SUITE=woods WOODS_ONLY=hop HOP_LEVELS=1`, `mossypath` (levels 1 and 3, land launch and return), `woods WOODS_ONLY=penguin FROM_LEVEL=1 TO_LEVEL=1` and `originals ORIGINALS_ONLY=scenes` (Bubble Pop shore, bath, night, sea) passed.
 - Not run: `fingerdemo` (no bot or interaction changed), screenshots (bodies unchanged), the offline check, a device.
+
+## 2026-10-21 — Rhythm Neighbors: support truth and a real pool (slice 1)
+
+- Built on `claude/rhythm-neighbors-support-truth` ([PR #708](https://github.com/rjdunlap/neo/pull/708), `e23d8eab` on `e4c941ea`): `PLANS` keyed by level ID, `levels` as a `BandLevels` table, twelve reply shapes with varied calls that never match, a croaking teal frog (`sfx.ribbit`), a joinable finale, free levels ending after eight taps with an idle wiggle, the 2.5 s pause rule at levels 5–6 (no miss), the extra-tap cap fix, level-scoped how-to finish and notes.
+- `npm run typecheck` clean; seven Rhythm Neighbors rule tests passed (plan keys, all twelve shapes seen across seeds, distinct replies, calls never matching, knock-count rule at 3–4, alternation, finale bounds, pause threshold against `judgeEcho`, ghost finger still passes `judgeEcho`); `npm test` 199 files, 2282 tests passed; `npm run build` passed.
+- Dev server http://localhost:5871: `BROWSER_SUITE=creative CREATIVE_ONLY=rhythm` levels 1–6 passed (scores [0,0] free, [2,1] turn levels; free levels finish by eight taps; a 3 s mid-reply pause empties the reply with no miss, proved by disabling the rule and watching "Rhythm pause 1/0" fail, then restoring). `BROWSER_SUITE=fingerdemo FINGER_ONLY=rhythm-neighbors FINGER_LEVELS=1,6` passed (6.4 s, 35.2 s).
+- Not run: couch suites (bot and `control()` unchanged), the offline check, a portrait screenshot, a device; open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): the teal ribbit on an iPad speaker and the eight-tap end and idle wiggle with a one-year-old.

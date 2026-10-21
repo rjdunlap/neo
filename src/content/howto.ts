@@ -782,14 +782,19 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'sound-garden': {
     goal: 'Listen to the garden friends and choose.',
     steps: [
-      { to: 1, text: 'Tap a friend to hear it sing.' },
+      { to: 1, text: 'Tap a friend to hear it sing: the bird sings high, the frog low, the bunny pats fast and the turtle plods slow. Five of the six friends stand in the garden each round.' },
       { from: 2, to: 2, text: 'Listen to the bird and the frog, then tap the one that sings high (or low), as asked.' },
       { from: 3, to: 3, text: 'Listen to the bunny and the turtle, then tap the one that is fast (or slow), as asked.' },
       { from: 4, to: 4, text: 'Listen to the tune, then tap whether it goes up or down.' },
       { from: 5, to: 5, text: "Listen to the woodpecker's rhythm, then tap it back on the drum." },
       { from: 6, to: 6, text: 'Listen closely, then answer: high or low, fast or slow, up or down.' },
     ],
-    finish: 'The round ends when the listening questions are answered.',
+    finish: [
+      { to: 1, text: 'The round ends after twelve songs.' },
+      { from: 2, to: 4, text: 'The round ends when the listening questions are answered.' },
+      { from: 5, to: 5, text: 'The round ends when the rhythms are echoed.' },
+      { from: 6, to: 6, text: 'The round ends when the listening questions are answered.' },
+    ],
   },
   'little-helpers': {
     goal: 'Send the right number of helpers to carry fruit.',
