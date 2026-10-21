@@ -3,6 +3,36 @@ import { Rng } from '../../engine/random';
 import { animalsFor, emptierPen, enter, fairBell, fairNeeds, fleeSpeed, FOLLOW_SPEED, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, pensFull, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, usesBell, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted, type Kind } from './logic';
 
 describe('Roundup', () => {
+  it('Fill it up starts short of 4 or 5 with 1–3 home and six loose, for every seed', () => {
+    const plan = planFor(9);
+    expect(plan).toMatchObject({ mode: 'count', prefilled: true, animals: 6, min: 4, max: 5 });
+    expect(usesBell(plan)).toBe(true);
+    const combinations = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const herd = makeHerd(plan, new Rng(seed));
+      expect(makeHerd(plan, new Rng(seed))).toEqual(herd);
+      const p = herd.pens[0];
+      expect(herd.pens).toHaveLength(1);
+      expect([4, 5]).toContain(p.target);
+      expect([1, 2, 3]).toContain(p.start);
+      expect(p.start).toBeLessThan(p.target!);
+      expect(herd.animals.length - p.start!).toBe(6);
+      expect(herd.animals.every((kind) => enter(p, kind) === 'in')).toBe(true);
+      const remainder = p.target! - p.start!;
+      expect(remainder).toBeLessThan(6);
+      expect(ringBell(herd, [p.start!])).toEqual([{ extra: 0, short: remainder }]);
+      expect(ringBell(herd, [p.start! + remainder])).toEqual([{ extra: 0, short: 0 }]);
+      expect(ringBell(herd, [p.target! + 1])).toEqual([{ extra: 1, short: 0 }]);
+      expect(pensFull(herd, [p.start!])).toBe(false);
+      combinations.add(`${p.target}+${p.start}`);
+    }
+    expect(combinations.size).toBe(6);
+    // Appended IDs keep their meanings and old counting rounds start empty.
+    expect(planFor(10).sequential).toBe(true);
+    expect(planFor(11).mode).toBe('follow');
+    expect(makeHerd(planFor(5), new Rng(1)).pens[0].start).toBeUndefined();
+  });
+
   it('gives Shoo one two successes, ordinary flee steering and a wider accepting gate', () => {
     const plan = planFor(10);
     expect(plan).toMatchObject({ mode: 'shoo', animals: 2, sequential: true, gate: 0.8, fleeRadius: 190, hintAfter: 10, helpAfter: 20 });
@@ -204,7 +234,7 @@ describe('Roundup', () => {
   });
 
   it('draws as many dots as the sign asks for, packed beside the numeral', () => {
-    for (let n = 1; n <= 4; n++) {
+    for (let n = 1; n <= 5; n++) {
       const dots = signDots(n);
       expect(dots).toHaveLength(n);
       expect(new Set(dots.map((d) => `${d.x},${d.y}`)).size).toBe(n);
@@ -214,8 +244,8 @@ describe('Roundup', () => {
         expect(Math.abs(d.y)).toBeLessThanOrEqual(26);
       }
     }
-    // Every counting target fits the four the sign can show.
-    for (const plan of PLANS.filter((p) => p.max !== undefined)) expect(plan.max).toBeLessThanOrEqual(4);
+    // Every counting target fits the five the sign can show.
+    for (const plan of PLANS.filter((p) => p.max !== undefined)) expect(plan.max).toBeLessThanOrEqual(5);
   });
 
   it('says one pig, two pigs', () => {

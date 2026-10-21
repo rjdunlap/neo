@@ -19,6 +19,8 @@ export interface HerdPlan {
   max?: number;
   /** One loose animal at a time, with two successes in the round. */
   sequential?: boolean;
+  /** Counting pen starts with 1–3 animals already inside; animals is the loose herd. */
+  prefilled?: boolean;
   gate?: number;
   fleeRadius?: number;
   hintAfter?: number;
@@ -45,11 +47,12 @@ export const PLANS: HerdPlan[] = [
   { mode: 'sortCount', animals: 7, min: 1, max: 3, name: 'Sort two kinds and put the requested number in each pen' },
   { mode: 'sortStay', animals: 6, name: 'Sort pigs and bunnies into their pens; leave the cows on the grass' },
   { mode: 'fair', animals: 6, maxAnimals: 8, name: 'Put the same number of one kind in each of two pens, then ring the bell' },
+  { mode: 'count', animals: 6, min: 4, max: 5, prefilled: true, name: 'Fill a pen asking 4 or 5, starting with 1 to 3 already inside' },
   SHOO_ONE,
   COME_ALONG,
 ];
 
-export const planFor = (level: number) => level === 10 ? SHOO_ONE : level === 11 ? COME_ALONG : PLANS[Math.min(8, Math.max(1, level)) - 1];
+export const planFor = (level: number) => level === 10 ? SHOO_ONE : level === 11 ? COME_ALONG : PLANS[Math.min(9, Math.max(1, level)) - 1];
 
 export const PLURAL: Record<Kind, string> = { pig: 'pigs', bunny: 'bunnies', cow: 'cows', duck: 'ducks', dog: 'dogs' };
 /** What each pen's floor is, for "three pigs in the mud". */
@@ -62,6 +65,8 @@ export interface Pen {
   kind: Kind;
   /** How many belong here; undefined means all of that kind. */
   target?: number;
+  /** Already home before play begins; included in Herd.animals. */
+  start?: number;
 }
 
 export interface Herd {
@@ -94,7 +99,8 @@ export function makeHerd(plan: HerdPlan, rng: Rng): Herd {
   const kind = rng.pick(KINDS);
   const pen: Pen = { kind };
   if (plan.mode === 'count') pen.target = rng.int(plan.min!, Math.min(plan.max!, n - 1));
-  return { animals: Array(n).fill(kind), pens: [pen] };
+  if (plan.prefilled) pen.start = rng.int(1, Math.min(3, pen.target! - 1));
+  return { animals: Array(n + (pen.start ?? 0)).fill(kind), pens: [pen] };
 }
 
 /**
