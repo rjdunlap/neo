@@ -3096,10 +3096,16 @@ async function homeFlow() {
     kit.store.data.creatures = { owned: [{ id: 'pip0', species: 'sprout', name: 'Clover', look: { color: 'pink', worn: ['scarf'] }, metAt: 'start' }, { id: 'gli0', species: 'glider', name: 'Breeze', look: { color: 'yellow', worn: [] }, metAt: 'dev:glider' }], companion: 'pip0' };
     kit.store.data.profile.band = 'preschool';
     kit.store.keepCreation({ kind: 'tune', cols: 4, rows: 3, notes: [{ col: 0, row: 0 }, { col: 1, row: 1 }, { col: 2, row: 2 }, { col: 3, row: 1 }] });
+    // Last seen at toddler: Home throws her birthday (RW08 slice 2).
+    kit.store.data.world.band = 'toddler';
     kit.store.save(); kit.store.flush(); neo.go.start();
   });
   await pickFirst(); await scene('HomeScene');
   assert.deepEqual(await page.evaluate(() => ({ young: neo.scene.young, play: !!neo.scene.play, toy: !!neo.scene.toy, pet: neo.scene.pet.species, worn: neo.scene.pet.worn, link: !document.querySelector('.classic-link').hidden })), { young: false, play: true, toy: false, pet: 'sprout', worn: ['scarf'], link: true });
+  // The birthday once, and the grown-ups' gear top right with the link below it.
+  assert.deepEqual(await page.evaluate(() => ({ birthday: neo.scene.birthday, world: kit.store.data.world.band })), { birthday: true, world: 'preschool' });
+  const corner = await page.evaluate(() => { const g = document.querySelector('.gear').getBoundingClientRect(), l = document.querySelector('.classic-link').getBoundingClientRect(); return { gear: !document.querySelector('.gear').hidden, below: l.top >= g.bottom, right: g.right > innerWidth - 80 }; });
+  assert.deepEqual(corner, { gear: true, below: true, right: true });
   await page.waitForTimeout(400); await screenshot('home-landscape');
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
   await screenshot('home-portrait');
@@ -3122,6 +3128,24 @@ async function homeFlow() {
   await tap('neo.scene.plaque');
   await page.waitForFunction(() => neo.scene.singing, null, { timeout: 3000 });
   await page.waitForFunction(() => !neo.scene.singing, null, { timeout: 8000 });
+  // RW08 slice 2: the books → the library (the journal and the Windy Picnic at preschool) → the journal → Back → the library.
+  assert.equal(await page.evaluate(() => document.querySelector('.gear')), null, 'the gear belongs to Home');
+  await tap('neo.scene.books'); await scene('LibraryScene');
+  assert.deepEqual(await page.evaluate(() => neo.scene.cards.map((c) => c.book)), ['journal', 'windy']);
+  await screenshot('library-landscape');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+  await screenshot('library-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+  await tap('neo.scene.cards[0].node'); await scene('JournalScene');
+  await tap('neo.scene.back'); await scene('LibraryScene');
+  // One Windy Picnic step at the root: the blanket, saved once; the story's Back returns to the library, the library's to creature play.
+  const picnic = () => page.waitForFunction(() => neo.scene.constructor.name === 'PicnicScene' && !neo.switching && !neo.scene.busy, null, { timeout: 30000 });
+  await tap('neo.scene.cards[1].node'); await picnic();
+  await tap("neo.scene.requests.find(r => r.step === 'blanket').button");
+  await tap('neo.scene.hung.find(h => h.index === neo.scene.puzzle.target).node'); await picnic();
+  assert.deepEqual(await page.evaluate(() => kit.store.picnic.steps), ['blanket']);
+  await tap('neo.scene.home'); await scene('LibraryScene');
+  await tap('neo.scene.back'); await scene('PlayScene');
   // Basket → Friends → Dress → Back → Friends (same friend) → Back → creature play.
   await tap('neo.scene.basket'); await scene('FriendsScene');
   await tap('neo.scene.cards.children[1]'); await page.waitForTimeout(300);
@@ -3208,6 +3232,21 @@ async function homeFlow() {
   await tap('neo.scene.toy.ball');
   await page.waitForFunction(() => neo.scene.toy.fetches === 1, null, { timeout: 8000 });
   await screenshot('home-toddler');
+  assert.equal(await page.evaluate(() => neo.scene.birthday), false, 'the birthday is thrown once');
+  // RW08 slice 2: at lap, Little surprises leads All games' first page; a stop's Home comes back there with the sheet, and its Back ends the mix.
+  await page.evaluate(() => { kit.store.data.profile.band = 'lap'; neo.go.explore('all', 0); }); await explore('all', 0);
+  assert.deepEqual(await page.evaluate(() => neo.scene.cards.map((c) => c.kind).slice(0, 2)), ['mix', 'game']);
+  await screenshot('explore-all-mix');
+  await tap('neo.scene.cards[0].node');
+  await page.waitForFunction(() => !!neo.scene.mix?.sheet, null, { timeout: 5000 });
+  await tap('neo.scene.mix.sheet.playButton');
+  await page.waitForFunction(() => neo.scene.constructor.name === 'GameScene' && !neo.switching && !!neo.scene.game, null, { timeout: 20000 });
+  assert.deepEqual(await page.evaluate(() => [!!neo.scene.mixRound, neo.scene.origin]), [true, { place: 'lap' }]);
+  await page.evaluate(() => neo.scene.leave()); await explore('all', 0);
+  await page.waitForFunction(() => !!neo.scene.mix?.sheet, null, { timeout: 5000 });
+  await tap('neo.scene.mix.sheet.backButton');
+  assert.deepEqual(await page.evaluate(() => [neo.scene.constructor.name, neo.scene.mix.sheet, neo.scene.mix.live]), ['ExploreScene', null, false]);
+  await page.evaluate(() => { kit.store.data.profile.band = 'toddler'; neo.go.hub(); }); await scene('HomeScene');
   // Who's playing → a second profile → its own Home and companion.
   await tap('neo.scene.who'); await scene('ChooserScene');
   await page.evaluate(async () => {
@@ -3222,7 +3261,7 @@ async function homeFlow() {
   await page.reload(); await ready();
   await scene('ChooserScene');
   assert.equal(errors.length, 0, errors.join('\n'));
-  log('Home: chooser → Home by band, creature play ball ×3 unrecorded, tune, Friends/Dress chain, mid-bounce leave, Explore entries → Places → Counting Cove → Back chain, All games page 2 → game → Back to All games (same page) → Home, Favorites older launch and empty, Family play → couch → Explore both orientations, second profile');
+  log('Home: chooser → Home by band, creature play ball ×3 unrecorded, tune, Friends/Dress chain, mid-bounce leave, Explore entries → Places → Counting Cove → Back chain, All games page 2 → game → Back to All games (same page) → Home, Favorites older launch and empty, Family play → couch → Explore both orientations, second profile; RW08 slice 2: birthday once, the gear, books → library → journal → Back, a Windy blanket step at the root → Back → library, Little surprises on All games page 1 → stop → Home → sheet → Back');
 }
 
 /** Welcome a New Friend at the root (RW07 slice 1): Continue, the page, the two built steps, leaving mid-step, reload. */

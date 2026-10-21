@@ -3,6 +3,7 @@ import '@fontsource/fredoka/latin-600.css';
 import './style.css';
 import { registerSW } from 'virtual:pwa-register';
 import { App, type Routes } from './app/App';
+import { placeAtRoot } from './app/origin';
 import { createRoutes } from './app/routes';
 import { applySettings } from './app/settings';
 import { loadArt } from './art/creatures/illustrated';
@@ -12,6 +13,7 @@ import { loadCollectionArt } from './creatures/companion';
 import { CreaturePreview } from './dev/creature-preview';
 import { ExploreScene } from './app/scenes/ExploreScene';
 import { HomeScene } from './app/scenes/HomeScene';
+import { LibraryScene } from './app/scenes/LibraryScene';
 import { PlayScene } from './app/scenes/PlayScene';
 import { ProjectScene } from './app/scenes/ProjectScene';
 import { loadHomeBackdrop } from './art/home/backdrop';
@@ -61,9 +63,12 @@ async function boot() {
       ...island,
       hub: () => void app.show(new HomeScene(app)),
       room: () => void app.show(new PlayScene(app)),
+      library: () => void app.show(new LibraryScene(app)),
       project: (from) => void app.show(new ProjectScene(app, from)),
       explore: (entry, page, others) => void app.show(new ExploreScene(app, entry ?? null, page ?? 0, others ?? false)),
       land: atRoot,
+      // No age places at the root (RW08 slice 2): Little surprises' stops, its Explore and a game with no origin come back to All games.
+      place: () => placeAtRoot(app.go),
     });
     app.go.start();
   }

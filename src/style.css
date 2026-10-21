@@ -424,7 +424,8 @@ html.turning .pet-name-form {
 /* The root page's way to the island game at classic/ (src/rework.ts), plain HTML over the canvas. */
 .classic-link {
   position: fixed;
-  top: calc(var(--safe-top) + 12px);
+  /* Below Home's grown-ups' gear (52px at 12px from the top) until RW08's cutover removes the link. */
+  top: calc(var(--safe-top) + 76px);
   right: calc(var(--safe-right) + 12px);
   padding: 10px 16px;
   border-radius: 999px;

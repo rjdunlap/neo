@@ -3,7 +3,7 @@ import { BACK, type Spot } from './friends-layout';
 /**
  * Where the root's Home and creature play put things (RW06 slice 2, docs/rework/HOME.md#creature-play-and-home). Both
  * stand on the R06 day backdrop, cover-scaled and anchored at its bottom so the grass is always under the companion.
- * The bottom-left guide corner and, on Home, the top-right corner of the page's island-games link stay clear. A target
+ * The bottom-left guide corner and, on Home, the top-right corner of the grown-ups' gear and the page's island-games link stay clear. A target
  * never shrinks: the actions are 120 units, the ball 120, Back and Home 100 and 130 apart.
  */
 
@@ -16,11 +16,13 @@ export const HOME_BUTTON: Spot = { x: BACK.x + 130, y: BACK.y };
 /** Play with {pet}, Explore and the youngest's ball: 120-unit pictures. */
 export const ACTION_RADIUS = 60;
 export const BALL_RADIUS = 60;
-/** The basket to Friends: its hit box is 124 units. */
+/** The basket to Friends: its hit box is 124 units. The library's books take the same box. */
 export const BASKET = { w: 124, h: 120 };
 /** Kept clear: the bottom-left corner where a guide stands, and the island-games link's corner (CSS pixels over a scaled view, so generous). */
 export const GUIDE_CORNER = { w: 200, h: 200 };
 export const LINK_CORNER = { w: 300, h: 100 };
+/** Home's top-right corner: the grown-ups' gear, with the island-games link below it until RW08's cutover. */
+export const GEAR_CORNER = { w: 300, h: 150 };
 
 export interface Floor {
   x0: number;
@@ -63,7 +65,7 @@ export interface HomeLayout {
 export function homeLayout(v: { w: number; h: number }, young: boolean, project = false): HomeLayout {
   const backdrop = backdropFit(v);
   const right = v.w - 50 - ACTION_RADIUS;
-  const mid = Math.max(LINK_CORNER.h + ACTION_RADIUS + 20, v.h * 0.42);
+  const mid = Math.max(GEAR_CORNER.h + ACTION_RADIUS + 20, v.h * 0.42);
   const stage = { x: Math.round(v.w * 0.4), y: v.h - 60, scale: 1.2 };
   const row = 2 * ACTION_RADIUS + 40;
   const cont = !young && project ? { x: right, y: mid } : null;
@@ -85,6 +87,8 @@ export interface PlayLayout {
   board: Spot;
   plaque: Spot;
   basket: Spot;
+  /** The books on their shelf, to the library (RW08 slice 2): under Back and Home, on the wall. */
+  books: Spot;
   floor: Floor;
 }
 
@@ -96,7 +100,8 @@ export function playLayout(v: { w: number; h: number }): PlayLayout {
   const plaque = { x: v.w - 50 - 80, y: top };
   const board = { x: plaque.x - 80 - 40 - 130, y: top };
   const floor = { x0: GUIDE_CORNER.w + BALL_RADIUS, x1: basket.x - BASKET.w / 2 - BALL_RADIUS - 30, y0: Math.max(backdrop.floorTop + 40, v.h - 220), y1: v.h - BALL_RADIUS - 20 };
-  return { backdrop, back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, stage, ball: { x: Math.round(v.w * 0.62), y: v.h - 100 }, board, plaque, basket, floor };
+  const books = { x: Math.round((BACK.x + HOME_BUTTON.x) / 2), y: top };
+  return { backdrop, back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, stage, ball: { x: Math.round(v.w * 0.62), y: v.h - 100 }, board, plaque, basket, books, floor };
 }
 
 /**

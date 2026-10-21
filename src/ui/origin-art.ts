@@ -4,7 +4,7 @@ import { swatch } from '../art/palette';
 import type { Origin } from '../app/App';
 import type { ExploreEntry } from '../content/explore';
 import { landFor } from '../content/lands';
-import { arrowIcon, heartIcon, meadowIcon, padIcon, tilesIcon } from './icons';
+import { arrowIcon, heartIcon, libraryIcon, meadowIcon, padIcon, tilesIcon } from './icons';
 
 /** Explore's entries at the root (RW08): the name under each card, and its picture (about 60 units across). */
 export const ENTRY_NAMES: Record<ExploreEntry, string> = { places: 'Places', favorites: 'Favorites', all: 'All games', family: 'Family play' };
@@ -29,12 +29,15 @@ export function fitArt(art: Container, size: number): Container {
 }
 
 /**
- * What a result's Back to [origin] shows and says at the root (RW08): the location's landmark or the Explore entry's
- * picture, and its name. Null for an origin the root does not name (the island's places and journal keep Home).
+ * What a result's Back to [origin] shows and says at the root (RW08): the location's landmark, the Explore entry's or the
+ * library's picture, and its name. Null for an origin the root does not name (the island's journal keeps Home).
  */
 export function originArt(origin: Origin | undefined): { picture: Container; place: string } | null {
   if (origin && 'land' in origin) return { picture: landmarkFor(origin.land), place: landFor(origin.land).name };
   if (origin && 'explore' in origin) return { picture: entryArt(origin.explore), place: ENTRY_NAMES[origin.explore] };
+  if (origin && 'library' in origin) return { picture: libraryIcon(), place: 'the library' };
+  // At the root a home spot is All games' first page (`placeAtRoot`), where Little surprises' stops come back to.
+  if (origin && 'place' in origin) return { picture: entryArt('all'), place: ENTRY_NAMES.all };
   return null;
 }
 

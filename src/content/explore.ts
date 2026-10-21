@@ -38,20 +38,23 @@ export function ageOf(mod: Pick<GameModule, 'bands'>, band: Band): 'hers' | 'big
   return mod.bands.some((b) => bandRank(b) >= bandRank(band)) ? 'hers' : 'little';
 }
 
-/** One card on a page: a game, or the signpost that turns All games between hers and the other ages. */
-export type PageCard<T> = { game: T } | { signpost: true };
+/**
+ * One card on a page: a game, the signpost that turns All games between hers and the other ages, or Little surprises'
+ * picnic blanket (D2b), which leads All games' first page at lap and toddler (RW08 slice 2).
+ */
+export type PageCard<T> = { game: T } | { signpost: true } | { mix: true };
 
-/** How many pages a list takes, with room for a signpost as its last card; at least one (an empty page says so). */
-export const pageCount = (n: number, signpost = false) => Math.max(1, Math.ceil((n + (signpost ? 1 : 0)) / PAGE_SIZE));
+/** How many pages a list takes, with room for a signpost as its last card and a mix as its first; at least one (an empty page says so). */
+export const pageCount = (n: number, signpost = false, mix = false) => Math.max(1, Math.ceil((n + (signpost ? 1 : 0) + (mix ? 1 : 0)) / PAGE_SIZE));
 
 /** A page held inside the list's pages (a heart taken back can shorten Favorites under a remembered page). */
-export const clampPage = (page: number, n: number, signpost = false) => Math.min(Math.max(0, Math.floor(page) || 0), pageCount(n, signpost) - 1);
+export const clampPage = (page: number, n: number, signpost = false, mix = false) => Math.min(Math.max(0, Math.floor(page) || 0), pageCount(n, signpost, mix) - 1);
 
-/** The cards on one page, the signpost last on the last page. */
-export function pageOf<T>(items: readonly T[], page: number, signpost = false): PageCard<T>[] {
-  const cards: PageCard<T>[] = items.map((game) => ({ game }));
+/** The cards on one page: the mix first on the first page, the signpost last on the last page. */
+export function pageOf<T>(items: readonly T[], page: number, signpost = false, mix = false): PageCard<T>[] {
+  const cards: PageCard<T>[] = [...(mix ? [{ mix: true as const }] : []), ...items.map((game) => ({ game }))];
   if (signpost) cards.push({ signpost: true });
-  const p = clampPage(page, items.length, signpost);
+  const p = clampPage(page, items.length, signpost, mix);
   return cards.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE);
 }
 

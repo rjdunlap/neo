@@ -72,7 +72,8 @@ export class PicnicScene extends Scene {
   backdrop!: Backdrop;
   readonly gardener = makeGardener();
   readonly pip = makeCompanion();
-  readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(() => this.app.go.hub()));
+  /** Back to the island's map; at the root, an arrow back to the library (RW08 slice 2). */
+  readonly home = new RoundButton(this.app.creatureWorld ? arrowIcon(-1) : islandIcon(), swatch.white, 50, () => this.leave(() => (this.app.creatureWorld ? this.app.go.library() : this.app.go.hub())));
   readonly journalButton = new RoundButton(journalIcon(), swatch.white, 50, () => this.openJournal());
   readonly requests: Request[] = [];
   hung: Hung[] = [];
