@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PENTATONIC } from '../../audio/notes';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { advance, BEATS, botMove, canFinish, conductorLayout, earlyDone, listenAgain, makeRound, marksLit, MOTIFS, newScore, PACES, PAD, select, type BeatEvent, type PaceId, type Score } from './logic';
+import { advance, BEATS, botMove, canFinish, check, choose, conductorLayout, earlyDone, glowTarget, hint, listenAgain, makeRound, marksLit, MOTIFS, newRequests, newScore, PACES, PAD, select, signBot, submit, type BeatEvent, type PaceId, type Requests, type Round, type Score } from './logic';
 
 const hop = MOTIFS[0];
 /** Runs the clock in small frames until `n` more beats have sounded. */
@@ -155,6 +155,9 @@ describe('Little Conductor rounds and the bot', () => {
       seen.add(r.motif.id);
       expect(new Set(r.cast).size).toBe(3);
       expect(r.cast).not.toContain('bear');
+      expect([...r.cast, r.listener]).not.toContain('pip');
+      expect(r.cast).not.toContain(r.listener);
+      expect(r.listener).not.toBe('bear');
       expect(makeRound(new Rng(seed))).toEqual(r);
     }
     expect(seen.size).toBe(3);
@@ -183,7 +186,7 @@ describe('Little Conductor layout', () => {
     a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   const box = (d: { x: number; y: number; r: number }) => ({ x: d.x - d.r, y: d.y - d.r, w: 2 * d.r, h: 2 * d.r });
   for (const [pw, ph] of VIEWS)
-    for (const level of [1, 2])
+    for (const level of [1, 2, 3])
       it(`keeps every target large, apart, on screen and clear of the pet at ${pw}×${ph}, level ${level}`, () => {
         const view = computeView(pw, ph);
         const l = conductorLayout(view, level);
@@ -203,5 +206,107 @@ describe('Little Conductor layout', () => {
         for (let i = 0; i < targets.length; i++)
           for (let j = i + 1; j < targets.length; j++) expect(overlap(i < 2 ? withMarks(targets[i]) : targets[i], targets[j])).toBe(false);
         expect(overlap(l.stand, l.pads.turtle)).toBe(false);
+        if (level < 3) {
+          expect(l.sign).toBeUndefined();
+          return;
+        }
+        // Level 3: the sign is on screen, clear of the bandstand, the pads (with their marks), the buttons and the pet.
+        const sign = l.sign!;
+        expect(sign.w).toBeGreaterThanOrEqual(200);
+        expect(sign.x).toBeGreaterThanOrEqual(0);
+        expect(sign.x + sign.w).toBeLessThanOrEqual(view.w);
+        expect(sign.y + sign.h).toBeLessThanOrEqual(view.h);
+        for (const t of [l.stand, withMarks(l.pads.turtle), withMarks(l.pads.rabbit), box(l.listen), box(l.done), { x: 0, y: view.h - 220, w: 220, h: 220 }])
+          expect(overlap(sign, t)).toBe(false);
+        // The listener stands under the sign, above the buttons.
+        expect(l.listener!.y).toBeLessThan(l.listen.y - l.listen.r);
       });
+});
+
+describe('Little Conductor level 3 requests', () => {
+  const round = (requests: [PaceId, PaceId]): Round => ({ ...makeRound(new Rng(1)), requests });
+  const run = (rd: Round, taps: (PaceId | 'check' | 'hint')[]) => {
+    let r: Requests = newRequests();
+    for (const t of taps) {
+      if (t === 'check') r = submit(r, rd).state;
+      else if (t === 'hint') r = hint(r).state;
+      else r = choose(r, t);
+    }
+    return r;
+  };
+
+  it('seeds two different requests, both orders and every motif, the same for the same seed', () => {
+    const orders = new Set<string>();
+    const motifs = new Set<string>();
+    for (let seed = 1; seed <= 500; seed++) {
+      const r = makeRound(new Rng(seed));
+      expect(r.requests[0]).not.toBe(r.requests[1]);
+      orders.add(r.requests.join());
+      motifs.add(r.motif.id);
+      expect(makeRound(new Rng(seed)).requests).toEqual(r.requests);
+    }
+    expect(orders.size).toBe(2);
+    expect(motifs.size).toBe(3);
+  });
+
+  it('check is the truth table: right on the two matching cells, wrong on the other two', () => {
+    const rd = round(['turtle', 'rabbit']);
+    expect(check(rd, 0, 'turtle')).toBe(true);
+    expect(check(rd, 0, 'rabbit')).toBe(false);
+    expect(check(rd, 1, 'rabbit')).toBe(true);
+    expect(check(rd, 1, 'turtle')).toBe(false);
+    expect(check(rd, 0, null)).toBe(false);
+  });
+
+  it('a wrong Check keeps the pick; a Check with nothing picked changes nothing', () => {
+    const rd = round(['turtle', 'rabbit']);
+    const first = submit(newRequests(), rd);
+    expect(first.result).toBe('pick-first');
+    expect(first.state).toEqual(newRequests());
+    const wrong = submit(choose(newRequests(), 'rabbit'), rd);
+    expect(wrong.result).toBe('wrong');
+    expect(wrong.state.choice).toBe('rabbit');
+    expect(wrong.state.phrase).toBe(0);
+  });
+
+  it('rabbit, Check, turtle, Check, rabbit, Check: one miss, no hint, finished', () => {
+    const r = run(round(['turtle', 'rabbit']), ['rabbit', 'check', 'turtle', 'check', 'rabbit', 'check']);
+    expect(r).toMatchObject({ misses: 1, hints: 0, done: true });
+  });
+
+  it('two wrong Checks on a half light the requested pad once; asking again does not count it twice', () => {
+    const rd = round(['rabbit', 'turtle']);
+    let r = choose(newRequests(), 'turtle');
+    expect(submit(r, rd).glow).toBe(false);
+    r = submit(r, rd).state;
+    const second = submit(r, rd);
+    expect(second.glow).toBe(true);
+    expect(glowTarget(rd, second.state)).toBe('rabbit');
+    r = submit(second.state, rd).state;
+    expect(r).toMatchObject({ misses: 3, hints: 1 });
+    expect(hint(r).counted).toBe(false);
+    r = submit(choose(r, glowTarget(rd, r)), rd).state;
+    expect(r).toMatchObject({ phrase: 1, choice: null, missed: 0, hinted: false, hints: 1 });
+    // A new half has its own hint.
+    expect(hint(r).counted).toBe(true);
+  });
+
+  it('a requested hint counts once per half, and then two wrong Checks add nothing more', () => {
+    const rd = round(['turtle', 'rabbit']);
+    const r = run(rd, ['hint', 'hint', 'rabbit', 'check', 'check', 'turtle', 'check', 'rabbit', 'check']);
+    expect(r).toMatchObject({ misses: 2, hints: 1, done: true });
+  });
+
+  it('the bot reads the sign, picks that pad and checks, finishing every seeded round with no misses', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const rd = makeRound(new Rng(seed));
+      let r = newRequests();
+      for (let i = 0; i < 10 && !r.done; i++) {
+        const move = signBot(rd, r);
+        if (move === 'check') r = submit(r, rd).state;
+        else if (move) r = choose(r, move);
+      }
+      expect(r).toMatchObject({ done: true, misses: 0, hints: 0 });
+    }
+  });
 });
