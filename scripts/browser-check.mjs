@@ -6889,9 +6889,16 @@ async function creativeBatch() {
       const ready=async()=>{if(!await kit.until(()=>!g.busy,10000))throw new Error('Rhythm still busy');};
       if(g.plan.free){
         kit.tapOn(g.bird,0,-30);await ready();
-        for(const f of g.frogs){kit.tapOn(f);await kit.sleep(200);}kit.tapOn(g.submit);return;
+        // Eight frog taps end free play by itself (the arrow is the earlier stop the ghost finger shows).
+        for(let i=0;i<8;i++){kit.tapOn(g.frogs[i%g.frogs.length]);await kit.sleep(250);}
+        if(!g.done||!g.finale)throw new Error('Rhythm free play did not end after eight taps');return;
       }
       await ready();
+      if(g.plan.timing){
+        // A thinking pause in the middle of a reply empties it with no miss.
+        kit.tapOn(g.frogs[g.phrases[0].voices[0]]);await kit.sleep(3000);
+        if(g.taps.length!==0||g.misses!==0)throw new Error(`Rhythm pause ${g.taps.length}/${g.misses}`);
+      }
       // Two deliberately incomplete submitted phrases, then supported completion.
       for(let k=0;k<2;k++){kit.tapOn(g.frogs[0]);await kit.sleep(180);kit.tapOn(g.submit);await ready();}
       if(g.misses!==2||g.hints!==1)throw new Error(`Rhythm hint ${g.misses}/${g.hints}`);

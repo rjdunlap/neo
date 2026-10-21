@@ -1,27 +1,62 @@
 import type { Rng } from '../../engine/random';
-import { GAP_SECONDS, judgeEcho, type Gap } from '../sound-garden/logic';
+import { GAP_SECONDS, RHYTHMS, judgeEcho, type Gap } from '../sound-garden/logic';
 export { GAP_SECONDS };
 export interface Phrase { call: Gap[]; gaps: Gap[]; voices: number[] }
-export const PLANS = [
- {free:true,voices:1,timing:false,name:'Tap a woodpecker and hear a frog answer'},
- {free:true,voices:2,timing:false,name:'Choose two frog voices for a little chorus'},
- {free:false,voices:1,timing:false,name:'Take turns: answer the bird with two or three frog notes'},
- {free:false,voices:2,timing:false,name:'Play a pictured reply with two frog voices'},
- {free:false,voices:1,timing:true,name:'Answer a short bird call with a different long-and-short frog phrase'},
- {free:false,voices:2,timing:true,name:'Alternate two frog parts, then join a final duet'},
-] as const;
-export const planFor=(l:number)=>PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))];
+export interface NeighborPlan { free: boolean; voices: number; timing: boolean; name: string }
+export const PLANS: Record<number, NeighborPlan> = {
+ 1:{free:true,voices:1,timing:false,name:'Tap a woodpecker and hear a frog answer'},
+ 2:{free:true,voices:2,timing:false,name:'Choose two frog voices for a little chorus'},
+ 3:{free:false,voices:1,timing:false,name:'Take turns: answer the bird with two or three frog notes'},
+ 4:{free:false,voices:2,timing:false,name:'Play a pictured reply with two frog voices'},
+ 5:{free:false,voices:1,timing:true,name:'Answer a short bird call with a different long-and-short frog phrase'},
+ 6:{free:false,voices:2,timing:true,name:'Alternate two frog parts, then join a final duet'},
+};
+export const LEVEL_IDS = Object.keys(PLANS).map(Number);
+export const planFor=(l:number)=>PLANS[l]??PLANS[Math.min(Math.max(...LEVEL_IDS),Math.max(1,Math.round(l)))];
+
+/** Every reply shape: Sound Garden's eight echo rhythms and four more, from two frog notes up to four. */
+export const REPLIES: Gap[][] = [...RHYTHMS, ['L','L'], ['S','L','L'], ['L','S','L'], ['S','L','S']];
+/** The woodpecker's calls: two or three knocks. */
+export const CALLS: Gap[][] = [['S'], ['L'], ['S','S'], ['S','L'], ['L','S'], ['L','L']];
+/** Free play finishes by itself after this many frog taps. */
+export const FREE_TAPS = 8;
+/** Seconds without a touch before a frog wiggles at the free levels. */
+export const IDLE_WIGGLE = 6;
+/** A gap longer than this inside a reply is a thinking pause, not a rhythm: the reply starts over, never a miss (`judgeEcho` rejects such a gap). */
+export const PAUSE_SECONDS = 2.5;
+
+const same=(a:Gap[],b:Gap[])=>a.length===b.length&&a.every((g,i)=>g===b[i]);
+const pick=<T,>(rng:Rng,items:T[])=>items[rng.int(0,items.length-1)];
+
+/**
+ * Three exchanges, each a different reply. Levels 3–4 answer with two frog notes, then three, and the bird knocks a different
+ * number of times from the reply's notes, so "answer, don't copy" is audible; levels 5–6 answer with three and four notes,
+ * the longest last. A call is never the reply's pattern. Two-frog replies alternate, from a seeded first frog.
+ */
 export function makePhrases(level:number,rng:Rng):Phrase[]{
- const p=planFor(level);
- return rng.shuffle([['S','L'],['L','S'],['S','L','S']] as Gap[][]).map((gaps,i)=>({
-  call:[gaps[0] === 'S' ? 'L' : 'S'],gaps:p.timing?gaps:gaps.slice(0,i===0?1:2),
-  voices:Array.from({length:(p.timing?gaps.length:Math.min(gaps.length,i===0?1:2))+1},(_,j)=>p.voices===1?0:(j+i)%2),
- }));
+ const p=planFor(level),of=(n:number)=>rng.shuffle(REPLIES.filter(r=>r.length===n));
+ const replies=p.timing?[...of(2).slice(0,2),of(3)[0]]:[of(1)[0],...of(2).slice(0,2)];
+ return replies.map(gaps=>{
+  const knocks=p.timing?rng.int(1,2):gaps.length===1?2:1;
+  const call=pick(rng,CALLS.filter(c=>c.length===knocks&&!same(c,gaps)));
+  const first=p.voices===1?0:rng.int(0,1);
+  return {call:[...call],gaps:[...gaps],voices:Array.from({length:gaps.length+1},(_,j)=>p.voices===1?0:(first+j)%2)};
+ });
 }
 export function accepts(p:Phrase,taps:{voice:number;at:number}[],timing:boolean,guided:boolean){
  return p.voices.length===taps.length&&p.voices.every((v,i)=>taps[i].voice===v)&&(!timing||guided||judgeEcho(p.gaps,taps.map(t=>t.at)));
 }
 export function schedule(gaps:Gap[],start=0){const times=[start];for(const gap of gaps)times.push(times.at(-1)!+GAP_SECONDS[gap]);return times;}
+
+/**
+ * The song that ends every round: the woodpecker knocks its call, then every frog on the pond plays the reply together.
+ * Nothing in it is judged (her frog taps sound along); `end` is when the round finishes, about four seconds after `start`.
+ */
+export function finaleEvents(p:Phrase,frogs:number,start:number){
+ const call=schedule(p.call,start+0.2),reply=schedule(p.gaps,call.at(-1)!+0.5);
+ const events=[...call.map(at=>({at,voices:[-1]})),...reply.map(at=>({at,voices:Array.from({length:frogs},(_,v)=>v)}))];
+ return {events,end:Math.max(start+4,reply.at(-1)!+0.7)};
+}
 
 /**
  * The rest after a note, in seconds, for the how-to card's ghost finger: its taps are never closer than about a second, so a

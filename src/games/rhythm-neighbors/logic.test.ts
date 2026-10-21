@@ -30,3 +30,45 @@ it('has the ghost finger play every reply right, with the timing the game checks
   expect(accepts(p as Phrase,taps,plan.timing,false),`level ${l} seed ${seed}`).toBe(true);
  }
 });
+
+import {CALLS,FREE_TAPS,LEVEL_IDS,PAUSE_SECONDS,PLANS,REPLIES,finaleEvents} from './logic';
+import {judgeEcho} from '../sound-garden/logic';
+const key=(g:readonly string[])=>g.join('');
+it('keys its plans by level ID',()=>{
+ expect(LEVEL_IDS).toEqual([1,2,3,4,5,6]);
+ for(const l of LEVEL_IDS)expect(planFor(l)).toBe(PLANS[l]);
+ expect(planFor(9)).toBe(PLANS[6]);expect(planFor(0)).toBe(PLANS[1]);
+});
+it('draws from twelve different reply shapes and calls of two or three knocks',()=>{
+ expect(new Set(REPLIES.map(key)).size).toBe(12);
+ expect(CALLS.every(c=>c.length===1||c.length===2)).toBe(true);
+ const seen=new Set<string>(),knocks=new Set<number>();
+ for(let l=3;l<=6;l++)for(let seed=1;seed<=200;seed++){
+  const phrases=makePhrases(l,new Rng(seed)),timing=planFor(l).timing;
+  expect(new Set(phrases.map(p=>key(p.gaps))).size,`level ${l} seed ${seed}: three different replies`).toBe(3);
+  expect(phrases.map(p=>p.gaps.length)).toEqual(timing?[2,2,3]:[1,2,2]);
+  for(const p of phrases){
+   seen.add(key(p.gaps));knocks.add(p.call.length+1);
+   expect(REPLIES.map(key)).toContain(key(p.gaps));expect(CALLS.map(key)).toContain(key(p.call));
+   expect(key(p.call)).not.toBe(key(p.gaps));
+   if(planFor(l).voices===2)p.voices.forEach((v,i)=>{if(i)expect(v).not.toBe(p.voices[i-1]);});
+  }
+  // Answer, don't copy: at the picture levels the bird knocks a different number of times from the reply's notes, at least twice a round.
+  if(!timing)expect(phrases.filter(p=>p.call.length!==p.gaps.length).length).toBeGreaterThanOrEqual(2);
+ }
+ expect(seen.size).toBe(12);expect([...knocks].sort()).toEqual([2,3]);
+});
+it('ends every round with a song of about four seconds that judges nothing',()=>{
+ for(let l=1;l<=6;l++)for(let seed=1;seed<=30;seed++)for(const p of makePhrases(l,new Rng(seed))){
+  const frogs=planFor(l).voices,{events,end}=finaleEvents(p,frogs,10);
+  expect(end).toBeGreaterThanOrEqual(14);expect(end).toBeLessThan(15);
+  expect(events.every(e=>e.at>10&&e.at<end)).toBe(true);
+  expect(events.filter(e=>e.voices[0]===-1)).toHaveLength(p.call.length+1);
+  expect(events.filter(e=>e.voices[0]!==-1).every(e=>e.voices.length===frogs)).toBe(true);
+ }
+ expect(FREE_TAPS).toBe(8);
+});
+it('clears a reply at a thinking pause before the rhythm rule would call it wrong',()=>{
+ expect(judgeEcho(['S'],[0,PAUSE_SECONDS])).toBe(true);
+ expect(judgeEcho(['S'],[0,PAUSE_SECONDS+0.01])).toBe(false);
+});
