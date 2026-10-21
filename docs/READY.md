@@ -19,7 +19,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **Rework RW05 slice 2b, Splish Splash and Weather Wardrobe on `CompanionRig`, then drop `ctx.petSpec`** (status `decision`; waiting on the [misfit decision](WAITING-ON-DEVELOPER.md#decisions-that-block-work), so no routine picks it up; shell tier plus one filtered regression and `fingerdemo` per game): slice 2 landed in part in [#642](https://github.com/rjdunlap/neo/pull/642) with the other eight large-pet games. [Packet](rework/CREATURE-COLLECTION.md#built-slice-2-in-part-2026-10-20)
 
 
-- **`little-conductor`, build level 3 *Two pictured requests* (music M3)** (new-interaction tier): a listener's sign asks for turtle or rabbit per half of the tune, a pad tap auditions, Check submits, a wrong Check names the requested pace, two misses glow the pad once per phrase. [Definition](definitions/little-conductor.md) **Claimed 2026-10-21:** branch `claude/little-conductor-m3` (files: `src/games/little-conductor/`, `src/content/howto.ts`, `src/content/voice-script.ts`, `scripts/browser-check.mjs`).
 
 - **`egg-catch`, a miss that teaches and hens that wait** (existing-game change): boing, line and next-lane glow at levels 2–3; no eggs laid while nobody plays. [Slice 2](deep-dives/egg-catch.md#build-slices-in-order)
 - **`egg-catch`, notes, egg colours and the hatching basket** (content): pentatonic hens, catchable colours at 1–2, chicks at the finish. [Slice 3](deep-dives/egg-catch.md#fresh-content-inside-existing-levels)
