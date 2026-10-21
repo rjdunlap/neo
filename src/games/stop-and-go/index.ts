@@ -362,8 +362,10 @@ class StopAndGo implements Game {
       if (this.done >= this.plan.goal) void this.finale();
       return;
     }
-    this.toot(car);
-    if (answer === 'nudge') return void this.ctx.say('go.yellow');
+    if (answer === 'nudge') {
+      this.toot(car);
+      return void this.ctx.say('go.yellow');
+    }
     this.squash(car);
     this.stopMiss();
   }
