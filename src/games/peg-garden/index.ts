@@ -82,7 +82,7 @@ class Bud extends Container {
   }
 }
 
-/** The pearl's fixed physics step: the ball engine's substep, so a shot in play is the simulated shot. */
+/** A dropped pearl's fixed physics step: the ball engine's substep, so a drop in play is the simulated drop. */
 const STEP = 1 / 240;
 
 /** Where along the ledge each drop is made on the first level, as a fraction of the board: all over, not one place. */
@@ -150,7 +150,8 @@ class PegGarden implements Game {
     this.touch.on('globalpointermove', (e: FederatedPointerEvent) => e.pointerId === this.aiming && this.steerAim(e));
     this.touch.on('pointerup', (e: FederatedPointerEvent) => this.up(e));
     this.touch.on('pointerupoutside', (e: FederatedPointerEvent) => this.up(e));
-    this.touch.on('pointercancel', (e: FederatedPointerEvent) => this.cancel(e));
+    // Pixi does not pass a cancelled touch on, so the window is watched for it.
+    window.addEventListener('pointercancel', this.cancel, { capture: true });
   }
 
   private get aimed() {
@@ -182,8 +183,8 @@ class PegGarden implements Game {
     const s = Math.min(1, (v.h - 60) / (BOARD.h + 30), (v.w - 220) / BOARD.w);
     this.board.scale.set(s);
     this.board.position.set(Math.max(180, (v.w - BOARD.w * s) / 2), (v.h - BOARD.h * s) / 2 + 10);
-    // The whole screen takes touches, the sea beside the board too.
-    this.touch.hitArea = new Rectangle(-this.board.x / s, -this.board.y / s, v.w / s, v.h / s);
+    // The whole screen takes touches, the sea beside the board too (couch play takes none).
+    if (!this.ctx.couch) this.touch.hitArea = new Rectangle(-this.board.x / s, -this.board.y / s, v.w / s, v.h / s);
     const f = this.frame.clear();
     f.roundRect(-14, -14, BOARD.w + 28, BOARD.h + 28, 30).fill({ color: 0xffffff, alpha: 0.18 }).stroke({ width: 8, color: 0xffffff, alpha: 0.6 });
     // Sand and seaweed along the bottom, where pearls roll away.
@@ -198,16 +199,21 @@ class PegGarden implements Game {
     const b = this.ball;
     if (!b) return;
     this.ballAge += dt;
-    // Fixed steps, as the rules' simulation takes them, so a pearl goes exactly where the hint and the ghost finger expect
-    // whatever the frame rate. A long frame slows the pearl rather than changing its path.
-    this.stepLeft = Math.min(this.stepLeft + dt, 0.25);
-    for (; this.stepLeft >= STEP; this.stepLeft -= STEP) for (const i of stepBall(b, this.world, STEP)) this.touchBud(i);
+    if (this.aimed) {
+      for (const i of stepBall(b, this.world, dt)) this.touchBud(i);
+    } else {
+      // A dropped pearl takes fixed steps, as the rules' simulation does, so it goes exactly where the hint, the stall guard
+      // and the ghost finger expect whatever the frame rate; a long frame slows it rather than changing its path.
+      this.stepLeft = Math.min(this.stepLeft + dt, 0.25);
+      for (; this.stepLeft >= STEP; this.stepLeft -= STEP) for (const i of stepBall(b, this.world, STEP)) this.touchBud(i);
+    }
     this.pearl.position.set(b.x, b.y);
     if (b.y - b.r > BOARD.h || this.ballAge > 10) void this.shotOver();
   }
 
   destroy() {
     this.touch.removeAllListeners();
+    window.removeEventListener('pointercancel', this.cancel, { capture: true });
   }
 
   /** Couch play: hold left or right to swing the launcher, press the bottom button to let the pearl go. */
@@ -327,12 +333,12 @@ class PegGarden implements Game {
   }
 
   /** A cancelled aim (a system gesture, a palm) lets nothing go. */
-  private cancel(e: FederatedPointerEvent) {
+  private readonly cancel = (e: PointerEvent) => {
     if (e.pointerId !== this.aiming) return;
     this.aiming = null;
     this.guide.clear();
     this.drawLauncher();
-  }
+  };
 
   private up(e: FederatedPointerEvent) {
     if (e.pointerId !== this.aiming) return;

@@ -4636,6 +4636,16 @@ async function batch() {
         for (let guard = 0; guard < 40 && !g.finished; guard++) { const b = g.buds.find((b) => b.spot.kind === 'special' && !b.bloomed); if (!b) break; await drop(b.x); }
         return;
       }
+      // A cancelled aim (a system gesture, a palm) lets nothing go.
+      await done();
+      const at = screen(BOARD.w / 2, 300);
+      const press = (type) => document.querySelector('canvas').dispatchEvent(new PointerEvent(type, { clientX: at.x, clientY: at.y, pointerId: 9, pointerType: 'touch', bubbles: true, cancelable: true, buttons: 1 }));
+      press('pointerdown');
+      await kit.sleep(100);
+      if (g.aiming !== 9) throw new Error(`Peg aim did not start: ${g.aiming}`);
+      press('pointercancel');
+      await kit.sleep(300);
+      if (g.aiming !== null || g.ball) throw new Error('Peg cancelled aim fired or stayed');
       // Number and order: two shots that miss the target, then the full-path hint, then hits.
       const isTarget = (i) => g.buds[i].spot.kind === g.target;
       for (let k = 0; k < 2; k++) await shoot((hits) => !hits.some(isTarget));
