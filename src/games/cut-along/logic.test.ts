@@ -4,7 +4,7 @@ import { computeView } from '../../engine/view';
 import { advanceTrace, traceWaypoints, type Point } from '../letter-trails/strokes';
 import { offTrail } from '../letter-trails/logic';
 import {
-  DIFFERS, EDGE, LEVELS, MARK_HIT, PAPER_W, PLANS, RING_R, STRIP, boardsFor, chooseOrder, countsStrays, cutsFor, differsLine,
+  DIFFERS, EDGE, botRoute, LEVELS, MARK_HIT, PAPER_W, PLANS, RING_R, STRIP, boardsFor, chooseOrder, countsStrays, cutsFor, differsLine,
   fringeMarks, hintStretch, homeCorner, judgeOutline, layoutFor, markAt, markBox, pathOf, petCorner, planFor, startOf, tolerance,
   lengthTo, wrongReached, type Cut, type Rect,
 } from './logic';
@@ -104,6 +104,22 @@ describe('Cut Along cuts', () => {
 
   it('gives a start ring at least 110 units across', () => {
     expect(2 * RING_R).toBeGreaterThanOrEqual(110);
+  });
+
+  it('lets the ghost finger’s thinned route cut every path, both ways', () => {
+    for (let l = 2; l <= 8; l++) {
+      for (const seed of SEEDS.slice(0, 10)) {
+        for (const cut of allCuts(l, seed)) {
+          for (const order of cut.orders) {
+            const route = botRoute(cut, order, 0);
+            expect(route.length).toBeLessThan(40);
+            let progress = 0, prev = route[0];
+            for (const to of route.slice(1)) { progress = advanceTrace(order, progress, prev, to, tolerance(l)); prev = to; }
+            expect(progress, `${cut.kind} at level ${l}`).toBe(order.length - 1);
+          }
+        }
+      }
+    }
   });
 
   it('can be cut to the end, both ways round a closed shape', () => {

@@ -273,6 +273,21 @@ export const pathOf = (cut: Cut, order: number | null): Point[] => cut.orders[or
 /** The stretch the hint lights: the next 12 checkpoints from where the scissors wait. */
 export const hintStretch = (points: readonly Point[], progress: number): Point[] => showTheWay(points, progress, 12);
 
+/**
+ * The ghost finger's route from `progress` to the end: the corners, and a point about every 0.15 paper units along a curve,
+ * so a demonstration is not a hundred half-second legs. Each chord stays well inside the corridor.
+ */
+export function botRoute(cut: Cut, points: readonly Point[], progress: number): Point[] {
+  const turns = new Set([cut.lead, ...cut.corners.map((c) => points.findIndex((p) => p[0] === c[0] && p[1] === c[1]))]);
+  const out: Point[] = [points[progress]];
+  let since = 0;
+  for (let i = progress + 1; i < points.length; i++) {
+    since += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
+    if (since >= 0.15 || turns.has(i) || i === points.length - 1) { out.push(points[i]); since = 0; }
+  }
+  return out;
+}
+
 /* ---------------------------------------------------------------- level 1 */
 
 export interface Mark { x: number; length: number }
