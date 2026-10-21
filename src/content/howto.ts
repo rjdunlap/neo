@@ -734,14 +734,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'peg-garden': {
     goal: 'Drop a pearl through the garden so flowers bloom.',
     steps: [
-      { to: 3, text: 'Tap the top to drop a pearl.' },
+      { to: 3, text: 'Tap anywhere to drop a pearl from above that spot.' },
+      { to: 1, text: 'A tap while a pearl is falling drops the next one.' },
       { from: 2, to: 2, text: 'Keep dropping pearls until every flower has bloomed.' },
       { from: 3, to: 3, text: 'Bloom the orange flowers; they are counted aloud.' },
+      { from: 3, to: 3, text: 'After two pearls that miss them, a ring on the top shows where to tap.' },
       { from: 4, text: 'Drag to aim the launcher, then let go.' },
       { from: 4, to: 4, text: 'Hit the numbered flower that was asked for.' },
       { from: 5, text: 'Hit the numbered flowers in order: 1, then 2, then 3.' },
     ],
-    finish: 'The round ends when the requested flowers have bloomed.',
+    finish: [
+      { to: 1, text: 'The round ends after six pearls.' },
+      { from: 2, to: 2, text: 'The round ends when every flower has bloomed.' },
+      { from: 3, text: 'The round ends when the requested flowers have bloomed.' },
+    ],
   },
   'fluffy-salon': {
     goal: 'Give the pet a fluffy makeover.',

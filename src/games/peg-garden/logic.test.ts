@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { simulate, stepBall, type Ball, type BallWorld } from '../../engine/ball';
 import { Rng } from '../../engine/random';
-import { AIM_LIMIT, aimAt, aimVelocity, BOARD, DRIFT, dropAt, grid, makeBoard, PLANS, planFor, STALL_AT, targets } from './logic';
+import { AIM_LIMIT, aimAt, aimVelocity, BOARD, DRIFT, driftOf, dropAt, grid, guided, ledgeX, makeBoard, PLANS, planFor, STALL_AT, targets } from './logic';
 
 describe('Peg Garden', () => {
   it('grows buds on the grid, with the right number of specials and numbers', () => {
@@ -38,13 +38,11 @@ describe('Peg Garden', () => {
   /** The world of a board, as the game builds it. */
   const worldOf = (spots: ReturnType<typeof makeBoard>): BallWorld => ({ pegs: spots.map((s) => ({ x: s.x, y: s.y, r: BOARD.peg })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 });
 
-  /** A pearl flown with frames of uneven length, as a screen shows them, and the buds it touched in order. */
-  const fly = (ball: Ball, world: BallWorld, jitter: Rng) => {
+  /** A pearl flown as the game flies it, in fixed steps of the ball engine's substep, and the buds it touched in order. */
+  const fly = (ball: Ball, world: BallWorld) => {
     const touched: number[] = [];
-    for (let t = 0; t < 12 && ball.y - ball.r < BOARD.h; ) {
-      const dt = jitter.range(0.012, 0.024);
-      t += dt;
-      for (const i of stepBall(ball, world, dt)) if (!touched.includes(i)) touched.push(i);
+    for (let t = 0; t < 12 && ball.y - ball.r < BOARD.h; t += 1 / 240) {
+      for (const i of stepBall(ball, world, 1 / 240)) if (!touched.includes(i)) touched.push(i);
     }
     return touched;
   };
@@ -55,7 +53,6 @@ describe('Peg Garden', () => {
       let sureHits = 0;
       for (let seed = 1; seed <= 15; seed++) {
         const rng = new Rng(seed);
-        const jitter = new Rng(seed + 1000);
         const spots = makeBoard(plan, rng);
         const world = worldOf(spots);
         const bloomed = spots.map(() => false);
@@ -63,11 +60,12 @@ describe('Peg Garden', () => {
         let shots = 0;
         while (spots.some((_, i) => want(i))) {
           // The bot reads the next draw from a copy, then the game makes the same draw.
-          const drift = rng.clone().range(-DRIFT, DRIFT);
+          const spread = driftOf(plan.mode);
+          const drift = spread ? rng.clone().range(-spread, spread) : 0;
           const drop = dropAt(world, want, drift, plan.mode === 'color');
           expect(drop.x).toBeGreaterThanOrEqual(BOARD.ball);
           expect(drop.x).toBeLessThanOrEqual(BOARD.w - BOARD.ball);
-          const touched = fly({ x: drop.x, y: 40, vx: rng.range(-DRIFT, DRIFT), vy: 60, r: BOARD.ball }, world, jitter);
+          const touched = fly({ x: drop.x, y: 40, vx: spread ? rng.range(-spread, spread) : 0, vy: 60, r: BOARD.ball }, world);
           if (plan.mode === 'color' && drop.sure) {
             sureShots++;
             if (touched.some(want)) sureHits++;
@@ -77,8 +75,8 @@ describe('Peg Garden', () => {
           expect(++shots, `${plan.mode} seed ${seed}`).toBeLessThanOrEqual(plan.mode === 'bloom' ? 10 : 14);
         }
       }
-      // Frames are never the simulation's, and a pearl is chaotic after a few bounces; the bot prefers the soonest touch to keep this high.
-      if (plan.mode === 'color') expect(sureHits / sureShots).toBeGreaterThan(0.9);
+      // The game steps a pearl as the simulation does, so a shot the bot is sure of lands on the colour level.
+      if (plan.mode === 'color') expect(sureHits).toBe(sureShots);
     }
   });
 
@@ -86,7 +84,6 @@ describe('Peg Garden', () => {
     for (const plan of PLANS.filter((p) => p.mode === 'bloom')) {
       for (let seed = 1; seed <= 15; seed++) {
         const rng = new Rng(seed);
-        const jitter = new Rng(seed + 1000);
         const spots = makeBoard(plan, rng);
         const world = worldOf(spots);
         const bloomed = spots.map(() => false);
@@ -96,12 +93,58 @@ describe('Peg Garden', () => {
           let shots = 0;
           while (bloomed.some((b) => !b)) {
             const x = stalled >= STALL_AT ? dropAt(world, (i) => !bloomed[i], rng.clone().range(-DRIFT, DRIFT)).x : tapX;
-            const touched = fly({ x, y: 40, vx: rng.range(-DRIFT, DRIFT), vy: 60, r: BOARD.ball }, world, jitter);
+            const touched = fly({ x, y: 40, vx: rng.range(-DRIFT, DRIFT), vy: 60, r: BOARD.ball }, world);
             stalled = touched.some((i) => !bloomed[i]) ? 0 : stalled + 1;
             touched.forEach((i) => (bloomed[i] = true));
             expect(++shots, `seed ${seed} tap ${tapX}`).toBeLessThanOrEqual(20);
           }
         }
+      }
+    }
+  });
+
+  it('finishes the colour level even when the same spot is tapped every time, with a miss only for her own choice of spot', { timeout: 60_000 }, () => {
+    const plan = planFor(3);
+    expect(driftOf('color')).toBe(0);
+    for (let seed = 1; seed <= 15; seed++) {
+      const spots = makeBoard(plan, new Rng(seed));
+      const world = worldOf(spots);
+      const bloomed = spots.map(() => false);
+      const want = (i: number) => !bloomed[i] && spots[i].kind === 'special';
+      for (const tapX of [0, BOARD.w / 2, BOARD.w + 200]) {
+        bloomed.fill(false);
+        let stalled = 0;
+        let wrongs = 0;
+        let hinting = false;
+        let shots = 0;
+        while (spots.some((_, i) => want(i))) {
+          const help = guided('color', stalled, hinting);
+          const x = help ? dropAt(world, want, 0, true).x : ledgeX(tapX);
+          const touched = fly({ x, y: 40, vx: 0, vy: 60, r: BOARD.ball }, world);
+          const fresh = touched.some(want);
+          stalled = fresh ? 0 : stalled + 1;
+          if (fresh) hinting = false;
+          if (touched.some((i) => spots[i].kind === 'special')) wrongs = 0;
+          else if (!help && ++wrongs >= 2) [hinting, wrongs] = [true, 0];
+          touched.forEach((i) => (bloomed[i] = true));
+          expect(++shots, `seed ${seed} tap ${tapX}`).toBeLessThanOrEqual(16);
+        }
+      }
+    }
+  });
+
+  it('puts the colour hint on a ledge spot whose pearl touches a waiting orange bud, on every board and as buds bloom', () => {
+    const plan = planFor(3);
+    for (let seed = 1; seed <= 40; seed++) {
+      const spots = makeBoard(plan, new Rng(seed));
+      const world = worldOf(spots);
+      const bloomed = spots.map(() => false);
+      const want = (i: number) => !bloomed[i] && spots[i].kind === 'special';
+      while (spots.some((_, i) => want(i))) {
+        const { x } = dropAt(world, want, 0, true);
+        const { hits } = simulate({ x, y: 40, vx: 0, vy: 60, r: BOARD.ball }, world, BOARD.h, 12, 1 / 30);
+        expect(hits.some(want), `seed ${seed}`).toBe(true);
+        hits.forEach((i) => (bloomed[i] = true));
       }
     }
   });

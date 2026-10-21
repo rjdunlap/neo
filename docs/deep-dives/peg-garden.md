@@ -22,7 +22,7 @@ A pearl falls through a sea garden of flower buds, after Peggle and pachinko. Ev
 
 **Couch.** In `COUCH_IDS` (unlock tier 4 with Bumper Garden), turns, twin face-off, fewer shots wins; stops 1–2 play level 4 and later stops level 5 (`demoLevel: 4`). The couch keeps those levels whatever this dive adds.
 
-**Known gaps found reading the code (not fixed: docs-only session).**
+**Known gaps found reading the code.** Gaps 1–6, 8 and 9 are fixed (slice 1, built); 7, 10 and 11 stay open.
 
 1. **Taps while a pearl falls do nothing.** `down()` returns while `this.ball` is set. A fall takes two to four seconds, so at lap level 1 most of a one-year-old's taps get no answer at all, which is the age where every touch should respond.
 2. **Taps beside the board do nothing.** The touch layer's hit area is the board (`BOARD.w × BOARD.h`), and the board is scaled down and centred with the sea showing either side; the sea takes no input.
@@ -140,12 +140,14 @@ Appended IDs; `planFor` must look plans up by ID (today it indexes `PLANS` by po
 
 ## Build slices, in order
 
-1. **Every touch answers, a fair colour level and a true card** (existing-game bug-fix tier: typecheck, `logic.test.ts`, one filtered regression play `BROWSER_SUITE=batch BATCH_ONLY=pegs` at levels 1 and 3, `fingerdemo` at 3 because the hint changes the bot's spot; that case is the known flake in [chunk-table item 12](../ROADMAP.md#chunks), so a failure is probed once and recorded, not looped). Gaps 1–6, 8 and 9: whole-screen touch, bubble feedback during a fall, the level-1 queue, no drift at 3 (the bot's drift read follows), the stall guard and drop-spot ring at 3, `hinting` reset, `pointercancel`, the card's level-1 finish. Rule tests: the colour level finishes when the same spot is tapped every time; the hinted spot touches a waiting orange bud on every board.
+1. **Built (2026-10-21): Every touch answers, a fair colour level and a true card** (existing-game bug-fix tier: typecheck, `logic.test.ts`, one filtered regression play `BROWSER_SUITE=batch BATCH_ONLY=pegs` at levels 1 and 3, `fingerdemo` at 3 because the hint changes the bot's spot; that case is the known flake in [chunk-table item 12](../ROADMAP.md#chunks), so a failure is probed once and recorded, not looped). Gaps 1–6, 8 and 9: whole-screen touch, bubble feedback during a fall, the level-1 queue, no drift at 3 (the bot's drift read follows), the stall guard and drop-spot ring at 3, `hinting` reset, `pointercancel`, the card's level-1 finish. Rule tests: the colour level finishes when the same spot is tapped every time; the hinted spot touches a waiting orange bud on every board.
 2. **Numbered buds wait their turn and the last shot stays faint** (existing-game change: typecheck, rule tests, one filtered play at 4 and 5). Gap 7 and the trail.
 3. **The shell tray and board themes** (content: typecheck, rule tests over every shape, one screenshot per backdrop). Four shapes, three backdrops, the tray.
 4. **Level 8 *Big buds*, the lap entry** (new interaction: typecheck, unit tests, one scripted play at 8, `fingerdemo` at 8, one portrait screenshot). Plans keyed by ID, `order` and `entryLevels`.
 5. **Level 6 *Into the cup*** (new interaction: as slice 4, at 6). Needs the plans-by-ID change from slice 4 or makes it itself.
 6. **Level 7 *Plant a bud*** (new interaction, after slice 5: as slice 4, at 7).
+
+**Findings for the aimed slices (4–7), from slice 1.** The couch bot cannot cope with exact physics: `bestAim` uses a margin of 0.012 and falls back to 0 (straight down), and `autoplay` fires anywhere within 0.015 of its chosen angle, so with exact fixed steps at an aimed level it can repeat one losing shot forever (frame jitter had hidden this). Slice 1 steps fixed 1/240 s only for dropped pearls (levels 1–3); aimed levels and couch keep frame-step physics. `BROWSER_SUITE=couchgames COUCH_ONLY=peg-garden` failed intermittently on the branch (the bot never finished: 1 hint, 44–57 misses; 1 in 3 runs) while origin/main's game code passed 4 of 4; the cause is not established, and the final guarded code's couchgames was not run. Probe it before changing aimed levels. Also: Pixi 8 never forwards DOM `pointercancel`, so Fruit Slice's `this.layer.on('pointercancel', …)` (`src/games/fruit-slice/index.ts:155`) is dead code; a follow-up is to listen on `window` as Peg Garden now does (not done).
 
 Gated and not in the ready list: level 9's accounting (decision 2; the level is otherwise defined), level 10 and the school window, couch, rework hooks.
 
