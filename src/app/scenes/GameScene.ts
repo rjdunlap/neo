@@ -37,6 +37,7 @@ import { HowToPanel, questionIcon, type HowToIntro } from '../../ui/howto-card';
 import { discoveryPill } from '../../ui/journal-art';
 import { againIcon, basketIcon, checkIcon, heartIcon, houseIcon, nextIcon, treehouseIcon } from '../../ui/icons';
 import { FONT } from '../../ui/text';
+import { backToArt, originArt } from '../../ui/origin-art';
 import type { App, Origin, StoryRound } from '../App';
 import { controllerPlays, InputInUse, pressed } from '../input-in-use';
 import { goToOrigin } from '../origin';
@@ -59,7 +60,8 @@ export class GameScene extends Scene {
   private tip: Container | null = null;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
   /** The "again", heart and "home" buttons, once the celebration offers them. */
-  after: { again: RoundButton; next: RoundButton | null; heart: RoundButton; home: RoundButton; keep: RoundButton | null } | null = null;
+  /** The result's buttons. At the root a game opened from a location or Explore page has `home` as Back to that place and `house` as Home. */
+  after: { again: RoundButton; next: RoundButton | null; heart: RoundButton; home: RoundButton; house: RoundButton | null; keep: RoundButton | null } | null = null;
   /** What she made this round, offered for the treehouse (null when the game made nothing or it was empty). */
   private made: Creation | null = null;
   /** Journal entries this round showed her for the first time. */
@@ -282,7 +284,7 @@ export class GameScene extends Scene {
     const after = this.after;
     if (!after) return;
     this.offeredFor += dt;
-    const buttons = [after.again, ...(after.next ? [after.next] : []), after.home, after.heart, ...(after.keep ? [after.keep] : [])];
+    const buttons = [after.again, ...(after.next ? [after.next] : []), after.home, ...(after.house ? [after.house] : []), after.heart, ...(after.keep ? [after.keep] : [])];
     const at = Math.min(this.focus, buttons.length - 1);
     const focused = buttons[at];
     this.ring.visible = this.inputInUse.kind === 'controller';
@@ -539,7 +541,13 @@ export class GameScene extends Scene {
     // "Next level" plays the level above the one she just finished (not in a story round, which has its own level).
     const upTo = this.story ? null : nextLevelOffer(this.level, this.mod.levels(this.band));
     const next = upTo === null ? null : new RoundButton(nextIcon(0xffffff), swatch.orange, 66, () => this.navigateResult(() => { this.relaunchMix(); this.app.go.game(this.mod.id, this.band, undefined, true, this.origin, upTo); }));
-    const home = new RoundButton(this.story ? basketIcon() : houseIcon(0xffffff), swatch.blue, 66, () => this.navigateResult(() => this.goHome()));
+    // At the root (RW08) a game from a location or an Explore page goes Back to it by a return arrow beside its picture, and a house goes Home.
+    const from = this.app.creatureWorld && !this.story ? originArt(this.origin) : null;
+    const home = new RoundButton(from ? backToArt(from.picture) : this.story ? basketIcon() : houseIcon(0xffffff), swatch.blue, 66, () => {
+      if (from && this.liveResult() && !this.navigating) void voice.say('result.back', { place: from.place });
+      this.navigateResult(() => this.goHome());
+    });
+    const house = from ? new RoundButton(houseIcon(), swatch.white, 50, () => this.navigateResult(() => this.app.go.hub())) : null;
     // A heart beside the new sticker, for a game she loves: it joins the shelf on the island, and a second tap takes it back.
     const outline = heartIcon(0xffffff, false);
     const solid = heartIcon(0xffffff, true);
@@ -584,13 +592,14 @@ export class GameScene extends Scene {
       });
       keep.position.set(v.w / 2 - 195, v.h * 0.33);
     }
-    this.after = { again, next, heart, home, keep };
+    this.after = { again, next, heart, home, house, keep };
     // The celebrating pet fills the middle of the bottom row, so a next level goes above home, below the heart and clear of the discovery card.
     again.position.set(v.w / 2 - 240, v.h * 0.72);
     next?.position.set(v.w / 2 + 250, v.h * 0.525);
     heart.position.set(v.w / 2 + 195, v.h * 0.33);
     home.position.set(v.w / 2 + 240, v.h * 0.72);
-    for (const b of [again, ...(next ? [next] : []), heart, home, ...(keep ? [keep] : [])]) {
+    house?.position.set(v.w / 2 + 380, v.h * 0.72);
+    for (const b of [again, ...(next ? [next] : []), heart, home, ...(house ? [house] : []), ...(keep ? [keep] : [])]) {
       b.scale.set(0);
       layer.addChild(b);
       void this.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
@@ -889,6 +898,7 @@ export class GameScene extends Scene {
     a.again.position.set(view.w / 2 - 240, view.h * 0.72);
     a.next?.position.set(view.w / 2 + 250, view.h * 0.525);
     a.home.position.set(view.w / 2 + 240, view.h * 0.72);
+    a.house?.position.set(view.w / 2 + 380, view.h * 0.72);
     a.heart.position.set(view.w / 2 + 195, view.h * 0.33);
     a.keep?.position.set(view.w / 2 - 195, view.h * 0.33);
   }

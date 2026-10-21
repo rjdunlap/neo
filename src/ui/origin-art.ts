@@ -4,7 +4,7 @@ import { swatch } from '../art/palette';
 import type { Origin } from '../app/App';
 import type { ExploreEntry } from '../content/explore';
 import { landFor } from '../content/lands';
-import { heartIcon, meadowIcon, padIcon, tilesIcon } from './icons';
+import { arrowIcon, heartIcon, meadowIcon, padIcon, tilesIcon } from './icons';
 
 /** Explore's entries at the root (RW08): the name under each card, and its picture (about 60 units across). */
 export const ENTRY_NAMES: Record<ExploreEntry, string> = { places: 'Places', favorites: 'Favorites', all: 'All games', family: 'Family play' };
@@ -36,4 +36,16 @@ export function originArt(origin: Origin | undefined): { picture: Container; pla
   if (origin && 'land' in origin) return { picture: landmarkFor(origin.land), place: landFor(origin.land).name };
   if (origin && 'explore' in origin) return { picture: entryArt(origin.explore), place: ENTRY_NAMES[origin.explore] };
   return null;
+}
+
+/** The result's Back to [origin] picture (RW08): a white return arrow beside the place's picture, inside a 132-unit button. */
+export function backToArt(picture: Container): Container {
+  const art = new Container();
+  const arrow = arrowIcon(-1, 0xffffff);
+  arrow.scale.set(0.8);
+  arrow.position.set(-30, 0);
+  const pic = fitArt(picture, 64);
+  pic.x += 20;
+  art.addChild(arrow, pic);
+  return art;
 }
