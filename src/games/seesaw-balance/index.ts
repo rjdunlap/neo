@@ -229,6 +229,8 @@ class SeesawBalance implements Game {
   /** Level 11: the gap between the trays after the last change, and whether this pair's glow has been given. */
   private gap = 0;
   private glowUsed = false;
+  /** Level 11: changes so far, so a quick burst of moves is judged once, as one change. */
+  private changes = 0;
   private spin = 0;
   /** Presents already compared on a tray during the how-to demonstration. */
   private readonly demoTested = new Set<Item>();
@@ -664,8 +666,10 @@ class SeesawBalance implements Game {
    */
   private async checkSame() {
     if (this.busy || this.finished) return;
+    const change = ++this.changes;
     await this.ctx.tw.wait(0.5);
     if (this.busy || this.finished) return;
+    if (this.plan.mode === 'pair' && change !== this.changes) return;
     const { left, right } = this.weights;
     if (this.plan.mode === 'pair') return this.checkPair(Math.abs(left - right));
     if (left !== right) {

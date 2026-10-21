@@ -8579,6 +8579,7 @@ async function woodsBatch() {
       await kit.sleep(900);
     }, { pick, to });
     const state = () => page.evaluate(() => { const g = neo.scene.game; const sq = g.items.find((i) => i.thing.shape === 'square'); const rd = g.items.find((i) => i.thing.shape === 'round'); return { misses: g.misses, hints: g.hints, tips: g.tips, glow: !!g.hintItem, square: sq?.sign.text, round: rd?.sign.text, pads: g.pads.length }; });
+    let burst = false;
     for (let n = 0; n < rounds; n++) {
       await idle(n);
       const phase = await page.evaluate(() => neo.scene.game.round.phase);
@@ -8618,7 +8619,16 @@ async function woodsBatch() {
       for (let j = 0; j < k; j++) { await move({ side: 'fixed' }, 'grass'); await move({ side: 'other' }, 'grass'); }
       // The square box off, then its number of blocks off the other side: one tip, then closer and level.
       await move({ side: 'fixed', shape: 'square' }, 'grass');
-      for (let j = 0; j < s; j++) await move({ side: 'other' }, 'grass');
+      if (s >= 3 && !burst) {
+        burst = true;
+        // Two blocks off in a quick burst are judged once, as one narrowing change: no tip, no glow.
+        const before = await state();
+        await page.evaluate(() => { const g = neo.scene.game; const os = g.round.fixedSide === 'left' ? 'right' : 'left'; for (const item of g.items.filter((i) => i.side === os && i.thing.kind === 'block').slice(0, 2)) g.takeOff(item, true); });
+        await page.waitForTimeout(1500);
+        const after = await state();
+        assert.deepEqual([after.tips, after.hints], [0, before.hints], 'a quick burst of right moves is not a tip');
+        for (let j = 2; j < s; j++) await move({ side: 'other' }, 'grass');
+      } else for (let j = 0; j < s; j++) await move({ side: 'other' }, 'grass');
       await page.waitForFunction(() => neo.scene.game.pads.length === 3 && !neo.scene.game.busy, null, { timeout: 15000 });
       assert.equal(await page.evaluate(() => { const g = neo.scene.game; return g.items.filter((i) => i.side && i.thing.kind === 'block').length === g.round.answer; }), true, 'the blocks across weigh the round box');
       if (n === 1) await screenshot('seesaw-balance-11');
@@ -8629,7 +8639,7 @@ async function woodsBatch() {
     await finished('seesaw-balance');
     assert.deepEqual(await score('seesaw-balance'), [1, 1]);
     await page.setViewportSize({ width: 1024, height: 768 });
-    log('Seesaw Balance 11 (two boxes): readings tag the square box, round box stays, tips free with one glow, putting back, the square box worth its number, round box weighed, saved score and sticker passed');
+    log(`Seesaw Balance 11 (two boxes): ${burst ? 'quick burst judged once, ' : 'no square box of 3 or more, so the quick burst was not tried, '}` + 'readings tag the square box, round box stays, tips free with one glow, putting back, the square box worth its number, round box weighed, saved score and sticker passed');
   }
 
   // Mail Carrier 6–8: Hazel's picture map, two planned stops, and a shorter-route choice.
