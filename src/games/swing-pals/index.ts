@@ -174,6 +174,7 @@ class SwingPals implements Game {
   private match = false;
   /** How far both swings are drawn back before a release, 0 to 1. */
   private readonly hold = { k: 0 };
+  private readonly finaleCritters: Critter[] = [];
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -339,8 +340,10 @@ class SwingPals implements Game {
     const top = Math.min(...cols.map((c) => c.pivot.long.y));
     const trunkX = cols.length === 1 ? Math.min(this.view.w - 60, cols[0].pivot.middle.x + 300) : (cols[0].pivot.middle.x + cols[1].pivot.middle.x) / 2 + 30;
     g.roundRect(trunkX - 34, top - 40, 68, L.seatY - top + 140, 26).fill(wood.fill).stroke({ width: 5, color: wood.line });
-    for (const c of cols) {
-      for (const h of HOOKS) {
+    for (const [i, c] of cols.entries()) {
+      // Only the boughs in use: her three hooks at levels 4–6, otherwise the hook each swing hangs from.
+      const used = this.plan.mode === 'together' && i === 1 ? HOOKS : this.rigs[i] ? [this.rigs[i].hook] : [];
+      for (const h of used) {
         const p = c.pivot[h];
         const from = Math.min(p.x - 70, trunkX), to = Math.max(p.x + 70, trunkX);
         g.roundRect(from, p.y - 14, to - from, 22, 11).fill(wood.fill).stroke({ width: 4, color: wood.line });
@@ -348,9 +351,14 @@ class SwingPals implements Game {
       }
     }
     // Leaves along the top, and over the trunk.
-    for (let x = -40; x < this.view.w + 80; x += 90) {
-      const y = top - 70 + Math.sin(x * 0.05) * 18;
-      g.circle(x, y, 78).fill(LEAF[Math.abs(Math.round(x / 90)) % 3]);
+    // A crown in rows, each narrower than the one below, so a tall view shows a tree rather than a hedge.
+    for (let k = 3; k >= 0; k--) {
+      const y0 = top - 70 - k * 120;
+      if (y0 < -90) continue;
+      const half = this.view.w / 2 + 40 - k * 150;
+      for (let x = this.view.w / 2 - half; x <= this.view.w / 2 + half; x += 90) {
+        g.circle(x, y0 + Math.sin(x * 0.05 + k) * 18, 78).fill(LEAF[(Math.abs(Math.round(x / 90)) + k) % 3]);
+      }
     }
     g.circle(trunkX, top - 30, 90).fill(LEAF[1]);
   }
@@ -359,7 +367,7 @@ class SwingPals implements Game {
     for (const h of this.hookTargets) {
       const on = this.rigs[1]?.hook === h.hook;
       const glowing = this.glowHook === h.hook;
-      h.ring.clear().circle(0, 0, 60).fill({ color: 0xffffff, alpha: on ? 0.55 : 0.3 }).stroke({ width: glowing ? 9 : 6, color: glowing ? swatch.yellow.fill : on ? swatch.blue.line : 0xffffff });
+      h.ring.clear().circle(0, 0, 60).fill({ color: 0xffffff, alpha: on ? 0.22 : 0.12 }).stroke({ width: glowing ? 9 : 6, color: glowing ? swatch.yellow.fill : on ? swatch.blue.line : 0xffffff });
       h.ring.circle(0, 6, 12).stroke({ width: 6, color: 0x8c8c9c });
     }
   }
@@ -679,7 +687,7 @@ class SwingPals implements Game {
     const n = friends.length;
     const gap = Math.min(150, (this.view.w - 320) / Math.max(1, n - 1));
     const x0 = this.view.w / 2 - (gap * (n - 1)) / 2 + 60;
-    const critters: Critter[] = [];
+    const critters = this.finaleCritters;
     friends.forEach((f, i) => {
       const c = new Critter(SPECS[f]);
       c.scale.set(FRIEND_SCALE[WEIGHT[f]] * 0.85);
@@ -708,6 +716,7 @@ class SwingPals implements Game {
     this.destroyed = true;
     this.ground.removeAllListeners();
     for (const r of this.rigs) this.ctx.untrack(r.critter);
+    for (const c of this.finaleCritters) this.ctx.untrack(c);
   }
 }
 

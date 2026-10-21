@@ -374,7 +374,7 @@ export { overlaps as rectsOverlap };
  */
 export function swingLayout(swings: 1 | 2, v: View): SwingLayout {
   const bell = swings === 1 ? BELL_ONE : BELL_TWO;
-  const seatY = Math.min(620, v.h - 148);
+  const seatY = v.h - 150;
   const pet = petCorner(v);
   const x0 = seatY + FRIEND_DOWN > pet.y ? pet.x + pet.w + 10 : 20;
   const x1 = v.w - 20;
@@ -383,7 +383,8 @@ export function swingLayout(swings: 1 | 2, v: View): SwingLayout {
   const scale = Math.min(swings === 1 ? 560 : 460, seatY - 60, (half - FRIEND_HALF - 10) / sin);
   const columns: Column[] = [];
   for (let i = 0; i < swings; i++) {
-    const cx = x0 + half * (2 * i + 1);
+    // One swing stands in the middle when its widest arc clears the pet; otherwise each swing takes its column's middle.
+    const cx = swings === 1 ? Math.min(x1 - FRIEND_HALF - 10 - sin * scale, Math.max(v.w / 2, x0 + FRIEND_HALF + 10 + sin * scale)) : x0 + half * (2 * i + 1);
     const pivot = {} as Record<Hook, Pt>;
     for (const h of HOOKS) pivot[h] = { x: cx + (h === 'short' ? SHORT_SHIFT : 0), y: seatY - (LENGTH[h] / 4) * scale };
     const col: Column = { pivot, mitten: {} as Record<Hook, Pt>, bell: {} as Record<Hook, Pt>, zone: { x: 0, y: 0, w: 0, h: 0 } };
