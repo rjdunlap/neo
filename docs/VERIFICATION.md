@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-21 — Discovery D5a Make my mix definition (docs only)
+
+- PR #721, branch `claude/define-make-my-mix`: new [make-my-mix.md](definitions/make-my-mix.md) defining D5a, an in-memory lineup editor for the Little surprises mix (hold the mix spot, one to five stops, repeats allowed, no save). Routed into ROADMAP (chunk 19, D5a row), DISCOVERY, READY, WAITING-ON-DEVELOPER and the D2a and D3 definitions' couplings.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. No code changed, so no typecheck, unit, browser or offline run.
+- Open: nothing built or played; five decisions have leans the build follows. No coverage-summary row changed.
+
 ## 2026-10-21 — Egg Catch: a miss that teaches and hens that wait (slice 2)
 
 - Built on `claude/egg-catch-miss-teaches` ([PR #720](https://github.com/rjdunlap/neo/pull/720), tested at `d75e51d1`): levels 2–3 boing and "Peep! Slide under the next one." on a missed brown egg, a hay glow under the next brown egg's lane after two misses, and `HenPace` so hens lay only while someone plays (an unplayed landing is no miss); bots touch once per new egg.
@@ -106,14 +112,6 @@
 - Dev server http://localhost:5969: `BROWSER_SUITE=third MUNCH_LEVELS=1,2,4,7` passed (scores 1: 0/0, 2: 0/0, 4: 2/1, 7: 3/1; stickers saved); `BROWSER_SUITE=fingerdemo FINGER_ONLY=monster-munch FINGER_LEVELS=1` clean in 18.2 s.
 - Not run: build, other suites, the offline check, a portrait screenshot.
 - Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): whether per-bite counting keeps pace with fast feeding on iPad speech, and whether the ringed tummy count and the monster's lean read; a child.
-
-## 2026-10-21 — Draw the Pattern levels 1–8
-
-- Built on `claude/draw-the-pattern` ([PR #704](https://github.com/rjdunlap/neo/pull/704), base `bd885a39` plus the branch): new game `draw-the-pattern` in Painted Canyon (6 games), lap 1–2 to pre-K 5–8; a shared change to `canyonPlan` (a 0.75-size spring when the full one finds no room) is covered by `canyon.test.ts` but not visually checked. Levels 7–8 candidate pairs changed from the definition to one-up, one-down pairs.
-- `npm run typecheck` clean; `npm test` 199 files, 2277 tests passed on the final code (the game's 27 rule tests include one that undecided ways wait at `forkOf`); `npm run build` passed.
-- Dev server http://localhost:5848: `BROWSER_SUITE=drawpattern` passed: level 1 by marks and a pat, level 3 two strays (one miss, then glow and one hint, progress kept), level 4 a circle counterclockwise and clockwise, level 5 portrait screenshot (`test-results/browser/draw-the-pattern-5-portrait.png`), level 8 a wrong candidate (one miss, stroke resets) then finished with misses 1, hints 0; no page errors. `BROWSER_SUITE=fingerdemo FINGER_ONLY=draw-the-pattern FINGER_LEVELS=1,7` passed (20.9 s, 19.3 s).
-- Not run: world suite, the offline check, a visual check of the canyon's smaller spring.
-- Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): the 30-unit corridor on a two-year-old's zigzag, whether the crayon hides the dashes, level 5's stepping stones for a three-year-old, whether level 7's faint candidates read as a choice, level 8's narrow units for a four-year-old's finger.
 
 ## Coverage summary
 

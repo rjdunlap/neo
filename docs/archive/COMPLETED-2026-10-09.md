@@ -1406,7 +1406,7 @@ Idea row moved here from the notebook's candidates:
 
 | **Draw the Pattern / lap–pre-K** (pre-writing strokes: line, circle, cross, square, triangle; opened 2026-10-18) | The pet draws a zigzag, wave or loop-the-loop and she continues it; lines first, then circles and crosses. A pattern-continuation mode (hill, dip, hill, dip) links to Pattern Train | Built, see the section above | S–M |
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--draw-the-pattern-levels-18).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-21.md#2026-10-21--draw-the-pattern-levels-18).
 
 ## Monster Munch: a truthful card, counted bites and a wrong pad that counts, slice 1 (2026-10-21)
 
