@@ -222,11 +222,10 @@ export class GameScene extends Scene {
    */
   private async sayStop() {
     const round = this.mixRound!;
-    const state = mixMemory.live(store.data)?.state;
     const still = () => !this.game && !this.gone && this.app.scene === this;
     if (round.lead) { await voice.say(round.lead); if (!still()) return; }
-    const first = round.p === 0 && !!state?.items.every(i => i.state === 'upcoming');
-    if (first) {
+    // The session's first launch came from the mix spot (or Again mix); a Home back to the same card is not a new offer.
+    if (round.round === 1) {
       await voice.say('mix.offer');
       if (still()) void voice.say(this.mod.titleLine);
     } else void voice.say('mix.next', { title: titleOf(this.mod) });
@@ -841,7 +840,7 @@ export class GameScene extends Scene {
   private skipFromCard() {
     const session = this.mixSession();
     const p = this.mixRound?.p;
-    if (!session || p === undefined || this.game || this.navigating || session.state.items[p]?.state !== 'upcoming') return;
+    if (!session || p === undefined || this.game || this.navigating || !this.liveResult() || session.state.items[p]?.state !== 'upcoming') return;
     const after = mixMemory.apply(store.data, { type: 'skip', p })!;
     const r = mixReturn(after, true);
     this.navigateResult(() => {

@@ -163,19 +163,23 @@ export class HowToPanel extends Container {
     this.body.removeChildren().forEach((c) => c.destroy({ children: true }));
     // Long entries step their text down rather than run off a short screen; buttons keep their size. A ladder of levels
     // that still does not fit at the smallest text is left off before anything else gives.
-    let built = this.build(view, SCALES[0], true);
-    fit: for (const ladder of built.ladder ? [true, false] : [false]) {
-      for (const scale of SCALES) {
-        if (built.card.height + 24 <= view.h) break fit;
-        built.card.destroy({ children: true });
-        built = this.build(view, scale, ladder);
+    // A wide stop card that still does not fit takes its stop row into the Play and Back row, and tries again from full text.
+    let built = this.build(view, SCALES[0], true, false);
+    const ladders = built.ladder ? [true, false] : [false];
+    fit: for (const inline of built.canInline ? [false, true] : [false]) {
+      for (const ladder of ladders) {
+        for (const scale of SCALES) {
+          if (built.card.height + 24 <= view.h) break fit;
+          built.card.destroy({ children: true });
+          built = this.build(view, scale, ladder, inline);
+        }
       }
     }
     this.body.addChild(built.card);
     if (built.window) this.demo!.layout(built.card.x + built.window.x, built.card.y + built.window.y, built.window.w);
   }
 
-  private build(view: View, scale: number, withLadder: boolean): { card: Container; window: { x: number; y: number; w: number } | null; ladder: boolean } {
+  private build(view: View, scale: number, withLadder: boolean, inline: boolean): { card: Container; window: { x: number; y: number; w: number } | null; ladder: boolean; canInline: boolean } {
     const demo = this.demo;
     this.holds = [];
     this.stopTiles = [];
@@ -260,8 +264,10 @@ export class HowToPanel extends Container {
     // The intro's Play is the biggest thing on the card; the "?" card has one small check.
     const play = this.intro ? 62 : 52;
     // A stop card's row sits between the text and the buttons; it is never dropped or scaled.
-    const rowY = y + 18;
-    if (stops) y += STOP_ROW;
+    // Inline (a wide card only): the tiles sit left in the button row, Back and Play move right clear of them, Skip right of Play.
+    const inRow = !!stops && inline && wide;
+    const rowY = inRow ? y + 24 + play - SKIP / 2 : y + 18;
+    if (stops && !inRow) y += STOP_ROW;
     const cardH = y + 24 + play * 2 + 18;
     const card = new Container();
     card.addChild(
@@ -289,8 +295,10 @@ export class HowToPanel extends Container {
     if (this.intro) {
       const go = new RoundButton(playIcon(), swatch.green, play, this.intro.play);
       const back = new RoundButton(houseIcon(0xffffff), swatch.blue, 52, this.intro.back);
-      go.position.set(width / 2 + 62, y + 24 + play);
-      back.position.set(width / 2 - 94, y + 24 + play);
+      const tilesEnd = 32 + 3 * STOP + 2 * STOP_GAP;
+      const backX = inRow ? Math.max(width / 2 - 94, tilesEnd + 24 + 52) : width / 2 - 94;
+      go.position.set(backX + 156, y + 24 + play);
+      back.position.set(backX, y + 24 + play);
       card.addChild(back, go);
       if (stops) {
         this.stopTiles = stops.tiles();
@@ -312,7 +320,7 @@ export class HowToPanel extends Container {
     card.position.set((view.w - width) / 2, Math.max(12, (view.h - cardH) / 2));
     // A tap on the card itself must not fall through to the veil and close it.
     card.eventMode = 'static';
-    return { card, window: slot, ladder: !!ladder };
+    return { card, window: slot, ladder: !!ladder, canInline: !!stops && wide };
   }
 
   /** The level's picture on a pale tile, beside the arrows: a tap says what the level asks, and does nothing else. */
