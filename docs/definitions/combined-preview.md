@@ -86,9 +86,9 @@ The card already fits a 1024-wide design area in both orientations. The stop row
 | View | Expected fit with the row |
 | --- | --- |
 | Landscape `1024 × 768`, demo beside the text (card width 1000) | Text steps down, or the ladder drops, before anything else gives. Buttons and the row keep their size |
-| Portrait `1024 × 1365`, demo above the text (card width 760) | Fits at full text size for the three pool games' current levels |
+| Portrait `1024 × 1365`, demo above the text (card width 760) | Expected to fit at full text size for the three pool games' current levels (not yet measured) |
 
-The build proves the fit for every pool game (Bubble Pop, Sing-Along Barn, Fill and Dump) at every lap and toddler level, in four views: landscape and portrait at 1024, and a phone's safe-area landscape and portrait. A card that still would not fit, and so would scale its targets below 100 units, fails the test.
+The build proves the fit for every pool game (Bubble Pop, Sing-Along Barn, Fill and Dump) at every lap and toddler level, in four views: landscape and portrait at 1024, and a phone's safe-area landscape and portrait. A card that still would not fit, and so would scale its targets below 100 units, fails the test. If landscape at 768 fails once the text reaches 0.7, the wide card (1000 across) takes the stop row into its Play and Back row instead, adding no height: the three tiles on the left, Back and Play moved right so Back's left edge clears the tiles by at least 24, and Skip right of Play. The portrait card keeps the row of its own.
 
 ## Routes in a mix, with cards on
 
@@ -108,7 +108,8 @@ This table replaces only the D2a rows that open the sheet. With cards off, D2a's
 
 **How the routes are built.** The decision lives in `GameScene` and `MixHost`, not in `routes.ts`:
 
-- `GameScene.goHome()` asks the mix first. In a mix with cards on, it launches the next-up stop through `launchMixStop`, or goes to the place for the ending. Otherwise it goes to the origin, as today.
+- **The card's Back is not `goHome()`.** Today the corner Home, the intro's Back and Backspace on the intro all call `leave()` → `goHome()`. In a mix, the intro's Back and Backspace on the intro get their own handler: `mixMemory.end()`, then `go.place(origin band)`. If they went through the mix-aware `goHome()` below, Back on an upcoming stop's card would reopen that same card and seem to do nothing.
+- Only the round's corner Home and the result's blue Home go through `goHome()`, which asks the mix first. In a mix with cards on, it launches the next-up stop through `launchMixStop`, or goes to the place for the ending. Otherwise it goes to the origin, as today.
 - `MixHost.start()` launches stop 0 instead of opening the sheet when `settings.howToCards` is on.
 - `MixHost.resume()` opens only the ending sheet when cards are on. A live mix whose next stop is upcoming never stops at the home spot with cards on, because the routes above go past it.
 
@@ -128,7 +129,7 @@ In `src/content/mix.test.ts` (pure):
 - A played stop is never returned as `stop`. A skipped stop is never offered again.
 - Skip from a card settles the item once. A second Skip with the same token, or a stale one, changes nothing.
 
-In `src/app/mix-flow.test.ts` (the existing scene-flow test): the [routes table](#routes-in-a-mix-with-cards-on), card to card, with the session kept and then ended by Back.
+In `src/app/mix-flow.test.ts` (the existing scene-flow test): the [routes table](#routes-in-a-mix-with-cards-on), card to card, with the session kept and then ended by Back. One assertion: Back on an upcoming stop's card lands on the place with the session ended, not on the same card.
 
 In a new `src/ui/howto-card.test.ts`, or a headless layout check if Pixi's text measurement allows it (otherwise one browser probe):
 
@@ -139,7 +140,7 @@ In `src/content/howto.test.ts`: `shouldExplain` keeps its current table. D3 adds
 
 ## Filtered browser check
 
-Extend `BROWSER_SUITE=discovery DISCOVERY_ONLY=mix` and run it once, at an explicit strict-port URL, with an isolated toddler profile and **cards on**:
+Extend `BROWSER_SUITE=discovery DISCOVERY_ONLY=mix` and run it once, at an explicit strict-port URL, with an isolated toddler profile. The harness turns `settings.howToCards` off in `ready()`, so steps 1–5 must turn it back **on** afterwards, as D1b's flow did; otherwise the run never reaches a stop card. Step 6 is the existing flow's default:
 
 1. Tap the mix spot: Bubble Pop's card opens with the stop row and a single Play, and no sheet appears. No round is built (`neo.scene.game` is unset).
 2. Tap the Sing-Along Barn tile: its title is spoken and nothing launches. Tap the header picture: the title repeats.
