@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { Routes } from './App';
 import { goToOrigin } from './origin';
 
-const routes = () => ({ land: vi.fn(), place: vi.fn(), journal: vi.fn(), explore: vi.fn() }) as unknown as Routes & Record<'land' | 'place' | 'journal' | 'explore', ReturnType<typeof vi.fn>>;
+const routes = () => ({ land: vi.fn(), place: vi.fn(), journal: vi.fn(), library: vi.fn(), explore: vi.fn() }) as unknown as Routes & Record<'land' | 'place' | 'journal' | 'library' | 'explore', ReturnType<typeof vi.fn>>;
 
 describe('goToOrigin', () => {
   it('returns to the land, the home spot or the journal a game was opened from', () => {
@@ -13,6 +13,9 @@ describe('goToOrigin', () => {
     expect(b.place).toHaveBeenCalledWith('grownup');
     const c = routes(); goToOrigin(c, { journal: true }, fallback);
     expect(c.journal).toHaveBeenCalled();
+    const d = routes(); goToOrigin(d, { library: true }, fallback);
+    expect(d.library).toHaveBeenCalled();
+    expect(d.journal).not.toHaveBeenCalled();
     expect(fallback).not.toHaveBeenCalled();
   });
 

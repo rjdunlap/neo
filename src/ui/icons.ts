@@ -87,6 +87,16 @@ export function basketIcon(): Graphics {
     .rect(-31, -10, 62, 9).stroke(line(3, swatch.red.line));
 }
 
+/** Three books standing on a little shelf, one leaning: the library at the root (RW08 slice 2). */
+export function libraryIcon(): Graphics {
+  return new Graphics()
+    .roundRect(-30, -28, 16, 52, 3).fill(swatch.blue.fill).stroke(line(4, swatch.blue.line))
+    .roundRect(-12, -34, 18, 58, 3).fill(swatch.orange.fill).stroke(line(4, swatch.orange.line))
+    .rect(-12, -22, 18, 6).fill(swatch.orange.line)
+    .moveTo(10, 24).lineTo(22, -26).lineTo(36, -22).lineTo(25, 26).closePath().fill(swatch.green.fill).stroke(line(4, swatch.green.line))
+    .roundRect(-38, 24, 78, 10, 4).fill(0xc9925a).stroke(line(4, 0x8f5f32));
+}
+
 /** A little notebook with a leaf: the picnic journal. */
 export function journalIcon(): Graphics {
   return new Graphics()

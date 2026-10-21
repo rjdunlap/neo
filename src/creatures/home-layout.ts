@@ -16,7 +16,7 @@ export const HOME_BUTTON: Spot = { x: BACK.x + 130, y: BACK.y };
 /** Play with {pet}, Explore and the youngest's ball: 120-unit pictures. */
 export const ACTION_RADIUS = 60;
 export const BALL_RADIUS = 60;
-/** The basket to Friends: its hit box is 124 units. */
+/** The basket to Friends: its hit box is 124 units. The library's books take the same box. */
 export const BASKET = { w: 124, h: 120 };
 /** Kept clear: the bottom-left corner where a guide stands, and the island-games link's corner (CSS pixels over a scaled view, so generous). */
 export const GUIDE_CORNER = { w: 200, h: 200 };
@@ -87,6 +87,8 @@ export interface PlayLayout {
   board: Spot;
   plaque: Spot;
   basket: Spot;
+  /** The books on their shelf, to the library (RW08 slice 2): under Back and Home, on the wall. */
+  books: Spot;
   floor: Floor;
 }
 
@@ -98,7 +100,8 @@ export function playLayout(v: { w: number; h: number }): PlayLayout {
   const plaque = { x: v.w - 50 - 80, y: top };
   const board = { x: plaque.x - 80 - 40 - 130, y: top };
   const floor = { x0: GUIDE_CORNER.w + BALL_RADIUS, x1: basket.x - BASKET.w / 2 - BALL_RADIUS - 30, y0: Math.max(backdrop.floorTop + 40, v.h - 220), y1: v.h - BALL_RADIUS - 20 };
-  return { backdrop, back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, stage, ball: { x: Math.round(v.w * 0.62), y: v.h - 100 }, board, plaque, basket, floor };
+  const books = { x: Math.round((BACK.x + HOME_BUTTON.x) / 2), y: top };
+  return { backdrop, back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, stage, ball: { x: Math.round(v.w * 0.62), y: v.h - 100 }, board, plaque, basket, books, floor };
 }
 
 /**

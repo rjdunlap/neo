@@ -14,14 +14,14 @@ import type { View } from '../../engine/view';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { BOARD, PLAQUE, pictureBoard, TunePlaque } from '../../ui/creation-art';
-import { arrowIcon, basketIcon, houseIcon } from '../../ui/icons';
+import { arrowIcon, basketIcon, houseIcon, libraryIcon } from '../../ui/icons';
 import { Scene } from '../Scene';
 import { BallPlay } from './ball-play';
 
 /**
  * Creature play at the root (RW06 slice 2, docs/rework/HOME.md#creature-play-playscene), the root's `room`: the ball to
  * throw for her friend as often as she likes, her kept picture and tune drawn from the save as the treehouse draws them,
- * and the basket to Friends. Back and Home both return Home. Nothing is kept or counted here: keeping still happens only
+ * the basket to Friends and the books to the library (RW08 slice 2). Back and Home both return Home. Nothing is kept or counted here: keeping still happens only
  * at a round's end, and the ball has no score, sticker or end.
  */
 export class PlayScene extends Scene {
@@ -33,6 +33,8 @@ export class PlayScene extends Scene {
   readonly board = new Container();
   readonly plaque = new TunePlaque();
   readonly basket = new Container();
+  /** The books on their shelf: the library (RW08 slice 2), with the journal and the stories. */
+  readonly books = new Container();
   /** The tune is playing (taps on the plaque wait until it ends). */
   singing = false;
   private leaving = false;
@@ -61,7 +63,13 @@ export class PlayScene extends Scene {
     this.basket.addChild(new Graphics().ellipse(0, 34, 62, 14).fill({ color: 0x000000, alpha: 0.12 }), art);
     this.basket.hitArea = new Rectangle(-BASKET.w / 2, -BASKET.h / 2, BASKET.w, BASKET.h);
     onTap(this.basket, () => void this.openFriends(), { cooldown: 500 });
-    this.ui.addChild(this.board, this.plaque, this.basket, this.back, this.home);
+    const shelf = libraryIcon();
+    shelf.scale.set(1.9);
+    shelf.eventMode = 'none';
+    this.books.addChild(shelf);
+    this.books.hitArea = new Rectangle(-BASKET.w / 2, -BASKET.h / 2, BASKET.w, BASKET.h);
+    onTap(this.books, () => void this.openLibrary(), { cooldown: 500 });
+    this.ui.addChild(this.board, this.plaque, this.basket, this.books, this.back, this.home);
   }
 
   /** Her picture, admired: it pulses and sparkles. An empty frame says what could hang there. */
@@ -107,6 +115,19 @@ export class PlayScene extends Scene {
     this.singing = false;
   }
 
+  /** The books squish and her friend cheers, then the library opens. */
+  private async openLibrary() {
+    if (this.leaving) return;
+    this.leaving = true;
+    this.toy.frozen = true;
+    this.books.scale.set(0.9);
+    sfx.pop();
+    this.pet.cheer();
+    await Promise.race([voice.say('play.library'), this.tw.wait(1)]);
+    if (this.app.scene !== this) return;
+    this.app.go.library();
+  }
+
   /** Her friend goes to see who is in the basket, then Friends opens. */
   private async openFriends() {
     if (this.leaving) return;
@@ -133,6 +154,7 @@ export class PlayScene extends Scene {
     this.board.position.set(l.board.x, l.board.y);
     this.plaque.position.set(l.plaque.x, l.plaque.y);
     this.basket.position.set(l.basket.x, l.basket.y);
+    this.books.position.set(l.books.x, l.books.y);
     if (this.toy.throws === 0 && !this.leaving) this.pet.position.set(l.stage.x, l.stage.y);
     this.pet.scale.set(l.stage.scale * Math.sign(this.pet.scale.x || 1), l.stage.scale);
     this.toy.place(l.floor, l.ball);

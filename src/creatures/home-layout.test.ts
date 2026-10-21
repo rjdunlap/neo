@@ -79,12 +79,12 @@ describe('the root Home layout', () => {
 });
 
 describe('the creature play layout', () => {
-  it('fits Back, Home, the ball, the picture, the tune and the basket apart, with Back and Home at least 120 apart', () => {
+  it('fits Back, Home, the ball, the picture, the tune, the basket and the books apart, with Back and Home at least 120 apart', () => {
     expect(HOME_BUTTON.x - BACK.x).toBeGreaterThanOrEqual(120);
     for (const v of VIEWS) {
       const l = playLayout(v);
       const where = `${v.w}×${v.h}`;
-      const buttons = [disc(l.back, CORNER_RADIUS, 'back'), disc(l.home, CORNER_RADIUS, 'home'), rect(l.board, BOARD.w, BOARD.h, 'board'), rect(l.plaque, PLAQUE.w, PLAQUE.h, 'plaque'), rect(l.basket, BASKET.w, BASKET.h, 'basket')];
+      const buttons = [disc(l.back, CORNER_RADIUS, 'back'), disc(l.home, CORNER_RADIUS, 'home'), rect(l.board, BOARD.w, BOARD.h, 'board'), rect(l.plaque, PLAQUE.w, PLAQUE.h, 'plaque'), rect(l.basket, BASKET.w, BASKET.h, 'basket'), rect(l.books, BASKET.w, BASKET.h, 'books')];
       check(v, [...buttons, body(l.stage), disc(l.ball, BALL_RADIUS, 'ball')], [floorBox(l.floor)], where);
       for (const b of buttons) expect(overlap(b, floorBox(l.floor)), `the ball can land on ${b.what}, ${where}`).toBe(false);
       expect(l.floor.x1, where).toBeGreaterThan(l.floor.x0 + 200);

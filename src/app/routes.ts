@@ -49,5 +49,7 @@ export function createRoutes(app: App): Routes {
     friends: (previewId) => void app.show(new FriendsScene(app, previewId)),
     dress: (id) => void app.show(new DressScene(app, id)),
     journal: () => void app.show(new JournalScene(app)),
+    // The library is the root's (src/rework.ts); the island never makes a library origin, so it opens the treehouse.
+    library: () => void app.show(new RoomScene(app)),
   };
 }

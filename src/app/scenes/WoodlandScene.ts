@@ -19,7 +19,7 @@ import { gameById } from '../../games/registry';
 import { playBand } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
-import { againIcon, islandIcon } from '../../ui/icons';
+import { againIcon, arrowIcon, islandIcon } from '../../ui/icons';
 import type { App } from '../App';
 import { Scene } from '../Scene';
 
@@ -54,7 +54,8 @@ export class WoodlandScene extends Scene {
   backdrop!: Backdrop;
   readonly hazel = makeHazel();
   readonly pip = makeCompanion();
-  readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(() => this.app.go.place(WOODLAND_BAND)));
+  /** Back to Wonder Woods on the island; at the root, an arrow back to the library (RW08 slice 2). */
+  readonly home = new RoundButton(this.app.creatureWorld ? arrowIcon(-1) : islandIcon(), swatch.white, 50, () => this.leave(() => (this.app.creatureWorld ? this.app.go.library() : this.app.go.place(WOODLAND_BAND))));
   /** The kept photo, in the top-right corner once the story has ended once. */
   readonly photoButton = new RoundButton(woodlandPhoto(78), swatch.white, 50, () => this.openPhoto());
   readonly requests: WoodlandRequest[] = [];

@@ -41,7 +41,8 @@ export class JournalScene extends Scene {
   readonly cards: Card[] = [];
   page = lastPage;
   selected: JournalEntry = JOURNAL[0];
-  private readonly back = new RoundButton(treehouseIcon(), swatch.white, 50, () => this.leave());
+  /** Back to the treehouse on the island; at the root, an arrow back to the library (RW08 slice 2). */
+  private readonly back = new RoundButton(this.app.creatureWorld ? arrowIcon(-1) : treehouseIcon(), swatch.white, 50, () => this.leave());
   private readonly previous = new RoundButton(arrowIcon(-1), swatch.white, 50, () => this.turn(-1));
   private readonly next = new RoundButton(arrowIcon(1), swatch.white, 50, () => this.turn(1));
   private readonly play = new RoundButton(arrowIcon(1, 0xffffff), swatch.green, 56, () => this.openGame());
@@ -183,14 +184,15 @@ export class JournalScene extends Scene {
     voice.stop();
     void voice.say(mod.titleLine);
     // At the band nearest hers that the game has, and back here afterwards.
-    this.app.go.game(mod.id, undefined, undefined, false, { journal: true });
+    this.app.go.game(mod.id, undefined, undefined, false, this.app.creatureWorld ? { library: true } : { journal: true });
   }
 
   private leave() {
     if (this.left) return;
     this.left = true;
     lastPage = this.page;
-    this.app.go.room();
+    if (this.app.creatureWorld) this.app.go.library();
+    else this.app.go.room();
   }
 
   enter() {

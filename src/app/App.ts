@@ -35,7 +35,7 @@ export type StoryRound =
  * Where a game was opened from, so its home button (and "again") go back there. A story round has its own way home.
  * `explore` is one of Explore's entries at the root (RW08), with the page she was on and whether All games showed the other ages.
  */
-export type Origin = { land: LandId } | { place: Band } | { journal: true } | { explore: ExploreEntry; page: number; others?: boolean };
+export type Origin = { land: LandId } | { place: Band } | { journal: true } | { library: true } | { explore: ExploreEntry; page: number; others?: boolean };
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {
@@ -79,6 +79,8 @@ export interface Routes {
   /** The pet's treehouse: free furnishings, a frame for one sticker, a pet that plays. At the root, creature play (RW06). */
   room(): void;
   journal(): void;
+  /** The library at the root (RW08 slice 2): the journal and the stories. The island has none, so it opens the treehouse. */
+  library(): void;
 }
 
 /** Owns the Pixi app, the logical-unit root, scene switching and the frame loop. */
