@@ -78,3 +78,11 @@
 - `BROWSER_SUITE=world` fails at the known `hatchingAndMap` `pip.rig.mesh.filters` assertion (also on unchanged main); with it relaxed locally the full suite passed. `npm run test:offline` passed against preview http://localhost:5349 after matching `classic-cpjCpGSd.js` to dist.
 - Not run: couch, picnic, device or iPad speech, a child's understanding of the stop row and Skip.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): reach, Skip and tile understanding, device speech of the mix lines.
+
+## 2026-10-21 — Cut Along levels 1–8
+
+- Built on `claude/cut-along` ([PR #702](https://github.com/rjdunlap/neo/pull/702)): new game `cut-along` in Painted Canyon (now 5 games), levels 1–8, every open decision at its default; commit `f4358a3f`.
+- `npm run typecheck` clean; `npm test` 198 files, 2247 tests, and the game's 27 rule tests cover the fit and corridor floor (at least 30 units in the four standard views), no-skipping chords at corners, stretch separation, both ways round completable, the bot route completing, wobble not picking a way (shown failing on the old rule), level-1 marks at least 110×140 without overlap, one fit per level-8 board with a spoken difference, and seeds. `npm run build` passed.
+- Dev server http://localhost:5250: `BROWSER_SUITE=cutalong` passed: level 1 by taps (0 misses, 0 hints), level 3 two strays (two misses, glow, one hint, progress kept), level 5 a circle counterclockwise then clockwise in a second round, level 6 portrait screenshot reviewed (`test-results/browser/cut-along-6-portrait.png`), level 8 a wrong outline (one miss, slit closed) then the fitting outlines; stickers awarded, no page errors. `BROWSER_SUITE=fingerdemo FINGER_ONLY=cut-along` passed at levels 1 and 7 (7.9 s, 9.8 s) and 5 and 8 (11.7 s, 10.7 s).
+- Not run: other suites, the offline check, any iPad or child.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): the corridor floor for a toddler's finger, whether the scissors hide the line ahead, whether level 8's choice reads to a five-year-old.
