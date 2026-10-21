@@ -6,7 +6,7 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 ## Next ten
 
-- **`roundup`, two shepherds, slice 9** (existing-game interaction change): every active pointer repels, palm rejection kept, both rings drawn; the card's co-play line becomes a role. [Dive](deep-dives/roundup.md#build-slices-in-order)
+- **`roundup`, two shepherds, slice 9** (existing-game interaction change): every active pointer repels, palm rejection kept, both rings drawn; the card's co-play line becomes a role. Claimed: `claude/roundup-two-shepherds` (expected files: `src/games/roundup/index.ts`, `logic.ts`, `src/content/howto.ts`, tests). [Dive](deep-dives/roundup.md#build-slices-in-order)
 
 
 ## Queued
