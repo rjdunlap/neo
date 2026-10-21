@@ -503,12 +503,18 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'size-parade': {
     goal: 'Compare sizes of friends.',
     steps: [
-      { to: 4, text: 'Tap the friend who is bigger, smaller, biggest or smallest, as asked.' },
-      { from: 5, text: 'Drag the friends into a line, in the size order asked.' },
+      { to: 2, text: 'Tap the friend who is bigger or smaller, as asked.' },
+      { from: 3, to: 4, text: 'Tap the friend who is biggest or smallest, as asked.' },
+      { from: 5, text: 'Drag the friend asked for to the glowing spot, then the next one in size, until the line is full.' },
+      'A tap on the sky or the ground makes the friends hop and repeats the question; it never counts as a miss.',
     ],
     finish: [
-      { to: 4, text: 'The round ends when the friend is chosen.' },
+      { to: 4, text: 'The round ends after four rows, one right friend chosen from each.' },
       { from: 5, text: 'The round ends when the friends are lined up correctly.' },
+    ],
+    note: [
+      { to: 4, text: 'A wrong friend counts as a miss; after two in one row the right friend glows.' },
+      { from: 5, text: 'A wrong friend on the glowing spot counts as a miss, and after two the right friend glows. A friend put on another spot is not a miss: the line fills from the glowing spot.' },
     ],
   },
   'bug-builder': {

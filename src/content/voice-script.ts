@@ -1786,6 +1786,8 @@ export const SCRIPT = {
   'size.pick': ['Tap the {size} friend!'],
   'size.line': ['Make a parade! Drag the {size} friend to the glowing spot, then find the next one.'],
   'size.wrong': ['Look at their sizes. Find the {size} friend still waiting.'],
+  'size.wrong.pick': ['Look at their sizes. Which friend is {size}?'],
+  'size.spot': ['This spot first! Put a friend on the glowing spot.'],
   'size.hint': ['Look at the glowing friend!'],
   'size.next': ['Who comes next in our size parade?'],
   'size.done': ['What a lovely parade!'],

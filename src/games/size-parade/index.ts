@@ -5,16 +5,16 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { SIZE_PLANS, sizeOrder, sizeScale, sizeTouch } from './logic';
+import { dropSpot, FRIEND_SCALE, paradeLayout, SIZE_PLANS, sizeBell, sizeOrder, sizeScale, sizeTouch, sizeWord, TARGET } from './logic';
 
 type Animal = 'duck' | 'bunny' | 'cat';
 function friend(rank: number, count: number, animal: Animal): Container {
   const c = new Container(), pet = new Critter(CRITTERS[animal]);
   pet.alive = false;
-  pet.scale.set(sizeScale(rank, count) * 0.59);
+  pet.scale.set(sizeScale(rank, count) * FRIEND_SCALE);
   c.addChild(pet);
   return c;
 }
@@ -45,12 +45,18 @@ class SizeParade implements Game {
   private busy = false;
   private done = false;
   private clock = 0;
+  private pulse = 0;
+  private lastGroundTap = -Infinity;
+  private targetW: number = TARGET.w;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = SIZE_PLANS[Math.max(0, Math.min(SIZE_PLANS.length - 1, ctx.level - 1))];
     this.order = sizeOrder(this.plan.count, this.plan.order);
     ctx.stage.addChild(this.background, this.ground, this.shelf, this.glow, this.hintsGlow, this.progress);
+    // A tap on the sky or the ground is answered: every friend hops and the ask repeats. Drawings above it let taps through.
+    onTap(this.background, () => this.groundTap());
+    for (const g of [this.ground, this.shelf, this.glow, this.hintsGlow, this.progress]) g.eventMode = 'none';
     if (this.plan.mode === 'line') for (let i = 0; i < this.plan.count; i++) {
       const slot = new Container();
       slot.addChild(new Graphics().ellipse(0, 0, 66, 24).fill(swatch.white.fill).stroke({ width: 4, color: swatch.teal.line }));
@@ -60,24 +66,42 @@ class SizeParade implements Game {
   }
   start() { this.instruction(); }
   private instruction() {
-    void this.ctx.instruct(this.plan.mode === 'pick' ? 'size.pick' : 'size.line', { size: this.plan.order === 'small' ? 'smallest' : 'biggest' });
+    void this.ctx.instruct(this.plan.mode === 'pick' ? 'size.pick' : 'size.line', { size: sizeWord(this.plan) });
+  }
+  private groundTap() {
+    if (this.busy || this.done) return;
+    for (const c of this.choices) if (!c.placed && !c.drag?.dragging) this.hop(c.node);
+    // A hand mashing the ground hops the friends every time but hears the ask once every few seconds.
+    if (this.clock - this.lastGroundTap < 3) return;
+    this.lastGroundTap = this.clock;
+    sfx.tick(); this.instruction();
+  }
+  private hop(node: Container) {
+    const body = node.children[0];
+    if (!body || this.ctx.tw.busy(body)) return;
+    void this.ctx.tw.to(body, { y: -26 }, { duration: 0.12 }).then(() => this.ctx.tw.to(body, { y: 0 }, { duration: 0.18 }));
   }
   private deal() {
-    for (const c of this.choices) { c.drag?.destroy(); this.ctx.tw.kill(c.node); this.ctx.tw.kill(c.node.scale); c.node.destroy({ children: true }); }
+    for (const c of this.choices) { c.drag?.destroy(); this.ctx.tw.kill(c.node); this.ctx.tw.kill(c.node.scale); this.ctx.tw.kill(c.node.children[0]); c.node.destroy({ children: true }); }
     this.choices.length = 0;
     this.animal = this.ctx.rng.pick(['duck', 'bunny', 'cat'] as Animal[]);
     for (const rank of this.ctx.rng.shuffle([...this.order])) {
       const node = friend(rank, this.plan.count, this.animal);
-      node.hitArea = new Rectangle(-77, -175, 154, 190);
+      node.hitArea = new Rectangle(-TARGET.w / 2, -175, TARGET.w, TARGET.h);
       const choice: Choice = { rank, node, placed: false };
       this.ctx.stage.addChild(node);
       if (this.plan.mode === 'pick') onTap(node, () => this.choose(choice));
       else choice.drag = draggable(node, this.ctx.tw, {
         onPick: () => sfx.tick(),
         onDrop: (x, y) => {
-          const slot = this.slots[this.step];
-          if (!slot || Math.abs(x - slot.x) > 82 || Math.abs(y - slot.y) > 95) return false;
-          return this.choose(choice);
+          if (this.busy || this.done || !this.slots[this.step]) return false;
+          const spot = dropSpot(x, y, this.slots.map((s) => s.x), this.slots[this.step].y, this.step);
+          if (spot === null) return false;
+          if (spot === this.step) return this.choose(choice);
+          // Another spot: not a wrong answer, the line fills from the glowing spot.
+          sfx.tick(); this.pulse = 1;
+          void this.ctx.say('size.spot');
+          return false;
         },
       });
       this.choices.push(choice);
@@ -88,11 +112,11 @@ class SizeParade implements Game {
     if (this.busy || this.done || choice.placed) return false;
     if (choice.rank !== this.order[this.step]) {
       this.misses++; this.wrong++; sfx.boing();
-      void this.ctx.say('size.wrong', { size: this.plan.order === 'small' ? 'smallest' : 'biggest' });
+      void this.ctx.say(this.plan.mode === 'pick' ? 'size.wrong.pick' : 'size.wrong', { size: sizeWord(this.plan) });
       if (this.wrong === 2) { this.hints++; void this.ctx.say('size.hint'); }
       this.drawGlow(); return false;
     }
-    sfx.bell(5 + choice.rank, 0.3); this.ctx.pet.cheer();
+    sfx.bell(sizeBell(choice.rank, this.plan.count), 0.3); this.ctx.pet.cheer();
     this.wrong = 0;
     if (this.plan.mode === 'line') {
       choice.placed = true; choice.drag!.enabled = false; choice.node.visible = false;
@@ -118,13 +142,16 @@ class SizeParade implements Game {
     this.view = v;
     this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.blue.light).rect(0, v.h * 0.5, v.w, v.h * 0.5).fill(swatch.green.light);
     this.ground.clear().roundRect(165, v.h - 265, v.w - 210, 230, 45).fill(cream);
-    const xs = spread(this.choices.length, 165, v.w - 40, 175);
+    const layout = paradeLayout(this.choices.length, this.slots.length, v.w);
+    const xs = layout.friends;
+    this.targetW = layout.targetW;
     this.choices.forEach((c, i) => {
       const p = { x: xs[i], y: v.h - 90 };
       if (c.drag) c.drag.home = p;
+      c.node.hitArea = new Rectangle(-this.targetW / 2, -175, this.targetW, TARGET.h);
       if (!c.drag?.dragging) { this.ctx.tw.kill(c.node); c.node.position.set(p.x, p.y); }
     });
-    const spots = spread(this.slots.length, 130, v.w - 70, 165);
+    const spots = layout.spots;
     this.slots.forEach((s, i) => s.position.set(spots[i], v.h * 0.44));
     const g = this.progress.clear();
     if (this.plan.mode === 'pick') {
@@ -145,7 +172,7 @@ class SizeParade implements Game {
     this.glow.clear(); this.hintsGlow.clear();
     if (this.done) return;
     if (this.plan.mode === 'line') { const p = this.slots[this.step]; this.glow.ellipse(p.x, p.y, 74, 34).stroke({ width: 7, color: swatch.yellow.line }); }
-    if (this.wrong >= 2) { const c = this.choices.find((c) => c.rank === this.order[this.step])!; this.hintsGlow.roundRect((c.drag?.home.x ?? c.node.x) - 80, (c.drag?.home.y ?? c.node.y) - 180, 160, 200, 24).stroke({ width: 7, color: swatch.yellow.line }); }
+    if (this.wrong >= 2) { const c = this.choices.find((c) => c.rank === this.order[this.step])!, w = this.targetW + 6; this.hintsGlow.roundRect((c.drag?.home.x ?? c.node.x) - w / 2, (c.drag?.home.y ?? c.node.y) - 180, w, 200, 24).stroke({ width: 7, color: swatch.yellow.line }); }
   }
   /** The ghost finger: tap the biggest or smallest friend, or carry the next friend in size to its place in the line. */
   autotouch(): TouchIntent | null {
@@ -156,8 +183,14 @@ class SizeParade implements Game {
     const body = { on: this.choices[i].node, y: -80 };
     return this.plan.mode === 'pick' ? { tap: body } : { drag: body, to: { on: this.slots[this.step] } };
   }
-  update(dt: number) { this.clock += dt; this.glow.alpha = this.hintsGlow.alpha = 0.7 + 0.3 * Math.sin(this.clock * 3); }
-  destroy() { this.choices.forEach((c) => c.drag?.destroy()); }
+  update(dt: number) {
+    this.clock += dt; this.glow.alpha = this.hintsGlow.alpha = 0.7 + 0.3 * Math.sin(this.clock * 3);
+    // The glowing spot swells once when a friend is put on another spot.
+    this.pulse = Math.max(0, this.pulse - dt * 1.5);
+    const p = this.slots[this.step];
+    if (p) { this.glow.pivot.set(p.x, p.y); this.glow.position.set(p.x, p.y); this.glow.scale.set(1 + 0.3 * Math.sin(Math.PI * this.pulse)); }
+  }
+  destroy() { this.choices.forEach((c) => { c.drag?.destroy(); this.ctx.tw.kill(c.node.children[0]); }); }
 }
 export const sizeParade: GameModule = {
   id: 'size-parade', name: 'Size Parade', titleLine: 'game.size-parade', region: 'puzzle-peaks',
