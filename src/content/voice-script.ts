@@ -1659,6 +1659,8 @@ export const SCRIPT = {
   'salon.want': ['Can you make my hair {look}, please?'],
   'salon.check': ['Let me look in the mirror!'],
   'salon.more': ['Almost! I want it {fix}.'],
+  'salon.more-color': ['Almost! A little more {fix}, where it glows.'],
+  'salon.mirror': ['Look in the mirror when you are done!'],
   'salon.love': ['I love it!', 'So fluffy! Thank you!'],
   'salon.done': ['What a fancy look!', 'Looking good!'],
   'salon.tool.grow': ['Grow!'],

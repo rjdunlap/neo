@@ -768,10 +768,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, text: 'Look at the pictured style and use the tools to copy its length, curls and color.' },
     ],
     finish: [
-      { to: 2, text: 'The round ends when the pet is done.' },
-      { from: 3, text: 'The round ends when the mirror shows what was asked.' },
+      { to: 2, text: 'After some styling a mirror appears and the pet asks for it: tap the mirror to finish.' },
+      { from: 3, to: 3, text: 'Each request finishes by itself as soon as the hair is right; the round ends after the last one.' },
+      { from: 4, text: 'Tap the mirror to check each request; the round ends after the last one.' },
     ],
-    note: [{ to: 2, text: 'Any look is welcome in free play.' }],
+    note: [
+      { to: 2, text: 'Any look is welcome in free play and nothing counts as a miss; a touch off the fur makes the pet giggle.' },
+      { from: 3, to: 3, text: 'Nothing counts as a miss. After 15 seconds with no touch, the tool that helps glows, which counts as a hint.' },
+      { from: 4, text: 'Looking in the mirror too early counts as a miss, and the pet says what is still missing (when the color is nearly there, the strands still the old color glow); after two, the tool that helps glows, which counts as a hint.' },
+    ],
   },
   'sound-garden': {
     goal: 'Listen to the garden friends and choose.',
