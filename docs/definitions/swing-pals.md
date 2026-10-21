@@ -1,6 +1,6 @@
 # Swing Pals, levels 1–6 (definition)
 
-Defined 2026-10-17 for [chunk 27](../ROADMAP.md#chunks) (physics games), from the [PHYSICS-GAMES candidate](../PHYSICS-GAMES.md#new-candidates) and its [IDEAS row](../IDEAS.md#candidates). Docs only: no game, ID registration, voice line or save field exists yet. **Ready to build:** every open call below has a default the build can use, and none needs a content reviewer. They are listed in [Open decisions](#open-decisions) and in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
+Defined 2026-10-17 for [chunk 27](../ROADMAP.md#chunks) (physics games), from the [PHYSICS-GAMES candidate](../PHYSICS-GAMES.md#new-candidates) and its [IDEAS row](../IDEAS.md#candidates). **Built 2026-10-20** (levels 1–6, see [Built](#built)). Originally docs only. **Was ready to build:** every open call below has a default the build can use, and none needs a content reviewer. They are listed in [Open decisions](#open-decisions) and in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
 
 **Fun action and purpose:** push a friend on a tree swing and watch them swing higher and higher until their feet ring the bell in the leaves, with a giggle on every swoop. Then hang a second swing beside it on a short rope or a long one, and later choose the rope that makes her friend swing along with the pet's swing. The learning goal is **a pattern of motion she can see and use**: a swing comes back again and again at its own steady beat, pushes add up, a short rope swings back and forth faster than a long one, and who rides it or how high it goes does not change its beat. There is no clock, no move count and nothing to lose; height never falls away from a goal she has reached.
 
@@ -123,3 +123,14 @@ Each has a default the build uses. None blocks it.
 3. **Home land.** Default Rainbow Meadow (9 with the pending defaults). Alternatives: Tinker Lab, whose 14th game needs `landLayout` to fit, or Bubble Beach, already the default for Domino Run, Fruit Slice and Puddle Gobble (7 with those).
 4. **Journal.** Default: no discovery filed. Alternative: file "a longer rope swings slower" once level 3 has actually shown both swings ringing, as Seesaw Balance files only what a round showed.
 5. **Level 2's waiting push.** Default: a mistimed tap is stored and lands at the back point. Alternative: a tap outside a generous window does nothing (the mitten pops out and waits visibly); either way it is never a miss and never lowers the height.
+
+## Built
+
+**Built 2026-10-20 ([PR #689](https://github.com/rjdunlap/neo/pull/689), `claude/swing-pals`)** on every default in [Open decisions](#open-decisions): bands lap 1, toddler 1–2, preschool 2–3, pre-K 3–4, school 4–6; no misses at levels 1–3; home land Rainbow Meadow (now 10 games); no journal entry; level 2 stores a mistimed tap. Build notes: [archive](../archive/COMPLETED-2026-10-09.md#swing-pals-levels-16-2026-10-20). Deviations from the text above:
+
+1. **The glow at levels 4–6.** "After a line's second miss" could never fire: her starting hook is a free look and re-tries are free, so a line holds at most one miss. Built: the right hook glows once two different hooks have swung apart on the line (the free look at the starting hook counts toward that, a repeat does not), and counts one hint. A wrong hook other than the starting one still counts one miss. The how-to note says so. Open call for the developer in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
+2. **The finish.** The round's friends line up along the grass and hop in turn, each ringing its bell note, then the sticker, instead of all swinging in a row once.
+3. **Level 2 starts.** Seeded friends start still (four pushes; the first from rest lands at once); only the authored duck starts swinging low (three more pushes).
+4. **Layout.** Seats sit at `view.h − 150` (over the grass in every view). Two swings in landscape use a long-rope scale of 416 (not 460) so the left arc clears the pet's corner; a single swing is centered when its arc clears the pet; the short hook sits 70 units forward of the other two so the three hook targets never overlap. On the short rope a big friend's head reaches near the hook (the geometry above); the hook rings are see-through.
+5. **Mouse and frog** are local critter specs in the game, not entries in `CRITTERS`.
+6. **Show a hint at levels 1–3:** the pet gives the next two pushes with her (a yellow-tinted mitten), one hint per request.
