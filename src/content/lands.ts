@@ -58,7 +58,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cat' },
     backdrop: { sky: [0xffd6e3, 0xfff6e0], hills: [0xb8e1f7, 0x8fd0ef, 0xf3dcb0], horizon: 0.4, clouds: 3, sun: true, seed: 107 },
     music: tune(41, 'bell', 84),
-    games: ['rainbow-fingers', 'fluffy-salon', 'stamp-studio', 'pixel-pictures'],
+    games: ['rainbow-fingers', 'fluffy-salon', 'stamp-studio', 'pixel-pictures', 'cut-along'],
   },
   {
     id: 'barnyard',

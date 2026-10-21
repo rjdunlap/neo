@@ -92,6 +92,14 @@ export const sfx = {
     if (o) noise(o.ctx, o.dest, o.t, 0.12, 0.09 * jitter(200), { type: 'bandpass', hz: 3200 * jitter(), q: 0.8, sweepTo: 1800 });
   },
 
+  /** Scissors closing on paper: a short bright crunch and a tiny click. */
+  snip() {
+    const o = out();
+    if (!o) return;
+    noise(o.ctx, o.dest, o.t, 0.05, 0.16, { type: 'highpass', hz: 3800 * jitter(150) });
+    noise(o.ctx, o.dest, o.t + 0.025, 0.04, 0.1, { type: 'bandpass', hz: 6000 * jitter(150), q: 2 });
+  },
+
   squish() {
     const o = out();
     if (!o) return;
