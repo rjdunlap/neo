@@ -1146,6 +1146,27 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 2, text: 'The round arrow takes back a move, as often as you like. Moving fruit around is never counted against her.' },
     ],
   },
+  'bolt-boards': {
+    goal: 'Take out the bolts so the boards come down.',
+    steps: [
+      'Tap a bolt to take it out.',
+      { from: 2, to: 7, text: 'Two bolts hold a board up; with one, it swings; with none, it comes down.' },
+      { from: 3, to: 7, text: 'A bolt under another board waits until that board is gone.' },
+      { from: 6, to: 6, text: 'Tap a bolt, then tap a glowing empty hole for it.' },
+      { from: 7, to: 7, text: 'Tap a bolt, then tap an empty hole for it.' },
+    ],
+    finish: [
+      { from: 1, to: 4, text: 'Every board is down.' },
+      { from: 5, to: 5, text: 'Nothing covers the friend.' },
+      { from: 6, to: 6, text: 'Every board is down.' },
+      { from: 7, to: 7, text: 'Nothing covers the friend.' },
+    ],
+    note: [
+      { from: 1, to: 3, text: 'The round arrow puts a bolt back, as often as you like.' },
+      { from: 4, to: 6, text: 'The round arrow puts a bolt back, as often as you like. Tapping a bolt that is under a board counts as a mistake.' },
+      { from: 7, to: 7, text: 'The round arrow puts a bolt back, as often as you like. Tapping a bolt that is under a board counts as a mistake, and so does putting a bolt in a covered hole.' },
+    ],
+  },
   'pile-match': {
     goal: 'Gather the heap into sets of three the same.',
     steps: [

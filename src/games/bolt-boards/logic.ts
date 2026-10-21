@@ -69,6 +69,8 @@ export const planFor = (level: number): BoltPlan => PLANS[Math.max(0, Math.min(P
 /* Poses                                                                                          */
 /* ---------------------------------------------------------------------------------------------- */
 
+/** Where a board is up: its centre and rotation. */
+export type Placed = { x: number; y: number; rot: number };
 export type Pose =
   | { kind: 'pinned'; x: number; y: number; rot: number }
   | { kind: 'hanging'; x: number; y: number; rot: number; bolt: number }
@@ -96,7 +98,7 @@ export function pose(p: Puzzle, s: State, i: number): Pose {
 }
 
 /** A point in the board's own (authored, unrotated) frame, centred on its middle, for a pose. */
-export function toLocal(q: Pose & { x: number }, pt: Pt): Pt {
+export function toLocal(q: Placed, pt: Pt): Pt {
   const dx = pt.x - q.x, dy = pt.y - q.y, c = Math.cos(-q.rot), s = Math.sin(-q.rot);
   return { x: dx * c - dy * s, y: dx * s + dy * c };
 }
@@ -300,17 +302,28 @@ export interface BoltLayout {
   x: number;
   y: number;
   scale: number;
-  /** The basket's centre and the undo arrow's centre, in the strip. */
+  /** In the strip: the basket, the undo arrow and the toolbox, centres in view units. */
   basket: Pt;
   undo: Pt;
+  toolbox: Pt;
 }
 
-/** The wall under the header and above the basket strip, centred and scaled to fit; never larger than 1.1. */
+/** The pet's corner at the bottom left (as `petCorner` in lands.ts): the wall keeps right of it where they would meet. */
+export const PET_W = 200, PET_H = 205;
+
+/** The wall under the header and above the basket strip, scaled to fit (never larger than 1.1) and clear of the pet. */
 export function boardLayout(v: View): BoltLayout {
-  const scale = Math.min(1.1, (v.w - 80) / WALL_W, (v.h - HEADER - STRIP) / WALL_H);
-  const x = (v.w - WALL_W * scale) / 2, y = HEADER + (v.h - HEADER - STRIP - WALL_H * scale) / 2;
+  const top = HEADER, room = v.h - HEADER - STRIP;
+  let scale = Math.min(1.1, (v.w - 80) / WALL_W, room / WALL_H);
+  let x = (v.w - WALL_W * scale) / 2;
+  let y = top + (room - WALL_H * scale) / 2;
+  if (y + WALL_H * scale > v.h - PET_H && x < PET_W + 10) {
+    scale = Math.min(scale, (v.w - PET_W - 10 - 40) / WALL_W);
+    x = Math.max(PET_W + 10, (v.w - WALL_W * scale) / 2);
+    y = top + (room - WALL_H * scale) / 2;
+  }
   const sy = v.h - STRIP / 2;
-  return { x, y, scale, basket: { x: v.w - 130, y: sy }, undo: { x: v.w - 290, y: sy } };
+  return { x, y, scale, basket: { x: v.w - 130, y: sy }, undo: { x: v.w - 290, y: sy }, toolbox: { x: v.w - 440, y: sy } };
 }
 
 export const toView = (L: BoltLayout, q: Pt): Pt => ({ x: L.x + q.x * L.scale, y: L.y + q.y * L.scale });
