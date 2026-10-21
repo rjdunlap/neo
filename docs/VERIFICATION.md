@@ -5,7 +5,7 @@
 - [PR #723](https://github.com/rjdunlap/neo/pull/723), `codex/song-maker-authored-motifs`, tested `adb515d6` plus slice diff: twelve authored motifs per existing copy shape; rests preserved, seeded selection excludes three recent motifs within the loaded profile's session; demonstrations leave history alone. Frozen level-4 Missing Melody shape and bot unchanged.
 - Passed `npm run typecheck`; `npx vitest run src/games/song-maker/logic.test.ts` (9 tests): frozen plans, twelve distinct motifs each, exact authored columns/rests, multiple pitches, at most one leap, home endings, deterministic short-window exclusion, pool coverage, copies and right-tap bot completion of every motif.
 - Level-4 screenshot at http://localhost:5189, 1024×768, reviewed: five shadows and authored first-beat rest on 6×4, grid/pet clear; no page errors. Local artifact `test-results/song-motifs-level4.png` (ignored). Initial probe needed the harness's hatched test profile; Chromium required process access outside the sandbox.
-- Passed links and diff check. No new voice lines needed; the existing copy instruction remains true, and the how-to names the quiet beat.
+- Passed 18 how-to tests (`npx vitest run src/content/howto.test.ts`), links and diff check. No new voice lines needed; the existing copy instruction remains true, and the how-to names the quiet beat.
 - Not run: `fingerdemo` (bot unchanged), full units, build, play suites, offline, portrait, device or child checks (content tier). No new levels/interactions/story changes.
 
 ## 2026-10-21 — Discovery D5a Make my mix definition (docs only)
