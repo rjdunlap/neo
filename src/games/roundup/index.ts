@@ -337,7 +337,8 @@ class Roundup implements Game {
       this.sinceProgress += dt;
       if (this.sinceProgress >= (this.plan.hintAfter ?? 15) && !this.hinting && !this.drifting) this.showHint();
       // Still stuck: the nearest one trots home by itself, so no round gets stuck.
-      if (this.sinceProgress >= (this.plan.helpAfter ?? 30) && !this.helped) {
+      // Make it fair with the pens already level: the bell is the only thing left, so nobody trots in to unbalance them.
+      if (this.sinceProgress >= (this.plan.helpAfter ?? 30) && !this.helped && !(this.herd.fair && this.bellRight())) {
         this.helped = true;
         const a = this.animals.find((x) => x.state === 'loose' && this.needs(x) >= 0);
         // Help, not her own move: it counts as a hint.
@@ -680,7 +681,8 @@ class Roundup implements Game {
     // Counting levels with every pen right: the bell is what's left to do.
     const bellTime = usesBell(this.plan) && this.bellRight();
     this.bell.rotation = this.hinting && bellTime ? 0.25 * Math.sin(this.clock * 10) : 0;
-    const lit = this.hinting || this.drifting;
+    // Make it fair with the pens level: only the bell wiggles; another animal in would make it unfair.
+    const lit = (this.hinting || this.drifting) && !(this.herd.fair && bellTime);
     for (const a of this.animals) {
       const target = a.state === 'loose' ? this.needs(a) : -1;
       a.glow.visible = lit && target >= 0;

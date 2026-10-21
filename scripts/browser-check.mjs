@@ -5131,21 +5131,24 @@ async function arcade() {
           if (!spoken.includes('same number') || !g.bell.visible || g.pens[0].pen.kind !== g.pens[1].pen.kind || ![6, 8].includes(g.animals.length)) throw new Error('Make it fair setup');
           if (g.pens.some((p) => p.pen.target !== undefined)) throw new Error('Make it fair sign must show no number');
           // Some in one pen and none in the other: a miss, the empty pen named, and nobody hops out.
-          while (g.pens[0].inside < 2 && loose().length) await herdInto(loose()[0], 0);
+          // Isolate each crossing so the ordinary steering takes exactly one in.
+          const isolate = async (k) => {
+            const one = loose()[0];
+            for (const a of loose()) { a.critter.x = 280; a.wander.next = 20; a.wander.x = 280; }
+            const rk = g.pens[k].rect;
+            one.critter.position.set(rk.x - 60, rk.y + rk.h / 2);
+            one.vx = one.vy = 0;
+            await kit.sleep(60);
+            await herdInto(one, k);
+          };
+          while (g.pens[0].inside < 2 && loose().length) await isolate(0);
           const first = g.pens.map((p) => p.inside);
           if (first[1] === 0) {
             kit.tapOn(g.bell); await kit.sleep(300);
             await kit.until(() => !g.busy, 8000);
             if (g.misses !== 1 || !speech.some((s) => s.id === 'herd.fairempty') || g.pens[0].inside !== first[0]) throw new Error(`Empty pen bell: ${g.misses} ${g.pens.map((p) => p.inside)}`);
             // One in the other pen: unequal, so the pet says both counts and the extras leave the fuller pen.
-            // Isolate one animal at the second gate so the ordinary steering takes exactly one in.
-            const one = loose()[0];
-            for (const a of loose()) { a.critter.x = 280; a.wander.next = 20; a.wander.x = 280; }
-            const r1 = g.pens[1].rect;
-            one.critter.position.set(r1.x - 60, r1.y + r1.h / 2);
-            one.vx = one.vy = 0;
-            await kit.sleep(60);
-            await herdInto(one, 1);
+            await isolate(1);
             const second = g.pens.map((p) => p.inside);
             if (second[0] === second[1]) throw new Error(`Second pen setup came out level: ${second}`);
             {
@@ -5155,6 +5158,11 @@ async function arcade() {
               if (g.misses !== 2 || !unfair || unfair.values.more !== Math.max(...second) || unfair.values.less !== Math.min(...second)) throw new Error(`Unequal bell: ${g.misses} ${JSON.stringify(unfair)}`);
               if (g.pens[0].inside !== g.pens[1].inside) throw new Error(`Extras did not leave the fuller pen: ${g.pens.map((p) => p.inside)}`);
               if (g.hints < 1) throw new Error('Two wrong bells must glow the emptier pen');
+              // Level pens with animals still loose are a right answer: idle help wiggles only the bell and trots nobody in.
+              const level = g.pens.map((p) => p.inside);
+              g.sinceProgress = 29.8;
+              await kit.sleep(1500);
+              if (g.pens.some((p, i) => p.inside !== level[i]) || loose().some((a) => a.glow.visible) || g.pens.some((p) => p.glow.context.instructions.length)) throw new Error(`Idle help unbalanced level pens: ${g.pens.map((p) => p.inside)}`);
             }
           }
         }
