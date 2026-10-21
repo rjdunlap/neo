@@ -14,6 +14,10 @@
 
 Built on `claude/little-surprises-mix` from the [definition](../definitions/little-surprises.md): `src/content/mix.ts` (frozen pool, eligibility, pure `step()` reducer, 11 tests), `MixMemory` in `src/app/discovery.ts` bound to the save object, `Scene.holdsMix()` with `App.show` ending the mix, `src/app/mix.ts` `MixHost` and `src/ui/mix.ts` `MixSheet` (preview and ending), the mix entry in both home-spot layouts, `GameScene` Next stop/Skip/All done and a pause-sheet skip, eight `mix.*` voice lines, and `mix-flow.test.ts` (5 tests). Deviation recorded: All done goes to the home spot where the ending sheet opens. Browser flow `DISCOVERY_ONLY=mix`; offline harness follows the Little surprises card leading toddler page one.
 
+### Fill and Dump slice 5, Things to put away (2026-10-20)
+
+[PR #691](https://github.com/rjdunlap/neo/pull/691): levels 1–4 choose seeded fruit/basket, balls/bucket, blocks/toy box or ducks/tub. Each set has at least four distinct tip-out designs; counting repeats one identical design. Container speech and the how-to card name or describe the material truthfully, with a set-specific pentatonic landing pitch. Rules, touch bounds, level IDs and level 5/6 behavior stay the same. [Scope](../deep-dives/fill-dump.md#build-slices-in-order).
+
 ### Fill and Dump slice 2, Lap reach and idle invitation (2026-10-20)
 
 [PR #666](https://github.com/rjdunlap/neo/pull/666): at levels 1–2, open ground tips a full basket or scoops the outside fruit nearest the touch. Six idle seconds while ready for input wiggle the basket or the fruit nearest it; touch, flight and teardown clear the motion. This never counts a miss or hint. Levels 3–5, tip-window behavior, content and pouring are unchanged. [Scope](../deep-dives/fill-dump.md#build-slices-in-order); [verification](VERIFICATION-2026-10-20.md#2026-10-20--fill-and-dump-lap-reach-and-idle-invitation-slice-2).
@@ -1252,7 +1256,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-20.md#2026-10-20--garden-grow-
 
 ## Roundup kinds and pens, slice 2 (2026-10-20)
 
-[PR #672](https://github.com/rjdunlap/neo/pull/672), `codex/roundup-kinds-pens`: duck/pond/quack and dog/kennel/woof join pig, bunny and cow. One-pen rounds choose from five kinds; sorting rounds choose two distinct kinds. Level 4 deals four or five animals with every nonempty split possible. Level 6 still gives each pen its requested 1–3 plus exactly one spare. Instructions, totals and wrong-pen speech name the kinds and places; the how-to follows the pictured signs. The ghost finger starts with the animal nearest its gate, lines up outside before crossing and shoos counted spares left before steering another animal past them. A real-time probe reproduced the old collateral wrong-pen miss; the corrected level-6 demonstration finishes cleanly in 26.7 s. No new levels, bands or decisions. Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-20--roundup-kinds-and-pens-slice-2).
+[PR #672](https://github.com/rjdunlap/neo/pull/672), `codex/roundup-kinds-pens`: duck/pond/quack and dog/kennel/woof join pig, bunny and cow. One-pen rounds choose from five kinds; sorting rounds choose two distinct kinds. Level 4 deals four or five animals with every nonempty split possible. Level 6 still gives each pen its requested 1–3 plus exactly one spare. Instructions, totals and wrong-pen speech name the kinds and places; the how-to follows the pictured signs. The ghost finger starts with the animal nearest its gate, lines up outside before crossing and shoos counted spares left before steering another animal past them. A real-time probe reproduced the old collateral wrong-pen miss; the corrected level-6 demonstration finishes cleanly in 26.7 s. No new levels, bands or decisions. Checks are in [VERIFICATION](VERIFICATION-2026-10-20.md#2026-10-20--roundup-kinds-and-pens-slice-2).
 
 
 ## Mail Carrier: support truth, slice 1 (2026-10-20)
