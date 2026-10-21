@@ -32,7 +32,15 @@ import { rangeFor } from '../../progress/difficulty';
 
 /** Patients are big, so their body parts are easy to aim at. */
 const SCALE = 1.25;
-const STEP_WORDS: Record<Check, string> = { stethoscope: 'listen to my heart', thermometer: 'check my temperature', flashlight: 'look in my ear' };
+const STEP_WORDS: Record<Check, string> = {
+  stethoscope: 'listen to my heart',
+  thermometer: 'check my temperature',
+  flashlight: 'look in my ear',
+  scale: 'weigh me',
+  height: 'see how tall I am',
+};
+/** The height chart's stripes, bottom to top. */
+const CHART = [swatch.red.fill, swatch.yellow.fill, swatch.green.fill, swatch.blue.fill, swatch.purple.fill];
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 const SKIN = { fill: 0xf3c99b, line: 0xc98f5a };
@@ -85,6 +93,15 @@ function toolArt(tool: Tool): Container {
       for (const y of [-36, -26, -16]) g.moveTo(-10, y).lineTo(0, y).stroke(line(0x9aa5b1, 3));
       g.rotation = 0.5;
       break;
+    case 'scale':
+      scaleArt(g);
+      g.moveTo(0, -12).lineTo(-12, -30).stroke(line(swatch.red.line, 5));
+      break;
+    case 'height':
+      g.roundRect(-20, -54, 40, 108, 10).fill(0xffffff).stroke(line(0x9aa5b1, 5));
+      CHART.forEach((color, i) => g.rect(-14, 34 - i * 20, 28, 12).fill(color));
+      g.star(0, -58, 5, 16, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
+      break;
     case 'flashlight':
       g.moveTo(14, -16).lineTo(56, -38).lineTo(56, 38).lineTo(14, 16).closePath().fill({ color: 0xfff3a0, alpha: 0.85 });
       g.roundRect(-46, -14, 52, 28, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line));
@@ -93,6 +110,17 @@ function toolArt(tool: Tool): Container {
   }
   c.addChild(g);
   return c;
+}
+
+/** A bathroom scale: a soft platform with a round dial (the needle is drawn by whoever shows it). */
+function scaleArt(g: Graphics) {
+  g.roundRect(-52, 8, 104, 30, 12).fill(swatch.teal.fill).stroke(line(swatch.teal.line));
+  g.circle(0, -12, 30).fill(0xffffff).stroke(line(swatch.teal.line));
+  for (let k = 0; k < 5; k++) {
+    const a = Math.PI * (1.15 + k * 0.175);
+    g.moveTo(Math.cos(a) * 22, -12 + Math.sin(a) * 22).lineTo(Math.cos(a) * 28, -12 + Math.sin(a) * 28).stroke(line(swatch.teal.line, 3));
+  }
+  return g;
 }
 
 function sock(g: Graphics, fill: number, edge: number, s = 1) {
@@ -502,7 +530,7 @@ class TeddyDoctor implements Game {
     sfx.squish();
   }
 
-  /** Stethoscope, thermometer or flashlight: a little show, then it comes back off. */
+  /** Stethoscope, thermometer, flashlight, scale or height chart: a little show, then it comes back off. */
   private async check(tool: Check) {
     const part = CHECK_PART[tool];
     const at = this.partAt(part);
@@ -522,11 +550,64 @@ class TeddyDoctor implements Game {
       await this.ctx.tw.wait(0.3);
       sfx.bell(10, 0.25);
       await this.ctx.say('doctor.temp');
-    } else {
+    } else if (tool === 'flashlight') {
       sfx.sparkle();
       await this.ctx.say('doctor.ears');
+    } else if (tool === 'scale') {
+      shown.visible = false;
+      await this.weigh();
+    } else {
+      shown.visible = false;
+      await this.measure();
     }
     shown.destroy({ children: true });
+  }
+
+  /** The patient hops onto the scale at its feet, and the needle swings round from nothing to just right. */
+  private async weigh() {
+    const show = new Container();
+    const needle = new Graphics().moveTo(0, 0).lineTo(0, -24).stroke(line(swatch.red.line, 5));
+    needle.position.set(0, -12);
+    needle.rotation = -1.4;
+    show.addChild(scaleArt(new Graphics()), needle);
+    show.scale.set(1.6);
+    show.position.set(this.spot.x + 210, this.spot.y - 20);
+    this.ctx.stage.addChild(show);
+    this.patient?.hop(0.6);
+    sfx.squish();
+    void this.ctx.tw.to(needle, { rotation: 0.35 }, { duration: 0.9, ease: ease.outBack });
+    for (let k = 0; k < 4; k++) {
+      sfx.tick();
+      await this.ctx.tw.wait(0.2);
+    }
+    await this.ctx.say('doctor.weigh');
+    show.destroy({ children: true });
+  }
+
+  /** A striped chart slides up behind the patient, and a star pops on the top of its head. */
+  private async measure() {
+    const p = this.patient!;
+    // The top of the head (or a bunny's ears), from the drawing itself, and the chart a little taller than that.
+    const top = this.ctx.stage.toLocal({ x: 0, y: p.getBounds().minY }).y;
+    const tall = this.spot.y - top + 90;
+    const band = tall / CHART.length;
+    const chart = new Graphics().roundRect(-40, -tall, 80, tall, 16).fill(0xffffff).stroke(line(0x9aa5b1, 5));
+    CHART.forEach((color, i) => chart.rect(-30, -(i + 1) * band + 8, 60, band - 16).fill({ color, alpha: 0.75 }));
+    chart.position.set(this.spot.x, this.spot.y);
+    chart.scale.y = 0;
+    this.ctx.stage.addChildAt(chart, this.ctx.stage.getChildIndex(p));
+    sfx.whoosh();
+    await this.ctx.tw.to(chart.scale, { y: 1 }, { duration: 0.5, ease: ease.outBack });
+    const mark = new Graphics().moveTo(this.spot.x - 70, top).lineTo(this.spot.x + 70, top).stroke(line(swatch.yellow.line, 6));
+    mark.star(this.spot.x, top, 5, 26, 12).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4));
+    this.ctx.stage.addChildAt(mark, this.ctx.stage.getChildIndex(p) + 1);
+    this.ctx.particles.burst(this.spot.x, top, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 8, speed: [80, 200], gravity: 0, life: [0.4, 0.7] });
+    sfx.sparkle();
+    // Standing still and proud: a hop here would lift the head off the star.
+    p.setMood('happy', 1.5);
+    await this.ctx.say('doctor.tall');
+    chart.destroy();
+    mark.destroy();
   }
 
   /** The check-up card: the steps as pictures, the current one ringed. Told check-ups keep it face down. */

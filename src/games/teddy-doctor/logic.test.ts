@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { AILMENTS, AIM_PARTS, CHECKS, CURE, doctorTouch, LEVELS, makeRounds, nearestPart, partSpot, PATIENTS, planFor, PLANS, SCRAPE_PARTS, wantedTool, type Part } from './logic';
+import { AILMENTS, AIM_PARTS, CHECK_PART, CHECKS, CHECKUP_STEPS, CURE, doctorTouch, LEVELS, makeRounds, nearestPart, partSpot, PATIENTS, planFor, PLANS, SCRAPE_PARTS, wantedTool, type Part } from './logic';
 
 describe('Teddy Doctor', () => {
   it('gives every level in every band its own plan, never a clamped neighbour', () => {
@@ -46,7 +46,7 @@ describe('Teddy Doctor', () => {
             break;
           } else {
             const tool = round.steps[step];
-            expect(touch).toEqual({ kind: 'tool', tool, part: ({ stethoscope: 'tummy', thermometer: 'mouth', flashlight: 'ear' } as const)[tool] });
+            expect(touch).toEqual({ kind: 'tool', tool, part: CHECK_PART[tool] });
             step++;
           }
         }
@@ -81,12 +81,34 @@ describe('Teddy Doctor', () => {
             if (i > 0) expect(r.ailment).not.toBe(rounds[i - 1].ailment);
           }
           if (plan.mode === 'card' || plan.mode === 'told') {
-            expect([...r.steps].sort()).toEqual([...CHECKS].sort());
+            expect(r.steps).toHaveLength(CHECKUP_STEPS);
+            expect(new Set(r.steps).size).toBe(CHECKUP_STEPS);
+            for (const step of r.steps) expect(CHECKS).toContain(step);
+            // The tray holds exactly this check-up's tools.
+            expect([...r.tools].sort()).toEqual([...r.steps].sort());
             r.steps.forEach((step, k) => expect(wantedTool(r, k)).toBe(step));
             if (i > 0) expect(r.steps.join()).not.toBe(rounds[i - 1].steps.join());
           }
         });
       }
+    }
+  });
+
+  it('draws check-ups from all five steps, the scale and the height chart included, each on its own body part', () => {
+    expect(CHECKS).toHaveLength(5);
+    expect(new Set(CHECKS.map((c) => CHECK_PART[c])).size).toBe(CHECKS.length);
+    expect(CHECK_PART.scale).toBe('feet');
+    expect(CHECK_PART.height).toBe('head');
+    for (const plan of PLANS.filter((p) => p.mode === 'card' || p.mode === 'told')) {
+      const seen = new Map<string, number>();
+      const sets = new Set<string>();
+      for (let seed = 1; seed <= 300; seed++) for (const r of makeRounds(plan, new Rng(seed))) {
+        for (const step of r.steps) seen.set(step, (seen.get(step) ?? 0) + 1);
+        sets.add([...r.steps].sort().join());
+      }
+      // Every step turns up often, and all ten sets of three are met.
+      for (const step of CHECKS) expect(seen.get(step) ?? 0, `${plan.mode} ${step}`).toBeGreaterThan(200);
+      expect(sets.size, plan.mode).toBe(10);
     }
   });
 

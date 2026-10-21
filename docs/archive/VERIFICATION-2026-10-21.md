@@ -124,3 +124,19 @@
 - `npm run typecheck` clean; seven Rhythm Neighbors rule tests passed (plan keys, all twelve shapes seen across seeds, distinct replies, calls never matching, knock-count rule at 3–4, alternation, finale bounds, pause threshold against `judgeEcho`, ghost finger still passes `judgeEcho`); `npm test` 199 files, 2282 tests passed; `npm run build` passed.
 - Dev server http://localhost:5871: `BROWSER_SUITE=creative CREATIVE_ONLY=rhythm` levels 1–6 passed (scores [0,0] free, [2,1] turn levels; free levels finish by eight taps; a 3 s mid-reply pause empties the reply with no miss, proved by disabling the rule and watching "Rhythm pause 1/0" fail, then restoring). `BROWSER_SUITE=fingerdemo FINGER_ONLY=rhythm-neighbors FINGER_LEVELS=1,6` passed (6.4 s, 35.2 s).
 - Not run: couch suites (bot and `control()` unchanged), the offline check, a portrait screenshot, a device; open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): the teal ribbit on an iPad speaker and the eight-tap end and idle wiggle with a one-year-old.
+
+## 2026-10-21 — Roundup level 8 Make it fair (slice 6)
+
+- [PR #709](https://github.com/rjdunlap/neo/pull/709), branch `claude/roundup-make-it-fair`; tested commit `c7a68b3a`. Pre-K 3–8: an even herd of 6 or 8, two pens, any equal non-zero split rings true, a wrong bell is a miss that names the counts, `sfx.seesaw` on every bell.
+- `npm run typecheck` passed; `npx vitest run src/games/roundup src/content src/games/registry` passed (139 tests: herd shape, every equal split accepted, fuller/emptier named, extras level the pens, help reaches half each, pre-K 3–8).
+- http://localhost:5230: `BROWSER_SUITE=arcade ARCADE_ONLY=roundup ARCADE_LEVELS=8` passed (no number on the sign, empty-pen bell, unequal bell, two-wrong-bell hint, 30-second idle help leaving level pens alone, fair finish speech, one sticker; saved `[2,1]`); landscape screenshot reviewed (3 and 3 under a board above two mud pens). The idle-help check was shown to fail without its guard.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=8` finished in 26.2 s (run before the idle-help guard; the bot path is unchanged by it).
+- Not run: build, full unit suite, portrait, other suites, offline, iPad speech or the seesaw sound by ear, child play (new-level tier).
+
+## 2026-10-21 — Seesaw Balance level 11 Two boxes
+
+- [PR #710](https://github.com/rjdunlap/neo/pull/710), branch `claude/seesaw-two-boxes`, commits `a1b27c7a` and `c0c4a608` on base `c12d4b51`. School 6–11: `pair` mode, two pairs of a reading and a weighing, free closer moves, a free round-box wiggle, one glow per pair after two tips, a once-judged quick burst of moves.
+- `npm run typecheck` and `npm run build` passed; `npx vitest run src/games/seesaw-balance` passed (13 tests, 6 new: generation over 300 seeds, unique goal and path length, progress classes, the finger's tip sequence, hints narrowing the gap in 2,400 wandering states, a seed-7 fingerprint that levels 1–10 are unchanged); `npx vitest run src/content src/games/registry.test.ts src/progress` passed (16 files, 256 tests).
+- http://localhost:5908: `BROWSER_SUITE=woods WOODS_ONLY=twoboxes` passed three times (once before the burst guard, twice after) in portrait 768×1024: a wrong pad on the reading, the round box touched, two widening tips then the glow, put back, a quick two-block burst judged once, saved score [1,1] and a sticker. With the guard briefly removed the burst assertion failed. Screenshots `test-results/browser/seesaw-balance-11-glow.png` and `seesaw-balance-11.png`.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=seesaw-balance FINGER_LEVELS=11` passed in 58.7 s of the 75 s allowed.
+- Not run: full unit suite, other browser suites, offline, iPad speech, a child. The Woodland Picnic pins level 7 and is unaffected. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): the tagged box read as its number, the orange hatbox read as different, the "closer" line.
