@@ -65,6 +65,31 @@ export function makeLetters(plan: MailPlan, street: House[], rng: Rng): number[]
 export const letterShows = (mode: MailMode): 'nothing' | 'color' | 'dots' | 'numeral' => (mode === 'drop' ? 'nothing' : mode === 'color' ? 'color' : mode === 'numeral' ? 'numeral' : 'dots');
 export const mailboxShows = (mode: MailMode): { numeral: boolean; dots: boolean } => ({ numeral: mode !== 'color' && mode !== 'drop', dots: mode === 'dots' });
 
+/** At levels 3 and 5 the letter's dots are counted aloud before the number is said. */
+export const countsAloud = (mode: MailMode) => mode === 'dots' || mode === 'count';
+
+const COUNT_WORDS = ['One', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+
+/** "One, two, three, four." for a letter with four dots. */
+export function countedAloud(n: number): string {
+  return `${COUNT_WORDS.slice(0, Math.max(1, Math.min(n, COUNT_WORDS.length))).join(', ')}.`;
+}
+
+/** Seconds without a touch before level 1 invites again. */
+export const INVITE_AFTER = 6;
+
+/** Level 1 invites (the instruction again, with a mailbox's flag waving) after six quiet seconds while a letter waits. */
+export const shouldInvite = (mode: MailMode, idle: number, busy: boolean, finished: boolean) => mode === 'drop' && idle >= INVITE_AFTER && !busy && !finished;
+
+/** The mailbox nearest a touch off the houses, by its x on the street. */
+export function nearestHouse(xs: readonly number[], x: number): number {
+  let best = 0;
+  xs.forEach((hx, i) => {
+    if (Math.abs(hx - x) < Math.abs(xs[best] - x)) best = i;
+  });
+  return best;
+}
+
 // Wonder Woods map ---------------------------------------------------------------------------------
 
 /** Signs on the map's houses; the picture key says which neighbor lives behind each one. */

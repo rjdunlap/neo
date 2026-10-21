@@ -4725,6 +4725,19 @@ async function batch() {
       for (let q = 0; q < g.letters.length; q++) {
         await kit.until(() => g.index === q && !g.busy, 15000);
         const right = g.letter;
+        if (q === 0 && g.plan.mode === 'drop') {
+          // A touch off the houses answers for free: the envelope wiggles and a flag waves.
+          kit.tapOn(g.envelope, 0, -140);
+          let wiggled = false;
+          let waved = false;
+          await kit.until(() => { wiggled ||= g.envelope.rotation !== 0; waved ||= g.houses.some((h) => h.flag.rotation !== 0); return wiggled && waved; }, 1000);
+          if (!wiggled || !waved) throw new Error(`Mail off-house touch: wiggle ${wiggled}, wave ${waved}`);
+          if (!(await kit.until(() => g.envelope.rotation === 0 && g.houses.every((h) => h.flag.rotation === 0), 2000))) throw new Error('Mail wave did not settle');
+          // Six quiet seconds bring the invitation back, with a wave.
+          g.idle = 6;
+          if (!(await kit.until(() => g.houses.some((h) => h.flag.rotation !== 0), 1000))) throw new Error('Mail idle invitation did not wave');
+          if (g.misses || g.hints) throw new Error(`Mail free touches counted: ${g.misses} ${g.hints}`);
+        }
         if (q === 0 && g.plan.mode !== 'drop') {
           const wrong = g.houses.find((h) => h !== right);
           for (let k = 0; k < 2; k++) { kit.tapOn(wrong, 0, -60); await kit.sleep(300); await kit.until(() => !g.busy, 8000); }

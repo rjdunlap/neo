@@ -1,4 +1,4 @@
-import { Circle, Container, Graphics } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
@@ -11,7 +11,7 @@ import { spread, type View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { addressedHouse, isMapMode, letterShows, mailboxShows, makeLetters, makeStreet, planFor, type House, type MailPlan } from './logic';
+import { addressedHouse, countedAloud, countsAloud, isMapMode, letterShows, mailboxShows, makeLetters, makeStreet, nearestHouse, planFor, shouldInvite, type House, type MailPlan } from './logic';
 import { WoodsMail } from './woods';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
@@ -42,6 +42,7 @@ class HouseView extends Container {
   readonly neighbor: Critter;
   readonly box = new Container();
   delivered = 0;
+  private waving = false;
 
   constructor(
     readonly house: House,
@@ -87,16 +88,28 @@ class HouseView extends Container {
       }
     }
     this.box.position.set(0, 74);
-    this.flag.rotation = 0;
+    this.flag.pivot.set(44, -26);
+    this.flag.position.set(44, -26);
     this.addChild(this.box);
     this.hitArea = new Circle(0, -60, 110);
+  }
+
+  /** The flag waves hello, from wherever it rests: a free answer, never a delivery. */
+  async wave(tw: GameContext['tw']) {
+    if (this.waving) return;
+    this.waving = true;
+    const rest = this.delivered ? -1.4 : 0;
+    for (const r of [rest - 0.5, rest + 0.15, rest - 0.35, rest]) {
+      await tw.to(this.flag, { rotation: r }, { duration: 0.14, ease: ease.inOutSine });
+      if (!this.waving) return;
+    }
+    this.waving = false;
   }
 
   /** A letter arrived: flag up, and the neighbor peeks out happily. */
   async welcome(tw: GameContext['tw']) {
     this.delivered++;
-    this.flag.pivot.set(44, -26);
-    this.flag.position.set(44, -26);
+    this.waving = false;
     void tw.to(this.flag, { rotation: -1.4 }, { duration: 0.3, ease: ease.outBack });
     this.neighbor.visible = true;
     this.neighbor.y = -60;
@@ -120,6 +133,9 @@ class MailCarrier implements Game {
   private readonly backdrop: Backdrop;
   private readonly road = new Graphics();
   private wrongs = 0;
+  /** Seconds since the last touch, for level 1's invitation. */
+  private idle = 0;
+  private wiggling = false;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -127,10 +143,23 @@ class MailCarrier implements Game {
     this.letters = makeLetters(this.plan, this.street, ctx.rng);
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.55, clouds: 3, sun: true, seed: 52 }, ctx.view);
     ctx.stage.addChild(this.backdrop, this.road);
+    // Level 1: a touch anywhere off a house still answers (free, never a miss or a hint).
+    if (this.plan.mode === 'drop') {
+      const anywhere = new Container();
+      anywhere.hitArea = new Rectangle(-1e4, -1e4, 2e4, 2e4);
+      anywhere.eventMode = 'static';
+      anywhere.on('pointerdown', (e) => this.offHouse(e.getLocalPosition(ctx.stage).x));
+      ctx.stage.addChild(anywhere);
+    }
     const kinds = ctx.rng.shuffle([...NEIGHBORS]);
     this.street.forEach((house, i) => {
       const h = new HouseView(house, kinds[i % kinds.length], mailboxShows(this.plan.mode));
       onTap(h, () => void this.post(i), { cooldown: 400 });
+      h.on('pointerdown', () => {
+        this.idle = 0;
+        h.scale.set(1.04);
+      });
+      for (const up of ['pointerup', 'pointerupoutside', 'pointercancel'] as const) h.on(up, () => h.scale.set(1));
       ctx.track(h.neighbor);
       this.houses.push(h);
       ctx.stage.addChild(h);
@@ -157,7 +186,27 @@ class MailCarrier implements Game {
     this.envelope.position.set(v.w / 2, 150);
   }
 
-  update() {}
+  update(dt: number) {
+    if (!this.busy && !this.finished) this.idle += dt;
+    if (shouldInvite(this.plan.mode, this.idle, this.busy, this.finished)) {
+      this.idle = 0;
+      void this.houses[nearestHouse(this.houses.map((h) => h.x), this.envelope.x)]?.wave(this.ctx.tw);
+      void this.ctx.instruct('mail.drop');
+    }
+  }
+
+  /** A touch off the houses at level 1: the envelope wiggles and the nearest mailbox's flag waves. */
+  private offHouse(x: number) {
+    this.idle = 0;
+    if (this.finished) return;
+    void this.houses[nearestHouse(this.houses.map((h) => h.x), x)]?.wave(this.ctx.tw);
+    if (this.busy || this.wiggling || this.envelope.scale.x < 0.5) return;
+    this.wiggling = true;
+    void (async () => {
+      for (const r of [0.12, -0.12, 0.06, 0]) await this.ctx.tw.to(this.envelope, { rotation: r }, { duration: 0.08, ease: ease.inOutSine });
+      this.wiggling = false;
+    })();
+  }
 
   /** The ghost finger: post the letter at the house it is addressed to. */
   autotouch(): TouchIntent | null {
@@ -171,6 +220,7 @@ class MailCarrier implements Game {
   /** The next letter comes out of the bag. */
   private async next() {
     this.busy = true;
+    this.idle = 0;
     this.index++;
     this.wrongs = 0;
     for (const h of this.houses) h.glow.visible = false;
@@ -246,7 +296,9 @@ class MailCarrier implements Game {
       this.envelope.scale.set(0);
       await h.welcome(tw);
       this.ctx.particles.burst(h.x, h.y - 120, { kind: 'heart', colors: [swatch.pink.fill, swatch.red.fill], count: 6, speed: [60, 140], gravity: -40, size: [0.3, 0.45] });
-      if (this.plan.mode === 'dots' || this.plan.mode === 'count' || this.plan.mode === 'numeral') await this.ctx.say('mail.number', { n: h.house.number });
+      const n = h.house.number;
+      if (countsAloud(this.plan.mode)) await this.ctx.say('mail.counted', { counted: countedAloud(n), n });
+      else if (this.plan.mode === 'numeral') await this.ctx.say('mail.number', { n });
       await this.ctx.say('mail.thanks');
       await this.next();
       return;
