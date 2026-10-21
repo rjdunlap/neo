@@ -16,6 +16,7 @@ import {
   PIECE_HIT,
   basketSlot,
   countSign,
+  contentFor,
   describeFill,
   landingSpots,
   groundTap,
@@ -39,7 +40,7 @@ const LEVELS: BandLevels = {
   preschool: { min: 1, max: 6, order: [1, 2, 6, 3, 4, 5] },
 };
 
-import { BASKET_SCALE, BODY_H, Basket, FRUITS, GROUND_SCALE, line } from './basket';
+import { BASKET_SCALE, BODY_H, Basket, FRUITS, GROUND_SCALE, fillPiece, line } from './basket';
 
 /** The check: a big green button that says "that many is enough". */
 function drawTick(): Container {
@@ -117,11 +118,12 @@ interface Piece {
 
 class FillDump implements Game {
   private readonly state: FillState;
+  private readonly content: ReturnType<typeof contentFor>;
   private readonly bg = new Sprite(gradientTexture(0xcdeefc, 0xfff1d6));
   private readonly floor = new Graphics();
   private readonly halo = new Graphics();
   private readonly layer = new Container();
-  private readonly basket = new Basket();
+  private readonly basket: Basket;
   private readonly tick = drawTick();
   /** The count sign, in the counting levels only. */
   private readonly sign: CountSignCard | null;
@@ -147,6 +149,8 @@ class FillDump implements Game {
   constructor(private readonly ctx: GameContext) {
     const plan = planFor(ctx.level);
     this.state = startState(plan, targetFor(plan, ctx.rng));
+    this.content = contentFor(plan, ctx.rng);
+    this.basket = new Basket(1, this.content.set.id);
     this.spotSeed = ctx.rng.int(1, 1e9);
     ctx.stage.addChild(this.bg, this.floor, this.halo, this.basket.back, this.layer, this.basket.front, this.tick);
     this.tick.visible = this.state.target !== null;
@@ -166,20 +170,17 @@ class FillDump implements Game {
       this.handle(tap(this.state, action));
     }, { cooldown: 80 });
 
-    // Fruit: a different one for each piece in a tip-out level, all one kind when she is counting.
-    const rng = new Rng(this.spotSeed);
-    const mixed = rng.shuffle([...FRUITS]);
-    const one = rng.pick(FRUITS);
+    // Tip-out mixes four designs; counting uses identical pieces, with one shared sign color.
+    const colors: ColorName[] = ['red', 'blue', 'yellow', 'green'];
     for (let i = 0; i < plan.pieces; i++) {
-      const f = this.state.target === null ? mixed[i % mixed.length] : one;
-      const view = prop(f.kind, f.color);
+      const view = fillPiece(this.content.set, this.content.variants[i]);
       view.hitArea = new Circle(0, 0, PIECE_HIT / GROUND_SCALE);
       onTap(view, () => this.touchPiece(i), { cooldown: 80 });
       this.layer.addChild(view);
       this.pieces.push({ view, i });
     }
-    // The count sign shows the number asked for, in the fruit's own color.
-    this.sign = this.state.target === null ? null : new CountSignCard(one.color);
+    // The count sign shows the number asked for, in the counted pieces’ color.
+    this.sign = this.state.target === null ? null : new CountSignCard(this.content.set.id === 'fruit' ? FRUITS[this.content.variants[0]].color : colors[this.content.variants[0]]);
     if (this.sign) {
       ctx.stage.addChild(this.sign);
       this.showSign();
@@ -196,7 +197,7 @@ class FillDump implements Game {
 
   start() {
     const t = this.state.target;
-    void (t === null ? this.ctx.instruct('fill.tip') : this.ctx.instruct('fill.put', { n: t }));
+    void (t === null ? this.ctx.instruct('fill.tip', this.content.set) : this.ctx.instruct('fill.put', { n: t, ...this.content.set }));
   }
 
   resize(v: View) {
@@ -355,12 +356,12 @@ class FillDump implements Game {
         this.comeOut(ev.i);
         return;
       case 'again':
-        void this.ctx.instruct('fill.put', { n: this.state.target! });
+        void this.ctx.instruct('fill.put', { n: this.state.target!, ...this.content.set });
         return;
       case 'wrong':
         sfx.boing();
         this.basket.nope();
-        void this.ctx.say('fill.wrong', { n: this.state.target!, have: ev.have });
+        void this.ctx.say('fill.wrong', { n: this.state.target!, have: ev.have, ...this.content.set });
         if (ev.hint) this.hint(ev.hint);
         return;
       case 'done':
@@ -426,7 +427,7 @@ class FillDump implements Game {
       landed.push(
         this.hop(p, this.spots[p.i], GROUND_SCALE, 110, 0.7).then(async () => {
           if (this.gone) return;
-          sfx.pop(4 + (p.i % 4));
+          sfx.pop(4 + (p.i % 4) + this.content.set.pitch);
           this.ctx.particles.burst(p.view.x, p.view.y + 30, { kind: 'dot', colors: [0xffffff, 0xfff3a0], count: 5, speed: [60, 140], gravity: 300, life: [0.25, 0.4] });
           await tw.to(p.view, { y: p.view.y - 22 }, { duration: 0.1, ease: ease.outQuad });
           await tw.to(p.view, { y: p.view.y + 22 }, { duration: 0.1, ease: ease.inQuad });
@@ -438,7 +439,7 @@ class FillDump implements Game {
     await Promise.all(landed);
     await tw.to(this.basket, { lean: 0 }, { duration: 0.35, ease: ease.outBack });
     this.busy = false;
-    void this.ctx.instruct('fill.scoop');
+    void this.ctx.instruct('fill.scoop', this.content.set);
   }
 
   /** After every piece lands in the basket: the basket is full again, or the round is over. */
@@ -446,7 +447,7 @@ class FillDump implements Game {
     if (this.flying > 0 || this.busy || this.finished || this.state.target !== null) return;
     if (this.state.order.length !== this.state.plan.pieces) return;
     if (this.state.done) void this.finale();
-    else void this.ctx.instruct('fill.again');
+    else void this.ctx.instruct('fill.again', this.content.set);
   }
 
   private async finale() {
@@ -456,7 +457,7 @@ class FillDump implements Game {
     // Let the last piece land.
     while (this.flying > 0) await tw.wait(0.05);
     const t = this.state.target;
-    await (t === null ? this.ctx.say('fill.done') : this.ctx.say('fill.made', { n: t }));
+    await (t === null ? this.ctx.say('fill.done') : this.ctx.say('fill.made', { n: t, ...this.content.set }));
     const b = this.basket;
     b.squish();
     const y = this.rimY + BODY_H;
@@ -489,7 +490,7 @@ class FillDump implements Game {
     this.glow = { target, left: 4 };
     this.halo.visible = true;
     this.followGlow();
-    void this.ctx.say(h === 'check' ? 'fill.hintcheck' : h === 'remove' ? 'fill.hintremove' : 'fill.hintadd');
+    void this.ctx.say(h === 'check' ? 'fill.hintcheck' : h === 'remove' ? 'fill.hintremove' : 'fill.hintadd', this.content.set);
   }
 
   private followGlow() {
@@ -559,7 +560,7 @@ export const fillDump: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: describeFill,
   music: STYLES.stickers,
-  coplayHint: 'Tip the basket together and say "out they come!", then count aloud as {name} puts each piece back in: "one, two, three".',
+  coplayHint: 'Tip the container together and say "out they come!", then count aloud as {name} puts each piece back in: "one, two, three".',
   offScreen: 'Give a big bowl and some soft toys, blocks or dry beans in a tub: filling, dumping and scooping is the same game.',
   hubIcon: () => new BasketIcon(),
   touchDemo: true,
