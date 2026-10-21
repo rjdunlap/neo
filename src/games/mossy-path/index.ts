@@ -1,4 +1,5 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
+import { turtleArt } from '../../art/animals';
 import { ink, swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -10,15 +11,6 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { completion, helpFor, makeBoard, moveError, planFor, solved, step } from './logic';
 
-function turtle(size: number): Graphics {
-  const u = size / 100, g = new Graphics();
-  for (const x of [-22, 22]) for (const y of [-24, 24]) g.ellipse(x * u, y * u, 12 * u, 9 * u).fill(swatch.green.fill);
-  g.circle(0, -36 * u, 15 * u).fill(swatch.green.light).stroke({ width: 2 * u, color: swatch.green.line });
-  g.ellipse(0, 0, 30 * u, 34 * u).fill(swatch.teal.fill).stroke({ width: 3 * u, color: swatch.teal.line });
-  g.poly([-15 * u, -9 * u, 0, -20 * u, 15 * u, -9 * u, 15 * u, 9 * u, 0, 20 * u, -15 * u, 9 * u]).stroke({ width: 2 * u, color: swatch.teal.line });
-  g.circle(-5 * u, -39 * u, 2.5 * u).circle(5 * u, -39 * u, 2.5 * u).fill(ink);
-  g.eventMode = 'none'; return g;
-}
 function flower(g: Graphics, x: number, y: number, size: number, color: number) {
   for (let p = 0; p < 5; p++) { const a = p * Math.PI * 2 / 5; g.circle(x + Math.cos(a) * size * 0.65, y + Math.sin(a) * size * 0.65, size * 0.5).fill(color); }
   g.circle(x, y, size * 0.35).fill(swatch.yellow.fill);
@@ -122,7 +114,7 @@ class MossyPath implements Game {
         for (const x of [-half * 0.5, half * 0.45]) g.moveTo(x - 7, 12).lineTo(x, 0).lineTo(x + 7, 12).stroke({ width: 3, color: swatch.green.line });
       }
       if (at === this.hinted) g.roundRect(-half - 2, -half - 2, half * 2 + 4, half * 2 + 4, 20).stroke({ width: 6, color: swatch.yellow.fill });
-      node.addChild(g); if (at === last) node.addChild(turtle(this.cell * 0.72));
+      node.addChild(g); if (at === last) node.addChild(turtleArt(this.cell * 0.72));
     });
     this.trail.clear();
     for (let i = 1; i < this.path.length; i++) {
@@ -160,7 +152,7 @@ function iconArt(seed = 0): Container {
   g.roundRect(-90, -170, 180, 170, 24).fill(swatch.green.light).stroke({ width: 5, color: swatch.green.line });
   flower(g, -58, -42, 16, seed % 2 ? swatch.purple.fill : swatch.pink.fill);
   flower(g, 60, -132, 14, swatch.white.fill); c.addChild(g);
-  const t = turtle(140); t.position.set(0, -80); c.addChild(t); return c;
+  const t = turtleArt(140); t.position.set(0, -80); c.addChild(t); return c;
 }
 export const mossyPath: GameModule = {
   id: 'mossy-path', name: 'Mossy Path', titleLine: 'game.mossy-path', region: 'puzzle-peaks',

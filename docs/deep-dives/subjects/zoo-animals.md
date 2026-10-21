@@ -66,10 +66,10 @@ Every new species is new `CritterSpec` anatomy or bespoke art. The plan is to st
 | cow, pig, cat, bear, dog, bunny | mammal | `CRITTERS` | none | typical mammals |
 | duck | bird | `CRITTERS` | none | a flying bird with a bill |
 | owl | bird | `Critter` built in `owl-walk/index.ts` | none (move to shared art when needed) | a second bird |
-| penguin | bird | `penguinArt()` in `penguin-slide/index.ts`, bespoke | S: move to `src/art/` | **tricky:** a bird that does not fly |
-| frog | amphibian | `frogArt()` in `frog-hop/index.ts` | S: move | the only amphibian |
-| turtle | reptile | `turtle()` in `mossy-path/index.ts` | S: move | the only reptile |
-| fish | fish | `fishArt()` in Penguin Slide, `fish()` in Bubble Pop | S: pick one and move | the only fish |
+| penguin | bird | `penguinArt()` in `penguin-slide/index.ts`, bespoke | moved to `src/art/animals.ts` (Z2) | **tricky:** a bird that does not fly |
+| frog | amphibian | `frogArt()` in `frog-hop/index.ts` | moved to `src/art/animals.ts` (Z2) | the only amphibian |
+| turtle | reptile | `turtle()` in `mossy-path/index.ts` | moved as `turtleArt()` (Z2) | the only reptile |
+| fish | fish | `fishArt()` in Penguin Slide, `fish()` in Bubble Pop | Bubble Pop's moved as `fishArt()` (Z2) | the only fish |
 | **bat** | mammal | none | S–M: a `Critter` with pointy ears and a new membrane-wing part (today's `wings` are small side flaps that read as a bird's) | **tricky:** a mammal that flies; cheapest new species |
 | panda | mammal | none | S: bear body, white, with a new eye-patch part | Bamboo Hill's host; the Smithsonian's opened panda enrichment example |
 | platypus | mammal | none | M: `snout: 'bill'` exists; needs a flat tail and webbed feet (a tail part many More kinds need) | **tricky:** lays eggs and feeds milk |
@@ -193,7 +193,7 @@ None was played. "Opened" means the page itself was read.
 ## Build slices, in order
 
 1. **Z1 · Define Who Am I? levels 1–4** (docs): the trait table for the existing cast plus penguin and bat, clue signs, the rule tests above, voice lines, how-to steps, land and bands. Name the reviewer. **Defined 2026-10-19:** [definition](../../definitions/who-am-i.md) (a fourteen-feature trait table over thirteen friends with four marked reviewer cells, levels 1–4 with surprise steps, accounting, rule tests, layout, ghost finger, voice/how-to, Barnyard and pre-K/school by default, nine defaulted decisions; the trait review is decision 1).
-2. **Z2 · Shared cast art**: move penguin, frog, turtle and one fish drawing into `src/art/` with no visual change, only as Z3 needs them.
+2. **Z2 · Shared cast art**: move penguin, frog, turtle and one fish drawing into `src/art/` with no visual change, only as Z3 needs them. **Built 2026-10-21** ([#707](https://github.com/rjdunlap/neo/pull/707)): `src/art/animals.ts`.
 3. **Z3 · Build Who Am I? levels 1–3**: rules in `logic.ts`, tests, ghost finger, how-to card, one scripted play.
 4. **Z4 · The bat and level 4**: a membrane-wing part (or bespoke art), the surprise rounds, its tests.
 5. **Z5 · Prove Night Garden**: dress Rainbow Meadow and swap the cast in Photo Safari and Peekaboo Barn (owl, bat, fireflies), per the notebook's two-game proof.
@@ -204,4 +204,6 @@ None was played. "Opened" means the page itself was read.
 
 ## What was built
 
-Nothing. Docs only: this study, the tracker row, the notebook's candidate rows, the roadmap packet and a VERIFICATION entry. Checks: relative Markdown links (`node scripts/check-links.mjs`) and `git diff --check`; no code checks, per the docs-only tier.
+The study itself (2026-10-19) was docs only: this study, the tracker row, the notebook's candidate rows, the roadmap packet and a VERIFICATION entry. Checks: relative Markdown links (`node scripts/check-links.mjs`) and `git diff --check`; no code checks, per the docs-only tier.
+
+**Z2 (2026-10-21, [#707](https://github.com/rjdunlap/neo/pull/707)):** `src/art/animals.ts` now holds `frogArt` (Frog Hop), `penguinArt` (Penguin Slide), `turtleArt(size)` (Mossy Path's `turtle`) and `fishArt(color: Swatch)` (Bubble Pop's backdrop `fish`); drawing bodies unchanged and the four games import them. Penguin Slide's own `fishArt()` stays local. No game, README or GAMES row. Checks in [VERIFICATION](../../VERIFICATION.md#2026-10-21--who-am-i-z2-shared-cast-art-move).

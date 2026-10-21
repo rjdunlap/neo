@@ -102,7 +102,7 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`peg-garden`, level 7 Plant a bud** (new interaction, after level 6 *Into the cup*): drag a bud onto a marked place so the pearl reaches the cup, run, revise; pre-K. [Slice 6](deep-dives/peg-garden.md#new-levels-on-top)
 
 
-- **`who-am-i`, build levels 1–3 (Z2 art move, then Z3)** (new-game tier): tap the friend a picture clue fits (level 1), turn over every friend each clue rules out until one jumps out (levels 2–3); a reviewed trait table (developer review per decision 1), pre-K 1–2 and school 2–3, Barnyard by default; Z2 first moves penguin, frog, turtle and fish drawings to `src/art/`. [Definition](definitions/who-am-i.md)
+- **`who-am-i`, build levels 1–3 (Z3)** (new-game tier): tap the friend a picture clue fits (level 1), turn over every friend each clue rules out until one jumps out (levels 2–3); a reviewed trait table (developer review per decision 1), pre-K 1–2 and school 2–3, Barnyard by default; the penguin, frog, turtle and fish drawings are already in `src/art/animals.ts`. [Definition](definitions/who-am-i.md)
 - **`species-comeback`, build levels 1–3** (new-game tier): tap two turtles on a family tree into a nest with no brothers and sisters together (level 1), nor cousins (level 2), press Spring for hatchlings, then pick the release site that has every need on the card (level 3); an exact matching solver with at least two valid plans per round, undo and a blocking-nest hint, invented pond turtles, Lantern Lake `grownup` 1–3 by default (level 4, two keeper plans with a note and reason cards, is the next slice); the needs card and recovery lines reviewed per decision 1. [Definition](definitions/species-comeback.md)
 
 

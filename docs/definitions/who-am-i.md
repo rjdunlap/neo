@@ -1,6 +1,6 @@
 # Who Am I?, levels 1–4 (definition)
 
-Defined 2026-10-19 as slice **Z1** of the [zoo-animals study](../deep-dives/subjects/zoo-animals.md#build-slices-in-order), from its [first game's ladder](../deep-dives/subjects/zoo-animals.md#a-first-games-ladder-who-am-i), its [cast table](../deep-dives/subjects/zoo-animals.md#the-cast-and-what-it-costs) and the [IDEAS row](../IDEAS.md#candidates). Docs only: no game, ID registration, voice line, art move or save field exists yet. **Ready to build** (Z3 builds levels 1–3 after Z2 moves the art; Z4 adds the bat and level 4): every open call below has a default the build can use. The one gate that is not a default is the **trait table review** in [decision 1](#open-decisions): the table below is a draft with its doubtful cells marked, and the build ships it only after the review named there.
+Defined 2026-10-19 as slice **Z1** of the [zoo-animals study](../deep-dives/subjects/zoo-animals.md#build-slices-in-order), from its [first game's ladder](../deep-dives/subjects/zoo-animals.md#a-first-games-ladder-who-am-i), its [cast table](../deep-dives/subjects/zoo-animals.md#the-cast-and-what-it-costs) and the [IDEAS row](../IDEAS.md#candidates). Docs only: no game, ID registration, voice line or save field exists yet; the art move (Z2) is done, in `src/art/animals.ts` (`frogArt`, `penguinArt`, `turtleArt`, `fishArt`). **Ready to build** (Z3 builds levels 1–3 after Z2 moves the art; Z4 adds the bat and level 4): every open call below has a default the build can use. The one gate that is not a default is the **trait table review** in [decision 1](#open-decisions): the table below is a draft with its doubtful cells marked, and the build ships it only after the review named there.
 
 **Fun action and purpose:** a row of friends stands on the barn's stage. The pet gives one clue, spoken and shown as a picture sign ("I have feathers"). She taps a friend the clue rules out and it waves and ducks behind its card; when only one friend is left it jumps out: "It's me! Duck!" The learning goal is **grouping animals by their features**: feathers, fur, a shell, fins, eggs or milk, and later the surprises that the groups go by features and not by flying or swimming (a penguin has feathers and cannot fly; a bat flies and feeds its babies milk). It practises elimination reasoning (a clue says who stays and who goes) at pre-K, and the five vertebrate groups by their defining features at school, which is what England's Year 1 science names and NGSS 2-LS4-1 bounds to features rather than names ([the study's anchors](../deep-dives/subjects/zoo-animals.md#anchors-and-evidence-limits)).
 
@@ -49,17 +49,17 @@ No new source was opened for this definition; the study's anchors and its [simil
 
   Marked cells are **reviewer cases** ([decision 1](#open-decisions)): ¹ a pig has bristly hair, so the clue says "fur or hair" and the sign is a fluffy patch, or pig leaves `fur` rounds ([decision 4](#open-decisions)); ² the turtle gets `shell`, never `scales`, so the two kinds of scales never share a sign; ³ a duck's bill counts as a beak; ⁴ `eggs` is true of **these** friends (the island's fish and turtle), and the line is first person because not every fish or reptile lays eggs. `swims`, `lives in water`, `whiskers`, `tail` and `horns` are **never clues**: swimming does not sort anything, and the last three are about the drawing rather than the animal. `fly` appears only at level 4 and is never used to define a group.
 
-- **The cast in this slice** (art from the study's table; Z2 moves the four in-game drawings to `src/art/`, Z4 adds the bat):
+- **The cast in this slice** (art from the study's table; Z2 moved the four in-game drawings to `src/art/animals.ts`, Z4 adds the bat):
 
   | Friend | Group | Features | Art |
   | --- | --- | --- | --- |
   | cow, pig, cat, bear, dog, bunny | mammal | `fur`, `four-legs`, `milk` | `CRITTERS` |
   | duck | bird | `feathers`, `wings`, `beak`, `two-legs`, `eggs`, `fly` | `CRITTERS` |
   | owl | bird | as duck | Owl Walk's `Critter` |
-  | penguin | bird | `feathers`, `wings`, `beak`, `two-legs`, `eggs` (no `fly`) | Penguin Slide's `penguinArt()` |
-  | frog | amphibian | `smooth-skin`, `four-legs`, `eggs` | Frog Hop's `frogArt()` |
-  | turtle | reptile | `shell`, `four-legs`, `eggs` | Mossy Path's `turtle()` |
-  | fish | fish | `scales`, `fins`, `eggs`, `gills` | Bubble Pop's `fish()` |
+  | penguin | bird | `feathers`, `wings`, `beak`, `two-legs`, `eggs` (no `fly`) | `penguinArt()` in `src/art/animals.ts` |
+  | frog | amphibian | `smooth-skin`, `four-legs`, `eggs` | `frogArt()` in `src/art/animals.ts` |
+  | turtle | reptile | `shell`, `four-legs`, `eggs` | `turtleArt()` in `src/art/animals.ts` |
+  | fish | fish | `scales`, `fins`, `eggs`, `gills` | `fishArt()` in `src/art/animals.ts` |
   | bat (level 4, Z4) | mammal | `fur`, `wings`, `two-legs`, `milk`, `fly` | new: a `Critter` with pointy ears and a membrane-wing part |
 
 - **A round** is a seeded gallery (an ordered list of friends), an **answer** (one of them) and an ordered list of **clues**, each true of the answer. `keeps(clue, friend)` is the table lookup; `ruledOut(remaining, clue)` is the remaining friends the clue is false of. A clue is **useful** for a remaining set when it rules out at least one friend and keeps the answer. Applying the clues in order leaves exactly the answer.

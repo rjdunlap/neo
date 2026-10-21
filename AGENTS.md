@@ -77,7 +77,7 @@ Stories: a story that carries a chosen object, amount or tune needs the typed re
 
 | Need | Existing starting points |
 | --- | --- |
-| Characters, clothing, props | In `src/art/`: `critter.ts` (`CRITTERS`, `attach()`, moods including `sad`/`calm`, `currentMood`); `src/creatures/companion.ts` and `species.ts` for the companion, `props.ts`, `shapes.ts`, `scenery.ts`, `particles.ts`, `sticker.ts` |
+| Characters, clothing, props | In `src/art/`: `critter.ts` (`CRITTERS`, `attach()`, moods including `sad`/`calm`, `currentMood`), `animals.ts` (frog, penguin, turtle, fish); `src/creatures/companion.ts` and `species.ts` for the companion, `props.ts`, `shapes.ts`, `scenery.ts`, `particles.ts`, `sticker.ts` |
 | Input, motion, physics | In `src/engine/`: `input.ts`, `drag.ts`, `tween.ts`, `random.ts`, `view.ts`; `ball.ts` supplies ball/peg/wall simulation, and its `simulate()` also drives physics rule tests (reachable targets, nothing trapped, flight times). Inspect current code and tests before reusing work in progress. |
 | Music and speech | In `src/audio/`: `engine.ts` unlocks on first touch; `sfx.ts` includes synthesized animal voices; `music.beats()` supports beat-synced play; `voice.ts` speaks line IDs with device speech. Parent recordings remain a proposal. |
 | Steering and aiming | Duckling Parade / Roundup for continuous steering; Bouncy Launch for a pull measured from pointer movement rather than an object snapped to the fingertip |

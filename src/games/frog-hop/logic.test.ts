@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { frogArt, frogHop } from './index';
+import { frogArt } from '../../art/animals';
+import { frogHop } from './index';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
 import { answerOf, answerSlot, GAP_CARDS, makeQuestions, PLANS, WINDOW, missKind, hintCharge, stickerNumber } from './logic';
