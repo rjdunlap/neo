@@ -128,4 +128,4 @@ Each slice that adds a level updates `PLANS`, `LEVELS`/`order`/`entryLevels`, `d
 
 ## What was built in this session
 
-Slice 1 (roll when ready at levels 4–5) landed 2026-10-20 on `claude/egg-catch-roll-when-ready` (PR #652); the build note is in [the archive](../archive/COMPLETED-2026-10-09.md) and the checks in [VERIFICATION](../VERIFICATION.md#2026-10-20--egg-catch-roll-when-ready-at-levels-45). The research session itself changed no code. Links (`node scripts/check-links.mjs`) and `git diff --check` ran.
+Slice 1 (roll when ready at levels 4–5) landed 2026-10-20 on `claude/egg-catch-roll-when-ready` (PR #652); the build note is in [the archive](../archive/COMPLETED-2026-10-09.md) and the checks in [VERIFICATION](../archive/VERIFICATION-2026-10-20.md#2026-10-20--egg-catch-roll-when-ready-at-levels-45). The research session itself changed no code. Links (`node scripts/check-links.mjs`) and `git diff --check` ran.

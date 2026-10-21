@@ -23,6 +23,8 @@ import { keycap } from '../../ui/keycap';
 import { Sparkle } from '../../ui/sparkle';
 import { label } from '../../ui/text';
 import type { App } from '../App';
+import { MixHost } from '../mix';
+import { mixSpotArt } from '../../ui/mix';
 import { Scene, type Updatable } from '../Scene';
 import { gamesFor } from './PlaceScene';
 
@@ -31,6 +33,8 @@ interface Card { node: Container; id: string; mod?: GameModule; sparkle?: Sparkl
 export const FAVORITES = 'favorites';
 /** A story card among the subjects: Wonder Woods' Woodland Picnic, which opens its own scene. */
 export const WOODLAND = 'woodland';
+/** Little surprises' card, first on the first page at lap and toddler: it opens the mix's preview over this place. */
+export const MIX = 'mix';
 type Subject = RegionId | typeof FAVORITES;
 interface Position { subject: Subject | null; subjectsPage: number; gamesPage: number }
 const positions = new Map<Band, Position>();
@@ -80,12 +84,14 @@ export class SubjectPlaceScene extends Scene {
   private touch: { id: number; x: number; y: number; moved: boolean; card?: Card } | null = null;
   private leaving = false;
   private icons: Updatable[] = [];
+  readonly mix: MixHost;
   private readonly lost = () => this.cancel();
   private readonly release = (e: PointerEvent) => { if (this.touch?.id === e.pointerId) this.cancel(); };
 
   constructor(app: App, readonly band: Band) {
     super(app);
     this.place = placeFor(band);
+    this.mix = new MixHost(app, band, this.ui, () => this.view);
     this.games = gamesFor(band);
     this.subjects = SUBJECTS.filter(s => this.games.some(g => g.region === s.id));
     // Every hearted game, a bigger kids' one from a signpost too: the heart after a round promises it a place.
@@ -98,7 +104,11 @@ export class SubjectPlaceScene extends Scene {
   }
 
   /** Subject cards on offer: Favorites first (only when there is a heart here), then the real subjects. */
-  get subjectCount() { return this.subjects.length + (this.hearted.length ? 1 : 0) + (this.hasStory ? 1 : 0); }
+  get subjectCount() { return this.subjects.length + (this.hearted.length ? 1 : 0) + (this.hasStory ? 1 : 0) + (this.mix.mods ? 1 : 0); }
+
+  override holdsMix(): boolean {
+    return this.mix.live;
+  }
   /** Only Wonder Woods offers the Woodland Picnic, so younger children see nothing new. */
   get hasStory() { return this.band === WOODLAND_BAND; }
   private inSubject(subject: Subject | null): GameModule[] {
@@ -113,7 +123,7 @@ export class SubjectPlaceScene extends Scene {
     this.content.addChild(this.backdrop, this.choices);
     this.choices.eventMode = 'static';
     this.choices.on('pointerdown', (e: FederatedPointerEvent) => {
-      if (this.leaving || this.touch || palmOnGlass()) return;
+      if (this.leaving || this.touch || this.mix.sheet || palmOnGlass()) return;
       const p = this.choices.toLocal(e.global);
       const card = this.cards.find(c => c.node.visible && (c.node.hitArea as Rectangle).contains(p.x - c.node.x, p.y - c.node.y));
       this.touch = { id: e.pointerId, x: p.x, y: p.y, moved: false, card };
@@ -148,6 +158,8 @@ export class SubjectPlaceScene extends Scene {
     onTap(this.pip, () => { this.pip.poke(); this.speak(); });
     this.ui.addChild(this.track(this.pip), this.home, this.book, this.back, this.heading, this.previous, this.next, this.dots);
     this.rebuild();
+    // Back from a stop of a live mix: its sheet is up again before the first frame.
+    if (this.mix.live) this.mix.resume();
   }
 
   private cancel() { this.touch?.card?.node.scale.set(1); this.touch = null; }
@@ -169,6 +181,7 @@ export class SubjectPlaceScene extends Scene {
     const items = this.state.subject
       ? this.inSubject(this.state.subject).map(mod => ({ id: mod.id, name: mod.name, mod, icon: () => mod.hubIcon(), fresh: store.isNew(mod.id) }))
       : [
+        ...(this.mix.mods ? [{ id: MIX, name: 'Little surprises', mod: undefined, icon: () => Object.assign(mixSpotArt(this.mix.mods!), { update() {} }), fresh: false }] : []),
         ...(this.hearted.length ? [{ id: FAVORITES, name: 'Favorites', mod: undefined, icon: heartCard, fresh: false }] : []),
         ...(this.hasStory ? [{ id: WOODLAND, name: 'Woodland Picnic', mod: undefined, icon: storyCard, fresh: false }] : []),
         ...this.subjects.map(s => {
@@ -210,7 +223,10 @@ export class SubjectPlaceScene extends Scene {
   }
 
   private pick(card: Card) {
-    if (card.id === WOODLAND) {
+    if (card.id === MIX) {
+      voice.stop();
+      this.mix.start();
+    } else if (card.id === WOODLAND) {
       this.leaving = true;
       this.remember();
       void voice.say('woodland.spot');
@@ -259,7 +275,9 @@ export class SubjectPlaceScene extends Scene {
     this.dots.clear();
     for (let i = 0; i < this.pageCount; i++) this.dots.circle(v.w / 2 + (i - (this.pageCount - 1) / 2) * 28, v.h - 28, i === this.pageIndex ? 8 : 5).fill(swatch.teal.line);
     this.dots.eventMode = 'none';
+    this.mix.resize(v);
   }
-  enter() { music.play(STYLES.hub); this.speak(); }
+  override update(dt: number) { super.update(dt); this.mix.update(dt); }
+  enter() { music.play(STYLES.hub); if (!this.mix.sheet) this.speak(); }
   exit() { voice.stop(); this.cancel(); window.removeEventListener('blur', this.lost); window.removeEventListener('pointercancel', this.release); window.removeEventListener('pointerup', this.release); document.removeEventListener('visibilitychange', this.lost); }
 }

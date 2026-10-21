@@ -1,6 +1,6 @@
 # Little surprises: a three-game mix and its lifecycle (definition D2a)
 
-Defined 2026-10-17 as action **D2a** of the [discovery actions](../ROADMAP.md#discovery-actions), from the [discovery study](../DISCOVERY.md#a-round-boundary-that-keeps-the-groove). Docs only: nothing here is built. The source audit used base `d0d5b65` (`src/app/discovery.ts`, `src/content/discovery.ts`, `GameScene.ts`, `PlaceScene.ts`, `SubjectPlaceScene.ts`, `origin.ts`, `pause.ts` and the three games' level tables). **Ready to build as D2b.** The [open decisions](#open-decisions) each have a lean, and none of them gates D2b.
+Defined 2026-10-17 as action **D2a** of the [discovery actions](../ROADMAP.md#discovery-actions), from the [discovery study](../DISCOVERY.md#a-round-boundary-that-keeps-the-groove). D2b built 2026-10-20 on the leans below, with one deviation: the result’s All done (and a pause-sheet skip of the last stop) goes to the home spot, where the ending sheet opens, instead of drawing the ending over the last result. The source audit used base `d0d5b65` (`src/app/discovery.ts`, `src/content/discovery.ts`, `GameScene.ts`, `PlaceScene.ts`, `SubjectPlaceScene.ts`, `origin.ts`, `pause.ts` and the three games' level tables). Built as D2b. The [open decisions](#open-decisions) each have a lean, and none gated D2b.
 
 This is a shell feature, not a game. It adds no game ID, no learning claim, no level, no how-to card and no ghost-finger bot. Each stop is an ordinary round of an existing game, with that game's own goal, card, demo, accounting and sticker.
 

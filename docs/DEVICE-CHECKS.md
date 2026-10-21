@@ -16,6 +16,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 ## Open items
 
+- [ ] **Little surprises mix (D2b, 2026-10-20).** On an iPad at a lap or toddler band: can a small hand reach the picnic-blanket spot and the preview sheet's Play, Skip and Back; does device speech read `mix.offer/stop/next/skip/last/end` clearly; does a child understand Next stop and Skip, and does a corner Home returning to the preview feel like a comfortable stop? Chrome automation has not shown any of this.
 - [ ] **Roundup kinds and pens (slice 2, 2026-10-20, #672).** On an iPad, are duck/pond and dog/kennel pens recognized from their picture signs and floors; does device speech clearly name both kinds, their places and singular/plural targets? Child play remains unobserved.
 
 - [ ] **Feelings Faces pools (levels 6 and 8, 2026-10-20, #673).** On an iPad: do the butterfly on the pet's head and the rain cloud read as surprise and sadness to a preschooler; does the wobble invite a tap on a happening's prop; is the prop reachable over the big pet; do the new spoken lines ("{pet} loves a hug!") sound right in device speech.

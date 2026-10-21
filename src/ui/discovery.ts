@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
-import { ink, swatch } from '../art/palette';
+import { ink, swatch, type Swatch } from '../art/palette';
 import { sfx } from '../audio/sfx';
 import { onTap, palmOnGlass } from '../engine/input';
 import type { GameModule } from '../games/types';
@@ -12,10 +12,10 @@ export class DiscoveryTile extends Container {
   private readonly blur = () => this.cancel();
   // Pixi's pointer-event backend does not forward native pointercancel. Native release also clears a lost hit.
   private readonly lift = (e: PointerEvent) => { if (this.held === e.pointerId) this.cancel(); };
-  constructor(width: number, height: number, art: Container, action: () => void, private readonly allowed: () => boolean) {
+  constructor(width: number, height: number, art: Container, action: () => void, private readonly allowed: () => boolean, colors: Swatch = swatch.blue) {
     super();
     this.hitArea = new Rectangle(0, 0, width, height);
-    this.face.addChild(new Graphics().roundRect(0, 0, width, height, 22).fill(swatch.blue.light).stroke({ width: 4, color: swatch.blue.line }), art);
+    this.face.addChild(new Graphics().roundRect(0, 0, width, height, 22).fill(colors.light).stroke({ width: 4, color: colors.line }), art);
     this.face.eventMode = 'none';
     this.addChild(this.face);
     onTap(this, e => {
@@ -47,12 +47,12 @@ export class DiscoveryTile extends Container {
   }
 }
 
-const label = (text: string, x: number, y: number, size: number, width: number) => {
+export const label = (text: string, x: number, y: number, size: number, width: number) => {
   const t = new Text({ text, style: { fontFamily: FONT, fontSize: size, fontWeight: '600', fill: ink, wordWrap: true, wordWrapWidth: width } });
   t.position.set(x, y);
   return t;
 };
-function picture(mod: GameModule, x: number, y: number, size: number) {
+export function picture(mod: GameModule, x: number, y: number, size: number) {
   const icon = mod.hubIcon();
   const b = icon.getLocalBounds();
   const scale = size / Math.max(b.width, b.height, 1);
@@ -63,7 +63,7 @@ function picture(mod: GameModule, x: number, y: number, size: number) {
   box.position.set(x, y);
   return box;
 }
-function arrow(x: number, y: number, direction = 1) {
+export function arrow(x: number, y: number, direction = 1) {
   const g = new Graphics().moveTo(-12, 0).lineTo(12, 0).moveTo(4, -7).lineTo(12, 0).lineTo(4, 7).stroke({ width: 4, color: swatch.blue.line, cap: 'round', join: 'round' });
   g.position.set(x, y); g.scale.x = direction; return g;
 }

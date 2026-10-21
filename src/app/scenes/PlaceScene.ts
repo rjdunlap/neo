@@ -27,6 +27,8 @@ import { makeLandmark, type Landmark } from '../../ui/landmark';
 import type { Sparkle } from '../../ui/sparkle';
 import { label } from '../../ui/text';
 import type { App } from '../App';
+import { MixHost } from '../mix';
+import { mixSpotArt } from '../../ui/mix';
 import { Scene } from '../Scene';
 
 /** Every game's landmark is scaled to fit this box, feet on the ground. */
@@ -53,6 +55,22 @@ export function gamesFor(band: Band): GameModule[] {
     .map((g, i) => ({ g, i }))
     .sort((a, b) => REGION_IDS.indexOf(a.g.region) - REGION_IDS.indexOf(b.g.region) || a.i - b.i)
     .map(({ g }) => g);
+}
+
+/** Little surprises' spot on the path (lap and toddler home spots): a picnic blanket with the three games, one step like a game. */
+export interface MixSpot {
+  mix: true;
+  node: Container;
+}
+
+function mixSpot(mods: readonly GameModule[] | null): MixSpot | null {
+  if (!mods) return null;
+  const node = new Container();
+  node.addChild(mixSpotArt(mods));
+  node.eventMode = 'static';
+  node.cursor = 'pointer';
+  node.hitArea = new Rectangle(-ICON_W / 2, -ICON_H, ICON_W, ICON_H + 30);
+  return { mix: true, node };
 }
 
 /** A story's spot on the path, like a game's landmark: the Woodland Picnic in Wonder Woods. */
@@ -125,6 +143,9 @@ export class PlaceScene extends Scene {
   readonly landmarks: Landmark[] = [];
   /** The story that starts here, first along the path (Wonder Woods' Woodland Picnic), or null. */
   readonly story: StorySpot | null;
+  /** Little surprises, first along the path at lap and toddler, or null. */
+  readonly mixSpot: MixSpot | null;
+  readonly mix: MixHost;
   /** The twinkles on games not yet played, by game ID. */
   readonly sparkles = new Map<string, Sparkle>();
   scroll = 0;
@@ -143,7 +164,7 @@ export class PlaceScene extends Scene {
   private readonly heading = label('', 36);
   /** The hearted games for this place, standing in the sky; absent until something is hearted. */
   shelf: Shelf | null = null;
-  private touch: { id: number; x0: number; scroll0: number; lastX: number; lastT: number; moved: boolean; target: Landmark | StorySpot | Flower | null } | null = null;
+  private touch: { id: number; x0: number; scroll0: number; lastX: number; lastT: number; moved: boolean; target: Landmark | StorySpot | MixSpot | Flower | null } | null = null;
   private velocity = 0;
   private leaving = false;
   private landWidth = 0;
@@ -155,6 +176,12 @@ export class PlaceScene extends Scene {
     super(app);
     this.place = placeFor(band);
     this.story = storySpot(band);
+    this.mix = new MixHost(app, band, this.ui, () => this.view);
+    this.mixSpot = mixSpot(this.mix.mods);
+  }
+
+  override holdsMix(): boolean {
+    return this.mix.live;
   }
 
   init() {
@@ -164,6 +191,7 @@ export class PlaceScene extends Scene {
     this.land.addChild(this.path);
     this.content.addChild(this.backdrop, this.land);
     if (this.story) this.land.addChild(this.story.node);
+    if (this.mixSpot) this.land.addChild(this.mixSpot.node);
     for (const mod of gamesFor(this.band)) {
       const mark = makeLandmark(mod, { w: ICON_W, h: ICON_H }, store.isNew(mod.id));
       this.track(mark.icon);
@@ -196,6 +224,8 @@ export class PlaceScene extends Scene {
     if (this.backdrop.sun) onTap(this.backdrop.sun, () => { this.backdrop.sun!.poke(); sfx.sparkle(); }, { radius: 100 });
     this.backdrop.clouds.forEach((c) => onTap(c, () => { c.poke(); sfx.whoosh(); }, { radius: 90 }));
     this.scroll = lastScroll.get(this.band) ?? 0;
+    // Back from a stop of a live mix: its sheet is up again before the first frame.
+    if (this.mix.live) this.mix.resume();
   }
 
   resize(v: View) {
@@ -204,7 +234,7 @@ export class PlaceScene extends Scene {
     const backY = Math.max(ground + 95, v.h * 0.62);
     const frontY = v.h - 55;
     // A story spot stands first on the path, one step like a game, so no game's target shrinks.
-    const spots = [...(this.story ? [this.story] : []), ...this.landmarks];
+    const spots = [...(this.story ? [this.story] : []), ...(this.mixSpot ? [this.mixSpot] : []), ...this.landmarks];
     const n = spots.length;
     // Games zigzag between a back and a front row, each a step further along. Neighbors in a row are
     // two steps apart. Spread out to fill the screen when everything fits; otherwise swipe.
@@ -239,10 +269,12 @@ export class PlaceScene extends Scene {
     this.previous.position.set(60, ground - 145);
     this.next.position.set(v.w - 60, ground - 145);
     this.applyScroll();
+    this.mix.resize(v);
   }
 
   enter() {
     music.play(STYLES.hub);
+    if (this.mix.sheet) return;
     void voice.say('hub.pick').then(() => {
       if (this.maxScroll > 0 && !toldMore.has(this.band) && !this.leaving) {
         toldMore.add(this.band);
@@ -253,9 +285,10 @@ export class PlaceScene extends Scene {
 
   // Touch: tap a game, poke a flower, plant a flower, or swipe the land ------------------------
 
-  private find(target: unknown): Landmark | StorySpot | Flower | null {
+  private find(target: unknown): Landmark | StorySpot | MixSpot | Flower | null {
     for (let t = target as Container | null; t && t !== this.land; t = t.parent) {
       if (this.story && this.story.node === t) return this.story;
+      if (this.mixSpot && this.mixSpot.node === t) return this.mixSpot;
       const mark = this.landmarks.find((l) => l.node === t);
       if (mark) return mark;
       if (t instanceof Flower) return t;
@@ -264,7 +297,7 @@ export class PlaceScene extends Scene {
   }
 
   private down(e: FederatedPointerEvent) {
-    if (this.leaving || this.touch || palmOnGlass()) return;
+    if (this.leaving || this.touch || this.mix.sheet || palmOnGlass()) return;
     const x = this.content.toLocal(e.global).x;
     const target = this.find(e.target);
     this.touch = { id: e.pointerId, x0: x, scroll0: this.scroll, lastX: x, lastT: performance.now(), moved: false, target };
@@ -307,6 +340,15 @@ export class PlaceScene extends Scene {
     if (t.target instanceof Flower) return;
     if (t.target && 'story' in t.target) {
       this.openStory(t.target);
+      return;
+    }
+    if (t.target && 'mix' in t.target) {
+      void this.tw.to(t.target.node.scale, { x: 1, y: 1 }, { duration: 0.15 });
+      this.pip.cheer();
+      sfx.whoosh();
+      lastScroll.set(this.band, this.scroll);
+      voice.stop();
+      this.mix.start();
       return;
     }
     if (t.target) {
@@ -378,6 +420,7 @@ export class PlaceScene extends Scene {
 
   update(dt: number) {
     super.update(dt);
+    this.mix.update(dt);
     if (!this.touch && Math.abs(this.velocity) > 5) {
       this.scroll = Math.max(0, Math.min(this.maxScroll, this.scroll + this.velocity * dt));
       this.velocity *= Math.exp(-4 * dt);
