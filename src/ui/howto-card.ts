@@ -1,4 +1,4 @@
-import { Container, Graphics, Text } from 'pixi.js';
+import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { ink, swatch } from '../art/palette';
 import { voice } from '../audio/voice';
 import { onTap } from '../engine/input';
@@ -11,6 +11,7 @@ import type { LevelRange } from '../progress/difficulty';
 import { HoldButton, RoundButton } from './buttons';
 import { arrowIcon, checkIcon, houseIcon, playIcon } from './icons';
 import { FONT } from './text';
+import { hopIcon } from './mix';
 
 const MUTED = 0x6b6b7b;
 /** Body text steps down through these scales until the card fits the screen. */
@@ -36,6 +37,11 @@ const LADDER_MAX = 84;
 const LADDER_MIN = 48;
 const LADDER_GAP = 8;
 const TILE_FILL = 0xe3f3ff;
+/** A stop card's row: three 100-unit tiles 12 apart from the left margin, Skip (112) at its right end, 18 above it. */
+const STOP = 100;
+const STOP_GAP = 12;
+const SKIP = 112;
+const STOP_ROW = 18 + SKIP;
 
 /** What the card does as the intro before a game's first round: it starts the round, or goes back. */
 export interface HowToIntro {
@@ -43,6 +49,14 @@ export interface HowToIntro {
   icon: () => Container;
   play: () => void;
   back: () => void;
+  /** A tap on the game's picture in the header: the spoken title again. It changes nothing else. */
+  hear?: () => void;
+  /**
+   * Little surprises' stop card (Discovery D3): a row of the mix's stops above Play and Back, and Skip at its end. `tiles` makes a
+   * new set of 100-unit tiles, centred on their middles, each time the card is laid out; `shown` leaves the row off for a key or
+   * pad (the mix's controls are touch-only), and the scene lays the card out again when that changes.
+   */
+  stops?: { tiles: () => Array<Container & { update?(dt: number): void }>; skip: () => void; shown: () => boolean };
   /** A bot playing a real round in a window on the card, for a game that has one. The card runs, places and destroys it. */
   demo?: Demo;
   /**
@@ -77,6 +91,11 @@ export class HowToPanel extends Container {
   /** The held arrows of the card as last laid out, run each frame; and a step waiting to be applied after them. */
   private holds: HoldButton[] = [];
   private pending: 1 | -1 | 0 = 0;
+  /** The stop row's tiles and Skip as last laid out (a stop card only). */
+  stopTiles: Array<Container & { update?(dt: number): void }> = [];
+  skipButton: RoundButton | null = null;
+  /** The header picture's tap target, when the intro speaks its title again. */
+  titleSpot: Container | null = null;
 
   constructor(
     private info: HowToCard,
@@ -122,6 +141,7 @@ export class HowToPanel extends Container {
   update(dt: number) {
     this.demo?.update(dt);
     for (const h of this.holds) if (!h.destroyed) h.update(dt);
+    for (const t of this.stopTiles) if (!t.destroyed) t.update?.(dt);
     // A finished hold changes the card, which replaces the arrows: do it once they have all run.
     if (this.pending) {
       const delta = this.pending;
@@ -158,6 +178,9 @@ export class HowToPanel extends Container {
   private build(view: View, scale: number, withLadder: boolean): { card: Container; window: { x: number; y: number; w: number } | null; ladder: boolean } {
     const demo = this.demo;
     this.holds = [];
+    this.stopTiles = [];
+    this.skipButton = null;
+    const stops = this.intro?.stops?.shown() ? this.intro.stops : null;
     const range = this.intro?.pick && this.intro.pick.range.max > this.intro.pick.range.min ? this.intro.pick.range : null;
     // Beside the text when the screen is wider than tall; above it when it is tall. The window shrinks a little with the text.
     const wide = !!demo && view.w >= view.h * 1.1;
@@ -236,6 +259,9 @@ export class HowToPanel extends Container {
     if (demo && wide) y = Math.max(y, below);
     // The intro's Play is the biggest thing on the card; the "?" card has one small check.
     const play = this.intro ? 62 : 52;
+    // A stop card's row sits between the text and the buttons; it is never dropped or scaled.
+    const rowY = y + 18;
+    if (stops) y += STOP_ROW;
     const cardH = y + 24 + play * 2 + 18;
     const card = new Container();
     card.addChild(
@@ -266,6 +292,17 @@ export class HowToPanel extends Container {
       go.position.set(width / 2 + 62, y + 24 + play);
       back.position.set(width / 2 - 94, y + 24 + play);
       card.addChild(back, go);
+      if (stops) {
+        this.stopTiles = stops.tiles();
+        this.stopTiles.forEach((t, i) => {
+          t.position.set(32 + STOP / 2 + i * (STOP + STOP_GAP), rowY + SKIP / 2);
+          card.addChild(t);
+        });
+        const hop = hopIcon(ink);
+        this.skipButton = new RoundButton(hop, swatch.yellow, SKIP / 2, stops.skip);
+        this.skipButton.position.set(width - 32 - SKIP / 2, rowY + SKIP / 2);
+        card.addChild(this.skipButton);
+      }
     } else {
       const ok = new RoundButton(checkIcon(), swatch.green, play, this.close);
       ok.position.set(width / 2, y + 24 + play);
@@ -348,12 +385,22 @@ export class HowToPanel extends Container {
     const fit = ICON_BOX / Math.max(box.width, box.height, 1);
     icon.scale.set(fit);
     icon.position.set(32 + ICON_BOX / 2 - (box.x + box.width / 2) * fit, 20 + ICON_BOX / 2 - (box.y + box.height / 2) * fit);
+    const hear = this.intro!.hear;
+    const nodes: Container[] = [icon];
+    if (hear) {
+      // The picture's box takes the tap, so a small or oddly shaped icon is still a 100-unit target.
+      const spot = new Container();
+      spot.hitArea = new Rectangle(32, 20, ICON_BOX, ICON_BOX);
+      onTap(spot, () => { icon.scale.set(fit * 1.06); window.setTimeout(() => { if (!icon.destroyed) icon.scale.set(fit); }, 160); hear(); }, { cooldown: 400 });
+      nodes.push(spot);
+      this.titleSpot = spot;
+    }
     const label = new Text({ text: 'HOW TO PLAY', style: { fontFamily: FONT, fontSize: 13, fill: MUTED, fontWeight: '600' } });
     const title = new Text({ text: this.info.title, style: { fontFamily: FONT, fontSize: Math.round(34 * scale), fill: ink, fontWeight: '600', wordWrap: true, wordWrapWidth: width - 32 - ICON_BOX - 16 - 16 } });
     const x = 32 + ICON_BOX + 20;
     label.position.set(x, 20 + ICON_BOX / 2 - title.height / 2 - 20);
     title.position.set(x, 20 + ICON_BOX / 2 - title.height / 2);
-    return { nodes: [icon, label, title], bottom: 20 + ICON_BOX + 10 };
+    return { nodes: [...nodes, label, title], bottom: 20 + ICON_BOX + 10 };
   }
 }
 

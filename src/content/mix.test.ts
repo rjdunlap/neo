@@ -4,7 +4,7 @@ import { BANDS } from '../progress/bands';
 import { defaults } from '../progress/save';
 import { store } from '../progress/store';
 import { MixMemory } from '../app/discovery';
-import { endingLine, MIX_IDS, mixGames, nextUp, startMix, step, type MixState } from './mix';
+import { endingLine, MIX_IDS, mixGames, mixReturn, nextUp, startMix, step, type MixState } from './mix';
 
 const finishAt = (s: MixState, p: number, seed = 7) => {
   const launched = step(s, { type: 'launch', p });
@@ -112,5 +112,35 @@ describe('Little surprises session', () => {
     mix.finish(mix.launch(owner, 1)!, owner, 3);
     mix.end();
     expect(JSON.stringify(store.data)).toBe(before);
+  });
+});
+
+describe('Little surprises returns (D3)', () => {
+  const skip = (s: MixState, p: number) => step(s, { type: 'skip', p });
+  const gone = (s: MixState, p: number) => step(s, { type: 'unavailable', p });
+  it('with cards off is the sheet while a stop is upcoming, and the ending after', () => {
+    expect(mixReturn(startMix(), false)).toEqual({ kind: 'sheet' });
+    expect(mixReturn(finishAt(skip(startMix(), 0), 1), false)).toEqual({ kind: 'sheet' });
+    expect(mixReturn(finishAt(skip(gone(startMix(), 1), 0), 2), false)).toEqual({ kind: 'ending' });
+  });
+  it('with cards on is the next upcoming stop\'s card, past played, skipped and unavailable stops, then the ending', () => {
+    expect(mixReturn(startMix(), true)).toEqual({ kind: 'stop', p: 0 });
+    expect(mixReturn(finishAt(startMix(), 0), true)).toEqual({ kind: 'stop', p: 1 });
+    expect(mixReturn(skip(finishAt(startMix(), 0), 1), true)).toEqual({ kind: 'stop', p: 2 });
+    expect(mixReturn(gone(skip(startMix(), 0), 1), true)).toEqual({ kind: 'stop', p: 2 });
+    expect(mixReturn(finishAt(skip(finishAt(startMix(), 0), 1), 2), true)).toEqual({ kind: 'ending' });
+  });
+  it('never returns a played or skipped stop, and a second or stale skip from a card changes nothing', () => {
+    for (let mask = 0; mask < 27; mask++) {
+      let s = startMix();
+      [0, 1, 2].forEach((p) => { const k = Math.floor(mask / 3 ** p) % 3; if (k === 1) s = finishAt(s, p); if (k === 2) s = skip(s, p); });
+      const r = mixReturn(s, true);
+      if (r.kind === 'stop') expect(s.items[r.p].state).toBe('upcoming');
+      else expect(nextUp(s)).toBeNull();
+    }
+    const once = skip(startMix(), 1);
+    expect(skip(once, 1)).toBe(once);
+    const played = finishAt(startMix(), 1);
+    expect(skip(played, 1)).toBe(played);
   });
 });

@@ -17,9 +17,9 @@ import { SCRIPT, type LineId } from '../../content/voice-script';
 import { discoveryCandidates, suggestDiscovery } from '../../content/discovery';
 import { GAMES } from '../../games/registry';
 import { discoveryMemory, launchDiscovery, mixMemory, type MixRound } from '../discovery';
-import { mixGames, nextUp } from '../../content/mix';
+import { mixGames, mixReturn, nextUp } from '../../content/mix';
 import { titleOf } from '../mix';
-import { allDoneArt, hopIcon, nextStopArt } from '../../ui/mix';
+import { allDoneArt, hopIcon, nextStopArt, StopTile } from '../../ui/mix';
 import { DiscoveryTile, nextGameArt, anotherGameArt } from '../../ui/discovery';
 import { CouchInput, type CouchControls } from '../../engine/controller';
 import { nextSpot } from '../../couch/focus';
@@ -33,7 +33,7 @@ import type { Band } from '../../progress/bands';
 import { nextLevelOffer, stepLevel } from '../../progress/difficulty';
 import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
-import { HowToPanel, questionIcon } from '../../ui/howto-card';
+import { HowToPanel, questionIcon, type HowToIntro } from '../../ui/howto-card';
 import { discoveryPill } from '../../ui/journal-art';
 import { againIcon, basketIcon, checkIcon, heartIcon, houseIcon, nextIcon, treehouseIcon } from '../../ui/icons';
 import { FONT } from '../../ui/text';
@@ -70,6 +70,8 @@ export class GameScene extends Scene {
   readonly mixRound: MixRound | undefined = mixMemory.claim(store.data);
   /** Next stop (or All done) and Skip on a mix's result, in D1b's rectangles. */
   private mixControls: { tile: DiscoveryTile; skip: DiscoveryTile | null; next: number | null } | null = null;
+  /** Whether a stop card's row was last laid out (null: this intro has no row). */
+  private stopRow: boolean | null = null;
   private resultLayer: Container | null = null;
   private resultVeil: Graphics | null = null;
   private readonly resultPetOffset = { y: 300 };
@@ -210,7 +212,24 @@ export class GameScene extends Scene {
 
   enter() {
     if (this.game) this.begin();
+    else if (this.inMix()) void this.sayStop();
     else void voice.say(this.mod.titleLine);
+  }
+
+  /**
+   * A stop card's opening: the first stop from the mix spot offers the mix, a later one says "Next" with its title, and a hop
+   * from the card before it says so first. Nothing more is said once Play has built the round or she has gone.
+   */
+  private async sayStop() {
+    const round = this.mixRound!;
+    const state = mixMemory.live(store.data)?.state;
+    const still = () => !this.game && !this.gone && this.app.scene === this;
+    if (round.lead) { await voice.say(round.lead); if (!still()) return; }
+    const first = round.p === 0 && !!state?.items.every(i => i.state === 'upcoming');
+    if (first) {
+      await voice.say('mix.offer');
+      if (still()) void voice.say(this.mod.titleLine);
+    } else void voice.say('mix.next', { title: titleOf(this.mod) });
   }
 
   update(dt: number) {
@@ -219,6 +238,11 @@ export class GameScene extends Scene {
     this.inputInUse.sample(keys);
     this.drive(keys, dt, wasController);
     if (this.resultReady) { this.syncDiscovery(); this.syncMix(); }
+    // A stop card's row is for touch: a key or pad takes it off, and a touch puts it back.
+    if (this.helpCard && !this.game && this.stopRow !== null && this.stopRow !== (this.inputInUse.kind === 'touch')) {
+      this.stopRow = !this.stopRow;
+      this.helpCard.layout(this.view);
+    }
     // The how-to card holds the round still: nothing moves or counts while a grown-up reads (its demonstration, if any, plays on).
     if (this.helpCard) {
       this.helpCard.update(dt);
@@ -245,7 +269,7 @@ export class GameScene extends Scene {
       const intro = !this.game;
       if (!keys.players.some((p) => p.action || p.back || p.undo || p.direction >= 0)) return;
       if (intro && keys.players.some((p) => p.action)) this.playFromIntro();
-      else if (intro && keys.players.some((p) => p.back || p.undo)) this.leave();
+      else if (intro && keys.players.some((p) => p.back || p.undo)) this.backFromIntro();
       else if (intro && (lead.direction === 0 || lead.direction === 2)) this.stepIntroLevel(lead.direction === 0 ? 1 : -1);
       else if (!intro && keys.players.some((p) => p.action || p.back || p.undo)) this.closeHelp();
       return;
@@ -335,7 +359,8 @@ export class GameScene extends Scene {
     const suggested = store.levelFor(mod.id, range, mod.entryLevels);
     const pinned = store.data.games[mod.id]?.pinned ?? null;
     const pick = range.max > range.min ? { range, step: (delta: 1 | -1) => this.stepIntroLevel(delta), suggested, pinned } : undefined;
-    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.leave(), demo, pick, levelCard: mod.levelCard });
+    const hear = () => { voice.stop(); void voice.say(mod.titleLine); };
+    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.backFromIntro(), hear, demo, pick, levelCard: mod.levelCard, stops: this.stopRowFor() });
     // The bot's sounds sit lower behind the spoken title; the card gives them back when it closes.
     if (demo) audio.hush(true);
     // The loop that follows her in from the place would sit under a demonstration of making music; `begin` plays the same style later.
@@ -387,8 +412,28 @@ export class GameScene extends Scene {
     this.navigateResult(() => this.goHome());
   }
 
-  /** Back to where she came from (a land, a place, the journal), to its story's scene for a story round, or else to her home spot. */
+  /** The intro's Back. On a stop card it is the mix's Explore: the mix ends and she stays on the home spot with no sheet. */
+  private backFromIntro() {
+    const session = this.mixSession();
+    if (!session) return this.leave();
+    this.navigateResult(() => {
+      mixMemory.end(); // before the route: the home spot would otherwise hold the live mix
+      this.app.go.place(session.place);
+    });
+  }
+
+  /**
+   * Back to where she came from (a land, a place, the journal), to its story's scene for a story round, or else to her home spot.
+   * Inside a mix with cards on, the round's Home and the result's Home go on to the next-up stop's card instead, or to the ending.
+   */
   private goHome() {
+    const session = this.mixSession();
+    if (session) {
+      const r = mixReturn(session.state, store.data.settings.howToCards);
+      if (r.kind === 'stop' && session.mods) this.openStop(session.place, r.p);
+      else this.app.go.place(session.place);
+      return;
+    }
     if (this.story?.story === 'woodland') this.app.go.woodland(this.story.step);
     else if (this.story) this.app.go.picnic(this.story.step);
     else goToOrigin(this.app.go, this.origin, () => this.app.go.place(store.data.profile.band));
@@ -756,9 +801,52 @@ export class GameScene extends Scene {
       void this.queueMix('mix.changed');
       return;
     }
+    this.navigateResult(() => this.openStop(place, p));
+  }
+
+  /** A new round at stop `p`, opened on its card (with cards on): already checked, and inside a latched navigation. */
+  private openStop(place: Band, p: number, lead?: MixRound['lead']) {
+    const mod = this.mixSession()?.mods?.[p];
+    if (!mod) return this.app.go.place(place);
+    mixMemory.launch(store.data, p, lead);
+    this.app.go.game(mod.id, store.data.profile.band, undefined, false, { place });
+  }
+
+  /** The stop row for this card: only on the intro of a live mix stop, and only while the input in use is touch. */
+  private stopRowFor(): HowToIntro['stops'] {
+    const session = this.mixSession();
+    const mods = session?.mods;
+    if (!session || !mods) return undefined;
+    this.stopRow = this.inputInUse.kind === 'touch';
+    return {
+      shown: () => this.inputInUse.kind === 'touch' && this.inMix(),
+      tiles: () => {
+        const state = this.mixSession()?.state ?? session.state;
+        const next = this.mixRound!.p;
+        return mods.map((mod, p) => new StopTile(mod, state.items[p], p === next, () => this.hearStop(p), 100));
+      },
+      skip: () => this.skipFromCard(),
+    };
+  }
+
+  /** A stop tile on the card says its title and never launches. */
+  private hearStop(p: number) {
+    const mods = this.mixSession()?.mods;
+    if (!mods || this.game) return;
+    voice.stop();
+    void voice.say('mix.stop', { title: titleOf(mods[p]) });
+  }
+
+  /** Skip on a stop card: the shown stop is hopped over once, then the next stop's card, or the ending on the home spot. */
+  private skipFromCard() {
+    const session = this.mixSession();
+    const p = this.mixRound?.p;
+    if (!session || p === undefined || this.game || this.navigating || session.state.items[p]?.state !== 'upcoming') return;
+    const after = mixMemory.apply(store.data, { type: 'skip', p })!;
+    const r = mixReturn(after, true);
     this.navigateResult(() => {
-      mixMemory.launch(store.data, p);
-      this.app.go.game(mod.id, store.data.profile.band, undefined, false, { place });
+      if (r.kind === 'stop' && session.mods) this.openStop(session.place, r.p, 'mix.skip');
+      else this.app.go.place(session.place); // the home spot opens the ending and says it
     });
   }
 
