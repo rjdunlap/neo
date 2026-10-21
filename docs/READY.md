@@ -10,14 +10,14 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`fill-dump`, level 7 Which holds more?** (new interaction; level 6 *Full and empty* has landed): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
 - **`roundup`, level 8 *Make it fair*, slice 6** (new levels): pre-K 3–8, equal shares between two pens, with a seesaw sound. [Dive](deep-dives/roundup.md#new-levels-on-top)
 - **`roundup`, level 9 *Fill it up*, slice 7** (new levels): pre-K 3–9. [Dive](deep-dives/roundup.md#new-levels-on-top)
+- **`roundup`, level 12 *Big and little*, slice 8** (new levels, plus a portrait screenshot): pre-K `order [3, 4, 5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/roundup.md#new-levels-on-top)
+- **`roundup`, two shepherds, slice 9** (existing-game interaction change): every active pointer repels, palm rejection kept, both rings drawn; the card's co-play line becomes a role. [Dive](deep-dives/roundup.md#build-slices-in-order)
 
 
 ## Queued
 
 - **Rework RW05 slice 2b, Splish Splash and Weather Wardrobe on `CompanionRig`, then drop `ctx.petSpec`** (status `decision`; waiting on the [misfit decision](WAITING-ON-DEVELOPER.md#decisions-that-block-work), so no routine picks it up; shell tier plus one filtered regression and `fingerdemo` per game): slice 2 landed in part in [#642](https://github.com/rjdunlap/neo/pull/642) with the other eight large-pet games. [Packet](rework/CREATURE-COLLECTION.md#built-slice-2-in-part-2026-10-20)
 
-- **`roundup`, level 12 *Big and little*, slice 8** (new levels, plus a portrait screenshot): pre-K `order [3, 4, 5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/roundup.md#new-levels-on-top)
-- **`roundup`, two shepherds, slice 9** (existing-game interaction change): every active pointer repels, palm rejection kept, both rings drawn; the card's co-play line becomes a role. [Dive](deep-dives/roundup.md#build-slices-in-order)
 
 - **`little-conductor`, build level 3 *Two pictured requests* (music M3)** (new-interaction tier): a listener's sign asks for turtle or rabbit per half of the tune, a pad tap auditions, Check submits, a wrong Check names the requested pace, two misses glow the pad once per phrase. [Definition](definitions/little-conductor.md)
 
@@ -105,7 +105,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`who-am-i`, build levels 1–3 (Z2 art move, then Z3)** (new-game tier): tap the friend a picture clue fits (level 1), turn over every friend each clue rules out until one jumps out (levels 2–3); a reviewed trait table (developer review per decision 1), pre-K 1–2 and school 2–3, Barnyard by default; Z2 first moves penguin, frog, turtle and fish drawings to `src/art/`. [Definition](definitions/who-am-i.md)
 - **`species-comeback`, build levels 1–3** (new-game tier): tap two turtles on a family tree into a nest with no brothers and sisters together (level 1), nor cousins (level 2), press Spring for hatchlings, then pick the release site that has every need on the card (level 3); an exact matching solver with at least two valid plans per round, undo and a blocking-nest hint, invented pond turtles, Lantern Lake `grownup` 1–3 by default (level 4, two keeper plans with a note and reason cards, is the next slice); the needs card and recovery lines reviewed per decision 1. [Definition](definitions/species-comeback.md)
 
-- **`draw-the-pattern`, build levels 1–8** (new-game tier): the pet starts a line or pattern on a long strip with a crayon and she carries on from the green ring; free marks at 1, a long line and short down-lines at 2, zigzag and wave at 3, a circle either way and loops at 4, the dashes fade to stepping stones at 5, cross, square and triangle at 6, then AB and AAB/ABB stroke patterns with two faint candidates at 7–8; Letter Trails' tracer, one stray per drag a miss, glow after two, no clock; lap–pre-K, Paint Pier. [Definition](definitions/draw-the-pattern.md) Claimed: branch `claude/draw-the-pattern` (2026-10-21).
 
 - **`little-helpers`, the badge fills, needs vary, level 2 opens to lap** (existing-game change, levels 2–6): rings fill as helpers grab on, the gap named at 5, no 1, 2, 1, 2 rounds, lap window 1–2. [Slice 2](deep-dives/little-helpers.md#fresh-content-inside-existing-levels)
 - **`little-helpers`, things to carry and three places** (content): pumpkin, watermelon, acorn, pinecone, toy boat; orchard, beach and woods. [Slice 3](deep-dives/little-helpers.md#fresh-content-inside-existing-levels)

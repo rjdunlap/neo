@@ -7,7 +7,7 @@
 
 ### Roundup slice 3, Level 10 Shoo one (2026-10-20)
 
-[PR #686](https://github.com/rjdunlap/neo/pull/686): two successive single-animal successes, one loose animal at a time near an 80%-open gate, ordinary flee steering, fresh 10/20-second glow/trot-home support (one hint each), zero misses, one round/sticker. Toddler order `[1,10,2,3]`, `entryLevels: [10]`; other bands and IDs unchanged. Singular spoken instruction and level-scoped how-to. Level 11 and other slices remain open. [Verification](../VERIFICATION.md#2026-10-20--roundup-level-10-shoo-one-slice-3).
+[PR #686](https://github.com/rjdunlap/neo/pull/686): two successive single-animal successes, one loose animal at a time near an 80%-open gate, ordinary flee steering, fresh 10/20-second glow/trot-home support (one hint each), zero misses, one round/sticker. Toddler order `[1,10,2,3]`, `entryLevels: [10]`; other bands and IDs unchanged. Singular spoken instruction and level-scoped how-to. Level 11 and other slices remain open. [Verification](VERIFICATION-2026-10-20.md#2026-10-20--roundup-level-10-shoo-one-slice-3).
 
 
 ### Discovery D2b, the Little surprises mix (2026-10-20)
@@ -1379,3 +1379,13 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--cut-along-levels-18)
 ## Little Helpers: every touch answers and the empty crowd shrugs, slice 1 (2026-10-21)
 
 [PR #703](https://github.com/rjdunlap/neo/pull/703), `claude/little-helpers-every-touch` ([deep dive](../deep-dives/little-helpers.md#build-slices-in-order), gaps 1, 6, 7). A full-screen `field` layer behind the fruit, helpers and whistle sends a helper at level 1; a tap on a waiting helper sends too. While busy (fruit dropping, lifting, praise) any touch makes the nearest helper hop and squeak; at levels 2-6 a sky or grass tap makes the nearest waiting helper wave and chirp. A fruit tap with no helpers left makes the crowd shrug and the pet say `helpers.busy` instead of a boing (never a miss). A whistle with nobody sent is a nudge (`helpers.whistle.empty`), not a miss (decision 2's default). Every fruit of a bunch now goes into the basket (`pileSpot` rows inside the rim). `logic.ts` gained `fieldTouch`, `whistleFor`/`whistleMisses`, `pileSpot` and `BASKET_HALF` with three rule tests; the how-to level-1 step reads "Tap anywhere and a helper runs to carry the fruit home." with notes that every touch is answered and from level 3 only a wrong-team whistle counts. `scripts/browser-check.mjs`: the `batch` helpers case taps the sky at level 1, touches while busy, taps the whistle with nobody sent and the grass (no miss); `woods` helpers level 6 waits for every bunch fruit in the basket. Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--little-helpers-every-touch-answers-slice-1).
+
+## Draw the Pattern levels 1–8 (2026-10-21)
+
+[PR #704](https://github.com/rjdunlap/neo/pull/704), `claude/draw-the-pattern`, built from its [definition](../definitions/draw-the-pattern.md). New game `draw-the-pattern` in Painted Canyon (6 games, land id `treehouse`, decision 1's default), skills fine-motor, patterns and spatial reasoning, music `STYLES.paint`; lap 1–2, toddler 1–3, preschool 3–5, pre-K 5–8, no school level; nothing saved. Rules in `logic.ts` (27 tests); voice lines `game.draw-the-pattern` and `draw.*`; how-to card with a ghost-finger demonstration; browser case `drawpattern`. Deviations from the definition: levels 7–8 candidate pairs are all one-up, one-down (hill/dip, peak/valley, peak/dip, hill/valley) with units 3.2/7 and 3.2/9 wide; loops roll 0.72 wide and a loop strip is four loops with the pet drawing one at levels 4 and 5; the pet's part is the crayon moving by itself, the circle and shapes have none (first stroke shown faintly), and replaying it is a tap on the picture; undecided ways wait at the last common checkpoint (`forkOf`). Shared change: `canyonPlan` in `src/app/scenes/canyon.ts` tries a 0.75-size spring when the full spring finds no room (toddler landscape with six games), covered by `canyon.test.ts`, not visually checked.
+
+Idea row moved here from the notebook's candidates:
+
+| **Draw the Pattern / lap–pre-K** (pre-writing strokes: line, circle, cross, square, triangle; opened 2026-10-18) | The pet draws a zigzag, wave or loop-the-loop and she continues it; lines first, then circles and crosses. A pattern-continuation mode (hill, dip, hill, dip) links to Pattern Train | Built, see the section above | S–M |
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--draw-the-pattern-levels-18).
