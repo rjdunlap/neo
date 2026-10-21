@@ -348,17 +348,14 @@ function segDist(p: Point, a: Point, b: Point): number {
   return Math.hypot(p[0] - a[0] - dx * t, p[1] - a[1] - dy * t);
 }
 
-/** The last shared checkpoint while undecided: the index before either order is 1.5 corridors from the other. */
+/**
+ * The last checkpoint the two ways share while undecided: past it, the same index on the two paths is more than a corridor
+ * apart, so the crayon would wait somewhere one of them does not go. (Two candidates are sampled to different lengths.)
+ */
 export function forkOf(stroke: Stroke, tol: number): number {
   if (stroke.orders.length === 1) return stroke.orders[0].length - 1;
-  const n = Math.min(stroke.orders[0].length, stroke.orders[1].length);
-  const start = stroke.orders[0][0];
-  for (let i = 0; i < n; i++) {
-    const out = stroke.right === undefined
-      ? Math.hypot(stroke.orders[0][i][0] - start[0], stroke.orders[0][i][1] - start[1]) > 1.5 * tol
-      : apart(stroke, 0, i) > 1.5 * tol || apart(stroke, 1, i) > 1.5 * tol;
-    if (out) return Math.max(0, i - 1);
-  }
+  const [a, b] = stroke.orders, n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i++) if (Math.hypot(a[i][0] - b[i][0], a[i][1] - b[i][1]) > tol) return Math.max(0, i - 1);
   return n - 1;
 }
 

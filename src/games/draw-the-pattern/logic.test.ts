@@ -235,6 +235,25 @@ describe('Draw the Pattern ladder', () => {
     }
   });
 
+  it('waits, while undecided, where both ways still are: a carried-on drag never leaves the crayon off either path', () => {
+    for (const l of [4, 7, 8]) {
+      for (const seed of SEEDS.slice(0, 20)) {
+        for (const s of hers(l, seed).filter((x) => x.orders.length === 2)) {
+          const tol = tolerance(l), start = s.orders[0][0];
+          // A finger resting where the last unit ended, then nudged along either way by less than the fork.
+          for (const o of [0, 1]) {
+            let order: number | null = null, progress = 0, prev = start;
+            for (const to of s.orders[o].slice(1, 12)) {
+              const next = chooseOrder(s, order, progress, prev, to, tol);
+              order = next.order; progress = next.progress; prev = to;
+              if (order === null) expect(dist(s.orders[0][progress], s.orders[1][progress])).toBeLessThanOrEqual(tol);
+            }
+          }
+        }
+      }
+    }
+  });
+
   it('counts a wrong candidate only four checkpoints past its divergence', () => {
     for (const seed of SEEDS.slice(0, 10)) {
       for (const s of hers(7, seed).filter((x) => x.right !== undefined)) {

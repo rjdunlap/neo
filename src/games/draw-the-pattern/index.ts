@@ -39,7 +39,8 @@ function slotsFor(level: number, strips: readonly Strip[]): Slot[] {
     sun: { x: 0.62, y: 0.06, w: 0.3, h: 0.3 }, sheep: { x: 0.04, y: 0.58, w: 0.92, h: 0.3 },
     bridge: { x: 0.04, y: 0.5, w: 0.92, h: 0.3 }, bunting: { x: 0.04, y: 0.08, w: 0.92, h: 0.2 },
   };
-  return strips.map((s, i) => at[s.piece] ?? (i === 0 ? top : low));
+  // Level 5's two strips, whatever they are, stack one above the other.
+  return strips.map((s, i) => (l === 5 ? undefined : at[s.piece]) ?? (i === 0 ? top : low));
 }
 
 /** Map strip points into a slot (the stroke's own bounds stretched to the slot). */
@@ -258,6 +259,8 @@ class DrawThePattern implements Game {
   private pts(p: Point): [number, number] { return [p[0] * this.s, p[1] * this.s]; }
 
   private drawPaper() {
+    // A finished round can still be resized (the device turns while the picture shows).
+    if (!this.strip) return;
     const s = this.s, g = this.sheetG.clear(), c = swatch[this.paperColor];
     g.roundRect(0, 0, STRIP_W * s, s, 14).fill(c.light).stroke({ width: 4, color: c.line });
     // A curl at each end: the strip is a paper banner.
