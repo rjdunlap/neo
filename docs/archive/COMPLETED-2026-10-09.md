@@ -1468,7 +1468,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-21.md#2026-10-21--fluffy-salon
 
 Build-time decisions: the idle turtle-pad pulse is off at level 3 (it would point at an answer the sign may not ask for); `restart()` (Start again) is not implemented because `pauseLabels` shows no restart label on a child band, so it is not surfaced. The bot (`signBot`) reads the sign, taps that pad, waits for the audition and taps Check. The `conductor` browser suite defaults to levels 1,2,3 with a `CONDUCTOR_LEVELS` filter; level 3 runs in portrait (768×1024).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--little-conductor-level-3-two-pictured-requests-music-m3).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-21.md#2026-10-21--little-conductor-level-3-two-pictured-requests-music-m3).
 
 ### Discovery D5a, Make my mix (2026-10-21)
 

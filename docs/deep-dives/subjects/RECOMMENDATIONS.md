@@ -56,6 +56,20 @@ The definition packets recommended by the [subject studies](../subjects.md), one
 
 [Ordered slices](inquiry.md#build-slices-in-order) separate definitions and builds. Source-access gaps, child/device understanding, older appeal and transfer remain open. No game, tests, build, browser checks, save system or zone was added; docs links/diff only. Definitions do not claim deterministic repeated rolls teach measurement uncertainty.
 
+## Fractions recommendations
+
+**Recommended 2026-10-16:** [the fractions study](fractions.md), [PR #480](https://github.com/rjdunlap/neo/pull/480), follows the [standards audit](standards-audit.md#order-non-binding)'s wave E and answers for lap through parents. Opened CCSS geometry/fractions/number-system anchors, IES guidance, six digital references and a physical discussion practice. **Define Ribbon Workshop first** for composing/exchanging lengths. These are research proposals and docs-first definitions, with no change to the ready-build queue.
+
+| Candidate | Status | Next complete definition |
+| --- | --- | --- |
+| **Ribbon Workshop** · school first, pre-K trial | define first · R1 | Freeze proposed 2–4: make a whole, a half by equivalent pieces, and three quarters; exact reference unit/trays/solutions, exchange/undo, deliberate Check misses and useful help, supported finish, 100-unit selectable rows, speech/how-to/ghost finger. Recheck Inchworm Measure/Pet Kitchen identity; settle bands/land fit. Creative preschool entry remains a separate adaptation decision |
+| **Fraction Landings** · school–upper school | define within Frog Hop · R3 | One half/quarter 0–1 case, then 0–2 and equivalent jump plans; preserve current IDs/pins, coordinate its own deep dive, keep intervals and whole unit visible. No new hopping registration |
+| **Whole Switch** · upper school–parent | define workshop case · R4 | Fixed 6-unit ribbon with 12/24-unit reference frames; half/quarter claims depend on the active whole. Physical length stays fixed; comparisons and edits free |
+| **Ribbon Cases** · upper school–parent | define older case · R5 | Two three-quarter requests, stock one half/four quarters; enumerate alternate allocations, undo, residual-stock help and a solvable changed-request case. Supplies reset each round; older registration/placement unresolved |
+| **Window Mosaic / How Many Pieces Fit?** | later definitions · R6–R7 | One 4×4 equal-area window with eight colored cells, after existing-art-game overlap audit; then a 3/4 length measured with 1/2-length pieces, with quotient 1 1/2 and explicit units. Review area/division language before build; no arbitrary polygon engine |
+
+Lap keeps cause-and-effect play; toddler sharing stays Pet Kitchen. Same-share matching and equivalent measures use Memory Match/Pet Kitchen's existing packets. **One whole, many ways** is a later plain-HTML discussion-card definition. The [ordered slices](fractions.md#build-slices-in-order) separate definitions from implementations. Actual ranges, creative adaptation and destination capacity remain open; no new band, zone or save schema. Sources support curriculum relevance, not toddler mastery, teen/parent appeal or learning transfer. Docs use links/diff checks; eventual builds use the actual interaction tier.
+
 ## Zoo animals recommendations
 
 **Recommended 2026-10-16:** [the zoo-animals study](zoo-animals.md) answers for lap through parents with opened NGSS (K-LS1-1, 2-LS4-1, 3-LS3-1, 3-LS4-3, MS-LS2-5) and England national-curriculum anchors, Smithsonian National Zoo enrichment and black-footed ferret pages, a children's bird-concepts study record, five digital references (two seen only through listings) and three physical or unplugged ones. **Define Who Am I? first**: clues narrow a gallery to one friend, teaching the vertebrate groups by features and the penguin and bat as surprises. Its first three levels reuse the eight critters, the owl and four drawings already inside games; the bat is the first new species. These are research proposals and docs-first definitions, with no game, art, band or zone built and no change to the ready-build queue.
