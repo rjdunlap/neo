@@ -221,3 +221,10 @@
 - Ran `npm run typecheck` (clean) and full `npm test` (183 files, 1730 tests pass; 13 new domino-run rule tests: the tipping rule, the authored first lines' exact solutions, 500 seeds across the 8 plans never using the fallback, hint-following from every placement state, layout at four views). `npm run build` passed.
 - `BROWSER_SUITE=dominorun` (Vite http://localhost:5209) passed: level 1 by taps, level 8 with a stalled run (0 misses), one requested hint, drags, and a level 5 portrait screenshot (`test-results/browser/domino-run-5-portrait.png`). `BROWSER_SUITE=fingerdemo FINGER_ONLY=domino-run` passed at level 1 (toddler, 5.0 s) and level 8 (school, 13.6 s).
 - Not run: `world`, the offline check, an iPad. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a toddler finds tap-to-hop at level 2, whether the stall ring reads as "here is the gap", and whether three dot faces tell sizes apart on an iPad.
+
+## 2026-10-20 — Teddy Doctor: the whole patient counts (slice 1)
+
+- Built on `claude/teddy-doctor-support-truth` (PR #660, commit `427d63b3`, base `bf88b3d1`): at level 1 any touch on the patient bandages the nearest remaining boo-boo and the patient says the part (`doctor.patched`); how-to wording fixed (levels 2–3 drag, level 6 capped); `LEVELS` moved to `logic.ts`.
+- Ran `npm run typecheck` (clean); `npx vitest run src/games/teddy-doctor src/content/howto.test.ts src/games/registry.test.ts` passed (new rules: every band's levels map to their own plan; the level-1 tap reaches a remaining boo-boo from anywhere on the body, all patients and subsets).
+- `BROWSER_SUITE=next NEXT_ONLY=doctor FROM_LEVEL=1` (Vite http://localhost:5464) passed levels 1–6, level 1 now also tapping the patient far from every boo-boo; `BROWSER_SUITE=fingerdemo FINGER_ONLY=teddy-doctor FINGER_LEVELS=1` passed (14.1 s).
+- Not run: `npm run build`, full `npm test`, `world`, the offline check, an iPad. Open: taps during the spoken line are still dropped (gated on V2's person check); on the last boo-boo two thank-yous can run back to back.

@@ -42,7 +42,7 @@ Each seeded round chooses a Meadow arch, Pond columns or Hive ring. Pond bumpers
 
 ### Song Maker
 
-*lap–school.* A looping grid of jelly beads; higher rows sound higher (pentatonic steps), and the playhead follows the music clock's beat (`music.beats()`). Free play at lap and toddler; then copying a song from shadow notes, then from a small card; continuing a repeating pattern (stairs, hops, zigzags); and finding a four-note tune by ear, where a wrong jelly is followed by the right note so the difference can be heard. A song from a free level with at least two lit jellies can be kept on the treehouse's tune plaque (the round finishes on its tap count either way); a copied song is not hers and is not offered. The background loop is silenced so the song is the only music; its clock keeps running at the game's tempo for the playhead.
+*lap–school.* A looping grid of jelly beads; higher rows sound higher (pentatonic steps), and the playhead follows the music clock's beat (`music.beats()`). Free play at lap and toddler; then copying a song from shadow notes, then from a small card; continuing a repeating pattern (level 6 has ten named shapes, such as stairs, hops, zigzags, an arch and a valley, and the pet says the shape's name aloud before play); and finding a four-note tune by ear, where a wrong jelly is followed by the right note so the difference can be heard. A song from a free level with at least two lit jellies can be kept on the treehouse's tune plaque (the round finishes on its tap count either way); a copied song is not hers and is not offered. The background loop is silenced so the song is the only music; its clock keeps running at the game's tempo for the playhead.
 
 ### Sound Garden
 
