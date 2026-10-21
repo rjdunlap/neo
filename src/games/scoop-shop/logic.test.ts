@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { complete, makeOrders, nextNeeded, PLANS, planFor, scoopToTake, tryScoop } from './logic';
+import { complete, CONE_KINDS, dressShop, makeOrders, nextNeeded, PLANS, planFor, scoopToTake, tryScoop, WINDOW_SCENES } from './logic';
 
 describe('Scoop Shop', () => {
   it('only orders flavors that are on the counter, in the sizes each level asks for', () => {
@@ -82,5 +82,25 @@ describe('Scoop Shop', () => {
         }
       }
     }
+  });
+
+  it('dresses every round with a window scene and a cone kind per customer, never the same kind twice in a row', () => {
+    const scenes = new Set<string>();
+    const kinds = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      for (const n of [2, 3, 7]) {
+        const { scene, cones } = dressShop(n, new Rng(seed));
+        expect(WINDOW_SCENES).toContain(scene);
+        expect(cones).toHaveLength(n);
+        cones.forEach((k, i) => {
+          expect(CONE_KINDS).toContain(k);
+          if (i > 0) expect(k, `seed ${seed}`).not.toBe(cones[i - 1]);
+        });
+        scenes.add(scene);
+        cones.forEach((k) => kinds.add(k));
+      }
+    }
+    expect(scenes.size).toBe(WINDOW_SCENES.length);
+    expect(kinds.size).toBe(CONE_KINDS.length);
   });
 });

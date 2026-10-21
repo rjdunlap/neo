@@ -10,8 +10,23 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
+import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { complete, makeOrders, nextNeeded, planFor, scoopToTake, tryScoop, type Order, type ScoopPlan } from './logic';
+import {
+  complete,
+  CONE_KINDS,
+  dressShop,
+  FLAVORS,
+  makeOrders,
+  nextNeeded,
+  planFor,
+  scoopToTake,
+  tryScoop,
+  type ConeKind,
+  type Order,
+  type ScoopPlan,
+  type WindowScene,
+} from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -24,7 +39,16 @@ const LEVELS: BandLevels = {
 
 const SCOOP_R = 34;
 const SCOOP_STEP = 44;
-const CUSTOMERS: CritterName[] = ['cat', 'dog', 'bear', 'bunny', 'pig', 'cow'];
+const CUSTOMERS: CritterName[] = ['cat', 'dog', 'bear', 'bunny', 'pig', 'cow', 'pip', 'duck'];
+/** The thank-you names the flavor on top: strawberry, mint, blueberry, lemon, chocolate, grape. */
+const YUM: Partial<Record<ColorName, LineId>> = {
+  pink: 'scoop.yum.pink',
+  green: 'scoop.yum.green',
+  blue: 'scoop.yum.blue',
+  yellow: 'scoop.yum.yellow',
+  brown: 'scoop.yum.brown',
+  purple: 'scoop.yum.purple',
+};
 const WAFFLE = { fill: 0xe8b46a, line: 0xb07a3a };
 
 /** One scoop of ice cream, with a drippy edge and a shine. */
@@ -49,6 +73,42 @@ function coneArt(scale = 1): Graphics {
   return g;
 }
 
+/** A paper cup with a fluted rim. Its top sits where a cone's does, so scoops stack the same. */
+function cupArt(scale = 1): Graphics {
+  const fill = swatch.blue.light;
+  const line = swatch.blue.line;
+  const g = new Graphics().poly([-38, 0, 38, 0, 28, 74, -28, 74]).fill(fill).stroke({ width: 5, color: line, join: 'round' });
+  for (const x of [-14, 0, 14]) g.moveTo(x * 1.4, 8).lineTo(x, 68);
+  g.stroke({ width: 3, color: line, alpha: 0.6 });
+  // The fluted rim: a row of little scallops along the top.
+  for (let i = 0; i < 6; i++) {
+    const x = -38 + 6.33 + i * 12.67;
+    g.moveTo(x - 6.33, 0).arc(x, 0, 6.33, Math.PI, 0);
+  }
+  g.fill(0xffffff).stroke({ width: 3, color: line });
+  g.scale.set(scale);
+  return g;
+}
+
+/** A wide, shallow waffle bowl with the cone's lattice. */
+function bowlArt(scale = 1): Graphics {
+  const pts: number[] = [];
+  for (let i = 0; i <= 16; i++) {
+    const a = (Math.PI * i) / 16;
+    pts.push(48 * Math.cos(a), 34 * Math.sin(a));
+  }
+  const g = new Graphics().poly(pts).fill(WAFFLE.fill).stroke({ width: 5, color: WAFFLE.line, join: 'round' });
+  for (const x of [-24, 0, 24]) g.moveTo(x - 12, 4).lineTo(x + 8, 30 - Math.abs(x) * 0.4);
+  for (const x of [-24, 0, 24]) g.moveTo(x + 12, 4).lineTo(x - 8, 30 - Math.abs(x) * 0.4);
+  g.moveTo(-40, 16).lineTo(40, 16);
+  g.stroke({ width: 3, color: WAFFLE.line });
+  g.ellipse(0, 0, 50, 7).fill(WAFFLE.fill).stroke({ width: 4, color: WAFFLE.line });
+  g.scale.set(scale);
+  return g;
+}
+
+const holderArt = (kind: ConeKind, scale = 1) => (kind === 'cup' ? cupArt(scale) : kind === 'bowl' ? bowlArt(scale) : coneArt(scale));
+
 /** A flavor tub on the counter, its ice cream heaped on top. */
 function tubArt(color: ColorName): Container {
   const c = new Container();
@@ -70,9 +130,9 @@ class Cone extends Container {
   readonly scoops = new Container();
   readonly colors: ColorName[] = [];
 
-  constructor() {
+  constructor(kind: ConeKind) {
     super();
-    this.addChild(coneArt(), this.scoops);
+    this.addChild(holderArt(kind), this.scoops);
   }
 
   /** Where the next scoop sits, in cone coordinates. */
@@ -116,12 +176,15 @@ class ScoopShop implements Game {
   private lastTalk = -10;
   private clock = 0;
   private readonly kinds: CritterName[];
+  private readonly scene: WindowScene;
+  private readonly cones: ConeKind[];
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     ({ flavors: this.flavors, orders: this.orders } = makeOrders(this.plan, ctx.rng));
     this.kinds = ctx.rng.shuffle([...CUSTOMERS]);
+    ({ scene: this.scene, cones: this.cones } = dressShop(this.plan.customers, ctx.rng));
     this.bubble.eventMode = 'none';
     ctx.stage.addChild(this.wall, this.room, this.people, this.counter, this.bubble, this.tubGlow);
     for (const color of this.flavors) {
@@ -160,12 +223,11 @@ class ScoopShop implements Game {
     this.wall.height = v.h;
     const top = this.counterTop;
     const r = this.room.clear();
-    // A striped awning and a window onto the beach.
+    // A striped awning and a window onto the round's scene.
     const stripes = Math.ceil(v.w / 80);
     for (let i = 0; i < stripes; i++) r.rect(i * 80, 0, 80, 64).fill(i % 2 ? 0xffffff : swatch.pink.fill);
     for (let i = 0; i < stripes; i++) r.circle(i * 80 + 40, 64, 40).fill(i % 2 ? 0xffffff : swatch.pink.fill);
-    r.roundRect(v.w * 0.5, 130, v.w * 0.4, top - 190, 18).fill(0xbfe6fb).stroke({ width: 8, color: 0xffffff });
-    r.rect(v.w * 0.5 + 4, top - 120, v.w * 0.4 - 8, 54).fill(0xf6dfb0);
+    this.drawWindow(r, v.w * 0.5, 130, v.w * 0.4, top - 190);
     const c = this.counter.clear();
     c.rect(0, top, v.w, v.h - top).fill(wood.fill);
     c.rect(0, top, v.w, 26).fill(wood.light).stroke({ width: 4, color: wood.line });
@@ -179,6 +241,47 @@ class ScoopShop implements Game {
     if (this.cone) this.cone.position.copyFrom(this.coneSpot());
     const cs = this.customerSpot();
     this.bubble.position.set(cs.x + 220, Math.max(top - 190, 280));
+  }
+
+  /** The window: the beach, a village street, or evening lanterns. Scenery only; it changes no rule. */
+  private drawWindow(r: Graphics, x: number, y: number, w: number, h: number) {
+    const evening = this.scene === 'lanterns';
+    r.roundRect(x, y, w, h, 18).fill(evening ? 0x4a4f8f : 0xbfe6fb);
+    if (this.scene === 'beach') {
+      r.rect(x + 4, y + h - 120, w - 8, 66).fill(0x7cc6ea);
+      r.rect(x + 4, y + h - 60, w - 8, 56).fill(0xf6dfb0);
+      r.circle(x + w - 60, y + 50, 26).fill(swatch.yellow.fill);
+    } else if (this.scene === 'street') {
+      const n = Math.max(2, Math.floor(w / 110));
+      const hw = (w - 30) / n;
+      const roofs: ColorName[] = ['red', 'blue', 'green', 'orange'];
+      for (let i = 0; i < n; i++) {
+        const hx = x + 15 + i * hw;
+        const hb = y + h - 40;
+        const ht = hb - Math.min(110, h * 0.45) - (i % 2) * 18;
+        r.rect(hx + 6, ht, hw - 12, hb - ht).fill(i % 2 ? 0xfff1d6 : 0xffe0e6).stroke({ width: 3, color: 0xc7a98a });
+        r.poly([hx, ht, hx + hw / 2, ht - 40, hx + hw, ht]).fill(swatch[roofs[i % roofs.length]].fill);
+        r.roundRect(hx + hw / 2 - 12, hb - 40, 24, 40, 8).fill(wood.fill);
+      }
+      r.rect(x + 4, y + h - 40, w - 8, 36).fill(0xd8d2c8);
+    } else {
+      r.circle(x + 50, y + 44, 20).fill(0xfff6c8);
+      r.circle(x + 58, y + 38, 18).fill(0x4a4f8f);
+      for (let i = 0; i < 18; i++) r.circle(x + 30 + ((i * 97) % (w - 60)), y + 24 + ((i * 53) % (h * 0.5)), 2.5).fill(0xffffff);
+      // A string of lanterns sagging across the window.
+      const sy = y + h * 0.42;
+      r.moveTo(x + 8, sy).quadraticCurveTo(x + w / 2, sy + 50, x + w - 8, sy).stroke({ width: 3, color: 0x2e3260 });
+      const colors: ColorName[] = ['red', 'yellow', 'orange', 'pink'];
+      for (let i = 1; i <= 4; i++) {
+        const t = i / 5;
+        const lx = x + 8 + (w - 16) * t;
+        const ly = sy + 100 * t * (1 - t) + 14;
+        r.circle(lx, ly, 26).fill({ color: 0xfff3a0, alpha: 0.25 });
+        r.roundRect(lx - 14, ly - 16, 28, 32, 10).fill(swatch[colors[i - 1]].fill);
+      }
+      r.rect(x + 4, y + h - 50, w - 8, 46).fill(0x2f6a4a);
+    }
+    r.roundRect(x, y, w, h, 18).stroke({ width: 8, color: 0xffffff });
   }
 
   update(dt: number) {
@@ -228,7 +331,7 @@ class ScoopShop implements Game {
     onTap(critter, () => (this.plan.mode === 'memory' ? void this.peek() : this.tapCustomer(critter)), { cooldown: 600 });
     critter.hitArea = new Circle(0, -150, 150);
 
-    const cone = new Cone();
+    const cone = new Cone(this.cones[this.customerIndex] ?? 'cone');
     onTap(cone, () => this.wobble(cone, 0.12), { cooldown: 300 });
     cone.hitArea = new Rectangle(-55, -230, 110, 330);
     const cs = this.coneSpot();
@@ -297,7 +400,7 @@ class ScoopShop implements Game {
       });
     } else {
       const mini = new Container();
-      mini.addChild(coneArt(0.6));
+      mini.addChild(holderArt(this.cones[this.customerIndex] ?? 'cone', 0.6));
       order.scoops.forEach((c, i) => {
         const s = scoopArt(c, 24);
         s.position.set(0, -8 - i * 32);
@@ -431,12 +534,21 @@ class ScoopShop implements Game {
     this.hidden = false;
     void tw.to(this.bubble.scale, { x: 0, y: 0 }, { duration: 0.25 });
     sfx.sparkle();
+    const top = cone.colors[cone.colors.length - 1];
     const mouth = { x: critter.x + 70, y: critter.y - 70 };
     this.ctx.stage.addChild(cone);
     // A wobble from a last tap stops here, and the cone stops taking touches so a poke at the eating customer reaches them.
     tw.kill(cone);
     cone.eventMode = 'none';
-    await tw.to(cone, { x: mouth.x, y: mouth.y + 40, rotation: -0.3 }, { duration: 0.6, ease: ease.inOutSine });
+    // As it slides over, the cone plays itself bottom to top: each scoop bobs and sings its tub's note.
+    const slide = tw.to(cone, { x: mouth.x, y: mouth.y + 40, rotation: -0.3 }, { duration: 0.6, ease: ease.inOutSine });
+    const scoops = [...cone.scoops.children];
+    for (const [i, s] of scoops.entries()) {
+      sfx.pop(5 + this.flavors.indexOf(cone.colors[i]));
+      void tw.to(s.scale, { x: 1.18, y: 1.18 }, { duration: 0.07 }).then(() => tw.to(s.scale, { x: 1, y: 1 }, { duration: 0.1 }));
+      await tw.wait(Math.min(0.2, 0.75 / scoops.length));
+    }
+    await slide;
     for (const s of [...cone.scoops.children].reverse()) {
       sfx.munch();
       critter.poke();
@@ -450,7 +562,7 @@ class ScoopShop implements Game {
     this.cone = null;
     critter.cheer();
     sfx.tada();
-    await this.ctx.say('scoop.yum');
+    await this.ctx.say((top && YUM[top]) || 'scoop.yum');
     await tw.to(critter, { x: this.view.w + 200 }, { duration: 0.9, ease: ease.inOutSine });
     this.ctx.untrack(critter);
     critter.destroy({ children: true });
@@ -487,11 +599,11 @@ class ShopIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const cone = coneArt(1.2);
+  const cone = holderArt(rng.pick(CONE_KINDS), 1.2);
   cone.y = -20;
   c.addChild(cone);
   rng
-    .shuffle(['pink', 'green', 'blue', 'yellow', 'brown', 'purple'] as ColorName[])
+    .shuffle([...FLAVORS])
     .slice(0, 3)
     .forEach((color, i) => {
       const s = scoopArt(color, 40);

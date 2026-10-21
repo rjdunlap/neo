@@ -79,6 +79,29 @@ export function makeOrders(plan: ScoopPlan, rng: Rng): { flavors: ColorName[]; o
   return { flavors, orders };
 }
 
+/** What each customer's ice cream comes in: a waffle cone, a paper cup or a waffle bowl. None changes a rule. */
+export type ConeKind = 'cone' | 'cup' | 'bowl';
+export const CONE_KINDS: ConeKind[] = ['cone', 'cup', 'bowl'];
+
+/** The view through the shop window, one per round. */
+export type WindowScene = 'beach' | 'street' | 'lanterns';
+export const WINDOW_SCENES: WindowScene[] = ['beach', 'street', 'lanterns'];
+
+/**
+ * A round's dressing, drawn after the orders so it never changes them: a window scene, and a cone kind for each
+ * customer, dealt from shuffled sets of all three so no two customers in a row get the same kind.
+ */
+export function dressShop(customers: number, rng: Rng): { scene: WindowScene; cones: ConeKind[] } {
+  const scene = rng.pick(WINDOW_SCENES);
+  const cones: ConeKind[] = [];
+  while (cones.length < customers) {
+    let deal = rng.shuffle([...CONE_KINDS]);
+    if (deal[0] === cones[cones.length - 1]) deal = [...deal.slice(1), deal[0]];
+    cones.push(...deal);
+  }
+  return { scene, cones: cones.slice(0, customers) };
+}
+
 export type AddResult = 'add' | 'wrong' | 'too-many';
 
 /** Should a scoop of `color` stay on a cone that already holds `cone`? */
