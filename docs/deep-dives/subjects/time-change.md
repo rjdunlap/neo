@@ -133,7 +133,7 @@ Six to eight pictures from the island's archive box, none dated. Clues overlap: 
 
 ## Attic Finds: a bounded follow-up
 
-**Developed 2026-10-16:** the [everyday-life study](daily-life-long-ago.md#first-games-proposed-ladder-attic-finds) supplies the inspection/function ladder, younger opening and older evidence cases. Its H1 consolidates this definition task; this remains one candidate, not a second game.
+**Developed 2026-10-16:** the [everyday-life study](daily-life-long-ago.md#first-games-proposed-ladder-attic-finds) supplies the inspection/function ladder, younger opening and older evidence cases. Its H1 consolidates this definition task; this remains one candidate, not a second game. **Built 2026-10-21** as `attic-finds` levels 1–2 ([definition](../../definitions/attic-finds.md), PR #693).
 
 A made-up island object (a butter churn-like crank, a pet-sized lantern, a hand-wound music box) sits in the treehouse attic. She turns it and taps three glowing spots (a handle worn shiny, a crank, a little door), each of which the pet describes. Then she picks which of three pictures shows it in use, and the object comes alive doing it. Guesses before the pick are exploration, not misses. It stays fictional until a reviewer approves real objects, and becomes a new game only if inspecting stays central.
 
