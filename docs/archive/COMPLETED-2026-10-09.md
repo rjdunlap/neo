@@ -1,6 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
 
+### Seesaw Balance level 11 Two boxes (2026-10-21)
+
+[PR #710](https://github.com/rjdunlap/neo/pull/710), from the [definition](../definitions/seesaw-two-boxes.md): `PLANS[10]` mode `pair`, two pairs, each a `read` round (the square box alone against `s` blocks; the right pad tags it) and a `pair` round (the tagged square box, the round orange box (`r` not `s`) and `k` blocks against `s+r+k` blocks). `progress(before, after)` classes each change as level, closer or tip; a closer is free and resets the tips, the square box leaving says `seesaw.swap-tipped`, two tips give one glow per pair (`pairHint`, 1 hint), the round box wiggles and says `seesaw.round-stays` (free). Only the number pads miss; the round answer writes its number on the round box only. Seven new voice lines; the how-to level 10 line is bounded and a level 11 line added. Deviations: the finger's sequence is k × (tip, level), the square-box tip, s−1 closers, level (the definition's "exactly one tip" contradicted its own rule); a change counter judges a quick burst of moves once, at level 11 only. [Verification](../VERIFICATION.md#2026-10-21--seesaw-balance-level-11-two-boxes).
+
+
 ### Roundup slice 4, Level 11 Come along (2026-10-20)
 
 [PR #688](https://github.com/rjdunlap/neo/pull/688): the `follow` mode (`COME_ALONG` in `logic.ts`). Three animals of one kind gather to a finger (follow speed 0 inside an 85-unit ring, capped at 190, under the 330 flee speed; shared `spreadApart` 70-unit spacing) and are led through an 80% gate into one pen, in any order; no misses. "The {animals} want to follow you! Lead them to the pen." Fifteen seconds without an animal getting home make the herd glow and drift toward the gate for the rest of the round (one hint, counted once); the thirty-second trot-home stays as a safety (another hint). `leadGoal` leads to the gate mouth, then inside. Lap `order [1, 11]`, toddler `order [1, 11, 10, 2, 3]`, `entryLevels: [10, 11]`; preschool and pre-K unchanged. Level-scoped how-to lines; the co-play tip now suits every level; the ghost-finger bot leads from 160 units in front. Browser harness `launch()` takes a band; `ARCADE_LEVELS=11` plays lap (led) and toddler (idle, drift). [Verification](VERIFICATION-2026-10-21.md#2026-10-21--roundup-level-11-come-along-slice-4).

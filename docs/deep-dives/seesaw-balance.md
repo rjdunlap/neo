@@ -1,6 +1,6 @@
 # Seesaw Balance deep dive
 
-*ID `seesaw-balance` · bands toddler, preschool, pre-K, school · levels 1–10 built and 11 defined on 2026-10-19 · session `claude/dive-seesaw-balance-finish` ([PR #619](https://github.com/rjdunlap/neo/pull/619), resuming the claim in [PR #602](https://github.com/rjdunlap/neo/pull/602))*
+*ID `seesaw-balance` · bands toddler, preschool, pre-K, school · levels 1–11 built (11 defined on 2026-10-19, built 2026-10-21) · session `claude/dive-seesaw-balance-finish` ([PR #619](https://github.com/rjdunlap/neo/pull/619), resuming the claim in [PR #602](https://github.com/rjdunlap/neo/pull/602))*
 
 Audited `src/games/seesaw-balance/index.ts`, `logic.ts` and `logic.test.ts` on `4fd0dc8c`, the [GAMES.md](../GAMES.md#seesaw-balance) entry, the how-to card, the voice lines, the journal entries, the Woodland Picnic's use of level 7, the [level 11 definition](../definitions/seesaw-two-boxes.md) and every notebook and audit mention. Nothing under `src/` changed.
 
@@ -20,7 +20,7 @@ A springy seesaw with a level tray at each end, so only weight matters and never
 | 8 | The box alone | `same`, 3 rounds | school | Starts level: a box and `k` blocks against `m + k` blocks. Anything comes off. A tip is spoken and never a miss; two tips in a row glow the thing whose twin should come off (a hint). Box alone and level: say its weight. |
 | 9 | Boxes on both sides | `same` with two boxes, 3 rounds | school | As 8 with a box on each tray: a box for a box, a block for a block. |
 | 10 | Share the blocks | `share`, 3 rounds | school | Three boxes and `k` blocks against one box and `2m + k` blocks. Take the same off both sides, then share the remaining blocks between two boxes. |
-| 11 | Two boxes (*defined, not built*) | `pair`, 2 pairs | school | Read the square box's weight, then take the same off both sides with the tagged box worth its number until the round box is alone. [Definition](../definitions/seesaw-two-boxes.md), on the ready list. |
+| 11 | Two boxes (*built 2026-10-21*) | `pair`, 2 pairs | school | Read the square box's weight, then take the same off both sides with the tagged box worth its number until the round box is alone. [Definition](../definitions/seesaw-two-boxes.md); built in [PR #710](https://github.com/rjdunlap/neo/pull/710). |
 
 Windows: toddler 1–2, preschool 2–4, pre-K 3–7, school 6–10 (6–11 once level 11 lands). Two smooth rounds step up, two struggles step down, as everywhere.
 
@@ -131,7 +131,7 @@ Each has a default below; the build proceeds on it.
 7. **Level 16 *How much heavier?*** (new levels tier): school `order [6, 7, 15, 16, 8, 9, 10, 11]`.
 8. **Level 17 *Which way will it tip?*** (new interaction tier: typecheck, rule tests over 300 seeds, one play of 17 with a wrong prediction, one portrait screenshot, `fingerdemo` at 17): school `order [6, 7, 15, 16, 17, 8, 9, 10, 11]`.
 
-Level 11 *Two boxes* keeps its own ready line from its [definition](../definitions/seesaw-two-boxes.md) and can be built before or after any slice here. Each slice that touches `voice-script.ts` or `howto.ts` runs `npm run build`. Gated: nothing; every decision above has a default.
+Level 11 *Two boxes* is built from its [definition](../definitions/seesaw-two-boxes.md) (2026-10-21). Each slice that touches `voice-script.ts` or `howto.ts` runs `npm run build`. Gated: nothing; every decision above has a default.
 
 ## What was built in this session
 
