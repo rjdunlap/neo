@@ -12,17 +12,16 @@ import { label } from '../../ui/text';
 import { RoundButton } from '../../ui/buttons';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { animalsFor, emptierPen, enter, fairBell, fairNeeds, fleeSpeed, FOLLOW_SPEED, followSpeed, inRect, leadGoal, makeHerd, PLACE, pensFull, planFor, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect } from './logic';
+import { animalsFor, emptierPen, enter, fairBell, fairNeeds, fleeSpeed, FOLLOW_SPEED, followSpeed, inRect, leadGoal, makeHerd, PLACE, pensFull, planFor, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect, type Size, sizeScale } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 11, order: [1, 11] },
   toddler: { min: 1, max: 11, order: [1, 11, 10, 2, 3] },
   preschool: { min: 2, max: 5 },
-  prek: { min: 3, max: 9 },
+  prek: { min: 3, max: 12, order: [3, 4, 5, 6, 7, 8, 9, 12] },
 };
 
-const SCALE = 0.32;
 /** How far from the finger animals start to scoot, and their top speed. */
 const SHOO_R = 190;
 /** Come along: once the drift has started, every loose animal ambles toward its gate this fast. */
@@ -40,6 +39,7 @@ const FLOORS: Record<Kind, { fill: number; dot: number }> = {
 };
 
 interface Animal {
+  size?: Size;
   kind: Kind;
   critter: Critter;
   glow: Graphics;
@@ -121,17 +121,18 @@ class Roundup implements Game {
       // Lap: a tap on the sign says who lives there. Never a miss or a hint.
       if (this.plan.mode === 'tap') onTap(view.sign, () => void this.ctx.say('herd.sign', { animals: PLURAL[pen.kind] }), { cooldown: 1200 });
     }
-    for (const kind of this.herd.animals) {
+    for (const [index, kind] of this.herd.animals.entries()) {
+      const size = this.herd.sizes?.[index];
+      const scale = sizeScale(size);
       const critter = new Critter(CRITTERS[kind]);
-      critter.scale.set(SCALE);
+      critter.scale.set(scale);
+      critter.hitArea = new Circle(0, -120, 85 / scale);
       const glow = new Graphics().ellipse(0, -6, 62, 26).fill({ color: 0xfff3a0, alpha: 0.85 });
       glow.visible = false;
       ctx.track(critter);
-      const a: Animal = { kind, critter, glow, vx: 0, vy: 0, wander: { x: 0, y: 0, next: 0 }, state: 'loose', pen: -1 };
+      const a: Animal = { kind, size, critter, glow, vx: 0, vy: 0, wander: { x: 0, y: 0, next: 0 }, state: 'loose', pen: -1 };
       if (this.plan.mode === 'tap') {
         onTap(critter, () => void this.hopIn(a), { cooldown: 400 });
-        // Hit areas are in body units (the critter is drawn at a third size): about 85 units round its middle.
-        critter.hitArea = new Circle(0, -120, 85 / SCALE);
       }
       if (this.plan.sequential && this.animals.length) {
         a.state = 'waiting';
@@ -192,6 +193,8 @@ class Roundup implements Game {
         return void this.ctx.instruct('herd.follow', { animals });
       case 'shoo':
         return void this.ctx.instruct(this.plan.sequential ? 'herd.shooone' : 'herd.shoo', this.plan.sequential ? { animal: a.kind } : { animals });
+      case 'size':
+        return void this.ctx.instruct('herd.size', { animals });
       case 'sort':
         return void this.ctx.instruct('herd.sort', { a: PLURAL[a.kind], b: PLURAL[b.kind], placeA: PLACE[a.kind], placeB: PLACE[b.kind] });
       case 'sortStay':
@@ -290,7 +293,7 @@ class Roundup implements Game {
     const board = new Graphics().roundRect(-bw / 2, -40, bw, 80, 16).fill(0xffffff).stroke({ width: 5, color: wood.line });
     const face = new Critter(CRITTERS[p.pen.kind]);
     face.alive = false;
-    face.scale.set(0.24);
+    face.scale.set(p.pen.size ? sizeScale(p.pen.size) * 0.75 : 0.24);
     face.position.set(counting ? -72 : 0, 34);
     p.sign.addChild(board, face);
     if (counting) {
@@ -426,7 +429,7 @@ class Roundup implements Game {
   private penFor(a: Animal): number {
     // Make it fair: either pen takes them; steering and help lean toward the emptier one.
     if (this.herd.fair) return emptierPen(this.pens.map((p) => p.inside));
-    return this.pens.findIndex((p) => p.pen.kind === a.kind && (usesBell(this.plan) || p.inside < wanted(this.herd, p.pen)));
+    return this.pens.findIndex((p) => enter(p.pen, a.kind, a.size) === 'in' && (usesBell(this.plan) || p.inside < wanted(this.herd, p.pen)));
   }
 
   private roam(a: Animal, dt: number, f: { x0: number; x1: number; y0: number; y1: number }) {
@@ -514,7 +517,7 @@ class Roundup implements Game {
     }
     c.position.set(to.x, to.y);
     const moving = Math.hypot(a.vx, a.vy);
-    if (Math.abs(a.vx) > 8) c.scale.x = SCALE * Math.sign(a.vx);
+    if (Math.abs(a.vx) > 8) c.scale.x = sizeScale(a.size) * Math.sign(a.vx);
     c.rotation = moving > 20 ? 0.12 * Math.sin(this.clock * 16 + a.wander.next) : c.rotation * 0.8;
   }
 
@@ -530,7 +533,7 @@ class Roundup implements Game {
     if (d > 4) {
       c.x += (dx / d) * WANDER_SPEED * dt;
       c.y += (dy / d) * WANDER_SPEED * dt;
-      c.scale.x = SCALE * Math.sign(dx || 1);
+      c.scale.x = sizeScale(a.size) * Math.sign(dx || 1);
     }
   }
 
@@ -553,7 +556,7 @@ class Roundup implements Game {
   /** Through the gate: in it goes, or back out it hops. */
   private arrive(a: Animal, i: number) {
     const p = this.pens[i];
-    const result = enter(p.pen, a.kind);
+    const result = enter(p.pen, a.kind, a.size);
     if (result === 'in') {
       void this.settle(a, i);
       return;
@@ -606,6 +609,7 @@ class Roundup implements Game {
     this.wrongs++;
     if (why === 'wrong-pen') {
       if (a.kind === this.herd.stay) void this.ctx.say('herd.stayout', { outsiders: PLURAL[a.kind] });
+      else if (p.pen.size) void this.ctx.say('herd.wrongsize', { size: p.pen.size, animals: PLURAL[p.pen.kind], needed: a.size! });
       else void this.ctx.say('herd.wrongpen', { pen: p.pen.kind });
     }
     if (this.wrongs >= 2 && !this.hinting) this.showHint();
@@ -699,6 +703,7 @@ class Roundup implements Game {
     this.hints++;
     this.wrongs = 0;
     this.hinting = true;
+    if (this.plan.mode === 'size') void this.ctx.say('herd.sizehint', { animals: PLURAL[this.herd.pens[0].kind] });
     // Come along: one hint starts a drift that lasts the rest of the round, rather than one per animal.
     if (this.plan.mode === 'follow') this.drifting = true;
     if (this.plan.prefilled && !this.busy) void this.countPen(0);
@@ -730,7 +735,7 @@ class Roundup implements Game {
     a.state = 'hopping';
     const r = this.pens[i].rect;
     const c = a.critter;
-    c.scale.x = SCALE;
+    c.scale.x = sizeScale(a.size);
     sfx.whoosh();
     await this.ctx.tw.to(c, { x: r.x - 40, y: r.y + r.h / 2 }, { duration: 0.6, ease: ease.inOutSine });
     await this.ctx.tw.to(c, { x: r.x + 70, y: r.y + r.h / 2 + 10 }, { duration: 0.4, ease: ease.outBack });
