@@ -1267,7 +1267,6 @@ export const SCRIPT = {
   'attic-finds.hint-watch': ['Watch the {mover} when the crank turns.'],
   'attic-finds.hint-glow': ['Turn it over. Something connects the crank to the {mover}.'],
   'attic-finds.done': ['Both attic finds are on the shelf. Crank, crank, bob!'],
-  'fossil-dig.intro': ['A dig on the cliff! Something is hiding in the dust.'],
   'fossil-dig.instruct-brush': ["Something's hiding under the dust. Brush it off!"],
   'fossil-dig.brush-first': ['Brush the dust off first. Rub the dusty stone!'],
   'fossil-dig.found': ['A leaf print! A leaf pressed into mud, and the mud became stone.'],

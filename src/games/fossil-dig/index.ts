@@ -139,6 +139,8 @@ class FossilDig implements Game {
   private wiggled = false;
   private t = 0;
   private destroyed = false;
+  /** Bumped by Start again, so a continuation from before it stops. */
+  private epoch = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -418,8 +420,9 @@ class FossilDig implements Game {
     sfx.marimba(9, 0.15);
     this.wave = 3;
     this.addTrace(this.printTrace, leafOutline(this.find), swatch.yellow.fill);
+    const epoch = this.epoch;
     await this.ctx.say('fossil-dig.found');
-    if (this.destroyed) return;
+    if (this.destroyed || epoch !== this.epoch) return;
     this.busy = false;
     if (stepOf(this.state) === 'where') void this.ctx.instruct('fossil-dig.instruct-where');
   }
@@ -445,8 +448,9 @@ class FossilDig implements Game {
       this.whereArt.scale.set(1.5);
       void this.ctx.tw.to(this.whereArt.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
       this.busy = true;
+      const epoch = this.epoch;
       await this.ctx.say('fossil-dig.where-recorded', { flag: flag.name });
-      if (this.destroyed) return;
+      if (this.destroyed || epoch !== this.epoch) return;
       this.busy = false;
       void this.ctx.instruct(this.plan.id === 1 ? 'fossil-dig.instruct-shape' : 'fossil-dig.instruct-edge');
       return;
@@ -455,8 +459,9 @@ class FossilDig implements Game {
     this.wiggle(node);
     this.emptyFlash = { site, t: 0 };
     this.busy = true;
+    const epoch = this.epoch;
     await this.ctx.say('fossil-dig.wrong-flag', { flag: flag.name });
-    if (this.destroyed) return;
+    if (this.destroyed || epoch !== this.epoch) return;
     this.busy = false;
     if (glowing(this.state)) void this.ctx.say('fossil-dig.hint-flag');
   }
@@ -522,8 +527,9 @@ class FossilDig implements Game {
       const line = c.feature === 'outline'
         ? (chosen === 'ribbon' ? 'fossil-dig.not-ribbon' : 'fossil-dig.not-star-shape')
         : (chosen === 'star' ? 'fossil-dig.not-star-edge' : 'fossil-dig.not-saw-star');
+      const epoch = this.epoch;
       await this.ctx.say(line);
-      if (this.destroyed) return;
+      if (this.destroyed || epoch !== this.epoch) return;
       this.busy = false;
       if (glowing(this.state)) this.showHelp();
       return;
@@ -600,7 +606,8 @@ class FossilDig implements Game {
       this.mag.scale.set(0.6);
       void this.ctx.tw.to(this.mag.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
       sfx.pop(8);
-      void this.ctx.say(leafOf(leaf).margin === 'toothed' ? 'fossil-dig.edge-toothed' : 'fossil-dig.edge-smooth');
+      // Level 1 asks about the shape, so the edge is only said where it decides.
+      if (this.plan.id === 2) void this.ctx.say(leafOf(leaf).margin === 'toothed' ? 'fossil-dig.edge-toothed' : 'fossil-dig.edge-smooth');
     }
   }
 
@@ -635,7 +642,13 @@ class FossilDig implements Game {
     if (this.finished) return;
     this.banked.misses += this.state.misses;
     this.banked.hints += this.state.hints;
+    this.epoch++;
     this.state = digState(this.round);
+    this.brushing.clear();
+    this.wave = 0;
+    this.flagNodes.forEach((n) => (n.rotation = 0));
+    this.emptyFlash = null;
+    this.wiggled = false;
     this.looked.clear();
     this.closeMag();
     this.traces = [];
