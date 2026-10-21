@@ -8,7 +8,7 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 - **`song-maker`, authored motifs for levels 3–5, slice 3** (content tier): short pentatonic motifs replace random rows; level 4's Missing Melody shape is frozen. [Dive](deep-dives/song-maker.md#fresh-content-inside-existing-levels)
 - **`fill-dump`, level 7 Which holds more?** (new interaction; level 6 *Full and empty* has landed): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
-- **`roundup`, level 8 *Make it fair*, slice 6** (new levels): pre-K 3–8, equal shares between two pens, with a seesaw sound. [Dive](deep-dives/roundup.md#new-levels-on-top)
+- **`roundup`, level 8 *Make it fair*, slice 6** (claimed: `claude/roundup-make-it-fair`; new levels): pre-K 3–8, equal shares between two pens, with a seesaw sound. [Dive](deep-dives/roundup.md#new-levels-on-top)
 - **`roundup`, level 9 *Fill it up*, slice 7** (new levels): pre-K 3–9. [Dive](deep-dives/roundup.md#new-levels-on-top)
 - **`roundup`, level 12 *Big and little*, slice 8** (new levels, plus a portrait screenshot): pre-K `order [3, 4, 5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/roundup.md#new-levels-on-top)
 - **`roundup`, two shepherds, slice 9** (existing-game interaction change): every active pointer repels, palm rejection kept, both rings drawn; the card's co-play line becomes a role. [Dive](deep-dives/roundup.md#build-slices-in-order)
