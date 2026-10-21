@@ -11,6 +11,17 @@ import { PLACES } from '../content/places';
 import { REGION_IDS } from '../content/world';
 
 describe('game registry', () => {
+  it('extends Roundup only to pre-K 7 and preserves existing levels and pins', () => {
+    const g = gameById('roundup')!;
+    expect(g.levels('prek')).toEqual({ min: 3, max: 7 });
+    expect(stepLevel(6, 1, g.levels('prek'))).toBe(7);
+    expect(stepLevel(7, 1, g.levels('prek'))).toBe(7);
+    for (const level of [3, 4, 5, 6, 7]) expect(landing(level, g.levels('prek'), g.entryLevels)).toBe(level);
+    expect(g.levels('preschool')).toEqual({ min: 2, max: 5 });
+    expect(levelsInOrder(g.levels('lap'))).toEqual([1, 11]);
+    expect(levelsInOrder(g.levels('toddler'))).toEqual([1, 11, 10, 2, 3]);
+  });
+
   it('appends Photo Safari two clues only to school, keeping earlier levels and pins', () => {
     const g = gameById('photo-safari')!;
     expect(g.levels('school')).toEqual({ min: 4, max: 7 });

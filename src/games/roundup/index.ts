@@ -12,14 +12,14 @@ import { label } from '../../ui/text';
 import { RoundButton } from '../../ui/buttons';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { animalsFor, enter, fleeSpeed, FOLLOW_SPEED, followSpeed, inRect, leadGoal, makeHerd, PLACE, planFor, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect } from './logic';
+import { animalsFor, enter, fleeSpeed, FOLLOW_SPEED, followSpeed, inRect, leadGoal, makeHerd, PLACE, pensFull, planFor, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 11, order: [1, 11] },
   toddler: { min: 1, max: 11, order: [1, 11, 10, 2, 3] },
   preschool: { min: 2, max: 5 },
-  prek: { min: 3, max: 6 },
+  prek: { min: 3, max: 7 },
 };
 
 const SCALE = 0.32;
@@ -182,6 +182,8 @@ class Roundup implements Game {
         return void this.ctx.instruct(this.plan.sequential ? 'herd.shooone' : 'herd.shoo', this.plan.sequential ? { animal: a.kind } : { animals });
       case 'sort':
         return void this.ctx.instruct('herd.sort', { a: PLURAL[a.kind], b: PLURAL[b.kind], placeA: PLACE[a.kind], placeB: PLACE[b.kind] });
+      case 'sortStay':
+        return void this.ctx.instruct('herd.sortstay', { a: PLURAL[a.kind], b: PLURAL[b.kind], placeA: PLACE[a.kind], placeB: PLACE[b.kind], outsiders: PLURAL[this.herd.stay!] });
       case 'count':
         return void this.ctx.instruct('herd.count', { n: a.target!, animals });
       case 'sortCount':
@@ -542,7 +544,7 @@ class Roundup implements Game {
       return;
     }
     if (p.pen.target !== undefined) void this.ctx.say('count', { n: p.inside });
-    else if (this.pens.every((x) => x.inside >= wanted(this.herd, x.pen))) void this.finale();
+    else if (pensFull(this.herd, this.pens.map((x) => x.inside))) void this.finale();
   }
 
   private async bounceOut(a: Animal, i: number, why: 'wrong-pen') {
@@ -560,7 +562,10 @@ class Roundup implements Game {
     this.lastMiss = this.clock;
     this.misses++;
     this.wrongs++;
-    if (why === 'wrong-pen') void this.ctx.say('herd.wrongpen', { pen: p.pen.kind });
+    if (why === 'wrong-pen') {
+      if (a.kind === this.herd.stay) void this.ctx.say('herd.stayout', { outsiders: PLURAL[a.kind] });
+      else void this.ctx.say('herd.wrongpen', { pen: p.pen.kind });
+    }
     if (this.wrongs >= 2 && !this.hinting) this.showHint();
   }
 
@@ -649,7 +654,8 @@ class Roundup implements Game {
     sfx.tada();
     for (const p of this.pens) this.ctx.particles.burst(p.rect.x + p.rect.w / 2, p.rect.y + p.rect.h / 2, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 16, speed: [120, 300], gravity: 0, life: [0.6, 1] });
     if (counted) for (const t of totals) await this.ctx.say('herd.total', t);
-    await this.ctx.say('herd.done');
+    if (this.herd.stay) await this.ctx.say('herd.staydone', { outsiders: PLURAL[this.herd.stay] });
+    else await this.ctx.say('herd.done');
     await this.ctx.tw.wait(1);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }

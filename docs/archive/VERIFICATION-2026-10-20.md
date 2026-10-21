@@ -330,3 +330,10 @@
 - `npm run typecheck`, `npx vitest run src/games/stop-and-go src/content` (107 tests, four new rule tests) and `npm run build` passed.
 - `GAME_URL=http://localhost:5205 BROWSER_SUITE=woods WOODS_ONLY=go` levels 1–4 passed (new asserts: level 1 car tap counts, level 2 back-car tap is no miss, glow centred on the car or feet on green); `BROWSER_SUITE=fingerdemo FINGER_ONLY=stop-and-go FINGER_LEVELS=1,2` clean (12.2 s and 11.5 s).
 - Not run: iPad or device, child reaction, portrait screenshot, offline check, full suites, and the restore-old-rule check that the glow assertion fails on the old light ring.
+
+## 2026-10-20 — Song Maker: ten spoken patterns at level 6 (slice 2)
+
+- [PR #679](https://github.com/rjdunlap/neo/pull/679), `claude/song-maker-spoken-patterns`, tested `3520f314`: `PATTERNS` grew from five to ten shapes, and the level-6 instruction is a per-shape `song.pattern.<id>` line that names the shape; bot, IDs, levels and accounting unchanged.
+- `npm run typecheck` and `npx vitest run src/games/song-maker src/content src/games/registry` passed (new test: ten distinct shapes, each at least two rows, unique names and ids, a voice line each, all ten seen over 200 seeds).
+- One portrait 768×1024 screenshot of level 6 on `http://localhost:5991/classic/`: no page errors; grid and given first bar shown.
+- Not run: build, browser suites, `fingerdemo` (bot unchanged), device speech check of the new lines.

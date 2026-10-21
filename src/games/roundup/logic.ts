@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * from your finger, so you shoo them through a gate into their pen. Nobody escapes for good,
  * and a wrong pen just means a hop back out.
  */
-export type HerdMode = 'tap' | 'follow' | 'shoo' | 'sort' | 'count' | 'sortCount';
+export type HerdMode = 'tap' | 'follow' | 'shoo' | 'sort' | 'sortStay' | 'count' | 'sortCount';
 export const KINDS = ['pig', 'bunny', 'cow', 'duck', 'dog'] as const;
 export type Kind = (typeof KINDS)[number];
 
@@ -43,11 +43,12 @@ export const PLANS: HerdPlan[] = [
   { mode: 'sort', animals: 4, maxAnimals: 5, name: 'Sort four or five animals of two kinds into their own pens' },
   { mode: 'count', animals: 6, min: 2, max: 4, name: 'Put an exact number in the pen (2 to 4)' },
   { mode: 'sortCount', animals: 7, min: 1, max: 3, name: 'Sort two kinds and put the requested number in each pen' },
+  { mode: 'sortStay', animals: 6, name: 'Sort pigs and bunnies into their pens; leave the cows on the grass' },
   SHOO_ONE,
   COME_ALONG,
 ];
 
-export const planFor = (level: number) => level === 10 ? SHOO_ONE : level === 11 ? COME_ALONG : PLANS[Math.min(6, Math.max(1, level)) - 1];
+export const planFor = (level: number) => level === 10 ? SHOO_ONE : level === 11 ? COME_ALONG : PLANS[Math.min(7, Math.max(1, level)) - 1];
 
 export const PLURAL: Record<Kind, string> = { pig: 'pigs', bunny: 'bunnies', cow: 'cows', duck: 'ducks', dog: 'dogs' };
 /** What each pen's floor is, for "three pigs in the mud". */
@@ -65,10 +66,15 @@ export interface Pen {
 export interface Herd {
   animals: Kind[];
   pens: Pen[];
+  /** This kind belongs on the grass, outside both pens. */
+  stay?: Kind;
 }
 
 export function makeHerd(plan: HerdPlan, rng: Rng): Herd {
   const n = plan.maxAnimals === undefined ? plan.animals : rng.int(plan.animals, plan.maxAnimals);
+  if (plan.mode === 'sortStay') {
+    return { animals: rng.shuffle(['pig', 'pig', 'bunny', 'bunny', 'cow', 'cow'] as Kind[]), pens: [{ kind: 'pig' }, { kind: 'bunny' }], stay: 'cow' };
+  }
   if (plan.mode === 'sort' || plan.mode === 'sortCount') {
     const pens: Pen[] = rng.shuffle([...KINDS]).slice(0, 2).map((kind) => ({ kind }));
     if (plan.mode === 'sortCount') for (const p of pens) p.target = rng.int(plan.min!, plan.max!);
@@ -126,6 +132,9 @@ export const usesBell = (plan: HerdPlan) => plan.mode === 'count' || plan.mode =
 export function wanted(herd: Herd, pen: Pen): number {
   return pen.target ?? herd.animals.filter((k) => k === pen.kind).length;
 }
+
+/** All requested animals are home; outsiders are deliberately absent from these totals. */
+export const pensFull = (herd: Herd, inside: number[]) => herd.pens.every((pen, i) => inside[i] >= wanted(herd, pen));
 
 /**
  * How fast an animal scoots away from a finger `d` units off: nothing beyond `radius`,
