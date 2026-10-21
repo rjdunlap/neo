@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { animalsFor, enter, fleeSpeed, KINDS, makeHerd, PLACE, planFor, PLANS, PLURAL, ringBell, shooPoint, signDots, startSpots, throughGate, wanted } from './logic';
+import { animalsFor, enter, fleeSpeed, FOLLOW_SPEED, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted } from './logic';
 
 describe('Roundup', () => {
   it('gives Shoo one two successes, ordinary flee steering and a wider accepting gate', () => {
@@ -23,6 +23,53 @@ describe('Roundup', () => {
     // Existing IDs retain their plans; no placeholder levels 7–9 are introduced.
     expect(planFor(6)).toBe(PLANS[5]);
     expect(planFor(7)).toBe(PLANS[5]);
+  });
+
+  it('lets Come along follow a finger gently, gather without piling up and enter in any order', () => {
+    const plan = planFor(11);
+    expect(plan).toMatchObject({ mode: 'follow', animals: 3, gate: 0.8, hintAfter: 15 });
+    // Following is always slower than running from a finger, and stops short of the finger itself.
+    expect(FOLLOW_SPEED).toBeLessThan(SHOO_SPEED);
+    for (let d = 0; d <= 1200; d += 5) expect(followSpeed(d)).toBeLessThanOrEqual(FOLLOW_SPEED);
+    expect(followSpeed(FOLLOW_STOP)).toBe(0);
+    expect(followSpeed(FOLLOW_STOP - 30)).toBe(0);
+    expect(followSpeed(FOLLOW_STOP + 100)).toBeGreaterThan(0);
+    // Three animals following a still finger, jostling apart as in the round, end round it with room between them.
+    for (let seed = 1; seed <= 50; seed++) {
+      const rng = new Rng(seed);
+      const finger = { x: 500, y: 400 };
+      const herd = Array.from({ length: 3 }, () => ({ x: rng.range(200, 800), y: rng.range(250, 650) }));
+      for (let step = 0; step < 600; step++) {
+        for (const p of herd) {
+          const dx = finger.x - p.x;
+          const dy = finger.y - p.y;
+          const d = Math.hypot(dx, dy) || 1;
+          const s = followSpeed(d) / 60;
+          p.x += (dx / d) * s;
+          p.y += (dy / d) * s;
+        }
+        spreadApart(herd);
+      }
+      for (let i = 0; i < 3; i++) {
+        expect(Math.hypot(herd[i].x - finger.x, herd[i].y - finger.y)).toBeLessThan(FOLLOW_STOP + 80);
+        for (let j = i + 1; j < 3; j++) expect(Math.hypot(herd[i].x - herd[j].x, herd[i].y - herd[j].y)).toBeGreaterThan(60);
+      }
+    }
+    for (let seed = 1; seed <= 100; seed++) {
+      const herd = makeHerd(plan, new Rng(seed));
+      expect(herd.animals).toHaveLength(3);
+      expect(herd.pens).toHaveLength(1);
+      expect(herd.pens[0].target).toBeUndefined();
+      // One kind and no count: whichever arrives first, each one is welcome.
+      expect(herd.animals.every((kind) => enter(herd.pens[0], kind) === 'in')).toBe(true);
+    }
+    // Leading goes to the gate's mouth first, then inside once lined up, and the way in passes the wide gate.
+    const pen = { x: 600, y: 200, w: 300, h: 300 };
+    const outside = leadGoal({ x: 300, y: 250 }, pen);
+    expect(outside.x).toBeLessThan(pen.x);
+    const inside = leadGoal(outside, pen);
+    expect(inside.x).toBeGreaterThan(pen.x);
+    expect(throughGate(pen, outside, inside, plan.gate)).toBe(true);
   });
 
   it('always has enough animals for every pen, with a spare when counting', () => {

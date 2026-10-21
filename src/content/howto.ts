@@ -690,9 +690,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'Put exactly the number asked for in the pen, then ring the bell.' },
       { from: 6, to: 6, text: 'Sort the two kinds into their pictured pens, putting in the number of each that was asked for, then ring the bell.' },
       { from: 10, to: 10, text: 'Wiggle a finger behind the single animal to shoo it through the wide gate.' },
+      { from: 11, to: 11, text: 'Put a finger on the grass and the animals gather round it. Drag slowly to lead them through the wide gate into the pen.' },
     ],
-    finish: [{ to: 6, text: 'The round ends when every animal is where it was asked to go.' }, { from: 10, to: 10, text: 'Help one animal home, then a second one. Both successes make one round and one sticker.' }],
-    note: [{ to: 6, text: 'A wrong pen or a wrong bell counts a miss. If no animal gets home for thirty seconds, the nearest one trots home by itself, and that counts as a hint.' }, { from: 10, to: 10, text: 'Nothing counts as a miss. After ten seconds without a success the animal and gate glow (one hint); at twenty seconds it trots home (another hint). Support starts afresh for the second animal.' }],
+    finish: [{ to: 6, text: 'The round ends when every animal is where it was asked to go.' }, { from: 10, to: 10, text: 'Help one animal home, then a second one. Both successes make one round and one sticker.' }, { from: 11, to: 11, text: 'The round ends when all three animals are in the pen, in any order.' }],
+    note: [{ to: 6, text: 'A wrong pen or a wrong bell counts a miss. If no animal gets home for thirty seconds, the nearest one trots home by itself, and that counts as a hint.' }, { from: 10, to: 10, text: 'Nothing counts as a miss. After ten seconds without a success the animal and gate glow (one hint); at twenty seconds it trots home (another hint). Support starts afresh for the second animal.' }, { from: 11, to: 11, text: 'Nothing counts as a miss. After fifteen seconds without an animal getting home, the herd glows and drifts toward the gate by itself for the rest of the round (one hint). If one still is not home thirty seconds after the last, it trots in (another hint).' }],
   },
   'bouncy-launch': {
     goal: 'Launch the pet and see where it lands.',
