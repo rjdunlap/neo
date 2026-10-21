@@ -190,3 +190,22 @@ export function playWithIcon(): Graphics {
   all.x = -8;
   return all;
 }
+
+/** Four bright tiles: Explore's All games (RW08). */
+export function tilesIcon(): Graphics {
+  const g = new Graphics();
+  for (const [x, y, c] of [[-15, -15, swatch.red], [15, -15, swatch.yellow], [-15, 15, swatch.teal], [15, 15, swatch.pink]] as const) {
+    g.roundRect(x - 12, y - 12, 24, 24, 7).fill(c.fill).stroke(line(3, c.line));
+  }
+  return g;
+}
+
+/** A game controller: Explore's Family play, which needs one (or a keyboard). */
+export function padIcon(): Graphics {
+  return new Graphics()
+    .roundRect(-30, -16, 60, 32, 16).fill(swatch.blue.fill).stroke(line(4, swatch.blue.line))
+    .rect(-21, -3, 14, 6).fill(0xffffff)
+    .rect(-17, -7, 6, 14).fill(0xffffff)
+    .circle(13, -4, 4).fill(swatch.yellow.fill)
+    .circle(21, 4, 4).fill(swatch.red.fill);
+}

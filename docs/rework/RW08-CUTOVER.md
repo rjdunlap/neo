@@ -89,8 +89,8 @@ Recorded in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md#defaults-in-use-bl
 
 ## Build slices, in order
 
-1. **Explore's four entries, the browse origin and Back to [origin] at the root.** Ready. Shell and navigation tier, [above](#slice-1-explores-four-entries).
-2. **The library, the stories, the mix, the birthday and the gear at the root.** Ready after slice 1. Shell and navigation tier, [above](#slice-2-the-library-the-stories-and-the-rest-of-home).
+1. **Explore's four entries, the browse origin and Back to [origin] at the root.** **Built 2026-10-21** (PR #744; build note in the [archive](../archive/COMPLETED-2026-10-09.md#rw08-slice-1-explores-four-entries-2026-10-21)). Shell and navigation tier, [above](#slice-1-explores-four-entries).
+2. **The library, the stories, the mix, the birthday and the gear at the root.** Ready (slice 1 landed). Shell and navigation tier, [above](#slice-2-the-library-the-stories-and-the-rest-of-home).
 3. **The cutover.** Status `decision` (the developer's go-ahead), after slice 2. Shell, save and navigation tier, [above](#slice-3-the-cutover-waits-for-the-developer).
 
 **Proof of this packet:** links and `git diff --check`. Nothing was built or run in a browser. Child comprehension of the four entries and of Back versus Home is not established. Neither is device speech of the new lines. The observed-play script in [RW03](HOME-NAVIGATION.md#short-observed-play-script-and-open-observations) covers both.

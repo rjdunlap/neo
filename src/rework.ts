@@ -10,6 +10,7 @@ import { loadWearables } from './art/creatures/wearables';
 import { isLocation, LocationScene } from './app/scenes/LocationScene';
 import { loadCollectionArt } from './creatures/companion';
 import { CreaturePreview } from './dev/creature-preview';
+import { ExploreScene } from './app/scenes/ExploreScene';
 import { HomeScene } from './app/scenes/HomeScene';
 import { PlayScene } from './app/scenes/PlayScene';
 import { ProjectScene } from './app/scenes/ProjectScene';
@@ -32,6 +33,8 @@ async function boot() {
   const island = createRoutes(app);
   const query = new URLSearchParams(location.search);
   const land: Routes['land'] = (id) => (isLocation(id) ? void app.show(new LocationScene(app, id)) : island.land(id));
+  // At the root a location's Back returns to Explore's Places (RW08); its games' results come back to the location.
+  const atRoot: Routes['land'] = (id) => (isLocation(id) ? void app.show(new LocationScene(app, id, () => app.go.explore('places'))) : island.land(id));
   // The page's link to the island games shows only on the root's entry scene (Home, or the preview).
   const link = document.querySelector<HTMLElement>('.classic-link');
   const withLink = (routes: Routes) =>
@@ -59,7 +62,8 @@ async function boot() {
       hub: () => void app.show(new HomeScene(app)),
       room: () => void app.show(new PlayScene(app)),
       project: (from) => void app.show(new ProjectScene(app, from)),
-      land,
+      explore: (entry, page, others) => void app.show(new ExploreScene(app, entry ?? null, page ?? 0, others ?? false)),
+      land: atRoot,
     });
     app.go.start();
   }

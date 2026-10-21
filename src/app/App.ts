@@ -18,6 +18,7 @@ import type { LandId } from '../content/lands';
 import type { PicnicStep, WoodlandStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
 import type { WelcomeStep } from '../content/welcome';
+import type { ExploreEntry } from '../content/explore';
 import { mixMemory } from './discovery';
 
 /**
@@ -30,8 +31,11 @@ export type StoryRound =
   | { story: 'woodland'; step: WoodlandStep; level: number }
   | { project: 'welcome'; step: WelcomeStep; level: number };
 
-/** Where a game was opened from, so its home button (and "again") go back there. A story round has its own way home. */
-export type Origin = { land: LandId } | { place: Band } | { journal: true };
+/**
+ * Where a game was opened from, so its home button (and "again") go back there. A story round has its own way home.
+ * `explore` is one of Explore's entries at the root (RW08), with the page she was on and whether All games showed the other ages.
+ */
+export type Origin = { land: LandId } | { place: Band } | { journal: true } | { explore: ExploreEntry; page: number; others?: boolean };
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {
@@ -47,6 +51,11 @@ export interface Routes {
   hub(): void;
   /** A themed land: its host and its games for her age and younger, with a signpost to the bigger kids' ones. */
   land(id: LandId): void;
+  /**
+   * Explore at the root (RW08): with no entry, its four entries (Places, Favorites, All games, Family play); with one,
+   * that entry at `page` (All games showing the other ages with `others`). The island has no Explore and goes to the map.
+   */
+  explore(entry?: ExploreEntry, page?: number, others?: boolean): void;
   /** The home spot for an age band: every game for that age and younger along one path. */
   place(band: Band): void;
   /** The new friend's egg; `quick` skips the egg for someone old enough to choose a friend straight away. */

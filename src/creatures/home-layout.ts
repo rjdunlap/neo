@@ -136,6 +136,51 @@ export function exploreLayout(v: { w: number; h: number }, n: number): ExploreLa
   return { backdrop: backdropFit(v), back: { x: BACK.x, y: BACK.y }, cards };
 }
 
+/** The 120-unit page arrows under a page of game cards (RW08). */
+export const PAGE_ARROW_RADIUS = 60;
+
+export interface ExploreGridLayout {
+  backdrop: Backdrop;
+  back: Spot;
+  home: Spot;
+  /** Each card's centre, in reading order. */
+  cards: Spot[];
+  /** The previous and next arrows, under the cards (drawn only when they have somewhere to go). */
+  prev: Spot;
+  next: Spot;
+}
+
+/**
+ * Explore's four entries, a page of up to four games, or Family play's one card (RW08 slice 1,
+ * docs/rework/RW08-CUTOVER.md#slice-1-explores-four-entries): 150-unit cards with their names under them, in one row
+ * when the view is wider than tall and two by two when it is taller; Back and Home top left as in creature play, and
+ * the page arrows centred under the cards, clear of the guide corner.
+ */
+export function exploreGridLayout(v: { w: number; h: number }, n: number): ExploreGridLayout {
+  if (n < 1 || n > EXPLORE_ROW) throw new Error(`An Explore page holds one to ${EXPLORE_ROW} cards, not ${n}`);
+  const step = EXPLORE_CARD + 80;
+  const perRow = v.h > v.w && n > 2 ? 2 : n;
+  const rows = Math.ceil(n / perRow);
+  const y0 = rows === 1 ? Math.round(v.h * 0.42) : Math.round(v.h * 0.4 - ((rows - 1) * EXPLORE_PITCH) / 2);
+  const cards: Spot[] = [];
+  for (let r = 0, left = n; r < rows; r++) {
+    const inRow = Math.min(perRow, left);
+    const x0 = v.w / 2 - ((inRow - 1) * step) / 2;
+    for (let i = 0; i < inRow; i++) cards.push({ x: Math.round(x0 + i * step), y: y0 + r * EXPLORE_PITCH });
+    left -= inRow;
+  }
+  // Under the last row's names, a card's width apart either side of the middle.
+  const arrowY = y0 + (rows - 1) * EXPLORE_PITCH + EXPLORE_CARD / 2 + 50 + 30 + PAGE_ARROW_RADIUS;
+  return {
+    backdrop: backdropFit(v),
+    back: { x: BACK.x, y: BACK.y },
+    home: { ...HOME_BUTTON },
+    cards,
+    prev: { x: Math.round(v.w / 2 - 160), y: arrowY },
+    next: { x: Math.round(v.w / 2 + 160), y: arrowY },
+  };
+}
+
 /**
  * Welcome a New Friend's page (RW07, docs/rework/WELCOME-BUILD.md#routes-and-scenes): Back and Home top left, the
  * newcomer in its basket on the left (above the guide corner), and the step cards in a row, each with room for its green

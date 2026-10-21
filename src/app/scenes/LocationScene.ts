@@ -2,6 +2,7 @@ import { Companion } from '../../creatures/companion';
 import { SPECIES, type SpeciesId } from '../../creatures/species';
 import type { LandId, LandLayout } from '../../content/lands';
 import type { Graphics } from 'pixi.js';
+import { arrowIcon } from '../../ui/icons';
 import type { BackdropStyle } from '../../art/scenery';
 import type { View } from '../../engine/view';
 import type { App } from '../App';
@@ -60,13 +61,15 @@ export const isLocation = (id: LandId) => id in LOCATIONS;
  * RW13: a land as a location at the site root. It is the land's scene (its games and signpost from `landLayout`, the
  * same suggestions, the same `{ land }` origin, so Home from a game comes back here) with the location's ecosystem drawn
  * over the backdrop and its illustrated resident standing where the host stands. Tapping the resident pokes it, says
- * the location's line and suggests a game. Home goes to the root's entry scene (`go.hub()` at the root).
+ * the location's line and suggests a game. Built with `back` (the root, RW08), its corner button is a Back arrow to
+ * Explore's Places; without it, Home goes to `go.hub()`.
  */
 export class LocationScene extends LandScene {
   /** The illustrated resident, or null where the land's code-drawn host still stands in. */
   readonly resident: Companion | null;
 
-  constructor(app: App, id: LandId) {
+  /** `back`, at the root (RW08), turns the corner button into a Back arrow to Explore's Places. */
+  constructor(app: App, id: LandId, back?: () => void) {
     const place = LOCATIONS[id];
     if (!place) throw new Error(`${id} is not a location yet`);
     let resident: Companion | null = null;
@@ -82,6 +85,7 @@ export class LocationScene extends LandScene {
       backdrop: place.backdrop,
       headingColor: place.headingColor,
       hostSaysLine: true,
+      ...(back ? { home: back, homeIcon: () => arrowIcon(-1) } : {}),
     });
     this.resident = resident;
   }
