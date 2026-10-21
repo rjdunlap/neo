@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+
+### Discovery D2b, the Little surprises mix (2026-10-20)
+
+Built on `claude/little-surprises-mix` from the [definition](../definitions/little-surprises.md): `src/content/mix.ts` (frozen pool, eligibility, pure `step()` reducer, 11 tests), `MixMemory` in `src/app/discovery.ts` bound to the save object, `Scene.holdsMix()` with `App.show` ending the mix, `src/app/mix.ts` `MixHost` and `src/ui/mix.ts` `MixSheet` (preview and ending), the mix entry in both home-spot layouts, `GameScene` Next stop/Skip/All done and a pause-sheet skip, eight `mix.*` voice lines, and `mix-flow.test.ts` (5 tests). Deviation recorded: All done goes to the home spot where the ending sheet opens. Browser flow `DISCOVERY_ONLY=mix`; offline harness follows the Little surprises card leading toddler page one.
+
 ### Fill and Dump slice 2, Lap reach and idle invitation (2026-10-20)
 
 [PR #666](https://github.com/rjdunlap/neo/pull/666): at levels 1–2, open ground tips a full basket or scoops the outside fruit nearest the touch. Six idle seconds while ready for input wiggle the basket or the fruit nearest it; touch, flight and teardown clear the motion. This never counts a miss or hint. Levels 3–5, tip-window behavior, content and pouring are unchanged. [Scope](../deep-dives/fill-dump.md#build-slices-in-order); [verification](../VERIFICATION.md#2026-10-20--fill-and-dump-lap-reach-and-idle-invitation-slice-2).

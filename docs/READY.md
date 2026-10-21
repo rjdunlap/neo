@@ -86,7 +86,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`garden-grow`, level 10 Columns of colors** (new level, after level 9 *Rows of colors*): three columns in two or three colors. [Slice 6](deep-dives/garden-grow.md#new-levels-on-top)
 - **`garden-grow`, level 11 Same in every row** (new level, after level 9 *Rows of colors*): n flowers in each row in any beds, every placement accepted. [Slice 7](deep-dives/garden-grow.md#new-levels-on-top)
 
-- **Discovery D2b, play the Little surprises mix** (shell/navigation tier: unit tests, build, `BROWSER_SUITE=discovery DISCOVERY_ONLY=mix` and `direct-next`, `world`, offline): a lap/toddler home-spot mix spot, preview, Next stop/Skip in D1b's result rectangles, ending with no bonus; session/item/round tokens, in memory only. [Definition](definitions/little-surprises.md)
 
 - **`stop-and-go`, every touch counts and the hint on the car** (existing-game bug fix): the lap car toots and drives, back cars answer, the glow rings the car or feet on green, the walk hint resets, motion and sound per light state, a walk done line. [Slice 1](deep-dives/stop-and-go.md#fresh-content-inside-existing-levels)
 - **`stop-and-go`, varied phases and vehicles** (content, levels 2–4): seeded green and red of 3–4.2 s with a bounded-phase test, six code-drawn vehicles. [Slice 2](deep-dives/stop-and-go.md#fresh-content-inside-existing-levels)

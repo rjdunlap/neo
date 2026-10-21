@@ -131,10 +131,10 @@ try {
   // The home spot at 1024 by 768 (`mapLayout`: x 125 + 0.63 × 774, y 195 + 0.5 × 463); the pet hops over and the map zooms in.
   await page.mouse.click(613, 420); await page.waitForTimeout(3200);
   await page.screenshot({ path: 'test-results/offline/place.png' });
-  // Four subject cards per page. Counting Cove is first on page two; Monster Munch
+  // Four subject cards per page, Little surprises' card first at toddler. Counting Cove is second on page two; Monster Munch
   // is its second game. Subject-local positions survive growth in earlier subjects.
   await page.mouse.click(959, 384); await page.waitForTimeout(700);
-  await page.mouse.click(342, 290); await page.waitForTimeout(700);
+  await page.mouse.click(682, 290); await page.waitForTimeout(700);
   await page.screenshot({ path: 'test-results/offline/counting-cove.png' });
   await page.mouse.click(682, 290); await page.waitForTimeout(2000);
   // Every game opens on its how-to card, and Play starts the round (Monster Munch has no bot, so its card is text only).

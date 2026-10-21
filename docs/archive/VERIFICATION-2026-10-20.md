@@ -207,3 +207,10 @@
 - Ran `npm run typecheck` (clean), `npx vitest run src/games/block-garden` (33 rule tests pass) and full `npm test` (1713 tests pass on rerun; the first run had one failure in a creature rig test, "pins the face and body … never tears the picture", in untouched code; it passed alone and on rerun, recorded as a flake). The worst level-8 off-plan hint search measured about 320 ms on Node.
 - `BROWSER_SUITE=blockgarden` (Vite http://localhost:5856) passed: levels 1 and 8 planted by drags with no misses or hints and a sticker each, two refused drops at level 3 (two misses, one hint), the hinted piece planted, undo, level 6 portrait screenshot `test-results/browser/block-garden-6-portrait.png`. `BROWSER_SUITE=fingerdemo FINGER_ONLY=block-garden` passed at level 1 (prek, 3.9 s) and level 8 (grownup, 23.2 s). `npm run build` passed.
 - Not run: `world`, the offline check, an iPad. Open: carrying a piece with the 40-unit lift, 72-unit squares on a phone, the shadow, and the level 8 hint search time on a device ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-20 — Sound Garden: fair, varied listening (slice 1)
+
+- Built on `claude/sound-garden-fair-listening` (PR #656, code commit `21e35c01`): seeded sounds for levels 2–4 and 6 (`makeSounds`), equal-span fast/slow, varied high/low and up/down, `PLANS` keyed by level ID, how-to level-6 step capped.
+- Ran `npm run typecheck` (clean), `npx vitest run src/games/sound-garden src/content` (96 tests pass, including the new rule tests: answers differ only in the asked attribute, notes on the scale and in span, sounds vary and are deterministic per seed) and `npm run build` (passes).
+- `BROWSER_SUITE=batch BATCH_ONLY=garden` levels 1–6 passed (Vite http://localhost:5450): a wrong pair and a hint on each listening level.
+- Not run: `fingerdemo` (bot unchanged), `world`, the offline check, an iPad. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether she judges high/low by sound or by the tile's height, and the quiet-games and clarity rows.

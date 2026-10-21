@@ -35,6 +35,11 @@ export abstract class Scene {
     return [];
   }
 
+  /** Whether the Little surprises mix carries on into this scene: only its own round and the home spot it started from. */
+  holdsMix(): boolean {
+    return false;
+  }
+
   get view(): View {
     return this.app.view;
   }
