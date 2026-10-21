@@ -93,6 +93,7 @@ export const SCRIPT = {
   'buddies.occupied': ['A friend is already there. Drag that friend back to its parking spot first.'],
   'buddies.done': ['Your shapes brought a seed home. A little sprout!'],
   'game.orchard-rows': ['Orchard rows!'],
+  'game.bolt-boards': ['Bolt boards!'],
   'orchard.plant': ['Plant {rows} rows with {each} trees in each row. Tap an empty row to make it grow!'],
   'orchard.planted': ['{each} trees in this row. {total} trees planted altogether!'],
   'orchard.rows': ['Count by rows. Each row has {each} trees. Tap each row once to count it.'],
