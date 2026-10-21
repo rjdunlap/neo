@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Egg Catch notes, colours and hatching basket (2026-10-21)
+
+[PR #740](https://github.com/rjdunlap/neo/pull/740), [deep-dive slice 3](../deep-dives/egg-catch.md#build-slices-in-order): four lane-specific pentatonic laying notes at levels 1–3; brown, speckled brown and blue-green shells at 1–2, all catchable. Shells follow hens without consuming more RNG; rule levels retain brown and white. Successful eggs crack in a basket and chicks hop into a line before the shell celebration; three successful pairs show six chicks. The ending uses scene-owned tweens and centres again on resize. Catch thresholds, timing, accounting, idle hens, routes, levels and save fields unchanged; no gated touches, new rungs or collection hooks. [Verification](../VERIFICATION.md#2026-10-21--egg-catch-notes-colours-and-hatching-basket-slice-3).
+
+
 ### A better voice V0 (2026-10-21)
 
 [PR #734](https://github.com/rjdunlap/neo/pull/734), roadmap chunk 29: `src/audio/voice-choice.ts` (`chooseVoice`, `voiceLabel`) reads quality from the voice name or voiceURI and ranks Premium > Enhanced > standard, prefers an on-device voice over an online one (offline PWA), never picks novelty voices (Bells, Zarvox, Whisper) and ranks Eloquence/old MacinTalk voices (Eddy, Flo, Grandma, Rocko, Fred) last; no English voice returns null (device default). `voice.ts` uses it, re-picks lazily in `speak()` when nothing was chosen and exposes `voice.current()`. The grown-ups' page (Sound section, under "Hear the voice say the name") names the voice and its quality, says it belongs to the device (same for every player) and, for a standard voice, gives the iPad path Settings → Accessibility → Spoken Content → Voices → English to download Ava, Zoe or Samantha. Rate 0.95 and pitch 1.15 unchanged. Eight new tests; the iPad retune is an open device check.

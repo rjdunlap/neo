@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
-import { pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir } from './logic';
+import { pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir, type Shell, HEN_SHELLS, HEN_NOTES, SHELL } from './logic';
 
 describe('Egg Catch', () => {
   it('lays eggs in changing lanes, with white eggs only where asked and never three in a row', () => {
@@ -11,11 +11,25 @@ describe('Egg Catch', () => {
         for (const e of eggs) expect(e.lane).toBeLessThan(LANES);
         eggs.slice(1).forEach((e, i) => expect(e.lane).not.toBe(eggs[i].lane));
         const mixes = plan.mode === 'brown' || plan.mode === 'sort';
-        if (!mixes) expect(eggs.every((e) => e.shell === 'brown')).toBe(true);
+        if (mixes) expect(eggs.every((e) => e.shell === 'brown' || e.shell === 'white')).toBe(true);
+        else if (plan.mode === 'tap' || plan.mode === 'catch') expect(eggs.every((e) => e.shell === HEN_SHELLS[e.lane])).toBe(true);
+        else expect(eggs.every((e) => e.shell === 'brown')).toBe(true);
         eggs.slice(2).forEach((e, i) => expect(e.shell === 'white' && eggs[i].shell === 'white' && eggs[i + 1].shell === 'white').toBe(false));
-        expect(eggs.filter((e) => e.shell === 'brown').length).toBeGreaterThanOrEqual(plan.eggs);
+        expect(eggs.filter((e) => e.shell !== 'white').length).toBeGreaterThanOrEqual(plan.eggs);
       }
     }
+  });
+
+  it('keeps early shells visibly apart from white and every coloured egg catchable by the bot', () => {
+    expect(new Set(HEN_NOTES).size).toBe(LANES);
+    for (const shell of HEN_SHELLS) {
+      expect(shell).not.toBe('white');
+      const rgb = (n: number) => [n >> 16, (n >> 8) & 255, n & 255];
+      expect(Math.hypot(...rgb(SHELL[shell].fill).map((c, i) => c - rgb(SHELL.white.fill)[i]))).toBeGreaterThan(100);
+      expect(basketMove([{ x: 600, shell }], 230, [230, 420, 600, 790])).toBe(600);
+      expect(glowLane([{ lane: 2, shell, t: 0.5 }], [{ lane: 0, shell: 'brown' }], 0)).toBe(2);
+    }
+    expect(new Set(makeEggs(PLANS[1], new Rng(7), 100).map((e) => e.shell))).toEqual(new Set(['brown', 'speckled', 'blue']));
   });
 
   it('routes every exit with the gates the hint shows', () => {
@@ -125,7 +139,7 @@ describe('Egg Catch', () => {
     for (const plan of PLANS.filter((p) => p.mode === 'catch' || p.mode === 'brown')) {
       for (let seed = 1; seed <= 200; seed++) {
         const eggs = makeEggs(plan, new Rng(seed));
-        const air: { lane: number; shell: 'brown' | 'white'; t: number }[] = [];
+        const air: { lane: number; shell: Shell; t: number }[] = [];
         let basket = lanes[1];
         let target = basket;
         let finger = lanes[1] + 90;
@@ -161,7 +175,7 @@ describe('Egg Catch', () => {
           while (air.length && air[0].t >= 1) {
             const e = air.shift()!;
             const inBasket = caught(lanes[e.lane], basket);
-            if (e.shell === 'brown') {
+            if (e.shell !== 'white') {
               expect(inBasket, `${plan.mode} seed ${seed}: a brown egg landed in the hay at ${t.toFixed(1)} s`).toBe(true);
               got++;
             } else expect(inBasket, `${plan.mode} seed ${seed}: a white egg landed in the basket at ${t.toFixed(1)} s`).toBe(false);
@@ -234,7 +248,7 @@ describe('Egg Catch', () => {
         const eggs = makeEggs(PLANS[level - 1], new Rng(seed));
         for (let next = 0; next < eggs.length; next++) {
           // Nothing in the air: the next brown egg the hens will lay.
-          const upcoming = [...eggs.slice(next), ...eggs].find((e) => e.shell === 'brown')!;
+          const upcoming = [...eggs.slice(next), ...eggs].find((e) => e.shell !== 'white')!;
           expect(glowLane([], eggs, next)).toBe(upcoming.lane);
         }
       }

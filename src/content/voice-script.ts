@@ -1643,7 +1643,7 @@ export const SCRIPT = {
   'egg.wrongway': ['Oops! It rolled the other way. Peep!'],
   'egg.predict': ['The gates are already set. Where will the egg land? Tap the hay, then watch it roll!'],
   'egg.predictwrong': ['It went another way! Follow the gates: each one sends the egg the way it points.'],
-  'egg.done': ['All the eggs are safe!', 'What a lot of eggs!'],
+  'egg.done': ['Peep! All the chicks are here!', 'Look at our little chicks!'],
   'helpers.tap': ['Tap the fruit! A little helper will carry it home.'],
   'helpers.send': ['Tap the fruit to send helpers. This one needs {n}!'],
   'helpers.count': ['This fruit needs {n} helpers. Send them, then blow the whistle!'],
