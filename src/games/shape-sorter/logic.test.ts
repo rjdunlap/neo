@@ -17,8 +17,14 @@ import {
   pieceKinds,
   PLANS,
   startHelp,
+  TAP_HOLD,
+  TAP_REACH,
+  tapsIn,
+  planFor,
   wrongDrop,
 } from './logic';
+import { PRESS } from '../../engine/ghost';
+import { shapeSorter } from './index';
 
 describe('Shape Sorter', () => {
   it('deals a piece for every hole and only pieces that fit somewhere', () => {
@@ -104,9 +110,9 @@ describe('Shape Sorter', () => {
     }
   });
 
-  it('answers every touch at level 1, the only level where nothing can be wrong', () => {
-    expect(PLANS.filter((p) => p.everyTouch)).toEqual([PLANS[0]]);
-    expect(PLANS[0].holes).toHaveLength(1);
+  it('answers every touch at levels 1 and 9, the only levels where nothing can be wrong', () => {
+    expect(PLANS.filter((p) => p.everyTouch)).toEqual([PLANS[0], PLANS[8]]);
+    for (const p of PLANS.filter((p) => p.everyTouch)) expect(p.holes).toHaveLength(1);
     const items = [{ x: 0, y: 0 }, { x: 200, y: 0 }, { x: 400, y: 0 }];
     expect(nearest(items, 260, 50)).toBe(items[1]);
     expect(nearest(items, -999, 0)).toBe(items[0]);
@@ -135,5 +141,34 @@ describe('Shape Sorter', () => {
       expect(lines?.length, k).toBeGreaterThan(0);
       for (const l of lines) expect(l).toContain('{shape}');
     }
+  });
+
+  it('level 9 is the tap-in entry: one circle hole, three pieces, every touch answered, and a tap puts any dealt piece in', () => {
+    const plan = planFor(9);
+    expect(plan).toMatchObject({ holes: ['circle'], pieces: 3, everyTouch: true, tapIn: true });
+    // The ghost finger's press is a tap; a held touch is a drag, and no other level hops a piece in.
+    expect(tapsIn(plan, PRESS, 0)).toBe(true);
+    expect(tapsIn(plan, TAP_HOLD + 0.1, 0)).toBe(false);
+    // A quick fling across the floor is a drag; a wobble under a still finger is not.
+    expect(tapsIn(plan, PRESS, 48 + 40)).toBe(true);
+    expect(tapsIn(plan, PRESS, TAP_REACH + 1)).toBe(false);
+    for (let level = 1; level <= 8; level++) expect(tapsIn(planFor(level), 0, 0)).toBe(false);
+    // From any seed, three taps finish the round: every dealt piece has its own hole to hop into.
+    const { holes } = holeLayout(plan);
+    for (let seed = 1; seed <= 100; seed++) {
+      const kinds = pieceKinds(new Rng(seed), plan);
+      expect(kinds).toHaveLength(3);
+      for (const k of kinds) expect(holeFor(holes, k)).toBeDefined();
+    }
+    expect(SCRIPT['shape.tap.start']?.length).toBeGreaterThan(0);
+  });
+
+  it('plays level 9 alone at lap and first at toddler, an entry level the older bands never land on', () => {
+    expect(shapeSorter.bands).toContain('lap');
+    expect(shapeSorter.levels('lap')).toEqual({ min: 9, max: 9, order: [9] });
+    expect(shapeSorter.levels('toddler').order).toEqual([9, 1, 2, 3, 4, 5]);
+    expect(shapeSorter.entryLevels).toEqual([9]);
+    for (const band of ['preschool', 'prek'] as const) expect(shapeSorter.levels(band).max).toBeLessThan(9);
+    expect(shapeSorter.describeLevel(9)).toBe('tap a shape and it hops in');
   });
 });

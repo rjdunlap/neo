@@ -407,7 +407,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'shape-sorter': {
     goal: 'Put each shape in the hole it fits.',
     steps: [
-      'Drag a shape to a hole and let go.',
+      { to: 8, text: 'Drag a shape to a hole and let go.' },
+      { from: 9, to: 9, text: 'Tap a shape and it hops into the hole by itself. Dragging it there works too.' },
       { to: 4, text: 'Each hole is the color of the shape that fits it.' },
       { from: 5, to: 5, text: 'The holes are plain, so match by shape alone.' },
       { from: 6, to: 6, text: 'Every shape is the same color, so match by shape alone.' },
@@ -416,6 +417,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     finish: 'The round ends when every shape is in a hole.',
     note: [
+      { from: 9, to: 9, text: 'There is no wrong move here. A tap on the box makes it giggle, and a tap on the floor wiggles the nearest shape and names it.' },
       { to: 1, text: 'There is no wrong move here. A tap on the box makes it giggle, a tap on the floor wiggles the nearest shape and names it, and a shape let go far from the hole plops and slides home.' },
       { from: 2, to: 7, text: 'A shape in the wrong hole slides back with a boing, a miss. Every second miss makes the right hole glow, whichever shapes were tried.' },
       { from: 8, to: 8, text: 'A shape that is not the one asked for slides back, a miss; if it fits its own hole, the voice names it and repeats the clue. Every second miss makes the asked hole glow.' },

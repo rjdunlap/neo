@@ -14,6 +14,8 @@ export interface SorterPlan {
   clue?: boolean;
   /** Nothing can go wrong and every touch is answered: the box giggles, the floor wiggles a piece, a far drop plops. */
   everyTouch?: boolean;
+  /** A short touch on a piece hops it into its hole by itself (a drag there works too). */
+  tapIn?: boolean;
 }
 
 const FOUR: ShapeKind[] = ['circle', 'square', 'triangle', 'star'];
@@ -28,7 +30,21 @@ export const PLANS: SorterPlan[] = [
   { holes: [...FOUR, 'heart'], pieces: 7, coded: false, sameColor: true, tilt: false },
   { holes: CLASSIC, pieces: 8, coded: false, sameColor: true, tilt: true },
   { holes: CLASSIC, pieces: CLASSIC.length, coded: false, sameColor: true, tilt: false, clue: true },
+  // 9, Tap and in it goes: the lap entry and toddler's first rung.
+  { holes: ['circle'], pieces: 3, coded: true, sameColor: false, tilt: false, everyTouch: true, tapIn: true },
 ];
+
+/** A touch let go sooner than this (in seconds) is a tap. The ghost finger presses for 0.22 s. */
+export const TAP_HOLD = 0.4;
+
+/**
+ * How far (in logical units) a tapped piece may have left its place on the floor: a still finger jumps it by up to its
+ * radius plus the 40-unit lift once it moves at all, so a wobble stays a tap while a fling is a drag.
+ */
+export const TAP_REACH = 120;
+
+/** A piece let go away from every hole: at a tap-in level, a quick touch that barely moved it is a tap, and the piece hops in. */
+export const tapsIn = (plan: SorterPlan, heldFor: number, moved: number) => !!plan.tapIn && heldFor < TAP_HOLD && moved < TAP_REACH;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

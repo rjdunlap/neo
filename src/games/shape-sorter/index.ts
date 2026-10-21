@@ -23,6 +23,7 @@ import {
   pieceKinds,
   planFor,
   startHelp,
+  tapsIn,
   wrongDrop,
   type SorterPlan,
 } from './logic';
@@ -39,8 +40,8 @@ const SHAPE_COLOR: Record<ShapeKind, ColorName> = {
 };
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 5 },
+  lap: { min: 9, max: 9, order: [9] },
+  toddler: { min: 1, max: 9, order: [9, 1, 2, 3, 4, 5] },
   preschool: { min: 3, max: 7 },
   prek: { min: 5, max: 8 },
 };
@@ -60,6 +61,8 @@ interface Piece {
   drag: DragHandle;
   /** Seconds left on a "here I am" wiggle after a floor tap. */
   wiggle: number;
+  /** The game clock when the finger went down on it, to tell a tap from a drag. */
+  pickedAt: number;
 }
 
 interface Hole {
@@ -209,9 +212,10 @@ class ShapeSorter implements Game {
       const view = new Container();
       view.addChild(drawPiece(kind, this.plan.sameColor ? one : SHAPE_COLOR[kind]));
       if (this.plan.tilt) view.rotation = ctx.rng.range(-0.7, 0.7);
-      const piece: Piece = { view, kind, wiggle: 0, drag: null! };
+      const piece: Piece = { view, kind, wiggle: 0, pickedAt: 0, drag: null! };
       piece.drag = draggable(view, ctx.tw, {
         onPick: () => {
+          piece.pickedAt = this.clock;
           sfx.tick();
           void ctx.say(`shape.${kind}`);
         },
@@ -223,7 +227,7 @@ class ShapeSorter implements Game {
   }
 
   start() {
-    void this.ctx.instruct(this.plan.clue ? 'shape.find.start' : 'shape.start').then(() => {
+    void this.ctx.instruct(this.plan.clue ? 'shape.find.start' : this.plan.tapIn ? 'shape.tap.start' : 'shape.start').then(() => {
       if (this.plan.clue) void this.askNextClue();
     });
   }
@@ -269,9 +273,13 @@ class ShapeSorter implements Game {
     return this.help.hints;
   }
 
-  /** The ghost finger on the how-to card: carry the next waiting piece to its matching hole. */
+  /** The ghost finger on the how-to card: carry the next waiting piece to its matching hole (tap it, where a tap puts it in). */
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
+    if (this.plan.tapIn) {
+      const next = this.pieces.find((p) => !p.drag.dragging && !p.view.destroyed);
+      return next ? { tap: { on: next.view } } : null;
+    }
     if (this.plan.clue && (!this.asked || !this.clueReady)) return null;
     const kind = this.plan.clue ? this.asked ?? undefined : undefined;
     const piece = this.pieces.find((p) => !p.drag.dragging && !p.view.destroyed && (!kind || p.kind === kind));
@@ -287,6 +295,14 @@ class ShapeSorter implements Game {
     if (this.finished) return false;
     if (this.plan.clue && !this.clueReady) return false;
     const near = holeAt(this.box.holes.map((h) => ({ h, x: this.box.x + h.x, y: this.box.y + h.y })), x, y);
+    if (!near && tapsIn(this.plan, this.clock - piece.pickedAt, Math.hypot(x - piece.drag.home.x, y - piece.drag.home.y))) {
+      // A tap: the piece hops into its own hole by itself.
+      const hole = holeFor(this.box.holes, piece.kind);
+      if (hole) {
+        void this.swallow(piece, this.box.x + hole.x, this.box.y + hole.y, true);
+        return true;
+      }
+    }
     if (!near) {
       // Out of reach: the piece floats home. At level 1 that is answered too, with a plop and the box leaning to look.
       if (this.plan.everyTouch) {
@@ -333,11 +349,12 @@ class ShapeSorter implements Game {
     void this.ctx.say(`shape.${near.p.kind}`);
   }
 
-  /** In it goes: snap to the hole, shrink down out of sight, and the box says thank you. */
-  private async swallow(piece: Piece, x: number, y: number) {
+  /** In it goes: snap to the hole (hopping up and over first after a tap), shrink down out of sight, and the box says thank you. */
+  private async swallow(piece: Piece, x: number, y: number, hop = false) {
     piece.drag.destroy();
     this.pieces = this.pieces.filter((p) => p !== piece);
     const v = piece.view;
+    if (hop) await this.ctx.tw.to(v, { x: (v.x + x) / 2, y: Math.min(v.y, y) - 90 }, { duration: 0.28, ease: ease.outQuad });
     await this.ctx.tw.to(v, { x, y, rotation: 0 }, { duration: 0.12 });
     void this.ctx.tw.to(v, { alpha: 0 }, { duration: 0.25 });
     await this.ctx.tw.to(v.scale, { x: 0.2, y: 0.2 }, { duration: 0.25, ease: ease.inBack });
@@ -439,12 +456,14 @@ export const shapeSorter: GameModule = {
   titleLine: 'game.shape-sorter',
   region: 'rainbow-meadow',
   skills: ['shapes', 'fine-motor', 'spatial'],
-  bands: ['toddler', 'preschool', 'prek'],
+  bands: ['lap', 'toddler', 'preschool', 'prek'],
+  entryLevels: [9],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
     const n = p.holes.length;
     const shapes = `${n} shape${n === 1 ? '' : 's'}`;
+    if (p.tapIn) return 'tap a shape and it hops in';
     if (p.coded) return `${shapes}, color-matched holes`;
     if (p.clue) return 'hear a shape clue, then find it';
     if (!p.sameColor) return `${shapes}, plain holes`;
