@@ -2134,7 +2134,6 @@ export const SCRIPT = {
 
   'munch.tap': ['The monster is hungry! Tap a cookie!'],
   'munch.count': ['Feed the monster! We will count every cookie.'],
-  'munch.yum': ['Yum!', 'Num num num!', 'Crunchy!'],
   'munch.burp': ['Burp! Excuse me! Thank you!'],
   'munch.each': ['One cookie for each monster!'],
   'munch.had': ['I had mine! Who still needs a cookie?'],
@@ -2154,7 +2153,13 @@ export const SCRIPT = {
   'munch.more': ['It is fair so far, and there are enough cookies for everyone to have one more!'],
   'munch.left-how': ['And how many cookies are left over?'],
   'munch.left-yes': ['{n} left over! Those go to the pet. Yum!'],
-  'munch.hint': ['Look at the glow!'],
+  'munch.hint.food': ['This one! Look at the glow!'],
+  'munch.hint.bell': ['That is just right. Ring the bell now!'],
+  'munch.hint.monster': ['Who still needs one? Look at the glow!'],
+  'munch.hint.pad': ['Try the glowing number!'],
+  'munch.bite': ['{food}!'],
+  'munch.hm': ['Hm?'],
+  'munch.left-no': ['Let us count the cookies on the tray together.'],
   'munch.done': ['What a feast!'],
 
   'song.free': ['Tap the jellies to make a song! Listen to it go round and round.'],

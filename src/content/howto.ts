@@ -571,11 +571,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'monster-munch': {
     goal: 'Feed the monster the right number of cookies.',
     steps: [
-      { to: 2, text: 'Tap a cookie to feed the monster; it counts aloud.' },
+      { to: 1, text: 'Tap a cookie, or the monster, to feed it; it counts each bite aloud.' },
+      { from: 2, to: 2, text: 'Drag a cookie to the monster, or tap it; it counts each bite aloud.' },
       { from: 3, to: 3, text: 'Give each monster one cookie.' },
-      { from: 4, to: 5, text: 'Feed the monster the number of cookies asked for; it counts aloud. Ring the bell when done.' },
-      { from: 6, to: 6, text: 'Feed the cookies and apples asked for, like "2 cookies and 1 apple", then ring the bell.' },
-      { from: 7, to: 7, text: 'Move cookies from the tray to the monsters until each has the same, then ring the bell and tap how many each monster got.' },
+      { from: 4, to: 5, text: 'Feed the monster the number of cookies asked for; it counts each one aloud. Ring the bell when done.' },
+      { from: 6, to: 6, text: 'Feed the cookies and apples asked for, like "2 cookies and 1 apple"; it counts each kind aloud. Then ring the bell.' },
+      { from: 7, to: 7, text: 'Move every cookie from the tray to the monsters; when the tray is empty they check it is fair. Then tap how many each monster got.' },
       { from: 8, text: 'Share the cookies fairly; some may be left over. Ring the bell, then tap how many each monster got and how many are left over.' },
     ],
     finish: [

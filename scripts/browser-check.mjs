@@ -4219,6 +4219,9 @@ async function expansion() {
 }
 
 async function third() {
+  // MUNCH_LEVELS=1,4,7 plays only those Monster Munch levels (no Feelings Faces, no reload check).
+  const munchLevels = process.env.MUNCH_LEVELS?.split(',').map(Number);
+  if (!munchLevels) {
   // Feelings Faces: free play at lap, then every question level with two mistakes and a hint.
   await launch('feelings-faces', 1);
   await page.evaluate(async () => {
@@ -4259,6 +4262,7 @@ async function third() {
     await page.setViewportSize({ width: 1024, height: 768 });
     log(`Feelings Faces ${level}: choices, mistakes, hint, saved round and sticker passed`);
   }
+  }
 
   // Monster Munch: feeding by tap and drag, refusals, the bell, and fair sharing.
   const feedHelpers = () => {
@@ -4278,7 +4282,8 @@ async function third() {
     };
   };
   const expected = { 1: [0, 0], 2: [0, 0], 3: [2, 1], 4: [2, 1], 5: [2, 1], 6: [2, 1], 7: [3, 1], 8: [2, 1] };
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= 8; level++) {
+  const levels = munchLevels ?? Array.from({ length: 9 - Number(process.env.FROM_LEVEL || 1) }, (_, i) => i + Number(process.env.FROM_LEVEL || 1));
+  for (const level of levels) {
     await launch('monster-munch', level);
     await page.evaluate(feedHelpers);
     await page.waitForTimeout(700);
@@ -4286,10 +4291,34 @@ async function third() {
     await page.evaluate(async () => {
       const g = mm.g();
       const mode = g.plan.mode;
-      if (mode === 'tap') { for (const s of [...g.snacks]) { kit.tapOn(s.node); await kit.sleep(300); } return; }
-      if (mode === 'count') {
-        for (const s of g.snacks.slice(0, 2)) { kit.tapOn(s.node); await kit.sleep(400); }
-        while (mm.free()) await mm.feed(mm.free(), g.monsters[0]);
+      if (mode === 'tap' || mode === 'count') {
+        // Two rounds, a short one first; at 1 every other bite is a tap on the monster itself.
+        const sizes = [];
+        while (!g.done) {
+          await kit.until(() => g.done || (!g.busy && g.snacks.length > 0), 20000);
+          if (g.done) break;
+          await mm.ready();
+          const round = g.round;
+          sizes.push(g.snacks.length);
+          const m = g.monsters[0];
+          if (mode === 'tap') {
+            for (let i = 0; mm.free(); i++) {
+              if (i % 2) kit.tapOn(m, 0, -150 * m.scale.y * neo.view.scale); else kit.tapOn(mm.free().node);
+              await kit.sleep(350);
+            }
+            if (m.eaten.length !== sizes.at(-1)) throw new Error('Tapping the monster did not feed it');
+          } else {
+            // A drop short of the monster is no miss: the cookie goes home.
+            const s0 = mm.free();
+            await kit.dragTo(s0.node, { x: 250 * neo.view.scale, y: 150 * neo.view.scale });
+            await kit.sleep(700);
+            if (s0.eatenBy || g.misses) throw new Error('A short drop fed or counted a miss');
+            for (const s of g.snacks.slice(0, 2)) { kit.tapOn(s.node); await kit.sleep(400); }
+            while (mm.free()) await mm.feed(mm.free(), m);
+          }
+          await kit.until(() => g.done || g.round > round, 20000);
+        }
+        if (sizes.join() !== (mode === 'tap' ? '4,6' : '3,5')) throw new Error(`Rounds ${sizes}`);
         return;
       }
       let mistakes = 0;
@@ -4314,7 +4343,11 @@ async function third() {
             // Two wrong answers in the first round bring the hint glow.
             const wrong = g.round === 0 && mistakes < 2;
             kit.tapOn(g.pads.find((p) => (p.value !== r.want.cookie) === wrong).node); await kit.sleep(600);
-            if (wrong) mistakes++;
+            if (wrong) {
+              mistakes++;
+              // A wrong number counts one monster's tummy together, icon by icon.
+              if (!await kit.until(() => g.monsters[0].lit >= 0, 8000)) throw new Error('A wrong pad did not count a tummy');
+            }
             continue;
           }
           if (g.round === 1) {
@@ -4356,6 +4389,7 @@ async function third() {
     assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('monster-munch').history.at(-1); return [r.misses, r.hints]; }), expected[level], `munch ${level} score`);
     log(`Monster Munch ${level}: feeding, mistakes, hints, saved round and sticker passed`);
   }
+  if (munchLevels) return;
 
   // Both start at lap, so Puddle Lagoon shows them, and progress survives a reload.
   await page.waitForTimeout(500);

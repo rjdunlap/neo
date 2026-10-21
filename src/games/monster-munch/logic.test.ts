@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { complete, extras, missing, MUNCH_PLANS, munchRounds, munchTouch, numberChoices, orderWords, TRAY_MAX, wantsMore, type Food, type MunchTable, type Order } from './logic';
+import { complete, extras, missing, MUNCH_PLANS, munchHint, munchRounds, munchTouch, numberChoices, orderWords, TRAY_MAX, wantsMore, type Food, type MunchTable, type Order } from './logic';
 
 describe('Monster Munch rounds', () => {
   it('always put enough food on a tray that stays small enough to grab', () => {
@@ -25,6 +25,12 @@ describe('Monster Munch rounds', () => {
         if (plan.mode === 'exact') rounds.slice(1).forEach((r, i) => expect(r.want.cookie).not.toBe(rounds[i].want.cookie));
       }
     }
+  });
+
+  it('plays two rounds at the tapping levels, a short one first', () => {
+    const counts = (level: number) => munchRounds(MUNCH_PLANS[level - 1], new Rng(3)).map((r) => [r.want.cookie, r.tray.cookie]);
+    expect(counts(1)).toEqual([[4, 4], [6, 6]]);
+    expect(counts(2)).toEqual([[3, 3], [5, 5]]);
   });
 
   it('checks orders, refusals and fair shares', () => {
@@ -87,6 +93,13 @@ describe('Monster Munch rounds', () => {
           for (let step = 0; step < 40 && !won; step++) {
             const move = munchTouch(plan, t);
             expect(move, `${plan.mode} seed ${seed}: a touch to make (step ${step})`).not.toBeNull();
+            // The glow (and its spoken line) points at the kind of thing the next useful touch is.
+            const hint = munchHint(plan, t);
+            if (plan.mode === 'tap' || plan.mode === 'count') expect(hint).toBeNull();
+            else {
+              const kind = move === 'bell' ? 'bell' : 'pad' in move! ? 'pad' : plan.mode === 'exact' || plan.mode === 'two' ? 'food' : 'monster';
+              expect(hint, `${plan.mode} seed ${seed} step ${step}`).toBe(kind);
+            }
             if (move === 'bell') {
               if (plan.mode === 'leftover') {
                 // The game's own judgment: even shares and fewer left than monsters, so the pads come.
