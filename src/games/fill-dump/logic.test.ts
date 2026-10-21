@@ -1,9 +1,12 @@
+import { SCRIPT } from '../../content/voice-script';
 import { checkPour, emptyCup, pour, pourAmount, pourHint, POUR_DISTANCE, POUR_TOLERANCE, recoverTray, startPour } from './logic';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { DESIGN_H, DESIGN_W } from '../../engine/view';
 import {
   FILL_PLANS,
+  FILL_SETS,
+  contentFor,
   MAX_PIECES,
   SPOT_GAP,
   basketSlot,
@@ -444,5 +447,45 @@ describe('Full and empty (level 6)', () => {
         expect(p.y).toBeLessThan(h - 180);
       }
     }
+  });
+});
+
+
+describe('things to put away', () => {
+  it('draws every set reproducibly with matching nouns and playable pieces at levels 1–4', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      for (let level = 1; level <= 4; level++) {
+        const plan = planFor(level);
+        const content = contentFor(plan, new Rng(seed));
+        expect(content).toEqual(contentFor(plan, new Rng(seed)));
+        seen.add(content.set.id);
+        expect(content.variants).toHaveLength(plan.pieces);
+        if (plan.count) expect(new Set(content.variants).size).toBe(1);
+        else expect(new Set(content.variants).size).toBe(plan.pieces);
+        const state = startState(plan, targetFor(plan, new Rng(seed)));
+        for (let i = 0; i < 30 && !state.done; i++) tap(state, nextTouch(state)!);
+        expect([state.done, state.misses, state.hints]).toEqual([true, 0, 0]);
+      }
+    }
+    expect([...seen].sort()).toEqual(FILL_SETS.map(s => s.id).sort());
+  });
+
+  it('offers at least four distinct tip-out designs per set and truthful speech for each', () => {
+    for (const set of FILL_SETS) {
+      const designs = new Set<number>();
+      for (let seed = 1; seed <= 200; seed++) {
+        const content = contentFor(planFor(2), new Rng(seed));
+        if (content.set.id === set.id) content.variants.forEach(v => designs.add(v));
+      }
+      expect(designs.size).toBeGreaterThanOrEqual(4);
+      for (const id of ['fill.tip', 'fill.scoop', 'fill.again', 'fill.put', 'fill.wrong', 'fill.hintremove'] as const) {
+        const spoken = SCRIPT[id].map(line => line.replaceAll('{container}', set.container).replaceAll('{things}', set.things));
+        expect(spoken.every(line => !line.includes('{container}') && !line.includes('{things}'))).toBe(true);
+        expect(spoken.join(' ')).toContain(id === 'fill.scoop' ? set.things : set.container);
+        if (set.id !== 'fruit') expect(spoken.join(' ')).not.toMatch(/fruit|basket/);
+      }
+    }
+    expect(SCRIPT['fill.hintadd'].join(' ')).toContain('piece');
   });
 });

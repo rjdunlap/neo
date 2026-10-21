@@ -1,5 +1,23 @@
 import type { Rng } from '../../engine/random';
 
+/** One material per round; speech and art share these nouns. Pitch offsets are pentatonic steps. */
+export const FILL_SETS = [
+  { id: 'fruit', things: 'fruit', container: 'basket', pitch: 0 },
+  { id: 'balls', things: 'balls', container: 'bucket', pitch: 2 },
+  { id: 'blocks', things: 'blocks', container: 'toy box', pitch: -2 },
+  { id: 'ducks', things: 'ducks', container: 'tub', pitch: 4 },
+] as const;
+export type FillSet = (typeof FILL_SETS)[number];
+
+/** At least four visibly different designs in each set; counting repeats exactly one design. */
+export function contentFor(plan: FillPlan, rng: Rng) {
+  const set = rng.pick(FILL_SETS);
+  const count = set.id === 'fruit' ? 6 : 4;
+  const designs = rng.shuffle(Array.from({ length: count }, (_, i) => i));
+  const one = rng.int(0, count - 1);
+  return { set, variants: Array.from({ length: plan.pieces }, (_, i) => plan.count ? one : designs[i % designs.length]) };
+}
+
 /**
  * Fill and Dump: tip a basket of fruit out, scoop it back in, and (from level 3) fill it with a stated number.
  * The rules live here as a small reducer so a test can prove what the screen has to guarantee: the lap levels cannot
@@ -37,7 +55,7 @@ export const describeFill = (level: number): string => {
   if (kind === 'pour') return 'Tip the jug to fill three cups to their lines; catch and reuse spills';
   if (kind === 'pair') return `Full and empty: ${PAIR_REQUESTS} times, tip out the full basket or fill the empty one`;
   const p = planFor(level);
-  if (p.count) return `Put ${p.count[0]} to ${p.count[1]} in the basket, then check (${p.pieces} to pick from)`;
+  if (p.count) return `Put ${p.count[0]} to ${p.count[1]} in the container, then check (${p.pieces} to pick from)`;
   return `Tip out ${p.pieces} and scoop them back${p.dumps > 1 ? `, ${p.dumps} times` : ''}`;
 };
 
