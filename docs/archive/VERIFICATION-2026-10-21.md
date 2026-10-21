@@ -110,3 +110,10 @@
 - Dev server http://localhost:5969: `BROWSER_SUITE=third MUNCH_LEVELS=1,2,4,7` passed (scores 1: 0/0, 2: 0/0, 4: 2/1, 7: 3/1; stickers saved); `BROWSER_SUITE=fingerdemo FINGER_ONLY=monster-munch FINGER_LEVELS=1` clean in 18.2 s.
 - Not run: build, other suites, the offline check, a portrait screenshot.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether per-bite counting keeps pace with fast feeding on iPad speech, and whether the ringed tummy count and the monster's lean read; a child.
+
+## 2026-10-21 — Who Am I? Z2: shared cast art move
+
+- Built on `claude/who-am-i-z2-art` ([PR #707](https://github.com/rjdunlap/neo/pull/707), `cd49bdd8` on `058c49c6`): `src/art/animals.ts` holds `frogArt`, `penguinArt`, `turtleArt(size)` and `fishArt(color: Swatch)`; drawing bodies are byte-identical (removed/added line comparison of the diff) and Frog Hop, Penguin Slide, Mossy Path and Bubble Pop import them.
+- `npm run typecheck` clean; `npm test` 199 files, 2278 tests passed; `npm run build` passed.
+- Dev server http://localhost:5240: `BROWSER_SUITE=woods WOODS_ONLY=hop HOP_LEVELS=1`, `mossypath` (levels 1 and 3, land launch and return), `woods WOODS_ONLY=penguin FROM_LEVEL=1 TO_LEVEL=1` and `originals ORIGINALS_ONLY=scenes` (Bubble Pop shore, bath, night, sea) passed.
+- Not run: `fingerdemo` (no bot or interaction changed), screenshots (bodies unchanged), the offline check, a device.

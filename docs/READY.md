@@ -19,7 +19,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 
 
-- **Discovery D5a, Make my mix** (shell and navigation tier): hold the mix spot to choose one to five stops, repeats allowed, in memory only. [Definition](definitions/make-my-mix.md)
 - **`egg-catch`, notes, egg colours and the hatching basket** (content): pentatonic hens, catchable colours at 1–2, chicks at the finish. [Slice 3](deep-dives/egg-catch.md#fresh-content-inside-existing-levels)
 - **`egg-catch`, level 8 Under the hen** (new interaction): tap a lane, the basket hops; toddler order 1, 8, 2. [Slice 4](deep-dives/egg-catch.md#new-levels-on-top)
 - **`egg-catch`, level 9 One gate** (new level): preschool and pre-K entry before 4. [Slice 5](deep-dives/egg-catch.md#new-levels-on-top)

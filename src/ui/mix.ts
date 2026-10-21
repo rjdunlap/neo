@@ -20,11 +20,11 @@ export function hopIcon(color = ink, size = 1): Graphics {
   return g;
 }
 
-/** Three dots, one per stop: filled once a stop is played or hopped over, ringed for the one that is next. */
+/** One dot per stop, centred on the count: filled once a stop is played or hopped over, ringed for the one that is next. */
 export function progressDots(items: readonly MixItem[], next: number | null): Graphics {
   const g = new Graphics();
   items.forEach((it, i) => {
-    const x = (i - 1) * 22;
+    const x = (i - (items.length - 1) / 2) * 22;
     if (it.state === 'played') g.circle(x, 0, 7).fill(swatch.green.fill);
     else if (it.state !== 'upcoming') g.circle(x, 0, 7).fill({ color: ink, alpha: 0.25 });
     else g.circle(x, 0, 7).fill(0xffffff).stroke({ width: 3, color: i === next ? swatch.orange.line : swatch.yellow.line });
@@ -56,13 +56,13 @@ export function nextStopArt(mod: GameModule, title: string, state: MixState): Co
   return art;
 }
 
-/** The All done tile: the blanket's three little pictures and a ribbon. */
+/** The All done tile: the first three stops' little pictures and a ribbon. */
 export function allDoneArt(mods: readonly GameModule[]): Container {
   const art = new Container();
   const ribbon = new Graphics().poly([210, 30, 250, 30, 262, 82, 230, 66, 198, 82]).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line })
     .circle(230, 34, 20).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
   art.addChild(ribbon);
-  mods.forEach((m, i) => art.addChild(picture(m, 46 + i * 58, 56 + (i === 1 ? -8 : 6), 56)));
+  mods.slice(0, 3).forEach((m, i) => art.addChild(picture(m, 46 + i * 58, 56 + (i === 1 ? -8 : 6), 56)));
   return art;
 }
 
@@ -76,6 +76,13 @@ export interface SheetActions {
 }
 
 const TILE = 220;
+
+/** The sheet's stop tiles for one to five stops: their size and centres (before the design area's offset), centred on 512. */
+export function sheetTiles(count: number): { size: number; xs: number[] } {
+  const size = count <= 3 ? TILE : count === 4 ? 190 : 150;
+  const gap = count <= 3 ? 60 : count === 4 ? 24 : 18;
+  return { size, xs: Array.from({ length: count }, (_, i) => 512 + (i - (count - 1) / 2) * (size + gap)) };
+}
 
 /** One stop on the sheet (220 across) or a stop card's row (100): bright when next or still to come, a sticker copy once played, dimmed with a hop once passed. */
 export class StopTile extends Container {
@@ -104,7 +111,7 @@ export class StopTile extends Container {
       copy.eventMode = 'none';
       this.addChild(copy);
     }
-    this.bobbing = next && size === TILE;
+    this.bobbing = next && size > 100; // on the sheet, never on a stop card's row
     onTap(this, () => {
       this.face.scale.set(1.06);
       onPress();
@@ -112,13 +119,13 @@ export class StopTile extends Container {
   }
   update(dt: number) {
     this.clock += dt;
-    this.face.y = this.bobbing ? Math.sin(this.clock * 3) * 6 : 0;
+    this.face.y = this.bobbing ? Math.sin(this.clock * 3) * 6 * this.size / TILE : 0;
     this.face.scale.set(Math.max(1, this.face.scale.x - dt * 0.6));
   }
 }
 
 /**
- * The preview and the ending, over the home spot: Back, three stop tiles, then Play and Skip while a stop is left, or
+ * The preview and the ending, over the home spot: Back, one to five stop tiles, then Play and Skip while a stop is left, or
  * Again mix and Home at the end. Pictures carry the meaning; every target is at least 100 across.
  */
 export class MixSheet extends Container {
@@ -133,7 +140,7 @@ export class MixSheet extends Container {
   readonly homeButton: RoundButton;
   private state: MixState | null = null;
 
-  constructor(private readonly mods: readonly GameModule[], private readonly actions: SheetActions) {
+  constructor(private readonly actions: SheetActions) {
     super();
     this.scrim.eventMode = 'static'; // nothing on the home spot can be touched under the sheet
     this.backButton = new RoundButton(arrowIcon(-1), swatch.white, 50, () => actions.back());
@@ -148,11 +155,13 @@ export class MixSheet extends Container {
     return !!this.state && nextUp(this.state) === null;
   }
 
-  show(state: MixState, view: View) {
+  /** The live session's stops, one tile each. */
+  show(state: MixState, mods: readonly GameModule[], view: View) {
     this.state = state;
     for (const t of this.tiles) t.destroy({ children: true });
     const next = nextUp(state);
-    this.tiles = this.mods.map((mod, p) => new StopTile(mod, state.items[p], p === next, () => this.actions.tile(p)));
+    const { size } = sheetTiles(mods.length);
+    this.tiles = mods.map((mod, p) => new StopTile(mod, state.items[p], p === next, () => this.actions.tile(p), size));
     this.tileLayer.addChild(...this.tiles);
     this.layout(view);
   }
@@ -164,7 +173,7 @@ export class MixSheet extends Container {
     this.scrim.clear().rect(0, 0, view.w, view.h).fill({ color: wood.light, alpha: 0.85 });
     this.panel.clear().roundRect(ox + 82, tileY - 160, 860, buttonY - tileY + 260, 40).fill({ color: 0xffffff, alpha: 0.7 });
     this.backButton.position.set(65, 65);
-    const xs = [232, 512, 792].map(x => ox + x);
+    const xs = sheetTiles(this.tiles.length).xs.map(x => ox + x);
     this.tiles.forEach((t, i) => t.position.set(xs[i], tileY));
     const next = this.state ? nextUp(this.state) : null;
     const ending = next === null;
