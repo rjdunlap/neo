@@ -223,3 +223,10 @@
 - Level-4 screenshot at http://localhost:5189, 1024×768, reviewed: five shadows and authored first-beat rest on 6×4, grid/pet clear; no page errors. Local artifact `test-results/song-motifs-level4.png` (ignored). Initial probe needed the harness's hatched test profile; Chromium required process access outside the sandbox.
 - Passed 18 how-to tests (`npx vitest run src/content/howto.test.ts`), links and diff check. No new voice lines needed; the existing copy instruction remains true, and the how-to names the quiet beat.
 - Not run: `fingerdemo` (bot unchanged), full units, build, play suites, offline, portrait, device or child checks (content tier). No new levels/interactions/story changes.
+
+## 2026-10-21 — Discovery D5a: Make my mix
+
+- [PR #724](https://github.com/rjdunlap/neo/pull/724), `claude/make-my-mix`, base `8610cf8e` plus the branch commits: hold the mix spot (0.6 s) to open a mix table, edit a one-to-five-stop lineup (add, repeat, reorder, remove, reset), Play it; in memory only, no game ID.
+- Passed `npm run typecheck`, `npm run build`, `npm test` (2349 of 2350; the one failure is a hint-search timing cap in `block-garden/logic.test.ts` under full-suite load, unrelated, a known flake). New: `my-mix.test.ts` (14, table targets in four views at every count) and five cases in `mix-flow.test.ts`.
+- Passed `BROWSER_SUITE=discovery DISCOVERY_ONLY=my-mix` (hold, add/repeat/full, reorder, remove, four-stop mix, Skip, finish, result tile, Explore keeps lineup, profile switch resets) and `DISCOVERY_ONLY=mix` unchanged, at http://localhost:5540; landscape and portrait table screenshots reviewed.
+- Not run: `world`, offline, the subject-layout hold in a browser (unit-level only), a gamepad closing the table (not implemented). Open in DEVICE-CHECKS: a grown-up finding the hold, a child's reaction.
