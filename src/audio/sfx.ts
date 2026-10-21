@@ -86,6 +86,12 @@ export const sfx = {
     if (o) noise(o.ctx, o.dest, o.t, 0.35, 0.22, { type: 'bandpass', hz: 400, q: 2, sweepTo: 2400 });
   },
 
+  /** A dry brush across dust: a short, soft hiss. */
+  brush() {
+    const o = out();
+    if (o) noise(o.ctx, o.dest, o.t, 0.12, 0.09 * jitter(200), { type: 'bandpass', hz: 3200 * jitter(), q: 0.8, sweepTo: 1800 });
+  },
+
   squish() {
     const o = out();
     if (!o) return;
