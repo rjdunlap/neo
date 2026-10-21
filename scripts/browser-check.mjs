@@ -5203,7 +5203,7 @@ async function arcade() {
       await kit.sleep(200);
     };
   });
-  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 11, 10, 2, 3, 4, 5, 6, 7, 8];
+  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 11, 10, 2, 3, 4, 5, 6, 7, 8, 9];
   // Come along plays twice: led by a finger at lap, then left alone at toddler so the drift brings the herd home.
   const roundupPlays = roundupLevels.flatMap((level) => level === 11 ? [[11, 'lap'], [11, 'toddler']] : [[level]]);
   for (const [level, playBand] of (!only || only === 'roundup') ? roundupPlays : []) {
@@ -5338,12 +5338,37 @@ async function arcade() {
             }
           }
         }
+        if (g.plan.prefilled) {
+          const p = g.pens[0];
+          if (![4, 5].includes(p.pen.target) || ![1, 2, 3].includes(p.pen.start) || p.inside !== p.pen.start || loose().length !== 6) throw new Error('Fill it up initial counts');
+          if (!spoken.includes(`${p.inside} are in`) || !spoken.includes('Put in the rest')) throw new Error(`Fill instruction: ${spoken}`);
+          if (!g.animals.filter((a) => a.state === 'penned').every((a) => a.pen === 0 && a.critter.x > p.rect.x)) throw new Error('Prefill was not placed inside');
+          // Too few: count from one, then name the current remainder. Two wrong bells add one hint.
+          for (let k = 0; k < 2; k++) {
+            speech.length = 0;
+            kit.tapOn(g.bell); await kit.sleep(300);
+            await kit.until(() => !g.busy, 10000);
+            const counts = speech.filter((s) => s.id === 'count').map((s) => s.values.n);
+            if (JSON.stringify(counts) !== JSON.stringify(Array.from({ length: p.inside }, (_, i) => i + 1))) throw new Error(`Recount: ${counts}`);
+            if (!speech.some((s) => s.id === 'herd.more' && s.values.n === p.pen.target - p.inside)) throw new Error('Wrong spoken remainder');
+          }
+          if (g.misses !== 2 || g.hints !== 1 || !loose().every((a) => a.glow.visible)) throw new Error(`Fill support: ${g.misses}/${g.hints}`);
+          // An idle hint after a new arrival must use the present count, not the prefill.
+          const a = loose()[0];
+          await herdInto(a, 0);
+          if (p.inside < p.pen.target) {
+            speech.length = 0;
+            g.sinceProgress = 14.8;
+            await kit.until(() => g.hinting && !g.recounting, 10000);
+            if (!speech.some((s) => s.id === 'herd.more' && s.values.n === p.pen.target - p.inside)) throw new Error('Hint reused the initial remainder');
+          }
+        }
         if (g.plan.mode === 'count') {
           // One too many, then the bell: the extra hops back out.
           while (g.pens[0].inside <= g.pens[0].pen.target && loose().length) await herdInto(loose()[0], 0);
           kit.tapOn(g.bell); await kit.sleep(300);
           await kit.until(() => !g.busy, 8000);
-          if (g.misses !== 1 || g.pens[0].inside !== g.pens[0].pen.target) throw new Error(`Extra not noticed: ${g.misses} ${g.pens[0].inside}`);
+          if (g.misses !== (g.plan.prefilled ? 3 : 1) || g.pens[0].inside !== g.pens[0].pen.target) throw new Error(`Extra not noticed: ${g.misses} ${g.pens[0].inside}`);
         }
         // Shooing can sweep a neighbor in too; the bell sends extras back out, so herd and ring until right.
         for (let round = 0; round < 4 && !g.finished; round++) {

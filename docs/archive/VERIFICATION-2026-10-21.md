@@ -146,3 +146,10 @@
 - [PR #711](https://github.com/rjdunlap/neo/pull/711), branch `claude/rw07-welcome-definition`: new [WELCOME-BUILD.md](../rework/WELCOME-BUILD.md) defining RW07 as three slices (record, page, Continue, `pretty` and `yummy`; the song step; the ending, adoption and basket bed) with five recorded defaults. Routed into WORK-ITEMS, READY, ROADMAP chunk 30 and WAITING-ON-DEVELOPER.
 - Ran: `node scripts/check-links.mjs` and `git diff --check` (results in the PR). No code changed, so no typecheck, unit, browser or offline run.
 - Open: nothing built or played; slice 2 waits on the hello-song decision. No coverage-summary row changed.
+
+## 2026-10-21 — RW07 slice 1: Welcome a New Friend (record, page, Continue, pretty and yummy)
+
+- [PR #712](https://github.com/rjdunlap/neo/pull/712), branch `claude/rw07-welcome-slice1`: `projects.welcome` with repair, `go.project` and `ProjectScene`, Home's Continue, the `project` member of `StoryRound`, voice lines, and a new `welcome` browser suite. The `home` suite's stale Explore assertion (RW13 added locations) narrowed to the first two ids.
+- Ran at `2eb18d2c` (dev http://localhost:5254, preview http://localhost:5949): typecheck; `npm test` 200 files, 2302 tests; build; `BROWSER_SUITE=welcome`, `home` and `picnic` passed; `npm run test:offline` passed. Landscape and portrait welcome page and Home with Continue reviewed by screenshot.
+- Not run: `world` (classic only gained a `project` to map stub), device speech, iPad, a child.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a child understands the invitation and step cards; how the asks and done lines sound.

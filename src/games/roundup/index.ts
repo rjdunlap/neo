@@ -19,7 +19,7 @@ const LEVELS: BandLevels = {
   lap: { min: 1, max: 11, order: [1, 11] },
   toddler: { min: 1, max: 11, order: [1, 11, 10, 2, 3] },
   preschool: { min: 2, max: 5 },
-  prek: { min: 3, max: 8 },
+  prek: { min: 3, max: 9 },
 };
 
 const SCALE = 0.32;
@@ -97,6 +97,8 @@ class Roundup implements Game {
   private drifting = false;
   private placed = false;
   private autoAnimal: Animal | null = null;
+  /** Hold the loose herd while the pet counts the visible pen, so the remainder stays true. */
+  private recounting = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -134,6 +136,12 @@ class Roundup implements Game {
       if (this.plan.sequential && this.animals.length) {
         a.state = 'waiting';
         critter.visible = false;
+      }
+      const prefill = this.pens.findIndex((p) => p.inside < (p.pen.start ?? 0));
+      if (prefill >= 0) {
+        a.state = 'penned';
+        a.pen = prefill;
+        this.pens[prefill].inside++;
       }
       this.animals.push(a);
       this.world.addChild(glow, critter);
@@ -189,7 +197,7 @@ class Roundup implements Game {
       case 'sortStay':
         return void this.ctx.instruct('herd.sortstay', { a: PLURAL[a.kind], b: PLURAL[b.kind], placeA: PLACE[a.kind], placeB: PLACE[b.kind], outsiders: PLURAL[this.herd.stay!] });
       case 'count':
-        return void this.ctx.instruct('herd.count', { n: a.target!, animals });
+        return void this.ctx.instruct(a.start ? 'herd.fill' : 'herd.count', { n: a.target!, k: this.pens[0].inside, animals });
       case 'fair':
         return void this.ctx.instruct('herd.fair', { animals });
       case 'sortCount':
@@ -198,7 +206,7 @@ class Roundup implements Game {
   }
 
   private point(e: FederatedPointerEvent) {
-    if (this.finished) return;
+    if (this.finished || this.recounting) return;
     const p = this.ctx.stage.toLocal(e.global);
     this.finger = { x: p.x, y: p.y };
   }
@@ -237,7 +245,8 @@ class Roundup implements Game {
         }
       }
       this.animals.forEach((a, i) => {
-        a.critter.position.set(spots[i].x, spots[i].y);
+        const r = a.state === 'penned' ? this.pens[a.pen].rect : null;
+        a.critter.position.set(r ? r.x + 85 + (i % 2) * 105 : spots[i].x, r ? r.y + 95 + Math.floor(i / 2) * 100 : spots[i].y);
         a.wander = { x: a.critter.x, y: a.critter.y, next: this.ctx.rng.range(0, 2) };
       });
     }
@@ -323,7 +332,7 @@ class Roundup implements Game {
     this.placeAutoSpot();
     const f = this.field();
     for (const a of this.animals) {
-      if (a.state === 'loose') this.roam(a, dt, f);
+      if (a.state === 'loose' && !this.recounting) this.roam(a, dt, f);
       else if (a.state === 'penned') this.potter(a, dt);
       a.glow.position.copyFrom(a.critter.position);
     }
@@ -333,7 +342,7 @@ class Roundup implements Game {
     this.fingerRing.clear();
     if (this.finger) this.fingerRing.circle(this.finger.x, this.finger.y, 60 + 6 * Math.sin(this.clock * 8)).stroke({ width: 6, color: 0xffffff, alpha: 0.6 });
 
-    if (!this.finished && this.animals.some((a) => a.state === 'loose')) {
+    if (!this.finished && !(this.plan.prefilled && (this.busy || this.recounting)) && this.animals.some((a) => a.state === 'loose')) {
       this.sinceProgress += dt;
       if (this.sinceProgress >= (this.plan.hintAfter ?? 15) && !this.hinting && !this.drifting) this.showHint();
       // Still stuck: the nearest one trots home by itself, so no round gets stuck.
@@ -604,7 +613,7 @@ class Roundup implements Game {
 
   /** The bell: "I think that's the right number." Extras hop back out; a short pen asks for more. */
   private async ring() {
-    if (this.busy || this.finished || !usesBell(this.plan)) return;
+    if (this.busy || this.recounting || this.finished || !usesBell(this.plan)) return;
     this.busy = true;
     this.finger = null;
     this.sinceProgress = 0;
@@ -620,6 +629,7 @@ class Roundup implements Game {
     for (let i = 0; i < this.pens.length; i++) {
       const p = this.pens[i];
       const { extra, short } = result[i];
+      if (this.plan.prefilled) await this.countPen(i);
       if (extra > 0) {
         await this.ctx.say('herd.extra', { count: p.inside, n: p.pen.target! });
         const out = this.animals.filter((a) => a.state === 'penned' && a.pen === i).slice(0, extra);
@@ -630,7 +640,7 @@ class Roundup implements Game {
           a.state = 'loose';
           a.wander = { x: a.critter.x - 60, y: a.critter.y, next: 2 };
         }
-      } else if (short > 0) {
+      } else if (short > 0 && !this.plan.prefilled) {
         await this.ctx.say('herd.short', { k: p.inside, n: p.pen.target! });
       }
     }
@@ -668,12 +678,30 @@ class Roundup implements Game {
     this.busy = false;
   }
 
+  /** Count the animals that are actually home, then name the missing part (never the original start count). */
+  private async countPen(i: number) {
+    if (this.recounting) return;
+    this.recounting = true;
+    this.finger = null;
+    const p = this.pens[i];
+    const home = this.animals.filter((a) => a.state === 'penned' && a.pen === i);
+    for (let n = 1; n <= home.length; n++) {
+      home[n - 1].critter.poke();
+      await this.ctx.say('count', { n });
+    }
+    const more = p.pen.target! - p.inside;
+    if (more > 0) await this.ctx.say('herd.more', { n: more });
+    else if (more === 0) await this.ctx.say('herd.fillready', { n: p.inside });
+    this.recounting = false;
+  }
+
   private showHint() {
     this.hints++;
     this.wrongs = 0;
     this.hinting = true;
     // Come along: one hint starts a drift that lasts the rest of the round, rather than one per animal.
     if (this.plan.mode === 'follow') this.drifting = true;
+    if (this.plan.prefilled && !this.busy) void this.countPen(0);
   }
 
   private drawGlows() {
