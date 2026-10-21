@@ -184,3 +184,11 @@
 - One-off probe (`test-results/salon-glow-probe.mjs`, not a suite): level 4 with 16 of 26 strands in the asked colour and the mirror tapped gave misses 1, hints 0, glow set; a screenshot showed the glow.
 - Not run: `npm run build`, levels 4-5 in the suite, other suites.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): the giggle, device speech of the two new lines, the glow on an iPad.
+
+## 2026-10-21 — Little Conductor level 3: Two pictured requests (music M3)
+
+- Built on `claude/little-conductor-m3` ([PR #718](https://github.com/rjdunlap/neo/pull/718)): the listener's sign, pad audition, Check, a wrong Check that names the requested pace, a once-per-half requested hint, bands toddler 1–2, preschool 1–3, pre-K 2–3, and the `conductor` suite's level 3.
+- Tested commit `698731cc` plus a one-line idle-pulse guard in the next commit (typecheck and the 49 little-conductor and how-to tests re-run on it). `npm run typecheck`; full `npm test` (200 files, 2322 tests pass); `npm run build` passed.
+- Ran (Vite http://localhost:5665): `BROWSER_SUITE=conductor CONDUCTOR_LEVELS=3` passed (Check with no pick, a wrong Check with the pick kept, the hint asked twice counted once, both halves matched, one sticker); the portrait screenshot `little-conductor-3-portrait` was reviewed (sign above the listener, glowing hint pad, wrong pick framed). `BROWSER_SUITE=fingerdemo FINGER_ONLY=little-conductor FINGER_LEVELS=3` finished in 18.1 s.
+- Not run: a landscape level-3 screenshot, the real Esc to pause-sheet route (`askForHint` called directly), a levels 1–2 regression play (paths unchanged; layout tests cover them), the offline check, a device, a child.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a preschooler reads the sign as the thing to match, and whether a bunny friend in the band blurs the rabbit pad.
