@@ -360,3 +360,11 @@
 - Dev server http://localhost:5362: `BROWSER_SUITE=originals ORIGINALS_ONLY=fill FILL_LEVELS=6` passed (free grass tap, two wrong baskets, glow hint, four requests, score [2,1], sticker; portrait screenshot `test-results/browser/fill-dump-6-portrait.png`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=fill-dump FINGER_LEVELS=6` clean in 14.5 s (toddler).
 - After the `basket.ts` split, `ORIGINALS_ONLY=fill FILL_LEVELS=1,3,5` also passed (tip-out, counting with hint, pour). Not run: levels 2 and 4, the full suites, the offline check, any device.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md) not edited): a person watching a toddler tell full from empty.
+
+## 2026-10-20 — Roundup level 10 Shoo one (slice 3)
+
+- [PR #686](https://github.com/rjdunlap/neo/pull/686), `codex/roundup-shoo-one`, tested base `afd4d7e9` plus slice diff: two successive single-animal successes, 80% gate, short meadow, ordinary flee radius, fresh 10/20-second support; toddler order `[1,10,2,3]`, entry `[10]`. Level 11 and other slices excluded.
+- `npm run typecheck` and `npx vitest run src/games/roundup/logic.test.ts src/games/roundup/levels.test.ts src/content/howto.test.ts` passed (29 tests): wider gate/fences, two acceptable animals, supported bands, birthday landing, ordered stepping and truthful card.
+- `GAME_URL=http://localhost:5184 BROWSER_SUITE=arcade ARCADE_ONLY=roundup ARCADE_LEVELS=10 npm run test:browser` passed: first success leaves round open, second animal reveals, fresh timers, animal/gate glow, assisted finish, saved `[0,2]` and exactly one sticker; no page errors. Timer setup advances idle counters; real updates trigger support. Landscape screenshot reviewed. Initial sandbox launch was blocked by Chromium's Mach permission; reran outside sandbox.
+- `GAME_URL=http://localhost:5184 BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=10 npm run test:browser` passed cleanly in 7.3 s (two successes, zero misses/hints), no page errors.
+- Not run: build, full suites, offline, portrait, device/child checks (new level on existing interaction tier). iPad steering feel, second-arrival clarity and device speech remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).

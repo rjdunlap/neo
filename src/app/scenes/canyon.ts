@@ -20,6 +20,8 @@ export interface CanyonItem {
   x: number;
   y: number;
   rect: Rect;
+  /** Drawn at this size (the spring shrinks a step where a full land leaves no room for it). */
+  k?: number;
 }
 
 /**
@@ -74,13 +76,13 @@ export function canyonPlan(layout: LandLayout, view: View, ground: number): Cany
   const rng = new Rng(163);
   const items: CanyonItem[] = [];
   /** Up to `n` of a thing `size` wide and `tall` high whose feet are between `top` and `bottom`, in up to `tries` tries. */
-  const place = (kind: CanyonThing, n: number, size: number, tall: number, top: number, bottom: number, tries = n * 14) => {
+  const place = (kind: CanyonThing, n: number, size: number, tall: number, top: number, bottom: number, tries = n * 14, k?: number) => {
     for (let i = 0, placed = 0; i < tries && placed < n; i++) {
       const x = rng.range(size / 2, w - size / 2);
       const y = rng.range(top, bottom);
       const rect = { x: x - size / 2, y: y - tall, w: size, h: tall };
       if (!clear(rect)) continue;
-      items.push({ kind, x, y, rect });
+      items.push(k ? { kind, x, y, rect, k } : { kind, x, y, rect });
       // Nothing stands on anything else.
       keepOut.push(rect);
       placed++;
@@ -89,6 +91,7 @@ export function canyonPlan(layout: LandLayout, view: View, ground: number): Cany
   // The spring and its cottonwood first, searched for longest (in a full landscape field it fits only between two spots),
   // then the desert plants, then the animals between them.
   place('spring', 1, 140, 150, ground + 40, h - 8, 600);
+  if (!items.length) place('spring', 1, 105, 113, ground + 40, h - 8, 600, 0.75);
   place('pear', 3, 60, 72, ground + 30, h - 8);
   place('yucca', 3, 50, 76, ground + 40, h - 8);
   place('lizard', 2, 64, 36, ground + 30, h - 8);
@@ -116,8 +119,12 @@ export function drawCanyon(g: Graphics, layout: LandLayout, view: View, ground: 
   }
   g.stroke({ color: FAR_LINE, width: 2, join: 'round' });
   for (const m of near) mesa(g, m, ground + 12, STRATA, ROCK_LINE, 2.5);
-  for (const { kind, x, y } of canyonPlan(layout, view, ground)) {
-    if (kind === 'spring') spring(g, x, y);
+  for (const { kind, x, y, k } of canyonPlan(layout, view, ground)) {
+    if (kind === 'spring') {
+      g.save().translateTransform(x, y).scaleTransform(k ?? 1, k ?? 1);
+      spring(g, 0, 0);
+      g.restore();
+    }
     else if (kind === 'pear') pear(g, x, y);
     else if (kind === 'yucca') yucca(g, x, y);
     else if (kind === 'lizard') lizard(g, x, y, x > view.w / 2 ? -1 : 1);
