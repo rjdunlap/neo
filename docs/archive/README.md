@@ -56,3 +56,5 @@ IDEAS.md's short-ladder audit (2026-10-09), round two and round three moved to [
 RW06 slice 2 closeout rotated the oldest live verification entry (Ramp Race truthful support, inquiry Q2) into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
 
 Puddle Gobble closeout rotated the oldest live verification entry into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
+
+Swing Pals closeout rotated the oldest live verification entry (Garden Grow, slice 1) into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.

@@ -287,3 +287,10 @@
 - Ran `npm run typecheck` (pass) and `npx vitest run src/games/feelings-faces src/content` (96 pass). Full `npm test` 1791 of 1793: the two failures (`src/art/creatures/cast.test.ts` RW02b tote "less than 2", `src/app/scenes/peaks.test.ts` glider loop on screen) are nondeterministic, pass and fail across reruns, and passed on the unchanged tree.
 - Browser (http://localhost:5549, headless): `BROWSER_SUITE=feelings8 FEELINGS_LEVEL=6` passed twice and `FEELINGS_LEVEL=8` passed (one wrong card twice, a glow hint, prop wobble with no miss, sticker, misses/hints [2,1]); `BROWSER_SUITE=fingerdemo FINGER_ONLY=feelings-faces FINGER_LEVELS=6,8` clean in 19.0 s and 18.3 s; landscape probe screenshots of each new happening.
 - Open: no portrait screenshot; the `third` suite (levels 1-7) was not rerun, so the level-7 friends pool is unit-tested but not browser-played; build not run (no shared assets). Not run: iPad, device speech, whether the butterfly and rain read as surprise and sadness, whether the wobble invites taps ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-20 — Garden Grow: true how-to and spoken gaps (slice 1)
+
+- Built on `claude/garden-grow-true-howto` ([PR #674](https://github.com/rjdunlap/neo/pull/674), commit 9890fd1a): capped and corrected how-to steps (levels 1, 3, 5, 7), `grow.full` for full beds, recount after a take-out, level 1 beds growing independently, the weather seat in the co-play tip.
+- Ran `npm run typecheck` (pass), vitest on 23 files (Garden Grow logic, how-to, all voice-script tests; 192 passed) and `npm run build` (pass).
+- Browser (http://localhost:5833): `BROWSER_SUITE=woods WOODS_ONLY=grow FROM_LEVEL=1` passed levels 1-7 (level 1 taps beds 250 ms apart, so concurrent growth and the finale ran); `BROWSER_SUITE=fingerdemo FINGER_ONLY=garden-grow FINGER_LEVELS=1` clean in 10.5 s. A first three-line co-play tip covered the cloud and swallowed the scripted tap at level 4; shortened to two lines and passed.
+- Open: level 7's drawn colors (decision 4). Not run: device speech of `grow.full`, a child's play, the offline check, a portrait screenshot.
