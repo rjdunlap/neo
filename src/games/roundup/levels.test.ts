@@ -28,10 +28,20 @@ it('places Shoo one between tap and shoo three without renumbering other bands',
   expect(nextLevelOffer(10, toddler)).toBe(2);
   expect(stepLevel(2, -1, toddler)).toBe(10);
   expect(levelsInOrder(roundup.levels('preschool'))).toEqual([2, 3, 4, 5]);
-  expect(levelsInOrder(roundup.levels('prek'))).toEqual([3, 4, 5, 6, 7]);
+  expect(levelsInOrder(roundup.levels('prek'))).toEqual([3, 4, 5, 6, 7, 8]);
   expect(landing(10, roundup.levels('preschool'), roundup.entryLevels)).toBe(2);
   const card = howToFor(roundup, 10)!;
   expect(JSON.stringify(card)).toContain('wide gate');
   expect(JSON.stringify(card)).toContain('second');
   expect(JSON.stringify(card)).not.toContain('ring the bell');
+});
+
+it('tops pre-K with Make it fair, a bell level with no number on the sign', () => {
+  expect(roundup.levels('prek').max).toBe(8);
+  expect(roundup.levels('preschool').max).toBe(5);
+  const card = JSON.stringify(howToFor(roundup, 8)!);
+  expect(card).toContain('same number');
+  expect(card).toContain('ring the bell');
+  expect(card).toContain('empty pen');
+  expect(card).not.toContain('cows');
 });
