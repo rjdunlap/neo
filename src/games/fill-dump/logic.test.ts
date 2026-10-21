@@ -21,6 +21,16 @@ import {
   type FillState,
   type FillTap,
   type Rect,
+  BASKET_HIT,
+  FILL_LEVELS,
+  PAIR_REQUESTS,
+  PAIR_SCALE,
+  kindFor,
+  pairLayout,
+  pairNext,
+  pairTap,
+  rightBasket,
+  startPair,
 } from './logic';
 
 const fresh = (level: number, seed = 1) => {
@@ -347,5 +357,92 @@ describe('Pouring to a line', () => {
     pour(s, 1); emptyCup(s); recoverTray(s);
     expect(checkPour(s)).toBe('ignored');
     expect(s).toEqual(before);
+  });
+});
+
+describe('Full and empty (level 6)', () => {
+  it('routes each level ID through the plan table: basket 1–4, the jug at 5, the pair at 6', () => {
+    expect([1, 2, 3, 4, 5, 6].map(kindFor)).toEqual(['basket', 'basket', 'basket', 'basket', 'pour', 'pair']);
+    expect(Object.keys(FILL_LEVELS).map(Number)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(describeFill(6)).toMatch(/full/i);
+    expect(describeFill(5)).toMatch(/jug/);
+  });
+
+  it('asks four requests that alternate, each with exactly one right basket, and the full one on each side twice', () => {
+    const firsts = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const s = startPair(new Rng(seed));
+      expect(s.requests).toHaveLength(PAIR_REQUESTS);
+      for (let i = 1; i < s.requests.length; i++) expect(s.requests[i].ask).not.toBe(s.requests[i - 1].ask);
+      expect(s.requests.filter((r) => r.full === 0)).toHaveLength(2);
+      for (const r of s.requests) {
+        const right = rightBasket(r);
+        // The full basket is the one to tip, the empty one (the other side) the one to fill: never both, never neither.
+        expect(right === r.full).toBe(r.ask === 'tip');
+      }
+      firsts.add(`${s.requests[0].ask}${s.requests.map((r) => r.full).join('')}`);
+    }
+    // Which comes first and where the full one stands vary by seed, so position cannot be memorized.
+    expect(firsts.size).toBeGreaterThan(6);
+  });
+
+  it('the ghost finger finishes with no miss', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      const s = startPair(new Rng(seed));
+      let taps = 0;
+      for (let side = pairNext(s); side !== null; side = pairNext(s)) {
+        expect(pairTap(s, side).kind).toBe('right');
+        taps++;
+      }
+      expect([s.done, s.misses, s.hints, taps]).toEqual([true, 0, 0, PAIR_REQUESTS]);
+      expect(pairTap(s, 0).kind).toBe('ignored');
+    }
+  });
+
+  it('a wrong basket is one miss; the second on one request brings the one hint, and the count starts over on the next', () => {
+    const s = startPair(new Rng(3));
+    const wrong = (rightBasket(s.requests[0]) === 0 ? 1 : 0) as 0 | 1;
+    expect(pairTap(s, wrong)).toEqual({ kind: 'wrong', ask: s.requests[0].ask, hint: false });
+    expect(pairTap(s, wrong)).toMatchObject({ kind: 'wrong', hint: true });
+    expect(pairTap(s, wrong)).toMatchObject({ kind: 'wrong', hint: false });
+    expect([s.misses, s.hints, s.round]).toEqual([3, 1, 0]);
+    expect(pairTap(s, pairNext(s)!)).toMatchObject({ kind: 'right', done: false });
+    const wrong2 = (rightBasket(s.requests[1]) === 0 ? 1 : 0) as 0 | 1;
+    pairTap(s, wrong2);
+    expect(pairTap(s, wrong2)).toMatchObject({ kind: 'wrong', hint: true });
+    expect([s.misses, s.hints]).toEqual([5, 2]);
+  });
+
+  it('stands both baskets apart with 100-unit touch boxes, the pile between them, all on screen and clear of the pet, in every view', () => {
+    const views: [number, number][] = [
+      [DESIGN_W, DESIGN_H],
+      [DESIGN_W + 340, DESIGN_H],
+      [DESIGN_H, DESIGN_W],
+      [DESIGN_H, DESIGN_W + 300],
+    ];
+    const w0 = BASKET_HIT.halfW * 2 * PAIR_SCALE;
+    const h0 = (BASKET_HIT.top + BASKET_HIT.bottom) * PAIR_SCALE;
+    expect(Math.min(w0, h0)).toBeGreaterThanOrEqual(100);
+    for (const [w, h] of views) {
+      const l = pairLayout(w, h);
+      const half = BASKET_HIT.halfW * PAIR_SCALE;
+      const [left, right] = l.xs;
+      expect(left - half, `${w}x${h} left edge`).toBeGreaterThanOrEqual(40);
+      expect(right + half, `${w}x${h} right edge`).toBeLessThanOrEqual(w - 40);
+      expect(right - left - 2 * half, 'a gap between the baskets').toBeGreaterThanOrEqual(80);
+      expect(l.feetY - BASKET_HIT.top * PAIR_SCALE - 130 * PAIR_SCALE, 'the handle under the corner buttons').toBeGreaterThan(130);
+      for (const p of l.pile) {
+        expect(p.x).toBeGreaterThan(left + half - 60);
+        expect(p.x).toBeLessThan(right - half + 60);
+      }
+      // The pile and a tipped basket's fruit stay a fruit's width apart.
+      for (const p of l.pile) for (const q of [...l.landing[0], ...l.landing[1]]) expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThanOrEqual(90);
+      // Everything sits above the bottom band where the pet stands, and on screen.
+      for (const p of [...l.pile, ...l.landing[0], ...l.landing[1]]) {
+        expect(p.x).toBeGreaterThan(50);
+        expect(p.x).toBeLessThan(w - 50);
+        expect(p.y).toBeLessThan(h - 180);
+      }
+    }
   });
 });

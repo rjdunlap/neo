@@ -5385,7 +5385,7 @@ async function originals() {
   }
 
   // Fill and Dump: a basket tipped out and scooped back by taps; then filled to a stated number, a wrong check twice, and the glow.
-  const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5').split(',').map(Number);
+  const fillLevels = (process.env.FILL_LEVELS || '1,2,3,4,5,6').split(',').map(Number);
   for (const level of (!only || only === 'fill' ? fillLevels : [])) {
     if (level === 4) await portrait(true);
     await launch('fill-dump', level);
@@ -5425,6 +5425,35 @@ async function originals() {
       assert.deepEqual(await score('fill-dump'), [2, 1]);
       await portrait(false);
       log('Fill and Dump 5: pour displacement, caught overflow, two wrong checks, one hint, resize, recovery, three cups and one sticker passed');
+      continue;
+    }
+    if (level === 6) {
+      // Full and empty: the grass is free, two taps on the wrong basket are two misses and glow the right one, then the requests finish.
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const idle = () => kit.until(() => !g.busy, 8000);
+        const hit = async (side) => { kit.tapOn(g.baskets[side].front, 0, -75); await kit.sleep(300); };
+        await idle();
+        kit.tapOn(g.floor, neo.view.w - 30, neo.view.h - 30); await kit.sleep(200);
+        if (g.state.misses) throw new Error('Full and empty: the grass is never wrong');
+        const right = g.autotouch().tap.on === g.baskets[0].front ? 0 : 1;
+        await hit(1 - right); await hit(1 - right);
+        if (g.state.misses !== 2 || g.state.hints !== 1 || g.glow?.side !== right) throw new Error(`Full and empty hint: ${g.state.misses} ${g.state.hints} ${g.glow?.side}`);
+      });
+      await portrait(true); await screenshot('fill-dump-6-portrait'); await portrait(false);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const idle = () => kit.until(() => !g.busy, 8000);
+        for (let guard = 0; guard < 12 && !g.state.done; guard++) {
+          await idle();
+          const intent = g.autotouch();
+          if (intent) { kit.tapOn(intent.tap.on, intent.tap.x, intent.tap.y); await kit.sleep(300); }
+        }
+        if (!g.state.done || g.state.misses !== 2) throw new Error(`Full and empty finish: ${JSON.stringify(g.state)}`);
+      });
+      await finished('fill-dump');
+      assert.deepEqual(await score('fill-dump'), [2, 1]);
+      log('Fill and Dump 6: free grass, two wrong baskets, one glow hint, four alternating requests and one sticker passed');
       continue;
     }
     await page.evaluate(async () => {

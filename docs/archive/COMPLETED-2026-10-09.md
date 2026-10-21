@@ -10,6 +10,10 @@ Built on `claude/little-surprises-mix` from the [definition](../definitions/litt
 [PR #666](https://github.com/rjdunlap/neo/pull/666): at levels 1–2, open ground tips a full basket or scoops the outside fruit nearest the touch. Six idle seconds while ready for input wiggle the basket or the fruit nearest it; touch, flight and teardown clear the motion. This never counts a miss or hint. Levels 3–5, tip-window behavior, content and pouring are unchanged. [Scope](../deep-dives/fill-dump.md#build-slices-in-order); [verification](VERIFICATION-2026-10-20.md#2026-10-20--fill-and-dump-lap-reach-and-idle-invitation-slice-2).
 
 
+### Fill and Dump slice 3, Level 6 Full and empty (2026-10-20)
+
+[PR #683](https://github.com/rjdunlap/neo/pull/683): toddler and preschool level 6, placed after 2 by `order` (toddler [1, 2, 6, 3, 4], preschool [1, 2, 6, 3, 4, 5]; lap unchanged). Routing reads a plan table keyed by level ID (`FILL_LEVELS`, `kindFor`: 1–4 basket, 5 pour, 6 pair); `PairGame` is in `src/games/fill-dump/pair.ts` and `Basket` moved to `basket.ts` (a size added). Four alternating tip-or-fill requests between a full and an empty basket; the wrong basket is one miss, a glow and one hint after the second miss on a request. Nine `fill.pair.*` voice lines, level-5 how-to lines bounded `to: 5`, a bot that taps the right basket. [Verification](../VERIFICATION.md#2026-10-20--fill-and-dump-level-6-full-and-empty-slice-3).
+
 ### Stamp Studio slice 4, Play the picture (2026-10-17)
 
 [PR #545](https://github.com/rjdunlap/neo/pull/545): at levels 3–6 (plan field `play`; not 1, 2 or 7) a music-note button left of the paper appears once a stamp is down and scans the picture left to right. `playOrder` in `logic.ts` sorts stamps by x (ties top first) and pitches each with `stepFromUnit(1 - y, 0, 8)` (C4–E5 pentatonic, higher on the paper higher); stamps are spaced at most 0.4 s apart and never more than 5.5 s in total. Each sounds `sfx.marimba`, pops and shows a yellow scan bar, driven from `update(dt)`; pressing again restarts, a removed stamp is skipped, finishing stops play and hides the button. Nothing is scored, the saved picture and `stampDemo` are unchanged, and no voice lines were added. The how-to finish line at levels 3–6 names the music note. [Dive slice 4](../deep-dives/stamp-studio.md#build-slices-in-order).
@@ -1216,7 +1220,7 @@ Idea row moved here from the notebook's candidates:
 
 | **Fruit Slice / lap–school** (swipe-through games: Fruit Ninja, Toca Kitchen's chopping board; opened 2026-10-13: Fruit Ninja is rated 7+ and only its Zen mode, with no bombs, suits young children; Toca Boca says the sound of the slice is much of the satisfaction) | Big fruit lofts slowly and hangs at the top of its arc; a swipe slices it with a trail from the moment of touch-down. Toddler: any contact slices (a tap works). Preschool: only the red ones. Pre-K: exactly the number on the sign. School: halves, then quarters (the swipe direction is the fraction), later summing the pieces. A wrong item bounces off with a boing; missed fruit drifts back, so there are no bombs, lives or round timer | A hit test of a swept swipe segment against a fruit circle and round plans in `logic.ts`, with a ghost-finger bot; custom pointer handling with `palmOnGlass`. Fruit at least 100 units across; the fractions levels should reuse Little Helpers' and Monster Munch's fruit art. **Defined 2026-10-17** ([definition](../definitions/fruit-slice.md)); the fractions levels wait on the fractions study | M |
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-20--fruit-slice-levels-18).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-20.md#2026-10-20--fruit-slice-levels-18).
 
 ## Shape Sorter slice 1, support truth (2026-10-20)
 

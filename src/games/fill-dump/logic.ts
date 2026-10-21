@@ -27,8 +27,15 @@ export const planFor = (level: number): FillPlan => FILL_PLANS[Math.min(FILL_PLA
 /** The number she is asked to put in, drawn from the plan's range. Null in the tip-out levels. */
 export const targetFor = (plan: FillPlan, rng: Rng): number | null => (plan.count ? rng.int(plan.count[0], plan.count[1]) : null);
 
+/** What each level ID plays: the one basket (tip-out and counting), the jug, or a full and an empty basket to tell apart. */
+export type FillKind = 'basket' | 'pour' | 'pair';
+export const FILL_LEVELS: Readonly<Record<number, FillKind>> = { 1: 'basket', 2: 'basket', 3: 'basket', 4: 'basket', 5: 'pour', 6: 'pair' };
+export const kindFor = (level: number): FillKind => FILL_LEVELS[level] ?? 'basket';
+
 export const describeFill = (level: number): string => {
-  if (level >= 5) return 'Tip the jug to fill three cups to their lines; catch and reuse spills';
+  const kind = kindFor(level);
+  if (kind === 'pour') return 'Tip the jug to fill three cups to their lines; catch and reuse spills';
+  if (kind === 'pair') return `Full and empty: ${PAIR_REQUESTS} times, tip out the full basket or fill the empty one`;
   const p = planFor(level);
   if (p.count) return `Put ${p.count[0]} to ${p.count[1]} in the basket, then check (${p.pieces} to pick from)`;
   return `Tip out ${p.pieces} and scoop them back${p.dumps > 1 ? `, ${p.dumps} times` : ''}`;
@@ -290,4 +297,104 @@ export function checkPour(s: PourState): 'again' | 'wrong' | 'next' | 'done' | '
   s.cup = s.tray = s.roundMisses = 0;
   s.helped = false;
   return 'next';
+}
+
+// ---- Full and empty (level 6): two baskets, one full and one empty; each request names which one to use --------------
+
+/** Requests in a round, alternating between tipping the full basket and filling the empty one. */
+export const PAIR_REQUESTS = 4;
+/** Fruit in the full basket, and in the little pile on the grass that fills the empty one. */
+export const PAIR_FRUIT = 3;
+
+export type PairAsk = 'tip' | 'fill';
+/** One request: what is asked, and which basket (0 left, 1 right) is the full one this time. */
+export interface PairRequest {
+  ask: PairAsk;
+  full: 0 | 1;
+}
+
+export interface PairState {
+  requests: PairRequest[];
+  round: number;
+  misses: number;
+  hints: number;
+  /** Misses on this request; the second one glows the right basket. */
+  roundMisses: number;
+  helped: boolean;
+  done: boolean;
+}
+
+/** Four requests that alternate (the first one seeded), with the full basket on each side twice in a seeded order, so its place cannot be learned. */
+export function startPair(rng: Rng): PairState {
+  const first: PairAsk = rng.chance(0.5) ? 'tip' : 'fill';
+  const sides = rng.shuffle<0 | 1>([0, 0, 1, 1]);
+  const requests = sides.map((full, i): PairRequest => ({ ask: i % 2 === 0 ? first : first === 'tip' ? 'fill' : 'tip', full }));
+  return { requests, round: 0, misses: 0, hints: 0, roundMisses: 0, helped: false, done: false };
+}
+
+/** The one basket that answers a request: the full one to tip out, the empty one to fill. */
+export const rightBasket = (r: PairRequest): 0 | 1 => (r.ask === 'tip' ? r.full : r.full === 0 ? 1 : 0);
+
+export type PairEvent =
+  | { kind: 'ignored' }
+  /** The wrong basket: one miss; `hint` the first time a request reaches two. */
+  | { kind: 'wrong'; ask: PairAsk; hint: boolean }
+  /** The right basket: tip it or fill it, then the next request (or the end). */
+  | { kind: 'right'; ask: PairAsk; side: 0 | 1; done: boolean };
+
+/** A tap on basket `side`. Nothing else in the scene is judged: the grass and the pile are free. */
+export function pairTap(s: PairState, side: 0 | 1): PairEvent {
+  if (s.done) return { kind: 'ignored' };
+  const r = s.requests[s.round];
+  if (side !== rightBasket(r)) {
+    s.misses++;
+    s.roundMisses++;
+    let hint = false;
+    if (s.roundMisses >= 2 && !s.helped) {
+      s.helped = true;
+      s.hints++;
+      hint = true;
+    }
+    return { kind: 'wrong', ask: r.ask, hint };
+  }
+  s.round++;
+  s.roundMisses = 0;
+  s.helped = false;
+  if (s.round === s.requests.length) s.done = true;
+  return { kind: 'right', ask: r.ask, side, done: s.done };
+}
+
+/** The ghost finger's tap: the right basket. Null once the round is done. */
+export const pairNext = (s: PairState): 0 | 1 | null => (s.done ? null : rightBasket(s.requests[s.round]));
+
+/** The basket's touch box at full size, around its feet: half its width, how far it reaches above them, and below. */
+export const BASKET_HIT = { halfW: 140, top: 180, bottom: 6 } as const;
+/** Level 6's baskets stand at this size: a 238 by 158 touch box each. */
+export const PAIR_SCALE = 0.85;
+/** The pile's fruit are drawn at this scale, between the two baskets. */
+export const PILE_SCALE = 0.9;
+
+export interface PairLayout {
+  feetY: number;
+  /** The left and right baskets' middles. */
+  xs: [number, number];
+  /** Where the pile's fruit sit, between the baskets. */
+  pile: { x: number; y: number }[];
+  /** Where a tipped basket's fruit land on the grass in front of it. */
+  landing: [{ x: number; y: number }[], { x: number; y: number }[]];
+}
+
+/** Two baskets standing apart on the grass, the pile between them, in a view of `w` by `h`. */
+export function pairLayout(w: number, h: number): PairLayout {
+  const feetY = h * 0.48 + 60;
+  const dx = 210;
+  const xs: [number, number] = [w / 2 - dx, w / 2 + dx];
+  const pile = [
+    { x: w / 2 - 55, y: feetY + 75 },
+    { x: w / 2 + 55, y: feetY + 75 },
+    { x: w / 2, y: feetY + 30 },
+  ];
+  // A tipped basket's fruit land in front of it, toward its outer side and clear of the pile.
+  const land = (x: number, out: number) => [-110, -35, 40].map((ox) => ({ x: x + ox * out, y: feetY + 90 }));
+  return { feetY, xs, pile, landing: [land(xs[0], 1), land(xs[1], -1)] };
 }
