@@ -368,3 +368,11 @@
 - `GAME_URL=http://localhost:5184 BROWSER_SUITE=arcade ARCADE_ONLY=roundup ARCADE_LEVELS=10 npm run test:browser` passed: first success leaves round open, second animal reveals, fresh timers, animal/gate glow, assisted finish, saved `[0,2]` and exactly one sticker; no page errors. Timer setup advances idle counters; real updates trigger support. Landscape screenshot reviewed. Initial sandbox launch was blocked by Chromium's Mach permission; reran outside sandbox.
 - `GAME_URL=http://localhost:5184 BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=10 npm run test:browser` passed cleanly in 7.3 s (two successes, zero misses/hints), no page errors.
 - Not run: build, full suites, offline, portrait, device/child checks (new level on existing interaction tier). iPad steering feel, second-arrival clarity and device speech remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-10-20 — Swing Pals levels 1–6
+
+- Built on `claude/swing-pals` ([PR #689](https://github.com/rjdunlap/neo/pull/689), tested at commit `997212bf` plus the docs-only tree): new game `swing-pals` in Rainbow Meadow (now 10 games), levels 1–6; the glow at levels 4–6 differs from the definition (it could never fire as written), recorded in the [definition](../definitions/swing-pals.md#built) and as an open call.
+- `npm run typecheck` clean; `npm test` 192 files, 2086 tests passed (23 new rule tests: beats 1, 1.5 and 2 s independent of weight and height, level 1 any four taps ring, pushes never faster than one per swing, latched bell, together by phase with every wrong hook parting by at least 1, authored first lines, 500 seeds per plan without fallback, layout at four views). An earlier parallel content+games run timed out four other games' heavy search tests under load; the full run then passed.
+- Dev server http://localhost:5333: `BROWSER_SUITE=swingpals` passed twice (level 1 by taps; level 6 with one wrong hook (one miss) and a requested glow (one hint); level 3 portrait screenshot; about 1 min). `BROWSER_SUITE=fingerdemo FINGER_ONLY=swing-pals FINGER_LEVELS=2,6` passed (level 2 30.0 s, level 6 29.8 s). `npm run build` passed.
+- Not run: the offline check, `world`, any iPad or child.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): lap tap-to-push link, the waiting push at level 2 reading as waiting, the parting swings at levels 4–6 on an iPad.
