@@ -266,3 +266,13 @@ describe('what the island card shows, by what she plays with', () => {
     for (const g of touch) expect(HOW_TO[g.id], g.id).toBeDefined();
   });
 });
+
+it('Under the hen describes lane taps and five eggs without inheriting the pair instructions', () => {
+  const game = GAMES.find((g) => g.id === 'egg-catch')!;
+  const card = howToFor(game, 8)!;
+  expect(card.steps.join(' ')).toContain('Tap anywhere in her lane');
+  expect(card.finish).toContain('five eggs');
+  expect(card.note).toContain('Two wrong taps');
+  expect(JSON.stringify(card)).not.toMatch(/gates|pairs|six eggs/);
+  expect(howToFor(game, 7)!.finish).toContain('three pairs');
+});

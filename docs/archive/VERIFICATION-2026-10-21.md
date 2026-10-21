@@ -230,3 +230,10 @@
 - Passed `npm run typecheck`, `npm run build`, `npm test` (2349 of 2350; the one failure is a hint-search timing cap in `block-garden/logic.test.ts` under full-suite load, unrelated, a known flake). New: `my-mix.test.ts` (14, table targets in four views at every count) and five cases in `mix-flow.test.ts`.
 - Passed `BROWSER_SUITE=discovery DISCOVERY_ONLY=my-mix` (hold, add/repeat/full, reorder, remove, four-stop mix, Skip, finish, result tile, Explore keeps lineup, profile switch resets) and `DISCOVERY_ONLY=mix` unchanged, at http://localhost:5540; landscape and portrait table screenshots reviewed.
 - Not run: `world`, offline, the subject-layout hold in a browser (unit-level only), a gamepad closing the table (not implemented). Open in DEVICE-CHECKS: a grown-up finding the hold, a child's reaction.
+
+## 2026-10-21 — Sound Garden: the whole cast sings (slice 2)
+
+- [PR #725](https://github.com/rjdunlap/neo/pull/725), `claude/sound-garden-whole-cast`, code commit `30ce109f`: level 1 seats a seeded five of six singers, each with its listening role (pitched frog, quick bunny, slow turtle); the how-to's `finish` is level-scoped.
+- Passed `npx tsc --noEmit`, and vitest for `src/games/sound-garden`, `src/content` and the registry (14 files, 154 tests; cast, role and tempo-gap rules over 100 seeds).
+- Passed `BROWSER_SUITE=batch BATCH_ONLY=garden` at http://localhost:5687, levels 1-6, no page errors; `BROWSER_SUITE=fingerdemo FINGER_ONLY=sound-garden FINGER_LEVELS=1` finished in 19.4 s (lap). A landscape level-1 screenshot was reviewed (a seed without the turtle).
+- Not run: build (no shared files or assets), a portrait screenshot, the full unit suite. Open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): bunny against turtle and the pitched ribbit on an iPad speaker, a child's reaction.

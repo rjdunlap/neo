@@ -1,6 +1,6 @@
 # Egg Catch deep dive
 
-*ID `egg-catch` · bands lap, toddler, preschool, pre-K, school · levels 1–7 on 2026-10-17 · session `claude/dive-egg-catch` ([PR #517](https://github.com/rjdunlap/neo/pull/517))*
+*ID `egg-catch` · bands lap, toddler, preschool, pre-K, school · levels 1–8 on 2026-10-21 · session `claude/dive-egg-catch` ([PR #517](https://github.com/rjdunlap/neo/pull/517))*
 
 ## The game today
 
@@ -16,7 +16,7 @@ Hens on a shelf lay eggs. At first she taps a hen and the egg rolls into a baske
 | 6 | The gates are set: tap where the egg will land (`predict`, 5) | school | Read three locked gates and name the bin |
 | 7 | Set it once for two eggs (`pair`, 3 pairs) | school | One arrangement of three gates that sends brown to the basket and white (entering the other branch) to the nest, then the green arrow |
 
-Ranges (`LEVELS` in `index.ts`): lap 1, toddler 1–2, preschool 2–4, pre-K 3–5, school 4–7; no `order`, no `entryLevels`. The IDEAS round-two row still reads "6 · 4–6" and proposes 7 *Set it once*; that level is built, so the row is history and now points here.
+Ranges (`LEVELS` in `index.ts`): lap 1, toddler order `[1, 8, 2]`, preschool 2–4, pre-K 3–5, school 4–7; `entryLevels: [8]` keeps a carried level 8 at another band’s easiest entry. Level 8 is the built lane-hop bridge: one calling hen, five eggs, wrong-lane teaching and a glow after two misses. The IDEAS round-two row still reads "6 · 4–6" and proposes 7 *Set it once*; that level is built, so the row is history and now points here.
 
 **Content pools.** Four hens (the duck critter in white with a red comb), two shell colours, one sunset `Backdrop` (horizon 0.72), four hay piles. Catch levels draw a 30-egg seeded stream (`makeEggs`: lanes never repeat twice running, never three whites in a row). Route levels have one fixed board: an entry, gate 0 splitting into gates 1 and 2, four exits (`exitFor`); `targetsFor` moves the basket (and nest) between exits, never the same basket exit twice running. Predict deals gate settings that never land in the same exit twice running; pair deals boards that start unsolved with one solution (`pairBoards`). Voice: 12 `egg.*` lines plus `count`.
 
@@ -76,7 +76,7 @@ The catching levels should stay few and gentle (two levels, plus a toddler bridg
 
 ### New levels on top
 
-Appended with stable IDs; `order` places 8 and 9 earlier, and `entryLevels: [8, 9]` keeps birthdays and pins safe in bands that do not list them.
+Appended with stable IDs; built level 8 uses toddler order `[1, 8, 2]` and `entryLevels: [8]`. Proposed level 9 will extend the entry list when built; birthdays and pins remain safe in bands that do not list an entry.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -92,7 +92,7 @@ Lap keeps level 1 only. Its work is slices 3 and 8 (notes, colours, the hatching
 
 ### Easier entries and levels between existing ones
 
-Level 8 sits between 1 and 2 (toddler), level 9 between 3 and 4 (preschool and pre-K), both through `order` and `entryLevels: [8, 9]`. No saved level is renumbered. The school window grows to `order: [4, 5, 6, 7, 10, 11]` (12 after its definition). Preschool and pre-K tops are unchanged.
+Level 8 sits between 1 and 2 (toddler), level 9 between 3 and 4 (preschool and pre-K), through `order`; only 8 is currently in `entryLevels`, with 9 added when built. No saved level is renumbered. The school window grows to `order: [4, 5, 6, 7, 10, 11]` (12 after its definition). Preschool and pre-K tops are unchanged.
 
 ### Left out on purpose
 
@@ -119,7 +119,7 @@ Each slice that adds a level updates `PLANS`, `LEVELS`/`order`/`entryLevels`, `d
 1. **Roll when ready at levels 4–5** (built). It adds a required arrow tap, so it also changes the level 4–5 how-to steps, the `egg.route` and `egg.sort` lines, the GAMES.md entry and the `eggs` case in `scripts/browser-check.mjs` (which today waits for the egg to roll by itself). Tier: new interaction: typecheck, unit tests (the ghost-finger route test updated), one filtered play (`BROWSER_SUITE=batch BATCH_ONLY=eggs FROM_LEVEL=4 TO_LEVEL=5`) with one wrong way and one hint, one portrait screenshot, `fingerdemo` at 4 and 5.
 2. **A miss that teaches and hens that wait at levels 2–3** (built). Tier: typecheck, rule tests, `BATCH_ONLY=eggs FROM_LEVEL=2 TO_LEVEL=3` once; the couch team game is untouched but its `control()` input must count as play (check `BROWSER_SUITE=couchgames` filtered to `egg-catch` once).
 3. **Notes, egg colours and the hatching basket** (built; [PR #740](https://github.com/rjdunlap/neo/pull/740)). Tier: content: typecheck, rule tests, one portrait screenshot of level 2 and of the ending.
-4. **Level 8, Under the hen** (claimed by worker `01a160dd-2e50-7880-9565-2705ebe6562d` on `codex/egg-catch-under-hen`; draft PR pending). Tier: new interaction: typecheck, unit tests (difficulty and how-to included), one scripted play of level 8 with a wrong lane and a hint, one portrait screenshot, `fingerdemo` at 8.
+4. **Level 8, Under the hen** (built; [PR #748](https://github.com/rjdunlap/neo/pull/748)). Tier: new interaction: typecheck, unit tests (difficulty and how-to included), one scripted play of level 8 with a wrong lane and a hint, one portrait screenshot, `fingerdemo` at 8.
 5. **Level 9, One gate** (ready). Tier: new level on an existing interaction: rule tests, one browser play of level 9, `fingerdemo` at 9.
 6. **Level 10, Fix the run** (ready). Tier: new interaction: unit tests, one scripted play (one miss, one hint), one portrait screenshot, `fingerdemo` at 10. Also extends the `eggs` loop to levels 6–7.
 7. **Level 11, Flip-flop gate** (ready, after slice 6). Same tier as slice 6.
@@ -134,4 +134,4 @@ Slice 2 (a miss that teaches and hens that wait, levels 2–3) landed 2026-10-21
 
 Slice 3 (notes, egg colours and the hatching basket) built 2026-10-21 on `codex/egg-catch-colours` ([PR #740](https://github.com/rjdunlap/neo/pull/740)); the [build note](../archive/COMPLETED-2026-10-09.md#egg-catch-notes-colours-and-hatching-basket-2026-10-21) and [checks](../VERIFICATION.md#2026-10-21--egg-catch-notes-colours-and-hatching-basket-slice-3) record the content-only scope.
 
-Slice-4 claim: only toddler level 8, lane taps/clucking hen/five eggs/wrong-lane support; expected files `src/games/egg-catch/{index,logic,logic.test}.ts`, difficulty/how-to tests, how-to/voice content, browser harness and closeout docs. No lap/couch changes or other rungs.
+Slice 4 (level 8 Under the hen) built on `codex/egg-catch-under-hen` ([PR #748](https://github.com/rjdunlap/neo/pull/748)); five eggs, forgiving lane taps, clucking cue and supported wrong-lane learning. No lap/couch additions or other rungs.

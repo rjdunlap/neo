@@ -2,7 +2,7 @@ import { audio } from './engine';
 import { bell, marimba, noise, pluck, tone, voiced } from './instruments';
 import { stepHz } from './notes';
 
-export type AnimalSound = 'moo' | 'quack' | 'oink' | 'meow' | 'woof' | 'growl' | 'hop';
+export type AnimalSound = 'cluck' | 'moo' | 'quack' | 'oink' | 'meow' | 'woof' | 'growl' | 'hop';
 
 /** A few cents of random detune so repeated sounds don't grate. */
 const jitter = (cents = 20) => Math.pow(2, ((Math.random() * 2 - 1) * cents) / 1200);
@@ -136,6 +136,9 @@ export const sfx = {
     const { ctx, dest, t } = o;
     const j = jitter(40);
     switch (kind) {
+      case 'cluck':
+        [0, 0.14, 0.3].forEach((d) => voiced(ctx, dest, t + d, 0.09, [340 * j, 190 * j], [700, 1500], 0.3));
+        break;
       case 'moo':
         voiced(ctx, dest, t, 0.95, [150 * j, 125 * j, 105 * j], [380, 760], 0.5, { vibrato: 3 });
         break;

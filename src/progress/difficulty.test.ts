@@ -1,5 +1,6 @@
+import { eggCatch } from '../games/egg-catch';
 import { describe, expect, it } from 'vitest';
-import { levelsInOrder, nextLevel, nextLevelOffer, stepLevel } from './difficulty';
+import { landing, levelsInOrder, nextLevel, nextLevelOffer, stepLevel } from './difficulty';
 import type { RoundRecord } from './save';
 
 const round = (level: number, misses: number, hints = 0): RoundRecord => ({ level, misses, hints, seconds: 60, at: 0 });
@@ -106,4 +107,22 @@ describe('an order that skips level IDs', () => {
     expect(nextLevel(13, [round(13, 0), round(13, 0)], skipping)).toBe(3);
     expect(nextLevel(3, [round(3, 5), round(3, 5)], skipping)).toBe(13);
   });
+});
+
+it('Egg Catch keeps toddler IDs ordered 1,8,2, with safe birthdays and pins outside that window', () => {
+  const range = eggCatch.levels('toddler');
+  expect(levelsInOrder(range)).toEqual([1, 8, 2]);
+  expect(nextLevel(1, [round(1, 0), round(1, 0)], range)).toBe(8);
+  expect(nextLevel(8, [round(8, 0), round(8, 0)], range)).toBe(2);
+  expect(nextLevel(2, [round(2, 5), round(2, 5)], range)).toBe(8);
+  expect(nextLevel(8, [round(8, 5), round(8, 5)], range)).toBe(1);
+  expect(nextLevelOffer(1, range)).toBe(8);
+  expect(nextLevelOffer(8, range)).toBe(2);
+  expect(nextLevelOffer(2, range)).toBeNull();
+  expect(nextLevel(2, [], range)).toBe(2);
+  for (const band of ['lap', 'preschool', 'prek', 'school'] as const) {
+    const r = eggCatch.levels(band);
+    expect(levelsInOrder(r)).not.toContain(8);
+    expect(landing(8, r, eggCatch.entryLevels)).toBe(r.min);
+  }
 });

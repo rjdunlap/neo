@@ -1646,6 +1646,8 @@ export const SCRIPT = {
   'mail.shorter-for': ['A letter for the {animal}! Find the {animal} in the picture key, then tap their house.'],
   'mail.shorter': ['Two paths reach the {animal}. Look at the stepping stones and tap the shorter path.'],
   'mail.shorter-hint': ['The short path has {n} stones. The other has {m}. Try the one with fewer stones.'],
+  'egg.lane': ['Tap under the clucking hen! The basket hops there to catch her egg.'],
+  'egg.under': ['Here, under me! Tap under the clucking hen.'],
   'egg.tap': ['Tap a hen! Her egg rolls into the basket.'],
   'egg.catch': ['Slide the basket to catch the eggs!'],
   'egg.brown': ['Catch the brown eggs! Let the white eggs fall in the hay.'],
