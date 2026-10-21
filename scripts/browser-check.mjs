@@ -5031,7 +5031,7 @@ async function arcade() {
       await kit.sleep(200);
     };
   });
-  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 11, 10, 2, 3, 4, 5, 6, 7];
+  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 11, 10, 2, 3, 4, 5, 6, 7, 8];
   // Come along plays twice: led by a finger at lap, then left alone at toddler so the drift brings the herd home.
   const roundupPlays = roundupLevels.flatMap((level) => level === 11 ? [[11, 'lap'], [11, 'toddler']] : [[level]]);
   for (const [level, playBand] of (!only || only === 'roundup') ? roundupPlays : []) {
@@ -5053,7 +5053,7 @@ async function arcade() {
       const { PLURAL, PLACE, animalsFor } = await import('/src/games/roundup/logic.ts');
       for (const { pen } of g.pens) {
         const word = g.plan.sequential ? pen.kind : pen.target === undefined ? PLURAL[pen.kind] : animalsFor(pen.kind, pen.target);
-        if (!spoken.includes(word) || (g.pens.length === 2 && !spoken.includes(PLACE[pen.kind]))) throw new Error(`Wrong instruction: ${spoken}`);
+        if (!spoken.includes(word) || (g.pens.length === 2 && !g.herd.fair && !spoken.includes(PLACE[pen.kind]))) throw new Error(`Wrong instruction: ${spoken}`);
       }
       if (g.plan.mode === 'tap') {
         // A lap tap on the grass or the sign answers, and is never a miss or a hint.
@@ -5127,6 +5127,37 @@ async function arcade() {
           if (!loose().filter((a) => a.kind !== g.herd.stay).every((a) => a.glow.visible)) throw new Error('Needed animals did not glow');
           if (!g.pens.every((p) => p.glow.context.instructions.length)) throw new Error('Needed gates did not glow');
         }
+        if (g.plan.mode === 'fair') {
+          if (!spoken.includes('same number') || !g.bell.visible || g.pens[0].pen.kind !== g.pens[1].pen.kind || ![6, 8].includes(g.animals.length)) throw new Error('Make it fair setup');
+          if (g.pens.some((p) => p.pen.target !== undefined)) throw new Error('Make it fair sign must show no number');
+          // Some in one pen and none in the other: a miss, the empty pen named, and nobody hops out.
+          while (g.pens[0].inside < 2 && loose().length) await herdInto(loose()[0], 0);
+          const first = g.pens.map((p) => p.inside);
+          if (first[1] === 0) {
+            kit.tapOn(g.bell); await kit.sleep(300);
+            await kit.until(() => !g.busy, 8000);
+            if (g.misses !== 1 || !speech.some((s) => s.id === 'herd.fairempty') || g.pens[0].inside !== first[0]) throw new Error(`Empty pen bell: ${g.misses} ${g.pens.map((p) => p.inside)}`);
+            // One in the other pen: unequal, so the pet says both counts and the extras leave the fuller pen.
+            // Isolate one animal at the second gate so the ordinary steering takes exactly one in.
+            const one = loose()[0];
+            for (const a of loose()) { a.critter.x = 280; a.wander.next = 20; a.wander.x = 280; }
+            const r1 = g.pens[1].rect;
+            one.critter.position.set(r1.x - 60, r1.y + r1.h / 2);
+            one.vx = one.vy = 0;
+            await kit.sleep(60);
+            await herdInto(one, 1);
+            const second = g.pens.map((p) => p.inside);
+            if (second[0] === second[1]) throw new Error(`Second pen setup came out level: ${second}`);
+            {
+              kit.tapOn(g.bell); await kit.sleep(300);
+              await kit.until(() => !g.busy, 10000);
+              const unfair = speech.find((s) => s.id === 'herd.unfair');
+              if (g.misses !== 2 || !unfair || unfair.values.more !== Math.max(...second) || unfair.values.less !== Math.min(...second)) throw new Error(`Unequal bell: ${g.misses} ${JSON.stringify(unfair)}`);
+              if (g.pens[0].inside !== g.pens[1].inside) throw new Error(`Extras did not leave the fuller pen: ${g.pens.map((p) => p.inside)}`);
+              if (g.hints < 1) throw new Error('Two wrong bells must glow the emptier pen');
+            }
+          }
+        }
         if (g.plan.mode === 'count') {
           // One too many, then the bell: the extra hops back out.
           while (g.pens[0].inside <= g.pens[0].pen.target && loose().length) await herdInto(loose()[0], 0);
@@ -5154,6 +5185,11 @@ async function arcade() {
         if (g.pens.some((p) => p.inside !== 2)) throw new Error('Required pen incomplete');
         if (!speech.some((s) => s.id === 'herd.staydone') || speech.some((s) => s.id === 'herd.done')) throw new Error('Completion speech must include the outsiders');
       }
+      if (g.plan.mode === 'fair') {
+        await kit.until(() => speech.some((s) => s.id === 'herd.fairdone'), 6000);
+        const done = speech.find((s) => s.id === 'herd.fairdone');
+        if (!done || g.pens[0].inside !== g.pens[1].inside || done.values.n !== g.pens[0].inside || speech.some((s) => s.id === 'herd.done')) throw new Error(`Fair finish: ${g.pens.map((p) => p.inside)} ${JSON.stringify(done)}`);
+      }
 
     });
     await screenshot(`roundup-${level}${playBand ? `-${playBand}` : ''}`);
@@ -5165,6 +5201,7 @@ async function arcade() {
     if (mode === 'sort') assert.ok(r[0] === 2 && r[1] >= 1, `roundup sort score ${r}`);
     if (mode === 'sortStay') assert.ok(r[0] >= 2 && r[1] >= 1, `roundup outsiders score ${r}`);
     if (mode === 'count') assert.ok(r[0] >= 1, 'roundup count misses');
+    if (mode === 'fair') assert.ok(r[0] >= 2 && r[1] >= 1, `roundup fair score ${r}`);
     if (mode === 'tap') assert.deepEqual(r, [0, 0], 'roundup tap score');
     if (level === 10) assert.deepEqual(r, [0, 2], 'roundup Shoo one supported score');
     if (level === 11) assert.deepEqual(r, playBand === 'lap' ? [0, 0] : [0, 1], `roundup Come along ${playBand} score`);
