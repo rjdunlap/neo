@@ -3,7 +3,7 @@ import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { entryId } from '../../content/journal';
 import { ink, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
-import { Backdrop } from '../../art/scenery';
+import { Backdrop, drawFarBarn } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -16,7 +16,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { BITE, BITE_SIZES, busyTouch, countedFood, eaterOf, FAVORITE, FOOD_WORDS, makeRounds, nearestFriend, SCENE_SPECS, sceneFor, SOUND_WORDS, planFor, shouldNudge, snackTouch, VOICE, type Food, type Scene, type SnackPlan, type SnackRound } from './logic';
+import { BITE, BITE_SIZES, busyTouch, countedFood, eaterOf, farBarnAt, FAVORITE, FOOD_WORDS, FRIEND_HIT, FRIEND_SCALE, friendFeet, friendXs, makeRounds, nearestFriend, SCENE_SPECS, sceneFor, SOUND_WORDS, planFor, shouldNudge, snackTouch, VOICE, type Food, type Scene, type SnackPlan, type SnackRound } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -157,8 +157,8 @@ class AnimalSnack implements Game {
     this.backdrop?.resize(v);
     this.drawDecor(v);
     this.drawSpot(v);
-    const xs = spread(this.friends.length, 200, v.w - 60, 270);
-    this.friends.forEach((f, i) => f.node.position.set(xs[i], v.h * 0.64));
+    const xs = friendXs(this.friends.length, v.w);
+    this.friends.forEach((f, i) => f.node.position.set(xs[i], friendFeet(v.h)));
     const loose = this.snacks.filter((s) => !s.eaten);
     const fx = spread(loose.length, 220, v.w - 80, 140);
     loose.forEach((s, i) => {
@@ -202,7 +202,7 @@ class AnimalSnack implements Game {
     }
   }
 
-  /** The scene's furniture, behind the animals and out of their way: nothing here takes a touch. */
+  /** The scene's furniture, behind the animals and out of their way: nothing here takes a touch. The far barn stands on every scene's horizon that has room for it. */
   private drawDecor(v: View) {
     for (const c of this.decor.removeChildren()) {
       this.ctx.tw.kill(c);
@@ -211,6 +211,12 @@ class AnimalSnack implements Game {
     this.stars.clear();
     const ground = v.h * 0.5;
     const g = new Graphics();
+    // The Barnyard's far barn on the horizon, behind the fence and clear of every friend's tap circle.
+    const barn = farBarnAt(this.scene, v.w, v.h, this.plan.animals);
+    if (barn) {
+      if (this.scene === 'dusk') drawFarBarn(g, barn.x, barn.base, barn.height, 0x6e3c4c, 0xc9c6dc);
+      else drawFarBarn(g, barn.x, barn.base, barn.height);
+    }
     const fence = (color: number, rail: number) => {
       for (let x = -10; x <= v.w + 10; x += 96) g.roundRect(x - 8, ground - 30, 16, 60, 5).fill(color).stroke({ width: 3, color: rail });
       for (const y of [ground - 12, ground + 10]) g.rect(-20, y, v.w + 40, 8).fill(color).stroke({ width: 3, color: rail });
@@ -318,8 +324,8 @@ class AnimalSnack implements Game {
     }
     for (const name of names) {
       const node = new Critter(CRITTERS[name]);
-      node.scale.set(0.6);
-      node.hitArea = new Circle(0, -125, 190);
+      node.scale.set(FRIEND_SCALE);
+      node.hitArea = new Circle(0, FRIEND_HIT.y, FRIEND_HIT.r);
       const f: Friend = { name, node };
       onTap(node, (e) => {
         this.idle = 0;

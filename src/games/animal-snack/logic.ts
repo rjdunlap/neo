@@ -2,6 +2,7 @@ import type { CritterName } from '../../art/critter';
 import type { BackdropStyle } from '../../art/scenery';
 import type { AnimalSound, BiteKind } from '../../audio/sfx';
 import type { Rng } from '../../engine/random';
+import { spread } from '../../engine/view';
 
 /**
  * Animal Snack: farm friends and their favorite foods. Lap levels are cause and effect: tap an
@@ -85,6 +86,51 @@ export const SCENE_SPECS: Record<Scene, SceneSpec> = {
 };
 /** Picked after the rounds are dealt, so a seed's animals and questions are the same in every scene. */
 export const sceneFor = (rng: Rng): Scene => rng.pick(SCENES);
+
+/** Where the friends stand: their feet at 0.64 of the height, spread across the view, drawn at 0.6 scale. */
+export const FRIEND_SCALE = 0.6;
+/** A friend's body-centered tap circle, in its own (unscaled) units. */
+export const FRIEND_HIT = { y: -125, r: 190 };
+export const friendXs = (n: number, w: number) => spread(n, 200, w - 60, 270);
+export const friendFeet = (h: number) => h * 0.64;
+
+/** The orchard tree's canopy across the left of the view (drawn in `drawDecor`). */
+const ORCHARD_TREE = { left: 10, right: 220 };
+
+/** A far barn is this many times as wide as it is tall. */
+export const BARN_ASPECT = 1.1;
+
+export interface FarBarn {
+  x: number;
+  /** The horizon the barn stands on. */
+  base: number;
+  height: number;
+}
+
+/**
+ * The Barnyard's far barn on the horizon (visual identity V1): 60 to 80 units tall, in the widest
+ * stretch of horizon that no friend's tap circle and no orchard tree covers, so it is never behind
+ * a target. Null when no stretch is wide enough; the scene then simply has no barn.
+ */
+export function farBarnAt(scene: Scene, w: number, h: number, animals: number): FarBarn | null {
+  const base = h * SCENE_SPECS[scene].backdrop.horizon;
+  const r = FRIEND_HIT.r * FRIEND_SCALE;
+  const blocked = friendXs(animals, w).map((x) => [x - r, x + r]);
+  if (scene === 'orchard') blocked.push([ORCHARD_TREE.left, ORCHARD_TREE.right]);
+  blocked.sort((a, b) => a[0] - b[0]);
+  const gap = 16;
+  let from = 24;
+  let best: [number, number] = [0, 0];
+  for (const [l, rr] of [...blocked, [w - 24 + gap, Infinity]]) {
+    const to = l - gap;
+    if (to - from > best[1] - best[0]) best = [from, to];
+    from = Math.max(from, rr + gap);
+  }
+  const height = Math.min(80, (best[1] - best[0]) / BARN_ASPECT);
+  if (height < 60) return null;
+  return { x: (best[0] + best[1]) / 2, base, height };
+}
+
 
 /** Who eats what: one food each, so every question has one answer. */
 export const FAVORITE: Partial<Record<CritterName, Food>> = { cow: 'hay', bunny: 'carrot', dog: 'bone', cat: 'fish', duck: 'seeds', pig: 'apple', bear: 'honey' };

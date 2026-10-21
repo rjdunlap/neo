@@ -1,6 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
 
+### Animal Snack far barn (visual identity V1 slice 3, 2026-10-21)
+
+[PR #719](https://github.com/rjdunlap/neo/pull/719), from the [definition](../definitions/visual-identity.md): `farBarnAt(scene, w, h, animals)` in `src/games/animal-snack/logic.ts` puts the Barnyard's far barn on the horizon (60–80 units tall, width 1.1x), centred in the widest horizon stretch clear of every friend's tap circle and, in the orchard, the tree's canopy, with 24-unit edge margins and 16-unit gaps; null when none fits. `drawDecor` draws it first so the fences stand in front; dusk uses darker colours, day uses the quiet red line colour. The drawing moved to `drawFarBarn` in `src/art/scenery.ts`, which the Barnyard land scene now also calls (identical output). Meadow, kitchen garden and dusk show it at the left in every view; the orchard shows none at 1024 wide and shows it at the right in wide views. Egg Catch is the next one-game slice.
+
 ### Seesaw Balance level 11 Two boxes (2026-10-21)
 
 [PR #710](https://github.com/rjdunlap/neo/pull/710), from the [definition](../definitions/seesaw-two-boxes.md): `PLANS[10]` mode `pair`, two pairs, each a `read` round (the square box alone against `s` blocks; the right pad tags it) and a `pair` round (the tagged square box, the round orange box (`r` not `s`) and `k` blocks against `s+r+k` blocks). `progress(before, after)` classes each change as level, closer or tip; a closer is free and resets the tips, the square box leaving says `seesaw.swap-tipped`, two tips give one glow per pair (`pairHint`, 1 hint), the round box wiggles and says `seesaw.round-stays` (free). Only the number pads miss; the round answer writes its number on the round box only. Seven new voice lines; the how-to level 10 line is bounded and a level 11 line added. Deviations: the finger's sequence is k × (tip, level), the square-box tip, s−1 closers, level (the definition's "exactly one tip" contradicted its own rule); a change counter judges a quick burst of moves once, at level 11 only. [Verification](../VERIFICATION.md#2026-10-21--seesaw-balance-level-11-two-boxes).
@@ -1379,7 +1383,7 @@ Idea row moved here from the notebook's candidates:
 
 | **Cut Along / toddler–school** (scissor skills; opened 2026-10-13: occupational-therapy sources agree on the order, with ages varying: single snips at about 2, forward along a thick line at 3, a 10 cm line, a curve and a rough circle at 4, a square and a triangle at 5) | Follow a dashed line on paper to cut out a shape. Toddler: tap along thick dashes (snips). Preschool: straight lines, then zigzags and curves. Pre-K: circle, square, triangle. School: **Fold & Snip**: cut notches in folded paper and unfold it to see a symmetric snowflake or heart, later predicting the unfolded result first | Letter Trails' tracer (`advanceTrace`, `traceWaypoints`) already enforces a corridor; straying only pauses the scissors, two strays glow the line, and partial progress is kept. The cut-out can be kept as a treehouse creation | M |
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--cut-along-levels-18).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-21.md#2026-10-21--cut-along-levels-18).
 
 ## Little Helpers: every touch answers and the empty crowd shrugs, slice 1 (2026-10-21)
 
