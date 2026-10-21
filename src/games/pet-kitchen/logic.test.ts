@@ -74,9 +74,10 @@ it('level 9 cuts one pizza into exactly three equal shares for three friends',()
  expect(plates).toEqual([1,1,1]); expect(fair(plates,3)).toBe(true);
  expect(planFor(9)).toBe(plan);
 });
-it('names the real trouble with a serve: nothing cut, nothing served, too few pieces, or plates that differ',()=>{
+it('names the real trouble with a serve: nothing cut, too few pieces, nothing served, or plates that differ',()=>{
  expect(serveTrouble([0,0],0)).toBe('uncut');
- expect(serveTrouble([0,0,0,0],2)).toBe('empty');
+ expect(serveTrouble([0,0,0,0],2)).toBe('short');
+ expect(serveTrouble([0,0,0,0],8)).toBe('empty');
  // Level 2 cut in halves: two friends could have a piece, two never can.
  expect(serveTrouble([1,1,0,0],2)).toBe('short');
  expect(serveTrouble([1,0,0,0],2)).toBe('short');

@@ -164,7 +164,12 @@ class PetKitchen implements Game {
   private drawHint(){
     this.glow.clear();if(!this.assisted||this.done)return;
     if(this.plan.mode==='share'||this.plan.mode==='fraction') {
-      if(this.plan.mode==='fraction'&&!this.split){this.glow.circle(this.cuts[0].x,this.cuts[0].y,62).stroke({width:8,color:swatch.yellow.line});return;}
+      if(!this.split){
+        // Nothing cut yet: glow the cut that works, not the hidden round arrow.
+        const wanted=this.plan.mode==='fraction'?fractionCut(this.request,this.plan.cuts):fairCut(this.plan);
+        const b=this.cuts[Math.max(0,(this.plan.cuts as readonly number[]).indexOf(wanted!))];
+        this.glow.circle(b.x,b.y,62).stroke({width:8,color:swatch.yellow.line});return;
+      }
       if(this.plan.mode==='fraction'&&!fractionCut(this.request,[this.split])){this.glow.circle(this.recut.x,this.recut.y,62).stroke({width:8,color:swatch.yellow.line});void this.ctx.say('kitchen.recut');return;}
       if(this.pieces.length<this.plates.length){this.glow.circle(this.recut.x,this.recut.y,62).stroke({width:8,color:swatch.yellow.line});void this.ctx.say('kitchen.recut');return;}
       const p=this.plates[nextPlate(this.counts())];this.glow.circle(p.x,p.y,84).stroke({width:8,color:swatch.yellow.line});

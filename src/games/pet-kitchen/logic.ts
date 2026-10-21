@@ -56,14 +56,15 @@ export function fairCut(plan: { wholes: number; friends: number; cuts: readonly 
 }
 
 /**
- * Why a share or fraction serve missed, so the first line says what is really wrong: nothing cut yet, nothing on any
- * plate, too few pieces for every friend to have one (the round arrow and a finer cut fix it), or plates that differ.
+ * Why a share or fraction serve missed, so the first line says what is really wrong: nothing cut yet, too few pieces for
+ * every friend to have one (the round arrow and a finer cut fix it, so this comes before an empty plate), nothing on
+ * any plate, or plates that differ.
  */
 export type ServeTrouble = 'uncut' | 'empty' | 'short' | 'unequal';
 export function serveTrouble(plates: readonly number[], pieces: number): ServeTrouble {
   if (pieces === 0) return 'uncut';
-  if (plates.every((n) => n === 0)) return 'empty';
   if (pieces < plates.length) return 'short';
+  if (plates.every((n) => n === 0)) return 'empty';
   return 'unequal';
 }
 const NUMBER_WORDS = ['one', 'two', 'three', 'four'];
