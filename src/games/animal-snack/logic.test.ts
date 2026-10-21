@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BITE, BITE_SIZES, ANIMALS, busyTouch, countedFood, eaterOf, FAVORITE, FOOD_WORDS, nearestFriend, shouldNudge, makeRounds, PLANS, SCENE_SPECS, SCENES, sceneFor, SOUND_WORDS, SOUNDERS, VOICE, snackTouch, type Food, type SnackTable } from './logic';
+import { BARN_ASPECT, BITE, BITE_SIZES, ANIMALS, busyTouch, countedFood, eaterOf, farBarnAt, FAVORITE, FRIEND_HIT, FRIEND_SCALE, friendFeet, friendXs, FOOD_WORDS, nearestFriend, shouldNudge, makeRounds, PLANS, SCENE_SPECS, SCENES, sceneFor, SOUND_WORDS, SOUNDERS, VOICE, snackTouch, type Food, type SnackTable } from './logic';
 
 describe('Animal Snack', () => {
   it('gives every scene a backdrop and its own feeding spot, and only the dusk yard loses the sun', () => {
@@ -190,4 +190,54 @@ describe('Animal Snack', () => {
     expect(busyTouch(true, false, { snack: { eaten: false, visible: false } })).toBeNull();
     expect(snack.snack).toEqual({ eaten: false, visible: true });
   });
+
+  // Logical views: iPad landscape, an iPad Air, a wide phone, iPad portrait and the tallest view before the turn prompt.
+  const VIEWS = [[1024, 768], [1105, 768], [1365, 768], [1024, 1365], [1024, 1638]] as const;
+  const circleHitsRect = (cx: number, cy: number, r: number, x0: number, y0: number, x1: number, y1: number) => {
+    const dx = cx - Math.max(x0, Math.min(cx, x1));
+    const dy = cy - Math.max(y0, Math.min(cy, y1));
+    return dx * dx + dy * dy < r * r;
+  };
+
+  it('stands a far barn, 60 to 80 tall, on the horizon of every scene but the orchard, at every view', () => {
+    for (const scene of SCENES) {
+      for (const [w, h] of VIEWS) {
+        const barn = farBarnAt(scene, w, h, 3);
+        if (scene === 'orchard') continue;
+        expect(barn, `${scene} ${w}x${h}`).not.toBeNull();
+        expect(barn!.height).toBeGreaterThanOrEqual(60);
+        expect(barn!.height).toBeLessThanOrEqual(80);
+        expect(barn!.base).toBe(h * SCENE_SPECS[scene].backdrop.horizon);
+      }
+    }
+  });
+
+  it('never puts the barn behind a friend, the orchard tree, the question bubble or the bell, or off the screen', () => {
+    for (const scene of SCENES) {
+      for (const [w, h] of VIEWS) {
+        for (const n of [1, 2, 3]) {
+          const barn = farBarnAt(scene, w, h, n);
+          if (!barn) continue;
+          const half = (barn.height * BARN_ASPECT) / 2 + 4; // the trim overhangs the walls by 4
+          const [x0, x1, y0, y1] = [barn.x - half, barn.x + half, barn.base - barn.height - 3, barn.base];
+          expect(x0).toBeGreaterThanOrEqual(0);
+          expect(x1).toBeLessThanOrEqual(w);
+          for (const fx of friendXs(n, w)) {
+            const hit = circleHitsRect(fx, friendFeet(h) + FRIEND_HIT.y * FRIEND_SCALE, FRIEND_HIT.r * FRIEND_SCALE, x0, y0, x1, y1);
+            expect(hit, `${scene} ${w}x${h} n=${n}`).toBe(false);
+          }
+          if (scene === 'orchard') expect(x0 > 220 || x1 < 10).toBe(true);
+          expect(y0).toBeGreaterThan(180); // the bubble (to y 180) and the bell (to y 166)
+        }
+      }
+    }
+  });
+
+  it('shows the orchard its barn only when the tree leaves room beside the friends', () => {
+    expect(farBarnAt('orchard', 1024, 768, 3)).toBeNull();
+    const wide = farBarnAt('orchard', 1365, 768, 3);
+    expect(wide).not.toBeNull();
+    expect(wide!.x).toBeGreaterThan(1365 / 2);
+  });
 });
+

@@ -177,3 +177,24 @@ export class Backdrop extends Container {
     for (const c of this.clouds) c.update(dt, this.view);
   }
 }
+
+/**
+ * The Barnyard's barn seen from far off (visual identity V1): the map barn's gable in a quieter red than
+ * playable objects, its white trim, and from 60 units tall its X door and round loft. `base` is the ground
+ * it stands on; the barn is `height * 1.1` wide. Pass a darker `body` and `trim` for an evening sky.
+ */
+export function drawFarBarn(g: Graphics, x: number, base: number, height: number, body: number = swatch.red.line, trim: number = swatch.white.light) {
+  const w = height * 1.1;
+  g.poly([x - w / 2, base, x - w / 2, base - height * 0.58, x, base - height, x + w / 2, base - height * 0.58, x + w / 2, base])
+    .fill(body);
+  g.moveTo(x - w / 2 - 4, base - height * 0.58).lineTo(x, base - height).lineTo(x + w / 2 + 4, base - height * 0.58)
+    .stroke({ color: trim, width: 5, cap: 'round', join: 'round' });
+  if (height >= 60) {
+    const door = height * 0.34;
+    g.rect(x - door / 2, base - door, door, door).stroke({ color: trim, width: 3 });
+    g.moveTo(x - door / 2, base - door).lineTo(x + door / 2, base).moveTo(x + door / 2, base - door).lineTo(x - door / 2, base)
+      .stroke({ color: trim, width: 3 });
+    g.circle(x, base - height * 0.65, height * 0.075).fill(trim);
+  }
+  return g;
+}

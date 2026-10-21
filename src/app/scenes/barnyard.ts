@@ -1,5 +1,6 @@
 import { Graphics } from 'pixi.js';
 import { swatch, wood } from '../../art/palette';
+import { drawFarBarn } from '../../art/scenery';
 import { spotRect, type LandLayout } from '../../content/lands';
 import type { View } from '../../engine/view';
 
@@ -15,20 +16,7 @@ export function drawBarnyard(g: Graphics, layout: LandLayout, view: View, ground
   const edge = barnyardFence(layout, ground);
   const base = edge - 20;
   const height = Math.min(100, base - 112);
-  const x = layout.host.x;
-  const w = height * 1.1;
-  // A quieter red than playable objects: the map barn's gable, white trim, X door and round loft.
-  g.poly([x - w / 2, base, x - w / 2, base - height * 0.58, x, base - height, x + w / 2, base - height * 0.58, x + w / 2, base])
-    .fill(swatch.red.line);
-  g.moveTo(x - w / 2 - 4, base - height * 0.58).lineTo(x, base - height).lineTo(x + w / 2 + 4, base - height * 0.58)
-    .stroke({ color: swatch.white.light, width: 5, cap: 'round', join: 'round' });
-  if (height >= 60) {
-    const door = height * 0.34;
-    g.rect(x - door / 2, base - door, door, door).stroke({ color: swatch.white.light, width: 3 });
-    g.moveTo(x - door / 2, base - door).lineTo(x + door / 2, base).moveTo(x + door / 2, base - door).lineTo(x - door / 2, base)
-      .stroke({ color: swatch.white.light, width: 3 });
-    g.circle(x, base - height * 0.65, height * 0.075).fill(swatch.white.light);
-  }
+  drawFarBarn(g, layout.host.x, base, height);
   // Split rails on short posts, with a straw edge at their feet.
   g.rect(0, edge + 12, view.w, 10).fill(swatch.yellow.light);
   for (let px = 18; px < view.w; px += 100) {
