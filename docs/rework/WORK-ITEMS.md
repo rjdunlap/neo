@@ -17,7 +17,7 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 | [RW04](https://github.com/rjdunlap/neo/issues/488) | Welcome adventure and learning packet | done 2026-10-17: [packet](WELCOME-ADVENTURE.md) | Existing game/source audit; coordinate RW01–RW03 |
 | [RW05](https://github.com/rjdunlap/neo/issues/489) | Creature collection and active companion | defined 2026-10-17 ([CREATURE-COLLECTION.md](CREATURE-COLLECTION.md)); slice 1 built 2026-10-20 ([PR #630](https://github.com/rjdunlap/neo/pull/630)), slice 2 landed in part 2026-10-20 ([PR #642](https://github.com/rjdunlap/neo/pull/642): `CompanionRig` and eight large-pet games; Splish Splash and Weather Wardrobe wait on the [misfit decision](../WAITING-ON-DEVELOPER.md#decisions-that-block-work)) | RW02, RW03 |
 | [RW06](https://github.com/rjdunlap/neo/issues/490) | Playable home and customization | defined 2026-10-20 ([HOME.md](HOME.md)): `look.worn` with slots, dressing from Friends, then a root Home and creature play with one ball toy; slice 1 (the saved look and dressing) built 2026-10-20 ([PR #637](https://github.com/rjdunlap/neo/pull/637)); slice 2 (Home and creature play at the root) built 2026-10-20 ([PR #638](https://github.com/rjdunlap/neo/pull/638)) | RW03, RW05 |
-| [RW07](https://github.com/rjdunlap/neo/issues/491) | Welcome adventure and visible reward | define after upstream packets | RW04, RW06 |
+| [RW07](https://github.com/rjdunlap/neo/issues/491) | Welcome adventure and visible reward | defined 2026-10-21 ([WELCOME-BUILD.md](WELCOME-BUILD.md)): slice 1 ready; slice 2 (song) waits on the hello-song decision; slice 3 after slice 2 | RW04, RW06 |
 | [RW08](https://github.com/rjdunlap/neo/issues/492) | Explore and default-home cutover | define after upstream packets | RW03, RW07; reconcile D1b |
 | [RW09](https://github.com/rjdunlap/neo/issues/493) | Learning evidence and family recap | define after upstream packets | RW04, RW07 |
 | [RW10](https://github.com/rjdunlap/neo/issues/494) | Collection book and chosen unlock goals | define after upstream packets | RW05, RW07, RW08 |
@@ -107,6 +107,8 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 **Likely files:** a definition under `docs/rework/`, references to existing game logic/how-to/voice and picnic contracts. **Proof:** source/rule audit, links and diff; no claim of observed engagement or learning transfer.
 
 **Delivered 2026-10-17:** [Welcome a New Friend packet](WELCOME-ADVENTURE.md): Stamp Studio 3/4, Pet Kitchen 2/5 (fixed plates the round guarantees) and Song Maker 2 (free loop, a stated out-of-range exception awaiting the developer), typed step results kept with the project, once-only adoption/item, evidence classes and the RW07a/RW07 slice. Observed play and learning not run.
+
+**Defined 2026-10-21:** [build packet](WELCOME-BUILD.md): three slices (the project record, page, Continue, `pretty` and `yummy`; the song step, awaiting the hello-song decision; the ending, adoption and basket bed), five defaults recorded. Observed play not run.
 
 ## RW05: Creature collection and active companion
 

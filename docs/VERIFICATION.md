@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-21 — RW07 Welcome a New Friend definition (docs only)
+
+- [PR #711](https://github.com/rjdunlap/neo/pull/711), branch `claude/rw07-welcome-definition`: new [WELCOME-BUILD.md](rework/WELCOME-BUILD.md) defining RW07 as three slices (record, page, Continue, `pretty` and `yummy`; the song step; the ending, adoption and basket bed) with five recorded defaults. Routed into WORK-ITEMS, READY, ROADMAP chunk 30 and WAITING-ON-DEVELOPER.
+- Ran: `node scripts/check-links.mjs` and `git diff --check` (results in the PR). No code changed, so no typecheck, unit, browser or offline run.
+- Open: nothing built or played; slice 2 waits on the hello-song decision. No coverage-summary row changed.
+
 ## 2026-10-21 — Seesaw Balance level 11 Two boxes
 
 - [PR #710](https://github.com/rjdunlap/neo/pull/710), branch `claude/seesaw-two-boxes`, commits `a1b27c7a` and `c0c4a608` on base `c12d4b51`. School 6–11: `pair` mode, two pairs of a reading and a weighing, free closer moves, a free round-box wiggle, one glow per pair after two tips, a once-judged quick burst of moves.
@@ -110,14 +116,6 @@
 - Dev server http://localhost:5575: `BROWSER_SUITE=atticfinds` passed (level 1 free prediction then two wrong picks = 0 misses, 1 hint; level 2 empty Check free, door Check = 1 miss, requested hint twice = 1 hint; portrait level 2 screenshot with the rod in the magnifier, layout clear). `BROWSER_SUITE=fingerdemo FINGER_ONLY=attic-finds FINGER_LEVELS=1,2` passed (22.7 s, 24.5 s).
 - Not run: the offline check, `world`, any iPad or child.
 - Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): crank and Turn readable for a three-year-old, the back-side rod reading as connected, device speech of the clue lines.
-
-## 2026-10-20 — Lift It levels 1–6
-
-- Built on `claude/lift-it` ([PR #692](https://github.com/rjdunlap/neo/pull/692), base `origin/main` e9f7f890): new game `lift-it` in Rainbow Meadow (now 11 games), levels 1–6; the replay button and a drawn pet paw for the level 1–2 hint are not built ([definition](definitions/lift-it.md)).
-- `npm run typecheck` clean; `npm test` 193 files, 2104 tests passed (18 new rule tests: the rule, working rigs, hauling, authored lines, 500 seeds per level with no fallback, layout at four views and ledge heights 1–3). `npm run build` passed. The lands test passes at every band.
-- Dev server http://localhost:5899: `BROWSER_SUITE=liftit` passed (level 1 by strokes with 0 misses and 0 hints; level 6 one wrong rig = 1 miss, a repeat tug free, a requested glow = 1 hint, then the cards and the haul, sticker; level 3 portrait screenshot with two wheels). `BROWSER_SUITE=fingerdemo FINGER_ONLY=lift-it FINGER_LEVELS=1,5` passed (16.8 s, 43.3 s) and `FINGER_LEVELS=6` passed (61.8 s against the 75 s limit: close, mostly spoken lines).
-- Not run: the offline check, `world`, any iPad or child.
-- Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): the handle reading as "pull me" across strokes, stretch-and-wobble reading as "too heavy", the two strands on the crate wheel visibly two.
 
 ## Coverage summary
 

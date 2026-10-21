@@ -384,3 +384,11 @@
 - Isolated Chromium probe `test-results/fill-sets.mjs`, Vite http://localhost:5186: actual level-2 tip-out per new set, four distinct pieces, zero misses/hints and no page errors. Inspected `test-results/browser/fill-{balls,blocks,ducks}.png`: landscape, one per set.
 - Initial probe lacked a hatched profile; corrected to the browser harness’s isolated profile setup. No game fix required.
 - Not run: build, full/browser regression suites, fingerdemo, offline, portrait, device speech and child play (content tier). Existing interactions and level 5/6 evidence retained.
+
+## 2026-10-20 — Lift It levels 1–6
+
+- Built on `claude/lift-it` ([PR #692](https://github.com/rjdunlap/neo/pull/692), base `origin/main` e9f7f890): new game `lift-it` in Rainbow Meadow (now 11 games), levels 1–6; the replay button and a drawn pet paw for the level 1–2 hint are not built ([definition](../definitions/lift-it.md)).
+- `npm run typecheck` clean; `npm test` 193 files, 2104 tests passed (18 new rule tests: the rule, working rigs, hauling, authored lines, 500 seeds per level with no fallback, layout at four views and ledge heights 1–3). `npm run build` passed. The lands test passes at every band.
+- Dev server http://localhost:5899: `BROWSER_SUITE=liftit` passed (level 1 by strokes with 0 misses and 0 hints; level 6 one wrong rig = 1 miss, a repeat tug free, a requested glow = 1 hint, then the cards and the haul, sticker; level 3 portrait screenshot with two wheels). `BROWSER_SUITE=fingerdemo FINGER_ONLY=lift-it FINGER_LEVELS=1,5` passed (16.8 s, 43.3 s) and `FINGER_LEVELS=6` passed (61.8 s against the 75 s limit: close, mostly spoken lines).
+- Not run: the offline check, `world`, any iPad or child.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): the handle reading as "pull me" across strokes, stretch-and-wobble reading as "too heavy", the two strands on the crate wheel visibly two.
