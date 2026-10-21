@@ -1,8 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { animalsFor, enter, fleeSpeed, KINDS, makeHerd, PLACE, PLANS, PLURAL, ringBell, shooPoint, signDots, startSpots, throughGate, wanted } from './logic';
+import { animalsFor, enter, fleeSpeed, KINDS, makeHerd, PLACE, planFor, PLANS, PLURAL, ringBell, shooPoint, signDots, startSpots, throughGate, wanted } from './logic';
 
 describe('Roundup', () => {
+  it('gives Shoo one two successes, ordinary flee steering and a wider accepting gate', () => {
+    const plan = planFor(10);
+    expect(plan).toMatchObject({ mode: 'shoo', animals: 2, sequential: true, gate: 0.8, fleeRadius: 190, hintAfter: 10, helpAfter: 20 });
+    const pen = { x: 500, y: 100, w: 200, h: 200 };
+    // A crossing outside the old opening is accepted; the fence ends still hold.
+    expect(throughGate(pen, { x: 490, y: 130 }, { x: 510, y: 130 }, plan.gate)).toBe(true);
+    expect(throughGate(pen, { x: 490, y: 130 }, { x: 510, y: 130 })).toBe(false);
+    expect(throughGate(pen, { x: 490, y: 110 }, { x: 510, y: 110 }, plan.gate)).toBe(false);
+    expect(fleeSpeed(plan.fleeRadius!, plan.fleeRadius!, 330)).toBe(0);
+    expect(fleeSpeed(105, plan.fleeRadius!, 330)).toBeGreaterThan(0);
+    for (let seed = 1; seed <= 100; seed++) {
+      const herd = makeHerd(plan, new Rng(seed));
+      expect(herd.animals).toHaveLength(2);
+      expect(herd.pens).toHaveLength(1);
+      expect(herd.animals.every((kind) => enter(herd.pens[0], kind) === 'in')).toBe(true);
+      expect(wanted(herd, herd.pens[0])).toBe(2);
+    }
+    // Existing IDs retain their plans; no placeholder levels 7–9 are introduced.
+    expect(planFor(6)).toBe(PLANS[5]);
+    expect(planFor(7)).toBe(PLANS[5]);
+  });
+
   it('always has enough animals for every pen, with a spare when counting', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 300; seed++) {

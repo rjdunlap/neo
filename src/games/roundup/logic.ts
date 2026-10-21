@@ -17,8 +17,19 @@ export interface HerdPlan {
   /** count/sortCount: how many each pen wants (a range). */
   min?: number;
   max?: number;
+  /** One loose animal at a time, with two successes in the round. */
+  sequential?: boolean;
+  gate?: number;
+  fleeRadius?: number;
+  hintAfter?: number;
+  helpAfter?: number;
   name: string;
 }
+
+export const SHOO_ONE: HerdPlan = {
+  mode: 'shoo', animals: 2, sequential: true, gate: 0.8, fleeRadius: 190,
+  hintAfter: 10, helpAfter: 20, name: 'Shoo one animal at a time into a wide gate, twice',
+};
 
 export const PLANS: HerdPlan[] = [
   { mode: 'tap', animals: 3, name: 'Tap an animal and it hops into its pen' },
@@ -27,9 +38,10 @@ export const PLANS: HerdPlan[] = [
   { mode: 'sort', animals: 4, maxAnimals: 5, name: 'Sort four or five animals of two kinds into their own pens' },
   { mode: 'count', animals: 6, min: 2, max: 4, name: 'Put an exact number in the pen (2 to 4)' },
   { mode: 'sortCount', animals: 7, min: 1, max: 3, name: 'Sort two kinds and put the requested number in each pen' },
+  SHOO_ONE,
 ];
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const planFor = (level: number) => level === 10 ? SHOO_ONE : PLANS[Math.min(6, Math.max(1, level)) - 1];
 
 export const PLURAL: Record<Kind, string> = { pig: 'pigs', bunny: 'bunnies', cow: 'cows', duck: 'ducks', dog: 'dogs' };
 /** What each pen's floor is, for "three pigs in the mud". */

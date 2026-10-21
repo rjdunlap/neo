@@ -1,6 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
 
+### Roundup slice 3, Level 10 Shoo one (2026-10-20)
+
+[PR #686](https://github.com/rjdunlap/neo/pull/686): two successive single-animal successes, one loose animal at a time near an 80%-open gate, ordinary flee steering, fresh 10/20-second glow/trot-home support (one hint each), zero misses, one round/sticker. Toddler order `[1,10,2,3]`, `entryLevels: [10]`; other bands and IDs unchanged. Singular spoken instruction and level-scoped how-to. Level 11 and other slices remain open. [Verification](../VERIFICATION.md#2026-10-20--roundup-level-10-shoo-one-slice-3).
+
+
 ### Discovery D2b, the Little surprises mix (2026-10-20)
 
 Built on `claude/little-surprises-mix` from the [definition](../definitions/little-surprises.md): `src/content/mix.ts` (frozen pool, eligibility, pure `step()` reducer, 11 tests), `MixMemory` in `src/app/discovery.ts` bound to the save object, `Scene.holdsMix()` with `App.show` ending the mix, `src/app/mix.ts` `MixHost` and `src/ui/mix.ts` `MixSheet` (preview and ending), the mix entry in both home-spot layouts, `GameScene` Next stop/Skip/All done and a pause-sheet skip, eight `mix.*` voice lines, and `mix-flow.test.ts` (5 tests). Deviation recorded: All done goes to the home spot where the ending sheet opens. Browser flow `DISCOVERY_ONLY=mix`; offline harness follows the Little surprises card leading toddler page one.
