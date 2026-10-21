@@ -94,7 +94,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'juniper' },
     backdrop: { sky: [0xc4ecff, 0xfff6e0], hills: [0xf5d0e6, 0xbfe39a, 0x9ad77e], horizon: 0.4, clouds: 3, sun: true, seed: 131 },
     music: tune(83, 'bell', 96),
-    games: ['shape-sorter', 'color-garden', 'dot-link', 'tangram-town', 'garden-grow', 'treasure-map', 'habitat-helpers', 'jar-sort', 'block-garden'],
+    games: ['shape-sorter', 'color-garden', 'dot-link', 'tangram-town', 'garden-grow', 'treasure-map', 'habitat-helpers', 'jar-sort', 'block-garden', 'swing-pals'],
   },
   {
     id: 'puzzle-peaks',

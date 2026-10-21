@@ -1262,6 +1262,28 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 8, to: 8, text: "Steering onto one that goes past the pail's number counts as a miss; letting one go never does. After two misses, or two tries that do not fit, the next good move glows, which counts as a hint." },
     ],
   },
+  'swing-pals': {
+    goal: 'Push your friends on the swing, then find the rope that swings along.',
+    steps: [
+      { from: 1, to: 1, text: 'Tap to push. Every push swings a little more, up to the bell.' },
+      { from: 2, to: 3, text: 'Tap and the push waits for your friend to come back. One push each swing goes up fastest.' },
+      { from: 3, to: 3, text: 'Push each swing up to its bell. The short rope comes back quicker.' },
+      { from: 4, to: 6, text: 'Tap a hook to hang her rope there. Both swings let go together.' },
+      { from: 4, to: 6, text: 'A long rope swings slower, a short rope faster.' },
+      { from: 5, to: 6, text: 'A heavy friend swings at the same beat as a light one.' },
+      { from: 6, to: 6, text: 'A big swing and a small swing on the same rope come back together.' },
+    ],
+    finish: [
+      { from: 1, to: 3, text: 'Every friend rings the bell.' },
+      { from: 4, to: 6, text: 'Every pair swings together.' },
+    ],
+    note: [
+      { from: 1, to: 6, text: 'A push never takes height away, and her timing is never counted against her.' },
+      { from: 1, to: 3, text: 'Show a hint in the pause sheet gives two pushes with her, which counts as a hint.' },
+      { from: 4, to: 6, text: 'Her rope starts on a wrong hook; watching it there first is free. Another hook that swings apart counts as a miss. Once two hooks have swung apart, the right hook glows, which counts as a hint: with three hooks it only confirms the last one left.' },
+      { from: 1, to: 6, text: "The swing follows the small-swing rule: only the rope's length changes how fast it swings back and forth. That is close to real swings, not exact." },
+    ],
+  },
   'block-garden': {
     goal: 'Plant shapes until every bud blooms.',
     steps: [

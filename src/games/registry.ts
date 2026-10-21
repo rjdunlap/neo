@@ -87,6 +87,7 @@ import { blockGarden } from './block-garden';
 import { dominoRun } from './domino-run';
 import { fruitSlice } from './fruit-slice';
 import { puddleGobble } from './puddle-gobble';
+import { swingPals } from './swing-pals';
 import { critterCrossing } from './critter-crossing';
 import { sudokuGarden } from './sudoku-garden';
 import { pondConga } from './pond-conga';
@@ -190,6 +191,7 @@ export const GAMES: GameModule[] = [
   dominoRun,
   fruitSlice,
   puddleGobble,
+  swingPals,
   critterCrossing,
   clapSyllables,
   chainReaction,
