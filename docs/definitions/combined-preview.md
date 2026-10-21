@@ -177,7 +177,7 @@ There is no save field, no new route argument, no voice line, no asset and no ga
 
 - **D2a/D2b:** this replaces the sheet's role as a preview when cards are on. The sheet stays for cards off and for the ending. D2a's [decision 4](little-surprises.md#open-decisions) (Home reopens the preview) carries over, with the card as the preview.
 - **D4b:** separate. If the developer later approves brief support for an introduced mode, a stop card may shorten under that rule. D3 neither assumes nor blocks it.
-- **D5a and D7:** a chosen or shuffled lineup reuses the stop row unchanged, since the row reads its stops from the session.
+- **D5a and D7:** a chosen or shuffled lineup reuses the stop row unchanged, since the row reads its stops from the session. D5a is now defined in [make-my-mix.md](make-my-mix.md); the row currently reads the frozen pool through `mixGames`, which D5a's build changes to the session's IDs.
 - **RW03 and RW08:** when RW08 moves the mix entry to the new Home, the stop card goes with it unchanged. Only the origin changes.
 - **Couch, controllers and stories:** excluded, as in D2a.
 

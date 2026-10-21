@@ -171,7 +171,7 @@ The preview speaks `mix.offer` once on opening, then the next-up title. Nothing 
 
 - **D1b:** shares its pool, tile class, latch, input-in-use rule and launch call. Inside a mix, the D1b offer gate in `GameScene` (`canDiscover` / `syncDiscovery`) returns no offer, and the mix's result controls take D1b's rectangles.
 - **D3:** a combined preview and introduction may later merge a stop tile with that game's card. D2a keeps the current full card on each launch, so D3 changes nothing here.
-- **D5a and D7:** editing, rerolling and reordering stops, and other mixes, belong there. D2a's reducer should take its pool as an argument so D5a reuses it, but D2b ships only Little surprises.
+- **D5a and D7:** editing, rerolling and reordering stops, and other mixes, belong there. D2a's reducer should take its pool as an argument so D5a reuses it, but D2b ships only Little surprises. D5a is now defined in [make-my-mix.md](make-my-mix.md).
 - **RW03 and RW08:** RW03's [navigation packet](../rework/HOME-NAVIGATION.md) relabels the result's blue Home as Back to its origin at RW08, and RW08 replaces the default home. The mix spot then moves to the new Home's creature-play or direct-play area, with the same origin and session rules. Until RW08, wording and placement stay as above.
 - **Art:** the picnic-blanket spot and the yellow tile are Pixi `Graphics` in `palette.ts` colors and reuse the hub icons. No assets.
 - **Couch, controllers and stories:** excluded. A story round is never a stop, and couch play never sees the entry.
