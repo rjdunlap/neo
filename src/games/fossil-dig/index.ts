@@ -121,6 +121,8 @@ class FossilDig implements Game {
   readonly whereSlot = new Container();
   readonly likeSlot = new Container();
   readonly checkBtn = new Container();
+  private readonly ghostFlag = flagArt('red', 0.9);
+  private readonly ghostLeaf = leafArt('star', 'leaf');
   private readonly whereArt = new Container();
   private readonly likeArt = new Container();
   private readonly stamp = new Container();
@@ -206,11 +208,15 @@ class FossilDig implements Game {
     for (let y = 40; y < RECORD_H; y += 34) paper.moveTo(16, y).lineTo(RECORD_W - 16, y).stroke({ width: 2, color: swatch.blue.light });
     paper.eventMode = 'none';
     this.record.addChild(paper);
-    const slotArt = (ghost: Graphics) => new Graphics().roundRect(-SLOT / 2, -SLOT / 2, SLOT, SLOT, 16).fill(0xffffff).stroke({ width: 5, color: wood.line }).addChild(ghost);
-    const ghostFlag = flagArt('red', 0.9);
+    const slotArt = (ghost: Graphics) => {
+      const c = new Container();
+      c.addChild(new Graphics().roundRect(-SLOT / 2, -SLOT / 2, SLOT, SLOT, 16).fill(0xffffff).stroke({ width: 5, color: wood.line }), ghost);
+      return c;
+    };
+    const ghostFlag = this.ghostFlag;
     ghostFlag.tint = 0xdddddd;
     ghostFlag.alpha = 0.35;
-    const ghostLeaf = leafArt('star', 'leaf');
+    const ghostLeaf = this.ghostLeaf;
     ghostLeaf.scale.set(0.24);
     ghostLeaf.tint = 0xdddddd;
     ghostLeaf.alpha = 0.35;
@@ -325,6 +331,8 @@ class FossilDig implements Game {
       g.scale.set(0.24);
       this.likeArt.addChild(g);
     }
+    this.ghostFlag.visible = !this.state.where;
+    this.ghostLeaf.visible = !this.state.like;
     for (const c of this.cards) c.node.alpha = this.state.like === c.leaf ? 0.4 : 1;
     this.checkBtn.alpha = this.state.where && this.state.like ? 1 : 0.45;
   }
