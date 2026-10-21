@@ -1960,8 +1960,8 @@ export const SCRIPT = {
   'weather.yes': ['Good idea!', 'Just right!', 'Yes!'],
   'weather.ready': ['{pet} is ready to go out!', 'All set! Let us go!'],
   'weather.hint': ['Try the glowing one!'],
+  'weather.name': ['{item}!'],
   'weather.change.remove': ['The weather is changing to {weather}. Tap the clothes that do not fit to take them off.'],
-  'weather.change.remove.first': ['First, take off the clothes that do not fit the new weather.'],
   'weather.change.add': ['Now it is {weather}. What should {pet} wear?'],
 
   'sink.drop': ['Tap something to drop it in the water! Splash!'],

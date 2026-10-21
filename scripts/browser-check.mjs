@@ -3817,7 +3817,18 @@ async function fourth() {
     await page.waitForTimeout(700);
     await page.evaluate(async () => {
       const g = neo.scene.game;
-      if (g.plan.mode === 'play') { for (let i = 0; i < 6; i++) { kit.tap(500, 200); await kit.sleep(600); } return; }
+      if (g.plan.mode === 'play') {
+        // Every touch answers: the grass bursts and a worn item says its name, neither changing the weather.
+        await kit.until(() => g.worn.size === 2, 3000);
+        kit.tap(120, innerHeight - 40); await kit.sleep(150);
+        if (!g.bursts.length || g.weather !== 'sunny') throw new Error('Wardrobe grass did not answer');
+        const [item, worn] = [...g.worn][0];
+        const at = worn.toGlobal(g.wornCenters.get(item));
+        kit.tap(at.x, at.y); await kit.sleep(300);
+        if (g.named !== 1 || g.weather !== 'sunny') throw new Error('Wardrobe worn item was not named');
+        for (let i = 0; i < 6; i++) { kit.tap(500, 200); await kit.sleep(600); }
+        return;
+      }
       const wrong = g.options.find((o) => !g.outfit.needed.includes(o.item));
       for (let i = 0; i < 2; i++) { kit.tapOn(wrong.node); await kit.sleep(450); }
       if (g.hints !== 1) throw new Error('Wardrobe hint missing');

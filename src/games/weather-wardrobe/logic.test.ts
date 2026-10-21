@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfits, WARDROBE_PLANS, WEATHERS, type Item } from './logic';
+import { GROUND_TOUCH, ITEM_NAMES, ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfits, WARDROBE_PLANS, WEATHERS, type Item } from './logic';
 
 describe('Weather Wardrobe', () => {
   it('gives every weather at least two things to wear, each spoken plainly', () => {
     for (const w of WEATHERS) expect(itemsFor(w).length).toBeGreaterThanOrEqual(2);
     for (const item of Object.keys(ITEMS)) expect(ITEM_WORDS[item as keyof typeof ITEMS]).toBeTruthy();
+  });
+
+  it('names every worn item at level 1, and the grass answers each weather its own way', () => {
+    for (const item of Object.keys(ITEMS) as Item[]) {
+      expect(ITEM_NAMES[item]).toBeTruthy();
+      // The name is the start of the "is for … days" line, so the two never disagree.
+      expect(ITEM_WORDS[item].startsWith(ITEM_NAMES[item])).toBe(true);
+    }
+    expect(new Set(WEATHERS.map((w) => GROUND_TOUCH[w])).size).toBe(WEATHERS.length);
   });
 
   it('offers the right things to wear among distinct choices from other weathers', () => {

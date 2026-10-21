@@ -611,9 +611,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Dress the pet for the weather.',
     steps: [
       { to: 1, text: 'Tap the sky to change the weather; the pet dresses itself.' },
+      { to: 1, text: 'Tap the grass to splash, crunch or pop up a flower, and tap the clothes on the pet to hear their names.' },
       { from: 2, to: 3, text: 'Tap the one thing that suits the weather.' },
       { from: 4, to: 5, text: 'Tap every thing that suits the weather.' },
-      { from: 6, text: 'Tap the clothes that suit each kind of weather, to pack for the trip.' },
+      { from: 6, to: 6, text: 'Tap the clothes that suit each kind of weather, to pack for the trip.' },
       { from: 7, text: 'Tap each worn item that does not suit the new weather to take it off, then tap clothes for the new weather.' },
     ],
     finish: [
