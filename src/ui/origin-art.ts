@@ -30,12 +30,14 @@ export function fitArt(art: Container, size: number): Container {
 
 /**
  * What a result's Back to [origin] shows and says at the root (RW08): the location's landmark, the Explore entry's or the
- * library's picture, and its name. Null for an origin the root does not name (the island's places and journal keep Home).
+ * library's picture, and its name. Null for an origin the root does not name (the island's journal keeps Home).
  */
 export function originArt(origin: Origin | undefined): { picture: Container; place: string } | null {
   if (origin && 'land' in origin) return { picture: landmarkFor(origin.land), place: landFor(origin.land).name };
   if (origin && 'explore' in origin) return { picture: entryArt(origin.explore), place: ENTRY_NAMES[origin.explore] };
   if (origin && 'library' in origin) return { picture: libraryIcon(), place: 'the library' };
+  // At the root a home spot is All games' first page (`placeAtRoot`), where Little surprises' stops come back to.
+  if (origin && 'place' in origin) return { picture: entryArt('all'), place: ENTRY_NAMES.all };
   return null;
 }
 

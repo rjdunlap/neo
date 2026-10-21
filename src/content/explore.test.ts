@@ -67,6 +67,26 @@ describe('pages', () => {
     expect(pageOf([1, 2, 3, 4], 1, true)).toEqual([{ signpost: true }]);
   });
 
+  it('leads the first page with the mix when asked, every game still once and four cards a page (RW08 slice 2)', () => {
+    for (let n = 0; n <= 13; n++) {
+      for (const sign of [false, true]) {
+        const items = Array.from({ length: n }, (_, i) => i);
+        const pages = pageCount(n, sign, true);
+        const all = Array.from({ length: pages }, (_, p) => pageOf(items, p, sign, true));
+        expect(all[0][0]).toEqual({ mix: true });
+        expect(all.flat().filter((c) => 'mix' in c)).toHaveLength(1);
+        for (const page of all) expect(page.length).toBeGreaterThan(0);
+        for (const page of all) expect(page.length).toBeLessThanOrEqual(PAGE_SIZE);
+        expect(all.flat().filter((c) => 'game' in c).map((c) => ('game' in c ? c.game : -1))).toEqual(items);
+        if (sign) expect(all.at(-1)!.at(-1)).toEqual({ signpost: true });
+      }
+    }
+    // The mix and three games fill the first page; the fourth game moves on.
+    expect(pageOf([1, 2, 3, 4], 0, false, true)).toEqual([{ mix: true }, { game: 1 }, { game: 2 }, { game: 3 }]);
+    expect(pageCount(4, false, true)).toBe(2);
+    expect(clampPage(9, 3, false, true)).toBe(0);
+  });
+
   it('clamps a remembered page into range (a heart taken back can shorten the list)', () => {
     expect(clampPage(5, 6)).toBe(1);
     expect(clampPage(-2, 6)).toBe(0);

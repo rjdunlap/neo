@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Routes } from './App';
-import { goToOrigin } from './origin';
+import { goToOrigin, placeAtRoot } from './origin';
 
 const routes = () => ({ land: vi.fn(), place: vi.fn(), journal: vi.fn(), library: vi.fn(), explore: vi.fn() }) as unknown as Routes & Record<'land' | 'place' | 'journal' | 'library' | 'explore', ReturnType<typeof vi.fn>>;
 
@@ -35,5 +35,12 @@ describe('goToOrigin', () => {
     goToOrigin(go, undefined, fallback);
     expect(fallback).toHaveBeenCalledOnce();
     expect(go.land).not.toHaveBeenCalled();
+  });
+
+  it('sends the root\'s home spot, where the mix lives, to All games\' first page of her own games (RW08 slice 2)', () => {
+    const go = routes();
+    placeAtRoot(go);
+    expect(go.explore).toHaveBeenCalledWith('all', 0, false);
+    expect(go.place).not.toHaveBeenCalled();
   });
 });
