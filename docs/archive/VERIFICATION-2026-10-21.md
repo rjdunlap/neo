@@ -200,3 +200,12 @@
 - A probe took a portrait (768×1024 meadow) and landscape (1024×768 dusk, plus the suite's garden) screenshot: barn visible, clear of the friends.
 - Not run: `fingerdemo` (bot unchanged), `world`, the offline check, a device.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a child recognises the land without its label.
+
+## 2026-10-21 — Egg Catch: a miss that teaches and hens that wait (slice 2)
+
+- Built on `claude/egg-catch-miss-teaches` ([PR #720](https://github.com/rjdunlap/neo/pull/720), tested at `d75e51d1`): levels 2–3 boing and "Peep! Slide under the next one." on a missed brown egg, a hay glow under the next brown egg's lane after two misses, and `HenPace` so hens lay only while someone plays (an unplayed landing is no miss); bots touch once per new egg.
+- Ran (Vite http://localhost:5734): `npm run typecheck`; `npx vitest run src/games/egg-catch src/content` 121 pass (idle round lays one egg with no miss at levels 2 and 3, busy play never lands unplayed, a look-away costs at most one or two eggs, the second egg waits for play, glow lane equals the next brown egg over 100 seeds at both levels).
+- `BROWSER_SUITE=batch BATCH_ONLY=eggs FROM_LEVEL=2 TO_LEVEL=3` passed (both levels score 2 misses, 1 hint, sticker saved, no page errors; run on `1fb7bc31`, which differs only in glow draw order and bot nudges). `BROWSER_SUITE=fingerdemo FINGER_ONLY=egg-catch FINGER_LEVELS=2,3` passed (24.3 s, 16.8 s); `BROWSER_SUITE=couchgames COUCH_ONLY=egg-catch` passed.
+- A portrait probe (768×1024, toddler level 2): 15 s idle laid 1 egg, 0 misses, hens settled; two played misses then gave the hint and the glow under the falling egg's lane (screenshot checked).
+- Not run: build (no shared files or assets changed), full unit suite, other suites, offline.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether resting hens after a still, caught egg read as a pause; whether the glow is visible on an iPad; a child's reaction.

@@ -18,7 +18,7 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 | [RW05](https://github.com/rjdunlap/neo/issues/489) | Creature collection and active companion | defined 2026-10-17 ([CREATURE-COLLECTION.md](CREATURE-COLLECTION.md)); slice 1 built 2026-10-20 ([PR #630](https://github.com/rjdunlap/neo/pull/630)), slice 2 landed in part 2026-10-20 ([PR #642](https://github.com/rjdunlap/neo/pull/642): `CompanionRig` and eight large-pet games; Splish Splash and Weather Wardrobe wait on the [misfit decision](../WAITING-ON-DEVELOPER.md#decisions-that-block-work)) | RW02, RW03 |
 | [RW06](https://github.com/rjdunlap/neo/issues/490) | Playable home and customization | defined 2026-10-20 ([HOME.md](HOME.md)): `look.worn` with slots, dressing from Friends, then a root Home and creature play with one ball toy; slice 1 (the saved look and dressing) built 2026-10-20 ([PR #637](https://github.com/rjdunlap/neo/pull/637)); slice 2 (Home and creature play at the root) built 2026-10-20 ([PR #638](https://github.com/rjdunlap/neo/pull/638)) | RW03, RW05 |
 | [RW07](https://github.com/rjdunlap/neo/issues/491) | Welcome adventure and visible reward | defined 2026-10-21 ([WELCOME-BUILD.md](WELCOME-BUILD.md)); slice 1 built 2026-10-21 ([PR #712](https://github.com/rjdunlap/neo/pull/712)); slice 2 (song) waits on the hello-song decision; slice 3 after slice 2 | RW04, RW06 |
-| [RW08](https://github.com/rjdunlap/neo/issues/492) | Explore and default-home cutover | define after upstream packets | RW03, RW07; reconcile D1b |
+| [RW08](https://github.com/rjdunlap/neo/issues/492) | Explore and default-home cutover | defined 2026-10-21 ([RW08-CUTOVER.md](RW08-CUTOVER.md)): Explore's four entries, then the library/stories/rest of Home at the root, then the cutover (slice 3 waits on the developer's go-ahead) | RW03, RW07; reconcile D1b |
 | [RW09](https://github.com/rjdunlap/neo/issues/493) | Learning evidence and family recap | define after upstream packets | RW04, RW07 |
 | [RW10](https://github.com/rjdunlap/neo/issues/494) | Collection book and chosen unlock goals | define after upstream packets | RW05, RW07, RW08 |
 | [RW11](https://github.com/rjdunlap/neo/issues/495) | Optional forms and useful talents | sketch, definition first | RW02, RW10 |
@@ -170,6 +170,8 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 ## RW08: Explore and default-home cutover
 
 [Issue #492](https://github.com/rjdunlap/neo/issues/492)
+
+**Defined 2026-10-21:** [build packet](RW08-CUTOVER.md).
 
 **Outcome:** the new home becomes the ordinary landing and the catalog remains easy to browse and launch.
 

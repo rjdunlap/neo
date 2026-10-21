@@ -6,6 +6,8 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 ## Next ten
 
+- **Rework RW08 slice 1, Explore's four entries** (shell and navigation tier): Places, Favorites, All games (with an Other ages signpost) and Family play at the root, a typed browse origin and the result's Back to [origin]. [Slice 1](rework/RW08-CUTOVER.md#slice-1-explores-four-entries)
+- **Rework RW08 slice 2, the library, the stories and the rest of Home** (after slice 1; shell and navigation tier): the library, both stories, the mix, the birthday and the grown-ups' gear at the root. [Slice 2](rework/RW08-CUTOVER.md#slice-2-the-library-the-stories-and-the-rest-of-home)
 - **`egg-catch`, level 8 Under the hen** (new interaction): tap a lane, the basket hops; toddler order 1, 8, 2. [Slice 4](deep-dives/egg-catch.md#new-levels-on-top)
 - **`egg-catch`, level 9 One gate** (new level): preschool and pre-K entry before 4. [Slice 5](deep-dives/egg-catch.md#new-levels-on-top)
 - **`egg-catch`, level 10 Fix the run** (new interaction): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
@@ -14,6 +16,7 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 ## Queued
 
 - **Rework RW07 slices 2 and 3, Welcome a New Friend** (slice 2, the song step, is status `decision`: waits on the [hello-song decision](WAITING-ON-DEVELOPER.md#decisions-that-block-work), so no routine picks it up; slice 3, the ending, adoption and basket bed, comes after slice 2; both shell, save and navigation tier). [Packet](rework/WELCOME-BUILD.md#build-slices-in-order)
+- **Rework RW08 slice 3, the cutover** (status `decision`; waits on the [cutover go-ahead](WAITING-ON-DEVELOPER.md#decisions-that-block-work), so no routine picks it up; shell, save and navigation tier): delete `classic/`, the map, age places and `?preview`. [Slice 3](rework/RW08-CUTOVER.md#slice-3-the-cutover-waits-for-the-developer)
 - **Rework RW05 slice 2b, Splish Splash and Weather Wardrobe on `CompanionRig`, then drop `ctx.petSpec`** (status `decision`; waiting on the [misfit decision](WAITING-ON-DEVELOPER.md#decisions-that-block-work), so no routine picks it up; shell tier plus one filtered regression and `fingerdemo` per game): slice 2 landed in part in [#642](https://github.com/rjdunlap/neo/pull/642) with the other eight large-pet games. [Packet](rework/CREATURE-COLLECTION.md#built-slice-2-in-part-2026-10-20)
 
 
