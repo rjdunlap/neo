@@ -300,4 +300,13 @@ export const sfx = {
     tone(o.ctx, o.dest, 'triangle', hz, o.t, 0.4, 0.01, 0.16, hz * 0.8);
     tone(o.ctx, o.dest, 'triangle', hz * 1.05, o.t + 0.18, 0.35, 0.01, 0.2, hz * 0.75);
   },
+
+  /** A smaller frog's croak on a scale step: two short buzzy bursts gliding down, so a second frog sounds like a frog, not a bell. */
+  ribbit(step = -4) {
+    const o = out();
+    if (!o) return;
+    const hz = stepHz(step);
+    tone(o.ctx, o.dest, 'sawtooth', hz, o.t, 0.18, 0.005, 0.11, hz * 0.8);
+    tone(o.ctx, o.dest, 'sawtooth', hz * 1.05, o.t + 0.13, 0.16, 0.005, 0.11, hz * 0.78);
+  },
 };

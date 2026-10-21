@@ -1006,8 +1006,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 6, text: 'Take turns with the woodpecker, playing your frog part each time, then join the final duet.' },
       'Tap the green arrow when the song is ready.',
     ],
-    finish: 'The round ends when the reply has been played and the green arrow tapped.',
-    note: 'Taking turns is the point; a reply need not be perfect.',
+    finish: [
+      { to: 2, text: 'After eight frog taps, or sooner with the green arrow, the bird and the frogs sing a short song together and the round ends.' },
+      { from: 3, text: 'After three replies, the bird and the frogs sing a short song together; tap a frog to join in, then the round ends.' },
+    ],
+    note: [
+      { to: 2, text: 'Any frog tap is welcome. After six quiet seconds a frog wiggles and croaks, an invitation only, never counted as a hint.' },
+      { from: 3, to: 4, text: 'Taking turns is the point; a reply need not be perfect. An extra frog tap after the reply sounds but is not counted.' },
+      { from: 5, text: 'Taking turns is the point; a reply need not be perfect. A long pause in the middle of a reply starts it again and is never counted as a miss; an extra tap after the reply sounds but is not counted.' },
+    ],
   },
   'peekaround-island': {
     goal: 'Turn the island to see who is hiding.',
