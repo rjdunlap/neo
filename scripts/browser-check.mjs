@@ -5463,8 +5463,21 @@ async function batch() {
         await kit.until(() => g.index === q && !g.busy, 15000);
         await settle();
         const f = g.fruit;
+        if (!g.whistle.visible && g.plan.mode === 'tap' && q === 0) {
+          // Level 1: a touch on the sky sends a helper too, and touches while it is carried only make helpers hop.
+          kit.tapOn(g.field, neo.view.w * 0.3, 140);
+          await kit.until(() => g.busy, 5000);
+          for (let i = 0; i < 3; i++) { kit.tapOn(g.field, neo.view.w * 0.5, neo.view.h - 30); await kit.sleep(250); }
+          await kit.until(() => g.index > q || g.finished, 15000);
+          if (g.misses !== 0) throw new Error(`Sky and busy touches counted: ${g.misses}`);
+          continue;
+        }
         if (!g.whistle.visible) { await send(f.need); await kit.until(() => g.index > q || g.finished, 15000); continue; }
         if (q === 0) {
+          // A whistle before anyone is sent and a touch on the grass are answered, never counted.
+          if (f.already === 0) { kit.tapOn(g.whistle); await kit.sleep(300); }
+          kit.tapOn(g.field, neo.view.w * 0.5, neo.view.h - 30); await kit.sleep(300); await settle();
+          if (g.misses !== 0 || g.carrying.length !== f.already) throw new Error(`Empty whistle or grass counted: ${g.misses} ${g.carrying.length}`);
           // One too many, then the whistle: an extra walks back. Then too few: too heavy.
           await send(f.need - f.already + 1);
           kit.tapOn(g.whistle); await kit.sleep(300); await settle();
@@ -8317,6 +8330,8 @@ async function woodsBatch() {
       } else await send(need);
       await tap('neo.scene.game.whistle');
     }
+    // Every fruit of every bunch reached the basket.
+    await page.waitForFunction(() => { const g = neo.scene.game; return g.pile.children.length === g.fruits.reduce((n, f) => n + f.groups, 0); }, null, { timeout: 15000 });
     await finished('little-helpers');
     assert.deepEqual(await score('little-helpers'), [2, 1]);
     log('Little Helpers 6: equal teams under each fruit of a bunch, short whistles counted by groups, hint, saved score and sticker passed');

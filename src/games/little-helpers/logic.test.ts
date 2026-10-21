@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BUNCHES, CROWD, helperTouch, makeFruits, PLANS, skipCount, tryLift, usesWhistle } from './logic';
+import { BASKET_HALF, BUNCHES, CROWD, fieldTouch, helperTouch, makeFruits, pileSpot, PLANS, skipCount, tryLift, usesWhistle, whistleFor, whistleMisses } from './logic';
 
 describe('Little Helpers', () => {
   it('never needs more helpers than the crowd, and leaves something to send', () => {
@@ -68,4 +68,34 @@ describe('Little Helpers', () => {
     expect(tryLift(3, 2)).toBe('short');
     expect(tryLift(3, 4)).toBe('extra');
   });
+
+  it('answers every touch off the fruit without a miss: any touch sends at level 1, a wave later, a hop while busy', () => {
+    expect(fieldTouch(PLANS[0], false)).toBe('send');
+    for (const plan of PLANS.slice(1)) expect(fieldTouch(plan, false)).toBe('wave');
+    for (const plan of PLANS) expect(fieldTouch(plan, true)).toBe('hop');
+  });
+
+  it('treats a whistle with no helpers as a nudge, never a miss', () => {
+    for (let need = 1; need < CROWD; need++) {
+      expect(whistleFor(need, 0)).toBe('nudge');
+      expect(whistleMisses(whistleFor(need, 0))).toBe(false);
+      expect(whistleFor(need, need)).toBe('lift');
+      expect(whistleMisses(whistleFor(need, need))).toBe(false);
+      for (let n = 1; n < CROWD + 1; n++) if (n !== need) expect(whistleMisses(whistleFor(need, n))).toBe(true);
+    }
+  });
+
+  it('keeps every carried fruit inside the basket, a whole bunch included', () => {
+    // The most a round can carry: four bunches of up to three fruits.
+    const most = PLANS.reduce((m, p) => Math.max(m, p.mode === 'groups' ? p.fruits * Math.max(...BUNCHES.map(([g]) => g)) : p.fruits), 0);
+    const seen = new Set<string>();
+    for (let n = 0; n < most; n++) {
+      const p = pileSpot(n);
+      expect(Math.abs(p.x) + 20).toBeLessThanOrEqual(BASKET_HALF);
+      expect(p.y).toBeLessThan(0);
+      seen.add(`${p.x},${p.y}`);
+    }
+    expect(seen.size).toBe(most);
+  });
 });
+

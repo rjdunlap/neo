@@ -1,4 +1,4 @@
-import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { FRUIT_FOR, prop } from '../../art/props';
 import { Backdrop } from '../../art/scenery';
@@ -12,7 +12,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { CROWD, helperTouch, makeFruits, planFor, skipCount, tryLift, usesWhistle, type Fruit, type HelperPlan } from './logic';
+import { CROWD, fieldTouch, helperTouch, makeFruits, pileSpot, planFor, skipCount, usesWhistle, whistleFor, whistleMisses, type Fruit, type HelperPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -34,6 +34,9 @@ class Helper extends Container {
   moving = false;
   private clock = Math.random() * 6;
   private readonly body = new Container();
+  private readonly arm = new Graphics();
+  /** A little answer to a touch: a hop, a wave or a shrug, with the time it has left. */
+  private cue: { kind: 'hop' | 'wave' | 'shrug'; left: number; length: number } | null = null;
 
   constructor(color: ColorName) {
     super();
@@ -44,14 +47,42 @@ class Helper extends Container {
     g.ellipse(0, -22, 26, 26).fill(sw.fill).stroke({ width: 5, color: sw.line });
     g.circle(-9, -26, 6).circle(9, -26, 6).fill(0xffffff).circle(-8, -25, 3).circle(10, -25, 3).fill(ink);
     for (const s of [-1, 1]) g.ellipse(s * 12, 2, 9, 5).fill(sw.line);
-    this.body.addChild(g);
+    // A waving arm, shown only while it waves.
+    this.arm.moveTo(0, 0).lineTo(12, -22).stroke({ width: 7, color: sw.line, cap: 'round' }).circle(12, -22, 6).fill(sw.fill).stroke({ width: 3, color: sw.line });
+    this.arm.position.set(22, -26);
+    this.arm.visible = false;
+    this.body.addChild(g, this.arm);
     this.addChild(this.body);
+  }
+
+  /** Answer a touch without going anywhere. */
+  react(kind: 'hop' | 'wave' | 'shrug') {
+    const length = kind === 'wave' ? 0.9 : kind === 'shrug' ? 0.7 : 0.4;
+    this.cue = { kind, left: length, length };
   }
 
   update(dt: number) {
     this.clock += dt;
     this.body.y = this.moving ? -Math.abs(Math.sin(this.clock * 14)) * 8 : 0;
     this.body.rotation = this.moving ? 0.12 * Math.sin(this.clock * 14) : 0.04 * Math.sin(this.clock * 2);
+    this.body.scale.set(1);
+    this.arm.visible = false;
+    if (!this.cue) return;
+    const c = this.cue;
+    c.left -= dt;
+    if (c.left <= 0) return void (this.cue = null);
+    const k = 1 - c.left / c.length;
+    const up = Math.sin(k * Math.PI);
+    if (c.kind === 'hop') this.body.y -= up * 24;
+    else if (c.kind === 'shrug') {
+      // Up go the shoulders, down they come: "everyone's busy".
+      this.body.scale.set(1 + 0.12 * up, 1 - 0.1 * up);
+      this.body.rotation = 0.1 * Math.sin(k * Math.PI * 2);
+    } else {
+      this.arm.visible = true;
+      this.arm.rotation = 0.5 * Math.sin(k * Math.PI * 5);
+      this.body.rotation = 0.06 * Math.sin(k * Math.PI * 5);
+    }
   }
 }
 
@@ -61,6 +92,8 @@ class LittleHelpers implements Game {
   readonly helpers: Helper[] = [];
   readonly whistle: RoundButton;
   readonly fruitNode = new Container();
+  /** Everything behind the fruit, the helpers and the whistle: every touch there is answered. */
+  readonly field = new Container();
   index = -1;
   misses = 0;
   hints = 0;
@@ -75,14 +108,18 @@ class LittleHelpers implements Game {
   private view: View;
   private wrongs = 0;
   private hinting = false;
+  /** While a "busy" or "send some first" line is being said, more such touches answer without speech. */
+  private talking = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.fruits = makeFruits(this.plan, ctx.rng);
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.5, clouds: 2, sun: true, seed: 41 }, ctx.view);
-    ctx.stage.addChild(this.backdrop, this.basket, this.pile, this.ghosts, this.fruitNode, this.badge);
-    onTap(this.fruitNode, () => this.send(), { cooldown: 180 });
+    ctx.stage.addChild(this.backdrop, this.field, this.basket, this.pile, this.ghosts, this.fruitNode, this.badge);
+    onTap(this.field, (e) => this.touchField(e), { cooldown: 180 });
+    this.field.cursor = 'default';
+    onTap(this.fruitNode, (e) => this.touchFruit(e), { cooldown: 180 });
     for (let i = 0; i < CROWD; i++) {
       const h = new Helper(HELPER_COLORS[i % HELPER_COLORS.length]);
       h.hitArea = new Circle(0, -24, 50);
@@ -122,6 +159,7 @@ class LittleHelpers implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
+    this.field.hitArea = new Rectangle(0, 0, v.w, v.h);
     const b = this.basketAt();
     this.basket.clear().moveTo(b.x - 90, b.y - 40).lineTo(b.x + 90, b.y - 40).lineTo(b.x + 70, b.y + 50).lineTo(b.x - 70, b.y + 50).closePath().fill(wood.fill).stroke({ width: 6, color: wood.line, join: 'round' });
     for (let y = b.y - 20; y < b.y + 50; y += 20) this.basket.moveTo(b.x - 84, y).lineTo(b.x + 84, y).stroke({ width: 3, color: wood.line, alpha: 0.5 });
@@ -257,15 +295,57 @@ class LittleHelpers implements Game {
 
   // Helpers ---------------------------------------------------------------------------------
 
-  /** Tap the fruit: the nearest waiting helper runs over and takes hold. */
+  /** The waiting helper nearest a point, or null when everyone is out helping. */
+  private nearestWaiting(x: number, y: number): Helper | undefined {
+    return this.helpers.filter((h) => h.slot < 0 && !h.moving).sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
+  }
+
+  /** A helper hops and squeaks: the answer to a touch while a fruit drops in or is carried away. */
+  private hopNear(x: number, y: number) {
+    const h = this.nearestWaiting(x, y) ?? this.helpers.filter((k) => !k.moving).sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
+    if (!h) return;
+    h.react('hop');
+    sfx.squeak(6 + this.ctx.rng.int(0, 4));
+  }
+
+  /** Tap the fruit: a helper runs over, or, while it is busy, one hops. */
+  private touchFruit(e: FederatedPointerEvent) {
+    if (this.finished || !this.fruit) return;
+    if (this.busy) {
+      const p = this.ctx.stage.toLocal(e.global);
+      return this.hopNear(p.x, p.y);
+    }
+    this.send();
+  }
+
+  /** A touch on the sky or the grass: at the first level it sends a helper; otherwise a helper waves or hops. */
+  private touchField(e: FederatedPointerEvent) {
+    if (this.finished || !this.fruit) return;
+    const p = this.ctx.stage.toLocal(e.global);
+    const answer = fieldTouch(this.plan, this.busy);
+    if (answer === 'send') return this.send();
+    if (answer === 'hop') return this.hopNear(p.x, p.y);
+    const h = this.nearestWaiting(p.x, p.y);
+    if (!h) return this.hopNear(p.x, p.y);
+    h.react('wave');
+    sfx.chirp(10 + this.ctx.rng.int(0, 3));
+  }
+
+  /** Nobody is left to send: the helpers shrug, and the pet says they are all busy. Not a miss. */
+  private shrug() {
+    for (const h of this.helpers) if (!h.moving) h.react('shrug');
+    sfx.squeak(3);
+    if (this.talking) return;
+    this.talking = true;
+    void this.ctx.say('helpers.busy').then(() => (this.talking = false));
+  }
+
+  /** Send the nearest waiting helper to the fruit. */
   private send(quiet = false) {
     const f = this.fruit;
     if (!f || (this.busy && !quiet) || this.finished) return;
-    const h = this.helpers.filter((x) => x.slot < 0 && !x.moving).sort((a, b) => Math.hypot(a.x - this.fruitNode.x, a.y - this.fruitNode.y) - Math.hypot(b.x - this.fruitNode.x, b.y - this.fruitNode.y))[0];
-    if (!h) {
-      sfx.boing();
-      return;
-    }
+    const h = this.nearestWaiting(this.fruitNode.x, this.fruitNode.y);
+    if (!h) return this.shrug();
     h.slot = this.carrying.length;
     const n = h.slot + 1;
     const to = this.slotAt(h.slot);
@@ -284,7 +364,14 @@ class LittleHelpers implements Game {
 
   /** Tap a carrying helper and it goes back to wait: easy take-backs before the whistle. */
   private recall(h: Helper) {
-    if (h.slot < 0 || this.busy || this.finished || h.moving) return;
+    if (this.finished || h.moving) return;
+    // A waiting helper answers with a hop; at the first level it also runs to the fruit, like any touch.
+    if (h.slot < 0 && !this.busy && this.plan.mode === 'tap') return this.send();
+    if (h.slot < 0 || this.busy) {
+      h.react('hop');
+      sfx.squeak(6 + this.ctx.rng.int(0, 4));
+      return;
+    }
     if (this.index >= 0 && h.slot < (this.fruit?.already ?? 0)) return;
     this.release(h);
     sfx.pop(3);
@@ -304,8 +391,15 @@ class LittleHelpers implements Game {
     const f = this.fruit;
     if (!f || this.busy || this.finished) return;
     if (this.carrying.some((h) => h.moving)) return;
-    const result = tryLift(f.need, this.carrying.length);
+    const result = whistleFor(f.need, this.carrying.length);
     if (result === 'lift') return void this.lift();
+    if (!whistleMisses(result)) {
+      // Nobody is holding on yet: a reminder, not a wrong count.
+      for (const h of this.helpers) if (!h.moving) h.react('hop');
+      if (this.talking) return;
+      this.talking = true;
+      return void this.ctx.say('helpers.whistle.empty').then(() => (this.talking = false));
+    }
     this.busy = true;
     this.misses++;
     this.wrongs++;
@@ -350,12 +444,12 @@ class LittleHelpers implements Game {
     const b = this.basketAt();
     const dx = b.x - this.fruitNode.x;
     await Promise.all([tw.to(this.fruitNode, { x: b.x, y: b.y - 120 }, { duration: 1.1, ease: ease.inOutSine }), ...team.map((h) => tw.to(h, { x: h.x + dx - 60, y: h.y - 20 }, { duration: 1.1, ease: ease.inOutSine }))]);
-    // Into the basket it goes.
-    const keep = this.fruitNode.children[0];
-    if (keep) {
+    // Into the basket it goes, every fruit of a bunch.
+    for (const keep of [...this.fruitNode.children]) {
       this.fruitNode.removeChild(keep);
-      keep.scale.set(0.6);
-      keep.position.set((this.pile.children.length - 2) * 30, -10 - (this.pile.children.length % 2) * 14);
+      keep.scale.set(this.plan.mode === 'groups' ? 0.5 : 0.6);
+      const at = pileSpot(this.pile.children.length);
+      keep.position.set(at.x, at.y);
       this.pile.addChild(keep);
     }
     sfx.sparkle();

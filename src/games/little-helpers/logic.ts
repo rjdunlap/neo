@@ -87,3 +87,34 @@ export function helperTouch(plan: HelperPlan, need: number, carrying: number): '
   if (carrying < need) return 'send';
   return usesWhistle(plan) && carrying === need ? 'whistle' : null;
 }
+
+/**
+ * What a touch away from the fruit, the whistle and a carrying helper does, so every touch is answered: at the tap
+ * level any touch sends a helper; on other levels a waiting helper waves; while a fruit is dropping, lifting or being
+ * praised, a helper hops. None of these is ever a miss.
+ */
+export type FieldTouch = 'send' | 'wave' | 'hop';
+
+export function fieldTouch(plan: HelperPlan, busy: boolean): FieldTouch {
+  if (busy) return 'hop';
+  return plan.mode === 'tap' ? 'send' : 'wave';
+}
+
+/** A whistle with nobody holding on is a nudge to send helpers first, not a wrong count. */
+export type Whistle = Lift | 'nudge';
+
+export function whistleFor(need: number, helpers: number): Whistle {
+  return helpers === 0 ? 'nudge' : tryLift(need, helpers);
+}
+
+/** Only a whistle with the wrong team counts as a miss. */
+export const whistleMisses = (w: Whistle) => w === 'short' || w === 'extra';
+
+/** Half the basket's rim, in logical units. */
+export const BASKET_HALF = 90;
+
+/** Where the `n`th fruit in the basket rests, relative to the middle of its rim: rows of five, each row a little higher. */
+export function pileSpot(n: number) {
+  const row = Math.floor(n / 5) % 3;
+  return { x: ((n % 5) - 2) * 26 + (row % 2) * 13, y: -10 - row * 16 - (n % 2) * 6 };
+}
