@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
-import { pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir } from './logic';
+import { pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir } from './logic';
 
 describe('Egg Catch', () => {
   it('lays eggs in changing lanes, with white eggs only where asked and never three in a row', () => {
@@ -170,6 +170,78 @@ describe('Egg Catch', () => {
         expect(got).toBe(plan.eggs);
       }
     }
+  });
+
+  /** Catching levels as the game runs them: lay when the timer and the hens allow, land after the fall. */
+  function run(level: 2 | 3, seconds: number, playing: (t: number) => boolean) {
+    const plan = PLANS[level - 1];
+    const pace = new HenPace();
+    const air: { k: number; t: number }[] = [];
+    let laid = 0;
+    let unplayed = 0;
+    let spawnIn = 1.2;
+    const dt = 1 / 60;
+    for (let t = 0; t < seconds; t += dt) {
+      if (playing(t)) pace.play();
+      spawnIn -= dt;
+      if (spawnIn <= 0 && air.length < (level === 3 ? 2 : 1) && pace.canLay(air.length)) {
+        air.push({ k: pace.lay(), t: 0 });
+        laid++;
+        spawnIn = level === 3 ? 1.8 : 1.2;
+      }
+      for (const e of [...air]) {
+        e.t += dt / plan.fall;
+        if (e.t >= 1) {
+          air.splice(air.indexOf(e), 1);
+          if (!pace.land(e.k)) unplayed++;
+        }
+      }
+    }
+    return { laid, unplayed, pace };
+  }
+
+  it('hens wait when nobody plays: an idle round lays one egg, and it is no miss', () => {
+    for (const level of [2, 3] as const) {
+      const idle = run(level, 60, () => false);
+      expect(idle.laid).toBe(1);
+      expect(idle.unplayed).toBe(1);
+      expect(idle.pace.awake).toBe(false);
+      // Playing all along keeps them laying, and every landing was played over.
+      const busy = run(level, 60, () => true);
+      expect(busy.laid).toBeGreaterThan(10);
+      expect(busy.unplayed).toBe(0);
+      // A look-away in the middle costs at most one unplayed egg; the next touch wakes them.
+      const away = run(level, 60, (t) => t < 15 || t > 40);
+      expect(away.unplayed).toBeLessThanOrEqual(level === 3 ? 2 : 1);
+      expect(away.laid).toBeGreaterThan(idle.laid);
+      expect(away.pace.awake).toBe(true);
+    }
+  });
+
+  it('a second egg in the air waits for play since the last one', () => {
+    const pace = new HenPace();
+    pace.play();
+    pace.lay();
+    expect(pace.canLay(1)).toBe(false);
+    pace.play();
+    expect(pace.canLay(1)).toBe(true);
+    expect(pace.canLay(0)).toBe(true);
+  });
+
+  it('the hint glows the lane of the next brown egg', () => {
+    for (const level of [2, 3]) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const eggs = makeEggs(PLANS[level - 1], new Rng(seed));
+        for (let next = 0; next < eggs.length; next++) {
+          // Nothing in the air: the next brown egg the hens will lay.
+          const upcoming = [...eggs.slice(next), ...eggs].find((e) => e.shell === 'brown')!;
+          expect(glowLane([], eggs, next)).toBe(upcoming.lane);
+        }
+      }
+    }
+    const eggs = makeEggs(PLANS[2], new Rng(4));
+    // In the air, the brown egg that lands first wins over a white egg lower down and the stream.
+    expect(glowLane([{ lane: 0, shell: 'white', t: 0.9 }, { lane: 2, shell: 'brown', t: 0.3 }, { lane: 3, shell: 'brown', t: 0.6 }], eggs, 0)).toBe(3);
   });
 });
 
