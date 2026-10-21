@@ -91,7 +91,7 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`stop-and-go`, level 6 Busy crossing** (new level): cars arrive on both roads, she hands over one road at a time; an idle point helps level 4 too; pre-K 3–6. [Slice 5](deep-dives/stop-and-go.md#new-levels-on-top)
 
 
-- **`bolt-boards`, build levels 1–7** (new-game tier): tap bolts out of boards on the barn wall; two bolts hold a board, one makes it swing and hang, none lets it slide down and free the fruit or friend behind; a covered bolt waits; exact analytic poses (no physics), levels 1–5 never dead-end, open-hole parking at 6–7 with a solver hint and free undo; covered taps count from 4; Barnyard. [Definition](definitions/bolt-boards.md)
+- **`bolt-boards`, build levels 1–7** (new-game tier; claimed by `claude/bolt-boards`, 2026-10-20): tap bolts out of boards on the barn wall; two bolts hold a board, one makes it swing and hang, none lets it slide down and free the fruit or friend behind; a covered bolt waits; exact analytic poses (no physics), levels 1–5 never dead-end, open-hole parking at 6–7 with a solver hint and free undo; covered taps count from 4; Barnyard. [Definition](definitions/bolt-boards.md)
 
 - **`weather-wardrobe`, every touch counts at level 1 and the level-7 card** (existing-game fix): the grass answers per weather, worn items wiggle and are named, the pack step stops at 6, the dead undress line goes. [Slice 1](deep-dives/weather-wardrobe.md#build-slices-in-order)
 - **`weather-wardrobe`, more items, one slot each** (content, levels 1–7): sandals, rain hat, earmuffs, puffy coat, a slot map so an outfit never doubles a slot, level 5 always three, sticker pool pinned. [Slice 2](deep-dives/weather-wardrobe.md#build-slices-in-order)
