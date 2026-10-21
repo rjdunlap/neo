@@ -185,6 +185,10 @@ export class HenPace {
     this.playedUpTo = this.laid;
     this.awake = true;
   }
+  /** An egg has been laid since the last play: a bot that is already in place still owes a touch. */
+  get owesPlay() {
+    return this.playedUpTo < this.laid;
+  }
   canLay(inAir: number) {
     return this.awake && (inAir === 0 || this.playedUpTo >= this.laid);
   }

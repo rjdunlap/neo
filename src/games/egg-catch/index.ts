@@ -115,7 +115,7 @@ class EggCatch implements Game {
     this.targets = targetsFor(this.plan, ctx.rng);
     this.backdrop = new Backdrop({ sky: [0xf6d1b8, 0xfff1e3], hills: [0xc8ecb0, 0x9edb86], horizon: 0.72, clouds: 2, seed: 9 }, ctx.view);
     this.laneGlow.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.shelf, this.chutes, this.exits, this.laneGlow, this.hay, this.gateArt);
+    ctx.stage.addChild(this.backdrop, this.shelf, this.chutes, this.exits, this.hay, this.laneGlow, this.gateArt);
     const routing = this.routing;
     const henCount = this.plan.mode === 'pair' ? 2 : routing ? 1 : LANES;
     for (let i = 0; i < henCount; i++) {
@@ -287,8 +287,8 @@ class EggCatch implements Game {
     const egg = this.falling.find((f) => !f.done && f.egg.shell === 'brown');
     const dx = (egg ? egg.x : this.basketTarget) - this.basket.x;
     out.players[0].x = Math.abs(dx) < 16 ? 0 : Math.max(-1, Math.min(1, dx / 80));
-    // Hens that have settled wait for play: a nudge wakes them.
-    if (!this.pace.awake && !this.falling.some((f) => !f.done)) out.players[0].x = 0.5;
+    // Already in place, the bot still plays: a small nudge of the stick for each new egg (and to wake settled hens).
+    if (!out.players[0].x && (this.pace.owesPlay || !this.pace.awake)) out.players[0].x = 0.3;
     return out;
   }
 
@@ -303,8 +303,8 @@ class EggCatch implements Game {
     if (mode === 'catch' || mode === 'brown') {
       const air = this.falling.filter((f) => !f.done).sort((a, b) => b.t - a.t).map((f) => ({ x: f.x, shell: f.egg.shell }));
       const x = basketMove(air, this.basketTarget, [...Array(LANES).keys()].map((i) => this.laneX(i)));
-      // Settled hens wait for a touch: touch where the basket already is.
-      if (x === null && !air.length && !this.pace.awake) return { tap: { on: this.touch, x: this.basketTarget, y: this.floor - 40 }, pause: 0.2 };
+      // Already in place, the finger still touches once for each new egg (and to wake settled hens), where the basket is.
+      if (x === null && (this.pace.owesPlay || !this.pace.awake)) return { tap: { on: this.touch, x: this.basketTarget, y: this.floor - 40 }, pause: 0.2 };
       return x === null ? null : { tap: { on: this.touch, x, y: this.floor - 40 }, pause: 0.2 };
     }
     if (mode === 'pair') {
@@ -413,7 +413,7 @@ class EggCatch implements Game {
     if (!this.hinting || (this.plan.mode !== 'catch' && this.plan.mode !== 'brown')) return;
     const air = this.falling.filter((f) => !f.done).map((f) => ({ lane: f.egg.lane, shell: f.egg.shell, t: f.t }));
     const x = this.laneX(glowLane(air, this.eggs, this.next));
-    g.ellipse(x, this.floor + 10, 120 + 8 * Math.sin(this.clock * 6), 46).fill({ color: 0xfff3a0, alpha: 0.7 });
+    g.ellipse(x, this.floor + 18, 96 + 8 * Math.sin(this.clock * 6), 40).fill({ color: 0xfff3a0, alpha: 0.6 }).stroke({ width: 6, color: 0xffc83a, alpha: 0.9 });
   }
 
   private miss(line: 'egg.white' | 'egg.wrongway' | 'egg.predictwrong' | 'egg.pairretry' | 'egg.peep' | null) {
