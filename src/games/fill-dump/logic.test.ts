@@ -366,7 +366,7 @@ describe('Pouring to a line', () => {
 describe('Full and empty (level 6)', () => {
   it('routes each level ID through the plan table: basket 1–4, the jug at 5, the pair at 6', () => {
     expect([1, 2, 3, 4, 5, 6].map(kindFor)).toEqual(['basket', 'basket', 'basket', 'basket', 'pour', 'pair']);
-    expect(Object.keys(FILL_LEVELS).map(Number)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(Object.keys(FILL_LEVELS).map(Number)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     expect(describeFill(6)).toMatch(/full/i);
     expect(describeFill(5)).toMatch(/jug/);
   });
