@@ -11276,14 +11276,14 @@ async function islandShelf() {
   await page.evaluate(() => kit.tapOn(neo.scene.shelf.items[0].node, 0, -50));
   await scene('GameScene');
   assert.equal(await page.evaluate(() => neo.scene.mod.id), id);
-  // Subject layout: Favorites is the first card, with the one game inside; subjects with new games twinkle.
+  // Subject layout: Little surprises' card leads at toddler, then Favorites with the one game inside; subjects with new games twinkle.
   await page.evaluate(() => { kit.store.data.settings.placeLayout = 'subjects'; neo.go.place('toddler'); });
   await scene('SubjectPlaceScene'); await page.waitForTimeout(400);
   const cards = await page.evaluate(() => neo.scene.cards.map((c) => ({ id: c.id, sparkle: !!c.sparkle })));
-  assert.equal(cards[0].id, 'favorites'); assert.equal(cards[0].sparkle, false);
-  assert.ok(cards.slice(1).every((c) => c.sparkle), 'every subject still holds a game she has not played');
+  assert.equal(cards[0].id, 'mix'); assert.equal(cards[1].id, 'favorites'); assert.equal(cards[1].sparkle, false);
+  assert.ok(cards.slice(2).every((c) => c.sparkle), 'every subject still holds a game she has not played');
   await screenshot('island-favorites-card');
-  await page.evaluate(() => kit.tapOn(neo.scene.cards[0].node)); await page.waitForTimeout(400);
+  await page.evaluate(() => kit.tapOn(neo.scene.cards[1].node)); await page.waitForTimeout(400);
   assert.deepEqual(await page.evaluate(() => ({ subject: neo.scene.state.subject, ids: neo.scene.cards.map((c) => c.id), sparkles: neo.scene.cards.map((c) => !!c.sparkle) })), { subject: 'favorites', ids: [id], sparkles: [false] });
   await page.evaluate(() => kit.tapOn(neo.scene.cards[0].node)); await scene('GameScene');
   assert.equal(await page.evaluate(() => neo.scene.mod.id), id);
@@ -11293,7 +11293,7 @@ async function islandShelf() {
   assert.deepEqual(await page.evaluate(() => [...kit.store.data.favorites]), [id]);
   await page.evaluate(() => { kit.store.data.settings.placeLayout = 'subjects'; kit.store.data.favorites = []; neo.go.place('toddler'); });
   await scene('SubjectPlaceScene'); await page.waitForTimeout(300);
-  assert.notEqual(await page.evaluate(() => neo.scene.cards[0].id), 'favorites', 'no hearts, no Favorites card');
+  assert.ok(await page.evaluate(() => neo.scene.cards.every((c) => c.id !== 'favorites')), 'no hearts, no Favorites card');
   // Portrait: a full shelf of five clears the games and the arrows.
   await page.evaluate(async () => {
     const { GAMES } = await import('/src/games/registry.ts');
