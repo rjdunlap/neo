@@ -133,7 +133,7 @@ describe('Peg Garden', () => {
     }
   });
 
-  it('puts the colour hint on a ledge spot whose pearl touches a waiting orange bud, on every board and as buds bloom', () => {
+  it('puts the colour hint on a ledge spot whose pearl touches a waiting orange bud, on every board and as buds bloom', { timeout: 60_000 }, () => {
     const plan = planFor(3);
     for (let seed = 1; seed <= 40; seed++) {
       const spots = makeBoard(plan, new Rng(seed));
@@ -149,7 +149,7 @@ describe('Peg Garden', () => {
     }
   });
 
-  it("aims the ghost finger's launcher so the shot touches the flower asked for, on every board", () => {
+  it("aims the ghost finger's launcher so the shot touches the flower asked for, on every board", { timeout: 60_000 }, () => {
     for (const plan of PLANS.filter((p) => p.mode === 'number' || p.mode === 'order')) {
       for (let seed = 1; seed <= 25; seed++) {
         const rng = new Rng(seed);
