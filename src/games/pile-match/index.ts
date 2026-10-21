@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
-import { ink, swatch, wood, type ColorName } from '../../art/palette';
+import { grass, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { palmOnGlass } from '../../engine/input';
@@ -185,6 +185,10 @@ class PileMatch implements Game {
     const t = this.trayLayer.removeChildren();
     t.forEach((c) => c.destroy());
     const back = new Graphics();
+    // The grass the heap lies on.
+    const xs = L.pieces.map((p) => p.x), ys = L.pieces.map((p) => p.y), pad = RADIUS + 26;
+    back.roundRect(Math.min(...xs) - pad, Math.min(...ys) - pad, Math.max(...xs) - Math.min(...xs) + 2 * pad, Math.max(...ys) - Math.min(...ys) + 2 * pad, 60)
+      .fill({ color: grass }).stroke({ width: 4, color: swatch.green.light });
     for (const s of L.slots) back.roundRect(s.x, s.y, s.w, s.h, 20).fill({ color: this.plan.asked ? wood.light : 0xffffff, alpha: 0.75 }).stroke({ width: 4, color: wood.line });
     this.trayLayer.addChild(back);
     this.basket.position.set(L.basket.x + L.basket.w / 2, L.basket.y + L.basket.h / 2);
@@ -286,9 +290,10 @@ class PileMatch implements Game {
     this.tagArt.scale.set(0.8);
   }
 
+  /** A slot's middle. The third of a kind can land one past a full tray for the moment before the three pop. */
   private slotPos(k: number) {
-    const s = this.layout.slots[k];
-    return { x: s.x + s.w / 2, y: s.y + s.h / 2 };
+    const s = this.layout.slots[0], step = this.layout.slots.length > 1 ? this.layout.slots[1].x - s.x : s.w;
+    return { x: s.x + s.w / 2 + k * step, y: s.y + s.h / 2 };
   }
 
   /** Every piece where the state puts it: on the heap (shaded while covered), in its tray slot, or gone. */
