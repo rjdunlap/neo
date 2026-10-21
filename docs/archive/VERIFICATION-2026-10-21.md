@@ -69,3 +69,12 @@
 - Dev server http://localhost:5491: `BROWSER_SUITE=trackwaytales` passed (level 1 replay, scrub, wrong hop Check = 1 miss, requested hint twice = 1 hint, bot finish; level 3 L3-pause fitting card free then bot Can't tell 0/0; L3-switch wrong Can't tell = 1 miss then finish; level 3 portrait screenshot). `BROWSER_SUITE=fingerdemo FINGER_ONLY=trackway-tales FINGER_LEVELS=1,2,3` passed (7.7 s, 13.1 s, 16.9 s).
 - Not run: the offline check, `world` (no navigation or persistence change), any iPad or child.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): practice strip read as "mine to try" against the mud as the record, toe legibility on an iPad, Can't tell landing as satisfying, device speech of "trackway".
+
+## 2026-10-21 — Discovery D3 the stop card
+
+- Built on `claude/discovery-d3-stop-card` ([PR #701](https://github.com/rjdunlap/neo/pull/701), tested commit a0909a78): with how-to cards on the Little surprises mix opens each stop's own card with the stop row and Skip (wide fallback at 1024×768), card Back ends the mix, Home goes to the next-up stop's card (`mixReturn`), the header picture repeats the title on every intro ([definition](../definitions/combined-preview.md)).
+- `npm run typecheck` clean; `npm test` 197 files, 2220 tests passed; `npm run build` passed. A one-off fit probe (Bubble Pop, Sing-Along Barn, Fill and Dump at every lap and toddler level; 1024×768, 768×1024, 844×390, 390×844) fit all 22 cards per view with Play, Back and Skip inside (worst margin 14 landscape, 36 portrait).
+- Dev server http://localhost:5204: `BROWSER_SUITE=discovery DISCOVERY_ONLY=mix` passed (stop card from the mix spot with no round built, tile and title speech through captured device speech, result Home to Barn's card, Skip to Fill and Dump, Back ends the mix, then the D2a sheet flow with cards off); `DISCOVERY_ONLY=direct-next` passed.
+- `BROWSER_SUITE=world` fails at the known `hatchingAndMap` `pip.rig.mesh.filters` assertion (also on unchanged main); with it relaxed locally the full suite passed. `npm run test:offline` passed against preview http://localhost:5349 after matching `classic-cpjCpGSd.js` to dist.
+- Not run: couch, picnic, device or iPad speech, a child's understanding of the stop row and Skip.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): reach, Skip and tile understanding, device speech of the mix lines.
