@@ -1,8 +1,31 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { addressedHouse, checkStop, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, routeChoices, routeLength, shorterRoutes, SHORTER_EDGES, SIGNS, walk, woodsTouch } from './logic';
+import { addressedHouse, checkStop, countedAloud, countsAloud, INVITE_AFTER, nearestHouse, planFor, shouldInvite, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, routeChoices, routeLength, shorterRoutes, SHORTER_EDGES, SIGNS, walk, woodsTouch } from './logic';
 
 describe('Mail Carrier', () => {
+  it('counts the dots aloud at levels 3 and 5, up to the number delivered', () => {
+    expect([1, 2, 3, 4, 5].filter((l) => countsAloud(planFor(l).mode))).toEqual([3, 5]);
+    expect(countedAloud(4)).toBe('One, two, three, four.');
+    expect(countedAloud(1)).toBe('One.');
+    for (const level of [3, 5]) expect(countedAloud(planFor(level).top).split(', ')).toHaveLength(planFor(level).top);
+  });
+
+  it('invites only at level 1, after six quiet seconds while a letter waits', () => {
+    expect(INVITE_AFTER).toBe(6);
+    expect(shouldInvite('drop', 6, false, false)).toBe(true);
+    expect(shouldInvite('drop', 5.9, false, false)).toBe(false);
+    expect(shouldInvite('drop', 9, true, false)).toBe(false);
+    expect(shouldInvite('drop', 9, false, true)).toBe(false);
+    for (const mode of ['color', 'dots', 'numeral', 'count'] as const) expect(shouldInvite(mode, 60, false, false)).toBe(false);
+  });
+
+  it('waves the mailbox nearest a touch off the houses', () => {
+    const xs = [160, 340, 520, 700];
+    expect(nearestHouse(xs, 0)).toBe(0);
+    expect(nearestHouse(xs, 600)).toBe(2);
+    expect(nearestHouse(xs, 2000)).toBe(3);
+  });
+
   it('builds a numbered street in order with different doors, and mails every house', () => {
     for (const plan of PLANS.filter((p) => !isMapMode(p.mode))) {
       for (let seed = 1; seed <= 200; seed++) {

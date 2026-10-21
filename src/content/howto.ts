@@ -801,7 +801,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'Tap the house with the number on the letter.' },
       { from: 5, to: 5, text: 'Count the dots on the letter, then tap the house with that number.' },
       { from: 6, to: 6, text: 'Find who the letter is for in the picture key, then tap the house with their sign.' },
-      { from: 7, text: 'Tap the house for letter one, then the house for letter two, then tap the green arrow to walk the route.' },
+      { from: 7, to: 7, text: 'Tap the house for letter one, then the house for letter two, then tap the green arrow to walk the route.' },
       { from: 8, text: 'Find who the letter is for in the picture key and tap their house. Then compare the two paths and tap the one with fewer stepping stones.' },
     ],
     finish: [
