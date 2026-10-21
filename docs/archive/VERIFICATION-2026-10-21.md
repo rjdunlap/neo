@@ -140,3 +140,9 @@
 - http://localhost:5908: `BROWSER_SUITE=woods WOODS_ONLY=twoboxes` passed three times (once before the burst guard, twice after) in portrait 768×1024: a wrong pad on the reading, the round box touched, two widening tips then the glow, put back, a quick two-block burst judged once, saved score [1,1] and a sticker. With the guard briefly removed the burst assertion failed. Screenshots `test-results/browser/seesaw-balance-11-glow.png` and `seesaw-balance-11.png`.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=seesaw-balance FINGER_LEVELS=11` passed in 58.7 s of the 75 s allowed.
 - Not run: full unit suite, other browser suites, offline, iPad speech, a child. The Woodland Picnic pins level 7 and is unaffected. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): the tagged box read as its number, the orange hatbox read as different, the "closer" line.
+
+## 2026-10-21 — RW07 Welcome a New Friend definition (docs only)
+
+- [PR #711](https://github.com/rjdunlap/neo/pull/711), branch `claude/rw07-welcome-definition`: new [WELCOME-BUILD.md](../rework/WELCOME-BUILD.md) defining RW07 as three slices (record, page, Continue, `pretty` and `yummy`; the song step; the ending, adoption and basket bed) with five recorded defaults. Routed into WORK-ITEMS, READY, ROADMAP chunk 30 and WAITING-ON-DEVELOPER.
+- Ran: `node scripts/check-links.mjs` and `git diff --check` (results in the PR). No code changed, so no typecheck, unit, browser or offline run.
+- Open: nothing built or played; slice 2 waits on the hello-song decision. No coverage-summary row changed.

@@ -41,7 +41,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`teddy-doctor`, level 7 Who needs help?** (new level): two friends, tap the one with a boo-boo, then bandage it; toddler order 1, 7, 2, 3, `entryLevels: [7]`. [Slice 3](deep-dives/teddy-doctor.md#new-levels-on-top)
 - **`teddy-doctor`, level 8 Before and after** (new level on the existing drag): a check-up with a stated order rule, every order that keeps it accepted; school 5, 6, 8. [Slice 4](deep-dives/teddy-doctor.md#new-levels-on-top)
 
-- **`scoop-shop`, pools and a serve tune** (content): eight customers, three cone kinds, three window scenes, flavour thank-yous, the cone played bottom to top. [Slice 2](deep-dives/scoop-shop.md#fresh-content-inside-existing-levels)
 - **`scoop-shop`, lap entry 10 Any scoop** (new level on the existing interaction, with `order`/`entryLevels`): one tap, one scoop, one munch; lap order 10, 1. [Slice 3](deep-dives/scoop-shop.md#younger-band-openings)
 - **`scoop-shop`, toddler 11 Who wanted pink?** (new interaction): tap the customer whose picture matches the scoop already on the cone; toddler order 1, 2, 11, 3. [Slice 4](deep-dives/scoop-shop.md#easier-entries-and-levels-between-existing-ones)
 - **`scoop-shop`, level 12 Fill it up** (new level on the existing interaction): count on from scoops already on the cone; pre-K and school. [Slice 5](deep-dives/scoop-shop.md#new-levels-on-top)
