@@ -6,9 +6,10 @@ import type { Rng } from '../../engine/random';
  * balancing with blocks, finding the heaviest of look-alike presents, making the same weight two ways,
  * and weighing a mystery box. Things sit on level trays at the ends, so only weight matters, never
  * how far out something sits. The early-school steps, after DragonBox and PhET's Equality Explorer, start
- * balanced with a box and blocks on one side: take the same off both sides until the box is alone.
+ * balanced with a box and blocks on one side: take the same off both sides until the box is alone. The top step,
+ * after SolveMe Mobiles, weighs a square box first and then uses its number to find a round box (substitution).
  */
-export type SeesawMode = 'up' | 'heavy' | 'level' | 'heaviest' | 'parts' | 'mystery' | 'same' | 'share';
+export type SeesawMode = 'up' | 'heavy' | 'level' | 'heaviest' | 'parts' | 'mystery' | 'same' | 'share' | 'pair';
 export type Side = 'left' | 'right';
 
 export interface SeesawPlan {
@@ -29,6 +30,7 @@ export const PLANS: SeesawPlan[] = [
   { mode: 'same', rounds: 3, name: 'A box and blocks balance blocks: take the same off both sides until the box is alone, then say its weight' },
   { mode: 'same', rounds: 3, boxes: 2, name: 'Boxes on both sides: take a box for a box and a block for a block until one box is alone' },
   { mode: 'share', rounds: 3, name: 'Take the same off both sides, then share the blocks between two identical boxes' },
+  { mode: 'pair', rounds: 2, name: 'Two different boxes: read the square box, then take the same off both sides until the round box is alone' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -38,6 +40,8 @@ export type ThingKind = 'friend' | 'block' | 'weight' | 'present' | 'box';
 export interface Thing {
   kind: ThingKind;
   weight: number;
+  /** Level 11's two different boxes; other boxes leave it unset. */
+  shape?: 'square' | 'round';
 }
 
 /** Friends by weight: the bigger the friend, the heavier. */
@@ -55,6 +59,8 @@ export interface SeesawRound {
   answer: number;
   /** Things that start on the other tray (the take-the-same-off levels start balanced). */
   across?: Thing[];
+  /** Level 11: a pair is a reading of the square box, then the round box weighed with it. */
+  phase?: 'read' | 'pair';
 }
 
 export const other = (side: Side): Side => (side === 'left' ? 'right' : 'left');
@@ -167,6 +173,16 @@ export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
         rounds.push({ fixed: [...boxes(3), ...blocks(k)], fixedSide, offered: [], across: [...boxes(1), ...blocks(2 * m + k)], answer: m });
         break;
       }
+      case 'pair': {
+        // Square s alone against s blocks, then square + round r + k blocks against s + r + k blocks.
+        const s = fresh(2, 4);
+        const r = rng.pick([1, 2, 3, 4].filter((w) => w !== s));
+        const k = rng.int(1, 2);
+        const square = (): Thing => ({ kind: 'box', weight: s, shape: 'square' });
+        rounds.push({ fixed: [square()], fixedSide, offered: [], across: blocks(s), answer: s, phase: 'read' });
+        rounds.push({ fixed: [square(), { kind: 'box', weight: r, shape: 'round' }, ...blocks(k)], fixedSide, offered: [], across: blocks(s + r + k), answer: r, phase: 'pair' });
+        break;
+      }
       case 'mystery': {
         const m = fresh(2, plan.boxes === 2 ? 3 : 5);
         rounds.push({ fixed: Array.from({ length: plan.boxes ?? 1 }, () => ({ kind: 'box', weight: m })), fixedSide, offered: blocks(plan.boxes === 2 ? 7 : 6), answer: m });
@@ -201,6 +217,35 @@ export function shareSide(sides: Record<Side, readonly Thing[]>): Side | null {
     if (here.length === 2 && here.every((t) => t.kind === 'box') && there.length > 0 && there.every((t) => t.kind === 'block')) return side;
   }
   return null;
+}
+
+/** Level 11: what a change did to the tilt, from the gap between the trays before and after it. */
+export type Progress = 'level' | 'closer' | 'tip';
+export function progress(before: number, after: number): Progress {
+  if (after === 0) return 'level';
+  return after < before ? 'closer' : 'tip';
+}
+
+/** The round box is the thing being weighed: it never leaves its tray. */
+export const stays = (thing: Thing) => thing.shape === 'round';
+
+/**
+ * Level 11's glow after two tips: on the heavy side, the removable thing whose weight is the gap, else a
+ * block; if the heavy side has nothing to give, something on the grass to put back on the light side
+ * (the last thing taken from there when it fits the gap, else a block). Returns an item index, or null when level.
+ */
+export function pairHint(items: readonly SeesawTouchItem[], lastOff: number | null): number | null {
+  const sum = (side: Side) => total(items.filter((i) => i.side === side).map((i) => i.thing));
+  const heavy = downSide(sum('left'), sum('right'));
+  if (!heavy) return null;
+  const gap = Math.abs(sum('left') - sum('right'));
+  const all = items.map((item, index) => ({ item, index }));
+  const removable = all.filter(({ item }) => item.side === heavy && !stays(item.thing));
+  const take = removable.find(({ item }) => item.thing.weight === gap) ?? removable.find(({ item }) => item.thing.kind === 'block');
+  if (take) return take.index;
+  const last = lastOff === null ? null : all[lastOff];
+  if (last && last.item.side === null && last.item.thing.weight <= gap) return last.index;
+  return all.find(({ item }) => item.side === null && item.thing.kind === 'block')?.index ?? null;
 }
 
 export interface SeesawTouchItem {
@@ -259,6 +304,24 @@ export function seesawTouch(plan: SeesawPlan, round: SeesawRound, items: readonl
     if (untested && left && right) return { kind: 'move', item: untested.index, to: left.item.thing.weight < right.item.thing.weight ? 'left' : 'right' };
     if (left && right) return { kind: 'move', item: left.item.thing.weight > right.item.thing.weight ? left.index : right.index, to: 'wagon' };
     return null;
+  }
+
+  if (plan.mode === 'pair') {
+    // The round box never moves. While tipped, take the gap's worth (or a block) off the heavy side; while
+    // level, clear the spare blocks from the box side first, then the tagged square box.
+    const sum = (side: Side) => total(items.filter((i) => i.side === side).map((i) => i.thing));
+    const l = sum('left');
+    const r = sum('right');
+    if (l !== r) {
+      const heavy: Side = l > r ? 'left' : 'right';
+      const pick = on(heavy).find(({ item }) => item.thing.weight === Math.abs(l - r)) ?? on(heavy).find(({ item }) => item.thing.kind === 'block');
+      return pick ? { kind: 'move', item: pick.index, to: 'ground' } : null;
+    }
+    const sides = { left: items.filter((i) => i.side === 'left').map((i) => i.thing), right: items.filter((i) => i.side === 'right').map((i) => i.thing) };
+    if (aloneSide(sides)) return null;
+    const box = on(round.fixedSide);
+    const pick = box.find(({ item }) => item.thing.kind === 'block') ?? box.find(({ item }) => item.thing.shape === 'square');
+    return pick ? { kind: 'move', item: pick.index, to: 'ground' } : null;
   }
 
   // Take the same kind off both sides. At level, begin a pair; while tipped, remove one item whose weight restores equality.

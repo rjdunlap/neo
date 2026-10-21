@@ -898,7 +898,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'Tap number weights onto the other side until it weighs the same as this side, using different pieces.' },
       { from: 6, to: 7, text: 'Tap blocks onto the other side until the seesaw balances, then tap the answer button for how heavy the box is.' },
       { from: 8, to: 9, text: 'Take the same thing off both sides, one at a time, until a box is alone; then tap the answer button for how heavy it is.' },
-      { from: 10, text: 'Take the same things off both sides. When two boxes balance the blocks, share the blocks fairly and tap how many belong to each box.' },
+      { from: 10, to: 10, text: 'Take the same things off both sides. When two boxes balance the blocks, share the blocks fairly and tap how many belong to each box.' },
+      { from: 11, text: 'First tap how heavy the square box is, and it wears its number. Then take the same off both sides, counting the square box as its number of blocks, until the round box is alone; then tap how heavy the round box is.' },
     ],
     finish: [
       { to: 4, text: 'The round ends when the seesaw is balanced or the heaviest is chosen, as asked.' },
