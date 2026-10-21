@@ -9,8 +9,9 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { store } from '../../progress/store';
+import { showsContinue } from '../../content/welcome';
 import { RoundButton } from '../../ui/buttons';
-import { meadowIcon, peopleIcon, playWithIcon } from '../../ui/icons';
+import { basketIcon, meadowIcon, peopleIcon, playWithIcon } from '../../ui/icons';
 import type { App } from '../App';
 import { Scene } from '../Scene';
 import { BallPlay } from './ball-play';
@@ -22,7 +23,7 @@ export const youngHome = () => store.data.profile.band === 'lap' || store.data.p
 /**
  * The root's Home (RW06 slice 2, docs/rework/HOME.md#home-homescene-the-roots-hub): her companion on the R06 day
  * backdrop and RW03's per-band exits. Lap and toddler: the companion, the ball and Explore. Preschool and older: Play
- * with {pet} and Explore (Continue waits for RW07 and is not drawn). Who's playing sits top left; Home has no Back. The
+ * with {pet} and Explore, and Continue above them while Welcome a New Friend is open (RW07; never drawn empty). Who's playing sits top left; Home has no Back. The
  * companion only idles and never asks for anything. Explore opens the picker of the built locations (RW13,
  * `ExploreScene`) until RW08's Explore. Nothing here is a round: no sticker, no stats.
  */
@@ -31,6 +32,8 @@ export class HomeScene extends Scene {
   readonly young = youngHome();
   readonly pet: Companion = this.track(makeCompanion());
   readonly who = new RoundButton(peopleIcon(), swatch.white, CORNER_RADIUS, () => this.leave('home.who', () => this.app.go.start()));
+  /** Welcome a New Friend (RW07): drawn while the project is open and hers, never empty. */
+  readonly cont: RoundButton | null = !this.young && showsContinue(store.welcome, store.data.profile.band) ? new RoundButton(basketIcon(), swatch.orange, ACTION_RADIUS, () => this.leave('home.continue', () => this.app.go.project())) : null;
   readonly play: RoundButton | null = this.young ? null : new RoundButton(playWithIcon(), swatch.yellow, ACTION_RADIUS, () => this.leave('home.play', () => this.app.go.room()));
   readonly explore = new RoundButton(meadowIcon(), swatch.green, ACTION_RADIUS, () => this.leave('home.explore', () => void this.app.show(new ExploreScene(this.app))));
   readonly toy: BallPlay | null = this.young ? this.track(new BallPlay(this.pet, new Rng(), () => void voice.say('play.fetch'))) : null;
@@ -47,9 +50,9 @@ export class HomeScene extends Scene {
     if (this.toy) this.content.addChild(this.toy.shadow, this.toy.ball);
     this.pet.hitArea = this.pet.touchArea(20);
     onTap(this.pet, () => this.pet.poke(), { cooldown: 300 });
-    for (const b of [this.who, this.play, this.explore]) if (b) this.ui.addChild(b);
+    for (const b of [this.who, this.cont, this.play, this.explore]) if (b) this.ui.addChild(b);
     // The icon art is drawn about 60 units across; the 120-unit pictures carry it larger.
-    for (const b of [this.play, this.explore]) b?.children[1]?.scale.set(1.35);
+    for (const b of [this.cont, this.play, this.explore]) b?.children[1]?.scale.set(1.35);
   }
 
   /** A picture's line, a hop, then the way out; a second tap while leaving does nothing. */
@@ -63,10 +66,11 @@ export class HomeScene extends Scene {
   }
 
   resize(v: View) {
-    const l = homeLayout(v, this.young);
+    const l = homeLayout(v, this.young, !!this.cont);
     this.backdrop.position.set(l.backdrop.x, l.backdrop.y);
     this.backdrop.scale.set(l.backdrop.scale);
     this.who.position.set(l.who.x, l.who.y);
+    if (this.cont && l.continue) this.cont.position.set(l.continue.x, l.continue.y);
     if (this.play && l.play) this.play.position.set(l.play.x, l.play.y);
     this.explore.position.set(l.explore.x, l.explore.y);
     if (!this.toy?.chasing) this.pet.position.set(l.stage.x, l.stage.y);

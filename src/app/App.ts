@@ -17,13 +17,18 @@ import type { Band } from '../progress/bands';
 import type { LandId } from '../content/lands';
 import type { PicnicStep, WoodlandStep } from '../content/world';
 import type { CourseId } from '../couch/courses';
+import type { WelcomeStep } from '../content/welcome';
 import { mixMemory } from './discovery';
 
 /**
  * A game round played as one story request: at the story's level, coming home to the story's scene. Without a
- * `story` it is a Windy Picnic request (as rounds were saved and scripted before the Woodland Picnic).
+ * `story` it is a Windy Picnic request (as rounds were saved and scripted before the Woodland Picnic). A `project` round is
+ * a step of Welcome a New Friend at the root (RW07), played the same way and coming home to the project page.
  */
-export type StoryRound = { story?: 'picnic'; step: PicnicStep; level: number } | { story: 'woodland'; step: WoodlandStep; level: number };
+export type StoryRound =
+  | { story?: 'picnic'; step: PicnicStep; level: number }
+  | { story: 'woodland'; step: WoodlandStep; level: number }
+  | { project: 'welcome'; step: WelcomeStep; level: number };
 
 /** Where a game was opened from, so its home button (and "again") go back there. A story round has its own way home. */
 export type Origin = { land: LandId } | { place: Band } | { journal: true };
@@ -59,6 +64,8 @@ export interface Routes {
   picnic(from?: PicnicStep): void;
   /** The Woodland Picnic, Hazel's story in Wonder Woods. `from` is the request whose round just finished. */
   woodland(from?: WoodlandStep): void;
+  /** Welcome a New Friend's page (RW07, the root only; classic sends it to the map). `from` is the step whose round just finished. */
+  project(from?: WelcomeStep): void;
   stickers(): void;
   /** The pet's treehouse: free furnishings, a frame for one sticker, a pet that plays. At the root, creature play (RW06). */
   room(): void;

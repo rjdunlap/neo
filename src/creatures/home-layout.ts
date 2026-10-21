@@ -48,6 +48,8 @@ export interface HomeLayout {
   who: Spot;
   /** The companion's feet and scale. */
   stage: Spot & { scale: number };
+  /** Preschool and pre-K with Welcome a New Friend open (RW07): Continue, first in the column. Absent otherwise. */
+  continue: Spot | null;
   /** Preschool and older: Play with {pet}. Absent for the youngest. */
   play: Spot | null;
   explore: Spot;
@@ -57,17 +59,20 @@ export interface HomeLayout {
   floor: Floor;
 }
 
-/** `young` is lap or toddler: the companion, one toy and Explore. */
-export function homeLayout(v: { w: number; h: number }, young: boolean): HomeLayout {
+/** `young` is lap or toddler: the companion, one toy and Explore. `project` adds Continue above Play (never for the youngest). */
+export function homeLayout(v: { w: number; h: number }, young: boolean, project = false): HomeLayout {
   const backdrop = backdropFit(v);
   const right = v.w - 50 - ACTION_RADIUS;
   const mid = Math.max(LINK_CORNER.h + ACTION_RADIUS + 20, v.h * 0.42);
   const stage = { x: Math.round(v.w * 0.4), y: v.h - 60, scale: 1.2 };
-  const explore = { x: right, y: young ? mid + 80 : mid + 2 * ACTION_RADIUS + 40 };
-  const play = young ? null : { x: right, y: mid };
+  const row = 2 * ACTION_RADIUS + 40;
+  const cont = !young && project ? { x: right, y: mid } : null;
+  const top = cont ? mid + row : mid;
+  const explore = { x: right, y: young ? mid + 80 : top + row };
+  const play = young ? null : { x: right, y: top };
   const ball = young ? { x: Math.min(stage.x + 280, right - 2 * ACTION_RADIUS - 60), y: v.h - 90 } : null;
   const floor = { x0: GUIDE_CORNER.w + BALL_RADIUS, x1: right - ACTION_RADIUS - BALL_RADIUS - 30, y0: Math.max(backdrop.floorTop + 40, v.h - 220), y1: v.h - BALL_RADIUS - 20 };
-  return { backdrop, who: { x: BACK.x, y: BACK.y }, stage, play, explore, ball, floor };
+  return { backdrop, who: { x: BACK.x, y: BACK.y }, stage, continue: cont, play, explore, ball, floor };
 }
 
 export interface PlayLayout {
@@ -129,4 +134,36 @@ export function exploreLayout(v: { w: number; h: number }, n: number): ExploreLa
     left -= inRow;
   }
   return { backdrop: backdropFit(v), back: { x: BACK.x, y: BACK.y }, cards };
+}
+
+/**
+ * Welcome a New Friend's page (RW07, docs/rework/WELCOME-BUILD.md#routes-and-scenes): Back and Home top left, the
+ * newcomer in its basket on the left (above the guide corner), and the step cards in a row, each with room for its green
+ * Play arrow below it. Cards are 150 units, the arrow 120, the basket's touch 200 across.
+ */
+export const PROJECT_CARD = 150;
+export const PROJECT_PLAY_RADIUS = 60;
+export const NEWCOMER_REACH = 100;
+
+export interface ProjectLayout {
+  backdrop: Backdrop;
+  back: Spot;
+  home: Spot;
+  /** The basket's centre; the newcomer peeks out of it. */
+  basket: Spot;
+  cards: Spot[];
+  /** Each card's Play arrow, under it. */
+  plays: Spot[];
+}
+
+export function projectLayout(v: { w: number; h: number }, n: number): ProjectLayout {
+  const basket = { x: Math.round(Math.max(GUIDE_CORNER.w + 20, v.w * 0.24)), y: Math.round(Math.min(v.h * 0.52, v.h - GUIDE_CORNER.h - NEWCOMER_REACH - 20)) };
+  const step = PROJECT_CARD + 70;
+  const left = basket.x + NEWCOMER_REACH + 40 + PROJECT_CARD / 2;
+  const span = (n - 1) * step;
+  const cx = Math.max(left + span / 2, Math.min((v.w * 0.62), v.w - 40 - PROJECT_CARD / 2 - span / 2));
+  const y = Math.round(Math.max(BACK.y + BACK.r + 40 + PROJECT_CARD / 2, v.h * 0.36));
+  const cards = Array.from({ length: n }, (_, i) => ({ x: Math.round(cx - span / 2 + i * step), y }));
+  const plays = cards.map((c) => ({ x: c.x, y: c.y + PROJECT_CARD / 2 + 30 + PROJECT_PLAY_RADIUS }));
+  return { backdrop: backdropFit(v), back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, basket, cards, plays };
 }

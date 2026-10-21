@@ -12,6 +12,7 @@ import { loadCollectionArt } from './creatures/companion';
 import { CreaturePreview } from './dev/creature-preview';
 import { HomeScene } from './app/scenes/HomeScene';
 import { PlayScene } from './app/scenes/PlayScene';
+import { ProjectScene } from './app/scenes/ProjectScene';
 import { loadHomeBackdrop } from './art/home/backdrop';
 import { store } from './progress/store';
 
@@ -57,6 +58,7 @@ async function boot() {
       ...island,
       hub: () => void app.show(new HomeScene(app)),
       room: () => void app.show(new PlayScene(app)),
+      project: (from) => void app.show(new ProjectScene(app, from)),
       land,
     });
     app.go.start();
