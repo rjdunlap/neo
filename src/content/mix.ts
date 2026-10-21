@@ -3,11 +3,14 @@ import { playBand, type Band } from '../progress/bands';
 import { DISCOVERY_IDS } from './discovery';
 
 /**
- * Little surprises (Discovery D2b): one finite three-game mix on a lap or toddler home spot, held in memory only.
- * The pool and its order are D1b's; each stop is an ordinary round of its own game, so the mix awards and records nothing.
+ * Little surprises (Discovery D2b): one finite mix on a lap or toddler home spot, held in memory only.
+ * The default lineup and its order are D1b's; a grown-up may line up one to five stops of her own (D5a, Make my mix).
+ * Each stop is an ordinary round of its own game, so the mix awards and records nothing.
  */
 export const MIX_IDS = DISCOVERY_IDS;
 export const MIX_BANDS: readonly Band[] = ['lap', 'toddler'];
+/** The most stops a lineup holds: five 100-unit tiles still clear Skip on the portrait stop card. */
+export const MIX_MAX = 5;
 
 type Candidate = Pick<GameModule, 'id' | 'bands' | 'inputs'>;
 
@@ -21,6 +24,44 @@ export function mixGames<T extends Candidate>(profileBand: Band, placeBand: Band
   if (!MIX_BANDS.includes(profileBand) || placeBand !== profileBand) return null;
   const mods = ids.map(id => catalog.find(m => m.id === id));
   return mods.every(m => mixPlayable(m, profileBand)) ? mods as T[] : null;
+}
+
+/** One stop of a live mix, checked at its launch: her own lap or toddler home spot, and that game playable there by touch. */
+export function mixStop<T extends Candidate>(profileBand: Band, placeBand: Band, catalog: readonly T[], id: string | undefined): T | null {
+  if (!MIX_BANDS.includes(profileBand) || placeBand !== profileBand) return null;
+  const mod = catalog.find(m => m.id === id);
+  return mod && mixPlayable(mod, profileBand) ? mod : null;
+}
+
+/** The games a lineup may hold: her home spot's own games, in its order, that she can play at her band by touch. */
+export function mixPool(profileBand: Band, placeIds: readonly string[], catalog: readonly Candidate[]): string[] {
+  if (!MIX_BANDS.includes(profileBand)) return [];
+  return placeIds.filter((id, i) => placeIds.indexOf(id) === i && mixPlayable(catalog.find(m => m.id === id), profileBand));
+}
+
+/** Lineup edits (D5a): pure, never empty, never more than `MIX_MAX`; a repeated game is two entries. */
+export const lineup = {
+  add(ids: readonly string[], id: string): readonly string[] {
+    return ids.length >= MIX_MAX ? ids : [...ids, id];
+  },
+  move(ids: readonly string[], from: number, to: number): readonly string[] {
+    if (from < 0 || from >= ids.length) return ids;
+    const out = ids.filter((_, i) => i !== from);
+    out.splice(Math.max(0, Math.min(out.length, to)), 0, ids[from]);
+    return out;
+  },
+  remove(ids: readonly string[], p: number): readonly string[] {
+    return ids.length <= 1 || p < 0 || p >= ids.length ? ids : ids.filter((_, i) => i !== p);
+  },
+  reset(): readonly string[] {
+    return [...MIX_IDS];
+  },
+};
+
+/** A held lineup after the pool changed (a birthday, a game gone): what is still in the pool, in order, or the default. */
+export function repairLineup(ids: readonly string[], pool: readonly string[]): readonly string[] {
+  const kept = ids.filter(id => pool.includes(id)).slice(0, MIX_MAX);
+  return kept.length ? kept : lineup.reset();
 }
 
 export type ItemState = 'upcoming' | 'played' | 'skipped' | 'unavailable';
@@ -39,8 +80,9 @@ export type MixEvent =
   | { type: 'skip'; p: number }
   | { type: 'unavailable'; p: number };
 
-export function startMix(count = MIX_IDS.length): MixState {
-  return { items: Array.from({ length: count }, () => ({ state: 'upcoming' as const })), at: null, round: 0 };
+/** One upcoming item per lineup entry. */
+export function startMix(ids: readonly string[] = MIX_IDS): MixState {
+  return { items: ids.map(() => ({ state: 'upcoming' as const })), at: null, round: 0 };
 }
 
 const settle = (s: MixState, p: number, item: MixItem): MixState =>

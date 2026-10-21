@@ -17,7 +17,7 @@ import { SCRIPT, type LineId } from '../../content/voice-script';
 import { discoveryCandidates, suggestDiscovery } from '../../content/discovery';
 import { GAMES } from '../../games/registry';
 import { discoveryMemory, launchDiscovery, mixMemory, type MixRound } from '../discovery';
-import { mixGames, mixReturn, nextUp } from '../../content/mix';
+import { mixReturn, mixStop, nextUp } from '../../content/mix';
 import { titleOf } from '../mix';
 import { allDoneArt, hopIcon, nextStopArt, StopTile } from '../../ui/mix';
 import { DiscoveryTile, nextGameArt, anotherGameArt } from '../../ui/discovery';
@@ -723,12 +723,18 @@ export class GameScene extends Scene {
     return !!this.mixRound && mixMemory.current(this.mixRound, store.data);
   }
 
-  /** The live mix's home spot, stops and state, or nothing once it has ended or the save changed. */
+  /** The live mix's home spot, stops (its own lineup's pictures) and state, or nothing once it has ended or the save changed. */
   private mixSession() {
     if (!this.mixRound || !this.inMix()) return undefined;
     const session = mixMemory.live(store.data)!;
-    const mods = mixGames(store.data.profile.band, session.place, GAMES);
-    return { place: session.place, state: session.state, mods };
+    const mods = session.ids.map(id => GAMES.find(m => m.id === id)).filter((m): m is GameModule => !!m);
+    return { place: session.place, state: session.state, mods, ids: session.ids };
+  }
+
+  /** Stop `p`, checked on its own at the press: playable at her band on her home spot, or null. */
+  private mixStopAt(p: number): GameModule | null {
+    const session = this.mixSession();
+    return session ? mixStop(store.data.profile.band, session.place, GAMES, session.ids[p]) : null;
   }
 
   /** Again and Next level replay the same stop: a new round there, and the stops to come stay as they were. */
@@ -796,7 +802,7 @@ export class GameScene extends Scene {
   /** Checked again at the press: never a different game behind its picture. */
   private launchMixStop(place: Band, p: number) {
     const session = this.mixSession();
-    const mod = session?.mods?.[p];
+    const mod = this.mixStopAt(p);
     if (!session || !mod) {
       mixMemory.apply(store.data, { type: 'unavailable', p });
       this.syncMix();
@@ -808,7 +814,7 @@ export class GameScene extends Scene {
 
   /** A new round at stop `p`, opened on its card (with cards on): already checked, and inside a latched navigation. */
   private openStop(place: Band, p: number, lead?: MixRound['lead']) {
-    const mod = this.mixSession()?.mods?.[p];
+    const mod = this.mixStopAt(p);
     if (!mod) return this.app.go.place(place);
     mixMemory.launch(store.data, p, lead);
     this.app.go.game(mod.id, store.data.profile.band, undefined, false, { place });
@@ -821,6 +827,7 @@ export class GameScene extends Scene {
     if (!session || !mods) return undefined;
     this.stopRow = this.inputInUse.kind === 'touch';
     return {
+      count: mods.length,
       shown: () => this.inputInUse.kind === 'touch' && this.inMix(),
       tiles: () => {
         const state = this.mixSession()?.state ?? session.state;

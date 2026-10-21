@@ -91,7 +91,7 @@ export class SubjectPlaceScene extends Scene {
   constructor(app: App, readonly band: Band) {
     super(app);
     this.place = placeFor(band);
-    this.mix = new MixHost(app, band, this.ui, () => this.view);
+    this.mix = new MixHost(app, band, this.ui, () => this.view, this.tw, gamesFor(band).map(g => g.id));
     this.games = gamesFor(band);
     this.subjects = SUBJECTS.filter(s => this.games.some(g => g.region === s.id));
     // Every hearted game, a bigger kids' one from a signpost too: the heart after a round promises it a place.
@@ -123,11 +123,13 @@ export class SubjectPlaceScene extends Scene {
     this.content.addChild(this.backdrop, this.choices);
     this.choices.eventMode = 'static';
     this.choices.on('pointerdown', (e: FederatedPointerEvent) => {
-      if (this.leaving || this.touch || this.mix.sheet || palmOnGlass()) return;
+      if (this.leaving || this.touch || this.mix.covering || palmOnGlass()) return;
       const p = this.choices.toLocal(e.global);
       const card = this.cards.find(c => c.node.visible && (c.node.hitArea as Rectangle).contains(p.x - c.node.x, p.y - c.node.y));
       this.touch = { id: e.pointerId, x: p.x, y: p.y, moved: false, card };
       if (card) { card.node.scale.set(0.96); sfx.tick(); }
+      // A grown-up's hold on the mix card opens the mix table (D5a); a tap still just starts the mix.
+      if (card?.id === MIX) this.mix.holdStart(card.node, 0, 0, 70);
     });
     this.choices.on('globalpointermove', (e: FederatedPointerEvent) => {
       const t = this.touch;
@@ -136,13 +138,16 @@ export class SubjectPlaceScene extends Scene {
       if (Math.hypot(p.x - t.x, p.y - t.y) > 24) {
         t.moved = true;
         t.card?.node.scale.set(1);
+        this.mix.holdCancel();
       }
     });
     this.choices.on('pointerup', (e: FederatedPointerEvent) => {
       const t = this.touch;
       if (!t || t.id !== e.pointerId) return;
       const p = this.choices.toLocal(e.global);
+      const held = this.mix.consumeHold();
       this.cancel();
+      if (held) return; // the hold opened the table: this lift does not also start the mix
       if (t.moved) {
         if (Math.abs(p.x - t.x) > 70 && Math.abs(p.x - t.x) > Math.abs(p.y - t.y)) this.page(p.x < t.x ? 1 : -1);
       } else if (t.card) this.pick(t.card);
@@ -162,7 +167,7 @@ export class SubjectPlaceScene extends Scene {
     if (this.mix.live) this.mix.resume();
   }
 
-  private cancel() { this.touch?.card?.node.scale.set(1); this.touch = null; }
+  private cancel() { this.touch?.card?.node.scale.set(1); this.touch = null; this.mix.holdCancel(); }
   private remember() { positions.set(this.band, { ...this.state }); }
   private speak() {
     const subject = this.subjects.find(s => s.id === this.state.subject);
@@ -278,6 +283,6 @@ export class SubjectPlaceScene extends Scene {
     this.mix.resize(v);
   }
   override update(dt: number) { super.update(dt); this.mix.update(dt); }
-  enter() { music.play(STYLES.hub); if (!this.mix.sheet) this.speak(); }
+  enter() { music.play(STYLES.hub); if (!this.mix.covering) this.speak(); }
   exit() { voice.stop(); this.cancel(); window.removeEventListener('blur', this.lost); window.removeEventListener('pointercancel', this.release); window.removeEventListener('pointerup', this.release); document.removeEventListener('visibilitychange', this.lost); }
 }

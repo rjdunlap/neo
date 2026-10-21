@@ -1,6 +1,6 @@
 import type { Origin, Routes } from './App';
 import type { Band } from '../progress/bands';
-import { startMix, step, type MixEvent, type MixState } from '../content/mix';
+import { MIX_IDS, startMix, step, type MixEvent, type MixState } from '../content/mix';
 
 export type DiscoveryToken = { owner: object; epoch: number };
 
@@ -35,7 +35,8 @@ export interface MixRound {
   /** What the stop card says before the stop's title: a hop over the stop before it (D3). */
   lead?: 'mix.skip';
 }
-interface MixSession { owner: object; id: number; place: Band; state: MixState }
+interface MixSession { owner: object; id: number; place: Band; state: MixState; /** The stops, frozen when it started. */ readonly ids: readonly string[] }
+interface HeldLineup { owner: object; place: Band; ids: readonly string[] }
 
 /**
  * The live Little surprises session (D2b), in memory only. It belongs to one save object: a profile switch, reset,
@@ -45,13 +46,26 @@ export class MixMemory {
   private session?: MixSession;
   private pending?: MixRound;
   private serial = 0;
+  /** The grown-up's chosen lineup (D5a): kept across sessions until the save object changes or the page reloads. */
+  private held?: HeldLineup;
 
-  start(owner: object, place: Band): number {
+  start(owner: object, place: Band, ids: readonly string[] = MIX_IDS): number {
     this.pending = undefined;
-    this.session = { owner, id: ++this.serial, place, state: startMix() };
+    const frozen = Object.freeze([...ids]);
+    this.session = { owner, id: ++this.serial, place, state: startMix(frozen), ids: frozen };
     return this.session.id;
   }
+  /** Ends the live session; the held lineup stays for the next one. */
   end() { this.session = undefined; this.pending = undefined; this.serial++; }
+  /** A different player, or a replaced save: the session and the held lineup both go. */
+  forget() { this.end(); this.held = undefined; }
+  /** The held lineup for this save at this home spot, if a grown-up has edited one. */
+  lineup(owner: object, place: Band): readonly string[] | undefined {
+    return this.held?.owner === owner && this.held.place === place ? this.held.ids : undefined;
+  }
+  hold(owner: object, place: Band, ids: readonly string[]) {
+    this.held = { owner, place, ids: [...ids] };
+  }
   live(owner: object): Readonly<MixSession> | undefined {
     return this.own(owner);
   }

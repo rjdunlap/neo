@@ -6,6 +6,7 @@ import { GameScene } from './scenes/GameScene';
 import { discoveryMemory, mixMemory } from './discovery';
 import { MixHost } from './mix';
 import { Container } from 'pixi.js';
+import { Tweener } from '../engine/tween';
 vi.mock('../audio/voice', () => ({ voice: { stop: vi.fn(), say: vi.fn(async () => {}) } }));
 
 // The real result callbacks of a mix round, without a renderer: a scene that has claimed stop `p`'s round.
@@ -136,11 +137,11 @@ describe('Little surprises stop cards (D3)', () => {
     const launched: unknown[][] = [];
     const app = { go: { game: (...args: unknown[]) => launched.push(args) } };
     const view = () => ({ w: 1024, h: 768, scale: 1 });
-    const host = new MixHost(app as never, 'lap', new Container(), view as never);
+    const host = new MixHost(app as never, 'lap', new Container(), view as never, new Tweener(), []);
     host.start();
     expect(launched).toEqual([['bubble-pop', 'lap', undefined, false, { place: 'lap' }]]);
     expect([host.sheet, mixMemory.claim(store.data)?.p]).toEqual([null, 0]);
-    const back = new MixHost(app as never, 'lap', new Container(), view as never);
+    const back = new MixHost(app as never, 'lap', new Container(), view as never, new Tweener(), []);
     back.resume();
     expect(back.sheet).toBeNull();
   });

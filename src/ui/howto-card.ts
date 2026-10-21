@@ -37,9 +37,13 @@ const LADDER_MAX = 84;
 const LADDER_MIN = 48;
 const LADDER_GAP = 8;
 const TILE_FILL = 0xe3f3ff;
-/** A stop card's row: three 100-unit tiles 12 apart from the left margin, Skip (112) at its right end, 18 above it. */
+/** A stop card's row: one to five 100-unit tiles 12 apart from the left margin, Skip (112) at its right end, 18 above it. */
 const STOP = 100;
 const STOP_GAP = 12;
+/** Back's x when the stop row sits inline, left of Back and Play in the button row. */
+const inlineBackX = (width: number, count: number) => Math.max(width / 2 - 94, 32 + count * STOP + (count - 1) * STOP_GAP + 24 + 52);
+/** The inline row is taken only when Play still clears Skip by 24: at five stops it does not, so the stops keep their own row. */
+export const inlineFits = (width: number, count: number, play: number) => inlineBackX(width, count) + 156 + play + 24 <= width - 32 - SKIP;
 const SKIP = 112;
 const STOP_ROW = 18 + SKIP;
 
@@ -56,7 +60,7 @@ export interface HowToIntro {
    * new set of 100-unit tiles, centred on their middles, each time the card is laid out; `shown` leaves the row off for a key or
    * pad (the mix's controls are touch-only), and the scene lays the card out again when that changes.
    */
-  stops?: { tiles: () => Array<Container & { update?(dt: number): void }>; skip: () => void; shown: () => boolean };
+  stops?: { count: number; tiles: () => Array<Container & { update?(dt: number): void }>; skip: () => void; shown: () => boolean };
   /** A bot playing a real round in a window on the card, for a game that has one. The card runs, places and destroys it. */
   demo?: Demo;
   /**
@@ -295,8 +299,7 @@ export class HowToPanel extends Container {
     if (this.intro) {
       const go = new RoundButton(playIcon(), swatch.green, play, this.intro.play);
       const back = new RoundButton(houseIcon(0xffffff), swatch.blue, 52, this.intro.back);
-      const tilesEnd = 32 + 3 * STOP + 2 * STOP_GAP;
-      const backX = inRow ? Math.max(width / 2 - 94, tilesEnd + 24 + 52) : width / 2 - 94;
+      const backX = inRow ? inlineBackX(width, stops!.count) : width / 2 - 94;
       go.position.set(backX + 156, y + 24 + play);
       back.position.set(backX, y + 24 + play);
       card.addChild(back, go);
@@ -320,7 +323,7 @@ export class HowToPanel extends Container {
     card.position.set((view.w - width) / 2, Math.max(12, (view.h - cardH) / 2));
     // A tap on the card itself must not fall through to the veil and close it.
     card.eventMode = 'static';
-    return { card, window: slot, ladder: !!ladder, canInline: !!stops && wide };
+    return { card, window: slot, ladder: !!ladder, canInline: !!stops && wide && inlineFits(width, stops.count, play) };
   }
 
   /** The level's picture on a pale tile, beside the arrows: a tap says what the level asks, and does nothing else. */

@@ -176,7 +176,7 @@ export class PlaceScene extends Scene {
     super(app);
     this.place = placeFor(band);
     this.story = storySpot(band);
-    this.mix = new MixHost(app, band, this.ui, () => this.view);
+    this.mix = new MixHost(app, band, this.ui, () => this.view, this.tw, gamesFor(band).map(g => g.id));
     this.mixSpot = mixSpot(this.mix.mods);
   }
 
@@ -209,6 +209,7 @@ export class PlaceScene extends Scene {
       const target = this.touch.target;
       if (target && !(target instanceof Flower)) void this.tw.to(target.node.scale, { x: 1, y: 1 }, { duration: 0.15 });
       this.touch = null;
+      this.mix.holdCancel();
     });
 
     this.pip.scale.set(0.55);
@@ -274,7 +275,7 @@ export class PlaceScene extends Scene {
 
   enter() {
     music.play(STYLES.hub);
-    if (this.mix.sheet) return;
+    if (this.mix.covering) return;
     void voice.say('hub.pick').then(() => {
       if (this.maxScroll > 0 && !toldMore.has(this.band) && !this.leaving) {
         toldMore.add(this.band);
@@ -297,7 +298,7 @@ export class PlaceScene extends Scene {
   }
 
   private down(e: FederatedPointerEvent) {
-    if (this.leaving || this.touch || this.mix.sheet || palmOnGlass()) return;
+    if (this.leaving || this.touch || this.mix.covering || palmOnGlass()) return;
     const x = this.content.toLocal(e.global).x;
     const target = this.find(e.target);
     this.touch = { id: e.pointerId, x0: x, scroll0: this.scroll, lastX: x, lastT: performance.now(), moved: false, target };
@@ -310,15 +311,18 @@ export class PlaceScene extends Scene {
       this.tw.kill(target.node.scale);
       void this.tw.to(target.node.scale, { x: 1.08, y: 1.08 }, { duration: 0.1 });
       sfx.tick();
+      // A grown-up's hold on the mix spot opens the mix table (D5a); a tap still just starts the mix.
+      if ('mix' in target) this.mix.holdStart(target.node, 0, -160, 40);
     }
   }
 
   private move(e: FederatedPointerEvent) {
     const t = this.touch;
-    if (!t || e.pointerId !== t.id) return;
+    if (!t || e.pointerId !== t.id || this.mix.table) return;
     const x = this.content.toLocal(e.global).x;
     if (!t.moved && Math.abs(x - t.x0) > SWIPE) {
       t.moved = true;
+      this.mix.holdCancel(); // scrolling the path never opens the table
       if (t.target && !(t.target instanceof Flower)) void this.tw.to(t.target.node.scale, { x: 1, y: 1 }, { duration: 0.15 });
     }
     if (t.moved && this.maxScroll > 0) {
@@ -336,6 +340,8 @@ export class PlaceScene extends Scene {
     const t = this.touch;
     if (!t || e.pointerId !== t.id) return;
     this.touch = null;
+    // The lift after a hold that opened the table: the table is up, and the mix does not also start.
+    if (this.mix.consumeHold()) return;
     if (t.moved) return;
     if (t.target instanceof Flower) return;
     if (t.target && 'story' in t.target) {
