@@ -40,7 +40,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'duck' },
     backdrop: { sky: [0x9fd8f5, 0xfff6e0], hills: [0x9fd8f5, 0x7cc7ec, 0xffe7a3], horizon: 0.4, clouds: 3, sun: true, seed: 101 },
     music: tune(23, 'pluck', 104),
-    games: ['bubble-pop', 'peg-garden', 'bounce-back', 'bumper-garden', 'sink-float', 'domino-run', 'fruit-slice', 'puddle-gobble', 'lost-layers', 'trackway-tales'],
+    games: ['bubble-pop', 'peg-garden', 'bounce-back', 'bumper-garden', 'sink-float', 'domino-run', 'fruit-slice', 'puddle-gobble', 'lost-layers'],
   },
   {
     id: 'music-mountain',
@@ -112,7 +112,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'bunny', color: 'purple' },
     backdrop: { sky: [0xd6efc8, 0xfff6e0], hills: [0x9fd3a8, 0x86c98f, 0x8fcf73], horizon: 0.4, clouds: 2, sun: true, seed: 139 },
     music: tune(103, 'bell', 80),
-    games: ['letter-trails', 'story-steps', 'word-monsters', 'photo-safari', 'goodnight-room', 'rhyme-time', 'opposites', 'clap-syllables', 'read-do', 'owl-walk', 'attic-finds'],
+    games: ['letter-trails', 'story-steps', 'word-monsters', 'photo-safari', 'goodnight-room', 'rhyme-time', 'opposites', 'clap-syllables', 'read-do', 'owl-walk', 'attic-finds', 'trackway-tales'],
   },
   {
     id: 'tinker-lab',

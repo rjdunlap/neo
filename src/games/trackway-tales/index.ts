@@ -50,23 +50,27 @@ function drawWalker(g: Graphics, heading: Heading, lift = 0) {
   g.ellipse(heading * 26, y - 44, 12, 8).fill(GHOST).stroke({ width: 3, color: 0x6f6f80 });
 }
 
-/** A card's little picture: the movement's prints on a short strip. */
+/** A card's short label (the pet speaks the full name). */
+const SHORT: Record<MoveId, string> = {
+  walk: 'walked', hop: 'hopped', 'walk-back': 'walked back', 'hop-back': 'hopped back', 'walk-stand-walk': 'walked, stopped', 'walk-then-hop': 'walked, hopped',
+};
+
+/** A card's little picture: the movement's prints on a short strip, with an arrow the way it went. */
 function miniPrints(id: MoveId): Graphics {
   const g = new Graphics();
   const m = MOVEMENTS[id];
   const cols = id === 'walk-then-hop' ? 8 : 6;
-  const cw = 112 / cols, s = 0.32;
-  g.roundRect(-62, -30, 124, 60, 10).fill(MUD);
-  for (const mk of stamp(m, cols)) drawPad(g, -56 + (mk.col + 0.5) * cw, mk.row === 0 ? -12 : 12, mk.heading, MUD_DARK, 1, s);
+  const cw = 120 / cols, s = id === 'walk-then-hop' ? 0.3 : 0.38;
+  g.roundRect(-64, -34, 128, 68, 10).fill(MUD);
+  for (const mk of stamp(m, cols)) drawPad(g, -60 + (mk.col + 0.5) * cw, mk.row === 0 ? -20 : 2, mk.heading, MUD_DARK, 1, s);
   if (id === 'walk-stand-walk') {
     // A little pause sign over the middle: two bars, where it stood to look.
-    const x = -56 + 4 * cw - 2;
-    g.roundRect(x - 7, -28, 5, 14, 2).roundRect(x + 2, -28, 5, 14, 2).fill(ink);
+    const x = -60 + 4 * cw;
+    g.roundRect(x - 7, -32, 5, 12, 2).roundRect(x + 2, -32, 5, 12, 2).fill(ink);
   }
-  // An arrow the way it went.
-  const ay = 40, h = m.heading;
-  g.moveTo(-30 * h, ay).lineTo(30 * h, ay).stroke({ width: 5, color: ink, alpha: 0.55, cap: 'round' });
-  g.poly([30 * h, ay - 9, 42 * h, ay, 30 * h, ay + 9]).fill({ color: ink, alpha: 0.55 });
+  const ay = 22, h = m.heading;
+  g.moveTo(-26 * h, ay).lineTo(24 * h, ay).stroke({ width: 4, color: 0xffffff, alpha: 0.85, cap: 'round' });
+  g.poly([22 * h, ay - 7, 32 * h, ay, 22 * h, ay + 7]).fill({ color: 0xffffff, alpha: 0.85 });
   return g;
 }
 
@@ -202,10 +206,10 @@ class TrackwayTales implements Game {
       const cant = id === 'cant-tell';
       face.addChild(new Graphics().roundRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 18).fill(0xffffff).stroke({ width: 5, color: cant ? swatch.purple.line : wood.line }));
       const art = cant ? cantTellArt() : miniPrints(id);
-      art.y = cant ? -40 : -62;
-      const label = new Text({ text: cant ? "Can't tell" : MOVEMENTS[id].name, style: { fontFamily: FONT, fontSize: 19, fontWeight: '700', fill: ink, align: 'center', wordWrap: true, wordWrapWidth: CARD_W - 14 } });
+      art.y = cant ? -40 : -80;
+      const label = new Text({ text: cant ? "Can't tell" : SHORT[id], style: { fontFamily: FONT, fontSize: 18, fontWeight: '700', fill: ink, align: 'center', wordWrap: true, wordWrapWidth: CARD_W - 14 } });
       label.anchor.set(0.5, 0);
-      label.y = cant ? 30 : -4;
+      label.y = cant ? 30 : -40;
       face.addChild(art, label);
       node.addChild(face);
       // The card is chosen by its upper part; the Play button below it replays.
