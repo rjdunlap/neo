@@ -42,5 +42,8 @@ export default defineConfig({
     }),
   ],
   // `scripts/creature-art/*.test.mjs` checks the sprite preparation tool's pixel rules on synthetic images.
-  test: { include: ['src/**/*.test.ts', 'scripts/**/*.test.mjs'] },
+  // Many rule tests sweep dozens of seeded boards through a simulation: 1–7 s each under the
+  // full parallel run, and slower on the CI runner, where vitest's 5 s default failed deploys
+  // (Peg Garden, Draw the Pattern). They are deterministic, so the limit only has to catch a hang.
+  test: { include: ['src/**/*.test.ts', 'scripts/**/*.test.mjs'], testTimeout: 60_000 },
 });
