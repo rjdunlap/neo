@@ -126,7 +126,7 @@ class SongMaker implements Game {
       case 'free': void this.ctx.instruct('song.free'); break;
       case 'ghost': void this.ctx.instruct('song.copy'); break;
       case 'card': void this.ctx.instruct('song.card'); break;
-      case 'pattern': void this.ctx.instruct('song.pattern'); break;
+      case 'pattern': void this.ctx.instruct(`song.pattern.${this.song.pattern ?? 'stairs-up'}`); break;
       case 'listen':
         // No guessing before she has heard the tune once.
         this.listening = true;

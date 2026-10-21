@@ -28,7 +28,7 @@ A looping grid of jelly beads. Each column is a beat and each row a pitch, and h
 4. **The levels are an inline function**, not a `BandLevels` table read with `rangeFor`. The first slice that appends a level and places it with `order` converts it. The saved IDs 1–7 do not change.
 5. **On copy levels, trying a jelly is a miss.** A tap on a non-target jelly sings and counts. That fits an explicit copying goal, but it means there is nowhere to audition. The proposed composing levels below separate the two.
 6. **No grid has sol or re.** The rows are 3 = C5 E4 C4; 4 = E5 C5 E4 C4; 5 = E5 C5 A4 E4 C4 (`stepToMidi`). Kodály teaching starts from sol–mi (G–E), which no grid offers. This is not a bug: every combination is still consonant. It is a decision, because changing `ROW_STEPS` would change how kept tunes play.
-7. **The pattern's name is never spoken**, and level 6 has only five shapes.
+7. **The pattern's name is never spoken**, and level 6 has only five shapes. *(Fixed by slice 2: ten shapes, each named aloud.)*
 
 **Person and device checks still open:** the iPad listening check for the quiet music games ([DEVICE-CHECKS](../DEVICE-CHECKS.md#needs-a-person-or-a-device), 2026-10-09). Whether a toddler connects row height to pitch, and whether a six-year-old hears "question and answer" as a relationship, are unobserved.
 
@@ -170,7 +170,7 @@ Level 10 (Finish my song) is preschool's easiest composing, placed after 4. Leve
    - IDs and accounting are unchanged.
 
    *Tier: existing-game bug fix.* Typecheck, Song Maker's rule tests, one filtered play at levels 1 and 6, and `fingerdemo` at level 6 because tap targets changed.
-2. **Ten spoken patterns at level 6 (ready).** Content inside an existing level, plus 10 voice lines. *Tier: content.* Typecheck, rule tests, one screenshot.
+2. **Ten spoken patterns at level 6 (built).** Content inside an existing level, plus 10 voice lines. *Tier: content.* Typecheck, rule tests, one screenshot.
 3. **Authored motifs for levels 3–5 (ready).** Level 4's shape is frozen for the Missing Melody. *Tier: content.* Typecheck, rule tests, one screenshot at level 4. `fingerdemo` only if the bot changes.
 4. **My song, level 8 (gated: D1, D2).** Adds the `BandLevels` conversion and the check button. *Tier: new interaction.*
 5. **Answer my song, level 9, the M4 build (gated: D1, D3).** *Tier: new interaction*, with a portrait screenshot of the 8×4 board.
@@ -186,3 +186,5 @@ Each slice updates the how-to card (`LevelLine`s), GAMES.md, the README row, voi
 Deep dive session: research and ideation only (`node scripts/check-links.mjs`, `git diff --check`).
 
 **Slice 1, support truth** ([PR #628](https://github.com/rjdunlap/neo/pull/628), commit 72d2b51f): each bead's hit area is its whole grid cell (levels 5–6 were about 91–92 units, now at least 101 in 1024×768); `songLayout(plan, view)` in `logic.ts` holds the placement that `resize` used, and a test asserts every level's cell is at least 100 and the grid stays within its margins in 1024×768, 1024×1365 portrait and 1660×768; the levels 1–2 how-to note now says a tree house button hangs the song if at least two jellies are lit at the end (`TUNE_MIN_NOTES = 2`). The round still always finishes on its tap count. IDs, levels and miss/hint accounting unchanged. Checks in [VERIFICATION](../archive/VERIFICATION-2026-10-20.md#2026-10-20--song-maker-support-truth-slice-1); the old-rule failing proof and a device touch check were not run.
+
+**Slice 2, ten spoken patterns** ([PR #679](https://github.com/rjdunlap/neo/pull/679), commit 3520f314): `PATTERNS` in `logic.ts` grows from five to ten shapes, each with an `id` (stairs-up, stairs-down, zigzag, hop, twins, arch, valley, climb-rest, big-leap, step-back); the level-6 instruction is a per-shape line `song.pattern.<id>` ("This one goes like a zigzag. Keep the song going the same way!") so the shape is named aloud and the pet repeats it, replacing the generic `song.pattern`; level 6's plan name and how-to step name the shapes. Bot, IDs, levels and accounting are unchanged. New test: ten distinct shapes, each at least two rows, unique names and ids, a voice line each, all ten drawn over 200 seeds. Not run: device speech check of the new lines.
