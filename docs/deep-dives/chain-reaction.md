@@ -124,7 +124,7 @@ Levels 7 and 8 are appended IDs that are easier than 1. Place them with `order` 
 3. **Level 7, Tap to turn.** (built 2026-10-16, branch `codex/chain-reaction-tap-turn`, [PR #448](https://github.com/rjdunlap/neo/pull/448)). Two preplaced tappable ramps, a fixed wooden ramp, solver-backed flips/hints and ghost-finger taps. Pre-K order `[7, 8, 1, 2, 3]`, entry IDs `[7, 8]`; school 3–6 and supported bands unchanged. Younger openings and other decisions remain open. [Build note](../archive/COMPLETED-2026-10-09.md#chain-reaction-level-7-tap-to-turn-2026-10-16).
 4. **Decision 1** if approved: `tries` stat feeding the difficulty step. Tier: shell and save contracts (typecheck, unit tests, build).
 5. **Cargo and goal skins, note per ramp.** Tier: typecheck and one screenshot.
-6. **Level 9, Two marbles.** Tier: rule tests and one play.
+6. **Level 9, Two marbles.** Tier: rule tests and one play. *Claimed 2026-10-21: branch `claude/chain-reaction-two-marbles` (level 9 only; files `src/games/chain-reaction/`, voice script, how-to card, browser check).*
 7. **Level 10, Springboard.** Tier: rule tests, one play, `fingerdemo`.
 8. **Level 11, The chime opens the gate.** Tier: the same.
 9. **A kept "My machine"** only after decision 4.
