@@ -1,4 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
+import { fishArt } from '../../art/animals';
 import { Backdrop } from '../../art/scenery';
 import { ink, swatch } from '../../art/palette';
 import { Rng } from '../../engine/random';
@@ -14,22 +15,6 @@ interface Fish {
 
 const FISH_COLORS = [swatch.orange, swatch.yellow, swatch.pink];
 
-/** A small cartoon fish facing right, drawn around its middle. */
-function fish(color: (typeof FISH_COLORS)[number]): Container {
-  const c = new Container();
-  const g = new Graphics()
-    .poly([-30, 0, -58, -20, -58, 20])
-    .fill(color.line)
-    .ellipse(0, 0, 38, 24)
-    .fill(color.fill)
-    .stroke({ width: 4, color: color.line })
-    .circle(16, -5, 6)
-    .fill(0xffffff)
-    .circle(18, -5, 3)
-    .fill(ink);
-  c.addChild(g);
-  return c;
-}
 
 /**
  * The place a round of bubbles floats in: the shore as it always was, a bath, a night sky or the sea. Everything here is
@@ -66,7 +51,7 @@ export class BubbleBackdrop extends Container {
     }
     if (scene === 'sea') {
       FISH_COLORS.forEach((color, i) => {
-        const node = fish(color);
+        const node = fishArt(color);
         node.eventMode = 'none';
         node.alpha = 0.9;
         node.scale.set(0.9 - i * 0.1);

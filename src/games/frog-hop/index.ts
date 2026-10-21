@@ -1,4 +1,5 @@
 import { Container, Graphics, Rectangle, type Text } from 'pixi.js';
+import { frogArt } from '../../art/animals';
 import { ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -22,18 +23,6 @@ const LEVELS: BandLevels = {
 
 const STEP = 104;
 
-export function frogArt(): Container {
-  const c = new Container();
-  const g = new Graphics();
-  g.ellipse(-26, 4, 16, 9).ellipse(26, 4, 16, 9).fill(swatch.green.line);
-  g.ellipse(0, -22, 38, 28).fill(swatch.green.fill).stroke({ width: 5, color: swatch.green.line });
-  g.circle(-18, -50, 13).circle(18, -50, 13).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
-  g.circle(-18, -50, 7).circle(18, -50, 7).fill(0xffffff).circle(-17, -49, 4).circle(19, -49, 4).fill(ink);
-  g.moveTo(-14, -18).quadraticCurveTo(0, -8, 14, -18).stroke({ width: 4, color: swatch.green.line, cap: 'round' });
-  g.circle(-24, -26, 5).circle(24, -26, 5).fill({ color: swatch.pink.fill, alpha: 0.6 });
-  c.addChild(g);
-  return c;
-}
 
 class Pad extends Container {
   readonly num: Text;

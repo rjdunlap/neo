@@ -1,4 +1,5 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
+import { penguinArt } from '../../art/animals';
 import { ink, swatch } from '../../art/palette';
 import { puffs } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
@@ -26,19 +27,6 @@ const LEVELS: BandLevels = {
 const CELL = 100;
 const ICE = 0xe3f4ff;
 
-function penguinArt(): Container {
-  const c = new Container();
-  const g = new Graphics();
-  g.ellipse(-14, 34, 13, 7).ellipse(14, 34, 13, 7).fill(swatch.orange.fill);
-  g.ellipse(0, 0, 32, 38).fill(ink);
-  g.ellipse(0, 8, 22, 28).fill(0xffffff);
-  g.ellipse(-30, 6, 8, 20).ellipse(30, 6, 8, 20).fill(ink);
-  g.circle(-10, -14, 6).circle(10, -14, 6).fill(0xffffff).circle(-9, -13, 3).circle(11, -13, 3).fill(ink);
-  g.poly([-8, -4, 8, -4, 0, 6]).fill(swatch.orange.fill).stroke({ width: 2, color: swatch.orange.line, join: 'round' });
-  g.circle(-18, 2, 5).circle(18, 2, 5).fill({ color: swatch.pink.fill, alpha: 0.6 });
-  c.addChild(g);
-  return c;
-}
 
 function fishArt(): Graphics {
   const g = new Graphics();
