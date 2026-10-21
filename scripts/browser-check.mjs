@@ -6473,10 +6473,14 @@ async function originals() {
 
   // Shape Sorter: pieces dragged into holes, two wrong holes, then the right hole glows.
   const shapeLevels = process.env.SHAPE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 8 }, (_, i) => i + 1);
-  for (const level of shapeLevels.filter((n) => n >= 1 && n <= 8 && (!only || only === 'shapes'))) {
-    if (level === 8) await portrait(true);
-    await launch('shape-sorter', level);
+  // Level 9, the tap-in entry, plays once at lap and once at toddler (in portrait), where it opens the ladder.
+  const shapeRuns = shapeLevels.filter((n) => n >= 1 && n <= 9 && (!only || only === 'shapes')).flatMap((n) => (n === 9 ? [[9, 'lap'], [9, 'toddler']] : [[n, undefined]]));
+  for (const [level, shapeBand] of shapeRuns) {
+    const upright = level === 8 || shapeBand === 'toddler';
+    if (upright) await portrait(true);
+    await launch('shape-sorter', level, 'Mia', shapeBand);
     await page.waitForTimeout(400);
+    if (shapeBand === 'toddler') await screenshot('shape-sorter-9-start-portrait');
     const holes = await page.evaluate(async () => {
       const g = neo.scene.game;
       // Pieces ride above the finger, so aim the finger just below the hole.
@@ -6515,6 +6519,13 @@ async function originals() {
         await kit.sleep(500);
         if (g.misses || g.hints || g.pieces.length !== 3) throw new Error(`Shape 1: touches are free: ${g.misses} ${g.hints} ${g.pieces.length}`);
       }
+      if (g.plan.tapIn) {
+        // A tap on a piece hops it into the hole by itself; the last one goes in by a drag, which still works.
+        for (const n of [2, 1]) {
+          kit.tapOn(g.pieces[0].view); await kit.sleep(900);
+          if (g.pieces.length !== n) throw new Error(`Shape 9: a tap puts a piece in (${g.pieces.length} left)`);
+        }
+      }
       if (g.box.holes.length > 1) {
         const piece = g.pieces[0];
         const wrong = g.box.holes.find((h) => h.kind !== piece.kind);
@@ -6524,11 +6535,11 @@ async function originals() {
       for (let guard = 0; guard < 20 && g.pieces.length; guard++) { const p = g.pieces[0]; await into(p, holeFor(p.kind)); }
       return g.box.holes.length;
     });
-    await screenshot(`shape-sorter-${level}`);
+    await screenshot(`shape-sorter-${level}${shapeBand ? `-${shapeBand}` : ''}`);
     await finished('shape-sorter');
     assert.deepEqual(await score('shape-sorter'), holes > 1 ? [2, 1] : [0, 0], `shapes ${level} score`);
-    if (level === 8) await portrait(false);
-    log(`Shape Sorter ${level}: dragging into holes, wrong holes, glow hint, saved score and sticker passed`);
+    if (upright) await portrait(false);
+    log(`Shape Sorter ${level}${shapeBand ? ` (${shapeBand})` : ''}: dragging into holes, wrong holes, glow hint, saved score and sticker passed`);
   }
 
   // Fill and Dump: a basket tipped out and scooped back by taps; then filled to a stated number, a wrong check twice, and the glow.

@@ -2106,6 +2106,7 @@ export const SCRIPT = {
   'fill.hintremove': ['That is too many! Tap the {container} to take one out.'],
   'fill.hintcheck': ['That is just right! Tap the check!'],
   'shape.start': ['Put the shapes in the box!'],
+  'shape.tap.start': ['Tap a shape!', 'Tap a shape, in it goes!'],
   'shape.find.start': ['Listen to the clue, then put that shape in the box.'],
   'shape.find.clue.circle': ['Find the shape with no corners.'],
   'shape.find.clue.square': ['Find the shape with four equal sides.'],
