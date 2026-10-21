@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### A better voice V0 (2026-10-21)
+
+[PR #734](https://github.com/rjdunlap/neo/pull/734), roadmap chunk 29: `src/audio/voice-choice.ts` (`chooseVoice`, `voiceLabel`) reads quality from the voice name or voiceURI and ranks Premium > Enhanced > standard, prefers an on-device voice over an online one (offline PWA), never picks novelty voices (Bells, Zarvox, Whisper) and ranks Eloquence/old MacinTalk voices (Eddy, Flo, Grandma, Rocko, Fred) last; no English voice returns null (device default). `voice.ts` uses it, re-picks lazily in `speak()` when nothing was chosen and exposes `voice.current()`. The grown-ups' page (Sound section, under "Hear the voice say the name") names the voice and its quality, says it belongs to the device (same for every player) and, for a standard voice, gives the iPad path Settings → Accessibility → Spoken Content → Voices → English to download Ava, Zoe or Samantha. Rate 0.95 and pitch 1.15 unchanged. Eight new tests; the iPad retune is an open device check.
+
 ### Fill and Dump level 7, Which holds more? (2026-10-21)
 
 [PR #727](https://github.com/rjdunlap/neo/pull/727), slice 4 of the [deep dive](../deep-dives/fill-dump.md#build-slices-in-order): preschool top `[1, 2, 6, 3, 4, 5, 7]`; free prediction → displacement-controlled pour → supported answer over bowl/cup, cup/bucket and bucket/mug. Straight sides show volume ÷ width, capacity ratios ≥1.6; overflow and empty space provide evidence. Guesses, spills, partial checks and re-pours stay unscored; two post-evidence misses glow the evidence once per pair. The tray restores the same water, and the finger plays through three pairs for one sticker. Other levels, band openings and gated pouring feel are unchanged. [Verification](../VERIFICATION.md#2026-10-21--fill-and-dump-level-7-which-holds-more).

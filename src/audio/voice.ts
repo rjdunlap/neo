@@ -1,5 +1,6 @@
 import { SCRIPT, type LineId } from '../content/voice-script';
 import { audio } from './engine';
+import { chooseVoice, voiceLabel, voiceQuality, type VoiceQuality } from './voice-choice';
 
 export type LineVars = Record<string, string | number>;
 
@@ -44,6 +45,7 @@ class Voice {
   speak(text: string): Promise<void> {
     if (!hasSpeech) return Promise.resolve();
     speechSynthesis.cancel();
+    if (!this.chosen) this.pickVoice();
     return new Promise((resolve) => {
       const u = new SpeechSynthesisUtterance(text);
       if (this.chosen) u.voice = this.chosen;
@@ -72,14 +74,15 @@ class Voice {
     if (hasSpeech) speechSynthesis.cancel();
   }
 
+  /** The voice in use, for the grown-ups' page; null when the device's default speaks or there is no speech. */
+  current(): { name: string; quality: VoiceQuality } | null {
+    if (!hasSpeech) return null;
+    if (!this.chosen) this.pickVoice();
+    return this.chosen ? { name: voiceLabel(this.chosen), quality: voiceQuality(this.chosen) } : null;
+  }
+
   private pickVoice() {
-    const score = (v: SpeechSynthesisVoice) =>
-      (/premium|enhanced|neural|natural/i.test(v.name) ? 4 : 0) +
-      (/samantha|ava|allison|susan|zoe|karen|tessa|serena/i.test(v.name) ? 2 : 0) +
-      (v.lang === 'en-US' ? 1 : 0) +
-      (v.localService ? 1 : 0);
-    const english = speechSynthesis.getVoices().filter((v) => v.lang.startsWith('en'));
-    this.chosen = english.sort((a, b) => score(b) - score(a))[0] ?? null;
+    this.chosen = chooseVoice(speechSynthesis.getVoices());
   }
 }
 

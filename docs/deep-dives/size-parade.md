@@ -155,6 +155,6 @@ Slices 1–8 need no decision (their defaults are recorded above); 9 and 10 are 
 - **Card.** Steps split (to level 2 bigger or smaller; 3-4 biggest or smallest; 5 and up the glowing spot, then the next in size), a sky or ground tap line, the false pick finish fixed to four rows, level-scoped notes on misses, the glow and the free other-spot drop.
 - **Browser check.** The `expansion` size case gained `SIZE_LEVELS` and `SIZE_PORTRAIT` and asserts the sky tap is answered and a right friend on the last spot is answered, not placed, and neither counts.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--size-parade-support-truth-slice-1). Still open: the person checks of gap 9 and a child hearing the comparative words.
+Checks are in [VERIFICATION](../archive/VERIFICATION-2026-10-21.md#2026-10-21--size-parade-support-truth-slice-1). Still open: the person checks of gap 9 and a child hearing the comparative words.
 
 Earlier session: a deep dive session is research and ideation only. The write-up was drafted on `claude/dive-size-parade` (PR #600, 2026-10-18) and closed out re-checked against `src/games/size-parade/` on `d6e7d15f`.
