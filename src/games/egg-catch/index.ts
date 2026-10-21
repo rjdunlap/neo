@@ -11,7 +11,7 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { pairBoards, pairNeeds, pairGateToFlip, type PairBoard, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
+import { HEN_NOTES, HEN_SHELLS, SHELL, pairBoards, pairNeeds, pairGateToFlip, type PairBoard, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -22,12 +22,17 @@ const LEVELS: BandLevels = {
   school: { min: 4, max: 7 },
 };
 
-const SHELL = { brown: { fill: 0xd9a066, line: 0x9c6b3c }, white: { fill: 0xfffdf6, line: 0xc9bfae } };
 const HAY = { fill: 0xf3dc8a, line: 0xd9b95a };
 
 function eggArt(shell: Shell): Graphics {
   const c = SHELL[shell];
-  return new Graphics().ellipse(0, 0, 26, 33).fill(c.fill).stroke({ width: 4, color: c.line }).ellipse(-8, -12, 6, 9).fill({ color: 0xffffff, alpha: 0.6 });
+  const g = new Graphics().ellipse(0, 0, 26, 33).fill(c.fill).stroke({ width: 4, color: c.line }).ellipse(-8, -12, 6, 9).fill({ color: 0xffffff, alpha: 0.6 });
+  if (shell === 'speckled') for (const [x, y] of [[-14, 5], [8, 16], [14, -10], [-4, -24], [-6, 24]]) g.circle(x, y, 3).fill(c.line);
+  return g;
+}
+
+function chickArt() {
+  return new Graphics().circle(0, 0, 22).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line }).circle(8, -4, 4).fill(0x2b2b3a).poly([18, 0, 30, 4, 18, 8]).fill(swatch.orange.fill);
 }
 
 function hen(): Critter {
@@ -67,6 +72,9 @@ class EggCatch implements Game {
   readonly hens: Critter[] = [];
   readonly basket = new Container();
   readonly falling: Falling[] = [];
+  /** Successful eggs only; a pair contributes both shells after the whole board succeeds. */
+  readonly gathered: Shell[] = [];
+  readonly ending = new Container();
   caughtCount = 0;
   misses = 0;
   hints = 0;
@@ -85,7 +93,7 @@ class EggCatch implements Game {
   private readonly exits = new Container();
   private readonly touch = new Container();
   private readonly hay = new Container();
-  /** Levels 2–3, after two misses: the hay under the next brown egg's lane glows. */
+  /** Levels 2–3, after two misses: the hay under the next catchable egg's lane glows. */
   private readonly laneGlow = new Graphics();
   /** Levels 2–3: the hens lay only while someone plays. */
   readonly pace = new HenPace();
@@ -201,6 +209,7 @@ class EggCatch implements Game {
 
   resize(v: View) {
     this.view = v;
+    this.ending.position.set(v.w / 2, v.h * 0.56);
     this.backdrop.resize(v);
     this.touch.hitArea = new Rectangle(0, v.h * 0.4, v.w, v.h * 0.6);
     const s = this.shelf.clear();
@@ -280,11 +289,11 @@ class EggCatch implements Game {
     if (push) this.basketTarget = Math.max(160, Math.min(this.view.w - 80, this.basketTarget + push * 760 * dt));
   }
 
-  /** The "watch me" demo: slide under the next brown egg that is falling. */
+  /** The "watch me" demo: slide under the next catchable egg that is falling. */
   autoplay(): CouchControls {
     const out = idle();
     out.players[0].active = true;
-    const egg = this.falling.find((f) => !f.done && f.egg.shell === 'brown');
+    const egg = this.falling.find((f) => !f.done && f.egg.shell !== 'white');
     const dx = (egg ? egg.x : this.basketTarget) - this.basket.x;
     out.players[0].x = Math.abs(dx) < 16 ? 0 : Math.max(-1, Math.min(1, dx / 80));
     // Already in place, the bot still plays: a small nudge of the stick for each new egg (and to wake settled hens).
@@ -293,7 +302,7 @@ class EggCatch implements Game {
   }
 
   /**
-   * The ghost finger on the how-to card: tap a hen (lap), touch under the next brown egg and let the basket slide there (it
+   * The ghost finger on the how-to card: tap a hen (lap), touch under the next catchable egg and let the basket slide there (it
    * leaves white eggs alone), flip the gates the waiting egg needs and then tap the green arrow, or tap the bin the set gates lead to.
    */
   autotouch(): TouchIntent | null {
@@ -334,10 +343,10 @@ class EggCatch implements Game {
   lay(lane: number) {
     if (this.finished) return;
     if (this.plan.mode === 'tap' && this.falling.some((f) => !f.done)) return;
-    const egg = this.plan.mode === 'tap' ? { lane, shell: 'brown' as Shell } : this.eggs[this.next++ % this.eggs.length];
+    const egg = this.plan.mode === 'tap' ? { lane, shell: HEN_SHELLS[lane] } : this.eggs[this.next++ % this.eggs.length];
     const h = this.hens[egg.lane];
     h.cheer();
-    sfx.pop(8);
+    sfx.pop(HEN_NOTES[egg.lane]);
     const node = eggArt(egg.shell);
     // Brown eggs glow while a hint is on.
     if (this.hinting && egg.shell === 'brown' && this.plan.mode === 'brown') node.circle(0, 0, 40).stroke({ width: 6, color: 0xfff3a0 });
@@ -349,12 +358,13 @@ class EggCatch implements Game {
   private land(f: Falling) {
     f.done = true;
     const inBasket = caught(f.node.x, this.basket.x);
-    const want = f.egg.shell === 'brown';
+    const want = f.egg.shell !== 'white';
     // Nobody played while it fell: the hens settle until the next touch, and it is no miss.
     const played = this.plan.mode === 'tap' || this.pace.land(f.k);
     if (!played) this.hens.forEach((h) => h.setMood('sleepy'));
     if (inBasket && want) {
       this.caughtCount++;
+      this.gathered.push(f.egg.shell);
       f.node.destroy();
       sfx.squish();
       this.basket.scale.set(1.12, 0.88);
@@ -387,7 +397,7 @@ class EggCatch implements Game {
       sfx.pop(3);
       await tw.to(node, { rotation: 0.3 }, { duration: 0.12 });
       await tw.to(node, { rotation: -0.3 }, { duration: 0.12 });
-      const chick = new Graphics().circle(0, 0, 22).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line }).circle(8, -4, 4).fill(0x2b2b3a).poly([18, 0, 30, 4, 18, 8]).fill(swatch.orange.fill);
+      const chick = chickArt();
       chick.position.copyFrom(node.position);
       this.ctx.stage.addChildAt(chick, this.ctx.stage.getChildIndex(this.basket));
       node.destroy();
@@ -407,7 +417,7 @@ class EggCatch implements Game {
     this.pace.play();
   }
 
-  /** After two misses at levels 2–3, the hay under the next brown egg's lane glows while the slower fall goes on. */
+  /** After two misses at levels 2–3, the hay under the next catchable egg's lane glows while the slower fall goes on. */
   private drawLaneGlow() {
     const g = this.laneGlow.clear();
     if (!this.hinting || (this.plan.mode !== 'catch' && this.plan.mode !== 'brown')) return;
@@ -614,6 +624,7 @@ class EggCatch implements Game {
     this.pairNodes = [];
     this.rolling = false;
     if (this.pairSuccess) {
+      this.gathered.push('brown', 'white');
       this.caughtCount++;
       this.wrongs = 0;
       this.hinting = false;
@@ -671,6 +682,7 @@ class EggCatch implements Game {
       this.ctx.particles.burst(node.x, node.y - 30, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 12, speed: [100, 240], gravity: 0, life: [0.5, 0.8] });
       node.destroy();
       this.caughtCount++;
+      this.gathered.push(egg.shell);
       this.wrongs = 0;
       this.hinting = false;
       void this.ctx.say('count', { n: this.caughtCount });
@@ -688,6 +700,35 @@ class EggCatch implements Game {
     if (this.finished) return;
     this.finished = true;
     for (const h of this.hens) h.cheer();
+    // A scene-owned, non-interactive stopping point. No missed egg joins this basket.
+    this.ending.eventMode = 'none';
+    this.ending.position.set(this.view.w / 2, this.view.h * 0.56);
+    const width = Math.max(360, this.gathered.length * 64 + 60);
+    const panel = new Graphics().roundRect(-width / 2, -150, width, 290, 40).fill({ color: 0xfff1e3, alpha: 0.97 }).stroke({ color: wood.line, width: 5 });
+    this.ending.addChild(panel);
+    const eggs = this.gathered.map((shell, i) => {
+      const node = eggArt(shell);
+      node.position.set((i - (this.gathered.length - 1) / 2) * 64, -55);
+      this.ending.addChild(node);
+      return node;
+    });
+    const basket = basketArt();
+    basket.scale.set(width / 180, 1);
+    basket.y = -5;
+    this.ending.addChild(basket);
+    this.ctx.stage.addChild(this.ending);
+    await this.ctx.tw.wait(0.4);
+    for (const [i, node] of eggs.entries()) {
+      await this.ctx.tw.to(node, { rotation: 0.25 }, { duration: 0.1 });
+      await this.ctx.tw.to(node, { rotation: -0.25 }, { duration: 0.1 });
+      const chick = chickArt();
+      chick.position.copyFrom(node.position);
+      this.ending.addChild(chick);
+      // The lower shell stays in the basket, with a visible zig-zag crack.
+      node.clear().poly([-24, -5, -12, 3, 0, -5, 12, 3, 24, -5]).lineTo(19, 22).quadraticCurveTo(0, 40, -19, 22).closePath().fill(SHELL[this.gathered[i]].fill).stroke({ width: 3, color: SHELL[this.gathered[i]].line });
+      sfx.chirp(HEN_NOTES[i % LANES]);
+      await this.ctx.tw.to(chick, { y: 85 }, { duration: 0.25, ease: ease.outBack });
+    }
     sfx.tada();
     await this.ctx.say('egg.done');
     await this.ctx.tw.wait(0.8);

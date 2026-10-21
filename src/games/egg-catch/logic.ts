@@ -40,7 +40,17 @@ export function predictGates(rng: Rng, count: number): [boolean, boolean, boolea
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export const LANES = 4;
-export type Shell = 'brown' | 'white';
+export type Shell = 'brown' | 'white' | 'speckled' | 'blue';
+/** Shells belong to hens; the early levels catch every colour, never a near-white shell. */
+export const HEN_SHELLS: readonly Shell[] = ['brown', 'speckled', 'blue', 'brown'];
+export const SHELL = {
+  brown: { fill: 0xd9a066, line: 0x9c6b3c },
+  white: { fill: 0xfffdf6, line: 0xc9bfae },
+  speckled: { fill: 0xd9a066, line: 0x9c6b3c },
+  blue: { fill: 0x77bcb1, line: 0x397e77 },
+};
+/** sfx.pop reads these as steps in notes.ts's pentatonic scale. */
+export const HEN_NOTES = [5, 6, 7, 8] as const;
 
 export interface Egg {
   /** The hen (lane) it comes from. */
@@ -54,7 +64,7 @@ export function makeEggs(plan: EggPlan, rng: Rng, count = 30): Egg[] {
   for (let i = 0; i < count; i++) {
     let lane = rng.int(0, LANES - 1);
     if (lane === out[i - 1]?.lane) lane = (lane + rng.int(1, LANES - 1)) % LANES;
-    let shell: Shell = plan.mode === 'brown' || plan.mode === 'sort' ? (rng.chance(0.55) ? 'brown' : 'white') : 'brown';
+    let shell: Shell = plan.mode === 'brown' || plan.mode === 'sort' ? (rng.chance(0.55) ? 'brown' : 'white') : plan.mode === 'tap' || plan.mode === 'catch' ? HEN_SHELLS[lane] : 'brown';
     if (shell === 'white' && out.slice(-2).length === 2 && out.slice(-2).every((e) => e.shell === 'white')) shell = 'brown';
     out.push({ lane, shell });
   }
@@ -122,21 +132,21 @@ export interface EggInAir {
 
 /**
  * Catching: where to slide the basket next, or null to leave it. `air` is the eggs still falling, the one that lands first
- * first. A brown egg wants the basket right under it, a white one wants it out of the way. The basket only moves when that
- * keeps the eggs ahead of this one right too (it waits under one brown egg until it lands, then goes to the next) and the
+ * first. A catchable egg wants the basket right under it, a white one wants it out of the way. The basket only moves when that
+ * keeps the eggs ahead of this one right too (it waits under one catchable egg until it lands, then goes to the next) and the
  * slide does not pass through the lane of a white egg about to land (a basket caught crossing it would take the egg in).
- * A white egg is dodged to the lane of the next brown egg when there is one, else the nearest lane that is clear.
+ * A white egg is dodged to the lane of the next catchable egg when there is one, else the nearest lane that is clear.
  */
 export function basketMove(air: readonly EggInAir[], basketX: number, lanes: readonly number[], reach = 95): number | null {
   const clear = reach + 30;
-  const fits = (x: number, e: EggInAir) => (e.shell === 'brown' ? Math.abs(x - e.x) <= reach * 0.4 : Math.abs(x - e.x) > clear);
+  const fits = (x: number, e: EggInAir) => (e.shell !== 'white' ? Math.abs(x - e.x) <= reach * 0.4 : Math.abs(x - e.x) > clear);
   const k = air.findIndex((e) => !fits(basketX, e));
   if (k < 0) return null;
   const crossing = (x: number, e: EggInAir) => e.shell === 'white' && Math.min(basketX, x) < e.x + clear && Math.max(basketX, x) > e.x - clear;
   const spots =
-    air[k].shell === 'brown'
+    air[k].shell !== 'white'
       ? [air[k].x]
-      : [...air.slice(k + 1).filter((e) => e.shell === 'brown').map((e) => e.x), ...[...lanes].sort((a, b) => Math.abs(a - basketX) - Math.abs(b - basketX))];
+      : [...air.slice(k + 1).filter((e) => e.shell !== 'white').map((e) => e.x), ...[...lanes].sort((a, b) => Math.abs(a - basketX) - Math.abs(b - basketX))];
   return spots.find((x) => air.slice(0, k + 1).every((e) => fits(x, e)) && !air.slice(0, k).some((e) => crossing(x, e))) ?? null;
 }
 
@@ -205,15 +215,15 @@ export class HenPace {
 }
 
 /**
- * The hint after two misses at levels 2–3: the lane of the next brown egg, glowing on the hay. That is the brown egg in the
- * air that lands first (`air` is ordered by how far each has fallen, `t`), else the next brown one the hens will lay.
+ * The hint after two misses at levels 2–3: the lane of the next catchable egg, glowing on the hay. That is the catchable egg in the
+ * air that lands first (`air` is ordered by how far each has fallen, `t`), else the next catchable one the hens will lay.
  */
 export function glowLane(air: readonly { lane: number; shell: Shell; t: number }[], eggs: readonly Egg[], next: number): number {
-  const falling = [...air].sort((a, b) => b.t - a.t).find((e) => e.shell === 'brown');
+  const falling = [...air].sort((a, b) => b.t - a.t).find((e) => e.shell !== 'white');
   if (falling) return falling.lane;
   for (let i = 0; i < eggs.length; i++) {
     const e = eggs[(next + i) % eggs.length];
-    if (e.shell === 'brown') return e.lane;
+    if (e.shell !== 'white') return e.lane;
   }
   return eggs[next % eggs.length].lane;
 }
