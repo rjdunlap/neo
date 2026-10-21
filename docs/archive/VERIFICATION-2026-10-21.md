@@ -37,3 +37,11 @@
 - Dev server http://localhost:5575: `BROWSER_SUITE=atticfinds` passed (level 1 free prediction then two wrong picks = 0 misses, 1 hint; level 2 empty Check free, door Check = 1 miss, requested hint twice = 1 hint; portrait level 2 screenshot with the rod in the magnifier, layout clear). `BROWSER_SUITE=fingerdemo FINGER_ONLY=attic-finds FINGER_LEVELS=1,2` passed (22.7 s, 24.5 s).
 - Not run: the offline check, `world`, any iPad or child.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): crank and Turn readable for a three-year-old, the back-side rod reading as connected, device speech of the clue lines.
+
+## 2026-10-21 — Fossil Dig levels 1–2
+
+- Built on `claude/fossil-dig` (base `origin/main` d3ba284b plus branch commits through 397e8ec6; PR link not recorded here): new game `fossil-dig` in Tinker Lab (now 12 games), pre-K levels 1–2 ([definition](../definitions/fossil-dig.md)); deviations are in the [archive note](COMPLETED-2026-10-09.md#fossil-dig-levels-12-2026-10-21).
+- `npm run typecheck` clean; `npm test` 2149 of 2149 passed (24 new rule tests: cases, rounds over 500 seeds, dust reveal at most twelve pats, tiling, reach, flags, accounting, layout at four views, two levels and three sites). `npm run build` passed. A game-reviewer pass fixed the restart guards (Start again stops old continuations; the edge line is spoken only at level 2).
+- Dev server http://localhost:5956: `BROWSER_SUITE=fossildig` passed (level 1 early flag free, wrong flag and wrong leaf = 2 misses; level 2 requested hint twice = 1 hint, wrong leaf 1 miss; portrait screenshot with the magnifier). `BROWSER_SUITE=fingerdemo FINGER_ONLY=fossil-dig FINGER_LEVELS=1,2` passed (14.3 s, 19.0 s).
+- Not run: the offline check, `world`, any iPad or child.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): the dusty stone read as "rub me", teeth before the magnifier, the flag-of-the-square idea without the pet's line, device speech of the leaf names.

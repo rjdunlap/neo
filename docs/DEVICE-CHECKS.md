@@ -16,6 +16,8 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 ## Open items
 
+- [ ] **Size Parade support truth (slice 1, 2026-10-21, #714).** On an iPad at toddler and pre-K: does a two-year-old hear "bigger" and "smaller" at two friends and understand it; does big-low pitch feel natural; does the first drag at level 5 (40-unit lift) work; does "This spot first!" read as a nudge, not a scolding; does device speech say the new lines clearly?
+
 - [ ] **Welcome a New Friend, slice 1 (RW07, 2026-10-21, #712).** On an iPad at preschool and pre-K, does a child understand the invitation and the two step cards (tap a card to hear its ask, then the green Play arrow), and do the asks and done lines (`welcome.invite`, `welcome.ask.*`, `welcome.done.*`, `welcome.soon`, `home.continue`) sound right in device speech?
 
 - [ ] **Roundup Come along (level 11, slice 4, 2026-10-20, #688).** On an iPad at lap and toddler, does a one-year-old read the gathering herd as "they come with me", drag slowly enough for them to keep up, and understand the glow and drift when stuck? Child play remains unobserved.
