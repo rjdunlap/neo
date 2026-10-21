@@ -6,7 +6,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 ## Next ten
 
-- **`roundup`, level 10 *Shoo one*, slice 3** (new levels on an existing interaction): toddler `order [1, 10, 2, 3]`, `entryLevels: [10]`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
 - **`fill-dump`, things to put away** (content): balls, blocks and ducks beside fruit in levels 1–4. [Slice 5](deep-dives/fill-dump.md#fresh-content-inside-existing-levels)
 - **`roundup`, level 11 *Come along*, slice 4** (new interaction): the follow mode for lap and toddler, placed by `order`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
 - **`roundup`, level 7 *Leave the cows*, slice 5** (new levels): pre-K 3–7. [Dive](deep-dives/roundup.md#new-levels-on-top)

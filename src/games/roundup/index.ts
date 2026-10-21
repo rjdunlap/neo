@@ -17,7 +17,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 3 },
+  toddler: { min: 1, max: 10, order: [1, 10, 2, 3] },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
 };
@@ -45,7 +45,7 @@ interface Animal {
   vx: number;
   vy: number;
   wander: { x: number; y: number; next: number };
-  state: 'loose' | 'penned' | 'hopping';
+  state: 'waiting' | 'loose' | 'penned' | 'hopping';
   pen: number;
 }
 
@@ -124,6 +124,10 @@ class Roundup implements Game {
         // Hit areas are in body units (the critter is drawn at a third size): about 85 units round its middle.
         critter.hitArea = new Circle(0, -120, 85 / SCALE);
       }
+      if (this.plan.sequential && this.animals.length) {
+        a.state = 'waiting';
+        critter.visible = false;
+      }
       this.animals.push(a);
       this.world.addChild(glow, critter);
     }
@@ -170,7 +174,7 @@ class Roundup implements Game {
       case 'tap':
         return void this.ctx.instruct('herd.tap', { animals });
       case 'shoo':
-        return void this.ctx.instruct('herd.shoo', { animals });
+        return void this.ctx.instruct(this.plan.sequential ? 'herd.shooone' : 'herd.shoo', this.plan.sequential ? { animal: a.kind } : { animals });
       case 'sort':
         return void this.ctx.instruct('herd.sort', { a: PLURAL[a.kind], b: PLURAL[b.kind], placeA: PLACE[a.kind], placeB: PLACE[b.kind] });
       case 'count':
@@ -189,7 +193,7 @@ class Roundup implements Game {
   private field() {
     const v = this.view;
     // Clear of the corner guide and the screen edges, so there's always room to get a finger behind an animal.
-    return { x0: 230, x1: v.w - 40, y0: v.h * 0.34, y1: v.h - 90 };
+    return { x0: this.plan.sequential ? Math.max(230, v.w - 640) : 230, x1: v.w - 40, y0: v.h * 0.34, y1: v.h - 90 };
   }
 
   resize(v: View) {
@@ -211,6 +215,13 @@ class Roundup implements Game {
     if (!this.placed) {
       this.placed = true;
       const spots = startSpots(this.animals.length, f, this.pens[0].rect.x - 80, this.ctx.rng);
+      if (this.plan.sequential) {
+        const r = this.pens[0].rect;
+        for (const spot of spots) {
+          spot.x = this.ctx.rng.range(r.x - 170, r.x - 110);
+          spot.y = r.y + r.h / 2 + this.ctx.rng.range(-55, 55);
+        }
+      }
       this.animals.forEach((a, i) => {
         a.critter.position.set(spots[i].x, spots[i].y);
         a.wander = { x: a.critter.x, y: a.critter.y, next: this.ctx.rng.range(0, 2) };
@@ -235,8 +246,8 @@ class Roundup implements Game {
         g.roundRect(x + dx - 5, y + dy + 2, 10, 11, 4).fill(floor.dot);
       } else g.circle(x + dx, y + dy, rng.range(6, 12)).fill(floor.dot);
     }
-    const gateTop = y + (h * (1 - GATE)) / 2;
-    const gateBottom = y + h - (h * (1 - GATE)) / 2;
+    const gateTop = y + (h * (1 - (this.plan.gate ?? GATE))) / 2;
+    const gateBottom = y + h - (h * (1 - (this.plan.gate ?? GATE))) / 2;
     const rail = { width: 10, color: wood.line, cap: 'round' as const };
     g.moveTo(x, gateTop).lineTo(x, y).lineTo(x + w, y).lineTo(x + w, y + h).lineTo(x, y + h).lineTo(x, gateBottom).stroke(rail);
     g.moveTo(x, gateTop).lineTo(x, y).lineTo(x + w, y).lineTo(x + w, y + h).lineTo(x, y + h).lineTo(x, gateBottom).stroke({ ...rail, width: 5, color: wood.fill });
@@ -287,11 +298,11 @@ class Roundup implements Game {
     this.fingerRing.clear();
     if (this.finger) this.fingerRing.circle(this.finger.x, this.finger.y, 60 + 6 * Math.sin(this.clock * 8)).stroke({ width: 6, color: 0xffffff, alpha: 0.6 });
 
-    if (!this.finished) {
+    if (!this.finished && this.animals.some((a) => a.state === 'loose')) {
       this.sinceProgress += dt;
-      if (this.sinceProgress > 15 && !this.hinting) this.showHint();
+      if (this.sinceProgress >= (this.plan.hintAfter ?? 15) && !this.hinting) this.showHint();
       // Still stuck: the nearest one trots home by itself, so no round gets stuck.
-      if (this.sinceProgress > 30 && !this.helped) {
+      if (this.sinceProgress >= (this.plan.helpAfter ?? 30) && !this.helped) {
         this.helped = true;
         const a = this.animals.find((x) => x.state === 'loose' && this.needs(x) >= 0);
         // Help, not her own move: it counts as a hint.
@@ -382,7 +393,7 @@ class Roundup implements Game {
       const dx = c.x - this.finger.x;
       const dy = c.y - 30 - this.finger.y;
       const d = Math.hypot(dx, dy) || 1;
-      const s = fleeSpeed(d, SHOO_R, SHOO_SPEED);
+      const s = fleeSpeed(d, this.plan.fleeRadius ?? SHOO_R, SHOO_SPEED);
       if (s > 0) {
         tx = (dx / d) * s;
         ty = (dy / d) * s;
@@ -413,13 +424,13 @@ class Roundup implements Game {
 
     for (let i = 0; i < this.pens.length; i++) {
       const r = this.pens[i].rect;
-      if (throughGate(r, from, to)) {
+      if (throughGate(r, from, to, this.plan.gate ?? GATE)) {
         this.arrive(a, i);
         return;
       }
       // Fences keep a body's width away, except in the gate's mouth, which stays open.
       const body = { x: r.x - BODY, y: r.y - BODY * 0.6, w: r.w + BODY * 2, h: r.h + BODY * 1.2 };
-      const pad = (r.h * (1 - GATE)) / 2;
+      const pad = (r.h * (1 - (this.plan.gate ?? GATE))) / 2;
       const ok = (p: { x: number; y: number }) => !inRect(body, p.x, p.y) || (p.x <= r.x && p.y > r.y + pad && p.y < r.y + r.h - pad);
       if (ok(to)) continue;
       // Bump along the fence instead of through it.
@@ -473,7 +484,7 @@ class Roundup implements Game {
     for (const a of loose) {
       for (const p of this.pens) {
         const r = p.rect;
-        const pad = (r.h * (1 - GATE)) / 2;
+        const pad = (r.h * (1 - (this.plan.gate ?? GATE))) / 2;
         const { x, y } = a.critter;
         const inMouth = x <= r.x && y > r.y + pad && y < r.y + r.h - pad;
         if (!inMouth && inRect({ x: r.x - BODY, y: r.y - BODY * 0.6, w: r.w + BODY * 2, h: r.h + BODY * 1.2 }, x, y)) a.critter.x = r.x - BODY - 1;
@@ -505,6 +516,17 @@ class Roundup implements Game {
     a.critter.cheer();
     sfx.animal(voiceOf(a.kind));
     this.ctx.particles.burst(a.critter.x, a.critter.y - 40, { kind: 'heart', colors: [swatch.pink.fill, swatch.red.fill], count: 4, speed: [40, 100], gravity: -60, size: [0.3, 0.45] });
+    const next = this.animals.find((x) => x.state === 'waiting');
+    if (next) {
+      // A new animal arrives only after the first success; the penned friend stays home.
+      this.busy = true;
+      this.finger = null;
+      await this.ctx.tw.wait(0.8);
+      next.state = 'loose';
+      next.critter.visible = true;
+      this.busy = false;
+      return;
+    }
     if (p.pen.target !== undefined) void this.ctx.say('count', { n: p.inside });
     else if (this.pens.every((x) => x.inside >= wanted(this.herd, x.pen))) void this.finale();
   }
@@ -674,6 +696,7 @@ export const roundup: GameModule = {
   skills: ['motor-planning', 'sorting', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [10],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Show {name} how to wiggle a finger behind the animals to send them home.',

@@ -1480,6 +1480,7 @@ export const SCRIPT = {
   'launch.wee': ['Wheee!', 'Boing!', 'Up we go!'],
   'launch.done': ['What a flyer!', 'Great bouncing!'],
   'herd.tap': ['Tap the {animals} to send them home!'],
+  'herd.shooone': ['Help the {animal} into its pen! Wiggle your finger behind it.'],
   'herd.shoo': ['Help the {animals} into their pen! Wiggle your finger behind them.'],
   'herd.sort': ['The {a} go in the {placeA}. The {b} go in the {placeB}!'],
   'herd.count': ['Put {n} {animals} in the pen, then ring the bell!'],
