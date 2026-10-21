@@ -76,6 +76,27 @@ export function needs(look: Look, strands: Strand[]): Fix | null {
   return null;
 }
 
+/** Seconds without progress (no stroke with the tool that helps) before a one-at-a-time request lights the tool that would help. */
+export const QUIET_HINT = 15;
+
+/** Whether this tool works on what the look still needs, so a touch with it counts as progress for the quiet-time hint. */
+export function helps(look: Look, strands: Strand[], tool: Tool): boolean {
+  const fix = needs(look, strands);
+  return fix !== null && toolFor(fix) === tool;
+}
+
+/**
+ * The line for a mirror check that is not done yet: when the asked colour is already on at least half the strands, "a little more pink"
+ * (with the strands still the old colour glowing) rather than a line that sounds as if the colour were wrong.
+ */
+export function moreLine(look: Look, strands: Strand[]): 'salon.more' | 'salon.more-color' {
+  const fix = needs(look, strands);
+  return fix && look.color === fix && stats(strands).share(fix) >= 0.5 ? 'salon.more-color' : 'salon.more';
+}
+
+/** The strands not yet the asked colour, which glow once she has been told about them. */
+export const oldStrands = (strands: Strand[], color: ColorName): number[] => strands.flatMap((s, i) => (s.color === color ? [] : [i]));
+
 /** Which tool fixes what. */
 export type Tool = 'grow' | 'cut' | 'comb' | 'curl' | ColorName;
 export const toolFor = (fix: Fix): Tool => (fix === 'longer' ? 'grow' : fix === 'shorter' ? 'cut' : fix === 'curlier' ? 'curl' : fix === 'straighter' ? 'comb' : fix);

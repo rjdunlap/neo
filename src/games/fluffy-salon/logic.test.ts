@@ -2,7 +2,7 @@ import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { bodyBox, restPoints } from '../../creatures/companion';
 import { SPECIES_IDS } from '../../creatures/species';
-import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, makeRequests, PIP_SCALP, scalpFor, MAX_LENGTH, MIN_LENGTH, needs, PLAY_STROKES, PLANS, REACH, SEG, salonMove, STRANDS, strandPoints, strokePath, TOUR, toolFor, touchStrands, type Pt, type SalonState, type Strand, type Tool } from './logic';
+import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, helps, makeRequests, moreLine, oldStrands, PIP_SCALP, QUIET_HINT, scalpFor, MAX_LENGTH, MIN_LENGTH, needs, PLAY_STROKES, PLANS, REACH, SEG, salonMove, STRANDS, strandPoints, strokePath, TOUR, toolFor, touchStrands, type Pt, type SalonState, type Strand, type Tool } from './logic';
 
 const head = (length: number, curl: number, color: Strand['color'], n = 20): Strand[] => Array.from({ length: n }, () => ({ length, curl, color }));
 
@@ -20,6 +20,29 @@ group('Fluffy Salon', () => {
         }
       }
     }
+  });
+
+  it('asks for a little more of a colour that is mostly there, and points at the strands still the old colour', () => {
+    const look = { color: 'pink' as const };
+    const mixed = (pink: number) => [...head(100, 0.3, 'pink', pink), ...head(100, 0.3, 'blue', 20 - pink)];
+    // A head that is barely pink hears the plain line; half or more pink hears "a little more", until the rule (80 %) is met.
+    expect(moreLine(look, mixed(4))).toBe('salon.more');
+    expect(moreLine(look, mixed(10))).toBe('salon.more-color');
+    expect(moreLine(look, mixed(15))).toBe('salon.more-color');
+    expect(needs(look, mixed(16))).toBeNull();
+    expect(oldStrands(mixed(15), 'pink')).toEqual([15, 16, 17, 18, 19]);
+    // When the length still needs work, the colour line waits for the colour to be what is missing.
+    expect(moreLine({ length: 'long', color: 'pink' }, mixed(15))).toBe('salon.more');
+    expect(moreLine({ length: 'long', color: 'pink' }, [...head(200, 0.3, 'pink', 15), ...head(200, 0.3, 'blue', 5)])).toBe('salon.more-color');
+  });
+
+  it('counts only a stroke with the tool that helps as progress for the quiet-time hint', () => {
+    const look = { length: 'long' as const, color: 'pink' as const };
+    expect(helps(look, head(60, 0.3, 'blue'), 'grow')).toBe(true);
+    for (const tool of ['cut', 'comb', 'curl', 'pink', 'blue'] as Tool[]) expect(helps(look, head(60, 0.3, 'blue'), tool), tool).toBe(false);
+    expect(helps(look, head(200, 0.3, 'blue'), 'pink')).toBe(true);
+    expect(helps(look, head(200, 0.3, 'blue'), 'grow')).toBe(false);
+    expect(helps(look, head(200, 0.3, 'pink'), 'pink')).toBe(false);
   });
 
   it('says what to fix first, and which tool fixes it', () => {
@@ -127,8 +150,8 @@ group('Fluffy Salon', () => {
             worst = Math.max(worst, time);
           }
         }
-        // The hint timer is 15 s on the one-at-a-time level; the other levels have none.
-        if (plan.mode === 'ask') expect(worst, `${plan.mode} at ${spacing}`).toBeLessThan(12);
+        // The quiet-time hint is QUIET_HINT on the one-at-a-time level (and every stroke resets it); the other levels have none.
+        if (plan.mode === 'ask') expect(worst, `${plan.mode} at ${spacing}`).toBeLessThan(QUIET_HINT - 3);
       }
     }
   }, 15_000);

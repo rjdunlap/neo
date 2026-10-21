@@ -14,7 +14,7 @@ import type { CompanionRig } from '../../creatures/companion';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, HAIR_COLORS, scalpFor, makeRequests, needs, planFor, salonMove, strandPoints, strokePath, toolFor, touchStrands, type Anchor, type Look, type Request, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
+import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, HAIR_COLORS, helps, scalpFor, makeRequests, moreLine, needs, oldStrands, planFor, QUIET_HINT, salonMove, strandPoints, strokePath, toolFor, touchStrands, type Anchor, type Look, type Request, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -37,15 +37,17 @@ function wearFur(pet: CompanionRig, hair: Graphics, scalp: Scalp) {
   else pet.attach(hair);
 }
 
-function drawHair(g: Graphics, an: Anchor[], strands: Strand[]) {
+function drawHair(g: Graphics, an: Anchor[], strands: Strand[], glow: number[] = [], glowAlpha = 1) {
   g.clear();
   strands.forEach((s, i) => {
     const pts = strandPoints(an[i], s);
     const sw = swatch[s.color];
-    for (const [width, color] of [[17, sw.line], [11, sw.fill]] as const) {
+    // A glowing strand's halo sits just under it, over the strands drawn before it, so it shows in a full head.
+    const layers = glow.includes(i) ? ([[32, 0xffd23f, glowAlpha], [17, sw.line, 1], [11, sw.fill, 1]] as const) : ([[17, sw.line, 1], [11, sw.fill, 1]] as const);
+    for (const [width, color, alpha] of layers) {
       g.moveTo(pts[0].x, pts[0].y);
       for (const p of pts.slice(1)) g.lineTo(p.x, p.y);
-      g.stroke({ width, color, cap: 'round', join: 'round' });
+      g.stroke({ width, color, alpha, cap: 'round', join: 'round' });
     }
   });
 }
@@ -143,6 +145,12 @@ class FluffySalon implements Game {
   private wrongs = 0;
   private sinceProgress = 0;
   private hintTool: Tool | null = null;
+  /** Once she has been told the colour is not all there yet, the strands still the old colour glow until they are painted. */
+  private oldGlow: ColorName | null = null;
+  /** When a pat that missed the fur last giggled, so a held or drumming finger does not giggle every frame. */
+  private lastPat = -1;
+  /** Free play's mirror has been offered aloud. */
+  private invited = false;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
 
   constructor(private readonly ctx: GameContext) {
@@ -164,7 +172,12 @@ class FluffySalon implements Game {
     this.touch.on('pointerdown', (e: FederatedPointerEvent) => {
       if (palmOnGlass() || this.busy || this.finished) return;
       this.pointer = e.pointerId;
-      this.work1(e);
+      // A touch that lands off the fur (the cape, the chair, the pet's body) is answered too: a giggle and a wobble.
+      if (!this.work1(e) && this.clock - this.lastPat > 0.4) {
+        this.lastPat = this.clock;
+        this.pet.poke(true);
+        sfx.giggle();
+      }
     });
     this.touch.on('globalpointermove', (e: FederatedPointerEvent) => e.pointerId === this.pointer && this.work1(e));
     const up = (e: { pointerId: number }) => e.pointerId === this.pointer && (this.pointer = null);
@@ -248,8 +261,9 @@ class FluffySalon implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    if (this.dirty) {
-      drawHair(this.hair, this.an, this.strands);
+    const glow = this.oldGlow ? oldStrands(this.strands, this.oldGlow) : [];
+    if (this.dirty || glow.length) {
+      drawHair(this.hair, this.an, this.strands, glow, 0.55 + 0.35 * Math.sin(this.clock * 6));
       this.dirty = false;
     }
     for (const b of this.buttons) {
@@ -258,13 +272,22 @@ class FluffySalon implements Game {
     }
     if (this.finished || this.busy) return;
     this.sinceProgress += dt;
-    // One-at-a-time requests: after a quiet while, light the tool that would help.
-    if (this.plan.mode === 'ask' && this.sinceProgress > 15 && !this.hintTool) this.hint();
-    if (!this.mirror.visible && (this.work > 40 || this.clock > 25)) {
+    // One-at-a-time requests: after a quiet while (no touch, no tool picked), light the tool that would help.
+    if (this.plan.mode === 'ask' && this.sinceProgress > QUIET_HINT && !this.hintTool) this.hint();
+    // Free play's mirror appears once there is something to see; at one-at-a-time requests there is no mirror.
+    const free = this.plan.mode === 'play' || this.plan.mode === 'tools';
+    if (free && !this.mirror.visible && (this.work > 40 || this.clock > 25)) {
       this.mirror.visible = true;
       this.mirror.scale.set(0);
       void this.ctx.tw.to(this.mirror.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.outBack });
+      // Free play's only exit says what it is for.
+      if (!this.invited) {
+        this.invited = true;
+        void this.instruct('salon.mirror');
+      }
     }
+    // In free play the mirror keeps inviting: a little wiggle every few seconds.
+    if (this.invited && this.mirror.visible) this.mirror.rotation = (this.clock % 4 < 0.6 ? Math.sin(this.clock * 20) * 0.18 : 0);
   }
 
   /**
@@ -307,18 +330,21 @@ class FluffySalon implements Game {
 
   private choose(tool: Tool, quiet = false) {
     this.tool = tool;
+    if (this.look && helps(this.look, this.strands, tool)) this.sinceProgress = 0;
     for (const b of this.buttons) b.setChosen(b.tool === tool);
     if (quiet) return;
     sfx.pop(6);
     void this.ctx.say(HAIR_COLORS.includes(tool as ColorName) ? (`color.${tool}` as `color.${ColorName}`) : (`salon.tool.${tool}` as 'salon.tool.grow'));
   }
 
-  /** The finger is in the fur: whichever strands it touches get the current tool. */
-  private work1(e: FederatedPointerEvent) {
+  /** The finger is in the fur: whichever strands it touches get the current tool. Returns how many it touched. */
+  private work1(e: FederatedPointerEvent): number {
     const p = this.hair.toLocal(e.global);
+    const progress = !!this.look && helps(this.look, this.strands, this.tool);
     const { touched, snipped } = touchStrands(this.tool, this.strands, this.an, p);
     for (const s of snipped) this.snipped(s.tip, s.color);
-    if (!touched) return;
+    if (!touched) return 0;
+    if (progress) this.sinceProgress = 0;
     this.dirty = true;
     this.work += touched;
     if (this.clock - this.lastSound > 0.12) {
@@ -328,6 +354,7 @@ class FluffySalon implements Game {
       else sfx.squish();
     }
     if (this.plan.mode === 'ask') this.checkAsk();
+    return touched;
   }
 
   /** A snipped bit of fluff tumbles away. */
@@ -343,6 +370,8 @@ class FluffySalon implements Game {
     this.request++;
     this.wrongs = 0;
     this.hintTool = null;
+    this.oldGlow = null;
+    this.dirty = true;
     this.sinceProgress = 0;
     const r = this.requests[this.request];
     if (!r) return void this.finale();
@@ -404,7 +433,9 @@ class FluffySalon implements Game {
     this.wrongs++;
     sfx.boing();
     this.pet.poke(true);
-    await this.ctx.say('salon.more', { fix });
+    const line = moreLine(look, this.strands);
+    if (line === 'salon.more-color') this.oldGlow = look.color ?? null;
+    await this.ctx.say(line, { fix });
     if (this.wrongs >= 2 && !this.hintTool) this.hint();
     this.busy = false;
   }
@@ -414,6 +445,7 @@ class FluffySalon implements Game {
     const fix = look && needs(look, this.strands);
     if (!fix) return;
     this.hintTool = toolFor(fix);
+    if (fix === look.color) this.oldGlow = fix;
     this.hints++;
   }
 
