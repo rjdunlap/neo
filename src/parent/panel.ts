@@ -117,6 +117,7 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
         <span>Hear the voice say the name</span>
         <button class="btn" data-test-voice>Play</button>
       </div>
+      <p class="muted" data-voice-note></p>
 
       <h2>This week</h2>
       <div data-week></div>
@@ -196,6 +197,7 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
     if (undoAt !== null) $('[data-undo-note]').textContent = `Their progress from before ${clock(undoAt)} is kept, so a reset or restore can be undone. Undoing twice puts it back the way it is now.`;
     root.querySelectorAll<HTMLButtonElement>('[data-band]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.band === store.data.profile.band)));
     $('[data-week]').innerHTML = weekSummary();
+    $('[data-voice-note]').textContent = voiceNote();
     root.querySelectorAll<HTMLSelectElement>('[data-pin]').forEach((sel) =>
       sel.addEventListener('change', () => {
         store.pin(sel.dataset.pin!, sel.value ? Number(sel.value) : null);
@@ -351,6 +353,16 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
   $('[data-done]').addEventListener('click', () => void close());
   window.addEventListener('keydown', onKey);
   document.body.appendChild(root);
+}
+
+/** Which device voice speaks, and how to get a clearer one; the voice belongs to the device, not to a player. */
+function voiceNote(): string {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return 'This browser has no speech, so the voice stays quiet here.';
+  const now = voice.current();
+  const shared = 'The voice comes from this device, so it is the same for every player.';
+  if (now && now.quality !== 'standard') return `Speaking: ${now.name}, a downloaded ${now.quality === 'premium' ? 'Premium' : 'Enhanced'} voice. ${shared}`;
+  const who = now ? `Speaking: ${now.name}, the device's standard voice.` : "Speaking: the device's default voice.";
+  return `${who} ${shared} For a clearer voice on an iPad, open Settings → Accessibility → Spoken Content → Voices → English, download a voice marked Enhanced or Premium (Ava, Zoe or Samantha), then close and reopen Puddle Island.`;
 }
 
 function weekSummary(): string {
