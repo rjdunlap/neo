@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { chainTouch, hintFor, makeBoard, makeBoards, PLANS, planFor, predictedBell, PREDICT_PLAN, solutions, trace, turnHint, turnSolutions, TURN_PLAN, TAP_TO_TURN, WHICH_BELL } from './logic';
+import { chainTouch, hintFor, makeBoard, makeBoards, PLANS, planFor, predictedBell, PREDICT_PLAN, rampsMet, solutions, trace, traces, turnHint, turnSolutions, TURN_PLAN, TAP_TO_TURN, TWO_MARBLES, TWO_PLAN, WHICH_BELL, works, type Layout } from './logic';
 
 describe('Chain Reaction', () => {
   it('level 7 starts unsolved and has an exact working flip set for every seeded machine', () => {
@@ -199,5 +199,98 @@ describe('Chain Reaction', () => {
     const board = makeBoard(PREDICT_PLAN, new Rng(4));
     expect(hintFor(board, [])).toBeNull();
     expect(chainTouch(board, [])).toEqual({ kind: 'run' });
+  });
+
+  it('level 9 gives every seeded machine two marbles that need one shared design', () => {
+    expect(planFor(TWO_MARBLES)).toBe(TWO_PLAN);
+    for (let seed = 0; seed < 300; seed++) {
+      const boards = makeBoards(TWO_PLAN, new Rng(seed));
+      expect(makeBoards(TWO_PLAN, new Rng(seed))).toEqual(boards);
+      for (const board of boards) {
+        const blue = board.blue!;
+        expect(blue.start).not.toBe(board.start);
+        expect(blue.target).not.toBe(board.target);
+        expect(blue.target).toBeGreaterThanOrEqual(0);
+        expect(blue.target).toBeLessThan(board.cols);
+        expect(board.chime).toBeUndefined();
+        expect(works(board, [null, null])).toBe(false);
+        const ways = solutions(board);
+        expect(ways.length).toBeGreaterThanOrEqual(TWO_PLAN.solutions.min);
+        expect(ways.length).toBeLessThanOrEqual(TWO_PLAN.solutions.max);
+        expect(works(board, board.solution)).toBe(true);
+        for (const way of ways) {
+          const [red, bl] = traces(board, way);
+          expect(red).toMatchObject({ success: true, end: board.target });
+          expect(bl).toMatchObject({ success: true, end: blue.target });
+        }
+        // In every accepted design each marble meets a loose ramp of its own, their ways never share a cell, and a spare
+        // socket sits on one of the ways, so a ramp put there for one marble would knock the other off course.
+        for (const way of ways) {
+          const [red, bl] = traces(board, way);
+          const [redMet, blueMet] = [red, bl].map(rampsMet);
+          expect(redMet.size).toBeGreaterThan(0);
+          expect(blueMet.size).toBeGreaterThan(0);
+          expect([...redMet].some((piece) => blueMet.has(piece))).toBe(false);
+          expect(red.steps.some((a) => bl.steps.some((b) => a.row === b.row && a.col === b.col))).toBe(false);
+          expect(board.sockets.some((cell, i) => !way.includes(i) && [...red.steps, ...bl.steps].some((st) => st.row === cell.row && st.col === cell.col))).toBe(true);
+        }
+        // Solving for one marble alone is not enough: some placement rings one bell while the other marble misses.
+        let redOnly = false, blueOnly = false;
+        for (let a = 0; a < board.sockets.length; a++) for (let b = 0; b < board.sockets.length; b++) {
+          if (a !== b && trace(board, [a, b]).success && !trace(board, [a, b], [], 1).success) redOnly = true;
+          if (a !== b && !trace(board, [a, b]).success && trace(board, [a, b], [], 1).success) blueOnly = true;
+        }
+        expect([redOnly, blueOnly]).toEqual([true, true]);
+      }
+    }
+  });
+
+  it('level 9 hints point at the marble that missed and the bot finishes with a run that rings both bells', () => {
+    for (let seed = 0; seed < 120; seed++) {
+      const board = makeBoard(TWO_PLAN, new Rng(seed));
+      // From every two-socket placement, following hints reaches a working design within a few steps.
+      for (let a = 0; a < board.sockets.length; a++) for (let b = 0; b < board.sockets.length; b++) {
+        if (a === b) continue;
+        const layout: Layout = [a, b];
+        const missed = traces(board, layout).findIndex((t) => !t.success);
+        const first = hintFor(board, layout);
+        if (missed < 0) { expect(first).toBeNull(); continue; }
+        expect(first).not.toBeNull();
+        // The glowing ramp matters to the marble that missed: it is in that marble's way now, or that marble meets it in a
+        // working design that keeps the hinted placement.
+        const pointsAtMissed = traces(board, layout)[missed].steps.some((st) => st.loose === first!.piece) || Array.from({ length: board.sockets.length }, (_, other) => other).some((other) => {
+          if (other === first!.socket) return false;
+          const way: Layout = first!.piece === 0 ? [first!.socket, other] : [other, first!.socket];
+          return works(board, way) && traces(board, way)[missed].steps.some((st) => st.loose === first!.piece);
+        });
+        expect(pointsAtMissed).toBe(true);
+        for (let step = 0; step < 4 && !works(board, layout); step++) {
+          const hint = hintFor(board, layout)!;
+          const other = layout.findIndex((s, i) => i !== hint.piece && s === hint.socket);
+          if (other >= 0) layout[other] = null;
+          layout[hint.piece] = hint.socket;
+        }
+        // A hint may empty a socket another ramp held; the bot then puts that ramp back.
+        for (let step = 0; step < 4; step++) {
+          const move = chainTouch(board, layout);
+          if (!move || move.kind === 'run') break;
+          if (move.kind === 'place') {
+            const other = layout.findIndex((s, i) => i !== move.piece && s === move.socket);
+            if (other >= 0) layout[other] = null;
+            layout[move.piece] = move.socket;
+          }
+        }
+        expect(chainTouch(board, layout)).toEqual({ kind: 'run' });
+        expect(works(board, layout)).toBe(true);
+      }
+      // The bot starts from an empty tray too.
+      const layout: Layout = [null, null];
+      for (let step = 0; step < 4; step++) {
+        const move = chainTouch(board, layout);
+        if (!move || move.kind !== 'place') break;
+        layout[move.piece] = move.socket;
+      }
+      expect(chainTouch(board, layout)).toEqual({ kind: 'run' });
+    }
   });
 });

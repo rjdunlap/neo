@@ -45,3 +45,11 @@
 - Dev server http://localhost:5956: `BROWSER_SUITE=fossildig` passed (level 1 early flag free, wrong flag and wrong leaf = 2 misses; level 2 requested hint twice = 1 hint, wrong leaf 1 miss; portrait screenshot with the magnifier). `BROWSER_SUITE=fingerdemo FINGER_ONLY=fossil-dig FINGER_LEVELS=1,2` passed (14.3 s, 19.0 s).
 - Not run: the offline check, `world`, any iPad or child.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): the dusty stone read as "rub me", teeth before the magnifier, the flag-of-the-square idea without the pet's line, device speech of the leaf names.
+
+## 2026-10-21 — Lost Layers levels 1–2
+
+- Built on `claude/lost-layers` ([PR #697](https://github.com/rjdunlap/neo/pull/697)): new game `lost-layers` in Bubble Beach (now 9 games), school levels 1–2 ([definition](../definitions/lost-layers.md)); deviations are in the [archive note](COMPLETED-2026-10-09.md#lost-layers-levels-12-2026-10-21).
+- `npm run typecheck` clean; `npm test` 196 files, 2173 tests passed (24 new rule tests: columns, validity over all 120 triples, level-1 ambiguity, level-2 resolution, ties iff valid, scripted rounds, glows finish their steps, layout at four views). `npm run build` passed.
+- Dev server http://localhost:5554: `BROWSER_SUITE=lostlayers` passed (level 1 red It fits = 1 miss, Can't tell hidden then free, one-story claim = 2nd miss with the other fit stamped, requested hint twice = 1 hint, bot 2/1; level 2 free preview, wavy look = 1 miss, bot 1/0; portrait level 2 with the lens open and landscape screenshots). `BROWSER_SUITE=fingerdemo FINGER_ONLY=lost-layers FINGER_LEVELS=1,2` passed (12.1 s, 10.0 s).
+- Not run: the offline check, `world`, any iPad or child.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): wavy line read as missing rock, Can't tell as honest, dragging a 180x100 piece, device speech of creature names and "Shell Cove".

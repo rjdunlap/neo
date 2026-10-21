@@ -86,9 +86,11 @@ Appended IDs 7–10, never renumbered. Level 7 and 8 are easy entries and are pl
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 7 | Tap to turn | preschool 1–2; pre-K 1–3 (entry) | Three rows, one fixed ramp, ramps already placed in two sockets, each showing its direction; tap a ramp to flip it | Which ramp to flip so the marble hits the bell | A wrong run is a free run with the trail; hint glows the ramp to flip; counts a hint | Every seed has at least one flip set that rings the bell; the no-flip state does not; hint points to a ramp that flips toward a working set | New `mode: 'turn'` in the plan; tapping uses `onTap`; the ghost finger taps the flip. New how-to step line scoped to 7–8; art: no new art (flip animation of the groove) |
 | 8 | Which bell? | preschool 2–3; pre-K 1–4 (entry) | A finished fixed machine, no loose parts, three bells at the bottom; tap the bell you think it will ring, then press run | A prediction | No wrong answer. A mismatch just says where it landed and the trail shows why; the hint is "follow the marble with your finger" (no counted hint) | The machine's `trace().end` is one of the bell columns and the bells are all reachable; a prediction never records a miss | Reuses `trace`; three bell props; a "predict" label; a how-to line; bot taps the correct bell then run |
-| 9 | Two marbles | pre-K 5; school 3–7 | A red and a blue marble, two bells (red and blue), a shared board | One placement that sends each marble to its bell; the same ramp affects both | Hint glows the part that matters for the marble that missed | `solutions` filters on both traces; no seed has the same ramp serve both only trivially; at least one solution requires different sockets | `trace` gets a second start; draws a second marble; new voice lines; bot unchanged but plays both runs; art: blue marble swatch |
+| 9 | Two marbles | school 3–9 (top, order 3, 4, 5, 6, 9); pre-K unchanged, see the note below | A red and a blue marble, two bells (red and blue), a shared board | One placement that sends each marble to its bell; a ramp pool shared by both; a spare socket on one marble's way can knock the other off course (built; one ramp cannot serve both, because two marbles in one cell fall the same way after it) | Hint glows the part that matters for the marble that missed | `solutions` filters on both traces; no seed has the same ramp serve both only trivially; at least one solution requires different sockets | `trace` gets a second start; draws a second marble; new voice lines; bot unchanged but plays both runs; art: blue marble swatch |
 | 10 | Springboard | school 5–8 | A spring part that sends the marble two rows down | Place a ramp so the marble lands on the spring column | Hint glows the spring column; a miss says where it landed | Spring skips exactly one row; solution enumeration remains exact; the fixed part cannot be placed on the last row | New part kind in `trace()`; new art; journal "the spring skips a row" discovery (a test that its voice line matches data) |
 | 11 | The chime opens the gate | school 6–8 | A gate fixed ramp that exists only after the marble touches the chime | Plan so the chime comes first, then the gate-turned path | A miss that never opens the gate says so; the hint shows the chime's cell | `trace` records the order; solvable; the no-chime path fails | A conditional in `trace()`; a gate prop; chime ordering is already tracked |
+
+Level 9 was built at the school top only; the "pre-K 5" window is ambiguous because the pre-K ladder ends at 3, so pre-K is unchanged and any pre-K opening stays an open choice.
 
 Level 12 and beyond (a machine she builds on an open board and keeps) is a creation-slot proposal; see decisions.
 
@@ -124,12 +126,14 @@ Levels 7 and 8 are appended IDs that are easier than 1. Place them with `order` 
 3. **Level 7, Tap to turn.** (built 2026-10-16, branch `codex/chain-reaction-tap-turn`, [PR #448](https://github.com/rjdunlap/neo/pull/448)). Two preplaced tappable ramps, a fixed wooden ramp, solver-backed flips/hints and ghost-finger taps. Pre-K order `[7, 8, 1, 2, 3]`, entry IDs `[7, 8]`; school 3–6 and supported bands unchanged. Younger openings and other decisions remain open. [Build note](../archive/COMPLETED-2026-10-09.md#chain-reaction-level-7-tap-to-turn-2026-10-16).
 4. **Decision 1** if approved: `tries` stat feeding the difficulty step. Tier: shell and save contracts (typecheck, unit tests, build).
 5. **Cargo and goal skins, note per ramp.** Tier: typecheck and one screenshot.
-6. **Level 9, Two marbles.** Tier: rule tests and one play.
+6. **Level 9, Two marbles.** Tier: rule tests and one play. (built 2026-10-21, branch `claude/chain-reaction-two-marbles`, [PR #715](https://github.com/rjdunlap/neo/pull/715)) A red and a blue marble on one 5x4 board; success needs both to ring their own bell; school order `[3, 4, 5, 6, 9]`. [Build note](../archive/COMPLETED-2026-10-09.md#chain-reaction-level-9-two-marbles-2026-10-21).
 7. **Level 10, Springboard.** Tier: rule tests, one play, `fingerdemo`.
 8. **Level 11, The chime opens the gate.** Tier: the same.
 9. **A kept "My machine"** only after decision 4.
 
 ## What was built in this session
+
+**Slice 6, level 9 Two marbles (built 2026-10-21, branch `claude/chain-reaction-two-marbles`, PR #715).** See the slice list above and the [build note](../archive/COMPLETED-2026-10-09.md#chain-reaction-level-9-two-marbles-2026-10-21).
 
 The deep-dive session itself built nothing (research and ideation only; links and `git diff --check` ran).
 

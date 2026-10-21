@@ -29,6 +29,8 @@ export interface ChainPlan {
   turn?: boolean;
   /** A finished machine with several bells: she predicts which one rings, then runs it. Nothing is placed. */
   predict?: { bells: number; offPath: number };
+  /** A blue marble shares the board with the red one; one placement must send each to its own bell. */
+  two?: boolean;
 }
 
 export const PLANS: ChainPlan[] = [
@@ -53,7 +55,15 @@ export const TURN_PLAN: ChainPlan = {
   solutions: { min: 1, max: 4 }, machines: 2, turn: true,
 };
 
-export const planFor = (level: number): ChainPlan => level === TAP_TO_TURN ? TURN_PLAN : level === WHICH_BELL ? PREDICT_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+/** Level 9, school: a red and a blue marble run the same machine, so each ramp is placed for both of them. */
+export const TWO_MARBLES = 9;
+export const TWO_PLAN: ChainPlan = {
+  name: 'Two marbles: each one rings the bell of its own colour', cols: 5, rows: 4, fixed: 1, loose: 2, decoys: 3, chime: false,
+  solutions: { min: 1, max: 3 }, machines: 2, two: true,
+};
+
+const SPECIAL: Record<number, ChainPlan> = { [TAP_TO_TURN]: TURN_PLAN, [WHICH_BELL]: PREDICT_PLAN, [TWO_MARBLES]: TWO_PLAN };
+export const planFor = (level: number): ChainPlan => SPECIAL[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** One socket index per loose ramp; null means that ramp is still in the tray. */
 export type Layout = (number | null)[];
@@ -74,7 +84,12 @@ export interface ChainBoard {
   bells?: number[];
   /** Preplaced coloured ramps; each boolean in the turn state reverses one groove. */
   turn?: FixedRamp[];
+  /** Level 9's blue marble: its own cup and its own bell on the same board. `start`/`target` above are the red marble's. */
+  blue?: { start: number; target: number };
 }
+
+/** Which marble a trace follows: 0 is the red marble (every level), 1 the blue one at level 9. */
+export type Marble = 0 | 1;
 
 export interface TraceStep extends Cell {
   ramp?: Ramp;
@@ -95,8 +110,10 @@ const sameCell = (a: Cell, b: Cell) => a.row === b.row && a.col === b.col;
 const delta = (r: Ramp) => (r === 'left' ? -1 : 1);
 
 /** Follow the marble through a placement. It is deterministic, so run, hints and tests use one rule. */
-export function trace(board: ChainBoard, layout: Layout, flipped: boolean[] = []): Trace {
-  let col = board.start;
+export function trace(board: ChainBoard, layout: Layout, flipped: boolean[] = [], marble: Marble = 0): Trace {
+  const blue = marble === 1 && board.blue;
+  let col = blue ? blue.start : board.start;
+  const target = blue ? blue.target : board.target;
   let chimed = false;
   const steps: TraceStep[] = [];
   let escaped = false;
@@ -123,8 +140,16 @@ export function trace(board: ChainBoard, layout: Layout, flipped: boolean[] = []
       break;
     }
   }
-  return { steps, end: col, chime: chimed, success: !escaped && col === board.target && (!board.chime || chimed), escaped };
+  return { steps, end: col, chime: chimed, success: !escaped && col === target && (!board.chime || chimed), escaped };
 }
+
+/** One trace per marble on the board: the red marble, then the blue one at level 9. */
+export const traces = (board: ChainBoard, layout: Layout, flipped: boolean[] = []): Trace[] =>
+  board.blue ? [trace(board, layout, flipped, 0), trace(board, layout, flipped, 1)] : [trace(board, layout, flipped)];
+
+/** The machine works only when every marble on it rings its own bell. Run, hints, the bot and tests all use this. */
+export const works = (board: ChainBoard, layout: Layout, flipped: boolean[] = []): boolean =>
+  traces(board, layout, flipped).every((t) => t.success);
 
 function layouts(piece: number, sockets: number, work: Layout, used: Set<number>, out: Layout[]) {
   if (piece === work.length) {
@@ -143,7 +168,7 @@ function layouts(piece: number, sockets: number, work: Layout, used: Set<number>
 function workingLayouts(board: ChainBoard): number[][] {
   const all: Layout[] = [];
   layouts(0, board.sockets.length, Array<number | null>(board.loose.length).fill(null), new Set(), all);
-  return all.filter((layout) => trace(board, layout).success) as number[][];
+  return all.filter((layout) => works(board, layout)) as number[][];
 }
 
 /**
@@ -173,18 +198,27 @@ function closestWorkingLayout(board: ChainBoard, layout: Layout): number[] | nul
 
 /** A hint keeps as much of the child's current design as possible, then points to one change. */
 export function hintFor(board: ChainBoard, layout: Layout): { piece: number; socket: number } | null {
-  if (trace(board, layout).success) return null;
+  if (works(board, layout)) return null;
   const way = closestWorkingLayout(board, layout);
   if (!way) return null;
-  const piece = way.findIndex((socket, i) => layout[i] !== socket);
-  return piece < 0 ? null : { piece, socket: way[piece] };
+  const differs = way.map((socket, i) => (layout[i] !== socket ? i : -1)).filter((i) => i >= 0);
+  if (!differs.length) return null;
+  // With two marbles, point first to a ramp that matters to the marble that missed: one in its way now (perhaps placed
+  // for the other marble), or one it meets in the working design.
+  const now = traces(board, layout);
+  const after = traces(board, way);
+  const missed = now.findIndex((t) => !t.success);
+  const meets = (t: Trace, piece: number) => t.steps.some((step) => step.loose === piece);
+  const onMissedPath = missed >= 0 ? differs.find((piece) => meets(now[missed], piece) || meets(after[missed], piece)) : undefined;
+  const piece = onMissedPath ?? differs[0];
+  return { piece, socket: way[piece] };
 }
 
 /** All accepted flip states. Only the two preplaced ramps can change. */
 export function turnSolutions(board: ChainBoard): boolean[][] {
   return Array.from({ length: 2 ** (board.turn?.length ?? 0) }, (_, mask) =>
     (board.turn ?? []).map((_, i) => !!(mask & (1 << i))))
-    .filter((flipped) => trace(board, [], flipped).success);
+    .filter((flipped) => works(board, [], flipped));
 }
 
 /** Keep the nearest working state and name one ramp that needs turning. */
@@ -201,12 +235,15 @@ export type ChainTouch = { kind: 'flip'; piece: number } | { kind: 'place'; piec
 export function chainTouch(board: ChainBoard, layout: Layout, flipped: boolean[] = []): ChainTouch | null {
   if (board.turn) {
     const piece = turnHint(board, flipped);
-    return piece !== null ? { kind: 'flip', piece } : trace(board, [], flipped).success ? { kind: 'run' } : null;
+    return piece !== null ? { kind: 'flip', piece } : works(board, [], flipped) ? { kind: 'run' } : null;
   }
+  const hint = hintFor(board, layout);
+  if (hint) return { kind: 'place', ...hint };
+  // A part-built machine can already work; the run still needs every ramp in a socket, so finish the nearest design.
   const way = closestWorkingLayout(board, layout);
   const piece = way?.findIndex((socket, i) => layout[i] !== socket) ?? -1;
   if (way && piece >= 0) return { kind: 'place', piece, socket: way[piece] };
-  return layout.every((socket) => socket !== null) && trace(board, layout).success ? { kind: 'run' } : null;
+  return layout.every((socket) => socket !== null) && works(board, layout) ? { kind: 'run' } : null;
 }
 
 function key(c: Cell) {
@@ -225,12 +262,13 @@ export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
     const board: ChainBoard = { ...base, loose: [], sockets: [], solution: [], turn };
     // Choose an unsolved starting state without changing the authored, reachable bell.
     const wrong = Array.from({ length: 2 ** turn.length }, (_, mask) => turn.map((_, i) => !!(mask & (1 << i))))
-      .filter((flipped) => !trace(board, [], flipped).success);
+      .filter((flipped) => !works(board, [], flipped));
     const initial = rng.pick(wrong);
     turn.forEach((part, i) => { if (initial[i]) part.ramp = part.ramp === 'left' ? 'right' : 'left'; });
     return board;
   }
   if (plan.predict) return makePredictBoard(plan, plan.predict, rng);
+  if (plan.two) return makeTwoBoard(plan, rng);
   for (let attempt = 0; attempt < 800; attempt++) {
     const rows = rng.shuffle(Array.from({ length: plan.rows }, (_, row) => row));
     const looseRows = new Set(rows.slice(0, plan.loose));
@@ -272,11 +310,93 @@ export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
     const ways = solutions(board);
     if (ways.length < plan.solutions.min || ways.length > plan.solutions.max) continue;
     // The stored layout must be one of the accepted ways, and taking every loose ramp away must not solve it.
-    if (!trace(board, solution).success || trace(board, Array(loose.length).fill(null)).success) continue;
+    if (!works(board, solution) || works(board, Array(loose.length).fill(null))) continue;
     board.solution = ways[0];
     return board;
   }
   throw new Error(`could not make a Chain Reaction board for ${plan.name}`);
+}
+
+/** The loose ramps (by piece) that a marble meets on its way down. */
+export const rampsMet = (t: Trace): Set<number> => new Set(t.steps.flatMap((step) => (step.loose === undefined ? [] : [step.loose])));
+
+/**
+ * Level 9: two marbles on one board. Each marble's own way down needs one loose ramp, and one fixed ramp sits on one of
+ * them. The two ways never share a cell (two marbles in one cell would fall the same way from there on, so they could
+ * never ring different bells). At least one empty socket lies on a marble's way, so a ramp put there for the other marble
+ * knocks this one off course: she plans for both. Some placement rings one bell while the other marble misses.
+ */
+function makeTwoBoard(plan: ChainPlan, rng: Rng): ChainBoard {
+  for (let attempt = 0; attempt < 800; attempt++) {
+    const rows = Array.from({ length: plan.rows }, (_, row) => row);
+    const redRow = rng.pick(rows);
+    const blueRow = rng.pick(rows);
+    const fixedRow = rng.pick(rows.filter((r) => r !== redRow && r !== blueRow));
+    const fixedOn: Marble = rng.chance(0.5) ? 0 : 1;
+    const starts = rng.shuffle(Array.from({ length: plan.cols }, (_, c) => c));
+    const cols = [starts[0], starts[1]];
+    const begin = cols.slice();
+    const paths: Cell[][] = [[], []];
+    const fixed: FixedRamp[] = [];
+    const correct: Cell[] = [];
+    const loose: Ramp[] = [];
+    let ok = true;
+    for (let row = 0; row < plan.rows && ok; row++) {
+      for (const m of [0, 1] as Marble[]) {
+        const col = cols[m];
+        paths[m].push({ row, col });
+        const own = m === 0 ? redRow : blueRow;
+        if (row !== own && !(row === fixedRow && m === fixedOn)) continue;
+        const options: Ramp[] = [];
+        if (col > 0) options.push('left');
+        if (col < plan.cols - 1) options.push('right');
+        const ramp = rng.pick(options);
+        if (row === own) { loose[m] = ramp; correct[m] = { row, col }; } else fixed.push({ row, col, ramp });
+        cols[m] += delta(ramp);
+      }
+      if (cols[0] === cols[1]) ok = false;
+    }
+    if (!ok || paths[0].some((a) => paths[1].some((b) => sameCell(a, b)))) continue;
+    if (cols[0] === begin[0] || cols[1] === begin[1]) continue;
+
+    const occupied = new Set([...fixed, ...correct].map(key));
+    const onWay = new Set([...paths[0], ...paths[1]].map(key));
+    const free = rng.shuffle(Array.from({ length: plan.rows * plan.cols }, (_, i) => ({ row: Math.floor(i / plan.cols), col: i % plan.cols }))
+      .filter((cell) => !occupied.has(key(cell))));
+    const crossing = free.find((cell) => onWay.has(key(cell)));
+    if (!crossing) continue;
+    const sockets = [...correct, crossing, ...free.filter((cell) => cell !== crossing).slice(0, plan.decoys - 1)];
+    if (sockets.length < plan.loose + plan.decoys) continue;
+    rng.shuffle(sockets);
+    const solution = correct.map((cell) => sockets.findIndex((s) => sameCell(s, cell)));
+    const board: ChainBoard = { cols: plan.cols, rows: plan.rows, start: begin[0], target: cols[0], fixed, loose, sockets, solution, blue: { start: begin[1], target: cols[1] } };
+    const ways = solutions(board);
+    if (ways.length < plan.solutions.min || ways.length > plan.solutions.max) continue;
+    if (!works(board, solution) || works(board, Array(loose.length).fill(null))) continue;
+    if (!oneBellOnly(board, 0) || !oneBellOnly(board, 1) || !ways.every((way) => plansForBoth(board, way))) continue;
+    board.solution = ways[0];
+    return board;
+  }
+  throw new Error(`could not make a Chain Reaction board for ${plan.name}`);
+}
+
+/** In a working design each marble meets a ramp of its own, the two ways share no cell, and a spare socket sits on a way. */
+function plansForBoth(board: ChainBoard, way: number[]): boolean {
+  const [red, blue] = traces(board, way);
+  const [redMet, blueMet] = [rampsMet(red), rampsMet(blue)];
+  if (!redMet.size || !blueMet.size || [...redMet].some((piece) => blueMet.has(piece))) return false;
+  if (red.steps.some((a) => blue.steps.some((b) => sameCell(a, b)))) return false;
+  return board.sockets.some((cell, i) => !way.includes(i) && [...red.steps, ...blue.steps].some((step) => sameCell(step, cell)));
+}
+
+/** Some full placement rings this marble's bell while the other marble misses. */
+function oneBellOnly(board: ChainBoard, marble: Marble): boolean {
+  const all: Layout[] = [];
+  layouts(0, board.sockets.length, Array<number | null>(board.loose.length).fill(null), new Set(), all);
+  return all.some((layout) => {
+    const t = traces(board, layout);
+    return t[marble].success && !t[1 - marble].success;
+  });
 }
 
 /**

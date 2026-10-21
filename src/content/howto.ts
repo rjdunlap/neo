@@ -1603,7 +1603,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'chain-reaction': {
-    goal: 'Predict and plan where a marble will go: build the ramps so it rings the big bell, or say which bell a finished machine rings.',
+    goal: 'Predict and plan where a marble will go: build the ramps so it rings the big bell (or each marble its own bell), or say which bell a finished machine rings.',
     steps: [
       { from: 7, to: 7, text: 'Tap a coloured ramp to flip its direction. The wooden ramp stays fixed.' },
       { from: 7, to: 7, text: 'Tap the green arrow to test the machine. The red trail shows the last run; tap the blue cup to watch it again.' },
@@ -1614,11 +1614,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 1, to: 6, text: 'Drag every loose ramp into a round socket.' },
       { from: 1, to: 6, text: 'Tap the green arrow to run the machine and watch what each ramp changes; a faint red trail stays behind, and tapping the blue cup shows the run again.' },
       { from: 1, to: 6, text: 'Move one ramp and run it again, or tap the yellow light bulb for one useful placement.' },
+      { from: 9, to: 9, text: 'Drag both loose ramps into round sockets so the red marble reaches the red bell and the blue marble the blue bell.' },
+      { from: 9, to: 9, text: 'Tap the green arrow: red runs, then blue. Each leaves a faint trail; tap a cup to watch again.' },
+      { from: 9, to: 9, text: 'A ramp in the wrong socket can knock the other marble off course. Move a ramp, or tap the light bulb to glow one for the marble that missed.' },
     ],
     finish: [
       { from: 7, to: 7, text: 'The round ends after both machines ring their bells.' },
       { from: 8, to: 8, text: 'The round ends after three machines have run, whichever bell each one rang.' },
       { from: 1, to: 6, text: 'The round ends after both machines ring their bells.' },
+      { from: 9, to: 9, text: 'The round ends after both machines send each marble to its own bell.' },
     ],
     note: [
       { from: 7, to: 7, text: 'Experimental runs are free. Requested help counts as a hint; the ramps stay in their sockets.' },
