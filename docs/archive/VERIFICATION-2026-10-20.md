@@ -337,3 +337,11 @@
 - `npm run typecheck` and `npx vitest run src/games/song-maker src/content src/games/registry` passed (new test: ten distinct shapes, each at least two rows, unique names and ids, a voice line each, all ten seen over 200 seeds).
 - One portrait 768×1024 screenshot of level 6 on `http://localhost:5991/classic/`: no page errors; grid and given first bar shown.
 - Not run: build, browser suites, `fingerdemo` (bot unchanged), device speech check of the new lines.
+
+## 2026-10-20 — Pile Match levels 1–8
+
+- Built on `claude/pile-match` ([PR #680](https://github.com/rjdunlap/neo/pull/680), commit `7b34ea3a` on base origin/main `49c780a7`): new game `pile-match` in Counting Cove, levels 1–8 on the definition's defaults, new `pilematch` browser suite.
+- Ran `npm run typecheck` (clean), full `npm test` (188 files, 2012 tests pass; 13 new rule tests: free-piece monotonicity, take/put-back/tray, frozen shapes, every dealt board clears along its route, same seed same board, level 3 never fills and 4+ can, the asked kind always has a free piece, hints legal and non-looping, the fallback alone clears, the level 8 worst hint at 0.1 ms, layout at four views) and `npm run build`.
+- `BROWSER_SUITE=pilematch` (Vite http://localhost:5509) passed: level 1 with one wrong-kind tap (one miss, nothing taken) solved by taps, sticker; level 8 with the tray filled to five, a refused tap twice (one miss), three put-backs (free, one hint), solved, sticker; portrait screenshot `test-results/browser/pile-match-8-portrait.png`. `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match` passed (level 1 in 9.6 s, level 8 in 36.1 s).
+- Follow-up on the same branch, after review: a resize or a Start again during a flight now waits for it to land, as Jar Sort's does (killing the flight's tween had left the round busy for good). `pilematch` gained a mid-flight resize check, saw it time out with the old rule, and passed again with the fix. Typecheck is clean; fingerdemo was not rerun because the bot path is unchanged.
+- Not run: the offline check, `world` and other suites, an iPad, a child. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a three-year-old reads the dimmed pieces as underneath, piece legibility at 24 pieces, whether put-back is found without the hint.

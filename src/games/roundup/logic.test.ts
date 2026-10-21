@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { animalsFor, enter, fleeSpeed, FOLLOW_SPEED, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted } from './logic';
+import { animalsFor, enter, fleeSpeed, FOLLOW_SPEED, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, pensFull, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted } from './logic';
 
 describe('Roundup', () => {
   it('gives Shoo one two successes, ordinary flee steering and a wider accepting gate', () => {
@@ -20,9 +20,32 @@ describe('Roundup', () => {
       expect(herd.animals.every((kind) => enter(herd.pens[0], kind) === 'in')).toBe(true);
       expect(wanted(herd, herd.pens[0])).toBe(2);
     }
-    // Existing IDs retain their plans; no placeholder levels 7–9 are introduced.
+    // Existing IDs retain their plans.
     expect(planFor(6)).toBe(PLANS[5]);
-    expect(planFor(7)).toBe(PLANS[5]);
+    expect(planFor(7)).toBe(PLANS[6]);
+  });
+
+  it('leaves cows outside while both nonempty pens can be completed, for every seed', () => {
+    const plan = planFor(7);
+    expect(plan.mode).toBe('sortStay');
+    for (let seed = 1; seed <= 300; seed++) {
+      const herd = makeHerd(plan, new Rng(seed));
+      expect(makeHerd(plan, new Rng(seed))).toEqual(herd);
+      expect(herd.stay).toBe('cow');
+      expect(herd.animals).toHaveLength(6);
+      expect(new Set(herd.pens.map((p) => p.kind)).size).toBe(2);
+      expect(herd.pens.every((p) => p.kind !== herd.stay)).toBe(true);
+      for (const kind of ['pig', 'bunny', 'cow']) expect(herd.animals.filter((k) => k === kind)).toHaveLength(2);
+      for (const pen of herd.pens) {
+        expect(enter(pen, herd.stay!)).toBe('wrong-pen');
+        expect(enter(pen, pen.kind)).toBe('in');
+        expect(wanted(herd, pen)).toBe(2);
+      }
+      expect(pensFull(herd, [2, 1])).toBe(false);
+      expect(pensFull(herd, [1, 2])).toBe(false);
+      expect(pensFull(herd, [2, 2])).toBe(true);
+      expect(pensFull({ ...herd, animals: herd.animals.filter((k) => k !== herd.stay) }, [2, 2])).toBe(true);
+    }
   });
 
   it('lets Come along follow a finger gently, gather without piling up and enter in any order', () => {
@@ -90,7 +113,7 @@ describe('Roundup', () => {
   });
 
   it('uses every kind in one-pen rounds and every distinct pen pair in sorting rounds', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'sortStay')) {
       const pairs = new Set<string>();
       const kinds = new Set<string>();
       for (let seed = 1; seed <= 300; seed++) {

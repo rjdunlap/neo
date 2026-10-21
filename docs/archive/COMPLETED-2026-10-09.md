@@ -1361,3 +1361,7 @@ Accounting: replays, scrubs, the magnifier, an empty-slot Check and (level 3) a 
 Implementation notes: marks are stored by screen half (a left foot is on the upper half walking right, the lower half walking left), so walk and walk-back differ only by the toes, as the definition's level-2 test requires; single-gait movements carry on to the strip's end (the table's "walk x4 / hop x2" are the four-column picture). Portrait is 1024x1365 logical, so one centred layout serves every view (cards 140x240, Play 104 round).
 
 Deviation from the definition: the home land is Story Grove, not Bubble Beach (decision 2). With ten games Bubble Beach's scenery test (`src/app/scenes/beach.test.ts`, rock pools) fails at school landscape, and Tinker Lab at 13 fails `lab.test.ts`; Barnyard and Story Grove both pass, and Story Grove (Owl Walk, Photo Safari: noticing outdoors) fits better than Barnyard. Rule tests (36): stamping, fitting, mismatch kinds, the puddle, Can't tell right once and wrong once, rounds over 500 seeds, accounting, hints, layout in four views. Checks: [VERIFICATION](../VERIFICATION.md) 2026-10-21 (Trackway Tales).
+
+## Roundup level 7 Leave the cows (2026-10-21)
+
+[PR #698](https://github.com/rjdunlap/neo/pull/698): slice 5 adds two pigs/mud, two bunnies/carrots and two cows that stay on grass. Outsiders are rejected from either pen, never selected by hints or trot-home, and excluded from completion. Cow-specific instruction/miss/finish speech; pre-K 3–7. Other levels and decisions unchanged.
