@@ -192,7 +192,7 @@ Cost is not the deciding factor even with retakes (3–5×). Voice consistency f
 
 **Slices.**
 
-- **V0 (ready, no rule change):** `pickVoice` prefers Enhanced/Premium English voices, and the grown-ups' page says how to download one. Device check: retune rate and pitch on an iPad.
+- **V0 (ready, no rule change; claimed 2026-10-21, branch `claude/better-voice-v0`):** `pickVoice` prefers Enhanced/Premium English voices, and the grown-ups' page says how to download one. Device check: retune rate and pitch on an iPad.
 - **V1 (after the decision): listening test.** A scratch script renders the same twenty lines (praise, an instruction, a counted `{n}` line, a name line, and Word Monsters' isolated sounds) on two or three engines; the developer picks one voice by ear. Nothing ships.
 - **V2: build-time clips.** A script renders slot-free variants to hashed files listed in a manifest, cached by the service worker; `voice.ts` plays a clip by line and variant and falls back to device speech when none exists. A test fails if a line changed without its clip being regenerated (or marks it as falling back).
 - **V3: slots.** Render fragments (numbers to 20, colors, animals, `{pet}` names) and stitch them, or keep slotted lines on device speech; a mid-sentence voice change sounds jarring, so stitch only where it listens well. `{name}` stays on device speech unless a grown-up asks for a rendered name. Word Monsters' phonemes need their own check: neural voices often get isolated sounds wrong.
