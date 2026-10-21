@@ -209,3 +209,17 @@
 - A portrait probe (768×1024, toddler level 2): 15 s idle laid 1 egg, 0 misses, hens settled; two played misses then gave the hint and the glow under the falling egg's lane (screenshot checked).
 - Not run: build (no shared files or assets changed), full unit suite, other suites, offline.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether resting hens after a still, caught egg read as a pause; whether the glow is visible on an iPad; a child's reaction.
+
+## 2026-10-21 — Discovery D5a Make my mix definition (docs only)
+
+- PR #721, branch `claude/define-make-my-mix`: new [make-my-mix.md](../definitions/make-my-mix.md) defining D5a, an in-memory lineup editor for the Little surprises mix (hold the mix spot, one to five stops, repeats allowed, no save). Routed into ROADMAP (chunk 19, D5a row), DISCOVERY, READY, WAITING-ON-DEVELOPER and the D2a and D3 definitions' couplings.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. No code changed, so no typecheck, unit, browser or offline run.
+- Open: nothing built or played; five decisions have leans the build follows. No coverage-summary row changed.
+
+## 2026-10-21 — Song Maker authored motifs (slice 3)
+
+- [PR #723](https://github.com/rjdunlap/neo/pull/723), `codex/song-maker-authored-motifs`, tested `adb515d6` plus slice diff: twelve authored motifs per existing copy shape; rests preserved, seeded selection excludes three recent motifs within the loaded profile's session; demonstrations leave history alone. Frozen level-4 Missing Melody shape and bot unchanged.
+- Passed `npm run typecheck`; `npx vitest run src/games/song-maker/logic.test.ts` (9 tests): frozen plans, twelve distinct motifs each, exact authored columns/rests, multiple pitches, at most one leap, home endings, deterministic short-window exclusion, pool coverage, copies and right-tap bot completion of every motif.
+- Level-4 screenshot at http://localhost:5189, 1024×768, reviewed: five shadows and authored first-beat rest on 6×4, grid/pet clear; no page errors. Local artifact `test-results/song-motifs-level4.png` (ignored). Initial probe needed the harness's hatched test profile; Chromium required process access outside the sandbox.
+- Passed 18 how-to tests (`npx vitest run src/content/howto.test.ts`), links and diff check. No new voice lines needed; the existing copy instruction remains true, and the how-to names the quiet beat.
+- Not run: `fingerdemo` (bot unchanged), full units, build, play suites, offline, portrait, device or child checks (content tier). No new levels/interactions/story changes.
