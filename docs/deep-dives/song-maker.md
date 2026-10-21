@@ -170,7 +170,7 @@ Level 10 (Finish my song) is preschool's easiest composing, placed after 4. Leve
    - IDs and accounting are unchanged.
 
    *Tier: existing-game bug fix.* Typecheck, Song Maker's rule tests, one filtered play at levels 1 and 6, and `fingerdemo` at level 6 because tap targets changed.
-2. **Ten spoken patterns at level 6 (ready).** Content inside an existing level, plus 10 voice lines. *Tier: content.* Typecheck, rule tests, one screenshot.
+2. **Ten spoken patterns at level 6 (claimed: branch `claude/song-maker-spoken-patterns`).** Content inside an existing level, plus 10 voice lines. *Tier: content.* Typecheck, rule tests, one screenshot.
 3. **Authored motifs for levels 3–5 (ready).** Level 4's shape is frozen for the Missing Melody. *Tier: content.* Typecheck, rule tests, one screenshot at level 4. `fingerdemo` only if the bot changes.
 4. **My song, level 8 (gated: D1, D2).** Adds the `BandLevels` conversion and the check button. *Tier: new interaction.*
 5. **Answer my song, level 9, the M4 build (gated: D1, D3).** *Tier: new interaction*, with a portrait screenshot of the 8×4 board.
