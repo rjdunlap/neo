@@ -316,3 +316,10 @@
 - Ran: typecheck; `npm test` 186 files / 1986 tests (before the flow test), then `mix-flow.test.ts` 5/5 and `mix.test.ts` 11/11; `npm run build`. `BROWSER_SUITE=discovery DISCOVERY_ONLY=mix` passed (lap: preview, Bubble Pop 15 by ghost finger, Next stop, Skip, Fill and Dump, ending, Again mix, Home, Back, D1b back on an ordinary result; landscape and portrait screenshots); `DISCOVERY_ONLY=direct-next` passed. Dev http://localhost:5903, preview http://localhost:5305.
 - `world` fails at `hatchingAndMap` (`neo.scene.pip.rig.mesh.filters` undefined) on unchanged `993d35d8` too, so the break is not D2b; with that one assertion relaxed locally (not committed) the whole suite passed. `npm run test:offline` passed against a matching production build after the harness followed the toddler subject layout (Counting Cove is now page two's second card).
 - Open: `world`'s pip-mesh assertion needs a fix; couch, picnic and the release sweep not run; child understanding, device speech and iPad reach in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-10-20 — Mail Carrier: support truth (slice 1)
+
+- [PR #677](https://github.com/rjdunlap/neo/pull/677), `claude/mail-carrier-support-truth`, tested `1b09bd9c`: level 1 off-house touch wiggles the envelope and waves the nearest flag, six-second idle invitation, touch-down scale on houses, `mail.counted` after deliveries at levels 3 and 5, two more thanks variants, how-to level 7 step `to: 7`. IDs and windows unchanged.
+- `npm run typecheck`, full `npm test` (185 files, 1978 tests, three new Mail Carrier rule tests) and `npm run build` passed. Server http://localhost:5919.
+- `BROWSER_SUITE=batch BATCH_ONLY=mail` levels 1–5 passed (now asserts the level 1 wiggle/wave and idle invitation with no misses or hints); `BROWSER_SUITE=woods WOODS_ONLY=mailmap FROM_LEVEL=8`, `BROWSER_SUITE=fingerdemo FINGER_ONLY=mail-carrier FINGER_LEVELS=1` (clean, 15.5 s) and `BROWSER_SUITE=woodland` passed.
+- Not run: portrait screenshot, offline check. Open: the counted phrase's spoken quality on an iPad's device speech and a child's reaction.

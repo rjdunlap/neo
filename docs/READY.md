@@ -10,13 +10,13 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`song-maker`, authored motifs for levels 3–5, slice 3** (content tier): short pentatonic motifs replace random rows; level 4's Missing Melody shape is frozen. [Dive](deep-dives/song-maker.md#fresh-content-inside-existing-levels)
 - **`fill-dump`, level 7 Which holds more?** (new interaction; level 6 *Full and empty* has landed): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
 - **`roundup`, level 8 *Make it fair*, slice 6** (new levels): pre-K 3–8, equal shares between two pens, with a seesaw sound. [Dive](deep-dives/roundup.md#new-levels-on-top)
+- **`roundup`, level 9 *Fill it up*, slice 7** (new levels): pre-K 3–9. [Dive](deep-dives/roundup.md#new-levels-on-top)
 
 
 ## Queued
 
 - **Rework RW05 slice 2b, Splish Splash and Weather Wardrobe on `CompanionRig`, then drop `ctx.petSpec`** (status `decision`; waiting on the [misfit decision](WAITING-ON-DEVELOPER.md#decisions-that-block-work), so no routine picks it up; shell tier plus one filtered regression and `fingerdemo` per game): slice 2 landed in part in [#642](https://github.com/rjdunlap/neo/pull/642) with the other eight large-pet games. [Packet](rework/CREATURE-COLLECTION.md#built-slice-2-in-part-2026-10-20)
 
-- **`roundup`, level 9 *Fill it up*, slice 7** (new levels): pre-K 3–9. [Dive](deep-dives/roundup.md#new-levels-on-top)
 - **`roundup`, level 12 *Big and little*, slice 8** (new levels, plus a portrait screenshot): pre-K `order [3, 4, 5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/roundup.md#new-levels-on-top)
 - **`roundup`, two shepherds, slice 9** (existing-game interaction change): every active pointer repels, palm rejection kept, both rings drawn; the card's co-play line becomes a role. [Dive](deep-dives/roundup.md#build-slices-in-order)
 
@@ -103,7 +103,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`peg-garden`, level 7 Plant a bud** (new interaction, after level 6 *Into the cup*): drag a bud onto a marked place so the pearl reaches the cup, run, revise; pre-K. [Slice 6](deep-dives/peg-garden.md#new-levels-on-top)
 
 
-- **`fossil-dig`, build levels 1–2** (new-game tier): brush the dust off a stone until a leaf print shows, tap the flag of the dig square it was found in, then pick the reference leaf whose shape (level 1) or magnified edge, toothed or smooth (level 2) matches and Check; three invented leaves, four authored cases, pre-K only, Tinker Lab by default. [Definition](definitions/fossil-dig.md) **Claimed 2026-10-21:** branch `claude/fossil-dig` (new `src/games/fossil-dig/`, registry, lands, voice, how-to, browser case).
 - **`lost-layers`, build levels 1–2** (new-game tier): slide Shell Cove's three rock pieces beside Gull Cliff's six layers until every fossil tie is green and no wavy line is squeezed, stamp each fit as a story card, then claim Can't tell when two fit (level 1); choose the one look that separates the stories and claim the survivor (level 2); four invented creatures, two layouts, school 1–2, Bubble Beach by default. [Definition](definitions/lost-layers.md)
 - **`trackway-tales`, build levels 1–3** (new-game tier): tap a movement card's Play to watch a gray mud walker replay it and stamp ghost prints above a strip of dried mud, scrub it back and forth, set the card whose prints match on the study board and Check until every mark lights green (level 1: walk or hop); read the toes with the magnifier to tell which way it went (level 2); with a puddle over the middle, claim Can't tell when two movements leave the very same marks (level 3); six authored movements and cases, school 1–3, Bubble Beach by default. [Definition](definitions/trackway-tales.md)
 - **`who-am-i`, build levels 1–3 (Z2 art move, then Z3)** (new-game tier): tap the friend a picture clue fits (level 1), turn over every friend each clue rules out until one jumps out (levels 2–3); a reviewed trait table (developer review per decision 1), pre-K 1–2 and school 2–3, Barnyard by default; Z2 first moves penguin, frog, turtle and fish drawings to `src/art/`. [Definition](definitions/who-am-i.md)
