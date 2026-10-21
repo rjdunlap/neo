@@ -4748,7 +4748,7 @@ async function arcade() {
       await kit.sleep(200);
     };
   });
-  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 11, 10, 2, 3, 4, 5, 6];
+  const roundupLevels = (only === 'roundup' ? process.env.ARCADE_LEVELS?.split(',').map(Number) : undefined) ?? [1, 11, 10, 2, 3, 4, 5, 6, 7];
   // Come along plays twice: led by a finger at lap, then left alone at toddler so the drift brings the herd home.
   const roundupPlays = roundupLevels.flatMap((level) => level === 11 ? [[11, 'lap'], [11, 'toddler']] : [[level]]);
   for (const [level, playBand] of (!only || only === 'roundup') ? roundupPlays : []) {
@@ -4823,6 +4823,27 @@ async function arcade() {
           if (g.misses !== 2 || g.hints < 1) throw new Error(`Wrong pens: ${g.misses} ${g.hints}`);
           if (speech.find((s) => s.id === 'herd.wrongpen')?.values.pen !== g.pens[1].pen.kind) throw new Error('Wrong-pen speech names another kind');
         }
+        if (g.plan.mode === 'sortStay') {
+          if (!spoken.includes('cows stay on the grass') || g.bell.visible) throw new Error('Outsider instruction or finish rule missing');
+          // Isolate each gate crossing from neighbours, then use the ordinary finger steering.
+          const outsider = loose().find((a) => a.kind === g.herd.stay);
+          for (let k = 0; k < 2; k++) {
+            for (const a of loose()) {
+              a.critter.x = 280; a.wander.next = 20; a.wander.x = 280;
+            }
+            const r = g.pens[k].rect;
+            outsider.critter.position.set(r.x - 60, r.y + r.h / 2);
+            outsider.vx = outsider.vy = 0;
+            await kit.sleep(60);
+            await herdInto(outsider, k);
+            await kit.until(() => outsider.state === 'loose', 3000);
+            await kit.sleep(2100);
+          }
+          if (g.misses !== 2 || g.hints !== 1 || !speech.some((s) => s.id === 'herd.stayout' && s.values.outsiders === 'cows')) throw new Error('Outsider misses or feedback incorrect');
+          if (g.animals.some((a) => a.kind === g.herd.stay && (a.glow.visible || g.needs(a) !== -1))) throw new Error('Outsider was offered as a hint');
+          if (!loose().filter((a) => a.kind !== g.herd.stay).every((a) => a.glow.visible)) throw new Error('Needed animals did not glow');
+          if (!g.pens.every((p) => p.glow.context.instructions.length)) throw new Error('Needed gates did not glow');
+        }
         if (g.plan.mode === 'count') {
           // One too many, then the bell: the extra hops back out.
           while (g.pens[0].inside <= g.pens[0].pen.target && loose().length) await herdInto(loose()[0], 0);
@@ -4843,6 +4864,14 @@ async function arcade() {
         }
       }
       if (!await kit.until(() => g.finished, 8000)) throw new Error(`Roundup unfinished: ${g.pens.map((p) => p.inside).join(',')}`);
+      if (g.plan.mode === 'sortStay') {
+        // A cow swept into a gate beside the last pig can still be finishing its hop back out.
+        await kit.until(() => g.animals.filter((a) => a.kind === g.herd.stay).every((a) => a.state === 'loose'), 2000);
+        if (!g.animals.filter((a) => a.kind === g.herd.stay).every((a) => a.state === 'loose')) throw new Error('Cows did not stay on the grass');
+        if (g.pens.some((p) => p.inside !== 2)) throw new Error('Required pen incomplete');
+        if (!speech.some((s) => s.id === 'herd.staydone') || speech.some((s) => s.id === 'herd.done')) throw new Error('Completion speech must include the outsiders');
+      }
+
     });
     await screenshot(`roundup-${level}${playBand ? `-${playBand}` : ''}`);
     await finished('roundup');
@@ -4851,6 +4880,7 @@ async function arcade() {
     log(`Roundup ${level} (${mode}): score ${r}`);
     // Herding speed varies, so an idle hint may add to the two wrong-pen misses' hint.
     if (mode === 'sort') assert.ok(r[0] === 2 && r[1] >= 1, `roundup sort score ${r}`);
+    if (mode === 'sortStay') assert.ok(r[0] >= 2 && r[1] >= 1, `roundup outsiders score ${r}`);
     if (mode === 'count') assert.ok(r[0] >= 1, 'roundup count misses');
     if (mode === 'tap') assert.deepEqual(r, [0, 0], 'roundup tap score');
     if (level === 10) assert.deepEqual(r, [0, 2], 'roundup Shoo one supported score');

@@ -1351,3 +1351,7 @@ Branch `claude/lost-layers` ([PR #697](https://github.com/rjdunlap/neo/pull/697)
 Accounting: level 1 It fits with something red, and claiming one story while the other fits, are misses (the other fit is then shown and stamped with help); Can't tell with one card is free. Level 2: a useless look is a miss, Can't tell or a story claim before the look is free ("not yet"), after the look Can't tell or the ruled-out story is a miss. Two misses on a step glow its answer (one hint per step); "Show a hint" counts once per step; restart keeps misses and hints. The ghost-finger bot plays both levels.
 
 Deviations from the definition's layout: the stamped story cards are the claim buttons; cards are 200x110; the right column at level 2 stacks slot, Look, cards, Can't tell; the look cards sit left of Gull Cliff. Rule tests (24): columns, validity over all 120 ordered triples, level-1 ambiguity, level-2 resolution, ties green iff valid, scripted rounds (2/0 and 1/0), two-red glow, two-useless-looks (2/1), every glow finishes its step, layout at four views.
+
+## Roundup level 7 Leave the cows (2026-10-21)
+
+[PR #698](https://github.com/rjdunlap/neo/pull/698): slice 5 adds two pigs/mud, two bunnies/carrots and two cows that stay on grass. Outsiders are rejected from either pen, never selected by hints or trot-home, and excluded from completion. Cow-specific instruction/miss/finish speech; pre-K 3–7. Other levels and decisions unchanged.
