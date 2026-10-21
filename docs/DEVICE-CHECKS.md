@@ -16,6 +16,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 ## Open items
 
+- [ ] **Fluffy Salon support truth (slice 1, 2026-10-21, #717).** On an iPad at lap and pre-K: does the giggle on a pat off the fur read as a welcome to a lap child; does device speech say "Look in the mirror when you are done!" (`salon.mirror`) and "A little more {fix}, where it glows" (`salon.more-color`) clearly; and is the warm-yellow glow on the old-colour strands visible on the iPad?
 - [ ] **Pet Kitchen support truth (slice 1, 2026-10-21, #716).** On an iPad at toddler and school: does a two-year-old read the uncut food's wiggle and the cut buttons' bounce after quiet as an invitation, not a scolding; does device speech say `kitchen.empty` and `kitchen.short` clearly; and does the counted line at level 7 ("one quarter, two quarters, three quarters. That is three quarters!") sound natural over the hopping pieces?
 - [ ] **Size Parade support truth (slice 1, 2026-10-21, #714).** On an iPad at toddler and pre-K: does a two-year-old hear "bigger" and "smaller" at two friends and understand it; does big-low pitch feel natural; does the first drag at level 5 (40-unit lift) work; does "This spot first!" read as a nudge, not a scolding; does device speech say the new lines clearly?
 

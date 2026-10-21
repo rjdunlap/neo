@@ -72,7 +72,7 @@ Each seeded round chooses a Meadow arch, Pond columns or Hive ring. Pond bumpers
 
 ### Fluffy Salon
 
-*lap–pre-K · after Toca Hair Salon.* The pet sits in the chair with fluffy fur to grow, snip, comb, curl and color. Free play first (lap play includes the all-tools free mode), then one request at a time, two-part requests checked in the mirror ("short and blue"), then copying a pictured style. Requests never start already done, and the hint points to the tool for what to fix next.
+*lap–pre-K · after Toca Hair Salon.* The pet sits in the chair with fluffy fur to grow, snip, comb, curl and color. Free play first (lap play includes the all-tools free mode), then one request at a time, two-part requests checked in the mirror ("short and blue"), then copying a pictured style. Requests never start already done, and the hint points to the tool for what to fix next. Free play (levels 1–2) has no misses: a touch that misses the fur makes the pet giggle, and when the mirror appears the pet asks her to look in it, which ends the round. Level 3 has no mirror and no misses; each request finishes by itself, and a tool glows (one hint) after 15 seconds without progress with the tool that helps. At levels 4–5 the mirror checks: looking too early is a miss, and when the colour is mostly there the pet says "a little more" and the strands still in the old colour glow.
 
 ### Stamp Studio
 

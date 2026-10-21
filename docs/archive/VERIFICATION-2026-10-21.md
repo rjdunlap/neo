@@ -61,3 +61,11 @@
 - http://localhost:5187: `BROWSER_SUITE=arcade ARCADE_ONLY=roundup ARCADE_LEVELS=7` passed with saved `[2,1]`, both pens full, cows loose, needed animals/gates glowing after two misses, cow-specific speech and one sticker. First attempt checked a cow during its hop-out; a small transition probe confirmed loose after 0.8 seconds, and the assertion now waits for that correction.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=7` passed cleanly in 16.1 seconds, no misses/hints/page errors. Landscape screenshot reviewed.
 - Not run: build, full units, other browser levels/suites, offline, portrait, iPad speech or child play (new-level tier). No save/assets/navigation changes; unrelated Peg Garden timeout remains out of scope.
+
+## 2026-10-21 — Trackway Tales levels 1–3
+
+- Built on `claude/trackway-tales` ([PR #699](https://github.com/rjdunlap/neo/pull/699), tested commit b28df6c5): new game `trackway-tales` in Story Grove (now 12 games; Bubble Beach and Tinker Lab fail their scenery tests), school levels 1–3 ([definition](../definitions/trackway-tales.md)); deviations are in the [archive note](COMPLETED-2026-10-09.md#trackway-tales-levels-13-2026-10-21).
+- `npm run typecheck` clean; `npm test` 197 files, 2209 tests passed (36 new rule tests: stamping, fitting, mismatch kinds, the puddle, Can't tell right once and wrong once, rounds over 500 seeds, accounting, hints, layout in four views). `npm run build` passed.
+- Dev server http://localhost:5491: `BROWSER_SUITE=trackwaytales` passed (level 1 replay, scrub, wrong hop Check = 1 miss, requested hint twice = 1 hint, bot finish; level 3 L3-pause fitting card free then bot Can't tell 0/0; L3-switch wrong Can't tell = 1 miss then finish; level 3 portrait screenshot). `BROWSER_SUITE=fingerdemo FINGER_ONLY=trackway-tales FINGER_LEVELS=1,2,3` passed (7.7 s, 13.1 s, 16.9 s).
+- Not run: the offline check, `world` (no navigation or persistence change), any iPad or child.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): practice strip read as "mine to try" against the mud as the record, toe legibility on an iPad, Can't tell landing as satisfying, device speech of "trackway".
