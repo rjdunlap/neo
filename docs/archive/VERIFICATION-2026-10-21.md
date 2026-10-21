@@ -192,3 +192,11 @@
 - Ran (Vite http://localhost:5665): `BROWSER_SUITE=conductor CONDUCTOR_LEVELS=3` passed (Check with no pick, a wrong Check with the pick kept, the hint asked twice counted once, both halves matched, one sticker); the portrait screenshot `little-conductor-3-portrait` was reviewed (sign above the listener, glowing hint pad, wrong pick framed). `BROWSER_SUITE=fingerdemo FINGER_ONLY=little-conductor FINGER_LEVELS=3` finished in 18.1 s.
 - Not run: a landscape level-3 screenshot, the real Esc to pause-sheet route (`askForHint` called directly), a levels 1–2 regression play (paths unchanged; layout tests cover them), the offline check, a device, a child.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a preschooler reads the sign as the thing to match, and whether a bunny friend in the band blurs the rabbit pad.
+
+## 2026-10-21 — Animal Snack: a far barn on the horizon (visual identity V1 slice 3)
+
+- Built on `claude/animal-snack-far-barn` ([PR #719](https://github.com/rjdunlap/neo/pull/719), code `90598fac`): `farBarnAt` in the game's `logic.ts`, `drawFarBarn` extracted to `src/art/scenery.ts` (the Barnyard scene calls it, same output), drawn first in `drawDecor`.
+- Ran (Vite http://localhost:5647, stopped): `npm run typecheck`; `npx vitest run src/games/animal-snack` 15 pass (three new: 60–80 tall on the horizon at five views, never in a friend's tap circle, the orchard tree, the bubble/bell band or off screen, orchard null at 1024 and right at 1365; dropping one friend's circle made two fail, then restored); full `npm test`; `npm run build`; `BROWSER_SUITE=woods WOODS_ONLY=snack` levels 1–5 (1m31s, no page errors).
+- A probe took a portrait (768×1024 meadow) and landscape (1024×768 dusk, plus the suite's garden) screenshot: barn visible, clear of the friends.
+- Not run: `fingerdemo` (bot unchanged), `world`, the offline check, a device.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a child recognises the land without its label.
