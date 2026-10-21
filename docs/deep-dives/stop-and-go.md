@@ -17,7 +17,7 @@ A road, round smiling cars and a three-lamp traffic light in Cozy Village. The a
 
 **Accounting.** Level 1 has no misses. Levels 2–3: going on red is a miss; two misses turn on the hint glow (`hints++`). Level 4: both roads green is a miss; misses count across the round, and the glow rings the green light whose road has fewer cars.
 
-**Known gaps found reading the code (not fixed: docs-only session).**
+**Known gaps found reading the code (1–6 fixed by build slice 1, [PR #678](https://github.com/rjdunlap/neo/pull/678); 7–8 remain).**
 
 1. **The lap car ignores her.** At level 1 only the light listens (`tapCar` returns unless the mode is `send`). A one-year-old reaches for the car, the big friendly thing, and nothing happens.
 2. **Back cars are silent.** At level 2 only the front car answers; a tap on the second or third car gets no touch-down acknowledgement at all.
@@ -123,7 +123,7 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 
 ## Build slices, in order
 
-1. **Every touch counts and the hint points at the action** (existing-game bug fix; gaps 1–6; in progress on `claude/stop-and-go-every-touch`): car taps at level 1, back-car toots at level 2, glow on the car/feet, level 3 hint reset, per-state motion and sound, `go.done.walk`. Checks: typecheck, the rule tests, one filtered regression play (levels 1 and 3, a red tap twice), `fingerdemo` at level 2 since the glow target moves.
+1. **Every touch counts and the hint points at the action** (existing-game bug fix; gaps 1–6; **built**, [PR #678](https://github.com/rjdunlap/neo/pull/678)): car taps at level 1, back-car toots at level 2, glow on the car/feet, level 3 hint reset, per-state motion and sound, `go.done.walk`. Checks: typecheck, the rule tests, one filtered regression play (levels 1 and 3, a red tap twice), `fingerdemo` at level 2 since the glow target moves.
 2. **Varied phases and vehicles** (content in existing levels): `cycleFor(rng)` with its bounded-phase test, six vehicles, the sticker pool. Checks: typecheck, rule tests, one browser play of level 2 and `fingerdemo` at it.
 3. **Lap entry 9 *Go car, stop car*** (new interaction): lap order `[9, 1]`, `entryLevels: [9]`, how-to step for 9, bot taps green and red alternately. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
 4. **Level 5 *Whose light?* and the pre-K window** (new level): preschool 2–5, pre-K 3–5. Checks: typecheck, rule tests, play of 5, `fingerdemo` at 5.
@@ -135,4 +135,8 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 
 ## What was built in this session
 
-Nothing: research and ideation only. Ran `node scripts/check-links.mjs` and `git diff --check`.
+Research and ideation only: no code. Ran `node scripts/check-links.mjs` and `git diff --check`.
+
+## What was built: slice 1, every touch counts (2026-10-20)
+
+[PR #678](https://github.com/rjdunlap/neo/pull/678). Gaps 1–6 are fixed; 7 (fixed rhythm) and 8 (no help when stuck at the crossing) remain for slices 2 and 5. Rules are in `logic.ts` (`carTap`, `touchCounts`, `hintOn`, `doneLine`). Details in the [archive note](../archive/COMPLETED-2026-10-09.md#stop-and-go-every-touch-counts-slice-1-2026-10-20).

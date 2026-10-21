@@ -214,3 +214,10 @@
 - Ran `npm run typecheck` (clean), `npx vitest run src/games/sound-garden src/content` (96 tests pass, including the new rule tests: answers differ only in the asked attribute, notes on the scale and in span, sounds vary and are deterministic per seed) and `npm run build` (passes).
 - `BROWSER_SUITE=batch BATCH_ONLY=garden` levels 1–6 passed (Vite http://localhost:5450): a wrong pair and a hint on each listening level.
 - Not run: `fingerdemo` (bot unchanged), `world`, the offline check, an iPad. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether she judges high/low by sound or by the tile's height, and the quiet-games and clarity rows.
+
+## 2026-10-20 — Domino Run levels 1–8
+
+- Built on `claude/domino-run` (PR #659, tested commit `cd11a6f7`): new game `domino-run` in Bubble Beach, levels 1–8 (tipping rule, tray, stalls never a miss, glow hint after the second stall), new `dominorun` browser suite, a ghost-finger bot.
+- Ran `npm run typecheck` (clean) and full `npm test` (183 files, 1730 tests pass; 13 new domino-run rule tests: the tipping rule, the authored first lines' exact solutions, 500 seeds across the 8 plans never using the fallback, hint-following from every placement state, layout at four views). `npm run build` passed.
+- `BROWSER_SUITE=dominorun` (Vite http://localhost:5209) passed: level 1 by taps, level 8 with a stalled run (0 misses), one requested hint, drags, and a level 5 portrait screenshot (`test-results/browser/domino-run-5-portrait.png`). `BROWSER_SUITE=fingerdemo FINGER_ONLY=domino-run` passed at level 1 (toddler, 5.0 s) and level 8 (school, 13.6 s).
+- Not run: `world`, the offline check, an iPad. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a toddler finds tap-to-hop at level 2, whether the stall ring reads as "here is the gap", and whether three dot faces tell sizes apart on an iPad.

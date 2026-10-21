@@ -10,6 +10,9 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`roundup`, level 10 *Shoo one*, slice 3** (new levels on an existing interaction): toddler `order [1, 10, 2, 3]`, `entryLevels: [10]`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
 - **`fill-dump`, things to put away** (content): balls, blocks and ducks beside fruit in levels 1–4. [Slice 5](deep-dives/fill-dump.md#fresh-content-inside-existing-levels)
 - **`roundup`, level 11 *Come along*, slice 4** (new interaction): the follow mode for lap and toddler, placed by `order`. [Dive](deep-dives/roundup.md#easier-entries-and-levels-between-existing-ones)
+- **`roundup`, level 7 *Leave the cows*, slice 5** (new levels): pre-K 3–7. [Dive](deep-dives/roundup.md#new-levels-on-top)
+- **`song-maker`, ten spoken patterns at level 6, slice 2** (content tier): five new pattern shapes, each named aloud before play. [Dive](deep-dives/song-maker.md#fresh-content-inside-existing-levels)
+- **`song-maker`, authored motifs for levels 3–5, slice 3** (content tier): short pentatonic motifs replace random rows; level 4's Missing Melody shape is frozen. [Dive](deep-dives/song-maker.md#fresh-content-inside-existing-levels)
 
 
 ## Queued
@@ -17,14 +20,10 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **Rework RW05 slice 2b, Splish Splash and Weather Wardrobe on `CompanionRig`, then drop `ctx.petSpec`** (status `decision`; waiting on the [misfit decision](WAITING-ON-DEVELOPER.md#decisions-that-block-work), so no routine picks it up; shell tier plus one filtered regression and `fingerdemo` per game): slice 2 landed in part in [#642](https://github.com/rjdunlap/neo/pull/642) with the other eight large-pet games. [Packet](rework/CREATURE-COLLECTION.md#built-slice-2-in-part-2026-10-20)
 - **`fill-dump`, level 7 Which holds more?** (new interaction; after level 6 *Full and empty* lands): free guess, pour to test, answer from the overflow; preschool top. [Slice 4](deep-dives/fill-dump.md#new-levels-on-top)
 
-- **`roundup`, level 7 *Leave the cows*, slice 5** (new levels): pre-K 3–7. [Dive](deep-dives/roundup.md#new-levels-on-top)
 - **`roundup`, level 8 *Make it fair*, slice 6** (new levels): pre-K 3–8, equal shares between two pens, with a seesaw sound. [Dive](deep-dives/roundup.md#new-levels-on-top)
 - **`roundup`, level 9 *Fill it up*, slice 7** (new levels): pre-K 3–9. [Dive](deep-dives/roundup.md#new-levels-on-top)
 - **`roundup`, level 12 *Big and little*, slice 8** (new levels, plus a portrait screenshot): pre-K `order [3, 4, 5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/roundup.md#new-levels-on-top)
 - **`roundup`, two shepherds, slice 9** (existing-game interaction change): every active pointer repels, palm rejection kept, both rings drawn; the card's co-play line becomes a role. [Dive](deep-dives/roundup.md#build-slices-in-order)
-
-- **`song-maker`, ten spoken patterns at level 6, slice 2** (content tier): five new pattern shapes, each named aloud before play. [Dive](deep-dives/song-maker.md#fresh-content-inside-existing-levels)
-- **`song-maker`, authored motifs for levels 3–5, slice 3** (content tier): short pentatonic motifs replace random rows; level 4's Missing Melody shape is frozen. [Dive](deep-dives/song-maker.md#fresh-content-inside-existing-levels)
 
 - **`little-conductor`, build level 3 *Two pictured requests* (music M3)** (new-interaction tier): a listener's sign asks for turtle or rabbit per half of the tune, a pad tap auditions, Check submits, a wrong Check names the requested pace, two misses glow the pad once per phrase. [Definition](definitions/little-conductor.md)
 
@@ -87,7 +86,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`garden-grow`, level 11 Same in every row** (new level, after level 9 *Rows of colors*): n flowers in each row in any beds, every placement accepted. [Slice 7](deep-dives/garden-grow.md#new-levels-on-top)
 
 
-- **`stop-and-go`, every touch counts and the hint on the car** (existing-game bug fix): the lap car toots and drives, back cars answer, the glow rings the car or feet on green, the walk hint resets, motion and sound per light state, a walk done line. [Slice 1](deep-dives/stop-and-go.md#fresh-content-inside-existing-levels)
 - **`stop-and-go`, varied phases and vehicles** (content, levels 2–4): seeded green and red of 3–4.2 s with a bounded-phase test, six code-drawn vehicles. [Slice 2](deep-dives/stop-and-go.md#fresh-content-inside-existing-levels)
 - **`stop-and-go`, lap entry 9 Go car, stop car** (new interaction): a looping car, two huge lamps, no misses; lap order 9, 1, `entryLevels: [9]`. [Slice 3](deep-dives/stop-and-go.md#younger-band-openings)
 - **`stop-and-go`, level 5 Whose light? and the pre-K window** (new level): two lanes with their own lights, send the one whose light is green; preschool 2–5, pre-K 3–5. [Slice 4](deep-dives/stop-and-go.md#new-levels-on-top)
