@@ -605,6 +605,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: [
       { to: 2, text: "Any song is welcome. If at least two jellies are lit at the end, a little tree house button hangs the song in the pet's room, where the pet sings it." },
+      { from: 3, to: 5, text: 'The short tune includes a quiet beat: leave that beat empty.' },
       { from: 3, text: 'A copied song is not hers, so it is not offered for the pet\'s room.' },
     ],
   },

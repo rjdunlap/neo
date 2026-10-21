@@ -53,7 +53,29 @@ export const PATTERNS = [
 ] as const;
 export type PatternId = (typeof PATTERNS)[number]['id'];
 
+/** Authored beats: null is a deliberate rest, never shuffled or filled in. Rows run high to low.
+ * Adjacent notes repeat or step, with at most one larger jump; eight of each twelve return home.
+ */
+export const MOTIFS = {
+  3: [
+    [2, 1, 2, null], [2, null, 1, 2], [null, 0, 1, 2], [0, 1, null, 2],
+    [1, 1, 2, null], [1, null, 2, 2], [null, 1, 0, 2], [2, 1, null, 2],
+    [2, 1, 0, null], [2, null, 2, 1], [null, 0, 0, 1], [0, 1, null, 1],
+  ],
+  4: [
+    [3, 2, 1, 2, 3, null], [3, 2, null, 2, 3, 3], [null, 1, 2, 2, 3, 3],
+    [1, 2, 3, null, 2, 3], [3, 3, 2, 2, null, 3], [2, null, 1, 2, 3, 3],
+    [null, 3, 1, 2, 2, 3], [3, 1, 1, null, 2, 3], [3, 2, 1, 0, 1, null],
+    [3, null, 3, 2, 1, 1], [null, 0, 1, 1, 2, 2], [1, 2, null, 3, 2, 1],
+  ],
+} as const;
+
+/** Previous three authored rounds are excluded; no save field or cross-profile history. */
+export const MOTIF_WINDOW = 3;
+
 export interface Song {
+  /** Authored content identity (shape plus pool index), for the short repeat window. */
+  motif?: string;
   /** The whole song. */
   notes: Note[];
   /** Notes already placed for her (the first bar of a pattern). */
@@ -63,12 +85,22 @@ export interface Song {
 }
 
 /** A song for one round. Every note has its own column, and a song never sits on a single pitch. */
-export function makeSong(plan: SongPlan, rng: Rng): Song {
+export function makeSong(plan: SongPlan, rng: Rng, recent: readonly string[] = []): Song {
   if (plan.mode === 'free') return { notes: [], given: [] };
   if (plan.mode === 'pattern') {
     const p = rng.pick(PATTERNS);
     const notes = Array.from({ length: plan.cols }, (_, col) => ({ col, row: p.rows[col % p.rows.length] }));
     return { notes, given: notes.slice(0, 4), pattern: p.id };
+  }
+  if (plan.mode === 'ghost' || plan.mode === 'card') {
+    const pool = MOTIFS[plan.rows as keyof typeof MOTIFS];
+    const choices = pool.map((beats, index) => ({ beats, id: `${plan.rows}:${index}` }))
+      .filter(({ id }) => !recent.slice(-MOTIF_WINDOW).includes(id));
+    const motif = rng.pick(choices);
+    return {
+      notes: motif.beats.flatMap((row, col) => row === null ? [] : [{ col, row }]),
+      given: [], motif: motif.id,
+    };
   }
   const count = plan.mode === 'listen' ? plan.cols : plan.notes;
   for (;;) {

@@ -4,17 +4,20 @@ import { musicNote } from '../../art/shapes';
 import { music, STYLES, silenced } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
+import { store } from '../../progress/store';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { beadToTap, key, makeSong, ROW_STEPS, songLayout, songPlan, type Note, type Song, type SongPlan } from './logic';
+import { beadToTap, key, makeSong, MOTIF_WINDOW, ROW_STEPS, songLayout, songPlan, type Note, type Song, type SongPlan } from './logic';
 
 /** Row colors, top (high) to bottom (low), matching the jelly drums' rainbow. */
 const ROW_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue'];
 const rowColor = (row: number, rows: number) => ROW_COLORS[Math.round((row * (ROW_COLORS.length - 1)) / Math.max(1, rows - 1))];
 const FALLBACK_BPM = 92;
+// Session-only, keyed by the loaded profile's save. Replaced/reset saves start fresh; demos never consume it.
+const recentMotifs = new WeakMap<object, string[]>();
 
 /** One spot on the grid. Off it is a little seed; on it is a singing jelly bead. */
 class Bead extends Container {
@@ -98,7 +101,11 @@ class SongMaker implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = songPlan(ctx.level);
-    this.song = makeSong(this.plan, ctx.rng);
+    const recent = ctx.demo ? [] : recentMotifs.get(store.data) ?? [];
+    this.song = makeSong(this.plan, ctx.rng, recent);
+    if (!ctx.demo && this.song.motif) {
+      recentMotifs.set(store.data, [...recent, this.song.motif].slice(-MOTIF_WINDOW));
+    }
     ctx.stage.addChild(this.background, this.board, this.playhead, this.card, this.glow);
     const target = new Set(this.song.notes.map(key));
     for (let col = 0; col < this.plan.cols; col++) {

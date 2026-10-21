@@ -171,7 +171,7 @@ Level 10 (Finish my song) is preschool's easiest composing, placed after 4. Leve
 
    *Tier: existing-game bug fix.* Typecheck, Song Maker's rule tests, one filtered play at levels 1 and 6, and `fingerdemo` at level 6 because tap targets changed.
 2. **Ten spoken patterns at level 6 (built).** Content inside an existing level, plus 10 voice lines. *Tier: content.* Typecheck, rule tests, one screenshot.
-3. **Authored motifs for levels 3–5 (claimed: `codex/song-maker-authored-motifs`).** Level 4's shape is frozen for the Missing Melody. Worker `01a15f8a-f118-7ff3-9bcd-1a24ee002dc8`; expected files: Song Maker logic/tests/index, README, GAMES, how-to, readiness/verification/archive and execution queue. No new levels, interactions or story changes. *Tier: content.* Typecheck, rule tests, one screenshot at level 4. `fingerdemo` only if the bot changes.
+3. **Authored motifs for levels 3–5 (built, [PR #723](https://github.com/rjdunlap/neo/pull/723)).** Twelve motifs per shape, authored rests and frozen level-4 Missing Melody shape. Session selection excludes the previous three motifs; demos do not consume it. *Tier: content.* Typecheck, nine rule tests and one level-4 screenshot. Bot unchanged; `fingerdemo` not rerun.
 4. **My song, level 8 (gated: D1, D2).** Adds the `BandLevels` conversion and the check button. *Tier: new interaction.*
 5. **Answer my song, level 9, the M4 build (gated: D1, D3).** *Tier: new interaction*, with a portrait screenshot of the 8×4 board.
 6. **Finish my song, level 10 (gated: D1, D3).** *Tier: new levels on an existing interaction* (reuses slice 5).

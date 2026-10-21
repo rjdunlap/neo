@@ -1,6 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
 
+### Song Maker slice 3, authored motifs (2026-10-21)
+
+[PR #723](https://github.com/rjdunlap/neo/pull/723): twelve authored motifs for each copy-song shape (3 notes on 4×3, 5 notes on 6×4), shared by shadows and the card. Authored columns/rests stay intact; each has multiple pitches and at most one jump over a row, eight of twelve end home. Supplied seeded RNG excludes the previous three motif IDs in the loaded profile’s session; a weak save-keyed history never changes saves or other profiles, and demonstrations do not read/write it. Level 4’s Missing Melody contract, free/listen/pattern modes, levels, interaction, bot, accounting and stories unchanged. [Verification](../VERIFICATION.md#2026-10-21--song-maker-authored-motifs-slice-3).
+
+
 ### Animal Snack far barn (visual identity V1 slice 3, 2026-10-21)
 
 [PR #719](https://github.com/rjdunlap/neo/pull/719), from the [definition](../definitions/visual-identity.md): `farBarnAt(scene, w, h, animals)` in `src/games/animal-snack/logic.ts` puts the Barnyard's far barn on the horizon (60–80 units tall, width 1.1x), centred in the widest horizon stretch clear of every friend's tap circle and, in the orchard, the tree's canopy, with 24-unit edge margins and 16-unit gaps; null when none fits. `drawDecor` draws it first so the fences stand in front; dusk uses darker colours, day uses the quiet red line colour. The drawing moved to `drawFarBarn` in `src/art/scenery.ts`, which the Barnyard land scene now also calls (identical output). Meadow, kitchen garden and dusk show it at the left in every view; the orchard shows none at 1024 wide and shows it at the right in wide views. Egg Catch is the next one-game slice.
@@ -1412,7 +1417,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-21.md#2026-10-21--draw-the-pat
 
 [PR #705](https://github.com/rjdunlap/neo/pull/705), `claude/monster-munch-truthful-card` ([deep dive](../deep-dives/monster-munch.md#build-slices-in-order), gaps 1-6 and 9). Levels 1 and 2 play two rounds (`amounts` on `MunchPlan`: 4 then 6 cookies at 1, 3 then 5 at 2). Level 1 counts each bite aloud and a tap on the monster feeds it the next cookie; levels 4-6 count each bite of its kind ("2 cookies!", `munch.bite`). A wrong number pad counts one monster's tummy together: after `munch.each-no` each tummy icon is ringed (`Monster.light`) as it is counted, and level 8's leftover question says `munch.left-no` and counts the cookies on the tray. Hint lines follow the glow (`munch.hint.food/.bell/.monster/.pad`; `munchHint(plan, table)` in `logic.ts`, a rule test checks it matches the bot's next move); `munch.yum` is gone. A drop short of any monster is still no miss but says "Hm?" (`munch.hm`) and the nearest monster leans (`Monster.lean`). The how-to card's level 1-2 steps are split and true, levels 4-6 say it counts each one or kind, and level 7 no longer mentions a bell. Gaps 7 and 8 stay open. The `third` browser suite gained `MUNCH_LEVELS=1,2,4,7`. Not run: build, offline, portrait review, device speech pace, a child.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--monster-munch-a-truthful-card-slice-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-21.md#2026-10-21--monster-munch-a-truthful-card-slice-1).
 
 ## Rhythm Neighbors: support truth and a real pool, slice 1 (2026-10-21)
 

@@ -102,3 +102,11 @@
 - Dev server http://localhost:5848: `BROWSER_SUITE=drawpattern` passed: level 1 by marks and a pat, level 3 two strays (one miss, then glow and one hint, progress kept), level 4 a circle counterclockwise and clockwise, level 5 portrait screenshot (`test-results/browser/draw-the-pattern-5-portrait.png`), level 8 a wrong candidate (one miss, stroke resets) then finished with misses 1, hints 0; no page errors. `BROWSER_SUITE=fingerdemo FINGER_ONLY=draw-the-pattern FINGER_LEVELS=1,7` passed (20.9 s, 19.3 s).
 - Not run: world suite, the offline check, a visual check of the canyon's smaller spring.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): the 30-unit corridor on a two-year-old's zigzag, whether the crayon hides the dashes, level 5's stepping stones for a three-year-old, whether level 7's faint candidates read as a choice, level 8's narrow units for a four-year-old's finger.
+
+## 2026-10-21 — Monster Munch: a truthful card (slice 1)
+
+- Built on `claude/monster-munch-truthful-card` ([PR #705](https://github.com/rjdunlap/neo/pull/705), code `f772d7c7` and `0b044f1e` on `bd885a39`): two rounds at levels 1-2, counted bites at 1 and 4-6, monster taps feed at 1, a wrong pad counts one tummy (level 8 counts the tray), hint lines per target, a short drop says "Hm?" and the monster leans, a truthful card.
+- `npm run typecheck` clean; `npm test` 198 files, 2251 tests passed (includes the `munchHint` rule test).
+- Dev server http://localhost:5969: `BROWSER_SUITE=third MUNCH_LEVELS=1,2,4,7` passed (scores 1: 0/0, 2: 0/0, 4: 2/1, 7: 3/1; stickers saved); `BROWSER_SUITE=fingerdemo FINGER_ONLY=monster-munch FINGER_LEVELS=1` clean in 18.2 s.
+- Not run: build, other suites, the offline check, a portrait screenshot.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether per-bite counting keeps pace with fast feeding on iPad speech, and whether the ringed tummy count and the monster's lean read; a child.
