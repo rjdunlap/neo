@@ -134,3 +134,16 @@ export function dropAt(world: BallWorld, wanted: (bud: number) => boolean, drift
 
 /** On the bloom level, pearls in a row that wake no new flower before the next one is let go over a waiting flower. */
 export const STALL_AT = 2;
+
+/** How far a pearl may drift as it is let go on a level: none on the colour level, so a miss there is her choice of spot. */
+export const driftOf = (mode: PegMode) => (mode === 'color' ? 0 : DRIFT);
+
+/** Where a tap lets a pearl go: straight above it, or the nearest point on the ledge for a tap beside the board. */
+export const ledgeX = (x: number) => Math.max(BOARD.ball, Math.min(BOARD.w - BOARD.ball, x));
+
+/**
+ * Whether the next pearl is let go over a waiting flower instead of the tapped spot: on the bloom and colour levels after
+ * `STALL_AT` pearls in a row that woke nothing wanted, and on the colour level while its hint is on.
+ */
+export const guided = (mode: PegMode, stalled: number, hinting: boolean) =>
+  (mode === 'bloom' || mode === 'color') && (stalled >= STALL_AT || (mode === 'color' && hinting));

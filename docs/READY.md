@@ -100,7 +100,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 - **`puddle-gobble`, build levels 1–8** (new-game tier): lead a rain puddle that soaks up beach things smaller than itself and grows every two or three; too-big things wobble and wait, never a miss; then smallest first, numbers up to its own, add to grow and land exactly on the pail with a free let-go; Bubble Beach. [Definition](definitions/puddle-gobble.md)
 
-- **`peg-garden`, every touch answers, a fair colour level and a true card** (existing-game bug fix): whole-screen touch, bubbles during a fall, a queued lap pearl, no drift at 3, the stall guard and a drop-spot ring at 3, the hint resets, `pointercancel`, level 1's finish line; the `pegs` batch case is the item-12 flake. [Slice 1](deep-dives/peg-garden.md#build-slices-in-order)
 - **`peg-garden`, numbered buds wait their turn and the last shot stays faint** (existing-game change, levels 4–5): only the asked numeral blooms; the previous path stays as faint dots. [Slice 2](deep-dives/peg-garden.md#build-slices-in-order)
 - **`peg-garden`, shell tray and board themes** (content): pearls collect in a tray and pour back; four simulated board shapes, three backdrops. [Slice 3](deep-dives/peg-garden.md#fresh-content-inside-existing-levels)
 - **`peg-garden`, level 8 Big buds** (new lap entry): four huge buds, every touch blooms one; lap order 8, 1, toddler 8, 1, 2, `entryLevels: [8]`; plans keyed by ID. [Slice 4](deep-dives/peg-garden.md#younger-band-openings)

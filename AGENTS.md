@@ -151,6 +151,7 @@ Use scripted input for moving targets, then screenshots for visual review. Finis
 
 - In couch play the game's stage takes no pointer input, so a touch game's on-screen buttons are dead there: hide them when `ctx.couch` is set and put the action on `control()` or the pause menu (`Game.restart`).
 - Couch scenes sample controller and key input once per frame and ignore input for their first 0.35 s. Hold scripted keys at least ~120 ms (`page.keyboard.press(key, { delay: 120 })`) and wait out a new scene before pressing.
+- Pixi 8 does not forward the DOM `pointercancel` to display objects (a `.on('pointercancel')` on a layer never fires). Listen on `window` (capture) and remove it in `destroy()`, as Peg Garden does.
 - Dispatch synthetic `pointerup` on the canvas (the kit does); using `document` leaves Pixi thinking the finger is down. Handle `pointercancel` and lost release in custom controls.
 - Object drags ride 40 logical units above the finger; aim drops about 40 units below the target. Tracing can use `lift: 0`.
 - On macOS `sed -i` needs an empty suffix (`sed -i ''`); `sed -i -e` leaves a stray `<file>-e` copy that then gets committed (one was: `docs/VERIFICATION.md-e`). Prefer the Edit tool for a doc change, and check `git status --short` before `git add -A`.
