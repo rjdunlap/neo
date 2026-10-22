@@ -295,7 +295,7 @@ class RibbonWorkshop implements Game {
   }
 
   private drawGift(tied: boolean) {
-    for (const c of this.giftLayer.removeChildren()) c.destroy({ children: true });
+    for (const c of this.giftLayer.removeChildren()) { this.ctx.tw.kill(c.scale); c.destroy({ children: true }); }
     const box = giftBox(this.giftColor, tied);
     box.position.set(X0 + this.target * UNIT, BENCH_Y - 82);
     this.giftLayer.addChild(box);
@@ -375,13 +375,16 @@ class RibbonWorkshop implements Game {
     dashed(g, X0, BENCH_Y + 36, end, BENCH_Y + 36, swatch.brown.line);
     dashed(g, X0, BENCH_Y - 36, X0, BENCH_Y + 36, swatch.brown.line);
     g.moveTo(end, BENCH_Y - 46).lineTo(end, BENCH_Y + 46).stroke({ width: 6, color: swatch.brown.line });
-    if (!this.spoolLabel) { this.spoolLabel = label('1 whole', 30); this.spoolLabel.anchor?.set(0, 0.5); this.ctx.stage.addChildAt(this.spoolLabel, 2); }
-    this.spoolLabel.position.set(X0 + 4 * UNIT + 26, SPOOL_Y);
+    if (!this.spoolLabel) { this.spoolLabel = label('1 whole', 30); this.spoolLabel.anchor?.set(0.5); this.ctx.stage.addChildAt(this.spoolLabel, 2); }
+    // Above the spool's middle, clear of the gift that sits at a whole's end.
+    this.spoolLabel.position.set(X0 + 2 * UNIT, SPOOL_Y - 44);
     this.tag.position.set(Math.max(300, v.w / 2 - 120), 82);
     this.undo.position.set(v.w - 80, 82);
     this.scissors.position.set(v.w - 80, v.h - 215);
     this.bow.position.set(v.w - 80, v.h - 90);
     this.drawTag();
+    // A resize while the bow ties keeps the joined ribbon and the tied gift.
+    if (this.busy) return;
     this.drawGift(false);
     this.draw();
   }
