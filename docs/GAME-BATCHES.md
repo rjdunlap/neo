@@ -424,6 +424,14 @@ Built 2026-10-22, branch `claude/sea-lift-1-3`; [closeout](archive/COMPLETED-202
 
 Proof: new-game tier, as the [definition's check tier](definitions/sea-lift.md#check-tier) sets it (typecheck, unit tests, a new `browser-check.mjs` case at levels 1 and 3, `fingerdemo` at levels 1 and 3, one portrait screenshot of level 2, one build). No review gate: levels 1–3 use only "above/below the water"; the educator gate applies from level 4. The [open decisions](definitions/sea-lift.md#open-decisions) all have defaults.
 
+### sea-lift 2: Levels 4–5
+
+Defined 2026-10-22. **Gated, not eligible for routines:** starts only after the mathematics educator reads the level-4 card table (study decision 8; Waiting row "Sea Lift 4–5: the educator's read of the level-4 cards").
+
+- **`sea-lift`, levels 4–5 (IN2)** (new levels with one new interaction, number cards; school, upper-school content): How far? (number cards for the interval across zero, the magnitude and both-ends mistakes as distractors) at level 4, Twin stops (the opposite across the water; the dock is its own twin) at level 5. [Definition](definitions/sea-lift-4-5.md), [integers study](deep-dives/subjects/integers.md)
+
+Proof: typecheck and unit tests (the properties above plus registry and how-to tests); one scripted play through `browser-check.mjs`'s `sea-lift` case extended to level 4 (one wrong card, one hint, the dimmed card) and level 5 (the dock case, one wrong stop); one portrait screenshot of level 4's card column beside the shaft; `fingerdemo` at levels 4 and 5; `npm run build`, because the voice and how-to files change. [Check tier](definitions/sea-lift-4-5.md#check-tier).
+
 ### recipe-workshop 1: Levels 1–3
 
 Built 2026-10-22, branch `claude/recipe-workshop-1-3`; [closeout](archive/COMPLETED-2026-10-09.md#recipe-workshop-levels-13-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
