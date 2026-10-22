@@ -134,6 +134,8 @@ Level 9 (lap entry, `entryLevels`) and level 10 (toddler, between 2 and 3) above
 
 ## Build slices, in order
 
+**Claimed 2026-10-21:** `codex/feelings-help-and-happenings`, Helping and explaining happenings batch (slices 3–5: levels 10, 11 and 13). Expected files: `src/games/feelings-faces/`, voice/how-to content, filtered browser check, inventory and closeout docs. Depends on built slices 1–2; Ask first remains separate. Proof: typecheck, unit tests, build (shared content), filtered plays with misses/glow and portrait, demos at 10/11/13.
+
 **Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`feelings-faces` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
 1. **Pools, the pet's own hug and scenery that answers** (**built 2026-10-20**, [PR #673](https://github.com/rjdunlap/neo/pull/673); the pool is five scenarios, not four, see the archive note; existing-game content tier; gaps 1–3, 6): `EVENTS` 4 → 8 with four props and animations, `CARE_SCENARIOS` 2 → 4 (ice cream, snow), `FRIENDS` → 8, reworded `feel.hug`/`feel.need-sad`/`feel.helped`, second line variants, tap-to-wobble on props, the how-to finish and repeat lines. Tests: every event → a feeling; four scenarios → four distinct helpers; a level-8 round shows four different happenings. Checks: typecheck, the rule tests, one filtered play of levels 6 and 8 (one wrong card, one glow), `fingerdemo` at 8.
