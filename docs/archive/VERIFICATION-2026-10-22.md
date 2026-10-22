@@ -193,3 +193,11 @@
 - `BROWSER_SUITE=arcade ARCADE_ONLY=scoop ARCADE_LEVELS=10,11`: 10 passed; 11 initially exposed a driver offset error (screen offsets on a scaled customer). `test-results/scoop-probe.mjs` logged the old picture tap at local y −583, outside the −500 hit area; the correct transformed tap counted a miss. Fixed driver coordinates; filtered `ARCADE_LEVELS=11` passed body/picture taps, free cone exploration, wrong customer twice, glow, saved 2/1, retained waiting friend and one sticker. Level 10 saved 0/0 and one sticker. No page errors.
 - Portraits `test-results/browser/scoop-shop-10-portrait.png` and `scoop-shop-11-portrait.png` inspected: legible scoop/heart and separate customer pictures, clear pet and shell controls. `BROWSER_SUITE=fingerdemo FINGER_ONLY=scoop-shop FINGER_LEVELS=10,11`: clean in **13.9 / 13.3 seconds**, no misses, hints or page errors.
 - Links and diff check at closeout. World/offline/picnic/couch not run (unaffected); iPad touch/speech and child understanding remain open in DEVICE-CHECKS.
+
+## 2026-10-22 — Little Helpers batch 1: rings, whistle and carrying
+
+- [PR #804](https://github.com/rjdunlap/neo/pull/804), slices 2, 3 and 5: filling rings and the gap whistle (levels 2–6), non-alternating needs, lap 1–2, six carry things in three places, level 9 *Whistle when it's full* with no misses.
+- Proof on `740ac380` (base `origin/main` `46e80632`), `http://localhost:5646`: typecheck clean; `npm test` 2474 of 2475, the one failure Block Garden's time-capped hint search under full-suite load (unrelated; passes alone, 33/33). 11 Little Helpers rule tests.
+- `BROWSER_SUITE=batch BATCH_ONLY=helpers HELPERS_LEVELS=2,5,9` passed: 2 and 5 in the orchard (5 with extras, the short whistle and one hint, `[2,1]`), 9 on the beach in portrait (early whistle and past-full helper uncounted, `[0,0]`). `BROWSER_SUITE=fingerdemo FINGER_ONLY=little-helpers FINGER_LEVELS=2,9` clean in 22.0 / 29.9 s.
+- Orchard, woods and beach mid-round and a level 9 portrait reviewed by eye (`test-results/lh-*.png`, not committed).
+- Not run: build (no shared assets), level 6's own suite (only its art changed), world/offline. Open: whether a toddler reads the wiggling whistle and blinking rings (DEVICE-CHECKS).

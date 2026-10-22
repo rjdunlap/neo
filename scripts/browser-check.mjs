@@ -7190,12 +7190,14 @@ async function originals() {
   const shapeLevels = process.env.SHAPE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 8 }, (_, i) => i + 1);
   // Level 9, the tap-in entry, plays once at lap and once at toddler (in portrait), where it opens the ladder.
   // Level 10 (Round or square) is toddler's; 11 (Big, middle, little) plays in portrait for its wider three-size lid.
-  const shapeRuns = shapeLevels.filter((n) => n >= 1 && n <= 11 && (!only || only === 'shapes')).flatMap((n) => (n === 9 ? [[9, 'lap'], [9, 'toddler']] : n === 10 ? [[10, 'toddler']] : [[n, undefined]]));
+  const shapeRuns = shapeLevels.filter((n) => n >= 1 && n <= 12 && (!only || only === 'shapes')).flatMap((n) => (n === 9 ? [[9, 'lap'], [9, 'toddler']] : n === 10 ? [[10, 'toddler']] : [[n, undefined]]));
   for (const [level, shapeBand] of shapeRuns) {
-    const upright = level === 8 || level === 11 || (level === 9 && shapeBand === 'toddler');
+    const upright = level === 8 || level === 11 || level === 12 || (level === 9 && shapeBand === 'toddler');
     if (upright) await portrait(true);
     await launch('shape-sorter', level, 'Mia', shapeBand);
     await page.waitForTimeout(400);
+    const shapeStickers = await page.evaluate(() => kit.store.data.stickers.length);
+    if (level === 12) await screenshot('shape-sorter-12-start-portrait');
     if (level === 9 && shapeBand === 'toddler') await screenshot('shape-sorter-9-start-portrait');
     const holes = await page.evaluate(async () => {
       const g = neo.scene.game;
@@ -7204,6 +7206,43 @@ async function originals() {
       // By kind (a clue), or the piece's own hole: its kind and, at the sized level, its size.
       const fits = (h, p) => h.kind === p.kind && (h.size === undefined || h.size === p.size);
       const holeFor = (k) => g.box.holes.find((h) => (typeof k === 'string' ? h.kind === k : fits(h, k)));
+      if (g.plan.turning) {
+        const { turnFits, turnNext } = await import('/src/games/shape-sorter/logic.ts');
+        const p = g.pieces.find((p) => p.kind !== 'circle');
+        const angle = p.view.rotation;
+        // A second finger cannot steal the tap, and cancellation submits neither a turn nor a drop.
+        const global = p.view.getGlobalPosition();
+        p.view.emit('pointerdown', { pointerId: 301, global });
+        p.view.emit('pointerdown', { pointerId: 302, global });
+        p.view.emit('globalpointermove', { pointerId: 302, global: { x: global.x + 200, y: global.y } });
+        if (p.tapStart?.pointerId !== 301 || p.tapMoved) throw new Error('Shape turn: second finger stole the tap');
+        window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 301 }));
+        await kit.sleep(500);
+        if (p.drag.dragging || p.view.rotation !== angle || g.misses || g.hints) throw new Error('Shape turn: cancellation changed play');
+        // A real tap advances one notch for free, leaving the piece at its floor spot.
+        const pos = { x: p.view.x, y: p.view.y };
+        kit.tapOn(p.view); await kit.sleep(200);
+        if (Math.abs(p.view.rotation - turnNext(angle)) > 1e-6 || p.view.x !== pos.x || p.view.y !== pos.y || g.misses) throw new Error('Shape turn: tap must turn one notch in place');
+        // Keep turning until off-fit again so two right-hole orientation misses can teach and align.
+        for (let n = 0; turnFits(p.kind, p.view.rotation) && n < 12; n++) { kit.tapOn(p.view); await kit.sleep(180); }
+        const wrong = g.box.holes.find((h) => !fits(h, p));
+        await into(p, wrong); await into(p, wrong);
+        if (g.misses !== 2 || g.hints !== 1 || !holeFor(p).glow.visible) throw new Error('Shape turn: wrong-hole support');
+        await into(p, holeFor(p));
+        if (g.misses !== 3 || g.hints !== 1 || !g.pieces.includes(p) || Math.hypot(p.view.x - (g.box.x + holeFor(p).x), p.view.y - (g.box.y + holeFor(p).y)) > 1) throw new Error('Shape turn: misaligned piece must wait at its hole');
+        await into(p, holeFor(p));
+        if (g.misses !== 4 || g.hints !== 2 || !turnFits(p.kind, p.view.rotation) || !g.pieces.includes(p)) throw new Error('Shape turn: second orientation miss must self-align once');
+        // Tapping while it waits on a hole must turn rather than accidentally swallow it.
+        kit.tapOn(p.view); await kit.sleep(200);
+        if (!g.pieces.includes(p) || g.misses !== 4) throw new Error('Shape turn: a tap on the hole posted the piece');
+        for (let guard = 0; guard < 30 && g.pieces.length; guard++) {
+          const next = g.pieces[0];
+          if (!turnFits(next.kind, next.view.rotation)) { kit.tapOn(next.view); await kit.sleep(180); }
+          else await into(next, holeFor(next));
+        }
+        if (g.pieces.length) throw new Error('Shape turn: tap then carry did not finish');
+        return g.box.holes.length;
+      }
       if (g.plan.clue) {
         await kit.until(() => g.clueReady || g.finished, 10000);
         let checkedHint = false;
@@ -7255,7 +7294,8 @@ async function originals() {
     });
     await screenshot(`shape-sorter-${level}${shapeBand ? `-${shapeBand}` : ''}`);
     await finished('shape-sorter');
-    assert.deepEqual(await score('shape-sorter'), holes > 1 ? [2, 1] : [0, 0], `shapes ${level} score`);
+    assert.deepEqual(await score('shape-sorter'), level === 12 ? [4, 2] : holes > 1 ? [2, 1] : [0, 0], `shapes ${level} score`);
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), shapeStickers + 1, 'one shape sticker');
     if (upright) await portrait(false);
     log(`Shape Sorter ${level}${shapeBand ? ` (${shapeBand})` : ''}: dragging into holes, wrong holes, glow hint, saved score and sticker passed`);
   }
