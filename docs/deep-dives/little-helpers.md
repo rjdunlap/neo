@@ -8,20 +8,21 @@ A fruit drops onto the meadow; tapping it sends the nearest of seven leaf-topped
 
 | Level | Plan (`PLANS`, by array position) | Band windows | What she decides |
 | --- | --- | --- | --- |
-| 1 | `tap`: 5 fruits, each needs 1 | lap 1, toddler 1–2 | Nothing to judge: tap the fruit, one helper carries it |
-| 2 | `two`: 4 fruits, need 1–2, dots on a badge | toddler, preschool | Keep tapping until the fruit lifts by itself; it cannot be wrong |
+| 1 | `tap`: 5 fruits, each needs 1 | lap 1–2, toddler 1–2 | Nothing to judge: tap the fruit, one helper carries it |
+| 2 | `two`: 4 fruits, need 1–2, rings that fill (no 1, 2, 1, 2 swap) | lap, toddler, preschool | Keep tapping until the fruit lifts by itself; it cannot be wrong |
 | 3 | `count`: 4 fruits, need 2–4, dots, whistle | preschool, pre-K | How many to send before blowing the whistle; too few strain, extras walk back |
 | 4 | `numeral`: 4 fruits, need 2–5, a numeral | preschool, pre-K | The same, from a written number |
-| 5 | `more`: 4 fruits, need 3–6, 1 to need−1 already holding | pre-K, school | Send the rest (the pet counts on from the ones already there) |
+| 5 | `more`: 4 fruits, need 3–6, 1 to need−1 already holding, empty rings are the gap | pre-K, school | Send the rest (a short whistle names the gap; the pet counts on) |
 | 6 | `groups`: 4 bunches from 2×2, 3×2, 2×3, each once first | pre-K, school | The total for a bunch of same-size fruits; teams line up under each fruit |
+| 9 | `whistle`: 4 things, need 1–3, rings fill | toddler order 1, 2, 9; preschool order 2, 9, 3, 4 | Blow the whistle when every ring is full; an early whistle or an extra helper is free, never a miss |
 
-**Content pools.** Five fruits, one per colour (`FRUIT_FOR`: apple, orange, lemon, pear, grapes), scaled by need. One sky-and-hills backdrop (seed 41), one basket, seven helpers in seven colours. Rounds differ only in fruit colour and the needs drawn.
+**Content pools.** Fruits (`FRUIT_FOR`: apple, orange, lemon, pear, grapes) plus a pumpkin, watermelon, acorn, pinecone, blueberries and toy boat, each with a need range (`CARRY_NEEDS`). A seeded place per round (`dressRound`): orchard (basket), beach (rowing boat) or woods (bucket), each with its own scenery. Seven helpers in seven colours. Plans are keyed by level (`planFor`); badge rings fill as helpers arrive.
 
-**Accounting.** Levels 1–2 have no misses. From 3, a whistle with too few or too many is a miss (`boing`, a spoken line naming the need; at 6 a skip count, "Count by 2: 2, 4, 6"); two misses on one fruit draw yellow rings where the team should stand (one hint per fruit). Tapping a holding helper sends it home freely (except helpers who were already there at 5). Spoken support: the pet counts each arrival (`count` with the new total, so level 5 counts on), and each bunch ends "3 groups of 2 make 6".
+**Accounting.** Levels 1–2 and 9 have no misses. From 3, a whistle with too few or too many is a miss (`boing`, a spoken line naming the need; at 6 a skip count, "Count by 2: 2, 4, 6"); two misses on one fruit draw yellow rings where the team should stand (one hint per fruit). Tapping a holding helper sends it home freely (except helpers who were already there at 5). Spoken support: the pet counts each arrival (`count` with the new total, so level 5 counts on), and each bunch ends "3 groups of 2 make 6".
 
 **Bot.** `autotouch()` taps the fruit (the middle fruit of a bunch) until `helperTouch` says the team is complete, then taps the whistle. A rule test walks every seeded fruit at every level with it.
 
-**Known gaps found reading the code.** Gaps 1, 6 and 7 are fixed (slice 1, built); the rest stay open.
+**Known gaps found reading the code.** Gaps 1, 6 and 7 are fixed (slice 1), 3, 4, 5, 8 and 10 (batch 1, slices 2, 3 and 5; all built); 2, 9 (the double-tap part), 11 and 12 stay open.
 
 1. **Many touches get no answer at the lap and toddler levels.** `send()` returns while `busy`, which covers the fruit's drop-in, the whole lift and carry (about three seconds) and the praise line; taps on the sky and grass have no listener; a tap on a waiting helper reaches `recall()`, which needs `slot >= 0`, so nothing happens. At level 1 a one-year-old's taps between fruits are mostly silent.
 2. **Level 6 asks for a total, not groups.** Every tap on the bunch fills the next slot, and `slotAt()` assigns teams by index, so the teams are always equal by construction; she can never make an unequal team, and the ghost finger's choice of fruit means nothing. The equal-groups claim lives in the drawing, not in her action.
@@ -140,10 +141,10 @@ This separates the whistle from exactness (gap 8): at 9 the whistle means "done"
 **Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`little-helpers` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
 1. **Built (2026-10-21): Every touch answers and the empty crowd shrugs** (existing-game bug fix tier: typecheck, rule tests, one filtered regression play, `fingerdemo` at level 1): level 1 whole-screen send, hop/squeak on taps while busy, grass wave, the no-helpers shrug instead of `boing`, a zero-helper whistle as a nudge (decision 2's default), the whole bunch into the basket. Gaps 1, 6, 7. Built: a full-screen `field` layer sends a helper at level 1; while busy any touch hops and squeaks the nearest helper; at levels 2–6 a sky or grass tap makes the nearest waiting helper wave; a fruit tap with no helpers left shrugs and says `helpers.busy`; a zero-helper whistle is a nudge, not a miss (`fieldTouch`, `whistleFor`/`whistleMisses`, `pileSpot`, `BASKET_HALF` in `logic.ts`, three rule tests); every fruit of a bunch lands in the basket. How-to step and notes updated. Still open: whether a one-year-old notices the hop and wave, and whether the shrug reads (device check).
-2. **The badge fills, needs vary, and level 2 opens to lap** (existing-game change, rule tests, one screenshot, `fingerdemo` at 2): fill-as-they-arrive rings at 2–6, the gap named at 5, extras outside the frame, seeded non-alternating needs, lap window 1–2. Gaps 3, 4, 5.
-3. **Things to carry and three places** (content tier: rule tests, one screenshot per backdrop): pumpkin, watermelon, acorn, pinecone, toy boat; orchard, beach and woods with their destinations.
+2. **Built (2026-10-22, [PR #804](https://github.com/rjdunlap/neo/pull/804), batch 1): The badge fills, needs vary, and level 2 opens to lap** (existing-game change, rule tests, one screenshot, `fingerdemo` at 2): fill-as-they-arrive rings at 2–6, the gap named at 5, extras outside the frame, seeded non-alternating needs, lap window 1–2. Gaps 3, 4, 5.
+3. **Built (2026-10-22, PR #804, batch 1): Things to carry and three places** (content tier: rule tests, one screenshot per backdrop): pumpkin, watermelon, acorn, pinecone, toy boat; orchard, beach and woods with their destinations.
 4. **Level 6 teams she builds** (existing-game change on a changed interaction: nearest-helper taps, rule tests, one filtered play at 6, `fingerdemo` at 6, how-to step update). Gaps 2, 11.
-5. **Level 9 Whistle when it's full** (new level; after slice 2: plans keyed by ID, `order` for toddler and preschool, rule tests, a level-9 play, `fingerdemo` at 9, how-to and voice). Gaps 8, 10.
+5. **Built (2026-10-22, PR #804, batch 1): Level 9 Whistle when it's full** (new level; after slice 2: plans keyed by ID, `order` for toddler and preschool, rule tests, a level-9 play, `fingerdemo` at 9, how-to and voice). Gaps 8, 10.
 6. **Level 7 Everyone helps** (new interaction: two fruit spots, a crowd size per plan (the existing test's one-spare rule becomes per plan), rule tests, one scripted play first and last level with a wrong whistle and a hint, portrait screenshot, `fingerdemo`).
 7. **Level 8 Strong helpers** (new interaction: strength-aware lift, big helper art, rule tests, scripted play, `fingerdemo`).
 
@@ -151,4 +152,4 @@ Gated: *Make ten* and *Share the crowd* (decision 1) and the rework hooks (decis
 
 ## What was built in this session
 
-Nothing: research and ideation only. Ran `node scripts/check-links.mjs` and `git diff --check`.
+Batch 1 (slices 2, 3, 5) is built in PR #804 (see the [build note](../archive/COMPLETED-2026-10-09.md#little-helpers-batch-1-rings-that-fill-things-to-carry-and-the-full-team-whistle-2026-10-22)); the dive itself was research and ideation only. Ran `node scripts/check-links.mjs` and `git diff --check`.
