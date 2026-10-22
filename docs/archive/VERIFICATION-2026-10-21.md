@@ -320,3 +320,9 @@
 - Branch `claude/rw08-cutover-definition` (PR #743): [RW08-CUTOVER.md](../rework/RW08-CUTOVER.md), with three build slices (Explore's four entries; the library, stories and rest of Home; the `classic/` cutover, waiting on the developer) and five defaults. Also the RW08 row, READY, WAITING-ON-DEVELOPER and the roadmap row.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Nothing built. Not run: unit tests, browser suites, offline check, device, child play. Packet claims come from a source audit at `03e20c70`, not from play.
+
+## 2026-10-21 — RW08 slice 1: Explore's four entries
+
+- Branch `claude/rw08-explore-entries` (PR #744), base `origin/main` 50525377 plus the branch: `ExploreScene` entries (Places, Favorites, All games paged, Family play), the `{ explore }` origin, `go.explore`, the result's Back to [origin] beside a Home house at the root.
+- Ran `npm run typecheck`; `npm test` (204 files, 2387 tests, new `explore.test.ts` and `exploreGridLayout` five-view test); `npm run build`; `BROWSER_SUITE=home` at a dev server (entries, Places to Counting Cove and back, All games page 2 to a game and the result's Back to All games and Home, an older-age favorite at school band with no re-pin, empty Favorites, Family play to couch and back in landscape and portrait; six screenshots inspected); `npm run test:offline` against the matched preview.
+- Not run: `world`, `couch`, `picnic` (classic and couch code unchanged). No iPad, device speech or child check ([DEVICE-CHECKS](../DEVICE-CHECKS.md)). Open: couch's leave button still says "Back to the island" for an Explore origin.
