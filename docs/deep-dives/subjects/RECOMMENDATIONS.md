@@ -754,3 +754,17 @@ The [ordered slices](speaking-listening.md#build-slices-in-order) separate defin
 | **VW5 Root Garden** · U, M | sketch; after decision 4 (reading at the school top) | Greek and Latin roots, guess then check (L.4–6.4b, L.6.4d) |
 | **VW6 Root Words** · 13+ | first a Word Search root-family theme list (ordinary review); the Lantern Lake game after its capacity test | Any valid build accepted; boards checked against a word list; no timer |
 | **VW7 Silly Compounds / word-inside-a-word** · G co-play and page | hand to off-screen companions after an ordinary content review | Plain HTML; any home language |
+
+## Informational reading recommendations
+
+**Recommended 2026-10-22:** [the informational-reading study](informational-reading.md), [PR #815](https://github.com/rjdunlap/neo/pull/815). Its anchors were opened: CCSS RI.K–RI.5 and RST.6–8 (text features to locate a fact, pictures versus words, diagrams, two texts, procedures), Head Start ELOF IT-LC 10–12 and P-LIT 2 and 5, and the UK EYFS framework. Zhao et al. 2014 and Jian 2018 were opened; Masonheimer et al. and Liben and Downs are secondary sources only. Maps and keys stay with Mail Carrier and Treasure Map, graphs with Picture Graph, picture procedures with Recipe Workshop, printed signs with Read & Do and clue elimination with Who Am I? and Fewest Clues; this study owns using a book's features to find a fact.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **IR1 Look It Up 1–3** · toddler–pre-K, school 3 | define now, docs only, as one packet | A new game: a picture guide whose pages each hold one island friend and a fact box in the same place. Level 1 has no misses (touch a label, it speaks); level 2 finds a hungry visitor's page by picture tab and gives the food it shows; level 3 finds a row (*Eats*, *Plays with*, *Naps at*) and acts it out in the scene. Flipping, label and row taps are free; only an answer acted out is a miss. *Eats* equals Animal Snack's `FAVORITE` (a rule test); the opening page is never the visitor's. Its build waits on decision 1 (new game and land) |
+| **IR2 Look It Up 4–6** · school, upper school | define after IR1 is played and decision 3 is answered | Contents page with printed names; a caption that decides between two pictured friends; a question needing two pages. Printed words with free replay on Read & Do's terms; never a reading-speed score |
+| **IR3 Diagram Detective** · upper school, middle | sketch; a note to Attic Finds' owner | An invented machine's diagram; each question answerable only from it; one convention per level (arrow, label line, cutaway, inset, legend) |
+| **IR4 Key It Out** · 13+ | define after the Lantern Lake capacity test (twelve games today) | Identify invented creatures from a field-guide page; answers confirm three at a time; no timer or daily board |
+| **IR5 Look it up together, text feature walk, sign walk** · L, T, G co-play and page | hand to off-screen companions after an ordinary content review | Plain HTML; any home language |
+
+The [ordered slices](informational-reading.md#build-slices-in-order) separate definitions from builds. The IR1 build uses the new-game tier. Completion with spoken support is not evidence of independent reading, and nothing scores how fast she finds a page.

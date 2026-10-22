@@ -66,6 +66,7 @@ The research is complete for every row below; `define` means the next session wr
 | `estimation` | person | Lasso Loops 6 About how many? (E1) [built](definitions/lasso-loops-about-how-many.md); next definition Lasso Loops 7 (E2) after a child has played 6; E6/E7 co-play and family card retain their ordinary content review | [Study](deep-dives/subjects/estimation.md), [definition](definitions/lasso-loops-about-how-many.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#estimation-recommendations) |
 | `speaking-listening` | build | Photo Safari *Tell me which* and *Tell me both* (SL1–2) [defined](definitions/photo-safari-tell-me-which.md) 2026-10-22 ([PR #813](https://github.com/rjdunlap/neo/pull/813), levels 10–11); build queued in READY, ungated | [Study](deep-dives/subjects/speaking-listening.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#speaking-and-listening-recommendations) |
 | `vocabulary-word-parts` | define | Word Glue 1–3 (VW1) definition, docs only; its build waits on decisions 1 (new game and land) and 2 (compound list review) | [Study](deep-dives/subjects/vocabulary-word-parts.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#vocabulary-and-word-parts-recommendations) |
+| `informational-reading` | define | Look It Up 1–3 (IR1) definition, docs only; its build waits on decision 1 (new game and land) | [Study](deep-dives/subjects/informational-reading.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#informational-reading-recommendations) |
 
 ## Unstarted subject research
 
@@ -73,7 +74,6 @@ One subject per docs-only session using the [subject procedure](deep-dives/subje
 
 | Subject | Status | Next action |
 | --- | --- | --- |
-| `informational-reading` | research | Labels, captions, diagrams, maps, a how-to; finding an answer in a text, with spoken support; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `writing-composition` | research | A message, a list, a story, an opinion with a reason, planning and revising for a reader; picture/word choices through free composition; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `keyboarding-editing` | research | Finding keys, spaces, capitals, punctuation, delete, cursor movement and revising digital text; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `spelling-sentences` | research | Encoding words, spelling patterns, word boundaries, sentence construction, capitals and punctuation; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
