@@ -203,7 +203,7 @@ Each row is one future session. Definitions are docs only (links and `git diff -
 
 | Order | One-session deliverable | Entry / exit and checks |
 | --- | --- | --- |
-| **1 — Define Far Lights 1–4** | Freeze stops, glows, halo steps, both layouts, speech, accounting (levels 1–2 exploratory), accepted answers, ghost-finger actions, how-to wording ("looks brighter, not bigger") | Docs only. Placement and accounting decisions recorded; reviewer named or explicitly pending |
+| **1 — Define Far Lights 1–4 — done 2026-10-22 ([definition](../../definitions/far-lights.md))** | Freeze stops, glows, halo steps, both layouts, speech, accounting (levels 1–2 exploratory), accepted answers, ghost-finger actions, how-to wording ("looks brighter, not bigger") | Docs only. Placement and accounting decisions recorded; reviewer named or explicitly pending |
 | **2 — Build Far Lights 1–4** | Registered touch game with `logic.ts` model, seeded layouts, how-to card and ghost finger | After decisions 1–3: typecheck, rule tests (strictly increasing brightness toward the window, exactly one match, pair separation ≥ 2×), one filtered first/last-level play with a wrong check and a hint, portrait screenshot, demo |
 | **3 — Define Far Lights 5–8** | Curtain, ordering, unequal glows and the toy parallax step, with enumerated surviving pairings | Docs only; parallax wording reviewed or held; levels 7–8 placement decided |
 | **4 — Define Moon Window 8–9** | Edge-on view, labelled tilt, eclipse records, all matching arrangements | Docs only, **after** Moon Window's levels 1–7 are defined (Space slices 1 and 3) |
