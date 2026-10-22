@@ -40,7 +40,7 @@ describe('Animal Snack', () => {
 
   it('names every drawn snack with a grammatical countable unit from one to six', () => {
     const expected: Record<Food, string[]> = {
-      hay: ['bale of hay', 'bales of hay'], carrot: ['carrot', 'carrots'], bone: ['bone', 'bones'],
+      hay: ['bale of hay', 'bales of hay'], grass: ['tuft of grass', 'tufts of grass'], bone: ['bone', 'bones'],
       fish: ['fish', 'fish'], seeds: ['handful of seeds', 'handfuls of seeds'],
       apple: ['apple', 'apples'], honey: ['pot of honey', 'pots of honey'],
     };
