@@ -26,6 +26,7 @@ import {
   makeWorld,
   pickTable,
   type TableId,
+  wantsColor,
   orderNumbers,
   planFlip,
   planFor,
@@ -42,7 +43,7 @@ const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 9, order: [3, 4, 6, 5, 9] },
+  prek: { min: 3, max: 9, order: [3, 4, 6, 8, 5, 9] },
 };
 
 /** Colors a flower can be; on color levels the first is the one to bloom. */
@@ -61,6 +62,9 @@ interface Due {
 /** A flower bumper: closed petals until it is bumped the right way, then it blooms. */
 class Flower extends Container {
   bloomed = false;
+  /** On a "not" level the asked color's flowers fall asleep: faded, shut and drooping, with a "z" over them. */
+  sleepy = false;
+  private readonly snore = label('z', 26, 0x8c8c9c);
   /** When it last chimed, so a long touch rings once. */
   lastHit = -1;
   private readonly head = new Container();
@@ -85,12 +89,23 @@ class Flower extends Container {
       this.head.addChild(n);
     }
     this.ripple.eventMode = 'none';
-    this.addChild(this.ripple, this.head);
+    this.snore.position.set(30, -44);
+    this.snore.visible = false;
+    this.addChild(this.ripple, this.head, this.snore);
+    this.draw();
+  }
+
+  /** Fall asleep (or wake up, at the finale): the same shape on every table, faded so it reads as "not now". */
+  sleep(on: boolean) {
+    this.sleepy = on;
+    this.snore.visible = on;
+    this.head.alpha = on ? 0.45 : 1;
+    this.head.rotation = on ? 0.35 : 0;
     this.draw();
   }
 
   private draw() {
-    const sw = swatch[this.color];
+    const sw = this.sleepy ? { fill: 0xc4c4cc, line: swatch[this.color].line, light: swatch.white.light } : swatch[this.color];
     const g = this.petals.clear();
     const open = this.bloomed ? 1 : 0.62;
     if (this.table === 'pond') {
@@ -115,6 +130,7 @@ class Flower extends Container {
   }
 
   bloom() {
+    if (this.sleepy) this.sleep(false);
     this.bloomed = true;
     this.draw();
   }
@@ -133,6 +149,7 @@ class Flower extends Container {
         .stroke({ color: swatch.white.fill, width: 3, alpha: (1 - this.rippleAge) * 0.65 });
     }
     this.head.scale.set(1 + 0.25 * Math.sin(this.bump * Math.PI));
+    if (this.sleepy) this.snore.y = -44 - 6 * Math.sin(this.rippleAge * Math.PI);
     // The petals turn slowly once open; the number stays upright.
     if (this.table === 'meadow') this.petals.rotation += dt * (this.bloomed ? 0.5 : 0);
   }
@@ -265,7 +282,15 @@ class BumperGarden implements Game {
     const p = this.plan;
     if (p.mode === 'spring') void this.ctx.instruct('bumper.spring');
     else if (p.mode === 'bloom') void this.ctx.instruct('bumper.bloom');
-    else if (p.mode === 'color') void this.ctx.instruct('bumper.color', { color: this.target });
+    else if (p.not) {
+      void this.ctx.instruct('bumper.not', { color: this.target });
+      // She sees which ones are the asked color first; then, as the words land, they fall asleep.
+      void this.ctx.tw.wait(1.4).then(() => {
+        if (this.finished) return;
+        this.flowers.forEach((f, i) => { if (!this.wanted(i) && !f.bloomed) f.sleep(true); });
+        sfx.squish();
+      });
+    } else if (p.mode === 'color') void this.ctx.instruct('bumper.color', { color: this.target });
     else if (p.descend) void this.ctx.instruct('bumper.back', { n: this.next });
     else if (p.start) void this.ctx.instruct('bumper.start', { n: this.next });
     else void this.ctx.instruct('bumper.order', { n: this.next });
@@ -407,7 +432,7 @@ class BumperGarden implements Game {
   wanted(i: number): boolean {
     const f = this.flowers[i];
     if (f.bloomed) return false;
-    if (this.plan.mode === 'color') return f.color === this.target;
+    if (this.plan.mode === 'color') return wantsColor(this.plan, f.bumper.color);
     if (this.plan.mode === 'order') return f.bumper.number === this.next;
     return true;
   }
@@ -565,7 +590,8 @@ class BumperGarden implements Game {
         this.hints++;
         this.hinting = true;
         void this.ctx.say('bumper.hint');
-      } else if (mode === 'color') void this.ctx.say('bumper.again-color', { color: this.target });
+      } else if (this.plan.not) void this.ctx.say('bumper.again-not', { color: this.target });
+      else if (mode === 'color') void this.ctx.say('bumper.again-color', { color: this.target });
       else void this.ctx.say('bumper.again-order', { n: this.next });
     }
   }

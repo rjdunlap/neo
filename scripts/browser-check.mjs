@@ -7146,10 +7146,10 @@ async function next() {
   }
 
   // Bumper Garden: launching, then flipping like a finger: tap a side as the ladybug comes down to it.
-  const bumperLevels = process.env.BUMPER_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 9].filter(l => l >= Number(process.env.FROM_LEVEL || 1));
+  const bumperLevels = process.env.BUMPER_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 8, 9].filter(l => l >= Number(process.env.FROM_LEVEL || 1));
   const bumperTables = process.env.BUMPER_TABLES?.split(',') ?? [null];
   for (const table of bumperTables) for (const level of (!only || only === 'bumper') ? bumperLevels : []) {
-    if (level === 1 || level === 5 || level === 9) await page.setViewportSize({ width: 768, height: 1024 });
+    if (level === 1 || level === 5 || level === 8 || level === 9) await page.setViewportSize({ width: 768, height: 1024 });
     if (table) await page.evaluate(async ({ table, level }) => {
       const { bumperGarden } = await import('/src/games/bumper-garden/index.ts');
       const { pickTable, planFor, TABLE_IDS } = await import('/src/games/bumper-garden/logic.ts');
@@ -7167,8 +7167,18 @@ async function next() {
     }, { table, level });
     await launch('bumper-garden', level);
     if (table) assert.equal(await page.evaluate(() => neo.scene.game.table), table);
-    await page.waitForTimeout(400);
-    if (table || level === 6 || level === 9) await screenshot(`bumper-garden-${table ? `${table}-` : ''}${level}`);
+    await page.waitForTimeout(level === 8 ? 2000 : 400);
+    if (table || level === 6 || level === 8 || level === 9) await screenshot(`bumper-garden-${table ? `${table}-` : ''}${level}`);
+    if (level === 8) await page.evaluate(() => {
+      // Not this color: the asked color sleeps, is never wanted, and bumping one only chimes.
+      const g = neo.scene.game;
+      const sleepy = g.flowers.findIndex(f => f.sleepy);
+      if (sleepy < 0 || !g.plan.not) throw new Error('Bumper 8: no sleepy flower');
+      if (g.flowers.some((f, i) => f.sleepy === g.wanted(i))) throw new Error('Bumper 8: a sleepy flower is wanted, or an awake one is not');
+      const before = { misses: g.misses, hints: g.hints };
+      g.bumped(sleepy);
+      if (g.flowers[sleepy].bloomed || g.misses !== before.misses || g.hints !== before.hints) throw new Error('Bumper 8: a sleepy bump changed progress');
+    });
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const result = await page.evaluate(async () => {
       const g = neo.scene.game;
@@ -7213,12 +7223,12 @@ async function next() {
       if (!g.finished) throw new Error(`Bumper never finished: next ${g.next}, bloomed ${g.flowers.filter((f) => f.bloomed).length}`);
       return { launches: g.launches, misses: g.misses, hints: g.hints };
     });
-    if (level !== 6 && level !== 9) await screenshot(`bumper-garden-${level}`);
+    if (level !== 6 && level !== 8 && level !== 9) await screenshot(`bumper-garden-${level}`);
     await finished('bumper-garden');
     const r = await score('bumper-garden');
     if (mode === 'spring' || mode === 'bloom') assert.deepEqual(r, [0, 0], `bumper ${level} score`);
     else assert.ok(r[0] >= 2 && r[1] >= 1 && r[0] === result.misses && r[1] === result.hints, `bumper ${level} score ${r}`);
-    if (level === 1 || level === 5 || level === 9) await page.setViewportSize({ width: 1024, height: 768 });
+    if (level === 1 || level === 5 || level === 8 || level === 9) await page.setViewportSize({ width: 1024, height: 768 });
     log(`Bumper Garden ${table ?? 'random'} ${level} (${mode}): ${result.launches} launches, flips, blooms, score ${r}, saved score and sticker passed`);
   }
 
