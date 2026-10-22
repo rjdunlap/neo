@@ -500,7 +500,7 @@ class SingAlongBarn implements Game {
   }
 }
 
-/** A song's card: a barn-red tab with its picture (a cow, a bun, a lamb, a moon, a rain cloud, a spider or a ball) and the first beads of its tune. */
+/** A song's card: a barn-red tab with its picture (a cow, a bun, a lamb, a moon, a rain cloud, a spider, a ball or a ring of roses) and the first beads of its tune. */
 function drawTuneCard(t: Tune): Container {
   const c = new Container();
   const g = new Graphics().roundRect(-110, -100, 220, 200, 28).fill(0xfff4d6).stroke(line(BARN_DARK, 8));
@@ -531,6 +531,21 @@ function drawTuneCard(t: Tune): Container {
     const ball = new Graphics().circle(0, 12, 44).fill(0xe8604c).stroke(line(0xa83a2a, 5)).moveTo(-42, 12).lineTo(42, 12).stroke(line(0xfff4d6, 7));
     const lines = new Graphics().moveTo(-78, 30).lineTo(-60, 52).moveTo(78, 30).lineTo(60, 52).stroke(line(0x8a9db5, 5));
     c.addChild(shadow, ball, lines);
+  } else if (t.id === 'ring') {
+    // A ring of pink roses, a puff for each friend holding hands.
+    const ring = new Graphics();
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2;
+      ring.circle(Math.cos(a) * 52, 24 + Math.sin(a) * 52, 17);
+    }
+    ring.fill(0xf4a6c8).stroke(line(0xc0577f, 5));
+    const centres = new Graphics();
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2;
+      centres.circle(Math.cos(a) * 52, 24 + Math.sin(a) * 52, 6);
+    }
+    centres.fill(0xffe9a0);
+    c.addChild(ring, centres);
   } else if (t.id === 'mary') {
     const lamb = new Graphics()
       .circle(-40, 30, 26)
@@ -627,14 +642,14 @@ export const singAlongBarn: GameModule = {
   describeLevel: (level) => {
     const p = planFor(level);
     const friends = p.verses === 1 ? '1 friend' : `${p.verses} friends`;
-    if (p.full) return `Choose the whole Old MacDonald verse (with the moo-moo lines), Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider or Bounce High, Bounce Low, then choose who sings next after each verse (${friends})`;
-    if (p.chooseTune) return `Choose Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider or Bounce High, Bounce Low, then choose who sings next after each verse (${friends})`;
-    if (p.each) return `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider or Bounce High, Bounce Low; after each verse, choose who sings next (${friends})`;
-    return p.invite ? `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider or Bounce High, Bounce Low; choose ${friends} to join the song` : `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider or Bounce High, Bounce Low; tap to sing, ${friends} visit`;
+    if (p.full) return `Choose the whole Old MacDonald verse (with the moo-moo lines), Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, then choose who sings next after each verse (${friends})`;
+    if (p.chooseTune) return `Choose Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, then choose who sings next after each verse (${friends})`;
+    if (p.each) return `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie; after each verse, choose who sings next (${friends})`;
+    return p.invite ? `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie; choose ${friends} to join the song` : `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie; tap to sing, ${friends} visit`;
   },
   music: silenced(STYLES.quiet),
   coplayHint: 'Sing along while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse. At the top level, sing the whole Old MacDonald verse, with the moo-moo lines.',
-  offScreen: 'Sing Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider or Bounce High, Bounce Low with stuffed animals: bring out one for each verse and make its sound together.',
+  offScreen: 'Sing Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie with stuffed animals: bring out one for each verse and make its sound together.',
   hubIcon: () => new BarnIcon(),
   touchDemo: true,
   sticker,

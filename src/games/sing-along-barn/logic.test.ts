@@ -18,6 +18,7 @@ import {
   RAIN,
   ITSY,
   BOUNCE,
+  RING,
   VOICES,
   farmAnimals,
   makeSong,
@@ -264,12 +265,39 @@ describe('Bounce High, Bounce Low', () => {
   });
 });
 
+describe('Ring Around the Rosie', () => {
+  it('opens with the rosie and the posies, then each friend falls down and answers on "down"', () => {
+    const song = makeSong(['pig', 'cat'], RING);
+    expect(song.map((n) => n.syllable).join(' ')).toBe(
+      'Ring a round the ro sie a pock et full of po sies Ash es ash es we all fall down Ash es ash es we all fall down',
+    );
+    const answers = song.filter((n) => n.answers);
+    expect(answers.map((n) => [n.syllable, n.animal])).toEqual([['down', 'pig'], ['down', 'cat']]);
+    expect(answers.every((n) => n.verseEnd)).toBe(true);
+    expect(song.filter((n) => n.verseEnd)).toHaveLength(3);
+    expect(song.length).toBe(13 + 8 + 8);
+  });
+
+  it('is sung on do, mi, sol and la alone, and "down" is the lowest note of the song', () => {
+    const song = makeSong(ANIMALS.slice(0, 3), RING);
+    expect([...new Set(song.map((n) => n.step))].sort()).toEqual([0, 2, 3, 4]);
+    for (const p of [...RING.opening, ...RING.verse]) expect(p.syllables.length).toBe(p.steps.length);
+    for (const n of song) {
+      expect(PENTATONIC).toContain(stepToMidi(n.step) % 12);
+      expect(n.of).toBeLessThanOrEqual(8);
+    }
+    const down = song.filter((n) => n.syllable === 'down');
+    expect(down.every((n) => n.step === Math.min(...song.map((m) => m.step)))).toBe(true);
+    expect(song.filter((n) => n.step === 0).every((n) => n.syllable === 'down')).toBe(true);
+  });
+});
+
 describe('which tune a round sings', () => {
   it('is a seeded draw: the same seed sings the same tune, and every tune turns up', () => {
     expect(pickTune(new Rng(7)).id).toBe(pickTune(new Rng(7)).id);
     const seen = new Set<string>();
     for (let seed = 1; seed <= 40; seed++) seen.add(pickTune(new Rng(seed)).id);
-    expect([...seen].sort()).toEqual(['bounce', 'buns', 'clair', 'itsy', 'macdonald', 'mary', 'rain']);
+    expect([...seen].sort()).toEqual(['bounce', 'buns', 'clair', 'itsy', 'macdonald', 'mary', 'rain', 'ring']);
   });
 });
 
@@ -302,6 +330,6 @@ describe('the whole Old MacDonald verse', () => {
 
   it('is offered only at the level that has it, beside Hot Cross Buns', () => {
     expect(tunesFor(PLANS[4])).toBe(TUNES);
-    expect(tunesFor(PLANS[5])).toEqual([OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE]);
+    expect(tunesFor(PLANS[5])).toEqual([OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE, RING]);
   });
 });
