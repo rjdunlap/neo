@@ -1520,7 +1520,7 @@ Built on `claude/make-my-mix` (PR #724) from the [definition](../definitions/mak
 
 Edge to examine later: a window `pointercancel` on a short unmoved touch at level 9 goes through drop and hops the piece in. Harmless at 9 (no misses are counted), but a later tap-in level that counts misses should check it.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--shape-sorter-level-9-tap-and-in-it-goes-slice-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-21.md#2026-10-21--shape-sorter-level-9-tap-and-in-it-goes-slice-2).
 
 ## RW08 slice 1, Explore's four entries (2026-10-21)
 
@@ -1560,3 +1560,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--feelings-faces-level
 ### Egg Catch One gate (2026-10-21)
 
 [PR #754](https://github.com/rjdunlap/neo/pull/754), `codex/egg-catch-one-gate`: slice 5 adds stable level 9, a deliberate-release single fork with basket/hay exits and four successful eggs. Wrong routes teach with a boing, speech and safe hatching; two misses glow the needed direction. Preschool order `[2, 3, 9, 4]`, pre-K `[3, 9, 4, 5]`; entry landing protects other bands. Seeded target variety, hint/bot rules, scoped how-to and speech, and filtered level-9 play/demo cover this slice. Other rungs and developer decisions remain open.
+
+### Bumper Garden level 8, Not this color (2026-10-22)
+
+[PR #757](https://github.com/rjdunlap/neo/pull/757), `claude/bumper-not-this-color`, slice 5 of the [Bumper Garden dive](../deep-dives/bumper-garden.md): a `not: true` flag on a `color` plan (`PLANS[8]`: 8 flowers, 2 of the asked color, 3 each of two others) and `wantsColor(plan, color)` in `logic.ts`. The pet says "Bloom every flower that is not {color}! Shh, the {color} ones are sleeping."; 1.4 s later the asked-color flowers fall asleep (faded, tilted, a bobbing "z", on all three tables), are never wanted, and only chime when bumped. Accounting as level 3: a launch that blooms nothing wanted is a miss, two in a row glow the wanted flowers and aim the next launch (a counted hint; decision 5, hint accounting on "not" levels, is built on that default and still open). Pre-K order `[3, 4, 6, 8, 5, 9]`; ID 7 stays reserved; the finale wakes the sleepy flowers. Voice lines `bumper.not`, `bumper.again-not`; how-to level-8 step and finish lines, ring note widened to 8-9; couch catalog unchanged (levels 3-4).

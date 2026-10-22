@@ -292,3 +292,11 @@
 - Passed `BROWSER_SUITE=arcade ARCADE_ONLY=roundup ARCADE_LEVELS=3` (two-pointer probe: tracked 2, rings 2, second finger alone moved an animal 64.6, after a cancelled touch 1 left, a fourth contact ignored as a palm (3 tracked), all lifted left 0; score 0,0) and `ARCADE_LEVELS=11` (lap 0,0 and toddler 0,1 drift).
 - Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=3`: clean in 19.5 s.
 - Not run: build (no shared files), full suites, offline. Real two-handed play on an iPad is [open](../DEVICE-CHECKS.md).
+
+## 2026-10-21 — Shape Sorter level 9, Tap and in it goes (slice 2)
+
+- [PR #738](https://github.com/rjdunlap/neo/pull/738), `claude/shape-sorter-tap-in`, tested `4a760035` (base `e16771d4`) at http://localhost:5905. Level 9 (a quick unmoved touch hops its piece into the one circle hole; drags still work; 0 misses, 0 hints) and the lap band; toddler `order [9, 1, 2, 3, 4, 5]`.
+- Passed typecheck and full `npm test` (203 files, 2375 tests, including the new tap rule, three-taps-from-any-seed and band-window tests).
+- Passed `BROWSER_SUITE=originals ORIGINALS_ONLY=shapes SHAPE_LEVELS=1,9`: level 1, then level 9 at lap and at toddler in portrait (opening screenshot `shape-sorter-9-start-portrait`).
+- Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-sorter FINGER_LEVELS=9`: clean at lap in 7.0 s.
+- Not run: `npm run build` (no shared assets changed), device speech, a child's reaction. A window `pointercancel` on a short unmoved touch hops the piece in (harmless at 9); a later tap-in level that counts misses should examine it. An iPad check is [open](../DEVICE-CHECKS.md).
