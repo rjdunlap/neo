@@ -153,7 +153,7 @@ These examples are proposals to be reviewed. They contain no small object, no fo
 
 ## Build slices in order
 
-Each is one session; the first two do not wait on any decision.
+Each is one session; the first two do not wait on any decision. **Slices 1–3 are defined 2026-10-22 as one build batch** in [the definition](../../definitions/off-screen-lines.md) (merge waits on the developer's answer to the small-objects row).
 
 1. **Fix the `{name}` replacement on the page** (pure helper plus a unit test) and **swap the small objects** in the five audited lap/toddler lines for large soft items (removal only; no new advice). Tier: shell for the helper (typecheck, unit tests); strings for the rest. Do not widen the rewrite while there.
 2. **A word-list test** over every line reachable at lap and toddler (rules-tester), so the next edit cannot reintroduce one. Docs: README and GAMES stay unchanged.
