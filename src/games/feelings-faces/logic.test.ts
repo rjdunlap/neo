@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { restPoints } from '../../creatures/companion';
 import { SPECIES_IDS } from '../../creatures/species';
-import { bubbleToTap, CLUES, REACTIONS, feelingPlan, CARE_ONLY, CARE_SCENARIOS, choiceToTap, EVENTS, FACE_MAX_GROW, FACE_PARTS, faceFrame, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, LEVELS, NEEDS, playDone, pokeAfter, pokeDone, POKE_TAPS, type Feeling, type PokeStep } from './logic';
+import { WISHES, wishEnding, bubbleToTap, CLUES, REACTIONS, feelingPlan, CARE_ONLY, CARE_SCENARIOS, choiceToTap, EVENTS, FACE_MAX_GROW, FACE_PARTS, faceFrame, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, LEVELS, NEEDS, playDone, pokeAfter, pokeDone, POKE_TAPS, type Feeling, type PokeStep } from './logic';
 import { landing, levelsInOrder, nextLevel } from '../../progress/difficulty';
 
 describe('Feelings Faces questions', () => {
@@ -214,12 +214,32 @@ describe('Helping and explaining happenings batch', () => {
     }
   });
 
-  it('keeps old IDs and pins and leaves Ask first out of the supported order', () => {
+  it('keeps old IDs and pins with Ask first between the school levels', () => {
     expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 8, 11]);
-    expect(levelsInOrder(LEVELS.school!)).toEqual([11, 13]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([11, 12, 13]);
     expect(feelingPlan(13).mode).toBe('clue');
     for (const level of [5, 6, 7, 8]) expect(landing(level, LEVELS.prek!, [9])).toBe(level);
     expect(landing(3, LEVELS.toddler!, [9])).toBe(3);
-    expect(levelsInOrder(LEVELS.school!)).not.toContain(12);
+    expect(feelingPlan(12).mode).toBe('ask');
+  });
+});
+
+
+describe('Ask first', () => {
+  it('offers every stated wish once in four questions, including quiet space, for every seeded round', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const qs = feelingRound(feelingPlan(12), new Rng(seed));
+      expect(qs).toHaveLength(4);
+      expect(new Set(qs.map((q) => q.answer))).toEqual(new Set(WISHES));
+      expect(qs.filter((q) => q.answer === 'quiet')).toHaveLength(1);
+      for (const q of qs) {
+        expect(q.answer).toBe(q.prompt);
+        expect(new Set(q.options)).toEqual(new Set(WISHES));
+        expect(q.options[choiceToTap(q)]).toBe(q.prompt);
+      }
+    }
+  });
+  it('accepts calm after quiet space, a hug or a grown-up; a game may end happy', () => {
+    for (const wish of WISHES) expect(wishEnding(wish)).toBe(wish === 'game' ? 'happy' : 'calm');
   });
 });

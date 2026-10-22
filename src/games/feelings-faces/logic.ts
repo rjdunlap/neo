@@ -56,7 +56,12 @@ export const CARE_SCENARIOS = {
 } as const satisfies Partial<Record<Happening, { need: Need; helper: Helper }>>;
 export type CareEvent = keyof typeof CARE_SCENARIOS;
 
-export type FeelingMode = 'play' | 'poke' | 'mirror' | 'name' | 'help' | 'why' | 'friends' | 'care' | 'perspective' | 'clue';
+export const WISHES = ['hug', 'quiet', 'game', 'grownup'] as const;
+export type Wish = (typeof WISHES)[number];
+/** Success respects the request; feeling happy is not required. */
+export const wishEnding = (wish: Wish) => wish === 'game' ? 'happy' as const : 'calm' as const;
+
+export type FeelingMode = 'play' | 'poke' | 'mirror' | 'name' | 'help' | 'why' | 'friends' | 'care' | 'perspective' | 'clue' | 'ask';
 
 export interface FeelingPlan {
   mode: FeelingMode;
@@ -83,7 +88,8 @@ export const FEELING_PLANS: FeelingPlan[] = [
   { mode: 'poke', choices: 0, feelings: FEELINGS, rounds: 0, name: 'Tap the pet to see it show one feeling after another' },
   { mode: 'help', choices: 2, feelings: FEELINGS, needs: ['sad', 'sleepy', 'hungry'], rounds: 4, name: 'Hug or pillow: choose from two helpers for a sad, sleepy or hungry pet' },
   { mode: 'perspective', choices: 3, feelings: FEELINGS, rounds: 4, name: 'Two friends, one happening: match each friend’s own reaction' },
-  // Level 13; ID 12 is reserved for the separately queued Ask first interaction.
+  { mode: 'ask', choices: 4, feelings: ['sad', 'sleepy'], rounds: 4, name: 'Ask first: hear what a friend wants, then offer its stated wish, including quiet space' },
+  // Level 13 keeps its saved ID.
   { mode: 'clue', choices: 3, feelings: FEELINGS, rounds: 4, name: 'What happened? Use the face and leftover clue to choose a happening' },
 ];
 
@@ -93,10 +99,10 @@ export const LEVELS: BandLevels = {
   toddler: { min: 2, max: 10, order: [2, 10, 3, 4] },
   preschool: { min: 3, max: 6 },
   prek: { min: 5, max: 11, order: [5, 6, 7, 8, 11] },
-  school: { min: 11, max: 13, order: [11, 13] },
+  school: { min: 11, max: 13, order: [11, 12, 13] },
 };
 
-export const feelingPlan = (level: number) => FEELING_PLANS[level === 13 ? 11 : Math.max(0, Math.min(10, level - 1))];
+export const feelingPlan = (level: number) => FEELING_PLANS[Math.max(0, Math.min(12, level - 1))];
 
 export interface Question<P extends string, O extends string> {
   prompt: P;
@@ -139,6 +145,8 @@ export function feelingRound(plan: FeelingPlan, rng: Rng): Question<string, stri
     case 'play':
     case 'poke':
       return [];
+    case 'ask':
+      return questions(rng, plan.rounds, WISHES, WISHES, (wish) => wish, plan.choices);
     case 'help':
       return questions(rng, plan.rounds, plan.needs ?? NEEDS, Object.values(HELPERS), (n) => HELPERS[n], plan.choices);
     case 'perspective': {

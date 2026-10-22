@@ -33,12 +33,6 @@ Built 2026-10-21, [PR #766](https://github.com/rjdunlap/neo/pull/766); [closeout
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
-### feelings-faces 2: Ask first
-
-- **`feelings-faces`, level 12 *Ask first*** (new interaction; after 11): tap the friend to hear what it wants, then give that, quiet time included; school. [Slice 6](deep-dives/feelings-faces.md#new-levels-on-top)
-
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
-
 ### sound-garden 1: Listening direction and visible echoes
 
 - **`sound-garden`, level 7 Up, down or the same** (new level): staircases and a flat path at pre-K top. [Slice 3](deep-dives/sound-garden.md#new-levels-on-top)
