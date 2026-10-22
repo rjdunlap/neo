@@ -20,7 +20,7 @@ Defined 2026-10-17 as slice **Q3** of the [scientific inquiry study](../deep-div
 | Band | Today | Proposed |
 | --- | --- | --- |
 | `prek` | 1–2 | 1–2, unchanged. A pre-K trial of 5 needs observation first (study audience K) |
-| `school` | 1–4 | **1–6**, plain `min..max`, so no `order` is needed. Level 7 (What can we tell?, Q5) would be the school top later |
+| `school` | 1–4 | **1–6**, plain `min..max`, so no `order` is needed. Level 7 ([What can we tell?](what-can-we-tell.md), Q5) would be the school top later |
 
 `describeLevel` names:
 - 5: *Trial Shelf: roll two ramps, keep both cards, tap the one that went farther*
