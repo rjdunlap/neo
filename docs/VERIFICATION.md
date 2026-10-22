@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Look It Up levels 1–3 definition (informational-reading IR1, docs only)
+
+- [PR #818](https://github.com/rjdunlap/neo/pull/818), `claude/sharp-cannon-xdrzdf`: defined Look It Up levels 1–3 ([definition](definitions/look-it-up.md)) with real animal facts (the developer's choice, other decisions delegated); two research subagent passes opened at least two sources per fact; study, tracker, recommendations, backlog, READY, GAME-BATCHES and waiting-on-developer updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: device speech of the fact sentences, whether a three-year-old reads tabs as pages, tab legibility in portrait; Animal Snack's bunny carrot (misleading per the RSPCA) is a separate follow-up.
+
 ## 2026-10-22 — Shape Sorter batch 1: levels 10, 11, shape pool and sizes (slices 3–5)
 
 - [PR #817](https://github.com/rjdunlap/neo/pull/817): level 10 *Round or square*, five new shapes, sizes at 6–7, seven-colour pool, box facts, level 11 *Big, middle, little*. Proof on base `28aefc36` plus the branch.
@@ -98,13 +104,6 @@
 - `BROWSER_SUITE=arcade ARCADE_ONLY=scoop ARCADE_LEVELS=10,11`: 10 passed; 11 initially exposed a driver offset error (screen offsets on a scaled customer). `test-results/scoop-probe.mjs` logged the old picture tap at local y −583, outside the −500 hit area; the correct transformed tap counted a miss. Fixed driver coordinates; filtered `ARCADE_LEVELS=11` passed body/picture taps, free cone exploration, wrong customer twice, glow, saved 2/1, retained waiting friend and one sticker. Level 10 saved 0/0 and one sticker. No page errors.
 - Portraits `test-results/browser/scoop-shop-10-portrait.png` and `scoop-shop-11-portrait.png` inspected: legible scoop/heart and separate customer pictures, clear pet and shell controls. `BROWSER_SUITE=fingerdemo FINGER_ONLY=scoop-shop FINGER_LEVELS=10,11`: clean in **13.9 / 13.3 seconds**, no misses, hints or page errors.
 - Links and diff check at closeout. World/offline/picnic/couch not run (unaffected); iPad touch/speech and child understanding remain open in DEVICE-CHECKS.
-
-## 2026-10-22 — Lasso Loops 6 About how many? definition (estimation E1, docs only)
-
-- [PR #800](https://github.com/rjdunlap/neo/pull/800), `claude/define-lasso-about-how-many`: [definition](definitions/lasso-loops-about-how-many.md); READY (build line replaces the definition line), batch plan, backlog, estimation study and trackers updated.
-- Ran `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, unit tests, build, browser (docs only); nothing is built.
-- Open: the guess sign in portrait and a child's play of level 6 (decision 2 for level 7) remain unchecked.
 
 ## Coverage summary
 

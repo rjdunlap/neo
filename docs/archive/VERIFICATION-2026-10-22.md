@@ -178,3 +178,10 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
 - Open: whether a six-year-old changes a guess after the benchmark jar, whether "about 30" is understood when spoken, and the guess sign in portrait; no reference game was played.
+
+## 2026-10-22 — Lasso Loops 6 About how many? definition (estimation E1, docs only)
+
+- [PR #800](https://github.com/rjdunlap/neo/pull/800), `claude/define-lasso-about-how-many`: [definition](../definitions/lasso-loops-about-how-many.md); READY (build line replaces the definition line), batch plan, backlog, estimation study and trackers updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only); nothing is built.
+- Open: the guess sign in portrait and a child's play of level 6 (decision 2 for level 7) remain unchecked.
