@@ -576,11 +576,16 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'Make the face back, and say the word together.' },
       { from: 2, to: 6, text: 'Tap the pet to hear the question again.' },
       { from: 8, to: 8, text: 'Tap the pet to hear the question again.' },
+      { from: 10, to: 10, text: 'Listen to what the pet needs, then choose one of the two helpers. Tap the pet to hear it again.' },
+      { from: 11, to: 11, text: 'Watch Cat and Bunny react to the same happening. Listen for a name and look at the blue ring, then tap that friend’s face. Tap a friend to hear the question again.' },
+      { from: 13, to: 13, text: 'Look at the pet’s face and the leftover clue, then choose the happening that explains both. Tap the pet to hear the question again.' },
     ],
     finish: [
       { to: 1, text: 'Free play ends by itself after a few taps, with a sticker.' },
       { from: 2, to: 8, text: 'Four questions, then a sticker.' },
       { from: 9, to: 9, text: 'Ends by itself after six taps, with a sticker.' },
+      { from: 10, to: 11, text: 'Four questions, then a sticker.' },
+      { from: 13, to: 13, text: 'Four questions, then a sticker.' },
     ],
     note: [
       { to: 1, text: 'Pure exploring: tap bubbles to see each feeling.' },

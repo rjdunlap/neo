@@ -290,3 +290,36 @@ export function feelingsSticker(seed = 1): Container {
   c.addChild(new Graphics().circle(0, 0, 88).fill(cream), friend, heart);
   return c;
 }
+
+/** Still pictures for the happening choices; each fits inside the same large card. */
+export function eventPicture(event: import('./logic').ClueEvent | 'drum'): Container {
+  const node = new Container();
+  if (event === 'balloon') {
+    node.addChild(new Graphics().moveTo(0, 20).quadraticCurveTo(-20, 65, 0, 90).stroke(line(wood.line, 3)), prop('balloon', 'red'));
+  } else if (event === 'present') {
+    const gift = present().node;
+    gift.scale.set(0.8); gift.y = 55; node.addChild(gift);
+  } else if (event === 'moon') {
+    const moon = moonAndStars(); moon.scale.set(0.45); node.addChild(moon);
+  } else if (event === 'rain') {
+    const cloud = windowCloud(); cloud.scale.set(0.6); cloud.y = -30;
+    node.addChild(cloud, new Graphics().moveTo(-35, 15).lineTo(-45, 45).moveTo(0, 20).lineTo(-10, 50).moveTo(35, 15).lineTo(25, 45).stroke(line(swatch.blue.fill, 7)));
+  } else {
+    node.addChild(new Graphics().roundRect(-55, -25, 110, 80, 15).fill(swatch.red.fill).stroke(line(swatch.red.line)).ellipse(0, -25, 55, 18).fill(swatch.yellow.light).stroke(line(wood.line)).moveTo(-65, -65).lineTo(0, -25).moveTo(65, -65).lineTo(15, -25).stroke(line(wood.line, 9)));
+  }
+  node.eventMode = 'none';
+  return node;
+}
+
+/** What remains after the happening, rather than a replay that gives away the answer. */
+export function leftoverClue(event: import('./logic').ClueEvent): Container {
+  const node = new Container();
+  const g = new Graphics();
+  if (event === 'balloon') g.moveTo(-25, -90).bezierCurveTo(45, -60, -50, -20, 25, 0).stroke(line(wood.line, 6));
+  if (event === 'present') g.moveTo(-65, 0).lineTo(-35, -60).lineTo(0, -30).lineTo(30, -65).lineTo(65, 0).closePath().fill(swatch.pink.light).stroke(line(swatch.red.line)).moveTo(-30, -45).lineTo(15, -15).stroke(line(swatch.yellow.fill, 7));
+  if (event === 'moon') { const moon = moonAndStars(); moon.scale.set(0.65); moon.y = -50; node.addChild(moon); }
+  if (event === 'rain') g.ellipse(0, -10, 85, 23).fill(swatch.blue.light).stroke(line(swatch.blue.fill)).ellipse(10, -12, 35, 10).stroke(line(swatch.white.fill, 3));
+  node.addChild(g);
+  node.eventMode = 'none';
+  return node;
+}

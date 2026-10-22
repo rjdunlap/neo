@@ -27,9 +27,21 @@ export const EVENTS = {
 } as const satisfies Record<string, Feeling>;
 export type FeelingEvent = keyof typeof EVENTS;
 
+/** Authored reactions describe these fictional friends, never a universal response to an event. */
+export const REACTIONS = {
+  jack: ['surprised', 'happy'],
+  rain: ['sad', 'happy'],
+  drum: ['happy', 'surprised'],
+} as const satisfies Record<string, readonly [Feeling, Feeling]>;
+export type ReactionEvent = keyof typeof REACTIONS;
+
+/** A unique leftover distinguishes even the two sad happenings. */
+export const CLUES = { balloon: 'string', present: 'wrapper', moon: 'moon', rain: 'puddle' } as const;
+export type ClueEvent = keyof typeof CLUES;
+
 /** Happenings only level 8 plays: each leaves a need rather than a feeling to name (snow leaves the pet cold). */
 export const CARE_ONLY = ['icecream', 'snow', 'basket'] as const;
-export type Happening = FeelingEvent | (typeof CARE_ONLY)[number];
+export type Happening = FeelingEvent | ReactionEvent | (typeof CARE_ONLY)[number];
 
 /**
  * Happenings that leave a need, and the helper that answers it. Between them every helper is an answer, so a level-8
@@ -44,7 +56,7 @@ export const CARE_SCENARIOS = {
 } as const satisfies Partial<Record<Happening, { need: Need; helper: Helper }>>;
 export type CareEvent = keyof typeof CARE_SCENARIOS;
 
-export type FeelingMode = 'play' | 'poke' | 'mirror' | 'name' | 'help' | 'why' | 'friends' | 'care';
+export type FeelingMode = 'play' | 'poke' | 'mirror' | 'name' | 'help' | 'why' | 'friends' | 'care' | 'perspective' | 'clue';
 
 export interface FeelingPlan {
   mode: FeelingMode;
@@ -54,6 +66,7 @@ export interface FeelingPlan {
   feelings: readonly Feeling[];
   /** Questions per round; free play has none. */
   rounds: number;
+  needs?: readonly Need[];
   name: string;
 }
 
@@ -68,22 +81,29 @@ export const FEELING_PLANS: FeelingPlan[] = [
   { mode: 'care', choices: 4, feelings: FEELINGS, rounds: 4, name: 'Watch what happens, then choose how to help the pet feel better' },
   // Level 9, lap's entry (`entryLevels`): the pet alone, no bubbles; each tap shows the next feeling (`pokeAfter`).
   { mode: 'poke', choices: 0, feelings: FEELINGS, rounds: 0, name: 'Tap the pet to see it show one feeling after another' },
+  { mode: 'help', choices: 2, feelings: FEELINGS, needs: ['sad', 'sleepy', 'hungry'], rounds: 4, name: 'Hug or pillow: choose from two helpers for a sad, sleepy or hungry pet' },
+  { mode: 'perspective', choices: 3, feelings: FEELINGS, rounds: 4, name: 'Two friends, one happening: match each friend’s own reaction' },
+  // Level 13; ID 12 is reserved for the separately queued Ask first interaction.
+  { mode: 'clue', choices: 3, feelings: FEELINGS, rounds: 4, name: 'What happened? Use the face and leftover clue to choose a happening' },
 ];
 
 /** Level 9 Poke a feeling is lap's entry, placed first by `order` so levels 1–8 keep their IDs and pins. */
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 9, order: [9, 1, 2] },
-  toddler: { min: 2, max: 4 },
+  toddler: { min: 2, max: 10, order: [2, 10, 3, 4] },
   preschool: { min: 3, max: 6 },
-  prek: { min: 5, max: 8 },
+  prek: { min: 5, max: 11, order: [5, 6, 7, 8, 11] },
+  school: { min: 11, max: 13, order: [11, 13] },
 };
 
-export const feelingPlan = (level: number) => FEELING_PLANS[Math.max(0, Math.min(FEELING_PLANS.length - 1, level - 1))];
+export const feelingPlan = (level: number) => FEELING_PLANS[level === 13 ? 11 : Math.max(0, Math.min(10, level - 1))];
 
 export interface Question<P extends string, O extends string> {
   prompt: P;
   answer: O;
   options: O[];
+  event?: ReactionEvent;
+  friend?: 0 | 1;
 }
 
 /**
@@ -120,7 +140,15 @@ export function feelingRound(plan: FeelingPlan, rng: Rng): Question<string, stri
     case 'poke':
       return [];
     case 'help':
-      return questions(rng, plan.rounds, NEEDS, Object.values(HELPERS), (n) => HELPERS[n], plan.choices);
+      return questions(rng, plan.rounds, plan.needs ?? NEEDS, Object.values(HELPERS), (n) => HELPERS[n], plan.choices);
+    case 'perspective': {
+      const events = rng.shuffle(Object.keys(REACTIONS) as ReactionEvent[]).slice(0, 2);
+      return events.flatMap((event) => ([0, 1] as const).map((friend) => ({
+        ...questions(rng, 1, [`${event}:${friend}`], FEELINGS, () => REACTIONS[event][friend], plan.choices)[0], event, friend,
+      })));
+    }
+    case 'clue':
+      return questions(rng, plan.rounds, Object.keys(CLUES) as ClueEvent[], Object.keys(CLUES) as ClueEvent[], (e) => e, plan.choices);
     case 'why':
       return questions(rng, plan.rounds, Object.keys(EVENTS) as FeelingEvent[], FEELINGS, (e) => EVENTS[e], plan.choices);
     case 'care':

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { restPoints } from '../../creatures/companion';
 import { SPECIES_IDS } from '../../creatures/species';
-import { bubbleToTap, CARE_ONLY, CARE_SCENARIOS, choiceToTap, EVENTS, FACE_MAX_GROW, FACE_PARTS, faceFrame, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, LEVELS, NEEDS, playDone, pokeAfter, pokeDone, POKE_TAPS, type Feeling, type PokeStep } from './logic';
+import { bubbleToTap, CLUES, REACTIONS, feelingPlan, CARE_ONLY, CARE_SCENARIOS, choiceToTap, EVENTS, FACE_MAX_GROW, FACE_PARTS, faceFrame, FEELING_PLANS, FEELINGS, feelingRound, HELPERS, LEVELS, NEEDS, playDone, pokeAfter, pokeDone, POKE_TAPS, type Feeling, type PokeStep } from './logic';
 import { landing, levelsInOrder, nextLevel } from '../../progress/difficulty';
 
 describe('Feelings Faces questions', () => {
@@ -160,5 +160,66 @@ describe('Feelings Faces level 9 Poke a feeling', () => {
     expect(nextLevel(0, [], LEVELS.lap!)).toBe(9);
     for (const band of ['toddler', 'preschool', 'prek'] as const) expect(landing(9, LEVELS[band]!, [9])).toBe(LEVELS[band]!.min);
     for (const level of [1, 2]) expect(landing(level, LEVELS.lap!, [9])).toBe(level);
+  });
+});
+
+describe('Helping and explaining happenings batch', () => {
+  it('keeps cold out of the two-choice toddler entry, and practices every other need', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const qs = feelingRound(feelingPlan(10), new Rng(seed));
+      expect(new Set(qs.map((q) => q.prompt))).toEqual(new Set(['sad', 'sleepy', 'hungry']));
+      for (const q of qs) {
+        seen.add(q.prompt);
+        expect(q.options).toHaveLength(2);
+        expect(q.answer).toBe(HELPERS[q.prompt as keyof typeof HELPERS]);
+      }
+    }
+    expect(seen.has('cold')).toBe(false);
+    expect(levelsInOrder(LEVELS.toddler!)).toEqual([2, 10, 3, 4]);
+  });
+
+  it('asks about both friends for each happening, showing different reactions to the same thing', () => {
+    const seen = new Set<string>();
+    for (const pair of Object.values(REACTIONS)) expect(pair[0]).not.toBe(pair[1]);
+    for (let seed = 1; seed <= 100; seed++) {
+      const qs = feelingRound(feelingPlan(11), new Rng(seed));
+      for (const offset of [0, 2]) {
+        const [first, second] = qs.slice(offset, offset + 2);
+        expect(first.event).toBe(second.event);
+        expect([first.friend, second.friend]).toEqual([0, 1]);
+        expect(first.answer).not.toBe(second.answer);
+        for (const q of [first, second]) {
+          seen.add(q.event!);
+          expect(q.answer).toBe(REACTIONS[q.event!][q.friend!]);
+          expect(q.options[choiceToTap(q)]).toBe(q.answer);
+        }
+      }
+      expect(qs[0].event).not.toBe(qs[2].event);
+    }
+    expect(seen).toEqual(new Set(Object.keys(REACTIONS)));
+  });
+
+  it('uses a unique clue for every happening, including the two sad faces, and deals all four', () => {
+    expect(new Set(Object.values(CLUES)).size).toBe(Object.keys(CLUES).length);
+    expect(EVENTS.balloon).toBe(EVENTS.rain);
+    expect(CLUES.balloon).not.toBe(CLUES.rain);
+    for (let seed = 1; seed <= 100; seed++) {
+      const qs = feelingRound(feelingPlan(13), new Rng(seed));
+      expect(new Set(qs.map((q) => q.prompt))).toEqual(new Set(Object.keys(CLUES)));
+      for (const q of qs) {
+        expect(q.answer).toBe(q.prompt);
+        expect(new Set(q.options.map((o) => CLUES[o as keyof typeof CLUES])).size).toBe(3);
+      }
+    }
+  });
+
+  it('keeps old IDs and pins and leaves Ask first out of the supported order', () => {
+    expect(levelsInOrder(LEVELS.prek!)).toEqual([5, 6, 7, 8, 11]);
+    expect(levelsInOrder(LEVELS.school!)).toEqual([11, 13]);
+    expect(feelingPlan(13).mode).toBe('clue');
+    for (const level of [5, 6, 7, 8]) expect(landing(level, LEVELS.prek!, [9])).toBe(level);
+    expect(landing(3, LEVELS.toddler!, [9])).toBe(3);
+    expect(levelsInOrder(LEVELS.school!)).not.toContain(12);
   });
 });
