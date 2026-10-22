@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`scoop-shop`, Younger scoop and customer entries** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#scoop-shop-1-younger-scoop-and-customer-entries).
 - **`scoop-shop`, Count-on and mixed-colour orders** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#scoop-shop-2-count-on-and-mixed-colour-orders).
 - **`shape-sorter`, Sorting entry, shape pool and three sizes** (one implementation batch; 3 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#shape-sorter-1-sorting-entry-shape-pool-and-three-sizes).
 - **`sea-lift`, build levels 1–3** (new-game tier): send a glass lift to friends' stops above and below the water line (zero): up or down from the water (1), rides through the water (2), deepest or highest first (3); school 1–3, Bubble Beach by default; no review gate for 1–3. [Definition](definitions/sea-lift.md), [batch](GAME-BATCHES.md#sea-lift-1-levels-13)

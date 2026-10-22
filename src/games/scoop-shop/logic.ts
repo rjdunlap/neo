@@ -6,7 +6,7 @@ import type { Rng } from '../../engine/random';
  * you tap flavor tubs to stack scoops, and a matching cone is served. A scoop that doesn't
  * belong bounces gently back into its tub, so a cone can never be wrong for long.
  */
-export type ScoopMode = 'free' | 'one' | 'pair' | 'count' | 'stack' | 'memory';
+export type ScoopMode = 'free' | 'one' | 'pair' | 'count' | 'stack' | 'memory' | 'customer';
 
 export interface ScoopPlan {
   mode: ScoopMode;
@@ -28,7 +28,29 @@ export const PLANS: ScoopPlan[] = [
   { mode: 'memory', customers: 3, flavors: 6, min: 3, max: 3, name: 'Remember the order after the picture hides' },
 ];
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+const ANY_SCOOP: ScoopPlan = { mode: 'free', customers: 3, flavors: 4, min: 1, max: 1, name: 'Any scoop: one tap, one scoop, one munch' };
+const MATCH_CUSTOMER: ScoopPlan = { mode: 'customer', customers: 3, flavors: 4, min: 1, max: 1, name: 'Who wanted pink? Match the prepared scoop to one of two customer pictures' };
+export const planFor = (level: number) => level === 10 ? ANY_SCOOP : level === 11 ? MATCH_CUSTOMER : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+
+export interface CustomerChoice {
+  pictures: [ColorName, ColorName];
+  scoop: ColorName;
+  match: number;
+}
+
+/** Keep the unserved customer's order; replace only the served customer. Matching sides alternate. */
+export function makeCustomerChoices(flavors: ColorName[], rng: Rng): CustomerChoice[] {
+  const pictures = rng.shuffle([...flavors]).slice(0, 2) as [ColorName, ColorName];
+  const first = rng.int(0, 1);
+  return Array.from({ length: 3 }, (_, i) => {
+    const match = (first + i) % 2;
+    const choice = { pictures: [...pictures] as [ColorName, ColorName], scoop: pictures[match], match };
+    pictures[match] = rng.pick(flavors.filter(c => c !== pictures[1 - match] && c !== pictures[match]));
+    return choice;
+  });
+}
+
+export const customerToServe = (choice: CustomerChoice, side: number) => choice.pictures[side] === choice.scoop;
 
 /** Ice cream colors that read as flavors: strawberry, mint, blueberry, lemon, chocolate, grape. */
 export const FLAVORS: ColorName[] = ['pink', 'green', 'blue', 'yellow', 'brown', 'purple'];
@@ -49,6 +71,9 @@ export function makeOrders(plan: ScoopPlan, rng: Rng): { flavors: ColorName[]; o
     let scoops: ColorName[] = [];
     switch (plan.mode) {
       case 'free':
+        break;
+      case 'customer':
+        scoops = [rng.pick(flavors)];
         break;
       case 'one': {
         // Never the tub at the customer's own place on the counter, and never the last customer's colour, so tapping

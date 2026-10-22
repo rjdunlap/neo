@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { complete, CONE_KINDS, dressShop, makeOrders, nextNeeded, PLANS, planFor, scoopToTake, tryScoop, WINDOW_SCENES } from './logic';
+import { complete, customerToServe, makeCustomerChoices, CONE_KINDS, dressShop, makeOrders, nextNeeded, PLANS, planFor, scoopToTake, tryScoop, WINDOW_SCENES } from './logic';
 
 describe('Scoop Shop', () => {
   it('only orders flavors that are on the counter, in the sizes each level asks for', () => {
@@ -82,6 +82,47 @@ describe('Scoop Shop', () => {
         }
       }
     }
+  });
+
+  it('serves every flavour after a single tap at the lap entry', () => {
+    const plan = planFor(10);
+    expect(plan).toMatchObject({ mode: 'free', max: 1, customers: 3 });
+    for (let seed = 1; seed <= 200; seed++) {
+      const { flavors, orders } = makeOrders(plan, new Rng(seed));
+      for (const order of orders) {
+        for (const color of flavors) {
+          expect(tryScoop(plan, order, [], color)).toBe('add');
+          expect(complete(plan, order, [color])).toBe(true);
+          expect(scoopToTake(plan, order, [color], flavors)).toBeNull();
+        }
+        expect(scoopToTake(plan, order, [], flavors)).toBe(flavors[0]);
+      }
+    }
+  });
+
+  it('offers exactly one matching picture, alternating sides and retaining the waiting customer', () => {
+    const firstSides = new Set<number>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      const { flavors } = makeOrders(planFor(11), rng);
+      const choices = makeCustomerChoices(flavors, rng);
+      expect(choices).toHaveLength(3);
+      firstSides.add(choices[0].match);
+      choices.forEach((choice, i) => {
+        expect(new Set(choice.pictures).size).toBe(2);
+        expect(choice.pictures.filter(c => c === choice.scoop)).toHaveLength(1);
+        expect(customerToServe(choice, choice.match)).toBe(true);
+        expect(customerToServe(choice, 1 - choice.match)).toBe(false);
+        choice.pictures.forEach(c => expect(flavors).toContain(c));
+        if (i) {
+          const previous = choices[i - 1];
+          expect(choice.match).not.toBe(previous.match);
+          expect(choice.pictures[choice.match]).toBe(previous.pictures[choice.match]);
+          expect(choice.pictures[previous.match]).not.toBe(previous.pictures[previous.match]);
+        }
+      });
+    }
+    expect(firstSides.size).toBe(2);
   });
 
   it('dresses every round with a window scene and a cone kind per customer, never the same kind twice in a row', () => {
