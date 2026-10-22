@@ -260,3 +260,12 @@
 - Passed `npm run typecheck` and `npx vitest run src/games/scoop-shop src/content src/games/registry` (14 files, 149 tests; `dressShop` over 200 seeds: valid kinds and scenes, no repeat in a row, every kind and scene appears).
 - Passed at `http://localhost:5230`: `BROWSER_SUITE=fingerdemo FINGER_ONLY=scoop-shop FINGER_LEVELS=5` (finished in 26.8 s) and `BROWSER_SUITE=arcade ARCADE_ONLY=scoop` (levels 1–6, wrong scoops, hint glow, peeking, one sticker each). A level-5 probe in portrait (768×1024) reviewed cup, cone and bowl; landscape screenshots reviewed all three window scenes.
 - Not run: build (no shared files or assets), device speech of the flavour names, a child's reaction to a cup or bowl at tub scale (both added to the [device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-21 — Roundup level 9 Fill it up (slice 7)
+
+- [PR #731](https://github.com/rjdunlap/neo/pull/731), `codex/roundup-fill`, tested `797c73dc` plus the slice diff (upstream `37874317`): one pen asking 4 or 5 starts with 1–3 home and six loose; present-count/remainder support, pre-K 3–9.
+- Passed typecheck and 54 focused tests (`src/games/roundup/logic.test.ts src/games/registry.test.ts src/content/howto.test.ts`): every target/start combination, seeded solvability/spares, exact bell counts, preserved IDs/windows, adaptation and level-scoped cards.
+- Passed `BROWSER_SUITE=arcade ARCADE_ONLY=roundup ARCADE_LEVELS=9 GAME_URL=http://localhost:5194`: initial prefill, two short bells with ordered recount/remainder, counted glow, updated-count idle hint, extra correction, exact finish and one sticker (saved `[3,2]`); no page errors.
+- Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=9` at the same URL: clean completion in 18.3 s. Browser evidence uses isolated profiles; real saves untouched.
+- First deployment of `77e24e7a` failed only on two stale pre-K-8 expectations in `roundup/levels.test.ts`, omitted from the initial focused list. Test-only follow-up `codex/roundup-fill-tests` updates those and adds level-9 next-offer/card assertions. Passed all 58 tests with `npx vitest run src/games/roundup src/games/registry.test.ts src/content/howto.test.ts`. Gameplay unchanged; browser evidence reused.
+- Links and diff check passed. Not run: build, other gameplay suites, world/offline (no shared engine, navigation, persistence or assets changed), portrait (not required by this new-level tier), device speech or child play ([open check](../DEVICE-CHECKS.md)). Server stopped at closeout.
