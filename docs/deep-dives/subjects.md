@@ -154,7 +154,7 @@ Phonics, letters, rhyme and syllables are researched as game deep dives (Word Mo
 
 | ID | Subject | Anchors to open | Island games it touches | Likely zone | Audiences | G form | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `speaking-listening` | Conversation, retelling, describing, asking, following and giving directions (the island cannot hear her, so co-play and cards) | CCSS SL.K–5; EYFS communication and language; Head Start ELOF language | Peekaround Island, Story Steps | Story Grove | L–U; G | conversation cards; describer/finder barrier game | not started |
+| `speaking-listening` | Conversation, retelling, describing, asking, following and giving directions (the island cannot hear her, so co-play and cards) | CCSS SL.K–5; EYFS communication and language; Head Start ELOF language | Peekaround Island, Story Steps | Story Grove | L–U; G | conversation cards; describer/finder barrier game | in progress 2026-10-22: `claude/loving-gates-tzccpn` (docs only) |
 | `vocabulary-word-parts` | Word meaning, categories, prefixes, suffixes, roots, multiple meanings | CCSS L.K–2.4–5, L.3–8.4 | Opposites, Word Monsters, Critter Sort | Story Grove | T–M; G | root-word puzzle | not started |
 | `informational-reading` | Labels, captions, diagrams, maps, a how-to; finding an answer in a text, with spoken support | CCSS RI.K–5, RST.6–8 | Read & Do, Mail Carrier, Photo Safari | Story Grove | P–M | field-guide puzzle | not started |
 | `writing-composition` | A message, a list, a story, an opinion with a reason, planning and revising for a reader; picture/word choices through free composition | CCSS W.K–5.1–5 | Story Steps, Letter Trails, Stamp Studio; Story Weaver (proposed) | Story Grove | P–M | family story cards | not started |
