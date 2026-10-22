@@ -36,9 +36,9 @@ export default defineConfig({
       },
       // The first worker still takes control at once, so the very first visit already works offline;
       // an update waits (no skipWaiting) until every open copy of the app has closed.
-      // The code-drawn game catalog's main bundle is just over 2 MiB; cache it offline with an explicit 3 MiB per-file bound.
+      // The code-drawn game catalog's routes bundle is just over 3 MiB; cache it offline with an explicit 4 MiB per-file bound.
       // `webp` holds the root Home's backdrop (src/art/home/, kept under 1 MiB).
-      workbox: { maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff,woff2}'], clientsClaim: true },
+      workbox: { maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff,woff2}'], clientsClaim: true },
     }),
   ],
   // `scripts/creature-art/*.test.mjs` checks the sprite preparation tool's pixel rules on synthetic images.
