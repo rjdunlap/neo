@@ -778,6 +778,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, text: 'Drag to aim the launcher, then let go.' },
       { from: 4, to: 4, text: 'Hit the numbered flower that was asked for.' },
       { from: 5, text: 'Hit the numbered flowers in order: 1, then 2, then 3.' },
+      { from: 4, text: 'Only the number asked for opens; another number the pearl touches just wiggles.' },
+      { from: 4, text: 'The last shot leaves faint dots showing which way it went, until the next shot.' },
     ],
     finish: [
       { to: 1, text: 'The round ends after six pearls.' },

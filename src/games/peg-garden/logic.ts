@@ -37,27 +37,72 @@ export interface PegSpot {
   kind: 'plain' | 'special' | number;
 }
 
-/** Every place a bud can grow: staggered rows, like a pachinko board. */
-export function grid(): { x: number; y: number }[] {
+/**
+ * The board shapes a round is grown on, picked from a seeded pool: staggered rows like a pachinko board, a diamond that
+ * widens to the middle, an hourglass that narrows there, and rows that rise and fall like waves. Every shape keeps buds at
+ * least 80 units apart, so a pearl always passes between two of them, and above the sand.
+ */
+export const SHAPES = ['rows', 'diamond', 'hourglass', 'waves'] as const;
+export type BoardShape = (typeof SHAPES)[number];
+
+const ROWS: Record<BoardShape, number[]> = {
+  rows: [7, 6, 7, 6, 7, 6],
+  diamond: [4, 5, 6, 7, 6, 5],
+  hourglass: [7, 6, 5, 4, 5, 6],
+  waves: [7, 6, 7, 6, 7, 6],
+};
+
+/** The least distance from a side wall to a bud's centre on the newer shapes: the bud, a pearl's width and a little. */
+export const EDGE = BOARD.peg + 2 * BOARD.ball + 6;
+
+/** Every place a bud can grow on a shape: rows centred on the board, each a half step from the next. */
+export function grid(shape: BoardShape = 'rows'): { x: number; y: number }[] {
   const out: { x: number; y: number }[] = [];
-  const rows = 6;
-  for (let r = 0; r < rows; r++) {
-    const cols = r % 2 ? 6 : 7;
-    const gap = BOARD.w / 7;
-    const offset = r % 2 ? gap : gap / 2;
-    for (let c = 0; c < cols; c++) out.push({ x: offset + c * gap, y: BOARD.top + 30 + r * 78 });
-  }
+  ROWS[shape].forEach((cols, r) => {
+    // The newer shapes leave a pearl's width and a little between the side walls and the outer buds, so none wedges there
+    // (the first shape, which couch play keeps, has 27 units at its seven-bud rows; a pearl caught there ends after ten seconds).
+    const gap = shape === 'rows' ? BOARD.w / 7 : Math.min(BOARD.w / 7, (BOARD.w - 2 * EDGE) / (cols - 1));
+    const offset = (BOARD.w - (cols - 1) * gap) / 2;
+    for (let c = 0; c < cols; c++) {
+      const x = offset + c * gap;
+      const wave = shape === 'waves' ? 18 * Math.sin((x / BOARD.w) * Math.PI * 2) : 0;
+      out.push({ x, y: BOARD.top + (shape === 'waves' ? 18 : 30) + r * 78 + wave });
+    }
+  });
   return out;
 }
 
-export function makeBoard(plan: PegPlan, rng: Rng): PegSpot[] {
-  const spots = rng.shuffle(grid()).slice(0, plan.pegs).map((p): PegSpot => ({ ...p, kind: 'plain' }));
+export function makeBoard(plan: PegPlan, rng: Rng, shape: BoardShape = 'rows'): PegSpot[] {
+  const spots = rng.shuffle(grid(shape)).slice(0, plan.pegs).map((p): PegSpot => ({ ...p, kind: 'plain' }));
   // Specials and numbers sit in the middle rows, where an aimed shot can reach them.
   const reachable = rng.shuffle(spots.filter((s) => s.x > 80 && s.x < BOARD.w - 80));
   if (plan.mode === 'color') reachable.slice(0, plan.count).forEach((s) => (s.kind = 'special'));
   if (plan.mode === 'number' || plan.mode === 'order') reachable.slice(0, plan.count).forEach((s, i) => (s.kind = i + 1));
   return spots;
 }
+
+/** The sea a round is played in: daytime shallows, a pink coral reef, or a green kelp forest. */
+export const BACKDROPS = ['shallows', 'reef', 'kelp'] as const;
+export type Backdrop = (typeof BACKDROPS)[number];
+
+/** A round's look, drawn first from the round's seed. Couch play keeps the first look, so its boards never change. */
+export function pickTheme(rng: Rng | null): { shape: BoardShape; backdrop: Backdrop } {
+  if (!rng) return { shape: 'rows', backdrop: 'shallows' };
+  return { shape: rng.pick(SHAPES), backdrop: rng.pick(BACKDROPS) };
+}
+
+/**
+ * Whether a touched bud blooms. On the aiming levels a numbered bud opens only when it is the one asked for (the others
+ * chime and wiggle), so open flowers show what is done; every other bud blooms at a touch.
+ */
+export const blooms = (kind: PegSpot['kind'], mode: PegMode, target: number | undefined) =>
+  typeof kind !== 'number' || (mode !== 'number' && mode !== 'order') || kind === target;
+
+/** The shell tray along the sand, where finished pearls collect: this many show, side by side. */
+export const TRAY = { slots: 12, gap: 26, y: BOARD.h - 15 };
+
+/** Where the `i`th finished pearl sits in the tray (pearls past the last slot wait in it). */
+export const traySlot = (i: number) => ({ x: BOARD.w / 2 + (Math.min(i, TRAY.slots - 1) - (TRAY.slots - 1) / 2) * TRAY.gap, y: TRAY.y });
 
 /** The numbers to aim for, one per shot. Order levels count up from 1. */
 export function targets(plan: PegPlan, rng: Rng): number[] {
