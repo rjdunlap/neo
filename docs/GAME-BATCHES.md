@@ -360,6 +360,8 @@ Proof: new-game tier under the batch contract, as the [definition's check tier](
 
 ### inchworm 1: Big worms, little worms
 
+Built 2026-10-22, branch `claude/inchworm-big-worms`; [closeout](archive/COMPLETED-2026-10-09.md#inchworm-level-7-big-worms-little-worms-measurement-m2-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`inchworm`, level 7 *Big worms, little worms*** (new level on the existing worm-laying and number-pad interaction; pre-K top and school after level 2): measure one stick with big worms then little worms, then tap the number the little (or big) worms made. [Definition](definitions/big-worms-little-worms.md), [study slice M2](deep-dives/subjects/measurement-units.md#build-slices-in-order)
 
 Proof: new-level tier on an existing interaction, as the [definition's Build and check tier (M2)](definitions/big-worms-little-worms.md#build-and-check-tier-m2) sets it (typecheck, Inchworm rule tests and `howto.test.ts`, one filtered portrait play of level 7, `fingerdemo` at it, one portrait screenshot).
