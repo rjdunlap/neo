@@ -123,3 +123,7 @@ Gated: level 1 taps during the spoken line and a poke for busy touches (V2's per
 ## What was built in this session
 
 Research and ideation only, then slice 1 built on 2026-10-20 ([PR #660](https://github.com/rjdunlap/neo/pull/660); build note in the [archive](../archive/COMPLETED-2026-10-09.md#teddy-doctor-slice-1-the-whole-patient-counts-2026-10-20)). The research session ran `node scripts/check-links.mjs` and `git diff --check`.
+
+## Active batch claim (2026-10-22)
+
+Worker `01a1645f-35e0-7791-934d-7982a5b2017a`, branch `codex/teddy-patient-order`: batch 1 only, slices 3–4, level 7 Who needs help? then level 8 Before and after. Expected files: game logic/rendering/tests, voice, how-to, browser case, README, game/roadmap/ready/batch/archive/verification docs and execution queue. Defined defaults only; no band expansion, other levels or gated decisions; preserve #733. Combined new-interaction proof, both bots and portrait.
