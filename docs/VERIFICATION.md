@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Writing-and-composition study (subject research, docs only)
+
+- **Changed:** [writing-composition study](deep-dives/subjects/writing-composition.md), its [packet](deep-dives/subjects/RECOMMENDATIONS.md#writing-and-composition-recommendations), the tracker, backlog, READY (Leave a Note 1–3 definition queued), roadmap and notebook rows. No code.
+- **Opened:** CCSS W.K, W.2, W.3, W.5, W.7 (the last two as excerpts); the Head Start ELOF PDF (extracted with `pdftotext`; P-LIT 6, IT-LC 13); Puranik and Lonigan 2014 (first 100,000 characters). Added eight more candidate modes from an app survey. **Not opened:** the emergent-writing page (503) and DeBaryshe 2023 (search summary only).
+- **Ran:** link check and `git diff --check` only. **Open:** no evidence found for screen-based note composition; the build waits on decisions 1–2.
+
 ## 2026-10-22 — Look It Up levels 1–3 definition (informational-reading IR1, docs only)
 
 - [PR #818](https://github.com/rjdunlap/neo/pull/818), `claude/sharp-cannon-xdrzdf`: defined Look It Up levels 1–3 ([definition](definitions/look-it-up.md)) with real animal facts (the developer's choice, other decisions delegated); two research subagent passes opened at least two sources per fact; study, tracker, recommendations, backlog, READY, GAME-BATCHES and waiting-on-developer updated.
