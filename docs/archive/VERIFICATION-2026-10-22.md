@@ -150,3 +150,9 @@
 - [PR #794](https://github.com/rjdunlap/neo/pull/794), `claude/define-meadow-pens`: defined Meadow Pens levels 1–3 ([definition](../definitions/meadow-pens.md)); READY (build queued), batch plan, study backlog, study, recommendations, tracker, ideas and waiting-on-developer updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the level-2 card-table review (merge gate), device speech of the counts, all person checks.
+
+## 2026-10-22 — Playdate Workshop levels 1–3 definition (social-emotional slice 1, docs only)
+
+- [PR #795](https://github.com/rjdunlap/neo/pull/795), `claude/define-playdate-workshop`: defined Playdate Workshop levels 1–3 ([definition](../definitions/playdate-workshop.md)); READY, study backlog, study, recommendations, tracker, ideas and waiting-on-developer updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the developer's identity/registration and land call (the build waits on it), early-childhood/SEL and accessibility review of the requests, all device and child checks.
