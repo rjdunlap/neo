@@ -121,7 +121,7 @@ Toddler already starts at level 1 (two spots, a ghost), which is a fine first ma
 ### Left out on purpose
 
 - Timers, speed, a "number of bugs finished" count, stars, a perfect-bug bonus, a crying bug.
-- Area, perimeter and unit tiling: a later school mode of its own (IDEAS, PhET Area Builder), not bug decoration.
+- Area, perimeter and unit tiling: a later school mode of its own (IDEAS, PhET Area Builder), not bug decoration. The [area, volume and space study](subjects/area-volume-space.md) (2026-10-22) takes it as Meadow Pens and cites level 10 *Fold a friend* as the mirror owner.
 - Rotational symmetry, which is Puzzle Pals' territory (turned pieces).
 - A mode that grades a free design. Creative bugs have no wrong answer.
 - Reading numbers as the only way to say the count: the sign always shows dots beside the numeral.
