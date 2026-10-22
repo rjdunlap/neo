@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Recipe Workshop levels 1–3 definition (cooking-recipes slice C1, docs only)
+
+- [PR #792](https://github.com/rjdunlap/neo/pull/792), `claude/define-recipe-workshop`: defined Recipe Workshop levels 1–3 ([definition](definitions/recipe-workshop.md)); READY (build C2–C4 queued as one batch), batch plan, study backlog, cooking study, recommendations, tracker, ideas and waiting-on-developer updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the build C2–C4 (no review gate; five open decisions all have defaults), all device and person checks (the definition's check tier lists them).
+
 ## 2026-10-22 — Ready for Adventure levels 1–3 definition (routines-self-care slice 1, docs only)
 
 - [PR #791](https://github.com/rjdunlap/neo/pull/791), `claude/define-ready-for-adventure`: defined Ready for Adventure levels 1–3 ([definition](definitions/ready-for-adventure.md)); READY (build RA2 promoted), study backlog, routines study, recommendations, tracker, ideas and waiting-on-developer updated.
@@ -92,12 +98,6 @@
 - [PR #773](https://github.com/rjdunlap/neo/pull/773), `claude/define-lid-and-lever`: defined Attic Finds levels 3 *Up and down* and 4 *Peek inside* ([definition](definitions/lid-and-lever.md)); batch plan, READY, study backlog, waiting-on-developer, the daily-life-long-ago study, recommendations and the Attic Finds dive updated.
 - Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean).
 - Not run: typecheck, unit tests, build, browser (docs only). Open: the build and every device check named in the definition; nothing is built.
-
-## 2026-10-22 — Same Kind, Different Sprouts definition (genetics G4, docs only)
-
-- [PR #772](https://github.com/rjdunlap/neo/pull/772), `claude/define-same-kind-sprouts`: defined Critter Sort levels 12–13 ([definition](definitions/same-kind-different-sprouts.md)), choosing Critter Sort over Photo Safari; batch plan, READY, study backlog, the genetics study, recommendations and the Critter Sort dive updated.
-- Ran `node scripts/check-links.mjs` and `git diff --check` (results in the closeout report).
-- Not run: typecheck, unit tests, build, browser (docs only). Open: the build; nothing is built.
 
 ## Coverage summary
 
