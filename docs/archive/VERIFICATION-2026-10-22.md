@@ -171,3 +171,10 @@
 - `BROWSER_SUITE=next NEXT_ONLY=doctor FROM_LEVEL=7` passed level 7 (logged probe copy of the harness), wrong friend twice, hint, all three pairs, portrait, saved 2/1 and sticker. Level 8 completed its actions but exposed a test-driver extra action at completion; the driver guard was fixed. `FROM_LEVEL=8` then passed both patients, alternative valid order, two misses/one hint, reward, no page errors.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=teddy-doctor FINGER_LEVELS=7,8`: both clean, 16.3 / 24.9 seconds, no page errors. Pair portrait `test-results/browser/teddy-doctor-7-pair-portrait.png` inspected; faces, boo-boo and separated targets readable.
 - Not run: world, offline, stories and couch (unaffected). Open: real iPad speech of ordering words, toddler patient choice and all child/device observations; broader bands and care/creature decisions remain gated.
+
+## 2026-10-22 — Estimation study (subject research, docs only)
+
+- [PR #799](https://github.com/rjdunlap/neo/pull/799), `claude/estimation-research`: [study](../deep-dives/subjects/estimation.md) (Lasso Loops 6 *About how many?* recommended first); tracker, packet, roadmap table, backlog, READY (definition line replaces the research line) and IDEAS updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
+- Open: whether a six-year-old changes a guess after the benchmark jar, whether "about 30" is understood when spoken, and the guess sign in portrait; no reference game was played.

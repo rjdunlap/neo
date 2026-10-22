@@ -7189,18 +7189,21 @@ async function originals() {
   // Shape Sorter: pieces dragged into holes, two wrong holes, then the right hole glows.
   const shapeLevels = process.env.SHAPE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 8 }, (_, i) => i + 1);
   // Level 9, the tap-in entry, plays once at lap and once at toddler (in portrait), where it opens the ladder.
-  const shapeRuns = shapeLevels.filter((n) => n >= 1 && n <= 9 && (!only || only === 'shapes')).flatMap((n) => (n === 9 ? [[9, 'lap'], [9, 'toddler']] : [[n, undefined]]));
+  // Level 10 (Round or square) is toddler's; 11 (Big, middle, little) plays in portrait for its wider three-size lid.
+  const shapeRuns = shapeLevels.filter((n) => n >= 1 && n <= 11 && (!only || only === 'shapes')).flatMap((n) => (n === 9 ? [[9, 'lap'], [9, 'toddler']] : n === 10 ? [[10, 'toddler']] : [[n, undefined]]));
   for (const [level, shapeBand] of shapeRuns) {
-    const upright = level === 8 || shapeBand === 'toddler';
+    const upright = level === 8 || level === 11 || (level === 9 && shapeBand === 'toddler');
     if (upright) await portrait(true);
     await launch('shape-sorter', level, 'Mia', shapeBand);
     await page.waitForTimeout(400);
-    if (shapeBand === 'toddler') await screenshot('shape-sorter-9-start-portrait');
+    if (level === 9 && shapeBand === 'toddler') await screenshot('shape-sorter-9-start-portrait');
     const holes = await page.evaluate(async () => {
       const g = neo.scene.game;
       // Pieces ride above the finger, so aim the finger just below the hole.
       const into = async (piece, hole) => { await kit.dragTo(piece.view, g.box.toGlobal({ x: hole.x, y: hole.y + 40 }), 12); await kit.sleep(450); };
-      const holeFor = (kind) => g.box.holes.find((h) => h.kind === kind);
+      // By kind (a clue), or the piece's own hole: its kind and, at the sized level, its size.
+      const fits = (h, p) => h.kind === p.kind && (h.size === undefined || h.size === p.size);
+      const holeFor = (k) => g.box.holes.find((h) => (typeof k === 'string' ? h.kind === k : fits(h, k)));
       if (g.plan.clue) {
         await kit.until(() => g.clueReady || g.finished, 10000);
         let checkedHint = false;
@@ -7243,11 +7246,11 @@ async function originals() {
       }
       if (g.box.holes.length > 1) {
         const piece = g.pieces[0];
-        const wrong = g.box.holes.find((h) => h.kind !== piece.kind);
+        const wrong = g.box.holes.find((h) => !fits(h, piece));
         await into(piece, wrong); await into(piece, wrong);
-        if (g.misses !== 2 || g.hints !== 1 || !holeFor(piece.kind).glow.visible) throw new Error(`Shape hint: ${g.misses} ${g.hints}`);
+        if (g.misses !== 2 || g.hints !== 1 || !holeFor(piece).glow.visible) throw new Error(`Shape hint: ${g.misses} ${g.hints}`);
       }
-      for (let guard = 0; guard < 20 && g.pieces.length; guard++) { const p = g.pieces[0]; await into(p, holeFor(p.kind)); }
+      for (let guard = 0; guard < 20 && g.pieces.length; guard++) { const p = g.pieces[0]; await into(p, holeFor(p)); }
       return g.box.holes.length;
     });
     await screenshot(`shape-sorter-${level}${shapeBand ? `-${shapeBand}` : ''}`);
