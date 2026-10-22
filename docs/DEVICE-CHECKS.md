@@ -1,5 +1,9 @@
 # Needs a person or a device
 
+## Sound Garden One big friend (level 8)
+
+- [ ] On an iPad, does a one-year-old repeat taps on the large singer and surrounding grass, understand the wave/walking handoff, and hear each immediate response clearly? Check device speech for `sg.big`, quick taps replacing delayed beats, and the twelve-song ending. Browser checks establish input/accounting only; level-1 every-touch retrofit remains gated.
+
 ## Sound Garden listening direction and visible echoes (levels 7 and 5)
 
 - [ ] On iPad speakers, confirm the three-note/four-note up/down/same tunes read as pitch direction without relying on words or loudness. Check the three portrait targets and spoken instructions with a pre-K player.

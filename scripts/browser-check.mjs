@@ -6191,9 +6191,9 @@ async function batch() {
   }
 
   // Sound Garden: singers, listening questions with wrong answers, and echoing rhythms on the drum.
-  const soundLevels = process.env.SOUND_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7];
+  const soundLevels = process.env.SOUND_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8];
   for (const level of (!only || only === 'garden') ? soundLevels : []) {
-    if (level === 7) await page.setViewportSize({ width: 768, height: 1024 });
+    if (level === 7 || level === 8) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('sound-garden', level);
     if (level === 7) {
       await page.waitForFunction(() => !neo.scene.game.busy);
@@ -6204,10 +6204,29 @@ async function batch() {
       await screenshot('sound-garden-7-portrait');
     }
     await page.waitForTimeout(600);
+    if (level === 8 && only === 'garden') await screenshot('sound-garden-8-portrait');
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     await page.evaluate(async () => {
       const g = neo.scene.game;
       const ready = () => kit.until(() => !g.busy || g.finished, 15000);
+      if (g.plan.big) {
+        if (g.singers.filter(s => s.node.visible).length !== 1 || g.singers[0].node.width < 200) throw new Error('Missing big singer');
+        // Check the exclusion without pressing shell buttons; their actual routes stay shell-owned.
+        for (const [x,y] of [[20,20], [neo.view.w-20,20], [40,neo.view.h-40]]) {
+          if (g.bigPad.hitArea.contains(x,y)) throw new Error('Lap pad overlaps a corner');
+        }
+        for (let i = 0; i < 12; i++) {
+          const before = g.played;
+          // Grass edges and quick repeated taps must sound, including during handoffs.
+          const point = g.bigPad.toGlobal({ x: i % 2 ? neo.view.w - 25 : neo.view.w / 2, y: i % 2 ? neo.view.h - 25 : neo.view.h / 2 });
+          kit.tap(point.x, point.y);
+          await kit.sleep(90);
+          if (g.played !== before + 1) throw new Error('Big friend swallowed a tap');
+          if (!g.finished && !g.singers[Math.floor(g.played / 4)].node.visible) throw new Error('Missing four-tap handoff');
+        }
+        if (g.misses || g.hints) throw new Error('Creative taps counted as errors');
+        return;
+      }
       if (g.plan.mode === 'play') {
         for (let i = 0; i < g.plan.rounds; i++) { kit.tapOn(g.singers[i % g.singers.length].node); await kit.sleep(300); }
         return;
@@ -6263,7 +6282,7 @@ async function batch() {
     const r = await page.evaluate(() => { const r = kit.store.stats('sound-garden').history.at(-1); return [r.misses, r.hints]; });
     assert.deepEqual(r, mode === 'play' ? [0, 0] : [2, 1], `garden ${level} score`);
     log(`Sound Garden ${level} (${mode}): sounds, answers, mistakes, hint, saved score and sticker passed`);
-    if (level === 7) await page.setViewportSize({ width: 1024, height: 768 });
+    if (level === 7 || level === 8) await page.setViewportSize({ width: 1024, height: 768 });
   }
 
   // Little Helpers: tap the fruit to send helpers one by one; the whistle checks the count.

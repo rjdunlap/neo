@@ -13,6 +13,7 @@ export interface GardenPlan {
   mode: GardenMode;
   rounds: number;
   name: string;
+  big?: boolean;
 }
 
 /** Plans keyed by stable level ID, so a new level can be placed anywhere in a band's order without renumbering. */
@@ -23,6 +24,7 @@ export const PLANS: Record<number, GardenPlan> = {
   4: { mode: 'updown', rounds: 5, name: 'Does the tune go up or down?' },
   5: { mode: 'echo', rounds: 4, name: 'Echo the woodpecker\'s rhythm on the drum' },
   6: { mode: 'mix', rounds: 6, name: 'Mixed listening: high or low, fast or slow, up or down' },
+  8: { mode: 'play', big: true, rounds: 12, name: 'One big friend: tap anywhere to hear a singer' },
   7: { mode: 'updownsame', rounds: 6, name: 'Does the tune go up, down or stay the same?' },
 };
 
@@ -237,4 +239,13 @@ export const tileFor = (q: Question): number => CHOICES[q.ask].indexOf(q.answer)
 export function echoRest(gap: Gap, minGap: number): number {
   const short = minGap + 0.05;
   return gap === 'S' ? 0.05 : short * 1.7 - minGap;
+}
+
+/** Four songs with one friend before the next takes the stage. */
+export const bigSingerIndex = (played: number, castSize: number) => Math.floor(played / 4) % castSize;
+
+/** Broad lap touch field, leaving the shell's corner controls and companion clear. */
+export function bigTouch(x: number, y: number, w: number, h: number): boolean {
+  return x >= 0 && y >= 0 && x <= w && y <= h &&
+    !(y < 160 && (x < 180 || x > w - 180)) && !(x < 300 && y > h - 300);
 }

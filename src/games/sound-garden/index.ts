@@ -13,12 +13,12 @@ import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { CHOICES, echoDots, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, makeCast, planFor, singerToTap, songFor, tileFor, type Singer, type Song, type Answer, type Gap, type GardenPlan, type Note, type Question, type Sound } from './logic';
+import { bigSingerIndex, bigTouch, CHOICES, echoDots, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, makeCast, planFor, singerToTap, songFor, tileFor, type Singer, type Song, type Answer, type Gap, type GardenPlan, type Note, type Question, type Sound } from './logic';
 import { MIN_TAP_GAP } from '../../engine/ghost';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
+  lap: { min: 1, max: 8, order: [8, 1] },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 7 },
@@ -161,6 +161,10 @@ class SoundGarden implements Game {
   finished = false;
   played = 0;
 
+  readonly bigPad = new Container();
+  private bigBeat = 0;
+  private bigBounce = 0;
+  private bigSwap = -1;
   private readonly backdrop: Backdrop;
   private readonly rhythmHint = new Graphics();
   private readonly drumGlow = new Graphics();
@@ -221,13 +225,20 @@ class SoundGarden implements Game {
     this.drum.visible = echo;
     ctx.stage.addChild(this.woodpecker, this.drumGlow, this.drum, this.rhythmHint);
 
+    if (this.plan.big) {
+      this.bigPad.hitArea = { contains: (x: number, y: number) => bigTouch(x, y, this.view.w, this.view.h) };
+      onTap(this.bigPad, () => void this.sing(this.singers[bigSingerIndex(this.played, this.cast.length)]), { cooldown: 0 });
+      ctx.stage.addChild(this.bigPad);
+    }
+
     if (this.plan.mode === 'play') {
       this.cast.push(...makeCast(ctx.rng));
       for (const kind of this.cast) {
         const node = art(kind);
         const s = { kind, node, taps: 0 };
         node.hitArea = new Circle(0, 0, 100);
-        onTap(node, () => this.sing(s), { cooldown: 250 });
+        if (this.plan.big) node.eventMode = 'none';
+        else onTap(node, () => this.sing(s), { cooldown: 250 });
         this.singers.push(s);
         ctx.stage.addChild(node);
       }
@@ -241,7 +252,7 @@ class SoundGarden implements Game {
   start() {
     if (this.plan.mode === 'play') {
       this.busy = false;
-      void this.ctx.instruct('sg.play');
+      void this.ctx.instruct(this.plan.big ? 'sg.big' : 'sg.play');
       return;
     }
     void this.next();
@@ -256,7 +267,22 @@ class SoundGarden implements Game {
     this.drum.position.set(v.w * 0.68, v.h - 200);
     this.drumGlow.position.copyFrom(this.drum.position);
     this.drawDots();
-    this.singers.forEach((s, i) => s.node.position.set(200 + ((v.w - 300) * i) / (this.singers.length - 1), v.h * (i % 2 ? 0.72 : 0.5)));
+    if (this.plan.big) this.placeBig();
+    else this.singers.forEach((s, i) => s.node.position.set(200 + ((v.w - 300) * i) / (this.singers.length - 1), v.h * (i % 2 ? 0.72 : 0.5)));
+  }
+
+  private placeBig() {
+    const active = bigSingerIndex(Math.min(this.played, this.plan.rounds - 1), this.cast.length);
+    const size = Math.min((this.view.w - 360) / 220, (this.view.h - 300) / 200, 2.7);
+    this.singers.forEach((s, i) => {
+      const leaving = this.bigSwap >= 0 && i === active - 1;
+      s.node.visible = i === active || leaving;
+      const progress = this.bigSwap < 0 ? 1 : Math.min(1, this.bigSwap / 0.55);
+      s.node.alpha = leaving ? 1 - progress : 1;
+      s.node.position.set(this.view.w / 2 + 60 + (leaving ? -progress * this.view.w * 0.5 : (1 - progress) * this.view.w * 0.5), this.view.h * 0.5);
+      s.node.scale.set(size * (1 + this.bigBounce * 0.15), size * (1 - this.bigBounce * 0.12));
+      s.node.rotation = leaving ? Math.sin(this.bigSwap * 14) * 0.14 : 0;
+    });
   }
 
   private placeTiles() {
@@ -273,6 +299,14 @@ class SoundGarden implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    if (this.plan.big) {
+      this.bigBounce = Math.max(0, this.bigBounce - dt * 4);
+      if (this.bigSwap >= 0) {
+        this.bigSwap += dt;
+        if (this.bigSwap >= 0.55) this.bigSwap = -1;
+      }
+      this.placeBig();
+    }
     this.wiggle = Math.max(0, this.wiggle - dt);
     this.bush.rotation = this.wiggle > 0 ? 0.06 * Math.sin(this.clock * 30) : 0;
     for (const t of this.tiles) if (t.glow.visible) t.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 7);
@@ -292,6 +326,7 @@ class SoundGarden implements Game {
    */
   autotouch(): TouchIntent | null {
     if (this.finished) return null;
+    if (this.plan.big) return { tap: { on: this.bigPad, x: this.view.w / 2 + 60, y: this.view.h / 2 }, pause: 0.3 };
     if (this.plan.mode === 'play') return { tap: { on: this.singers.find((s) => s.kind === singerToTap(this.cast, this.played))!.node } };
     if (this.busy) return null;
     if (this.plan.mode === 'echo') {
@@ -305,6 +340,8 @@ class SoundGarden implements Game {
   }
 
   destroy() {
+    this.bigBeat++;
+    this.bigPad.removeAllListeners();
     this.drum.removeAllListeners();
   }
 
@@ -312,6 +349,24 @@ class SoundGarden implements Game {
 
   private async sing(s: { kind: Singer; node: Container; taps: number }) {
     if (this.finished) return;
+    // Handoffs never block touch: a fresh tap sounds immediately and cancels the previous call's delayed beats.
+    if (this.plan.big) {
+      const beatId = ++this.bigBeat;
+      const song = songFor(s.kind, s.taps++);
+      this.played++;
+      this.bigBounce = 1;
+      call(song.call, song.beats[0].step);
+      if (this.played >= this.plan.rounds) { void this.finale(); return; }
+      if (this.played % 4 === 0) this.bigSwap = 0;
+      this.placeBig();
+      for (let i = 1; i < song.beats.length; i++) {
+        await this.ctx.tw.wait(song.beats[i].at - song.beats[i - 1].at);
+        if (beatId !== this.bigBeat || this.finished) return;
+        call(song.call, song.beats[i].step);
+        this.bigBounce = 1;
+      }
+      return;
+    }
     const song = songFor(s.kind, s.taps);
     s.taps++;
     this.played++;
@@ -572,6 +627,7 @@ export const soundGarden: GameModule = {
   skills: ['listening', 'pitch', 'tempo', 'rhythm'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [8],
   describeLevel: (level) => planFor(level).name,
   // Quiet music, so the listening questions are easy to hear.
   music: silenced(STYLES.lullaby),

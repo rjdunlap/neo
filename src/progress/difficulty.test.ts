@@ -1,3 +1,4 @@
+import { soundGarden } from '../games/sound-garden';
 import { eggCatch } from '../games/egg-catch';
 import { describe, expect, it } from 'vitest';
 import { landing, levelsInOrder, nextLevel, nextLevelOffer, stepLevel } from './difficulty';
@@ -157,5 +158,20 @@ it('adds repair and spring boards after the school pair without admitting younge
   for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const) {
     expect(levelsInOrder(eggCatch.levels(band))).not.toContain(10);
     expect(levelsInOrder(eggCatch.levels(band))).not.toContain(11);
+  }
+});
+
+it('Sound Garden lap enters at 8 then 1, preserving saved IDs and safe birthday entry', () => {
+  const range = soundGarden.levels('lap');
+  expect(levelsInOrder(range)).toEqual([8, 1]);
+  expect(nextLevel(0, [], range)).toBe(8);
+  expect(nextLevel(1, [], range)).toBe(1);
+  expect(nextLevel(8, [round(8, 0), round(8, 0)], range)).toBe(1);
+  expect(nextLevelOffer(8, range)).toBe(1);
+  expect(nextLevelOffer(1, range)).toBeNull();
+  for (const band of ['toddler', 'preschool', 'prek'] as const) {
+    const r = soundGarden.levels(band);
+    expect(levelsInOrder(r)).not.toContain(8);
+    expect(landing(8, r, soundGarden.entryLevels)).toBe(levelsInOrder(r)[0]);
   }
 });

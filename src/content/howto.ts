@@ -806,7 +806,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'sound-garden': {
-    goal: 'Listen to the garden friends and choose.',
+    goal: 'Make music with the garden friends and listen to their sounds.',
     steps: [
       { to: 1, text: 'Tap a friend to hear it sing: the bird sings high, the frog low, the bunny pats fast and the turtle plods slow. Five of the six friends stand in the garden each round.' },
       { from: 2, to: 2, text: 'Listen to the bird and the frog, then tap the one that sings high (or low), as asked.' },
@@ -815,12 +815,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: "Watch the dots as the woodpecker knocks, then tap its rhythm back on the drum to wake the tree. Tap the woodpecker to listen again. After two misses, the drum lights for each remaining tap." },
       { from: 6, to: 6, text: 'Listen closely, then answer: high or low, fast or slow, up or down.' },
       { from: 7, to: 7, text: 'Listen to the tune, then tap the rising steps, falling steps or flat path: up, down or the same note.' },
+      { from: 8, to: 8, text: 'Tap the big friend or the space around it to hear it sing. After four taps it waves and the next friend takes a turn. The corner controls and pet stay clear.' },
     ],
     finish: [
       { to: 1, text: 'The round ends after twelve songs.' },
       { from: 2, to: 4, text: 'The round ends when the listening questions are answered.' },
       { from: 5, to: 5, text: 'The round ends when the rhythms are echoed.' },
       { from: 6, to: 7, text: 'The round ends when the listening questions are answered.' },
+      { from: 8, to: 8, text: 'Twelve songs finish the round. Every musical choice is welcome.' },
     ],
   },
   'little-helpers': {
