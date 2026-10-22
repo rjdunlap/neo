@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { simulate, stepBall, type Ball } from '../../engine/ball';
-import { aimFor, CATCH_Y, FLIPPER, flight, kickBall, kickReach, LAUNCH, launchVelocity, makeBumpers, makeWorld, orderNumbers, planFlip, planFor, PLANS, restingFlippers, pickTable, TABLE_IDS, TABLE_SPOTS, STEP, swingFlippers, TABLE } from './logic';
+import { aimFor, CATCH_Y, FLIPPER, flight, kickBall, kickReach, LAUNCH, launchVelocity, makeBumpers, makeWorld, orderNumbers, wantsColor, planFlip, planFor, PLANS, restingFlippers, pickTable, TABLE_IDS, TABLE_SPOTS, STEP, swingFlippers, TABLE } from './logic';
 import { bumperGarden } from './index';
 import { levelsInOrder, nextLevelOffer, stepLevel } from '../../progress/difficulty';
 
@@ -70,15 +70,39 @@ describe('Bumper Garden', () => {
     expect(orderNumbers(planFor(4))).toEqual([1, 2, 3]);
     expect(orderNumbers(planFor(5))).toEqual([1, 2, 3, 4, 5]);
     const range = bumperGarden.levels('prek');
-    expect(levelsInOrder(range)).toEqual([3, 4, 6, 5, 9]);
+    expect(levelsInOrder(range)).toEqual([3, 4, 6, 8, 5, 9]);
     expect(nextLevelOffer(4, range)).toBe(6);
-    expect(nextLevelOffer(6, range)).toBe(5);
+    expect(nextLevelOffer(6, range)).toBe(8);
+    expect(nextLevelOffer(8, range)).toBe(5);
     expect(nextLevelOffer(5, range)).toBe(9);
     expect(stepLevel(9, -1, range)).toBe(5);
     expect(nextLevelOffer(9, range)).toBeNull();
-    for (const id of [3, 4, 5]) expect(stepLevel(id, 0, range)).toBe(id);
+    for (const id of [3, 4, 5, 8]) expect(stepLevel(id, 0, range)).toBe(id);
     expect(levelsInOrder(bumperGarden.levels('preschool'))).toEqual([2, 3, 4]);
   });
+
+  it.each(TABLE_IDS)('sets out a fair "not this color" round on %s: few sleepy flowers, the rest wanted and reachable', table => {
+    const plan = planFor(8);
+    expect(plan).toMatchObject({ mode: 'color', not: true });
+    for (let seed = 1; seed <= 60; seed++) {
+      const bumpers = makeBumpers(plan, new Rng(seed), table);
+      const counts = new Map<number, number>();
+      for (const b of bumpers) counts.set(b.color, (counts.get(b.color) ?? 0) + 1);
+      const sleepy = counts.get(0) ?? 0;
+      expect(sleepy).toBeGreaterThan(0);
+      // The asked color is strictly the fewest, and at least two flowers are wanted.
+      for (const [color, n] of counts) if (color !== 0) expect(n).toBeGreaterThan(sleepy);
+      const wanted = bumpers.map((b, i) => (wantsColor(plan, b.color) ? i : -1)).filter((i) => i >= 0);
+      expect(wanted.length).toBeGreaterThanOrEqual(2);
+      // A sleepy flower is never wanted.
+      bumpers.forEach((b) => { if (b.color === 0) expect(wantsColor(plan, b.color)).toBe(false); });
+      const world = makeWorld(bumpers);
+      for (const i of wanted) expect(aimFor(world, bumpers.length, (k) => k === i), `seed ${seed} flower ${i}`).not.toBeNull();
+    }
+    // The plain color level is unchanged: the asked color is the wanted one.
+    expect(wantsColor(planFor(3), 0)).toBe(true);
+    expect(wantsColor(planFor(3), 1)).toBe(false);
+  }, 15000);
 
   it.each(TABLE_IDS)('makes reproducible count-on and count-back sequences with reachable %s targets', table => {
     const starts = new Set<number>();
@@ -160,12 +184,12 @@ describe('Bumper Garden', () => {
     let planned = 0;
     let touchedOne = 0;
     let free = 0;
-    for (const level of [3, 4, 5, 6, 9]) {
+    for (const level of [3, 4, 5, 6, 8, 9]) {
       const plan = planFor(level);
       for (let seed = 1; seed <= 6; seed++) {
         const bumpers = makeBumpers(plan, new Rng(seed), table);
         const world = makeWorld(bumpers);
-        const wanted = (i: number) => (plan.mode === 'color' ? bumpers[i].color === 0 : bumpers[i].number === orderNumbers(plan)[0]);
+        const wanted = (i: number) => (plan.mode === 'color' ? wantsColor(plan, bumpers[i].color) : bumpers[i].number === orderNumbers(plan)[0]);
         for (const angle of [-0.3, -0.1, 0.15, 0.35]) {
           const start: Ball = { x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(angle), r: TABLE.ball };
           const noise = (seed * 7 + angle * 10) % 40;

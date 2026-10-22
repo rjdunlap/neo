@@ -18,15 +18,18 @@ export interface BumperPlan {
   /** First numbered flower; defaults to one on the original order levels. */
   start?: number;
   descend?: boolean;
+  /** Color levels: bloom every flower that is NOT the asked color; the asked ones fall asleep. `goal` is how many sleep. */
+  not?: boolean;
 }
 
-/** IDs 7 and 8 remain reserved for the pattern and negation slices. */
+/** ID 7 remains reserved for the pattern slice. */
 export const PLANS: Record<number, BumperPlan> = {
   1: { mode: 'spring', bumpers: 6, goal: 6, name: 'Tap to launch the ladybug; flowers bloom when it bumps them' },
   2: { mode: 'bloom', bumpers: 5, goal: 5, name: 'Flip the ladybug back up until every flower blooms' },
   3: { mode: 'color', bumpers: 7, goal: 3, name: 'Bloom the three flowers of one color' },
   4: { mode: 'order', bumpers: 6, goal: 3, name: 'Bump flowers 1, 2, 3 in order' },
   5: { mode: 'order', bumpers: 8, goal: 5, name: 'Bump flowers 1 to 5 in order, with others in the way' },
+  8: { mode: 'color', not: true, bumpers: 8, goal: 2, name: 'Bloom every flower that is not the color asked for; those ones are asleep' },
   6: { mode: 'order', bumpers: 6, goal: 3, start: 3, name: 'Count on from a number between 2 and 6: three or four flowers in order' },
   9: { mode: 'order', bumpers: 8, goal: 5, start: 5, descend: true, name: 'Count back to 1 from a starting number between 5 and 8' },
 };
@@ -119,7 +122,10 @@ export interface Bumper {
   number: number | null;
 }
 
-/** Flowers for a round. Color levels have exactly `goal` flowers of the asked color (color 0). */
+/** Whether a flower of this color (0 is the asked one) is wanted on a color level: the asked color, or on a "not" level every other. */
+export const wantsColor = (plan: BumperPlan, color: number): boolean => (plan.not ? color !== 0 : color === 0);
+
+/** Flowers for a round. Color levels have exactly `goal` flowers of the asked color (color 0); on a "not" level those are the sleepy ones, fewer than each other color. */
 export function makeBumpers(plan: BumperPlan, rng: Rng, table: TableId = 'meadow'): Bumper[] {
   const spots = rng.shuffle([...TABLE_SPOTS[table]]).slice(0, plan.bumpers);
   const numbers = orderNumbers(plan);
