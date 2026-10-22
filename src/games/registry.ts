@@ -47,6 +47,7 @@ import { bumperGarden } from './bumper-garden';
 import { quickTricks } from './quick-tricks';
 import { stampStudio } from './stamp-studio';
 import { petKitchen } from './pet-kitchen';
+import { ribbonWorkshop } from './ribbon-workshop';
 import { tangramTown } from './tangram-town';
 import { rhythmNeighbors } from './rhythm-neighbors';
 import { peekaroundIsland } from './peekaround-island';
@@ -160,6 +161,7 @@ export const GAMES: GameModule[] = [
   quickTricks,
   stampStudio,
   petKitchen,
+  ribbonWorkshop,
   tangramTown,
   rhythmNeighbors,
   peekaroundIsland,

@@ -352,6 +352,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### ribbon-workshop 1: First ribbons
 
+Built 2026-10-22, branch `claude/ribbon-workshop`; [closeout](archive/COMPLETED-2026-10-09.md#ribbon-workshop-levels-1-3-fractions-r2-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`ribbon-workshop`, levels 1–3 *A whole ribbon*, *Snip a half*, *Three quarters*** (new game, new interaction; school): tap ribbon pieces onto a bench to match a gift tag's length of one declared whole, then snip a half into two quarters; every composition that makes the length is accepted. [Definition](definitions/ribbon-workshop.md#levels), [study slice R1](deep-dives/subjects/fractions.md#build-slices-in-order)
 
 Proof: new-game tier under the batch contract, as the [definition's check tier](definitions/ribbon-workshop.md#check-tier) sets it (unit tests and build, `BROWSER_SUITE=ribbon`, one portrait screenshot, `fingerdemo` and `smoke` filtered to the game).
