@@ -15,6 +15,12 @@
 - Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=lasso-loops FINGER_LEVELS=6` at the same URL, clean in 23.3 s. Viewed `test-results/browser/lasso-loops-6-guess-sign.png`: portrait sign, cards, jar and pet clear.
 - Not run: world/offline (no persistence, assets or navigation change); iPad speech, sign readability and child benchmark use remain [device checks](DEVICE-CHECKS.md).
 
+## 2026-10-22 — Puddle Lens levels 1–4 definition (cells-microbes slice 1, docs only)
+
+- Branch `claude/define-puddle-lens` (PR #812): definition packet `docs/definitions/puddle-lens.md`; READY (build queued and gated, define line removed), study backlog, cells-microbes study, Waiting row and recommendations row updated.
+- Ran: a throwaway `landLayout` probe at `5e136276` measuring Bubble Beach's capacity in four views (10 games today, fits up to 13, a 14th fails at school and grown-up; probe file not committed); `node scripts/check-links.mjs` and `git diff --check`.
+- Open: no typecheck, unit tests, build or browser run; the build is gated on the developer confirming identity, Bubble Beach and levels 1–2 accounting, and on the science-and-scale-facts reviewer.
+
 ## 2026-10-22 — Gear Garden levels 1–3 definition (machines-tools slice 1, docs only)
 
 - Branch `claude/define-gear-garden` (PR #807): definition packet `docs/definitions/gear-garden.md`; READY (build queued, define line removed), study backlog, machines-tools study, Waiting row and recommendations row updated.
@@ -99,12 +105,6 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
 - Open: device speech for "perimeter"; a mathematics educator's read of the level-2, 4 and 5 distractors and the M rungs; no reference game was played.
-
-## 2026-10-22 — Recipe Workshop levels 1–3 definition (cooking-recipes slice C1, docs only)
-
-- [PR #792](https://github.com/rjdunlap/neo/pull/792), `claude/define-recipe-workshop`: defined Recipe Workshop levels 1–3 ([definition](definitions/recipe-workshop.md)); READY (build C2–C4 queued as one batch), batch plan, study backlog, cooking study, recommendations, tracker, ideas and waiting-on-developer updated.
-- Ran `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the build C2–C4 (no review gate; five open decisions all have defaults), all device and person checks (the definition's check tier lists them).
 
 ## Coverage summary
 
