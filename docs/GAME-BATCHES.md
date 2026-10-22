@@ -401,3 +401,9 @@ Proof: new-game tier, as the [definition's check tier](definitions/second-chance
 - **`sand-table`, levels 1–3 (E2)** (a new game, one subtask; lap 1, toddler 1–2, preschool 2–3, pre-K 3, Bubble Beach by default): tap a sand tray to pour a shower of grains that settle into a heap, tap a scoop paddle to lift some back into the bucket, one bay added per level; any landscape is a finished one, and every round counts 0 misses and 0 hints. [Definition](definitions/sand-table.md), [earth-materials study slice E1](deep-dives/subjects/earth-materials.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's check tier](definitions/sand-table.md#check-tier) sets it (typecheck, unit tests, a new `browser-check.mjs` case at levels 1 and 3, `fingerdemo` at levels 1 and 3, one portrait screenshot of level 3, one build). No review gate: the three rungs make no geology claim; the [open decisions](definitions/sand-table.md#open-decisions) all have defaults.
+
+### adventure-walk 1: Levels 1–3
+
+- **`adventure-walk`, levels 1–3 (AW2)** (a new game, one subtask; toddler 1, preschool 1–2, pre-K 2–3, school 3, Rainbow Meadow by default): the companion walks to a friend's picnic past three landmarks; she taps one of two glowing ways past each (over, under, through, across, around), then follows the friend's call, then two calls at once with replay. [Definition](definitions/adventure-walk.md), [movement study follow-up](deep-dives/subjects/movement-exercise.md#recommended-follow-ups-requested-2026-10-14)
+
+Proof: new-game tier, as the [definition's check tier](definitions/adventure-walk.md#check-tier) sets it (typecheck, unit tests, a new `browser-check.mjs` case at levels 1 and 3, `fingerdemo` at levels 1 and 3, one portrait screenshot of level 2, one build). No review gate: screen-only, the companion does the walking; any movement invitation stays on decision 4. The [open decisions](definitions/adventure-walk.md#open-decisions) all have defaults.
