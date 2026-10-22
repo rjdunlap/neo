@@ -228,6 +228,15 @@ describe('Inchworm Measure with big worms, then little worms (level 7)', () => {
   });
 
   it('leaves levels 1-6 as they were', () => {
+    // Seed 7's sticks for levels 1-6, as they were before level 7 was appended.
+    expect([1, 2, 3, 4, 5, 6].map((l) => makeMeasures(planFor(l), new Rng(7)))).toEqual([
+      [{thing: 'leaf', length: 2}, {thing: 'snake', length: 4}, {thing: 'pencil', length: 3}],
+      [{thing: 'leaf', length: 2}, {thing: 'snake', length: 6}, {thing: 'pencil', length: 4}],
+      [{thing: 'leaf', length: 2, other: {thing: 'stick', length: 6}}, {thing: 'snake', length: 3, other: {thing: 'leaf', length: 5}}, {thing: 'stick', length: 2, other: {thing: 'leaf', length: 4}}],
+      [{thing: 'leaf', length: 2, start: 0}, {thing: 'snake', length: 8, start: 2}, {thing: 'pencil', length: 4, start: 0}, {thing: 'snake', length: 3, start: 3}],
+      [{thing: 'leaf', length: 2, start: 0, other: {thing: 'stick', length: 8, start: 0}}, {thing: 'snake', length: 3, start: 0, other: {thing: 'stick', length: 7, start: 1}}, {thing: 'snake', length: 4, start: 1, other: {thing: 'pencil', length: 7, start: 3}}, {thing: 'leaf', length: 7, start: 1, other: {thing: 'pencil', length: 3, start: 1}}],
+      [{thing: 'leaf', length: 2, start: 0, other: {thing: 'stick', length: 4, start: 2}}, {thing: 'snake', length: 3, start: 1, other: {thing: 'stick', length: 2, start: 4}}, {thing: 'pencil', length: 2, start: 0, other: {thing: 'snake', length: 2, start: 2}}, {thing: 'leaf', length: 4, start: 1, other: {thing: 'pencil', length: 4, start: 5}}]
+    ]);
     expect(PLANS.slice(0, 6).map((p) => p.mode)).toEqual(['lay', 'say', 'compare', 'ruler', 'rulerdiff', 'rulersum']);
     for (let level = 1; level <= 6; level++) for (const m of makeMeasures(planFor(level), new Rng(level))) expect(m.ask).toBeUndefined();
   });
