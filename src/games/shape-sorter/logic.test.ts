@@ -27,6 +27,14 @@ import {
   planFor,
   sizeMiss,
   wrongDrop,
+  wrongTurn,
+  turnFits,
+  turnOffset,
+  turnStart,
+  turnNext,
+  TURN_PERIOD,
+  TURN_TOLERANCE,
+  type TurnKind,
 } from './logic';
 import { PRESS } from '../../engine/ghost';
 import { shapeSorter } from './index';
@@ -197,10 +205,71 @@ describe('Shape Sorter', () => {
     }
     expect(kinds).toEqual(new Set(SIZE_POOL));
     expect(shapeSorter.levels('preschool')).toEqual({ min: 3, max: 11, order: [3, 4, 5, 6, 7, 11] });
-    expect(shapeSorter.levels('prek')).toEqual({ min: 5, max: 11, order: [5, 6, 7, 11, 8] });
+    expect(shapeSorter.levels('prek')).toEqual({ min: 5, max: 12, order: [5, 6, 7, 11, 8, 12] });
     for (const id of ['shape.size.start', 'shape.size.big', 'shape.size.little', 'shape.size.same']) {
       expect((SCRIPT[id as keyof typeof SCRIPT] as readonly string[] | undefined)?.length, id).toBeGreaterThan(0);
     }
+  });
+
+  it('level 12 deals four distinct shapes, sometimes a circle; every turning start has a bounded tap solution', () => {
+    const plan = planFor(12);
+    expect(plan).toMatchObject({ turning: true, sameColor: true, coded: false, pieces: 4 });
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      const holes = dealHoles(rng, plan);
+      expect(dealHoles(new Rng(seed), plan)).toEqual(holes);
+      expect(holes).toHaveLength(4);
+      expect(new Set(holes.map((h) => h.kind)).size).toBe(4);
+      for (const h of holes) {
+        expect(Object.keys(TURN_PERIOD)).toContain(h.kind);
+        seen.add(h.kind);
+        const kind = h.kind as TurnKind;
+        const start = turnStart(new Rng(seed), kind);
+        expect(turnStart(new Rng(seed), kind)).toBe(start);
+        expect(turnFits(kind, start)).toBe(kind === 'circle');
+        let a = start, taps = 0;
+        while (!turnFits(kind, a) && taps < 12) { a = turnNext(a); taps++; }
+        expect(taps).toBeLessThanOrEqual(3);
+        expect(turnFits(kind, a)).toBe(true);
+        expect(turnFits(kind, a - turnOffset(kind, a))).toBe(true);
+      }
+    }
+    expect(seen).toEqual(new Set(Object.keys(TURN_PERIOD)));
+    expect(shapeSorter.levels('prek').order?.at(-1)).toBe(12);
+    for (const band of ['lap', 'toddler', 'preschool'] as const) expect(shapeSorter.levels(band).order).not.toContain(12);
+    expect(shapeSorter.bands).not.toContain('school');
+    for (const id of ['shape.turn.start', 'shape.turn.tap', 'shape.turn.wrong', 'shape.turn.help']) {
+      expect(SCRIPT[id as keyof typeof SCRIPT]?.length, id).toBeGreaterThan(0);
+    }
+  });
+
+  it('accepts symmetric rotations, full wraps, and ±15° boundaries; rejects just outside the tolerance', () => {
+    for (const [kind, degrees] of Object.entries(TURN_PERIOD)) {
+      if (!degrees) {
+        for (const a of [-777, -1, 0, 123]) expect(turnFits('circle', a)).toBe(true);
+        continue;
+      }
+      for (let n = -12; n <= 12; n++) {
+        const a = degrees * Math.PI / 180 * n;
+        for (const delta of [-TURN_TOLERANCE, 0, TURN_TOLERANCE]) expect(turnFits(kind as TurnKind, a + delta)).toBe(true);
+        for (const sign of [-1, 1]) expect(turnFits(kind as TurnKind, a + sign * (TURN_TOLERANCE + 0.001))).toBe(false);
+      }
+    }
+  });
+
+  it('self-aligns on the second orientation miss of that piece, with a single hint even when a glow is due', () => {
+    const help = startHelp(), a = { turnMisses: 0 }, b = { turnMisses: 0 };
+    expect(wrongTurn(help, a)).toEqual({ glow: false, align: false });
+    expect(wrongTurn(help, a)).toEqual({ glow: true, align: true });
+    expect(help).toEqual({ misses: 2, hints: 1, sinceGlow: 0 });
+    expect(b.turnMisses).toBe(0);
+    // Interleaved wrong holes and another piece do not steal this piece's promised help.
+    const mixed = startHelp(), p = { turnMisses: 0 };
+    wrongTurn(mixed, p);
+    wrongDrop(mixed);
+    expect(wrongTurn(mixed, p)).toEqual({ glow: true, align: true });
+    expect(mixed).toEqual({ misses: 3, hints: 2, sinceGlow: 0 });
   });
 
   it('stands every lid on the floor, below the top buttons and inside the view, in every view', () => {

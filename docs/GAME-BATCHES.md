@@ -92,6 +92,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### shape-sorter 2: Turn it to fit
 
+Built 2026-10-22, [PR #822](https://github.com/rjdunlap/neo/pull/822); [closeout](archive/COMPLETED-2026-10-09.md#shape-sorter-batch-2-turn-it-to-fit-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`shape-sorter`, level 12 *Turn it to fit*, slice 6** (new interaction): tap a piece to turn it a notch, then carry it to an upright hole; pre-K `order [5, 6, 7, 11, 8, 12]`. [Dive](deep-dives/shape-sorter.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.

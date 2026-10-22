@@ -26,6 +26,8 @@ export interface SorterPlan {
   sameColor: boolean;
   /** Pieces arrive tilted. */
   tilt: boolean;
+  /** Tap to turn in 30° notches; upright holes require a symmetric fit. */
+  turning?: boolean;
   /** A spoken shape clue asks the player to find one matching shape. */
   clue?: boolean;
   /** Nothing can go wrong and every touch is answered: the box giggles, the floor wiggles a piece, a far drop plops. */
@@ -73,6 +75,8 @@ export const PLANS: SorterPlan[] = [
   { holes: ['circle', 'square'], pieces: 4, coded: false, sameColor: false, tilt: false },
   // 11, Big, middle, little: one kind in three sizes.
   { holes: [], pieces: 3, coded: false, sameColor: false, tilt: false, sized: true },
+  // 12, Turn it to fit: three or four corner shapes, sometimes a circle for contrast.
+  { holes: ['square', 'triangle', 'hexagon', 'star'], pieces: 4, coded: false, sameColor: true, tilt: false, turning: true },
 ];
 
 /** A touch let go sooner than this (in seconds) is a tap. The ghost finger presses for 0.22 s. */
@@ -113,6 +117,11 @@ const clash = (pairs: [ShapeKind, ShapeKind][], kinds: readonly ShapeKind[], k: 
 
 /** The lid's holes for one round: fixed for most levels, drawn from the pool at 6–8, one kind in three sizes at 11. */
 export function dealHoles(rng: Rng, plan: SorterPlan): HoleSpec[] {
+  if (plan.turning) {
+    const kinds = [...plan.holes];
+    if (rng.chance(0.5)) kinds[rng.int(0, kinds.length - 1)] = 'circle';
+    return kinds.map((kind) => ({ kind }));
+  }
   if (plan.sized) {
     const kind = rng.pick(SIZE_POOL);
     return rng.shuffle([0, 1, 2] as Size[]).map((size) => ({ kind, size }));
@@ -242,4 +251,35 @@ export function wrongDrop(h: SorterHelp): boolean {
   h.sinceGlow = 0;
   h.hints++;
   return true;
+}
+
+/** Rotational periods in degrees; zero means every angle fits (a circle). */
+export const TURN_PERIOD = { square: 90, triangle: 120, hexagon: 60, star: 72, circle: 0 } as const;
+export type TurnKind = keyof typeof TURN_PERIOD;
+export const TURN_NOTCH = Math.PI / 6;
+export const TURN_TOLERANCE = Math.PI / 12;
+
+/** Signed distance to the nearest symmetric fit, in radians. Handles wrapped and negative angles. */
+export function turnOffset(kind: TurnKind, angle: number): number {
+  const period = TURN_PERIOD[kind] * Math.PI / 180;
+  if (!period) return 0;
+  return ((angle + period / 2) % period + period) % period - period / 2;
+}
+export const turnFits = (kind: TurnKind, angle: number) => Math.abs(turnOffset(kind, angle)) <= TURN_TOLERANCE + 1e-9;
+export const turnNext = (angle: number) => (angle + TURN_NOTCH) % (Math.PI * 2);
+/** Start every corner shape out of fit, on the same notch grid the child can reach. */
+export function turnStart(rng: Rng, kind: TurnKind): number {
+  const notches = Array.from({ length: 12 }, (_, n) => n * TURN_NOTCH);
+  return rng.pick(kind === 'circle' ? notches : notches.filter((a) => !turnFits(kind, a)));
+}
+
+/** One orientation miss; a second on this piece self-aligns it. A simultaneous glow is the same hint, never charged twice. */
+export function wrongTurn(help: SorterHelp, piece: { turnMisses: number }): { glow: boolean; align: boolean } {
+  const glow = wrongDrop(help);
+  const align = ++piece.turnMisses >= 2;
+  if (align && !glow) {
+    help.hints++;
+    help.sinceGlow = 0;
+  }
+  return { glow: glow || align, align };
 }

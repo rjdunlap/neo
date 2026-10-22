@@ -28,6 +28,13 @@ import {
   startHelp,
   tapsIn,
   wrongDrop,
+  wrongTurn,
+  turnFits,
+  turnNext,
+  turnOffset,
+  turnStart,
+  TAP_HOLD,
+  type TurnKind,
   type HoleSpec,
   type Size,
   type SorterPlan,
@@ -56,7 +63,7 @@ const LEVELS: BandLevels = {
   lap: { min: 9, max: 9, order: [9] },
   toddler: { min: 1, max: 10, order: [9, 1, 2, 10, 3, 4, 5] },
   preschool: { min: 3, max: 11, order: [3, 4, 5, 6, 7, 11] },
-  prek: { min: 5, max: 11, order: [5, 6, 7, 11, 8] },
+  prek: { min: 5, max: 12, order: [5, 6, 7, 11, 8, 12] },
 };
 
 const PIECE_R = 48;
@@ -79,6 +86,9 @@ interface Piece {
   wiggle: number;
   /** The game clock when the finger went down on it, to tell a tap from a drag. */
   pickedAt: number;
+  turnMisses: number;
+  tapStart: { x: number; y: number; pointerId: number; localX: number; localY: number } | null;
+  tapMoved: boolean;
 }
 
 interface Hole extends HoleSpec {
@@ -212,6 +222,11 @@ class ShapeSorter implements Game {
   /** At the sizes levels, which kinds have gone in little and big, and whether the box has said so. */
   private readonly wentIn = new Map<ShapeKind, Set<boolean>>();
   private saidSizes = false;
+  /** Cancellation must never turn a piece or submit a drop. Capture runs before draggable's release handler. */
+  private readonly cancelTurn = (e: PointerEvent) => {
+    if (!this.plan.turning) return;
+    for (const p of this.pieces) if (p.tapStart?.pointerId === e.pointerId) p.tapStart = null;
+  };
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -225,6 +240,7 @@ class ShapeSorter implements Game {
       for (const ground of [this.bg, this.floor]) onTap(ground, (e) => this.nudge(this.ctx.stage.toLocal(e.global)), { cooldown: 200 });
     }
 
+    if (this.plan.turning) window.addEventListener('pointercancel', this.cancelTurn, true);
     const specs = pieceKinds(ctx.rng, this.plan, holes);
     if (this.plan.clue) this.clueQueue = clueKinds(ctx.rng, holes);
     const one = ctx.rng.pick(ONE_COLOR);
@@ -234,7 +250,8 @@ class ShapeSorter implements Game {
       // However small it is drawn, the piece is at least 112 units to touch.
       view.hitArea = new Circle(0, 0, Math.max(56, PIECE_R * scale + 8));
       if (this.plan.tilt) view.rotation = ctx.rng.range(-0.7, 0.7);
-      const piece: Piece = { view, kind, size, scale, wiggle: 0, pickedAt: 0, drag: null! };
+      if (this.plan.turning) view.rotation = turnStart(ctx.rng, kind as TurnKind);
+      const piece: Piece = { view, kind, size, scale, wiggle: 0, pickedAt: 0, turnMisses: 0, tapStart: null, tapMoved: false, drag: null! };
       piece.drag = draggable(view, ctx.tw, {
         onPick: () => {
           piece.pickedAt = this.clock;
@@ -243,13 +260,24 @@ class ShapeSorter implements Game {
         },
         onDrop: (x, y) => this.drop(piece, x, y),
       });
+      if (this.plan.turning) {
+        // onTap starts a candidate after draggable has accepted this pointer; the release distinguishes a turn from a carry.
+        onTap(view, (e) => {
+          if (!piece.drag.dragging || piece.tapStart) return;
+          piece.tapStart = { x: e.global.x, y: e.global.y, pointerId: e.pointerId, localX: view.x, localY: view.y };
+          piece.tapMoved = false;
+        }, { cooldown: 0 });
+        view.on('globalpointermove', (e) => {
+          if (piece.tapStart?.pointerId === e.pointerId && Math.hypot(e.global.x - piece.tapStart.x, e.global.y - piece.tapStart.y) > 24) piece.tapMoved = true;
+        });
+      }
       this.layer.addChild(view);
       return piece;
     });
   }
 
   start() {
-    const first = this.plan.clue ? 'shape.find.start' : this.plan.tapIn ? 'shape.tap.start' : this.plan.sized ? 'shape.size.start' : 'shape.start';
+    const first = this.plan.clue ? 'shape.find.start' : this.plan.tapIn ? 'shape.tap.start' : this.plan.sized ? 'shape.size.start' : this.plan.turning ? 'shape.turn.start' : 'shape.start';
     void this.ctx.instruct(first).then(() => {
       if (this.plan.clue) void this.askNextClue();
     });
@@ -307,16 +335,30 @@ class ShapeSorter implements Game {
     const kind = this.plan.clue ? this.asked ?? undefined : undefined;
     const piece = this.pieces.find((p) => !p.drag.dragging && !p.view.destroyed && (!kind || p.kind === kind));
     const hole = piece && holeFor(this.box.holes, piece);
+    if (piece && this.plan.turning && !turnFits(piece.kind as TurnKind, piece.view.rotation)) return { tap: { on: piece.view } };
     return piece && hole ? { drag: { on: piece.view }, to: { on: this.box, x: hole.x, y: hole.y } } : null;
   }
 
   destroy() {
+    window.removeEventListener('pointercancel', this.cancelTurn, true);
     for (const p of this.pieces) p.drag.destroy();
   }
 
   private drop(piece: Piece, x: number, y: number): boolean {
     if (this.finished) return false;
     if (this.plan.clue && !this.clueReady) return false;
+    if (this.plan.turning) {
+      if (!piece.tapStart) return false; // cancelled contact
+      const start = piece.tapStart;
+      piece.tapStart = null;
+      if (!piece.tapMoved && this.clock - piece.pickedAt < TAP_HOLD) {
+        piece.view.position.set(start.localX, start.localY);
+        piece.view.rotation = turnNext(piece.view.rotation);
+        sfx.tick();
+        void this.ctx.say('shape.turn.tap');
+        return true; // stay where she tapped it, including when it waits on a hole
+      }
+    }
     const near = holeAt(this.box.holes.map((h) => ({ h, x: this.box.x + h.x, y: this.box.y + h.y })), x, y);
     if (!near && tapsIn(this.plan, this.clock - piece.pickedAt, Math.hypot(x - piece.drag.home.x, y - piece.drag.home.y))) {
       // A tap: the piece hops into its own hole by itself.
@@ -336,6 +378,20 @@ class ShapeSorter implements Game {
     }
 
     if (fits(near.h, piece) && (!this.plan.clue || (this.clueReady && this.asked === piece.kind))) {
+      if (this.plan.turning && !turnFits(piece.kind as TurnKind, piece.view.rotation)) {
+        const support = wrongTurn(this.help, piece);
+        piece.view.position.set(near.x, near.y);
+        sfx.boing();
+        this.box.nope();
+        void this.ctx.say(support.align ? 'shape.turn.help' : 'shape.turn.wrong');
+        if (support.glow) this.box.hint(piece, 4);
+        if (support.align) {
+          // Keep the equivalent orientation rather than turning every shape all the way back to zero.
+          void this.ctx.tw.to(piece.view, { rotation: piece.view.rotation - turnOffset(piece.kind as TurnKind, piece.view.rotation) }, { duration: 0.3 });
+        }
+        void this.jiggle(piece, near.x);
+        return true;
+      }
       if (this.plan.clue) this.clueReady = false;
       void this.swallow(piece, near.x, near.y);
       return true;
@@ -355,6 +411,13 @@ class ShapeSorter implements Game {
     }
     if (glow) this.box.hint(this.plan.clue && this.asked ? { kind: this.asked } : piece, 4);
     return false;
+  }
+
+  /** A misaligned shape waits at the hole, with a sideways jiggle that preserves its angle. */
+  private async jiggle(piece: Piece, x: number) {
+    await this.ctx.tw.to(piece.view, { x: x + 8 }, { duration: 0.08 });
+    await this.ctx.tw.to(piece.view, { x: x - 8 }, { duration: 0.12 });
+    await this.ctx.tw.to(piece.view, { x }, { duration: 0.08 });
   }
 
   /** A tap on the box at level 1: a gulp and a giggle. */
@@ -380,7 +443,7 @@ class ShapeSorter implements Game {
     this.pieces = this.pieces.filter((p) => p !== piece);
     const v = piece.view;
     if (hop) await this.ctx.tw.to(v, { x: (v.x + x) / 2, y: Math.min(v.y, y) - 90 }, { duration: 0.28, ease: ease.outQuad });
-    await this.ctx.tw.to(v, { x, y, rotation: 0 }, { duration: 0.12 });
+    await this.ctx.tw.to(v, { x, y, rotation: this.plan.turning ? v.rotation : 0 }, { duration: 0.12 });
     void this.ctx.tw.to(v, { alpha: 0 }, { duration: 0.25 });
     await this.ctx.tw.to(v.scale, { x: 0.2, y: 0.2 }, { duration: 0.25, ease: ease.inBack });
     v.destroy({ children: true });
@@ -503,6 +566,7 @@ export const shapeSorter: GameModule = {
     const n = p.deal?.count ?? p.holes.length;
     const shapes = `${n} shape${n === 1 ? '' : 's'}`;
     if (p.tapIn) return 'tap a shape and it hops in';
+    if (p.turning) return 'tap to turn each shape, then carry it to its upright hole';
     if (p.sized) return 'one shape in three sizes: big, middle, little';
     if (p.coded) return `${shapes}, color-matched holes`;
     if (p.clue) return 'hear a shape clue, then find it';
