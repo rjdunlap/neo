@@ -373,3 +373,9 @@ Proof: new-interaction tier, as the [definition's Build and check tier](definiti
 - **`critter-sort`, levels 12 *Like the big plant* and 13 *Same and different*** (new levels on the existing drag interaction; pre-K and school): drag little plants grown from one big plant's seeds into hoops for the big plant's leaf shape and petal marks, first one hoop (level 12), then overlapping hoops (level 13); the family is stated, never deduced, and no mechanism is taught. [Definition](definitions/same-kind-different-sprouts.md), [genetics study slice G4](deep-dives/subjects/genetics.md#build-slices-in-order)
 
 Proof: new-level tier on an existing interaction, as the [definition's Build and check tier](definitions/same-kind-different-sprouts.md#build-and-check-tier) sets it.
+
+### attic-finds 1: Lid and Lever
+
+- **`attic-finds`, levels 3 *Up and down* (lap, toddler) and 4 *Peek inside* (toddler)** (a new giant-handle interaction inside the existing game; `entryLevels: [3, 4]`; 0 misses and 0 hints, nothing kept): each touch turns a giant handle half a turn so the bird (or fish) rises, then sinks; level 4 adds a peek door that shows the rod the handle pushes; a Finish picture appears after three turns and only her tap ends the round. [Definition](definitions/lid-and-lever.md), [everyday-life study slice H3](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the [definition's Build and check tier](definitions/lid-and-lever.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticlever` scripted play at levels 3–4, `fingerdemo` at both, one portrait screenshot of level 4 with the door open, one build).
