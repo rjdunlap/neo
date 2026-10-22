@@ -110,6 +110,13 @@ export function targetsFor(plan: EggPlan, rng: Rng): { basket: number; nest: num
     const nest = (basket + 1 + rng.int(0, 2)) % 4;
     out.push({ basket, nest });
   }
+  if (plan.singleGate && out.length >= 3) {
+    // Retries can wrap the stream: keep the same variety across that seam too.
+    const last = out.length - 1;
+    const basket = 1 - out[0].basket;
+    out[last] = { basket, nest: 1 - basket };
+    if (out[last - 1].basket === basket && out[last - 2].basket === basket) out[last - 1] = { basket: 1 - basket, nest: basket };
+  }
   return out;
 }
 

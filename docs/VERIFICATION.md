@@ -6,6 +6,7 @@
 - Passed `npm run typecheck`; `npx vitest run src/games/egg-catch/logic.test.ts src/progress/difficulty.test.ts src/content/howto.test.ts`: 3 files / 51 tests, including target variety, single-flip solvability, hint/bot agreement, adaptation, entry landing and existing IDs.
 - Passed `BROWSER_SUITE=batch BATCH_ONLY=eggs FROM_LEVEL=9 TO_LEVEL=9 GAME_URL=http://localhost:5198`: portrait play, egg waits through a long look, exactly one gate/two exits, two wrong routes, one hint, four catches, saved history/sticker and no page errors. Inspected `test-results/browser/egg-catch-9.png`: fork, basket/hay, arrow, companion and four-egg ending clear.
 - Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=egg-catch FINGER_LEVELS=9` at the same URL: preschool bot clean in 25.8 s. Source frozen during successful plays. Links and `git diff --check` passed; server stopped.
+- Retry-boundary follow-up: target variety also holds when retries wrap the seeded list. Typecheck and the same 51 tests passed on `4dea4ee2` plus this rule diff; the first six targets used by the play and first four used by the demo are unchanged, so browser evidence is reused.
 - Not run: extra local build, broad suites, offline (source new-level tier); iPad speech/audio and child play remain open. No lap/couch remapping, repair, flip-flop or decisions. Required PR tests/build pending before merge.
 
 ## 2026-10-21 — Sing-Along Barn eighth tune, Ring Around the Rosie

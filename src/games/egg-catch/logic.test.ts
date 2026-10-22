@@ -50,7 +50,7 @@ describe('Egg Catch', () => {
       expect(new Set(targets.map((t) => t.basket))).toEqual(new Set([0, 1]));
       targets.forEach(({ basket, nest }, i) => {
         expect(nest).toBe(1 - basket);
-        if (i >= 2) expect(targets.slice(i - 2, i + 1).every((t) => t.basket === basket)).toBe(false);
+        expect([0, 1, 2].every((offset) => targets[(i + offset) % targets.length].basket === basket)).toBe(false);
         for (const start of [false, true]) {
           const gates = [start, false, false];
           const hint = gatesFor(basket, true);
