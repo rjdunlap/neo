@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle, Sprite } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, Sprite } from 'pixi.js';
 import { cheek, ink, RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { shapePath, SHAPES, type ShapeKind } from '../../art/shapes';
@@ -13,18 +13,23 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   BOX_FRONT,
   FLOOR_AT,
-  HOLE_R,
   boxTopFor,
   clueKinds,
+  dealHoles,
+  factDue,
+  fits,
   holeAt,
   holeFor,
   holeLayout,
   nearest,
   pieceKinds,
   planFor,
+  sizeMiss,
   startHelp,
   tapsIn,
   wrongDrop,
+  type HoleSpec,
+  type Size,
   type SorterPlan,
 } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
@@ -37,27 +42,38 @@ const SHAPE_COLOR: Record<ShapeKind, ColorName> = {
   star: 'orange',
   heart: 'pink',
   hexagon: 'green',
+  oval: 'teal',
+  rectangle: 'purple',
+  diamond: 'red',
+  pentagon: 'blue',
+  trapezoid: 'yellow',
 };
+
+/** The one colour of a round where colour no longer helps: the rainbow, less the floor's orange. */
+const ONE_COLOR: ColorName[] = ['red', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink'];
 
 const LEVELS: BandLevels = {
   lap: { min: 9, max: 9, order: [9] },
-  toddler: { min: 1, max: 9, order: [9, 1, 2, 3, 4, 5] },
-  preschool: { min: 3, max: 7 },
-  prek: { min: 5, max: 8 },
+  toddler: { min: 1, max: 10, order: [9, 1, 2, 10, 3, 4, 5] },
+  preschool: { min: 3, max: 11, order: [3, 4, 5, 6, 7, 11] },
+  prek: { min: 5, max: 11, order: [5, 6, 7, 11, 8] },
 };
 
 const PIECE_R = 48;
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
-function drawPiece(kind: ShapeKind, color: ColorName): Graphics {
+function drawPiece(kind: ShapeKind, color: ColorName, scale = 1): Graphics {
   const sw = swatch[color];
-  const g = shapePath(new Graphics(), kind, PIECE_R).fill(sw.fill).stroke(line(sw.line));
-  return g.ellipse(-PIECE_R * 0.35, -PIECE_R * 0.4, PIECE_R * 0.14, PIECE_R * 0.22).fill({ color: 0xffffff, alpha: 0.45 });
+  const r = PIECE_R * scale;
+  const g = shapePath(new Graphics(), kind, r).fill(sw.fill).stroke(line(sw.line));
+  return g.ellipse(-r * 0.35, -r * 0.4, r * 0.14, r * 0.22).fill({ color: 0xffffff, alpha: 0.45 });
 }
 
 interface Piece {
   view: Container;
   kind: ShapeKind;
+  size?: Size;
+  scale: number;
   drag: DragHandle;
   /** Seconds left on a "here I am" wiggle after a floor tap. */
   wiggle: number;
@@ -65,8 +81,7 @@ interface Piece {
   pickedAt: number;
 }
 
-interface Hole {
-  kind: ShapeKind;
+interface Hole extends HoleSpec {
   x: number;
   y: number;
   glow: Graphics;
@@ -88,9 +103,9 @@ class Box extends Container {
   readonly w: number;
   readonly lidH: number;
 
-  constructor(plan: SorterPlan) {
+  constructor(plan: SorterPlan, specs: readonly HoleSpec[]) {
     super();
-    const layout = holeLayout(plan);
+    const layout = holeLayout(plan, specs);
     this.w = layout.w;
     this.lidH = layout.lidH;
     const frontH = BOX_FRONT + 10;
@@ -103,15 +118,15 @@ class Box extends Container {
       .stroke(line(wood.line));
     this.addChild(body);
 
-    layout.holes.forEach(({ kind, x, y }) => {
+    layout.holes.forEach(({ kind, size, r, x, y }) => {
       const rim = plan.coded ? swatch[SHAPE_COLOR[kind]].fill : wood.line;
-      const glow = shapePath(new Graphics(), kind, HOLE_R + 16).fill({ color: 0xfff3a0, alpha: 0.85 });
+      const glow = shapePath(new Graphics(), kind, r + 16).fill({ color: 0xfff3a0, alpha: 0.85 });
       glow.position.set(x, y);
       glow.visible = false;
-      const hole = shapePath(new Graphics(), kind, HOLE_R).fill(0x4a3424).stroke(line(rim, plan.coded ? 9 : 6));
+      const hole = shapePath(new Graphics(), kind, r).fill(0x4a3424).stroke(line(rim, plan.coded ? 9 : 6));
       hole.position.set(x, y);
       this.addChild(glow, hole);
-      this.holes.push({ kind, x, y, glow });
+      this.holes.push({ kind, size, x, y, glow });
     });
 
     // A friendly face on the front.
@@ -149,8 +164,9 @@ class Box extends Container {
     this.leanLeft = 1;
   }
 
-  hint(kind: ShapeKind, seconds: number) {
-    for (const h of this.holes) h.glow.visible = h.kind === kind;
+  /** Light the hole that takes this piece (its kind, and its size where holes have sizes). */
+  hint(piece: { kind: ShapeKind; size?: Size }, seconds: number) {
+    for (const h of this.holes) h.glow.visible = fits(h, piece);
     this.glowFor = seconds;
   }
 
@@ -193,10 +209,14 @@ class ShapeSorter implements Game {
   private clueQueue: ShapeKind[] = [];
   private asked: ShapeKind | null = null;
   private clueReady = false;
+  /** At the sizes levels, which kinds have gone in little and big, and whether the box has said so. */
+  private readonly wentIn = new Map<ShapeKind, Set<boolean>>();
+  private saidSizes = false;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
-    this.box = ctx.track(new Box(this.plan));
+    const holes = dealHoles(ctx.rng, this.plan);
+    this.box = ctx.track(new Box(this.plan, holes));
     this.layer.addChild(this.box);
     ctx.stage.addChild(this.bg, this.floor, this.layer);
     // Level 1 answers every touch: the box giggles, and the floor or the wall wiggles the nearest piece and names it.
@@ -205,14 +225,16 @@ class ShapeSorter implements Game {
       for (const ground of [this.bg, this.floor]) onTap(ground, (e) => this.nudge(this.ctx.stage.toLocal(e.global)), { cooldown: 200 });
     }
 
-    const kinds = pieceKinds(ctx.rng, this.plan);
-    if (this.plan.clue) this.clueQueue = clueKinds(ctx.rng, this.plan);
-    const one: ColorName = ctx.rng.pick(['teal', 'purple', 'blue'] as ColorName[]);
-    this.pieces = kinds.map((kind) => {
+    const specs = pieceKinds(ctx.rng, this.plan, holes);
+    if (this.plan.clue) this.clueQueue = clueKinds(ctx.rng, holes);
+    const one = ctx.rng.pick(ONE_COLOR);
+    this.pieces = specs.map(({ kind, size, scale }) => {
       const view = new Container();
-      view.addChild(drawPiece(kind, this.plan.sameColor ? one : SHAPE_COLOR[kind]));
+      view.addChild(drawPiece(kind, this.plan.sameColor ? one : SHAPE_COLOR[kind], scale));
+      // However small it is drawn, the piece is at least 112 units to touch.
+      view.hitArea = new Circle(0, 0, Math.max(56, PIECE_R * scale + 8));
       if (this.plan.tilt) view.rotation = ctx.rng.range(-0.7, 0.7);
-      const piece: Piece = { view, kind, wiggle: 0, pickedAt: 0, drag: null! };
+      const piece: Piece = { view, kind, size, scale, wiggle: 0, pickedAt: 0, drag: null! };
       piece.drag = draggable(view, ctx.tw, {
         onPick: () => {
           piece.pickedAt = this.clock;
@@ -227,7 +249,8 @@ class ShapeSorter implements Game {
   }
 
   start() {
-    void this.ctx.instruct(this.plan.clue ? 'shape.find.start' : this.plan.tapIn ? 'shape.tap.start' : 'shape.start').then(() => {
+    const first = this.plan.clue ? 'shape.find.start' : this.plan.tapIn ? 'shape.tap.start' : this.plan.sized ? 'shape.size.start' : 'shape.start';
+    void this.ctx.instruct(first).then(() => {
       if (this.plan.clue) void this.askNextClue();
     });
   }
@@ -283,7 +306,7 @@ class ShapeSorter implements Game {
     if (this.plan.clue && (!this.asked || !this.clueReady)) return null;
     const kind = this.plan.clue ? this.asked ?? undefined : undefined;
     const piece = this.pieces.find((p) => !p.drag.dragging && !p.view.destroyed && (!kind || p.kind === kind));
-    const hole = piece && holeFor(this.box.holes, piece.kind);
+    const hole = piece && holeFor(this.box.holes, piece);
     return piece && hole ? { drag: { on: piece.view }, to: { on: this.box, x: hole.x, y: hole.y } } : null;
   }
 
@@ -297,7 +320,7 @@ class ShapeSorter implements Game {
     const near = holeAt(this.box.holes.map((h) => ({ h, x: this.box.x + h.x, y: this.box.y + h.y })), x, y);
     if (!near && tapsIn(this.plan, this.clock - piece.pickedAt, Math.hypot(x - piece.drag.home.x, y - piece.drag.home.y))) {
       // A tap: the piece hops into its own hole by itself.
-      const hole = holeFor(this.box.holes, piece.kind);
+      const hole = holeFor(this.box.holes, piece);
       if (hole) {
         void this.swallow(piece, this.box.x + hole.x, this.box.y + hole.y, true);
         return true;
@@ -312,7 +335,7 @@ class ShapeSorter implements Game {
       return false;
     }
 
-    if (near.h.kind === piece.kind && (!this.plan.clue || (this.clueReady && this.asked === piece.kind))) {
+    if (fits(near.h, piece) && (!this.plan.clue || (this.clueReady && this.asked === piece.kind))) {
       if (this.plan.clue) this.clueReady = false;
       void this.swallow(piece, near.x, near.y);
       return true;
@@ -323,12 +346,14 @@ class ShapeSorter implements Game {
     // At the clue level a shape in its own hole fits but is not the one asked for: say what she did right, every time.
     const asked = this.plan.clue ? this.asked : null;
     const fitted = asked !== null && near.h.kind === piece.kind;
+    const size = sizeMiss(near.h, piece);
     if (fitted || this.clock - this.lastNag > 3) {
       this.lastNag = this.clock;
       if (asked && fitted) void this.ctx.say(`shape.find.notyet.${asked}`, { shape: piece.kind });
+      else if (size) void this.ctx.say(`shape.size.${size}`);
       else void this.ctx.say(this.plan.clue && this.asked ? `shape.find.hint.${this.asked}` : 'shape.wrong', { hole: near.h.kind });
     }
-    if (glow) this.box.hint(this.plan.clue && this.asked ? this.asked : piece.kind, 4);
+    if (glow) this.box.hint(this.plan.clue && this.asked ? { kind: this.asked } : piece, 4);
     return false;
   }
 
@@ -360,13 +385,27 @@ class ShapeSorter implements Game {
     await this.ctx.tw.to(v.scale, { x: 0.2, y: 0.2 }, { duration: 0.25, ease: ease.inBack });
     v.destroy({ children: true });
     sfx.clunk();
-    sfx.bell(5 + (this.placed % 6), 0.22);
+    // Sized pieces ring by size: the little one high, the big one low.
+    sfx.bell(piece.size !== undefined ? 9 - 2 * piece.size : 5 + (this.placed % 6), 0.22);
     this.box.gulp();
     this.ctx.particles.burst(x, y, { kind: 'star', colors: [0xffd54a, 0xffffff], count: 8, speed: [100, 220], gravity: 0, life: [0.4, 0.7] });
     this.placed++;
     if (this.placed % 3 === 0) this.ctx.pet.cheer();
+    if (!this.sizeSaid(piece) && factDue(this.plan, this.placed)) void this.ctx.say(`shape.fact.${piece.kind}`);
     if (this.pieces.length === 0) void this.finale();
     else if (this.plan.clue) void this.askNextClue();
+  }
+
+  /** Once a round, when one kind has gone in both little and big: "Big or little, a star is a star!" True when it spoke. */
+  private sizeSaid(piece: Piece): boolean {
+    if (!this.plan.sizes || this.saidSizes) return false;
+    const seen = this.wentIn.get(piece.kind) ?? new Set<boolean>();
+    seen.add(piece.scale > 1);
+    this.wentIn.set(piece.kind, seen);
+    if (seen.size < 2) return false;
+    this.saidSizes = true;
+    void this.ctx.say('shape.size.same', { shape: piece.kind });
+    return true;
   }
 
   private async askNextClue() {
@@ -461,13 +500,14 @@ export const shapeSorter: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => {
     const p = planFor(level);
-    const n = p.holes.length;
+    const n = p.deal?.count ?? p.holes.length;
     const shapes = `${n} shape${n === 1 ? '' : 's'}`;
     if (p.tapIn) return 'tap a shape and it hops in';
+    if (p.sized) return 'one shape in three sizes: big, middle, little';
     if (p.coded) return `${shapes}, color-matched holes`;
     if (p.clue) return 'hear a shape clue, then find it';
     if (!p.sameColor) return `${shapes}, plain holes`;
-    return `${shapes}, all one color${p.tilt ? ', tilted' : ''}`;
+    return `${shapes}, all one color${p.sizes ? ', big and little' : ''}${p.tilt ? ', tilted' : ''}`;
   },
   music: STYLES.stickers,
   coplayHint: 'Name each shape as {name} picks it up: "circle", "square".',

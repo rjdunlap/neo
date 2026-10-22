@@ -1,8 +1,24 @@
-import type { ShapeKind } from '../../art/shapes';
+import { MORE_SHAPES, SHAPES, type ShapeKind } from '../../art/shapes';
 import type { Rng } from '../../engine/random';
 
+/** Little, middle, big. */
+export type Size = 0 | 1 | 2;
+/** How a sized hole and piece are drawn against `HOLE_R` and the piece's radius. */
+export const SIZE_SCALE = [0.72, 1, 1.32] as const;
+
+/** Hole kinds drawn per seed: `holes` are always in, the rest come from `pool`, never two kinds from one `apart` pair. */
+export interface HoleDeal {
+  pool: readonly ShapeKind[];
+  count: number;
+  /** At least this many all-curve kinds and straight-sided kinds. */
+  curves?: number;
+  straights?: number;
+}
+
 export interface SorterPlan {
+  /** The holes, or with `deal` the kinds always in. */
   holes: readonly ShapeKind[];
+  deal?: HoleDeal;
   pieces: number;
   /** Hole rims in the shape's color (a strong hint). */
   coded: boolean;
@@ -16,22 +32,47 @@ export interface SorterPlan {
   everyTouch?: boolean;
   /** A short touch on a piece hops it into its hole by itself (a drag there works too). */
   tapIn?: boolean;
+  /** Pieces come a little bigger or smaller (0.85–1.15); any size of a kind fits its hole. */
+  sizes?: boolean;
+  /** One kind in three sizes, holes and pieces alike: the size is what to match. */
+  sized?: boolean;
+  /** The box says a property of a shape it swallows, now and then. */
+  facts?: boolean;
 }
 
+/** Every shape the sorter knows: the classic six and the later five. */
+export const POOL: readonly ShapeKind[] = [...SHAPES, ...MORE_SHAPES];
+/** Kinds with no straight side. */
+export const CURVES: readonly ShapeKind[] = ['circle', 'oval', 'heart'];
+/** Never on one lid: a turned square is a diamond. */
+const APART: [ShapeKind, ShapeKind][] = [['square', 'diamond']];
+/** Never on one lid at the clue level either, where a clue must name exactly one dealt shape. */
+const CLUE_APART: [ShapeKind, ShapeKind][] = [
+  ['circle', 'oval'],
+  ['star', 'pentagon'],
+  ['diamond', 'trapezoid'],
+];
+/** The kinds level 11 draws in three sizes. */
+export const SIZE_POOL: readonly ShapeKind[] = ['circle', 'square', 'triangle', 'star', 'heart', 'hexagon', 'oval', 'pentagon'];
+
 const FOUR: ShapeKind[] = ['circle', 'square', 'triangle', 'star'];
-/** The six shapes levels 7 and 8 use, named here so a shape added to `SHAPES` cannot widen their lids. */
-export const CLASSIC: readonly ShapeKind[] = ['circle', 'square', 'triangle', 'star', 'heart', 'hexagon'];
+/** Levels 7 and 8: six from the pool, a curve and straight sides among them; the count is pinned, so the pool can grow without widening a lid. */
+const MIXED: HoleDeal = { pool: POOL, count: 6, curves: 1, straights: 2 };
 export const PLANS: SorterPlan[] = [
   { holes: ['circle'], pieces: 3, coded: true, sameColor: false, tilt: false, everyTouch: true },
   { holes: ['circle', 'square'], pieces: 4, coded: true, sameColor: false, tilt: false },
   { holes: ['circle', 'square', 'triangle'], pieces: 6, coded: true, sameColor: false, tilt: false },
   { holes: FOUR, pieces: 6, coded: true, sameColor: false, tilt: false },
-  { holes: FOUR, pieces: 6, coded: false, sameColor: false, tilt: false },
-  { holes: [...FOUR, 'heart'], pieces: 7, coded: false, sameColor: true, tilt: false },
-  { holes: CLASSIC, pieces: 8, coded: false, sameColor: true, tilt: true },
-  { holes: CLASSIC, pieces: CLASSIC.length, coded: false, sameColor: true, tilt: false, clue: true },
+  { holes: FOUR, pieces: 6, coded: false, sameColor: false, tilt: false, facts: true },
+  { holes: ['circle', 'square'], deal: { pool: POOL, count: 5 }, pieces: 7, coded: false, sameColor: true, tilt: false, sizes: true, facts: true },
+  { holes: [], deal: MIXED, pieces: 8, coded: false, sameColor: true, tilt: true, sizes: true, facts: true },
+  { holes: [], deal: MIXED, pieces: 6, coded: false, sameColor: true, tilt: false, clue: true },
   // 9, Tap and in it goes: the lap entry and toddler's first rung.
   { holes: ['circle'], pieces: 3, coded: true, sameColor: false, tilt: false, everyTouch: true, tapIn: true },
+  // 10, Round or square: two holes by outline alone, between toddler's colour-coded two and three.
+  { holes: ['circle', 'square'], pieces: 4, coded: false, sameColor: false, tilt: false },
+  // 11, Big, middle, little: one kind in three sizes.
+  { holes: [], pieces: 3, coded: false, sameColor: false, tilt: false, sized: true },
 ];
 
 /** A touch let go sooner than this (in seconds) is a tap. The ghost finger presses for 0.22 s. */
@@ -54,29 +95,98 @@ export const SNAP = 100;
 const HOLE_GAP_X = 150;
 const HOLE_GAP_Y = 136;
 
-/** Every hole gets at least one piece; the rest are random holes. Shuffled. */
-export function pieceKinds(rng: Rng, plan: SorterPlan): ShapeKind[] {
-  const kinds = [...plan.holes];
-  while (kinds.length < plan.pieces) kinds.push(rng.pick(plan.holes));
-  return rng.shuffle(kinds);
+export interface HoleSpec {
+  kind: ShapeKind;
+  /** Set only at the sized level: the hole takes only a piece of this size. */
+  size?: Size;
+}
+
+export interface PieceSpec {
+  kind: ShapeKind;
+  size?: Size;
+  /** How big it is drawn, against the usual piece. */
+  scale: number;
+}
+
+const clash = (pairs: [ShapeKind, ShapeKind][], kinds: readonly ShapeKind[], k: ShapeKind) =>
+  pairs.some(([a, b]) => (k === a && kinds.includes(b)) || (k === b && kinds.includes(a)));
+
+/** The lid's holes for one round: fixed for most levels, drawn from the pool at 6–8, one kind in three sizes at 11. */
+export function dealHoles(rng: Rng, plan: SorterPlan): HoleSpec[] {
+  if (plan.sized) {
+    const kind = rng.pick(SIZE_POOL);
+    return rng.shuffle([0, 1, 2] as Size[]).map((size) => ({ kind, size }));
+  }
+  const deal = plan.deal;
+  if (!deal) return plan.holes.map((kind) => ({ kind }));
+  const apart = plan.clue ? [...APART, ...CLUE_APART] : APART;
+  for (;;) {
+    const kinds = [...plan.holes];
+    for (const k of rng.shuffle([...deal.pool])) {
+      if (kinds.length >= deal.count) break;
+      if (!kinds.includes(k) && !clash(apart, kinds, k)) kinds.push(k);
+    }
+    const curves = kinds.filter((k) => CURVES.includes(k)).length;
+    if (kinds.length === deal.count && curves >= (deal.curves ?? 0) && kinds.length - curves >= (deal.straights ?? 0)) {
+      return kinds.map((kind) => ({ kind }));
+    }
+  }
+}
+
+/** Every hole gets at least one piece; the rest are random holes. Shuffled. At 6–7 sizes vary, and a kind dealt twice comes once small and once big. */
+export function pieceKinds(rng: Rng, plan: SorterPlan, holes: readonly HoleSpec[] = dealHoles(rng, plan)): PieceSpec[] {
+  if (plan.sized) return rng.shuffle(holes.map(({ kind, size }) => ({ kind, size, scale: SIZE_SCALE[size!] })));
+  const kinds = holes.map((h) => h.kind);
+  while (kinds.length < plan.pieces) kinds.push(rng.pick(holes).kind);
+  const big = new Map<ShapeKind, boolean>();
+  const pieces = kinds.map((kind) => {
+    if (!plan.sizes) return { kind, scale: 1 };
+    const next = big.has(kind) ? !big.get(kind) : rng.chance(0.5);
+    big.set(kind, next);
+    return { kind, scale: next ? rng.range(1.07, 1.15) : rng.range(0.85, 0.93) };
+  });
+  return rng.shuffle(pieces);
 }
 
 /** One spoken clue for each shape, in a seeded order. */
-export const clueKinds = (rng: Rng, plan: SorterPlan): ShapeKind[] => rng.shuffle([...plan.holes]);
+export const clueKinds = (rng: Rng, holes: readonly HoleSpec[]): ShapeKind[] => rng.shuffle(holes.map((h) => h.kind));
 
-/** The lid's holes in rows of up to four (three when there are more), relative to the lid's top middle. */
-export function holeLayout(plan: SorterPlan) {
-  const n = plan.holes.length;
+/** Does this piece go in this hole: its own kind, and at the sized level its own size. */
+export const fits = (hole: HoleSpec, piece: { kind: ShapeKind; size?: Size }) =>
+  hole.kind === piece.kind && (hole.size === undefined || hole.size === piece.size);
+
+/** At the sized level, a piece on a hole of its kind but the wrong size: too big or too little. */
+export const sizeMiss = (hole: HoleSpec, piece: { kind: ShapeKind; size?: Size }): 'big' | 'little' | null =>
+  hole.size === undefined || piece.size === undefined || hole.kind !== piece.kind || hole.size === piece.size
+    ? null
+    : piece.size > hole.size
+      ? 'big'
+      : 'little';
+
+/** A hole's drawn radius: sized holes by their size, and a little roomier where pieces vary in size. */
+export const holeRadius = (plan: SorterPlan, hole: HoleSpec) =>
+  hole.size !== undefined ? HOLE_R * SIZE_SCALE[hole.size] : plan.sizes ? HOLE_R * 1.1 : HOLE_R;
+
+/** The lid's holes in rows of up to four (three when there are more), relative to the lid's top middle, spaced for the largest. */
+export function holeLayout(plan: SorterPlan, specs: readonly HoleSpec[]) {
+  const n = specs.length;
   const perRow = n <= 4 ? n : 3;
   const rows = Math.ceil(n / perRow);
-  const holes = plan.holes.map((kind, i) => {
+  const maxR = Math.max(...specs.map((h) => holeRadius(plan, h)));
+  const gapX = Math.max(HOLE_GAP_X, 2 * maxR + 40);
+  const gapY = Math.max(HOLE_GAP_Y, 2 * maxR + 28);
+  const top = 24 + Math.max(56, maxR + 2);
+  const holes = specs.map((spec, i) => {
     const row = Math.floor(i / perRow);
     const inRow = Math.min(perRow, n - row * perRow);
     const col = i % perRow;
-    return { kind, x: (col - (inRow - 1) / 2) * HOLE_GAP_X, y: 24 + row * HOLE_GAP_Y + 56 };
+    return { ...spec, r: holeRadius(plan, spec), x: (col - (inRow - 1) / 2) * gapX, y: top + row * gapY };
   });
-  return { holes, w: Math.max(300, perRow * HOLE_GAP_X + 40), lidH: rows * HOLE_GAP_Y + 24 };
+  return { holes, w: Math.max(300, perRow * gapX + 40), lidH: top + (rows - 1) * gapY + maxR + 26 };
 }
+
+/** One in three swallows (the second, fifth, eighth…) earns a spoken fact, where the plan has them. */
+export const factDue = (plan: SorterPlan, placed: number) => !!plan.facts && placed % 3 === 2;
 
 /** The box's front hangs this far below the lid's bottom edge (the lid overlaps the front by 10). */
 export const BOX_FRONT = 110;
@@ -99,9 +209,10 @@ export function holeAt<H extends { x: number; y: number }>(holes: readonly H[], 
 
 /**
  * The hole a capable player takes a piece to, for the how-to card's ghost finger: the one with the piece's own
- * shape. Every piece has one (`pieceKinds` only makes kinds the plan has holes for).
+ * shape (and size, at the sized level). Every piece has one (`pieceKinds` only makes pieces the dealt holes take).
  */
-export const holeFor = <H extends { kind: ShapeKind }>(holes: readonly H[], kind: ShapeKind): H | undefined => holes.find((h) => h.kind === kind);
+export const holeFor = <H extends HoleSpec>(holes: readonly H[], piece: { kind: ShapeKind; size?: Size }): H | undefined =>
+  holes.find((h) => fits(h, piece));
 
 /** The waiting thing nearest a touch, for a tap on the floor at level 1 to wiggle and name. */
 export function nearest<T extends { x: number; y: number }>(items: readonly T[], x: number, y: number): T | undefined {
