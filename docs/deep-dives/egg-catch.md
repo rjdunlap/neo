@@ -125,8 +125,8 @@ Each slice that adds a level updates `PLANS`, `LEVELS`/`order`/`entryLevels`, `d
 3. **Notes, egg colours and the hatching basket** (built; [PR #740](https://github.com/rjdunlap/neo/pull/740)). Tier: content: typecheck, rule tests, one portrait screenshot of level 2 and of the ending.
 4. **Level 8, Under the hen** (built; [PR #748](https://github.com/rjdunlap/neo/pull/748)). Tier: new interaction: typecheck, unit tests (difficulty and how-to included), one scripted play of level 8 with a wrong lane and a hint, one portrait screenshot, `fingerdemo` at 8.
 5. **Level 9, One gate** (built; [PR #754](https://github.com/rjdunlap/neo/pull/754)). Tier: new level on an existing interaction: rule tests, one browser play of level 9, `fingerdemo` at 9.
-6. **Level 10, Fix the run** (ready). Tier: new interaction: unit tests, one scripted play (one miss, one hint), one portrait screenshot, `fingerdemo` at 10. Also extends the `eggs` loop to levels 6–7.
-7. **Level 11, Flip-flop gate** (ready, after slice 6). Same tier as slice 6.
+6. **Level 10, Fix the run** (claimed with slice 7 on `codex/egg-catch-gate-repair`, worker `01a161fa-9f96-75d2-b63e-ab1aa671d115`). Tier: new interaction: unit tests, one scripted play (one miss, one hint), one portrait screenshot, `fingerdemo` at 10. Also extends the `eggs` loop to levels 6–7.
+7. **Level 11, Flip-flop gate** (same batch claim, after slice 6). Same tier as slice 6.
 8. **Every touch answers at level 1** (after V2's person check). Tier: rule tests, a rapid-tap regression play at level 1, `fingerdemo` at 1.
 9. **Define level 12, Sorting gate** (docs only), then decisions 2–5.
 
@@ -139,3 +139,7 @@ Slice 2 (a miss that teaches and hens that wait, levels 2–3) landed 2026-10-21
 Slice 3 (notes, egg colours and the hatching basket) built 2026-10-21 on `codex/egg-catch-colours` ([PR #740](https://github.com/rjdunlap/neo/pull/740)); the [build note](../archive/COMPLETED-2026-10-09.md#egg-catch-notes-colours-and-hatching-basket-2026-10-21) and [checks](../archive/VERIFICATION-2026-10-21.md#2026-10-21--egg-catch-notes-colours-and-hatching-basket-slice-3) record the content-only scope.
 
 Slice 4 (level 8 Under the hen) built on `codex/egg-catch-under-hen` ([PR #748](https://github.com/rjdunlap/neo/pull/748)); five eggs, forgiving lane taps, clucking cue and supported wrong-lane learning. No lap/couch additions or other rungs.
+
+### Gate repair and changing gates batch claim
+
+Worker `01a161fa-9f96-75d2-b63e-ab1aa671d115` claims only slices 6–7 / school levels 10–11, in that dependency order, on `codex/egg-catch-gate-repair`. Level 9 is already built. Expected files: `src/games/egg-catch/{logic,index}.ts`, rule/difficulty/how-to tests, `src/content/{howto,voice-script}.ts`, `scripts/browser-check.mjs`, README and Egg Catch documentation/queue closeout. One PR covers both interactions; shared proof includes typecheck, unit tests, build (shared content), filtered eggs 6–7/10–11 with miss/hint, portrait and ghost finger at 10–11. Excludes all other levels and developer decisions; #733 stays awaiting review. Admission 4%/50% used, resets `1792663143`/`1793117891`, ordinary usage allowed; conservative two-substep estimate 47.5/7.5 points fits 96%/50% remaining.
