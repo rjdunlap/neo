@@ -368,7 +368,9 @@ Proof: new-level tier on an existing interaction, as the [definition's Build and
 
 ### stamp-studio 1: Trace Prints
 
-- **`stamp-studio`, levels 8 *Leaf prints* (lap) and 9 *Two feet* (toddler)** (a new `TracePrints` interaction inside the existing game: a mud tray where a leaf, a duck foot or a cat paw leaves its own fresh print; 0 misses and 0 hints, nothing kept): pat the mud with one big leaf (eight pats finish it), then choose between two feet and print both. [Definition](definitions/trace-prints.md), [deep-time D3](deep-dives/subjects/deep-time.md#build-slices-in-order) **Claimed 2026-10-22** on `claude/trace-prints` (levels 8–9 together; expected files as in the definition).
+Built 2026-10-22, [PR #777](https://github.com/rjdunlap/neo/pull/777); [closeout](archive/COMPLETED-2026-10-09.md#stamp-studio-levels-8-9-trace-prints-deep-time-d3-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
+- **`stamp-studio`, levels 8 *Leaf prints* (lap) and 9 *Two feet* (toddler)** (a new `TracePrints` interaction inside the existing game: a mud tray where a leaf, a duck foot or a cat paw leaves its own fresh print; 0 misses and 0 hints, nothing kept): pat the mud with one big leaf (eight pats finish it), then choose between two feet and print both. [Definition](definitions/trace-prints.md), [deep-time D3](deep-dives/subjects/deep-time.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the [definition's Build and check tier](definitions/trace-prints.md#build-and-check-tier) sets it (typecheck, unit tests, the `creative` stamps loop at levels 8–9, `fingerdemo` at both, one portrait screenshot of level 9, one build).
 

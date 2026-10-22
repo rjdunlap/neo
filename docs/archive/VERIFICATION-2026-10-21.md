@@ -407,3 +407,10 @@
 - Updated AGENTS, roadmap, workflow, study closeout, Claude docs-keeper and the 18 affected dives: one worker/claim/PR per declared batch, combined admission estimate and proportionate shared checks, resume unfinished batches in the same worker. Coordinator checkpoint/ledger unchanged.
 - Passed Markdown links, exact original-task coverage/uniqueness and Next ten composition assertions, plus `git diff --check`.
 - Not run: local game tests/typecheck/build/browser/offline (docs-only tier). Required PR CI supplies tests/build; cache/token savings are unmeasured and existing device/reviewer decisions remain open.
+
+## 2026-10-21 — Ribbon Workshop definition (fractions R1, docs only)
+
+- [PR #760](https://github.com/rjdunlap/neo/pull/760), `claude/define-ribbon-workshop`: new [definition](../definitions/ribbon-workshop.md) for Ribbon Workshop levels 1–3 (school, new game); the study's IDs 2–4 became 1–3 and later rungs moved to 6 and 7.
+- Updated READY (definition line out, build line in), GAME-BATCHES, the study backlog, the fractions study, its recommendation row, the subject tracker, the idea notebook and WAITING-ON-DEVELOPER (defaults for five open decisions).
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser, offline (docs only). The R2 build does not exist, so no play, ghost finger, iPad or child check applies yet.

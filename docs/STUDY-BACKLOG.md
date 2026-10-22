@@ -15,7 +15,7 @@ The research is complete for every row below; `define` means the next session wr
 
 | Subject | Status | Next bounded action | Source |
 | --- | --- | --- | --- |
-| `deep-time` | ready | D3 [defined](definitions/trace-prints.md); its build is queued as the `stamp-studio` Trace Prints batch | [Study](deep-dives/subjects/deep-time.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#deep-time-recommendations) |
+| `deep-time` | ready | D3 [defined](definitions/trace-prints.md) and built (2026-10-22, PR #777) | [Study](deep-dives/subjects/deep-time.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#deep-time-recommendations) |
 | `genetics` | ready / define | G4 [defined](definitions/same-kind-different-sprouts.md); its build is queued as the `critter-sort` batch; next definition G7 Patchwork Conservatory (after G5, which is defined) | [Study](deep-dives/subjects/genetics.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#genetics-recommendations) |
 | `daily-life-long-ago` | ready / define | H3 [defined](definitions/lid-and-lever.md); its build is queued as the `attic-finds` Lid and Lever batch; next definition H4 Same Job, Different Tools | [Study](deep-dives/subjects/daily-life-long-ago.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations) |
 | `inquiry` | decision | Q5 [defined](definitions/what-can-we-tell.md) (Ramp Race level 7); its build follows Q4 (Trial Shelf 5–6), both waiting on inquiry decisions 1–2; next definition Q6 Workshop Detective waits on decision 3 | [Study](deep-dives/subjects/inquiry.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#scientific-inquiry-recommendations) |
