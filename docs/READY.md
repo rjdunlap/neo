@@ -6,7 +6,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 
 ## Next ten
 
-- **`egg-catch`, level 9 One gate** (new level): preschool and pre-K entry before 4. [Slice 5](deep-dives/egg-catch.md#new-levels-on-top)
 - **`egg-catch`, level 10 Fix the run** (new interaction): repair one gate from a visible trace; school. [Slice 6](deep-dives/egg-catch.md#new-levels-on-top)
 - **`egg-catch`, level 11 Flip-flop gate** (new interaction; after *Fix the run*): a gate that flips itself, two eggs, one setting; school. [Slice 7](deep-dives/egg-catch.md#new-levels-on-top)
 - **`feelings-faces`, toddler 10 *Hug or pillow*** (new level on the help interaction): two helper cards for sad, sleepy or hungry; toddler `[2, 10, 3, 4]`. [Slice 3](deep-dives/feelings-faces.md#new-levels-on-top)
