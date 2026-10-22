@@ -148,8 +148,8 @@ These are unresolved definition/review choices, not blockers to this docs-only s
 
 ## Build slices, in order
 
-1. **F1 · Define Food Web Workshop 1–3**, docs only: exact reviewed records and graph semantics, first three rounds, support/accounting, scoped how-to/speech/demo, both layouts and destination audit. Decide whether the badge/graph action earns a new identity. Include the reviewer and trace-round adaptation questions in the packet.
-2. **F2 · Build Food Web Workshop 1–3**, only after F1: finite logic and property tests, shell integration, original art/voice script and ghost finger. New-game tier: typecheck/unit tests, filtered first/last play with one wrong Check and one hint, portrait screenshot; build because registry/shared content changes. No browser checks in this research session.
+1. **F1 · Define Food Web Workshop 1–3**, docs only, **defined 2026-10-21** ([packet](../../definitions/food-web-workshop.md)): exact reviewed records and graph semantics, first three rounds, support/accounting, scoped how-to/speech/demo, both layouts and destination audit. Decide whether the badge/graph action earns a new identity. Include the reviewer and trace-round adaptation questions in the packet.
+2. **F2 · Build Food Web Workshop 1–3**, only after F1; waits on the developer reviewing the packet's six records and confirming identity and land ([WAITING](../../WAITING-ON-DEVELOPER.md)): finite logic and property tests, shell integration, original art/voice script and ghost finger. New-game tier: typecheck/unit tests, filtered first/last play with one wrong Check and one hint, portrait screenshot; build because registry/shared content changes. No browser checks in this research session.
 3. **F3 · Define Patch Change**, Habitat Helpers: one unavailable resource, visible comparison, accepted repairs, exact appended ID/range and prediction-vs-claim accounting. Build in its own later interaction slice.
 4. **F4 · Define Pollinator Post**, docs only: prove difference from Seed Travelers, review pollen/nectar/flower-state model and freeze free visit, keyed choice and comparative plan rounds. Implementation remains a separate new-interaction slice.
 5. **F5 · Define Leaf Litter Window** inside Garden Grow's Under the Soil packet, docs only: reviewed snapshots, compressed time, unjudged finish and adaptation. No separate game registration.
@@ -159,5 +159,7 @@ These are unresolved definition/review choices, not blockers to this docs-only s
 9. **F9 · Define the parent page card**, only after a named practical-content review; plain HTML, no new tracking or obligations.
 
 ## What was built and checked
+
+F1 (Food Web Workshop 1–3 definition, 2026-10-21) is docs only: [packet](../../definitions/food-web-workshop.md), checked with the link and diff checks; its build is not started.
 
 Nothing was implemented. The subject study, tracker, notebook, roadmap recommendations and verification entry are the deliverables. Relative-link and diff checks are recorded in [VERIFICATION](../../archive/VERIFICATION-2026-10-16.md#2026-10-16--ecosystems-subject-research). No typecheck, unit tests, build, browser suite, device checks, reference-game play or learning study was run. The developer authorized publishing the research branch and draft PR after the initial automatic review rejection.
