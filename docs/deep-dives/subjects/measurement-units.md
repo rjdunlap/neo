@@ -115,8 +115,8 @@ Nothing in M1 waits on these.
 
 Each is one session. Definitions are recommendations; their builds need their own ready packet.
 
-1. **M1 — define Inchworm Measure: *Big worms, little worms*.** Docs only. Freeze the level's ID and orders, the two worm sizes, stick lengths, the row-tap card, misses/help, voice lines, how-to lines (scoped to the level), the ghost finger and the rule test above. Coordinate with Inchworm's queued game dive (either may land first; whichever is second reconciles). No decision needed.
-2. **M2 — build M1.** New-level tier on an existing interaction plus the one new card: typecheck, Inchworm rule tests, one browser play of the new level with one wrong tap and help, `fingerdemo` at it.
+1. **M1 — define Inchworm Measure: *Big worms, little worms*.** Defined 2026-10-22 in PR #767: [definition](../../definitions/big-worms-little-worms.md). Docs only. Freeze the level's ID and orders, the two worm sizes, stick lengths, the row-tap card, misses/help, voice lines, how-to lines (scoped to the level), the ghost finger and the rule test above. Coordinate with Inchworm's queued game dive (either may land first; whichever is second reconciles). No decision needed.
+2. **M2 — build M1.** Queued in READY as the `inchworm` batch. New-level tier on an existing interaction plus the one new card: typecheck, Inchworm rule tests, one browser play of the new level with one wrong tap and help, `fingerdemo` at it.
 3. **M3 — define Measuring Post 1–3** after decision 1: which tool (rope, balance, jug), whose count used the smaller unit across attributes, and counts in different units compared by re-measuring in one unit. Exact tools, objects, results and hints.
 4. **M4 — define Measuring Post 4, *How many little ones?*** (upper school): a conversion table from an equivalence seen on the balance, then one checked row; after decision 2 for the unit names.
 5. **M5 — define one Weights Case** after decision 3: a parcel list, a fixed weight set, both pans, a search proving each case solvable and a par. Grown-up target sizes.
@@ -125,3 +125,5 @@ Each is one session. Definitions are recommendations; their builds need their ow
 ## What was built and checked
 
 Nothing implemented. Opened the primary sources linked above, checked ownership in the related game dives and studies, and published a docs-only claim. Docs verification only: local links and `git diff --check`. No typecheck, tests, build, browser, iPad or child observation.
+
+M1's definition landed 2026-10-22 (docs only, PR #767); it dropped the optional third unit. Links and `git diff --check` only.
