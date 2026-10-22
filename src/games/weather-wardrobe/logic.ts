@@ -13,9 +13,41 @@ export const ITEMS = {
   beanie: 'snowy',
   scarf: 'snowy',
   mittens: 'snowy',
+  sandals: 'sunny',
+  rainhat: 'rainy',
+  earmuffs: 'snowy',
+  puffycoat: 'snowy',
 } as const satisfies Record<string, Weather>;
 export type Item = keyof typeof ITEMS;
 export const itemsFor = (w: Weather) => (Object.keys(ITEMS) as Item[]).filter((i) => ITEMS[i] === w);
+
+export type Slot = 'head' | 'eyes' | 'neck' | 'body' | 'hands' | 'feet' | 'held';
+
+/** Where each item goes on the pet. An outfit holds one item per slot, so a beanie and earmuffs are never both on. */
+export const SLOTS: Record<Item, Slot> = {
+  sunhat: 'head',
+  sunglasses: 'eyes',
+  raincoat: 'body',
+  umbrella: 'held',
+  boots: 'feet',
+  beanie: 'head',
+  scarf: 'neck',
+  mittens: 'hands',
+  sandals: 'feet',
+  rainhat: 'head',
+  earmuffs: 'head',
+  puffycoat: 'body',
+};
+
+/** One whole outfit for a weather: an item for each slot that weather fills, chosen by seed where two share a slot. */
+export function outfitFor(w: Weather, rng: Rng): Item[] {
+  const bySlot = new Map<Slot, Item[]>();
+  for (const item of itemsFor(w)) bySlot.set(SLOTS[item], [...(bySlot.get(SLOTS[item]) ?? []), item]);
+  return [...bySlot.values()].map((items) => rng.pick(items));
+}
+
+/** The items the sticker draws from: the original eight, so stickers from before the new clothes look the same. */
+export const STICKER_ITEMS: readonly Item[] = ['sunhat', 'sunglasses', 'raincoat', 'umbrella', 'boots', 'beanie', 'scarf', 'mittens'];
 
 /** How each item is spoken in "___ for snowy days". */
 export const ITEM_WORDS: Record<Item, string> = {
@@ -27,6 +59,10 @@ export const ITEM_WORDS: Record<Item, string> = {
   beanie: 'A warm hat is',
   scarf: 'A scarf is',
   mittens: 'Mittens are',
+  sandals: 'Sandals are',
+  rainhat: 'A rain hat is',
+  earmuffs: 'Earmuffs are',
+  puffycoat: 'A puffy coat is',
 };
 
 /** Each item's name, said when she touches it on the pet at level 1. */
@@ -39,6 +75,10 @@ export const ITEM_NAMES: Record<Item, string> = {
   beanie: 'A warm hat',
   scarf: 'A scarf',
   mittens: 'Mittens',
+  sandals: 'Sandals',
+  rainhat: 'A rain hat',
+  earmuffs: 'Earmuffs',
+  puffycoat: 'A puffy coat',
 };
 
 /** What the grass does when she touches it at level 1: a puddle splashes, snow crunches, a flower pops up. */
@@ -81,23 +121,25 @@ export interface Outfit {
 export function outfits(plan: WardrobePlan, rng: Rng): Outfit[] {
   const out: Outfit[] = [];
   let order: Weather[] = [];
+  // Weather-change rounds wear one outfit per weather all game, so the clothes to take off are the ones she just put on.
+  const dress = plan.mode === 'change' ? new Map(WEATHERS.map((w) => [w, outfitFor(w, rng)])) : null;
   for (let r = 0; r < plan.rounds; r++) {
     if (plan.mode === 'change') {
       if (!order.length) order = rng.shuffle([...WEATHERS]);
       const from = order[r]!;
       const to = order[(r + 1) % order.length];
-      const needed = itemsFor(to);
+      const needed = dress!.get(to)!;
       const others = rng.shuffle((Object.keys(ITEMS) as Item[]).filter((i) => ITEMS[i] !== to));
-      out.push({ weathers: [from, to], remove: itemsFor(from), needed, options: rng.shuffle([...needed, ...others.slice(0, plan.choices - needed.length)]) });
+      out.push({ weathers: [from, to], remove: [...dress!.get(from)!], needed: [...needed], options: rng.shuffle([...needed, ...others.slice(0, plan.choices - needed.length)]) });
       continue;
     }
     if (order.length < (plan.mode === 'trip' ? 2 : 1)) order = rng.shuffle([...WEATHERS]);
     const weathers = plan.mode === 'trip' ? [order.shift()!, order.shift()!] : [order.shift()!];
-    // Sunny has only two things to wear, so "everything" there means both.
+    // Every weather fills at least three slots, so "everything" at level 5 is always three, one per slot.
     const needed =
       plan.mode === 'trip'
-        ? weathers.flatMap((w) => rng.shuffle(itemsFor(w)).slice(0, 2))
-        : rng.shuffle(itemsFor(weathers[0])).slice(0, Math.min(plan.need, itemsFor(weathers[0]).length));
+        ? weathers.flatMap((w) => rng.shuffle(outfitFor(w, rng)).slice(0, 2))
+        : rng.shuffle(outfitFor(weathers[0], rng)).slice(0, plan.need);
     const others = rng.shuffle((Object.keys(ITEMS) as Item[]).filter((i) => !weathers.includes(ITEMS[i])));
     const options = rng.shuffle([...needed, ...others.slice(0, plan.choices - needed.length)]);
     out.push({ weathers, needed, options });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { GROUND_TOUCH, ITEM_NAMES, ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfits, WARDROBE_PLANS, WEATHERS, type Item } from './logic';
+import { GROUND_TOUCH, ITEM_NAMES, ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfitFor, outfits, SLOTS, STICKER_ITEMS, WARDROBE_PLANS, WEATHERS, wardrobePlan, type Item } from './logic';
 
 describe('Weather Wardrobe', () => {
   it('gives every weather at least two things to wear, each spoken plainly', () => {
@@ -38,8 +38,9 @@ describe('Weather Wardrobe', () => {
           if (plan.mode === 'change') {
             expect(o.weathers).toHaveLength(2);
             expect(o.weathers[0]).not.toBe(o.weathers[1]);
-            expect(o.remove?.sort()).toEqual(itemsFor(o.weathers[0]).sort());
-            expect(o.needed.sort()).toEqual(itemsFor(o.weathers[1]).sort());
+            for (const item of o.remove!) expect(ITEMS[item]).toBe(o.weathers[0]);
+            expect(o.remove!.length).toBe(new Set(itemsFor(o.weathers[0]).map((i) => SLOTS[i])).size);
+            expect(o.needed.length).toBe(new Set(itemsFor(o.weathers[1]).map((i) => SLOTS[i])).size);
             expect(o.remove!.length).toBeGreaterThan(0);
             expect(o.needed.length).toBeGreaterThan(0);
           }
@@ -47,6 +48,37 @@ describe('Weather Wardrobe', () => {
         });
       }
     }
+  });
+
+  it('never puts two things in one slot, and a whole outfit fills every slot its weather uses', () => {
+    const slotsOf = (items: Item[]) => items.map((i) => SLOTS[i]);
+    for (let seed = 1; seed <= 200; seed++) {
+      for (const w of WEATHERS) {
+        const outfit = outfitFor(w, new Rng(seed));
+        for (const item of outfit) expect(ITEMS[item]).toBe(w);
+        expect(new Set(slotsOf(outfit)).size).toBe(outfit.length);
+        expect(new Set(slotsOf(outfit))).toEqual(new Set(slotsOf(itemsFor(w))));
+      }
+      for (const plan of WARDROBE_PLANS.filter((p) => p.mode !== 'play')) {
+        for (const o of outfits(plan, new Rng(seed))) {
+          const sets = plan.mode === 'trip' ? o.weathers.map((w) => o.needed.filter((i) => ITEMS[i] === w)) : [o.needed, ...(o.remove ? [o.remove] : [])];
+          for (const set of sets) expect(new Set(slotsOf(set)).size, plan.name).toBe(set.length);
+        }
+      }
+    }
+  });
+
+  it('asks for three things every round of level 5, and changes outfits that match what she just put on', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      for (const o of outfits(wardrobePlan(5), new Rng(seed))) expect(o.needed).toHaveLength(3);
+      const change = outfits(wardrobePlan(7), new Rng(seed));
+      for (let i = 1; i < change.length; i++) expect([...change[i].remove!].sort()).toEqual([...change[i - 1].needed].sort());
+    }
+  });
+
+  it('keeps the sticker to the original eight items, so old stickers look the same', () => {
+    expect(STICKER_ITEMS).toEqual(['sunhat', 'sunglasses', 'raincoat', 'umbrella', 'boots', 'beanie', 'scarf', 'mittens']);
+    for (const w of WEATHERS) expect(STICKER_ITEMS.some((i) => ITEMS[i] === w)).toBe(true);
   });
 
   it("gives the ghost finger's bot only things that fit the weather, each once, until the outfit is complete", () => {
