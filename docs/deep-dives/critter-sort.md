@@ -87,6 +87,7 @@ IDs are appended, never renumbered. 6 is the easy entry; 7–11 are the new top.
 | 9 | This but not that (**school built 2026-10-16**) | school | One hoop with sign A and a red-lined sign B inside it | Critters that fit A and not B | Spoken reason names both parts | Every answer exists (at least one in, one fit-A-but-B, one neither) | New sign layout; voice; how-to line |
 | 10 | Pick the signs | school | Critters in the middle; two signs on the table to choose from | Which signs go on the hoops (free), then the sorting by her own rule | Choosing signs is never counted; only dropping a critter against her own signs is a miss | Signs offered always make at least one critter fit each; no pair makes an empty hoop | Needs Decision 3 on whether a creation is kept; no new bot beyond a random choice |
 | 11 | How many? (**school built 2026-10-16**) | school | After a sort, tap each critter in a part to count it aloud | The count for each part, then which part has more | Tapping to count is free; only the "which has more" answer can miss | Counts match `placeOf` for every seed; the "more" answer is unambiguous | Spoken numbers already exist; a small number badge; links to Picture Graph |
+| 12–13 | Same Kind, Different Sprouts (**defined 2026-10-22**, [definition](../definitions/same-kind-different-sprouts.md)) | pre-K, school | Little plants grown from one big plant's seeds | Which plants share the big plant's leaf shape and petal marks (one hoop, then overlapping hoops) | Usual spoken reason, mat and hints | [Definition](../definitions/same-kind-different-sprouts.md#rule-tests-logictestts) | Plant art; voice; how-to |
 
 ### Younger-band openings
 
@@ -117,6 +118,7 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 7. **Level 11 How many? — built** (school only), [PR #439](https://github.com/rjdunlap/neo/pull/439), `codex/critter-sort-eleven`, worker `01a14435-4fa4-75c2-bc0c-802e92b789e9`, dispatch `critter-sort-eleven-20261016T101434Z`. Two separate hoops plus the mat contain one, two and three critters. Sort, freely tap to count each part aloud with badges/rings, then choose the uniquely largest part; repeated counting taps do not inflate totals. Two wrong comparisons reveal totals/glow and count one hint. School appends 11, skipping 10; IDs/pins preserved. [Proof](../archive/VERIFICATION-2026-10-16.md#2026-10-16--critter-sort-level-11-how-many). Excludes level 10, third feature, bands and saves; device/child checks open.
 8. **Third critter feature** (decision 2), shared with Critter Crossing: both games' rule tests plus the fairness test across the larger pool.
 9. **Level 10 Pick the signs** (after decision 3): its own definition first.
+10. **Levels 12–13 Same Kind, Different Sprouts** (genetics G4): [definition](../definitions/same-kind-different-sprouts.md); a plant cast sorted by leaf and petal marks against a stated big plant; pre-K order [6, 1, 12, 2, 3, 13], school [2, 12, 3, 13, 4, 5, 7, 8, 9, 11]. Tier: new levels.
 
 ## What was built in this session
 

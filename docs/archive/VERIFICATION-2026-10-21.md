@@ -377,3 +377,10 @@
 - Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=egg-catch FINGER_LEVELS=9` at the same URL: preschool bot clean in 25.8 s. Source frozen during successful plays. Links and `git diff --check` passed; server stopped.
 - Retry-boundary follow-up: target variety also holds when retries wrap the seeded list. Typecheck and the same 51 tests passed on `4dea4ee2` plus this rule diff; the first six targets used by the play and first four used by the demo are unchanged, so browser evidence is reused.
 - Not run: extra local build, broad suites, offline (source new-level tier); iPad speech/audio and child play remain open. No lap/couch remapping, repair, flip-flop or decisions. Required PR tests/build passed on final implementation `c1da2c89` ([run 39709317844](https://github.com/rjdunlap/neo/actions/runs/39709317844)); this docs-only closeout reuses its gameplay evidence.
+
+## 2026-10-21 — Weather Wardrobe more items, one slot each (slice 2)
+
+- [PR #755](https://github.com/rjdunlap/neo/pull/755), `claude/weather-wardrobe-items`; `src/games/weather-wardrobe/`: sandals, rain hat, earmuffs and a blue puffy coat, `SLOTS` and `outfitFor`, level 5 always three, sticker pool pinned to the original eight.
+- Passed `npm run typecheck`; `npx vitest run src/games/weather-wardrobe src/content/howto` (26 tests; new: one item per slot over 200 seeds for every plan, level 5 always three over 300 seeds, change rounds remove what was just put on, sticker pool pinned). Full `npm test` 2409 of 2410: the one failure is Block Garden's level-8 `hintPlacement` time-cap test (timing under load; that file is untouched).
+- Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=weather-wardrobe FINGER_LEVELS=5,7` at http://localhost:5650 (level 5 in 16.5 s, level 7 in 26.8 s), run before the final coat recolor (art only). Reviewed portrait 768×1024 screenshots of every new item worn (snowy: scarf, puffy coat, earmuffs, mittens; rainy: rain hat, raincoat, umbrella, sandals).
+- Not run: `npm run build` (no shared files changed), the `fourth` and `wardrobe7` suites, an iPad look at the new items (open in DEVICE-CHECKS).
