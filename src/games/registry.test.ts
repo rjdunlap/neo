@@ -24,14 +24,16 @@ describe('game registry', () => {
     expect(levelsInOrder(g.levels('toddler'))).toEqual([1, 11, 10, 2, 3]);
   });
 
-  it('appends Photo Safari two clues only to school, keeping earlier levels and pins', () => {
+  it('appends Photo Safari telling only to school, skipping reserved IDs and keeping younger ranges', () => {
     const g = gameById('photo-safari')!;
-    expect(g.levels('school')).toEqual({ min: 4, max: 7 });
+    expect(g.levels('school')).toEqual({ min: 4, max: 11, order: [4, 5, 6, 7, 10, 11] });
     expect(g.levels('prek')).toEqual({ min: 3, max: 5 });
     expect(g.levels('preschool')).toEqual({ min: 2, max: 4 });
     for (const band of ['lap', 'toddler'] as const) expect(g.levels(band)).toEqual({ min: 1, max: 2 });
     for (const band of g.bands) for (const level of levelsInOrder(g.levels(band)).filter((l) => l <= 6)) expect(landing(level, g.levels(band))).toBe(level);
-    expect(stepLevel(7, 1, g.levels('school'))).toBe(7);
+    expect(stepLevel(7, 1, g.levels('school'))).toBe(10);
+    expect(stepLevel(10, -1, g.levels('school'))).toBe(7);
+    expect(stepLevel(10, 1, g.levels('school'))).toBe(11);
   });
 
   it('adds Planet Hop at the end of school and Between two flights after 6, without moving existing Launch pins', () => {

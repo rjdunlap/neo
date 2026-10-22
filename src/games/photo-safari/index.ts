@@ -14,7 +14,7 @@ import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { animalToTap, describe, makeScene, planFor, request, nearestSighting, sightingPositions, spotPosition, type Action, type Animal, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
+import { ANIMALS, chipsFor, chipPhrase, fewestChips, judgeTell, sameChip, tellHint, toggleChip, type Chip, animalToTap, describe, makeScene, planFor, request, nearestSighting, sightingPositions, spotPosition, type Action, type Animal, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -22,7 +22,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
-  school: { min: 4, max: 7 },
+  school: { min: 4, max: 11, order: [4, 5, 6, 7, 10, 11] },
 };
 
 const SCALE = 0.5;
@@ -149,6 +149,58 @@ export function safariJournalPicture(action: Action): Container {
   return actor;
 }
 
+/** Small pictures shared by the word cards and the Tell bubble. */
+function chipIcon(chip: Chip): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const blue = swatch.blue.line;
+  if (chip.kind === 'spot') {
+    if (chip.value === 'tree') {
+      g.roundRect(-5, -22, 10, 48, 3).fill(wood.fill);
+      puffs(g, [[-16, -24, 18], [2, -35, 22], [21, -23, 17]], swatch.green.fill, swatch.green.line, 3);
+    } else if (chip.value === 'bush') puffs(g, [[-22, 4, 18], [0, -5, 24], [22, 4, 18]], swatch.green.fill, swatch.green.line, 3);
+    else if (chip.value === 'rock') g.poly([-34, 22, -22, -14, 12, -23, 34, 22]).fill(0xb9b2a6).stroke({ width: 3, color: 0x8c857a });
+    else g.ellipse(0, 0, 36, 21).fill(swatch.blue.fill).stroke({ width: 3, color: blue });
+  } else if (chip.value === 'eating') {
+    const apple = prop('apple', 'red'); apple.scale.set(0.5); apple.y = 20; c.addChild(apple);
+  } else if (chip.value === 'jumping') {
+    g.moveTo(-32, 18).quadraticCurveTo(0, -48, 32, 18).stroke({ width: 6, color: blue });
+    g.moveTo(0, 10).lineTo(0, -34).stroke({ width: 6, color: blue }).poly([-12, -20, 0, -40, 12, -20]).fill(blue);
+  } else if (chip.value === 'waving') {
+    g.moveTo(0, 25).lineTo(0, -8).stroke({ width: 16, color: swatch.orange.fill, cap: 'round' });
+    for (let i = -2; i <= 2; i++) g.moveTo(i * 7, -6).lineTo(i * 10, -28 + Math.abs(i) * 5).stroke({ width: 6, color: swatch.orange.line, cap: 'round' });
+    g.circle(0, -4, 16).fill(swatch.orange.fill);
+  } else if (chip.value === 'sleeping') {
+    g.circle(-8, -7, 25).fill(0xffd866).circle(3, -16, 22).fill(0xffffff);
+    const z = label('z', 27, blue); z.position.set(23, 10); c.addChild(z);
+  } else {
+    const note = label('♪', 62, swatch.purple.line); note.y = -4; c.addChild(note);
+  }
+  c.addChild(g); c.eventMode = 'none'; return c;
+}
+function cameraIcon(): Graphics {
+  return new Graphics().roundRect(-34, -22, 68, 44, 8).fill(0x5a5a6e).roundRect(-20, -30, 22, 12, 3).fill(0x5a5a6e)
+    .circle(2, 0, 15).fill(0x7cc4f2).stroke({ width: 4, color: 0x2b2b3a });
+}
+class WordCard extends Container {
+  readonly plate = new Graphics();
+  readonly glow = new Graphics().roundRect(-76, -66, 152, 132, 18).fill({ color: 0xfff3a0, alpha: 0.85 });
+  selected = false;
+  constructor(readonly chip: Chip, tap: () => void) {
+    super();
+    this.glow.visible = false; this.glow.eventMode = 'none';
+    const icon = chipIcon(chip); icon.y = -16;
+    const word = label(chipPhrase([chip]), 22, 0x34475a); word.y = 37;
+    this.addChild(this.glow, this.plate, icon, word);
+    this.hitArea = new Rectangle(-75, -65, 150, 130);
+    onTap(this, tap); this.draw();
+  }
+  draw() {
+    this.plate.clear().roundRect(-70, -60, 140, 120, 16).fill(this.selected ? 0xd5efff : 0xffffff)
+      .stroke({ width: this.selected ? 6 : 3, color: this.selected ? 0xffffff : 0x7d9db4 });
+  }
+}
+
 class PhotoSafari implements Game {
   readonly plan: SafariPlan;
   scene: Scene | null = null;
@@ -167,6 +219,17 @@ class PhotoSafari implements Game {
   private readonly fronts = new Container();
   private readonly album = new Container();
   private readonly flash = new Graphics();
+  readonly tray = new Container();
+  chips: WordCard[] = [];
+  chosen: Chip[] = [];
+  readonly tellButton = new Container();
+  readonly viewfinder = new Graphics();
+  private readonly tellPictures = new Container();
+  private readonly visitor = new Container();
+  private friend: Critter | null = null;
+  private readonly wanted = new Graphics().poly([0, -22, 6, -6, 22, 0, 6, 6, 0, 22, -6, 6, -22, 0, -6, -6]).fill(0xffce45).stroke({ width: 2, color: 0xb77b10 });
+  private tellClock = 0;
+  private sparkleAt = 0;
   private view: View;
   private wrongs = 0;
   private readonly textures: Texture[] = [];
@@ -176,7 +239,7 @@ class PhotoSafari implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0xa6de8e, 0x9edb86], horizon: 0.45, clouds: 3, sun: true, seed: 64 }, ctx.view);
-    if (this.sharedPlaces) {
+    if (this.sharedPlaces && !this.isTell) {
       onTap(this.cast, (e) => {
         const point = this.cast.toLocal(e.global);
         const i = nearestSighting(this.actors, point);
@@ -186,12 +249,28 @@ class PhotoSafari implements Game {
     this.flash.alpha = 0;
     // Scenery in front of the animals (the bush, the pond's edge, the flash) must not catch taps.
     for (const layer of [this.backs, this.fronts, this.album, this.flash]) layer.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.backs, this.cast, this.fronts, this.album, this.flash);
+    ctx.stage.addChild(this.backdrop, this.backs, this.cast, this.fronts, this.album, this.flash, this.visitor, this.viewfinder, this.tray);
+    for (const layer of [this.visitor, this.viewfinder, this.wanted]) layer.eventMode = 'none';
+    if (this.isTell) {
+      for (const x of [-110, 110]) for (const y of [-125, 125]) {
+        this.viewfinder.moveTo(x, y - Math.sign(y) * 30).lineTo(x, y).lineTo(x - Math.sign(x) * 30, y).stroke({ width: 6, color: 0xffffff });
+      }
+      const bubble = new Graphics().roundRect(-85, -65, 170, 130, 26).fill(0xe6f5ff).stroke({ width: 5, color: 0x527da0 });
+      const cam = cameraIcon(); cam.position.set(-40, -22); cam.scale.set(0.7);
+      const text = label('Tell', 27, 0x34475a); text.position.set(22, -22);
+      this.tellPictures.y = 27;
+      this.tellButton.addChild(bubble, cam, text, this.tellPictures);
+      this.tellButton.hitArea = new Rectangle(-85, -65, 170, 130);
+      onTap(this.tellButton, () => void this.tell());
+      this.tray.addChild(this.tellButton);
+    }
   }
 
   private get sharedPlaces(): boolean {
-    return this.plan.mode === 'both' || this.plan.mode === 'clues';
+    return this.plan.mode === 'both' || this.plan.mode === 'clues' || this.isTell;
   }
+
+  private get isTell() { return this.plan.mode === 'tell'; }
 
   get target(): Actor | undefined {
     return this.scene && this.scene.target >= 0 ? this.actors[this.scene.target] : undefined;
@@ -204,16 +283,21 @@ class PhotoSafari implements Game {
   /** The ghost finger on the how-to card: photograph the animal that was asked for, or each animal in turn. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.scene) return null;
+    if (this.isTell) {
+      const missing = fewestChips(this.scene).find((c) => !this.chosen.some((k) => sameChip(k, c)));
+      const on = missing ? this.chips.find((c) => sameChip(c.chip, missing)) : this.tellButton;
+      return on ? { tap: { on }, receiver: on } : null;
+    }
     const animal = this.actors[animalToTap(this.scene, this.photos)];
     return animal && !animal.destroyed ? { tap: { on: animal, y: -60 }, receiver: this.sharedPlaces ? this.cast : animal } : null;
   }
 
   private ground() {
-    return this.view.h * 0.78;
+    return this.isTell ? Math.min(this.view.h * 0.78, this.view.h - 200) : this.view.h * 0.78;
   }
 
   private spotPos(spot: Spot) {
-    return spotPosition(spot, this.scene?.sightings ?? [], this.view.w, this.view.h);
+    return spotPosition(spot, this.scene?.sightings ?? [], this.view.w, this.view.h, this.ground());
   }
 
   resize(v: View) {
@@ -222,12 +306,17 @@ class PhotoSafari implements Game {
     this.flash.clear().rect(0, 0, v.w, v.h).fill(0xffffff);
     this.drawSpots();
     this.layoutActors();
-    if (this.sharedPlaces) this.cast.hitArea = new Rectangle(0, 0, v.w, v.h);
+    if (this.sharedPlaces && !this.isTell) this.cast.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.album.position.set(180, 24);
+    if (this.isTell) {
+      this.layoutChips();
+      this.visitor.position.set(v.w - 110, 250);
+      if (!this.busy) this.viewfinder.position.set(v.w / 2, this.ground() - 100);
+    }
   }
 
   private layoutActors() {
-    const positions = sightingPositions(this.actors.map((a) => a.sighting), this.view.w, this.view.h);
+    const positions = sightingPositions(this.actors.map((a) => a.sighting), this.view.w, this.view.h, this.ground());
     this.actors.forEach((a, i) => a.position.copyFrom(positions[i]));
   }
 
@@ -261,11 +350,22 @@ class PhotoSafari implements Game {
 
   update(dt: number) {
     for (const a of this.actors) a.update(dt);
+    if (this.isTell) {
+      this.tellClock += dt; this.friend?.update(dt);
+      this.wanted.rotation = 0.2 * Math.sin(this.tellClock);
+      this.wanted.scale.set(1 + 0.12 * Math.sin(this.tellClock * 3));
+      for (const c of this.chips) c.glow.alpha = 0.6 + 0.4 * Math.sin(this.tellClock * 5);
+      if (this.target && !this.finished && this.tellClock > this.sparkleAt) {
+        this.sparkleAt = this.tellClock + 2;
+        this.ctx.particles.burst(this.target.x, this.target.y - 200, { colors: [0xffce45], count: 2, kind: 'star', speed: [10, 30], gravity: 0, life: [0.4, 0.8], size: [0.15, 0.25] });
+      }
+    }
   }
 
   destroy() {
     this.destroyed = true;
     this.busy = true;
+    this.wanted.destroy();
     // Release the sprites before their game-owned generated textures and GPU sources.
     this.album.removeChildren().forEach((card) => card.destroy({ children: true }));
     for (const texture of this.textures) texture.destroy(true);
@@ -276,6 +376,7 @@ class PhotoSafari implements Game {
     if (this.destroyed) return;
     this.busy = true;
     this.wrongs = 0;
+    this.wanted.removeFromParent();
     for (const a of this.actors) a.destroy({ children: true });
     this.actors = [];
     if (this.photos >= this.plan.photos) return void this.finale();
@@ -283,22 +384,111 @@ class PhotoSafari implements Game {
     this.actors = this.scene.sightings.map((s) => {
       const a = new Actor(s);
       a.position.copyFrom(this.spotPos(s.spot));
-      if (this.sharedPlaces) a.eventMode = 'none';
+      if (this.isTell) onTap(a, () => { if (!this.busy && !this.finished) { a.critter.hop(); void this.ctx.say('safari.tell-tap'); } });
+      else if (this.sharedPlaces) a.eventMode = 'none';
       else onTap(a, () => void this.snap(a), { cooldown: 500 });
       this.cast.addChild(a);
       a.scale.set(0);
       void this.ctx.tw.to(a.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
       return a;
     });
+    if (this.isTell) this.prepareTell();
     if (this.sharedPlaces) this.resize(this.view);
     await this.ctx.tw.wait(0.4);
     this.busy = false;
     const t = this.target;
-    if (this.plan.mode === 'snap') {
+    if (this.isTell) {
+      await this.ctx.instruct('safari.tell');
+    } else if (this.plan.mode === 'snap') {
       if (this.photos === 0) await this.ctx.instruct('safari.snap');
     } else if (t) {
       await this.ctx.instruct(this.plan.mode === 'clues' ? 'safari.clues' : 'safari.ask', { what: request(this.plan.mode, this.scene!) });
     }
+  }
+
+  private prepareTell() {
+    this.chosen = [];
+    this.chips.forEach((c) => c.destroy({ children: true }));
+    this.chips = chipsFor(this.scene!, this.ctx.rng).map((chip) => {
+      const card = new WordCard(chip, () => {
+        if (this.busy || this.finished) return;
+        this.chosen = toggleChip(this.chosen, chip);
+        card.scale.set(0.94);
+        void this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.15 });
+        void this.ctx.say('safari.chip', { what: chipPhrase([chip]) });
+        this.layoutChips();
+      });
+      this.tray.addChild(card); return card;
+    });
+    this.target!.addChild(this.wanted); this.wanted.position.set(0, -200);
+    this.visitor.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const animals = this.scene!.sightings.map((s) => s.animal);
+    this.friend = new Critter(CRITTERS[this.ctx.rng.pick(ANIMALS.filter((a) => !animals.includes(a)))]);
+    this.friend.scale.set(0.45);
+    const thought = new Graphics().roundRect(-190, -168, 150, 105, 24).fill(0xffffff).circle(-46, -51, 10).fill(0xffffff).circle(-27, -33, 6).fill(0xffffff);
+    const camera = cameraIcon(); camera.position.set(-115, -115);
+    this.visitor.addChild(this.friend, thought, camera);
+    this.viewfinder.position.set(this.view.w / 2, this.ground() - 100);
+    this.layoutChips();
+  }
+
+  private layoutChips() {
+    const start = (150 + this.view.w - 40 - 806) / 2;
+    this.chips.forEach((c, i) => {
+      c.selected = this.chosen.some((k) => sameChip(k, c.chip));
+      c.position.set(start + 70 + i * 156, this.view.h - 78 - (c.selected ? 16 : 0)); c.draw();
+    });
+    this.tellButton.position.set(start + 721, this.view.h - 78);
+    this.tellPictures.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.chosen.forEach((chip, i) => {
+      const icon = chipIcon(chip); icon.scale.set(0.5); icon.x = (i - (this.chosen.length - 1) / 2) * 52; this.tellPictures.addChild(icon);
+    });
+  }
+
+  private async aimAt(x: number, y: number) {
+    await this.ctx.tw.to(this.viewfinder, { x, y }, { duration: 0.25, ease: ease.inOutSine });
+  }
+
+  private async tell() {
+    if (this.busy || this.finished || !this.scene) return;
+    this.tellButton.scale.set(1.08);
+    void this.ctx.tw.to(this.tellButton.scale, { x: 1, y: 1 }, { duration: 0.18 });
+    const judged = judgeTell(this.chosen, this.scene);
+    if (judged.result === 'empty') { void this.ctx.say('safari.tell-empty'); return; }
+    this.busy = true;
+    const found = judged.fits.map((i) => this.actors[i]);
+    if (found.length === 1) await this.aimAt(found[0].x, found[0].y - 100);
+    if (judged.result === 'right') {
+      this.busy = false;
+      await this.snap(this.target!); return;
+    }
+    this.misses++; this.wrongs++;
+    const what = chipPhrase(this.chosen);
+    if (found.length === 2) {
+      sfx.bell(2, 0.12);
+      await this.ctx.tw.wait(0.16); sfx.bell(3, 0.12);
+      for (let n = 0; n < 2; n++) for (const a of found) await this.aimAt(a.x, a.y - 100);
+      await this.aimAt((found[0].x + found[1].x) / 2, (found[0].y + found[1].y) / 2 - 100);
+      await this.ctx.say('safari.which', { what });
+    } else if (!found.length) {
+      sfx.boing();
+      await this.aimAt(this.view.w * 0.3, this.ground() - 100);
+      await this.aimAt(this.view.w * 0.76, this.ground() - 100);
+      await this.aimAt(this.view.w / 2, this.ground() - 100);
+      await this.ctx.say('safari.nobody', { what });
+    } else {
+      sfx.boing(); sfx.tick();
+      this.flash.alpha = 0.75;
+      void this.ctx.tw.to(this.flash, { alpha: 0 }, { duration: 0.35 });
+      await this.ctx.say('safari.thatis', { desc: describe('both', found[0].sighting) });
+    }
+    if (this.wrongs >= 2) {
+      const hint = tellHint(this.chosen, this.scene);
+      this.chosen = hint.chosen;
+      for (const c of this.chips) if (hint.glow.some((k) => sameChip(k, c.chip))) c.glow.visible = true;
+      this.hints++; this.wrongs = 0; this.layoutChips();
+    }
+    this.busy = false;
   }
 
   private async snap(a: Actor) {
@@ -328,7 +518,8 @@ class PhotoSafari implements Game {
     await this.polaroid(a);
     this.photos++;
     await this.ctx.say('safari.click');
-    if (this.plan.mode !== 'snap') await this.ctx.say('praise');
+    if (this.isTell) { this.friend?.hop(); await this.ctx.say('safari.thanks'); }
+    else if (this.plan.mode !== 'snap') await this.ctx.say('praise');
     await this.nextScene();
   }
 
@@ -359,6 +550,7 @@ class PhotoSafari implements Game {
     if (this.finished) return;
     this.finished = true;
     this.busy = true;
+    this.tray.visible = this.visitor.visible = this.viewfinder.visible = false;
     // The album opens up big so everyone can look at the photos together.
     const v = this.view;
     const cards = [...this.album.children];
