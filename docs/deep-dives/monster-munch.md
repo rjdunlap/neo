@@ -126,6 +126,8 @@ The [short-ladder audit](../archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#shor
 
 ## Build slices, in order
 
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`monster-munch` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+
 1. **Built.** **Truthful card, counted bites and a wrong pad that counts** (existing-game bug fix; gaps 1–6, 9): count aloud at 1 and 4–6, the level-7 card without the bell, `munch.each-no` lights and counts one tummy, hint lines per target, monster taps feed at level 1, two rounds at 1–2, the short-drop "hm?". Checks: typecheck, the rule tests, one filtered regression play (levels 1, 4 and 7, one wrong pad), `fingerdemo` at 1.
 2. **Foods, monsters and places** (content in existing levels): the `FOODS` pool, two kinds per round at 6, monster variants, three backdrops, the sticker pool; rule tests that every food reads in `orderWords` and the tray fits. Checks: typecheck, rule tests, one browser play of level 6 and `fingerdemo` at 6.
 3. **Lap entry 9 *Big bites*** with the `BandLevels` conversion and `entryLevels` (new interaction): belly growth, rumble, monster-tap feeding; the birthday-landing test. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).

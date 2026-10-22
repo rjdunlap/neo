@@ -140,6 +140,8 @@ Appended IDs; `planFor` must look plans up by ID (today it indexes `PLANS` by po
 
 ## Build slices, in order
 
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`peg-garden` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+
 1. **Built (2026-10-21): Every touch answers, a fair colour level and a true card** (existing-game bug-fix tier: typecheck, `logic.test.ts`, one filtered regression play `BROWSER_SUITE=batch BATCH_ONLY=pegs` at levels 1 and 3, `fingerdemo` at 3 because the hint changes the bot's spot; that case is the known flake in [chunk-table item 12](../ROADMAP.md#chunks), so a failure is probed once and recorded, not looped). Gaps 1–6, 8 and 9: whole-screen touch, bubble feedback during a fall, the level-1 queue, no drift at 3 (the bot's drift read follows), the stall guard and drop-spot ring at 3, `hinting` reset, `pointercancel`, the card's level-1 finish. Rule tests: the colour level finishes when the same spot is tapped every time; the hinted spot touches a waiting orange bud on every board.
 2. **Numbered buds wait their turn and the last shot stays faint** (existing-game change: typecheck, rule tests, one filtered play at 4 and 5). Gap 7 and the trail.
 3. **The shell tray and board themes** (content: typecheck, rule tests over every shape, one screenshot per backdrop). Four shapes, three backdrops, the tray.

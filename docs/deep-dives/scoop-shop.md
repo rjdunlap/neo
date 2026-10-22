@@ -129,6 +129,8 @@ Band windows after the ladder (saved levels and pins keep their IDs; only steppi
 
 ## Build slices, in order
 
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`scoop-shop` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+
 1. **Built 2026-10-20 (`claude/scoop-shop-support-truth`, PR #664).** **Honest level 2, every touch answers, counting aloud and the count picture** (existing-game bug fix tier; gaps 1–4): the level-2 shuffle rule and its test, tub squash and flight-time wobble, customer tap repeats the order, cone wobble, counted scoops at 1 and 4, the count card's row of scoops, how-to lines. Checks: typecheck, the rule tests, one filtered regression play (levels 1, 2 and 4, one wrong scoop, one hint), `fingerdemo` at 4.
 2. **Built 2026-10-21 (`claude/scoop-shop-pools`, PR #729).** **Pools: customers, cone kinds, window scenes, flavour thank-yous and the serve tune** (content tier): eight customers, three cone kinds, three scenes, `scoop.yum` flavour variants (decision 3's lean), the sticker pool, the tune in `serve()`. Checks: typecheck, rule tests, one browser play of level 5 and `fingerdemo` at 5.
 3. **Lap entry 10 *Any scoop*** with the `order`/`entryLevels` conversion (new level on the existing interaction): lap `[10, 1]`, the landing test. Checks: typecheck, rule tests, one play of 10, `fingerdemo` at 10, one portrait screenshot.

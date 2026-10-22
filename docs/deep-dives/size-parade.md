@@ -130,6 +130,8 @@ Each has a default the build uses:
 
 ## Build slices, in order
 
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`size-parade` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+
 1. **Support truth (built 2026-10-21)** (existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 7 in portrait, `fingerdemo` at 7): comparative words at two, every touch answered (ground tap, right friend on the wrong spot), pitch inverted (big is low), the portrait spacing fix with its test, the pinned-steps test, the how-to card's wording checked. IDs and windows unchanged. Run `npm run build` if `sfx.ts` changes.
 2. **The parade happens, eight friends, seeded ground** (fresh content: typecheck, rule tests for the dealt-size draws, one play of 2 and 8, one portrait screenshot): strut after a pick, the march with the size scale after a line, five new friends, flag and bunting by seed, the sticker's friend, varied dealt sizes at 1–4.
 3. **Levels 16 and 9 and the lap band** (new interaction tier: typecheck, units including the lands layout at lap, one scripted play of 16 and 9 at lap and toddler, one portrait screenshot, `fingerdemo` at 16 and 9): the cycle mode, `bands` gains `lap`, lap `order [16, 9]`, toddler `order [9, 1, 2, 3, 4]`, `entryLevels: [9, 16]`, the per-band accounting of decision 1, voice and card.
