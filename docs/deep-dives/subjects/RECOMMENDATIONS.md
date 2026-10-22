@@ -215,9 +215,9 @@ Lap/toddler reuse Feelings Faces and Owl Walk Home. Character requests stay pict
 
 | Candidate | Status | Next complete definition |
 | --- | --- | --- |
-| **Safe swap and `{name}` fix** · lap–toddler, grown-ups' page | ready (XS; decision 1 in the study leans no reviewer for removal only) | Replace small objects in the audited lines with large soft items, cups or blocks, and substitute the child's name on the page through one tested helper. Existing-game content tier; no new advice |
-| **Small-object word-list test** | ready after the swap | Rules test over every line reachable at lap and toddler; no `{`, minutes, "must" or purchases |
-| **Per-band lines** · all bands | define | `offScreenFor(mod, band)` shaped like `BandLevels`; migrate ten games that span lap to school first. Bath and food lines wait for the reviewer |
+| **Safe swap and `{name}` fix** · lap–toddler, grown-ups' page | defined 2026-10-22 ([definition](../../definitions/off-screen-lines.md)); ready to build, merge waits on the developer (decision 1 leans no reviewer for removal only) | Replace small objects in the audited lines with large soft items, cups or blocks, and substitute the child's name on the page through one tested helper. Existing-game content tier; no new advice |
+| **Small-object word-list test** | defined 2026-10-22 in the same [definition](../../definitions/off-screen-lines.md) batch | Rules test over every line reachable at lap and toddler; no `{`, minutes, "must" or purchases |
+| **Per-band lines** · all bands | defined 2026-10-22 in the same [definition](../../definitions/off-screen-lines.md) batch (resolver and type; school lines authored; bath and food still wait for the reviewer) | `offScreenFor(mod, band)` shaped like `BandLevels`; migrate ten games that span lap to school first. Bath and food lines wait for the reviewer |
 | **At-home card and kit list** · grown-ups' page | define | Three lines, each with *try*, *notice*, *say*; a derived "things around the house" list; no checkbox, count or reminder |
 | **Upper-school challenge lines** · school top levels | sketch | A build with a result for the build games; no M surface until the middle-band decision |
 
