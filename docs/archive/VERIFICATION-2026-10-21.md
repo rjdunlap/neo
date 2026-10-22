@@ -276,3 +276,11 @@
 - Passed typecheck, full `npm test` (203 files, 2,370 tests, 8 new voice-choice tests) and `npm run build`.
 - Probe `test-results/voice-note-probe.mjs` on Vite `http://localhost:5344`, headless Chromium: held the gear on Who's playing?; the note read "Speaking: Samantha, the device's standard voice…" (41 English voices on this Mac); screenshot inspected.
 - Not run: browser suites (the panel change is one static note, no navigation or persistence change), offline check, any iPad or Enhanced/Premium voice ([open check](../DEVICE-CHECKS.md)).
+
+## 2026-10-21 — Roundup level 12 Big and little (slice 8)
+
+- [PR #736](https://github.com/rjdunlap/neo/pull/736), `codex/roundup-size`, tested `eaa57807` plus slice diff; integrated `cb27d66d` queue docs only. Three pigs of each size, matching pens/speech/hints, pre-K ordered through 12.
+- Passed typecheck and all 60 tests in `src/games/roundup`, `src/games/registry.test.ts` and `src/content/howto.test.ts`: seeded balanced herds, size-specific gates/completion, preserved bands/IDs, adaptation and card.
+- Passed `GAME_URL=http://localhost:5196 BROWSER_SUITE=arcade ARCADE_ONLY=roundup ARCADE_LEVELS=12`: scales, centred 170-unit hit diameters, two wrong-size gates, truthful speech/glow, exact finish, saved `[2,1]` and one sticker; no page errors.
+- Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=12` at that URL: clean finish in 23.8 s. Portrait `test-results/browser/roundup-12-portrait.png` inspected: size contrast, matching signs, gates and pet clearance.
+- Passed links/diff. Not run: build, broader suites/world/offline (new-level tier; no engine/navigation/persistence/assets changes). iPad speech/readability and child play remain [open](../DEVICE-CHECKS.md).
