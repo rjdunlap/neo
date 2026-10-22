@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`sound-garden`, One big friend** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#sound-garden-2-one-big-friend).
 - **`sound-garden`, Pitch drawing and copying** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#sound-garden-3-pitch-drawing-and-copying).
 - **`teddy-doctor`, Choose a patient and order a check-up** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#teddy-doctor-1-choose-a-patient-and-order-a-check-up).
 - **Research subject `integers`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).

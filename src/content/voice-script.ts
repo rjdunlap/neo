@@ -1720,6 +1720,7 @@ export const SCRIPT = {
   'helpers.done': ['All the fruit is home! Thank you, helpers!'],
   'helpers.busy': ['Everyone is busy helping!', 'All the helpers are already helping!'],
   'helpers.whistle.empty': ['Send some helpers first! Tap the fruit.'],
+  'sg.big': ['Tap anywhere to hear your big friend sing!'],
   'sg.play': ['Tap the garden friends to hear them sing!'],
   'sg.highlow': ['Listen! Is it high like the bird, or low like the frog?'],
   'sg.fastslow': ['Listen! Is it fast like the bunny, or slow like the turtle?'],

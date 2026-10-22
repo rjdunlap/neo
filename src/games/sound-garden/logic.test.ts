@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { CHOICES, echoDots, echoRest, GAP_SECONDS, judgeEcho, LEVEL_IDS, makeQuestions, makeRhythms, MIN_APART, planFor, PLANS, ECHO_RHYTHMS as RHYTHMS, SINGERS, singerToTap, makeCast, songFor, CAST_SIZE, FAST_BEATS, SLOW_BEATS, TEMPO_SPAN, tileFor, type Gap, type Question, type Sound } from './logic';
+import { bigSingerIndex, bigTouch, CHOICES, echoDots, echoRest, GAP_SECONDS, judgeEcho, LEVEL_IDS, makeQuestions, makeRhythms, MIN_APART, planFor, PLANS, ECHO_RHYTHMS as RHYTHMS, SINGERS, singerToTap, makeCast, songFor, CAST_SIZE, FAST_BEATS, SLOW_BEATS, TEMPO_SPAN, tileFor, type Gap, type Question, type Sound } from './logic';
 
 /** Tap times for a rhythm, with each gap stretched by a factor (a child's wobble). */
 const play = (r: Gap[], wobble: number[] = []) => {
@@ -98,10 +98,10 @@ describe('Sound Garden', () => {
   });
 
   it('keys plans by level ID and clamps unknown levels to the ladder', () => {
-    expect(LEVEL_IDS).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(LEVEL_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     for (const id of LEVEL_IDS) expect(planFor(id)).toBe(PLANS[id]);
     expect(planFor(0)).toBe(PLANS[1]);
-    expect(planFor(99)).toBe(PLANS[7]);
+    expect(planFor(99)).toBe(PLANS[8]);
     expect(planFor(2).mode).toBe('highlow');
   });
 
@@ -216,4 +216,19 @@ describe('Sound Garden', () => {
     // Same span, more beats: the fast-or-slow level's cue, not a shorter clip.
     expect(bunny.length * (TEMPO_SPAN / FAST_BEATS)).toBeCloseTo(turtle.length * (TEMPO_SPAN / SLOW_BEATS));
   });
+});
+
+it('big friends change every four taps and all cast positions are reachable across the cycle', () => {
+  expect(Array.from({ length: 12 }, (_, i) => bigSingerIndex(i, 5))).toEqual([0,0,0,0,1,1,1,1,2,2,2,2]);
+  expect(new Set(Array.from({ length: 20 }, (_, i) => bigSingerIndex(i, 5))).size).toBe(5);
+  expect(planFor(8)).toMatchObject({ mode: 'play', big: true, rounds: 12 });
+});
+it('big friend hears the view apart from corner buttons and the companion', () => {
+  for (const [w, h] of [[1024,768], [1024,1365], [1365,768]]) {
+    for (let x = -10; x <= w + 10; x += 10) for (let y = -10; y <= h + 10; y += 10) {
+      expect(bigTouch(x, y, w, h)).toBe(x >= 0 && x <= w && y >= 0 && y <= h && !(y < 160 && (x < 180 || x > w - 180)) && !(x < 300 && y > h - 300));
+    }
+    expect(bigTouch(w / 2, h / 2, w, h)).toBe(true);
+    expect(bigTouch(w - 10, h - 10, w, h)).toBe(true);
+  }
 });

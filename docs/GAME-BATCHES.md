@@ -44,6 +44,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### sound-garden 2: One big friend
 
+Built 2026-10-22, [PR #784](https://github.com/rjdunlap/neo/pull/784); [closeout](archive/COMPLETED-2026-10-09.md#sound-garden-one-big-friend-2026-10-22). No longer eligible for dispatch.
+
 - **`sound-garden`, level 8 One big friend** (new lap entry): one screen-filling singer, `entryLevels`, lap order 8, 1. [Slice 5](deep-dives/sound-garden.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
