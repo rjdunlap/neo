@@ -15,7 +15,7 @@ The research is complete for every row below; `define` means the next session wr
 
 | Subject | Status | Next bounded action | Source |
 | --- | --- | --- | --- |
-| `deep-time` | define | Trace Prints in Stamp Studio (D3) | [Study](deep-dives/subjects/deep-time.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#deep-time-recommendations) |
+| `deep-time` | ready | D3 [defined](definitions/trace-prints.md); its build is queued as the `stamp-studio` Trace Prints batch | [Study](deep-dives/subjects/deep-time.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#deep-time-recommendations) |
 | `genetics` | define | Same Kind, Different Sprouts: existing-game comparison packet (G4) | [Study](deep-dives/subjects/genetics.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#genetics-recommendations) |
 | `daily-life-long-ago` | define | Lid and Lever: younger Attic Finds mode (H3) | [Study](deep-dives/subjects/daily-life-long-ago.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations) |
 | `inquiry` | define | What can we tell? evidence-comparison packet (Q5) | [Study](deep-dives/subjects/inquiry.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#scientific-inquiry-recommendations) |

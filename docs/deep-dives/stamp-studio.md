@@ -176,6 +176,7 @@ Each is sized for one session. Slices that add a level are built in level order 
 14. **Level 11, Wrapping paper.** Same tier.
 15. **The entries below level 1** (they wait on the level-order decisions; *Pat the paper* is **built as level 7**, [PR #300](https://github.com/rjdunlap/neo/pull/300); *Follow the sparkle* is next).
 16. **Sketches:** layers, a story in three pictures, the pet as a stamp, a stamp from a pixel picture.
+17. **Trace Prints, levels 8 *Leaf prints* (lap) and 9 *Two feet* (toddler)** (from the deep-time study's D3, **defined 2026-10-22**: [definition](../definitions/trace-prints.md); queued as a [batch](../GAME-BATCHES.md#stamp-studio-1-trace-prints)). They take IDs 8 and 9, so the levels on top above (named 7–11 there, before *Pat the paper* took 7) number from 10 when built.
 
 ## What was built in this session
 

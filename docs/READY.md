@@ -11,6 +11,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`sound-garden`, Pitch drawing and copying** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#sound-garden-3-pitch-drawing-and-copying).
 - **`ribbon-workshop`, First ribbons, levels 1–3** (new game; one implementation batch; school; new-game tier): [definition](definitions/ribbon-workshop.md), [scope and levels](GAME-BATCHES.md#ribbon-workshop-1-first-ribbons).
 - **`inchworm`, Big worms, little worms** (one implementation batch; 1 original subtask; new level on an existing interaction): [scope and levels](GAME-BATCHES.md#inchworm-1-big-worms-little-worms).
+- **`stamp-studio`, Trace Prints, levels 8–9** (one implementation batch; deep-time D3; new interaction in an existing game): [definition](definitions/trace-prints.md), [scope and levels](GAME-BATCHES.md#stamp-studio-1-trace-prints).
 
 ## Queued
 
@@ -61,7 +62,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
 
-- **Study `deep-time`: define Trace Prints in Stamp Studio (D3)** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#deep-time-recommendations).
 - **Study `genetics`: define Same Kind, Different Sprouts: existing-game comparison packet (G4)** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#genetics-recommendations).
 - **Study `daily-life-long-ago`: define Lid and Lever: younger Attic Finds mode (H3)** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations).
 - **Study `inquiry`: define What can we tell? evidence-comparison packet (Q5)** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#scientific-inquiry-recommendations).

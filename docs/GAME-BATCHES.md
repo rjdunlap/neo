@@ -361,3 +361,9 @@ Proof: new-game tier under the batch contract, as the [definition's check tier](
 - **`inchworm`, level 7 *Big worms, little worms*** (new level on the existing worm-laying and number-pad interaction; pre-K top and school after level 2): measure one stick with big worms then little worms, then tap the number the little (or big) worms made. [Definition](definitions/big-worms-little-worms.md), [study slice M2](deep-dives/subjects/measurement-units.md#build-slices-in-order)
 
 Proof: new-level tier on an existing interaction, as the [definition's Build and check tier (M2)](definitions/big-worms-little-worms.md#build-and-check-tier-m2) sets it (typecheck, Inchworm rule tests and `howto.test.ts`, one filtered portrait play of level 7, `fingerdemo` at it, one portrait screenshot).
+
+### stamp-studio 1: Trace Prints
+
+- **`stamp-studio`, levels 8 *Leaf prints* (lap) and 9 *Two feet* (toddler)** (a new `TracePrints` interaction inside the existing game: a mud tray where a leaf, a duck foot or a cat paw leaves its own fresh print; 0 misses and 0 hints, nothing kept): pat the mud with one big leaf (eight pats finish it), then choose between two feet and print both. [Definition](definitions/trace-prints.md), [deep-time D3](deep-dives/subjects/deep-time.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the [definition's Build and check tier](definitions/trace-prints.md#build-and-check-tier) sets it (typecheck, unit tests, the `creative` stamps loop at levels 8–9, `fingerdemo` at both, one portrait screenshot of level 9, one build).
