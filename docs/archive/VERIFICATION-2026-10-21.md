@@ -347,3 +347,10 @@
 - Passed `BROWSER_SUITE=batch BATCH_ONLY=eggs FROM_LEVEL=8 TO_LEVEL=8 GAME_URL=http://localhost:5197`: isolated portrait 768×1024, idle hen waits, wide shelf/hay taps move the basket, two wrong lanes keep the egg and light one hint, five changing cues caught, saved history 2 misses / 1 hint and sticker, no page errors. Inspected `test-results/browser/egg-catch-8-hint-portrait.png`: calling hen and glowing hay, basket/pet clear.
 - Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=egg-catch FINGER_LEVELS=8` at the same URL: clean in 13.9 s. Browser harness now lists level 8 explicitly alongside 1–5; 6–7 remain slice 6 scope. A small `test-results/egg-lanes-probe.mjs` diagnosed portrait input scaling; the harness now uses `toGlobal` for its lane taps. The first lane test also exposed the old layout's narrower lanes; the new layout passes ±95-unit taps.
 - Not run: broader browser suites, offline (no persistence/assets/navigation changes), physical iPad/speech/audio/child play. Existing device checks extended for the new cue and lane hops. Browser evidence predates only harness-default/comment/docs edits; game source unchanged afterward.
+
+## 2026-10-21 — Garden Grow growth stages and wet soil (slice 2)
+
+- [PR #749](https://github.com/rjdunlap/neo/pull/749), `claude/garden-grow-stages`, code `3f679d3b` on base `05929ab5`; `src/games/garden-grow/index.ts` only: staged bloom (stem, leaves, bud, open head) and wet-soil overlay on rain. No rule, accounting, voice, how-to or level change.
+- Passed typecheck; vitest garden-grow plus `src/content` (15 files, 139 tests).
+- Passed `BROWSER_SUITE=woods WOODS_ONLY=grow FROM_LEVEL=1` (levels 1-7, no page errors) at http://localhost:5921; `BROWSER_SUITE=fingerdemo FINGER_ONLY=garden-grow FINGER_LEVELS=1,7` clean in 11.0 s and 41.0 s. A portrait 768×1024 probe at level 2 showed buds on stems with leaves, dark wet soil, then open heads.
+- Not run: build (no shared files), device or child play. Open: whether a one-year-old notices the wet soil with sound off (existing person check stays open).
