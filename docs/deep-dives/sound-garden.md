@@ -121,7 +121,7 @@ Speed rounds, a Simon sequence that grows until a mistake, scored timing, a micr
 
 ## Build slices, in order
 
-Claimed 2026-10-22: batch 1 **Listening direction and visible echoes**, slices 3–4 only, worker `01a16313-1f71-76a3-9e96-40caac360a90`, branch `codex/sound-garden-direction-echo` (draft PR pending). Level 7 three-way contour, then level 5 visible dots, 12 rhythms, sleepy-tree answer and per-tap support. Expected files: Sound Garden rules/rendering/tests; voice/how-to; browser harness and game documentation. Combined proof: typecheck, focused rules/content tests, build (shared content), filtered level 7/5 play and demos, level-7 portrait. No other levels or decisions; preserve #733.
+Claimed 2026-10-22: batch 1 **Listening direction and visible echoes**, slices 3–4 only, worker `01a16313-1f71-76a3-9e96-40caac360a90`, branch `codex/sound-garden-direction-echo` ([PR #779](https://github.com/rjdunlap/neo/pull/779)). Level 7 three-way contour, then level 5 visible dots, 12 rhythms, sleepy-tree answer and per-tap support. Expected files: Sound Garden rules/rendering/tests; voice/how-to; browser harness and game documentation. Combined proof: typecheck, focused rules/content tests, build (shared content), filtered level 7/5 play and demos, level-7 portrait. No other levels or decisions; preserve #733.
 
 **Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`sound-garden` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
