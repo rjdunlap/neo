@@ -35,6 +35,15 @@ export const sunRect = (view: View): Rect => {
 
 /** Where each shore thing goes for this layout: seeded, so the same view always draws the same beach. */
 export function beachPlan(layout: LandLayout, view: View, ground: number): BeachItem[] {
+  // A crowded shore (ten games at one band) gives up rocks before its pools; a roomier shore keeps all three.
+  for (const rocks of [3, 1, 0]) {
+    const plan = shorePlan(layout, view, ground, rocks);
+    if (rocks === 0 || plan.filter((i) => i.kind === 'pool').length >= 2) return plan;
+  }
+  return [];
+}
+
+function shorePlan(layout: LandLayout, view: View, ground: number, rocks: number): BeachItem[] {
   const { w, h } = view;
   const keepOut = [...meadowKeepOut(layout, view), sunRect(view)];
   const clear = (r: Rect) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
@@ -55,7 +64,7 @@ export function beachPlan(layout: LandLayout, view: View, ground: number): Beach
   };
   // The rock pools first, then the rocks, then the crabs walk the sand between them.
   place('pool', 3, 124, 46, ground + 50, h - 8);
-  place('rock', 3, 100, 54, ground + 30, h - 8);
+  place('rock', rocks, 100, 54, ground + 30, h - 8);
   place('crab', 3, 50, 36, ground + 30, h - 8);
   // Smaller pools in the gaps.
   place('pool', 3, 90, 36, ground + 40, h - 8);
