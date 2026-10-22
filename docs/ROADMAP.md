@@ -310,6 +310,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | --- | --- | --- | --- |
 | Deep time | 2026-10-16 | [study](deep-dives/subjects/deep-time.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#deep-time-recommendations) |
 | Fractions | 2026-10-16 | [study](deep-dives/subjects/fractions.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#fractions-recommendations) |
+| Measurement and units | 2026-10-21 | [study](deep-dives/subjects/measurement-units.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#measurement-and-units-recommendations) |
 | Genetics | 2026-10-16 | [study](deep-dives/subjects/genetics.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#genetics-recommendations) |
 | Everyday life long ago | 2026-10-16 | [study](deep-dives/subjects/daily-life-long-ago.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations) |
 | Scientific inquiry | 2026-10-16 | [study](deep-dives/subjects/inquiry.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#scientific-inquiry-recommendations) |

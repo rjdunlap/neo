@@ -19,6 +19,7 @@ The research is complete for every row below; `define` means the next session wr
 | `genetics` | define | Same Kind, Different Sprouts: existing-game comparison packet (G4) | [Study](deep-dives/subjects/genetics.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#genetics-recommendations) |
 | `daily-life-long-ago` | define | Lid and Lever: younger Attic Finds mode (H3) | [Study](deep-dives/subjects/daily-life-long-ago.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations) |
 | `inquiry` | define | What can we tell? evidence-comparison packet (Q5) | [Study](deep-dives/subjects/inquiry.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#scientific-inquiry-recommendations) |
+| `measurement-units` | define | Inchworm Measure *Big worms, little worms* (M1); Measuring Post and Weights Case wait on three developer decisions | [Study](deep-dives/subjects/measurement-units.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#measurement-and-units-recommendations) |
 | `fractions` | ready / define | Ribbon Workshop 1–3 build (R2, READY); next definition R3 Fraction Landings within Frog Hop | [Definition](definitions/ribbon-workshop.md), [Study](deep-dives/subjects/fractions.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#fractions-recommendations) |
 | `zoo-animals` | ready / decision | Who Am I? Z3: existing READY build; Species Comeback draft #733 waits on developer review (do not duplicate or merge) | [Study](deep-dives/subjects/zoo-animals.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#zoo-animals-recommendations) |
 | `body-health` | define | Sense Detective | [Study](deep-dives/subjects/body-health.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#body-and-health-recommendations) |
@@ -69,7 +70,6 @@ One subject per docs-only session using the [subject procedure](deep-dives/subje
 | --- | --- | --- |
 | `integers` | research | Below zero: temperature, sea level, floors, owing and having; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `area-volume-space` | research | Area and perimeter, filling boxes, nets, views and the coordinate grid; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
-| `measurement-units` | research | Choosing tools/units, measuring the same quantity with different units, mass/capacity, elapsed pretend time, conversions and measurement limits; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `estimation` | research | Guess, then check: how many, how long, how heavy; a sensible range; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `speaking-listening` | research | Conversation, retelling, describing, asking, following and giving directions (the island cannot hear her, so co-play and cards); use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `vocabulary-word-parts` | research | Word meaning, categories, prefixes, suffixes, roots, multiple meanings; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
