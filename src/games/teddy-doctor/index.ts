@@ -13,6 +13,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   CHECK_PART,
+  allowedChecks,
   CURE,
   LEVELS,
   doctorTouch,
@@ -162,6 +163,9 @@ class TeddyDoctor implements Game {
   scrapes: { part: Part; node: Container }[] = [];
   /** Check-up step reached. */
   step = 0;
+  done: Check[] = [];
+  choosing = false;
+  friend: Critter | null = null;
 
   private readonly room = new Graphics();
   private readonly glow = new Graphics();
@@ -203,8 +207,16 @@ class TeddyDoctor implements Game {
     this.spot = { x: v.w * 0.36, y: v.h - 100 };
     g.ellipse(this.spot.x, this.spot.y + 6, 190, 30).fill(swatch.blue.light).stroke(line(swatch.blue.line, 4));
     if (this.patient) this.patient.position.set(this.spot.x, this.spot.y);
+    this.layoutPair();
     this.layoutTools();
     this.card.position.set(v.w - 220, 110);
+  }
+
+  private layoutPair() {
+    if (!this.choosing || !this.patient || !this.friend) return;
+    const xs = [this.view.w * 0.32, this.view.w * 0.73];
+    this.patient.position.set(xs[this.round.hurtSide], this.spot.y);
+    this.friend.position.set(xs[1 - this.round.hurtSide], this.spot.y);
   }
 
   private layoutTools() {
@@ -219,7 +231,7 @@ class TeddyDoctor implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    if (this.patient) this.patient.x = this.spot.x + (this.shiver ? 3 * Math.sin(this.clock * 40) : 0);
+    if (this.patient && !this.choosing) this.patient.x = this.spot.x + (this.shiver ? 3 * Math.sin(this.clock * 40) : 0);
     for (const s of this.symptoms) if (s.label === 'stars') s.rotation += dt * 2;
     this.drawGlow();
   }
@@ -227,7 +239,8 @@ class TeddyDoctor implements Game {
   /** Tap the next boo-boo, or carry the right tool to the body part it belongs on. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.patient || !this.round) return null;
-    const move = doctorTouch(this.plan.mode, this.round, this.step, this.scrapes.map((s) => s.part));
+    if (this.choosing) return { tap: { on: this.patient, x: 0, y: -130 } };
+    const move = doctorTouch(this.plan.mode, this.round, this.step, this.scrapes.map((s) => s.part), this.done);
     if (!move) return null;
     const at = partSpot(this.round.patient, move.part);
     if (move.kind === 'tap') return { tap: { on: this.patient, x: at.x, y: at.y } };
@@ -245,6 +258,14 @@ class TeddyDoctor implements Game {
     const g = this.glow.clear();
     if (this.finished || this.wrongs < 2 || !this.patient) return;
     const a = 0.55 + 0.3 * Math.sin(this.clock * 6);
+    if (this.choosing) {
+      g.ellipse(this.patient.x, this.patient.y - 150, 165, 210).stroke({ width: 8, color: swatch.yellow.line, alpha: a });
+      return;
+    }
+    if (this.plan.mode === 'rules') {
+      for (const t of this.tools) if (allowedChecks(this.round, this.done).includes(t.tool as Check)) g.circle(t.home.x, t.home.y, 78).fill({ color: 0xfff3a0, alpha: a });
+      return;
+    }
     const want = wantedTool(this.round, this.step);
     const tool = this.tools.find((t) => t.tool === want);
     if (tool && this.tools.length > 1) g.circle(tool.home.x, tool.home.y, 78).fill({ color: 0xfff3a0, alpha: a });
@@ -265,6 +286,8 @@ class TeddyDoctor implements Game {
     this.index++;
     this.wrongs = 0;
     this.step = 0;
+    this.done = [];
+    this.choosing = false;
     this.busy = true;
     const r = this.round;
     const p = new Critter(CRITTERS[r.patient]);
@@ -274,17 +297,31 @@ class TeddyDoctor implements Game {
     this.ctx.stage.addChildAt(p, this.ctx.stage.getChildIndex(this.glow));
     void this.ctx.tw.to(p.scale, { x: SCALE, y: SCALE }, { duration: 0.4, ease: ease.outBack });
     p.hop(0.6);
-    if (this.plan.mode === 'play') {
+    if (this.plan.mode === 'play' || this.plan.mode === 'choose') {
       // Boo-boos sit close together, so a tap goes to the nearest one rather than whichever is drawn on top.
-      p.hitArea = new Rectangle(-175, -340, 350, 390);
-      onTap(p, (e) => void this.tapAt(e.global), { cooldown: 250 });
+      p.hitArea = this.plan.mode === 'choose' ? new Rectangle(-125, -330, 250, 370) : new Rectangle(-175, -340, 350, 390);
+      onTap(p, (e) => void (this.choosing ? this.choose(true) : this.tapAt(e.global)), { cooldown: 250 });
     }
     this.setTools(r.tools);
     this.showSymptoms();
     this.drawCard();
+    if (this.plan.mode === 'choose') {
+      this.choosing = true;
+      p.setMood('sad');
+      const friend = this.ctx.track(new Critter(CRITTERS[r.friend!]));
+      this.friend = friend;
+      friend.scale.set(SCALE);
+      friend.hitArea = new Rectangle(-125, -330, 250, 370);
+      friend.setMood('happy');
+      onTap(friend, () => void this.choose(false), { cooldown: 250 });
+      this.ctx.stage.addChildAt(friend, this.ctx.stage.getChildIndex(this.glow));
+      this.layoutPair();
+    }
     await this.ctx.tw.wait(0.5);
     const mode = this.plan.mode;
-    if (mode === 'play') await this.ctx.instruct('doctor.play');
+    if (mode === 'choose') await this.ctx.instruct('doctor.choose');
+    else if (mode === 'rules') await this.sayRules(true);
+    else if (mode === 'play') await this.ctx.instruct('doctor.play');
     else if (mode === 'part') await this.askPart();
     else if (mode === 'tool') {
       await this.ctx.say(`doctor.${r.ailment!}`, { part: r.part! });
@@ -296,6 +333,32 @@ class TeddyDoctor implements Game {
       await this.ctx.instruct('doctor.told', { a, b, c });
     }
     this.busy = false;
+  }
+
+  private async choose(hurt: boolean) {
+    if (this.busy || !this.choosing || this.finished) return;
+    this.busy = true;
+    if (!hurt) {
+      this.miss();
+      this.patient?.setMood('sad');
+      this.friend?.poke();
+      sfx.giggle();
+      await this.ctx.say('doctor.fine');
+    } else {
+      this.choosing = false;
+      this.ctx.untrack(this.friend!);
+      this.friend!.destroy({ children: true });
+      this.friend = null;
+      await this.ctx.tw.to(this.patient!, { x: this.spot.x }, { duration: 0.4 });
+      await this.ctx.instruct('doctor.play');
+    }
+    this.busy = false;
+  }
+
+  private async sayRules(instruction = false) {
+    const text = this.round.rules.map((r) => r.kind === 'before' ? `${STEP_WORDS[r.tool]} before you ${STEP_WORDS[r.other]}` : `${STEP_WORDS[r.tool]} ${r.kind}`).join(', and ');
+    if (instruction) await this.ctx.instruct('doctor.rules', { rule: text });
+    else await this.ctx.say('doctor.rules', { rule: text });
   }
 
   private async askPart() {
@@ -479,15 +542,17 @@ class TeddyDoctor implements Game {
     }
 
     // Check-ups: the steps in order.
-    const want = r.steps[this.step];
-    if (item.tool !== want) {
+    const want = mode === 'rules' ? item.tool as Check : r.steps[this.step];
+    if (mode === 'rules' ? !allowedChecks(r, this.done).includes(want) : item.tool !== want) {
       this.miss();
-      await this.ctx.say('doctor.first', { step: STEP_WORDS[want] });
+      if (mode === 'rules') await this.sayRules();
+      else await this.ctx.say('doctor.first', { step: STEP_WORDS[want] });
       this.busy = false;
       return;
     }
     await this.check(want);
     this.step++;
+    this.done.push(want);
     this.drawCard();
     if (this.step >= r.steps.length) return this.better();
     this.busy = false;
@@ -619,8 +684,10 @@ class TeddyDoctor implements Game {
     this.card.addChild(g);
     r.steps.forEach((tool, i) => {
       const x = (i - 1) * 120;
-      const shown = this.plan.mode === 'card' || i < this.step;
-      if (i === this.step) g.roundRect(x - 52, -58, 104, 116, 18).fill({ color: 0xfff3a0, alpha: 0.9 });
+      const unordered = this.plan.mode === 'rules';
+      const complete = unordered ? this.done.includes(tool) : i < this.step;
+      const shown = unordered || this.plan.mode === 'card' || complete;
+      if (!unordered && i === this.step) g.roundRect(x - 52, -58, 104, 116, 18).fill({ color: 0xfff3a0, alpha: 0.9 });
       if (shown) {
         const art = toolArt(tool);
         art.scale.set(0.6);
@@ -631,10 +698,12 @@ class TeddyDoctor implements Game {
         q.position.set(x, -4);
         this.card.addChild(q);
       }
-      if (i < this.step) g.moveTo(x + 18, 40).lineTo(x + 28, 52).lineTo(x + 46, 26).stroke(line(swatch.green.line, 6));
-      const n = label(String(i + 1), 24, swatch.blue.line);
-      n.position.set(x - 38, 44);
-      this.card.addChild(n);
+      if (complete) g.moveTo(x + 18, 40).lineTo(x + 28, 52).lineTo(x + 46, 26).stroke(line(swatch.green.line, 6));
+      if (!unordered) {
+        const n = label(String(i + 1), 24, swatch.blue.line);
+        n.position.set(x - 38, 44);
+        this.card.addChild(n);
+      }
     });
   }
 
@@ -702,6 +771,7 @@ export const teddyDoctor: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,
+  entryLevels: [7],
   coplayHint: 'Be the patient! Tell {name} where it hurts, and say thank you when you feel better.',
   offScreen: 'Play doctor with a teddy and a box of plasters: where does it hurt, and what will help?',
   hubIcon: () => new WigglyIcon(teddyArt(1)),

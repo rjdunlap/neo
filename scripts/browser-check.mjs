@@ -7420,16 +7420,18 @@ async function next() {
   }
 
   // Teddy Doctor: boo-boos tapped, then tools dragged onto the body part that needs them.
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= 6 && (!only || only === 'doctor'); level++) {
-    if (level === 4 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= 8 && (!only || only === 'doctor'); level++) {
+    if (level === 4 || level === 5 || level === 7) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('teddy-doctor', level);
     await page.waitForTimeout(400);
+    await page.waitForFunction(() => !neo.scene.game.busy);
+    if (level === 7) await screenshot('teddy-doctor-7-pair-portrait');
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     // Check-ups are three of five steps (the scale and the height chart among them); the log names the ones played.
     const steps = await page.evaluate(() => neo.scene.game.rounds.map((r) => r.steps.join('>')).filter(Boolean).join(', '));
     await page.evaluate(async () => {
       const g = neo.scene.game;
-      const { CURE, CHECK_PART } = await import('/src/games/teddy-doctor/logic.ts');
+      const { CURE, CHECK_PART, allowedChecks } = await import('/src/games/teddy-doctor/logic.ts');
       const idle = () => kit.until(() => (!g.busy && g.patient) || g.finished, 15000);
       // A tool rides 40 above the finger, so aim the finger just below the body part.
       const use = async (tool, part) => {
@@ -7440,7 +7442,30 @@ async function next() {
       for (let r = 0; r < g.rounds.length; r++) {
         await idle();
         const first = r === 0, round = g.round, mode = g.plan.mode;
-        if (mode === 'play') {
+        if (mode === 'choose') {
+          if (first) {
+            for (let k = 0; k < 2; k++) { kit.tapOn(g.friend, 0, -130); await kit.sleep(350); await idle(); }
+            check('choose');
+            g.drawGlow();
+            if (!g.choosing) throw new Error('Wrong friend advanced patient');
+          }
+          if (Math.abs(g.patient.x - g.friend.x) < 400) throw new Error('Friends too close');
+          kit.tapOn(g.patient, 0, -130); await kit.sleep(500); await idle();
+          kit.tapOn(g.scrapes[0].node); await kit.sleep(350);
+        } else if (mode === 'rules') {
+          if (first) {
+            const wrong = round.steps.find((t) => !allowedChecks(round, g.done).includes(t));
+            for (let k = 0; k < 2; k++) { await use(wrong, CHECK_PART[wrong]); await idle(); }
+            check('rules');
+          }
+          while (g.index === r && g.step < 3) {
+            await idle();
+            if (g.index !== r || g.finished || g.step >= 3) break;
+            const options = allowedChecks(round, g.done);
+            const tool = options[options.length - 1];
+            await use(tool, CHECK_PART[tool]);
+          }
+        } else if (mode === 'play') {
           // A touch on the patient far from every boo-boo (the side of the body) still bandages one.
           if (first) {
             const n = g.scrapes.length, side = g.patient.toGlobal({ x: -150, y: -130 });
@@ -7477,7 +7502,7 @@ async function next() {
     await screenshot(`teddy-doctor-${level}`);
     await finished('teddy-doctor');
     assert.deepEqual(await score('teddy-doctor'), mode === 'play' ? [0, 0] : [2, 1], `doctor ${level} score`);
-    if (level === 4 || level === 5) await page.setViewportSize({ width: 1024, height: 768 });
+    if (level === 4 || level === 5 || level === 7) await page.setViewportSize({ width: 1024, height: 768 });
     log(`Teddy Doctor ${level} (${mode}${steps ? `: ${steps}` : ''}): boo-boos, body parts, tools, check-ups, mistakes, hint, saved score and sticker passed`);
   }
 

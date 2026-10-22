@@ -7,7 +7,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * to choosing what helps a symptom you can see, then one you can only hear about, and finally
  * check-ups done in order: first from a picture card, then from what the patient says.
  */
-export type DoctorMode = 'play' | 'part' | 'tool' | 'clue' | 'card' | 'told';
+export type DoctorMode = 'play' | 'part' | 'tool' | 'clue' | 'card' | 'told' | 'choose' | 'rules';
 
 export interface DoctorPlan {
   mode: DoctorMode;
@@ -25,15 +25,17 @@ export const PLANS: DoctorPlan[] = [
   { mode: 'clue', patients: 3, choices: 4, name: 'Listen to what hurts, then use the right thing in the right place' },
   { mode: 'card', patients: 2, choices: 3, name: 'A check-up in the order shown on a picture card' },
   { mode: 'told', patients: 2, choices: 3, name: 'A check-up in the order the patient says' },
+  { mode: 'choose', patients: 3, choices: 0, name: 'Choose the friend with a boo-boo, then tap to bandage it' },
+  { mode: 'rules', patients: 2, choices: 3, name: 'Choose a check-up order that keeps the patient’s before, first or last rules' },
 ];
 
 /** Each band's window; every level in it has a plan of its own (a test holds it). */
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
-  toddler: { min: 1, max: 3 },
+  toddler: { min: 1, max: 7, order: [1, 7, 2, 3] },
   preschool: { min: 2, max: 5 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 6 },
+  school: { min: 5, max: 8, order: [5, 6, 8] },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -109,8 +111,22 @@ export function nearestPart(patient: Patient, x: number, y: number, parts: reado
   return best;
 }
 
+export type OrderRule = { kind: 'first'; tool: Check } | { kind: 'last'; tool: Check } | { kind: 'before'; tool: Check; other: Check };
+
+/** A prefix is legal when it can still be completed under every rule. */
+export function allowedChecks(round: DoctorRound, done: readonly Check[]): Check[] {
+  return round.steps.filter((tool) => !done.includes(tool) && round.rules.every((rule) => {
+    if (rule.kind === 'first') return done.length > 0 || tool === rule.tool;
+    if (rule.kind === 'last') return tool !== rule.tool || done.length === round.steps.length - 1;
+    return tool !== rule.other || done.includes(rule.tool);
+  }));
+}
+
 export interface DoctorRound {
   patient: Patient;
+  friend: Patient | null;
+  hurtSide: number;
+  rules: OrderRule[];
   /** Boo-boos to bandage (play and part modes), in the order asked for. */
   scrapes: Part[];
   /** What is wrong (tool and clue modes). */
@@ -128,11 +144,23 @@ export function makeRounds(plan: DoctorPlan, rng: Rng): DoctorRound[] {
   let lastPatient: Patient | null = null;
   let lastAilment: Ailment | null = null;
   let lastSteps = '';
+  const firstSide = rng.int(0, 1);
   for (let i = 0; i < plan.patients; i++) {
     const patient = rng.pick(PATIENTS.filter((p) => p !== lastPatient));
     lastPatient = patient;
-    const round: DoctorRound = { patient, scrapes: [], ailment: null, part: null, tools: [], steps: [] };
+    const round: DoctorRound = { patient, friend: null, hurtSide: (firstSide + i) % 2, rules: [], scrapes: [], ailment: null, part: null, tools: [], steps: [] };
     switch (plan.mode) {
+      case 'choose':
+        round.friend = rng.pick(PATIENTS.filter((p) => p !== patient));
+        round.scrapes = [rng.pick(SCRAPE_PARTS)];
+        break;
+      case 'rules': {
+        const [a, b, c] = rng.shuffle(['flashlight', 'thermometer', 'stethoscope'] as Check[]);
+        round.steps = [a, b, c];
+        round.tools = rng.shuffle([...round.steps]);
+        round.rules = i === 0 ? [rng.pick<OrderRule>([{ kind: 'before', tool: a, other: b }, { kind: 'first', tool: a }, { kind: 'last', tool: c }])] : [{ kind: 'before', tool: a, other: b }, { kind: 'first', tool: c }];
+        break;
+      }
       case 'play':
         round.scrapes = rng.shuffle([...SCRAPE_PARTS]).slice(0, 3);
         break;
@@ -179,13 +207,13 @@ export function wantedTool(round: DoctorRound, step = 0): Tool | null {
 export type DoctorTouch = { kind: 'tap'; part: Part } | { kind: 'tool'; tool: Tool; part: Part };
 
 /** The next kind, tool and body part a clean doctor demonstration should touch. */
-export function doctorTouch(mode: DoctorMode, round: DoctorRound, step = 0, scrapes: readonly Part[] = round.scrapes): DoctorTouch | null {
-  if (mode === 'play') return scrapes[0] ? { kind: 'tap', part: scrapes[0] } : null;
+export function doctorTouch(mode: DoctorMode, round: DoctorRound, step = 0, scrapes: readonly Part[] = round.scrapes, done: readonly Check[] = []): DoctorTouch | null {
+  if (mode === 'play' || mode === 'choose') return scrapes[0] ? { kind: 'tap', part: scrapes[0] } : null;
   if (mode === 'part') return scrapes[0] ? { kind: 'tool', tool: 'bandage', part: scrapes[0] } : null;
   if (mode === 'tool' || mode === 'clue') {
     const tool = wantedTool(round, step);
     return tool && round.part ? { kind: 'tool', tool, part: round.part } : null;
   }
-  const tool = wantedTool(round, step);
+  const tool = mode === 'rules' ? allowedChecks(round, done)[0] : wantedTool(round, step);
   return tool && tool in CHECK_PART ? { kind: 'tool', tool, part: CHECK_PART[tool as Check] } : null;
 }

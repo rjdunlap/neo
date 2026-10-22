@@ -59,6 +59,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### teddy-doctor 1: Choose a patient and order a check-up
 
+Built in [#798](https://github.com/rjdunlap/neo/pull/798); [build note](archive/COMPLETED-2026-10-09.md#teddy-doctor-batch-1-patient-choice-and-check-up-rules-2026-10-22).
+
 - **`teddy-doctor`, level 7 Who needs help?** (new level): two friends, tap the one with a boo-boo, then bandage it; toddler order 1, 7, 2, 3, `entryLevels: [7]`. [Slice 3](deep-dives/teddy-doctor.md#new-levels-on-top)
 - **`teddy-doctor`, level 8 Before and after** (new level on the existing drag): a check-up with a stated order rule, every order that keeps it accepted; school 5, 6, 8. [Slice 4](deep-dives/teddy-doctor.md#new-levels-on-top)
 
