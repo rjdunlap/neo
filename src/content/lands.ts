@@ -40,7 +40,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'duck' },
     backdrop: { sky: [0x9fd8f5, 0xfff6e0], hills: [0x9fd8f5, 0x7cc7ec, 0xffe7a3], horizon: 0.4, clouds: 3, sun: true, seed: 101 },
     music: tune(23, 'pluck', 104),
-    games: ['bubble-pop', 'peg-garden', 'bounce-back', 'bumper-garden', 'sink-float', 'domino-run', 'fruit-slice', 'puddle-gobble', 'lost-layers'],
+    games: ['bubble-pop', 'peg-garden', 'bounce-back', 'bumper-garden', 'sink-float', 'domino-run', 'fruit-slice', 'puddle-gobble', 'lost-layers', 'sea-lift'],
   },
   {
     id: 'music-mountain',

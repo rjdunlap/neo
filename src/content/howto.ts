@@ -1489,6 +1489,17 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 1, to: 3, text: 'The creature, the mud and the footprints are made up for the island; real tracks need a scientist, and nothing here says what kind of animal it was.' },
     ],
   },
+  'sea-lift': {
+    goal: 'Run the sea lift: take friends to their stops above and below the water.',
+    steps: [
+      { from: 1, to: 1, text: 'A friend asks to go some stops above or below the water; tap that stop.' },
+      { from: 2, to: 2, text: 'A friend in the lift asks to go some stops up or down; the ride goes through the water, so tap where it ends.' },
+      { from: 3, to: 3, text: 'Pick up the friends in order, deepest or highest first, as asked: tap the stop a friend waits on.' },
+      'Tap the friend card to hear the friend again.',
+    ],
+    finish: 'Every friend is where they wanted to be.',
+    note: "The water line is zero; stops below it are numbers below zero, said as 'below the water'. A wrong stop is one miss: the lift goes there and the friend counts it out; after two misses the right stop glows, which counts as a hint, and a third wrong stop sends the lift there by itself. Hearing a friend again or watching a ride never counts.",
+  },
   'lost-layers': {
     goal: 'Slide the broken cliff\'s pieces beside the whole one until the fossils line up, then say what the rocks can tell.',
     steps: [

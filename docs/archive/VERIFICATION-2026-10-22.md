@@ -98,3 +98,10 @@
 - `BROWSER_SUITE=batch BATCH_ONLY=garden SOUND_LEVELS=8` passed portrait, grass-edge taps, quick taps through handoffs, zero misses/hints, saved sticker and ending. Initial run used logical coordinates as CSS pixels; a small view-scale probe identified the harness error, corrected with `toGlobal`. No page errors.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=sound-garden FINGER_LEVELS=8` clean in 15.6 s. Inspected `test-results/browser/sound-garden-8-portrait.png`: large friend and clear shell/pet corners.
 - Not run: world, offline, stories, couch (no route, asset, save-format or controller changes). iPad audio/speech and child's understanding remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md#sound-garden-one-big-friend-level-8). Level-1 every-touch retrofit and #733 preserved.
+
+## 2026-10-22 — Integers study (subject research, docs only)
+
+- [PR #785](https://github.com/rjdunlap/neo/pull/785), `claude/subject-integers`: [integers study](../deep-dives/subjects/integers.md) (Sea Lift 1–3 recommended first); tracker, packet, roadmap table, backlog, READY, IDEAS and Frog Hop's G3 note updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
+- Open: device speech for "−3" ("below the water", "minus" or "negative"), a mathematics educator's read of the level-4 cards and level-6/7 wording; no reference game was played.

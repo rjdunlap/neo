@@ -99,7 +99,7 @@ Effort: S = bounded extension; M = new interaction across several slices; L = mo
 
 ## A first game's ladder: Sea Lift
 
-Working ID `sea-lift`, **not registered**. The decision is **which stop** (or, from level 4, which number card), read from where friends are on a line whose zero is the water.
+Working ID `sea-lift`, registered 2026-10-22 with levels 1–3. The decision is **which stop** (or, from level 4, which number card), read from where friends are on a line whose zero is the water.
 
 **Interaction.** A tall glass lift on a pier at the right of the screen, its shaft a vertical line of stops from +5 (sky, cliff ledge) to −5 (under the water), spacing at least 100 logical units in landscape and the line scrolling a little in portrait so no target shrinks (a layout audit in both orientations is part of the definition). The water line crosses the shaft at 0, drawn as the island's own sea. Each stop has a large button-shaped landing (at least 100 units) with its numeral; stops below the water carry the minus sign **and** a bubble mark, so the sign is never the only cue. Friends wait on landings (island critters above; fictional sea friends below, from the existing animal art). Tap a landing: touch-down squashes it at once, the lift glides there stop by stop with a soft pentatonic tick per stop (rising going up, falling going down; a splash sound as it passes the water), and the friend says where they are. The pet keeps the bottom left; the friends' requests appear as a speech bubble with an arrow and dots.
 
@@ -145,7 +145,7 @@ The friends at the stops can be her creatures: a sky friend, a cliff friend, a s
 All future work, one session each. Definitions use links and `git diff --check`; builds use the activity tier in AGENTS.md.
 
 1. **Define Sea Lift 1–3** (docs; defined 2026-10-22, [packet](../../definitions/sea-lift.md); build queued): the shaft, stops and landings in both orientations, the friends' cast, requests and rides per level, the deepest-first cases, accounting, hints and supported finish, speech within decision 6's lean, how-to steps, ghost-finger plan, land capacity.
-2. **Build Sea Lift 1–3:** stop model and cases in `logic.ts` with the rule tests above; new-game check tier.
+2. **Build Sea Lift 1–3** (built 2026-10-22): stop model and cases in `logic.ts` with the rule tests above; new-game check tier.
 3. **Define and build Sea Lift 4–5:** number cards, intervals across zero, twin stops.
 4. **Define Sea Lift 6–7** after decisions 2 and 8; then build.
 5. **Define Lift Rounds** after the Lantern Lake capacity test; build at the grown-up tier.
