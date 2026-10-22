@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Gear Garden levels 1–3 definition (machines-tools slice 1, docs only)
+
+- Branch `claude/define-gear-garden` (PR #807): definition packet `docs/definitions/gear-garden.md`; READY (build queued, define line removed), study backlog, machines-tools study, Waiting row and recommendations row updated.
+- Ran: a throwaway `landLayout` probe at `964df9cc` measuring Tinker Lab with Gear Garden at every band in four views: it fits at every band, and a 14th game fails at pre-K, school and grown-up (probe file not committed); local link check and `git diff --check`.
+- Open: no code, typecheck, unit tests, build or browser run; the build is gated on the developer confirming the Tinker Lab default and the child-only registration arrangement.
+
 ## 2026-10-22 — Recipe Workshop levels 1–3 (cooking C2–C4, new game)
 
 - Branch `claude/recipe-workshop-1-3` (PR #806, commit `ad7b31a3`): new game `recipe-workshop` (toddler 1, preschool 1–2, pre-K 2–3, region `cozy-village`, home land Painted Canyon because Cozy Village's hedgerow no longer fits at 12 visible games).
@@ -96,12 +102,6 @@
 - [PR #790](https://github.com/rjdunlap/neo/pull/790), `claude/define-rain-garden`: defined Rain Garden levels 1–3 ([definition](definitions/rain-garden.md)); READY, study backlog, weather-water study, recommendations, tracker, ideas and waiting-on-developer updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`; both passed.
 - Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the developer's registration/bands/land call, a science reader for the explanation lines (recommended), all device checks.
-
-## 2026-10-22 — Adventure Walk levels 1–3 definition (movement-exercise, docs only)
-
-- [PR #786](https://github.com/rjdunlap/neo/pull/786), `claude/define-adventure-walk`: defined Adventure Walk levels 1–3 ([definition](definitions/adventure-walk.md)); READY, game batches, study backlog, movement study, recommendations and ideas updated.
-- Ran `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the build AW2 (screen-only, no review gate; six open decisions all have defaults); movement invitations stay reviewer-gated.
 
 ## Coverage summary
 

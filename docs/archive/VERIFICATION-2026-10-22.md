@@ -113,3 +113,9 @@
 - `BROWSER_SUITE=batch BATCH_ONLY=garden SOUND_LEVELS=9,10` passed endpoints, cancellation, second-finger rejection, twelve creative notes, two wrong contours/one stem hint, valid alternative pitches, ending/stickers and portrait. Initial attempt was interrupted by HMR; frozen-source replay passed. Follow-up at level 10 also passed an actual replay-bird tap using `toGlobal` coordinates and asserting the bird answers.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=sound-garden FINGER_LEVELS=9,10` clean: 19.6 s / 37.5 s, no misses, hints or page errors. Both portrait images inspected: clear controls, singers and companion clearance.
 - Not run: world, offline, stories and couch (unaffected). iPad audio/speech and child understanding remain open in [device checks](../DEVICE-CHECKS.md#sound-garden-pitch-drawing-and-copying-levels-910); gated level-1 retrofit, other levels and #733 untouched.
+
+## 2026-10-22 — Adventure Walk levels 1–3 definition (movement-exercise, docs only)
+
+- [PR #786](https://github.com/rjdunlap/neo/pull/786), `claude/define-adventure-walk`: defined Adventure Walk levels 1–3 ([definition](../definitions/adventure-walk.md)); READY, game batches, study backlog, movement study, recommendations and ideas updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the build AW2 (screen-only, no review gate; six open decisions all have defaults); movement invitations stay reviewer-gated.
