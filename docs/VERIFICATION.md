@@ -8,8 +8,6 @@
 - Not run: build, because no shared files or assets changed.
 - Open: device speech of "tufts of grass". Roundup still has a "carrots" pen for bunnies (scenery, not a diet claim), left as is.
 
-| `sealift`, `fingerdemo` (`sea-lift`) | 2026-10-22: level 1 free dock tap, wrong stop (1 miss) and two Show a hints (1 hint), played out; level 3 free empty landing and −2 before −5 (1 miss), played out; level 2 portrait; ghost finger clean at levels 1 and 3 (8.8 s, 8.4 s); typecheck, 2489 unit tests and build ([entry](archive/VERIFICATION-2026-10-22.md#2026-10-22--sea-lift-levels-13-integers-in1-new-game)) | Chrome automation only; iPad touch, device speech and a child's response open |
-
 ## 2026-10-22 — Photo Safari batch 1: Tell me which and Tell me both (10–11, SL1–2)
 
 - [PR #827](https://github.com/rjdunlap/neo/pull/827), worker `01a165dd-6049-7012-85e6-60e6afae58a5`, `codex/photo-safari-tell`; tested base `35589aff` plus batch working diff. School order4,5,6,7,10,11; reserved8–9/younger ranges unchanged.
