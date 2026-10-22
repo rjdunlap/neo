@@ -420,7 +420,7 @@ export const SCRIPT = {
   'journal.sink.coin': ['Surprise! A little coin sinks.'],
   'journal.sink.spoon': ['A spoon sinks, even though it is small.'],
   'journal.snack.cow': ['The cow eats hay. Munch, munch! Moo!'],
-  'journal.snack.bunny': ['The bunny eats a carrot. Crunch!'],
+  'journal.snack.bunny': ['The bunny eats grass. Nibble, nibble!'],
   'journal.snack.dog': ['The dog chews a bone. Woof!'],
   'journal.snack.cat': ['The cat eats fish. Meow!'],
   'journal.snack.duck': ['The duck eats seeds. Quack!'],

@@ -8,7 +8,7 @@ Defined 2026-10-22 as slice IR1 of the [informational-reading study](../deep-div
 
 ## Identity and overlap
 
-- **Animal Snack** feeds cartoon favourites (bunny carrots, bear honey). Look It Up's *Eats* row gives each animal's **main** food from its sources: rabbits eat grass, brown bears mostly berries, grass and roots. The two games are allowed to differ, and Animal Snack is not changed here. See [Animal Snack's favourites](#animal-snacks-favourites).
+- **Animal Snack** feeds cartoon favourites (bear honey; the bunny's carrot became grass on 2026-10-22). Look It Up's *Eats* row gives each animal's **main** food from its sources: rabbits eat grass, brown bears mostly berries, grass and roots. The two games are allowed to differ, and Animal Snack is not changed here. See [Animal Snack's favourites](#animal-snacks-favourites).
 - **Who Am I?** (defined, Barnyard) narrows a gallery by clues about features. Look It Up never eliminates: she finds a page, not a suspect, and its rows are food, place and baby, never body features.
 - **Habitat Helpers** builds a garden from a small food/water/shelter model for Bunny and Duck. Look It Up reads real places from a page and builds nothing.
 - **Read & Do** reads one printed sign into a picture. Look It Up searches a book of several pages; the study's decision 1 explains why this is a new game, not a Read & Do level.
@@ -176,7 +176,7 @@ Page titles, label words, every fact sentence **and every animal's two questions
 
 ## Animal Snack's favourites
 
-The same research checked Animal Snack's foods against the sources. Cow hay and duck seeds are main foods. Pig apple is real but occasional. Bear honey is a minor food (bears raiding hives want the bee grubs). Bunny carrot is **misleading**: carrots are a sugary pet treat and wild rabbits do not eat them (RSPCA, opened). Look It Up does not depend on Animal Snack changing. Changing the bunny's favourite to grass, hay or dandelion leaves is a separate small Animal Snack fix, offered as a follow-up rather than done here.
+The same research checked Animal Snack's foods against the sources. Cow hay and duck seeds are main foods. Pig apple is real but occasional. Bear honey is a minor food (bears raiding hives want the bee grubs). Bunny carrot is **misleading**: carrots are a sugary pet treat and wild rabbits do not eat them (RSPCA, opened). Look It Up does not depend on Animal Snack changing. Changing the bunny's favourite to grass, hay or dandelion leaves is a separate small Animal Snack fix, offered as a follow-up rather than done here. **Done 2026-10-22:** the bunny now eats grass (a tuft on a clump of earth), and its journal line says so.
 
 ## Check tier
 

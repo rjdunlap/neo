@@ -36,9 +36,12 @@ function foodArt(food: Food): Container {
       for (const y of [-12, 0, 12]) g.moveTo(-28, y).lineTo(28, y + 3).stroke(line(swatch.yellow.line, 3));
       g.rect(-4, -24, 8, 48).fill(swatch.red.fill);
       break;
-    case 'carrot':
-      g.poly([-12, -18, 12, -18, 0, 34]).fill(swatch.orange.fill).stroke(line(swatch.orange.line));
-      g.ellipse(-8, -28, 6, 14).ellipse(8, -28, 6, 14).fill(swatch.green.fill);
+    case 'grass':
+      // A tuft of long blades on a clump of earth: darker than the meadow so it reads on any scene.
+      g.ellipse(0, 22, 30, 10).fill(wood.fill).stroke(line(wood.line, 3));
+      for (const [x, tip, lean] of [[-20, -18, -10], [-10, -30, -4], [0, -36, 2], [10, -30, 6], [20, -18, 12]]) {
+        g.poly([x - 6, 20, x + 6, 20, x + lean, tip]).fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
+      }
       break;
     case 'bone':
       g.roundRect(-26, -7, 52, 14, 7).fill(0xffffff).stroke(line(swatch.white.line));
@@ -621,10 +624,9 @@ class SnackIcon extends WigglyIcon {
     bunny.alive = false;
     bunny.scale.set(0.62);
     c.addChild(bunny);
-    const carrot = foodArt('carrot');
-    carrot.position.set(70, -60);
-    carrot.rotation = -0.4;
-    c.addChild(carrot);
+    const grass = foodArt('grass');
+    grass.position.set(70, -50);
+    c.addChild(grass);
     super(c);
   }
 }
@@ -656,7 +658,7 @@ export const animalSnack: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'Make the animal sounds together, and say what each one eats: "The bunny eats a carrot. Crunch!"',
+  coplayHint: 'Make the animal sounds together, and say what each one eats: "The bunny eats grass. Nibble, nibble!"',
   offScreen: 'At snack time, offer a stuffed animal a pretend snack: "What does teddy like to eat?"',
   hubIcon: () => new SnackIcon(),
   touchDemo: true,
