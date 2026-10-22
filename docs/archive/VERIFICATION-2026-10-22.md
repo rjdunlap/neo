@@ -156,3 +156,10 @@
 - [PR #795](https://github.com/rjdunlap/neo/pull/795), `claude/define-playdate-workshop`: defined Playdate Workshop levels 1–3 ([definition](../definitions/playdate-workshop.md)); READY, study backlog, study, recommendations, tracker, ideas and waiting-on-developer updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the developer's identity/registration and land call (the build waits on it), early-childhood/SEL and accessibility review of the requests, all device and child checks.
+
+## 2026-10-22 — Per-band off-screen lines definition (off-screen-companions slices 1–3, docs only)
+
+- [PR #796](https://github.com/rjdunlap/neo/pull/796), `claude/define-off-screen-lines`: defined slices 1–3 as one batch ([definition](../definitions/off-screen-lines.md)); READY, study backlog, study, recommendations, tracker, ideas and waiting-on-developer updated.
+- Re-audit on `origin/main` `5a4bf744`: 113 `offScreen` lines, 59 reaching lap or toddler.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the developer's answer to the small-objects row (the build's merge waits on it), reviewer for any new under-3, bath, food, water or sun line.
