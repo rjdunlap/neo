@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BASKET_HALF, BUNCHES, CROWD, fieldTouch, helperTouch, makeFruits, pileSpot, PLANS, skipCount, tryLift, usesWhistle, whistleFor, whistleMisses } from './logic';
+import { alternates, badgeRings, BASKET_HALF, BUNCHES, CARRY_NEEDS, CROWD, dressRound, fieldTouch, helperTouch, makeFruits, pileSpot, PLACE_THINGS, PLACES, planFor, PLANS, ringsSayWhen, skipCount, thingsFor, tryLift, usesWhistle, whistleFor, whistleMisses } from './logic';
 
 describe('Little Helpers', () => {
   it('never needs more helpers than the crowd, and leaves something to send', () => {
@@ -26,7 +26,12 @@ describe('Little Helpers', () => {
           fruits.slice(1).forEach((f, i) => expect([f.groups, f.need]).not.toEqual([fruits[i].groups, fruits[i].need]));
         } else {
           for (const f of fruits) expect(f.groups).toBe(1);
-          if (plan.max > plan.min) fruits.slice(1).forEach((f, i) => expect(f.need).not.toBe(fruits[i].need));
+          const needs = fruits.map((f) => f.need);
+          // Never a plain swap (1, 2, 1, 2); with three or more values, never the same twice in a row either.
+          if (plan.max > plan.min) expect(alternates(needs), `${plan.name} seed ${seed}: ${needs}`).toBe(false);
+          if (plan.max - plan.min >= 2) fruits.slice(1).forEach((f, i) => expect(f.need).not.toBe(fruits[i].need));
+          // Two values come equally often, so both sizes are met every round.
+          if (plan.max - plan.min === 1) expect(needs.filter((n) => n === plan.min).length).toBe(plan.fruits / 2);
         }
       }
     }
@@ -63,6 +68,68 @@ describe('Little Helpers', () => {
     }
   });
 
+  it('keys plans by level ID: level 9 is its own plan, and unknown levels fall back as before', () => {
+    for (const plan of PLANS) expect(planFor(plan.level)).toBe(plan);
+    expect(planFor(9).mode).toBe('whistle');
+    expect(planFor(7).level).toBe(6);
+    expect(planFor(0).level).toBe(1);
+    expect(new Set(PLANS.map((p) => p.level)).size).toBe(PLANS.length);
+  });
+
+  it('level 9 needs 1 to 3, every round has at least two sizes, and the rings, not a count, decide', () => {
+    const plan = planFor(9);
+    expect(usesWhistle(plan)).toBe(true);
+    expect(ringsSayWhen(plan)).toBe(true);
+    for (const p of PLANS) if (p !== plan) expect(ringsSayWhen(p)).toBe(false);
+    for (let seed = 1; seed <= 200; seed++) {
+      const needs = makeFruits(plan, new Rng(seed)).map((f) => f.need);
+      expect(Math.min(...needs)).toBeGreaterThanOrEqual(1);
+      expect(Math.max(...needs)).toBeLessThanOrEqual(3);
+      expect(new Set(needs).size).toBeGreaterThanOrEqual(2);
+    }
+    // An early whistle is never a miss at 9; it still is at 3.
+    expect(whistleMisses('short', plan)).toBe(false);
+    expect(whistleMisses('short', planFor(3))).toBe(true);
+  });
+
+  it('fills the rings as helpers arrive: filled plus empty is the need, extras stand outside', () => {
+    for (let need = 1; need < CROWD; need++) {
+      for (let carrying = 0; carrying <= CROWD; carrying++) {
+        const r = badgeRings(need, carrying);
+        expect(r.filled + r.empty).toBe(need);
+        expect(r.filled + r.extra).toBe(carrying);
+        if (carrying <= need) expect(r.extra).toBe(0);
+      }
+    }
+    // Level 5: the empty rings are how many more.
+    expect(badgeRings(6, 4)).toEqual({ filled: 4, empty: 2, extra: 0 });
+  });
+
+  it('every place has something for every need, heavier needs draw the bigger things, and no thing comes twice running', () => {
+    for (const place of PLACES) for (let need = 1; need < CROWD; need++) expect(thingsFor(place, need).length, `${place} ${need}`).toBeGreaterThan(0);
+    for (const place of PLACES) expect(PLACE_THINGS[place].every((k) => k in CARRY_NEEDS)).toBe(true);
+    // The pumpkin and watermelon never stand for a light need, the acorn never for a heavy one.
+    expect(CARRY_NEEDS.pumpkin[0]).toBeGreaterThan(CARRY_NEEDS.acorn[1]);
+    expect(CARRY_NEEDS.watermelon[0]).toBeGreaterThan(CARRY_NEEDS.pinecone[1]);
+    const places = new Set<string>();
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const fruits = makeFruits(plan, new Rng(seed));
+        const { place, things } = dressRound(fruits, new Rng(seed * 7));
+        places.add(place);
+        expect(things).toHaveLength(fruits.length);
+        things.forEach((k, i) => {
+          const each = fruits[i].need / fruits[i].groups;
+          expect(PLACE_THINGS[place]).toContain(k);
+          expect(each).toBeGreaterThanOrEqual(CARRY_NEEDS[k][0]);
+          expect(each).toBeLessThanOrEqual(CARRY_NEEDS[k][1]);
+          if (i > 0 && thingsFor(place, each).filter((x) => x !== things[i - 1]).length) expect(k).not.toBe(things[i - 1]);
+        });
+      }
+    }
+    expect(places.size).toBe(PLACES.length);
+  });
+
   it('lifts only with exactly enough helpers', () => {
     expect(tryLift(3, 3)).toBe('lift');
     expect(tryLift(3, 2)).toBe('short');
@@ -73,6 +140,8 @@ describe('Little Helpers', () => {
     expect(fieldTouch(PLANS[0], false)).toBe('send');
     for (const plan of PLANS.slice(1)) expect(fieldTouch(plan, false)).toBe('wave');
     for (const plan of PLANS) expect(fieldTouch(plan, true)).toBe('hop');
+    expect(fieldTouch(PLANS[0], false)).toBe('send');
+    expect(PLANS[0].mode).toBe('tap');
   });
 
   it('treats a whistle with no helpers as a nudge, never a miss', () => {
