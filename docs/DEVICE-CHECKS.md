@@ -1,6 +1,11 @@
 # Needs a person or a device
 
 
+## Egg Catch gate repair and spring gate (levels 10–11)
+
+- [ ] On an iPad, follow the dotted failed run and identify its wrong junction; confirm the needed-direction glow is useful after two misses. Rotate with a waiting egg and after a rerun.
+- [ ] Confirm the spring visibly changes after brown passes and a school-age player can explain why white takes the other branch. Check spoken instructions, target comfort and both ghost-finger demos on-device. Chrome checks do not establish this understanding.
+
 ## One iPad session (about fifteen minutes)
 
 The 112 items below are mostly the same five checks asked once per game: device speech, target size for a small hand, both orientations, frame rate, and what a child actually does. Most of them can be covered in one sitting with the iPad, in this order; tick every item a step covers, and write what was wrong in the item rather than here.

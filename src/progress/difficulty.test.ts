@@ -145,3 +145,17 @@ it('Egg Catch one-gate entry precedes the full tree without renumbering saved st
     expect(landing(9, range, eggCatch.entryLevels)).toBe(levelsInOrder(range)[0]);
   }
 });
+
+
+it('adds repair and spring boards after the school pair without admitting younger entry IDs', () => {
+  const range = eggCatch.levels('school');
+  expect(levelsInOrder(range)).toEqual([4, 5, 6, 7, 10, 11]);
+  expect(stepLevel(7, 1, range)).toBe(10);
+  expect(stepLevel(10, 1, range)).toBe(11);
+  expect(stepLevel(10, -1, range)).toBe(7);
+  expect(nextLevelOffer(11, range)).toBeNull();
+  for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const) {
+    expect(levelsInOrder(eggCatch.levels(band))).not.toContain(10);
+    expect(levelsInOrder(eggCatch.levels(band))).not.toContain(11);
+  }
+});

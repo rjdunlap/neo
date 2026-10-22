@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`egg-catch`, Gate repair and changing gates** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#egg-catch-1-gate-repair-and-changing-gates).
 - **`feelings-faces`, Helping and explaining happenings** (one implementation batch; 3 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#feelings-faces-1-helping-and-explaining-happenings).
 - **`feelings-faces`, Ask first** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#feelings-faces-2-ask-first).
 - **`sound-garden`, Listening direction and visible echoes** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#sound-garden-1-listening-direction-and-visible-echoes).

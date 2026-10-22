@@ -6111,11 +6111,47 @@ async function batch() {
   }
 
   // Egg Catch: a finger steers the basket under falling eggs; route levels flip the gates.
-  for (const level of [1, 2, 3, 4, 5, 8, 9].filter((n) => n >= Number(process.env.FROM_LEVEL || 1) && n <= Number(process.env.TO_LEVEL || 9) && (!only || only === 'eggs'))) {
-    if (level === 8 || level === 9) await page.setViewportSize({ width: 768, height: 1024 });
+  for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].filter((n) => n >= Number(process.env.FROM_LEVEL || 1) && n <= Number(process.env.TO_LEVEL || 11) && (!only || only === 'eggs'))) {
+    if (level >= 8) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('egg-catch', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (['predict', 'pair', 'repair', 'flipflop'].includes(mode)) {
+      // Distinct routing interactions share two supported misses, then a clean completion.
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const { exitFor } = await import('/src/games/egg-catch/logic.ts');
+        const ready = () => g.plan.mode === 'predict' ? g.waiting : g.paired ? g.pairReady && !g.rolling : g.held && !g.rolling;
+        await kit.until(ready, 12000);
+        if (g.misses || g.hints) throw new Error('the pet preview must be free');
+        if (g.plan.mode === 'repair' && (g.traceExit === null || !g.traceArt.context.instructions.length)) throw new Error('missing failed trace');
+        for (let attempt = 0; attempt < 2; attempt++) {
+          await kit.sleep(350);
+          if (g.plan.mode === 'predict') kit.tapOn(g.exits.children[(exitFor(g.gates) + 1) % 4], 0, -20);
+          else {
+            if (g.plan.mode === 'repair') {
+              const wrong = g.traceExit;
+              // The unchanged failed run deliberately lands in the same hay.
+              if (exitFor(g.gates) !== wrong) throw new Error('repair retry changed its board');
+            }
+            kit.tapOn(g.goButton);
+            await kit.until(() => g.rolling, 2000);
+            if (g.plan.mode === 'flipflop') {
+              const start = g.gates[0];
+              await kit.until(() => g.gates[0] !== start, 4000);
+              const gates = [...g.gates];
+              kit.tapOn(g.gateHits[1]);
+              await kit.sleep(300);
+              if (g.gates.some((x, i) => x !== gates[i])) throw new Error('gate touch changed an active pair');
+            }
+          }
+          await kit.until(() => g.misses === attempt + 1 && ready(), 20000);
+          if (g.plan.mode !== 'predict' && g.routed !== 0) throw new Error('failed run must keep its board');
+        }
+        if (!g.hinting || g.hints !== 1 || !g.gateArt.context.instructions.length) throw new Error('two misses must give one visible hint');
+      });
+      await screenshot(`egg-catch-${level}-hint-portrait`);
+    }
     if (mode === 'lane') {
       await page.evaluate(async () => {
         const g = neo.scene.game;
@@ -6175,6 +6211,34 @@ async function batch() {
         touch('pointerup', 10, y);
         return;
       }
+      if (['predict', 'pair', 'repair', 'flipflop'].includes(g.plan.mode)) {
+        const { exitFor, pairGateToFlip, routeTouch, repairTarget } = await import('/src/games/egg-catch/logic.ts');
+        const started = performance.now();
+        while (!g.finished && performance.now() - started < 180000) {
+          const ready = () => g.plan.mode === 'predict' ? g.waiting : g.paired ? g.pairReady && !g.rolling : g.held && !g.rolling;
+          if (!await kit.until(() => ready() || g.finished, 12000)) throw new Error('routing board did not become ready');
+          if (g.finished) break;
+          await kit.sleep(350);
+          if (g.plan.mode === 'predict') {
+            const n = g.routed;
+            kit.tapOn(g.exits.children[exitFor(g.gates)], 0, -20);
+            await kit.until(() => g.routed !== n || g.finished, 12000);
+          } else {
+            let gate;
+            if (g.paired) gate = pairGateToFlip(g.pairBoards[g.routed], g.gates);
+            else {
+              const action = routeTouch(g.gates, repairTarget(g.repairBoards[g.routed]));
+              gate = action === 'go' ? null : action;
+            }
+            if (gate !== null) { kit.tapOn(g.gateHits[gate]); await kit.sleep(300); continue; }
+            const n = g.caughtCount;
+            kit.tapOn(g.goButton);
+            await kit.until(() => g.caughtCount > n || g.finished, 20000);
+          }
+        }
+        if (!g.finished) throw new Error('routing round exceeded its bounded play check');
+        return;
+      }
       // Routing: two eggs sent the wrong way (gates set away from the target), then the right way. Each egg waits for the arrow.
       const { gatesFor } = await import('/src/games/egg-catch/logic.ts');
       const t0 = performance.now();
@@ -6209,7 +6273,7 @@ async function batch() {
     if (mode === 'tap') assert.deepEqual(r, [0, 0], 'eggs tap score');
     else assert.ok(r[0] >= 2 && r[1] === 1, `eggs ${level} score ${r}`);
     log(`Egg Catch ${level} (${mode}): eggs, basket, gates, hatching, hint, saved score and sticker passed`);
-    if (level === 8 || level === 9) await page.setViewportSize({ width: 1024, height: 768 });
+    if (level >= 8) await page.setViewportSize({ width: 1024, height: 768 });
   }
 
   // Mail Carrier: deliver each letter; a wrong mailbox hands it back.

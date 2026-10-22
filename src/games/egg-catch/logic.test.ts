@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
-import { laneChoice, pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir, type Shell, HEN_SHELLS, HEN_NOTES, SHELL } from './logic';
+import { repairBoards, repairTarget, repairGate, simulateFlipflop, flipflopBoards, laneChoice, pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir, type Shell, HEN_SHELLS, HEN_NOTES, SHELL } from './logic';
 
 describe('Egg Catch', () => {
   it('lays eggs in changing lanes, with white eggs only where asked and never three in a row', () => {
@@ -325,5 +325,60 @@ it('Under the hen deals five changing cues and accepts a forgiving tap only unde
     }
     expect(laneChoice(-200, lanes, 0)).toEqual({ lane: 0, lay: true });
     expect(laneChoice(width + 200, lanes, 3)).toEqual({ lane: 3, lay: true });
+  }
+});
+
+
+it('deals four visible failed runs with exactly one repair on the trace and a truthful hint', () => {
+  for (let seed = 1; seed <= 200; seed++) {
+    const boards = repairBoards(new Rng(seed), 4);
+    expect(boards).toEqual(repairBoards(new Rng(seed), 4));
+    expect(boards.map((b) => b.shell)).toEqual(['brown', 'brown', 'white', 'white']);
+    for (const board of boards) {
+      const target = repairTarget(board);
+      const failed = exitFor(board.gates);
+      expect(failed).not.toBe(board.basket);
+      expect(failed).not.toBe(board.nest);
+      const repairs = [0, 1, 2].filter((i) => {
+        const gates = [...board.gates] as typeof board.gates;
+        gates[i] = !gates[i];
+        return exitFor(gates) === target;
+      });
+      expect(repairs).toHaveLength(1);
+      expect([0, board.gates[0] ? 2 : 1]).toContain(repairs[0]);
+      expect(repairGate(board.gates, target)).toBe(repairs[0]);
+      // Even an experimental multi-gate revision gets a hint that reaches the destination.
+      for (let bits = 0; bits < 8; bits++) {
+        const gates = [!!(bits & 1), !!(bits & 2), !!(bits & 4)] as typeof board.gates;
+        let flips = 0;
+        for (let gate = repairGate(gates, target); gate !== null; gate = repairGate(gates, target)) {
+          expect(++flips).toBeLessThanOrEqual(2);
+          gates[gate] = !gates[gate];
+        }
+        expect(exitFor(gates)).toBe(target);
+      }
+    }
+  }
+});
+
+it('simulates the spring after each passage and deals one unique working start for both top-entry eggs', () => {
+  const starts = Array.from({ length: 8 }, (_, bits) => [!!(bits & 1), !!(bits & 2), !!(bits & 4)] as [boolean, boolean, boolean]);
+  for (const start of starts) {
+    const before = [...start];
+    const result = simulateFlipflop(start);
+    expect(result.exits).toEqual([exitFor(start), exitFor([!start[0], start[1], start[2]])]);
+    expect(result.gates).toEqual(start);
+    expect(start).toEqual(before);
+  }
+  for (let seed = 1; seed <= 200; seed++) {
+    for (const board of flipflopBoards(new Rng(seed), 3)) {
+      expect(board.basket < 2).not.toBe(board.nest < 2);
+      expect(simulateFlipflop(board.gates).exits).not.toEqual([board.basket, board.nest]);
+      const solutions = starts.filter((g) => simulateFlipflop(g).exits.every((exit, i) => exit === [board.basket, board.nest][i]));
+      expect(solutions).toHaveLength(1);
+      const gates = [...board.gates];
+      for (const { gate, right } of pairNeeds(board)) gates[gate] = right;
+      expect(simulateFlipflop(gates).exits).toEqual([board.basket, board.nest]);
+    }
   }
 });

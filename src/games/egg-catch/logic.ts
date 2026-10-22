@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * hens lay eggs that roll gently down to a basket. Missed eggs land in soft hay and hatch,
  * so nothing breaks. Later levels route eggs through chutes with flip gates.
  */
-export type EggMode = 'tap' | 'lane' | 'catch' | 'brown' | 'route' | 'sort' | 'predict' | 'pair';
+export type EggMode = 'tap' | 'lane' | 'catch' | 'brown' | 'route' | 'sort' | 'predict' | 'pair' | 'repair' | 'flipflop';
 
 export interface EggPlan {
   mode: EggMode;
@@ -28,6 +28,8 @@ export const PLANS: EggPlan[] = [
   { mode: 'pair', eggs: 3, fall: 0, name: 'Set the gates once for two eggs: brown to the basket, white to the nest' },
   { mode: 'lane', eggs: 5, fall: 1.2, name: 'Under the hen: tap a lane to hop under the clucking hen' },
   { mode: 'route', singleGate: true, eggs: 4, fall: 0, name: 'One gate: point it toward the basket, then tap the green arrow' },
+  { mode: 'repair', eggs: 4, fall: 0, name: 'Fix the run: follow the dotted trace, repair one gate and roll again' },
+  { mode: 'flipflop', eggs: 3, fall: 0, name: 'Flip-flop gate: set a spring gate for brown then white with one arrangement' },
 ];
 
 /** Predict levels: gate settings for each egg, never landing in the same place twice running. */
@@ -251,3 +253,40 @@ export function laneChoice(x: number, lanes: readonly number[], calling: number)
   const lane = lanes.reduce((best, at, i) => Math.abs(at - x) < Math.abs(lanes[best] - x) ? i : best, 0);
   return { lane, lay: lane === calling };
 }
+
+/** A visible failed run, with one and only one single-gate repair on its trace. */
+export interface RepairBoard {
+  gates: [boolean, boolean, boolean];
+  basket: number;
+  nest: number;
+  shell: 'brown' | 'white';
+}
+export function repairBoards(rng: Rng, count: number): RepairBoard[] {
+  return Array.from({ length: count }, (_, i) => {
+    const target = rng.int(0, 3);
+    const gates: RepairBoard['gates'] = [rng.chance(0.5), rng.chance(0.5), rng.chance(0.5)];
+    const path = gatesFor(target);
+    for (const { gate, right } of path) gates[gate] = right;
+    const broken = path[rng.int(0, 1)].gate;
+    gates[broken] = !gates[broken];
+    const others = [0, 1, 2, 3].filter((exit) => exit !== target && exit !== exitFor(gates));
+    const other = others[rng.int(0, others.length - 1)];
+    const shell = i < 2 ? 'brown' : 'white';
+    return { gates, basket: shell === 'brown' ? target : other, nest: shell === 'white' ? target : other, shell };
+  });
+}
+export const repairTarget = (board: RepairBoard) => board.shell === 'white' ? board.nest : board.basket;
+/** The first divergence from the needed path, including after an experimental rerun. */
+export const repairGate = (gates: readonly boolean[], target: number) => gateToFlip(gates, target, 0);
+
+/** Both eggs enter at the top. Each reads the spring, then flips it for the next egg. */
+export function simulateFlipflop(start: readonly boolean[]): { exits: [number, number]; gates: [boolean, boolean, boolean] } {
+  const gates = [...start] as [boolean, boolean, boolean];
+  const brown = exitFor(gates);
+  gates[0] = !gates[0];
+  const white = exitFor(gates);
+  gates[0] = !gates[0];
+  return { exits: [brown, white], gates };
+}
+/** Opposite destination branches make all three starting directions matter. */
+export const flipflopBoards = (rng: Rng, count: number) => pairBoards(rng, count);
