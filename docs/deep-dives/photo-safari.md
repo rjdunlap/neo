@@ -109,7 +109,7 @@ Photo scoring and stars, rare animals, timers or moving rails, zoom precision, h
 5. **Decision 2 first: level 8, What changed?** Tier: new interaction, as in slice 2, plus `fingerdemo` at 8.
 6. **Decision 3 first: level 9, Is it true?** Tier: new interaction.
 7. **Decision 1 / person first: the toddler action-only entry**, then the lap entry with fewer animals. Tier: new levels, plus registry `order`/`entryLevels` tests.
-8. **Proposed by the [speaking-and-listening study](subjects/speaking-listening.md#first-games-proposed-ladder-photo-safari-tell-me-which-and-tell-me-both):** *Tell me which* and *Tell me both*, at the next free IDs after 8–9 (fixed at definition). She sees the wanted animal and taps action and place chips to tell the pet. This is describing for a listener, not the hidden-information deduction left out above. *Which one?*, *Just enough* and *Whose clue works?* come later.
+8. **Defined 2026-10-22, IDs 10–11 fixed** ([definition](../definitions/photo-safari-tell-me-which.md), [PR #813](https://github.com/rjdunlap/neo/pull/813); 8–9 stay reserved), build queued. Proposed by the [speaking-and-listening study](subjects/speaking-listening.md#first-games-proposed-ladder-photo-safari-tell-me-which-and-tell-me-both):** *Tell me which* and *Tell me both*, at the next free IDs after 8–9 (fixed at definition). She sees the wanted animal and taps action and place chips to tell the pet. This is describing for a listener, not the hidden-information deduction left out above. *Which one?*, *Just enough* and *Whose clue works?* come later.
 9. **Horizon:** Field Notes Detective, defined by [the life-science study's slice 3](subjects/life-science.md), not here.
 
 ## What was built in this session
