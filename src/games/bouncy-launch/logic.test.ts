@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { PLANET_PLAN, planetPairs, gravityFor, planetBotLanding, planetSide, airtimeFor, FRIEND_GAP, FRIEND_LEVEL, FRIEND_PLAN, FRIEND_RANGE, FRIEND_WINDOW, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets } from './logic';
+import { BETWEEN_LEVEL, BETWEEN_PLAN, BETWEEN_TRIPLES, betweenTriples, PLANET_PLAN, planetPairs, gravityFor, planetBotLanding, planetSide, airtimeFor, FRIEND_GAP, FRIEND_LEVEL, FRIEND_PLAN, FRIEND_RANGE, FRIEND_WINDOW, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets } from './logic';
 
 describe('Bouncy Launch', () => {
   it('turns a bigger pull into a farther flight, and every pad has a pull that lands on it', () => {
@@ -146,10 +146,63 @@ describe('Bouncy Launch', () => {
 
 
 describe('Planet Hop, level 12', () => {
-  it('keeps IDs 1–7 and reserves 8–11', () => {
+  it('keeps IDs 1–7, puts Between two flights at 9 and reserves 8, 10 and 11', () => {
     for (let i = 1; i <= 6; i++) expect(planFor(i)).toBe(PLANS[i - 1]);
     expect(planFor(7)).toBe(FRIEND_PLAN);
+    expect(BETWEEN_LEVEL).toBe(9);
+    expect(planFor(9)).toBe(BETWEEN_PLAN);
     expect(planFor(12)).toBe(PLANET_PLAN);
+  });
+
+  describe('Between two flights (level 9)', () => {
+    it('puts the middle cloud strictly between two flags at least two clouds apart, at the midpoint of their pulls', () => {
+      for (const t of BETWEEN_TRIPLES) {
+        expect(t.low).toBeGreaterThanOrEqual(0);
+        expect(t.high).toBeLessThan(PADS);
+        expect(t.high - t.low).toBeGreaterThanOrEqual(2);
+        expect(t.low).toBeLessThan(t.mid);
+        expect(t.mid).toBeLessThan(t.high);
+        // The spoken reason is literally true: the middle pull is halfway between the two shown pulls, and lands on its cloud.
+        const midPull = pullFor(padAt(t.mid));
+        expect(midPull).toBeCloseTo((pullFor(padAt(t.low)) + pullFor(padAt(t.high))) / 2, 9);
+        expect(midPull).toBeGreaterThan(pullFor(padAt(t.low)));
+        expect(midPull).toBeLessThan(pullFor(padAt(t.high)));
+      }
+    });
+
+    it('lands every shown pull on its own cloud, inside the leash', () => {
+      for (const t of BETWEEN_TRIPLES) {
+        for (const pad of [t.low, t.mid, t.high]) {
+          const pull = pullFor(padAt(pad));
+          expect(pull).toBeGreaterThanOrEqual(MIN_PULL);
+          expect(pull).toBeLessThanOrEqual(MAX_PULL);
+          expect(padHit(reach(pull))).toBe(pad);
+        }
+      }
+    });
+
+    it('deals three different sets per round, never the same middle cloud twice running, the same for one seed', () => {
+      const mids = new Set<number>();
+      for (let seed = 1; seed <= 300; seed++) {
+        const round = betweenTriples(new Rng(seed), BETWEEN_PLAN.shots);
+        expect(round).toHaveLength(3);
+        expect(new Set(round).size).toBe(3);
+        round.forEach((t, i) => { if (i > 0) expect(t.mid).not.toBe(round[i - 1].mid); });
+        round.forEach(t => mids.add(t.mid));
+        expect(betweenTriples(new Rng(seed), BETWEEN_PLAN.shots)).toEqual(round);
+      }
+      expect([...mids].sort()).toEqual([1, 2, 3]);
+    });
+
+    it('never judges a prediction, and the bot taps the middle cloud the shown pull reaches', () => {
+      for (let seed = 1; seed <= 50; seed++) {
+        const tgs = betweenTriples(new Rng(seed), BETWEEN_PLAN.shots).map(t => t.mid);
+        tgs.forEach((mid, shot) => {
+          expect(pullToTake(BETWEEN_PLAN, shot, tgs)).toBe(pullFor(padAt(mid)));
+          for (let f = 0; f <= 1; f += 0.1) expect(judge(BETWEEN_PLAN, f, mid)).toBe('yes');
+        });
+      }
+    });
   });
 
   it('shows distinct safe home flights, both planets, and clear past/before evidence for every seed', () => {
