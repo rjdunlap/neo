@@ -119,3 +119,9 @@
 - [PR #786](https://github.com/rjdunlap/neo/pull/786), `claude/define-adventure-walk`: defined Adventure Walk levels 1–3 ([definition](../definitions/adventure-walk.md)); READY, game batches, study backlog, movement study, recommendations and ideas updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the build AW2 (screen-only, no review gate; six open decisions all have defaults); movement invitations stay reviewer-gated.
+
+## 2026-10-22 — Rain Garden levels 1–3 definition (weather-water slice 1, docs only)
+
+- [PR #790](https://github.com/rjdunlap/neo/pull/790), `claude/define-rain-garden`: defined Rain Garden levels 1–3 ([definition](../definitions/rain-garden.md)); READY, study backlog, weather-water study, recommendations, tracker, ideas and waiting-on-developer updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`; both passed.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the developer's registration/bands/land call, a science reader for the explanation lines (recommended), all device checks.
