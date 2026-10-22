@@ -131,7 +131,7 @@ These packets are recommendations, not the ready-build queue. Each definition ca
 
 | Slice | One-session deliverable | Gate / verification |
 | --- | --- | --- |
-| B1 · define first | Freeze Sense Detective 1–2 toy table, view/sound depictions, one complete round each, pure evaluator, mistakes/support/adaptation, speech/how-to/demo and 100-unit layouts | Docs-only links/diff. Resolve identity, accounting, K/S window and land fit before implementation; no clinical content dependency |
+| B1 · define first · **claimed 2026-10-22 by branch `claude/define-sense-detective` (docs-only definition)** | Freeze Sense Detective 1–2 toy table, view/sound depictions, one complete round each, pure evaluator, mistakes/support/adaptation, speech/how-to/demo and 100-unit layouts | Docs-only links/diff. Resolve identity, accounting, K/S window and land fit before implementation; no clinical content dependency |
 | B2 · build first round | Implement the frozen investigation/answer loop and levels 1–2 only | After B1 decisions; typecheck/units, one filtered first/top/wrong/hint play plus portrait, ghost finger; build for shared registration/content changes. No unrelated suites |
 | B3 · define ambiguity | Freeze levels 3–5 with every consistent set, valid insufficient-evidence answer, accessible clue equivalence and useful hint/test rules | Docs only. This adds a new set-selection interaction; do not pretend it is content-only |
 | B4 · build ambiguity | Implement the bounded multi-select/record/uncertainty cases from B3 | New-interaction tier filtered to these cases, including demonstrated action; preserve existing IDs |
