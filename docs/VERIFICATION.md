@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Photo Safari Tell me which/both definition (speaking-listening SL1–2, docs only)
+
+- Branch `claude/define-photo-safari-tell` (PR #813): definition packet `docs/definitions/photo-safari-tell-me-which.md` (levels 10–11, IDs fixed; 8–9 reserved); READY, batch plan, study backlog, Photo Safari dive and speaking-listening study updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Open: no typecheck, unit tests, build or browser run; build not started.
+
 ## 2026-10-22 — Speaking-and-listening study (subject research, docs only)
 
 - [PR #810](https://github.com/rjdunlap/neo/pull/810), `claude/loving-gates-tzccpn`: [study](deep-dives/subjects/speaking-listening.md) (Photo Safari *Tell me which* and *Tell me both* recommended first); tracker, packet, roadmap table, backlog, READY (the definition line replaces the research line, and `vocabulary-word-parts` moves up to keep a research place), IDEAS and the Photo Safari dive's ladder updated.
@@ -98,13 +104,6 @@
 - [PR #794](https://github.com/rjdunlap/neo/pull/794), `claude/define-meadow-pens`: defined Meadow Pens levels 1–3 ([definition](definitions/meadow-pens.md)); READY (build queued), batch plan, study backlog, study, recommendations, tracker, ideas and waiting-on-developer updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the level-2 card-table review (merge gate), device speech of the counts, all person checks.
-
-## 2026-10-22 — Area, volume and space study (subject research, docs only)
-
-- [PR #793](https://github.com/rjdunlap/neo/pull/793), `claude/subject-area-volume-space`: [study](deep-dives/subjects/area-volume-space.md) (Meadow Pens 1–3 recommended first); tracker, packet, roadmap table, backlog, READY (Next ten refilled), IDEAS and the Bug Builder and Tangram Town hand-off notes updated.
-- Ran `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
-- Open: device speech for "perimeter"; a mathematics educator's read of the level-2, 4 and 5 distractors and the M rungs; no reference game was played.
 
 ## Coverage summary
 

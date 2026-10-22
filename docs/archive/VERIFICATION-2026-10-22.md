@@ -137,3 +137,10 @@
 - [PR #792](https://github.com/rjdunlap/neo/pull/792), `claude/define-recipe-workshop`: defined Recipe Workshop levels 1–3 ([definition](../definitions/recipe-workshop.md)); READY (build C2–C4 queued as one batch), batch plan, study backlog, cooking study, recommendations, tracker, ideas and waiting-on-developer updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the build C2–C4 (no review gate; five open decisions all have defaults), all device and person checks (the definition's check tier lists them).
+
+## 2026-10-22 — Area, volume and space study (subject research, docs only)
+
+- [PR #793](https://github.com/rjdunlap/neo/pull/793), `claude/subject-area-volume-space`: [study](../deep-dives/subjects/area-volume-space.md) (Meadow Pens 1–3 recommended first); tracker, packet, roadmap table, backlog, READY (Next ten refilled), IDEAS and the Bug Builder and Tangram Town hand-off notes updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
+- Open: device speech for "perimeter"; a mathematics educator's read of the level-2, 4 and 5 distractors and the M rungs; no reference game was played.
