@@ -12,7 +12,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **Study `chemistry`: define Bond Beads** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#chemistry-recommendations).
 - **Study `matter`: define Melt and Freeze** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#matter-recommendations).
 - **Study `programming`: define Cue Studio** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#programming-recommendations).
-- **Research subject `writing-composition`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
+- **Study `writing-composition`: define Story Weaver 1–3 (WC1)** (docs only; status `define`): one bounded packet from the completed study; a new game, so its build waits on the developer's identity and land decision. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#writing-and-composition-recommendations).
+- **Research subject `keyboarding-editing`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies (including `writing-composition`, which leaves typing, delete and cursor movement to it), and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 
 ## Queued
 
@@ -97,7 +98,6 @@ Each line is selected for routine dispatch; claim one packet, then enqueue its u
 
 ### Subject research (docs only)
 
-- **Research subject `keyboarding-editing`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `spelling-sentences`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `poetry-wordplay`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `oceans`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).

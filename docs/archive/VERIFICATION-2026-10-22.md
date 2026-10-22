@@ -201,3 +201,11 @@
 - `BROWSER_SUITE=batch BATCH_ONLY=helpers HELPERS_LEVELS=2,5,9` passed: 2 and 5 in the orchard (5 with extras, the short whistle and one hint, `[2,1]`), 9 on the beach in portrait (early whistle and past-full helper uncounted, `[0,0]`). `BROWSER_SUITE=fingerdemo FINGER_ONLY=little-helpers FINGER_LEVELS=2,9` clean in 22.0 / 29.9 s.
 - Orchard, woods and beach mid-round and a level 9 portrait reviewed by eye (`test-results/lh-*.png`, not committed).
 - Not run: build (no shared assets), level 6's own suite (only its art changed), world/offline. Open: whether a toddler reads the wiggling whistle and blinking rings (DEVICE-CHECKS).
+
+## 2026-10-22 — Sea Lift levels 1–3 (integers IN1, new game)
+
+- Branch `claude/sea-lift-1-3`: new game `sea-lift` (school 1–3, Bubble Beach, region `counting-cove`). Shared changes: `beachPlan` tries three rocks, then one, then none (a crowded shore keeps its rock pools; layouts with room draw as before), and the workbox precache bound rose from 3 to 4 MiB (the routes bundle reached 3.15 MB; the build failed without it).
+- Proof on `d97d07e4` (base `origin/main` `85b9291b`), dev `http://localhost:5201`, preview `http://localhost:5488`: typecheck clean; `npm test` 2489 passed (209 files), including 14 Sea Lift rule tests (500-seed rules per level, authored rounds, miss/hint/supported-finish accounting, `shaftLayout` at four views with nearest-landing resolution, null when too short); `npm run build` passed.
+- `BROWSER_SUITE=sealift`: level 1 dock tap free, wrong stop twice (one miss, lift back at the water) and Show a hint twice (one hint), played out (1 miss, 1 hint, a sticker); level 3 empty landing free, −2 before −5 (one miss, nobody boards), played out (1 miss, 0 hints); level 2 portrait mid-ride and level 1 landscape with the glow reviewed by eye (`test-results/browser/`, not committed); no page errors. `fingerdemo` with `FINGER_ONLY=sea-lift FINGER_LEVELS=1,3` clean in 8.8 / 8.4 s.
+- `npm run test:offline` against a production preview whose build name matched `dist`: passed, 95 cached assets.
+- Not run: `world`, `couch`, `picnic` (unaffected). Open (DEVICE-CHECKS): iPad speech of "below the water", whether a six-year-old reads the zig-zag landings as one line, whether the splash at zero is noticed, whether a grown-up takes the caller part.
