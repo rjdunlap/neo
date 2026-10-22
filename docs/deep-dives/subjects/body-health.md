@@ -84,6 +84,8 @@ Effort: S = contained existing-game mode; M = one new interaction/model scene; L
 
 ## First game's proposed ladder: Sense Detective
 
+Levels 1–2 are [defined](../../definitions/sense-detective.md) (2026-10-22); levels 3–5 await B3.
+
 **Small complete experience:** a toy parcel belongs at the puppet museum. Choose an investigation, inspect its outcome, select every possible toy and press the large **Check** card. One task at the entry, two tasks at deeper levels, one shell-owned sticker at completion, including with help. No real people or health states are classified. Controls must remain at least 100 logical units in landscape and portrait; limit to three candidate cards and two investigation buttons on the first definitions. Tap acknowledgment squishes the button immediately; result playback can repeat without submitting.
 
 **Concrete finite pool:** bell, rattle, drum; view observations are `round` for bell/drum and `handled` for rattle; sound observations are `ring`, `shake`, `beat`. Each toy's original drawing visibly matches its view description. This is an authored toy identification model, not a universal acoustic rule about real objects. Sound cards include replay plus an equivalent pictured event (bell swinging, pellets moving, drum struck); the player can use it without hearing. No smell/taste/texture emulation. Define additional pools only after the first pool works.
@@ -131,8 +133,8 @@ These packets are recommendations, not the ready-build queue. Each definition ca
 
 | Slice | One-session deliverable | Gate / verification |
 | --- | --- | --- |
-| B1 · define first | Freeze Sense Detective 1–2 toy table, view/sound depictions, one complete round each, pure evaluator, mistakes/support/adaptation, speech/how-to/demo and 100-unit layouts | Docs-only links/diff. Resolve identity, accounting, K/S window and land fit before implementation; no clinical content dependency |
-| B2 · build first round | Implement the frozen investigation/answer loop and levels 1–2 only | After B1 decisions; typecheck/units, one filtered first/top/wrong/hint play plus portrait, ghost finger; build for shared registration/content changes. No unrelated suites |
+| B1 · define first · **defined 2026-10-22, [Sense Detective 1–2](../../definitions/sense-detective.md)** | Freeze Sense Detective 1–2 toy table, view/sound depictions, one complete round each, pure evaluator, mistakes/support/adaptation, speech/how-to/demo and 100-unit layouts | Docs-only links/diff. Resolve identity, accounting, K/S window and land fit before implementation; no clinical content dependency |
+| B2 · build first round · **ready (queued in READY)** | Implement the frozen investigation/answer loop and levels 1–2 only | After B1 decisions; typecheck/units, one filtered first/top/wrong/hint play plus portrait, ghost finger; build for shared registration/content changes. No unrelated suites |
 | B3 · define ambiguity | Freeze levels 3–5 with every consistent set, valid insufficient-evidence answer, accessible clue equivalence and useful hint/test rules | Docs only. This adds a new set-selection interaction; do not pretend it is content-only |
 | B4 · build ambiguity | Implement the bounded multi-select/record/uncertainty cases from B3 | New-interaction tier filtered to these cases, including demonstrated action; preserve existing IDs |
 | B5 · define systems | One reviewed Body Connections case with explicit model boundaries and partial-order alternatives; compare Story Steps before claiming identity | Docs only; named model review, standalone interaction and destination/ranges before build. Digestion/interacting systems each a later packet |
