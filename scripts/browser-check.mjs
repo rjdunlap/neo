@@ -5896,23 +5896,24 @@ async function batch() {
   }
 
   // Peg Garden: tap to drop; aim by dragging. Shots are chosen by simulating the real physics.
-  for (let level = 1; level <= 5 && (!only || only === 'pegs'); level++) {
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 5) && (!only || only === 'pegs'); level++) {
     await launch('peg-garden', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     await page.evaluate(async () => {
       const g = neo.scene.game;
       const { simulate } = await import('/src/engine/ball.ts');
-      const { aimVelocity, AIM_LIMIT, BOARD } = await import('/src/games/peg-garden/logic.ts');
+      const { aimAt, aimVelocity, AIM_LIMIT, BOARD } = await import('/src/games/peg-garden/logic.ts');
       const board = g.board;
       const screen = (x, y) => board.toGlobal({ x, y });
       const done = () => kit.until(() => !g.ball, 15000);
       const drop = async (x) => { await done(); const p = screen(x, 30); kit.tap(p.x, p.y); await kit.until(() => g.ball, 2000); await done(); };
       // Aim: find an angle whose simulated path touches what we want, then drag the launcher there.
-      const shoot = async (good) => {
+      const shoot = async (good, want) => {
         await done();
-        let best = 0;
-        for (let a = -AIM_LIMIT; a <= AIM_LIMIT; a += 0.01) {
+        // A shot meant to hit aims as the ghost finger does, at an angle whose neighbours hit too (aimed pearls step by frame).
+        let best = want === undefined ? 0 : aimAt(g.world, want, 0) ?? 0;
+        for (let a = -AIM_LIMIT; want === undefined && a <= AIM_LIMIT; a += 0.01) {
           const { hits } = simulate({ x: BOARD.w / 2, y: 40, ...aimVelocity(a), r: BOARD.ball }, g.world, BOARD.h, 6, 1 / 30);
           if (good(hits)) { best = a; break; }
         }
@@ -5964,7 +5965,14 @@ async function batch() {
       const isTarget = (i) => g.buds[i].spot.kind === g.target;
       for (let k = 0; k < 2; k++) await shoot((hits) => !hits.some(isTarget));
       if (g.misses < 2 || g.hints !== 1) throw new Error(`Peg hint: ${g.misses} ${g.hints}`);
-      for (let guard = 0; guard < 10 && !g.finished; guard++) await shoot((hits) => hits.some(isTarget));
+      for (let guard = 0; guard < 10 && !g.finished; guard++) {
+        // Only the asked number opens; the others the pearl touches wait their turn.
+        const others = g.buds.filter((b) => typeof b.spot.kind === 'number' && !g.targets.slice(0, g.goal + 1).includes(b.spot.kind));
+        await shoot(null, g.buds.findIndex((b) => b.spot.kind === g.target));
+        if (!g.finished && others.some((b) => b.bloomed)) throw new Error(`Peg: a number not yet asked for opened: ${others.filter((b) => b.bloomed).map((b) => b.spot.kind)} targets ${g.targets} goal ${g.goal} finished ${g.finished}`);
+      }
+      // The last shot's path stays as faint dots until the next one.
+      if (!g.path.length) throw new Error('Peg: no faint trail after a shot');
     });
     if (!await page.evaluate(() => neo.scene.game.finished)) await page.waitForTimeout(2000);
     await screenshot(`peg-garden-${level}`);

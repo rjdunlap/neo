@@ -11,8 +11,9 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, Spot, TouchIntent } from '../types';
 import { idle, type CouchControls } from '../../engine/controller';
-import { AIM_LIMIT, aimAt, aimVelocity, BOARD, driftOf, dropAt, guided, ledgeX, makeBoard, planFor, targets, type PegPlan, type PegSpot } from './logic';
+import { AIM_LIMIT, aimAt, aimVelocity, blooms, BOARD, driftOf, dropAt, guided, ledgeX, makeBoard, pickTheme, planFor, targets, TRAY, traySlot, type Backdrop, type BoardShape, type PegPlan, type PegSpot } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { ease } from '../../engine/tween';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
@@ -24,10 +25,20 @@ const LEVELS: BandLevels = {
 const PETALS: ColorName[] = ['pink', 'purple', 'blue', 'yellow', 'teal', 'red'];
 const SPECIAL: ColorName = 'orange';
 
+/** Each backdrop's sea (top and bottom of its gradient), its sand and what grows from the sand. */
+const SEAS: Record<Backdrop, { sea: [number, number]; sand: number }> = {
+  shallows: { sea: [0x8fd3f7, 0x3f8fd0], sand: 0xf6dfb0 },
+  reef: { sea: [0xa8e6e2, 0x3a9fb4], sand: 0xfbe6cc },
+  kelp: { sea: [0x9adbbf, 0x2f7a72], sand: 0xe8d6a6 },
+};
+
 /** A sea-garden bud that opens into a flower when the pearl touches it. */
 class Bud extends Container {
   readonly art = new Graphics();
   bloomed = false;
+  /** How hard the bud is wiggling: a numbered bud that was not asked for shakes instead of opening. */
+  private wiggle = 0;
+  private age = 0;
   private readonly color: ColorName;
 
   constructor(
@@ -52,6 +63,10 @@ class Bud extends Container {
     this.draw();
     this.scale.set(1.35);
     return true;
+  }
+
+  shake() {
+    this.wiggle = 1;
   }
 
   draw() {
@@ -79,6 +94,9 @@ class Bud extends Container {
     const k = Math.min(1, dt * 8);
     this.scale.x += (1 - this.scale.x) * k;
     this.scale.y += (1 - this.scale.y) * k;
+    this.age += dt;
+    this.wiggle = Math.max(0, this.wiggle - dt * 1.6);
+    this.rotation = Math.sin(this.age * 28) * 0.3 * this.wiggle;
   }
 }
 
@@ -101,11 +119,20 @@ class PegGarden implements Game {
   hints = 0;
   hinting = false;
   finished = false;
+  /** The round's look: a board shape and a backdrop from a seeded pool. */
+  readonly theme: { shape: BoardShape; backdrop: Backdrop };
 
-  private readonly sea = new Sprite(gradientTexture(0x8fd3f7, 0x3f8fd0));
+  private readonly sea: Sprite;
   private readonly board = new Container();
   private readonly frame = new Graphics();
+  /** The last aimed shot's path, left as faint dots until the next shot starts. */
+  private readonly trail = new Graphics();
+  private path: { x: number; y: number }[] = [];
   private readonly guide = new Graphics();
+  /** The shell tray along the sand, and the finished pearls in it. */
+  private readonly tray = new Graphics();
+  private readonly trayPearls = new Container();
+  private collected = 0;
   private readonly launcher = new Graphics();
   private readonly pearl = new Graphics();
   private readonly arrow = new Graphics();
@@ -134,13 +161,19 @@ class PegGarden implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
-    const spots = makeBoard(this.plan, ctx.rng);
+    // Couch play keeps the first look, so a course's boards stay as they were.
+    this.theme = pickTheme(ctx.couch ? null : ctx.rng);
+    const look = SEAS[this.theme.backdrop];
+    this.sea = new Sprite(gradientTexture(look.sea[0], look.sea[1]));
+    const spots = makeBoard(this.plan, ctx.rng, this.theme.shape);
     this.targets = targets(this.plan, ctx.rng);
     this.buds = spots.map((s) => new Bud(s, ctx.rng));
     this.world = { pegs: spots.map((s) => ({ x: s.x, y: s.y, r: BOARD.peg })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 };
     this.pearl.circle(0, 0, BOARD.ball).fill(0xfffaf0).stroke({ width: 3, color: 0xd9cbb0 }).circle(-5, -5, 5).fill({ color: 0xffffff, alpha: 0.9 });
     this.pearl.visible = false;
-    this.board.addChild(this.frame, this.guide, ...this.buds, this.arrow, this.launcher, this.pearl, this.touch);
+    this.drawTray();
+    for (const g of [this.trail, this.tray, this.trayPearls]) g.eventMode = 'none';
+    this.board.addChild(this.frame, this.trail, this.guide, ...this.buds, this.tray, this.trayPearls, this.arrow, this.launcher, this.pearl, this.touch);
     ctx.stage.addChild(this.sea, this.board);
     for (const b of this.buds) ctx.track(b);
 
@@ -187,9 +220,7 @@ class PegGarden implements Game {
     if (!this.ctx.couch) this.touch.hitArea = new Rectangle(-this.board.x / s, -this.board.y / s, v.w / s, v.h / s);
     const f = this.frame.clear();
     f.roundRect(-14, -14, BOARD.w + 28, BOARD.h + 28, 30).fill({ color: 0xffffff, alpha: 0.18 }).stroke({ width: 8, color: 0xffffff, alpha: 0.6 });
-    // Sand and seaweed along the bottom, where pearls roll away.
-    f.rect(0, BOARD.h - 30, BOARD.w, 30).fill({ color: 0xf6dfb0, alpha: 0.9 });
-    for (let x = 30; x < BOARD.w; x += 90) f.moveTo(x, BOARD.h - 30).quadraticCurveTo(x - 20, BOARD.h - 80, x + 4, BOARD.h - 110).stroke({ width: 8, color: 0x4a9a35, cap: 'round', alpha: 0.7 });
+    this.drawSeabed(f);
     this.drawLauncher();
   }
 
@@ -201,6 +232,9 @@ class PegGarden implements Game {
     this.ballAge += dt;
     if (this.aimed) {
       for (const i of stepBall(b, this.world, dt)) this.touchBud(i);
+      // Where the pearl actually went, for the faint trail it leaves.
+      const last = this.path.at(-1);
+      if (!last || Math.hypot(b.x - last.x, b.y - last.y) >= 18) this.path.push({ x: b.x, y: b.y });
     } else {
       // A dropped pearl takes fixed steps, as the rules' simulation does, so it goes exactly where the hint, the stall guard
       // and the ghost finger expect whatever the frame rate; a long frame slows it rather than changing its path.
@@ -213,6 +247,7 @@ class PegGarden implements Game {
 
   destroy() {
     this.touch.removeAllListeners();
+    this.sea.texture.destroy(true);
     window.removeEventListener('pointercancel', this.cancel, { capture: true });
   }
 
@@ -353,6 +388,8 @@ class PegGarden implements Game {
 
   fire(b: Ball) {
     this.ball = b;
+    this.path = [];
+    this.trail.clear();
     this.ballAge = 0;
     this.stepLeft = 0;
     this.lit = [];
@@ -366,7 +403,10 @@ class PegGarden implements Game {
   private touchBud(i: number) {
     const bud = this.buds[i];
     if (!this.lit.includes(i)) this.lit.push(i);
-    const fresh = bud.bloom();
+    // A numbered bud that was not asked for only chimes and wiggles, so open flowers show what is done.
+    const opens = blooms(bud.spot.kind, this.plan.mode, this.target);
+    if (!opens && !bud.bloomed) bud.shake();
+    const fresh = opens && bud.bloom();
     if (fresh || this.clock - this.lastChime > 0.08) {
       this.lastChime = this.clock;
       // Higher on the board, higher the note.
@@ -384,9 +424,12 @@ class PegGarden implements Game {
   /** The pearl rolled away: see what this shot did. */
   private async shotOver() {
     if (!this.ball) return;
+    const exit = this.ball.x;
     this.ball = null;
     this.pearl.visible = false;
     this.shots++;
+    this.collect(exit);
+    if (this.aimed) this.drawTrail();
     const lit = this.lit.map((i) => this.buds[i]);
     switch (this.plan.mode) {
       case 'drop': {
@@ -443,6 +486,71 @@ class PegGarden implements Game {
 
   // Drawing ------------------------------------------------------------------------------
 
+  /** The sand along the bottom, where pearls roll away, and what grows there: seaweed, coral or kelp. */
+  private drawSeabed(f: Graphics) {
+    const { backdrop } = this.theme;
+    const sandTop = BOARD.h - 30;
+    f.rect(0, sandTop, BOARD.w, 30).fill({ color: SEAS[backdrop].sand, alpha: 0.9 });
+    if (backdrop === 'shallows') {
+      for (let x = 30; x < BOARD.w; x += 90) f.moveTo(x, sandTop).quadraticCurveTo(x - 20, BOARD.h - 80, x + 4, BOARD.h - 110).stroke({ width: 8, color: 0x4a9a35, cap: 'round', alpha: 0.7 });
+    } else if (backdrop === 'reef') {
+      // Branching coral in pink and purple (never orange, the colour level's flowers).
+      [40, 150, 530, 640].forEach((x, i) => {
+        const color = i % 2 ? swatch.purple.fill : swatch.pink.fill;
+        const line = { width: 10, color, cap: 'round' as const, alpha: 0.8 };
+        f.moveTo(x, sandTop).lineTo(x, sandTop - 55).stroke(line);
+        f.moveTo(x, sandTop - 25).lineTo(x - 22, sandTop - 50).stroke(line);
+        f.moveTo(x, sandTop - 35).lineTo(x + 20, sandTop - 62).stroke(line);
+        f.circle(x, sandTop - 58, 7).circle(x - 24, sandTop - 53, 6).circle(x + 22, sandTop - 65, 6).fill({ color, alpha: 0.9 });
+      });
+    } else {
+      // Tall kelp ribbons with leaves, up the sides of the board.
+      for (const x of [22, 70, BOARD.w - 70, BOARD.w - 22]) {
+        f.moveTo(x, sandTop).bezierCurveTo(x + 18, sandTop - 120, x - 18, sandTop - 220, x + 6, sandTop - 320).stroke({ width: 9, color: 0x5e8f2e, cap: 'round', alpha: 0.75 });
+        for (let k = 1; k <= 4; k++) f.ellipse(x + (k % 2 ? 12 : -12), sandTop - k * 70, 14, 7).fill({ color: 0x7fb23a, alpha: 0.75 });
+      }
+    }
+  }
+
+  /** A scalloped shell tray in the sand: finished pearls collect in it. */
+  private drawTray() {
+    const w = TRAY.slots * TRAY.gap + 16;
+    const x = BOARD.w / 2 - w / 2;
+    const g = this.tray.clear();
+    g.roundRect(x, TRAY.y - 14, w, 26, 13).fill({ color: swatch.pink.light, alpha: 0.95 }).stroke({ width: 4, color: swatch.pink.line });
+    for (let i = 1; i < TRAY.slots; i++) {
+      const sx = x + 8 + i * TRAY.gap;
+      g.moveTo(sx, TRAY.y - 10).lineTo(sx, TRAY.y + 8).stroke({ width: 2, color: swatch.pink.line, alpha: 0.4 });
+    }
+  }
+
+  /** A pearl that has rolled away rolls into the tray. */
+  private collect(x: number) {
+    if (this.collected >= TRAY.slots) {
+      this.collected++;
+      return;
+    }
+    const slot = traySlot(this.collected++);
+    const p = new Graphics().circle(0, 0, 10).fill(0xfffaf0).stroke({ width: 2, color: 0xd9cbb0 }).circle(-3, -3, 3).fill({ color: 0xffffff, alpha: 0.9 });
+    p.position.set(Math.max(10, Math.min(BOARD.w - 10, x)), TRAY.y - 30);
+    this.trayPearls.addChild(p);
+    void this.ctx.tw.to(p, { x: slot.x, y: slot.y }, { duration: 0.45, ease: ease.outBack });
+  }
+
+  /** At the finish the tray pours its pearls back up to the top. */
+  private pour() {
+    this.trayPearls.children.forEach((p, i) => {
+      void this.ctx.tw.to(p, { x: BOARD.w / 2, y: 40, alpha: 0 }, { duration: 0.5, delay: i * 0.06, ease: ease.inQuad });
+    });
+    if (this.trayPearls.children.length) sfx.pop(5);
+  }
+
+  /** The last aimed shot's path as faint dots (feedback for every shot, not a hint). */
+  private drawTrail() {
+    const g = this.trail.clear();
+    for (const p of this.path) g.circle(p.x, p.y, 4).fill({ color: 0xffffff, alpha: 0.35 });
+  }
+
   private drawLauncher() {
     const g = this.launcher.clear();
     if (!this.aimed) {
@@ -490,6 +598,7 @@ class PegGarden implements Game {
     for (const b of this.buds) b.bloom();
     const c = this.ctx.stage.toLocal(this.board.toGlobal({ x: BOARD.w / 2, y: BOARD.h / 2 }));
     this.ctx.particles.burst(c.x, c.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 30, speed: [150, 400], gravity: 0, life: [0.8, 1.3] });
+    this.pour();
     await this.ctx.say('peg.done');
     await this.ctx.tw.wait(0.8);
     this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.shots });
