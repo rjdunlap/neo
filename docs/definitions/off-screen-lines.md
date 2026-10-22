@@ -57,7 +57,7 @@ Scoop Shop and Swing Pals, already in the removal table, keep today's sentence a
 
 ## Rule tests (`src/content/offscreen.test.ts`)
 
-All pure, over `GAMES` and `GROWNUP_GAMES` and every band each game lists, through `offScreenFor` (so `{name}` is tested after substitution, with a sample name):
+All pure, over `GAMES` (grown-up games included) and every band each game lists, through `offScreenFor` (so `{name}` is tested after substitution, with a sample name):
 
 - **Under 3.** At `lap` and `toddler`, no resolved line contains (case-insensitive, word-bounded, plural-aware) *marble, coin, button, bean, bead, pebble, rubber band, battery, balloon, small ball, dry bean, pom-pom, seed, string*. The study's list plus this re-audit's pom-pom, seed and string; "dry" alone is not listed, since Quick Tricks' "keep a toy dry" is fine.
 - **Every band.** No resolved line contains `{` or `}`, a number of minutes, "every day", "each morning", "must" or "buy".
