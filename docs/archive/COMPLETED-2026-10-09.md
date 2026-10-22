@@ -7,7 +7,7 @@
 
 ### Feelings Faces Ask first (2026-10-21)
 
-[PR #769](https://github.com/rjdunlap/neo/pull/769), dive slice 6 / level 12: ask Bunny, Cat, Bear and Dog before offer cards appear. All four wishes appear once, including quiet space; matching request icons, replayable speech and a two-step ghost finger. Wrong offers replay the wish with one miss, glow after two; calm is a valid ending. School order `[11, 12, 13]` preserves saved IDs. Fictional lines ship on decision 3’s standing default (no named reviewer); angry/scared and journal work stay excluded. [Verification](../VERIFICATION.md#2026-10-21--feelings-faces-ask-first-slice-6); iPad speech and child understanding remain open.
+[PR #769](https://github.com/rjdunlap/neo/pull/769), dive slice 6 / level 12: ask Bunny, Cat, Bear and Dog before offer cards appear. All four wishes appear once, including quiet space; matching request icons, replayable speech and a two-step ghost finger. Wrong offers replay the wish with one miss, glow after two; calm is a valid ending. School order `[11, 12, 13]` preserves saved IDs. Fictional lines ship on decision 3’s standing default (no named reviewer); angry/scared and journal work stay excluded. [Verification](VERIFICATION-2026-10-21.md#2026-10-21--feelings-faces-ask-first-slice-6); iPad speech and child understanding remain open.
 
 
 ### Feelings Faces helping and explaining happenings (2026-10-21)
@@ -1604,3 +1604,7 @@ Branch `claude/ribbon-workshop` (code `291ed66b` on base `02671f92`), batch `rib
 ## Sound Garden One big friend (2026-10-22)
 
 [PR #784](https://github.com/rjdunlap/neo/pull/784), batch 2 / dive slice 5: appended lap entry 8 before 1, large singer with broad palm-rejecting touch field, immediate call, four-tap wave/walking handoffs, twelve-song creative completion, voice/how-to and ghost finger. Existing levels and developer-review #733 preserved. Three friends per twelve-tap round, from a seeded cast varying across replays; this resolves the proposal's incompatible “all five”/four-tap/twelve-tap wording. Entry/birthday/order tests retain stable IDs. Device and child checks remain open.
+
+## Sound Garden pitch drawing and copying (2026-10-22)
+
+Batch 3 / dive slices 6–7, [#788](https://github.com/rjdunlap/neo/pull/788): level 9 Sing Higher then level 10 Copy the shape. Six snapped pentatonic pitches, audition on movement and one committed note per release; twelve creative notes finish, friends joining on the step below. Copying starts with two notes, then three, judging only directions; alternative pitches count, replay is free, a blocked edge restarts freely and two misses light viable continuations. Preschool order 2,3,4,9; pre-K 3,4,5,6,7,9,10. Saved IDs, lap and toddler stay intact. Gated level-1 retrofit and developer decisions remain open; #733 untouched. See the current verification entry for combined proof and device gaps.

@@ -121,7 +121,7 @@ Speed rounds, a Simon sequence that grows until a mistake, scored timing, a micr
 
 ## Build slices, in order
 
-Batch 1, slices 3–4, built 2026-10-22 ([#779](https://github.com/rjdunlap/neo/pull/779)); [closeout](../archive/COMPLETED-2026-10-09.md#sound-garden-listening-direction-and-visible-echoes-2026-10-22). One worker/claim/PR covered level 7 and level 5. Later levels and decisions remain proposed.
+Batch 1, slices 3–4, built 2026-10-22 ([#779](https://github.com/rjdunlap/neo/pull/779)); [closeout](../archive/COMPLETED-2026-10-09.md#sound-garden-listening-direction-and-visible-echoes-2026-10-22). One worker/claim/PR covered level 7 and level 5. Levels 9–10 are also built in batch 3 (#788); decision-dependent levels remain proposed.
 
 **Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`sound-garden` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
@@ -130,8 +130,9 @@ Batch 1, slices 3–4, built 2026-10-22 ([#779](https://github.com/rjdunlap/neo/
 3. **Level 7 Up, down or the same** — built 2026-10-22 ([#779](https://github.com/rjdunlap/neo/pull/779)) (new level on the existing tap interaction): three tiles, the flat-path picture and voice, a how-to step. Checks: typecheck, rule tests, one browser play at 7 and `fingerdemo` at 7, one portrait screenshot (three tiles).
 4. **Echo you can see** — built 2026-10-22 ([#779](https://github.com/rjdunlap/neo/pull/779)) (level 5): knock dots from the start, 12 rhythms, the sleepy tree's answer, a per-tap hint. Checks: typecheck, rule tests (dot spacing follows gaps, pool lengths), one filtered play at 5 and `fingerdemo` at 5.
 5. **Level 8 One big friend** — built 2026-10-22 ([#784](https://github.com/rjdunlap/neo/pull/784)); `entryLevels: [8]`, lap order 8,1, large singer, broad touch field and handoffs. Twelve taps means three four-tap turns per round; the seeded five-of-six cast varies across rounds (the proposal's “all five” is across replays, not five turns inside twelve taps). [Closeout](../archive/COMPLETED-2026-10-09.md#sound-garden-one-big-friend-2026-10-22).
-6. **Level 9 Sing Higher** (new interaction): the vertical drag, snapped steps, creative finish, a drag bot, how-to and voice. Checks: the new-interaction tier (scripted play with first and last notes, a cancelled drag, one portrait screenshot, `fingerdemo`).
-7. **Level 10 Copy the shape** (new level on slice 6's interaction): the direction judge, two-then-three-note shapes, the stem hint. Checks: typecheck, rule tests, one play at 10, `fingerdemo` at 10.
+6. **Level 9 Sing Higher** — built 2026-10-22 ([#788](https://github.com/rjdunlap/neo/pull/788)), batch 3 / slice 6: six snapped pitches, audition while dragging, release to make each of twelve creative notes, lower companion notes, cancellation and drag bot.
+7. **Level 10 Copy the shape** — built in the same batch/PR, slice 7: two two-note shapes before four three-note shapes, direction-only alternatives, free replay, viable stem hints after two misses. [Closeout](../archive/COMPLETED-2026-10-09.md#sound-garden-pitch-drawing-and-copying-2026-10-22).
+
 
 Gated: level 1's every-touch retrofit (V2's person check); levels 11, 12 and 13 and the garden chorus (decisions above).
 
