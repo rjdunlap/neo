@@ -25,6 +25,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### feelings-faces 1: Helping and explaining happenings
 
+Built 2026-10-21, [PR #766](https://github.com/rjdunlap/neo/pull/766); [closeout](archive/COMPLETED-2026-10-09.md#feelings-faces-helping-and-explaining-happenings-2026-10-21). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`feelings-faces`, toddler 10 *Hug or pillow*** (new level on the help interaction): two helper cards for sad, sleepy or hungry; toddler `[2, 10, 3, 4]`. [Slice 3](deep-dives/feelings-faces.md#new-levels-on-top)
 - **`feelings-faces`, level 11 *Two friends, one happening*** (new interaction): one happening, two friends with two different faces, a question for each; pre-K top and the school entry. [Slice 4](deep-dives/feelings-faces.md#new-levels-on-top)
 - **`feelings-faces`, level 13 *What happened?*** (new level; after 11): a face and a leftover clue, three happening cards; school. [Slice 5](deep-dives/feelings-faces.md#new-levels-on-top)

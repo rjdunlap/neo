@@ -354,3 +354,10 @@
 - Passed typecheck; vitest garden-grow plus `src/content` (15 files, 139 tests).
 - Passed `BROWSER_SUITE=woods WOODS_ONLY=grow FROM_LEVEL=1` (levels 1-7, no page errors) at http://localhost:5921; `BROWSER_SUITE=fingerdemo FINGER_ONLY=garden-grow FINGER_LEVELS=1,7` clean in 11.0 s and 41.0 s. A portrait 768×1024 probe at level 2 showed buds on stems with leaves, dark wet soil, then open heads.
 - Not run: build (no shared files), device or child play. Open: whether a one-year-old notices the wet soil with sound off (existing person check stays open).
+
+## 2026-10-21 — Mail Carrier seeded street, the cart and a mirrored map (slice 2)
+
+- `claude/mail-carrier-street`, code `8b4d5383` on base `a1a63aeb`; `src/games/mail-carrier/` (`logic.ts`, `index.ts`, tests) and the woods suite: seeded roofs, chimneys and window boxes, one mailbox colour away from the doors, the duck on the street, the pet's cart, and a woods map mirrored half the time. No level ID, range, voice or how-to change.
+- Passed typecheck; `npx vitest run src/games/mail-carrier` (17 tests, including 300-seed checks of the mailbox colour, the seven-neighbour pool and the mirrored map's edges); `BROWSER_SUITE=batch BATCH_ONLY=mail` (levels 1-5, wrong taps, hint, scores, stickers) at http://localhost:5995.
+- Passed `BROWSER_SUITE=woods WOODS_ONLY=mailmap FROM_LEVEL=6 MAIL_MIRRORED=1` (levels 6-8 all mirrored, level 7 in portrait); `BROWSER_SUITE=fingerdemo FINGER_ONLY=mail-carrier FINGER_LEVELS=1,6` clean in 19.4 s and 14.2 s. Screenshots inspected: street levels 2 (mid-delivery) and 4, mirrored level 6 portrait and level 7 landscape.
+- Not run: full `npm test` and build (no shared, voice, how-to or asset files changed; CI runs both), the `woodland` story suite, the unmirrored woods orientation (`MAIL_MIRRORED=0`). Open on a device: [cart readability](../DEVICE-CHECKS.md#open-items) and whether a toddler confuses the mailbox colour with a door.
