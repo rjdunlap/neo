@@ -22,12 +22,24 @@ Seven animals the island already draws. Each page names its kind where a fact ho
 | Animal (page title) | Eats (sentence · picture) | Where (sentence · picture) | Baby (sentence · picture) |
 | --- | --- | --- | --- |
 | **Cow** | "Cows eat grass." · grass tuft | "Cows live in a grassy field." · field | "A baby cow is called a calf." · calf |
-| **Pig** | "Pigs eat plants, roots and little bugs." · leafy plant with its root | "Pigs roll in mud to keep cool." · muddy pen | "A baby pig is called a piglet." · piglet |
+| **Pig** | "Pigs eat plants and roots." · leafy plant with its root | "Pigs roll in mud to keep cool." · muddy pen | "A baby pig is called a piglet." · piglet |
 | **Duck** (mallard) | "Ducks eat seeds and water plants." · seeds | "Ducks live on a pond." · pond | "A baby duck is called a duckling." · duckling |
 | **Rabbit** (wild) | "Rabbits eat grass." · grass tuft | "Rabbits live in a burrow under the ground." · burrow (a small hole in a grassy bank) | "A baby rabbit is called a kit." · kit |
 | **Brown bear** | "Brown bears eat berries, grass and roots, and sometimes fish." · berries | "A brown bear sleeps in a den all winter." · den (a large cave) | "A baby bear is called a cub." · cub |
 | **Frog** (common frog) | "Frogs eat slugs, snails and bugs." · snail | "Frogs lay their eggs in a pond." · pond | "A baby frog is called a tadpole." · tadpole |
 | **African penguin** | "African penguins catch fish in the sea." · fish | "African penguins live on a rocky beach." · rocky beach | "A baby penguin is called a chick." · chick (brown and downy) |
+
+**Questions.** Each animal asks its *Where* question in words that fit its answer, so no question says "live" when the answer is about keeping cool or winter sleep. Every *Eats* question is "{Animal} is hungry. What does a {kind} eat?"
+
+| Animal | *Where* question (the pet says it, then "Let's look it up!") |
+| --- | --- |
+| Cow | "Cow wants some fresh air. Where do cows live?" |
+| Pig | "Pig is hot. Where can a pig keep cool?" |
+| Duck | "Duck wants a swim. Where do ducks live?" |
+| Rabbit | "Rabbit wants to go home. Where do rabbits live?" |
+| Brown bear | "Bear is sleepy. Where does a brown bear sleep in winter?" |
+| Frog | "Frog has eggs to lay. Where does a frog lay its eggs?" |
+| African penguin | "Penguin wants to rest. Where do African penguins live?" |
 
 **Shared pictures**, which the round rules keep apart: cow and rabbit share *grass*; duck and frog share *pond*.
 
@@ -45,7 +57,7 @@ Seven animals the island already draws. Each page names its kind where a fact ho
 
 **Choices the table makes:**
 
-- **The pig's line stops at bugs.** "Farm pigs eat lots of corn" is true of US farms but not of farms that feed wheat or barley.
+- **The pig's line is plants and roots only.** "Farm pigs eat lots of corn" is true of US farms but not of farms that feed wheat or barley, and the opened sources do not say bugs.
 - **The rabbit's baby is a *kit*.** *Kitten* is also correct, but a small child hears a cat.
 - **The frog's *Where* row says where it lays its eggs.** Common frogs spend most of the year on land, so the line does not say a frog lives in a pond.
 - **Narrow facts name their kind.** "Penguins live where it is cold" and "all bears sleep all winter" are both wrong as general claims, so the penguin page says *African penguin* and the bear page says *brown bear*.
@@ -69,7 +81,7 @@ Seven animals the island already draws. Each page names its kind where a fact ho
 
 - **Level 1 (authored):** the guide lies open on the cow's page. A cow stands in a field, a grass tuft before it, a calf at its side. Three label tags each have a line to their picture: *cow*, *grass*, *calf*. She touches *grass*: the tag lights and speaks "grass", and the grass tuft wiggles. Touching the calf lights the *calf* tag the same way. When all three have spoken, the pet reads the page's three sentences, the cow steps out of the book and munches, and the page turns by itself to the duck (*duck*, *seeds*, *duckling*), then the bear (*bear*, *berries*, *cub*).
 - **Level 2 (authored):** the guide is open on the duck's page. Three tabs show the cow, duck and bear. The cow walks in. "Cow is hungry. What does a cow eat? Let's look it up!" She taps the bear tab: the page turns and reads "Brown bears eat berries…" (free). She taps the cow tab: "Cows eat grass." The basket holds grass, seeds and berries. She drags the seeds to the cow; it shakes its head kindly and the pet says "Let's look in the guide" (one miss). She drags the grass: the cow munches. Then the bear, then the duck.
-- **Level 3 (authored):** tabs for the rabbit, pig and penguin; the guide opens on the pig's page. The scene shows three places: a burrow in a grassy bank, a muddy pen and a rocky beach. "Rabbit is sleepy. Where does a rabbit live? Let's look it up!" She taps the rabbit tab; its fact box has three rows, each with a picture icon (a bowl for *Eats*, a map pin for *Where*, an egg for *Baby*). She touches the *Where* row: "Rabbits live in a burrow under the ground." She leads the rabbit to the burrow and it pops inside. Next the penguin is hungry: the scene's places give way to a basket holding fish, a plant with its root and grass; she finds *Eats* on the penguin's page. Then the pig, with *Where*: it rolls in the mud.
+- **Level 3 (authored):** tabs for the rabbit, pig and penguin; the guide opens on the pig's page. The scene shows three places: a burrow in a grassy bank, a muddy pen and a rocky beach. "Rabbit wants to go home. Where do rabbits live? Let's look it up!" She taps the rabbit tab; its fact box has three rows, each with a picture icon (a bowl for *Eats*, a map pin for *Where*, an egg for *Baby*). She touches the *Where* row: "Rabbits live in a burrow under the ground." She leads the rabbit to the burrow and it pops inside. Next the penguin is hungry: the scene's places give way to a basket holding fish, a plant with its root and grass; she finds *Eats* on the penguin's page. Then the pig: "Pig is hot. Where can a pig keep cool?" She finds *Where* and taps the muddy pen; it rolls in the mud.
 
 ## The model (`logic.ts`)
 
@@ -108,15 +120,15 @@ Seven animals the island already draws. Each page names its kind where a fact ho
 Lines live under `lookitup.*`:
 
 - `intro` and `instruct.labels` ("Touch a word to hear it.").
-- `ask.eats` ("{animal} is hungry. What does a {kind} eat? Let's look it up!") and `ask.where` ("{animal} is sleepy. Where does a {kind} live? Let's look it up!").
+- `ask.eats` ("{animal} is hungry. What does a {kind} eat? Let's look it up!") and `ask.where` (the animal's own *Where* question from the table, followed by "Let's look it up!").
 - `miss.food` ("Those are {food}. {owner line} Let's look in the guide for the {kind}.") and `miss.place` (the same shape for a place).
 - `hint` ("Find the {kind}'s face on a tab."), `hint.row` ("Look in the box for the {row} picture.") and `done`.
 
-Page titles, label words and every fact sentence come from the fact table, so a reader sees every spoken fact in one place. *Where* is asked as "where does it live" for every animal but the frog, whose ask is "Where does a frog lay its eggs?" so that the question matches its row.
+Page titles, label words, every fact sentence **and every animal's two questions** come from the fact table, so a reader checks each question beside its answer in one place. `ask.eats` and `ask.where` above are only the fallback shape: each animal's row carries its own `ask`, with a reason that fits the answer (see the asks column).
 
 ## Rule tests (`logic.test.ts`)
 
-- **Table:** seven animals; every row has a non-empty `line`, a `picture` with art, and **two distinct source URLs**; no sentence contains *carrot*, *honey*, *bread*, *dirty*, *all bears* or *cold*. *Eats* pictures are shared only by cow and rabbit, and *Where* pictures only by duck and frog.
+- **Table:** seven animals; every row has a non-empty `line`, a `picture` with art, and **two distinct source URLs**; no sentence contains *carrot*, *honey*, *bread*, *dirty*, *all bears* or *cold*; every animal has an *Eats* and a *Where* question, and no *Where* question says *live* where its answer does not. *Eats* pictures are shared only by cow and rabbit, and *Where* pictures only by duck and frog.
 - **Level 1, over 500 seeds:** three distinct animals; the authored first round matches.
 - **Level 2, over 500 seeds:** three tab animals with distinct *Eats* pictures; the basket is exactly their foods; the opening page is not the first visitor's; `check` of each visitor's own food is `right` and every other basket food is `wrong`.
 - **Level 3, over 500 seeds:** three tab animals with distinct *Eats* and *Where* pictures; both rows are asked; every scene choice is a tab animal's picture for the asked row; exactly one choice is right for each ask.
@@ -138,7 +150,7 @@ Page titles, label words and every fact sentence come from the fact table, so a 
   - Hub icon: an open book with a cow's face on a tab.
   - Sticker (page `farm`): a seeded animal from the table with its baby.
 - **Art** (code-drawn in `src/games/look-it-up/art.ts`, colours from `src/art/palette.ts`):
-  - *Reuse:* cow, pig, duck, bear and bunny (`CRITTERS`); `frogArt`, `penguinArt` and `fishArt` (`src/art/animals.ts`); seeds from Animal Snack's `foodArt` (the build lifts it into `src/art/` only if it reuses it unchanged).
+  - *Reuse:* cow, pig, duck, bear and bunny (`CRITTERS`), with the adults tinted to read as the page's kind: the duck a mallard (brown body, green head), not the yellow cartoon duck that reads as a duckling, and the rabbit brown, not the white pet bunny; `frogArt`, `penguinArt` and `fishArt` (`src/art/animals.ts`); seeds from Animal Snack's `foodArt` (the build lifts it into `src/art/` only if it reuses it unchanged).
   - *New pictures:* grass tuft, leafy plant with its root, berries, snail; field, muddy pen, pond, burrow, den, rocky beach.
   - *New babies:* calf, piglet, duckling, kit and cub as small, rounder critters with the same spec; a tadpole; a brown, downy penguin chick.
   - *New book:* the guide, the page turn, tabs, row icons and label tags.
