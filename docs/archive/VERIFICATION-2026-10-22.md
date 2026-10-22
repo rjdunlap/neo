@@ -78,3 +78,9 @@
 - `BROWSER_SUITE=batch BATCH_ONLY=garden SOUND_LEVELS=5,7` passed: free replay, two misses/one hint, per-tap drum lights, fading dots, tree wake, all answers, completion/accounting/sticker; level 7 portrait inspected with three separate full-size choices. Pool export correction preserves the same twelve Sound Garden patterns and does not invalidate the touch evidence.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=sound-garden FINGER_LEVELS=5,7`: levels 5 and 7 clean in 34.2 s and 22.3 s, no page errors. Inspected level 5 layout and level 7 portrait. No page errors in touch play.
 - Not run: world, offline, stories, couch (no navigation/assets/persistence/story/control changes). iPad audio/speech, dot interpretation and child understanding remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md#sound-garden-listening-direction-and-visible-echoes-levels-7-and-5).
+
+## 2026-10-22 — Second Chance Shed 1–4 definition (nature-sustainability N1, docs only)
+
+- [PR #781](https://github.com/rjdunlap/neo/pull/781), `claude/define-second-chance-shed`: defined Second Chance Shed levels 1–4 ([definition](../definitions/second-chance-shed.md)); READY, game batches, study backlog, nature study, recommendations, waiting-on-developer and ideas updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (nothing built). Open: the build N2, which merges only after the developer's item-table review (definition decision 1).

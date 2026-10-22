@@ -112,7 +112,7 @@ None of these blocks E1's definition: decision 1's lean is the default, and E1 a
 
 ## Build slices, in order
 
-1. **E1 define: Lasso Loops 6 *About how many?*** (docs only; status `define`). A packet in `docs/definitions/lasso-loops-about-how-many.md` with the level table above, the rule tests, voice lines, how-to lines and the bot rule. Check tier: links and diff.
+1. **E1 define: Lasso Loops 6 *About how many?*** (defined 2026-10-22, [definition](../../definitions/lasso-loops-about-how-many.md), [PR #800](https://github.com/rjdunlap/neo/pull/800); the school window is 3–6 and the tens round makes 21–39 fireflies, as the definition fixes). A packet in `docs/definitions/lasso-loops-about-how-many.md` with the level table above, the rule tests, voice lines, how-to lines and the bot rule. Check tier: links and diff.
 2. **E1 build** (new-levels tier on an existing interaction plus the guess tap: typecheck, Lasso Loops rule tests, one browser play of level 6 with one wrong loop and one hint, `fingerdemo` at 6, one portrait screenshot of the guess sign).
 3. **E6 co-play tip and E7 Jar guess card** (docs plus plain HTML after an ordinary content review; card wording checked against the choking-hazard boundary).
 4. **E2 define: Lasso Loops 7** after a child has played 6 (decision 2).
