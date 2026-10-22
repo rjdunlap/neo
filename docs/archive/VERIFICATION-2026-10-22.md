@@ -185,3 +185,11 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only); nothing is built.
 - Open: the guess sign in portrait and a child's play of level 6 (decision 2 for level 7) remain unchecked.
+
+## 2026-10-22 — Scoop Shop younger entries (batch 1, slices 3–4)
+
+- [PR #802](https://github.com/rjdunlap/neo/pull/802): level 10 Any scoop (one scoop of anything per customer), level 11 Who wanted pink? (two customer pictures, prepared cone, retained waiting friend). Lap/toddler/preschool teaching order and entry landing preserve saved IDs; later levels and decisions excluded.
+- Proof on `ab60d82d` plus the implementation diff, `http://localhost:5211/classic/`: typecheck, 29 focused rule/band tests, full unit suite **2467 passed / 4 skipped** (`--maxWorkers=4`), build passed. Normal large-bundle and listener-count warnings only.
+- `BROWSER_SUITE=arcade ARCADE_ONLY=scoop ARCADE_LEVELS=10,11`: 10 passed; 11 initially exposed a driver offset error (screen offsets on a scaled customer). `test-results/scoop-probe.mjs` logged the old picture tap at local y −583, outside the −500 hit area; the correct transformed tap counted a miss. Fixed driver coordinates; filtered `ARCADE_LEVELS=11` passed body/picture taps, free cone exploration, wrong customer twice, glow, saved 2/1, retained waiting friend and one sticker. Level 10 saved 0/0 and one sticker. No page errors.
+- Portraits `test-results/browser/scoop-shop-10-portrait.png` and `scoop-shop-11-portrait.png` inspected: legible scoop/heart and separate customer pictures, clear pet and shell controls. `BROWSER_SUITE=fingerdemo FINGER_ONLY=scoop-shop FINGER_LEVELS=10,11`: clean in **13.9 / 13.3 seconds**, no misses, hints or page errors.
+- Links and diff check at closeout. World/offline/picnic/couch not run (unaffected); iPad touch/speech and child understanding remain open in DEVICE-CHECKS.
