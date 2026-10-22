@@ -438,6 +438,12 @@ Proof: new-game tier, as the [definition's check tier](definitions/meadow-pens.m
 
 Built; [completed scope and proof](archive/COMPLETED-2026-10-09.md#2026-10-22--lasso-loops-about-how-many-estimation-e1).
 
+### look-it-up 1: Levels 1–3
+
+- **`look-it-up`, levels 1–3 (IR1)** (a new game, one subtask; toddler 1, preschool 1–2, pre-K 2–3, school 3, Barnyard by default): a picture guide of seven real animals (cow, pig, duck, rabbit, brown bear, common frog, African penguin), each page with a fact box of *Eats*, *Where* and *Baby*; touch labels to hear them (level 1), find a hungry visitor's page by its tab and feed it (level 2), find the asked row and help it there (level 3). Turning pages is free; only a wrong food or place given to the animal is a miss. [Definition](definitions/look-it-up.md), [informational-reading study slice IR1](deep-dives/subjects/informational-reading.md#build-slices-in-order)
+
+Proof: new-game tier, as the [definition's check tier](definitions/look-it-up.md#check-tier) sets it (typecheck, unit tests including two sources per fact, a new `browser-check.mjs` case at levels 1 and 3 with one wrong food and one hint, `fingerdemo` at levels 1 and 3, one portrait screenshot of level 3, one build). No review gate: the developer chose real animal facts and the table carries its sources.
+
 ### photo-safari 1: Tell me which and Tell me both
 
 - **`photo-safari`, levels 10–11 (SL1–2)** (existing game, one declared batch of two named parts; school, `{ min: 4, max: 11, order: [4, 5, 6, 7, 10, 11] }`): she sees the wanted animal and taps action and place chips, then Tell, so the pet photographs what her words fit. **SL1** level 10, Tell me which (the pet cannot tell which sparkling friend is meant); **SL2** level 11, Tell me both (level 7's scene, where every chip fits two animals, so a second word is needed). [Definition](definitions/photo-safari-tell-me-which.md), [speaking-and-listening study slices SL1–2](deep-dives/subjects/speaking-listening.md#build-slices-in-order)

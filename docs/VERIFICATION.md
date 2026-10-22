@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Look It Up levels 1–3 definition (informational-reading IR1, docs only)
+
+- [PR #818](https://github.com/rjdunlap/neo/pull/818), `claude/sharp-cannon-xdrzdf`: defined Look It Up levels 1–3 ([definition](definitions/look-it-up.md)) with real animal facts (the developer's choice, other decisions delegated); a research subagent opened two sources per fact; study, tracker, recommendations, backlog, READY, GAME-BATCHES and waiting-on-developer updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: device speech of the fact sentences, whether a three-year-old reads tabs as pages, tab legibility in portrait; Animal Snack's bunny carrot (misleading per the RSPCA) is a separate follow-up.
+
 ## 2026-10-22 — Word Glue levels 1–3 definition (vocabulary-word-parts VW1, docs only)
 
 - Branch `claude/define-word-glue` (PR #816): definition packet `docs/definitions/word-glue.md`; READY (build queued and gated, define line removed), study backlog, subjects tracker, recommendations row, study build slices and the Waiting row updated.
@@ -98,13 +104,6 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only); nothing is built.
 - Open: the guess sign in portrait and a child's play of level 6 (decision 2 for level 7) remain unchecked.
-
-## 2026-10-22 — Estimation study (subject research, docs only)
-
-- [PR #799](https://github.com/rjdunlap/neo/pull/799), `claude/estimation-research`: [study](deep-dives/subjects/estimation.md) (Lasso Loops 6 *About how many?* recommended first); tracker, packet, roadmap table, backlog, READY (definition line replaces the research line) and IDEAS updated.
-- Ran `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
-- Open: whether a six-year-old changes a guess after the benchmark jar, whether "about 30" is understood when spoken, and the guess sign in portrait; no reference game was played.
 
 ## Coverage summary
 
