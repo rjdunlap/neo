@@ -111,6 +111,7 @@ These would be appended, not renumbered, and a band's range would have to skip l
 
 ### Left out on purpose
 
+- **Writing a story in words for a reader** (tile pages, an owl who asks about a missing part): a separate game, Story Weaver, [researched 2026-10-22](subjects/writing-composition.md); it is not Story Steps 14–15.
 - **Retell it from memory:** hides the pictures and loads memory; conflicts with the "depth before pressure" rule.
 - **Timed or numbered ordering,** counting how many it took, and any score.
 - **Reading each sentence:** every prompt stays spoken.

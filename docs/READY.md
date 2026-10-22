@@ -10,7 +10,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`photo-safari`, Tell me which and Tell me both, levels 10–11 (SL1–2)** (one implementation batch; 2 original subtasks; new interaction in an existing game): [definition](definitions/photo-safari-tell-me-which.md), [scope and levels](GAME-BATCHES.md#photo-safari-1-tell-me-which-and-tell-me-both).
 - **`look-it-up`, build levels 1–3 (informational-reading IR1)** (new-game tier): tap a visiting animal's face on the picture guide's tabs, then give it the food its page shows (level 2), or find the *Eats* or *Where* row in its fact box and help it there (level 3); level 1 is talking labels with no misses; seven real animals, two opened sources per fact; toddler 1, preschool 1–2, pre-K 2–3, school 3, Barnyard by default; no review gate. [Definition](definitions/look-it-up.md), [batch](GAME-BATCHES.md#look-it-up-1-levels-13)
 - **Study `astronomy`: define Far Lights** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#astronomy-recommendations).
-- **Research subject `writing-composition`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
+- **Study `writing-composition`: define Story Weaver 1–3 (WC1)** (docs only; status `define`): one bounded packet from the completed study; a new game, so its build waits on the developer's identity and land decision. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#writing-and-composition-recommendations).
+- **Research subject `keyboarding-editing`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies (including `writing-composition`, which leaves typing, delete and cursor movement to it), and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 
 ## Queued
 
@@ -97,7 +98,6 @@ Each line is selected for routine dispatch; claim one packet, then enqueue its u
 
 ### Subject research (docs only)
 
-- **Research subject `keyboarding-editing`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `spelling-sentences`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `poetry-wordplay`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `oceans`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).

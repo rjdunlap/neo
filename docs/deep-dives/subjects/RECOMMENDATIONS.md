@@ -768,3 +768,21 @@ The [ordered slices](speaking-listening.md#build-slices-in-order) separate defin
 | **IR5 Look it up together, text feature walk, sign walk** · L, T, G co-play and page | hand to off-screen companions after an ordinary content review | Plain HTML; any home language |
 
 The [ordered slices](informational-reading.md#build-slices-in-order) separate definitions from builds. The IR1 build uses the new-game tier. Completion with spoken support is not evidence of independent reading, and nothing scores how fast she finds a page.
+
+## Writing and composition recommendations
+
+**Recommended 2026-10-22:** [the writing-composition study](writing-composition.md), [PR #824](https://github.com/rjdunlap/neo/pull/824). Its anchors were opened: CCSS W.K, W.1, W.3, W.5 and W.7 (compose by "drawing, dictating, and writing", respond to a peer's question and add a detail, reasons joined by linking words, audience and purpose, revision), the What Works Clearinghouse writing practice guide (its page, not the PDF; the writing-process recommendation is rated strong), Development Matters, and Puranik and Lonigan 2011. Puranik, Duncan and Guo 2024 (transcription constrains kindergarten composition), Stein and Glenn story grammar, *Writing Next* and the story-dictation sources are search summaries only. Handwriting stays with Letter Trails; keyboarding and spelling/sentence mechanics stay with their unstarted rows; reading signs with Read & Do; finding a fact with Look It Up; film with Movie Night. This study owns writing a story, opinion, page or note for a reader who is not there, and revising it when they ask.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **WC1 Story Weaver 1–3** · school | define (a new game; its build waits on decision 1: identity and land, lean Story Grove) | Level 1 builds three pages from tiles (who and where, what went wrong, how it ended), no misses; level 2 has an owl who "can't see the pictures" ask about the first missing story part, and she may add it or say "that's my story" (never a miss); level 3 joins a feeling to one of her own events with *because*, where an unsupported reason is a gentle question (first free, repeats counted, two glow). No typed or handwritten text; names only via `ctx.childName`; every combination reachable is a sensible story |
+| **WC2 Pet scribes** · P, K | after a child has played level 1 at school | A Story Weaver opening: she picks who and where, the pet writes the page and reads it back |
+| **WC3 Make the sign** · K, S | handed to the Read & Do dive | Build a sign from word tiles so the pet acts on the exact words |
+| **WC4 My favorite** · S, U | define after WC1 is played | Opinion with a reason that is true of the chosen thing; opinions are never judged; no food as good or bad |
+| **WC5 Write a guide page** · S, U | define after Look It Up is built | Choose true facts for an animal's page; a younger friend uses it to find the animal's food |
+| **WC6 Same news, two readers** · U, M | sketch; define after WC1 | A postcard to a friend and a notice to the mayor from the same facts; fitting the reader, never ranking |
+| **WC7 Claim, reason, example** · M | sketch; after `keyboarding-editing` and the `philosophy-reasoning`/`media-literacy` studies | Arrange claim, reason, evidence and counter-point; structure is checked, agreement never |
+| **WC8 Cut to What Matters** · 13+ | define after Fewest Clues' decision and the Lantern Lake capacity test (twelve games today) | The fewest words that keep every needed fact; any minimal cut; shares Fewest Clues' sufficiency solver |
+| **WC9–WC12 Name her marks, Story scribe, Pass the story, Write to someone real** · L–G co-play and page | hand to off-screen companions' at-home card (their slice 4) after an ordinary content review | Plain HTML cards; write her words exactly, any home language; nothing about writing delay or readiness without a named literacy specialist |
+
+The [ordered slices](writing-composition.md#build-slices-in-order) separate definitions from builds. Completion with spoken read-back is not evidence of independent reading or writing, and nothing scores a story.
