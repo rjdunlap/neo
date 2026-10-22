@@ -146,7 +146,7 @@ All future work, one session each. Definitions use links and `git diff --check`;
 
 1. **Define Sea Lift 1–3** (docs; defined 2026-10-22, [packet](../../definitions/sea-lift.md); build queued): the shaft, stops and landings in both orientations, the friends' cast, requests and rides per level, the deepest-first cases, accounting, hints and supported finish, speech within decision 6's lean, how-to steps, ghost-finger plan, land capacity.
 2. **Build Sea Lift 1–3** (built 2026-10-22): stop model and cases in `logic.ts` with the rule tests above; new-game check tier.
-3. **Define and build Sea Lift 4–5:** number cards, intervals across zero, twin stops.
+3. **Define and build Sea Lift 4–5:** number cards, intervals across zero, twin stops. Defined 2026-10-22 ([packet](../../definitions/sea-lift-4-5.md)); the build is gated on the educator's read of the level-4 cards (decision 8).
 4. **Define Sea Lift 6–7** after decisions 2 and 8; then build.
 5. **Define Lift Rounds** after the Lantern Lake capacity test; build at the grown-up tier.
 6. **The Where's zero? card** after an ordinary content review.
