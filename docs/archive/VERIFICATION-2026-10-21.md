@@ -284,3 +284,11 @@
 - Passed `GAME_URL=http://localhost:5196 BROWSER_SUITE=arcade ARCADE_ONLY=roundup ARCADE_LEVELS=12`: scales, centred 170-unit hit diameters, two wrong-size gates, truthful speech/glow, exact finish, saved `[2,1]` and one sticker; no page errors.
 - Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=12` at that URL: clean finish in 23.8 s. Portrait `test-results/browser/roundup-12-portrait.png` inspected: size contrast, matching signs, gates and pet clearance.
 - Passed links/diff. Not run: build, broader suites/world/offline (new-level tier; no engine/navigation/persistence/assets changes). iPad speech/readability and child play remain [open](../DEVICE-CHECKS.md).
+
+## 2026-10-21 — Roundup two shepherds (slice 9)
+
+- [PR #737](https://github.com/rjdunlap/neo/pull/737), `claude/roundup-two-shepherds`, tested `f0725fa3` (base `769d0514`) at http://localhost:5312. Every finger on the grass shoos at levels 2–12 (capped pushes, nearest-finger follow, one ring per finger, palm rejection, lost-touch drop); the co-play line is a role.
+- Passed typecheck and `npx vitest run src/games src/content` (150 files, 1703 tests, including a new `fleeFrom`/`nearestFinger` test).
+- Passed `BROWSER_SUITE=arcade ARCADE_ONLY=roundup ARCADE_LEVELS=3` (two-pointer probe: tracked 2, rings 2, second finger alone moved an animal 64.6, after a cancelled touch 1 left, a fourth contact ignored as a palm (3 tracked), all lifted left 0; score 0,0) and `ARCADE_LEVELS=11` (lap 0,0 and toddler 0,1 drift).
+- Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=3`: clean in 19.5 s.
+- Not run: build (no shared files), full suites, offline. Real two-handed play on an iPad is [open](../DEVICE-CHECKS.md).
