@@ -1542,7 +1542,7 @@ Deviation from the packet's tier: the one Windy step at the root ran inside `BRO
 
 `FEELING_PLANS[8]` is mode `poke` with no bubbles: the pet starts calm and each tap anywhere on it shows the next step of the fixed cycle `pokeAfter` (happy, surprised, sleepy, sad, hug, then happy again), with the feeling's sound, word and effect; the hug is hearts and `feel.hug`. `pokeDone` ends the round after six taps (`POKE_TAPS`) with a sticker, misses and hints always 0. `LEVELS` moved into `logic.ts` as a `BandLevels` table (lap `{ 1-9, order [9, 1, 2] }`, toddler 2-4, preschool 3-6, pre-K 5-8) with `entryLevels: [9]`; no saved level was renumbered. Deviation from the dive: one new voice line, `feel.poke` ("Tap {pet}! How does {pet} feel?"), because `feel.play` mentions bubbles. How-to card: level 9 steps and finish; the level-8 lines are capped at `to: 8`. The ghost finger taps the pet's touch point. New browser suite `feelpoke`.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--feelings-faces-level-9-poke-a-feeling-slice-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-21.md#2026-10-21--feelings-faces-level-9-poke-a-feeling-slice-2).
 
 ## Egg Catch level 8 Under the hen (2026-10-21)
 
