@@ -62,7 +62,7 @@ The research is complete for every row below; `define` means the next session wr
 | `chance-statistics` | define | Spinner Fair 1–5 | [Study](deep-dives/subjects/chance-statistics.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#chance-and-statistics-recommendations) |
 | `algebra-balance` | define | Rule Machine 1–4 | [Study](deep-dives/subjects/algebra-balance.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#algebra-and-balance-recommendations) |
 | `integers` | ready | Sea Lift 1–3 (IN1) [defined](definitions/sea-lift.md) 2026-10-22; its build is queued in READY as a new-game line (no review gate); next definition Sea Lift 4–5 (IN2) after the build lands | [Study](deep-dives/subjects/integers.md), [definition](definitions/sea-lift.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#integers-recommendations) |
-| `area-volume-space` | define | Meadow Pens 1–3 | [Study](deep-dives/subjects/area-volume-space.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#area-volume-and-space-recommendations) |
+| `area-volume-space` | ready | Meadow Pens 1–3 [defined](definitions/meadow-pens.md) 2026-10-22; its build is queued in READY as a new-game line with the level-2 card-table review gate; next definition Meadow Pens 4–5 after the build lands | [Study](deep-dives/subjects/area-volume-space.md), [definition](definitions/meadow-pens.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#area-volume-and-space-recommendations) |
 
 ## Unstarted subject research
 

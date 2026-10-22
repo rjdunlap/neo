@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Meadow Pens levels 1–3 definition (area-volume-space slice 1, docs only)
+
+- [PR #794](https://github.com/rjdunlap/neo/pull/794), `claude/define-meadow-pens`: defined Meadow Pens levels 1–3 ([definition](definitions/meadow-pens.md)); READY (build queued), batch plan, study backlog, study, recommendations, tracker, ideas and waiting-on-developer updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the level-2 card-table review (merge gate), device speech of the counts, all person checks.
+
 ## 2026-10-22 — Area, volume and space study (subject research, docs only)
 
 - [PR #793](https://github.com/rjdunlap/neo/pull/793), `claude/subject-area-volume-space`: [study](deep-dives/subjects/area-volume-space.md) (Meadow Pens 1–3 recommended first); tracker, packet, roadmap table, backlog, READY (Next ten refilled), IDEAS and the Bug Builder and Tangram Town hand-off notes updated.
@@ -93,12 +99,6 @@
 - Branch `claude/ribbon-workshop`, commit `291ed66b` on base `02671f92`: new game `ribbon-workshop` (school, Counting Cove's twelfth game), with registry, lands, voice, how-to card and the `ribbon` browser case.
 - Ran `npm run typecheck`; the full unit suite (207 files, 2444 tests, 11 new rule tests: solvable, accepted compositions equal brute force, snip required at levels 2-3, undo, hint, capacity, seeded rounds 0-199, accounting, voice, tray layout); `npm run build`; `BROWSER_SUITE=ribbon` at `http://localhost:5429/classic/` (level 1: empty Check free, two misses then glow and one hint, finished `[1,2,1]` as the caller reported it; level 3 portrait: two halves too long is a miss, return, scissors, snip, quarter, finished `[3,1,0]`); `fingerdemo` with `FINGER_ONLY=ribbon-workshop` at levels 1 and 3 (3.6 s, 6.1 s); `smoke` with `SMOKE_ONLY=ribbon-workshop`.
 - Not run: `world`, couch, offline (not affected). Open: iPad touch, device speech and a child's response ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
-
-## 2026-10-22 — What can we tell? definition (inquiry Q5, docs only)
-
-- [PR #774](https://github.com/rjdunlap/neo/pull/774), `claude/define-what-can-we-tell`: defined Ramp Race level 7 ([definition](definitions/what-can-we-tell.md)); inquiry study, recommendations, study backlog, waiting-on-developer, READY and the Trial Shelf definition updated.
-- Ran `node scripts/check-links.mjs` and `git diff --check`; a node one-off over the ramp model confirmed the case pools (17 confounded pairs after one tie, 6 where the shorter ramp went farther, 18 controlled) and that every confounded pair repairs in at most 2 taps with 4 fair repairs.
-- Not run: typecheck, unit tests, build, browser (nothing built). Open: the build, which waits on Q4 and inquiry decisions 1–2 extended to level 7.
 
 ## Coverage summary
 
