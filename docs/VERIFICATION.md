@@ -7,6 +7,14 @@
 - Passed `BROWSER_SUITE=next NEXT_ONLY=bumper BUMPER_LEVELS=8` at http://localhost:5382/classic/ in portrait (pond table, 5 launches, two misses, one hint, sticker, a sleepy-bump check); screenshot `test-results/browser/bumper-garden-8.png` reviewed, sleepy flowers read clearly. Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=bumper-garden FINGER_LEVELS=8` in 10.9 s.
 - Not run: `npm run build` (no shared files or assets; CI builds), other suites. Open: whether a pre-K child reads "not" from the sleeping flowers ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
+## 2026-10-21 — Roadmap reconciliation and study dispatch
+
+- Docs-only cleanup on `codex/roadmap-study-queue`, base `554e3e24`: corrected shipped game/rework summaries, retired stale art/demo statements, and separated blocked work from routine picks.
+- Added [study backlog](STUDY-BACKLOG.md): 45 completed studies with named next actions, 20 eligible subject studies, five reviewer-dependent subjects and 26 unstarted game dives. Existing builds/claims remain distinct from definitions.
+- Refilled READY to ten; three study definitions and one research slot per refill when eligible, with first resulting builds promoted into content slots. Both routines use the shared ROADMAP/READY selection rules; coordinator state and active workers were not changed.
+- Passed relative Markdown links, queue/backlog coverage and duplicate-entry assertions, and `git diff --check` on the documentation diff.
+- Not run: typecheck, unit/browser/build/offline suites (docs-only tier); CI still supplies the required PR tests/build. Device/child checks and developer/reviewer gates remain open.
+
 ## 2026-10-21 — Bouncy Launch level 9, Between two flights (slice 6)
 
 - [PR #756](https://github.com/rjdunlap/neo/pull/756), `claude/bouncy-between-flights`, tested on base `f225960c` plus the branch; `src/games/bouncy-launch/`: school order 4, 5, 7, 6, 9, 12, three unscored rounds (two watched pulls plant numbered flags, the middle pull is predicted), voice lines `launch.between-watch`, `launch.between`, `launch.between-why`, how-to lines for level 9. Watched pulls never count misses or hints and never file the bigger-pull journal entry.
@@ -99,18 +107,13 @@
 - Probe setup corrected logical-to-screen touch scaling; interrupted attempts were not game failures. Source frozen for final successful run. Comments added after the unit pass do not change its evidence.
 - Local build, broad/browser suites, offline, physical iPad/audio/speech/child play not run (content tier). Upstream `8ca0ac75` adds PR tests/build and an AGENTS wait-for-pass rule only; integrated as `4f72a733`, gameplay proof reused. PR tests/build passed on `2bb3bb02` (run 39682115924); subsequent upstream `efabf001` is fractions research/docs only, with both verification entries preserved. Required CI is repeated on the integrated PR before merge. Existing device checks remain open; route/pair endings share the finale, but no separate route/pair browser play was run.
 
-## 2026-10-21 — Fractions subject research landed
-
-- [PR #480](https://github.com/rjdunlap/neo/pull/480)'s research (2026-10-16, `codex/fractions-subject-research`) re-applied on current `main`, 936 commits on: the study as written; its tracker row, wave-E line, notebook rows and definition packet moved to where those now live ([RECOMMENDATIONS.md](deep-dives/subjects/RECOMMENDATIONS.md#fractions-recommendations) and the roadmap's subject table).
-- Sources as recorded in the study: CCSS 1.G/2.G, 3.NF–5.NF, 6.NS; IES guide; NAEYC; six digital references and Fraction Talks. No reference game was played.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: code checks (docs-only tier).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Planning docs / study dispatch | 2026-10-21: links, backlog/queue coverage and diff checks | [Roadmap reconciliation](#2026-10-21--roadmap-reconciliation-and-study-dispatch) | Docs only; no gameplay or device proof |
 | `blockgarden`, `fingerdemo` (`block-garden`) | 2026-10-20: levels 1 and 8 by drags (no misses or hints, a sticker each), level 3 (two refused drops = 2 misses and 1 hint), hinted piece, undo, a free tap on a tall piece's slot upright, level 6 portrait; ghost finger clean at levels 1 and 8 (3.9, 23.2 s); typecheck, 33 rule tests, full `npm test` (1713), build | commit `0448a289`, http://localhost:5856 | No world or offline run; iPad drag lift, phone squares, shadow and level 8 hint time open; one creature-rig test flaked once in the full run |
 | `boltboards`, `fingerdemo` (`bolt-boards`) | 2026-10-20: level 1 by taps (no miss), level 7 with a covered-bolt tap and a covered hole (2 misses, 1 hint, solved), level 6 portrait screenshot; ghost finger clean at levels 5 and 7 (5.2 s, 10.5 s) | `GAME_URL=… BROWSER_SUITE=boltboards`; `fingerdemo FINGER_ONLY=bolt-boards FINGER_LEVELS=5,7` | No iPad or child; toddler bolt-to-drop link, covered-bolt reading and undo discovery open in DEVICE-CHECKS |
 | `swingpals`, `fingerdemo` (`swing-pals`) | 2026-10-20: level 1 by taps, level 6 with one wrong hook (one miss) and a requested glow (one hint), level 3 portrait screenshot; ghost finger clean at levels 2 and 6 (30.0 s, 29.8 s); typecheck, 2086 unit tests and build passed | `GAME_URL=… BROWSER_SUITE=swingpals`; `fingerdemo FINGER_ONLY=swing-pals FINGER_LEVELS=2,6` | Offline check and `world` not run; no iPad or child; lap tap-to-push link, the waiting push and the parting swings open in DEVICE-CHECKS |

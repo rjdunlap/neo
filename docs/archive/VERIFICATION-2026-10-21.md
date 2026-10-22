@@ -300,3 +300,9 @@
 - Passed `BROWSER_SUITE=originals ORIGINALS_ONLY=shapes SHAPE_LEVELS=1,9`: level 1, then level 9 at lap and at toddler in portrait (opening screenshot `shape-sorter-9-start-portrait`).
 - Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-sorter FINGER_LEVELS=9`: clean at lap in 7.0 s.
 - Not run: `npm run build` (no shared assets changed), device speech, a child's reaction. A window `pointercancel` on a short unmoved touch hops the piece in (harmless at 9); a later tap-in level that counts misses should examine it. An iPad check is [open](../DEVICE-CHECKS.md).
+
+## 2026-10-21 — Fractions subject research landed
+
+- [PR #480](https://github.com/rjdunlap/neo/pull/480)'s research (2026-10-16, `codex/fractions-subject-research`) re-applied on current `main`, 936 commits on: the study as written; its tracker row, wave-E line, notebook rows and definition packet moved to where those now live ([RECOMMENDATIONS.md](../deep-dives/subjects/RECOMMENDATIONS.md#fractions-recommendations) and the roadmap's subject table).
+- Sources as recorded in the study: CCSS 1.G/2.G, 3.NF–5.NF, 6.NS; IES guide; NAEYC; six digital references and Fraction Talks. No reference game was played.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: code checks (docs-only tier).

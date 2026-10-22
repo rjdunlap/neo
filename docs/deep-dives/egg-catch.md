@@ -78,7 +78,7 @@ The catching levels should stay few and gentle (two levels, plus a toddler bridg
 
 ### New levels on top
 
-Appended with stable IDs; built level 8 uses toddler order `[1, 8, 2]` and `entryLevels: [8]`. Proposed level 9 will extend the entry list when built; birthdays and pins remain safe in bands that do not list an entry.
+Appended with stable IDs; built level 8 uses toddler order `[1, 8, 2]` and `entryLevels: [8]`. Built level 9 extends preschool/pre-K entry lists; birthdays and pins remain safe in bands that do not list an entry.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |

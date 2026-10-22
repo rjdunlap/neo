@@ -141,4 +141,4 @@ Each item is sized as one definition or one subsequent implementation session. D
 
 ## What was built and checked
 
-Nothing implemented. Opened the primary sources linked above, checked existing ownership and concurrent claims, and published a draft docs-only claim. Documentation closeout updates the subject tracker, notebook and roadmap. Local links/anchors and `git diff --check` are the verification tier; see the [verification entry](../../VERIFICATION.md#2026-10-21--fractions-subject-research-landed). No typecheck, tests, build, browser, iPad, controller, device speech or child/teen/parent response was run or established.
+Nothing implemented. Opened the primary sources linked above, checked existing ownership and concurrent claims, and published a draft docs-only claim. Documentation closeout updates the subject tracker, notebook and roadmap. Local links/anchors and `git diff --check` are the verification tier; see the [verification entry](../../archive/VERIFICATION-2026-10-21.md#2026-10-21--fractions-subject-research-landed). No typecheck, tests, build, browser, iPad, controller, device speech or child/teen/parent response was run or established.
