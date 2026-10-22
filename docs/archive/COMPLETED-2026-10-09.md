@@ -1520,7 +1520,7 @@ Built on `claude/make-my-mix` (PR #724) from the [definition](../definitions/mak
 
 Edge to examine later: a window `pointercancel` on a short unmoved touch at level 9 goes through drop and hops the piece in. Harmless at 9 (no misses are counted), but a later tap-in level that counts misses should check it.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--shape-sorter-level-9-tap-and-in-it-goes-slice-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-21.md#2026-10-21--shape-sorter-level-9-tap-and-in-it-goes-slice-2).
 
 ## RW08 slice 1, Explore's four entries (2026-10-21)
 
