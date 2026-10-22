@@ -1,6 +1,6 @@
 # Estimation: guess first, then check, and say what a sensible guess is
 
-*Subject `estimation` · 2026-10-22 · `claude/estimation-research` · [PR #799](https://github.com/rjdunlap/neo/pull/799). Research and proposals only, for L/T/P/K/S/U/M and grown-ups. Base: `033a79f7`. No game was played or implemented.*
+*Subject `estimation` · 2026-10-22 · `claude/estimation-research` · [PR #799](https://github.com/rjdunlap/neo/pull/799). Research and proposals only, for L/T/P/K/S/U/M and grown-ups. Base: `033a79f7`. The original session played or implemented no game; E1 level 6 is now [built](../../definitions/lasso-loops-about-how-many.md) with browser evidence in [verification](../../VERIFICATION.md#2026-10-22--lasso-loops-level-6-about-how-many-estimation-e1).*
 
 **Recommendation:** the island already asks for a guess in three places, each the same shape: a free, never-marked guess, then evidence, then an ordinary judged answer (Fill and Dump 7 *Which holds more?*, built; Seesaw Balance 15 *Guess the pumpkin* and Duck Pond's *Count the Peekers*, planned). Number-line estimation, the best-evidenced estimation skill, is already Frog Hop level 13 *Where does it go?* in [its dive](../frog-hop.md#new-levels-on-top), waiting on its scoring decision. This study does not re-propose any of those. **Define first, inside Lasso Loops, level 6 *About how many?***: a meadow of 20–39 fireflies, a free guess among three far-apart cards, one jar of ten looped as a benchmark, a chance to change the guess, then the built tens-and-ones loop and count as the check, with the pet comparing the guess to the count aloud. It is the one estimation habit no built or planned rung covers (a benchmark set used to adjust a guess about a collection), it reuses Lasso Loops' built loop, jars of ten and number cards, and it needs no new game, land or developer decision.
 
@@ -46,11 +46,11 @@ Read [GAMES](../../GAMES.md) for Lasso Loops, Fill and Dump, Seesaw Balance, Duc
 | Which is more, before checking | Fill and Dump 7 *Which holds more?* (free guess, pour, judged answer) | Fill and Dump 8 *Tricky pairs*; Duck Pond *Count the Peekers* ("a few or lots?") |
 | A guess in units, then measure | Sink or Float's unmarked predictions (not a quantity) | Seesaw 15 *Guess the pumpkin*; Fill and Dump 9 *How many cups?*; the measurement study's *Guess and measure* co-play tip |
 | Where a number sits on a line | Frog Hop 1–8 (a numbered line of pads) | Frog Hop 13 *Where does it go?* (decision 5), G4 (0–1000), G5 couch estimate duel |
-| How many in a collection, from a benchmark | **Nothing** | **Lasso Loops 6–7 (this study)** |
+| How many in a collection, from a benchmark | **Lasso Loops 6 About how many?** | **Lasso Loops 7 (this study; person gate)** |
 | Is a computed answer sensible? | Nothing | Market Stall hand-off (this study, inside its dive) |
 | Sampling a part to estimate a whole | Nothing | *Count a patch* (this study, later) |
 
-**What no game covers:** guessing the size of a collection, using a known ten to improve the guess, and judging which guesses cannot be right (a range); checking a computed total by rounding (3.OA.D.8); estimating a whole from a counted part. Lands: Lasso Loops, Frog Hop, Duck Pond and Fill and Dump are in Counting Cove (12 games); Seesaw in Tinker Lab (12); Market Stall's land is unchanged by a level. No land has known spare capacity, which is why the first definition is a level, not a game.
+**What no game covers:** judging which guesses cannot be right (a range); checking a computed total by rounding (3.OA.D.8); estimating a whole from a counted part. Lands: Lasso Loops, Frog Hop, Duck Pond and Fill and Dump are in Counting Cove (12 games); Seesaw in Tinker Lab (12); Market Stall's land is unchanged by a level. No land has known spare capacity, which is why the first definition is a level, not a game.
 
 ## Similar games and tools
 
@@ -84,7 +84,7 @@ Opened descriptions unless marked; nothing was played.
 
 ## First game's proposed ladder: Lasso Loops 6 and 7
 
-Lasso Loops today: levels 1–5 (`free`, `exact`, `fives`, `tens`, `groups`), preschool 1–3, pre-K 2–4, school 3–5; the tens level puts 20–39 fireflies in a scattered meadow (a jittered grid up to five rows), loops of exactly ten fill jars, and a three-card choice asks "how many in all?" with tens-and-ones swaps and ten-more/ten-less distractors. Appending 6 and 7 moves no saved level; school becomes 3–7.
+Before E1, Lasso Loops had levels 1–5 (`free`, `exact`, `fives`, `tens`, `groups`), preschool 1–3, pre-K 2–4, school 3–5; the tens level puts 20–39 fireflies in a scattered meadow (a jittered grid up to five rows), loops of exactly ten fill jars, and a three-card choice asks "how many in all?" with tens-and-ones swaps and ten-more/ten-less distractors. E1 is now built at 6 with school 3–6 and 21–39 fireflies; 7 is still proposed and moves no saved level.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -113,7 +113,7 @@ None of these blocks E1's definition: decision 1's lean is the default, and E1 a
 ## Build slices, in order
 
 1. **E1 define: Lasso Loops 6 *About how many?*** (defined 2026-10-22, [definition](../../definitions/lasso-loops-about-how-many.md), [PR #800](https://github.com/rjdunlap/neo/pull/800); the school window is 3–6 and the tens round makes 21–39 fireflies, as the definition fixes). A packet in `docs/definitions/lasso-loops-about-how-many.md` with the level table above, the rule tests, voice lines, how-to lines and the bot rule. Check tier: links and diff.
-2. **E1 build** (new-levels tier on an existing interaction plus the guess tap: typecheck, Lasso Loops rule tests, one browser play of level 6 with one wrong loop and one hint, `fingerdemo` at 6, one portrait screenshot of the guess sign).
+2. **E1 built:** level 6 *About how many?*, school 3–6 ([PR #808](https://github.com/rjdunlap/neo/pull/808)); [verification](../../VERIFICATION.md#2026-10-22--lasso-loops-level-6-about-how-many-estimation-e1). Remaining person checks and E2’s decision 2 stay open.
 3. **E6 co-play tip and E7 Jar guess card** (docs plus plain HTML after an ordinary content review; card wording checked against the choking-hazard boundary).
 4. **E2 define: Lasso Loops 7** after a child has played 6 (decision 2).
 5. **E3 in Market Stall's dive** (after its window decision), and **E4 *Count a patch*** defined with its home game chosen.
