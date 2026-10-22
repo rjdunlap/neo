@@ -102,7 +102,18 @@ export const TO_SHILOH: Phrase = { syllables: ['bounce', 'the', 'ball', 'to', 'S
 /** The verse's line: the last syllable is the friend's name. */
 export const TO_THE: Phrase = { syllables: ['bounce', 'the', 'ball', 'to', 'the', ''], steps: [3, 3, 4, 4, 3, 2] };
 
-export type TuneId = 'macdonald' | 'buns' | 'mary' | 'clair' | 'rain' | 'itsy' | 'bounce';
+/**
+ * "Ring Around the Rosie" is a traditional ring game. Its tune uses do, mi, sol and la (C E G A in C), all inside the
+ * pentatonic set: the rosie and posies lines are sol sol mi la sol mi, and "we all fall down" drops to do at the end.
+ * The sources found give only that set of notes, not their order, so this is written from the tune's standard form and
+ * a grown-up singing it is the final check (DEVICE-CHECKS). One note per sung syllable.
+ */
+export const RING_AROUND: Phrase = { syllables: ['Ring', 'a', 'round', 'the', 'ro', 'sie'], steps: [3, 3, 2, 4, 3, 2] };
+export const POCKET: Phrase = { syllables: ['a', 'pock', 'et', 'full', 'of', 'po', 'sies'], steps: [3, 3, 3, 2, 4, 3, 2] };
+export const ASHES: Phrase = { syllables: ['Ash', 'es', 'ash', 'es'], steps: [3, 2, 3, 2] };
+export const FALL_DOWN: Phrase = { syllables: ['we', 'all', 'fall', 'down'], steps: [3, 3, 3, 0] };
+
+export type TuneId = 'macdonald' | 'buns' | 'mary' | 'clair' | 'rain' | 'itsy' | 'bounce' | 'ring';
 
 /**
  * A song the barn sings: an opening nobody answers, then a verse for each friend. A friend answers on the last note
@@ -180,7 +191,15 @@ export const BOUNCE: Tune = {
   answers: TO_THE,
   namesAnimal: true,
 };
-export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE];
+/** "Ring around the rosie, a pocket full of posies" opens it; each friend's verse is "Ashes, ashes, we all fall down", answering on "down". */
+export const RING: Tune = {
+  id: 'ring',
+  opening: [RING_AROUND, POCKET],
+  verse: [ASHES, FALL_DOWN],
+  answers: FALL_DOWN,
+  namesAnimal: false,
+};
+export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE, RING];
 
 export interface Note {
   step: number;
@@ -253,7 +272,7 @@ export const PLANS: readonly SingPlan[] = [
 ];
 
 /** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */
-export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE] : TUNES);
+export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE, RING] : TUNES);
 
 export const planFor = (level: number): SingPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
