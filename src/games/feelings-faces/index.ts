@@ -393,8 +393,10 @@ class FeelingsFaces implements Game {
       const x = node.x;
       void this.ctx.tw.to(node, { x: x + 12 }, { duration: 0.06 }).then(() => this.ctx.tw.to(node, { x }, { duration: 0.25, ease: ease.outElastic }));
       if (this.plan.mode === 'ask') {
-        this.revealWish();
-        void this.ctx.say('feel.asked', { friend: this.friendName() });
+        // Speech replaces the current utterance, so replay the wish after the retry/hint.
+        void this.ctx.say(this.wrong === 2 ? 'feel.hint' : 'feel.asked', { friend: this.friendName() }).then(() => {
+          if (!this.busy && !this.done && this.question === q) this.revealWish();
+        });
       } else if (this.plan.mode === 'perspective') {
         const friend = this.friends[q.friend!];
         friend.critter.hop(0.5);
@@ -416,7 +418,7 @@ class FeelingsFaces implements Game {
       }
       if (this.wrong === 2) {
         this.hints++;
-        void this.ctx.say('feel.hint');
+        if (this.plan.mode !== 'ask') void this.ctx.say('feel.hint');
       } else if (this.plan.mode !== 'perspective' && this.plan.mode !== 'clue' && this.plan.mode !== 'ask') {
         if (this.plan.mode === 'help' || this.plan.mode === 'care') void this.ctx.say('feel.not-that');
         else if (this.plan.mode === 'friends') void this.ctx.say('feel.friend-that', { feeling: value });

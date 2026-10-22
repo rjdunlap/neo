@@ -4791,11 +4791,21 @@ async function feelingsAsk() {
       const friend = g.friends[round].critter;
       if (round === 0) {
         const wrong = g.options.find((o) => o.value !== g.question.answer);
+        const heard = [];
+        const say = g.ctx.say;
+        const instruct = g.ctx.instruct;
+        g.ctx.say = (id, vars) => { heard.push(id); return say(id, vars); };
+        g.ctx.instruct = (id, vars) => { heard.push(id); return instruct(id, vars); };
         for (let retry = 1; retry <= 2; retry++) {
           kit.tapOn(wrong.node);
           if (!await kit.until(() => g.misses === retry, 3000)) throw new Error('Wrong offer missed');
+          if (!await kit.until(() => heard.length >= retry * 2, 4000)) throw new Error('Retry did not finish replaying the wish');
+          const expected = [retry === 1 ? 'feel.asked' : 'feel.hint', `feel.wish-${g.question.answer}`];
+          if (JSON.stringify(heard.slice((retry - 1) * 2, retry * 2)) !== JSON.stringify(expected)) throw new Error(`Retry speech interrupted wish: ${heard}`);
           await kit.sleep(450);
         }
+        g.ctx.say = say;
+        g.ctx.instruct = instruct;
         if (g.hints !== 1 || !g.glow.context.instructions.length || !g.requestBubble) throw new Error('Missing replay/glow after wrong offers');
       }
       const wish = g.question.answer;
