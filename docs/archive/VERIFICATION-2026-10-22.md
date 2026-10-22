@@ -163,3 +163,11 @@
 - Re-audit on `origin/main` `5a4bf744`: 113 `offScreen` lines, 59 reaching lap or toddler.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the developer's answer to the small-objects row (the build's merge waits on it), reviewer for any new under-3, bath, food, water or sun line.
+
+## 2026-10-22 — Teddy Doctor patient choice and check-up rules (batch 1, slices 3–4)
+
+- [PR #798](https://github.com/rjdunlap/neo/pull/798), `codex/teddy-patient-order`: level 7 choose a hurt friend then bandage; level 8 accepts all check-up orders that keep the spoken rules. Defaults only, #733 preserved.
+- Proof: `1e994162` plus working diff, `http://localhost:5209/classic/`; typecheck, 30 focused rule/how-to tests, full `npx vitest run --maxWorkers=4` (2463 pass, four skipped), build, links and diff check. Initial unconstrained full run had three failures under load; unchanged-code rerun passed.
+- `BROWSER_SUITE=next NEXT_ONLY=doctor FROM_LEVEL=7` passed level 7 (logged probe copy of the harness), wrong friend twice, hint, all three pairs, portrait, saved 2/1 and sticker. Level 8 completed its actions but exposed a test-driver extra action at completion; the driver guard was fixed. `FROM_LEVEL=8` then passed both patients, alternative valid order, two misses/one hint, reward, no page errors.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=teddy-doctor FINGER_LEVELS=7,8`: both clean, 16.3 / 24.9 seconds, no page errors. Pair portrait `test-results/browser/teddy-doctor-7-pair-portrait.png` inspected; faces, boo-boo and separated targets readable.
+- Not run: world, offline, stories and couch (unaffected). Open: real iPad speech of ordering words, toddler patient choice and all child/device observations; broader bands and care/creature decisions remain gated.
