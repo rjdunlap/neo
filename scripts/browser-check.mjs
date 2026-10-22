@@ -6773,6 +6773,13 @@ async function batch() {
     await launch('photo-safari', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (mode === 'tell') {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(400);
+      await screenshot(`photo-safari-${level}-tell-portrait`);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+    }
     if (level === 5 || level === 7) {
       assert.deepEqual(await page.evaluate(() => {
         const g = neo.scene.game, t = g.target.sighting;
@@ -6789,6 +6796,31 @@ async function batch() {
       for (let p = 0; p < g.plan.photos; p++) {
         await kit.until(() => g.photos === p && !g.busy && g.actors.length, 15000);
         const right = g.target ?? g.actors[p % g.actors.length];
+        if (g.plan.mode === 'tell') {
+          const { fewestChips, sameChip, fits } = await import('/src/games/photo-safari/logic.ts');
+          if (p === 0) {
+            kit.tapOn(g.tellButton); await kit.sleep(200);
+            kit.tapOn(right, 0, -60); await kit.sleep(200);
+            if (g.misses || g.photos || g.chosen.length) throw new Error('Empty Tell/animal tap must be free');
+            const shared = g.chips.find((c) => { const f = fits([c.chip], g.scene.sightings); return f.includes(g.scene.target) && f.length === 2; });
+            kit.tapOn(shared); await kit.sleep(200);
+            const chosen = JSON.stringify(g.chosen);
+            for (let k = 0; k < 2; k++) {
+              kit.tapOn(g.tellButton); await kit.until(() => !g.busy, 10000); await kit.sleep(200);
+              if (JSON.stringify(g.chosen) !== chosen) throw new Error('Under-informative words must stay');
+            }
+            if (g.misses !== 2 || g.hints !== 1 || !g.chips.some((c) => c.glow.visible)) throw new Error('Tell hint missing');
+            // Every interactive card and Tell retain at least 100 logical units and clear the pet.
+            if (g.chips.some((c) => c.x < 225 || c.hitArea.width < 100 || c.hitArea.height < 100)) throw new Error('Tell tray targets');
+          }
+          const solver = fewestChips(g.scene);
+          for (const chip of solver) if (!g.chosen.some((k) => sameChip(k, chip))) {
+            kit.tapOn(g.chips.find((c) => sameChip(c.chip, chip))); await kit.sleep(200);
+          }
+          kit.tapOn(g.tellButton);
+          await kit.until(() => g.photos > p, 10000);
+          continue;
+        }
         if (p === 0 && g.target) {
           const wrong = g.actors.find((a) => a !== right && (!['both', 'clues'].includes(g.plan.mode) || a.sighting.spot === right.sighting.spot));
           for (let k = 0; k < 2; k++) { kit.tapOn(wrong, 0, -60); await kit.sleep(600); }

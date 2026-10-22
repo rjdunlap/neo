@@ -1,5 +1,12 @@
 # Needs a person or a device
 
+## Photo Safari Tell me which and Tell me both (10–11)
+
+- [ ] Watch a six-year-old: does the pretend premise that the pet cannot see the sparkle make sense?
+- [ ] Does the camera wobble between two friends read as “I’m not sure”?
+- [ ] On an iPad, check chip size and tray comfort in portrait; hear “Which one? Two are in the pond!” clearly.
+- [ ] Transfer to describing things to people remains unestablished.
+
 ## Recipe Workshop levels 1–3
 
 - [ ] Watch a two-year-old at level 1: do the dollop layers read as separate things and the blend as "mixed"? Does a toddler's drag of the spoon work better than a tap?

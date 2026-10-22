@@ -128,7 +128,7 @@ None of these blocks the A–B definition: decision 1's lean is the default, and
 ## Build slices, in order
 
 1. **SL1–2 define: Photo Safari *Tell me which* and *Tell me both*** (defined 2026-10-22, IDs 10–11: [definition](../../definitions/photo-safari-tell-me-which.md), [PR #813](https://github.com/rjdunlap/neo/pull/813)) (one packet in `docs/definitions/photo-safari-tell-me-which.md`, with the IDs fixed, the level table above, chip layout in both orientations, rule tests, voice lines, how-to lines and the bot rule; add one line to the Photo Safari dive's ladder pointing here). Check tier: links and diff.
-2. **SL1–2 build** (new-interaction tier: typecheck, unit tests, one filtered browser play of both levels with one under-informative Tell and one hint, `fingerdemo` at each, one portrait screenshot of the chip tray).
+2. **SL1–2 built**, [PR #827](https://github.com/rjdunlap/neo/pull/827), levels10–11 ([scope/proof](../../archive/COMPLETED-2026-10-09.md#photo-safari-batch-1-tell-me-which-and-tell-me-both-2026-10-22)); combined new-interaction tier: typecheck, unit tests, one filtered browser play of both levels with one under-informative Tell and one hint, `fingerdemo` at each, portrait screenshots of the chip tray.
 3. **SL7 talk-about wording rules** handed to the off-screen-companions slice 5 (docs), and the **SL8 card** after an ordinary content review.
 4. **SL4 *Which one?*** define, after decision 2.
 5. **SL3 *Just enough*** and **SL6 *Whose clue works?*** define, after a child has played A–B.

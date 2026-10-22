@@ -2,6 +2,8 @@
 
 Defined 2026-10-22 on `claude/define-photo-safari-tell` ([PR #813](https://github.com/rjdunlap/neo/pull/813)). This is slices SL1–2 of the [speaking-and-listening study](../deep-dives/subjects/speaking-listening.md#build-slices-in-order), taken from its [proposed ladder](../deep-dives/subjects/speaking-listening.md#first-games-proposed-ladder-photo-safari-tell-me-which-and-tell-me-both) and its [recommendation](../deep-dives/subjects/RECOMMENDATIONS.md#speaking-and-listening-recommendations). It is slice 8 of the [Photo Safari dive](../deep-dives/photo-safari.md#build-slices-in-order). It is one same-game packet: one build, one branch, one PR.
 
+**Built 2026-10-22:** [PR #827](https://github.com/rjdunlap/neo/pull/827), batch1/SL1–2 only. [Scope and proof](../archive/COMPLETED-2026-10-09.md#photo-safari-batch-1-tell-me-which-and-tell-me-both-2026-10-22); person checks remain open.
+
 **What it adds:** two new school levels at the end of `photo-safari` (`src/games/photo-safari/`).
 
 - **Level 10, *Tell me which*.** A visiting friend wants a photo of one sparkling animal. The pet holds the camera and cannot tell which one is meant. She taps picture-word chips (a doing word, a place word) and presses **Tell**. The pet photographs whatever her words fit.

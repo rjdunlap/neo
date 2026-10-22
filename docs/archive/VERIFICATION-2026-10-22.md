@@ -216,3 +216,9 @@
 - Proof on base `origin/main` `bbd337cd` plus the branch, server `http://localhost:5268/classic/`: typecheck clean; `npm test` 210 files / 2508 tests passed, including 19 new rule tests (both orders, all reachable states, mix and undo rules with a bounded non-repeating stack, hints reach ok from every state, accounting, two-bowl independence, seeded variation, layout at the four lands-test views); `npm run build` passed.
 - `BROWSER_SUITE=recipeworkshop`: level 1 free empty Serve and an uncounted hint; level 2 two failed Serves lit the glow and counted one hint, a requested hint counted nothing more; level 3 in portrait 768x1024, a dragged dollop selected the right bowl, an unmixed Serve one miss, the bot served the right bowl then the left (misses/hints [1,0]). `fingerdemo` with `FINGER_LEVELS=1,2,3` passed (8.2 s, 8.3 s, 18.7 s). Screenshots inspected: level 1, level 2 glow, level 3 portrait.
 - Not run: `world`, `npm run test:offline`, `couch` (unaffected). Open (DEVICE-CHECKS): layers and blend read by a two-year-old, the late-dollop "not mixed" for three-year-olds, drag versus tap stirring, iPad speech.
+
+## 2026-10-22 — Gear Garden levels 1–3 definition (machines-tools slice 1, docs only)
+
+- Branch `claude/define-gear-garden` (PR #807): definition packet `docs/definitions/gear-garden.md`; READY (build queued, define line removed), study backlog, machines-tools study, Waiting row and recommendations row updated.
+- Ran: a throwaway `landLayout` probe at `964df9cc` measuring Tinker Lab with Gear Garden at every band in four views: it fits at every band, and a 14th game fails at pre-K, school and grown-up (probe file not committed); local link check and `git diff --check`.
+- Open: no code, typecheck, unit tests, build or browser run; the build is gated on the developer confirming the Tinker Lab default and the child-only registration arrangement.
