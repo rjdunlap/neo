@@ -109,6 +109,8 @@ Product details are as the subagent labelled them; nothing was played.
 
 ## A first game's ladder: Look It Up
 
+**Superseded in part by the [definition](../../definitions/look-it-up.md) (2026-10-22):** the developer chose real animal facts, so the guide covers seven real animals with *Eats*, *Where* and *Baby* rows, each fact backed by two opened sources. The island-invented *Plays with* and *Naps at* rows and the Animal Snack link below are dropped, and the home land is Barnyard. The ladder's shape (labels, find the page, the fact box) and its accounting stand.
+
 **The guide.** A picture book on a stand beside the picnic blanket. Each page is about one island friend: a big picture, the friend's name (spoken at every band), and a **fact box in the same place on every page** with three icon rows. *Eats* shows a food picture, *Plays with* a toy, *Naps at* a spot. Picture tabs down the side show each friend's face. The facts are about these island friends, not about all cows: *Eats* comes from Animal Snack's `FAVORITE` table (cow hay, bunny carrots, dog bones, cat fish, duck seeds, pig apples, bear honey), so the two games can never disagree. *Plays with* and *Naps at* are authored island facts in the game's `logic.ts`.
 
 | Level | Name | Bands | First round | What she decides | Mistakes and hints | A rule test asserts | Cost |
@@ -133,14 +135,17 @@ Product details are as the subagent labelled them; nothing was played.
 
 ## Decisions for the developer
 
-1. **A new game, and its land.** Lean: yes to a new game (see *Why a new game rather than a Read & Do mode*). Home: Story Grove if its capacity test passes. Story Grove holds twelve games and Word Glue's default also names it, so the fallback is Painted Canyon (seven games). *Look It Up* is a placeholder name.
-2. **Whose facts.** Lean: the island's own friends, with *Eats* taken from Animal Snack's data and *Plays with* and *Naps at* authored as island facts; a rule test keeps them consistent and no fact reviewer is needed. The alternative is real-animal facts (where a duck sleeps), which route to the zoo-animals reviewer and are not proposed for IR1.
-3. **Printed words at school.** IR2's contents page and captions print names and short sentences with free replay, as Read & Do does. The decision is whether that is welcome at the school band (lean: yes, since Read & Do already does it).
-4. **Person checks to add:** device speech for each page sentence; whether a three-year-old understands that the tabs are faces of pages; tab legibility at 100 units in portrait.
+**Settled 2026-10-22.** The developer chose real animal facts and delegated the rest; see the definition's [decisions taken](../../definitions/look-it-up.md#decisions-taken):
+
+1. A new game, at home in Barnyard (Story Grove stays free for Word Glue).
+2. Real animal facts, each with two opened sources, and no reviewer gate.
+3. Printed captions wait for IR2.
+
+Still open: the person checks (device speech of each fact sentence, whether a three-year-old reads tabs as pages, tab legibility in portrait).
 
 ## Build slices, in order
 
-1. **IR1 define: Look It Up levels 1–3** (docs only, one packet in `docs/definitions/look-it-up.md`): the friend and fact tables (*Eats* from Animal Snack), round tables, page layout at 100-unit targets in both orientations, land capacity, accounting, voice lines, how-to lines, bot, rule tests and asset list. Its build waits on decision 1.
+1. **IR1 define: Look It Up levels 1–3** (docs only, one packet in `docs/definitions/look-it-up.md`): the friend and fact tables (*Eats* from Animal Snack), round tables, page layout at 100-unit targets in both orientations, land capacity, accounting, voice lines, how-to lines, bot, rule tests and asset list. Defined 2026-10-22 ([definition](../../definitions/look-it-up.md)); its build is ready.
 2. **IR1 build** (new-game tier: typecheck, unit tests, one filtered play of levels 1 and 3 with one wrong answer and one hint, `fingerdemo`, one portrait screenshot).
 3. **IR2 define and build: levels 4–6** after IR1 is played and decision 3 is answered.
 4. **Notes to owners** (docs only, no new slice): LEGO's per-step card to Recipe Workshop's later levels; Curcio's levels to Picture Graph; a two-step how-to sign to Read & Do's dive; Diagram Detective to Attic Finds' owner.
