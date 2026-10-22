@@ -414,6 +414,8 @@ Proof: new-game tier, as the [definition's check tier](definitions/adventure-wal
 
 ### sea-lift 1: Levels 1–3
 
+Built 2026-10-22, branch `claude/sea-lift-1-3`; [closeout](archive/COMPLETED-2026-10-09.md#sea-lift-levels-13-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`sea-lift`, levels 1–3 (IN1)** (a new game; school 1–3, Bubble Beach by default): send a glass lift to friends' stops above and below the water line (zero): up or down from the water (1), rides through the water (2), deepest or highest first (3). [Definition](definitions/sea-lift.md), [integers study](deep-dives/subjects/integers.md)
 
 Proof: new-game tier, as the [definition's check tier](definitions/sea-lift.md#check-tier) sets it (typecheck, unit tests, a new `browser-check.mjs` case at levels 1 and 3, `fingerdemo` at levels 1 and 3, one portrait screenshot of level 2, one build). No review gate: levels 1–3 use only "above/below the water"; the educator gate applies from level 4. The [open decisions](definitions/sea-lift.md#open-decisions) all have defaults.

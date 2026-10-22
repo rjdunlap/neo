@@ -1,5 +1,10 @@
 # Needs a person or a device
 
+## Sea Lift levels 1–3
+
+- [ ] On an iPad, hear "three below the water" (and the other spoken counts) and check it never sounds like "minus" or a bare number; check the splash and tick at zero and portrait/landscape touches with the pet clear.
+- [ ] Watch a six- to eight-year-old: does she read the zig-zag landings as one line with the water at zero, notice the splash at zero, and tap the deepest friend first at level 3 (not the biggest number)? Does a grown-up take the caller part?
+
 ## Sound Garden pitch drawing and copying (levels 9–10)
 
 - [ ] On iPad, hear six distinct snapped pitches and the friends joining below; verify speech stays clear before the model sings.
