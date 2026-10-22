@@ -120,7 +120,7 @@ Each slice that adds a level updates `PLANS`, `LEVELS`/`order`/`entryLevels`, `d
 2. **A miss that teaches and hens that wait at levels 2–3** (built). Tier: typecheck, rule tests, `BATCH_ONLY=eggs FROM_LEVEL=2 TO_LEVEL=3` once; the couch team game is untouched but its `control()` input must count as play (check `BROWSER_SUITE=couchgames` filtered to `egg-catch` once).
 3. **Notes, egg colours and the hatching basket** (built; [PR #740](https://github.com/rjdunlap/neo/pull/740)). Tier: content: typecheck, rule tests, one portrait screenshot of level 2 and of the ending.
 4. **Level 8, Under the hen** (built; [PR #748](https://github.com/rjdunlap/neo/pull/748)). Tier: new interaction: typecheck, unit tests (difficulty and how-to included), one scripted play of level 8 with a wrong lane and a hint, one portrait screenshot, `fingerdemo` at 8.
-5. **Level 9, One gate** (ready). Tier: new level on an existing interaction: rule tests, one browser play of level 9, `fingerdemo` at 9.
+5. **Level 9, One gate** (claimed by `codex/egg-catch-one-gate`, worker `01a16150-3dd0-7a20-b562-c6de03f10fb7`; PR pending). Tier: new level on an existing interaction: rule tests, one browser play of level 9, `fingerdemo` at 9.
 6. **Level 10, Fix the run** (ready). Tier: new interaction: unit tests, one scripted play (one miss, one hint), one portrait screenshot, `fingerdemo` at 10. Also extends the `eggs` loop to levels 6–7.
 7. **Level 11, Flip-flop gate** (ready, after slice 6). Same tier as slice 6.
 8. **Every touch answers at level 1** (after V2's person check). Tier: rule tests, a rapid-tap regression play at level 1, `fingerdemo` at 1.
