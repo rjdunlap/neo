@@ -61,6 +61,7 @@ The research is complete for every row below; `define` means the next session wr
 | `ratio-proportion` | define | Paint Mixer 1–4 | [Study](deep-dives/subjects/ratio-proportion.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#ratio-and-proportion-recommendations) |
 | `chance-statistics` | define | Spinner Fair 1–5 | [Study](deep-dives/subjects/chance-statistics.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#chance-and-statistics-recommendations) |
 | `algebra-balance` | define | Rule Machine 1–4 | [Study](deep-dives/subjects/algebra-balance.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#algebra-and-balance-recommendations) |
+| `integers` | define | Sea Lift 1–3 (IN1) | [Study](deep-dives/subjects/integers.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#integers-recommendations) |
 
 ## Unstarted subject research
 
@@ -68,7 +69,6 @@ One subject per docs-only session using the [subject procedure](deep-dives/subje
 
 | Subject | Status | Next action |
 | --- | --- | --- |
-| `integers` | research | Below zero: temperature, sea level, floors, owing and having; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `area-volume-space` | research | Area and perimeter, filling boxes, nets, views and the coordinate grid; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `estimation` | research | Guess, then check: how many, how long, how heavy; a sensible range; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `speaking-listening` | research | Conversation, retelling, describing, asking, following and giving directions (the island cannot hear her, so co-play and cards); use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |

@@ -443,3 +443,11 @@
 - Updated the subject tracker, recommendations, roadmap table, idea notebook, study backlog, READY (research line out, M1 definition line in) and WAITING-ON-DEVELOPER.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser, offline (docs only). Nothing is built; no reference game was played and no iPad or child check applies yet.
+
+## 2026-10-21 — Feelings Faces helping and explaining happenings (slices 3–5)
+
+- [PR #766](https://github.com/rjdunlap/neo/pull/766), `codex/feelings-help-and-happenings`: levels 10 (two helpers), 11 (two friends react differently) and 13 (face plus leftover clue); spoken support, how-tos, seeded rules and bots. School order `[11, 13]`; level 12 remains queued.
+- Tested base `origin/main` `6edf9431` plus working diff. Full `npm test` before the final mood-feedback fix passed (206 files, 2422 passed, 4 skipped). After that fix, typecheck, 16 focused rule tests and build passed (existing chunk-size warning).
+- `GAME_URL=http://localhost:5173 BROWSER_SUITE=feelingsbatch` passed levels 10, 11 and 13: four questions each, two wrong choices, one glow hint, preserved level-13 evidence, completion and one sticker. Level 11 passed again after scene simplification/main integration and the final repeat-question fix: actual transformed-coordinate taps on both friends in every question preserve their shown moods. Restoring the old `poke()` feedback makes this regression fail (it briefly changes a face to surprised); the corrected hop passes. An intermediate art-edit Vite reload invalidated a check.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=feelings-faces FINGER_LEVELS=10,11,13` clean in 9.9/13.6/19.1 s before unrelated main integration and the final repeat-question hop fix; the bot taps only unchanged answer cards, so this evidence remains applicable. Inspected `test-results/browser/feelings-faces-11-portrait.png` and `feelings-faces-13-landscape.png`; clear.
+- Not run: world, offline, couch, story, device speech or child play (shared contracts unchanged; new-interaction tier). iPad speech, named-friend reading and clue understanding remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).

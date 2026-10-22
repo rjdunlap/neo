@@ -151,4 +151,4 @@ Level 9 (lap entry, `entryLevels`) and level 10 (toddler, between 2 and 3) above
 
 ## What was built in this session
 
-The original dive was research only. Slices 1–6 are now built (see the slice markers above); the Helping and explaining happenings batch is recorded in the [archive](../archive/COMPLETED-2026-10-09.md#feelings-faces-helping-and-explaining-happenings-2026-10-21) and [verification](../VERIFICATION.md#2026-10-21--feelings-faces-helping-and-explaining-happenings-slices-35).
+The original dive was research only. Slices 1–6 are now built (see the slice markers above); the Helping and explaining happenings batch is recorded in the [archive](../archive/COMPLETED-2026-10-09.md#feelings-faces-helping-and-explaining-happenings-2026-10-21) and [verification](../archive/VERIFICATION-2026-10-21.md#2026-10-21--feelings-faces-helping-and-explaining-happenings-slices-35).
