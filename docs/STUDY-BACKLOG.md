@@ -32,7 +32,7 @@ The research is complete for every row below; `define` means the next session wr
 | `social-emotional` | define | Playdate Workshop | [Study](deep-dives/subjects/social-emotional.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#social-emotional-play-recommendations) |
 | `off-screen-companions` | define | Per-band off-screen lines: scope and review boundaries | [Study](deep-dives/subjects/off-screen-companions.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#off-screen-companions-recommendations) |
 | `machines-tools` | define | Gear Garden | [Study](deep-dives/subjects/machines-tools.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#machines-and-tools-recommendations) |
-| `life-science` | define | Seed Travelers | [Study](deep-dives/subjects/life-science.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#life-science-recommendations) |
+| `life-science` | decision | Seed Travelers 1–3 defined 2026-10-21; build (slice 2) waits on the developer confirming the packet's decisions 1–2 (identity, land) | [Definition](definitions/seed-travelers.md), [Study](deep-dives/subjects/life-science.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#life-science-recommendations) |
 | `cells-microbes` | define | Puddle Lens | [Study](deep-dives/subjects/cells-microbes.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations) |
 | `space` | define | Moon Window | [Study](deep-dives/subjects/space.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#space-science-recommendations) |
 | `astronomy` | define | Far Lights | [Study](deep-dives/subjects/astronomy.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#astronomy-recommendations) |
