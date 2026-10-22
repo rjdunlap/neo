@@ -96,6 +96,7 @@ import { atticFinds } from './attic-finds';
 import { fossilDig } from './fossil-dig';
 import { lostLayers } from './lost-layers';
 import { seaLift } from './sea-lift';
+import { recipeWorkshop } from './recipe-workshop';
 import { trackwayTales } from './trackway-tales';
 import { critterCrossing } from './critter-crossing';
 import { sudokuGarden } from './sudoku-garden';
@@ -209,6 +210,7 @@ export const GAMES: GameModule[] = [
   fossilDig,
   lostLayers,
   seaLift,
+  recipeWorkshop,
   trackwayTales,
   critterCrossing,
   clapSyllables,

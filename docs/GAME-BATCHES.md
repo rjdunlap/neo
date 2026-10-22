@@ -422,6 +422,8 @@ Proof: new-game tier, as the [definition's check tier](definitions/sea-lift.md#c
 
 ### recipe-workshop 1: Levels 1–3
 
+Built 2026-10-22, branch `claude/recipe-workshop-1-3`; [closeout](archive/COMPLETED-2026-10-09.md#recipe-workshop-levels-13-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`recipe-workshop`, levels 1–3 (C2–C4)** (a new game, one declared batch of three named parts; toddler 1, preschool 1–2, pre-K 2–3, Cozy Village by default): tap pots of pretend fruit mash and a white base into a bowl, mix with the spoon into one blend, add a star or leaf topper and Serve. **C2** level 1, My bowl (free); **C3** level 2, Follow the picture (one of each in either order, then mix); **C4** level 3, Bowls for two (two bowls, each with its own topper). [Definition](definitions/recipe-workshop.md), [cooking study slices C2–C4](deep-dives/subjects/cooking-recipes.md#build-slices-in-order)
 
 Proof: as the [definition's check tier](definitions/recipe-workshop.md#check-tier) sets it: new-game tier for C2, new-interaction tier for C3, new levels plus the bowl-selection control for C4; one `browser-check.mjs` case growing across the three, `fingerdemo` at levels 1–3, one build. If the allowance cannot cover all three, stop after a complete C2 or C3 with a draft-PR checkpoint. No review gate: screen-only pretend food; the [open decisions](definitions/recipe-workshop.md#open-decisions) all have defaults.

@@ -1,5 +1,11 @@
 # Needs a person or a device
 
+## Recipe Workshop levels 1–3
+
+- [ ] Watch a two-year-old at level 1: do the dollop layers read as separate things and the blend as "mixed"? Does a toddler's drag of the spoon work better than a tap?
+- [ ] Watch a three-year-old at level 2 and a four- to five-year-old at level 3: do they see why a dollop added after the stir makes the bowl "not mixed", and can they tell which bowl is selected?
+- [ ] On an iPad, hear the recipe lines ("One spoon of berries, one spoon of yogurt, then mix.") and the base word, and check the pet clear of the pots in portrait.
+
 ## Sea Lift levels 1–3
 
 - [ ] On an iPad, hear "three below the water" (and the other spoken counts) and check it never sounds like "minus" or a bare number; check the splash and tick at zero and portrait/landscape touches with the pet clear.
