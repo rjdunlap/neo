@@ -13,7 +13,7 @@ import { spread, type View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { clothing, itemIcon } from './art';
-import { GROUND_TOUCH, ITEM_NAMES, ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfits, wardrobePlan, WEATHERS, type Item, type Outfit, type WardrobePlan, type Weather } from './logic';
+import { GROUND_TOUCH, ITEM_NAMES, ITEM_WORDS, ITEMS, itemToTap, outfitFor, outfits, SLOTS, STICKER_ITEMS, wardrobePlan, WEATHERS, type Item, type Outfit, type WardrobePlan, type Weather } from './logic';
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -234,11 +234,11 @@ class WeatherWardrobe implements Game {
     void this.ctx.say('weather.name', { item: ITEM_NAMES[item] });
   }
 
-  /** Free play: the pet changes into everything for the weather. */
+  /** Free play: the pet changes into a whole outfit for the weather, one thing per slot. */
   private dressFor(w: Weather) {
     this.undress();
     // Quick taps can change the weather again before everything is on; only dress for the current one.
-    itemsFor(w).forEach((item, i) => void this.ctx.tw.wait(0.25 + i * 0.2).then(() => this.weather === w && !this.worn.has(item) && this.put(item, (e) => this.nameWorn(e))));
+    outfitFor(w, this.ctx.rng).forEach((item, i) => void this.ctx.tw.wait(0.25 + i * 0.2).then(() => this.weather === w && !this.worn.has(item) && this.put(item, (e) => this.nameWorn(e))));
   }
 
   // Rounds -------------------------------------------------------------------------
@@ -335,6 +335,8 @@ class WeatherWardrobe implements Game {
       onTap(c, touched);
     }
     this.pet.attach(c);
+    // A coat goes on under everything else, so a scarf put on first still shows over it.
+    if (SLOTS[item] === 'body') for (const node of this.worn.values()) this.pet.attach(node);
     this.worn.set(item, c);
     c.scale.set(0.6);
     void this.ctx.tw.to(c.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
@@ -525,7 +527,7 @@ function wardrobeArt(seed = 1): Container {
   const rng = new Rng(seed);
   const w = rng.pick(WEATHERS);
   const c = new Container();
-  const item = itemIcon(rng.pick(itemsFor(w)), 120);
+  const item = itemIcon(rng.pick(STICKER_ITEMS.filter((i) => ITEMS[i] === w)), 120);
   item.y = -70;
   const icon = weatherIcon(w, 60);
   icon.position.set(70, -150);

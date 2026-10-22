@@ -74,6 +74,41 @@ export function clothing(item: Item): Container {
         g.roundRect(side * 138 - 26, -70, 52, 14, 6).fill(swatch.purple.light);
       }
       break;
+    case 'sandals':
+      for (const side of [-1, 1]) {
+        const x = side * 40;
+        g.ellipse(x + side * 6, 4, 38, 13).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 5));
+        g.moveTo(x - 26, -2).quadraticCurveTo(x, -26, x + 26, -2).stroke(line(swatch.pink.line, 13));
+        g.moveTo(x - 26, -2).quadraticCurveTo(x, -26, x + 26, -2).stroke(line(swatch.pink.fill, 7));
+        g.circle(x, -14, 7).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
+      }
+      break;
+    case 'rainhat': {
+      // A sou'wester: a round crown and a wide brim that droops down at the sides to shed the rain.
+      const oil = swatch.green;
+      g.moveTo(-92, -232).quadraticCurveTo(-88, -306, 0, -310).quadraticCurveTo(88, -306, 92, -232).closePath().fill(oil.fill).stroke(line(oil.line));
+      g.moveTo(-140, -196).quadraticCurveTo(-118, -248, 0, -250).quadraticCurveTo(118, -248, 140, -196).quadraticCurveTo(0, -222, -140, -196).closePath().fill(oil.light).stroke(line(oil.line));
+      g.moveTo(0, -306).lineTo(0, -246).moveTo(-46, -298).quadraticCurveTo(-56, -270, -52, -244).moveTo(46, -298).quadraticCurveTo(56, -270, 52, -244).stroke(line(oil.line, 4));
+      break;
+    }
+    case 'earmuffs': {
+      const fluff = swatch.pink;
+      g.moveTo(-108, -186).quadraticCurveTo(-112, -324, 0, -326).quadraticCurveTo(112, -324, 108, -186).stroke(line(fluff.line, 16));
+      g.moveTo(-108, -186).quadraticCurveTo(-112, -324, 0, -326).quadraticCurveTo(112, -324, 108, -186).stroke(line(fluff.light, 8));
+      for (const side of [-1, 1]) {
+        g.circle(side * 110, -182, 36).fill(fluff.fill).stroke(line(fluff.line, 5));
+        for (const [dx, dy] of [[-12, -10], [12, -6], [0, 12]] as const) g.circle(side * 110 + dx, -182 + dy, 9).fill(fluff.light);
+      }
+      break;
+    }
+    case 'puffycoat': {
+      // Blue and quilted, so it never looks like the yellow raincoat and still shows under the red scarf.
+      const down = swatch.blue;
+      g.moveTo(-128, -78).quadraticCurveTo(-154, -42, -126, -6).lineTo(126, -6).quadraticCurveTo(154, -42, 128, -78).quadraticCurveTo(0, -96, -128, -78).closePath().fill(down.fill).stroke(line(down.line));
+      for (const y of [-62, -34]) g.moveTo(-140, y + 4).quadraticCurveTo(0, y - 12, 140, y + 4).stroke(line(down.line, 5));
+      g.moveTo(0, -80).lineTo(0, -6).stroke(line(down.light, 6));
+      break;
+    }
   }
   c.addChild(g);
   return c;
