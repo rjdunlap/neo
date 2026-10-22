@@ -19,3 +19,10 @@
 - [PR #767](https://github.com/rjdunlap/neo/pull/767), `claude/define-big-worms`: defined Inchworm Measure level 7 *Big worms, little worms* ([definition](../definitions/big-worms-little-worms.md)); batch plan, READY, study backlog and the study's slices updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only). Open: the M2 build; nothing is built.
+
+## 2026-10-22 — Peg Garden numbered buds, shot trail, shell tray and board themes (slices 2-3)
+
+- [PR #770](https://github.com/rjdunlap/neo/pull/770), `claude/peg-garden-buds-and-themes`, code `3fd33664` on base `6daa9a47`: only the asked numeral blooms at levels 4-5, a faint last-shot trail, a shell tray, four board shapes and three backdrops (couch keeps the first look); how-to card and `pegs` browser case updated.
+- Passed `npm run typecheck`; `npm test` (206 files, 2431 tests); peg-garden rule tests (12, including shape spacing and room, no wedge on the newer shapes, `pickTheme` covering every shape and backdrop, `blooms()`, tray slots). At http://localhost:5604: `BROWSER_SUITE=batch BATCH_ONLY=pegs FROM_LEVEL=4 TO_LEVEL=5` (level 4 score 3,1; level 5 score 2,1; level 5 failed twice before the script used the game's `aimAt` margins); `BROWSER_SUITE=couchgames COUCH_ONLY=peg-garden` passed before and after the edits; one probe screenshot per backdrop (landscape shallows level 4, landscape reef level 3, portrait 768x1024 kelp level 5).
+- Not run: `fingerdemo` (aim bot unchanged), levels 1-3 browser play, `npm run build` (no shared files or assets changed), device or child play.
+- Open: gap 12 (a pearl can wedge near the wall on the `rows` shape the couch keeps, or balance on a bud, until the 10-second cutoff; [dive](../deep-dives/peg-garden.md#the-game-today)).
