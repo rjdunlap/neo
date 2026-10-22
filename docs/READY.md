@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`shape-sorter`, Sorting entry, shape pool and three sizes** (one implementation batch; 3 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#shape-sorter-1-sorting-entry-shape-pool-and-three-sizes).
 - **`shape-sorter`, Turn it to fit** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#shape-sorter-2-turn-it-to-fit).
 - **Study `integers`: define Sea Lift 4–5 (IN2)** (docs only; status `define`): one bounded packet from the completed study and the built Sea Lift 1–3; the mathematics educator reads the level-4 card distractors before any build. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#integers-recommendations).
 - **`photo-safari`, Tell me which and Tell me both, levels 10–11 (SL1–2)** (one implementation batch; 2 original subtasks; new interaction in an existing game): [definition](definitions/photo-safari-tell-me-which.md), [scope and levels](GAME-BATCHES.md#photo-safari-1-tell-me-which-and-tell-me-both).

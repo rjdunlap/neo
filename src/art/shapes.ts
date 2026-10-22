@@ -54,8 +54,22 @@ export function musicNote(g: Graphics, size: number, color: number): Graphics {
   return g.poly([-1 * s, -20 * s, 14 * s, -14 * s, 14 * s, -8 * s, -1 * s, -13 * s]).fill(color);
 }
 
-export type ShapeKind = 'circle' | 'square' | 'triangle' | 'star' | 'heart' | 'hexagon';
+export type ShapeKind =
+  | 'circle'
+  | 'square'
+  | 'triangle'
+  | 'star'
+  | 'heart'
+  | 'hexagon'
+  | 'oval'
+  | 'rectangle'
+  | 'diamond'
+  | 'pentagon'
+  | 'trapezoid';
+/** The classic six. Games that deal "any shape" use these; the five later kinds join only where a game lists them. */
 export const SHAPES: ShapeKind[] = ['circle', 'square', 'triangle', 'star', 'heart', 'hexagon'];
+/** The later five, for games that teach more shape names (Shape Sorter's pool). */
+export const MORE_SHAPES: ShapeKind[] = ['oval', 'rectangle', 'diamond', 'pentagon', 'trapezoid'];
 
 function regular(sides: number, r: number, turn = -Math.PI / 2): number[] {
   return Array.from({ length: sides * 2 }, (_, i) => {
@@ -83,6 +97,16 @@ export function shapePath(g: Graphics, kind: ShapeKind, r: number): Graphics {
         .bezierCurveTo(-r * 1.3, r * 0.05, -r * 0.95, -r * 1.05, 0, -r * 0.42)
         .bezierCurveTo(r * 0.95, -r * 1.05, r * 1.3, r * 0.05, 0, r * 0.95)
         .closePath();
+    case 'oval':
+      return g.ellipse(0, 0, r * 1.12, r * 0.72);
+    case 'rectangle':
+      return g.roundRect(-r * 1.08, -r * 0.64, r * 2.16, r * 1.28, r * 0.14);
+    case 'diamond':
+      return g.poly([0, -r * 1.18, r * 1.18, 0, 0, r * 1.18, -r * 1.18, 0]);
+    case 'pentagon':
+      return g.poly(regular(5, r * 1.06).map((v, i) => (i % 2 ? v + r * 0.08 : v)));
+    case 'trapezoid':
+      return g.poly([-r * 0.62, -r * 0.7, r * 0.62, -r * 0.7, r * 1.12, r * 0.7, -r * 1.12, r * 0.7]);
   }
 }
 
