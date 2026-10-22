@@ -17,7 +17,7 @@ vi.mock('../../ui/buttons', async () => {
   } };
 });
 vi.mock('../../engine/drag', () => ({ draggable: (node: object, _tw: unknown, opts: { onPick: () => void }) => { pick.set(node, opts.onPick); return { enabled: true, home: { x: 0, y: 0 }, destroy: vi.fn() }; } }));
-vi.mock('../../audio/sfx', () => ({ sfx: { sparkle: vi.fn(), pop: vi.fn(), tick: vi.fn(), marimba: vi.fn() } }));
+vi.mock('../../audio/sfx', () => ({ sfx: { sparkle: vi.fn(), pop: vi.fn(), tick: vi.fn(), marimba: vi.fn(), squish: vi.fn(), animal: vi.fn() } }));
 
 /** Exercise the game's real editing/finish callbacks, holding its scene-owned celebration wait open. */
 function round(level: number) {
@@ -204,6 +204,53 @@ describe('Stamp Studio bin and early stopping', () => {
     r.wake(); await Promise.resolve();
     expect(r.finish).toHaveBeenCalledTimes(1);
     expect(r.finish.mock.calls[0][0]).toMatchObject({ misses: 0, hints: 0 });
+    r.cleanup();
+  });
+});
+
+describe('Trace Prints play', () => {
+  type Trace = { sheet: Container; finish: Container; undo: Container; makers: Container[]; prints: unknown[]; done: boolean; chosen: string;
+    autotouch(): unknown; resize(v: unknown): void; destroy(): void };
+  function trace(level: number) {
+    let wake!: () => void;
+    const finish = vi.fn<(result: RoundResult) => void>(), say = vi.fn(), stage = new Container();
+    const ctx = { level, stage, say, instruct: vi.fn(), rng: new Rng(3), finish,
+      tw: { wait: () => new Promise<void>(resolve => { wake = resolve; }), kill: vi.fn(), to: vi.fn(() => new Promise<void>(() => {})) } } as unknown as GameContext;
+    const game = stampStudio.create(ctx) as unknown as Trace;
+    game.resize({ w: 1024, h: 768 });
+    const tap = (x = 400, y = 300) => press.get(game.sheet)!({ global: new Point(x, y) } as FederatedPointerEvent);
+    return { game, finish, say, tap, wake: () => wake(), cleanup: () => { game.destroy(); stage.destroy({ children: true }); } };
+  }
+  it('level 9: chooses a foot, says the pair once, undoes, and finishes on the arrow with nothing kept', async () => {
+    const { sfx } = await import('../../audio/sfx');
+    const r = trace(9);
+    expect(r.game.makers).toHaveLength(2); expect(r.game.chosen).toBe('duck'); expect(r.game.finish.visible).toBe(false);
+    r.tap(); expect(r.game.prints).toHaveLength(1); expect(r.game.finish.visible).toBe(true); expect(sfx.squish).toHaveBeenCalled();
+    press.get(r.game.makers[1])!(); expect(r.game.chosen).toBe('paw'); expect(sfx.animal).toHaveBeenCalledWith('meow');
+    r.tap(500, 300);
+    expect(r.say.mock.calls.filter(c => c[0] === 'stamp.pair')).toHaveLength(1);
+    press.get(r.game.undo)!(); expect(r.game.prints).toHaveLength(1);
+    r.tap(500, 300); r.tap(600, 300);
+    expect(r.say.mock.calls.filter(c => c[0] === 'stamp.pair')).toHaveLength(1);
+    press.get(r.game.finish)!();
+    expect(r.game.done).toBe(true); expect(r.game.autotouch()).toBeNull();
+    // Nothing changes after the finish.
+    r.tap(); press.get(r.game.undo)!(); press.get(r.game.makers[0])!(); press.get(r.game.finish)!();
+    expect(r.game.prints).toHaveLength(3); expect(r.game.chosen).toBe('paw');
+    r.wake(); await Promise.resolve();
+    expect(r.finish).toHaveBeenCalledTimes(1);
+    expect(r.finish.mock.calls[0][0]).toEqual({ misses: 0, hints: 0 });
+    r.cleanup();
+  });
+  it('level 8: one leaf, no buttons to choose, and the eighth pat finishes by itself', async () => {
+    const r = trace(8);
+    expect(r.game.makers).toHaveLength(0);
+    for (let i = 0; i < 7; i++) r.tap(300 + i * 40, 300);
+    expect(r.game.done).toBe(false);
+    expect(r.say.mock.calls.filter(c => c[0] === 'stamp.leafmark')).toHaveLength(1);
+    r.tap(); expect(r.game.done).toBe(true); r.tap(); expect(r.game.prints).toHaveLength(8);
+    r.wake(); await Promise.resolve();
+    expect(r.finish).toHaveBeenCalledWith({ misses: 0, hints: 0 });
     r.cleanup();
   });
 });

@@ -7569,8 +7569,50 @@ async function creativeBatch() {
   const only = process.env.CREATIVE_ONLY;
   const score = id => page.evaluate(id => { const r=kit.store.stats(id).history.at(-1);return [r.misses,r.hints]; },id);
   const fromLevel = Number(process.env.FROM_LEVEL || 1);
-  const stampLevels = process.env.STAMP_LEVELS?.split(',').map(Number) ?? Array.from({ length: Math.max(0, 7 - fromLevel) }, (_, i) => fromLevel + i);
-  if (!only || only === 'stamps') {
+  const chosenLevels = process.env.STAMP_LEVELS?.split(',').map(Number);
+  const stampLevels = chosenLevels?.filter(l => l < 7) ?? Array.from({ length: Math.max(0, 7 - fromLevel) }, (_, i) => fromLevel + i);
+  const stampAt = level => !chosenLevels || chosenLevels.includes(level);
+  if ((!only || only === 'stamps') && stampAt(8)) {
+    // Level 8, Leaf prints (lap): eight quick pats in the mud are all kept, each a print, and the eighth finishes by itself.
+    await launch('stamp-studio', 8);
+    await page.evaluate(() => { if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40); });
+    await page.waitForTimeout(500);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      if (g.makers.length !== 0 || g.finish.visible) throw new Error('Leaf prints shows a choice or an early arrow');
+      for (let i = 0; i < 8; i++) { const p = g.paper.toGlobal({ x: 120 + (i % 4) * 140, y: 130 + Math.floor(i / 4) * 200 }); kit.tap(p.x, p.y); await kit.sleep(i === 7 ? 150 : 60); if (i === 0 && !g.finish.visible) throw new Error('No green arrow after the first print'); if (i === 6 && g.done) throw new Error('Finished before the eighth pat'); }
+      if (g.prints.length !== 8 || !g.done) throw new Error(`Leaf prints kept ${g.prints.length} prints, done ${g.done}`);
+      if (g.prints.some(p => p.maker !== 'leaf' || p.node.destroyed)) throw new Error('A leaf print is missing');
+    });
+    await screenshot('stamp-studio-8');
+    await finished('stamp-studio');
+    assert.deepEqual(await score('stamp-studio'), [0, 0], 'leaf prints count no misses or hints');
+  }
+  if ((!only || only === 'stamps') && stampAt(9)) {
+    // Level 9, Two feet (toddler): duck prints, choose the paw, paw prints, the back arrow, then the green arrow; portrait.
+    await launch('stamp-studio', 9);
+    await page.evaluate(() => { if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40); });
+    await page.waitForTimeout(500);
+    await page.evaluate(async () => {
+      const g = neo.scene.game, at = (x, y) => { const p = g.paper.toGlobal({ x, y }); kit.tap(p.x, p.y); };
+      if (g.makers.length !== 2 || g.chosen !== 'duck') throw new Error('Two feet does not start on the duck foot');
+      at(150, 130); await kit.sleep(700); at(330, 150); await kit.sleep(700);
+      kit.tapOn(g.makers[1]); await kit.sleep(700);
+      if (g.chosen !== 'paw') throw new Error('The paw button did not choose the paw');
+      at(200, 330); await kit.sleep(700); at(450, 320); await kit.sleep(700); at(560, 150); await kit.sleep(700);
+      if (g.prints.map(p => p.maker).join() !== 'duck,duck,paw,paw,paw') throw new Error(`Prints ${g.prints.map(p => p.maker)}`);
+      kit.tapOn(g.undo); await kit.sleep(500);
+      if (g.prints.length !== 4) throw new Error('The back arrow did not smooth away the latest print');
+    });
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(700);
+    await page.evaluate(() => { const g = neo.scene.game, r = g.sheet.getBounds(); for (const p of g.prints) { const b = p.node.getBounds(); if (b.x < r.x - 1 || b.y < r.y - 1 || b.x + b.width > r.x + r.width + 1 || b.y + b.height > r.y + r.height + 1) throw new Error('A print left the mud in portrait'); } });
+    await screenshot('stamp-studio-9-portrait');
+    await page.evaluate(() => kit.tapOn(neo.scene.game.finish));
+    await finished('stamp-studio');
+    assert.deepEqual(await score('stamp-studio'), [0, 0], 'two feet counts no misses or hints');
+    await page.setViewportSize({ width: 1024, height: 768 });
+  }
+  if ((!only || only === 'stamps') && stampAt(7)) {
     // Level 7, Pat the paper (lap): eight quick pats are all kept and the eighth finishes the picture by itself.
     await launch('stamp-studio', 7);
     await page.evaluate(() => { if (neo.scene.tip) kit.tapOn(neo.scene.tip, 0, 40); });

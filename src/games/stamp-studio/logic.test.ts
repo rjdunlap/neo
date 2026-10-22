@@ -10,6 +10,9 @@ import { stampStudio } from './index';
 import { cleanPicture } from '../../content/creations';
 import { playOrder, planFor } from './logic';
 import { PENTATONIC, stepToMidi } from '../../audio/notes';
+import { TILTS, TRACE_MAKERS, traceBounds, traceDemo, traceMargin, tracePress, traceReach, traceRound, traceShape, traceTilt, traceUndo, type TraceMakerId } from './logic';
+import { landing, levelsInOrder } from '../../progress/difficulty';
+import { spread } from '../../engine/view';
 describe('Stamp Studio', () => {
   it('keeps stamps on paper through resize, including edge drops', () => {
     for (const [w,h] of [[674,478],[674,1075],[1200,478]]) for (const x of [-300,0,300,2000]) for(const y of [-500,0,250,2000]) {
@@ -28,7 +31,7 @@ describe('Stamp Studio', () => {
     // The smallest sheet the game draws (the 1024 by 768 design: 674 by 478).
     const [w, h] = [674, 478];
     for (const plan of [...PLANS.slice(0, 6), ...Array.from({ length: 150 }, (_, i) => roundPlan(i % 3 + 1, new Rng(Math.floor(i / 3))).plan)]) {
-      const st: StampState = { stamps: [], kind: plan.kinds[0], color: 'purple' };
+      const st: StampState = { stamps: [], kind: plan.kinds[0]!, color: 'purple' };
       const kinds = new Set<StampKind>();
       let move = false;
       let finished = false;
@@ -143,7 +146,7 @@ describe('seeded early stamp choices', () => {
 
   it('Pat the paper is the easiest lap level and its bot pats eight times then finishes', () => {
     const plan = PLANS[6];
-    expect(stampStudio.levels!('lap')).toEqual({ min: 1, max: 7, order: [7, 1, 2] });
+    expect(stampStudio.levels!('lap')).toEqual({ min: 1, max: 8, order: [7, 8, 1, 2] });
     expect(plan.pat).toEqual({ size: 85 / 48, count: 8 });
     const st: StampState = { stamps: [], kind: 'star', color: 'purple' };
     for (let n = 0; n < 8; n++) { expect(stampDemo(plan, st).do).toBe('stamp'); st.stamps.push({ x: 0, y: 0, size: 2, turns: 0 }); }
@@ -169,7 +172,115 @@ describe('seeded early stamp choices', () => {
     // Ties in x sound top first.
     expect(playOrder([{ x: 0.3, y: 0.9 }, { x: 0.3, y: 0.1 }]).map(t => t.index)).toEqual([1, 0]);
   });
-  it('offers play-back from level 3 to 6, never at the lap levels or Pat the paper', () => {
-    expect([1, 2, 3, 4, 5, 6, 7].map(l => !!(planFor(l) as { play?: boolean }).play)).toEqual([false, false, true, true, true, true, false]);
+  it('offers play-back from level 3 to 6, never at the lap levels, Pat the paper or the trace levels', () => {
+    expect([1, 2, 3, 4, 5, 6, 7, 8, 9].map(l => !!planFor(l).play)).toEqual([false, false, true, true, true, true, false, false, false]);
+  });
+});
+
+describe('Trace Prints (levels 8–9)', () => {
+  const leaf = planFor(8).trace!, feet = planFor(9).trace!;
+  it('appends two levels and leaves levels 1–7 as they were', () => {
+    expect(PLANS).toHaveLength(9);
+    expect(PLANS.slice(0, 7).map(p => [p.prompt, p.kinds, p.name, 'trace' in p])).toEqual([
+      ['stars', ['star'], 'Press one kind of stamp onto a picture', false],
+      ['friends', ['cat', 'fish'], 'Make a picture with two kinds of stamps', false],
+      ['picture', ['star', 'flower', 'fish'], 'Choose colors, stamp, and rearrange a picture', false],
+      ['sizes', ['star', 'flower', 'fish', 'cat'], 'Turn stamps and make them big or small', false],
+      ['garden', ['star', 'flower', 'fish', 'cat'], 'Make an imaginary garden, then tell its story', false],
+      ['story', ['star', 'flower', 'fish', 'cat'], 'Make two friends on an adventure; every story is welcome', false],
+      ['pats', ['star'], 'Pat the paper: eight big soft stamps make a picture', false],
+    ]);
+    // Seeded early rounds draw the same as before the append.
+    expect(roundPlan(2, new Rng(5))).toEqual(roundPlan(2, new Rng(5)));
+    expect(leaf).toEqual({ makers: ['leaf'], count: 8, tilt: true });
+    expect(feet).toEqual({ makers: ['duck', 'paw'], count: 10, tilt: false });
+    for (const p of [planFor(8), planFor(9)]) expect([p.color, p.move, p.transform, !!p.play, p.kinds.length]).toEqual([false, false, false, false, 0]);
+  });
+  it('puts level 8 in lap and level 9 first in toddler; a carried trace level starts another band at its easiest', () => {
+    expect(stampStudio.levels!('lap')).toEqual({ min: 1, max: 8, order: [7, 8, 1, 2] });
+    expect(stampStudio.levels!('toddler')).toEqual({ min: 2, max: 9, order: [9, 2, 3] });
+    expect(stampStudio.levels!('preschool')).toEqual({ min: 3, max: 5 });
+    expect(stampStudio.levels!('prek')).toEqual({ min: 4, max: 6 });
+    expect(stampStudio.levels!('school')).toEqual({ min: 5, max: 6 });
+    expect(stampStudio.entryLevels).toEqual([7, 8, 9]);
+    for (const l of [8, 9]) expect(landing(l, stampStudio.levels!('preschool'), stampStudio.entryLevels)).toBe(3);
+    expect(landing(7, stampStudio.levels!('toddler'), stampStudio.entryLevels)).toBe(9);
+    for (const l of [1, 2, 7]) expect(landing(l, stampStudio.levels!('lap'), stampStudio.entryLevels)).toBe(l);
+    for (const l of [2, 3]) expect(landing(l, stampStudio.levels!('toddler'), stampStudio.entryLevels)).toBe(l);
+    expect(levelsInOrder(stampStudio.levels!('toddler'))[0]).toBe(9);
+    expect(stampStudio.describeLevel!(8)).toMatch(/Leaf prints/); expect(stampStudio.describeLevel!(9)).toMatch(/Two feet/);
+  });
+  it('keeps every maker big, and every print wholly on the mud at any tilt, at the smallest paper and in portrait', () => {
+    for (const id of ['leaf', 'duck', 'paw'] as TraceMakerId[]) {
+      expect(TRACE_MAKERS[id].across).toBeGreaterThanOrEqual(150);
+      expect(traceBounds(id).w).toBeCloseTo(TRACE_MAKERS[id].across, 5);
+      const margin = traceMargin(id), reach = traceReach(id);
+      expect(margin).toBeGreaterThanOrEqual(TRACE_MAKERS[id].across / 2 + 5);
+      for (const [w, h] of [[674, 478], [674, 1075], [1200, 478]]) for (const x of [-300, 0, 300, 2000]) for (const y of [-500, 0, 250, 2000]) {
+        const p = pixel(place(x, y, w, h, margin), w, h, margin);
+        expect(p.x - reach).toBeGreaterThanOrEqual(0); expect(p.x + reach).toBeLessThanOrEqual(w);
+        expect(p.y - reach).toBeGreaterThanOrEqual(0); expect(p.y + reach).toBeLessThanOrEqual(h);
+      }
+    }
+    // The level-9 buttons are 120 across and sit apart, clear of the back arrow (radius 48 at v.w − 77).
+    for (const vw of [1024, 1366, 768]) {
+      const xs = spread(2, 185, vw - 180, 135);
+      expect(xs[1] - xs[0]).toBeGreaterThanOrEqual(120);
+      expect(vw - 77 - 48 - (xs[1] + 60)).toBeGreaterThan(0);
+    }
+    expect(new Set([...Array(200)].map((_, i) => traceTilt(new Rng(i))))).toEqual(new Set(TILTS));
+  });
+  it('makes different marks for the duck foot and the cat paw, not just different colours', () => {
+    expect(TRACE_MAKERS.duck.toes).not.toBe(TRACE_MAKERS.paw.toes);
+    const aspect = (id: TraceMakerId) => traceBounds(id).w / traceBounds(id).h;
+    expect(Math.abs(aspect('duck') - aspect('paw')) / Math.min(aspect('duck'), aspect('paw'))).toBeGreaterThanOrEqual(0.15);
+    expect(traceShape('paw').circles).toHaveLength(1 + TRACE_MAKERS.paw.toes);
+    expect(traceShape('duck').lines).toHaveLength(TRACE_MAKERS.duck.toes);
+    expect(traceShape('leaf').lines).toHaveLength(5);
+  });
+  it('finishes exactly once at its count, and the demonstration reaches a finish using every maker', () => {
+    for (const plan of [leaf, feet]) {
+      const round = traceRound();
+      let finishes = 0;
+      for (let i = 0; i < plan.count + 3; i++) if (tracePress(plan, round, plan.makers[i % plan.makers.length]).finish) finishes++;
+      expect(finishes).toBe(1); expect(round.prints).toHaveLength(plan.count);
+      // The demonstration, from an empty tray, choosing and pressing as it asks.
+      const demo = traceRound();
+      let chosen: TraceMakerId = plan.makers[0], ended = false, moves = 0;
+      while (!ended && moves < plan.count + 3) {
+        const m = traceDemo(plan, { prints: demo.prints, chosen }); moves++;
+        if (m.do === 'choose') chosen = m.maker;
+        else if (m.do === 'press') {
+          expect(m.x).toBeGreaterThanOrEqual(0); expect(m.x).toBeLessThanOrEqual(1); expect(m.y).toBeGreaterThanOrEqual(0); expect(m.y).toBeLessThanOrEqual(1);
+          ended = tracePress(plan, demo, chosen).finish;
+        } else ended = true;
+      }
+      expect(ended).toBe(true);
+      expect(new Set(demo.prints)).toEqual(new Set(plan.makers));
+    }
+  });
+  it('says the pair moment once, in either order, never after an undo and reprint, and never with one kind of print', () => {
+    for (const order of [['duck', 'paw', 'paw', 'duck'], ['paw', 'paw', 'duck', 'duck']] as TraceMakerId[][]) {
+      const round = traceRound();
+      expect(order.map(m => tracePress(feet, round, m).pair).filter(Boolean)).toHaveLength(1);
+      traceUndo(round); traceUndo(round); traceUndo(round);
+      expect(['duck', 'paw', 'duck'].map(m => tracePress(feet, round, m as TraceMakerId).pair)).toEqual([false, false, false]);
+    }
+    const ducks = traceRound();
+    expect(Array.from({ length: 10 }, () => tracePress(feet, ducks, 'duck').pair).some(Boolean)).toBe(false);
+    const leaves = traceRound();
+    expect(Array.from({ length: 8 }, () => tracePress(leaf, leaves, 'leaf').pair).some(Boolean)).toBe(false);
+  });
+  it('never words a fresh print as old: no fossil, stone or long ago in its lines, names or how-to', () => {
+    const lines = ['stamp.leaf', 'stamp.leafmark', 'stamp.feet', 'stamp.foot', 'stamp.pair', 'stamp.printsdone'] as const;
+    const text = [...lines.flatMap(id => SCRIPT[id]), ...Object.values(TRACE_MAKERS).map(m => m.name),
+      ...[8, 9].flatMap(l => { const c = howToFor(stampStudio, l)!; return [stampStudio.describeLevel!(l), c.goal, ...c.steps, ...[c.finish].flat(), c.note ?? '']; })];
+    for (const t of text) expect(t).not.toMatch(/fossil|long ago|dinosaur|million|stone|extinct/i);
+    for (const l of [8, 9]) {
+      const c = howToFor(stampStudio, l)!;
+      expect([c.finish].flat().join(' ')).toContain('green arrow');
+      expect([c.finish].flat().join(' ')).not.toMatch(/tree house/i);
+    }
+    expect([howToFor(stampStudio, 4)!.finish].flat().join(' ')).toMatch(/tree house/i);
   });
 });

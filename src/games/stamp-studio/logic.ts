@@ -2,6 +2,8 @@ import type { ColorName } from '../../art/palette';
 import { STAMP_KINDS, type StampKindId } from '../../content/creations';
 import { Rng } from '../../engine/random';
 import { stepFromUnit } from '../../audio/notes';
+import type { AnimalSound } from '../../audio/sfx';
+import { leafOutline } from '../fossil-dig/logic';
 export { STAMP_KINDS };
 export type StampKind = StampKindId;
 export const STAMP_NAMES: Record<StampKind, string> = { star: 'A star', flower: 'A flower', fish: 'A fish', cat: 'A cat' };
@@ -19,12 +21,14 @@ export interface StampPlan {
   color: boolean;
   move: boolean;
   transform: boolean;
-  prompt: 'pats' | 'stars' | 'friends' | 'picture' | 'sizes' | 'garden' | 'story';
+  prompt: 'pats' | 'stars' | 'friends' | 'picture' | 'sizes' | 'garden' | 'story' | 'leaf' | 'feet';
   name: string;
   /** Every stamp is pressed at this size, and this many of them finish the picture (the lap level). */
   pat?: { size: number; count: number };
   /** A music-note button plays the picture back, left to right. */
   play?: boolean;
+  /** Trace Prints (levels 8–9): the paper is mud, and each maker presses its own shape; `count` prints finish the round. */
+  trace?: { makers: readonly TraceMakerId[]; count: number; tilt: boolean };
 }
 /** Each pat is a stamp of 170 units across (the art's radius is 48 at size 1); the eighth finishes the picture. */
 export const PAT = { size: 85 / 48, count: 8 } as const;
@@ -37,13 +41,17 @@ export const PLANS = [
   { kinds: ['star', 'flower', 'fish', 'cat'], color: true, move: true, transform: true, prompt: 'story', play: true, name: 'Make two friends on an adventure; every story is welcome' },
   // Easiest of all: placed first for lap by `order`, so it has the highest ID.
   { kinds: ['star'], color: false, move: false, transform: false, prompt: 'pats', name: 'Pat the paper: eight big soft stamps make a picture', pat: PAT },
+  // Trace Prints: fresh prints in mud, appended so levels 1–7 keep their IDs (lap and toddler reach them through `order`).
+  { kinds: [], color: false, move: false, transform: false, prompt: 'leaf', name: 'Leaf prints: pat the mud and the leaf leaves its shape', trace: { makers: ['leaf'], count: 8, tilt: true } },
+  { kinds: [], color: false, move: false, transform: false, prompt: 'feet', name: 'Two feet: a duck foot and a cat paw each leave their own print', trace: { makers: ['duck', 'paw'], count: 10, tilt: false } },
 ] as const satisfies readonly StampPlan[];
-export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
-/** Normalized coordinates leave room for the largest stamp, including after resizing. */
-export function place(x: number, y: number, width: number, height: number) {
-  return { x: Math.max(0, Math.min(1, (x - 70) / (width - 140))), y: Math.max(0, Math.min(1, (y - 70) / (height - 140))) };
+export const planFor = (level: number): StampPlan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
+/** Normalized coordinates leave room for the largest stamp (or, with its margin, a whole print), including after resizing. */
+export function place(x: number, y: number, width: number, height: number, margin = 70) {
+  return { x: Math.max(0, Math.min(1, (x - margin) / (width - 2 * margin))), y: Math.max(0, Math.min(1, (y - margin) / (height - 2 * margin))) };
 }
-export const pixel = (s: Pick<Stamp, 'x' | 'y'>, width: number, height: number) => ({ x: 70 + s.x * (width - 140), y: 70 + s.y * (height - 140) });
+export const pixel = (s: Pick<Stamp, 'x' | 'y'>, width: number, height: number, margin = 70) =>
+  ({ x: margin + s.x * (width - 2 * margin), y: margin + s.y * (height - 2 * margin) });
 
 /** Playing the picture: the lowest and highest scale steps (C4 to E5), and the longest gap between two notes. */
 export const PLAY = { from: 0, count: 8, gap: 0.4, longest: 5.5 } as const;
@@ -119,4 +127,97 @@ export function stampDemo(plan: StampPlan, st: StampState): StampMove {
   }
   if (plan.move && Math.abs(st.stamps[DEMO_MOVE.stamp].x - DEMO_MOVE.x) > 0.02) return { do: 'move', ...DEMO_MOVE };
   return { do: 'finish' };
+}
+
+// ---- Trace Prints (levels 8–9): fresh prints in mud. Every touch is creative play: 0 misses, 0 hints, nothing kept. ----
+
+export type TraceMakerId = 'leaf' | 'duck' | 'paw';
+export const TRACE_MAKERS: Record<TraceMakerId, { name: string; across: number; toes: number; sound?: AnimalSound }> = {
+  leaf: { name: 'A leaf', across: 170, toes: 0 },
+  duck: { name: 'Duck foot', across: 150, toes: 3, sound: 'quack' },
+  paw: { name: 'Cat paw', across: 150, toes: 4, sound: 'meow' },
+};
+export interface Pt { x: number; y: number }
+/** A maker's shape, centred on its bounds: filled outlines and circles (the print's dent) and inner lines (veins, toe and pad gaps). */
+export interface TraceShape { polys: Pt[][]; circles: (Pt & { r: number })[]; lines: Pt[][] }
+
+function centred(shape: TraceShape, across: number): TraceShape {
+  const xs: number[] = [], ys: number[] = [];
+  for (const p of shape.polys.flat()) { xs.push(p.x); ys.push(p.y); }
+  for (const c of shape.circles) { xs.push(c.x - c.r, c.x + c.r); ys.push(c.y - c.r, c.y + c.r); }
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const k = across / (Math.max(...xs) - Math.min(...xs));
+  const at = (p: Pt) => ({ x: (p.x - cx) * k, y: (p.y - cy) * k });
+  return { polys: shape.polys.map(ps => ps.map(at)), circles: shape.circles.map(c => ({ ...at(c), r: c.r * k })), lines: shape.lines.map(ps => ps.map(at)) };
+}
+const SHAPES: Record<TraceMakerId, TraceShape> = {
+  // Fossil Dig's invented five-lobed leaf: a midrib to the top lobe and a vein to each of the other four.
+  leaf: centred({
+    polys: [leafOutline('star')],
+    circles: [],
+    lines: [-90, -18, 54, 126, 198].map(deg => { const a = deg * Math.PI / 180; return [{ x: 0, y: 15 }, { x: Math.cos(a) * 128 * 0.85, y: 15 + Math.sin(a) * 128 * 0.85 }]; }),
+  }, TRACE_MAKERS.leaf.across),
+  // Three long webbed toes, taller than wide.
+  duck: centred({
+    polys: [[{ x: -14, y: 75 }, { x: -75, y: -52 }, { x: -62, y: -64 }, { x: -32, y: -40 }, { x: -11, y: -85 }, { x: 11, y: -85 },
+      { x: 32, y: -40 }, { x: 62, y: -64 }, { x: 75, y: -52 }, { x: 14, y: 75 }]],
+    circles: [],
+    lines: [[{ x: 0, y: 58 }, { x: -64, y: -50 }], [{ x: 0, y: 58 }, { x: 0, y: -74 }], [{ x: 0, y: 58 }, { x: 64, y: -50 }]],
+  }, TRACE_MAKERS.duck.across),
+  // One round pad and four round toes, wider than tall.
+  paw: centred({
+    polys: [],
+    circles: [{ x: 0, y: 25, r: 38 }, { x: -58, y: -22, r: 17 }, { x: -22, y: -50, r: 17 }, { x: 22, y: -50, r: 17 }, { x: 58, y: -22, r: 17 }],
+    lines: [],
+  }, TRACE_MAKERS.paw.across),
+};
+export const traceShape = (id: TraceMakerId) => SHAPES[id];
+/** The shape's width and height (before any tilt). */
+export function traceBounds(id: TraceMakerId) {
+  const s = SHAPES[id], xs: number[] = [], ys: number[] = [];
+  for (const p of s.polys.flat()) { xs.push(p.x); ys.push(p.y); }
+  for (const c of s.circles) { xs.push(c.x - c.r, c.x + c.r); ys.push(c.y - c.r, c.y + c.r); }
+  return { w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+}
+/** The farthest any part of the shape reaches from its centre, so a print at any tilt stays inside this radius. */
+export function traceReach(id: TraceMakerId) {
+  const s = SHAPES[id];
+  return Math.max(...s.polys.flat().map(p => Math.hypot(p.x, p.y)), ...s.circles.map(c => Math.hypot(c.x, c.y) + c.r));
+}
+/** How far a print's centre keeps from the mud's edge: at least half its width and 5 more, and never less than its reach, so the whole print stays on the mud. */
+export const traceMargin = (id: TraceMakerId) => Math.ceil(Math.max(TRACE_MAKERS[id].across / 2, traceReach(id))) + 5;
+/** The seeded tilt of one leaf press, in degrees (the leaf and its print share it). */
+export const TILTS = [-20, -10, 0, 10, 20] as const;
+export const traceTilt = (rng: Rng) => rng.pick(TILTS);
+
+/** One round's prints, in order, and whether the pair moment has been said. */
+export interface TraceRound { prints: TraceMakerId[]; paired: boolean; done: boolean }
+export const traceRound = (): TraceRound => ({ prints: [], paired: false, done: false });
+/**
+ * Press one print. `pair` is true on the one press of a round that first makes every one of the plan's makers present (never at
+ * level 8, which has one); undoing a print never makes it fire again. `finish` is true on the press that reaches the plan's count.
+ */
+export function tracePress(plan: NonNullable<StampPlan['trace']>, round: TraceRound, maker: TraceMakerId) {
+  if (round.done) return { pair: false, finish: false };
+  round.prints.push(maker);
+  const pair = plan.makers.length > 1 && !round.paired && plan.makers.every(m => round.prints.includes(m));
+  if (pair) round.paired = true;
+  const finish = round.prints.length >= plan.count;
+  if (finish) round.done = true;
+  return { pair, finish };
+}
+/** The back arrow smooths away the latest print. */
+export const traceUndo = (round: TraceRound) => { if (!round.done) round.prints.pop(); };
+
+export type TraceMove = { do: 'choose'; maker: TraceMakerId } | { do: 'press'; x: number; y: number } | { do: 'finish' };
+/**
+ * The ghost finger: level 8 pats `PAT_SPOTS` in order until the round ends itself; level 9 presses three duck prints, chooses the
+ * paw, presses two paw prints, then taps the green arrow, so it shows choosing, both marks and the optional finish.
+ */
+export function traceDemo(plan: NonNullable<StampPlan['trace']>, st: { prints: readonly TraceMakerId[]; chosen: TraceMakerId }): TraceMove {
+  const n = st.prints.length;
+  if (plan.makers.length === 1) return n < plan.count ? { do: 'press', ...PAT_SPOTS[n % PAT_SPOTS.length] } : { do: 'finish' };
+  if (n >= 5) return { do: 'finish' };
+  const want = n < 3 ? plan.makers[0] : plan.makers[1];
+  return st.chosen !== want ? { do: 'choose', maker: want } : { do: 'press', ...DEMO_SPOTS[n] };
 }
