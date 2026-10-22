@@ -91,7 +91,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Island Bridges | `island-bridges` | G | 4 | 4 | not started (island touch built 2026-10-13) | — | — |
 | Jelly Drums | `jelly-drums` | LTPKS | 9 | 2 | designed (One big jelly built as level 10) | `claude/fervent-keller-f86ol8` ([PR 104](https://github.com/rjdunlap/neo/pull/104)) | [jelly-drums.md](jelly-drums.md) |
 | Lantern Lights | `lantern-lights` | G | 6 | 4 | not started (island touch built 2026-10-13) | — | — |
-| Lasso Loops | `lasso-loops` | PKS | 5 | 4 | not started (level 6 *About how many?* [defined](../definitions/lasso-loops-about-how-many.md) by the [estimation study](subjects/estimation.md#build-slices-in-order) 2026-10-22; build queued) | — | — |
+| Lasso Loops | `lasso-loops` | PKS | 6 | 4 | not started (level 6 *About how many?* [built](../definitions/lasso-loops-about-how-many.md) from the estimation study; the game dive starts new IDs at 7) | — | — |
 | Lemonade Stand | `lemonade-stand` | S | 4 | 4 | not started | — | — |
 | Letter Trails | `letter-trails` | PKS | 8 | 3 | building (slices 1, 3 (PR #442) and 4, journal entries (PR #363), built; slice 2 next) | `claude/tender-faraday-xt9q70` ([PR 122](https://github.com/rjdunlap/neo/pull/122)); slice 1: `codex/letter-trails-capital-start` ([PR #172](https://github.com/rjdunlap/neo/pull/172)) | [letter-trails.md](letter-trails.md) |
 | Light Lab | `light-lab` | KS | 7 | 4 | not started | — | — |

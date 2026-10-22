@@ -10,6 +10,7 @@ export type LassoMode = 'free' | 'exact' | 'fives' | 'tens' | 'groups';
 
 export interface LassoPlan {
   mode: LassoMode;
+  guess?: boolean;
   name: string;
 }
 
@@ -19,6 +20,7 @@ export const PLANS: LassoPlan[] = [
   { mode: 'fives', name: 'Jars of 5: loop fives, then count by fives and the ones left over' },
   { mode: 'tens', name: 'Jars of 10: loop tens, then say the number (34 is 3 tens and 4 ones)' },
   { mode: 'groups', name: 'Equal groups: make 3 groups of 4, then say how many in all' },
+  { mode: 'tens', guess: true, name: 'About how many? Guess, loop one jar of 10, keep or change the guess, then loop the tens and say the number' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -85,6 +87,18 @@ export function choices(round: LassoRound, rng: Rng): number[] {
     out.add(v);
   }
   return rng.shuffle([...out]);
+}
+
+/** Widely separated estimates, with one nearest-ten benchmark. No estimate is scored. */
+export function guessCards(n: number, rng: Rng): { cards: number[]; near: number } {
+  const near = 10 * Math.floor((n + 5) / 10);
+  const high = Array.from({ length: 9 }, (_, i) => (i + 1) * 10).filter((v) => v >= 2 * n);
+  const far = rng.pick([true, false]) ? [10, rng.pick(high)] : rng.shuffle(high).slice(0, 2);
+  return { cards: [near, ...far].sort((a, b) => a - b), near };
+}
+
+export function compareGuess(g: number, n: number): 'close' | 'more' | 'fewer' {
+  return Math.abs(g - n) < 10 ? 'close' : g < n ? 'more' : 'fewer';
 }
 
 // Firefly places and loops ------------------------------------------------------------------------

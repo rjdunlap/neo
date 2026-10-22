@@ -436,6 +436,4 @@ Proof: new-game tier, as the [definition's check tier](definitions/meadow-pens.m
 
 ### lasso-loops 1: About how many?
 
-- **`lasso-loops`, level 6 *About how many?* (estimation E1)** (new level on the existing loop interaction plus the guess-card tap; school 3–6): guess a meadow's fireflies from three far-apart cards (never marked), loop one benchmark ten and keep or change the guess, then play level 4's tens round (21–39 fireflies) as the check. [Definition](definitions/lasso-loops-about-how-many.md), [estimation study slice E1](deep-dives/subjects/estimation.md#build-slices-in-order)
-
-Proof: as the [definition's check tier](definitions/lasso-loops-about-how-many.md#build-and-check-tier-e1-build) sets it (typecheck, Lasso Loops rule tests and `howto.test.ts`, one filtered portrait play at level 6 with a far-card guess, two wrong loops, a changed guess, one wrong pad and the score equal to level 4's, `fingerdemo` at level 6, one portrait screenshot of the guess sign). No review gate.
+Built; [completed scope and proof](archive/COMPLETED-2026-10-09.md#2026-10-22--lasso-loops-about-how-many-estimation-e1).
