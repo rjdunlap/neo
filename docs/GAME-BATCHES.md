@@ -351,3 +351,9 @@ Proof: use the union of the included check tiers under the batch contract; prese
 - **`pet-kitchen`, level 15 *One cup, many ways*, slice 8** (new interaction tier per the cooking packet: typecheck, rule tests over every half-and-quarter combination, one play of 15 with an oversupply undo, a portrait screenshot, `fingerdemo` at 15): the packet's equivalent-measures round; school `order [14, 5, 6, 7, 8, 9, 12, 13, 15]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+
+### ribbon-workshop 1: First ribbons
+
+- **`ribbon-workshop`, levels 1–3 *A whole ribbon*, *Snip a half*, *Three quarters*** (new game, new interaction; school): tap ribbon pieces onto a bench to match a gift tag's length of one declared whole, then snip a half into two quarters; every composition that makes the length is accepted. [Definition](definitions/ribbon-workshop.md#levels), [study slice R1](deep-dives/subjects/fractions.md#build-slices-in-order)
+
+Proof: new-game tier under the batch contract, as the [definition's check tier](definitions/ribbon-workshop.md#check-tier) sets it (unit tests and build, `BROWSER_SUITE=ribbon`, one portrait screenshot, `fingerdemo` and `smoke` filtered to the game).
