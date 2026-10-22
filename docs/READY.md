@@ -9,7 +9,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`sound-garden`, Listening direction and visible echoes** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#sound-garden-1-listening-direction-and-visible-echoes).
 - **`sound-garden`, One big friend** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#sound-garden-2-one-big-friend).
 - **`sound-garden`, Pitch drawing and copying** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#sound-garden-3-pitch-drawing-and-copying).
-- **`inchworm`, Big worms, little worms** (one implementation batch; 1 original subtask; new level on an existing interaction): [scope and levels](GAME-BATCHES.md#inchworm-1-big-worms-little-worms).
+- **`inchworm`, Big worms, little worms** (one implementation batch; 1 original subtask; new level on an existing interaction): [scope and levels](GAME-BATCHES.md#inchworm-1-big-worms-little-worms). **Claimed 2026-10-22 on `claude/inchworm-big-worms`.**
 - **`stamp-studio`, Trace Prints, levels 8–9** (one implementation batch; deep-time D3; new interaction in an existing game): [definition](definitions/trace-prints.md), [scope and levels](GAME-BATCHES.md#stamp-studio-1-trace-prints).
 
 ## Queued
