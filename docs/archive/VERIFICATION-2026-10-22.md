@@ -125,3 +125,9 @@
 - [PR #790](https://github.com/rjdunlap/neo/pull/790), `claude/define-rain-garden`: defined Rain Garden levels 1–3 ([definition](../definitions/rain-garden.md)); READY, study backlog, weather-water study, recommendations, tracker, ideas and waiting-on-developer updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`; both passed.
 - Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the developer's registration/bands/land call, a science reader for the explanation lines (recommended), all device checks.
+
+## 2026-10-22 — Ready for Adventure levels 1–3 definition (routines-self-care slice 1, docs only)
+
+- [PR #791](https://github.com/rjdunlap/neo/pull/791), `claude/define-ready-for-adventure`: defined Ready for Adventure levels 1–3 ([definition](../definitions/ready-for-adventure.md)); READY (build RA2 promoted), study backlog, routines study, recommendations, tracker, ideas and waiting-on-developer updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the build RA2 (no review gate; five open decisions all have defaults), all device checks.

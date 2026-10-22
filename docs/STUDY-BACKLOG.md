@@ -64,6 +64,7 @@ The research is complete for every row below; `define` means the next session wr
 | `integers` | ready | Sea Lift 1–3 (IN1) [defined](definitions/sea-lift.md) and built 2026-10-22; next definition Sea Lift 4–5 (IN2) is queued in READY (the educator reads its card distractors before a build) | [Study](deep-dives/subjects/integers.md), [definition](definitions/sea-lift.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#integers-recommendations) |
 | `area-volume-space` | ready | Meadow Pens 1–3 [defined](definitions/meadow-pens.md) 2026-10-22; its build is queued in READY as a new-game line with the level-2 card-table review gate; next definition Meadow Pens 4–5 after the build lands | [Study](deep-dives/subjects/area-volume-space.md), [definition](definitions/meadow-pens.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#area-volume-and-space-recommendations) |
 | `estimation` | person | Lasso Loops 6 About how many? (E1) [built](definitions/lasso-loops-about-how-many.md); next definition Lasso Loops 7 (E2) after a child has played 6; E6/E7 co-play and family card retain their ordinary content review | [Study](deep-dives/subjects/estimation.md), [definition](definitions/lasso-loops-about-how-many.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#estimation-recommendations) |
+| `speaking-listening` | define | Photo Safari *Tell me which* and *Tell me both* (SL1–2) | [Study](deep-dives/subjects/speaking-listening.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#speaking-and-listening-recommendations) |
 
 ## Unstarted subject research
 
@@ -71,7 +72,6 @@ One subject per docs-only session using the [subject procedure](deep-dives/subje
 
 | Subject | Status | Next action |
 | --- | --- | --- |
-| `speaking-listening` | research | Conversation, retelling, describing, asking, following and giving directions (the island cannot hear her, so co-play and cards); use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `vocabulary-word-parts` | research | Word meaning, categories, prefixes, suffixes, roots, multiple meanings; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `informational-reading` | research | Labels, captions, diagrams, maps, a how-to; finding an answer in a text, with spoken support; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `writing-composition` | research | A message, a list, a story, an opinion with a reason, planning and revising for a reader; picture/word choices through free composition; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |

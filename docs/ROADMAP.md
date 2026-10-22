@@ -315,6 +315,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | Integers | 2026-10-22 | [study](deep-dives/subjects/integers.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#integers-recommendations) |
 | Area, volume and space | 2026-10-22 | [study](deep-dives/subjects/area-volume-space.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#area-volume-and-space-recommendations) |
 | Estimation | 2026-10-22 | [study](deep-dives/subjects/estimation.md); [E1 built](definitions/lasso-loops-about-how-many.md), E2 waits on child play | [packet](deep-dives/subjects/RECOMMENDATIONS.md#estimation-recommendations) |
+| Speaking and listening | 2026-10-22 | [study](deep-dives/subjects/speaking-listening.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#speaking-and-listening-recommendations) |
 | Measurement and units | 2026-10-21 | [study](deep-dives/subjects/measurement-units.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#measurement-and-units-recommendations) |
 | Genetics | 2026-10-16 | [study](deep-dives/subjects/genetics.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#genetics-recommendations) |
 | Everyday life long ago | 2026-10-16 | [study](deep-dives/subjects/daily-life-long-ago.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations) |

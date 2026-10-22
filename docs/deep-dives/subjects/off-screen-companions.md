@@ -159,7 +159,7 @@ Each is one session; the first two do not wait on any decision. **Slices 1–3 a
 2. **A word-list test** over every line reachable at lap and toddler (rules-tester), so the next edit cannot reintroduce one. Docs: README and GAMES stay unchanged.
 3. **`offScreenFor(mod, band)`** with a band-keyed type, migrating ten games whose bands span lap to school (e.g. Bubble Pop, Puzzle Pals, Mail Carrier, Rainbow Fingers, Teddy Doctor, Sink or Float after the reviewer, Monster Munch after the reviewer).
 4. **The At-home card** on the page: three lines with *notice* and *say*; the kit list. Plain HTML, no save field. A screenshot at the page's width.
-5. **Talk-about lines** for ten games, then more.
+5. **Talk-about lines** for ten games, then more. Wording rules for these lines (name, wait, build on what she says; open questions; any home language; no quiz or milestone text) are in the [speaking-and-listening study](speaking-listening.md#candidates-and-fit) (SL7).
 6. **School and upper-school challenge lines** for the build games (Chain Reaction, Light Lab, Seesaw Balance, Bouncy Launch, Block Tower).
 7. **Printable cards**, after the reviewer.
 

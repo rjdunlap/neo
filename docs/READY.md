@@ -11,7 +11,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`shape-sorter`, Turn it to fit** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#shape-sorter-2-turn-it-to-fit).
 - **Study `integers`: define Sea Lift 4–5 (IN2)** (docs only; status `define`): one bounded packet from the completed study and the built Sea Lift 1–3; the mathematics educator reads the level-4 card distractors before any build. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#integers-recommendations).
 - **Study `cells-microbes`: define Puddle Lens** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations).
-- **Research subject `speaking-listening`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
+- **Study `speaking-listening`: define Photo Safari Tell me which and Tell me both (SL1–2)** (docs only; status `define`): one bounded packet from the completed study (a same-game pair sharing the chip interaction); fix the level IDs after the dive's reserved 8–9; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#speaking-and-listening-recommendations).
+- **Research subject `vocabulary-word-parts`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 
 ## Queued
 
@@ -97,7 +98,6 @@ Each line is selected for routine dispatch; claim one packet, then enqueue its u
 
 ### Subject research (docs only)
 
-- **Research subject `vocabulary-word-parts`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `informational-reading`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `writing-composition`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `keyboarding-editing`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
