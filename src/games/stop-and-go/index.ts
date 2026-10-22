@@ -12,7 +12,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { carTap, crossTouch, doneLine, GO_TARGET, hintOn, judgeGo, lightAt, nextLight, planFor, rightNow, safe, touchCounts, type GoPlan, type Light, type Road } from './logic';
+import { carTap, crossTouch, doneLine, GO_TARGET, hintOn, judgeGo, lightAt, nextLight, planFor, rightNow, safe, touchCounts, VEHICLES, cycleFor, type Cycle, type GoPlan, type Light, type Road, type Vehicle } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
@@ -41,27 +41,105 @@ class TrafficLight extends Container {
   }
 }
 
-/** A car: its drawing (`art`, which bounces, squashes and idles inside the car's place) and its headlight. */
-type Car = Container & { art: Container; lamp: Graphics; road?: Road };
+/** A car (or another vehicle): its drawing (`art`, which bounces, squashes and idles inside the car's place) and its headlight. */
+type Car = Container & { art: Container; lamp: Graphics; kind: Vehicle; road?: Road };
 
-/** A round little car with a face on its windshield. */
-function carArt(color: ColorName): Car {
+/** The windshield face every vehicle shares: two eyes and a smile around (x, y). */
+function face(g: Graphics, x: number, y: number) {
+  g.circle(x - 12, y, 5).circle(x + 12, y, 5).fill(ink);
+  g.moveTo(x - 10, y + 10).quadraticCurveTo(x, y + 16, x + 10, y + 10).stroke({ width: 3, color: ink, cap: 'round' });
+}
+
+function wheel(g: Graphics, x: number, y: number, r: number) {
+  g.circle(x, y, r).fill(ink).circle(x, y, r * 0.4).fill(0xdfe3ea);
+}
+
+const GLASS = 0xdff3ff;
+
+/**
+ * The six vehicles, drawn inside the same 160-wide box (x −80…80, y −90…30) so the line-up, the hit area and the
+ * north–south queue fit every kind; the headlamp sits at the front, drawn about its own centre so its blink stays put.
+ */
+const DRAW: Record<Vehicle, (g: Graphics, sw: (typeof swatch)[ColorName]) => [number, number]> = {
+  car: (g, sw) => {
+    g.roundRect(-70, -40, 140, 50, 18).fill(sw.fill).stroke({ width: 5, color: sw.line });
+    g.roundRect(-40, -78, 76, 44, 16).fill(sw.fill).stroke({ width: 5, color: sw.line });
+    g.roundRect(-30, -70, 56, 30, 10).fill(GLASS);
+    face(g, -2, -56);
+    for (const x of [-40, 40]) wheel(g, x, 12, 18);
+    return [66, -20];
+  },
+  bus: (g, sw) => {
+    g.roundRect(-76, -84, 152, 94, 18).fill(sw.fill).stroke({ width: 5, color: sw.line });
+    for (const x of [-64, -26]) g.roundRect(x, -72, 30, 28, 8).fill(GLASS);
+    g.roundRect(14, -72, 52, 34, 10).fill(GLASS);
+    face(g, 40, -58);
+    g.rect(-72, -26, 144, 8).fill(sw.line);
+    for (const x of [-46, 46]) wheel(g, x, 12, 17);
+    return [70, -8];
+  },
+  bike: (g, sw) => {
+    for (const x of [-46, 46]) g.circle(x, 8, 22).stroke({ width: 7, color: ink }).circle(x, 8, 5).fill(ink);
+    g.moveTo(-46, 8).lineTo(-10, -26).lineTo(30, -26).lineTo(46, 8).moveTo(-10, -26).lineTo(2, 8).lineTo(-46, 8).stroke({ width: 7, color: sw.line, cap: 'round', join: 'round' });
+    g.moveTo(30, -26).lineTo(38, -44).stroke({ width: 7, color: ink, cap: 'round' });
+    // The rider leans to the handlebars, with the shared face and a helmet in the bike's colour.
+    g.roundRect(-30, -58, 32, 40, 12).fill(sw.fill).stroke({ width: 4, color: sw.line });
+    g.moveTo(-2, -48).lineTo(36, -44).stroke({ width: 8, color: sw.fill, cap: 'round' });
+    g.circle(-10, -70, 20).fill(0xf6d2b0);
+    g.moveTo(-31, -72).arc(-10, -72, 21, Math.PI, 0).fill(sw.line);
+    face(g, -8, -66);
+    return [42, -40];
+  },
+  tractor: (g, sw) => {
+    g.roundRect(-8, -34, 76, 38, 10).fill(sw.fill).stroke({ width: 5, color: sw.line });
+    g.rect(36, -60, 9, 28).fill(ink);
+    g.roundRect(-64, -88, 60, 76, 12).fill(sw.fill).stroke({ width: 5, color: sw.line });
+    g.roundRect(-56, -80, 44, 36, 10).fill(GLASS);
+    face(g, -34, -64);
+    wheel(g, -36, 0, 30);
+    wheel(g, 48, 14, 16);
+    return [66, -20];
+  },
+  van: (g, sw) => {
+    g.roundRect(-74, -78, 148, 88, 20).fill(0xfff7ef).stroke({ width: 5, color: sw.line });
+    // A stripe awning over the serving hatch, and an ice-cream cone painted on the side.
+    g.roundRect(-62, -58, 64, 36, 8).fill(sw.light);
+    for (let i = 0; i < 4; i++) g.rect(-62 + i * 16, -66, 16, 10).fill(i % 2 ? 0xffffff : sw.fill);
+    g.poly([-38, -24, -26, -24, -32, -6]).fill(wood.fill);
+    g.circle(-32, -30, 9).fill(sw.fill);
+    g.roundRect(16, -68, 48, 34, 10).fill(GLASS);
+    face(g, 40, -54);
+    g.rect(-70, -14, 140, 8).fill(sw.fill);
+    for (const x of [-44, 44]) wheel(g, x, 12, 17);
+    return [70, -14];
+  },
+  digger: (g, sw) => {
+    // The arm reaches up and forward, the bucket resting low at the front.
+    g.moveTo(-8, -50).lineTo(40, -76).lineTo(62, -30).stroke({ width: 13, color: sw.line, cap: 'round', join: 'round' });
+    g.poly([50, -32, 78, -30, 74, -4, 54, -8]).fill(ink);
+    g.roundRect(-70, -4, 112, 34, 17).fill(ink);
+    for (const x of [-52, -24, 4, 26]) g.circle(x, 13, 8).fill(0xdfe3ea);
+    g.roundRect(-64, -84, 64, 80, 12).fill(sw.fill).stroke({ width: 5, color: sw.line });
+    g.roundRect(-56, -76, 48, 36, 10).fill(GLASS);
+    face(g, -32, -60);
+    return [-4, -22];
+  },
+};
+
+/** A vehicle with a face on its windshield (or on its rider). */
+function carArt(color: ColorName, kind: Vehicle = 'car'): Car {
   const c = new Container() as Car;
-  const sw = swatch[color];
   const art = new Container();
   const g = new Graphics();
-  g.roundRect(-70, -40, 140, 50, 18).fill(sw.fill).stroke({ width: 5, color: sw.line });
-  g.roundRect(-40, -78, 76, 44, 16).fill(sw.fill).stroke({ width: 5, color: sw.line });
-  g.roundRect(-30, -70, 56, 30, 10).fill(0xdff3ff);
-  g.circle(-14, -56, 5).circle(10, -56, 5).fill(ink);
-  g.moveTo(-12, -46).quadraticCurveTo(-2, -40, 8, -46).stroke({ width: 3, color: ink, cap: 'round' });
-  for (const x of [-40, 40]) g.circle(x, 12, 18).fill(ink).circle(x, 12, 7).fill(0xdfe3ea);
-  const lamp = new Graphics().circle(66, -20, 7).fill(0xffffff);
+  const [lx, ly] = DRAW[kind](g, swatch[color]);
+  const lamp = new Graphics().circle(0, 0, 7).fill(0xffffff);
+  lamp.position.set(lx, ly);
   lamp.tint = swatch.yellow.light;
   art.addChild(g, lamp);
   c.addChild(art);
   c.art = art;
   c.lamp = lamp;
+  c.kind = kind;
   return c;
 }
 
@@ -88,6 +166,8 @@ class StopAndGo implements Game {
   private readonly glow = new Graphics();
   private view: View;
   private clock = 0;
+  /** This round's seeded light cycle (send and walk). */
+  private readonly cycle: Cycle;
   private wrongs = 0;
   private hinting = false;
   private driving = false;
@@ -97,6 +177,7 @@ class StopAndGo implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    this.cycle = cycleFor(ctx.rng);
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.5, clouds: 2, sun: true, seed: 66 }, ctx.view);
     this.glow.eventMode = 'none';
     this.step = new RoundButton(this.feet(), swatch.green, 64, () => void this.walk());
@@ -132,7 +213,7 @@ class StopAndGo implements Game {
   }
 
   private addCar(i: number) {
-    const car = carArt(CAR_COLORS[(i + this.done) % CAR_COLORS.length]);
+    const car = carArt(CAR_COLORS[(i + this.done) % CAR_COLORS.length], this.ctx.rng.pick(VEHICLES));
     car.hitArea = new Rectangle(-80, -90, 160, 120);
     onTap(car, () => void this.tapCar(car), { cooldown: 300 });
     this.cars.push(car);
@@ -201,7 +282,7 @@ class StopAndGo implements Game {
     this.clock += dt;
     // The light runs itself on the send and walk levels.
     if (this.plan.mode === 'send' || this.plan.mode === 'walk') {
-      const l = lightAt(this.clock);
+      const l = lightAt(this.clock, this.cycle);
       if (l !== this.light.light) {
         this.light.set(l);
         if (l === 'green') this.greenNow();
@@ -461,7 +542,8 @@ class GoIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const car = carArt(rng.pick(CAR_COLORS));
+  const color = rng.pick(CAR_COLORS);
+  const car = carArt(color, rng.pick(VEHICLES));
   car.y = 40;
   const l = new TrafficLight(false);
   l.set(rng.pick(['red', 'green'] as Light[]));

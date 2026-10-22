@@ -64,7 +64,6 @@ The content slices were re-checked 2026-10-15 against their dives and `origin/ma
 - **`garden-grow`, level 11 Same in every row** (new level, after level 9 *Rows of colors*): n flowers in each row in any beds, every placement accepted. [Slice 7](deep-dives/garden-grow.md#new-levels-on-top)
 
 
-- **`stop-and-go`, varied phases and vehicles** (content, levels 2–4): seeded green and red of 3–4.2 s with a bounded-phase test, six code-drawn vehicles. [Slice 2](deep-dives/stop-and-go.md#fresh-content-inside-existing-levels)
 - **`stop-and-go`, lap entry 9 Go car, stop car** (new interaction): a looping car, two huge lamps, no misses; lap order 9, 1, `entryLevels: [9]`. [Slice 3](deep-dives/stop-and-go.md#younger-band-openings)
 - **`stop-and-go`, level 5 Whose light? and the pre-K window** (new level): two lanes with their own lights, send the one whose light is green; preschool 2–5, pre-K 3–5. [Slice 4](deep-dives/stop-and-go.md#new-levels-on-top)
 - **`stop-and-go`, level 6 Busy crossing** (new level): cars arrive on both roads, she hands over one road at a time; an idle point helps level 4 too; pre-K 3–6. [Slice 5](deep-dives/stop-and-go.md#new-levels-on-top)

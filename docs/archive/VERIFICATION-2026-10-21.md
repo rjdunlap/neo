@@ -246,3 +246,17 @@
 - Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=fill-dump FINGER_LEVELS=7` at the same URL: clean round in 22.6 demo seconds. The final feedback cleanup leaves its gesture/plan unchanged.
 - Initial unrestricted full units overloaded the machine (unrelated Fluffy Salon and Block Garden timing failures); stopped, bounded run passed. An editor-triggered Vite reload interrupted the first browser completion after the screenshot; frozen-source reruns passed.
 - Not run: other gameplay suites, world, offline (no persistence, navigation or asset changes), iPad/device speech or child play. [Device check](../DEVICE-CHECKS.md) remains open. Owned server stopped at closeout.
+
+## 2026-10-21 — Teddy Doctor: weigh and measure (slice 2)
+
+- [PR #728](https://github.com/rjdunlap/neo/pull/728), `claude/teddy-doctor-weigh-measure`, commit `db23dbd1` on `42f37c87`: levels 5 (card) and 6 (told) draw three distinct check-up steps of five (a scale on the feet, a height chart on the head join heart, temperature, ears); consecutive patients never repeat the same steps in order; the tray holds that check-up's three tools. Level IDs, bands and accounting unchanged; no care claim.
+- Passed typecheck and `npx vitest run src/games/teddy-doctor src/content` (132 tests: distinct steps, tray equals steps, consecutive differ, five checks on five parts, every step and all ten sets occur in 300 seeds, demonstration parts).
+- Passed `BROWSER_SUITE=next NEXT_ONLY=doctor FROM_LEVEL=5` at `http://localhost:5702` on the final code (level 5 and 6 plays with differing steps, 2 misses/1 hint, sticker) and `BROWSER_SUITE=fingerdemo FINGER_ONLY=teddy-doctor FINGER_LEVELS=5` (finished in 25.8 s). Portrait probe (768×1024) of both new shows reviewed: star on the cat's ears, scale beside the feet, clear of tray and pet.
+- Not run: build (no shared files or assets), other suites, device speech of "weigh me" and "see how tall I am" (no [device check](../DEVICE-CHECKS.md) added). Server stopped.
+
+## 2026-10-21 — Scoop Shop: pools and a serve tune (slice 2)
+
+- [PR #729](https://github.com/rjdunlap/neo/pull/729), `claude/scoop-shop-pools`, commit `b999e558` on `0d33df0f`: eight customers, a cup and a waffle bowl beside the cone, three window scenes, flavour thank-yous and the serve tune; `dressShop` is drawn after the orders so no rule, accounting or how-to card changed.
+- Passed `npm run typecheck` and `npx vitest run src/games/scoop-shop src/content src/games/registry` (14 files, 149 tests; `dressShop` over 200 seeds: valid kinds and scenes, no repeat in a row, every kind and scene appears).
+- Passed at `http://localhost:5230`: `BROWSER_SUITE=fingerdemo FINGER_ONLY=scoop-shop FINGER_LEVELS=5` (finished in 26.8 s) and `BROWSER_SUITE=arcade ARCADE_ONLY=scoop` (levels 1–6, wrong scoops, hint glow, peeking, one sticker each). A level-5 probe in portrait (768×1024) reviewed cup, cone and bowl; landscape screenshots reviewed all three window scenes.
+- Not run: build (no shared files or assets), device speech of the flavour names, a child's reaction to a cup or bowl at tub scale (both added to the [device checks](../DEVICE-CHECKS.md)).
