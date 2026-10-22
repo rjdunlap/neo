@@ -197,3 +197,11 @@ describe('Scoop Shop younger entries', () => {
     expect(landing(10, scoopShop.levels('lap'), scoopShop.entryLevels)).toBe(10);
   });
 });
+
+ it('keeps Scoop Shop saved IDs while inserting count-on and mixed counts into older bands', () => {
+  expect(levelsInOrder(scoopShop.levels('prek'))).toEqual([3, 4, 12, 13, 5, 6]);
+  expect(levelsInOrder(scoopShop.levels('school'))).toEqual([5, 12, 13, 6]);
+  expect(stepLevel(4, 1, scoopShop.levels('prek'))).toBe(12);
+  expect(stepLevel(13, 1, scoopShop.levels('school'))).toBe(6);
+  expect(nextLevel(6, [], scoopShop.levels('school'))).toBe(6);
+});

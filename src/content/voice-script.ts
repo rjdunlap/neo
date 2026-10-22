@@ -1928,6 +1928,8 @@ export const SCRIPT = {
   'scoop.one': ['{a}, please!', 'One {a} scoop, please!'],
   'scoop.two': ['{a} and {b}, please!'],
   'scoop.twosame': ['Two {a} scoops, please!'],
+  'scoop.fill': ['Make it {n} {a} scoops, please!'],
+  'scoop.mixed': ['{n} {a} and {m} {b} scoops, please!'],
   'scoop.count': ['{n} {a} scoops, please!'],
   'scoop.stack': ['{a} on the bottom, then {b}, then {c} on top!'],
   'scoop.notthat': ['No {color} for me! I want {want}.'],
