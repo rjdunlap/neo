@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-22 — Lasso Loops 6 About how many? definition (estimation E1, docs only)
+
+- [PR #800](https://github.com/rjdunlap/neo/pull/800), `claude/define-lasso-about-how-many`: [definition](definitions/lasso-loops-about-how-many.md); READY (build line replaces the definition line), batch plan, backlog, estimation study and trackers updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only); nothing is built.
+- Open: the guess sign in portrait and a child's play of level 6 (decision 2 for level 7) remain unchecked.
+
 ## 2026-10-22 — Estimation study (subject research, docs only)
 
 - [PR #799](https://github.com/rjdunlap/neo/pull/799), `claude/estimation-research`: [study](deep-dives/subjects/estimation.md) (Lasso Loops 6 *About how many?* recommended first); tracker, packet, roadmap table, backlog, READY (definition line replaces the research line) and IDEAS updated.
@@ -93,12 +100,6 @@
 - [PR #782](https://github.com/rjdunlap/neo/pull/782), `claude/define-sand-table`: defined Sand Table dry play, levels 1–3 ([definition](definitions/sand-table.md)); READY, game batches, study backlog, earth-materials study, recommendations, tracker, ideas and waiting-on-developer updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (nothing built). Open: the build E2 (no review gate; six open decisions all have defaults).
-
-## 2026-10-22 — Second Chance Shed 1–4 definition (nature-sustainability N1, docs only)
-
-- [PR #781](https://github.com/rjdunlap/neo/pull/781), `claude/define-second-chance-shed`: defined Second Chance Shed levels 1–4 ([definition](definitions/second-chance-shed.md)); READY, game batches, study backlog, nature study, recommendations, waiting-on-developer and ideas updated.
-- Ran `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, unit tests, build, browser (nothing built). Open: the build N2, which merges only after the developer's item-table review (definition decision 1).
 
 ## Coverage summary
 
