@@ -42,6 +42,30 @@ describe('Egg Catch', () => {
     }
   });
 
+  it('deals the single fork fairly and solves it with at most one flip, using the same hint and bot', () => {
+    const plan = PLANS[8];
+    expect(plan).toMatchObject({ mode: 'route', singleGate: true, eggs: 4 });
+    for (let seed = 1; seed <= 100; seed++) {
+      const targets = targetsFor(plan, new Rng(seed));
+      expect(new Set(targets.map((t) => t.basket))).toEqual(new Set([0, 1]));
+      targets.forEach(({ basket, nest }, i) => {
+        expect(nest).toBe(1 - basket);
+        expect([0, 1, 2].every((offset) => targets[(i + offset) % targets.length].basket === basket)).toBe(false);
+        for (const start of [false, true]) {
+          const gates = [start, false, false];
+          const hint = gatesFor(basket, true);
+          expect(hint).toEqual([{ gate: 0, right: basket === 1 }]);
+          expect(routeTouch(gates, basket, true)).toBe(Number(start) === basket ? 'go' : 0);
+          const flip = gateToFlip(gates, basket, 0, true);
+          if (flip !== null) gates[flip] = !gates[flip];
+          expect(Number(gates[0])).toBe(basket);
+          expect(routeTouch(gates, basket, true)).toBe('go');
+          expect(gateToFlip([!gates[0]], basket, 1, true)).toBeNull();
+        }
+      });
+    }
+  });
+
   it('keeps the basket and nest apart, and catches generously', () => {
     for (const t of targetsFor(PLANS[4], new Rng(2))) expect(t.nest).not.toBe(t.basket);
     expect(caught(100, 180)).toBe(true);

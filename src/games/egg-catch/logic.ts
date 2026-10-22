@@ -9,6 +9,8 @@ export type EggMode = 'tap' | 'lane' | 'catch' | 'brown' | 'route' | 'sort' | 'p
 
 export interface EggPlan {
   mode: EggMode;
+  /** A single fork before the full routing tree. */
+  singleGate?: boolean;
   /** Eggs to catch (or route) to finish. */
   eggs: number;
   /** Seconds for an egg to fall the whole way (catch levels). */
@@ -25,6 +27,7 @@ export const PLANS: EggPlan[] = [
   { mode: 'predict', eggs: 5, fall: 0, name: 'The gates are set: tap where the egg will land, then watch it roll' },
   { mode: 'pair', eggs: 3, fall: 0, name: 'Set the gates once for two eggs: brown to the basket, white to the nest' },
   { mode: 'lane', eggs: 5, fall: 1.2, name: 'Under the hen: tap a lane to hop under the clucking hen' },
+  { mode: 'route', singleGate: true, eggs: 4, fall: 0, name: 'One gate: point it toward the basket, then tap the green arrow' },
 ];
 
 /** Predict levels: gate settings for each egg, never landing in the same place twice running. */
@@ -84,7 +87,8 @@ export function exitFor(gates: [boolean, boolean, boolean]): number {
 }
 
 /** The gate settings that send an egg to `exit` (the gate on the other branch doesn't matter). */
-export function gatesFor(exit: number): { gate: number; right: boolean }[] {
+export function gatesFor(exit: number, singleGate = false): { gate: number; right: boolean }[] {
+  if (singleGate) return [{ gate: 0, right: exit === 1 }];
   const right = exit >= 2;
   return [
     { gate: 0, right },
@@ -96,10 +100,22 @@ export function gatesFor(exit: number): { gate: number; right: boolean }[] {
 export function targetsFor(plan: EggPlan, rng: Rng): { basket: number; nest: number }[] {
   const out: { basket: number; nest: number }[] = [];
   for (let i = 0; i < plan.eggs * 3; i++) {
-    let basket = rng.int(0, 3);
+    let basket = rng.int(0, plan.singleGate ? 1 : 3);
+    if (plan.singleGate) {
+      if (out.length >= 2 && out.at(-1)!.basket === basket && out.at(-2)!.basket === basket) basket = 1 - basket;
+      out.push({ basket, nest: 1 - basket });
+      continue;
+    }
     if (basket === out[i - 1]?.basket) basket = (basket + 1 + rng.int(0, 2)) % 4;
     const nest = (basket + 1 + rng.int(0, 2)) % 4;
     out.push({ basket, nest });
+  }
+  if (plan.singleGate && out.length >= 3) {
+    // Retries can wrap the stream: keep the same variety across that seam too.
+    const last = out.length - 1;
+    const basket = 1 - out[0].basket;
+    out[last] = { basket, nest: 1 - basket };
+    if (out[last - 1].basket === basket && out[last - 2].basket === basket) out[last - 1] = { basket: 1 - basket, nest: basket };
   }
   return out;
 }
@@ -111,8 +127,8 @@ export const exitWanted = (mode: EggMode, shell: Shell, target: { basket: number
  * Routing: the next gate a capable child flips so that an egg bound for `exit` gets there, or null once the gates it still
  * has to pass already send it. `passed` is how many gates (0 to 2) the egg has already gone by: those are read and done with.
  */
-export function gateToFlip(gates: readonly boolean[], exit: number, passed: number): number | null {
-  const need = gatesFor(exit);
+export function gateToFlip(gates: readonly boolean[], exit: number, passed: number, singleGate = false): number | null {
+  const need = gatesFor(exit, singleGate);
   for (let i = passed; i < need.length; i++) if (gates[need[i].gate] !== need[i].right) return need[i].gate;
   return null;
 }
@@ -121,8 +137,8 @@ export function gateToFlip(gates: readonly boolean[], exit: number, passed: numb
  * Routing at levels 4–5, where the egg waits at the top until the green arrow: the ghost finger's next touch. A gate still
  * set the wrong way for `exit`, else 'go' once every gate the egg will meet sends it there. The arrow never comes first.
  */
-export function routeTouch(gates: readonly boolean[], exit: number): number | 'go' {
-  return gateToFlip(gates, exit, 0) ?? 'go';
+export function routeTouch(gates: readonly boolean[], exit: number, singleGate = false): number | 'go' {
+  return gateToFlip(gates, exit, 0, singleGate) ?? 'go';
 }
 
 /** An egg in the air, as a child watching sees it: the lane it will land in, and its shell. */

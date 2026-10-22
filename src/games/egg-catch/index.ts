@@ -17,8 +17,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 8, order: [1, 8, 2] },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
+  preschool: { min: 2, max: 9, order: [2, 3, 9, 4] },
+  prek: { min: 3, max: 9, order: [3, 9, 4, 5] },
   school: { min: 4, max: 7 },
 };
 
@@ -171,7 +171,7 @@ class EggCatch implements Game {
       // The steering layer is only for catching; here it would sit over the bins and swallow taps.
       this.touch.eventMode = 'none';
       // Each gate is a big tap target at its junction.
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < (this.plan.singleGate ? 1 : 3); i++) {
         const hit = new Container();
         hit.hitArea = new Circle(0, 0, 80);
         onTap(hit, () => this.flip(i), { cooldown: 250 });
@@ -197,7 +197,7 @@ class EggCatch implements Game {
   start() {
     const line = { lane: 'egg.lane', tap: 'egg.tap', catch: 'egg.catch', brown: 'egg.brown', route: 'egg.route', sort: 'egg.sort', predict: 'egg.predict', pair: 'egg.pair' } as const;
     if (this.plan.mode === 'predict') this.predictions = predictGates(this.ctx.rng, this.plan.eggs * 3);
-    void this.ctx.instruct(line[this.plan.mode]);
+    void this.ctx.instruct(this.plan.singleGate ? 'egg.onegate' : line[this.plan.mode]);
     if (this.routing) void this.nextRoute();
     if (this.plan.mode === 'lane') this.callHen();
   }
@@ -330,13 +330,13 @@ class EggCatch implements Game {
       return { tap: { on: gate === null ? this.goButton : this.gateHits[gate] }, pause: 0.25 };
     }
     if (this.held) {
-      const touch = routeTouch(this.gates, exitWanted(mode, this.held.egg.shell, this.target));
+      const touch = routeTouch(this.gates, exitWanted(mode, this.held.egg.shell, this.target), this.plan.singleGate);
       return { tap: { on: touch === 'go' ? this.goButton : this.gateHits[touch] }, pause: 0.25 };
     }
     if (mode === 'predict') return this.waiting ? { tap: { on: this.exits.children[exitFor(this.gates)], y: -20 } } : null;
     if (this.passed >= 2) return null;
     const egg = this.eggs[this.routed % this.eggs.length];
-    const gate = gateToFlip(this.gates, exitWanted(mode, egg.shell, this.target), this.passed);
+    const gate = gateToFlip(this.gates, exitWanted(mode, egg.shell, this.target), this.passed, this.plan.singleGate);
     return gate === null ? null : { tap: { on: this.gateHits[gate] }, pause: 0.25 };
   }
 
@@ -480,6 +480,12 @@ class EggCatch implements Game {
     const v = this.view;
     const cx = v.w / 2 + 40;
     const top = 210;
+    if (this.plan.singleGate) return {
+      entry: { x: cx, y: top },
+      gate: [{ x: cx, y: top + 120 }],
+      exit: [-190, 190].map((dx) => ({ x: cx + dx, y: top + 280 })),
+      bin: [-190, 190].map((dx) => ({ x: cx + dx, y: v.h - 90 })),
+    };
     return {
       entry: { x: cx, y: top },
       gate: [
@@ -500,10 +506,12 @@ class EggCatch implements Game {
       g.moveTo(a.x, a.y).lineTo(b.x, b.y).stroke({ width: 24, color: wood.light, cap: 'round' });
     };
     seg(o.entry, o.gate[0]);
-    seg(o.gate[0], o.gate[1]);
-    seg(o.gate[0], o.gate[2]);
-    for (let i = 0; i < 4; i++) {
-      seg(o.gate[i < 2 ? 1 : 2], o.exit[i]);
+    if (!this.plan.singleGate) {
+      seg(o.gate[0], o.gate[1]);
+      seg(o.gate[0], o.gate[2]);
+    }
+    for (let i = 0; i < o.exit.length; i++) {
+      seg(o.gate[this.plan.singleGate ? 0 : i < 2 ? 1 : 2], o.exit[i]);
       seg(o.exit[i], o.bin[i]);
     }
     if (this.plan.mode === 'pair') {
@@ -517,7 +525,7 @@ class EggCatch implements Game {
   private drawExits() {
     this.exits.removeChildren().forEach((c) => c.destroy({ children: true }));
     const o = this.geo();
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < o.bin.length; i++) {
       const node = i === this.target.basket ? basketArt() : i === this.target.nest && (this.plan.mode === 'sort' || this.plan.mode === 'pair') ? this.nestArt() : hayArt(150);
       node.position.set(o.bin[i].x, o.bin[i].y + 20);
       // Predict levels: tap a bin to say where the egg will land.
@@ -558,12 +566,16 @@ class EggCatch implements Game {
       return;
     }
     const want = this.hinting ? this.plan.mode === 'pair' ? pairNeeds(this.pairBoards[this.routed]) : this.wanted() : [];
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < o.gate.length; i++) {
       const p = o.gate[i];
       const right = this.gates[i];
       const dx = i === 0 ? 190 : 95;
       const to = { x: p.x + (right ? dx : -dx) * 0.42, y: p.y + (i === 0 ? 130 : 130) * 0.42 };
       const glow = want.find((w) => w.gate === i);
+      if (glow && this.plan.singleGate) {
+        const end = o.exit[glow.right ? 1 : 0];
+        g.moveTo(p.x, p.y).lineTo(end.x, end.y).stroke({ width: 18, color: swatch.yellow.fill, alpha: 0.65 + 0.2 * Math.sin(this.clock * 7), cap: 'round' });
+      }
       if (glow) g.circle(p.x, p.y, 62 + 5 * Math.sin(this.clock * 7)).fill({ color: 0xfff3a0, alpha: glow.right === right ? 0.35 : 0.85 });
       g.circle(p.x, p.y, 40).fill({ color: 0xffffff, alpha: 0.8 }).stroke({ width: 5, color: swatch.purple.line });
       g.moveTo(p.x, p.y).lineTo(to.x, to.y).stroke({ width: 18, color: swatch.purple.fill, cap: 'round' });
@@ -574,7 +586,7 @@ class EggCatch implements Game {
   /** The gates this egg needs, for the hint. */
   private wanted() {
     const egg = this.eggs[this.routed % this.eggs.length];
-    return gatesFor(exitWanted(this.plan.mode, egg.shell, this.target));
+    return gatesFor(exitWanted(this.plan.mode, egg.shell, this.target), this.plan.singleGate);
   }
 
   private flip(i: number) {
@@ -615,7 +627,7 @@ class EggCatch implements Game {
   /** Whether the waiting egg (or pair) would arrive where it should with the gates as they are. */
   private setToGo() {
     if (this.plan.mode === 'pair') return this.pairReady && !this.rolling && pairGateToFlip(this.pairBoards[this.routed], this.gates) === null;
-    return !!this.held && gateToFlip(this.gates, exitWanted(this.plan.mode, this.held.egg.shell, this.target), 0) === null;
+    return !!this.held && gateToFlip(this.gates, exitWanted(this.plan.mode, this.held.egg.shell, this.target), 0, this.plan.singleGate) === null;
   }
 
   /** The green arrow at levels 4–5: the waiting egg rolls. Gates can still be flipped ahead of it as it goes. */
@@ -698,12 +710,13 @@ class EggCatch implements Game {
     const whitePair = this.plan.mode === 'pair' && egg.shell === 'white';
     if (!whitePair) await go(o.gate[0]);
     this.passed = 1;
+    const singleExit = this.gates[0] ? 1 : 0;
     const second = whitePair ? this.pairBoards[this.routed].whiteBranch : this.gates[0] ? 2 : 1;
     const right = second === 2;
-    await go(o.gate[second]);
+    if (!this.plan.singleGate) await go(o.gate[second]);
     this.passed = 2;
     // The first gate was read when the egg passed it; the second is read now.
-    const exit = right ? (this.gates[2] ? 3 : 2) : this.gates[1] ? 1 : 0;
+    const exit = this.plan.singleGate ? singleExit : right ? (this.gates[2] ? 3 : 2) : this.gates[1] ? 1 : 0;
     await go(o.exit[exit]);
     await go({ x: o.bin[exit].x, y: o.bin[exit].y - 10 });
     const want = this.plan.mode === 'pair' && egg.shell === 'white' ? this.target.nest : exitWanted(this.plan.mode, egg.shell, this.target);
@@ -724,6 +737,7 @@ class EggCatch implements Game {
       void this.ctx.say('count', { n: this.caughtCount });
       if (this.caughtCount >= this.plan.eggs) return void this.finale();
     } else {
+      if (this.plan.singleGate) sfx.boing();
       this.miss(this.plan.mode === 'predict' ? 'egg.predictwrong' : 'egg.wrongway');
       this.hatch(node);
     }
@@ -819,7 +833,7 @@ export const eggCatch: GameModule = {
   skills: ['tracking', 'hand-eye', 'colors', 'prediction'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [8],
+  entryLevels: [8, 9],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Point and say "here it comes!" as each egg rolls down.',

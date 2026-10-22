@@ -6073,8 +6073,8 @@ async function batch() {
   }
 
   // Egg Catch: a finger steers the basket under falling eggs; route levels flip the gates.
-  for (const level of [1, 2, 3, 4, 5, 8].filter((n) => n >= Number(process.env.FROM_LEVEL || 1) && n <= Number(process.env.TO_LEVEL || 8) && (!only || only === 'eggs'))) {
-    if (level === 8) await page.setViewportSize({ width: 768, height: 1024 });
+  for (const level of [1, 2, 3, 4, 5, 8, 9].filter((n) => n >= Number(process.env.FROM_LEVEL || 1) && n <= Number(process.env.TO_LEVEL || 9) && (!only || only === 'eggs'))) {
+    if (level === 8 || level === 9) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('egg-catch', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -6146,14 +6146,18 @@ async function batch() {
           lastRouted = g.routed;
           await kit.until(() => g.held || g.finished, 8000);
           if (g.finished) break;
+          if (g.plan.singleGate && (g.gateHits.length !== 1 || g.exits.children.length !== 2)) throw new Error('one gate board must have exactly two exits');
           // No clock: after a long look the egg is still waiting at the top.
           if (g.routed === 0) { await kit.sleep(4500); if (!g.held || g.passed !== 0) throw new Error('egg rolled without the arrow'); }
+          if (g.plan.singleGate && g.hinting) {
+            if (g.misses !== 2 || g.hints !== 1 || !g.gateArt.context.instructions.length) throw new Error('single gate hint accounting');
+          }
           const egg = g.eggs[g.routed % g.eggs.length];
           const exit = g.plan.mode === 'sort' && egg.shell === 'white' ? g.target.nest : g.target.basket;
           const want = [...g.gates];
-          for (const { gate, right } of gatesFor(exit)) want[gate] = right;
+          for (const { gate, right } of gatesFor(exit, g.plan.singleGate)) want[gate] = right;
           if (g.misses < 2 && g.hints === 0) want[0] = !want[0];
-          for (let i = 0; i < 3; i++) if (g.gates[i] !== want[i]) { kit.tapOn(g.gateHits[i]); await kit.sleep(300); }
+          for (let i = 0; i < g.gateHits.length; i++) if (g.gates[i] !== want[i]) { kit.tapOn(g.gateHits[i]); await kit.sleep(300); }
           kit.tapOn(g.goButton);
           await kit.until(() => !g.held, 3000);
         }
@@ -6167,7 +6171,7 @@ async function batch() {
     if (mode === 'tap') assert.deepEqual(r, [0, 0], 'eggs tap score');
     else assert.ok(r[0] >= 2 && r[1] === 1, `eggs ${level} score ${r}`);
     log(`Egg Catch ${level} (${mode}): eggs, basket, gates, hatching, hint, saved score and sticker passed`);
-    if (level === 8) await page.setViewportSize({ width: 1024, height: 768 });
+    if (level === 8 || level === 9) await page.setViewportSize({ width: 1024, height: 768 });
   }
 
   // Mail Carrier: deliver each letter; a wrong mailbox hands it back.

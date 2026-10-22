@@ -269,3 +269,10 @@
 - Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=roundup FINGER_LEVELS=9` at the same URL: clean completion in 18.3 s. Browser evidence uses isolated profiles; real saves untouched.
 - First deployment of `77e24e7a` failed only on two stale pre-K-8 expectations in `roundup/levels.test.ts`, omitted from the initial focused list. Test-only follow-up `codex/roundup-fill-tests` updates those and adds level-9 next-offer/card assertions. Passed all 58 tests with `npx vitest run src/games/roundup src/games/registry.test.ts src/content/howto.test.ts`. Gameplay unchanged; browser evidence reused.
 - Links and diff check passed. Not run: build, other gameplay suites, world/offline (no shared engine, navigation, persistence or assets changed), portrait (not required by this new-level tier), device speech or child play ([open check](../DEVICE-CHECKS.md)). Server stopped at closeout.
+
+## 2026-10-21 — A better voice V0 (chunk 29)
+
+- [PR #734](https://github.com/rjdunlap/neo/pull/734), `claude/better-voice-v0`, commit `80199672` on base `2f25be9f`: `chooseVoice` prefers Premium/Enhanced, on-device English voices and avoids novelty and old MacinTalk voices; the grown-ups' page names the voice in use and how to download a better one.
+- Passed typecheck, full `npm test` (203 files, 2,370 tests, 8 new voice-choice tests) and `npm run build`.
+- Probe `test-results/voice-note-probe.mjs` on Vite `http://localhost:5344`, headless Chromium: held the gear on Who's playing?; the note read "Speaking: Samantha, the device's standard voice…" (41 English voices on this Mac); screenshot inspected.
+- Not run: browser suites (the panel change is one static note, no navigation or persistence change), offline check, any iPad or Enhanced/Premium voice ([open check](../DEVICE-CHECKS.md)).

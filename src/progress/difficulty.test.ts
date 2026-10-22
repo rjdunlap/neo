@@ -126,3 +126,22 @@ it('Egg Catch keeps toddler IDs ordered 1,8,2, with safe birthdays and pins outs
     expect(landing(8, r, eggCatch.entryLevels)).toBe(r.min);
   }
 });
+
+
+it('Egg Catch one-gate entry precedes the full tree without renumbering saved steps or pins', () => {
+  for (const [band, order, before] of [['preschool', [2, 3, 9, 4], 3], ['prek', [3, 9, 4, 5], 3]] as const) {
+    const range = eggCatch.levels(band);
+    expect(levelsInOrder(range)).toEqual(order);
+    expect(nextLevelOffer(before, range)).toBe(9);
+    expect(nextLevelOffer(9, range)).toBe(4);
+    expect(nextLevel(9, [round(9, 0), round(9, 0)], range)).toBe(4);
+    expect(nextLevel(9, [round(9, 5), round(9, 5)], range)).toBe(3);
+    expect(nextLevel(4, [], range)).toBe(4);
+    expect(landing(9, range, eggCatch.entryLevels)).toBe(9);
+  }
+  for (const band of ['lap', 'toddler', 'school'] as const) {
+    const range = eggCatch.levels(band);
+    expect(levelsInOrder(range)).not.toContain(9);
+    expect(landing(9, range, eggCatch.entryLevels)).toBe(levelsInOrder(range)[0]);
+  }
+});
