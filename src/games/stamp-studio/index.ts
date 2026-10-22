@@ -10,6 +10,7 @@ import { againIcon, arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { stampArt } from './art';
+import { TracePrints } from './trace';
 import { LIMIT, pixel, place, planFor, playOrder, type PlayNote, roundPlan, STAMP_COLORS, STAMP_NAMES, stickerStamp, stampDemo, type Stamp, type StampKind } from './logic';
 
 interface Mark { data: Stamp; node: Container; drag?: DragHandle }
@@ -213,11 +214,11 @@ class StampStudio implements Game {
 export const stampStudio: GameModule = {
   id: 'stamp-studio', name: 'Stamp Studio', titleLine: 'game.stamp-studio', region: 'treehouse',
   skills: ['composition', 'creative-expression', 'spatial-reasoning'], bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
-  levels: b => b === 'school' ? { min: 5, max: 6 } : b === 'lap' ? { min: 1, max: 7, order: [7, 1, 2] } : b === 'toddler' ? { min: 2, max: 3 } : b === 'preschool' ? { min: 3, max: 5 } : { min: 4, max: 6 },
-  entryLevels: [7], describeLevel: l => planFor(l).name, music: STYLES.paint, touchDemo: true,
+  levels: b => b === 'school' ? { min: 5, max: 6 } : b === 'lap' ? { min: 1, max: 8, order: [7, 8, 1, 2] } : b === 'toddler' ? { min: 2, max: 9, order: [9, 2, 3] } : b === 'preschool' ? { min: 3, max: 5 } : { min: 4, max: 6 },
+  entryLevels: [7, 8, 9], describeLevel: l => planFor(l).name, music: STYLES.paint, touchDemo: true,
   coplayHint: 'Let {name} choose where the picture goes. The green arrow finishes any creation.',
   offScreen: 'Stamp with a sponge or potato on scrap paper, then tell a story about the picture.',
   hubIcon: () => { const c = new Container(); c.addChild(new Graphics().roundRect(-90,-140,180,140,15).fill(cream).stroke({width:7,color:swatch.brown.line})); const a=stampArt('flower','pink');a.y=-70;c.addChild(a);return new WigglyIcon(c); },
   sticker: seed => { const { kind, color } = stickerStamp(seed); return stampArt(kind, color, 70); },
-  create: ctx => new StampStudio(ctx),
+  create: ctx => planFor(ctx.level).trace ? new TracePrints(ctx) : new StampStudio(ctx),
 };

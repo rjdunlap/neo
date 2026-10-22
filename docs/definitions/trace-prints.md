@@ -1,6 +1,6 @@
 # Stamp Studio levels 8–9: Trace Prints (definition)
 
-Defined 2026-10-22 on `claude/define-trace-prints` ([PR #771](https://github.com/rjdunlap/neo/pull/771)), slice D3 of the [deep-time study](../deep-dives/subjects/deep-time.md#build-slices-in-order), from its [audience table](../deep-dives/subjects/deep-time.md#an-answer-for-every-audience) (rows L and T) and its [candidate row](../deep-dives/subjects/deep-time.md#candidates-and-overlap-decisions). Docs only; nothing is implemented. The build is queued as an [implementation batch](../GAME-BATCHES.md#stamp-studio-1-trace-prints).
+Defined 2026-10-22 on `claude/define-trace-prints` ([PR #771](https://github.com/rjdunlap/neo/pull/771)), slice D3 of the [deep-time study](../deep-dives/subjects/deep-time.md#build-slices-in-order), from its [audience table](../deep-dives/subjects/deep-time.md#an-answer-for-every-audience) (rows L and T) and its [candidate row](../deep-dives/subjects/deep-time.md#candidates-and-overlap-decisions). **Built 2026-10-22, [PR #777](https://github.com/rjdunlap/neo/pull/777)** (`TracePrints` in `src/games/stamp-studio/trace.ts`), to this definition with one deviation: the print margin is `max(across / 2, farthest reach) + 5`, not exactly `across / 2 + 5`, so a tilted leaf stays on the mud. Text below is retained as the scope the build followed.
 
 **What it adds:** two appended levels of `stamp-studio` (`src/games/stamp-studio/`) in which the paper is soft mud and a stamp is a real thing that leaves its own shape:
 

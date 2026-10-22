@@ -6,6 +6,10 @@
 - [ ] On an iPad, follow the dotted failed run and identify its wrong junction; confirm the needed-direction glow is useful after two misses. Rotate with a waiting egg and after a rerun.
 - [ ] Confirm the spring visibly changes after brown passes and a school-age player can explain why white takes the other branch. Check spoken instructions, target comfort and both ghost-finger demos on-device. Chrome checks do not establish this understanding.
 
+## Stamp Studio Trace Prints (levels 8–9)
+
+- [ ] On an iPad: does a one-year-old notice that each print matches the leaf she pressed? Does a two-year-old choose between the duck foot and the cat paw on purpose, and do the quack and meow read as "whose foot"? Check the 120-across buttons for a small hand, the speech, and both ghost-finger demos.
+
 ## One iPad session (about fifteen minutes)
 
 The 112 items below are mostly the same five checks asked once per game: device speech, target size for a small hand, both orientations, frame rate, and what a child actually does. Most of them can be covered in one sitting with the iPad, in this order; tick every item a step covers, and write what was wrong in the item rather than here.
