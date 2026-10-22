@@ -199,7 +199,7 @@ None of this has been observed: child appeal, whether consequences teach the pla
 
 ## Build slices, in order
 
-1. **N1 · Define Second Chance Shed 1–4** (docs only). Freeze the reviewed item table and island rules, the consequences for each place, the toddler no-miss rule, the how-to, speech and ghost finger, the portrait and landscape layouts, and the land capacity check. Write down the overlap test against Critter Sort.
+1. **N1 · Define Second Chance Shed 1–4** (docs only; defined 2026-10-22, [definition](../../definitions/second-chance-shed.md); next N2). Freeze the reviewed item table and island rules, the consequences for each place, the toddler no-miss rule, the how-to, speech and ghost finger, the portrait and landscape layouts, and the land capacity check. Write down the overlap test against Critter Sort.
 2. **N2 · Build Second Chance Shed 1–4** after N1, at the new-game tier: typecheck and unit tests, then one filtered play of the first and last level with one wrong drop and one hint, and one portrait screenshot. Build, because the registry and lands change.
 3. **N3 · Define levels 5–6** (docs only): request cards, whole-plan checking with the bell, the greedy-fails case for level 6, and accounting. Then build them in their own slice at the new-interaction tier, since the bell check is new.
 4. **N4 · Define and build Picnic Loop 7–8**: exact enumeration, several accepted plans plus a tempting failure, and the wash-tub capacity; new levels on the level 5–6 interaction.

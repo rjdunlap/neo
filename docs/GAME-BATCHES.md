@@ -387,3 +387,9 @@ Proof: new-level tier on an existing interaction, as the [definition's Build and
 - **`attic-finds`, levels 3 *Up and down* (lap, toddler) and 4 *Peek inside* (toddler)** (a new giant-handle interaction inside the existing game; `entryLevels: [3, 4]`; 0 misses and 0 hints, nothing kept): each touch turns a giant handle half a turn so the bird (or fish) rises, then sinks; level 4 adds a peek door that shows the rod the handle pushes; a Finish picture appears after three turns and only her tap ends the round. [Definition](definitions/lid-and-lever.md), [everyday-life study slice H3](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the [definition's Build and check tier](definitions/lid-and-lever.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticlever` scripted play at levels 3–4, `fingerdemo` at both, one portrait screenshot of level 4 with the door open, one build).
+
+### second-chance-shed 1: Levels 1–4
+
+- **`second-chance-shed`, levels 1–4 (N2)** (a new game, one subtask; toddler 1–2, preschool 2–3, pre-K 3–4, Cozy Village by default): used things arrive one at a time on a cart and she drags each to the worm bin, reuse shelf, mending table or Remake machine, one place added per level; each place visibly makes something, and level 1 counts no misses. [Definition](definitions/second-chance-shed.md), [nature-sustainability study slice N1](deep-dives/subjects/nature-sustainability.md#build-slices-in-order)
+
+Proof: new-game tier, as the [definition's check tier](definitions/second-chance-shed.md#check-tier) sets it (typecheck, unit tests, a new `browser-check.mjs` case at levels 1 and 4, `fingerdemo` at both, one portrait screenshot of level 4, one build). Review gate: merges only after the developer's item-table review ([decision 1](definitions/second-chance-shed.md#open-decisions)); the build itself may proceed.
