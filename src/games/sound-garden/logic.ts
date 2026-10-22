@@ -5,9 +5,9 @@ import type { Rng } from '../../engine/random';
  * ladder turns play into listening: high or low, fast or slow, going up or down, and
  * echoing a woodpecker's rhythm on a drum.
  */
-export type GardenMode = 'play' | 'highlow' | 'fastslow' | 'updown' | 'echo' | 'mix';
-export type Ask = 'highlow' | 'fastslow' | 'updown';
-export type Answer = 'high' | 'low' | 'fast' | 'slow' | 'up' | 'down';
+export type GardenMode = 'play' | 'highlow' | 'fastslow' | 'updown' | 'updownsame' | 'echo' | 'mix';
+export type Ask = 'highlow' | 'fastslow' | 'updown' | 'updownsame';
+export type Answer = 'high' | 'low' | 'fast' | 'slow' | 'up' | 'down' | 'same';
 
 export interface GardenPlan {
   mode: GardenMode;
@@ -23,16 +23,18 @@ export const PLANS: Record<number, GardenPlan> = {
   4: { mode: 'updown', rounds: 5, name: 'Does the tune go up or down?' },
   5: { mode: 'echo', rounds: 4, name: 'Echo the woodpecker\'s rhythm on the drum' },
   6: { mode: 'mix', rounds: 6, name: 'Mixed listening: high or low, fast or slow, up or down' },
+  7: { mode: 'updownsame', rounds: 6, name: 'Does the tune go up, down or stay the same?' },
 };
 
 export const LEVEL_IDS = Object.keys(PLANS).map(Number);
 
 export const planFor = (level: number) => PLANS[level] ?? PLANS[Math.min(Math.max(...LEVEL_IDS), Math.max(1, Math.round(level)))];
 
-export const CHOICES: Record<Ask, [Answer, Answer]> = {
+export const CHOICES: Record<Ask, Answer[]> = {
   highlow: ['high', 'low'],
   fastslow: ['fast', 'slow'],
   updown: ['up', 'down'],
+  updownsame: ['up', 'down', 'same'],
 };
 
 /** An instrument the bush can sing with; the drum has no pitch, so its step is only kept for the record. */
@@ -55,7 +57,7 @@ export interface Question {
   ask: Ask;
   answer: Answer;
   /**
-   * The sound for each of the two choices, built together so they differ only in what is asked: the same instrument and span, and for
+   * The sound for each choice, built together so they differ only in what is asked: the same instrument and span, and for
    * fast or slow the same step. The bush plays `sounds[answer]`; a replay plays the same notes again.
    */
   sounds: Record<Answer, Sound>;
@@ -82,7 +84,7 @@ const repeat = (step: number, voice: Voice, count: number, gap: number): Sound =
   span: count * gap,
 });
 
-/** The pair of sounds for a question, from the seeded RNG. */
+/** The matching sounds for a question, from the seeded RNG. */
 export function makeSounds(ask: Ask, rng: Rng): Record<Answer, Sound> {
   const out = {} as Record<Answer, Sound>;
   if (ask === 'highlow') {
@@ -98,13 +100,14 @@ export function makeSounds(ask: Ask, rng: Rng): Record<Answer, Sound> {
     out.slow = repeat(step, voice, SLOW_BEATS, TEMPO_SPAN / SLOW_BEATS);
   } else {
     const voice = rng.pick(PITCHED);
-    const length = rng.int(3, 5);
+    const length = rng.int(3, ask === 'updownsame' ? 4 : 5);
     const rises = Array.from({ length: length - 1 }, () => rng.int(1, 2));
     const climb = rises.reduce((a, b) => a + b, 0);
     let step = rng.int(TUNE_STEPS[0], TUNE_STEPS[1] - climb);
     const steps = [step, ...rises.map((r) => (step += r))];
     const at = (i: number) => i * TUNE_GAP;
     out.up = { notes: steps.map((s, i) => ({ at: at(i), step: s, voice })), span: length * TUNE_GAP };
+    if (ask === 'updownsame') out.same = repeat(steps[0], voice, length, TUNE_GAP);
     out.down = { notes: [...steps].reverse().map((s, i) => ({ at: at(i), step: s, voice })), span: length * TUNE_GAP };
   }
   return out;
@@ -116,10 +119,14 @@ export function makeQuestions(plan: GardenPlan, rng: Rng): Question[] {
   const asks: Ask[] = plan.mode === 'mix' ? rng.shuffle(['highlow', 'fastslow', 'updown', 'highlow', 'fastslow', 'updown'] as Ask[]).slice(0, plan.rounds) : Array(plan.rounds).fill(plan.mode);
   const out: Question[] = [];
   for (const ask of asks) {
-    const [a, b] = CHOICES[ask];
+    const choices = CHOICES[ask];
     const lastTwo = out.slice(-2).map((q) => q.answer);
-    let answer = rng.pick([a, b]);
-    if (lastTwo.length === 2 && lastTwo.every((x) => x === answer)) answer = answer === a ? b : a;
+    let answer = rng.pick(choices);
+    if (lastTwo.length === 2 && lastTwo.every((x) => x === answer)) {
+      const others = choices.filter((c) => c !== answer);
+      // Keep the original binary questions' RNG sequence; only three choices need another draw.
+      answer = others.length === 1 ? others[0] : rng.pick(others);
+    }
     out.push({ ask, answer, sounds: makeSounds(ask, rng) });
   }
   return out;
@@ -129,14 +136,23 @@ export function makeQuestions(plan: GardenPlan, rng: Rng): Question[] {
 export type Gap = 'S' | 'L';
 export const GAP_SECONDS: Record<Gap, number> = { S: 0.32, L: 0.72 };
 
-/** Rhythms to echo, from two taps up to four. */
+/** Original shared pool: Rhythm Neighbors builds its own twelve replies from these eight. */
 export const RHYTHMS: Gap[][] = [['S'], ['L'], ['S', 'S'], ['L', 'S'], ['S', 'L'], ['S', 'S', 'S'], ['L', 'S', 'S'], ['S', 'S', 'L']];
+/** Sound Garden's twelve rhythms, from two taps up to five. */
+export const ECHO_RHYTHMS: Gap[][] = [...RHYTHMS, ['L', 'S', 'L'], ['S', 'L', 'S'], ['S', 'L', 'S', 'L'], ['L', 'S', 'L', 'S']];
 
 export function makeRhythms(rounds: number, rng: Rng): Gap[][] {
-  // Start easy (two or three taps), then a longer one.
-  const easy = rng.shuffle(RHYTHMS.filter((r) => r.length <= 2));
-  const hard = rng.shuffle(RHYTHMS.filter((r) => r.length === 3));
-  return [...easy.slice(0, Math.max(1, rounds - 1)), ...hard].slice(0, rounds);
+  // Two/three taps first, then four, then five. Draw without replacement.
+  const easy = rng.shuffle(ECHO_RHYTHMS.filter((r) => r.length <= 2));
+  const middle = rng.shuffle(ECHO_RHYTHMS.filter((r) => r.length === 3));
+  const last = rng.pick(ECHO_RHYTHMS.filter((r) => r.length === 4));
+  return [...easy.slice(0, 2), ...middle].slice(0, Math.max(0, rounds - 1)).concat(rounds > 0 ? [last] : []);
+}
+
+// Dot positions use elapsed sound time, so their spacing exactly follows the heard gaps.
+export function echoDots(pattern: Gap[]): number[] {
+  let at = 0;
+  return [0, ...pattern.map((g) => (at += GAP_SECONDS[g] * 100))];
 }
 
 /**
@@ -209,8 +225,8 @@ export function songFor(singer: Singer, tap: number): Song {
   }
 }
 
-/** Which of the two answer tiles shows the answer (the tiles show the two choices in order). */
-export const tileFor = (q: Question): 0 | 1 => (CHOICES[q.ask][0] === q.answer ? 0 : 1);
+/** The tiles show every choice in order, including the third, flat path. */
+export const tileFor = (q: Question): number => CHOICES[q.ask].indexOf(q.answer);
 
 /**
  * The seconds the demonstration's hand rests after a drum tap so that the next tap makes a short or a long gap. The hand needs at least

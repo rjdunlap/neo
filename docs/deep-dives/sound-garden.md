@@ -121,12 +121,14 @@ Speed rounds, a Simon sequence that grows until a mistake, scored timing, a micr
 
 ## Build slices, in order
 
+Batch 1, slices 3–4, built 2026-10-22 ([#779](https://github.com/rjdunlap/neo/pull/779)); [closeout](../archive/COMPLETED-2026-10-09.md#sound-garden-listening-direction-and-visible-echoes-2026-10-22). One worker/claim/PR covered level 7 and level 5. Later levels and decisions remain proposed.
+
 **Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`sound-garden` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
 1. **Fair, varied listening** (levels 2–4, 6; existing-game bug fix on an unchanged interaction): sound specs in `logic.ts` from the seeded RNG, equal-span fast/slow, varied register with the bird and frog as heard references, varied up/down tunes; level 2's rule unchanged for the Missing Melody. Also two guards for every later slice: `PLANS` becomes a table keyed by stable level ID (today `planFor` indexes by array position, so 8 could not land before 7), and the how-to's last step is capped at `{ from: 6, to: 6 }`. Checks: `npm run typecheck`, Sound Garden's rule tests, one filtered regression play of levels 2–4 and 6; `fingerdemo` only if the bot's wait changes. Built 2026-10-20 ([#656](https://github.com/rjdunlap/neo/pull/656)).
 2. **The whole cast sings** (level 1 content): the turtle joins, pitched frog, quick bunny, seeded cast of five from six; `singerToTap` reads the cast. Checks: typecheck, rule tests (every singer heard in 12 taps), one filtered play and `fingerdemo` at level 1. Built 2026-10-21 ([#725](https://github.com/rjdunlap/neo/pull/725)).
-3. **Level 7 Up, down or the same** (new level on the existing tap interaction): three tiles, the flat-path picture and voice, a how-to step. Checks: typecheck, rule tests, one browser play at 7 and `fingerdemo` at 7, one portrait screenshot (three tiles).
-4. **Echo you can see** (level 5): knock dots from the start, 12 rhythms, the sleepy tree's answer, a per-tap hint. Checks: typecheck, rule tests (dot spacing follows gaps, pool lengths), one filtered play at 5 and `fingerdemo` at 5.
+3. **Level 7 Up, down or the same** — built 2026-10-22 ([#779](https://github.com/rjdunlap/neo/pull/779)) (new level on the existing tap interaction): three tiles, the flat-path picture and voice, a how-to step. Checks: typecheck, rule tests, one browser play at 7 and `fingerdemo` at 7, one portrait screenshot (three tiles).
+4. **Echo you can see** — built 2026-10-22 ([#779](https://github.com/rjdunlap/neo/pull/779)) (level 5): knock dots from the start, 12 rhythms, the sleepy tree's answer, a per-tap hint. Checks: typecheck, rule tests (dot spacing follows gaps, pool lengths), one filtered play at 5 and `fingerdemo` at 5.
 5. **Level 8 One big friend** (new lap entry): `entryLevels`, lap order 8, 1, the big-singer layout. Checks: typecheck, unit tests (order and entry), one play at 8, `fingerdemo` at 8, one portrait screenshot.
 6. **Level 9 Sing Higher** (new interaction): the vertical drag, snapped steps, creative finish, a drag bot, how-to and voice. Checks: the new-interaction tier (scripted play with first and last notes, a cancelled drag, one portrait screenshot, `fingerdemo`).
 7. **Level 10 Copy the shape** (new level on slice 6's interaction): the direction judge, two-then-three-note shapes, the stem hint. Checks: typecheck, rule tests, one play at 10, `fingerdemo` at 10.
@@ -135,4 +137,4 @@ Gated: level 1's every-touch retrofit (V2's person check); levels 11, 12 and 13 
 
 ## What was built in this session
 
-Research and ideation, then slices 1 (#656) and 2 (#725); build notes are in the [archive](../archive/COMPLETED-2026-10-09.md). Ran `node scripts/check-links.mjs` and `git diff --check`.
+Research and ideation, then slices 1 (#656), 2 (#725), and batch 1 slices 3–4 (#779); build notes are in the [archive](../archive/COMPLETED-2026-10-09.md). Ran `node scripts/check-links.mjs` and `git diff --check`.

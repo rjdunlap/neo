@@ -13,7 +13,7 @@ import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { CHOICES, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, makeCast, planFor, singerToTap, songFor, tileFor, type Singer, type Song, type Answer, type Gap, type GardenPlan, type Note, type Question, type Sound } from './logic';
+import { CHOICES, echoDots, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, makeCast, planFor, singerToTap, songFor, tileFor, type Singer, type Song, type Answer, type Gap, type GardenPlan, type Note, type Question, type Sound } from './logic';
 import { MIN_TAP_GAP } from '../../engine/ghost';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
@@ -21,10 +21,10 @@ const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 6 },
+  prek: { min: 3, max: 7 },
 };
 
-type Kind = 'bird' | 'frog' | 'bunny' | 'turtle' | 'up' | 'down' | 'bell' | 'woodpecker' | 'drum';
+type Kind = 'bird' | 'frog' | 'bunny' | 'turtle' | 'up' | 'down' | 'same' | 'bell' | 'woodpecker' | 'drum';
 
 const line = (color: number, width = 6) => ({ width, color, cap: 'round' as const, join: 'round' as const });
 
@@ -82,6 +82,11 @@ function art(kind: Kind): Container {
       g.poly(up ? [40, ay - 22, 52, ay - 18, 42, ay - 6] : [40, ay + 22, 52, ay + 18, 42, ay + 6]).fill(ink).stroke(line(ink, 6));
       break;
     }
+    case 'same':
+      g.roundRect(-80, 20, 160, 35, 12).fill(swatch.green.light).stroke(line(swatch.green.line));
+      g.moveTo(-60, -40).lineTo(60, -40).stroke(line(ink, 8));
+      g.poly([40, -60, 62, -40, 40, -20]).stroke(line(ink, 8));
+      break;
     case 'bell':
       g.moveTo(0, 40).lineTo(0, 80).stroke(line(swatch.green.line, 8));
       g.moveTo(-50, 40).bezierCurveTo(-50, -60, 50, -60, 50, 40).quadraticCurveTo(0, 20, -50, 40).closePath().fill(swatch.purple.fill).stroke(line(swatch.purple.line));
@@ -105,6 +110,7 @@ class Tile extends Container {
     super();
     this.glow.circle(0, 0, 150).fill({ color: 0xfff3a0, alpha: 0.85 });
     this.glow.visible = false;
+    this.glow.eventMode = 'none';
     const card = new Graphics().circle(0, 0, 124).fill({ color: 0xffffff, alpha: 0.9 }).stroke({ width: 6, color: 0xb9c6d1 });
     this.addChild(this.glow, card, this.picture);
     onTap(this, onPick, { radius: 130, cooldown: 400 });
@@ -134,7 +140,7 @@ function call(c: Song['call'], step: number) {
   else sfx.knock();
 }
 
-const PICTURE: Record<Answer, Kind> = { high: 'bird', low: 'frog', fast: 'bunny', slow: 'turtle', up: 'up', down: 'down' };
+const PICTURE: Record<Answer, Kind> = { high: 'bird', low: 'frog', fast: 'bunny', slow: 'turtle', up: 'up', down: 'down', same: 'same' };
 
 class SoundGarden implements Game {
   readonly plan: GardenPlan;
@@ -157,6 +163,11 @@ class SoundGarden implements Game {
 
   private readonly backdrop: Backdrop;
   private readonly rhythmHint = new Graphics();
+  private readonly drumGlow = new Graphics();
+  private readonly treeFace = new Graphics();
+  private dotCount = 0;
+  private echoHelp = false;
+  treeAwake = false;
   private view: View;
   private wrongs = 0;
   private clock = 0;
@@ -183,7 +194,7 @@ class SoundGarden implements Game {
     this.bush.visible = this.plan.mode !== 'play' && this.plan.mode !== 'echo';
     ctx.stage.addChild(this.bush);
 
-    this.tiles = [0, 1].map((i) => new Tile(() => void this.pick(i)));
+    this.tiles = Array.from({ length: this.plan.mode === 'updownsame' ? 3 : 2 }, (_, i) => i).map((i) => new Tile(() => void this.pick(i)));
     for (const t of this.tiles) {
       t.visible = this.questions.length > 0;
       ctx.stage.addChild(t);
@@ -194,16 +205,21 @@ class SoundGarden implements Game {
     const bird = art('woodpecker');
     bird.position.set(70, -120);
     bird.scale.set(-0.8, 0.8);
-    this.woodpecker.addChild(trunk, bird);
+    this.woodpecker.addChild(trunk, bird, this.treeFace);
+    this.drawTree(false);
     onTap(this.woodpecker, () => void this.replay(), { radius: 140, cooldown: 600 });
     this.drum = art('drum');
     this.drum.hitArea = new Circle(0, -10, 150);
-    this.drum.eventMode = 'static';
-    this.drum.on('pointerdown', () => this.drumTap());
+    onTap(this.drum, () => this.drumTap(), { cooldown: 80 });
+    this.drumGlow.ellipse(0, -15, 135, 95).fill({ color: swatch.yellow.fill, alpha: 0.65 });
+    this.drumGlow.eventMode = 'none';
+    this.drumGlow.visible = false;
+    this.rhythmHint.eventMode = 'none';
+    this.treeFace.eventMode = 'none';
     const echo = this.plan.mode === 'echo';
     this.woodpecker.visible = echo;
     this.drum.visible = echo;
-    ctx.stage.addChild(this.woodpecker, this.drum, this.rhythmHint);
+    ctx.stage.addChild(this.woodpecker, this.drumGlow, this.drum, this.rhythmHint);
 
     if (this.plan.mode === 'play') {
       this.cast.push(...makeCast(ctx.rng));
@@ -237,7 +253,9 @@ class SoundGarden implements Game {
     this.bush.position.set(v.w / 2, v.h * 0.27);
     this.placeTiles();
     this.woodpecker.position.set(v.w * 0.3, v.h - 90);
-    this.drum.position.set(v.w * 0.64, v.h - 200);
+    this.drum.position.set(v.w * 0.68, v.h - 200);
+    this.drumGlow.position.copyFrom(this.drum.position);
+    this.drawDots();
     this.singers.forEach((s, i) => s.node.position.set(200 + ((v.w - 300) * i) / (this.singers.length - 1), v.h * (i % 2 ? 0.72 : 0.5)));
   }
 
@@ -245,6 +263,10 @@ class SoundGarden implements Game {
     const v = this.view;
     const high = this.question?.ask === 'highlow';
     // High things sit higher and low things lower, so place matches pitch.
+    if (this.tiles.length === 3) {
+      this.tiles.forEach((t, i) => t.position.set(v.w * (0.24 + i * 0.26), v.h * 0.65));
+      return;
+    }
     this.tiles[0].position.set(v.w * 0.33, v.h * 0.68 - (high ? 40 : 0));
     this.tiles[1].position.set(v.w * 0.67, v.h * 0.68 + (high ? 40 : 0));
   }
@@ -254,6 +276,8 @@ class SoundGarden implements Game {
     this.wiggle = Math.max(0, this.wiggle - dt);
     this.bush.rotation = this.wiggle > 0 ? 0.06 * Math.sin(this.clock * 30) : 0;
     for (const t of this.tiles) if (t.glow.visible) t.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 7);
+    this.drumGlow.visible = this.echoHelp && !this.busy && !this.finished && this.taps.length <= (this.rhythms[this.index]?.length ?? -1) &&
+      (!this.taps.length || this.echoTimer >= GAP_SECONDS[this.rhythms[this.index][this.taps.length - 1]]);
     // Echo: once the taps stop, see if they matched.
     if (this.plan.mode === 'echo' && this.taps.length && !this.busy) {
       this.echoTimer += dt;
@@ -313,6 +337,10 @@ class SoundGarden implements Game {
     this.wrongs = 0;
     for (const t of this.tiles) t.glow.visible = false;
     this.rhythmHint.clear();
+    this.dotCount = 0;
+    this.rhythmHint.alpha = 1;
+    this.echoHelp = false;
+    this.drawTree(false);
     if (this.plan.mode === 'echo') {
       if (!this.rhythms[this.index]) return void this.finale();
       if (this.index === 0) await this.ctx.instruct('sg.echo');
@@ -324,9 +352,7 @@ class SoundGarden implements Game {
     }
     const q = this.question;
     if (!q) return void this.finale();
-    const [a, b] = CHOICES[q.ask];
-    this.tiles[0].show(a, PICTURE[a]);
-    this.tiles[1].show(b, PICTURE[b]);
+    CHOICES[q.ask].forEach((a, i) => this.tiles[i].show(a, PICTURE[a]));
     this.placeTiles();
     for (const t of this.tiles) {
       t.scale.set(0);
@@ -359,8 +385,13 @@ class SoundGarden implements Game {
       const r = this.rhythms[this.index];
       this.wiggle = 0;
       const bird = this.woodpecker.children[1];
+      this.dotCount = 0;
+      this.rhythmHint.alpha = 1;
+      this.drawDots();
       for (let i = 0; i <= r.length; i++) {
         sfx.knock();
+        this.dotCount = i + 1;
+        this.drawDots();
         void tw.to(bird, { rotation: -0.3 }, { duration: 0.05 }).then(() => tw.to(bird, { rotation: 0 }, { duration: 0.1 }));
         if (i < r.length) await tw.wait(GAP_SECONDS[r[i]]);
       }
@@ -416,13 +447,8 @@ class SoundGarden implements Game {
 
   private hint() {
     if (this.plan.mode === 'echo') {
-      // Dots spaced like the rhythm, over the drum.
-      const r = this.rhythms[this.index];
-      const g = this.rhythmHint.clear();
-      let x = 0;
-      const xs = [0, ...r.map((gap) => (x += gap === 'L' ? 90 : 45))];
-      const left = this.drum.x - x / 2;
-      for (const dx of xs) g.circle(left + dx, this.drum.y - 150, 16).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
+      // Light the drum for the next tap, then each remaining gap after her tap.
+      this.echoHelp = true;
     } else {
       const right = this.tiles.find((t) => t.answer === this.question?.answer);
       if (right) right.glow.visible = true;
@@ -435,6 +461,8 @@ class SoundGarden implements Game {
 
   private drumTap() {
     if (this.plan.mode !== 'echo' || this.busy || this.finished) return;
+    if (!this.taps.length) void this.ctx.tw.to(this.rhythmHint, { alpha: 0 }, { duration: 0.4 });
+    this.drumGlow.visible = false;
     this.taps.push(this.clock);
     this.echoTimer = 0;
     sfx.drum();
@@ -449,6 +477,7 @@ class SoundGarden implements Game {
     if (judgeEcho(r, taps)) {
       sfx.sparkle();
       this.ctx.particles.burst(this.drum.x, this.drum.y - 120, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.red.light], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+      await this.wakeTree();
       await this.ctx.say('sg.echoyes');
       await this.next();
       return;
@@ -460,6 +489,37 @@ class SoundGarden implements Game {
     await this.ctx.say('sg.again');
     await this.playSound();
     this.busy = false;
+  }
+
+  private drawDots() {
+    const g = this.rhythmHint.clear();
+    const r = this.rhythms[this.index];
+    if (!r) return;
+    const xs = echoDots(r);
+    const left = this.woodpecker.x - xs[xs.length - 1] / 2;
+    for (const x of xs.slice(0, this.dotCount)) g.circle(left + x, this.woodpecker.y - 15, 13).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
+  }
+
+  private drawTree(awake: boolean) {
+    this.treeAwake = awake;
+    const g = this.treeFace.clear();
+    for (const x of [-17, 17]) {
+      if (awake) g.ellipse(x, -55, 5, 9).fill(ink);
+      else g.moveTo(x - 7, -55).quadraticCurveTo(x, -49, x + 7, -55).stroke(line(ink, 4));
+    }
+    if (awake) g.moveTo(-16, -28).quadraticCurveTo(0, -6, 16, -28).stroke(line(ink, 4));
+    else g.ellipse(0, -25, 7, 10).stroke(line(ink, 3));
+  }
+
+  private async wakeTree() {
+    this.drawTree(true);
+    await this.ctx.say('sg.treeawake');
+    // A short answering flourish, owned by the scene's tween clock.
+    for (let i = 0; i < 3; i++) {
+      sfx.knock();
+      void this.ctx.tw.to(this.treeFace.scale, { x: 1.1, y: 1.1 }, { duration: 0.07 }).then(() => this.ctx.tw.to(this.treeFace.scale, { x: 1, y: 1 }, { duration: 0.1 }));
+      await this.ctx.tw.wait(i === 0 ? 0.32 : 0.18);
+    }
   }
 
   private async finale() {

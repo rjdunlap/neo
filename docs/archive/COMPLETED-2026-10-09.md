@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Sound Garden listening direction and visible echoes (2026-10-22)
+
+[PR #779](https://github.com/rjdunlap/neo/pull/779), one batch for dive slices 3–4. Level 7 adds a flat path to the rising/falling choices, three- or four-note pentatonic contours with repeated-pitch "same", six questions, spoken support and a three-tile bot; pre-K 3–7 preserves stable IDs. Level 5 shows proportional knock dots from the first demonstration, fades them on the first tap, draws twelve rhythm patterns with a four-gap final round, wakes a sleepy tree with an answering flourish on a correct echo, and lights the drum for remaining taps after two misses. Free replay, relative-gap judging, supported completion and one sticker remain. The original eight-rhythm export used by Rhythm Neighbors is preserved; Sound Garden uses a separate twelve-pattern pool. [Verification](../VERIFICATION.md#2026-10-22--sound-garden-listening-direction-and-visible-echoes-slices-34); device hearing, speech and child understanding remain open. Other levels, batches and decisions excluded.
+
+
 ### Feelings Faces Ask first (2026-10-21)
 
 [PR #769](https://github.com/rjdunlap/neo/pull/769), dive slice 6 / level 12: ask Bunny, Cat, Bear and Dog before offer cards appear. All four wishes appear once, including quiet space; matching request icons, replayable speech and a two-step ghost finger. Wrong offers replay the wish with one miss, glow after two; calm is a valid ending. School order `[11, 12, 13]` preserves saved IDs. Fictional lines ship on decision 3’s standing default (no named reviewer); angry/scared and journal work stay excluded. [Verification](../VERIFICATION.md#2026-10-21--feelings-faces-ask-first-slice-6); iPad speech and child understanding remain open.
