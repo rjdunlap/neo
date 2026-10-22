@@ -44,6 +44,8 @@ Standards are curriculum destinations, not gates, and none shows that a game tea
 | [Treasure Map](../../GAMES.md#treasure-map) (pre-K–school) | First-quadrant grid, row 1 at the bottom, directions and two-clue lines | Owns coordinates. Four quadrants are its later rung; it has no dive yet |
 | [Peekaround Island](../../GAMES.md#peekaround-island) (toddler–school); **Skyline View** (notebook) | Viewpoint words from the child's side; the notebook's Skyline View (towers from front and side, then from above) as its older mode | Views of solids belong there, school top |
 | [Fill and Dump](../../GAMES.md#fill-and-dump), [Shape Sorter](../../GAMES.md#shape-sorter), [Block Tower](../../GAMES.md#block-tower) | In and out, fits and does not, stacking | The younger precursors; capacity stays with Fill and Dump |
+| **Pen Planner** (notebook, Shikaku) | Split a grid into rectangles, each holding one number equal to its area; solver-checked, school top and grown-up | A logic puzzle over given areas: a later rung for U, M and G once Meadow Pens has taught squares and rows. Shares the pens theme, so the definition keeps their names and pictures apart |
+| **Meadow Fence** (notebook, after Qix) | Fence off part of a meadow and estimate the share claimed | Fractions and percent of a whole, not unit squares; the fractions study's ground. Its name is close to Meadow Pens: decision 1 settles both names |
 | Mirror Brush, Fold a Friend, Reflection Catch (notebook) | Mirror symmetry as painting, folding and catching | Reflection's younger rungs are already seeded |
 
 Audiences today: lap to pre-K have covering, fitting and stacking. Nothing on the island counts area, perimeter or volume, nets are absent, and only the first quadrant exists: **school (6–8) to 11–14 have the gap.**
@@ -131,7 +133,7 @@ The friends who ask for pens can be her creatures, each request filing a journal
 
 ## Decisions for the developer
 
-1. **Meadow Pens as a new game, or a mode of Pixel Pictures or Bug Builder?** Lean new game: the painting gesture is shared with Pixel Pictures, but her decision (a shape that meets a size and fence request) and the fence model are new, and Bug Builder's dive already says area belongs elsewhere.
+1. **Meadow Pens as a new game, or a mode of Pixel Pictures or Bug Builder?** Lean new game: the painting gesture is shared with Pixel Pictures, but her decision (a shape that meets a size and fence request) and the fence model are new, and Bug Builder's dive already says area belongs elsewhere. The working name sits close to the notebook's Pen Planner and Meadow Fence; the definition picks a final name that keeps all three apart.
 2. **Land:** Rainbow Meadow (eleven games, the tracker's land) after the `landLayout` capacity test, or the rework's meadow location. Lean Rainbow Meadow.
 3. **Names:** "squares of grass" and "fence pieces" only, or "area" and "perimeter" joining as names from level 3. Lean: from level 3, after a device speech check.
 4. **The hay loft** as Meadow Pens 7 (lean, same field, one new picture) or a separate packing game.

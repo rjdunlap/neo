@@ -62,6 +62,7 @@ The research is complete for every row below; `define` means the next session wr
 | `chance-statistics` | define | Spinner Fair 1–5 | [Study](deep-dives/subjects/chance-statistics.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#chance-and-statistics-recommendations) |
 | `algebra-balance` | define | Rule Machine 1–4 | [Study](deep-dives/subjects/algebra-balance.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#algebra-and-balance-recommendations) |
 | `integers` | ready | Sea Lift 1–3 (IN1) [defined](definitions/sea-lift.md) 2026-10-22; its build is queued in READY as a new-game line (no review gate); next definition Sea Lift 4–5 (IN2) after the build lands | [Study](deep-dives/subjects/integers.md), [definition](definitions/sea-lift.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#integers-recommendations) |
+| `area-volume-space` | define | Meadow Pens 1–3 | [Study](deep-dives/subjects/area-volume-space.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#area-volume-and-space-recommendations) |
 
 ## Unstarted subject research
 
@@ -69,7 +70,6 @@ One subject per docs-only session using the [subject procedure](deep-dives/subje
 
 | Subject | Status | Next action |
 | --- | --- | --- |
-| `area-volume-space` | research | Area and perimeter, filling boxes, nets, views and the coordinate grid; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `estimation` | research | Guess, then check: how many, how long, how heavy; a sensible range; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `speaking-listening` | research | Conversation, retelling, describing, asking, following and giving directions (the island cannot hear her, so co-play and cards); use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `vocabulary-word-parts` | research | Word meaning, categories, prefixes, suffixes, roots, multiple meanings; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |

@@ -38,3 +38,9 @@
 - [PR #772](https://github.com/rjdunlap/neo/pull/772), `claude/define-same-kind-sprouts`: defined Critter Sort levels 12–13 ([definition](../definitions/same-kind-different-sprouts.md)), choosing Critter Sort over Photo Safari; batch plan, READY, study backlog, the genetics study, recommendations and the Critter Sort dive updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check` (results in the closeout report).
 - Not run: typecheck, unit tests, build, browser (docs only). Open: the build; nothing is built.
+
+## 2026-10-22 — Lid and Lever definition (daily-life-long-ago H3, docs only)
+
+- [PR #773](https://github.com/rjdunlap/neo/pull/773), `claude/define-lid-and-lever`: defined Attic Finds levels 3 *Up and down* and 4 *Peek inside* ([definition](../definitions/lid-and-lever.md)); batch plan, READY, study backlog, waiting-on-developer, the daily-life-long-ago study, recommendations and the Attic Finds dive updated.
+- Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean).
+- Not run: typecheck, unit tests, build, browser (docs only). Open: the build and every device check named in the definition; nothing is built.

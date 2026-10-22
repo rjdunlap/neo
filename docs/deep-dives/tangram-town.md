@@ -122,7 +122,7 @@ Appended easier levels are placed with `order` (see DESIGN.md, Level tables).
 3. **Spoken shape names** — **built 2026-10-11**, `codex/tangram-spoken-shapes` ([PR 157](https://github.com/rjdunlap/neo/pull/157)): four geometric-name voice lines and once-per-piece pickup cues at toddler–pre-K. Typecheck, targeted tests and production build passed; actual device speech remains open.
 4. **Level 7, two ways** — built 2026-10-13 ([PR #262](https://github.com/rjdunlap/neo/pull/262)): cover sets accept the roof plus square or roof plus two triangles; every accepted partial choice finishes. Spare-wall drops are free, help follows the shortest surviving cover and completion names two or three pieces. Both alternatives and the ghost finger checked; school 5–7.
 5. **Level 8, fix the picture** — built 2026-10-13 ([PR #263](https://github.com/rjdunlap/neo/pull/263)): turn-only repair, eight distinct-center picture pools, one visible mismatch, free in-place selection/turns, truthful hint and explicit Check. School 5–8. Wrong-shape swaps remain unbuilt; no dragging needed for this slice.
-6. **Level 9, flip it** (waits on decision 1).
+6. **Level 9, flip it** (waits on decision 1). The [area, volume and space study](subjects/area-volume-space.md) (2026-10-22) cites it as the flip owner, waits on it for Stencil Moves, and takes area elsewhere (Meadow Pens).
 7. **Level 10, build and keep** (waits on decision 2).
 8. **One piece home / pick the missing piece** (waits on the level-order decisions).
 
