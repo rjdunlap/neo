@@ -314,3 +314,9 @@
 - `node test-results/egg-colours-probe.mjs`, isolated Chromium at `http://localhost:5197/classic/`, portrait 768×1024: real level-2 touches, six gathered eggs, zero misses/hints, one saved sticker, no page errors. Inspected `test-results/browser/egg-colours-level2-portrait.png` and `egg-colours-ending-portrait.png`: blue-green falling shell and six peeping chicks/cracked shells, pet clear.
 - Probe setup corrected logical-to-screen touch scaling; interrupted attempts were not game failures. Source frozen for final successful run. Comments added after the unit pass do not change its evidence.
 - Local build, broad/browser suites, offline, physical iPad/audio/speech/child play not run (content tier). Upstream `8ca0ac75` adds PR tests/build and an AGENTS wait-for-pass rule only; integrated as `4f72a733`, gameplay proof reused. PR tests/build passed on `2bb3bb02` (run 39682115924); subsequent upstream `efabf001` is fractions research/docs only, with both verification entries preserved. Required CI is repeated on the integrated PR before merge. Existing device checks remain open; route/pair endings share the finale, but no separate route/pair browser play was run.
+
+## 2026-10-21 — RW08 cutover definition (docs only)
+
+- Branch `claude/rw08-cutover-definition` (PR #743): [RW08-CUTOVER.md](../rework/RW08-CUTOVER.md), with three build slices (Explore's four entries; the library, stories and rest of Home; the `classic/` cutover, waiting on the developer) and five defaults. Also the RW08 row, READY, WAITING-ON-DEVELOPER and the roadmap row.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Nothing built. Not run: unit tests, browser suites, offline check, device, child play. Packet claims come from a source audit at `03e20c70`, not from play.

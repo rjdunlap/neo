@@ -7,7 +7,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **`egg-catch`, Gate repair and changing gates** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#egg-catch-1-gate-repair-and-changing-gates).
-- **Study `fractions`: define Ribbon Workshop** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#fractions-recommendations).
 - **`feelings-faces`, Helping and explaining happenings** (one implementation batch; 3 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#feelings-faces-1-helping-and-explaining-happenings).
 - **`feelings-faces`, Ask first** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#feelings-faces-2-ask-first).
 - **Study `life-science`: define Seed Travelers** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#life-science-recommendations).
@@ -16,6 +15,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **Study `ecosystems`: define Food Web Workshop** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#ecosystems-recommendations).
 - **`sound-garden`, Pitch drawing and copying** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#sound-garden-3-pitch-drawing-and-copying).
 - **Research subject `measurement-units`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
+- **`ribbon-workshop`, First ribbons, levels 1–3** (new game; one implementation batch; school; new-game tier): [definition](definitions/ribbon-workshop.md), [scope and levels](GAME-BATCHES.md#ribbon-workshop-1-first-ribbons).
 
 ## Queued
 
