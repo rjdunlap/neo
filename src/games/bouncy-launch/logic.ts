@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * pet back on a big spring and let go. Farther pull, farther flight. Every landing is soft;
  * the ladder asks for a particular landing spot.
  */
-export type LaunchMode = 'tap' | 'free' | 'star' | 'number' | 'compare' | 'predict' | 'friend' | 'planet';
+export type LaunchMode = 'tap' | 'free' | 'star' | 'number' | 'compare' | 'predict' | 'friend' | 'planet' | 'between';
 
 export interface LaunchPlan {
   mode: LaunchMode;
@@ -29,7 +29,10 @@ export const FRIEND_PLAN: LaunchPlan = { mode: 'friend', shots: 3, name: 'Bring 
 
 export const PLANET_LEVEL = 12;
 export const PLANET_PLAN: LaunchPlan = { mode: 'planet', shots: 3, name: 'The same pull on a light or a heavy planet: past the flag or before it?' };
-const PLANS_BY_ID: Record<number, LaunchPlan> = Object.fromEntries([...PLANS.map((p, i) => [i + 1, p]), [FRIEND_LEVEL, FRIEND_PLAN], [PLANET_LEVEL, PLANET_PLAN]]);
+/** Level 9, Between two flights: two shown pulls leave flags, then a pull between them is predicted. */
+export const BETWEEN_LEVEL = 9;
+export const BETWEEN_PLAN: LaunchPlan = { mode: 'between', shots: 3, name: 'Two shown pulls fly; predict where a pull between them lands' };
+const PLANS_BY_ID: Record<number, LaunchPlan> = Object.fromEntries([...PLANS.map((p, i) => [i + 1, p]), [FRIEND_LEVEL, FRIEND_PLAN], [BETWEEN_LEVEL, BETWEEN_PLAN], [PLANET_LEVEL, PLANET_PLAN]]);
 export const planFor = (level: number) => PLANS_BY_ID[level] ?? PLANS[0];
 
 export const LIGHT = 0.5;
@@ -46,6 +49,27 @@ export function planetPairs(rng: Rng): PlanetPair[] {
 /** Full-height regions split at the home flag, including the spring area. */
 export const planetSide = (x: number, flagX: number): 'before' | 'past' => x < flagX ? 'before' : 'past';
 export const planetBotLanding = (pair: PlanetPair) => reach(pullFor(pair.base), gravityFor(pair.planet));
+
+/** A short pull, a long pull and the pull between them, as pad indices (`low < mid < high`). */
+export interface BetweenTriple { low: number; mid: number; high: number }
+
+/**
+ * Every (low, mid, high) on the five clouds with at least one cloud strictly between the flags. The middle pull is
+ * always the midpoint of the two shown pulls, so "the pull is between them, so it lands between them" is literally
+ * true, and on a wide gap the cloud it reaches is the one halfway along, not merely one of several in between.
+ */
+export const BETWEEN_TRIPLES: BetweenTriple[] = [
+  { low: 0, mid: 1, high: 2 }, { low: 1, mid: 2, high: 3 }, { low: 2, mid: 3, high: 4 },
+  { low: 0, mid: 2, high: 4 },
+];
+
+/** Three rounds: three different triples, never the same middle cloud twice running. */
+export function betweenTriples(rng: Rng, rounds = 3): BetweenTriple[] {
+  for (;;) {
+    const out = rng.shuffle(BETWEEN_TRIPLES.slice()).slice(0, rounds);
+    if (out.every((t, i) => i === 0 || t.mid !== out[i - 1].mid)) return out;
+  }
+}
 
 /** Landing clouds, numbered 1 to 5 from nearest to farthest. */
 export const PADS = 5;
@@ -118,7 +142,7 @@ export type Verdict = 'yes' | 'short' | 'long';
 /** Did a landing meet the ask? `last` is the previous landing for compare levels; `width` is how forgiving the clouds are. */
 export function judge(plan: LaunchPlan, f: number, target: number, ask?: 'farther' | 'nearer', last?: number, width = 0.85): Verdict {
   // A prediction is an observation, rather than an accuracy test: every chosen answer gets to see its result.
-  if (plan.mode === 'tap' || plan.mode === 'free' || plan.mode === 'predict' || plan.mode === 'planet') return 'yes';
+  if (plan.mode === 'tap' || plan.mode === 'free' || plan.mode === 'predict' || plan.mode === 'planet' || plan.mode === 'between') return 'yes';
   if (plan.mode === 'compare') {
     if (last === undefined) return 'yes';
     if (ask === 'farther') return f > last + 0.04 ? 'yes' : 'short';
@@ -154,7 +178,8 @@ export function pullToTake(plan: LaunchPlan, shot: number, targets: readonly num
     case 'planet':
       return 0; // Planet Hop shows its own fixed pull; the bot chooses a region.
     case 'predict':
-      // The child does not pull at this level; this is the fixed pull shown on screen.
+    case 'between':
+      // The child does not pull at these levels; this is the fixed pull shown on screen (the middle one at level 9).
       return pullFor(padAt(targets[shot]));
   }
 }

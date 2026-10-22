@@ -123,7 +123,7 @@ The [first](archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#short-ladder-audit-2
 | --- | --- | --- |
 | **Memory Match's equivalent representations** | Levels 13–14 are separate decision-dependent slices; level-10 and younger-band decisions stay open | [Build slices](deep-dives/memory-match.md#build-slices-in-order) |
 | **Owl Walk Home** | Every remaining slice is gated: Stepping stones (decision 6), Color or shape (decision 7 and the iPad speech check), the grown-up seat (decision 5) | [Build slices](deep-dives/owl-walk.md#build-slices-in-order) |
-| **Bouncy Launch** | Notches with rising landing notes (device listen decision), then Near or Far (8) and later levels | [Build slices](deep-dives/bouncy-launch.md#build-slices-in-order) |
+| **Bouncy Launch** | Notches with rising landing notes (device listen decision), then Near or Far (8), Where on the line? (10) and later levels (Between two flights, 9, is built) | [Build slices](deep-dives/bouncy-launch.md#build-slices-in-order) |
 | **Clock Tower's elapsed time** | Appended levels 8–11, their order and a preschool opening are decision-dependent | [Build slices](deep-dives/clock-tower.md#build-slices-in-order) |
 | **Day by Day** | Preschool, months and daylight are decision-dependent; causal seasons stay separate | [Build slices](deep-dives/day-by-day.md#build-slices-in-order) |
 | **Robot Path's reusable routine** | Decision-dependent scope under Waiting on the developer | [Build slices](deep-dives/robot-path.md#build-slices-in-order) |

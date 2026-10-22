@@ -5656,6 +5656,44 @@ async function arcade() {
       log('Bouncy Launch 12: three pairs, different guess, pause hint, portrait, no misses and one sticker passed');
       continue;
     }
+    if (level === 9) {
+      // Between two flights: taps during the watched pulls do nothing; two flags, two rings, then a pick; a wrong pick is no miss.
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        await kit.until(() => g.flying, 15000);
+        kit.tapOn(g.pads[0]);
+        await kit.sleep(300);
+        if (g.prediction !== undefined) throw new Error('A pad tap during a watched pull must not pick');
+      });
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+      await page.waitForFunction(() => neo.scene.game.betweenStep === 2 && !neo.scene.game.flying, null, { timeout: 30000 });
+      assert.ok(await page.evaluate(async () => {
+        const g = neo.scene.game, { pullFor, padAt } = await import('/src/games/bouncy-launch/logic.ts');
+        const t = g.betweens[g.shot];
+        return Math.abs(g.pullNow() - pullFor(padAt(t.mid))) < 0.01 && g.flagNumbers.children.map((n) => n.text).join() === `${t.low + 1},${t.high + 1}` && g.compareRing.context.instructions.length > 0;
+      }), 'portrait keeps the middle pull, both numbered flags and the two pull rings');
+      await screenshot('bouncy-launch-9-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        while (!g.finished) {
+          if (!await kit.until(() => g.finished || (g.betweenStep === 2 && !g.flying), 30000)) throw new Error('No middle pull to pick');
+          if (g.finished) break;
+          const t = g.betweens[g.shot];
+          if (g.flagNumbers.children.map((n) => n.text).join() !== `${t.low + 1},${t.high + 1}`) throw new Error('Both watched flights need their numbered flags');
+          // The first pick deliberately lands on a flag's cloud instead; it is explained, never a miss.
+          kit.tapOn(g.pads[g.shot === 0 ? t.low : t.mid]);
+          await kit.until(() => g.flying, 4000);
+          await kit.until(() => !g.flying || g.finished, 15000);
+        }
+        if (g.shot !== 3 || g.misses !== 0 || g.hints !== 0 || g.observedPulls.length) throw new Error(`Between accounting or journal: ${g.shot} ${g.misses} ${g.hints} ${g.observedPulls.length}`);
+      });
+      await finished('bouncy-launch');
+      const result = await page.evaluate(() => { const h = kit.store.stats('bouncy-launch').history.at(-1); return [h.misses, h.hints]; });
+      assert.deepEqual(result, [0, 0]);
+      log('Bouncy Launch 9: watched pulls ignore taps, two flags and rings, a different guess, portrait, no misses and one sticker passed');
+      continue;
+    }
     if (level === 6) {
       await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
       assert.ok(await page.evaluate(async () => {

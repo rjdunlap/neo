@@ -82,6 +82,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 - [ ] **Woodland Picnic (built 2026-10-16, #479):** on an iPad in both orientations, hear Hazel's `woodland.*` lines and the eight-step picnic beat (drum and bells), check the story spot is easy to find first on Wonder Woods' path and the photo button and "tell it again" are reachable, and watch a child aged 6 to 8 play the three jobs in any order and the ending.
 
 - [ ] **Planet Hop, Bouncy Launch 12 (#466):** on an iPad in both orientations, hear the named pet's ask and toy-gravity explanations, compare landing notes with the music, try the before/past regions and pause hint, and observe whether the same shown pull and numbered flag communicate the changed world pull. Browser play does not establish speech, touch comfort or understanding.
+- [ ] **Between two flights, Bouncy Launch 9 (#756):** at school band on an iPad, hear the three lines (watching, prediction match, between-the-flags reason), and observe whether a school child reads the two faint rings and flags as the pulls she just watched and the middle ring as between them. Browser play does not establish speech or understanding.
 
 - [ ] **Letter Trails show the way (#442):** on an iPad, hear the rising firefly note across a stroke, see whether the purple start arrow reads and the yellow shown way helps a small hand follow after two wanders, and check the four ink looks are legible in both orientations.
 
