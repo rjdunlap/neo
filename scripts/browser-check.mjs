@@ -10073,15 +10073,31 @@ async function shortlistBatch() {
         },
       };
     });
-    for (let level = fromLevel; level <= 5; level++) {
+    for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 6); level++) {
       await launch('lasso-loops', level);
-      if (level === 4 || level === 5) await page.setViewportSize({ width: 768, height: 1024 });
+      if (level >= 4) await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+      if (level === 6) {
+        assert.deepEqual(await page.evaluate(() => neo.scene.mod.levels('school')), { min: 3, max: 6 });
+        await tap('neo.scene.game.guessCards.find((c) => Math.abs(c.value - neo.scene.game.round.fireflies) >= 10)');
+        await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+        assert.deepEqual(await counts(), [0, 0]);
+        assert.equal(await page.evaluate(() => neo.scene.game.jars.filter((j) => j.visible).length), 1);
+      }
       const jars = await page.evaluate(() => neo.scene.game.jars.length);
       for (let j = 0; j < jars; j++) {
         await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.game.finished, null, { timeout: 30000 });
         if (await page.evaluate(() => neo.scene.game.finished || !neo.scene.game.free.length)) break;
         const want = await page.evaluate(() => neo.scene.game.jar.want || 2);
+        if (level === 6 && j === 1) {
+          const before = await counts();
+          await screenshot('lasso-loops-6-guess-sign');
+          await tap('neo.scene.game.guessCards.find((c) => Math.abs(c.value - neo.scene.game.round.fireflies) < 10)');
+          await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
+          assert.deepEqual(await counts(), before);
+          assert.equal(await page.evaluate(() => { const g = neo.scene.game; return g.guessSign.visible && g.guessNumber.text === String(g.guess) && Math.abs(g.guess - g.round.fireflies) < 10; }), true);
+          assert.equal(await page.evaluate(() => neo.scene.game.jars.every((j) => j.visible)), true);
+        }
         if (j === 0 && level > 1) {
           // Two loops with one too many: gentle misses, then rings around a group that fits.
           for (let k = 0; k < 2; k++) {
@@ -10090,7 +10106,7 @@ async function shortlistBatch() {
           }
           assert.deepEqual(await counts(), [2, 1]);
           assert.equal(await page.evaluate(() => neo.scene.game.flies.filter((f) => f.ring.visible).length), want);
-          await screenshot(`lasso-loops-${level}`);
+          if (level !== 6) await screenshot(`lasso-loops-${level}`);
         }
         await page.evaluate(async (n) => lasso.draw(lasso.loop(n)), want);
         await page.waitForFunction((j) => { const g = neo.scene.game; return g.index > j || g.finished || g.pads.length > 0; }, j, { timeout: 30000 });
@@ -10098,7 +10114,7 @@ async function shortlistBatch() {
       if (level >= 3) {
         // How many in all? A wrong number is counted aloud the way the jars show it.
         await page.waitForFunction(() => neo.scene.game.pads.length === 3 && !neo.scene.game.busy, null, { timeout: 30000 });
-        await screenshot(`lasso-loops-${level}-question`);
+        if (level !== 6) await screenshot(`lasso-loops-${level}-question`);
         await tap('neo.scene.game.pads.find((p) => p.value !== neo.scene.game.round.answer)');
         await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 40000 });
         await tap('neo.scene.game.pads.find((p) => p.value === neo.scene.game.round.answer)');

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { choices, demoLoop, gridFor, inside, makeRound, nearestGroup, PLANS, scatter } from './logic';
+import { choices, compareGuess, demoLoop, guessCards, gridFor, inside, makeRound, nearestGroup, PLANS, scatter } from './logic';
 
 describe('Lasso Loops', () => {
   it('has enough fireflies for every jar, and a question whose answer is what was caught', () => {
@@ -39,6 +39,43 @@ describe('Lasso Loops', () => {
         for (const v of c) expect(v).toBeGreaterThan(0);
       }
     }
+  });
+
+  it('appends estimation as the same seeded tens round without changing earlier plans', () => {
+    expect(PLANS.map((p) => p.mode)).toEqual(['free', 'exact', 'fives', 'tens', 'groups', 'tens']);
+    expect(PLANS[5].guess).toBe(true);
+    expect(PLANS.slice(0, 5).every((p) => !p.guess)).toBe(true);
+    for (let seed = 1; seed <= 300; seed++) {
+      const a = new Rng(seed), b = new Rng(seed);
+      const round = makeRound(PLANS[5], a);
+      expect(round).toEqual(makeRound(PLANS[3], b));
+      expect(choices(round, a)).toEqual(choices(round, b));
+      expect(round.fireflies).toBeGreaterThanOrEqual(21);
+      expect(round.fireflies).toBeLessThanOrEqual(39);
+    }
+  });
+
+  it('offers one nearby ten and two widely separated estimates, without a fixed near-card position', () => {
+    const positions = new Set<number>();
+    for (let n = 21; n <= 39; n++) for (let seed = 1; seed <= 50; seed++) {
+      const { cards, near } = guessCards(n, new Rng(seed));
+      expect(cards).toHaveLength(3);
+      expect(new Set(cards).size).toBe(3);
+      expect(cards).toEqual([...cards].sort((a, b) => a - b));
+      expect(Math.abs(near - n)).toBeLessThanOrEqual(5);
+      expect(cards.filter((v) => Math.abs(v - n) < 10)).toEqual([near]);
+      positions.add(cards.indexOf(near));
+      for (const v of cards) {
+        expect(v % 10).toBe(0);
+        expect(v >= 10 && v <= 90).toBe(true);
+        if (v !== near) expect(v <= n / 2 || v >= 2 * n).toBe(true);
+        expect(compareGuess(v, n)).toBe(v === near ? 'close' : v < n ? 'more' : 'fewer');
+      }
+    }
+    expect([...positions].sort()).toEqual([0, 1]);
+    expect(compareGuess(20, 30)).toBe('more');
+    expect(compareGuess(40, 30)).toBe('fewer');
+    expect(compareGuess(21, 30)).toBe('close');
   });
 
   it('offers the swapped tens and ones as a choice when they differ', () => {
