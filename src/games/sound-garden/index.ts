@@ -1,3 +1,4 @@
+import { PitchGarden } from './pitch';
 import { Circle, Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
@@ -20,8 +21,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 8, order: [8, 1] },
   toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 7 },
+  preschool: { min: 2, max: 9, order: [2, 3, 4, 9] },
+  prek: { min: 3, max: 10, order: [3, 4, 5, 6, 7, 9, 10] },
 };
 
 type Kind = 'bird' | 'frog' | 'bunny' | 'turtle' | 'up' | 'down' | 'same' | 'bell' | 'woodpecker' | 'drum';
@@ -29,7 +30,7 @@ type Kind = 'bird' | 'frog' | 'bunny' | 'turtle' | 'up' | 'down' | 'same' | 'bel
 const line = (color: number, width = 6) => ({ width, color, cap: 'round' as const, join: 'round' as const });
 
 /** The garden's singers and the answer pictures, all code-drawn. */
-function art(kind: Kind): Container {
+export function art(kind: Kind): Container {
   const c = new Container();
   const g = new Graphics();
   c.addChild(g);
@@ -636,5 +637,5 @@ export const soundGarden: GameModule = {
   offScreen: 'Play a pot-and-spoon drum: copy each other\'s taps, fast and slow.',
   hubIcon: () => new GardenIcon(),
   sticker,
-  create: (ctx) => new SoundGarden(ctx),
+  create: (ctx) => ctx.level === 9 || ctx.level === 10 ? new PitchGarden(ctx) : new SoundGarden(ctx),
 };

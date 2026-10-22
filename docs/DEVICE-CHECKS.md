@@ -1,5 +1,10 @@
 # Needs a person or a device
 
+## Sound Garden pitch drawing and copying (levels 9–10)
+
+- [ ] On iPad, hear six distinct snapped pitches and the friends joining below; verify speech stays clear before the model sings.
+- [ ] Watch a preschool/pre-K child drag and release for a note, copy directions from a different starting pitch, replay, and use the lit stem without treating it as a precision target. Check the twelve-note creative ending feels comfortable.
+
 ## Sound Garden One big friend (level 8)
 
 - [ ] On an iPad, does a one-year-old repeat taps on the large singer and surrounding grass, understand the wave/walking handoff, and hear each immediate response clearly? Check device speech for `sg.big`, quick taps replacing delayed beats, and the twelve-song ending. Browser checks establish input/accounting only; level-1 every-touch retrofit remains gated.

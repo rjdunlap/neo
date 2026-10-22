@@ -6191,9 +6191,9 @@ async function batch() {
   }
 
   // Sound Garden: singers, listening questions with wrong answers, and echoing rhythms on the drum.
-  const soundLevels = process.env.SOUND_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8];
+  const soundLevels = process.env.SOUND_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   for (const level of (!only || only === 'garden') ? soundLevels : []) {
-    if (level === 7 || level === 8) await page.setViewportSize({ width: 768, height: 1024 });
+    if ([7, 8, 9, 10].includes(level)) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('sound-garden', level);
     if (level === 7) {
       await page.waitForFunction(() => !neo.scene.game.busy);
@@ -6206,9 +6206,55 @@ async function batch() {
     await page.waitForTimeout(600);
     if (level === 8 && only === 'garden') await screenshot('sound-garden-8-portrait');
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (level === 9 || level === 10) {
+      await page.waitForFunction(() => !neo.scene.game.busy);
+      await screenshot(`sound-garden-${level}-portrait`);
+    }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       const ready = () => kit.until(() => !g.busy || g.finished, 15000);
+      if (g.plan.mode === 'sing' || g.plan.mode === 'copy') {
+        const { pitchY } = await import('/src/games/sound-garden/pitch-logic.ts');
+        await ready();
+        const note = async (step) => {
+          const a = g.pad.toGlobal({ x: g.x, y: pitchY(g.step, g.top, g.bottom) });
+          const b = g.pad.toGlobal({ x: g.x, y: pitchY(step, g.top, g.bottom) });
+          await kit.drag(kit.line([a.x, a.y], [b.x, b.y], 8));
+          await kit.sleep(100);
+          if (g.step !== step || g.heardStep !== step) throw new Error('Shown and heard pitches differ');
+        };
+        // Cancellation and a second finger cannot add a note or steal the first finger.
+        const global = g.pad.toGlobal({ x: g.x, y: pitchY(4, g.top, g.bottom) });
+        const before = g.played;
+        g.pad.emit('pointerdown', { pointerId: 301, global });
+        g.pad.emit('pointerdown', { pointerId: 302, global });
+        if (g.pointer !== 301) throw new Error('Second finger stole pitch drag');
+        window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 301 }));
+        if (g.played !== before || g.pointer !== null) throw new Error('Cancelled drag committed');
+        if (!g.copy) {
+          await note(2); await note(7);
+          for (let i = 2; i < 12; i++) await note(2 + i % 6);
+          if (g.misses || g.hints) throw new Error('Creative pitches counted as errors');
+        } else {
+          const replayPoint = g.replay.toGlobal({ x: g.modelX, y: g.model.y });
+          kit.tap(replayPoint.x, replayPoint.y);
+          if (!g.busy) throw new Error('Replay bird did not answer');
+          await kit.sleep(150); await ready();
+          if (g.misses || g.hints) throw new Error('Replay counted as a hint');
+          for (let k = 0; k < 2; k++) {
+            await note(4); await note(4); await ready();
+          }
+          if (g.misses !== 2 || g.hints !== 1 || !g.help) throw new Error('Missing stem hint');
+          for (let q = 0; q < g.shapes.length; q++) {
+            await ready();
+            // A different starting note and interval with the right direction must work.
+            const target = q === 0 ? [3, 7] : g.shapes[q];
+            for (const step of target) await note(step);
+            await kit.until(() => g.index > q || g.finished, 10000);
+          }
+        }
+        return;
+      }
       if (g.plan.big) {
         if (g.singers.filter(s => s.node.visible).length !== 1 || g.singers[0].node.width < 200) throw new Error('Missing big singer');
         // Check the exclusion without pressing shell buttons; their actual routes stay shell-owned.
@@ -6280,9 +6326,9 @@ async function batch() {
     await screenshot(`sound-garden-${level}`);
     await finished('sound-garden');
     const r = await page.evaluate(() => { const r = kit.store.stats('sound-garden').history.at(-1); return [r.misses, r.hints]; });
-    assert.deepEqual(r, mode === 'play' ? [0, 0] : [2, 1], `garden ${level} score`);
+    assert.deepEqual(r, mode === 'play' || mode === 'sing' ? [0, 0] : [2, 1], `garden ${level} score`);
     log(`Sound Garden ${level} (${mode}): sounds, answers, mistakes, hint, saved score and sticker passed`);
-    if (level === 7 || level === 8) await page.setViewportSize({ width: 1024, height: 768 });
+    if ([7, 8, 9, 10].includes(level)) await page.setViewportSize({ width: 1024, height: 768 });
   }
 
   // Little Helpers: tap the fruit to send helpers one by one; the whistle checks the count.

@@ -14,7 +14,7 @@ describe('Sound Garden', () => {
     for (const plan of Object.values(PLANS)) {
       for (let seed = 1; seed <= 200; seed++) {
         const qs = makeQuestions(plan, new Rng(seed));
-        if (plan.mode === 'play' || plan.mode === 'echo') {
+        if (plan.mode === 'play' || plan.mode === 'echo' || plan.mode === 'sing' || plan.mode === 'copy') {
           expect(qs).toHaveLength(0);
           continue;
         }
@@ -98,10 +98,10 @@ describe('Sound Garden', () => {
   });
 
   it('keys plans by level ID and clamps unknown levels to the ladder', () => {
-    expect(LEVEL_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(LEVEL_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     for (const id of LEVEL_IDS) expect(planFor(id)).toBe(PLANS[id]);
     expect(planFor(0)).toBe(PLANS[1]);
-    expect(planFor(99)).toBe(PLANS[8]);
+    expect(planFor(99)).toBe(PLANS[10]);
     expect(planFor(2).mode).toBe('highlow');
   });
 

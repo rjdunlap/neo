@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * ladder turns play into listening: high or low, fast or slow, going up or down, and
  * echoing a woodpecker's rhythm on a drum.
  */
-export type GardenMode = 'play' | 'highlow' | 'fastslow' | 'updown' | 'updownsame' | 'echo' | 'mix';
+export type GardenMode = 'play' | 'highlow' | 'fastslow' | 'updown' | 'updownsame' | 'echo' | 'mix' | 'sing' | 'copy';
 export type Ask = 'highlow' | 'fastslow' | 'updown' | 'updownsame';
 export type Answer = 'high' | 'low' | 'fast' | 'slow' | 'up' | 'down' | 'same';
 
@@ -25,6 +25,8 @@ export const PLANS: Record<number, GardenPlan> = {
   5: { mode: 'echo', rounds: 4, name: 'Echo the woodpecker\'s rhythm on the drum' },
   6: { mode: 'mix', rounds: 6, name: 'Mixed listening: high or low, fast or slow, up or down' },
   8: { mode: 'play', big: true, rounds: 12, name: 'One big friend: tap anywhere to hear a singer' },
+  9: { mode: 'sing', rounds: 12, name: 'Sing Higher: drag a singer up and down to make twelve notes' },
+  10: { mode: 'copy', rounds: 6, name: 'Copy the shape: sing two- then three-note directions' },
   7: { mode: 'updownsame', rounds: 6, name: 'Does the tune go up, down or stay the same?' },
 };
 
@@ -117,7 +119,7 @@ export function makeSounds(ask: Ask, rng: Rng): Record<Answer, Sound> {
 
 /** Listening questions: balanced answers, never the same answer three times running. */
 export function makeQuestions(plan: GardenPlan, rng: Rng): Question[] {
-  if (plan.mode === 'play' || plan.mode === 'echo') return [];
+  if (plan.mode === 'play' || plan.mode === 'echo' || plan.mode === 'sing' || plan.mode === 'copy') return [];
   const asks: Ask[] = plan.mode === 'mix' ? rng.shuffle(['highlow', 'fastslow', 'updown', 'highlow', 'fastslow', 'updown'] as Ask[]).slice(0, plan.rounds) : Array(plan.rounds).fill(plan.mode);
   const out: Question[] = [];
   for (const ask of asks) {
