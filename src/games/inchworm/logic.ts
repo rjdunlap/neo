@@ -5,9 +5,10 @@ import type { Rng } from '../../engine/random';
  * snap into line, no gaps or overlaps), count them, then say the length; then compare two
  * things by measuring both; then read a ruler, including things that don't start at 0; then
  * use the ruler to find how much longer one thing is than another (starting at different
- * marks), and how long two things are end to end.
+ * marks), and how long two things are end to end; and measure one thing with big worms, then little
+ * worms, to see that a smaller unit makes a bigger count.
  */
-export type MeasureMode = 'lay' | 'say' | 'compare' | 'ruler' | 'rulerdiff' | 'rulersum';
+export type MeasureMode = 'lay' | 'say' | 'compare' | 'ruler' | 'rulerdiff' | 'rulersum' | 'units';
 
 /** The levels that read a ruler instead of laying worms. */
 export const isRuler = (mode: MeasureMode) => mode === 'ruler' || mode === 'rulerdiff' || mode === 'rulersum';
@@ -30,7 +31,11 @@ export const PLANS: MeasurePlan[] = [
   { mode: 'ruler', max: 8, rounds: 4, name: 'Read a ruler, even when the pencil does not start at 0' },
   { mode: 'rulerdiff', max: 8, rounds: 4, name: 'Two things on one ruler, starting at different marks: how much longer is one?' },
   { mode: 'rulersum', max: 4, rounds: 4, name: 'Two things end to end on the ruler: how long are they together?' },
+  { mode: 'units', max: 6, rounds: 4, name: 'Measure one thing with big worms, then little worms: which number did the little worms make?' },
 ];
+
+/** Big and little worms: how many little worms long each row's worm is (row 0 big, row 1 little). */
+export const UNIT_SIZE = [2, 1] as const;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -43,12 +48,15 @@ export interface Measure {
   other?: { thing: Thing; length: number; start?: number };
   /** Ruler levels: where on the ruler it starts. */
   start?: number;
+  /** Big and little worms: which row's count the pet asks for. */
+  ask?: 'little' | 'big';
 }
 
 const THINGS: Thing[] = ['leaf', 'pencil', 'snake', 'stick'];
 
 export function makeMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
   const out: Measure[] = [];
+  if (plan.mode === 'units') return unitMeasures(plan, rng);
   while (out.length < plan.rounds) {
     const length = rng.int(2, plan.max);
     if (out.at(-1)?.length === length) continue;
@@ -80,6 +88,24 @@ export function makeMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
       out.push({ thing, length, start, other: { thing: rng.pick(THINGS.filter((t) => t !== thing)), length: length2, start: start + length } });
     } else out.push({ thing, length });
   }
+  return out;
+}
+
+/**
+ * Big and little worms: one stick measured twice, `b` big worms (2 or 3) on the first row and `2b` little
+ * worms on the second. Never the same thing twice in a row and never three sticks of one length. The first
+ * two sticks ask for the little worms' number; the last two ask one each way, in a seeded order.
+ */
+function unitMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
+  const out: Measure[] = [];
+  while (out.length < plan.rounds) {
+    const b = rng.int(2, Math.floor(plan.max / UNIT_SIZE[0]));
+    const thing = rng.pick(THINGS.filter((t) => t !== out.at(-1)?.thing));
+    if (out.filter((m) => m.length === b).length >= 2) continue;
+    out.push({ thing, length: b, other: { thing, length: b * UNIT_SIZE[0] }, ask: 'little' });
+  }
+  const late: ('little' | 'big')[] = rng.shuffle(['little', 'big']);
+  late.forEach((ask, i) => (out[2 + i].ask = ask));
   return out;
 }
 
@@ -118,6 +144,8 @@ export function temptingReading(m: Measure, mode: MeasureMode): number | null {
 
 /** Number choices: the answer and two near it (for ruler levels, include the likely wrong reading). */
 export function choices(m: Measure, mode: MeasureMode, rng: Rng): number[] {
+  // Big and little worms: just the two counts, shuffled so a pad's place never says which row it is.
+  if (mode === 'units') return rng.shuffle([m.length, m.other!.length]);
   const answer = answerOf(m, mode);
   const t = temptingReading(m, mode);
   const tempting = t === null ? [] : [t];
@@ -126,6 +154,7 @@ export function choices(m: Measure, mode: MeasureMode, rng: Rng): number[] {
 }
 
 export const answerOf = (m: Measure, mode: MeasureMode) =>
+  mode === 'units' ? (m.ask === 'big' ? m.length : m.other!.length) :
   mode === 'compare' || mode === 'rulerdiff' ? Math.abs(m.length - m.other!.length) : mode === 'rulersum' ? m.length + m.other!.length : m.length;
 
 export type MeasureTouch = { kind: 'worm'; row: number } | { kind: 'answer'; value: number };

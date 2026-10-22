@@ -399,3 +399,11 @@
 - Refilled READY to ten; three study definitions and one research slot per refill when eligible, with first resulting builds promoted into content slots. Both routines use the shared ROADMAP/READY selection rules; coordinator state and active workers were not changed.
 - Passed relative Markdown links, queue/backlog coverage and duplicate-entry assertions, and `git diff --check` on the documentation diff.
 - Not run: typecheck, unit/browser/build/offline suites (docs-only tier); CI still supplies the required PR tests/build. Device/child checks and developer/reviewer gates remain open.
+
+## 2026-10-21 — Same-game level batches
+
+- Docs-only change on `codex/coherent-game-batches`: regrouped 96 existing game/content tasks into 48 same-game implementation batches; Who Am I remains standalone and Species Comeback remains blocked.
+- Added GAME-BATCHES with every original scope, source link, special check and gate; READY still has ten dispatch entries and the three-definition/one-research cadence. Original level IDs and dive subtask numbering stay unchanged.
+- Updated AGENTS, roadmap, workflow, study closeout, Claude docs-keeper and the 18 affected dives: one worker/claim/PR per declared batch, combined admission estimate and proportionate shared checks, resume unfinished batches in the same worker. Coordinator checkpoint/ledger unchanged.
+- Passed Markdown links, exact original-task coverage/uniqueness and Next ten composition assertions, plus `git diff --check`.
+- Not run: local game tests/typecheck/build/browser/offline (docs-only tier). Required PR CI supplies tests/build; cache/token savings are unmeasured and existing device/reviewer decisions remain open.
