@@ -1,6 +1,6 @@
 # Scoop Shop deep dive
 
-*ID `scoop-shop` · bands lap, toddler, preschool, pre-K, school · levels 1–6 on 2026-10-18 · session `claude/dive-scoop-shop` ([PR #576](https://github.com/rjdunlap/neo/pull/576))*
+*ID `scoop-shop` · bands lap, toddler, preschool, pre-K, school · levels 1–6, 10–11 on 2026-10-22 · session `claude/dive-scoop-shop` ([PR #576](https://github.com/rjdunlap/neo/pull/576))*
 
 Research and ideation only: nothing under `src/` changed. This write-up also answers item EF1 of the [executive-function study](subjects/executive-function.md#a-first-games-ladder-scoop-shop-79), which asked for Scoop Shop 7–9 to be defined in this file; their rows are carried into the ladder below unchanged in substance and stay behind that study's decision 2.
 
@@ -133,8 +133,8 @@ Band windows after the ladder (saved levels and pins keep their IDs; only steppi
 
 1. **Built 2026-10-20 (`claude/scoop-shop-support-truth`, PR #664).** **Honest level 2, every touch answers, counting aloud and the count picture** (existing-game bug fix tier; gaps 1–4): the level-2 shuffle rule and its test, tub squash and flight-time wobble, customer tap repeats the order, cone wobble, counted scoops at 1 and 4, the count card's row of scoops, how-to lines. Checks: typecheck, the rule tests, one filtered regression play (levels 1, 2 and 4, one wrong scoop, one hint), `fingerdemo` at 4.
 2. **Built 2026-10-21 (`claude/scoop-shop-pools`, PR #729).** **Pools: customers, cone kinds, window scenes, flavour thank-yous and the serve tune** (content tier): eight customers, three cone kinds, three scenes, `scoop.yum` flavour variants (decision 3's lean), the sticker pool, the tune in `serve()`. Checks: typecheck, rule tests, one browser play of level 5 and `fingerdemo` at 5.
-3. **Lap entry 10 *Any scoop*** with the `order`/`entryLevels` conversion (new level on the existing interaction): lap `[10, 1]`, the landing test. Checks: typecheck, rule tests, one play of 10, `fingerdemo` at 10, one portrait screenshot.
-4. **Toddler 11 *Who wanted pink?*** (new interaction: the chosen-customer tap, two open customers, hidden tubs): toddler `[1, 2, 11, 3]`, preschool `[2, 11, 3, 4, 5]`. Checks: new-interaction tier (scripted play at 11, one wrong customer, one hint, one portrait screenshot, `fingerdemo` at 11).
+3. **Built batch 1, 2026-10-22 ([PR #802](https://github.com/rjdunlap/neo/pull/802), slices 3–4).** **Lap entry 10 *Any scoop*** with the `order`/`entryLevels` conversion (new level on the existing interaction): lap `[10, 1]`, the landing test. Checks: typecheck, rule tests, one play of 10, `fingerdemo` at 10, one portrait screenshot.
+4. **Built in batch 1, PR #802.** **Toddler 11 *Who wanted pink?*** (new interaction: the chosen-customer tap, two open customers, hidden tubs): toddler `[1, 2, 11, 3]`, preschool `[2, 11, 3, 4, 5]`. Checks: new-interaction tier (scripted play at 11, one wrong customer, one hint, one portrait screenshot, `fingerdemo` at 11).
 5. **Level 12 *Fill it up*** (new level on the existing interaction: a pre-filled cone): pre-K `[3, 4, 12, 5, 6]`, school `[5, 12, 6]`. Checks: typecheck, rule tests, one play of 12, `fingerdemo` at 12.
 6. **Level 13 *Three pink and two blue*** (new level, `makeOrders` only): pre-K `[3, 4, 12, 13, 5, 6]`, school `[5, 12, 13, 6]`. Checks: typecheck, rule tests, one play of 13, `fingerdemo` at 13.
 7. *(Decision 1)* **Levels 8 *Change of mind* and 9 *Top first*** (new levels on 6's interaction): school order gains 8 and 9 after 6. Checks: typecheck, rule tests (one change, no palindrome), one play of 9, `fingerdemo` at 8 and 9.

@@ -14,6 +14,9 @@ import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   complete,
+  customerToServe,
+  makeCustomerChoices,
+  type CustomerChoice,
   CONE_KINDS,
   dressShop,
   FLAVORS,
@@ -30,9 +33,9 @@ import {
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 3 },
-  preschool: { min: 2, max: 5 },
+  lap: { min: 1, max: 10, order: [10, 1] },
+  toddler: { min: 1, max: 11, order: [1, 2, 11, 3] },
+  preschool: { min: 2, max: 11, order: [2, 11, 3, 4, 5] },
   prek: { min: 3, max: 6 },
   school: { min: 5, max: 6 },
 };
@@ -153,6 +156,8 @@ class ScoopShop implements Game {
   readonly flavors: ColorName[];
   readonly orders: Order[];
   readonly tubs = new Map<ColorName, Container>();
+  readonly choices: CustomerChoice[];
+  readonly guests: (Critter | null)[] = [null, null];
   customerIndex = -1;
   cone: Cone | null = null;
   customer: Critter | null = null;
@@ -170,6 +175,7 @@ class ScoopShop implements Game {
   private readonly flying = new Container();
   private view: View;
   private wrongs = 0;
+  private guestSerial = 0;
   private hinted = false;
   private peeked = false;
   private hidden = false;
@@ -183,12 +189,15 @@ class ScoopShop implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     ({ flavors: this.flavors, orders: this.orders } = makeOrders(this.plan, ctx.rng));
+    this.choices = this.plan.mode === 'customer' ? makeCustomerChoices(this.flavors, ctx.rng) : [];
     this.kinds = ctx.rng.shuffle([...CUSTOMERS]);
     ({ scene: this.scene, cones: this.cones } = dressShop(this.plan.customers, ctx.rng));
+    this.tubGlow.eventMode = 'none';
     this.bubble.eventMode = 'none';
     ctx.stage.addChild(this.wall, this.room, this.people, this.counter, this.bubble, this.tubGlow);
     for (const color of this.flavors) {
       const tub = tubArt(color);
+      tub.visible = this.plan.mode !== 'customer';
       onTap(tub, () => this.tapTub(color), { radius: 72, cooldown: 200 });
       this.tubs.set(color, tub);
       ctx.stage.addChild(tub);
@@ -214,7 +223,7 @@ class ScoopShop implements Game {
 
   private coneSpot() {
     // The cone rests in a stand on the counter, its tip tucked in.
-    return { x: this.view.w * 0.68, y: this.counterTop - 66 };
+    return { x: this.view.w * (this.plan.mode === 'customer' ? 0.5 : 0.68), y: this.counterTop - 66 };
   }
 
   resize(v: View) {
@@ -237,7 +246,8 @@ class ScoopShop implements Game {
     c.ellipse(cs0.x, top - 30, 40, 9).fill(0x8c9aa8);
     const xs = spread(this.flavors.length, 150, v.w - 40, 140);
     this.flavors.forEach((color, i) => this.tubs.get(color)!.position.set(xs[i], v.h - 70));
-    if (this.customer) this.customer.position.copyFrom(this.customerSpot());
+    this.guests.forEach((guest, side) => guest?.position.set(this.view.w * (side ? 0.76 : 0.25), this.counterTop + 18));
+    if (this.customer && this.plan.mode !== 'customer') this.customer.position.copyFrom(this.customerSpot());
     if (this.cone) this.cone.position.copyFrom(this.coneSpot());
     const cs = this.customerSpot();
     this.bubble.position.set(cs.x + 220, Math.max(top - 190, 280));
@@ -287,6 +297,11 @@ class ScoopShop implements Game {
   update(dt: number) {
     this.clock += dt;
     const g = this.tubGlow.clear();
+    if (this.plan.mode === 'customer') {
+      const guest = this.guests[this.choices[this.customerIndex]?.match];
+      if (this.hinted && guest && !this.busy) g.roundRect(guest.x - 78, guest.y - 365, 156, 130, 24).stroke({ width: 10, color: 0xffe478, alpha: 0.8 + 0.2 * Math.sin(this.clock * 7) });
+      return;
+    }
     if (this.hinted && this.order && this.cone && !this.busy) {
       const want = nextNeeded(this.order, this.cone.colors);
       const tub = want && this.tubs.get(want);
@@ -298,6 +313,10 @@ class ScoopShop implements Game {
   autotouch(): TouchIntent | null {
     const { order, cone } = this;
     if (this.busy || this.finished || !order || !cone) return null;
+    if (this.plan.mode === 'customer') {
+      const guest = this.guests[this.choices[this.customerIndex].match];
+      return guest ? { tap: { on: guest, x: 0, y: -150 } } : null;
+    }
     // The last level: wait for the picture to hide, so the order is scooped from memory and never copied.
     if (this.plan.mode === 'memory' && !this.hidden && cone.colors.length === 0) return null;
     const color = scoopToTake(this.plan, order, cone.colors, this.flavors);
@@ -309,7 +328,67 @@ class ScoopShop implements Game {
 
   // Customers -------------------------------------------------------------------------
 
+  private async nextChoice() {
+    this.busy = true;
+    this.customerIndex++;
+    const choice = this.choices[this.customerIndex];
+    if (!choice) return void this.end();
+    this.wrongs = 0;
+    this.hinted = false;
+    const arrivals: Promise<unknown>[] = [];
+    for (let side = 0; side < 2; side++) {
+      if (this.guests[side]) continue;
+      const guest = new Critter(CRITTERS[this.kinds[this.guestSerial++ % this.kinds.length]]);
+      guest.scale.set(0.72);
+      guest.position.set(side ? this.view.w + 160 : -160, this.counterTop + 18);
+      const picture = new Container();
+      picture.eventMode = 'none';
+      picture.addChild(new Graphics().roundRect(-95, -490, 190, 150, 28).fill(0xffffff).stroke({ width: 5, color: 0xb9c6d1 }));
+      const scoop = scoopArt(choice.pictures[side], 43);
+      scoop.position.set(0, -420);
+      picture.addChild(scoop);
+      guest.addChild(picture);
+      onTap(guest, () => this.tapGuest(side), { cooldown: 600 });
+      guest.hitArea = new Rectangle(-150, -500, 300, 500);
+      this.ctx.track(guest);
+      this.people.addChild(guest);
+      this.guests[side] = guest;
+      arrivals.push(this.ctx.tw.to(guest, { x: this.view.w * (side ? 0.76 : 0.25) }, { duration: 0.7, ease: ease.outBack }));
+    }
+    const cone = new Cone(this.cones[this.customerIndex]);
+    cone.add(choice.scoop);
+    cone.position.copyFrom(this.coneSpot());
+    onTap(cone, () => this.wobble(cone, 0.12), { cooldown: 300 });
+    cone.hitArea = new Rectangle(-55, -60, 110, 160);
+    this.cone = cone;
+    this.ctx.stage.addChildAt(cone, this.ctx.stage.getChildIndex(this.bubble));
+    await Promise.all(arrivals);
+    this.busy = false;
+    void this.ctx.instruct('scoop.customer', { a: choice.scoop });
+  }
+
+  private tapGuest(side: number) {
+    const guest = this.guests[side];
+    if (!guest) return;
+    guest.poke();
+    if (this.busy || this.finished) { sfx.giggle(); return; }
+    const choice = this.choices[this.customerIndex];
+    if (customerToServe(choice, side)) {
+      this.customer = guest;
+      this.guests[side] = null;
+      void this.serve();
+    } else {
+      this.misses++;
+      this.wrongs++;
+      sfx.boing();
+      this.wobble(guest, 0.08);
+      void this.ctx.say('scoop.notme', { a: choice.pictures[side] });
+      if (this.wrongs >= 2 && !this.hinted) { this.hinted = true; this.hints++; }
+    }
+  }
+
   private async nextCustomer() {
+    if (this.plan.mode === 'customer') return this.nextChoice();
     this.busy = true;
     this.customerIndex++;
     const order = this.order;
@@ -357,7 +436,7 @@ class ScoopShop implements Game {
     const [a, b, c] = s;
     switch (this.plan.mode) {
       case 'free':
-        return this.ctx.instruct('scoop.free');
+        return this.ctx.instruct(this.ctx.level === 10 ? 'scoop.any' : 'scoop.free');
       case 'one':
         return this.ctx.instruct('scoop.one', { a });
       case 'pair':
@@ -385,6 +464,15 @@ class ScoopShop implements Game {
     this.bubble.addChild(card);
     if (this.plan.mode === 'free') {
       const heart = new Graphics().circle(-18, -86, 24).circle(18, -86, 24).poly([-40, -76, 40, -76, 0, -30]).fill(swatch.pink.fill);
+      if (this.ctx.level === 10) {
+        heart.scale.set(0.45);
+        heart.position.set(40, -12);
+        const mini = holderArt(this.cones[this.customerIndex], 0.5);
+        mini.position.set(-10, -65);
+        const scoop = scoopArt('pink', 25);
+        scoop.position.set(-10, -78);
+        this.bubble.addChild(mini, scoop);
+      }
       this.bubble.addChild(heart);
     } else if (count) {
       // The numeral, and under it that many scoops in a row, so the card shows "three" to a child who cannot read 3.
@@ -620,6 +708,7 @@ export const scoopShop: GameModule = {
   region: 'cozy-village',
   skills: ['colors', 'counting', 'sequencing', 'memory'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  entryLevels: [10],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
