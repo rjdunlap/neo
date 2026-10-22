@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Second Chance Shed 1–4 definition (nature-sustainability N1, docs only)
+
+- [PR #781](https://github.com/rjdunlap/neo/pull/781), `claude/define-second-chance-shed`: defined Second Chance Shed levels 1–4 ([definition](definitions/second-chance-shed.md)); READY, game batches, study backlog, nature study, recommendations, waiting-on-developer and ideas updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (nothing built). Open: the build N2, which merges only after the developer's item-table review (definition decision 1).
+
 ## 2026-10-22 — Sound Garden listening direction and visible echoes (slices 3–4)
 
 - [PR #779](https://github.com/rjdunlap/neo/pull/779), `codex/sound-garden-direction-echo`; tested `4dcbb461` plus working diff, on `http://localhost:5203/classic/`. Level 7 up/down/same and level 5 dots, twelve rhythms, tree response and per-tap hints; one batch, no later levels.
@@ -95,13 +101,6 @@
 - `BROWSER_SUITE=batch BATCH_ONLY=eggs FROM_LEVEL=10 TO_LEVEL=11`: both portrait rounds passed, two failed reruns/one hint each, original repair board retained, automatic spring flip, locked rolling pairs, ending/sticker, no page errors. Inspected `egg-catch-10-hint-portrait.png` and `egg-catch-11-hint-portrait.png`.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=egg-catch FINGER_LEVELS=10,11`: clean in 43.6/37.9 s. `batch BATCH_ONLY=eggs FROM_LEVEL=6 TO_LEVEL=7`: passed, two misses/one hint and saved reward each, no page errors. The extension exposed a pre-existing prediction glow swallowing the correct-bin tap after two misses; a bounded logging probe failed under the old rule, then gate art was made non-interactive. One earlier run was interrupted by a comment-edit HMR reload. About twelve minutes of browser wall time including the stalled regression/probe; new-level play and demos were not repeated.
 - Links/diff check passed. Not run: broader browser, couch, world, stories or offline (no affected persistence/assets/navigation); on-device speech, orientation/target comfort and child understanding remain [open](DEVICE-CHECKS.md#egg-catch-gate-repair-and-spring-gate-levels-1011). Integrated docs-only research main `e6c77320` without changing tested source; proof reused. PR tests/build and deployment recorded at publication.
-
-## 2026-10-21 — Food Web Workshop 1–3 definition (ecosystems F1, docs only)
-
-- [PR #762](https://github.com/rjdunlap/neo/pull/762), `claude/define-food-web-workshop`: new [definition](definitions/food-web-workshop.md) for Food Web Workshop levels 1–3 (school, new game); the build (F2) is gated on the developer reviewing its six feeding records and confirming identity and land, so no READY build line or batch plan was added.
-- Updated READY (definition line out), the study backlog, the ecosystems study and its recommendation row, the subject tracker, the idea notebook and WAITING-ON-DEVELOPER.
-- Ran `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, unit tests, build, browser, offline (docs only). Nothing is built, so no play, ghost finger, iPad or child check applies yet.
 
 ## Coverage summary
 

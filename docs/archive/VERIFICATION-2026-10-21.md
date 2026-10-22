@@ -421,3 +421,10 @@
 - Updated READY (definition line out), the study backlog, the life-science study and its recommendation row, the subject tracker, the idea notebook and WAITING-ON-DEVELOPER.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser, offline (docs only). Nothing is built, so no play, ghost finger, iPad or child check applies yet.
+
+## 2026-10-21 — Food Web Workshop 1–3 definition (ecosystems F1, docs only)
+
+- [PR #762](https://github.com/rjdunlap/neo/pull/762), `claude/define-food-web-workshop`: new [definition](../definitions/food-web-workshop.md) for Food Web Workshop levels 1–3 (school, new game); the build (F2) is gated on the developer reviewing its six feeding records and confirming identity and land, so no READY build line or batch plan was added.
+- Updated READY (definition line out), the study backlog, the ecosystems study and its recommendation row, the subject tracker, the idea notebook and WAITING-ON-DEVELOPER.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser, offline (docs only). Nothing is built, so no play, ghost finger, iPad or child check applies yet.
