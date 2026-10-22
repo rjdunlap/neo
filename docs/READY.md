@@ -7,9 +7,9 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **`teddy-doctor`, Choose a patient and order a check-up** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#teddy-doctor-1-choose-a-patient-and-order-a-check-up).
-- **Study `routines-self-care`: define Ready for Adventure** (docs only; status `define`; claimed 2026-10-22 by `claude/define-ready-for-adventure`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#routines-and-self-care-recommendations).
 - **Study `cooking-recipes`: define Recipe Workshop** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#cooking-and-recipes-recommendations).
 - **Research subject `area-volume-space`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
+- **`ready-for-adventure`, levels 1–3 (RA2, new game)** (one implementation batch; new-game tier): [definition](definitions/ready-for-adventure.md)
 - **`scoop-shop`, Younger scoop and customer entries** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#scoop-shop-1-younger-scoop-and-customer-entries).
 - **`scoop-shop`, Count-on and mixed-colour orders** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#scoop-shop-2-count-on-and-mixed-colour-orders).
 

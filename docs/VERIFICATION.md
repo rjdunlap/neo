@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Ready for Adventure levels 1–3 definition (routines-self-care slice 1, docs only)
+
+- [PR #791](https://github.com/rjdunlap/neo/pull/791), `claude/define-ready-for-adventure`: defined Ready for Adventure levels 1–3 ([definition](definitions/ready-for-adventure.md)); READY (build RA2 promoted), study backlog, routines study, recommendations, tracker, ideas and waiting-on-developer updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the build RA2 (no review gate; five open decisions all have defaults), all device checks.
+
 ## 2026-10-22 — Rain Garden levels 1–3 definition (weather-water slice 1, docs only)
 
 - [PR #790](https://github.com/rjdunlap/neo/pull/790), `claude/define-rain-garden`: defined Rain Garden levels 1–3 ([definition](definitions/rain-garden.md)); READY, study backlog, weather-water study, recommendations, tracker, ideas and waiting-on-developer updated.
@@ -93,12 +99,6 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check` (results in the closeout report).
 - Not run: typecheck, unit tests, build, browser (docs only). Open: the build; nothing is built.
 
-## 2026-10-22 — Stamp Studio Trace Prints definition (deep-time D3, docs only)
-
-- [PR #771](https://github.com/rjdunlap/neo/pull/771), `claude/define-trace-prints`: defined Stamp Studio levels 8–9 *Trace Prints* ([definition](definitions/trace-prints.md)); batch plan, READY, study backlog, waiting-on-developer, the deep-time study, recommendations and the Stamp Studio dive updated.
-- Ran `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean).
-- Not run: typecheck, unit tests, build, browser (docs only). Open: the build; nothing is built.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -131,7 +131,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Creature-world rework planning | 2026-10-17: RW04 welcome adventure packet, source audit, links/diff; RW02b illustrated glider pilot (typecheck, creature units, build isolation, landscape/portrait preview probe, wingbeat stills); RW03 navigation packet, links/diff, desktop wireframe flows and landscape/portrait inspection; RW02 creature art prototype (typecheck, units, build, landscape/portrait preview probe); RW01 name and story packet, informal name screen, source check of named games, links/anchors and diff check; 2026-10-16: plan audit and work items | [RW04 packet](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw04-welcome-adventure-definition), [RW02b pilot](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02b-illustrated-glider-pilot), [RW03 packet](archive/VERIFICATION-2026-10-17.md#2026-10-17--rw03-home-and-navigation-packet), [RW02 prototype](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw02-creature-art-prototype), [RW01 packet](archive/VERIFICATION-2026-10-16.md#2026-10-17--rw01-name-and-story-packet), [rework plan](archive/VERIFICATION-2026-10-16.md#2026-10-16--creature-world-rework-plan) | Proposed direction only; RW02b new-candidate generation, RW02/RW02b iPad frame rate/touch feel, runtime, legal name clearance, name/appeal, device speech/child and learning-transfer checks not run |
 | Barnyard land visuals | 2026-10-16: typecheck/build, units 1400/1401 (remaining unchanged timeout passed alone), 14 lands tests/all-band four-view fit; landscape/portrait and greeting/session/exit probe passed | [V1 Barnyard](archive/VERIFICATION-2026-10-16.md#2026-10-16--barnyard-land-identity-v1) | Device audio and child recognition open; world/offline not run (unchanged navigation/assets) |
 | `clap` and `fingerdemo` (`clap-syllables`) | 2026-10-16: level 9 short entry, typecheck/59 focused tests/build, filtered guided play/support replay/sticker/portrait, clean 10.0 s ghost finger | [Clap along short](archive/VERIFICATION-2026-10-16.md#2026-10-16--clap-the-syllables-level-9-clap-along-short) | Prior level-6 and level-8 proof retained above; device speech, touch and child play open |
-| Game definition docs | 2026-10-22: Sand Table levels 1–3 packet (links and diff check) | [Sand Table definition](#2026-10-22--sand-table-levels-13-definition-earth-materials-e1-docs-only) | Docs only; no code, build or browser check; a build uses its defaulted decisions |
+| Game definition docs | 2026-10-22: Ready for Adventure levels 1–3 packet (links and diff check) | [Ready for Adventure definition](#2026-10-22--ready-for-adventure-levels-13-definition-routines-self-care-slice-1-docs-only) | Docs only; no code, build or browser check; a build uses its defaulted decisions |
 | Discovery definition docs | 2026-10-15: D1a screen/pool/selection/route packet; source audit, links/anchors and diff check | [Direct-next definition](archive/VERIFICATION-2026-10-15.md#2026-10-15--discovery-direct-next-definition) | Docs only; D1b UI/rules/flow, screenshots and device/child checks not run |
 | Game deep-dive docs | 2026-10-19: Size Parade source audit (levels 1–8, the superlative at two, `sfx.bell(5 + rank)`, the 154-wide tap rectangles against portrait spacing at five), eleven precedents and the Clements–Sarama/K.MD/1.MD references, ladder 9–17 with lap and toddler openings, experience and ten slices; links/anchors and diff check. Prior Shape Sorter, Song Maker, Fill and Dump and Duckling Parade evidence retained | [Size Parade](archive/VERIFICATION-2026-10-19.md#2026-10-19--size-parade-deep-dive) | Docs only; no reference play or new gameplay verification; device/child and named decisions open |
 | `critternot` | 2026-10-15: stable entry 8, two misses/one hint, two rounds, one sticker and landscape/portrait passed; 54 focused tests and build | [Visible not entry](archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-crossing-visible-not-entry) | Device speech, touch and child interpretation open |
