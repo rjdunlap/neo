@@ -85,7 +85,7 @@ Every touch is play: **0 misses and 0 hints**, whatever she does. There is no wr
 
 - **Ghost finger** (`autotouch()`): level 3 taps the handle three times, waiting for each half turn to end, then taps Finish. Level 4 taps the handle once, taps the door open, taps the handle twice more (the rod shows), then taps Finish. It always aims at the handle, even at level 3 where anywhere works, so the demonstration shows what causes the motion. The same bot drives the scripted play.
 - **How-to card** (`src/content/howto.ts`). The card's plain strings that are not true at levels 3–4 become level lines:
-  - Goal (whole ladder): "Crank an attic thing and watch what it does; at older levels, turn it over and show what made it move."
+  - Goal (whole ladder, with no level wording, which the how-to test rejects): "Crank an attic thing, watch what it does, and find what makes it move."
   - Steps: the existing "Tap the parts to see them up close. Tap Turn to see the back." becomes `{ from: 1, to: 2 }`; add `{ from: 3, to: 3, text: 'Tap anywhere, or the big handle. The bird or fish goes up; tap again and it comes down.' }`, `{ from: 4, to: 4, text: 'Tap the big handle: the bird goes up, then down. Tap the little door to open it and see the rod inside.' }`; "Crank it again any time to watch." stays plain.
   - Finish: `{ from: 1, to: 2, text: 'Both things sit on the shelf.' }`, `{ from: 3, to: 4, text: 'After three turns of the handle a shelf picture appears; she taps it when she is ready, and the toy goes onto the shelf.' }`.
   - Note `{ from: 3, to: 4 }`: "Every touch is play: nothing is ever counted as a miss or a hint, and the round ends only when she taps the shelf. Everything in the attic is made up for the island; nothing here is a real old thing."
