@@ -134,6 +134,8 @@ Level 9 (lap entry, `entryLevels`) and level 10 (toddler, between 2 and 3) above
 
 ## Build slices, in order
 
+**Claimed 2026-10-21:** Ask first batch, slice 6 / level 12 only, worker `01a1622c-f1b5-7982-8c55-4747a8f9fe9b`, branch `codex/feelings-ask-first`. Depends on landed levels 11/13 (#766). Files: feelings-faces logic/art/interaction/tests, voice/how-to, browser filter and closeout docs. Proof: new-interaction tier at 12, quiet-space answer, wrong card/glow, portrait and two-step ghost finger. Other batches and unresolved decisions excluded.
+
 **Built 2026-10-21:** Helping and explaining happenings, slices 3–5 (levels 10, 11 and 13), [PR #766](https://github.com/rjdunlap/neo/pull/766). Current school order is `[11, 13]`; Ask first (12) remains a separate ready batch. [Build note](../archive/COMPLETED-2026-10-09.md#feelings-faces-helping-and-explaining-happenings-2026-10-21).
 
 **Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`feelings-faces` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
