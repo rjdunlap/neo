@@ -1,6 +1,6 @@
 # Egg Catch deep dive
 
-*ID `egg-catch` · bands lap, toddler, preschool, pre-K, school · levels 1–8 on 2026-10-21 · session `claude/dive-egg-catch` ([PR #517](https://github.com/rjdunlap/neo/pull/517))*
+*ID `egg-catch` · bands lap, toddler, preschool, pre-K, school · levels 1–11 on 2026-10-21 · session `claude/dive-egg-catch` ([PR #517](https://github.com/rjdunlap/neo/pull/517))*
 
 ## The game today
 
@@ -17,12 +17,14 @@ Hens on a shelf lay eggs. At first she taps a hen and the egg rolls into a baske
 | 7 | Set it once for two eggs (`pair`, 3 pairs) | school | One arrangement of three gates that sends brown to the basket and white (entering the other branch) to the nest, then the green arrow |
 | 8 | Under the hen (`lane`, 5 eggs) | toddler | Tap the calling hen’s lane to hop under her |
 | 9 | One gate (`route`, 4 eggs) | preschool, pre-K | Point one gate toward the basket, then release the egg |
+| 10 | Fix the run (`repair`, 4 boards) | school | Find the one broken gate on the pet’s dotted failed trace, then rerun |
+| 11 | Flip-flop gate (`flipflop`, 3 pairs) | school | Set three starting directions for two top-entry eggs; the spring flips after each passage |
 
-Ranges (`LEVELS` in `index.ts`): lap 1, toddler order `[1, 8, 2]`, preschool order `[2, 3, 9, 4]`, pre-K order `[3, 9, 4, 5]`, school 4–7; `entryLevels: [8, 9]` keeps a carried entry ID at an unsupported band’s easiest step. Level 8 is the built lane-hop bridge: one calling hen, five eggs, wrong-lane teaching and a glow after two misses. The IDEAS round-two row still reads "6 · 4–6" and proposes 7 *Set it once*; that level is built, so the row is history and now points here.
+Ranges (`LEVELS` in `index.ts`): lap 1, toddler order `[1, 8, 2]`, preschool order `[2, 3, 9, 4]`, pre-K order `[3, 9, 4, 5]`, school order `[4, 5, 6, 7, 10, 11]`; `entryLevels: [8, 9]` keeps a carried entry ID at an unsupported band’s easiest step. Level 8 is the built lane-hop bridge: one calling hen, five eggs, wrong-lane teaching and a glow after two misses. The IDEAS round-two row still reads "6 · 4–6" and proposes 7 *Set it once*; that level is built, so the row is history and now points here.
 
-**Content pools.** Four hens (the duck critter in white with a red comb), two shell colours, one sunset `Backdrop` (horizon 0.72), four hay piles. Catch levels draw a 30-egg seeded stream (`makeEggs`: lanes never repeat twice running, never three whites in a row). Level 9 has one gate/two exits, with basket sides never repeating three times running. The full route levels have one fixed board: an entry, gate 0 splitting into gates 1 and 2, four exits (`exitFor`); `targetsFor` moves the basket (and nest) between exits, never the same basket exit twice running. Predict deals gate settings that never land in the same exit twice running; pair deals boards that start unsolved with one solution (`pairBoards`). Voice: 12 `egg.*` lines plus `count`.
+**Content pools.** Four hens (the duck critter in white with a red comb), two shell colours, one sunset `Backdrop` (horizon 0.72), four hay piles. Catch levels draw a 30-egg seeded stream (`makeEggs`: lanes never repeat twice running, never three whites in a row). Level 9 has one gate/two exits, with basket sides never repeating three times running. The full route levels have one fixed board: an entry, gate 0 splitting into gates 1 and 2, four exits (`exitFor`); `targetsFor` moves the basket (and nest) between exits, never the same basket exit twice running. Predict deals gate settings that never land in the same exit twice running; pair deals boards that start unsolved with one solution (`pairBoards`). Voice: 19 `egg.*` lines plus `count`.
 
-**Known gaps** (written down, not fixed; this session changes no code):
+**Known gaps** (separate from the delivered slices):
 
 - **Fixed (slice 1): levels 4–5 rolled on a clock.** `nextRoute` waits 3.5 s for the first egg and 2 s for the rest, then rolls the egg whether she has decided or not; a gate still wrong when the egg reaches it is a miss (`egg.wrongway`). Gates can be flipped mid-roll, but a preschooler who is still looking loses the egg to time. That is the speed pressure "depth before pressure" excludes, and level 4 sits in the preschool window. Level 7 already solved it with the green arrow.
 - **Fixed (slice 2): a missed brown egg on level 2 was nearly silent.** It counts a miss with no line and no boing; the "hint" after two misses only slows the fall 1.4×, with no glow (the brown-egg glow exists only at level 3). The house rule is a boing, a spoken hint and a glow after two misses.
@@ -78,7 +80,7 @@ The catching levels should stay few and gentle (two levels, plus a toddler bridg
 
 ### New levels on top
 
-Appended with stable IDs; built level 8 uses toddler order `[1, 8, 2]` and `entryLevels: [8]`. Built level 9 extends preschool/pre-K entry lists; birthdays and pins remain safe in bands that do not list an entry.
+Appended with stable IDs; built level 8 uses toddler order `[1, 8, 2]` and the entry list is `[8, 9]`. Built level 9 extends preschool/pre-K entry lists; birthdays and pins remain safe in bands that do not list an entry.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -94,7 +96,7 @@ Lap keeps level 1 only. Its work is slices 3 and 8 (notes, colours, the hatching
 
 ### Easier entries and levels between existing ones
 
-Level 8 sits between 1 and 2 (toddler), level 9 between 3 and 4 (preschool and pre-K), through `order`; only 8 is currently in `entryLevels`, with 9 added when built. No saved level is renumbered. The school window grows to `order: [4, 5, 6, 7, 10, 11]` (12 after its definition). Preschool and pre-K tops are unchanged.
+Level 8 sits between 1 and 2 (toddler), level 9 between 3 and 4 (preschool and pre-K), through `order`; both are in `entryLevels`. No saved level is renumbered. The school window is `order: [4, 5, 6, 7, 10, 11]` (12 after its definition). Preschool and pre-K tops are unchanged.
 
 ### Left out on purpose
 
@@ -125,8 +127,8 @@ Each slice that adds a level updates `PLANS`, `LEVELS`/`order`/`entryLevels`, `d
 3. **Notes, egg colours and the hatching basket** (built; [PR #740](https://github.com/rjdunlap/neo/pull/740)). Tier: content: typecheck, rule tests, one portrait screenshot of level 2 and of the ending.
 4. **Level 8, Under the hen** (built; [PR #748](https://github.com/rjdunlap/neo/pull/748)). Tier: new interaction: typecheck, unit tests (difficulty and how-to included), one scripted play of level 8 with a wrong lane and a hint, one portrait screenshot, `fingerdemo` at 8.
 5. **Level 9, One gate** (built; [PR #754](https://github.com/rjdunlap/neo/pull/754)). Tier: new level on an existing interaction: rule tests, one browser play of level 9, `fingerdemo` at 9.
-6. **Level 10, Fix the run** (claimed with slice 7 on `codex/egg-catch-gate-repair`, worker `01a161fa-9f96-75d2-b63e-ab1aa671d115`). Tier: new interaction: unit tests, one scripted play (one miss, one hint), one portrait screenshot, `fingerdemo` at 10. Also extends the `eggs` loop to levels 6–7.
-7. **Level 11, Flip-flop gate** (same batch claim, after slice 6). Same tier as slice 6.
+6. **Level 10, Fix the run** (built with slice 7; [PR #765](https://github.com/rjdunlap/neo/pull/765)). Tier: new interaction: unit tests, one scripted play (one miss, one hint), one portrait screenshot, `fingerdemo` at 10. Also extends the `eggs` loop to levels 6–7.
+7. **Level 11, Flip-flop gate** (built after slice 6 in the same batch; [PR #765](https://github.com/rjdunlap/neo/pull/765)). Same tier as slice 6.
 8. **Every touch answers at level 1** (after V2's person check). Tier: rule tests, a rapid-tap regression play at level 1, `fingerdemo` at 1.
 9. **Define level 12, Sorting gate** (docs only), then decisions 2–5.
 
@@ -140,6 +142,4 @@ Slice 3 (notes, egg colours and the hatching basket) built 2026-10-21 on `codex/
 
 Slice 4 (level 8 Under the hen) built on `codex/egg-catch-under-hen` ([PR #748](https://github.com/rjdunlap/neo/pull/748)); five eggs, forgiving lane taps, clucking cue and supported wrong-lane learning. No lap/couch additions or other rungs.
 
-### Gate repair and changing gates batch claim
-
-Worker `01a161fa-9f96-75d2-b63e-ab1aa671d115` claims only slices 6–7 / school levels 10–11, in that dependency order, on `codex/egg-catch-gate-repair`. Level 9 is already built. Expected files: `src/games/egg-catch/{logic,index}.ts`, rule/difficulty/how-to tests, `src/content/{howto,voice-script}.ts`, `scripts/browser-check.mjs`, README and Egg Catch documentation/queue closeout. One PR covers both interactions; shared proof includes typecheck, unit tests, build (shared content), filtered eggs 6–7/10–11 with miss/hint, portrait and ghost finger at 10–11. Excludes all other levels and developer decisions; #733 stays awaiting review. Admission 4%/50% used, resets `1792663143`/`1793117891`, ordinary usage allowed; conservative two-substep estimate 47.5/7.5 points fits 96%/50% remaining.
+Slices 6–7 (levels 10–11) built together on `codex/egg-catch-gate-repair` ([PR #765](https://github.com/rjdunlap/neo/pull/765)); [build note](../archive/COMPLETED-2026-10-09.md#egg-catch-gate-repair-and-changing-gates-2026-10-21). Four repair boards preserve visible failed traces; three spring pairs have one unique start. School order is `[4, 5, 6, 7, 10, 11]`; other bands and decisions stay unchanged.

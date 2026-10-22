@@ -11,7 +11,7 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { laneChoice, HEN_NOTES, HEN_SHELLS, SHELL, pairBoards, pairNeeds, pairGateToFlip, type PairBoard, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
+import { repairBoards, repairTarget, repairGate, flipflopBoards, type RepairBoard, laneChoice, HEN_NOTES, HEN_SHELLS, SHELL, pairBoards, pairNeeds, pairGateToFlip, type PairBoard, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -19,7 +19,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 8, order: [1, 8, 2] },
   preschool: { min: 2, max: 9, order: [2, 3, 9, 4] },
   prek: { min: 3, max: 9, order: [3, 9, 4, 5] },
-  school: { min: 4, max: 7 },
+  school: { min: 4, max: 11, order: [4, 5, 6, 7, 10, 11] },
 };
 
 const HAY = { fill: 0xf3dc8a, line: 0xd9b95a };
@@ -89,6 +89,10 @@ class EggCatch implements Game {
   private readonly backdrop: Backdrop;
   private readonly shelf = new Graphics();
   private readonly chutes = new Graphics();
+  private readonly traceArt = new Graphics();
+  traceExit: number | null = null;
+  readonly repairBoards: RepairBoard[] = [];
+  private springUntil = 0;
   private readonly gateArt = new Graphics();
   private readonly exits = new Container();
   private readonly touch = new Container();
@@ -123,7 +127,7 @@ class EggCatch implements Game {
     this.targets = targetsFor(this.plan, ctx.rng);
     this.backdrop = new Backdrop({ sky: [0xf6d1b8, 0xfff1e3], hills: [0xc8ecb0, 0x9edb86], horizon: 0.72, clouds: 2, seed: 9 }, ctx.view);
     this.laneGlow.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.shelf, this.chutes, this.exits, this.hay, this.laneGlow, this.gateArt);
+    ctx.stage.addChild(this.backdrop, this.shelf, this.chutes, this.exits, this.hay, this.laneGlow, this.traceArt, this.gateArt);
     const routing = this.routing;
     const henCount = this.plan.mode === 'pair' ? 2 : routing ? 1 : LANES;
     for (let i = 0; i < henCount; i++) {
@@ -160,11 +164,15 @@ class EggCatch implements Game {
       this.touch.on('pointerup', up);
       this.touch.on('pointerupoutside', up);
     }
-    if (this.plan.mode === 'pair') this.pairBoards = pairBoards(ctx.rng, this.plan.eggs);
+    this.traceArt.eventMode = 'none';
+    // The prediction glow reaches the bins: decoration must never swallow their taps.
+    this.gateArt.eventMode = 'none';
+    if (this.plan.mode === 'repair') this.repairBoards = repairBoards(ctx.rng, this.plan.eggs);
+    if (this.paired) this.pairBoards = (this.plan.mode === 'flipflop' ? flipflopBoards : pairBoards)(ctx.rng, this.plan.eggs);
     if (this.arrowed) {
       this.goButton.circle(0, 0, 55).fill(swatch.green.fill).stroke({ width: 5, color: swatch.green.line }).poly([-14, -25, 25, 0, -14, 25]).fill(0xffffff);
       this.goButton.alpha = 0.4;
-      onTap(this.goButton, () => void (this.plan.mode === 'pair' ? this.sendPair() : this.send()));
+      onTap(this.goButton, () => void (this.paired ? this.sendPair() : this.send()));
       ctx.stage.addChild(this.goButton);
     }
     if (routing) {
@@ -182,12 +190,16 @@ class EggCatch implements Game {
   }
 
   get routing() {
-    return this.plan.mode === 'route' || this.plan.mode === 'sort' || this.plan.mode === 'predict' || this.plan.mode === 'pair';
+    return this.arrowed || this.plan.mode === 'predict';
   }
 
   /** Levels where the egg (or pair) waits for the green arrow. */
   get arrowed() {
-    return this.plan.mode === 'route' || this.plan.mode === 'sort' || this.plan.mode === 'pair';
+    return this.plan.mode === 'route' || this.plan.mode === 'sort' || this.plan.mode === 'repair' || this.paired;
+  }
+
+  get paired() {
+    return this.plan.mode === 'pair' || this.plan.mode === 'flipflop';
   }
 
   /** Predict levels: the gates for each egg, and the egg waiting at the top for a guess. */
@@ -195,7 +207,7 @@ class EggCatch implements Game {
   private waiting: { node: Graphics; egg: Egg } | null = null;
 
   start() {
-    const line = { lane: 'egg.lane', tap: 'egg.tap', catch: 'egg.catch', brown: 'egg.brown', route: 'egg.route', sort: 'egg.sort', predict: 'egg.predict', pair: 'egg.pair' } as const;
+    const line = { lane: 'egg.lane', tap: 'egg.tap', catch: 'egg.catch', brown: 'egg.brown', route: 'egg.route', sort: 'egg.sort', predict: 'egg.predict', pair: 'egg.pair', repair: 'egg.repair', flipflop: 'egg.flipflop' } as const;
     if (this.plan.mode === 'predict') this.predictions = predictGates(this.ctx.rng, this.plan.eggs * 3);
     void this.ctx.instruct(this.plan.singleGate ? 'egg.onegate' : line[this.plan.mode]);
     if (this.routing) void this.nextRoute();
@@ -221,10 +233,10 @@ class EggCatch implements Game {
       s.roundRect(v.w / 2 - 110, 150, 220, 24, 10).fill(wood.fill).stroke({ width: 5, color: wood.line });
       this.drawChutes();
       if (this.arrowed) this.goButton.position.set(v.w - 95, 95);
-      if (this.plan.mode === 'pair') {
+      if (this.paired) {
         const o = this.geo();
         const b = this.pairBoards[this.routed]?.whiteBranch ?? 2;
-        this.hens[1].position.set(o.gate[b].x + (b === 1 ? -100 : 100), 275);
+        this.hens[1]?.position.set(o.gate[b].x + (b === 1 ? -100 : 100), 275);
         if (this.pairReady) this.placePair();
       }
     } else {
@@ -324,13 +336,13 @@ class EggCatch implements Game {
       if (x === null && (this.pace.owesPlay || !this.pace.awake)) return { tap: { on: this.touch, x: this.basketTarget, y: this.floor - 40 }, pause: 0.2 };
       return x === null ? null : { tap: { on: this.touch, x, y: this.floor - 40 }, pause: 0.2 };
     }
-    if (mode === 'pair') {
+    if (this.paired) {
       if (!this.pairReady || this.rolling) return null;
       const gate = pairGateToFlip(this.pairBoards[this.routed], this.gates);
       return { tap: { on: gate === null ? this.goButton : this.gateHits[gate] }, pause: 0.25 };
     }
     if (this.held) {
-      const touch = routeTouch(this.gates, exitWanted(mode, this.held.egg.shell, this.target), this.plan.singleGate);
+      const touch = routeTouch(this.gates, this.plan.mode === 'repair' ? repairTarget(this.repairBoards[this.routed]) : exitWanted(mode, this.held.egg.shell, this.target), this.plan.singleGate);
       return { tap: { on: touch === 'go' ? this.goButton : this.gateHits[touch] }, pause: 0.25 };
     }
     if (mode === 'predict') return this.waiting ? { tap: { on: this.exits.children[exitFor(this.gates)], y: -20 } } : null;
@@ -526,7 +538,7 @@ class EggCatch implements Game {
     this.exits.removeChildren().forEach((c) => c.destroy({ children: true }));
     const o = this.geo();
     for (let i = 0; i < o.bin.length; i++) {
-      const node = i === this.target.basket ? basketArt() : i === this.target.nest && (this.plan.mode === 'sort' || this.plan.mode === 'pair') ? this.nestArt() : hayArt(150);
+      const node = i === this.target.basket ? basketArt() : i === this.target.nest && (this.plan.mode === 'sort' || this.plan.mode === 'repair' || this.paired) ? this.nestArt() : hayArt(150);
       node.position.set(o.bin[i].x, o.bin[i].y + 20);
       // Predict levels: tap a bin to say where the egg will land.
       if (this.plan.mode === 'predict') {
@@ -547,6 +559,7 @@ class EggCatch implements Game {
     if (!this.routing) return;
     const g = this.gateArt.clear();
     const o = this.geo();
+    this.drawTrace();
     if (this.plan.mode === 'predict') {
       // Gates are locked; after two misses the egg's whole path glows.
       for (let i = 0; i < 3; i++) {
@@ -565,7 +578,7 @@ class EggCatch implements Game {
       }
       return;
     }
-    const want = this.hinting ? this.plan.mode === 'pair' ? pairNeeds(this.pairBoards[this.routed]) : this.wanted() : [];
+    const want = this.hinting ? this.paired ? pairNeeds(this.pairBoards[this.routed]) : this.wanted() : [];
     for (let i = 0; i < o.gate.length; i++) {
       const p = o.gate[i];
       const right = this.gates[i];
@@ -580,17 +593,34 @@ class EggCatch implements Game {
       g.circle(p.x, p.y, 40).fill({ color: 0xffffff, alpha: 0.8 }).stroke({ width: 5, color: swatch.purple.line });
       g.moveTo(p.x, p.y).lineTo(to.x, to.y).stroke({ width: 18, color: swatch.purple.fill, cap: 'round' });
       g.circle(p.x, p.y, 10).fill(swatch.purple.line);
+      if (i === 0 && this.plan.mode === 'flipflop') {
+        const bounce = this.clock < this.springUntil ? 6 * Math.sin((this.springUntil - this.clock) * 22) : 0;
+        for (let j = 0; j < 3; j++) {
+          const y = p.y - 54 - j * 8 + bounce;
+          g.moveTo(p.x - 18, y).quadraticCurveTo(p.x, y - 14, p.x + 18, y).stroke({ width: 5, color: swatch.purple.line });
+        }
+        if (this.hinting) {
+          // A curved arrow shows the automatic change after the first egg.
+          g.moveTo(p.x + 62, p.y - 35).quadraticCurveTo(p.x + 105, p.y, p.x + 62, p.y + 35).stroke({ width: 6, color: swatch.purple.line });
+          g.poly([p.x + 62, p.y + 35, p.x + 80, p.y + 31, p.x + 68, p.y + 17]).fill(swatch.purple.line);
+        }
+      }
     }
   }
 
   /** The gates this egg needs, for the hint. */
   private wanted() {
+    if (this.plan.mode === 'repair') {
+      const target = repairTarget(this.repairBoards[this.routed]);
+      const gate = repairGate(this.gates, target);
+      return gatesFor(target).filter((n) => n.gate === gate);
+    }
     const egg = this.eggs[this.routed % this.eggs.length];
     return gatesFor(exitWanted(this.plan.mode, egg.shell, this.target), this.plan.singleGate);
   }
 
   private flip(i: number) {
-    if (this.finished || this.plan.mode === 'predict' || (this.plan.mode === 'pair' && (!this.pairReady || this.rolling))) return;
+    if (this.finished || this.plan.mode === 'predict' || ((this.paired || this.plan.mode === 'repair') && this.rolling) || (this.paired && !this.pairReady)) return;
     this.gates[i] = !this.gates[i];
     sfx.tick();
     sfx.pop(4 + i * 2);
@@ -598,7 +628,8 @@ class EggCatch implements Game {
 
   private async nextRoute() {
     if (this.finished) return;
-    if (this.plan.mode === 'pair') { this.preparePair(); return; }
+    if (this.paired) { this.preparePair(); return; }
+    if (this.plan.mode === 'repair') { await this.prepareRepair(); return; }
     this.target = this.targets[this.routed % this.targets.length];
     this.drawExits();
     const egg = this.eggs[this.routed % this.eggs.length];
@@ -626,8 +657,8 @@ class EggCatch implements Game {
 
   /** Whether the waiting egg (or pair) would arrive where it should with the gates as they are. */
   private setToGo() {
-    if (this.plan.mode === 'pair') return this.pairReady && !this.rolling && pairGateToFlip(this.pairBoards[this.routed], this.gates) === null;
-    return !!this.held && gateToFlip(this.gates, exitWanted(this.plan.mode, this.held.egg.shell, this.target), 0, this.plan.singleGate) === null;
+    if (this.paired) return this.pairReady && !this.rolling && pairGateToFlip(this.pairBoards[this.routed], this.gates) === null;
+    return !!this.held && gateToFlip(this.gates, this.plan.mode === 'repair' ? repairTarget(this.repairBoards[this.routed]) : exitWanted(this.plan.mode, this.held.egg.shell, this.target), 0, this.plan.singleGate) === null;
   }
 
   /** The green arrow at levels 4–5: the waiting egg rolls. Gates can still be flipped ahead of it as it goes. */
@@ -637,11 +668,90 @@ class EggCatch implements Game {
     this.held = null;
     this.goButton.alpha = 0.4;
     sfx.pop(6);
-    await this.roll(node, egg);
+    if (this.plan.mode === 'repair') await this.runRepair(node);
+    else await this.roll(node, egg);
+  }
+
+  private drawTrace() {
+    const g = this.traceArt.clear();
+    if (this.traceExit === null) return;
+    const o = this.geo();
+    const exit = this.traceExit;
+    const path = [o.entry, o.gate[0], o.gate[exit < 2 ? 1 : 2], o.exit[exit], o.bin[exit]];
+    for (let i = 1; i < path.length; i++) {
+      const a = path[i - 1], b = path[i];
+      const n = Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 19);
+      for (let j = 0; j < n; j++) g.circle(a.x + (b.x - a.x) * j / n, a.y + (b.y - a.y) * j / n, 5).fill(swatch.purple.line);
+    }
+  }
+
+  private holdRepair() {
+    const board = this.repairBoards[this.routed];
+    const node = eggArt(board.shell);
+    const p = this.geo().entry;
+    node.position.set(p.x, p.y - 30);
+    this.ctx.stage.addChild(node);
+    this.held = { node, egg: { lane: 0, shell: board.shell } };
+    this.passed = 0;
+    this.goButton.alpha = 1;
+  }
+
+  private async prepareRepair() {
+    const board = this.repairBoards[this.routed];
+    this.gates = [...board.gates];
+    this.target = { basket: board.basket, nest: board.nest };
+    this.traceExit = null;
+    this.drawExits();
+    this.holdRepair();
+    const node = this.held!.node;
+    this.held = null;
+    this.goButton.alpha = 0.4;
+    await this.runRepair(node, true);
+  }
+
+  /** The pet's initial failed run is evidence, never a child's miss. Reruns keep this board. */
+  private async runRepair(node: Graphics, preview = false) {
+    this.rolling = true;
+    const exit = exitFor(this.gates);
+    const o = this.geo();
+    const path = [o.gate[0], o.gate[exit < 2 ? 1 : 2], o.exit[exit], o.bin[exit]];
+    for (const p of path) {
+      const d = Math.hypot(p.x - node.x, p.y - node.y);
+      await this.ctx.tw.to(node, { x: p.x, y: p.y }, { duration: d / 210, ease: ease.linear });
+      sfx.tick();
+    }
+    this.traceExit = exit;
+    this.drawTrace();
+    const board = this.repairBoards[this.routed];
+    if (!preview && exit === repairTarget(board)) {
+      node.destroy();
+      this.caughtCount++;
+      this.gathered.push(board.shell);
+      this.wrongs = 0;
+      this.hinting = false;
+      sfx.sparkle();
+      this.ctx.particles.burst(o.bin[exit].x, o.bin[exit].y, { kind: 'star', count: 12, colors: [swatch.yellow.fill, 0xffffff] });
+      this.rolling = false;
+      if (this.caughtCount >= this.plan.eggs) { void this.finale(); return; }
+      this.routed++;
+      await this.ctx.tw.wait(0.6);
+      await this.prepareRepair();
+      return;
+    }
+    this.hatch(node);
+    if (!preview) { sfx.boing(); this.miss('egg.wrongway'); }
+    await this.ctx.tw.wait(0.8);
+    this.rolling = false;
+    this.holdRepair();
   }
 
   private placePair() {
     const o = this.geo();
+    if (this.plan.mode === 'flipflop') {
+      this.pairNodes[0]?.position.set(o.entry.x, o.entry.y - 30);
+      this.pairNodes[1]?.position.set(o.entry.x + 70, o.entry.y - 30);
+      return;
+    }
     const b = this.pairBoards[this.routed].whiteBranch;
     this.pairNodes[0]?.position.set(o.entry.x, o.entry.y - 30);
     this.pairNodes[1]?.position.set(o.gate[b].x + (b === 1 ? -100 : 100), o.gate[b].y - 110);
@@ -666,7 +776,7 @@ class EggCatch implements Game {
     this.rolling = true;
     this.goButton.alpha = 0.4;
     this.pairSuccess = true;
-    // Both use the same frozen gates; watching one at a time keeps the paths readable.
+    // One starting setting, one egg at a time; only the spring can change during a run.
     await this.roll(this.pairNodes[0], { lane: 0, shell: 'brown' });
     await this.roll(this.pairNodes[1], { lane: 1, shell: 'white' });
     this.pairNodes = [];
@@ -712,6 +822,12 @@ class EggCatch implements Game {
     this.passed = 1;
     const singleExit = this.gates[0] ? 1 : 0;
     const second = whitePair ? this.pairBoards[this.routed].whiteBranch : this.gates[0] ? 2 : 1;
+    if (this.plan.mode === 'flipflop') {
+      this.gates[0] = !this.gates[0];
+      this.springUntil = this.clock + 1;
+      sfx.pop(9);
+      if (egg.shell === 'brown' && this.hinting) void this.ctx.say('egg.flipped');
+    }
     const right = second === 2;
     if (!this.plan.singleGate) await go(o.gate[second]);
     this.passed = 2;
@@ -719,8 +835,8 @@ class EggCatch implements Game {
     const exit = this.plan.singleGate ? singleExit : right ? (this.gates[2] ? 3 : 2) : this.gates[1] ? 1 : 0;
     await go(o.exit[exit]);
     await go({ x: o.bin[exit].x, y: o.bin[exit].y - 10 });
-    const want = this.plan.mode === 'pair' && egg.shell === 'white' ? this.target.nest : exitWanted(this.plan.mode, egg.shell, this.target);
-    if (this.plan.mode === 'pair') {
+    const want = this.paired && egg.shell === 'white' ? this.target.nest : exitWanted(this.plan.mode, egg.shell, this.target);
+    if (this.paired) {
       if (exit !== want) this.pairSuccess = false;
       else { sfx.sparkle(); this.ctx.particles.burst(node.x, node.y - 30, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 8 }); }
       node.destroy();
