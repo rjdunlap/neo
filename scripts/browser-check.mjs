@@ -9113,6 +9113,9 @@ async function woodsBatch() {
   // Mail Carrier 6–8: Hazel's picture map, two planned stops, and a shorter-route choice.
   if (!only || only === 'mailmap') for (let level = Math.max(6, fromLevel); level <= 8; level++) {
     await launch('mail-carrier', level);
+    // MAIL_MIRRORED=1 (or 0) relaunches until the round's map is (or is not) the mirror image.
+    if (process.env.MAIL_MIRRORED) for (let k = 0; k < 12 && (await page.evaluate(() => neo.scene.game.mirrored)) !== (process.env.MAIL_MIRRORED === '1'); k++) await launch('mail-carrier', level);
+    const mirrored = await page.evaluate(() => neo.scene.game.mirrored);
     if (level >= 7) await page.setViewportSize({ width: 768, height: 1024 });
     const trips = await page.evaluate(() => neo.scene.game.trips.length);
     // Tap a house's middle (the hit area is centered above its feet).
@@ -9172,7 +9175,7 @@ async function woodsBatch() {
     await finished('mail-carrier');
     assert.deepEqual(await score('mail-carrier'), level === 8 ? [4, 2] : [2, 1]);
     await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Mail Carrier ${level} (${level === 6 ? 'picture map and key' : level === 7 ? 'two planned stops' : 'shorter of two paths'}): wrong answers, hints and completion passed`);
+    log(`Mail Carrier ${level} (${level === 6 ? 'picture map and key' : level === 7 ? 'two planned stops' : 'shorter of two paths'}${mirrored ? ', mirrored map' : ''}): wrong answers, hints and completion passed`);
   }
 
   // Lemonade Stand: a forecast, a batch (and a price), one table row a day, help once a day, never a miss.

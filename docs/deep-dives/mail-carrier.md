@@ -74,10 +74,10 @@ The references' progression devices stay out: Paperboy's lost subscribers, crash
 ### Fresh content inside existing levels
 
 - **Support truth** (the audit's gaps): the level 7 how-to step gains `to: 7`; at level 1 a touch anywhere off a house wiggles the envelope and waves the nearest mailbox's flag (free, never a miss or a hint), and six seconds without a touch replays the instruction with the same wave; a house scales to 1.04 on touch-down; `mail.thanks` gains two variants and `mail.number` is preceded at 3 and 5 by the dots counted aloud ("One, two, three, four. Number 4!").
-- **One pool of seven neighbours** (logic): the street gains the duck, the woods keeps its six, and a rule test asserts no round seats two look-alikes (dog and bear) on the woods map.
-- **A seeded street** (art): the backdrop seed from `ctx.rng`; two roof shapes, an optional chimney and window box per house; the mailbox colour drawn from the palette away from every door colour in the round (a rule test at level 2).
-- **The pet on the street** (presentation): a small cart with `ctx.petSpec` beside the bag; on a post the cart rolls to the mailbox and the letter drops in from the cart rather than flying from the sky; the woods already walks.
-- **A mirrored map** (logic): per round seed, `MAP_NODES` reflected in x; the graph, the stones and `walk` are unchanged, so a test asserts the reflected map has the same edges and route lengths (decision 5).
+- **One pool of seven neighbours** *(built, slice 2)* (logic): the street gains the duck, the woods keeps its six, and a rule test asserts no round seats two look-alikes (dog and bear) on the woods map.
+- **A seeded street** *(built, slice 2)* (art): the backdrop seed from `ctx.rng`; two roof shapes, an optional chimney and window box per house; the mailbox colour drawn from the palette away from every door colour in the round (a rule test at level 2).
+- **The pet on the street** *(built, slice 2, with `ctx.companion()` rather than `ctx.petSpec`)* (presentation): a small cart beside the bag; on a post the cart rolls to the mailbox and the letter drops in from the cart rather than flying from the sky; the woods already walks.
+- **A mirrored map** *(built, slice 2)* (logic): per round seed, `MAP_NODES` reflected in x; the graph, the stones and `walk` are unchanged, so a test asserts the reflected map has the same edges and route lengths (decision 5).
 
 ### New levels on top
 
@@ -124,7 +124,7 @@ Each has a default below; the build proceeds on it.
 ## Build slices, in order
 
 1. **Support truth** *(built 2026-10-20; see the [build note](../archive/COMPLETED-2026-10-09.md#mail-carrier-support-truth-slice-1-2026-10-20))* (existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 8, `fingerdemo` at 1): the how-to's level 7 step gains `to: 7`; level 1 answers every touch and invites after six seconds; touch-down scale; the dots counted aloud at 3 and 5; two more thanks variants. IDs and windows unchanged.
-2. **Seeded street, seven neighbours, the pet's cart and the mirrored map** (logic tier plus one filtered play of 2 and 6 and `fingerdemo` at 6): backdrop seed, roof and chimney variety, mailbox colours away from the doors, the duck on the street with the look-alike test, the pet's cart, the reflected map with its edge and length test (decision 5).
+2. **Seeded street, seven neighbours, the pet's cart and the mirrored map** *(built 2026-10-21; see the [build note](../archive/COMPLETED-2026-10-09.md#mail-carrier-seeded-street-seven-neighbours-the-cart-and-a-mirrored-map-slice-2-2026-10-21))* (logic tier plus one filtered play of 2 and 6 and `fingerdemo` at 6): backdrop seed, roof and chimney variety, mailbox colours away from the doors, the duck on the street with the look-alike test, the pet's cart, the reflected map with its edge and length test (decision 5).
 3. **Level 10 *Which door?*** (new levels on the existing tap, with the tool art: typecheck, rule tests, one play of 10 with one wrong tap and one hint, a portrait screenshot of the signs, `fingerdemo` at 10): six tool `Graphics`, `letterShows` gains `'tool'`, toddler `order [1, 2, 10]`, preschool `order [2, 10, 3, 4]`, `entryLevels: [10]`.
 4. **Level 9 *Who can help?*** (new levels tier, after slice 3: typecheck, rule tests, one play of 9, a portrait screenshot, `fingerdemo` at 9): the problem pictures, helper hats, the six journal entries (decision 4), pre-K `order [3, 4, 5, 9, 6]`, school `order [4, 5, 9, 6, 7, 8]`.
 5. **Level 12 *Numbers past ten*** (new levels tier): pre-K `order [3, 4, 5, 9, 12, 6]`, school `order [4, 5, 9, 12, 6, 7, 8]`.

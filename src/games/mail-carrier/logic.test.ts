@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { addressedHouse, checkStop, countedAloud, countsAloud, INVITE_AFTER, nearestHouse, planFor, shouldInvite, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, routeChoices, routeLength, shorterRoutes, SHORTER_EDGES, SIGNS, walk, woodsTouch } from './logic';
+import { houseLooks, mailboxColor, MAILBOX_COLORS, NEAR, mapNode, mapX, NEIGHBORS, WOODS_NEIGHBORS, addressedHouse, checkStop, countedAloud, countsAloud, INVITE_AFTER, nearestHouse, planFor, shouldInvite, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, routeChoices, routeLength, shorterRoutes, SHORTER_EDGES, SIGNS, walk, woodsTouch } from './logic';
 
 describe('Mail Carrier', () => {
   it('counts the dots aloud at levels 3 and 5, up to the number delivered', () => {
@@ -173,5 +173,69 @@ describe('Mail Carrier demonstration', () => {
       }
     }
     expect(woodsTouch('map', [], [])).toBeNull();
+  });
+});
+
+describe('Mail Carrier street and map variety', () => {
+  it('one pool of seven neighbours; the woods leaves out the dog, so no round seats the dog and the bear together', () => {
+    expect(NEIGHBORS).toHaveLength(7);
+    expect(NEIGHBORS).toContain('duck');
+    expect(WOODS_NEIGHBORS).toHaveLength(6);
+    for (let seed = 1; seed <= 300; seed++) {
+      const residents = makeWoods(new Rng(seed)).map((h) => h.resident);
+      expect(residents.includes('dog') && residents.includes('bear')).toBe(false);
+      expect(new Set(residents).size).toBe(HOUSE_NODES.length);
+    }
+  });
+
+  it('the mailbox colour is never a door colour in the round, nor white', () => {
+    for (const plan of PLANS.filter((p) => !isMapMode(p.mode))) {
+      for (let seed = 1; seed <= 300; seed++) {
+        const rng = new Rng(seed);
+        const street = makeStreet(plan, rng);
+        const color = mailboxColor(street, rng);
+        expect(MAILBOX_COLORS).toContain(color);
+        expect(color).not.toBe('white');
+        expect(street.map((h) => h.door)).not.toContain(color);
+        // When some colour is far from every door, the mailbox takes one of those.
+        const anyFar = MAILBOX_COLORS.some((c) => !street.some((h) => h.door === c || NEAR[h.door]?.includes(c)));
+        if (anyFar) expect(street.some((h) => NEAR[h.door]?.includes(color))).toBe(false);
+      }
+    }
+  });
+
+  it('level 2 mailboxes vary in colour across rounds', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      seen.add(mailboxColor(makeStreet(planFor(2), rng), rng));
+    }
+    expect(seen.size).toBeGreaterThan(3);
+  });
+
+  it('house looks give both roofs, chimneys and window boxes', () => {
+    const looks = houseLooks(200, new Rng(7));
+    expect(new Set(looks.map((l) => l.roof)).size).toBe(2);
+    expect(looks.some((l) => l.chimney) && looks.some((l) => !l.chimney)).toBe(true);
+    expect(looks.some((l) => l.windowBox) && looks.some((l) => !l.windowBox)).toBe(true);
+  });
+
+  it('the mirrored map keeps every node on the paper and every path the same length', () => {
+    MAP_NODES.forEach((_, n) => {
+      const m = mapNode(n, true);
+      expect(m.x).toBeGreaterThanOrEqual(0);
+      expect(m.x).toBeLessThanOrEqual(1);
+      expect(m.y).toBe(MAP_NODES[n].y);
+      expect(m.x).toBeCloseTo(mapX(MAP_NODES[n].x, true));
+      expect(mapNode(n, false)).toEqual(MAP_NODES[n]);
+    });
+    const len = (a: number, b: number, mirrored: boolean) => Math.hypot(mapNode(a, mirrored).x - mapNode(b, mirrored).x, mapNode(a, mirrored).y - mapNode(b, mirrored).y);
+    for (const [a, b] of SHORTER_EDGES) expect(len(a, b, true)).toBeCloseTo(len(a, b, false));
+  });
+
+  it('the mirror swaps left and right: the houses stand in reverse order across the map', () => {
+    const order = (m: boolean) => [...HOUSE_NODES].sort((a, b) => mapNode(a, m).x - mapNode(b, m).x);
+    expect(order(true)).toEqual(order(false).reverse());
+    for (const [a, b] of MAP_EDGES) for (const m of [false, true]) expect(mapNode(a, m)).not.toEqual(mapNode(b, m));
   });
 });
