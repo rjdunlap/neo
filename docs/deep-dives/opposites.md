@@ -132,7 +132,7 @@ Both are placed by [`order`, which may skip IDs](../DESIGN.md) (built); an easie
 
 1. **Should Opposites open a school window?** Lean: yes, with levels 7–10 (7 is shared with pre-K), because the school profile plays pre-K's levels 3–4 today. The alternative is to stop at pre-K with levels 5–7. This needs your call on **how far the language arts go**: a printed word on levels 8 and 9, with spoken support always, is a literacy step (see decision 3).
 2. **Level order and windows.** Lean: 5 Which two?, 6 In between, 7 Line them up, 8 Only the word, 9 Un- words, 10 Two answers; pre-K 3–7 and school 7–10. Lap, toddler and preschool stay as they are.
-3. **Is reading-lite acceptable on levels 8–9?** The spoken word is always there and the pictures carry the answer; the printed word is an extra, never required. The "un" bubble is the only part that is about the letters. Device speech for the un- words is unchecked either way.
+3. **Is reading-lite acceptable on levels 8–9?** The spoken word is always there and the pictures carry the answer; the printed word is an extra, never required. The "un" bubble is the only part that is about the letters. Device speech for the un- words is unchecked either way. Ownership (2026-10-22, [vocabulary study](subjects/vocabulary-word-parts.md)): **un-** stays here at level 9; re-, -ing, -ed and -s go to Word Monsters G2, and compounds and -er/-ful/-less to the proposed Word Glue.
 4. **Families.** Lean: enforce the family rule for every level-3+ round and fix it in a test, so a reasonable answer is never marked wrong.
 5. **Levels below level 1** wait on the existing level-order and range-skip rows in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer); no new row.
 
