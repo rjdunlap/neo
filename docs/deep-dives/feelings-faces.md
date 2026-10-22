@@ -134,7 +134,7 @@ Level 9 (lap entry, `entryLevels`) and level 10 (toddler, between 2 and 3) above
 
 ## Build slices, in order
 
-**Claimed 2026-10-21:** Ask first batch, slice 6 / level 12 only, worker `01a1622c-f1b5-7982-8c55-4747a8f9fe9b`, branch `codex/feelings-ask-first`. Depends on landed levels 11/13 (#766). Files: feelings-faces logic/art/interaction/tests, voice/how-to, browser filter and closeout docs. Proof: new-interaction tier at 12, quiet-space answer, wrong card/glow, portrait and two-step ghost finger. Other batches and unresolved decisions excluded.
+**Built 2026-10-21:** Ask first batch, slice 6 / level 12, [PR #769](https://github.com/rjdunlap/neo/pull/769). Four stated wishes, ask-before-offer, quiet space and calm endings; school `[11, 12, 13]`.
 
 **Built 2026-10-21:** Helping and explaining happenings, slices 3–5 (levels 10, 11 and 13), [PR #766](https://github.com/rjdunlap/neo/pull/766). Current school order is `[11, 13]`; Ask first (12) remains a separate ready batch. [Build note](../archive/COMPLETED-2026-10-09.md#feelings-faces-helping-and-explaining-happenings-2026-10-21).
 
@@ -145,10 +145,10 @@ Level 9 (lap entry, `entryLevels`) and level 10 (toddler, between 2 and 3) above
 3. **Toddler 10 *Hug or pillow*** (**built 2026-10-21**, [PR #766](https://github.com/rjdunlap/neo/pull/766); new level on the `help` interaction): a needs subset in the plan, toddler `[2, 10, 3, 4]`. Checks: typecheck, rule tests, one play of 10, `fingerdemo` at 10.
 4. **Level 11 *Two friends, one happening*** (**built 2026-10-21**, [PR #766](https://github.com/rjdunlap/neo/pull/766); new interaction; decision 1's default): `REACTIONS`, the two-friend layout, two questions per happening, pre-K `[5, 6, 7, 8, 11]`, school `[11]`. Checks: new-interaction tier (scripted play at 11, one wrong face, one glow, portrait screenshot, `fingerdemo` at 11); `lands.test.ts` is unaffected (no new game).
 5. **Level 13 *What happened?*** (**built 2026-10-21**, [PR #766](https://github.com/rjdunlap/neo/pull/766); new level, reverse `why`): `CLUES`, still happening cards, school `[11, 13]`. Checks: typecheck, rule tests (unique clue per event; options distinguishable), one play of 13, `fingerdemo` at 13.
-6. **Level 12 *Ask first*** (new `ask` interaction; decision 3's default): `WISHES`, the thought bubble, blanket and door cards, the two-step bot, school `[11, 12, 13]`. Checks: new-interaction tier (play at 12 with a quiet-spot answer, one wrong card, one glow, portrait screenshot, `fingerdemo` at 12).
+6. **Level 12 *Ask first*** (**built 2026-10-21**, [PR #769](https://github.com/rjdunlap/neo/pull/769); new `ask` interaction; decision 3's default): `WISHES`, the thought bubble, blanket and door cards, the two-step bot, school `[11, 12, 13]`. Checks: new-interaction tier (play at 12 with a quiet-spot answer, one wrong card, one glow, portrait screenshot, `fingerdemo` at 12).
 7. *(Decision 2)* **Angry and scared**: two critter moods in `src/art/critter.ts`, two happenings, level 4 and 6 pools, a tone pass on the lines. Checks: typecheck, rule tests, a play of 4 and 6, `fingerdemo` at 6, plus Teddy Doctor's and Weather Wardrobe's filtered plays (they share the critter).
 8. *(Decision 4, with RW05)* **Feelings I know** journal entries; not here.
 
 ## What was built in this session
 
-The original dive was research only. Slices 1–5 are now built (see the slice markers above); the Helping and explaining happenings batch is recorded in the [archive](../archive/COMPLETED-2026-10-09.md#feelings-faces-helping-and-explaining-happenings-2026-10-21) and [verification](../VERIFICATION.md#2026-10-21--feelings-faces-helping-and-explaining-happenings-slices-35).
+The original dive was research only. Slices 1–6 are now built (see the slice markers above); the Helping and explaining happenings batch is recorded in the [archive](../archive/COMPLETED-2026-10-09.md#feelings-faces-helping-and-explaining-happenings-2026-10-21) and [verification](../VERIFICATION.md#2026-10-21--feelings-faces-helping-and-explaining-happenings-slices-35).

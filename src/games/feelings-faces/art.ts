@@ -4,9 +4,10 @@ import type { CompanionRig } from '../../creatures/companion';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { prop } from '../../art/props';
 import { puffs, shapePath, starPoints } from '../../art/shapes';
+import { makeHazel } from '../../art/lands';
 import { Rng } from '../../engine/random';
 import { tile } from '../shared';
-import { FACE_PARTS, faceFrame, FEELINGS, type Feeling, type Helper } from './logic';
+import { FACE_PARTS, faceFrame, FEELINGS, type Feeling, type Helper, type Wish } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -101,6 +102,45 @@ export function helperCard(helper: Helper): Container {
   const art = helperArt(helper);
   art.scale.set(1.05);
   node.addChild(tile(170, 190), art);
+  return node;
+}
+
+/** The same request icon appears in the bubble, card and fulfilled scene. */
+export function wishArt(wish: Wish): Container {
+  if (wish === 'hug') return helperArt('hug');
+  if (wish === 'game') return bouncyBall();
+  const node = new Container();
+  if (wish === 'quiet') {
+    const g = new Graphics().roundRect(-65, -38, 130, 76, 12).fill(swatch.purple.light).stroke(line(swatch.purple.line));
+    for (const y of [-18, 4, 26]) g.moveTo(-58, y).lineTo(58, y).stroke(line(swatch.white.fill, 4));
+    node.addChild(g);
+  } else {
+    node.addChild(new Graphics().roundRect(-65, -78, 130, 152, 10).fill(wood.light).stroke(line(wood.line, 7)));
+    const hazel = makeHazel();
+    hazel.critter.alive = false;
+    hazel.critter.setMood('calm');
+    hazel.critter.update(0);
+    hazel.node.scale.set(0.36);
+    hazel.node.position.set(-10, 64);
+    node.addChild(hazel.node);
+  }
+  return node;
+}
+
+export function wishCard(wish: Wish): Container {
+  const node = new Container();
+  node.addChild(tile(170, 190), wishArt(wish));
+  return node;
+}
+
+export function wishBubble(wish: Wish): Container {
+  const node = new Container();
+  const cloud = puffs(new Graphics(), [[-52, 0, 54], [0, -14, 65], [52, 0, 54]], swatch.white.light, swatch.blue.line, 5);
+  cloud.circle(-60, 74, 13).fill(swatch.white.light).circle(-78, 96, 7).fill(swatch.white.light);
+  const art = wishArt(wish);
+  art.scale.set(0.7);
+  node.addChild(cloud, art);
+  node.eventMode = 'none';
   return node;
 }
 

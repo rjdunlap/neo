@@ -14,8 +14,8 @@ import { spread, type View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import { rangeFor } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { bouncyBall, butterfly, drawSpring, emptyBasket, eventPicture, leftoverClue, faceCard, feelingBubble, feelingCritter, feelingsSticker, FRIENDS, helperCard, iceCream, jackBox, moonAndStars, musicNote, present, windowCloud } from './art';
-import { bubbleToTap, EVENTS, REACTIONS, type ClueEvent, CARE_SCENARIOS, LEVELS, pokeAfter, pokeDone, type PokeStep, FACE_PARTS, choiceToTap, FEELINGS, feelingPlan, feelingRound, playDone, type CareEvent, type Feeling, type FeelingEvent, type FeelingPlan, type Happening, type Helper, type Need, type Question } from './logic';
+import { wishArt, wishCard, wishBubble, bouncyBall, butterfly, drawSpring, emptyBasket, eventPicture, leftoverClue, faceCard, feelingBubble, feelingCritter, feelingsSticker, FRIENDS, helperCard, iceCream, jackBox, moonAndStars, musicNote, present, windowCloud } from './art';
+import { wishEnding, type Wish, bubbleToTap, EVENTS, REACTIONS, type ClueEvent, CARE_SCENARIOS, LEVELS, pokeAfter, pokeDone, type PokeStep, FACE_PARTS, choiceToTap, FEELINGS, feelingPlan, feelingRound, playDone, type CareEvent, type Feeling, type FeelingEvent, type FeelingPlan, type Happening, type Helper, type Need, type Question } from './logic';
 
 const PET_SCALE = 0.85;
 
@@ -45,6 +45,9 @@ class FeelingsFaces implements Game {
   taps = 0;
   /** Level 9: the last thing a poke showed, null before the first. */
   poked: PokeStep | null = null;
+  asked = false;
+  private requestBubble: Container | null = null;
+  private offered: Container | null = null;
   q = 0;
   wrong = 0;
   misses = 0;
@@ -83,13 +86,16 @@ class FeelingsFaces implements Game {
     this.questions = feelingRound(this.plan, ctx.rng);
     this.night.alpha = 0;
     ctx.stage.addChild(this.background, this.night, this.props);
-    if (this.plan.mode === 'friends' || this.plan.mode === 'perspective') {
-      for (const name of (this.plan.mode === 'perspective' ? ['cat', 'bunny'] as const : ctx.rng.shuffle([...FRIENDS]).slice(0, 4))) {
+    if (this.plan.mode === 'friends' || this.plan.mode === 'perspective' || this.plan.mode === 'ask') {
+      for (const name of (this.plan.mode === 'ask' ? ['bunny', 'cat', 'bear', 'dog'] as const : this.plan.mode === 'perspective' ? ['cat', 'bunny'] as const : ctx.rng.shuffle([...FRIENDS]).slice(0, 4))) {
         const critter = feelingCritter(CRITTERS[name], 'happy', 0.62);
         critter.hitArea = new Rectangle(-150, -310, 300, 330);
         const friend = { critter, feeling: 'happy' as Feeling };
         onTap(critter, () => {
-          if (this.plan.mode === 'perspective') {
+          if (this.plan.mode === 'ask') {
+            critter.hop(0.3);
+            if (!this.busy && !this.done) this.revealWish();
+          } else if (this.plan.mode === 'perspective') {
             critter.hop(0.3);
             if (!this.busy && this.instruction) void ctx.say(this.instruction.id, this.instruction.vars);
           } else this.choose(friend.feeling, critter);
@@ -98,7 +104,7 @@ class FeelingsFaces implements Game {
         ctx.stage.addChild(critter);
       }
       this.pet = null;
-      if (this.plan.mode === 'perspective') ctx.pet.visible = false;
+      if (this.plan.mode === 'perspective' || this.plan.mode === 'ask') ctx.pet.visible = false;
     } else {
       // The pet is the star here, so the corner guide steps out; tapping the big pet repeats instead.
       ctx.pet.visible = false;
@@ -237,6 +243,14 @@ class FeelingsFaces implements Game {
     this.drawGlow();
     const pet = this.pet;
     switch (this.plan.mode) {
+      case 'ask':
+        this.asked = false;
+        this.requestBubble = null;
+        this.offered = null;
+        this.friends.forEach((f, i) => { f.critter.visible = i === this.q; });
+        this.friends[this.q % 4].critter.setMood(this.q % 2 === 0 ? 'sad' : 'sleepy');
+        this.instruct('feel.ask', { friend: this.friendName() });
+        break;
       case 'mirror':
         pet!.setMood(q.answer as Feeling);
         feelingSound(q.answer as Feeling);
@@ -325,6 +339,20 @@ class FeelingsFaces implements Game {
     this.busy = false;
   }
 
+  private friendName() { return ['Bunny', 'Cat', 'Bear', 'Dog'][this.q % 4]; }
+
+  /** Asking is exploration, and may be repeated without changing progress or the friend's face. */
+  private revealWish() {
+    this.asked = true;
+    if (!this.requestBubble) {
+      this.requestBubble = wishBubble(this.question.answer as Wish);
+      this.front.addChild(this.requestBubble);
+    }
+    if (!this.options.length) for (const wish of this.question.options as Wish[]) this.addOption({ value: wish, node: wishCard(wish) });
+    this.instruct(`feel.wish-${this.question.answer as Wish}`, { friend: this.friendName() });
+    this.resize(this.view);
+  }
+
   private dealFaces(feelings: Feeling[]) {
     for (const feeling of feelings) {
       const { node, critter } = faceCard(this.ctx.companion(), feeling);
@@ -356,6 +384,7 @@ class FeelingsFaces implements Game {
   private choose(value: string, node: Container) {
     if (this.busy || this.done) return;
     const q = this.question;
+    if (this.plan.mode === 'ask' && !this.asked) return;
     if (value !== q.answer) {
       this.misses++;
       this.wrong++;
@@ -363,7 +392,10 @@ class FeelingsFaces implements Game {
       this.ctx.tw.kill(node);
       const x = node.x;
       void this.ctx.tw.to(node, { x: x + 12 }, { duration: 0.06 }).then(() => this.ctx.tw.to(node, { x }, { duration: 0.25, ease: ease.outElastic }));
-      if (this.plan.mode === 'perspective') {
+      if (this.plan.mode === 'ask') {
+        this.revealWish();
+        void this.ctx.say('feel.asked', { friend: this.friendName() });
+      } else if (this.plan.mode === 'perspective') {
         const friend = this.friends[q.friend!];
         friend.critter.hop(0.5);
         feelingSound(friend.feeling);
@@ -385,7 +417,7 @@ class FeelingsFaces implements Game {
       if (this.wrong === 2) {
         this.hints++;
         void this.ctx.say('feel.hint');
-      } else if (this.plan.mode !== 'perspective' && this.plan.mode !== 'clue') {
+      } else if (this.plan.mode !== 'perspective' && this.plan.mode !== 'clue' && this.plan.mode !== 'ask') {
         if (this.plan.mode === 'help' || this.plan.mode === 'care') void this.ctx.say('feel.not-that');
         else if (this.plan.mode === 'friends') void this.ctx.say('feel.friend-that', { feeling: value });
         else void this.ctx.say('feel.that', { feeling: value });
@@ -403,6 +435,20 @@ class FeelingsFaces implements Game {
   private async right(value: string, node: Container) {
     const pet = this.pet;
     switch (this.plan.mode) {
+      case 'ask': {
+        const friend = this.friends[this.q % 4].critter;
+        this.requestBubble?.destroy({ children: true });
+        this.requestBubble = null;
+        this.offered = wishArt(value as Wish);
+        this.offered.eventMode = 'none';
+        this.front.addChild(this.offered);
+        friend.setMood(wishEnding(value as Wish));
+        if (value === 'game') friend.hop(0.5);
+        if (value === 'hug') this.hearts(friend.x, friend.y - 110);
+        this.resize(this.view);
+        await this.ctx.say(`feel.received-${value as Wish}`, { friend: this.friendName() });
+        break;
+      }
       case 'perspective': {
         const f = this.friends[this.question.friend!];
         f.critter.hop(0.6);
@@ -466,8 +512,8 @@ class FeelingsFaces implements Game {
     this.clearOptions();
     this.pet?.setMood('happy');
     this.pet?.cheer();
-    this.friends.forEach((f) => { f.critter.setMood('happy'); f.critter.hop(0.6); });
-    void this.ctx.say('feel.done');
+    if (this.plan.mode !== 'ask') this.friends.forEach((f) => { f.critter.setMood('happy'); f.critter.hop(0.6); });
+    void this.ctx.say(this.plan.mode === 'ask' ? 'feel.ask-done' : 'feel.done');
     void this.ctx.tw.wait(1.5).then(() => this.ctx.finish({ misses: this.misses, hints: this.hints }));
   }
 
@@ -704,6 +750,8 @@ class FeelingsFaces implements Game {
   }
 
   private clearProps() {
+    this.requestBubble = null;
+    this.offered = null;
     this.endNeed();
     this.wobbles.clear();
     for (const layer of [this.props, this.front]) {
@@ -811,8 +859,10 @@ class FeelingsFaces implements Game {
         o.node.position.set(xs[i], v.h - 125);
       });
     }
-    const fx = this.plan.mode === 'perspective' ? [v.w / 2 - 215, v.w / 2 + 215] : spread(this.friends.length, 160, v.w - 40, 215);
-    this.friends.forEach((f, i) => f.critter.position.set(fx[i], this.plan.mode === 'perspective' ? floor : v.h * 0.68));
+    const fx = this.plan.mode === 'ask' ? [v.w / 2 - 110] : this.plan.mode === 'perspective' ? [v.w / 2 - 215, v.w / 2 + 215] : spread(this.friends.length, 160, v.w - 40, 215);
+    this.friends.forEach((f, i) => f.critter.position.set(this.plan.mode === 'ask' ? v.w / 2 - 110 : fx[i], this.plan.mode === 'perspective' || this.plan.mode === 'ask' ? floor : v.h * 0.68));
+    if (this.requestBubble) this.requestBubble.position.set(v.w / 2 + 100, floor - 230);
+    if (this.offered) this.offered.position.set(v.w / 2 + 160, floor - 30);
     this.subject.clear();
     if (this.plan.mode === 'perspective' && !this.done && this.question) {
       const f = this.friends[this.question.friend!].critter;
@@ -876,6 +926,7 @@ class FeelingsFaces implements Game {
       return bubble ? { tap: { on: bubble.node } } : null;
     }
     if (this.busy || !this.question) return null;
+    if (this.plan.mode === 'ask' && !this.asked) return { tap: { on: this.friends[this.q % 4].critter, x: 0, y: -150 } };
     const at = choiceToTap(this.question);
     if (this.plan.mode === 'friends') {
       const friend = this.friends[at];
