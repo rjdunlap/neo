@@ -94,7 +94,7 @@ Device and person checks stay open: how the iPad's speech says the lines ("below
 
 ## What comes next
 
-**Sea Lift 4–5 (IN2 in the recommendation row; define and build after this lands):** *How far?* (number cards for the interval across zero, with the difference-of-magnitudes card as a distractor, after the educator's read of the distractors) and *Twin stops* (opposites; the dock is its own twin). **Levels 6–7** wait on study decisions 2 and 8. **Lift Rounds** waits on the Lantern Lake capacity test.
+**[Sea Lift 4–5](sea-lift-4-5.md) (IN2 in the recommendation row; defined 2026-10-22, build gated on the educator's read of the level-4 cards):** *How far?* (number cards for the interval across zero, with the difference-of-magnitudes card as a distractor, after the educator's read of the distractors) and *Twin stops* (opposites; the dock is its own twin). **Levels 6–7** wait on study decisions 2 and 8. **Lift Rounds** waits on the Lantern Lake capacity test.
 
 ## Open decisions
 
