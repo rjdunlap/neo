@@ -50,3 +50,9 @@
 - [PR #774](https://github.com/rjdunlap/neo/pull/774), `claude/define-what-can-we-tell`: defined Ramp Race level 7 ([definition](../definitions/what-can-we-tell.md)); inquiry study, recommendations, study backlog, waiting-on-developer, READY and the Trial Shelf definition updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`; a node one-off over the ramp model confirmed the case pools (17 confounded pairs after one tie, 6 where the shorter ramp went farther, 18 controlled) and that every confounded pair repairs in at most 2 taps with 4 fair repairs.
 - Not run: typecheck, unit tests, build, browser (nothing built). Open: the build, which waits on Q4 and inquiry decisions 1–2 extended to level 7.
+
+## 2026-10-22 — Ribbon Workshop levels 1-3 (fractions R2)
+
+- Branch `claude/ribbon-workshop`, commit `291ed66b` on base `02671f92`: new game `ribbon-workshop` (school, Counting Cove's twelfth game), with registry, lands, voice, how-to card and the `ribbon` browser case.
+- Ran `npm run typecheck`; the full unit suite (207 files, 2444 tests, 11 new rule tests: solvable, accepted compositions equal brute force, snip required at levels 2-3, undo, hint, capacity, seeded rounds 0-199, accounting, voice, tray layout); `npm run build`; `BROWSER_SUITE=ribbon` at `http://localhost:5429/classic/` (level 1: empty Check free, two misses then glow and one hint, finished `[1,2,1]` as the caller reported it; level 3 portrait: two halves too long is a miss, return, scissors, snip, quarter, finished `[3,1,0]`); `fingerdemo` with `FINGER_ONLY=ribbon-workshop` at levels 1 and 3 (3.6 s, 6.1 s); `smoke` with `SMOKE_ONLY=ribbon-workshop`.
+- Not run: `world`, couch, offline (not affected). Open: iPad touch, device speech and a child's response ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).

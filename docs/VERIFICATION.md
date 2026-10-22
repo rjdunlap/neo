@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Playdate Workshop levels 1–3 definition (social-emotional slice 1, docs only)
+
+- [PR #795](https://github.com/rjdunlap/neo/pull/795), `claude/define-playdate-workshop`: defined Playdate Workshop levels 1–3 ([definition](definitions/playdate-workshop.md)); READY, study backlog, study, recommendations, tracker, ideas and waiting-on-developer updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the developer's identity/registration and land call (the build waits on it), early-childhood/SEL and accessibility review of the requests, all device and child checks.
+
 ## 2026-10-22 — Meadow Pens levels 1–3 definition (area-volume-space slice 1, docs only)
 
 - [PR #794](https://github.com/rjdunlap/neo/pull/794), `claude/define-meadow-pens`: defined Meadow Pens levels 1–3 ([definition](definitions/meadow-pens.md)); READY (build queued), batch plan, study backlog, study, recommendations, tracker, ideas and waiting-on-developer updated.
@@ -93,12 +99,6 @@
 - Ran `npm run typecheck`; vitest for Inchworm logic (15 tests, levels 1-6 generation pinned to its pre-change seed-7 output), `howto` and registry (54 passed).
 - Served at `http://localhost:5995/classic/`: `BROWSER_SUITE=woods WOODS_ONLY=worm FROM_LEVEL=7 TO_LEVEL=7` passed in portrait (one overhang drop, one wrong pad, glow and see-through big worm, score [2,1], sticker); `FROM_LEVEL=1 TO_LEVEL=3` rerun after the `lay()` change, passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=inchworm FINGER_LEVELS=6,7` clean (6: 5.1 s, 7 at pre-K: 22.1 s; the demonstration measures one stick). Portrait screenshot of step c reviewed.
 - Not run: full `npm test` and `npm run build` locally (CI runs both), worm levels 4-6 browser plays, `world`, offline, couch (unaffected). Open: iPad size and device speech ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
-
-## 2026-10-22 — Ribbon Workshop levels 1-3 (fractions R2)
-
-- Branch `claude/ribbon-workshop`, commit `291ed66b` on base `02671f92`: new game `ribbon-workshop` (school, Counting Cove's twelfth game), with registry, lands, voice, how-to card and the `ribbon` browser case.
-- Ran `npm run typecheck`; the full unit suite (207 files, 2444 tests, 11 new rule tests: solvable, accepted compositions equal brute force, snip required at levels 2-3, undo, hint, capacity, seeded rounds 0-199, accounting, voice, tray layout); `npm run build`; `BROWSER_SUITE=ribbon` at `http://localhost:5429/classic/` (level 1: empty Check free, two misses then glow and one hint, finished `[1,2,1]` as the caller reported it; level 3 portrait: two halves too long is a miss, return, scissors, snip, quarter, finished `[3,1,0]`); `fingerdemo` with `FINGER_ONLY=ribbon-workshop` at levels 1 and 3 (3.6 s, 6.1 s); `smoke` with `SMOKE_ONLY=ribbon-workshop`.
-- Not run: `world`, couch, offline (not affected). Open: iPad touch, device speech and a child's response ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
 ## Coverage summary
 
