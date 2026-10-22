@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { answerOf, choices, hintSpans, isRuler, longerShorter, makeMeasures, measureTouch, PLANS, RULER, temptingReading } from './logic';
+import { answerOf, choices, hintSpans, isRuler, longerShorter, makeMeasures, measureTouch, planFor, PLANS, RULER, temptingReading, UNIT_SIZE } from './logic';
+import { inchworm } from '.';
+import { levelsInOrder } from '../../progress/difficulty';
 
 describe('Inchworm Measure', () => {
   it('demonstrates every mode by filling each row and then choosing the exact reading', () => {
@@ -28,7 +30,7 @@ describe('Inchworm Measure', () => {
   });
 
   it('makes lengths that fit, different each time, and answers that are offered', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'units')) {
       for (let seed = 1; seed <= 300; seed++) {
         const rng = new Rng(seed);
         const ms = makeMeasures(plan, rng);
@@ -56,7 +58,7 @@ describe('Inchworm Measure on a ruler: how much longer, and end to end', () => {
   const plan = (mode: string) => PLANS.find((p) => p.mode === mode)!;
 
   it('keeps the ladder in order, with the two new ruler levels appended after reading a ruler', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['lay', 'say', 'compare', 'ruler', 'rulerdiff', 'rulersum']);
+    expect(PLANS.map((p) => p.mode)).toEqual(['lay', 'say', 'compare', 'ruler', 'rulerdiff', 'rulersum', 'units']);
     expect(PLANS.filter((p) => isRuler(p.mode)).map((p) => p.mode)).toEqual(['ruler', 'rulerdiff', 'rulersum']);
   });
 
@@ -159,5 +161,81 @@ describe('Inchworm Measure on a ruler: how much longer, and end to end', () => {
         expect(b).not.toBe(a);
       }
     }
+  });
+});
+
+describe('Inchworm Measure with big worms, then little worms (level 7)', () => {
+  const plan = planFor(7);
+  const seeds = Array.from({ length: 300 }, (_, i) => i + 1);
+
+  it('measures one stick twice: b big worms, then exactly 2b little ones, ending at the same mark', () => {
+    expect(plan.mode).toBe('units');
+    expect(isRuler(plan.mode)).toBe(false);
+    for (const seed of seeds) {
+      const ms = makeMeasures(plan, new Rng(seed));
+      expect(ms).toHaveLength(4);
+      ms.forEach((m, i) => {
+        expect([2, 3]).toContain(m.length);
+        expect(m.other!.thing).toBe(m.thing);
+        expect(m.other!.length).toBe(2 * m.length);
+        expect(m.length * UNIT_SIZE[0]).toBe(m.other!.length * UNIT_SIZE[1]);
+        expect(m.other!.length).toBeLessThanOrEqual(plan.max);
+        if (i > 0) expect(m.thing).not.toBe(ms[i - 1].thing);
+      });
+      for (const b of [2, 3]) expect(ms.filter((m) => m.length === b).length).toBeLessThan(3);
+    }
+  });
+
+  it('asks for the little worms first, then one each way in either order', () => {
+    const orders = new Set<string>();
+    for (const seed of seeds) {
+      const ms = makeMeasures(plan, new Rng(seed));
+      expect(ms.slice(0, 2).map((m) => m.ask)).toEqual(['little', 'little']);
+      expect([...ms.slice(2).map((m) => m.ask)].sort()).toEqual(['big', 'little']);
+      orders.add(ms.slice(2).map((m) => m.ask).join());
+      for (const m of ms) expect(answerOf(m, 'units')).toBe(m.ask === 'big' ? m.length : m.other!.length);
+    }
+    expect(orders).toEqual(new Set(['little,big', 'big,little']));
+  });
+
+  it('offers just the two counts, and where the right one sits does not give it away', () => {
+    const places = { little: new Set<number>(), big: new Set<number>() };
+    for (const seed of seeds) {
+      const rng = new Rng(seed);
+      for (const m of makeMeasures(plan, rng)) {
+        const cs = choices(m, 'units', rng);
+        expect([...cs].sort()).toEqual([m.length, m.other!.length].sort());
+        places[m.ask!].add(cs.indexOf(answerOf(m, 'units')));
+      }
+    }
+    expect(places.little).toEqual(new Set([0, 1]));
+    expect(places.big).toEqual(new Set([0, 1]));
+  });
+
+  it('the finger lays b big worms, then 2b little ones, then taps the count that was asked', () => {
+    for (const seed of seeds.slice(0, 50)) for (const m of makeMeasures(plan, new Rng(seed))) {
+      const worms = [0, 0];
+      const rows: number[] = [];
+      let move = measureTouch(m, 'units', worms);
+      while (move?.kind === 'worm') {
+        rows.push(move.row);
+        worms[move.row]++;
+        move = measureTouch(m, 'units', worms);
+      }
+      expect(rows).toEqual([...Array(m.length).fill(0), ...Array(2 * m.length).fill(1)]);
+      expect(move).toEqual({ kind: 'answer', value: m.ask === 'big' ? m.length : 2 * m.length });
+    }
+  });
+
+  it('leaves levels 1-6 as they were', () => {
+    expect(PLANS.slice(0, 6).map((p) => p.mode)).toEqual(['lay', 'say', 'compare', 'ruler', 'rulerdiff', 'rulersum']);
+    for (let level = 1; level <= 6; level++) for (const m of makeMeasures(planFor(level), new Rng(level))) expect(m.ask).toBeUndefined();
+  });
+
+  it('is the pre-K top and comes after "how many worms long" at school', () => {
+    expect(inchworm.levels('prek')).toEqual({ min: 1, max: 7, order: [1, 2, 7] });
+    expect(inchworm.levels('school')).toEqual({ min: 1, max: 7, order: [1, 2, 7, 3, 4, 5, 6] });
+    expect(levelsInOrder(inchworm.levels('prek'))).toEqual([1, 2, 7]);
+    expect(levelsInOrder(inchworm.levels('school'))).toEqual([1, 2, 7, 3, 4, 5, 6]);
   });
 });

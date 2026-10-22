@@ -9229,7 +9229,9 @@ async function woodsBatch() {
     log(`Picture Graph ${level} (${mode}): bars built block by block, graph checked, questions answered on bars and number pads, misses, glow hint, saved score and sticker passed`);
   }
 
-  if (!only || only === 'worm') for (let level = fromLevel; level <= 6; level++) {
+  if (!only || only === 'worm') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 7); level++) {
+    // Level 7 (big worms, then little worms) plays in portrait.
+    if (level === 7) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('inchworm', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); await page.waitForTimeout(250); };
@@ -9237,7 +9239,9 @@ async function woodsBatch() {
     const lay = async (row) => {
       await page.evaluate(async (row) => {
         const g = neo.scene.game; const r = g.rows[row]; const w = g.bucket[0];
-        await kit.dragTo(w.node, { x: g.x0() + (r.start + Math.min(r.worms, r.length - 1)) * g.u + g.u / 2, y: r.y + 40 }, 12);
+        // Logical to screen (portrait scales the view), aiming at the row's last filled or next slot.
+        const at = r.node.parent.toGlobal({ x: g.x0() + (r.start + Math.min(r.worms, r.length - 1) * r.size) * g.u + (r.size * g.u) / 2, y: r.y + 40 });
+        await kit.dragTo(w.node, at, 12);
       }, row);
       await page.waitForTimeout(260);
     };
@@ -9258,14 +9262,27 @@ async function woodsBatch() {
             assert.deepEqual(await counts(), [2, 1]);
             await screenshot('inchworm-3-hint');
           }
+          if (mode === 'units' && n === 0 && k === 0) {
+            // The big worms' row is full: a little worm dropped on it would hang off the end.
+            assert.deepEqual(await page.evaluate(() => [neo.scene.game.rows.map((r) => r.worms), neo.scene.game.bucket.map((b) => Math.round(b.node.width)), neo.scene.game.rows[1].node.alpha]), [[await page.evaluate(() => neo.scene.game.m.length), 0], [89, 89, 89], 1]);
+            await lay(0);
+            assert.deepEqual(await counts(), [1, 0]);
+          }
         }
         await settle();
       }
       if (mode === 'lay') continue;
-      await page.waitForFunction(() => neo.scene.game.pads.length === 3, null, { timeout: 10000 });
-      if (n === 0 && mode !== 'compare') { const [a, b] = await wrongPads(); await pad(a); await pad(b); assert.deepEqual(await counts(), [2, 1]); }
+      await page.waitForFunction((n) => neo.scene.game.pads.length === n, mode === 'units' ? 2 : 3, { timeout: 15000 });
+      if (n === 0 && mode === 'units') {
+        // One wrong count after the overhang: the second miss on this stick lights the glow and the see-through big worm.
+        const [a] = await wrongPads(); await pad(a); assert.deepEqual(await counts(), [2, 1]);
+        assert.equal(await page.evaluate(() => neo.scene.game.bucket.length), 0);
+        await page.waitForTimeout(300);
+        await screenshot('inchworm-7-hint');
+      } else if (n === 0 && mode !== 'compare') { const [a, b] = await wrongPads(); await pad(a); await pad(b); assert.deepEqual(await counts(), [2, 1]); }
       await pad(await answer());
     }
+    if (level === 7) await page.setViewportSize({ width: 1024, height: 768 });
     await finished('inchworm');
     assert.deepEqual(await score('inchworm'), mode === 'lay' ? [0, 0] : [2, 1]);
     log(`Inchworm Measure ${level} (${mode}): worms dragged end to end, ${mode.startsWith('ruler') ? 'ruler readings' : 'lengths counted'}, misses, hints, saved score and sticker passed`);
