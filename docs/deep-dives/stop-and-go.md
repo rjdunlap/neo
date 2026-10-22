@@ -13,11 +13,11 @@ A road, round smiling cars and a three-lamp traffic light in Cozy Village. The a
 | 3 | `walk`: red light, green light with the pet; 8 steps | preschool | Whether to tap the feet button: step on green, freeze on red |
 | 4 | `cross`: two roads, two lights she controls; 6 cars (3 per road) | preschool | Which road goes next; both green at once is the one miss (cars just wait) |
 
-**Content pools.** One car drawing in six colors (`CAR_COLORS`), one backdrop (seed 66), one fixed cycle (`CYCLE`: green 3.5 s, yellow 1.4 s, red 3.5 s), the pet at level 3. Every round of a level looks and times the same.
+**Content pools.** Six code-drawn vehicles (`VEHICLES`: car, bus, bike with a rider, tractor, ice-cream van, digger) in the car colors (`CAR_COLORS`), one picked per round from the round's rng; one backdrop (seed 66); a seeded cycle per round (`cycleFor(rng)`: green and red each 3–4.2 s, yellow fixed at 1.4 s; `CYCLE` stays the default), the pet at level 3. The sticker draws its vehicle and colour from the same pool.
 
 **Accounting.** Level 1 has no misses. Levels 2–3: going on red is a miss; two misses turn on the hint glow (`hints++`). Level 4: both roads green is a miss; misses count across the round, and the glow rings the green light whose road has fewer cars.
 
-**Known gaps found reading the code (1–6 fixed by build slice 1, [PR #678](https://github.com/rjdunlap/neo/pull/678); 7–8 remain).**
+**Known gaps found reading the code (1–6 fixed by build slice 1, [PR #678](https://github.com/rjdunlap/neo/pull/678); 7 fixed by slice 2, [PR #751](https://github.com/rjdunlap/neo/pull/751); 8 remains for slice 5).**
 
 1. **The lap car ignores her.** At level 1 only the light listens (`tapCar` returns unless the mode is `send`). A one-year-old reaches for the car, the big friendly thing, and nothing happens.
 2. **Back cars are silent.** At level 2 only the front car answers; a tap on the second or third car gets no touch-down acknowledgement at all.
@@ -25,7 +25,7 @@ A road, round smiling cars and a three-lamp traffic light in Cozy Village. The a
 4. **The walk hint never clears.** `walk()` never resets `wrongs` or `hinting` after a good step (only `tapCar` does), so once the glow is on it stays on for the rest of a level-3 round, and the next red tap adds misses without a fresh hint.
 5. **"Great driving!" at the walk level.** `go.done` is said at every level, including the pet's walk to the flag.
 6. **Colour is the only state cue.** Lamp position helps (red always top), but the car itself does nothing different on red and green, and red/green colour blindness (about 1 in 12 boys, recalled) makes position the only cue. A toddler also needs motion and sound per state.
-7. **A fixed rhythm.** With one fixed cycle a child can tap by rhythm instead of looking; replay never varies.
+7. **A fixed rhythm (fixed, slice 2).** With one fixed cycle a child can tap by rhythm instead of looking; replay never varies.
 8. **No help when she is stuck at the crossing.** If both lights are red and she does nothing, nothing prompts her; the only hint is for the both-green mistake.
 
 **Couch, journal, picnic.** Not in couch play, no journal entry, no story step. Person checks: none recorded for this game.
@@ -124,7 +124,7 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 ## Build slices, in order
 
 1. **Every touch counts and the hint points at the action** (existing-game bug fix; gaps 1–6; **built**, [PR #678](https://github.com/rjdunlap/neo/pull/678)): car taps at level 1, back-car toots at level 2, glow on the car/feet, level 3 hint reset, per-state motion and sound, `go.done.walk`. Checks: typecheck, the rule tests, one filtered regression play (levels 1 and 3, a red tap twice), `fingerdemo` at level 2 since the glow target moves.
-2. **Varied phases and vehicles** (content in existing levels): `cycleFor(rng)` with its bounded-phase test, six vehicles, the sticker pool. **Claimed** on `claude/stop-and-go-phases` (2026-10-22; files `src/games/stop-and-go/`). Checks: typecheck, rule tests, one browser play of level 2 and `fingerdemo` at it.
+2. **Varied phases and vehicles** (content in existing levels): `cycleFor(rng)` with its bounded-phase test, six vehicles, the sticker pool. **built**, [PR #751](https://github.com/rjdunlap/neo/pull/751). Checks: typecheck, rule tests, one browser play of level 2 and `fingerdemo` at it.
 3. **Lap entry 9 *Go car, stop car*** (new interaction): lap order `[9, 1]`, `entryLevels: [9]`, how-to step for 9, bot taps green and red alternately. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
 4. **Level 5 *Whose light?* and the pre-K window** (new level): preschool 2–5, pre-K 3–5. Checks: typecheck, rule tests, play of 5, `fingerdemo` at 5.
 5. **Level 6 *Busy crossing*** with the idle point that also helps level 4: pre-K 3–6. Checks: typecheck, rule tests, play of 6, `fingerdemo` at 6.
@@ -140,3 +140,7 @@ Research and ideation only: no code. Ran `node scripts/check-links.mjs` and `git
 ## What was built: slice 1, every touch counts (2026-10-20)
 
 [PR #678](https://github.com/rjdunlap/neo/pull/678). Gaps 1–6 are fixed; 7 (fixed rhythm) and 8 (no help when stuck at the crossing) remain for slices 2 and 5. Rules are in `logic.ts` (`carTap`, `touchCounts`, `hintOn`, `doneLine`). Details in the [archive note](../archive/COMPLETED-2026-10-09.md#stop-and-go-every-touch-counts-slice-1-2026-10-20).
+
+## What was built: slice 2, varied phases and vehicles (2026-10-22)
+
+[PR #751](https://github.com/rjdunlap/neo/pull/751). Gap 7 (fixed rhythm) is fixed; 8 remains for slice 5. `cycleFor(rng)` and `lightAt(t, cycle)` are in `logic.ts`; the six vehicles are in `index.ts`. Details in the [archive note](../archive/COMPLETED-2026-10-09.md#stop-and-go-varied-phases-and-vehicles-slice-2-2026-10-22).
