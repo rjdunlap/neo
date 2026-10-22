@@ -179,6 +179,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### peg-garden 1: Numbered buds, shot trail and board variety
 
+Built 2026-10-22, [PR #770](https://github.com/rjdunlap/neo/pull/770); [closeout](archive/COMPLETED-2026-10-09.md#peg-garden-numbered-buds-shot-trail-shell-tray-and-board-themes-slices-2-3-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`peg-garden`, numbered buds wait their turn and the last shot stays faint** (existing-game change, levels 4–5): only the asked numeral blooms; the previous path stays as faint dots. [Slice 2](deep-dives/peg-garden.md#build-slices-in-order)
 - **`peg-garden`, shell tray and board themes** (content): pearls collect in a tray and pour back; four simulated board shapes, three backdrops. [Slice 3](deep-dives/peg-garden.md#fresh-content-inside-existing-levels)
 

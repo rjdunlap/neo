@@ -22,7 +22,7 @@ A pearl falls through a sea garden of flower buds, after Peggle and pachinko. Ev
 
 **Couch.** In `COUCH_IDS` (unlock tier 4 with Bumper Garden), turns, twin face-off, fewer shots wins; stops 1–2 play level 4 and later stops level 5 (`demoLevel: 4`). The couch keeps those levels whatever this dive adds.
 
-**Known gaps found reading the code.** Gaps 1–6, 8 and 9 are fixed (slice 1, built); 7, 10 and 11 stay open.
+**Known gaps found reading the code.** Gaps 1–6, 8 and 9 are fixed (slice 1, built 2026-10-21), 7 and 10 are fixed (slices 2 and 3, built 2026-10-22); 11 and 12 stay open.
 
 1. **Taps while a pearl falls do nothing.** `down()` returns while `this.ball` is set. A fall takes two to four seconds, so at lap level 1 most of a one-year-old's taps get no answer at all, which is the age where every touch should respond.
 2. **Taps beside the board do nothing.** The touch layer's hit area is the board (`BOARD.w × BOARD.h`), and the board is scaled down and centred with the sea showing either side; the sea takes no input.
@@ -30,11 +30,12 @@ A pearl falls through a sea garden of flower buds, after Peggle and pachinko. Ev
 4. **Level 3 cannot be guaranteed to finish, and luck counts as error.** The stall guard runs only in `bloom` mode, and every drop has random drift, so a well-placed tap can miss an orange bud by chance and be counted as a miss that lowers her level.
 5. **The level 3 hint points at the wrong thing.** The arrow is over the orange bud, but her action is choosing a spot on the top ledge; the place to tap is never shown, although `dropAt(..., early = true)` already computes it for the bot.
 6. **The level 3 hint never clears.** After an orange bloom only `wrongs` resets; `hinting` stays true, so the arrow stays for the rest of the round and later struggles count no second hint.
-7. **Numbered buds bloom when any shot touches them.** At levels 4–5 a pearl that brushes 2 and 4 on the way to 3 blooms all three, so blooms stop showing what is done (Bumper Garden's out-of-order touch only chimes).
+7. **Fixed (2026-10-22). Numbered buds bloom when any shot touches them.** At levels 4–5 a pearl that brushes 2 and 4 on the way to 3 blooms all three, so blooms stop showing what is done (Bumper Garden's out-of-order touch only chimes).
 8. **No cancel handling.** There is no `pointercancel` listener: a cancelled aim (a system gesture, a palm) leaves `aiming` set and the guide drawn until the next pointer-up.
 9. **The how-to card is wrong at level 1.** Its finish line says the round ends when the requested flowers have bloomed; level 1 ends after six pearls with nothing requested.
-10. **One look.** One grid, one sea, one pearl; replay changes only which places are filled.
+10. **Fixed (2026-10-22). One look.** One grid, one sea, one pearl; replay changes only which places are filled.
 11. **The aiming jump.** Level 3 to level 4 changes the input (tap the ledge → drag a launcher) and the goal (any orange → one numeral) at once.
+12. **A pearl can wedge on the original `rows` shape (found 2026-10-22, open).** Its seven-bud rows leave 27 units between the outer bud and the wall, less than a pearl's 30-unit width, so a pearl dropped near the wall can wedge there until the 10-second cutoff ends the shot; a pearl let go with zero drift exactly over a bud can also balance on it (same cutoff). Left alone because changing `rows` changes couch boards (the couch keeps `rows`); the newer shapes keep bud centres at least `EDGE` (64) from the side walls. A follow-up decides whether couch gets a new course version or a wider-wall fix.
 
 **Separate from the rules:** the flaky `BROWSER_SUITE=batch BATCH_ONLY=pegs` touch case is [chunk-table item 12](../ROADMAP.md#chunks) on the roadmap; this dive does not make it a slice.
 
@@ -143,8 +144,8 @@ Appended IDs; `planFor` must look plans up by ID (today it indexes `PLANS` by po
 **Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`peg-garden` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
 1. **Built (2026-10-21): Every touch answers, a fair colour level and a true card** (existing-game bug-fix tier: typecheck, `logic.test.ts`, one filtered regression play `BROWSER_SUITE=batch BATCH_ONLY=pegs` at levels 1 and 3, `fingerdemo` at 3 because the hint changes the bot's spot; that case is the known flake in [chunk-table item 12](../ROADMAP.md#chunks), so a failure is probed once and recorded, not looped). Gaps 1–6, 8 and 9: whole-screen touch, bubble feedback during a fall, the level-1 queue, no drift at 3 (the bot's drift read follows), the stall guard and drop-spot ring at 3, `hinting` reset, `pointercancel`, the card's level-1 finish. Rule tests: the colour level finishes when the same spot is tapped every time; the hinted spot touches a waiting orange bud on every board.
-2. **Numbered buds wait their turn and the last shot stays faint** (claimed with slice 3 on branch `claude/peg-garden-buds-and-themes`, 2026-10-22; existing-game change: typecheck, rule tests, one filtered play at 4 and 5). Gap 7 and the trail.
-3. **The shell tray and board themes** (content: typecheck, rule tests over every shape, one screenshot per backdrop). Four shapes, three backdrops, the tray.
+2. **Built (2026-10-22): Numbered buds wait their turn and the last shot stays faint** (batch `peg-garden 1`, with slice 3, PR #770; existing-game change: typecheck, rule tests, one filtered play at 4 and 5). Gap 7: only the asked numeral blooms (`blooms()` in `logic.ts`; any other numbered bud chimes and wiggles, plain buds still bloom), and each aimed shot's recorded path stays as faint dots until the next shot starts (feedback, counts nothing). Two new level-4+ steps on the how-to card.
+3. **Built (2026-10-22): The shell tray and board themes** (content: typecheck, rule tests over every shape, one screenshot per backdrop). Gap 10: finished pearls roll into a scalloped shell tray (`TRAY`, `traySlot`, 12 visible slots) and pour back at the finish; four shapes (`SHAPES`: rows, diamond, hourglass, waves) and three backdrops (`BACKDROPS`: shallows, reef, kelp forest) drawn from the round's seed by `pickTheme`; `makeBoard(plan, rng, shape)`. Couch keeps the first look (rows, shallows) and draws nothing, so its boards are unchanged.
 4. **Level 8 *Big buds*, the lap entry** (new interaction: typecheck, unit tests, one scripted play at 8, `fingerdemo` at 8, one portrait screenshot). Plans keyed by ID, `order` and `entryLevels`.
 5. **Level 6 *Into the cup*** (new interaction: as slice 4, at 6). Needs the plans-by-ID change from slice 4 or makes it itself.
 6. **Level 7 *Plant a bud*** (new interaction, after slice 5: as slice 4, at 7).

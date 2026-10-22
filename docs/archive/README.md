@@ -61,4 +61,6 @@ Swing Pals closeout rotated the oldest live verification entry (Garden Grow, sli
 
 Cut Along closeout rotated the oldest live verification entry (Weather Wardrobe, slice 1) into [Verification 2026-10-21](VERIFICATION-2026-10-21.md), leaving fifteen dated entries live.
 
+Peg Garden batch 1 closeout rotated the oldest live verification entry (Stop and Go, slice 2) into [Verification 2026-10-22](VERIFICATION-2026-10-22.md), leaving fifteen dated entries live.
+
 Little Helpers slice 1 closeout rotated the oldest live verification entry (Fill and Dump level 6) into [Verification 2026-10-20](VERIFICATION-2026-10-20.md), leaving fifteen dated entries live.
