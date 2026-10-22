@@ -2,7 +2,7 @@
 
 **Requested by the developer, 2026-10-14:** add research sessions for the sciences beyond physics, for a range of history subjects, for technology (could it expand beyond coding?), and (same day, after the question "other subjects, life skills, recipes, exercise?") for life skills. **The goal, stated the same day: games for toddlers, preschoolers, elementary children, middle schoolers *and* the parents.** So every session must answer for every audience, not only the school years. A game deep dive researches one built game; a **subject session** researches one subject and returns candidates, modes for existing games, and a ladder for one first game. Physics already has [its own plan](../PHYSICS-GAMES.md). A [standards audit](subjects/standards-audit.md) (2026-10-16) laid Common Core, Head Start, EYFS, IB, the arts and language standards over this tracker and added the mathematics, language and literacy, and languages-arts-thinking rows.
 
-**A subject session is research and ideation only: documents, no code**, with the same rule as a game deep dive (nothing under `src/`, `scripts/` or `public/`; no tests; do not build a slice, however small). The roadmap's chunk 28 points here. Each researched subject.s recommendation packet (what to define first, and its boundaries) is a section of [RECOMMENDATIONS.md](subjects/RECOMMENDATIONS.md), summarized in a table in the roadmap. Research completion does not mean the proposed games are built or scheduled; the tracker records studies, and each game’s dive and [GAMES](../GAMES.md) record implementation. The long-term direction reaches about age eleven ([Later horizons](../ROADMAP.md#later-horizons-elementary)); she is about one, so the nearer rungs matter first (see the order below).
+**A subject session is research and ideation only: documents, no code**, with the same rule as a game deep dive (nothing under `src/`, `scripts/` or `public/`; no tests; do not build a slice, however small). The roadmap's chunk 28 points here. Each researched subject.s recommendation packet (what to define first, and its boundaries) is a section of [RECOMMENDATIONS.md](subjects/RECOMMENDATIONS.md), summarized in a table in the roadmap. Research completion does not mean the proposed games are built; named follow-ups are now scheduled in [READY](../READY.md) and tracked in the [study backlog](../STUDY-BACKLOG.md) (developer request, 2026-10-21); the tracker records studies, and each game’s dive and [GAMES](../GAMES.md) record implementation. The long-term direction reaches about age eleven ([Later horizons](../ROADMAP.md#later-horizons-elementary)); she is about one, so the nearer rungs matter first (see the order below).
 
 ## The audiences
 
@@ -187,9 +187,11 @@ Phonics, letters, rhyme and syllables are researched as game deep dives (Word Mo
 
 Geometry’s `area-volume-space` session should explicitly cover reflections, rotations, translations and similarity; `visual-art` should include textiles, sculpture and useful-object design; `engineering-design` should include designs for different users and access needs. These extend existing unstarted studies. See the audit for overlap boundaries and candidate actions.
 
-Additional [cross-subject findings](subjects/further-gaps.md) identify measurement and cells/microbes as unstarted sessions, plus expansions within existing studies. These do not change the dispatch order.
+Additional [cross-subject findings](subjects/further-gaps.md) identify measurement and expansions within existing studies. Cells/microbes is researched (2026-10-17); its next step is the Puddle Lens definition. Use the named READY entries for current dispatch.
 
 ## Suggested order (non-binding)
+
+**Routine selection, 2026-10-21:** the developer selected the named research and completed-study follow-ups in [READY](../READY.md). Its priority and refill cadence take precedence over the historical waves below. Reviewer-dependent rows remain blocked in the [study backlog](../STUDY-BACKLOG.md#research-waiting-on-a-reviewer-decision). One research session must add its first eligible definition to READY and update that backlog; do not repeat a completed study.
 
 The long horizon is real, but the nearest rungs serve a one-year-old, so the order starts there.
 
