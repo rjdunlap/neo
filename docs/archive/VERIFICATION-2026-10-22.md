@@ -90,3 +90,11 @@
 - [PR #782](https://github.com/rjdunlap/neo/pull/782), `claude/define-sand-table`: defined Sand Table dry play, levels 1–3 ([definition](../definitions/sand-table.md)); READY, game batches, study backlog, earth-materials study, recommendations, tracker, ideas and waiting-on-developer updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (nothing built). Open: the build E2 (no review gate; six open decisions all have defaults).
+
+## 2026-10-22 — Sound Garden One big friend (level 8)
+
+- [PR #784](https://github.com/rjdunlap/neo/pull/784), `codex/sound-garden-big-friend`; tested `6f8d5e51` plus working diff at `http://localhost:5205/classic/`. Docs-only main integration `6654bf20` preserves this evidence. Only batch 2 / dive slice 5: lap entry 8 before 1, broad touch field, four-tap handoffs and twelve-song finish.
+- Passed typecheck, 72 focused Sound Garden/difficulty/how-to/registry tests, full units (2459 passed, four skipped), build. After the final ending-only guard, typecheck/focused rules/build and the level-8 play passed again; no changes to the bot action.
+- `BROWSER_SUITE=batch BATCH_ONLY=garden SOUND_LEVELS=8` passed portrait, grass-edge taps, quick taps through handoffs, zero misses/hints, saved sticker and ending. Initial run used logical coordinates as CSS pixels; a small view-scale probe identified the harness error, corrected with `toGlobal`. No page errors.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=sound-garden FINGER_LEVELS=8` clean in 15.6 s. Inspected `test-results/browser/sound-garden-8-portrait.png`: large friend and clear shell/pet corners.
+- Not run: world, offline, stories, couch (no route, asset, save-format or controller changes). iPad audio/speech and child's understanding remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md#sound-garden-one-big-friend-level-8). Level-1 every-touch retrofit and #733 preserved.
