@@ -6363,8 +6363,10 @@ async function batch() {
     if ([7, 8, 9, 10].includes(level)) await page.setViewportSize({ width: 1024, height: 768 });
   }
 
-  // Little Helpers: tap the fruit to send helpers one by one; the whistle checks the count.
-  for (let level = 1; level <= 5 && (!only || only === 'helpers'); level++) {
+  // Little Helpers: tap the fruit to send helpers one by one; the whistle checks the count. HELPERS_LEVELS=2,5,9 picks levels.
+  // Level 9 (Whistle when it's full) plays in portrait: an early whistle and a helper past full are never counted.
+  for (const level of (process.env.HELPERS_LEVELS || '1,2,3,4,5').split(',').map(Number).filter(() => !only || only === 'helpers')) {
+    if (level === 9) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('little-helpers', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -6385,7 +6387,27 @@ async function batch() {
           if (g.misses !== 0) throw new Error(`Sky and busy touches counted: ${g.misses}`);
           continue;
         }
-        if (!g.whistle.visible) { await send(f.need); await kit.until(() => g.index > q || g.finished, 15000); continue; }
+        if (!g.whistle.visible) {
+          if (g.plan.mode === 'two' && q === 0) {
+            // The rings fill as each helper grabs on.
+            if (g.emptyRings?.parent == null) throw new Error('Level 2 badge has no rings');
+          }
+          await send(f.need); await kit.until(() => g.index > q || g.finished, 15000); continue;
+        }
+        if (g.plan.mode === 'whistle') {
+          if (q === 0 || f.need > 1) {
+            // Not full yet: an early whistle blinks the empty rings and counts nothing.
+            if (f.need > 1) { await send(1); kit.tapOn(g.whistle); await kit.sleep(400); await settle(); await send(f.need - 1); }
+            else await send(f.need);
+            // A helper past full bounces off and walks back.
+            await send(1); await settle();
+            if (g.carrying.length !== f.need || g.misses !== 0 || g.hints !== 0) throw new Error(`Level 9 counted: ${g.carrying.length}/${f.need} ${g.misses} ${g.hints}`);
+          } else await send(f.need);
+          await settle();
+          kit.tapOn(g.whistle);
+          await kit.until(() => g.index > q || g.finished, 15000);
+          continue;
+        }
         if (q === 0) {
           // A whistle before anyone is sent and a touch on the grass are answered, never counted.
           if (f.already === 0) { kit.tapOn(g.whistle); await kit.sleep(300); }
@@ -6410,8 +6432,9 @@ async function batch() {
     await screenshot(`little-helpers-${level}`);
     await finished('little-helpers');
     const r = await page.evaluate(() => { const r = kit.store.stats('little-helpers').history.at(-1); return [r.misses, r.hints]; });
-    assert.deepEqual(r, mode === 'tap' || mode === 'two' ? [0, 0] : [2, 1], `helpers ${level} score`);
-    log(`Little Helpers ${level} (${mode}): sending, take-backs, whistle, hint, saved score and sticker passed`);
+    assert.deepEqual(r, mode === 'tap' || mode === 'two' || mode === 'whistle' ? [0, 0] : [2, 1], `helpers ${level} score`);
+    log(`Little Helpers ${level} (${mode}, ${await page.evaluate(() => neo.scene.game?.place ?? 'done')}): sending, take-backs, whistle, hint, saved score and sticker passed`);
+    if (level === 9) await page.setViewportSize({ width: 1024, height: 768 });
   }
 
   // Egg Catch: a finger steers the basket under falling eggs; route levels flip the gates.

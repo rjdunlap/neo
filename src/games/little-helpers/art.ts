@@ -29,10 +29,10 @@ export function carryArt(kind: CarryKind): Container {
     }
     case 'watermelon': {
       const gr = swatch.green;
-      g.ellipse(0, 0, 60, 40).fill(gr.fill).stroke(line(gr.line));
-      for (const x of [-34, -12, 12, 34]) g.moveTo(x, -38 + Math.abs(x) * 0.3).quadraticCurveTo(x * 1.15, 0, x, 38 - Math.abs(x) * 0.3);
+      g.ellipse(0, 0, 52, 35).fill(gr.fill).stroke(line(gr.line));
+      for (const x of [-30, -10, 10, 30]) g.moveTo(x, -33 + Math.abs(x) * 0.3).quadraticCurveTo(x * 1.15, 0, x, 33 - Math.abs(x) * 0.3);
       g.stroke({ width: 6, color: gr.line, alpha: 0.6 });
-      g.ellipse(-28, -16, 10, 6).fill({ color: 0xffffff, alpha: 0.4 });
+      g.ellipse(-24, -14, 10, 6).fill({ color: 0xffffff, alpha: 0.4 });
       break;
     }
     case 'acorn': {
