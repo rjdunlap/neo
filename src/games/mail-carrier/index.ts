@@ -11,7 +11,8 @@ import { spread, type View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { addressedHouse, countedAloud, countsAloud, isMapMode, letterShows, mailboxShows, makeLetters, makeStreet, nearestHouse, planFor, shouldInvite, type House, type MailPlan } from './logic';
+import { addressedHouse, countedAloud, countsAloud, houseLooks, isMapMode, letterShows, mailboxColor, mailboxShows, makeLetters, makeStreet, nearestHouse, NEIGHBORS, planFor, shouldInvite, type House, type HouseLook, type MailPlan } from './logic';
+import type { CompanionRig } from '../../creatures/companion';
 import { WoodsMail } from './woods';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
@@ -22,8 +23,6 @@ const LEVELS: BandLevels = {
   prek: { min: 3, max: 6 },
   school: { min: 4, max: 8 },
 };
-
-const NEIGHBORS: CritterName[] = ['cat', 'dog', 'bear', 'bunny', 'pig', 'cow'];
 
 /** Dots laid out like dice faces, so small numbers can be seen at a glance. */
 function dots(g: Graphics, n: number, x: number, y: number, r: number, gap: number, color: number) {
@@ -48,14 +47,19 @@ class HouseView extends Container {
     readonly house: House,
     kind: CritterName,
     shows: { numeral: boolean; dots: boolean },
+    look: HouseLook,
+    mailbox: ColorName,
   ) {
     super();
     const door = swatch[house.door];
     this.glow.roundRect(-92, -250, 184, 270, 30).fill({ color: 0xfff3a0, alpha: 0.85 });
     this.glow.visible = false;
     const g = new Graphics();
+    if (look.chimney) g.rect(34, -214, 26, 64).fill(swatch.brown.fill).stroke({ width: 4, color: wood.line }).rect(30, -220, 34, 10).fill(swatch.brown.line);
     g.rect(-70, -150, 140, 150).fill(cream).stroke({ width: 5, color: wood.line });
-    g.poly([-86, -146, 0, -226, 86, -146]).fill(door.line).stroke({ width: 5, color: wood.line, join: 'round' });
+    if (look.roof === 'peak') g.poly([-86, -146, 0, -226, 86, -146]);
+    else g.moveTo(-86, -146).quadraticCurveTo(0, -286, 86, -146).closePath();
+    g.fill(door.line).stroke({ width: 5, color: wood.line, join: 'round' });
     g.roundRect(-24, -76, 48, 76, 8).fill(door.fill).stroke({ width: 4, color: door.line }).circle(14, -38, 4).fill(swatch.yellow.fill);
     // The window, with a neighbor who pops up when mail comes.
     const win = new Graphics().roundRect(-22, -134, 44, 40, 6).fill(0xbfe6fb).stroke({ width: 4, color: wood.line });
@@ -66,11 +70,16 @@ class HouseView extends Container {
     const mask = new Graphics().roundRect(-20, -132, 40, 36, 5).fill(0xffffff);
     this.neighbor.mask = mask;
     this.addChild(this.glow, g, win, this.neighbor, mask);
+    if (look.windowBox) {
+      const flowers = new Graphics().roundRect(-30, -90, 60, 12, 4).fill(wood.fill).stroke({ width: 3, color: wood.line });
+      for (const [fx, c] of [[-18, swatch.pink.fill], [0, swatch.yellow.fill], [18, swatch.red.fill]] as const) flowers.circle(fx, -92, 5).fill(c);
+      this.addChild(flowers);
+    }
 
     // The mailbox out front, with its number.
     const b = new Graphics();
     b.rect(-6, -10, 12, 70).fill(wood.fill).stroke({ width: 3, color: wood.line });
-    b.roundRect(-46, -66, 92, 60, 20).fill(swatch.blue.fill).stroke({ width: 5, color: swatch.blue.line });
+    b.roundRect(-46, -66, 92, 60, 20).fill(swatch[mailbox].fill).stroke({ width: 5, color: swatch[mailbox].line });
     this.flag.rect(40, -66, 8, 40).fill(0x8c9aa8).rect(40, -66, 26, 16).fill(swatch.red.fill);
     this.box.addChild(this.flag, b);
     if (shows.numeral || shows.dots) {
@@ -124,6 +133,9 @@ class MailCarrier implements Game {
   readonly letters: number[];
   readonly houses: HouseView[] = [];
   readonly envelope = new Container();
+  /** The pet's cart: it carries each letter along the road to a mailbox. */
+  readonly cart = new Container();
+  private readonly pet: CompanionRig;
   index = -1;
   misses = 0;
   hints = 0;
@@ -141,7 +153,11 @@ class MailCarrier implements Game {
     this.plan = planFor(ctx.level);
     this.street = makeStreet(this.plan, ctx.rng);
     this.letters = makeLetters(this.plan, this.street, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.55, clouds: 3, sun: true, seed: 52 }, ctx.view);
+    const kinds = ctx.rng.shuffle([...NEIGHBORS]);
+    // Cosmetic draws come after the letters, so a seed's deliveries stay the same.
+    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.55, clouds: 3, sun: true, seed: ctx.rng.int(1, 9999) }, ctx.view);
+    const looks = houseLooks(this.street.length, ctx.rng);
+    const mailbox = mailboxColor(this.street, ctx.rng);
     ctx.stage.addChild(this.backdrop, this.road);
     // Level 1: a touch anywhere off a house still answers (free, never a miss or a hint).
     if (this.plan.mode === 'drop') {
@@ -151,9 +167,8 @@ class MailCarrier implements Game {
       anywhere.on('pointerdown', (e) => this.offHouse(e.getLocalPosition(ctx.stage).x));
       ctx.stage.addChild(anywhere);
     }
-    const kinds = ctx.rng.shuffle([...NEIGHBORS]);
     this.street.forEach((house, i) => {
-      const h = new HouseView(house, kinds[i % kinds.length], mailboxShows(this.plan.mode));
+      const h = new HouseView(house, kinds[i % kinds.length], mailboxShows(this.plan.mode), looks[i], mailbox);
       onTap(h, () => void this.post(i), { cooldown: 400 });
       h.on('pointerdown', () => {
         this.idle = 0;
@@ -164,7 +179,19 @@ class MailCarrier implements Game {
       this.houses.push(h);
       ctx.stage.addChild(h);
     });
-    ctx.stage.addChild(this.envelope);
+    // The pet's cart on the road: it rolls each letter to a mailbox. A decoration, never a touch target.
+    this.pet = ctx.companion();
+    this.pet.scale.set(0.3);
+    this.pet.position.set(0, -24);
+    ctx.track(this.pet);
+    const front = new Graphics()
+      .roundRect(-52, -48, 104, 40, 10).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line })
+      .roundRect(-40, -40, 80, 8, 4).fill(swatch.red.light)
+      .circle(-30, -6, 12).circle(30, -6, 12).fill(ink).circle(-30, -6, 4).circle(30, -6, 4).fill(0xffffff);
+    this.cart.addChild(this.pet, front);
+    this.cart.eventMode = 'none';
+    this.cart.interactiveChildren = false;
+    ctx.stage.addChild(this.cart, this.envelope);
   }
 
   get letter(): HouseView | undefined {
@@ -184,6 +211,7 @@ class MailCarrier implements Game {
     const xs = spread(this.houses.length, 160, v.w - 50, 178);
     this.houses.forEach((h, i) => h.position.set(xs[i], y));
     this.envelope.position.set(v.w / 2, 150);
+    this.cart.position.set(this.cartX(this.cart.x || v.w / 2), y + 140);
   }
 
   update(dt: number) {
@@ -193,6 +221,11 @@ class MailCarrier implements Game {
       void this.houses[nearestHouse(this.houses.map((h) => h.x), this.envelope.x)]?.wave(this.ctx.tw);
       void this.ctx.instruct('mail.drop');
     }
+  }
+
+  /** The cart stops in front of a mailbox, kept clear of the guide's corner. */
+  private cartX(x: number) {
+    return Math.max(210, Math.min(this.ctx.view.w - 70, x));
   }
 
   /** A touch off the houses at level 1: the envelope wiggles and the nearest mailbox's flag waves. */
@@ -278,16 +311,23 @@ class MailCarrier implements Game {
     this.busy = true;
     const h = this.houses[i];
     const tw = this.ctx.tw;
-    // The letter flies over to the mailbox.
+    // The letter drops into the pet's cart, the cart rolls to the mailbox, and the letter hops in.
     const flying = new Graphics().roundRect(-40, -26, 80, 52, 6).fill(0xffffff).stroke({ width: 4, color: 0xb9c6d1 }).moveTo(-40, -26).lineTo(0, 4).lineTo(40, -26).stroke({ width: 3, color: 0xd6dde4 });
+    flying.scale.set(0.8);
     flying.position.copyFrom(this.envelope.position);
     this.ctx.stage.addChild(flying);
-    const target = { x: h.x, y: h.y + 40 };
+    const inCart = () => ({ x: this.cart.x + 26, y: this.cart.y - 56 });
     sfx.whoosh();
-    // Wait for both halves of the arc: destroying the letter mid-tween would crash the tweener.
-    const across = tw.to(flying, { x: target.x }, { duration: 0.5, ease: ease.inOutSine });
-    await tw.to(flying, { y: Math.min(flying.y, target.y) - 60 }, { duration: 0.2, ease: ease.outQuad });
-    await tw.to(flying, { y: target.y }, { duration: 0.3, ease: ease.inQuad });
+    // Every tween is awaited: destroying the letter mid-tween would crash the tweener.
+    await tw.to(flying, inCart(), { duration: 0.35, ease: ease.inQuad });
+    const cartTo = this.cartX(h.x);
+    const roll = tw.to(this.cart, { x: cartTo }, { duration: 0.45, ease: ease.inOutSine });
+    await tw.to(flying, { x: cartTo }, { duration: 0.45, ease: ease.inOutSine });
+    await roll;
+    const target = { x: h.x, y: h.y + 40 };
+    const across = tw.to(flying, { x: target.x }, { duration: 0.3, ease: ease.inOutSine });
+    await tw.to(flying, { y: target.y - 40 }, { duration: 0.15, ease: ease.outQuad });
+    await tw.to(flying, { y: target.y }, { duration: 0.15, ease: ease.inQuad });
     await across;
     const right = this.plan.mode === 'drop' || h === to;
     if (right) {
@@ -309,7 +349,8 @@ class MailCarrier implements Game {
     sfx.boing();
     if (this.plan.mode === 'color') void this.ctx.say('mail.notme.color', { color: h.house.door });
     else void this.ctx.say('mail.notme.number', { n: h.house.number });
-    await tw.to(flying, { x: this.envelope.x, y: this.envelope.y }, { duration: 0.5, ease: ease.inOutSine });
+    await tw.to(flying, inCart(), { duration: 0.25, ease: ease.inOutSine });
+    await tw.to(flying, { x: this.envelope.x, y: this.envelope.y }, { duration: 0.4, ease: ease.inOutSine });
     flying.destroy();
     if (this.wrongs >= 2) {
       to.glow.visible = true;
@@ -333,7 +374,7 @@ class MailCarrier implements Game {
 class MailIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    const h = new HouseView({ number: 3, door: 'red' }, 'cat', { numeral: true, dots: false });
+    const h = new HouseView({ number: 3, door: 'red' }, 'cat', { numeral: true, dots: false }, { roof: 'peak', chimney: true, windowBox: true }, 'blue');
     h.scale.set(0.85);
     h.y = -40;
     const env = new Graphics().roundRect(40, -230, 90, 60, 8).fill(0xffffff).stroke({ width: 4, color: 0xb9c6d1 }).moveTo(40, -230).lineTo(85, -198).lineTo(130, -230).stroke({ width: 3, color: 0xd6dde4 });

@@ -49,6 +49,39 @@ export function makeStreet(plan: MailPlan, rng: Rng): House[] {
   return numbers.map((number, i) => ({ number, door: doors[i] }));
 }
 
+/** Who lives on the street: one pool of seven neighbours. The woods map leaves out the dog, the bear's brown look-alike. */
+export const NEIGHBORS: CritterName[] = ['cat', 'dog', 'bear', 'bunny', 'pig', 'cow', 'duck'];
+
+/** How a street house is built: two roof shapes, and an optional chimney and window box. Cosmetic only. */
+export interface HouseLook {
+  roof: 'peak' | 'round';
+  chimney: boolean;
+  windowBox: boolean;
+}
+
+export const houseLooks = (n: number, rng: Rng): HouseLook[] =>
+  Array.from({ length: n }, () => ({ roof: rng.chance(0.5) ? 'peak' : 'round', chimney: rng.chance(0.5), windowBox: rng.chance(0.5) }));
+
+/** Colours a mailbox can be: never white, which would hide its white number plate. */
+export const MAILBOX_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'brown'];
+
+/** Colours a small child could take for one another (teal for blue, pink for red). */
+export const NEAR: Partial<Record<ColorName, ColorName[]>> = {
+  red: ['pink', 'orange'], orange: ['red', 'yellow', 'brown'], yellow: ['orange'], green: ['teal'], teal: ['green', 'blue'],
+  blue: ['teal', 'purple'], purple: ['blue', 'pink'], pink: ['red', 'purple'], brown: ['orange'],
+};
+
+/**
+ * The street's mailboxes share one colour, never a door colour in the round, so a colour letter can only mean a door;
+ * where the round allows, not a near neighbour of one either.
+ */
+export function mailboxColor(street: House[], rng: Rng): ColorName {
+  const doors = new Set(street.map((h) => h.door));
+  const apart = MAILBOX_COLORS.filter((c) => !doors.has(c));
+  const far = apart.filter((c) => !street.some((h) => NEAR[h.door]?.includes(c)));
+  return rng.pick(far.length ? far : apart);
+}
+
 /** Which house each letter goes to: every house gets mail, never the same one twice in a row. */
 export function makeLetters(plan: MailPlan, street: House[], rng: Rng): number[] {
   const out: number[] = [];
@@ -95,8 +128,8 @@ export function nearestHouse(xs: readonly number[], x: number): number {
 /** Signs on the map's houses; the picture key says which neighbor lives behind each one. */
 export const SIGNS = ['acorn', 'mushroom', 'leaf', 'flower', 'star'] as const;
 export type Sign = (typeof SIGNS)[number];
-/** Neighbors that look clearly different at the key's size (the dog and the bear are both brown). */
-export const WOODS_NEIGHBORS: CritterName[] = ['cat', 'bear', 'bunny', 'pig', 'cow', 'duck'];
+/** Neighbors that look clearly different at the key's size (the dog and the bear are both brown): the street's pool without the dog. */
+export const WOODS_NEIGHBORS: CritterName[] = NEIGHBORS.filter((n) => n !== 'dog');
 
 /**
  * The map's paths as a small graph, in fractions of the map. Node 0 is the hollow-tree post office;
@@ -113,6 +146,12 @@ export const MAP_NODES: { x: number; y: number }[] = [
   { x: 0.27, y: 0.42 },
   { x: 0.72, y: 0.42 },
 ];
+/** A round's map can be the mirror image (left and right swapped): the same paths, stones and walks, drawn the other way round. */
+export const mapNode = (n: number, mirrored: boolean) => (mirrored ? { x: 1 - MAP_NODES[n].x, y: MAP_NODES[n].y } : MAP_NODES[n]);
+
+/** A map x in fractions (decor, the stream), reflected with the nodes. */
+export const mapX = (x: number, mirrored: boolean) => (mirrored ? 1 - x : x);
+
 export const POST_OFFICE = 0;
 export const HOUSE_NODES = [1, 2, 3, 4, 5];
 export const MAP_EDGES: [number, number][] = [

@@ -12,7 +12,7 @@ import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { checkStop, HOUSE_NODES, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, planFor, POST_OFFICE, route, routeLength, SHORTER_EDGES, shorterRoutes, walk, woodsTouch, type MailPlan, type Sign, type WoodsHouse } from './logic';
+import { checkStop, HOUSE_NODES, makeTrips, makeWoods, MAP_EDGES, mapNode, mapX, planFor, POST_OFFICE, route, routeLength, SHORTER_EDGES, shorterRoutes, walk, woodsTouch, type MailPlan, type Sign, type WoodsHouse } from './logic';
 
 /**
  * Mail Carrier in Wonder Woods: Hazel the squirrel postkeeper hands over letters for the woods. The houses
@@ -112,6 +112,8 @@ export class WoodsMail implements Game {
   readonly plan: MailPlan;
   readonly woods: WoodsHouse[];
   readonly trips: number[][];
+  /** This round's map is the mirror image: same paths and stones, left and right swapped. */
+  readonly mirrored: boolean;
   readonly houses: WoodsHouseView[] = [];
   readonly key: KeyRow[] = [];
   readonly go = new RoundButton(playIcon(), swatch.green, 48, () => void this.walkPlan());
@@ -147,6 +149,7 @@ export class WoodsMail implements Game {
     this.plan = planFor(ctx.level);
     this.woods = makeWoods(ctx.rng);
     this.trips = makeTrips(this.plan, ctx.rng);
+    this.mirrored = ctx.rng.chance(0.5);
     this.walker = ctx.companion();
     this.walker.scale.set(0.2);
     ctx.track(this.walker);
@@ -276,7 +279,8 @@ export class WoodsMail implements Game {
   private at(n: number) {
     const m = 70;
     const { w, h } = this.rect;
-    return { x: m + MAP_NODES[n].x * (w - 2 * m), y: m + 40 + MAP_NODES[n].y * (h - 2 * m - 40) };
+    const node = mapNode(n, this.mirrored);
+    return { x: m + node.x * (w - 2 * m), y: m + 40 + node.y * (h - 2 * m - 40) };
   }
 
   /** Where the walker stands at a node: at the post office's door, or on the path in front of a house. */
@@ -289,15 +293,17 @@ export class WoodsMail implements Game {
     this.decor.removeChildren().forEach((c) => c.destroy());
     const g = new Graphics();
     const { w, h } = this.rect;
+    // Reflected with the nodes when the map is mirrored, so the decor stays clear of the paths.
+    const X = (f: number) => mapX(f, this.mirrored) * w;
     // A stream across the bottom corner and some pines and flowers between the paths.
-    g.moveTo(w * 0.62, h).bezierCurveTo(w * 0.7, h * 0.86, w * 0.92, h * 0.9, w, h * 0.78).stroke({ width: 26, color: swatch.blue.light, cap: 'round' });
+    g.moveTo(X(0.62), h).bezierCurveTo(X(0.7), h * 0.86, X(0.92), h * 0.9, X(1), h * 0.78).stroke({ width: 26, color: swatch.blue.light, cap: 'round' });
     for (const [fx, fy] of [[0.3, 0.06], [0.6, 0.3], [0.95, 0.3], [0.05, 0.45], [0.36, 0.72], [0.75, 0.7], [0.62, 0.05]]) {
-      const x = fx * w;
+      const x = X(fx);
       const y = fy * h + 30;
       g.poly([x - 18, y, x, y - 40, x + 18, y]).fill(swatch.teal.fill).stroke(line(swatch.teal.line, 3));
       g.rect(x - 3, y, 6, 8).fill(wood.line);
     }
-    for (const [fx, fy] of [[0.22, 0.88], [0.8, 0.86], [0.55, 0.42], [0.03, 0.92]]) g.ellipse(fx * w, fy * h, 30, 12).fill(grass);
+    for (const [fx, fy] of [[0.22, 0.88], [0.8, 0.86], [0.55, 0.42], [0.03, 0.92]]) g.ellipse(X(fx), fy * h, 30, 12).fill(grass);
     this.decor.addChild(g);
   }
 
