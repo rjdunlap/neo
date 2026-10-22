@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Adventure Walk levels 1–3 definition (movement-exercise, docs only)
+
+- [PR #786](https://github.com/rjdunlap/neo/pull/786), `claude/define-adventure-walk`: defined Adventure Walk levels 1–3 ([definition](definitions/adventure-walk.md)); READY, game batches, study backlog, movement study, recommendations and ideas updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the build AW2 (screen-only, no review gate; six open decisions all have defaults); movement invitations stay reviewer-gated.
+
 ## 2026-10-22 — Integers study (subject research, docs only)
 
 - [PR #785](https://github.com/rjdunlap/neo/pull/785), `claude/subject-integers`: [integers study](deep-dives/subjects/integers.md) (Sea Lift 1–3 recommended first); tracker, packet, roadmap table, backlog, READY, IDEAS and Frog Hop's G3 note updated.
@@ -93,12 +99,6 @@
 - `BROWSER_SUITE=feelingsask` passed at 12: four friends asked before offers appear, repeated requests without progress changes, quiet answer, two wrong offers, one glow hint, accepted calm/happy endings and one sticker. Initial test offset missed the scaled friend; a bounded transformed-coordinate pointer probe confirmed the target before correction. A cumulative-accounting assertion was corrected too. A final speech review found retry/hint speech canceling the wish replay; the check fails with the old order (`feel.wish-game,feel.asked`) and passes when retry/hint finishes before the wish. Final focused tests and level-12 browser play cover the fix; the two-step bot’s clean-play path is unchanged.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=feelings-faces FINGER_LEVELS=12` finished cleanly in 15.4 s. Inspected `test-results/browser/feelings-faces-12-quiet-portrait.png`: request and four offers clear. Logs/probe remain ignored under test-results.
 - Not run: world, offline, story, couch (unchanged contracts), iPad speech, device orientation or child play. [Device checks](DEVICE-CHECKS.md) remain open. Fictional wording uses the source's standing default; no named reviewer.
-
-## 2026-10-22 — Inchworm Measure level 7 definition (measurement-units M1, docs only)
-
-- [PR #767](https://github.com/rjdunlap/neo/pull/767), `claude/define-big-worms`: defined Inchworm Measure level 7 *Big worms, little worms* ([definition](definitions/big-worms-little-worms.md)); batch plan, READY, study backlog and the study's slices updated.
-- Ran `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, unit tests, build, browser (docs only). Open: the M2 build; nothing is built.
 
 ## Coverage summary
 

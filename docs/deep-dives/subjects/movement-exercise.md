@@ -150,4 +150,6 @@ No build slice is dispatched or scheduled by this study. No code, tests, game as
 
 ## What was built
 
+The Adventure Walk levels 1–3 [definition](../../definitions/adventure-walk.md) exists (docs only, 2026-10-22); nothing is built yet.
+
 Nothing. Research and proposals only. Relative links/anchors and `git diff --check` checked in this session; see [verification](../../archive/VERIFICATION-2026-10-14.md#2026-10-14--movement-and-exercise-subject-research). Typecheck, units, build, browser, offline and device checks were not run. Open: named movement/accessibility reviewers, observed family/teen appeal and actual device speech/touch comfort.
