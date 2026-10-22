@@ -123,6 +123,8 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 
 ## Build slices, in order
 
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`stop-and-go` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+
 1. **Every touch counts and the hint points at the action** (existing-game bug fix; gaps 1–6; **built**, [PR #678](https://github.com/rjdunlap/neo/pull/678)): car taps at level 1, back-car toots at level 2, glow on the car/feet, level 3 hint reset, per-state motion and sound, `go.done.walk`. Checks: typecheck, the rule tests, one filtered regression play (levels 1 and 3, a red tap twice), `fingerdemo` at level 2 since the glow target moves.
 2. **Varied phases and vehicles** (content in existing levels): `cycleFor(rng)` with its bounded-phase test, six vehicles, the sticker pool. **built**, [PR #751](https://github.com/rjdunlap/neo/pull/751). Checks: typecheck, rule tests, one browser play of level 2 and `fingerdemo` at it.
 3. **Lap entry 9 *Go car, stop car*** (new interaction): lap order `[9, 1]`, `entryLevels: [9]`, how-to step for 9, bot taps green and red alternately. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).

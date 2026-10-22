@@ -41,6 +41,8 @@ The Codex coordinator's scheduled runs use the [execution queue](EXECUTION-QUEUE
 
 **How to pick a slice (routines and people alike):**
 
+Implementation queue items are [same-game batches](GAME-BATCHES.md), normally 2–4 related original level/content subtasks in one session/PR (developer direction, 2026-10-21). Original slice numbers describe substeps, not mandatory separate chats; one declared batch occupies one dispatch slot. Keep research/definition slots and existing gates.
+
 1. If you own an unfinished slice, finish it first.
 2. Otherwise take the **first line of [READY.md's Next ten](READY.md#next-ten) that no open PR, branch or worktree claims** (`scripts/overlap.sh <game-id> <path>…`). Read that game's dive section, or the work item's packet, before claiming; the dive is the authority on scope and gates.
 3. Next ten is in priority order (eligible creature-world explorations first), mixing builds with a few docs-only definitions (marked *docs only*) so the quality track is not starved; take its first unclaimed line, not its oldest. If every line is claimed or blocked, take the first unclaimed line of READY.md's [Queued](READY.md#queued) section, then the first `define` row of the [chunk table](#chunks). The developer selected study follow-ups and unstarted research for routine dispatch on 2026-10-21: use the named READY entries and the [study backlog](STUDY-BACKLOG.md), rather than waiting for another request. Unlisted research still needs a selection.

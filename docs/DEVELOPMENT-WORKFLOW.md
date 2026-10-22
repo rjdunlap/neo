@@ -16,9 +16,17 @@ Reviewed on 2026-10-10 from eight past Codex chats, current Git worktrees and br
 
 Some browser reruns followed real fixes and were necessary. Command counts alone do not prove wasted checking. Device and child checks remain distinct from automated coverage.
 
+## Same-game batches (2026-10-21)
+
+The developer requested grouping related levels to avoid reloading the same game in separate sessions. One session now owns a coherent batch, normally 2–4 original level/content subtasks, with one claim, branch, PR, local setup and closeout. [READY](READY.md) gives the dispatch order; [GAME-BATCHES](GAME-BATCHES.md) preserves the exact included source tasks. For example Garden Grow’s row, column and equal-row levels share a grid engine; Sound Garden’s pitch drawing and pitch copying share one drag interaction. A new input/layout family or unresolved decision is a reason to separate a batch.
+
+Keep the existing session through the whole declared batch and resume it after allowance resets. Read source sections once, retain a short implementation/proof checklist and run shared final checks once. Every distinct interaction and materially different younger entry still gets its required evidence; batching does not authorize skipped tests or broaden a game check into a release suite. The coordinator must estimate the whole batch, splitting before admission if needed. Study/research cadence counts dispatch batches rather than levels.
+
+This reduces repeated orientation, dependency setup, claim/PR handling and duplicated proof. Actual context-cache hit rates, token savings and total runtime have not been measured for this policy. Larger conversations can also accumulate more context, so keep batches bounded and start fresh after their merge. Do not assume that merely keeping a chat alive guarantees a cache saving.
+
 ## A session that stays small
 
-1. **Choose and claim.** Refresh origin, inspect open PRs, branch tips, worktree status and the game's existing slices. Name one complete game/content/level slice. Publish its docs-only claim and draft PR before implementing it.
+1. **Choose and claim.** Refresh origin, inspect open PRs, branch tips, worktree status and the game's existing slices. Name one complete same-game batch, including its related levels/content and dependencies; a slice need not mean one level. Publish its docs-only claim and draft PR before implementing it.
 2. **Set up once.** Install local dependencies, select a strict port and write down the server URL. Keep one feature branch and one worktree for the slice; create a snapshot only for checks that need one.
 3. **Define the proof before coding.** State the fun action, learning purpose, supported bands, completion and mistake/hint accounting. Identify rule properties and the exact browser suite, game filter and level selector. Use the existing [README suite table](../README.md#browser-checks), not a second command inventory.
 4. **Build the whole slice.** Rules, input/rendering, voice, level-scoped how-to and bot all describe the same interaction. Update the game's documentation and its existing roadmap/deep-dive row together.
@@ -29,7 +37,7 @@ For a docs-only session, step 5 means local links and `git diff --check`; no Typ
 
 ## Work across usage windows
 
-The [execution queue](EXECUTION-QUEUE.md) holds the Codex coordinator policy and its current checkpoint. An hourly follow-up in the coordinator chat checks both usage windows and existing sessions, then dispatches at most one slice into a new project chat with fresh context. The coordinator only schedules and records work; unfinished slices resume in their own worker chat. The handoff names only the slice, source and essential exclusions; the committed queue carries standing policy and prior proof. It uses the full remaining allowance, checks both actual account usage windows and records observed consumption rather than assuming a fixed message cost. Waiting checks do not create commits or new worktrees. This is an agent workflow, not a hard quota enforcement service; local scheduled work needs the computer on and the app running.
+The [execution queue](EXECUTION-QUEUE.md) holds the Codex coordinator policy and its current checkpoint. An hourly follow-up in the coordinator chat checks both usage windows and existing sessions, then dispatches at most one slice into a new project chat with fresh context for the whole declared batch, not each constituent level. The coordinator only schedules and records work; unfinished slices resume in their own worker chat. The handoff names only the slice, source and essential exclusions; the committed queue carries standing policy and prior proof. It uses the full remaining allowance, checks both actual account usage windows and records observed consumption rather than assuming a fixed message cost. Waiting checks do not create commits or new worktrees. This is an agent workflow, not a hard quota enforcement service; local scheduled work needs the computer on and the app running.
 
 ## Further improvements worth a separate slice
 
@@ -45,7 +53,7 @@ Measured from the 70 Claude Code session transcripts for this project (Codex ses
 
 What the transcripts showed, and what was done:
 
-- **Long chained sessions.** Several sessions ran 500 to 900 turns across more than one slice. *Done:* AGENTS.md now says one slice per session and to push verbose work to a subagent.
+- **Long chained sessions.** Several sessions ran 500 to 900 turns across more than one slice. *Initial response:* one slice per session. *Updated 2026-10-21:* one predeclared same-game batch per session, keeping the context through related levels while avoiding an unbounded chain of unrelated work.
 - **Whole-file reads of `ROADMAP.md`** (27 of 49 reads, each cut off near 70 KB, about 17K tokens apiece) and large reads of `DESIGN.md`, `README.md` and `CouchScene.ts`. *Done:* a read-by-section rule in AGENTS.md and in `docs-keeper`.
 - **Bash output** was three times the size of all file reads (13.6 MB against 4.4 MB). *Done:* a rule to pipe test and suite output through `tail` or `grep`.
 - **Repeated overlap checks** (about 85 `git fetch origin` runs, 47 merges, plus `gh pr list` and `git worktree list`, three or more times per slice). *Done:* `scripts/overlap.sh`.

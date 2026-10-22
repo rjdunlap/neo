@@ -15,3 +15,7 @@ Never read `docs/ROADMAP.md`, `VERIFICATION.md`, `GAMES.md`, `IDEAS.md` or `DESI
 - **Superseded document:** move it to `docs/archive/` with a line in that folder's index.
 
 Rules: take facts from the diff (`git diff main...HEAD`) and from what the caller tells you was verified; if a fact is missing, leave a clearly marked gap rather than inventing it. Keep the existing tone and table formats. Do not edit `AGENTS.md` unless the caller says a shared contract changed. Finish with `git diff --check` and report which files you changed and any gap you left.
+
+## Same-game batch closeout
+
+Developer direction, 2026-10-21: READY dispatches the batches in `docs/GAME-BATCHES.md`, usually 2–4 related original level/content subtasks in one session/PR. Keep every included substep on the one claim, and mark all shipped substeps in its dive during one closeout. Original slice IDs are stable scope references, not separate-session requirements. Requeue only unfinished complete parts with dependencies and existing gates; never recreate completed constituents. Study cadence counts batches, not levels. New definition/dive builds should be grouped this way.

@@ -116,6 +116,8 @@ Not developer decisions but gates: slice 8 waits on V2's person check; level 12 
 
 ## Build slices, in order
 
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`egg-catch` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+
 Each slice that adds a level updates `PLANS`, `LEVELS`/`order`/`entryLevels`, `describeLevel`, the how-to card (bounding level-7 lines to `to: 7` where needed), voice lines, the README row, [GAMES.md](../GAMES.md), the `eggs` case in `scripts/browser-check.mjs` and the `fingerdemo` levels.
 
 1. **Roll when ready at levels 4–5** (built). It adds a required arrow tap, so it also changes the level 4–5 how-to steps, the `egg.route` and `egg.sort` lines, the GAMES.md entry and the `eggs` case in `scripts/browser-check.mjs` (which today waits for the egg to roll by itself). Tier: new interaction: typecheck, unit tests (the ghost-finger route test updated), one filtered play (`BROWSER_SUITE=batch BATCH_ONLY=eggs FROM_LEVEL=4 TO_LEVEL=5`) with one wrong way and one hint, one portrait screenshot, `fingerdemo` at 4 and 5.
@@ -134,6 +136,6 @@ Slice 1 (roll when ready at levels 4–5) landed 2026-10-20 on `claude/egg-catch
 
 Slice 2 (a miss that teaches and hens that wait, levels 2–3) landed 2026-10-21 on `claude/egg-catch-miss-teaches` ([PR #720](https://github.com/rjdunlap/neo/pull/720)); the build note is in [the archive](../archive/COMPLETED-2026-10-09.md) and the checks in [VERIFICATION](../archive/VERIFICATION-2026-10-21.md#2026-10-21--egg-catch-a-miss-that-teaches-and-hens-that-wait-slice-2).
 
-Slice 3 (notes, egg colours and the hatching basket) built 2026-10-21 on `codex/egg-catch-colours` ([PR #740](https://github.com/rjdunlap/neo/pull/740)); the [build note](../archive/COMPLETED-2026-10-09.md#egg-catch-notes-colours-and-hatching-basket-2026-10-21) and [checks](../VERIFICATION.md#2026-10-21--egg-catch-notes-colours-and-hatching-basket-slice-3) record the content-only scope.
+Slice 3 (notes, egg colours and the hatching basket) built 2026-10-21 on `codex/egg-catch-colours` ([PR #740](https://github.com/rjdunlap/neo/pull/740)); the [build note](../archive/COMPLETED-2026-10-09.md#egg-catch-notes-colours-and-hatching-basket-2026-10-21) and [checks](../archive/VERIFICATION-2026-10-21.md#2026-10-21--egg-catch-notes-colours-and-hatching-basket-slice-3) record the content-only scope.
 
 Slice 4 (level 8 Under the hen) built on `codex/egg-catch-under-hen` ([PR #748](https://github.com/rjdunlap/neo/pull/748)); five eggs, forgiving lane taps, clucking cue and supported wrong-lane learning. No lap/couch additions or other rungs.

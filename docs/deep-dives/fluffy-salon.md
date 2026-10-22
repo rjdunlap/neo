@@ -131,6 +131,8 @@ Each has a default below; the build proceeds on it.
 
 ## Build slices, in order
 
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`fluffy-salon` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+
 1. **Support truth** (built 2026-10-21, `claude/fluffy-salon-support-truth`, [PR #717](https://github.com/rjdunlap/neo/pull/717); existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 3, `fingerdemo` at 3 since the hint timer is what the bot's 12-second test guards): the quiet-time hint, every touch answered, the mirror invitation, "more pink" with the old-color glow, the how-to note. IDs and windows unchanged.
 2. **Customers, rooms and start looks** (logic tier plus one filtered play of 4 and one screenshot): seeded friends in the chair with `{who}` lines, seeded wall and cape colors, five free-play start looks.
 3. **Level 6 *Pat the fluff*** (new interaction tier: typecheck, rule tests, one scripted play at lap, one portrait screenshot, `fingerdemo` at 6): no buttons, the floof shake, the big mirror and the self-finish; lap `order [6, 1, 2]`, toddler `order [6, 1, 2]`, `entryLevels: [6]`.

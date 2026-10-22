@@ -124,6 +124,8 @@ Each has a default below; the build proceeds on it.
 
 ## Build slices, in order
 
+**Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`pet-kitchen` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
+
 1. **Support truth** (built 2026-10-21, `claude/pet-kitchen-support-truth`, [PR #716](https://github.com/rjdunlap/neo/pull/716)): the how-to's open ranges close; `kitchen.short` and `kitchen.empty`; the uncut whole answers a touch and the cut button bounces after six seconds idle; the serve at 7 counts aloud. IDs and windows unchanged.
 2. **Friends, the meal eaten, round wholes, the fraction seen and a third fruit** (fresh content: typecheck, rule tests for the pie's cuts and the fruit pool, one filtered play of 2 and 7, `fingerdemo` at 7): decisions 2 and 3, the chew, the bubble at 7, the banana.
 3. **Level 10 *One for you, one for me* and the lap band** (new interaction tier: typecheck, rule tests, the picnic unit test, one play of 10 with a tap off a piece, a portrait screenshot, `fingerdemo` at 10, the `picnic` suite's sandwiches step once since the story's lap level changes): tap dealing, `bands` gains `lap`, toddler `order [10, 1]`, `entryLevels: [10]`, decisions 1 and 7.

@@ -6,7 +6,7 @@
 
 ### Egg Catch notes, colours and hatching basket (2026-10-21)
 
-[PR #740](https://github.com/rjdunlap/neo/pull/740), [deep-dive slice 3](../deep-dives/egg-catch.md#build-slices-in-order): four lane-specific pentatonic laying notes at levels 1–3; brown, speckled brown and blue-green shells at 1–2, all catchable. Shells follow hens without consuming more RNG; rule levels retain brown and white. Successful eggs crack in a basket and chicks hop into a line before the shell celebration; three successful pairs show six chicks. The ending uses scene-owned tweens and centres again on resize. Catch thresholds, timing, accounting, idle hens, routes, levels and save fields unchanged; no gated touches, new rungs or collection hooks. [Verification](../VERIFICATION.md#2026-10-21--egg-catch-notes-colours-and-hatching-basket-slice-3).
+[PR #740](https://github.com/rjdunlap/neo/pull/740), [deep-dive slice 3](../deep-dives/egg-catch.md#build-slices-in-order): four lane-specific pentatonic laying notes at levels 1–3; brown, speckled brown and blue-green shells at 1–2, all catchable. Shells follow hens without consuming more RNG; rule levels retain brown and white. Successful eggs crack in a basket and chicks hop into a line before the shell celebration; three successful pairs show six chicks. The ending uses scene-owned tweens and centres again on resize. Catch thresholds, timing, accounting, idle hens, routes, levels and save fields unchanged; no gated touches, new rungs or collection hooks. [Verification](VERIFICATION-2026-10-21.md#2026-10-21--egg-catch-notes-colours-and-hatching-basket-slice-3).
 
 
 ### A better voice V0 (2026-10-21)
