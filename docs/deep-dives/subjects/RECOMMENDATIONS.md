@@ -768,3 +768,18 @@ The [ordered slices](speaking-listening.md#build-slices-in-order) separate defin
 | **IR5 Look it up together, text feature walk, sign walk** · L, T, G co-play and page | hand to off-screen companions after an ordinary content review | Plain HTML; any home language |
 
 The [ordered slices](informational-reading.md#build-slices-in-order) separate definitions from builds. The IR1 build uses the new-game tier. Completion with spoken support is not evidence of independent reading, and nothing scores how fast she finds a page.
+
+## Writing and composition recommendations
+
+**Recommended 2026-10-22:** [the writing-composition study](writing-composition.md), [PR #819](https://github.com/rjdunlap/neo/pull/819). Opened: CCSS W.K, W.2, W.3, W.5 and W.7 (excerpts for 5 and 7). Not opened: Head Start ELOF writing goals; the emergent-writing stage page and DeBaryshe 2023 are search summaries only. No study of screen-based note composition or middle-school writing games was found. Handwriting stays with Letter Trails, keyboarding with `keyboarding-editing`, spelling and sentence mechanics with `spelling-sentences`, spoken description with Photo Safari *Tell me which*, kept stories with Story Weaver (making-media) and programs with Robot Path.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **WC1 Leave a Note 1–3** · preschool, pre-K, school | define now, docs only, as one packet | A new game: she builds a note from picture chips for a friend who cannot ask. Level 1 one chip (no miss); level 2 a *who* and a *what* chip; level 3 a first note that fits two things sends the friend to the wrong one, and she adds a *which* chip. Any sufficient note is accepted. Its build waits on decisions 1–2 (new game, name and land) |
+| **WC2 Because Notes 4–6** · school, upper school, middle | define after WC1 is played | An opinion with a reason chip that fits the scene; top levels choose relevant evidence over length |
+| **WC3 Story pages** · pre-K, school | note to the Story Weaver owner | Three captioned picture pages kept in the treehouse; not redefined here |
+| **WC4 Literal Reader** · upper school, middle | sketch; check Robot Path first | A helper follows the words exactly; fix the steps |
+| **WC5 Author and editor, dictation card** · T, P, K, G co-play and page | hand to off-screen companions after an ordinary content review | Plain HTML; any home language |
+| **WC6 Fewest tiles** · upper school, 13+ | mode of WC1; the grown-up form stays with Fewest Clues | Shortest note that still points to one thing |
+
+The [ordered slices](writing-composition.md#build-slices-in-order) separate the definition from the build. Completing a round shows she chose and ordered pieces, not that she can write.

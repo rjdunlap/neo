@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Writing-and-composition study (subject research, docs only)
+
+- **Changed:** [writing-composition study](deep-dives/subjects/writing-composition.md), its [packet](deep-dives/subjects/RECOMMENDATIONS.md#writing-and-composition-recommendations), the tracker, backlog, READY (Leave a Note 1–3 definition queued), roadmap and notebook rows. No code.
+- **Opened:** CCSS W.K, W.2, W.3, W.5, W.7 (the last two as excerpts). **Not opened:** Head Start ELOF writing goals; the emergent-writing page returned 503 and DeBaryshe 2023 is a search summary only.
+- **Ran:** link check and `git diff --check` only. **Open:** no evidence found for screen-based note composition; the build waits on decisions 1–2.
+
 ## 2026-10-22 — Shape Sorter batch 1: levels 10, 11, shape pool and sizes (slices 3–5)
 
 - [PR #817](https://github.com/rjdunlap/neo/pull/817): level 10 *Round or square*, five new shapes, sizes at 6–7, seven-colour pool, box facts, level 11 *Big, middle, little*. Proof on base `28aefc36` plus the branch.

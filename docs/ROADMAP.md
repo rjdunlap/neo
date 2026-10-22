@@ -317,6 +317,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | Estimation | 2026-10-22 | [study](deep-dives/subjects/estimation.md); [E1 built](definitions/lasso-loops-about-how-many.md), E2 waits on child play | [packet](deep-dives/subjects/RECOMMENDATIONS.md#estimation-recommendations) |
 | Speaking and listening | 2026-10-22 | [study](deep-dives/subjects/speaking-listening.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#speaking-and-listening-recommendations) |
 | Informational reading | 2026-10-22 | [study](deep-dives/subjects/informational-reading.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#informational-reading-recommendations) |
+| Writing and composition | 2026-10-22 | [study](deep-dives/subjects/writing-composition.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#writing-and-composition-recommendations) |
 | Vocabulary and word parts | 2026-10-22 | [study](deep-dives/subjects/vocabulary-word-parts.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#vocabulary-and-word-parts-recommendations) |
 | Measurement and units | 2026-10-21 | [study](deep-dives/subjects/measurement-units.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#measurement-and-units-recommendations) |
 | Genetics | 2026-10-16 | [study](deep-dives/subjects/genetics.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#genetics-recommendations) |
