@@ -61,7 +61,7 @@ The research is complete for every row below; `define` means the next session wr
 | `ratio-proportion` | define | Paint Mixer 1–4 | [Study](deep-dives/subjects/ratio-proportion.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#ratio-and-proportion-recommendations) |
 | `chance-statistics` | define | Spinner Fair 1–5 | [Study](deep-dives/subjects/chance-statistics.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#chance-and-statistics-recommendations) |
 | `algebra-balance` | define | Rule Machine 1–4 | [Study](deep-dives/subjects/algebra-balance.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#algebra-and-balance-recommendations) |
-| `integers` | define | Sea Lift 1–3 (IN1) | [Study](deep-dives/subjects/integers.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#integers-recommendations) |
+| `integers` | ready | Sea Lift 1–3 (IN1) [defined](definitions/sea-lift.md) 2026-10-22; its build is queued in READY as a new-game line (no review gate); next definition Sea Lift 4–5 (IN2) after the build lands | [Study](deep-dives/subjects/integers.md), [definition](definitions/sea-lift.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#integers-recommendations) |
 
 ## Unstarted subject research
 
