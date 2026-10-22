@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { carTap, CYCLE, crossTouch, doneLine, GO_TARGET, hintOn, judgeGo, lightAt, nextLight, PLANS, rightNow, safe, touchCounts, type Light, type Road } from './logic';
+import { Rng } from '../../engine/random';
+import { carTap, CYCLE, crossTouch, cycleFor, PHASE, VEHICLES, doneLine, GO_TARGET, hintOn, judgeGo, lightAt, nextLight, PLANS, rightNow, safe, touchCounts, type Light, type Road } from './logic';
 
 describe('Stop and Go', () => {
   it('cycles green, yellow, red, and back, with greens and reds long enough to wait for', () => {
@@ -10,6 +11,54 @@ describe('Stop and Go', () => {
     expect(lightAt(total + 0.1)).toBe('green');
     for (const c of CYCLE) if (c.light !== 'yellow') expect(c.seconds).toBeGreaterThanOrEqual(3);
     expect([nextLight('green'), nextLight('yellow'), nextLight('red')]).toEqual(['yellow', 'red', 'green']);
+  });
+
+  it('seeds each round its own greens and reds, long enough to wait for and never longer than the hand waits', () => {
+    const greens = new Set<number>();
+    for (let seed = 1; seed <= 400; seed++) {
+      const cycle = cycleFor(new Rng(seed));
+      expect(cycle.map((c) => c.light)).toEqual(['green', 'yellow', 'red']);
+      for (const c of cycle) {
+        if (c.light === 'yellow') expect(c.seconds).toBe(PHASE.yellow);
+        else {
+          expect(c.seconds).toBeGreaterThanOrEqual(3);
+          expect(c.seconds).toBeLessThanOrEqual(4.2);
+        }
+      }
+      greens.add(Math.round(cycle[0].seconds * 10));
+      // Any stretch without green, a yellow then a red, is shorter than the ghost hand's six-second patience.
+      expect(cycle[1].seconds + cycle[2].seconds).toBeLessThan(6);
+      // The same hand as below, tapping the moment green allows, still finishes the send and walk levels.
+      for (const mode of ['send', 'walk'] as const) {
+        const goal = PLANS.find((p) => p.mode === mode)!.goal;
+        let t = 0;
+        let done = 0;
+        let waited = 0;
+        while (done < goal && t < 120) {
+          if (rightNow(mode, lightAt(t, cycle))) {
+            done++;
+            t += 1.4;
+            waited = 0;
+          } else {
+            t += 1 / 60;
+            waited += 1 / 60;
+            expect(waited).toBeLessThan(6);
+          }
+        }
+        expect(done).toBe(goal);
+      }
+    }
+    // Rounds really differ: no one rhythm to learn.
+    expect(greens.size).toBeGreaterThan(8);
+    expect(cycleFor(new Rng(7))).toEqual(cycleFor(new Rng(7)));
+  });
+
+  it('draws six vehicles, every one reachable from the seed', () => {
+    expect(VEHICLES).toHaveLength(6);
+    const rng = new Rng(3);
+    const seen = new Set<string>();
+    for (let i = 0; i < 200; i++) seen.add(rng.pick(VEHICLES));
+    expect(seen.size).toBe(6);
   });
 
   it('only counts going on red as a mistake; yellow is a nudge', () => {

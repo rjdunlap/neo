@@ -26,23 +26,39 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 
 export type Light = 'green' | 'yellow' | 'red';
 
-/** The light's own cycle, in seconds: long greens and reds, a short yellow. */
-export const CYCLE: { light: Light; seconds: number }[] = [
+export type Cycle = { light: Light; seconds: number }[];
+
+/** The light's own cycle, in seconds: long greens and reds, a short yellow. The middle of `cycleFor`'s range. */
+export const CYCLE: Cycle = [
   { light: 'green', seconds: 3.5 },
   { light: 'yellow', seconds: 1.4 },
   { light: 'red', seconds: 3.5 },
 ];
 
+/** The bounds of a seeded green or red: never shorter than 3 s, and a yellow plus the longest red stays under the hand's 6 s. */
+export const PHASE = { min: 3, max: 4.2, yellow: 1.4 } as const;
+
+/** One round's cycle, seeded: green and red each 3–4.2 s, so a round cannot be tapped by a rhythm learned in the last one. */
+export const cycleFor = (rng: { range(min: number, max: number): number }): Cycle => [
+  { light: 'green', seconds: rng.range(PHASE.min, PHASE.max) },
+  { light: 'yellow', seconds: PHASE.yellow },
+  { light: 'red', seconds: rng.range(PHASE.min, PHASE.max) },
+];
+
 /** Which light shows `t` seconds into the cycle. */
-export function lightAt(t: number): Light {
-  const total = CYCLE.reduce((a, c) => a + c.seconds, 0);
+export function lightAt(t: number, cycle: Cycle = CYCLE): Light {
+  const total = cycle.reduce((a, c) => a + c.seconds, 0);
   let x = ((t % total) + total) % total;
-  for (const c of CYCLE) {
+  for (const c of cycle) {
     if (x < c.seconds) return c.light;
     x -= c.seconds;
   }
   return 'red';
 }
+
+/** The vehicles that wait at the light, drawn per vehicle from the round's seed; each has the same face, headlamp and hit area. */
+export const VEHICLES = ['car', 'bus', 'bike', 'tractor', 'van', 'digger'] as const;
+export type Vehicle = (typeof VEHICLES)[number];
 
 /** The toy light's order when tapped. */
 export const nextLight = (l: Light): Light => (l === 'green' ? 'yellow' : l === 'yellow' ? 'red' : 'green');
