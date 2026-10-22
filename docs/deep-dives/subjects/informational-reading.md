@@ -121,7 +121,7 @@ Product details are as the subagent labelled them; nothing was played.
 
 **Bands (proposal):** toddler 1, preschool 1–2, pre-K 2–3, school 3 (IR1). IR2 later extends school to 3–6.
 
-**Not a quiz of known facts.** At level 2 she may already know a cow eats hay from Animal Snack. That is deliberate: the first use of a guide confirms something familiar. Level 3 asks facts that only the guide holds, so looking is needed.
+**Not a quiz of known facts.** At level 2 she may already know a cow eats hay from Animal Snack. That is deliberate: the first use of a guide confirms something familiar. Level 3 asks facts that only the guide holds, so looking is needed on first meetings. *Plays with* and *Naps at* are fixed per friend, so a child who replays will learn them by heart; the definition decides whether they stay fixed (a real guide does not change) or are dealt per round from a small seeded table.
 
 ## Experience and presentation
 
