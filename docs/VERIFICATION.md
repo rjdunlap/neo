@@ -2,7 +2,7 @@
 
 ## 2026-10-22 — Look It Up levels 1–3 definition (informational-reading IR1, docs only)
 
-- [PR #818](https://github.com/rjdunlap/neo/pull/818), `claude/sharp-cannon-xdrzdf`: defined Look It Up levels 1–3 ([definition](definitions/look-it-up.md)) with real animal facts (the developer's choice, other decisions delegated); a research subagent opened two sources per fact; study, tracker, recommendations, backlog, READY, GAME-BATCHES and waiting-on-developer updated.
+- [PR #818](https://github.com/rjdunlap/neo/pull/818), `claude/sharp-cannon-xdrzdf`: defined Look It Up levels 1–3 ([definition](definitions/look-it-up.md)) with real animal facts (the developer's choice, other decisions delegated); two research subagent passes opened at least two sources per fact; study, tracker, recommendations, backlog, READY, GAME-BATCHES and waiting-on-developer updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: device speech of the fact sentences, whether a three-year-old reads tabs as pages, tab legibility in portrait; Animal Snack's bunny carrot (misleading per the RSPCA) is a separate follow-up.
 
