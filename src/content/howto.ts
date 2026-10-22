@@ -709,9 +709,11 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'Stack the number and color of scoops the customer asks for. The picture shows that many scoops, and each one is counted aloud as it lands.' },
       { from: 5, to: 5, text: 'Stack the three flavors in the order of the picture, bottom to top.' },
       { from: 6, to: 6, text: 'Look at the picture, then stack the flavors in the same order after it hides.' },
+      { from: 12, to: 12, text: 'Count the scoops already there. Tap the matching tub to add just enough to reach the number. Outlined slots show how many are missing; each added scoop is counted aloud.' },
+      { from: 13, to: 13, text: 'Tap the tubs to match both color counts in the two picture rows. Either color can go first. Tap the customer to hear both counts again.' },
     ],
-    finish: [{ to: 6, text: 'The round ends when all customers have their matching cones.' }, { from: 10, to: 11, text: 'Serve three cones to finish the round.' }],
-    note: [{ from: 10, to: 10, text: 'Every flavor works; there are no wrong scoops.' }, { from: 11, to: 11, text: 'A wrong customer counts one miss and repeats their color. After two misses, the matching picture glows (one hint). Tapping the cone is free.' }],
+    finish: [{ to: 6, text: 'The round ends when all customers have their matching cones.' }, { from: 10, to: 13, text: 'Serve three cones to finish the round.' }],
+    note: [{ from: 12, to: 13, text: 'Wrong colors and extra scoops bounce back (one miss). After two misses, a tub that still needs scoops glows (one hint). Tapping the customer repeats the order for free.' }, { from: 10, to: 10, text: 'Every flavor works; there are no wrong scoops.' }, { from: 11, to: 11, text: 'A wrong customer counts one miss and repeats their color. After two misses, the matching picture glows (one hint). Tapping the cone is free.' }],
   },
   roundup: {
     goal: 'Herd the farm animals where they belong.',

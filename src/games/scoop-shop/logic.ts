@@ -6,7 +6,7 @@ import type { Rng } from '../../engine/random';
  * you tap flavor tubs to stack scoops, and a matching cone is served. A scoop that doesn't
  * belong bounces gently back into its tub, so a cone can never be wrong for long.
  */
-export type ScoopMode = 'free' | 'one' | 'pair' | 'count' | 'stack' | 'memory' | 'customer';
+export type ScoopMode = 'free' | 'one' | 'pair' | 'count' | 'stack' | 'memory' | 'customer' | 'mixed';
 
 export interface ScoopPlan {
   mode: ScoopMode;
@@ -17,6 +17,8 @@ export interface ScoopPlan {
   min: number;
   max: number;
   name: string;
+  /** Prefilled count-on cones start with 1–3 scoops. */
+  start?: boolean;
 }
 
 export const PLANS: ScoopPlan[] = [
@@ -30,7 +32,9 @@ export const PLANS: ScoopPlan[] = [
 
 const ANY_SCOOP: ScoopPlan = { mode: 'free', customers: 3, flavors: 4, min: 1, max: 1, name: 'Any scoop: one tap, one scoop, one munch' };
 const MATCH_CUSTOMER: ScoopPlan = { mode: 'customer', customers: 3, flavors: 4, min: 1, max: 1, name: 'Who wanted pink? Match the prepared scoop to one of two customer pictures' };
-export const planFor = (level: number) => level === 10 ? ANY_SCOOP : level === 11 ? MATCH_CUSTOMER : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+const FILL_UP: ScoopPlan = { mode: 'count', start: true, customers: 3, flavors: 5, min: 3, max: 5, name: 'Fill it up: count on from the scoops already there to make three to five' };
+const MIXED: ScoopPlan = { mode: 'mixed', customers: 3, flavors: 5, min: 4, max: 5, name: 'Three pink and two blue: match two color counts, in any order' };
+export const planFor = (level: number) => level === 12 ? FILL_UP : level === 13 ? MIXED : level === 10 ? ANY_SCOOP : level === 11 ? MATCH_CUSTOMER : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export interface CustomerChoice {
   pictures: [ColorName, ColorName];
@@ -60,15 +64,19 @@ export interface Order {
   scoops: ColorName[];
   /** Whether the stacking order matters. */
   ordered: boolean;
+  /** Scoops already on the cone, all in its requested colour. */
+  start?: number;
 }
 
 export function makeOrders(plan: ScoopPlan, rng: Rng): { flavors: ColorName[]; orders: Order[] } {
   const flavors = rng.shuffle([...FLAVORS]).slice(0, plan.flavors);
   const orders: Order[] = [];
   let lastCount = 0;
+  let lastNeeded = 0;
   let lastColor: ColorName | undefined;
   for (let i = 0; i < plan.customers; i++) {
     let scoops: ColorName[] = [];
+    let start: number | undefined;
     switch (plan.mode) {
       case 'free':
         break;
@@ -94,12 +102,25 @@ export function makeOrders(plan: ScoopPlan, rng: Rng): { flavors: ColorName[]; o
         scoops = Array(n).fill(rng.pick(flavors));
         break;
       }
+      case 'mixed': {
+        const [a, b] = rng.shuffle([...flavors]);
+        // First two orders always have unequal counts; the third can also show two and two.
+        const n = i < 2 ? 5 : rng.int(4, 5);
+        const first = rng.int(1, n - 1);
+        scoops = [...Array<ColorName>(first).fill(a), ...Array<ColorName>(n - first).fill(b)];
+        break;
+      }
       case 'stack':
       case 'memory':
         scoops = rng.shuffle([...flavors]).slice(0, plan.max);
         break;
     }
-    orders.push({ scoops, ordered: plan.mode === 'stack' || plan.mode === 'memory' });
+    if (plan.start) {
+      const starts = Array.from({ length: Math.min(3, scoops.length - 1) }, (_, k) => k + 1);
+      start = rng.pick(starts.filter(k => scoops.length - k !== lastNeeded));
+      lastNeeded = scoops.length - start;
+    }
+    orders.push({ ...(start === undefined ? {} : { start }), scoops, ordered: plan.mode === 'stack' || plan.mode === 'memory' });
   }
   return { flavors, orders };
 }
@@ -164,4 +185,14 @@ export function scoopToTake(plan: ScoopPlan, order: Order, cone: ColorName[], fl
   if (complete(plan, order, cone)) return null;
   if (plan.mode === 'free') return flavors[cone.length % flavors.length];
   return nextNeeded(order, cone) ?? null;
+}
+
+/** Count rows shared by the picture and speech; order in a row never constrains scooping. */
+export function scoopCounts(order: Order): { color: ColorName; count: number }[] {
+  return [...new Set(order.scoops)].map(color => ({ color, count: order.scoops.filter(c => c === color).length }));
+}
+
+/** The count-on picture marks only the scoops still missing as outlined slots. */
+export function countSlots(order: Order, have: number): boolean[] {
+  return order.scoops.map((_, i) => i < have);
 }

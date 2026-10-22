@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { complete, customerToServe, makeCustomerChoices, CONE_KINDS, dressShop, makeOrders, nextNeeded, PLANS, planFor, scoopToTake, tryScoop, WINDOW_SCENES } from './logic';
+import { countSlots, scoopCounts, complete, customerToServe, makeCustomerChoices, CONE_KINDS, dressShop, makeOrders, nextNeeded, PLANS, planFor, scoopToTake, tryScoop, WINDOW_SCENES } from './logic';
 
 describe('Scoop Shop', () => {
   it('only orders flavors that are on the counter, in the sizes each level asks for', () => {
@@ -123,6 +123,81 @@ describe('Scoop Shop', () => {
       });
     }
     expect(firstSides.size).toBe(2);
+  });
+
+  it('counts on from one to three existing scoops, with a different remainder each customer', () => {
+    const plan = planFor(12);
+    expect(plan.start).toBe(true);
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const { flavors, orders } = makeOrders(plan, new Rng(seed));
+      let previous = 0;
+      for (const order of orders) {
+        const start = order.start!;
+        expect(start).toBeGreaterThanOrEqual(1);
+        expect(start).toBeLessThanOrEqual(3);
+        expect(order.scoops.length).toBeGreaterThan(start);
+        expect(order.scoops.length).toBeGreaterThanOrEqual(3);
+        expect(order.scoops.length).toBeLessThanOrEqual(5);
+        expect(new Set(order.scoops).size).toBe(1);
+        const needed = order.scoops.length - start;
+        expect(needed).not.toBe(previous);
+        previous = needed;
+        seen.add(start);
+        const cone = order.scoops.slice(0, start);
+        expect(countSlots(order, cone.length).filter(filled => !filled)).toHaveLength(needed);
+        const wrong = flavors.find(c => c !== cone[0])!;
+        expect(tryScoop(plan, order, cone, wrong)).toBe('wrong');
+        while (!complete(plan, order, cone)) {
+          const next = scoopToTake(plan, order, cone, flavors)!;
+          expect(tryScoop(plan, order, cone, next)).toBe('add');
+          cone.push(next);
+        }
+        expect(countSlots(order, cone.length).every(Boolean)).toBe(true);
+        expect(scoopToTake(plan, order, cone, flavors)).toBeNull();
+        expect(tryScoop(plan, order, cone, cone[0])).toBe('too-many');
+      }
+    }
+    expect([...seen].sort()).toEqual([1, 2, 3]);
+  });
+
+  it('accepts either colour first in mixed counts and rejects extras without corrupting the remaining hint', () => {
+    const plan = planFor(13);
+    for (let seed = 1; seed <= 200; seed++) {
+      const { flavors, orders } = makeOrders(plan, new Rng(seed));
+      let unequal = 0;
+      for (const order of orders) {
+        expect(order.ordered).toBe(false);
+        const rows = scoopCounts(order);
+        expect(rows).toHaveLength(2);
+        expect(order.scoops.length).toBeGreaterThanOrEqual(4);
+        expect(order.scoops.length).toBeLessThanOrEqual(5);
+        rows.forEach(({ color, count }) => {
+          expect(flavors).toContain(color);
+          expect(count).toBeGreaterThanOrEqual(1);
+          expect(count).toBeLessThanOrEqual(4);
+        });
+        if (rows[0].count !== rows[1].count) unequal++;
+        const outsider = flavors.find(c => !order.scoops.includes(c))!;
+        expect(tryScoop(plan, order, [], outsider)).toBe('wrong');
+        for (const first of [0, 1]) {
+          const cone: ColorName[] = [];
+          for (let i = 0; i < rows[first].count; i++) {
+            expect(tryScoop(plan, order, cone, rows[first].color)).toBe('add');
+            cone.push(rows[first].color);
+          }
+          expect(tryScoop(plan, order, cone, rows[first].color)).toBe('too-many');
+          expect(nextNeeded(order, cone)).toBe(rows[1 - first].color);
+          while (!complete(plan, order, cone)) {
+            const next = scoopToTake(plan, order, cone, flavors)!;
+            expect(tryScoop(plan, order, cone, next)).toBe('add');
+            cone.push(next);
+          }
+          expect(complete(plan, order, [...cone].reverse())).toBe(true);
+        }
+      }
+      expect(unequal).toBeGreaterThanOrEqual(2);
+    }
   });
 
   it('dresses every round with a window scene and a cone kind per customer, never the same kind twice in a row', () => {

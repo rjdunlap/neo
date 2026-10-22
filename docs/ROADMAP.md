@@ -19,7 +19,7 @@ Puddle Island is an iPad learning game for the developer's daughter, who turns o
 
 ## Where we are
 
-- Scoop Shop’s lap entry 10 *Any scoop* and toddler/preschool 11 *Who wanted pink?* are built; [remaining ready slices](deep-dives/scoop-shop.md#build-slices-in-order) count on and combine colour counts. Executive-function and creature-customer gates remain open.
+- Scoop Shop’s entries 10–11, prefilled count-on cones at 12 and two-colour counts at 13 are built; [remaining slices](deep-dives/scoop-shop.md#build-slices-in-order) retain the executive-function and creature-customer gates.
 
 - Roundup’s toddler bridge *Shoo one* (level 10), the lap/toddler follow mode *Come along* (level 11), pre-K *Leave the cows* (level 7), pre-K *Make it fair* (level 8), *Fill it up* (level 9) and *Big and little* (level 12) are built, and every finger on the grass now shoos at levels 2–12 (two shepherds, slice 9); the [remaining slices](deep-dives/roundup.md#build-slices-in-order) are gated (13 *Two things at once*, a school window).
 
