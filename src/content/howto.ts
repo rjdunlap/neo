@@ -812,14 +812,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: 'Listen to the bird and the frog, then tap the one that sings high (or low), as asked.' },
       { from: 3, to: 3, text: 'Listen to the bunny and the turtle, then tap the one that is fast (or slow), as asked.' },
       { from: 4, to: 4, text: 'Listen to the tune, then tap whether it goes up or down.' },
-      { from: 5, to: 5, text: "Listen to the woodpecker's rhythm, then tap it back on the drum." },
+      { from: 5, to: 5, text: "Watch the dots as the woodpecker knocks, then tap its rhythm back on the drum to wake the tree. Tap the woodpecker to listen again. After two misses, the drum lights for each remaining tap." },
       { from: 6, to: 6, text: 'Listen closely, then answer: high or low, fast or slow, up or down.' },
+      { from: 7, to: 7, text: 'Listen to the tune, then tap the rising steps, falling steps or flat path: up, down or the same note.' },
     ],
     finish: [
       { to: 1, text: 'The round ends after twelve songs.' },
       { from: 2, to: 4, text: 'The round ends when the listening questions are answered.' },
       { from: 5, to: 5, text: 'The round ends when the rhythms are echoed.' },
-      { from: 6, to: 6, text: 'The round ends when the listening questions are answered.' },
+      { from: 6, to: 7, text: 'The round ends when the listening questions are answered.' },
     ],
   },
   'little-helpers': {

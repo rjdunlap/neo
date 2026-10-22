@@ -1,5 +1,10 @@
 # Needs a person or a device
 
+## Sound Garden listening direction and visible echoes (levels 7 and 5)
+
+- [ ] On iPad speakers, confirm the three-note/four-note up/down/same tunes read as pitch direction without relying on words or loudness. Check the three portrait targets and spoken instructions with a pre-K player.
+- [ ] Observe whether knock dots help a child hear the gaps or tempt taps on the dots; confirm the drum's per-tap lights support a mixed rhythm, the tree's answering flourish is clear, and the five-tap final echo remains comfortable. Chrome establishes neither hearing nor understanding.
+
 
 ## Egg Catch gate repair and spring gate (levels 10–11)
 

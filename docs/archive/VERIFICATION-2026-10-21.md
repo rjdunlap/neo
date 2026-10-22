@@ -414,3 +414,10 @@
 - Updated READY (definition line out, build line in), GAME-BATCHES, the study backlog, the fractions study, its recommendation row, the subject tracker, the idea notebook and WAITING-ON-DEVELOPER (defaults for five open decisions).
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser, offline (docs only). The R2 build does not exist, so no play, ghost finger, iPad or child check applies yet.
+
+## 2026-10-21 — Seed Travelers 1–3 definition (life-science slice 1, docs only)
+
+- `claude/define-seed-travelers`: new [definition](../definitions/seed-travelers.md) for Seed Travelers levels 1–3 (toddler–pre-K, new game); the build is gated on the developer confirming its decisions 1–2 (identity, land), so no build line was added to READY.
+- Updated READY (definition line out), the study backlog, the life-science study and its recommendation row, the subject tracker, the idea notebook and WAITING-ON-DEVELOPER.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser, offline (docs only). Nothing is built, so no play, ghost finger, iPad or child check applies yet.

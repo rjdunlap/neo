@@ -6191,8 +6191,18 @@ async function batch() {
   }
 
   // Sound Garden: singers, listening questions with wrong answers, and echoing rhythms on the drum.
-  for (let level = 1; level <= 6 && (!only || only === 'garden'); level++) {
+  const soundLevels = process.env.SOUND_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7];
+  for (const level of (!only || only === 'garden') ? soundLevels : []) {
+    if (level === 7) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('sound-garden', level);
+    if (level === 7) {
+      await page.waitForFunction(() => !neo.scene.game.busy);
+      assert.ok(await page.evaluate(() => {
+        const g = neo.scene.game;
+        return g.tiles.length === 3 && g.tiles.every((t, i) => t.width >= 100 && t.x - 130 >= 0 && t.x + 130 <= neo.view.w && (!i || t.x - g.tiles[i - 1].x >= 260));
+      }), 'three full-size, separate choices fit in portrait');
+      await screenshot('sound-garden-7-portrait');
+    }
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     await page.evaluate(async () => {
@@ -6211,11 +6221,26 @@ async function batch() {
           await kit.until(() => g.index === q && !g.busy, 15000);
           const r = g.rhythms[q];
           if (q === 0) {
-            // Two echoes with an extra tap: gentle misses, then rhythm dots appear.
+            if (g.dotCount !== r.length + 1 || g.rhythmHint.alpha !== 1) throw new Error('Visible knocks missing before the first tap');
+            // Listening again is free and restores every dot.
+            kit.tapOn(g.woodpecker, 0, -120); await kit.sleep(300); await ready();
+            if (g.misses || g.hints || g.dotCount !== r.length + 1) throw new Error('Replay changed echo accounting');
+            // Two echoes with an extra tap: gentle misses, then per-tap drum lights.
             for (let k = 0; k < 2; k++) { await tapRhythm([...r, 'S']); await kit.until(() => g.busy, 4000); await ready(); }
-            if (g.misses !== 2 || g.hints !== 1) throw new Error(`Echo hint: ${g.misses} ${g.hints}`);
+            if (g.misses !== 2 || g.hints !== 1 || !g.echoHelp) throw new Error(`Echo hint: ${g.misses} ${g.hints}`);
+            await kit.sleep(50);
+            if (!g.drumGlow.visible) throw new Error('Hint does not light the first tap');
           }
-          await tapRhythm(r);
+          if (q === 0) {
+            for (let i = 0; i <= r.length; i++) {
+              if (!await kit.until(() => g.drumGlow.visible, 1200)) throw new Error('Missing next-tap hint');
+              kit.tapOn(g.drum, 0, -40);
+              await kit.sleep(30);
+              if (g.drumGlow.visible) throw new Error('Hint did not clear on tap');
+            }
+          } else await tapRhythm(r);
+          if (!await kit.until(() => g.treeAwake, 8000)) throw new Error('The echoed rhythm did not wake the tree');
+          if (g.rhythmHint.alpha > 0.01) throw new Error('Dots did not fade after the first tap');
           await kit.until(() => g.index > q || g.finished, 15000);
         }
         return;
@@ -6238,6 +6263,7 @@ async function batch() {
     const r = await page.evaluate(() => { const r = kit.store.stats('sound-garden').history.at(-1); return [r.misses, r.hints]; });
     assert.deepEqual(r, mode === 'play' ? [0, 0] : [2, 1], `garden ${level} score`);
     log(`Sound Garden ${level} (${mode}): sounds, answers, mistakes, hint, saved score and sticker passed`);
+    if (level === 7) await page.setViewportSize({ width: 1024, height: 768 });
   }
 
   // Little Helpers: tap the fruit to send helpers one by one; the whistle checks the count.

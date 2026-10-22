@@ -35,6 +35,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### sound-garden 1: Listening direction and visible echoes
 
+Built 2026-10-22, [PR #779](https://github.com/rjdunlap/neo/pull/779); [closeout](archive/COMPLETED-2026-10-09.md#sound-garden-listening-direction-and-visible-echoes-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`sound-garden`, level 7 Up, down or the same** (new level): staircases and a flat path at pre-K top. [Slice 3](deep-dives/sound-garden.md#new-levels-on-top)
 - **`sound-garden`, echo you can see** (level 5): knock dots from the start, 12 rhythms, the sleepy tree answers. [Slice 4](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)
 

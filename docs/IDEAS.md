@@ -1759,7 +1759,7 @@ Prefer a mode of an existing game when the meaningful action is the same; make a
 | Sock Match / Shadow Match | Memory Match or Shape Sorter modes | Add attribute or silhouette reasoning if it is meaningfully new |
 | Lost and Found | A later Island Errands story | Keep one adventure system and a small authored cast |
 | Critter Friends / Piñata Garden / Puppy Pal | Habitat Helpers, journal, and pet treehouse | Befriending, inviting visitors, and pretend care share the persistent world |
-| Echo Knock / a woodpecker's rhythm | Sound Garden's echo level (its sleepy-tree payoff is the [deep dive](deep-dives/sound-garden.md#fresh-content-inside-existing-levels)'s level 5 slice) and Rhythm Neighbors | Both already cover echoing and answering a rhythm; add a new scene only if its payoff adds something |
+| Echo Knock / a woodpecker's rhythm | Sound Garden's echo level (visible dots and sleepy-tree payoff built in [#779](https://github.com/rjdunlap/neo/pull/779)) and Rhythm Neighbors | Both already cover echoing and answering a rhythm; add a new scene only if its payoff adds something |
 | Rhyme Picnic | Rhyme Time | Rhyme Time covers choosing a rhyme; a picnic scene is only worth it for its payoff |
 | Build-a-Bug counting | Bug Builder | A counting mode, not a second bug game |
 | Doghouse Directions / Bear Hunt Walk | Peekaround Island for positions; Bear Hunt Walk for movement along a route | Start as a Peekaround mode for in, on and under; build Bear Hunt Walk only if moving along a route proves to be the new decision |

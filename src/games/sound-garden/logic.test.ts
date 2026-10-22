@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { CHOICES, echoRest, GAP_SECONDS, judgeEcho, LEVEL_IDS, makeQuestions, makeRhythms, MIN_APART, planFor, PLANS, RHYTHMS, SINGERS, singerToTap, makeCast, songFor, CAST_SIZE, FAST_BEATS, SLOW_BEATS, TEMPO_SPAN, tileFor, type Gap, type Question, type Sound } from './logic';
+import { CHOICES, echoDots, echoRest, GAP_SECONDS, judgeEcho, LEVEL_IDS, makeQuestions, makeRhythms, MIN_APART, planFor, PLANS, ECHO_RHYTHMS as RHYTHMS, SINGERS, singerToTap, makeCast, songFor, CAST_SIZE, FAST_BEATS, SLOW_BEATS, TEMPO_SPAN, tileFor, type Gap, type Question, type Sound } from './logic';
 
 /** Tap times for a rhythm, with each gap stretched by a factor (a child's wobble). */
 const play = (r: Gap[], wobble: number[] = []) => {
@@ -36,10 +36,37 @@ describe('Sound Garden', () => {
     expect(judgeEcho(['S'], [0, 3])).toBe(false);
   });
 
-  it('starts echo rounds short and goes up and down the scale', () => {
-    const r = makeRhythms(4, new Rng(3));
-    expect(r).toHaveLength(4);
-    expect(r[0].length).toBeLessThanOrEqual(2);
+  it('offers twelve distinct rhythms, progressing to a four-gap last round with truthful visible spacing', () => {
+    expect(RHYTHMS).toHaveLength(12);
+    expect(new Set(RHYTHMS.map((r) => r.join(''))).size).toBe(12);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const rounds = makeRhythms(4, new Rng(seed));
+      expect(rounds.map((r) => r.length)).toEqual([expect.any(Number), expect.any(Number), 3, 4]);
+      expect(rounds[0].length).toBeLessThanOrEqual(2);
+      expect(rounds[1].length).toBeLessThanOrEqual(2);
+      expect(new Set(rounds.map((r) => r.join(''))).size).toBe(4);
+      rounds.forEach((r) => seen.add(r.join('')));
+      expect(makeRhythms(4, new Rng(seed))).toEqual(rounds);
+    }
+    expect(seen.size).toBe(12);
+    for (const r of RHYTHMS) {
+      const dots = echoDots(r);
+      expect(dots).toHaveLength(r.length + 1);
+      expect(dots[0]).toBe(0);
+      r.forEach((g, i) => expect(dots[i + 1] - dots[i]).toBeCloseTo(GAP_SECONDS[g] * 100));
+      expect(dots.at(-1)).toBeLessThanOrEqual(300);
+    }
+  });
+
+  it('asks all three directions across seeded rounds and points the bot at the flat path too', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) for (const q of makeQuestions(PLANS[7], new Rng(seed))) {
+      expect(q.ask).toBe('updownsame');
+      seen.add(q.answer);
+      expect(CHOICES[q.ask][tileFor(q)]).toBe(q.answer);
+    }
+    expect([...seen].sort()).toEqual(['down', 'same', 'up']);
   });
 
   it('touches every singer in free play, and the tile that shows the answer in the listening levels', () => {
@@ -71,10 +98,10 @@ describe('Sound Garden', () => {
   });
 
   it('keys plans by level ID and clamps unknown levels to the ladder', () => {
-    expect(LEVEL_IDS).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(LEVEL_IDS).toEqual([1, 2, 3, 4, 5, 6, 7]);
     for (const id of LEVEL_IDS) expect(planFor(id)).toBe(PLANS[id]);
     expect(planFor(0)).toBe(PLANS[1]);
-    expect(planFor(99)).toBe(PLANS[6]);
+    expect(planFor(99)).toBe(PLANS[7]);
     expect(planFor(2).mode).toBe('highlow');
   });
 
@@ -101,6 +128,16 @@ describe('Sound Garden', () => {
   it('makes the two answers of a question differ only in what is asked', () => {
     for (const q of questions()) {
       const [a, b] = CHOICES[q.ask].map((c) => q.sounds[c]);
+      for (const c of CHOICES[q.ask]) {
+        expect(voices(q.sounds[c])).toEqual(voices(a));
+        expect(q.sounds[c].span).toBeCloseTo(a.span, 9);
+      }
+      if (q.ask === 'updownsame') {
+        expect(new Set(steps(q.sounds.same)).size).toBe(1);
+        expect(q.sounds.same.notes.map((n) => n.at)).toEqual(a.notes.map((n) => n.at));
+        expect(q.sounds.same.notes.length).toBeGreaterThanOrEqual(3);
+        expect(q.sounds.same.notes.length).toBeLessThanOrEqual(4);
+      }
       expect(Object.keys(q.sounds).sort()).toEqual([...CHOICES[q.ask]].sort());
       // One instrument for the whole question, and the same span for both answers.
       expect(voices(a).size).toBe(1);
@@ -129,7 +166,7 @@ describe('Sound Garden', () => {
 
   it('varies the sounds from question to question, and a replay plays the same notes', () => {
     const qs = questions(60);
-    for (const ask of ['highlow', 'fastslow', 'updown'] as const) {
+    for (const ask of ['highlow', 'fastslow', 'updown', 'updownsame'] as const) {
       const heard = new Set(qs.filter((q) => q.ask === ask).map((q) => JSON.stringify(q.sounds[q.answer])));
       expect(heard.size, ask).toBeGreaterThan(10);
     }
