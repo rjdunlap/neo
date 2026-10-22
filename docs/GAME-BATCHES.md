@@ -367,3 +367,9 @@ Proof: new-level tier on an existing interaction, as the [definition's Build and
 - **`stamp-studio`, levels 8 *Leaf prints* (lap) and 9 *Two feet* (toddler)** (a new `TracePrints` interaction inside the existing game: a mud tray where a leaf, a duck foot or a cat paw leaves its own fresh print; 0 misses and 0 hints, nothing kept): pat the mud with one big leaf (eight pats finish it), then choose between two feet and print both. [Definition](definitions/trace-prints.md), [deep-time D3](deep-dives/subjects/deep-time.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the [definition's Build and check tier](definitions/trace-prints.md#build-and-check-tier) sets it (typecheck, unit tests, the `creative` stamps loop at levels 8–9, `fingerdemo` at both, one portrait screenshot of level 9, one build).
+
+### critter-sort 1: Same Kind, Different Sprouts
+
+- **`critter-sort`, levels 12 *Like the big plant* and 13 *Same and different*** (new levels on the existing drag interaction; pre-K and school): drag little plants grown from one big plant's seeds into hoops for the big plant's leaf shape and petal marks, first one hoop (level 12), then overlapping hoops (level 13); the family is stated, never deduced, and no mechanism is taught. [Definition](definitions/same-kind-different-sprouts.md), [genetics study slice G4](deep-dives/subjects/genetics.md#build-slices-in-order)
+
+Proof: new-level tier on an existing interaction, as the [definition's Build and check tier](definitions/same-kind-different-sprouts.md#build-and-check-tier) sets it.

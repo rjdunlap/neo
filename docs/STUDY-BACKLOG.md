@@ -16,7 +16,7 @@ The research is complete for every row below; `define` means the next session wr
 | Subject | Status | Next bounded action | Source |
 | --- | --- | --- | --- |
 | `deep-time` | ready | D3 [defined](definitions/trace-prints.md); its build is queued as the `stamp-studio` Trace Prints batch | [Study](deep-dives/subjects/deep-time.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#deep-time-recommendations) |
-| `genetics` | define | Same Kind, Different Sprouts: existing-game comparison packet (G4) | [Study](deep-dives/subjects/genetics.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#genetics-recommendations) |
+| `genetics` | ready / define | G4 [defined](definitions/same-kind-different-sprouts.md); its build is queued as the `critter-sort` batch; next definition G7 Patchwork Conservatory (after G5, which is defined) | [Study](deep-dives/subjects/genetics.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#genetics-recommendations) |
 | `daily-life-long-ago` | define | Lid and Lever: younger Attic Finds mode (H3) | [Study](deep-dives/subjects/daily-life-long-ago.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations) |
 | `inquiry` | define | What can we tell? evidence-comparison packet (Q5) | [Study](deep-dives/subjects/inquiry.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#scientific-inquiry-recommendations) |
 | `measurement-units` | ready | M1 [defined](definitions/big-worms-little-worms.md); M2 build queued as the `inchworm` batch; Measuring Post and Weights Case wait on three developer decisions | [Study](deep-dives/subjects/measurement-units.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#measurement-and-units-recommendations) |
