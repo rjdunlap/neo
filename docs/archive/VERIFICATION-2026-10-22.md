@@ -84,3 +84,9 @@
 - [PR #781](https://github.com/rjdunlap/neo/pull/781), `claude/define-second-chance-shed`: defined Second Chance Shed levels 1–4 ([definition](../definitions/second-chance-shed.md)); READY, game batches, study backlog, nature study, recommendations, waiting-on-developer and ideas updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (nothing built). Open: the build N2, which merges only after the developer's item-table review (definition decision 1).
+
+## 2026-10-22 — Sand Table levels 1–3 definition (earth-materials E1, docs only)
+
+- [PR #782](https://github.com/rjdunlap/neo/pull/782), `claude/define-sand-table`: defined Sand Table dry play, levels 1–3 ([definition](../definitions/sand-table.md)); READY, game batches, study backlog, earth-materials study, recommendations, tracker, ideas and waiting-on-developer updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (nothing built). Open: the build E2 (no review gate; six open decisions all have defaults).

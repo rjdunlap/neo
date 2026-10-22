@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Scoop Shop younger scoop and customer entries (2026-10-22)
+
+[PR #802](https://github.com/rjdunlap/neo/pull/802), batch 1 / dive slices 3–4 only: lap entry 10 serves one scoop of any flavour to each of three customers, with a scoop-and-heart picture and spoken support. Lap order `[10, 1]`, entry ID 10, birthday/pin landing tests. Level 11 matches one prepared scoop to one of two different customer pictures, keeps the unserved friend and replaces the served one, alternates matching sides, hides tubs and supports body/picture taps. Wrong customer names their colour (one miss); two misses glow the matching picture (one hint). Toddler `[1, 2, 11, 3]`, preschool `[2, 11, 3, 4, 5]`; saved IDs and older bands preserved. How-tos, voice and ghost-finger actions shipped together. Later batches, levels 7–9 and creature customers stay outside this work; #733 remains for developer review. [Verification](../VERIFICATION.md#2026-10-22--scoop-shop-younger-entries-batch-1-slices-34); device/child questions remain open.
+
+
 ### Sound Garden listening direction and visible echoes (2026-10-22)
 
 [PR #779](https://github.com/rjdunlap/neo/pull/779), one batch for dive slices 3–4. Level 7 adds a flat path to the rising/falling choices, three- or four-note pentatonic contours with repeated-pitch "same", six questions, spoken support and a three-tile bot; pre-K 3–7 preserves stable IDs. Level 5 shows proportional knock dots from the first demonstration, fades them on the first tap, draws twelve rhythm patterns with a four-gap final round, wakes a sleepy tree with an answering flourish on a correct echo, and lights the drum for remaining taps after two misses. Free replay, relative-gap judging, supported completion and one sticker remain. The original eight-rhythm export used by Rhythm Neighbors is preserved; Sound Garden uses a separate twelve-pattern pool. [Verification](VERIFICATION-2026-10-22.md#2026-10-22--sound-garden-listening-direction-and-visible-echoes-slices-34); device hearing, speech and child understanding remain open. Other levels, batches and decisions excluded.

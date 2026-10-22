@@ -5411,11 +5411,42 @@ async function arcade() {
   }
 
   // Scoop Shop: wrong flavors and extra scoops bounce back; two lead to a glowing tub; memory peeks.
-  for (let level = 1; level <= 6 && (!only || only === 'scoop'); level++) {
+  const scoopLevels = process.env.ARCADE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 10, 11];
+  for (const level of (!only || only === 'scoop') ? scoopLevels : []) {
     await launch('scoop-shop', level);
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    if (level === 10 || level === 11) {
+      await page.waitForFunction(() => !neo.scene.game.busy && !!neo.scene.game.cone);
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+      await screenshot(`scoop-shop-${level}-portrait`);
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    }
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     await page.evaluate(async () => {
       const g = neo.scene.game;
+      if (g.plan.mode === 'customer') {
+        if ([...g.tubs.values()].some(t => t.visible)) throw new Error('Customer match exposed tubs');
+        for (let c = 0; c < 3; c++) {
+          if (!await kit.until(() => g.customerIndex === c && !g.busy && g.cone, 15000)) throw new Error('Customer match not ready');
+          await kit.sleep(80);
+          const choice = g.choices[c];
+          const waiting = g.guests[1 - choice.match];
+          const tapSide = (side, picture = false) => { const at = g.guests[side].toGlobal({ x: 0, y: picture ? -420 : -150 }); kit.tap(at.x, at.y); };
+          if (g.cone.colors.join() !== choice.scoop) throw new Error('Wrong prepared cone');
+          const original = [g.misses, g.hints];
+          kit.tapOn(g.cone, 0, -12); await kit.sleep(350);
+          if (g.misses !== original[0] || g.hints !== original[1]) throw new Error('Cone exploration counted');
+          if (c === 0) {
+            tapSide(1 - choice.match); await kit.sleep(700);
+            tapSide(1 - choice.match, true); await kit.sleep(700);
+            if (g.misses !== 2 || g.hints !== 1 || !g.hinted || !g.tubGlow.context.instructions.length) throw new Error('Customer hint accounting/glow');
+          }
+          tapSide(choice.match, c % 2 === 0);
+          if (!await kit.until(() => g.customerIndex > c || g.finished, 15000)) throw new Error('Matching customer did not eat');
+          if (c < 2 && !g.guests.includes(waiting)) throw new Error('Unserved customer left');
+        }
+        return;
+      }
       const tap = async (color) => { await kit.until(() => !g.busy, 8000); kit.tapOn(g.tubs.get(color), 0, -20); await kit.sleep(150); await kit.until(() => !g.busy || g.customerIndex >= g.orders.length, 8000); };
       for (let c = 0; c < g.orders.length; c++) {
         await kit.until(() => g.customerIndex === c && !g.busy && g.cone, 8000);
@@ -5426,7 +5457,7 @@ async function arcade() {
           await kit.sleep(300);
           if (g.misses || g.hints) throw new Error(`Scoop customer tap counted: ${g.misses} ${g.hints}`);
         }
-        if (c === 0 && g.plan.mode === 'free') {
+        if (c === 0 && g.plan.mode === 'free' && g.plan.max > 1) {
           // A second tap while a scoop is in the air wobbles its tub and adds nothing.
           kit.tapOn(g.tubs.get(g.flavors[0]), 0, -20);
           await kit.sleep(250);
@@ -5447,7 +5478,7 @@ async function arcade() {
           if (g.hints !== 2) throw new Error('Peek not counted');
         }
         const want = g.plan.mode === 'free' ? Array(g.plan.max).fill(g.flavors[0]) : null;
-        for (let guard = 0; guard < 8 && g.order === order; guard++) {
+        for (let guard = 0; guard < 8 && g.order === order && !g.busy; guard++) {
           const next = want ? want[guard] : (await import('/src/games/scoop-shop/logic.ts')).nextNeeded(order, g.cone.colors);
           if (!next) break;
           await tap(next);
@@ -5458,6 +5489,7 @@ async function arcade() {
     await screenshot(`scoop-shop-${level}`);
     await finished('scoop-shop');
     const r = await page.evaluate(() => { const r = kit.store.stats('scoop-shop').history.at(-1); return [r.misses, r.hints]; });
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1, 'one sticker per Scoop Shop round');
     assert.deepEqual(r, mode === 'free' ? [0, 0] : mode === 'memory' ? [2, 2] : [2, 1], `scoop ${level} score`);
     log(`Scoop Shop ${level} (${mode}): orders, bounced scoops, hint glow${mode === 'memory' ? ', peeking' : ''}, saved score and sticker passed`);
   }

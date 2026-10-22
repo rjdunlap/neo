@@ -1,3 +1,4 @@
+import { scoopShop } from '../games/scoop-shop';
 import { soundGarden } from '../games/sound-garden';
 import { eggCatch } from '../games/egg-catch';
 import { describe, expect, it } from 'vitest';
@@ -174,4 +175,25 @@ it('Sound Garden lap enters at 8 then 1, preserving saved IDs and safe birthday 
     expect(levelsInOrder(r)).not.toContain(8);
     expect(landing(8, r, soundGarden.entryLevels)).toBe(levelsInOrder(r)[0]);
   }
+});
+
+describe('Scoop Shop younger entries', () => {
+  it('steps through the teaching order without renumbering old IDs', () => {
+    const lap = scoopShop.levels('lap');
+    expect(levelsInOrder(lap)).toEqual([10, 1]);
+    expect(nextLevel(10, [round(10, 0), round(10, 0)], lap)).toBe(1);
+    expect(nextLevelOffer(1, lap)).toBeNull();
+    expect(levelsInOrder(scoopShop.levels('toddler'))).toEqual([1, 2, 11, 3]);
+    expect(levelsInOrder(scoopShop.levels('preschool'))).toEqual([2, 11, 3, 4, 5]);
+    expect(stepLevel(2, 1, scoopShop.levels('toddler'))).toBe(11);
+    expect(stepLevel(11, 1, scoopShop.levels('toddler'))).toBe(3);
+    expect(stepLevel(11, -1, scoopShop.levels('preschool'))).toBe(2);
+  });
+  it('lands a birthday or lap pin at the next band’s easiest level', () => {
+    for (const band of ['toddler', 'preschool', 'prek', 'school'] as const) {
+      const range = scoopShop.levels(band);
+      expect(landing(10, range, scoopShop.entryLevels)).toBe(levelsInOrder(range)[0]);
+    }
+    expect(landing(10, scoopShop.levels('lap'), scoopShop.entryLevels)).toBe(10);
+  });
 });
