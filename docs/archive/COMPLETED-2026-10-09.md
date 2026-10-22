@@ -11,7 +11,7 @@
 
 ### Fill and Dump level 7, Which holds more? (2026-10-21)
 
-[PR #727](https://github.com/rjdunlap/neo/pull/727), slice 4 of the [deep dive](../deep-dives/fill-dump.md#build-slices-in-order): preschool top `[1, 2, 6, 3, 4, 5, 7]`; free prediction → displacement-controlled pour → supported answer over bowl/cup, cup/bucket and bucket/mug. Straight sides show volume ÷ width, capacity ratios ≥1.6; overflow and empty space provide evidence. Guesses, spills, partial checks and re-pours stay unscored; two post-evidence misses glow the evidence once per pair. The tray restores the same water, and the finger plays through three pairs for one sticker. Other levels, band openings and gated pouring feel are unchanged. [Verification](../VERIFICATION.md#2026-10-21--fill-and-dump-level-7-which-holds-more).
+[PR #727](https://github.com/rjdunlap/neo/pull/727), slice 4 of the [deep dive](../deep-dives/fill-dump.md#build-slices-in-order): preschool top `[1, 2, 6, 3, 4, 5, 7]`; free prediction → displacement-controlled pour → supported answer over bowl/cup, cup/bucket and bucket/mug. Straight sides show volume ÷ width, capacity ratios ≥1.6; overflow and empty space provide evidence. Guesses, spills, partial checks and re-pours stay unscored; two post-evidence misses glow the evidence once per pair. The tray restores the same water, and the finger plays through three pairs for one sticker. Other levels, band openings and gated pouring feel are unchanged. [Verification](VERIFICATION-2026-10-21.md#2026-10-21--fill-and-dump-level-7-which-holds-more).
 
 
 
@@ -1529,3 +1529,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--feelings-faces-level
 ## Egg Catch level 8 Under the hen (2026-10-21)
 
 [PR #748](https://github.com/rjdunlap/neo/pull/748), `codex/egg-catch-under-hen`, deep-dive slice 4 only. Toddler order `[1, 8, 2]` keeps the stable IDs; entry level 8 lands at the easiest level of another band. One of four hens fluffs and clucks; the basket hops to the nearest tapped lane, and only the calling hen releases an egg once it is under her. A wrong lane gets a boing and spoken “Here, under me!”; two wrong taps light her hay lane and count one hint. The cue changes after each catch. Five eggs hatch into chicks at the ending. The bot uses the same lane taps; the card and spoken instruction describe the new action. Lap/couch mappings and other rungs are unchanged. Checks and open device work are in [VERIFICATION](../VERIFICATION.md#2026-10-21--egg-catch-level-8-under-the-hen-slice-4).
+
+## Garden Grow growth stages and wet soil (2026-10-21)
+
+[PR #749](https://github.com/rjdunlap/neo/pull/749), `claude/garden-grow-stages`, deep-dive slice 2 only (`src/games/garden-grow/index.ts`). `Bloom.grow` raises the stem, unfolds two leaves (staggered, outBack), swells a closed bud in the flower's colour with a green sepal, then opens the head; the icon and sticker blooms draw fully open. Each bed has a dark wet-soil overlay: rain on a bed soaks it at once and it dries back about 1.8 s later; a cloud tap at levels 1 and 3 wets a bed within 90 units. No rule, accounting, voice, how-to or level change. Level 8 (slice 4) is unblocked.
