@@ -391,3 +391,11 @@
 - Passed `npm run typecheck`; bouncy-launch logic, registry and content tests (178; new: midpoint triples strictly between with gap of at least 2, every shown pull lands on its own cloud inside the leash, 300 seeds three distinct sets with no repeated middle and deterministic, bot pull and judge). Full `npm test` 2415 of 2416: the one failure was block-garden `hintPlacement` at 2064 ms against its 2000 ms cap under full-suite load, 33 of 33 passing alone.
 - Passed `BROWSER_SUITE=arcade ARCADE_ONLY=launch FROM_LEVEL=9 TO_LEVEL=9` at http://localhost:5880 (a pad tap during a watched pull ignored, portrait keeps the middle pull, both numbered flags and rings, first guess deliberately different, 0 misses and 0 hints, no journal observation, one sticker); portrait screenshot reviewed. Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=bouncy-launch FINGER_LEVELS=9` in 27.8 s.
 - Not run: `npm run build` (no shared assets), other suites; the one wrong answer and one hint step is not applicable (unscored, no hint control). Open: whether a school child reads the rings, and iPad speech ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-21 — Roadmap reconciliation and study dispatch
+
+- Docs-only cleanup on `codex/roadmap-study-queue`, base `554e3e24`: corrected shipped game/rework summaries, retired stale art/demo statements, and separated blocked work from routine picks.
+- Added [study backlog](../STUDY-BACKLOG.md): 45 completed studies with named next actions, 20 eligible subject studies, five reviewer-dependent subjects and 26 unstarted game dives. Existing builds/claims remain distinct from definitions.
+- Refilled READY to ten; three study definitions and one research slot per refill when eligible, with first resulting builds promoted into content slots. Both routines use the shared ROADMAP/READY selection rules; coordinator state and active workers were not changed.
+- Passed relative Markdown links, queue/backlog coverage and duplicate-entry assertions, and `git diff --check` on the documentation diff.
+- Not run: typecheck, unit/browser/build/offline suites (docs-only tier); CI still supplies the required PR tests/build. Device/child checks and developer/reviewer gates remain open.

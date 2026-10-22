@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — What can we tell? definition (inquiry Q5, docs only)
+
+- [PR #774](https://github.com/rjdunlap/neo/pull/774), `claude/define-what-can-we-tell`: defined Ramp Race level 7 ([definition](definitions/what-can-we-tell.md)); inquiry study, recommendations, study backlog, waiting-on-developer, READY and the Trial Shelf definition updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`; a node one-off over the ramp model confirmed the case pools (17 confounded pairs after one tie, 6 where the shorter ramp went farther, 18 controlled) and that every confounded pair repairs in at most 2 taps with 4 fair repairs.
+- Not run: typecheck, unit tests, build, browser (nothing built). Open: the build, which waits on Q4 and inquiry decisions 1–2 extended to level 7.
+
 ## 2026-10-22 — Lid and Lever definition (daily-life-long-ago H3, docs only)
 
 - [PR #773](https://github.com/rjdunlap/neo/pull/773), `claude/define-lid-and-lever`: defined Attic Finds levels 3 *Up and down* and 4 *Peek inside* ([definition](definitions/lid-and-lever.md)); batch plan, READY, study backlog, waiting-on-developer, the daily-life-long-ago study, recommendations and the Attic Finds dive updated.
@@ -97,14 +103,6 @@
 - Passed `npm run typecheck`; `npx vitest run src/games/bumper-garden src/content/howto.test.ts src/games/registry.test.ts` 62 passed (new: asked color strictly fewest, at least 2 wanted, no sleepy flower wanted, every wanted flower reachable by an aimed launch on all three tables over 60 seeds; ladder order; ghost-finger plan test includes level 8).
 - Passed `BROWSER_SUITE=next NEXT_ONLY=bumper BUMPER_LEVELS=8` at http://localhost:5382/classic/ in portrait (pond table, 5 launches, two misses, one hint, sticker, a sleepy-bump check); screenshot `test-results/browser/bumper-garden-8.png` reviewed, sleepy flowers read clearly. Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=bumper-garden FINGER_LEVELS=8` in 10.9 s.
 - Not run: `npm run build` (no shared files or assets; CI builds), other suites. Open: whether a pre-K child reads "not" from the sleeping flowers ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
-
-## 2026-10-21 — Roadmap reconciliation and study dispatch
-
-- Docs-only cleanup on `codex/roadmap-study-queue`, base `554e3e24`: corrected shipped game/rework summaries, retired stale art/demo statements, and separated blocked work from routine picks.
-- Added [study backlog](STUDY-BACKLOG.md): 45 completed studies with named next actions, 20 eligible subject studies, five reviewer-dependent subjects and 26 unstarted game dives. Existing builds/claims remain distinct from definitions.
-- Refilled READY to ten; three study definitions and one research slot per refill when eligible, with first resulting builds promoted into content slots. Both routines use the shared ROADMAP/READY selection rules; coordinator state and active workers were not changed.
-- Passed relative Markdown links, queue/backlog coverage and duplicate-entry assertions, and `git diff --check` on the documentation diff.
-- Not run: typecheck, unit/browser/build/offline suites (docs-only tier); CI still supplies the required PR tests/build. Device/child checks and developer/reviewer gates remain open.
 
 ## Coverage summary
 
