@@ -1536,7 +1536,7 @@ Little surprises: at lap and toddler the mix's picnic blanket leads All games' f
 
 Birthday and gear: one rule, `birthdayDue`/`settleWorldBand` in `src/progress/bands.ts`, serves `MapScene` and `HomeScene`; Home throws the party once (`map.birthday`, confetti, cheer) instead of `home.hello`. The grown-ups' gear (`gearButton` and `openParentPanel`, as on the map) sits top right on Home and hides when leaving; `.classic-link` moved below it (top: safe-top + 76px) until slice 3, and `homeLayout` keeps actions clear of the new `GEAR_CORNER` (300×150).
 
-Deviation from the packet's tier: the one Windy step at the root ran inside `BROWSER_SUITE=home` (the blanket step, saved once, Back to the library), not `picnic`, because the picnic suite drives `classic/`. Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-21--rw08-slice-2-the-library-the-mix-the-birthday-and-the-gear).
+Deviation from the packet's tier: the one Windy step at the root ran inside `BROWSER_SUITE=home` (the blanket step, saved once, Back to the library), not `picnic`, because the picnic suite drives `classic/`. Checks are in [VERIFICATION](VERIFICATION-2026-10-21.md#2026-10-21--rw08-slice-2-the-library-the-mix-the-birthday-and-the-gear).
 
 ### Feelings Faces slice 2: lap entry 9 Poke a feeling (2026-10-21, [PR #746](https://github.com/rjdunlap/neo/pull/746))
 
