@@ -77,7 +77,7 @@ export class TracePrints implements Game {
     // The maker, pressed flat on its print, lifts away and fades, leaving the mark behind.
     const lift = traceArt(maker); lift.position.copyFrom(node.position); lift.rotation = node.rotation; lift.scale.set(1.05);
     this.lifts.addChild(lift);
-    void this.ctx.tw.to(lift, { y: lift.y - 40, alpha: 0 }, { duration: 0.35 }).then(() => lift.destroy());
+    void this.ctx.tw.to(lift, { y: lift.y - 40, alpha: 0 }, { duration: 0.35 }).then(() => { if (!lift.destroyed) lift.destroy(); });
     if (this.plan.makers.length === 1 && !this.markSaid) { this.markSaid = true; void this.ctx.say('stamp.leafmark'); }
     if (pair) void this.ctx.say('stamp.pair');
     this.refresh();
