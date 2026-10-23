@@ -399,6 +399,8 @@ export const SCRIPT = {
   'explore.others': ['Games for other ages!'],
   'explore.mine': ['Back to your games!'],
   'result.back': ['Back to {place}!'],
+  'nav.home': ['Home!'],
+  'nav.back': ['Back!'],
   'play.ball': ['Throw the ball for {pet}! Tap the ball.'],
   'play.fetch': ['Got it!', '{pet} found the ball!', 'Again, again!', 'Fetch!'],
   'species.sprout': ['A sprout!'],
