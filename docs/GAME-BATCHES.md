@@ -363,10 +363,10 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### pet-kitchen 2: Fair shares, thirds and equivalent shapes
 
-**Claimed 2026-10-23 (`claude/pet-kitchen-same-or-not`, draft PR):** part A = slices 4–5 (levels 11 and 12) in one worker; slice 6 (level 14, a cut per whole) stays open as a named second part. Files: `src/games/pet-kitchen/*`, `voice-script.ts`, `howto.ts`, registry-adjacent tests, docs.
+**Part A built 2026-10-23** (slices 4-5, levels 11 and 12; [PR #879](https://github.com/rjdunlap/neo/pull/879), `claude/pet-kitchen-same-or-not`; [closeout](archive/COMPLETED-2026-10-09.md#pet-kitchen-batch-2-part-a-same-or-not-the-same-and-two-pizzas-three-friends-slices-4-5-2026-10-23)). **Slice 6 (level 14, a cut per whole) stays open** as the second part; the preschool, pre-K and school orders below that include 14 are applied when it lands (until then they exclude it).
 
-- **`pet-kitchen`, level 11 *Same or not the same?*, slice 4** (new levels on the cut-and-drag, plus the overlay: typecheck, rule tests, one play of 11 serving the lopsided pieces once, `fingerdemo` at 11): piece areas, the lopsided icon and drawing; preschool `order [1, 11, 2, 3, 4]`, pre-K `order [11, 3, 4, 5, 6]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
-- **`pet-kitchen`, level 12 *Two pizzas, three friends*, slice 5** (new levels tier: typecheck, rule tests, one play of 12 with a halves serve, `fingerdemo` at 12): thirds of two wholes; school `order [5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
+- **`pet-kitchen`, level 11 *Same or not the same?*, slice 4 (built)** (new levels on the cut-and-drag, plus the overlay: typecheck, rule tests, one play of 11 serving the lopsided pieces once, `fingerdemo` at 11): piece areas, the lopsided icon and drawing; preschool `order [1, 11, 2, 3, 4]`, pre-K `order [11, 3, 4, 5, 6]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
+- **`pet-kitchen`, level 12 *Two pizzas, three friends*, slice 5 (built)** (new levels tier: typecheck, rule tests, one play of 12 with a halves serve, `fingerdemo` at 12): thirds of two wholes; school `order [5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 - **`pet-kitchen`, level 14 *Different shape, same share*, slice 6** (new interaction tier, a cut per whole: typecheck, rule tests, one play of 14, a portrait screenshot of the overlay, `fingerdemo` at 14): two shapes of one share; pre-K `order [11, 3, 4, 14, 5, 6]`, school `order [14, 5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
