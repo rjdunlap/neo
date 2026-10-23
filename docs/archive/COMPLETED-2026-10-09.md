@@ -17,7 +17,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--attic-finds-levels-3
 
 [PR #858](https://github.com/rjdunlap/neo/pull/858), `claude/seesaw-support-truth`: slice 1 support truth: at levels 1–2 a tap on a loose friend on the grass hops it to the empty tray (a touch that ends within 60 units of its pick-up; drag still works) and the how-to's line says "Tap a friend, or drag it"; at levels 3, 6 and 7 the glow after two overs rings the excess, and when the tray is under (nothing excess) it rings the next block on the grass (via `seesawTouch`); new voice variants in `seesaw.other`, `seesaw.light` and `seesaw.too-many`. Slice 2: `FACES_FOR` gives each weight a pool (1 duck or cat, 2 bunny or dog, 3 pig or cow, 4 bear) drawn from a separate looks `Rng` seeded from a clone of the round rng, so existing round numbers and sides are unchanged; `friendScale` moved into `logic.ts`; presents get a seeded wrapping (plain, dots, stripes); the mystery box at levels 6–7 is a parcel or a crate per round (levels 8–11 boxes unchanged). IDs and level windows unchanged. Tests added for distinct faces per round, the pools, scale by weight, wrappings and looks.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--seesaw-balance-batch-1-truthful-support-and-varied-weighing-props-slices-12).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--seesaw-balance-batch-1-truthful-support-and-varied-weighing-props-slices-12).
 
 ### Sand Table levels 1–3 (E2, 2026-10-23)
 
