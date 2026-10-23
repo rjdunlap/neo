@@ -1,5 +1,6 @@
 import { discoveryMemory, mixMemory } from './discovery';
 import { store } from '../progress/store';
+import { forgetArcade } from '../content/arcade';
 import { forgetExplore } from '../content/explore';
 import { forgetJournalPage } from './scenes/JournalScene';
 import { forgetLands } from './scenes/LandScene';
@@ -29,6 +30,7 @@ export function playerChanged() {
   forgetSubjects();
   forgetLands();
   forgetExplore();
+  forgetArcade();
   forgetJournalPage();
   applySettings();
 }

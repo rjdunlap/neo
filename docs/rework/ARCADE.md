@@ -44,7 +44,7 @@ Kongregate, the Poki and CrazyGames developer pages, Coolmath and Apple's Games-
 
 | Slice | What | State |
 | --- | --- | --- |
-| 1 | The Arcade entry, the spotlight with attract mode, the paged grid with tags, the Topics sheet (All, Played before, ten subjects), return to page, layout and filter tests | Built on this branch; device check open |
+| 1 | The Arcade entry, the spotlight with attract mode, the paged grid with tags, the Topics sheet (All, Played before, ten subjects), return to page, layout and filter tests | Built 2026-10-23 ([PR #900](https://github.com/rjdunlap/neo/pull/900)); device check open |
 | 2 | Shelves: horizontal rows (Played before, each subject) on one scrolling page, with tap-versus-scroll handling and a "see all" tile per row | Proposal |
 | 3 | Still poster frames: render each game's demo once after a few seconds into a small `RenderTexture` (released on leave) so a card shows real play, not only the hub picture | Proposal; measure memory on the iPad first |
 | 4 | Grown-up filters (band, controller/two-player, short/long) and a "Surprise me" button that only picks a card for the spotlight | Proposal |
@@ -52,7 +52,7 @@ Kongregate, the Poki and CrazyGames developer pages, Coolmath and Apple's Games-
 
 ## Files (slice 1)
 
-`src/content/arcade.ts` (filters, ordering, tags; tested), `src/creatures/home-layout.ts` (the Arcade layout and a five-entry Explore layout; tested), `src/app/scenes/ArcadeScene.ts`, `src/rework.ts` (route), `src/content/explore.ts` and `src/ui/origin-art.ts` (the fifth entry and its picture), `src/content/voice-script.ts`.
+`src/content/arcade.ts` (filters, ordering, tags; tested), `src/creatures/arcade-layout.ts` (the Arcade and its Topics sheet; tested), `src/creatures/home-layout.ts` (Explore's five entries, three over two; tested), `src/ui/icons.ts` (the cabinet picture), `src/app/scenes/ArcadeScene.ts`, `src/rework.ts` (route), `src/content/explore.ts` and `src/ui/origin-art.ts` (the fifth entry and its picture), `src/content/voice-script.ts`.
 
 ## Not established
 

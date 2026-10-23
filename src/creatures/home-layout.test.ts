@@ -114,11 +114,11 @@ describe('the Explore picker layout', () => {
 });
 
 describe('the Explore entries and pages layout (RW08)', () => {
-  it('fits one to four 150-unit cards with their names, Back, Home and both page arrows apart, clear of the corners', () => {
+  it('fits one to five 150-unit cards with their names, Back, Home and both page arrows apart, clear of the corners', () => {
     expect(PAGE_ARROW_RADIUS * 2).toBeGreaterThanOrEqual(120);
     const NAME = 50;
     for (const v of VIEWS) {
-      for (let n = 1; n <= 4; n++) {
+      for (let n = 1; n <= 5; n++) {
         const l = exploreGridLayout(v, n);
         const where = `${v.w}×${v.h}, ${n} cards`;
         const cards = l.cards.map((c, i) => ({ ...rect(c, EXPLORE_CARD, EXPLORE_CARD, `card ${i}`), y1: c.y + EXPLORE_CARD / 2 + NAME }));
@@ -126,9 +126,10 @@ describe('the Explore entries and pages layout (RW08)', () => {
         const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
         for (const c of cards) expect(overlap(c, link), `${c.what} under the link, ${where}`).toBe(false);
         if (n === 4) expect(new Set(l.cards.map((c) => c.y)).size, where).toBe(v.h > v.w ? 2 : 1);
+        if (n === 5) expect(new Set(l.cards.map((c) => c.y)).size, where).toBe(v.h > v.w ? 3 : 2);
       }
     }
-    expect(() => exploreGridLayout(VIEWS[0], 5)).toThrow();
+    expect(() => exploreGridLayout(VIEWS[0], 6)).toThrow();
   });
 });
 
