@@ -135,3 +135,10 @@
 - Ran: typecheck; size-parade rule tests; `npm test` at the time failed only `lab.test.ts` (Tinker Lab, fixed on main by #877); after merging `origin/main` re-ran typecheck and the size-parade tests.
 - Browser: `BROWSER_SUITE=expansion EXPANSION_ONLY=size SIZE_LEVELS=10,17` passed (sky tap, two wrong picks then a hint, finish, `[2,1]`, portrait screenshot of 10 reviewed); `fingerdemo FINGER_ONLY=size-parade FINGER_LEVELS=10,17` clean (5.8 s, 4.7 s).
 - Not run: build locally (CI builds), offline, iPad or a child ([open](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — Little Helpers batch 2: teams, crowd split and strong helpers
+
+- [PR #863](https://github.com/rjdunlap/neo/pull/863), `claude/little-helpers-teams`, commit `d4cd9652`: level 6 teams she builds, level 7 Everyone helps (pre-K 3–7, school), level 8 Strong helpers (school 5–8) (slices 4, 6, 7).
+- Ran: typecheck; `npx vitest run src/games/little-helpers src/content src/games/registry` (175 passed, new rule tests); full `npm test` 2607 passed, 1 failed: `src/app/scenes/lab.test.ts` (Tinker Lab prek landscape n=12), which fails identically on the unchanged base (pre-existing, unrelated).
+- Browser at `http://localhost:5437`: `BROWSER_SUITE=woods WOODS_ONLY=helpers` levels 6, 7 (portrait) and 8: wrong whistles, 2 misses and 1 hint, saved score, sticker; screenshots checked. `BROWSER_SUITE=fingerdemo FINGER_ONLY=little-helpers FINGER_LEVELS=6,7,8` passed (51, 51 and 42 s).
+- Not run: `npm run build`, couch suites, offline, iPad touch, hearing the new voice lines on a device, child play ([open](../DEVICE-CHECKS.md)).

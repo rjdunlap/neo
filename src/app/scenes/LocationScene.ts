@@ -6,7 +6,9 @@ import { store } from '../../progress/store';
 import type { LineId } from '../../content/voice-script';
 import type { LandId, LandLayout } from '../../content/lands';
 import type { Graphics } from 'pixi.js';
-import { arrowIcon } from '../../ui/icons';
+import { ENTRY_NAMES, entryArt, fittedBack } from '../../ui/origin-art';
+import { ink } from '../../art/palette';
+import { voice } from '../../audio/voice';
 import type { BackdropStyle } from '../../art/scenery';
 import type { View } from '../../engine/view';
 import type { App } from '../App';
@@ -65,7 +67,8 @@ export const isLocation = (id: LandId) => id in LOCATIONS;
  * same suggestions, the same `{ land }` origin, so Home from a game comes back here) with the location's ecosystem drawn
  * over the backdrop and its illustrated resident standing where the host stands. Tapping the resident pokes it, says
  * its hello (a second-wave resident) or the location's line and suggests a game. Built with `back` (the root, RW08),
- * its corner button is a Back arrow to Explore's Places; without it, Home goes to `go.hub()`.
+ * its corner button is a Back arrow with Places' picture, and a house beside it goes Home (RW14 slice 3); without it,
+ * Home goes to `go.hub()`.
  */
 export class LocationScene extends LandScene {
   /** The illustrated resident (her own friend where this is its home), or null where the land's code-drawn host still stands in. */
@@ -108,7 +111,8 @@ export class LocationScene extends LandScene {
       headingColor: place.headingColor,
       hostSaysLine: true,
       hostLine,
-      ...(back ? { home: back, homeIcon: () => arrowIcon(-1) } : {}),
+      // At the root Back carries Places' picture and a house beside it goes Home (RW14 slice 3).
+      ...(back ? { home: back, homeIcon: () => fittedBack(entryArt('places'), 50, ink), root: { homeSays: () => voice.say('result.back', { place: ENTRY_NAMES.places }) } } : {}),
     });
     this.resident = resident;
     this.atHome = atHome;
