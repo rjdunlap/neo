@@ -331,6 +331,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | Writing and composition | 2026-10-22 | [study](deep-dives/subjects/writing-composition.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#writing-and-composition-recommendations) |
 | Keyboarding and editing | 2026-10-22 | [study](deep-dives/subjects/keyboarding-editing.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#keyboarding-and-editing-recommendations) |
 | Poetry and wordplay | 2026-10-22 | [study](deep-dives/subjects/poetry-wordplay.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#poetry-and-wordplay-recommendations) |
+| Oceans | 2026-10-23 | [study](deep-dives/subjects/oceans.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#oceans-recommendations) |
 | Informational reading | 2026-10-22 | [study](deep-dives/subjects/informational-reading.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#informational-reading-recommendations) |
 | Vocabulary and word parts | 2026-10-22 | [study](deep-dives/subjects/vocabulary-word-parts.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#vocabulary-and-word-parts-recommendations) |
 | Measurement and units | 2026-10-21 | [study](deep-dives/subjects/measurement-units.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#measurement-and-units-recommendations) |

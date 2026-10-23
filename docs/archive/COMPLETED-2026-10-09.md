@@ -17,7 +17,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--attic-finds-levels-3
 
 [PR #858](https://github.com/rjdunlap/neo/pull/858), `claude/seesaw-support-truth`: slice 1 support truth: at levels 1–2 a tap on a loose friend on the grass hops it to the empty tray (a touch that ends within 60 units of its pick-up; drag still works) and the how-to's line says "Tap a friend, or drag it"; at levels 3, 6 and 7 the glow after two overs rings the excess, and when the tray is under (nothing excess) it rings the next block on the grass (via `seesawTouch`); new voice variants in `seesaw.other`, `seesaw.light` and `seesaw.too-many`. Slice 2: `FACES_FOR` gives each weight a pool (1 duck or cat, 2 bunny or dog, 3 pig or cow, 4 bear) drawn from a separate looks `Rng` seeded from a clone of the round rng, so existing round numbers and sides are unchanged; `friendScale` moved into `logic.ts`; presents get a seeded wrapping (plain, dots, stripes); the mystery box at levels 6–7 is a parcel or a crate per round (levels 8–11 boxes unchanged). IDs and level windows unchanged. Tests added for distinct faces per round, the pools, scale by weight, wrappings and looks.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--seesaw-balance-batch-1-truthful-support-and-varied-weighing-props-slices-12).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--seesaw-balance-batch-1-truthful-support-and-varied-weighing-props-slices-12).
 
 ### Sand Table levels 1–3 (E2, 2026-10-23)
 
@@ -1778,7 +1778,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--adventure-wa
 
 [PR #868](https://github.com/rjdunlap/neo/pull/868), branch `claude/ready-for-adventure`: the [definition](../definitions/ready-for-adventure.md) built as `ready-for-adventure` (`src/games/ready-for-adventure/`; region `cozy-village`; toddler 1, preschool 1–2, pre-K 2–3). Pack the shown prop, make a bare prop ready before packing, then do two such jobs in any valid order; the companion's wagon parade uses exactly what was packed. All five open decisions took their defaults (wagon, tap-select on alongside dragging, misses as defined, level 1's other choice seeded) except the land: home **Barnyard**, since Cozy Village failed `village.test.ts` decor at 12 games and Music Mountain failed `mountain.test.ts` at 7, while Barnyard passed all scene tests (10 to 12 with Adventure Walk).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--ready-for-adventure-levels-13-new-game-ra2).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--ready-for-adventure-levels-13-new-game-ra2).
 
 ## Mail Carrier batch 3: Compare delivery routes (2026-10-23)
 
@@ -1790,7 +1790,7 @@ Typecheck,28 rule tests (300 seeds × six orders), local build, filtered portrai
 
 [PR #881](https://github.com/rjdunlap/neo/pull/881), branch `codex/mail-carrier-make-key`, worker `01a169c5-59b2-7920-aa2d-ee86e0b83e15`: level15 / dive slice9 only. Five wet sign rows are paired with their houses while neighbours stand at their doors; correct pairs reveal each neighbour. Free row replay and house exploration before selection, mismatched-pair feedback and two-miss glow support completion. A full key starts two single-letter deliveries; one round/sticker includes the construction and both letters. School order ends `[4, 5, 9, 12, 6, 13, 7, 8, 11, 14, 15]`; other levels/bands/decisions stay unchanged.
 
-Typecheck,29 rule tests (300 seeded key mappings and valid delivery recipients), build and filtered portrait15 play passed. Full units had one unchanged Block Garden search-timing failure (2657 passed,4 skipped); its isolated33-test probe passed. Ghost-finger clean26.4s and implementation CI (all214 test files/build) passed. Publication is tracked by the linked PR; proof is in [verification](../VERIFICATION.md#2026-10-23--mail-carrier-15-make-the-key). Real iPad speech, touch feel and child response remain open.
+Typecheck,29 rule tests (300 seeded key mappings and valid delivery recipients), build and filtered portrait15 play passed. Full units had one unchanged Block Garden search-timing failure (2657 passed,4 skipped); its isolated33-test probe passed. Ghost-finger clean26.4s and implementation CI (all214 test files/build) passed. Publication is tracked by the linked PR; proof is in [verification](VERIFICATION-2026-10-23.md#2026-10-23--mail-carrier-15-make-the-key). Real iPad speech, touch feel and child response remain open.
 
 ## Fluffy Salon levels 6 and 7: Pat the fluff and Snip snip (slices 3–4, 2026-10-23)
 

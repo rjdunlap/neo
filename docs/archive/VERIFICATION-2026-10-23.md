@@ -105,3 +105,26 @@
 - Full `npm test`:213 files passed,2654 tests passed,4 skipped; one failure in unchanged `src/app/scenes/lab.test.ts:40` (prek landscape n=12 has no bench). Same failure on coordinator docs-only #873 CI; lab source/test/land mappings unchanged in this PR. Required CI on implementation `200a3daa` ([run39978526935](https://github.com/rjdunlap/neo/actions/runs/39978526935)) failed only this same assertion; CI build skipped after unit failure (local build passed). Resolved upstream by #877 (`68cc9b0d`); publication resume integrated that tests-only fix and passed typecheck plus32 Mail Carrier/Tinker Lab tests. Required CI is rerunning. Mail gameplay code is unchanged from `200a3daa`, so its play/demo proof is reused; no unrelated repair here.
 - `BROWSER_SUITE=woods WOODS_ONLY=mailmap MAIL_LEVELS=14`: passed arbitrary order/undo, two misses/one hint, counted office return, a shorter free second walk, no comparison scoring, skip on second bag and one history/sticker. Portrait plan/choice screenshots inspected; no page errors.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=mail-carrier FINGER_LEVELS=14`: clean completion in31.3s. Broader browser, offline and device checks not run (no persistence/assets/navigation change); real iPad speech and whether the optional comparison feels welcome remain person checks.
+
+## 2026-10-23 — Ready for Adventure levels 1–3 (new game, RA2)
+
+- Branch `claude/ready-for-adventure` ([PR #868](https://github.com/rjdunlap/neo/pull/868)): get parade props ready, pack them, watch the parade; registered as the 12th Barnyard game (Cozy Village at 12 failed `village.test.ts` decor, Music Mountain failed `mountain.test.ts` at 7), region cozy-village, toddler 1, preschool 1–2, pre-K 2–3.
+- Ran: typecheck (clean); full `npm test` on the tree merged with `origin/main` at 68cc9b0d (all pass; one load-timing `block-garden` search-cap case failed once and passed alone; the earlier `lab.test.ts` failure was fixed on main by #877); `npm run build`.
+- Browser: `BROWSER_SUITE=readyadventure` (level 1 pack; level 3 in portrait with an early pack miss, requested hint and its assisted tap, drags, the parade, saved score 1/1) passed at port 5611; `fingerdemo FINGER_ONLY=ready-for-adventure` level 1 finished in 10.3 s and level 3 in 16.8 s, clean.
+- Not run: iPad or device speech, a toddler choosing drag or tap ([open](../DEVICE-CHECKS.md)); `world` and the offline production check.
+
+## 2026-10-23 — Mail Carrier 15: Make the key
+
+- [PR #881](https://github.com/rjdunlap/neo/pull/881), `codex/mail-carrier-make-key`: only batch4 / level15 / dive slice9; five key pairs followed by two deliveries, one round/sticker. Built and verified; publication tracked in the linked PR.
+- Tested base `5c2ef9fe` plus level15 working diff at `http://localhost:5195/classic/`; integrated coordinator docs-only main `025bd512` as `787b81b0` without gameplay changes. Typecheck,29 Mail Carrier rule tests and build passed;300 seeds prove unique sign/house mappings, correct neighbours, two distinct recipients and valid delivery bot targets.
+- Full units:213 files passed,2657 tests passed,4 skipped; one unchanged Block Garden off-plan search timing assertion failed (`logic.test.ts:233`, under2000ms). One isolated probe passed all33 Block Garden tests; timing flake retained, no unrelated fix. Required implementation CI [run39995153836](https://github.com/rjdunlap/neo/actions/runs/39995153836) passed all214 test files and build on `09c2387d`; only documentation changed afterward.
+- `BROWSER_SUITE=woods WOODS_ONLY=mailmap MAIL_LEVELS=15`: passed free pre-row house tap/row replay, two mismatched pairs/one glow, all five filled rows before letters appear, two deliveries, one saved history/sticker; no page errors. Reviewed `test-results/browser/mail-carrier-15-wet-key-portrait.png`: neighbours, all wet rows and separate houses visible in portrait.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=mail-carrier FINGER_LEVELS=15`: clean26.4s completion, no misses/hints/page errors. Earlier demo interrupted by integration reload is not proof. Broader browser and offline not run (no persistence/assets/navigation changes); real iPad speech/touch feel and child response remain open.
+
+## 2026-10-23 — Seesaw Balance batch 1: truthful support and varied weighing props (slices 1–2)
+
+- [PR #858](https://github.com/rjdunlap/neo/pull/858), `claude/seesaw-support-truth`: tap-to-hop friends at levels 1–2, glow that rings the next block when the tray is under, friend faces per weight, present wrappings and parcel/crate boxes at 6–7; IDs and windows unchanged.
+- `npm run typecheck` clean; vitest seesaw-balance, content and registry files 173 passed (new: distinct faces per round, pools, scale by weight, wrappings, looks).
+- `BROWSER_SUITE=next NEXT_ONLY=seesaw` levels 1–7 passed on the second run; the first run stopped at level 7 with a page-state dump and no page errors, not reproduced (possible timing flake). Probe: tapping a lifting friend at level 1 hopped it to the empty tray with no miss. Portrait screenshots of level 4 (wrappings) and level 6 (crate).
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=seesaw-balance` levels 1 and 6 passed (25.9 s, 40.8 s).
+- Not run: `npm run build`, offline check, an iPad or real touch.
