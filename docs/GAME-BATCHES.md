@@ -229,11 +229,14 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
-### monster-munch 1: Food variety and younger sharing entries
+### monster-munch 1: Food variety, monsters and places (remaining)
 
-Claimed 2026-10-23: branch `claude/monster-munch-variety-entries` (draft PR); files `src/games/monster-munch/*`, `src/content/howto.ts`, `src/content/voice-script.ts`, docs.
+Levels 9 *Big bites* and 10 *One of each* (slices 3–4) are built; only this content slice remains.
 
 - **`monster-munch`, foods, monsters and places** (content): five foods (two kinds at 6), monster variants, three backdrops, the sticker pool. [Slice 2](deep-dives/monster-munch.md#fresh-content-inside-existing-levels)
+
+Built (reference only, do not recreate):
+
 - **`monster-munch`, level 9 Big bites** (new lap entry): three big cookies, the monster itself feeds, the belly grows; `BandLevels`, lap order 9, 1, 2, `entryLevels: [9, 10]`. [Slice 3](deep-dives/monster-munch.md#younger-band-openings)
 - **`monster-munch`, level 10 One of each** (new level, after *Big bites*): a cookie and an apple for each monster; toddler order 2, 3, 10, 4. [Slice 4](deep-dives/monster-munch.md#easier-entries-and-levels-between-existing-ones)
 
