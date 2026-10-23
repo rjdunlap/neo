@@ -29,3 +29,10 @@
 - Ran: typecheck; `npx vitest run src/games src/content` (157 files passed).
 - Browser: `BROWSER_SUITE=fingerdemo FINGER_ONLY=garden-grow FINGER_LEVELS=9,10,11` clean (52, 55 and 26 s of the 75 s budget); one scripted pre-K play of 9–11 (two wrong rains = 2 misses and 1 hint each, then the bot finished 9 and 11; level 10 not awaited to the end in the script, the `fingerdemo` finished it); landscape 1024×768 screenshots of 9 and 11.
 - Not run: portrait screenshot, level 10 screenshot, `npm run build`, offline, iPad touch, device speech, child play ([open](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — Pet Kitchen batch 1: meal variety and lap tap-sharing (slices 2–3)
+
+- [PR #860](https://github.com/rjdunlap/neo/pull/860), `claude/pet-kitchen-meals-lap`: critter friends who eat, seeded sandwich or pie, fraction bubble at 7, banana, level 10 *One for you, one for me* and the lap band (toddler `order [10, 1]`, picnic lap level 1→10).
+- Ran: typecheck; full `npm test` (211 files, 2572 passed); `npm run build`.
+- Browser: `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen` levels 1–10 (misses/hints `[2,1]` for 1–9, `[0,0]` for 10, no page errors, portrait screenshot of 10 reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-kitchen` levels 2, 7, 10 clean (14.8/7.5/8.7 s).
+- Not run: the `picnic` suite's sandwiches step (its unit test passes), offline, iPad touch, device speech, child play ([open](../DEVICE-CHECKS.md)).
