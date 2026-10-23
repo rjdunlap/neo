@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`shape-sorter`, Corners, curves and corner counts** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#shape-sorter-3-corners-curves-and-corner-counts).
 - **Research subject `poetry-wordplay`** (docs only; one subject): follow the subject procedure and reuse completed literacy studies; keep review and implementation gates. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Study `energy-waves`: define Circuit Garden** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations).
 

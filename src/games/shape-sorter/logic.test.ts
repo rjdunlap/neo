@@ -5,6 +5,10 @@ import { SCRIPT } from '../../content/voice-script';
 import { DESIGN_H, DESIGN_W } from '../../engine/view';
 import {
   BOX_FRONT,
+  ATTRIBUTE_POOL,
+  COUNT_POOL,
+  CORNERS,
+  cornerClass,
   CURVES,
   FLOOR_AT,
   POOL,
@@ -205,7 +209,7 @@ describe('Shape Sorter', () => {
     }
     expect(kinds).toEqual(new Set(SIZE_POOL));
     expect(shapeSorter.levels('preschool')).toEqual({ min: 3, max: 11, order: [3, 4, 5, 6, 7, 11] });
-    expect(shapeSorter.levels('prek')).toEqual({ min: 5, max: 12, order: [5, 6, 7, 11, 8, 12] });
+    expect(shapeSorter.levels('prek')).toEqual({ min: 5, max: 14, order: [5, 6, 7, 11, 8, 12, 13, 14] });
     for (const id of ['shape.size.start', 'shape.size.big', 'shape.size.little', 'shape.size.same']) {
       expect((SCRIPT[id as keyof typeof SCRIPT] as readonly string[] | undefined)?.length, id).toBeGreaterThan(0);
     }
@@ -236,12 +240,51 @@ describe('Shape Sorter', () => {
       }
     }
     expect(seen).toEqual(new Set(Object.keys(TURN_PERIOD)));
-    expect(shapeSorter.levels('prek').order?.at(-1)).toBe(12);
+    expect(shapeSorter.levels('prek').order).toContain(12);
     for (const band of ['lap', 'toddler', 'preschool'] as const) expect(shapeSorter.levels(band).order).not.toContain(12);
     expect(shapeSorter.bands).not.toContain('school');
     for (const id of ['shape.turn.start', 'shape.turn.tap', 'shape.turn.wrong', 'shape.turn.help']) {
       expect(SCRIPT[id as keyof typeof SCRIPT]?.length, id).toBeGreaterThan(0);
     }
+  });
+
+  it('sorts all attribute kinds unambiguously, and deals both classes at 13 and shared four-corner targets at 14', () => {
+    expect(ATTRIBUTE_POOL).not.toContain('heart');
+    expect(COUNT_POOL).not.toContain('star');
+    expect(CORNERS.star).toBe(10);
+    const seen = new Map<number, Set<string>>([[13, new Set()], [14, new Set()]]);
+    for (const level of [13, 14]) {
+      const plan = planFor(level);
+      expect(plan.sameColor).toBe(true);
+      for (let seed = 1; seed <= 300; seed++) {
+        const holes = dealHoles(new Rng(seed), plan);
+        const pieces = pieceKinds(new Rng(seed), plan, holes);
+        expect(pieceKinds(new Rng(seed), plan, holes)).toEqual(pieces);
+        expect(pieces).toHaveLength(level === 13 ? 6 : 7);
+        const pool = level === 13 ? ATTRIBUTE_POOL : COUNT_POOL;
+        for (const kind of pool) {
+          expect(holes.filter((h) => fits(h, { kind }))).toHaveLength(1);
+          const target = holeFor(holes, { kind })!;
+          expect(target.attribute).toBe(level === 13 ? cornerClass(kind) : CORNERS[kind]);
+        }
+        for (const p of pieces) {
+          expect(pool).toContain(p.kind);
+          seen.get(level)!.add(p.kind);
+          expect(SCRIPT[(level === 13 ? `shape.attr.${cornerClass(p.kind)}` : `shape.count.${CORNERS[p.kind]}`) as keyof typeof SCRIPT]?.length).toBeGreaterThan(0);
+        }
+        if (level === 13) expect(new Set(pieces.map((p) => cornerClass(p.kind)))).toEqual(new Set(['curves', 'corners']));
+        else {
+          expect(holes.map((h) => h.attribute)).toEqual([0, 3, 4, 5, 6]);
+          const fours = pieces.filter((p) => CORNERS[p.kind] === 4);
+          expect(new Set(fours.map((p) => p.kind)).size).toBeGreaterThanOrEqual(2);
+          expect(new Set(fours.map((p) => holeFor(holes, p))).size).toBe(1);
+        }
+      }
+      expect(seen.get(level)).toEqual(new Set(level === 13 ? ATTRIBUTE_POOL : COUNT_POOL));
+      for (const band of ['lap', 'toddler', 'preschool'] as const) expect(shapeSorter.levels(band).order).not.toContain(level);
+    }
+    expect(shapeSorter.levels('prek')).toEqual({ min: 5, max: 14, order: [5, 6, 7, 11, 8, 12, 13, 14] });
+    expect(shapeSorter.bands).not.toContain('school');
   });
 
   it('accepts symmetric rotations, full wraps, and ±15° boundaries; rejects just outside the tolerance', () => {

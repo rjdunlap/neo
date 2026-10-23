@@ -284,3 +284,9 @@
 - Passed typecheck; `npm test` (210 files, 2517 tests); `npm run build` (shared `src/art/shapes.ts` changed).
 - Dev server `http://localhost:5690`: `BROWSER_SUITE=originals ORIGINALS_ONLY=shapes SHAPE_LEVELS=6,7,10,11` (10 at toddler, 11 in portrait; one wrong hole twice, glow hint, finish, sticker, score `[2,1]`) and `SHAPE_LEVELS=8` passed. `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-sorter FINGER_LEVELS=7,8,10,11` clean in 22.7, 18.8, 11.5 and 9.2 s. Portrait screenshot of 11 reviewed: three oval holes fit the lid.
 - Not run: world/offline/picnic/couch (unaffected). Open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): device speech of "trapezoid" and "pentagon", a child telling the three sizes apart. Level 11's first kind is a seeded pick, not "circle first".
+
+## 2026-10-22 — Look It Up levels 1–3 definition (informational-reading IR1, docs only)
+
+- [PR #818](https://github.com/rjdunlap/neo/pull/818), `claude/sharp-cannon-xdrzdf`: defined Look It Up levels 1–3 ([definition](../definitions/look-it-up.md)) with real animal facts (the developer's choice, other decisions delegated); two research subagent passes opened at least two sources per fact; study, tracker, recommendations, backlog, READY, GAME-BATCHES and waiting-on-developer updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: device speech of the fact sentences, whether a three-year-old reads tabs as pages, tab legibility in portrait; Animal Snack's bunny carrot (misleading per the RSPCA) is a separate follow-up.

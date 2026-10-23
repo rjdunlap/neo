@@ -1,7 +1,8 @@
-import { Circle, Container, Graphics, Rectangle, Sprite } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, Sprite, Text } from 'pixi.js';
 import { cheek, ink, RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { shapePath, SHAPES, type ShapeKind } from '../../art/shapes';
+import type { LineId } from '../../content/voice-script';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -12,6 +13,8 @@ import { spread, type View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   BOX_FRONT,
+  CORNERS,
+  cornerClass,
   FLOOR_AT,
   boxTopFor,
   clueKinds,
@@ -63,7 +66,7 @@ const LEVELS: BandLevels = {
   lap: { min: 9, max: 9, order: [9] },
   toddler: { min: 1, max: 10, order: [9, 1, 2, 10, 3, 4, 5] },
   preschool: { min: 3, max: 11, order: [3, 4, 5, 6, 7, 11] },
-  prek: { min: 5, max: 12, order: [5, 6, 7, 11, 8, 12] },
+  prek: { min: 5, max: 14, order: [5, 6, 7, 11, 8, 12, 13, 14] },
 };
 
 const PIECE_R = 48;
@@ -95,6 +98,7 @@ interface Hole extends HoleSpec {
   x: number;
   y: number;
   glow: Graphics;
+  dots: Graphics[];
 }
 
 /** A wooden box with a face. It eats shapes. */
@@ -128,15 +132,34 @@ class Box extends Container {
       .stroke(line(wood.line));
     this.addChild(body);
 
-    layout.holes.forEach(({ kind, size, r, x, y }) => {
+    layout.holes.forEach(({ kind, size, attribute, r, x, y }) => {
       const rim = plan.coded ? swatch[SHAPE_COLOR[kind]].fill : wood.line;
-      const glow = shapePath(new Graphics(), kind, r + 16).fill({ color: 0xfff3a0, alpha: 0.85 });
+      const outline: ShapeKind = attribute !== undefined ? 'circle' : kind;
+      const glow = shapePath(new Graphics(), outline, r + 16).fill({ color: 0xfff3a0, alpha: 0.85 });
       glow.position.set(x, y);
       glow.visible = false;
-      const hole = shapePath(new Graphics(), kind, r).fill(0x4a3424).stroke(line(rim, plan.coded ? 9 : 6));
+      const hole = (attribute === 'corners'
+        ? new Graphics().poly([-r, -r * 0.6, -r * 0.6, -r, 0, -r * 0.6, r * 0.6, -r, r, -r * 0.6, r, r * 0.6, r * 0.6, r, 0, r * 0.6, -r * 0.6, r, -r, r * 0.6]).closePath()
+        : shapePath(new Graphics(), outline, r)).fill(0x4a3424).stroke(line(rim, plan.coded ? 9 : 6));
       hole.position.set(x, y);
       this.addChild(glow, hole);
-      this.holes.push({ kind, size, x, y, glow });
+      const dots: Graphics[] = [];
+      if (attribute !== undefined) {
+        const sign = typeof attribute === 'number'
+          ? new Text({ text: String(attribute), style: { fontFamily: 'sans-serif', fontSize: 38, fontWeight: 'bold', fill: 0xffffff } })
+          : shapePath(new Graphics(), kind, 24).fill(wood.light);
+        if (sign instanceof Text) sign.anchor.set(0.5);
+        sign.position.set(x, y);
+        this.addChild(sign);
+        if (typeof attribute === 'number') for (let i = 0; i < attribute; i++) {
+          const a = -Math.PI / 2 + i * Math.PI * 2 / attribute;
+          const dot = new Graphics().circle(0, 0, 6).fill(0xfff3a0);
+          dot.position.set(x + Math.cos(a) * 40, y + Math.sin(a) * 40);
+          this.addChild(dot);
+          dots.push(dot);
+        }
+      }
+      this.holes.push({ kind, size, attribute, x, y, glow, dots });
     });
 
     // A friendly face on the front.
@@ -194,7 +217,11 @@ class Box extends Container {
       this.glowFor -= dt;
       if (this.glowFor <= 0) for (const h of this.holes) h.glow.visible = false;
     }
-    for (const h of this.holes) if (h.glow.visible) h.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 8);
+    for (const h of this.holes) {
+      if (h.glow.visible) h.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 8);
+      // Count the sign's dots one at a time, repeating while help is lit. Zero has no dots.
+      h.dots.forEach((dot, i) => { dot.alpha = !h.glow.visible || i <= Math.floor((4 - this.glowFor) / 0.45) % (h.dots.length + 1) ? 1 : 0.18; });
+    }
   }
 
   private drawMouth() {
@@ -277,7 +304,7 @@ class ShapeSorter implements Game {
   }
 
   start() {
-    const first = this.plan.clue ? 'shape.find.start' : this.plan.tapIn ? 'shape.tap.start' : this.plan.sized ? 'shape.size.start' : this.plan.turning ? 'shape.turn.start' : 'shape.start';
+    const first = this.plan.attribute === 'curves' ? 'shape.attr.start' : this.plan.attribute === 'count' ? 'shape.count.start' : this.plan.clue ? 'shape.find.start' : this.plan.tapIn ? 'shape.tap.start' : this.plan.sized ? 'shape.size.start' : this.plan.turning ? 'shape.turn.start' : 'shape.start';
     void this.ctx.instruct(first).then(() => {
       if (this.plan.clue) void this.askNextClue();
     });
@@ -406,6 +433,7 @@ class ShapeSorter implements Game {
     if (fitted || this.clock - this.lastNag > 3) {
       this.lastNag = this.clock;
       if (asked && fitted) void this.ctx.say(`shape.find.notyet.${asked}`, { shape: piece.kind });
+      else if (this.plan.attribute) void this.ctx.say(this.plan.attribute === 'curves' ? `shape.attr.${cornerClass(piece.kind)}` : `shape.count.${CORNERS[piece.kind]}` as LineId, { shape: piece.kind });
       else if (size) void this.ctx.say(`shape.size.${size}`);
       else void this.ctx.say(this.plan.clue && this.asked ? `shape.find.hint.${this.asked}` : 'shape.wrong', { hole: near.h.kind });
     }
@@ -565,6 +593,8 @@ export const shapeSorter: GameModule = {
     const p = planFor(level);
     const n = p.deal?.count ?? p.holes.length;
     const shapes = `${n} shape${n === 1 ? '' : 's'}`;
+    if (p.attribute === 'curves') return 'sort shapes into curves or corners';
+    if (p.attribute === 'count') return 'count corners: 0, 3, 4, 5 or 6; different shapes share a hole';
     if (p.tapIn) return 'tap a shape and it hops in';
     if (p.turning) return 'tap to turn each shape, then carry it to its upright hole';
     if (p.sized) return 'one shape in three sizes: big, middle, little';

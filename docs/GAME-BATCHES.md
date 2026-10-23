@@ -100,6 +100,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### shape-sorter 3: Corners, curves and corner counts
 
+Built 2026-10-22, [PR #842](https://github.com/rjdunlap/neo/pull/842); [closeout](archive/COMPLETED-2026-10-09.md#shape-sorter-batch-3-corners-curves-and-corner-counts-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`shape-sorter`, level 13 *Corners or curves*, slice 7** (new levels; after slice 4): two mouths, curves or corners; pre-K `order […, 12, 13]`. [Dive](deep-dives/shape-sorter.md#new-levels-on-top)
 - **`shape-sorter`, level 14 *Count the corners*, slice 8** (new levels; after slice 4): holes labelled 0, 3, 4, 5, 6 with dots; pre-K top by default. [Dive](deep-dives/shape-sorter.md#new-levels-on-top)
 

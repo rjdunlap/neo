@@ -40,6 +40,8 @@ export interface SorterPlan {
   sized?: boolean;
   /** The box says a property of a shape it swallows, now and then. */
   facts?: boolean;
+  /** Several kinds share a target, by curve/corner class or corner count. */
+  attribute?: 'curves' | 'count';
 }
 
 /** Every shape the sorter knows: the classic six and the later five. */
@@ -56,6 +58,13 @@ const CLUE_APART: [ShapeKind, ShapeKind][] = [
 ];
 /** The kinds level 11 draws in three sizes. */
 export const SIZE_POOL: readonly ShapeKind[] = ['circle', 'square', 'triangle', 'star', 'heart', 'hexagon', 'oval', 'pentagon'];
+
+/** Heart mixes curves and corners; star has ten corners, so neither belongs in the counting pool. */
+export const CORNERS: Record<ShapeKind, number> = { circle: 0, oval: 0, triangle: 3, square: 4, rectangle: 4, diamond: 4, trapezoid: 4, pentagon: 5, hexagon: 6, star: 10, heart: 1 };
+export const ATTRIBUTE_POOL = POOL.filter((k) => k !== 'heart');
+export const COUNT_POOL = ATTRIBUTE_POOL.filter((k) => k !== 'star');
+export const FOUR_CORNERS = COUNT_POOL.filter((k) => CORNERS[k] === 4);
+export const cornerClass = (kind: ShapeKind) => CORNERS[kind] === 0 ? 'curves' : 'corners';
 
 const FOUR: ShapeKind[] = ['circle', 'square', 'triangle', 'star'];
 /** Levels 7 and 8: six from the pool, a curve and straight sides among them; the count is pinned, so the pool can grow without widening a lid. */
@@ -77,6 +86,9 @@ export const PLANS: SorterPlan[] = [
   { holes: [], pieces: 3, coded: false, sameColor: false, tilt: false, sized: true },
   // 12, Turn it to fit: three or four corner shapes, sometimes a circle for contrast.
   { holes: ['square', 'triangle', 'hexagon', 'star'], pieces: 4, coded: false, sameColor: true, tilt: false, turning: true },
+  // 13–14 keep the drag, but several shape kinds share one target.
+  { holes: [], pieces: 6, coded: false, sameColor: true, tilt: false, attribute: 'curves' },
+  { holes: [], pieces: 7, coded: false, sameColor: true, tilt: false, attribute: 'count' },
 ];
 
 /** A touch let go sooner than this (in seconds) is a tap. The ghost finger presses for 0.22 s. */
@@ -103,6 +115,7 @@ export interface HoleSpec {
   kind: ShapeKind;
   /** Set only at the sized level: the hole takes only a piece of this size. */
   size?: Size;
+  attribute?: 'curves' | 'corners' | number;
 }
 
 export interface PieceSpec {
@@ -117,6 +130,8 @@ const clash = (pairs: [ShapeKind, ShapeKind][], kinds: readonly ShapeKind[], k: 
 
 /** The lid's holes for one round: fixed for most levels, drawn from the pool at 6–8, one kind in three sizes at 11. */
 export function dealHoles(rng: Rng, plan: SorterPlan): HoleSpec[] {
+  if (plan.attribute === 'curves') return [{ kind: 'circle', attribute: 'curves' }, { kind: 'triangle', attribute: 'corners' }];
+  if (plan.attribute === 'count') return (['circle', 'triangle', 'square', 'pentagon', 'hexagon'] as ShapeKind[]).map((kind) => ({ kind, attribute: CORNERS[kind] }));
   if (plan.turning) {
     const kinds = [...plan.holes];
     if (rng.chance(0.5)) kinds[rng.int(0, kinds.length - 1)] = 'circle';
@@ -144,6 +159,14 @@ export function dealHoles(rng: Rng, plan: SorterPlan): HoleSpec[] {
 
 /** Every hole gets at least one piece; the rest are random holes. Shuffled. At 6–7 sizes vary, and a kind dealt twice comes once small and once big. */
 export function pieceKinds(rng: Rng, plan: SorterPlan, holes: readonly HoleSpec[] = dealHoles(rng, plan)): PieceSpec[] {
+  if (plan.attribute) {
+    const kinds: ShapeKind[] = plan.attribute === 'curves'
+      ? [rng.pick(['circle', 'oval'] as const), rng.pick(ATTRIBUTE_POOL.filter((k) => CORNERS[k] > 0))]
+      : [rng.pick(['circle', 'oval'] as const), 'triangle', ...rng.shuffle([...FOUR_CORNERS]).slice(0, 2), 'pentagon', 'hexagon'];
+    const pool = plan.attribute === 'curves' ? ATTRIBUTE_POOL : COUNT_POOL;
+    while (kinds.length < plan.pieces) kinds.push(rng.pick(pool));
+    return rng.shuffle(kinds.map((kind) => ({ kind, scale: 1 })));
+  }
   if (plan.sized) return rng.shuffle(holes.map(({ kind, size }) => ({ kind, size, scale: SIZE_SCALE[size!] })));
   const kinds = holes.map((h) => h.kind);
   while (kinds.length < plan.pieces) kinds.push(rng.pick(holes).kind);
@@ -160,9 +183,11 @@ export function pieceKinds(rng: Rng, plan: SorterPlan, holes: readonly HoleSpec[
 /** One spoken clue for each shape, in a seeded order. */
 export const clueKinds = (rng: Rng, holes: readonly HoleSpec[]): ShapeKind[] => rng.shuffle(holes.map((h) => h.kind));
 
-/** Does this piece go in this hole: its own kind, and at the sized level its own size. */
+/** The target asks for an attribute, or the piece's own kind (and size at 11). */
 export const fits = (hole: HoleSpec, piece: { kind: ShapeKind; size?: Size }) =>
-  hole.kind === piece.kind && (hole.size === undefined || hole.size === piece.size);
+  hole.attribute !== undefined
+    ? typeof hole.attribute === 'number' ? CORNERS[piece.kind] === hole.attribute : cornerClass(piece.kind) === hole.attribute
+    : hole.kind === piece.kind && (hole.size === undefined || hole.size === piece.size);
 
 /** At the sized level, a piece on a hole of its kind but the wrong size: too big or too little. */
 export const sizeMiss = (hole: HoleSpec, piece: { kind: ShapeKind; size?: Size }): 'big' | 'little' | null =>
@@ -174,7 +199,7 @@ export const sizeMiss = (hole: HoleSpec, piece: { kind: ShapeKind; size?: Size }
 
 /** A hole's drawn radius: sized holes by their size, and a little roomier where pieces vary in size. */
 export const holeRadius = (plan: SorterPlan, hole: HoleSpec) =>
-  hole.size !== undefined ? HOLE_R * SIZE_SCALE[hole.size] : plan.sizes ? HOLE_R * 1.1 : HOLE_R;
+  plan.attribute === 'curves' ? 72 : hole.size !== undefined ? HOLE_R * SIZE_SCALE[hole.size] : plan.sizes ? HOLE_R * 1.1 : HOLE_R;
 
 /** The lid's holes in rows of up to four (three when there are more), relative to the lid's top middle, spaced for the largest. */
 export function holeLayout(plan: SorterPlan, specs: readonly HoleSpec[]) {
@@ -218,7 +243,7 @@ export function holeAt<H extends { x: number; y: number }>(holes: readonly H[], 
 
 /**
  * The hole a capable player takes a piece to, for the how-to card's ghost finger: the one with the piece's own
- * shape (and size, at the sized level). Every piece has one (`pieceKinds` only makes pieces the dealt holes take).
+ * shape, size or attribute. Every piece has one (`pieceKinds` only makes pieces the dealt holes take).
  */
 export const holeFor = <H extends HoleSpec>(holes: readonly H[], piece: { kind: ShapeKind; size?: Size }): H | undefined =>
   holes.find((h) => fits(h, piece));
