@@ -52,7 +52,7 @@ _Built 2026-10-23 ([PR #898](https://github.com/rjdunlap/neo/pull/898)): the six
 
 ### Slice 3: one meaning per button
 
-_Claimed 2026-10-23 on branch `claude/rw14-one-meaning` (draft PR to follow): GameScene, LandScene, LocationScene, howto-card, origin-art, voice-script and a new route test._
+_Built 2026-10-23 ([PR #899](https://github.com/rjdunlap/neo/pull/899)): at the root every house goes Home and every leaving control is a back arrow with its origin's picture, in rounds, how-to cards, results and locations; root Back and Home speak their label on press; `src/app/nav-meaning.test.ts` walks each marked button. Not done: location keep-out rects were not widened for the new house. [Build note](../archive/COMPLETED-2026-10-09.md#rw14-slice-3-one-meaning-per-button-2026-10-23)._
 
 - **Changes:** at the root (`app.creatureWorld`), the house always calls `go.hub()`. The control that leaves to the place that opened the screen is a back arrow with that place's picture (`backToArt(originArt(origin))`, which the result screen already uses). That means the in-round hold button shows the back arrow whenever the round has an origin; a location shows a house beside its back arrow; and the how-to card's leave button follows the same rule. Press-down speaks the label ("Home" or "Back to Rainbow Meadow"). `classic/` keeps today's buttons.
 - **Files:** `src/app/scenes/GameScene.ts`, `src/app/scenes/LandScene.ts` and `LocationScene.ts`, `src/ui/howto-card.ts`, `src/ui/origin-art.ts`, `src/content/voice-script.ts`; a new route test beside `src/app/origin.test.ts`.
