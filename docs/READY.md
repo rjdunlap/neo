@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Research subject `poetry-wordplay`** (docs only; one subject): follow the subject procedure and reuse completed literacy studies; keep review and implementation gates. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
+- **Study `poetry-wordplay`: define Rhyme Riddles** (docs only; status `define`): one bounded packet for Rhyme Time levels 5–7 from the completed study; keep its content-review gate. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#poetry-and-wordplay-recommendations).
 - **Study `energy-waves`: define Circuit Garden** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations).
 
 ## Queued
@@ -91,7 +91,7 @@ Each line is selected for routine dispatch; claim one packet, then enqueue its u
 - **Study `daily-life-long-ago`: define Same Job, Different Tools (H4)** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations).
 
 ### Subject research (docs only)
-- **Research subject `poetry-wordplay`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
+- **Study `poetry-wordplay`: define Rhyme Riddles** (docs only; status `define`): one bounded packet for Rhyme Time levels 5–7 from the completed study; keep its content-review gate. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#poetry-and-wordplay-recommendations).
 - **Research subject `oceans`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `world-languages`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `theatre-puppetry`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).

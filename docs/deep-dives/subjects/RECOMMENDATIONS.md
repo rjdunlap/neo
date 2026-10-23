@@ -816,3 +816,19 @@ The [ordered slices](keyboarding-editing.md#build-slices-in-order) separate defi
 | **SS6 Sign together** · family/page | At-home-card follow-up, ordinary content review | Large paper sign with an adult scribe; reuses WC/KE card work, no milestones or diagnostic advice |
 
 The [ordered slices](spelling-sentences.md#build-slices-in-order) stop this session at research. No developer decision or neighbouring build gate is resolved.
+
+## Poetry and wordplay recommendations
+
+**Recommended 2026-10-22:** [the poetry-wordplay study](poetry-wordplay.md), [PR #843](https://github.com/rjdunlap/neo/pull/843). Opened: CCSS RL.K (4, 5, 10), RF.K.2 and L.5.5. Search summaries only: the Bryant/Bradley/MacLean nursery-rhyme longitudinal abstract, Nemours pause-and-finish guidance, explicit-rhyme studies, North Carolina progressions on tongue twisters and McGhee's humour stages (the primary papers were not opened). The Head Start ELOF goals were not confirmed and must be opened before a definition quotes them. Rhyme choice stays with Rhyme Time, syllables with Clap the Syllables, songs with Sing-Along Barn, feature riddles with Who Am I?, letter sounds with Word Monsters; this study owns finishing a rhyme, two-clue riddles and double meanings.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **PW1 Rhyme Riddles** · pre-K, school | define (docs only) | Rhyme Time levels 5–7: a rhyme clue and a meaning clue about one of three pictures, both needed; level 7 has her build the riddle for the pet. Rule tests: exactly one picture fits both, each clue alone leaves two |
+| **PW2 Finish the line** · L, T, P | define after decision 2 (reviewed verses) | A Sing-Along Barn mode: the tune stops before the rhyming word and she touches the picture that finishes it; no choice at lap |
+| **PW3 Same first sound** · P, K | define after decision 5 (owner) | Tap the pictures that begin like the twister the pet says; never graded speech |
+| **PW4 Two Meanings** · school, upper school | sketch; after a reviewed word list | A sentence fits two pictures; no pun joke below about 7 |
+| **PW5 Literal or meant?** · upper school | sketch after PW4 | Idiom beside a literal picture (L.5.5b) |
+| **PW7 Pun Match** · 13+ | sketch; after the Lantern Lake capacity test | Match a setup to a reviewed punchline; nothing ranked or timed |
+| **PW8 Rhyme pause, twister listen, riddle-making cards** · L–G | hand to off-screen companions after an ordinary content review | Plain HTML; any home language |
+
+Completion with spoken support is not evidence of independent phonological awareness, and nothing scores a recited rhyme or twister.
