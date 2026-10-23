@@ -156,6 +156,8 @@ Device checks stay open:
 
 Each has a default that the build uses. None blocks it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults the build used stand (Painted Canyon, formerly Paint Pier; no saved strip; lap 1–2; either way around the circle; calm land music; cross, square and triangle at pre-K 6; the tracer's corridor at level 5).
+
 1. **Home land.** Default: Paint Pier (the craft land: 6 games with Cut Along and this one). The alternative is Story Grove beside Letter Trails, its follow-on, which would have 10 games; `lands.test.ts` decides whether either still fits at every band.
 2. **Keeping a strip.** Default: nothing saved. The alternative is a `pattern` creation in `src/content/creations.ts` that home customization could put on a creature's blanket or scarf. That is a save-field change at the shell/save tier, better folded into [RW06](../rework/WORK-ITEMS.md#rw06-playable-home-and-customization).
 3. **Lap entry.** Default: lap plays levels 1–2, free marks and then the one long line, since the sources place an imitated vertical or horizontal line at about 2. The alternative is lap 1 alone.

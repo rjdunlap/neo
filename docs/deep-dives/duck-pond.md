@@ -151,6 +151,8 @@ Two of the three are easier than a nearby level and one fits between existing le
 7. **Level order.** The three entries below level 1 join the existing level-order rows (the layout-and-pad slice is not blocked by them).
 8. **Person checks to add:** whether a three-year-old stops at the number without a check; whether the dots on the pads are used or ignored; whether children read two-digit pads 11–19; whether the teen words (eleven, twelve, thirteen…) come out clearly with device speech; and whether a night pond is calm or confusing.
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans stand: keep 12 Doubles, add 13 Ten and some more and define 14 Every way now (two non-empty sides, ordered), in school 8–14 with `order` placing 12; stopping becomes a real decision at 4–5, the glow comes after two misses, at most one hint per question; the toddler window stays 1–5; the frog moves to `src/art/` (Frog Hop's frog, sticker and icon pinned first); Duck Pond owns evens and odds. A child's play of 13 and the teen words become person/device checks, not gates.
+
 ## Build slices, in order
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken. Each level slice also raises `LEVELS.school.max`, updates `describeLevel`, the how-to's `LevelLine`s, `scripts/browser-check.mjs` (its `11` and the portrait level are numbers; read the plan's length), `fingerdemo`'s levels, the README row and [GAMES.md](../GAMES.md).

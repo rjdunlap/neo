@@ -49,6 +49,8 @@ These are design intentions, not developmental assessments. Keep the existing `s
 
 ## Navigation, discovery and levels
 
+**Decided 2026-10-23 (on the developer's delegation):** Catalog overflow and favorites capacity: Keep one-screen lands; when a capacity audit shows a game will not fit, add a new fitting land rather than pages or subplaces; favorites keep their current bound with visible management (a full set asks which heart to swap, never silently drops one). ([record](archive/DECISIONS-2026-10-23.md))
+
 The developer-selected discovery study is now written in [DISCOVERY.md](DISCOVERY.md): Explore and Play entrances, direct next-game selection, finite mixes, Just Dance references and an explicit introduction/automatic-handoff boundary. The [ordered roadmap actions](ROADMAP.md#discovery-actions) now set the next-session scopes and dependencies. Their first flow slices supplement the home/library proposals below; they do not approve land overflow, saved queues or changed support policies.
 
 ### N1: a useful home without a longer search
@@ -66,6 +68,8 @@ Each result shows the game's drawing, title, action, current mode and input requ
 **Acceptance:** find a remembered game without paging the whole path; find a touch game with no keyboard available; leave a result and return to the same query/page; profiles stay separate; every registered game is reachable; inputs and return routes tell the truth. Future verification uses metadata rules and targeted `world`/`lands` plays, plus keyboard/focus and safe-area review.
 
 ### N3: keep geography readable as the catalog grows
+
+**Decided 2026-10-23 (on the developer's delegation):** How do more brain boards fit Lantern Lake? (Islands and Sea, Garden Queens, Two-flower beds, Sort Four): Each new board gets its rules/solver defined and goes into Lantern Lake while `landLayout` fits; once it would not, apply the catalog-overflow decision (row 168: a new fitting land, never smaller targets). ([record](archive/DECISIONS-2026-10-23.md))
 
 **Decision before a contract change.** The current one-screen land and exactly-one-home-land tests are useful constraints. Try reorganizing explicit game lists into a new small land only if it fits the map and has a distinct place identity. If that no longer works, compare two prototypes: neighboring subplaces entered through one stable land landmark, and small named pages inside a land. Keep home and back at the same positions, speak the new destination and remember the last page. Do not adopt a giant scrolling world or duplicate game registrations to solve overflow.
 

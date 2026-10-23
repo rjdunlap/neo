@@ -126,3 +126,5 @@ Device and person checks stay open: whether a lap child connects a tap to the fa
 2. **Home land (gates the build with 1).** Default Tinker Lab as measured, full afterwards; fallback Treehouse; first of Gear Garden and Sense Detective to build takes Tinker Lab.
 3. **Real-world words.** Default: none at levels 1–3. A line connecting the toy to bikes or clocks joins after the mechanism reviewer.
 4. **Glow as a hint.** Default: counted, as the study counts answer-revealing help. Alternative: an uncounted glow, which would make every preschool round read as smooth.
+
+**Decided 2026-10-23 (on the developer's delegation):** every default stands (child `GAMES` registration at lap–school; Tinker Lab, fallback Treehouse, first of Gear Garden and Sense Detective to build takes it), so the build is unblocked; real-world words join after the building session's source check.

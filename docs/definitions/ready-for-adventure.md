@@ -178,6 +178,8 @@ Device and person checks stay open: whether a two-year-old drags or taps, whethe
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** Keep all five built defaults, with Barnyard as the land.
+
 Each has a default; RA2 used them all, except that decision 1 landed in Barnyard (see the status above).
 
 1. **New game, bands and land.** Default: a new game (the overlap section says why it is not a Weather Wardrobe or Story Steps mode), toddler 1, preschool 1–2, pre-K 2–3, home **Cozy Village**: 12 games today, 13 with this one (14 if [Second Chance Shed](second-chance-shed.md), also defaulting there, lands first; Puzzle Peaks already lays out 13). `village.test.ts` and `lands.test.ts` decide. Fallback if Cozy Village's layout returns null: **Music Mountain** (6 games), where a drum-and-flag parade also fits. **Note (2026-10-22):** Recipe Workshop found Cozy Village full for decoration at 12 visible games (`village.test.ts`: no hedgerow fits at pre-K landscape), so expect the same layout failure here and plan the fallback land.

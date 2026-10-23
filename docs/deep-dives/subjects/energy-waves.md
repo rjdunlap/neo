@@ -133,6 +133,8 @@ Human observation later must establish whether the wire really appears to have a
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** Circuit Garden is a separate game, pre-K/school 1–3 on the bounded two-terminal model, with free exploration never a miss, only Check misses counting and the ordinary adaptation rule; preschool waits on a device check; home Tinker Lab if its layout test passes, else its definition's fallback; the older lantern workshop sits at the top of `school`, with 13+ cases as a `grownup` range on the same ID. Circuit, charge, magnet and wave language takes the building session's check against cited sources; real electrical and magnet cards are not drafted for now (practical safety); the magnet test lives in the observation/fishing activity.
+
 - **Initial scope and placement:** recommend pre-K/school Circuit Garden 1–3 first, preschool only after observation; define the older workshop at the same time so the model supports it. Confirm Tinker Lab capacity and how grown-up-only levels are registered/destined without introducing a band or assuming a proposed zone.
 - **Model claims:** recommend a science educator review the two-terminal lamp/battery drawings, charge-versus-energy language, magnetic materials and ribbon/sound distinction before instructional claims. This is a recommendation for model review, not a newly imposed permission gate on screen-only documentation.
 - **Practical companion:** the repository already requires a named reviewer before real electrical, magnet or string instructions/cards ship. No practical advice has been authored here; that dependency does not block definitions/builds of a bounded screen toy.

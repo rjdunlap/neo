@@ -163,6 +163,8 @@ M–L: a new `logic.ts` simulator and solver, `Graphics` house, helpers and gaug
 4. **Older reach:** register H8–H9 at `grownup` too, or keep them at `school`'s top only?
 5. **Rework tie-in:** should completed helpers appear in the creature home as permanent unlocks once the home exists (RW-era), and which friend (a chilly lizard) carries the warmth levels?
 
+**Decided 2026-10-23 (on the developer's delegation):** Helper House is a new game with levels 1–2 kept as its own opening, placed in Tinker Lab if `landLayout` passes at every band, else Cozy Village; Watch runs are always free and only repeated identical failures count a hint (the Welcome Ways rule); no toddler Hello door level (toddlers keep the existing cause-and-effect games); H8–H9 sit at `school`'s top only; finished helpers become permanent creature-home unlocks once the home exists, and the chilly lizard carries the warmth levels. The warmth/light wording ships after the building session's source check (no outside reviewer); practical family cards are not drafted for now.
+
 ## Build slices, in order
 
 1. **RA1 — Define Helper House 1–4** (**defined 2026-10-23:** [definition](../../definitions/helper-house.md)) (docs only): the step model, sensor and helper tables, round plans, voice reasons, accounting (after decision 2), layouts at 100 units in both orientations, the how-to card with level-scoped steps, the ghost-finger plan, the rule tests above and the overlap test, placement after the capacity check.

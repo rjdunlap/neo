@@ -165,6 +165,8 @@ An older parent can enjoy designing and repairing this machine for themselves; b
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** Sorting Machine is the identity, with constructed, traced rules only; Picture Bytes stays in Pixel Pictures. Its exploratory first round uses the ordinary adaptation rule with no shared exploratory flag, only Check misses count, and grown-up text calls it exposure, not mastery; ranges are school-first, home Tinker Lab if its layout test passes, else its definition's fallback; Festival Signals keeps one game ID with school-top levels and a `grownup` range for 13+ cases. Memory Desk stays distinct only as direct manipulation, else folds into Parcel Programs; model language and any paper-decoder card take the building session's check against cited sources instead of a named CS educator.
+
 - **Identity and placement:** recommend Sorting Machine only with a constructed, traced rule. Keep picture encoding inside Pixel Pictures. Confirm school-first ranges, Tinker Lab capacity and older school/grown-up identity/destination when the definitions are selected; no new zone or middle band is assumed.
 - **Exposure versus mastery:** choose an adaptation policy for level 1's exploratory completion before implementation. Do not manufacture misses/hints or count button presses as Boolean understanding. Existing saved levels, pins and result contracts remain intact in this study.
 - **Older editor scope:** start Festival Signals with four gate slots, a selected-slot inspector and full-domain checking. A larger five-slot equivalence palette is later work. Confirm whether a grown-up registration shares the interaction while keeping stable game IDs and appropriate ranges.

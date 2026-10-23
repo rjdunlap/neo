@@ -325,6 +325,8 @@ Considered and set aside: Tetris-style falling blocks (a real-time pressure game
 
 ### Fun and arcade review (2026-10-09)
 
+**Decided 2026-10-23 (on the developer's delegation):** Lander's score: (a) bumps over zero across a set of pads, with fuel as a second statistic. ([record](archive/DECISIONS-2026-10-23.md))
+
 The request: add games that are fun first and "educational" second (Lunar Lander and its cousins), aimed mainly at the older end for mental stimulation. **Interpretation:** this is the couch route, which is already where adult play lives, with its own save. No `Band` is added; the ways adult play differs are comfort options in couch Settings (below). Correct this if "older adult bands" meant something else. **Superseded in part (2026-10-09, later):** [Profiles first](ROADMAP.md#profiles-first-one-map-for-every-age) proposes a `grownup` band and comfort questions kept per profile in place of couch Settings. The games and comfort options below still stand.
 
 **Two tracks, because the evidence does not all point at arcade.**
@@ -371,6 +373,8 @@ Evidence labels and sources for this review (what was opened and what was only a
 
 ### Touch, laptop and grandparents (2026-10-09)
 
+**Decided 2026-10-23 (on the developer's delegation):** Minimum target size for grown-up touch games: Already decided 2026-10-12 (64 logical units, zoom/scroll if needed) and written in AGENTS.md. ([record](archive/DECISIONS-2026-10-23.md))
+
 The audience widens from "two grown-ups with controllers" to **parents and grandparents**, on whatever they hold. These notes cover where such players are, what it takes to serve them, and a second batch of games. All of it is a proposal.
 
 **Where older players are.** AARP's 2023 report on adults 50 and over found 45% play games, 84% of those on a smartphone, 53% on a computer, tablet or laptop and **28% on a console** (up from 13% in 2019); 81% mostly play alone. The couch already takes a keyboard, so laptops are served; what it lacks is touch, which is the phone (84%) and some part of the 53% that AARP does not split between laptops and tablets. A route without touch reaches the smaller share, and "a phone later" defers the device most of them use. AARP's own games portal, which is a curated menu and not survey data, features Mahjongg Solitaire, a daily crossword, word games, Klondike, FreeCell, Spider and Pyramid solitaire, and a game called "10x10" among its most popular (with "Block Champ" under Arcade; by their names block-placement puzzles, which I did not open); arcade titles are fewer, and it lists no sudoku or board games.
@@ -413,6 +417,10 @@ The evidence behind [Profiles first](ROADMAP.md#profiles-first-one-map-for-every
 - **Age to start, play to adjust.** Puddle Island chooses no lock at entry, because the cost of a toddler opening a grown-up's card is low once destructive actions are protected.
 
 ### Flash portals, cozy and brain games (2026-10-11)
+
+**Decided 2026-10-23 (on the developer's delegation):** Is a finite, in-session idle-shaped game acceptable? (Honey Hive): Yes, as proposed (a real ending, no offline progress, resets, purchases or streaks), queued after Mix & Make and Sort Four. ([record](archive/DECISIONS-2026-10-23.md))
+**Decided 2026-10-23 (on the developer's delegation):** How do more brain boards fit Lantern Lake? (Islands and Sea, Garden Queens, Two-flower beds, Sort Four): Each new board gets its rules/solver defined and goes into Lantern Lake while `landLayout` fits; once it would not, apply the catalog-overflow decision (row 168: a new fitting land, never smaller targets). ([record](archive/DECISIONS-2026-10-23.md))
+**Decided 2026-10-23 (on the developer's delegation):** One reviewed word list, and a reviewer for science and scale facts: Bundle a word list and block list as data built from reputable published sources; the building session checks every recipe and size comparison against cited sources and records it in VERIFICATION; no outside reviewer. ([record](archive/DECISIONS-2026-10-23.md))
 
 The request: a deep dive for more game ideas, including ones aimed mainly at parents or older kids with brain-game, cozy or nostalgic qualities, researched from Flash-era portals such as Kongregate. Everything here is a **proposal**. The grown-up rows follow the [couch table's](#grown-up-play-candidates-couch-route) columns and ground rules; the Flash-origin games are also listed by source in the [Flash and web table](#flash-and-web), each pointing back here for its full row.
 
@@ -558,6 +566,10 @@ The three lists the prompts above asked for came back as pasted text. **I opened
 4. **Science and scale facts** (Mix & Make's recipes, Zoom Walk's sizes) need a reviewer before they are spoken to a child.
 
 ### Arcade classics and the Animal Crossing NES shelf (2026-10-11)
+
+**Decided 2026-10-23 (on the developer's delegation):** Should older and grown-up games appear as a "retro shelf": No retro shelf for now; grown-up games stay in their one land (Lantern Lake). ([record](archive/DECISIONS-2026-10-23.md))
+**Decided 2026-10-23 (on the developer's delegation):** Is a turn-based follower puzzle acceptable? (Wisp Maze): Yes, as a turn-based puzzle with no clock and no loss: if the follower reaches her, the move is undone with an explanation and she tries another route. ([record](archive/DECISIONS-2026-10-23.md))
+**Decided 2026-10-23 (on the developer's delegation):** Reopen Minesweeper as Garden Sweep?: Yes: reopen it with a no-guess generator and a pop-up mole (gentle hint) instead of a loss. ([record](archive/DECISIONS-2026-10-23.md))
 
 The request: another deep dive for game ideas, aimed mainly at parents and older children with brain-game, cozy or nostalgic qualities, starting from the arcade classics (Snake, Minesweeper, Pac-Man, Kaboom!) and the games you could play inside the GameCube *Animal Crossing*. Everything here is a **proposal**. The new-candidate rows follow the [Flash pass's](#new-candidates-for-parents-and-older-kids) columns (**home** says whether the island contract or the grown-up route applies).
 
@@ -855,6 +867,8 @@ No second row for the same game. [Buddy Delivery](#candidates), Complementary jo
 
 #### Mario Party minigames for one: alone and against bots
 
+**Decided 2026-10-23 (on the developer's delegation):** Bot opponents and a minigame shelf for one grown-up: Build Batting Cage, Stop the Cart, Crowd Count, Crayon Trace and Puddle Path as pure modules with a seeded skill-dial bot, Game night hosts cups, no bot seat in the couch shell; ribbons for every seat (a bot is never named the winner); a placement bonus against bots is allowed and labeled. ([record](archive/DECISIONS-2026-10-23.md))
+
 *Added later the same day, after the developer asked which minigames the developer's wife could play alone, with or without bots.* Every row below was checked on its own wiki page (summarized by the fetch tool; **†** as above). The first list I used paraphrased some games wrongly (Mushroom Mix-Up is a last-one-standing platform game, not a pattern game), so no row rests on that list alone.
 
 **The test.** A minigame is a good candidate for one grown-up, alone or against bots, when it:
@@ -1032,6 +1046,12 @@ On Wii Party (pages 2 to 4):
 **What it adds.** The Mario Party team's own words on fairness and chance (prompt 2, partly), two seeds (Count and Hide, Pass the Pet), a Block Tower two-seat mode, a Where Am I? variant of Mission Cards, a better Chime Hunt row, and a sixth item in the suggested order. Set aside: Word Bomb's loser; the Hide 'n' Hunt hider's score; Sketchy Situation's bluff (one player draws a different prompt and the rest spot who), a different game for an older band; and Name That Face, which photographs a face (none of the island's code asks for a camera; Feelings Faces' mirror faces cover the idea off screen). The island's contract stays two seats: only Count and Hide and Pass the Pet reach a circle of three or more.
 
 #### Order and decisions for the family table
+
+**Decided 2026-10-23 (on the developer's delegation):** Competition on the island: Cooperative by default; a competitive mode only where luck or a visible handicap evens the match, ribbons for every seat, ties score for both, nobody shown as the loser. ([record](archive/DECISIONS-2026-10-23.md))
+**Decided 2026-10-23 (on the developer's delegation):** Where games made for two live: Adopt the lean: games made for two go to a Pal Plaza land if it passes land-fit at every band and the map has room (otherwise their best-fitting existing land); two-seat modes get a "two seats" mark; the party board goes to Game night in Lantern Lake. ([record](archive/DECISIONS-2026-10-23.md))
+**Decided 2026-10-23 (on the developer's delegation):** A second seat's contract: Second seat is anonymous and uncredited; only seat 1's role is read by `difficulty.ts`; a role-swapped round counts as supported completion. ([record](archive/DECISIONS-2026-10-23.md))
+**Decided 2026-10-23 (on the developer's delegation):** Kept things made together: No kept puzzles; one bounded "our picture" slot is allowed, built with Two-Knob Doodle's slice using the existing creation storage with repair and backup tests. ([record](archive/DECISIONS-2026-10-23.md))
+**Decided 2026-10-23 (on the developer's delegation):** Table mode and a second screen: Not now for a split upside-down layout or second screen; Mission Cards (a physical barrier and printed card) first for hidden information. ([record](archive/DECISIONS-2026-10-23.md))
 
 **Suggested order (non-binding).**
 
@@ -1251,6 +1271,8 @@ What was found, and what it means for the sketches. These are starting points, n
 - **Logic for 8–11.** TERC's NSF-funded study looked at the computational thinking children do while playing Zoombinis, whose current publisher lists grades 3 to 8 ([TERC](https://www.terc.edu/zoombinis/), [FableVision](https://fablevisionlearning.com/zoombinis)). Lightbot is described as teaching loops, procedures and conditions; its publisher's page was not opened. Zoombinis' puzzles are mostly about sorting and sequencing rather than if/then, which matches Critter Sort and Critter Crossing as the stepping stones to Rule Parade.
 
 ### Decisions this needs from the developer
+
+**Decided 2026-10-23 (on the developer's delegation):** A pentatonic exception for tunes: Allow a documented, test-guarded exception for tap-to-advance known tunes in Sing-Along Barn (the tune picks the pitch, free taps stay pentatonic), so Twinkle and Wheels on the Bus can come in; Jelly Drums stays five-note. ([record](archive/DECISIONS-2026-10-23.md))
 
 1. **A pentatonic exception for tunes.** The rule exists so every free tap sounds musical. In a tap-to-advance tune the tune, not the tap, chooses the pitch, so the reason does not apply, but the rule is a shared contract. Either build only the tunes that fit first, or allow a documented exception for tap-to-advance tunes so Twinkle and Wheels on the Bus can be included.
 2. **Island forms of couch puzzles.** [AGENTS.md](../AGENTS.md) keeps grown-up-only games in `GROWNUP_GAMES` so the island cannot open them. Touch forms of Lantern Lights, Picture Logic and Island Bridges would be new island `GameModule`s sharing their solvers, with ordinary adaptive levels and one sticker, and none of the couch pars or records.

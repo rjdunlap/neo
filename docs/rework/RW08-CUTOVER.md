@@ -8,7 +8,7 @@ The root (`src/rework.ts`) already boots the chooser and then the person's Home.
 
 1. **Explore's four entries:** Places, Favorites, All games and Family play, with a typed browse origin and the result's **Back to [origin]** label. These are root only, and `classic/` is unchanged.
 2. **The library, the stories and the remaining home duties at the root:** the journal, the Windy and Woodland Picnics, Little surprises and Make my mix, the birthday, and the grown-ups' gear on Home.
-3. **The cutover:** delete `classic/`, the map, the age places and their layout switch, the `{ place }` origin, the `?preview` entry, RW03's HTML wireframe and the page link to the island games. Repoint the browser harness at the root and reseed development saves. **This slice waits for the developer's go-ahead** ([decision](../WAITING-ON-DEVELOPER.md#decisions-that-block-work)), because it removes the deployed `classic/` page.
+3. **The cutover:** delete `classic/`, the map, the age places and their layout switch, the `{ place }` origin, the `?preview` entry, RW03's HTML wireframe and the page link to the island games. Repoint the browser harness at the root and reseed development saves. **This slice waits for the developer's go-ahead** ([decision](../archive/DECISIONS-2026-10-23.md#decisions)), because it removes the deployed `classic/` page.
 
 Slices 1 and 2 do not depend on RW07's song step or ending. Home's Continue already exists, and RW08 changes no project behaviour.
 
@@ -51,7 +51,7 @@ Slices 1 and 2 do not depend on RW07's song step or ending. Home's Continue alre
 ## Slice 2: the library, the stories and the rest of Home
 
 - **The library.** Creature play gains a third object, a book on the shelf, which opens a **library** scene. It holds three 150-unit cards: the **journal** (`JournalScene`, unchanged), the **Windy Picnic** (`go.picnic()`) and the **Woodland Picnic** (`go.woodland()`). The Woodland Picnic card shows only where Wonder Woods' path shows it today, at school band. The library reads progress but does not change it. Each story keeps its own save identity and step idempotence (`store.completeStep` and the others), and a story step's round still returns to its story scene. The story scene's and the journal's Back go to the library at the root. They still call `go.room()`, which already means creature play at the root, so the library needs a `{ library: true }` origin only for a journal replay. That origin replaces `{ journal: true }` at the root, and `go.library()` is a new root route. A kept picture or tune still replays from creature play as now.
-- **Little surprises and Make my mix.** For lap and toddler, the mix's picnic blanket becomes the first card of All games' page 1. It works the same: a hold to edit, the same `MixHost` and the same preview. The mix's Explore, which today leaves to the age place, leaves to All games page 1. A mix keeps its own session rules (D2b). This settles the [open placement lean](../WAITING-ON-DEVELOPER.md#defaults-in-use-block-nothing) "after RW08 move it to the new Home's direct-play area" as All games, [default 2](#decisions-defaults-the-build-uses).
+- **Little surprises and Make my mix.** For lap and toddler, the mix's picnic blanket becomes the first card of All games' page 1. It works the same: a hold to edit, the same `MixHost` and the same preview. The mix's Explore, which today leaves to the age place, leaves to All games page 1. A mix keeps its own session rules (D2b). This settles the [open placement lean](../archive/DECISIONS-2026-10-23.md#decisions) "after RW08 move it to the new Home's direct-play area" as All games, [default 2](#decisions-defaults-the-build-uses).
 - **The birthday.** `HomeScene` runs the check `MapScene` makes (`world.band` behind `profile.band`), throws the existing birthday once with its existing lines, and saves `world.band`. The move goes into a shared helper so both entries agree until slice 3.
 - **The grown-ups' gear** (`src/ui/grownups.ts`, held two seconds) goes top right on Home. The `.classic-link` moves to sit below it until slice 3, keeping both clear of the companion and the actions (`homeLayout` gains the gear's box and its test keeps every action clear).
 
@@ -79,7 +79,9 @@ Run this only after the developer says go. They should first have played slices 
 
 ## Decisions: defaults the build uses
 
-Recorded in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md#defaults-in-use-block-nothing). Each has a default, so none of them blocks slices 1–2. Slice 3 waits on its own row in [Decisions that block work](../WAITING-ON-DEVELOPER.md#decisions-that-block-work).
+**Decided 2026-10-23 (on the developer's delegation):** defaults 1–4 stand (age-first All games with an Other ages signpost; Little surprises on All games' first page for lap and toddler; the library from a book in creature play with the journal and both picnics; the treehouse retired at the cutover). The cutover itself, deleting `classic/`, stays the developer's call.
+
+Recorded in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md#still-waiting). Each has a default, so none of them blocks slices 1–2. Slice 3 waits on its own row in [Decisions that block work](../archive/DECISIONS-2026-10-23.md#decisions).
 
 1. **All games is age-first, with Other ages as a signpost**, never a gate. Alternative: one index of every game with age badges.
 2. **Little surprises sits on All games' first page** for lap and toddler. Alternative: a fourth Home action for the youngest, beside the ball and Explore.

@@ -5,7 +5,7 @@ Defined 2026-10-18 on `claude/define-seesaw-two-boxes` ([PR #595](https://github
 **What it adds:** one appended level of `seesaw-balance` (`src/games/seesaw-balance/`), level 11 *Two boxes*, school only.
 - Levels 1–10, their IDs, pins, the toddler–pre-K windows and the `same`/`share` rules do not change. School becomes `{ min: 6, max: 11 }`; no `order` is needed because 11 simply follows 10.
 - It adds no band, land, tile, save field, journal entry, creation slot or couch entry. The `seesaw-balance` row in the [deep-dive tracker](../deep-dives/README.md) stays unclaimed: this is one level from the audit, not a full dive.
-- Garden Rows' boxes, the other half of the roadmap row, stay undefined: they overlap the couch-only Sudoku Garden and the [island forms of couch puzzles](../WAITING-ON-DEVELOPER.md#decisions-that-block-work) decision.
+- Garden Rows' boxes, the other half of the roadmap row, stay undefined: they overlap the couch-only Sudoku Garden and the [island forms of couch puzzles](../archive/DECISIONS-2026-10-23.md#decisions) decision.
 
 ## Fun action and learning goal
 
@@ -112,9 +112,11 @@ Read from store pages, teacher guides and search summaries on 2026-10-18; none p
 - [Imbalance Problems](https://nationalmathfestival.org/resources/imbalance-problems) (National Math Festival): mobile puzzles where one relation is read first and used in the next, the same two-step reasoning without a screen; a possible off-screen companion.
 - [Mobius Academy, Balance Shapes with three beams](https://www.mobius.academy/math/topics/algebra-balance-3-beams-substitution-and-subtraction-compound-answer/2): substitution and subtraction across beams as a multiple-choice drill, which is what the level avoids by keeping every step a physical move.
 
-## Developer decisions (defaults in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#defaults-in-use-block-nothing))
+## Developer decisions (defaults in [Waiting on the developer](../archive/DECISIONS-2026-10-23.md#decisions))
 
 Each has a default the build uses; a different answer changes this file, not the readiness.
+
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand (number tag on the square box, a one-tap reading first, the round box fixed, narrowing moves free at level 11 only, no journal entry).
 
 1. **One seesaw and a tag** (default) rather than the audit's second seesaw on screen or a record card. The alternative needs a second plank and tray pair in the scene and a smaller layout in portrait.
 2. **Step 1 is a reading**, not a level-8 take-off: the square box starts alone against its blocks and one pad tap tags it. The alternative (one block pair to clear first) lengthens the pair and blurs what the level checks.

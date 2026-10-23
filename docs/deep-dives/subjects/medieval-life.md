@@ -166,6 +166,8 @@ Replay varies the plan's shape, which needs are asked, which rooms share a clue 
 8. **Records cross-listing.** Stock and foil and the jurors' count are River Tablets cases, so they wait for that game's levels 5–6; confirm, so no second records engine starts here.
 9. **Guild exclusions.** Whether the grown-up card's apprentice-to-master story carries the one honest line that most guilds barred women from office and outsiders from trade. Lean: yes, one sentence, with Rouen as the exception.
 
+**Decided 2026-10-23 (on the developer's delegation):** every lean: walls and a gate are drawn and never used, no weapon, dungeon or siege, the war strand a grown-up-card sentence; Keep House in Cozy Village if `landLayout` passes, else Story Grove, first build A–3; Market Days a separate Lantern Lake puzzle; the 13+ plan case states in one source-checked sentence that most who worked the lands could not leave and that Domesday counted slaves; monasteries only as timekeepers, copyists, shepherds and hosts; Keystone as the stated ring rule now (Water Road level 1 owns the arch); tally and Domesday cases wait for River Tablets 5–6; the guild card carries the one line on women and outsiders. Historical lines ship after the building session's source check instead of a named reviewer.
+
 ## Build slices, in order
 
 Each line is one future session. **Definition ready** means research permits a concrete packet, not that implementation is approved.
