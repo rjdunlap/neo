@@ -278,6 +278,13 @@ export const sfx = {
     setTimeout(() => f.disconnect(), 1800);
   },
 
+  /** A handful of beads shaken in a box: three short bandpassed bursts. */
+  shake() {
+    const o = out();
+    if (!o) return;
+    [0, 0.09, 0.18].forEach((d) => noise(o.ctx, o.dest, o.t + d, 0.07, 0.3, { type: 'bandpass', hz: 4200, q: 1.5 }));
+  },
+
   /** A soft hand drum. */
   drum(gain = 0.6) {
     const o = out();

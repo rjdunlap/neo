@@ -343,6 +343,22 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 3, text: 'Turning pages is always free; only a wrong food or place given to the animal is a miss, and after two misses the right tab or picture glows, which counts as a hint.' },
     ],
   },
+  'sense-detective': {
+    goal: 'Find out what is in the parcel, then put its toy on the shelf.',
+    steps: [
+      { from: 1, to: 2, text: "Tap the window to peek at the toy's shape." },
+      { from: 2, to: 2, text: "Tap the ear to hear the toy inside." },
+      { from: 1, to: 2, text: 'Tap a toy on the shelf to choose it; it plays its own sound.' },
+      { from: 1, to: 2, text: 'Press the green tick when the clues show which toy it is.' },
+    ],
+    finish: 'The parcel opens and the toy jumps onto the shelf.',
+    note: [
+      { from: 1, to: 2, text: 'Peeking, listening and changing her mind are never counted.' },
+      { from: 2, to: 2, text: 'If the clues still fit two toys, the tick asks for another clue instead of counting a miss; a lucky guess does not finish the round.' },
+      { from: 1, to: 2, text: 'Choosing a toy the clues rule out counts as a miss, with the reason spoken; after two the right toy glows, which counts as a hint.' },
+      { from: 1, to: 2, text: 'Every sound has a matching picture, so she can play without hearing it.' },
+    ],
+  },
   'read-do': {
     goal: 'Read a sign and make its meaning happen in the scene.',
     steps: [
