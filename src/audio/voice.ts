@@ -4,6 +4,8 @@ import { chooseVoice, voiceLabel, voiceQuality, type VoiceQuality } from './voic
 
 export type LineVars = Record<string, string | number>;
 
+/** Set `VITE_SPEECH=off` in an untracked `.env.local` to silence speech on that machine whatever the setting says; deployed builds never see it. */
+const envMuted = import.meta.env.VITE_SPEECH === 'off';
 const hasSpeech = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
 /**
@@ -14,6 +16,8 @@ class Voice {
   /** The child's name, as it should be spoken. */
   name = '';
   pet = 'Pip';
+  /** The grown-ups' "Spoken voice" setting; off keeps the lines' timing but says nothing. */
+  enabled = true;
   private chosen: SpeechSynthesisVoice | null = null;
   private talking = 0;
 
@@ -25,7 +29,7 @@ class Voice {
 
   /** iOS only allows speech after a tap; call this from the first one. */
   unlock() {
-    if (!hasSpeech) return;
+    if (!hasSpeech || envMuted) return;
     const u = new SpeechSynthesisUtterance(' ');
     u.volume = 0;
     speechSynthesis.speak(u);
@@ -43,6 +47,8 @@ class Voice {
   }
 
   speak(text: string): Promise<void> {
+    // Silenced: stay quiet but keep a spoken line's pacing so games that await it don't rush.
+    if (envMuted || !this.enabled) return new Promise((resolve) => window.setTimeout(resolve, 600 + text.length * 45));
     if (!hasSpeech) return Promise.resolve();
     speechSynthesis.cancel();
     if (!this.chosen) this.pickVoice();

@@ -110,6 +110,10 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
         <input id="p-volume" type="range" min="0" max="1" step="0.05" />
       </div>
       <div class="parent__row">
+        <label for="p-speech">Spoken voice</label>
+        <input id="p-speech" type="checkbox" />
+      </div>
+      <div class="parent__row">
         <label for="p-music">Background music</label>
         <input id="p-music" type="checkbox" />
       </div>
@@ -153,6 +157,7 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
   const howto = $<HTMLInputElement>('#p-howto');
   const layout = $<HTMLSelectElement>('#p-layout');
   const volume = $<HTMLInputElement>('#p-volume');
+  const speechBox = $<HTMLInputElement>('#p-speech');
   const musicBox = $<HTMLInputElement>('#p-music');
   let closing = false;
   let gone = false;
@@ -190,6 +195,7 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
     tips.checked = d.settings.coplayHints;
     howto.checked = d.settings.howToCards;
     volume.value = String(d.settings.volume);
+    speechBox.checked = d.settings.speech;
     musicBox.checked = d.settings.music;
     const undoAt = store.undoAt;
     $('[data-undo]').toggleAttribute('hidden', undoAt === null);
@@ -288,6 +294,11 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
   layout.addEventListener('change', () => { store.data.settings.placeLayout = layout.value === 'subjects' ? 'subjects' : 'path'; store.save(); });
   volume.addEventListener('input', () => {
     store.data.settings.volume = Number(volume.value);
+    applySettings();
+    store.save();
+  });
+  speechBox.addEventListener('change', () => {
+    store.data.settings.speech = speechBox.checked;
     applySettings();
     store.save();
   });
