@@ -4,7 +4,8 @@
 #   scripts/overlap.sh penguin tangram src/games/penguin-slide
 #
 # Fetches origin, then prints how far this branch is behind origin/main and, for each term, the open pull requests,
-# worktrees and unmerged remote branches that mention it. No term lists every open pull request and worktree.
+# worktrees and unmerged remote branches that mention it. No term lists every open pull request and only the worktrees
+# that can still hold a claim (branch not in origin/main, detached, or uncommitted changes); merged clean ones are counted.
 set -uo pipefail
 git fetch --prune -q origin || echo "fetch failed"
 echo "behind origin/main: $(git rev-list --count HEAD..origin/main), ahead: $(git rev-list --count origin/main..HEAD)"
@@ -14,7 +15,19 @@ prs="$(gh pr list --state open --limit 100 --json number,headRefName,title,files
 wts="$(git worktree list | sed "s|$HOME/git/neo/||;s|$HOME/.codex/worktrees/||")"
 unmerged="$(git branch -r --no-merged origin/main | sed 's/^ *//' | grep -v 'origin/HEAD')"
 if [ ${#terms[@]} -eq 0 ]; then
-  echo "== open PRs"; echo "$prs"; echo "== worktrees"; echo "$wts"; exit 0
+  echo "== open PRs"; echo "$prs"
+  echo "== worktrees that may hold a claim"
+  hidden=0
+  while IFS='|' read -r path branch; do
+    [ -n "$path" ] || continue
+    dirty=$([ -n "$(git -C "$path" status --porcelain 2>/dev/null | head -1)" ] && echo " (uncommitted changes)")
+    if [ -n "$branch" ] && [ -z "$dirty" ] && git merge-base --is-ancestor "refs/heads/$branch" origin/main 2>/dev/null; then
+      hidden=$((hidden + 1)); continue
+    fi
+    echo "${path#"$HOME/"} ${branch:-(detached)}$dirty"
+  done < <(git worktree list --porcelain | awk '/^worktree /{if (p) print p "|" b; p=substr($0,10); b=""} /^branch /{b=substr($0,19)} END{if (p) print p "|" b}')
+  echo "($hidden clean worktrees on merged branches not shown)"
+  exit 0
 fi
 for t in "${terms[@]}"; do
   echo "== $t"
