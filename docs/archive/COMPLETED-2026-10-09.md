@@ -1,5 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Sand Table levels 1–3 (E2, 2026-10-23)
+
+Branch `claude/sand-table-1-3` (PR #866): the [definition](../definitions/sand-table.md)'s dry toy built exactly as defined as `sand-table` (`src/games/sand-table/`: `logic.ts` with 30 rule tests, `art.ts`, `index.ts`; region `tinker-lab`; lap 1, toddler 1–2, preschool 2–3, pre-K 3). Tap the tray to pour, tap a scoop paddle to lift sand back to the bucket, plant the flag; level 2 adds a bay, level 3 three bays, a pail for spills and a pictured invitation ending in Show. Every round counts 0 misses and 0 hints. Show a hint is the pause sheet's `askForHint` (a real action that counts nothing) and Start again is `restart()`. Home land is **Rainbow Meadow**, not the definition's Bubble Beach default or Treehouse fallback: adding the game to those two failed their `src/app/scenes/*.test.ts` decor counts, while Barnyard and Rainbow Meadow passed.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--sand-table-levels-13-new-game-e2).
+
 ### Sense Detective levels 1–2 (B2, 2026-10-23)
 
 [PR #861](https://github.com/rjdunlap/neo/pull/861), `claude/sense-detective-build`: the [definition](../definitions/sense-detective.md)'s investigation loop built as the 13th Tinker Lab game (`src/games/sense-detective/`, region `tinker-lab`; pre-K levels 1–2, school level 2): Look or Listen, an evidence strip, a toy shelf and Check that answers found, miss with a spoken reason, or a free "not yet". Bell, rattle and drum are invented; every sound has an equal picture. Music is silenced (the sounds are the clues). Ghost-finger bot looks before it checks. Levels 3–5 (several toys possible, two parcels) remain B3's definition, appended above level 2. Open: the decisions in the definition's open-decisions list stay on their defaults; real-device speech and children reading the badges are unchecked ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
@@ -1678,7 +1684,7 @@ The completed batch used the existing loop and guess-card tap; its proof checked
 
 [PR #842](https://github.com/rjdunlap/neo/pull/842), dive slices 7–8 in one worker/claim/PR. Level 13 sorts six one-color pieces into round/zigzag mouths with circle/triangle signs; both classes are dealt, heart excluded. Level 14 deals seven pieces to shared 0/3/4/5/6 targets, numeral and dots; at least two distinct four-corner kinds share the 4 hole, star and heart excluded. Boing/property voice and every-second-miss glow remain, with dots lighting in order during counting help; ghost finger uses the same `fits` rule. Pre-K `[5, 6, 7, 11, 8, 12, 13, 14]`; no school expansion, creature box or other batch. Existing saved IDs, younger bands and developer decisions preserved; #733 untouched.
 
-Combined proof: typecheck, 38 sorter/how-to tests, build; filtered originals 13/14 with wrong targets, hints, saved score/sticker/reload; clean 15.9/19.5 s demos and reviewed 13 landscape/14 portrait. [Verification](../VERIFICATION.md#2026-10-22--shape-sorter-batch-3-corners-curves-and-corner-counts-1314). Device speech/feel and child understanding remain open.
+Combined proof: typecheck, 38 sorter/how-to tests, build; filtered originals 13/14 with wrong targets, hints, saved score/sticker/reload; clean 15.9/19.5 s demos and reviewed 13 landscape/14 portrait. [Verification](VERIFICATION-2026-10-22.md#2026-10-22--shape-sorter-batch-3-corners-curves-and-corner-counts-1314). Device speech/feel and child understanding remain open.
 
 ### Mail Carrier batch 1: Tool signs, helpers and numbers past ten (2026-10-22)
 
