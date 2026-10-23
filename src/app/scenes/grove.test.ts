@@ -5,6 +5,7 @@ import { GAMES } from '../../games/registry';
 import { BANDS, type Band } from '../../progress/bands';
 import { exploreIds } from './ExploreScene';
 import { LOCATIONS } from './LocationScene';
+import { residentProblems } from './resident-check';
 import { meadowKeepOut } from './meadow';
 import { GROVE_BACKDROP, groveEdge, grovePlan, grovePlanSky } from './grove';
 
@@ -83,10 +84,9 @@ describe('Story Grove as a location', () => {
     }
   });
 
-  it('is a night location whose land host greets her until Lumen, its resident, is prepared, and Explore lists it', () => {
+  it('is a night location with Lumen as its resident, whose touch circle and motion clear every other spot, and Explore lists it', () => {
     const place = LOCATIONS['story-grove'];
     expect(place).toBeDefined();
-    expect(place?.resident).toBeUndefined();
     expect(place?.backdrop).toBe(GROVE_BACKDROP);
     expect(GROVE_BACKDROP.sun).toBeFalsy();
     expect(GROVE_BACKDROP.clouds ?? 0).toBe(0);
@@ -94,5 +94,7 @@ describe('Story Grove as a location', () => {
     expect(GROVE_BACKDROP.horizon).toBe(grove.backdrop.horizon);
     expect(grove.backdrop.sun).toBe(true);
     expect(exploreIds()).toContain('story-grove');
+    expect(LOCATIONS['story-grove']?.resident).toBe('lumen');
+    expect(residentProblems('lumen')).toEqual([]);
   });
 });

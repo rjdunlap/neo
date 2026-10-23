@@ -1,10 +1,10 @@
-import { Circle, Container, Graphics, Sprite, Text } from 'pixi.js';
+import { Assets, Circle, Container, Graphics, Sprite, Text, type Texture } from 'pixi.js';
 import type { App } from '../app/App';
 import { Scene } from '../app/Scene';
 import { makeAccessory } from '../art/creatures/accessories';
-import { CAST, CAST_ART, type CastId, type CastSet, IllustratedCast, loadCast } from '../art/creatures/cast';
+import { CAST, CAST_ART, type CastId, IllustratedCast } from '../art/creatures/cast';
 import { ACCESSORIES, dress } from '../art/creatures';
-import type { Mood } from '../art/creatures/illustrated';
+import { type ArtSet, EXPRESSIONS, type Expression, type Mood } from '../art/creatures/illustrated';
 import { cream, ink, swatch } from '../art/palette';
 import { onTap } from '../engine/input';
 import type { View } from '../engine/view';
@@ -15,8 +15,32 @@ import type { View } from '../engine/view';
  * Each stands at its CAST.md size relative to the others; a tap pokes it. The left button turns
  * every mood (calm, sleepy, sad); the right one puts the crown and scarf on or off, and a species
  * that declines one shows a "no" mark. The `alt` pose of the four that have one is a still beside it.
+ *
+ * The preview reads the prepared PNGs (the `alt` stills exist only as PNGs); the locations ship the WebPs
+ * (`loadCastArt`). This module is reached only on the dev server, so the PNGs stay out of the build.
  */
 const MOODS: Mood[] = ['calm', 'sleepy', 'sad'];
+
+const pngs = import.meta.glob<string>('../art/creatures/cast/*-*.png', { query: '?url', import: 'default' });
+
+export interface CastSet {
+  textures: ArtSet;
+  alt: Texture | null;
+}
+
+/** Loads a species' six expressions and its `alt` still, if it has one, from the prepared PNGs. */
+export async function loadCastPreview(species: CastId): Promise<CastSet> {
+  const load = async (name: Expression | 'alt') => {
+    const url = pngs[`../art/creatures/cast/${species}-${name}.png`];
+    if (!url) throw new Error(`no prepared sprite for ${species} ${name}`);
+    const t = await Assets.load<Texture>(await url());
+    t.source.autoGenerateMipmaps = true;
+    t.source.updateMipmaps();
+    return t;
+  };
+  const entries = await Promise.all(EXPRESSIONS.map(async (e) => [e, await load(e)] as const));
+  return { textures: Object.fromEntries(entries) as Record<Expression, Texture>, alt: CAST_ART[species].alt ? await load('alt') : null };
+}
 
 interface Cell {
   species: CastId;
@@ -27,7 +51,7 @@ interface Cell {
 }
 
 export async function showCast(app: App) {
-  const art = Object.fromEntries(await Promise.all(CAST.map(async (s) => [s, await loadCast(s)] as const))) as Record<CastId, CastSet>;
+  const art = Object.fromEntries(await Promise.all(CAST.map(async (s) => [s, await loadCastPreview(s)] as const))) as Record<CastId, CastSet>;
   await app.show(new CastPreview(app, art));
 }
 

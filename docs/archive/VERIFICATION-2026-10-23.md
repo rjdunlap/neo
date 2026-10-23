@@ -128,3 +128,10 @@
 - `BROWSER_SUITE=next NEXT_ONLY=seesaw` levels 1–7 passed on the second run; the first run stopped at level 7 with a page-state dump and no page errors, not reproduced (possible timing flake). Probe: tapping a lifting friend at level 1 hopped it to the empty tray with no miss. Portrait screenshots of level 4 (wrappings) and level 6 (crate).
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=seesaw-balance` levels 1 and 6 passed (25.9 s, 40.8 s).
 - Not run: `npm run build`, offline check, an iPad or real touch.
+
+## 2026-10-23 — Size Parade levels 17 and 10 (slices 4–5)
+
+- [PR #862](https://github.com/rjdunlap/neo/pull/862), `claude/size-parade-variety-lap`: level 17 *Two in a line* and level 10 *Big, middle, little* (middle cue, middle-asking rows), windows and how-to card updated.
+- Ran: typecheck; size-parade rule tests; `npm test` at the time failed only `lab.test.ts` (Tinker Lab, fixed on main by #877); after merging `origin/main` re-ran typecheck and the size-parade tests.
+- Browser: `BROWSER_SUITE=expansion EXPANSION_ONLY=size SIZE_LEVELS=10,17` passed (sky tap, two wrong picks then a hint, finish, `[2,1]`, portrait screenshot of 10 reviewed); `fingerdemo FINGER_ONLY=size-parade FINGER_LEVELS=10,17` clean (5.8 s, 4.7 s).
+- Not run: build locally (CI builds), offline, iPad or a child ([open](../DEVICE-CHECKS.md)).

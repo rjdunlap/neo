@@ -5,6 +5,7 @@ import { GAMES } from '../../games/registry';
 import { BANDS, type Band } from '../../progress/bands';
 import { exploreIds } from './ExploreScene';
 import { LOCATIONS } from './LocationScene';
+import { residentProblems } from './resident-check';
 import { meadowKeepOut } from './meadow';
 import { LANE_DEPTH, villageLane, villagePlan } from './village';
 
@@ -69,9 +70,10 @@ describe('Cozy Village as a location', () => {
     }
   });
 
-  it('is a location whose land host greets her until Bramble, its resident, is prepared, and Explore lists it', () => {
+  it('is a location with Bramble as its resident, whose touch circle and motion clear every other spot, and Explore lists it', () => {
     expect(LOCATIONS['cozy-village']).toBeDefined();
-    expect(LOCATIONS['cozy-village']?.resident).toBeUndefined();
     expect(exploreIds()).toContain('cozy-village');
+    expect(LOCATIONS['cozy-village']?.resident).toBe('bramble');
+    expect(residentProblems('bramble')).toEqual([]);
   });
 });

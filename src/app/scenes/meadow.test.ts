@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { landFor, landLayout, olderIn, overlaps, visibleIn } from '../../content/lands';
-import { SPECIES } from '../../creatures/species';
 import { computeView } from '../../engine/view';
 import { GAMES } from '../../games/registry';
 import { BANDS, type Band } from '../../progress/bands';
-import { LOCATIONS } from './LocationScene';
+import { homeOf, LOCATIONS } from './LocationScene';
 import { meadowKeepOut, meadowPlan } from './meadow';
 
 const VIEWS = {
@@ -40,6 +39,6 @@ describe('Rainbow Meadow as a location', () => {
   });
 
   it('is the home of its resident, an island species', () => {
-    for (const [id, place] of Object.entries(LOCATIONS)) if (place!.resident) expect(SPECIES[place!.resident].land).toBe(id);
+    for (const [id, place] of Object.entries(LOCATIONS)) if (place!.resident) expect(homeOf(place!.resident)).toBe(id);
   });
 });

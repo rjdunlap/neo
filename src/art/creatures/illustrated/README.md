@@ -46,7 +46,7 @@ Each file is 220–260 KB (about 4.3 MB for the eighteen); as RGBA textures a se
 
 ## The second wave (RW02b step 3, 2026-10-20)
 
-Tote, Trill, Dapple, Bramble, Mossback and Lumen (queue rows R09-R14) were cut with `node scripts/creature-art/prepare-sprite.mjs --set <species> --shrink 2 --scale 0.5 --out-dir src/art/creatures/cast` into **`src/art/creatures/cast/`**, not this folder. Six expressions per species share one box (all variants within the 4 px tolerance); Tote, Bramble, Mossback and Lumen also keep an `alt` still. Portraits were cut but not kept; RW10's collection book prepares them. 40 PNGs, about 12 MB.
+Tote, Trill, Dapple, Bramble, Mossback and Lumen (queue rows R09-R14) were cut with `node scripts/creature-art/prepare-sprite.mjs --set <species> --shrink 2 --scale 0.5 --out-dir src/art/creatures/cast` into **`src/art/creatures/cast/`**, not this folder. Six expressions per species share one box (all variants within the 4 px tolerance); Tote, Bramble, Mossback and Lumen also keep an `alt` still. Portraits were cut but not kept; RW10's collection book prepares them. 40 PNGs, about 12 MB. Since RW14 slice 2 (2026-10-23) the 36 expression PNGs also ship as WebP (36 files, 920 KB, made with `ls src/art/creatures/cast/*.png | grep -v -- -alt.png | xargs node scripts/creature-art/to-webp.mjs`); the PNGs stay for the pixel tests and the dev preview's `alt` stills, and none is in the build.
 
 | Species | Base size (px) | `alt` size (px) |
 | --- | --- | --- |
@@ -57,7 +57,7 @@ Tote, Trill, Dapple, Bramble, Mossback and Lumen (queue rows R09-R14) were cut w
 | Mossback | 683 x 413 | 549 x 361 |
 | Lumen | 623 x 457 | 467 x 474 |
 
-**Why a separate folder.** `illustrated.ts` loads `./illustrated/*-*.png` with a glob, so anything here ships in the production build and the precache. The six are not in the game yet (only the dev preview `/?cast` shows them), so they stay out of the build until RW10 or a species slice moves them. The rigs are in `../cast.ts`; the result and its limits are in [the pilot document](../../../../docs/rework/GENERATED-CREATURE-PILOT.md#step-3-result-2026-10-20).
+**Why a separate folder.** `illustrated.ts` loads `./illustrated/*-*.png` with a glob, so anything here ships in the production build and the precache. The six now ship as the residents of six locations, but only their WebP copies (`cast/*.webp`, loaded by `loadCastArt()` at boot); the PNGs stay out of the build. The rigs are in `../cast.ts`; the result and its limits are in [the pilot document](../../../../docs/rework/GENERATED-CREATURE-PILOT.md#step-3-result-2026-10-20).
 
 ## Usage terms
 
