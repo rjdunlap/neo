@@ -1727,7 +1727,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--peg-garden-l
 
 [PR #857](https://github.com/rjdunlap/neo/pull/857), `claude/monster-munch-variety-entries` ([deep dive](../deep-dives/monster-munch.md#build-slices-in-order)). `levels()` became a `BandLevels` table read with `rangeFor`: lap order `[9, 1, 2]`, toddler order `[2, 3, 10, 4]`, `entryLevels: [9, 10]`. Level 9 *Big bites* (lap entry) is two rounds of three big cookies; a tap on a cookie or on the monster feeds the next one and the belly grows each bite, with no misses. Level 10 *One of each* (toddler) gives two then three monsters a cookie and an apple each; a second of the same kind is refused as a miss (`munch.had-food`). Both have how-to cards and voice lines. Slice 2 (foods, monsters, places), 5 and 6 are not built. Typecheck, 162 test files (2015 tests), `third` with `MUNCH_LEVELS=9,10` (scores 9 `[0,0]`, 10 `[2,1]`) and `fingerdemo` at 9 and 10 (12.5 s, 23.7 s) passed; no portrait screenshot, build, offline or device check.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--monster-munch-batch-1-part-lap-9-big-bites-and-toddler-10-one-of-each-slices-34).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--monster-munch-batch-1-part-lap-9-big-bites-and-toddler-10-one-of-each-slices-34).
 
 ## Garden Grow levels 9 Rows of colors, 10 Columns of colors and 11 Same in every row, slices 5-7 (2026-10-23)
 
