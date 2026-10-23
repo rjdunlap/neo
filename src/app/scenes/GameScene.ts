@@ -41,6 +41,7 @@ import { backArt, backToArt, originArt } from '../../ui/origin-art';
 import type { App, Origin, StoryRound } from '../App';
 import { controllerPlays, InputInUse, pressed } from '../input-in-use';
 import { goToOrigin } from '../origin';
+import { ResultBackdrop, resultPlace } from './result-backdrop';
 import { isParentPanelOpen } from '../../parent/panel';
 import { Scene } from '../Scene';
 
@@ -77,6 +78,8 @@ export class GameScene extends Scene {
   private stopRow: boolean | null = null;
   private resultLayer: Container | null = null;
   private resultVeil: Graphics | null = null;
+  /** At the root, the round's place behind the veil (RW14 slice 5); null keeps flat cream. */
+  private resultPlace: ResultBackdrop | null = null;
   private readonly resultPetOffset = { y: 300 };
   private resultStar: ReturnType<typeof makeCompanion> | null = null;
   private resultSticker: Container | null = null;
@@ -522,17 +525,20 @@ export class GameScene extends Scene {
   private async celebrate(seed: number) {
     const v = this.view;
     const layer = this.resultLayer = new Container();
-    const veil = new Graphics().rect(0, 0, v.w, v.h).fill({ color: 0xfff4e3, alpha: 0.8 });
+    const place = resultPlace(this.origin, { story: !!this.story, root: this.app.creatureWorld });
+    const backdrop = this.resultPlace = place ? this.track(new ResultBackdrop(place, v)) : null;
+    const veil = new Graphics().rect(0, 0, v.w, v.h).fill({ color: 0xfff4e3, alpha: this.veilAlpha() });
     this.resultVeil = veil;
     veil.eventMode = 'static'; // nothing underneath can be tapped now
     veil.alpha = 0;
+    if (backdrop) backdrop.alpha = 0;
     const confetti = this.track(new Particles());
     const star = this.resultStar = this.track(makeCompanion());
     star.scale.set(0.8);
     const placeStar = () => star.position.set(this.view.w / 2, this.view.h - 20 + this.resultPetOffset.y);
     placeStar();
     this.track({ update: placeStar });
-    layer.addChild(veil, star, confetti);
+    layer.addChild(...(backdrop ? [backdrop] : []), veil, star, confetti);
     this.ui.addChild(layer);
     this.home.visible = false;
     this.help.visible = false;
@@ -540,6 +546,7 @@ export class GameScene extends Scene {
     this.tip?.destroy({ children: true });
     this.tip = null;
 
+    if (backdrop) void this.tw.to(backdrop, { alpha: 1 }, { duration: 0.3 });
     await this.tw.to(veil, { alpha: 1 }, { duration: 0.3 });
     void this.tw.to(this.resultPetOffset, { y: 0 }, { duration: 0.6, ease: ease.outBack });
     const colors = RAINBOW.map((c) => swatch[c].fill);
@@ -931,9 +938,15 @@ export class GameScene extends Scene {
     else this.launchMixStop(session.place, next);
   }
 
+  /** Flat cream where the result has no place behind it; softer over a place, so the place shows through. */
+  private veilAlpha() {
+    return this.resultPlace ? 0.45 : 0.8;
+  }
+
   /** Every existing result element keeps its original center formula when the usable view changes. */
   private layoutResult(view: View) {
-    this.resultVeil?.clear().rect(0, 0, view.w, view.h).fill({ color: 0xfff4e3, alpha: 0.8 });
+    this.resultPlace?.resize(view);
+    this.resultVeil?.clear().rect(0, 0, view.w, view.h).fill({ color: 0xfff4e3, alpha: this.veilAlpha() });
     this.resultStar?.position.set(view.w / 2, view.h - 20 + this.resultPetOffset.y);
     this.resultSticker?.position.set(view.w / 2, view.h * 0.33);
     this.resultPill?.position.set(view.w / 2, view.h * 0.555);
