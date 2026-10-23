@@ -66,6 +66,8 @@ Done lines (after the round returns to the project page): "Look, it's hanging ov
 
 **Recommendation (developer decision):** the `song` step plays **level 2** (free, 6 beats × 4 rows, `notes: 14` taps) at either band, as a named exception: *a project step may use a free-making level below the band's range when that level has no right answers.* A test asserts the exception's level has `mode: 'free'` and that every other project step stays in range. It is safe because a story round never moves the saved level (`GameScene.ts:398-399`) and free play scores no misses. Song Maker 4 stays free for the proposed [Missing Melody](../definitions/missing-melody.md) at preschool.
 
+**Decided 2026-10-23 (on the developer's delegation):** The recommendation stands: the `song` step plays Song Maker level 2 as the stated, test-guarded exception.
+
 **Alternative:** add a Song Maker compose level inside both ranges ("make a hello song, then press the green arrow"), which also lets her choose when it is finished. It is a real game change at the new-levels tier and a separate slice. The project's step contract is the same either way.
 
 **When fewer than two notes stay lit:** the step still completes. The project keeps no tune, the ending never plays a stand-in as hers, and the done and ending lines change to humming together (no notes play). She can [make it again](#replay-resume-and-leaving) before the ending.

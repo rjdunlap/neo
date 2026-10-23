@@ -148,6 +148,8 @@ These are easier than levels that exist, or fall between them, so they are place
 7. **Extra parts for the pet.** Lean: no feet or hands. A sprout (the leaf) is possible with a screenshot to check its size; feet need a new pose (a foot up on the rim).
 8. **Person checks to add:** whether a one-year-old scrubs, pats or slaps, and whether the larger brush feels right; device speech for the part, clue and room lines ("tummy", "cheeks", "sandy"); whether the sense and hat clues land with a four-year-old; and whether the mud-colour contrast reads on an iPad in a real light.
 
+**Decided 2026-10-23 (on the developer's delegation):** yes to muddy friends (pig first, then the shared four); build 9–12 in pre-K 5–12 and accept that 9 is easier than 8; no school window; the idle glow becomes a free sparkle, with a hint counted only after two misses; no feet or hands. Left and right (13) follow the one island rule shared with Pet Says: left and right are her own sides, the screen's left and right, said as "like a mirror". Part, clue and room words go to the device checks.
+
 ## Build slices, in order
 
 Each is sized for one session. Slices that add a level are built in level order so saved ids stay unbroken. Each level slice also updates `scripts/browser-check.mjs` (the `early` bath loop stops at level 8 and expects `[1, 0]` or `[0, 0]`), the `fingerdemo` levels, the how-to `LevelLine`s, `describeLevel`, the README row and [GAMES.md](../GAMES.md).

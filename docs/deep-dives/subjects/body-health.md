@@ -121,6 +121,8 @@ Co-play alternates investigator and explainer; a parent can ask what is still po
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** (1) Sense Detective stays a new game (built). (2) For model and sense language, the building session checks it against reputable sources (museums, universities, government science agencies, established curricula), lists them here and records the check in its VERIFICATION entry; no outside reviewer is needed. (3) Older proposals sit at the school top or in `grownup`; no new band. (4) Free reveals, "not yet" answers and unjudged creation are never misses; only an explicit wrong Check counts; a supported finish earns the ordinary sticker. (5) Practical care, food, sleep, physical and body-safety content is deferred and not drafted.
+
 1. Confirm whether Sense Detective's choice of information channel earns a new game; consolidate with Photo Safari if the final action is photography/visual clue collection. Define K/S first; preschool is an observation trial.
 2. Choose a science/health educator to review body-system models, accessible sense language and human teaching-diagram scope. Existing Teddy Doctor pairings are pretend behavior, not newly verified medical instructions.
 3. Decide initial band ranges, subject/land destination and capacity; school-top at 11–12 and grownup at 13+ can serve older proposals without a new band. Cozy Village, Tinker Lab and Lantern Lake all require actual capacity checks; proposed Discovery Marsh is not available infrastructure.

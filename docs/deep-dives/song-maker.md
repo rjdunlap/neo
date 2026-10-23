@@ -162,6 +162,8 @@ Level 10 (Finish my song) is preschool's easiest composing, placed after 4. Leve
 6. **D6, toddler finish.** Lean: level 2 keeps its automatic finish, with slice 1's keepable-song guard. A toddler check would follow Beat Builder 1's gentler version only after a person check.
 7. **Later (rework), editing a kept tune.** Should the plaque, or RW03's library, open Song Maker with her kept tune loaded to revise? That needs a route and creation contract and belongs with RW03/RW04, not this game.
 
+**Decided 2026-10-23 (on the developer's delegation):** D1 approve 8–13 with preschool 4–10, pre-K 5–11 and school 6–13 placed by `order`; D2 compose rounds stay 0/0; D3 a co-made song is kept as an ordinary tune, "our song"; D4 a failed check against a spoken rule counts as a miss (trying jellies never does); D5 no sol grid now and `ROW_STEPS` stays; D6 toddler level 2 keeps its automatic finish. Editing a kept tune stays with RW03/RW04.
+
 ## Build slices, in order
 
 1. **Support truth (built).**

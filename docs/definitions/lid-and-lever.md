@@ -113,6 +113,8 @@ Device checks stay open: whether a one-year-old's swat reads the handle as the c
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** all seven defaults stand as the build uses them: the ordinary 0/0 step-up from 3 to 4, preschool level 1 only, only her Finish tap ends a round, any attic touch turns the handle at level 3, the bird box at level 4, home Story Grove, and the pet never says *lever*, *old* or *long ago*.
+
 Each has a default the build uses. None blocks it.
 
 1. **Adaptation.** Default: rounds report 0/0 and step a toddler from 3 to 4 after two rounds, as every free level does. Alternative: hold her at the level until a grown-up moves it, which needs a shared "do not adapt" rule that does not exist yet.

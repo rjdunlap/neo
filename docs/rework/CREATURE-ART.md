@@ -90,6 +90,8 @@ Measured in the dev preview (headless Chromium, a one-off local probe in the ign
 
 ## Production recommendation
 
+**Decided 2026-10-23 (on the developer's delegation):** Illustrated sprites on mesh rigs are the final treatment, and the nine-species roster in [CAST.md](art-requests/CAST.md) is the production cast; names and colours stay editable by later art sessions, and the assistant generates and accepts candidates through the art request queue. The Graphics construction below remains the reference for slots and cost, not the shipped look.
+
 1. **Style:** keep this construction, flat palette shapes with one outline weight and light-tint shading, as the production base. Add illustrated-adventure warmth only where it is cheap: a second tint for shading, a highlight stroke and a softer outline color per species. Do not chase painterly or soft-toy rendering in `Graphics`. The brief's "expressive illustrated adventure" is reached through silhouette, pose and motion, not texture.
 2. **Rig:** each species owns its own small rig. Body parts are containers with procedural motion written as functions of time since the touch, so there is no physics state to leak, and the motion is easy to test and cheap to run. Do not build a universal skeleton or rig framework; three species with different anatomy shared only blinking, slots and the touch clock.
 3. **Slots:** keep two named slots (`head`, `neck`). Each species declares either a slot or a misfit reason, and an accessory is drawn for the slot's width. New accessories go through the same table; a species without a slot gets a deliberate reason, not an approximation.

@@ -122,6 +122,8 @@ Device checks stay open: whether a preschooler reads the handle as "pull me" and
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** Keep all six built defaults; the mechanism reviewer becomes the session's source check of the drawn rigging against reputable physics sources.
+
 Each has a default the build uses. None blocks it.
 
 1. **Bands.** Default preschool 1–2, pre-K 2–4, school 3–6, the study's P–S. Not in the first build: a toddler toy (level 1 with a 1-rung ledge, one stroke, PHYSICS-GAMES's "push a crate" row), upper-school content (a three-wheel rig with three or four strands) and the grown-up mechanism puzzle.

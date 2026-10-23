@@ -104,6 +104,8 @@ Device and person checks stay open: whether a four-year-old reads the from-above
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** Keep all six built defaults; a preschool level 1 waits on a device check with a three-year-old.
+
 Each has a default the build uses; none blocks B2.
 
 1. **Identity.** Default: a new game, because choosing the sense and knowing when the evidence is enough is an action no shipped game has. Alternative: a Photo Safari mode, if play shows the choice of channel does not matter to her.

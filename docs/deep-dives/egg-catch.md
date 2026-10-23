@@ -108,6 +108,8 @@ Level 8 sits between 1 and 2 (toddler), level 9 between 3 and 4 (preschool and p
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans are adopted: a wrong level-6 prediction stays a miss; level 8's added window is toddler only, no lap; no couch lane-hop rung before touch play; two-finger Pitch and catch is tried on touch at levels 2–3; egg-colour journal entries and visiting chicks come only from finished rounds, never a missed egg, after the rework's journal and collection items land.
+
 1. **Level 6 accounting.** Keep a wrong prediction as a miss (the gates are visible, so it is a deduction) or make it an unpenalized prediction like Sink or Float. Lean: keep the miss; it is reading a deterministic machine, and the hint shows the path.
 2. **Lap window for level 8**, after a person watches her tap a lane on purpose. Lean: toddler only until then.
 3. **Couch.** Whether level 8's lane hop becomes a couch rung (left/right hops one lane) for a very young player beside a grown-up. Lean: no until it is built and played on touch.

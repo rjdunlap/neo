@@ -86,6 +86,8 @@ What to paint, which colors, which side, and when to fold. Every choice is welco
 
 ## Open developer decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** yes to decision 0: fold pages go into Rainbow Fingers, at level 2 only (about one page in three), with a tapped 104-unit button and no drag-to-close. Whether a two-year-old links the press to the copy and enjoys the squish is a device check after the build, not a gate.
+
 0. **Does the fold button belong in Rainbow Fingers?** This reverses part of the approved decision 6 lean, which kept the button with Bug Builder. Lean: yes. A press with no prediction does not overlap *Fold a friend*, which is about predicting, and IDEAS' Mirror Brush row puts both halves in Rainbow Fingers. If the answer is no, the fold stays with Bug Builder level 10 and this page is dropped. **This gates the build.**
 1. **Where the fold appears.** Lean: level 2 only, about one page in three, as above. The alternative is a fold button on every level 1–2 page, which is simpler but takes away the plain toy page.
 2. **Fold button versus dragging the paper closed.** Lean: the button, since a toddler can tap a 104-unit target but cannot reliably drag a page edge across the screen. A corner drag stays a sketch for older bands.

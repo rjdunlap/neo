@@ -90,11 +90,15 @@ Real-date calendars, attendance, daily gifts, streaks, seasonal scarcity, round 
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** preschool entry 9 with three pictured skies under a truthful observations title is approved, no weekday claim (watching her weather matching becomes a device check); month-order mode 7 stays in Day by Day at school with twelve replayable names, large cards and no holidays; daylight mode 8 uses a fictional site with relative bars, no hour arithmetic or hemisphere season claims, checked by the building session against cited sources. Weather records stay here; causal seasons stay with the space study.
+
 1. **Younger entry 9:** open preschool with three pictured skies, under a truthful observations title? Lean yes only after watching the current weather matching; no change to the existing weekday entry is implied. No lap/toddler opening proposed.
 2. **Months 7:** retain a month-order mode in Day by Day, with twelve replayable names and no holidays? Approve its school window and large-card layout first; do not infer approval from the original first-slice sketch.
 3. **Daylight 8:** choose the fictional site's labels, daylight scale and reviewer, and whether this belongs here before the space study's causal seasons model. Lean relative bars first, with no hour arithmetic or universal northern-hemisphere season claims.
 
 These decisions gate only their named modes. Existing shared decisions on kept artifacts, second-seat credit and practical cards remain separate; none is needed for the ready slices. Baseline visible support at 10 is part of that proposed plan; repeated help after mistakes still counts normally. No proposed mode uses unscored experimental predictions as mastery evidence.
+
+**Decided 2026-10-23 (on the developer's delegation):** Day by Day uses in-game days only: no tie to the real date, no streak and no daily return, as already built.
 
 ## Build slices, in order
 

@@ -146,6 +146,8 @@ These are easier than levels that exist, or fall between them, so they are place
 5. **{pet} as a hiding friend, and the written name.** Lean: yes to both after reading `pet.ts`; neither can be a miss.
 6. **Person checks to add:** whether a one-year-old swats one door (lap), whether the bear's growl is gentle, whether a four- or five-year-old can follow a 0.9-second swap, and device speech for the feeling and part words.
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans stand: override the audit for 9–15 (Switcheroo at four items or fewer, untimed, slow swaps); pre-K 6–13 and school 9–15; level 9 may be easier than 8 (accepted); sheep, horse, hen and mouse join through `critter.ts`, shared with Animal Snack and Splish Splash; {pet} can hide and its name can show. Feeling and part words go to the device checks.
+
 ## Build slices, in order
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken. Each level slice also updates `scripts/browser-check.mjs` (its Peekaboo loop stops at level 8, and `originals` expects 8 history entries), the `fingerdemo` levels, the how-to `LevelLine`s, `describeLevel`, the README row and GAMES.md.

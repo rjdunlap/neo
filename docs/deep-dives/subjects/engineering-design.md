@@ -162,6 +162,8 @@ M: a new `logic.ts` with a path walker and a solver for tests; parts drawn with 
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** Welcome Ways is a new game, not a Habitat Helpers mode, home Tinker Lab by the layout test, else Cozy Village; a Try is never a miss and adaptation reads hints (Chain Reaction precedent); today's critters first, the rework's species later; fictional creature bodies only, and human access needs and a *Who can use it?* card are not drafted for now. Plaza Cases register as `grownup` cases; Garden Raft becomes Sink or Float level 8 after the building session's float-model check against cited sources.
+
 1. **Identity and placement:** keep Welcome Ways as a new game (not a Habitat Helpers mode, given the overlap test), and place it in Tinker Lab after a capacity check, Cozy Village, or a future Maker Harbor?
 2. **Accounting:** Try never a miss and hints only (Chain Reaction precedent), or an untested Welcome counted as a miss (Gadget Bench precedent)?
 3. **Human access needs:** should any human user with an access need ever appear (in the game or on a page card), and who with lived experience reviews it? Lean: fictional creature bodies only until a named reviewer exists.

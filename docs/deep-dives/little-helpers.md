@@ -131,6 +131,8 @@ This separates the whistle from exactness (gap 8): at 9 the whistle means "done"
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans are adopted and the built defaults kept: *Share the crowd* waits until levels 7–8 have been played (a device check) and *Make ten* stays with Duck Pond; level 9 counts no misses, a whistle with no helpers is a nudge, quick double taps keep lifting; windows lap 1–2, level 7 in pre-K 3–7, level 8 school only; rework hooks wait on RW05 and RW11, never fruit as a currency.
+
 1. **The gated levels.** *Share the crowd*: build partition without remainders here, or leave sharing to Monster Munch and Pet Kitchen (lean: wait until levels 7–8 have been played). *Make ten*: build it beside Duck Pond's level 10, or leave make-ten there (lean: leave it there).
 2. **Accounting defaults the build uses:** level 9 counts no misses; a whistle with no helpers at 3–9 is not a miss (only a nudge), since nothing was tried; quick double taps at 2 keep lifting.
 3. **Windows (defaults the build uses):** lap 1–2 (level 2 opened to lap); level 7 in pre-K 3–7; level 8 school only.
