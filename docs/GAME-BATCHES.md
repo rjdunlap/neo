@@ -223,6 +223,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### little-helpers 2: Build teams, share helpers and count strong helpers
 
+Built 2026-10-23, [PR #863](https://github.com/rjdunlap/neo/pull/863); [closeout](archive/COMPLETED-2026-10-09.md#little-helpers-batch-2-teams-she-builds-everyone-helps-and-strong-helpers-2026-10-23). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`little-helpers`, level 6 teams she builds** (existing-game change): tap which fruit gets the helper, nearest-helper taps; uneven teams strain. [Slice 4](deep-dives/little-helpers.md#fresh-content-inside-existing-levels)
 - **`little-helpers`, level 7 Everyone helps** (new interaction): split a crowd of 4–7 between two fruits; pre-K top and school. [Slice 6](deep-dives/little-helpers.md#new-levels-on-top)
 - **`little-helpers`, level 8 Strong helpers** (new interaction): big helpers count two, every exact mix right; school. [Slice 7](deep-dives/little-helpers.md#new-levels-on-top)
