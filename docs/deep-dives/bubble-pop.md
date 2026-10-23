@@ -152,6 +152,8 @@ These are placed by [`order`, which may skip IDs](../DESIGN.md) (built): each is
 
 The level-order decisions already have a row in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer); the others are added there as one row.
 
+**Decided 2026-10-23 (on the developer's delegation):** build big and little (toddler, placed between 3 and 4) and which one has the dots (preschool, between 6 and 7) with the band's `order`; blow-then-pop may be built too, and whether a lap child drags before she taps becomes a person check, not a gate. Evens and odds belong to Duck Pond, so Bubble Pop's pairing-bubbles sketch drops.
+
 ## Build slices, in order
 
 > **Built 2026-10-12** ([PR #206](https://github.com/rjdunlap/neo/pull/206)): slice 3's three backgrounds (bath, night, sea; `scenes.ts`, `backdrop.ts`), and, at the developer's request, a next-level button on every game's celebration (`GameScene`, `nextLevelOffer`).

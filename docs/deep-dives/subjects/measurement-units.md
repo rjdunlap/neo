@@ -105,6 +105,8 @@ Four sticks a round, lengths chosen so the big-worm count is a whole number (2â€
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans stand: Measuring Post is a new school game in Tinker Lab or Cozy Village, placed by the lands capacity check; island units (worms, blocks, cups) through the first packet and metric (cm, kg, l) at school top levels; Weights Case goes to Lantern Lake after its capacity test, defined after Box Balance. M3â€“M5 may now be defined on these.
+
 1. **Measuring Post as a new game, and where.** Lean: yes, as a school game in Tinker Lab or Cozy Village after a capacity check, because tool choice crosses attributes and no existing game holds all three. Alternative: spread its levels over Inchworm, Seesaw and Fill and Dump and drop the cross-attribute question.
 2. **Standard units, and which system.** Lean: island units (worms, blocks, cups) through the first packet; at school top levels, metric (cm, kg, l), which matches England's programme and the family's languages. Alternative: US customary (2.MD.A.3 names inches and feet), or both.
 3. **Weights Case's home.** Lean: Lantern Lake after its capacity test, defined after Box Balance so the two puzzles do not repeat each other. Alternative: a level of Box Balance.

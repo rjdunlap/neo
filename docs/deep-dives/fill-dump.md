@@ -105,6 +105,8 @@ Level 6 is the only in-between level: built with the band's `order` (toddler `[1
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** (1) Open pre-K for levels 8–9 now; the build checks Counting Cove's pre-K layout, and watching level 7 becomes a device check. (2) Level 8 has two answers, no "holds the same"; younger players never meet a looks-different-holds-same pair. (3) The toddler drag-to-pour rung builds only once a person sees a two-year-old pull the jug without help. (4) Two jugs stays with Fill and Dump in a school window (pouring is its action; [Jar Sort](../definitions/jar-sort.md#open-decisions) agrees).
+
 1. **Open pre-K** for levels 8–9 (and check Counting Cove's land layout at pre-K). Lean: yes, after level 7 is built and watched.
 2. **"Holds the same"** pairs at level 8: a third answer button, and whether younger players ever meet a pair that looks different but holds the same. Lean: not before a person sees level 8.
 3. **Toddler drag-to-pour rung**, after a person watches a two-year-old pull the jug. Lean: only if she pulls without help.

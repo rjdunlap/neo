@@ -127,6 +127,8 @@ Device and person checks stay open: how the iPad's speech says each whole compou
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** 1: a new game (*Word Glue* stays the working name). 2: for the compound table, distractors and deny list, the building session checks it against reputable sources (museums, universities, government science agencies, established curricula), lists them here and records the check in its VERIFICATION entry; no outside reviewer is needed (no opaque compound on meaning rungs, US/UK words flagged). Story Grove allocation: Word Glue, Story Weaver and Pond Typing each try Story Grove first; the CI lands test (`landLayout` at every band in all four views) decides at merge; a game that does not fit goes to Treehouse; a built game is never moved to make room. The build is unblocked.
+
 Decisions 1 and 2 block the build; the rest have defaults the build uses.
 
 1. **A new game, and its land** (blocks). Lean: a new game, since no built game joins two pictures into a third. See decision 4 for the land.

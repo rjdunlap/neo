@@ -114,6 +114,8 @@ Device checks stay open: whether a toddler finds tap-to-lead without help; wheth
 
 Each has a default the build uses. None blocks it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults the build used stand (toddler 1–2, preschool 2–4, pre-K 3–6, school 5–8, no lap yet; a too-big touch is never a miss; Bubble Beach; fits when `t ≤ s`; numerals alone at pre-K 6).
+
 1. **Bands.** Default toddler 1–2, preschool 2–4, pre-K 3–6, school 5–8. Not in the first build: a lap entry (any touch splashes the puddle toward a shell), which level 1 nearly is.
 2. **Accounting.** Default: a too-big touch is never a miss at any level; misses come only from level 5's stated order and level 8's overshoot, one per thing per round. Alternative: count a too-big touch as a miss at numeral levels 6–8, where the comparison is deliberate.
 3. **Home land.** Default Bubble Beach (a rain puddle on the sand). It holds 4 games today and 6 once Domino Run and Fruit Slice land on their defaults, so Puddle Gobble would be the seventh; the lands test must still fit. Alternative: Puzzle Peaks beside Size Parade (13 today, likely too many) or Barnyard after a rain (8 with Bolt Boards).

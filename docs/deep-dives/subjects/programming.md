@@ -145,6 +145,8 @@ Off-screen possibility: an author chooses two pictured actions and an interprete
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** Cue Studio is a new game, since its executable editor is the action Story Theater, Dance Workshop and Puppet Workshop lack. P2 uses the packet's conservative proposal: pre-K 1–2 creative and school 3 only, free creation never a miss and only wrong Checks counting; home Tinker Lab if its layout test passes, else Story Grove, else Paint Pier; preschool waits on a device check. Command and event language and any puppet card take the building session's check against cited sources; programs stay transient; Robot Path's decision stays separate.
+
 1. **Identity and first scope.** Recommend Cue Studio 1–3 first, only if the command editor earns a new game beside Story Theater/Dance Workshop/Puppet Workshop. Machine Line is the next lower-palette puzzle alternative. Docs-first definitions can proceed now.
 2. **Audience and placement.** Pre-K/school first; preschool 1 needs an observation, no lap/toddler coding claim. Confirm current-land capacity before registering. Older school/grownup entries need the existing registration/route audit; no new middle band or future zone assumed.
 3. **Robot Path gate stays put.** Its routine/couch decision remains under [Waiting on the developer](../../WAITING-ON-DEVELOPER.md#waiting-on-the-developer). This subject does not approve level 15 or add a competing route ladder.

@@ -1,6 +1,7 @@
 import { spread } from '../../engine/view';
 
-export const SIZE_PLANS = [
+export interface SizePlan { count: number; order: 'big' | 'small'; mode: 'pick' | 'line'; name: string; /** Some questions ask for the middle one. */ middle?: boolean }
+export const SIZE_PLANS: readonly SizePlan[] = [
   { count: 2, order: 'big', mode: 'pick', name: 'Find the bigger of two friends' },
   { count: 2, order: 'small', mode: 'pick', name: 'Find the smaller of two friends' },
   { count: 3, order: 'big', mode: 'pick', name: 'Find the biggest of three friends' },
@@ -9,8 +10,21 @@ export const SIZE_PLANS = [
   { count: 3, order: 'big', mode: 'line', name: 'Line up three friends, biggest first' },
   { count: 5, order: 'small', mode: 'line', name: 'Line up five friends, smallest first' },
   { count: 5, order: 'big', mode: 'line', name: 'Line up five friends, biggest first' },
-] as const;
-export type SizePlan = (typeof SIZE_PLANS)[number];
+];
+/** Levels with high IDs, placed among the first eight by a band's `order`: 17 *Two in a line* and 10 *Big, middle, little*. */
+export const TWO_IN_A_LINE: SizePlan = { count: 2, order: 'small', mode: 'line', name: 'Line up two friends, smaller first' };
+export const MIDDLE_ONE: SizePlan = { count: 3, order: 'big', mode: 'pick', middle: true, name: 'Find the middle-sized friend of three' };
+export const sizePlan = (level: number): SizePlan =>
+  level === 17 ? TWO_IN_A_LINE : level === 10 ? MIDDLE_ONE : SIZE_PLANS[Math.max(0, Math.min(SIZE_PLANS.length - 1, level - 1))];
+
+export type SizeAsk = 'big' | 'middle' | 'small';
+/** The four questions of *Big, middle, little*: at least two ask for the middle, so it is not the only answer. */
+export function middleAsks(rng: { shuffle<T>(a: T[]): T[]; pick<T>(a: readonly T[]): T }): SizeAsk[] {
+  const extra = rng.pick(['big', 'small'] as const), other = rng.pick(['big', 'middle', 'small'] as const);
+  return rng.shuffle<SizeAsk>(['middle', 'middle', extra, other]);
+}
+/** The rank (of three) an ask names. */
+export const askRank = (ask: SizeAsk): number => ask === 'small' ? 0 : ask === 'middle' ? 1 : 2;
 
 /** Ranks describe size only; shuffling position or changing the animal cannot change the answer. */
 export function sizeOrder(count: number, order: 'big' | 'small'): number[] {
@@ -36,7 +50,9 @@ export const CRITTER_H = 250;
 export const TARGET = { w: 154, h: 190 };
 
 /** The size word asked for: comparative between two friends (bigger, smaller), superlative among more. */
-export function sizeWord(plan: { count: number; order: 'big' | 'small' }): string {
+export function sizeWord(plan: { count: number; order: 'big' | 'small' }, ask?: SizeAsk): string {
+  if (ask === 'middle') return 'middle-sized';
+  if (ask) return ask === 'big' ? 'biggest' : 'smallest';
   if (plan.count === 2) return plan.order === 'big' ? 'bigger' : 'smaller';
   return plan.order === 'big' ? 'biggest' : 'smallest';
 }

@@ -125,6 +125,8 @@ Co-play uses two useful jobs: voice/point to a request and operate a plan, then 
 3. **Family and older appeal:** compare the actual Common Ground round with Village Planner/Picnic Pantry before choosing which to build. Observe willing replay and explanation of an alternative; bot completion cannot establish either. Page cards belong to the unstarted off-screen-companions subject; no second card system or schedule.
 4. **Claims:** no diagnosis, behavior score, mood history, forced personal disclosure or therapeutic marketing. Do not interpret completion/help use as empathy or emotional maturity. Existing game's event/helper mappings need their own reviewed change, preserving old levels and pins.
 
+**Decided 2026-10-23 (on the developer's delegation):** fictional screen rounds proceed; Playdate Workshop is a new game beside Story Theater on its definition's defaults (Story Grove, fallback Painted Canyon; preschool 1, pre-K 1–3; pet-role accounting); requests, endings and Feelings Faces assumptions ship after the building session's source check (early-childhood and accessibility guidance) instead of a named reviewer; practical mental-health, calming or conflict advice and real-life parent cards are not drafted for now; Common Ground uses `school`'s top and `grownup` only, no new band.
+
 ## Build slices in order
 
 | Order | One complete session | Exit / verification tier |

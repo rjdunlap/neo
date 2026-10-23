@@ -155,6 +155,8 @@ Replay varies stone counts, which side is open, pier heights, the valley's width
 9. **Numerals.** The Roman clock stops at XII (Year 3); numerals to C and M, the "no zero" lesson and the abacus belong to `number-structure` and the silk road's bead frame. Confirm, so no rung here teaches place value by the back door.
 10. **Rota and the couch.** A two-seat Rota could be a small couch face-off (three pieces each, a bot, a course version); decide whether it is worth a registration or stays a family card. Lean: card now, couch later if a face-off slot wants a calm turn game.
 
+**Decided 2026-10-23 (on the developer's delegation):** every lean: island names on the child's screen, Athens, Rome and dates only in the M rung and on the grown-up card; Water Road in Tinker Lab if `landLayout` passes, else Storybook Square when it exists, first build 1–3; Village Vote owns every counted decision; The Water Commissioner a separate Lantern Lake puzzle; the M rung and card state in one source-checked sentence who could not vote and that enslaved people built, rowed and served; Roman Britain through Vindolanda's letters, roads and the clock face only; temples stay buildings, myths go to the literature row; the Roman clock stops at XII; Rota stays a family card. Historical lines ship after the building session's source check instead of a named reviewer.
+
 ## Build slices, in order
 
 Each line is one future session. **Definition ready** means research permits a concrete packet, not that implementation is approved.

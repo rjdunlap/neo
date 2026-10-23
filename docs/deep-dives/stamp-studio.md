@@ -157,6 +157,8 @@ These are easier than levels that exist or fall between them, so they are placed
 10. **Sketches that need a decision first:** a multi-picture story (the flipbook-storage row), the pet as a stamp, a stamp from a pixel picture, and layers (behind and in front).
 11. **Person checks to add:** whether a one-year-old pats or presses and what the pop teaches; whether "between" and "next to" mean something to a three- and a four-year-old; whether a 1.5-size stamp and a 0.7 stamp read on the treehouse board; whether the new stamp names, animal sounds and composed sentences read right on a device; and whether a six-year-old finds the repeating tile.
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans stand: invitation levels 7–11 in preschool 3–7, pre-K 4–9 and school 5–11; an unmet invitation counts as one hint on 7–9 and 0/0 on 10–11; six sets open from the start with an optional `scene`; counting aloud at 1–3; seven colors and three sizes; the pet tells the picture back; level 7's easier start is accepted; mirror is school only with a `flip` field. Stamp names and composed sentences go to the device checks.
+
 ## Build slices, in order
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken. Each level slice also updates the `creative` stamps loop in `scripts/browser-check.mjs` (it runs levels 1–7), `stampDemo` and the `fingerdemo` levels, the how-to `LevelLine`s (keep the card short: it overflowed once), `describeLevel`, the README row and [GAMES.md](../GAMES.md).

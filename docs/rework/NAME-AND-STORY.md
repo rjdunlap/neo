@@ -6,6 +6,8 @@
 
 ## Summary
 
+**Decided 2026-10-23 (on the developer's delegation):** Keep **Puddle Island** as the title; no public rename now (a rename would need legal clearance). On screen the club is **the Puddle Island Club**, never "Discovery Club"; Puddlewild stays an unadopted exploration.
+
 - **Working recommendation:** a world-led title, **Puddlewild**, with **Puddle Island as its first region** and a plain descriptive line under it (for grown-ups, e.g. *"explore, make and learn with creature friends"*) rather than a second brand.
 - **"Discovery Club" stays a story premise, not a product subtitle.** The name screen found a US trademark application, **DISCOVERY CLUB PSP** (filed 2021; current status not checked), for children's educational apps, plus the Discovery family of kids' and education marks. On screen, the club shares the title's name: **the Puddlewild Club** (provisional). This packet still says "the club" for the idea.
 - **The creatures' family name stays open.** "Puddlings" screened clean and works as a word a child can say. RW02 and RW05 can adopt it or drop it when the cast is set, and it is not proposed as the title.

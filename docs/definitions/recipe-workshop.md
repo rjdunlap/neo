@@ -163,3 +163,5 @@ Each has a default the build uses; none blocks C2.
 3. **Bands.** Default: toddler 1, preschool 1–2, pre-K 2–3; school waits for levels 4–5. Alternative: school 3 now, if school children should see it before 4–5 exist.
 4. **Topper at level 2.** Default: none, so the round shows only the tools its card uses. Alternative: an optional sprinkle shaker at level 2, unjudged (the study's "optional topping choice"), folding in when mixed.
 5. **Drag to stir.** Default: a tap mixes at every level; the spoon drag is an alternative from level 1. Alternative: drag only from level 3, if a toddler's drag of the spoon mostly cancels.
+
+**Decided 2026-10-23 (on the developer's delegation):** every default stands (a new game; Cozy Village, fallback Painted Canyon; "yogurt"; toddler 1, preschool 1–2, pre-K 2–3; no topper; a tap mixes), so the registration is unblocked.

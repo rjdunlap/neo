@@ -112,6 +112,8 @@ Device checks stay open: whether a three-year-old reads the crank as "turn me" a
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** Keep all seven built defaults; any real tool or source later gets the session's source check (colonial and living-culture history stays undrafted).
+
 Each has a default the build uses. None blocks it. The study's decisions 1–2 (fictional scope and younger finish; placement and windows) are settled here as defaults.
 
 1. **Bands.** Default preschool 1, pre-K 1–2, school 2 (a one-level school window until H4 appends its levels, now numbered from 5). Alternative: leave school out until H4 lands. The lap/toddler opening A (giant handle, three activations, free finish) is H3, [defined](lid-and-lever.md) as levels 3–4 and not in this build.

@@ -94,6 +94,8 @@ Try limits, a pegs-style cost for trying, a countdown, a score, a "the gate bite
 2. **A third critter feature (bow or scarf), shared with Critter Sort.** It enlarges both games' rule pools; recommend yes, as its own slice with both games' rule tests run.
 3. **Role swap (level 8) and its seat credit** follow the family-role decisions already listed under [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer); not buildable until those are made.
 
+**Decided 2026-10-23 (on the developer's delegation):** level 1 opens to preschool once the visible "not" entry exists; the third feature is a scarf, shared with Critter Sort as its own slice with both games' rule tests; the level 8 role swap follows the second-seat decision (an anonymous, uncredited seat; only seat 1's role read by difficulty; a role-swapped round counts as supported completion), so Be the gate is buildable.
+
 ## Build slices, in order
 
 1. **Bank shelf** (built 2026-10-15, `claude/critter-crossing-bank-shelf`; crossed / waited copies on hidden levels). Screenshot in landscape and portrait, `fingerdemo` for `critter-crossing`; no rule change. Tier: existing-game bug fix on an unchanged interaction.
