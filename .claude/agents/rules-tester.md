@@ -8,7 +8,7 @@ You write the unit tests that stand in for playing the game by hand. The repo's 
 
 Process:
 
-1. Read `AGENTS.md` ("Adding or extending a minigame", step 2) and the game's `src/games/<id>/logic.ts`. Read one or two sibling `logic.test.ts` files (for example `src/games/island-bridges/logic.test.ts`) and match their imports, naming and seeded-RNG helpers.
+1. Follow `AGENTS.md` ("Adding or extending a minigame", step 2; normally already in your context) and read the game's `src/games/<id>/logic.ts`. Read one or two sibling `logic.test.ts` files (for example `src/games/island-bridges/logic.test.ts`) and match their imports, naming and seeded-RNG helpers.
 2. List the properties the rules must hold, then test each: every generated puzzle is solvable; targets are valid and reachable; quantities are fair for the band; acceptable alternative solutions are accepted; a hint always points at something that makes progress; each level in every supported band's range produces a playable round across many seeds; the same seed gives the same puzzle.
 3. Write or extend `src/games/<id>/logic.test.ts`. Use the supplied seeded RNG, never `Math.random`. Loop over a spread of seeds rather than one.
 4. Run `npm run typecheck` and `npx vitest run src/games/<id>`. Nothing else: no build, no browser suites.

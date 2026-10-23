@@ -17,6 +17,7 @@ import {
   balanceObservation,
   downSide,
   FRIEND_FOR,
+  friendScale,
   makeRounds,
   numberChoices,
   other,
@@ -55,7 +56,6 @@ const WEIGHT_COLORS: ColorName[] = ['teal', 'yellow', 'orange', 'purple'];
 const PRESENT_COLORS: ColorName[] = ['pink', 'blue', 'green', 'purple'];
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
-const friendScale = (weight: number) => 0.3 + 0.07 * weight;
 
 interface Item {
   thing: Thing;
@@ -74,7 +74,12 @@ interface Item {
   /** Gliding onto its tray; the frame loop leaves it alone until it lands. */
   settling: boolean;
   inWagon: boolean;
+  /** Where the last touch picked it up, so a touch that barely moved reads as a tap. */
+  pickedAt?: { x: number; y: number };
 }
+
+/** A touch that ends this close to where it began is a tap, not a drag. */
+const TAP_REACH = 60;
 
 /** The plank, its stand, and a tray at each end that stays level as the plank tips. */
 function drawPlank(g: Graphics) {
@@ -98,7 +103,7 @@ function thingNode(thing: Thing, index: number): { node: Container; width: numbe
   switch (thing.kind) {
     case 'friend': {
       const s = friendScale(thing.weight);
-      const critter = new Critter(CRITTERS[FRIEND_FOR[thing.weight as FriendWeight]]);
+      const critter = new Critter(CRITTERS[thing.face ?? FRIEND_FOR[thing.weight as FriendWeight]]);
       critter.scale.set(s);
       node.addChild(critter);
       const h = Math.max(100, 240 * s);
@@ -145,7 +150,10 @@ function thingNode(thing: Thing, index: number): { node: Container; width: numbe
         .ellipse(16, -84, 16, 10)
         .fill(swatch.yellow.fill)
         .stroke(line(swatch.yellow.line, 4));
-      node.addChild(g);
+      const wrap = new Graphics();
+      if (thing.wrap === 'dots') for (const [x, y] of [[-28, -58], [-22, -32], [-30, -12], [24, -58], [30, -34], [22, -12]]) wrap.circle(x, y, 6).fill({ color: 0xffffff, alpha: 0.85 });
+      if (thing.wrap === 'stripes') for (const x of [-34, -20, 20, 34]) wrap.moveTo(x, -72).lineTo(x, -4).stroke({ width: 7, color: 0xffffff, alpha: 0.8, cap: 'round' });
+      node.addChild(g, wrap);
       node.hitArea = new Rectangle(-55, -100, 110, 110);
       return { node, width: 96, height: 76 };
     }
@@ -168,6 +176,24 @@ function thingNode(thing: Thing, index: number): { node: Container; width: numbe
         node.addChild(g, sign);
         node.hitArea = new Rectangle(-55, -105, 110, 115);
         return { node, width: 104, height: 96, sign };
+      }
+      if (thing.look === 'parcel' || thing.look === 'crate') {
+        // Levels 6-7: a paper parcel tied with string, or a slatted crate; the same footprint as the plain box.
+        const g = new Graphics();
+        if (thing.look === 'parcel') {
+          g.roundRect(-50, -92, 100, 92, 10).fill(0xd9b98a).stroke(line(0x9a7448, 6));
+          g.moveTo(0, -92).lineTo(0, 0).moveTo(-50, -46).lineTo(50, -46).stroke(line(0x8a4b2a, 5));
+          g.ellipse(-12, -98, 12, 8).ellipse(12, -98, 12, 8).stroke(line(0x8a4b2a, 4));
+        } else {
+          g.roundRect(-50, -92, 100, 92, 6).fill(wood.fill).stroke(line(wood.line, 6));
+          for (const y of [-62, -31]) g.moveTo(-50, y).lineTo(50, y).stroke(line(wood.line, 4));
+          g.moveTo(-44, -86).lineTo(44, -6).moveTo(44, -86).lineTo(-44, -6).stroke(line(wood.line, 4));
+        }
+        const sign = label('?', 60, swatch.purple.line);
+        sign.style.stroke = { color: 0xffffff, width: 8, join: 'round' };
+        sign.y = -48;
+        node.addChild(g, sign);
+        return { node, width: 104, height: 92, sign };
       }
       const g = new Graphics()
         .roundRect(-50, -92, 100, 92, 10)
@@ -270,6 +296,12 @@ class SeesawBalance implements Game {
     this.wagon.addChild(cart);
     this.wagon.visible = this.plan.mode === 'heaviest';
     ctx.stage.addChild(this.backdrop, this.stand, this.plank, this.trays.left, this.trays.right, this.wagon, this.glow, this.layer);
+  }
+
+  /** The rider's face, for the voice line's `{animal}`. */
+  private animalOf(r: SeesawRound): string {
+    const rider = r.fixed.find((t) => t.kind === 'friend');
+    return rider?.face ?? FRIEND_FOR[r.answer as FriendWeight] ?? 'friend';
   }
 
   get round(): SeesawRound {
@@ -442,7 +474,14 @@ class SeesawBalance implements Game {
     }
     if (mode === 'level' || mode === 'mystery' || mode === 'parts') {
       // Glow what to take off: the things beyond a level seesaw.
-      for (const item of this.excess()) ring(item.node.x, item.node.y + 8, item.width + 16, item.height + 20);
+      const over = this.excess();
+      for (const item of over) ring(item.node.x, item.node.y + 8, item.width + 16, item.height + 20);
+      // Under, not over: ring the next block on the grass.
+      if (!over.length) {
+        const next = seesawTouch(this.plan, this.round, this.items.map((i) => ({ thing: i.thing, fixed: i.fixed, side: i.side, inWagon: i.inWagon })));
+        const pick = next?.kind === 'move' ? this.items[next.item] : undefined;
+        if (pick && !pick.side && !pick.drag?.dragging) ring(pick.node.x, pick.node.y + 8, pick.width + 16, pick.height + 20);
+      }
     }
   }
 
@@ -492,7 +531,7 @@ class SeesawBalance implements Game {
       void this.ctx.tw.to(item.node.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
     }
     await this.ctx.tw.wait(0.4);
-    const animal = FRIEND_FOR[(r.answer as FriendWeight)] ?? 'friend';
+    const animal = this.animalOf(r);
     const mode = this.plan.mode;
     if (mode === 'up') await this.ctx.instruct('seesaw.up', { animal });
     else if (mode === 'heavy') await this.ctx.instruct('seesaw.heavy', { animal });
@@ -522,6 +561,7 @@ class SeesawBalance implements Game {
     if (!fixed) {
       item.drag = draggable(made.node, this.ctx.tw, {
         onPick: () => {
+          item.pickedAt = { x: made.node.x, y: made.node.y };
           sfx.tick();
           made.critter?.poke();
         },
@@ -557,7 +597,9 @@ class SeesawBalance implements Game {
     if (this.busy || this.finished) return false;
     const mode = this.plan.mode;
     if (mode === 'heaviest' && this.overWagon(x, y)) return this.toWagon(item);
-    const side = this.trayAt(x, y);
+    // Levels 1 and 2: a tap on a friend on the grass hops it to the empty tray.
+    const tapped = (mode === 'up' || mode === 'heavy') && item.thing.kind === 'friend' && !item.side && !!item.pickedAt && Math.hypot(x - item.pickedAt.x, y - item.pickedAt.y) < TAP_REACH;
+    const side = tapped ? other(this.round.fixedSide) : this.trayAt(x, y);
     if (!side) {
       if (item.side) this.takeOff(item);
       return false;
@@ -626,11 +668,11 @@ class SeesawBalance implements Game {
       if (side !== r.fixedSide && downSide(left, right) === side) {
         rider.critter?.cheer();
         sfx.giggle();
-        await this.ctx.say('seesaw.wee', { animal: FRIEND_FOR[r.answer as FriendWeight] });
+        await this.ctx.say('seesaw.wee', { animal: this.animalOf(r) });
         return this.won();
       }
       this.miss();
-      await this.ctx.say(side === r.fixedSide ? 'seesaw.other' : 'seesaw.light', { animal: FRIEND_FOR[r.answer as FriendWeight] });
+      await this.ctx.say(side === r.fixedSide ? 'seesaw.other' : 'seesaw.light', { animal: this.animalOf(r) });
       this.takeOff(item, true);
       await this.ctx.tw.wait(0.4);
       this.busy = false;
