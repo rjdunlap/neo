@@ -381,3 +381,11 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, units, build, browser, offline or device checks (docs only); layouts are specified, not visually verified.
 - Open: decision 4 (registration, land, Story Grove capacity), content review of the pools, sticky-Shift reach for a small hand, a child at a real keyboard.
+
+## 2026-10-22 — Spelling and sentences study (subject research, docs only)
+
+- [PR #838](https://github.com/rjdunlap/neo/pull/838), `codex/spelling-sentences-research`: [study](../deep-dives/subjects/spelling-sentences.md), tracker/packet/roadmap/notebook and READY/backlog; KE3 received, SS1 Capital and stop definition queued; poetry-wordplay fills the research slot.
+- Opened: CCSS L.K/1/2/3/5/8, RF.K, Development Matters literacy, WWC guide landing page; Phonics Hero, Spelling Shed, Nessy, iKnowIt, Quill Proofreader/Connect, Montessori movable alphabet. Reused adjacent studies; paper-access failures and search-only evidence labelled.
+- Ran: Markdown links/anchors and `git diff --check`.
+- Not run: local typecheck, tests, build, browser, device or child play (docs only); nothing implemented.
+- Open: Read & Do integration/IDs/ranges/accounting, reviewed content/alternatives, layout and speech/child checks; later proposals and existing gates remain unresolved. No developer decision made; #733 preserved.
