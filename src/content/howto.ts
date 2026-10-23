@@ -555,16 +555,22 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 2, text: 'Tap the friend who is bigger or smaller, as asked.' },
       { from: 3, to: 4, text: 'Tap the friend who is biggest or smallest, as asked.' },
-      { from: 5, text: 'Drag the friend asked for to the glowing spot, then the next one in size, until the line is full.' },
+      { from: 5, to: 8, text: 'Drag the friend asked for to the glowing spot, then the next one in size, until the line is full.' },
+      { from: 10, to: 10, text: 'Tap the friend who is middle-sized, bigger than one and smaller than the other; the picture shows which circle is asked for. Some rows ask for the biggest or the smallest.' },
+      { from: 17, to: 17, text: 'Drag the smaller friend to the glowing spot, then the bigger one.' },
       'A tap on the sky or the ground makes the friends hop and repeats the question; it never counts as a miss.',
     ],
     finish: [
       { to: 4, text: 'The round ends after four rows, one right friend chosen from each.' },
-      { from: 5, text: 'The round ends when the friends are lined up correctly.' },
+      { from: 5, to: 8, text: 'The round ends when the friends are lined up correctly.' },
+      { from: 10, to: 10, text: 'The round ends after four rows, one right friend chosen from each.' },
+      { from: 17, to: 17, text: 'The round ends when the two friends are lined up correctly.' },
     ],
     note: [
       { to: 4, text: 'A wrong friend counts as a miss; after two in one row the right friend glows.' },
-      { from: 5, text: 'A wrong friend on the glowing spot counts as a miss, and after two the right friend glows. A friend put on another spot is not a miss: the line fills from the glowing spot.' },
+      { from: 5, to: 8, text: 'A wrong friend on the glowing spot counts as a miss, and after two the right friend glows. A friend put on another spot is not a miss: the line fills from the glowing spot.' },
+      { from: 10, to: 10, text: 'A wrong friend counts as a miss and the pet says why the middle one is the middle; after two in one row the right friend glows.' },
+      { from: 17, to: 17, text: 'A wrong friend on the glowing spot counts as a miss, and after two the right friend glows. A friend put on the other spot is not a miss: the line fills from the glowing spot.' },
     ],
   },
   'bug-builder': {

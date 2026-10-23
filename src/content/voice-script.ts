@@ -2026,6 +2026,8 @@ export const SCRIPT = {
   'size.pick': ['Tap the {size} friend!'],
   'size.line': ['Make a parade! Drag the {size} friend to the glowing spot, then find the next one.'],
   'size.wrong': ['Look at their sizes. Find the {size} friend still waiting.'],
+  'size.pick.middle': ['Tap the middle-sized friend! Not the biggest, not the littlest.'],
+  'size.wrong.middle': ['The middle one is smaller than the biggest and bigger than the littlest. Which friend is that?'],
   'size.wrong.pick': ['Look at their sizes. Which friend is {size}?'],
   'size.spot': ['This spot first! Put a friend on the glowing spot.'],
   'size.hint': ['Look at the glowing friend!'],

@@ -8,7 +8,8 @@ import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { dropSpot, FRIEND_SCALE, paradeLayout, SIZE_PLANS, sizeBell, sizeOrder, sizeScale, sizeTouch, sizeWord, TARGET } from './logic';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { askRank, dropSpot, FRIEND_SCALE, middleAsks, paradeLayout, type SizeAsk, sizePlan, sizeBell, sizeOrder, sizeScale, sizeTouch, sizeWord, TARGET } from './logic';
 
 type Animal = 'duck' | 'bunny' | 'cat';
 function friend(rank: number, count: number, animal: Animal): Container {
@@ -26,7 +27,8 @@ function paradeArt(): Container {
 interface Choice { rank: number; node: Container; drag?: DragHandle; placed: boolean }
 class SizeParade implements Game {
   readonly plan;
-  readonly order: number[];
+  order: number[];
+  private readonly asks: SizeAsk[] | null;
   readonly choices: Choice[] = [];
   readonly slots: Container[] = [];
   private readonly background = new Graphics();
@@ -51,8 +53,9 @@ class SizeParade implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    this.plan = SIZE_PLANS[Math.max(0, Math.min(SIZE_PLANS.length - 1, ctx.level - 1))];
+    this.plan = sizePlan(ctx.level);
     this.order = sizeOrder(this.plan.count, this.plan.order);
+    this.asks = this.plan.middle ? middleAsks(ctx.rng) : null;
     ctx.stage.addChild(this.background, this.ground, this.shelf, this.glow, this.hintsGlow, this.progress);
     // A tap on the sky or the ground is answered: every friend hops and the ask repeats. Drawings above it let taps through.
     onTap(this.background, () => this.groundTap());
@@ -66,8 +69,11 @@ class SizeParade implements Game {
   }
   start() { this.instruction(); }
   private instruction() {
-    void this.ctx.instruct(this.plan.mode === 'pick' ? 'size.pick' : 'size.line', { size: sizeWord(this.plan) });
+    const ask = this.ask();
+    void this.ctx.instruct(this.plan.mode === 'line' ? 'size.line' : ask === 'middle' ? 'size.pick.middle' : 'size.pick', { size: sizeWord(this.plan, ask) });
   }
+  /** The size asked for in this row: the middle in *Big, middle, little*, otherwise the plan's own. */
+  private ask(): SizeAsk | undefined { return this.asks?.[this.rounds]; }
   private groundTap() {
     if (this.busy || this.done) return;
     for (const c of this.choices) if (!c.placed && !c.drag?.dragging) this.hop(c.node);
@@ -85,6 +91,8 @@ class SizeParade implements Game {
     for (const c of this.choices) { c.drag?.destroy(); this.ctx.tw.kill(c.node); this.ctx.tw.kill(c.node.scale); this.ctx.tw.kill(c.node.children[0]); c.node.destroy({ children: true }); }
     this.choices.length = 0;
     this.animal = this.ctx.rng.pick(['duck', 'bunny', 'cat'] as Animal[]);
+    const ask = this.ask();
+    if (ask) this.order = [askRank(ask)];
     for (const rank of this.ctx.rng.shuffle([...this.order])) {
       const node = friend(rank, this.plan.count, this.animal);
       node.hitArea = new Rectangle(-TARGET.w / 2, -175, TARGET.w, TARGET.h);
@@ -112,7 +120,8 @@ class SizeParade implements Game {
     if (this.busy || this.done || choice.placed) return false;
     if (choice.rank !== this.order[this.step]) {
       this.misses++; this.wrong++; sfx.boing();
-      void this.ctx.say(this.plan.mode === 'pick' ? 'size.wrong.pick' : 'size.wrong', { size: sizeWord(this.plan) });
+      const ask = this.ask();
+      void this.ctx.say(ask === 'middle' ? 'size.wrong.middle' : this.plan.mode === 'pick' ? 'size.wrong.pick' : 'size.wrong', { size: sizeWord(this.plan, ask) });
       if (this.wrong === 2) { this.hints++; void this.ctx.say('size.hint'); }
       this.drawGlow(); return false;
     }
@@ -157,9 +166,16 @@ class SizeParade implements Game {
     if (this.plan.mode === 'pick') {
       // A visual size cue reinforces the spoken comparison without identifying an answer's position.
       for (let i = 0; i < 4; i++) g.circle(v.w / 2 + (i - 1.5) * 40, 125, 11).fill(i < this.rounds ? swatch.teal.fill : swatch.white.fill);
-      const big = this.plan.order === 'big';
-      g.circle(v.w / 2 - 65, 290, big ? 24 : 50).circle(v.w / 2 + 65, 290, big ? 50 : 24).fill(swatch.teal.fill).stroke({ width: 4, color: swatch.teal.line });
-      g.moveTo(v.w / 2 - 10, 290).lineTo(v.w / 2 + 15, 290).lineTo(v.w / 2 + 4, 278).moveTo(v.w / 2 + 15, 290).lineTo(v.w / 2 + 4, 302).stroke({ width: 6, color: swatch.teal.line });
+      const ask = this.ask();
+      if (ask) {
+        // Three circles, the asked one ringed: the middle one has a bigger and a smaller beside it.
+        [22, 36, 50].forEach((r, i) => g.circle(v.w / 2 + (i - 1) * 120, 290, r).fill(swatch.teal.fill).stroke({ width: 4, color: swatch.teal.line }));
+        g.circle(v.w / 2 + (askRank(ask) - 1) * 120, 290, [22, 36, 50][askRank(ask)] + 12).stroke({ width: 7, color: swatch.yellow.line });
+      } else {
+        const big = this.plan.order === 'big';
+        g.circle(v.w / 2 - 65, 290, big ? 24 : 50).circle(v.w / 2 + 65, 290, big ? 50 : 24).fill(swatch.teal.fill).stroke({ width: 4, color: swatch.teal.line });
+        g.moveTo(v.w / 2 - 10, 290).lineTo(v.w / 2 + 15, 290).lineTo(v.w / 2 + 4, 278).moveTo(v.w / 2 + 15, 290).lineTo(v.w / 2 + 4, 302).stroke({ width: 6, color: swatch.teal.line });
+      }
     } else {
       for (let i = 0; i < this.slots.length - 1; i++) {
         const x = (spots[i] + spots[i + 1]) / 2, y = v.h * 0.44;
@@ -192,11 +208,19 @@ class SizeParade implements Game {
   }
   destroy() { this.choices.forEach((c) => { c.drag?.destroy(); this.ctx.tw.kill(c.node.children[0]); }); }
 }
+const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 17, order: [1, 2, 3, 4, 17] },
+  preschool: { min: 3, max: 17, order: [3, 4, 17, 10, 5, 6] },
+  prek: { min: 5, max: 8 },
+  school: { min: 7, max: 8 },
+};
 export const sizeParade: GameModule = {
   id: 'size-parade', name: 'Size Parade', titleLine: 'game.size-parade', region: 'puzzle-peaks',
   skills: ['comparison', 'measurement', 'ordering'], bands: ['toddler', 'preschool', 'prek', 'school'],
-  levels: (b) => b === 'school' ? { min: 7, max: 8 } : b === 'prek' ? { min: 5, max: 8 } : b === 'preschool' ? { min: 3, max: 6 } : { min: 1, max: 4 },
-  describeLevel: (l) => SIZE_PLANS[Math.max(0, Math.min(SIZE_PLANS.length - 1, l - 1))].name,
+  levels: (b) => rangeFor(LEVELS, b),
+  // Levels 17 and 10 have high IDs and sit in the order where they fit; 17 is the first drag a toddler meets.
+  entryLevels: [17],
+  describeLevel: (l) => sizePlan(l).name,
   music: STYLES.hub, coplayHint: 'Use your hands to show {name} small and big, then compare the friends.',
   offScreen: 'Line up three spoons or shoes from smallest to biggest, then reverse the line.',
   hubIcon: () => new WigglyIcon(paradeArt()), touchDemo: true, sticker: () => paradeArt(), create: (ctx) => new SizeParade(ctx),
