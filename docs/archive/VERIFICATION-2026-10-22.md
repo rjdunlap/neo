@@ -277,3 +277,10 @@
 - Branch `claude/define-word-glue` (PR #816): definition packet `docs/definitions/word-glue.md`; READY (build queued and gated, define line removed), study backlog, subjects tracker, recommendations row, study build slices and the Waiting row updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Open: no typecheck, unit tests, build or browser run; the build is gated on the developer's decisions 1 (new game and land) and 2 (compound list review).
+
+## 2026-10-22 — Shape Sorter batch 1: levels 10, 11, shape pool and sizes (slices 3–5)
+
+- [PR #817](https://github.com/rjdunlap/neo/pull/817): level 10 *Round or square*, five new shapes, sizes at 6–7, seven-colour pool, box facts, level 11 *Big, middle, little*. Proof on base `28aefc36` plus the branch.
+- Passed typecheck; `npm test` (210 files, 2517 tests); `npm run build` (shared `src/art/shapes.ts` changed).
+- Dev server `http://localhost:5690`: `BROWSER_SUITE=originals ORIGINALS_ONLY=shapes SHAPE_LEVELS=6,7,10,11` (10 at toddler, 11 in portrait; one wrong hole twice, glow hint, finish, sticker, score `[2,1]`) and `SHAPE_LEVELS=8` passed. `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-sorter FINGER_LEVELS=7,8,10,11` clean in 22.7, 18.8, 11.5 and 9.2 s. Portrait screenshot of 11 reviewed: three oval holes fit the lid.
+- Not run: world/offline/picnic/couch (unaffected). Open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): device speech of "trapezoid" and "pentagon", a child telling the three sizes apart. Level 11's first kind is a seeded pick, not "circle first".

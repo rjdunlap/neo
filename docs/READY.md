@@ -6,9 +6,11 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Research subject `spelling-sentences`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies (including `writing-composition` and `keyboarding-editing`, which leave the rules of capitals, stops and spelling, and hand it KE3 Capital and stop), and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
+- **Study `spelling-sentences`: define Read & Do — Capital and stop A–C (SS1, KE3 received)** (docs only; status `define`): a bounded convention-repair packet for the existing game, free spoken replay, capital toggle and end-stop stamp; coordinate WC3 Make the sign and KE1 Mend the sign. Build waits on the Read & Do dive's IDs/ranges/ordering/accounting, reviewed sentence/voice table and target layout; no implementation authorized. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/spelling-sentences.md#build-slices-in-order).
 - **`shape-sorter`, Corners, curves and corner counts** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#shape-sorter-3-corners-curves-and-corner-counts).
 - **Study `music-instruments`: define Hat Band (M5)** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#music-and-instruments-recommendations).
+- **Research subject `poetry-wordplay`** (docs only; one subject): follow the subject procedure and reuse completed literacy studies; keep review and implementation gates. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
+- **Study `energy-waves`: define Circuit Garden** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations).
 
 ## Queued
 
@@ -69,7 +71,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
 
-- **Study `energy-waves`: define Circuit Garden** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations).
 - **Study `how-computers-work`: define Sorting Machine** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#how-computers-work-recommendations).
 - **Study `robots-automation`: define Helper House** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#robots-and-automation-recommendations).
 - **Study `time-change`: define Timeline Trail** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#time-and-change-recommendations).
@@ -93,7 +94,6 @@ Each line is selected for routine dispatch; claim one packet, then enqueue its u
 - **Study `daily-life-long-ago`: define Same Job, Different Tools (H4)** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations).
 
 ### Subject research (docs only)
-
 - **Research subject `poetry-wordplay`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `oceans`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **Research subject `world-languages`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).

@@ -311,6 +311,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 
 | Subject | Researched | Study | Packet |
 | --- | --- | --- | --- |
+| Spelling and sentences | 2026-10-22 | [study](deep-dives/subjects/spelling-sentences.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#spelling-and-sentences-recommendations) |
 | Deep time | 2026-10-16 | [study](deep-dives/subjects/deep-time.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#deep-time-recommendations) |
 | Fractions | 2026-10-16 | [study](deep-dives/subjects/fractions.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#fractions-recommendations) |
 | Integers | 2026-10-22 | [study](deep-dives/subjects/integers.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#integers-recommendations) |

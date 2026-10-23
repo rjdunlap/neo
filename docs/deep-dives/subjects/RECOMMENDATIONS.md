@@ -801,3 +801,18 @@ The [ordered slices](writing-composition.md#build-slices-in-order) separate defi
 | **KE7 Find her letters, Type it together** · P–S, G | hand to the off-screen companions' at-home card after a content review | Plain-HTML cards; no posture or finger advice without a named reviewer |
 
 The [ordered slices](keyboarding-editing.md#build-slices-in-order) separate definitions from builds. Completing a round shows she found the keys or made the edit, not that typing helps her writing.
+
+## Spelling and sentences recommendations
+
+**Recommended 2026-10-22:** [study](spelling-sentences.md), [PR #838](https://github.com/rjdunlap/neo/pull/838). Reuses writing-composition, keyboarding-editing (KE3 received) and vocabulary-word-parts. Official CCSS L.K/1/2/3/5/8 and RF.K, Development Matters literacy and the WWC writing-guide landing page opened; six digital precedents and the movable alphabet compared, none played. Preschool writing evidence is attributed to the adjacent study; this session's paper access failed. No tile-to-writing transfer, independent mastery, device speech or tween appeal is established.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **SS1 Capital and stop** · K/S | **Define now**, docs only, as a Read & Do extension | Three study steps A–C: initial capital, final full stop, both in either order; free spoken/content replay; Send checks only conventions. Existing land and game. Build waits on Read & Do dive coordination with WC3/KE1, IDs/ranges/accounting, reviewed sentences/feedback and target layout |
+| **SS2 Pattern words** · K–U | Existing Word Monsters ladder, no duplicate game | Encoding, digraphs/blends/silent-e and spelling alternatives retain their word/sound-review and progression gates; meaning stays with vocabulary |
+| **SS3 Word spaces** · K/S | Define after SS1 play | Gap opening between known word blocks, then question/statement cases separately; finite reviewed boundaries |
+| **SS4 Join the notices** · U/M | Sketch after Read & Do/WC ownership reconciliation | Clauses linked for meaning, multiple accepted alternatives; no typed text or judgment of home dialect |
+| **SS5 Punctuation paths** · 13+/G | New-game definition only after identity/band/land and content review | Two supplied interpretations of one word row; finite accepted placements; no generic grammar parser |
+| **SS6 Sign together** · family/page | At-home-card follow-up, ordinary content review | Large paper sign with an adult scribe; reuses WC/KE card work, no milestones or diagnostic advice |
+
+The [ordered slices](spelling-sentences.md#build-slices-in-order) stop this session at research. No developer decision or neighbouring build gate is resolved.
