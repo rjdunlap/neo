@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Melt and Freeze levels 1–4 definition (matter, docs only)
+
+- Branch `claude/define-melt-and-freeze` (PR #832): definition packet `docs/definitions/melt-and-freeze.md` (authored substance table, sun and snowflake tools, four levels, accounting, layout, tests, how-to); READY (build queued and gated, define line removed), study backlog, recommendations row, matter slice 1 and the Waiting row updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Open: no typecheck, unit tests, build or browser run; the build is gated on the developer's decisions 1 (new game) and 3 (land); four-thing portrait fit is unproven until the layout test exists.
+
 ## 2026-10-22 — Bond Beads levels 1–4 definition (chemistry, docs only)
 
 - Branch `claude/define-bond-beads` (PR #831): definition packet `docs/definitions/bond-beads.md`; READY (build queued and gated, define line removed), study backlog, recommendations row, chemistry study slice and the Waiting row updated. The shape tables come from a brute-force enumeration of single-link connected graphs over H, O and C beads (7 beads or fewer) run once while writing; the build's tests re-derive them.

@@ -315,7 +315,7 @@ The [ordered slices](chemistry.md#build-slices-in-order) separate definitions fr
 
 | Candidate | Status | Next complete definition |
 | --- | --- | --- |
-| **Melt and Freeze** · lap–grown-up | define first | Freeze the authored substance table (states, heat step, reversible flag), the three-setting dial and levels 1–4. Specify accounting (predictions and exploring never miss), hints, supported ending, band/land fit and both layouts; recheck overlap with Sink or Float and the weather study's Drop's Journey |
+| **Melt and Freeze** · lap–grown-up | [defined](../../definitions/melt-and-freeze.md) 2026-10-22 (levels 1–4); build gated on the developer (new game, land); original packet: | Freeze the authored substance table (states, heat step, reversible flag), the three-setting dial and levels 1–4. Specify accounting (predictions and exploring never miss), hints, supported ending, band/land fit and both layouts; recheck overlap with Sink or Float and the weather study's Drop's Journey |
 | **Stir and See** · preschool–grown-up | define after Melt and Freeze's table | A finite dissolve/settle/float outcome table, unscored predictions, and a ladder; show no chemical reaction until a science reviewer is named |
 | **Particle Lens** · upper school–grown-up | top levels of Melt and Freeze, after review | Dots as a model (faster, never "melting dots"); science review of the dot picture and steam before any claim |
 | **Material Match** and **Weigh It** · small options | check existing games first | A property-sort mode in an existing sorting game; a sealed-jar scale mode in Seesaw Balance |
