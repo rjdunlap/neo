@@ -147,8 +147,6 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### garden-grow 2: Rows, columns and equal rows
 
-*In progress: branch `claude/garden-grow-rows-columns` (claimed 2026-10-23; levels 9–11 in one batch, expected files `src/games/garden-grow/*`, `src/content/howto.ts`, `src/content/voice-script.ts`).*
-
 - **`garden-grow`, level 9 Rows of colors** (new interaction): choose a packet, then beds, to match a sign of two colored rows; judged by position; pre-K after 7. [Slice 5](deep-dives/garden-grow.md#new-levels-on-top)
 - **`garden-grow`, level 10 Columns of colors** (new level, after level 9 *Rows of colors*): three columns in two or three colors. [Slice 6](deep-dives/garden-grow.md#new-levels-on-top)
 - **`garden-grow`, level 11 Same in every row** (new level, after level 9 *Rows of colors*): n flowers in each row in any beds, every placement accepted. [Slice 7](deep-dives/garden-grow.md#new-levels-on-top)
