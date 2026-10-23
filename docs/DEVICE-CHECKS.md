@@ -1,5 +1,18 @@
 # Needs a person or a device
 
+## Adventure Walk levels 1–3
+
+- [ ] On an iPad, hear the way words: are "across" and "around" clearly distinct in device speech?
+- [ ] Watch a toddler: does she read the two dotted paths as two ways, and tap one?
+- [ ] On an iPad, hear the friends' calls and the reasons after a wrong tap (device speech).
+
+## Sand Table levels 1–3
+
+- [ ] Watch a lap or toddler player: does she connect her tap to the heap?
+- [ ] Without speech, do the scoop paddles read as "take away"?
+- [ ] On an iPad, does the Graphics redraw keep up during rapid taps?
+- [ ] On an iPad, hear the Show lines (device speech).
+
 ## Look It Up levels 1–3
 
 - [ ] On an iPad, hear the animal names, questions and fact sentences clearly (device speech, including "kit" and the long brown bear and penguin lines).
@@ -70,6 +83,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 - [ ] **Explore's four entries and Back versus Home (RW08 slice 1, 2026-10-21, #744).** On an iPad at toddler, preschool and school: does a child tap one of the four pictures (Places, Favorites, All games, Family play) without reading, do the 150-unit cards and the 120-unit page arrows suit a small hand in both orientations, does device speech say `explore.pick`, `explore.other-age`, `explore.page` and `result.back` clearly, and does she tell the result screen's blue Back to [place] from the white Home house? Scripted Chrome play passed; device speech and child comprehension remain unobserved.
 
 - [ ] **Fluffy Salon support truth (slice 1, 2026-10-21, #717).** On an iPad at lap and pre-K: does the giggle on a pat off the fur read as a welcome to a lap child; does device speech say "Look in the mirror when you are done!" (`salon.mirror`) and "A little more {fix}, where it glows" (`salon.more-color`) clearly; and is the warm-yellow glow on the old-colour strands visible on the iPad?
+- [ ] **Pet Kitchen meals and lap tap-sharing (batch 1, slices 2-3, 2026-10-23, #860).** On an iPad at lap and toddler: does a one-year-old's tap land on a tray piece at level 10 (and does a miss off the piece read as a wiggle, not a failure); does the chew at the end read as eating; do the critter faces (calm, then happy) read well in portrait; does the fraction bubble at level 7 invite a tap; is the pie clearly a whole to cut. The `picnic` suite's sandwiches step at lap (level 10) was not run in a browser.
 - [ ] **Pet Kitchen support truth (slice 1, 2026-10-21, #716).** On an iPad at toddler and school: does a two-year-old read the uncut food's wiggle and the cut buttons' bounce after quiet as an invitation, not a scolding; does device speech say `kitchen.empty` and `kitchen.short` clearly; and does the counted line at level 7 ("one quarter, two quarters, three quarters. That is three quarters!") sound natural over the hopping pieces?
 - [ ] **Size Parade support truth (slice 1, 2026-10-21, #714).** On an iPad at toddler and pre-K: does a two-year-old hear "bigger" and "smaller" at two friends and understand it; does big-low pitch feel natural; does the first drag at level 5 (40-unit lift) work; does "This spot first!" read as a nudge, not a scolding; does device speech say the new lines clearly?
 

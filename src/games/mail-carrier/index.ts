@@ -22,7 +22,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 10, order: [1, 2, 10] },
   preschool: { min: 2, max: 10, order: [2, 10, 3, 4] },
   prek: { min: 3, max: 12, order: [3, 4, 5, 9, 12, 6] },
-  school: { min: 4, max: 13, order: [4, 5, 9, 12, 6, 13, 7, 8, 11] },
+  school: { min: 4, max: 15, order: [4, 5, 9, 12, 6, 13, 7, 8, 11, 14, 15] },
 };
 
 /** Dots laid out like dice faces, so small numbers can be seen at a glance. */

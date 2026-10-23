@@ -1,0 +1,95 @@
+# Helper House, levels 1–4 (definition)
+
+Defined 2026-10-23 as slice RA1 of the [robots-and-automation study](../deep-dives/subjects/robots-automation.md#build-slices-in-order) ([packet](../deep-dives/subjects/RECOMMENDATIONS.md#robots-and-automation-recommendations)), [PR #872](https://github.com/rjdunlap/neo/pull/872). **Docs only: no game, ID, voice line or save field exists yet.** Every open call in [Open decisions](#open-decisions) has a default the build can use; the five [Waiting](../WAITING-ON-DEVELOPER.md) calls (identity, accounting, toddler entry, older reach, rework tie-in) are answered here by recommended defaults the developer can overturn. The study's science-educator read of the warmth and light wording is a content gate on the spoken lines and card, not on the rules. RA2 builds levels 1–3; RA3 appends level 4. Levels 5–9 (flicker, the comfy line, calm heater, Cases) stay in the study and are not defined here.
+
+**Fun action and purpose:** put a helper's sensor in the right place, pick the rule card, tap Watch, and see the house run a whole day by itself while a friend reacts. She does not open the door or switch the lamp; she makes the helper able to do it by itself, and she sees every check as a pulse from sensor to card to helper. Learning goal: a sensor reads the world, a rule card turns a reading into an action, and the helper keeps checking, so what it did a moment ago can still matter now (a lamp that came on stays on until a rule says otherwise). Not choosing a sensor for one critter ([Sorting Machine](sorting-machine.md): no time, no carried state), not a command sequence ([Robot Path](../GAMES.md#robot-path), [Cue Studio](cue-studio.md)), not current in a wire ([Circuit Garden](circuit-garden.md)).
+
+## Overlap and reuse
+
+- **Sorting Machine** classifies one critter at a time and keeps nothing between sends. Helper House earns its identity from **level 3**: the goal depends on helper state carried from an earlier step, or on a reading the helper changed. Levels 1–2 share Sorting Machine's choose-the-sensor action and are stated as a cause-and-effect opening; they stay in this game (decision 1) so the ladder has an entry the younger bands can reach, and they could fold into Sorting Machine later without touching levels 3–4.
+- **Stop and Go** changes its light on a fixed cycle; nothing there senses. Its Smart light level (RA6) is a separate slice through that game's dive.
+- Reuse `CRITTERS`/`attach()` (`src/art/critter.ts`) for the visiting friend (cosmetic only), `src/art/scenery.ts`/`shapes.ts` for house parts, `drag.ts` for sensors and rule chips, `onTap` for every other control, Chain Reaction's run-and-replay structure for the step player, and Ferry Jam's pattern for a bot that finishes through the same inputs. No new engine, wire library, save field or shared helper. Fiction only: the sun sensor, thermometer and eye are toy pictures; copy never says "electricity", "circuit", "battery" or "real thermostat".
+
+## The model (`logic.ts`)
+
+One house, one **day of 12 steps** (index 0–11), played at a steady pace. Each step runs four phases in this order, with no randomness and no hidden input:
+
+1. **World changes.** The step's sun value and any friend arrival are read from the day script; the nook's warmth is whatever the heater phase left last step.
+2. **Every sensor reads.** A sensor always reads a picture level: the **eye** reads `near` (a friend stands at the spot the eye watches) or `far`; the **sun sensor** reads `dark`, `dim` or `bright`; the **thermometer** reads a warmth zone, `cool` (warmth 0–2), `warm` (3–4) or `hot` (5–6). What a placed sensor can see comes only from the placement table below; a sensor that sees nothing reads its neutral picture (`far`), never an error.
+3. **Rules set helpers.** Each helper has rule rows `reading → action`. Rows are applied in screen order, so a later matching row wins; a helper with no matching row **keeps its state** (the lamp stays as it was). An empty row never matches.
+4. **Helpers act.** The door lets a waiting friend in this step if it is open. The lamp lights (on) or not. The heater adds 1 warmth if on; otherwise warmth falls 1 toward the outside value 0 (never below 0, never above 6).
+
+**Values are pictures, not numbers on screen.** The sun sensor draws a moon, a half sun or a full sun; the eye draws an open or a lidded eye; the thermometer draws its three zones in colour **and** fill height (never colour alone), with the friend's mood beside it. A pulse travels sensor → card → helper each step and the matched card lights.
+
+**Placement table.** Sensors have sockets at the house. Level 1: `door` socket (eye watches the step; reads `near` while a friend stands there) or `window` socket (eye watches the garden; always `far` for this day). Level 2: the single sun/eye slot at the lamp post: `sun` reads the day script; `eye` reads `far` all day (no friend comes to the lamp post). Levels 3–4 have their sensor placed and fixed. Placement beyond these (moving a sensor under its own lamp) is level 5, not defined here.
+
+**Day scripts** (`dayFor(level, seed)`, frozen sets; a seed picks one, never changes a rule): sun scripts always start `dim`, have at least four consecutive `bright` steps, one `dim` dusk step before at least three consecutive `dark` steps, one `dim` dawn step after them, and end `bright`. Friend arrivals (level 1): exactly three arrivals, at distinct steps among 1–10, separated by at least two steps. Level 4 starts at warmth 1 with outside value 0.
+
+### Levels
+
+| Level | Name (`describeLevel`) | Board | Goal (`meetsGoal(day)`) | Rounds |
+| --- | --- | --- | --- | --- |
+| 1 | Wake the door | Eye on the bench; sockets at the door and the window; a given card "friend near → door opens" | All three friends came in during the day | 3 days (seeded arrivals and house colours) |
+| 2 | Lamp at dusk | Lamp, a given card "dark → lamp on", one sensor slot; bench holds the eye and the sun sensor | The lamp is on at every `dark` step | 3 sun scripts |
+| 3 | On and off | Sun sensor placed; given row "dark → on"; one empty row "[reading] → off" with three reading chips (`dark`, `dim`, `bright`) | The lamp is on at every `dark` step **and off at step 11** | 3 sun scripts |
+| 4 | Chilly nook | Heater, thermometer (placed); two empty rows "[reading] → on" and "[reading] → off", each with three zone chips | From step 2 on, warmth is 2–4 after every step | 3 starts of the same model (house colour and friend only) |
+
+**Accepted boards** are every board whose day meets the goal, not only the authored one. Level 1: the eye at the door. Level 2: the sun sensor. Level 3: `bright → off` and `dim → off` (the lamp turns off a step earlier at dawn, still before the last step); `dark → off` is a loser because the later row wins and the lamp never stays on. Level 4: exactly one board, `cool → on` with `warm → off`; `cool → on` with `hot → off` overshoots to 5; `warm → on` or `hot → on` never warms the nook; `cool → off` in the off row cancels the on row. The single accepted board at level 4 is deliberate (the choice is between three zones, not a free parameter) and is a stated limit, not a hidden gap.
+
+**Bands (`BandLevels`):** `preschool: { min: 1, max: 1 }`, `prek: { min: 1, max: 3 }`, `school: { min: 2, max: 4 }` (school begins at the lamp so the door is not a trivial first round). No lap, toddler or grown-up window (decisions 3 and 4). No `order`.
+
+## Screen and controls
+
+- **Stage, board, bench.** Landscape: the house (left, most of the width) above or beside a **rule board**; portrait stacks the house above the board and the bench. Sensors on the bench and rule chips are at least 110 × 110 units; rule cards are at least 130 × 110; sockets are at least 110 units wide and glow when a dragged sensor nears. **Watch** (at least 120 × 100, the one large action), **Step** and **Pause** (at least 100 × 100, shown once a day is running) and the pet's **Help** button keep clear of the bottom-left pet.
+- **Place and pick.** A sensor is dragged to a socket (`drag.ts`): it lifts and wiggles at touch-down, drops with a click, snaps to the nearest socket, and a wrong socket still accepts it (the house shows what it sees). A rule chip is dragged into its row or tapped to cycle in the row; both work. Re-placing or re-picking replaces; nothing is lost. **Undo** takes back the last placement.
+- **Watch.** Plays the 12 steps as scene-owned tweens at a steady pace (about 0.9 s per step, with a pentatonic note from `src/audio/notes.ts` per matched card). The day is not a timer: Pause holds it, Step advances one step, and leaving the screen simply ends it. The friend reacts truthfully each step (waits at the door, squints in the dark, shivers when cool, fluffs up when comfy, fans itself when hot). At the end the house freezes on the last step and the goal either completes or the pet says why.
+- **Level 1 is a try-out** (like Sorting Machine level 1): the sensor choice is two sockets and the card is given. A wrong socket simply plays a day where the friends wait outside.
+- **Speech:** `ctx.instruct` states the brief ("Make the lamp come on when it gets dark"); the pet repeats it. Reasons are separate lines so device speech never fills a template. Navigation never needs reading.
+- **Feel:** a calm existing music style (she is not making music). Code-drawn Pixi shapes and palette colors only. Decorations (stars, steam, curtains) are `eventMode = 'none'`.
+
+## Accounting, help and finishing
+
+- **Never a miss:** every Watch, Step, Pause, Undo, re-placing a sensor or chip, repeating the instruction and opening the how-to. A day that does not meet the goal is an observation, not an error, and no board is declared wrong by a count. **`misses` is always 0.**
+- **The same failure twice** (decision 2): when two completed days in the round end with the same `failure` (the same unmet goal reason, e.g. `lamp-on-at-morning`), the card or socket that would change it **glows** and `hints++` once; it does not glow again until she changes that card or socket and the failure recurs twice. Level 1's failure is `friend-waiting`, glowing the sensor and the door socket. Level 2's is `sensor-blind`, glowing the sun sensor. Level 3's are `lamp-on-at-morning` (glows the empty row) and `lamp-off-at-night` (glows the row's chip). Level 4's are `never-warms` and `too-warm` (glowing the on-row chip or the off-row chip respectively).
+- **Show me** (the pet's Help button) is one hint each press. First press: the pet places one accepted card or sensor (the next one the board needs) and says why. Second press: the remaining accepted pieces. A Show me that completes an accepted board never ends the round by itself; the day still plays and Watch finishes it.
+- **Supported finish:** after three completed days that all fail, the pet offers "Shall I set it up?" (a big yes), which places an accepted board, runs the day and finishes with `hints` including that help. A day is never withheld.
+- **Predictions:** none at levels 1–4 (the comfy-line prediction is level 6).
+- **Finish:** one ordinary sticker per round, with or without help, through `ctx.finish({ misses: 0, hints })`. No creation, discovery or journal entry is filed in the first build. The friend does a small dance and the finished helper stays lit on the sticker art.
+- **Adaptation:** misses are always 0, so a round is smooth with no hints and struggling with two hints. An unhelped solve that took many Watches still counts as smooth, which is an accepted limit: the board space is at most nine boards, so trial and error can solve it. The how-to note therefore says the first two levels are a try-out, and adaptation here is evidence of persistence, not of understanding feedback. A "Show me" solve is assisted completion, not mastery.
+
+## Rule tests (`logic.test.ts`)
+
+- **Step model:** for each authored day and a fixed board, `runDay` produces the exact per-step trace (readings, matched rows, helper states) for hand-computed cases, in the order world → read → rules → act. A helper with no matching row keeps its state. With two matching rows the later one wins. An empty row never matches. Warmth never leaves 0–6.
+- **Enumeration:** for every level the full board space (sensor placements × rule rows × chips) is enumerated and bounded (level 1: 2 boards; level 2: 2; level 3: 3; level 4: 9). At least one accepted board exists for every authored day; every accepted board meets `meetsGoal` on every day; the starting board fails; no board fails the goal on the first Watch of a seed in a way that leaves no fix.
+- **Accepted sets:** level 3 accepts exactly `bright → off` and `dim → off`; level 4 accepts exactly `cool → on` with `warm → off`; level 1 accepts only the eye at the door; level 2 only the sun sensor.
+- **Overlap property (levels 3 and up):** a board exists whose every row is sensible alone and still fails the goal because of carried state or a reading the helper changed: level 3's given row alone leaves the lamp on at step 11 on every sun script, and level 4's `cool → on` with `hot → off` reaches 5 while no single step's classification is wrong. This is the test that keeps the game distinct from Sorting Machine; levels 1–2 do not claim it.
+- **Day scripts:** every sun script satisfies the stated shape (starts dim, at least four bright steps, a dim dusk step, at least three dark steps, a dim dawn step, ends bright); every level-1 day has exactly three arrivals separated by at least two steps; both `dim → off` and `bright → off` leave the lamp on for every dark step.
+- **Failures and help:** each failing board reports one named `failure`; `glowFor(board, failure)` names a piece whose change moves toward an accepted board; `helpFor(board, presses)` reaches an accepted board by the second press from every reachable partial state. The glow rule fires after the second same-failure day and not after one, and resets after the piece changes.
+- **Seeds:** the same seed gives the same day, cast and colours; every authored day appears across seeds.
+- **Layout:** `houseLayout(level, view)` at the four views the lands test uses: every draggable and button at least the sizes above, nothing under the bottom-left pet or corner buttons, portrait stacks rather than shrinks.
+- **Registry, lands and how-to tests** pass with the new game (card per level; no "later levels" wording).
+
+## Ghost finger, how-to card, voice and registration
+
+- **Ghost finger:** `touchDemo: true` and `autotouch()` through the same inputs. Level 1: drag the eye to the door socket, tap Watch. Level 2: drag the sun sensor to the slot, tap Watch. Level 3: tap Watch once (the lamp stays on), drag the `bright` chip into the empty row, tap Watch. Level 4: drag `cool` to the on row and `warm` to the off row, tap Watch. The bot never takes an action a child cannot take; the first Watch before the fix at levels 3–4 is the one `glowFor` would learn from. It stands in for the scripted solve.
+- **How-to card** (`src/content/howto.ts`). Goal: "Set up the helper, then watch the house run its day." Steps: "Drag the eye to the door" `{ from: 1, to: 1 }`; "Pick the sensor the lamp needs" `{ from: 2, to: 2 }`; "Add the missing row so the lamp turns off too" `{ from: 3, to: 3 }`; "Pick which warmth turns the heater on and which turns it off" `{ from: 4, to: 4 }`; "Tap Watch and see what the helper does" (all levels). Finish: "The helper does its job all day by itself." Note: "Watching is never counted. If it does not work, look at what the friend and the helper did." Level 1–2 note: "These first two levels are a try-out."
+- **Voice lines** under `hh.*`: `intro`, `instruct.1`–`instruct.4`, `watch`, `step-note`, `door-open`, `door-shut`, `lamp-on`, `lamp-off`, `friend-waiting`, `sensor-blind`, `lamp-on-at-morning`, `lamp-off-at-night`, `never-warms`, `too-warm`, `glow`, `help.*`, `offer`, `done`. Reasons name the **helper and its rule**, not the answer ("The lamp is still on. Nothing tells it to turn off."). `{pet}` optional.
+- **Registration:** ID `helper-house`, name "Helper House", spoken title `game.helper-house`, region `cozy-village`, home land **Cozy Village** (12 games today, 13 with this one; it appears from the preschool band, and the lands test proves the fit; Tinker Lab is full after Gear Garden and Sense Detective). Skills `['systems', 'logic', 'cause-effect', 'testing']`. The hub icon is a small house with a glowing window and an eye above the door. The sticker is a seeded house with a lit helper.
+- **Co-play:** one person picks the sensor and rule, the other says what the helper did at each step. **Off-screen:** Be the Helper with a teddy and a blanket (one person is the "sensor" who calls "chilly!", the other the heater who tucks the blanket in); a practical-card version waits for the named practical-card review (RA7).
+- **Couch:** none. Controller support is separate work.
+
+## Check tier
+
+RA2 (levels 1–3) is new-game tier and RA3 (level 4) is new levels on an existing interaction. Typecheck and unit tests (all above, plus registry, lands and how-to tests); then one scripted play of the new game through a `browser-check.mjs` filter (level 1 and the top built level, a day that does not meet the goal twice, one Show me) and one portrait screenshot; `fingerdemo` at the top built level; `npm run build` because the registry, lands, voice and how-to change. Not run in this docs slice: everything but `node scripts/check-links.mjs` and `git diff --check`. Device checks stay open: whether the pulse from sensor to card to helper reads on an iPad, how a five-year-old reads the three-zone thermometer, and whether the day's pace feels right.
+
+## Open decisions
+
+Each has a default the build uses; none blocks RA2.
+
+1. **Identity.** Default: a new game, with levels 1–2 as its opening (above). The alternative folds them into Sorting Machine and starts Helper House at the old level 3; levels 3–4 are unaffected.
+2. **Accounting.** Default: Watch is always free, `misses` is always 0, and the same failure twice glows a fix and counts one hint (the Welcome Ways rule). The alternative is a deliberate Check button that counts misses; it would need a shell-visible "complete day" step this slice does not add.
+3. **Toddler entry (H0).** Default: none. No sensor concept is expected at two, so toddlers keep existing cause-and-effect games; revisit only after someone watches a three-year-old play level 1.
+4. **Older reach.** Default: school only, up to level 4 in this slice. Registering the later greenhouse cases (levels 8–9) at `grownup` is RA5's call.
+5. **Rework tie-in.** Default: none in the first build. Whether finished helpers later appear in the creature home as permanent unlocks, and which friend carries the warmth levels, waits for the home infrastructure.
+6. **Land.** Default: Cozy Village (a 13th game). Fallback if the lands test fails: Treehouse (7 games).
+7. **Review.** Science-educator read of the warmth, light and "sensor / rule / helper" wording before the build merges.

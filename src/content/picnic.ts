@@ -24,7 +24,7 @@ export interface GameStep {
 
 export const GAME_STEPS: GameStep[] = [
   // Pet Kitchen 1: halves for two friends; 3: two halves each; 4: two sandwiches for four, halves or quarters.
-  { id: 'sandwiches', game: 'pet-kitchen', level: { lap: 1, toddler: 1, preschool: 1, prek: 3, school: 4, grownup: 4 } },
+  { id: 'sandwiches', game: 'pet-kitchen', level: { lap: 10, toddler: 1, preschool: 1, prek: 3, school: 4, grownup: 4 } },
   // Jelly Drums 1: free play; 4: copy two-note tunes; 5: three notes; 7: four notes.
   { id: 'invitation', game: 'jelly-drums', level: { lap: 1, toddler: 1, preschool: 4, prek: 5, school: 7, grownup: 7 } },
 ];
