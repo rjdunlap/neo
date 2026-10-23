@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-23 — Ready for Adventure levels 1–3 (new game, RA2)
+
+- Branch `claude/ready-for-adventure` ([PR #868](https://github.com/rjdunlap/neo/pull/868)): get parade props ready, pack them, watch the parade; registered as the 12th Barnyard game (Cozy Village at 12 failed `village.test.ts` decor, Music Mountain failed `mountain.test.ts` at 7), region cozy-village, toddler 1, preschool 1–2, pre-K 2–3.
+- Ran: typecheck (clean); full `npm test` (all pass except `src/app/scenes/lab.test.ts` "prek landscape n=12"); `npm run build`.
+- Browser: `BROWSER_SUITE=readyadventure` (level 1 pack; level 3 in portrait with an early pack miss, requested hint and its assisted tap, drags, the parade, saved score 1/1) passed at port 5611; `fingerdemo FINGER_ONLY=ready-for-adventure` level 1 finished in 10.3 s and level 3 in 16.8 s, clean.
+- Known failure, pre-existing and open: the `lab.test.ts` Tinker Lab decor case fails independently of this change (see the Sand Table entry).
+- Not run: iPad or device speech, a toddler choosing drag or tap ([open](DEVICE-CHECKS.md)); `world` and the offline production check.
+
 ## 2026-10-23 — Adventure Walk levels 1–3 (new game, AW2)
 
 - Branch `claude/adventure-walk-1-3` (PR #867): choose or follow the way past three landmarks; registered as the 11th Barnyard game (Rainbow Meadow and Story Grove failed their `src/app/scenes/*.test.ts` decor counts), toddler 1, preschool 1–2, pre-K 2–3, school 3.
@@ -103,14 +111,6 @@
 - Not run: local typecheck, units, build, browser, reference-app play, device or child checks (docs only); no implementation.
 - Open: registration/model scope, ranges/accounting and added land capacity, recommended educator review, practical-card named review, device speech/touch/understanding; E2 onward and #733 untouched.
 
-## 2026-10-22 — Rhyme Riddles definition (PW1, docs only)
-
-- [PR #844](https://github.com/rjdunlap/neo/pull/844), `claude/define-rhyme-riddles`: [definition](definitions/rhyme-riddles.md), READY (define line replaced by the build line), backlog, notebook, study.
-- Defined: tag table for the 29 pictures, riddle rules, levels 5–7, level-7 chip builder, accounting, voice lines, rule tests, bot. Found and fixed an inconsistency in the study's example (meaning clue alone left one picture).
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, units, build, browser or device checks (docs only). ELOF not opened.
-- Open: tag-table review, decisions (a)–(c) in the definition.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -128,6 +128,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `lostlayers`, `fingerdemo` (`lost-layers`) | 2026-10-21: level 1 red It fits (1 miss), one-story claim (2nd miss), requested hint twice (1 hint), bot 2/1; level 2 free preview, wavy look (1 miss), bot 1/0; portrait screenshot with the lens open; ghost finger clean at levels 1 and 2 (12.1 s, 10.0 s); typecheck, 2173 unit tests and build passed | `GAME_URL=… BROWSER_SUITE=lostlayers`; `fingerdemo FINGER_ONLY=lost-layers FINGER_LEVELS=1,2` | Offline check and `world` not run; no iPad or child; wavy line, Can't tell, piece dragging and device speech open in DEVICE-CHECKS |
 | `trackwaytales`, `fingerdemo` (`trackway-tales`) | 2026-10-21: level 1 replay, scrub, wrong hop Check (1 miss), requested hint twice (1 hint), bot finish; level 3 L3-pause fitting card free and bot Can't tell (0/0), L3-switch wrong Can't tell (1 miss); portrait screenshot; ghost finger clean at levels 1–3 (7.7, 13.1, 16.9 s); typecheck, 2209 unit tests and build passed | `GAME_URL=… BROWSER_SUITE=trackwaytales`; `fingerdemo FINGER_ONLY=trackway-tales FINGER_LEVELS=1,2,3` | Offline check and `world` not run; no iPad or child; practice strip against the record, toe legibility, Can't tell and device speech open in DEVICE-CHECKS |
 | `adventurewalk`, `fingerdemo` (`adventure-walk`) | 2026-10-23: level 1 free choices; level 3 portrait with a wrong way, badge replay, requested hint and calls, saved score 1/1; ghost finger clean at levels 1 and 3 (9.9 s, 11.4 s); typecheck, game/registry/content/scenes tests and build passed | `GAME_URL=… BROWSER_SUITE=adventurewalk`; `fingerdemo FINGER_ONLY=adventure-walk FINGER_LEVELS=1,3` | Offline check not run; no iPad (device speech) or child; `lab.test.ts` fails on unchanged `origin/main` |
+| `readyadventure`, `fingerdemo` (`ready-for-adventure`) | 2026-10-23: level 1 pack; level 3 portrait with an early pack miss, requested hint and assisted tap, drags, parade, saved score 1/1; ghost finger clean at levels 1 and 3 (10.3 s, 16.8 s); typecheck, full unit tests and build passed | `GAME_URL=… BROWSER_SUITE=readyadventure`; `fingerdemo FINGER_ONLY=ready-for-adventure FINGER_LEVELS=1,3` | `world` and offline checks not run; no iPad (device speech) or toddler; `lab.test.ts` prek landscape n=12 fails independently |
 | `sandtable`, `fingerdemo` (`sand-table`) | 2026-10-23: level 1 pour, scoop, flag; level 3 portrait with spill to pail and back, empty-bucket pour, requested hint and Show, saved score 0/0; ghost finger clean at levels 1–3 (10–15 s); typecheck, 30 game tests and build passed; full `npm test` passed except the known `lab.test.ts` decor failure | `GAME_URL=… BROWSER_SUITE=sandtable`; `fingerdemo FINGER_ONLY=sand-table FINGER_LEVELS=1,2,3` | Offline check and `world` not run; no iPad or child; `lab.test.ts` fails on unchanged code (Sense Detective's land growth) |
 | `sensedetective`, `fingerdemo` (`sense-detective`) | 2026-10-23: level 1 not-yet tick, wrong tick, found; level 2 portrait with look, not-yet, listen, wrong tick and requested hint, saved score; ghost finger clean at levels 1 and 2 (6.3 s, 8.1 s); typecheck, 158 files / 1920 unit tests and build passed | `GAME_URL=… BROWSER_SUITE=sensedetective`; `fingerdemo FINGER_ONLY=sense-detective FINGER_LEVELS=1,2` | Offline check and `world` not run; no iPad or child; device speech and children reading the from-above badges open |
 | `fossildig`, `fingerdemo` (`fossil-dig`) | 2026-10-21: level 1 early flag free, wrong flag and wrong leaf (2 misses), level 2 requested hint twice (1 hint) and a wrong leaf (1 miss), portrait screenshot with the magnifier; ghost finger clean at levels 1 and 2 (14.3 s, 19.0 s); typecheck, 2149 unit tests and build passed | `GAME_URL=… BROWSER_SUITE=fossildig`; `fingerdemo FINGER_ONLY=fossil-dig FINGER_LEVELS=1,2` | Offline check and `world` not run; no iPad or child; the stone read as "rub me", teeth before the magnifier, the flag idea and device speech of leaf names open in DEVICE-CHECKS |

@@ -405,3 +405,11 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, units, build, browser or device checks (docs only); nothing implemented.
 - Open: ELOF wording, primary humour papers, a reviewer for meaning tags and verses, decisions 1–7 in the study.
+
+## 2026-10-22 — Rhyme Riddles definition (PW1, docs only)
+
+- [PR #844](https://github.com/rjdunlap/neo/pull/844), `claude/define-rhyme-riddles`: [definition](../definitions/rhyme-riddles.md), READY (define line replaced by the build line), backlog, notebook, study.
+- Defined: tag table for the 29 pictures, riddle rules, levels 5–7, level-7 chip builder, accounting, voice lines, rule tests, bot. Found and fixed an inconsistency in the study's example (meaning clue alone left one picture).
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser or device checks (docs only). ELOF not opened.
+- Open: tag-table review, decisions (a)–(c) in the definition.
