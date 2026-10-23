@@ -5,6 +5,7 @@ import { GAMES } from '../../games/registry';
 import { BANDS, type Band } from '../../progress/bands';
 import { beachPlan, poolLife, sunRect } from './beach';
 import { LOCATIONS } from './LocationScene';
+import { residentProblems } from './resident-check';
 import { meadowKeepOut } from './meadow';
 
 const VIEWS = {
@@ -59,8 +60,9 @@ describe('Bubble Beach as a location', () => {
     expect(new Set([0, 1, 2].flatMap(poolLife))).toEqual(new Set(['star', 'anemone', 'kelp']));
   });
 
-  it('is a location whose land host greets her until Tote, its resident, is prepared', () => {
+  it('is a location with Tote as its resident, whose touch circle and motion clear every other spot', () => {
     expect(LOCATIONS['bubble-beach']).toBeDefined();
-    expect(LOCATIONS['bubble-beach']?.resident).toBeUndefined();
+    expect(LOCATIONS['bubble-beach']?.resident).toBe('tote');
+    expect(residentProblems('tote')).toEqual([]);
   });
 });

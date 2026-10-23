@@ -7,6 +7,7 @@ import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { landFor, landLayout, olderIn, spotRect, suggest, visibleIn, type Land, type LandId, type LandLayout } from '../../content/lands';
+import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
@@ -65,8 +66,10 @@ export interface LandOptions {
   /** A backdrop in place of the land's own (a location's night sky), and the heading's colour over it. */
   backdrop?: BackdropStyle;
   headingColor?: number;
-  /** Whether tapping the host says the land's line before its suggestion. */
+  /** Whether tapping the host says the land's line (or `hostLine`) before its suggestion. */
   hostSaysLine?: boolean;
+  /** What the host says then, in place of the land's line: a resident's hello (RW14). */
+  hostLine?: LineId;
 }
 
 /**
@@ -278,7 +281,7 @@ export class LandScene extends Scene {
     const tip = () => voice.say('land.try').then(() => {
       if (!this.leaving && this.suggested === mod.id) return voice.say(mod.titleLine);
     });
-    if (this.options.hostSaysLine) void voice.say(this.land.line).then(() => {
+    if (this.options.hostSaysLine) void voice.say(this.options.hostLine ?? this.land.line).then(() => {
       if (!this.leaving && this.suggested === mod.id) return tip();
     });
     else void tip();

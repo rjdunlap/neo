@@ -5,6 +5,7 @@ import { GAMES } from '../../games/registry';
 import { BANDS, type Band } from '../../progress/bands';
 import { exploreIds } from './ExploreScene';
 import { LOCATIONS } from './LocationScene';
+import { residentProblems } from './resident-check';
 import { meadowKeepOut } from './meadow';
 import { cloudRidge, mistBands, mountainPlan } from './mountain';
 
@@ -65,9 +66,10 @@ describe('Music Mountain as a location', () => {
     }
   });
 
-  it('is a location whose land host greets her until Trill, its resident, is prepared, and Explore lists it', () => {
+  it('is a location with Trill as its resident, whose touch circle and motion clear every other spot, and Explore lists it', () => {
     expect(LOCATIONS['music-mountain']).toBeDefined();
-    expect(LOCATIONS['music-mountain']?.resident).toBeUndefined();
     expect(exploreIds()).toContain('music-mountain');
+    expect(LOCATIONS['music-mountain']?.resident).toBe('trill');
+    expect(residentProblems('trill')).toEqual([]);
   });
 });

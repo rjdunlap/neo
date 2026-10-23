@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { CAST, CAST_ART, castWeights, IllustratedCast } from './cast';
-import type { Expression } from './illustrated';
+import { EXPRESSIONS, type Expression } from './illustrated';
 import { illustratedSuite } from './illustrated-suite';
 
 const pngs = import.meta.glob<string>('./cast/*-*.png', { query: '?inline', import: 'default', eager: true });
+const webps = import.meta.glob<string>('./cast/*-*.webp', { query: '?url', import: 'default', eager: true });
 
 for (const species of CAST) {
   const A = CAST_ART[species];
@@ -34,6 +35,11 @@ describe('RW02b second-wave tables', () => {
         expect(castWeights(A, near.x, near.y)[i], `${species} part ${i} tip`).toBeGreaterThan(0.4);
       });
     }
+  });
+
+  it('ships every expression as WebP for the locations (RW14 slice 2), with the PNGs kept for these pixel checks', () => {
+    for (const species of CAST) for (const e of EXPRESSIONS) expect(!!webps[`./cast/${species}-${e}.webp`], `${species} ${e}`).toBe(true);
+    expect(Object.keys(webps).length).toBe(CAST.length * EXPRESSIONS.length);
   });
 
   it('ships an alt still for the four whose pose retracts or opens, and none for the rest', () => {

@@ -5,6 +5,7 @@ import { GAMES } from '../../games/registry';
 import { BANDS, type Band } from '../../progress/bands';
 import { exploreIds } from './ExploreScene';
 import { LOCATIONS } from './LocationScene';
+import { residentProblems } from './resident-check';
 import { canyonPlan, canyonRim } from './canyon';
 import { meadowKeepOut } from './meadow';
 
@@ -69,9 +70,10 @@ describe('Painted Canyon as a location', () => {
     }
   });
 
-  it('is a location whose land host greets her until Dapple, its resident, is prepared, and Explore lists it', () => {
+  it('is a location with Dapple as its resident, whose touch circle and motion clear every other spot, and Explore lists it', () => {
     expect(LOCATIONS.treehouse).toBeDefined();
-    expect(LOCATIONS.treehouse?.resident).toBeUndefined();
     expect(exploreIds()).toContain('treehouse');
+    expect(LOCATIONS['treehouse']?.resident).toBe('dapple');
+    expect(residentProblems('dapple')).toEqual([]);
   });
 });

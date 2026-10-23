@@ -6,10 +6,9 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-1. **RW14 slice 2, residents in six locations** (shell tier, offline check): the prepared second-wave six as the residents of Bubble Beach, Music Mountain, Painted Canyon, Cozy Village, Story Grove and Tinker Lab, shipped in production as smaller files; her own friend stands in where it is the resident. No new image. [POLISH.md](rework/POLISH.md#slice-2-residents-in-six-locations-and-her-own-friend-at-home)
-2. **RW14 slice 3, one meaning per button** (shell and navigation tier; after slice 2, which shares `LocationScene.ts`): at the root the house always goes Home and a back arrow with the place's picture goes back, in rounds, how-to cards and locations, with a route test. [POLISH.md](rework/POLISH.md#slice-3-one-meaning-per-button)
-3. **RW14 slice 5, celebration and result in place** (shell tier; after slice 3, which shares `GameScene.ts`): the result draws its origin's backdrop behind a veil instead of flat cream. [POLISH.md](rework/POLISH.md#slice-5-celebration-and-result-in-place)
-4. **RW14 slice 7, buttons and cards with a finish** (shell tier): one code-drawn finish (face, highlight, rim, shadow, press squash) for every root button and card; Home's exits as picture buttons; hit areas unchanged. [POLISH.md](rework/POLISH.md#slice-7-buttons-and-cards-with-a-finish)
+1. **RW14 slice 3, one meaning per button** (shell and navigation tier; slice 2 has landed, so `LocationScene.ts` is free): at the root the house always goes Home and a back arrow with the place's picture goes back, in rounds, how-to cards and locations, with a route test. [POLISH.md](rework/POLISH.md#slice-3-one-meaning-per-button)
+2. **RW14 slice 5, celebration and result in place** (shell tier; after slice 3, which shares `GameScene.ts`): the result draws its origin's backdrop behind a veil instead of flat cream. [POLISH.md](rework/POLISH.md#slice-5-celebration-and-result-in-place)
+3. **RW14 slice 7, buttons and cards with a finish** (shell tier): one code-drawn finish (face, highlight, rim, shadow, press squash) for every root button and card; Home's exits as picture buttons; hit areas unchanged. [POLISH.md](rework/POLISH.md#slice-7-buttons-and-cards-with-a-finish)
 
 ## Queued
 

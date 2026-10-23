@@ -5,6 +5,7 @@ import { GAMES } from '../../games/registry';
 import { BANDS, type Band } from '../../progress/bands';
 import { exploreIds } from './ExploreScene';
 import { LOCATIONS } from './LocationScene';
+import { residentProblems } from './resident-check';
 import { meadowKeepOut } from './meadow';
 import { hasRoom } from './decor-room';
 import { LAB_BACKDROP, labCeiling, labMouth, labPlan } from './lab';
@@ -97,10 +98,9 @@ describe('Tinker Lab as a location', () => {
     }
   });
 
-  it('is a cave location whose land host greets her until Mossback, its resident, is prepared, and Explore lists it', () => {
+  it('is a cave location with Mossback as its resident, whose touch circle and motion clear every other spot, and Explore lists it', () => {
     const place = LOCATIONS['tinker-lab'];
     expect(place).toBeDefined();
-    expect(place?.resident).toBeUndefined();
     expect(place?.backdrop).toBe(LAB_BACKDROP);
     expect(LAB_BACKDROP.sun).toBeFalsy();
     expect(LAB_BACKDROP.clouds ?? 0).toBe(0);
@@ -108,5 +108,7 @@ describe('Tinker Lab as a location', () => {
     expect(LAB_BACKDROP.horizon).toBe(lab.backdrop.horizon);
     expect(lab.backdrop.sun).toBe(true);
     expect(exploreIds()).toContain('tinker-lab');
+    expect(LOCATIONS['tinker-lab']?.resident).toBe('mossback');
+    expect(residentProblems('mossback')).toEqual([]);
   });
 });

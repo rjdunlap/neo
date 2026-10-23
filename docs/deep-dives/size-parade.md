@@ -167,4 +167,4 @@ Earlier session: a deep dive session is research and ideation only. The write-up
 
 - `sizePlan(level)` gained `TWO_IN_A_LINE` (17) and `MIDDLE_ONE` (10, `middleAsks`, `askRank`): three friends, at least two of four questions ask for the middle one, with three ringed circles as the cue; voice lines `size.pick.middle` and `size.wrong.middle`. The pick-mode ask is per row.
 - Windows now: toddler min 1 max 17 `order [1, 2, 3, 4, 17]` (9 joins in slice 3); preschool min 3 max 17 `order [3, 4, 17, 10, 5, 6]`; pre-K 5-8; school 7-8; `entryLevels [17]`. How-to card updated; the `expansion` size case iterates `SIZE_LEVELS` (default adds 10 and 17).
-- Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--size-parade-levels-17-and-10-slices-45). Still open: a toddler's first drag at 17, whether "the middle one" is understood at three, whether the circle cue is looked at (DEVICE-CHECKS).
+- Checks are in [VERIFICATION](../archive/VERIFICATION-2026-10-23.md#2026-10-23--size-parade-levels-17-and-10-slices-45). Still open: a toddler's first drag at 17, whether "the middle one" is understood at three, whether the circle cue is looked at (DEVICE-CHECKS).

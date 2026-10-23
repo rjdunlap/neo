@@ -7,12 +7,13 @@ import { type ArtBase, type ArtSet, bend, EXPRESSIONS, type Expression, Illustra
  * illustrations on the pilot's rig pattern. Each species is one smaller `*_ART` table (face, the
  * pinned body, one to four moving parts that bend about their roots, the touch circle, slots and
  * misfits) on the shared `IllustratedCreature` mesh, with the same texture swap; the reaction is
- * one of a few whole-craft moves. No save, species or route knows them yet: they stand only in
- * the dev preview (`/?cast`), and RW10's collection book is what ships them.
+ * one of a few whole-craft moves. RW14 slice 2 ships them as the residents of six locations
+ * (`src/creatures/resident.ts`, `LocationScene`): no save, species or collection knows them yet.
  *
  * Art: `cast/<species>-*.png`, cut by `scripts/creature-art/prepare-sprite.mjs --set <species>
- * --shrink 2 --out-dir src/art/creatures/cast`; `alt` (Tote, Bramble, Mossback, Lumen) is a
- * separate picture, shown as a still. See `illustrated/README.md`.
+ * --shrink 2 --out-dir src/art/creatures/cast`, and re-encoded for production as `cast/<species>-*.webp`
+ * by `scripts/creature-art/to-webp.mjs` (the PNGs stay for the pixel tests and the dev preview's
+ * `alt` stills; only the WebPs are in the build). See `illustrated/README.md`.
  */
 
 export const CAST = ['tote', 'trill', 'dapple', 'bramble', 'mossback', 'lumen'] as const;
@@ -301,18 +302,15 @@ export class IllustratedCast extends IllustratedCreature {
   }
 }
 
-/** The sprite files, by species and picture; only the dev preview reaches this, so none ship yet. */
-const files = import.meta.glob<string>('./cast/*-*.png', { query: '?url', import: 'default' });
+/** The production textures: six expressions a species, as WebP (`scripts/creature-art/to-webp.mjs`); the PNGs stay out of the build. */
+const files = import.meta.glob<string>('./cast/*-*.webp', { query: '?url', import: 'default' });
 
-export interface CastSet {
-  textures: ArtSet;
-  alt: Texture | null;
-}
+const loaded: Partial<Record<CastId, ArtSet>> = {};
 
-/** Loads a second-wave species' six expressions and its `alt` still, if it has one. */
-export async function loadCast(species: CastId): Promise<CastSet> {
-  const load = async (name: Expression | 'alt') => {
-    const url = files[`./cast/${species}-${name}.png`];
+/** Loads one second-wave species' six expressions. */
+export async function loadCast(species: CastId): Promise<ArtSet> {
+  const load = async (name: Expression) => {
+    const url = files[`./cast/${species}-${name}.webp`];
     if (!url) throw new Error(`no prepared sprite for ${species} ${name}`);
     const t = await Assets.load<Texture>(await url());
     t.source.autoGenerateMipmaps = true;
@@ -320,5 +318,29 @@ export async function loadCast(species: CastId): Promise<CastSet> {
     return t;
   };
   const entries = await Promise.all(EXPRESSIONS.map(async (e) => [e, await load(e)] as const));
-  return { textures: Object.fromEntries(entries) as Record<Expression, Texture>, alt: CAST_ART[species].alt ? await load('alt') : null };
+  return Object.fromEntries(entries) as Record<Expression, Texture>;
+}
+
+/**
+ * Loads every second-wave species' art at boot (RW14 slice 2), so a location builds its resident without waiting.
+ * Never throws: a species whose art failed has none, and its location keeps the land's code-drawn host.
+ */
+export async function loadCastArt(): Promise<void> {
+  await Promise.all(
+    CAST.map(async (s) => {
+      try {
+        loaded[s] = await loadCast(s);
+      } catch (e) {
+        console.warn(`Could not load the ${s} art`, e);
+      }
+    }),
+  );
+}
+
+/** A species' loaded art, or undefined before boot loaded it (or when the load failed). */
+export const castArt = (species: CastId): ArtSet | undefined => loaded[species];
+
+/** For tests: draws a species with the given art instead of what boot loaded. */
+export function useCastArt(species: CastId, art: ArtSet | undefined) {
+  loaded[species] = art;
 }

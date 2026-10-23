@@ -6,6 +6,7 @@ import { App, type Routes } from './app/App';
 import { placeAtRoot } from './app/origin';
 import { createRoutes } from './app/routes';
 import { applySettings } from './app/settings';
+import { loadCastArt } from './art/creatures/cast';
 import { loadArt } from './art/creatures/illustrated';
 import { loadWearables } from './art/creatures/wearables';
 import { isLocation, LocationScene } from './app/scenes/LocationScene';
@@ -52,12 +53,13 @@ async function boot() {
     await (await import('./dev/cast-preview')).showCast(app);
   } else if (query.has('preview')) {
     // RW02b's preview, for comparing the rigs on the iPad until RW08; its meadow button opens Rainbow Meadow, whose Home comes back here.
-    const [sprout, river, glider, items] = await Promise.all([loadArt('sprout'), loadArt('river'), loadArt('glider'), loadWearables(), loadCollectionArt()]);
+    const [sprout, river, glider, items] = await Promise.all([loadArt('sprout'), loadArt('river'), loadArt('glider'), loadWearables(), loadCollectionArt(), loadCastArt()]);
     const entry = () => void app.show(new CreaturePreview(app, { sprout, river, glider }, items));
     app.go = withLink({ ...island, hub: entry, land });
     app.go.hub();
   } else {
-    await Promise.all([loadCollectionArt(), loadHomeBackdrop()]);
+    // The residents' art (RW14 slice 2) loads with the collection's, so a location never waits for it.
+    await Promise.all([loadCollectionArt(), loadHomeBackdrop(), loadCastArt()]);
     app.creatureWorld = true;
     app.go = withLink({
       ...island,
