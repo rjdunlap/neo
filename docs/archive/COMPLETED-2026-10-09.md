@@ -1747,6 +1747,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--pet-kitchen-batch-2-
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--adventure-walk-levels-13-new-game-aw2).
 
+## Ready for Adventure levels 1–3 (RA2, 2026-10-23)
+
+[PR #868](https://github.com/rjdunlap/neo/pull/868), branch `claude/ready-for-adventure`: the [definition](../definitions/ready-for-adventure.md) built as `ready-for-adventure` (`src/games/ready-for-adventure/`; region `cozy-village`; toddler 1, preschool 1–2, pre-K 2–3). Pack the shown prop, make a bare prop ready before packing, then do two such jobs in any valid order; the companion's wagon parade uses exactly what was packed. All five open decisions took their defaults (wagon, tap-select on alongside dragging, misses as defined, level 1's other choice seeded) except the land: home **Barnyard**, since Cozy Village failed `village.test.ts` decor at 12 games and Music Mountain failed `mountain.test.ts` at 7, while Barnyard passed all scene tests (10 to 12 with Adventure Walk).
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--ready-for-adventure-levels-13-new-game-ra2).
+
 ## Mail Carrier batch 3: Compare delivery routes (2026-10-23)
 
 [PR #874](https://github.com/rjdunlap/neo/pull/874), worker `01a16958-6380-7e22-b796-185ee2918505`: level14 / dive slice8 only. Two bags carry three letters each; every order works, with flags, free undo, a counted office return and an optional unscored second walk comparing shorter, longer or equal counts. The loop has one visible stone per segment and two bags award one sticker. School order is `[4, 5, 9, 12, 6, 13, 7, 8, 11, 14]`; level15 and developer decisions are excluded.
