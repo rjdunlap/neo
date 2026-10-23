@@ -9763,29 +9763,61 @@ async function woodsBatch() {
   }
 
   if (!only || only === 'helpers') {
-    await launch('little-helpers', 6);
-    for (let k = 0; k < 4; k++) {
-      await idle(k);
-      const need = await page.evaluate(() => neo.scene.game.fruit.need);
-      // Tap the fruit itself, as a finger would: its foot is where the team stands, and a tap there calls a helper back.
-      const send = async (n) => {
-        for (let i = 0; i < n; i++) { await page.evaluate(() => kit.tapOn(neo.scene.game.fruitNode, 0, -60)); await page.waitForTimeout(300); }
-        await page.waitForFunction(() => !neo.scene.game.helpers.some((h) => h.moving));
-      };
-      if (k === 0) {
-        await send(need - 1);
-        for (let m = 0; m < 2; m++) { await tap('neo.scene.game.whistle'); await page.waitForTimeout(450); await idle(0); }
-        assert.deepEqual(await counts(), [2, 1]);
-        await screenshot('little-helpers-6-hint');
-        await send(1);
-      } else await send(need);
-      await tap('neo.scene.game.whistle');
+    // Level 6 (teams she builds), 7 (Everyone helps, in portrait) and 8 (Strong helpers): tap a fruit to send its team a helper.
+    for (const level of [6, 7, 8]) {
+      if (level === 7) await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('little-helpers', level);
+      for (let k = 0; k < 4; k++) {
+        await idle(k);
+        const parts = await page.evaluate(() => { const g = neo.scene.game; return g.fruit.parts ?? Array.from({ length: g.fruit.groups }, () => g.fruit.need / g.fruit.groups); });
+        const need = await page.evaluate(() => neo.scene.game.fruit.need);
+        const settle = () => page.waitForFunction(() => !neo.scene.game.helpers.some((h) => h.moving));
+        // Tap fruit `g` of a bunch or pair, as a finger would: the tap goes to the nearest fruit.
+        const sendTeam = async (g, n) => {
+          for (let i = 0; i < n; i++) { await page.evaluate((g) => { const G = neo.scene.game; kit.tapOn(G.fruitNode, G.groupX(g, G.fruit), -60); }, g); await page.waitForTimeout(300); }
+          await settle();
+        };
+        // Level 8: touch the helpers themselves, big ones or small, until the team adds up.
+        const sendKind = async (big, n) => {
+          for (let i = 0; i < n; i++) { await page.evaluate((big) => { const h = neo.scene.game.helpers.find((x) => x.big === big && x.slot < 0 && x.visible); kit.tapOn(h, 0, -28); }, big); await page.waitForTimeout(300); }
+          await settle();
+        };
+        const whistle = async () => { await tap('neo.scene.game.whistle'); await page.waitForTimeout(450); await idle(0); };
+        if (level === 8) {
+          if (k === 0) {
+            // Too strong first (an extra walks back), then too light: two counted, one hint.
+            await sendKind(true, 3); await sendKind(false, need - 6 > 0 ? need - 6 + 1 : 1);
+            await whistle(); await page.waitForTimeout(800);
+            await page.evaluate(() => { const g = neo.scene.game; for (const h of g.carrying) g.recall(h); });
+            await page.waitForTimeout(600); await settle();
+            await sendKind(false, 1); await whistle();
+            assert.deepEqual(await counts(), [2, 1]);
+            await page.evaluate(() => { const g = neo.scene.game; for (const h of g.carrying) g.recall(h); });
+            await page.waitForTimeout(600); await settle();
+            await screenshot('little-helpers-8-hint');
+          }
+          // Any exact mix is right: bigs first, then smalls.
+          const bigs = Math.min(3, Math.floor(need / 2));
+          await sendKind(true, bigs); await sendKind(false, need - bigs * 2);
+          await settle();
+        } else if (k === 0) {
+          // Fill every team but one helper, then whistle twice; a full team says so and takes no more.
+          for (let g = 0; g < parts.length; g++) await sendTeam(g, g === parts.length - 1 ? parts[g] - 1 : parts[g]);
+          if (level === 6) { await sendTeam(0, 1); assert.equal(await page.evaluate(() => neo.scene.game.carrying.length), need - 1, 'a full team took another helper'); }
+          for (let m = 0; m < 2; m++) await whistle();
+          assert.deepEqual(await counts(), [2, 1]);
+          await screenshot(`little-helpers-${level}-hint`);
+          await sendTeam(parts.length - 1, 1);
+        } else for (let g = 0; g < parts.length; g++) await sendTeam(g, parts[g]);
+        await tap('neo.scene.game.whistle');
+      }
+      // Every fruit reached the basket.
+      await page.waitForFunction(() => { const g = neo.scene.game; return g.pile.children.length === g.fruits.reduce((n, f) => n + f.groups, 0); }, null, { timeout: 20000 });
+      await finished('little-helpers');
+      assert.deepEqual(await score('little-helpers'), [2, 1]);
+      log(`Little Helpers ${level}: ${level === 8 ? 'big helpers count two, any exact mix lifts' : level === 7 ? 'a crowd split between two fruits' : 'equal teams under each fruit of a bunch'}, wrong whistles, hint, saved score and sticker passed`);
+      if (level === 7) await page.setViewportSize({ width: 1024, height: 768 });
     }
-    // Every fruit of every bunch reached the basket.
-    await page.waitForFunction(() => { const g = neo.scene.game; return g.pile.children.length === g.fruits.reduce((n, f) => n + f.groups, 0); }, null, { timeout: 15000 });
-    await finished('little-helpers');
-    assert.deepEqual(await score('little-helpers'), [2, 1]);
-    log('Little Helpers 6: equal teams under each fruit of a bunch, short whistles counted by groups, hint, saved score and sticker passed');
   }
 
   // Seesaw Balance 8–10: take the same off both sides until a box is alone, or two boxes share the blocks.
