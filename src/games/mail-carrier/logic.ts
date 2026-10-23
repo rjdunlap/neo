@@ -7,7 +7,7 @@ import type { Rng } from '../../engine/random';
  * shows who it's for (a door color, a number of dots, or a numeral) and the child taps the
  * matching mailbox. A wrong mailbox politely hands the letter back.
  */
-export type MailMode = 'drop' | 'color' | 'dots' | 'numeral' | 'count' | 'map' | 'route' | 'shorter' | 'tool' | 'help' | 'teen' | 'clue' | 'sides' | 'compare';
+export type MailMode = 'drop' | 'color' | 'dots' | 'numeral' | 'count' | 'map' | 'route' | 'shorter' | 'tool' | 'help' | 'teen' | 'clue' | 'sides' | 'compare' | 'key';
 
 export interface MailPlan {
   /** The level this plan is: the street's levels 9, 10 and 12 sit after the woods' 6–8 in this list, so look it up with `planFor`. */
@@ -39,9 +39,10 @@ export const PLANS: MailPlan[] = [
   { level: 13, mode: 'clue', houses: 5, letters: 4, top: 0, name: 'Hazel’s spoken clue: between, next on the left, nearest and farthest on the picture map' },
   { level: 11, mode: 'sides', houses: 8, letters: 5, top: 16, name: 'Both sides of the street: odd numbers on one side, even on the other, rising left to right' },
   { level: 14, mode: 'compare', houses: 5, letters: 6, top: 0, name: 'Plan three deliveries in any order; optionally walk a second order and compare stone counts (two bags)' },
+  { level: 15, mode: 'key', houses: 5, letters: 2, top: 0, name: 'Make the picture key: match five signs to their neighbours, then deliver two letters' },
 ];
 
-export const isMapMode = (mode: MailMode) => mode === 'map' || mode === 'route' || mode === 'shorter' || mode === 'clue' || mode === 'compare';
+export const isMapMode = (mode: MailMode) => mode === 'map' || mode === 'route' || mode === 'shorter' || mode === 'clue' || mode === 'compare' || mode === 'key';
 
 export const planFor = (level: number) => PLANS.find((p) => p.level === level) ?? PLANS[Math.min(8, Math.max(1, level)) - 1];
 
@@ -389,7 +390,7 @@ export type WoodsTouch = { house: number } | 'go';
  */
 export function woodsTouch(mode: MailMode, trip: number[], planned: number[]): WoodsTouch | null {
   if (!trip.length) return null;
-  if (mode === 'map' || mode === 'shorter' || mode === 'clue') return { house: trip[0] };
+  if (mode === 'map' || mode === 'shorter' || mode === 'clue' || mode === 'key') return { house: trip[0] };
   return planned.length < trip.length ? { house: mode === 'compare' ? trip.find((h) => !planned.includes(h))! : trip[planned.length] } : 'go';
 }
 
@@ -438,3 +439,6 @@ export function makeClues(woods: WoodsHouse[], mirrored: boolean, rng: Rng): Map
   ];
   return rng.shuffle(clues).map((clue) => ({ ...clue, house: clueMatches(clue, woods, mirrored)[0] }));
 }
+
+/** A key pair is correct only when the chosen house carries the row’s sign. */
+export const keyMatches = (woods: WoodsHouse[], sign: Sign, house: number) => woods[house]?.sign === sign;
