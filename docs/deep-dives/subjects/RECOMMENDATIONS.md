@@ -832,3 +832,20 @@ The [ordered slices](spelling-sentences.md#build-slices-in-order) stop this sess
 | **PW8 Rhyme pause, twister listen, riddle-making cards** · L–G | hand to off-screen companions after an ordinary content review | Plain HTML; any home language |
 
 Completion with spoken support is not evidence of independent phonological awareness, and nothing scores a recited rhyme or twister.
+
+## Oceans recommendations
+
+**Recommended 2026-10-23:** [the oceans study](oceans.md), [PR #849](https://github.com/rjdunlap/neo/pull/849). Opened: California's copy of NGSS 2-ESS2-2/3, 4-ESS2-2, 5-ESS2-2, MS-ESS2-6 and K-ESS3-3, the NOAA Ocean Literacy poster, two Common Sense Media reviews, Sobel's ecophobia essay and a Smithsonian pre-K zones lesson. Everything else is marked as a search summary. The tracker's "2-ESS2-3" for a land-and-water model is 2-ESS2-2. One new identity, **Tide Line**; every other idea extends an existing game. The sea is shown bright and well: no litter, suffering animals, predation or danger to a person, and shore safety stays with the unscheduled safety study.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **Tide Line** · lap–school · new identity | define levels 1–4 (docs only); build waits on identity, Bubble Beach placement and an ocean reviewer | Pull the sea in and out (L–T, exploratory); keep a pail above the seaweed line (T–P); read only the line to place three things (P–K); complete "high, low, high, low" (K). Shore creatures and wave/gull synthesis are built with it. The cause of tides is not drawn below school |
+| **Tide Line 5–7** · pre-K–school | define after 1–4; level 7 held for a reviewer and Moon Window | Find when the rock pool shows; read a height chart and fit jobs to windows; bigger and smaller tides |
+| **Salty or Fresh** · school–upper school · mode in Sink or Float | hand to the Sink or Float dive | The same thing in two tanks; it sits higher in salt water (5-ESS2-2). No reviewer if worded only as "sits higher" |
+| **Beach Day Pack-up / Beach Tally** · T–S · modes in Second Chance Shed and Picture Graph | hand to those definitions | Pack away the picnic; line up shells, stones and driftwood by kind. No litter scene |
+| **Rock Pool / shore zones** · P–S · content in Photo Safari and Habitat Helpers | hand to those dives | The pool shows when the sea is out; who lives high and low by what they need |
+| **Down We Go** · pre-K–upper school | define after Tide Line is built | A lantern on a rope, light that dims by stops, a seaweed question (plants need light). Ordered stops, never metres or percentages |
+| **Drift Cards** · upper school–M | define after Drop's Journey (weather-water) | Send a bottle on a current map and predict where it lands (MS-ESS2-6). Counts of the 1992 toy spill disagree between sources |
+| **Tide Tables** · 13+ / parents | sketch; after a Lantern Lake capacity test | A cozy scheduling puzzle that fits jobs into tide windows |
+
+Completion with spoken support is not evidence of independent understanding of tides, and nothing scores a recited fact.
