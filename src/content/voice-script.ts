@@ -2580,6 +2580,8 @@ export const SCRIPT = {
   'weather.wrong': ['{item} for {weather} days. Try another!'],
   'weather.yes': ['Good idea!', 'Just right!', 'Yes!'],
   'weather.ready': ['{pet} is ready to go out!', 'All set! Let us go!'],
+  'weather.which': ['Look at what {pet} is wearing! What is the weather today?'],
+  'weather.sky.wrong': ['That is {weather}, but look at what {pet} is wearing. Try another sky!'],
   'weather.hint': ['Try the glowing one!'],
   'weather.name': ['{item}!'],
   'weather.change.remove': ['The weather is changing to {weather}. Tap the clothes that do not fit to take them off.'],

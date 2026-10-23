@@ -93,7 +93,7 @@ export const MISFIT: Record<Weather, Misfit> = { sunny: 'hot', rainy: 'wet', sno
 /** The one item per weather that stops it on the pet at level 8: a hat in sun, an umbrella in rain, a coat in snow. */
 export const SHIELD: Record<Weather, Item> = { sunny: 'sunhat', rainy: 'umbrella', snowy: 'puffycoat' };
 
-export type WardrobeMode = 'play' | 'pick' | 'all' | 'trip' | 'change' | 'try';
+export type WardrobeMode = 'play' | 'pick' | 'all' | 'trip' | 'change' | 'try' | 'sky';
 
 export interface WardrobePlan {
   mode: WardrobeMode;
@@ -114,6 +114,7 @@ export const WARDROBE_PLANS: WardrobePlan[] = [
   { mode: 'trip', choices: 6, need: 4, rounds: 2, name: 'Pack for a trip with two kinds of weather' },
   { mode: 'change', choices: 5, need: 0, rounds: 3, name: 'Take off clothes that do not fit the new weather, then dress for it' },
   { mode: 'try', choices: 2, need: 1, rounds: 3, name: 'Try things on in the weather: the one that fits stops it (no mistakes)' },
+  { mode: 'sky', choices: 3, need: 1, rounds: 3, name: 'See what the pet is wearing and pick the weather it is dressed for' },
 ];
 
 export const wardrobePlan = (level: number) => WARDROBE_PLANS[Math.max(0, Math.min(WARDROBE_PLANS.length - 1, level - 1))];
@@ -125,7 +126,14 @@ export interface Outfit {
   options: Item[];
   /** In weather-change rounds, these are the worn clothes to remove before dressing for the new weather. */
   remove?: Item[];
+  /** Which sky: what the pet already wears, the skies on offer, and the one it suits. */
+  worn?: Item[];
+  skies?: Weather[];
+  answer?: Weather;
 }
+
+/** What a trip unpacks, weather by weather in forecast order: each weather's packed things, then the next weather's. */
+export const tripPlays = (o: Outfit): { weather: Weather; items: Item[] }[] => o.weathers.map((weather) => ({ weather, items: o.needed.filter((i) => ITEMS[i] === weather) }));
 
 /** One round's weather and choices. Weathers change from round to round. */
 export function outfits(plan: WardrobePlan, rng: Rng): Outfit[] {
@@ -134,6 +142,13 @@ export function outfits(plan: WardrobePlan, rng: Rng): Outfit[] {
   // Weather-change rounds wear one outfit per weather all game, so the clothes to take off are the ones she just put on.
   const dress = plan.mode === 'change' ? new Map(WEATHERS.map((w) => [w, outfitFor(w, rng)])) : null;
   for (let r = 0; r < plan.rounds; r++) {
+    if (plan.mode === 'sky') {
+      // Each round is a different weather, and the pet wears two things made for it: exactly one offered sky fits.
+      if (!order.length) order = rng.shuffle([...WEATHERS]);
+      const answer = order.shift()!;
+      out.push({ weathers: [answer], needed: [], options: [], worn: rng.shuffle(outfitFor(answer, rng)).slice(0, 2), skies: rng.shuffle([...WEATHERS]).slice(0, plan.choices), answer });
+      continue;
+    }
     if (plan.mode === 'change') {
       if (!order.length) order = rng.shuffle([...WEATHERS]);
       const from = order[r]!;
