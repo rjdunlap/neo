@@ -24,6 +24,7 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 | [RW11](https://github.com/rjdunlap/neo/issues/495) | Optional forms and useful talents | sketch, definition first | RW02, RW10 |
 | [RW12](https://github.com/rjdunlap/neo/issues/496) | First expansion and later-school coverage | sketch, definition first | RW08, RW09, RW10; RW11 only if used |
 | [RW13](#rw13-island-revamp-ecosystems-as-locations) | Island revamp: ecosystems as locations | defined 2026-10-20 ([ISLAND-REVAMP.md](ISLAND-REVAMP.md)): eleven land IDs kept as ecosystems, five game moves, residents and backdrop requests (R23, R26); build slices 1 (catalog moves, PR #634), 2 (Rainbow Meadow at the root, PR #635) and 3 (Counting Cove, PR #639) built 2026-10-20; the Explore picker of built locations (PR #640) built 2026-10-20; slices 4 (Puzzle Peaks, PR #641) to 10 (Tinker Lab, PR #648) built 2026-10-20; slice 11 (Barnyard with Lantern Lake, PR #649) built 2026-10-20, the last of the packet's build slices | RW03 packet, the land catalog; informs RW06, RW08 and the backdrop art (R23) |
+| [RW14](#rw14-polish-and-navigation-flow) | Polish and navigation flow | defined 2026-10-23 ([POLISH.md](POLISH.md)): ten ordered slices; slice 0, the art inbox (`scripts/art/import-inbox.mjs`), built with the packet; slices 1–3 need no new image; [ChatGPT batch 1](art-requests/CHATGPT-BATCH.md) (R22, R23) feeds slices 4 and 6 | RW06, RW08 slices 1–2, RW13; the catalog-wide art decision for slices 4, 6 and 10 |
 
 ## RW01: Name and story
 
@@ -273,3 +274,29 @@ Requested by the developer 2026-10-19 (see the [rework brief](README.md#decision
 - Lists what the `classic/` island keeps until cutover and what each build slice removes.
 
 **Likely files:** a new `docs/rework/ISLAND-REVAMP.md`, this index, READY.md and the art queue. **Proof:** links and `git diff --check`.
+
+## RW14: Polish and navigation flow
+
+Requested by the developer 2026-10-23 (relayed by the session that started the definition): make the game look and feel polished, with more generated images (made by the developer in ChatGPT) and smoother navigation. No GitHub issue yet.
+
+**Packet (2026-10-23):** [POLISH.md](POLISH.md) records what looks unfinished at the root and `classic/` (with screenshots taken in scripted Chromium, not on an iPad) and splits the work into [ordered build slices](POLISH.md#build-slices-in-order), each with its files, done-when and check tier. The images are in [ChatGPT batch 1](art-requests/CHATGPT-BATCH.md#batch-1-generate-these-first) (the R22 duck and the R23 meadow) and [batch 2](art-requests/CHATGPT-BATCH.md#batch-2-after-the-meadow-is-accepted) (R26, after the meadow is accepted on the device); the [import pipeline](art-requests/IMPORT.md) files and prepares them with one command.
+
+| Slice | What | Needs | Check tier |
+| --- | --- | --- | --- |
+| 0 | The art inbox script (built with the packet) | — | its unit test |
+| 1 | First run on the home backdrop | — | shell |
+| 2 | Residents in six locations; her own friend stands in where it is the resident | — | shell, offline |
+| 3 | One meaning per button: the house is Home, the back arrow names its place | — | shell and navigation |
+| 4 | Illustrated Rainbow Meadow; Places postcards; the drop-in backdrop loader | R23 imported | shell, offline |
+| 5 | Celebration and result in place | slice 4's loader (or the code-drawn backdrop) | shell |
+| 6 | The duck pilot in Duck Pond | R22 imported | existing-game change |
+| 7 | Buttons and cards with a finish, in code | — | shell |
+| 8 | The last place first on Explore | — | shell and save, offline |
+| 9 | Moving between screens without a cream flash | — | shell and navigation |
+| 10 | The other ten backdrops: images only | R26, after slice 4 is accepted | one probe per location, offline |
+
+**Acceptance:**
+- No target shrinks below 100 units, navigation never needs reading, the guide and corners stay clear, and nothing gates.
+- A house always means Home and a back arrow always names the place it returns to, at the root ([RW03](HOME-NAVIGATION.md#routes-and-meaning)); `classic/` keeps its buttons until RW08.
+- A new image of an already wired kind needs only the import script; no image is committed without its untouched original and manifest row.
+- What only a device or a child can show (readability on painted ground, the transitions' feel, whether she prefers the illustrated pair) is listed in [DEVICE-CHECKS](../DEVICE-CHECKS.md), not claimed.
