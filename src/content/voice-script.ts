@@ -995,6 +995,7 @@ export const SCRIPT = {
   'sort.howmany.count': ['All sorted! Tap the critters in each part to count them. A ring shows each one you counted. You can hear its number again. Which part has more critters? Tap its picture below.'],
   'sort.howmany.try': ['That part has {small}. Another part has {big}. Count the critters again. Which part has more?'],
   'sort.done': ['Super sorting!'],
+  'go.lamps': ['Tap the green lamp and the car goes! Tap the red lamp and it stops.'],
   'go.toy': ['Tap the traffic light! Green means go, red means stop.'],
   'go.send': ['When the light is green, tap the car to make it go. Red means wait!'],
   'go.walk': ['Red light, green light! Tap the feet to walk on green. On red, freeze!'],

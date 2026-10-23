@@ -9164,12 +9164,26 @@ async function woodsBatch() {
     log(`Bubble Pop ${level}: pairs that make ${sum} popped together, wrong pairs as misses, glowing pair hint, rainbow bubble, saved score and sticker passed`);
   }
 
-  if (!only || only === 'go') for (let level = fromLevel; level <= 4; level++) {
+  if (!only || only === 'go') for (const level of [1, 2, 3, 4, 9].filter((l) => l >= fromLevel)) {
     await launch('stop-and-go', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const lightIs = (l) => page.waitForFunction((l) => neo.scene.game.light.light === l, l, { timeout: 15000 });
     await page.waitForTimeout(500);
-    if (mode === 'toy') {
+    if (mode === 'lamps') {
+      // Lap level 9: green sets the looping car rolling, red brakes it, the car toots; eight touches and no miss.
+      const rolling = () => page.evaluate(() => neo.scene.game.rolling);
+      await tap('neo.scene.game.lamps[0]'); await page.waitForTimeout(500);
+      assert.equal(await rolling(), true, 'green sets the car going');
+      const x0 = await page.evaluate(() => neo.scene.game.cars[0].x); await page.waitForTimeout(400);
+      assert.notEqual(await page.evaluate(() => neo.scene.game.cars[0].x), x0, 'the car moves on green');
+      await tap('neo.scene.game.lamps[1]'); await page.waitForTimeout(500);
+      assert.equal(await rolling(), false, 'red stops the car');
+      await tap('neo.scene.game.cars[0]'); await page.waitForTimeout(350);
+      assert.equal(await page.evaluate(() => neo.scene.game.done), 3, 'both lamps and the car count');
+      await screenshot('stop-and-go-9');
+      for (let k = 0; k < 5; k++) { await tap(`neo.scene.game.lamps[${k % 2}]`); await page.waitForTimeout(350); }
+    }
+    else if (mode === 'toy') {
       // The car answers too: a tap on it counts as one of the eight touches.
       await tap('neo.scene.game.cars[0]'); await page.waitForTimeout(300);
       assert.equal(await page.evaluate(() => neo.scene.game.done), 1, 'a car tap counts at the toy level');
@@ -9209,8 +9223,8 @@ async function woodsBatch() {
       await screenshot('stop-and-go-4');
     }
     await finished('stop-and-go');
-    assert.deepEqual(await score('stop-and-go'), mode === 'toy' ? [0, 0] : [2, 1]);
-    log(`Stop and Go ${level} (${mode}): the light ${mode === 'toy' ? 'as a toy' : 'cycling or switched by hand'}, waiting for green, going on red as a miss, glow hint, saved score and sticker passed`);
+    assert.deepEqual(await score('stop-and-go'), mode === 'toy' || mode === 'lamps' ? [0, 0] : [2, 1]);
+    log(`Stop and Go ${level} (${mode}): ${mode === 'lamps' ? 'green and red lamps and the car, eight touches and no miss' : mode === 'toy' ? 'the light as a toy' : 'the light cycling or switched by hand'}, waiting for green, going on red as a miss, glow hint, saved score and sticker passed`);
   }
 
   if (!only || only === 'ramp') for (let level = fromLevel; level <= 4; level++) {

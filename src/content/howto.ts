@@ -1794,17 +1794,22 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'stop-and-go': {
     goal: 'Go on green, stop on red.',
     steps: [
-      { to: 1, text: 'Tap the traffic light to change it: red stops the car, green makes it go. Tapping the car counts too: it toots, and on green it drives round.' },
+      { from: 9, to: 9, text: 'Tap the big green lamp to make the car go round, and the big red lamp to make it stop. Tapping the car makes it toot.' },
+      { from: 1, to: 1, text: 'Tap the traffic light to change it: red stops the car, green makes it go. Tapping the car counts too: it toots, and on green it drives round.' },
       { from: 2, to: 2, text: 'The light changes by itself: tap a car only when the light is green.' },
       { from: 3, to: 3, text: 'Tap the feet to step toward the flag on green, and freeze on red.' },
-      { from: 4, text: 'At the crossing, tap a light to let one road go at a time.' },
+      { from: 4, to: 4, text: 'At the crossing, tap a light to let one road go at a time.' },
     ],
-    finish: 'The round ends when the cars or the pet have reached the end.',
+    finish: [
+      { from: 9, to: 9, text: 'The round ends after eight touches.' },
+      { to: 8, text: 'The round ends when the cars or the pet have reached the end.' },
+    ],
     note: [
-      { to: 1, text: 'Every touch counts toward the round; there is nothing to get wrong.' },
+      { from: 1, to: 1, text: 'Every touch counts toward the round; there is nothing to get wrong.' },
+      { from: 9, to: 9, text: 'Every touch of a lamp or the car counts toward the round, so nothing can go wrong; the round ends after eight touches.' },
       { from: 2, to: 2, text: 'Tapping the front car on red is a miss; yellow gets a reminder, and a car further back just toots. After two misses the front car glows when the light is green.' },
       { from: 3, to: 3, text: 'Tapping the feet on red is a miss; yellow gets a reminder. After two misses the feet glow when the light is green, until the next good step.' },
-      { from: 4, text: 'Turning both roads green is the one miss: everyone waits. After two, the green light to turn red glows.' },
+      { from: 4, to: 4, text: 'Turning both roads green is the one miss: everyone waits. After two, the green light to turn red glows.' },
     ],
   },
   'ramp-race': {

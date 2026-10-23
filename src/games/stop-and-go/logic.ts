@@ -6,7 +6,7 @@
  *
  * Nothing is timed: the light keeps cycling as long as she likes, and waiting is never wrong.
  */
-export type GoMode = 'toy' | 'send' | 'walk' | 'cross';
+export type GoMode = 'lamps' | 'toy' | 'send' | 'walk' | 'cross';
 
 export interface GoPlan {
   mode: GoMode;
@@ -22,7 +22,11 @@ export const PLANS: GoPlan[] = [
   { mode: 'cross', goal: 6, name: 'Traffic helper: let one road go at a time at the crossing' },
 ];
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+/** Lap's first level, 9 (the easiest, so it sits outside PLANS): two lamps, a looping car, nothing to get wrong. */
+export const LAMPS_LEVEL = 9;
+export const LAMPS_PLAN: GoPlan = { mode: 'lamps', goal: 8, name: 'Go car, stop car: tap the green lamp to make the car go and the red lamp to make it stop (lap\'s first level)' };
+
+export const planFor = (level: number) => (level === LAMPS_LEVEL ? LAMPS_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1]);
 
 export type Light = 'green' | 'yellow' | 'red';
 
@@ -77,13 +81,13 @@ export interface Crossing {
 export const safe = (c: Crossing) => !(c.ns === 'green' && c.ew === 'green');
 
 /** What a capable child touches at each level but the crossing: the toy light, the car at the front, or the step button. */
-export const GO_TARGET = { toy: 'light', send: 'car', walk: 'step' } as const;
+export const GO_TARGET = { lamps: 'lamp', toy: 'light', send: 'car', walk: 'step' } as const;
 
 /**
  * Whether a tap that lands now is right: the toy light answers every tap, but a car or a step is only right on green
  * (yellow is a nudge and red the one miss). The demonstration's hand waits over its target until this is true.
  */
-export const rightNow = (mode: GoMode, light: Light) => mode === 'toy' || judgeGo(light) === 'go';
+export const rightNow = (mode: GoMode, light: Light) => mode === 'lamps' || mode === 'toy' || judgeGo(light) === 'go';
 
 export type Road = 'ew' | 'ns';
 
@@ -113,6 +117,7 @@ export function crossTouch(lights: Crossing, waiting: Record<Road, number>): Roa
 export type CarAnswer = 'drive' | 'toot' | 'send' | 'nudge' | 'miss';
 
 export function carTap(mode: GoMode, light: Light, front: boolean): CarAnswer {
+  if (mode === 'lamps') return 'toot';
   if (mode === 'toy') return light === 'green' ? 'drive' : 'toot';
   if (mode !== 'send' || !front) return 'toot';
   const j = judgeGo(light);
@@ -120,7 +125,16 @@ export function carTap(mode: GoMode, light: Light, front: boolean): CarAnswer {
 }
 
 /** At the toy level a touch on the light or a car counts toward the round; elsewhere only a send or a step does. */
-export const touchCounts = (mode: GoMode, answer: CarAnswer | 'light') => mode === 'toy' && (answer === 'light' || answer === 'drive' || answer === 'toot');
+export const touchCounts = (mode: GoMode, answer: CarAnswer | 'light') => (mode === 'toy' || mode === 'lamps') && (answer === 'light' || answer === 'drive' || answer === 'toot');
+
+/**
+ * The lap level's two lamps: green sets the looping car going, red brakes it (and a second touch of the same lamp keeps
+ * it so). Both lamps and the car answer every touch, so there is no miss.
+ */
+export type Lamp = 'green' | 'red';
+export const lampRolls = (lamp: Lamp) => lamp === 'green';
+/** The ghost finger's lamp: the one the car is not already obeying, so green and red both get shown. */
+export const nextLamp = (rolling: boolean): Lamp => (rolling ? 'red' : 'green');
 
 /**
  * Where the hint glow sits once two misses have turned it on: on the thing to touch, and only while touching it is

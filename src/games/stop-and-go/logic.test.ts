@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { carTap, CYCLE, crossTouch, cycleFor, PHASE, VEHICLES, doneLine, GO_TARGET, hintOn, judgeGo, lightAt, nextLight, PLANS, rightNow, safe, touchCounts, type Light, type Road } from './logic';
+import { carTap, CYCLE, crossTouch, cycleFor, PHASE, VEHICLES, doneLine, GO_TARGET, hintOn, judgeGo, lightAt, nextLight, PLANS, LAMPS_LEVEL, lampRolls, nextLamp, planFor, rightNow, safe, touchCounts, type Light, type Road } from './logic';
 
 describe('Stop and Go', () => {
   it('cycles green, yellow, red, and back, with greens and reds long enough to wait for', () => {
@@ -71,7 +71,7 @@ describe('Stop and Go', () => {
 
   it('sends and steps only on green, so the hand never makes the one mistake', () => {
     expect(PLANS.map((p) => p.mode)).toEqual(['toy', 'send', 'walk', 'cross']);
-    expect(GO_TARGET).toEqual({ toy: 'light', send: 'car', walk: 'step' });
+    expect(GO_TARGET).toEqual({ lamps: 'lamp', toy: 'light', send: 'car', walk: 'step' });
     for (const light of ['green', 'yellow', 'red'] as Light[]) {
       expect(rightNow('toy', light)).toBe(true);
       for (const mode of ['send', 'walk'] as const) expect(rightNow(mode, light)).toBe(judgeGo(light) === 'go');
@@ -172,5 +172,30 @@ describe('Stop and Go: every touch answers', () => {
   it('ends the walk at the flag, not with the cars', () => {
     expect(doneLine('walk')).toBe('go.done.walk');
     for (const m of ['toy', 'send', 'cross'] as const) expect(doneLine(m)).toBe('go.done');
+  });
+
+  it('lap level 9 is two lamps and a looping car where every touch counts and nothing can be missed', () => {
+    const plan = planFor(LAMPS_LEVEL);
+    expect(plan.mode).toBe('lamps');
+    expect(plan.goal).toBe(8);
+    // Levels 1–4 keep their plans.
+    expect([1, 2, 3, 4].map((l) => planFor(l).mode)).toEqual(['toy', 'send', 'walk', 'cross']);
+    for (const light of ['green', 'yellow', 'red'] as Light[]) {
+      expect(carTap('lamps', light, true)).toBe('toot');
+      expect(touchCounts('lamps', 'toot')).toBe(true);
+      expect(rightNow('lamps', light)).toBe(true);
+    }
+    expect(touchCounts('lamps', 'light')).toBe(true);
+    expect(lampRolls('green')).toBe(true);
+    expect(lampRolls('red')).toBe(false);
+    // A bot that always taps the other lamp shows both, and finishes in exactly the goal's touches.
+    let rolling = false;
+    const seen = new Set<string>();
+    for (let i = 0; i < plan.goal; i++) {
+      const lamp = nextLamp(rolling);
+      seen.add(lamp);
+      rolling = lampRolls(lamp);
+    }
+    expect([...seen].sort()).toEqual(['green', 'red']);
   });
 });
