@@ -71,6 +71,15 @@ for (const file of opt.choose) {
   if (!infoFor.has(stem)) infoFor.set(stem, parseName(`${stem}.png`));
 }
 
+// Build the whole new manifest before touching a file, so a mistyped --choose stops the run with nothing moved.
+let next = p.rows.length ? insertRowsOnce(manifest, p.rows) : manifest;
+try {
+  for (const file of opt.choose) next = setChosen(next, file);
+} catch (e) {
+  console.error(`stopped: ${e.message}; nothing moved or written`);
+  process.exit(1);
+}
+
 if (opt.dryRun) {
   for (const w of p.waiting) console.log(`waiting  ${w.stem}: several candidates; pick one with --choose ${w.files[0]}`);
   console.log('dry run: nothing moved or written');
@@ -78,8 +87,7 @@ if (opt.dryRun) {
 }
 
 for (const m of p.moves) renameSync(join(inbox, m.from), join(generated, m.to));
-manifest = p.rows.length ? insertRowsOnce(manifest, p.rows) : manifest;
-for (const file of opt.choose) manifest = setChosen(manifest, file);
+manifest = next;
 writeFileSync(manifestPath, manifest);
 for (const w of p.waiting) if (!opt.choose.some((f) => f.startsWith(`${w.stem}-`))) console.log(`waiting  ${w.stem}: several candidates; pick one with --choose ${w.files[0]}`);
 

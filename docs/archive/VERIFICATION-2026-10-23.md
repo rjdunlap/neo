@@ -22,3 +22,10 @@
 - Browser at `http://localhost:5517`: `BROWSER_SUITE=third MUNCH_LEVELS=9,10` (harness extended in `scripts/browser-check.mjs`) passed with the expected scores 9: `[0,0]`, 10: `[2,1]`; landscape screenshots reviewed.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=monster-munch FINGER_LEVELS=9,10`: clean completion in 12.5 s (lap) and 23.7 s (toddler).
 - Not run: portrait screenshot, build, offline, iPad touch and speech, child play ([open](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — Garden Grow batch 2: rows, columns and equal rows (slices 5–7)
+
+- [PR #859](https://github.com/rjdunlap/neo/pull/859), `claude/garden-grow-rows-columns`: pre-K levels 9 Rows of colors, 10 Columns of colors and 11 Same in every row (order `[6, 7, 9, 10, 11]`), with rule tests, how-to steps, voice lines and a bot that reuses the packet in hand.
+- Ran: typecheck; `npx vitest run src/games src/content` (157 files passed).
+- Browser: `BROWSER_SUITE=fingerdemo FINGER_ONLY=garden-grow FINGER_LEVELS=9,10,11` clean (52, 55 and 26 s of the 75 s budget); one scripted pre-K play of 9–11 (two wrong rains = 2 misses and 1 hint each, then the bot finished 9 and 11; level 10 not awaited to the end in the script, the `fingerdemo` finished it); landscape 1024×768 screenshots of 9 and 11.
+- Not run: portrait screenshot, level 10 screenshot, `npm run build`, offline, iPad touch, device speech, child play ([open](../DEVICE-CHECKS.md)).

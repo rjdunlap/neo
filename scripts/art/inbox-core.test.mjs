@@ -76,6 +76,7 @@ describe('plan', () => {
       { file: 'sprout-base.png', size: { w: 1536, h: 1024 } },
       { file: 'land-cove.png', size: { w: 800, h: 600 } },
       { file: 'notes.txt', size: null },
+      { file: 'land-beach.webp', size: null },
     ];
     const p = plan(drops, opts);
     expect(p.moves.map((m) => [m.from, m.to, m.chosen])).toEqual([
@@ -85,7 +86,8 @@ describe('plan', () => {
       // sprout-base already has a chosen candidate, so a re-roll waits for --choose.
       ['sprout-base.png', 'sprout-base-3.png', false],
     ]);
-    expect(p.refused.map((r) => r.file)).toEqual(['land-cove.png', 'notes.txt']);
+    expect(p.refused.map((r) => r.file)).toEqual(['land-cove.png', 'notes.txt', 'land-beach.webp']);
+    expect(p.refused[2].reason).toMatch(/only PNG/);
     expect(p.waiting.map((w) => w.stem)).toEqual(['land-meadow', 'sprout-base']);
     expect(p.rows).toHaveLength(4);
   });

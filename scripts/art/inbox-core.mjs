@@ -148,6 +148,7 @@ export function plan(drops, { existing, manifest, date, tool, prompts }) {
   const moves = [], refused = [];
   for (const d of drops) {
     const info = parseName(d.file);
+    if (!info && /\.(jpe?g|webp|gif|heic)$/i.test(d.file)) { refused.push({ file: d.file, reason: 'only PNG is accepted: download the PNG from ChatGPT' }); continue; }
     if (!info) { refused.push({ file: d.file, reason: 'not a name the art queue lists (see IMPORT.md)' }); continue; }
     const problem = d.size ? sizeProblem(info, d.size) : null;
     if (problem) { refused.push({ file: d.file, reason: problem }); continue; }
