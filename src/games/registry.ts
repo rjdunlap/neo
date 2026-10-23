@@ -116,6 +116,7 @@ import { fruitSums } from './fruit-sums';
 import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
 import { sandTable } from './sand-table';
+import { adventureWalk } from './adventure-walk';
 import { senseDetective } from './sense-detective';
 import type { GameModule } from './types';
 
@@ -226,6 +227,7 @@ export const GAMES: GameModule[] = [
   readDo,
   lookItUp,
   sandTable,
+  adventureWalk,
   senseDetective,
   marbleJump,
   logRoll,
