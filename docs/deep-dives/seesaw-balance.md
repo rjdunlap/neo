@@ -122,6 +122,8 @@ Each has a default below; the build proceeds on it.
 
 ## Build slices, in order
 
+**Claimed 2026-10-23:** batch 1 (slices 1–2) on `claude/seesaw-support-truth` (draft PR).
+
 **Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`seesaw-balance` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
 1. **Support truth** (existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 6, `fingerdemo` at 1): a tap on a loose friend hops it to the empty tray at 1–2; the glow after two overs rings the next block on the grass when the tray is under; the how-to's levels 1–2 line says tap or drag; the new voice variants. IDs and windows unchanged.
