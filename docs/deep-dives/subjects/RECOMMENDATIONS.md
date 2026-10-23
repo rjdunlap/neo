@@ -835,7 +835,7 @@ Completion with spoken support is not evidence of independent phonological aware
 
 ## Oceans recommendations
 
-**Recommended 2026-10-23:** [the oceans study](oceans.md), [PR #849](https://github.com/rjdunlap/neo/pull/849). Opened: California's copy of NGSS 2-ESS2-2/3, 4-ESS2-2, 5-ESS2-2, MS-ESS2-6 and K-ESS3-3, the NOAA Ocean Literacy poster, two Common Sense Media reviews, Sobel's ecophobia essay and a Smithsonian pre-K zones lesson. Everything else is marked as a search summary. The tracker's "2-ESS2-3" for a land-and-water model is 2-ESS2-2. One new identity, **Tide Line**; every other idea extends an existing game. The sea is shown bright and well: no litter, suffering animals, predation or danger to a person, and shore safety stays with the unscheduled safety study.
+**Recommended 2026-10-23:** [the oceans study](oceans.md), [PR #849](https://github.com/rjdunlap/neo/pull/849). Opened: California's copy of NGSS 2-ESS2-2/3, 4-ESS2-2, 5-ESS2-2, MS-ESS2-6 and K-ESS3-3, the NOAA Ocean Literacy poster, two Common Sense Media reviews, Sobel's ecophobia essay and a Smithsonian pre-K zones lesson. Everything else is marked as a search summary. It adds 2-ESS2-2 (a model of land and water shapes) to the tracker's codes. One new identity, **Tide Line**; every other idea extends an existing game. The sea is shown bright and well: no litter, suffering animals, predation or danger to a person, and shore safety stays with the unscheduled safety study.
 
 | Candidate | Next action | Complete slice / boundary |
 | --- | --- | --- |
