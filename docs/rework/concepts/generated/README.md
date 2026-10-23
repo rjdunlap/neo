@@ -4,6 +4,8 @@ Original, untouched images from the creature art passes (see the [art bible](../
 
 | File | Request | Date | Tool and model | Prompt | Chosen |
 | --- | --- | --- | --- | --- | --- |
+| duck-base-2.png | R22 | 2026-10-23 | Built-in image_gen.imagegen; model undisclosed | [Bases 2 and 3](R22-PROMPTS.md#bases-2-and-3) | yes |
+| duck-portrait-2.png | R22 | 2026-10-23 | Built-in image_gen.imagegen; model undisclosed | [Portrait 2](R22-PROMPTS.md#portrait-2) | yes |
 | glider-base-3.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [base3Prompt](R01-PROMPTS.md#base3prompt) | yes |
 | glider-blink-2.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [blink2Prompt](R01-PROMPTS.md#blink2prompt) | yes |
 | glider-happy-2.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [happy2Prompt](R01-PROMPTS.md#happy2prompt) | yes |
@@ -300,6 +302,8 @@ White fallback has faint near-white variation, as R08 does. Preserve cream and s
 
 OpenAI built-in image generation, checked 2026-10-17. The [OpenAI Terms of Use, Content section](https://openai.com/policies/terms-of-use/#content) assign OpenAI's rights in output to the user to the extent permitted by law; output may be similar to others' output. These files are disclosed as AI-generated. This records the service's terms, not a claim of exclusive copyright. The tool did not expose its underlying model name, so none is inferred.
 
+ChatGPT, used by the developer from 2026-10-23 ([batch](../../art-requests/CHATGPT-BATCH.md)): the same OpenAI Terms of Use apply. Rows record "ChatGPT (developer)" and the model only where ChatGPT showed it. Files arrive through `scripts/art/import-inbox.mjs` ([pipeline](../../art-requests/IMPORT.md)).
+
 ## R19 review and preparation notes
 
 Selected `wear-raincoat-sitter-4.png`, `wear-raincoat-walker-4.png`, and `wear-boots-sitter-3.png`: three untouched RGB PNG originals, each 1254 × 1254. [Exact prompts, reference order, candidate disposition, byte counts and source hashes](R19-PROMPTS.md). Same generating service terms and undisclosed model caveat as above. No missing assets or retained runner-ups. Originals have not been resized, cropped, recompressed or cleaned.
@@ -323,3 +327,7 @@ No cutting, preparation, rigging, integration or source-image cleanup. A separat
 All remove both arms cleanly with closed rounded body contours and no ghost hands; face and cream belly shape remain visually aligned. Bidirectional silhouette comparison outside documented arm areas finds zero pixels beyond 4 px for each. Candidate 1 changes leaf saturation and broad shading; 2 and 3 improve color fidelity but still redraw teal side shading outside the arm area. Unchanged shading fails despite passing geometry. No cleanup or compositing to conceal drift.
 
 The three-try fallback applies: keep the rig's existing small wag. No approved plate for cutting, preparation, rigging or integration. Reopen only in a separately authorized follow-up. No animation/device quality claim; masks/thumbnails were inspection only, no code/build/browser/offline/device checks.
+
+## R22 review and preparation notes
+
+Two untouched originals, 2,432,234 bytes; base 1536 × 1024, portrait 1254 × 1254. Built-in image_gen.imagegen, model undisclosed; same service terms as the existing R01 record. Three base candidates and two portraits reviewed; only the chosen pair retained. Full-size and 120 px review on white and a temporary sky-blue key/composite passed. The temporary preview is inspection only, not prepared art. [Exact prompts, candidate selection and limitations](R22-PROMPTS.md). No expressions requested or missing. No preparation, rigging, src integration or device acceptance.

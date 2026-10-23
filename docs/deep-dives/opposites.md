@@ -136,6 +136,8 @@ Both are placed by [`order`, which may skip IDs](../DESIGN.md) (built); an easie
 4. **Families.** Lean: enforce the family rule for every level-3+ round and fix it in a test, so a reasonable answer is never marked wrong.
 5. **Levels below level 1** wait on the existing level-order and range-skip rows in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer); no new row.
 
+**Decided 2026-10-23 (on the developer's delegation):** yes to the school window and the leans: levels 5 Which two?, 6 In between, 7 Line them up, 8 Only the word, 9 Un- words, 10 Two answers, in pre-K 3–7 and school 7–10 (younger windows unchanged); the printed word on 8–9 is optional reading-lite with the voice always there; the family rule is enforced and tested. Device speech for the un- words becomes a device check, not a blocker.
+
 ## Build slices, in order
 
 Each is sized for one session. The slices that add a level are built in level order so saved IDs stay unbroken.

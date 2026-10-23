@@ -119,6 +119,8 @@ Descriptions only; nothing was played. Vendor text is marked.
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** every default is adopted: Story Weaver is a new game (not Story Steps 14–15) at `school`, home Story Grove if the lands test passes, else Paint Pier; no kept story in the first slice; the owl's question is never a miss and "That's my story" always completes; a pet-scribed preschool/pre-K opening only after school play is built. The tiles get the building session's ordinary source check (gentle problems only), and the game makes no writing-readiness or delay claim, so no literacy specialist is needed.
+
 1. **Identity, registration and land.** Lean: a new game, **Story Weaver** (working name), school band, in **Story Grove**, which lists 12 games; Puzzle Peaks lists 13, so a 13th is possible in the layout, but other proposals also target Story Grove, so the lands test decides. The alternative is Story Steps 14–15 (rejected above).
 2. **Does she keep her story?** Not in the first slice. A story is six small choices (who, where, problem, try, ending, feeling), so a kept one is a tiny bounded record, not text; it still needs a new creation kind with repair and backup tests (development saves may be reset, per AGENTS). Lean: a journal entry "Stories I wrote" after level 3 plays well, not a new treehouse shelf.
 3. **The owl's question and "That's my story".** Lean: the question is never a miss, declining always completes, and the sticker follows the finish. Alternative: none that fits "predictable rewards".

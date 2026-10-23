@@ -149,6 +149,8 @@ Device checks stay open:
 
 Each has a default that the build uses. None blocks it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults the build used stand: no Fold & Snip here (folding and prediction stay with Bug Builder); the collage is not saved; home land Painted Canyon; no lap level; the land's calm music, not `silenced`.
+
 1. **Fold & Snip.** Default: not in this game, which keeps the approved lean that folding and prediction stay with Bug Builder. The alternative is the later slice above, at school.
 2. **Keeping the collage.** Default: nothing saved. The alternative is a `cutout` picture creation in `src/content/creations.ts`. That is a save-field change at the shell/save tier, and it is better folded into the rework's home customization ([RW06](../rework/WORK-ITEMS.md#rw06-playable-home-and-customization)).
 3. **Home land.** Default: Paint Pier (the craft land, 5 games). The alternative is Story Grove beside Letter Trails, which would have 10 games.

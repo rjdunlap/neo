@@ -141,6 +141,8 @@ These are easier than levels that exist, or fall between them, so they are place
 6. **Printed food words on levels 9–10.** Optional reading-lite, with the voice always available and a free replay. Lean: yes, with no phonics claim until device speech has been checked. The words are hay, bone, fish, seeds, apple, honey, corn, oats, cheese and grass.
 7. **Person checks to add:** the counted speech (gap 1) on a device; whether a one-year-old drags a snack to a mouth or only taps (Open wide); whether the half-second a tap is ignored while eating feels slow to a three-year-old. The existing check on whether Animal Snack holds a one-year-old's attention is in the [roadmap](../DEVICE-CHECKS.md#needs-a-person-or-a-device) and is not repeated.
 
+**Decided 2026-10-23 (on the developer's delegation):** replace the planned 6–7 with 6 Who says moo?, 7 Who eats it too? (the set of answers, moved ahead so the ladder does not dip) and 8 Their own snacks, plus 9–10 the menu board, in pre-K 5–8 and school 8–10; share the four new animals (journal to twenty-nine), with seeds and grain rather than cheese for the mouse. The `EATS` table ships after the building session checks it against cited sources (no grown-up sign-off); the diet sort stays a sketch; printed food words are optional reading-lite. Counted speech goes to the device checks.
+
 ## Build slices, in order
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken. Each level slice also updates `scripts/browser-check.mjs` (its Animal Snack loop stops at level 5), the `fingerdemo` levels, the how-to `LevelLine`s, `describeLevel`, the README row and [GAMES.md](../GAMES.md).

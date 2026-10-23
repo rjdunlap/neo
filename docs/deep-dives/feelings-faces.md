@@ -127,6 +127,8 @@ Level 9 (lap entry, `entryLevels`) and level 10 (toddler, between 2 and 3) above
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand, with the review gates replaced by the session's source check: school `order [11, 12, 13]` with pre-K ending at 11; angry and scared stay out of slices 1–6 and, when drafted, merge after the building session checks their lines against reputable child-development sources (lists them here, records the check in its VERIFICATION entry), no outside reviewer; level 12's lines ship as written for the fictional friend after the same source check; a feelings journal page waits for RW05's collection model.
+
 1. **A school window (levels 11–13).** Levels 11 and 13 are built on this default; 12 remains queued. The [roadmap](../ROADMAP.md#more-to-play-in-every-band) now records the built school window `[11, 13]`; Ask First remains queued under this default, and the subject study’s placement review stays open. **Default:** school `order [11, 13]` is built; slice 6 will insert 12 for `[11, 12, 13]`; pre-K ends at 11. Alternative: pre-K `[5, 6, 7, 8, 11, 12]` and no school band.
 2. **Angry and scared.** New critter moods and the happenings that cause them. **Default:** not in slices 1–6; a later content slice after the subject study's review (its WAITING row covers the review).
 3. **Level 12's words.** "Quiet spot", "a grown-up" (Hazel at the door) and a friend who ends calm rather than happy are proposals written for the fictional friend; **default:** build with these lines and the subject study's reviewer reads them before `main`, or they ship under the standing authorization if no reviewer is named by then.

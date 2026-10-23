@@ -183,6 +183,8 @@ These are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are
 8. **Pre-K lowercase.** Lean: only levels 9 and 10 for pre-K (the tracing aid and the first little letters), the rest school. Or none until school.
 9. **Person checks to add:** whether a three-year-old can use the 0.095 corridor on a tablet and in portrait; whether the iPad voice says capital letter names ("A", "I") as letters; whether a two-year-old follows a firefly along a long line; whether the show-me hint reads as help; whether the dotted and start-only tries are clear to a five-year-old; and whether the biggest and smallest trace boxes keep every touch target at least 100 units at every view.
 
+**Decided 2026-10-23 (on the developer's delegation):** (1) the stroke convention is the programme whose sheet was opened (Handwriting Without Tears: its groups and start-at-the-top), and the building session checks each stroke, the capitals' pen lifts and Number Trails' interim digits against its published chart; M, N, W, Z and K stay one zero-lift stroke. (2)–(5), (7) and (8): the leans stand (9 Three times, 10–15 little letters, 16 Little words, 17 My name in pre-K 3–10 and school 7–17; one miss and one hint per letter at most; eight letters with the whole name in print; Number Trails owns digits; toddler through Shape Trails, no lap entry; pre-K lowercase only at 9–10). (6), level 18's grown-up "my words" list in the save, stays with the developer.
+
 ## Build slices, in order
 
 Each is sized for one session. A slice that adds a level is built in level order so saved IDs stay unbroken, raises `LEVELS.school.max`, and updates `describeLevel`, the how-to `LevelLine`s, the README row and [GAMES.md](../GAMES.md).

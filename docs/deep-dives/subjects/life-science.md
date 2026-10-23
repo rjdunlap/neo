@@ -135,6 +135,8 @@ Person/device review still needs to establish whether young players connect the 
 3. **Older content:** define one small graph and one mechanism mystery; decide how 11–14 is routed and how a grownup version is registered. Do not relabel hypothetical school content as a middle-school band, or change difficulty ranges/pins in this research.
 4. **Living processes:** the full life-cycle standard includes reproduction and death; the first young observation case is deliberately partial. Decide later how to explain a new generation, different plant reproduction and organism death with age-appropriate reviewed speech. Do not draw an adult rewinding into its own egg, or claim the partial sequence is a complete biological curriculum.
 
+**Decided 2026-10-23 (on the developer's delegation):** named species, relations and voice qualifiers ship after the building session's source check (botanic gardens, museums, university extension) instead of a named reviewer; practical growing, handling, feeding and outdoor cards are not drafted for now. Seed Travelers and Life Story Lab are confirmed as new games; older content uses `school`'s top and `grownup` only; full life cycles, new generations and death wait for their own definition with source-checked speech.
+
 ## Build slices in order
 
 Each definition is docs only (links/anchors and diff check). Eventual implementation uses the actual change tier; nothing here authorizes a shared engine or broad test run.

@@ -107,6 +107,8 @@ Timers, tries, lives, a score; sorting animals by class (Habitat Helpers); parts
 2. **A third critter feature (bow or scarf), shared with Critter Crossing.** Already listed in [Waiting on the developer](../WAITING-ON-DEVELOPER.md); recommend yes. A size feature (big/little) would be a no-new-art alternative but needs larger hit areas on the small critter.
 3. **Is a chosen-signs sort (level 10) worth keeping in the treehouse?** Recommend no creation slot yet; treat it as play only.
 
+**Decided 2026-10-23 (on the developer's delegation):** all three recommendations: Critter Sort opens to preschool with the three-critter entry appended as level 6 (with `order`, `entryLevels`, voice and saves audit); the third feature is a scarf, shared with Critter Crossing as its own slice; level 10 keeps nothing in the treehouse.
+
 ## Build slices, in order
 
 1. **Neither mat, a hint on the critter she missed, and worked examples — built.** The hint landed 2026-10-14, examples in [PR #418](https://github.com/rjdunlap/neo/pull/418), and the leaf mat at levels 2, 3 and 5 in [PR #423](https://github.com/rjdunlap/neo/pull/423) (2026-10-15). Correct outside drops are explicit, bare grass stays free, and hints, completion and the ghost finger include the mat. [Verification](../archive/VERIFICATION-2026-10-15.md#2026-10-15--critter-sort-neither-mat).

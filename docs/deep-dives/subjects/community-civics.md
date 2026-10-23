@@ -153,6 +153,8 @@ A cozy Lantern Lake puzzle: nine ballots, three pictured candidates (which ride 
 6. **A persistent square.** Whether voted things stay on the square between rounds (a bounded list in the save) is a rework question; the first slice needs nothing persistent.
 7. **The family meeting card's reviewer.** It is a conversation prompt, not advice, but it is printed text a parent will follow; name who reads it before it ships.
 
+**Decided 2026-10-23 (on the developer's delegation):** every lean: Village Vote in Cozy Village if the capacity test passes, else Maker Harbor or Storybook Square; the pet's vote may lose cheerfully from level 2; Count the Ballots in Lantern Lake with the 11–12 signpost; *Chip in* names both share rules and judges neither; Mail Carrier 9's helpers are plumber, doctor, gardener, postkeeper, lifeguard and baker, with no police and no fire creature for now (safety topics are not drafted); the first slice keeps nothing, and a persistent square belongs to the rework's home and collection rules (RW05/RW07); the family meeting card ships after the building session's source check.
+
 ## Build slices, in order
 
 1. **CC1, docs:** define Village Vote 1–3 (preschool through school entry): generator, accepted taps, misses and hints, voice lines, both layouts, the bot, band windows and the Cozy Village capacity test. Decisions 1 and 2.

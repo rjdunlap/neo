@@ -83,6 +83,8 @@ Rule tests: route looks for `Aa × Aa` are `{spotted: 3, plain: 1}`, and the gen
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** 1: the session's source check replaces the named reviewer (voice lines no longer marked draft once checked). 2: option (a), register for school at level 1 with the "about 9 and up" note; the watched prototype becomes a device check. 3: option (a). 4: Rainbow Meadow if its layout test passes. G2 is unblocked.
+
 The developer makes these calls. Each has a proposal, and none is settled.
 
 1. **Reviewer.** Name a biology/education reviewer for the toy rule, the "one spot copy is enough" wording, and inclusive parent/sprout language before G2 ships. Proposal: build G2 behind review, with the voice lines marked draft until reviewed.

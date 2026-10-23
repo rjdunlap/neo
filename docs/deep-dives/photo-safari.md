@@ -96,6 +96,8 @@ Photo scoring and stars, rare animals, timers or moving rails, zoom precision, h
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** (1) Append the action-only "Who is sleeping?" toddler entry now; a toddler trying it becomes a device check. (2) What changed? is school only first, since it adds memory load. (3) Thumbs-up/down judgement buttons at school level 9 only; younger players never hear a false claim. Slices 5–7 are unblocked.
+
 1. **Toddler action-only entry:** extend the toddler window to an appended "Who is sleeping?" entry? Person check first. (Added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).)
 2. **What changed?** at pre-K as well as school, or school only?
 3. **Is it true?**: are thumbs-up/down judgement buttons wanted in a photo game, and should younger players ever hear a false claim?

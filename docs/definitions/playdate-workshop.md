@@ -180,3 +180,5 @@ Each has a default the build uses.
 3. **Bands.** Default: preschool 1, pre-K 1–3; school waits for levels 4–6. Alternative: school 3 now, if school children should see it before 4–6 exist.
 4. **Pet roles.** Default: the pet picking or making counts one hint for that decision, and both count two. Alternative: the pet's roles are free in solo play (only the lightbulb counts), accepting that a pet-made round would then read as smooth for adaptation.
 5. **Roller drag.** Default: tapping a banner cell rolls one cell, and dragging the roller along it rolls the cells it passes. Alternative: drag only, if a tap per cell feels like stamping.
+
+**Decided 2026-10-23 (on the developer's delegation):** every default stands; decision 1 is confirmed (a new game, Story Grove, fallback Painted Canyon), so the build is unblocked, and decision 2's reading is the building session's source check.

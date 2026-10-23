@@ -103,6 +103,8 @@ Level 7 is the easier entry (between 1 and 2 for toddlers), placed by `order` an
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** comfort-only pretend ailments (hiccups, sleepy) and a level 9 *Find out what is wrong* proceed with the building session's check against cited sources, never medicine; wash-then-cover and any real first-aid or care routine are not drafted for now. Defaults stand: level 7 toddler only with the smiling friend a miss, level 8 school only with a broken rule a miss, lap keeps level 2's drag; lap 7 and pre-K 8 windows wait on device checks, and thank-you cards, the companion as patient and creature patients follow the rework's cast and journal.
+
 1. **New ailments and care routines** (gated by the body/health practical-care review). Proposed: hiccups → a sip of water at the mouth; sleepy → a blanket; a scrape that is washed before it is covered; a level 9 *Find out what is wrong* (a check-up result, such as a warm thermometer, leads to a comfort item). Lean: keep comfort items only (a blanket, a cuddle, a cool cloth), never medicine, and name a reviewer before building any of them.
 2. **Level 7's windows and accounting.** Defaults the build uses: toddler only (order 1, 7, 2, 3); tapping the friend who is fine is a miss. Alternatives: a lap window after a person watches a toddler and a lap player; tapping the happy friend as a free look.
 3. **Level 8's windows and accounting.** Defaults: school only (5, 6, 8); breaking the rule is a miss. Alternative: a pre-K window after it is watched.

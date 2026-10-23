@@ -120,6 +120,8 @@ The windows after every slice: lap `order [16, 9]`; toddler `order [9, 1, 2, 3, 
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: `lap` with `order [16, 9]` and level 9's free first touch then a counted hint; Shade Lineup is level 15 *Darkest first* here; Hidden heights is swap-only and reveals nothing until the gate opens; the eight code-drawn friends until RW05 casts her creatures; bed, chair, bowl and door, code-drawn.
+
 Each has a default the build uses:
 
 1. **The lap band and its accounting.** Default: `bands` gains `lap` with `order [16, 9]`; at 9 the first touch of the other friend in a question answers without a miss, the second glows the asked friend and counts a hint. Alternative: no lap band, 9 toddler-only with level-1 accounting.
@@ -135,8 +137,8 @@ Each has a default the build uses:
 1. **Support truth (built 2026-10-21)** (existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 7 in portrait, `fingerdemo` at 7): comparative words at two, every touch answered (ground tap, right friend on the wrong spot), pitch inverted (big is low), the portrait spacing fix with its test, the pinned-steps test, the how-to card's wording checked. IDs and windows unchanged. Run `npm run build` if `sfx.ts` changes.
 2. **The parade happens, eight friends, seeded ground** (fresh content: typecheck, rule tests for the dealt-size draws, one play of 2 and 8, one portrait screenshot): strut after a pick, the march with the size scale after a line, five new friends, flag and bunting by seed, the sticker's friend, varied dealt sizes at 1–4.
 3. **Levels 16 and 9 and the lap band** (new interaction tier: typecheck, units including the lands layout at lap, one scripted play of 16 and 9 at lap and toddler, one portrait screenshot, `fingerdemo` at 16 and 9): the cycle mode, `bands` gains `lap`, lap `order [16, 9]`, toddler `order [9, 1, 2, 3, 4]`, `entryLevels: [9, 16]`, the per-band accounting of decision 1, voice and card.
-4. **Level 17 *Two in a line*** (new levels on an existing interaction: typecheck, rule tests, one play of 17, `fingerdemo` at 17): the two-friend line plan, toddler `order [9, 1, 2, 3, 4, 17]`, preschool `order [3, 4, 17, 5, 6]`, `entryLevels: [9, 16, 17]`.
-5. **Level 10 *Big, middle, little*** (new levels tier: typecheck, rule tests, one play of 10, `fingerdemo` at 10): preschool `order [3, 4, 17, 10, 5, 6]`, the middle cue, three voice lines.
+4. **(Built 2026-10-23, without 2–3.) Level 17 *Two in a line*** (new levels on an existing interaction: typecheck, rule tests, one play of 17, `fingerdemo` at 17): the two-friend line plan, toddler `order [9, 1, 2, 3, 4, 17]`, preschool `order [3, 4, 17, 5, 6]`, `entryLevels: [9, 16, 17]`.
+5. **(Built 2026-10-23.) Level 10 *Big, middle, little*** (new levels tier: typecheck, rule tests, one play of 10, `fingerdemo` at 10): preschool `order [3, 4, 17, 10, 5, 6]`, the middle cue, three voice lines.
 6. **Level 11 *Who fits?*** (new interaction tier: typecheck, units, one scripted play of 11 with one too-big and one too-little try, one portrait screenshot, `fingerdemo` at 11): props, the try animation, preschool `order [3, 4, 17, 10, 5, 6, 11]`, pre-K `order [5, 6, 11, 7, 8]`.
 7. **Level 12 *Where does this one go?*** (new interaction tier: typecheck, units, one scripted play of 12 with one wrong gap, one portrait screenshot, `fingerdemo` at 12): the nearest-gap drop with friends sliding apart, pre-K `order [5, 6, 11, 7, 8, 12]`, school `order [7, 8, 12]`.
 8. **Level 15 *Darkest first*** (new levels tier plus a device contrast check written to DEVICE-CHECKS: typecheck, rule tests for the shade steps, one play of 15, `fingerdemo` at 15): shade variants, the shade-strip cue, pre-K `order [5, 6, 11, 7, 8, 12, 15]`, school `order [7, 8, 12, 15]`; the IDEAS Shade Lineup row leaves the notebook. Decision 2's default.
@@ -160,3 +162,9 @@ Slices 1–8 need no decision (their defaults are recorded above); 9 and 10 are 
 Checks are in [VERIFICATION](../archive/VERIFICATION-2026-10-21.md#2026-10-21--size-parade-support-truth-slice-1). Still open: the person checks of gap 9 and a child hearing the comparative words.
 
 Earlier session: a deep dive session is research and ideation only. The write-up was drafted on `claude/dive-size-parade` (PR #600, 2026-10-18) and closed out re-checked against `src/games/size-parade/` on `d6e7d15f`.
+
+**Slices 4 and 5, levels 17 and 10** (`claude/size-parade-variety-lap`, 2026-10-23; slices 2 and 3 still open):
+
+- `sizePlan(level)` gained `TWO_IN_A_LINE` (17) and `MIDDLE_ONE` (10, `middleAsks`, `askRank`): three friends, at least two of four questions ask for the middle one, with three ringed circles as the cue; voice lines `size.pick.middle` and `size.wrong.middle`. The pick-mode ask is per row.
+- Windows now: toddler min 1 max 17 `order [1, 2, 3, 4, 17]` (9 joins in slice 3); preschool min 3 max 17 `order [3, 4, 17, 10, 5, 6]`; pre-K 5-8; school 7-8; `entryLevels [17]`. How-to card updated; the `expansion` size case iterates `SIZE_LEVELS` (default adds 10 and 17).
+- Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--size-parade-levels-17-and-10-slices-45). Still open: a toddler's first drag at 17, whether "the middle one" is understood at three, whether the circle cue is looked at (DEVICE-CHECKS).

@@ -150,6 +150,8 @@ These are easier than level 1 or fall between levels, so they are placed by [`or
 8. **Make a dance** as a kept creation needs a new creation kind (bounded list, repair, migration, backup tests): decide with the treehouse owner.
 9. **Person checks to add:** whether a one-year-old pats, copies or just watches; whether the mitten targets read on the round-eared pip in a few colors (it has no drawn nose); whether the pet's counted and named moves read right with device speech; whether "Quiet dance" is a game or a confusion to a three-year-old; and whether a four-year-old can do "the opposite".
 
+**Decided 2026-10-23 (on the developer's delegation):** override the audit: 6–10 in pre-K 3–10 and a school window 6–12 with 11 and 12, placed with `order` (lifting a school save to 6 is fine under the development-save exception); the held "once more" button counts a hint at 4, 6 and 8–12 and 0/0 elsewhere; the island's one left/right rule is the mirror convention (the pet's screen-right mitten is her right, and "like a mirror" is said), shared with Splish Splash; wrong-name and do-this tricks and an original chant are in. Make a dance waits for the creation-kind work.
+
 ## Build slices, in order
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken. Each level slice also updates `scripts/browser-check.mjs` (the `says` loop runs levels 1–5 by number, so give it the plan's length), `fingerdemo`'s levels, the how-to `LevelLine`s, `describeLevel`, the README row and [GAMES.md](../GAMES.md).

@@ -214,6 +214,8 @@ None of these shows that a mix improves learning. The study's [limits](../DISCOV
 
 None of these gates D2b. Each has a lean the build follows unless the developer says otherwise.
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans stand: keep the name "Little surprises"; no grown-up switch to hide the mix spot (revisit with D8); its place after RW08 is All games' first page (built); Home during a mix reopens the mix preview.
+
 1. **Name and picture.** "Little surprises", with a picnic-blanket spot. Lean: keep it. The title remains an exploration, like the rework's names.
 2. **A grown-up switch to hide the mix spot.** Lean: none now. The spot is one optional tap and the map stays the default. Revisit with D8.
 3. **Where the entry lives after RW08.** Lean: the new Home's direct-play area, decided in RW08 rather than now.

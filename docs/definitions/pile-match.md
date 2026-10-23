@@ -109,6 +109,8 @@ New-game tier. Run typecheck and unit tests (all the rule properties above, plus
 
 Each has a default that the build uses. None blocks it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults the build used stand (a windy-day heap into the host's basket; no toddler band; 3 slots at 1–2, then 5; one miss per full-tray episode from 4; Counting Cove; couch play later).
+
 1. **Theme and kinds.** Default: a windy-day heap of island things (shell, acorn, apple, star, leaf, toy duck, flower, mushroom) gathered into the host's basket. Alternatives: a toy-box tidy-up, or later the rework's collectible items.
 2. **Toddler entry.** Default: no toddler band; preschool starts at level 1. Alternative: `toddler: { min: 1, max: 1 }` once a person has watched a 2-year-old play the flat asked level.
 3. **Tray size.** Default: 3 (the basket) at 1–2, then 5, the most that fits portrait at 104 units a slot. The genre's 7-slot tray would need landscape-only play or a two-row tray; neither is proposed.

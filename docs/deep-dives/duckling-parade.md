@@ -105,6 +105,8 @@ No faster snake mode, fatal tail collisions, blocked exits, prey, timers, lives,
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the count card shows following-now beside home-so-far, and incidental extra pickups are not misses (only a deliberate wrong-quantity check counts); continuation 12 with a permanently visible reference and a one-step reveal counted as help, and mapping 13, are approved; authoring 14 is a bounded parade that is not kept. One-duck 15 is built for lap only, toddler order unchanged, and her real play of it is a device check rather than a gate.
+
 These are open choices, not resolved by this research. [Waiting list](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer).
 
 1. Should the count card show following-now as well as home-so-far? Should incidental extra pickups still count as misses on arrival, or only deliberate quantity checks? Freeze the exact rule, assistance and adaptation accounting before changing either. Keep existing behavior in ready slices.

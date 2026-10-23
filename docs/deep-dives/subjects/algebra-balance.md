@@ -147,6 +147,8 @@ A *rules I found* page in the journal (the rule card and its table, the first ro
 7. **Reviewer:** a mathematics educator for "two more", "*n* goes in", "the same as" and "a rule at all" wording, the level-8 straight-line test, and whether the equal-sign rule above is the right reading of Knuth et al.; the practical-card reviewer for any pan-balance card.
 8. **The hat as a wearable:** accept that the hat machine's output can join the pet's wearables (RW02b), or keep the journal entry only.
 
+**Decided 2026-10-23 (on the developer's delegation):** every lean: Rule Machine is a new game; one plotted-log grid shared with Paint Mixer 8; Puzzle Peaks if `landLayout` passes, else Tinker Lab, else Counting Cove; levels 7–8 at `school`'s top; Box Balance a Lantern Lake puzzle if the capacity test passes, else Seesaw Balance's 13+ level; a first wrong prediction on a new rule is never a miss; the wording and equal-sign reading ship after the building session's source check; the hat joins the pet's wearables. Any pan-balance family card is not drafted for now.
+
 ## Build slices, in order
 
 All future work, one session each. Definitions use links and `git diff --check`; builds use the activity tier in AGENTS.md.

@@ -156,6 +156,8 @@ The research and docs-first packet can proceed without these answers; implementa
 
 Future person/device observations are tracked in [DEVICE-CHECKS](../../DEVICE-CHECKS.md). No game code or real-world activity advice ships as part of this study.
 
+**Decided 2026-10-23 (on the developer's delegation):** Rain Garden 1–3 first, on its definition's defaults; the simplified EPA/NOAA-anchored storage toy, with every explanation line source-checked by the building session instead of a named reviewer; realistic infiltration, water-cycle or forecast claims wait for their own definition; the tween/parent try of older cases is a later person check, and no band changes.
+
 ## Build slices, in order
 
 1. **Freeze one complete Rain Garden packet — docs only. Defined 2026-10-22 ([definition](../../definitions/rain-garden.md)).** Set the surface/route/trial rules, exact first board and all outcomes, narration/model limits, level-1–3 completion and accounting, help/assisted ending, band/land fit and both layout sketches. Recheck Water Paths/Puddle Pipes/Sand Table overlap; resolve the scientific explanation and first registration decision. Exit: someone else can build the complete first round without inventing its rules. Checks: links and diff only.
