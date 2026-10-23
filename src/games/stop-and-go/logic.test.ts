@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { carTap, CYCLE, crossTouch, cycleFor, PHASE, VEHICLES, doneLine, GO_TARGET, hintOn, judgeGo, lightAt, nextLight, PLANS, LAMPS_LEVEL, lampRolls, nextLamp, planFor, rightNow, safe, touchCounts, type Light, type Road } from './logic';
+import { arrivalOrder, canArrive, isCross, laneCycles, LANES, MAX_WAITING, nextGreenLane, carTap, CYCLE, crossTouch, cycleFor, PHASE, VEHICLES, doneLine, GO_TARGET, hintOn, judgeGo, lightAt, nextLight, PLANS, LAMPS_LEVEL, lampRolls, nextLamp, planFor, rightNow, safe, touchCounts, type Light, type Road } from './logic';
 
 describe('Stop and Go', () => {
   it('cycles green, yellow, red, and back, with greens and reds long enough to wait for', () => {
@@ -70,8 +70,8 @@ describe('Stop and Go', () => {
   });
 
   it('sends and steps only on green, so the hand never makes the one mistake', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['toy', 'send', 'walk', 'cross']);
-    expect(GO_TARGET).toEqual({ lamps: 'lamp', toy: 'light', send: 'car', walk: 'step' });
+    expect(PLANS.map((p) => p.mode)).toEqual(['toy', 'send', 'walk', 'cross', 'lanes', 'busy']);
+    expect(GO_TARGET).toEqual({ lamps: 'lamp', toy: 'light', send: 'car', walk: 'step', lanes: 'car' });
     for (const light of ['green', 'yellow', 'red'] as Light[]) {
       expect(rightNow('toy', light)).toBe(true);
       for (const mode of ['send', 'walk'] as const) expect(rightNow(mode, light)).toBe(judgeGo(light) === 'go');
@@ -197,5 +197,108 @@ describe('Stop and Go: every touch answers', () => {
       rolling = lampRolls(lamp);
     }
     expect([...seen].sort()).toEqual(['green', 'red']);
+  });
+});
+
+describe('Stop and Go: whose light and the busy crossing', () => {
+  it('adds the two levels on top of the crossing', () => {
+    expect(planFor(5).mode).toBe('lanes');
+    expect(planFor(6).mode).toBe('busy');
+    expect([planFor(4), planFor(6)].map((p) => isCross(p.mode))).toEqual([true, true]);
+  });
+
+  it('gives each lane its own light, with a green within six seconds from any moment and both red at some moment of every cycle', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const c = laneCycles(new Rng(seed));
+      const total = (l: 'car' | 'bike') => c[l].reduce((a, x) => a + x.seconds, 0);
+      expect(total('car')).toBeCloseTo(total('bike'), 6);
+      let bothRed = false;
+      let carGreen = 0;
+      let bikeGreen = 0;
+      for (let t = 0; t < total('car') * 2; t += 0.05) {
+        const [a, b] = [lightAt(t, c.car), lightAt(t, c.bike)];
+        if (a === 'red' && b === 'red') bothRed = true;
+        if (a === 'green') carGreen++;
+        if (b === 'green') bikeGreen++;
+        expect(a === 'green' && b === 'green').toBe(false);
+        // From here one of the two lights is green now or turns green soon.
+        let wait = 0;
+        while (lightAt(t + wait, c.car) !== 'green' && lightAt(t + wait, c.bike) !== 'green') wait += 0.05;
+        expect(wait).toBeLessThan(6);
+      }
+      expect(bothRed).toBe(true);
+      expect(carGreen).toBeGreaterThan(0);
+      expect(bikeGreen).toBeGreaterThan(0);
+    }
+  });
+
+  it('judges a send by its own lane\'s light alone, and the hand picks a lane that is green', () => {
+    expect(carTap('lanes', 'green', true)).toBe('send');
+    expect(carTap('lanes', 'red', true)).toBe('miss');
+    expect(carTap('lanes', 'yellow', true)).toBe('nudge');
+    expect(carTap('lanes', 'red', false)).toBe('toot');
+    for (let seed = 1; seed <= 100; seed++) {
+      const c = laneCycles(new Rng(seed));
+      for (let t = 0; t < 30; t += 0.7) {
+        const lane = nextGreenLane(c, t);
+        let w = 0;
+        while (lightAt(t + w, c[lane]) !== 'green') w += 0.05;
+        // No other lane turns green sooner than the one chosen.
+        for (const other of LANES) {
+          let o = 0;
+          while (lightAt(t + o, c[other]) !== 'green') o += 0.05;
+          expect(w).toBeLessThanOrEqual(o + 1e-9);
+        }
+      }
+    }
+  });
+
+  it('finishes every seeded arrival order with no unsafe state, never more than three waiting, and at least two hand-overs', () => {
+    for (let seed = 1; seed <= 150; seed++) {
+      const rng = new Rng(seed);
+      const order = arrivalOrder(rng, 8);
+      expect(order.filter((r) => r === 'ew')).toHaveLength(4);
+      let lights = { ew: 'red' as Light, ns: 'red' as Light };
+      const waiting: Record<Road, number> = { ew: 0, ns: 0 };
+      let arrived = 0;
+      let done = 0;
+      let nextIn = 1;
+      let gap = 0;
+      let handOvers = 0;
+      let last: Road | null = null;
+      for (let t = 0; t < 400 && done < 8; t += 0.1) {
+        nextIn -= 0.1;
+        if (arrived < 8 && nextIn <= 0) {
+          if (canArrive(waiting, order[arrived])) {
+            waiting[order[arrived++]]++;
+            nextIn = rng.range(1.6, 2.8);
+          } else nextIn = 0.5;
+        }
+        // The bot taps a light every 0.5 s at most.
+        if (Math.round(t * 10) % 5 === 0) {
+          const road = crossTouch(lights, waiting);
+          if (road) {
+            lights = { ...lights, [road]: lights[road] === 'green' ? 'red' : 'green' };
+            if (lights[road] === 'green' && road !== last) {
+              handOvers++;
+              last = road;
+            }
+          }
+        }
+        expect(safe(lights)).toBe(true);
+        gap -= 0.1;
+        for (const road of ['ew', 'ns'] as Road[]) {
+          if (lights[road] === 'green' && waiting[road] > 0 && gap <= 0) {
+            waiting[road]--;
+            done++;
+            gap = 1.1;
+            break;
+          }
+        }
+        expect(Math.max(waiting.ew, waiting.ns)).toBeLessThanOrEqual(MAX_WAITING);
+      }
+      expect(done).toBe(8);
+      expect(handOvers).toBeGreaterThanOrEqual(2);
+    }
   });
 });

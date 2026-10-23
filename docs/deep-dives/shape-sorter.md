@@ -135,6 +135,8 @@ Level 10 is the between-level (after the colour-coded two shapes, before the col
 
 Each has a default the build uses; none blocks slices 1–7.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: no school band (14 *Count the corners* is pre-K's top); at 11 a little piece on a big hole does not go in and counts a miss; at 8 a right shape for the wrong clue bounces and counts a miss with a line naming it; the wooden box stays until a creature-casting slice proposes otherwise.
+
 1. **A school window.** Default: none; 14 is pre-K's top. Alternative: `school: { min: 13, max: 14, order: [13, 14] }` so a five-year-old meets the two attribute sorts from Wonder Woods (K.G.B.4 is a kindergarten standard).
 2. **Level 11's little piece on a big hole.** Default: it does not go in ("it would rattle"), a miss like the other direction, so size is matched exactly. Alternative: it goes in, as a real sorter would, and when the last piece has only a too-small hole left the box coughs the wrong one back up with "Biggest first!" (a planning puzzle; one extra rule and animation).
 3. **Level 8's right shape, wrong clue.** Default: it bounces and counts a miss, with the new line naming what she dropped. Alternative: it goes in (it fits), counts a miss for listening, and the clue queue drops that shape.

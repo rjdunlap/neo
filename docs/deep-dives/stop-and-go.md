@@ -17,7 +17,7 @@ A road, round smiling cars and a three-lamp traffic light in Cozy Village. The a
 
 **Accounting.** Level 1 has no misses. Levels 2–3: going on red is a miss; two misses turn on the hint glow (`hints++`). Level 4: both roads green is a miss; misses count across the round, and the glow rings the green light whose road has fewer cars.
 
-**Known gaps found reading the code (1–6 fixed by build slice 1, [PR #678](https://github.com/rjdunlap/neo/pull/678); 7 fixed by slice 2, [PR #751](https://github.com/rjdunlap/neo/pull/751); 8 remains for slice 5).**
+**Known gaps found reading the code (1–6 fixed by build slice 1, [PR #678](https://github.com/rjdunlap/neo/pull/678); 7 fixed by slice 2, [PR #751](https://github.com/rjdunlap/neo/pull/751); 8 fixed by slices 4–5, [PR #869](https://github.com/rjdunlap/neo/pull/869)).**
 
 1. **The lap car ignores her.** At level 1 only the light listens (`tapCar` returns unless the mode is `send`). A one-year-old reaches for the car, the big friendly thing, and nothing happens.
 2. **Back cars are silent.** At level 2 only the front car answers; a tap on the second or third car gets no touch-down acknowledgement at all.
@@ -116,6 +116,8 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** level 8 *Walk signal* is not drafted or built for now, since street-crossing advice is practical safety instruction under the deferred rule. *Smart light* and a school window wait on the `robots-automation` study; a red tap at toddler level 10 is a nudge, not a miss, at 10 only; the companion drives first once its rework art settles, and vehicles join the road with the rework's unlocks.
+
 1. **Walk signal (level 8)** — ship only after the safety expert review named in [subjects.md](subjects.md); lean: build it with stop-look-listen and a held hand, never "safe because it says walk".
 2. **School window and Smart light (level 7)** — lean: wait for the `robots-automation` subject study.
 3. **Toddler level 10 accounting** — lean: red is a nudge, not a miss, at 10 only.
@@ -128,8 +130,8 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 1. **Every touch counts and the hint points at the action** (existing-game bug fix; gaps 1–6; **built**, [PR #678](https://github.com/rjdunlap/neo/pull/678)): car taps at level 1, back-car toots at level 2, glow on the car/feet, level 3 hint reset, per-state motion and sound, `go.done.walk`. Checks: typecheck, the rule tests, one filtered regression play (levels 1 and 3, a red tap twice), `fingerdemo` at level 2 since the glow target moves.
 2. **Varied phases and vehicles** (content in existing levels): `cycleFor(rng)` with its bounded-phase test, six vehicles, the sticker pool. **built**, [PR #751](https://github.com/rjdunlap/neo/pull/751). Checks: typecheck, rule tests, one browser play of level 2 and `fingerdemo` at it.
 3. **Lap entry 9 *Go car, stop car*** (new interaction; **built**, [PR #847](https://github.com/rjdunlap/neo/pull/847)): lap order `[9, 1]`, `entryLevels: [9]`, how-to step for 9, bot taps green and red alternately. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
-4. **Level 5 *Whose light?* and the pre-K window** (new level): preschool 2–5, pre-K 3–5. Checks: typecheck, rule tests, play of 5, `fingerdemo` at 5.
-5. **Level 6 *Busy crossing*** with the idle point that also helps level 4: pre-K 3–6. Checks: typecheck, rule tests, play of 6, `fingerdemo` at 6.
+4. **Level 5 *Whose light?* and the pre-K window** (new level; **built**, [PR #869](https://github.com/rjdunlap/neo/pull/869)): preschool 2–5, pre-K 3–5. Checks: typecheck, rule tests, play of 5, `fingerdemo` at 5.
+5. **Level 6 *Busy crossing*** with the idle point that also helps level 4 (**built**, [PR #869](https://github.com/rjdunlap/neo/pull/869)): pre-K 3–6. Checks: typecheck, rule tests, play of 6, `fingerdemo` at 6.
 6. *(Decision 3)* Toddler level 10 *Wait for green*.
 7. *(Decision 2)* Level 7 *Smart light* and a school window.
 8. *(Decision 1)* Level 8 *Walk signal* after the safety review.
@@ -149,4 +151,8 @@ Research and ideation only: no code. Ran `node scripts/check-links.mjs` and `git
 
 ## What was built: slice 2, varied phases and vehicles (2026-10-22)
 
-[PR #751](https://github.com/rjdunlap/neo/pull/751). Gap 7 (fixed rhythm) is fixed; 8 remains for slice 5. `cycleFor(rng)` and `lightAt(t, cycle)` are in `logic.ts`; the six vehicles are in `index.ts`. Details in the [archive note](../archive/COMPLETED-2026-10-09.md#stop-and-go-varied-phases-and-vehicles-slice-2-2026-10-22).
+[PR #751](https://github.com/rjdunlap/neo/pull/751). Gap 7 (fixed rhythm) is fixed; 8 was fixed by slice 5. `cycleFor(rng)` and `lightAt(t, cycle)` are in `logic.ts`; the six vehicles are in `index.ts`. Details in the [archive note](../archive/COMPLETED-2026-10-09.md#stop-and-go-varied-phases-and-vehicles-slice-2-2026-10-22).
+
+## What was built: slices 4 and 5, Whose light? and Busy crossing (2026-10-23)
+
+[PR #869](https://github.com/rjdunlap/neo/pull/869). Levels 5 and 6, the pre-K window and the idle point (gap 8 fixed, also at level 4). Rules are in `logic.ts`. Details in the [archive note](../archive/COMPLETED-2026-10-09.md#stop-and-go-whose-light-and-busy-crossing-slices-4-5-2026-10-23).

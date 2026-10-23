@@ -96,6 +96,10 @@ Phoneme work, rhyme (Rhyme Time), a rhythm timing judge, printed syllables, and 
 3. **Isolated syllables:** is it acceptable that level 7 depends on device speech being clear, or should it wait for the device-speech check?
 
 
+**Decided 2026-10-23 (on the developer's delegation):** (2) yes, level 1 opens to toddler, with the enjoyment check moved to the person checks; (3) level 7 may be built now with the fallback of the whole word while the part lights, spoken by build-time generated clips with device speech as fallback, and the iPad listen is a device check (no isolated-syllable skill claimed until it passes). (1), storing typed name splits, stays with the developer because it adds names to the save.
+
+**Decided 2026-10-23 by the developer:** (1) yes: the grown-ups' page may store a typed syllable split of her name, and optionally family names, on this device only (bounded and repaired like every save field, never sent anywhere), so names become a Clap the Syllables level.
+
 ## Build slices, in order
 
 1. **More words** (built 2026-10-14; about 12–16 words, with pictures; a dialect exclusion list; spelling and count tests). Unit tests, one portrait screenshot of level 5. Check tier: new content on an existing interaction.

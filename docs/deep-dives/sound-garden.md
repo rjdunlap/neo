@@ -114,6 +114,8 @@ Speed rounds, a Simon sequence that grows until a mistake, scored timing, a micr
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans are adopted: no *Who sang?* level (Animal Snack and Peekaboo Barn keep voice identification); *Loud or quiet* goes to Little Conductor's later strong-or-gentle level (its plan 5), not Sound Garden 12, with the iPad speaker check kept as a device check; no school window before Jelly Drums 11; the garden chorus waits on the rework home and collection.
+
 1. **Toddler *Who sang?* (11):** a Sound Garden level, or leave voice identification to Animal Snack's *Who's Calling?* and Peekaboo Barn? Lean: leave it there, and give Sound Garden's toddlers Sing Higher once watched.
 2. **Loud or quiet (12):** in Sound Garden as a heard relative pair, or wait for Little Conductor to own dynamics? Lean: wait for the Music row's Little Conductor decision; if Sound Garden gets it, a device check on the iPad speaker comes first.
 3. **School window:** *Two at once* (13) and rhythm cards (pick the card the woodpecker knocked) would open Sound Garden to school; they overlap Jelly Drums 11 *Same or different?* and the proposed Sour Note. Lean: no school window until Jelly Drums 11 lands.

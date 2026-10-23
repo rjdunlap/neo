@@ -185,7 +185,7 @@ describe('game registry', () => {
   it('keeps two unjudged creative modes available for lap co-play', () => {
     for (const id of ['rainbow-fingers', 'fluffy-salon', 'stamp-studio', 'rhythm-neighbors']) {
       const lap = GAMES.find(g => g.id === id)!.levels('lap');
-      expect(id === 'stamp-studio' || id === 'rhythm-neighbors' ? levelsInOrder(lap) : lap).toEqual(id === 'stamp-studio' ? [7, 8, 1, 2] : id === 'rhythm-neighbors' ? [7, 1, 2] : { min: 1, max: 2 });
+      expect(id === 'stamp-studio' || id === 'rhythm-neighbors' || id === 'fluffy-salon' ? levelsInOrder(lap) : lap).toEqual(id === 'stamp-studio' ? [7, 8, 1, 2] : id === 'rhythm-neighbors' ? [7, 1, 2] : id === 'fluffy-salon' ? [6, 1, 7, 2] : { min: 1, max: 2 });
     }
   });
 

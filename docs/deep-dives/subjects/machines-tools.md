@@ -120,6 +120,7 @@ Reuse one scene with seeded flower/visitor variety and meaningful layout alterna
 - **Physical cards:** name a practical-safety reviewer before any build/tool/hoist instructions. Research may proceed; no such instructions are drafted here.
 - **Routing:** definition must test Tinker Lab capacity and choose the child/grown-up registration arrangement. Maker Harbor remains proposed. The existing middle-band decision stands; this session adds no band.
 - **Kept scenes:** decide whether Puppet Workshop should keep a mechanism at all before proposing a bounded schema. Transient first scenes need no save change.
+- **Decided 2026-10-23 (on the developer's delegation):** drawn gear contacts, ratios, pulley strands and cam followers, and any real-world line, ship after the building session's source check instead of a named reviewer; practical tool, build and hoist instructions and cards are not drafted for now; Gear Garden takes its definition's defaults (child game lap–school in Tinker Lab, fallback Treehouse, no grown-up variant until levels 6–8); Puppet Workshop stays transient, and keeping a mechanism waits for the rework's creature-home collection rules.
 
 ## Build slices, in order
 

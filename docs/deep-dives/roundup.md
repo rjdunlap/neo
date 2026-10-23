@@ -114,6 +114,8 @@ Lap already opens at level 1. *Come along* (11) gives lap a second rung without 
 
 Each has a default below; the build proceeds on it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: no school band (12 is pre-K's top); *Come along* joins lap by `order` once built; an equal split with animals left on the grass is accepted at 8; the thirty-second trot-home counts a hint from slice 1.
+
 1. **A school window** with 13 *Two things at once* (big pigs only in the mud, little pigs and all bunnies out; kind and size together). Default: no school band; 12 is pre-K's top. Alternative: school `order [12, 13]`.
 2. **Lap's second rung.** Default: *Come along* joins lap by `order` once built. Alternative: lap stays at level 1 and 11 is toddler only.
 3. **Equal shares with leftovers at 8.** Default: 2+2 with two loose is accepted (equal is the rule, and the pet says "and two are still on the grass"). Alternative: every animal must be penned, which makes 8 a division level.

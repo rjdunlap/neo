@@ -135,6 +135,8 @@ Levels 7, 8 and 9 above are the entries and between-levels, placed by the built 
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the lean is adopted: the 2026-10-09 cap of 6 is overridden for 10 *Copy or answer?*, 11 *Your own answer* and 12 *Longer calls* (pre-K `[4, 5, 6, 10]`, school `[5, 6, 10, 11, 12]`); a mid-reply gap over 2.5 s clears the reply without a miss; 11 stays school-only, with a five-year-old's play of 10 as a device check; Rhythm Neighbors keeps the same-or-different rhythm question, so Sound Garden's rhythm cards are not built; preschool order `[9, 3, 4]`. The third neighbor waits on RW05–RW07, and a two-seat caller follows the anonymous, uncredited second-seat rule.
+
 1. **Override the audit's leave for levels 10–12.** The 2026-10-09 audit left Rhythm Neighbors at 6 ("a couch game; layered rhythms are a larger design"). Lean: **yes**, because none of the three adds a layer or a longer memory: 10 is a listening judgment, 11 a creative answer with one constraint, 12 more material with the reply still pictured. If no, slices 1–4 (support, pool and the three younger rungs) are built alone.
 2. **The mid-reply pause.** Lean: a gap over 2.5 s **clears the reply without a miss** and says so. Alternative: keep it as a miss. This changes what a miss costs (fewer misses from thinking), not how one is counted.
 3. **Pre-K window for 11 *Your own answer*.** Lean: **school only** until a five-year-old has played 10; the creative level is never failed, so widening it later moves nothing.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { aloneSide, balanceObservation, downSide, FRIEND_FOR, makeRounds, MAX_TILT, numberChoices, other, pairHint, PLANS, planFor, progress, seesawTouch, shareSide, stays, tilt, total, ways, weigh, type SeesawRound, type SeesawTouchItem, type Side, type Thing } from './logic';
+import { aloneSide, balanceObservation, BOX_LOOKS, downSide, FACES_FOR, FRIEND_FOR, friendScale, WRAPPINGS, makeRounds, MAX_TILT, numberChoices, other, pairHint, PLANS, planFor, progress, seesawTouch, shareSide, stays, tilt, total, ways, weigh, type SeesawRound, type SeesawTouchItem, type Side, type Thing } from './logic';
 
 describe('Seesaw Balance', () => {
   it('demonstrates every mode with only moves that lead to its answer', () => {
@@ -335,5 +335,42 @@ describe('Seesaw Balance', () => {
       const fingerprint = PLANS.slice(0, 10).map((p) => makeRounds(p, new Rng(7)).map((r) => `${r.fixedSide[0]}${r.answer}:${r.fixed.length}/${r.across?.length ?? 0}/${r.offered.map((t) => t.weight).join('')}`).join(' '));
       expect(fingerprint).toEqual(["l1:1/0/23 l2:1/0/43 l1:1/0/42 l2:1/0/43","l2:1/0/14 l3:1/0/42 r2:1/0/13 l3:1/0/41","l2:1/0/1111 r4:1/0/111111 r3:1/0/11111","l4:0/0/423 r4:0/0/314 r4:0/0/241","l4:2/0/4123 l6:2/0/3412 r4:2/0/3142","l2:1/0/111111 r4:1/0/111111 r3:1/0/111111","l2:2/0/1111111 r3:2/0/1111111 r2:2/0/1111111","l2:3/4/ r3:2/4/ l2:3/4/","l2:4/5/ r3:3/5/ l2:4/5/","l2:5/7/ r3:4/8/ l2:5/7/"]);
     });
+  });
+});
+
+describe('faces, wrappings and box looks', () => {
+  it('draws each friend from its weight pool, never sharing a face in a round, and size follows weight alone', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      for (const level of [1, 2, 3]) {
+        for (const r of makeRounds(planFor(level), new Rng(seed))) {
+          const friends = [...r.fixed, ...r.offered].filter((t) => t.kind === 'friend');
+          const faces = friends.map((t) => t.face);
+          for (const t of friends) expect((FACES_FOR[t.weight as 1 | 2 | 3 | 4] as readonly string[]).includes(t.face!)).toBe(true);
+          expect(new Set(faces).size).toBe(faces.length);
+        }
+      }
+    }
+    expect(friendScale(1)).toBeLessThan(friendScale(4));
+  });
+  it('uses more than one face at weights with a pool', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) for (const r of makeRounds(planFor(1), new Rng(seed))) for (const t of [...r.fixed, ...r.offered]) if (t.kind === 'friend' && t.weight === 1) seen.add(t.face!);
+    expect([...seen].sort()).toEqual(['cat', 'duck']);
+  });
+  it('wraps every present and gives a mystery round one box look', () => {
+    const wraps = new Set<string>();
+    const looks = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) {
+      for (const r of makeRounds(planFor(4), new Rng(seed))) for (const t of r.offered) { expect(WRAPPINGS).toContain(t.wrap); wraps.add(t.wrap!); }
+      for (const level of [6, 7]) for (const r of makeRounds(planFor(level), new Rng(seed))) {
+        const own = new Set(r.fixed.map((t) => t.look));
+        expect(own.size).toBe(1);
+        expect(BOX_LOOKS).toContain(r.fixed[0].look);
+        looks.add(r.fixed[0].look!);
+      }
+      for (const level of [8, 9, 10, 11]) for (const r of makeRounds(planFor(level), new Rng(seed))) for (const t of [...r.fixed, ...(r.across ?? [])]) expect(t.look).toBeUndefined();
+    }
+    expect(wraps.size).toBe(3);
+    expect(looks.size).toBe(2);
   });
 });

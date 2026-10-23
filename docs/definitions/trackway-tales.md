@@ -133,6 +133,8 @@ Device checks stay open: whether a six-year-old reads the practice strip as "min
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** the built defaults are confirmed, with the home land as built (Story Grove, not Bubble Beach). The toy gait model and any later real trace, gait or dinosaur content take the building session's check against cited sources instead of a named reviewer.
+
 Each has a default the build uses. None blocks it. The deep-time study's decision 4 (range and placement) is settled here as a default and its decision 5 (exploration and support) by the accounting above; its decision 1 (a content reviewer) is not needed for an invented creature and toy gaits and stays open for any real trace.
 
 1. **Bands.** Default school 1–3 only, as the study's "S first" asks; the M audience (11–12) plays level 3 at the top of the same window. Alternatives: a pre-K window at 1 (two cards, no toes to read, beside Fossil Dig), and a separately registered 13+ case (a turn, two creatures) in Lantern Lake after its own definition; neither invents a middle band.

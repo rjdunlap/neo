@@ -136,3 +136,5 @@ Each has a default. Decisions 1 and 2 are the developer's confirmation the WAITI
 4. **The free two-stay glow.** Default as specified: it counts nothing, because stays are experiments. The alternative is no automatic glow at all, leaving only the requested hint. Choose that if the browser play shows the glow giving the answer away before she tries.
 5. **School window.** Default: none until study rung 4 (*Change one thing*) is defined; then append it as level 4 with a `school` window starting there. Existing IDs are never renumbered.
 6. **Later rungs.** Study rungs 4–7 (one-variable comparison, a floating fruit, a two-patch plan and an evidence mystery) need their own definitions (study slice 6), one rung per session.
+
+**Decided 2026-10-23 (on the developer's delegation):** decisions 1 and 2 take their defaults (a new game; Rainbow Meadow, else Barnyard; region `tinker-lab`), so the build is unblocked; the other defaults stand.

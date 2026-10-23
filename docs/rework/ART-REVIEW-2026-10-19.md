@@ -64,6 +64,8 @@ The next steps are code slices, not image requests, until the pilot three stand 
 
 ## Uplifting the rest of the game
 
+**Decided 2026-10-23 (on the developer's delegation):** The friends and land backdrops follow the companions onto the illustrated pipeline. Once the duck and meadow pilot pair is integrated (RW14 slices 4 and 6) and the session's screenshot review beside untouched lands passes, R26 (the other ten backdrops) and friends beyond the duck proceed; hub icons, stickers and buttons stay code-drawn. The iPad look of the pair is a device check that can roll a step back, not a gate.
+
 The companions will be the best-drawn things on screen. Everything around them, the friends and hosts, the land backdrops, the hub icons, stickers and buttons, is flat `Graphics` in the shared palette. That contrast is the real "quality of things in-game" question, and the queue deliberately left it out ("not requested") because it is a catalog-wide decision. The ladder, cheapest and least risky first:
 
 1. **See the companion in the game first.** Nothing is decided until the illustrated sprout stands in Splish Splash and Duck Pond on an iPad (RW05 slice 1 plus the device check). Most of the uplift the developer asked for comes from this step alone: the guide, the result star, the chooser card and the treehouse resident all become illustrated.

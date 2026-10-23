@@ -175,3 +175,5 @@ Each has a default the build uses; only the card-table review gates the merge.
 6. **A pre-K window at level 1.** Default: school only, until a person watches a five-year-old play it with a grown-up.
 7. **Four quadrants** stay with Treasure Map (study).
 8. **Review.** Default gate: the developer approves the level-2 card table before merge (or names a mathematics reviewer); levels 4–5's comparison pairs get the same review at their definition.
+
+**Decided 2026-10-23 (on the developer's delegation):** the level-2 card table is approved subject to the building session's source check against established curricula (recorded in the build's verification entry), which replaces the merge gate, and levels 4–5 get the same check; the other defaults stand (a new game named Meadow Pens; Rainbow Meadow, fallback Counting Cove; "squares of grass" and "fence pieces" until a device speech check; school only until a person watches a five-year-old play level 1).

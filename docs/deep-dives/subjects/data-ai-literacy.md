@@ -139,6 +139,8 @@ Round variety changes request feature, parcel decorations, contrastive evidence 
 - Review model explanations before shipping, especially the difference between coverage and fairness, training error and new-case reliability. Real social classifications, chatbot literacy and claims about practical privacy require a separately scoped review; they are not dependencies of the fictional parcel first slice.
 - Decide whether Paper Sorter earns a printable page after the digital definition; no new account, project persistence or family tracking required.
 
+**Decided 2026-10-23 (on the developer's delegation):** Example Express starts with only the selected rule shown (large targets, simpler first rounds); the all-six-rules inspector arrives as a later level once a layout prototype keeps every target at 100 units. Sorter Inspector registers at the top of `school` with an "about 10 and up" note and as a separate `grownup` case, in whichever existing land passes the `landLayout` capacity check (Tinker Lab and Skywatch Isles stay proposed); model explanations are source-checked by the building session (S1), and Paper Sorter gets a plain-HTML printable card on the grown-ups' page after its digital definition. A pre-K window waits for a person check after a prototype.
+
 ## Build slices in order
 
 Definitions are docs-only, links and diff checks. Builds below are later sessions explicitly selected by the developer, not a dispatch queue.

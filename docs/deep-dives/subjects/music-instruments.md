@@ -132,6 +132,8 @@ Every card is level-scoped and has a ghost-finger demonstration through the actu
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** Little Conductor's identity (live pace control) is confirmed and Hat Band is a new Music Mountain game with independent roles beyond Beat Builder; creative rounds count no misses and only Check misses count, the score clock stays game-owned, and Music Mountain's layout test decides capacity; older arrangements go at the top of `school` and 13+ as a `grownup` range, no new band. Terminology, property isolation, instrument depictions and any Our Little Band card take the building session's check against cited sources; first performances stay transient, and a kept mix still needs its own save contract when wanted.
+
 1. **Identity and first audience:** define Little Conductor 1–3 now, then check its live performance control earns the identity beside Sound Garden. Start toddler with taps; gesture readiness remains unobserved. Hat Band must add distinct musical roles beyond Beat Builder. Sound Workshop waits behind these two and the energy/waves overlap check.
 2. **Placement:** audit Music Mountain capacity for the child candidates and school/grownup registration/destinations for older arrangements; no new land or middle band is assumed. The 12/13 boundary follows existing bands.
 3. **Claims and material:** recommend a music educator review of score/voice terminology, instrument depictions and musical-property isolation before educational claims. The no-imported-audio/pentatonic contracts stand. Authentic instrumental recognition, diatonic harmony, composer portraits or culturally named repertoire need separate sourced definitions; nothing here authorizes an exception.

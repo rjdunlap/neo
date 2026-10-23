@@ -109,6 +109,8 @@ The queue's species sets cover the guide, the large-pet games and the celebratio
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** All three leans: owned creatures replace the friends by default where a role fits (word roles such as Rhyme Time's cat keep the friends); Fluffy Salon's hair and Weather Wardrobe's outfit persist first; a talent is a flourish on the result only, so cards and bots stay as they are.
+
 - Whether owned creatures replace the friends **by default** where they fit, or only when she chooses (a lean: by default, since she owns them; the friends remain where the role is a word).
 - Which "comes home" results persist first (a lean: hair and outfit, since both already exist as choices in a game).
 - Whether talents may change a game's **look** in a way the how-to card and ghost finger must know about (a lean: no; a talent is a flourish on the result, so cards and bots stay as they are).

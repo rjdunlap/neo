@@ -185,6 +185,8 @@ There is no save field, no new route argument, no voice line, no asset and no ga
 
 None gates the build. Each has a lean the build follows unless the developer says otherwise. They are recorded in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans the build followed stand: Home during a stop returns to that stop's card; a tap on the header picture repeats the title on every intro card; with how-to cards off the D2a sheet stays as the preview.
+
 1. **The corner Home mid-round returns to the same stop's card.** Lean: keep it, as D2a does with its sheet; Skip and Back are one press away. The alternative is that the corner Home always ends the mix, which leaves touch without a mid-round Skip.
 2. **The header picture's tap on every intro, not only in a mix.** Lean: every intro. It is a spoken replay a child can find without reading, and it changes nothing else.
 3. **Cards off keeps the D2a sheet.** Lean: keep it. Without a card the sheet is the only preview. Removing it would launch a round with no stop row and no Skip.

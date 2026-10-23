@@ -302,6 +302,8 @@ PhET Pendulum Lab's controls were not established by the study, and nothing is b
 
 ## Developer decisions (in [Waiting on the developer](../WAITING-ON-DEVELOPER.md))
 
+**Decided 2026-10-23 (on the developer's delegation):** 1: the table is approved, and level 5 steps a player up to 6 by the ordinary two-smooth-rounds rule. 2: school 1–6, plain range; pre-K stays 1–2. 3: the locked blue control lane. Q4 is unblocked.
+
 1. **Accounting (inquiry decision 1).** Approve the table above:
    - misses only for unfair Checks and wrong cards;
    - one hint per question for setup help, and one for reading help;

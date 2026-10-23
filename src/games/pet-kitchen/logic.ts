@@ -11,7 +11,25 @@ export const PLANS = [
   { mode: 'half-recipe', wholes: 0, friends: 0, cuts: [], name: 'Halve a picture recipe for one friend' },
   { mode: 'share', wholes: 1, friends: 3, cuts: [3], name: 'Cut one pizza into thirds and share one slice with each of three friends' },
   { mode: 'deal', wholes: 1, friends: 2, cuts: [2,4], name: 'Tap a piece to deal it, one for you and one for me (halves or quarters, no wrong touch)' },
+  { mode: 'share', wholes: 1, friends: 2, cuts: [2], lopsided: true, name: 'Same or not the same? Choose the cut that gives two friends equal pieces, not a big one and a little one' },
+  { mode: 'share', wholes: 2, friends: 3, cuts: [2,3,4], lopsided: false, name: 'Two pizzas for three friends: only thirds share them out' },
 ] as const;
+/** Level 11 offers the middle cut beside a lopsided one; level 12 shares two pizzas among three. */
+export const SAME_LEVEL = 11;
+export const PIZZAS_LEVEL = 12;
+/** The two pieces of a lopsided cut, by share of the whole (one third, two thirds). */
+export const LOPSIDED_AREAS = [1/3, 2/3] as const;
+/** Areas of the pieces one cut makes in each whole: equal parts, or the lopsided pair when `lopsided`. */
+export function pieceAreas(parts: number, wholes: number, lopsided = false, smallFirst = true): number[] {
+  const one: number[] = lopsided ? (smallFirst ? [...LOPSIDED_AREAS] : [...LOPSIDED_AREAS].reverse()) : Array<number>(parts).fill(1 / parts);
+  return Array.from({ length: wholes }, () => one).flat();
+}
+/** Plates hold the same amount of food (not just the same number of pieces). */
+export function fairAreas(sums: readonly number[]): boolean {
+  return sums.length > 0 && sums[0] > 0 && sums.every((a) => Math.abs(a - sums[0]) < 1e-9);
+}
+/** A cut shares the wholes out evenly by count: every friend gets the same number of pieces and none is left over. */
+export const cutShares = (plan: { wholes: number; friends: number }, cut: number) => cut > 0 && (plan.wholes * cut) % plan.friends === 0;
 /** The level whose pieces are already cut and dealt by tapping (the lap rung). */
 export const DEAL_LEVEL = 10;
 export const planFor = (l: number) => PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))];
@@ -56,7 +74,7 @@ export function plateAt(plates: readonly { x: number; y: number }[], x: number, 
  * is a miss when she serves it, so the ghost finger never makes one.
  */
 export function fairCut(plan: { wholes: number; friends: number; cuts: readonly number[] }): number | undefined {
-  return [...plan.cuts].sort((a, b) => a - b).find((c) => (plan.wholes * c) % plan.friends === 0);
+  return [...plan.cuts].sort((a, b) => a - b).find((c) => cutShares(plan, c));
 }
 
 /**
@@ -64,11 +82,16 @@ export function fairCut(plan: { wholes: number; friends: number; cuts: readonly 
  * every friend to have one (the round arrow and a finer cut fix it, so this comes before an empty plate), nothing on
  * any plate, or plates that differ.
  */
-export type ServeTrouble = 'uncut' | 'empty' | 'short' | 'unequal';
-export function serveTrouble(plates: readonly number[], pieces: number): ServeTrouble {
+export type ServeTrouble = 'uncut' | 'empty' | 'short' | 'leftover' | 'lopsided' | 'unequal';
+export function serveTrouble(plates: readonly number[], pieces: number, areas?: readonly number[]): ServeTrouble {
   if (pieces === 0) return 'uncut';
   if (pieces < plates.length) return 'short';
   if (plates.every((n) => n === 0)) return 'empty';
+  const equal = plates.every((n) => n > 0 && n === plates[0]);
+  // The same number of pieces everywhere but a bigger piece on one plate: the pieces are shown side by side.
+  if (equal && fair([...plates], pieces) && areas && !fairAreas(areas)) return 'lopsided';
+  // Everyone has the same but pieces wait in the tray that nobody can have.
+  if (equal && plates.reduce((a, b) => a + b, 0) < pieces) return 'leftover';
   return 'unequal';
 }
 const NUMBER_WORDS = ['one', 'two', 'three', 'four'];
@@ -82,7 +105,9 @@ export function countAloud(cut: number, served: number): string {
 /** What a round cuts at the levels that share: a sandwich or a round pie (the pizza at 9 stays a pizza). */
 export type Whole = 'sandwich' | 'pie';
 export const WHOLES: readonly Whole[] = ['sandwich', 'pie'];
-export const wholeFor = (level: number, rng: Rng): Whole => (level >= 1 && level <= 4 ? rng.pick(WHOLES) : 'sandwich');
+export const wholeFor = (level: number, rng: Rng): Whole => (level >= 1 && level <= 4 ? rng.pick(WHOLES) : level === PIZZAS_LEVEL ? 'pie' : 'sandwich');
+/** Levels whose whole is a pizza (thirds at 9, two pizzas at 12). */
+export const isPizzaLevel = (level: number) => level === 9 || level === PIZZAS_LEVEL;
 /** Pieces on the counter after one cut of every whole: the same for a sandwich or a pie. */
 export const pieceCount = (plan: { wholes: number }, cut: number) => plan.wholes * cut;
 
