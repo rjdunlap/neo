@@ -5,10 +5,11 @@ import { ACTIONS } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats } from '../games/sink-float/logic';
 import { cleanJournal, discover, emptyJournal, entriesOf, entryById, entryId, hasNew, JOURNAL, JOURNAL_IDS, markSeen, sourceText } from './journal';
 import { WORDS } from '../games/letter-trails/pictures';
+import { HELPER, HELPERS } from '../games/mail-carrier/logic';
 import { SCRIPT } from './voice-script';
 
 describe('the entries', () => {
-  it('covers every promised observation from all seven source games, and no others', () => {
+  it('covers every promised observation from all eight source games, and no others', () => {
     expect(entriesOf('sink-float').map((e) => e.key).sort()).toEqual([...ALL_THINGS].sort());
     expect(entriesOf('animal-snack').map((e) => e.key).sort()).toEqual([...ANIMALS].sort());
     expect(entriesOf('photo-safari').map((e) => e.key).sort()).toEqual([...ACTIONS].sort());
@@ -16,7 +17,8 @@ describe('the entries', () => {
     expect(entriesOf('bouncy-launch').map((e) => e.key)).toEqual(['bigger-pull']);
     expect(entriesOf('habitat-helpers').map((e) => e.key).sort()).toEqual(['bunny', 'duck']);
     expect(entriesOf('letter-trails').map((e) => e.key)).toEqual(Object.keys(WORDS));
-    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26);
+    expect(entriesOf('mail-carrier').map((e) => e.key)).toEqual([...HELPERS]);
+    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6);
   });
 
   it('gives each a stable, unique id from its game and key', () => {
@@ -68,6 +70,10 @@ describe('the entries', () => {
           expect(said, e.id).toContain('water');
           expect(said, e.id).toContain('shelter');
           break;
+        case 'mail-carrier':
+          expect(said, e.id).toContain(e.key);
+          expect(said, e.id).toContain(HELPER[e.key as (typeof HELPERS)[number]].toolName.replace(/^an? /, ''));
+          break;
         case 'letter-trails':
           expect(said, e.id).toContain(`${e.key.toLowerCase()} is for ${WORDS[e.key]}`);
           break;
@@ -109,6 +115,10 @@ describe('the entries', () => {
       } else if (e.game === 'bouncy-launch') {
         expect(find).toContain('pulls');
         expect(found).toContain('bigger pull');
+      } else if (e.game === 'mail-carrier') {
+        expect(find).toContain(e.key);
+        expect(find).toContain(HELPER[e.key as (typeof HELPERS)[number]].problem);
+        expect(found).toContain(HELPER[e.key as (typeof HELPERS)[number]].toolName);
       } else if (e.game === 'letter-trails') {
         expect(find).toContain(`letter ${e.key}`);
         expect(found).toContain(`letter ${e.key}`);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { houseLooks, mailboxColor, MAILBOX_COLORS, NEAR, mapNode, mapX, NEIGHBORS, WOODS_NEIGHBORS, addressedHouse, checkStop, countedAloud, countsAloud, INVITE_AFTER, nearestHouse, planFor, shouldInvite, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, routeChoices, routeLength, shorterRoutes, SHORTER_EDGES, SIGNS, walk, woodsTouch } from './logic';
+import { houseLooks, mailboxColor, MAILBOX_COLORS, NEAR, mapNode, mapX, NEIGHBORS, WOODS_NEIGHBORS, addressedHouse, checkStop, countedAloud, countsAloud, INVITE_AFTER, nearestHouse, planFor, shouldInvite, HELPER, HELPERS, TOOLS, helpFixed, helpWrong, letterShows, mailboxShows, teenSpoken, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, routeChoices, routeLength, shorterRoutes, SHORTER_EDGES, SIGNS, walk, woodsTouch } from './logic';
 
 describe('Mail Carrier', () => {
   it('counts the dots aloud at levels 3 and 5, up to the number delivered', () => {
@@ -31,7 +31,8 @@ describe('Mail Carrier', () => {
       for (let seed = 1; seed <= 200; seed++) {
         const rng = new Rng(seed);
         const street = makeStreet(plan, rng);
-        expect(street).toHaveLength(plan.houses);
+        if (plan.mode === 'tool') expect([2, 3]).toContain(street.length);
+        else expect(street).toHaveLength(plan.houses);
         const nums = street.map((h) => h.number);
         expect(nums).toEqual([...nums].sort((a, b) => a - b));
         expect(new Set(nums).size).toBe(nums.length);
@@ -40,7 +41,7 @@ describe('Mail Carrier', () => {
         const letters = makeLetters(plan, street, rng);
         expect(letters).toHaveLength(plan.letters);
         letters.slice(1).forEach((l, i) => expect(l).not.toBe(letters[i]));
-        if (plan.letters >= plan.houses) expect(new Set(letters).size).toBe(plan.houses);
+        if (plan.letters >= street.length) expect(new Set(letters).size).toBe(street.length);
       }
     }
   });
@@ -237,5 +238,100 @@ describe('Mail Carrier street and map variety', () => {
     const order = (m: boolean) => [...HOUSE_NODES].sort((a, b) => mapNode(a, m).x - mapNode(b, m).x);
     expect(order(true)).toEqual(order(false).reverse());
     for (const [a, b] of MAP_EDGES) for (const m of [false, true]) expect(mapNode(a, m)).not.toEqual(mapNode(b, m));
+  });
+});
+
+describe('Mail Carrier levels 9, 10 and 12', () => {
+  it('finds each plan by its level, leaving the woods levels where they were', () => {
+    expect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map((l) => planFor(l).level)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12]);
+    expect(planFor(6).mode).toBe('map');
+    expect(planFor(9).mode).toBe('help');
+    expect(planFor(10).mode).toBe('tool');
+    expect(planFor(12).mode).toBe('teen');
+    expect(planFor(99).mode).toBe('shorter');
+    expect(planFor(0).mode).toBe('drop');
+  });
+
+  it('shows pictures, not numbers, on the tool signs, and numbers on the teen street', () => {
+    expect(mailboxShows('tool')).toEqual({ numeral: false, dots: false, tool: true });
+    expect(mailboxShows('help')).toEqual({ numeral: false, dots: false, tool: true });
+    expect(mailboxShows('teen')).toEqual({ numeral: true, dots: false, tool: false });
+    expect(letterShows('tool')).toBe('tool');
+    expect(letterShows('help')).toBe('problem');
+    expect(letterShows('teen')).toBe('numeral');
+  });
+
+  it('level 10: two or three distinct tools, every letter has its tool on one sign, never the same sign twice in a row', () => {
+    const sizes = new Set<number>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const plan = planFor(10);
+      const street = makeStreet(plan, rng);
+      sizes.add(street.length);
+      expect([2, 3]).toContain(street.length);
+      const tools = street.map((h) => h.tool);
+      expect(tools.every(Boolean)).toBe(true);
+      expect(new Set(tools).size).toBe(street.length);
+      expect(new Set(street.map((h) => h.door)).size).toBe(street.length);
+      const letters = makeLetters(plan, street, rng);
+      expect(letters).toHaveLength(5);
+      letters.forEach((l, i) => {
+        expect(tools.filter((t) => t === street[l].tool)).toHaveLength(1);
+        if (i) expect(street[l].tool).not.toBe(street[letters[i - 1]].tool);
+      });
+    }
+    expect([...sizes].sort()).toEqual([2, 3]);
+  });
+
+  it('level 9: each problem has exactly one tool, five distinct helpers per round, each gets one different problem', () => {
+    expect(new Set(HELPERS.map((h) => HELPER[h].tool)).size).toBe(HELPERS.length);
+    expect(new Set(HELPERS.map((h) => HELPER[h].problem)).size).toBe(HELPERS.length);
+    expect([...HELPERS.map((h) => HELPER[h].tool)].sort()).toEqual([...TOOLS].sort());
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const plan = planFor(9);
+      const street = makeStreet(plan, rng);
+      expect(street).toHaveLength(5);
+      expect(new Set(street.map((h) => h.helper)).size).toBe(5);
+      street.forEach((h) => expect(h.tool).toBe(HELPER[h.helper!].tool));
+      const letters = makeLetters(plan, street, rng);
+      expect(new Set(letters).size).toBe(5);
+      expect(new Set(letters.map((l) => HELPER[street[l].helper!].problem)).size).toBe(5);
+    }
+  });
+
+  it('level 9 speaks the wrong helper’s tool and the problem it does not fix, then the fix', () => {
+    const wrong = helpWrong('baker', 'plumber');
+    expect(wrong.tool).toBe('a whisk');
+    expect(wrong.use).toContain('baking');
+    expect(wrong.problem).toBe('the dripping tap');
+    expect(helpFixed('plumber')).toEqual({ Tool: 'A wrench', problem: 'the dripping tap' });
+  });
+
+  it('level 12: houses are distinct, sorted numbers from 10 to 20, and every one is mailed', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const plan = planFor(12);
+      const street = makeStreet(plan, rng);
+      const nums = street.map((h) => h.number);
+      expect(nums).toHaveLength(5);
+      expect(nums).toEqual([...nums].sort((a, b) => a - b));
+      expect(new Set(nums).size).toBe(5);
+      expect(Math.min(...nums)).toBeGreaterThanOrEqual(10);
+      expect(Math.max(...nums)).toBeLessThanOrEqual(20);
+      expect(new Set(makeLetters(plan, street, rng)).size).toBe(5);
+    }
+  });
+
+  it('says a teen number and its ten and ones, with no "ten and zero"', () => {
+    expect(teenSpoken(13)).toEqual({ word: 'Thirteen', parts: 'Ten and three.' });
+    expect(teenSpoken(11).parts).toBe('Ten and one.');
+    expect(teenSpoken(10)).toEqual({ word: 'Ten', parts: 'One ten.' });
+    expect(teenSpoken(20)).toEqual({ word: 'Twenty', parts: 'Two tens.' });
+    for (let n = 10; n <= 20; n++) {
+      const { word, parts } = teenSpoken(n);
+      expect(word).toMatch(/^[A-Z][a-z]+$/);
+      expect(parts).not.toMatch(/zero/);
+    }
   });
 });

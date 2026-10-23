@@ -11,17 +11,18 @@ import { spread, type View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { addressedHouse, countedAloud, countsAloud, houseLooks, isMapMode, letterShows, mailboxColor, mailboxShows, makeLetters, makeStreet, nearestHouse, NEIGHBORS, planFor, shouldInvite, type House, type HouseLook, type MailPlan } from './logic';
+import { addressedHouse, countedAloud, countsAloud, helpFixed, helpWrong, houseLooks, isMapMode, letterShows, mailboxColor, mailboxShows, makeLetters, makeStreet, nearestHouse, NEIGHBORS, planFor, shouldInvite, teenSpoken, TOOL_NAME, type HelperId, type House, type HouseLook, type MailPlan } from './logic';
+import { drawProblem, drawTool } from './art';
 import type { CompanionRig } from '../../creatures/companion';
 import { WoodsMail } from './woods';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 6 },
-  school: { min: 4, max: 8 },
+  toddler: { min: 1, max: 10, order: [1, 2, 10] },
+  preschool: { min: 2, max: 10, order: [2, 10, 3, 4] },
+  prek: { min: 3, max: 12, order: [3, 4, 5, 9, 12, 6] },
+  school: { min: 4, max: 12, order: [4, 5, 9, 12, 6, 7, 8] },
 };
 
 /** Dots laid out like dice faces, so small numbers can be seen at a glance. */
@@ -46,7 +47,7 @@ class HouseView extends Container {
   constructor(
     readonly house: House,
     kind: CritterName,
-    shows: { numeral: boolean; dots: boolean },
+    shows: { numeral: boolean; dots: boolean; tool: boolean },
     look: HouseLook,
     mailbox: ColorName,
   ) {
@@ -82,6 +83,12 @@ class HouseView extends Container {
     b.roundRect(-46, -66, 92, 60, 20).fill(swatch[mailbox].fill).stroke({ width: 5, color: swatch[mailbox].line });
     this.flag.rect(40, -66, 8, 40).fill(0x8c9aa8).rect(40, -66, 26, 16).fill(swatch.red.fill);
     this.box.addChild(this.flag, b);
+    if (shows.tool && house.tool) {
+      this.box.addChild(new Graphics().roundRect(-34, -58, 68, 44, 10).fill(0xffffff));
+      const t = drawTool(house.tool, 0.55);
+      t.position.set(0, -36);
+      this.box.addChild(t);
+    }
     if (shows.numeral || shows.dots) {
       const plate = new Graphics().roundRect(-34, -58, 68, 44, 10).fill(0xffffff);
       this.box.addChild(plate);
@@ -139,6 +146,8 @@ class MailCarrier implements Game {
   index = -1;
   misses = 0;
   hints = 0;
+  /** Level 9: the helpers whose letter has landed, for the journal. */
+  readonly helped = new Set<HelperId>();
   busy = true;
   finished = false;
 
@@ -272,6 +281,12 @@ class MailCarrier implements Game {
         return this.ctx.instruct('mail.color', { color });
       case 'numeral':
         return this.ctx.instruct('mail.numeral', { n });
+      case 'teen':
+        return this.ctx.instruct('mail.teen-for', { word: teenSpoken(n).word });
+      case 'tool':
+        return this.ctx.instruct('mail.tool', { tool: TOOL_NAME[to.house.tool!] });
+      case 'help':
+        return this.ctx.instruct('mail.help');
       default:
         return this.ctx.instruct('mail.count');
     }
@@ -298,6 +313,19 @@ class MailCarrier implements Game {
         const n = label(String(house.number), 84, ink);
         n.y = 18;
         this.envelope.addChild(n);
+        break;
+      }
+      case 'tool': {
+        const t = drawTool(house.tool!, 1.5);
+        t.y = 14;
+        this.envelope.addChild(t);
+        break;
+      }
+      case 'problem': {
+        const p = drawProblem(house.helper!);
+        p.y = 14;
+        p.scale.set(1.1);
+        this.envelope.addChild(p);
         break;
       }
       default:
@@ -339,6 +367,13 @@ class MailCarrier implements Game {
       const n = h.house.number;
       if (countsAloud(this.plan.mode)) await this.ctx.say('mail.counted', { counted: countedAloud(n), n });
       else if (this.plan.mode === 'numeral') await this.ctx.say('mail.number', { n });
+      else if (this.plan.mode === 'teen') await this.ctx.say('mail.teen', teenSpoken(n));
+      else if (this.plan.mode === 'help') {
+        const id = h.house.helper!;
+        this.helped.add(id);
+        this.popTool(h);
+        await this.ctx.say('mail.help-fixed', helpFixed(id));
+      }
       await this.ctx.say('mail.thanks');
       await this.next();
       return;
@@ -348,6 +383,8 @@ class MailCarrier implements Game {
     this.wrongs++;
     sfx.boing();
     if (this.plan.mode === 'color') void this.ctx.say('mail.notme.color', { color: h.house.door });
+    else if (this.plan.mode === 'tool') void this.ctx.say('mail.notme.tool', { tool: TOOL_NAME[h.house.tool!] });
+    else if (this.plan.mode === 'help') void this.ctx.say('mail.notme.help', helpWrong(h.house.helper!, to.house.helper!));
     else void this.ctx.say('mail.notme.number', { n: h.house.number });
     await tw.to(flying, inCart(), { duration: 0.25, ease: ease.inOutSine });
     await tw.to(flying, { x: this.envelope.x, y: this.envelope.y }, { duration: 0.4, ease: ease.inOutSine });
@@ -360,6 +397,20 @@ class MailCarrier implements Game {
     this.busy = false;
   }
 
+  /** The helper holds up their tool above the house for a moment. */
+  private popTool(h: HouseView) {
+    const t = drawTool(h.house.tool!, 1.1);
+    t.position.set(h.x, h.y - 300);
+    t.scale.set(0);
+    this.ctx.stage.addChild(t);
+    void (async () => {
+      await this.ctx.tw.to(t.scale, { x: 1.1, y: 1.1 }, { duration: 0.3, ease: ease.outBack });
+      await this.ctx.tw.wait(0.9);
+      await this.ctx.tw.to(t, { alpha: 0 }, { duration: 0.3 });
+      t.destroy();
+    })();
+  }
+
   private async finale() {
     if (this.finished) return;
     this.finished = true;
@@ -367,14 +418,14 @@ class MailCarrier implements Game {
     for (const h of this.houses) h.neighbor.cheer();
     await this.ctx.say('mail.done');
     await this.ctx.tw.wait(0.8);
-    this.ctx.finish({ misses: this.misses, hints: this.hints });
+    this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries: [...this.helped].map((id) => `mail-carrier:${id}`) });
   }
 }
 
 class MailIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    const h = new HouseView({ number: 3, door: 'red' }, 'cat', { numeral: true, dots: false }, { roof: 'peak', chimney: true, windowBox: true }, 'blue');
+    const h = new HouseView({ number: 3, door: 'red' }, 'cat', { numeral: true, dots: false, tool: false }, { roof: 'peak', chimney: true, windowBox: true }, 'blue');
     h.scale.set(0.85);
     h.y = -40;
     const env = new Graphics().roundRect(40, -230, 90, 60, 8).fill(0xffffff).stroke({ width: 4, color: 0xb9c6d1 }).moveTo(40, -230).lineTo(85, -198).lineTo(130, -230).stroke({ width: 3, color: 0xd6dde4 });
@@ -404,6 +455,7 @@ export const mailCarrier: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   touchDemo: true,
+  entryLevels: [10],
   coplayHint: 'Read the house numbers together as you pass them: "two, four, five..."',
   offScreen: 'Find the number on your own front door, then spot numbers on a walk.',
   hubIcon: () => new MailIcon(),
