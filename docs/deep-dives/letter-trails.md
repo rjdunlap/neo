@@ -185,6 +185,8 @@ These are placed by [`order`, which may skip IDs](../DESIGN.md) (built). IDs are
 
 **Decided 2026-10-23 (on the developer's delegation):** (1) the stroke convention is the programme whose sheet was opened (Handwriting Without Tears: its groups and start-at-the-top), and the building session checks each stroke, the capitals' pen lifts and Number Trails' interim digits against its published chart; M, N, W, Z and K stay one zero-lift stroke. (2)–(5), (7) and (8): the leans stand (9 Three times, 10–15 little letters, 16 Little words, 17 My name in pre-K 3–10 and school 7–17; one miss and one hint per letter at most; eight letters with the whole name in print; Number Trails owns digits; toddler through Shape Trails, no lap entry; pre-K lowercase only at 9–10). (6), level 18's grown-up "my words" list in the save, stays with the developer.
 
+**Decided 2026-10-23 by the developer:** level 18's "my words" list may be kept on this device only: about ten words of up to eight letters, entered on the grown-ups' page, bounded and repaired on load, never sent anywhere.
+
 ## Build slices, in order
 
 Each is sized for one session. A slice that adds a level is built in level order so saved IDs stay unbroken, raises `LEVELS.school.max`, and updates `describeLevel`, the how-to `LevelLine`s, the README row and [GAMES.md](../GAMES.md).

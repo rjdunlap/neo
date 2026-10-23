@@ -57,7 +57,9 @@ Slices 1 and 2 do not depend on RW07's song step or ending. Home's Continue alre
 
 **Check tier:** shell and navigation. Run typecheck, unit tests (library layout, the Woodland card's band rule, the birthday helper in both entries, the mix's new leave target, the gear's clearance) and the build. Run `BROWSER_SUITE=home` (creature play → library → journal → Back; a lap profile's mix card → first stop → Explore leaves to All games), `BROWSER_SUITE=picnic` filtered to one Windy step at the root, and the offline check.
 
-## Slice 3: the cutover (waits for the developer)
+## Slice 3: the cutover (approved; starts when the developer has played slices 1–2)
+
+**Decided 2026-10-23 by the developer:** yes, delete `classic/` once they have played slices 1–2 on the iPad. A session starts slice 3 only when the developer says they have done that.
 
 Run this only after the developer says go. They should first have played slices 1 and 2 on the iPad ([device check](../DEVICE-CHECKS.md)).
 
@@ -93,6 +95,6 @@ Recorded in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md#still-waiting). Ea
 
 1. **Explore's four entries, the browse origin and Back to [origin] at the root.** **Built 2026-10-21** (PR #744; build note in the [archive](../archive/COMPLETED-2026-10-09.md#rw08-slice-1-explores-four-entries-2026-10-21)). Shell and navigation tier, [above](#slice-1-explores-four-entries).
 2. **The library, the stories, the mix, the birthday and the gear at the root.** **Built 2026-10-21** (PR #745; build note in the [archive](../archive/COMPLETED-2026-10-09.md#rw08-slice-2-the-library-the-mix-the-birthday-and-the-gear-2026-10-21); the Windy step ran inside the `home` suite, not `picnic`). Shell and navigation tier, [above](#slice-2-the-library-the-stories-and-the-rest-of-home).
-3. **The cutover.** Status `decision` (the developer's go-ahead), after slice 2. Shell, save and navigation tier, [above](#slice-3-the-cutover-waits-for-the-developer).
+3. **The cutover.** Status `decision` (the developer's go-ahead), after slice 2. Shell, save and navigation tier, [above](#slice-3-the-cutover-approved-starts-when-the-developer-has-played-slices-12).
 
 **Proof of this packet:** links and `git diff --check`. Nothing was built or run in a browser. Child comprehension of the four entries and of Back versus Home is not established. Neither is device speech of the new lines. The observed-play script in [RW03](HOME-NAVIGATION.md#short-observed-play-script-and-open-observations) covers both.

@@ -6,12 +6,12 @@ Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the 
 
 ## Still waiting
 
-| Question | Recommended answer | Written in |
+The developer answered the last four questions on 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#answered-by-the-developer)). Two steps are still theirs:
+
+| Step | What happens next | Written in |
 | --- | --- | --- |
-| **RW08 cutover: retire `classic/`**: Once you have played RW08 slices 1–2 on the iPad and they feel complete, may the next session delete `classic/` (the old island map, age places, `?preview` and the wireframe)? | Yes. | [RW08 packet](rework/RW08-CUTOVER.md#slice-3-the-cutover-waits-for-the-developer) |
-| **Clap the Syllables' names, toddler window and isolated syllables**: May the grown-ups' page store a typed syllable split of her name (and family names) on this device so names become a Clap the Syllables level? | Yes, on-device only, her own name first, family names optional and bounded. | [Clap the Syllables deep dive](deep-dives/clap-syllables.md#decisions-for-the-developer) |
-| **Letter Trails' levels on top, windows, long rounds and names**: May the grown-ups' page keep a short, bounded "my words" list (family names, favorite words) on this device for Letter Trails level 18? | Yes, on-device only, capped at about ten words of eight letters. | [Letter Trails deep dive](deep-dives/letter-trails.md#decisions-for-the-developer) |
-| **In what order the family's languages come, which variety of each, and who reviews the lines**: Shall Portuguese come first, in the variety spoken by the family member who will review every line? | Yes, and tell us that reviewer's name and variety (Brazilian or European). | [Additional languages](ROADMAP.md#additional-languages) |
+| **Play RW08 slices 1–2 on the iPad** | The cutover (deleting `classic/`) is approved; a session starts it when the developer says they have played the new Explore and library at the root | [RW08 slice 3](rework/RW08-CUTOVER.md#slice-3-the-cutover-approved-starts-when-the-developer-has-played-slices-12) |
+| **Name the Portuguese reviewer and the variety** (Brazilian or European) | Portuguese comes first; its lines are written and reviewed by that family member before anything in Portuguese ships | [Additional languages](definitions/additional-languages.md) |
 
 ## Adding a question
 
