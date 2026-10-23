@@ -4,6 +4,7 @@ Original, untouched images from the creature art passes (see the [art bible](../
 
 | File | Request | Date | Tool and model | Prompt | Chosen |
 | --- | --- | --- | --- | --- | --- |
+| land-meadow-5.png | R23 | 2026-10-23 | Built-in image_gen.imagegen; model undisclosed | [Candidate 5](R23-PROMPTS.md#candidate-5) | yes |
 | duck-base-2.png | R22 | 2026-10-23 | Built-in image_gen.imagegen; model undisclosed | [Bases 2 and 3](R22-PROMPTS.md#bases-2-and-3) | yes |
 | duck-portrait-2.png | R22 | 2026-10-23 | Built-in image_gen.imagegen; model undisclosed | [Portrait 2](R22-PROMPTS.md#portrait-2) | yes |
 | glider-base-3.png | R01 | 2026-10-17 | Built-in image_gen; model undisclosed | [base3Prompt](R01-PROMPTS.md#base3prompt) | yes |
@@ -331,3 +332,7 @@ The three-try fallback applies: keep the rig's existing small wag. No approved p
 ## R22 review and preparation notes
 
 Two untouched originals, 2,432,234 bytes; base 1536 × 1024, portrait 1254 × 1254. Built-in image_gen.imagegen, model undisclosed; same service terms as the existing R01 record. Three base candidates and two portraits reviewed; only the chosen pair retained. Full-size and 120 px review on white and a temporary sky-blue key/composite passed. The temporary preview is inspection only, not prepared art. [Exact prompts, candidate selection and limitations](R22-PROMPTS.md). No expressions requested or missing. No preparation, rigging, src integration or device acceptance.
+
+## R23 review and preparation notes
+
+Chosen `land-meadow-5.png`, one untouched RGB 1536 × 1024 PNG, 1,670,501 bytes, no missing file or retained runner-up. Five built-in imagegen calls (three candidates and two composition edits); model undisclosed, same service terms as above. [Exact prompts, selection, source hash and limitations](R23-PROMPTS.md). Source hash equality, full-size/120 px review and static 1024 × 768 / 768 × 1024 cover previews passed. Horizon about 38%, smooth clear lower lawn; peripheral butterfly/flower/rock clipping and edge cloud recorded. Previews use illustrative 100 px circles, not actual game UI. No preparation/import, src integration, device or child judgement.
