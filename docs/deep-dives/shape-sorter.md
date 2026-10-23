@@ -150,13 +150,11 @@ Each has a default the build uses; none blocks slices 1–7.
 4. **More shapes, sizes and colours** (built 2026-10-22, PR #817; logic tier plus `fingerdemo` at 8 and one play of 6): five new kinds with lines and colours, pool draws at 6–8, sizes at 6–7, the rainbow one colour, the box's property facts. Run `npm run build` (shared `src/art/shapes.ts` changes).
 5. **Level 11 *Big, middle, little*** (built 2026-10-22, PR #817; new levels tier, plus a portrait screenshot for the three-size lid): preschool `order [3, 4, 5, 6, 7, 11]`, pre-K `order [5, 6, 7, 11, 8]`.
 6. **Level 12 *Turn it to fit*** (built 2026-10-22, [PR #822](https://github.com/rjdunlap/neo/pull/822); new interaction tier: typecheck, units, build, filtered play of 12 with wrong holes/orientation help and cancellation, portrait, `fingerdemo` at 12): pre-K `order [5, 6, 7, 11, 8, 12]`. Four pieces; on some seeds a circle replaces one of square/triangle/hexagon/star for contrast. [Build note](../archive/COMPLETED-2026-10-09.md#shape-sorter-batch-2-turn-it-to-fit-2026-10-22).
-7. **Level 13 *Corners or curves*** (claimed with slice 8 by worker `01a166bf-f88d-7961-b282-0ead2aeff7b9`, branch `codex/shape-corners-counts`, draft PR pending; new levels tier; after slice 4): pre-K `order […, 12, 13]`.
-8. **Level 14 *Count the corners*** (new levels tier; after slice 4): pre-K `order […, 13, 14]`; a school window only if decision 1 says so.
+7. **Level 13 *Corners or curves*** (built 2026-10-22 with slice 8, [PR #842](https://github.com/rjdunlap/neo/pull/842)): six pieces, both classes each round, heart excluded; pre-K order ends 12, 13. [Build note](../archive/COMPLETED-2026-10-09.md#shape-sorter-batch-3-corners-curves-and-corner-counts-2026-10-22).
+8. **Level 14 *Count the corners*** (built 2026-10-22 with slice 7, [PR #842](https://github.com/rjdunlap/neo/pull/842)): seven pieces, shared 0/3/4/5/6 targets, at least two distinct four-corner kinds; sequential dot glow. Pre-K `[5, 6, 7, 11, 8, 12, 13, 14]`; school default remains none. Combined typecheck/rules, filtered plays and both demos, portrait and build; device/child checks open.
 
 Gated: a school window (decision 1); the creature box (decision 4, and the rework's casting).
 
 ## What was built in this session
 
 Nothing: a deep dive session is research and ideation only. Ran `node scripts/check-links.mjs` and `git diff --check`; no code, tests, build, browser or device checks.
-
-Batch 3 claim (2026-10-22): only levels 13–14, pre-K order `[5, 6, 7, 11, 8, 12, 13, 14]`. Expected files: sorter logic/render/tests, voice, how-to, filtered browser case and closeout docs. Combined typecheck/rule tests, plays and fingerdemo at 13–14, portrait. School, creature box, other batches and developer review #733 excluded. Admission 3%/24% used, resets `1792743182`/`1793293746`, ordinary usage true; conservative combined estimate 51.25/7.5 points fits. Historical shape worktrees clean and already superseded by merged #738/#817.

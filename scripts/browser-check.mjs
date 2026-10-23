@@ -7222,21 +7222,21 @@ async function originals() {
   const shapeLevels = process.env.SHAPE_LEVELS?.split(',').map(Number) ?? Array.from({ length: 8 }, (_, i) => i + 1);
   // Level 9, the tap-in entry, plays once at lap and once at toddler (in portrait), where it opens the ladder.
   // Level 10 (Round or square) is toddler's; 11 (Big, middle, little) plays in portrait for its wider three-size lid.
-  const shapeRuns = shapeLevels.filter((n) => n >= 1 && n <= 12 && (!only || only === 'shapes')).flatMap((n) => (n === 9 ? [[9, 'lap'], [9, 'toddler']] : n === 10 ? [[10, 'toddler']] : [[n, undefined]]));
+  const shapeRuns = shapeLevels.filter((n) => n >= 1 && n <= 14 && (!only || only === 'shapes')).flatMap((n) => (n === 9 ? [[9, 'lap'], [9, 'toddler']] : n === 10 ? [[10, 'toddler']] : [[n, undefined]]));
   for (const [level, shapeBand] of shapeRuns) {
-    const upright = level === 8 || level === 11 || level === 12 || (level === 9 && shapeBand === 'toddler');
+    const upright = level === 8 || level === 11 || level === 12 || level === 14 || (level === 9 && shapeBand === 'toddler');
     if (upright) await portrait(true);
     await launch('shape-sorter', level, 'Mia', shapeBand);
     await page.waitForTimeout(400);
     const shapeStickers = await page.evaluate(() => kit.store.data.stickers.length);
-    if (level === 12) await screenshot('shape-sorter-12-start-portrait');
+    if (level === 12 || level === 14) await screenshot(`shape-sorter-${level}-start-portrait`);
     if (level === 9 && shapeBand === 'toddler') await screenshot('shape-sorter-9-start-portrait');
     const holes = await page.evaluate(async () => {
       const g = neo.scene.game;
       // Pieces ride above the finger, so aim the finger just below the hole.
       const into = async (piece, hole) => { await kit.dragTo(piece.view, g.box.toGlobal({ x: hole.x, y: hole.y + 40 }), 12); await kit.sleep(450); };
       // By kind (a clue), or the piece's own hole: its kind and, at the sized level, its size.
-      const fits = (h, p) => h.kind === p.kind && (h.size === undefined || h.size === p.size);
+      const { fits } = await import('/src/games/shape-sorter/logic.ts');
       const holeFor = (k) => g.box.holes.find((h) => (typeof k === 'string' ? h.kind === k : fits(h, k)));
       if (g.plan.turning) {
         const { turnFits, turnNext } = await import('/src/games/shape-sorter/logic.ts');
@@ -7316,10 +7316,21 @@ async function originals() {
         }
       }
       if (g.box.holes.length > 1) {
-        const piece = g.pieces[0];
+        const piece = g.plan.attribute === 'count' ? g.pieces.find((p) => fits(g.box.holes.find((h) => h.attribute === 4), p)) : g.pieces[0];
         const wrong = g.box.holes.find((h) => !fits(h, piece));
         await into(piece, wrong); await into(piece, wrong);
         if (g.misses !== 2 || g.hints !== 1 || !holeFor(piece).glow.visible) throw new Error(`Shape hint: ${g.misses} ${g.hints}`);
+        if (g.plan.attribute === 'count') {
+          // Wrong drops on a four-corner shape light its four dots in order; the shared target accepts either kind.
+          const { CORNERS } = await import('/src/games/shape-sorter/logic.ts');
+          const fours = g.pieces.filter((p) => CORNERS[p.kind] === 4);
+          if (new Set(fours.map((p) => p.kind)).size < 2 || new Set(fours.map(holeFor)).size !== 1) throw new Error('Shape count: need two kinds sharing 4');
+          const target = holeFor(piece);
+          if (target.dots.length) {
+            g.box.update(0.01);
+            if (target.dots[0].alpha !== 1 || target.dots.at(-1).alpha !== 0.18) throw new Error('Shape count: dots must light in order');
+          }
+        }
       }
       for (let guard = 0; guard < 20 && g.pieces.length; guard++) { const p = g.pieces[0]; await into(p, holeFor(p)); }
       return g.box.holes.length;

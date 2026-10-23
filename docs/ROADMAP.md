@@ -126,7 +126,7 @@ The [first](archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#short-ladder-audit-2
 
 | Direction | Next useful work | Detail |
 | --- | --- | --- |
-| **Shape Sorter's sorting attributes** | Ready: Corners or curves and Count the corners, pre-K only by default | [Build slices](deep-dives/shape-sorter.md#build-slices-in-order) |
+| **Shape Sorter** | Attribute sorts built through pre-K 14; only developer-dependent school/creature alternatives remain | [Deep dive](deep-dives/shape-sorter.md#decisions-for-the-developer) |
 | **Memory Match's equivalent representations** | Levels 13–14 are separate decision-dependent slices; level-10 and younger-band decisions stay open | [Build slices](deep-dives/memory-match.md#build-slices-in-order) |
 | **Owl Walk Home** | Every remaining slice is gated: Stepping stones (decision 6), Color or shape (decision 7 and the iPad speech check), the grown-up seat (decision 5) | [Build slices](deep-dives/owl-walk.md#build-slices-in-order) |
 | **Bouncy Launch** | Notches with rising landing notes (device listen decision), then Near or Far (8), Where on the line? (10) and later levels (Between two flights, 9, is built) | [Build slices](deep-dives/bouncy-launch.md#build-slices-in-order) |
