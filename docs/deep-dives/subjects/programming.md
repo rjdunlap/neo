@@ -4,6 +4,8 @@
 
 Research and proposals only, following [chunk 28](../../ROADMAP.md#next-up) and the [subject procedure](../subjects.md#the-procedure-one-session-one-subject). Source pages were opened on the session date, with extraction limits below. No reference game was installed or played; no game, interpreter or parent tool was built.
 
+**P1 definition:** [Cue Studio 1–3](../../definitions/cue-studio.md), 2026-10-22, [PR #834](https://github.com/rjdunlap/neo/pull/834), docs only. Identity, band/entry/accounting and land decisions remain open; P2 is gated. This packet supersedes the provisional first-three-level details below, including its proposed band windows; later levels remain research proposals.
+
 **Recommendation:** define **Cue Studio** first: make a pet perform a tiny program, then connect an event to another character's response. It earns a separate identity only if the child actually edits executable commands; choosing story endings stays in Story Steps. Develop the existing **Machine Line** seed next for transforming objects, then **Parcel Programs** for older children and parents: one reusable program must work on several visible input trays. Keep waypoints, loop repair and reusable route routines in **Robot Path**, through its existing decisions and dive. These are docs-first recommendations, not a scheduled queue or approved registrations.
 
 ## Anchors and evidence limits
@@ -156,7 +158,7 @@ Each definition is one docs-only session; build packets are separate sessions af
 
 | Order | Complete slice and exit | Check tier when undertaken |
 | --- | --- | --- |
-| P1 **Define Cue Studio 1–3** — claimed `codex/define-cue-studio`, worker `01a1664d-d24f-7b92-b6de-d9039e09f58a` | Freeze identity, exact actions/traces, append/select/undo input, all alternatives, Check/help/assisted finish, adaptation, band/land fit, speech/demo and both layouts | Docs: links/anchors and diff only |
+| P1 **Define Cue Studio 1–3** — defined 2026-10-22 | [Bounded packet](../../definitions/cue-studio.md), [PR #834](https://github.com/rjdunlap/neo/pull/834); identity, ranges/accounting and placement remain decisions, no implementation | Docs: links/anchors and diff only |
 | P2 **Build Cue Studio 1–2** | One-command and two-command free performances, editable replay and deliberate supported Finish; complete shell integration, not an interpreter-only stub | New game: typecheck, units, one filtered first/top play with help/inert-action coverage and portrait; shared registration files imply build |
 | P3 **Build Cue Studio 3** | Pictured requested trace, free first watch, local repair, deliberate Check and truthful graduated help; bot demonstrates repair | New interaction tier: typecheck, units, filtered first/top affected play including wrong Check/help and portrait; build only if shared files/assets change |
 | P4 **Define event/repeat/message 4–6** | Freeze event dispatch, bounded loops, sender/receiver trace and all interruption cases, then build one complete rung per session | Definition docs only; builds use new-interaction tier, or new-level tier where the input is unchanged, plus top-level ghost finger |

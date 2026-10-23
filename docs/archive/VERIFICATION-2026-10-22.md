@@ -236,3 +236,31 @@
 - Passed `GAME_URL=http://localhost:5186 BROWSER_SUITE=shortlist SHORTLIST_ONLY=lasso FROM_LEVEL=6 npm run test:browser`: portrait, far guess `[0,0]`, two wrong loops/hint, free revised guess, wrong final pad, final `[3,1]`, one sticker and no page errors.
 - Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=lasso-loops FINGER_LEVELS=6` at the same URL, clean in 23.3 s. Viewed `test-results/browser/lasso-loops-6-guess-sign.png`: portrait sign, cards, jar and pet clear.
 - Not run: world/offline (no persistence, assets or navigation change); iPad speech, sign readability and child benchmark use remain [device checks](../DEVICE-CHECKS.md).
+
+## 2026-10-22 — Speaking-and-listening study (subject research, docs only)
+
+- [PR #810](https://github.com/rjdunlap/neo/pull/810), `claude/loving-gates-tzccpn`: [study](../deep-dives/subjects/speaking-listening.md) (Photo Safari *Tell me which* and *Tell me both* recommended first); tracker, packet, roadmap table, backlog, READY (the definition line replaces the research line, and `vocabulary-word-parts` moves up to keep a research place), IDEAS and the Photo Safari dive's ladder updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
+- Open: whether a six-year-old accepts that the pet cannot see the twinkle, whether the camera's wobble between two friends reads as "I'm not sure", chip-tray fit in portrait, and any transfer to talking with people; no reference game was played.
+
+## 2026-10-22 — Photo Safari Tell me which/both definition (speaking-listening SL1–2, docs only)
+
+- Branch `claude/define-photo-safari-tell` (PR #813): definition packet `docs/definitions/photo-safari-tell-me-which.md` (levels 10–11, IDs fixed; 8–9 reserved); READY, batch plan, study backlog, Photo Safari dive and speaking-listening study updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Open: no typecheck, unit tests, build or browser run; build not started.
+
+## 2026-10-22 — Scoop Shop count-on and mixed-colour orders (batch 2, slices 5–6)
+
+- [PR #811](https://github.com/rjdunlap/neo/pull/811): level 12 prefilled cones and missing slots; level 13 two unordered colour counts. Proof on `02bc8869` plus implementation diff, later integrated docs-only main through `151e3368`; code unchanged.
+- Passed typecheck; 32 focused Scoop Shop rule/band tests (200 seeded rounds per new level, changing remainder, either colour first, saturation rejection, helpful hints, saved IDs); 39 how-to/registry tests; build (existing chunk-size warning).
+- `GAME_URL=http://localhost:5213 BROWSER_SUITE=arcade ARCADE_ONLY=scoop ARCADE_LEVELS=12,13`: prefilled cones retained after wrong scoops, free order repeat, hint glow, mixed counts in either order and saturated-colour bounce; saved 2/1 at 12 and 3/1 at 13, one sticker each, no page errors. Initial sandbox Chromium launch denied; same filtered command passed with approved escalation.
+- Same URL, `BROWSER_SUITE=fingerdemo FINGER_ONLY=scoop-shop FINGER_LEVELS=12,13`: both clean, **27.3 / 37.7 s**, no misses/hints/page errors. Both `test-results/browser/scoop-shop-12-portrait.png` and `scoop-shop-13-portrait.png` inspected: clear slot/count rows, tubs, pet and controls.
+- Links/diff checks passed. Not run: full local unit suite (CI runs it), world/offline/picnic/couch (unaffected). iPad speech/touch and child count-on/two-row understanding remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-10-22 — Vocabulary-and-word-parts study (subject research, docs only)
+
+- [PR #814](https://github.com/rjdunlap/neo/pull/814), `claude/vocabulary-word-parts-research`: [study](../deep-dives/subjects/vocabulary-word-parts.md) (Word Glue levels 1–3 recommended first); tracker, packet, roadmap table, backlog, READY (the definition line added and `informational-reading` moves up to keep a research place), IDEAS, WAITING-ON-DEVELOPER and the Opposites and Word Monsters ownership notes updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
+- Open: device speech of whole compounds and invented names, whether a young child reads the join as making a new thing, legibility of combined pictures at 140 units; no reference game was played.

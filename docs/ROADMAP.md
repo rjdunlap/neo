@@ -343,7 +343,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | Astronomy | 2026-10-17 | [study](deep-dives/subjects/astronomy.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#astronomy-recommendations) |
 | Chemistry | 2026-10-17 | [study](deep-dives/subjects/chemistry.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#chemistry-recommendations) |
 | Matter | 2026-10-17 | [study](deep-dives/subjects/matter.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#matter-recommendations) |
-| Programming | 2026-10-14 | [study](deep-dives/subjects/programming.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#programming-recommendations) |
+| Programming | 2026-10-14 | [study](deep-dives/subjects/programming.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#programming-recommendations); [Cue Studio P1 defined](definitions/cue-studio.md), P2 gated on identity/bands/accounting/land |
 | Music and instruments | 2026-10-14 | [study](deep-dives/subjects/music-instruments.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#music-and-instruments-recommendations) |
 | Energy and waves | 2026-10-14 | [study](deep-dives/subjects/energy-waves.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations) |
 | How computers work | 2026-10-15 | [study](deep-dives/subjects/how-computers-work.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#how-computers-work-recommendations) |

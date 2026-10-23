@@ -6,11 +6,11 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Study `programming`: define Cue Studio** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#programming-recommendations).
 - **Study `writing-composition`: define Story Weaver 1–3 (WC1)** (docs only; status `define`): one bounded packet from the completed study; a new game, so its build waits on the developer's identity and land decision. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#writing-and-composition-recommendations).
 - **Study `keyboarding-editing`: define Pond Typing, reshaped (KE2)** (docs only; status `define`): one bounded packet from the completed study; a keyboard-only game (`inputs: ['controller']`, opens its couch course), so its build needs letters in the couch input and waits on the developer's registration and land decision (Story Grove capacity). [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#keyboarding-and-editing-recommendations).
 - **Research subject `spelling-sentences`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies (including `writing-composition` and `keyboarding-editing`, which leave the rules of capitals, stops and spelling, and hand it KE3 Capital and stop), and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 - **`shape-sorter`, Corners, curves and corner counts** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#shape-sorter-3-corners-curves-and-corner-counts).
+- **Study `music-instruments`: define Hat Band (M5)** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#music-and-instruments-recommendations).
 
 ## Queued
 
@@ -70,7 +70,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
 
-- **Study `music-instruments`: define Hat Band (M5)** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#music-and-instruments-recommendations).
 - **Study `energy-waves`: define Circuit Garden** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations).
 - **Study `how-computers-work`: define Sorting Machine** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#how-computers-work-recommendations).
 - **Study `robots-automation`: define Helper House** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#robots-and-automation-recommendations).
@@ -144,5 +143,7 @@ Each line is selected for routine dispatch; claim one packet, then enqueue its u
 
 - **`species-comeback`, levels 1–3** (status `decision`; existing [PR #733](https://github.com/rjdunlap/neo/pull/733) awaits developer review): preserve the draft and its checks; do not duplicate or merge it. [Definition](definitions/species-comeback.md).
 - **Study `weather-water`: define Drop's Journey** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#weather-and-water-recommendations).
+
+- **`cue-studio`, levels 1–2 (programming P2)** (one proposed same-game batch; new-game tier; **gated, not eligible for routines**): one-command and any two-command executable performances, slot replacement/Undo, replay and supported deliberate Finish. Starts only after developer identity, bands/entry/accounting and land/capacity decisions; P3 repair is a separate dependent interaction. [P1 definition](definitions/cue-studio.md#bands-and-adaptation-proposal-awaiting-decision).
 
 Reviewer-dependent research is tracked in the [backlog](STUDY-BACKLOG.md#research-waiting-on-a-reviewer-decision), not dispatched here.
