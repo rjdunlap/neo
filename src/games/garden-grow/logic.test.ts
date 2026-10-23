@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BEDS, gardenTouch, makeRequests, matches, packetsFor, planFor, PLANS, total, type BedState, type Request } from './logic';
+import { BEDS, BIG_FLOWERS, BIG_STAGES, bigFinished, bigTouch, KINDS, gardenTouch, makeRequests, matches, packetsFor, planFor, PLANS, total, type BedState, type BigState, type Request } from './logic';
 
 describe('Garden Grow', () => {
   it('asks for things that fit the beds, offers the packets needed, and never repeats a request back to back', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'big')) {
       for (let seed = 1; seed <= 300; seed++) {
         const rng = new Rng(seed);
         const rs = makeRequests(plan, rng);
@@ -37,19 +37,19 @@ describe('Garden Grow', () => {
     expect(planFor(5).mode).toBe('mix');
     expect(planFor(6).mode).toBe('more');
     expect(planFor(7).mode).toBe('array');
-    expect(planFor(8).mode).toBe('array');
+    expect(planFor(8).mode).toBe('big');
   });
 
   it('checks plantings by color and number, in any order', () => {
-    const r: Request = { want: { red: 2, yellow: 1 } };
+    const r: Request = { kind: 'daisy', want: { red: 2, yellow: 1 } };
     expect(matches(r, ['red', 'yellow', 'red'])).toBe(true);
     expect(matches(r, ['red', 'yellow'])).toBe(false);
     expect(matches(r, ['red', 'yellow', 'red', 'blue'])).toBe(false);
-    expect(matches({ want: { blue: 3 } }, ['blue', 'blue', 'blue'])).toBe(true);
+    expect(matches({ kind: 'tulip', want: { blue: 3 } }, ['blue', 'blue', 'blue'])).toBe(true);
   });
 
   it("plants what is asked and no more, so the demonstration's every request is met with no bounce", () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'big')) {
       for (let seed = 1; seed <= 100; seed++) {
         const requests = makeRequests(plan, new Rng(seed));
         const free = plan.requests === 0;
@@ -91,5 +91,46 @@ describe('Garden Grow', () => {
         }
       }
     }
+  });
+
+  it('picks a kind per request, never the same twice running, and judges color and number only', () => {
+    for (const plan of PLANS.filter((p) => p.mode !== 'big')) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const rs = makeRequests(plan, new Rng(seed));
+        rs.forEach((r, i) => {
+          expect(KINDS).toContain(r.kind);
+          if (i > 0) expect(r.kind).not.toBe(rs[i - 1].kind);
+        });
+      }
+    }
+    const r: Request = { kind: 'daisy', want: { red: 2 } };
+    expect(matches({ ...r, kind: 'sunflower' }, ['red', 'red'])).toBe(matches(r, ['red', 'red']));
+  });
+
+  it('maps every level of every band to its own plan, level 8 being the big bed', () => {
+    expect(PLANS.map((p) => p.mode)).toHaveLength(8);
+    expect(planFor(8).mode).toBe('big');
+    for (const l of [1, 2, 3, 4, 5, 6, 7]) expect(planFor(l).mode).not.toBe('big');
+    expect(makeRequests(planFor(8), new Rng(1))).toHaveLength(0);
+    expect(packetsFor(planFor(8), undefined, new Rng(1))).toEqual([]);
+  });
+
+  it('level 8: five stages per flower, three flowers end it, and every touch moves it on', () => {
+    let s: BigState = { done: 0, stage: 0 };
+    let touches = 0;
+    const stages: number[] = [];
+    while (!bigFinished(s)) {
+      const next = bigTouch(s);
+      expect(next).not.toEqual(s);
+      s = next;
+      stages.push(s.stage);
+      touches++;
+      expect(touches).toBeLessThan(40);
+    }
+    expect(s).toEqual({ done: BIG_FLOWERS, stage: BIG_STAGES });
+    // Every flower passes through every stage, one at a time.
+    expect(stages.filter((x) => x === BIG_STAGES)).toHaveLength(BIG_FLOWERS);
+    for (let st = 1; st <= BIG_STAGES; st++) expect(stages.filter((x) => x === st)).toHaveLength(BIG_FLOWERS);
+    expect(bigTouch(s)).toBe(s);
   });
 });
