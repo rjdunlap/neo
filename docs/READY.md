@@ -135,7 +135,7 @@ Each line is selected for routine dispatch; claim one packet, then enqueue its u
 
 ## Blocked work (not routine picks)
 
-- **Rework RW08 slice 3, the cutover** (status `decision`; waits on the [cutover go-ahead](WAITING-ON-DEVELOPER.md#still-waiting), so no routine picks it up; shell, save and navigation tier): delete `classic/`, the map, age places and `?preview`. [Slice 3](rework/RW08-CUTOVER.md#slice-3-the-cutover-waits-for-the-developer)
+- **Rework RW08 slice 3, the cutover** (approved by the developer 2026-10-23; starts only when they say they have played slices 1–2 on the iPad ([waiting](WAITING-ON-DEVELOPER.md#still-waiting)), so no routine picks it up; shell, save and navigation tier): delete `classic/`, the map, age places and `?preview`. [Slice 3](rework/RW08-CUTOVER.md#slice-3-the-cutover-approved-starts-when-the-developer-has-played-slices-12)
 
 - **Study `weather-water`: define Drop's Journey** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#weather-and-water-recommendations).
 

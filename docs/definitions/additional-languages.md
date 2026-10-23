@@ -60,3 +60,5 @@ Translating sentences, the journal and captions (stage 2); the how-to cards, the
 3. **Whether the grown-ups' page labels the status line** with a way to test the voice (a "hear a sample" button is plain HTML and cheap, but is proposed, not defined).
 
 **Decided 2026-10-23 (on the developer's delegation):** stage 1 adds the second-language word after the English one, as the per-person `settings.language2` above, spoken by device speech; whole-voice switching is only a later option for older bands, and replacing English, a per-device setting and recorded parent lines are not used. The first language and its family reviewer remain the developer's call.
+
+**Decided 2026-10-23 by the developer:** Portuguese comes first. The developer will name the family member who reviews every Portuguese line and whether it is Brazilian or European Portuguese; nothing in Portuguese ships before that review.
