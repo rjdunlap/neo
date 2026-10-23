@@ -2464,6 +2464,9 @@ export const SCRIPT = {
 
   'munch.tap': ['The monster is hungry! Tap a cookie!'],
   'munch.count': ['Feed the monster! We will count every cookie.'],
+  'munch.big': ['Big, big cookies! Tap one to feed the monster!'],
+  'munch.each-kind': ['A cookie and an apple for each monster!'],
+  'munch.had-food': ['I had one of those! What else can I have?'],
   'munch.burp': ['Burp! Excuse me! Thank you!'],
   'munch.each': ['One cookie for each monster!'],
   'munch.had': ['I had mine! Who still needs a cookie?'],

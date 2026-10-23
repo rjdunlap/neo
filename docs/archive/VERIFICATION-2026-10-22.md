@@ -360,3 +360,10 @@
 - Branch `claude/define-melt-and-freeze` (PR #832): definition packet `docs/definitions/melt-and-freeze.md` (authored substance table, sun and snowflake tools, four levels, accounting, layout, tests, how-to); READY (build queued and gated, define line removed), study backlog, recommendations row, matter slice 1 and the Waiting row updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Open: no typecheck, unit tests, build or browser run; the build is gated on the developer's decisions 1 (new game) and 3 (land); four-thing portrait fit is unproven until the layout test exists.
+
+## 2026-10-22 — Cue Studio 1–3 definition (programming P1, docs only)
+
+- [PR #834](https://github.com/rjdunlap/neo/pull/834), `codex/define-cue-studio`: finite performance/editor, complete accepted traces, Check/help/finish, band/adaptation proposal, land audit and both layout specifications; study/packet/tracker, READY/backlog, decisions/device notes and archive reconciled.
+- Ran: relative Markdown links/anchors (`node scripts/check-links.mjs`) and `git diff --check`.
+- Not run: local typecheck, units, build, browser, offline or device checks (docs only); layouts are specified, not visually verified.
+- Open: identity, bands/entry/accounting and land/capacity block P2; review and child/device evidence remain open. No P2 onward or Robot Path implementation; #733 preserved.
