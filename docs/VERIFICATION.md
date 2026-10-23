@@ -8,6 +8,13 @@
 - Not run: world, offline, picnic, couch (unaffected).
 - Open: iPad speech, a three-year-old's understanding of the tabs, and portrait legibility (DEVICE-CHECKS.md).
 
+## 2026-10-22 — Keyboarding-editing study (subject research, docs only)
+
+- [PR #829](https://github.com/rjdunlap/neo/pull/829), `claude/zealous-albattani-woucn3`: [study](deep-dives/subjects/keyboarding-editing.md) (Pond Typing reshaped for the couch's Laptop setting recommended first; *Mend the sign* handed to the Read & Do dive); tracker, packet, roadmap table, backlog, READY (the define line replaces the research line and `spelling-sentences` moves up), IDEAS and a Waiting default row updated.
+- Opened: CCSS W.K.6, W.1.6, W.2.5–2.6, W.3.6, W.4.6, L.K.2, L.1.2; MDN VisualViewport, VirtualKeyboard, `autocorrect`, `KeyboardEvent.code`; Typing.com K–1, the Vanderbilt thesis, Montessori Academy, Mayer 2020. Opened by research agents and labelled in the study: Kiefer, Ibaibarriaga, Ouellette and Tims, Vatavu, Anthony, Nicolson and Gardner, Edclub, LWT, Nessy, BabySmash, CUPS. Goldberg 2003 read from its PDF abstract; summary only: Morphy and Graham, Bangert-Drowns. Not checked: iPad installed-app keyboard behaviour, a browser's shortcut lockout, the couch's player names and orientation.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
+
 ## 2026-10-22 — Animal Snack: the bunny eats grass
 
 - Changed: the bunny's favourite went from a carrot (a sugary treat, per the [RSPCA's rabbit-diet myths page](https://www.rspca.org.uk/adviceandwelfare/pets/rabbits/diet/myths)) to grass, its main food. That means a new `grass` food (a tuft of grass, a swish bite and a code-drawn tuft on a clump of earth), the level-3 name, the map icon, the co-play tip and the journal line "The bunny eats grass. Nibble, nibble!". Entry id `animal-snack:bunny` is unchanged. Considered and kept: bear honey (a minor food) and pig apple (real but occasional).

@@ -68,6 +68,7 @@ The research is complete for every row below; `define` means the next session wr
 | `vocabulary-word-parts` | decision | Word Glue 1–3 (VW1) [defined](definitions/word-glue.md) 2026-10-22 ([PR #816](https://github.com/rjdunlap/neo/pull/816)); next is the gated build, waiting on decisions 1 (new game and land) and 2 (compound list review) | [Study](deep-dives/subjects/vocabulary-word-parts.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#vocabulary-and-word-parts-recommendations) |
 | `informational-reading` | ready | Look It Up 1–3 (IR1) [defined](definitions/look-it-up.md) 2026-10-22 with real animal facts (the developer's choice); built 2026-10-22 (PR #830, game gaps in the archive note); next definition IR2 (levels 4–6) after a child has played level 3 | [Study](deep-dives/subjects/informational-reading.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#informational-reading-recommendations) |
 | `writing-composition` | decision / define | Researched 2026-10-22 ([PR #824](https://github.com/rjdunlap/neo/pull/824)); next action define Story Weaver 1–3 (WC1, a new game: three-page tile story, an owl who asks about the first missing part); its build waits on the developer confirming identity and land (decision 1); the Read & Do dive takes *Make the sign*, Look It Up takes *Write a guide page* once built | [Study](deep-dives/subjects/writing-composition.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#writing-and-composition-recommendations) |
+| `keyboarding-editing` | define | Researched 2026-10-22 ([PR #829](https://github.com/rjdunlap/neo/pull/829)); next action define Pond Typing, reshaped (KE2: couch Laptop setting, six levels from one letter to mending a line with the arrow keys; no drift, accuracy only); *Mend the sign* is handed to the Read & Do dive and the capital/stop rules to `spelling-sentences`; no system keyboard or typed text in a child's game | [Study](deep-dives/subjects/keyboarding-editing.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#keyboarding-and-editing-recommendations) |
 
 ## Unstarted subject research
 
@@ -75,7 +76,6 @@ One subject per docs-only session using the [subject procedure](deep-dives/subje
 
 | Subject | Status | Next action |
 | --- | --- | --- |
-| `keyboarding-editing` | research | Finding keys, spaces, capitals, punctuation, delete, cursor movement and revising digital text; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `spelling-sentences` | research | Encoding words, spelling patterns, word boundaries, sentence construction, capitals and punctuation; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `poetry-wordplay` | research | Nursery rhymes, riddles, jokes, puns, tongue-twisters; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `oceans` | research | Beach and tide pools, depth zones, ocean animals, tides and currents, a clean sea; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
