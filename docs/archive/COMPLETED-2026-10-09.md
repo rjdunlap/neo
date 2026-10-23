@@ -1749,7 +1749,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--pet-kitchen-
 
 [PR #879](https://github.com/rjdunlap/neo/pull/879), `claude/pet-kitchen-same-or-not` ([deep dive](../deep-dives/pet-kitchen.md#build-slices-in-order)). Level 11: one sandwich, two friends, a cut choice of the middle or a lopsided third and two-thirds (side seeded); pieces now carry an area and a serve is fair only by area. Serving one piece each of unequal area is a miss shown as an overlay of the two pieces that then return; the second miss glows the round arrow (`kitchen.recut-other`). Preschool `order [1, 11, 2, 3, 4]`, pre-K `order [11, 3, 4, 5, 6]`, `entryLevels [10, 11]`. Level 12: two pizzas, three friends, cuts 2/3/4; only thirds share, and halves or quarters leave a piece in the tray (a new `leftover` trouble, `kitchen.leftover`); school `order [5, 6, 7, 8, 9, 12]`. The orders exclude level 14, which (slice 6, a cut per whole) is the open part of the batch. Rule tests added in `src/games/pet-kitchen/logic.test.ts`; the `creative` kitchen harness now plays level 12 with level-11 and 12 branches.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--pet-kitchen-batch-2-part-a-levels-11-12-slices-45).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--pet-kitchen-batch-2-part-a-levels-11-12-slices-45).
 
 ## Adventure Walk levels 1–3 (AW2, 2026-10-23)
 
