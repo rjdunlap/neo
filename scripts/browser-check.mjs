@@ -9231,7 +9231,7 @@ async function woodsBatch() {
     log(`Bubble Pop ${level}: pairs that make ${sum} popped together, wrong pairs as misses, glowing pair hint, rainbow bubble, saved score and sticker passed`);
   }
 
-  if (!only || only === 'go') for (const level of [1, 2, 3, 4, 9].filter((l) => l >= fromLevel)) {
+  if (!only || only === 'go') for (const level of [1, 2, 3, 4, 5, 6, 9].filter((l) => l >= fromLevel)) {
     await launch('stop-and-go', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const lightIs = (l) => page.waitForFunction((l) => neo.scene.game.light.light === l, l, { timeout: 15000 });
@@ -9255,6 +9255,36 @@ async function woodsBatch() {
       await tap('neo.scene.game.cars[0]'); await page.waitForTimeout(300);
       assert.equal(await page.evaluate(() => neo.scene.game.done), 1, 'a car tap counts at the toy level');
       for (let k = 0; k < 7; k++) { await tap('neo.scene.game.light'); await page.waitForTimeout(260); }
+    }
+    else if (mode === 'lanes') {
+      // Whose light? Each vehicle answers only to its own lane's light: a send on its own red is a miss, whatever the other light shows.
+      const lightOf = (lane) => `neo.scene.game.${lane === 'car' ? 'light' : 'light2'}.light`;
+      await page.waitForFunction(() => neo.scene.game.light.light === 'red', null, { timeout: 15000 });
+      await page.waitForTimeout(300);
+      await tap(`neo.scene.game.cars.find((c) => c.lane === 'car')`); await page.waitForTimeout(450);
+      await tap(`neo.scene.game.cars.find((c) => c.lane === 'car')`);
+      assert.deepEqual(await counts(), [2, 1]);
+      await screenshot('stop-and-go-5');
+      for (let k = 0; k < 60 && !(await page.evaluate(() => neo.scene.game.finished)); k++) {
+        const lane = await page.evaluate(() => (neo.scene.game.light.light === 'green' ? 'car' : neo.scene.game.light2.light === 'green' ? 'bike' : ''));
+        if (!lane) { await page.waitForTimeout(150); continue; }
+        await tap(`neo.scene.game.cars.find((c) => c.lane === '${lane}')`); await page.waitForTimeout(650);
+      }
+    }
+    else if (mode === 'busy') {
+      // Busy crossing: cars arrive with clouds; both roads green is the one miss; then hand the roads over by the ghost hand's rule.
+      await page.waitForFunction(() => neo.scene.game.cars.length >= 2, null, { timeout: 15000 });
+      assert.ok(await page.evaluate(() => neo.scene.game.cars[0].children.length > 1), 'a waiting car shows its thought cloud');
+      await tap('neo.scene.game.light'); await page.waitForTimeout(350);
+      for (let k = 0; k < 3; k++) { await tap('neo.scene.game.light2'); await page.waitForTimeout(400); }
+      assert.deepEqual(await counts(), [2, 1], 'both roads green twice');
+      await tap('neo.scene.game.light2'); await page.waitForTimeout(300);
+      await screenshot('stop-and-go-6');
+      for (let k = 0; k < 150 && !(await page.evaluate(() => neo.scene.game.finished)); k++) {
+        const w = await page.evaluate(() => { const i = neo.scene.game.autotouch(); return i && i.tap ? (i.tap.on === neo.scene.game.light ? 1 : 2) : 0; });
+        if (w) await tap(w === 1 ? 'neo.scene.game.light' : 'neo.scene.game.light2');
+        await page.waitForTimeout(450);
+      }
     }
     else if (mode === 'send' || mode === 'walk') {
       const act = mode === 'send' ? 'neo.scene.game.cars[0]' : 'neo.scene.game.step';
