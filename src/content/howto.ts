@@ -1157,6 +1157,9 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 7, to: 7, text: 'Listen to the amount your friend asks for (tap the picture bubble to hear it again), cut equal pieces, then put that fraction on their plate.' },
       { from: 8, to: 8, text: 'Look at the recipe card and halve it: put in one fruit for every two fruits on the card.' },
       { from: 9, to: 9, text: 'Cut the pizza into three equal slices, then give one slice to each friend.' },
+      { from: 11, to: 11, text: 'Choose the cutting picture that makes two pieces the same size, then give one piece to each friend.' },
+      { from: 12, to: 12, text: 'Cut the two pizzas so three friends can each have the same number of slices, then share them out.' },
+      { from: 11, to: 12, text: 'Tap the green arrow to serve. The friends eat what was shared fairly.' },
       { to: 9, text: 'Tap the green arrow to serve. The friends eat what was shared fairly.' },
     ],
     finish: 'The round ends when the food is served fairly.',
@@ -1167,6 +1170,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 7, to: 7, text: 'Two quarters count as one half, and the round arrow lets you cut again; nothing is lost. A good serve is counted aloud.' },
       { from: 8, to: 8, text: 'The back arrow takes the last fruit out; nothing is lost.' },
       { from: 9, to: 9, text: 'The round arrow puts the pizza back together to cut again; nothing is lost.' },
+      { from: 11, to: 11, text: 'Choosing the uneven cut is fine to explore. If you serve unequal pieces, they are laid one over the other to show which is bigger, then come back.' },
+      { from: 12, to: 12, text: 'A cut that leaves a piece in the tray gets a hint; the round arrow puts the pizzas back together to cut again.' },
     ],
   },
   'tangram-town': {
