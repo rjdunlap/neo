@@ -1073,7 +1073,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'seesaw-balance': {
     goal: 'Make the seesaw go up, balance, or show how heavy something is.',
     steps: [
-      { to: 2, text: 'Tap a friend to put it on the other side of the seesaw.' },
+      { to: 2, text: 'Tap a friend, or drag it, to put it on the other side of the seesaw.' },
       { from: 3, to: 3, text: 'Tap blocks to put them on the other side until the seesaw balances.' },
       { from: 4, to: 4, text: 'Put the presents on the seesaw to see which side drops; the heaviest goes in the wagon.' },
       { from: 5, to: 5, text: 'Tap number weights onto the other side until it weighs the same as this side, using different pieces.' },

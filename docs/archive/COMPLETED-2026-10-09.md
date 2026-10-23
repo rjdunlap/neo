@@ -1,5 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Seesaw Balance batch 1: truthful support and varied weighing props (slices 1–2, 2026-10-23)
+
+[PR #858](https://github.com/rjdunlap/neo/pull/858), `claude/seesaw-support-truth`: slice 1 support truth: at levels 1–2 a tap on a loose friend on the grass hops it to the empty tray (a touch that ends within 60 units of its pick-up; drag still works) and the how-to's line says "Tap a friend, or drag it"; at levels 3, 6 and 7 the glow after two overs rings the excess, and when the tray is under (nothing excess) it rings the next block on the grass (via `seesawTouch`); new voice variants in `seesaw.other`, `seesaw.light` and `seesaw.too-many`. Slice 2: `FACES_FOR` gives each weight a pool (1 duck or cat, 2 bunny or dog, 3 pig or cow, 4 bear) drawn from a separate looks `Rng` seeded from a clone of the round rng, so existing round numbers and sides are unchanged; `friendScale` moved into `logic.ts`; presents get a seeded wrapping (plain, dots, stripes); the mystery box at levels 6–7 is a parcel or a crate per round (levels 8–11 boxes unchanged). IDs and level windows unchanged. Tests added for distinct faces per round, the pools, scale by weight, wrappings and looks.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--seesaw-balance-batch-1-truthful-support-and-varied-weighing-props-slices-12).
+
 ### Sand Table levels 1–3 (E2, 2026-10-23)
 
 Branch `claude/sand-table-1-3` (PR #866): the [definition](../definitions/sand-table.md)'s dry toy built exactly as defined as `sand-table` (`src/games/sand-table/`: `logic.ts` with 30 rule tests, `art.ts`, `index.ts`; region `tinker-lab`; lap 1, toddler 1–2, preschool 2–3, pre-K 3). Tap the tray to pour, tap a scoop paddle to lift sand back to the bucket, plant the flag; level 2 adds a bay, level 3 three bays, a pail for spills and a pictured invitation ending in Show. Every round counts 0 misses and 0 hints. Show a hint is the pause sheet's `askForHint` (a real action that counts nothing) and Start again is `restart()`. Home land is **Rainbow Meadow**, not the definition's Bubble Beach default or Treehouse fallback: adding the game to those two failed their `src/app/scenes/*.test.ts` decor counts, while Barnyard and Rainbow Meadow passed.
@@ -1710,7 +1716,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-22.md#2026-10-22--rhythm-neigh
 
 Branch `claude/peg-garden-big-buds` (batch `peg-garden 2`, [deep dive](../deep-dives/peg-garden.md#build-slices-in-order)). New `big` mode: `BIG_PLAN` has four huge buds (radius 60) in a diamond at `BIG_SPOTS`, every touch drops a pearl and blooms a bud, with no misses or hints. Plans are now keyed by level ID through `planFor`; lap order is `[8, 1]`, toddler `[8, 1, 2]`, `entryLevels: [8]`; voice line `peg.big`; the how-to card has lines scoped to level 8. Rule tests cover huge buds clear of each other and the walls, every bud reachable with margin under drift, no trapped pearl, and the stall guard. Couch keeps its own catalog levels.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--peg-garden-level-8-big-buds-slice-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--peg-garden-level-8-big-buds-slice-4).
 
 
 ## Mail Carrier batch 2: Spoken map clues and both street sides (2026-10-23)

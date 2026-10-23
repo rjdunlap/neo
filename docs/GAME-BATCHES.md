@@ -271,8 +271,10 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### seesaw-balance 1: Truthful support and varied weighing props
 
-- **`seesaw-balance`, support truth, slice 1** (existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 6, `fingerdemo` at 1): a tap on a loose friend hops it to the empty tray at 1–2, the glow after two overs rings the next block on the grass when the tray is under, the how-to's levels 1–2 line says tap or drag, new voice variants; IDs and windows unchanged. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
-- **`seesaw-balance`, two faces per weight, wrappings and boxes, slice 2** (logic tier, plus one filtered play of 2 and 4): a friend pool per weight with a distinct-faces test, seeded present wrappings, parcel and crate boxes at 6–7. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
+Built 2026-10-23, [PR #858](https://github.com/rjdunlap/neo/pull/858); [closeout](archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-1-truthful-support-and-varied-weighing-props-slices-12-2026-10-23).
+
+- **`seesaw-balance`, support truth, slice 1 (built)** (existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 6, `fingerdemo` at 1): a tap on a loose friend hops it to the empty tray at 1–2, the glow after two overs rings the next block on the grass when the tray is under, the how-to's levels 1–2 line says tap or drag, new voice variants; IDs and windows unchanged. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
+- **`seesaw-balance`, two faces per weight, wrappings and boxes, slice 2 (built)** (logic tier, plus one filtered play of 2 and 4): a friend pool per weight with a distinct-faces test, seeded present wrappings, parcel and crate boxes at 6–7. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
