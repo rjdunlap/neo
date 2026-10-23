@@ -2,7 +2,7 @@ import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { bodyBox, restPoints } from '../../creatures/companion';
 import { SPECIES_IDS } from '../../creatures/species';
-import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, helps, makeRequests, moreLine, oldStrands, PIP_SCALP, QUIET_HINT, scalpFor, MAX_LENGTH, MIN_LENGTH, needs, PLAY_STROKES, PLANS, REACH, SEG, salonMove, STRANDS, strandPoints, strokePath, TOUR, toolFor, touchStrands, type Pt, type SalonState, type Strand, type Tool } from './logic';
+import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, helps, makeRequests, moreLine, oldStrands, PIP_SCALP, QUIET_HINT, scalpFor, MAX_LENGTH, MIN_LENGTH, needs, PLAY_STROKES, PLANS, FLOOF, isFree, PAT_START, SNIP_START, SNIP_TOUR, REACH, SEG, salonMove, STRANDS, strandPoints, strokePath, TOUR, toolFor, touchStrands, type Pt, type SalonState, type Strand, type Tool } from './logic';
 
 const head = (length: number, curl: number, color: Strand['color'], n = 20): Strand[] => Array.from({ length: n }, () => ({ length, curl, color }));
 
@@ -216,5 +216,32 @@ group('Fluffy Salon', () => {
       const spot = faceSpot(scalp, restPoints(s, 'eyes')[0], scale);
       for (const p of roots) expect(Math.hypot(p.x - spot.x, p.y - spot.y) * scale, `${s} face spot`).toBeGreaterThan(FACE_TAP);
     }
+  });
+
+  it('pats the fur to a floof within a bounded number of sweeps, and the bot finishes level 6', () => {
+    const an = anchors();
+    const strands: Strand[] = an.map(() => ({ ...PAT_START, color: 'pink' as const }));
+    let sweeps = 0;
+    while (strands.reduce((a, x) => a + x.length, 0) / strands.length < FLOOF) {
+      const path = strokePath('grow', sweeps++ % 2 === 1);
+      for (let k = 0; k + 1 < path.length; k++) {
+        for (let t = 0; t <= 10; t++) touchStrands('grow', strands, an, { x: path[k].x + ((path[k + 1].x - path[k].x) * t) / 10, y: path[k].y + ((path[k + 1].y - path[k].y) * t) / 10 });
+      }
+      expect(sweeps).toBeLessThan(30);
+    }
+    const base: SalonState = { mode: 'pat', look: null, strands, tool: 'grow', strokes: 0, mirror: false };
+    expect(salonMove(base)).toEqual({ do: 'stroke' });
+    expect(salonMove({ ...base, mirror: true })).toEqual({ do: 'mirror' });
+  });
+
+  it('answers every touch in the fur area at the free levels, and the bot snips after growing at level 7', () => {
+    expect(isFree('pat') && isFree('snip') && isFree('play') && !isFree('ask')).toBe(true);
+    expect(SNIP_START.length).toBeGreaterThan(MAX_LENGTH / 2);
+    const base: SalonState = { mode: 'snip', look: null, strands: head(SNIP_START.length, SNIP_START.curl, 'pink'), tool: 'grow', strokes: 0, mirror: false };
+    expect(salonMove(base)).toEqual({ do: 'stroke' });
+    expect(salonMove({ ...base, strokes: 1 })).toEqual({ do: 'tool', tool: 'cut' });
+    expect(salonMove({ ...base, strokes: SNIP_TOUR.length, mirror: true })).toEqual({ do: 'mirror' });
+    expect(PLANS[5].mode).toBe('pat');
+    expect(PLANS[6].mode).toBe('snip');
   });
 });

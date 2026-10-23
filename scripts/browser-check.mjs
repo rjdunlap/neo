@@ -6307,20 +6307,30 @@ async function batch() {
       },
     };
   });
-  for (let level = 1; level <= (process.env.TO_LEVEL ? Number(process.env.TO_LEVEL) : 5) && (!only || only === 'salon'); level++) {
+  for (let level = 1; level <= (process.env.TO_LEVEL ? Number(process.env.TO_LEVEL) : 7) && (!only || only === 'salon'); level++) {
+    if (process.env.FROM_LEVEL && level < Number(process.env.FROM_LEVEL)) continue;
     await launch('fluffy-salon', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     await page.evaluate(async () => {
       const g = neo.scene.game;
-      if (g.plan.mode === 'play' || g.plan.mode === 'tools') {
+      if (g.plan.mode === 'pat') {
+        if (g.buttons.length || g.mirror.visible) throw new Error('Pat the fluff has buttons or an early mirror');
+        for (let i = 0; i < 40 && !g.mirror.visible; i++) await salon.zigzag();
+        if (!await kit.until(() => g.mirror.visible, 5000)) throw new Error('No floof mirror');
+        if (g.mirror.radius !== 70) throw new Error('The pat mirror is not big');
+        await kit.sleep(500);
+        kit.tapOn(g.mirror);
+        return;
+      }
+      if (g.plan.mode === 'play' || g.plan.mode === 'tools' || g.plan.mode === 'snip') {
         // A pat off the fur, low on the left of the touch area, is answered (a giggle and a wobble) and changes no strand.
         const before = JSON.stringify(g.strands);
         const p = g.touch.toGlobal({ x: 190, y: neo.view.h - 160 });
         kit.tap(p.x, p.y);
         await kit.sleep(300);
         if (g.lastPat < 0 || JSON.stringify(g.strands) !== before) throw new Error('A pat off the fur was not answered');
-        for (const tool of g.plan.mode === 'play' ? ['grow', 'pink'] : ['grow', 'curl', 'blue', 'cut']) {
+        for (const tool of g.plan.mode === 'snip' ? ['grow', 'cut'] : g.plan.mode === 'play' ? ['grow', 'pink'] : ['grow', 'curl', 'blue', 'cut']) {
           await salon.pick(tool);
           if (tool === 'cut') await salon.cutShort(); else await salon.zigzag();
         }
