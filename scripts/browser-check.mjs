@@ -3634,7 +3634,7 @@ async function homeFlow() {
   // Family play → couch play → leave → back to Explore's Family play, in both orientations.
   for (const size of [{ width: 1024, height: 768 }, { width: 768, height: 1024 }]) {
     await page.setViewportSize(size); await page.evaluate(() => neo.go.explore()); await explore(null);
-    await tap('neo.scene.cards[3].node'); await explore('family', 0);
+    await tap('neo.scene.cards.find((c) => c.entry === \'family\').node'); await explore('family', 0);
     if (size.width < size.height) await screenshot('explore-family-portrait');
     await tap('neo.scene.cards[0].node'); await scene('CouchScene');
     await page.waitForTimeout(500);

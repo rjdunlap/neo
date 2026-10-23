@@ -19,6 +19,7 @@ import type { View } from '../../engine/view';
 import { GAMES } from '../../games/registry';
 import type { GameModule, HubIcon } from '../../games/types';
 import { playBand } from '../../progress/bands';
+import { levelsInOrder } from '../../progress/difficulty';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon, arcadeIcon, arrowIcon, houseIcon, playIcon, tilesIcon } from '../../ui/icons';
@@ -234,7 +235,9 @@ export class ArcadeScene extends Scene {
       return;
     }
     const band = playBand(mod.bands, store.data.profile.band);
-    const level = store.levelFor(mod.id, mod.levels(band), mod.entryLevels);
+    // Looking changes nothing: a game she has never played shows its first level without making a save entry for it.
+    const range = mod.levels(band);
+    const level = store.data.games[mod.id] ? store.levelFor(mod.id, range, mod.entryLevels) : levelsInOrder(range)[0];
     const spec = islandDemo(mod, level, band);
     if (spec) {
       this.demo = new Demo(mod, { ...spec, renderer: this.app.renderer });
@@ -417,8 +420,8 @@ export class ArcadeScene extends Scene {
     if (link) link.hidden = true;
     music.play(STYLES.hub);
     // The demonstrations' effects stay low, as on the how-to card.
+    // Explore's card already said `explore.arcade` on the way in.
     audio.hush(true);
-    if (!this.chosen) void voice.say('explore.arcade');
   }
 
   exit() {
