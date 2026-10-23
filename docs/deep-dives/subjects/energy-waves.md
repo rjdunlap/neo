@@ -84,6 +84,8 @@ S/M/L describe relative scope, not delivery estimates. Every row remains a propo
 | **G: play-with** | One person sets a switch/driver, the other chooses the predicted picture; watch together and swap | Both can revise the plan; solo pet fallback and either person may decline a turn. No second device/controller requirement |
 | **G: page** | Later choose a reviewed Connections and Changes conversation/activity card | Observe, compare and talk away from the screen; plain HTML, no log, daily visit or assessed family task. Practical instructions remain unwritten pending named review |
 
+**E1 claim (2026-10-22):** worker `01a166f1-dbd0-7a70-98ef-503b9c7d5695`, branch `codex/define-circuit-garden`; docs-only Circuit Garden 1–3 definition plus required future topology semantics. Expected files: new `docs/deep-dives/circuit-garden.md`, this study/recommendation packet, READY/STUDY-BACKLOG/ROADMAP and tracker links, verification/archive closeout, execution queue. No E2+ implementation or older workshop definition; registration/model-scope, reviewer/device and practical-content gates remain.
+
 ## First game's proposed ladder: Circuit Garden
 
 New game's **proposed** IDs, not changes to any saved ladder. Define levels 1–3 first, initially pre-K 1–3 and school 1–6; preschool 1–2 is an observation-dependent possibility. Upper-school and grown-up 4–6 require separate scope/registration decisions. Register only built IDs: if the workshop design (proposed 5) precedes contrast (4), explicitly use `BandLevels.order` to skip the absent ID, or freeze a different order before the first registration; never expose missing plans or renumber a saved level. These ranges are not approvals and do not imply an older player must repeat a preschool entry.
