@@ -127,7 +127,7 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 
 1. **Every touch counts and the hint points at the action** (existing-game bug fix; gaps 1–6; **built**, [PR #678](https://github.com/rjdunlap/neo/pull/678)): car taps at level 1, back-car toots at level 2, glow on the car/feet, level 3 hint reset, per-state motion and sound, `go.done.walk`. Checks: typecheck, the rule tests, one filtered regression play (levels 1 and 3, a red tap twice), `fingerdemo` at level 2 since the glow target moves.
 2. **Varied phases and vehicles** (content in existing levels): `cycleFor(rng)` with its bounded-phase test, six vehicles, the sticker pool. **built**, [PR #751](https://github.com/rjdunlap/neo/pull/751). Checks: typecheck, rule tests, one browser play of level 2 and `fingerdemo` at it.
-3. **Lap entry 9 *Go car, stop car*** (new interaction): lap order `[9, 1]`, `entryLevels: [9]`, how-to step for 9, bot taps green and red alternately. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
+3. **Lap entry 9 *Go car, stop car*** (new interaction; **built**, [PR #847](https://github.com/rjdunlap/neo/pull/847)): lap order `[9, 1]`, `entryLevels: [9]`, how-to step for 9, bot taps green and red alternately. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
 4. **Level 5 *Whose light?* and the pre-K window** (new level): preschool 2–5, pre-K 3–5. Checks: typecheck, rule tests, play of 5, `fingerdemo` at 5.
 5. **Level 6 *Busy crossing*** with the idle point that also helps level 4: pre-K 3–6. Checks: typecheck, rule tests, play of 6, `fingerdemo` at 6.
 6. *(Decision 3)* Toddler level 10 *Wait for green*.
@@ -142,6 +142,10 @@ Research and ideation only: no code. Ran `node scripts/check-links.mjs` and `git
 ## What was built: slice 1, every touch counts (2026-10-20)
 
 [PR #678](https://github.com/rjdunlap/neo/pull/678). Gaps 1–6 are fixed; 7 (fixed rhythm) and 8 (no help when stuck at the crossing) remain for slices 2 and 5. Rules are in `logic.ts` (`carTap`, `touchCounts`, `hintOn`, `doneLine`). Details in the [archive note](../archive/COMPLETED-2026-10-09.md#stop-and-go-every-touch-counts-slice-1-2026-10-20).
+
+## What was built: slice 3, Go car, stop car (2026-10-22)
+
+[PR #847](https://github.com/rjdunlap/neo/pull/847). Lap range 1–9 with order `[9, 1]` and `entryLevels: [9]`; mode `lamps` in `logic.ts`. Details in the [archive note](../archive/COMPLETED-2026-10-09.md#stop-and-go-go-car-stop-car-slice-3-2026-10-22).
 
 ## What was built: slice 2, varied phases and vehicles (2026-10-22)
 

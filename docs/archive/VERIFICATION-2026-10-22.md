@@ -311,3 +311,9 @@
 - Opened: CCSS W.K, W.1, W.3, W.5, W.7, the WWC practice guide page, Development Matters, Puranik and Lonigan 2011. Search summaries only: Puranik, Duncan and Guo 2024, Stein and Glenn, *Writing Next*, the story-dictation sources. Not opened: the statutory Writing ELG, Head Start ELOF, the WWC PDF.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
+
+## 2026-10-22 — Far Lights levels 1–4 definition (astronomy slice 1, docs only)
+
+- Branch `claude/define-far-lights` (PR #826): definition packet `docs/definitions/far-lights.md`; READY (define line removed, build gated), study backlog, astronomy study and recommendations, subject tracker, Waiting row and idea row updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Open: no typecheck, unit tests, build or browser run; nothing built or played. The build waits on the developer's identity, land and levels 1–2 accounting confirmation; the astronomy reviewer gates levels 5–8, not 1–4.
