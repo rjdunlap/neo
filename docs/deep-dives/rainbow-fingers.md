@@ -159,6 +159,8 @@ These are easier than levels that exist, or fall between them, so they are place
 10. **Level 12's color model.** Lean: write a hue-interpolation model in `logic.ts` and its tests before any art; if it does not stay faithful to how paint behaves, drop the level.
 11. **Person checks to add:** whether a one-year-old pats, slaps or drags and whether the splat reads as paint; whether 104-unit pots are right for a two-year-old; whether new picture and color names read right on device speech; and whether a six-year-old finds the wheel's neighbors.
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans stand: build 8–11 and define 12 in school 5–12, accepting the 9–10 inversion; level 7 stays one page; apple and grapes accepted in green; a hint counts only after two misses; fold-down pages in about a third of rounds at levels 1–2; a `'paint'` journal source with five entries; paint mixing, said as paint; a mark on every pot. New picture and color words go to the device checks.
+
 ## Build slices, in order
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken. Each level slice also updates the `early` paint loop in `scripts/browser-check.mjs`, the `fingerdemo` levels, the how-to `LevelLine`s, `describeLevel`, the README row and [GAMES.md](../GAMES.md).

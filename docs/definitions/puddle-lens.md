@@ -154,6 +154,8 @@ Device and person checks stay open: whether a lap child links her tap to the swe
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** Puddle Lens is a new game, home Bubble Beach (its 11th, within the measured 13), levels 1–2 on the ordinary rule with no shell change; levels 7–8 at the top of `school` and Slide Files on `grownup`; faceless science drawings only, with no germ, hygiene, illness or "bad microbe" content. The stop order, feature table and level 3–8 lines take the building session's check against cited sources instead of named reviewers; a hand-lens card takes the same check, and microscope, culturing, swab, body-sample, pond-collection or sunlight-through-lens instructions are not drafted.
+
 1. **Identity (gates the build).** Default: a new game. Level 4's [table](#level-4-questions) has eleven questions with windows of one or two stops, six that can be too close and eight that can be too small, so "how close is enough" is a real decision on one fixed sample. Alternative: fold the feature tables into Zoom Walk's small end.
 2. **Home land (gates the build).** Default Bubble Beach as measured, leaving two places (Sand Table defaults there too). Alternative: the rework's Explore places when they exist.
 3. **Reviewer.** The science-and-scale-facts reviewer row covers the stop order, the feature windows and the level 3–4 lines; it reads them before the build merges. Until "Who reviews content?" is answered, no build merges.

@@ -123,6 +123,8 @@ Band windows after the ladder (saved levels and pins keep their IDs; only steppi
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** decisions 2 and 3's leans stand: once the creature home exists, her creatures are the customers, a served cone is a feeding moment with no hunger and every served flavour sits on a permanent shelf, built as a pet-integration slice, not of this game; the thank-you names the flavour (built in slice 2).
+
 1. **Levels 7–9 and a school window reaching 9** are already decision 2 of the executive-function row in [WAITING-ON-DEVELOPER.md](../WAITING-ON-DEVELOPER.md) (lean: yes, school only, a peek still a hint). This dive adds nothing to it except that level 11 should land first so 7 reuses its chosen-customer tap.
 2. **Creature customers and what comes home** (rework, after RW05/RW08): her creatures as the customers, a served cone as a feeding moment at home with no hunger, and a permanent flavour shelf of everything she has served. Lean: yes, as a later slice of the pet-integration work, not of this game.
 3. **Spoken flavour names on the thank-you** ("Yum, strawberry!"). Lean: yes; it is vocabulary she hears, never a word she must know.

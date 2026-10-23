@@ -168,3 +168,5 @@ Each has a default the build uses. Decision 1 is the one review the study asks f
 4. **The two-miss glow.** Default: it counts one hint, once per item. Alternative: once per round, as Sense Detective.
 5. **Level 1 misses.** Default: none counted and no glow, as the study says. Alternative: count misses from level 1 for preschool players who start there (they do not by default).
 6. **Journal.** Default: nothing filed. Alternative: a discovery "worms turn peels into soil" after the first level-1 round.
+
+**Decided 2026-10-23 (on the developer's delegation):** every default stands; decision 1 becomes the building session's source check of every item-table row (government waste and composting guidance), recorded in N2's verification entry, so N2 merges without the developer's review; the Kitchen Sort and Our Tree cards (N7) are not drafted for now.

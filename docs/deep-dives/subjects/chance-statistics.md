@@ -142,6 +142,8 @@ Her creatures are the sections: whichever she owns can stand on the wheel, and t
 6. **A mathematics educator** to read "chance", "a better chance", "fair", "about" and the level-10 explanation ("the spinner has no memory") before any line is spoken, and to confirm that a band answer at level 6 is honest for ten-year-olds.
 7. **The island rule** that chance is a subject and never a reward, unlock or creature mechanic in the rework, recorded in the brief when confirmed.
 
+**Decided 2026-10-23 (on the developer's delegation):** every lean: Spinner Fair is a new game in Counting Cove beside Picture Graph if `landLayout` passes, else Tinker Lab; it opens at preschool, and `toddler` joins level 1 after a person check with a two-year-old (lap stays out); levels 9–10 at `school`'s top with the hidden spinner last; whichever of Lucky Columns and Mixing Room is defined first takes Lantern Lake's capacity test, the other waits or goes to couch play; "chance", "fair", "about" and "the spinner has no memory" ship after the building session's source check; chance is a subject and never a reward, unlock or creature mechanic.
+
 ## Build slices, in order
 
 1. **CS1 definition** (docs only): Spinner Fair levels 1–5 in `docs/deep-dives/definitions/spinner-fair.md` with the accounting rule, seeds, voice lines and rule tests above; decisions 1–3 answered or defaulted. Links and `git diff --check`.

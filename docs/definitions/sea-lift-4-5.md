@@ -101,6 +101,8 @@ Device and person checks stay open: whether a school child reads the numerals on
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** Decision 1: for the level-4 card table, the building session checks it against reputable sources (museums, universities, government science agencies, established curricula), lists them here and records the check in its VERIFICATION entry; no outside reviewer is needed. Decisions 2–4 keep their defaults; the build no longer waits on a named educator.
+
 Each has a default; the build waits only on the educator's read in decision 1.
 
 1. **The level-4 card table.** Default as [above](#the-level-4-card-table-for-the-educator): the magnitude mistake and the both-ends mistake, with one same-side case a round. Waits on the mathematics educator (study decision 8), who is not named yet.

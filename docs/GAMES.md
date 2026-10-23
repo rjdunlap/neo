@@ -658,6 +658,8 @@ Tap a gem then its neighbour, or use the D-pad and bottom button; selecting a di
 
 ### Lantern Lights
 
+**Decided 2026-10-23 (on the developer's delegation):** What counts as a miss in Lantern Lights by touch, and the other grown-up puzzles: Count a miss only where the game shows it: Lantern Lights stays 0; Sudoku Garden's wrong digit (against the solution) stays a miss and now gets the gentle boing and a spoken hint; Island Bridges' stray plank and Picture Logic's stray fill stop counting as misses (0, adapt on hints). ([record](archive/DECISIONS-2026-10-23.md))
+
 *grown-up couch play · after Lights Out, on a pond at dusk.* A square of paper lanterns, each lit or dark. Pressing one flips it and the lanterns above, below and beside it; the goal is every lantern lit. The cursor shows a faint glow over what a press would flip. **Controls:** the stick or D-pad moves (hold to repeat); the bottom button presses; the left button takes the last press back; the pause menu has **Show a hint** and **Start this pond again**.
 
 **Score and help.** Every press counts, and a press taken back stays counted (taking it back is free); the fewest is the pond's par, so the score is presses over par. A hint (marks a challenge run as helped) points at a lantern in one of the fewest-press ways to light the pond from where it stands now, and the cursor goes to it; pressing it always brings the fewest down by exactly one, so a hint never leads away from the finish. A restart puts the pond back as it began, with the presses so far still counted. There are no misses to count: any press is allowed, and nothing is ever stuck, because every pond can always be lit.

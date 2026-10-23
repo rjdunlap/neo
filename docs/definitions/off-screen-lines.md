@@ -82,3 +82,5 @@ GAMES.md and the README rows stay unchanged (no game behaviour). DESIGN.md gains
 3. **One line per band, or one plus a school extra** (study decision 3): the type serves both; default as the study leans.
 4. **Who reviews new under-3, bath, food, water and sun lines**, and the flagged list above: the standing reviewer question (Waiting item 1). Not needed for this batch.
 5. **Garden Grow's lap and toddler line.** Withheld until a reviewed sentence exists; a candidate for the reviewer is "Look at a plant or flower together and touch a leaf: soft, smooth, bumpy?"
+
+**Decided 2026-10-23 (on the developer's delegation):** the removal-only swaps need no reviewer and the eight school lines ship as written, so the build may merge; one line per band only where the bands differ; new under-3, bath, food, water or sun lines, Garden Grow's lap and toddler line and printable cards are not drafted for now.

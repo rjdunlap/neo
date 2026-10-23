@@ -138,6 +138,8 @@ Replay variety is authorship at 1–3 and seeded solvable start/constraint combi
 3. Approve the proposed band windows and how creative participation reaches constrained levels. Keep M as an audience until the separate middle-band decision is made. No silent migration or saved-level renumbering.
 4. Is parent solo composition interesting enough for Lantern Lake, or better as the grown-up levels of this game? Observe one finite puzzle before choosing a second registration.
 
+**Decided 2026-10-23 (on the developer's delegation):** physical prompts, cards, poses, stretches and breath work are not drafted for now, so no movement reviewer is named; Dance Workshop is a new game only if arranging and revising is its main action (otherwise a Pet Says mode), starting with a screen-only two-slot round; the proposed band windows stand, creative participation never counts as a miss, M stays an audience; parent solo composition becomes this game's grown-up levels, not a second Lantern Lake registration.
+
 ## Build slices, in order
 
 1. **Ready to define, docs only:** settle decision 2, the first two-slot screen-only round, exact gesture art/wording and reviewed/omitted physical prompts; approve the band table and assistance accounting. Recheck Pet Says/music authoring overlap. Exit: one implementable round with all buttons, replay/finish/cancel states and no unresolved placement alternative. Links and diff check only.

@@ -134,6 +134,8 @@ The R2 build is **new game / new interaction**: typecheck, unit tests (this game
 
 Each has a default the build uses. None waits on the developer before R2.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: a new game, not a Pet Kitchen mode; `school` 1–3 only, with no pre-K entry now (whether a younger child manages level 1 is a person check, not a gate); Counting Cove if the lands test passes, else Rainbow Meadow, never Tinker Lab; `½` and `¼` written and spoken; the scissors stay a mode.
+
 1. **Identity.** Default: a new game, per [overlap](#overlap). The alternative is a Pet Kitchen mode, rejected because joining many pieces into one length is not sharing one food.
 2. **Bands.** Default: `school` 1–3 only, which is the study's lean. A `prek` entry (level 1 alone, or a creative "any ribbon" round with no Check) waits on watching a child play level 1. It would be appended with a new ID and `order`.
 3. **Land.** Default: **Counting Cove**, its twelfth game, if the lands layout test passes at every band and view. If it returns null there, use **Rainbow Meadow** (eleven games today). The region stays `counting-cove`. Never Tinker Lab, which already holds twelve. Never shrink a target.

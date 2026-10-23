@@ -115,6 +115,8 @@ Fog (its clothing rule is "be seen", a safety claim the subject studies keep out
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans are adopted: some items suit two weathers through an explicit table, so 11 *Keep what still fits* is a real revision; a school window with 12 *Pack light* follows it; 13 *Warm or cold?* is a picture thermometer at school, pictures only; *Try it on* 8 stays lap only until a device check shows a toddler wants it; the rework hooks wait on RW05/RW06.
+
 1. **Items that suit two weathers** (rain boots in snow, a raincoat in wind): relaxing the one-weather rule makes level 7 a real revision (11 *Keep what still fits*) and opens *Pack light*. Lean: yes, with a small explicit table and a rule test that every item's weathers are listed.
 2. **A school window** (12 *Pack light*, 13 *Warm or cold?*). Lean: yes after decision 1; school would play 6, 7, 11, 12.
 3. **Temperature as a second axis** (a picture thermometer, no numbers below zero until the `integers` subject asks). Lean: pictures only (cold, cool, warm, hot), school.

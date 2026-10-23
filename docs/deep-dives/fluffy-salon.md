@@ -123,6 +123,8 @@ Covered above: 6 and 7 enter below 1–2 and 8 sits between 2 and 3 for toddler 
 
 Each has a default below; the build proceeds on it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: *Pat the fluff* ends by itself after twenty quiet seconds once the fur is long; the style staying on the creature waits for RW05/RW06/RW07 with no save change before then; accessories wait for RW02's wearable slots; no school window (12 is pre-K's top); code-drawn `CRITTERS` sit in the chair at 9 and 10 until RW05 casting.
+
 1. **The lap round that ends by itself.** Default: at *Pat the fluff* the pet looks in the mirror by itself after twenty quiet seconds once the fur is long (no miss, no hint), as Stamp Studio's eighth pat does. Alternative: the mirror tap stays the only exit, and the invitation (wiggle and "Look in the mirror!") is all the help.
 2. **The style comes home.** Default: gated on the rework's collection model (RW05) and the creature customization slice (RW06/RW07): a bounded `hairstyle` on the creature record (26 strands, each a length 8–220, a curl 0–1 quantized to twentieths and a color name), set when a round finishes on an owned creature, shown at home and used as the next visit's start; no save change before then. Alternative: a `creation` slot now in the existing picture frame, which the integration review argues is the wrong home for it.
 3. **Accessories.** Default: none until RW02's wearable slots exist; then a bow or hat becomes a request part at 5 and 9 ("short, blue, with a bow") and a free-play item at 2. Alternative: a code-drawn bow now as a sixth tool (the 2026-10-09 audit's row).

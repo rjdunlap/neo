@@ -120,6 +120,8 @@ The windows after every slice: lap `order [16, 9]`; toddler `order [9, 1, 2, 3, 
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: `lap` with `order [16, 9]` and level 9's free first touch then a counted hint; Shade Lineup is level 15 *Darkest first* here; Hidden heights is swap-only and reveals nothing until the gate opens; the eight code-drawn friends until RW05 casts her creatures; bed, chair, bowl and door, code-drawn.
+
 Each has a default the build uses:
 
 1. **The lap band and its accounting.** Default: `bands` gains `lap` with `order [16, 9]`; at 9 the first touch of the other friend in a question answers without a miss, the second glows the asked friend and counts a hint. Alternative: no lap band, 9 toddler-only with level-1 accounting.

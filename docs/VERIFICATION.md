@@ -1,9 +1,16 @@
 # Puddle Island verification
 
+## 2026-10-23 — Waiting on the developer: every open question decided on delegation
+
+- [PR #886](https://github.com/rjdunlap/neo/pull/886), `claude/waiting-decisions`: the developer asked for every open question to be decided and acted on. 178 of 182 rows decided by [standing rules](archive/DECISIONS-2026-10-23.md#standing-rules) and each row's lean; each decision is recorded in its source (about 130 docs) and in the [record](archive/DECISIONS-2026-10-23.md). [Waiting](WAITING-ON-DEVELOPER.md) keeps 4 questions (the `classic/` deletion, two on-device name lists, the first language's family reviewer).
+- Follow-on edits: READY ungated (11 lines) with 12 builds queued; 48 former gates moved to [DEVICE-CHECKS](DEVICE-CHECKS.md#from-the-delegated-decisions-2026-10-23); AGENTS.md allows build-time Kokoro voice clips, a Sing-Along Barn tune exception and a grown-up wording rule; ROADMAP chunk 16, D4a and D4b set ready.
+- Ran: `node scripts/check-links.mjs`, `git diff --check`. Docs only; no code checks.
+- Not checked: each source edit was written by a subagent from its row and read back only by link check and spot checks, not line by line.
+
 ## 2026-10-23 — Fluffy Salon levels 6 and 7: Pat the fluff and Snip snip (slices 3–4)
 
 - [PR #864](https://github.com/rjdunlap/neo/pull/864), `claude/fluffy-salon-pat-snip`: lap and toddler `order [6, 1, 7, 2]`, range 1–7, `entryLevels [6, 7]`; level 6 (no buttons, floof shake, big mirror, self-finish) and level 7 (grow and snip buttons, long curly start, free-play mirror), no miss or hint at either.
-- Ran: typecheck; `npm test` (all pass except `src/app/scenes/lab.test.ts` "prek landscape n=12" bench count, unrelated to this change and not checked on `main`); new `logic.test.ts` tests; registry test updated.
+- Ran: typecheck; `npm test` (then failed only the shared `lab.test.ts` bench assertion, fixed on main by #877; after merging `origin/main` at `74c1009e`, 217 files and 2702 tests pass); new `logic.test.ts` tests; registry test updated.
 - Browser: `BROWSER_SUITE=batch BATCH_ONLY=salon FROM_LEVEL=6` passed (the `salon` case now covers 6 and 7, default `TO_LEVEL` 7); `fingerdemo` `FINGER_ONLY=fluffy-salon FINGER_LEVELS=6,7` clean (10.4 s, 10.8 s); one landscape screenshot of level 7 reviewed.
 - Not run: portrait screenshot, offline check, real device or touch ([open](DEVICE-CHECKS.md) if a person should pat the fluff).
 
@@ -113,13 +120,6 @@
 - Browser: `BROWSER_SUITE=sandtable` (level 1 pour, scoop, flag; level 3 in portrait with spill to pail and back, empty-bucket pour, requested hint, Show; saved score 0/0) passed at `http://localhost:5487`; one portrait screenshot reviewed; `fingerdemo FINGER_ONLY=sand-table` levels 1, 2, 3 passed (10–15 s each).
 - Known failure, not from this change: `src/app/scenes/lab.test.ts` (Tinker Lab decor `bench` count 0 at pre-K, n=12) fails since Sense Detective joined that land; open, needs a decor fix.
 - Not run: iPad or device checks, a child with the tray, real-sand comparison ([open](DEVICE-CHECKS.md)); the offline production check (no persistence change).
-
-## 2026-10-23 — Sense Detective levels 1–2 (new game, B2)
-
-- [PR #861](https://github.com/rjdunlap/neo/pull/861), `claude/sense-detective-build`: Look or Listen to find the parcel's toy; registered as the 13th Tinker Lab game, pre-K levels 1–2 and school level 2.
-- Ran: typecheck; `npx vitest run src/games src/content` (158 files, 1920 tests, including 29 new logic tests: toy table, possible set, rounds over 500 seeds, check / not-yet / miss, bot, layout at four views); `npm run build`.
-- Browser: `BROWSER_SUITE=sensedetective` (level 1, then level 2 in portrait) passed; `fingerdemo FINGER_ONLY=sense-detective` levels 1 and 2 clean (6.3 s, 8.1 s); one portrait screenshot.
-- Not run: real device, device speech, a child reading the badges ([open](DEVICE-CHECKS.md)); the full browser suites.
 
 ## Coverage summary
 

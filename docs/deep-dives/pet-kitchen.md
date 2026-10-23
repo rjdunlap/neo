@@ -114,6 +114,8 @@ The appended IDs 10–15 are placed by each band's `order`: 10 before toddler's 
 
 Each has a default below; the build proceeds on it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: `lap` `{ min: 10, max: 10 }` with the picnic's sandwiches step at 10 for lap; `CRITTERS` friends, calm then happy, never sad; a seeded pie or sandwich at 1–4; level 14 first in school; the equivalent-measures round is level 15 here; three journal entries (`half`, `quarter`, `third`); level 10 allows no misses or hints.
+
 1. **The lap band.** Default: `bands` gains `lap` with `{ min: 10, max: 10 }`, and the picnic's *sandwiches* step plays 10 for lap. Alternative: no lap band; 10 toddler-only, the picnic's lap step staying at 1 as toddler.
 2. **Friends.** Default: `CRITTERS` dealt from the seed, `calm` then happy, never `sad`. Alternative: the pink faces stay.
 3. **Round wholes at 1–4.** Default: a seeded pie or sandwich each round. Alternative: the sandwich only, the pie at 9 and 12.

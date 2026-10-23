@@ -24,6 +24,8 @@ Start with the [work items](WORK-ITEMS.md). [READY.md](../READY.md) remains the 
 
 The save exception overrides older preservation/migration requirements **for this development rework**. Current-format defaults, bounded validation, reliable writes, profile isolation, current-format backup/restore and offline play still need appropriate checks. Define one understandable reset/reseed path when changing the format. No save is reset by this planning change.
 
+**Chance (decided 2026-10-23):** chance is something she studies in a game (Spinner Fair), never a reward, unlock or creature mechanic: no random drops, eggs or boxes.
+
 ## Learning belongs in the story
 
 The **Discovery Club** is a working story premise: the child and their creatures explore the island, investigate questions, make things and help a community. A home base holds tools, creatures, creations and a journal of what they actually did. A recurring question leads into a playable project, and its answer visibly changes the world.

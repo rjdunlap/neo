@@ -24,7 +24,7 @@ Seen on the dev server at 1024 × 768 and 768 × 1024, a new preschool player at
 ## Principles
 
 1. **Use the art that already exists before asking for more.** The egg stages, the home backdrop, six prepared species and the R15 looks are in the repository; slices 1–2 need no new image.
-2. **One look per screen.** An illustrated creature stands on an illustrated or softened ground. Code-drawn things that stay, such as game spots, hub icons and stickers (the [lean](../WAITING-ON-DEVELOPER.md#decisions-that-block-work)), are drawn on soft plates so they sit on a picture.
+2. **One look per screen.** An illustrated creature stands on an illustrated or softened ground. Code-drawn things that stay, such as game spots, hub icons and stickers (the [lean](../archive/DECISIONS-2026-10-23.md#decisions)), are drawn on soft plates so they sit on a picture.
 3. **Every button means one thing.** The house always goes to Home, her creature's home. The back arrow, with a small picture of the place, goes back to whatever opened the screen. Each has its own spoken label (the [RW03 route table](HOME-NAVIGATION.md#routes-and-meaning)).
 4. **Moving between screens shows where she is going.** A screen grows out of the thing she tapped, and Back shrinks it home. Nothing blinks to an empty colour.
 5. **A drop-in pipeline.** Once a slice has wired a kind of image (a location backdrop, a friend), a new image of that kind needs only `node scripts/art/import-inbox.mjs`, with no code change.
@@ -76,7 +76,7 @@ Slices 1–3 need no new image. Slices 4 and 6 wait on images from [ChatGPT batc
 ### Slice 6: the duck pilot
 
 - **Needs:** `duck-base` and `duck-portrait` (R22) from batch 1, imported into `src/art/friends/`.
-- **Changes:** Duck Pond's ducks use the prepared duck sprite, with a code-driven bob and squash and the same hit circles, instead of `src/art/critter.ts`'s drawing. The fourteen other duck games keep the drawing until the developer judges the pair (this slice and slice 4) on the iPad, as the [catalog-wide art row](../WAITING-ON-DEVELOPER.md#decisions-that-block-work) asks.
+- **Changes:** Duck Pond's ducks use the prepared duck sprite, with a code-driven bob and squash and the same hit circles, instead of `src/art/critter.ts`'s drawing. The fourteen other duck games keep the drawing until the developer judges the pair (this slice and slice 4) on the iPad, as the [catalog-wide art row](../archive/DECISIONS-2026-10-23.md#decisions) asks.
 - **Files:** `src/art/friends/duck.ts` (new: a still sprite with a tween, not a mesh rig), `src/games/duck-pond/index.ts`.
 - **Done when:** Duck Pond plays the same at its first and top level, the bot (`fingerdemo`) still finishes, the ducks' touch areas are unchanged, and a portrait screenshot is recorded for the device judgement.
 - **Check tier:** existing-game change on an unchanged interaction. Typecheck, Duck Pond's rule tests, one filtered regression play, `fingerdemo` at the top level, and a build (a new asset).
@@ -104,7 +104,7 @@ Slices 1–3 need no new image. Slices 4 and 6 wait on images from [ChatGPT batc
 
 ### Slice 10: the other ten backdrops
 
-- **Needs:** R26 from [batch 2](art-requests/CHATGPT-BATCH.md#batch-2-after-the-meadow-is-accepted), which waits until slice 4's meadow is accepted on the iPad.
+- **Needs:** R26 from [batch 2](art-requests/CHATGPT-BATCH.md#batch-2-after-the-meadow-is-accepted), after slices 4 and 6 are built and their screenshot review beside the untouched lands passes (decided 2026-10-23; the iPad look is a device check that can roll a step back).
 - **Changes:** none in code. Import each image; slice 4's loader shows it.
 - **Done when:** each location is checked at four views with the slice 4 rules (horizon, landmarks clear of spots, the plates), and the precache total is recorded.
 - **Check tier:** one root probe per location in both orientations, then the offline check once at the end.

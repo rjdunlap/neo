@@ -156,6 +156,8 @@ Device speech clarity for `A/a`, tile identity without letters/color, target com
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** (1) For the toy model and its wording, the building session checks it against reputable sources (museums, universities, government science agencies, established curricula), lists them here and records the check in its VERIFICATION entry; no outside reviewer is needed. (2) Sprout Shuffle registers for school at level 1 now, with an "about 9 and up" grown-up note; a grown-up watching level 1 becomes a device check. (3) 11–12 at the school top; no 13+ or Lantern Lake entry now. (4) Level 1's 0/0 rounds are accepted as adaptation, not mastery. (5) Home Rainbow Meadow if its layout test passes. (6) Paper Sprouts waits until the screen game ships; never family or genetic data.
+
 1. Name a biology/education reviewer for the invented model, dominance wording, uncertainty and inclusive parent/offspring language before release. Define G1 now; no real-human traits or practical genetics advice are required.
 2. Choose a school entry window after observing the one-locus prototype; the proposed U start is not permission to impose alleles on every 6-year-old. Preserve all existing levels/pins.
 3. Resolve older routing: 11–12 in school top; 13+ only through a compatible grownup registration/destination definition. No new band or migration is proposed.
