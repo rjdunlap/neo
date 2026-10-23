@@ -264,3 +264,16 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
 - Open: device speech of whole compounds and invented names, whether a young child reads the join as making a new thing, legibility of combined pictures at 140 units; no reference game was played.
+
+## 2026-10-22 — Informational-reading study (subject research, docs only)
+
+- [PR #815](https://github.com/rjdunlap/neo/pull/815), `claude/sharp-cannon-xdrzdf`: [study](../deep-dives/subjects/informational-reading.md) (Look It Up levels 1–3 recommended first); tracker, packet, roadmap table, backlog, READY (the definition line added and `writing-composition` moves up to keep a research place), IDEAS and WAITING-ON-DEVELOPER updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
+- Open: device speech of the page sentences, whether a three-year-old reads picture tabs as pages, tab legibility at 100 units in portrait; no reference game was played.
+
+## 2026-10-22 — Word Glue levels 1–3 definition (vocabulary-word-parts VW1, docs only)
+
+- Branch `claude/define-word-glue` (PR #816): definition packet `docs/definitions/word-glue.md`; READY (build queued and gated, define line removed), study backlog, subjects tracker, recommendations row, study build slices and the Waiting row updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Open: no typecheck, unit tests, build or browser run; the build is gated on the developer's decisions 1 (new game and land) and 2 (compound list review).
