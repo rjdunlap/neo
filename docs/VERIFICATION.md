@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-23 — Typing Land reference review
+
+- `claude/typing-land-review-88a7ed`: [docs/TYPING-LAND.md](TYPING-LAND.md), a review of higopage's Typing Land against the island's rules with seven proposals (P1–P7), plus pointers in [IDEAS](IDEAS.md#typing-land-review-2026-10-23), the [keyboarding study](deep-dives/subjects/keyboarding-editing.md#similar-games-and-tools) and the [Pond Typing definition](definitions/pond-typing.md).
+- Ran: the browser edition played in the app's browser pane through setup, the tutorial, World 1 lesson 1 (three mini-games, the result) and the World 1, 2 and 6 maps; store, official and review pages opened; `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: no code changed; no sound heard (headless pane); later worlds, Challenge mode and the manual PDF not opened.
+
 ## 2026-10-23 — Critter Sort levels 12–13: Same Kind, Different Sprouts (G4)
 
 - [PR #865](https://github.com/rjdunlap/neo/pull/865), `claude/critter-sort-sprouts`: little plants sorted by a stated big plant's leaf shape and petal marks, one hoop (12) then overlapping hoops with a leaf mat (13); pre-K and school.
