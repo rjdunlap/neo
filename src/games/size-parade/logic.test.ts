@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { CRITTER_H, dropSpot, FRIEND_SCALE, paradeLayout, SIZE_PLANS, sizeBell, sizeOrder, sizeScale, sizeTouch, sizeWord, TARGET } from './logic';
+import { CRITTER_H, dropSpot, FRIEND_SCALE, paradeLayout, SIZE_PLANS, askRank, middleAsks, MIDDLE_ONE, sizePlan, TWO_IN_A_LINE, sizeBell, sizeOrder, sizeScale, sizeTouch, sizeWord, TARGET } from './logic';
 
 /** An iPad sideways and upright, and a phone sideways: the logical width is never below the 1024 design width. */
 const VIEWS = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390)];
@@ -86,5 +86,24 @@ describe('Size Parade', () => {
     }
     expect(dropSpot(spots[2], y + 200, spots, y, 2)).toBeNull();
     expect(dropSpot(spots[4] + 200, y, spots, y, 0)).toBeNull();
+  });
+
+  it('level 17 lines two friends up, smaller first, and the bot can do it; level 10 asks for the middle at least twice in four rows', () => {
+    expect(sizePlan(17)).toBe(TWO_IN_A_LINE);
+    expect(sizePlan(10)).toBe(MIDDLE_ONE);
+    expect(sizePlan(4).count).toBe(4);
+    const order = sizeOrder(2, 'small'), friends = [{ rank: 1, placed: false }, { rank: 0, placed: false }];
+    expect(friends[sizeTouch(order, 0, friends)!].rank).toBe(0);
+    friends[1].placed = true;
+    expect(friends[sizeTouch(order, 1, friends)!].rank).toBe(1);
+    for (let seed = 1; seed <= 200; seed++) {
+      const asks = middleAsks(new Rng(seed));
+      expect(asks).toHaveLength(4);
+      expect(asks.filter((a) => a === 'middle').length).toBeGreaterThanOrEqual(2);
+      expect(asks.some((a) => a !== 'middle')).toBe(true);
+      for (const a of asks) expect([0, 1, 2]).toContain(askRank(a));
+    }
+    expect(askRank('middle')).toBe(1);
+    expect(sizeWord(MIDDLE_ONE, 'middle')).toBe('middle-sized');
   });
 });

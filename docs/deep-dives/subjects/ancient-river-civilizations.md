@@ -158,6 +158,8 @@ Replay varies counts, goods kinds, tablet shape and which tablet is wrong, never
 7. **Numerals.** Additive tens-and-ones at S (Egyptian-style); positional base sixty only as a note for `number-structure`/`measurement-units`. Confirm, so no rung depends on place value before Lasso Loops' jars.
 8. **Kush, religion and named rulers** stay out until a reviewer and a later packet; confirm that the island does not try to cover California 6.2 whole.
 
+**Decided 2026-10-23 (on the developer's delegation):** every lean: invented island marks on the child's screen; River Tablets in Story Grove if `landLayout` passes, else Counting Cove, first build 1–3; Two Tablets a separate Lantern Lake puzzle; the 13+ bakery case states in one source-checked sentence that enslaved people existed while the pyramid workers were paid; levels 7–8 stay here, cross-listed; additive tens-and-ones at school, base sixty a note only; Kush, religion and named rulers stay out. Every historical line ships after the building session's source check (museums, universities, KS2 curricula) instead of a named reviewer; the Ur-board and play-dough cards are not drafted for now.
+
 ## Build slices, in order
 
 Each line is one future session. **Definition ready** means research permits a concrete packet, not that implementation is approved.

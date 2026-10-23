@@ -325,3 +325,134 @@
 - `GAME_URL=http://localhost:5227 BROWSER_SUITE=batch BATCH_ONLY=safari SAFARI_LEVELS=10,11`: both four-photo rounds, free empty Tell/animal taps, two under-informative Tells, words retained, one working hint, album, saved `[2,1]`, reward and portraits passed without page errors. Sandbox Chromium launch denied; approved escalation passed.
 - Same server, `BROWSER_SUITE=fingerdemo FINGER_ONLY=photo-safari FINGER_LEVELS=10,11`: clean0 misses/0 hints,23.8s/29.7s. Inspected `test-results/browser/photo-safari-10-tell-portrait.png`; tray fits, nonreading icons and pet clearance visible. Final cleanup destroys the reusable sparkle when leaving; isolated exit-during-Tell probe passed with no page errors.
 - Not run: world/offline/picnic/couch (unchanged scope); iPad speech/touch comfort, child premise/wobble understanding and communication transfer remain open in DEVICE-CHECKS. Links/diff checked; CI/deployment publication follows.
+
+## 2026-10-22 — Animal Snack: the bunny eats grass
+
+- Changed: the bunny's favourite went from a carrot (a sugary treat, per the [RSPCA's rabbit-diet myths page](https://www.rspca.org.uk/adviceandwelfare/pets/rabbits/diet/myths)) to grass, its main food. That means a new `grass` food (a tuft of grass, a swish bite and a code-drawn tuft on a clump of earth), the level-3 name, the map icon, the co-play tip and the journal line "The bunny eats grass. Nibble, nibble!". Entry id `animal-snack:bunny` is unchanged. Considered and kept: bear honey (a minor food) and pig apple (real but occasional).
+- Ran (base `f336f7b` plus the working diff, Vite on `http://localhost:5191`): typecheck; 46 Animal Snack, journal and how-to tests; full `npm test` (2516 passed); `BROWSER_SUITE=woods WOODS_ONLY=snack` levels 1–5; `BROWSER_SUITE=fingerdemo FINGER_ONLY=animal-snack FINGER_LEVELS=1,3,4,5`, clean in 10.5, 8.1, 8.8 and 25.2 s.
+- Also ran: one probe screenshot of level 4 in the kitchen garden, where the tuft reads clearly in the tub.
+- Not run: build, because no shared files or assets changed.
+- Open: device speech of "tufts of grass". Roundup still has a "carrots" pen for bunnies (scenery, not a diet claim), left as is.
+
+## 2026-10-22 — Keyboarding-editing study (subject research, docs only)
+
+- [PR #829](https://github.com/rjdunlap/neo/pull/829), `claude/zealous-albattani-woucn3`: [study](../deep-dives/subjects/keyboarding-editing.md) (Pond Typing reshaped for the couch's Laptop setting recommended first; *Mend the sign* handed to the Read & Do dive); tracker, packet, roadmap table, backlog, READY (the define line replaces the research line and `spelling-sentences` moves up), IDEAS and a Waiting default row updated.
+- Opened: CCSS W.K.6, W.1.6, W.2.5–2.6, W.3.6, W.4.6, L.K.2, L.1.2; MDN VisualViewport, VirtualKeyboard, `autocorrect`, `KeyboardEvent.code`; Typing.com K–1, the Vanderbilt thesis, Montessori Academy, Mayer 2020. Opened by research agents and labelled in the study: Kiefer, Ibaibarriaga, Ouellette and Tims, Vatavu, Anthony, Nicolson and Gardner, Edclub, LWT, Nessy, BabySmash, CUPS. Goldberg 2003 read from its PDF abstract; summary only: Morphy and Graham, Bangert-Drowns. Not checked: iPad installed-app keyboard behaviour, a browser's shortcut lockout, the couch's player names and orientation.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
+
+## 2026-10-22 — Look It Up levels 1–3 (informational-reading IR1, new game)
+
+- Changed: a new game in Barnyard (subject story-grove; toddler 1, preschool 1–2, pre-K 2–3, school 3): a picture guide of seven real animals with two-sourced *Eats*, *Where* and *Baby* rows; talking labels, find the page and feed it, find the row and help. Barnyard 10 games, 117 in all.
+- Ran (Vite on `http://localhost:5617/classic/`): typecheck clean; `npm test` 2538 passed; `npm run build` ok; `BROWSER_SUITE=lookitup` (level 1 touches all three labels of three pages, score [0,0]; level 3 in portrait with two wrong pictures then the glow hint, [2,1], sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=look-it-up` clean at level 1 (17.0 s) and level 3 (23.4 s); one portrait screenshot reviewed. The Barnyard lands test passed.
+- Gaps: first round of each level is seeded-random, not the authored one; baby pictures are the parent critter scaled small, duck and rabbit untinted; choices are drag-or-tap; the level 2 demo does not first tap another tab; the third-miss supported finish fires after four wrong tries; no restart pause action.
+- Not run: world, offline, picnic, couch (unaffected).
+- Open: iPad speech, a three-year-old's understanding of the tabs, and portrait legibility (DEVICE-CHECKS.md).
+
+## 2026-10-22 — Bond Beads levels 1–4 definition (chemistry, docs only)
+
+- Branch `claude/define-bond-beads` (PR #831): definition packet `docs/definitions/bond-beads.md`; READY (build queued and gated, define line removed), study backlog, recommendations row, chemistry study slice and the Waiting row updated. The shape tables come from a brute-force enumeration of single-link connected graphs over H, O and C beads (7 beads or fewer) run once while writing; the build's tests re-derive them.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Open: no typecheck, unit tests, build or browser run; the build is gated on the developer's decisions 1 (new game) and 3 (land); seven-bead portrait fit is unproven until the layout test exists.
+
+## 2026-10-22 — Melt and Freeze levels 1–4 definition (matter, docs only)
+
+- Branch `claude/define-melt-and-freeze` (PR #832): definition packet `docs/definitions/melt-and-freeze.md` (authored substance table, sun and snowflake tools, four levels, accounting, layout, tests, how-to); READY (build queued and gated, define line removed), study backlog, recommendations row, matter slice 1 and the Waiting row updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Open: no typecheck, unit tests, build or browser run; the build is gated on the developer's decisions 1 (new game) and 3 (land); four-thing portrait fit is unproven until the layout test exists.
+
+## 2026-10-22 — Cue Studio 1–3 definition (programming P1, docs only)
+
+- [PR #834](https://github.com/rjdunlap/neo/pull/834), `codex/define-cue-studio`: finite performance/editor, complete accepted traces, Check/help/finish, band/adaptation proposal, land audit and both layout specifications; study/packet/tracker, READY/backlog, decisions/device notes and archive reconciled.
+- Ran: relative Markdown links/anchors (`node scripts/check-links.mjs`) and `git diff --check`.
+- Not run: local typecheck, units, build, browser, offline or device checks (docs only); layouts are specified, not visually verified.
+- Open: identity, bands/entry/accounting and land/capacity block P2; review and child/device evidence remain open. No P2 onward or Robot Path implementation; #733 preserved.
+
+## 2026-10-22 — Story Weaver 1–3 definition (writing-composition WC1, docs only)
+
+- [PR #835](https://github.com/rjdunlap/neo/pull/835), `claude/define-story-weaver`: tile and clause tables, `supports` rules, three rounds with owl question and *because* accounting, school 1–3 band proposal, layout specifications, voice ids, bot and rule tests; READY (define line removed, gated build queued), backlog, study and packet updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser, offline or device checks (docs only); layouts are specified, not visually verified.
+- Open: identity, land and band decisions, content review of tiles and owl lines, child comprehension of the owl.
+
+## 2026-10-22 — Pond Typing 1–6 definition (keyboarding-editing KE2, docs only)
+
+- [PR #836](https://github.com/rjdunlap/neo/pull/836), `claude/define-pond-typing`: registration and land proposal, the typed-letter channel (`typed` on `CouchControls`, read from `key`, Pond-Typing-only), bubble/coach accounting with a free first miss, six school levels, word and line pools, layout, bot and rule tests; READY (build queued and gated, define line removed), backlog, packet, study and Waiting row updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser, offline or device checks (docs only); layouts are specified, not visually verified.
+- Open: decision 4 (registration, land, Story Grove capacity), content review of the pools, sticky-Shift reach for a small hand, a child at a real keyboard.
+
+## 2026-10-22 — Spelling and sentences study (subject research, docs only)
+
+- [PR #838](https://github.com/rjdunlap/neo/pull/838), `codex/spelling-sentences-research`: [study](../deep-dives/subjects/spelling-sentences.md), tracker/packet/roadmap/notebook and READY/backlog; KE3 received, SS1 Capital and stop definition queued; poetry-wordplay fills the research slot.
+- Opened: CCSS L.K/1/2/3/5/8, RF.K, Development Matters literacy, WWC guide landing page; Phonics Hero, Spelling Shed, Nessy, iKnowIt, Quill Proofreader/Connect, Montessori movable alphabet. Reused adjacent studies; paper-access failures and search-only evidence labelled.
+- Ran: Markdown links/anchors and `git diff --check`.
+- Not run: local typecheck, tests, build, browser, device or child play (docs only); nothing implemented.
+- Open: Read & Do integration/IDs/ranges/accounting, reviewed content/alternatives, layout and speech/child checks; later proposals and existing gates remain unresolved. No developer decision made; #733 preserved.
+
+## 2026-10-22 — Shape Sorter batch 3: Corners, curves and corner counts (13–14)
+
+- [PR #842](https://github.com/rjdunlap/neo/pull/842), slices 7–8 only: two curve/corner mouths at 13; shared 0/3/4/5/6 dot-and-numeral holes and sequential dot help at 14. Pre-K `[5, 6, 7, 11, 8, 12, 13, 14]`; school and creature box remain excluded.
+- Ran: typecheck, 38 targeted sorter/how-to tests, build (existing chunk-size warning only). Property tests cover 300 seeds per attribute level, all valid mappings, exclusions, both classes, distinct four-corner kinds sharing one hole, determinism and existing layout/target rules.
+- Browser at `http://localhost:5198/classic/`: `BROWSER_SUITE=originals ORIGINALS_ONLY=shapes SHAPE_LEVELS=13,14` passed both rounds with two wrong targets, one hint, saved `[2,1]`, one sticker each and reload; counting case checks sequential dot help. `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-sorter FINGER_LEVELS=13,14` clean in 15.9/19.5 s. Reviewed landscape 13 and start-portrait 14 screenshots.
+- Tested `1334fc9e` plus implementation diff; final source diff SHA-256 `3211ee2269d37709a39f50e8fb9eb505372d21e1256a62ec4ad9ded1446391d1`. Browser/build preceded only comment cleanup and changing “A {shape}” to “The {shape}” in new voice text; no behavior changed afterward. Chromium required unsandboxed launch after sandbox bootstrap permission failure.
+- Not run: full local units, unrelated browser suites or offline (existing drag interaction; no persistence, assets or routes changed). CI supplies full unit/build checks. Open: iPad speech/feel and child understanding in [device checks](../DEVICE-CHECKS.md); existing developer decisions and #733 preserved.
+
+## 2026-10-22 — Poetry and wordplay study (subject research, docs only)
+
+- [PR #843](https://github.com/rjdunlap/neo/pull/843), `claude/research-poetry-wordplay`: [study](../deep-dives/subjects/poetry-wordplay.md), tracker, packet, roadmap, notebook, backlog and READY (research line replaced by the Rhyme Riddles definition).
+- Opened: CCSS RL.K, RF.K and L.5. Search summaries only: Bryant et al. abstract, Nemours, explicit-rhyme studies, NC progressions, McGhee stages; ELOF goals not confirmed.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser or device checks (docs only); nothing implemented.
+- Open: ELOF wording, primary humour papers, a reviewer for meaning tags and verses, decisions 1–7 in the study.
+
+## 2026-10-22 — Rhyme Riddles definition (PW1, docs only)
+
+- [PR #844](https://github.com/rjdunlap/neo/pull/844), `claude/define-rhyme-riddles`: [definition](../definitions/rhyme-riddles.md), READY (define line replaced by the build line), backlog, notebook, study.
+- Defined: tag table for the 29 pictures, riddle rules, levels 5–7, level-7 chip builder, accounting, voice lines, rule tests, bot. Found and fixed an inconsistency in the study's example (meaning clue alone left one picture).
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser or device checks (docs only). ELOF not opened.
+- Open: tag-table review, decisions (a)–(c) in the definition.
+
+## 2026-10-22 — Circuit Garden 1–3 definition (energy-waves E1, docs only)
+
+- [PR #846](https://github.com/rjdunlap/neo/pull/846), `codex/define-circuit-garden`: [definition](../definitions/circuit-garden.md), study/packet, READY/backlog/roadmap/notebook and decision links, archive closeout.
+- Defined finite terminal graphs/states, observation/Done/Check, free experiments and counted help, supported finish, adaptation, voice/how-to/demo, two layouts and future switch-topology invariants; source audit of current Tinker Lab list/layout contract.
+- Ran: Markdown links/anchors and `git diff --check` on current upstream plus E1 documentation diff.
+- Not run: local typecheck, units, build, browser, reference-app play, device or child checks (docs only); no implementation.
+- Open: registration/model scope, ranges/accounting and added land capacity, recommended educator review, practical-card named review, device speech/touch/understanding; E2 onward and #733 untouched.
+
+## 2026-10-22 — Stop and Go lap entry 9 Go car, stop car (slice 3)
+
+- [PR #847](https://github.com/rjdunlap/neo/pull/847), `claude/stop-and-go-go-car`: level 9 `lamps` (two 160-wide lamps, looping car, eight touches, no misses; lap order `[9, 1]`), how-to step, `go.lamps` voice line, bot alternating lamps.
+- Ran: typecheck; vitest `stop-and-go`, content, progress, registry and app (414 passed); `BROWSER_SUITE=woods WOODS_ONLY=go FROM_LEVEL=9` (new lamps case) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=stop-and-go FINGER_LEVELS=9` clean in 12.1 s; one landscape screenshot reviewed.
+- Not run: portrait screenshot, build, `world`, iPad or device, a child's reaction.
+- Open: portrait layout of the lamps and real touch on an iPad.
+
+## 2026-10-22 — Mail Carrier batch 1: Tool signs, helpers and numbers past ten (9, 10, 12)
+
+- [PR #850](https://github.com/rjdunlap/neo/pull/850), slices 3–5: level 10 tool signs (2–3 houses, seeded), level 9 helpers with problem pictures, tool pop-up and six journal entries, level 12 houses 10–20 with ten-and-ones speech; ladders per band updated, how-to steps added.
+- Ran: typecheck; full `npm test` (211 files, 2547 tests) including new logic and journal cases; build; `BROWSER_SUITE=batch BATCH_ONLY=mail MAIL_LEVELS=10,9,12` (two wrong taps, hint, saved `[2,1]`, sticker each) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=mail-carrier FINGER_LEVELS=9,10,12` clean in 19.4/16.1/20.1 s; portrait 768x1024 screenshots of 9 and 10 reviewed.
+- Not run: `woodland` and mailmap suites (levels 6–8 unchanged), offline check.
+- Open: a toddler reading the tool pictures, problem pictures at viewing distance, real iPad speech ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-22 — Garden Grow batch 1: flower kinds and level 8 Grow it up (slices 3–4)
+
+- [PR #851](https://github.com/rjdunlap/neo/pull/851): five flower kinds (kind judged never, color and number only) and the lap entry level 8 (one big bed, any touch grows a stage, three flowers); `grow.big` voice, how-to and bot updated.
+- Ran: typecheck; `vitest` Garden Grow (7 pass) plus `src/content`, registry and progress (286 pass); `BROWSER_SUITE=woods WOODS_ONLY=grow FROM_LEVEL=1` passed levels 1–8; `fingerdemo` `FINGER_ONLY=garden-grow` clean at 1, 7 (earlier pass) and 8 (after the bot was changed to `receiver: tapLayer`); one landscape screenshot at level 8.
+- Not run: portrait screenshot, `npm run build`, device checks.
+- Open: whether a lap player touches the big bed repeatedly, iPad feel and device speech of `grow.big` ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-22 — Weather Wardrobe batch 1: a miss that shows why and lap entry 8 (slices 3–4)
+
+- [PR #852](https://github.com/rjdunlap/neo/pull/852): wrong items show a hot, wet or cold consequence and hop back at levels 2–7 (accounting unchanged); lap entry level 8 *Try it on* (order `[1, 8, 2]`).
+- Ran (tree = branch HEAD): typecheck; `vitest` weather-wardrobe, registry and content (165 pass); `BROWSER_SUITE=fourth FOURTH_ONLY=weather` levels 1–6 and 8 (suite now waits out the misfit and covers 8); `BROWSER_SUITE=wardrobe7`; `fingerdemo` `FINGER_ONLY=weather-wardrobe FINGER_LEVELS=8,1` (6.4 s, 10.8 s); two 768x1024 misfit screenshots checked by eye.
+- Not run: `npm run build`, offline check, iPad/device, a child's reaction.
+- Open: whether misfits read as funny rather than unkind and how lap level 8 plays ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-22 — Rhythm Neighbors batch 1: Knock, knock, My turn your turn and the frogs' journal page (slices 2, 3, 8)
+
+- [PR #853](https://github.com/rjdunlap/neo/pull/853): lap entry level 7 (big tree, a croak answers each knock, eight knocks finish; lap order `[7, 1, 2]`), toddler level 8 (bird calls, one frog glows, one tap answers; `[2, 8, 3]`) and the journal entry `rhythm-neighbors:frogs-answer`.
+- Ran (tree = branch HEAD): typecheck; `npm test` (211 files, 2556 tests pass); `BROWSER_SUITE=creative CREATIVE_ONLY=rhythm FROM_LEVEL=3` on a Vite dev server at port 5611 (levels 3-8 pass; the suite now plays 7 and 8); `fingerdemo` `FINGER_ONLY=rhythm-neighbors FINGER_LEVELS=7,8,6` clean in 15.6 s, 12.9 s and 35.2 s; one portrait screenshot of level 7 (tree and frog clear of the pet).
+- Not run: `npm run build`, offline check, iPad/device, a child's reaction.
+- Open: whether a one-year-old waits for the answer at 7 and reads the glow at 8 ([device checks](../DEVICE-CHECKS.md)).

@@ -14,12 +14,12 @@ import type { CompanionRig } from '../../creatures/companion';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, HAIR_COLORS, helps, scalpFor, makeRequests, moreLine, needs, oldStrands, planFor, QUIET_HINT, salonMove, strandPoints, strokePath, toolFor, touchStrands, type Anchor, type Look, type Request, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
+import { anchors, describe, FACE_TAP, faceSpot, FLOOF, furFit, growFor, HAIR_COLORS, helps, isFree, PAT_MIRROR, PAT_QUIET, PAT_START, SNIP_START, SNIP_TOOL_RADIUS, stats, scalpFor, makeRequests, moreLine, needs, oldStrands, planFor, QUIET_HINT, salonMove, strandPoints, strokePath, toolFor, touchStrands, type Anchor, type Look, type Request, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
-  toddler: { min: 1, max: 2 },
+  lap: { min: 1, max: 7, order: [6, 1, 7, 2] },
+  toddler: { min: 1, max: 7, order: [6, 1, 7, 2] },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
 };
@@ -92,18 +92,18 @@ class ToolButton extends Container {
   private readonly disc = new Graphics();
   constructor(
     readonly tool: Tool,
-    radius: number,
+    private readonly radius: number,
     onPick: () => void,
   ) {
     super();
     this.glow.circle(0, 0, radius + 16).fill({ color: 0xfff3a0, alpha: 0.85 });
     this.glow.visible = false;
     this.addChild(this.glow, this.disc, toolIcon(tool));
-    this.setChosen(false, radius);
+    this.setChosen(false);
     onTap(this, onPick, { radius: radius + 8, cooldown: 200 });
   }
-  setChosen(on: boolean, radius = 44) {
-    this.disc.clear().circle(0, 0, radius).fill(0xffffff).stroke({ width: on ? 8 : 4, color: on ? swatch.purple.line : 0xb9c6d1 });
+  setChosen(on: boolean) {
+    this.disc.clear().circle(0, 0, this.radius).fill(0xffffff).stroke({ width: on ? 8 : 4, color: on ? swatch.purple.line : 0xb9c6d1 });
     this.scale.set(on ? 1.12 : 1);
   }
 }
@@ -152,9 +152,14 @@ class FluffySalon implements Game {
   /** Free play's mirror has been offered aloud. */
   private invited = false;
   private instruction: { id: LineId; vars?: LineVars } | null = null;
+  /** Pat the fluff: the floof has happened and the big mirror is up; the seconds since, before the pet looks by itself. */
+  private floofed = false;
+  private sinceFloof = 0;
+  private readonly free: boolean;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
+    this.free = isFree(this.plan.mode);
     this.requests = makeRequests(this.plan, ctx.rng);
     // The pet is in the chair, so the corner guide steps out (tapping the mirror repeats the ask).
     ctx.pet.visible = false;
@@ -187,26 +192,29 @@ class FluffySalon implements Game {
     this.card.visible = false;
     this.card.hitArea = new Rectangle(-110, -130, 220, 250);
     onTap(this.card, () => this.repeatInstruction(), { cooldown: 500 });
-    this.faceReplay.visible = this.plan.mode === 'play' || this.plan.mode === 'tools';
+    this.faceReplay.visible = this.free && this.plan.mode !== 'pat';
     this.faceReplay.hitArea = new Circle(0, 0, FACE_TAP);
     onTap(this.faceReplay, () => this.repeatInstruction(), { cooldown: 500 });
 
-    const tools: Tool[] = this.plan.mode === 'play' ? ['grow'] : ['grow', 'cut', 'comb', 'curl'];
-    for (const tool of [...tools, ...HAIR_COLORS]) {
-      const b = new ToolButton(tool, 44, () => this.choose(tool));
+    const mode = this.plan.mode;
+    const tools: Tool[] = mode === 'pat' ? [] : mode === 'play' ? ['grow'] : mode === 'snip' ? ['grow', 'cut'] : ['grow', 'cut', 'comb', 'curl'];
+    for (const tool of [...tools, ...(mode === 'pat' || mode === 'snip' ? [] : HAIR_COLORS)]) {
+      const b = new ToolButton(tool, mode === 'snip' ? SNIP_TOOL_RADIUS : 44, () => this.choose(tool));
       this.buttons.push(b);
       ctx.stage.addChild(b);
     }
-    this.mirror = new RoundButton(this.mirrorIcon(), swatch.white, 54, () => void this.lookInMirror());
+    this.mirror = new RoundButton(this.mirrorIcon(), swatch.white, mode === 'pat' ? PAT_MIRROR : 54, () => void this.lookInMirror());
     ctx.stage.addChild(this.mirror);
     this.choose('grow', true);
   }
 
   start() {
-    if (this.plan.mode === 'play' || this.plan.mode === 'tools') {
-      this.setHair({ length: 55, curl: 0.3, color: this.ctx.rng.pick(HAIR_COLORS) });
+    if (this.free) {
+      const mode = this.plan.mode;
+      const color = this.ctx.rng.pick(HAIR_COLORS);
+      this.setHair(mode === 'pat' ? { ...PAT_START, color } : mode === 'snip' ? { ...SNIP_START, color } : { length: 55, curl: 0.3, color });
       this.mirror.visible = false;
-      void this.instruct('salon.play');
+      void this.instruct(mode === 'pat' ? 'salon.pat' : mode === 'snip' ? 'salon.snip' : 'salon.play');
       return;
     }
     void this.nextRequest();
@@ -253,7 +261,7 @@ class FluffySalon implements Game {
     const colors = this.buttons.filter((b) => HAIR_COLORS.includes(b.tool as ColorName));
     spread(tools.length, 150, v.w - 160, 120).forEach((x, i) => tools[i].position.set(x, v.h - 62));
     colors.forEach((b, i) => b.position.set(v.w - 64, 184 + i * 100));
-    this.mirror.position.set(v.w - 64, 62);
+    this.mirror.position.set(this.plan.mode === 'pat' ? v.w * 0.5 : v.w - 64, this.plan.mode === 'pat' ? 90 : 62);
     this.card.position.set(170, 190);
     const face = faceSpot(this.scalp, this.pet.partPoints('eyes')[0], this.pet.scale.x);
     this.faceReplay.position.set(this.pet.x + face.x * this.pet.scale.x, this.pet.y + face.y * this.pet.scale.y);
@@ -275,7 +283,8 @@ class FluffySalon implements Game {
     // One-at-a-time requests: after a quiet while (no touch, no tool picked), light the tool that would help.
     if (this.plan.mode === 'ask' && this.sinceProgress > QUIET_HINT && !this.hintTool) this.hint();
     // Free play's mirror appears once there is something to see; at one-at-a-time requests there is no mirror.
-    const free = this.plan.mode === 'play' || this.plan.mode === 'tools';
+    if (this.plan.mode === 'pat') return this.updatePat(dt);
+    const free = this.free;
     if (free && !this.mirror.visible && (this.work > 40 || this.clock > 25)) {
       this.mirror.visible = true;
       this.mirror.scale.set(0);
@@ -288,6 +297,30 @@ class FluffySalon implements Game {
     }
     // In free play the mirror keeps inviting: a little wiggle every few seconds.
     if (this.invited && this.mirror.visible) this.mirror.rotation = (this.clock % 4 < 0.6 ? Math.sin(this.clock * 20) * 0.18 : 0);
+  }
+
+  /** Pat the fluff: when the fur is fluffy the pet shakes, the big mirror pops up, and a tap on it (or twenty quiet seconds) finishes. */
+  private updatePat(dt: number) {
+    if (!this.floofed) {
+      if (stats(this.strands).length >= FLOOF) void this.floof();
+      return;
+    }
+    this.sinceFloof += dt;
+    this.mirror.rotation = this.sinceFloof % 4 < 0.6 ? Math.sin(this.sinceFloof * 20) * 0.18 : 0;
+    if (this.sinceFloof > PAT_QUIET) void this.lookInMirror();
+  }
+
+  private async floof() {
+    this.floofed = true;
+    this.pointer = null;
+    this.pet.cheer();
+    sfx.sparkle();
+    const p = this.ctx.stage.toLocal(this.hair.toGlobal({ x: 0, y: -200 }));
+    this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 14, speed: [100, 260], gravity: 0, life: [0.6, 1] });
+    this.mirror.visible = true;
+    this.mirror.scale.set(0);
+    void this.ctx.tw.to(this.mirror.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.outBack });
+    void this.instruct('salon.floof');
   }
 
   /**
@@ -416,7 +449,7 @@ class FluffySalon implements Game {
   private async lookInMirror() {
     if (this.busy || this.finished) return;
     this.pointer = null;
-    if (this.plan.mode === 'play' || this.plan.mode === 'tools') {
+    if (this.free) {
       this.busy = true;
       return void this.finale();
     }
@@ -518,6 +551,7 @@ export const fluffySalon: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
+  entryLevels: [6, 7],
   touchDemo: true,
   coplayHint: 'Be the customer! Ask {name} for "long and pink, please!" and say how you like it.',
   offScreen: 'Play hair salon with a doll or stuffed animal: brushing, ribbons, and a mirror.',

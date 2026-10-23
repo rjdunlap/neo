@@ -20,13 +20,13 @@ Sun, rain or snow fills a big sky over grass; the pet (large, centre stage, the 
 
 **Accounting.** Level 1 has no misses. Levels 2–7: a wrong item is a miss with a boing, a nudge and the spoken reason ("A scarf is for snowy days. Try another!"); the second wrong in a row counts one hint, says "Try the glowing one!" and rings a fitting item; a right choice resets the count. At level 7 the tray is hidden while she undresses, so the `weather.change.remove.first` line ("First, take off…") could never play; slice 1 removed it (gap 9).
 
-**Known gaps found reading the code (1, 4 and 9 fixed by slice 1, 2026-10-21; the rest not fixed).**
+**Known gaps found reading the code (1, 4 and 9 fixed by slice 1, 2026-10-21, and 5 by slice 3, 2026-10-22; the rest not fixed).**
 
 1. **(Fixed in slice 1.) The level-7 card was wrong.** The how-to's pack step is `{ from: 6, … }` with no `to`, so the level-7 card also says to pack for a trip. It should be `{ from: 6, to: 6 }`.
 2. **Level 7 has no real decision when undressing.** Every worn item belongs to the old weather, so "take off the clothes that do not fit" always means take off everything. A real "keep what still fits" round needs an item that suits two weathers (rain boots in snow), which breaks the one-weather-per-item rule and its tests (decision 1).
 3. **The lap window holds level 2,** a two-choice round with boings and counted misses. For a child about one, the only lap level without a wrong answer is the sky toy.
 4. **(Fixed in slice 1.) Level 1 ignored most touches.** Only the sky above 62% of the height answers. The grass and the worn clothes do nothing, and the pet only giggles and repeats the instruction. Nothing is named when she touches it, so the vocabulary goal rests on the weather words alone.
-5. **A miss does not show why.** The boing and the spoken rule are the whole consequence; nothing on screen shows what a sun hat does in snow.
+5. **(Fixed in slice 3.) A miss did not show why.** The boing and the spoken rule are the whole consequence; nothing on screen shows what a sun hat does in snow.
 6. **The trip never pays off.** At level 6 items go into the suitcase and the round ends; the pet never goes on the trip or uses them.
 7. **"Everything" means different amounts.** At level 5 sunny has only two items, so "find everything" is two in sunny rounds and three otherwise; the pools are small enough that rounds repeat quickly.
 8. **The grown-ups' page shows `{name}`** in this game's `offScreen` line: already recorded as a shell bug in the [off-screen study](subjects/off-screen-companions.md); not re-diagnosed here.
@@ -115,6 +115,8 @@ Fog (its clothing rule is "be seen", a safety claim the subject studies keep out
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans are adopted: some items suit two weathers through an explicit table, so 11 *Keep what still fits* is a real revision; a school window with 12 *Pack light* follows it; 13 *Warm or cold?* is a picture thermometer at school, pictures only; *Try it on* 8 stays lap only until a device check shows a toddler wants it; the rework hooks wait on RW05/RW06.
+
 1. **Items that suit two weathers** (rain boots in snow, a raincoat in wind): relaxing the one-weather rule makes level 7 a real revision (11 *Keep what still fits*) and opens *Pack light*. Lean: yes, with a small explicit table and a rule test that every item's weathers are listed.
 2. **A school window** (12 *Pack light*, 13 *Warm or cold?*). Lean: yes after decision 1; school would play 6, 7, 11, 12.
 3. **Temperature as a second axis** (a picture thermometer, no numbers below zero until the `integers` subject asks). Lean: pictures only (cold, cool, warm, hot), school.
@@ -127,10 +129,10 @@ Fog (its clothing rule is "be seen", a safety claim the subject studies keep out
 
 1. **Every touch counts at level 1, and the level-7 card** (existing-game fix): grass per weather, worn items named, `{ from: 6, to: 6 }` on the pack step, the dead remove-phase line dropped or wired (gap 9). Checks: typecheck, the rule and how-to tests, one filtered play (`BROWSER_SUITE=fourth FOURTH_ONLY=weather`), `fingerdemo` at 1. *(Built 2026-10-21, [PR #682](https://github.com/rjdunlap/neo/pull/682): the grass answers per weather, worn items wiggle and are named, the pack step is `{ from: 6, to: 6 }`, the dead remove-phase line was dropped; closes gaps 1, 4 and 9. Build note in the [archive](../archive/COMPLETED-2026-10-09.md#weather-wardrobe-every-touch-counts-at-level-1-and-the-level-7-card-slice-1-2026-10-21).)*
 2. **More items, one slot each, sticker pinned** (content in existing levels): sandals, rain hat, earmuffs, puffy coat, `SLOTS`, level 5 always three. Checks: typecheck, rule tests, one screenshot of each new item worn, `fingerdemo` at 5. *(Built 2026-10-21, [PR #755](https://github.com/rjdunlap/neo/pull/755): the four items, `SLOTS` and `outfitFor`, level 5 always three, sticker pinned to the original eight; the puffy coat is blue, not red, because a red coat vanished under the red scarf. Build note in the [archive](../archive/COMPLETED-2026-10-09.md#weather-wardrobe-more-items-one-slot-each-slice-2-2026-10-21).)*
-3. **A miss that shows why** (existing-game change on the same interaction): misfit consequences, the item hops back; accounting unchanged. Checks: typecheck, rule tests, one filtered play with one wrong answer at 2 and 7 (`wardrobe7`).
-4. **Lap entry 8 *Try it on*** (new level, needs 3): order `[1, 8, 2]`, `entryLevels: [8]`. Checks: new-interaction tier (scripted play at 8 and 1, one portrait screenshot), `fingerdemo` at 8.
-5. **The trip happens** (level 6 payoff). Checks: typecheck, rule tests, one play of 6.
-6. **Level 9 *Which sky?*** in toddler and preschool (after 3: its wrong sky uses the misfit consequences). Checks: typecheck, rule tests, play of 9 with a wrong sky and a hint, `fingerdemo` at 9.
+3. **A miss that shows why** (existing-game change on the same interaction): misfit consequences, the item hops back; accounting unchanged. Checks: typecheck, rule tests, one filtered play with one wrong answer at 2 and 7 (`wardrobe7`). *(Built 2026-10-22, [PR #852](https://github.com/rjdunlap/neo/pull/852), batched with slice 4; closes gap 5. Build note in the [archive](../archive/COMPLETED-2026-10-09.md#weather-wardrobe-batch-1-a-miss-that-shows-why-and-lap-entry-8-try-it-on-slices-34-2026-10-22).)*
+4. **Lap entry 8 *Try it on*** (new level, needs 3): order `[1, 8, 2]`, `entryLevels: [8]`. Checks: new-interaction tier (scripted play at 8 and 1, one portrait screenshot), `fingerdemo` at 8. *(Built 2026-10-22, [PR #852](https://github.com/rjdunlap/neo/pull/852); see slice 3's build note.)*
+5. **The trip happens** (level 6 payoff). Checks: typecheck, rule tests, one play of 6. *(Built 2026-10-23, [PR #876](https://github.com/rjdunlap/neo/pull/876), batched with slice 6: after packing, the suitcase unpacks and the pet wears each weather's two packed items in forecast order. Build note in the [archive](../archive/COMPLETED-2026-10-09.md#weather-wardrobe-batch-2-the-trip-happens-and-level-9-which-sky-slices-5-6-2026-10-23).)*
+6. **Level 9 *Which sky?*** in toddler and preschool (after 3: its wrong sky uses the misfit consequences). Checks: typecheck, rule tests, play of 9 with a wrong sky and a hint, `fingerdemo` at 9. *(Built 2026-10-23, [PR #876](https://github.com/rjdunlap/neo/pull/876); see slice 5's build note.)*
 7. **Wind** (fourth weather, kite and windbreaker, `blown` misfit; after 2 and 3, which supply the slot map and the consequences). Checks: typecheck, rule tests, plays of 1 and 6, one screenshot; Lemonade Stand's forecast icons unchanged (one screenshot).
 8. **Level 10 *Two friends, two places*** (new drag interaction, pre-K). Checks: new-interaction tier, `fingerdemo` at 10.
 9. *(Decisions 1–2)* Items for two weathers, 11 *Keep what still fits*, 12 *Pack light* and the school window.

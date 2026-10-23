@@ -109,6 +109,8 @@ Device speech, iPad touch and a child's reaction stay human checks.
 
 ## Open developer decisions (none blocking; the build uses the defaults)
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: pre-K and school both play 1–3; the join changes the drawing and the carry, not the trace (the building session judges "combined" from its own play); *Down and catch* stays a proposal.
+
 1. **Pre-K window:** the default is pre-K and school both 1–3. The alternative is school only at level 3.
 2. **Is the join enough to count as "combined"?** The trace is level 1's rule. The new things are the joined drawing, the carry together and the flip from level 2. A stronger variant is defined only as level 4 below.
 3. **A level 4 "Down and catch":** combining level 2's step down with level 3's join (slope near half, cup far half at the low bank) stays a proposal, not part of this slice.

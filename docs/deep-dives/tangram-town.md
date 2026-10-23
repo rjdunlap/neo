@@ -115,6 +115,8 @@ Appended easier levels are placed with `order` (see DESIGN.md, Level tables).
 3. **Lap.** Does Tangram Town open to lap with a one-piece level 0, or does lap keep to Shape Sorter and Puzzle Pals? Waits on the level-order decisions in any case.
 4. **How many pictures per level is enough?** Six to eight is proposed; more is a few lines each, with no change to the tests.
 
+**Decided 2026-10-23 (on the developer's delegation):** add the parallelogram, flip button and mirror-aware rule for level 9, after fewer pieces and fix the picture; a built picture may be kept in the treehouse on request through a picture slot in `creations.ts`, as its own slice; lap keeps Shape Sorter and Puzzle Pals (no lap opening); six to eight pictures per level.
+
 ## Build slices, in order
 
 1. **Picture pool for levels 1–6** — **built this session.** Rule tests and typecheck, and one scripted play (`BROWSER_SUITE=creative CREATIVE_ONLY=tangram`).

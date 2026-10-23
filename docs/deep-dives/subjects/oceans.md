@@ -23,14 +23,14 @@ Opened 2026-10-23. Anchors are guides, not prerequisites or claims that a round 
 - **A repeated cycle is something a child can read as a pattern.** The island's Pattern Train and Day by Day already teach sequence from toddler up; Tide Line borrows the *form* (alternation) without claiming a measured age.
 - **Light fades with depth is a good small model.** The zone vocabulary varies by source: a K-2 lesson puts the sunlight zone at the surface to 200 m, twilight at 200 to 1,000 m and midnight at 1,000 to 4,000 m (summary only); the [Smithsonian pre-K ocean-zones lesson](https://naturalhistory.si.edu/sites/default/files/media/file/231215prek-group-exploration-lesson-3-ocean-zones-accessible.pdf) (read) says only about 25% of the ocean "sees the sunlight" (its top two zones, sunlight and twilight) and the midnight zone has none, while a National Geographic activity (summary only) puts 90% in the midnight zone. Because sources disagree, Down We Go uses **ordered stops with a light meter, never metres or percentages** until a reviewer picks one source.
 - **Fear first backfires.** David Sobel's essay on ecophobia ([*Connect*, Nov/Dec 2007](https://brandwein.org/wp-content/uploads/2019/02/David_Sobel_Climate_Change_meets_Ecophobia.pdf), read) quotes a parent worried that hitting kids "(before 6th grade) too hard with environmental problems" leaves them overwhelmed, cites Finger (1993) that heavy environmental knowledge "can even be counter-productive", and says the path to responsible behavior runs from a sense of agency and control to knowledge and then action. The "no tragedies before fourth grade" phrase circulates but I only found it second-hand (an NSTA blog report), so I do not repeat it as Sobel's. Consequence: the sea is shown **well and bright**; any care action is something she does and sees work. No dying animals, no polluted water, no entangled creatures anywhere on the child's island.
-- **Touch-pool etiquette is a real, simple, widely shared rule.** Aquariums teach touching with two wet fingers and not lifting animals off rocks (Seattle Aquarium and others, search summaries; a Leave No Trace tide-pool page credits Monterey Bay Aquarium for the advice). It is a **real-world instruction**, so it waits for a reviewer. The game's version is only that a quick poke makes a sea anemone close and it opens again by itself (a reviewer must confirm this is real behavior and fine to show; it is not asserted here).
-- **Safety at the shore is its own topic.** Rip currents, rising tides that cut off a cove, slippery rocks and cold water are body-safety content; the [safety](../subjects.md#decisions-for-the-developer) row waits on a named reviewer. Nothing here drafts any of it, and Tide Line shows the sea rising only against a pail and a picnic, never against a person.
+- **Touch-pool etiquette is a real, simple, widely shared rule.** Aquariums teach touching with two wet fingers and not lifting animals off rocks (Seattle Aquarium and others, search summaries; a Leave No Trace tide-pool page credits Monterey Bay Aquarium for the advice). It is a **real-world instruction**, so it is not drafted as a card (S1's body-safety exception). The game's version is only that a quick poke makes a sea anemone close and it opens again by itself (the session's source check must confirm this is real behavior and fine to show; it is not asserted here).
+- **Safety at the shore is its own topic.** Rip currents, rising tides that cut off a cove, slippery rocks and cold water are body-safety content; the [safety](../subjects.md#decisions-for-the-developer) row is deferred. Nothing here drafts any of it, and Tide Line shows the sea rising only against a pail and a picnic, never against a person.
 
 ## On the island today
 
 | What exists | Relevant content | Gap for oceans |
 | --- | --- | --- |
-| **Bubble Beach** ([lands](../../../src/content/lands.ts)) | Duck host, ten games: Bubble Pop, Peg Garden, Bounce Back, Bumper Garden, Sink or Float, Domino Run, Fruit Slice, Puddle Gobble, Lost Layers, Sea Lift. The map scene ([beach.ts](../../../src/app/scenes/beach.ts)) already draws a rocky shore with rock pools, sea stars, anemones, kelp, hermit crabs and gulls; its header says there is "no coral or reef fish" | Everything is an *appearance*; no game is *about* the sea. Measured capacity is 13 games (a 14th fails at school and grown-up, [Waiting](../../WAITING-ON-DEVELOPER.md)) |
+| **Bubble Beach** ([lands](../../../src/content/lands.ts)) | Duck host, ten games: Bubble Pop, Peg Garden, Bounce Back, Bumper Garden, Sink or Float, Domino Run, Fruit Slice, Puddle Gobble, Lost Layers, Sea Lift. The map scene ([beach.ts](../../../src/app/scenes/beach.ts)) already draws a rocky shore with rock pools, sea stars, anemones, kelp, hermit crabs and gulls; its header says there is "no coral or reef fish" | Everything is an *appearance*; no game is *about* the sea. Measured capacity is 13 games (a 14th failed the layout test at school and grown-up when measured 2026-10-22, per the earlier Waiting row; re-measure at build time) |
 | **Sea Lift** | Levels 1–3: above and below the water line, integer lifts | It owns above/below and sea level as a number line. Tide Line is time and repetition, not integers |
 | **Sink or Float** | Things arc into a tank; floats bob; levels 1–7 including "Make it float" | Only one water. No salt versus fresh, the island's one clean physical ocean fact |
 | **Puddle Gobble, Bubble Pop** | Shells, driftwood, seaweed and starfish as items; a sea scene | Content, not concepts |
@@ -73,16 +73,16 @@ Proposals, not registrations. P and K are separate; M is split at 12 and 13.
 
 | Audience | First action without someone supplying the answer | Deeper decision / placement |
 | --- | --- | --- |
-| **L** | Tide Line 1: pull the big wave up the beach and let it slide back; shells wobble, a sea star waves, a soft whoosh. Nothing is wrong. A grown-up names "in" and "out" | An anemone closes to a poke and opens again (if a reviewer confirms). **Shared visual toy; no claim about tides** |
+| **L** | Tide Line 1: pull the big wave up the beach and let it slide back; shells wobble, a sea star waves, a soft whoosh. Nothing is wrong. A grown-up names "in" and "out" | An anemone closes to a poke and opens again (if the session's source check confirms). **Shared visual toy; no claim about tides** |
 | **T** | Tide Line 1–2: drag the pail up the sand and the sea stops at the seaweed line; the pail is dry. Pail too low: it floats and the pet fetches it back up | The second and third items in any order. **No claim beyond "the sea stops at the line"** |
 | **P** | Tide Line 3: the sea is out and only the line of seaweed and shells is showing; she reads the line to place three things so they stay dry, then watches the sea come in | Two lines of different heights (a calm day and a stormy day) and a choice of which line to trust. The line is *evidence of a past tide* |
 | **K** | Tide Line 4: four pictures of one shore across a day, one missing; she picks the sea height that completes "high, low, high, low" | A sky arc with a sun and a moon. The day has two ins and two outs; the same pattern the next day |
-| **S** | Tide Line 5–6: drag the sun along the day to find when the rock pool shows (low) and when it is under (high); then read a tide chart (a line graph of height) to choose the best window for each job on three cards | Two valid windows per job; an earlier-or-later plan. Level 7 (review-gated): bigger and smaller tides across a fortnight |
+| **S** | Tide Line 5–6: drag the sun along the day to find when the rock pool shows (low) and when it is under (high); then read a tide chart (a line graph of height) to choose the best window for each job on three cards | Two valid windows per job; an earlier-or-later plan. Level 7 (source-check gated): bigger and smaller tides across a fortnight |
 | **U** | Down We Go (candidate): lower a lantern on a rope; light dims by stops; choose where seaweed can live because plants need light | Drift Cards (candidate): send a bottle across a map from a coast, with arrows for currents, and predict where it lands. Salty or Fresh at the top of Sink or Float |
 | **M** | **12:** the top levels of the above in `school`. **13+:** Tide Tables on `grownup` | Honest limit: **no evidence of what 11–14-year-olds choose** (see the tracker's note); the grown-up puzzle is the only deliberate answer |
 | **G — own play** | **Tide Tables** (candidate on `grownup`): a cozy scheduling puzzle. A day on the shore has a tide table and a list of jobs (the rock pool at low, the little boat at high, the picnic above the line); fit them in without clashes | The fewest changes; two tides a day in one place and a different pattern in another (reviewer) |
 | **G — play-with** | "Tide keeper and beachcomber": one person pulls the sea, the other places the picnic, then swap; the pet plays the other role alone | At level 3, the beachcomber reads the line aloud before placing |
-| **G — page tool** | A plain-HTML **Find the Line** conversation card: "Where did the water reach? How can you tell? Is the sand darker below that line?" with no equipment | **Needs a named reviewer** before any real-shore wording. No instructions about tide times, rocks, rip currents or swimming (the safety row) |
+| **G — page tool** | A plain-HTML **Find the Line** conversation card: "Where did the water reach? How can you tell? Is the sand darker below that line?" with no equipment | **Not drafted** (S1's body-safety exception): no real-shore wording. No instructions about tide times, rocks, rip currents or swimming (the safety row) |
 
 ## Candidates and recommended order
 
@@ -90,9 +90,9 @@ Effort as in the other studies (S small mode, M bounded new interaction, L model
 
 | Candidate | Fun action and learning purpose | Audiences / smallest useful version | Effort / new infrastructure |
 | --- | --- | --- | --- |
-| **Tide Line** (new game, recommended first) | Pull the sea in and out, keep things dry using the seaweed line, read the cycle and then a chart. Tides recur; the shore keeps evidence | L–S, levels 1–6 (7 review-gated) | M. Wave and gull synthesis in `sfx.ts`, a crab/sea-star/shell art set, tide generator in `logic.ts` |
+| **Tide Line** (new game, recommended first) | Pull the sea in and out, keep things dry using the seaweed line, read the cycle and then a chart. Tides recur; the shore keeps evidence | L–S, levels 1–6 (7 source-check gated) | M. Wave and gull synthesis in `sfx.ts`, a crab/sea-star/shell art set, tide generator in `logic.ts` |
 | **Tide Pool Friends** (habitat-kit art, with Tide Line) | The creatures that live on the shore: sea star, crab, shell, anemone; whale and octopus later | All bands that meet them | M. Code-drawn, built with Tide Line's first slice; the zoo study's kit row is satisfied by this, not a second kit |
-| **Salty or Fresh** (mode in Sink or Float) | Two tanks, the same thing in both; it sits higher in the salty one. Salt water holds things up | S–U; 5-ESS2-2 | S. No reviewer if wording is only "sits higher"; handed to the Sink or Float dive |
+| **Salty or Fresh** (mode in Sink or Float) | Two tanks, the same thing in both; it sits higher in the salty one. Salt water holds things up | S–U; 5-ESS2-2 | S. No source check beyond the ordinary one if wording is only "sits higher"; handed to the Sink or Float dive |
 | **Beach Day Pack-up** (mode in Second Chance Shed) | Pack the picnic so nothing is left behind: take home, reuse, worm bin | T–K; K-ESS3-3 | S. Bubble Beach picnic backdrop only |
 | **Beach Tally** (mode in Picture Graph) | Line up found things by kind and compare the rows | S; 5-ESS2-2 graphing habit | S. No litter scene: items are shells, stones, driftwood, feathers; "things that don't belong" is a later reviewed set |
 | **Rock Pool scene** (content in Photo Safari) | Find what is in the pool, then what shows when the sea is out | P–S | S. Uses the Tide Pool Friends art |
@@ -118,7 +118,7 @@ The sea level moves between a low and a high along a sloped beach, in a fixed re
 | 4 In, out, in, out | Four shore pictures across a day, one missing; choose the picture that completes high, low, high, low | pre-K | Wrong picture shakes; the sky arc shows where in the day it is. Glow after two |
 | 5 Pool time | Drag the sun along the day to find when the rock pool shows; the pool's creatures appear only at low tide | pre-K, school | The pool stays hidden at the wrong time; this is exploration, not a miss; "show me" after a minute is a hint |
 | 6 Read the chart | A line graph of height over a day; three job cards (look in the pool, sail the paper boat, picnic on the sand); put each on a window that suits it; at least two windows per job | school | A job in a clashing window shows what goes wrong in one line; glow marks the windows |
-| 7 Bigger and smaller tides (review-gated) | A fortnight chart; find the biggest highs and lowest lows; match to the Moon strip | school top, M | Gated on a named ocean educator and Moon Window being built |
+| 7 Bigger and smaller tides (source-check gated) | A fortnight chart; find the biggest highs and lowest lows; match to the Moon strip | school top, M | Gated on a named ocean educator and Moon Window being built |
 
 ### A rule test
 
@@ -137,17 +137,20 @@ One new game with three to six levels: wave and gull synthesis (shared), four co
 - **Off-screen:** the reviewed Find the Line card. Nothing practical ships before review.
 - **Presentation:** bright and calm; the sea never rises against a person; the creatures react with curiosity, never fear.
 
-## Decisions for the developer
+## Decisions
 
-1. **Identity:** confirm Tide Line as a new game (where will the sea reach, and when) rather than a Sea Lift or Day by Day mode. Lean: new game, if the level-3 line-reading round survives definition.
-2. **Placement:** Bubble Beach (ten games) fits thirteen. Puddle Lens is already named as the eleventh, Sand Table and Melt and Freeze both default to Bubble Beach, so with Tide Line the beach would hold fourteen and fail the layout test. **Bubble Beach is oversubscribed:** Puddle Lens, Sand Table, Melt and Freeze and Tide Line all name it, one more than fits. The ordering is the developer's call; this study does not move another game's land. Tide Line's own fallback is Counting Cove (the zoo study's Tide Pools row named it), whose capacity is unmeasured.
-3. **Review:** a named ocean or marine-science educator for creature behavior (an anemone closing to a poke and opening again), the tide pattern and level 7. Default reviewer is the developer until one is named, as for the other studies.
-4. **Moon link:** confirm the cause of tides appears only at school and behind review; below that the game shows the pattern and the evidence.
-5. **Tone:** confirm the island never shows litter, a polluted sea or a suffering animal to a child; "a clean sea" is a Second Chance Shed and Picture Graph mode with shells and stones, and a care action she does.
-6. **Predation:** confirm no predation as the fun or as an unlocked scene below `grownup`.
-7. **Safety:** shore safety stays with the unscheduled safety study; nothing here drafts it.
-8. **Real creatures:** confirm common names (crab, sea star, shell) and a rocky-shore island with no reef fish, as the beach scene already says.
-9. **Sound:** confirm synthesized wave and gull sounds (no imported audio).
+**Decided 2026-10-23** on the developer's delegation ([standing rules S1, S2, S8](../../archive/DECISIONS-2026-10-23.md#standing-rules)); nothing here waits on the developer. Each was my lean; the rule that settles it is named.
+
+1. **Identity (S8):** Tide Line is a new game (where the sea will reach, and when), not a Sea Lift or Day by Day mode. If the level-3 line-reading round fails definition, the rounds fold into Day by Day instead.
+2. **Placement (S8):** Bubble Beach, by layout test. It holds ten games and fits thirteen; Sand Table has since been built in Rainbow Meadow, so Puddle Lens, Melt and Freeze and Tide Line can be its 11th to 13th in whatever order they are built, and the first to fail the layout test falls back (Tide Line: Counting Cove, whose capacity is unmeasured).
+3. **Review (S1):** the building session checks the tide pattern, creature behaviour (an anemone closing to a poke) and every spoken line against reputable sources (a national ocean agency, an aquarium or museum, an established curriculum), cites them in the definition and records the check in its VERIFICATION entry. No named educator is needed; level 7 gets the same check.
+4. **Moon link (S1, S2):** the cause of tides appears only at school, after the source check and once Moon Window exists; level 7 sits at the top of `school` with an "about 10 and up" note, no gate. No two-bulge drawing.
+5. **Tone (S8):** the island never shows litter, a polluted sea or a suffering animal to a child; a clean sea is a Second Chance Shed and Picture Graph mode with shells and stones, and a care action she does.
+6. **Predation (S8):** none as the fun or as an unlocked scene below `grownup`.
+7. **Safety (S1's exception):** shore, tide-cut-off, rip-current and swimming safety, and any real touch-pool etiquette card, are not drafted. The game shows the sea rising only against a pail and a picnic.
+8. **Real creatures (S8):** common names (crab, sea star, shell, anemone) on a rocky-shore island with no reef fish, as the beach scene says.
+9. **Sound (AGENTS):** wave and gull sounds are synthesized in `sfx.ts`; no imported audio.
+10. **Older audiences (S2):** no middle band; Drift Cards and the chart levels sit at the top of `school`, and Tide Tables goes to `grownup` if Lantern Lake's layout test allows.
 
 ## Build slices, in order
 
@@ -155,9 +158,9 @@ Each row is one future session. Definitions are docs only (links and `git diff -
 
 | Order | One-session deliverable | Entry / exit and checks |
 | --- | --- | --- |
-| **1 — Define Tide Line 1–4** | Freeze the shore geometry, the line heights, the item sets, speech, accounting, ghost-finger actions and how-to wording; fill the open decisions | Docs only; decisions 1–2 recorded or explicitly pending |
-| **2 — Build Tide Line 1–4 and the shore creatures** | A registered touch game, `logic.ts` with a tide generator, wave and gull synthesis, crab, sea star and shell art | After decisions 1–3: typecheck, rule tests, one filtered first and last level play with a wrong placement and a hint, portrait screenshot, demonstration; build only if shared files changed |
-| **3 — Define Tide Line 5–7** | Sky arc, day strip, chart and the fortnight set | Docs only; level 7 held for the reviewer |
+| **1 — Define Tide Line 1–4** | Freeze the shore geometry, the line heights, the item sets, speech, accounting, ghost-finger actions and how-to wording; fill the open decisions | Docs only; decisions 1–2 are settled above |
+| **2 — Build Tide Line 1–4 and the shore creatures** | A registered touch game, `logic.ts` with a tide generator, wave and gull synthesis, crab, sea star and shell art | Decisions settled above: typecheck, rule tests, one filtered first and last level play with a wrong placement and a hint, portrait screenshot, demonstration; build only if shared files changed |
+| **3 — Define Tide Line 5–7** | Sky arc, day strip, chart and the fortnight set | Docs only; level 7 needs the session's source check and Moon Window |
 | **4 — Handoffs** | Salty or Fresh to the Sink or Float dive; Beach Day Pack-up to Second Chance Shed's next definition; Beach Tally to the Picture Graph dive; Rock Pool to Photo Safari; shore zones to the Habitat Helpers dive | Each through its own game's workflow; stable IDs and pins kept |
 | **5 — Define Down We Go** | The light meter, stops, the seaweed question and the school levels | Docs only, after slice 2 so the shore art exists |
 | **6 — Define Drift Cards** | Maps with currents; the route puzzle | Docs only, after Drop's Journey is defined |
@@ -165,4 +168,4 @@ Each row is one future session. Definitions are docs only (links and `git diff -
 
 ## What was built and what ran
 
-**Nothing built in code.** Sources opened: the California copy of the NGSS (the ESS2 listing and K-ESS3-3), the NOAA Ocean Literacy poster PDF, two Common Sense Media reviews, and Sobel's essay (PDF text). Search-summary-only sources are marked where they appear. Repository overlaps came from a read-only sweep of `docs/`, `src/content/lands.ts`, `src/art/` and `src/audio/`. Checks: `node scripts/check-links.mjs` and `git diff --check` only (docs). Not done: a named reviewer, the current Ocean Literacy Guide V3.1, any NGSS tide expectation, and any device or child check.
+**Nothing built in code.** Sources opened: the California copy of the NGSS (the ESS2 listing and K-ESS3-3), the NOAA Ocean Literacy poster PDF, two Common Sense Media reviews, and Sobel's essay (PDF text). Search-summary-only sources are marked where they appear. Repository overlaps came from a read-only sweep of `docs/`, `src/content/lands.ts`, `src/art/` and `src/audio/`. Checks: `node scripts/check-links.mjs` and `git diff --check` only (docs). Not done: the session's source check (a later build step), the current Ocean Literacy Guide V3.1, any NGSS tide expectation, and any device or child check.

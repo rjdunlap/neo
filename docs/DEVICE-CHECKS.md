@@ -1,5 +1,18 @@
 # Needs a person or a device
 
+## Adventure Walk levels 1–3
+
+- [ ] On an iPad, hear the way words: are "across" and "around" clearly distinct in device speech?
+- [ ] Watch a toddler: does she read the two dotted paths as two ways, and tap one?
+- [ ] On an iPad, hear the friends' calls and the reasons after a wrong tap (device speech).
+
+## Sand Table levels 1–3
+
+- [ ] Watch a lap or toddler player: does she connect her tap to the heap?
+- [ ] Without speech, do the scoop paddles read as "take away"?
+- [ ] On an iPad, does the Graphics redraw keep up during rapid taps?
+- [ ] On an iPad, hear the Show lines (device speech).
+
 ## Look It Up levels 1–3
 
 - [ ] On an iPad, hear the animal names, questions and fact sentences clearly (device speech, including "kit" and the long brown bear and penguin lines).
@@ -70,8 +83,10 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 - [ ] **Explore's four entries and Back versus Home (RW08 slice 1, 2026-10-21, #744).** On an iPad at toddler, preschool and school: does a child tap one of the four pictures (Places, Favorites, All games, Family play) without reading, do the 150-unit cards and the 120-unit page arrows suit a small hand in both orientations, does device speech say `explore.pick`, `explore.other-age`, `explore.page` and `result.back` clearly, and does she tell the result screen's blue Back to [place] from the white Home house? Scripted Chrome play passed; device speech and child comprehension remain unobserved.
 
 - [ ] **Fluffy Salon support truth (slice 1, 2026-10-21, #717).** On an iPad at lap and pre-K: does the giggle on a pat off the fur read as a welcome to a lap child; does device speech say "Look in the mirror when you are done!" (`salon.mirror`) and "A little more {fix}, where it glows" (`salon.more-color`) clearly; and is the warm-yellow glow on the old-colour strands visible on the iPad?
+- [ ] **Pet Kitchen meals and lap tap-sharing (batch 1, slices 2-3, 2026-10-23, #860).** On an iPad at lap and toddler: does a one-year-old's tap land on a tray piece at level 10 (and does a miss off the piece read as a wiggle, not a failure); does the chew at the end read as eating; do the critter faces (calm, then happy) read well in portrait; does the fraction bubble at level 7 invite a tap; is the pie clearly a whole to cut. The `picnic` suite's sandwiches step at lap (level 10) was not run in a browser.
 - [ ] **Pet Kitchen support truth (slice 1, 2026-10-21, #716).** On an iPad at toddler and school: does a two-year-old read the uncut food's wiggle and the cut buttons' bounce after quiet as an invitation, not a scolding; does device speech say `kitchen.empty` and `kitchen.short` clearly; and does the counted line at level 7 ("one quarter, two quarters, three quarters. That is three quarters!") sound natural over the hopping pieces?
 - [ ] **Size Parade support truth (slice 1, 2026-10-21, #714).** On an iPad at toddler and pre-K: does a two-year-old hear "bigger" and "smaller" at two friends and understand it; does big-low pitch feel natural; does the first drag at level 5 (40-unit lift) work; does "This spot first!" read as a nudge, not a scolding; does device speech say the new lines clearly?
+- [ ] **Size Parade levels 17 and 10 (2026-10-23).** On an iPad: does a toddler manage the first drag at level 17 (the lift); does a three-year-old understand "the middle one" at level 10; is the ringed-circle cue looked at?
 
 - [ ] **Welcome a New Friend, slice 1 (RW07, 2026-10-21, #712).** On an iPad at preschool and pre-K, does a child understand the invitation and the two step cards (tap a card to hear its ask, then the green Play arrow), and do the asks and done lines (`welcome.invite`, `welcome.ask.*`, `welcome.done.*`, `welcome.soon`, `home.continue`) sound right in device speech?
 
@@ -112,6 +127,8 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
   - the feel of the basket entry in the treehouse;
   - whether the recoloured art looks right in all eight colours on a 2x screen.
 - [ ] **Weather Wardrobe new items (slice 2, 2026-10-21, #755):** on an iPad, do the sandals, rain hat, earmuffs and blue puffy coat read as what they are at the pet's size, in both orientations, and does the coat stay visible under the scarf and mittens? A portrait screenshot was reviewed in Chrome; the iPad look and a child's reaction are not established.
+- [ ] **Weather Wardrobe misfits and lap entry 8 (batch 1, 2026-10-22, #852):** on an iPad, do the hot, wet and cold misfit reactions read as funny rather than unkind to a child, is the one-second wait before the item hops back comfortable, and at lap level 8 does she try the items and enjoy the fitting one stopping the weather (and does the six-second wiggle help without feeling like a hint)? Device speech of `weather.try` is also unchecked.
+- [ ] **Weather Wardrobe trip and Which sky? (batch 2, 2026-10-23, #876):** on an iPad, does the level-6 unpacking read as the trip happening, and can a toddler tell the weather from the grey scene and the outfit at level 9 (wrong-sky consequence tone, glow after two misses)?
 - [ ] **Dressing (RW06 slice 1, 2026-10-20, #637):** on an iPad, does the hanger on Friends read as "dress" to a child or only to a grown-up; do the nine items read at that size (crown, sun hat, beanie, sunglasses, scarf, raincoat, umbrella, mittens, boots) on each species; device speech of the new lines (`friends.dress`, `dress.pick`, `dress.on.*`, `dress.off`, `dress.none`); the frame rate with a dressed live rig on the guide, result star and treehouse; and whether she notices, wants to change, or is bothered by the guide never showing the umbrella. A child's reaction is not established.
 - [ ] **Home and creature play (RW06 slice 2, 2026-10-20, #638):** on an iPad at the site root, in both orientations: does a child read the ball as hers to throw (and, for the youngest, the ball on Home); do the people picture (Who's playing) and the house picture (Home) read to a grown-up and to an older child; device speech of the six new lines (`home.hello`, `home.play`, `home.explore`, `home.who`, `play.ball`, `play.fetch`); the frame rate of a dressed rig on the backdrop while the ball bounces and the friend runs; whether the "Island games" link in the top-right is easy for a grown-up to find and hard for a small hand to hit.
 - [ ] **Ramp Race truthful support (inquiry Q2, 2026-10-20, #624):** on an iPad at the fair-test level, watch whether a child connects the orange glow (a ghost ramp, an outlined floor or a ring around go, after two unfair Checks on one question) to "change this part", and listen to whether device speech reads the half-marks ("two and a half") and the new `ramp.wrong.*` and `ramp.fairhint` lines well.
@@ -137,6 +154,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 - [ ] **Letter Trails show the way (#442):** on an iPad, hear the rising firefly note across a stroke, see whether the purple start arrow reads and the yellow shown way helps a small hand follow after two wanders, and check the four ink looks are legible in both orientations.
 
+- [ ] **Critter Sort levels 12–13 (#865):** on an iPad in both orientations, hear the plant instructions and spoken reasons (device speech), check that the big plant beside or above the hoops and the leaf and petal signs communicate which marks to match, and observe whether a child understands "like the big plant" and "different both ways". Desktop automation and the ghost finger do not establish this.
 - [ ] **Critter Sort level 11 (#439):** on iPad in both orientations, hear sorting/counting/comparison speech, tap and replay every counted critter, and check that the rings, badges and three pictured choices communicate which part has more. Observe a child counting the groups and using the comparison hint. Desktop proof does not establish device speech or independent understanding.
 
 - [ ] **Critter Sort level 9 (#436):** on iPad in both orientations, hear the A/not-B instruction and both-part placement reasons; check that the paired pictures and red line communicate exclusion, and observe whether a child distinguishes A-only from A-and-B and neither. Desktop checks do not establish device speech or child understanding.
@@ -240,6 +258,7 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 
 - [ ] **The chooser on real hardware (2026-10-09).** On an iPad (and a phone): does a tap on a card open the island, not couch play (the chooser reads a real `pointerdown`, with a click's `detail` only as a fallback, and headless Chrome is not WebKit), does the first tap still wake sound and speech, and can a small hand pick its own card without reaching the gear or the couch button? On a TV with a controller: do the stick and the bottom button move the ring and open couch play for the highlighted person, and is the ring easy to see from the couch? With a keyboard: does Tab show the ring, and does Enter on the gear still only hold it?
 - [ ] **Rhythm Neighbors on the iPad (2026-10-21).** Does the teal frog's new ribbit (two short sawtooth bursts gliding down) carry on the iPad speaker and sound like a second frog, not a click; and does free play suit a one-year-old: the round ending by itself after eight frog taps, and the frog that wiggles and croaks after six quiet seconds (welcome or startling)? Not established by Chrome automation.
+- [ ] **Rhythm Neighbors levels 7 and 8 with small hands (2026-10-22).** A one-year-old at 7: does she wait for the frog's answer or knock through it, and does the answering croak with its ripple read as the frog replying; a two-year-old at 8: is the glowing frog read as "my turn", and does the 6 s idle wiggle help? Not established by Chrome automation.
 - [ ] **The quiet music-making games on the iPad (2026-10-09).** Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors, Clap the Syllables and the treehouse tune plaque no longer have the island's loop under them (a probe in headless Chrome shows the loop at about zero and the beat clock still running; the plaque's dip came back after the duck). Does the bare room feel empty to a small child or does her own sound carry it, is Song Maker's playhead still easy to follow, and does Pattern Train's bell level want the same treatment?
 - [ ] **Sound Garden's whole cast on the iPad (2026-10-21).** Level 1 seats five of six singers: do the bunny's four quick beats and the turtle's two slow tocks sound clearly different from the speaker, does the pitched ribbit read as low next to the bird's chirp, and does a small child tap through the whole garden?
 - [ ] **Speech voices for other languages on the iPad (2026-10-11).** Which voices her iPad has for the languages under consideration (Settings, Accessibility, Spoken Content, Voices), whether one needs a download, how they sound at the game's rate (0.95) and pitch (1.15), which were tuned on English voices, and whether a native speaker would accept them for a toddler. Blocks the stage 1 build of [Additional languages](ROADMAP.md#additional-languages); the definition does not wait.
@@ -297,6 +316,8 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 - [ ] Lasso Loops level 6 *About how many?* (2026-10-22): whether a six-year-old changes a guess after seeing the benchmark jar of ten; whether spoken "about thirty" is understood; whether the guess sign reads clearly on an iPad in portrait. E2 definition waits on child play.
 - [ ] Physical play: Peg Garden and Egg Catch (reachable goals feel reachable, motion slow enough, forgiving catches; at levels 2–3 whether resting hens after a still, caught egg read as a pause rather than a stall, and whether the hay glow after two misses is visible on an iPad; level 8: whether a toddler connects the fluffed/clucking hen to a lane tap, sees its hint, and finds lane hops forgiving); Bounce Back with two real hands and the pet taking over; Dot Link's line through dots for small fingers, and whether its heart, drop, star, leaf and moon marks read at 34-unit dots; Bumper Garden's half-screen flipping; Lasso Loops' loop gesture with small fingers.
 - [ ] Bumper Garden level 8 on the iPad (2026-10-22): does a pre-K child understand "not" from the sleeping flowers (faded, tilted, a bobbing z) and bloom the awake ones, or does she chase the sleepy ones; is the spoken "Shh, the {color} ones are sleeping" clear, and do the sleepy flowers read on all three tables?
+- [ ] Mail Carrier (2026-10-23, batch 2): actual iPad speech and comprehension of between/left/nearest/farthest; Hazel replay discoverability; eight-house odd/even portrait legibility and touch comfort. Browser proof kept separate 176-unit targets; it does not establish device or child play.
+- [ ] Mail Carrier (2026-10-22, batch 1): whether a toddler reads the tool pictures on the signs and letter at level 10, whether the problem pictures at level 9 read at viewing distance, and how the spoken ten-and-ones at level 12 sounds on a real iPad.
 - [ ] Little Helpers (2026-10-21, slice 1): whether a one-year-old notices the nearest helper's hop and squeak when she taps while a fruit is carried, the waiting helper's wave on a sky tap, and whether the crowd's shrug and "Everyone is busy helping!" read as "all busy" rather than a mistake.
 - [ ] Little Helpers (2026-10-22, batch 1): whether a toddler reads the wiggling whistle and the blinking empty rings at level 9 as "wait" and "done", whether the filling rings read as one-to-one counting, and whether the orchard, beach and woods things are recognisable at viewing distance.
 - [ ] Clarity: Fluffy Salon and Sound Garden (satisfying free play, clear exits, guided modes that keep creative exploration); Little Helpers and Mail Carrier (visible quantities and unambiguous requests at viewing distance; whether a Little Helpers bunch reads as equal teams; whether the pet's cart on Mail Carrier's street reads at iPad size, and whether a toddler confuses the mailbox colour with a door colour); Seesaw Balance's tipping as weight; Teddy Doctor's spoken-only clues; Quick Tricks' arrow between tricks; Stamp Studio, Pet Kitchen, Rhythm Neighbors and Tangram Town (stamp moving, equal pieces, reply scoring, silhouette help and understanding the square/two-triangle wall alternatives and turn/check repair); Peekaround Island (turning reads as looking from another side, "behind" the crown, drop spots easy to hit).
@@ -320,7 +341,61 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 - [ ] **Trackway Tales (levels 1–3, 2026-10-21, #699).** On an iPad with a 6–8-year-old (and an 11-year-old for level 3): does she read the practice strip as hers to try and the dried mud as the record; do the 70-unit toe bumps read as direction before the magnifier opens; does Can't tell at the puddle land as satisfying rather than a trick; does device speech say "trackway" clearly.
 - [ ] **Fossil Dig (levels 1–2, 2026-10-21).** On an iPad with a pre-K child: does she read the dusty stone as "rub me"; do the teeth read before she opens the magnifier at level 2; does "the flag of the square it was found in" land without the pet's line; are the leaf names clear on device speech.
 - [ ] **Attic Finds (levels 1–2, 2026-10-21, #693).** On an iPad with a preschooler: is the crank and Turn readable for a three-year-old; does the back-side rod read as connected to the crank and the bird or fish; at level 2 does she understand "show the part that proves it" without reading; are the spoken clue lines clear on device speech.
+- [ ] **Attic Finds (levels 3–4, 2026-10-23, #870).** On an iPad with a one- or two-year-old: does a swat read the giant handle as the cause (rather than "the screen makes it go"); does a two-year-old find and open the peek door unprompted; device speech for "up", "down", "turn", "push" and "inside". See the [definition](definitions/lid-and-lever.md).
 - [ ] **Monster Munch (slice 1, 2026-10-21, #705).** On an iPad: does device speech keep pace with per-bite counting when a one- or two-year-old feeds quickly at level 1 (or does the count lag or pile up); does the ringed tummy count after a wrong pad read as "let us count together"; does the monster's lean on a short drop read as "try again" without feeling like a miss. Not established by automation.
 - [ ] **Better voice V0 (2026-10-21, #734).** On an iPad with an Enhanced or Premium English voice downloaded (Settings → Accessibility → Spoken Content → Voices): does the grown-ups' page name that voice and does the game speak with it; retune the rate 0.95 and pitch 1.15 on it. Not established by automation (a Mac probe only saw the standard Samantha).
 
 - **Feelings Faces Ask first (12, PR #769):** on iPad, hear each friend’s wish and repeat it; check the blanket and Hazel-at-door pictures, portrait/landscape touches and pet clearance. Observe whether asking before offering and a calm/quiet ending make sense to a child. Chrome proof does not establish device speech or child understanding.
+
+## From the delegated decisions (2026-10-23)
+
+Added when the open questions were decided on the developer's delegation ([record](archive/DECISIONS-2026-10-23.md#decisions)). Each was a gate before; now it is a check that informs a later change and blocks nothing. Remove a line once it is done, as elsewhere in this file.
+
+- **Catalog-wide art uplift beyond the companions**: The illustrated duck and meadow beside untouched lands on the iPad.
+- **Genetics**: A grown-up watches a child try Sprout Shuffle level 1.
+- **Scientific inquiry**: A three-to-four-year-old tries Ramp Race before a preschool window.
+- **Photo Safari**: A toddler plays the "Who is sleeping?" entry.
+- **Fill and Dump**: A person watches level 7 played.
+- **Sense Detective**: A three-year-old tries Sense Detective level 1.
+- **Melt and Freeze**: Does a lap child enjoy Melt and Freeze 1–2.
+- **Mirror Brush fold button**: Does a two-year-old link the fold press to the copy, and is the squish pleasant.
+- **Visual art**: Can a lap child manage Little Loom level 1.
+- **Sound Garden**: iPad speaker loud/quiet contrast (for Little Conductor plan 5).
+- **Rhythm Neighbors**: Does a five-year-old play level 10 (before any pre-K window for 11).
+- **Garden Grow**: Would a toddler enjoy Garden Grow level 8.
+- **Teddy Doctor**: Teddy Doctor level 7 at lap, level 8 at pre-K.
+- **Weather Wardrobe**: Would a toddler start at Weather Wardrobe level 8.
+- **Little Helpers**: Little Helpers levels 7–8 played before Share the crowd.
+- **Duckling Parade additions**: Does she manage Duckling Parade one-duck 15 at lap.
+- **Day by Day**: Watch preschool weather matching in Day by Day 9.
+- **Energy/waves**: Preschool readiness for Circuit Garden.
+- **Programming**: Preschool readiness for Cue Studio level 1.
+- **Ratio and proportion**: iPad art check of the authored colour pairs (blue + yellow stays unauthored until it passes).
+- **Chance and statistics**: A two-year-old plays Spinner Fair level 1 (informs adding a toddler entry).
+- **Money and economy**: Child playtest of Lemonade Stand 6's stopped top-up.
+- **Area, volume and space**: Device speech check of "area"/"perimeter.
+- **Weather/water subject**: A tween and parent try the older robust-layout/mystery cases.
+- **Bouncy Launch’s near-or-far entry, lap pull, spring variable and supports**: A one-year-old drags the lap pull level.
+- **Bounce Back’s school window and couch face-off**: Two real people on two controllers play the face-off (is five goals the right length?).
+- **Robot Path's routine level and couch range**: A child plays Robot Path level 12 (informs level 15's difficulty).
+- **Goodnight Room's remaining levels**: A two-year-old plays level 4 (two names in order).
+- **Owl Walk Home’s goal and the stone-tap rework**: iPad speech for shape names (Owl Walk 6).
+- **Opposites' school window and its new levels**: Device speech for the un- words.
+- **Bubble Pop's below-level-1 play**: Whether a lap child drags before she taps (blow-then-pop).
+- **Peekaboo Barn's levels on top, its school window and its new animals**: Feeling and part words on device speech.
+- **Animal Snack's levels on top, its windows and its food table**: Counted speech ("3 carrot") and the below-1 entries.
+- **Splish Splash's friends in the tub, levels on top and hint rule**: Part, clue and room words.
+- **Jelly Drums' levels on top, resume rule and couch entry**: Song titles and color words on device speech.
+- **Rainbow Fingers' levels on top, journal source and pictures**: New picture and color words.
+- **Stamp Studio's levels on top, how they count, and its sets**: Stamp names, sounds, composed sentences.
+- **Duck Pond's levels on top, its hint rule and real stopping**: Teen words, night pond.
+- **Market Stall's levels on top, its school window and the coin look**: Counting up, pips on coins, ten words (decision 10's person checks).
+- **Word Monsters' levels on top, how much the voice tells, and speech**: The 26 `sound.*` lines and letter names on iPad (non-gating).
+- **Frog Hop's levels on top, its school window and the estimate level**: Tens words, "100" on a pad, the open line's small hops.
+- **Clap the Syllables' names, toddler window and isolated syllables**: Toddlers tapping big hands.
+- **Memory Match board, school extensions and toddler window**: Level 10 word legibility and 100-unit card minimum on an iPad.
+- **Are Memory Match 10–12's matching levels a bridge or a duplicate of Pet Kitchen **: Does she treat 10–12 as bridges.
+- **In what order the family's languages come, which variety of each, and who review**: An installed device voice for the chosen language.
+- **May the island ship AI voice clips?**: Listening judgement of the Kokoro voice on the iPad.
+- **Data/AI toy-model presentation and destination**: A pre-K window after the prototype.
+- **Ribbon Workshop**: Watch a pre-K child play Ribbon Workshop level 1 before opening a pre-K entry.

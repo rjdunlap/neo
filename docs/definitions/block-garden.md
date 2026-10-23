@@ -132,6 +132,8 @@ Device checks stay open:
 
 Each has a default that the build uses. None blocks it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults the build used stand (pre-K 1–3, school 2–6, grown-up 5–8 in Rainbow Meadow; no rotation; refused drops free at 1–2, one miss from 3; no reshuffle; box clears and an endless run stay proposals; couch play later).
+
 1. **Bands.** Default: pre-K 1–3, school 2–6 and grown-up 5–8, in Rainbow Meadow. The alternative is the IDEAS row's grown-up-only game in Lantern Lake (it would be the 13th game there), which drops levels 1–4.
 2. **Rotation.** Default: none, as in Block Blast and 1010!. Each orientation is its own shape. The alternative is a rotate button for grown-ups only, which needs its own solver branch and a hint for turning.
 3. **Refused-drop accounting.** Default: free at levels 1–2, one miss from level 3. The alternative is never a miss, with help only from the wander hint.

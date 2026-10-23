@@ -120,6 +120,8 @@ The [short-ladder audit](../archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#shor
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans are adopted: school level 13 *Even it out* goes at the top of the school order; level 5 (only) lets her overfeed and hands extras back at the bell, and extras handed back are not misses; the companion eats leftovers at 8 and 11 after the rework's companion art, and monster looks join the collection through play under RW05+'s unlock rules, never hunger while away.
+
 1. **Level 13 *Even it out* and its window.** Monsters start with uneven tummies (5, 1, 3); she moves cookies from one monster to another until all have the same; then "how many each?" (the fair share as an average, IDEAS *Share Fairly*, PhET). Lean: build it for school as the top of the order, since the band reaches 12 and moving between monsters is a new, satisfying action; the alternative is to wait for an older band.
 2. **Refusal at 4–6** (gap 7). Keep refusal (a miss) or let her overfeed and have the bell hand extras back. Lean: keep it at 4 (dots) and 6; at 5 let the monster accept extras and give them back only when the bell rings, so "enough" is her call. Small change, but it alters accounting.
 3. **Rework hooks.** The monsters as a creature family met here (a new look joins the collection after a first feast, permanently, through play, with supported completion reaching it); her companion at the table eating the leftovers at 8 and 11 (it already gets them, via `ctx.pet`); foods and places unlocked permanently as she plays. Lean: the companion at the table first, once the rework's companion art lands; collectible monster looks with the rework's unlock rules (RW05+). Never hunger, decay or waiting while she is away.
@@ -130,8 +132,8 @@ The [short-ladder audit](../archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#shor
 
 1. **Built.** **Truthful card, counted bites and a wrong pad that counts** (existing-game bug fix; gaps 1–6, 9): count aloud at 1 and 4–6, the level-7 card without the bell, `munch.each-no` lights and counts one tummy, hint lines per target, monster taps feed at level 1, two rounds at 1–2, the short-drop "hm?". Checks: typecheck, the rule tests, one filtered regression play (levels 1, 4 and 7, one wrong pad), `fingerdemo` at 1.
 2. **Foods, monsters and places** (content in existing levels): the `FOODS` pool, two kinds per round at 6, monster variants, three backdrops, the sticker pool; rule tests that every food reads in `orderWords` and the tray fits. Checks: typecheck, rule tests, one browser play of level 6 and `fingerdemo` at 6.
-3. **Lap entry 9 *Big bites*** with the `BandLevels` conversion and `entryLevels` (new interaction): belly growth, rumble, monster-tap feeding; the birthday-landing test. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
-4. **Toddler 10 *One of each*** (new level on 3's interaction): toddler order `[2, 3, 10, 4]`. Checks: typecheck, rule tests, play of 10, `fingerdemo` at 10.
+3. **Built.** **Lap entry 9 *Big bites*** with the `BandLevels` conversion and `entryLevels` (new interaction): belly growth, rumble, monster-tap feeding; the birthday-landing test. Checks: new-interaction tier (scripted play at 9 and 1, one portrait screenshot).
+4. **Built.** **Toddler 10 *One of each*** (new level on 3's interaction): toddler order `[2, 3, 10, 4]`. Checks: typecheck, rule tests, play of 10, `fingerdemo` at 10.
 5. **School 12 *Share two kinds*** (new level on 7's interaction): school order gains 12 between 7 and 8. Checks: typecheck, rule tests, play of 12, `fingerdemo` at 12.
 6. **School 11 *How many friends?*** (new interaction: the cave door, quotitive sharing with a visible leftover): school order ends at 11. Checks: new-interaction tier (scripted play at 11 and 8, one wrong bell, one hint, one portrait screenshot).
 7. *(Decision 2)* Overfeed and hand back at 5.
@@ -140,4 +142,4 @@ The [short-ladder audit](../archive/IDEAS-SHORT-LADDER-AUDITS-2026-10-09.md#shor
 
 ## What was built in this session
 
-The deep dive session itself built nothing. Slice 1 is built (PR #705, `claude/monster-munch-truthful-card`; build note in the [archive](../archive/COMPLETED-2026-10-09.md)); slices 2–6 are ready. Links (`node scripts/check-links.mjs`) and `git diff --check` ran.
+The deep dive session itself built nothing. Slice 1 is built (PR #705, `claude/monster-munch-truthful-card`; build note in the [archive](../archive/COMPLETED-2026-10-09.md)); slices 3–4 (levels 9 and 10, `claude/monster-munch-variety-entries`, [PR #857](https://github.com/rjdunlap/neo/pull/857); build note in the [archive](../archive/COMPLETED-2026-10-09.md)) are built; slices 2, 5 and 6 are ready. Links (`node scripts/check-links.mjs`) and `git diff --check` ran.

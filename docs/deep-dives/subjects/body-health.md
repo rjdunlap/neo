@@ -84,7 +84,7 @@ Effort: S = contained existing-game mode; M = one new interaction/model scene; L
 
 ## First game's proposed ladder: Sense Detective
 
-Levels 1–2 are [defined](../../definitions/sense-detective.md) (2026-10-22); levels 3–5 await B3.
+Levels 1–2 are [defined](../../definitions/sense-detective.md) (2026-10-22) and built (2026-10-23, Tinker Lab); levels 3–5 await B3.
 
 **Small complete experience:** a toy parcel belongs at the puppet museum. Choose an investigation, inspect its outcome, select every possible toy and press the large **Check** card. One task at the entry, two tasks at deeper levels, one shell-owned sticker at completion, including with help. No real people or health states are classified. Controls must remain at least 100 logical units in landscape and portrait; limit to three candidate cards and two investigation buttons on the first definitions. Tap acknowledgment squishes the button immediately; result playback can repeat without submitting.
 
@@ -121,6 +121,8 @@ Co-play alternates investigator and explainer; a parent can ask what is still po
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** (1) Sense Detective stays a new game (built). (2) For model and sense language, the building session checks it against reputable sources (museums, universities, government science agencies, established curricula), lists them here and records the check in its VERIFICATION entry; no outside reviewer is needed. (3) Older proposals sit at the school top or in `grownup`; no new band. (4) Free reveals, "not yet" answers and unjudged creation are never misses; only an explicit wrong Check counts; a supported finish earns the ordinary sticker. (5) Practical care, food, sleep, physical and body-safety content is deferred and not drafted.
+
 1. Confirm whether Sense Detective's choice of information channel earns a new game; consolidate with Photo Safari if the final action is photography/visual clue collection. Define K/S first; preschool is an observation trial.
 2. Choose a science/health educator to review body-system models, accessible sense language and human teaching-diagram scope. Existing Teddy Doctor pairings are pretend behavior, not newly verified medical instructions.
 3. Decide initial band ranges, subject/land destination and capacity; school-top at 11–12 and grownup at 13+ can serve older proposals without a new band. Cozy Village, Tinker Lab and Lantern Lake all require actual capacity checks; proposed Discovery Marsh is not available infrastructure.
@@ -134,7 +136,7 @@ These packets are recommendations, not the ready-build queue. Each definition ca
 | Slice | One-session deliverable | Gate / verification |
 | --- | --- | --- |
 | B1 · define first · **defined 2026-10-22, [Sense Detective 1–2](../../definitions/sense-detective.md)** | Freeze Sense Detective 1–2 toy table, view/sound depictions, one complete round each, pure evaluator, mistakes/support/adaptation, speech/how-to/demo and 100-unit layouts | Docs-only links/diff. Resolve identity, accounting, K/S window and land fit before implementation; no clinical content dependency |
-| B2 · build first round · **ready (queued in READY)** | Implement the frozen investigation/answer loop and levels 1–2 only | After B1 decisions; typecheck/units, one filtered first/top/wrong/hint play plus portrait, ghost finger; build for shared registration/content changes. No unrelated suites |
+| B2 · build first round · **built 2026-10-23 (PR #861)** | Implement the frozen investigation/answer loop and levels 1–2 only | After B1 decisions; typecheck/units, one filtered first/top/wrong/hint play plus portrait, ghost finger; build for shared registration/content changes. No unrelated suites |
 | B3 · define ambiguity | Freeze levels 3–5 with every consistent set, valid insufficient-evidence answer, accessible clue equivalence and useful hint/test rules | Docs only. This adds a new set-selection interaction; do not pretend it is content-only |
 | B4 · build ambiguity | Implement the bounded multi-select/record/uncertainty cases from B3 | New-interaction tier filtered to these cases, including demonstrated action; preserve existing IDs |
 | B5 · define systems | One reviewed Body Connections case with explicit model boundaries and partial-order alternatives; compare Story Steps before claiming identity | Docs only; named model review, standalone interaction and destination/ranges before build. Digestion/interacting systems each a later packet |

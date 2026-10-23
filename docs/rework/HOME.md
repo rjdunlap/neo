@@ -114,7 +114,9 @@ Home and Back follow RW03. Creature play, Friends and Dress each show **Back** (
 
 ## Decisions: defaults the build uses
 
-These are recorded in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md#defaults-in-use-block-nothing). Each has a default, so none of them blocks a slice.
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: all nine wearables free from the first visit; the day backdrop only; the ball as the one toy; the creature preview kept at `?preview` until RW08.
+
+These were decided 2026-10-23 on the developer's delegation ([record](../archive/DECISIONS-2026-10-23.md#decisions)). Each has a default, so none of them blocks a slice.
 
 1. **All nine items free now.** Every fitting item is available from the first visit, like the treehouse furnishings. Earned items come later as new items. (Alternative: start with three and earn the rest, which needs RW07 first.)
 2. **Day backdrop only.** No dusk at Home. (Alternative: dusk after a local evening hour. That is a clock-driven change, cosmetic only, and never a bedtime cue.)

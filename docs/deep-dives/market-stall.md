@@ -182,6 +182,8 @@ Both open a younger band, so they are placed by [`order`, which may skip IDs](..
 9. **Give me one, two, three: who stops?** Lean: the tray closes itself at the number (never wrong). Or the shopkeeper's hand is the target and an extra coin returns gently.
 10. **Person checks to add:** whether a six-year-old counts each coin as one (the counted-coins line); whether the pips help a three-year-old match a coin to the tag's dots; whether counting up from the price is understood or confusing next to the coin values said on touch-down; whether tens-and-ones words come out clearly with device speech; whether a child finds the 12-coin counter limit frustrating or a nudge toward bigger coins; whether a bigger-is-worth-more coin set confuses a child who has seen real coins; whether a toddler gives "two" and stops.
 
+**Decided 2026-10-23 (on the developer's delegation):** build 8–11 and define 12 Can I buy it? and 13 Trade up (unscored) now, in school 3–13 with `order` placing the inversions; shell coins on the island, real US coins (¢) only in a `grownup` window starting with G1; count change up from the price with a ten strip; a ten-bar tag from price 11; a first "too dear" tap is a miss, a nudge after; the tray closes itself at the number. The person checks in decision 10 go to the device checks, not gates.
+
 ## Build slices, in order
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken. Each level slice also raises `LEVELS.school.max`, updates `describeLevel`, the how-to's `LevelLine`s, the browser loop's `7` and `fingerdemo`'s levels, the README row and [GAMES.md](../GAMES.md).

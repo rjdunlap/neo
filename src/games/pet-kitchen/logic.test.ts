@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, PLANS, plateAt, PLATE_REACH, recipe, servesFraction, serveTrouble, countAloud } from './logic';
+import { dealCut, dealFriends, dealTo, DEAL_LEVEL, fruitPair, FRUITS, pieceCount, wholeFor, WHOLES, doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, PLANS, plateAt, PLATE_REACH, recipe, servesFraction, serveTrouble, countAloud, cutShares, fairAreas, pieceAreas, LOPSIDED_AREAS, isPizzaLevel } from './logic';
 it('can share every meal fairly and accepts alternative equal cuts',()=>{
  for(const p of PLANS.filter(p=>p.mode==='share')) {
    expect(p.cuts.some(c=>p.wholes*c%p.friends===0)).toBe(true);
@@ -91,4 +91,53 @@ it('counts served pieces aloud in their own fraction words',()=>{
  expect(countAloud(4,3)).toBe('one quarter, two quarters, three quarters');
  expect(countAloud(2,1)).toBe('one half');
  for(const r of FRACTIONS){const cut=fractionCut(r,[2,4])!;const n=cut*r.numerator/r.denominator;expect(countAloud(cut,n).split(', ')).toHaveLength(n);}
+});
+
+it('deals every tap to a plate with the fewest, so the plates end equal',()=>{
+  const p=planFor(DEAL_LEVEL);expect(p.mode).toBe('deal');
+  for(let seed=1;seed<=50;seed++){
+    const cut=dealCut(new Rng(seed));const pieces=pieceCount(p,cut);
+    expect(pieces%p.friends).toBe(0);
+    const plates=Array(p.friends).fill(0);
+    for(let i=0;i<pieces;i++){const to=dealTo(plates);expect(plates[to]).toBe(Math.min(...plates));plates[to]++;}
+    expect(fair(plates,pieces)).toBe(true);
+  }
+});
+it('gives every seeded whole the same piece count and only varies levels 1-4',()=>{
+  const seen=new Set<string>();
+  for(let seed=1;seed<=40;seed++){for(let l=1;l<=4;l++){const w=wholeFor(l,new Rng(seed));expect(WHOLES).toContain(w);seen.add(w);}}
+  expect(seen.size).toBe(2);
+  for(const l of [5,6,7,8,9,10])expect(wholeFor(l,new Rng(3))).toBe('sandwich');
+  for(const p of PLANS)for(const c of p.cuts)expect(pieceCount(p,c)).toBe(p.wholes*c);
+});
+it('picks two different fruits from three and distinct friends from the seed',()=>{
+  const used=new Set<number>();
+  for(let seed=1;seed<=60;seed++){const [a,b]=fruitPair(new Rng(seed));expect(a).not.toBe(b);expect(a).toBeLessThan(FRUITS.length);expect(b).toBeLessThan(FRUITS.length);used.add(a);used.add(b);}
+  expect(used.size).toBe(3);
+  for(let seed=1;seed<=30;seed++){const f=dealFriends(new Rng(seed),3);expect(new Set(f).size).toBe(3);}
+});
+
+it('level 11 offers a lopsided cut whose pieces are a third and two thirds, and only the middle cut shares fairly',()=>{
+ const p=PLANS[10] as typeof PLANS[10]&{lopsided?:boolean};
+ expect(p.lopsided).toBe(true);expect(p.friends).toBe(2);expect(fairCut(p)).toBe(2);
+ for(const small of [true,false]){
+   const a=pieceAreas(2,1,true,small);expect(a.reduce((x,y)=>x+y,0)).toBeCloseTo(1);
+   expect(a[small?0:1]).toBeCloseTo(1/3);expect(a[small?1:0]).toBeCloseTo(2/3);
+   // One piece each by count, but not by area.
+   expect(fair([1,1],2)).toBe(true);expect(fairAreas(a)).toBe(false);expect(serveTrouble([1,1],2,a)).toBe('lopsided');
+ }
+ const mid=pieceAreas(2,1);expect(fairAreas(mid)).toBe(true);expect(serveTrouble([1,1],2,mid)).toBe('unequal');
+ expect(LOPSIDED_AREAS[0]+LOPSIDED_AREAS[1]).toBeCloseTo(1);
+ // Both lopsided pieces on one plate is the usual unfair serve, named as it was before.
+ expect(serveTrouble([2,0],2,pieceAreas(2,1,true))).toBe('unequal');
+});
+it('level 12 shares two pizzas among three only as thirds; halves and quarters leave a piece over',()=>{
+ const p=PLANS[11];expect(p.wholes).toBe(2);expect(p.friends).toBe(3);expect(fairCut(p)).toBe(3);
+ expect(cutShares(p,3)).toBe(true);expect(cutShares(p,2)).toBe(false);expect(cutShares(p,4)).toBe(false);
+ expect(fair([2,2,2],6)).toBe(true);expect(fair([1,1,1],4)).toBe(false);
+ expect(serveTrouble([1,1,1],4,pieceAreas(2,2))).toBe('leftover');
+ expect(serveTrouble([2,2,2],6,pieceAreas(3,2))).toBe('unequal');
+ expect(wholeFor(12,new Rng(1))).toBe('pie');expect(isPizzaLevel(12)).toBe(true);expect(isPizzaLevel(9)).toBe(true);
+ // The ghost finger hands out the six slices and they come out two each.
+ const plates=[0,0,0];for(let i=0;i<6;i++)plates[nextPlate(plates)]++;expect(plates).toEqual([2,2,2]);
 });

@@ -3,3 +3,9 @@ dist
 dev-dist
 .DS_Store
 test-results
+
+.env.local
+
+# Generated images waiting for scripts/art/import-inbox.mjs
+docs/rework/concepts/inbox/*
+!docs/rework/concepts/inbox/README.md

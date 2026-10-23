@@ -6,7 +6,10 @@ import type { Rng } from '../../engine/random';
  * Grow it, snip it, comb it straight, curl it and color it. Free play at first, then requests
  * ("long and pink") checked in the mirror.
  */
-export type SalonMode = 'play' | 'tools' | 'ask' | 'two' | 'match';
+export type SalonMode = 'play' | 'tools' | 'ask' | 'two' | 'match' | 'pat' | 'snip';
+
+/** Modes with no request: she styles freely and the mirror ends the round. */
+export const isFree = (mode: SalonMode) => mode === 'play' || mode === 'tools' || mode === 'pat' || mode === 'snip';
 
 export interface SalonPlan {
   mode: SalonMode;
@@ -21,7 +24,21 @@ export const PLANS: SalonPlan[] = [
   { mode: 'ask', requests: 3, name: 'One request at a time: "make it long", "make it pink"' },
   { mode: 'two', requests: 3, name: 'Two-part requests checked in the mirror: "short and blue"' },
   { mode: 'match', requests: 2, name: 'Copy a pictured style: length, curls and color' },
+  { mode: 'pat', requests: 0, name: 'Pat the fluff: no buttons, any touch grows the fur' },
+  { mode: 'snip', requests: 0, name: 'Snip snip: grow the fur, then snip it' },
 ];
+
+/** Pat the fluff: the fur starts as short fuzz; at this average length the pet does the floof shake and the big mirror appears. */
+export const PAT_START = { length: 20, curl: 0.3 };
+export const FLOOF = 120;
+/** Seconds after the floof with no mirror tap before the pet looks in the mirror by itself (no miss, no hint). */
+export const PAT_QUIET = 20;
+export const PAT_MIRROR = 70;
+/** Snip snip: the fur starts long and curly, so the first snip sends fluff tumbling. */
+export const SNIP_START = { length: 150, curl: 0.8 };
+export const SNIP_TOOL_RADIUS = 54;
+/** Snip snip's tools, each used once by the demonstration. */
+export const SNIP_TOUR: Tool[] = ['grow', 'cut'];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -300,9 +317,11 @@ export type SalonMove = { do: 'tool'; tool: Tool } | { do: 'stroke' } | { do: 'm
  * only once nothing is left to do, which is the only way to a miss there.
  */
 export function salonMove(s: SalonState): SalonMove | null {
+  if (s.mode === 'pat') return s.mirror ? { do: 'mirror' } : { do: 'stroke' };
   if (!s.look) {
-    const want = s.mode === 'play' ? 'grow' : TOUR[Math.min(s.strokes, TOUR.length - 1)];
-    const done = s.strokes >= (s.mode === 'play' ? PLAY_STROKES : TOUR.length);
+    const tour = s.mode === 'snip' ? SNIP_TOUR : TOUR;
+    const want = s.mode === 'play' ? 'grow' : tour[Math.min(s.strokes, tour.length - 1)];
+    const done = s.strokes >= (s.mode === 'play' ? PLAY_STROKES : tour.length);
     if (done) return s.mirror ? { do: 'mirror' } : { do: 'stroke' };
     return s.tool === want ? { do: 'stroke' } : { do: 'tool', tool: want };
   }

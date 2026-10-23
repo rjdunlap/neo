@@ -5,7 +5,10 @@ import {
   atticLayout, authored, CARD, check, CHECK_R, CHIP_R, CLAIM, CLAIM_H, CLAIM_W, CLAIMS, clueOf, CRANK_HIT, EFFECTS, encounterState, glowing,
   glowTarget, help, look, makeRound, OBJ, objectOf, OBJECTS, outcome, petCorner, pick, place, PLANS, planFor, shellButtons, SLOT, SPOT_R,
   supports, tryIt, TURN_R, WINDOW_R, type Pt, type Rect,
+  canFinish, finishLever, leverState, makeLeverRound, press, toggleDoor, turnEnded, TURNS_TO_FINISH, FINISH_R,
 } from './logic';
+import { atticFinds } from './index';
+import { landing } from '../../progress/difficulty';
 
 const VIEWS = {
   landscape: computeView(1024, 768),
@@ -206,4 +209,128 @@ describe('layout', () => {
       });
     }
   }
+});
+
+describe('levels 3-4: the giant handle', () => {
+  const lever = planFor(3), peek = planFor(4);
+  const turn = (s: ReturnType<typeof leverState>) => { if (press(s)) turnEnded(s); };
+
+  it('has plans by ID, with level 1 and 2 unchanged and an unknown level falling back to 1', () => {
+    expect(lever.mode).toBe('lever');
+    expect(peek.mode).toBe('peek');
+    expect(planFor(1).mode).toBe('try');
+    expect(planFor(2).mode).toBe('prove');
+    expect(planFor(99).id).toBe(1);
+    for (const p of PLANS) expect(p.name.length).toBeGreaterThan(0);
+  });
+
+  it('toggles up and down, counting each ended turn once', () => {
+    const s = leverState();
+    turn(s);
+    expect(s.up).toBe(true);
+    turn(s);
+    expect(s.up).toBe(false);
+    expect(s.turns).toBe(2);
+  });
+
+  it('queues at most one touch during a turn', () => {
+    const s = leverState();
+    expect(press(s)).toBe(true);
+    expect(press(s)).toBe(false);
+    expect(press(s)).toBe(false);
+    expect(turnEnded(s)).toBe(true);
+    expect(turnEnded(s)).toBe(false);
+    expect(s.turns).toBe(2);
+  });
+
+  it('allows Finish from the third turn and never before, whatever the door does', () => {
+    const s = leverState();
+    for (let i = 0; i < TURNS_TO_FINISH; i++) {
+      expect(canFinish(s)).toBe(false);
+      toggleDoor(s, peek);
+      turn(s);
+    }
+    expect(canFinish(s)).toBe(true);
+    turn(s);
+    expect(canFinish(s)).toBe(true);
+    expect(finishLever(s)).toBe(true);
+    const turns = s.turns;
+    expect(press(s)).toBe(false);
+    expect(s.turns).toBe(turns);
+    expect(finishLever(s)).toBe(false);
+  });
+
+  it('opens the door only at level 4, and the door never changes the turns', () => {
+    const a = leverState(), b = leverState();
+    expect(toggleDoor(a, lever)).toBe(false);
+    expect(a.doorOpen).toBe(false);
+    expect(toggleDoor(b, peek)).toBe(true);
+    expect(b.doorOpen).toBe(true);
+    toggleDoor(b, peek);
+    expect(b.doorOpen).toBe(false);
+    expect(b.turns).toBe(0);
+  });
+
+  it('can always be finished within three presses, from any random play', () => {
+    for (let seed = 1; seed <= 500; seed++) {
+      const rng = new Rng(seed), s = leverState();
+      for (let i = 0; i < rng.int(0, 12); i++) {
+        const r = rng.next();
+        if (r < 0.5) press(s);
+        else if (r < 0.75) toggleDoor(s, peek);
+        else if (r < 0.9) turnEnded(s);
+        else finishLever(s);
+      }
+      if (s.done) continue;
+      s.turning = false;
+      s.queued = false;
+      for (let i = 0; i < TURNS_TO_FINISH && !canFinish(s); i++) turn(s);
+      expect(canFinish(s)).toBe(true);
+    }
+  });
+
+  it('is deterministic, with level 4 and the authored first round always the bird box and level 3 showing both', () => {
+    expect(makeLeverRound(lever, new Rng(5))).toEqual(makeLeverRound(lever, new Rng(5)));
+    expect(makeLeverRound(lever, new Rng(5), true).object).toBe('bird-box');
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 200; seed++) {
+      seen.add(makeLeverRound(lever, new Rng(seed)).object);
+      expect(makeLeverRound(peek, new Rng(seed)).object).toBe('bird-box');
+    }
+    expect(seen.size).toBe(2);
+  });
+
+  it('registers for lap 3, toddler 3-4 and leaves the older bands, with entry levels 3 and 4', () => {
+    expect(atticFinds.levels('lap')).toEqual({ min: 3, max: 3 });
+    expect(atticFinds.levels('toddler')).toEqual({ min: 3, max: 4 });
+    expect(atticFinds.levels('preschool')).toEqual({ min: 1, max: 1 });
+    expect(atticFinds.levels('prek')).toEqual({ min: 1, max: 2 });
+    expect(atticFinds.levels('school')).toEqual({ min: 2, max: 2 });
+    expect(atticFinds.entryLevels).toEqual([3, 4]);
+    expect(landing(4, atticFinds.levels('prek'), atticFinds.entryLevels)).toBe(1);
+    expect(landing(3, atticFinds.levels('preschool'), atticFinds.entryLevels)).toBe(1);
+  });
+
+  it('lays out a handle, door and Finish of at least 100 units that never overlap each other, the pet or the shell buttons', () => {
+    for (const [name, v] of Object.entries(VIEWS)) {
+      for (const level of [3, 4]) {
+        const L = atticLayout(v, level);
+        const handle = circle(L.handle, L.handleR), finish = circle(L.finish, FINISH_R);
+        expect(L.handleR * 2, name).toBeGreaterThanOrEqual(100);
+        expect(FINISH_R * 2).toBeGreaterThanOrEqual(100);
+        expect(inside(handle, v), `${name} handle`).toBe(true);
+        expect(inside(finish, v), `${name} finish`).toBe(true);
+        expect(overlap(finish, handle), `${name} finish/handle`).toBe(false);
+        expect(overlap(finish, petCorner(v)), `${name} finish/pet`).toBe(false);
+        for (const b of shellButtons(v)) expect(overlap(finish, b) || overlap(handle, b), `${name} shell`).toBe(false);
+        if (level === 4) {
+          expect(L.door.w).toBeGreaterThanOrEqual(100);
+          expect(L.door.h).toBeGreaterThanOrEqual(100);
+          expect(inside(L.door, v), `${name} door`).toBe(true);
+          expect(overlap(L.door, handle), `${name} door/handle`).toBe(false);
+          expect(overlap(L.door, finish)).toBe(false);
+        }
+      }
+    }
+  });
 });

@@ -121,6 +121,8 @@ Device checks stay open: whether a four-year-old reads the dusty stone as "rub m
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** Keep all seven built defaults; a real plant, shell, track or dinosaur may be added after the session's source check against museum or university sources.
+
 Each has a default the build uses. None blocks it. The deep-time study's decisions 2 (shared ownership: this is the one definition, and the audit above finds the Where flag and the feature comparison are decisions Splish Splash and Puzzle Pals never ask) and 5 (exploration and support: no persistence, supported finish as above) are settled here as defaults; its decision 1 (a content reviewer) is not needed for invented leaves and stays open for real species.
 
 1. **Bands.** Default pre-K 1–2 only, as the studies' "K first" asks. Alternatives: preschool 1 with the Where flag stamped automatically when Shown (so its only decision is the outline), and a one-level school window at 2 until plans 3–4 are defined.

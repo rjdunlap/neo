@@ -1,6 +1,6 @@
 # Attic Finds levels 3–4: Lid and Lever (definition)
 
-Defined 2026-10-22 on `claude/define-lid-and-lever` ([PR #773](https://github.com/rjdunlap/neo/pull/773)), slice **H3** of the [everyday-life-long-ago study](../deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order), from step **A** of its [proposed ladder](../deep-dives/subjects/daily-life-long-ago.md#first-games-proposed-ladder-attic-finds) and its [candidate row](../deep-dives/subjects/daily-life-long-ago.md#candidates-and-overlap-decisions). Docs only; nothing is implemented. The build is queued as an [implementation batch](../GAME-BATCHES.md#attic-finds-1-lid-and-lever).
+Defined 2026-10-22 on `claude/define-lid-and-lever` ([PR #773](https://github.com/rjdunlap/neo/pull/773)), slice **H3** of the [everyday-life-long-ago study](../deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order), from step **A** of its [proposed ladder](../deep-dives/subjects/daily-life-long-ago.md#first-games-proposed-ladder-attic-finds) and its [candidate row](../deep-dives/subjects/daily-life-long-ago.md#candidates-and-overlap-decisions). **Built 2026-10-23** on `claude/attic-lid-lever` ([PR #870](https://github.com/rjdunlap/neo/pull/870)): lap 3, toddler 3–4, `entryLevels` [3, 4]; the peek door is 220 units wide (not ~240) at `DOOR_AT` (-40, 30); Finish after three turns; 0 misses and 0 hints. Device checks below stay open in [DEVICE-CHECKS](../DEVICE-CHECKS.md). Originally docs only. The build is queued as an [implementation batch](../GAME-BATCHES.md#attic-finds-1-lid-and-lever).
 
 **What it adds:** two appended levels of the built `attic-finds` game (`src/games/attic-finds/`, levels 1–2, [definition](attic-finds.md)) that open it to lap and toddler:
 
@@ -112,6 +112,8 @@ New-interaction tier (a new input inside an existing game), as the study's H3 ro
 Device checks stay open: whether a one-year-old's swat reads the handle as the cause (rather than "the screen makes it go"); whether a two-year-old finds and opens the door unprompted; whether the Finish picture is tapped on purpose or by accident; device speech of the new lines.
 
 ## Open decisions
+
+**Decided 2026-10-23 (on the developer's delegation):** all seven defaults stand as the build uses them: the ordinary 0/0 step-up from 3 to 4, preschool level 1 only, only her Finish tap ends a round, any attic touch turns the handle at level 3, the bird box at level 4, home Story Grove, and the pet never says *lever*, *old* or *long ago*.
 
 Each has a default the build uses. None blocks it.
 

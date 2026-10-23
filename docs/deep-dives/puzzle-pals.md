@@ -154,6 +154,8 @@ Both are placed by [`order`, which may skip IDs](../DESIGN.md) (built): an easie
 
 The level-order decision already has a row in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer); the others are added there as one row.
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans of decisions 1–4 stand: a box lid from level 5 (whether levels 5–7 are fair becomes a person check, not a gate); a near-blank-piece test first, fixing the art it flags; levels 8 Turn it round, 9 Two pictures, 10 Mend the picture and 11 Quarter turns in pre-K 5–9 and school 6–11; stickers and the map icon stay on the first six scenes.
+
 ## Build slices, in order
 
 **Built 2026-10-14 ([PR #292](https://github.com/rjdunlap/neo/pull/292)):** `codex/puzzle-pals-visible-cues` completes slice 1's visible-detail fairness guard and scenery repair across all twelve scenes ([build note](../archive/COMPLETED-2026-10-09.md#puzzle-pals-visible-cues-and-fairness-2026-10-14); [checks](../archive/VERIFICATION-2026-10-07-13.md#2026-10-14--puzzle-pals-visible-cues-and-fairness)). Saved sticker/map drawings retain their original art. The local claim is `3808201`; publication was explicitly approved by the developer on 2026-10-14. The box lid stays a separate, person-check-dependent slice.

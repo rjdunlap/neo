@@ -116,6 +116,8 @@ New-game tier. Run typecheck and unit tests (all the rule properties above, plus
 
 Each has a default that the build uses. None blocks it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults the build used stand (wooden boards on the barn's pegboard wall; Barnyard; covered-bolt taps free at 1–3, one miss from 4; toddler 1–2; holes at level 6, lit; couch play later).
+
 1. **Theme.** Default: wooden boards on the barn's pegboard wall, with fruit and peeking friends. The alternative is toy-box lids in the treehouse.
 2. **Home land.** Default: Barnyard (7 games). The alternative is Tinker Lab with the `tinker-lab` subject, at 14 games, more than `lands.test.ts` has covered.
 3. **Covered-tap accounting.** Default: free at levels 1–3, one miss from 4. The alternative is never a miss, with help only through the glow after a struggle.

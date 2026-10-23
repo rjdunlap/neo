@@ -190,6 +190,8 @@ IDs are illustrative for a new game. Proposed windows: L 1, T 1–2, P 2–3, K 
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** Far Lights is a new game beside Light Lab with windows lap 1 to school 6–8, home Tinker Lab if its last place is free (first to build takes it), else Music Mountain; levels 1–2 and "both could fit" use Space's policy (ordinary rule, no exploratory flag). Levels 5–8 and quantitative wording take the building session's check against cited sources instead of a named astronomy educator; 7–8 and Moon Window 8–9 sit at the top of `school`, Observatory Files on `grownup` with the three proposed case types; page cards and star finders take the same check, real or cultural sky content is not drafted, and there is no Sun, eclipse or telescope viewing advice.
+
 1. **Far Lights identity and placement:** confirm it as a new game beside Light Lab (different action), its windows (L 1 to U 6–8), and its land. Tinker Lab lists 13 games; the layout test decides fit, with no smaller targets. Lean: Tinker Lab if it fits, otherwise wait for the rework's Explore/places.
 2. **Model review:** name an astronomy educator to review the inverse-square toy, the halo-size convention, the toy parallax, Moon Window's edge-on tilt, the season model and the cluster table before scientific claims ship. No reviewer is named or review done.
 3. **Exploration accounting:** Far Lights 1–2 and level 8's "both could fit" need the same policy as Space's decision 5: completion earns the sticker, but those rounds do not move the level as if mastered.

@@ -12,11 +12,12 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { COUNT_PARTS, countParts, countSpot, morePart, type CountPart, exampleIndices, fits, HOOP_R, hasNeitherMat, hintFor, MAT_RX, MAT_RY, neitherMat, hoopCenters, makeRound, nextToSort, sortPlaceAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
+import { PlantNode, PETAL_COLORS, drawPlant, plantRuleIcon } from './plants';
+import { COUNT_PARTS, HAVE_WORDS, isPlantRule, makePlantRound, countParts, countSpot, morePart, type CountPart, exampleIndices, fits, HOOP_R, hasNeitherMat, hintFor, MAT_RX, MAT_RY, neitherMat, hoopCenters, makeRound, nextToSort, sortPlaceAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type PlantRule, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
 
 const LEVELS: BandLevels = {
-  prek: { min: 1, max: 6, order: [6, 1, 2, 3] },
-  school: { min: 2, max: 11, order: [2, 3, 4, 5, 7, 8, 9, 11] },
+  prek: { min: 1, max: 13, order: [6, 1, 12, 2, 3, 13] },
+  school: { min: 2, max: 13, order: [2, 12, 3, 13, 4, 5, 7, 8, 9, 11] },
 };
 
 const SCALE = 0.32;
@@ -28,6 +29,7 @@ export function hatArt(): Graphics {
 
 /** A little picture of a rule, for the sign above a hoop. */
 export function ruleIcon(rule: Rule): Graphics {
+  if (isPlantRule(rule)) return plantRuleIcon(rule);
   const g = new Graphics();
   const head = (color: number) => g.circle(0, 6, 26).fill(color).stroke({ width: 4, color: ink, alpha: 0.5 });
   switch (rule) {
@@ -58,7 +60,7 @@ export function ruleIcon(rule: Rule): Graphics {
 
 interface Sorter {
   c: SortCritter;
-  node: Critter;
+  node: Critter | PlantNode;
   drag?: DragHandle;
   placed: Place | null;
   home: { x: number; y: number };
@@ -85,6 +87,7 @@ class CritterSort implements Game {
   private readonly hoops = new Graphics();
   private readonly mat = new Graphics();
   private readonly signs = new Container();
+  private readonly bigPlant = new Container();
   private readonly glow = new Graphics();
   private view: View;
   private wrongs = 0;
@@ -100,7 +103,8 @@ class CritterSort implements Game {
     this.mat.eventMode = 'none';
     this.badges.eventMode = 'none';
     this.signs.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.hoops, this.mat, this.signs, this.glow, this.badges);
+    this.bigPlant.eventMode = 'none';
+    ctx.stage.addChild(this.backdrop, this.hoops, this.mat, this.signs, this.bigPlant, this.glow, this.badges);
   }
 
   start() {
@@ -152,6 +156,7 @@ class CritterSort implements Game {
       sign.position.set(c.x + (this.centers().length === 2 ? (i ? 80 : -80) : 0), c.y - HOOP_R - 50);
       this.signs.addChild(sign);
     });
+    this.bigPlant.position.set(...this.bigPlantSpot());
     const loose = this.sorters.filter((s) => !s.placed);
     const xs = spread(loose.length, 190, v.w - 50, 150);
     loose.forEach((s, i) => {
@@ -177,6 +182,13 @@ class CritterSort implements Game {
     }
     const os = spread(this.options.length, 220, v.w - 120, 190);
     this.options.forEach((o, i) => o.node.position.set(os[i], v.h - 90));
+  }
+
+  /** The big plant stands beside the single sign, or above the middle of two overlapping signs, clear of the corners. */
+  private bigPlantSpot(): [number, number] {
+    const [first] = this.centers();
+    if (this.plan.mode === 'venn') return [this.view.w / 2, first.y - 150];
+    return [first.x - 215, first.y - 70];
   }
 
   update(dt: number) {
@@ -237,12 +249,22 @@ class CritterSort implements Game {
       s.node.destroy({ children: true });
     }
     for (const o of this.options.splice(0)) o.node.destroy({ children: true });
-    this.round = makeRound(this.plan, this.ctx.rng, this.round?.rules.join());
+    this.round = this.plan.cast ? makePlantRound(this.plan, this.ctx.rng, this.round?.rules.join()) : makeRound(this.plan, this.ctx.rng, this.round?.rules.join());
+    this.bigPlant.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (this.round.parent) {
+      const { parent, petalColor } = this.round;
+      const big = drawPlant(new Graphics(), { ...parent, petalColor: PETAL_COLORS[petalColor!], pot: 5, big: true });
+      big.scale.set(this.plan.mode === 'venn' ? 0.95 : 1.15);
+      this.bigPlant.addChild(big);
+    }
     for (const [i, c] of this.round.critters.entries()) {
-      const node = new Critter(CRITTERS[c.kind]);
-      node.scale.set(SCALE);
-      if (c.hat) node.attach(hatArt());
-      node.hitArea = new Circle(0, -120, 170);
+      const node = c.plant ? new PlantNode({ ...c.plant, petalColor: PETAL_COLORS[this.round.petalColor!] }) : new Critter(CRITTERS[c.kind]);
+      if (c.plant) node.hitArea = new Circle(0, -70, 75);
+      else {
+        node.scale.set(SCALE);
+        if (c.hat) (node as Critter).attach(hatArt());
+        node.hitArea = new Circle(0, -120, 170);
+      }
       this.ctx.track(node);
       this.ctx.stage.addChild(node);
       const s: Sorter = { c, node, placed: null, home: { x: 0, y: 0 } };
@@ -275,6 +297,7 @@ class CritterSort implements Game {
     await this.instruct();
     // Name the example only while its round is still on the board.
     if (this.index !== index || this.finished) return;
+    if (this.plan.cast) return this.ctx.say('sort.plant.example');
     const [first, second] = examples.map((s) => KIND_WORDS[s.c.kind]);
     if (second) return this.ctx.say('sort.examples', { a: first, b: second });
     if (first) return this.ctx.say('sort.example', { who: first });
@@ -282,6 +305,7 @@ class CritterSort implements Game {
 
   private instruct() {
     const [a, b] = this.round.rules.map((r) => RULE_WORDS[r]);
+    if (this.plan.cast) return this.ctx.instruct(this.plan.mode === 'venn' ? 'sort.plant.venn' : 'sort.plant.one', { a, b });
     if (this.plan.count) return this.ctx.instruct('sort.howmany.sort', { a, b });
     if (this.plan.mode === 'butnot') return this.ctx.instruct('sort.butnot', { a, b });
     if (this.plan.newcomer) return this.ctx.instruct('sort.newcomer', { a, b });
@@ -306,7 +330,8 @@ class CritterSort implements Game {
       if (this.plan.mode === 'butnot') void this.explainButNot(s);
       if (at === 'out') {
         sfx.whoosh();
-        if (this.plan.mode !== 'butnot') void this.ctx.say(this.plan.mode === 'not' ? 'sort.mat.not' : 'sort.mat.yes', { who: KIND_WORDS[s.c.kind], rule: RULE_WORDS[this.round.rules[0]] });
+        if (this.plan.cast) void this.ctx.say('sort.plant.mat');
+        else if (this.plan.mode !== 'butnot') void this.ctx.say(this.plan.mode === 'not' ? 'sort.mat.not' : 'sort.mat.yes', { who: KIND_WORDS[s.c.kind], rule: RULE_WORDS[this.round.rules[0]] });
       }
       s.node.cheer();
       this.wrongs = 0;
@@ -333,6 +358,7 @@ class CritterSort implements Game {
   /** Say why it doesn't go there: which rule it fails, or which rule it also fits. */
   private explain(s: Sorter, at: Place) {
     if (this.plan.mode === 'butnot') return this.explainButNot(s);
+    if (this.plan.cast) return this.explainPlant(s, at);
     const who = KIND_WORDS[s.c.kind];
     const rules = this.round.rules;
     if (at === 'out' && this.plan.mode !== 'not') {
@@ -346,6 +372,23 @@ class CritterSort implements Game {
     if (wantB && !fits(s.c, rules[1])) return this.ctx.say('sort.isnot', { who, rule: RULE_WORDS[rules[1]] });
     // It fits both, so it belongs in the middle.
     return this.ctx.say('sort.both', { who, a: RULE_WORDS[rules[0]], b: RULE_WORDS[rules[1]] });
+  }
+
+  /** Names what the little plant has beside what the big plant has; no answer is ever "not in the family". */
+  private explainPlant(s: Sorter, at: Place) {
+    const rules = this.round.rules as PlantRule[];
+    const miss = (at === 'left' ? [rules[0]] : at === 'right' ? [rules[1]] : at === 'both' ? rules : []).find((r) => !fits(s.c, r));
+    if (miss) {
+      // The feature the rule is about: say what this plant has there and what the big plant has.
+      const leafRule = miss === 'round' || miss === 'pointyleaf';
+      const p = s.c.plant!;
+      const have = leafRule ? HAVE_WORDS[p.leaves === 'round' ? 'round' : 'pointyleaf'] : HAVE_WORDS[p.petals];
+      return this.ctx.say('sort.plant.isnot', { have, parent: HAVE_WORDS[miss] });
+    }
+    const p = s.c.plant!;
+    const have = `${HAVE_WORDS[p.leaves === 'round' ? 'round' : 'pointyleaf']} and ${HAVE_WORDS[p.petals]}`;
+    if (at === 'out') return this.ctx.say('sort.plant.hoop', { have });
+    return this.ctx.say('sort.plant.both', { have });
   }
 
   private explainButNot(s: Sorter) {
@@ -451,7 +494,7 @@ class CritterSort implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     for (const s of this.sorters) if (s.placed && s.placed !== 'out') s.node.cheer();
-    await this.ctx.say(this.plan.mode === 'guess' ? 'sort.guessyay' : 'sort.yay', { rule: RULE_WORDS[this.round.rules[0]] });
+    await this.ctx.say(this.plan.cast ? 'sort.plant.family' : this.plan.mode === 'guess' ? 'sort.guessyay' : 'sort.yay', { rule: RULE_WORDS[this.round.rules[0]] });
     await this.ctx.tw.wait(0.5);
     if (this.plan.mode === 'resort' && this.pass === 0) {
       // Keep the very same critters and drag handles; the sign and destinations change.

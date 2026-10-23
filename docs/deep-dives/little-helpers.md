@@ -131,6 +131,8 @@ This separates the whistle from exactness (gap 8): at 9 the whistle means "done"
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans are adopted and the built defaults kept: *Share the crowd* waits until levels 7–8 have been played (a device check) and *Make ten* stays with Duck Pond; level 9 counts no misses, a whistle with no helpers is a nudge, quick double taps keep lifting; windows lap 1–2, level 7 in pre-K 3–7, level 8 school only; rework hooks wait on RW05 and RW11, never fruit as a currency.
+
 1. **The gated levels.** *Share the crowd*: build partition without remainders here, or leave sharing to Monster Munch and Pet Kitchen (lean: wait until levels 7–8 have been played). *Make ten*: build it beside Duck Pond's level 10, or leave make-ten there (lean: leave it there).
 2. **Accounting defaults the build uses:** level 9 counts no misses; a whistle with no helpers at 3–9 is not a miss (only a nudge), since nothing was tried; quick double taps at 2 keep lifting.
 3. **Windows (defaults the build uses):** lap 1–2 (level 2 opened to lap); level 7 in pre-K 3–7; level 8 school only.
@@ -143,13 +145,13 @@ This separates the whistle from exactness (gap 8): at 9 the whistle means "done"
 1. **Built (2026-10-21): Every touch answers and the empty crowd shrugs** (existing-game bug fix tier: typecheck, rule tests, one filtered regression play, `fingerdemo` at level 1): level 1 whole-screen send, hop/squeak on taps while busy, grass wave, the no-helpers shrug instead of `boing`, a zero-helper whistle as a nudge (decision 2's default), the whole bunch into the basket. Gaps 1, 6, 7. Built: a full-screen `field` layer sends a helper at level 1; while busy any touch hops and squeaks the nearest helper; at levels 2–6 a sky or grass tap makes the nearest waiting helper wave; a fruit tap with no helpers left shrugs and says `helpers.busy`; a zero-helper whistle is a nudge, not a miss (`fieldTouch`, `whistleFor`/`whistleMisses`, `pileSpot`, `BASKET_HALF` in `logic.ts`, three rule tests); every fruit of a bunch lands in the basket. How-to step and notes updated. Still open: whether a one-year-old notices the hop and wave, and whether the shrug reads (device check).
 2. **Built (2026-10-22, [PR #804](https://github.com/rjdunlap/neo/pull/804), batch 1): The badge fills, needs vary, and level 2 opens to lap** (existing-game change, rule tests, one screenshot, `fingerdemo` at 2): fill-as-they-arrive rings at 2–6, the gap named at 5, extras outside the frame, seeded non-alternating needs, lap window 1–2. Gaps 3, 4, 5.
 3. **Built (2026-10-22, PR #804, batch 1): Things to carry and three places** (content tier: rule tests, one screenshot per backdrop): pumpkin, watermelon, acorn, pinecone, toy boat; orchard, beach and woods with their destinations.
-4. **Level 6 teams she builds** (existing-game change on a changed interaction: nearest-helper taps, rule tests, one filtered play at 6, `fingerdemo` at 6, how-to step update). Gaps 2, 11.
+4. **Built (2026-10-23, [PR #863](https://github.com/rjdunlap/neo/pull/863), batch 2): Level 6 teams she builds** (existing-game change on a changed interaction: nearest-helper taps, rule tests, one filtered play at 6, `fingerdemo` at 6, how-to step update). Gaps 2, 11.
 5. **Built (2026-10-22, PR #804, batch 1): Level 9 Whistle when it's full** (new level; after slice 2: plans keyed by ID, `order` for toddler and preschool, rule tests, a level-9 play, `fingerdemo` at 9, how-to and voice). Gaps 8, 10.
-6. **Level 7 Everyone helps** (new interaction: two fruit spots, a crowd size per plan (the existing test's one-spare rule becomes per plan), rule tests, one scripted play first and last level with a wrong whistle and a hint, portrait screenshot, `fingerdemo`).
-7. **Level 8 Strong helpers** (new interaction: strength-aware lift, big helper art, rule tests, scripted play, `fingerdemo`).
+6. **Built (2026-10-23, PR #863, batch 2): Level 7 Everyone helps** (new interaction: two fruit spots, a crowd size per plan (the existing test's one-spare rule becomes per plan), rule tests, one scripted play first and last level with a wrong whistle and a hint, portrait screenshot, `fingerdemo`).
+7. **Built (2026-10-23, PR #863, batch 2): Level 8 Strong helpers** (new interaction: strength-aware lift, big helper art, rule tests, scripted play, `fingerdemo`).
 
 Gated: *Make ten* and *Share the crowd* (decision 1) and the rework hooks (decision 4).
 
 ## What was built in this session
 
-Batch 1 (slices 2, 3, 5) is built in PR #804 (see the [build note](../archive/COMPLETED-2026-10-09.md#little-helpers-batch-1-rings-that-fill-things-to-carry-and-the-full-team-whistle-2026-10-22)); the dive itself was research and ideation only. Ran `node scripts/check-links.mjs` and `git diff --check`.
+Batch 1 (slices 2, 3, 5) is built in PR #804 (see the [build note](../archive/COMPLETED-2026-10-09.md#little-helpers-batch-1-rings-that-fill-things-to-carry-and-the-full-team-whistle-2026-10-22)); batch 2 (slices 4, 6, 7) in PR #863 ([build note](../archive/COMPLETED-2026-10-09.md#little-helpers-batch-2-teams-she-builds-everyone-helps-and-strong-helpers-2026-10-23)); the dive itself was research and ideation only. Ran `node scripts/check-links.mjs` and `git diff --check`.

@@ -92,12 +92,81 @@ export function glowTarget(obj: AtticObject, claim: ClaimId): Clue | null {
 
 /* Levels and rounds ----------------------------------------------------------------------------- */
 
-export interface Plan { id: 1 | 2; name: string; mode: 'try' | 'prove' }
+export interface Plan { id: 1 | 2 | 3 | 4; name: string; mode: 'try' | 'prove' | 'lever' | 'peek' }
 export const PLANS: readonly Plan[] = [
   { id: 1, name: 'Try it: crank it, then pick the picture of what it did', mode: 'try' },
   { id: 2, name: 'Show the clue: the part that proves the crank makes it bob', mode: 'prove' },
+  { id: 3, name: 'Up and down: tap the big handle and the bird or fish goes up, then down', mode: 'lever' },
+  { id: 4, name: 'Peek inside: open the little door and watch the rod lift the bird', mode: 'peek' },
 ];
-export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
+/** The plan with this level's ID; an unknown level is level 1. */
+export const planFor = (level: number): Plan => PLANS.find((p) => p.id === level) ?? PLANS[0];
+export const isFree = (plan: Plan): boolean => plan.mode === 'lever' || plan.mode === 'peek';
+
+/* Levels 3-4: a giant handle. Every touch is play, so nothing here is ever a miss or a hint. ------- */
+
+export const TURNS_TO_FINISH = 3;
+
+export interface LeverState {
+  up: boolean;
+  turns: number;
+  queued: boolean;
+  turning: boolean;
+  doorOpen: boolean;
+  peeked: boolean;
+  done: boolean;
+}
+
+export const leverState = (): LeverState => ({ up: false, turns: 0, queued: false, turning: false, doorOpen: false, peeked: false, done: false });
+
+/** A touch on the handle: starts a half turn, or queues one more if one is already turning. Returns whether a turn started. */
+export function press(s: LeverState): boolean {
+  if (s.done) return false;
+  if (s.turning) {
+    s.queued = true;
+    return false;
+  }
+  s.turning = true;
+  return true;
+}
+
+/** A half turn ended: the mover flips, the turn counts, and a queued one starts. Returns whether another began. */
+export function turnEnded(s: LeverState): boolean {
+  if (!s.turning) return false;
+  s.up = !s.up;
+  s.turns++;
+  s.turning = false;
+  if (s.doorOpen) s.peeked = true;
+  if (s.queued && !s.done) {
+    s.queued = false;
+    s.turning = true;
+    return true;
+  }
+  s.queued = false;
+  return false;
+}
+
+export function toggleDoor(s: LeverState, plan: Plan): boolean {
+  if (plan.mode !== 'peek' || s.done) return false;
+  s.doorOpen = !s.doorOpen;
+  return true;
+}
+
+export const canFinish = (s: LeverState): boolean => s.turns >= TURNS_TO_FINISH && !s.done;
+
+export function finishLever(s: LeverState): boolean {
+  if (!canFinish(s)) return false;
+  s.done = true;
+  s.queued = false;
+  return true;
+}
+
+export interface LeverRound { object: ObjectId }
+/** Level 4 and the session's authored first round are the bird box; level 3 otherwise picks either, seeded. */
+export function makeLeverRound(plan: Plan, rng: Rng, first = false): LeverRound {
+  const object: ObjectId = plan.mode === 'peek' || first ? 'bird-box' : rng.chance(0.5) ? 'bird-box' : 'fish-churn';
+  return { object };
+}
 
 export interface Encounter {
   object: ObjectId;
@@ -244,6 +313,11 @@ export const CLAIM_H = 130;
 export interface Rect { x: number; y: number; w: number; h: number }
 
 export interface AtticLayout {
+  /** Levels 3-4: the handle's hit circle, the peek door, the Finish button. */
+  handle: Pt;
+  handleR: number;
+  door: Rect;
+  finish: Pt;
   portrait: boolean;
   object: Pt;
   scale: number;
@@ -262,15 +336,41 @@ export const petCorner = (v: View): Rect => ({ x: 0, y: v.h - 205, w: 200, h: 20
 export const shellButtons = (v: View): Rect[] => [{ x: 0, y: 0, w: 130, h: 130 }, { x: v.w - 130, y: 0, w: 130, h: 130 }];
 
 /** Every rectangle of the screen. The level is accepted so a later level can rearrange; levels 1 and 2 share one plan. */
-export function atticLayout(v: View, _level: number): AtticLayout {
+export const FREE_SCALE = 1.45;
+export const FREE_SCALE_PORTRAIT = 1.3;
+export const HANDLE_R = 110;
+export const FINISH_R = 70;
+/** The peek door's centre on the box front, in object units. */
+export const DOOR_AT = { x: -40, y: 30 };
+export const DOOR_W = 220;
+export const DOOR_H = 200;
+
+export function atticLayout(v: View, level: number): AtticLayout {
+  const base = classicLayout(v);
+  if (level < 3) return base;
   const portrait = v.h > v.w;
+  const fs = portrait ? FREE_SCALE_PORTRAIT : FREE_SCALE;
+  const object = portrait ? { x: v.w / 2 - 60, y: 470 } : { x: Math.max(420, v.w * 0.42), y: 430 };
+  const knob = objectOf('bird-box').crank.front.knob;
+  const dc = { x: object.x + DOOR_AT.x * fs, y: object.y + DOOR_AT.y * fs };
+  return {
+    ...base, object, scale: fs,
+    handle: { x: object.x + knob.x * fs, y: object.y + knob.y * fs },
+    door: { x: dc.x - DOOR_W / 2, y: dc.y - DOOR_H / 2, w: DOOR_W, h: DOOR_H },
+    finish: portrait ? { x: v.w / 2 + 150, y: object.y + OBJ * fs + 150 } : { x: v.w - 100, y: v.h - 100 },
+  };
+}
+
+function classicLayout(v: View): AtticLayout {
+  const portrait = v.h > v.w;
+  const free = { handle: { x: 0, y: 0 }, handleR: HANDLE_R, door: { x: 0, y: 0, w: DOOR_W, h: DOOR_H }, finish: { x: 0, y: 0 } };
   const shelfY = 150;
   const shelf = [{ x: v.w / 2 - 90, y: shelfY }, { x: v.w / 2 + 90, y: shelfY }];
   if (portrait) {
     const object = { x: v.w / 2 + 40, y: 480 };
     const below = object.y + OBJ + 150;
     return {
-      portrait, object, scale: 1, shelf, shelfY,
+      ...free, portrait, object, scale: 1, shelf, shelfY,
       turn: { x: object.x + OBJ + 120, y: object.y + 60 },
       window: { x: object.x - OBJ - 175, y: object.y - 40 },
       cards: [{ x: v.w / 2 - 85, y: below }, { x: v.w / 2 + 85, y: below }],
@@ -284,7 +384,7 @@ export function atticLayout(v: View, _level: number): AtticLayout {
   const object = { x: Math.max(470, v.w * 0.45), y: 430 };
   const right = v.w - 30;
   return {
-    portrait, object, scale, shelf, shelfY,
+    ...free, portrait, object, scale, shelf, shelfY,
     turn: { x: object.x + 70, y: v.h - 75 },
     window: { x: object.x - OBJ * scale - 160, y: 345 },
     cards: [{ x: right - CARD * 1.5 - 20, y: v.h - 100 }, { x: right - CARD / 2, y: v.h - 100 }],
