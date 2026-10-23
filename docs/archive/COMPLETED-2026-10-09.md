@@ -1,5 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Attic Finds levels 3–4 Lid and Lever (H3, 2026-10-23)
+
+Branch `claude/attic-lid-lever` (PR #870): the [definition](../definitions/lid-and-lever.md)'s giant-handle interaction built inside `attic-finds` (lap 3, toddler 3–4, `entryLevels` [3, 4]; bands now lap/toddler/preschool/prek/school). Each touch turns the handle half a turn and the bird or fish rises, then sinks; level 4's peek door (built 220 units wide, not ~240, at `DOOR_AT` (-40, 30)) shows the rod. Finish appears after three turns and only her tap ends the round; 0 misses, 0 hints, nothing kept. No new registration, so the game count is unchanged.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--attic-finds-levels-34-lid-and-lever-h3).
+
 ### Sand Table levels 1–3 (E2, 2026-10-23)
 
 Branch `claude/sand-table-1-3` (PR #866): the [definition](../definitions/sand-table.md)'s dry toy built exactly as defined as `sand-table` (`src/games/sand-table/`: `logic.ts` with 30 rule tests, `art.ts`, `index.ts`; region `tinker-lab`; lap 1, toddler 1–2, preschool 2–3, pre-K 3). Tap the tray to pour, tap a scoop paddle to lift sand back to the bucket, plant the flag; level 2 adds a bay, level 3 three bays, a pail for spills and a pictured invitation ending in Show. Every round counts 0 misses and 0 hints. Show a hint is the pause sheet's `askForHint` (a real action that counts nothing) and Start again is `restart()`. Home land is **Rainbow Meadow**, not the definition's Bubble Beach default or Treehouse fallback: adding the game to those two failed their `src/app/scenes/*.test.ts` decor counts, while Barnyard and Rainbow Meadow passed.
