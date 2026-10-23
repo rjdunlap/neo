@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { houseLooks, mailboxColor, MAILBOX_COLORS, NEAR, mapNode, mapX, NEIGHBORS, WOODS_NEIGHBORS, addressedHouse, checkStop, countedAloud, countsAloud, INVITE_AFTER, nearestHouse, planFor, shouldInvite, HELPER, HELPERS, TOOLS, helpFixed, helpWrong, letterShows, mailboxShows, teenSpoken, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, routeChoices, routeLength, shorterRoutes, SHORTER_EDGES, SIGNS, walk, woodsTouch } from './logic';
+import { clueMatches, clueNode, makeClues, sideColumns, sideLayout, parity, houseLooks, mailboxColor, MAILBOX_COLORS, NEAR, mapNode, mapX, NEIGHBORS, WOODS_NEIGHBORS, addressedHouse, checkStop, countedAloud, countsAloud, INVITE_AFTER, nearestHouse, planFor, shouldInvite, HELPER, HELPERS, TOOLS, helpFixed, helpWrong, letterShows, mailboxShows, teenSpoken, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, routeChoices, routeLength, shorterRoutes, SHORTER_EDGES, SIGNS, walk, woodsTouch } from './logic';
 
 describe('Mail Carrier', () => {
   it('counts the dots aloud at levels 3 and 5, up to the number delivered', () => {
@@ -34,10 +34,10 @@ describe('Mail Carrier', () => {
         if (plan.mode === 'tool') expect([2, 3]).toContain(street.length);
         else expect(street).toHaveLength(plan.houses);
         const nums = street.map((h) => h.number);
-        expect(nums).toEqual([...nums].sort((a, b) => a - b));
+        if (plan.mode !== 'sides') expect(nums).toEqual([...nums].sort((a, b) => a - b));
         expect(new Set(nums).size).toBe(nums.length);
         expect(Math.max(...nums)).toBeLessThanOrEqual(plan.top);
-        expect(new Set(street.map((h) => h.door)).size).toBe(street.length);
+        expect(new Set(street.map((h) => h.door)).size).toBe(Math.min(6, street.length));
         const letters = makeLetters(plan, street, rng);
         expect(letters).toHaveLength(plan.letters);
         letters.slice(1).forEach((l, i) => expect(l).not.toBe(letters[i]));
@@ -51,7 +51,7 @@ describe('Mail Carrier in Wonder Woods', () => {
   const mapPlans = PLANS.filter((p) => isMapMode(p.mode));
 
   it('has a connected map where every walk follows the paths', () => {
-    expect(mapPlans.map((p) => p.mode)).toEqual(['map', 'route', 'shorter']);
+    expect(mapPlans.map((p) => p.mode)).toEqual(['map', 'route', 'shorter', 'clue']);
     const edge = (a: number, b: number) => MAP_EDGES.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
     for (const h of HOUSE_NODES) {
       const w = walk(POST_OFFICE, h);
@@ -157,7 +157,7 @@ describe('Mail Carrier demonstration', () => {
           const planned: number[] = [];
           for (let step = 0; step < trip.length + 1; step++) {
             const touch = woodsTouch(plan.mode, trip, planned);
-            if (plan.mode === 'map') {
+            if (plan.mode === 'map' || plan.mode === 'clue') {
               expect(touch).toEqual({ house: trip[0] });
               break;
             }
@@ -332,6 +332,72 @@ describe('Mail Carrier levels 9, 10 and 12', () => {
       const { word, parts } = teenSpoken(n);
       expect(word).toMatch(/^[A-Z][a-z]+$/);
       expect(parts).not.toMatch(/zero/);
+    }
+  });
+});
+
+
+describe('Mail Carrier spoken clues and two street sides', () => {
+  it('300 seeds in both orientations: four different clue shapes, each naming exactly one drawn house', () => {
+    for (let seed = 1; seed <= 300; seed++) for (const mirrored of [false, true]) {
+      const rng = new Rng(seed), woods = makeWoods(rng), clues = makeClues(woods, mirrored, rng);
+      expect(clues).toHaveLength(4);
+      expect(new Set(clues.map((c) => c.kind)).size).toBe(4);
+      const p = (i: number) => clueNode(HOUSE_NODES[i], mirrored);
+      for (const clue of clues) {
+        expect(clueMatches(clue, woods, mirrored)).toEqual([clue.house]);
+        expect(woods[clue.house]).toBeDefined();
+        for (const sign of [clue.a, clue.b].filter(Boolean)) expect(SIGNS).toContain(sign);
+        // Independent geometry assertions, rather than trusting the generator's resolver.
+        if (clue.kind === 'between') {
+          const a = p(woods.findIndex((h) => h.sign === clue.a)), b = p(woods.findIndex((h) => h.sign === clue.b));
+          expect(p(clue.house).x).toBeGreaterThan(Math.min(a.x, b.x));
+          expect(p(clue.house).x).toBeLessThan(Math.max(a.x, b.x));
+          expect(p(clue.house).y).toBeLessThan(0.25);
+        } else if (clue.kind === 'left') {
+          const a = p(woods.findIndex((h) => h.sign === clue.a));
+          expect(p(clue.house).x).toBeLessThan(a.x);
+          expect(woods.filter((_, i) => p(i).y < 0.25 && p(i).x > p(clue.house).x && p(i).x < a.x)).toHaveLength(0);
+        } else {
+          const office = clueNode(0, mirrored), d = (i: number) => Math.hypot(p(i).x - office.x, p(i).y - office.y);
+          for (const i of woods.keys()) if (i !== clue.house) {
+            const margin = clue.kind === 'nearest' ? d(i) - d(clue.house) : d(clue.house) - d(i);
+            expect(margin).toBeGreaterThan(0.08);
+          }
+        }
+        expect(woodsTouch('clue', [clue.house], [])).toEqual({ house: clue.house });
+      }
+    }
+  });
+
+  it('300 seeds: parity determines the side, each side rises, every letter has one house, both number runs occur', () => {
+    const starts = new Set<number>();
+    for (let seed = 1; seed <= 300; seed++) for (const columns of [3, 4]) {
+      const rng = new Rng(seed), plan = { ...planFor(11), houses: columns * 2, top: columns === 3 ? 12 : 16 };
+      const street = makeStreet(plan, rng);
+      starts.add(street[0].number);
+      const nums = street.map((h) => h.number);
+      expect(new Set(nums).size).toBe(columns * 2);
+      for (let i = 0; i < street.length; i++) {
+        expect(parity(nums[i])).toBe(i < columns ? 'odd' : 'even');
+        if (i % columns) expect(nums[i] - nums[i - 1]).toBe(2);
+      }
+      expect(Math.max(...nums)).toBeLessThanOrEqual(plan.top);
+      for (const h of makeLetters(plan, street, rng)) expect(nums.filter((n) => n === street[h].number)).toHaveLength(1);
+    }
+    expect(starts.has(1) && starts.has(9) && starts.has(7)).toBe(true);
+  });
+
+  it('keeps 176-unit targets apart in landscape and portrait; fallback uses three houses, never smaller targets', () => {
+    for (const [w, h] of [[1024, 768], [1024, 1365], [1365, 768], [768, 1024]]) {
+      const columns = sideColumns(w), points = sideLayout(w, h, columns * 2);
+      expect(columns).toBe(w === 768 ? 3 : 4);
+      for (const a of points) {
+        expect(220 * a.scale).toBeGreaterThanOrEqual(100);
+        expect(a.x - 110 * a.scale).toBeGreaterThanOrEqual(0);
+        expect(a.x + 110 * a.scale).toBeLessThanOrEqual(w);
+        for (const b of points) if (a !== b) expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(176);
+      }
     }
   });
 });

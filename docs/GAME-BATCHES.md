@@ -119,6 +119,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### mail-carrier 2: Spoken map clues and both street sides
 
+Built 2026-10-23 in [#856](https://github.com/rjdunlap/neo/pull/856); [build note](archive/COMPLETED-2026-10-09.md#mail-carrier-batch-2-spoken-map-clues-and-both-street-sides-2026-10-23).
+
 - **`mail-carrier`, level 13 *Hazel's clue*, slice 6** (new levels on the map interaction: typecheck, rule tests over 300 seeds for clue uniqueness on both map orientations, one play of 13, `fingerdemo` at 13): Hazel says a spoken clue and the carrier finds the one house it names; school `order [4, 5, 9, 12, 6, 13, 7, 8]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 - **`mail-carrier`, level 11 *Both sides of the street*, slice 7** (new interaction tier: typecheck, rule tests, one play of 11, a portrait screenshot that decides decision 7, `fingerdemo` at 11): odd numbers on one side and even on the other, house found from the parity then the order; school `order [4, 5, 9, 12, 6, 13, 7, 8, 11]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 

@@ -6728,11 +6728,18 @@ async function batch() {
   }
 
   // Mail Carrier: deliver each letter; a wrong mailbox hands it back.
-  for (const level of [1, 2, 3, 4, 5, 10, 9, 12].filter((l) => !process.env.MAIL_LEVELS || process.env.MAIL_LEVELS.split(',').map(Number).includes(l))) {
+  for (const level of [1, 2, 3, 4, 5, 10, 9, 12, 11].filter((l) => !process.env.MAIL_LEVELS || process.env.MAIL_LEVELS.split(',').map(Number).includes(l))) {
     if (only && only !== 'mail') break;
+    if (level === 11) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('mail-carrier', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (level === 11) {
+      const targets = await page.evaluate(() => neo.scene.game.houses.map((h) => ({ diameter: 220 * h.scale.x, x: h.x, y: h.y })));
+      assert.equal(targets.length, 8, 'portrait keeps four houses per side');
+      for (const t of targets) assert.ok(t.diameter >= 100, 'portrait target at least 100 logical units');
+      await screenshot('mail-carrier-11-portrait');
+    }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       for (let q = 0; q < g.letters.length; q++) {
@@ -6752,8 +6759,8 @@ async function batch() {
           if (g.misses || g.hints) throw new Error(`Mail free touches counted: ${g.misses} ${g.hints}`);
         }
         if (q === 0 && g.plan.mode !== 'drop') {
-          const wrong = g.houses.find((h) => h !== right);
-          for (let k = 0; k < 2; k++) { kit.tapOn(wrong, 0, -60); await kit.sleep(300); await kit.until(() => !g.busy, 8000); }
+          const wrongs = g.plan.mode === 'sides' ? [g.houses.find((h) => h.house.number % 2 !== right.house.number % 2), g.houses.find((h) => h !== right && h.house.number % 2 === right.house.number % 2)] : [g.houses.find((h) => h !== right)];
+          for (let k = 0; k < 2; k++) { kit.tapOn(wrongs[k % wrongs.length], 0, -60); await kit.sleep(300); await kit.until(() => !g.busy, 8000); }
           if (g.misses !== 2 || g.hints !== 1 || !right.glow.visible) throw new Error(`Mail hint: ${g.misses} ${g.hints}`);
         }
         kit.tapOn(g.plan.mode === 'drop' ? g.houses[q % g.houses.length] : right, 0, -60);
@@ -6765,6 +6772,7 @@ async function batch() {
     const r = await page.evaluate(() => { const r = kit.store.stats('mail-carrier').history.at(-1); return [r.misses, r.hints]; });
     assert.deepEqual(r, mode === 'drop' ? [0, 0] : [2, 1], `mail ${level} score`);
     log(`Mail Carrier ${level} (${mode}): letters, mailboxes, mistakes, hint, saved score and sticker passed`);
+    if (level === 11) await page.setViewportSize({ width: 1024, height: 768 });
   }
 
   // Photo Safari: photograph the asked-for animal; a wrong photo names what it caught.
@@ -9901,7 +9909,7 @@ async function woodsBatch() {
   }
 
   // Mail Carrier 6–8: Hazel's picture map, two planned stops, and a shorter-route choice.
-  if (!only || only === 'mailmap') for (let level = Math.max(6, fromLevel); level <= 8; level++) {
+  if (!only || only === 'mailmap') for (const level of (process.env.MAIL_LEVELS?.split(',').map(Number) ?? [6, 7, 8]).filter((l) => l >= fromLevel)) {
     await launch('mail-carrier', level);
     // MAIL_MIRRORED=1 (or 0) relaunches until the round's map is (or is not) the mirror image.
     if (process.env.MAIL_MIRRORED) for (let k = 0; k < 12 && (await page.evaluate(() => neo.scene.game.mirrored)) !== (process.env.MAIL_MIRRORED === '1'); k++) await launch('mail-carrier', level);
@@ -9913,8 +9921,12 @@ async function woodsBatch() {
     for (let n = 0; n < trips; n++) {
       await idle(n);
       const trip = await page.evaluate(() => [...neo.scene.game.trip]);
+      if (n === 0 && level === 13) {
+        await page.evaluate(() => kit.tapOn(neo.scene.game.office, -35, -40));
+        assert.deepEqual(await counts(), [0, 0], 'Hazel replay is free');
+      }
       if (n === 0) {
-        if (level === 6) {
+        if (level === 6 || level === 13) {
           // Two wrong houses say who lives there; then the key row and the house glow.
           const wrong = (trip[0] + 1) % 5;
           await house(wrong); await page.waitForTimeout(1200); await house(wrong);
@@ -9925,8 +9937,8 @@ async function woodsBatch() {
           await house(trip[1]); await house(nobody);
           assert.deepEqual(await counts(), [2, 1]);
         }
-        if (level < 8) assert.ok(await page.evaluate((h) => { const g = neo.scene.game; return g.houses[h].glow.visible && g.key.find((r) => r.house === h).glow.visible; }, trip[0]), 'house and key row glow');
-        if (level < 8) await screenshot(`mail-carrier-${level}`);
+        if (level < 8 || level === 13) assert.ok(await page.evaluate((h) => { const g = neo.scene.game; return g.houses[h].glow.visible && g.key.find((r) => r.house === h).glow.visible; }, trip[0]), 'house and key row glow');
+        if (level < 8 || level === 13) await screenshot(`mail-carrier-${level}`);
         if (level === 7) {
           // A planned stop can be taken out again by tapping it.
           await house(trip[0]); await house(trip[0]);
@@ -9965,7 +9977,7 @@ async function woodsBatch() {
     await finished('mail-carrier');
     assert.deepEqual(await score('mail-carrier'), level === 8 ? [4, 2] : [2, 1]);
     await page.setViewportSize({ width: 1024, height: 768 });
-    log(`Mail Carrier ${level} (${level === 6 ? 'picture map and key' : level === 7 ? 'two planned stops' : 'shorter of two paths'}${mirrored ? ', mirrored map' : ''}): wrong answers, hints and completion passed`);
+    log(`Mail Carrier ${level} (${level === 13 ? 'spoken map clues' : level === 6 ? 'picture map and key' : level === 7 ? 'two planned stops' : 'shorter of two paths'}${mirrored ? ', mirrored map' : ''}): wrong answers, hints and completion passed`);
   }
 
   // Lemonade Stand: a forecast, a batch (and a price), one table row a day, help once a day, never a miss.
