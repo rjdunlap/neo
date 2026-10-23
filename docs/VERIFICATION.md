@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-22 — Bond Beads levels 1–4 definition (chemistry, docs only)
+
+- Branch `claude/define-bond-beads` (PR #831): definition packet `docs/definitions/bond-beads.md`; READY (build queued and gated, define line removed), study backlog, recommendations row, chemistry study slice and the Waiting row updated. The shape tables come from a brute-force enumeration of single-link connected graphs over H, O and C beads (7 beads or fewer) run once while writing; the build's tests re-derive them.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Open: no typecheck, unit tests, build or browser run; the build is gated on the developer's decisions 1 (new game) and 3 (land); seven-bead portrait fit is unproven until the layout test exists.
+
 ## 2026-10-22 — Look It Up levels 1–3 (informational-reading IR1, new game)
 
 - Changed: a new game in Barnyard (subject story-grove; toddler 1, preschool 1–2, pre-K 2–3, school 3): a picture guide of seven real animals with two-sourced *Eats*, *Where* and *Baby* rows; talking labels, find the page and feed it, find the row and help. Barnyard 10 games, 117 in all.
