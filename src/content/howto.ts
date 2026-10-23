@@ -672,16 +672,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 1, text: 'Tap the sky to change the weather; the pet dresses itself.' },
       { to: 1, text: 'Tap the grass to splash, crunch or pop up a flower, and tap the clothes on the pet to hear their names.' },
+      { from: 8, to: 8, text: 'Tap either thing to try it on the pet. The one that fits stops the weather; the other shows what the weather does and hops back.' },
       { from: 2, to: 3, text: 'Tap the one thing that suits the weather.' },
       { from: 4, to: 5, text: 'Tap every thing that suits the weather.' },
       { from: 6, to: 6, text: 'Tap the clothes that suit each kind of weather, to pack for the trip.' },
-      { from: 7, text: 'Tap each worn item that does not suit the new weather to take it off, then tap clothes for the new weather.' },
+      { from: 7, to: 7, text: 'Tap each worn item that does not suit the new weather to take it off, then tap clothes for the new weather.' },
     ],
     finish: [
       { to: 6, text: 'The round ends when the pet is dressed for the weather (or the trip).' },
-      { from: 7, text: 'The round ends when the pet has changed clothes for each new weather.' },
+      { from: 8, to: 8, text: 'Each of three weathers ends when the fitting thing is on the pet.' },
+      { from: 7, to: 7, text: 'The round ends when the pet has changed clothes for each new weather.' },
     ],
-    note: [{ from: 2, text: 'A wrong choice is told which weather it is for, and the glowing one helps.' }],
+    note: [
+      { from: 2, to: 7, text: 'A wrong choice goes on the pet for a moment to show what the weather does, is told which weather it is for, and the glowing one helps.' },
+      { from: 8, to: 8, text: 'There are no wrong answers here: everything can be tried on.' },
+    ],
   },
   'sink-float': {
     goal: 'Find out which things float and which sink.',

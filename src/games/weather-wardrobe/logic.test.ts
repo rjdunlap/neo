@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { GROUND_TOUCH, ITEM_NAMES, ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfitFor, outfits, SLOTS, STICKER_ITEMS, WARDROBE_PLANS, WEATHERS, wardrobePlan, type Item } from './logic';
+import { GROUND_TOUCH, ITEM_NAMES, MISFIT, SHIELD, ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfitFor, outfits, SLOTS, STICKER_ITEMS, WARDROBE_PLANS, WEATHERS, wardrobePlan, type Item } from './logic';
 
 describe('Weather Wardrobe', () => {
   it('gives every weather at least two things to wear, each spoken plainly', () => {
@@ -95,6 +95,27 @@ describe('Weather Wardrobe', () => {
           }
           expect([...used].sort()).toEqual([...o.needed].sort());
         }
+      }
+    }
+  });
+
+  it('gives every weather a misfit consequence and a fitting shield for level 8', () => {
+    expect(new Set(WEATHERS.map((w) => MISFIT[w])).size).toBe(WEATHERS.length);
+    for (const w of WEATHERS) expect(ITEMS[SHIELD[w]]).toBe(w);
+  });
+
+  it('level 8 gives three different weathers, one fitting item and one misfit from another weather', () => {
+    const plan = wardrobePlan(8);
+    expect(plan.mode).toBe('try');
+    for (let seed = 1; seed <= 300; seed++) {
+      const rounds = outfits(plan, new Rng(seed));
+      expect(rounds).toHaveLength(3);
+      expect(new Set(rounds.map((o) => o.weathers[0])).size).toBe(3);
+      for (const o of rounds) {
+        expect(o.options).toHaveLength(2);
+        expect(o.needed).toEqual([SHIELD[o.weathers[0]]]);
+        const fits = o.options.filter((i) => ITEMS[i] === o.weathers[0]);
+        expect(fits).toEqual(o.needed);
       }
     }
   });

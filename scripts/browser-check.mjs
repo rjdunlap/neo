@@ -4358,7 +4358,7 @@ async function wardrobe7() {
     }
     if (g.changePhase !== 'add') throw new Error('Taking off the old outfit did not reveal the new weather');
     const wrong = g.options.find((o) => !g.outfit.needed.includes(o.item));
-    for (let i = 0; i < 2; i++) { kit.tapOn(wrong.node); await kit.sleep(450); }
+    for (let i = 0; i < 2; i++) { kit.tapOn(wrong.node); await kit.sleep(100); if (!g.busy) throw new Error('No misfit shown'); await kit.until(() => !g.busy, 3000); await kit.sleep(50); }
     if (g.hints !== 1) throw new Error('Weather change hint missing');
     for (let step = 0; !g.done && step < 40; step++) {
       await kit.until(() => !g.busy || g.done, 15000);
@@ -5104,7 +5104,7 @@ async function fourth() {
   }
 
   // Weather Wardrobe: free weather play, then dressing and packing.
-  if (!only || only === 'weather') for (let level = 1; level <= 6; level++) {
+  if (!only || only === 'weather') for (const level of [1, 2, 3, 4, 5, 6, 8]) {
     await launch('weather-wardrobe', level);
     await page.waitForTimeout(700);
     await page.evaluate(async () => {
@@ -5122,10 +5122,10 @@ async function fourth() {
         return;
       }
       const wrong = g.options.find((o) => !g.outfit.needed.includes(o.item));
-      for (let i = 0; i < 2; i++) { kit.tapOn(wrong.node); await kit.sleep(450); }
-      if (g.hints !== 1) throw new Error('Wardrobe hint missing');
+      for (let i = 0; i < (g.plan.mode === 'try' ? 1 : 2); i++) { kit.tapOn(wrong.node); await kit.sleep(100); if (!g.busy) throw new Error('No misfit shown'); await kit.until(() => !g.busy, 3000); await kit.sleep(50); }
+      if (g.plan.mode === 'try' ? g.hints !== 0 || g.misses !== 0 : g.hints !== 1) throw new Error('Wardrobe hint/miss accounting wrong');
     });
-    if ([1, 4, 6].includes(level)) await screenshot(`weather-wardrobe-${level}`);
+    if ([1, 4, 6, 8].includes(level)) await screenshot(`weather-wardrobe-${level}`);
     await page.evaluate(async () => {
       const g = neo.scene.game;
       for (let step = 0; !g.done && step < 30; step++) {
@@ -5138,7 +5138,7 @@ async function fourth() {
     });
     await finished('weather-wardrobe');
     const r = await page.evaluate(() => { const r = kit.store.stats('weather-wardrobe').history.at(-1); return [r.misses, r.hints]; });
-    assert.deepEqual(r, level === 1 ? [0, 0] : [2, 1], `wardrobe ${level} score`);
+    assert.deepEqual(r, level === 1 || level === 8 ? [0, 0] : [2, 1], `wardrobe ${level} score`);
     log(`Weather Wardrobe ${level}: weather, dressing, mistakes, hint, saved round and sticker passed`);
   }
 
