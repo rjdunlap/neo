@@ -8114,9 +8114,9 @@ async function creativeBatch() {
     }
     await page.setViewportSize({width:1024,height:768});log(`Stamp Studio ${level}: creative choices, arrangement, undo, late editing/held-drag guards, frozen kept picture, saved round and sticker passed`);
   }
-  if (!only || only === 'kitchen') for(let level=fromLevel;level<=10;level++) {
+  if (!only || only === 'kitchen') for(let level=fromLevel;level<=12;level++) {
     await launch('pet-kitchen',level);
-    if(level===4||level===6||level===10){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
+    if(level===4||level===6||level===10||level===11){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
     await screenshot(`pet-kitchen-${level}-start`);
     await page.evaluate(async()=>{
       const g=neo.scene.game;
@@ -8125,6 +8125,27 @@ async function creativeBatch() {
         kit.tap(40,neo.view.h*0.2);await kit.sleep(300);
         for(const p of g.pieces){kit.tapOn(p.node);await kit.sleep(450);}
         if(!g.done||g.misses!==0||g.hints!==0)throw new Error(`Kitchen deal ${g.done}/${g.misses}/${g.hints}`);
+      }else if(g.plan.mode==='share'&&g.ctx.level===11){
+        // Level 11: the lopsided cut served one piece each is a miss shown as an overlay; the second miss glows the round arrow.
+        const bad=g.cutKinds.findIndex(k=>k.lopsided);
+        kit.tapOn(g.cuts[bad]);await kit.sleep(450);
+        for(let i=0;i<2;i++){const p=g.plates[i].getGlobalPosition();await kit.dragTo(g.pieces[i].node,{x:p.x,y:p.y+40*neo.view.scale},18);await kit.sleep(220);}
+        kit.tapOn(g.serve);await kit.sleep(900);
+        if(g.misses!==1||!g.overlaying)throw new Error(`Kitchen 11 overlay ${g.misses}/${g.overlaying}`);
+        await kit.sleep(2400);
+        if(g.overlaying)throw new Error('Kitchen 11 overlay did not end');
+        kit.tapOn(g.serve);await kit.sleep(2800);
+        if(g.misses!==2||g.hints!==1)throw new Error(`Kitchen 11 hint ${g.misses}/${g.hints}`);
+        kit.tapOn(g.recut);await kit.sleep(500);kit.tapOn(g.cuts[g.cutKinds.findIndex(k=>!k.lopsided)]);await kit.sleep(500);
+        for(let i=0;i<2;i++){const p=g.plates[i].getGlobalPosition();await kit.dragTo(g.pieces[i].node,{x:p.x,y:p.y+40*neo.view.scale},18);await kit.sleep(220);}
+      }else if(g.plan.mode==='share'&&g.ctx.level===12){
+        // Level 12: halves leave a piece in the tray (a miss, twice); thirds share the six slices out.
+        kit.tapOn(g.cuts[0]);await kit.sleep(450);
+        for(let i=0;i<3;i++){const p=g.plates[i].getGlobalPosition();await kit.dragTo(g.pieces[i].node,{x:p.x,y:p.y+40*neo.view.scale},18);await kit.sleep(220);}
+        for(let k=0;k<2;k++){kit.tapOn(g.serve);await kit.sleep(900);}
+        if(g.misses!==2||g.hints!==1)throw new Error(`Kitchen 12 hint ${g.misses}/${g.hints}`);
+        kit.tapOn(g.recut);await kit.sleep(500);kit.tapOn(g.cuts[1]);await kit.sleep(500);
+        for(let i=0;i<6;i++){const p=g.plates[i%3].getGlobalPosition();await kit.dragTo(g.pieces[i].node,{x:p.x,y:p.y+40*neo.view.scale},18);await kit.sleep(220);}
       }else if(g.plan.mode==='share'){
         kit.tapOn(g.cuts[0]);await kit.sleep(450);
         for(let k=0;k<2;k++){kit.tapOn(g.serve);await kit.sleep(500);}

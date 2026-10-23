@@ -435,3 +435,17 @@
 - Ran: typecheck; full `npm test` (211 files, 2547 tests) including new logic and journal cases; build; `BROWSER_SUITE=batch BATCH_ONLY=mail MAIL_LEVELS=10,9,12` (two wrong taps, hint, saved `[2,1]`, sticker each) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=mail-carrier FINGER_LEVELS=9,10,12` clean in 19.4/16.1/20.1 s; portrait 768x1024 screenshots of 9 and 10 reviewed.
 - Not run: `woodland` and mailmap suites (levels 6–8 unchanged), offline check.
 - Open: a toddler reading the tool pictures, problem pictures at viewing distance, real iPad speech ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-22 — Garden Grow batch 1: flower kinds and level 8 Grow it up (slices 3–4)
+
+- [PR #851](https://github.com/rjdunlap/neo/pull/851): five flower kinds (kind judged never, color and number only) and the lap entry level 8 (one big bed, any touch grows a stage, three flowers); `grow.big` voice, how-to and bot updated.
+- Ran: typecheck; `vitest` Garden Grow (7 pass) plus `src/content`, registry and progress (286 pass); `BROWSER_SUITE=woods WOODS_ONLY=grow FROM_LEVEL=1` passed levels 1–8; `fingerdemo` `FINGER_ONLY=garden-grow` clean at 1, 7 (earlier pass) and 8 (after the bot was changed to `receiver: tapLayer`); one landscape screenshot at level 8.
+- Not run: portrait screenshot, `npm run build`, device checks.
+- Open: whether a lap player touches the big bed repeatedly, iPad feel and device speech of `grow.big` ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-22 — Weather Wardrobe batch 1: a miss that shows why and lap entry 8 (slices 3–4)
+
+- [PR #852](https://github.com/rjdunlap/neo/pull/852): wrong items show a hot, wet or cold consequence and hop back at levels 2–7 (accounting unchanged); lap entry level 8 *Try it on* (order `[1, 8, 2]`).
+- Ran (tree = branch HEAD): typecheck; `vitest` weather-wardrobe, registry and content (165 pass); `BROWSER_SUITE=fourth FOURTH_ONLY=weather` levels 1–6 and 8 (suite now waits out the misfit and covers 8); `BROWSER_SUITE=wardrobe7`; `fingerdemo` `FINGER_ONLY=weather-wardrobe FINGER_LEVELS=8,1` (6.4 s, 10.8 s); two 768x1024 misfit screenshots checked by eye.
+- Not run: `npm run build`, offline check, iPad/device, a child's reaction.
+- Open: whether misfits read as funny rather than unkind and how lap level 8 plays ([device checks](../DEVICE-CHECKS.md)).
