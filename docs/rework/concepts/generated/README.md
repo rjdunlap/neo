@@ -300,6 +300,8 @@ White fallback has faint near-white variation, as R08 does. Preserve cream and s
 
 OpenAI built-in image generation, checked 2026-10-17. The [OpenAI Terms of Use, Content section](https://openai.com/policies/terms-of-use/#content) assign OpenAI's rights in output to the user to the extent permitted by law; output may be similar to others' output. These files are disclosed as AI-generated. This records the service's terms, not a claim of exclusive copyright. The tool did not expose its underlying model name, so none is inferred.
 
+ChatGPT, used by the developer from 2026-10-23 ([batch](../../art-requests/CHATGPT-BATCH.md)): the same OpenAI Terms of Use apply. Rows record "ChatGPT (developer)" and the model only where ChatGPT showed it. Files arrive through `scripts/art/import-inbox.mjs` ([pipeline](../../art-requests/IMPORT.md)).
+
 ## R19 review and preparation notes
 
 Selected `wear-raincoat-sitter-4.png`, `wear-raincoat-walker-4.png`, and `wear-boots-sitter-3.png`: three untouched RGB PNG originals, each 1254 × 1254. [Exact prompts, reference order, candidate disposition, byte counts and source hashes](R19-PROMPTS.md). Same generating service terms and undisclosed model caveat as above. No missing assets or retained runner-ups. Originals have not been resized, cropped, recompressed or cleaned.

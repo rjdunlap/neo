@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-23 — RW14 polish packet, ChatGPT art batch and the art inbox script
+
+- [PR #885](https://github.com/rjdunlap/neo/pull/885), `claude/polish-nav-art-backlog`: [POLISH.md](rework/POLISH.md) (audit and ten slices), [ChatGPT batch](rework/art-requests/CHATGPT-BATCH.md), [IMPORT.md](rework/art-requests/IMPORT.md), and `scripts/art/import-inbox.mjs` with its rules in `inbox-core.mjs`; no `src/` change.
+- Ran: `scripts/art/inbox-core.test.mjs` (8 tests), `npm test` (217 files pass), a smoke run of the script on copies of existing originals (one refused for size, three filed with manifest rows, the backdrop prepared at 150 KB with its card, the duck set cut by `prepare-sprite.mjs`), reverted afterwards; links and `git diff --check`.
+- Audit screenshots: root and `classic/` at 1024 × 768 and 768 × 1024 on the dev server (scripted Chromium, `test-results/polish/`, not committed).
+- Not run: typecheck and build (no `src/` change), browser suites, iPad.
+
 ## 2026-10-23 — Size Parade levels 17 and 10 (slices 4–5)
 
 - [PR #862](https://github.com/rjdunlap/neo/pull/862), `claude/size-parade-variety-lap`: level 17 *Two in a line* and level 10 *Big, middle, little* (middle cue, middle-asking rows), windows and how-to card updated.
