@@ -114,6 +114,7 @@ import { pileMatch } from './pile-match';
 import { numberTrails } from './number-trails';
 import { fruitSums } from './fruit-sums';
 import { readDo } from './read-do';
+import { lookItUp } from './look-it-up';
 import type { GameModule } from './types';
 
 /**
@@ -221,6 +222,7 @@ export const GAMES: GameModule[] = [
   numberTrails,
   fruitSums,
   readDo,
+  lookItUp,
   marbleJump,
   logRoll,
   snowballMerge,

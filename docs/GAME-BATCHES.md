@@ -456,6 +456,8 @@ Built; [completed scope and proof](archive/COMPLETED-2026-10-09.md#2026-10-22--l
 
 Proof: new-game tier, as the [definition's check tier](definitions/look-it-up.md#check-tier) sets it (typecheck, unit tests including two sources per fact, a new `browser-check.mjs` case at levels 1 and 3 with one wrong food and one hint, `fingerdemo` at levels 1 and 3, one portrait screenshot of level 3, one build). No review gate: the developer chose real animal facts and the table carries its sources.
 
+Built 2026-10-22 (PR #830); see the [build note](archive/COMPLETED-2026-10-09.md#look-it-up-levels-13-2026-10-22).
+
 ### photo-safari 1: Tell me which and Tell me both
 
 Built; [completed scope and proof](archive/COMPLETED-2026-10-09.md#photo-safari-batch-1-tell-me-which-and-tell-me-both-2026-10-22).

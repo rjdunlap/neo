@@ -95,7 +95,7 @@ Product details are as the subagent labelled them; nothing was played.
 
 | Name | Fun action | Learning goal | Audiences | Effort | New infrastructure |
 | --- | --- | --- | --- | --- | --- |
-| **IR1 Look It Up 1–3** | Find a visiting friend's page with picture tabs, read its fact box, then feed it or lead it to its spot | A book's features find a fact (RI.1.5); picture and words go together (RI.K.7) | T–K (school plays 3) | M | A new game: a page-flip book, a friend table, a scene with three spots and a basket; a land |
+| **IR1 Look It Up 1–3** (built 2026-10-22) | Find a visiting friend's page with picture tabs, read its fact box, then feed it or lead it to its spot | A book's features find a fact (RI.1.5); picture and words go together (RI.K.7) | T–K (school plays 3) | M | A new game: a page-flip book, a friend table, a scene with three spots and a basket; a land |
 | **IR2 Look It Up 4–6** | A contents page with printed names; a caption that decides between two pictured friends; a question needing two pages | Contents page (RI.1.5); words versus picture (RI.1.6); two texts together (RI.2.9, RI.4.9) | S, U | S–M | Printed names and captions with replay, on Read & Do's terms |
 | **IR3 Diagram Detective** (sketch) | Answer from an invented machine's diagram: follow the arrow, find the label, look inside the cutaway | How a diagram clarifies a text (RI.2.7, RI.4.7, RST.6-8.7) | U, M | M | Probably an Attic Finds mode (its invented objects); its owner decides |
 | **IR4 Key It Out** | Identify nine invented creatures from a field-guide page; confirmed three at a time | Cross-referencing a document for grown-ups' own play | G (13+) | M | A Lantern Lake game after its capacity test (twelve games today) |
@@ -145,8 +145,8 @@ Still open: the person checks (device speech of each fact sentence, whether a th
 
 ## Build slices, in order
 
-1. **IR1 define: Look It Up levels 1–3** (docs only, one packet in `docs/definitions/look-it-up.md`): the friend and fact tables (*Eats* from Animal Snack), round tables, page layout at 100-unit targets in both orientations, land capacity, accounting, voice lines, how-to lines, bot, rule tests and asset list. Defined 2026-10-22 ([definition](../../definitions/look-it-up.md)); its build is ready.
-2. **IR1 build** (new-game tier: typecheck, unit tests, one filtered play of levels 1 and 3 with one wrong answer and one hint, `fingerdemo`, one portrait screenshot).
+1. **IR1 define: Look It Up levels 1–3** (docs only, one packet in `docs/definitions/look-it-up.md`): the friend and fact tables (*Eats* from Animal Snack), round tables, page layout at 100-unit targets in both orientations, land capacity, accounting, voice lines, how-to lines, bot, rule tests and asset list. Defined 2026-10-22 ([definition](../../definitions/look-it-up.md)); built 2026-10-22 (PR #830).
+2. **IR1 build, built 2026-10-22 (PR #830)** (new-game tier: typecheck, unit tests, one filtered play of levels 1 and 3 with one wrong answer and one hint, `fingerdemo`, one portrait screenshot).
 3. **IR2 define and build: levels 4–6** after IR1 is played and decision 3 is answered.
 4. **Notes to owners** (docs only, no new slice): LEGO's per-step card to Recipe Workshop's later levels; Curcio's levels to Picture Graph; a two-step how-to sign to Read & Do's dive; Diagram Detective to Attic Finds' owner.
 5. **IR4 Key It Out** define after the Lantern Lake capacity test; **IR5 cards** to the off-screen companions work after an ordinary content review.
