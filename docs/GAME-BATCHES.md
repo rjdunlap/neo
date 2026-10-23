@@ -469,6 +469,12 @@ Proof: as the [definition's check tier](definitions/recipe-workshop.md#check-tie
 
 Proof: new-game tier, as the [definition's check tier](definitions/meadow-pens.md#check-tier) sets it (typecheck, unit tests including the rule tests, a new `browser-check.mjs` case filtered to Meadow Pens at levels 1 and 3 with one wrong ring each and a requested hint, plus one wrong card at level 2, `fingerdemo` at levels 1–3, one portrait screenshot at level 3, one build). If the allowance cannot cover all three, stop after a complete level 1 (or 1–2) with a draft-PR checkpoint. Review gate: merges only after the developer approves the [level-2 card table](definitions/meadow-pens.md#level-2-card-table) ([decision 8](definitions/meadow-pens.md#open-decisions)); the build itself may proceed.
 
+### gadget-bench 1: Levels 1–3
+
+- **`gadget-bench`, levels 1–3 (slice I2)** (a new game, one declared batch; preschool 1, pre-K 1–3, school 2–3, Treehouse by default): a wooden cart with big sockets, a neighbor's pictured need and a short path to Try. Level 1, Which one works? (two finished gadgets differing in one part; try both, give one); level 2, Change one part (the pet's shown cart, a new neighbor, swap or add one part); level 3, Build it (two open sockets, a tray of four, a path of two conditions; position matters). [Definition](definitions/gadget-bench.md), [inventions study slice 2](deep-dives/subjects/inventions.md#build-slices-in-order)
+
+Proof: new-game tier, as the [definition's check tier](definitions/gadget-bench.md#check-tier) sets it (typecheck, unit tests including the rule tests, a new `browser-check.mjs` case filtered to Gadget Bench at levels 1–3 with a wrong Give, a free failing Try, a swapped placement and a requested hint, `fingerdemo` at levels 1–3, one portrait screenshot at level 3, one build). If the allowance cannot cover all three, stop after a complete level 1 (or 1–2) with a draft-PR checkpoint. No review gate; the home land is [decision 1](definitions/gadget-bench.md#open-decisions).
+
 ### lasso-loops 1: About how many?
 
 Built; [completed scope and proof](archive/COMPLETED-2026-10-09.md#2026-10-22--lasso-loops-about-how-many-estimation-e1).

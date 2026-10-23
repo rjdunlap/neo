@@ -15,6 +15,14 @@
 - Ran: typecheck; full `npm test` (214 files, 2654 passed, 4 skipped).
 - Open: the other nine land decor tests (`beach`, `canyon`, `cove`, `farm`, `grove`, `meadow`, `mountain`, `peaks`, `village`) keep their own fixed decor minimums and still act as a hidden capacity limit when a land gains a game; `hasRoom` is there to gate them the same way when one fails.
 
+## 2026-10-23 — Gadget Bench definition (I1, docs only)
+
+- `claude/define-gadget-bench`: [definition](definitions/gadget-bench.md), READY (define line replaced by the I2 build line), batch plan, backlog row, inventions study.
+- Defined: the part/socket/condition model with `runPath` and `passingDesigns`, levels 1–3 with authored rounds, free Try and Give-as-claim accounting with the same-condition glow, speech, rule tests including the position-matters overlap proof against Habitat Helpers, bot, card, registration, and a measured land table (Tinker Lab full at pre-K and school; Treehouse takes six more).
+- Ran: a throwaway `landLayout` probe (four views; not committed), `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser or device checks (docs only).
+- Open: home land (decision 1) and accounting (decision 2); children's and parents' reactions.
+
 ## 2026-10-23 — Helper House definition (RA1, docs only)
 
 - [PR #872](https://github.com/rjdunlap/neo/pull/872), `claude/define-helper-house`: [definition](definitions/helper-house.md), READY (define line replaced by the RA2 build line), backlog, notebook, study.
