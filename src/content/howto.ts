@@ -343,6 +343,53 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 3, text: 'Turning pages is always free; only a wrong food or place given to the animal is a miss, and after two misses the right tab or picture glows, which counts as a hint.' },
     ],
   },
+  'ready-for-adventure': {
+    goal: 'Get the parade things ready, pack them, and watch {pet} use them.',
+    steps: [
+      { from: 1, to: 3, text: 'Look at the card: it shows what to bring. Tap it to hear it.' },
+      { from: 1, to: 1, text: 'Drag the thing on the card into the bag.' },
+      { from: 2, to: 2, text: 'Put the ribbon on the pole (or the beater with the drum), then drag it into the bag.' },
+      { from: 3, to: 3, text: 'Get the flag and the drum ready and packed, in either order.' },
+    ],
+    finish: 'When the bag has what the card shows, the parade plays; a tap skips it.',
+    note: [
+      { from: 1, to: 3, text: 'Dragging or tapping both work: tap a thing, then tap where it goes.' },
+      { from: 1, to: 3, text: 'Packing something not ready yet, or the wrong thing, counts as a miss; two on the same job light up the next step and count as help.' },
+      { from: 1, to: 3, text: 'Show a hint lights the next step; tapping a lit thing lets {pet} do it, and finishing with help still earns the sticker.' },
+      { from: 1, to: 3, text: 'Pretend parade things only: this is about getting things ready in order, not a lesson in real getting-ready routines.' },
+    ],
+  },
+  'adventure-walk': {
+    goal: "Walk to the friend's picnic, choosing how to get past each place on the way.",
+    steps: [
+      { from: 1, to: 1, text: 'Tap a way past each place: both ways are fine.' },
+      { from: 2, to: 2, text: 'Listen to the friend, then tap the way they ask for.' },
+      { from: 3, to: 3, text: 'The friend asks for two ways at once; tap them in order.' },
+      { from: 2, to: 3, text: "Tap the friend's picture to hear the way again." },
+    ],
+    finish: 'The friends sit down together on the picnic blanket.',
+    note: [
+      { from: 1, to: 1, text: 'Every choice is right, and the pet says the word for the way chosen. Nobody is asked to move: the pet does the walking.' },
+      { from: 2, to: 3, text: "Taking the other way is a miss, with both ways named; after two misses at one place the asked-for way glows, which counts as a hint. Hearing the request again is never counted. Nobody is asked to move: the pet does the walking." },
+    ],
+  },
+  'sand-table': {
+    goal: 'Pour and scoop sand to shape a little landscape.',
+    steps: [
+      'Tap the sand to pour a shower of grains.',
+      'Tap a scoop to lift some sand back into the bucket.',
+      { from: 2, to: 3, text: 'Tap a side to choose where the sand goes.' },
+      { from: 3, to: 3, text: 'Make it tall, flat or hilly, then tap the flag and watch the pet walk it.' },
+    ],
+    finish: [
+      { from: 1, to: 2, text: 'Tap the flag whenever you like the sand.' },
+      { from: 3, to: 3, text: 'Tap the flag (Show) whenever you like the sand.' },
+    ],
+    note: [
+      { from: 1, to: 2, text: 'Nothing here is wrong, and finishing is not a test. The sand follows a made-up toy rule; real sand behaves differently.' },
+      { from: 3, to: 3, text: 'The picture is an idea to try, never a target. The sand follows a made-up toy rule; real sand behaves differently.' },
+    ],
+  },
   'sense-detective': {
     goal: 'Find out what is in the parcel, then put its toy on the shelf.',
     steps: [
@@ -954,6 +1001,9 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'Look at the problem on the letter, like a dripping tap, then tap the helper whose tool fixes it.' },
       { from: 10, to: 10, text: 'Look at the tool picture on the letter, then tap the house whose sign shows the same tool.' },
       { from: 11, to: 11, text: 'Read the numeral on the letter. Odd numbers are above the road, even below; each side rises from left to right. Tap that house.' },
+      { from: 15, to: 15, text: 'Hazel’s key got wet. Tap a blank sign row, then the house with the same sign. Its neighbour fills the row. Fill all five rows, then use your key to deliver two picture letters, one at a time.' },
+      { from: 14, to: 14, text: 'Find the three neighbours in the key. Tap their houses in any order, then the green arrow. Tap a planned stop to remove it and the stops after it. The walk counts one stone per path segment, including the return to the post office.' },
+      { from: 14, to: 14, text: 'After each bag, choose the blue circle arrow to plan one free second walk with the same stops, or the green arrow to continue. The second walk compares its count with the first; every order is welcome.' },
       { from: 13, to: 13, text: 'Listen to Hazel’s clue and tap the one house it describes. Between and next on the left refer to the top row; nearest and farthest compare straight-line distances. Tap Hazel at the post office to replay for free.' },
       { from: 12, to: 12, text: 'Read the two-digit number on the letter and tap the house with that number. The pet says it as ten and some ones.' },
     ],
@@ -961,6 +1011,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 7, text: 'The round ends when the letters are delivered.' },
       { from: 8, to: 8, text: 'The round ends when the shorter path is walked and the letter is delivered.' },
       { from: 9, to: 13, text: 'The round ends when the letters are delivered.' },
+      { from: 15, to: 15, text: 'Making the key and delivering both letters finishes one round.' },
+      { from: 14, to: 14, text: 'Two bags finish the round. Each optional second walk is free and awards no extra sticker.' },
     ],
     note: [{ from: 8, to: 8, text: 'The stones mark the path length. Count them together; every destination has one path with fewer stones.' }],
   },
@@ -1027,7 +1079,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'seesaw-balance': {
     goal: 'Make the seesaw go up, balance, or show how heavy something is.',
     steps: [
-      { to: 2, text: 'Tap a friend to put it on the other side of the seesaw.' },
+      { to: 2, text: 'Tap a friend, or drag it, to put it on the other side of the seesaw.' },
       { from: 3, to: 3, text: 'Tap blocks to put them on the other side until the seesaw balances.' },
       { from: 4, to: 4, text: 'Put the presents on the seesaw to see which side drops; the heaviest goes in the wagon.' },
       { from: 5, to: 5, text: 'Tap number weights onto the other side until it weighs the same as this side, using different pieces.' },
@@ -1129,6 +1181,9 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 7, to: 7, text: 'Listen to the amount your friend asks for (tap the picture bubble to hear it again), cut equal pieces, then put that fraction on their plate.' },
       { from: 8, to: 8, text: 'Look at the recipe card and halve it: put in one fruit for every two fruits on the card.' },
       { from: 9, to: 9, text: 'Cut the pizza into three equal slices, then give one slice to each friend.' },
+      { from: 11, to: 11, text: 'Choose the cutting picture that makes two pieces the same size, then give one piece to each friend.' },
+      { from: 12, to: 12, text: 'Cut the two pizzas so three friends can each have the same number of slices, then share them out.' },
+      { from: 11, to: 12, text: 'Tap the green arrow to serve. The friends eat what was shared fairly.' },
       { to: 9, text: 'Tap the green arrow to serve. The friends eat what was shared fairly.' },
     ],
     finish: 'The round ends when the food is served fairly.',
@@ -1139,6 +1194,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 7, to: 7, text: 'Two quarters count as one half, and the round arrow lets you cut again; nothing is lost. A good serve is counted aloud.' },
       { from: 8, to: 8, text: 'The back arrow takes the last fruit out; nothing is lost.' },
       { from: 9, to: 9, text: 'The round arrow puts the pizza back together to cut again; nothing is lost.' },
+      { from: 11, to: 11, text: 'Choosing the uneven cut is fine to explore. If you serve unequal pieces, they are laid one over the other to show which is bigger, then come back.' },
+      { from: 12, to: 12, text: 'A cut that leaves a piece in the tray gets a hint; the round arrow puts the pizzas back together to cut again.' },
     ],
   },
   'tangram-town': {

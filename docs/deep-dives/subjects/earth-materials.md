@@ -144,7 +144,7 @@ Co-play: maker and observer swap after one visible change; a child can describe 
 These are future single-session packets, not a scheduled queue. A definition precedes each new interaction's implementation.
 
 1. **E1 — define Sand Table dry play** (defined 2026-10-22, [definition](../../definitions/sand-table.md); next E2): freeze rungs 1–3, grain/overflow/scoop invariants, target layout, replay/support/Finish, creative adaptation, speech/how-to/ghost finger and land capacity. Compare with Fill and Dump. Docs only.
-2. **E2 — build the dry round:** implement the frozen complete toy only; new-game tier, no fluid engine, saved sandbox or new zone.
+2. **E2 — build the dry round (built 2026-10-23, `sand-table` levels 1–3):** implement the frozen complete toy only; new-game tier, no fluid engine, saved sandbox or new zone.
 3. **E3 — define sediment evidence:** one reviewed breeze transport table and rung 4, with before/after trace and accepted observation answers. No water route scope. Docs only.
 4. **E4 — build that observation round:** new-interaction tier; comparisons/design rung 5–6 wait for their own model packet.
 5. **E5 — define Fossil Dig:** **Defined 2026-10-18** with deep-time D1: [definition](../../definitions/fossil-dig.md); **built 2026-10-21** as `fossil-dig` levels 1–2. Original scope: one reviewed leaf impression plus location record and two comparison references; neutral exploration, evidence-based Check/help and supported ending. Audit Splish Splash/Puzzle Pals ownership and deep-time boundary. Docs only; build in a separate session.

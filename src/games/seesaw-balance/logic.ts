@@ -1,4 +1,4 @@
-import type { Rng } from '../../engine/random';
+import { Rng } from '../../engine/random';
 
 /**
  * Seesaw Balance, after Hasee Bounce and playground balance toys: put friends and blocks on a big
@@ -42,11 +42,27 @@ export interface Thing {
   weight: number;
   /** Level 11's two different boxes; other boxes leave it unset. */
   shape?: 'square' | 'round';
+  /** A friend's face, drawn from the pool for its weight. */
+  face?: FriendFace;
+  /** A present's wrapping. */
+  wrap?: Wrapping;
+  /** The mystery box's look at levels 6 and 7 (the same footprint either way). */
+  look?: BoxLook;
 }
+
+export type Wrapping = 'plain' | 'dots' | 'stripes';
+export const WRAPPINGS: readonly Wrapping[] = ['plain', 'dots', 'stripes'];
+export type BoxLook = 'parcel' | 'crate';
+export const BOX_LOOKS: readonly BoxLook[] = ['parcel', 'crate'];
 
 /** Friends by weight: the bigger the friend, the heavier. */
 export const FRIEND_FOR = { 1: 'duck', 2: 'bunny', 3: 'pig', 4: 'bear' } as const;
 export type FriendWeight = keyof typeof FRIEND_FOR;
+/** The faces a round may draw for each weight; a face belongs to one weight, so a round's friends never share one. */
+export const FACES_FOR = { 1: ['duck', 'cat'], 2: ['bunny', 'dog'], 3: ['pig', 'cow'], 4: ['bear'] } as const;
+export type FriendFace = (typeof FACES_FOR)[FriendWeight][number];
+/** How big a friend is drawn: size says weight, whatever the face. */
+export const friendScale = (weight: number) => 0.3 + 0.07 * weight;
 
 export interface SeesawRound {
   /** Already sitting on the seesaw, and not movable. */
@@ -104,11 +120,13 @@ export function ways(n: number, weights: readonly number[]): number[][] {
   return out;
 }
 
-const friend = (weight: number): Thing => ({ kind: 'friend', weight });
 const blocks = (n: number): Thing[] => Array.from({ length: n }, () => ({ kind: 'block', weight: 1 }));
 
 export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
   const rounds: SeesawRound[] = [];
+  // Faces, wrappings and box looks come from their own stream, seeded from this one without using it up, so the numbers and sides of a seed are the same as before.
+  const looks = new Rng(Math.floor(rng.clone().next() * 4294967296) ^ 0x5bd1e995);
+  const friend = (weight: number): Thing => ({ kind: 'friend', weight, face: looks.pick([...FACES_FOR[weight as FriendWeight]]) });
   let last = 0;
   // A different number from last round where there is a choice, so each round is a fresh look.
   const fresh = (min: number, max: number) => {
@@ -139,7 +157,7 @@ export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
       }
       case 'heaviest': {
         const weights = rng.shuffle([1, 2, 3, 4]).slice(0, 3);
-        rounds.push({ fixed: [], fixedSide, offered: weights.map((weight) => ({ kind: 'present', weight })), answer: Math.max(...weights) });
+        rounds.push({ fixed: [], fixedSide, offered: weights.map((weight) => ({ kind: 'present', weight, wrap: looks.pick([...WRAPPINGS]) })), answer: Math.max(...weights) });
         break;
       }
       case 'parts': {
@@ -185,7 +203,8 @@ export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
       }
       case 'mystery': {
         const m = fresh(2, plan.boxes === 2 ? 3 : 5);
-        rounds.push({ fixed: Array.from({ length: plan.boxes ?? 1 }, () => ({ kind: 'box', weight: m })), fixedSide, offered: blocks(plan.boxes === 2 ? 7 : 6), answer: m });
+        const look = looks.pick([...BOX_LOOKS]);
+        rounds.push({ fixed: Array.from({ length: plan.boxes ?? 1 }, (): Thing => ({ kind: 'box', weight: m, look })), fixedSide, offered: blocks(plan.boxes === 2 ? 7 : 6), answer: m });
         break;
       }
     }
