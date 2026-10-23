@@ -6,8 +6,18 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
+1. **RW14 slice 1, the first run on the island** (shell tier): the hatch's egg, colour and name steps on the home backdrop instead of flat cream; no new image. [POLISH.md](rework/POLISH.md#slice-1-the-first-run-on-the-island)
+2. **RW14 slice 2, residents in six locations** (shell tier, offline check): the prepared second-wave six as the residents of Bubble Beach, Music Mountain, Painted Canyon, Cozy Village, Story Grove and Tinker Lab, shipped in production as smaller files; her own friend stands in where it is the resident. No new image. [POLISH.md](rework/POLISH.md#slice-2-residents-in-six-locations-and-her-own-friend-at-home)
+3. **RW14 slice 3, one meaning per button** (shell and navigation tier; after slice 2, which shares `LocationScene.ts`): at the root the house always goes Home and a back arrow with the place's picture goes back, in rounds, how-to cards and locations, with a route test. [POLISH.md](rework/POLISH.md#slice-3-one-meaning-per-button)
+4. **RW14 slice 5, celebration and result in place** (shell tier; after slice 3, which shares `GameScene.ts`): the result draws its origin's backdrop behind a veil instead of flat cream. [POLISH.md](rework/POLISH.md#slice-5-celebration-and-result-in-place)
+5. **RW14 slice 7, buttons and cards with a finish** (shell tier): one code-drawn finish (face, highlight, rim, shadow, press squash) for every root button and card; Home's exits as picture buttons; hit areas unchanged. [POLISH.md](rework/POLISH.md#slice-7-buttons-and-cards-with-a-finish)
 
 ## Queued
+
+- **RW14 slice 4, the illustrated Rainbow Meadow and Places postcards** (shell tier, offline check): eligible once `land-meadow` from [ChatGPT batch 1](rework/art-requests/CHATGPT-BATCH.md#batch-1-generate-these-first) is imported; then it goes to the top of Next ten. [POLISH.md](rework/POLISH.md#slice-4-the-illustrated-rainbow-meadow-and-postcards-in-places)
+- **RW14 slice 6, the duck pilot in Duck Pond** (existing-game change tier): eligible once `duck-base` and `duck-portrait` are imported. [POLISH.md](rework/POLISH.md#slice-6-the-duck-pilot)
+- **RW14 slices 8 and 9, the last place first and moving between screens** (shell and navigation tiers; one at a time, both touch `ExploreScene.ts`). [POLISH.md](rework/POLISH.md#slice-8-the-last-place-first)
+- **RW14 slice 10, the other ten backdrops** (images only): after slice 4's meadow is accepted on the iPad. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 
 - **`stop-and-go`, Whose light and the busy crossing** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#stop-and-go-2-whose-light-and-the-busy-crossing).
 - **`weather-wardrobe`, Forecast trip, reverse matching and wind** (one implementation batch; 3 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#weather-wardrobe-2-forecast-trip-reverse-matching-and-wind).

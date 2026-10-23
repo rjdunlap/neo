@@ -1737,13 +1737,13 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--monster-munc
 
 [PR #859](https://github.com/rjdunlap/neo/pull/859), `claude/garden-grow-rows-columns` ([deep dive](../deep-dives/garden-grow.md#build-slices-in-order)). Pre-K order is now `[6, 7, 9, 10, 11]`. Level 9: choose a packet (free; it lifts with a ring), then tap beds to match a sign of two rows by three; a seed of another color with a packet in hand replaces it, the same color takes it out; rain on a wrong layout is a miss with "The top row needs red." Level 10: three columns in two or three colors. Level 11: one or two flowers per row in any beds, every placement accepted, a sign with flowers, empty pots and a numeral per row, and the finishing line "2 and 2 makes 4". After two misses the wrong or empty beds (at 11, the short row's free beds or the over row's extra seeds) glow. Rule tests (`judgeGrid`, generators, bot) in `logic.test.ts`; how-to steps and voice lines added; the bot reuses the packet already in hand.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--garden-grow-batch-2-rows-columns-and-equal-rows-slices-57).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--garden-grow-batch-2-rows-columns-and-equal-rows-slices-57).
 
 ## Pet Kitchen batch 1: meal variety and lap tap-sharing, slices 2-3 (2026-10-23)
 
 [PR #860](https://github.com/rjdunlap/neo/pull/860), `claude/pet-kitchen-meals-lap` ([deep dive](../deep-dives/pet-kitchen.md#build-slices-in-order)). Slice 2: friends are `CRITTERS` dealt from the seed (calm, then happy); on a fair share or fraction serve the pieces slide to the mouths and the friends chew (`sfx.munch`) before `kitchen.done`; levels 1-4 deal a seeded sandwich or round pie (pizza stays at level 9); level 7 shows a tappable fraction bubble over the plate (`kitchen.fraction-ask`); a banana joins the recipe fruit and a round picks two of three. Slice 3: level 10 *One for you, one for me*: the food arrives cut (halves or quarters, seeded), a tap on a tray piece deals it to the plate with the fewest, a touch off a piece wiggles one, no miss or hint is possible, and the friends eat and the round finishes with no serve button. `bands` is now lap `{ 10, 10 }`, toddler `{ 1..10 }` with `order [10, 1]`, `entryLevels [10]`; the Windy Picnic's sandwiches step plays level 10 for lap (was 1).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--pet-kitchen-batch-1-meal-variety-and-lap-tap-sharing-slices-23).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--pet-kitchen-batch-1-meal-variety-and-lap-tap-sharing-slices-23).
 
 ## Pet Kitchen batch 2 part A: Same or not the same? and Two pizzas, three friends, slices 4-5 (2026-10-23)
 
