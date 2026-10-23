@@ -11,12 +11,15 @@ import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  atticLayout, CARD, check, CHECK_R, CHIP_R, CLAIM, CLAIM_H, CLAIM_W, clueOf, CRANK_HIT, encounterState, glowing, glowTarget, help, look,
-  makeRound, OBJ, objectOf, pick, place, planFor, SLOT, SPOT_R, TURN_R, tryIt, WINDOW_R, type AtticLayout, type Clue, type ClueId,
-  type Effect, type EncounterState, type ObjectId, type Plan, type Pt, type Round, type Side,
+  atticLayout, canFinish, CARD, check, CHECK_R, CHIP_R, CLAIM, CLAIM_H, CLAIM_W, clueOf, CRANK_HIT, DOOR_AT, DOOR_H, DOOR_W, encounterState,
+  FINISH_R, finishLever, glowing, glowTarget, help, isFree, leverState, look, makeLeverRound, makeRound, OBJ, objectOf, pick, place, planFor,
+  press, SLOT, SPOT_R, toggleDoor, TURN_R, turnEnded, tryIt, WINDOW_R, type AtticLayout, type Clue, type ClueId, type Effect,
+  type EncounterState, type LeverRound, type ObjectId, type Plan, type Pt, type Round, type Side,
 } from './logic';
 
 const LEVELS: BandLevels = {
+  lap: { min: 3, max: 3 },
+  toddler: { min: 3, max: 4 },
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 2 },
   school: { min: 2, max: 2 },
@@ -35,6 +38,9 @@ const RISE: Record<ObjectId, number> = { 'bird-box': 85, 'fish-churn': 70 };
 const REST: Record<ObjectId, number> = { 'bird-box': -62, 'fish-churn': -5 };
 const TURN_TIME = 1.2;
 const IDLE_WIGGLE = 6;
+/** Levels 3-4: one half turn of the giant handle, and how long a dip lasts after touch-down. */
+const HALF_TURN = 0.6;
+const DIP = 0.12;
 const FLASH_TIME = 0.7;
 
 /* Art -------------------------------------------------------------------------------------------- */
@@ -283,12 +289,30 @@ class AtticFinds implements Game {
   private t = 0;
   private destroyed = false;
 
+  /* Levels 3-4 */
+  private readonly free: boolean;
+  private lever = leverState();
+  private leverRound: LeverRound | null = null;
+  private halfT: number | null = null;
+  private goingUp = true;
+  private baseRot = 0;
+  private dipT = 0;
+  private speaking = false;
+  private peekSaid = false;
+  private doorEver = false;
+  private finishBtn: Container | null = null;
+  private doorFlap: Container | null = null;
+  private peekRod: Graphics | null = null;
+  private doorOpenK = 0;
+
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     const first = !authoredShown.has(this.plan.id) && !ctx.demo;
     if (first) authoredShown.add(this.plan.id);
-    this.round = makeRound(this.plan, ctx.rng, first);
+    this.free = isFree(this.plan);
+    this.round = this.free ? { encounters: [] } : makeRound(this.plan, ctx.rng, first);
+    if (this.free) this.leverRound = makeLeverRound(this.plan, ctx.rng, first);
     this.L = atticLayout(ctx.view, this.plan.id);
 
     const s = ctx.stage;
@@ -303,7 +327,12 @@ class AtticFinds implements Game {
     this.windowNode.eventMode = 'none';
     s.addChild(this.bg, this.shelfArt, this.shelfLayer, this.objNode, this.turnBtn, this.controls, this.windowNode, this.glow);
 
-    onTap(this.objNode, (e) => this.tapObject(e), { cooldown: 150 });
+    if (this.free) {
+      this.turnBtn.visible = false;
+      this.objNode.eventMode = 'none';
+      onTap(this.bg, (e) => this.tapFree(e), { cooldown: 0 });
+      this.bg.cursor = 'default';
+    } else onTap(this.objNode, (e) => this.tapObject(e), { cooldown: 150 });
 
     this.turnBtn.addChild(this.turnGlow, new Graphics().circle(0, 0, TURN_R).fill(swatch.purple.fill).stroke({ width: 5, color: swatch.purple.line }));
     const arrow = new Graphics()
@@ -323,7 +352,8 @@ class AtticFinds implements Game {
       this.controls.addChild(this.slotNode, this.checkBtn);
     }
     this.drawBackdrop();
-    this.buildEncounter();
+    if (this.free) this.buildFree();
+    else this.buildEncounter();
   }
 
   get cur() {
@@ -343,8 +373,225 @@ class AtticFinds implements Game {
   }
 
   start() {
-    void this.ctx.instruct(this.plan.mode === 'try' ? 'attic-finds.instruct-try' : 'attic-finds.instruct-prove');
+    void this.ctx.instruct(
+      this.plan.mode === 'try' ? 'attic-finds.instruct-try' : this.plan.mode === 'prove' ? 'attic-finds.instruct-prove'
+        : this.plan.mode === 'lever' ? 'attic-finds.instruct-lever' : 'attic-finds.instruct-peek',
+    );
     this.busy = false;
+  }
+
+  /* Levels 3-4: the giant handle ---------------------------------------------------------------- */
+
+  private get mover(): 'bird' | 'fish' {
+    return this.leverRound!.object === 'bird-box' ? 'bird' : 'fish';
+  }
+
+  private buildFree() {
+    const id = this.leverRound!.object;
+    this.parts = buildObject(id, 'front');
+    this.objNode.addChildAt(this.parts.root, 0);
+    if (this.plan.mode === 'peek') this.buildPeek(this.parts.root);
+    this.layout();
+  }
+
+  /** The recess behind the door (a sliding rod) and the hinged flap, drawn under the crank. */
+  private buildPeek(root: Container) {
+    const w = DOOR_W / this.L.scale, h = DOOR_H / this.L.scale;
+    const recess = new Container();
+    recess.position.set(DOOR_AT.x, DOOR_AT.y);
+    recess.addChild(new Graphics().roundRect(-w / 2, -h / 2, w, h, 12).fill(0x4a321d).stroke({ width: 5, color: wood.line }));
+    this.peekRod = new Graphics();
+    recess.addChild(this.peekRod);
+    const flap = new Container();
+    flap.position.set(-w / 2, 0);
+    flap.addChild(
+      new Graphics().roundRect(0, -h / 2, w, h, 12).fill(wood.light).stroke({ width: 5, color: wood.line })
+        .circle(w - 28, 0, 13).fill(BRASS.fill).stroke({ width: 4, color: BRASS.line }),
+    );
+    recess.addChild(flap);
+    this.doorFlap = flap;
+    const at = root.children.length - 1;
+    root.addChildAt(recess, at);
+    this.drawPeekRod(0);
+  }
+
+  private drawPeekRod(k: number) {
+    if (!this.peekRod) return;
+    const w = DOOR_W / this.L.scale, h = DOOR_H / this.L.scale;
+    const bottom = h / 2 - 14, top = bottom - 36 - (h - 90) * k;
+    this.peekRod.clear()
+      .moveTo(0, bottom).lineTo(0, top).stroke({ width: 16, color: BRASS.line, cap: 'round' })
+      .moveTo(0, bottom).lineTo(0, top).stroke({ width: 8, color: BRASS.fill, cap: 'round' })
+      .circle(0, top, 14).fill(BRASS.fill).stroke({ width: 4, color: BRASS.line })
+      .moveTo(-w / 2 + 14, bottom).lineTo(0, bottom).stroke({ width: 8, color: BRASS.line, cap: 'round' });
+  }
+
+  private tapFree(e: FederatedPointerEvent) {
+    if (this.busy || this.finished || this.lever.done) return;
+    this.touched();
+    const g = this.bg.toLocal(e.global);
+    if (!Number.isFinite(g.x)) return;
+    const L = this.L;
+    if (this.plan.mode === 'peek') {
+      const d = L.door;
+      if (g.x >= d.x && g.x <= d.x + d.w && g.y >= d.y && g.y <= d.y + d.h) {
+        this.pressDoor();
+        return;
+      }
+      const o = this.objNode.toLocal(e.global);
+      const onBox = Number.isFinite(o.x) && Math.abs(o.x) <= 150 && o.y >= -130 && o.y <= 150;
+      const onHandle = Math.hypot(g.x - L.handle.x, g.y - L.handle.y) <= L.handleR;
+      if (!onBox && !onHandle) {
+        sfx.pop(5);
+        this.ctx.particles.burst(g.x, g.y, { kind: 'dot', colors: [0xd9c4a0, 0xffffff], count: 5, speed: [30, 80], gravity: 0, life: [0.3, 0.6] });
+        return;
+      }
+    }
+    this.pressHandle();
+  }
+
+  private pressDoor() {
+    if (!toggleDoor(this.lever, this.plan)) return;
+    if (this.lever.doorOpen) this.doorEver = true;
+    sfx.knock();
+    this.dipT = 0;
+  }
+
+  private pressHandle() {
+    this.dipT = DIP;
+    if (press(this.lever)) this.beginHalf();
+  }
+
+  private beginHalf() {
+    this.halfT = 0;
+    this.goingUp = !this.lever.up;
+    if (this.lever.doorOpen && !this.peekSaid) {
+      this.peekSaid = true;
+      this.speak('attic-finds.peek');
+    }
+  }
+
+  /** Words only when she is not already hearing some, so a run of fast touches makes sounds without a pile of speech. */
+  private speak(id: Parameters<GameContext['say']>[0]) {
+    if (this.speaking) return;
+    this.speaking = true;
+    void this.ctx.say(id, { mover: this.mover }).then(() => { this.speaking = false; });
+  }
+
+  private updateFree(dt: number) {
+    const p = this.parts;
+    if (!p) return;
+    const id = this.leverRound!.object;
+    // The peek door swings.
+    const wantOpen = this.lever.doorOpen ? 1 : 0;
+    this.doorOpenK += Math.sign(wantOpen - this.doorOpenK) * Math.min(Math.abs(wantOpen - this.doorOpenK), dt / 0.3);
+    if (this.doorFlap) this.doorFlap.scale.x = 1 - 0.88 * this.doorOpenK;
+    if (this.halfT !== null) {
+      const prev = this.halfT;
+      this.halfT += dt;
+      const k = Math.min(1, this.halfT / HALF_TURN);
+      const quarter = HALF_TURN / 4;
+      if (Math.floor(this.halfT / quarter) > Math.floor(prev / quarter) && k < 1) sfx.tick();
+      const angle = this.baseRot + Math.PI * k;
+      if (id === 'bird-box') p.crank.rotation = angle;
+      else p.crank.scale.x = Math.cos(angle);
+      const f = ease.inOutSine(this.goingUp ? k : 1 - k);
+      p.mover.y = REST[id] - RISE[id] * f;
+      this.drawPeekRod(f);
+      if (k >= 1) {
+        this.halfT = null;
+        this.baseRot += Math.PI;
+        const up = this.goingUp;
+        const more = turnEnded(this.lever);
+        sfx.pluck(up ? 11 : 6);
+        if (up) sfx.pluck(8, 0.12);
+        this.speak(up ? 'attic-finds.up' : 'attic-finds.down');
+        if (canFinish(this.lever) && !this.finishBtn) this.showFinish();
+        if (more) this.beginHalf();
+      }
+    } else {
+      if (this.dipT > 0) this.dipT -= dt;
+      if (id === 'bird-box') p.crank.rotation = this.baseRot - (this.dipT > 0 ? 0.105 : 0);
+    }
+    if (!this.finished && !this.lever.done) {
+      this.idle += dt;
+      if (this.idle > IDLE_WIGGLE) {
+        // An invitation, never a hint: the handle wiggles, and again after the next quiet stretch.
+        this.idle = 0;
+        this.wiggle();
+      }
+    }
+    if (this.finishBtn && !this.lever.done) this.finishBtn.scale.set(1 + 0.04 * Math.sin(this.t * 4));
+  }
+
+  private wiggle() {
+    const p = this.parts;
+    if (!p || this.halfT !== null || this.leverRound!.object !== 'bird-box') return;
+    const b = this.baseRot;
+    void this.ctx.tw.to(p.crank, { rotation: b + 0.35 }, { duration: 0.15 })
+      .then(() => this.ctx.tw.to(p.crank, { rotation: b - 0.2 }, { duration: 0.15 }))
+      .then(() => this.ctx.tw.to(p.crank, { rotation: b }, { duration: 0.2 }));
+  }
+
+  private showFinish() {
+    const btn = new Container();
+    btn.addChild(new Graphics().circle(0, 0, FINISH_R).fill(0xffffff).stroke({ width: 6, color: swatch.green.line }));
+    btn.addChild(new Graphics().roundRect(-46, 18, 92, 10, 4).fill(wood.fill).stroke({ width: 3, color: wood.line }));
+    const mini = buildObject(this.leverRound!.object, 'front');
+    mini.root.scale.set(0.2);
+    mini.root.y = 18 - 0.2 * 140;
+    mini.mover.y = REST[this.leverRound!.object] - RISE[this.leverRound!.object];
+    btn.addChild(mini.root);
+    btn.addChild(
+      new Graphics().circle(34, -34, 20).fill(swatch.green.fill).stroke({ width: 3, color: 0xffffff })
+        .moveTo(25, -34).lineTo(32, -26).lineTo(44, -42).stroke({ width: 5, color: 0xffffff, cap: 'round', join: 'round' }),
+    );
+    btn.hitArea = new Circle(0, 0, FINISH_R + 6);
+    onTap(btn, () => { this.touched(); void this.finishFree(); }, { cooldown: 400 });
+    btn.position.set(this.L.finish.x + 220, this.L.finish.y);
+    this.controls.addChild(btn);
+    this.finishBtn = btn;
+    sfx.bell(9);
+    this.speak('attic-finds.finish-ready');
+    void this.ctx.tw.to(btn, { x: this.L.finish.x }, { duration: 0.45, ease: ease.outBack });
+  }
+
+  private async finishFree() {
+    if (!finishLever(this.lever)) return;
+    this.busy = true;
+    this.glow.clear();
+    this.speaking = false;
+    void this.ctx.say('attic-finds.lever-done');
+    const spot = this.L.shelf[0];
+    if (this.finishBtn) this.finishBtn.visible = false;
+    await this.ctx.tw.to(this.objNode, { x: spot.x, y: spot.y - 10 }, { duration: 0.55, ease: ease.inOutSine });
+    void this.ctx.tw.to(this.objNode.scale, { x: 0.3, y: 0.3 }, { duration: 0.55, ease: ease.inOutSine });
+    await this.ctx.tw.wait(0.6);
+    if (this.destroyed) return;
+    sfx.bell(7);
+    sfx.bell(11, 0.2);
+    this.ctx.pet.cheer();
+    this.finished = true;
+    this.finaleT = 0;
+    await this.ctx.tw.wait(1.2);
+    if (this.destroyed) return;
+    this.ctx.finish({ misses: 0, hints: 0 });
+  }
+
+  private resetFree() {
+    this.lever = leverState();
+    this.halfT = null;
+    this.baseRot = 0;
+    this.doorOpenK = 0;
+    this.peekSaid = false;
+    this.doorEver = false;
+    this.finishBtn?.destroy({ children: true });
+    this.finishBtn = null;
+    this.parts?.root.destroy({ children: true });
+    this.parts = null;
+    this.doorFlap = null;
+    this.peekRod = null;
+    this.buildFree();
   }
 
   /* Building -------------------------------------------------------------------------------------- */
@@ -446,6 +693,7 @@ class AtticFinds implements Game {
       c.node.position.set(at.x, at.y);
     });
     this.shelved.forEach((s, i) => s.node.position.set(L.shelf[i].x, L.shelf[i].y));
+    this.finishBtn?.position.set(L.finish.x, L.finish.y);
   }
 
   /* Marks and glows ------------------------------------------------------------------------------- */
@@ -768,6 +1016,12 @@ class AtticFinds implements Game {
   /* Help ------------------------------------------------------------------------------------------ */
 
   askForHint() {
+    if (this.free) {
+      // Nothing to get wrong: the handle wiggles and the instruction repeats, and neither is counted.
+      this.wiggle();
+      void this.ctx.instruct(this.plan.mode === 'lever' ? 'attic-finds.instruct-lever' : 'attic-finds.instruct-peek');
+      return;
+    }
     if (this.finished || this.state.done) return;
     const counted = help(this.state);
     if (this.plan.mode === 'try') {
@@ -782,6 +1036,10 @@ class AtticFinds implements Game {
 
   restart() {
     if (this.finished) return;
+    if (this.free) {
+      this.resetFree();
+      return;
+    }
     this.banked.misses += this.state.misses;
     this.banked.hints += this.state.hints;
     for (const s of this.shelved) s.node.destroy({ children: true });
@@ -802,6 +1060,17 @@ class AtticFinds implements Game {
 
   update(dt: number) {
     this.t += dt;
+    if (this.free) {
+      this.updateFree(dt);
+      if (this.finaleT !== null) {
+        this.finaleT += dt;
+        const k = Math.min(1, this.finaleT / TURN_TIME);
+        const id = this.leverRound!.object;
+        if (this.parts) this.parts.mover.y = REST[id] - RISE[id] * Math.sin(Math.PI * k);
+        if (k >= 1) this.finaleT = null;
+      }
+      return;
+    }
     const p = this.parts;
     if (p && this.turnT !== null) {
       const prev = this.turnT;
@@ -858,6 +1127,17 @@ class AtticFinds implements Game {
   /* Bot ------------------------------------------------------------------------------------------- */
 
   autotouch(): TouchIntent | null {
+    if (this.free) {
+      if (this.busy || this.finished || this.lever.turning || this.halfT !== null) return null;
+      const L = this.L, lv = this.lever;
+      if (canFinish(lv)) return this.finishBtn ? { tap: { on: this.finishBtn }, pause: 0.5 } : null;
+      // Always at the handle, even at level 3 where anywhere works, so the demonstration shows what causes the motion.
+      const handle: TouchIntent = { tap: { on: this.bg, x: L.handle.x, y: L.handle.y }, pause: 0.5 };
+      if (this.plan.mode === 'peek' && lv.turns >= 1 && !this.doorEver) {
+        return { tap: { on: this.bg, x: L.door.x + L.door.w / 2, y: L.door.y + L.door.h / 2 }, pause: 0.8 };
+      }
+      return handle;
+    }
     if (this.busy || this.finished || this.flipping || this.turnT !== null || this.chips.some((c) => c.drag.dragging)) return null;
     const o = this.obj, s = this.state;
     const front = o.clues.find((c) => c.side === 'front' && c.kind !== 'handle')!;
@@ -926,7 +1206,8 @@ export const atticFinds: GameModule = {
   titleLine: 'game.attic-finds',
   region: 'story-grove',
   skills: ['observation', 'cause-and-effect', 'evidence', 'prediction'],
-  bands: ['preschool', 'prek', 'school'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  entryLevels: [3, 4],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,

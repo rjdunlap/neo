@@ -1596,18 +1596,24 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'attic-finds': {
-    goal: 'Look an attic thing over, turn it and crank it, then show what it does.',
+    goal: 'Crank an attic thing, watch what it does, and find what makes it move.',
     steps: [
-      'Tap the parts to see them up close. Tap Turn to see the back.',
+      { from: 1, to: 2, text: 'Tap the parts to see them up close. Tap Turn to see the back.' },
       { from: 1, to: 1, text: 'Tap a picture to try it, or tap the crank. Watch what really happens.' },
       { from: 1, to: 1, text: 'Then tap the picture of what it did.' },
       { from: 2, to: 2, text: "Tap each round chip to look at its part, then drag the part that proves the crank moves it into the card's slot and tap Check." },
+      { from: 3, to: 3, text: 'Tap anywhere, or the big handle. The bird or fish goes up; tap again and it comes down.' },
+      { from: 4, to: 4, text: 'Tap the big handle: the bird goes up, then down. Tap the little door to open it and see the rod inside.' },
       'Crank it again any time to watch.',
     ],
-    finish: 'Both things sit on the shelf.',
+    finish: [
+      { from: 1, to: 2, text: 'Both things sit on the shelf.' },
+      { from: 3, to: 4, text: 'After three turns of the handle a shelf picture appears; she taps it when she is ready, and the toy goes onto the shelf.' },
+    ],
     note: [
       { from: 1, to: 1, text: 'Looking, turning and trying are never counted against her, and a guess before the crank turns is never a miss. After two wrong picks the right picture glows, which counts as a hint. Everything in the attic is made up for the island; nothing here is a real old thing.' },
       { from: 2, to: 2, text: 'Looking, turning and swapping parts are never counted against her. A Check with a part that does not move the bird or fish counts as a miss; after two the right part glows, which counts as a hint. Everything in the attic is made up for the island; nothing here is a real old thing.' },
+      { from: 3, to: 4, text: 'Every touch is play: nothing is ever counted as a miss or a hint, and the round ends only when she taps the shelf. Everything in the attic is made up for the island; nothing here is a real old thing.' },
     ],
   },
   'fossil-dig': {
