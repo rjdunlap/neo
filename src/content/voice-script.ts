@@ -1602,6 +1602,7 @@ export const SCRIPT = {
   'clock.yay': ['Ding dong! Right on time!', 'Tick tock, you did it!'],
   'clock.done': ['The clock tower is right on time. Thank you!'],
   'grow.plant': ['Tap the soil to plant a seed. Watch it grow!'],
+  'grow.big': ['Touch the garden and watch the flower grow!'],
   'grow.water': ['Tap the soil to plant seeds. Then tap the cloud to make it rain!'],
   'grow.color': ['Plant a {color} flower! Tap the {color} seeds.'],
   'grow.count': ['Plant {n} seeds, then tap the cloud to make them grow.'],

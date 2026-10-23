@@ -8559,14 +8559,17 @@ async function woodsBatch() {
     log(`Market Stall ${level} (${plan.mode}): coins tapped down and back, too much, hint coins, ${plan.mode === 'ways' ? 'a second way, ' : ''}saved score and sticker passed`);
   }
 
-  if (!only || only === 'grow') for (let level = fromLevel; level <= 7; level++) {
+  if (!only || only === 'grow') for (let level = fromLevel; level <= 8; level++) {
     await launch('garden-grow', level);
     const plan = await page.evaluate(() => ({ mode: neo.scene.game.plan.mode, requests: neo.scene.game.requests.length }));
     const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); };
     const bed = async (i) => { await tap(`neo.scene.game.beds[${i}].node`); await settle(); };
     const packet = async (color) => { await tap(`neo.scene.game.packets.find((p) => p.color === '${color}').node`); await settle(); };
     const cloud = async () => { await tap('neo.scene.game.cloud'); await page.waitForTimeout(650); await settle(); };
-    if (plan.mode === 'plant') for (let i = 0; i < 6; i++) await bed(i);
+    if (plan.mode === 'big') {
+      // Every touch moves the flower on one stage: five per flower, and one more to put each of the first two in the vase.
+      for (let n = 0; n < 15; n++) { await tap('neo.scene.game.tapLayer'); await page.waitForTimeout(150); if (n === 3) await screenshot('garden-grow-8'); }
+    } else if (plan.mode === 'plant') for (let i = 0; i < 6; i++) await bed(i);
     else if (plan.mode === 'water') {
       for (let i = 0; i < 3; i++) await bed(i);
       await cloud();
@@ -8604,7 +8607,7 @@ async function woodsBatch() {
       await cloud();
     }
     await finished('garden-grow');
-    assert.deepEqual(await score('garden-grow'), plan.mode === 'plant' || plan.mode === 'water' ? [0, 0] : [2, 1]);
+    assert.deepEqual(await score('garden-grow'), ['plant', 'water', 'big'].includes(plan.mode) ? [0, 0] : [2, 1]);
     log(`Garden Grow ${level} (${plan.mode}): soil, seed packets, taking seeds back, rain, misses and glowing hints, saved score and sticker passed`);
   }
 

@@ -1239,8 +1239,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'Plant the number of seeds of each color asked for, like "2 red and 3 yellow", then tap the cloud; tap a seed to take it out.' },
       { from: 6, to: 6, text: 'Look at the flowers on the sign. Plant one more of that color than the sign shows, then tap the cloud; tap a seed to take it out.' },
       { from: 7, to: 7, text: 'Plant the flowers shown in two rows of three, then tap the cloud; tap a seed to take it out.' },
+      { from: 8, to: 8, text: 'Touch anywhere on the garden: each touch grows the flower one step, from seed to sprout, leaves, bud and bloom. Touch again to put it in the vase.' },
     ],
-    finish: 'The round ends when the garden has grown as asked.',
+    finish: [
+      { to: 7, text: 'The round ends when the garden has grown as asked.' },
+      { from: 8, to: 8, text: 'The round ends when three flowers are in the vase.' },
+    ],
   },
   'clock-tower': {
     goal: 'Set, read and change times on a clock.',
