@@ -50,3 +50,27 @@
 - Ran: typecheck; `npx vitest run src/games src/content` (158 files, 1920 tests, including 29 new logic tests: toy table, possible set, rounds over 500 seeds, check / not-yet / miss, bot, layout at four views); `npm run build`.
 - Browser: `BROWSER_SUITE=sensedetective` (level 1, then level 2 in portrait) passed; `fingerdemo FINGER_ONLY=sense-detective` levels 1 and 2 clean (6.3 s, 8.1 s); one portrait screenshot.
 - Not run: real device, device speech, a child reading the badges ([open](../DEVICE-CHECKS.md)); the full browser suites.
+
+## 2026-10-23 — Sand Table levels 1–3 (new game, E2)
+
+- Branch `claude/sand-table-1-3`: dry sand pour, scoop and flag; registered as the 12th Rainbow Meadow game (Bubble Beach and Treehouse failed their `src/app/scenes/*.test.ts` decor counts), lap 1, toddler 1–2, preschool 2–3, pre-K 3.
+- Ran: typecheck; `npx vitest run src/games/sand-table` (30 tests); full `npm test`; `npm run build`.
+- Browser: `BROWSER_SUITE=sandtable` (level 1 pour, scoop, flag; level 3 in portrait with spill to pail and back, empty-bucket pour, requested hint, Show; saved score 0/0) passed at `http://localhost:5487`; one portrait screenshot reviewed; `fingerdemo FINGER_ONLY=sand-table` levels 1, 2, 3 passed (10–15 s each).
+- Known failure, not from this change: `src/app/scenes/lab.test.ts` (Tinker Lab decor `bench` count 0 at pre-K, n=12) fails since Sense Detective joined that land; open, needs a decor fix.
+- Not run: iPad or device checks, a child with the tray, real-sand comparison ([open](../DEVICE-CHECKS.md)); the offline production check (no persistence change).
+
+## 2026-10-23 — Adventure Walk levels 1–3 (new game, AW2)
+
+- Branch `claude/adventure-walk-1-3` (PR #867): choose or follow the way past three landmarks; registered as the 11th Barnyard game (Rainbow Meadow and Story Grove failed their `src/app/scenes/*.test.ts` decor counts), toddler 1, preschool 1–2, pre-K 2–3, school 3.
+- Ran: typecheck (clean); vitest on game, registry, content and scenes (adventure-walk logic tests over 500 seeds); `npm run build`.
+- Browser: `BROWSER_SUITE=adventurewalk` (level 1 free choices; level 3 in portrait with a wrong way, badge replay, requested hint, calls, saved score 1/1) passed; `fingerdemo FINGER_ONLY=adventure-walk` levels 1 and 3 passed (9.9 s, 11.4 s); one portrait screenshot reviewed.
+- Known failure, not from this change: `src/app/scenes/lab.test.ts` (Tinker Lab decor, pre-K landscape n=12) fails on `origin/main` before this game was added.
+- Not run: iPad or device speech (are "across" and "around" distinct), a toddler reading two dotted paths ([open](../DEVICE-CHECKS.md)); the offline production check.
+
+## 2026-10-23 — Sorting Machine definition (H1, docs only)
+
+- [PR #871](https://github.com/rjdunlap/neo/pull/871), `claude/define-sorting-machine`: [definition](../definitions/sorting-machine.md), READY (define line replaced by the H2 build line), backlog, notebook, study.
+- Defined: Boolean model with an `incomplete` state, levels 1–3 with frozen briefs, free Send versus counted Check, help and supported finish, level 1 adaptation default, rule tests, bot, card, voice, registration.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser or device checks (docs only).
+- Open: CS-educator read, decisions 1–5 in the definition.

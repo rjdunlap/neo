@@ -10,7 +10,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--seesaw-balance-batch
 
 Branch `claude/sand-table-1-3` (PR #866): the [definition](../definitions/sand-table.md)'s dry toy built exactly as defined as `sand-table` (`src/games/sand-table/`: `logic.ts` with 30 rule tests, `art.ts`, `index.ts`; region `tinker-lab`; lap 1, toddler 1–2, preschool 2–3, pre-K 3). Tap the tray to pour, tap a scoop paddle to lift sand back to the bucket, plant the flag; level 2 adds a bay, level 3 three bays, a pail for spills and a pictured invitation ending in Show. Every round counts 0 misses and 0 hints. Show a hint is the pause sheet's `askForHint` (a real action that counts nothing) and Start again is `restart()`. Home land is **Rainbow Meadow**, not the definition's Bubble Beach default or Treehouse fallback: adding the game to those two failed their `src/app/scenes/*.test.ts` decor counts, while Barnyard and Rainbow Meadow passed.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--sand-table-levels-13-new-game-e2).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--sand-table-levels-13-new-game-e2).
 
 ### Sense Detective levels 1–2 (B2, 2026-10-23)
 
@@ -1755,7 +1755,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--pet-kitchen-
 
 [PR #867](https://github.com/rjdunlap/neo/pull/867), branch `claude/adventure-walk-1-3`: the [definition](../definitions/adventure-walk.md) built as `adventure-walk` (`src/games/adventure-walk/`; region `story-grove`; toddler 1, preschool 1–2, pre-K 2–3, school 3). The companion walks past three landmarks to a friend's picnic; she taps one of two glowing ways at each, then follows the friend's call, then two calls at once with a replay badge. Deviations from the definition: home land **Barnyard** (Rainbow Meadow's and Story Grove's scene decor tests fail at 13 games; Barnyard 10 to 11 passes); no cross-round landmark bag, a seeded shuffle of three per round with all five landmarks appearing across seeds (tested over 500 seeds); friends are duck, cow and pig (critter drawings; the frog is not a critter); way phrases go as `{way}`/`{text}` variables to `walk.call.one/two`, `walk.went` and `walk.other` instead of ten `walk.way.*`/`walk.went.*` lines; every wrong tap counts a miss (two at one stop light the asked way, one hint per stop); card pictures are code-drawn.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--adventure-walk-levels-13-new-game-aw2).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--adventure-walk-levels-13-new-game-aw2).
 
 ## Ready for Adventure levels 1–3 (RA2, 2026-10-23)
 

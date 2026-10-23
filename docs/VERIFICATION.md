@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-23 — R23 Rainbow Meadow source art
+
+- [PR #891](https://github.com/rjdunlap/neo/pull/891), `codex/art-r23`: five built-in imagegen calls, chosen untouched `land-meadow-5.png`, no missing source.
+- Tested `d30d7fff` plus art/docs diff; 1536 × 1024 RGB, 1,670,501 bytes; source/repository hash equality passed.
+- Reviewed full size, 120 px and static 1024 × 768 / 768 × 1024 cover previews with illustrative 100 px circles; about 38% horizon, clear ground; peripheral clipping caveats in [exact prompts/proof](rework/concepts/generated/R23-PROMPTS.md).
+- Ran links and diff checks; required PR CI tracked in #891. No source cleanup or import/preparation.
+- Not run: local typecheck/tests/build/browser/offline (source art/docs only), actual in-game layout, device/child judgement; integration remains separate.
+
 ## 2026-10-23 — Critter Sort levels 12–13: Same Kind, Different Sprouts (G4)
 
 - [PR #865](https://github.com/rjdunlap/neo/pull/865), `claude/critter-sort-sprouts`: little plants sorted by a stated big plant's leaf shape and petal marks, one hoop (12) then overlapping hoops with a leaf mat (13); pre-K and school.
@@ -104,37 +112,13 @@
 - Not run: typecheck, units, build, browser or device checks (docs only).
 - Open: science-educator read, decisions 1–7 in the definition.
 
-## 2026-10-23 — Sorting Machine definition (H1, docs only)
-
-- [PR #871](https://github.com/rjdunlap/neo/pull/871), `claude/define-sorting-machine`: [definition](definitions/sorting-machine.md), READY (define line replaced by the H2 build line), backlog, notebook, study.
-- Defined: Boolean model with an `incomplete` state, levels 1–3 with frozen briefs, free Send versus counted Check, help and supported finish, level 1 adaptation default, rule tests, bot, card, voice, registration.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, units, build, browser or device checks (docs only).
-- Open: CS-educator read, decisions 1–5 in the definition.
-
-## 2026-10-23 — Adventure Walk levels 1–3 (new game, AW2)
-
-- Branch `claude/adventure-walk-1-3` (PR #867): choose or follow the way past three landmarks; registered as the 11th Barnyard game (Rainbow Meadow and Story Grove failed their `src/app/scenes/*.test.ts` decor counts), toddler 1, preschool 1–2, pre-K 2–3, school 3.
-- Ran: typecheck (clean); vitest on game, registry, content and scenes (adventure-walk logic tests over 500 seeds); `npm run build`.
-- Browser: `BROWSER_SUITE=adventurewalk` (level 1 free choices; level 3 in portrait with a wrong way, badge replay, requested hint, calls, saved score 1/1) passed; `fingerdemo FINGER_ONLY=adventure-walk` levels 1 and 3 passed (9.9 s, 11.4 s); one portrait screenshot reviewed.
-- Known failure, not from this change: `src/app/scenes/lab.test.ts` (Tinker Lab decor, pre-K landscape n=12) fails on `origin/main` before this game was added.
-- Not run: iPad or device speech (are "across" and "around" distinct), a toddler reading two dotted paths ([open](DEVICE-CHECKS.md)); the offline production check.
-
-## 2026-10-23 — Sand Table levels 1–3 (new game, E2)
-
-- Branch `claude/sand-table-1-3`: dry sand pour, scoop and flag; registered as the 12th Rainbow Meadow game (Bubble Beach and Treehouse failed their `src/app/scenes/*.test.ts` decor counts), lap 1, toddler 1–2, preschool 2–3, pre-K 3.
-- Ran: typecheck; `npx vitest run src/games/sand-table` (30 tests); full `npm test`; `npm run build`.
-- Browser: `BROWSER_SUITE=sandtable` (level 1 pour, scoop, flag; level 3 in portrait with spill to pail and back, empty-bucket pour, requested hint, Show; saved score 0/0) passed at `http://localhost:5487`; one portrait screenshot reviewed; `fingerdemo FINGER_ONLY=sand-table` levels 1, 2, 3 passed (10–15 s each).
-- Known failure, not from this change: `src/app/scenes/lab.test.ts` (Tinker Lab decor `bench` count 0 at pre-K, n=12) fails since Sense Detective joined that land; open, needs a decor fix.
-- Not run: iPad or device checks, a child with the tray, real-sand comparison ([open](DEVICE-CHECKS.md)); the offline production check (no persistence change).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Generated source art | 2026-10-23: R22 full-size/120 px review, dimensions, source hashes, links/diff | [R22](#2026-10-23--r22-duck-pilot-source-art) | Source-only; padding/background keying, preparation and device judgement open |
+| Generated source art | 2026-10-23: R23 full-size/120 px/static landscape/portrait review, dimensions/hash, links/diff | [R23](#2026-10-23--r23-rainbow-meadow-source-art) | Source only; peripheral clipping recorded; actual game integration/device judgement open |
 | Planning docs / study dispatch | 2026-10-21: batch task coverage, Next ten composition, links and diff checks | [Same-game batches](archive/VERIFICATION-2026-10-21.md#2026-10-21--same-game-level-batches) | Docs only; cache savings unmeasured; no gameplay/device proof |
 | `ribbon`, `fingerdemo` (`ribbon-workshop`), `smoke` | 2026-10-22: level 1 empty Check free, two wrong Checks (glow, 1 hint), both gifts; level 3 portrait with the too-long two-halves ribbon (1 miss), return, scissors, snip; ghost finger clean at levels 1 and 3 (3.6 s, 6.1 s); typecheck, 2444 unit tests and build | Chrome automation only; iPad touch, device speech and a child's response open |
 | `lookitup`, `fingerdemo` (`look-it-up`) | 2026-10-22: level 1 labels all touched ([0,0]); level 3 portrait with two wrong pictures then the glow hint ([2,1]), sticker; ghost finger clean at levels 1 and 3 (17.0 s, 23.4 s); typecheck, 2538 unit tests, build; lands test passes with Barnyard at ten | [Look It Up](archive/VERIFICATION-2026-10-22.md#2026-10-22--look-it-up-levels-13-informational-reading-ir1-new-game) | First rounds seeded-random; baby art is scaled parent critter; level 2 demo does not tap another tab first; device speech and child understanding open |
