@@ -156,7 +156,7 @@ Each definition is one docs-only session; build packets are separate sessions af
 
 | Order | Complete slice and exit | Check tier when undertaken |
 | --- | --- | --- |
-| P1 **Define Cue Studio 1–3** | Freeze identity, exact actions/traces, append/select/undo input, all alternatives, Check/help/assisted finish, adaptation, band/land fit, speech/demo and both layouts | Docs: links/anchors and diff only |
+| P1 **Define Cue Studio 1–3** — claimed `codex/define-cue-studio`, worker `01a1664d-d24f-7b92-b6de-d9039e09f58a` | Freeze identity, exact actions/traces, append/select/undo input, all alternatives, Check/help/assisted finish, adaptation, band/land fit, speech/demo and both layouts | Docs: links/anchors and diff only |
 | P2 **Build Cue Studio 1–2** | One-command and two-command free performances, editable replay and deliberate supported Finish; complete shell integration, not an interpreter-only stub | New game: typecheck, units, one filtered first/top play with help/inert-action coverage and portrait; shared registration files imply build |
 | P3 **Build Cue Studio 3** | Pictured requested trace, free first watch, local repair, deliberate Check and truthful graduated help; bot demonstrates repair | New interaction tier: typecheck, units, filtered first/top affected play including wrong Check/help and portrait; build only if shared files/assets change |
 | P4 **Define event/repeat/message 4–6** | Freeze event dispatch, bounded loops, sender/receiver trace and all interruption cases, then build one complete rung per session | Definition docs only; builds use new-interaction tier, or new-level tier where the input is unchanged, plus top-level ghost finger |
