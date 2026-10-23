@@ -101,10 +101,12 @@ describe('game registry', () => {
     const g = gameById('weather-wardrobe')!;
     const lap = g.levels('lap'), toddler = g.levels('toddler');
     expect(levelsInOrder(lap)).toEqual([1, 8, 2]);
-    expect(g.entryLevels).toEqual([8]);
+    expect(g.entryLevels).toEqual([8, 9]);
     expect(stepLevel(1, 1, lap)).toBe(8);
     expect(stepLevel(8, 1, lap)).toBe(2);
-    expect(toddler).toEqual({ min: 2, max: 4 });
+    expect(levelsInOrder(toddler)).toEqual([2, 9, 3, 4]);
+    expect(levelsInOrder(g.levels('preschool'))).toEqual([3, 9, 4, 5]);
+    expect(g.entryLevels).toContain(9);
     expect(landing(8, toddler, g.entryLevels)).toBe(2);
     for (const l of [1, 8, 2]) expect(nextLevel(l, [], lap)).toBe(l);
   });

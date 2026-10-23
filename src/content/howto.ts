@@ -749,15 +749,18 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 5, text: 'Tap every thing that suits the weather.' },
       { from: 6, to: 6, text: 'Tap the clothes that suit each kind of weather, to pack for the trip.' },
       { from: 7, to: 7, text: 'Tap each worn item that does not suit the new weather to take it off, then tap clothes for the new weather.' },
+      { from: 9, to: 9, text: 'Look at what the pet is wearing, then tap the sky it is dressed for.' },
     ],
     finish: [
-      { to: 6, text: 'The round ends when the pet is dressed for the weather (or the trip).' },
+      { to: 6, text: 'The round ends when the pet is dressed for the weather (or the trip, which then plays out weather by weather).' },
       { from: 8, to: 8, text: 'Each of three weathers ends when the fitting thing is on the pet.' },
       { from: 7, to: 7, text: 'The round ends when the pet has changed clothes for each new weather.' },
+      { from: 9, to: 9, text: 'Each of three rounds ends when the right sky is picked.' },
     ],
     note: [
       { from: 2, to: 7, text: 'A wrong choice goes on the pet for a moment to show what the weather does, is told which weather it is for, and the glowing one helps.' },
       { from: 8, to: 8, text: 'There are no wrong answers here: everything can be tried on.' },
+      { from: 9, to: 9, text: 'A wrong sky plays over the pet for a moment to show what that weather does, then clears; after two wrong skies the right card glows.' },
     ],
   },
   'sink-float': {
