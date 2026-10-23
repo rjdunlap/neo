@@ -16,8 +16,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { ease } from '../../engine/tween';
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
+  lap: { min: 1, max: 8, order: [8, 1] },
+  toddler: { min: 1, max: 8, order: [8, 1, 2] },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
 };
@@ -72,7 +72,7 @@ class Bud extends Container {
   draw() {
     const g = this.art.clear();
     const sw = swatch[this.color];
-    const r = BOARD.peg;
+    const r = this.spot.r ?? BOARD.peg;
     const numbered = typeof this.spot.kind === 'number';
     if (!this.bloomed) {
       // A closed bud: the special ones already show their color.
@@ -168,7 +168,7 @@ class PegGarden implements Game {
     const spots = makeBoard(this.plan, ctx.rng, this.theme.shape);
     this.targets = targets(this.plan, ctx.rng);
     this.buds = spots.map((s) => new Bud(s, ctx.rng));
-    this.world = { pegs: spots.map((s) => ({ x: s.x, y: s.y, r: BOARD.peg })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 };
+    this.world = { pegs: spots.map((s) => ({ x: s.x, y: s.y, r: s.r ?? BOARD.peg })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 };
     this.pearl.circle(0, 0, BOARD.ball).fill(0xfffaf0).stroke({ width: 3, color: 0xd9cbb0 }).circle(-5, -5, 5).fill({ color: 0xffffff, alpha: 0.9 });
     this.pearl.visible = false;
     this.drawTray();
@@ -201,6 +201,8 @@ class PegGarden implements Game {
         return void this.ctx.instruct('peg.drop');
       case 'bloom':
         return void this.ctx.instruct('peg.bloom');
+      case 'big':
+        return void this.ctx.instruct('peg.big');
       case 'color':
         return void this.ctx.instruct('peg.color');
       case 'number':
@@ -440,6 +442,7 @@ class PegGarden implements Game {
         return;
       }
       case 'bloom':
+      case 'big':
         if (this.buds.every((b) => b.bloomed)) return void this.finale();
         this.stalled = this.freshThisShot > 0 ? 0 : this.stalled + 1;
         return;
@@ -651,6 +654,7 @@ export const pegGarden: GameModule = {
   offScreen: 'Roll a marble down a tilted tray with toy blocks as bumpers.',
   hubIcon: () => new PegIcon(),
   touchDemo: true,
+  entryLevels: [8],
   sticker,
   create: (ctx) => new PegGarden(ctx),
 };

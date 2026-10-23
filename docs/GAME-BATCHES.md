@@ -196,6 +196,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### peg-garden 2: Big buds
 
+Built 2026-10-23; [closeout](archive/COMPLETED-2026-10-09.md#peg-garden-level-8-big-buds-slice-4-2026-10-23). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`peg-garden`, level 8 Big buds** (new lap entry): four huge buds, every touch blooms one; lap order 8, 1, toddler 8, 1, 2, `entryLevels: [8]`; plans keyed by ID. [Slice 4](deep-dives/peg-garden.md#younger-band-openings)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.

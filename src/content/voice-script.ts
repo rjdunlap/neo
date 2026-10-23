@@ -1855,6 +1855,7 @@ export const SCRIPT = {
   'salon.tool.curl': ['Curly!'],
   'peg.drop': ['Tap the top to drop a pearl!'],
   'peg.bloom': ['Drop pearls and make all the flowers bloom!'],
+  'peg.big': ['Drop a pearl on the big flowers and watch them bloom!'],
   'peg.color': ['Find the orange flowers! Make them bloom.'],
   'peg.number': ['Drag to aim, then let go. Hit {n}!'],
   'peg.order': ['Hit 1, then 2, then 3! Drag to aim, then let go.'],
