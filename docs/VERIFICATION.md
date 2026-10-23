@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-23 — Sorting Machine definition (H1, docs only)
+
+- [PR #871](https://github.com/rjdunlap/neo/pull/871), `claude/define-sorting-machine`: [definition](definitions/sorting-machine.md), READY (define line replaced by the H2 build line), backlog, notebook, study.
+- Defined: Boolean model with an `incomplete` state, levels 1–3 with frozen briefs, free Send versus counted Check, help and supported finish, level 1 adaptation default, rule tests, bot, card, voice, registration.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser or device checks (docs only).
+- Open: CS-educator read, decisions 1–5 in the definition.
+
 ## 2026-10-23 — Adventure Walk levels 1–3 (new game, AW2)
 
 - Branch `claude/adventure-walk-1-3` (PR #867): choose or follow the way past three landmarks; registered as the 11th Barnyard game (Rainbow Meadow and Story Grove failed their `src/app/scenes/*.test.ts` decor counts), toddler 1, preschool 1–2, pre-K 2–3, school 3.
