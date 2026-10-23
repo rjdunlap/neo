@@ -7,6 +7,14 @@
 - Ran: `node scripts/check-links.mjs`, `git diff --check`. Docs only; no code checks.
 - Not checked: each source edit was written by a subagent from its row and read back only by link check and spot checks, not line by line.
 
+## 2026-10-23 — R22 duck pilot source art
+
+- [PR #888](https://github.com/rjdunlap/neo/pull/888), `codex/art-r22`: only duck base and portrait; five built-in imagegen calls, two chosen untouched originals, no missing files.
+- Tested base `773ba231` plus images/docs diff; dimensions and source SHA-256 equality passed; 2,432,234 bytes total.
+- Reviewed full size and at 120 px on white and a temporary sky-blue composite; closed outline, crest, feet, eye treatment and source identity checked.
+- Exact prompts, candidate rejection and padding/near-white background caveats in [R22 proof](rework/concepts/generated/R22-PROMPTS.md). Links and diff checks passed.
+- Not run: local typecheck/tests/build/browser/offline (source art/docs only); preparation, rigging, integration, device acceptance and child judgement remain separate. Required PR CI tracked in #888.
+
 ## 2026-10-23 — RW14 polish packet, ChatGPT art batch and the art inbox script
 
 - [PR #885](https://github.com/rjdunlap/neo/pull/885), `claude/polish-nav-art-backlog`: [POLISH.md](rework/POLISH.md) (audit and ten slices), [ChatGPT batch](rework/art-requests/CHATGPT-BATCH.md), [IMPORT.md](rework/art-requests/IMPORT.md), and `scripts/art/import-inbox.mjs` with its rules in `inbox-core.mjs`; no `src/` change.
@@ -106,19 +114,13 @@
 - Known failure, not from this change: `src/app/scenes/lab.test.ts` (Tinker Lab decor `bench` count 0 at pre-K, n=12) fails since Sense Detective joined that land; open, needs a decor fix.
 - Not run: iPad or device checks, a child with the tray, real-sand comparison ([open](DEVICE-CHECKS.md)); the offline production check (no persistence change).
 
-## 2026-10-23 — Sense Detective levels 1–2 (new game, B2)
-
-- [PR #861](https://github.com/rjdunlap/neo/pull/861), `claude/sense-detective-build`: Look or Listen to find the parcel's toy; registered as the 13th Tinker Lab game, pre-K levels 1–2 and school level 2.
-- Ran: typecheck; `npx vitest run src/games src/content` (158 files, 1920 tests, including 29 new logic tests: toy table, possible set, rounds over 500 seeds, check / not-yet / miss, bot, layout at four views); `npm run build`.
-- Browser: `BROWSER_SUITE=sensedetective` (level 1, then level 2 in portrait) passed; `fingerdemo FINGER_ONLY=sense-detective` levels 1 and 2 clean (6.3 s, 8.1 s); one portrait screenshot.
-- Not run: real device, device speech, a child reading the badges ([open](DEVICE-CHECKS.md)); the full browser suites.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Generated source art | 2026-10-23: R22 full-size/120 px review, dimensions, source hashes, links/diff | [R22](#2026-10-23--r22-duck-pilot-source-art) | Source-only; padding/background keying, preparation and device judgement open |
 | Planning docs / study dispatch | 2026-10-21: batch task coverage, Next ten composition, links and diff checks | [Same-game batches](archive/VERIFICATION-2026-10-21.md#2026-10-21--same-game-level-batches) | Docs only; cache savings unmeasured; no gameplay/device proof |
 | `ribbon`, `fingerdemo` (`ribbon-workshop`), `smoke` | 2026-10-22: level 1 empty Check free, two wrong Checks (glow, 1 hint), both gifts; level 3 portrait with the too-long two-halves ribbon (1 miss), return, scissors, snip; ghost finger clean at levels 1 and 3 (3.6 s, 6.1 s); typecheck, 2444 unit tests and build | Chrome automation only; iPad touch, device speech and a child's response open |
 | `lookitup`, `fingerdemo` (`look-it-up`) | 2026-10-22: level 1 labels all touched ([0,0]); level 3 portrait with two wrong pictures then the glow hint ([2,1]), sticker; ghost finger clean at levels 1 and 3 (17.0 s, 23.4 s); typecheck, 2538 unit tests, build; lands test passes with Barnyard at ten | [Look It Up](archive/VERIFICATION-2026-10-22.md#2026-10-22--look-it-up-levels-13-informational-reading-ir1-new-game) | First rounds seeded-random; baby art is scaled parent critter; level 2 demo does not tap another tab first; device speech and child understanding open |

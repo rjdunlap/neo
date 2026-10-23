@@ -46,6 +46,8 @@ Uses: [slice 4](../POLISH.md#slice-4-the-illustrated-rainbow-meadow-and-postcard
 
 ### 2. The duck (R22): `duck-base.png`
 
+**Already delivered** by the image routine on 2026-10-23 ([PR #888](https://github.com/rjdunlap/neo/pull/888)); skip this and the portrait unless a coding session asks for a re-roll.
+
 **Attach:** [`concepts/art-directions-2026-10-16.png`](../concepts/art-directions-2026-10-16.png) and [`concepts/generated/sprout-base-2.png`](../concepts/generated/sprout-base-2.png) (as the cast's outline and shading reference, not to copy). **Paste:** the creature style block, then:
 
 ```text
