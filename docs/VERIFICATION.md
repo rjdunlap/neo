@@ -3,9 +3,8 @@
 ## 2026-10-23 — Ready for Adventure levels 1–3 (new game, RA2)
 
 - Branch `claude/ready-for-adventure` ([PR #868](https://github.com/rjdunlap/neo/pull/868)): get parade props ready, pack them, watch the parade; registered as the 12th Barnyard game (Cozy Village at 12 failed `village.test.ts` decor, Music Mountain failed `mountain.test.ts` at 7), region cozy-village, toddler 1, preschool 1–2, pre-K 2–3.
-- Ran: typecheck (clean); full `npm test` (all pass except `src/app/scenes/lab.test.ts` "prek landscape n=12"); `npm run build`.
+- Ran: typecheck (clean); full `npm test` on the tree merged with `origin/main` at 68cc9b0d (all pass; one load-timing `block-garden` search-cap case failed once and passed alone; the earlier `lab.test.ts` failure was fixed on main by #877); `npm run build`.
 - Browser: `BROWSER_SUITE=readyadventure` (level 1 pack; level 3 in portrait with an early pack miss, requested hint and its assisted tap, drags, the parade, saved score 1/1) passed at port 5611; `fingerdemo FINGER_ONLY=ready-for-adventure` level 1 finished in 10.3 s and level 3 in 16.8 s, clean.
-- Known failure, pre-existing and open: the `lab.test.ts` Tinker Lab decor case fails independently of this change (see the Sand Table entry).
 - Not run: iPad or device speech, a toddler choosing drag or tap ([open](DEVICE-CHECKS.md)); `world` and the offline production check.
 
 ## 2026-10-23 — Mail Carrier 14: Three letters, your way
