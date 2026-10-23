@@ -158,6 +158,8 @@ M. Ten levels, four bands, a graph model, piece textures, two layouts (the map m
 7. **The story's home.** The Mixed-Up Invitations as a story blanket on the map like the picnics, or as Storybook Square's first errand. Lean: define it only after Relay Woods 1–7 exist.
 8. **Received pictures at home.** Whether a picture that arrives in the story or a round becomes a kept item at her creature home (RW05's collection rules), with the usual no-obligation rule.
 
+**Decided 2026-10-23 (on the developer's delegation):** every lean: Relay Woods is a new game in Cozy Village beside Mail Carrier if `landLayout` passes, else Story Grove; toddler level 1 counts no misses and the glow after two unjoined taps counts one hint; levels 8–9 (a readable postcard, a lock) are below the safety line, and no pretend-friend or contact scenario is drafted for now; Relay Cases is `grownup` only; *Our Family Message Rules* ships after the building session's source check against the AAP sources, and the AAP Family Media Plan is linked from the grown-ups' page; the Mixed-Up Invitations is defined only after Relay Woods 1–7 exist; an arrived picture becomes a kept item at her creature home under RW05's rules.
+
 ## Build slices, in order
 
 1. **NC1, docs:** define Relay Woods 1–4 (the map generator's constraints, the five pictures, voice lines, both layouts, the how-to card by level, the ghost finger's BFS). Decisions 1, 2, 4.

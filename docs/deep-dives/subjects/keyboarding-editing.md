@@ -152,6 +152,8 @@ Descriptions only; nothing was played. "Opened" is stated; fetches return summar
 
 **Decided 2026-10-23 (on the developer's delegation):** Decision 4: a new school-band game `pond-typing` (levels 1–6, `inputs: ['controller']`). Story Grove allocation: Word Glue, Story Weaver and Pond Typing each try Story Grove first; the CI lands test (`landLayout` at every band in all four views) decides at merge; a game that does not fit goes to Treehouse; a built game is never moved to make room. Decision 5: for the word and line pools, the building session checks it against reputable sources (museums, universities, government science agencies, established curricula), lists them here and records the check in its VERIFICATION entry; no outside reviewer is needed; posture and finger-placement text stays undrafted.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand for decisions 1–3: no on-screen QWERTY or full alphabet, no system keyboard, DOM text input or stored typed text in a child's game; physical-key aliases later, small and never required; Pond Typing for children has no drift, timer or words-per-minute (accuracy only), the drifting mode is for grown-ups; *Mend the sign* lives in Read & Do.
+
 1. **Surfaces.** Lean: no on-screen QWERTY or full alphabet, no system keyboard and no DOM text input in a child's game, and no typed text stored. Alternative: prototype an alphabetical board in portrait only (it fits upright by the arithmetic above).
 2. **Physical-key aliases (KE5).** Lean: yes later, small, never required.
 3. **Pond Typing for children.** Lean: no drift, no timer, accuracy only; a drifting, words-per-minute mode and a boss list only for grown-ups. IDEAS already lists them for the couch.

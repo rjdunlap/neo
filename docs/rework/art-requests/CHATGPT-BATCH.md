@@ -32,7 +32,7 @@ Format: exactly one creature and nothing else, on a perfectly flat plain white b
 
 ## Batch 1: generate these first
 
-Three images, two to three candidates each. They are the pilot pair the [catalog-wide art row](../../WAITING-ON-DEVELOPER.md#decisions-that-block-work) asks to judge on the iPad: an illustrated location and an illustrated friend beside the untouched rest.
+Three images, two to three candidates each. They are the pilot pair the [catalog-wide art row](../../archive/DECISIONS-2026-10-23.md#decisions) asks to judge on the iPad: an illustrated location and an illustrated friend beside the untouched rest.
 
 ### 1. Rainbow Meadow backdrop (R23): `land-meadow.png`
 
@@ -64,7 +64,7 @@ Uses: [slice 6](../POLISH.md#slice-6-the-duck-pilot) (Duck Pond only).
 
 ## Batch 2: after the meadow is accepted
 
-Wait until the illustrated meadow has been seen on the iPad and kept, since R26 follows R23's acceptance. Then make ten backdrops in this order, each in its own chat with the same two attachments plus the accepted `land-meadow` file. Paste the backdrop block, then the line below. Only real plants and animals, no resident creatures. The file names are what the script expects.
+Make these once the illustrated meadow and duck are in the game (RW14 slices 4 and 6) and their screenshot review passes (decided 2026-10-23; an iPad look can still send a step back). Then make ten backdrops in this order, each in its own chat with the same two attachments plus the accepted `land-meadow` file. Paste the backdrop block, then the line below. Only real plants and animals, no resident creatures. The file names are what the script expects.
 
 | File | Paste after the backdrop block |
 | --- | --- |
@@ -83,4 +83,4 @@ Uses: [slice 10](../POLISH.md#slice-10-the-other-ten-backdrops), which needs no 
 
 ## Not in these batches
 
-Buttons, hub icons, stickers, game spots and UI frames stay code-drawn (the [recorded lean](../../WAITING-ON-DEVELOPER.md#decisions-that-block-work)); [slice 7](../POLISH.md#slice-7-buttons-and-cards-with-a-finish) improves them in code. Creature variants (R20, R21, a new R25 attempt) keep the queue's routine. No audio, ever.
+Buttons, hub icons, stickers, game spots and UI frames stay code-drawn (the [recorded lean](../../archive/DECISIONS-2026-10-23.md#decisions)); [slice 7](../POLISH.md#slice-7-buttons-and-cards-with-a-finish) improves them in code. Creature variants (R20, R21, a new R25 attempt) keep the queue's routine. No audio, ever.

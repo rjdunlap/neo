@@ -161,3 +161,5 @@ Each has a default. Decisions 1–3 are what the WAITING row asks the developer 
 5. **Arrow direction.** Default: food → eater (where food and energy go), said aloud every time an arrow is made at level 1. Alternative "eater → food" ("eats") is rejected: it is what children often assume, but it reverses the convention later science uses.
 6. **Help placement.** Default: hints only through the pause sheet's Show a hint, plus the free glow after two failed Checks. Alternative: a visible bulb button, if school players do not find the sheet.
 7. **Later levels.** Study levels 4–6 and Meadow Plans need their own packets (study slices F7–F8); level 5 also needs the exploration-accounting decision. Existing IDs are never renumbered.
+
+**Decided 2026-10-23 (on the developer's delegation):** the six records are approved as written, subject to the building session's source check against museum or university food-web sources recorded in F2's verification entry; a new game; Rainbow Meadow, else Barnyard; the other defaults stand, so F2 is a ready build.

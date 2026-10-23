@@ -228,6 +228,8 @@ None of these shows that a chosen mix helps learning. The study's [limits](../DI
 
 None gates the build. Each has a lean the build follows unless the developer says otherwise. They are recorded in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans the build shipped stand: the table only on a lap or toddler child's home spot; an edited lineup keeps the name Little surprises; a bound of five; a 0.6 s hold opens the table; a lineup lasts until the save object changes or the page reloads.
+
 1. **Who sees the table.** Lean: unchanged from D2a, so only on a lap or toddler child's own home spot, as a grown-up's co-play tool. The alternative opens the mix spot and the table at every child band, so an older child can make her own mix. That widens D2a's reviewed-pool gate and its eligibility tests, and RW08 moves the entry anyway, so it is a separate decision.
 2. **The name of an edited lineup.** Lean: it stays "Little surprises", and only the count leaves `mix.offer`. The alternative names an edited lineup "Our mix", with its own offer and ending lines.
 3. **The bound.** Lean: five, derived from the portrait stop card's row. The alternative of three keeps every row exactly as built and reduces editing to choosing and ordering three.

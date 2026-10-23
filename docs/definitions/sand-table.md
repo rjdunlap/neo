@@ -182,3 +182,5 @@ Each has a default the build uses; none blocks E2.
 4. **Show a hint.** Default: a real demonstration action that counts nothing. Alternative: count one hint, which would stop that round from being smooth.
 5. **Keeping a landscape.** Default: nothing kept, as the study says. Alternative: a creation snapshot in the treehouse, which needs a new `creations.ts` kind and belongs to a later slice.
 6. **Review.** None for E2, since there is no geology claim and the card names the toy rule. The sediment rungs (E3) need the study's geology/model reviewer before their transport table is frozen.
+
+**Decided 2026-10-23 (on the developer's delegation):** every default stands, with the home land as built (Rainbow Meadow); E3's transport table is frozen after the building session's source check (university or geological-survey sources) instead of a named reviewer.

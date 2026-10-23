@@ -113,6 +113,8 @@ The appended IDs 9–15 are placed by each band's `order` above: 10 after toddle
 
 Each has a default below; the build proceeds on it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: plumber, doctor, gardener, postkeeper, lifeguard and baker with no police or fire creature (fire safety is practical safety content, not drafted for now); level 10 after 2; the teen number with its ten-and-ones; six helper journal entries; the mirrored map at 6–8 and 13–15; *Make the key* school only; eight houses at 0.8 scale, falling back to three per side if the portrait screenshot shows targets under 100 units.
+
 1. **The helper cast at 9 and 10** (the [civics study's](subjects/community-civics.md#decisions-for-the-developer) decision 5). Default: plumber (wrench, a dripping tap), doctor (bandage roll, a bandaged teddy), gardener (watering can, a drooping flower), postkeeper (stamp, a letter with no stamp), lifeguard (ring buoy, a toy boat far out on the pond), baker (whisk, a birthday candle with no cake); no police; no fire creature. Alternative: a fire creature with a hose for a smoking toaster, after the `safety` row's reviewer exists.
 2. **Level 10's place.** Default: after 2 in toddler and preschool (`[1, 2, 10]`, `[2, 10, 3, 4]`), since three tool pictures are more to look at than three colours. Alternative: between 1 and 2 with two houses only.
 3. **The teen words at 12.** Default: the pet says the number and its ten-and-ones ("Thirteen! Ten and three."). Alternative: the number alone, leaving place value to a number game.

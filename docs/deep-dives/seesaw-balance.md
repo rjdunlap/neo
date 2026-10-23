@@ -114,6 +114,8 @@ The appended IDs 13–17 are placed by each band's `order` above: 13 before pres
 
 Each has a default below; the build proceeds on it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: `lap` with `order [12]` and toddler `[12, 1, 2]`; "too heavy" at level 3 stays a miss; the unit at 15 is the game's blocks; no lever distance in this game; no prediction journal entry at 17.
+
 1. **A lap band with level 12.** Default: `bands` gains `lap` with `order [12]`, and toddler gets `order [12, 1, 2]`. Alternative: no lap band; 12 is a toddler entry only.
 2. **"Too heavy" at level 3.** Default: unchanged, one block too many is a miss, since the glow then rings the excess and the pet says what to do. Alternative: the first over in a round is a free observation and the second counts, as tips are free on 8–11.
 3. **The unit at 15.** Default: the game's blocks, so the measurement matches 6. Alternative: apples, which the notebook's row names and the pet would count as "apples".

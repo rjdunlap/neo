@@ -151,6 +151,8 @@ These examples are proposals to be reviewed. They contain no small object, no fo
 6. **M surface?** None added; wait for the middle-band decision.
 7. **Printable cards?** Held until the reviewer.
 
+**Decided 2026-10-23 (on the developer's delegation):** decisions 1 and 3–5 take their leans (removal-only swaps need no reviewer; per band only where bands differ; page only; three lines); new bath, food, water or sun lines and printable cards are not drafted for now, so decision 2 has no reviewer to name yet.
+
 ## Build slices in order
 
 Each is one session; the first two do not wait on any decision. **Slices 1–3 are defined 2026-10-22 as one build batch** in [the definition](../../definitions/off-screen-lines.md) (merge waits on the developer's answer to the small-objects row).
