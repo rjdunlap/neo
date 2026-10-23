@@ -449,3 +449,10 @@
 - Ran (tree = branch HEAD): typecheck; `vitest` weather-wardrobe, registry and content (165 pass); `BROWSER_SUITE=fourth FOURTH_ONLY=weather` levels 1–6 and 8 (suite now waits out the misfit and covers 8); `BROWSER_SUITE=wardrobe7`; `fingerdemo` `FINGER_ONLY=weather-wardrobe FINGER_LEVELS=8,1` (6.4 s, 10.8 s); two 768x1024 misfit screenshots checked by eye.
 - Not run: `npm run build`, offline check, iPad/device, a child's reaction.
 - Open: whether misfits read as funny rather than unkind and how lap level 8 plays ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-22 — Rhythm Neighbors batch 1: Knock, knock, My turn your turn and the frogs' journal page (slices 2, 3, 8)
+
+- [PR #853](https://github.com/rjdunlap/neo/pull/853): lap entry level 7 (big tree, a croak answers each knock, eight knocks finish; lap order `[7, 1, 2]`), toddler level 8 (bird calls, one frog glows, one tap answers; `[2, 8, 3]`) and the journal entry `rhythm-neighbors:frogs-answer`.
+- Ran (tree = branch HEAD): typecheck; `npm test` (211 files, 2556 tests pass); `BROWSER_SUITE=creative CREATIVE_ONLY=rhythm FROM_LEVEL=3` on a Vite dev server at port 5611 (levels 3-8 pass; the suite now plays 7 and 8); `fingerdemo` `FINGER_ONLY=rhythm-neighbors FINGER_LEVELS=7,8,6` clean in 15.6 s, 12.9 s and 35.2 s; one portrait screenshot of level 7 (tree and frog clear of the pet).
+- Not run: `npm run build`, offline check, iPad/device, a child's reaction.
+- Open: whether a one-year-old waits for the answer at 7 and reads the glow at 8 ([device checks](../DEVICE-CHECKS.md)).

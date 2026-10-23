@@ -9951,6 +9951,44 @@ async function woodsBatch() {
     const trips = await page.evaluate(() => neo.scene.game.trips.length);
     // Tap a house's middle (the hit area is centered above its feet).
     const house = (i) => tap(`neo.scene.game.houses[${i}]`).then(() => page.waitForTimeout(250));
+    if (level === 15) {
+      await page.waitForFunction(() => !neo.scene.game.busy);
+      assert.equal(await page.evaluate(() => neo.scene.game.letters.children.length), 0, 'letters wait for a full key');
+      assert.ok(await page.evaluate(() => neo.scene.game.houses.every((h) => h.resident.visible)), 'neighbours visible at their doors');
+      await screenshot('mail-carrier-15-wet-key-portrait');
+      await house(0);
+      assert.deepEqual(await counts(), [0, 0], 'house before a row is free');
+      const rows = await page.evaluate(() => neo.scene.game.key.map((r) => r.house));
+      for (let k = 0; k < rows.length; k++) {
+        const h = rows[k];
+        await tap(`neo.scene.game.key[${k}].node`);
+        if (k === 0) {
+          await page.waitForTimeout(550);
+          await tap(`neo.scene.game.key[${k}].node`);
+          assert.deepEqual(await counts(), [0, 0], 'row replay is free');
+          await house((h + 1) % 5); await page.waitForTimeout(500); await house((h + 1) % 5);
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.ok(await page.evaluate((h) => neo.scene.game.houses[h].glow.visible, h));
+          assert.equal(await page.evaluate(() => neo.scene.game.key.filter((r) => r.filled).length), 0, 'wrong pairs never fill');
+        }
+        await house(h);
+        await page.waitForFunction(() => !neo.scene.game.busy);
+        assert.equal(await page.evaluate((k) => neo.scene.game.key[k].filled && neo.scene.game.key[k].who.visible && !neo.scene.game.key[k].wet.visible, k), true);
+      }
+      assert.equal(await page.evaluate(() => neo.scene.game.buildingKey), false);
+      assert.equal(trips, 2);
+      for (let n = 0; n < trips; n++) {
+        await idle(n);
+        await house(await page.evaluate(() => neo.scene.game.trip[0]));
+      }
+      await finished('mail-carrier');
+      assert.deepEqual(await score('mail-carrier'), [2, 1]);
+      assert.equal(await page.evaluate(() => kit.store.stats('mail-carrier').history.length), 1);
+      assert.equal(await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'mail-carrier').length), 1);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log('Mail Carrier 15: wet key portrait, free replays, wrong pairs/hint, five filled rows, two deliveries and one reward passed');
+      continue;
+    }
     if (level === 14) {
       for (let n = 0; n < trips; n++) {
         await idle(n);

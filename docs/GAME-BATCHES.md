@@ -136,6 +136,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### mail-carrier 4: Make the key
 
+Implemented 2026-10-23 in [PR #881](https://github.com/rjdunlap/neo/pull/881), publication pending; [build note](archive/COMPLETED-2026-10-09.md#mail-carrier-batch-4-make-the-key-2026-10-23). Scope retained for dependency references; no duplicate dispatch.
+
 - **`mail-carrier`, level 15 *Make the key*, slice 9** (new interaction tier: typecheck, rule tests, one play of 15, a portrait screenshot of the wet key, `fingerdemo` at 15): match each sign row to its house to fill Hazel's key, then deliver two letters; school `order [4, 5, 9, 12, 6, 13, 7, 8, 11, 14, 15]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
