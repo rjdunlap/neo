@@ -1259,9 +1259,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 6, to: 6, text: 'Look at the flowers on the sign. Plant one more of that color than the sign shows, then tap the cloud; tap a seed to take it out.' },
       { from: 7, to: 7, text: 'Plant the flowers shown in two rows of three, then tap the cloud; tap a seed to take it out.' },
       { from: 8, to: 8, text: 'Touch anywhere on the garden: each touch grows the flower one step, from seed to sprout, leaves, bud and bloom. Touch again to put it in the vase.' },
+      { from: 9, to: 9, text: 'Tap a seed packet to choose it, then tap beds to plant that color. Look at the sign: the top row and the bottom row each have their own color. Tap the cloud when the rows match; tap a seed to take it out.' },
+      { from: 10, to: 10, text: 'Tap a seed packet to choose it, then tap beds to plant that color. Look at the sign: each column has its own color, top and bottom the same. Tap the cloud when the columns match; tap a seed to take it out.' },
+      { from: 11, to: 11, text: 'The sign shows how many flowers go in each row. Plant that many in the top row and that many in the bottom row, in any beds, then tap the cloud; tap a seed to take it out.' },
     ],
     finish: [
       { to: 7, text: 'The round ends when the garden has grown as asked.' },
+      { from: 9, to: 11, text: 'The round ends when three gardens have grown as the signs ask.' },
       { from: 8, to: 8, text: 'The round ends when three flowers are in the vase.' },
     ],
   },

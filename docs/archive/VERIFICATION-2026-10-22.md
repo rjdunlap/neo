@@ -367,3 +367,10 @@
 - Ran: relative Markdown links/anchors (`node scripts/check-links.mjs`) and `git diff --check`.
 - Not run: local typecheck, units, build, browser, offline or device checks (docs only); layouts are specified, not visually verified.
 - Open: identity, bands/entry/accounting and land/capacity block P2; review and child/device evidence remain open. No P2 onward or Robot Path implementation; #733 preserved.
+
+## 2026-10-22 — Story Weaver 1–3 definition (writing-composition WC1, docs only)
+
+- [PR #835](https://github.com/rjdunlap/neo/pull/835), `claude/define-story-weaver`: tile and clause tables, `supports` rules, three rounds with owl question and *because* accounting, school 1–3 band proposal, layout specifications, voice ids, bot and rule tests; READY (define line removed, gated build queued), backlog, study and packet updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser, offline or device checks (docs only); layouts are specified, not visually verified.
+- Open: identity, land and band decisions, content review of tiles and owl lines, child comprehension of the owl.
