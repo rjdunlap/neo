@@ -347,7 +347,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | Matter | 2026-10-17 | [study](deep-dives/subjects/matter.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#matter-recommendations) |
 | Programming | 2026-10-14 | [study](deep-dives/subjects/programming.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#programming-recommendations); [Cue Studio P1 defined](definitions/cue-studio.md), P2 gated on identity/bands/accounting/land |
 | Music and instruments | 2026-10-14 | [study](deep-dives/subjects/music-instruments.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#music-and-instruments-recommendations) |
-| Energy and waves | 2026-10-14 | [study](deep-dives/subjects/energy-waves.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations) |
+| Energy and waves | 2026-10-14 | [study](deep-dives/subjects/energy-waves.md); E1 [Circuit Garden 1–3 definition](definitions/circuit-garden.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations); E2 decision-gated |
 | How computers work | 2026-10-15 | [study](deep-dives/subjects/how-computers-work.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#how-computers-work-recommendations) |
 | Robots and automation | 2026-10-17 | [study](deep-dives/subjects/robots-automation.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#robots-and-automation-recommendations) |
 | Time and change | 2026-10-15 | [study](deep-dives/subjects/time-change.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#time-and-change-recommendations) |

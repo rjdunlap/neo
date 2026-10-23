@@ -290,3 +290,24 @@
 - [PR #818](https://github.com/rjdunlap/neo/pull/818), `claude/sharp-cannon-xdrzdf`: defined Look It Up levels 1–3 ([definition](../definitions/look-it-up.md)) with real animal facts (the developer's choice, other decisions delegated); two research subagent passes opened at least two sources per fact; study, tracker, recommendations, backlog, READY, GAME-BATCHES and waiting-on-developer updated.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: device speech of the fact sentences, whether a three-year-old reads tabs as pages, tab legibility in portrait; Animal Snack's bunny carrot (misleading per the RSPCA) is a separate follow-up.
+
+## 2026-10-22 — Moon Window levels 1–3 definition (space slice 1, docs only)
+
+- [PR #820](https://github.com/rjdunlap/neo/pull/820), `claude/define-moon-window`: defined Moon Window levels 1–3 ([definition](../definitions/moon-window.md)); READY, backlog, space study, recommendations, tracker, ideas and the Waiting row updated.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only, nothing built). Open: the whole packet's check tier at build time, the developer's answers to the Waiting row, the astronomy-educator review for levels 4–7, and device checks of the dip/chime and card sizes.
+
+## 2026-10-22 — Shape Sorter batch 2: Turn it to fit (level 12, slice 6)
+
+- [PR #822](https://github.com/rjdunlap/neo/pull/822), `codex/shape-sorter-turn-fit`: 30° tap turns, symmetric fit ±15°, two orientation misses self-align with one hint, pre-K top12, scoped card/voice/bot. Base `d424c9f8` plus implementation diff; coordinator #821 integrated before proof.
+- Passed `npm run typecheck`, `npm test` (210 files, 2516 passed, four skipped), `npm run build`, links and diff check.
+- `http://localhost:5217/classic/`: `BROWSER_SUITE=originals ORIGINALS_ONLY=shapes SHAPE_LEVELS=12` passed in portrait: tap stays in place, second finger ignored, cancellation free, wrong hole twice/glow, two orientation misses/one self-align hint, tap at hole stays available, completion saved `[4,2]` and exactly one sticker; reload retained history, no page errors. Initial sandbox Chromium launch denied; approved escalation passed.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-sorter FINGER_LEVELS=12` finished clean in15.4s. Inspected `test-results/browser/shape-sorter-12-start-portrait.png`: four upright holes and floor pieces fit, pet clear.
+- Not run: world/offline/picnic/couch (no navigation, persistence or asset changes). iPad tap/drag feel, speech and child understanding remain open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-10-22 — Writing-composition study (subject research, docs only)
+
+- [PR #824](https://github.com/rjdunlap/neo/pull/824), `claude/roadmap-research-ideation-sk8axh`: [study](../deep-dives/subjects/writing-composition.md) (Story Weaver levels 1–3 recommended first, a new game); tracker, packet, roadmap table, backlog, READY (the define line replaces the research line and `keyboarding-editing` moves up), IDEAS, Waiting row and a Story Steps dive pointer updated.
+- Opened: CCSS W.K, W.1, W.3, W.5, W.7, the WWC practice guide page, Development Matters, Puranik and Lonigan 2011. Search summaries only: Puranik, Duncan and Guo 2024, Stein and Glenn, *Writing Next*, the story-dictation sources. Not opened: the statutory Writing ELG, Head Start ELOF, the WWC PDF.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.

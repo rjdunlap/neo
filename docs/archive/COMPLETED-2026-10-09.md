@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Circuit Garden 1–3 definition, energy-waves E1 (2026-10-22)
+
+[PR #846](https://github.com/rjdunlap/neo/pull/846), `codex/define-circuit-garden`: [definition](../definitions/circuit-garden.md) freezes terminal graphs, all base states/alternatives, one-gap connection, free switch comparison and two-gap Check repair; rendered observation/Done gates, idempotent help, Undo/restart/adaptation, proposed voice/how-to/demo and both layouts. Required future series/parallel topology semantics are specified without defining/building the older workshop. E2 remains decision-gated on registration/model scope, bands/accounting and land capacity; E3 and E4 onward stay separate. Links/diff only; no runtime/device/child proof or practical content. #733 preserved.
+
+
 ### Cue Studio 1–3 definition, programming P1 (2026-10-22)
 
 [PR #834](https://github.com/rjdunlap/neo/pull/834), `codex/define-cue-studio`: [definition](../definitions/cue-studio.md) fixes the proposed Wave/Turn traces, append/select/replace/Undo, all alternatives, free playback and explicit Check, idempotent help/repairs and deliberate finish. A conservative band/adaptation option and two layout specifications are ready for developer review; identity, ranges/accounting and land capacity stay open. P2's one levels1–2 batch is listed as gated, P3 depends on it; P2 onward/Robot Path and #733 untouched. Links/diff only; no implementation, device or understanding evidence.
