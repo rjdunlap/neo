@@ -405,3 +405,54 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, units, build, browser or device checks (docs only); nothing implemented.
 - Open: ELOF wording, primary humour papers, a reviewer for meaning tags and verses, decisions 1–7 in the study.
+
+## 2026-10-22 — Rhyme Riddles definition (PW1, docs only)
+
+- [PR #844](https://github.com/rjdunlap/neo/pull/844), `claude/define-rhyme-riddles`: [definition](../definitions/rhyme-riddles.md), READY (define line replaced by the build line), backlog, notebook, study.
+- Defined: tag table for the 29 pictures, riddle rules, levels 5–7, level-7 chip builder, accounting, voice lines, rule tests, bot. Found and fixed an inconsistency in the study's example (meaning clue alone left one picture).
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser or device checks (docs only). ELOF not opened.
+- Open: tag-table review, decisions (a)–(c) in the definition.
+
+## 2026-10-22 — Circuit Garden 1–3 definition (energy-waves E1, docs only)
+
+- [PR #846](https://github.com/rjdunlap/neo/pull/846), `codex/define-circuit-garden`: [definition](../definitions/circuit-garden.md), study/packet, READY/backlog/roadmap/notebook and decision links, archive closeout.
+- Defined finite terminal graphs/states, observation/Done/Check, free experiments and counted help, supported finish, adaptation, voice/how-to/demo, two layouts and future switch-topology invariants; source audit of current Tinker Lab list/layout contract.
+- Ran: Markdown links/anchors and `git diff --check` on current upstream plus E1 documentation diff.
+- Not run: local typecheck, units, build, browser, reference-app play, device or child checks (docs only); no implementation.
+- Open: registration/model scope, ranges/accounting and added land capacity, recommended educator review, practical-card named review, device speech/touch/understanding; E2 onward and #733 untouched.
+
+## 2026-10-22 — Stop and Go lap entry 9 Go car, stop car (slice 3)
+
+- [PR #847](https://github.com/rjdunlap/neo/pull/847), `claude/stop-and-go-go-car`: level 9 `lamps` (two 160-wide lamps, looping car, eight touches, no misses; lap order `[9, 1]`), how-to step, `go.lamps` voice line, bot alternating lamps.
+- Ran: typecheck; vitest `stop-and-go`, content, progress, registry and app (414 passed); `BROWSER_SUITE=woods WOODS_ONLY=go FROM_LEVEL=9` (new lamps case) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=stop-and-go FINGER_LEVELS=9` clean in 12.1 s; one landscape screenshot reviewed.
+- Not run: portrait screenshot, build, `world`, iPad or device, a child's reaction.
+- Open: portrait layout of the lamps and real touch on an iPad.
+
+## 2026-10-22 — Mail Carrier batch 1: Tool signs, helpers and numbers past ten (9, 10, 12)
+
+- [PR #850](https://github.com/rjdunlap/neo/pull/850), slices 3–5: level 10 tool signs (2–3 houses, seeded), level 9 helpers with problem pictures, tool pop-up and six journal entries, level 12 houses 10–20 with ten-and-ones speech; ladders per band updated, how-to steps added.
+- Ran: typecheck; full `npm test` (211 files, 2547 tests) including new logic and journal cases; build; `BROWSER_SUITE=batch BATCH_ONLY=mail MAIL_LEVELS=10,9,12` (two wrong taps, hint, saved `[2,1]`, sticker each) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=mail-carrier FINGER_LEVELS=9,10,12` clean in 19.4/16.1/20.1 s; portrait 768x1024 screenshots of 9 and 10 reviewed.
+- Not run: `woodland` and mailmap suites (levels 6–8 unchanged), offline check.
+- Open: a toddler reading the tool pictures, problem pictures at viewing distance, real iPad speech ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-22 — Garden Grow batch 1: flower kinds and level 8 Grow it up (slices 3–4)
+
+- [PR #851](https://github.com/rjdunlap/neo/pull/851): five flower kinds (kind judged never, color and number only) and the lap entry level 8 (one big bed, any touch grows a stage, three flowers); `grow.big` voice, how-to and bot updated.
+- Ran: typecheck; `vitest` Garden Grow (7 pass) plus `src/content`, registry and progress (286 pass); `BROWSER_SUITE=woods WOODS_ONLY=grow FROM_LEVEL=1` passed levels 1–8; `fingerdemo` `FINGER_ONLY=garden-grow` clean at 1, 7 (earlier pass) and 8 (after the bot was changed to `receiver: tapLayer`); one landscape screenshot at level 8.
+- Not run: portrait screenshot, `npm run build`, device checks.
+- Open: whether a lap player touches the big bed repeatedly, iPad feel and device speech of `grow.big` ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-22 — Weather Wardrobe batch 1: a miss that shows why and lap entry 8 (slices 3–4)
+
+- [PR #852](https://github.com/rjdunlap/neo/pull/852): wrong items show a hot, wet or cold consequence and hop back at levels 2–7 (accounting unchanged); lap entry level 8 *Try it on* (order `[1, 8, 2]`).
+- Ran (tree = branch HEAD): typecheck; `vitest` weather-wardrobe, registry and content (165 pass); `BROWSER_SUITE=fourth FOURTH_ONLY=weather` levels 1–6 and 8 (suite now waits out the misfit and covers 8); `BROWSER_SUITE=wardrobe7`; `fingerdemo` `FINGER_ONLY=weather-wardrobe FINGER_LEVELS=8,1` (6.4 s, 10.8 s); two 768x1024 misfit screenshots checked by eye.
+- Not run: `npm run build`, offline check, iPad/device, a child's reaction.
+- Open: whether misfits read as funny rather than unkind and how lap level 8 plays ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-22 — Rhythm Neighbors batch 1: Knock, knock, My turn your turn and the frogs' journal page (slices 2, 3, 8)
+
+- [PR #853](https://github.com/rjdunlap/neo/pull/853): lap entry level 7 (big tree, a croak answers each knock, eight knocks finish; lap order `[7, 1, 2]`), toddler level 8 (bird calls, one frog glows, one tap answers; `[2, 8, 3]`) and the journal entry `rhythm-neighbors:frogs-answer`.
+- Ran (tree = branch HEAD): typecheck; `npm test` (211 files, 2556 tests pass); `BROWSER_SUITE=creative CREATIVE_ONLY=rhythm FROM_LEVEL=3` on a Vite dev server at port 5611 (levels 3-8 pass; the suite now plays 7 and 8); `fingerdemo` `FINGER_ONLY=rhythm-neighbors FINGER_LEVELS=7,8,6` clean in 15.6 s, 12.9 s and 35.2 s; one portrait screenshot of level 7 (tree and frog clear of the pet).
+- Not run: `npm run build`, offline check, iPad/device, a child's reaction.
+- Open: whether a one-year-old waits for the answer at 7 and reads the glow at 8 ([device checks](../DEVICE-CHECKS.md)).

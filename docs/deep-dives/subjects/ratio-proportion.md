@@ -147,6 +147,8 @@ A paint shelf in the journal (colour, recipe, the first round that mixed it), a 
 6. **Reviewer:** a mathematics educator for "for every", "per hundred" and "one colour all the way" wording and for the level-8 plotting; an art check for the authored colour pairs on an iPad (and whether blue + yellow can ever be authored honestly).
 7. **Palette unlock:** accept that a mixed colour joins the pet's palette, or keep the journal entry only.
 
+**Decided 2026-10-23 (on the developer's delegation):** Paint Mixer is a new game (reusing Rainbow Fingers 12's drop rule if that lands first); one ratio-table look shared with the cooking batch table; Counting Cove if `landLayout` passes, else Rainbow Meadow; levels 7–8 at `school`'s top; Mixing Room a Lantern Lake puzzle if the capacity test passes, else Paint Mixer's 13+ level; the "for every", "per hundred" and "one colour all the way" wording ships after the building session's source check; a mixed colour joins the pet's palette as a permanent unlock (the rework's customization direction). The authored colour pairs get an iPad art check, and blue + yellow stays unauthored until it passes.
+
 ## Build slices, in order
 
 All future work, one session each. Definitions use links and `git diff --check`; builds use the activity tier in AGENTS.md.

@@ -97,6 +97,8 @@ A new interaction inside an existing game (a new `Game` class, a new kind of mar
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** Keep all five built defaults.
+
 Each has a default the build uses; none blocks it.
 
 1. **Bands.** Default: level 8 lap only, level 9 toddler only. Alternatives: level 8 also first in toddler; a preschool comparison step ("which foot made this print?") later, which would be a checked answer and needs its own definition and accounting.

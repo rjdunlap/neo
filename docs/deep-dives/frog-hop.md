@@ -185,6 +185,8 @@ All four are easier than level 1 or fit between existing levels, so they are pla
 8. **Level order.** The four entries below level 1 join the existing level-order rows.
 9. **Person checks to add:** whether a six-year-old counts the pad the frog stands on (the off-by-one line); whether landing numerals aloud help or crowd the counting; whether the stop at ten is chosen; whether tens words ("forty, fifty") come out clearly with device speech; whether "100" reads on a pad; whether the open line's small hops are readable at 8 units each; whether a three-year-old uses the dots on levels 1–2; whether a brook and a flower path are calm or confusing.
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans stand: build 8–11 and define 12 and 13 now (13 unscored estimates plus one ticked-line placement), in school 3–13 with `order`; say landing numerals at 3, 4, 6 and 11 and hop counts elsewhere; only 10 is a free stop at level 10; the grown-up window uses the `grownup` band, starting with G1; the frog moves to `src/art/` with Duck Pond, its look pinned first. Tens words and the open line go to the device checks.
+
 ## Build slices, in order
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken. Each level slice also raises `LEVELS.school.max`, updates `describeLevel`, the how-to's `LevelLine`s, the `woods` hop loop (its `7` is a number), `fingerdemo`'s levels, the README row and [GAMES.md](../GAMES.md).

@@ -142,6 +142,8 @@ The brief's collection includes "child-made patterns" and asks that an education
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans are adopted: Little Loom is a new Paint Pier game after its layout test; windows toddler 1–2, preschool 2–3, pre-K 3–4, school 4–7, with lap 1 added only once a device check shows a lap child manages it; no misses at 1–2, a slipped or wrong row one miss at 3–5, only Check misses at 6–7; a kept cloth is a bounded grid on the picture board until the rework wardrobe; original technique pictures, artists named in grown-up text from school age; Gallery Walk code-drawn after the building session judges a four-picture sample; Loom Logic registered in `GROWNUP_GAMES` if Lantern Lake's layout test passes. Living and Indigenous traditions are not drafted for now, and the Paper Weaving card takes the session's check against cited sources instead of a named reviewer.
+
 1. **Little Loom as a new identity** (lean yes: no game interlaces; the overlap tests with Pattern Train and Stamp Studio pass, and Picture Bytes passes only with Loom 6's striped warp and weft, as stated above) and **placement**: Paint Pier, which holds four games (lean, after its layout test), else the rework's workshop when one exists.
 2. **Windows and a lap entry.** Lean: toddler 1–2, preschool 2–3, pre-K 3–4, school 4–7; lap 1 only after a person watches a lap child.
 3. **Accounting.** Lean: levels 1–2 have no misses or hints; at 3–5 a slipped or wrong row is one miss and the two-miss glow one hint; at 6–7 only a pressed Check can miss, and weaving to look is free.

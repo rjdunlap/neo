@@ -108,6 +108,8 @@ New-game tier. Run typecheck and unit tests (all the rule properties above, plus
 
 Each has a default that the build uses. None blocks it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults the build used stand (fruit into jam jars; refused moves free at 1–2, one miss from 3; preschool 1–3 with lit targets at 1–2; Rainbow Meadow; Fill and Dump keeps *Two jugs*; couch play later).
+
 1. **Theme.** Default: fruit into jam jars, which ties to Fill and Dump's fruit and gives a picture for each kind. The alternatives are paint pots for creature customization, or glow bugs into lanterns.
 2. **Refused-move accounting.** Default: free at levels 1–2, one miss from level 3. The alternative is Ferry Jam's rule, never a miss, with help only after a wander.
 3. **Preschool entry.** Default: preschool levels 1–3, with lit targets at 1–2. The alternative is pre-K and up only, until a person has watched a 3–4-year-old play level 1.

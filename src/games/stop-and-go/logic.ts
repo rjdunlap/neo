@@ -6,7 +6,7 @@
  *
  * Nothing is timed: the light keeps cycling as long as she likes, and waiting is never wrong.
  */
-export type GoMode = 'lamps' | 'toy' | 'send' | 'walk' | 'cross';
+export type GoMode = 'lamps' | 'toy' | 'send' | 'walk' | 'cross' | 'lanes' | 'busy';
 
 export interface GoPlan {
   mode: GoMode;
@@ -20,7 +20,12 @@ export const PLANS: GoPlan[] = [
   { mode: 'send', goal: 5, name: 'The light changes by itself: tap a car only when the light is green' },
   { mode: 'walk', goal: 8, name: 'Red light, green light: step toward the flag on green, freeze on red' },
   { mode: 'cross', goal: 6, name: 'Traffic helper: let one road go at a time at the crossing' },
+  { mode: 'lanes', goal: 6, name: 'Whose light? A car lane and a bike lane each have their own light: send the front one whose own light is green' },
+  { mode: 'busy', goal: 8, name: 'Busy crossing: cars arrive one at a time on both roads; hand over one road at a time' },
 ];
+
+/** The two crossing levels: the preset crossing (4) and the busy one where cars arrive (6). */
+export const isCross = (mode: GoMode) => mode === 'cross' || mode === 'busy';
 
 /** Lap's first level, 9 (the easiest, so it sits outside PLANS): two lamps, a looping car, nothing to get wrong. */
 export const LAMPS_LEVEL = 9;
@@ -81,7 +86,7 @@ export interface Crossing {
 export const safe = (c: Crossing) => !(c.ns === 'green' && c.ew === 'green');
 
 /** What a capable child touches at each level but the crossing: the toy light, the car at the front, or the step button. */
-export const GO_TARGET = { lamps: 'lamp', toy: 'light', send: 'car', walk: 'step' } as const;
+export const GO_TARGET = { lamps: 'lamp', toy: 'light', send: 'car', walk: 'step', lanes: 'car' } as const;
 
 /**
  * Whether a tap that lands now is right: the toy light answers every tap, but a car or a step is only right on green
@@ -119,7 +124,7 @@ export type CarAnswer = 'drive' | 'toot' | 'send' | 'nudge' | 'miss';
 export function carTap(mode: GoMode, light: Light, front: boolean): CarAnswer {
   if (mode === 'lamps') return 'toot';
   if (mode === 'toy') return light === 'green' ? 'drive' : 'toot';
-  if (mode !== 'send' || !front) return 'toot';
+  if ((mode !== 'send' && mode !== 'lanes') || !front) return 'toot';
   const j = judgeGo(light);
   return j === 'go' ? 'send' : j === 'wait' ? 'nudge' : 'miss';
 }
@@ -141,7 +146,52 @@ export const nextLamp = (rolling: boolean): Lamp => (rolling ? 'red' : 'green');
  * right (green), so the glow leads to the action. The crossing's glow is on a light instead (`null` here).
  */
 export const hintOn = (mode: GoMode, light: Light): 'car' | 'step' | null =>
-  mode === 'send' && light === 'green' ? 'car' : mode === 'walk' && light === 'green' ? 'step' : null;
+  (mode === 'send' || mode === 'lanes') && light === 'green' ? 'car' : mode === 'walk' && light === 'green' ? 'step' : null;
 
 /** The line said when the round is done: the walk ends at the flag, the other levels with the cars. */
 export const doneLine = (mode: GoMode) => (mode === 'walk' ? 'go.done.walk' : 'go.done');
+
+
+// Whose light? ------------------------------------------------------------------------------------
+
+export type Lane = 'car' | 'bike';
+export const LANES: Lane[] = ['car', 'bike'];
+
+/**
+ * The two lanes' own cycles, seeded. The lights take turns: the car light is green, then yellow, then both are red for a
+ * moment, then the bike light, so one light is always green or about to be, and both are red at some moment of every cycle.
+ */
+export function laneCycles(rng: { range(min: number, max: number): number }): Record<Lane, Cycle> {
+  const a = rng.range(PHASE.min, PHASE.max);
+  const b = rng.range(PHASE.min, PHASE.max);
+  const gap = rng.range(1, 1.8);
+  const y = PHASE.yellow;
+  return {
+    car: [{ light: 'green', seconds: a }, { light: 'yellow', seconds: y }, { light: 'red', seconds: gap + b + y + gap }],
+    bike: [{ light: 'red', seconds: a + y + gap }, { light: 'green', seconds: b }, { light: 'yellow', seconds: y }, { light: 'red', seconds: gap }],
+  };
+}
+
+/** The lane to send next at time `t`: the one whose light is green, else the one that turns green first. */
+export function nextGreenLane(cycles: Record<Lane, Cycle>, t: number): Lane {
+  for (let s = 0; s < 40; s += 0.05) for (const lane of LANES) if (lightAt(t + s, cycles[lane]) === 'green') return lane;
+  return 'car';
+}
+
+// Busy crossing ------------------------------------------------------------------------------------
+
+/** Most cars that wait on one road. */
+export const MAX_WAITING = 3;
+
+/** The roads the busy crossing's cars arrive on, one at a time, seeded: half on each so both roads need a turn. */
+export function arrivalOrder(rng: { shuffle<T>(a: T[]): T[] }, total: number): Road[] {
+  const half = Math.floor(total / 2);
+  const roads: Road[] = [...Array<Road>(half).fill('ew'), ...Array<Road>(total - half).fill('ns')];
+  return rng.shuffle(roads);
+}
+
+/** A car arrives only if its road has room; otherwise it waits its turn out of sight. */
+export const canArrive = (waiting: Record<Road, number>, road: Road) => waiting[road] < MAX_WAITING;
+
+/** Seconds of both-red with cars waiting before the helper points at the busier road's light. */
+export const IDLE_POINT = 6;

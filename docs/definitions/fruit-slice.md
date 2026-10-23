@@ -112,6 +112,8 @@ New-game tier, with a new interaction (the swept slice and the straight line). R
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** the five built defaults are kept: no lap level, home Bubble Beach, no halves or quarters until the fractions study lands, the land's calm music under the slice notes, and level 7's line following the finger from touch-down and cutting on lift.
+
 Each has a default that the build uses. None blocks it.
 
 1. **Lap entry.** Default: none; toddler 1–2 first, because a lap-level tap-to-slice is Bubble Pop with fruit. The alternative is lap level 1 alone, if the developer wants a fruit version for her now.

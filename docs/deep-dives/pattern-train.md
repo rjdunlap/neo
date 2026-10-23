@@ -132,6 +132,8 @@ Appended after 12, never renumbered. A "car count" is the number of tiles includ
 5. **A kind pool with sizes, turns and acting.** Lean: yes; sizes and turns come after shapes and animals. The pet's pose art is the cost.
 6. **Level 21 (add three, add four) and the 4.OA.5 "what do you notice" sketch** wait on a child playing 19–20 and on the Wonder Woods decision.
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans stand: accept the inversions in 13–21 and say so on the card; 17 Make your own climbs fast, as Stamp Studio's invitations do; a toddler window on level 1 with two choices and the dead lap and toddler `LEVELS` entries removed; a kind pool with sizes and turns after shapes and animals. Wonder Woods grows first, so 21 (add three, add four) may be defined now, with a child's play of 19–20 as a person check.
+
 ## Build slices, in order
 
 Each is one session. Slices 1–6 are built (2026-10-11; [slice 1 build note](../archive/COMPLETED-2026-10-09.md#pattern-train-slice-1-the-train-ends-anywhere-2026-10-11)); the rest are not.

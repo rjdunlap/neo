@@ -116,6 +116,8 @@ Device checks stay open: whether a lap child connects her tap with the push; whe
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** Keep all five built defaults, and keep the built glow rule at levels 4–6 (the right hook glows once two different hooks have swung apart, counting one hint).
+
 Each has a default the build uses. None blocks it.
 
 1. **Bands.** Default lap 1, toddler 1–2, preschool 2–3, pre-K 3–4, school 4–6, matching PHYSICS-GAMES's lap–school. Not in the first build: a school prediction mode ("which comes back first?", unscored, as Planet Hop's predictions are), a counting mode (count the swings in a song phrase) and the grown-up calm toy.

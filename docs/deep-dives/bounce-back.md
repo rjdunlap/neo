@@ -109,6 +109,8 @@ Speeding up until someone fails, shrinking paddles, lives, tokens, power-ups tha
 4. **Is the pet's straight return a fixed rule or a lever?** Lean: lob a little on levels 3 and 5.
 5. **Younger entries:** add a level 0 for follow-the-ball? Waiting on the level-order decisions.
 
+**Decided 2026-10-23 (on the developer's delegation):** the couch face-off stays first to five goals; two real people on two controllers is a later device check, not a blocker; the follow-the-ball entry is a new stable level ID placed below level 1 with `order` (no renumbering), and the duel demo may be built.
+
 ## Build slices, in order
 
 1. **Truthful words and rule guards (ready; unit tests, one filtered browser play).** Per-level how-to lines and finish text (level 4's finish is stars); a `bounce.rally` line that says the number at level 2; a test that no level's goal is satisfiable in a single pet-only rally; pin the sticker seed results first. Tier: typecheck, the game's rule tests, `BROWSER_SUITE=batch BATCH_ONLY=bounce`.

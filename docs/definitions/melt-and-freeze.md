@@ -110,6 +110,8 @@ Levels 5–6 (predictions; the can't-go-back sort with toast and a popped kernel
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** a new game with bands lap 1–2, toddler 1–3 and preschool 3–4 (lap kept; whether a lap child enjoys it is a device check), home Bubble Beach if its layout test passes (else Tinker Lab, then Cozy Village), and one journal entry per changing substance. Levels 1–4 need no reviewer; the dial and steam science takes the building session's check against cited sources, and any food-safety, real-heating or off-screen card line is not drafted for now.
+
 Decisions 1 and 3 block the build; the rest have defaults the build uses.
 
 1. **A new game or a mode of Sink or Float** (blocks). Lean: a new game, since the action (warm, cool) and learning (changes that can be undone) differ from density, and the overlap check above found no game that owns it.

@@ -12,13 +12,14 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { carTap, crossTouch, doneLine, GO_TARGET, hintOn, judgeGo, lampRolls, lightAt, nextLamp, nextLight, planFor, rightNow, safe, touchCounts, VEHICLES, cycleFor, type Cycle, type GoPlan, type Lamp, type Light, type Road, type Vehicle } from './logic';
+import { arrivalOrder, canArrive, carTap, crossTouch, doneLine, GO_TARGET, hintOn, IDLE_POINT, isCross, judgeGo, lampRolls, laneCycles, lightAt, nextGreenLane, nextLamp, nextLight, planFor, rightNow, safe, touchCounts, VEHICLES, cycleFor, type Cycle, type GoPlan, type Lamp, type Lane, type Light, type Road, type Vehicle } from './logic';
 
 const LEVELS: BandLevels = {
   // Level 9 is the easiest, so lap plays it first and then 1 (see `order`).
   lap: { min: 1, max: 9, order: [9, 1] },
   toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 4 },
+  preschool: { min: 2, max: 5 },
+  prek: { min: 3, max: 6 },
 };
 
 const LAMP: Record<Light, number> = { red: swatch.red.fill, yellow: swatch.yellow.fill, green: swatch.green.fill };
@@ -56,7 +57,7 @@ class BigLamp extends Container {
 }
 
 /** A car (or another vehicle): its drawing (`art`, which bounces, squashes and idles inside the car's place) and its headlight. */
-type Car = Container & { art: Container; lamp: Graphics; kind: Vehicle; road?: Road };
+type Car = Container & { art: Container; lamp: Graphics; kind: Vehicle; road?: Road; lane?: Lane };
 
 /** The windshield face every vehicle shares: two eyes and a smile around (x, y). */
 function face(g: Graphics, x: number, y: number) {
@@ -192,11 +193,24 @@ class StopAndGo implements Game {
   private puff = 0;
   /** Crossing: seconds until the next car may roll through. */
   private gap = 0;
+  private readonly crossMode: boolean;
+  /** Whose light: each lane's own cycle. */
+  private readonly laneCycle: Record<Lane, Cycle> | null;
+  /** Busy crossing: the roads the cars arrive on, how many have come, and seconds until the next. */
+  private readonly order: Road[];
+  private arrived = 0;
+  private nextIn = 1;
+  /** The crossing: seconds both roads have been red with cars waiting, and seconds the helper's pointing ring still shows. */
+  private idle = 0;
+  private pointing = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    this.crossMode = isCross(this.plan.mode);
     this.cycle = cycleFor(ctx.rng);
+    this.laneCycle = this.plan.mode === 'lanes' ? laneCycles(ctx.rng) : null;
+    this.order = this.plan.mode === 'busy' ? arrivalOrder(ctx.rng, this.plan.goal) : [];
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.5, clouds: 2, sun: true, seed: 66 }, ctx.view);
     this.glow.eventMode = 'none';
     this.step = new RoundButton(this.feet(), swatch.green, 64, () => void this.walk());
@@ -204,7 +218,7 @@ class StopAndGo implements Game {
     ctx.stage.addChild(this.backdrop, this.road, this.flag, this.carLayer);
     onTap(this.light, () => this.tapLight(this.light), { cooldown: 300 });
     onTap(this.light2, () => this.tapLight(this.light2), { cooldown: 300 });
-    this.light2.visible = this.plan.mode === 'cross';
+    this.light2.visible = this.crossMode || this.plan.mode === 'lanes';
     this.light.visible = this.plan.mode !== 'lamps';
     for (const l of this.lamps) {
       l.visible = this.plan.mode === 'lamps';
@@ -216,18 +230,54 @@ class StopAndGo implements Game {
       ctx.track(this.pet);
       ctx.stage.addChild(this.pet);
     } else {
-      const n = this.plan.mode === 'cross' ? this.plan.goal : this.plan.mode === 'send' ? 3 : 1;
+      const n = this.plan.mode === 'cross' ? this.plan.goal : this.plan.mode === 'send' ? 3 : this.plan.mode === 'lanes' ? 4 : this.plan.mode === 'busy' ? 0 : 1;
       for (let i = 0; i < n; i++) {
-        const car = this.addCar(i);
+        // Whose light: two vehicles wait in each lane (a car lane and a bike lane).
+        const car = this.addCar(i, this.plan.mode === 'lanes' ? (i % 2 ? 'bike' : 'car') : undefined);
         // The crossing: half the cars wait on each road, so both roads need a turn.
         if (this.plan.mode === 'cross') car.road = i % 2 ? 'ns' : 'ew';
       }
     }
     ctx.stage.addChild(this.light, this.light2, ...this.lamps, this.glow, this.step);
-    if (this.plan.mode === 'cross') {
+    if (this.crossMode) {
       this.light.set('red');
       this.light2.set('red');
     }
+    if (this.plan.mode === 'lanes') {
+      // Each lane's light is smaller and wears its own picture: a car, a bike.
+      this.light.scale.set(0.8);
+      this.light2.scale.set(0.8);
+      this.light.addChild(this.badge('car'));
+      this.light2.addChild(this.badge('bike'));
+    }
+  }
+
+  /** A little picture above a lane's light: whose light it is. */
+  private badge(lane: Lane) {
+    const g = new Graphics().roundRect(-46, -250, 92, 66, 16).fill(0xffffff).stroke({ width: 5, color: ink });
+    if (lane === 'car') {
+      g.roundRect(-30, -222, 60, 20, 8).fill(swatch.blue.fill).roundRect(-18, -238, 36, 18, 7).fill(swatch.blue.fill);
+      for (const x of [-16, 16]) g.circle(x, -200, 7).fill(ink);
+    } else {
+      for (const x of [-20, 20]) g.circle(x, -206, 11).stroke({ width: 4, color: ink });
+      g.moveTo(-20, -206).lineTo(-6, -228).lineTo(14, -228).lineTo(20, -206).moveTo(-6, -228).lineTo(4, -206).lineTo(-20, -206).stroke({ width: 4, color: swatch.orange.line, cap: 'round', join: 'round' });
+    }
+    g.eventMode = 'none';
+    return g;
+  }
+
+  /** The light that rules a vehicle: its lane's own at Whose light?, the one light elsewhere. */
+  private lightOf(car: Car) {
+    return car.lane === 'bike' ? this.light2 : this.light;
+  }
+
+  private laneCars(lane: Lane) {
+    return this.cars.filter((c) => c.lane === lane);
+  }
+
+  /** The car at the front of a lane, or of the single line. */
+  private front(lane?: Lane) {
+    return lane ? this.laneCars(lane)[0] : this.cars[0];
   }
 
   private feet() {
@@ -236,8 +286,10 @@ class StopAndGo implements Game {
     return g;
   }
 
-  private addCar(i: number) {
-    const car = carArt(CAR_COLORS[(i + this.done) % CAR_COLORS.length], this.ctx.rng.pick(VEHICLES));
+  private addCar(i: number, lane?: Lane) {
+    const kind = lane === 'bike' ? 'bike' : lane === 'car' ? this.ctx.rng.pick(['car', 'bus', 'van'] as const) : this.ctx.rng.pick(VEHICLES);
+    const car = carArt(CAR_COLORS[(i + this.done) % CAR_COLORS.length], kind);
+    car.lane = lane;
     car.hitArea = new Rectangle(-80, -90, 160, 120);
     onTap(car, () => void this.tapCar(car), { cooldown: 300 });
     this.cars.push(car);
@@ -248,7 +300,7 @@ class StopAndGo implements Game {
   start() {
     this.layoutCars(true);
     this.busy = false;
-    const line = { lamps: 'go.lamps', toy: 'go.toy', send: 'go.send', walk: 'go.walk', cross: 'go.cross' } as const;
+    const line = { lamps: 'go.lamps', toy: 'go.toy', send: 'go.send', walk: 'go.walk', cross: 'go.cross', lanes: 'go.lanes', busy: 'go.busy' } as const;
     void this.ctx.instruct(line[this.plan.mode]);
   }
 
@@ -256,19 +308,31 @@ class StopAndGo implements Game {
     return this.view.h * 0.66;
   }
 
+  /** Whose light: the car lane runs above the bike lane. */
+  private laneY(lane: Lane) {
+    return this.view.h * (lane === 'car' ? 0.38 : 0.68);
+  }
+
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
     const y = this.roadY();
-    const r = this.road.clear().rect(0, y - 60, v.w, 120).fill(0x8e96a3);
-    for (let x = 20; x < v.w; x += 90) r.rect(x, y - 4, 50, 8).fill(0xffffff);
-    if (this.plan.mode === 'cross') {
+    const r = this.road.clear();
+    for (const ry of this.plan.mode === 'lanes' ? [this.laneY('car'), this.laneY('bike')] : [y]) {
+      r.rect(0, ry - 60, v.w, 120).fill(0x8e96a3);
+      for (let x = 20; x < v.w; x += 90) r.rect(x, ry - 4, 50, 8).fill(0xffffff);
+    }
+    if (this.crossMode) {
       // The up-and-down road crosses in the middle.
       r.rect(v.w * 0.62 - 60, 0, 120, v.h).fill(0x8e96a3);
       r.rect(v.w * 0.62 - 60, y - 60, 120, 120).fill(0x9ba3ae);
     }
-    this.light.position.set(this.plan.mode === 'cross' ? v.w * 0.62 - 120 : v.w * 0.55, y - 80);
+    this.light.position.set(this.crossMode ? v.w * 0.62 - 120 : v.w * 0.55, y - 80);
     this.light2.position.set(v.w * 0.62 + 130, y - 80);
+    if (this.plan.mode === 'lanes') {
+      this.light.position.set(v.w * 0.55, this.laneY('car') - 20);
+      this.light2.position.set(v.w * 0.55, this.laneY('bike') - 20);
+    }
     // The lamps sit low and centred, clear of the pet in the bottom-left.
     this.lamps[0].position.set(v.w / 2 + 120, v.h - 110);
     this.lamps[1].position.set(v.w / 2 - 120, v.h - 110);
@@ -284,7 +348,11 @@ class StopAndGo implements Game {
   /** Waiting cars line up before the light (and below the crossing). */
   private layoutCars(snap = false) {
     const y = this.roadY() + 30;
-    if (this.plan.mode === 'cross') {
+    if (this.plan.mode === 'lanes') {
+      for (const lane of ['car', 'bike'] as Lane[]) this.laneCars(lane).forEach((c, i) => this.place(c, this.light.x - 120 - i * 170, this.laneY(lane) + 30, 0, snap));
+      return;
+    }
+    if (this.crossMode) {
       const [a, b] = [this.cars.filter((c) => c.road !== 'ns'), this.cars.filter((c) => c.road === 'ns')];
       a.forEach((c, i) => this.place(c, this.light.x - 120 - i * 170, y, 0, snap));
       b.forEach((c, i) => this.place(c, this.view.w * 0.62 + 30, this.roadY() + 160 + i * 170, -Math.PI / 2, snap));
@@ -314,6 +382,16 @@ class StopAndGo implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    // Each lane's light runs its own cycle.
+    if (this.laneCycle) {
+      for (const [light, lane] of [[this.light, 'car'], [this.light2, 'bike']] as const) {
+        const l = lightAt(this.clock, this.laneCycle[lane]);
+        if (l !== light.light) {
+          light.set(l);
+          if (l === 'green') this.greenNow(this.laneCars(lane));
+        }
+      }
+    }
     // The light runs itself on the send and walk levels.
     if (this.plan.mode === 'send' || this.plan.mode === 'walk') {
       const l = lightAt(this.clock, this.cycle);
@@ -324,25 +402,31 @@ class StopAndGo implements Game {
     }
     if (this.plan.mode === 'lamps') this.loopCar(dt);
     // Waiting on red, the cars idle: a small rumble, a different motion from green's blink, so colour is not the only cue.
-    const idle = this.plan.mode !== 'cross' && this.light.light === 'red';
-    for (const c of this.cars) c.art.y = idle ? -Math.abs(Math.sin((this.clock * Math.PI) / 0.6)) * 3 : 0;
-    if (this.plan.mode === 'cross' && !this.finished) this.crossing(dt);
+    for (const c of this.cars) c.art.y = !this.crossMode && this.lightOf(c).light === 'red' ? -Math.abs(Math.sin((this.clock * Math.PI) / 0.6)) * 3 : 0;
+    if (this.crossMode && !this.finished) this.crossing(dt);
     const g = this.glow.clear();
     const ring = (t: TrafficLight) => {
       const b = t.getBounds();
       g.roundRect(b.x - 10, b.y - 10, b.width + 20, b.height + 20, 24).stroke({ width: 7 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.light });
     };
     // The glow sits on the thing to touch (the front car or the feet), and only while touching it is right.
-    const on = this.hinting ? hintOn(this.plan.mode, this.light.light) : null;
-    const target = on === 'car' ? this.cars[0] : on === 'step' ? this.step : null;
+    const greenLane: Lane | undefined = this.plan.mode === 'lanes' ? (this.light.light === 'green' ? 'car' : 'bike') : undefined;
+    const on = this.hinting ? hintOn(this.plan.mode, (greenLane === 'bike' ? this.light2 : this.light).light) : null;
+    const target = on === 'car' ? this.front(greenLane) : on === 'step' ? this.step : null;
     if (target) {
       const b = target.getBounds();
       g.roundRect(b.x - 12, b.y - 12, b.width + 24, b.height + 24, 30).stroke({ width: 7 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.light });
     }
     // At the crossing, glow a green light whose road has fewer cars waiting: that one should turn red.
-    if (this.hinting && this.plan.mode === 'cross' && this.light.light === 'green' && this.light2.light === 'green') {
+    if (this.hinting && this.crossMode && this.light.light === 'green' && this.light2.light === 'green') {
       const ns = this.cars.filter((c) => c.road === 'ns').length;
       ring(ns < this.cars.length - ns ? this.light2 : this.light);
+    }
+    // The idle point: both roads red with cars waiting for a while, so the helper points at the busier road's light. Not a miss or a hint.
+    if (this.pointing > 0) {
+      this.pointing -= dt;
+      const road = crossTouch({ ew: this.light.light, ns: this.light2.light }, { ew: this.waiting('ew'), ns: this.waiting('ns') });
+      if (road) ring(road === 'ew' ? this.light : this.light2);
     }
   }
 
@@ -368,7 +452,14 @@ class StopAndGo implements Game {
     if (this.busy || this.finished) return null;
     const mode = this.plan.mode;
     const spot = (t: TrafficLight) => ({ on: t, y: -84 });
-    if (mode === 'cross') {
+    if (mode === 'lanes' && this.laneCycle) {
+      // Wait over the front vehicle of the lane whose own light is green (or about to be).
+      const lane = nextGreenLane(this.laneCycle, this.clock);
+      const car = this.front(lane);
+      if (!car) return null;
+      return { tap: { on: car, y: -30 }, when: () => (this.finished || this.front(lane) !== car ? 'cancel' : !this.busy && rightNow(mode, this.lightOf(car).light)) };
+    }
+    if (mode === 'cross' || mode === 'busy') {
       const road = crossTouch({ ew: this.light.light, ns: this.light2.light }, { ew: this.waiting('ew'), ns: this.waiting('ns') });
       return road ? { tap: spot(road === 'ew' ? this.light : this.light2) } : null;
     }
@@ -421,7 +512,8 @@ class StopAndGo implements Game {
       if (this.done >= this.plan.goal) void this.finale();
       return;
     }
-    if (this.plan.mode === 'cross') {
+    if (this.crossMode) {
+      this.idle = 0;
       t.set(t.light === 'green' ? 'red' : 'green');
       sfx.bell(t.light === 'green' ? 9 : 4, 0.25);
       if (!safe({ ns: this.light2.light, ew: this.light.light })) {
@@ -442,9 +534,9 @@ class StopAndGo implements Game {
   }
 
   /** The light has just turned green: a tick, and every waiting car blinks its headlight and looks ready. */
-  private greenNow() {
+  private greenNow(cars: Car[] = this.cars) {
     sfx.tick();
-    for (const c of this.cars) {
+    for (const c of cars) {
       c.lamp.tint = 0xffffff;
       c.lamp.scale.set(1.6);
       void this.ctx.tw.to(c.lamp.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outQuad }).then(() => {
@@ -484,8 +576,8 @@ class StopAndGo implements Game {
   // Sending cars on green ---------------------------------------------------------------------
 
   private async tapCar(car: Car) {
-    if (this.busy || this.finished || (this.plan.mode !== 'send' && this.plan.mode !== 'toy' && this.plan.mode !== 'lamps')) return;
-    const answer = carTap(this.plan.mode, this.light.light, car === this.cars[0]);
+    if (this.busy || this.finished || (this.plan.mode !== 'send' && this.plan.mode !== 'toy' && this.plan.mode !== 'lamps' && this.plan.mode !== 'lanes')) return;
+    const answer = carTap(this.plan.mode, this.lightOf(car).light, car === this.front(car.lane));
     if (answer === 'toot' || answer === 'drive') {
       this.toot(car);
       if (touchCounts(this.plan.mode, answer)) this.done++;
@@ -495,13 +587,13 @@ class StopAndGo implements Game {
     }
     if (answer === 'send') {
       this.busy = true;
-      this.cars.shift();
+      this.cars.splice(this.cars.indexOf(car), 1);
       this.done++;
       this.wrongs = 0;
       this.hinting = false;
       void this.drive(car, true);
       void this.ctx.say('go.zoom');
-      this.addCar(this.cars.length);
+      this.addCar(this.cars.length, car.lane);
       this.cars[this.cars.length - 1].x = -150;
       this.layoutCars();
       await this.ctx.tw.wait(0.5);
@@ -514,14 +606,14 @@ class StopAndGo implements Game {
       return void this.ctx.say('go.yellow');
     }
     this.squash(car);
-    this.stopMiss();
+    this.stopMiss(car.lane === 'bike' ? 'go.red.bike' : car.lane === 'car' ? 'go.red.car' : 'go.red');
   }
 
-  private stopMiss() {
+  private stopMiss(line: 'go.red' | 'go.red.car' | 'go.red.bike' = 'go.red') {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    void this.ctx.say('go.red');
+    void this.ctx.say(line);
     if (this.wrongs >= 2 && !this.hinting) {
       this.hinting = true;
       this.hints++;
@@ -559,6 +651,16 @@ class StopAndGo implements Game {
 
   /** Cars roll through on their road's green, one at a time, unless both roads are green. */
   private crossing(dt: number) {
+    this.arrive(dt);
+    // Both roads red with cars waiting for a while: the helper points at the busier road (a nudge, never a miss).
+    if (!this.busy && this.cars.length && this.light.light === 'red' && this.light2.light === 'red') {
+      this.idle += dt;
+      if (this.idle >= IDLE_POINT) {
+        this.idle = 0;
+        this.pointing = 3;
+        void this.ctx.say('go.point');
+      }
+    } else this.idle = 0;
     this.gap -= dt;
     if (this.gap > 0 || this.busy) return;
     if (!safe({ ns: this.light2.light, ew: this.light.light })) return;
@@ -577,6 +679,36 @@ class StopAndGo implements Game {
     // One road empty while its light is still green: a nudge to give the other road a turn.
     if (!this.cars.some((c) => (type(c) === 'ns') === ns) && this.cars.length) void this.ctx.say('go.turn');
     if (this.done >= this.plan.goal) void this.finale();
+  }
+
+  /** The busy crossing: the next car rolls up on its seeded road, if that road has room. */
+  private arrive(dt: number) {
+    if (this.plan.mode !== 'busy' || this.arrived >= this.order.length) return;
+    this.nextIn -= dt;
+    if (this.nextIn > 0) return;
+    const road = this.order[this.arrived];
+    if (!canArrive({ ew: this.waiting('ew'), ns: this.waiting('ns') }, road)) {
+      this.nextIn = 0.5;
+      return;
+    }
+    const car = this.addCar(this.arrived);
+    car.road = road;
+    this.arrived++;
+    this.nextIn = this.ctx.rng.range(1.6, 2.8);
+    if (road === 'ns') car.position.set(this.view.w * 0.62 + 30, this.view.h + 150);
+    else car.position.set(-150, this.roadY() + 30);
+    // A thought cloud shows which way it wants to go, kept upright whichever way the car faces.
+    const cloud = new Graphics().ellipse(0, 0, 54, 38).fill(0xffffff).stroke({ width: 4, color: ink });
+    if (road === 'ew') cloud.poly([-22, -8, 4, -8, 4, -20, 26, 0, 4, 20, 4, 8, -22, 8]).fill(swatch.green.fill);
+    else cloud.poly([-8, 22, -8, -4, -20, -4, 0, -26, 20, -4, 8, -4, 8, 22]).fill(swatch.green.fill);
+    cloud.eventMode = 'none';
+    if (road === 'ew') cloud.position.set(0, -130);
+    else {
+      cloud.position.set(40, 100);
+      cloud.rotation = Math.PI / 2;
+    }
+    car.addChild(cloud);
+    this.layoutCars();
   }
 
   private async finale() {
@@ -625,7 +757,7 @@ export const stopAndGo: GameModule = {
   titleLine: 'game.stop-and-go',
   region: 'cozy-village',
   skills: ['self-control', 'colors', 'safety', 'turn-taking'],
-  bands: ['lap', 'toddler', 'preschool'],
+  bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [9],
   describeLevel: (level) => planFor(level).name,

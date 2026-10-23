@@ -99,6 +99,8 @@ Speed rounds, tight timing windows, lives, streaks, long hidden phrases, forced 
 
 Added to [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer). Below-level-1 ordering already has a shared decision there. Devices/person: actual sound separation and speech, Bluetooth delay, comfortable eight-column tapping, the difference between copying and making, and response to a visible repair remain open.
 
+**Decided 2026-10-23 (on the developer's delegation):** nothing remains open: the 2026-10-12 acceptance stands, lap stays with Jelly Drums (no pat-to-score mode), and percussion storage stays out until a bounded creation kind is defined with the rework's creation library.
+
 ## Build slices, in order
 
 Each is a separate session. Slices 1–3 are built; the remaining slices retain their readiness/decision status.

@@ -88,6 +88,8 @@ The diagram’s intro is the current full-card policy. A shorter session introdu
 
 ## A round boundary that keeps the groove
 
+**Decided 2026-10-23 (on the developer's delegation):** Optional compact round result: Pilot a brief acknowledgment for toy/puzzle rounds as an option; full celebration stays available, the sticker is still awarded every round, Heart and Keep stay one tap away, and new evidence or a first discovery still gets the full result. ([record](archive/DECISIONS-2026-10-23.md))
+
 For a session, the first useful result flow is:
 
 **Save the completed round → acknowledge its sticker → show Next game’s picture, Again, and Explore.**
@@ -104,6 +106,8 @@ Initially retain the existing celebration and card. First prove the routing and 
 
 ### Introductions: reduce duplication without losing support
 
+**Decided 2026-10-23 (on the developer's delegation):** Session introduction policy: Yes: an exact mode and input already introduced this session may use brief, replayable support; a new or changed mode still gets its full introduction. ([record](archive/DECISIONS-2026-10-23.md))
+
 Three alternatives deserve comparison:
 
 | Approach | Behavior | Recommendation |
@@ -115,6 +119,8 @@ Three alternatives deserve comparison:
 A session can remember which exact `(game ID, resolved band, level ID, input route)` was introduced **during that session**, and revalidate when the next round launches. This is UI support state, not independent mastery. An adaptive level change, pin change or input change may need another introduction. Existing pet replay and `?` remain available. Never overload the existing Again flag to suppress a different game’s card.
 
 ### Truly automatic handoff
+
+**Decided 2026-10-23 (on the developer's delegation):** Finite automatic game handoff: Yes, as a grown-up opt-in "Keep moving" pilot, default off, only after deliberate Next works; the line-up is visible, it ends with the mix, and it stops for new support, a pending Keep, an input change or an interruption. ([record](archive/DECISIONS-2026-10-23.md))
 
 An optional **Keep moving** setting could start the next preapproved game after the result, within one visible finite mix. It is separate from simply removing catalog steps. Recommend keeping it off initially and testing explicit Next game first.
 

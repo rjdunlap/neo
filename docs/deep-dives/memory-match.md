@@ -143,6 +143,10 @@ More than twenty cards, faster flip-back, a preview countdown, moving cards, man
 3. **Toddler window:** lean hidden level 1 only (1–1), naming familiar pictures; six-card level 2 remains preschool. Face-up play and lap sketches wait on level-order/mode decisions.
 4. **Optional family split-seat play:** follows the roadmap's placement/seat decisions. Keep the existing couch turn-taking unchanged; do not add co-play seats or progress attribution in these slices.
 
+**Decided 2026-10-23 (on the developer's delegation):** adopt the leans for 1–3: level 10 keeps its ID and becomes five pairs sampled from the ten number words; school gains 12–14 (three pairs each, the easier clock round placed by `order`, IDs and pins preserved); toddler gets hidden level 1 only (1–1). Split-seat play follows the second-seat contract (anonymous, uncredited, seat 1 only read by difficulty).
+
+**Decided 2026-10-23 (on the developer's delegation):** levels 10–12 count as bridges, not duplicates, of Pet Kitchen and Clock Tower: the action (remembering and pairing two representations) differs from sharing or setting a clock, so they stay; whether she treats them as bridges is a person check after play, not a blocker.
+
 ## Build slices, in order
 
 Slice 1 and the familiar-picture part of slice 2 are built ([PR #170](https://github.com/rjdunlap/neo/pull/170), [PR #264](https://github.com/rjdunlap/neo/pull/264)); remaining content and levels are future sessions. The audit above records the source as it stood before the support slice.

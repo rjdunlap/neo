@@ -58,3 +58,7 @@ Translating sentences, the journal and captions (stage 2); the how-to cards, the
 1. **Which language first, and who reviews it** (developer; [Waiting](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer)). The build needs one native-reviewed table of the first-slice vocabulary.
 2. **Word table versus line table** (this definition's recommendation: word table for stage 1). Confirm or revert.
 3. **Whether the grown-ups' page labels the status line** with a way to test the voice (a "hear a sample" button is plain HTML and cheap, but is proposed, not defined).
+
+**Decided 2026-10-23 (on the developer's delegation):** stage 1 adds the second-language word after the English one, as the per-person `settings.language2` above, spoken by device speech; whole-voice switching is only a later option for older bands, and replacing English, a per-device setting and recorded parent lines are not used. The first language and its family reviewer remain the developer's call.
+
+**Decided 2026-10-23 by the developer:** Portuguese comes first, in **European Portuguese** (pt-PT: its vocabulary, spelling and a `pt-PT` device voice, not Brazilian). The developer will name the family member who reviews every Portuguese line; nothing in Portuguese ships before that review.
