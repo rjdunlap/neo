@@ -1,5 +1,11 @@
 # Needs a person or a device
 
+## Look It Up levels 1–3
+
+- [ ] On an iPad, hear the animal names, questions and fact sentences clearly (device speech, including "kit" and the long brown bear and penguin lines).
+- [ ] Watch a three-year-old at level 2: does she understand that a tab turns to an animal's page, and look there rather than guess the food?
+- [ ] Check the book, tabs, fact rows and choices for legibility and comfortable targets in portrait on the iPad.
+
 ## Photo Safari Tell me which and Tell me both (10–11)
 
 - [ ] Watch a six-year-old: does the pretend premise that the pet cannot see the sparkle make sense?
