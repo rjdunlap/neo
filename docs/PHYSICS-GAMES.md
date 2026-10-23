@@ -33,6 +33,8 @@ Built: Sink or Float (buoyancy by trial), Seesaw Balance (balance), Ramp Race (r
 
 ## Three tiers of physics, by what the island must build
 
+**Decided 2026-10-23 (on the developer's delegation):** The physics approach for ropes, blocks, drawn lines and circle piles: Rule-model physics first; small hand-written deterministic solvers in each game's logic.ts for Vine Snip, Block Topple, Draw a Ramp, Pond Merge and Roll Table; no physics library; Block Topple starts with the simplified tipping rule. ([record](archive/DECISIONS-2026-10-23.md))
+
 1. **Rule models and analytic curves (no engine).** The rule is a small formula a test can check exactly: Block Tower's balance rule, a pendulum's period, a ballistic arc under a chosen gravity (`ball.ts` already takes `gravity`), buoyancy by a stated density rule, a lever's torque, a row of dominoes where the next tips if the gap is short enough. Results are the same on every device and every test.
 2. **Existing circle simulation** (`engine/ball.ts`): pegs, walls, bumpers, replay.
 3. **A new deterministic solver:** ropes (Vine Snip), rigid blocks (Block Topple), a circle pile (Pond Merge, Roll Table), drawn lines (Draw a Ramp). These need the engine decision recorded in [Waiting on the developer](WAITING-ON-DEVELOPER.md#waiting-on-the-developer).

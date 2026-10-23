@@ -130,6 +130,8 @@ Product details are **recalled** unless marked; nothing was played.
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** Decisions 1–2 as in the [Word Glue definition](../../definitions/word-glue.md#open-decisions): a new game, the shared Story Grove allocation with Treehouse as fallback, and the session's source check for the compound list. Decisions 3–4 keep their leans.
+
 1. **A new game, and its land.** Lean: yes to a new game (no built game joins two pictures into a third); home land Story Grove if its capacity test passes, else Puzzle Peaks or Treehouse. The working name *Word Glue* is a placeholder.
 2. **Compound list review.** The list, its distractors and the deny list need an ordinary content read (an adult literacy reviewer, not a specialist): no opaque compound on meaning rungs, no distractor that is a real compound, regional words (US/UK) flagged.
 3. **Family languages.** English puts the thing last (gold*fish*). Spanish, French and Portuguese often put it first or join a verb and a noun (*guarda-chuva*, *paraguas*). Arabic builds families from consonant roots (k-t-b, write: *kitāb*, *maktab*), which suits Root Garden more than Word Glue. Lean: Word Glue levels 1–3 can take another language's reviewed table later, while levels 4–5 are English-only and say so on the grown-ups' card.

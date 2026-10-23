@@ -7,46 +7,137 @@ import type { Rng } from '../../engine/random';
  * shows who it's for (a door color, a number of dots, or a numeral) and the child taps the
  * matching mailbox. A wrong mailbox politely hands the letter back.
  */
-export type MailMode = 'drop' | 'color' | 'dots' | 'numeral' | 'count' | 'map' | 'route' | 'shorter';
+export type MailMode = 'drop' | 'color' | 'dots' | 'numeral' | 'count' | 'map' | 'route' | 'shorter' | 'tool' | 'help' | 'teen' | 'clue' | 'sides' | 'compare' | 'key';
 
 export interface MailPlan {
+  /** The level this plan is: the street's levels 9, 10 and 12 sit after the woods' 6–8 in this list, so look it up with `planFor`. */
+  level: number;
   mode: MailMode;
   houses: number;
   letters: number;
   /** Highest house number. */
   top: number;
+  /** Lowest house number, when the street does not start at 1 (the teens). */
+  low?: number;
   name: string;
 }
 
 export const PLANS: MailPlan[] = [
-  { mode: 'drop', houses: 4, letters: 6, top: 4, name: 'Tap any mailbox to post a letter' },
-  { mode: 'color', houses: 3, letters: 5, top: 3, name: 'Match the letter\'s color to the door' },
-  { mode: 'dots', houses: 4, letters: 5, top: 5, name: 'Match dots on the letter to dots and numbers on the mailboxes' },
-  { mode: 'numeral', houses: 5, letters: 5, top: 9, name: 'Deliver to the house number on the letter (1 to 9)' },
-  { mode: 'count', houses: 5, letters: 5, top: 9, name: 'Count the dots on the letter, then find that house number' },
+  { level: 1, mode: 'drop', houses: 4, letters: 6, top: 4, name: 'Tap any mailbox to post a letter' },
+  { level: 2, mode: 'color', houses: 3, letters: 5, top: 3, name: 'Match the letter\'s color to the door' },
+  { level: 3, mode: 'dots', houses: 4, letters: 5, top: 5, name: 'Match dots on the letter to dots and numbers on the mailboxes' },
+  { level: 4, mode: 'numeral', houses: 5, letters: 5, top: 9, name: 'Deliver to the house number on the letter (1 to 9)' },
+  { level: 5, mode: 'count', houses: 5, letters: 5, top: 9, name: 'Count the dots on the letter, then find that house number' },
   // Wonder Woods: a picture map with a key. `letters` counts letters; the route level carries them two at a time.
-  { mode: 'map', houses: 5, letters: 4, top: 0, name: 'Picture map of Wonder Woods: find who the letter is for in the key, then the house with their sign' },
-  { mode: 'route', houses: 5, letters: 6, top: 0, name: 'Plan two deliveries on the map in order (letter 1, then 2), then walk the route' },
-  { mode: 'shorter', houses: 5, letters: 4, top: 0, name: 'Find the house, then choose the shorter of two paths marked with stepping stones' },
+  { level: 6, mode: 'map', houses: 5, letters: 4, top: 0, name: 'Picture map of Wonder Woods: find who the letter is for in the key, then the house with their sign' },
+  { level: 7, mode: 'route', houses: 5, letters: 6, top: 0, name: 'Plan two deliveries on the map in order (letter 1, then 2), then walk the route' },
+  { level: 8, mode: 'shorter', houses: 5, letters: 4, top: 0, name: 'Find the house, then choose the shorter of two paths marked with stepping stones' },
+  // Levels 9, 10 and 12 are street levels added above the woods.
+  { level: 9, mode: 'help', houses: 5, letters: 5, top: 5, name: 'A problem on the letter: tap the helper whose tool fixes it' },
+  { level: 10, mode: 'tool', houses: 3, letters: 5, top: 3, name: 'Match the picture on the letter to the tool on the sign' },
+  { level: 12, mode: 'teen', houses: 5, letters: 5, top: 20, low: 10, name: 'Deliver to the house number on the letter (10 to 20)' },
+  { level: 13, mode: 'clue', houses: 5, letters: 4, top: 0, name: 'Hazel’s spoken clue: between, next on the left, nearest and farthest on the picture map' },
+  { level: 11, mode: 'sides', houses: 8, letters: 5, top: 16, name: 'Both sides of the street: odd numbers on one side, even on the other, rising left to right' },
+  { level: 14, mode: 'compare', houses: 5, letters: 6, top: 0, name: 'Plan three deliveries in any order; optionally walk a second order and compare stone counts (two bags)' },
+  { level: 15, mode: 'key', houses: 5, letters: 2, top: 0, name: 'Make the picture key: match five signs to their neighbours, then deliver two letters' },
 ];
 
-export const isMapMode = (mode: MailMode) => mode === 'map' || mode === 'route' || mode === 'shorter';
+export const isMapMode = (mode: MailMode) => mode === 'map' || mode === 'route' || mode === 'shorter' || mode === 'clue' || mode === 'compare' || mode === 'key';
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const planFor = (level: number) => PLANS.find((p) => p.level === level) ?? PLANS[Math.min(8, Math.max(1, level)) - 1];
 
 export const DOOR_COLORS: ColorName[] = ['red', 'blue', 'yellow', 'green', 'purple', 'orange'];
 
 export interface House {
   number: number;
   door: ColorName;
+  /** Levels 9 and 10: the picture on this house's sign. */
+  tool?: Tool;
+  /** Level 9: the helper who lives here. */
+  helper?: HelperId;
+}
+
+// Tool signs and helpers ---------------------------------------------------------------------------
+
+export const TOOLS = ['wrench', 'bandage', 'can', 'stamp', 'buoy', 'whisk'] as const;
+export type Tool = (typeof TOOLS)[number];
+
+/** Level 9's helpers, each with the tool they carry and the problem that tool fixes (one tool per problem). */
+export const HELPERS = ['plumber', 'doctor', 'gardener', 'postkeeper', 'lifeguard', 'baker'] as const;
+export type HelperId = (typeof HELPERS)[number];
+
+export interface Helper {
+  tool: Tool;
+  /** "a wrench": the tool as a person would name it. */
+  toolName: string;
+  /** What the tool is for, said by a house that has the wrong tool. */
+  use: string;
+  /** The problem on the letter, said after "the". */
+  problem: string;
+  /** What the helper does, for the journal. */
+  fixes: string;
+}
+
+export const HELPER: Record<HelperId, Helper> = {
+  plumber: { tool: 'wrench', toolName: 'a wrench', use: 'A wrench is for fixing pipes.', problem: 'dripping tap', fixes: 'drips' },
+  doctor: { tool: 'bandage', toolName: 'a bandage roll', use: 'A bandage roll is for wrapping a hurt.', problem: 'hurt teddy', fixes: 'hurts' },
+  gardener: { tool: 'can', toolName: 'a watering can', use: 'A watering can is for watering plants.', problem: 'drooping flower', fixes: 'thirsty flowers' },
+  postkeeper: { tool: 'stamp', toolName: 'a stamp', use: 'A stamp is for sending letters.', problem: 'letter with no stamp', fixes: 'letters with no stamp' },
+  lifeguard: { tool: 'buoy', toolName: 'a ring buoy', use: 'A ring buoy is for rescuing in water.', problem: 'boat far out on the pond', fixes: 'boats that drift far out' },
+  baker: { tool: 'whisk', toolName: 'a whisk', use: 'A whisk is for baking.', problem: 'candle with no cake', fixes: 'birthdays that need a cake' },
+};
+
+export const TOOL_NAME: Record<Tool, string> = {
+  wrench: 'a wrench', bandage: 'a bandage roll', can: 'a watering can', stamp: 'a stamp', buoy: 'a ring buoy', whisk: 'a whisk',
+};
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/** What a helper's house says when a letter lands on the wrong door, and when it lands on the right one. */
+export const helpWrong = (h: HelperId, letterFor: HelperId) => ({ tool: HELPER[h].toolName, use: HELPER[h].use, problem: `the ${HELPER[letterFor].problem}` });
+export const helpFixed = (h: HelperId) => ({ Tool: cap(HELPER[h].toolName), problem: `the ${HELPER[h].problem}` });
+
+/** Ten-and-ones for a number from 10 to 20: 13 is "Thirteen" and "Ten and three." */
+const TEEN_WORDS: Record<number, string> = { 10: 'Ten', 11: 'Eleven', 12: 'Twelve', 13: 'Thirteen', 14: 'Fourteen', 15: 'Fifteen', 16: 'Sixteen', 17: 'Seventeen', 18: 'Eighteen', 19: 'Nineteen', 20: 'Twenty' };
+const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+export function teenSpoken(n: number): { word: string; parts: string } {
+  const word = TEEN_WORDS[n] ?? String(n);
+  if (n === 10) return { word, parts: 'One ten.' };
+  if (n === 20) return { word, parts: 'Two tens.' };
+  return { word, parts: `Ten and ${ONES[n - 10]}.` };
 }
 
 /** A street of houses, numbered in order left to right (like a real street), each a different door color. */
 export function makeStreet(plan: MailPlan, rng: Rng): House[] {
-  const pool = Array.from({ length: plan.top }, (_, i) => i + 1);
+  if (plan.mode === 'sides') {
+    const columns = plan.houses / 2;
+    // No saved bag count exists: a seeded round chooses the first or higher number run.
+    const start = rng.chance(0.5) ? 1 : plan.top - 2 * columns + 1;
+    return Array.from({ length: columns * 2 }, (_, i) => ({
+      number: start + (i % columns) * 2 + (i < columns ? 0 : 1), door: DOOR_COLORS[i % DOOR_COLORS.length],
+    }));
+  }
+  if (plan.mode === 'tool' || plan.mode === 'help') return makeToolStreet(plan, rng);
+  const low = plan.low ?? 1;
+  const pool = Array.from({ length: plan.top - low + 1 }, (_, i) => low + i);
   const numbers = rng.shuffle(pool).slice(0, plan.houses).sort((a, b) => a - b);
   const doors = rng.shuffle([...DOOR_COLORS]).slice(0, plan.houses);
   return numbers.map((number, i) => ({ number, door: doors[i] }));
+}
+
+/**
+ * Level 10 deals two or three houses (the dive's "two the first bag, three from the second" has no round signal to read,
+ * so the seed chooses), level 9 five, each with a different tool; their house numbers still rise left to right.
+ */
+export function makeToolStreet(plan: MailPlan, rng: Rng): House[] {
+  const count = plan.mode === 'tool' ? rng.int(2, plan.houses) : plan.houses;
+  const doors = rng.shuffle([...DOOR_COLORS]).slice(0, count);
+  if (plan.mode === 'help') {
+    const helpers = rng.shuffle([...HELPERS]).slice(0, count);
+    return helpers.map((helper, i) => ({ number: i + 1, door: doors[i], helper, tool: HELPER[helper].tool }));
+  }
+  const tools = rng.shuffle([...TOOLS]).slice(0, count);
+  return tools.map((tool, i) => ({ number: i + 1, door: doors[i], tool }));
 }
 
 /** Who lives on the street: one pool of seven neighbours. The woods map leaves out the dog, the bear's brown look-alike. */
@@ -95,8 +186,22 @@ export function makeLetters(plan: MailPlan, street: House[], rng: Rng): number[]
 }
 
 /** What the letter shows, and what the mailboxes show, at each level. */
-export const letterShows = (mode: MailMode): 'nothing' | 'color' | 'dots' | 'numeral' => (mode === 'drop' ? 'nothing' : mode === 'color' ? 'color' : mode === 'numeral' ? 'numeral' : 'dots');
-export const mailboxShows = (mode: MailMode): { numeral: boolean; dots: boolean } => ({ numeral: mode !== 'color' && mode !== 'drop', dots: mode === 'dots' });
+export type LetterShows = 'nothing' | 'color' | 'dots' | 'numeral' | 'tool' | 'problem';
+export const letterShows = (mode: MailMode): LetterShows => {
+  switch (mode) {
+    case 'drop': return 'nothing';
+    case 'color': return 'color';
+    case 'numeral': case 'teen': case 'sides': return 'numeral';
+    case 'tool': return 'tool';
+    case 'help': return 'problem';
+    default: return 'dots';
+  }
+};
+export const mailboxShows = (mode: MailMode): { numeral: boolean; dots: boolean; tool: boolean } => ({
+  numeral: mode !== 'color' && mode !== 'drop' && mode !== 'tool' && mode !== 'help',
+  dots: mode === 'dots',
+  tool: mode === 'tool' || mode === 'help',
+});
 
 /** At levels 3 and 5 the letter's dots are counted aloud before the number is said. */
 export const countsAloud = (mode: MailMode) => mode === 'dots' || mode === 'count';
@@ -176,10 +281,10 @@ export function routeChoices(house: number): number[][] {
   return paths.sort((a, b) => routeLength(a) - routeLength(b));
 }
 
-export function routeLength(path: number[]): number {
+export function routeLength(path: number[], edges = SHORTER_EDGES): number {
   let total = 0;
   for (let i = 1; i < path.length; i++) {
-    const edge = SHORTER_EDGES.find(([a, b]) => (a === path[i - 1] && b === path[i]) || (b === path[i - 1] && a === path[i]));
+    const edge = edges.find(([a, b]) => (a === path[i - 1] && b === path[i]) || (b === path[i - 1] && a === path[i]));
     if (edge) total += edge[2];
   }
   return total;
@@ -192,13 +297,13 @@ export function shorterRoutes(house: number): [number[], number[]] {
 }
 
 /** The shortest walk along the paths from one node to another, both ends included. */
-export function walk(from: number, to: number): number[] {
+export function walk(from: number, to: number, edges: readonly (readonly number[])[] = MAP_EDGES): number[] {
   const prev = new Map<number, number>([[from, from]]);
   const queue = [from];
   while (queue.length) {
     const n = queue.shift()!;
     if (n === to) break;
-    for (const [a, b] of MAP_EDGES) {
+    for (const [a, b] of edges) {
       const m = a === n ? b : b === n ? a : -1;
       if (m >= 0 && !prev.has(m)) {
         prev.set(m, n);
@@ -212,11 +317,19 @@ export function walk(from: number, to: number): number[] {
 }
 
 /** From the post office through each stop in order. */
-export function route(stops: number[]): number[] {
+export function route(stops: number[], edges: readonly (readonly number[])[] = MAP_EDGES): number[] {
   const out = [POST_OFFICE];
-  for (const s of stops) out.push(...walk(out[out.length - 1], HOUSE_NODES[s]).slice(1));
+  for (const s of stops) out.push(...walk(out[out.length - 1], HOUSE_NODES[s], edges).slice(1));
   return out;
 }
+
+/** Level 14's loop has one visible stone on every edge. All walks start and finish at the office. */
+export const COMPARE_EDGES: [number, number, number][] = [...MAP_EDGES.map(([a, b]) => [a, b, 1] as [number, number, number]), [7, 8, 1]];
+export function comparisonRoute(stops: number[]): number[] {
+  const path = route(stops, COMPARE_EDGES);
+  return [...path, ...walk(path.at(-1)!, POST_OFFICE, COMPARE_EDGES).slice(1)];
+}
+export const compareCounts = (first: number, second: number) => second < first ? 'shorter' : second > first ? 'longer' : 'same';
 
 export interface WoodsHouse {
   resident: CritterName;
@@ -235,7 +348,7 @@ export function makeWoods(rng: Rng): WoodsHouse[] {
  * No house gets two letters in a row, and a pair never sends both letters to one house.
  */
 export function makeTrips(plan: MailPlan, rng: Rng): number[][] {
-  const per = plan.mode === 'route' ? 2 : 1;
+  const per = plan.mode === 'compare' ? 3 : plan.mode === 'route' ? 2 : 1;
   const trips: number[][] = [];
   let last = -1;
   const order: number[] = [];
@@ -259,10 +372,10 @@ export function makeTrips(plan: MailPlan, rng: Rng): number[][] {
 }
 
 /** Planning a trip: is this house the next stop, a stop that comes later, already planned, or nobody's letter? */
-export function checkStop(trip: number[], planned: number[], house: number): 'ok' | 'later' | 'planned' | 'nobody' {
+export function checkStop(trip: number[], planned: number[], house: number, freeOrder = false): 'ok' | 'later' | 'planned' | 'nobody' {
   if (planned.includes(house)) return 'planned';
   if (!trip.includes(house)) return 'nobody';
-  return trip[planned.length] === house ? 'ok' : 'later';
+  return freeOrder || trip[planned.length] === house ? 'ok' : 'later';
 }
 
 /** The house on the street a letter is addressed to, or null when the letters have run out. The demonstration posts there. */
@@ -277,6 +390,55 @@ export type WoodsTouch = { house: number } | 'go';
  */
 export function woodsTouch(mode: MailMode, trip: number[], planned: number[]): WoodsTouch | null {
   if (!trip.length) return null;
-  if (mode === 'map' || mode === 'shorter') return { house: trip[0] };
-  return planned.length < trip.length ? { house: trip[planned.length] } : 'go';
+  if (mode === 'map' || mode === 'shorter' || mode === 'clue' || mode === 'key') return { house: trip[0] };
+  return planned.length < trip.length ? { house: mode === 'compare' ? trip.find((h) => !planned.includes(h))! : trip[planned.length] } : 'go';
 }
+
+
+/** Layout fallback: four 0.8-scale houses per side unless their 176-unit targets would overlap. */
+export const sideColumns = (width: number) => (width - 260 >= 3 * 180 ? 4 : 3);
+export function sideLayout(width: number, height: number, count: number) {
+  const columns = count / 2;
+  const near = height - 130;
+  const far = 380;
+  return Array.from({ length: count }, (_, i) => ({
+    x: 160 + (width - 260) * (i % columns) / (columns - 1),
+    y: i < columns ? far : near, scale: 0.8,
+  }));
+}
+export const parity = (n: number) => n % 2 ? 'odd' : 'even';
+export function sideWrong(actual: number, target: number) {
+  return { n: actual, target, side: parity(actual), wanted: parity(target), direction: target > actual ? 'further along' : 'back along the street' };
+}
+
+export type ClueKind = 'between' | 'left' | 'nearest' | 'farthest';
+export interface MapClue { kind: ClueKind; a?: Sign; b?: Sign; house: number }
+/** Same path graph as the key map, with clear straight-line near/far differences for speech. */
+export function clueNode(n: number, mirrored: boolean) {
+  const p = n === 1 ? { x: 0.08, y: 0.02 } : n === 5 ? { x: 0.23, y: 0.78 } : MAP_NODES[n];
+  return { x: mirrored ? 1 - p.x : p.x, y: p.y };
+}
+/** Resolve the clue from signs and geometry, independent of its stored answer. */
+export function clueMatches(clue: Pick<MapClue, 'kind' | 'a' | 'b'>, woods: WoodsHouse[], mirrored: boolean): number[] {
+  const point = (i: number) => clueNode(HOUSE_NODES[i], mirrored);
+  const top = woods.map((_, i) => i).filter((i) => point(i).y < 0.25).sort((a, b) => point(a).x - point(b).x);
+  const a = woods.findIndex((h) => h.sign === clue.a), b = woods.findIndex((h) => h.sign === clue.b);
+  if (clue.kind === 'between') return top.filter((i) => i !== a && i !== b && point(i).x > Math.min(point(a).x, point(b).x) && point(i).x < Math.max(point(a).x, point(b).x));
+  if (clue.kind === 'left') return top.filter((_, k) => top[k + 1] === a);
+  const office = clueNode(POST_OFFICE, mirrored);
+  const distances = woods.map((_, i) => Math.hypot(point(i).x - office.x, point(i).y - office.y));
+  const distance = clue.kind === 'nearest' ? Math.min(...distances) : Math.max(...distances);
+  return distances.flatMap((d, i) => Math.abs(d - distance) < 1e-8 ? [i] : []);
+}
+export function makeClues(woods: WoodsHouse[], mirrored: boolean, rng: Rng): MapClue[] {
+  const top = [0, 1, 2].sort((a, b) => clueNode(HOUSE_NODES[a], mirrored).x - clueNode(HOUSE_NODES[b], mirrored).x);
+  const clues: Omit<MapClue, 'house'>[] = [
+    { kind: 'between', a: woods[top[0]].sign, b: woods[top[2]].sign },
+    { kind: 'left', a: woods[rng.pick(top.slice(1))].sign },
+    { kind: 'nearest' }, { kind: 'farthest' },
+  ];
+  return rng.shuffle(clues).map((clue) => ({ ...clue, house: clueMatches(clue, woods, mirrored)[0] }));
+}
+
+/** A key pair is correct only when the chosen house carries the row’s sign. */
+export const keyMatches = (woods: WoodsHouse[], sign: Sign, house: number) => woods[house]?.sign === sign;

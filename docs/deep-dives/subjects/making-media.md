@@ -153,6 +153,8 @@ Levels 1–3: one session to define, one to build (strip, sound pads, a premiere
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** Movie Night is a new game, not a Story Steps or Photo Safari mode, home Paint Pier; the first unmet premiere is free and repeats count misses, the second glowing the asked-about slot for one hint (Story Steps 11 precedent); Director's cases are `school` top levels plus a `grownup` range on the same ID; kept movies and flipbook frames use the existing Flipbook storage row with no migration; Picture Show waits for the rework home; today's critters are the first cast.
+
 1. **Identity and placement:** Movie Night as a new game (not a Story Steps or Photo Safari mode, by the overlap tests above), in Paint Pier (lean) or Story Grove.
 2. **Premiere accounting:** the Story Steps 11 precedent (lean) or the Welcome Ways observation precedent.
 3. **13+ Director's cases:** `school` top levels plus a `grownup` range on the same game (lean), or a separate Lantern Lake title (not leaned).

@@ -7,7 +7,7 @@ Defined 2026-10-21 for [RW07](WORK-ITEMS.md#rw07-welcome-adventure-and-visible-r
 - **Where it lives:** the site root only (`app.creatureWorld`). Classic's island never shows the project, and its picnics are untouched.
 - **Who sees it:** profiles at `preschool` and `prek`, as RW04 says. Lap, toddler, school and grown-up profiles get no Continue and no project, and their Home is unchanged.
 - **What it adds:** a saved `projects.welcome` record, a project round beside today's story rounds, a `ProjectScene` reached from Home's **Continue**, an ending in which the newcomer is named and joins her collection, and the newcomer's basket bed in creature play. The bed shows her picture over it and plays her tune.
-- **Three slices.** Slice 1 is built (2026-10-21, #712): the record, the page, Continue, and the `pretty` and `yummy` steps. Slice 2, the `song` step, waits on the open [hello-song decision](../WAITING-ON-DEVELOPER.md#decisions-that-block-work). Slice 3, the ending, adoption and bed, comes after slice 2, because the ending needs all three results.
+- **Three slices.** Slice 1 is built (2026-10-21, #712): the record, the page, Continue, and the `pretty` and `yummy` steps. Slice 2, the `song` step, waits on the open [hello-song decision](../archive/DECISIONS-2026-10-23.md#decisions). Slice 3, the ending, adoption and bed, comes after slice 2, because the ending needs all three results.
 
 ## What the code offers now (audit at `f43ae313`)
 
@@ -84,7 +84,9 @@ The companion does not change. The newcomer appears in Friends at once and trave
 
 ## Decisions: defaults the build uses
 
-Recorded in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md#defaults-in-use-block-nothing). Each has a default, so none blocks slice 1 or 3. The hello-song level stays the one blocking call, and it gates slice 2.
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: the first unowned of river, then glider comes; the species' three suggested names only; the species' palette colour with no colour step; no journal page until the root has the journal; a reset clears the project and keeps the newcomer.
+
+Decided 2026-10-23 on the developer's delegation ([record](../archive/DECISIONS-2026-10-23.md#decisions)). Each has a default, so none blocks slice 1 or 3. The hello-song level stays the one blocking call, and it gates slice 2.
 
 1. **Who comes:** the first unowned of river, then glider. (Alternative: a fixed species, or a pick between two eggs.)
 2. **Naming:** the species' three suggested names only. (Alternative: the hatch's grown-up typed name as well.)

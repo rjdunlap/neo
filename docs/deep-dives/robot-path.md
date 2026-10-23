@@ -116,6 +116,8 @@ These are placed by [`order`, which may skip IDs](../DESIGN.md) (built). If the 
 4. **Preschool at levels 1–2.** Ready; includes a person check. Also: which is the right moment for the drive and one-step-then-play levels (they wait on the level-order decisions).
 5. **Couch.** The school window 4–6 stays a team stop. Do the new levels (which need select and predict controls) belong on the couch at all? Lean: no, leave couch at 4–6.
 
+**Decided 2026-10-23 (on the developer's delegation):** build 14 Mend the loop, then 15 A routine as the last school level (a child playing level 12 becomes a later person check, not a gate); couch play stays at 4–6.
+
 ## Build slices, in order
 
 1. **Say what happened** (built 2026-10-11, [PR #151](https://github.com/rjdunlap/neo/pull/151)): the bump/stopped-short/empty messages, the hint that prefers a consistent known route, three new voice lines. Rule tests for `nextPress` on alternative valid routes. Tier: game rules plus typecheck; the voice test; one scripted play at level 6.

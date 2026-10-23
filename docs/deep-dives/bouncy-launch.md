@@ -170,6 +170,8 @@ Append 8 (near or far; 7 is built as Feed the friend) and place it with the buil
 6. **Watched pulls and the journal.** Should level 6's shown pulls file `bigger-pull`? Lean: only pulls she made herself, so the entry stays an observation of her own action.
 7. **Rising notes next to the music.** Landing and tick notes are sound effects, not "she makes the music" (so the island's loop keeps playing). Lean: yes, quiet and pentatonic. A person should listen once on an iPad.
 
+**Decided 2026-10-23 (on the developer's delegation):** all seven leans: level 7 Near or Far for toddler and preschool; lap plays the pull level once the wrong-way reply exists (a person watching a one-year-old drag is a later device check); level 11 spring stiffness as the last school level, predicted first; the magnet counts one hint after four misses and notches are free; no-miss levels keep stepping up, with no `assisted` flag; only her own pulls file `bigger-pull`; quiet pentatonic notes beside the island music, with one iPad listen as a device check.
+
 These go on the roadmap's "Waiting on the developer" list as one row.
 
 ## Build slices, in order

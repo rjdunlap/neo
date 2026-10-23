@@ -67,7 +67,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cow' },
     backdrop: { sky: [0xbfe6fb, 0xfff6e0], hills: [0xcde8a4, 0xa8dc8f, 0x8fcf73], horizon: 0.4, clouds: 3, sun: true, seed: 109 },
     music: tune(53, 'marimba', 96),
-    games: ['peekaboo-barn', 'duckling-parade', 'roundup', 'egg-catch', 'animal-snack', 'critter-sort', 'sing-along-barn', 'orchard-rows', 'bolt-boards', 'look-it-up'],
+    games: ['peekaboo-barn', 'duckling-parade', 'roundup', 'egg-catch', 'animal-snack', 'critter-sort', 'sing-along-barn', 'orchard-rows', 'bolt-boards', 'look-it-up', 'adventure-walk', 'ready-for-adventure'],
   },
   {
     id: 'counting-cove',
@@ -94,7 +94,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'juniper' },
     backdrop: { sky: [0xc4ecff, 0xfff6e0], hills: [0xf5d0e6, 0xbfe39a, 0x9ad77e], horizon: 0.4, clouds: 3, sun: true, seed: 131 },
     music: tune(83, 'bell', 96),
-    games: ['shape-sorter', 'color-garden', 'dot-link', 'tangram-town', 'garden-grow', 'treasure-map', 'habitat-helpers', 'jar-sort', 'block-garden', 'swing-pals', 'lift-it'],
+    games: ['shape-sorter', 'color-garden', 'dot-link', 'tangram-town', 'garden-grow', 'treasure-map', 'habitat-helpers', 'jar-sort', 'block-garden', 'swing-pals', 'lift-it', 'sand-table'],
   },
   {
     id: 'puzzle-peaks',
@@ -121,7 +121,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cat', color: 'blue' },
     backdrop: { sky: [0xc8f0ec, 0xfff6e0], hills: [0xa9e0d6, 0xc5e7a8, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 149 },
     music: tune(113, 'pluck', 100),
-    games: ['log-roll', 'robot-path', 'bug-builder', 'bouncy-launch', 'seesaw-balance', 'light-lab', 'ramp-race', 'inchworm', 'block-tower', 'chain-reaction', 'shape-buddies', 'fossil-dig'],
+    games: ['log-roll', 'robot-path', 'bug-builder', 'bouncy-launch', 'seesaw-balance', 'light-lab', 'ramp-race', 'inchworm', 'block-tower', 'chain-reaction', 'shape-buddies', 'fossil-dig', 'sense-detective'],
   },
   {
     // The grown-up puzzles. Every game here is for the `grownup` band, so everyone younger sees them behind the signpost.

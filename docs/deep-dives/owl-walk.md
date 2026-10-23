@@ -165,6 +165,8 @@ Append 5 and 6 and place them with the built `order` support, declaring `entryLe
 8. **A school window (levels 7–8).** *Lean: a sketch only; define after pre-K play of level 4.*
 9. **The fly-home rule. Done (2026-10-13, as 2).** Teach it at level 3 and make the nest tap the answer. *Lean: yes.* (Level 1–2 cards avoid it until an owl is on the last stone; the nest is also the answer there.)
 
+**Decided 2026-10-23 (on the developer's delegation):** the remaining leans stand: no clock or par (4); a grown-up may take the pet's turn, uncredited (5); level 5 is a free lap toy with no cards (6); level 6 (shape apart from color) may be built now, with the iPad check of spoken shape names moved to the device checks (7); levels 7–8 may be defined from their sketch now, and the pre-K play of level 4 becomes a person check, not a gate (8).
+
 ## Build slices, in order
 
 1. **Built 2026-10-13.** **Truthful words and counted hops** (voice, how-to, `describeLevel`). The words stop claiming a choice at level 3 that the rules do not have; the fly-home rule is said when it happens; the hops are counted aloud on the way (reuse Frog Hop's counted-hop lines); the pet says what it looked for. No rule changes. *Tier: typecheck, the owl rule tests, the how-to tests; one filtered `shortlist` play of level 3 and `fingerdemo` at 3.* Ready.

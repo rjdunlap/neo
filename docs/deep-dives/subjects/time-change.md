@@ -151,7 +151,7 @@ The long-ago end is soft and sepia-tinted in palette colors and the now end is b
 
 ## Build slices, in order
 
-1. **Define Timeline Trail 1–4** (docs packet): the three places' stage art, gap rules, speech, how-to steps per level, ghost finger, both layouts and the land capacity audit.
+1. **Define Timeline Trail 1–4** (docs packet; **defined 2026-10-23**, [packet](../../definitions/timeline-trail.md)): the three places' stage art, gap rules, speech, how-to steps per level, ghost finger, both layouts and the land capacity audit.
 2. **Build levels 1–3** with rule tests (insertion validity, solvable boards, hints that lead to a gap). New game tier: one scripted play and one portrait screenshot.
 3. **Add level 4**, a clue inside the picture, with the test that every clue decides its card.
 4. **Add levels 5–6:** the continuity ribbon, the counter-progress card with its failing-heuristic test, and the two-valid-places card.

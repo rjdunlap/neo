@@ -105,6 +105,8 @@ Read, none played or handled:
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** Keep all seven defaults; decision 1's reviewer becomes the session's source check against reputable biology sources.
+
 Each has a default the build uses; the developer can change any.
 
 1. **Reviewer** (shared with G1): the "two spot copies can never make a plain sprout" and "can't tell yet" lines need the same biology/education review. Default: build behind review, lines marked draft.

@@ -149,6 +149,8 @@ Three plates hold up to 1, 2 and 3 pancakes (the Tower of London's peg heights);
 6. **Brain Break 4 *Back and forth*.** Lean: yes, a picture sequence (fruit spoken by name) rather than letters, so no reading is needed; misses and the two-miss outline as at levels 1–3; the hint names *which kind* comes next.
 7. **Pet Says school window** (already its decision 1). This study adds evidence for it: inhibition matures into adolescence, and the HTKS is used from 4 to 8.
 
+**Decided 2026-10-23 (on the developer's delegation):** every lean: (1) the grown-up wording rule is adopted (name what a game asks; never "brain training" or an attention, behaviour, school or ADHD benefit); (2) Scoop Shop 7–9 with a school window of 5–9, three scoops per level, a peek still a hint; (3) Pancake Stack accounting as leaned; (4) Pancake Stack kept as a new Puzzle Peaks game (Tinker Lab if the layout fails), after Scoop Shop and the switch entry; (5) Critter Sort's pre-K switch entry as a new level ID after 6, first old-rule drop a nudge; (6) Brain Break 4 *Back and forth* with pictured fruit; (7) this evidence supports opening Pet Says' school window.
+
 ## Build slices, in order
 
 Each is sized for one session. Definitions are docs only (links and `git diff --check`); builds use their own tier.

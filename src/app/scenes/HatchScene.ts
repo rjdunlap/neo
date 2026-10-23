@@ -1,5 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
-import { cream, swatch } from '../../art/palette';
+import { swatch } from '../../art/palette';
+import { homeBackdrop } from '../../art/home/backdrop';
+import { homeLayout } from '../../creatures/home-layout';
 import { Companion, makeEgg, type EggStage } from '../../creatures/companion';
 import { SPECIES } from '../../creatures/species';
 import { sfx } from '../../audio/sfx';
@@ -18,7 +20,10 @@ import { applySettings } from '../settings';
 export class HatchScene extends Scene {
   /** It has a name field, and nothing here has started yet. */
   canPause = false;
-  private readonly background = new Graphics();
+  private readonly background = homeBackdrop();
+  private readonly plate = new Graphics();
+  private eggHeight = 260;
+  private friendHeight = 0;
   /** The sprout's egg: whole, cracked after the first taps, open on the last (R08 and R18). */
   private readonly egg = new Container();
   private eggStage: EggStage | null = null;
@@ -46,12 +51,22 @@ export class HatchScene extends Scene {
     if (stage === this.eggStage) return;
     this.eggStage = stage;
     this.egg.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.egg.addChild(makeEgg(stage));
+    const art = makeEgg(stage);
+    const bounds = art.getLocalBounds();
+    if (stage === 'whole') this.eggHeight = bounds.height;
+    // All three illustrated stages share a bottom edge; keep the lifted cap's extra height.
+    art.y = this.eggHeight / 2 - (bounds.y + bounds.height);
+    this.egg.addChild(art);
+    this.resize(this.view);
   }
 
   init() {
+    // Include the illustrated sprout's leaves and feet, not only its body polygon.
+    const preview = new Companion({ species: 'sprout', look: { color: this.color } });
+    this.friendHeight = preview.getLocalBounds().height;
+    preview.destroy({ children: true });
     this.showEgg(0);
-    this.content.addChild(this.background, this.egg, this.choices);
+    this.content.addChild(this.background, this.egg, this.plate, this.choices);
     this.ui.addChild(this.next, this.nameLabel);
     this.next.visible = false;
     if (this.quick) {
@@ -143,19 +158,32 @@ export class HatchScene extends Scene {
   }
 
   resize(v: View) {
-    this.background.clear().rect(0, 0, v.w, v.h).fill(cream).ellipse(v.w / 2, v.h * 0.53, 160, 28).fill(swatch.green.light);
-    this.egg.position.set(v.w / 2, v.h * 0.38);
-    this.pip?.position.set(v.w / 2, v.h * 0.53);
-    this.pip?.scale.set(0.8);
-    this.next.position.set(v.w - 80, v.h * 0.39);
+    const l = homeLayout(v, false);
+    this.background.position.set(l.backdrop.x, l.backdrop.y);
+    this.background.scale.set(l.backdrop.scale);
+    const height = this.friendHeight * l.stage.scale;
+    this.egg.scale.set(height / this.eggHeight);
+    this.egg.position.set(l.stage.x, l.stage.y - height / 2);
+    this.pip?.position.set(l.stage.x, l.stage.y);
+    this.pip?.scale.set(l.stage.scale);
+    this.next.position.set(v.w - 90, 220);
+    this.plate.visible = this.step !== 'egg';
+    this.plate.clear().roundRect(30, 24, v.w - 60, 340, 42)
+      .fill({ color: swatch.white.fill, alpha: 0.92 })
+      .stroke({ width: 3, color: swatch.teal.light });
+    this.plate.eventMode = 'none';
+    if (this.form) {
+      this.form.style.bottom = 'auto';
+      this.form.style.top = `calc(var(--safe-top) + ${300 * v.scale}px)`;
+    }
     this.nameLabel.text = this.step === 'name' ? this.name : '';
     this.nameLabel.scale.set(1);
     this.nameLabel.scale.set(Math.min(1, (v.w - 100) / Math.max(1, this.nameLabel.width)));
     this.nameLabel.position.set(v.w / 2, 70);
     this.selected.clear();
     this.choices.children.filter((c) => c !== this.selected).forEach((c, i) => {
-      const x = this.step === 'color' ? v.w / 2 + ((i % 4) - 1.5) * 138 : v.w / 2 + (i - 1) * 260;
-      const y = this.step === 'color' ? v.h * 0.65 + Math.floor(i / 4) * 125 : v.h * 0.68;
+      const x = this.step === 'color' ? (v.w - 160) / 2 + ((i % 4) - 1.5) * 138 : (v.w - 160) / 2 + (i - 1) * 245;
+      const y = this.step === 'color' ? 155 + Math.floor(i / 4) * 125 : 220;
       c.position.set(x, y);
       if (this.step === 'color' ? PET_COLORS[i] === this.color : this.names[i] === this.name) {
         this.selected.roundRect(x - (this.step === 'color' ? 59 : 119), y - 59, this.step === 'color' ? 118 : 238, 118, 52).stroke({ width: 6, color: swatch.yellow.line });

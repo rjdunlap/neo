@@ -144,6 +144,8 @@ For example, a half-lit-area clue alone permits the two quarter positions. Revea
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** Moon Window's packet defaults are confirmed: Tinker Lab, else Bubble Beach; lap 1, toddler 1–2, preschool 2–3, pre-K 3; the ordinary adaptation rule, described to grown-ups as exposure, not phase mastery; one miss per two-card board, then help. Phase geometry, orientation and labels take the building session's check against cited sources; an adapted lamp-and-ball card takes the same check, while Sun, eclipse and sky-equipment advice is not drafted; Orbit Garden and Observatory Files go at the top of `school` and as `grownup` cases when defined, with no kept observations yet.
+
 1. **Identity and placement:** confirm Moon Window as the existing seed's identity and its proposed band windows; audit Tinker Lab capacity. Orbit Garden/Observatory Files need their own complete definitions and school/grown-up registration decisions, with one land per ID. No new zone/band is needed to research or define them.
 2. **Model review:** recommend an astronomy educator review phase geometry, the fixed reference orientation, unseen-new-Moon treatment, labels and the separation of phase/visibility/eclipse concepts before scientific claims ship. No reviewer has been named or review performed.
 3. **Practical cards:** a named appropriate reviewer is required before adapted lamp/ball instructions or sky/Sun/equipment advice is printed/spoken. A screen-only definition can proceed now; the NASA lesson is not preapproved toddler guidance.

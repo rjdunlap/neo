@@ -123,6 +123,8 @@ Covered above: 6 and 7 enter below 1–2 and 8 sits between 2 and 3 for toddler 
 
 Each has a default below; the build proceeds on it.
 
+**Decided 2026-10-23 (on the developer's delegation):** the defaults stand: *Pat the fluff* ends by itself after twenty quiet seconds once the fur is long; the style staying on the creature waits for RW05/RW06/RW07 with no save change before then; accessories wait for RW02's wearable slots; no school window (12 is pre-K's top); code-drawn `CRITTERS` sit in the chair at 9 and 10 until RW05 casting.
+
 1. **The lap round that ends by itself.** Default: at *Pat the fluff* the pet looks in the mirror by itself after twenty quiet seconds once the fur is long (no miss, no hint), as Stamp Studio's eighth pat does. Alternative: the mirror tap stays the only exit, and the invitation (wiggle and "Look in the mirror!") is all the help.
 2. **The style comes home.** Default: gated on the rework's collection model (RW05) and the creature customization slice (RW06/RW07): a bounded `hairstyle` on the creature record (26 strands, each a length 8–220, a curl 0–1 quantized to twentieths and a color name), set when a round finishes on an owned creature, shown at home and used as the next visit's start; no save change before then. Alternative: a `creation` slot now in the existing picture frame, which the integration review argues is the wrong home for it.
 3. **Accessories.** Default: none until RW02's wearable slots exist; then a bow or hat becomes a request part at 5 and 9 ("short, blue, with a bow") and a free-play item at 2. Alternative: a code-drawn bow now as a sixth tool (the 2026-10-09 audit's row).
@@ -135,8 +137,8 @@ Each has a default below; the build proceeds on it.
 
 1. **Support truth** (built 2026-10-21, `claude/fluffy-salon-support-truth`, [PR #717](https://github.com/rjdunlap/neo/pull/717); existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 3, `fingerdemo` at 3 since the hint timer is what the bot's 12-second test guards): the quiet-time hint, every touch answered, the mirror invitation, "more pink" with the old-color glow, the how-to note. IDs and windows unchanged.
 2. **Customers, rooms and start looks** (logic tier plus one filtered play of 4 and one screenshot): seeded friends in the chair with `{who}` lines, seeded wall and cape colors, five free-play start looks.
-3. **Level 6 *Pat the fluff*** (new interaction tier: typecheck, rule tests, one scripted play at lap, one portrait screenshot, `fingerdemo` at 6): no buttons, the floof shake, the big mirror and the self-finish; lap `order [6, 1, 2]`, toddler `order [6, 1, 2]`, `entryLevels: [6]`.
-4. **Level 7 *Snip snip*** (new levels on an existing interaction: typecheck, rule tests, one play of 7, `fingerdemo` at 7): lap `order [6, 1, 7, 2]`, toddler `order [6, 1, 7, 2]`, `entryLevels: [6, 7]`.
+3. **Level 6 *Pat the fluff*** (built 2026-10-23, `claude/fluffy-salon-pat-snip`, [PR #864](https://github.com/rjdunlap/neo/pull/864), with 4: levels 6–7 were the first named part of READY batch 1; slice 2 customers/rooms/start looks stays queued; new interaction tier: typecheck, rule tests, one scripted play at lap, one portrait screenshot, `fingerdemo` at 6): no buttons, the floof shake, the big mirror and the self-finish; lap `order [6, 1, 2]`, toddler `order [6, 1, 2]`, `entryLevels: [6]`.
+4. **Level 7 *Snip snip*** (built 2026-10-23 with 3, [PR #864](https://github.com/rjdunlap/neo/pull/864); new levels on an existing interaction: typecheck, rule tests, one play of 7, `fingerdemo` at 7): lap `order [6, 1, 7, 2]`, toddler `order [6, 1, 7, 2]`, `entryLevels: [6, 7]`.
 5. **Level 8 *Pink, please*** (new levels on an existing interaction, with the wrong-color naming: one play of 8, `fingerdemo` at 8): toddler `order [6, 1, 7, 2, 8]`, preschool `order [2, 8, 3, 4]`.
 6. **Level 9 *Two customers*** (new interaction tier, plus a portrait screenshot for two heads): preschool `order [2, 8, 3, 4, 9]`, pre-K `order [3, 4, 5, 9]`.
 7. **Level 10 *Longer than Pip's*** (new interaction tier: the comparison drawing in the mirror): pre-K `order [3, 4, 5, 9, 10]`.
@@ -146,5 +148,7 @@ Each has a default below; the build proceeds on it.
 Gated: the style coming home (decision 2, after RW05/RW06), accessories (decision 3, after RW02's slots), 13 *Six beads long* and a school window (decision 4), owned creatures in the chair (decision 5, after RW05 casting).
 
 ## What was built in this session
+
+Slices 3–4 (levels 6 and 7, 2026-10-23, [PR #864](https://github.com/rjdunlap/neo/pull/864)) are built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#fluffy-salon-levels-6-and-7-pat-the-fluff-and-snip-snip-slices-34-2026-10-23), the checks in [VERIFICATION](../VERIFICATION.md#2026-10-23--fluffy-salon-levels-6-and-7-pat-the-fluff-and-snip-snip-slices-34).
 
 Slice 1 (support truth, 2026-10-21, [PR #717](https://github.com/rjdunlap/neo/pull/717)) is built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#fluffy-salon-support-truth-slice-1-2026-10-21), the checks in [VERIFICATION](../archive/VERIFICATION-2026-10-21.md#2026-10-21--fluffy-salon-support-truth-slice-1). It also found and fixed a bug the audit missed: the mirror appeared at level 3, which has no mirror, and a tap on it counted a miss. The deep dive session itself was research and ideation only.

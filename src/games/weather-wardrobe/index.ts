@@ -8,12 +8,13 @@ import type { LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { clothing, itemIcon } from './art';
-import { GROUND_TOUCH, ITEM_NAMES, ITEM_WORDS, ITEMS, itemToTap, outfitFor, outfits, SLOTS, STICKER_ITEMS, wardrobePlan, WEATHERS, type Item, type Outfit, type WardrobePlan, type Weather } from './logic';
+import { GROUND_TOUCH, ITEM_NAMES, tripPlays, MISFIT, ITEM_WORDS, ITEMS, itemToTap, outfitFor, outfits, SLOTS, STICKER_ITEMS, wardrobePlan, WEATHERS, type Item, type Misfit, type Outfit, type WardrobePlan, type Weather } from './logic';
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -51,6 +52,15 @@ interface Burst {
 
 const BURST_LIFE = 0.9;
 
+/** Level 8 is the lap entry, played before level 2 (a lap child tries things on before choosing); 9 (Which sky?) sits after 2 for toddlers and after 3 for preschool. */
+const LEVELS: BandLevels = {
+  lap: { min: 1, max: 8, order: [1, 8, 2] },
+  toddler: { min: 2, max: 9, order: [2, 9, 3, 4] },
+  preschool: { min: 3, max: 9, order: [3, 9, 4, 5] },
+  prek: { min: 4, max: 7 },
+};
+const TRY_IDLE = 6;
+
 interface Option {
   item: Item;
   node: Container;
@@ -75,6 +85,12 @@ class WeatherWardrobe implements Game {
   busy = false;
   done = false;
   private changePhase: 'remove' | 'add' | null = null;
+  /** Level 8: seconds since she last touched anything, and how long the stopped weather still bounces off the pet. */
+  private idle = 0;
+  private shield = 0;
+  /** Level 9: the grey scene before she picks a sky, and the sky cards. */
+  private blank = false;
+  private readonly skyCards: { weather: Weather; node: Container }[] = [];
 
   private readonly sky = new Graphics();
   private readonly ground = new Graphics();
@@ -150,6 +166,10 @@ class WeatherWardrobe implements Game {
       return { tap: { on: this.skyHit, x: sky.width * 0.7, y: sky.height * 0.3 } };
     }
     if (this.busy) return null;
+    if (this.plan.mode === 'sky') {
+      const card = this.skyCards.find((c) => c.weather === this.outfit.answer);
+      return card ? { tap: { on: card.node } } : null;
+    }
     const item = itemToTap(this.outfit, new Set(this.options.filter((o) => o.used).map((o) => o.item)));
     if (this.changePhase === 'remove') {
       const worn = this.outfit.remove?.find((i) => this.worn.has(i));
@@ -251,8 +271,15 @@ class WeatherWardrobe implements Game {
     const o = this.outfit;
     this.wrong = 0;
     this.changePhase = this.plan.mode === 'change' ? 'remove' : null;
+    this.idle = 0;
+    this.shield = 0;
     this.undress();
     this.packed.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (this.plan.mode === 'sky') {
+      this.askSky(o);
+      return;
+    }
+    this.blank = false;
     this.setWeather(o.weathers[0]);
     if (this.plan.mode === 'change') o.remove?.forEach((item) => this.put(item, () => this.removeWorn(item)));
     this.drawForecast(o);
@@ -272,26 +299,111 @@ class WeatherWardrobe implements Game {
     });
     this.ctx.stage.addChild(this.glow);
     if (this.plan.mode === 'change') this.instruct('weather.change.remove', { weather: o.weathers[1] });
+    else if (this.plan.mode === 'try') this.instruct('weather.try', { weather: o.weathers[0] });
     else if (this.plan.mode === 'trip') this.instruct('weather.trip', { a: o.weathers[0], b: o.weathers[1] });
     else this.instruct(this.plan.mode === 'pick' ? 'weather.pick' : 'weather.all', { weather: o.weathers[0] });
     this.resize(this.view);
     this.busy = false;
   }
 
+  /** Level 9: the pet stands in a grey scene already dressed; she picks the sky it is dressed for. */
+  private askSky(o: Outfit) {
+    this.blank = true;
+    this.drops = [];
+    this.drawWeather();
+    this.pet.setMood('calm', 0.6);
+    o.worn?.forEach((item) => this.put(item));
+    this.drawForecast(o);
+    for (const opt of this.options) opt.node.destroy({ children: true });
+    this.options.length = 0;
+    for (const c of this.skyCards) c.node.destroy({ children: true });
+    this.skyCards.length = 0;
+    o.skies?.forEach((weather, i) => {
+      const node = new Container();
+      node.addChild(tile(124, 124), weatherIcon(weather, 96));
+      node.hitArea = new Rectangle(-70, -70, 140, 140);
+      onTap(node, () => this.chooseSky(weather));
+      node.scale.set(0);
+      void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.35, delay: i * 0.07, ease: ease.outBack });
+      this.skyCards.push({ weather, node });
+      this.ctx.stage.addChild(node);
+    });
+    this.ctx.stage.addChild(this.glow);
+    this.instruct('weather.which');
+    this.resize(this.view);
+    this.busy = false;
+  }
+
+  private chooseSky(weather: Weather) {
+    if (this.busy || this.done) return;
+    const o = this.outfit;
+    if (weather !== o.answer) {
+      // The wrong sky plays over the pet for a moment, shows its weather's trouble, then clears.
+      this.misses++;
+      this.wrong++;
+      this.busy = true;
+      sfx.boing();
+      this.blank = false;
+      this.setWeather(weather);
+      const fx = this.misfitFx(MISFIT[weather]);
+      const hint = this.wrong === 2;
+      if (hint) this.hints++;
+      void (async () => {
+        const said = this.ctx.say('weather.sky.wrong', { weather });
+        const x = this.pet.x;
+        for (const dx of [-5, 5, -5, 5, 0]) await this.ctx.tw.to(this.pet, { x: x + dx }, { duration: 0.07 });
+        this.pet.x = x;
+        await this.ctx.tw.wait(0.4);
+        fx.destroy();
+        this.pet.setMood('calm', 0.6);
+        this.blank = true;
+        this.drops = [];
+        this.drawWeather();
+        await said;
+        if (hint) await this.ctx.say('weather.hint');
+        this.busy = false;
+        this.drawGlow();
+      })();
+      return;
+    }
+    this.busy = true;
+    this.wrong = 0;
+    this.blank = false;
+    this.setWeather(weather);
+    sfx.bell(7, 0.3);
+    this.drawGlow();
+    void this.ctx.tw.wait(0.6).then(() => this.finishRound());
+  }
+
+  private finishRound() {
+    this.pet.cheer();
+    sfx.sparkle();
+    return this.ctx.say('weather.ready').then(() => this.ctx.tw.wait(0.4)).then(() => {
+      this.q++;
+      if (this.q < this.rounds.length) this.ask();
+      else {
+        this.done = true;
+        this.ctx.finish({ misses: this.misses, hints: this.hints });
+      }
+    });
+  }
+
   private choose(opt: Option) {
     if (this.busy || this.done || opt.used) return;
     const o = this.outfit;
+    this.idle = 0;
     if (!o.needed.includes(opt.item)) {
-      this.misses++;
-      this.wrong++;
-      sfx.boing();
-      this.ctx.tw.kill(opt.node);
-      const x = opt.node.x;
-      void this.ctx.tw.to(opt.node, { x: x + 12 }, { duration: 0.06 }).then(() => this.ctx.tw.to(opt.node, { x }, { duration: 0.25, ease: ease.outElastic }));
-      if (this.wrong === 2) {
-        this.hints++;
-        void this.ctx.say('weather.wrong', { item: ITEM_WORDS[opt.item], weather: ITEMS[opt.item] }).then(() => this.ctx.say('weather.hint'));
-      } else void this.ctx.say('weather.wrong', { item: ITEM_WORDS[opt.item], weather: ITEMS[opt.item] });
+      // Level 8 has no mistakes: anything goes on, shows what it does, and hops back.
+      if (this.plan.mode !== 'try') {
+        this.misses++;
+        this.wrong++;
+        sfx.boing();
+        if (this.wrong === 2) {
+          this.hints++;
+          void this.ctx.say('weather.wrong', { item: ITEM_WORDS[opt.item], weather: ITEMS[opt.item] }).then(() => this.ctx.say('weather.hint'));
+        } else void this.ctx.say('weather.wrong', { item: ITEM_WORDS[opt.item], weather: ITEMS[opt.item] });
+      }
+      this.tryOn(opt);
       this.drawGlow();
       return;
     }
@@ -301,6 +413,7 @@ class WeatherWardrobe implements Game {
     sfx.bell(5 + this.options.filter((o) => o.used).length, 0.3);
     if (this.plan.mode === 'trip') this.pack(opt);
     else this.put(opt.item);
+    if (this.plan.mode === 'try') this.shield = 2.2;
     const left = o.needed.filter((i) => !this.options.find((x) => x.item === i)?.used);
     this.drawGlow();
     if (left.length) {
@@ -309,17 +422,23 @@ class WeatherWardrobe implements Game {
     }
     this.busy = true;
     void this.ctx.tw.wait(0.6).then(async () => {
-      this.pet.cheer();
-      sfx.sparkle();
-      await this.ctx.say('weather.ready');
-      await this.ctx.tw.wait(0.4);
-      this.q++;
-      if (this.q < this.rounds.length) this.ask();
-      else {
-        this.done = true;
-        this.ctx.finish({ misses: this.misses, hints: this.hints });
-      }
+      if (this.plan.mode === 'trip') await this.unpack();
+      await this.finishRound();
     });
+  }
+
+  /** Level 6's payoff: the trip happens. Each weather comes in turn and the pet puts on the things packed for it. */
+  private async unpack() {
+    for (const { weather, items } of tripPlays(this.outfit)) {
+      this.undress();
+      this.setWeather(weather);
+      await this.ctx.tw.wait(0.6);
+      for (const item of items) {
+        this.put(item);
+        await this.ctx.tw.wait(0.55);
+      }
+      await this.ctx.tw.wait(0.5);
+    }
   }
 
   /** Dresses the pet in one item, with a little pop; `touched` makes the worn item answer a touch. */
@@ -368,6 +487,60 @@ class WeatherWardrobe implements Game {
     this.wornCenters.clear();
   }
 
+  /**
+   * A wrong item goes on for under a second, shows what the weather does to it (drops on the lenses, sweat, a frosty cap),
+   * then hops back to its tile. The tap that started it counts however the caller scores it.
+   */
+  private tryOn(opt: Option) {
+    const { ctx, pet } = this;
+    this.busy = true;
+    opt.node.alpha = 0.35;
+    const c = clothing(opt.item);
+    pet.attach(c);
+    c.scale.set(0.6);
+    void ctx.tw.to(c.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    sfx.pop(8);
+    const fx = this.misfitFx(MISFIT[this.weather]);
+    // A shiver or a fan-wiggle on the pet's whole body, then back to where it stood.
+    const x = pet.x;
+    void (async () => {
+      for (const dx of [-5, 5, -5, 5, 0]) await ctx.tw.to(pet, { x: x + dx }, { duration: 0.07 });
+      pet.x = x;
+      await ctx.tw.wait(0.25);
+      c.destroy({ children: true });
+      fx.destroy();
+      pet.setMood('happy', 0.4);
+      const back = itemIcon(opt.item, 96);
+      back.position.set(pet.x, pet.y - 150);
+      ctx.stage.addChild(back);
+      await ctx.tw.to(back, { x: opt.node.x, y: opt.node.y }, { duration: 0.3, ease: ease.outBack });
+      back.destroy({ children: true });
+      opt.node.alpha = 1;
+      this.busy = false;
+    })();
+  }
+
+  /** The weather's trouble drawn on the pet (drops, sweat or frost), with its little sound and mood; the caller destroys it. */
+  private misfitFx(kind: Misfit): Graphics {
+    const { ctx, pet } = this;
+    const fx = new Graphics();
+    pet.attach(fx);
+    if (kind === 'wet') {
+      for (const [x, y] of [[-46, -176], [4, -150], [52, -184], [-14, -214]]) fx.circle(x, y, 9).fill(swatch.blue.fill).stroke(line(swatch.blue.line, 3));
+      pet.setMood('surprised', 0.9);
+      [7, 5, 4].forEach((s, i) => void ctx.tw.wait(0.12 + i * 0.1).then(() => sfx.bell(s, 0.2)));
+    } else if (kind === 'hot') {
+      for (const side of [-1, 1]) fx.poly([side * 112, -250, side * 100, -226, side * 124, -226]).fill(swatch.blue.light).stroke(line(swatch.blue.line, 3)).circle(side * 112, -222, 12).fill(swatch.blue.light);
+      pet.setMood('calm', 0.9);
+      [4, 5, 7].forEach((s, i) => void ctx.tw.wait(0.12 + i * 0.1).then(() => sfx.bell(s, 0.2)));
+    } else {
+      puffs(fx, [[-46, -298, 26], [0, -318, 32], [48, -298, 26]], swatch.white.fill, swatch.blue.light, 4);
+      pet.setMood('surprised', 0.9);
+      [7, 4, 2].forEach((s, i) => void ctx.tw.wait(0.12 + i * 0.1).then(() => sfx.bell(s, 0.2)));
+    }
+    return fx;
+  }
+
   /** Trips: the item hops into the suitcase and shows on its lid. */
   private pack(opt: Option) {
     const icon = itemIcon(opt.item, 96);
@@ -403,7 +576,14 @@ class WeatherWardrobe implements Game {
     const v = this.view;
     const groundY = v.h * 0.62;
     const w = this.weather;
-    const s = this.sky.clear().rect(0, 0, v.w, groundY + 20).fill(w === 'snowy' ? swatch.white.light : swatch.blue.light);
+    const s = this.sky.clear().rect(0, 0, v.w, groundY + 20).fill(this.blank ? swatch.white.line : w === 'snowy' ? swatch.white.light : swatch.blue.light);
+    if (this.blank) {
+      // Level 9's grey, weatherless scene: no sun, clouds, rain or snow until she picks a sky.
+      this.skyHit.hitArea = new Rectangle(0, 0, v.w, groundY);
+      this.groundHit.hitArea = new Rectangle(0, groundY, v.w, v.h - groundY);
+      this.ground.clear().rect(0, groundY, v.w, v.h - groundY).fill(swatch.white.light);
+      return;
+    }
     if (w === 'rainy') s.rect(0, 0, v.w, groundY + 20).fill({ color: swatch.white.line, alpha: 0.4 });
     if (w === 'sunny') {
       const cx = v.w * 0.84;
@@ -454,12 +634,25 @@ class WeatherWardrobe implements Game {
         o.node.position.set(xs[i], v.h - 86);
       });
     }
+    if (this.skyCards.length) {
+      this.tray.roundRect(160, v.h - 160, v.w - 190, 148, 30).fill({ color: swatch.white.fill, alpha: 0.85 });
+      const xs = spread(this.skyCards.length, 175, v.w - 40, 150);
+      this.skyCards.forEach((c, i) => {
+        this.ctx.tw.kill(c.node);
+        c.node.position.set(xs[i], v.h - 86);
+      });
+    }
     this.drawGlow();
   }
 
   private drawGlow() {
     const g = this.glow.clear();
     if (this.wrong < 2 || this.done || !this.outfit) return;
+    const sky = this.skyCards.find((c) => c.weather === this.outfit.answer);
+    if (this.plan.mode === 'sky') {
+      if (sky) g.roundRect(sky.node.x - 72, sky.node.y - 72, 144, 144, 26).stroke({ width: 8, color: swatch.yellow.line });
+      return;
+    }
     const target = this.options.find((o) => !o.used && this.outfit.needed.includes(o.item));
     if (target) g.roundRect(target.node.x - 72, target.node.y - 72, 144, 144, 26).stroke({ width: 8, color: swatch.yellow.line });
   }
@@ -468,9 +661,26 @@ class WeatherWardrobe implements Game {
     this.clock += dt;
     this.pet.update(dt);
     this.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 4);
+    if (this.plan.mode === 'try' && !this.busy && !this.done && this.options.length) {
+      this.idle += dt;
+      if (this.idle > TRY_IDLE) {
+        // Not a hint: the fitting tile only wiggles, and nothing is counted.
+        this.idle = 0;
+        const fit = this.options.find((o) => !o.used && this.outfit.needed.includes(o.item));
+        if (fit) {
+          const x = fit.node.x;
+          this.ctx.tw.kill(fit.node);
+          void this.ctx.tw.to(fit.node, { x: x + 10 }, { duration: 0.07 })
+            .then(() => this.ctx.tw.to(fit.node, { x: x - 10 }, { duration: 0.1 }))
+            .then(() => this.ctx.tw.to(fit.node, { x }, { duration: 0.3, ease: ease.outElastic }));
+        }
+      }
+    }
     const v = this.view;
     this.drawBursts(dt);
     const fx = this.fx.clear();
+    if (this.shield > 0) this.drawShield(fx, dt);
+    if (this.blank) return;
     if (this.weather === 'rainy') {
       for (const d of this.drops) {
         d.y += d.v * dt;
@@ -486,6 +696,19 @@ class WeatherWardrobe implements Game {
         fx.circle(d.x, d.y, 5 + (d.d % 3));
       }
       fx.fill(swatch.white.fill).stroke({ width: 2, color: swatch.blue.light });
+    }
+  }
+
+  /** Level 8: the fitting item stops the weather, so a few drops, flakes or sun sparks bounce off the pet. */
+  private drawShield(fx: Graphics, dt: number) {
+    this.shield = Math.max(0, this.shield - dt);
+    const t = 2.2 - this.shield;
+    const color = this.weather === 'sunny' ? swatch.yellow.fill : this.weather === 'rainy' ? swatch.blue.fill : swatch.white.fill;
+    for (let i = 0; i < 7; i++) {
+      const phase = (t * 1.6 + i / 7) % 1;
+      const a = -Math.PI / 2 + (i - 3) * 0.42;
+      const r = 150 + 90 * phase;
+      fx.circle(this.pet.x + Math.cos(a) * r, this.pet.y - 140 + Math.sin(a) * r * 0.9, 8 * (1 - phase) + 3).fill({ color, alpha: 1 - phase });
     }
   }
 
@@ -542,7 +765,8 @@ export const weatherWardrobe: GameModule = {
   region: 'cozy-village',
   skills: ['reasoning', 'vocabulary', 'everyday-life'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (b) => (b === 'prek' ? { min: 4, max: 7 } : b === 'preschool' ? { min: 3, max: 5 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
+  levels: (b) => rangeFor(LEVELS, b),
+  entryLevels: [8, 9],
   describeLevel: (l) => wardrobePlan(l).name,
   touchDemo: true,
   music: STYLES.hub,

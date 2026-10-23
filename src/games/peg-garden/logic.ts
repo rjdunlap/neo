@@ -6,7 +6,7 @@ import type { Rng } from '../../engine/random';
  * Every bud it touches blooms and chimes. Nothing is ever lost; the ladder asks for
  * particular flowers, then for aiming at numbers.
  */
-export type PegMode = 'drop' | 'bloom' | 'color' | 'number' | 'order';
+export type PegMode = 'drop' | 'bloom' | 'color' | 'number' | 'order' | 'big';
 
 export interface PegPlan {
   mode: PegMode;
@@ -25,7 +25,22 @@ export const PLANS: PegPlan[] = [
   { mode: 'order', pegs: 14, count: 3, name: 'Hit numbered flowers 1, 2, 3 in order' },
 ];
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+/** Level 8, the lap entry: four huge buds, and every touch blooms one. Plans are keyed by ID, so it sits outside the ladder's order. */
+export const BIG_LEVEL = 8;
+export const BIG_PLAN: PegPlan = { mode: 'big', pegs: 4, count: 0, name: 'Four huge flowers: any pearl that touches one makes it bloom' };
+
+export const planFor = (level: number) => (level === BIG_LEVEL ? BIG_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1]);
+
+/** The huge buds' radius: nearly three plain buds across, so a pearl dropped anywhere near one touches it. */
+export const BIG_PEG = 60;
+
+/** The four huge buds, a diamond with a pearl's width and more between each pair and from the walls. */
+export const BIG_SPOTS: { x: number; y: number }[] = [
+  { x: 340, y: 200 },
+  { x: 170, y: 340 },
+  { x: 510, y: 340 },
+  { x: 340, y: 480 },
+];
 
 /** The board, in its own units: pegs live inside it and the ball falls out the bottom. */
 export const BOARD = { w: 680, h: 600, top: 120, peg: 22, ball: 15 };
@@ -35,6 +50,8 @@ export interface PegSpot {
   y: number;
   /** 'plain', a special color bud, or a number 1..n. */
   kind: 'plain' | 'special' | number;
+  /** A bud's radius when it is not a plain bud's. */
+  r?: number;
 }
 
 /**
@@ -73,6 +90,7 @@ export function grid(shape: BoardShape = 'rows'): { x: number; y: number }[] {
 }
 
 export function makeBoard(plan: PegPlan, rng: Rng, shape: BoardShape = 'rows'): PegSpot[] {
+  if (plan.mode === 'big') return BIG_SPOTS.map((p): PegSpot => ({ ...p, kind: 'plain', r: BIG_PEG }));
   const spots = rng.shuffle(grid(shape)).slice(0, plan.pegs).map((p): PegSpot => ({ ...p, kind: 'plain' }));
   // Specials and numbers sit in the middle rows, where an aimed shot can reach them.
   const reachable = rng.shuffle(spots.filter((s) => s.x > 80 && s.x < BOARD.w - 80));
@@ -191,4 +209,4 @@ export const ledgeX = (x: number) => Math.max(BOARD.ball, Math.min(BOARD.w - BOA
  * `STALL_AT` pearls in a row that woke nothing wanted, and on the colour level while its hint is on.
  */
 export const guided = (mode: PegMode, stalled: number, hinting: boolean) =>
-  (mode === 'bloom' || mode === 'color') && (stalled >= STALL_AT || (mode === 'color' && hinting));
+  (mode === 'bloom' || mode === 'big' || mode === 'color') && (stalled >= STALL_AT || (mode === 'color' && hinting));
