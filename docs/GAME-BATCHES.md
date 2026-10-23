@@ -173,10 +173,10 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
-### weather-wardrobe 2: Forecast trip, reverse matching and wind
+### weather-wardrobe 2: Wind (remaining part)
 
-- **`weather-wardrobe`, the trip happens** (level 6 payoff): the pet unpacks and wears each weather's things in forecast order. [Slice 5](deep-dives/weather-wardrobe.md#build-slices-in-order)
-- **`weather-wardrobe`, level 9 Which sky?** (new level, after *a miss that shows why*): the outfit is the clue, tap the weather it suits; toddler and preschool, placed after 3 and 4. [Slice 6](deep-dives/weather-wardrobe.md#build-slices-in-order)
+*Slices 5 (the trip happens) and 6 (level 9 Which sky?) are built; wind is the remaining part.*
+
 - **`weather-wardrobe`, wind** (content, after *more items* and *a miss that shows why*): a fourth weather with a kite and a windbreaker; a sun hat blows off; level-1 finish and trip pairs adjusted. [Slice 7](deep-dives/weather-wardrobe.md#build-slices-in-order)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
