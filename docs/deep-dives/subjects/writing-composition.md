@@ -130,7 +130,7 @@ None of these blocks the WC1 definition: the lean in each is the default, and de
 
 ## Build slices, in order
 
-1. **WC1 define: Story Weaver levels 1–3** (docs only: `docs/definitions/story-weaver.md` with the tile tables, support table, clause lines, layout in both orientations, rule tests and the bot rule; check tier is links and diff). The pointer line in the Story Steps dive's "Left out on purpose" was added with this study.
+1. **WC1 define: Story Weaver levels 1–3** (**done 2026-10-22**, [definition](../../definitions/story-weaver.md), PR #835; docs only: `docs/definitions/story-weaver.md` with the tile tables, support table, clause lines, layout in both orientations, rule tests and the bot rule; check tier is links and diff). The pointer line in the Story Steps dive's "Left out on purpose" was added with this study.
 2. **WC1 build** after decision 1 (new-game tier: typecheck, unit tests, one scripted play with the owl's question and a decline, one portrait screenshot).
 3. **WC9 and WC12 cards, WC10 and WC11** handed to the off-screen-companions at-home card (their slice 4) after an ordinary content review.
 4. **WC3 Make the sign** noted for the Read & Do dive.
