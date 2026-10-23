@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Study `spelling-sentences`: define Read & Do — Capital and stop A–C (SS1, KE3 received)** (docs only; status `define`): a bounded convention-repair packet for the existing game, free spoken replay, capital toggle and end-stop stamp; coordinate WC3 Make the sign and KE1 Mend the sign. Build waits on the Read & Do dive's IDs/ranges/ordering/accounting, reviewed sentence/voice table and target layout; no implementation authorized. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/spelling-sentences.md#build-slices-in-order).
 - **`shape-sorter`, Corners, curves and corner counts** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#shape-sorter-3-corners-curves-and-corner-counts).
 - **Study `music-instruments`: define Hat Band (M5)** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#music-and-instruments-recommendations).
 - **Research subject `poetry-wordplay`** (docs only; one subject): follow the subject procedure and reuse completed literacy studies; keep review and implementation gates. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
