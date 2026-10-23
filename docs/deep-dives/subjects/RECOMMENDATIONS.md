@@ -792,7 +792,7 @@ The [ordered slices](writing-composition.md#build-slices-in-order) separate defi
 
 | Candidate | Next action | Complete slice / boundary |
 | --- | --- | --- |
-| **KE2 Pond Typing (reshaped)** · S–M, G | define (`docs/definitions/pond-typing.md`; a keyboard-only game on the couch's Laptop setting; the build needs letters in the couch input and waits on the registration and land decision) | Six levels: one letter, her name, words and a space, a capital, a line and a stop, mend a letter with the arrow keys. Bubbles wait; nothing drifts or times out; a wrong key is a wobble and a name; Backspace and the caret are never misses; accuracy only for children |
+| **KE2 Pond Typing (reshaped)** · S–M, G | defined 2026-10-22 ([`docs/definitions/pond-typing.md`](../../definitions/pond-typing.md); a keyboard-only game on the couch's Laptop setting; the build needs letters in the couch input and waits on the registration and land decision) | Six levels: one letter, her name, words and a space, a capital, a line and a stop, mend a letter with the arrow keys. Bubbles wait; nothing drifts or times out; a wrong key is a wobble and a name; Backspace and the caret are never misses; accuracy only for children |
 | **KE1 Mend the sign** · S, U | handed to the Read & Do dive | The pet acts out the sign as printed; she deletes the extra word, inserts the missing one at a gap, swaps one. Touch, word tiles at 100 units or more |
 | **KE3 Capital and stop** · K, S | handed to `spelling-sentences` | The rule is its; keyboarding supplies the keys |
 | **KE4 Type her name** | a level of KE2 | Not a game |

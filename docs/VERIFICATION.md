@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-22 — Pond Typing 1–6 definition (keyboarding-editing KE2, docs only)
+
+- [PR #836](https://github.com/rjdunlap/neo/pull/836), `claude/define-pond-typing`: registration and land proposal, the typed-letter channel (`typed` on `CouchControls`, read from `key`, Pond-Typing-only), bubble/coach accounting with a free first miss, six school levels, word and line pools, layout, bot and rule tests; READY (build queued and gated, define line removed), backlog, packet, study and Waiting row updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser, offline or device checks (docs only); layouts are specified, not visually verified.
+- Open: decision 4 (registration, land, Story Grove capacity), content review of the pools, sticky-Shift reach for a small hand, a child at a real keyboard.
+
 ## 2026-10-22 — Story Weaver 1–3 definition (writing-composition WC1, docs only)
 
 - [PR #835](https://github.com/rjdunlap/neo/pull/835), `claude/define-story-weaver`: tile and clause tables, `supports` rules, three rounds with owl question and *because* accounting, school 1–3 band proposal, layout specifications, voice ids, bot and rule tests; READY (define line removed, gated build queued), backlog, study and packet updated.
@@ -96,19 +103,6 @@
 - Passed typecheck; `npm test` (210 files, 2517 tests); `npm run build` (shared `src/art/shapes.ts` changed).
 - Dev server `http://localhost:5690`: `BROWSER_SUITE=originals ORIGINALS_ONLY=shapes SHAPE_LEVELS=6,7,10,11` (10 at toddler, 11 in portrait; one wrong hole twice, glow hint, finish, sticker, score `[2,1]`) and `SHAPE_LEVELS=8` passed. `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-sorter FINGER_LEVELS=7,8,10,11` clean in 22.7, 18.8, 11.5 and 9.2 s. Portrait screenshot of 11 reviewed: three oval holes fit the lid.
 - Not run: world/offline/picnic/couch (unaffected). Open in [DEVICE-CHECKS](DEVICE-CHECKS.md): device speech of "trapezoid" and "pentagon", a child telling the three sizes apart. Level 11's first kind is a seeded pick, not "circle first".
-
-## 2026-10-22 — Word Glue levels 1–3 definition (vocabulary-word-parts VW1, docs only)
-
-- Branch `claude/define-word-glue` (PR #816): definition packet `docs/definitions/word-glue.md`; READY (build queued and gated, define line removed), study backlog, subjects tracker, recommendations row, study build slices and the Waiting row updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Open: no typecheck, unit tests, build or browser run; the build is gated on the developer's decisions 1 (new game and land) and 2 (compound list review).
-
-## 2026-10-22 — Informational-reading study (subject research, docs only)
-
-- [PR #815](https://github.com/rjdunlap/neo/pull/815), `claude/sharp-cannon-xdrzdf`: [study](deep-dives/subjects/informational-reading.md) (Look It Up levels 1–3 recommended first); tracker, packet, roadmap table, backlog, READY (the definition line added and `writing-composition` moves up to keep a research place), IDEAS and WAITING-ON-DEVELOPER updated.
-- Ran `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
-- Open: device speech of the page sentences, whether a three-year-old reads picture tabs as pages, tab legibility at 100 units in portrait; no reference game was played.
 
 ## Coverage summary
 

@@ -161,7 +161,7 @@ None blocks the KE2 *definition*: the lean in each is the default. **Decision 4 
 
 ## Build slices, in order
 
-1. **KE2 define: Pond Typing levels 1–6** (docs only: `docs/definitions/pond-typing.md` with the registration and land (decision 4), the word pool, the seeded course, the typed-letter channel, the bot rule and the layout; check tier is links and diff).
+1. **KE2 define: Pond Typing levels 1–6** (**done 2026-10-22**, [definition](../../definitions/pond-typing.md), PR #836; docs only: `docs/definitions/pond-typing.md` with the registration and land (decision 4), the word pool, the seeded course, the typed-letter channel, the bot rule and the layout; check tier is links and diff).
 2. **KE1 hand-off to the Read & Do dive** (a line in the dive's brief; the dive numbers its own levels).
 3. **KE2 build** (couch tier: `BROWSER_SUITE=couchgames` filtered to the new game; typecheck and rule tests).
 4. **KE3 hand-off to `spelling-sentences`** when that study runs.
