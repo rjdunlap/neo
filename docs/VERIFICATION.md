@@ -2,9 +2,9 @@
 
 ## 2026-10-23 — Mail Carrier 15: Make the key
 
-- [PR #881](https://github.com/rjdunlap/neo/pull/881), `codex/mail-carrier-make-key`: only batch4 / level15 / dive slice9; five key pairs followed by two deliveries, one round/sticker. Implementation complete; CI/publication pending.
+- [PR #881](https://github.com/rjdunlap/neo/pull/881), `codex/mail-carrier-make-key`: only batch4 / level15 / dive slice9; five key pairs followed by two deliveries, one round/sticker. Built and verified; publication tracked in the linked PR.
 - Tested base `5c2ef9fe` plus level15 working diff at `http://localhost:5195/classic/`; integrated coordinator docs-only main `025bd512` as `787b81b0` without gameplay changes. Typecheck,29 Mail Carrier rule tests and build passed;300 seeds prove unique sign/house mappings, correct neighbours, two distinct recipients and valid delivery bot targets.
-- Full units:213 files passed,2657 tests passed,4 skipped; one unchanged Block Garden off-plan search timing assertion failed (`logic.test.ts:233`, under2000ms). One isolated probe passed all33 Block Garden tests; timing flake retained, no unrelated fix. Required PR CI gates publication.
+- Full units:213 files passed,2657 tests passed,4 skipped; one unchanged Block Garden off-plan search timing assertion failed (`logic.test.ts:233`, under2000ms). One isolated probe passed all33 Block Garden tests; timing flake retained, no unrelated fix. Required implementation CI [run39995153836](https://github.com/rjdunlap/neo/actions/runs/39995153836) passed all214 test files and build on `09c2387d`; only documentation changed afterward.
 - `BROWSER_SUITE=woods WOODS_ONLY=mailmap MAIL_LEVELS=15`: passed free pre-row house tap/row replay, two mismatched pairs/one glow, all five filled rows before letters appear, two deliveries, one saved history/sticker; no page errors. Reviewed `test-results/browser/mail-carrier-15-wet-key-portrait.png`: neighbours, all wet rows and separate houses visible in portrait.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=mail-carrier FINGER_LEVELS=15`: clean26.4s completion, no misses/hints/page errors. Earlier demo interrupted by integration reload is not proof. Broader browser and offline not run (no persistence/assets/navigation changes); real iPad speech/touch feel and child response remain open.
 
