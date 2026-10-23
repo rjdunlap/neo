@@ -8114,12 +8114,18 @@ async function creativeBatch() {
     }
     await page.setViewportSize({width:1024,height:768});log(`Stamp Studio ${level}: creative choices, arrangement, undo, late editing/held-drag guards, frozen kept picture, saved round and sticker passed`);
   }
-  if (!only || only === 'kitchen') for(let level=fromLevel;level<=9;level++) {
+  if (!only || only === 'kitchen') for(let level=fromLevel;level<=10;level++) {
     await launch('pet-kitchen',level);
-    if(level===4||level===6){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
+    if(level===4||level===6||level===10){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
+    await screenshot(`pet-kitchen-${level}-start`);
     await page.evaluate(async()=>{
       const g=neo.scene.game;
-      if(g.plan.mode==='share'){
+      if(g.plan.mode==='deal'){
+        // Level 10: a touch off every piece wiggles one (free), then each tap deals a piece to the plate with fewer.
+        kit.tap(40,neo.view.h*0.2);await kit.sleep(300);
+        for(const p of g.pieces){kit.tapOn(p.node);await kit.sleep(450);}
+        if(!g.done||g.misses!==0||g.hints!==0)throw new Error(`Kitchen deal ${g.done}/${g.misses}/${g.hints}`);
+      }else if(g.plan.mode==='share'){
         kit.tapOn(g.cuts[0]);await kit.sleep(450);
         for(let k=0;k<2;k++){kit.tapOn(g.serve);await kit.sleep(500);}
         if(g.misses!==2||g.hints!==1)throw new Error(`Kitchen hint ${g.misses}/${g.hints}`);
@@ -8147,7 +8153,7 @@ async function creativeBatch() {
         for(let i=0;i<2;i++)for(let n=0;n<multiplier*g.base[i];n++){kit.tapOn(g.ingredients[i]);await kit.sleep(450);}
       }
     });
-    await screenshot(`pet-kitchen-${level}`);await tap('neo.scene.game.serve');await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[2,1]);
+    await screenshot(`pet-kitchen-${level}`);if(level===10){await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[0,0]);}else{await tap('neo.scene.game.serve');await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[2,1]);}
     await page.setViewportSize({width:1024,height:768});log(`Pet Kitchen ${level}: equal sharing/recipe, retries, hints, saved round and sticker passed`);
   }
   if (!only || only === 'rhythm') for(let level=fromLevel;level<=8;level++) {

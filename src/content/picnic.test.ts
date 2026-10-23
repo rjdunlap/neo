@@ -22,8 +22,8 @@ describe('The Windy Picnic', () => {
         expect(mod.describeLevel(level).length).toBeGreaterThan(3);
       }
     }
-    // Pet Kitchen starts at toddler, so lap plays the toddler version; older bands play their own.
-    expect(bandForGame(gameById('pet-kitchen')!.bands, 'lap')).toBe('toddler');
+    // Beat Builder starts at toddler, so lap plays the toddler version; older bands play their own.
+    expect(bandForGame(gameById('beat-builder')!.bands, 'lap')).toBe('toddler');
     expect(bandForGame(gameById('jelly-drums')!.bands, 'school')).toBe('school');
   });
 

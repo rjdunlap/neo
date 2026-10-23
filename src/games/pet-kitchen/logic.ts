@@ -1,3 +1,4 @@
+import { CRITTERS, type CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
 export const PLANS = [
   { mode: 'share', wholes: 1, friends: 2, cuts: [2], name: 'Cut one sandwich in halves and share with two friends' },
@@ -9,7 +10,10 @@ export const PLANS = [
   { mode: 'fraction', wholes: 1, friends: 1, cuts: [2,4], name: 'Serve a named fraction of one sandwich' },
   { mode: 'half-recipe', wholes: 0, friends: 0, cuts: [], name: 'Halve a picture recipe for one friend' },
   { mode: 'share', wholes: 1, friends: 3, cuts: [3], name: 'Cut one pizza into thirds and share one slice with each of three friends' },
+  { mode: 'deal', wholes: 1, friends: 2, cuts: [2,4], name: 'Tap a piece to deal it, one for you and one for me (halves or quarters, no wrong touch)' },
 ] as const;
+/** The level whose pieces are already cut and dealt by tapping (the lap rung). */
+export const DEAL_LEVEL = 10;
 export const planFor = (l: number) => PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))];
 export const fair = (plates: number[], pieces: number) => pieces > 0 && plates.length > 0 && plates.every(n => n > 0 && n === pieces / plates.length);
 export function nextPlate(plates: number[]) { return plates.indexOf(Math.min(...plates)); }
@@ -74,3 +78,32 @@ export function countAloud(cut: number, served: number): string {
   const [one, many] = PIECE_WORDS[cut] ?? ['piece', 'pieces'];
   return Array.from({ length: served }, (_, i) => `${NUMBER_WORDS[i] ?? i + 1} ${i ? many : one}`).join(', ');
 }
+
+/** What a round cuts at the levels that share: a sandwich or a round pie (the pizza at 9 stays a pizza). */
+export type Whole = 'sandwich' | 'pie';
+export const WHOLES: readonly Whole[] = ['sandwich', 'pie'];
+export const wholeFor = (level: number, rng: Rng): Whole => (level >= 1 && level <= 4 ? rng.pick(WHOLES) : 'sandwich');
+/** Pieces on the counter after one cut of every whole: the same for a sandwich or a pie. */
+export const pieceCount = (plan: { wholes: number }, cut: number) => plan.wholes * cut;
+
+/** Fruit for a recipe: berry, apple and banana; a round picks two different ones. */
+export const FRUITS = ['berry', 'apple', 'banana'] as const;
+export type Fruit = typeof FRUITS[number];
+export function fruitPair(rng: Rng): [number, number] {
+  const a = rng.int(0, FRUITS.length - 1);
+  const b = (a + 1 + rng.int(0, FRUITS.length - 2)) % FRUITS.length;
+  return [a, b];
+}
+
+/** The friends at the plates: distinct creatures dealt from the seed. */
+export function dealFriends(rng: Rng, n: number): CritterName[] {
+  return rng.shuffle(Object.keys(CRITTERS) as CritterName[]).slice(0, n);
+}
+
+/** Level 10 deals two halves or four quarters to two friends. */
+export function dealCut(rng: Rng): 2 | 4 { return rng.chance(0.5) ? 2 : 4; }
+/**
+ * A tap on a tray piece sends it to the plate with the fewest (the first of them on a tie), so every tap is right and
+ * `pieces` taps leave the plates equal.
+ */
+export function dealTo(plates: readonly number[]): number { return nextPlate([...plates]); }

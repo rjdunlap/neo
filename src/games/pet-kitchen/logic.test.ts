@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, PLANS, plateAt, PLATE_REACH, recipe, servesFraction, serveTrouble, countAloud } from './logic';
+import { dealCut, dealFriends, dealTo, DEAL_LEVEL, fruitPair, FRUITS, pieceCount, wholeFor, WHOLES, doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, PLANS, plateAt, PLATE_REACH, recipe, servesFraction, serveTrouble, countAloud } from './logic';
 it('can share every meal fairly and accepts alternative equal cuts',()=>{
  for(const p of PLANS.filter(p=>p.mode==='share')) {
    expect(p.cuts.some(c=>p.wholes*c%p.friends===0)).toBe(true);
@@ -91,4 +91,28 @@ it('counts served pieces aloud in their own fraction words',()=>{
  expect(countAloud(4,3)).toBe('one quarter, two quarters, three quarters');
  expect(countAloud(2,1)).toBe('one half');
  for(const r of FRACTIONS){const cut=fractionCut(r,[2,4])!;const n=cut*r.numerator/r.denominator;expect(countAloud(cut,n).split(', ')).toHaveLength(n);}
+});
+
+it('deals every tap to a plate with the fewest, so the plates end equal',()=>{
+  const p=planFor(DEAL_LEVEL);expect(p.mode).toBe('deal');
+  for(let seed=1;seed<=50;seed++){
+    const cut=dealCut(new Rng(seed));const pieces=pieceCount(p,cut);
+    expect(pieces%p.friends).toBe(0);
+    const plates=Array(p.friends).fill(0);
+    for(let i=0;i<pieces;i++){const to=dealTo(plates);expect(plates[to]).toBe(Math.min(...plates));plates[to]++;}
+    expect(fair(plates,pieces)).toBe(true);
+  }
+});
+it('gives every seeded whole the same piece count and only varies levels 1-4',()=>{
+  const seen=new Set<string>();
+  for(let seed=1;seed<=40;seed++){for(let l=1;l<=4;l++){const w=wholeFor(l,new Rng(seed));expect(WHOLES).toContain(w);seen.add(w);}}
+  expect(seen.size).toBe(2);
+  for(const l of [5,6,7,8,9,10])expect(wholeFor(l,new Rng(3))).toBe('sandwich');
+  for(const p of PLANS)for(const c of p.cuts)expect(pieceCount(p,c)).toBe(p.wholes*c);
+});
+it('picks two different fruits from three and distinct friends from the seed',()=>{
+  const used=new Set<number>();
+  for(let seed=1;seed<=60;seed++){const [a,b]=fruitPair(new Rng(seed));expect(a).not.toBe(b);expect(a).toBeLessThan(FRUITS.length);expect(b).toBeLessThan(FRUITS.length);used.add(a);used.add(b);}
+  expect(used.size).toBe(3);
+  for(let seed=1;seed<=30;seed++){const f=dealFriends(new Rng(seed),3);expect(new Set(f).size).toBe(3);}
 });

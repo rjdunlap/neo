@@ -574,6 +574,8 @@ export const SCRIPT = {
   'kitchen.half-hint': ['For every two fruits on the card, put one in the bowl. The back arrow takes the last one out.'],
   'kitchen.undo': ['The bowl has lots of fruit. Use the back arrow to take the last one out.'],
   'kitchen.done': ['A meal to share! Thank you, chef!'],
+  'kitchen.deal': ['One for you, one for me! Tap a piece.'],
+  'kitchen.fraction-ask': ['Our friend asked for {amount} of the sandwich.'],
   'game.tangram-town': ['Tangram town!'],
   'tangram.covers': ['Build a house! Its wall can be one square or two triangles. Either way works. Leave the spare shapes in the tray.'],
   'tangram.covered': ['That wall already has its shapes. Leave this spare in the tray.'],
