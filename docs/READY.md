@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-1. **RW14 slice 5, celebration and result in place** (shell tier; slice 3 has landed, so `GameScene.ts` is free): the result draws its origin's backdrop behind a veil instead of flat cream. [POLISH.md](rework/POLISH.md#slice-5-celebration-and-result-in-place)
+1. **RW14 slice 5, celebration and result in place** (shell tier; slice 3 has landed, so `GameScene.ts` is free): the result draws its origin's backdrop behind a veil instead of flat cream. [POLISH.md](rework/POLISH.md#slice-5-celebration-and-result-in-place) Claimed 2026-10-23 on `claude/rw14-result-in-place`.
 2. **RW14 slice 7, buttons and cards with a finish** (shell tier): one code-drawn finish (face, highlight, rim, shadow, press squash) for every root button and card; Home's exits as picture buttons; hit areas unchanged. [POLISH.md](rework/POLISH.md#slice-7-buttons-and-cards-with-a-finish)
 
 ## Queued
