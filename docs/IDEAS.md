@@ -1058,7 +1058,7 @@ On Wii Party (pages 2 to 4):
 **Decided 2026-10-23 (on the developer's delegation):** Kept things made together: No kept puzzles; one bounded "our picture" slot is allowed, built with Two-Knob Doodle's slice using the existing creation storage with repair and backup tests. ([record](archive/DECISIONS-2026-10-23.md))
 **Decided 2026-10-23 (on the developer's delegation):** Table mode and a second screen: Not now for a split upside-down layout or second screen; Mission Cards (a physical barrier and printed card) first for hidden information. ([record](archive/DECISIONS-2026-10-23.md))
 
-**Reopened 2026-10-23 (the developer asked for Jackbox-style play):** [Phone party play](PHONE-PARTY.md) proposes phones as controllers and private screens, hosted in couch play, with eleven mini-games (two of them unblock Same Pick and Lantern Keeper's Manual). It waits on the developer's call on hosting ([waiting](WAITING-ON-DEVELOPER.md#still-waiting)); Mission Cards stay first until then.
+**Reopening proposed 2026-10-23, waiting on the developer (they asked for Jackbox-style play):** [Phone party play](PHONE-PARTY.md) proposes phones as controllers and private screens, hosted in couch play, with eleven mini-games (two of them unblock Same Pick and Lantern Keeper's Manual). It waits on the developer's call on hosting ([waiting](WAITING-ON-DEVELOPER.md#still-waiting)); Mission Cards stay first until then.
 
 **Suggested order (non-binding).**
 
