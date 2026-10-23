@@ -242,6 +242,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### rhythm-neighbors 1: Younger turn-taking and its journal page
 
+Built 2026-10-22, [PR #853](https://github.com/rjdunlap/neo/pull/853); [closeout](archive/COMPLETED-2026-10-09.md#rhythm-neighbors-batch-1-knock-knock-my-turn-your-turn-and-the-frogs-journal-page-slices-2-3-and-8-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`rhythm-neighbors`, level 7 Knock, knock** (new lap entry: order and entry tests, one play, `fingerdemo` at 7, one portrait screenshot): a big tree, every knock answered by a frog a beat later, eight knocks finish; lap order `[7, 1, 2]`. [Dive](deep-dives/rhythm-neighbors.md#new-levels-on-top)
 - **`rhythm-neighbors`, level 8 My turn, your turn** (new level on the tap interaction: rule tests, one play, `fingerdemo` at 8): the bird knocks, one big frog glows and waits, one tap answers; toddler order `[2, 8, 3]`; no misses. [Dive](deep-dives/rhythm-neighbors.md#new-levels-on-top)
 - **`rhythm-neighbors`, journal page** (small; after slice 1): "The frogs answered the woodpecker", filed from a finished turn-taking round. [Dive](deep-dives/rhythm-neighbors.md#build-slices-in-order)

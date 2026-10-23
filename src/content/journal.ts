@@ -11,7 +11,7 @@ import type { LineId } from './voice-script';
  * is found. A game reports what it actually showed during a round (`RoundResult.discoveries`); the shell files it.
  */
 
-export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails' | 'mail-carrier';
+export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails' | 'mail-carrier' | 'rhythm-neighbors';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -163,6 +163,14 @@ export const JOURNAL: readonly JournalEntry[] = [
     name: 'Duck habitat',
     line: 'journal.habitat.duck',
     source: { find: 'build a garden with food, water and shelter for Duck and open the gate', found: 'a garden supplied food, water and shelter and Duck visited' },
+  },
+  {
+    id: entryId('rhythm-neighbors', 'frogs-answer'),
+    game: 'rhythm-neighbors',
+    key: 'frogs-answer',
+    name: 'The frogs answered the woodpecker',
+    line: 'journal.neighbors.answer',
+    source: { find: 'take turns with the woodpecker and answer its knocks with the frogs', found: 'the woodpecker knocked and the frog answered' },
   },
   ...Object.keys(WORDS).map((letter): JournalEntry => ({
     id: entryId('letter-trails', letter),

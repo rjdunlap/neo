@@ -8136,13 +8136,26 @@ async function creativeBatch() {
     await screenshot(`pet-kitchen-${level}`);await tap('neo.scene.game.serve');await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[2,1]);
     await page.setViewportSize({width:1024,height:768});log(`Pet Kitchen ${level}: equal sharing/recipe, retries, hints, saved round and sticker passed`);
   }
-  if (!only || only === 'rhythm') for(let level=fromLevel;level<=6;level++) {
+  if (!only || only === 'rhythm') for(let level=fromLevel;level<=8;level++) {
     await launch('rhythm-neighbors',level);
-    if(level===6){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
+    if(level===6||level===7){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
     await screenshot(`rhythm-neighbors-${level}`);
     await page.evaluate(async()=>{
       const g=neo.scene.game;
       const ready=async()=>{if(!await kit.until(()=>!g.busy,10000))throw new Error('Rhythm still busy');};
+      if(g.plan.knock){
+        // Level 7: each knock on the tree gets exactly one croak; eight knocks end the round on their own.
+        let croaks=0;const was=g.sound.bind(g);g.sound=v=>{if(v===0)croaks++;was(v);};
+        for(let i=0;i<8;i++){kit.tapOn(g.bird);await kit.sleep(250);}
+        if(!await kit.until(()=>g.done,3000))throw new Error('Eight knocks did not end the round');
+        if(croaks<8||g.misses!==0||g.hints!==0)throw new Error(`Knock answers ${croaks}/${g.misses}/${g.hints}`);return;
+      }
+      if(g.plan.turn){
+        // Level 8: a tap during the call croaks but is not counted; then one tap on the glowing frog answers, three times.
+        kit.tapOn(g.frogs[0]);await kit.sleep(150);if(g.phrase!==0)throw new Error('A tap during the call was counted');
+        while(!g.done){if(!await kit.until(()=>g.waiting||g.done,10000))throw new Error('Frog never waited');if(g.done)break;kit.tapOn(g.frogs[0]);await kit.sleep(300);}
+        return;
+      }
       if(g.plan.free){
         kit.tapOn(g.bird,0,-30);await ready();
         // Eight frog taps end free play by itself (the arrow is the earlier stop the ghost finger shows).
@@ -8165,7 +8178,7 @@ async function creativeBatch() {
         kit.tapOn(g.submit);await kit.sleep(200);
       }
     });
-    await finished('rhythm-neighbors');assert.deepEqual(await score('rhythm-neighbors'),level<=2?[0,0]:[2,1]);
+    await finished('rhythm-neighbors');assert.deepEqual(await score('rhythm-neighbors'),level<=2||level>=7?[0,0]:[2,1]);
     await page.setViewportSize({width:1024,height:768});log(`Rhythm Neighbors ${level}: calls, replies, retries, guided timing, saved round and sticker passed`);
   }
   if (!only || only === 'tangram') for(let level=fromLevel;level<=Number(process.env.TO_LEVEL||8);level++) {

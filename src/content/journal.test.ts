@@ -18,7 +18,8 @@ describe('the entries', () => {
     expect(entriesOf('habitat-helpers').map((e) => e.key).sort()).toEqual(['bunny', 'duck']);
     expect(entriesOf('letter-trails').map((e) => e.key)).toEqual(Object.keys(WORDS));
     expect(entriesOf('mail-carrier').map((e) => e.key)).toEqual([...HELPERS]);
-    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6);
+    expect(entriesOf('rhythm-neighbors').map((e) => e.key)).toEqual(['frogs-answer']);
+    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1);
   });
 
   it('gives each a stable, unique id from its game and key', () => {
@@ -74,6 +75,10 @@ describe('the entries', () => {
           expect(said, e.id).toContain(e.key);
           expect(said, e.id).toContain(HELPER[e.key as (typeof HELPERS)[number]].toolName.replace(/^an? /, ''));
           break;
+        case 'rhythm-neighbors':
+          expect(said, e.id).toContain('woodpecker');
+          expect(said, e.id).toContain('frog');
+          break;
         case 'letter-trails':
           expect(said, e.id).toContain(`${e.key.toLowerCase()} is for ${WORDS[e.key]}`);
           break;
@@ -119,6 +124,9 @@ describe('the entries', () => {
         expect(find).toContain(e.key);
         expect(find).toContain(HELPER[e.key as (typeof HELPERS)[number]].problem);
         expect(found).toContain(HELPER[e.key as (typeof HELPERS)[number]].toolName);
+      } else if (e.game === 'rhythm-neighbors') {
+        expect(find).toContain('woodpecker');
+        expect(found).toContain('frog answered');
       } else if (e.game === 'letter-trails') {
         expect(find).toContain(`letter ${e.key}`);
         expect(found).toContain(`letter ${e.key}`);
