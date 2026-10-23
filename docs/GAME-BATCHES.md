@@ -423,6 +423,8 @@ Proof: new-game tier, as the [definition's check tier](definitions/second-chance
 
 ### sand-table 1: Levels 1–3
 
+Built 2026-10-23; [build note](archive/COMPLETED-2026-10-09.md#sand-table-levels-13-e2-2026-10-23). Home land is Rainbow Meadow (see the note). No longer eligible for dispatch.
+
 - **`sand-table`, levels 1–3 (E2)** (a new game, one subtask; lap 1, toddler 1–2, preschool 2–3, pre-K 3, Bubble Beach by default): tap a sand tray to pour a shower of grains that settle into a heap, tap a scoop paddle to lift some back into the bucket, one bay added per level; any landscape is a finished one, and every round counts 0 misses and 0 hints. [Definition](definitions/sand-table.md), [earth-materials study slice E1](deep-dives/subjects/earth-materials.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's check tier](definitions/sand-table.md#check-tier) sets it (typecheck, unit tests, a new `browser-check.mjs` case at levels 1 and 3, `fingerdemo` at levels 1 and 3, one portrait screenshot of level 3, one build). No review gate: the three rungs make no geology claim; the [open decisions](definitions/sand-table.md#open-decisions) all have defaults.

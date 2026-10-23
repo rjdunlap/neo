@@ -389,3 +389,11 @@
 - Ran: Markdown links/anchors and `git diff --check`.
 - Not run: local typecheck, tests, build, browser, device or child play (docs only); nothing implemented.
 - Open: Read & Do integration/IDs/ranges/accounting, reviewed content/alternatives, layout and speech/child checks; later proposals and existing gates remain unresolved. No developer decision made; #733 preserved.
+
+## 2026-10-22 — Shape Sorter batch 3: Corners, curves and corner counts (13–14)
+
+- [PR #842](https://github.com/rjdunlap/neo/pull/842), slices 7–8 only: two curve/corner mouths at 13; shared 0/3/4/5/6 dot-and-numeral holes and sequential dot help at 14. Pre-K `[5, 6, 7, 11, 8, 12, 13, 14]`; school and creature box remain excluded.
+- Ran: typecheck, 38 targeted sorter/how-to tests, build (existing chunk-size warning only). Property tests cover 300 seeds per attribute level, all valid mappings, exclusions, both classes, distinct four-corner kinds sharing one hole, determinism and existing layout/target rules.
+- Browser at `http://localhost:5198/classic/`: `BROWSER_SUITE=originals ORIGINALS_ONLY=shapes SHAPE_LEVELS=13,14` passed both rounds with two wrong targets, one hint, saved `[2,1]`, one sticker each and reload; counting case checks sequential dot help. `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-sorter FINGER_LEVELS=13,14` clean in 15.9/19.5 s. Reviewed landscape 13 and start-portrait 14 screenshots.
+- Tested `1334fc9e` plus implementation diff; final source diff SHA-256 `3211ee2269d37709a39f50e8fb9eb505372d21e1256a62ec4ad9ded1446391d1`. Browser/build preceded only comment cleanup and changing “A {shape}” to “The {shape}” in new voice text; no behavior changed afterward. Chromium required unsandboxed launch after sandbox bootstrap permission failure.
+- Not run: full local units, unrelated browser suites or offline (existing drag interaction; no persistence, assets or routes changed). CI supplies full unit/build checks. Open: iPad speech/feel and child understanding in [device checks](../DEVICE-CHECKS.md); existing developer decisions and #733 preserved.

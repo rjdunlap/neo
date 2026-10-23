@@ -1,5 +1,12 @@
 # Needs a person or a device
 
+## Sand Table levels 1–3
+
+- [ ] Watch a lap or toddler player: does she connect her tap to the heap?
+- [ ] Without speech, do the scoop paddles read as "take away"?
+- [ ] On an iPad, does the Graphics redraw keep up during rapid taps?
+- [ ] On an iPad, hear the Show lines (device speech).
+
 ## Look It Up levels 1–3
 
 - [ ] On an iPad, hear the animal names, questions and fact sentences clearly (device speech, including "kit" and the long brown bear and penguin lines).
