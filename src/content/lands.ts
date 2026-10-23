@@ -67,7 +67,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cow' },
     backdrop: { sky: [0xbfe6fb, 0xfff6e0], hills: [0xcde8a4, 0xa8dc8f, 0x8fcf73], horizon: 0.4, clouds: 3, sun: true, seed: 109 },
     music: tune(53, 'marimba', 96),
-    games: ['peekaboo-barn', 'duckling-parade', 'roundup', 'egg-catch', 'animal-snack', 'critter-sort', 'sing-along-barn', 'orchard-rows', 'bolt-boards', 'look-it-up'],
+    games: ['peekaboo-barn', 'duckling-parade', 'roundup', 'egg-catch', 'animal-snack', 'critter-sort', 'sing-along-barn', 'orchard-rows', 'bolt-boards', 'look-it-up', 'adventure-walk'],
   },
   {
     id: 'counting-cove',
