@@ -11,7 +11,7 @@ The developer answered the last four questions on 2026-10-23 ([record](archive/D
 | Step | What happens next | Written in |
 | --- | --- | --- |
 | **Play RW08 slices 1–2 on the iPad** | The cutover (deleting `classic/`) is approved; a session starts it when the developer says they have played the new Explore and library at the root | [RW08 slice 3](rework/RW08-CUTOVER.md#slice-3-the-cutover-approved-starts-when-the-developer-has-played-slices-12) |
-| **Name the Portuguese reviewer and the variety** (Brazilian or European) | Portuguese comes first; its lines are written and reviewed by that family member before anything in Portuguese ships | [Additional languages](definitions/additional-languages.md) |
+| **Name the Portuguese reviewer** | Portuguese comes first, in European Portuguese (decided 2026-10-23); its lines are reviewed by that family member before anything in Portuguese ships | [Additional languages](definitions/additional-languages.md) |
 
 ## Adding a question
 
