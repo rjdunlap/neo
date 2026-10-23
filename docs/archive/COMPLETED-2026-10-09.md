@@ -1,5 +1,12 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### RW14 slice 1: first run on the island (2026-10-23)
+
+[PR #895](https://github.com/rjdunlap/neo/pull/895), branch `codex/rw14-first-run`: HatchScene reuses Home's bottom-anchored backdrop and companion stage. The egg is sized from the full sprout artwork (including leaves), all egg stages share their feet, and the colour/name controls sit on a soft plate above the grass. Four taps → colour → name → Home and the saved sprout are unchanged. Classic boot is unchanged and uses the existing sky/grass fallback. No new image, save schema or route.
+
+Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-1-first-run-on-the-island); device speech/touch and child response remain unchecked.
+
+
 ### Attic Finds levels 3–4 Lid and Lever (H3, 2026-10-23)
 
 Branch `claude/attic-lid-lever` (PR #870): the [definition](../definitions/lid-and-lever.md)'s giant-handle interaction built inside `attic-finds` (lap 3, toddler 3–4, `entryLevels` [3, 4]; bands now lap/toddler/preschool/prek/school). Each touch turns the handle half a turn and the bird or fish rises, then sinks; level 4's peek door (built 220 units wide, not ~240, at `DOOR_AT` (-40, 30)) shows the rod. Finish appears after three turns and only her tap ends the round; 0 misses, 0 hints, nothing kept. No new registration, so the game count is unchanged.
@@ -1777,7 +1784,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--ready-for-adventure-
 
 [PR #874](https://github.com/rjdunlap/neo/pull/874), worker `01a16958-6380-7e22-b796-185ee2918505`: level14 / dive slice8 only. Two bags carry three letters each; every order works, with flags, free undo, a counted office return and an optional unscored second walk comparing shorter, longer or equal counts. The loop has one visible stone per segment and two bags award one sticker. School order is `[4, 5, 9, 12, 6, 13, 7, 8, 11, 14]`; level15 and developer decisions are excluded.
 
-Typecheck,28 rule tests (300 seeds × six orders), local build, filtered portrait14 play and clean31.3s ghost-finger passed. Play proved arbitrary order/undo, two misses/one hint, shorter free comparison, skip and one history/sticker. Initial full units/CI hit the pre-existing Tinker Lab failure; upstream #877 resolved it, with typecheck and32 Mail/Tinker tests passing after integration. The gameplay proof is reused because Mail code stayed unchanged; required PR CI/build gates publication. Device speech/iPad/child response remain open. See [verification](../VERIFICATION.md#2026-10-23--mail-carrier-14-three-letters-your-way).
+Typecheck,28 rule tests (300 seeds × six orders), local build, filtered portrait14 play and clean31.3s ghost-finger passed. Play proved arbitrary order/undo, two misses/one hint, shorter free comparison, skip and one history/sticker. Initial full units/CI hit the pre-existing Tinker Lab failure; upstream #877 resolved it, with typecheck and32 Mail/Tinker tests passing after integration. The gameplay proof is reused because Mail code stayed unchanged; required PR CI/build gates publication. Device speech/iPad/child response remain open. See [verification](VERIFICATION-2026-10-23.md#2026-10-23--mail-carrier-14-three-letters-your-way).
 
 ## Mail Carrier batch 4: Make the key (2026-10-23)
 

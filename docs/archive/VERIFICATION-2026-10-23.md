@@ -82,3 +82,26 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, units, build, browser or device checks (docs only).
 - Open: science-educator read, decisions 1–7 in the definition.
+
+## 2026-10-23 — Gadget Bench definition (I1, docs only)
+
+- `claude/define-gadget-bench`: [definition](../definitions/gadget-bench.md), READY (define line replaced by the I2 build line), batch plan, backlog row, inventions study.
+- Defined: the part/socket/condition model with `runPath` and `passingDesigns`, levels 1–3 with authored rounds, free Try and Give-as-claim accounting with the same-condition glow, speech, rule tests including the position-matters overlap proof against Habitat Helpers, bot, card, registration, and a measured land table (Tinker Lab full at pre-K and school; Treehouse takes six more).
+- Ran: a throwaway `landLayout` probe (four views; not committed), `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser or device checks (docs only).
+- Open: home land (decision 1) and accounting (decision 2); children's and parents' reactions.
+
+## 2026-10-23 — Tinker Lab decor test fix (CI red on every PR and `main`)
+
+- Branch `ccr-9ee6eaa7-5euwv0`: `src/app/scenes/lab.test.ts` failed deterministically (`prek landscape n=12`, no bench) since Sense Detective became the lab's 13th game, which turned every pull request check and every deploy red. In the 12- and 13-game landscape layouts (pre-K, school, grown-up) the touch areas fill the whole cave floor, so `labPlan` has no room for any decor, at any size.
+- Changed tests only: the bench and pool minimums now apply where the floor leaves a clearing (`hasRoom` in `src/app/scenes/decor-room.ts`, sized to the smallest bench and pool `labPlan` tries plus a fifth to spare); on-screen, off-touch-area, no-overlap and determinism checks still run on every layout, and a count check requires that most layouts are furnished. Removing benches from `labPlan` makes the test fail again.
+- Ran: typecheck; full `npm test` (214 files, 2654 passed, 4 skipped).
+- Open: the other nine land decor tests (`beach`, `canyon`, `cove`, `farm`, `grove`, `meadow`, `mountain`, `peaks`, `village`) keep their own fixed decor minimums and still act as a hidden capacity limit when a land gains a game; `hasRoom` is there to gate them the same way when one fails.
+
+## 2026-10-23 — Mail Carrier 14: Three letters, your way
+
+- [PR #874](https://github.com/rjdunlap/neo/pull/874), `codex/mail-carrier-compare-routes`: only batch3 / dive slice8. Three stops in any order, two bags, optional unscored second walk, counted return, one sticker. Level15 and developer decisions untouched; implementation complete; publication checks below.
+- Tested `6ffddf16` plus the level14 working diff at `http://localhost:5199/classic/`. Ran typecheck, build,28 Mail Carrier rule tests;300 seeds × six orders prove valid recipients/edges, different round-trip lengths, one stone per edge, comparison directions and bot plans.
+- Full `npm test`:213 files passed,2654 tests passed,4 skipped; one failure in unchanged `src/app/scenes/lab.test.ts:40` (prek landscape n=12 has no bench). Same failure on coordinator docs-only #873 CI; lab source/test/land mappings unchanged in this PR. Required CI on implementation `200a3daa` ([run39978526935](https://github.com/rjdunlap/neo/actions/runs/39978526935)) failed only this same assertion; CI build skipped after unit failure (local build passed). Resolved upstream by #877 (`68cc9b0d`); publication resume integrated that tests-only fix and passed typecheck plus32 Mail Carrier/Tinker Lab tests. Required CI is rerunning. Mail gameplay code is unchanged from `200a3daa`, so its play/demo proof is reused; no unrelated repair here.
+- `BROWSER_SUITE=woods WOODS_ONLY=mailmap MAIL_LEVELS=14`: passed arbitrary order/undo, two misses/one hint, counted office return, a shorter free second walk, no comparison scoring, skip on second bag and one history/sticker. Portrait plan/choice screenshots inspected; no page errors.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=mail-carrier FINGER_LEVELS=14`: clean completion in31.3s. Broader browser, offline and device checks not run (no persistence/assets/navigation change); real iPad speech and whether the optional comparison feels welcome remain person checks.

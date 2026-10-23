@@ -284,7 +284,7 @@ Requested by the developer 2026-10-23 (relayed by the session that started the d
 | Slice | What | Needs | Check tier |
 | --- | --- | --- | --- |
 | 0 | The art inbox script (built with the packet) | — | its unit test |
-| 1 | First run on the home backdrop | — | shell |
+| 1 | First run on the home backdrop (built) | — | shell |
 | 2 | Residents in six locations; her own friend stands in where it is the resident | — | shell, offline |
 | 3 | One meaning per button: the house is Home, the back arrow names its place | — | shell and navigation |
 | 4 | Illustrated Rainbow Meadow; Places postcards; the drop-in backdrop loader | R23 imported | shell, offline |
