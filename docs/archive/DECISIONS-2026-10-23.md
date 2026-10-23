@@ -212,7 +212,7 @@ The four questions left for the developer were answered the same day, in their w
 | RW08 cutover: retire `classic/` | Yes, after the developer has played slices 1–2 on the iPad | [RW08 slice 3](../rework/RW08-CUTOVER.md#slice-3-the-cutover-approved-starts-when-the-developer-has-played-slices-12) |
 | Clap the Syllables: a typed syllable split of her name and family names | Yes, stored on the device only | [Clap the Syllables](../deep-dives/clap-syllables.md#decisions-for-the-developer) |
 | Letter Trails level 18: a "my words" list | Yes, on the device only, about ten words of up to eight letters | [Letter Trails](../deep-dives/letter-trails.md#decisions-for-the-developer) |
-| The first family language | Portuguese first; the developer will name the reviewer and the variety | [Additional languages](../definitions/additional-languages.md) |
+| The first family language | Portuguese first, European Portuguese (answered the same day); the developer will name the reviewer | [Additional languages](../definitions/additional-languages.md) |
 
 ## The rows as they stood
 

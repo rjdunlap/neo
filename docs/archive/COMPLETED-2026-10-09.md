@@ -10,7 +10,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--seesaw-balance-batch
 
 Branch `claude/sand-table-1-3` (PR #866): the [definition](../definitions/sand-table.md)'s dry toy built exactly as defined as `sand-table` (`src/games/sand-table/`: `logic.ts` with 30 rule tests, `art.ts`, `index.ts`; region `tinker-lab`; lap 1, toddler 1–2, preschool 2–3, pre-K 3). Tap the tray to pour, tap a scoop paddle to lift sand back to the bucket, plant the flag; level 2 adds a bay, level 3 three bays, a pail for spills and a pictured invitation ending in Show. Every round counts 0 misses and 0 hints. Show a hint is the pause sheet's `askForHint` (a real action that counts nothing) and Start again is `restart()`. Home land is **Rainbow Meadow**, not the definition's Bubble Beach default or Treehouse fallback: adding the game to those two failed their `src/app/scenes/*.test.ts` decor counts, while Barnyard and Rainbow Meadow passed.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--sand-table-levels-13-new-game-e2).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--sand-table-levels-13-new-game-e2).
 
 ### Sense Detective levels 1–2 (B2, 2026-10-23)
 
@@ -1386,6 +1386,10 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-20.md#2026-10-20--garden-grow-
 
 [PR #847](https://github.com/rjdunlap/neo/pull/847), `claude/stop-and-go-go-car`; `src/games/stop-and-go/`. Level 9 is the lap entry (lap range `{ min: 1, max: 9, order: [9, 1] }`, `entryLevels: [9]`), mode `lamps`: two 160-wide lamps (green with a play triangle, red with a stop square) low on screen and one car looping an oval road with puffs while green. A tap on either lamp or on the car is a touch; eight touches finish the round, with no misses or hints. The bot alternates the lamps. Added the how-to step and the voice line `go.lamps`, and a lamps case in `scripts/browser-check.mjs`.
 
+## Stop and Go: Whose light and Busy crossing, slices 4-5 (2026-10-23)
+
+[PR #869](https://github.com/rjdunlap/neo/pull/869), `claude/stop-and-go-whose-light`; `src/games/stop-and-go/`. Level 5 *Whose light?*: a car lane and a bike lane, each with its own seeded light, taking turns with a short both-red gap; the front vehicle goes only on its own green, a miss on its own red has a lane-specific line (`go.red.car`, `go.red.bike`), and the hint glows the front vehicle of the green lane. Level 6 *Busy crossing*: eight cars arrive one at a time on both roads in a seeded order (at most three waiting per road, thought cloud with the road's arrow, never both green). The idle point (6 s with both red and cars waiting: the busier road's light rings and a line is spoken, not a miss or hint) also applies at level 4. Bands: pre-K added (3-6), preschool now 2-5. New voice lines `go.lanes`, `go.busy`, `go.point`; how-to steps and notes for 5 and 6; a `WOODS_ONLY=go` browser case; the bot reuses the crossing rules.
+
 ## Pile Match levels 1–8 (2026-10-20)
 
 [PR #680](https://github.com/rjdunlap/neo/pull/680), `claude/pile-match`, built from its [definition](../definitions/pile-match.md) on every default. New game `pile-match` in Counting Cove (now 11 games); preschool 1–4, pre-K 3–6, school 5–8, no toddler. Tap a free piece of a layered heap into a tray; three of a kind pop into the basket until the grass is clear. A 3-slot basket asking for one kind at levels 1–2 (a wrong kind is a miss), a free 5-slot tray from level 3; a full tray costs one miss per episode from level 4; covered touches and put-backs never count, and the two-miss glow plus a wander hint after three put-backs apply at 4–8. Heaps are frozen shapes (`shapes.ts`) with kinds dealt along a clearing route (`logic.ts`); the hint is a memoized search capped at 200,000 states, then the route fallback. The pet counts the pops by threes at levels 6–8. Files: `src/games/pile-match/` (`index`, `logic`, `shapes`, `logic.test`), registry, lands, voice lines `pile.*` and `game.pile-match`, how-to card, `pilematch` browser suite.
@@ -1755,7 +1759,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--pet-kitchen-
 
 [PR #867](https://github.com/rjdunlap/neo/pull/867), branch `claude/adventure-walk-1-3`: the [definition](../definitions/adventure-walk.md) built as `adventure-walk` (`src/games/adventure-walk/`; region `story-grove`; toddler 1, preschool 1–2, pre-K 2–3, school 3). The companion walks past three landmarks to a friend's picnic; she taps one of two glowing ways at each, then follows the friend's call, then two calls at once with a replay badge. Deviations from the definition: home land **Barnyard** (Rainbow Meadow's and Story Grove's scene decor tests fail at 13 games; Barnyard 10 to 11 passes); no cross-round landmark bag, a seeded shuffle of three per round with all five landmarks appearing across seeds (tested over 500 seeds); friends are duck, cow and pig (critter drawings; the frog is not a critter); way phrases go as `{way}`/`{text}` variables to `walk.call.one/two`, `walk.went` and `walk.other` instead of ten `walk.way.*`/`walk.went.*` lines; every wrong tap counts a miss (two at one stop light the asked way, one hint per stop); card pictures are code-drawn.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--adventure-walk-levels-13-new-game-aw2).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--adventure-walk-levels-13-new-game-aw2).
 
 ## Ready for Adventure levels 1–3 (RA2, 2026-10-23)
 
