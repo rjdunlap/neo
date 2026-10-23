@@ -417,9 +417,9 @@ Proof: new-interaction tier, as the [definition's Build and check tier](definiti
 
 ### critter-sort 1: Same Kind, Different Sprouts
 
-- **`critter-sort`, levels 12 *Like the big plant* and 13 *Same and different*** (new levels on the existing drag interaction; pre-K and school): drag little plants grown from one big plant's seeds into hoops for the big plant's leaf shape and petal marks, first one hoop (level 12), then overlapping hoops (level 13); the family is stated, never deduced, and no mechanism is taught. [Definition](definitions/same-kind-different-sprouts.md), [genetics study slice G4](deep-dives/subjects/genetics.md#build-slices-in-order)
+Built 2026-10-23, [PR #865](https://github.com/rjdunlap/neo/pull/865); [closeout](archive/COMPLETED-2026-10-09.md#critter-sort-levels-12-13-same-kind-different-sprouts-genetics-g4-2026-10-23). Scope retained for dependency references; this batch is no longer eligible for dispatch.
 
-Proof: new-level tier on an existing interaction, as the [definition's Build and check tier](definitions/same-kind-different-sprouts.md#build-and-check-tier) sets it.
+- **`critter-sort`, levels 12 *Like the big plant* and 13 *Same and different*** (new levels on the existing drag interaction; pre-K and school): drag little plants grown from one big plant's seeds into hoops for the big plant's leaf shape and petal marks, first one hoop (level 12), then overlapping hoops (level 13); the family is stated, never deduced, and no mechanism is taught. [Definition](definitions/same-kind-different-sprouts.md), [genetics study slice G4](deep-dives/subjects/genetics.md#build-slices-in-order)
 
 ### attic-finds 1: Lid and Lever
 

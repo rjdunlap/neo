@@ -153,6 +153,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 - [ ] **Letter Trails show the way (#442):** on an iPad, hear the rising firefly note across a stroke, see whether the purple start arrow reads and the yellow shown way helps a small hand follow after two wanders, and check the four ink looks are legible in both orientations.
 
+- [ ] **Critter Sort levels 12–13 (#865):** on an iPad in both orientations, hear the plant instructions and spoken reasons (device speech), check that the big plant beside or above the hoops and the leaf and petal signs communicate which marks to match, and observe whether a child understands "like the big plant" and "different both ways". Desktop automation and the ghost finger do not establish this.
 - [ ] **Critter Sort level 11 (#439):** on iPad in both orientations, hear sorting/counting/comparison speech, tap and replay every counted critter, and check that the rings, badges and three pictured choices communicate which part has more. Observe a child counting the groups and using the comparison hint. Desktop proof does not establish device speech or independent understanding.
 
 - [ ] **Critter Sort level 9 (#436):** on iPad in both orientations, hear the A/not-B instruction and both-part placement reasons; check that the paired pictures and red line communicate exclusion, and observe whether a child distinguishes A-only from A-and-B and neither. Desktop checks do not establish device speech or child understanding.

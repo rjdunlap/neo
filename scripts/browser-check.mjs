@@ -9519,9 +9519,10 @@ async function woodsBatch() {
         assert.deepEqual(await counts(), [2, 1]);
         if (mat) assert.equal(await page.evaluate(i => neo.scene.game.hinting === neo.scene.game.sorters[i], outsider), true);
         if (level === 3 || level === 5) await screenshot(`critter-sort-${level}-hint`);
-        if (level === 3) {
+        if (level === 12) await screenshot('critter-sort-12-landscape');
+        if (level === 3 || level === 13) {
           await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
-          await screenshot('critter-sort-neither-portrait');
+          await screenshot(level === 13 ? 'critter-sort-13-portrait' : 'critter-sort-neither-portrait');
         }
       }
       for (const [i, place] of places.entries()) if (place !== 'out' && place !== 'example') await dropTo(i, place);
