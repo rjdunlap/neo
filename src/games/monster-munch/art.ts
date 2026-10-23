@@ -38,6 +38,9 @@ export class Monster extends Container {
   readonly eaten: Food[] = [];
   /** Show eaten food as little icons in the tummy window. */
   showTummy = true;
+  /** Big bites: the belly swells a little with every bite and rumbles. */
+  grows = false;
+  private belly = 0;
 
   private readonly body = new Container();
   private readonly mouth = new Graphics();
@@ -104,6 +107,10 @@ export class Monster extends Container {
     this.eaten.push(food);
     this.chew = 0.9;
     this.squashV += 3;
+    if (this.grows) {
+      this.belly++;
+      this.shake = 0.5;
+    }
     this.drawTummy();
   }
 
@@ -211,7 +218,8 @@ export class Monster extends Container {
 
   private drawTummy() {
     const g = this.tummy.clear();
-    g.ellipse(0, -72, 96, 58).fill(this.sw.light);
+    const swell = 1 + 0.12 * this.belly;
+    g.ellipse(0, -72, 96 * swell, 58 * swell).fill(this.sw.light).stroke(line(this.sw.line, this.belly ? 4 : 0));
     if (!this.showTummy) return;
     // Up to ten little foods in two rows of five.
     this.eaten.slice(0, 10).forEach((food, i) => {

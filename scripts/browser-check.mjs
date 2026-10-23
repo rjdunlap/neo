@@ -4751,17 +4751,17 @@ async function third() {
       },
     };
   };
-  const expected = { 1: [0, 0], 2: [0, 0], 3: [2, 1], 4: [2, 1], 5: [2, 1], 6: [2, 1], 7: [3, 1], 8: [2, 1] };
-  const levels = munchLevels ?? Array.from({ length: 9 - Number(process.env.FROM_LEVEL || 1) }, (_, i) => i + Number(process.env.FROM_LEVEL || 1));
+  const expected = { 1: [0, 0], 2: [0, 0], 3: [2, 1], 4: [2, 1], 5: [2, 1], 6: [2, 1], 7: [3, 1], 8: [2, 1], 9: [0, 0], 10: [2, 1] };
+  const levels = munchLevels ?? Array.from({ length: 11 - Number(process.env.FROM_LEVEL || 1) }, (_, i) => i + Number(process.env.FROM_LEVEL || 1));
   for (const level of levels) {
     await launch('monster-munch', level);
     await page.evaluate(feedHelpers);
     await page.waitForTimeout(700);
-    if ([1, 3, 6, 7].includes(level)) await screenshot(`monster-munch-${level}`);
+    if ([1, 3, 6, 7, 9, 10].includes(level)) await screenshot(`monster-munch-${level}`);
     await page.evaluate(async () => {
       const g = mm.g();
       const mode = g.plan.mode;
-      if (mode === 'tap' || mode === 'count') {
+      if (mode === 'tap' || mode === 'big' || mode === 'count') {
         // Two rounds, a short one first; at 1 every other bite is a tap on the monster itself.
         const sizes = [];
         while (!g.done) {
@@ -4771,7 +4771,7 @@ async function third() {
           const round = g.round;
           sizes.push(g.snacks.length);
           const m = g.monsters[0];
-          if (mode === 'tap') {
+          if (mode === 'tap' || mode === 'big') {
             for (let i = 0; mm.free(); i++) {
               if (i % 2) kit.tapOn(m, 0, -150 * m.scale.y * neo.view.scale); else kit.tapOn(mm.free().node);
               await kit.sleep(350);
@@ -4788,7 +4788,7 @@ async function third() {
           }
           await kit.until(() => g.done || g.round > round, 20000);
         }
-        if (sizes.join() !== (mode === 'tap' ? '4,6' : '3,5')) throw new Error(`Rounds ${sizes}`);
+        if (sizes.join() !== (mode === 'tap' ? '4,6' : mode === 'big' ? '3,3' : '3,5')) throw new Error(`Rounds ${sizes}`);
         return;
       }
       let mistakes = 0;
@@ -4801,6 +4801,12 @@ async function third() {
           if (a.count('cookie') === 0) await mm.feed(mm.free(), a);
           if (mistakes < 2) { await mm.feed(mm.free(), a); mistakes++; continue; }
           for (const m of g.monsters) if (m.count('cookie') === 0) await mm.feed(mm.free(), m);
+        } else if (mode === 'eachkind') {
+          // A second cookie to the first monster is handed back (a miss); two of them bring the hint glow.
+          const a = g.monsters[0];
+          await mm.feed(mm.free('cookie'), a);
+          while (mistakes < 2) { await mm.feed(mm.free('cookie'), a); mistakes++; }
+          for (const m of g.monsters) for (const food of ['cookie', 'apple']) if (m.count(food) === 0) await mm.feed(mm.free(food), m);
         } else if (mode === 'exact' || mode === 'two') {
           const m = g.monsters[0];
           if (mistakes === 0) { kit.tapOn(g.bell); await kit.sleep(500); mistakes++; }

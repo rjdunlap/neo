@@ -3,7 +3,7 @@ import type { Rng } from '../../engine/random';
 export type Food = 'cookie' | 'apple';
 /** How many of each food: an order, a monster's tummy, or what is on the tray. */
 export type Order = Record<Food, number>;
-export type MunchMode = 'tap' | 'count' | 'each' | 'exact' | 'two' | 'share' | 'leftover';
+export type MunchMode = 'tap' | 'big' | 'count' | 'each' | 'eachkind' | 'exact' | 'two' | 'share' | 'leftover';
 
 export interface MunchPlan {
   mode: MunchMode;
@@ -29,7 +29,12 @@ export const MUNCH_PLANS: MunchPlan[] = [
   { mode: 'two', rounds: 3, min: 1, max: 3, name: 'Feed cookies and apples, like "2 cookies and 1 apple"' },
   { mode: 'share', rounds: 2, min: 2, max: 3, monsters: [2, 3], name: 'Share cookies fairly, then say how many each monster got' },
   { mode: 'leftover', rounds: 2, min: 2, max: 3, monsters: [2, 3], name: 'Share fairly when it does not come out even: how many each, and how many left over?' },
+  { mode: 'big', rounds: 2, min: 3, max: 3, amounts: [3, 3], name: 'Tap three big cookies (or the monster) and its belly grows' },
+  { mode: 'eachkind', rounds: 2, min: 1, max: 1, monsters: [2, 3], name: 'Give each monster a cookie and an apple' },
 ];
+
+/** Tapping levels: a tap feeds the next cookie, and nothing can go wrong. */
+export const isTapMode = (mode: MunchMode) => mode === 'tap' || mode === 'big';
 
 export const munchPlan = (level: number) => MUNCH_PLANS[Math.max(0, Math.min(MUNCH_PLANS.length - 1, level - 1))];
 
@@ -54,6 +59,7 @@ export function munchRounds(plan: MunchPlan, rng: Rng): MunchRound[] {
     const monsters = plan.monsters?.[r % plan.monsters.length] ?? 1;
     switch (plan.mode) {
       case 'tap':
+      case 'big':
       case 'count': {
         const n = plan.amounts?.[r] ?? plan.max;
         rounds.push({ monsters, want: order(n), tray: order(n) });
@@ -62,6 +68,10 @@ export function munchRounds(plan: MunchPlan, rng: Rng): MunchRound[] {
       case 'each':
         // One spare cookie, so giving out cookies is a choice.
         rounds.push({ monsters, want: order(1), tray: order(monsters + 1) });
+        break;
+      case 'eachkind':
+        // One spare of each food, so giving out food is a choice.
+        rounds.push({ monsters, want: order(1, 1), tray: order(monsters + 1, monsters + 1) });
         break;
       case 'exact': {
         let n = rng.int(plan.min, plan.max);
@@ -151,9 +161,20 @@ export function munchTouch(plan: MunchPlan, t: MunchTable): MunchTouch | null {
     return answer !== undefined && t.pads.includes(answer) ? { pad: answer } : null;
   }
   switch (plan.mode) {
-    case 'tap': {
+    case 'tap':
+    case 'big': {
       const i = waiting();
       return i < 0 ? null : { tap: i };
+    }
+    case 'eachkind': {
+      // A food a monster lacks, to the monster that lacks it.
+      for (let to = 0; to < t.fed.length; to++) {
+        for (const food of ['cookie', 'apple'] as Food[]) {
+          const i = t.fed[to][food] < t.want[food] ? waiting(food) : -1;
+          if (i >= 0) return { give: i, to };
+        }
+      }
+      return null;
     }
     case 'count': {
       const i = waiting();
@@ -187,7 +208,7 @@ export type MunchHint = 'food' | 'bell' | 'monster' | 'pad';
 
 /** The thing that glows after two misses: the same next useful thing `munchTouch` would touch. Tapping levels have no misses. */
 export function munchHint(plan: MunchPlan, t: MunchTable): MunchHint | null {
-  if (plan.mode === 'tap' || plan.mode === 'count') return null;
+  if (isTapMode(plan.mode) || plan.mode === 'count') return null;
   if (t.pads.length) return 'pad';
   if (plan.mode === 'exact' || plan.mode === 'two') {
     const need = missing(t.want, t.fed[0]);
