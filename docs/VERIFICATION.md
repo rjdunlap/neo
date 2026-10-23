@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-23 — Tinker Lab decor test fix (CI red on every PR and `main`)
+
+- Branch `ccr-9ee6eaa7-5euwv0`: `src/app/scenes/lab.test.ts` failed deterministically (`prek landscape n=12`, no bench) since Sense Detective became the lab's 13th game, which turned every pull request check and every deploy red. In the 12- and 13-game landscape layouts (pre-K, school, grown-up) the touch areas fill the whole cave floor, so `labPlan` has no room for any decor, at any size.
+- Changed tests only: the bench and pool minimums now apply where the floor leaves a clearing (`hasRoom` in `src/app/scenes/decor-room.ts`, sized to the smallest bench and pool `labPlan` tries plus a fifth to spare); on-screen, off-touch-area, no-overlap and determinism checks still run on every layout, and a count check requires that most layouts are furnished. Removing benches from `labPlan` makes the test fail again.
+- Ran: typecheck; full `npm test` (214 files, 2654 passed, 4 skipped).
+- Open: the other nine land decor tests (`beach`, `canyon`, `cove`, `farm`, `grove`, `meadow`, `mountain`, `peaks`, `village`) keep their own fixed decor minimums and still act as a hidden capacity limit when a land gains a game; `hasRoom` is there to gate them the same way when one fails.
+
 ## 2026-10-23 — Helper House definition (RA1, docs only)
 
 - [PR #872](https://github.com/rjdunlap/neo/pull/872), `claude/define-helper-house`: [definition](definitions/helper-house.md), READY (define line replaced by the RA2 build line), backlog, notebook, study.
