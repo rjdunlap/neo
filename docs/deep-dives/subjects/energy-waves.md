@@ -84,9 +84,9 @@ S/M/L describe relative scope, not delivery estimates. Every row remains a propo
 | **G: play-with** | One person sets a switch/driver, the other chooses the predicted picture; watch together and swap | Both can revise the plan; solo pet fallback and either person may decline a turn. No second device/controller requirement |
 | **G: page** | Later choose a reviewed Connections and Changes conversation/activity card | Observe, compare and talk away from the screen; plain HTML, no log, daily visit or assessed family task. Practical instructions remain unwritten pending named review |
 
-**E1 claim (2026-10-22):** worker `01a166f1-dbd0-7a70-98ef-503b9c7d5695`, branch `codex/define-circuit-garden`; docs-only Circuit Garden 1–3 definition plus required future topology semantics. Expected files: new `docs/deep-dives/circuit-garden.md`, this study/recommendation packet, READY/STUDY-BACKLOG/ROADMAP and tracker links, verification/archive closeout, execution queue. No E2+ implementation or older workshop definition; registration/model-scope, reviewer/device and practical-content gates remain.
-
 ## First game's proposed ladder: Circuit Garden
+
+Levels 1–3 are now [defined in the E1 packet](../../definitions/circuit-garden.md) (2026-10-22, [PR #846](https://github.com/rjdunlap/neo/pull/846)); that packet freezes the base graph/round rules and future topology invariants. The ladder below retains the research horizon; no levels are implemented and registration/model-scope decisions remain open.
 
 New game's **proposed** IDs, not changes to any saved ladder. Define levels 1–3 first, initially pre-K 1–3 and school 1–6; preschool 1–2 is an observation-dependent possibility. Upper-school and grown-up 4–6 require separate scope/registration decisions. Register only built IDs: if the workshop design (proposed 5) precedes contrast (4), explicitly use `BandLevels.order` to skip the absent ID, or freeze a different order before the first registration; never expose missing plans or renumber a saved level. These ranges are not approvals and do not imply an older player must repeat a preschool entry.
 
@@ -146,8 +146,7 @@ Each row is one future session; definitions first, complete builds after. Depend
 
 | Slice | Complete outcome | Dependency / verification tier |
 | --- | --- | --- |
-| **E1 — define Circuit Garden 1–3** | Freeze terminal/socket graph, the three rounds, observed-state/Done/Check gates, mistakes/help, solvability, voice/how-to/ghost finger, both layouts, band/land fit and overlap | Start now; docs links/diff. Include the older brief's required topology semantics, without implementing it |
-| **E2 — build the loop and switch, 1–2** | One new registered game with connection and switch rounds, optional supported finish, inventory/docs/voice/card/demo and seeded variation | E1 and resolved registration/model scope; new-game tier: typecheck, units, one filtered first/top play with support, portrait; build because registry/shared content changes |
+| **E2 — build the loop and switch, 1–2** | One new registered game with connection and switch rounds, optional supported finish, inventory/docs/voice/card/demo and seeded variation | [E1 definition](../../definitions/circuit-garden.md) and resolved registration/model scope; new-game tier: typecheck, units, one filtered first/top play with support, portrait; build because registry/shared content changes |
 | **E3 — build repair, 3** | Two-gap repair with undo, free audition, Check, a useful hint and supported completion | E2; new-interaction tier, focused scripted wrong Check/help/finish, portrait; build if shared files change |
 | **E4 — define the older lantern workshop, 4–6** | Four-state brief and accepted graphs, series/parallel contrast, disclosed mystery pair, useful tests, counterexamples/help and older placement | E1; docs links/diff. Can define before E2, but construction builds depend on it |
 | **E5 — build one workshop round** | A complete level-5 either-switch design case, with both valid spatial routings accepted and all four states tested | E2 plus E4 and resolved older registration (repair E3 can proceed independently); new-interaction tier. Contrast/mystery rounds 4/6 each follow separately; never silently renumber |
@@ -159,4 +158,6 @@ No full release, couch course or offline suite is justified by this research. An
 
 ## What was built
 
-Nothing. Added this subject study, tracker/candidate/roadmap recommendations, decision/device notes and a short verification entry. Opened primary standards, practitioner guidance, a PhET author commentary and six digital descriptions with access limits above. No experiments or gameplay ran. Local Markdown links/anchors and `git diff --check` are the docs-only checks; results are recorded in [VERIFICATION](../../archive/VERIFICATION-2026-10-15.md#2026-10-14--energy-and-waves-subject-research). No code, model implementation, practical card, speech/device check or child/parent play is established.
+E1 is documentation only: [Circuit Garden 1–3](../../definitions/circuit-garden.md) defined in #846; [completed-work note](../../archive/COMPLETED-2026-10-09.md#circuit-garden-13-definition-energy-waves-e1-2026-10-22). No game/model, practical card or older workshop implemented.
+
+Original research closeout: nothing built. Added this subject study, tracker/candidate/roadmap recommendations, decision/device notes and a short verification entry. Opened primary standards, practitioner guidance, a PhET author commentary and six digital descriptions with access limits above. No experiments or gameplay ran. Local Markdown links/anchors and `git diff --check` are the docs-only checks; results are recorded in [VERIFICATION](../../archive/VERIFICATION-2026-10-15.md#2026-10-14--energy-and-waves-subject-research). No code, model implementation, practical card, speech/device check or child/parent play is established.
