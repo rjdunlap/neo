@@ -2516,6 +2516,7 @@ export const SCRIPT = {
   'weather.sunny': ['Sunny! Hats and sunglasses on.'],
   'weather.rainy': ['Rainy! Pitter patter. Umbrella up!'],
   'weather.snowy': ['Snowy! Brr! Bundle up.'],
+  'weather.try': ['It is {weather} today! Try something on {pet}!'],
   'weather.pick': ['It is {weather} today! What should {pet} wear?'],
   'weather.all': ['It is {weather} today! Find everything {pet} needs.'],
   'weather.trip': ['We are going on a trip! First it will be {a}, then {b}. Pack what we need for both!'],

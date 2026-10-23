@@ -97,6 +97,18 @@ describe('game registry', () => {
     for (const l of [2, 3, 4, 5, 6, 7]) expect(nextLevel(l, [], school)).toBe(l);
   });
 
+  it('places Weather Wardrobe Try it on between levels 1 and 2 for lap only', () => {
+    const g = gameById('weather-wardrobe')!;
+    const lap = g.levels('lap'), toddler = g.levels('toddler');
+    expect(levelsInOrder(lap)).toEqual([1, 8, 2]);
+    expect(g.entryLevels).toEqual([8]);
+    expect(stepLevel(1, 1, lap)).toBe(8);
+    expect(stepLevel(8, 1, lap)).toBe(2);
+    expect(toddler).toEqual({ min: 2, max: 4 });
+    expect(landing(8, toddler, g.entryLevels)).toBe(2);
+    for (const l of [1, 8, 2]) expect(nextLevel(l, [], lap)).toBe(l);
+  });
+
   it('has unique ids and a spoken title for every game', () => {
     expect(new Set(GAMES.map((g) => g.id)).size).toBe(GAMES.length);
     for (const g of GAMES) expect(SCRIPT[g.titleLine]).toBeDefined();

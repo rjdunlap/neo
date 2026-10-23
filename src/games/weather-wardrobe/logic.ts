@@ -84,7 +84,16 @@ export const ITEM_NAMES: Record<Item, string> = {
 /** What the grass does when she touches it at level 1: a puddle splashes, snow crunches, a flower pops up. */
 export const GROUND_TOUCH = { sunny: 'flower', rainy: 'splash', snowy: 'crunch' } as const satisfies Record<Weather, string>;
 
-export type WardrobeMode = 'play' | 'pick' | 'all' | 'trip' | 'change';
+/** What a wrong item shows for a moment before it hops back: the weather it was not made for. */
+export type Misfit = 'cold' | 'hot' | 'wet';
+
+/** The consequence of wearing the wrong thing in each weather (sunglasses in rain run with drops, mittens in sun sweat). */
+export const MISFIT: Record<Weather, Misfit> = { sunny: 'hot', rainy: 'wet', snowy: 'cold' };
+
+/** The one item per weather that stops it on the pet at level 8: a hat in sun, an umbrella in rain, a coat in snow. */
+export const SHIELD: Record<Weather, Item> = { sunny: 'sunhat', rainy: 'umbrella', snowy: 'puffycoat' };
+
+export type WardrobeMode = 'play' | 'pick' | 'all' | 'trip' | 'change' | 'try';
 
 export interface WardrobePlan {
   mode: WardrobeMode;
@@ -104,6 +113,7 @@ export const WARDROBE_PLANS: WardrobePlan[] = [
   { mode: 'all', choices: 5, need: 3, rounds: 3, name: 'Find everything to wear, out of five' },
   { mode: 'trip', choices: 6, need: 4, rounds: 2, name: 'Pack for a trip with two kinds of weather' },
   { mode: 'change', choices: 5, need: 0, rounds: 3, name: 'Take off clothes that do not fit the new weather, then dress for it' },
+  { mode: 'try', choices: 2, need: 1, rounds: 3, name: 'Try things on in the weather: the one that fits stops it (no mistakes)' },
 ];
 
 export const wardrobePlan = (level: number) => WARDROBE_PLANS[Math.max(0, Math.min(WARDROBE_PLANS.length - 1, level - 1))];
@@ -137,7 +147,9 @@ export function outfits(plan: WardrobePlan, rng: Rng): Outfit[] {
     const weathers = plan.mode === 'trip' ? [order.shift()!, order.shift()!] : [order.shift()!];
     // Every weather fills at least three slots, so "everything" at level 5 is always three, one per slot.
     const needed =
-      plan.mode === 'trip'
+      plan.mode === 'try'
+        ? [SHIELD[weathers[0]]]
+        : plan.mode === 'trip'
         ? weathers.flatMap((w) => rng.shuffle(outfitFor(w, rng)).slice(0, 2))
         : rng.shuffle(outfitFor(weathers[0], rng)).slice(0, plan.need);
     const others = rng.shuffle((Object.keys(ITEMS) as Item[]).filter((i) => !weathers.includes(ITEMS[i])));
