@@ -9,7 +9,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Queued
 
-- **`mail-carrier`, Tool signs, helpers and numbers past ten** (one implementation batch; 3 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#mail-carrier-1-tool-signs-helpers-and-numbers-past-ten) **In progress:** branch `claude/mail-carrier-tools-helpers` (levels 10, 9 and 12; files `src/games/mail-carrier/`, `src/content/journal.ts`, voice-script, howto).
 - **`mail-carrier`, Spoken map clues and both street sides** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#mail-carrier-2-spoken-map-clues-and-both-street-sides).
 - **`mail-carrier`, Compare delivery routes** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#mail-carrier-3-compare-delivery-routes).
 - **`mail-carrier`, Make the key** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#mail-carrier-4-make-the-key).

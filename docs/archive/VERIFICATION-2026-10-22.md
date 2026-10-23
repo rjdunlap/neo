@@ -317,3 +317,11 @@
 - Branch `claude/define-far-lights` (PR #826): definition packet `docs/definitions/far-lights.md`; READY (define line removed, build gated), study backlog, astronomy study and recommendations, subject tracker, Waiting row and idea row updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Open: no typecheck, unit tests, build or browser run; nothing built or played. The build waits on the developer's identity, land and levels 1–2 accounting confirmation; the astronomy reviewer gates levels 5–8, not 1–4.
+
+## 2026-10-22 — Photo Safari batch 1: Tell me which and Tell me both (10–11, SL1–2)
+
+- [PR #827](https://github.com/rjdunlap/neo/pull/827), worker `01a165dd-6049-7012-85e6-60e6afae58a5`, `codex/photo-safari-tell`; tested base `35589aff` plus batch working diff. School order4,5,6,7,10,11; reserved8–9/younger ranges unchanged.
+- Typecheck and build passed. Full unit run: 2518 passed, four skipped, two failures: stale Safari registry range assertion corrected (20 registry tests now pass); unrelated Block Garden timing threshold2525ms/2000ms passed its one focused rerun (33 tests). Safari13 tests pass, including250 seeds/level over all nine descriptions, solvable hints and geometry. No broader unit rerun after test/docs edits; CI remains required.
+- `GAME_URL=http://localhost:5227 BROWSER_SUITE=batch BATCH_ONLY=safari SAFARI_LEVELS=10,11`: both four-photo rounds, free empty Tell/animal taps, two under-informative Tells, words retained, one working hint, album, saved `[2,1]`, reward and portraits passed without page errors. Sandbox Chromium launch denied; approved escalation passed.
+- Same server, `BROWSER_SUITE=fingerdemo FINGER_ONLY=photo-safari FINGER_LEVELS=10,11`: clean0 misses/0 hints,23.8s/29.7s. Inspected `test-results/browser/photo-safari-10-tell-portrait.png`; tray fits, nonreading icons and pet clearance visible. Final cleanup destroys the reusable sparkle when leaving; isolated exit-during-Tell probe passed with no page errors.
+- Not run: world/offline/picnic/couch (unchanged scope); iPad speech/touch comfort, child premise/wobble understanding and communication transfer remain open in DEVICE-CHECKS. Links/diff checked; CI/deployment publication follows.
