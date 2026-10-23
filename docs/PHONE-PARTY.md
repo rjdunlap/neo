@@ -2,6 +2,8 @@
 
 Written 2026-10-23 at the developer's request: review how the Jackbox games use one shared screen and everyone's phones, and their art, and propose mini-games for the family or a group. Everything here is a **proposal**, like [IDEAS.md](IDEAS.md). Nothing is built, and no slice is claimed.
 
+**Priority: low, parked (the developer, 2026-10-23): "pretty low on my priority list but would be neat to look into at some point."** Do not promote any of this to READY or the roadmap's next slices until the developer raises it again.
+
 **The developer reopened a recorded decision (2026-10-23): "I'm not opposed to 2nd screens."** On 2026-10-23 [Table mode and a second screen](IDEAS.md#order-and-decisions-for-the-family-table) had been decided "not now" on the developer's delegation, with Mission Cards (a printed card behind a physical barrier) first for hidden information ([record](archive/DECISIONS-2026-10-23.md)). Second screens are now allowed in principle. What is left is how the phones meet, which is the app's first network dependency and the developer's call ([Waiting on the developer](WAITING-ON-DEVELOPER.md#still-waiting)). Mission Cards remain the offline version, not a prerequisite.
 
 ## How Jackbox works
