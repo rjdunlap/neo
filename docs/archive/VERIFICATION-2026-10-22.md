@@ -325,3 +325,18 @@
 - `GAME_URL=http://localhost:5227 BROWSER_SUITE=batch BATCH_ONLY=safari SAFARI_LEVELS=10,11`: both four-photo rounds, free empty Tell/animal taps, two under-informative Tells, words retained, one working hint, album, saved `[2,1]`, reward and portraits passed without page errors. Sandbox Chromium launch denied; approved escalation passed.
 - Same server, `BROWSER_SUITE=fingerdemo FINGER_ONLY=photo-safari FINGER_LEVELS=10,11`: clean0 misses/0 hints,23.8s/29.7s. Inspected `test-results/browser/photo-safari-10-tell-portrait.png`; tray fits, nonreading icons and pet clearance visible. Final cleanup destroys the reusable sparkle when leaving; isolated exit-during-Tell probe passed with no page errors.
 - Not run: world/offline/picnic/couch (unchanged scope); iPad speech/touch comfort, child premise/wobble understanding and communication transfer remain open in DEVICE-CHECKS. Links/diff checked; CI/deployment publication follows.
+
+## 2026-10-22 — Animal Snack: the bunny eats grass
+
+- Changed: the bunny's favourite went from a carrot (a sugary treat, per the [RSPCA's rabbit-diet myths page](https://www.rspca.org.uk/adviceandwelfare/pets/rabbits/diet/myths)) to grass, its main food. That means a new `grass` food (a tuft of grass, a swish bite and a code-drawn tuft on a clump of earth), the level-3 name, the map icon, the co-play tip and the journal line "The bunny eats grass. Nibble, nibble!". Entry id `animal-snack:bunny` is unchanged. Considered and kept: bear honey (a minor food) and pig apple (real but occasional).
+- Ran (base `f336f7b` plus the working diff, Vite on `http://localhost:5191`): typecheck; 46 Animal Snack, journal and how-to tests; full `npm test` (2516 passed); `BROWSER_SUITE=woods WOODS_ONLY=snack` levels 1–5; `BROWSER_SUITE=fingerdemo FINGER_ONLY=animal-snack FINGER_LEVELS=1,3,4,5`, clean in 10.5, 8.1, 8.8 and 25.2 s.
+- Also ran: one probe screenshot of level 4 in the kitchen garden, where the tuft reads clearly in the tub.
+- Not run: build, because no shared files or assets changed.
+- Open: device speech of "tufts of grass". Roundup still has a "carrots" pen for bunnies (scenery, not a diet claim), left as is.
+
+## 2026-10-22 — Keyboarding-editing study (subject research, docs only)
+
+- [PR #829](https://github.com/rjdunlap/neo/pull/829), `claude/zealous-albattani-woucn3`: [study](../deep-dives/subjects/keyboarding-editing.md) (Pond Typing reshaped for the couch's Laptop setting recommended first; *Mend the sign* handed to the Read & Do dive); tracker, packet, roadmap table, backlog, READY (the define line replaces the research line and `spelling-sentences` moves up), IDEAS and a Waiting default row updated.
+- Opened: CCSS W.K.6, W.1.6, W.2.5–2.6, W.3.6, W.4.6, L.K.2, L.1.2; MDN VisualViewport, VirtualKeyboard, `autocorrect`, `KeyboardEvent.code`; Typing.com K–1, the Vanderbilt thesis, Montessori Academy, Mayer 2020. Opened by research agents and labelled in the study: Kiefer, Ibaibarriaga, Ouellette and Tims, Vatavu, Anthony, Nicolson and Gardner, Edclub, LWT, Nessy, BabySmash, CUPS. Goldberg 2003 read from its PDF abstract; summary only: Morphy and Graham, Bangert-Drowns. Not checked: iPad installed-app keyboard behaviour, a browser's shortcut lockout, the couch's player names and orientation.
+- Ran `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
