@@ -74,3 +74,11 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, units, build, browser or device checks (docs only).
 - Open: CS-educator read, decisions 1–5 in the definition.
+
+## 2026-10-23 — Helper House definition (RA1, docs only)
+
+- [PR #872](https://github.com/rjdunlap/neo/pull/872), `claude/define-helper-house`: [definition](../definitions/helper-house.md), READY (define line replaced by the RA2 build line), backlog, notebook, study.
+- Defined: the 12-step four-phase day model, sensor and zone tables, levels 1–4 with frozen goals and accepted boards, free Watch with the same-failure-twice glow, `misses` always 0, help and supported finish, rule tests including the overlap property, bot, card, voice, registration.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser or device checks (docs only).
+- Open: science-educator read, decisions 1–7 in the definition.
