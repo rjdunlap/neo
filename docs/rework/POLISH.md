@@ -39,6 +39,8 @@ Slices 1–3 need no new image. Slices 4 and 6 wait on images from [ChatGPT batc
 
 ### Slice 1: the first run on the island
 
+Claim: worker `01a16aa6-9188-7f30-bb36-bddebe24c0d1`, branch `codex/rw14-first-run`; draft PR pending. Only the hatch backdrop, egg sizing/placement and soft control plate in `src/app/scenes/HatchScene.ts`; reuse `home-layout.ts` unchanged, leave classic boot unchanged. Shell checks: typecheck, unit tests, build, filtered first-run Home play and portrait review.
+
 - **Changes:** `HatchScene` draws the home backdrop (`homeBackdrop()` and `backdropFit`, as Home does) behind its egg, colour and name steps, instead of flat cream. The egg sits on the grass at the companion's Home position and size, so hatching happens where her friend will live. The colour and name steps keep their controls on a soft plate. `classic/` gets the same treatment by loading the backdrop at boot, or keeps the plain sky fallback (`homeBackdrop()` already draws one).
 - **Files:** `src/app/scenes/HatchScene.ts`, `src/creatures/home-layout.ts` (reuse; add a hatch position only if Home's stage does not fit), `src/main.ts` (only if `classic/` loads the backdrop).
 - **Done when:** a new player's hatch shows the backdrop at 1024 × 768 and 768 × 1024; the egg is at least Home's companion height; the egg's tap area and the colour and name controls are still at least 100 units and keep touch-down feedback; the step order and the saved result are unchanged.
