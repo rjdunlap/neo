@@ -28,6 +28,8 @@ interface Choice { rank: number; node: Container; drag?: DragHandle; placed: boo
 class SizeParade implements Game {
   readonly plan;
   order: number[];
+  /** Every size on the ground, whatever is asked for. */
+  private readonly ranks: number[];
   private readonly asks: SizeAsk[] | null;
   readonly choices: Choice[] = [];
   readonly slots: Container[] = [];
@@ -54,7 +56,7 @@ class SizeParade implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = sizePlan(ctx.level);
-    this.order = sizeOrder(this.plan.count, this.plan.order);
+    this.order = this.ranks = sizeOrder(this.plan.count, this.plan.order);
     this.asks = this.plan.middle ? middleAsks(ctx.rng) : null;
     ctx.stage.addChild(this.background, this.ground, this.shelf, this.glow, this.hintsGlow, this.progress);
     // A tap on the sky or the ground is answered: every friend hops and the ask repeats. Drawings above it let taps through.
@@ -93,7 +95,7 @@ class SizeParade implements Game {
     this.animal = this.ctx.rng.pick(['duck', 'bunny', 'cat'] as Animal[]);
     const ask = this.ask();
     if (ask) this.order = [askRank(ask)];
-    for (const rank of this.ctx.rng.shuffle([...this.order])) {
+    for (const rank of this.ctx.rng.shuffle([...this.ranks])) {
       const node = friend(rank, this.plan.count, this.animal);
       node.hitArea = new Rectangle(-TARGET.w / 2, -175, TARGET.w, TARGET.h);
       const choice: Choice = { rank, node, placed: false };

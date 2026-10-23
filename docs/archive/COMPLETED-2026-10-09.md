@@ -1678,7 +1678,7 @@ The completed batch used the existing loop and guess-card tap; its proof checked
 
 [PR #842](https://github.com/rjdunlap/neo/pull/842), dive slices 7–8 in one worker/claim/PR. Level 13 sorts six one-color pieces into round/zigzag mouths with circle/triangle signs; both classes are dealt, heart excluded. Level 14 deals seven pieces to shared 0/3/4/5/6 targets, numeral and dots; at least two distinct four-corner kinds share the 4 hole, star and heart excluded. Boing/property voice and every-second-miss glow remain, with dots lighting in order during counting help; ghost finger uses the same `fits` rule. Pre-K `[5, 6, 7, 11, 8, 12, 13, 14]`; no school expansion, creature box or other batch. Existing saved IDs, younger bands and developer decisions preserved; #733 untouched.
 
-Combined proof: typecheck, 38 sorter/how-to tests, build; filtered originals 13/14 with wrong targets, hints, saved score/sticker/reload; clean 15.9/19.5 s demos and reviewed 13 landscape/14 portrait. [Verification](../VERIFICATION.md#2026-10-22--shape-sorter-batch-3-corners-curves-and-corner-counts-1314). Device speech/feel and child understanding remain open.
+Combined proof: typecheck, 38 sorter/how-to tests, build; filtered originals 13/14 with wrong targets, hints, saved score/sticker/reload; clean 15.9/19.5 s demos and reviewed 13 landscape/14 portrait. [Verification](VERIFICATION-2026-10-22.md#2026-10-22--shape-sorter-batch-3-corners-curves-and-corner-counts-1314). Device speech/feel and child understanding remain open.
 
 ### Mail Carrier batch 1: Tool signs, helpers and numbers past ten (2026-10-22)
 

@@ -4421,9 +4421,8 @@ async function stickerBook() {
 async function expansion() {
   const only = process.env.EXPANSION_ONLY;
   // Both the smallest supported band and the upper ladder are exercised through real pointer events.
-  const sizeLevels = (process.env.SIZE_LEVELS || '1,2,3,4,5,6,7,8').split(',').map(Number);
-  for (let level = 1; level <= 8 && (!only || only === 'size'); level++) {
-    if (!sizeLevels.includes(level)) continue;
+  const sizeLevels = (process.env.SIZE_LEVELS || '1,2,3,4,5,6,7,8,10,17').split(',').map(Number);
+  for (const level of sizeLevels.filter(() => !only || only === 'size')) {
     if (process.env.SIZE_PORTRAIT) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('size-parade', level);
     // A tap on the sky hops the friends and repeats the ask; a right friend on a later spot is told "This spot first!". Neither is a miss.
@@ -4452,8 +4451,8 @@ async function expansion() {
       await act(wrong); await act(wrong);
     });
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, `size ${level} hint`);
-    if (level === 4 || level === 8) await screenshot(`size-parade-${level}`);
-    if (level === 8 || (process.env.SIZE_PORTRAIT && level === 7)) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot(`size-parade-portrait-${level}`); }
+    if (level === 4 || level === 8 || level === 10 || level === 17) await screenshot(`size-parade-${level}`);
+    if (level === 8 || level === 10 || (process.env.SIZE_PORTRAIT && level === 7)) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot(`size-parade-portrait-${level}`); }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       for (let step = 0; !g.done && step < 10; step++) {
