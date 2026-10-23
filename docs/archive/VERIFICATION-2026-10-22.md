@@ -374,3 +374,10 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, units, build, browser, offline or device checks (docs only); layouts are specified, not visually verified.
 - Open: identity, land and band decisions, content review of tiles and owl lines, child comprehension of the owl.
+
+## 2026-10-22 — Pond Typing 1–6 definition (keyboarding-editing KE2, docs only)
+
+- [PR #836](https://github.com/rjdunlap/neo/pull/836), `claude/define-pond-typing`: registration and land proposal, the typed-letter channel (`typed` on `CouchControls`, read from `key`, Pond-Typing-only), bubble/coach accounting with a free first miss, six school levels, word and line pools, layout, bot and rule tests; READY (build queued and gated, define line removed), backlog, packet, study and Waiting row updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser, offline or device checks (docs only); layouts are specified, not visually verified.
+- Open: decision 4 (registration, land, Story Grove capacity), content review of the pools, sticky-Shift reach for a small hand, a child at a real keyboard.
