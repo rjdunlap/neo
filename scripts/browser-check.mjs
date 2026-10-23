@@ -6212,7 +6212,7 @@ async function batch() {
         for (let i = 2; i < g.plan.count; i++) await drop(60 + i * 110);
         return;
       }
-      if (g.plan.mode === 'bloom') {
+      if (g.plan.mode === 'bloom' || g.plan.mode === 'big') {
         for (let guard = 0; guard < 40 && !g.finished; guard++) { const b = g.buds.find((b) => !b.bloomed); if (!b) break; await drop(b.x); }
         return;
       }
@@ -6255,7 +6255,7 @@ async function batch() {
     await finished('peg-garden');
     const r = await page.evaluate(() => { const r = kit.store.stats('peg-garden').history.at(-1); return [r.misses, r.hints]; });
     log(`Peg Garden ${level} (${mode}): score ${r}`);
-    if (mode === 'drop' || mode === 'bloom') assert.deepEqual(r, [0, 0], `pegs ${level} score`);
+    if (mode === 'drop' || mode === 'bloom' || mode === 'big') assert.deepEqual(r, [0, 0], `pegs ${level} score`);
     else assert.ok(r[0] >= 2 && r[1] === 1, `pegs ${level} score ${r}`);
     log(`Peg Garden ${level} (${mode}): drops, aiming, blooms, hint, saved score and sticker passed`);
   }

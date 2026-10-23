@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { simulate, stepBall, type Ball, type BallWorld } from '../../engine/ball';
 import { Rng } from '../../engine/random';
-import { AIM_LIMIT, aimAt, aimVelocity, BACKDROPS, blooms, BOARD, DRIFT, EDGE, driftOf, dropAt, grid, guided, ledgeX, makeBoard, pickTheme, PLANS, planFor, SHAPES, STALL_AT, targets, TRAY, traySlot } from './logic';
+import { AIM_LIMIT, BIG_LEVEL, BIG_PEG, BIG_PLAN, aimAt, aimVelocity, BACKDROPS, blooms, BOARD, DRIFT, EDGE, driftOf, dropAt, grid, guided, ledgeX, makeBoard, pickTheme, PLANS, planFor, SHAPES, STALL_AT, targets, TRAY, traySlot } from './logic';
 
 describe('Peg Garden', () => {
   it('grows every board shape with room for every plan, buds a pearl can pass between, and all above the sand', () => {
@@ -226,5 +226,37 @@ describe('Peg Garden', () => {
         }
       }
     }
+  });
+
+  it('level 8 grows four huge buds, apart from each other and the walls, and every one is reachable with margin', () => {
+    expect(planFor(BIG_LEVEL)).toBe(BIG_PLAN);
+    const spots = makeBoard(BIG_PLAN, new Rng(3));
+    expect(spots).toHaveLength(4);
+    for (const a of spots) {
+      expect(a.r).toBe(BIG_PEG);
+      expect(a.x - BIG_PEG).toBeGreaterThanOrEqual(2 * BOARD.ball);
+      expect(BOARD.w - a.x - BIG_PEG).toBeGreaterThanOrEqual(2 * BOARD.ball);
+      expect(a.y + BIG_PEG).toBeLessThan(BOARD.h - 30);
+      for (const b of spots) if (a !== b) expect(Math.hypot(a.x - b.x, a.y - b.y) - 2 * BIG_PEG).toBeGreaterThanOrEqual(2 * BOARD.ball);
+    }
+    const world = { pegs: spots.map((s) => ({ x: s.x, y: s.y, r: s.r! })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 };
+    spots.forEach((_, i) => {
+      // Some place on the ledge reaches the bud on every try, drifting either way.
+      for (const drift of [-DRIFT, DRIFT]) expect(dropAt(world, (b) => b === i, drift).sure, `bud ${i} drift ${drift}`).toBe(true);
+    });
+  });
+
+  it('level 8 never traps a pearl: drops all along the ledge reach the sand', () => {
+    const spots = makeBoard(BIG_PLAN, new Rng(1));
+    const world = { pegs: spots.map((s) => ({ x: s.x, y: s.y, r: s.r! })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 };
+    for (let x = BOARD.ball; x <= BOARD.w - BOARD.ball; x += 20) {
+      const { landed } = simulate({ x, y: 40, vx: x < BOARD.w / 2 ? 12 : -12, vy: 60, r: BOARD.ball }, world, BOARD.h, 10, 1 / 60);
+      expect(landed.y - BOARD.ball, `x ${x}`).toBeGreaterThanOrEqual(BOARD.h);
+    }
+  });
+
+  it('a stuck tapper on level 8 is guided over a waiting flower', () => {
+    expect(guided('big', STALL_AT, false)).toBe(true);
+    expect(guided('big', 0, false)).toBe(false);
   });
 });
