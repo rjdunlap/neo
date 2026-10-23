@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { alternates, badgeRings, BASKET_HALF, BUNCHES, CARRY_NEEDS, CROWD, dressRound, fieldTouch, helperTouch, makeFruits, pileSpot, PLACE_THINGS, PLACES, planFor, PLANS, ringsSayWhen, skipCount, thingsFor, tryLift, usesWhistle, whistleFor, whistleMisses } from './logic';
+import { alternates, botTeam, BIG_POWER, CREW, keepWithin, nearestTeam, nextStrong, partsOf, partThing, SPLITS, strongMixes, teamCenters, teamedPlan, teamsResult, badgeRings, BASKET_HALF, BUNCHES, CARRY_NEEDS, CROWD, dressRound, fieldTouch, helperTouch, makeFruits, pileSpot, PLACE_THINGS, PLACES, planFor, PLANS, ringsSayWhen, skipCount, thingsFor, tryLift, usesWhistle, whistleFor, whistleMisses } from './logic';
 
 describe('Little Helpers', () => {
   it('never needs more helpers than the crowd, and leaves something to send', () => {
@@ -10,7 +10,7 @@ describe('Little Helpers', () => {
         expect(fruits).toHaveLength(plan.fruits);
         for (const f of fruits) {
           expect(f.need).toBeGreaterThanOrEqual(plan.min);
-          expect(f.need).toBeLessThanOrEqual(Math.min(plan.max, CROWD - 1));
+          expect(f.need).toBeLessThanOrEqual(plan.mode === 'split' ? CROWD : plan.mode === 'strong' ? plan.max : Math.min(plan.max, CROWD - 1));
           if (plan.mode === 'more') {
             expect(f.already).toBeGreaterThanOrEqual(1);
             expect(f.already).toBeLessThan(f.need);
@@ -24,6 +24,8 @@ describe('Little Helpers', () => {
           }
           // Neighbouring bunches differ in shape, even when the totals match (3 twos, 2 threes).
           fruits.slice(1).forEach((f, i) => expect([f.groups, f.need]).not.toEqual([fruits[i].groups, fruits[i].need]));
+        } else if (plan.mode === 'split') {
+          for (const f of fruits) expect(f.groups).toBe(2);
         } else {
           for (const f of fruits) expect(f.groups).toBe(1);
           const needs = fruits.map((f) => f.need);
@@ -56,7 +58,7 @@ describe('Little Helpers', () => {
           while (helperTouch(plan, f.need, carrying) === 'send') {
             carrying++;
             sent++;
-            expect(carrying).toBeLessThanOrEqual(CROWD);
+            expect(carrying).toBeLessThanOrEqual(plan.mode === 'strong' ? CREW.small + CREW.big * BIG_POWER : CROWD);
           }
           expect(carrying, `${plan.name} seed ${seed}`).toBe(f.need);
           expect(tryLift(f.need, carrying)).toBe('lift');
@@ -71,7 +73,9 @@ describe('Little Helpers', () => {
   it('keys plans by level ID: level 9 is its own plan, and unknown levels fall back as before', () => {
     for (const plan of PLANS) expect(planFor(plan.level)).toBe(plan);
     expect(planFor(9).mode).toBe('whistle');
-    expect(planFor(7).level).toBe(6);
+    expect(planFor(7).mode).toBe('split');
+    expect(planFor(8).mode).toBe('strong');
+    expect(planFor(10).level).toBe(6);
     expect(planFor(0).level).toBe(1);
     expect(new Set(PLANS.map((p) => p.level)).size).toBe(PLANS.length);
   });
@@ -119,7 +123,7 @@ describe('Little Helpers', () => {
         places.add(place);
         expect(things).toHaveLength(fruits.length);
         things.forEach((k, i) => {
-          const each = fruits[i].need / fruits[i].groups;
+          const each = Math.max(...partsOf(fruits[i]));
           expect(PLACE_THINGS[place]).toContain(k);
           expect(each).toBeGreaterThanOrEqual(CARRY_NEEDS[k][0]);
           expect(each).toBeLessThanOrEqual(CARRY_NEEDS[k][1]);
@@ -128,6 +132,113 @@ describe('Little Helpers', () => {
       }
     }
     expect(places.size).toBe(PLACES.length);
+  });
+
+  it('level 7 splits a crowd of 4 to 7 two ways, and the same total comes back split another way', () => {
+    const plan = planFor(7);
+    for (let seed = 1; seed <= 200; seed++) {
+      const fruits = makeFruits(plan, new Rng(seed));
+      const splits = new Map<number, Set<string>>();
+      fruits.forEach((f, i) => {
+        const parts = partsOf(f);
+        expect(parts).toHaveLength(2);
+        expect(parts[0] + parts[1]).toBe(f.need);
+        expect(f.need).toBeGreaterThanOrEqual(4);
+        expect(f.need).toBeLessThanOrEqual(CROWD);
+        for (const p of parts) expect(p).toBeGreaterThanOrEqual(1);
+        expect(SPLITS[f.need].map((x) => [...x].sort().join())).toContain([...parts].sort().join());
+        if (i > 0) expect(f.need).not.toBe(fruits[i - 1].need);
+        splits.set(f.need, (splits.get(f.need) ?? new Set()).add([...parts].sort().join()));
+      });
+      // Each total is met twice, split a different way the second time.
+      for (const set of splits.values()) expect(set.size).toBe(2);
+    }
+    for (const [total, pairs] of Object.entries(SPLITS)) {
+      expect(pairs.length).toBeGreaterThanOrEqual(2);
+      for (const [a, b] of pairs) expect(a + b).toBe(Number(total));
+    }
+  });
+
+  it('level 7 things fit each part, the heavier part gets the thing and a lighter part one that fits it', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const fruits = makeFruits(planFor(7), new Rng(seed));
+      const { place, things } = dressRound(fruits, new Rng(seed * 3));
+      fruits.forEach((f, i) => {
+        const parts = partsOf(f);
+        expect(thingsFor(place, Math.max(...parts))).toContain(things[i]);
+        for (const p of parts) {
+          const k = partThing(place, p, things[i]);
+          expect(thingsFor(place, p)).toContain(k);
+        }
+      });
+    }
+  });
+
+  it('a team lifts only when every fruit has exactly its team; the bot sends to the emptiest and then whistles', () => {
+    expect(teamsResult([2, 3], [2, 3]).lift).toBe(true);
+    expect(teamsResult([2, 3], [3, 2])).toMatchObject({ lift: false, short: [1], over: [0] });
+    expect(teamsResult([2, 3], [0, 0]).empty).toBe(true);
+    expect(teamsResult([2, 2], [2, 1])).toMatchObject({ lift: false, short: [1], over: [] });
+    for (const parts of [[2, 3], [1, 4], [2, 2, 2], [3, 3]]) {
+      const counts = parts.map(() => 0);
+      for (let guard = 0; guard < 20; guard++) {
+        const g = botTeam(parts, counts);
+        if (g === null) break;
+        counts[g]++;
+      }
+      expect(teamsResult(parts, counts).lift).toBe(true);
+    }
+  });
+
+  it('tap resolves to the nearest fruit and the teams never overlap', () => {
+    for (const parts of [[2, 2], [1, 5], [2, 2, 2], [3, 4]]) {
+      const c = teamCenters(parts);
+      c.forEach((x, i) => {
+        expect(nearestTeam(parts, x)).toBe(i);
+        if (i) expect(x - c[i - 1]).toBeGreaterThan(((parts[i] + parts[i - 1]) / 2) * 50);
+      });
+    }
+    expect(teamedPlan(planFor(6))).toBe(true);
+    expect(teamedPlan(planFor(7))).toBe(true);
+    expect(teamedPlan(planFor(8))).toBe(false);
+  });
+
+  it('level 8: every need 4 to 8 has at least two teams from the crew, and the bot builds an exact one', () => {
+    const plan = planFor(8);
+    expect(plan.min).toBe(4);
+    expect(plan.max).toBe(8);
+    for (let need = plan.min; need <= plan.max; need++) {
+      const mixes = strongMixes(need);
+      expect(mixes.length, `need ${need}`).toBeGreaterThanOrEqual(2);
+      for (const m of mixes) {
+        expect(m.small + m.big * BIG_POWER).toBe(need);
+        expect(m.small).toBeLessThanOrEqual(CREW.small);
+        expect(m.big).toBeLessThanOrEqual(CREW.big);
+      }
+      let s = 0;
+      let b = 0;
+      for (let guard = 0; guard < 20; guard++) {
+        const next = nextStrong(need, s, b);
+        if (!next) break;
+        if (next === 'big') b++;
+        else s++;
+      }
+      expect(s + b * BIG_POWER, `bot ${need}`).toBe(need);
+    }
+    // Any exact mix is right, whichever helpers she chose.
+    expect(nextStrong(6, 2, 2)).toBeNull();
+    expect(nextStrong(6, 4, 0)).toBe('big');
+  });
+
+  it('level 8 trims a too-strong team back to what fits, in the order sent', () => {
+    expect(keepWithin([2, 2, 2, 2], 7)).toBe(3);
+    expect(keepWithin([1, 2, 2, 1], 4)).toBe(2);
+    expect(keepWithin([2, 2], 4)).toBe(2);
+    expect(keepWithin([2], 1)).toBe(0);
+  });
+
+  it('level 8 needs of 7 and 8 still have something to carry', () => {
+    for (const place of PLACES) for (const need of [7, 8]) expect(thingsFor(place, need).length, `${place} ${need}`).toBeGreaterThan(0);
   });
 
   it('lifts only with exactly enough helpers', () => {
