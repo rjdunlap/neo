@@ -36,3 +36,10 @@
 - Ran: typecheck; full `npm test` (211 files, 2572 passed); `npm run build`.
 - Browser: `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen` levels 1–10 (misses/hints `[2,1]` for 1–9, `[0,0]` for 10, no page errors, portrait screenshot of 10 reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-kitchen` levels 2, 7, 10 clean (14.8/7.5/8.7 s).
 - Not run: the `picnic` suite's sandwiches step (its unit test passes), offline, iPad touch, device speech, child play ([open](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — Pet Kitchen batch 2 part A: levels 11-12 (slices 4–5)
+
+- [PR #879](https://github.com/rjdunlap/neo/pull/879), `claude/pet-kitchen-same-or-not`: level 11 *Same or not the same?* (piece areas, lopsided cut, overlay miss, `kitchen.recut-other`) and level 12 *Two pizzas, three friends* (`leftover` trouble); orders exclude level 14, still open.
+- Ran: typecheck; `npx vitest run src/games src/content src/progress` (165 files pass, new rule tests in `src/games/pet-kitchen/logic.test.ts`); `npm run build`.
+- Browser: `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen FROM_LEVEL=11` passed (harness extended to level 12); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-kitchen FINGER_LEVELS=11,12` passed (9.9 s, 19.8 s); one portrait screenshot of level 11's start.
+- Not run: screenshot of the overlay, the `picnic` suite, offline, iPad touch, device speech, child play ([open](../DEVICE-CHECKS.md)).
