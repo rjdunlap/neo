@@ -169,10 +169,21 @@ describe('game registry', () => {
     expect(landing(4, school, g.entryLevels)).toBe(4); // birthday from pre-K
   });
 
+  it('places Rhythm Neighbors 7 first for lap and 8 between 2 and 3 for toddlers without moving saved levels', () => {
+    const g = gameById('rhythm-neighbors')!;
+    expect(g.entryLevels).toEqual([7]);
+    expect(levelsInOrder(g.levels('toddler'))).toEqual([2, 8, 3]);
+    expect(stepLevel(2, 1, g.levels('toddler'))).toBe(8);
+    expect(stepLevel(8, 1, g.levels('toddler'))).toBe(3);
+    expect(levelsInOrder(g.levels('preschool'))).toEqual([3, 4]);
+    expect(landing(7, g.levels('toddler'), g.entryLevels)).toBe(2);
+    expect(landing(3, g.levels('toddler'), g.entryLevels)).toBe(3);
+  });
+
   it('keeps two unjudged creative modes available for lap co-play', () => {
     for (const id of ['rainbow-fingers', 'fluffy-salon', 'stamp-studio', 'rhythm-neighbors']) {
       const lap = GAMES.find(g => g.id === id)!.levels('lap');
-      expect(id === 'stamp-studio' ? levelsInOrder(lap) : lap).toEqual(id === 'stamp-studio' ? [7, 8, 1, 2] : { min: 1, max: 2 });
+      expect(id === 'stamp-studio' || id === 'rhythm-neighbors' ? levelsInOrder(lap) : lap).toEqual(id === 'stamp-studio' ? [7, 8, 1, 2] : id === 'rhythm-neighbors' ? [7, 1, 2] : { min: 1, max: 2 });
     }
   });
 

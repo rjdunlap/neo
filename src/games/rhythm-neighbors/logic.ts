@@ -2,7 +2,8 @@ import type { Rng } from '../../engine/random';
 import { GAP_SECONDS, RHYTHMS, judgeEcho, type Gap } from '../sound-garden/logic';
 export { GAP_SECONDS };
 export interface Phrase { call: Gap[]; gaps: Gap[]; voices: number[] }
-export interface NeighborPlan { free: boolean; voices: number; timing: boolean; name: string }
+/** `knock`: a free level on a big tree where every knock gets one frog answer; `turn`: the bird calls, then one glowing frog waits for a single tap. */
+export interface NeighborPlan { free: boolean; voices: number; timing: boolean; name: string; knock?: boolean; turn?: boolean }
 export const PLANS: Record<number, NeighborPlan> = {
  1:{free:true,voices:1,timing:false,name:'Tap a woodpecker and hear a frog answer'},
  2:{free:true,voices:2,timing:false,name:'Choose two frog voices for a little chorus'},
@@ -10,9 +11,22 @@ export const PLANS: Record<number, NeighborPlan> = {
  4:{free:false,voices:2,timing:false,name:'Play a pictured reply with two frog voices'},
  5:{free:false,voices:1,timing:true,name:'Answer a short bird call with a different long-and-short frog phrase'},
  6:{free:false,voices:2,timing:true,name:'Alternate two frog parts, then join a final duet'},
+ 7:{free:true,voices:1,timing:false,knock:true,name:'Knock a big tree and a frog answers every knock'},
+ 8:{free:false,voices:1,timing:false,turn:true,name:'My turn, your turn: the bird knocks, then one tap on the glowing frog answers'},
 };
 export const LEVEL_IDS = Object.keys(PLANS).map(Number);
 export const planFor=(l:number)=>PLANS[l]??PLANS[Math.min(Math.max(...LEVEL_IDS),Math.max(1,Math.round(l)))];
+
+/** Level 7: knocks on the tree that finish the round. */
+export const KNOCKS = 8;
+/** Level 7: the frog answers each knock this long after it (seconds). */
+export const KNOCK_ANSWER = 0.45;
+/** Level 8: exchanges that finish the round. */
+export const TURN_EXCHANGES = 3;
+/** The knock times a frog answers, one croak per knock a beat later. */
+export const answerTimes = (knocks: number[]) => knocks.map((at) => at + KNOCK_ANSWER);
+/** The ending song of level 7, which has no phrases of its own. */
+export const KNOCK_FINALE: Phrase = { call: ['S', 'S'], gaps: ['S', 'L'], voices: [0, 0, 0] };
 
 /** Every reply shape: Sound Garden's eight echo rhythms and four more, from two frog notes up to four. */
 export const REPLIES: Gap[][] = [...RHYTHMS, ['L','L'], ['S','L','L'], ['L','S','L'], ['S','L','S']];
@@ -34,7 +48,11 @@ const pick=<T,>(rng:Rng,items:T[])=>items[rng.int(0,items.length-1)];
  * the longest last. A call is never the reply's pattern. Two-frog replies alternate, from a seeded first frog.
  */
 export function makePhrases(level:number,rng:Rng):Phrase[]{
- const p=planFor(level),of=(n:number)=>rng.shuffle(REPLIES.filter(r=>r.length===n));
+ const p=planFor(level);
+ if(p.knock)return [];
+ // Level 8: three different calls of two or three knocks, each answered by one frog tap (a reply of a single note, so no gaps).
+ if(p.turn)return rng.shuffle(CALLS).slice(0,TURN_EXCHANGES).map(call=>({call:[...call],gaps:[],voices:[0]}));
+ const of=(n:number)=>rng.shuffle(REPLIES.filter(r=>r.length===n));
  const replies=p.timing?[...of(2).slice(0,2),of(3)[0]]:[of(1)[0],...of(2).slice(0,2)];
  return replies.map(gaps=>{
   const knocks=p.timing?rng.int(1,2):gaps.length===1?2:1;

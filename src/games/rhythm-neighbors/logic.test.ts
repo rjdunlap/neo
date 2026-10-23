@@ -35,9 +35,9 @@ import {CALLS,FREE_TAPS,LEVEL_IDS,PAUSE_SECONDS,PLANS,REPLIES,finaleEvents} from
 import {judgeEcho} from '../sound-garden/logic';
 const key=(g:readonly string[])=>g.join('');
 it('keys its plans by level ID',()=>{
- expect(LEVEL_IDS).toEqual([1,2,3,4,5,6]);
+ expect(LEVEL_IDS).toEqual([1,2,3,4,5,6,7,8]);
  for(const l of LEVEL_IDS)expect(planFor(l)).toBe(PLANS[l]);
- expect(planFor(9)).toBe(PLANS[6]);expect(planFor(0)).toBe(PLANS[1]);
+ expect(planFor(9)).toBe(PLANS[8]);expect(planFor(0)).toBe(PLANS[1]);
 });
 it('draws from twelve different reply shapes and calls of two or three knocks',()=>{
  expect(new Set(REPLIES.map(key)).size).toBe(12);
@@ -71,4 +71,26 @@ it('ends every round with a song of about four seconds that judges nothing',()=>
 it('clears a reply at a thinking pause before the rhythm rule would call it wrong',()=>{
  expect(judgeEcho(['S'],[0,PAUSE_SECONDS])).toBe(true);
  expect(judgeEcho(['S'],[0,PAUSE_SECONDS+0.01])).toBe(false);
+});
+
+import {KNOCKS,KNOCK_ANSWER,KNOCK_FINALE,TURN_EXCHANGES,answerTimes} from './logic';
+it('level 7: every knock gets exactly one answer inside 0.6 s, and eight knocks finish',()=>{
+ expect(makePhrases(7,new Rng(1))).toEqual([]);
+ const knocks=Array.from({length:KNOCKS},(_,i)=>i*0.3);const answers=answerTimes(knocks);
+ expect(answers).toHaveLength(knocks.length);
+ answers.forEach((a,i)=>{expect(a-knocks[i]).toBeGreaterThan(0);expect(a-knocks[i]).toBeLessThanOrEqual(0.6);});
+ expect(KNOCK_ANSWER).toBeLessThanOrEqual(0.6);expect(KNOCKS).toBe(8);
+ expect(planFor(7).free).toBe(true);expect(finaleEvents(KNOCK_FINALE,1,0).end).toBeGreaterThanOrEqual(4);
+});
+it('level 8: three different calls, each answered by a single frog tap with no timing or misses to judge',()=>{
+ for(let seed=1;seed<=100;seed++){
+  const ph=makePhrases(8,new Rng(seed));
+  expect(ph).toHaveLength(TURN_EXCHANGES);expect(new Set(ph.map(p=>key(p.call))).size).toBe(3);
+  for(const p of ph){
+   expect(p.voices).toEqual([0]);expect(p.gaps).toEqual([]);expect(p.voices.length).toBe(p.gaps.length+1);
+   expect(accepts(p,[{voice:0,at:0}],planFor(8).timing,false)).toBe(true);
+   expect(nextNote(p,0)).toMatchObject({voice:0});expect(nextNote(p,1)).toEqual({send:true});
+  }
+ }
+ expect(planFor(8).timing).toBe(false);
 });
