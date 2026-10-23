@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Sense Detective levels 1–2 (B2, 2026-10-23)
+
+[PR #861](https://github.com/rjdunlap/neo/pull/861), `claude/sense-detective-build`: the [definition](../definitions/sense-detective.md)'s investigation loop built as the 13th Tinker Lab game (`src/games/sense-detective/`, region `tinker-lab`; pre-K levels 1–2, school level 2): Look or Listen, an evidence strip, a toy shelf and Check that answers found, miss with a spoken reason, or a free "not yet". Bell, rattle and drum are invented; every sound has an equal picture. Music is silenced (the sounds are the clues). Ghost-finger bot looks before it checks. Levels 3–5 (several toys possible, two parcels) remain B3's definition, appended above level 2. Open: the decisions in the definition's open-decisions list stay on their defaults; real-device speech and children reading the badges are unchecked ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
 ### Circuit Garden 1–3 definition, energy-waves E1 (2026-10-22)
 
 [PR #846](https://github.com/rjdunlap/neo/pull/846), `codex/define-circuit-garden`: [definition](../definitions/circuit-garden.md) freezes terminal graphs, all base states/alternatives, one-gap connection, free switch comparison and two-gap Check repair; rendered observation/Done gates, idempotent help, Undo/restart/adaptation, proposed voice/how-to/demo and both layouts. Required future series/parallel topology semantics are specified without defining/building the older workshop. E2 remains decision-gated on registration/model scope, bands/accounting and land capacity; E3 and E4 onward stay separate. Links/diff only; no runtime/device/child proof or practical content. #733 preserved.
