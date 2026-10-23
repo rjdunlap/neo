@@ -20,7 +20,7 @@ describe('migrate', () => {
     });
     expect(save.profile).toEqual({ name: 'Mia', band: 'lap' });
     // A save from when the app had a play timer: the limit is retired, and always saved as 0 (no limit).
-    expect(save.settings).toEqual({ placeLayout: 'path', volume: 1, music: false, sessionMinutes: 0, coplayHints: true, howToCards: true });
+    expect(save.settings).toEqual({ placeLayout: 'path', volume: 1, music: false, sessionMinutes: 0, coplayHints: true, howToCards: true, speech: true });
     expect(defaults().settings.sessionMinutes).toBe(0);
     expect(save.games['bubble-pop'].level).toBe(1);
     expect(save.games['bubble-pop'].pinned).toBeNull();
@@ -303,6 +303,13 @@ describe('migrate', () => {
     const kept = migrate({ explained: ['duck-pond'], settings: { howToCards: false } });
     expect('explained' in kept).toBe(false);
     expect(kept.settings.howToCards).toBe(false);
+  });
+
+  it('starts with spoken lines on, and repairs the switch', () => {
+    expect(defaults().settings.speech).toBe(true);
+    expect(migrate({ settings: { volume: 0.5 } }).settings.speech).toBe(true);
+    expect(migrate({ settings: { speech: 'no' } }).settings.speech).toBe(true);
+    expect(migrate({ settings: { speech: false } }).settings.speech).toBe(false);
   });
 
   it('keeps the switch through a backup and restore', () => {

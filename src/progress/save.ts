@@ -96,7 +96,7 @@ export interface SaveData {
    * (Screen Time, Guided Access). The field stays so an older cached build that reads a newer backup finds 0, not its
    * old default of a few minutes, and never starts a goodnight scene.
    */
-  settings: { placeLayout: 'path' | 'subjects'; volume: number; music: boolean; sessionMinutes: 0; coplayHints: boolean; howToCards: boolean };
+  settings: { placeLayout: 'path' | 'subjects'; volume: number; music: boolean; sessionMinutes: 0; coplayHints: boolean; howToCards: boolean; speech: boolean };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
   stories: { picnic: StoryProgress<'picnic'>; woodland: StoryProgress<'woodland'> };
@@ -120,7 +120,7 @@ export function defaults(): SaveData {
     profile: { name: '', band: 'lap' },
     creatures: { owned: [], companion: null },
     world: { band: null },
-    settings: { placeLayout: 'path', volume: 0.8, music: true, sessionMinutes: 0, coplayHints: true, howToCards: true },
+    settings: { placeLayout: 'path', volume: 0.8, music: true, sessionMinutes: 0, coplayHints: true, howToCards: true, speech: true },
     games: {},
     stickers: [],
     stories: { picnic: { steps: [], ended: false, keepsake: false }, woodland: { steps: [], ended: false, keepsake: false } },
@@ -271,6 +271,7 @@ export function migrate(raw: unknown): SaveData {
       sessionMinutes: 0,
       coplayHints: bool(settings.coplayHints, d.settings.coplayHints),
       howToCards: bool(settings.howToCards, d.settings.howToCards),
+      speech: bool(settings.speech, d.settings.speech),
     },
     games,
     stickers,
