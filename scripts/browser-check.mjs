@@ -9930,6 +9930,51 @@ async function woodsBatch() {
     const trips = await page.evaluate(() => neo.scene.game.trips.length);
     // Tap a house's middle (the hit area is centered above its feet).
     const house = (i) => tap(`neo.scene.game.houses[${i}]`).then(() => page.waitForTimeout(250));
+    if (level === 14) {
+      for (let n = 0; n < trips; n++) {
+        await idle(n);
+        const trip = await page.evaluate(() => [...neo.scene.game.trip]);
+        const orders = await page.evaluate(async (t) => {
+          const { comparisonRoute, routeLength, COMPARE_EDGES } = await import('/src/games/mail-carrier/logic.ts');
+          return t.flatMap((a) => t.filter((b) => b !== a).map((b) => [a, b, t.find((c) => c !== a && c !== b)]))
+            .map((order) => ({ order, count: routeLength(comparisonRoute(order), COMPARE_EDGES) })).sort((a, b) => a.count - b.count);
+        }, trip);
+        if (n === 0) {
+          const nobody = [0, 1, 2, 3, 4].find((h) => !trip.includes(h));
+          await house(nobody); await page.waitForTimeout(1600); await house(nobody); await page.waitForTimeout(350);
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.ok(await page.evaluate(() => { const g = neo.scene.game; return g.trip.some((h) => g.houses[h].glow.visible && g.key.find((r) => r.house === h).glow.visible); }));
+          await house(trip[2]); await house(trip[2]);
+          assert.deepEqual(await page.evaluate(() => neo.scene.game.planned), [], 'undo is free');
+        }
+        const first = orders.at(-1);
+        for (const h of first.order) await house(h);
+        assert.deepEqual(await page.evaluate(() => neo.scene.game.planned), first.order, 'any order accepted');
+        if (n === 0) await screenshot('mail-carrier-14-plan-portrait');
+        await tap('neo.scene.game.go');
+        await page.waitForFunction(() => neo.scene.game.choosingComparison && !neo.scene.game.busy, null, { timeout: 20000 });
+        assert.equal(await page.evaluate(() => neo.scene.game.firstCount), first.count);
+        if (n === 0) {
+          await screenshot('mail-carrier-14-compare-portrait');
+          await tap('neo.scene.game.compareButtons[0]');
+          await house([0, 1, 2, 3, 4].find((h) => !trip.includes(h)));
+          assert.deepEqual(await counts(), [2, 1], 'optional walk mistakes are unscored');
+          assert.deepEqual(await page.evaluate(() => neo.scene.game.trip), trip, 'same bag');
+          for (const h of orders[0].order) await house(h);
+          assert.ok(orders[0].count < first.count, 'second order is shorter');
+          await tap('neo.scene.game.go');
+          await page.waitForFunction(() => neo.scene.game.index === 1 && !neo.scene.game.busy, null, { timeout: 20000 });
+          assert.deepEqual(await counts(), [2, 1], 'comparison never adds misses or hints');
+        } else await tap('neo.scene.game.compareButtons[1]');
+      }
+      await finished('mail-carrier');
+      assert.deepEqual(await score('mail-carrier'), [2, 1]);
+      assert.equal(await page.evaluate(() => kit.store.stats('mail-carrier').history.length), 1, 'two bags and optional comparison make one round');
+      assert.equal(await page.evaluate(() => kit.store.data.stickers.filter((s) => s.game === 'mail-carrier').length), 1, 'one sticker, including help');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log('Mail Carrier 14: any order, undo, two misses/one glow, counted office return, shorter free second walk, skip second comparison and single reward passed');
+      continue;
+    }
     for (let n = 0; n < trips; n++) {
       await idle(n);
       const trip = await page.evaluate(() => [...neo.scene.game.trip]);

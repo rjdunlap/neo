@@ -405,3 +405,33 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, units, build, browser or device checks (docs only); nothing implemented.
 - Open: ELOF wording, primary humour papers, a reviewer for meaning tags and verses, decisions 1–7 in the study.
+
+## 2026-10-22 — Rhyme Riddles definition (PW1, docs only)
+
+- [PR #844](https://github.com/rjdunlap/neo/pull/844), `claude/define-rhyme-riddles`: [definition](../definitions/rhyme-riddles.md), READY (define line replaced by the build line), backlog, notebook, study.
+- Defined: tag table for the 29 pictures, riddle rules, levels 5–7, level-7 chip builder, accounting, voice lines, rule tests, bot. Found and fixed an inconsistency in the study's example (meaning clue alone left one picture).
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser or device checks (docs only). ELOF not opened.
+- Open: tag-table review, decisions (a)–(c) in the definition.
+
+## 2026-10-22 — Circuit Garden 1–3 definition (energy-waves E1, docs only)
+
+- [PR #846](https://github.com/rjdunlap/neo/pull/846), `codex/define-circuit-garden`: [definition](../definitions/circuit-garden.md), study/packet, READY/backlog/roadmap/notebook and decision links, archive closeout.
+- Defined finite terminal graphs/states, observation/Done/Check, free experiments and counted help, supported finish, adaptation, voice/how-to/demo, two layouts and future switch-topology invariants; source audit of current Tinker Lab list/layout contract.
+- Ran: Markdown links/anchors and `git diff --check` on current upstream plus E1 documentation diff.
+- Not run: local typecheck, units, build, browser, reference-app play, device or child checks (docs only); no implementation.
+- Open: registration/model scope, ranges/accounting and added land capacity, recommended educator review, practical-card named review, device speech/touch/understanding; E2 onward and #733 untouched.
+
+## 2026-10-22 — Stop and Go lap entry 9 Go car, stop car (slice 3)
+
+- [PR #847](https://github.com/rjdunlap/neo/pull/847), `claude/stop-and-go-go-car`: level 9 `lamps` (two 160-wide lamps, looping car, eight touches, no misses; lap order `[9, 1]`), how-to step, `go.lamps` voice line, bot alternating lamps.
+- Ran: typecheck; vitest `stop-and-go`, content, progress, registry and app (414 passed); `BROWSER_SUITE=woods WOODS_ONLY=go FROM_LEVEL=9` (new lamps case) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=stop-and-go FINGER_LEVELS=9` clean in 12.1 s; one landscape screenshot reviewed.
+- Not run: portrait screenshot, build, `world`, iPad or device, a child's reaction.
+- Open: portrait layout of the lamps and real touch on an iPad.
+
+## 2026-10-22 — Mail Carrier batch 1: Tool signs, helpers and numbers past ten (9, 10, 12)
+
+- [PR #850](https://github.com/rjdunlap/neo/pull/850), slices 3–5: level 10 tool signs (2–3 houses, seeded), level 9 helpers with problem pictures, tool pop-up and six journal entries, level 12 houses 10–20 with ten-and-ones speech; ladders per band updated, how-to steps added.
+- Ran: typecheck; full `npm test` (211 files, 2547 tests) including new logic and journal cases; build; `BROWSER_SUITE=batch BATCH_ONLY=mail MAIL_LEVELS=10,9,12` (two wrong taps, hint, saved `[2,1]`, sticker each) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=mail-carrier FINGER_LEVELS=9,10,12` clean in 19.4/16.1/20.1 s; portrait 768x1024 screenshots of 9 and 10 reviewed.
+- Not run: `woodland` and mailmap suites (levels 6–8 unchanged), offline check.
+- Open: a toddler reading the tool pictures, problem pictures at viewing distance, real iPad speech ([device checks](../DEVICE-CHECKS.md)).

@@ -128,6 +128,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### mail-carrier 3: Compare delivery routes
 
+Built 2026-10-23 in [PR #874](https://github.com/rjdunlap/neo/pull/874); [build note](archive/COMPLETED-2026-10-09.md#mail-carrier-batch-3-compare-delivery-routes-2026-10-23). Scope retained for dependency references; no duplicate dispatch.
+
 - **`mail-carrier`, level 14 *Three letters, your way*, slice 8** (new levels on the route interaction, plus the free second walk: typecheck, rule tests, one play of 14 taking the second plan, `fingerdemo` at 14): plan three stops in any order, then optionally compare a second order's stone count; school `order [4, 5, 9, 12, 6, 13, 7, 8, 11, 14]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.

@@ -382,7 +382,8 @@ The 6–8 pilot (the `school` band, built) bridges E1 and E2.
 
 ### E1: early elementary, roughly ages 5–7
 
-Built so far: the `school` band and Wonder Woods (where many games play their top levels), Seesaw Balance 8–9 (take the same off both sides), Robot Path loops with step-through playback (7–10), Mail Carrier's picture map, two planned stops and shorter route (6–8), spoken map clues (13) and odd/even street sides (11), and Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall and Clock Tower built to reach it.
+Built so far: the `school` band and Wonder Woods (where many games play their top levels), Seesaw Balance 8–9 (take the same off both sides), Robot Path loops with step-through playback (7–10), Mail Carrier's picture map, two planned stops and shorter route (6–8), spoken map clues (13), odd/even street sides (11) and three-stop route comparisons with an optional free second walk (14), and Light Lab, Penguin Slide, Secret Code, Frog Hop, Market Stall and Clock Tower built to reach it.
+
 
 - [ ] Wonder Woods as a thematic zone: a host, an errand and an identity separate from the band. [Lands](#lands-navigation-and-discovery) stage A gives every land a host, an identity and a launch and return context; what is left here is a woods land's own errand (below).
 - [x] A woodland errand: the Woodland Picnic (built 2026-10-16); a delivery for a friend using Mail Carrier's map stays an idea; every participating game stays independently playable.
