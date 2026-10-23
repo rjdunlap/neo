@@ -12,7 +12,7 @@ import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { checkStop, HOUSE_NODES, makeTrips, makeWoods, MAP_EDGES, mapNode, mapX, planFor, POST_OFFICE, route, routeLength, SHORTER_EDGES, shorterRoutes, walk, woodsTouch, type MailPlan, type Sign, type WoodsHouse } from './logic';
+import { clueNode, makeClues, type MapClue, checkStop, HOUSE_NODES, makeTrips, makeWoods, MAP_EDGES, mapNode, mapX, planFor, POST_OFFICE, route, routeLength, SHORTER_EDGES, shorterRoutes, walk, woodsTouch, type MailPlan, type Sign, type WoodsHouse } from './logic';
 
 /**
  * Mail Carrier in Wonder Woods: Hazel the squirrel postkeeper hands over letters for the woods. The houses
@@ -112,6 +112,7 @@ export class WoodsMail implements Game {
   readonly plan: MailPlan;
   readonly woods: WoodsHouse[];
   readonly trips: number[][];
+  readonly clues: MapClue[];
   /** This round's map is the mirror image: same paths and stones, left and right swapped. */
   readonly mirrored: boolean;
   readonly houses: WoodsHouseView[] = [];
@@ -148,8 +149,9 @@ export class WoodsMail implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.woods = makeWoods(ctx.rng);
-    this.trips = makeTrips(this.plan, ctx.rng);
     this.mirrored = ctx.rng.chance(0.5);
+    this.clues = this.plan.mode === 'clue' ? makeClues(this.woods, this.mirrored, ctx.rng) : [];
+    this.trips = this.clues.length ? this.clues.map((c) => [c.house]) : makeTrips(this.plan, ctx.rng);
     this.walker = ctx.companion();
     this.walker.scale.set(0.2);
     ctx.track(this.walker);
@@ -164,9 +166,17 @@ export class WoodsMail implements Game {
     ctx.track(this.hazel.critter);
     this.office.addChild(tree, this.hazel.node);
     this.office.eventMode = 'none';
+    if (this.plan.mode === 'clue') {
+      this.office.eventMode = 'static';
+      this.office.hitArea = new Circle(-35, -40, 68);
+      onTap(this.office, () => void this.speakClue(), { cooldown: 450 });
+    }
     this.board.addChild(this.paper, this.decor, this.paths, this.preview, this.office);
     this.woods.forEach((house, i) => {
       const h = new WoodsHouseView(house, i);
+      if (this.plan.mode === 'clue') h.hitArea = new Circle(0, -50, 50);
+      h.on('pointerdown', () => { h.alpha = 0.7; });
+      for (const up of ['pointerup', 'pointerupoutside', 'pointercancel']) h.on(up, () => { h.alpha = 1; });
       onTap(h, () => this.tapHouse(i), { cooldown: 350 });
       ctx.track(h.resident);
       this.houses.push(h);
@@ -279,7 +289,11 @@ export class WoodsMail implements Game {
   private at(n: number) {
     const m = 70;
     const { w, h } = this.rect;
-    const node = mapNode(n, this.mirrored);
+    const node = this.plan.mode === 'clue' ? clueNode(n, this.mirrored) : mapNode(n, this.mirrored);
+    if (this.plan.mode === 'clue') {
+      const size = Math.min(w - 2 * m, h - 2 * m - 40);
+      return { x: m + node.x * size, y: m + 40 + node.y * size };
+    }
     return { x: m + node.x * (w - 2 * m), y: m + 40 + node.y * (h - 2 * m - 40) };
   }
 
@@ -350,7 +364,9 @@ export class WoodsMail implements Game {
     await this.ctx.tw.to(this.letters.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
     this.busy = false;
     const who = (i: number) => this.woods[i].resident;
-    if (this.plan.mode === 'map') {
+    if (this.plan.mode === 'clue') {
+      await this.speakClue();
+    } else if (this.plan.mode === 'map') {
       if (this.index === 0) await this.ctx.instruct('mail.map', { animal: who(trip[0]) });
       else await this.ctx.instruct('mail.map-for', { animal: who(trip[0]) });
     } else if (this.plan.mode === 'shorter') {
@@ -359,6 +375,12 @@ export class WoodsMail implements Game {
       if (this.index === 0) await this.ctx.say('mail.route');
       await this.ctx.instruct('mail.route-for', { first: who(trip[0]), second: who(trip[1]) });
     }
+  }
+
+  private speakClue() {
+    const clue = this.clues[this.index];
+    if (!clue || this.finished) return;
+    return this.ctx.instruct(`mail.clue-${clue.kind}`, { a: clue.a ?? '', b: clue.b ?? '' });
   }
 
   private drawLetters(trip: number[]) {
@@ -373,7 +395,12 @@ export class WoodsMail implements Game {
       who.alive = false;
       who.scale.set(0.26);
       who.position.set(0, 50);
-      env.addChild(g, who);
+      if (this.plan.mode === 'clue') {
+        who.destroy();
+        const question = label('?', 64, wood.line);
+        question.y = 6;
+        env.addChild(g, question);
+      } else env.addChild(g, who);
       if (two) {
         const n = new Graphics().circle(-w / 2 + 6, -50, 18).fill(swatch.purple.fill).stroke(line(swatch.purple.line, 3));
         const t = label(String(i + 1), 22, 0xffffff);
@@ -389,7 +416,7 @@ export class WoodsMail implements Game {
     const trip = this.trip;
     if (!trip || this.busy || this.finished) return;
     if (this.plan.mode === 'shorter') return void this.chooseShorterHouse(i, trip[0]);
-    if (this.plan.mode === 'map') return void this.deliverOne(i, trip[0]);
+    if (this.plan.mode === 'map' || this.plan.mode === 'clue') return void this.deliverOne(i, trip[0]);
     this.planStop(i, trip);
   }
 
@@ -497,7 +524,10 @@ export class WoodsMail implements Game {
       this.miss();
       void h.peek(this.ctx.tw, false);
       const t = this.woods[target];
-      await this.ctx.say('mail.map-wrong', { sign: h.house.sign, resident: h.house.resident, animal: t.resident });
+      if (this.plan.mode === 'clue') {
+        await this.ctx.say('mail.clue-wrong', { sign: h.house.sign });
+        await this.speakClue();
+      } else await this.ctx.say('mail.map-wrong', { sign: h.house.sign, resident: h.house.resident, animal: t.resident });
       h.resident.visible = false;
       if (this.wrongs >= 2) this.hint(target);
       return;
@@ -555,6 +585,10 @@ export class WoodsMail implements Game {
     const row = this.key.find((r) => r.house === house);
     if (row) row.glow.visible = true;
     const t = this.woods[house];
+    if (this.plan.mode === 'clue') {
+      void this.ctx.say('mail.clue-hint', { sign: t.sign });
+      return;
+    }
     void this.ctx.say(this.plan.mode === 'route' ? 'mail.route-hint' : 'mail.map-hint', { animal: t.resident, sign: t.sign, n: this.planned.length + 1 });
   }
 

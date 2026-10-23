@@ -7,7 +7,7 @@ import type { Rng } from '../../engine/random';
  * shows who it's for (a door color, a number of dots, or a numeral) and the child taps the
  * matching mailbox. A wrong mailbox politely hands the letter back.
  */
-export type MailMode = 'drop' | 'color' | 'dots' | 'numeral' | 'count' | 'map' | 'route' | 'shorter' | 'tool' | 'help' | 'teen';
+export type MailMode = 'drop' | 'color' | 'dots' | 'numeral' | 'count' | 'map' | 'route' | 'shorter' | 'tool' | 'help' | 'teen' | 'clue' | 'sides';
 
 export interface MailPlan {
   /** The level this plan is: the street's levels 9, 10 and 12 sit after the woods' 6–8 in this list, so look it up with `planFor`. */
@@ -36,9 +36,11 @@ export const PLANS: MailPlan[] = [
   { level: 9, mode: 'help', houses: 5, letters: 5, top: 5, name: 'A problem on the letter: tap the helper whose tool fixes it' },
   { level: 10, mode: 'tool', houses: 3, letters: 5, top: 3, name: 'Match the picture on the letter to the tool on the sign' },
   { level: 12, mode: 'teen', houses: 5, letters: 5, top: 20, low: 10, name: 'Deliver to the house number on the letter (10 to 20)' },
+  { level: 13, mode: 'clue', houses: 5, letters: 4, top: 0, name: 'Hazel’s spoken clue: between, next on the left, nearest and farthest on the picture map' },
+  { level: 11, mode: 'sides', houses: 8, letters: 5, top: 16, name: 'Both sides of the street: odd numbers on one side, even on the other, rising left to right' },
 ];
 
-export const isMapMode = (mode: MailMode) => mode === 'map' || mode === 'route' || mode === 'shorter';
+export const isMapMode = (mode: MailMode) => mode === 'map' || mode === 'route' || mode === 'shorter' || mode === 'clue';
 
 export const planFor = (level: number) => PLANS.find((p) => p.level === level) ?? PLANS[Math.min(8, Math.max(1, level)) - 1];
 
@@ -105,6 +107,14 @@ export function teenSpoken(n: number): { word: string; parts: string } {
 
 /** A street of houses, numbered in order left to right (like a real street), each a different door color. */
 export function makeStreet(plan: MailPlan, rng: Rng): House[] {
+  if (plan.mode === 'sides') {
+    const columns = plan.houses / 2;
+    // No saved bag count exists: a seeded round chooses the first or higher number run.
+    const start = rng.chance(0.5) ? 1 : plan.top - 2 * columns + 1;
+    return Array.from({ length: columns * 2 }, (_, i) => ({
+      number: start + (i % columns) * 2 + (i < columns ? 0 : 1), door: DOOR_COLORS[i % DOOR_COLORS.length],
+    }));
+  }
   if (plan.mode === 'tool' || plan.mode === 'help') return makeToolStreet(plan, rng);
   const low = plan.low ?? 1;
   const pool = Array.from({ length: plan.top - low + 1 }, (_, i) => low + i);
@@ -179,7 +189,7 @@ export const letterShows = (mode: MailMode): LetterShows => {
   switch (mode) {
     case 'drop': return 'nothing';
     case 'color': return 'color';
-    case 'numeral': case 'teen': return 'numeral';
+    case 'numeral': case 'teen': case 'sides': return 'numeral';
     case 'tool': return 'tool';
     case 'help': return 'problem';
     default: return 'dots';
@@ -370,6 +380,52 @@ export type WoodsTouch = { house: number } | 'go';
  */
 export function woodsTouch(mode: MailMode, trip: number[], planned: number[]): WoodsTouch | null {
   if (!trip.length) return null;
-  if (mode === 'map' || mode === 'shorter') return { house: trip[0] };
+  if (mode === 'map' || mode === 'shorter' || mode === 'clue') return { house: trip[0] };
   return planned.length < trip.length ? { house: trip[planned.length] } : 'go';
+}
+
+
+/** Layout fallback: four 0.8-scale houses per side unless their 176-unit targets would overlap. */
+export const sideColumns = (width: number) => (width - 260 >= 3 * 180 ? 4 : 3);
+export function sideLayout(width: number, height: number, count: number) {
+  const columns = count / 2;
+  const near = height - 130;
+  const far = 380;
+  return Array.from({ length: count }, (_, i) => ({
+    x: 160 + (width - 260) * (i % columns) / (columns - 1),
+    y: i < columns ? far : near, scale: 0.8,
+  }));
+}
+export const parity = (n: number) => n % 2 ? 'odd' : 'even';
+export function sideWrong(actual: number, target: number) {
+  return { n: actual, target, side: parity(actual), wanted: parity(target), direction: target > actual ? 'further along' : 'back along the street' };
+}
+
+export type ClueKind = 'between' | 'left' | 'nearest' | 'farthest';
+export interface MapClue { kind: ClueKind; a?: Sign; b?: Sign; house: number }
+/** Same path graph as the key map, with clear straight-line near/far differences for speech. */
+export function clueNode(n: number, mirrored: boolean) {
+  const p = n === 1 ? { x: 0.08, y: 0.02 } : n === 5 ? { x: 0.23, y: 0.78 } : MAP_NODES[n];
+  return { x: mirrored ? 1 - p.x : p.x, y: p.y };
+}
+/** Resolve the clue from signs and geometry, independent of its stored answer. */
+export function clueMatches(clue: Pick<MapClue, 'kind' | 'a' | 'b'>, woods: WoodsHouse[], mirrored: boolean): number[] {
+  const point = (i: number) => clueNode(HOUSE_NODES[i], mirrored);
+  const top = woods.map((_, i) => i).filter((i) => point(i).y < 0.25).sort((a, b) => point(a).x - point(b).x);
+  const a = woods.findIndex((h) => h.sign === clue.a), b = woods.findIndex((h) => h.sign === clue.b);
+  if (clue.kind === 'between') return top.filter((i) => i !== a && i !== b && point(i).x > Math.min(point(a).x, point(b).x) && point(i).x < Math.max(point(a).x, point(b).x));
+  if (clue.kind === 'left') return top.filter((_, k) => top[k + 1] === a);
+  const office = clueNode(POST_OFFICE, mirrored);
+  const distances = woods.map((_, i) => Math.hypot(point(i).x - office.x, point(i).y - office.y));
+  const distance = clue.kind === 'nearest' ? Math.min(...distances) : Math.max(...distances);
+  return distances.flatMap((d, i) => Math.abs(d - distance) < 1e-8 ? [i] : []);
+}
+export function makeClues(woods: WoodsHouse[], mirrored: boolean, rng: Rng): MapClue[] {
+  const top = [0, 1, 2].sort((a, b) => clueNode(HOUSE_NODES[a], mirrored).x - clueNode(HOUSE_NODES[b], mirrored).x);
+  const clues: Omit<MapClue, 'house'>[] = [
+    { kind: 'between', a: woods[top[0]].sign, b: woods[top[2]].sign },
+    { kind: 'left', a: woods[rng.pick(top.slice(1))].sign },
+    { kind: 'nearest' }, { kind: 'farthest' },
+  ];
+  return rng.shuffle(clues).map((clue) => ({ ...clue, house: clueMatches(clue, woods, mirrored)[0] }));
 }

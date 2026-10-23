@@ -11,7 +11,7 @@ import { spread, type View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { addressedHouse, countedAloud, countsAloud, helpFixed, helpWrong, houseLooks, isMapMode, letterShows, mailboxColor, mailboxShows, makeLetters, makeStreet, nearestHouse, NEIGHBORS, planFor, shouldInvite, teenSpoken, TOOL_NAME, type HelperId, type House, type HouseLook, type MailPlan } from './logic';
+import { sideColumns, sideLayout, sideWrong, parity, addressedHouse, countedAloud, countsAloud, helpFixed, helpWrong, houseLooks, isMapMode, letterShows, mailboxColor, mailboxShows, makeLetters, makeStreet, nearestHouse, NEIGHBORS, planFor, shouldInvite, teenSpoken, TOOL_NAME, type HelperId, type House, type HouseLook, type MailPlan } from './logic';
 import { drawProblem, drawTool } from './art';
 import type { CompanionRig } from '../../creatures/companion';
 import { WoodsMail } from './woods';
@@ -22,7 +22,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 10, order: [1, 2, 10] },
   preschool: { min: 2, max: 10, order: [2, 10, 3, 4] },
   prek: { min: 3, max: 12, order: [3, 4, 5, 9, 12, 6] },
-  school: { min: 4, max: 12, order: [4, 5, 9, 12, 6, 7, 8] },
+  school: { min: 4, max: 13, order: [4, 5, 9, 12, 6, 13, 7, 8, 11] },
 };
 
 /** Dots laid out like dice faces, so small numbers can be seen at a glance. */
@@ -160,7 +160,7 @@ class MailCarrier implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
-    this.street = makeStreet(this.plan, ctx.rng);
+    this.street = makeStreet(this.plan.mode === 'sides' && sideColumns(ctx.view.w) === 3 ? { ...this.plan, houses: 6, top: 12 } : this.plan, ctx.rng);
     this.letters = makeLetters(this.plan, this.street, ctx.rng);
     const kinds = ctx.rng.shuffle([...NEIGHBORS]);
     // Cosmetic draws come after the letters, so a seed's deliveries stay the same.
@@ -181,9 +181,9 @@ class MailCarrier implements Game {
       onTap(h, () => void this.post(i), { cooldown: 400 });
       h.on('pointerdown', () => {
         this.idle = 0;
-        h.scale.set(1.04);
+        h.scale.set(this.plan.mode === 'sides' ? 0.832 : 1.04);
       });
-      for (const up of ['pointerup', 'pointerupoutside', 'pointercancel'] as const) h.on(up, () => h.scale.set(1));
+      for (const up of ['pointerup', 'pointerupoutside', 'pointercancel'] as const) h.on(up, () => h.scale.set(this.plan.mode === 'sides' ? 0.8 : 1));
       ctx.track(h.neighbor);
       this.houses.push(h);
       ctx.stage.addChild(h);
@@ -219,7 +219,14 @@ class MailCarrier implements Game {
     for (let x = 30; x < v.w; x += 90) this.road.roundRect(x, y + 96, 50, 8, 4).fill(0xffffff);
     const xs = spread(this.houses.length, 160, v.w - 50, 178);
     this.houses.forEach((h, i) => h.position.set(xs[i], y));
-    this.envelope.position.set(v.w / 2, 150);
+    if (this.plan.mode === 'sides') {
+      const layout = sideLayout(v.w, v.h, this.houses.length);
+      this.houses.forEach((h, i) => { h.position.set(layout[i].x, layout[i].y); h.scale.set(layout[i].scale); });
+      const roadTop = layout[0].y + 110;
+      this.road.clear().rect(0, roadTop, v.w, 54).fill(0xd9d2c5);
+      for (let x = 30; x < v.w; x += 90) this.road.roundRect(x, roadTop + 25, 50, 6, 3).fill(0xffffff);
+    }
+    this.envelope.position.set(v.w / 2, this.plan.mode === 'sides' ? 105 : 150);
     this.cart.position.set(this.cartX(this.cart.x || v.w / 2), y + 140);
   }
 
@@ -281,6 +288,8 @@ class MailCarrier implements Game {
         return this.ctx.instruct('mail.color', { color });
       case 'numeral':
         return this.ctx.instruct('mail.numeral', { n });
+      case 'sides':
+        return this.ctx.instruct('mail.side-for', { n });
       case 'teen':
         return this.ctx.instruct('mail.teen-for', { word: teenSpoken(n).word });
       case 'tool':
@@ -352,7 +361,7 @@ class MailCarrier implements Game {
     const roll = tw.to(this.cart, { x: cartTo }, { duration: 0.45, ease: ease.inOutSine });
     await tw.to(flying, { x: cartTo }, { duration: 0.45, ease: ease.inOutSine });
     await roll;
-    const target = { x: h.x, y: h.y + 40 };
+    const target = { x: h.x, y: h.y + 40 * h.scale.y };
     const across = tw.to(flying, { x: target.x }, { duration: 0.3, ease: ease.inOutSine });
     await tw.to(flying, { y: target.y - 40 }, { duration: 0.15, ease: ease.outQuad });
     await tw.to(flying, { y: target.y }, { duration: 0.15, ease: ease.inQuad });
@@ -385,6 +394,7 @@ class MailCarrier implements Game {
     if (this.plan.mode === 'color') void this.ctx.say('mail.notme.color', { color: h.house.door });
     else if (this.plan.mode === 'tool') void this.ctx.say('mail.notme.tool', { tool: TOOL_NAME[h.house.tool!] });
     else if (this.plan.mode === 'help') void this.ctx.say('mail.notme.help', helpWrong(h.house.helper!, to.house.helper!));
+    else if (this.plan.mode === 'sides') void this.ctx.say(parity(h.house.number) !== parity(to.house.number) ? 'mail.side-wrong' : 'mail.side-order', sideWrong(h.house.number, to.house.number));
     else void this.ctx.say('mail.notme.number', { n: h.house.number });
     await tw.to(flying, inCart(), { duration: 0.25, ease: ease.inOutSine });
     await tw.to(flying, { x: this.envelope.x, y: this.envelope.y }, { duration: 0.4, ease: ease.inOutSine });
