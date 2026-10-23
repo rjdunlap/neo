@@ -6,6 +6,7 @@ import { BANDS, type Band } from '../../progress/bands';
 import { exploreIds } from './ExploreScene';
 import { LOCATIONS } from './LocationScene';
 import { meadowKeepOut } from './meadow';
+import { hasRoom } from './decor-room';
 import { LAB_BACKDROP, labCeiling, labMouth, labPlan } from './lab';
 
 const VIEWS = {
@@ -33,12 +34,23 @@ function* layouts() {
 
 describe('Tinker Lab as a location', () => {
   it('keeps every lab drawing on screen and off every touch area, at every band, both sides of the signpost, in every view', () => {
+    let furnished = 0;
+    let full = 0;
     for (const { view, ground, layout, where: where0 } of layouts()) {
       const keepOut = meadowKeepOut(layout, view);
       const plan = labPlan(layout, view, ground);
-      // A workshop in a cave: a bench, and the cave's pool.
-      expect(plan.filter((p) => p.kind === 'bench').length, where0).toBeGreaterThanOrEqual(1);
-      expect(plan.filter((p) => p.kind === 'pool').length, where0).toBe(1);
+      // A workshop in a cave: a bench, and the cave's pool, wherever the games leave a clearing for them. A land of a
+      // dozen games can fill its whole floor with touch areas (the layout never shrinks those), and then it has no decor.
+      // The smallest bench `labPlan` tries is 55 by 36 and the smallest pool 66 by 20; ask with a fifth to spare, for both at once.
+      const field = ground + 40;
+      const roomFor = (w: number, h: number) => hasRoom(keepOut, view, ground, { w, h }, field, view.h - 8);
+      if (roomFor(66, 44) && roomFor(80, 24)) {
+        furnished++;
+        expect(plan.filter((p) => p.kind === 'bench').length, where0).toBeGreaterThanOrEqual(1);
+        expect(plan.filter((p) => p.kind === 'pool').length, where0).toBe(1);
+      } else {
+        full++;
+      }
       for (const { kind, rect: r } of plan) {
         const where = `${kind} ${where0}`;
         expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= view.w && r.y + r.h <= view.h, where).toBe(true);
@@ -48,6 +60,8 @@ describe('Tinker Lab as a location', () => {
       for (const p of plan) for (const b of plan) if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
       expect(labPlan(layout, view, ground)).toEqual(plan);
     }
+    // The room check must not quietly excuse the lab: most layouts are furnished, and only a crowded floor is bare.
+    expect(furnished).toBeGreaterThan(full);
   });
 
   it('hangs stalactites, bats and glow-worms from the ceiling above the back wall, off the corner buttons and the heading', () => {

@@ -428,3 +428,10 @@
 - Ran: typecheck; vitest `stop-and-go`, content, progress, registry and app (414 passed); `BROWSER_SUITE=woods WOODS_ONLY=go FROM_LEVEL=9` (new lamps case) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=stop-and-go FINGER_LEVELS=9` clean in 12.1 s; one landscape screenshot reviewed.
 - Not run: portrait screenshot, build, `world`, iPad or device, a child's reaction.
 - Open: portrait layout of the lamps and real touch on an iPad.
+
+## 2026-10-22 — Mail Carrier batch 1: Tool signs, helpers and numbers past ten (9, 10, 12)
+
+- [PR #850](https://github.com/rjdunlap/neo/pull/850), slices 3–5: level 10 tool signs (2–3 houses, seeded), level 9 helpers with problem pictures, tool pop-up and six journal entries, level 12 houses 10–20 with ten-and-ones speech; ladders per band updated, how-to steps added.
+- Ran: typecheck; full `npm test` (211 files, 2547 tests) including new logic and journal cases; build; `BROWSER_SUITE=batch BATCH_ONLY=mail MAIL_LEVELS=10,9,12` (two wrong taps, hint, saved `[2,1]`, sticker each) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=mail-carrier FINGER_LEVELS=9,10,12` clean in 19.4/16.1/20.1 s; portrait 768x1024 screenshots of 9 and 10 reviewed.
+- Not run: `woodland` and mailmap suites (levels 6–8 unchanged), offline check.
+- Open: a toddler reading the tool pictures, problem pictures at viewing distance, real iPad speech ([device checks](../DEVICE-CHECKS.md)).
