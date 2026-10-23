@@ -1,5 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### RW14 slice 3: one meaning per button (2026-10-23)
+
+[PR #899](https://github.com/rjdunlap/neo/pull/899), branch `claude/rw14-one-meaning`: at the root (`app.creatureWorld`) every house goes `go.hub()` and the control that leaves to the screen's opener is a back arrow, with the origin's picture where `originArt` names one. The round's hold-to-leave (`GameScene.home`) is a back arrow (a plain arrow with no named origin); the result's Back without an origin is a plain arrow (`GameScene.resultWayOut()`); the how-to card's Back uses `HowToIntro.backIcon`. A root location shows Back with Places' picture and a house beside it (`HOUSE_X` = 190 via `LandOptions.root`), both in key and pad focus. Root Back/Home speak their label on press and wait up to 1.1 s ("Back to {place}!", new `nav.home`, `nav.back`); `HoldButton` gained `onDown`, `press()` and `setIcon()`. Buttons carry `meaning: 'home' | 'back'`; `src/app/nav-meaning.test.ts` (9 tests) presses each. Classic is unchanged. Home has no Back (RW03) and is not constructed in the test.
+
+Open: location keep-out rects (`landButtons`) are not widened for the new house, so scenery may draw under it (decoration only); the sun's tap circle overlaps the house's and the house wins. Friends and Dress already routed house to hub and back to the caller. Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-3-one-meaning-per-button).
+
 ### RW14 slice 1: first run on the island (2026-10-23)
 
 [PR #895](https://github.com/rjdunlap/neo/pull/895), branch `codex/rw14-first-run`: HatchScene reuses Home's bottom-anchored backdrop and companion stage. The egg is sized from the full sprout artwork (including leaves), all egg stages share their feet, and the colour/name controls sit on a soft plate above the grass. Four taps → colour → name → Home and the saved sprout are unchanged. Classic boot is unchanged and uses the existing sky/grass fallback. No new image, save schema or route.

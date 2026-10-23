@@ -49,8 +49,8 @@ export type ExploreCard =
 export class ExploreScene extends Scene {
   private readonly backdrop = homeBackdrop();
   readonly ids = exploreIds();
-  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.leave(() => (this.entry ? this.app.go.explore() : this.app.go.hub())));
-  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.hub()));
+  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.leave(() => (this.entry ? this.app.go.explore() : this.app.go.hub()), 'nav.back')).means('back');
+  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.hub(), 'nav.home')).means('home');
   readonly prev = new RoundButton(arrowIcon(-1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(-1));
   readonly next = new RoundButton(arrowIcon(1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(1));
   /** The cards on screen, in reading order. */

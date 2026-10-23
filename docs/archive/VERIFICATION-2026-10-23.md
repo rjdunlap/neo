@@ -142,3 +142,10 @@
 - Ran: typecheck; `npx vitest run src/games/little-helpers src/content src/games/registry` (175 passed, new rule tests); full `npm test` 2607 passed, 1 failed: `src/app/scenes/lab.test.ts` (Tinker Lab prek landscape n=12), which fails identically on the unchanged base (pre-existing, unrelated).
 - Browser at `http://localhost:5437`: `BROWSER_SUITE=woods WOODS_ONLY=helpers` levels 6, 7 (portrait) and 8: wrong whistles, 2 misses and 1 hint, saved score, sticker; screenshots checked. `BROWSER_SUITE=fingerdemo FINGER_ONLY=little-helpers FINGER_LEVELS=6,7,8` passed (51, 51 and 42 s).
 - Not run: `npm run build`, couch suites, offline, iPad touch, hearing the new voice lines on a device, child play ([open](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — RW14 polish packet, ChatGPT art batch and the art inbox script
+
+- [PR #885](https://github.com/rjdunlap/neo/pull/885), `claude/polish-nav-art-backlog`: [POLISH.md](../rework/POLISH.md) (audit and ten slices), [ChatGPT batch](../rework/art-requests/CHATGPT-BATCH.md), [IMPORT.md](../rework/art-requests/IMPORT.md), and `scripts/art/import-inbox.mjs` with its rules in `inbox-core.mjs`; no `src/` change.
+- Ran: `scripts/art/inbox-core.test.mjs` (8 tests), `npm test` (217 files pass), a smoke run of the script on copies of existing originals (one refused for size, three filed with manifest rows, the backdrop prepared at 150 KB with its card, the duck set cut by `prepare-sprite.mjs`), reverted afterwards; links and `git diff --check`.
+- Audit screenshots: root and `classic/` at 1024 × 768 and 768 × 1024 on the dev server (scripted Chromium, `test-results/polish/`, not committed).
+- Not run: typecheck and build (no `src/` change), browser suites, iPad.

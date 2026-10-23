@@ -53,6 +53,8 @@ export interface HowToIntro {
   icon: () => Container;
   play: () => void;
   back: () => void;
+  /** Back's picture, made each time the card is laid out: a house by default; at the root a back arrow (RW14 slice 3). */
+  backIcon?: () => Container;
   /** A tap on the game's picture in the header: the spoken title again. It changes nothing else. */
   hear?: () => void;
   /**
@@ -98,6 +100,8 @@ export class HowToPanel extends Container {
   /** The stop row's tiles and Skip as last laid out (a stop card only). */
   stopTiles: Array<Container & { update?(dt: number): void }> = [];
   skipButton: RoundButton | null = null;
+  /** The intro's Back (or Home on the island), for keys and the route test. */
+  backButton: RoundButton | null = null;
   /** The header picture's tap target, when the intro speaks its title again. */
   titleSpot: Container | null = null;
 
@@ -298,7 +302,9 @@ export class HowToPanel extends Container {
     if (range) card.addChild(...this.arrows(range, 32 + STEP_RADIUS, stepY));
     if (this.intro) {
       const go = new RoundButton(playIcon(), swatch.green, play, this.intro.play);
-      const back = new RoundButton(houseIcon(0xffffff), swatch.blue, 52, this.intro.back);
+      const back = new RoundButton(this.intro.backIcon?.() ?? houseIcon(0xffffff), swatch.blue, 52, this.intro.back);
+      back.meaning = this.intro.backIcon ? 'back' : null;
+      this.backButton = back;
       const backX = inRow ? inlineBackX(width, stops!.count) : width / 2 - 94;
       go.position.set(backX + 156, y + 24 + play);
       back.position.set(backX, y + 24 + play);

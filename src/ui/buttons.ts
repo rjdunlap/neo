@@ -2,6 +2,7 @@ import { Circle, Container, Graphics } from 'pixi.js';
 import type { Swatch } from '../art/palette';
 import { sfx } from '../audio/sfx';
 import { onTap, palmOnGlass } from '../engine/input';
+import type { Meaning } from './origin-art';
 
 function disc(radius: number, sw: Swatch): Graphics {
   return new Graphics()
@@ -25,6 +26,14 @@ export class RoundButton extends Container {
 
   /** The button's size, for a focus ring around it. */
   readonly radius: number;
+  /** At the root, whether this is a Home house or a Back arrow (RW14 slice 3). */
+  meaning: Meaning | null = null;
+
+  /** Marks the button as Home or Back (RW14 slice 3), for chaining onto its construction. */
+  means(meaning: Meaning): this {
+    this.meaning = meaning;
+    return this;
+  }
 
   /** What a tap does: the squish, the tick and the action. A key or button on a controller presses it the same way. */
   press() {
@@ -44,6 +53,8 @@ export class HoldButton extends Container {
   private readonly ring = new Graphics();
   private progress = 0;
   private holding = -1;
+  /** At the root, whether this is a Home house or a Back arrow (RW14 slice 3). */
+  meaning: Meaning | null = null;
   /** Any lift of the holding finger, anywhere, lets go; a stuck press must never fire. */
   private readonly lift = (e: PointerEvent) => {
     if (e.pointerId === this.holding) this.holding = -1;
@@ -57,6 +68,8 @@ export class HoldButton extends Container {
     private readonly onDone: () => void,
     /** The ring that fills while held: white for a button over a scene, a color where the button sits on a pale card. */
     private readonly ringColor = 0xffffff,
+    /** Touch-down, before the hold completes: where a button speaks its label. */
+    private readonly onDown?: () => void,
   ) {
     super();
     this.addChild(disc(radius, sw), icon, this.ring);
@@ -67,6 +80,7 @@ export class HoldButton extends Container {
       if (this.holding < 0 && !palmOnGlass()) {
         this.holding = e.pointerId;
         sfx.tick();
+        this.onDown?.();
       }
     });
     const release = () => (this.holding = -1);
@@ -81,6 +95,17 @@ export class HoldButton extends Container {
     window.removeEventListener('pointerup', this.lift);
     window.removeEventListener('pointercancel', this.lift);
     super.destroy(options);
+  }
+
+  /** What a completed hold does, for a key, a pad or a test. */
+  press() {
+    this.onDone();
+  }
+
+  /** Swaps the picture on the button, under the ring. */
+  setIcon(icon: Container) {
+    this.removeChildAt(1).destroy({ children: true });
+    this.addChildAt(icon, 1);
   }
 
   update(dt: number) {

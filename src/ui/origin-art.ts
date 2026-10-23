@@ -42,14 +42,37 @@ export function originArt(origin: Origin | undefined): { picture: Container; pla
   return null;
 }
 
-/** The result's Back to [origin] picture (RW08): a white return arrow beside the place's picture, inside a 132-unit button. */
-export function backToArt(picture: Container): Container {
+/** The result's Back to [origin] picture (RW08): a return arrow (white, or `color`) beside the place's picture, inside a 132-unit button. */
+export function backToArt(picture: Container, color = 0xffffff): Container {
   const art = new Container();
-  const arrow = arrowIcon(-1, 0xffffff);
+  const arrow = arrowIcon(-1, color);
   arrow.scale.set(0.8);
   arrow.position.set(-30, 0);
   const pic = fitArt(picture, 64);
   pic.x += 20;
   art.addChild(arrow, pic);
+  return art;
+}
+
+/**
+ * What a root button means (RW14 slice 3): the house always goes Home (`go.hub()`), and a back arrow goes back to
+ * whatever opened the screen. A scene marks its leaving buttons so the route test can press each one.
+ */
+export type Meaning = 'home' | 'back';
+
+/**
+ * A back arrow for a `radius` button at the root: beside the picture of the place it returns to where `originArt` names
+ * one, alone otherwise (a story's or project's page, a mix's next stop, All games for a game with no origin).
+ */
+export function backArt(origin: Origin | undefined, radius: number, color = 0xffffff): Container {
+  const from = originArt(origin);
+  return from ? fittedBack(from.picture, radius, color) : arrowIcon(-1, color);
+}
+
+/** `backToArt` scaled from its 132-unit button to a `radius` one. */
+export function fittedBack(picture: Container, radius: number, color = 0xffffff): Container {
+  const art = backToArt(picture, color);
+  art.scale.set(radius / 66);
+  art.eventMode = 'none';
   return art;
 }

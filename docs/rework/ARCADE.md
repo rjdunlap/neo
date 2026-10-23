@@ -27,7 +27,7 @@ Kongregate, the Poki and CrazyGames developer pages, Coolmath and Apple's Games-
 
 - A large spotlight window plays the selected game's bot at her current level, with effects lowered (`audio.hush`), as on the how-to card. A game with no bot shows its picture large instead.
 - Grid cards show the game's own hub picture with its name on a pill and up to two tag pills under it.
-- Until she taps something, the spotlight works like an arcade cabinet's attract mode: after the demo finishes a round, or 20 seconds, it moves to the next card on the page. Once she taps a card it stays where she put it.
+- Until she taps something (preschool and up; at lap and toddler it stays on the first card until a tap, since [RW03](HOME-NAVIGATION.md#routes-and-meaning) asks for no carousel that advances itself), the spotlight works like an arcade cabinet's attract mode: after the demo finishes a round, or 20 seconds, it moves to the next card on the page. Once she taps a card it stays where she put it.
 - First tap on a card spotlights it and says its title; a tap on the spotlighted card, or the big green Play button on the window, starts the game.
 
 **Filters.** One "Topics" button opens a sheet of picture tiles: All games, Played before (last played first, from the round history) and each of the ten subjects, drawn with that subject's landmark and spoken by its existing subject line. The chosen filter shows on the button. No search and no text-only chips, so it works without reading.
@@ -53,6 +53,10 @@ Kongregate, the Poki and CrazyGames developer pages, Coolmath and Apple's Games-
 ## Files (slice 1)
 
 `src/content/arcade.ts` (filters, ordering, tags; tested), `src/creatures/arcade-layout.ts` (the Arcade and its Topics sheet; tested), `src/creatures/home-layout.ts` (Explore's five entries, three over two; tested), `src/ui/icons.ts` (the cabinet picture), `src/app/scenes/ArcadeScene.ts`, `src/rework.ts` (route), `src/content/explore.ts` and `src/ui/origin-art.ts` (the fifth entry and its picture), `src/content/voice-script.ts`.
+
+## For the developer
+
+The Arcade departs from two RW03 working recommendations for Explore: it shows six or more cards a page (RW03: at most four), and its spotlight moves along the page by itself until she taps (RW03: no carousel that advances itself), which is off at lap and toddler. Both follow the request for a portal grid with the demos playing. Whether the attract mode stays, and from which band, is listed in [WAITING-ON-DEVELOPER.md](../WAITING-ON-DEVELOPER.md).
 
 ## Not established
 

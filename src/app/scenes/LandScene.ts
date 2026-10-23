@@ -15,7 +15,7 @@ import { GAMES } from '../../games/registry';
 import { playBand, type Band } from '../../progress/bands';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
-import { bookIcon, islandIcon } from '../../ui/icons';
+import { bookIcon, houseIcon, islandIcon } from '../../ui/icons';
 import { makeLandmark, type Landmark } from '../../ui/landmark';
 import { label } from '../../ui/text';
 import type { App } from '../App';
@@ -53,6 +53,9 @@ export interface LandHost {
   hitArea: Circle;
 }
 
+/** Where the root's house stands, beside Back in the top-left corner and clear of the heading (`landButtons`). */
+export const HOUSE_X = 190;
+
 /** What a scene built on a land may change; without them it is the island's land (`classic/`). */
 export interface LandOptions {
   /** Who greets her here: the land's code-drawn host by default. */
@@ -61,6 +64,11 @@ export interface LandOptions {
   home?: () => void;
   /** The picture on that button: the island by default (a location at the root draws a Back arrow). */
   homeIcon?: () => Container;
+  /**
+   * At the root (RW14 slice 3): the corner button is Back and says `homeSays` on press, and a house beside it goes Home
+   * (`go.hub()`) and says so. Each waits for its word, up to a moment, before leaving.
+   */
+  root?: { homeSays: () => Promise<void> };
   /** Scenery drawn over the backdrop and under the field on every resize, kept clear of the field's touch areas. */
   scenery?: (g: Graphics, layout: LandLayout, view: View, ground: number) => void;
   /** A backdrop in place of the land's own (a location's night sky), and the heading's colour over it. */
@@ -103,8 +111,10 @@ export class LandScene extends Scene {
   private readonly glow = new Graphics();
   private glowLeft = 0;
   readonly pip = makeCompanion();
-  readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(this.goHome));
+  readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(this.goHome, this.options.root?.homeSays));
   readonly book = new RoundButton(bookIcon(), swatch.white, 50, () => this.leave(() => this.app.go.stickers()));
+  /** At the root, a house beside Back that always goes Home (RW14 slice 3); null on the island. */
+  readonly house: RoundButton | null;
   private readonly heading = label('', 36);
   private leaving = false;
   private scale0 = 1;
@@ -133,6 +143,11 @@ export class LandScene extends Scene {
     if (options.homeIcon) {
       this.home.removeChildAt(1).destroy();
       this.home.addChild(options.homeIcon());
+    }
+    this.house = options.root ? new RoundButton(houseIcon(), swatch.white, 50, () => this.leave(() => this.app.go.hub(), () => voice.say('nav.home'))) : null;
+    if (this.house) {
+      this.home.meaning = 'back';
+      this.house.meaning = 'home';
     }
   }
 
@@ -178,7 +193,7 @@ export class LandScene extends Scene {
     this.pip.scale.set(0.55);
     this.pip.hitArea = new Circle(0, -120, 155);
     onTap(this.pip, () => { this.pip.poke(); void voice.say('hub.pick'); });
-    this.ui.addChild(this.track(this.pip), this.home, this.book, this.heading, this.keys.ring);
+    this.ui.addChild(this.track(this.pip), this.home, ...(this.house ? [this.house] : []), this.book, this.heading, this.keys.ring);
     if (this.backdrop.sun) onTap(this.backdrop.sun, () => { this.backdrop.sun!.poke(); sfx.sparkle(); }, { radius: 100 });
     this.backdrop.clouds.forEach((c) => onTap(c, () => { c.poke(); sfx.whoosh(); }, { radius: 90 }));
   }
@@ -193,6 +208,7 @@ export class LandScene extends Scene {
     const layout = landLayout(this.showing.length, !!this.sign, v, this.backdrop.groundY);
     this.layout = layout;
     this.home.position.set(65, 65);
+    this.house?.position.set(HOUSE_X, 65);
     this.book.position.set(v.w - 65, 65);
     this.heading.position.set(v.w / 2, 65);
     this.pip.position.set(92, v.h - 12);
@@ -242,6 +258,7 @@ export class LandScene extends Scene {
     }
     spots.push(
       { id: 'home', x: this.home.x, y: this.home.y, r: this.home.radius, press: () => this.home.press() },
+      ...(this.house ? [{ id: 'house', x: this.house.x, y: this.house.y, r: this.house.radius, press: () => this.house!.press() }] : []),
       { id: 'book', x: this.book.x, y: this.book.y, r: this.book.radius, press: () => this.book.press() },
     );
     return spots;
@@ -302,9 +319,14 @@ export class LandScene extends Scene {
 
   private readonly goHome = () => (this.options.home ?? this.app.go.hub)();
 
-  private leave(go: () => void) {
+  /** The way out; with a spoken label (the root's Back and Home) it waits for the word, up to a moment. A second tap while leaving does nothing. */
+  private async leave(go: () => void, say?: () => Promise<void>) {
     if (this.leaving) return;
     this.leaving = true;
+    if (!say) return go();
+    voice.stop();
+    await Promise.race([say(), this.tw.wait(1.1)]);
+    if (this.app.scene !== this) return;
     go();
   }
 

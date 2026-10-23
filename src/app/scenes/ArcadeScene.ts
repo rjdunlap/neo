@@ -48,8 +48,8 @@ export interface ArcadeCard {
  */
 export class ArcadeScene extends Scene {
   private readonly backdrop = homeBackdrop();
-  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => (this.sheet ? this.closeTopics() : this.leave(() => this.app.go.explore())));
-  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.hub()));
+  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => (this.sheet ? this.closeTopics() : this.leave(() => this.app.go.explore(), voice.say('nav.back')))).means('back');
+  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.hub(), voice.say('nav.home'))).means('home');
   readonly prev = new RoundButton(arrowIcon(-1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(-1));
   readonly next = new RoundButton(arrowIcon(1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(1));
   readonly play = new RoundButton(playIcon(), swatch.green, ARCADE_PLAY_RADIUS, () => !this.sheet && this.spotlit && this.launch(this.spotlit));
@@ -80,6 +80,7 @@ export class ArcadeScene extends Scene {
   private attract = 0;
   private seenRounds = 0;
   private leaving = false;
+  private readonly youngest = store.data.profile.band === 'lap' || store.data.profile.band === 'toddler';
 
   constructor(app: App, page = 0) {
     super(app);
@@ -405,8 +406,9 @@ export class ArcadeScene extends Scene {
     super.update(dt);
     if (this.sheet) return;
     this.demo?.update(dt);
-    if (this.chosen || this.leaving || !this.spotlit || this.cards.length < 2) return;
-    // Attract mode: after a finished round, or a while, the spotlight moves to the next card on the page.
+    if (this.chosen || this.leaving || !this.spotlit || this.cards.length < 2 || this.youngest) return;
+    // Attract mode: after a finished round, or a while, the spotlight moves to the next card on the page. Not at lap and
+    // toddler, where RW03 asks for nothing that changes by itself (docs/rework/ARCADE.md#design; the developer's call).
     this.attract += dt;
     const finished = (this.demo?.finishedRounds ?? 0) > this.seenRounds;
     if (finished || this.attract > ATTRACT_SECONDS) {

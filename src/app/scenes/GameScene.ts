@@ -35,9 +35,9 @@ import { store } from '../../progress/store';
 import { HoldButton, RoundButton } from '../../ui/buttons';
 import { HowToPanel, questionIcon, type HowToIntro } from '../../ui/howto-card';
 import { discoveryPill } from '../../ui/journal-art';
-import { againIcon, basketIcon, checkIcon, heartIcon, houseIcon, nextIcon, treehouseIcon } from '../../ui/icons';
+import { againIcon, arrowIcon, basketIcon, checkIcon, heartIcon, houseIcon, nextIcon, treehouseIcon } from '../../ui/icons';
 import { FONT } from '../../ui/text';
-import { backToArt, originArt } from '../../ui/origin-art';
+import { backArt, backToArt, originArt } from '../../ui/origin-art';
 import type { App, Origin, StoryRound } from '../App';
 import { controllerPlays, InputInUse, pressed } from '../input-in-use';
 import { goToOrigin } from '../origin';
@@ -53,7 +53,8 @@ export class GameScene extends Scene {
   private game: Game | null = null;
   private readonly stage = new Container();
   private readonly pet = makeGuide();
-  private readonly home = new HoldButton(houseIcon(), swatch.white, 44, 0.5, () => this.leave());
+  /** Hold to leave. On the island it is a house; at the root it goes back, so it is a back arrow (RW14 slice 3, set in `init`). */
+  private readonly home = new HoldButton(houseIcon(), swatch.white, 44, 0.5, () => this.leave(), 0xffffff, () => this.sayBack());
   /** For the grown-up: hold to open the how-to card. Quiet on purpose, and a long hold so a small hand does not open it. */
   private readonly help = new HoldButton(questionIcon(), swatch.white, 38, 0.9, () => this.openHelp());
   private helpCard: HowToPanel | null = null;
@@ -123,6 +124,11 @@ export class GameScene extends Scene {
     private readonly startLevel?: number,
   ) {
     super(app);
+    if (this.app.creatureWorld) {
+      // At the root a house always goes Home; this goes back to the round's origin, its story's page or the mix's next stop.
+      this.home.setIcon(this.story ? basketIcon() : backArt(this.origin, 44, ink));
+      this.home.meaning = 'back';
+    }
   }
 
   init() {
@@ -361,7 +367,7 @@ export class GameScene extends Scene {
     const pinned = store.data.games[mod.id]?.pinned ?? null;
     const pick = range.max > range.min ? { range, step: (delta: 1 | -1) => this.stepIntroLevel(delta), suggested, pinned } : undefined;
     const hear = () => { voice.stop(); void voice.say(mod.titleLine); };
-    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.backFromIntro(), hear, demo, pick, levelCard: mod.levelCard, stops: this.stopRowFor() });
+    const card = new HowToPanel(info, () => undefined, { icon: () => mod.hubIcon(), play: () => this.playFromIntro(), back: () => this.backFromIntro(), backIcon: this.app.creatureWorld ? () => (this.story ? basketIcon() : backArt(this.origin, 52)) : undefined, hear, demo, pick, levelCard: mod.levelCard, stops: this.stopRowFor() });
     // The bot's sounds sit lower behind the spoken title; the card gives them back when it closes.
     if (demo) audio.hush(true);
     // The loop that follows her in from the place would sit under a demonstration of making music; `begin` plays the same style later.
@@ -413,11 +419,55 @@ export class GameScene extends Scene {
     this.navigateResult(() => this.goHome());
   }
 
+  /** The root's Back label (RW14 slice 3): "Back to Rainbow Meadow" where the origin has a name, else "Back!". Nothing on the island. */
+  private backLine(): (() => Promise<void>) | null {
+    if (!this.app.creatureWorld) return null;
+    const from = this.story ? null : originArt(this.origin);
+    return from ? () => voice.say('result.back', { place: from.place }) : () => voice.say('nav.back');
+  }
+
+  /**
+   * The result's way out. At the root (RW08) a game from a location or an Explore page goes Back to it by a return arrow
+   * beside its picture, and a house goes Home; there a house always goes Home (RW14 slice 3), so a result with no named
+   * origin goes back by a plain arrow. A story's basket goes back to its page. On the island it is a house to the origin.
+   */
+  resultWayOut(): { home: RoundButton; house: RoundButton | null } {
+    const root = this.app.creatureWorld;
+    const from = root && !this.story ? originArt(this.origin) : null;
+    const icon = from ? backToArt(from.picture) : this.story ? basketIcon() : root ? arrowIcon(-1, 0xffffff) : houseIcon(0xffffff);
+    const home = new RoundButton(icon, swatch.blue, 66, () => this.leaveSaying(this.backLine(), () => this.goHome()));
+    const house = from ? new RoundButton(houseIcon(), swatch.white, 50, () => this.leaveSaying(() => voice.say('nav.home'), () => this.app.go.hub())).means('home') : null;
+    if (root) home.means('back');
+    return { home, house };
+  }
+
+  /** Touch-down on the round's hold-to-leave: its label while it fills. */
+  private sayBack() {
+    const line = this.backLine();
+    if (!line || this.navigating) return;
+    voice.stop();
+    void line();
+  }
+
+  /**
+   * Leaves by `run` after a spoken label (the root's Back and Home, RW14 slice 3), waiting for the word up to a moment; a
+   * second press while it speaks does nothing. Without a label it leaves at once.
+   */
+  private leaveSaying(say: (() => Promise<void>) | null, run: () => void) {
+    if (!say) return this.navigateResult(run);
+    this.navigateResult(() => {
+      const moment = new Promise<void>((done) => window.setTimeout(done, 1100));
+      void Promise.race([say(), moment]).then(() => {
+        if (!this.gone && this.app.scene === this) run();
+      });
+    });
+  }
+
   /** The intro's Back. On a stop card it is the mix's Explore: the mix ends and she stays on the home spot with no sheet. */
   private backFromIntro() {
     const session = this.mixSession();
-    if (!session) return this.leave();
-    this.navigateResult(() => {
+    if (!session) return this.leaveSaying(this.backLine(), () => this.goHome());
+    this.leaveSaying(this.backLine(), () => {
       mixMemory.end(); // before the route: the home spot would otherwise hold the live mix
       this.app.go.place(session.place);
     });
@@ -541,13 +591,7 @@ export class GameScene extends Scene {
     // "Next level" plays the level above the one she just finished (not in a story round, which has its own level).
     const upTo = this.story ? null : nextLevelOffer(this.level, this.mod.levels(this.band));
     const next = upTo === null ? null : new RoundButton(nextIcon(0xffffff), swatch.orange, 66, () => this.navigateResult(() => { this.relaunchMix(); this.app.go.game(this.mod.id, this.band, undefined, true, this.origin, upTo); }));
-    // At the root (RW08) a game from a location or an Explore page goes Back to it by a return arrow beside its picture, and a house goes Home.
-    const from = this.app.creatureWorld && !this.story ? originArt(this.origin) : null;
-    const home = new RoundButton(from ? backToArt(from.picture) : this.story ? basketIcon() : houseIcon(0xffffff), swatch.blue, 66, () => {
-      if (from && this.liveResult() && !this.navigating) void voice.say('result.back', { place: from.place });
-      this.navigateResult(() => this.goHome());
-    });
-    const house = from ? new RoundButton(houseIcon(), swatch.white, 50, () => this.navigateResult(() => this.app.go.hub())) : null;
+    const { home, house } = this.resultWayOut();
     // A heart beside the new sticker, for a game she loves: it joins the shelf on the island, and a second tap takes it back.
     const outline = heartIcon(0xffffff, false);
     const solid = heartIcon(0xffffff, true);

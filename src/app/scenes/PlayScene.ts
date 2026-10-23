@@ -28,8 +28,8 @@ export class PlayScene extends Scene {
   private readonly backdrop = homeBackdrop();
   readonly pet: Companion = this.track(makeCompanion());
   readonly toy = this.track(new BallPlay(this.pet, new Rng(), () => void voice.say('play.fetch')));
-  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.app.go.hub());
-  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.app.go.hub());
+  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.app.go.hub()).means('back');
+  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.app.go.hub()).means('home');
   readonly board = new Container();
   readonly plaque = new TunePlaque();
   readonly basket = new Container();

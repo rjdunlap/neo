@@ -24,7 +24,7 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 | [RW11](https://github.com/rjdunlap/neo/issues/495) | Optional forms and useful talents | sketch, definition first | RW02, RW10 |
 | [RW12](https://github.com/rjdunlap/neo/issues/496) | First expansion and later-school coverage | sketch, definition first | RW08, RW09, RW10; RW11 only if used |
 | [RW13](#rw13-island-revamp-ecosystems-as-locations) | Island revamp: ecosystems as locations | defined 2026-10-20 ([ISLAND-REVAMP.md](ISLAND-REVAMP.md)): eleven land IDs kept as ecosystems, five game moves, residents and backdrop requests (R23, R26); build slices 1 (catalog moves, PR #634), 2 (Rainbow Meadow at the root, PR #635) and 3 (Counting Cove, PR #639) built 2026-10-20; the Explore picker of built locations (PR #640) built 2026-10-20; slices 4 (Puzzle Peaks, PR #641) to 10 (Tinker Lab, PR #648) built 2026-10-20; slice 11 (Barnyard with Lantern Lake, PR #649) built 2026-10-20, the last of the packet's build slices | RW03 packet, the land catalog; informs RW06, RW08 and the backdrop art (R23) |
-| [RW14](#rw14-polish-and-navigation-flow) | Polish and navigation flow | defined 2026-10-23 ([POLISH.md](POLISH.md)): ten ordered slices; slice 0, the art inbox (`scripts/art/import-inbox.mjs`), built with the packet; slices 1–3 need no new image; [ChatGPT batch 1](art-requests/CHATGPT-BATCH.md) (R22, R23) feeds slices 4 and 6 | RW06, RW08 slices 1–2, RW13 |
+| [RW14](#rw14-polish-and-navigation-flow) | Polish and navigation flow | defined 2026-10-23 ([POLISH.md](POLISH.md)): ten ordered slices; slice 0, the art inbox (`scripts/art/import-inbox.mjs`), built with the packet; slices 1–3 (built) need no new image; [ChatGPT batch 1](art-requests/CHATGPT-BATCH.md) (R22, R23) feeds slices 4 and 6 | RW06, RW08 slices 1–2, RW13 |
 
 ## RW01: Name and story
 
@@ -286,7 +286,7 @@ Requested by the developer 2026-10-23 (relayed by the session that started the d
 | 0 | The art inbox script (built with the packet) | — | its unit test |
 | 1 | First run on the home backdrop (built) | — | shell |
 | 2 | Residents in six locations; her own friend stands in where it is the resident | — | shell, offline |
-| 3 | One meaning per button: the house is Home, the back arrow names its place | — | shell and navigation |
+| 3 | One meaning per button: the house is Home, the back arrow names its place (built) | — | shell and navigation |
 | 4 | Illustrated Rainbow Meadow; Places postcards; the drop-in backdrop loader | R23 imported | shell, offline |
 | 5 | Celebration and result in place | slice 4's loader (or the code-drawn backdrop) | shell |
 | 6 | The duck pilot in Duck Pond | R22 imported | existing-game change |

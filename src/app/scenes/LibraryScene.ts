@@ -30,8 +30,8 @@ const LINES: Record<LibraryBook, LineId> = { journal: 'library.journal', windy: 
 export class LibraryScene extends Scene {
   private readonly backdrop = homeBackdrop();
   readonly books = libraryBooks(store.data.profile.band);
-  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.room()));
-  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.hub()));
+  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.room(), 'nav.back')).means('back');
+  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.hub(), 'nav.home')).means('home');
   /** The cards on screen, in order, so a script can find and press one. */
   readonly cards: { book: LibraryBook; node: Container }[] = [];
   private leaving = false;
