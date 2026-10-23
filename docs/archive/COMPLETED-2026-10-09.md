@@ -1632,7 +1632,7 @@ Branch `claude/sea-lift-1-3`: integers study slice 2 (IN1), a new game, `sea-lif
 
 ## 2026-10-22 — Lasso Loops About how many? (estimation E1)
 
-[PR #808](https://github.com/rjdunlap/neo/pull/808), `codex/lasso-about-how-many`: level 6, school 3–6, free first and revised guesses around a benchmark ten, then the tens-and-ones check and spoken comparison. Levels 1–5 and existing bands retain their rules. [Definition](../definitions/lasso-loops-about-how-many.md); [verification](../VERIFICATION.md#2026-10-22--lasso-loops-level-6-about-how-many-estimation-e1). Typecheck, 27 focused tests, build, filtered portrait play and the level-6 ghost finger passed. Child/device checks remain open.
+[PR #808](https://github.com/rjdunlap/neo/pull/808), `codex/lasso-about-how-many`: level 6, school 3–6, free first and revised guesses around a benchmark ten, then the tens-and-ones check and spoken comparison. Levels 1–5 and existing bands retain their rules. [Definition](../definitions/lasso-loops-about-how-many.md); [verification](VERIFICATION-2026-10-22.md#2026-10-22--lasso-loops-level-6-about-how-many-estimation-e1). Typecheck, 27 focused tests, build, filtered portrait play and the level-6 ghost finger passed. Child/device checks remain open.
 
 The completed batch used the existing loop and guess-card tap; its proof checked a far guess at `[0,0]`, two wrong benchmark loops plus a hint, a free changed guess, one wrong final pad and final `[3,1]`, with one sticker. The how-to combines draw and close to fit four steps and fixes the completion description for leftover ones.
 
