@@ -7,7 +7,7 @@ import type { Rng } from '../../engine/random';
  * shows who it's for (a door color, a number of dots, or a numeral) and the child taps the
  * matching mailbox. A wrong mailbox politely hands the letter back.
  */
-export type MailMode = 'drop' | 'color' | 'dots' | 'numeral' | 'count' | 'map' | 'route' | 'shorter' | 'tool' | 'help' | 'teen' | 'clue' | 'sides';
+export type MailMode = 'drop' | 'color' | 'dots' | 'numeral' | 'count' | 'map' | 'route' | 'shorter' | 'tool' | 'help' | 'teen' | 'clue' | 'sides' | 'compare';
 
 export interface MailPlan {
   /** The level this plan is: the street's levels 9, 10 and 12 sit after the woods' 6–8 in this list, so look it up with `planFor`. */
@@ -38,9 +38,10 @@ export const PLANS: MailPlan[] = [
   { level: 12, mode: 'teen', houses: 5, letters: 5, top: 20, low: 10, name: 'Deliver to the house number on the letter (10 to 20)' },
   { level: 13, mode: 'clue', houses: 5, letters: 4, top: 0, name: 'Hazel’s spoken clue: between, next on the left, nearest and farthest on the picture map' },
   { level: 11, mode: 'sides', houses: 8, letters: 5, top: 16, name: 'Both sides of the street: odd numbers on one side, even on the other, rising left to right' },
+  { level: 14, mode: 'compare', houses: 5, letters: 6, top: 0, name: 'Plan three deliveries in any order; optionally walk a second order and compare stone counts (two bags)' },
 ];
 
-export const isMapMode = (mode: MailMode) => mode === 'map' || mode === 'route' || mode === 'shorter' || mode === 'clue';
+export const isMapMode = (mode: MailMode) => mode === 'map' || mode === 'route' || mode === 'shorter' || mode === 'clue' || mode === 'compare';
 
 export const planFor = (level: number) => PLANS.find((p) => p.level === level) ?? PLANS[Math.min(8, Math.max(1, level)) - 1];
 
@@ -279,10 +280,10 @@ export function routeChoices(house: number): number[][] {
   return paths.sort((a, b) => routeLength(a) - routeLength(b));
 }
 
-export function routeLength(path: number[]): number {
+export function routeLength(path: number[], edges = SHORTER_EDGES): number {
   let total = 0;
   for (let i = 1; i < path.length; i++) {
-    const edge = SHORTER_EDGES.find(([a, b]) => (a === path[i - 1] && b === path[i]) || (b === path[i - 1] && a === path[i]));
+    const edge = edges.find(([a, b]) => (a === path[i - 1] && b === path[i]) || (b === path[i - 1] && a === path[i]));
     if (edge) total += edge[2];
   }
   return total;
@@ -295,13 +296,13 @@ export function shorterRoutes(house: number): [number[], number[]] {
 }
 
 /** The shortest walk along the paths from one node to another, both ends included. */
-export function walk(from: number, to: number): number[] {
+export function walk(from: number, to: number, edges: readonly (readonly number[])[] = MAP_EDGES): number[] {
   const prev = new Map<number, number>([[from, from]]);
   const queue = [from];
   while (queue.length) {
     const n = queue.shift()!;
     if (n === to) break;
-    for (const [a, b] of MAP_EDGES) {
+    for (const [a, b] of edges) {
       const m = a === n ? b : b === n ? a : -1;
       if (m >= 0 && !prev.has(m)) {
         prev.set(m, n);
@@ -315,11 +316,19 @@ export function walk(from: number, to: number): number[] {
 }
 
 /** From the post office through each stop in order. */
-export function route(stops: number[]): number[] {
+export function route(stops: number[], edges: readonly (readonly number[])[] = MAP_EDGES): number[] {
   const out = [POST_OFFICE];
-  for (const s of stops) out.push(...walk(out[out.length - 1], HOUSE_NODES[s]).slice(1));
+  for (const s of stops) out.push(...walk(out[out.length - 1], HOUSE_NODES[s], edges).slice(1));
   return out;
 }
+
+/** Level 14's loop has one visible stone on every edge. All walks start and finish at the office. */
+export const COMPARE_EDGES: [number, number, number][] = [...MAP_EDGES.map(([a, b]) => [a, b, 1] as [number, number, number]), [7, 8, 1]];
+export function comparisonRoute(stops: number[]): number[] {
+  const path = route(stops, COMPARE_EDGES);
+  return [...path, ...walk(path.at(-1)!, POST_OFFICE, COMPARE_EDGES).slice(1)];
+}
+export const compareCounts = (first: number, second: number) => second < first ? 'shorter' : second > first ? 'longer' : 'same';
 
 export interface WoodsHouse {
   resident: CritterName;
@@ -338,7 +347,7 @@ export function makeWoods(rng: Rng): WoodsHouse[] {
  * No house gets two letters in a row, and a pair never sends both letters to one house.
  */
 export function makeTrips(plan: MailPlan, rng: Rng): number[][] {
-  const per = plan.mode === 'route' ? 2 : 1;
+  const per = plan.mode === 'compare' ? 3 : plan.mode === 'route' ? 2 : 1;
   const trips: number[][] = [];
   let last = -1;
   const order: number[] = [];
@@ -362,10 +371,10 @@ export function makeTrips(plan: MailPlan, rng: Rng): number[][] {
 }
 
 /** Planning a trip: is this house the next stop, a stop that comes later, already planned, or nobody's letter? */
-export function checkStop(trip: number[], planned: number[], house: number): 'ok' | 'later' | 'planned' | 'nobody' {
+export function checkStop(trip: number[], planned: number[], house: number, freeOrder = false): 'ok' | 'later' | 'planned' | 'nobody' {
   if (planned.includes(house)) return 'planned';
   if (!trip.includes(house)) return 'nobody';
-  return trip[planned.length] === house ? 'ok' : 'later';
+  return freeOrder || trip[planned.length] === house ? 'ok' : 'later';
 }
 
 /** The house on the street a letter is addressed to, or null when the letters have run out. The demonstration posts there. */
@@ -381,7 +390,7 @@ export type WoodsTouch = { house: number } | 'go';
 export function woodsTouch(mode: MailMode, trip: number[], planned: number[]): WoodsTouch | null {
   if (!trip.length) return null;
   if (mode === 'map' || mode === 'shorter' || mode === 'clue') return { house: trip[0] };
-  return planned.length < trip.length ? { house: trip[planned.length] } : 'go';
+  return planned.length < trip.length ? { house: mode === 'compare' ? trip.find((h) => !planned.includes(h))! : trip[planned.length] } : 'go';
 }
 
 

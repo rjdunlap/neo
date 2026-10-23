@@ -128,6 +128,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### mail-carrier 3: Compare delivery routes
 
+Built 2026-10-23 in [PR #874](https://github.com/rjdunlap/neo/pull/874); [build note](archive/COMPLETED-2026-10-09.md#mail-carrier-batch-3-compare-delivery-routes-2026-10-23). Scope retained for dependency references; no duplicate dispatch.
+
 - **`mail-carrier`, level 14 *Three letters, your way*, slice 8** (new levels on the route interaction, plus the free second walk: typecheck, rule tests, one play of 14 taking the second plan, `fingerdemo` at 14): plan three stops in any order, then optionally compare a second order's stone count; school `order [4, 5, 9, 12, 6, 13, 7, 8, 11, 14]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
@@ -361,8 +363,10 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### pet-kitchen 2: Fair shares, thirds and equivalent shapes
 
-- **`pet-kitchen`, level 11 *Same or not the same?*, slice 4** (new levels on the cut-and-drag, plus the overlay: typecheck, rule tests, one play of 11 serving the lopsided pieces once, `fingerdemo` at 11): piece areas, the lopsided icon and drawing; preschool `order [1, 11, 2, 3, 4]`, pre-K `order [11, 3, 4, 5, 6]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
-- **`pet-kitchen`, level 12 *Two pizzas, three friends*, slice 5** (new levels tier: typecheck, rule tests, one play of 12 with a halves serve, `fingerdemo` at 12): thirds of two wholes; school `order [5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
+**Part A built 2026-10-23** (slices 4-5, levels 11 and 12; [PR #879](https://github.com/rjdunlap/neo/pull/879), `claude/pet-kitchen-same-or-not`; [closeout](archive/COMPLETED-2026-10-09.md#pet-kitchen-batch-2-part-a-same-or-not-the-same-and-two-pizzas-three-friends-slices-4-5-2026-10-23)). **Slice 6 (level 14, a cut per whole) stays open** as the second part; the preschool, pre-K and school orders below that include 14 are applied when it lands (until then they exclude it).
+
+- **`pet-kitchen`, level 11 *Same or not the same?*, slice 4 (built)** (new levels on the cut-and-drag, plus the overlay: typecheck, rule tests, one play of 11 serving the lopsided pieces once, `fingerdemo` at 11): piece areas, the lopsided icon and drawing; preschool `order [1, 11, 2, 3, 4]`, pre-K `order [11, 3, 4, 5, 6]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
+- **`pet-kitchen`, level 12 *Two pizzas, three friends*, slice 5 (built)** (new levels tier: typecheck, rule tests, one play of 12 with a halves serve, `fingerdemo` at 12): thirds of two wholes; school `order [5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 - **`pet-kitchen`, level 14 *Different shape, same share*, slice 6** (new interaction tier, a cut per whole: typecheck, rule tests, one play of 14, a portrait screenshot of the overlay, `fingerdemo` at 14): two shapes of one share; pre-K `order [11, 3, 4, 14, 5, 6]`, school `order [14, 5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
@@ -466,6 +470,12 @@ Proof: as the [definition's check tier](definitions/recipe-workshop.md#check-tie
 - **`meadow-pens`, levels 1–3 (slice 1)** (a new game, one declared batch; school 1–3, Rainbow Meadow by default): paint squares of grass for a friend's pen while the fence builds itself from a visible stack. Level 1, Enough grass (any connected shape with the squares asked for); level 2, Rows of grass (a field that fills by rows, three cards for the total); level 3, Same grass, new fence (use every piece of a stack of 10, 12 or 14). [Definition](definitions/meadow-pens.md), [area, volume and space study slice 1](deep-dives/subjects/area-volume-space.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's check tier](definitions/meadow-pens.md#check-tier) sets it (typecheck, unit tests including the rule tests, a new `browser-check.mjs` case filtered to Meadow Pens at levels 1 and 3 with one wrong ring each and a requested hint, plus one wrong card at level 2, `fingerdemo` at levels 1–3, one portrait screenshot at level 3, one build). If the allowance cannot cover all three, stop after a complete level 1 (or 1–2) with a draft-PR checkpoint. Review gate: merges only after the developer approves the [level-2 card table](definitions/meadow-pens.md#level-2-card-table) ([decision 8](definitions/meadow-pens.md#open-decisions)); the build itself may proceed.
+
+### gadget-bench 1: Levels 1–3
+
+- **`gadget-bench`, levels 1–3 (slice I2)** (a new game, one declared batch; preschool 1, pre-K 1–3, school 2–3, Treehouse by default): a wooden cart with big sockets, a neighbor's pictured need and a short path to Try. Level 1, Which one works? (two finished gadgets differing in one part; try both, give one); level 2, Change one part (the pet's shown cart, a new neighbor, swap or add one part); level 3, Build it (two open sockets, a tray of four, a path of two conditions; position matters). [Definition](definitions/gadget-bench.md), [inventions study slice 2](deep-dives/subjects/inventions.md#build-slices-in-order)
+
+Proof: new-game tier, as the [definition's check tier](definitions/gadget-bench.md#check-tier) sets it (typecheck, unit tests including the rule tests, a new `browser-check.mjs` case filtered to Gadget Bench at levels 1–3 with a wrong Give, a free failing Try, a swapped placement and a requested hint, `fingerdemo` at levels 1–3, one portrait screenshot at level 3, one build). If the allowance cannot cover all three, stop after a complete level 1 (or 1–2) with a draft-PR checkpoint. No review gate; the home land is [decision 1](definitions/gadget-bench.md#open-decisions).
 
 ### lasso-loops 1: About how many?
 
