@@ -16,7 +16,9 @@ import {
   aloneSide,
   balanceObservation,
   downSide,
+  faceOf,
   FRIEND_FOR,
+  nextOnGrass,
   makeRounds,
   numberChoices,
   other,
@@ -38,6 +40,9 @@ import {
   type ThingKind,
 } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
+
+/** A touch that ends this close to where the thing sat is a tap, not a drag. */
+const TAP_SLOP = 60;
 
 const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
@@ -98,7 +103,7 @@ function thingNode(thing: Thing, index: number): { node: Container; width: numbe
   switch (thing.kind) {
     case 'friend': {
       const s = friendScale(thing.weight);
-      const critter = new Critter(CRITTERS[FRIEND_FOR[thing.weight as FriendWeight]]);
+      const critter = new Critter(CRITTERS[faceOf(thing)]);
       critter.scale.set(s);
       node.addChild(critter);
       const h = Math.max(100, 240 * s);
@@ -146,6 +151,9 @@ function thingNode(thing: Thing, index: number): { node: Container; width: numbe
         .fill(swatch.yellow.fill)
         .stroke(line(swatch.yellow.line, 4));
       node.addChild(g);
+      // The wrapping sits over the color, clear of the ribbon, and says nothing about weight.
+      if (thing.wrap === 'dots') for (const [x, y] of [[-30, -56], [-30, -22], [30, -56], [30, -22], [-30, -39], [30, -39]]) node.addChild(new Graphics().circle(x, y, 6).fill(0xffffff));
+      if (thing.wrap === 'stripes') for (const y of [-60, -40, -20]) node.addChild(new Graphics().moveTo(-40, y).lineTo(-12, y).moveTo(12, y).lineTo(40, y).stroke(line(0xffffff, 6)));
       node.hitArea = new Rectangle(-55, -100, 110, 110);
       return { node, width: 96, height: 76 };
     }
@@ -169,15 +177,21 @@ function thingNode(thing: Thing, index: number): { node: Container; width: numbe
         node.hitArea = new Rectangle(-55, -105, 110, 115);
         return { node, width: 104, height: 96, sign };
       }
+      const parcel = thing.look === 'parcel';
       const g = new Graphics()
         .roundRect(-50, -92, 100, 92, 10)
-        .fill(wood.light)
-        .stroke(line(wood.line, 6))
-        .moveTo(-50, -46)
-        .lineTo(50, -46)
-        .stroke(line(wood.line, 4));
+        .fill(parcel ? 0xd9b98a : wood.light)
+        .stroke(line(wood.line, 6));
+      if (parcel) {
+        // Brown paper and string, with a bow on top.
+        g.moveTo(-50, -46).lineTo(50, -46).moveTo(0, -92).lineTo(0, 0).stroke(line(ink, 4)).ellipse(-12, -98, 14, 9).ellipse(12, -98, 14, 9).fill(swatch.red.fill).stroke(line(swatch.red.line, 3));
+      } else if (thing.look === 'crate') {
+        // Slats and a cross brace.
+        g.moveTo(-50, -62).lineTo(50, -62).moveTo(-50, -30).lineTo(50, -30).moveTo(-50, -92).lineTo(50, 0).stroke(line(wood.line, 4));
+      } else g.moveTo(-50, -46).lineTo(50, -46).stroke(line(wood.line, 4));
       const sign = label('?', 60, swatch.purple.line);
       sign.y = -48;
+      if (parcel) sign.x = 22;
       node.addChild(g, sign);
       return { node, width: 104, height: 92, sign };
     }
@@ -400,13 +414,7 @@ class SeesawBalance implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.round) return null;
     for (const item of this.items) if (item.side) this.demoTested.add(item);
-    const move = seesawTouch(this.plan, this.round, this.items.map((item) => ({
-      thing: item.thing,
-      fixed: item.fixed,
-      side: item.side,
-      inWagon: item.inWagon,
-      tested: this.demoTested.has(item),
-    })), this.pads.length > 0);
+    const move = seesawTouch(this.plan, this.round, this.touchItems(), this.pads.length > 0);
     if (!move) return null;
     if (move.kind === 'answer') {
       const pad = this.pads.find((p) => p.value === move.value);
@@ -418,6 +426,16 @@ class SeesawBalance implements Game {
     if (move.to === 'ground') return { drag: { on: item.node }, to: { on: this.ctx.stage, x: item.ground.x, y: item.ground.y } };
     const at = this.trayTop(move.to);
     return { drag: { on: item.node }, to: { on: this.ctx.stage, x: at.x, y: at.y } };
+  }
+
+  private touchItems() {
+    return this.items.map((item) => ({
+      thing: item.thing,
+      fixed: item.fixed,
+      side: item.side,
+      inWagon: item.inWagon,
+      tested: this.demoTested.has(item),
+    }));
   }
 
   private drawGlow() {
@@ -442,7 +460,14 @@ class SeesawBalance implements Game {
     }
     if (mode === 'level' || mode === 'mystery' || mode === 'parts') {
       // Glow what to take off: the things beyond a level seesaw.
-      for (const item of this.excess()) ring(item.node.x, item.node.y + 8, item.width + 16, item.height + 20);
+      const over = this.excess();
+      for (const item of over) ring(item.node.x, item.node.y + 8, item.width + 16, item.height + 20);
+      // Under, not over: the next one to add waits on the grass.
+      if (!over.length) {
+        const next = nextOnGrass(this.plan, this.round, this.touchItems());
+        const item = next === null ? null : this.items[next];
+        if (item) ring(item.node.x, item.node.y + 8, item.width + 16, item.height + 20);
+      }
     }
   }
 
@@ -492,7 +517,7 @@ class SeesawBalance implements Game {
       void this.ctx.tw.to(item.node.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
     }
     await this.ctx.tw.wait(0.4);
-    const animal = FRIEND_FOR[(r.answer as FriendWeight)] ?? 'friend';
+    const animal = r.fixed[0]?.kind === 'friend' ? faceOf(r.fixed[0]) : 'friend';
     const mode = this.plan.mode;
     if (mode === 'up') await this.ctx.instruct('seesaw.up', { animal });
     else if (mode === 'heavy') await this.ctx.instruct('seesaw.heavy', { animal });
@@ -557,6 +582,11 @@ class SeesawBalance implements Game {
     if (this.busy || this.finished) return false;
     const mode = this.plan.mode;
     if (mode === 'heaviest' && this.overWagon(x, y)) return this.toWagon(item);
+    // Levels 1–2: a tap on a loose friend hops it to the empty tray, as a drag there would.
+    if ((mode === 'up' || mode === 'heavy') && !item.side && Math.hypot(x - item.ground.x, y - item.ground.y) < TAP_SLOP) {
+      const at = this.trayTop(other(this.round.fixedSide));
+      return this.drop(item, at.x, at.y);
+    }
     const side = this.trayAt(x, y);
     if (!side) {
       if (item.side) this.takeOff(item);
@@ -626,11 +656,11 @@ class SeesawBalance implements Game {
       if (side !== r.fixedSide && downSide(left, right) === side) {
         rider.critter?.cheer();
         sfx.giggle();
-        await this.ctx.say('seesaw.wee', { animal: FRIEND_FOR[r.answer as FriendWeight] });
+        await this.ctx.say('seesaw.wee', { animal: faceOf(rider.thing) });
         return this.won();
       }
       this.miss();
-      await this.ctx.say(side === r.fixedSide ? 'seesaw.other' : 'seesaw.light', { animal: FRIEND_FOR[r.answer as FriendWeight] });
+      await this.ctx.say(side === r.fixedSide ? 'seesaw.other' : 'seesaw.light', { animal: faceOf(rider.thing) });
       this.takeOff(item, true);
       await this.ctx.tw.wait(0.4);
       this.busy = false;

@@ -42,11 +42,28 @@ export interface Thing {
   weight: number;
   /** Level 11's two different boxes; other boxes leave it unset. */
   shape?: 'square' | 'round';
+  /** A friend's face, from `FRIEND_POOL` for its weight. */
+  face?: Face;
+  /** A present's wrapping over its color. */
+  wrap?: Wrapping;
+  /** The mystery box's look at levels 6–7; the hatbox belongs to level 11's round box. */
+  look?: BoxLook;
 }
+
+export type Wrapping = 'plain' | 'dots' | 'stripes';
+export const WRAPPINGS: readonly Wrapping[] = ['plain', 'dots', 'stripes'];
+export type BoxLook = 'parcel' | 'crate';
+export const BOX_LOOKS: readonly BoxLook[] = ['parcel', 'crate'];
 
 /** Friends by weight: the bigger the friend, the heavier. */
 export const FRIEND_FOR = { 1: 'duck', 2: 'bunny', 3: 'pig', 4: 'bear' } as const;
 export type FriendWeight = keyof typeof FRIEND_FOR;
+
+/** The faces a friend of each weight may wear: size says weight, never the face. */
+export const FRIEND_POOL = { 1: ['duck', 'cat'], 2: ['bunny', 'dog'], 3: ['pig', 'cow'], 4: ['bear'] } as const;
+export type Face = (typeof FRIEND_POOL)[FriendWeight][number];
+/** The face a friend of this weight wears (its first, when it was not given one). */
+export const faceOf = (thing: Pick<Thing, 'weight' | 'face'>): Face => thing.face ?? FRIEND_FOR[thing.weight as FriendWeight];
 
 export interface SeesawRound {
   /** Already sitting on the seesaw, and not movable. */
@@ -104,11 +121,17 @@ export function ways(n: number, weights: readonly number[]): number[][] {
   return out;
 }
 
-const friend = (weight: number): Thing => ({ kind: 'friend', weight });
+const friend = (weight: number, face?: Face): Thing => ({ kind: 'friend', weight, face });
+/** One face per weight for a round, so two friends of the same weight look alike and different weights never do. */
+const facesFor = (rng: Rng): Record<number, Face> =>
+  Object.fromEntries(([1, 2, 3, 4] as FriendWeight[]).map((w) => [w, rng.pick([...FRIEND_POOL[w]]) as Face]));
 const blocks = (n: number): Thing[] => Array.from({ length: n }, () => ({ kind: 'block', weight: 1 }));
 
 export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
   const rounds: SeesawRound[] = [];
+  // Faces, wrappings and box looks draw from a copy, so the numbers and sides of a seeded plan stay as they were.
+  const looks = rng.clone();
+  looks.next();
   let last = 0;
   // A different number from last round where there is a choice, so each round is a fresh look.
   const fresh = (min: number, max: number) => {
@@ -121,25 +144,27 @@ export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
     switch (plan.mode) {
       case 'up': {
         const rider = fresh(1, 2);
+        const face = facesFor(looks);
         const bigger = rng.shuffle([2, 3, 4].filter((w) => w > rider)).slice(0, 2);
-        rounds.push({ fixed: [friend(rider)], fixedSide, offered: rng.shuffle(bigger.map(friend)), answer: rider });
+        rounds.push({ fixed: [friend(rider, face[rider])], fixedSide, offered: rng.shuffle(bigger.map((w) => friend(w, face[w]))), answer: rider });
         break;
       }
       case 'heavy': {
         const rider = fresh(2, 3);
         const lighter = rng.int(1, rider - 1);
         const heavier = rng.int(rider + 1, 4);
-        rounds.push({ fixed: [friend(rider)], fixedSide, offered: rng.shuffle([friend(lighter), friend(heavier)]), answer: rider });
+        const face = facesFor(looks);
+        rounds.push({ fixed: [friend(rider, face[rider])], fixedSide, offered: rng.shuffle([friend(lighter, face[lighter]), friend(heavier, face[heavier])]), answer: rider });
         break;
       }
       case 'level': {
         const w = fresh(2, 4);
-        rounds.push({ fixed: [friend(w)], fixedSide, offered: blocks(w + 2), answer: w });
+        rounds.push({ fixed: [friend(w, facesFor(looks)[w])], fixedSide, offered: blocks(w + 2), answer: w });
         break;
       }
       case 'heaviest': {
         const weights = rng.shuffle([1, 2, 3, 4]).slice(0, 3);
-        rounds.push({ fixed: [], fixedSide, offered: weights.map((weight) => ({ kind: 'present', weight })), answer: Math.max(...weights) });
+        rounds.push({ fixed: [], fixedSide, offered: weights.map((weight) => ({ kind: 'present', weight, wrap: looks.pick([...WRAPPINGS]) })), answer: Math.max(...weights) });
         break;
       }
       case 'parts': {
@@ -185,7 +210,8 @@ export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
       }
       case 'mystery': {
         const m = fresh(2, plan.boxes === 2 ? 3 : 5);
-        rounds.push({ fixed: Array.from({ length: plan.boxes ?? 1 }, () => ({ kind: 'box', weight: m })), fixedSide, offered: blocks(plan.boxes === 2 ? 7 : 6), answer: m });
+        const look = looks.pick([...BOX_LOOKS]);
+        rounds.push({ fixed: Array.from({ length: plan.boxes ?? 1 }, () => ({ kind: 'box', weight: m, look })), fixedSide, offered: blocks(plan.boxes === 2 ? 7 : 6), answer: m });
         break;
       }
     }
@@ -267,6 +293,20 @@ function completion(items: readonly SeesawTouchItem[], indexes: readonly number[
   const withFirst = completion(items, rest, need - items[first].thing.weight);
   if (withFirst) return [first, ...withFirst];
   return completion(items, rest, need);
+}
+
+/**
+ * Level, mystery and parts: the glow once the tray is under. The thing on the grass to add next: the one
+ * the demonstration would move, else any that still fits the gap. Returns an item index, or null.
+ */
+export function nextOnGrass(plan: SeesawPlan, round: SeesawRound, items: readonly SeesawTouchItem[]): number | null {
+  const target = other(round.fixedSide);
+  const need = total(round.fixed) - total(items.filter((i) => i.side === target).map((i) => i.thing));
+  if (need <= 0) return null;
+  const move = seesawTouch(plan, round, items);
+  if (move?.kind === 'move' && move.to === target) return move.item;
+  const fit = items.findIndex((i) => !i.fixed && !i.inWagon && i.side === null && i.thing.weight <= need);
+  return fit < 0 ? null : fit;
 }
 
 /**

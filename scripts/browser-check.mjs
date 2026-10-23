@@ -7630,7 +7630,10 @@ async function next() {
             }
             if (g.misses !== 2 || g.hints !== 1) throw new Error(`Seesaw ${mode} hint: ${g.misses} ${g.hints}`);
           }
-          await seesaw.onto(loose().find((i) => i.thing.weight > g.round.answer), empty());
+          const lifter = loose().find((i) => i.thing.weight > g.round.answer);
+          // The second round lifts with a tap on the friend, which hops it to the empty tray.
+          if (r === 1) { await kit.tapOn(lifter.node, 0, -60); await kit.sleep(250); if (lifter.side !== empty()) throw new Error('Seesaw tap did not hop the friend to the empty tray'); }
+          else await seesaw.onto(lifter, empty());
         } else if (mode === 'level' || mode === 'mystery') {
           const blocks = () => loose().filter((i) => !i.side);
           const need = total(g.round.fixed), answer = g.round.answer;

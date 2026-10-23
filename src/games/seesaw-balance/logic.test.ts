@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { aloneSide, balanceObservation, downSide, FRIEND_FOR, makeRounds, MAX_TILT, numberChoices, other, pairHint, PLANS, planFor, progress, seesawTouch, shareSide, stays, tilt, total, ways, weigh, type SeesawRound, type SeesawTouchItem, type Side, type Thing } from './logic';
+import { aloneSide, BOX_LOOKS, FRIEND_POOL, faceOf, nextOnGrass, WRAPPINGS, balanceObservation, downSide, FRIEND_FOR, makeRounds, MAX_TILT, numberChoices, other, pairHint, PLANS, planFor, progress, seesawTouch, shareSide, stays, tilt, total, ways, weigh, type SeesawRound, type SeesawTouchItem, type Side, type Thing } from './logic';
 
 describe('Seesaw Balance', () => {
   it('demonstrates every mode with only moves that lead to its answer', () => {
@@ -335,5 +335,56 @@ describe('Seesaw Balance', () => {
       const fingerprint = PLANS.slice(0, 10).map((p) => makeRounds(p, new Rng(7)).map((r) => `${r.fixedSide[0]}${r.answer}:${r.fixed.length}/${r.across?.length ?? 0}/${r.offered.map((t) => t.weight).join('')}`).join(' '));
       expect(fingerprint).toEqual(["l1:1/0/23 l2:1/0/43 l1:1/0/42 l2:1/0/43","l2:1/0/14 l3:1/0/42 r2:1/0/13 l3:1/0/41","l2:1/0/1111 r4:1/0/111111 r3:1/0/11111","l4:0/0/423 r4:0/0/314 r4:0/0/241","l4:2/0/4123 l6:2/0/3412 r4:2/0/3142","l2:1/0/111111 r4:1/0/111111 r3:1/0/111111","l2:2/0/1111111 r3:2/0/1111111 r2:2/0/1111111","l2:3/4/ r3:2/4/ l2:3/4/","l2:4/5/ r3:3/5/ l2:4/5/","l2:5/7/ r3:4/8/ l2:5/7/"]);
     });
+  });
+
+  it('gives friends seeded faces from their weight\'s pool, distinct across weights and alike within one', () => {
+    const seen = new Set<string>();
+    for (const level of [1, 2, 3]) for (let seed = 1; seed <= 60; seed++) {
+      for (const round of makeRounds(planFor(level), new Rng(seed))) {
+        const friends = [...round.fixed, ...round.offered].filter((t) => t.kind === 'friend');
+        for (const t of friends) {
+          expect((FRIEND_POOL[t.weight as 1 | 2 | 3 | 4] as readonly string[]).includes(faceOf(t))).toBe(true);
+          seen.add(faceOf(t));
+        }
+        const byFace = new Map<string, number>();
+        for (const t of friends) {
+          byFace.set(faceOf(t), t.weight);
+          expect(byFace.get(faceOf(t))).toBe(t.weight);
+        }
+        expect(new Set(friends.map((t) => t.weight)).size).toBe(new Set(friends.map(faceOf)).size);
+      }
+    }
+    for (const face of ['duck', 'cat', 'bunny', 'dog', 'pig', 'cow', 'bear']) expect(seen.has(face)).toBe(true);
+  });
+
+  it('wraps presents and looks boxes over from the seeded rng, at levels 4, 6 and 7 only', () => {
+    const wraps = new Set<string>();
+    const looks = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) {
+      for (const r of makeRounds(planFor(4), new Rng(seed))) for (const t of r.offered) { expect(WRAPPINGS).toContain(t.wrap); wraps.add(t.wrap!); }
+      for (const level of [6, 7]) for (const r of makeRounds(planFor(level), new Rng(seed))) for (const t of r.fixed) { expect(BOX_LOOKS).toContain(t.look); looks.add(t.look!); }
+      for (const r of makeRounds(planFor(8), new Rng(seed))) for (const t of r.fixed) expect(t.look).toBeUndefined();
+    }
+    expect(wraps.size).toBe(3);
+    expect(looks.size).toBe(2);
+  });
+
+  it('after two overs, once under, glows a block on the grass that helps fill the tray', () => {
+    for (const level of [3, 5, 6]) for (let seed = 1; seed <= 40; seed++) {
+      const plan = planFor(level);
+      const round = makeRounds(plan, new Rng(seed))[0];
+      const target = other(round.fixedSide);
+      const items: SeesawTouchItem[] = [
+        ...round.fixed.map((thing) => ({ thing, fixed: true, side: round.fixedSide })),
+        ...round.offered.map((thing) => ({ thing, fixed: false, side: null as Side | null })),
+      ];
+      const pick = nextOnGrass(plan, round, items);
+      expect(pick).not.toBeNull();
+      expect(items[pick!].side).toBeNull();
+      expect(items[pick!].thing.weight).toBeLessThanOrEqual(total(round.fixed));
+      // Level: nothing more to add.
+      items.filter((i) => !i.fixed).forEach((i) => { if (total(items.filter((j) => j.side === target).map((j) => j.thing)) < total(round.fixed) && i.side === null) i.side = target; });
+      if (total(items.filter((j) => j.side === target).map((j) => j.thing)) >= total(round.fixed)) expect(nextOnGrass(plan, round, items)).toBeNull();
+    }
   });
 });
