@@ -117,6 +117,7 @@ import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
 import { sandTable } from './sand-table';
 import { adventureWalk } from './adventure-walk';
+import { readyForAdventure } from './ready-for-adventure';
 import { senseDetective } from './sense-detective';
 import type { GameModule } from './types';
 
@@ -228,6 +229,7 @@ export const GAMES: GameModule[] = [
   lookItUp,
   sandTable,
   adventureWalk,
+  readyForAdventure,
   senseDetective,
   marbleJump,
   logRoll,
