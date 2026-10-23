@@ -109,6 +109,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### mail-carrier 1: Tool signs, helpers and numbers past ten
 
+Built 2026-10-22, [PR #850](https://github.com/rjdunlap/neo/pull/850); [closeout](archive/COMPLETED-2026-10-09.md#mail-carrier-batch-1-tool-signs-helpers-and-numbers-past-ten-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`mail-carrier`, level 10 *Which door?*, slice 3** (new levels on the existing tap: typecheck, rule tests, one play of 10 with one wrong tap and one hint, a portrait screenshot of the signs, `fingerdemo` at 10): six tool `Graphics`, `letterShows` gains `'tool'`; toddler `order [1, 2, 10]`, preschool `order [2, 10, 3, 4]`, `entryLevels: [10]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 - **`mail-carrier`, level 9 *Who can help?*, slice 4** (new levels tier, after slice 3: typecheck, rule tests, one play of 9, a portrait screenshot, `fingerdemo` at 9): the problem pictures, helper hats, the six journal entries; pre-K `order [3, 4, 5, 9, 6]`, school `order [4, 5, 9, 6, 7, 8]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)
 - **`mail-carrier`, level 12 *Numbers past ten*, slice 5** (new levels tier): two-digit numerals 10–20 with the ten-and-ones spoken; pre-K `order [3, 4, 5, 9, 12, 6]`, school `order [4, 5, 9, 12, 6, 7, 8]`. [Dive](deep-dives/mail-carrier.md#new-levels-on-top)

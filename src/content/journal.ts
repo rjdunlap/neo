@@ -2,6 +2,7 @@ import { ANIMALS, FAVORITE, FOOD_WORDS } from '../games/animal-snack/logic';
 import { WORDS } from '../games/letter-trails/pictures';
 import { ACTIONS, type Action } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats, type Thing } from '../games/sink-float/logic';
+import { HELPER, HELPERS } from '../games/mail-carrier/logic';
 import type { LineId } from './voice-script';
 
 /**
@@ -10,7 +11,7 @@ import type { LineId } from './voice-script';
  * is found. A game reports what it actually showed during a round (`RoundResult.discoveries`); the shell files it.
  */
 
-export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails';
+export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails' | 'mail-carrier';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -170,6 +171,17 @@ export const JOURNAL: readonly JournalEntry[] = [
     name: `${letter} is for ${WORDS[letter]}`,
     line: TRAIL_LINES[letter],
     source: { find: `trace the letter ${letter} to its end`, found: `the letter ${letter} was traced to its end` },
+  })),
+  ...HELPERS.map((helper): JournalEntry => ({
+    id: entryId('mail-carrier', helper),
+    game: 'mail-carrier',
+    key: helper,
+    name: `The ${helper} fixes ${HELPER[helper].fixes}`,
+    line: `journal.mail.${helper}` as LineId,
+    source: {
+      find: `deliver the letter that shows the ${HELPER[helper].problem} to the ${helper}`,
+      found: `the ${helper} fixed the ${HELPER[helper].problem} with ${HELPER[helper].toolName}`,
+    },
   })),
 ];
 

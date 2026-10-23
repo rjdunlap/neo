@@ -5,6 +5,8 @@ import type { JournalEntry } from '../content/journal';
 import { snackPicture } from '../games/animal-snack';
 import { launchJournalPicture } from '../games/bouncy-launch';
 import { habitatJournalPicture } from '../games/habitat-helpers/art';
+import { mailJournalPicture } from '../games/mail-carrier/art';
+import type { HelperId } from '../games/mail-carrier/logic';
 import { letterPicture } from '../games/letter-trails/pictures';
 import { safariJournalPicture } from '../games/photo-safari';
 import type { Action } from '../games/photo-safari/logic';
@@ -24,6 +26,7 @@ export function entryPicture(entry: JournalEntry): Container {
     case 'bouncy-launch': return launchJournalPicture();
     case 'habitat-helpers': return habitatJournalPicture(entry.key as 'bunny' | 'duck');
     case 'letter-trails': return letterPicture(entry.key);
+    case 'mail-carrier': return mailJournalPicture(entry.key as HelperId);
   }
 }
 

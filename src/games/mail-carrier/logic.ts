@@ -7,46 +7,125 @@ import type { Rng } from '../../engine/random';
  * shows who it's for (a door color, a number of dots, or a numeral) and the child taps the
  * matching mailbox. A wrong mailbox politely hands the letter back.
  */
-export type MailMode = 'drop' | 'color' | 'dots' | 'numeral' | 'count' | 'map' | 'route' | 'shorter';
+export type MailMode = 'drop' | 'color' | 'dots' | 'numeral' | 'count' | 'map' | 'route' | 'shorter' | 'tool' | 'help' | 'teen';
 
 export interface MailPlan {
+  /** The level this plan is: the street's levels 9, 10 and 12 sit after the woods' 6–8 in this list, so look it up with `planFor`. */
+  level: number;
   mode: MailMode;
   houses: number;
   letters: number;
   /** Highest house number. */
   top: number;
+  /** Lowest house number, when the street does not start at 1 (the teens). */
+  low?: number;
   name: string;
 }
 
 export const PLANS: MailPlan[] = [
-  { mode: 'drop', houses: 4, letters: 6, top: 4, name: 'Tap any mailbox to post a letter' },
-  { mode: 'color', houses: 3, letters: 5, top: 3, name: 'Match the letter\'s color to the door' },
-  { mode: 'dots', houses: 4, letters: 5, top: 5, name: 'Match dots on the letter to dots and numbers on the mailboxes' },
-  { mode: 'numeral', houses: 5, letters: 5, top: 9, name: 'Deliver to the house number on the letter (1 to 9)' },
-  { mode: 'count', houses: 5, letters: 5, top: 9, name: 'Count the dots on the letter, then find that house number' },
+  { level: 1, mode: 'drop', houses: 4, letters: 6, top: 4, name: 'Tap any mailbox to post a letter' },
+  { level: 2, mode: 'color', houses: 3, letters: 5, top: 3, name: 'Match the letter\'s color to the door' },
+  { level: 3, mode: 'dots', houses: 4, letters: 5, top: 5, name: 'Match dots on the letter to dots and numbers on the mailboxes' },
+  { level: 4, mode: 'numeral', houses: 5, letters: 5, top: 9, name: 'Deliver to the house number on the letter (1 to 9)' },
+  { level: 5, mode: 'count', houses: 5, letters: 5, top: 9, name: 'Count the dots on the letter, then find that house number' },
   // Wonder Woods: a picture map with a key. `letters` counts letters; the route level carries them two at a time.
-  { mode: 'map', houses: 5, letters: 4, top: 0, name: 'Picture map of Wonder Woods: find who the letter is for in the key, then the house with their sign' },
-  { mode: 'route', houses: 5, letters: 6, top: 0, name: 'Plan two deliveries on the map in order (letter 1, then 2), then walk the route' },
-  { mode: 'shorter', houses: 5, letters: 4, top: 0, name: 'Find the house, then choose the shorter of two paths marked with stepping stones' },
+  { level: 6, mode: 'map', houses: 5, letters: 4, top: 0, name: 'Picture map of Wonder Woods: find who the letter is for in the key, then the house with their sign' },
+  { level: 7, mode: 'route', houses: 5, letters: 6, top: 0, name: 'Plan two deliveries on the map in order (letter 1, then 2), then walk the route' },
+  { level: 8, mode: 'shorter', houses: 5, letters: 4, top: 0, name: 'Find the house, then choose the shorter of two paths marked with stepping stones' },
+  // Levels 9, 10 and 12 are street levels added above the woods.
+  { level: 9, mode: 'help', houses: 5, letters: 5, top: 5, name: 'A problem on the letter: tap the helper whose tool fixes it' },
+  { level: 10, mode: 'tool', houses: 3, letters: 5, top: 3, name: 'Match the picture on the letter to the tool on the sign' },
+  { level: 12, mode: 'teen', houses: 5, letters: 5, top: 20, low: 10, name: 'Deliver to the house number on the letter (10 to 20)' },
 ];
 
 export const isMapMode = (mode: MailMode) => mode === 'map' || mode === 'route' || mode === 'shorter';
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const planFor = (level: number) => PLANS.find((p) => p.level === level) ?? PLANS[Math.min(8, Math.max(1, level)) - 1];
 
 export const DOOR_COLORS: ColorName[] = ['red', 'blue', 'yellow', 'green', 'purple', 'orange'];
 
 export interface House {
   number: number;
   door: ColorName;
+  /** Levels 9 and 10: the picture on this house's sign. */
+  tool?: Tool;
+  /** Level 9: the helper who lives here. */
+  helper?: HelperId;
+}
+
+// Tool signs and helpers ---------------------------------------------------------------------------
+
+export const TOOLS = ['wrench', 'bandage', 'can', 'stamp', 'buoy', 'whisk'] as const;
+export type Tool = (typeof TOOLS)[number];
+
+/** Level 9's helpers, each with the tool they carry and the problem that tool fixes (one tool per problem). */
+export const HELPERS = ['plumber', 'doctor', 'gardener', 'postkeeper', 'lifeguard', 'baker'] as const;
+export type HelperId = (typeof HELPERS)[number];
+
+export interface Helper {
+  tool: Tool;
+  /** "a wrench": the tool as a person would name it. */
+  toolName: string;
+  /** What the tool is for, said by a house that has the wrong tool. */
+  use: string;
+  /** The problem on the letter, said after "the". */
+  problem: string;
+  /** What the helper does, for the journal. */
+  fixes: string;
+}
+
+export const HELPER: Record<HelperId, Helper> = {
+  plumber: { tool: 'wrench', toolName: 'a wrench', use: 'A wrench is for fixing pipes.', problem: 'dripping tap', fixes: 'drips' },
+  doctor: { tool: 'bandage', toolName: 'a bandage roll', use: 'A bandage roll is for wrapping a hurt.', problem: 'hurt teddy', fixes: 'hurts' },
+  gardener: { tool: 'can', toolName: 'a watering can', use: 'A watering can is for watering plants.', problem: 'drooping flower', fixes: 'thirsty flowers' },
+  postkeeper: { tool: 'stamp', toolName: 'a stamp', use: 'A stamp is for sending letters.', problem: 'letter with no stamp', fixes: 'letters with no stamp' },
+  lifeguard: { tool: 'buoy', toolName: 'a ring buoy', use: 'A ring buoy is for rescuing in water.', problem: 'boat far out on the pond', fixes: 'boats that drift far out' },
+  baker: { tool: 'whisk', toolName: 'a whisk', use: 'A whisk is for baking.', problem: 'candle with no cake', fixes: 'birthdays that need a cake' },
+};
+
+export const TOOL_NAME: Record<Tool, string> = {
+  wrench: 'a wrench', bandage: 'a bandage roll', can: 'a watering can', stamp: 'a stamp', buoy: 'a ring buoy', whisk: 'a whisk',
+};
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/** What a helper's house says when a letter lands on the wrong door, and when it lands on the right one. */
+export const helpWrong = (h: HelperId, letterFor: HelperId) => ({ tool: HELPER[h].toolName, use: HELPER[h].use, problem: `the ${HELPER[letterFor].problem}` });
+export const helpFixed = (h: HelperId) => ({ Tool: cap(HELPER[h].toolName), problem: `the ${HELPER[h].problem}` });
+
+/** Ten-and-ones for a number from 10 to 20: 13 is "Thirteen" and "Ten and three." */
+const TEEN_WORDS: Record<number, string> = { 10: 'Ten', 11: 'Eleven', 12: 'Twelve', 13: 'Thirteen', 14: 'Fourteen', 15: 'Fifteen', 16: 'Sixteen', 17: 'Seventeen', 18: 'Eighteen', 19: 'Nineteen', 20: 'Twenty' };
+const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+export function teenSpoken(n: number): { word: string; parts: string } {
+  const word = TEEN_WORDS[n] ?? String(n);
+  if (n === 10) return { word, parts: 'One ten.' };
+  if (n === 20) return { word, parts: 'Two tens.' };
+  return { word, parts: `Ten and ${ONES[n - 10]}.` };
 }
 
 /** A street of houses, numbered in order left to right (like a real street), each a different door color. */
 export function makeStreet(plan: MailPlan, rng: Rng): House[] {
-  const pool = Array.from({ length: plan.top }, (_, i) => i + 1);
+  if (plan.mode === 'tool' || plan.mode === 'help') return makeToolStreet(plan, rng);
+  const low = plan.low ?? 1;
+  const pool = Array.from({ length: plan.top - low + 1 }, (_, i) => low + i);
   const numbers = rng.shuffle(pool).slice(0, plan.houses).sort((a, b) => a - b);
   const doors = rng.shuffle([...DOOR_COLORS]).slice(0, plan.houses);
   return numbers.map((number, i) => ({ number, door: doors[i] }));
+}
+
+/**
+ * Level 10 deals two or three houses (the dive's "two the first bag, three from the second" has no round signal to read,
+ * so the seed chooses), level 9 five, each with a different tool; their house numbers still rise left to right.
+ */
+export function makeToolStreet(plan: MailPlan, rng: Rng): House[] {
+  const count = plan.mode === 'tool' ? rng.int(2, plan.houses) : plan.houses;
+  const doors = rng.shuffle([...DOOR_COLORS]).slice(0, count);
+  if (plan.mode === 'help') {
+    const helpers = rng.shuffle([...HELPERS]).slice(0, count);
+    return helpers.map((helper, i) => ({ number: i + 1, door: doors[i], helper, tool: HELPER[helper].tool }));
+  }
+  const tools = rng.shuffle([...TOOLS]).slice(0, count);
+  return tools.map((tool, i) => ({ number: i + 1, door: doors[i], tool }));
 }
 
 /** Who lives on the street: one pool of seven neighbours. The woods map leaves out the dog, the bear's brown look-alike. */
@@ -95,8 +174,22 @@ export function makeLetters(plan: MailPlan, street: House[], rng: Rng): number[]
 }
 
 /** What the letter shows, and what the mailboxes show, at each level. */
-export const letterShows = (mode: MailMode): 'nothing' | 'color' | 'dots' | 'numeral' => (mode === 'drop' ? 'nothing' : mode === 'color' ? 'color' : mode === 'numeral' ? 'numeral' : 'dots');
-export const mailboxShows = (mode: MailMode): { numeral: boolean; dots: boolean } => ({ numeral: mode !== 'color' && mode !== 'drop', dots: mode === 'dots' });
+export type LetterShows = 'nothing' | 'color' | 'dots' | 'numeral' | 'tool' | 'problem';
+export const letterShows = (mode: MailMode): LetterShows => {
+  switch (mode) {
+    case 'drop': return 'nothing';
+    case 'color': return 'color';
+    case 'numeral': case 'teen': return 'numeral';
+    case 'tool': return 'tool';
+    case 'help': return 'problem';
+    default: return 'dots';
+  }
+};
+export const mailboxShows = (mode: MailMode): { numeral: boolean; dots: boolean; tool: boolean } => ({
+  numeral: mode !== 'color' && mode !== 'drop' && mode !== 'tool' && mode !== 'help',
+  dots: mode === 'dots',
+  tool: mode === 'tool' || mode === 'help',
+});
 
 /** At levels 3 and 5 the letter's dots are counted aloud before the number is said. */
 export const countsAloud = (mode: MailMode) => mode === 'dots' || mode === 'count';

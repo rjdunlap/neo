@@ -6728,7 +6728,8 @@ async function batch() {
   }
 
   // Mail Carrier: deliver each letter; a wrong mailbox hands it back.
-  for (let level = 1; level <= 5 && (!only || only === 'mail'); level++) {
+  for (const level of [1, 2, 3, 4, 5, 10, 9, 12].filter((l) => !process.env.MAIL_LEVELS || process.env.MAIL_LEVELS.split(',').map(Number).includes(l))) {
+    if (only && only !== 'mail') break;
     await launch('mail-carrier', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
