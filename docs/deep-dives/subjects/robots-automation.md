@@ -165,7 +165,7 @@ M–L: a new `logic.ts` simulator and solver, `Graphics` house, helpers and gaug
 
 ## Build slices, in order
 
-1. **RA1 — Define Helper House 1–4** (docs only): the step model, sensor and helper tables, round plans, voice reasons, accounting (after decision 2), layouts at 100 units in both orientations, the how-to card with level-scoped steps, the ghost-finger plan, the rule tests above and the overlap test, placement after the capacity check.
+1. **RA1 — Define Helper House 1–4** (**defined 2026-10-23:** [definition](../../definitions/helper-house.md)) (docs only): the step model, sensor and helper tables, round plans, voice reasons, accounting (after decision 2), layouts at 100 units in both orientations, the how-to card with level-scoped steps, the ghost-finger plan, the rule tests above and the overlap test, placement after the capacity check.
 2. **RA2 — Build Helper House 1–3** (new-game tier): one scripted play, portrait screenshot.
 3. **RA3 — Build level 4** (new levels on an existing interaction tier).
 4. **RA4 — Define and build 5–7** (sensor placement, the comfy line, two lines).
