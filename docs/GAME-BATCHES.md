@@ -352,6 +352,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### pet-kitchen 1: Meal variety and lap tap-sharing
 
+Built 2026-10-23, [PR #860](https://github.com/rjdunlap/neo/pull/860); [closeout](archive/COMPLETED-2026-10-09.md#pet-kitchen-batch-1-meal-variety-and-lap-tap-sharing-slices-2-3-2026-10-23). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`pet-kitchen`, friends, the meal eaten, round wholes, the fraction seen and a third fruit, slice 2** (fresh content tier: typecheck, rule tests for the pie's cuts and the fruit pool, one filtered play of 2 and 7, `fingerdemo` at 7): `CRITTERS` dealt from the seed, a seeded pie or sandwich each round, the chew, the fraction bubble at 7, the banana. [Slice 2](deep-dives/pet-kitchen.md#build-slices-in-order)
 - **`pet-kitchen`, level 10 *One for you, one for me* and the lap band, slice 3** (new interaction tier: typecheck, rule tests, the picnic unit test, one play of 10 with a tap off a piece, a portrait screenshot, `fingerdemo` at 10, the `picnic` suite's sandwiches step once): tap dealing; `bands` gains `lap` with `{ min: 10, max: 10 }`, toddler `order [10, 1]`, `entryLevels: [10]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 

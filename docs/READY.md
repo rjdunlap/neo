@@ -31,7 +31,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`size-parade`, Insert a friend and order shades** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-3-insert-a-friend-and-order-shades).
 - **`size-parade`, Hidden heights** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-4-hidden-heights).
 - **`size-parade`, The measuring ribbon** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-5-the-measuring-ribbon).
-- **`pet-kitchen`, Meal variety and lap tap-sharing** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#pet-kitchen-1-meal-variety-and-lap-tap-sharing). **In flight: `claude/pet-kitchen-meals-lap` (draft PR).**
 - **`pet-kitchen`, Fair shares, thirds and equivalent shapes** (one implementation batch; 3 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#pet-kitchen-2-fair-shares-thirds-and-equivalent-shapes).
 - **`pet-kitchen`, Compare shares** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#pet-kitchen-3-compare-shares).
 - **`pet-kitchen`, Equivalent cup measures** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#pet-kitchen-4-equivalent-cup-measures).
