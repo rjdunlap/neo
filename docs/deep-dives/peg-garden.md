@@ -133,6 +133,8 @@ Appended IDs; `planFor` must look plans up by ID (today it indexes `PLANS` by po
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** leans and defaults are adopted: a missed shot at preschool bridge 9 *Aim at the big flower* is no miss; level 10's Galton-board graph waits for a school reason and the physics strand; no couch stop before island play; level 7 counts a missed run as a miss and level 8 plays lap and toddler; creature riders and board themes unlock through play after RW05, never pearls as a currency.
+
 1. **School window and *Where do most land?* (proposed level 10).** Ten pearls dropped from one chosen spot pile into four bins as a picture graph; she first taps the bin she thinks will get the most (unscored), then compares a drop from the left. Lean: wait for a school-band reason and the physics strand's *change one variable* work; the game's bands end at pre-K by design.
 2. **Level 9's accounting.** Lean: a missed shot at the bridge level is not a miss, because the whole path is shown and it is the first time with the launcher; a goal with no misses departs from "a wrong answer is a gentle miss".
 3. **Couch.** Whether Into the cup joins couch stops (a new course version) — lean: not until it has been played on the island.

@@ -122,6 +122,8 @@ Device checks stay open: whether an eight- to eleven-year-old reads the wavy lin
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** Keep all six built defaults; the island and dark-stripe rules get the session's source check before any real-place case borrows them.
+
 Each has a default the build uses. None blocks it. The deep-time study's decision 2 (Outcrop Detective comparison) is settled above as a default, its decision 4 (range and placement) is defaulted in 1 and 2 below, and its decision 5 (exploration and support: nothing persisted, supported finish as above) is settled here; its decision 1 (a content reviewer) is not needed for invented cliffs and creatures and stays open for any real place, creature or age, and the reviewer should also read the three island rules and the stripe rule before a real-world case borrows them.
 
 1. **Bands and the 13+ entry.** Default school 1–2 only; parents and 13+ profiles play it at the school band. Alternative: a separately registered Lantern Lake case in `GROWNUP_GAMES` with more pieces, which needs its own definition and the Lantern Lake capacity test (twelve games today).

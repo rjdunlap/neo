@@ -184,6 +184,8 @@ These are proposals only, against the [rework brief](../../rework/README.md).
 5. **Income and hardship.** Leave out NSPFE Spending 8-1d (budgets on minimum wage), debt, credit products and insurance from play. Lean: none in play; a grown-up card later, if anything.
 6. **Lemonade Stand 5–6 and the captain's top-up.** At level 5, does the top-up ignore the jar (so saving never risks the week)? At level 6, does the top-up stop so the rainy-day jar matters? Lean: yes to the first; the second needs a child playtest.
 
+**Decided 2026-10-23 (on the developer's delegation):** every lean: money lessons stay inside a round and Harbor tickets stay parked (the Harbor Bank the only real-time exception); shells on the island, real coins only on a grown-up card after a currency choice; Swap Meet keeps its name, toddler–school levels 1–6, Cozy Village if the capacity test passes; Harbor Orders replaces the household-budget puzzle; no minimum-wage budgets, debt, credit or insurance in play; Lemonade Stand 5's top-up ignores the jar and level 6's top-up stops so the rainy-day jar matters, with a child playtest as a later person check.
+
 ## Build slices, in order
 
 1. **ME1 · Define Swap Meet 1–4** (docs): the want-graph model, the trade rule, the misses and hints above, the BFS tests, voice, the how-to card, the ghost finger, land capacity.

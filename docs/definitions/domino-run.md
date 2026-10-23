@@ -114,6 +114,8 @@ Device checks stay open: whether a toddler's tap-to-hop at level 2 is found with
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** Keep all five built defaults.
+
 Each has a default the build uses. None blocks it.
 
 1. **Bands.** Default toddler 1–2, preschool 2–4, pre-K 3–5, school 4–8, matching PHYSICS-GAMES's toddler–school. Not in the first build: a lap opening (tap and watch, which level 1 nearly is) and the grown-up "Rube Goldberg builder" from the [every-band table](../PHYSICS-GAMES.md#every-band).

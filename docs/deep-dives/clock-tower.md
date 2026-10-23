@@ -119,6 +119,8 @@ Races, alarm countdowns, real-time waiting, lateness penalties, compulsory routi
 
 The first support/content slices need none of those decisions: they repair the evidence and wording in current modes without moving levels or pins. Keep couch absent and sticker/save behavior fixed.
 
+**Decided 2026-10-23 (on the developer's delegation):** the leans stand: school 2–11 appending 8–11 (an explicit hours/half-hours picker at 10), with 8 placed by `order`; preschool 1–1 copies a visible model with one hand, with no younger telling-time claim; morning/evening, single minutes and longer schedules get their own definitions later.
+
 ## Build slices, in order
 
 Each is a later session. Ready slices improve existing play; decision slices stay proposals.

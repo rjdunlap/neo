@@ -114,6 +114,8 @@ No fast stacking, survival clock, lives, tallest-ever streak or losing possessio
 3. **Temporary supports:** adopt ropes plus deliberate release at 7–9, with final-state search and multiple valid solutions? Lean: yes, equal blocks only; current immediate-settle `finish` stays for 6. Otherwise defer counterweights rather than a farther-star substitute.
 4. **Younger entries and co-play:** optionally toddler 1–3; below-level-1 entries wait on order. Two-seat shared tower (unscored prediction, rebuilding together, pet partner) needs a separate definition/session; no couch range change yet. Kept towers/journal stay deferred, not prerequisites for these slices.
 
+**Decided 2026-10-23 (on the developer's delegation):** every lean: keep 1–6 IDs and lower bounds, do support words and height variety first, then 7 repair, 8 equal-block counterweight under ropes, 9 remove a spare (school 5–9, easier modes placed with `order`); failed releases and topples at 6–9 are unscored experiments with one counted hint after two unsuccessful trials, wrong heights at 3–4 stay misses, and the first tall glow on 3–4 moves to the two-miss help rule; ropes plus deliberate release with a small deterministic final-state solver in `logic.ts` (equal blocks only); toddler 1–3 opens, below-level-1 entries use new IDs placed with `order`; two-seat and kept towers stay separate definitions.
+
 ## Build slices, in order
 
 1. **Built: truthful support at existing 1–6** ([PR #213](https://github.com/rjdunlap/neo/pull/213); [build note](../archive/COMPLETED-2026-10-09.md#block-tower-truthful-support-2026-10-12)).

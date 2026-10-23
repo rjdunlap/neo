@@ -131,6 +131,8 @@ The **off-screen proposal** is to enact a picture procedure with age-reviewed pr
 3. **Older placement:** retain today's `school`/`grownup` split pending the existing middle-band decision; audit Cozy Village/Lantern Lake fit and choose an existing destination before registration. Parent appeal is an open person check, not established by choosing a factory-game precedent.
 4. **Later scope:** persistent recipes/dishes, real food-science experiments and credited multiplayer need separate definitions. None is necessary for a complete first bowl or pantry case.
 
+**Decided 2026-10-23 (on the developer's delegation):** Recipe Workshop registers as a new game on its definition's defaults; practical recipes, food handling, heat/knife, dietary, allergen or feeding advice and printed cooking cards are not drafted for now, so no food-safety reviewer is needed; screen-only pretend play proceeds after the building session's source check; older play keeps the `school`/`grownup` split with no middle band.
+
 ## Build slices, in order
 
 Each row is one future session; definition rows are docs only. These are recommendations, not a new automated queue or claimed implementations.

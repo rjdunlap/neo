@@ -1,12 +1,12 @@
 import { critterSort } from './index';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { COUNT_PARTS, COUNT_PLAN, countParts, morePart, countSpot, planFor, exampleIndices, examplePlaces, fits, hasNeitherMat, hintFor, neitherMat, MAT_RX, MAT_RY, sortPlaceAt, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place } from './logic';
+import { COUNT_PARTS, COUNT_PLAN, countParts, morePart, countSpot, planFor, exampleIndices, examplePlaces, fits, hasNeitherMat, hintFor, neitherMat, MAT_RX, MAT_RY, sortPlaceAt, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place, makePlantRound, SPROUT_PLANS, HAVE_WORDS, type PlantRule } from './logic';
 
 describe('Critter Sort', () => {
   it('preserves the younger ladder and stable school IDs, appending 11 without opening reserved level 10', () => {
-    expect(critterSort.levels('prek').order).toEqual([6, 1, 2, 3]);
-    expect(critterSort.levels('school').order).toEqual([2, 3, 4, 5, 7, 8, 9, 11]);
+    expect(critterSort.levels('prek').order).toEqual([6, 1, 12, 2, 3, 13]);
+    expect(critterSort.levels('school').order).toEqual([2, 12, 3, 13, 4, 5, 7, 8, 9, 11]);
     expect(critterSort.entryLevels).toEqual([6]);
     expect(PLANS).toHaveLength(9);
   });
@@ -301,5 +301,78 @@ describe('Critter Sort', () => {
     }
     // Already sorted rounds have no example to add.
     expect(exampleIndices(PLANS[3], makeRound(PLANS[3], new Rng(1)))).toEqual([]);
+  });
+
+  it('plant levels: signs are truthful, the family varies, colour is shared, and places are derivable', () => {
+    expect(planFor(12)).toBe(SPROUT_PLANS[12]);
+    expect(planFor(13)).toBe(SPROUT_PLANS[13]);
+    expect(planFor(9)).toBe(PLANS[8]);
+    for (const level of [12, 13] as const) {
+      const plan = SPROUT_PLANS[level];
+      for (let seed = 0; seed < 200; seed++) {
+        const rng = new Rng(seed);
+        let prev: string | undefined;
+        const kinds = new Set<boolean>();
+        for (let round = 0; round < plan.rounds; round++) {
+          const r = makePlantRound(plan, rng, prev);
+          prev = r.rules.join();
+          const parent = r.parent!;
+          for (const rule of r.rules as PlantRule[]) {
+            // Every sign shows a value the big plant actually has.
+            const parentHas = rule === 'round' ? parent.leaves === 'round' : rule === 'pointyleaf' ? parent.leaves === 'pointy' : parent.petals === rule;
+            expect(parentHas).toBe(true);
+            expect(HAVE_WORDS[rule]).toBeTruthy();
+          }
+          kinds.add(r.rules[0] === 'spotted' || r.rules[0] === 'plain');
+          expect(r.critters).toHaveLength(plan.critters);
+          expect(new Set(r.critters.map((c) => `${c.plant!.leaves}${c.plant!.petals}${c.plant!.pot}`)).size).toBe(plan.critters);
+          const places = r.critters.map((c) => placeOf(c, r.rules));
+          if (level === 12) {
+            const matching = places.filter((p) => p !== 'out').length;
+            expect(r.rules).toHaveLength(1);
+            expect(matching).toBeGreaterThanOrEqual(2);
+            expect(matching).toBeLessThanOrEqual(3);
+            expect(places).toContain('out');
+          } else {
+            for (const part of ['left', 'right', 'both', 'out'] as Place[]) expect(places).toContain(part);
+          }
+          // Brute force: each place agrees with the two features against the big plant.
+          r.critters.forEach((c, i) => {
+            const leaf = c.plant!.leaves === parent.leaves;
+            const petal = c.plant!.petals === parent.petals;
+            if (level === 13) {
+              const [a, b] = r.rules.map((rule) => (rule === 'round' || rule === 'pointyleaf' ? leaf : petal));
+              expect(places[i]).toBe(a && b ? 'both' : a ? 'left' : b ? 'right' : 'out');
+            } else expect(places[i] !== 'out').toBe(r.rules[0] === 'round' || r.rules[0] === 'pointyleaf' ? leaf : petal);
+          });
+          // A worked example sits in its place and a hint always leads to an unplaced plant.
+          const ex = exampleIndices(plan, r);
+          expect(ex).toHaveLength(level === 13 ? 1 : 1);
+          expect(ex[0]).toBeGreaterThanOrEqual(0);
+          const sorters = r.critters.map((c, i) => ({ c, placed: ex.includes(i) ? placeOf(c, r.rules) : null as Place | null }));
+          const mat = hasNeitherMat(plan.mode);
+          let moves = 0;
+          for (let next = nextToSort(sorters, r.rules, false, mat); next; next = nextToSort(sorters, r.rules, false, mat)) {
+            expect(next.place).toBe(placeOf(next.who.c, r.rules));
+            next.who.placed = next.place;
+            moves++;
+          }
+          expect(moves).toBeGreaterThan(0);
+          const missed = sorters.find((x) => placeOf(x.c, r.rules) !== 'out')!;
+          expect(hintFor(sorters.map((x) => ({ ...x, placed: null })), { ...missed, placed: null }, r.rules, false, mat)).toBeTruthy();
+        }
+        // Level 12's second round shows the other kind of feature.
+        if (level === 12) expect(kinds.size).toBe(2);
+      }
+    }
+  });
+
+  it('plant rules never read the pot and critter rules ignore plants', () => {
+    const c = { kind: 'cow' as const, hat: false, plant: { leaves: 'round' as const, petals: 'plain' as const, pot: 0 } };
+    expect(fits(c, 'round')).toBe(true);
+    expect(fits({ ...c, plant: { ...c.plant, pot: 4 } }, 'round')).toBe(true);
+    expect(fits(c, 'spotted')).toBe(false);
+    expect(fits({ kind: 'cow', hat: true }, 'round')).toBe(false);
+    expect(fits(c, 'hat')).toBe(false);
   });
 });

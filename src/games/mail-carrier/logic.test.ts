@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { clueMatches, clueNode, makeClues, sideColumns, sideLayout, parity, houseLooks, mailboxColor, MAILBOX_COLORS, NEAR, mapNode, mapX, NEIGHBORS, WOODS_NEIGHBORS, addressedHouse, checkStop, countedAloud, countsAloud, INVITE_AFTER, nearestHouse, planFor, shouldInvite, HELPER, HELPERS, TOOLS, helpFixed, helpWrong, letterShows, mailboxShows, teenSpoken, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, routeChoices, routeLength, shorterRoutes, SHORTER_EDGES, SIGNS, walk, woodsTouch } from './logic';
+import { keyMatches, COMPARE_EDGES, comparisonRoute, compareCounts, clueMatches, clueNode, makeClues, sideColumns, sideLayout, parity, houseLooks, mailboxColor, MAILBOX_COLORS, NEAR, mapNode, mapX, NEIGHBORS, WOODS_NEIGHBORS, addressedHouse, checkStop, countedAloud, countsAloud, INVITE_AFTER, nearestHouse, planFor, shouldInvite, HELPER, HELPERS, TOOLS, helpFixed, helpWrong, letterShows, mailboxShows, teenSpoken, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, routeChoices, routeLength, shorterRoutes, SHORTER_EDGES, SIGNS, walk, woodsTouch } from './logic';
 
 describe('Mail Carrier', () => {
   it('counts the dots aloud at levels 3 and 5, up to the number delivered', () => {
@@ -51,7 +51,7 @@ describe('Mail Carrier in Wonder Woods', () => {
   const mapPlans = PLANS.filter((p) => isMapMode(p.mode));
 
   it('has a connected map where every walk follows the paths', () => {
-    expect(mapPlans.map((p) => p.mode)).toEqual(['map', 'route', 'shorter', 'clue']);
+    expect(mapPlans.map((p) => p.mode)).toEqual(['map', 'route', 'shorter', 'clue', 'compare', 'key']);
     const edge = (a: number, b: number) => MAP_EDGES.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
     for (const h of HOUSE_NODES) {
       const w = walk(POST_OFFICE, h);
@@ -89,7 +89,7 @@ describe('Mail Carrier in Wonder Woods', () => {
         const flat = trips.flat();
         expect(flat).toHaveLength(plan.letters);
         for (const t of trips) {
-          expect(t).toHaveLength(plan.mode === 'route' ? 2 : 1);
+          expect(t).toHaveLength(plan.mode === 'compare' ? 3 : plan.mode === 'route' ? 2 : 1);
           expect(new Set(t).size).toBe(t.length);
           for (const h of t) expect(h >= 0 && h < HOUSE_NODES.length).toBe(true);
         }
@@ -97,6 +97,41 @@ describe('Mail Carrier in Wonder Woods', () => {
         if (plan.mode === 'map') expect(new Set(flat).size).toBe(flat.length);
       }
     }
+  });
+
+  it('accepts all six three-stop orders, with real differences on the loop and a counted return', () => {
+    const permutations = (t: number[]) => t.flatMap((a) => t.filter((b) => b !== a).map((b) => [a, b, t.find((c) => c !== a && c !== b)!]));
+    for (let seed = 1; seed <= 300; seed++) {
+      const trips = makeTrips(planFor(14), new Rng(seed));
+      expect(trips).toHaveLength(2);
+      for (const trip of trips) {
+        const lengths: number[] = [];
+        for (const order of permutations(trip)) {
+          const planned: number[] = [];
+          for (const h of order) {
+            expect(checkStop(trip, planned, h, true)).toBe('ok');
+            planned.push(h);
+          }
+          expect(checkStop(trip, planned, order[0], true)).toBe('planned');
+          expect(checkStop(trip, [], [0, 1, 2, 3, 4].find((h) => !trip.includes(h))!, true)).toBe('nobody');
+          expect(woodsTouch('compare', trip, planned)).toBe('go');
+          const path = comparisonRoute(order);
+          expect(path[0]).toBe(POST_OFFICE);
+          expect(path.at(-1)).toBe(POST_OFFICE);
+          expect(path.filter((n) => HOUSE_NODES.includes(n))).toEqual(order.map((h) => HOUSE_NODES[h]));
+          path.slice(1).forEach((n, i) => expect(COMPARE_EDGES.some(([a, b]) => (a === path[i] && b === n) || (a === n && b === path[i]))).toBe(true));
+          const count = routeLength(path, COMPARE_EDGES);
+          expect(count).toBe(path.length - 1); // One drawn stone per edge, including repeated edges.
+          lengths.push(count);
+        }
+        expect(new Set(lengths).size).toBeGreaterThan(1);
+        // After undo/reordering, the bot chooses an unplanned recipient, never an already planned house.
+        expect(woodsTouch('compare', trip, [trip[2]])).toEqual({ house: trip[0] });
+      }
+    }
+    expect(compareCounts(14, 12)).toBe('shorter');
+    expect(compareCounts(12, 14)).toBe('longer');
+    expect(compareCounts(12, 12)).toBe('same');
   });
 
   it('checks a planned stop: next, later, already planned, or no letter there', () => {
@@ -157,7 +192,7 @@ describe('Mail Carrier demonstration', () => {
           const planned: number[] = [];
           for (let step = 0; step < trip.length + 1; step++) {
             const touch = woodsTouch(plan.mode, trip, planned);
-            if (plan.mode === 'map' || plan.mode === 'clue') {
+            if (plan.mode === 'map' || plan.mode === 'clue' || plan.mode === 'key') {
               expect(touch).toEqual({ house: trip[0] });
               break;
             }
@@ -400,4 +435,30 @@ describe('Mail Carrier spoken clues and two street sides', () => {
       }
     }
   });
+});
+
+it('constructs exactly the sign-to-neighbour key before two distinct deliveries', () => {
+  const plan = planFor(15);
+  expect(plan.mode).toBe('key');
+  for (let seed = 1; seed <= 300; seed++) {
+    const rng = new Rng(seed), woods = makeWoods(rng);
+    const filled = new Map();
+    for (const sign of SIGNS) {
+      const matches = woods.flatMap((_, i) => keyMatches(woods, sign, i) ? [i] : []);
+      expect(matches).toHaveLength(1);
+      const house = matches[0];
+      filled.set(sign, woods[house].resident);
+      expect(keyMatches(woods, sign, (house + 1) % 5)).toBe(false);
+    }
+    expect(filled.size).toBe(5);
+    for (const h of woods) expect(filled.get(h.sign)).toBe(h.resident);
+    const trips = makeTrips(plan, rng);
+    expect(trips).toHaveLength(2);
+    expect(trips[0]).not.toEqual(trips[1]);
+    for (const trip of trips) {
+      expect(woodsTouch('key', trip, [])).toEqual({ house: trip[0] });
+      const h = woods[trip[0]];
+      expect(filled.get(h.sign)).toBe(h.resident);
+    }
+  }
 });

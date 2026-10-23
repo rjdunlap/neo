@@ -21,6 +21,8 @@ export interface SortPlan {
   newcomer?: boolean;
   /** Count the sorted parts, then compare their quantities. */
   count?: boolean;
+  /** Little plants grown from one big plant's seeds instead of critters. */
+  cast?: 'plants';
 }
 
 export const PLANS: SortPlan[] = [
@@ -37,9 +39,17 @@ export const PLANS: SortPlan[] = [
 
 // ID 10 remains reserved for Pick the signs; existing plan IDs never move.
 export const COUNT_PLAN: SortPlan = { mode: 'two', critters: 6, rounds: 2, count: true, name: 'How many? Sort six critters, tap to count each hoop and the leaf mat aloud, then choose the part with more' };
-export const planFor = (level: number) => level === 11 ? COUNT_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+// Same Kind, Different Sprouts: every plant belongs to the family; only the hoop changes.
+export const SPROUT_PLANS: Record<12 | 13, SortPlan> = {
+  12: { mode: 'one', critters: 4, rounds: 2, example: true, cast: 'plants', name: 'Like the big plant: one hoop, one little plant already in; put in every little plant that shares the big plant\u2019s pictured feature' },
+  13: { mode: 'venn', critters: 6, rounds: 2, example: true, cast: 'plants', name: 'Same and different: overlapping hoops for the big plant\u2019s leaves and petal marks; the middle is both, the leaf mat is different both ways' },
+};
+export const planFor = (level: number) => level === 11 ? COUNT_PLAN : level === 12 || level === 13 ? SPROUT_PLANS[level] : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
-export type Rule = 'hat' | 'brown' | 'white' | 'floppy' | 'pointy' | 'whiskers';
+export type Rule = 'hat' | 'brown' | 'white' | 'floppy' | 'pointy' | 'whiskers' | PlantRule;
+export type PlantRule = 'round' | 'pointyleaf' | 'spotted' | 'plain';
+export type Leaves = 'round' | 'pointy';
+export type Petals = 'spotted' | 'plain';
 
 export const RULE_WORDS: Record<Rule, string> = {
   hat: 'wearing a hat',
@@ -48,16 +58,38 @@ export const RULE_WORDS: Record<Rule, string> = {
   floppy: 'with floppy ears',
   pointy: 'with pointy ears',
   whiskers: 'with whiskers',
+  round: 'with round leaves',
+  pointyleaf: 'with pointy leaves',
+  spotted: 'with spotted petals',
+  plain: 'with plain petals',
 };
+
+/** What a plant has, said after "has": the miss and middle lines name the feature itself. */
+export const HAVE_WORDS: Record<PlantRule, string> = { round: 'round leaves', pointyleaf: 'pointy leaves', spotted: 'spotted petals', plain: 'plain petals' };
+const PLANT_RULES: Rule[] = ['round', 'pointyleaf', 'spotted', 'plain'];
+export const isPlantRule = (r: Rule): r is PlantRule => PLANT_RULES.includes(r);
+
+/** A little plant's two sortable features; the pot (0-5) is decoration that tells two alike plants apart. */
+export interface SortSprout {
+  leaves: Leaves;
+  petals: Petals;
+  pot: number;
+}
 
 export interface SortCritter {
   kind: CritterName;
   hat: boolean;
+  /** Set on the little plants of levels 12-13 (`kind` is then unused). */
+  plant?: SortSprout;
 }
 
 const KINDS: CritterName[] = ['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny'];
 
 export function fits(c: SortCritter, rule: Rule): boolean {
+  if (isPlantRule(rule)) {
+    const p = c.plant;
+    return !!p && (rule === 'round' ? p.leaves === 'round' : rule === 'pointyleaf' ? p.leaves === 'pointy' : p.petals === rule);
+  }
   switch (rule) {
     case 'hat':
       return c.hat;
@@ -71,6 +103,8 @@ export function fits(c: SortCritter, rule: Rule): boolean {
       return c.kind === 'pig' || c.kind === 'cat';
     case 'whiskers':
       return c.kind === 'cat' || c.kind === 'bunny';
+    default:
+      return false;
   }
 }
 
@@ -108,6 +142,45 @@ export interface SortRound {
   nextRule?: Rule;
   /** Index of the single newcomer in an otherwise sorted diagram. */
   newcomer?: number;
+  /** Plant levels: the big plant's features, and the one petal colour the whole family shares. */
+  parent?: { leaves: Leaves; petals: Petals };
+  petalColor?: number;
+}
+
+/**
+ * A family of little plants for levels 12-13. Level 12 shows one of the big plant's features on a single sign (a petal
+ * mark in one round and a leaf shape in the other); level 13 shows both on overlapping signs. Two or three of the four
+ * level-12 plants share the sign (the example included) and at least one differs; level 13 fills all four parts.
+ */
+export function makePlantRound(plan: SortPlan, rng: Rng, avoid?: string): SortRound {
+  for (;;) {
+    const parent = { leaves: rng.pick(['round', 'pointy'] as Leaves[]), petals: rng.pick(['spotted', 'plain'] as Petals[]) };
+    const leafRule: PlantRule = parent.leaves === 'round' ? 'round' : 'pointyleaf';
+    let rules: Rule[];
+    if (plan.mode === 'venn') {
+      rules = [leafRule, parent.petals];
+      if (rng.chance(0.5)) rules.reverse();
+    } else {
+      // The second round shows the other kind of feature from the first.
+      const petalNow = avoid ? !['spotted', 'plain'].includes(avoid) : rng.chance(0.5);
+      rules = [petalNow ? parent.petals : leafRule];
+    }
+    if (rules.join() === avoid) continue;
+    const plants: SortCritter[] = [];
+    for (let i = 0; i < plan.critters; i++) {
+      plants.push({ kind: 'cow', hat: false, plant: { leaves: rng.pick(['round', 'pointy'] as Leaves[]), petals: rng.pick(['spotted', 'plain'] as Petals[]), pot: rng.int(0, 5) } });
+    }
+    const key = (c: SortCritter) => `${c.plant!.leaves}${c.plant!.petals}${c.plant!.pot}`;
+    if (new Set(plants.map(key)).size < plants.length) continue;
+    const places = plants.map((c) => placeOf(c, rules));
+    if (plan.mode === 'venn') {
+      if (!(['left', 'right', 'both', 'out'] as Place[]).every((p) => places.includes(p))) continue;
+    } else {
+      const matching = places.filter((p) => p !== 'out').length;
+      if (matching < 2 || matching > 3) continue;
+    }
+    return { rules, critters: plants, parent, petalColor: rng.int(0, 2) };
+  }
 }
 
 /** A round where every place in play gets at least one critter, so each part of the diagram matters. */

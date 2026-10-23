@@ -128,6 +128,8 @@ Device and person checks stay open: whether a school-age child reads the nubs as
 
 ## Open decisions
 
+**Decided 2026-10-23 (on the developer's delegation):** all six leans are adopted: a new game, `school` 1–4 only, home Tinker Lab if the layout test passes (else Treehouse), nothing filed in the journal, and levels 1–2 stay as the gesture-and-tally puzzle that claims no chemistry. No chemistry educator gates levels 5–8: the building session checks the molecule list, model-limits line and any picture against cited sources and records it in VERIFICATION; the O-chain shapes stay as puzzle shapes, never named substances.
+
 Decisions 1 and 3 block the build; the rest have defaults the build uses.
 
 1. **A new game** (blocks). Lean: yes, since rearrangement under a tally is an action no game owns and the study checked the overlap.

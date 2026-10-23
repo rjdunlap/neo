@@ -121,6 +121,8 @@ Both are placed by [`order`, which may skip IDs](../DESIGN.md) (built).
 4. **The toddler window includes level 4 (two names in order).** Lean: keep it; it has a glow and no penalty. A person check on a two-year-old decides.
 5. **Levels below level 1 and tuck-in** wait on the existing level-order and range-skip rows in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#waiting-on-the-developer); no new row.
 
+**Decided 2026-10-23 (on the developer's delegation):** every lean: the teddy stays out of animal rounds (test-asserted); levels 7 and 10 stay unmissable and she climbs through them; level 4 (two names in order) stays in the toddler window, with a two-year-old person check as a later device check; the remaining pre-K ladder may be built.
+
 ## Build slices, in order
 
 Each is sized for one session. A slice that adds a level is built in level order so the saved IDs stay unbroken.

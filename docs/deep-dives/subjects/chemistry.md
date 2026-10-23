@@ -132,6 +132,8 @@ The first unsupported action is level 1's drag from one bead to another; touch-d
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** Bond Beads 1–4 is a new game, home Tinker Lab by the layout test (else Treehouse), and levels 1–2 earn their place as a puzzle that claims no chemistry; levels 5–8 go at the top of `school`; Island Bridges molecule seas is the grown-up form. The molecule list, model-limits line, double-hold art and any reaction picture take the building session's check against cited sources instead of a named chemistry educator; acids and bases stay held, with no household mixing in any form.
+
 - **Bond Beads as a new game?** Lean yes: rearrangement under a tally is an action no game owns. Confirm the land (Tinker Lab lists 13 games, so the layout test decides) and that S levels 1–2 earn their place as a puzzle that claims no chemistry.
 - **Where M levels 5–8 live** until a band exists: `school`'s top levels (lean) or 13+ only.
 - **Island Bridges molecule seas:** accept a lettered skin and named molecules in a grown-up logic game, with a reviewed list?

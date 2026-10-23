@@ -196,6 +196,7 @@ None of this has been observed: child appeal, whether consequences teach the pla
 - **How far to take "human impact":** the lean follows Sobel, with consequences and solutions only through `school` and monitoring/minimizing at the 13+ cases. Should climate change appear in any band? The lean is not without its own study and a reviewer.
 - **Rework hook:** whether the first RW07 adventure after Welcome a New Friend could be "What can we make from the shed?", with a permanent home decoration.
 - **Older placement:** Picnic Loop at the top of `school` through 12, and Festival Loop on `grownup` at 13+, subject to registration and capacity. No new band.
+- **Decided 2026-10-23 (on the developer's delegation):** Second Chance Shed is the Trash Sort seed with a visible consequence at each place, homed per its definition (Cozy Village, else Treehouse); the item table and compost list ship after the building session's source check, no real bin rule spoken, and the Kitchen Sort / Our Tree cards are not drafted for now; consequences and solutions through `school`, monitoring/minimizing at 13+, no climate change without its own study; Picnic Loop at `school`'s top and Festival Loop on `grownup`; "What can we make from the shed?" is a candidate RW07 adventure with a permanent home decoration.
 
 ## Build slices, in order
 

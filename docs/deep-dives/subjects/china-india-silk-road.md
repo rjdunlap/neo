@@ -180,6 +180,8 @@ Replay varies the oases' order, the legs' suns, the goods and the wants, never t
 9. **Numbers.** Bead frame and market weights are representation rungs in Lasso Loops and Seesaw Balance; zero, place value and binary as a system belong to `number-structure`. Confirm, so no rung here depends on place value before Lasso Loops' jars.
 10. **The kite's owner.** A toddler kite is a toy with a provenance line; decide whether the weather/water or energy/waves study owns it, or whether it is dropped. Lean: a note to those studies, no slice here.
 
+**Decided 2026-10-23 (on the developer's delegation):** every lean: island oasis names on the child's screen, real cities, dates and "Silk Road" only in level 8 and on the grown-up card; Caravan Days in Cozy Village if `landLayout` passes, else Rainbow Meadow, first build 1–3; levels 4–5 defined here, cross-listed to Swap Meet, never two relay engines; The Ledger a separate Lantern Lake puzzle; the basin case and card state in one source-checked sentence the enslaved and conscripted labour; religion stays out, with at most a grown-up line that stories and beliefs travelled too; Baghdad c. 900 stays inside this grown-up card (no new row); bead frame and weights stay representation rungs; the kite is a note to the weather/water study. Historical lines ship after the building session's source check; living practices (pachisi rules, kite festivals, kolam, tea) are not drafted for now.
+
 ## Build slices, in order
 
 Each line is one future session. **Definition ready** means research permits a concrete packet, not that implementation is approved.

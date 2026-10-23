@@ -127,13 +127,15 @@ Proposed future windows: pre-K becomes 3–10 (4–10 for adaptation purposes mi
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** decision 5's default stands: on level 8's "not" levels a launch that blooms nothing wanted is a miss, two in a row glow the wanted flowers and aim the next launch (a counted hint), as at level 3; bumping a sleepy flower only chimes.
+
 1. **A school window.** Bumper Garden ends at pre-K by design. Open school with levels 11 and 12 (make ten, a tune), or leave it? Recommend leaving school unopened until levels 6–10 are tuned, then deciding.
 2. **Lap Floaty garden (13).** Lap's tap-and-watch is already level 1; a slower, bigger table is only worth it if a one-year-old can follow the ball (a device check). Recommend yes, appended, ready for observation.
 3. **Garden tune (12) as music.** It makes the game a music-making game: silence the island loop and add it to the registry's silenced list, or leave music off the ladder.
 4. **Wide reach through level 3.** A balance change to an existing level.
 5. **Hint accounting (built on the default, still open).** Level 8 uses the usual accounting (a launch that blooms nothing wanted is a miss; the two-trip hint counts). Whether the two-trip hint should count as a hint on level 8's "not" levels, where a sleepy-flower bump is not a miss.
 
-Decision 5 is in [Waiting on the developer](../WAITING-ON-DEVELOPER.md#defaults-in-use-block-nothing); add the rest when the roadmap chunk is next edited.
+Decision 5 is in [Waiting on the developer](../archive/DECISIONS-2026-10-23.md#decisions); add the rest when the roadmap chunk is next edited.
 
 ## Build slices, in order
 

@@ -116,6 +116,8 @@ No renumbering: 5–10 are new stable IDs; 1–4 are unchanged.
 
 ## Decisions for the developer
 
+**Decided 2026-10-23 (on the developer's delegation):** level 8 *Walk signal* is not drafted or built for now, since street-crossing advice is practical safety instruction under the deferred rule. *Smart light* and a school window wait on the `robots-automation` study; a red tap at toddler level 10 is a nudge, not a miss, at 10 only; the companion drives first once its rework art settles, and vehicles join the road with the rework's unlocks.
+
 1. **Walk signal (level 8)** — ship only after the safety expert review named in [subjects.md](subjects.md); lean: build it with stop-look-listen and a held hand, never "safe because it says walk".
 2. **School window and Smart light (level 7)** — lean: wait for the `robots-automation` subject study.
 3. **Toddler level 10 accounting** — lean: red is a nudge, not a miss, at 10 only.
