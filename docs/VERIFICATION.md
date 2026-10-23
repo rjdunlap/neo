@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-10-22 — Poetry and wordplay study (subject research, docs only)
+
+- [PR #843](https://github.com/rjdunlap/neo/pull/843), `claude/research-poetry-wordplay`: [study](deep-dives/subjects/poetry-wordplay.md), tracker, packet, roadmap, notebook, backlog and READY (research line replaced by the Rhyme Riddles definition).
+- Opened: CCSS RL.K, RF.K and L.5. Search summaries only: Bryant et al. abstract, Nemours, explicit-rhyme studies, NC progressions, McGhee stages; ELOF goals not confirmed.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser or device checks (docs only); nothing implemented.
+- Open: ELOF wording, primary humour papers, a reviewer for meaning tags and verses, decisions 1–7 in the study.
+
 ## 2026-10-22 — Shape Sorter batch 3: Corners, curves and corner counts (13–14)
 
 - [PR #842](https://github.com/rjdunlap/neo/pull/842), slices 7–8 only: two curve/corner mouths at 13; shared 0/3/4/5/6 dot-and-numeral holes and sequential dot help at 14. Pre-K `[5, 6, 7, 11, 8, 12, 13, 14]`; school and creature box remain excluded.
