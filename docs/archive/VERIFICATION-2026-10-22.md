@@ -340,3 +340,11 @@
 - Opened: CCSS W.K.6, W.1.6, W.2.5–2.6, W.3.6, W.4.6, L.K.2, L.1.2; MDN VisualViewport, VirtualKeyboard, `autocorrect`, `KeyboardEvent.code`; Typing.com K–1, the Vanderbilt thesis, Montessori Academy, Mayer 2020. Opened by research agents and labelled in the study: Kiefer, Ibaibarriaga, Ouellette and Tims, Vatavu, Anthony, Nicolson and Gardner, Edclub, LWT, Nessy, BabySmash, CUPS. Goldberg 2003 read from its PDF abstract; summary only: Morphy and Graham, Bangert-Drowns. Not checked: iPad installed-app keyboard behaviour, a browser's shortcut lockout, the couch's player names and orientation.
 - Ran `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, unit tests, build, browser (docs only); nothing is built or registered.
+
+## 2026-10-22 — Look It Up levels 1–3 (informational-reading IR1, new game)
+
+- Changed: a new game in Barnyard (subject story-grove; toddler 1, preschool 1–2, pre-K 2–3, school 3): a picture guide of seven real animals with two-sourced *Eats*, *Where* and *Baby* rows; talking labels, find the page and feed it, find the row and help. Barnyard 10 games, 117 in all.
+- Ran (Vite on `http://localhost:5617/classic/`): typecheck clean; `npm test` 2538 passed; `npm run build` ok; `BROWSER_SUITE=lookitup` (level 1 touches all three labels of three pages, score [0,0]; level 3 in portrait with two wrong pictures then the glow hint, [2,1], sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=look-it-up` clean at level 1 (17.0 s) and level 3 (23.4 s); one portrait screenshot reviewed. The Barnyard lands test passed.
+- Gaps: first round of each level is seeded-random, not the authored one; baby pictures are the parent critter scaled small, duck and rabbit untinted; choices are drag-or-tap; the level 2 demo does not first tap another tab; the third-miss supported finish fires after four wrong tries; no restart pause action.
+- Not run: world, offline, picnic, couch (unaffected).
+- Open: iPad speech, a three-year-old's understanding of the tabs, and portrait legibility (DEVICE-CHECKS.md).
