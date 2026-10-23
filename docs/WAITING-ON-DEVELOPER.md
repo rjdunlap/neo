@@ -6,12 +6,13 @@ Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the 
 
 ## Still waiting
 
-The developer answered the last four questions on 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#answered-by-the-developer)). Two steps are still theirs:
+The developer answered the last four questions on 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#answered-by-the-developer)). Two steps are still theirs, plus one new question (2026-10-23):
 
 | Step | What happens next | Written in |
 | --- | --- | --- |
 | **Play RW08 slices 1–2 on the iPad** | The cutover (deleting `classic/`) is approved; a session starts it when the developer says they have played the new Explore and library at the root | [RW08 slice 3](rework/RW08-CUTOVER.md#slice-3-the-cutover-approved-starts-when-the-developer-has-played-slices-12) |
 | **Name the Portuguese reviewer** | Portuguese comes first, in European Portuguese (decided 2026-10-23); its lines are reviewed by that family member before anything in Portuguese ships | [Additional languages](definitions/additional-languages.md) |
+| **Phones as controllers: go ahead, and how they meet** | Reopens the 2026-10-23 "not now" on a second screen. Phones need somewhere to meet: a hosted relay (an account, maybe money, and a service that sees a child's app's traffic), WebRTC introduced through a relay, or a QR exchange that needs a camera. Recommended: yes, a small relay with no accounts and nothing stored, used only by couch play's phone mode (the island stays offline), built with the first phone slice (phones as couch gamepads) | [Phone party play](PHONE-PARTY.md#hosting-where-the-phones-meet) |
 
 ## Adding a question
 
