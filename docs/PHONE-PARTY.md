@@ -2,7 +2,7 @@
 
 Written 2026-10-23 at the developer's request: review how the Jackbox games use one shared screen and everyone's phones, and their art, and propose mini-games for the family or a group. Everything here is a **proposal**, like [IDEAS.md](IDEAS.md). Nothing is built, and no slice is claimed.
 
-**This reopens a recorded decision.** On 2026-10-23, [Table mode and a second screen](IDEAS.md#order-and-decisions-for-the-family-table) was decided "not now", with Mission Cards (a printed card behind a physical barrier) first for hidden information ([record](archive/DECISIONS-2026-10-23.md)). The costs it named still hold: a second screen breaks "one iPad", and hidden information needs its own layout and contract. Phones would also bring the app's first network dependency. Whether to go ahead is the developer's call ([Waiting on the developer](WAITING-ON-DEVELOPER.md#still-waiting)). Until then this is a design notebook. Mission Cards stay first.
+**The developer reopened a recorded decision (2026-10-23): "I'm not opposed to 2nd screens."** On 2026-10-23 [Table mode and a second screen](IDEAS.md#order-and-decisions-for-the-family-table) had been decided "not now" on the developer's delegation, with Mission Cards (a printed card behind a physical barrier) first for hidden information ([record](archive/DECISIONS-2026-10-23.md)). Second screens are now allowed in principle. What is left is how the phones meet, which is the app's first network dependency and the developer's call ([Waiting on the developer](WAITING-ON-DEVELOPER.md#still-waiting)). Mission Cards remain the offline version, not a prerequisite.
 
 ## How Jackbox works
 
@@ -102,7 +102,7 @@ She is about one. The full Jackbox shape (each person reading their own phone) f
 
 ## Suggested order (non-binding)
 
-1. **The decision** on hosting and on reopening the second screen ([waiting](WAITING-ON-DEVELOPER.md#still-waiting)).
+1. **The hosting decision** ([waiting](WAITING-ON-DEVELOPER.md#still-waiting)); second screens themselves are approved.
 2. **Phones as couch gamepads**, which proves the room, the QR lobby, the creatures arriving and reconnecting with games that already exist.
 3. **Same Pick with phones**, the smallest private-screen game, reusing an already-defined row.
 4. **Bakery Orders** or **Pond Band**, the first new game made for phones, plus the Cheer Section.
