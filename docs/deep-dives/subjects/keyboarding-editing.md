@@ -1,0 +1,172 @@
+# Keyboarding and editing: letters on a real keyboard, and the verbs that mend text
+
+*Subject `keyboarding-editing` · 2026-10-22 · `claude/zealous-albattani-woucn3` · [PR #829](https://github.com/rjdunlap/neo/pull/829). Research and proposals only, for L/T/P/K/S/U/M and grown-ups. Base: `822ad7c5`. No game was played or implemented.*
+
+**Recommendation.** Keyboarding is two skills that the island's rules pull apart. **Finding keys** (where the letters, space, capital and stop live) belongs to a *physical* keyboard: a full on-screen keyboard cannot meet the child's 100-unit target rule (arithmetic below), the evidence does not show that tapping letters teaches letters better than writing them, and no source found shows that tablet typing transfers to a real keyboard. **Editing verbs** (take a word out, put one in at a gap, swap one, move one) are a different skill: they are what makes digital text different from ink, they survive on touch with tiles at 100 units or more, and the sign a pet acts on is a natural place to learn them, because the pet's act shows what the edit did. So:
+
+1. **Touch, child bands: no keyboard.** Letters stay with Letter Trails (handwriting) and Word Monsters (a bounded shelf); the edit verbs go to Read & Do as *Mend the sign*, handed to its dive.
+2. **Physical keyboard: the couch's Laptop setting.** Letters reach a game for the first time (the couch reads only arrows, Enter, Space, Backspace and Escape today). The first definition is **Pond Typing, reshaped**: bubbles wait, nothing drifts, a wrong key is a wobble and a name, and backspace and the arrow keys are the edit verbs, never misses.
+3. **No system keyboard and no free text in a child's game.** Every text input in the app today is for a grown-up.
+
+## Anchors and evidence limits
+
+Opened 2026-10-22 unless marked. A standard is a guide, never a gate. Several fetches returned a summary rather than the page, which is stated where it matters.
+
+| Opened source / codes | What it says | Design implication |
+| --- | --- | --- |
+| [CCSS W.K.6](https://www.thecorestandards.org/ELA-Literacy/W/K/), [W.1.6](https://www.thecorestandards.org/ELA-Literacy/W/1/), [W.2.6](https://www.thecorestandards.org/ELA-Literacy/W/2/) | "With guidance and support from adults, explore a variety of digital tools to produce and publish writing" (K; Grades 1 and 2 say "use a variety of digital tools", with peers in W.2.6) | **Kindergarten to Grade 2 ask for using digital tools, not for typing.** Nothing here requires a keyboard |
+| [CCSS W.2.5](https://www.thecorestandards.org/ELA-Literacy/W/2/), [W.K.5](https://www.thecorestandards.org/ELA-Literacy/W/K/) | W.2.5: "strengthen writing as needed by revising and editing"; W.K.5: respond to peers' questions and add details | The edit verbs serve revising and editing |
+| [CCSS W.3.6](https://www.thecorestandards.org/ELA-Literacy/W/3/), [W.4.6](https://www.thecorestandards.org/ELA-Literacy/W/4/) | W.3.6: "use technology to produce and publish writing" with keyboarding skills (opened 2026-10-16; this fetch returned a paraphrase); W.4.6 sets a one-page-in-one-sitting expectation (paraphrase) | **Grade 3 (about 8) is where keyboarding is first named.** A one-page sitting is not a round length; it is not imported |
+| [CCSS L.K.2](https://www.thecorestandards.org/ELA-Literacy/L/K/) a–b, [L.1.2](https://www.thecorestandards.org/ELA-Literacy/L/1/) a–b | "Capitalize the first word in a sentence and the pronoun I"; "Recognize and name end punctuation"; "Capitalize dates and names of people"; "Use end punctuation for sentences" | The *rules* of capitals and stops belong to `spelling-sentences`. Here they are keys and tiles to find |
+| [IES WWC practice guide 17](https://ies.ed.gov/ncee/wwc/PracticeGuide/17), recommendation 3 (the page, as in the writing-composition study) | "Teach students to become fluent with handwriting, spelling, sentence construction, typing, and word processing"; evidence level moderate. The page gives no grade split | Fluency is a goal; the page says nothing about starting age |
+
+**What people can do, by age (every item opened unless marked).**
+
+- **Letters: handwriting against typing, ages 3–7.** Longcamp, Zerbato-Poudou and Velay 2005 (*Acta Psychologica* 119; Europe PMC record, a paraphrase of the abstract): two groups of 38 children aged 3 to 5 copied letters by hand or by typing for about three weeks; the handwriting group recognized letters better, per the paraphrase "but only among the older children" (the paper was not opened, so there are no effect sizes or age split). Kiefer and colleagues 2015 ([PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC4710970/)): 23 children aged about 4;10 to 6;3, 16 sessions; "Results did not indicate a superiority of typing training over handwriting training in any of these tasks"; handwriting was better at word writing (a tiny sample; it does not replicate Longcamp). Mayer and colleagues 2020 ([Frontiers](https://www.frontiersin.org/articles/10.3389/fpsyg.2019.03054/full); I re-opened it): 145 final-year kindergartners, about 4;10 to 6;7, seven weeks and 28 sessions on 16 letters and 12 words by pencil, tablet stylus or virtual tablet keyboard; pencil beat the keyboard for letter recognition ("handwriting with pencil fosters acquisition of letter knowledge"); keyboard beat stylus on word reading and writing; the pencil–keyboard difference on words was not significant. Ibaibarriaga, Acha and Perea 2025 ([PDF](https://www.uv.es/mperea/HandwritingJECP.pdf)): 50 Spanish prereaders, nine letters; "children in the handwriting groups ... achieved higher accuracy across all posttest tasks" (a computer, not an iPad; small). Ouellette and Tims 2014 ([Frontiers](https://frontiersin.org/articles/10.3389/fpsyg.2014.00117/full)): 40 Grade 2 children (7;5); "no main effects of practice modality" for spelling novel words, but "pre-existing keyboarding skills" mattered. **Reading of the lot:** for letter learning at 3–6, writing by hand is equal or better, never clearly worse; by about seven, typing is no worse for spelling if the child can already type. This supports leaving letter learning with Letter Trails. Every study is small and short.
+- **Touch accuracy by age.** Vatavu, Cramariuc and Schipor 2015 ([PDF](https://mintviz.usv.ro/publications/ijhcs2015.pdf)): 89 children aged 3 to 6; touch offsets averaged 4.5 mm at 3, 3.8 mm at 4 and 3.4 mm over 5 (ages 4 and 5 did not differ), "significant improvements in children's touch performance as they grow from 3 to 6"; single targets, not a text-entry study. Anthony and colleagues 2013 ([PDF](https://lisa-anthony.com/wp-content/uploads/2013/04/anthony-et-al-jpuc2013.pdf)): ages 6 to 17 and adults; the 7–10 group had the most trouble with small targets, and a touch landed where the *previous* target had been ("holdovers") on 38.8% of targets (3.93% for ages 7–10 against 0.56% for adults); padding at the screen's edge nearly doubled misses. Brown and Anthony 2012 ([PDF](https://lisa-anthony.com/wp-content/uploads/2012/03/brown-and-anthony-chi2012eist.pdf)): 8 children aged 7 to 11; touches "were not within the target 46% of the time" (adults 32%), tiny sample and very small targets included. **Reading:** the 100-unit rule is well supported, and adjacent keys are the risky case. My arithmetic: on the iPad's 132 CSS points per inch, 100 units is about 15 mm held upright and about 21 mm in landscape; it was not measured on a device.
+- **Tablet typing at four.** Bigelow 2013 ([Vanderbilt thesis](https://ir.vanderbilt.edu/handle/1803/13251); the repository page): 15 four-year-olds in a preschool used iPads to compose messages; two styles, "two-handed grown-up style" and "one-handed hunt-and-peck style"; children "chose typing over handwriting letters", and relied on an adult for what to say. One small study; it shows willingness, not learning.
+- **Alphabetical against QWERTY.** Nicolson and Gardner 1985 ([abstract](https://research.edgehill.ac.uk/en/publications/the-qwerty-keyboard-hampers-schoolchildren/)): inexperienced users aged 8, 12 and 20 on a physical keyboard; "The QWERTY responses were not only slower but also showed a much greater variability"; single-key responses, 1985, not a touchscreen.
+- **Instruction.** Freeman, MacKinnon and Miller 2005 (Europe PMC record, a paraphrase; students with handwriting difficulties): upper elementary is a suitable start, about 25 to 30 hours of instruction. Connelly, Gee and Walsh 2007 (Europe PMC record): handwriting was faster for nearly all UK Year 5–6 pupils without systematic training, and the authors conclude formal touch-typing instruction is needed. Wollscheid, Sjaastad and Tømte 2016 (abstract) is a review of digital against pencil-and-paper writing, *not* of touch typing: findings are "rather consistent within each perspective" and inconsistent across them. **No credible measured keyboard speeds for Grades 3–5 were found** (state curriculum goals exist, snippet only, and are not norms).
+- **Editing on screen.** Goldberg, Russell and Cook 2003 (*JTLA*; **reported by the research agent from the PDF abstract; I could not read the PDF**): 26 studies, writing on computers raised quantity (d = .50) and quality (d = .41), and studies of revision behaviors "revealed mixed results". Morphy and Graham 2012 (snippet only): word processing helps weaker writers. *Writing Next* (the summary page): word processing "can be particularly helpful for low-achieving writers" (grades 4 to 12). **For children aged 5 to 8 placing a cursor by touch: a gap.** The only school-age source on backspace is a curriculum, the Raspberry Pi Foundation's Year 1 lesson whose objective is "I can use backspace to remove text".
+- **Under three, and letters on a keyboard at three to five: gaps.** No study of toddlers pressing keys was found (the nearest, Ingraham and colleagues 2024 on a joystick, did not test keys); a population study of 1,539 four-year-olds found computer use correlated with letter knowledge, which is not a keyboard test.
+
+**Evidence limits.** Nothing opened shows that a keyboard, a letter shelf or a Mend-the-sign level improves typing, writing or letter knowledge. Completing a round shows she can find the keys or make the edit, and nothing more.
+
+## What the screen allows: keyboard arithmetic
+
+From `src/engine/view.ts`: the view is the 1024 by 768 design area, grown on whichever side has room, so **the view is always at least 1024 wide and at least 768 tall** in logical units, including upright (a 810 by 1080 iPad has scale 0.79, so the view is 1024 by about 1365).
+
+| Layout | Result (my arithmetic from the code and the target rule; nothing was built or measured) |
+| --- | --- |
+| QWERTY | A top row has 10 keys. At 100 units with an 8-unit gap that is 1072 units, wider than the 1024 guaranteed; nine keys is 964. **A QWERTY row does not fit at any orientation** |
+| An alphabet in rows of nine | 9 + 9 + 8 letters is three rows of 316 units, and space, backspace, a capital key and a stop make a fourth (about 424 together). **Upright it fits (about 1365 tall). Landscape at 4:3 (768 tall) it leaves about 100 units beside the text line and the corner buttons, and it covers the bottom-left pet's corner** |
+| A shelf of about eight tiles | Fits every orientation with the pet clear: this is Word Monsters' shape |
+| A grown-up-band board | The 64-unit exemption applies to the `grownup` band only; ten 64-unit keys is 640. It exists for a grown-up game, never for a child's |
+
+Native alternatives are not better for the child: the system keyboard shrinks the visual viewport (MDN, VisualViewport: it "can shrink the visual viewport without affecting the layout viewport"), the VirtualKeyboard API that would opt out is marked experimental and its Safari status was not confirmed, and the HTML `autocorrect` attribute's Safari support was not confirmed either. **I did not check how an installed iPad web app behaves with the on-screen keyboard.** The system keyboard also brings autocorrect, suggestions, dictation and emoji that a child's game cannot control, and a stored string, which the app has none of for a child.
+
+## What a typing "key" is on this island
+
+Facts from the code that shape every candidate:
+
+- `voice.speak(text)` speaks any string and `ctx.say(id, vars)` fills `{word}` and `{name}`, so a chosen or typed word can be read back without new speech work. Device speech for isolated letter sounds is already a known stand-in (Word Monsters).
+- `src/engine/controller.ts` reads only `ArrowLeft/Right/Up/Down`, `Enter`, `Space`, `Backspace` and (couch only) `Escape`, `KeyW`, `KeyS`. **No letter key reaches a game today.** Its `typing(e)` guard already treats form fields as text, not controls.
+- `KeyboardEvent.code` is the *physical* key (MDN: "isn't altered by keyboard layout"; `KeyQ` is the ' key on Dvorak and A on AZERTY), so a game that teaches letters should read `key`, and one that teaches positions should read `code` and say so.
+- Every text input in the app is for a grown-up (`ChooserScene`'s Add form, `HatchScene`'s name, the grown-ups' page).
+- Couch play already has a **Laptop setting** ("Laptop with keyboard") that shows key caps through `prompts(parts, place)`.
+
+## On the island today
+
+I read the [Word Monsters dive](../word-monsters.md), [GAMES](../../GAMES.md) for Word Monsters, Letter Trails and Read & Do, the [writing-composition](writing-composition.md) study, the notebook's Pond Typing and Writing rows and `src/content/lands.ts`.
+
+| Neighbour | What it owns | Overlap test |
+| --- | --- | --- |
+| Letter Trails | Letter formation by drag, names (levels 7–8) | Letters are *learned* by writing; this study does not teach them by typing |
+| Word Monsters (levels 1–8 built; the dive proposes 9–17 including *Fix the pet's word*, *Change one sound*) | A bounded shelf of letter monsters dragged into slots; spelling by sound | **Choosing and placing a letter into a word is its action.** A letter swap is Word Monsters; this study adds nothing there |
+| `spelling-sentences` (unstarted) | Which letters make the word, capitals and stops as *rules*, agreement | The proposed line: **if the letters to press are shown or announced, it is keyboarding (copying); if she must know them, it is spelling (encoding)** |
+| `writing-composition` (Story Weaver, WC3 *Make the sign*) | What to say, for whom; tiles, never typed text | Keyboarding owns how text gets onto the page and how it is edited; Story Weaver's tiles stay tiles |
+| Read & Do (levels 1–3 built; dive queued) | Reading a sign and acting it out | The sign is already a line of word tiles at 108 by 100 that the pet acts on: *Mend the sign* is its inverse |
+| Pond Typing (notebook row, couch, Laptop setting) | Type the word on each bubble | Reshaped here; its drift-off, words-per-minute and boss list stay couch-only and for grown-ups |
+| Secret Code, Word Search | A code of pictures; finding listed words | Not typing |
+
+**What no game covers:** a letter key that does something; a space, a capital and a stop as things she presses; taking a word out and putting one in at a gap; a result that shows what an edit did.
+
+## Similar games and tools
+
+Descriptions only; nothing was played. "Opened" is stated; fetches return summaries, so quotes are short.
+
+| Tool | Kind | How progression grows | Borrow | Leave out |
+| --- | --- | --- | --- | --- |
+| BBC Bitesize *Dance Mat Typing* ([fan blog, 2015](https://www.kidztype.com/blog/?p=302) and a [teacher card](https://remc.org/mitechkids/1st-grade/dance-mat-typing/), both opened; the BBC pages were blocked, so whether it still runs is unknown) | Web game, "Kindergarten through third grade" (the teacher's words) | 12 stages: home row, then two keys at a time (E I; R U; T Y; W O; P Q; V M; N B; C and comma; X Z; slash), **Shift for capitals last** (stage 12) | A coach who gives a tip on a wrong key and compliments on finishing; two new keys at a time | The closing words-per-minute test; ads |
+| TypingClub / *Jungle Junior* ([Edclub](https://www.edclub.com/help/resources/jungle-junior.html), opened) | Web course, "PK through grade 1" | The alphabet, sight words, word families, simple sentences; a character points to the target key (the handbook was unreadable, so lesson structure is secondhand) | **Alphabetical order for children who know the alphabet song**; a pointing helper | Stars, badges, levels, any speed measure |
+| [Typing.com K–1](https://www.typing.com/whats-new/1785421821/meet-the-new-kindergarten-and-1st-grade-typing-curriculum) (opened) | Web, free tier | Getting Started (9 lessons: mouse, home row), Top and Bottom Rows (8), then for Grade 1 only Numbers and Beyond (13: space bar, period, Enter, **backspace**, first words with pictures); read-aloud; uppercase or lowercase keyboard display; accepts a letter with or without Shift | **Backspace arrives late and beside first words**; lowercase display; picture revealed as words are typed; Shift not demanded | The paid split; it does not mention tablets |
+| *Keyboarding Without Tears* ([LWT](https://lwtears.com/node/4828226), [second page](https://www.lwtears.com/node/2096), opened) | Classroom program, K–5 | Six weeks of foundations each year on "a simplified keyboard", colour-coded rows; Grade 4 types "complete sentences" with an image revealed as each is done; Grade 5 formatting | A simplified keyboard that grows; colour by row; a picture earned by a finished sentence | Accuracy-and-speed grades |
+| *Nessy Fingers* ([listing](http://www.nessy.com/en-us/shop/home-products/nessy-fingers-touch-typing/?pp=1), opened) | Subscription app, ages 7+ | Keys introduced "alphabetically", then word lists; the child can add their own spelling words; works on iPad 5 and newer per the page | Real words early; the child's own words | The subscription, trophies, race games |
+| *BabySmash* ([site](https://www.babysmash.com/), opened) | Free Windows program for babies | "Every tap or key press fills the background with bold letters and confetti shapes"; no wrong key, no progression | Any key does something delightful | A browser cannot lock out shortcuts the way it describes (not checked) |
+| *ZType*, *Typing of the Dead* (snippets and one page), Nitro Type (blocked) | Arcade typing | Harder tiers; speed leaderboards | The satisfying pop | Everything else |
+| Sentence-editing cards ([Boom, Grade 2](https://wow.boomlearning.com/store/deck/2biy8rnPvZKWZusW3), [iKnowit, Grade 1](https://www.iknowit.com/lessons/a-sentence-features-capitalization-punctuation.html), opened) | Paid tools | One sentence per card with capital or stop errors; the child retypes it; iKnowit has a read-aloud and hint button, tracks time and score and awards trophies | One sentence per card; fix the wrong thing, do not retype everything; read-aloud on every sentence | "Sorry, your answer is incorrect"; score; trophies; daily caps |
+| **Montessori moveable alphabet** ([Montessori Academy](https://montessoriacademy.com.au/material-spotlight-moveable-alphabet/), opened) | Unplugged material | "Single words, to phrases, and eventually to stories", introduced between 4 and 6; the adult does not read the word back while the child builds | **A shelf of letters; build before you write; no scoring; tidy the letters away in order** | Nothing |
+| **CUPS proofreading** ([Education.com](https://www.education.com/activity/article/Essay_Editing_middle), [Rockin' Resources](https://rockinresources.com/2017/09/writing-mini-lesson-33-capitalization.html), opened; grades 3–5) | Unplugged | One pass per error type, one colour each: capitals first, then usage by reading aloud, then punctuation and spelling | **One kind of fix per pass**; a magnifying glass as the hint | Red-pen correction of a child's own draft |
+
+**Patterns across the products.** (1) Everyone starts with very few keys and adds two or so at a time; the order is home row (Dance Mat) or alphabetical (Jungle Junior, Nessy). (2) Capitals and backspace come after letters and first words; none of the pages opened teaches cursor movement. (3) The unit grows key, word, sentence, paragraph, and editing arrives after typing (Grade 1–2 cards, CUPS from Grade 3). (4) Speed, stars and trophies are nearly universal; the two that have none (BabySmash and Montessori) are the models. (5) **No product opened addresses a touchscreen keyboard lesson.** Finger rules are the old programs' focus, and the one tablet study (n = 15, four-year-olds) found hunt-and-peck typing was fine.
+
+## What fits
+
+- **Fits:** a shelf of at most about eight tiles (Word Monsters' shape); text as a row of word tiles with a gap that opens (the edit verbs); a physical keyboard through the couch's Laptop setting; a plain-HTML card for a grown-up and child at a real keyboard.
+- **Fits as a mode of an existing game:** *Mend the sign* in Read & Do (the pet acts on the sign as printed); physical-key aliases on Word Monsters' letter monsters (pressing `c` taps the c monster, never required).
+- **Does not fit:** a QWERTY or full alphabet on glass in a child's game (the arithmetic above); the system keyboard or any DOM text input for a child; storing typed text; a words-per-minute number, a drift-off timer or a boss list for a child; finger-placement lessons on glass, which have no purpose there; teaching letter *shapes* by typing, which the evidence does not favour; a typing game that takes over the capitals and stops rules (`spelling-sentences`).
+
+## An answer for every audience
+
+| Audience | First action without an adult giving the answer | Deeper rung / boundary |
+| --- | --- | --- |
+| L, under 2 | **On screen, none, and why:** a key press is not something an iPad lap game has; there is no evidence to cite (a gap). With a laptop, the couch could show a shape and say a letter for any key (**KE6**, below), but a browser cannot lock out Cmd/Ctrl shortcuts a smashing baby could hit, so it needs a check before it is proposed further | None |
+| T, about 2 | **None, and why:** same. Word Monsters' tap-a-letter-to-hear-it is the letters-and-sounds route | None |
+| P, about 3 | **None new on touch.** Handwriting equals or beats typing for letters at this age (opened above), so Letter Trails and Word Monsters stay the route | The grown-up card **Find her letters** on a real keyboard (KE7) |
+| K, about 4–5 | Word Monsters' shelf already builds words; **KE5 keys as aliases** lets a child with a keyboard press the letter | A child this age typed happily on a tablet (n = 15); nothing adds a lesson |
+| S, about 6–8 | **KE1 Mend the sign** (delete the extra word, insert the missing one at a gap) on touch; **KE2 Pond Typing levels 1–3** with a grown-up on a laptop | Grade 3 is when keyboarding is first named; the couch is where it lives |
+| U, about 9–12 | **KE2 levels 4–6** (a capital, a stop, backspace, then moving the caret with the arrow keys to fix a letter) | The one-page sitting (W.4.6) is not a round; it is not imported |
+| M, about 11–14 | Same game; a grown-up-band board is possible only for 13+ and only if a need appears | Appeal untested |
+| G, own play | **KE2** on the couch (a calm accuracy best); optional drift and a words best only in a G mode (decision 3) | A Lantern Lake typing puzzle: none now (12 games and a capacity test) |
+| G, co-play | **KE7 Find her letters / Type it together**: she finds the letters of her name on the real keyboard (sticky notes allowed) and a grown-up types her words exactly | She watches the letters appear; no timer, no correction of her word |
+| G, page | **KE7** as a plain-HTML card in `src/parent/panel.ts`; **no posture or finger-placement advice without a named reviewer** (real-world advice rule) | Wording on invented spelling and praise needs an ordinary content review |
+
+## Candidates
+
+| Name | Fun action | Learning goal | Audiences | Effort | New infrastructure |
+| --- | --- | --- | --- | --- | --- |
+| **KE1 Mend the sign** | The pet acts out the sign as printed; it is not what the friend asked; she takes a word out, puts one in at a gap, swaps one | The edit verbs (delete, insert, replace, then move) on digital text; read what it says (W.2.5) | S, U | M | **Handed to the Read & Do dive**: tile-gap drag and the sign's consequence replay |
+| **KE2 Pond Typing (reshaped)** | Type the letter, name, word or sentence on each bubble; bubbles wait | Finding keys, space, capital, stop, backspace, the arrow keys; accuracy over speed | S–M, G | M–L | **Letters in the couch input**, a seeded course, a bot that types through `control()`, entries in `COUCH_IDS`, `UNLOCK_TIERS` and the catalog, key-cap prompts |
+| **KE3 Capital and stop** | A big-letter key and a stop tile that end a sentence | The mechanism for L.K.2 / L.1.2 | K, S | S | **Handed to `spelling-sentences`** (the rule); keyboarding supplies the keys |
+| **KE4 Type her name** | Her name, a letter at a time (a name the couch holds, **not checked**) | A known word to type first | K, S | S | A level of KE2 (level 2), not a game |
+| **KE5 Keys as aliases** | A letter tile accepts its own key if one is pressed | A physical keyboard without a keyboard game | K, S | S | A shell change: letters pass `typing()` and reach `Game.control`; touch stays the default; **never required** |
+| **KE6 Key smash** | Any key makes a shape and says a letter | Cause and effect | L, T (with a laptop) | S | A couch mode; no evidence; shortcut lockout unchecked |
+| **KE7 Find her letters, Type it together** | Find the letters of her name on a real keyboard; a grown-up types her words exactly | Letter-to-key matching with a person | P–S, G | S | Plain-HTML cards; ordinary content review |
+
+## A first game's ladder: Pond Typing, reshaped (KE2)
+
+**The scene.** A pond with a lily-pad stage. A large bubble drifts in and *stops*; the target sits inside it, drawn big. The pet beside it says the letter or word. A strip of key caps (from `prompts()`) lights the key to press: a coach that points, as in Jungle Junior, hidden when the player turns "show the key" off. A wrong key makes the bubble wobble and the pet says what was pressed ("That was M. Find D."); the correct key pops it with a pentatonic note. **Nothing drifts away, nothing times out and no key is a loss.** Backspace and the arrow keys are controls, not errors. Couch rules already allow a personal best in its own unit.
+
+| Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | *One letter* | school | Four letters in alphabetical groups (A–D first), one bubble each; the key lights | Which key is this letter | A wrong key is a wobble and a name; two wrong keys on one bubble glow its key (one hint). Accepts the letter with or without Shift | Every group is four consecutive letters; each bubble has a lit key unless the player turned the coach off; the bot completes any seed | Letters in the couch input; key-cap art |
+| 2 | *My name* | school | The player's name (if the couch holds one; otherwise the pet's), a letter at a time, then the whole name read back with a picture | The letters of a name in order | As level 1 | Accented letters normalize to A–Z as Letter Trails does; a name with no A–Z falls back to the pet's name; order is enforced | Reuses Letter Trails' name normalization |
+| 3 | *Words and a space* | school | A picture and its word as bubbles ("hat", then "red hat"); the space bar joins two words | Letters in order, and the space | A space where a letter belongs is a wobble ("that was space; the next letter is r") | Words come from a reviewed pool of 3–5 letter words; the space step appears only in two-word rounds | A word pool (no spelling rule: every letter is shown) |
+| 4 | *A big letter* | school | The first word of a line, or a name, needs a capital: Shift with the key, or a one-tap sticky Shift | When a letter is big | Without it, the bubble wobbles once with "it starts with a big letter"; **the first miss is free**; two glow the Shift key | Capitals are required only for first words and names; the sticky Shift is on for exactly one letter | Rules stay `spelling-sentences`'; this level is the key press |
+| 5 | *A line and a stop* | school top | "Pip has a hat." as a typed line, a full stop at the end, a picture revealed as the line completes | Capital, spaces and a stop in one line | A wrong letter *appears* in the line; **Backspace removes it and is never a miss** | A typed wrong letter is accepted, shown, and removable; the picture reveals only on an exact line | Picture-reveal art; the typed line is not stored |
+| 6 | *Mend it* | school top | The line has one wrong letter in the middle; the arrow keys move the caret, Backspace removes, a new letter goes in | Where the caret is, and what to remove | A caret press never counts; two wrong removals glow the letter | The caret index is always within the line; every wrong-letter line has exactly one correct mend path (delete, then insert) and the bot finds it | The caret model and its bot |
+
+**Cases the definition must settle.** How a typed letter reaches `Game.control` (a `typed` field on `CouchControls`, kept off the touch contract); whether a capital letter chord is acceptable for a hand that small (lean: accept sticky Shift, never require a chord); Caps Lock and non-US layouts (read `key`, never `code`, for letters); whether "show the key" defaults on (lean: yes); how a laptop with no key caps shown is handled; the couch's orientation and whether it has a name for the player were not checked.
+
+**Later rungs (sketches).** A reviewed sentence pool for G; a gentle-drift G mode with a words best; a Lantern Lake variant only after the capacity test.
+
+## Experience and presentation
+
+- **First unsupported action:** press the lit key. The pet speaks the letter and the bubble pops with a soft note.
+- **Touch-down feedback:** the key cap dips on screen as the real key goes down.
+- **Replay variety:** letter groups, words and lines come from the seed.
+- **The reveal:** a picture appears as a line is finished (Typing.com, LWT), then the pet reads it.
+- **Off-screen activity:** KE7. **Co-play:** the grown-up types the words she says; she finds the letters.
+
+## Decisions for the developer
+
+1. **Surfaces.** Lean: no on-screen QWERTY or full alphabet, no system keyboard and no DOM text input in a child's game, and no typed text stored. Alternative: prototype an alphabetical board in portrait only (it fits upright by the arithmetic above).
+2. **Physical-key aliases (KE5).** Lean: yes later, small, never required.
+3. **Pond Typing for children.** Lean: no drift, no timer, accuracy only; a drifting, words-per-minute mode and a boss list only for grown-ups. IDEAS already lists them for the couch.
+4. **Home.** Lean: couch only (no land); Mend the sign lives in Read & Do (Story Grove, which lists 12 games).
+5. **Review gates.** The word pool and the sentences get an ordinary content review; posture, finger placement and any "is my child behind?" text need a named specialist and are not drafted.
+6. **Person checks to add:** a child at a real keyboard; whether a six-year-old understands "the pet did what the sign said"; whether the sticky Shift is reachable for a small hand; key-cap prompts on a laptop.
+
+None blocks the KE2 definition: the lean in each is the default.
+
+## Build slices, in order
+
+1. **KE2 define: Pond Typing levels 1–6** (docs only: `docs/definitions/pond-typing.md` with the word pool, the seeded course, the typed-letter channel, the bot rule and the layout; check tier is links and diff).
+2. **KE1 hand-off to the Read & Do dive** (a line in the dive's brief; the dive numbers its own levels).
+3. **KE2 build** (couch tier: `BROWSER_SUITE=couchgames` filtered to the new game; typecheck and rule tests).
+4. **KE3 hand-off to `spelling-sentences`** when that study runs.
+5. **KE5 define** after KE2 is played; **KE7 cards** to the off-screen-companions at-home card after a content review; **KE6** only after a lockout check.
+
+## What was built
+
+Nothing: a subject session is research and ideation only. Links and `git diff --check` ran on the changed docs. No game was opened or played. Standards, the Frontiers, Vanderbilt, Typing.com, Montessori and platform pages were opened by me; the research agents opened the rest as labelled; several fetches returned summaries, not full pages.

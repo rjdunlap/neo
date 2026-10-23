@@ -785,3 +785,19 @@ The [ordered slices](informational-reading.md#build-slices-in-order) separate de
 | **WC9–WC12 Name her marks, Story scribe, Pass the story, Write to someone real** · L–G co-play and page | hand to off-screen companions' at-home card (their slice 4) after an ordinary content review | Plain HTML cards; write her words exactly, any home language; nothing about writing delay or readiness without a named literacy specialist |
 
 The [ordered slices](writing-composition.md#build-slices-in-order) separate definitions from builds. Completion with spoken read-back is not evidence of independent reading or writing, and nothing scores a story.
+
+## Keyboarding and editing recommendations
+
+**Recommended 2026-10-22:** [the keyboarding-editing study](keyboarding-editing.md), [PR #829](https://github.com/rjdunlap/neo/pull/829). Its anchors were opened: CCSS W.K.6, W.1.6, W.2.5–2.6, W.3.6, W.4.6, L.K.2 and L.1.2 (Kindergarten to Grade 2 ask to use digital tools, Grade 3 first names keyboarding), the WWC practice guide page, and MDN's pages on the visual viewport, the virtual keyboard and `KeyboardEvent.code`. The evidence was opened as labelled: handwriting equals or beats typing for letter learning at 3–6 (Longcamp, Kiefer, Mayer, Ibaibarriaga; all small), no difference at 7 (Ouellette and Tims), touch accuracy by age (Vatavu, Anthony, Brown), a 15-child iPad study (Bigelow), alphabetical against QWERTY (Nicolson and Gardner). Search summaries or unread PDFs: Morphy and Graham, Goldberg, Bangert-Drowns. Gaps: tablet-to-keyboard transfer, caret placement by touch for ages 5–8, toddlers and keys, measured speeds for Grades 3–5. Letters stay with Letter Trails and Word Monsters; capitals, stops and spelling rules with `spelling-sentences`; what to say with writing-composition. This study owns getting text onto a page with a physical keyboard and editing it.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **KE2 Pond Typing (reshaped)** · S–M, G | define (`docs/definitions/pond-typing.md`; couch Laptop setting; build needs letters in the couch input) | Six levels: one letter, her name, words and a space, a capital, a line and a stop, mend a letter with the arrow keys. Bubbles wait; nothing drifts or times out; a wrong key is a wobble and a name; Backspace and the caret are never misses; accuracy only for children |
+| **KE1 Mend the sign** · S, U | handed to the Read & Do dive | The pet acts out the sign as printed; she deletes the extra word, inserts the missing one at a gap, swaps one. Touch, word tiles at 100 units or more |
+| **KE3 Capital and stop** · K, S | handed to `spelling-sentences` | The rule is its; keyboarding supplies the keys |
+| **KE4 Type her name** | a level of KE2 | Not a game |
+| **KE5 Keys as aliases** · K, S | define after KE2 is played | A letter tile accepts its own key when a keyboard is used; never required |
+| **KE6 Key smash** · L, T | sketch; needs a shortcut-lockout check | Any key makes a shape and says a letter, on a laptop; no evidence |
+| **KE7 Find her letters, Type it together** · P–S, G | hand to the off-screen companions' at-home card after a content review | Plain-HTML cards; no posture or finger advice without a named reviewer |
+
+The [ordered slices](keyboarding-editing.md#build-slices-in-order) separate definitions from builds. Completing a round shows she found the keys or made the edit, not that typing helps her writing.

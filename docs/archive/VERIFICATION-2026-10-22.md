@@ -222,3 +222,17 @@
 - Branch `claude/define-gear-garden` (PR #807): definition packet `docs/definitions/gear-garden.md`; READY (build queued, define line removed), study backlog, machines-tools study, Waiting row and recommendations row updated.
 - Ran: a throwaway `landLayout` probe at `964df9cc` measuring Tinker Lab with Gear Garden at every band in four views: it fits at every band, and a 14th game fails at pre-K, school and grown-up (probe file not committed); local link check and `git diff --check`.
 - Open: no code, typecheck, unit tests, build or browser run; the build is gated on the developer confirming the Tinker Lab default and the child-only registration arrangement.
+
+## 2026-10-22 — Puddle Lens levels 1–4 definition (cells-microbes slice 1, docs only)
+
+- Branch `claude/define-puddle-lens` (PR #812): definition packet `docs/definitions/puddle-lens.md`; READY (build queued and gated, define line removed), study backlog, cells-microbes study, Waiting row and recommendations row updated.
+- Ran: a throwaway `landLayout` probe at `5e136276` measuring Bubble Beach's capacity in four views (10 games today, fits up to 13, a 14th fails at school and grown-up; probe file not committed); `node scripts/check-links.mjs` and `git diff --check`.
+- Open: no typecheck, unit tests, build or browser run; the build is gated on the developer confirming identity, Bubble Beach and levels 1–2 accounting, and on the science-and-scale-facts reviewer.
+
+## 2026-10-22 — Lasso Loops level 6 About how many? (estimation E1)
+
+- [PR #808](https://github.com/rjdunlap/neo/pull/808), `codex/lasso-about-how-many`: free guesses around one benchmark ten, then tens-and-ones checking; school 3–6. Tested base `498852d6` + claim `a6e9f8f2` + working diff.
+- Passed `npm run typecheck`; `npx vitest run src/games/lasso-loops/logic.test.ts src/content/howto.test.ts` (27 tests); `npm run build` (existing chunk-size warning).
+- Passed `GAME_URL=http://localhost:5186 BROWSER_SUITE=shortlist SHORTLIST_ONLY=lasso FROM_LEVEL=6 npm run test:browser`: portrait, far guess `[0,0]`, two wrong loops/hint, free revised guess, wrong final pad, final `[3,1]`, one sticker and no page errors.
+- Passed `BROWSER_SUITE=fingerdemo FINGER_ONLY=lasso-loops FINGER_LEVELS=6` at the same URL, clean in 23.3 s. Viewed `test-results/browser/lasso-loops-6-guess-sign.png`: portrait sign, cards, jar and pet clear.
+- Not run: world/offline (no persistence, assets or navigation change); iPad speech, sign readability and child benchmark use remain [device checks](../DEVICE-CHECKS.md).
