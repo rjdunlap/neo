@@ -71,6 +71,16 @@ Left as is, on purpose:
 - `IDEAS.md` (396 KB) and `GAMES.md` (131 KB) are only read by section, so they cost nothing until opened.
 - About 40 registered worktrees (roughly 30 under `~/.codex/worktrees`) are mostly merged branches. That is disk and clutter, not tokens; the cleanup procedure below applies.
 
+## Agent setup review (2026-10-23)
+
+Compared against Anthropic's Claude Code guidance (best practices, "Extend Claude Code", the June 2026 steering post) and OpenAI's Codex guidance (AGENTS.md discovery, best practices, rules).
+
+- **Codex was reading only the first 32 KiB of AGENTS.md.** Codex stops at `project_doc_max_bytes` (32 KiB by default); AGENTS.md is about 46 KB. Asked directly, Codex quoted text that broke off at "Same-game batches" (line 140), so Codex sessions never saw the closeout, worktree, pitfall, claim, overlap or merge rules. *Done:* `project_doc_max_bytes = 65536` in the developer's `~/.codex/config.toml` (outside the repository; a new machine needs the same line), confirmed by asking Codex for the file's last headings, and `scripts/agent-guard.test.mjs` fails if AGENTS.md passes 60 KiB. Claude Code loads the whole file.
+- **Stale subagent prompts.** `game-reviewer` still banned imported art (sprites are allowed since 2026-10-17) and `docs-keeper` archived verification entries by hand instead of with `archive-verification.mjs`. *Done:* both fixed; all three agents now treat AGENTS.md as already loaded and as overriding their own summary. `game-reviewer` reports only rule or requirement breaks, since a reviewer asked for gaps always finds some.
+- **The subagents were never invoked.** *Done:* the minigame checklist names `rules-tester` (step 2) and `game-reviewer` (step 7), as it already named `docs-keeper`.
+- **"Never" rules were only requests.** *Done:* a Claude `PreToolUse` hook (`scripts/agent-guard.mjs`, `.claude/settings.json`) blocks `npm run test:browser` without `BROWSER_SUITE` and, on macOS, `sed -i -e`; a Codex rule in `~/.codex/rules/guards.rules` forbids `sed -i -e` (checked with `codex execpolicy check`). Codex prefix rules cannot express "without a filter", so the browser rule is Claude-only.
+- **Not done, on purpose.** AGENTS.md was not split: nested AGENTS.md files below the repository root are invisible to Codex sessions started at the root, and path-scoped `.claude/rules/` would help Claude only. Skills shared through `.agents/skills/` (Codex) and `.claude/skills/` (Claude) would duplicate checklists AGENTS.md already carries, which is how the two subagent prompts drifted. Run `/doctor prompt-audit` in Claude Code from time to time to catch that drift.
+
 ## Cleanup performed
 
 Starting inventory: 19 registered worktrees, 116 local branches and 130 remote branch refs including the symbolic origin HEAD. Every deletion was checked against freshly fetched `origin/main`; the open PR and dirty worktrees were excluded.
