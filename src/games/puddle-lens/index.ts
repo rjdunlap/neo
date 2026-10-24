@@ -87,6 +87,8 @@ class PuddleLens implements Game {
   private view: View;
   private relayout = false;
   private turnId = 0;
+  /** Bumped by Start again, so a step already under way does not carry on into the restarted round. */
+  private epoch = 0;
   private movingSaid = false;
   private pawSeen = false;
   private pawSaid = false;
@@ -423,15 +425,16 @@ class PuddleLens implements Game {
   }
 
   private async swell() {
-    this.busy = true;
     const [near, close] = [this.layers[0], this.layers[1]];
     if (!near || !close) return;
+    this.busy = true;
+    const e = this.epoch;
     close.scale.set(0.36);
     sfx.bell(4, 0.25);
     void this.ctx.tw.to(near, { alpha: 0 }, { duration: 0.3 });
     void this.ctx.tw.to(close, { alpha: 1 }, { duration: 0.3 });
     await this.ctx.tw.to(close.scale, { x: 1, y: 1 }, { duration: 0.55, ease: ease.outBack });
-    if (!this.alive) return;
+    if (!this.alive || e !== this.epoch) return;
     sfx.sparkle();
     const l = this.layout!;
     this.ctx.particles.burst(l.lens.x, l.lens.y - l.lens.r * 0.6, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 10, speed: [80, 200], gravity: 0, life: [0.5, 0.9] });
@@ -443,12 +446,13 @@ class PuddleLens implements Game {
 
   private async shrink() {
     if (!this.swollen) return;
+    const e = this.epoch;
     this.swollen = false;
     const [near, close] = [this.layers[0], this.layers[1]];
     void this.ctx.tw.to(near, { alpha: 1 }, { duration: 0.35 });
     void this.ctx.tw.to(close, { alpha: 0 }, { duration: 0.35 });
     await this.ctx.tw.to(close.scale, { x: 0.36, y: 0.36 }, { duration: 0.4 });
-    if (!this.alive) return;
+    if (!this.alive || e !== this.epoch) return;
     this.index++;
     this.tally.next();
     if (this.index >= 3) {
@@ -462,7 +466,7 @@ class PuddleLens implements Game {
     view.x = ART_R * 2.2;
     sfx.whoosh();
     await this.ctx.tw.to(view, { x: 0 }, { duration: 0.5, ease: ease.outCubic });
-    if (!this.alive) return;
+    if (!this.alive || e !== this.epoch) return;
     this.settle();
   }
 
@@ -495,9 +499,10 @@ class PuddleLens implements Game {
 
   private async finishTable() {
     this.busy = true;
+    const e = this.epoch;
     if (this.drag) this.drag.enabled = false;
     await this.ctx.tw.wait(1);
-    if (this.alive) void this.finale();
+    if (this.alive && e === this.epoch) void this.finale();
   }
 
   // ----- levels 3–4: the dial -----
@@ -544,13 +549,14 @@ class PuddleLens implements Game {
       return void this.say(v.line);
     }
     this.busy = true;
+    const e = this.epoch;
     sfx.sparkle();
     this.ctx.pet.cheer();
     const node = swimmer !== null ? this.swimmerNodes[this.stop - 1]?.[swimmer] : null;
     if (node) void this.ctx.tw.to(node.scale, { x: 1.25, y: 1.25 }, { duration: 0.18 }).then(() => { if (!node.destroyed) void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.18 }); });
     await this.say(v.line);
     await this.ctx.tw.wait(0.6);
-    if (!this.alive) return;
+    if (!this.alive || e !== this.epoch) return;
     this.index++;
     this.tally.next();
     if (this.index >= this.drops.length) return void this.finale();
@@ -585,11 +591,12 @@ class PuddleLens implements Game {
       return void this.say(v === 'too-small' ? 'lens.too-small' : 'lens.too-close', { thing: q.thing });
     }
     this.busy = true;
+    const e = this.epoch;
     sfx.sparkle();
     this.ctx.pet.cheer();
     await this.say('lens.just-right', { what: q.what });
     await this.ctx.tw.wait(0.5);
-    if (!this.alive) return;
+    if (!this.alive || e !== this.epoch) return;
     this.index++;
     this.tally.next();
     if (this.index >= this.questions.length) return void this.finale();
@@ -611,7 +618,16 @@ class PuddleLens implements Game {
       if (!this.swollen) void this.swell();
     } else if (help.do === 'glide' && this.glass && l) {
       const to = l.things[help.to];
-      void this.ctx.tw.to(this.glass, { x: to.x, y: to.y }, { duration: 0.8, ease: ease.outCubic }).then(() => (this.glassAt = { x: to.x, y: to.y }));
+      // The glide holds the table still (a resize waits for it) and the glass cannot be grabbed until it lands.
+      this.busy = true;
+      if (this.drag) this.drag.enabled = false;
+      const e = this.epoch;
+      void this.ctx.tw.to(this.glass, { x: to.x, y: to.y }, { duration: 0.8, ease: ease.outCubic }).then(() => {
+        if (!this.alive || e !== this.epoch) return;
+        this.glassAt = { x: to.x, y: to.y };
+        if (this.drag) this.drag.enabled = true;
+        this.settle();
+      });
     } else if (help.do === 'turn') void this.turnTo(help.stop);
   }
 
@@ -620,6 +636,7 @@ class PuddleLens implements Game {
   /** Start again: the same round from its first question, misses and hints kept. */
   restart() {
     if (this.finished) return;
+    this.epoch++;
     this.index = 0;
     this.stop = 1;
     this.turnId++;
@@ -669,6 +686,8 @@ class PuddleLens implements Game {
       const spots = this.swimmerSpots();
       const k = spots.findIndex((s) => Math.hypot(s.x, s.y) < (this.layout?.lens.r ?? 0) * 0.8);
       if (k >= 0) return { tap: { on: this.swimmerNodes[this.stop - 1][k] }, receiver: this.lensHit };
+      // Swimmers are here but drifting near the edge: wait for one rather than say No swimmers.
+      if (this.drop.swimmers.length) return null;
     }
     return this.answer ? { tap: { on: this.answer } } : null;
   }
