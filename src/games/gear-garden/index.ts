@@ -55,6 +55,7 @@ class GearGarden implements Game {
   private stillSaid = false;
   private directionSaid = false;
   private backShown = false;
+  private relayout = false;
 
   private readonly backdrop: Backdrop;
   private readonly board = new Container();
@@ -96,7 +97,15 @@ class GearGarden implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
+    // A turn, a gear flying in or a bloom finishes on the old layout first; the board is then rebuilt for the new view.
+    if (this.anim || this.busy || this.finished) { this.relayout = true; return; }
     this.build();
+  }
+
+  /** Busy is over: rebuild if the view changed meanwhile. */
+  private settled() {
+    this.busy = false;
+    if (this.relayout && !this.anim && !this.finished) { this.relayout = false; this.build(); }
   }
 
   private get step(): Step {
@@ -139,6 +148,7 @@ class GearGarden implements Game {
   /** Every node of the board, rebuilt from the model. */
   private build() {
     this.epoch++;
+    this.relayout = false;
     this.anim = null;
     this.queued = null;
     this.drag?.destroy();
@@ -259,11 +269,7 @@ class GearGarden implements Game {
       if (this.press.on) this.press.travel = Math.max(this.press.travel, Math.hypot(e.global.x - this.press.x, e.global.y - this.press.y) / Math.max(0.01, this.view.scale));
     });
     const drag = draggable(node, this.ctx.tw, {
-      onPick: () => {
-        sfx.tick();
-        this.tally.touched();
-        this.stillSaid = false;
-      },
+      onPick: () => sfx.tick(),
       onDrop: (x, y) => this.dropLoose(x, y),
     });
     drag.home = m.looseIn ? { ...gapAt } : { ...tray };
@@ -284,6 +290,9 @@ class GearGarden implements Game {
       this.pressTurn(1);
       return false;
     }
+    // A real move of the loose gear ends the still trial in progress.
+    this.tally.touched();
+    this.stillSaid = false;
     if (dropsInGap(l, board, x, y)) {
       if (!m.looseIn) this.placeLoose();
       else this.loose!.position.set(gapAt.x, gapAt.y);
@@ -417,11 +426,12 @@ class GearGarden implements Game {
       void this.ctx.say('gears.still');
     }
     if (verdict === 'glow') void this.ctx.say('gears.hint');
-    if (verdict === 'install') void this.autoPlace();
+    if (verdict === 'install') { this.queued = null; void this.autoPlace(); }
     if (m.bloomed) { this.queued = null; void this.bloom(); return; }
     const q = this.queued;
     this.queued = null;
-    if (q) this.turn(q);
+    if (q && !this.busy) this.turn(q);
+    else if (this.relayout && !this.busy) this.settled();
   }
 
   private redrawFlower() {
@@ -443,13 +453,15 @@ class GearGarden implements Game {
     const l = this.layoutNow;
     if (!m || !l || m.looseIn || !this.loose || this.drag?.dragging) return;
     this.busy = true;
+    if (this.drag) this.drag.enabled = false;
     const epoch = this.epoch;
     const at = toScreen(l, m.spec.board.sockets[gapOf(m.spec.board)]);
     sfx.whoosh();
     await this.ctx.tw.to(this.loose, { x: at.x, y: at.y }, { duration: 0.5, ease: ease.inOutSine });
     if (!this.alive || epoch !== this.epoch) return;
-    this.busy = false;
+    if (this.drag) this.drag.enabled = true;
     this.placeLoose();
+    this.settled();
   }
 
   private async bloom() {
@@ -470,8 +482,8 @@ class GearGarden implements Game {
     await this.ctx.say('gears.bloom');
     if (!this.alive || epoch !== this.epoch) return;
     this.clearVisitor();
-    this.busy = false;
     if (this.index + 1 >= this.steps.length) return this.finale();
+    this.busy = false;
     this.index++;
     this.openStep();
     if (this.plan.level === 3) void this.ctx.instruct('gears.instruct.choose');
@@ -575,8 +587,10 @@ class GearGarden implements Game {
     if (this.finished) return;
     this.clearVisitor();
     this.busy = false;
+    this.backShown = false;
     this.index = 0;
     this.openStep();
+    void this.ctx.instruct(this.plan.level === 1 ? 'gears.instruct.turn' : this.plan.level === 2 ? 'gears.instruct.gap' : 'gears.instruct.choose');
   }
 
   /** The ghost finger: open machine B, carry the loose gear to the gap, then tap the face (one Turn-back on the second flower). */
