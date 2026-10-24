@@ -380,6 +380,8 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 
 Two Node-only docs scripts: `node scripts/check-links.mjs` checks every relative Markdown link and anchor in README, AGENTS and `docs/`, and `node scripts/archive-verification.mjs` (`--before=YYYY-MM-DD`, `--keep=N`, `--dry-run`) rotates older dated entries out of [the verification log](docs/VERIFICATION.md) into `docs/archive/VERIFICATION-<date>.md` and repoints their links.
 
+`scripts/voice-clips/` is a separate npm package (kokoro-js) that CI never installs: on a Mac, `cd scripts/voice-clips && npm ci && node render.mjs` renders the chosen slot-free voice lines to `src/audio/clips/*.m4a` and `src/content/voice-clips.json`; the app plays a clip when one exists and falls back to device speech.
+
 `FROM_LEVEL=n` starts `next`, `creative`, `woods`, `shortlist` and `robot` at a later level; `TO_LEVEL=n` limits the robot, paint, salon, Tangram Town, Penguin Slide Goodnight Room or Critter Sort loop for a targeted level check (`WOODS_ONLY=sort FROM_LEVEL=12 TO_LEVEL=13` plays the two plant levels, with a portrait screenshot of 13).
 
 With `npm run build-and-preview` running in another terminal:
