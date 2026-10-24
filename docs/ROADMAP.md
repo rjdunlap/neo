@@ -365,7 +365,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | Robots and automation | 2026-10-17 | [study](deep-dives/subjects/robots-automation.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#robots-and-automation-recommendations) |
 | Time and change | 2026-10-15 | [study](deep-dives/subjects/time-change.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#time-and-change-recommendations) |
 | Inventions | 2026-10-15 | [study](deep-dives/subjects/inventions.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#inventions-recommendations) |
-| Engineering design | 2026-10-17 | [study](deep-dives/subjects/engineering-design.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#engineering-design-recommendations) |
+| Engineering design | 2026-10-17 | [study](deep-dives/subjects/engineering-design.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#engineering-design-recommendations); [Welcome Ways 1–4 defined](definitions/welcome-ways.md), ready for a separate new-game batch with capacity check |
 | Making media | 2026-10-17 | [study](deep-dives/subjects/making-media.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#making-media-recommendations) |
 | Data and AI literacy | 2026-10-15 | [study](deep-dives/subjects/data-ai-literacy.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#data-and-ai-literacy-recommendations) |
 | Executive function | 2026-10-17 | [study](deep-dives/subjects/executive-function.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#executive-function-recommendations) |
