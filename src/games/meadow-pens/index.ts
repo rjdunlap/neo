@@ -17,7 +17,7 @@ import {
   requestPicture, turfCell,
 } from './art';
 import {
-  CELLS, cellAt, cellRect, centre, check, drawnRows, FenceHeap, fenceEdges, fieldCells, flowersOf, GAP, holes, makeTasks,
+  CELLS, cellAt, cellRect, centre, check, drawnSide, drawnRows, FenceHeap, fenceEdges, fieldCells, flowersOf, GAP, holes, makeTasks,
   meadowLayout, nextCell, PenTally, penOf, planFor, targetFor, type Cell, type FieldTask, type MeadowLayout, type PenTask,
   type Plan, type Task,
 } from './logic';
@@ -157,10 +157,10 @@ class MeadowPens implements Game {
     for (const c of this.cards) c.glow(this.tally.glowing && c.value === this.field?.right && !this.finished, this.clock);
     const g = this.glow.clear();
     if (this.hintPen && !this.finished) {
-      const a = 0.45 + 0.3 * Math.sin(this.clock * 6);
+      const a = 0.7 + 0.25 * Math.sin(this.clock * 6);
       for (const c of this.hintPen) {
         const r = cellRect(this.lay, c);
-        g.roundRect(r.x - 4, r.y - 4, r.w + 8, r.h + 8, 16).stroke({ width: 7, color: 0xffe14a, alpha: a });
+        g.roundRect(r.x + 4, r.y + 4, r.w - 8, r.h - 8, 14).fill({ color: 0xfff3a0, alpha: a * 0.6 }).stroke({ width: 8, color: 0xffd23a, alpha: a });
       }
     }
   }
@@ -344,7 +344,7 @@ class MeadowPens implements Game {
     // The fence: around the pen; at level 2, around the whole field from the start.
     const edges = fenceEdges(field ? new Set(fieldCells(this.field)) : pen);
     const want = !field ? this.request.fence : undefined;
-    edges.forEach((e, i) => fencePiece(f, edgeLine(cellRect(l, e.cell), e.side, GAP), want !== undefined && i >= want));
+    edges.forEach((e, i) => fencePiece(f, edgeLine(cellRect(l, e.cell), drawnSide(e.side, l.tall), GAP), want !== undefined && i >= want));
     this.drawStack(edges.length);
     drawGate(this.gate, l.gate, this.gateOpen);
   }
@@ -424,7 +424,7 @@ class MeadowPens implements Game {
   private async countFence(n: number) {
     const edges = fenceEdges(penOf(this.painted));
     for (let i = 0; i < Math.min(n, edges.length); i++) {
-      const [x1, y1, x2, y2] = edgeLine(cellRect(this.lay, edges[i].cell), edges[i].side, GAP);
+      const [x1, y1, x2, y2] = edgeLine(cellRect(this.lay, edges[i].cell), drawnSide(edges[i].side, this.lay.tall), GAP);
       this.flash.clear().moveTo(x1, y1).lineTo(x2, y2).stroke({ width: 16, color: 0xffffff, alpha: 0.8, cap: 'round' });
       sfx.tick();
       await this.ctx.tw.wait(0.16);

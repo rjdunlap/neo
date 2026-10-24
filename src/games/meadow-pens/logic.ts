@@ -447,6 +447,12 @@ export function cellRect(l: MeadowLayout, c: Cell): Rect {
   return { x: l.grid.x + col * l.grid.pitch, y: l.grid.y + row * l.grid.pitch, w: l.grid.cell, h: l.grid.cell };
 }
 
+/** The side of a cell an edge is drawn on: portrait's transpose swaps right with down and left with up. */
+export function drawnSide(side: Edge['side'], tall: boolean): Edge['side'] {
+  if (!tall) return side;
+  return side === 'right' ? 'down' : side === 'down' ? 'right' : side === 'left' ? 'up' : 'left';
+}
+
 /** The model cell under a point on screen (the gap between cells belongs to the nearer cell), or null off the grid. */
 export function cellAt(l: MeadowLayout, px: number, py: number): Cell | null {
   const col = Math.floor((px - l.grid.x + GAP / 2) / l.grid.pitch);
