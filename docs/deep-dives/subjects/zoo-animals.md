@@ -194,7 +194,7 @@ None was played. "Opened" means the page itself was read.
 
 1. **Z1 · Define Who Am I? levels 1–4** (docs): the trait table for the existing cast plus penguin and bat, clue signs, the rule tests above, voice lines, how-to steps, land and bands. Name the reviewer. **Defined 2026-10-19:** [definition](../../definitions/who-am-i.md) (a fourteen-feature trait table over thirteen friends with four marked reviewer cells, levels 1–4 with surprise steps, accounting, rule tests, layout, ghost finger, voice/how-to, Barnyard and pre-K/school by default, nine defaulted decisions; the trait review is decision 1).
 2. **Z2 · Shared cast art**: move penguin, frog, turtle and one fish drawing into `src/art/` with no visual change, only as Z3 needs them. **Built 2026-10-21** ([#707](https://github.com/rjdunlap/neo/pull/707)): `src/art/animals.ts`.
-3. **Z3 · Build Who Am I? levels 1–3**: rules in `logic.ts`, tests, ghost finger, how-to card, one scripted play.
+3. **Z3 · Build Who Am I? levels 1–3**: rules in `logic.ts`, tests, ghost finger, how-to card, one scripted play. **Claimed 2026-10-24** (`claude/who-am-i-z3`).
 4. **Z4 · The bat and level 4**: a membrane-wing part (or bespoke art), the surprise rounds, its tests.
 5. **Z5 · Prove Night Garden**: dress Rainbow Meadow and swap the cast in Photo Safari and Peekaboo Barn (owl, bat, fireflies), per the notebook's two-game proof.
 6. **Z6 · Define Enrichment Day** on Bamboo Hill (decision 4), with its accepted-answer table and the sharing rung.
