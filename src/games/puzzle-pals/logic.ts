@@ -98,6 +98,14 @@ export function whereWords(plan: PuzzlePlan, p: Piece) {
  * What a capable child does next: carry the first piece still in the tray to its own place. The ghost finger follows
  * this, so a test can check that letting each piece go on the middle of its place finds that place and no other.
  */
+/**
+ * Lap: on the one- and two-piece pictures a piece that is tapped (picked up and let go without moving) hops into its
+ * own place, so a finger that only taps can finish. Bigger puzzles keep the carry, which is their point.
+ */
+export const tapHops = (plan: Pick<PuzzlePlan, 'cols' | 'rows'>): boolean => plan.cols * plan.rows <= 2;
+/** How far a piece may have moved from its tray spot and still count as a tap rather than a carry. */
+export const TAP_HOP = 30;
+
 export function nextToPlace<P extends { placed: boolean }>(pieces: readonly P[]): P | undefined {
   return pieces.find((p) => !p.placed);
 }

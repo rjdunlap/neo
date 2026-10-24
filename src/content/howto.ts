@@ -358,7 +358,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'splish-splash': {
     goal: 'Give the pet a bath.',
     steps: [
-      { to: 2, text: 'Rub a finger over the mud to scrub it off.' },
+      { to: 2, text: 'Rub or pat a finger over the mud to scrub it off.' },
       { from: 9, to: 9, text: 'Pat anywhere on the screen: each pat washes a third of the nearest patch of mud away.' },
       { from: 3, to: 6, text: 'Rub a finger over the body part the pet names to wash it, then the next one it asks for.' },
       { from: 7, to: 7, text: 'Rub a finger over each of the two body parts the pet names.' },
@@ -883,7 +883,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'puzzle-pals': {
     goal: 'Put a picture together.',
     steps: [
-      'Drag a piece to where it belongs and let go.',
+      { to: 2, text: 'Tap a piece and it hops into its place. Dragging it there works too.' },
+      { from: 3, text: 'Drag a piece to where it belongs and let go.' },
       { to: 1, text: 'One half is already in place: fit the other half to finish the picture.' },
       { from: 2, to: 4, text: 'A faint picture under the frame shows where each piece goes.' },
       { from: 5, to: 7, text: 'The frame is empty. Thick flat sides belong along its outside edge; corners have two.' },
@@ -987,7 +988,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'The pen already holds some animals. Count them, then shoo in just enough more to match the numeral and dots (4 or 5). Ring the bell when it is full.' },
       { from: 8, to: 8, text: 'Shoo the animals into the two pens so each pen holds the same number, then ring the bell. The sign shows no number: how many is her choice.' },
       { from: 10, to: 10, text: 'Wiggle a finger behind the single animal to shoo it through the wide gate.' },
-      { from: 11, to: 11, text: 'Put a finger on the grass and the animals gather round it. Drag slowly to lead them through the wide gate into the pen.' },
+      { from: 11, to: 11, text: 'Put a finger on the grass and the animals gather round it. Drag slowly, or tap a little ahead of them again and again, to lead them through the wide gate into the pen.' },
     ],
     finish: [{ from: 12, to: 12, text: 'All six pigs sorted by size finish the round. No bell is needed.' }, { from: 9, to: 9, text: 'The bell finishes the round when the pen holds exactly its requested total, including the animals already inside.' }, { from: 7, to: 7, text: 'Both pigs and both bunnies in their own pens finish the round, with the cows still outside. No bell is needed.' }, { to: 6, text: 'The round ends when every animal is where it was asked to go.' }, { from: 10, to: 10, text: 'Help one animal home, then a second one. Both successes make one round and one sticker.' }, { from: 11, to: 11, text: 'The round ends when all three animals are in the pen, in any order.' }, { from: 8, to: 8, text: 'A bell with the same number in each pen finishes the round, even with some left on the grass (two and two out of six is fair; an empty pen is not).' }],
     note: [{ from: 12, to: 12, text: 'A wrong gate counts a miss: the pig hops out and the pet names the pen’s size. Two misses or fifteen idle seconds glow the animals and matching gates (one hint), with a spoken size reminder. A thirty-second trot-home counts another hint.' }, { from: 9, to: 9, text: 'A wrong bell counts one miss. The pet counts the pen aloud and says how many more are needed; extras hop back out. Two wrong bells or fifteen idle seconds glow the needed animals and gate (one hint), with a spoken recount. A thirty-second trot-home counts another hint.' }, { from: 7, to: 7, text: 'An animal entering a wrong pen counts a miss and hops back out. After two misses only animals that need a pen and their gates glow (one hint); cows never glow. After thirty seconds without progress, a needed animal trots home (another hint).' }, { to: 6, text: 'A wrong pen or a wrong bell counts a miss. If no animal gets home for thirty seconds, the nearest one trots home by itself, and that counts as a hint.' }, { from: 10, to: 10, text: 'Nothing counts as a miss. After ten seconds without a success the animal and gate glow (one hint); at twenty seconds it trots home (another hint). Support starts afresh for the second animal.' }, { from: 8, to: 8, text: 'An unequal bell counts a miss: the pet says each pen\'s number and the extras hop out of the fuller pen (none while the other is empty). Two wrong bells glow the emptier pen (one hint). Thirty idle seconds with uneven pens trot one in (another hint).' }, { from: 11, to: 11, text: 'Nothing counts as a miss. After fifteen seconds without an animal getting home, the herd glows and drifts toward the gate by itself for the rest of the round (one hint). If one still is not home thirty seconds after the last, it trots in (another hint).' }],
@@ -1289,7 +1290,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Look after the teddy patient.',
     steps: [
       { to: 1, text: 'Tap the patient anywhere: the nearest boo-boo gets a bandage.' },
-      { from: 2, to: 2, text: 'Listen to where the patient hurts, then drag the bandage onto that place.' },
+      { from: 2, to: 2, text: 'Listen to where the patient hurts, then tap that place on the patient, or drag the bandage there.' },
       { from: 3, to: 3, text: 'Look at what is wrong, then drag what helps onto the patient.' },
       { from: 4, to: 4, text: 'Listen to what hurts, then use the right thing in the right place.' },
       { from: 5, to: 5, text: 'Do the check-up in the order shown on the picture card.' },

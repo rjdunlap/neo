@@ -10,7 +10,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { pictureScene, pictureThumb, puzzleIcon } from './art';
 import { SCENES, type SceneDef } from './scenes';
-import { dropSlot, hintPiece, nextToPlace, outerSides, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, trayRows, whereWords, type Piece, type PuzzlePlan } from './logic';
+import { dropSlot, hintPiece, nextToPlace, outerSides, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, TAP_HOP, tapHops, trayRows, whereWords, type Piece, type PuzzlePlan } from './logic';
 
 interface PieceView {
   piece: Piece;
@@ -113,6 +113,11 @@ class PuzzlePals implements Game {
 
   private drop(view: PieceView, x: number, y: number): boolean {
     if (this.done) return false;
+    // Lap: a tap (let go where it was picked up) sends the piece home by itself; a carry is judged where it lands.
+    if (tapHops(this.plan) && Math.hypot(x - view.drag.home.x, y - view.drag.home.y) < TAP_HOP) {
+      this.settle(view, true);
+      return true;
+    }
     const empty = this.pieces.filter((p) => !p.placed).map((p) => p.piece);
     const slot = dropSlot(this.plan, (x - this.board.x) / this.scale, (y - this.board.y) / this.scale, empty);
     // Off the frame is just exploring: the piece floats back without a word.

@@ -99,6 +99,18 @@ Changed my mind about: the tip banner, she tried to grab it
 
 Three entries decide more than a hundred Chrome checks. After the first three, pick the next game from what she went back to, not from the roadmap.
 
+## Lap-level audit: can taps alone finish it? (R2, 2026-10-24)
+
+Branch `claude/lap-taps-only-audit`. Every game with a lap range was listed from the registry with its lap levels, its how-to steps at those levels and whether its code uses the drag engine or raw pointer tracking; the ambiguous ones were read by hand. Result, by group:
+
+| Group | Games and lap levels | What happens |
+| --- | --- | --- |
+| **Taps only, already** (39 games) | Bubble Pop, Jelly Drums, Sing-Along Barn, Peekaboo Barn, Duck Pond, Shape Sorter 9, Color Garden 9, Feelings Faces, Monster Munch 9 and 1, Song Maker, Weather Wardrobe, Sink or Float, Duckling Parade, Scoop Shop, Roundup 1, Bouncy Launch, Word Monsters, Peg Garden, Fluffy Salon 6, 1 and 2, Sound Garden, Little Helpers, Egg Catch, Mail Carrier, Photo Safari, Dot Link, Teddy Doctor 1, Bumper Garden, Stamp Studio, Pet Kitchen 10, Rhythm Neighbors, Garden Grow, Goodnight Room, Animal Snack, Stop and Go, Opposites, Block Tower, Pet Says, Draw the Pattern 1, Swing Pals, Attic Finds 3, Fill and Dump, Gear Garden, Word Glue 1, Sand Table, Puddle Lens | Nothing to change |
+| **Taps work, the card says otherwise** | Splish Splash 1–2 ("rub": a pat scrubs the spot it lands on), Rainbow Fingers 1–2 (a pat is a stroke), Bounce Back 1 (the huge paddle drifts to the ball by itself; a tap moves it), Fluffy Salon 7 (a tap grows or snips under the finger; the mirror finishes) | Card wording only |
+| **Drag only** | **Puzzle Pals 1–2** (pieces move only by drag), **Teddy Doctor 2** (the bandage must be dragged to the named part), **Roundup 11** *Come along* (the herd moves only while a finger is down), **Draw the Pattern 2** (tracing along dashes) | **Built 2026-10-24** ([PR #942](https://github.com/rjdunlap/neo/pull/942)): Puzzle Pals' one- and two-piece pictures let a tapped piece hop into its place; Teddy Doctor 2 puts the bandage where she taps the patient; Roundup 11's herd keeps walking to where the finger last was for a few seconds, so tapping ahead leads them; Draw the Pattern's lap range becomes level 1 only (tracing stays at toddler and up) |
+
+Expected files: `src/games/puzzle-pals/{index,logic,logic.test}.ts`, `src/games/teddy-doctor/index.ts`, `src/games/roundup/{index,logic,logic.test}.ts`, `src/games/draw-the-pattern/{logic,index.test}.ts`, `src/content/howto.ts`, the four GAMES.md entries, a verification entry.
+
 ## What this review could not do
 
 No child, iPad, controller or grandparent was observed. The walkthrough used a mouse in a 1024-by-768 Chrome tab, so hand size, speech voice, frame rate and the silent switch are untested. The research cited is about children in general; it tells us what is likely, not what she does. Every statement about her in this review is a hypothesis for the protocol to test.

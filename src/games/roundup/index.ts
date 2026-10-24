@@ -12,7 +12,7 @@ import { label } from '../../ui/text';
 import { RoundButton } from '../../ui/buttons';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { animalsFor, emptierPen, enter, fairBell, fairNeeds, fleeFrom, FOLLOW_SPEED, nearestFinger, followSpeed, inRect, leadGoal, makeHerd, PLACE, pensFull, planFor, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect, type Size, sizeScale } from './logic';
+import { animalsFor, emptierPen, enter, fairBell, fairNeeds, fleeFrom, BEACON_S, FOLLOW_SPEED, nearestFinger, followSpeed, inRect, leadGoal, makeHerd, PLACE, pensFull, planFor, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect, type Size, sizeScale } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -95,6 +95,8 @@ class Roundup implements Game {
   private helped = false;
   /** Come along's help: the herd drifts toward the gate for the rest of the round. */
   private drifting = false;
+  /** Come along: where the last finger was, kept for `BEACON_S` after it lifted, so a tap ahead of the herd still leads it. */
+  private beacon: { x: number; y: number; until: number } | null = null;
   private placed = false;
   private autoAnimal: Animal | null = null;
   /** Hold the loose herd while the pet counts the visible pen, so the remainder stays true. */
@@ -212,15 +214,22 @@ class Roundup implements Game {
     this.fingers.set(e.pointerId, { x: p.x, y: p.y });
   }
 
-  private readonly lift = (e: { pointerId: number }) => void this.fingers.delete(e.pointerId);
+  private readonly lift = (e: { pointerId: number }) => {
+    const last = this.fingers.get(e.pointerId);
+    if (this.plan.mode === 'follow' && last) this.beacon = { x: last.x, y: last.y, until: this.clock + BEACON_S };
+    this.fingers.delete(e.pointerId);
+  };
 
   /** Where the fingers on the grass are now. */
   private down(): { x: number; y: number }[] {
-    return [...this.fingers.values()].filter((f): f is { x: number; y: number } => !!f);
+    const live = [...this.fingers.values()].filter((f): f is { x: number; y: number } => !!f);
+    if (!live.length && this.beacon && this.clock < this.beacon.until) return [{ x: this.beacon.x, y: this.beacon.y }];
+    return live;
   }
 
   /** A pause (the bell, a recount, the next animal) stills every finger until it moves again. */
   private still() {
+    this.beacon = null;
     for (const id of this.fingers.keys()) this.fingers.set(id, null);
   }
 
