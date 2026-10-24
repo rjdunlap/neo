@@ -251,6 +251,10 @@ class PegGarden implements Game {
     SEED_HOMES.slice(0, this.plan.count).forEach((home) => {
       const bud = new Bud({ x: home.x, y: home.y, kind: 'plain' }, this.ctx.rng);
       bud.hitArea = new Circle(0, 0, HIT);
+      // A sprout on top tells her own seeds from the board's buds, planted or not.
+      const sprout = new Graphics().moveTo(0, -BOARD.peg + 2).lineTo(0, -BOARD.peg - 10).stroke({ width: 4, color: 0x4a9a35, cap: 'round' });
+      sprout.ellipse(-9, -BOARD.peg - 12, 9, 5).ellipse(9, -BOARD.peg - 12, 9, 5).fill(0x6cc04a).stroke({ width: 2, color: 0x4a9a35 });
+      bud.addChild(sprout);
       this.board.addChild(bud);
       this.ctx.track(bud);
       const seed: Seed = { bud, place: null, drag: null! };

@@ -6798,7 +6798,7 @@ async function batch() {
   }
 
   // Peg Garden: tap to drop; aim by dragging. Shots are chosen by simulating the real physics.
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 6) && (!only || only === 'pegs'); level++) {
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 7) && (!only || only === 'pegs'); level++) {
     await launch('peg-garden', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -6851,6 +6851,37 @@ async function batch() {
         // The hint shows where to act: a ring on the ledge, and a tap anywhere lets the pearl go there; a tap while it falls adds nothing.
         if (!g.finished && g.hintX === null) throw new Error('Peg color hint has no ledge ring');
         for (let guard = 0; guard < 40 && !g.finished; guard++) { const b = g.buds.find((b) => b.spot.kind === 'special' && !b.bloomed); if (!b) break; await drop(b.x); }
+        return;
+      }
+      if (g.plan.mode === 'plant') {
+        // Plant a bud: a free look, two runs with a bud on a place that misses, then the hint and the hinted place.
+        const { plantRun, plantings } = await import('/src/games/peg-garden/logic.ts');
+        const run = async () => { await done(); const p = screen(g.dropX, 40); kit.tap(p.x, p.y); await kit.until(() => g.ball, 2000); await done(); await kit.sleep(400); };
+        // A seed rides 40 units over the finger, so the finger lets go 40 below the place.
+        const plant = async (seed, place) => {
+          const from = screen(seed.bud.x, seed.bud.y);
+          const to = screen(g.places[place].x, g.places[place].y + 40);
+          await kit.drag(kit.line([from.x, from.y], [to.x, to.y], 12), 1, 20);
+          await kit.sleep(400);
+          if (seed.place !== place) throw new Error(`Peg plant: seed went to ${seed.place}, not ${place}`);
+        };
+        await run();
+        if (g.misses !== 0) throw new Error(`Peg plant: a free look counted ${g.misses}`);
+        const spots = g.fixed.map((b) => b.spot);
+        const wrong = plantings(g.places.length).find((ix) => ix.length && plantRun(spots, ix.map((i) => g.places[i]), g.dropX) !== g.friendCup);
+        if (!wrong) throw new Error('Peg plant: no planting misses');
+        for (let k = 0; k < wrong.length; k++) await plant(g.seeds[k], wrong[k]);
+        await run();
+        await run();
+        if (g.misses !== 2 || g.hints !== 1 || !g.hinting) throw new Error(`Peg plant hint: ${g.misses} ${g.hints}`);
+        await kit.sleep(600);
+        if (g.seeds.some((q) => q.place !== null && q.place !== g.hintPlace)) throw new Error('Peg plant: a stray seed stayed after the hint');
+        if (!g.seeds.some((q) => q.place === g.hintPlace)) await plant(g.seeds.find((q) => q.place === null), g.hintPlace);
+        await run();
+        // The finish follows the praise line; a run that missed would have counted a third miss.
+        await kit.until(() => g.finished || g.misses > 2, 8000).catch(() => {});
+        if (!g.finished) throw new Error(`Peg plant: the hinted place did not reach the cup (misses ${g.misses})`);
+        if (!g.path.length) throw new Error('Peg plant: no faint trail after a run');
         return;
       }
       if (g.plan.mode === 'cup') {
