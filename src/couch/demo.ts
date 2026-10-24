@@ -45,6 +45,8 @@ export class Demo {
   readonly root = new Container();
   /** Parts lit right now, held briefly after each press. */
   readonly lit = new Set<PadPart>();
+  typed: string[] = [];
+  private typedHold = 0;
   /** How many times the bot has finished the round (the checks wait for one; a round that runs long is replayed and not counted). */
   finishedRounds = 0;
   private readonly stage = new Container();
@@ -138,6 +140,7 @@ export class Demo {
     } else if (game.autoplay && !this.touches) {
       const input = game.autoplay(dt);
       game.control?.(input, dt);
+      if (input.typed?.length) { this.typed = input.typed; this.typedHold = HOLD; }
       for (const part of pressed(input)) this.held.set(part, HOLD);
     }
     game.update(dt);
@@ -158,6 +161,8 @@ export class Demo {
   }
 
   private decay(dt: number) {
+    this.typedHold -= dt;
+    if (this.typedHold <= 0) this.typed = [];
     for (const [part, left] of this.held) {
       if (left - dt <= 0) this.held.delete(part);
       else this.held.set(part, left - dt);
@@ -173,6 +178,7 @@ export class Demo {
     this.tw.clear();
     this.tracked.clear();
     this.held.clear();
+    this.typed = []; this.typedHold = 0;
     this.lit.clear();
     this.finger?.stop();
     // Take everything out of sight now, and destroy it a moment later: a continuation the game had already queued (an `await`

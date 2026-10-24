@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { GROUPS, NAME_LETTERS, PHRASES, WORDS, Typist, describeTypingLevel, nameToType, roundBubbles } from './logic';
+import { GROUPS, NAME_LETTERS, PHRASES, WORDS, LINES, LineTypist, muddle, typingLayout, Typist, describeTypingLevel, nameToType, roundBubbles } from './logic';
 
 const seeds = Array.from({ length: 200 }, (_, i) => i * 7919 + 3);
 const chars = (b: readonly string[]) => b.join('').split('');
@@ -157,6 +157,97 @@ describe('describeTypingLevel', () => {
       const d = describeTypingLevel(l);
       expect(d.length).toBeGreaterThan(0);
       expect(d.toLowerCase()).not.toMatch(/grade|speed|fast|wpm|minute/);
+    }
+  });
+});
+
+describe('capitals, lines and repairs', () => {
+  it('uses five distinct reviewed lines and one capital at the start', () => {
+    for (const seed of seeds) for (const level of [4, 5, 6]) {
+      const b = roundBubbles(level, new Rng(seed), 'Zoë');
+      expect(new Set(b).size).toBe(5);
+      for (const text of b) {
+        expect(text).toMatch(/^[A-Z][a-z .]+$/);
+        if (level >= 5) expect(LINES).toContain(text);
+      }
+    }
+  });
+  it('sticky Shift applies to one letter; held/caps capitals work; lowercase capital is free then helped', () => {
+    const t = new Typist(['Ab'], 4);
+    expect(t.press('a')).toMatchObject({ kind: 'wrong', why: 'capital', counted: false });
+    expect(t.press('a')).toMatchObject({ glow: true, counted: true });
+    t.press('Shift'); t.press('a');
+    expect(t.shift).toBe(false);
+    expect(t.press('b')).toMatchObject({ roundDone: true });
+    const held = new Typist(['Ab'], 4); held.press('A'); held.press('b'); expect(held.done).toBe(true);
+    expect(t.presses).toBe(4); expect(t.misses).toBe(1); expect(t.hints).toBe(1);
+  });
+  it('wrong letters stay until removed; edits are free and exact line required', () => {
+    const t = new LineTypist(['Pip has a hat.'], 5, ['']);
+    t.press('Shift'); t.press('p'); t.press('q');
+    expect(t.buffer).toBe('Pq'); expect(t.done).toBe(false); expect(t.misses).toBe(0);
+    const tries = t.presses;
+    t.press('ArrowLeft'); t.press('ArrowRight'); t.press('Backspace');
+    expect(t.buffer).toBe('P'); expect(t.presses).toBe(tries); expect(t.misses).toBe(0);
+    for (const ch of 'ip has a hat') t.press(ch);
+    expect(t.done).toBe(false);
+    expect(t.press('.')).toMatchObject({ roundDone: true });
+    expect(t.firstTry).toBe(13); // i had a wrong key first
+  });
+  it('accepts insertion followed by deleting the old letter as an alternative mend', () => {
+    const model = 'Pip has a hat.';
+    const t = new LineTypist([model], 6, ['Pip has a hqt.']);
+    const q = t.buffer.indexOf('q');
+    while (t.caret > q) t.press('ArrowLeft');
+    t.press('a'); t.press('ArrowRight');
+    expect(t.press('Backspace')).toMatchObject({ kind: 'right', roundDone: true });
+    expect(t.done).toBe(true); expect(t.presses).toBe(1); expect(t.misses).toBe(0);
+  });
+  it('two wrong removals show help without misses, and all caret positions stay bounded', () => {
+    const t = new LineTypist(['Pip has a hat.'], 6, ['Pip has a hqt.']);
+    t.press('Backspace'); t.press('Backspace');
+    expect(t.hints).toBe(1); expect(t.misses).toBe(0); expect(t.presses).toBe(0);
+    for (let i = 0; i < 80; i++) t.press('ArrowLeft');
+    expect(t.caret).toBe(0); t.press('Backspace');
+    for (let i = 0; i < 80; i++) t.press('ArrowRight');
+    expect(t.caret).toBe(t.buffer.length);
+  });
+  it('seeded one-letter damage is internal; bot repairs every line and extra edits', () => {
+    for (const seed of seeds) for (const text of LINES) {
+      const start = muddle(text, new Rng(seed));
+      const diffs = [...text].flatMap((ch, i) => ch !== start[i] ? [i] : []);
+      expect(diffs).toHaveLength(1); expect(diffs[0]).toBeGreaterThan(0);
+      expect(text[diffs[0]]).toMatch(/[a-z]/);
+      const t = new LineTypist([text], 6, [start]);
+      if (seed % 2) { t.press('Backspace'); t.press('Backspace'); t.press('x'); }
+      for (let i = 0; i < 100 && !t.done; i++) t.press(t.nextAction);
+      expect(t.done).toBe(true);
+      if (!(seed % 2)) { expect(t.presses).toBe(1); expect(t.misses).toBe(0); expect(t.hints).toBe(0); }
+    }
+  });
+  it('typing bot copies all five lines with one-shot Shift through the same press channel', () => {
+    for (const seed of seeds.slice(0, 20)) {
+      const b = roundBubbles(5, new Rng(seed), 'Pip');
+      const t = new LineTypist(b, 5, b.map(() => ''));
+      for (let i = 0; i < 200 && !t.done; i++) {
+        const action = t.nextAction;
+        if (/[A-Z]/.test(action) && action.length === 1) { t.press('Shift'); t.press(action.toLowerCase()); }
+        else t.press(action);
+      }
+      expect(t.done).toBe(true); expect(t.firstTry).toBe(b.join('').length);
+    }
+  });
+  it('layout bounds stay separate from each other, HUD and bottom-left pet in both views', () => {
+    for (const [w, h] of [[1024,768], [1024,1365], [1365,768], [1024,1820]]) {
+      const l = typingLayout(w, h);
+      const boxes = Object.values(l);
+      const overlap = (a: typeof l.bubble, b: typeof l.bubble) => a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+      for (const a of boxes) {
+        expect(a.x).toBeGreaterThanOrEqual(0); expect(a.y).toBeGreaterThanOrEqual(80);
+        expect(a.x+a.w).toBeLessThanOrEqual(w); expect(a.y+a.h).toBeLessThanOrEqual(h);
+        expect(overlap(a, { x:0, y:h-220, w:170, h:220 })).toBe(false);
+      }
+      for (let i=0;i<boxes.length;i++) for(let j=i+1;j<boxes.length;j++) expect(overlap(boxes[i],boxes[j])).toBe(false);
     }
   });
 });

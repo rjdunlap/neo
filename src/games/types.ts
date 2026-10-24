@@ -248,6 +248,8 @@ export interface Game {
    * called mid-animation; the game finishes what it is doing first.
    */
   restart?(): void;
+  /** Optional typing coach, changed only in the couch pause menu; round-local, never saved. */
+  keyCoach?: { shown: boolean; toggle(): void };
   /**
    * The couch pause menu's and the island pause sheet's "show a hint", for a game whose help is something she asks for (a puzzle with no misses to count).
    * A hint shown marks a challenge run as helped for good, the same as the games whose help arrives by itself.

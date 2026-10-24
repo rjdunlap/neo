@@ -2,7 +2,7 @@
  * Cue Studio's rules (docs/definitions/cue-studio.md): a tiny executable show. She puts Wave and Turn cards in one or two
  * slots, presses Play and watches the companion act each card in order, left to right. Levels 1–2 are free creation: every
  * full show is a good show, nothing counts as a miss, and Finish waits for one complete run of the show as it stands.
- * Programs are transient: nothing here is saved.
+ * Level 3 repairs a pictured request; only a deliberate failed Check counts a miss. Programs are transient.
  */
 
 export type Cue = 'W' | 'T';
@@ -14,17 +14,22 @@ export interface CuePlan {
   level: number;
   slots: number;
   name: string;
+  request?: readonly Cue[];
 }
 
 export const PLANS: readonly CuePlan[] = [
   { level: 1, slots: 1, name: 'Make a move: choose one action, wave or turn, and play it' },
   { level: 2, slots: 2, name: 'My little show: make any two-action show and play it' },
+  { level: 3, slots: 2, name: 'Fix the cue: repair the pictured order, then check the show', request: ['W', 'T'] },
 ];
 
 export const planFor = (level: number): CuePlan => PLANS.find((p) => p.level === level) ?? PLANS[0];
 
 export interface Studio {
   readonly slots: number;
+  readonly request: readonly Cue[] | null;
+  checked: boolean;
+  misses: number;
   program: Slot[];
   /** The occupied slot she picked to change, or null. */
   selected: number | null;
@@ -39,8 +44,8 @@ export interface Studio {
   hints: number;
 }
 
-export function newStudio(slots: number): Studio {
-  return { slots, program: Array<Slot>(slots).fill(null), selected: null, undo: null, played: false, stepAt: 0, helped: new Set(), hints: 0 };
+export function newStudio(slots: number, request?: readonly Cue[]): Studio {
+  return { slots, request: request ?? null, checked: false, misses: 0, program: request ? [...request].reverse() : Array<Slot>(slots).fill(null), selected: null, undo: null, played: false, stepAt: 0, helped: new Set(), hints: 0 };
 }
 
 /** The commands in the order they run: the filled slots, left to right. */
@@ -65,6 +70,7 @@ export type ActionResult = 'insert' | 'replace' | 'same' | 'full';
 function edit(s: Studio, next: Slot[]) {
   s.undo = s.program.slice();
   s.program = next;
+  s.checked = false;
   s.played = false;
   s.stepAt = 0;
 }
@@ -108,6 +114,7 @@ export function undo(s: Studio): boolean {
   if (!s.undo) return false;
   s.program = s.undo;
   s.undo = null;
+  s.checked = false;
   s.played = false;
   s.stepAt = 0;
   return true;
@@ -136,11 +143,27 @@ export function step(s: Studio): { at: number; cue: Cue } | null {
   return { at, cue: t[at] };
 }
 
-/** Finish is open once the full show as it stands has played through. */
-export const canFinish = (s: Studio) => isComplete(s.program) && s.played;
+/** Creation needs a complete run; a requested show needs a successful Check of the current program. */
+export const canFinish = (s: Studio) => isComplete(s.program) && (s.request ? s.checked : s.played);
 
-/** What Help does at levels 1–2. */
-export type HelpResult = { kind: 'insert'; at: number } | { kind: 'play' } | { kind: 'finish' };
+/** Help offers a creative move, or a clue/repair for the requested trace. */
+export type HelpResult = { kind: 'insert'; at: number } | { kind: 'clue' | 'repair'; at: number; cue: Cue } | { kind: 'check' } | { kind: 'play' } | { kind: 'finish' };
+
+const hasClue = (s: Studio) => [...s.helped].some(id => id.startsWith('clue:'));
+
+export const mismatch = (s: Studio) => s.request ? s.program.findIndex((cue, i) => cue !== s.request![i]) : -1;
+
+/** Only a completed deliberate Check counts a miss; ordinary playback never does. */
+export function checkRun(s: Studio): number | null {
+  if (!s.request || !isProgram(s.program, s.slots) || !isComplete(s.program)) return null;
+  const at = mismatch(s);
+  s.checked = at < 0;
+  if (at >= 0) {
+    s.misses++;
+    if (s.misses >= 2 && !hasClue(s)) charge(s, `clue:${at}`);
+  }
+  return at;
+}
 
 /**
  * Help offers, never corrects: an empty slot gets a Wave (each slot's supplied insertion counts one hint, once, even after
@@ -148,6 +171,20 @@ export type HelpResult = { kind: 'insert'; at: number } | { kind: 'play' } | { k
  */
 export function help(s: Studio): HelpResult {
   s.selected = null;
+  if (s.request) {
+    const at = mismatch(s);
+    if (at < 0) return { kind: s.checked ? 'finish' : 'check' };
+    const cue = s.request[at];
+    if (!hasClue(s)) {
+      charge(s, `clue:${at}`);
+      return { kind: 'clue', at, cue };
+    }
+    const next = s.program.slice();
+    next[at] = cue;
+    edit(s, next);
+    charge(s, `repair:${at}`);
+    return { kind: 'repair', at, cue };
+  }
   const at = firstEmpty(s.program);
   if (at >= 0) {
     const next = s.program.slice();
@@ -169,11 +206,12 @@ function charge(s: Studio, id: string) {
   s.hints++;
 }
 
-/** Start this again: the empty shelf, keeping the help she has had. */
+/** Restore the authored start, keeping misses and the help already supplied. */
 export function restart(s: Studio) {
-  s.program = Array<Slot>(s.slots).fill(null);
+  s.program = s.request ? [...s.request].reverse() : Array<Slot>(s.slots).fill(null);
   s.selected = null;
   s.undo = null;
+  s.checked = false;
   s.played = false;
   s.stepAt = 0;
 }
@@ -183,8 +221,14 @@ export function restart(s: Studio) {
  * Turn, Play, then select the first slot, change it to Turn, Play the new show and Finish (a show that repeats an action is
  * a good show too). `changed` says whether the demonstration has made its change yet.
  */
-export type DemoPress = { action: Cue } | { slot: number } | 'play' | 'finish';
+export type DemoPress = { action: Cue } | { slot: number } | 'play' | 'check' | 'finish';
 export function demoNext(s: Studio, changed: boolean): DemoPress {
+  if (s.request) {
+    if (!s.played) return 'play';
+    const at = mismatch(s);
+    if (at >= 0) return s.selected === at ? { action: s.request[at] } : { slot: at };
+    return s.checked ? 'finish' : 'check';
+  }
   const at = firstEmpty(s.program);
   if (at >= 0) return { action: at === 0 ? 'W' : 'T' };
   if (s.slots === 1 || changed) return s.played ? 'finish' : 'play';

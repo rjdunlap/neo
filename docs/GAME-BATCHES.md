@@ -513,3 +513,7 @@ Built; [completed scope and proof](archive/COMPLETED-2026-10-09.md#photo-safari-
 - **`timeline-trail`, levels 1–3 (T2)** (a new game, one declared batch; preschool 1–2, pre-K 1–3, school 2–3, Barnyard by default): a clothesline between a "long ago" post and a "now" post; level 1 taps the older of two pictures, level 2 drags a third picture into the right of three gaps, level 3 builds a line of four one card at a time; a finished line plays as a flipbook of the place growing. Level 4 (a clue inside the picture) is a later batch on the same game. [Definition](definitions/timeline-trail.md), [time-and-change study slice 2](deep-dives/subjects/time-change.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's Check tier](definitions/timeline-trail.md#check-tier) sets it (typecheck, unit tests, one scripted play at levels 2–3, `fingerdemo` at levels 1–3, one portrait screenshot of level 3, one build).
+
+### welcome-ways 1: Levels 1–4
+
+One new-game batch from the [definition](definitions/welcome-ways.md), three related substeps: pure plans/walker/repair solver and exhaustive rules; the one/two-socket building interaction and visitor parade; voice/how-to/demonstration/registration and the Tinker Lab then Cozy Village capacity check. Toddler 1–2, preschool 1–3, pre-K 2–4, school 3–4. Try always free; no save field, human access representation or later parts. Use the definition’s new-game check tier, first/last play, failure/help, each new bot level and one portrait screenshot. Levels 5–7 wait until this batch is built.

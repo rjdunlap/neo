@@ -72,6 +72,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 ## Pond Typing levels 1–3 (KE2, 2026-10-24)
 
+- [ ] Part2: sticky Shift reach and held Shift/Caps Lock, non-US layouts, following the caret/Backspace, the hidden coach and line/picture readability in both views; real speech for capital, stop and repair prompts. Browser proof cannot establish these.
 - [ ] With a child at a real laptop keyboard: can she find and press a letter on a waiting bubble, and does the name and the space-bar level read and feel fair? Also a real keyboard on a laptop rather than Chrome automation, and device speech for the prompts.
 
 ## Illustrated duck pilot (RW14 slice 6, 2026-10-23)

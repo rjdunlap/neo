@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Cue Studio level 3, Fix the cue (programming P3, 2026-10-24)
+
+[PR #947](https://github.com/rjdunlap/neo/pull/947), `codex/cue-studio-p3`: school 3–3 in Tinker Lab, following the approved pre-K creative/school requested split. The pictured Wave→Turn request starts with Turn→Wave; Play/Step freely show the actual trace, selection/replacement repairs either slot, and Check deliberately compares the complete trace. Only wrong Checks count misses; two supply a clue, and Help gives a clue then local repairs with persistent per-round assistance identities. Undo/Start again preserve assistance accounting, edits invalidate successful Check, and restarting a running Check cancels its late result. The ghost finger watches, repairs both slots and Checks before Finish. One normal sticker follows either independent or supported completion. The next study packet is P4's separate event/repeat/message definition; no downstream implementation or practical puppet card ships. Checks: [verification entry](../VERIFICATION.md#2026-10-24--cue-studio-level-3-programming-p3); iPad and child checks remain open.
+
+
 ### Bond Beads levels 1–2 (chemistry slice 2, built 2026-10-24, PR #941)
 
 New game in Tinker Lab (its 15th, 14 shown at school), `bond-beads`, school 1–2. Level 1 holds every hand of three trays in one piece (ends itself; no misses or hints; a stuck tray pulses a link to break), level 2 copies a pictured shape with Check (a miss only if the build changed; two misses glow the fix and count one hint per card; a further wrong Check gives a supported finish). A graph model and canonical matcher in `logic.ts` with 43 rule tests; a tally strip, Undo and Start again; a ghost finger; a Kokoro title clip. Cut for now: "Tidy" (moving beads), the 6–7-bead layout. Levels 3–4 are chemistry slice 3. Checks: [VERIFICATION](../VERIFICATION.md#2026-10-24--bond-beads-levels-12-chemistry-slice-2)
@@ -1892,13 +1897,13 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--critter-sort
 
 [PR #925](https://github.com/rjdunlap/neo/pull/925), `claude/rhythm-neighbors-knock-a-call` ([deep dive](../deep-dives/rhythm-neighbors.md#build-slices-in-order)), batch `rhythm-neighbors 2`. New interaction: she is the caller. Toddler order `[2, 8, 9, 3]`, preschool `[9, 3, 4]`, `entryLevels [7, 9]`. She knocks the big tree one to five times; the call ends after a 1.6 s quiet spell (`CALL_QUIET`) or at once on the fifth knock (the frog starts 0.6 s later). Knock times become short/long gaps by `judgeEcho`'s relative rule (`gapsOf`), and `reply()` answers: one knock gets two croaks, one gap is flipped, two or more gaps are reversed, and mixed palindromes (S·L·S) are flipped so the answer differs whenever the call has two kinds of gap. Knocks during the answer sound but are not recorded. Three calls finish, then the finale replays her last call and answer; no misses, no hints. The ghost finger knocks three or four times with varied rests (`BOT_CALLS`). New voice lines `neighbors.call` and `neighbors.call-again`; how-to steps and finish scoped to level 9. Deviation from the dive: a 1.6 s quiet rather than 1 s, since the ghost finger's shortest tap gap is about 0.9 s and a long gap about 1.4 s. Review fix: a comment had swallowed `demonstrate()`'s busy/taps/waiting reset.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--rhythm-neighbors-level-9-knock-a-call-slice-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-24.md#2026-10-24--rhythm-neighbors-level-9-knock-a-call-slice-4).
 
 ## Peg Garden levels 6 Into the cup and 7 Plant a bud, slices 5-6 (2026-10-24)
 
 Branch `claude/peg-garden-cup-and-bud` (batch `peg-garden 3`, [PR #923](https://github.com/rjdunlap/neo/pull/923), [deep dive](../deep-dives/peg-garden.md#build-slices-in-order)). Level 6: four cups with 1-4 dots, three distinct asks, a wrong cup says its count, two misses show the full path and glow the asked cup, fixed stepping, the cutoff counts nothing. Level 7: a fixed pearl button, the friend's cup missed as the board stands, 3-5 rings at least 120 board units apart, two seeds in dishes (snap to the nearest free ring within 100); an empty run is a free look, each planted miss counts, two misses outline one working ring and return seeds on other rings; voice `peg.plant`, `peg.plantLook`, `peg.plantMissed`; the ghost finger plants on the hinted ring and taps the pearl. Pre-K window is 3-7. Couch levels unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--peg-garden-levels-6-and-7-into-the-cup-and-plant-a-bud-slices-56).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-24.md#2026-10-24--peg-garden-levels-6-and-7-into-the-cup-and-plant-a-bud-slices-56).
 
 ## Who Am I? levels 1-3, slice Z3 (2026-10-24)
 
@@ -1942,3 +1947,12 @@ New game in Story Grove (its 14th), subject story-grove; bands lap 1, toddler 1�
 ## Quiet automated tests (2026-10-24)
 
 [PR #938](https://github.com/rjdunlap/neo/pull/938), `codex/quiet-test-audio`. Shared test-browser helpers silence Chromium media/Web Audio and native text-to-speech across browser, offline and abandon-card checks, including extra touch and phone contexts. Real speech callbacks and timing remain active; `TEST_AUDIO=on` enables deliberate audible testing. No app settings, runtime source or assets changed. Nineteen targeted tests and a live native-speech volume probe passed across normal/touch contexts, new pages and reloads; [verification](../VERIFICATION.md#2026-10-24--quiet-automated-tests) records scope and gaps.
+
+## 2026-10-24 — Welcome Ways early definition
+
+[PR #944](https://github.com/rjdunlap/neo/pull/944), `codex/welcome-ways-definition`: [Welcome Ways 1–4](../definitions/welcome-ways.md) defined from the completed engineering-design study and decided fictional cast/placement/accounting. Parts, visitors, accepted boards, repair hints, layouts, voice/how-to/bot and build checks fixed; implementation batch queued. Docs only; no game or device evidence. Links and diff checked.
+
+
+## Pond Typing KE2 part 2 — 2026-10-24
+
+[PR #946](https://github.com/rjdunlap/neo/pull/946): levels 4–6, sticky Shift capitals, visible copied lines with stops/Backspace, seeded one-letter caret repairs, word pictures, round-local Show the key and typed-key diagram lighting. Built 1–3/copying/accounting remain; Bubble Pond version 2 retains its three early ponds and adds capitals, line and repair ponds. Scope/actual differences/source check: [definition](../definitions/pond-typing.md#part-2-implementation-and-source-check-2026-10-24). No registration, land or other-game changes. Device/child checks remain open. Evidence: [verification](../VERIFICATION.md#2026-10-24--pond-typing-levels-46-ke2-part-2).
