@@ -228,3 +228,17 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, units, build, browser or device checks (docs only); nothing implemented.
 - Open: an ocean reviewer, Ocean Literacy Guide V3.1, any NGSS tide expectation, Bubble Beach placement (a 14th game), decisions 1–9 in the study.
+
+## 2026-10-23 — RW14 slice 2: residents in six locations
+
+- The six second-wave creatures became the residents of Bubble Beach, Music Mountain, Painted Canyon, Cozy Village, Story Grove and Tinker Lab (`src/creatures/resident.ts`, `LOCATIONS`), with a poke reaction and hello line each; her own friend stands in where it is the resident's species, and the guide hides there. The 36 expression sprites ship as WebP (920 KB) ([PR #898](https://github.com/rjdunlap/neo/pull/898)).
+- Ran: typecheck; `npm test` (217 files, 2720 tests, including the six location tests through `residentProblems`); `npm run build` (precache 174 entries, 11532.26 KiB, zero cast PNGs in `dist/assets`).
+- Browser: `BROWSER_SUITE=home HOME_ONLY=residents RESIDENT_LAND=bubble-beach` at `http://localhost:5564`, passed twice (before and after Tote's fit changed from 0.85 to 0.95). `npm run test:offline` against `vite preview --port 5546` of the current build passed (167 cached assets).
+- Not run: the other five locations in the browser, `world`, `picnic`, couch suites (unchanged). Open for a person: an iPad, real speech of the six hello lines and the child's reaction ([DEVICE-CHECKS.md](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — RW14 slice 3: one meaning per button
+
+- At the root every house goes Home and every leaving control is a back arrow with its origin's picture (round hold, how-to card, result, location with a new house beside Back); root Back/Home speak their label on press; buttons carry `meaning`, and `src/app/nav-meaning.test.ts` presses them ([PR #899](https://github.com/rjdunlap/neo/pull/899)).
+- Ran: typecheck; `npm test` (218 files, 2729 tests); `npm run build` (precache 174 entries, 11534.22 KiB). Regression proof: pointing the location house at `goHome` failed the route test, then restored.
+- Browser: `GAME_URL=http://localhost:5883 BROWSER_SUITE=home HOME_ONLY=buttons` passed (Counting Cove Back and house in landscape and portrait, house at least 100 and left of the heading, how-to Back, round Back, result Back to the location, house to Home); five screenshots reviewed.
+- Not run: `world`, offline (no persistence or asset change), iPad or device speech. Open: location keep-out rects not widened for the house; Home itself not in the route test.
