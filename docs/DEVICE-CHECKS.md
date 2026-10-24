@@ -1,5 +1,35 @@
 # Needs a person or a device
 
+What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), one entry per sitting; the [user research review](USER-RESEARCH-2026-10-24.md#a-five-minute-observation-protocol-for-the-lap-band) has the five-minute protocol for watching her play.
+
+## Taps-only lap levels: Puzzle Pals 1–2, Teddy Doctor 2, Roundup 11 (R2, 2026-10-24)
+
+- [ ] On an iPad at lap with a one-year-old: does a tap on a puzzle piece read as "it went in" or as a surprise; does a tap on the named part of the patient land on the right part with a small finger (the bandage still drags for a grown-up); in *Come along*, does the herd walking to where she last tapped read as following her, and is three seconds long enough between taps? Chrome play with synthetic taps finished all three with no misses ([entry](VERIFICATION.md#2026-10-24--taps-only-lap-levels-r2)); a child's hand and device speech remain unobserved.
+
+## Bond Beads levels 1–2 (chemistry slice 2, 2026-10-24)
+
+- [ ] On an iPad with a school-age child (6–8): does she read the small nubs as hands, and can she drag or tap one bead onto another and tap a link to break it comfortably in both orientations?
+- [ ] On the iPad's voice, are the level lines clear (the stuck-tray line, the Check hints, the tally strip words)?
+- [ ] Does she take the level 2 Check as "same shape as the card" and can she tell a rebuilt shape from the card's picture at a glance?
+
+## Story Weaver levels 1–3 (writing-composition WC1, 2026-10-24)
+
+- [ ] With a six-year-old: does she understand that the owl cannot see the pictures, and does the owl's question read as a suggestion she may decline?
+- [ ] On an iPad in portrait: do the page row, tiles and slots fit without crowding the Home and help buttons or the pet?
+- [ ] Do the words for the feelings (relieved, sleepy) and the composed sentences read clearly in device speech?
+
+## Meadow Pens levels 1–3 (area-volume-space slice 1, 2026-10-24)
+
+- [ ] On an iPad with a school-age child: can she paint squares and ring the bell comfortably in both orientations; is device speech for the Meadow Pens lines (squares counted aloud, the fence ticking, the stack count) clear; does the level-2 card choice read as area against fence count; and do the finale friends and bell tune land? Chrome proved the flow, the portrait fence sides and the ghost finger only. The pre-K window ([decision 6](definitions/meadow-pens.md#open-decisions)) waits on a person check.
+
+## Second Chance Shed levels 1–4 (nature-sustainability N2, 2026-10-24)
+
+- [ ] With a two-year-old: does she drag the first scrap into the one worm bin unprompted, and does the sprout read as the result?
+- [ ] Do the four pictured keys (worm bin, shelf, mending table, Remake machine) read without speech?
+- [ ] Does "whole" against "squashed" read from the drawings alone (the box and tub drawn whole, the can drawn squashed)?
+- [ ] On an iPad, hear each place's reason line ("I only munch food bits" and the others) in device speech.
+- [ ] Does a child take the island's Remake machine for a real recycling bin? The card tells grown-ups to check their own town's rules; listen for what she says.
+
 ## Who Am I? levels 1–3 (zoo animals Z3, 2026-10-24)
 
 - [ ] On an iPad, hear the clue lines ("I have feathers", "I feed my babies milk" and the miss reasons) in device speech (the definition wanted this before merge; the 2026-10-23 delegation made the source check the only gate, so it stays open).
@@ -10,6 +40,27 @@
 ## Food Web Workshop levels 1-3 (2026-10-24)
 
 - [ ] On an iPad with a school-age child: can she drag a food badge between far stations (and turn a backwards arrow) comfortably in both orientations; is device speech for the `web.*` lines clear; and does she read the arrow as "the food goes to the eater" as intended? Chrome proved the flow, portrait targets of 100 units or more and the ghost finger only; understanding and a person's response are untested.
+
+## Word Glue levels 1–3 (vocabulary-word-parts VW1, 2026-10-24)
+
+- [ ] On an iPad: does device speech say each whole compound naturally, and is the pause in "first… second… word!" clear?
+- [ ] With a three-year-old (and a lap child at level 1): does she read a join as making a new thing?
+- [ ] Is each joined drawing legible at 140 units on the iPad?
+- [ ] With a pre-K child: are the level 3 meanings understood as "for" (a house for a dog)?
+
+## Puddle Lens levels 1–4 (cells-microbes slice 2, 2026-10-24)
+
+- [ ] On an iPad with a lap child: does she link her tap on the lens to the swelling?
+- [ ] On an iPad with a toddler: does she keep the lens moving with one finger?
+- [ ] With a four-year-old: does "too close" make sense?
+- [ ] On the iPad's voice, how does "No swimmers" sound?
+
+## Gear Garden levels 1–3 (machines-tools slice 2, 2026-10-24)
+
+- [ ] On an iPad with a lap child: does she connect a tap on the machine to the far flower turning, or only watch the flower?
+- [ ] On an iPad with a three-year-old: can she drag the loose gear into the gap (and does a short drop gliding home feel kind)?
+- [ ] With a pre-K child, speech off: is the four-gear reversal (the last flower turning the other way) noticed from the picture and arrow alone?
+- [ ] On the iPad's voice, does "the other way" read clearly?
 
 ## Cue Studio levels 1–2 (2026-10-23)
 

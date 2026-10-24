@@ -66,6 +66,7 @@ import { littleConductor } from './little-conductor';
 import { clapSyllables } from './clap-syllables';
 import { chainReaction } from './chain-reaction';
 import { rhymeTime } from './rhyme-time';
+import { storyWeaver } from './story-weaver';
 import { stopAndGo } from './stop-and-go';
 import { rampRace } from './ramp-race';
 import { critterSort } from './critter-sort';
@@ -120,7 +121,13 @@ import { fruitSums } from './fruit-sums';
 import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
 import { whoAmI } from './who-am-i';
+import { secondChanceShed } from './second-chance-shed';
+import { gearGarden } from './gear-garden';
+import { bondBeads } from './bond-beads';
+import { meadowPens } from './meadow-pens';
+import { wordGlue } from './word-glue';
 import { sandTable } from './sand-table';
+import { puddleLens } from './puddle-lens';
 import { adventureWalk } from './adventure-walk';
 import { readyForAdventure } from './ready-for-adventure';
 import { senseDetective } from './sense-detective';
@@ -190,6 +197,7 @@ export const GAMES: GameModule[] = [
   beatBuilder,
   littleConductor,
   rhymeTime,
+  storyWeaver,
   stopAndGo,
   rampRace,
   critterSort,
@@ -233,7 +241,13 @@ export const GAMES: GameModule[] = [
   readDo,
   lookItUp,
   whoAmI,
+  secondChanceShed,
+  gearGarden,
+  bondBeads,
+  meadowPens,
+  wordGlue,
   sandTable,
+  puddleLens,
   adventureWalk,
   readyForAdventure,
   senseDetective,

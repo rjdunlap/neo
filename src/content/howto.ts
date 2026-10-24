@@ -286,6 +286,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'Tap the web button when it matches the cards; a matching web earns a sticker. The round arrow takes back the last change.',
     note: 'This is a small model of what the cards show. A pair with no card isn\'t wrong in nature, it just isn\'t on our cards. Only the web button can count a miss; after two, the cards and creatures to fix glow. Show a hint mends one arrow and counts as help.',
   },
+  'word-glue': {
+    goal: 'Stick two pictures together to make a new thing, and hear the word they make.',
+    steps: [
+      { from: 1, to: 1, text: 'Drag one picture onto the other, or tap one, and they join.' },
+      { from: 2, to: 2, text: 'Listen for the word, then join the two pictures that make it.' },
+      { from: 3, to: 3, text: 'A friend needs the thing in the middle; join that friend to it.' },
+      'Touch a picture to hear its word.',
+    ],
+    finish: 'Every pair is joined and its new thing has come alive.',
+    note: [
+      { from: 1, to: 1, text: 'Every new word is two whole words she already knows. Nothing can go wrong here.' },
+      { from: 2, to: 2, text: 'Every new word is two whole words she already knows. A wrong pair is one miss and the pet says the word\'s parts; after two misses the right pictures glow, which counts as a hint. Hearing a word again never counts.' },
+      { from: 3, to: 3, text: 'Every new word is two whole words she already knows. A wrong friend makes a real thing, and the pet says who it is for; that is one miss. After two misses the friend who asked glows, which counts as a hint. Hearing a word again never counts.' },
+    ],
+  },
   'pond-conga': {
     goal: 'Steer a line of ducklings to each crumb of bread, in order.',
     steps: [
@@ -343,7 +358,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'splish-splash': {
     goal: 'Give the pet a bath.',
     steps: [
-      { to: 2, text: 'Rub a finger over the mud to scrub it off.' },
+      { to: 2, text: 'Rub or pat a finger over the mud to scrub it off.' },
       { from: 9, to: 9, text: 'Pat anywhere on the screen: each pat washes a third of the nearest patch of mud away.' },
       { from: 3, to: 6, text: 'Rub a finger over the body part the pet names to wash it, then the next one it asks for.' },
       { from: 7, to: 7, text: 'Rub a finger over each of the two body parts the pet names.' },
@@ -381,6 +396,72 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 4, text: 'The dots beside a number are there to count; counting them aloud together helps.' },
       { from: 8, to: 11, text: 'After a right answer, the sign shows the number sentence and the pet reads it aloud.' },
       { from: 11, to: 11, text: 'The hidden ducks paddle out one by one so both parts of the whole can be seen.' },
+    ],
+  },
+  'puddle-lens': {
+    goal: 'Look closer and closer with a lens.',
+    steps: [
+      { from: 1, to: 1, text: 'Tap the lens; each thing looks bigger, then goes back.' },
+      { from: 2, to: 2, text: 'Drag the lens over all three things; the paw outside it stays the same size.' },
+      { from: 3, to: 3, text: "Tap the dial's pictures to look closer; tap a swimmer, or No swimmers if the drop has none." },
+      { from: 4, to: 4, text: 'Tap the dial to just the view the friend asks for, then Show.' },
+    ],
+    finish: [
+      { from: 1, to: 2, text: 'Three things looked at.' },
+      { from: 3, to: 3, text: 'Every drop checked.' },
+      { from: 4, to: 4, text: 'All three views shown.' },
+    ],
+    note: [
+      { from: 1, to: 2, text: "The lens makes things look bigger; it doesn't make them bigger. Nothing here is ever wrong." },
+      { from: 3, to: 3, text: "Saying 'No swimmers' before the closest views is never wrong; it only asks to look closer. Show a hint turns the dial for her and counts as a hint, once per drop." },
+      { from: 4, to: 4, text: 'Too far and too close are both misses; turning the dial never is. Show a hint turns the dial for her and counts as a hint, once per question.' },
+    ],
+  },
+  'bond-beads': {
+    goal: 'Link beads together hand to hand until every hand is held.',
+    steps: [
+      'Drag from one bead to another to link them (or tap one bead, then the other), and tap a link to break it.',
+      { from: 1, to: 1, text: 'Link until every hand is held and all the beads are one piece.' },
+      { from: 2, to: 2, text: 'Build the shape on the card, then tap Check.' },
+      'The yellow arrow undoes one step; the round arrow takes every link apart.',
+    ],
+    finish: [
+      { from: 1, to: 1, text: 'Every hand is held and all the beads are one piece, three times.' },
+      { from: 2, to: 2, text: 'Two shapes match their cards.' },
+    ],
+    note: [
+      { from: 1, to: 1, text: 'Linking, breaking and undo never count as mistakes, and nothing here is ever wrong. If no free hands can reach each other, a link to break pulses, with no count. This is a puzzle about beads and hands, not a model of real substances.' },
+      { from: 2, to: 2, text: 'Linking, breaking and undo never count. A Check that is not the card is one miss (checking the same build again is not) and the pet names a bead or link to look at; after two misses the one to change glows, which counts as a hint, and a third wrong Check finishes the shape by itself. This is a puzzle about beads and hands, not a model of real substances.' },
+    ],
+  },
+  'gear-garden': {
+    goal: 'Make the flowers spin with a machine of gears.',
+    steps: [
+      { from: 1, to: 1, text: 'Tap the machine to turn the handle; the gears turn the flower.' },
+      { from: 2, to: 2, text: 'Drag the loose gear into the gap, then tap to turn.' },
+      { from: 3, to: 3, text: 'Pick one of two broken machines, put its gear in the gap and turn.' },
+      'The round arrow turns it the other way.',
+    ],
+    finish: 'Every flower has bloomed.',
+    note: [
+      { from: 1, to: 1, text: 'Nothing here is ever wrong; Show a hint turns the handle once by itself and counts as a hint.' },
+      { from: 2, to: 2, text: 'Nothing here is ever wrong: turning a broken machine shows where the turning stops. Show a hint, the glow on the gap and the gear going in by itself count as one hint per machine.' },
+      { from: 3, to: 3, text: 'Nothing here is ever wrong. Three gears turn the flower the same way as the handle and four the other way; she only watches this. Help counts as one hint per machine.' },
+    ],
+  },
+  'second-chance-shed': {
+    goal: 'Take each used thing to the place on the island that gives it a second life.',
+    steps: [
+      'Drag the food bits to the worm bin.',
+      { from: 2, to: 4, text: 'Put whole things on the shelf to be used again.' },
+      { from: 3, to: 4, text: 'Take a toy that lost a piece to the mending table.' },
+      { from: 4, to: 4, text: 'Put squashed and worn-down things in the Remake machine.' },
+    ],
+    finish: 'Every thing has found its place, and the yard shows what each one made.',
+    note: [
+      { from: 1, to: 1, text: 'Nothing is counted here; she just feeds the worms.' },
+      { from: 2, to: 4, text: 'A drop in the wrong place counts as a miss and that place says why; after two, the right place glows, which counts as a hint.' },
+      { from: 1, to: 4, text: 'These are the island\'s own rules. Check what your town\'s recycling and compost take.' },
     ],
   },
   'who-am-i': {
@@ -802,7 +883,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'puzzle-pals': {
     goal: 'Put a picture together.',
     steps: [
-      'Drag a piece to where it belongs and let go.',
+      { to: 2, text: 'Tap a piece and it hops into its place. Dragging it there works too.' },
+      { from: 3, text: 'Drag a piece to where it belongs and let go.' },
       { to: 1, text: 'One half is already in place: fit the other half to finish the picture.' },
       { from: 2, to: 4, text: 'A faint picture under the frame shows where each piece goes.' },
       { from: 5, to: 7, text: 'The frame is empty. Thick flat sides belong along its outside edge; corners have two.' },
@@ -906,7 +988,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'The pen already holds some animals. Count them, then shoo in just enough more to match the numeral and dots (4 or 5). Ring the bell when it is full.' },
       { from: 8, to: 8, text: 'Shoo the animals into the two pens so each pen holds the same number, then ring the bell. The sign shows no number: how many is her choice.' },
       { from: 10, to: 10, text: 'Wiggle a finger behind the single animal to shoo it through the wide gate.' },
-      { from: 11, to: 11, text: 'Put a finger on the grass and the animals gather round it. Drag slowly to lead them through the wide gate into the pen.' },
+      { from: 11, to: 11, text: 'Put a finger on the grass and the animals gather round it. Drag slowly, or tap a little ahead of them again and again, to lead them through the wide gate into the pen.' },
     ],
     finish: [{ from: 12, to: 12, text: 'All six pigs sorted by size finish the round. No bell is needed.' }, { from: 9, to: 9, text: 'The bell finishes the round when the pen holds exactly its requested total, including the animals already inside.' }, { from: 7, to: 7, text: 'Both pigs and both bunnies in their own pens finish the round, with the cows still outside. No bell is needed.' }, { to: 6, text: 'The round ends when every animal is where it was asked to go.' }, { from: 10, to: 10, text: 'Help one animal home, then a second one. Both successes make one round and one sticker.' }, { from: 11, to: 11, text: 'The round ends when all three animals are in the pen, in any order.' }, { from: 8, to: 8, text: 'A bell with the same number in each pen finishes the round, even with some left on the grass (two and two out of six is fair; an empty pen is not).' }],
     note: [{ from: 12, to: 12, text: 'A wrong gate counts a miss: the pig hops out and the pet names the pen’s size. Two misses or fifteen idle seconds glow the animals and matching gates (one hint), with a spoken size reminder. A thirty-second trot-home counts another hint.' }, { from: 9, to: 9, text: 'A wrong bell counts one miss. The pet counts the pen aloud and says how many more are needed; extras hop back out. Two wrong bells or fifteen idle seconds glow the needed animals and gate (one hint), with a spoken recount. A thirty-second trot-home counts another hint.' }, { from: 7, to: 7, text: 'An animal entering a wrong pen counts a miss and hops back out. After two misses only animals that need a pen and their gates glow (one hint); cows never glow. After thirty seconds without progress, a needed animal trots home (another hint).' }, { to: 6, text: 'A wrong pen or a wrong bell counts a miss. If no animal gets home for thirty seconds, the nearest one trots home by itself, and that counts as a hint.' }, { from: 10, to: 10, text: 'Nothing counts as a miss. After ten seconds without a success the animal and gate glow (one hint); at twenty seconds it trots home (another hint). Support starts afresh for the second animal.' }, { from: 8, to: 8, text: 'An unequal bell counts a miss: the pet says each pen\'s number and the extras hop out of the fuller pen (none while the other is empty). Two wrong bells glow the emptier pen (one hint). Thirty idle seconds with uneven pens trot one in (another hint).' }, { from: 11, to: 11, text: 'Nothing counts as a miss. After fifteen seconds without an animal getting home, the herd glows and drifts toward the gate by itself for the rest of the round (one hint). If one still is not home thirty seconds after the last, it trots in (another hint).' }],
@@ -1185,11 +1267,30 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: 'Tipping is how the seesaw explains weight; trying things is the game. A heavier side going down and equal sides lying flat are added to her discovery journal after she sees them.',
   },
+  'meadow-pens': {
+    goal: "Paint squares of grass for a friend's pen; the fence builds itself around them.",
+    steps: [
+      'Tap or drag to paint grass; tap a square again to lift it.',
+      { from: 1, to: 1, text: 'Paint as many squares as your friend asks, any shape, then ring the bell.' },
+      { from: 2, to: 2, text: "Count the field's rows and tap the card for the whole field." },
+      { from: 3, to: 3, text: 'Paint six squares so the fence uses every piece on the stack, then ring the bell.' },
+    ],
+    finish: [
+      { from: 1, to: 1, text: "When every friend has a pen, it's done." },
+      { from: 2, to: 2, text: "After five fields, it's done." },
+      { from: 3, to: 3, text: "When every friend has a pen, it's done." },
+    ],
+    note: [
+      { from: 1, to: 1, text: 'Painting and lifting are free; only a bell ring with the wrong pen counts as a miss, and two light up a pen that works. Grass is the area and the fence is the perimeter; the game says only squares of grass and fence pieces.' },
+      { from: 2, to: 2, text: 'A wrong card fills the field row by row; two light up the right card. Grass is the area and the fence is the perimeter; the game says only squares of grass and fence pieces.' },
+      { from: 3, to: 3, text: 'Painting and lifting are free; only a bell ring with the wrong pen or the wrong fence counts as a miss, and two light up a pen that works. Grass is the area and the fence is the perimeter; the game says only squares of grass and fence pieces.' },
+    ],
+  },
   'teddy-doctor': {
     goal: 'Look after the teddy patient.',
     steps: [
       { to: 1, text: 'Tap the patient anywhere: the nearest boo-boo gets a bandage.' },
-      { from: 2, to: 2, text: 'Listen to where the patient hurts, then drag the bandage onto that place.' },
+      { from: 2, to: 2, text: 'Listen to where the patient hurts, then tap that place on the patient, or drag the bandage there.' },
       { from: 3, to: 3, text: 'Look at what is wrong, then drag what helps onto the patient.' },
       { from: 4, to: 4, text: 'Listen to what hurts, then use the right thing in the right place.' },
       { from: 5, to: 5, text: 'Do the check-up in the order shown on the picture card.' },
@@ -1988,6 +2089,25 @@ export const HOW_TO: Record<string, GameHowTo> = {
         text: 'A run that misses is an experiment, not a wrong answer. Loose ramps can be moved back to their tray, and this puzzle has several working designs.',
       },
       { text: 'A run that misses is an experiment, not a wrong answer. Loose ramps can be moved back to their tray.' },
+    ],
+  },
+  'story-weaver': {
+    goal: 'Build a little three-page story from picture tiles and hear the pet read it back.',
+    steps: [
+      'Touch a tile to hear its words; touch it again to put it on the page. Touch a tile on a page to take it back off.',
+      { from: 1, to: 1, text: 'Pages open one at a time: who and where, then what went wrong (what they tried is optional; the arrow turns the page), then how it ended.' },
+      { from: 2, text: 'Any page can be filled in any order; touch a page space to choose which tiles show.' },
+      { from: 2, to: 2, text: 'The ear button reads the story to the owl, who cannot see the pictures. If a part is missing, the owl asks about it.' },
+      { from: 3, to: 3, text: 'Once the story has who, where, what went wrong and an ending, pick how the friend felt, then the part of the story that made them feel that way.' },
+    ],
+    finish: [
+      { from: 1, to: 1, text: 'Placing the ending reads the whole story and finishes the round.' },
+      { from: 2, to: 2, text: 'A complete story read to the owl finishes the round, and so does the green "That\'s my story" button at any time.' },
+      { from: 3, to: 3, text: 'A reason that fits the feeling reads the whole story with "because" and finishes the round.' },
+    ],
+    note: [
+      { from: 1, to: 2, text: 'Nothing here can be wrong: the owl\'s question is a suggestion, never a mistake, and leaving a part out is fine.' },
+      { from: 3, to: 3, text: 'The first reason that does not fit is free; the owl only asks. After that, each one that does not fit counts a miss, and after two misses the parts that fit glow, which counts as one hint (so does the star button).' },
     ],
   },
   'rhyme-time': {

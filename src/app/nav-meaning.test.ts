@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Container } from 'pixi.js';
 vi.mock('../audio/voice', () => ({ voice: { stop: vi.fn(), say: vi.fn(async () => {}), unlock: vi.fn() } }));
 vi.mock('../audio/music', async (real) => ({ ...(await real<object>()), music: { play: vi.fn(), stop: vi.fn() } }));
@@ -10,6 +10,8 @@ import { store } from '../progress/store';
 import type { Meaning } from '../ui/origin-art';
 import type { Origin } from './App';
 import { ArcadeScene } from './scenes/ArcadeScene';
+import type { Scene } from './Scene';
+import { sceneFixture } from '../test-support/scenes';
 import { ExploreScene } from './scenes/ExploreScene';
 import { GameScene } from './scenes/GameScene';
 import { HOUSE_X } from './scenes/LandScene';
@@ -22,6 +24,8 @@ import { PlayScene } from './scenes/PlayScene';
  * whatever opened the screen, as the RW03 route table (docs/rework/HOME-NAVIGATION.md#routes-and-meaning) says. Each
  * screen is built fresh for each of its marked buttons, which is pressed as a tap or a completed hold would.
  */
+
+const keep = sceneFixture();
 
 type Pressable = Container & { meaning?: Meaning | null; press(): void };
 const ROUTES = ['hub', 'explore', 'land', 'place', 'journal', 'library', 'room', 'project', 'picnic', 'woodland', 'stickers', 'game', 'start'] as const;
@@ -36,7 +40,9 @@ function fakeApp() {
 const marked = (scene: object): Pressable[] => Object.values(scene).filter((v): v is Pressable => !!v && typeof v === 'object' && !!(v as Pressable).meaning);
 
 async function walk(make: (app: App) => object & { tw?: { update(dt: number): void } }, buttons: (scene: object) => Pressable[] = marked) {
-  const count = buttons(make(fakeApp())).length;
+  const probe = make(fakeApp());
+  const count = buttons(probe).length;
+  await keep.dispose(probe as Scene);
   const calls: { meaning: Meaning; route: string; args: unknown[] }[] = [];
   for (let i = 0; i < count; i++) {
     const app = fakeApp();
@@ -51,6 +57,7 @@ async function walk(make: (app: App) => object & { tw?: { update(dt: number): vo
     const called = ROUTES.filter((r) => app.go[r].mock.calls.length);
     expect(called, `${b.meaning} calls one route`).toHaveLength(1);
     calls.push({ meaning: b.meaning!, route: called[0], args: app.go[called[0]].mock.calls[0] });
+    await keep.dispose(scene as Scene);
   }
   return calls;
 }
@@ -63,7 +70,14 @@ const expectOneMeaning = (calls: Awaited<ReturnType<typeof walk>>, back: { route
   }
 };
 
+afterEach(async () => {
+  await keep.cleanup();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
+
 beforeEach(() => {
+  vi.clearAllMocks();
   vi.stubGlobal('window', Object.assign(new EventTarget(), { setTimeout, clearTimeout }));
   vi.stubGlobal('document', new EventTarget());
   store.data = defaults();
@@ -72,30 +86,30 @@ beforeEach(() => {
 
 describe('one meaning per button at the root (RW14 slice 3)', () => {
   it('creature play: Back and the house both go Home, which opened it', async () => {
-    expectOneMeaning(await walk((app) => new PlayScene(app as never)), { route: 'hub' });
+    expectOneMeaning(await walk((app) => keep(new PlayScene(app as never))), { route: 'hub' });
   });
 
   it('Explore and each of its pages: the house goes Home, Back goes up one level', async () => {
-    expectOneMeaning(await walk((app) => new ExploreScene(app as never)), { route: 'hub' });
+    expectOneMeaning(await walk((app) => keep(new ExploreScene(app as never))), { route: 'hub' });
     for (const entry of ['places', 'favorites', 'all', 'family'] as const) {
-      const calls = await walk((app) => new ExploreScene(app as never, entry));
+      const calls = await walk((app) => keep(new ExploreScene(app as never, entry)));
       expect(calls.map((c) => c.meaning).sort()).toEqual(['back', 'home']);
       expectOneMeaning(calls, { route: 'explore', args: [] });
     }
   });
 
   it('the Arcade: the house goes Home, Back goes up to Explore', async () => {
-    const calls = await walk((app) => new ArcadeScene(app as never));
+    const calls = await walk((app) => keep(new ArcadeScene(app as never)));
     expect(calls.map((c) => c.meaning).sort()).toEqual(['back', 'home']);
     expectOneMeaning(calls, { route: 'explore', args: [] });
   });
 
   it('the library: Back goes to creature play, the house goes Home', async () => {
-    expectOneMeaning(await walk((app) => new LibraryScene(app as never)), { route: 'room' });
+    expectOneMeaning(await walk((app) => keep(new LibraryScene(app as never))), { route: 'room' });
   });
 
   it('a location: Back goes to Places and says so, the house beside it goes Home', async () => {
-    const calls = await walk((app) => new LocationScene(app as never, 'rainbow-meadow', () => (app.go.explore as (e: string) => void)('places')));
+    const calls = await walk((app) => keep(new LocationScene(app as never, 'rainbow-meadow', () => (app.go.explore as (e: string) => void)('places'))));
     expect(calls).toEqual([
       { meaning: 'back', route: 'explore', args: ['places'] },
       { meaning: 'home', route: 'hub', args: [] },
@@ -105,7 +119,7 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
   });
 
   it('a location\'s house stands beside Back, at least 100 units across, clear of Back and the heading', () => {
-    const s = new LocationScene(fakeApp() as never, 'counting-cove', () => undefined);
+    const s = keep(new LocationScene(fakeApp() as never, 'counting-cove', () => undefined));
     const r = s.house!.radius;
     expect(r * 2).toBeGreaterThanOrEqual(100);
     // Every view is at least 1024 wide, so the heading's 380 keeps clear of the house's hit circle.
@@ -121,14 +135,14 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
       [{ explore: 'all', page: 1, others: false }, 'explore', ['all', 1, false]],
       [{ library: true }, 'library', []],
     ] as [Origin, string, unknown[]][]) {
-      const calls = await walk((app) => new GameScene(app as never, mod, 'lap', undefined, false, origin), (s) => [(s as unknown as { home: Pressable }).home]);
+      const calls = await walk((app) => keep(new GameScene(app as never, mod, 'lap', undefined, false, origin)), (s) => [(s as unknown as { home: Pressable }).home]);
       expect(calls).toEqual([{ meaning: 'back', route, args }]);
     }
   });
 
   it('a result: Back to the origin, the house Home; with no named origin a plain Back, and a story\'s basket to its page', async () => {
     const mod = gameById('bubble-pop')!;
-    const result = (origin?: Origin, story?: unknown) => (app: App) => new GameScene(app as never, mod, 'lap', story as never, false, origin);
+    const result = (origin?: Origin, story?: unknown) => (app: App) => keep(new GameScene(app as never, mod, 'lap', story as never, false, origin));
     const ways = (s: object) => {
       const { home, house } = (s as GameScene).resultWayOut();
       return [home, ...(house ? [house] : [])] as Pressable[];
@@ -143,7 +157,7 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
 
   it('a game\'s how-to card: Back goes to the origin and says its name', async () => {
     const app = fakeApp();
-    const s = new GameScene(app as never, gameById('bubble-pop')!, 'lap', undefined, false, { land: 'counting-cove' });
+    const s = keep(new GameScene(app as never, gameById('bubble-pop')!, 'lap', undefined, false, { land: 'counting-cove' }));
     app.scene = s;
     (s as unknown as { backFromIntro(): void }).backFromIntro();
     await new Promise((r) => setTimeout(r, 0));
@@ -154,7 +168,7 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
 
   it('on the island nothing is marked: classic keeps its buttons', () => {
     const app = { ...fakeApp(), creatureWorld: false };
-    const s = new GameScene(app as never, gameById('bubble-pop')!, 'lap', undefined, false, { land: 'counting-cove' });
+    const s = keep(new GameScene(app as never, gameById('bubble-pop')!, 'lap', undefined, false, { land: 'counting-cove' }));
     expect(s.resultWayOut().home.meaning).toBeNull();
     expect(s.resultWayOut().house).toBeNull();
     expect((s as unknown as { home: Pressable }).home.meaning).toBeNull();

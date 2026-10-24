@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
-import { dropSlot, hintPiece, nextToPlace, outerSides, PICTURE_H, PICTURE_W, piecesFor, PUZZLE_PLANS, slotCenter, trayRows, whereWords } from './logic';
+import { dropSlot, hintPiece, nextToPlace, outerSides, PICTURE_H, PICTURE_W, piecesFor, PUZZLE_PLANS, slotCenter, TAP_HOP, tapHops, trayRows, whereWords } from './logic';
 
 describe('Puzzle Pals', () => {
   it('hinted corners lead to adjacent edges, then an interior beside a placed piece', () => {
@@ -98,5 +98,13 @@ describe('Puzzle Pals', () => {
     const plan = PUZZLE_PLANS[0];
     const [, right] = piecesFor(plan);
     expect(dropSlot(plan, 20, 20, [right])).toEqual(right);
+  });
+
+  it('lets a tapped piece hop into place on the one- and two-piece pictures only', () => {
+    expect(PUZZLE_PLANS.slice(0, 2).every(tapHops)).toBe(true);
+    expect(PUZZLE_PLANS.slice(2).some(tapHops)).toBe(false);
+    // A tap is judged where the piece was let go: it must still be within a finger's wobble of its tray spot.
+    expect(TAP_HOP).toBeGreaterThan(10);
+    expect(TAP_HOP).toBeLessThan(60);
   });
 });
