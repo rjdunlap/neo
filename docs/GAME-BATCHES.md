@@ -266,6 +266,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### rhythm-neighbors 2: Knock a call
 
+Built 2026-10-24, [PR #925](https://github.com/rjdunlap/neo/pull/925); [closeout](archive/COMPLETED-2026-10-09.md#rhythm-neighbors-level-9-knock-a-call-slice-4-2026-10-24). Scope retained below.
+
 - **`rhythm-neighbors`, level 9 Knock a call** (new interaction tier; after level 8): she knocks the tree two to five times and the frogs answer with the gaps reversed; toddler `[2, 8, 9, 3]`, preschool `[9, 3, 4]`, `entryLevels [7, 9]`. [Dive](deep-dives/rhythm-neighbors.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
