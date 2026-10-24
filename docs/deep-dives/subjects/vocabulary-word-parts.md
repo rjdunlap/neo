@@ -141,7 +141,7 @@ Product details are **recalled** unless marked; nothing was played.
 ## Build slices, in order
 
 1. **VW1 define: Word Glue levels 1–3** (**defined 2026-10-22**: [definition](../../definitions/word-glue.md), PR #816; docs only, one packet in `docs/definitions/word-glue.md`): the compound table with parts, distractors and deny list, the bands, land capacity, accounting, voice lines, how-to lines, bot, rule tests and asset list. Merges after decision 1 is noted as open; its build waits on decisions 1–2.
-2. **VW1 build** (new-game tier: typecheck, unit tests, one filtered play of levels 1 and 3 with one wrong pair and one hint, `fingerdemo`, one portrait screenshot).
+2. **VW1 build** (claimed 2026-10-24, branch `claude/word-glue`; new-game tier: typecheck, unit tests, one filtered play of levels 1 and 3 with one wrong pair and one hint, `fingerdemo`, one portrait screenshot).
 3. **VW2 define and build: levels 4–5** after a child has played level 3.
 4. **VW3 *Name the new thing*** and **VW4 Suffix Workshop** define, after VW2.
 5. **VW6 first step: a Word Search root-family theme list** (content only, after an ordinary review); Root Words and Root Garden stay sketches until decision 4.
