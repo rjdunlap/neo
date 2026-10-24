@@ -5,7 +5,7 @@ import { courseSpec, repairCourse, type CourseSave } from './course';
 import { isCourseId, type CourseId } from './courses';
 import { repairSettings, settingsDefaults, type CouchSettings } from './settings';
 
-export const COUCH_IDS = ['penguin-slide', 'bouncy-launch', 'bounce-back', 'memory-match', 'rhythm-neighbors', 'light-lab', 'secret-code', 'peg-garden', 'bumper-garden', 'pattern-train', 'egg-catch', 'robot-path', 'frog-hop', 'sink-float', 'sudoku-garden', 'lantern-lights', 'picture-logic', 'ferry-jam', 'word-search', 'island-bridges', 'pond-conga', 'tile-pairs', 'gem-swap', 'treasure-map', 'garden-rows'] as const;
+export const COUCH_IDS = ['penguin-slide', 'bouncy-launch', 'bounce-back', 'memory-match', 'rhythm-neighbors', 'light-lab', 'secret-code', 'peg-garden', 'bumper-garden', 'pattern-train', 'egg-catch', 'robot-path', 'frog-hop', 'sink-float', 'sudoku-garden', 'lantern-lights', 'picture-logic', 'ferry-jam', 'word-search', 'island-bridges', 'pond-conga', 'tile-pairs', 'gem-swap', 'treasure-map', 'garden-rows', 'pond-typing'] as const;
 export type CouchId = typeof COUCH_IDS[number];
 export const STOPS = 6;
 /** Together: shared lanterns. Face-off: the same six stops, with a winner at each. */
@@ -61,7 +61,7 @@ export const newParty = (mode: TripMode, seed: number): Party => ({ seed, rounds
  * (either mode) opens the next. Derived from the trip count, never stored, so a reload or a restored
  * backup can't award twice, and nothing locks again.
  */
-export const UNLOCK_TIERS: readonly (readonly CouchId[])[] = [['penguin-slide', 'bouncy-launch', 'bounce-back'], ['memory-match', 'rhythm-neighbors'], ['light-lab', 'secret-code'], ['peg-garden', 'bumper-garden'], ['pattern-train', 'egg-catch'], ['frog-hop', 'sink-float'], ['robot-path'], ['sudoku-garden'], ['lantern-lights'], ['picture-logic'], ['ferry-jam'], ['word-search'], ['island-bridges'], ['pond-conga'], ['tile-pairs'], ['gem-swap'], ['treasure-map'], ['garden-rows']];
+export const UNLOCK_TIERS: readonly (readonly CouchId[])[] = [['penguin-slide', 'bouncy-launch', 'bounce-back'], ['memory-match', 'rhythm-neighbors'], ['light-lab', 'secret-code'], ['peg-garden', 'bumper-garden'], ['pattern-train', 'egg-catch'], ['frog-hop', 'sink-float'], ['robot-path'], ['sudoku-garden'], ['lantern-lights'], ['picture-logic'], ['ferry-jam'], ['word-search'], ['island-bridges'], ['pond-conga'], ['tile-pairs'], ['gem-swap'], ['treasure-map'], ['garden-rows'], ['pond-typing']];
 const completed = (trips: number) => Number.isFinite(trips) ? Math.max(0, Math.floor(trips)) : 0;
 export const unlockedIds = (trips: number, tiers = UNLOCK_TIERS): CouchId[] => tiers.slice(0, completed(trips) + 1).flat();
 export const tierOf = (id: CouchId, tiers = UNLOCK_TIERS) => tiers.findIndex(t => t.includes(id));
@@ -131,8 +131,10 @@ export const starterOf = (party: Party): 0 | 1 => party.rounds.length % 2 === 0 
 export const playerNow = (party: Party): 0 | 1 => party.turn ? (starterOf(party) === 0 ? 1 : 0) : starterOf(party);
 
 /** Three choices from the unlocked games: stable across reload, preferring games not yet played this trip and not the last two. */
-export function offers(party: Party, trips: number, tiers = UNLOCK_TIERS): CouchId[] {
-  const pool = new Rng(seedFor(party) + party.reroll * 15485863).shuffle([...unlockedIds(trips, tiers)]);
+/** Games played only on a keyboard: a TV with a controller is never offered them. */
+export const keyboardOnly: readonly CouchId[] = ['pond-typing'];
+export function offers(party: Party, trips: number, tiers = UNLOCK_TIERS, skip: readonly CouchId[] = []): CouchId[] {
+  const pool = new Rng(seedFor(party) + party.reroll * 15485863).shuffle(unlockedIds(trips, tiers).filter(id => !skip.includes(id)));
   if (pool.length <= 3) return pool;
   const recent = party.rounds.slice(-2).map(r => r.id);
   const played = new Set(party.rounds.map(r => r.id));

@@ -12,7 +12,7 @@ import { finaleOf, namerOf, stopLabel, type Finale } from '../../couch/finale';
 import { FinaleStage } from '../../couch/finale-stage';
 import { completeCourse, courseDefaults, courseOf, noteProgress, startRun, BADGES, courseSpec, type CourseSpec, type Outcome, type PlayerRecord } from '../../couch/course';
 import { COURSE_IDS, countOf, courseInfo, unitsOf, type CourseId, type CourseInfo } from '../../couch/courses';
-import { cleanName, completeRound, isNew, levelFor, markSeen, NAME_MAX, newParty, nextTier, offers, playerNow, repairCouch, reshuffle, roundToken, seedFor, starterOf, STOPS, tally, unlockedIds, type CouchId, type CouchRound, type Party, type TripMode } from '../../couch/party';
+import { cleanName, completeRound, isNew, keyboardOnly, levelFor, markSeen, NAME_MAX, newParty, nextTier, offers, playerNow, repairCouch, reshuffle, roundToken, seedFor, starterOf, STOPS, tally, unlockedIds, type CouchId, type CouchRound, type Party, type TripMode } from '../../couch/party';
 import { PLACE_CHOICES, PLACE_NAMES, PLAYER_CHOICES, PLAYER_NAMES, TEXT_NAMES, TEXT_SIZES, VOLUME_MAX, cardHint, gainFor, menuHint, nextText, nudgeVolume, placeReason, resolvePlace, unitFor, type Place, type PlaceChoice, type Players, type TextSize } from '../../couch/settings';
 import { canWatchRoute, shelfEntry, standing } from '../../couch/shelf';
 import { couchStore } from '../../couch/store';
@@ -302,7 +302,7 @@ export class CouchScene extends Scene {
     if (last) sheet.append(node('p', this.resultLine(last, p), 'couch-result'));
     if (p.selected) this.button(sheet, `Resume ${gameById(p.selected)!.name}${p.turn && !alone ? ` · ${who(playerNow(p))}’s turn` : ''}`, () => this.go(true), 'couch-primary');
     const grid = node('div', '', 'couch-cards'); sheet.append(grid);
-    for (const id of offers(p, this.couch.data.trips)) {
+    for (const id of offers(p, this.couch.data.trips, undefined, this.place() === 'tv' ? keyboardOnly : [])) {
       const mod = gameById(id)!, info = COUCH_INFO[id];
       const bt = this.button(grid, '', () => { p.selected = id; this.couch.save(); this.go(true); }, `couch-card couch-card-${id}`);
       bt.dataset.game = id;
@@ -757,12 +757,14 @@ export class CouchScene extends Scene {
     const run = course && courseOf(this.couch.data, course.spec).run;
     const resume = { board: run?.slides.length ?? 0, done: run?.slides.slice() ?? [], attempts: run?.attempts ?? 0, assisted: run?.assisted ?? false };
     const couch = course ? { versus: false, course: { id: course.spec.id, resume, progress: (p: CourseProgress) => this.courseProgress(p) } } : { versus: party!.mode === 'faceoff' && info.faceoff === 'shared' };
-    this.game = mod.create({ stage: this.stage, view: this.view, level: course ? course.info.level : levelFor(id, party!.rounds.length), band: info.band, couch, rng: new Rng(course ? course.token : seedFor(party!, party!.turn ? 1 : 0)), tw: this.tw, particles: this.particles, renderer: this.app.renderer, pet: this.pet, companion: makeStar, childName: 'friend', track: o => this.track(o), untrack: o => this.untrack(o),
+    this.game = mod.create({ stage: this.stage, view: this.view, level: course ? course.info.level : levelFor(id, party!.rounds.length), band: info.band, couch, rng: new Rng(course ? course.token : seedFor(party!, party!.turn ? 1 : 0)), tw: this.tw, particles: this.particles, renderer: this.app.renderer, pet: this.pet, companion: makeStar, childName: mod.typing && party?.mode !== 'faceoff' ? this.couch.data.names[0] || 'friend' : 'friend', track: o => this.track(o), untrack: o => this.untrack(o),
       instruct: (line, vars) => { const said = speak(line); this.instruction = { id: said, vars }; this.caption.textContent = voice.line(said, vars); return this.whileHere(voice.say(said, vars)); },
       say: (line, vars) => this.whileHere(voice.say(speak(line), vars)), finish: result => this.finish(result),
     });
     // The overlay owns couch controls; avoid competing touch steering and global drag releases.
     this.stage.eventMode = 'none';
+    // A typing game reads the letter keys themselves, but only while its round is on screen (not the pause menu).
+    this.input.typing = () => !!mod.typing && this.screen === 'game';
     this.game.resize(this.view); music.play(mod.music); this.game.start();
   }
 

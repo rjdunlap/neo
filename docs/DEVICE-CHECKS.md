@@ -1,5 +1,9 @@
 # Needs a person or a device
 
+## Pond Typing levels 1–3 (KE2, 2026-10-24)
+
+- [ ] With a child at a real laptop keyboard: can she find and press a letter on a waiting bubble, and does the name and the space-bar level read and feel fair? Also a real keyboard on a laptop rather than Chrome automation, and device speech for the prompts.
+
 ## Illustrated duck pilot (RW14 slice 6, 2026-10-23)
 
 - [ ] On an iPad, judge Duck Pond's R22 still duck beside the illustrated Rainbow Meadow from slice 4 once available: face/outline at play size, bob/squash, countability, and touch comfort in both orientations. Browser portrait proof: `test-results/browser/duck-pond-12-illustrated-portrait.png`; [PR #904](https://github.com/rjdunlap/neo/pull/904). Other duck games keep their drawings pending this judgement; a screenshot does not establish a child's response or device speech.

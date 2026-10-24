@@ -211,6 +211,17 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The picture is done when every filled square matches its numbers.',
     note: 'A fill outside the picture is a miss, and a hint is help. Crossing and emptying are free.',
   },
+  'pond-typing': {
+    goal: 'Press the key a bubble shows, on a real keyboard. Played on the couch, on a laptop with its keyboard.',
+    steps: [
+      { from: 1, to: 1, text: 'A bubble holds one letter. Press that letter\'s key and the bubble pops.' },
+      { from: 2, to: 2, text: 'The bubbles spell her name, one letter each, in order.' },
+      { from: 3, to: 3, text: 'A bubble holds a word, typed letter by letter; two words need the space bar between them.' },
+      'The key cap under the bubble shows the key to press. Esc opens the pause menu: glow the key, or start this bubble again.',
+    ],
+    finish: 'The round ends when every bubble has popped.',
+    note: 'Nothing is timed and no bubble drifts away. The first wrong key on a letter is free; each wrong key after that counts a miss, and a second wrong key glows the key, which counts as help.',
+  },
   'word-search': {
     goal: 'Find the hidden words in a grid of letters.',
     steps: [

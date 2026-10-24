@@ -8,6 +8,7 @@ import { COURSES as HARBORS_COURSE, courseBest as harborBest, courseMinimum as h
 import { COURSES as PICTURES, courseBest as pictureBest, courseMinimum as pictureMinimum, type PictureCourseId } from '../games/picture-logic/course';
 import { COURSES as LANTERNS, courseBest as lanternBest, courseMinimum as lanternMinimum, type LanternCourseId } from '../games/lantern-lights/course';
 import { COURSES as BEDS, courseBest as bedBest, courseMinimum as bedMinimum, type BedCourseId } from '../games/sudoku-garden/course';
+import { COURSES as TYPING, courseBest as typingBest, courseMinimum as typingMinimum, type TypingCourseId } from '../games/pond-typing/course';
 import type { CouchId } from './party';
 
 /**
@@ -16,9 +17,9 @@ import type { CouchId } from './party';
  * speaks about them and how many there are. Adding a course means a game that can play one, an entry
  * here, and a save for it (`couch/course.ts` is generic over all of them).
  */
-export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId | WordCourseId | BridgeCourseId | CongaCourseId;
+export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId | WordCourseId | BridgeCourseId | CongaCourseId | TypingCourseId;
 /** In the order the Challenges menu shows them: a gentle one first. */
-export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga'];
+export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga', 'typing'];
 export const isCourseId = (v: unknown): v is CourseId => COURSE_IDS.includes(v as CourseId);
 
 export interface CourseInfo {
@@ -136,6 +137,19 @@ const build: Record<CourseId, () => CourseInfo> = {
       minimum: { title: 'Every plank right', how: 'Join every sea with exactly the answer\'s planks and no hint.' },
     },
   }),
+  typing: () => ({
+    id: 'typing', game: 'pond-typing', level: 3, version: TYPING.typing.version, name: TYPING.typing.name, blurb: TYPING.typing.blurb,
+    card: 'Pond Typing, three ponds of bubbles on the keyboard: letters, words, then two words with a space. Every bubble waits.',
+    part: 'pond', unit: 'key', par: 'fewest', routes: false, best: typingBest('typing'), minimum: typingMinimum('typing'),
+    rule: 'Type every bubble with as few keys as you can: one for each letter and space. A wrong key counts too; nothing is timed.',
+    note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a pond starts it again, and the keys you pressed on it still count.',
+    leaving: 'Leaving or refreshing starts the pond you are on again, and the keys you pressed on it still count. Finished ponds stay saved.',
+    done: 'couch.course.typing',
+    badges: {
+      finish: { title: 'Finished', how: 'Type every bubble in every pond, with or without help.' },
+      minimum: { title: 'Every key right', how: 'Type every bubble with the right key first every time and no hint.' },
+    },
+  }),
   words: () => words('words', 'Word Search, three themed grids in a row. Find every word with as few guesses as you can, then beat your own best.', 'couch.course.words'),
   bigwords: () => words('bigwords', 'Word Search, two big 14 by 14 grids with twelve words each, in every direction. An evening\'s puzzle.', 'couch.course.bigwords'),
   harbors: () => ({
@@ -193,7 +207,7 @@ export function courseInfo(id: CourseId): CourseInfo {
 
 /** The couch course the island opens for a game that only takes a controller: its first one. A test checks each names its own game. */
 export const FIRST_COURSE: Readonly<Record<string, CourseId>> = {
-  'lantern-lights': 'lanterns', 'sudoku-garden': 'beds', 'picture-logic': 'pictures', 'word-search': 'words', 'island-bridges': 'bridges', 'pond-conga': 'conga',
+  'lantern-lights': 'lanterns', 'sudoku-garden': 'beds', 'picture-logic': 'pictures', 'word-search': 'words', 'island-bridges': 'bridges', 'pond-conga': 'conga', 'pond-typing': 'typing',
 };
 
 /** "slides", "launches", "entries". */

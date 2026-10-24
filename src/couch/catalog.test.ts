@@ -13,7 +13,8 @@ describe('couch catalog', () => {
       expect(SCRIPT[info.goal], id).toHaveLength(1);
       expect(info.controls.length, id).toBeGreaterThan(0);
       for (const row of info.controls) {
-        expect(row.parts.length).toBeGreaterThan(0);
+        // A typing game's letter keys and space bar are no controller part: its row names the key in words.
+        if (!mod.typing) expect(row.parts.length).toBeGreaterThan(0);
         expect(row.text.length).toBeGreaterThan(0);
       }
       expect(mod.bands, id).toContain(info.band);
