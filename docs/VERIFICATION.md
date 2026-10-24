@@ -1,9 +1,16 @@
 # Puddle Island verification
 
+## 2026-10-24 — Location capacity definition (docs only)
+
+- [PR #914](https://github.com/rjdunlap/neo/pull/914), `claude/location-capacity`: [definition](definitions/location-capacity.md) of pages for a full land; no code changed.
+- Probe: a throwaway vitest probe of `landLayout`, `visibleIn` and `olderIn` on `origin/main` `edd6a74b`, deleted afterward. 4:3 landscape binds at 14 spots, Rainbow Meadow's scenery fails at 14, and portrait and phone fit 23 or more.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, unit tests, build, browser (docs only).
+- Open: the build.
+
 ## 2026-10-23 — The Arcade: portal-style game grid (Explore's fifth entry)
 
 - Explore's fifth entry at the root, `ArcadeScene`: every game in a paged grid with derived tags, one spotlight running the chosen game's bot `Demo` (attract mode until she taps), a Topics sheet (All, Played before, ten subjects) and Back to the same page; `src/content/arcade.ts`, `src/creatures/arcade-layout.ts` ([packet](rework/ARCADE.md), [PR #900](https://github.com/rjdunlap/neo/pull/900)).
-- Ran (after merging `origin/main` at `fcb5d306`, RW14 slice 3): typecheck; `npm test` (220 files, 2736 tests, including the new list/tag and layout tests, Explore's five-entry layout and the Arcade in `nav-meaning.test.ts`); `npm run build`.
+- Ran (last on 2026-10-24 after merging `origin/main` through RW14 slice 9 and RW07 slice 3; five entries fit under slice 8's postcard in both orientations): typecheck; `npm test` (223 files, 2763 tests, including the new list/tag and layout tests, Explore's five-entry layout and the Arcade in `nav-meaning.test.ts`); `npm run build`.
 - Browser at `http://localhost:5191` (dev server, merged tree): `BROWSER_SUITE=home HOME_ONLY=arcade` passed on the final code; full `BROWSER_SUITE=home` passed after its Family play tap moved from card index 3 to the `family` entry (an earlier run died to an HMR reload from an edit mid-run).
 - Not run: offline check (no new assets), `world`, how-to cards on while launching from the Arcade (scripts turn them off). Open for a person: iPad frame rate with the spotlight, device speech, a child's tap-to-watch/tap-to-play reading ([DEVICE-CHECKS.md](DEVICE-CHECKS.md)).
 
@@ -99,14 +106,6 @@
 - Ran: typecheck; `npm test` (217 files, 2720 tests, including the six location tests through `residentProblems`); `npm run build` (precache 174 entries, 11532.26 KiB, zero cast PNGs in `dist/assets`).
 - Browser: `BROWSER_SUITE=home HOME_ONLY=residents RESIDENT_LAND=bubble-beach` at `http://localhost:5564`, passed twice (before and after Tote's fit changed from 0.85 to 0.95). `npm run test:offline` against `vite preview --port 5546` of the current build passed (167 cached assets).
 - Not run: the other five locations in the browser, `world`, `picnic`, couch suites (unchanged). Open for a person: an iPad, real speech of the six hello lines and the child's reaction ([DEVICE-CHECKS.md](DEVICE-CHECKS.md)).
-
-## 2026-10-23 — Oceans study (subject research, docs only)
-
-- [PR #849](https://github.com/rjdunlap/neo/pull/849), `claude/confident-gates-lvnhu9`: [study](deep-dives/subjects/oceans.md), tracker, packet, roadmap, notebook, backlog, READY (research line replaced by the Tide Line definition) and a Waiting row.
-- Opened: California's copy of NGSS 2-ESS2-2/3, 4-ESS2-2, 5-ESS2-2, MS-ESS2-6 and K-ESS3-3; the NOAA Ocean Literacy poster; two Common Sense Media reviews; Sobel's essay; a Smithsonian pre-K zones lesson. Search summaries only: tide-misconception studies, aquarium touch-pool rules, Ocean Conservancy data card, currents activities, Georgia Aquarium depths, Endless Ocean/Abzu/Beyond Blue.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, units, build, browser or device checks (docs only); nothing implemented.
-- Open: an ocean reviewer, Ocean Literacy Guide V3.1, any NGSS tide expectation, Bubble Beach placement (a 14th game), decisions 1–9 in the study.
 
 ## Coverage summary
 
