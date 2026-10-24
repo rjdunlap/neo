@@ -141,7 +141,7 @@ Product details are **recalled** unless marked; nothing was played.
 ## Build slices, in order
 
 1. **VW1 define: Word Glue levels 1–3** (**defined 2026-10-22**: [definition](../../definitions/word-glue.md), PR #816; docs only, one packet in `docs/definitions/word-glue.md`): the compound table with parts, distractors and deny list, the bands, land capacity, accounting, voice lines, how-to lines, bot, rule tests and asset list. Merges after decision 1 is noted as open; its build waits on decisions 1–2.
-2. **VW1 build** (claimed 2026-10-24, branch `claude/word-glue`; new-game tier: typecheck, unit tests, one filtered play of levels 1 and 3 with one wrong pair and one hint, `fingerdemo`, one portrait screenshot).
+2. **VW1 build** (**built 2026-10-24**, PR #937; see [what was built](#what-was-built-vw1-word-glue-levels-13)).
 3. **VW2 define and build: levels 4–5** after a child has played level 3.
 4. **VW3 *Name the new thing*** and **VW4 Suffix Workshop** define, after VW2.
 5. **VW6 first step: a Word Search root-family theme list** (content only, after an ordinary review); Root Words and Root Garden stay sketches until decision 4.
@@ -150,3 +150,7 @@ Product details are **recalled** unless marked; nothing was played.
 ## What was built
 
 Nothing: a subject session is research and ideation only. Links and `git diff --check` ran on the changed docs. No game was opened or played; the island facts come from the docs and `src/content/lands.ts`.
+
+## What was built: VW1 Word Glue levels 1–3
+
+Built 2026-10-24 as the new game `word-glue` (`src/games/word-glue/`) in Story Grove (14 games); bands lap 1, toddler 1–2, preschool 2–3, pre-K 3, school 3. Level 1 *Stick them*: five pairs, a tap or a drag joins, nothing counted. Level 2 *What do they make?*: five asked words, three pictures (two parts and a seeded distractor that forms no listed or denied word with either part), one miss per distinct wrong pair per ask. Level 3 *Who is it for?*: two of three heads (house, box, brush), two asks each; a wrong friend briefly gets its real thing (one miss). After two misses the right pair or friend glows and counts one hint (once per ask); a wrong drop after the glow and two earlier wrong drops joins the right pair uncounted. Made things go to a decorative shelf and all play their animations at the end; nothing is kept or filed. The first round of each level in a session is the definition's authored round. Compound list checked in the build session (see the [definition](../../definitions/word-glue.md#open-decisions)).
