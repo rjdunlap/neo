@@ -444,8 +444,7 @@ class SpeciesComeback implements Game {
       if (this.finished) return;
       this.litLines.clear();
       for (const [id, c] of this.cards) if (c.state === 'lit') c.set(this.isCandidate(id) ? 'normal' : 'faded');
-      this.cards.get(a)!.scale.set(1);
-      this.cards.get(b)!.scale.set(1);
+      for (const id of [a, b]) if (this.lifted !== id) this.cards.get(id)!.scale.set(1);
       this.drawGlow();
     });
     this.afterMiss('pair');
