@@ -12830,8 +12830,13 @@ async function couchGames() {
     assert.equal(name, await page.evaluate(async (id) => (await import('/src/games/registry.ts')).couchGameById(id).name, id));
     assert.equal(await page.locator('.couch-how-screen svg.pad').count(), 1, `${id}: controller diagram`);
     assert.ok(await page.locator('.couch-rows li').count() >= 1, `${id}: control rows`);
-    await page.waitForFunction(() => neo.scene.demo?.lit.size > 0, null, { timeout: 30000 });
-    assert.ok(await page.locator('.pad .on').count() >= 1, `${id}: the diagram lights with the bot`);
+    // A typing game's bot presses letter keys, which the arrows-Enter-Esc diagram does not show: its demo has to type instead.
+    const typingGame = await page.evaluate(async (id) => !!(await import('/src/games/registry.ts')).couchGameById(id).typing, id);
+    if (typingGame) await page.waitForFunction(() => neo.scene.demo?.game?.typist?.presses > 0, null, { timeout: 30000 });
+    else {
+      await page.waitForFunction(() => neo.scene.demo?.lit.size > 0, null, { timeout: 30000 });
+      assert.ok(await page.locator('.pad .on').count() >= 1, `${id}: the diagram lights with the bot`);
+    }
     assert.equal(await page.evaluate(() => document.querySelector('.couch-how-screen').scrollHeight <= document.querySelector('.couch-how-screen').clientHeight + 1), true, `${id}: the intro fits the screen`);
     await screenshot(`couch-catalog-${id}`);
     await page.waitForTimeout(450);

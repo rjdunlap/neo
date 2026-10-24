@@ -106,6 +106,7 @@ import { tilePairs } from './tile-pairs';
 import { lanternLights } from './lantern-lights';
 import { pictureLogic } from './picture-logic';
 import { wordSearch } from './word-search';
+import { pondTyping } from './pond-typing';
 import { islandBridges } from './island-bridges';
 import { lemonadeStand } from './lemonade-stand';
 import { habitatHelpers } from './habitat-helpers';
@@ -240,6 +241,7 @@ export const GAMES: GameModule[] = [
   sudokuGarden,
   pictureLogic,
   wordSearch,
+  pondTyping,
   islandBridges,
   pondConga,
   numberNook,

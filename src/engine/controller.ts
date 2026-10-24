@@ -14,7 +14,11 @@ export interface PlayerControls {
   holdUndo: boolean;
 }
 /** `controllers` counts the standard-mapped pads connected right now, so a screen can tell a controller from a keyboard. */
-export interface CouchControls { players: [PlayerControls, PlayerControls]; disconnected: boolean; status: string; controllers: number }
+/**
+ * `typed`: the characters pressed since the last frame, in order, from `KeyboardEvent.key` (so the letter meant on any layout).
+ * Only a typing game (`CouchInput.typing`) ever sees any; for every other game, and on the island, it stays empty.
+ */
+export interface CouchControls { players: [PlayerControls, PlayerControls]; disconnected: boolean; status: string; controllers: number; typed?: string[] }
 export const neutral = (): PlayerControls => ({ x: 0, y: 0, direction: -1, action: false, undo: false, pause: false, back: false, active: false, hold: false, holdUndo: false });
 /** Nobody pressing anything: the starting point for a bot's frame of input. */
 export const idle = (): CouchControls => ({ players: [neutral(), neutral()], disconnected: false, status: '', controllers: 0 });
@@ -117,14 +121,28 @@ export class CouchInput {
   private sampler = new ControllerSampler();
   private readonly listening: () => boolean;
   private readonly codes: ReadonlySet<string>;
+  private typedKeys: string[] = [];
+  /**
+   * The game in play types (Pond Typing): any one-character key arrives in `typed` as well as, for Space, its usual press.
+   * W and S are letters then, not the second player's paddles. A held key repeats nothing.
+   */
+  typing: () => boolean = () => false;
   private readonly down = (e: KeyboardEvent) => {
-    if (!this.codes.has(e.code) || e.metaKey || e.ctrlKey || e.altKey || typing(e) || !this.listening()) return;
+    if (e.metaKey || e.ctrlKey || e.altKey || typing(e) || !this.listening()) return;
+    if (e.key.length === 1 && this.typing()) {
+      e.preventDefault();
+      if (!e.repeat && this.typedKeys.length < 32) this.typedKeys.push(e.key);
+      if (e.code === 'Space') this.keys.add(e.code);
+      this.unlock();
+      return;
+    }
+    if (!this.codes.has(e.code)) return;
     e.preventDefault();
     this.keys.add(e.code);
     this.unlock();
   };
   private readonly up = (e: KeyboardEvent) => { this.keys.delete(e.code); };
-  private readonly blur = () => { this.keys.clear(); this.onBlur(); };
+  private readonly blur = () => { this.keys.clear(); this.typedKeys = []; this.onBlur(); };
   private readonly hidden = () => { if (document.hidden) this.blur(); };
   /**
    * `island`: keys for a round on the island. Esc stays with the app's pause sheet, W and S (the second player) are left alone, and
@@ -141,7 +159,8 @@ export class CouchInput {
   poll() {
     let pads: (Gamepad | null)[] = [];
     try { pads = [...(navigator.getGamepads?.() ?? [])]; } catch { /* restricted embedding: keyboard remains usable */ }
-    return this.sampler.sample(pads, this.keys);
+    const typed = this.typedKeys; this.typedKeys = [];
+    return { ...this.sampler.sample(pads, this.keys), typed: this.typing() ? typed : [] };
   }
   destroy() {
     window.removeEventListener('keydown', this.down);

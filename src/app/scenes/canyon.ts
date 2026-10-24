@@ -94,6 +94,8 @@ export function canyonPlan(layout: LandLayout, view: View, ground: number): Cany
   if (!items.length) place('spring', 1, 105, 113, ground + 40, h - 8, 600, 0.75);
   place('pear', 3, 60, 72, ground + 30, h - 8);
   place('yucca', 3, 50, 76, ground + 40, h - 8);
+  // A full field with a signpost leaves little room between the spots: a smaller cactus still makes it a desert.
+  if (items.filter((i) => i.kind === 'pear' || i.kind === 'yucca').length < 2) place('pear', 1, 42, 50, ground + 30, h - 8, 600, 0.7);
   place('lizard', 2, 64, 36, ground + 30, h - 8);
   place('roadrunner', 1, 70, 52, ground + 30, h - 8);
   place('jackrabbit', 1, 50, 68, ground + 30, h - 8);
@@ -125,6 +127,7 @@ export function drawCanyon(g: Graphics, layout: LandLayout, view: View, ground: 
       spring(g, 0, 0);
       g.restore();
     }
+    else if (kind === 'pear' && k) { g.save().translateTransform(x, y).scaleTransform(k, k); pear(g, 0, 0); g.restore(); }
     else if (kind === 'pear') pear(g, x, y);
     else if (kind === 'yucca') yucca(g, x, y);
     else if (kind === 'lizard') lizard(g, x, y, x > view.w / 2 ? -1 : 1);
