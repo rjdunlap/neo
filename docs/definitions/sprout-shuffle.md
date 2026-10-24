@@ -85,6 +85,8 @@ Rule tests: route looks for `Aa × Aa` are `{spotted: 3, plain: 1}`, and the gen
 
 **Decided 2026-10-23 (on the developer's delegation):** 1: the session's source check replaces the named reviewer (voice lines no longer marked draft once checked). 2: option (a), register for school at level 1 with the "about 9 and up" note; the watched prototype becomes a device check. 3: option (a). 4: Rainbow Meadow if its layout test passes. G2 is unblocked.
 
+**Placement check, 2026-10-24 (the G2 session, [PR #912](https://github.com/rjdunlap/neo/pull/912)):** decision 4's condition fails. Rainbow Meadow now holds 12 games, not 7. With this school-only game added, the school view has 13 spots and the prek view has 12 plus a signpost. Either way, at 4:3 landscape the field fills the screen from y≈120 down, leaving no free 40-unit cell, so `meadow.test.ts` finds no room for its six flowers. A fallback to the hill behind the field cannot help, because the top row of spots already sits above the horizon. Every other land fails its own location test with the game added, and Tinker Lab and Puzzle Peaks also fail `lands.test.ts` (`landLayout` returns null). Under standing rule S8 the home stays Rainbow Meadow, and G2 waits for the location-capacity definition in [READY](../READY.md#queued). The code was backed out; the build itself is unchanged.
+
 The developer makes these calls. Each has a proposal, and none is settled.
 
 1. **Reviewer.** Name a biology/education reviewer for the toy rule, the "one spot copy is enough" wording, and inclusive parent/sprout language before G2 ships. Proposal: build G2 behind review, with the voice lines marked draft until reviewed.

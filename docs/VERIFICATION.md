@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-24 — Sprout Shuffle G2 placement check (blocked; docs only)
+
+- [PR #912](https://github.com/rjdunlap/neo/pull/912), `claude/sprout-shuffle-g2`: the G2 build stopped at its placement condition; the blocker and a location-capacity definition line are recorded in READY, the genetics dive and the definition.
+- Probe: with a stub `sprout-shuffle` module registered (school only), `npx vitest run src/content/lands.test.ts src/app/scenes/ src/app/nav-meaning.test.ts` was run once in each of the 11 lands. Every land failed. Rainbow Meadow failed `meadow.test.ts` at prek and school 4:3 landscape: 0 flowers, against a minimum of 6, and a free-cell grid found no 40-unit gap from y≈120 down. Tinker Lab and Puzzle Peaks failed `lands.test.ts` because `landLayout` returned null. Every other land failed its scene test, including small lands through the added signpost (Painted Canyon at preschool n=7, Music Mountain at toddler n=6).
+- Not run: typecheck, the unit suite, build and the browser checks. The stub and code were backed out, so only docs changed.
+- Open: the location-capacity definition, then G2 itself.
+
 ## 2026-10-23 — Measurement M3–M5 definition packets (docs only)
 
 - [PR #911](https://github.com/rjdunlap/neo/pull/911), `codex/measurement-m3-m5`: Measuring Post 1–4 and one provisional Weights Case; study/READY/backlog/queue closeout.
