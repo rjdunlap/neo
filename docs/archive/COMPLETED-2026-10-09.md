@@ -1834,7 +1834,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--ready-for-ad
 
 [PR #915](https://github.com/rjdunlap/neo/pull/915), `claude/location-pages` ([definition](../definitions/location-capacity.md)). `LAND_SPOTS = 13` (confirmed by the sweep), balanced `landPages`, `clampLandPage` and `landLayout(..., arrows)` with `prev`/`next` spots; a `PageArrow` (yellow round marker with a white arrow on a post, no word). `LandScene` and the root's `LocationScene` remember a page per side for the session (`forgetLands` clears it), the arrows turn on touch-down and say `explore.page`, the signpost opens the other side's remembered page, the host turns to the page of its suggestion, and the key ring follows the path. Origin is `{ land, page }` and `go.land(id, page?)` carries it. Every location test runs `landLayouts(id)`; Beach, Painted Canyon and Music Mountain were reworked with `scanPlace`. Pages today: Puzzle Peaks and Tinker Lab at school, Tinker Lab at prek (6+6), both at grown-up (7+6), Lantern Lake's bigger-kids side at child bands and Puzzle Peaks' at lap (6+6). Unblocks `sprout-shuffle`, `food-web-workshop`, `cue-studio` and `species-comeback`, each with its own placement check.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--location-capacity-pages-for-a-full-land).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-24.md#2026-10-24--location-capacity-pages-for-a-full-land).
 
 ## Mail Carrier batch 3: Compare delivery routes (2026-10-23)
 
@@ -1908,6 +1908,11 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--who-am-i-levels-13-z
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--second-chance-shed-levels-14-nature-sustainability-n2).
 
+## Gear Garden levels 1-3, machines-tools slice 2 (2026-10-24)
+
+[PR #933](https://github.com/rjdunlap/neo/pull/933), `claude/gear-garden`, per [the definition](../definitions/gear-garden.md): new game `gear-garden` (region tinker-lab; lap 1, toddler 1, preschool 1-2, pre-K 2-3, school 3), home land Painted Canyon because Tinker Lab was full at 14 games. Tap a machine of equal gears to spin a flower, drop the loose gear into a gap, choose and mend one of two machines and hear three gears keep the handle's direction and four reverse it; Turn-back at every level, misses always 0, at most one hint per machine; code-drawn art, a Kokoro title clip, how-to card and ghost finger. Real-world words and levels 4-5 wait on the mechanism reviewer and first play.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--gear-garden-levels-13-machines-tools-slice-2).
 ## Meadow Pens levels 1-3, slice 1 (2026-10-24)
 
 [PR #932](https://github.com/rjdunlap/neo/pull/932), `claude/meadow-pens`, per [the definition](../definitions/meadow-pens.md): new game `meadow-pens` (school 1-3) in Rainbow Meadow (region rainbow-meadow; the land now holds 14 games and pages, so no fallback land was needed). She paints squares of grass on a 6 by 4 grid (4 by 6 in portrait); the fence builds itself round the largest connected group, other squares are flowers and enclosed holes are ponds. Level 1 Enough grass, level 2 Rows of grass (card table, three cards, a wrong card fills the field row by row), level 3 Same grass, new fence (a stack of 10, 12 or 14). Two misses or Show a hint glow a pen that works and count one hint; ringing under the glow is a supported finish. One new Kokoro clip (the title). Review fixes: a level-2 finale crash after a helped last field, a stale friend position after rotation, and the portrait fence drawn on untransposed sides (found by the portrait screenshot). Deliberate simplifications: the wrong-ring fence count ticks piece by piece rather than being spoken per piece, the stack and cards sit under the grid in landscape, the finale has no tap to skip and friends play on the meadow rather than in kept pens, and level 1's ghost finger taps squares rather than showing a drag. Levels 4-5 are a later definition.

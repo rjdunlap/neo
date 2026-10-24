@@ -23,6 +23,13 @@
 
 - [ ] On an iPad with a school-age child: can she drag a food badge between far stations (and turn a backwards arrow) comfortably in both orientations; is device speech for the `web.*` lines clear; and does she read the arrow as "the food goes to the eater" as intended? Chrome proved the flow, portrait targets of 100 units or more and the ghost finger only; understanding and a person's response are untested.
 
+## Gear Garden levels 1–3 (machines-tools slice 2, 2026-10-24)
+
+- [ ] On an iPad with a lap child: does she connect a tap on the machine to the far flower turning, or only watch the flower?
+- [ ] On an iPad with a three-year-old: can she drag the loose gear into the gap (and does a short drop gliding home feel kind)?
+- [ ] With a pre-K child, speech off: is the four-gear reversal (the last flower turning the other way) noticed from the picture and arrow alone?
+- [ ] On the iPad's voice, does "the other way" read clearly?
+
 ## Cue Studio levels 1–2 (2026-10-23)
 
 - [ ] On an iPad with a pre-K child and a grown-up: can she tap a Wave or Turn card, press Play and watch her own pet perform it without help, and does the lit slot and dot make sense as "what is happening now" (and at level 2 the replace-a-slot step with Undo)? Are the 100-unit cards, slots and Play, Step, Undo, Finish and bulb comfortable in both orientations, and is the spoken support clear on the device? Chrome proved the flow, portrait targets and the ghost finger only; understanding, preschool readiness and a child's reaction are untested.
