@@ -480,7 +480,7 @@ Proof: as the [definition's check tier](definitions/recipe-workshop.md#check-tie
 
 ### meadow-pens 1: Levels 1–3
 
-Claimed 2026-10-24 on `claude/meadow-pens` (levels 1–3 as one batch; files under `src/games/meadow-pens/`, the registry, lands, voice script, how-to cards and scripted-play cases).
+Built 2026-10-24, [PR #932](https://github.com/rjdunlap/neo/pull/932); [closeout](archive/COMPLETED-2026-10-09.md#meadow-pens-levels-1-3-slice-1-2026-10-24). No longer eligible for dispatch.
 
 - **`meadow-pens`, levels 1–3 (slice 1)** (a new game, one declared batch; school 1–3, Rainbow Meadow by default): paint squares of grass for a friend's pen while the fence builds itself from a visible stack. Level 1, Enough grass (any connected shape with the squares asked for); level 2, Rows of grass (a field that fills by rows, three cards for the total); level 3, Same grass, new fence (use every piece of a stack of 10, 12 or 14). [Definition](definitions/meadow-pens.md), [area, volume and space study slice 1](deep-dives/subjects/area-volume-space.md#build-slices-in-order)
 
