@@ -20,3 +20,10 @@
 - Ran: typecheck; 175 unit tests (photo-safari logic 17, with new act/changed/true rule tests, registry and content); `BROWSER_SUITE=batch BATCH_ONLY=safari SAFARI_LEVELS=8,9,12` (two misses and one hint each, album, saved score, sticker, portrait screenshots of 8 and 9; level 9 re-run after the judge-phase tap fix); `BROWSER_SUITE=fingerdemo FINGER_ONLY=photo-safari FINGER_LEVELS=8,9,12` clean (24.7, 20.2, 13.1 s). `game-reviewer` found one defect (animal taps while judging), fixed.
 - Not run: build (no shared files or assets changed), offline, the unchanged levels.
 - Open: a toddler on entry 12, a child comparing the pinned photo at 8 and understanding 9's claims and thumbs on an iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md)); the lap fewer-animals entry waits on a person check.
+
+## 2026-10-24 — Location capacity definition (docs only)
+
+- [PR #914](https://github.com/rjdunlap/neo/pull/914), `claude/location-capacity`: [definition](../definitions/location-capacity.md) of pages for a full land; no code changed.
+- Probe: a throwaway vitest probe of `landLayout`, `visibleIn` and `olderIn` on `origin/main` `edd6a74b`, deleted afterward. 4:3 landscape binds at 14 spots, Rainbow Meadow's scenery fails at 14, and portrait and phone fit 23 or more.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, unit tests, build, browser (docs only).
+- Open: the build.

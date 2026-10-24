@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-24 — Gear Garden levels 1–3 (machines-tools slice 2)
+
+- `claude/gear-garden` ([PR #933](https://github.com/rjdunlap/neo/pull/933)), tested commit 38939024 on base origin/main eb605b1d, dev server `http://localhost:5645` (since stopped): new game in Painted Canyon (8 games; Tinker Lab is full at 14), levels 1–3, a Kokoro title clip.
+- Ran: `npm run typecheck`; `npm test` 2994/2994 (25 new rule tests, registry, lands, how-to); `BROWSER_SUITE=gears` passed twice, the second after the review fixes (level 1 face tap, Turn-back, three blooms 0/0; level 3 open B, short drop home, still flower, requested hint, portrait screenshot of board B, 0/1); `BROWSER_SUITE=fingerdemo FINGER_ONLY=gear-garden FINGER_LEVELS=1,3` passed (21.3 s, 30.8 s) before review fixes that touch only restart/resize; `npm run build`. Review fixes: a resize during a turn, hint or bloom waits; the gear is locked while it flies in; a queued turn is dropped on install; a press on a gear is only a turn.
+- Not run: offline check, unaffected suites, the fingerdemo again after the review fixes. Open: lap tap-to-flower link, a three-year-old's drag, the four-gear reversal without speech, iPad speech of "the other way" ([DEVICE-CHECKS](DEVICE-CHECKS.md#gear-garden-levels-13-machines-tools-slice-2-2026-10-24)).
+
 ## 2026-10-24 — Second Chance Shed levels 1–4 (nature-sustainability N2)
 
 - `claude/second-chance-shed` ([PR #930](https://github.com/rjdunlap/neo/pull/930)), tested on the dev server `http://localhost:5918` (since stopped) at base origin/main 70018b00 plus the branch: new game in Cozy Village (13 games), levels 1–4, one Kokoro clip for the title line.
@@ -87,13 +93,6 @@
 - Scripted look (Tinker Lab at school, root): pages 6+6; the next arrow turns to page 1; a game launched there returns to page 1; the host's suggestion turns back to page 0; portrait page 1 fine; no page errors.
 - Not run: couch suites (untouched). Open: iPad check of the arrows (no fitting section in [device checks](DEVICE-CHECKS.md) yet).
 
-## 2026-10-24 — Location capacity definition (docs only)
-
-- [PR #914](https://github.com/rjdunlap/neo/pull/914), `claude/location-capacity`: [definition](definitions/location-capacity.md) of pages for a full land; no code changed.
-- Probe: a throwaway vitest probe of `landLayout`, `visibleIn` and `olderIn` on `origin/main` `edd6a74b`, deleted afterward. 4:3 landscape binds at 14 spots, Rainbow Meadow's scenery fails at 14, and portrait and phone fit 23 or more.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, unit tests, build, browser (docs only).
-- Open: the build.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -102,6 +101,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | --- | --- | --- | --- |
 | Generated source art | 2026-10-23: R23 full-size/120 px/static landscape/portrait review, dimensions/hash, links/diff | [R23](archive/VERIFICATION-2026-10-23.md#2026-10-23--r23-rainbow-meadow-source-art) | Source only; peripheral clipping recorded; actual game integration/device judgement open |
 | Planning docs / study dispatch | 2026-10-21: batch task coverage, Next ten composition, links and diff checks | [Same-game batches](archive/VERIFICATION-2026-10-21.md#2026-10-21--same-game-level-batches) | Docs only; cache savings unmeasured; no gameplay/device proof |
+| `gears`, `fingerdemo` (`gear-garden`) | 2026-10-24: level 1 face tap, Turn-back, three blooms 0/0; level 3 open B, short drop home, still flower, requested hint, portrait screenshot, 0/1 (passed twice, after review fixes); ghost finger 21.3 s and 30.8 s at levels 1 and 3 | [Gear Garden](VERIFICATION.md#2026-10-24--gear-garden-levels-13-machines-tools-slice-2) | Ghost finger ran before the review fixes (restart/resize only); offline check not run |
 | `shed`, `fingerdemo` (`second-chance-shed`) | 2026-10-24: level 1 empty-yard drop then every scrap fed (0/0), level 4 one wrong place, Show a hint, portrait screenshot, finish 1/1; ghost finger 14.5 s (level 1) and 32.1 s (level 4) | [Second Chance Shed entry](#2026-10-24--second-chance-shed-levels-14-nature-sustainability-n2) | Levels 2–3 not played in the browser; offline check not run; iPad and a child open |
 | `whoami`, `fingerdemo` (`who-am-i`) | 2026-10-24: level 1 wrong friend then fit, level 3 keeps-tap miss, requested hint, three clues, free peek, portrait screenshot; ghost finger 7.8 s (level 1) and 16.0 s (level 3) | [Who Am I? entry](#2026-10-24--who-am-i-levels-13-zoo-animals-z3) | Level 2 not played in the browser; Owl Walk suite and offline check not run after the owl art move; iPad speech and a child open |
 | `foodweb`, `fingerdemo`, `smoke` (`food-web-workshop`) | 2026-10-24: levels 1–3 extra-arrow miss, Undo, matching web, turn by drag in portrait (targets of 100 units or more), one requested hint; ghost finger 12.5 s (levels 1, 3); smoke levels 1–3 | [Food Web Workshop entry](#2026-10-24--food-web-workshop-levels-13-ecosystems-f2) | Station-tap and refused-drag-tick review fixes were checked by rule tests and typecheck only, not re-browsed; no iPad or device speech |
