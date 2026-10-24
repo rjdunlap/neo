@@ -34,7 +34,7 @@ describe('direct next visit and launch', () => {
     const land = vi.fn(), place = vi.fn(), journal = vi.fn(), fallback = vi.fn();
     goToOrigin({ land, place, journal } as never, origin, fallback);
     expect(land.mock.calls.length + place.mock.calls.length + journal.mock.calls.length + fallback.mock.calls.length).toBe(1);
-    if (origin && 'land' in origin) expect(land).toHaveBeenCalledWith(origin.land);
+    if (origin && 'land' in origin) expect(land).toHaveBeenCalledWith(origin.land, origin.page);
     else if (origin && 'place' in origin) expect(place).toHaveBeenCalledWith(origin.place);
     else if (origin) expect(journal).toHaveBeenCalled();
     else expect(fallback).toHaveBeenCalled();

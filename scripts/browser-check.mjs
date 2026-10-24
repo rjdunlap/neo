@@ -41,6 +41,11 @@ const tap = async (expression) => {
   await page.waitForTimeout(180);
 };
 const screenshot = (name) => page.screenshot({ path: `${output}/${name}.png` });
+/** A full land shows a page at a time: tap its arrows until the game stands on the page (back to the first, then on). */
+async function turnToGame(id) {
+  while (await page.evaluate(() => neo.scene.prevArrow?.visible)) { await tap('neo.scene.prevArrow'); await page.waitForTimeout(350); }
+  while (await page.evaluate((id) => !neo.scene.showing.some((m) => m.mod.id === id) && neo.scene.nextArrow?.visible, id)) { await tap('neo.scene.nextArrow'); await page.waitForTimeout(350); }
+}
 async function launch(id, level, childName = 'Mia', playBand) {
   await ready();
   await page.evaluate(async ({ id, level, childName, playBand }) => {
@@ -252,6 +257,7 @@ async function marbleJumpPlay() {
     assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('marble-jump').history.at(-1); return [r.misses, r.hints]; }), [1, level === 6 ? 2 : 1]);
   }
   await page.evaluate(() => neo.go.land('puzzle-peaks')); await scene('LandScene');
+  await turnToGame('marble-jump');
   await tap("neo.scene.showing.find(m => m.mod.id === 'marble-jump').node"); await scene('GameScene');
   await page.waitForTimeout(400);
   assert.equal(await page.evaluate(() => neo.scene.mod.id), 'marble-jump');
@@ -320,6 +326,7 @@ async function logRollPlay() {
     log(`Log Roll level ${level}: edge support, hint, Undo, reset and one sticker passed`);
   }
   await page.evaluate(() => neo.go.land('tinker-lab')); await scene('LandScene');
+  await turnToGame('log-roll');
   await tap("neo.scene.showing.find(m => m.mod.id === 'log-roll').node"); await scene('GameScene');
   assert.equal(await page.evaluate(() => neo.scene.mod.id), 'log-roll');
 }
@@ -384,6 +391,7 @@ async function snowballMergePlay() {
     assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('snowball-merge').history.at(-1); return [r.misses, r.hints]; }), [0, 2]);
   }
   await page.evaluate(() => neo.go.land('lantern-lake')); await scene('LandScene');
+  await turnToGame('snowball-merge');
   await tap("neo.scene.showing.find(m => m.mod.id === 'snowball-merge').node"); await scene('GameScene');
   await page.waitForTimeout(400);
   // Leave while a slide's scene-owned tween is in flight.
@@ -586,6 +594,7 @@ async function pyramidPlay() {
   assert.ok(await page.evaluate(() => neo.scene.game.solve(neo.scene.game.mask)));
   assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
   await page.evaluate(() => neo.go.land('lantern-lake')); await scene('LandScene');
+  await turnToGame('pyramid-solitaire');
   await tap("neo.scene.showing.find(m => m.mod.id === 'pyramid-solitaire').node"); await scene('GameScene');
   assert.equal(await page.evaluate(() => neo.scene.mod.id), 'pyramid-solitaire');
   const beforeLeaving = await page.evaluate(() => kit.store.data.stickers.length);
@@ -655,6 +664,7 @@ async function mossyPathPlay() {
   }
   await page.evaluate(() => { kit.store.data.profile.band = 'school'; neo.go.land('puzzle-peaks'); });
   await scene('LandScene'); await page.waitForTimeout(600);
+  await turnToGame('mossy-path');
   await tap("neo.scene.showing.find(m => m.mod.id === 'mossy-path').node"); await scene('GameScene');
   assert.equal(await page.evaluate(() => neo.scene.mod.id), 'mossy-path');
   await page.evaluate(async () => {
@@ -770,6 +780,7 @@ async function gemSwapPlay() {
     assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('gem-swap').history.at(-1); return [r.misses, r.hints]; }), [2, level === 4 ? 2 : 1]);
   }
   await page.evaluate(() => { kit.store.data.profile.band = 'grownup'; neo.go.land('lantern-lake'); }); await scene('LandScene');
+  await turnToGame('gem-swap');
   await tap("neo.scene.showing.find(m => m.mod.id === 'gem-swap').node"); await scene('GameScene');
   await page.waitForTimeout(400);
   // Leaving in the middle of a clear discards scene-owned animation safely.
@@ -858,6 +869,7 @@ async function tilePairsPlay() {
   }
   // The actual Lantern Lake tile launches the game and Home returns to that land.
   await page.evaluate(() => { kit.store.data.profile.band = 'grownup'; neo.go.land('lantern-lake'); }); await scene('LandScene');
+  await turnToGame('tile-pairs');
   await tap("neo.scene.showing.find(m => m.mod.id === 'tile-pairs').node"); await scene('GameScene');
   await page.waitForTimeout(350);
   await page.mouse.move(62, 62); await page.mouse.down(); await page.waitForTimeout(650); await page.mouse.up(); await scene('LandScene');
@@ -14882,7 +14894,8 @@ async function landsTour() {
         const tl = o.toGlobal({ x: x0, y: y0 }), br = o.toGlobal({ x: x0 + w, y: y0 + h });
         return { x: tl.x / scale, y: tl.y / scale, w: (br.x - tl.x) / scale, h: (br.y - tl.y) / scale };
       };
-      const items = [...neo.scene.showing.map((m) => ['game ' + m.mod.id, m.node]), ['host', neo.scene.host], ...(neo.scene.sign ? [['sign', neo.scene.sign]] : [])];
+      const arrows = [['back arrow', neo.scene.prevArrow], ['on arrow', neo.scene.nextArrow]].filter(([, a]) => a.visible);
+      const items = [...neo.scene.showing.map((m) => ['game ' + m.mod.id, m.node]), ['host', neo.scene.host], ...(neo.scene.sign ? [['sign', neo.scene.sign]] : []), ...arrows];
       const rects = items.map(([name, node]) => ({ name, node, r: rect(node) }));
       for (const { name, node, r } of rects) {
         if (!node.visible) out.push(`${name} hidden`);
@@ -14898,6 +14911,19 @@ async function landsTour() {
     });
     assert.deepEqual(bad, [], label);
   };
+  /** Every page of the side shown: back to the first, then each arrow tap on, checked; a turned page shows only its own games. */
+  const checkPages = async (label) => {
+    while (await page.evaluate(() => neo.scene.prevArrow.visible)) { await tap('neo.scene.prevArrow'); await page.waitForTimeout(350); }
+    await check(label);
+    for (let p = 1; await page.evaluate(() => neo.scene.nextArrow.visible); p++) {
+      const before = await page.evaluate(() => neo.scene.showing.map((m) => m.mod.id));
+      await tap('neo.scene.nextArrow'); await page.waitForTimeout(400);
+      const now = await page.evaluate(() => ({ page: neo.scene.page, ids: neo.scene.showing.map((m) => m.mod.id), seen: [...neo.scene.mine, ...neo.scene.older].filter((m) => m.node.visible).length }));
+      assert.equal(now.page, p, `${label} turned to page ${p}`);
+      assert.ok(now.ids.every((id) => !before.includes(id)) && now.seen === now.ids.length, `${label} page ${p} shows only its own games`);
+      await check(`${label}, page ${p}`);
+    }
+  };
   const orientations = [[false, ['lap', 'toddler', 'preschool', 'prek', 'school', 'grownup']], [true, ['lap', 'school', 'grownup']]];
   for (const [portrait, bands] of orientations) {
     await page.setViewportSize(portrait ? { width: 768, height: 1024 } : { width: 1024, height: 768 });
@@ -14907,17 +14933,17 @@ async function landsTour() {
       const ids = await page.evaluate(async () => (await import('/src/content/lands.ts')).LAND_IDS.slice());
       for (const id of ids.filter((id) => !only || only.includes(id))) {
         await page.evaluate((id) => neo.go.land(id), id); await scene('LandScene'); await page.waitForTimeout(120);
-        await check(`${id} ${band} ${portrait ? 'portrait' : 'landscape'}`);
+        await checkPages(`${id} ${band} ${portrait ? 'portrait' : 'landscape'}`);
         if (await page.evaluate(() => !!neo.scene.sign)) {
           // A land with nothing yet for her age (Lantern Lake, below the grown-up band) opens with its signpost already turned.
           const before = await page.evaluate(() => neo.scene.showingOlder);
           await tap('neo.scene.sign'); await page.waitForTimeout(400);
           assert.equal(await page.evaluate(() => neo.scene.showingOlder), !before);
-          await check(`${id} ${band} ${portrait ? 'portrait' : 'landscape'}, ${before ? 'her games' : 'bigger kids'}`);
+          await checkPages(`${id} ${band} ${portrait ? 'portrait' : 'landscape'}, ${before ? 'her games' : 'bigger kids'}`);
           await tap('neo.scene.sign'); await page.waitForTimeout(400);
         }
       }
-      log(`Lands at ${band} ${portrait ? 'portrait' : 'landscape'}: every land and signpost fits on one screen`);
+      log(`Lands at ${band} ${portrait ? 'portrait' : 'landscape'}: every page of every land and signpost fits on one screen`);
     }
   }
   await page.setViewportSize({ width: 768, height: 1024 });

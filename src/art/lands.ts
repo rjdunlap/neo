@@ -242,3 +242,20 @@ export class Signpost extends Container {
     } else g.poly(starPoints(18, 8).map((v, i) => v + (i % 2 ? -112 : -6))).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
   }
 }
+
+/**
+ * A full land's page arrow (docs/definitions/location-capacity.md): a round yellow marker on a short post at one end of
+ * the path, its big white arrow pointing back a page (-1) or on (1). A picture, never a word; it stands on its feet at (0, 0).
+ */
+export class PageArrow extends Container {
+  constructor(readonly dir: -1 | 1) {
+    super();
+    const d = dir;
+    const g = new Graphics()
+      .ellipse(0, 2, 40, 10).fill({ color: swatch.green.line, alpha: 0.2 })
+      .roundRect(-8, -60, 16, 62, 5).fill(wood.fill).stroke(line(wood.line, 4))
+      .circle(0, -100, 52).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 5));
+    g.poly([-30 * d, -110, 2 * d, -110, 2 * d, -130, 34 * d, -100, 2 * d, -70, 2 * d, -90, -30 * d, -90]).fill(swatch.white.fill).stroke(line(swatch.yellow.line, 4));
+    this.addChild(g);
+  }
+}
