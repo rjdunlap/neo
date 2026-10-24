@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
 import { BOARD, PLAQUE } from '../ui/creation-art';
 import { BACK } from './friends-layout';
-import { ACTION_RADIUS, BALL_RADIUS, BASKET, CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, EXPLORE_POSTCARD, exploreGridLayout, exploreLayout, PAGE_ARROW_RADIUS, GEAR_CORNER, GUIDE_CORNER, HOME_BUTTON, homeLayout, LINK_CORNER, NEWCOMER_REACH, playLayout, PROJECT_CARD, PROJECT_PLAY_RADIUS, projectLayout, type Floor } from './home-layout';
+import { ACTION_RADIUS, BALL_RADIUS, BASKET, BED, CORNER_RADIUS, ENDING_PICTURE, ENDING_PLATES, endingLayout, NAME_BUTTON, EXPLORE_CARD, EXPLORE_MAX, EXPLORE_POSTCARD, exploreGridLayout, exploreLayout, PAGE_ARROW_RADIUS, GEAR_CORNER, GUIDE_CORNER, HOME_BUTTON, homeLayout, LINK_CORNER, NEWCOMER_REACH, playLayout, PROJECT_CARD, PROJECT_PLAY_RADIUS, projectLayout, type Floor } from './home-layout';
 
 /** An iPad sideways and upright, a phone sideways, one with a notch, and a wide laptop. */
 const VIEWS = [
@@ -78,13 +78,28 @@ describe('the root Home layout', () => {
   });
 });
 
+/** The welcome bed's two taps: her picture above (whose bed it is) and the newcomer curled in the basket below. */
+const bedParts = (b: { x: number; y: number }): Box[] => [
+  { x0: b.x - BED.w / 2, y0: b.y - BED.h / 2, x1: b.x + BED.w / 2, y1: b.y - BED.h / 2 + BED.picture, what: 'bed picture' },
+  { x0: b.x - BED.w / 2, y0: b.y - BED.h / 2 + BED.picture, x1: b.x + BED.w / 2, y1: b.y + BED.h / 2, what: 'bed newcomer' },
+];
+
 describe('the creature play layout', () => {
+  it('gives each of the welcome bed\'s two taps at least 100 units, against the real plaque height', () => {
+    expect(BED.w).toBeGreaterThanOrEqual(100);
+    expect(BED.picture).toBeGreaterThanOrEqual(100);
+    expect(BED.h - BED.picture).toBeGreaterThanOrEqual(100);
+    // The layout mirrors the plaque's height without importing Pixi; this pins the two together.
+    const l = playLayout(VIEWS[0]);
+    expect(l.bed.y).toBe(Math.round((l.plaque.y + PLAQUE.h / 2 + l.basket.y - BASKET.h / 2) / 2));
+  });
+
   it('fits Back, Home, the ball, the picture, the tune, the basket and the books apart, with Back and Home at least 120 apart', () => {
     expect(HOME_BUTTON.x - BACK.x).toBeGreaterThanOrEqual(120);
     for (const v of VIEWS) {
       const l = playLayout(v);
       const where = `${v.w}×${v.h}`;
-      const buttons = [disc(l.back, CORNER_RADIUS, 'back'), disc(l.home, CORNER_RADIUS, 'home'), rect(l.board, BOARD.w, BOARD.h, 'board'), rect(l.plaque, PLAQUE.w, PLAQUE.h, 'plaque'), rect(l.basket, BASKET.w, BASKET.h, 'basket'), rect(l.books, BASKET.w, BASKET.h, 'books')];
+      const buttons = [disc(l.back, CORNER_RADIUS, 'back'), disc(l.home, CORNER_RADIUS, 'home'), rect(l.board, BOARD.w, BOARD.h, 'board'), rect(l.plaque, PLAQUE.w, PLAQUE.h, 'plaque'), rect(l.basket, BASKET.w, BASKET.h, 'basket'), rect(l.books, BASKET.w, BASKET.h, 'books'), ...bedParts(l.bed)];
       check(v, [...buttons, body(l.stage), disc(l.ball, BALL_RADIUS, 'ball')], [floorBox(l.floor)], where);
       for (const b of buttons) expect(overlap(b, floorBox(l.floor)), `the ball can land on ${b.what}, ${where}`).toBe(false);
       expect(l.floor.x1, where).toBeGreaterThan(l.floor.x0 + 200);
@@ -171,6 +186,38 @@ describe('the welcome project page layout', () => {
         const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
         for (const t of targets.slice(2)) expect(overlap(t, link), `${t.what} under the link, ${where}`).toBe(false);
       }
+    }
+  });
+});
+
+describe('the welcome ending layout (RW07 slice 3)', () => {
+  it('fits Back, Home, the newcomer, three 120-unit names and the arrow apart, with the picture, plates and companion clear of them', () => {
+    expect(NAME_BUTTON.h).toBeGreaterThanOrEqual(120);
+    for (const v of VIEWS) {
+      const l = endingLayout(v);
+      const where = `${v.w}×${v.h}`;
+      const targets = [
+        disc(l.back, CORNER_RADIUS, 'back'),
+        disc(l.home, CORNER_RADIUS, 'home'),
+        // The basket's touch, as the page sets it: centred 40 above the basket.
+        disc({ x: l.basket.x, y: l.basket.y - 40 }, NEWCOMER_REACH, 'newcomer'),
+        ...l.names.map((n, i) => rect(n, NAME_BUTTON.w, NAME_BUTTON.h, `name ${i}`)),
+        disc(l.arrow, PROJECT_PLAY_RADIUS, 'arrow'),
+      ];
+      const art = [
+        rect(l.picture, BOARD.w * ENDING_PICTURE, BOARD.h * ENDING_PICTURE, 'picture'),
+        rect(l.plates, ENDING_PLATES.w, ENDING_PLATES.h, 'plates'),
+        body(l.companion),
+      ];
+      check(v, targets, art, where);
+      for (const a of art) for (const t of targets) {
+        // The picture hangs over the basket, inside the newcomer's touch: it takes no touches of its own.
+        if (a.what === 'picture' && t.what === 'newcomer') continue;
+        expect(overlap(a, t), `${a.what} over ${t.what}, ${where}`).toBe(false);
+      }
+      expect(overlap(art[1], art[2]), `plates and companion, ${where}`).toBe(false);
+      const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
+      for (const t of targets.slice(3)) expect(overlap(t, link), `${t.what} under the link, ${where}`).toBe(false);
     }
   });
 });

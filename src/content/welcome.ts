@@ -6,7 +6,7 @@ import type { LineId } from './voice-script';
 /**
  * Welcome a New Friend (RW07, docs/rework/WELCOME-BUILD.md): the first project at the root, for preschool and pre-K.
  * Three steps in any order, each an ordinary round at the project's level, get the house ready for a newcomer. Slice 1
- * built `pretty` and `yummy`, slice 2 `song`; the ending (slice 3) waits on all three.
+ * built `pretty` and `yummy`, slice 2 `song`; slice 3 the ending, which waits on all three and adopts the newcomer.
  */
 export const WELCOME_STEPS = ['pretty', 'yummy', 'song'] as const;
 export type WelcomeStep = (typeof WELCOME_STEPS)[number];
@@ -100,10 +100,24 @@ export function cleanWelcome(raw: unknown): WelcomeProject {
   };
 }
 
-/** The first of river and glider she does not own yet, or river when she owns both. */
-export function newcomerFor(owned: readonly { species: SpeciesId }[]): SpeciesId {
+/** The adoption's `metAt` token: `meet` is idempotent on it, so the project adopts one friend however often it ends. */
+export const WELCOME_MET_AT = 'project:welcome';
+
+/** The friend the project adopted, if it has (it stays hers through a reset). */
+export const welcomeFriend = <T extends { metAt?: string }>(owned: readonly T[]): T | null => owned.find((o) => o.metAt === WELCOME_MET_AT) ?? null;
+
+/**
+ * The first of river and glider she does not own yet, or river when she owns both. Once the project has adopted, the
+ * same species again: after a reset the ending finds the friend already adopted, and the page shows that friend.
+ */
+export function newcomerFor(owned: readonly { species: SpeciesId; metAt?: string }[]): SpeciesId {
+  const adopted = welcomeFriend(owned);
+  if (adopted) return adopted.species;
   return (['river', 'glider'] as const).find((s) => !owned.some((o) => o.species === s)) ?? 'river';
 }
+
+/** Every step is done: the page plays the ending instead of the cards. */
+export const welcomeReady = (p: WelcomeProject) => WELCOME_STEPS.every((s) => p.steps.includes(s));
 
 /** The project's band once a step was launched, otherwise the band her profile would launch it at (null outside the project's bands). */
 export function welcomeBand(p: WelcomeProject, profile: Band): WelcomeBand | null {
@@ -114,7 +128,7 @@ export function welcomeBand(p: WelcomeProject, profile: Band): WelcomeBand | nul
 export const showsContinue = (p: WelcomeProject, profile: Band) => !p.ended && welcomeBand(p, profile) !== null;
 
 /** Launching a step fixes the project's band and newcomer the first time; later launches change nothing. */
-export function beginWelcome(p: WelcomeProject, band: WelcomeBand, owned: readonly { species: SpeciesId }[]): boolean {
+export function beginWelcome(p: WelcomeProject, band: WelcomeBand, owned: readonly { species: SpeciesId; metAt?: string }[]): boolean {
   if (p.band) return false;
   p.band = band;
   p.newcomer ??= newcomerFor(owned);
