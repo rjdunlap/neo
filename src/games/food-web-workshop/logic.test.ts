@@ -408,14 +408,14 @@ describe('demoNext', () => {
 });
 
 describe('voice', () => {
+  // The scene's line maps are typed as LineId, so the compiler checks what it speaks; this checks the packet's full set.
   it('has every line the game speaks', async () => {
     const { SCRIPT } = await import('../../content/voice-script');
-    const { readFileSync } = await import('node:fs');
-    const src = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
-    const used = new Set([...src.matchAll(/'(web\.[a-z0-9.-]+|game\.food-web-workshop)'/g)].map((m) => m[1]));
-    expect(used.size).toBeGreaterThan(20);
-    for (const id of used) expect(SCRIPT, id).toHaveProperty([id]);
-    for (const r of RECORDS) expect(SCRIPT).toHaveProperty([`web.card.${r.id}`]);
-    for (const o of ORGANISMS) expect(SCRIPT).toHaveProperty([`web.name.${o}`]);
+    const ids = [
+      'game.food-web-workshop', 'web.ask.make', 'web.ask.turn', 'web.ask.branch', 'web.arrow', 'web.turned', 'web.miss.reversed',
+      'web.miss.missing', 'web.miss.extra', 'web.hint', 'web.ready', 'web.done',
+      ...RECORDS.map((r) => `web.card.${r.id}`), ...ORGANISMS.map((o) => `web.name.${o}`),
+    ];
+    for (const id of ids) expect(SCRIPT, id).toHaveProperty([id]);
   });
 });
