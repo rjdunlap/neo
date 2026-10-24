@@ -292,6 +292,9 @@ export function makeCupRound(plan: PegPlan, rng: Rng, shape: BoardShape) {
     table = landingTable(worldOf(spots));
   }
   const dots = rng.shuffle(Array.from({ length: CUPS }, (_, i) => i + 1));
-  const asks = rng.shuffle(Array.from({ length: CUPS }, (_, i) => i + 1)).slice(0, plan.count);
+  // Only a cup some aim reaches with room to spare is ever asked for (every cup, unless thirty boards in a row failed).
+  const world = worldOf(spots);
+  const reachable = dots.filter((_, c) => aimInto(world, table, c) !== null);
+  const asks = rng.shuffle(Array.from({ length: CUPS }, (_, i) => i + 1)).filter((n) => reachable.includes(n)).slice(0, plan.count);
   return { spots, table, dots, asks };
 }

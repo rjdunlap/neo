@@ -651,7 +651,7 @@ class PegGarden implements Game {
   /** While aiming: a short dotted guide, or the whole path once a hint is on. */
   private drawGuide() {
     const g = this.guide.clear();
-    const { path } = simulate(this.shotStart(), this.world, BOARD.h, this.hinting ? 6 : 0.35, 1 / 30);
+    const { path } = simulate(this.shotStart(), this.world, BOARD.h, this.hinting ? (this.plan.mode === 'cup' ? CUTOFF : 6) : 0.35, 1 / 30);
     for (let i = 1; i < path.length; i += 2) g.circle(path[i].x, path[i].y, 5).fill({ color: 0xffffff, alpha: 0.9 });
   }
 
