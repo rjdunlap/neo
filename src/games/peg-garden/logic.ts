@@ -6,13 +6,13 @@ import type { Rng } from '../../engine/random';
  * Every bud it touches blooms and chimes. Nothing is ever lost; the ladder asks for
  * particular flowers, then for aiming at numbers.
  */
-export type PegMode = 'drop' | 'bloom' | 'color' | 'number' | 'order' | 'big' | 'cup';
+export type PegMode = 'drop' | 'bloom' | 'color' | 'number' | 'order' | 'big' | 'cup' | 'plant';
 
 export interface PegPlan {
   mode: PegMode;
   /** Buds on the board. */
   pegs: number;
-  /** drop: balls in a round. color: special buds. number/order: numbered buds. cup: asks in a round. */
+  /** drop: balls in a round. color: special buds. number/order: numbered buds. cup: asks in a round. plant: seeds in the tray. */
   count: number;
   name: string;
 }
@@ -24,6 +24,7 @@ export const PLANS: PegPlan[] = [
   { mode: 'number', pegs: 14, count: 5, name: 'Aim the launcher to hit a numbered flower: "hit 3"' },
   { mode: 'order', pegs: 14, count: 3, name: 'Hit numbered flowers 1, 2, 3 in order' },
   { mode: 'cup', pegs: 12, count: 3, name: 'Into the cup: aim the pearl into the cup with that many dots' },
+  { mode: 'plant', pegs: 11, count: 2, name: 'Plant a bud: drag a seed onto a marked spot so the dropped pearl rolls into the cup' },
 ];
 
 /** Level 8, the lap entry: four huge buds, and every touch blooms one. Plans are keyed by ID, so it sits outside the ladder's order. */
@@ -92,8 +93,8 @@ export function grid(shape: BoardShape = 'rows'): { x: number; y: number }[] {
 
 export function makeBoard(plan: PegPlan, rng: Rng, shape: BoardShape = 'rows'): PegSpot[] {
   if (plan.mode === 'big') return BIG_SPOTS.map((p): PegSpot => ({ ...p, kind: 'plain', r: BIG_PEG }));
-  // Into the cup keeps its buds a pearl's width above the cups along the sand.
-  const places = plan.mode === 'cup' ? grid(shape).filter((p) => p.y + BOARD.peg + 2 * BOARD.ball < CUP_TOP) : grid(shape);
+  // Into the cup and Plant a bud keep their buds a pearl's width above the cups along the sand.
+  const places = plan.mode === 'cup' || plan.mode === 'plant' ? grid(shape).filter((p) => p.y + BOARD.peg + 2 * BOARD.ball < CUP_TOP) : grid(shape);
   const spots = rng.shuffle(places).slice(0, plan.pegs).map((p): PegSpot => ({ ...p, kind: 'plain' }));
   // Specials and numbers sit in the middle rows, where an aimed shot can reach them.
   const reachable = rng.shuffle(spots.filter((s) => s.x > 80 && s.x < BOARD.w - 80));
@@ -297,4 +298,79 @@ export function makeCupRound(plan: PegPlan, rng: Rng, shape: BoardShape) {
   const reachable = dots.filter((_, c) => aimInto(world, table, c) !== null);
   const asks = rng.shuffle(Array.from({ length: CUPS }, (_, i) => i + 1)).filter((n) => reachable.includes(n)).slice(0, plan.count);
   return { spots, table, dots, asks };
+}
+
+// Level 7, Plant a bud ---------------------------------------------------------------------------------------------------
+
+/** Marked places to plant on: at least this far apart, so each is its own target on screen (portrait scale is about 0.88). */
+export const PLACE_GAP = 120;
+/** At most this many marked places on a board. */
+export const PLACES = 5;
+/** How near a let-go seed must be to a marked place to snap onto it, and a seed's and the drop button's touch radius. */
+export const SNAP = 100;
+export const HIT = 62;
+/** The two seeds' homes in the tray, at the ends of the ledge, and where the pearl drop button may sit between them. */
+export const SEED_HOMES = [
+  { x: 60, y: 40 },
+  { x: BOARD.w - 60, y: 40 },
+];
+export const DROP_RANGE = { min: 200, max: BOARD.w - 200 };
+
+export type Place = { x: number; y: number };
+
+/** The deterministic drop: no drift, stepped by the shared sample, so the run in play is exactly this one. */
+export const plantDrop = (x: number) => ({ x, y: 40, vx: 0, vy: 60, r: BOARD.ball });
+
+/** Where the dropped pearl ends up with buds planted on `planted`: the cup it falls into, or null if still on the board at the cutoff. */
+export function plantRun(spots: PegSpot[], planted: Place[], dropX: number): number | null {
+  const world = worldOf([...spots, ...planted.map((p): PegSpot => ({ ...p, kind: 'plain' }))]);
+  const { landed } = simulate(plantDrop(dropX), world, BOARD.h, CUTOFF, SAMPLE);
+  return landed.y - BOARD.ball >= BOARD.h ? cupAt(landed.x) : null;
+}
+
+/** Every planting she can make: nothing, one place, or both seeds on two places. */
+export function plantings(n: number): number[][] {
+  const out: number[][] = [[]];
+  for (let i = 0; i < n; i++) out.push([i]);
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) out.push([i, j]);
+  return out;
+}
+
+/**
+ * A board of Plant a bud: plain buds, a fixed drop spot, marked empty places at least `PLACE_GAP` apart, and the friend's cup,
+ * which the pearl misses as the board stands and reaches with one bud planted on the `hint` place. Every planting she can make
+ * rolls out before the cutoff. A board that fails is grown again from the same seed.
+ */
+export function makePlantRound(plan: PegPlan, rng: Rng, shape: BoardShape) {
+  for (let tries = 0; tries < 80; tries++) {
+    const spots = makeBoard(plan, rng, shape);
+    const taken = (p: Place) => spots.some((s) => Math.hypot(s.x - p.x, s.y - p.y) < 1);
+    const places: Place[] = [];
+    for (const p of rng.shuffle(grid(shape).filter((p) => p.y + BOARD.peg + 2 * BOARD.ball < CUP_TOP && !taken(p)))) {
+      if (places.length < PLACES && places.every((q) => Math.hypot(q.x - p.x, q.y - p.y) >= PLACE_GAP)) places.push(p);
+    }
+    const dropX = Math.round(rng.range(DROP_RANGE.min, DROP_RANGE.max));
+    if (places.length < 3) continue;
+    const runs = plantings(places.length).map((ix) => ({ ix, cup: plantRun(spots, ix.map((i) => places[i]), dropX) }));
+    if (runs.some((r) => r.cup === null)) continue;
+    const bare = runs[0].cup;
+    const singles = runs.filter((r) => r.ix.length === 1 && r.cup !== bare);
+    if (!singles.length) continue;
+    const cup = rng.pick(singles).cup!;
+    // The hint is the place whose single bud reaches the cup nearest under the drop, where it is easiest to see.
+    const hint = singles.filter((r) => r.cup === cup).map((r) => r.ix[0]).sort((a, b) => Math.abs(places[a].x - dropX) - Math.abs(places[b].x - dropX))[0];
+    return { spots, dropX, places, cup, hint };
+  }
+  // Eighty failed boards in a row never happen on the shipped shapes (a rule test grows hundreds); this keeps the type total.
+  return { spots: [] as PegSpot[], dropX: BOARD.w / 2, places: [] as Place[], cup: 0, hint: -1 };
+}
+
+/** The marked place a let-go seed snaps onto: the nearest free place within `SNAP`, or null to go back to the tray. */
+export function snapPlace(places: Place[], x: number, y: number, taken: (i: number) => boolean): number | null {
+  let best: number | null = null;
+  places.forEach((p, i) => {
+    const d = Math.hypot(p.x - x, p.y - y);
+    if (d <= SNAP && !taken(i) && (best === null || d < Math.hypot(places[best].x - x, places[best].y - y))) best = i;
+  });
+  return best;
 }

@@ -949,7 +949,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 5, text: 'Only the number asked for opens; another number the pearl touches just wiggles.' },
       { from: 6, to: 6, text: 'Four cups along the sand show one to four dots. Put the pearl in the cup with the count that was asked for.' },
       { from: 6, to: 6, text: 'A pearl in another cup is a miss, and its count is said. After two, the whole path shows while aiming and the asked cup glows.' },
-      { from: 4, to: 6, text: 'The last shot leaves faint dots showing which way it went, until the next shot.' },
+      { from: 7, to: 7, text: 'The pearl drops from one spot and misses the cup with the fish. Drag a seed onto a white ring to plant a bud, then tap the pearl to let it go.' },
+      { from: 7, to: 7, text: 'Letting it go with nothing planted is a free look. A run with buds planted that misses the cup is a miss; the buds stay put and can be moved again.' },
+      { from: 7, to: 7, text: 'After two misses a glowing outline shows one ring that works on its own, and any other planted bud goes back to its dish.' },
+      { from: 4, to: 7, text: 'The last run leaves faint dots showing which way it went, until the next one.' },
     ],
     finish: [
       { to: 1, text: 'The round ends after six pearls.' },
@@ -957,6 +960,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: 'The round ends when every flower has bloomed.' },
       { from: 3, to: 5, text: 'The round ends when the requested flowers have bloomed.' },
       { from: 6, to: 6, text: 'The round ends when three asked cups each have a pearl.' },
+      { from: 7, to: 7, text: 'The round ends when the pearl rolls into the cup.' },
     ],
   },
   'fluffy-salon': {
