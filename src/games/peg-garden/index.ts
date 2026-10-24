@@ -138,6 +138,8 @@ class PegGarden implements Game {
   friendCup = 0;
   hintPlace = -1;
   readonly seeds: Seed[] = [];
+  /** The pearl reached the cup: nothing more runs or moves while the praise plays. */
+  private won = false;
   private readonly marks = new Graphics();
   private readonly dropButton = new Container();
   ball: Ball | null = null;
@@ -223,7 +225,6 @@ class PegGarden implements Game {
     this.board.addChild(this.frame, this.marks, this.trail, this.guide, ...this.buds, this.tray, this.trayPearls, this.arrow, this.launcher, this.pearl, this.touch);
     ctx.stage.addChild(this.sea, this.board);
     for (const b of this.buds) ctx.track(b);
-    if (this.plan.mode === 'plant') this.setUpPlanting();
 
     this.touch.eventMode = 'static';
     this.touch.hitArea = new Rectangle(0, 0, BOARD.w, BOARD.h);
@@ -233,6 +234,8 @@ class PegGarden implements Game {
     this.touch.on('pointerupoutside', (e: FederatedPointerEvent) => this.up(e));
     // Pixi does not pass a cancelled touch on, so the window is watched for it.
     window.addEventListener('pointercancel', this.cancel, { capture: true });
+    // Last, so its touch layer stays off.
+    if (this.plan.mode === 'plant') this.setUpPlanting();
   }
 
   /**
@@ -247,7 +250,8 @@ class PegGarden implements Game {
     b.addChild(new Graphics().circle(0, 0, 40).fill(swatch.pink.light).stroke({ width: 6, color: swatch.pink.line }));
     b.addChild(new Graphics().circle(0, 0, BOARD.ball).fill(0xfffaf0).stroke({ width: 3, color: 0xd9cbb0 }).circle(-5, -5, 5).fill({ color: 0xffffff, alpha: 0.9 }));
     onTap(b, () => this.runPlanted(), { radius: HIT });
-    this.board.addChild(b);
+    // Under the pearl, so the pearl is seen leaving it.
+    this.board.addChildAt(b, this.board.getChildIndex(this.pearl));
     SEED_HOMES.slice(0, this.plan.count).forEach((home) => {
       const bud = new Bud({ x: home.x, y: home.y, kind: 'plain' }, this.ctx.rng);
       bud.hitArea = new Circle(0, 0, HIT);
@@ -287,8 +291,9 @@ class PegGarden implements Game {
 
   /** The drop button: let the pearl go from the fixed spot, with whatever is planted. */
   private runPlanted() {
-    if (this.ball || this.finished || this.seeds.some((q) => q.drag.dragging)) return void sfx.pop(2);
-    const planted = this.seeds.filter((q) => q.place !== null);
+    if (this.ball || this.finished || this.won || this.seeds.some((q) => q.drag.dragging)) return void sfx.pop(2);
+    // In place order, as the rules check plantings, so two pegs touched in one step resolve the same way.
+    const planted = this.seeds.filter((q) => q.place !== null).sort((a, b) => a.place! - b.place!);
     for (const q of planted) q.bud.position.copyFrom(this.places[q.place!]);
     // The world is rebuilt with the buds on every run, so a bud the pearl touches is the one in `buds` at its index.
     this.buds = [...this.fixed, ...planted.map((q) => q.bud)];
@@ -618,13 +623,14 @@ class PegGarden implements Game {
         return;
       }
       case 'plant': {
-        for (const q of this.seeds) q.drag.enabled = true;
         if (out && cupAt(exit) === this.friendCup) {
+          this.won = true;
           sfx.sparkle();
           this.ctx.pet.cheer();
           await this.ctx.say('praise');
           return void this.finale();
         }
+        for (const q of this.seeds) q.drag.enabled = true;
         // Nothing planted is a free look at where the pearl goes; a planted run that misses is her try, so it counts.
         if (!this.seeds.some((q) => q.place !== null)) return void this.ctx.say('peg.plantLook');
         this.miss('peg.plantMissed');

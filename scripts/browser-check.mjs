@@ -6865,6 +6865,11 @@ async function batch() {
           await kit.sleep(400);
           if (seed.place !== place) throw new Error(`Peg plant: seed went to ${seed.place}, not ${place}`);
         };
+        // Only the pearl button lets it go: a tap in the water does nothing.
+        const water = screen(BOARD.w / 2, 330);
+        kit.tap(water.x, water.y);
+        await kit.sleep(300);
+        if (g.ball) throw new Error('Peg plant: a tap in the water dropped a pearl');
         await run();
         if (g.misses !== 0) throw new Error(`Peg plant: a free look counted ${g.misses}`);
         const spots = g.fixed.map((b) => b.spot);
