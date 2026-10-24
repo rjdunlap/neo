@@ -31,7 +31,8 @@ describe('the substance table', () => {
     expect(sayAfter('ice', 'melted', 'snow')).toBe('meltfreeze.freeze.ice');
     expect(sayAfter('butter', 'melted', 'snow')).toBe('meltfreeze.freeze');
     expect(sayAfter('chocolate', 'melted', 'snow')).toBe('meltfreeze.freeze');
-    expect(sayAfter('stone', 'solid', 'sun')).toBe('meltfreeze.stays');
+    expect(sayAfter('stone', 'solid', 'sun')).toBe('meltfreeze.stays.stone');
+    expect(sayAfter('spoon', 'solid', 'snow')).toBe('meltfreeze.stays.spoon');
     expect(sayAfter('ice', 'melted', 'sun')).toBe('meltfreeze.already.melted');
     expect(sayAfter('ice', 'solid', 'snow')).toBe('meltfreeze.already.hard');
   });

@@ -302,7 +302,8 @@ class MeltFreeze implements Game {
       sfx.boing();
       // The tool she picked does what it does (usually nothing), so she sees it; then the clue.
       await this.apply(t, tool);
-      if (out.hint) await this.ctx.say(out.hint);
+      // The clue plays over an open table: a tap on the right tool while it is spoken still counts.
+      if (out.hint) void this.ctx.say(out.hint);
       if (out.glow) this.setGlow(toolFor(r));
     } else {
       await this.apply(t, tool);

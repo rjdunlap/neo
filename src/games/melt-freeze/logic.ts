@@ -32,11 +32,11 @@ export function step(s: Substance, state: State, tool: Tool): State {
   return state === 'melted' && SUBSTANCES[s].reversible ? 'solid' : state;
 }
 
-/** What the voice says after a tool on a thing (level 2 names the thing that stays; "already" lines when nothing can change). */
+/** What the voice says after a tool on a thing: the change, the named thing that stays, or "already" when the tool cannot change it. */
 export function sayAfter(s: Substance, before: State, tool: Tool): LineId {
   const after = step(s, before, tool);
   if (after !== before) return after === 'melted' ? 'meltfreeze.melt' : s === 'ice' ? 'meltfreeze.freeze.ice' : 'meltfreeze.freeze';
-  if (!melts(s)) return 'meltfreeze.stays';
+  if (!melts(s)) return s === 'stone' ? 'meltfreeze.stays.stone' : 'meltfreeze.stays.spoon';
   return tool === 'sun' ? 'meltfreeze.already.melted' : 'meltfreeze.already.hard';
 }
 
