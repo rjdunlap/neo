@@ -224,7 +224,7 @@ class GearGarden implements Game {
       card.position.set(cc.x, cc.y);
       const bg = panelArt(l.card.w, l.card.h);
       const pic = miniMachine(other.board.sockets, other.flower, other.color, 14);
-      pic.scale.set(Math.min(1, (l.card.w - 20) / Math.max(1, pic.width)));
+      pic.scale.set(Math.min((l.card.w - 20) / Math.max(1, pic.width), (l.card.h - 20) / Math.max(1, pic.height)));
       bg.eventMode = pic.eventMode = 'none';
       card.addChild(bg, pic);
       card.hitArea = new Rectangle(-l.card.w / 2, -l.card.h / 2, l.card.w, l.card.h);
@@ -597,7 +597,7 @@ class GearGarden implements Game {
     }
     if (!this.face) return null;
     const c = centre(l.face);
-    return { tap: { on: this.face, x: c.x, y: c.y + l.r * 1.3 }, pause: 0.45 };
+    return { tap: { on: this.face, x: c.x, y: c.y + l.r * 0.9 }, pause: 0.45 };
   }
 }
 
