@@ -220,3 +220,11 @@
 - Tested base `841999e3` plus the source/browser diff, `GAME_URL=http://localhost:5199`, `BROWSER_SUITE=home HOME_ONLY=first-run`: 1024×768 and 768×1024 backdrop/egg feet/height, four taps, ≥100-unit controls, colour/preset/custom name, save and reload passed; no page errors. Two portrait images reviewed (egg and colour plate).
 - Typecheck/build passed. Full unit run: 2708 passed, four skipped, five failures in untouched Fluffy Salon, Bumper Garden, Penguin Slide and Bolt Boards; one filtered rerun of those four files passed all 64 tests (transient failures; no game code/test changes).
 - Diff/link checks passed. No new assets, persistence or route changes; `world`, offline, couch and full-release suites not run under the scoped shell tier. No iPad, actual speech/touch or child-response claim.
+
+## 2026-10-23 — Oceans study (subject research, docs only)
+
+- [PR #849](https://github.com/rjdunlap/neo/pull/849), `claude/confident-gates-lvnhu9`: [study](../deep-dives/subjects/oceans.md), tracker, packet, roadmap, notebook, backlog, READY (research line replaced by the Tide Line definition) and a Waiting row.
+- Opened: California's copy of NGSS 2-ESS2-2/3, 4-ESS2-2, 5-ESS2-2, MS-ESS2-6 and K-ESS3-3; the NOAA Ocean Literacy poster; two Common Sense Media reviews; Sobel's essay; a Smithsonian pre-K zones lesson. Search summaries only: tide-misconception studies, aquarium touch-pool rules, Ocean Conservancy data card, currents activities, Georgia Aquarium depths, Endless Ocean/Abzu/Beyond Blue.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, units, build, browser or device checks (docs only); nothing implemented.
+- Open: an ocean reviewer, Ocean Literacy Guide V3.1, any NGSS tide expectation, Bubble Beach placement (a 14th game), decisions 1–9 in the study.

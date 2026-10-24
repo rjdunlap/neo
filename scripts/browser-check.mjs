@@ -3602,7 +3602,7 @@ async function homeResult() {
   await page.evaluate(() => kit.tapOn(neo.scene.showing.find((s) => s.mod?.id === 'duck-pond' || s.id === 'duck-pond')?.node ?? neo.scene.showing[0].node)); await scene('GameScene');
   await page.waitForTimeout(1500);
   const from = await page.evaluate(() => ({ id: neo.scene.mod.id, origin: neo.scene.origin }));
-  assert.deepEqual(from.origin, { land: 'counting-cove' }, JSON.stringify(from));
+  assert.deepEqual(from.origin, { land: 'counting-cove', page: 0 }, JSON.stringify(from));
   await finishAndLook('cove');
   await page.evaluate(() => kit.tapOn(neo.scene.after.home)); await scene('LocationScene');
   assert.equal(await page.evaluate(() => neo.scene.id), 'counting-cove');
@@ -4022,7 +4022,7 @@ async function hatchingAndMap() {
   await screenshot('land-barnyard-lap');
   // A game opens at her band, and holding home comes back to the land.
   await page.evaluate(() => kit.tapOn(neo.scene.mine[0].node, 0, -60)); await scene('GameScene');
-  assert.deepEqual(await page.evaluate(() => [neo.scene.mod.id, neo.scene.band, neo.scene.origin]), [barn.want[0], 'lap', { land: 'barnyard' }]);
+  assert.deepEqual(await page.evaluate(() => [neo.scene.mod.id, neo.scene.band, neo.scene.origin]), [barn.want[0], 'lap', { land: 'barnyard', page: 0 }]);
   await page.mouse.move(62, 62); await page.mouse.down();
   await scene('LandScene'); await page.mouse.up();
   assert.equal(await page.evaluate(() => neo.scene.id), 'barnyard');
