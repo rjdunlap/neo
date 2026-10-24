@@ -129,11 +129,11 @@ describe('the Explore picker layout', () => {
 });
 
 describe('the Explore entries and pages layout (RW08)', () => {
-  it('fits one to four 150-unit cards with their names, Back, Home and both page arrows apart, clear of the corners', () => {
+  it('fits one to five 150-unit cards with their names, Back, Home and both page arrows apart, clear of the corners', () => {
     expect(PAGE_ARROW_RADIUS * 2).toBeGreaterThanOrEqual(120);
     const NAME = 50;
     for (const v of VIEWS) {
-      for (let n = 1; n <= 4; n++) {
+      for (let n = 1; n <= 5; n++) {
         const l = exploreGridLayout(v, n);
         const where = `${v.w}×${v.h}, ${n} cards`;
         const cards = l.cards.map((c, i) => ({ ...rect(c, EXPLORE_CARD, EXPLORE_CARD, `card ${i}`), y1: c.y + EXPLORE_CARD / 2 + NAME }));
@@ -141,9 +141,10 @@ describe('the Explore entries and pages layout (RW08)', () => {
         const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
         for (const c of cards) expect(overlap(c, link), `${c.what} under the link, ${where}`).toBe(false);
         if (n === 4) expect(new Set(l.cards.map((c) => c.y)).size, where).toBe(v.h > v.w ? 2 : 1);
+        if (n === 5) expect(new Set(l.cards.map((c) => c.y)).size, where).toBe(v.h > v.w ? 3 : 2);
       }
     }
-    expect(() => exploreGridLayout(VIEWS[0], 5)).toThrow();
+    expect(() => exploreGridLayout(VIEWS[0], 6)).toThrow();
   });
 
   it('fits the last place\'s postcard above the cards without shrinking a target (RW14 slice 8)', () => {
@@ -152,12 +153,14 @@ describe('the Explore entries and pages layout (RW08)', () => {
     const NAME = 50;
     for (const v of VIEWS) {
       expect(exploreGridLayout(v, 4).postcard, `${v.w}×${v.h}`).toBeNull();
-      for (let n = 1; n <= 4; n++) {
+      for (let n = 1; n <= 5; n++) {
         const l = exploreGridLayout(v, n, true);
         const where = `${v.w}×${v.h}, ${n} cards and the postcard`;
         const cards = l.cards.map((c, i) => ({ ...rect(c, EXPLORE_CARD, EXPLORE_CARD, `card ${i}`), y1: c.y + EXPLORE_CARD / 2 + NAME }));
         const post = { ...rect(l.postcard!, EXPLORE_POSTCARD.w, EXPLORE_POSTCARD.h, 'postcard'), y1: l.postcard!.y + EXPLORE_POSTCARD.h / 2 + NAME };
-        check(v, [disc(l.back, CORNER_RADIUS, 'back'), disc(l.home, CORNER_RADIUS, 'home'), post, ...cards, disc(l.prev, PAGE_ARROW_RADIUS, 'prev'), disc(l.next, PAGE_ARROW_RADIUS, 'next')], [], where);
+        // Five cards are Explore's own entries, the one page the postcard shows on; it has no page arrows.
+        const arrows = n <= 4 ? [disc(l.prev, PAGE_ARROW_RADIUS, 'prev'), disc(l.next, PAGE_ARROW_RADIUS, 'next')] : [];
+        check(v, [disc(l.back, CORNER_RADIUS, 'back'), disc(l.home, CORNER_RADIUS, 'home'), post, ...cards, ...arrows], [], where);
         const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
         for (const c of [post, ...cards]) expect(overlap(c, link), `${c.what} under the link, ${where}`).toBe(false);
         // The cards keep their own layout's rows: the postcard only moves them down.

@@ -8,8 +8,8 @@ import { forAgeOrYounger, olderIn, visibleIn, type Land } from './lands';
  * Nothing here gates: an older or younger game is only named as such, and still plays at `playBand`.
  */
 
-/** Explore's four entries, in the order they stand. */
-export const EXPLORE_ENTRIES = ['places', 'favorites', 'all', 'family'] as const;
+/** Explore's five entries, in the order they stand (the Arcade, docs/rework/ARCADE.md, is its own scene). */
+export const EXPLORE_ENTRIES = ['places', 'favorites', 'all', 'arcade', 'family'] as const;
 export type ExploreEntry = (typeof EXPLORE_ENTRIES)[number];
 export const isExploreEntry = (v: unknown): v is ExploreEntry => EXPLORE_ENTRIES.includes(v as ExploreEntry);
 

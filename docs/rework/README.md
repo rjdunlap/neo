@@ -4,7 +4,7 @@
 
 **Direction recorded 2026-10-16; implementation is staged, not built.** The developer wants a broad educational play journey with collectible, customizable creatures, meaningful unlocks, a personal world and manageable navigation, drawing on Neopets, Pokémon, JumpStart and Khan Academy. The title, final cast and visual treatment remain explorations. Puddle Island is still the shipped title.
 
-Start with the [work items](WORK-ITEMS.md). [READY.md](../READY.md) remains the one dispatch queue; GitHub issues carry discussion, claims and execution state. This document holds the rework's direction and boundaries. [DESIGN.md](../DESIGN.md) continues to describe implemented behavior, not this target.
+Start with the [work items](WORK-ITEMS.md). The [Arcade](ARCADE.md) (2026-10-23) is a portal-style Explore entry: a grid of every game with one live bot spotlight, researched from Kongregate, Newgrounds and Apple Arcade. [READY.md](../READY.md) remains the one dispatch queue; GitHub issues carry discussion, claims and execution state. This document holds the rework's direction and boundaries. [DESIGN.md](../DESIGN.md) continues to describe implemented behavior, not this target.
 
 ## Decisions and working recommendations
 

@@ -71,3 +71,9 @@
 - Ran: typecheck; `npm test` (230 files, 2864 tests, including the manifest/file/settings test and the clip lookup test); `npm run build` (precache 390 entries, 215 m4a in `dist` and `sw.js`); `npm run test:offline` PASSED on `vite preview --port 4817` (served `classic-DXt0k59h.js` matched `dist`); an offline probe found all 215 clips in the service-worker cache and fetched one offline (200).
 - Dev probe on `http://localhost:5743` (Playwright Chromium): a clip decoded (1.41 s), "Home!" played by clip with no device speech, `stop()` resolved a playing clip in about 240 ms, an unrendered line used device speech.
 - Not run: any browser suite (no navigation or game change), an iPad. Open: [device check](../DEVICE-CHECKS.md) for clip playback, loudness against music and the voice.
+
+## 2026-10-24 — Monster Munch foods, monsters and places (slice 2)
+
+- `claude/monster-munch-foods` ([PR #924](https://github.com/rjdunlap/neo/pull/924)), code commit 47412abc on base 348224bc: a five-food pool (one per round at 4–5 and 7–8, two unlike foods at 6), five monster colours with horns or crest and one or two eyes, three places, sticker drawn from the same pools, `{kind}` in the sharing lines, the card naming the foods.
+- Ran: `npm run typecheck`; `npm test` 230 files / 2872 tests passed (before a one-line look-alike addition, then the 18 Monster Munch rule tests passed again); `BROWSER_SUITE=third MUNCH_LEVELS=6,8` passed on `http://localhost:5720` (the first try failed only because the harness fed cookies; fixed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=monster-munch FINGER_LEVELS=6,8` clean in 31.5 s and 31.9 s; one level-6 landscape screenshot reviewed.
+- Not run: `npm run build` (no shared assets), a portrait screenshot, browser play of levels 4, 5 and 7 (rule tests cover them), an iPad or device speech for the new food names.

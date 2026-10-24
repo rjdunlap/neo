@@ -124,6 +124,8 @@ export const EXPLORE_CARD = 150;
 export const EXPLORE_MAX = 11;
 /** Cards to a row, and the distance from one row's centre to the next (a card, its name and a gap). */
 const EXPLORE_ROW = 4;
+/** Explore's own entries (Places, Favorites, All games, Arcade, Family play); a page of games holds at most `EXPLORE_ROW`. */
+const EXPLORE_ENTRY_MAX = 5;
 const EXPLORE_PITCH = 220;
 
 export interface ExploreLayout {
@@ -173,15 +175,16 @@ export interface ExploreGridLayout {
 export const EXPLORE_POSTCARD = { w: 320, h: 200 };
 
 /**
- * Explore's four entries, a page of up to four games, or Family play's one card (RW08 slice 1,
+ * Explore's five entries (three over two), a page of up to four games, or Family play's one card (RW08 slice 1,
  * docs/rework/RW08-CUTOVER.md#slice-1-explores-four-entries): 150-unit cards with their names under them, in one row
  * when the view is wider than tall and two by two when it is taller; Back and Home top left as in creature play, and
  * the page arrows centred under the cards, clear of the guide corner.
  */
 export function exploreGridLayout(v: { w: number; h: number }, n: number, postcard = false): ExploreGridLayout {
-  if (n < 1 || n > EXPLORE_ROW) throw new Error(`An Explore page holds one to ${EXPLORE_ROW} cards, not ${n}`);
+  if (n < 1 || n > EXPLORE_ENTRY_MAX) throw new Error(`An Explore page holds one to ${EXPLORE_ENTRY_MAX} cards, not ${n}`);
   const step = EXPLORE_CARD + 80;
-  const perRow = v.h > v.w && n > 2 ? 2 : n;
+  // Explore's five entries take two rows (three over two) even when the view is wide: five in a row would not fit 1024.
+  const perRow = v.h > v.w && n > 2 ? 2 : n > EXPLORE_ROW ? Math.ceil(n / 2) : n;
   const rows = Math.ceil(n / perRow);
   let y0 = rows === 1 ? Math.round(v.h * 0.42) : Math.round(v.h * 0.4 - ((rows - 1) * EXPLORE_PITCH) / 2);
   // The postcard stands just above where the cards would be; where that is too high it keeps to the top (below Back and

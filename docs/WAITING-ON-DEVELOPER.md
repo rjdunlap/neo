@@ -6,7 +6,7 @@ Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the 
 
 ## Still waiting
 
-The developer answered the last four questions on 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#answered-by-the-developer)). Two steps are still theirs, plus one new question (2026-10-23):
+The developer answered the last four questions on 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#answered-by-the-developer)). Two steps are still theirs, plus two new questions (2026-10-23):
 
 | Step | What happens next | Written in |
 | --- | --- | --- |
@@ -14,6 +14,7 @@ The developer answered the last four questions on 2026-10-23 ([record](archive/D
 | **Name the Portuguese reviewer** | Portuguese comes first, in European Portuguese (decided 2026-10-23); its lines are reviewed by that family member before anything in Portuguese ships | [Additional languages](definitions/additional-languages.md) |
 | **How phones meet the shared screen** (parked, low priority: the developer will raise it when wanted) | The developer approved second screens in principle (2026-10-23). Phones still need somewhere to meet: a hosted relay (an account, maybe money, and a service that sees a child's app's traffic), WebRTC introduced through a relay, or a QR exchange that needs a camera. Recommended: a small relay with no accounts and nothing stored, used only by couch play's phone mode (the island stays offline), built with the first phone slice (phones as couch gamepads) | [Phone party play](PHONE-PARTY.md#hosting-where-the-phones-meet) |
 | **RW14 defaults** | Her own friend stands in as the resident where it is the resident's species (a sprout child in Rainbow Meadow) and the corner guide hides there; built as the default in slice 2 ([PR #898](https://github.com/rjdunlap/neo/pull/898)). Say if you would rather the illustrated species resident always stand and her friend stay in the corner | [POLISH.md](rework/POLISH.md#slice-2-residents-in-six-locations-and-her-own-friend-at-home) |
+| **The Arcade's attract mode and density** (2026-10-23) | The Arcade shows six or more cards a page and its spotlight moves on by itself from preschool up (off at lap and toddler), against RW03's "at most four" and "no carousel that advances itself". Keep, change the band, or switch it off after playing it | [Arcade packet](rework/ARCADE.md#for-the-developer) |
 
 ## Adding a question
 
