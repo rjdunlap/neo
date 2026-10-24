@@ -14,7 +14,7 @@
 
 ## Full lands turn pages (location capacity, 2026-10-24)
 
-On an iPad, open Tinker Lab at school (12 games and a signpost, now 6 + 6): check that the yellow arrow markers read as "more games this way" to her and not as a second signpost, that a tap turns the page at once, that a game opened from page 2 comes back to page 2, and that the host's suggestion turns to its page. [Verification](VERIFICATION.md#2026-10-24--location-capacity-pages-for-a-full-land)
+- [ ] On an iPad, open Tinker Lab at school (12 games and a signpost, now 6 + 6): do the yellow arrow markers read as "more games this way" and not as a second signpost, does a tap turn the page at once, does a game opened from page 2 come back to page 2, and does the host's suggestion turn to its page? [PR #915](https://github.com/rjdunlap/neo/pull/915)
 
 ## Moving between screens (RW14 slice 9, 2026-10-23)
 
