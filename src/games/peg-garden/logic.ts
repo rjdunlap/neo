@@ -6,13 +6,13 @@ import type { Rng } from '../../engine/random';
  * Every bud it touches blooms and chimes. Nothing is ever lost; the ladder asks for
  * particular flowers, then for aiming at numbers.
  */
-export type PegMode = 'drop' | 'bloom' | 'color' | 'number' | 'order' | 'big';
+export type PegMode = 'drop' | 'bloom' | 'color' | 'number' | 'order' | 'big' | 'cup';
 
 export interface PegPlan {
   mode: PegMode;
   /** Buds on the board. */
   pegs: number;
-  /** drop: balls in a round. color: special buds. number/order: numbered buds. */
+  /** drop: balls in a round. color: special buds. number/order: numbered buds. cup: asks in a round. */
   count: number;
   name: string;
 }
@@ -23,6 +23,7 @@ export const PLANS: PegPlan[] = [
   { mode: 'color', pegs: 16, count: 4, name: 'Bloom the four orange flowers (counted aloud)' },
   { mode: 'number', pegs: 14, count: 5, name: 'Aim the launcher to hit a numbered flower: "hit 3"' },
   { mode: 'order', pegs: 14, count: 3, name: 'Hit numbered flowers 1, 2, 3 in order' },
+  { mode: 'cup', pegs: 12, count: 3, name: 'Into the cup: aim the pearl into the cup with that many dots' },
 ];
 
 /** Level 8, the lap entry: four huge buds, and every touch blooms one. Plans are keyed by ID, so it sits outside the ladder's order. */
@@ -210,3 +211,70 @@ export const ledgeX = (x: number) => Math.max(BOARD.ball, Math.min(BOARD.w - BOA
  */
 export const guided = (mode: PegMode, stalled: number, hinting: boolean) =>
   (mode === 'bloom' || mode === 'big' || mode === 'color') && (stalled >= STALL_AT || (mode === 'color' && hinting));
+
+// Level 6, Into the cup ------------------------------------------------------------------------------------------------
+
+/** Cups along the sand, side by side across the whole board, so every pearl that rolls out lands in one of them. */
+export const CUPS = 4;
+export const CUP_W = BOARD.w / CUPS;
+/** The cup a pearl leaving the board at `x` falls into. */
+export const cupAt = (x: number) => Math.max(0, Math.min(CUPS - 1, Math.floor(x / CUP_W)));
+export const cupCentre = (i: number) => (i + 0.5) * CUP_W;
+
+/** A stuck pearl is let go after this long; it lands in no cup and counts nothing. */
+export const CUTOFF = 10;
+/** The physics sample both the rules and an aimed cup shot step by, so a shot in play is exactly the simulated one. */
+export const SAMPLE = 1 / 30;
+/** Aims sampled across the launcher's swing, and how far either side of a chosen aim must land in the same cup. */
+export const CUP_STEP = 0.005;
+export const CUP_MARGIN = 0.012;
+
+export const worldOf = (spots: PegSpot[]): BallWorld => ({ pegs: spots.map((s) => ({ x: s.x, y: s.y, r: s.r ?? BOARD.peg })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 });
+
+/** Where an aimed shot ends up: the cup it falls into, or null when it is still on the board at the cutoff. */
+export function landing(world: BallWorld, angle: number): number | null {
+  const { landed } = simulate({ x: BOARD.w / 2, y: 40, ...aimVelocity(angle), r: BOARD.ball }, world, BOARD.h, CUTOFF, SAMPLE);
+  return landed.y - BOARD.ball >= BOARD.h ? cupAt(landed.x) : null;
+}
+
+/** Every aim across the swing and the cup it lands in, worked out once per board. */
+export function landingTable(world: BallWorld): { angle: number; cup: number | null }[] {
+  const n = Math.round((2 * AIM_LIMIT) / CUP_STEP);
+  return Array.from({ length: n + 1 }, (_, i) => {
+    const angle = -AIM_LIMIT + i * CUP_STEP;
+    return { angle, cup: landing(world, angle) };
+  });
+}
+
+/**
+ * An aim that lands in `cup` with room to spare: the middle of the widest run of neighbouring aims that all land there,
+ * if that run reaches `CUP_MARGIN` either side; otherwise null.
+ */
+export function aimInto(table: { angle: number; cup: number | null }[], cup: number): number | null {
+  let best: { from: number; to: number } | null = null;
+  for (let i = 0; i < table.length; i++) {
+    if (table[i].cup !== cup) continue;
+    let j = i;
+    while (j + 1 < table.length && table[j + 1].cup === cup) j++;
+    if (!best || table[j].angle - table[i].angle > best.to - best.from) best = { from: table[i].angle, to: table[j].angle };
+    i = j;
+  }
+  if (!best || best.to - best.from < 2 * CUP_MARGIN) return null;
+  return (best.from + best.to) / 2;
+}
+
+/**
+ * A round of Into the cup: a board of plain buds on which every cup can be reached with room to spare (a board that
+ * fails is grown again from the same seed), the dots on each cup (1 to 4, shuffled), and three different counts to ask for.
+ */
+export function makeCupRound(plan: PegPlan, rng: Rng, shape: BoardShape) {
+  let spots = makeBoard(plan, rng, shape);
+  let table = landingTable(worldOf(spots));
+  for (let tries = 0; tries < 30 && !Array.from({ length: CUPS }, (_, c) => aimInto(table, c)).every((a) => a !== null); tries++) {
+    spots = makeBoard(plan, rng, shape);
+    table = landingTable(worldOf(spots));
+  }
+  const dots = rng.shuffle(Array.from({ length: CUPS }, (_, i) => i + 1));
+  const asks = rng.shuffle(Array.from({ length: CUPS }, (_, i) => i + 1)).slice(0, plan.count);
+  return { spots, table, dots, asks };
+}
