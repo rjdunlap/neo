@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { levelsInOrder } from '../progress/difficulty';
 import { GAMES } from '../games/registry';
 import { neutral, type CouchControls } from '../engine/controller';
 import { controllerLevels, controllerPlays, InputInUse, pressed } from './input-in-use';
@@ -56,8 +57,7 @@ describe('controllerPlays', () => {
       expect(levels.size, mod.id).toBeGreaterThan(0);
       const all = new Set<number>();
       for (const band of mod.bands) {
-        const { min, max } = mod.levels(band);
-        for (let l = min; l <= max; l++) all.add(l);
+        for (const level of levelsInOrder(mod.levels(band))) all.add(level);
       }
       for (const level of levels) {
         expect(all.has(level), `${mod.id} level ${level}`).toBe(true);
