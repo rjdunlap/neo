@@ -4,7 +4,7 @@
 
 - `claude/pond-typing` at `aa4f38a3`: new keyboard-only couch game `pond-typing` (school 1–3), the typed-letter channel (`CouchControls.typed`, `GameModule.typing`), couch registration, the Bubble Pond course and the island course route; home Painted Canyon.
 - Ran: typecheck; `npm test` 2779 passed (224 files, with 20 new rule tests in `pond-typing/{logic,course}.test.ts` and 3 in `couch-input.test.ts`); `BROWSER_SUITE=couchgames COUCH_ONLY=pond-typing` (intro, level-1 bot round, save; the bot's typing checked instead of key lighting); one Playwright probe: island `go.game('pond-typing')` opens the course page, two wrong keys gave 1 miss and 1 hint with the key glowing, the right key popped, no page errors, portrait screenshot reviewed; `npm run build`.
-- Not run: offline check, `world`, `lands` suite (the land fit was checked by the registry and lands unit tests), a real laptop keyboard or a child. Open: levels 4–6, picture words, the Show the key toggle; [device check](DEVICE-CHECKS.md#pond-typing-levels-1-3-ke2-2026-10-24).
+- Not run: offline check, `world`, `lands` suite (the land fit was checked by the registry and lands unit tests), a real laptop keyboard or a child. Open: levels 4–6, picture words, the Show the key toggle; [device check](DEVICE-CHECKS.md#pond-typing-levels-13-ke2-2026-10-24).
 
 ## 2026-10-24 — Location capacity definition (docs only)
 
