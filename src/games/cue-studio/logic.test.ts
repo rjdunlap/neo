@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  canFinish, CUES, demoNext, finishRun, help, isComplete, isProgram, newStudio, planFor, PLANS, playRun, restart, step,
+  canFinish, checkRun, CUES, demoNext, finishRun, help, isComplete, isProgram, newStudio, planFor, PLANS, playRun, restart, step,
   stickerRecipe, tapAction, tapSlot, trace, undo, type Cue, type Studio,
 } from './logic';
 
@@ -15,9 +15,10 @@ const watched = (slots: number, ...cues: Cue[]) => {
 };
 
 describe('plans', () => {
-  it('level 1 has one slot and level 2 has two', () => {
-    expect(PLANS.map((p) => p.slots)).toEqual([1, 2]);
+  it('levels 1–3 have one, two and two slots', () => {
+    expect(PLANS.map((p) => p.slots)).toEqual([1, 2, 2]);
     expect(planFor(2).slots).toBe(2);
+    expect(planFor(3).request).toEqual(['W', 'T']);
     expect(planFor(99).level).toBe(1);
   });
 });
@@ -253,10 +254,221 @@ describe('help', () => {
   });
 });
 
+describe('requested repair', () => {
+  const request: Cue[] = ['W', 'T'];
+  const programs: Cue[][] = [['W', 'W'], ['W', 'T'], ['T', 'W'], ['T', 'T']];
+  const replace = (s: Studio, at: number, cue: Cue) => {
+    tapSlot(s, at);
+    tapAction(s, cue);
+  };
+  const check = (s: Studio) => {
+    playRun(s);
+    finishRun(s);
+    return checkRun(s);
+  };
+
+  it('starts with the reversed request without changing the pictured request', () => {
+    const s = newStudio(2, request);
+    expect(s.program).toEqual(['T', 'W']);
+    expect(s.request).toEqual(['W', 'T']);
+    replace(s, 0, 'W');
+    expect(request).toEqual(['W', 'T']);
+    expect(s.checked).toBe(false);
+    expect(s.misses).toBe(0);
+  });
+
+  it('accepts exactly the requested trace and points at the earliest mismatch for all four programs', () => {
+    for (const program of programs) {
+      const s = newStudio(2, request);
+      program.forEach((cue, at) => replace(s, at, cue));
+      const earliest = program.findIndex((cue, at) => cue !== request[at]);
+      expect(check(s), program.join('')).toBe(earliest);
+      expect(canFinish(s)).toBe(earliest === -1);
+      expect(s.misses).toBe(earliest === -1 ? 0 : 1);
+      expect(s.program).toEqual(program);
+    }
+  });
+
+  it('each correct local replacement reduces mismatches and either repair order reaches success', () => {
+    for (const order of [[0, 1], [1, 0]]) {
+      const s = newStudio(2, request);
+      let remaining = 2;
+      for (const at of order) {
+        replace(s, at, request[at]);
+        expect(s.program.filter((cue, i) => cue !== request[i])).toHaveLength(--remaining);
+        expect(canFinish(s)).toBe(false);
+      }
+      expect(check(s)).toBe(-1);
+      expect(canFinish(s)).toBe(true);
+      expect(s.misses).toBe(0);
+    }
+  });
+
+  it('every legal replacement changes only its chosen slot and Help solves every alternative', () => {
+    for (const program of programs) {
+      for (let at = 0; at < 2; at++) for (const cue of CUES) {
+        const s = newStudio(2, request);
+        program.forEach((value, slot) => replace(s, slot, value));
+        replace(s, at, cue);
+        expect(s.program[at]).toBe(cue);
+        expect(s.program[1 - at]).toBe(program[1 - at]);
+        expect(isProgram(s.program, 2)).toBe(true);
+        expect(s.misses).toBe(0);
+      }
+      const s = newStudio(2, request);
+      program.forEach((cue, at) => replace(s, at, cue));
+      for (let press = 0; press < 4; press++) {
+        const before = s.program.filter((cue, at) => cue !== request[at]).length;
+        const result = help(s);
+        const after = s.program.filter((cue, at) => cue !== request[at]).length;
+        if (result.kind === 'repair') expect(after).toBe(before - 1);
+        else expect(after).toBe(before);
+        if (result.kind === 'check') break;
+      }
+      expect(s.program).toEqual(request);
+      expect(check(s)).toBe(-1);
+      expect(canFinish(s)).toBe(true);
+      expect(s.misses).toBe(0);
+    }
+  });
+
+  it('automatic redisplay of an already supplied clue never charges a second hint', () => {
+    const s = newStudio(2, request);
+    help(s);
+    check(s);
+    check(s);
+    expect(s.hints).toBe(1);
+    expect(s.helped).toEqual(new Set(['clue:0']));
+    restart(s);
+    check(s);
+    expect(s.misses).toBe(3);
+    expect(s.hints).toBe(1);
+  });
+
+  it('moving an existing clue to the next mismatch stays free, including a subsequent Check', () => {
+    const s = newStudio(2, request);
+    check(s); check(s);
+    replace(s, 0, 'W');
+    expect(check(s)).toBe(1);
+    expect(s.hints).toBe(1);
+    expect(help(s)).toEqual({ kind: 'repair', at: 1, cue: 'T' });
+    expect(s.hints).toBe(2);
+  });
+
+  it('ordinary Play and Step never enable requested Finish or charge misses, even when correct', () => {
+    for (const program of programs) {
+      const s = newStudio(2, request);
+      program.forEach((cue, at) => replace(s, at, cue));
+      playRun(s);
+      finishRun(s);
+      step(s);
+      step(s);
+      expect(s.played).toBe(true);
+      expect(s.checked).toBe(false);
+      expect(canFinish(s)).toBe(false);
+      expect(s.misses).toBe(0);
+      expect(s.hints).toBe(0);
+    }
+  });
+
+  it('rejects incomplete or malformed Checks and ignores Check in creation mode', () => {
+    for (const program of [[null, null], ['W', null], [null, 'T'], ['W'], ['X', 'T']]) {
+      const s = newStudio(2, request);
+      s.program = program as Studio['program'];
+      expect(checkRun(s)).toBeNull();
+      expect(s.misses).toBe(0);
+      expect(s.checked).toBe(false);
+    }
+    expect(checkRun(watched(2, 'W', 'T'))).toBeNull();
+  });
+
+  it('only failed Checks count misses, with an automatic clue after two and no repeated clue charge', () => {
+    const s = newStudio(2, request);
+    expect(check(s)).toBe(0);
+    expect(s.misses).toBe(1);
+    expect(s.hints).toBe(0);
+    expect(check(s)).toBe(0);
+    expect(s.misses).toBe(2);
+    expect(s.hints).toBe(1);
+    expect(s.helped.has('clue:0')).toBe(true);
+    expect(check(s)).toBe(0);
+    expect(s.misses).toBe(3);
+    expect(s.hints).toBe(1);
+    expect(help(s)).toEqual({ kind: 'repair', at: 0, cue: 'W' });
+    expect(s.misses).toBe(3);
+  });
+
+  it('Help gives a clue, repairs each earliest mismatch, then points to Check and Finish', () => {
+    const s = newStudio(2, request);
+    expect(help(s)).toEqual({ kind: 'clue', at: 0, cue: 'W' });
+    expect(s.program).toEqual(['T', 'W']);
+    expect(s.hints).toBe(1);
+    expect(help(s)).toEqual({ kind: 'repair', at: 0, cue: 'W' });
+    expect(s.program).toEqual(['W', 'W']);
+    expect(s.hints).toBe(2);
+    expect(help(s)).toEqual({ kind: 'repair', at: 1, cue: 'T' });
+    expect(s.program).toEqual(request);
+    expect(s.hints).toBe(3);
+    expect(help(s)).toEqual({ kind: 'check' });
+    expect(help(s)).toEqual({ kind: 'check' });
+    expect(canFinish(s)).toBe(false);
+    expect(check(s)).toBe(-1);
+    expect(help(s)).toEqual({ kind: 'finish' });
+    expect(canFinish(s)).toBe(true);
+    expect(s.hints).toBe(3);
+    expect(s.misses).toBe(0);
+  });
+
+  it('preserves assistance identities and accounting across Undo and restart', () => {
+    const s = newStudio(2, request);
+    check(s);
+    help(s);
+    help(s);
+    expect(undo(s)).toBe(true);
+    expect(help(s)).toEqual({ kind: 'repair', at: 0, cue: 'W' });
+    expect(s.hints).toBe(2);
+    help(s);
+    expect(s.hints).toBe(3);
+    check(s);
+    restart(s);
+    expect(s.program).toEqual(['T', 'W']);
+    expect(s.misses).toBe(1);
+    expect(s.hints).toBe(3);
+    expect(s.helped).toEqual(new Set(['clue:0', 'repair:0', 'repair:1']));
+    expect(s.selected).toBeNull();
+    expect(s.undo).toBeNull();
+    expect(s.played).toBe(false);
+    expect(s.checked).toBe(false);
+    expect(help(s)).toEqual({ kind: 'repair', at: 0, cue: 'W' });
+    expect(help(s)).toEqual({ kind: 'repair', at: 1, cue: 'T' });
+    expect(s.hints).toBe(3);
+    expect(check(s)).toBe(-1);
+    expect(canFinish(s)).toBe(true);
+  });
+
+  it('edits and Undo invalidate a successful Check, including Undo back to the requested program', () => {
+    const s = newStudio(2, request);
+    replace(s, 0, 'W');
+    replace(s, 1, 'T');
+    check(s);
+    replace(s, 0, 'T');
+    expect(s.checked).toBe(false);
+    expect(canFinish(s)).toBe(false);
+    undo(s);
+    expect(s.program).toEqual(request);
+    expect(s.checked).toBe(false);
+    expect(canFinish(s)).toBe(false);
+    expect(check(s)).toBe(-1);
+    tapSlot(s, 0);
+    expect(tapAction(s, 'W')).toBe('same');
+    expect(canFinish(s)).toBe(true);
+  });
+});
+
 describe('the demonstration', () => {
   /** Applies the ghost finger's presses the way the game would. */
-  function runDemo(slots: number) {
-    const s = newStudio(slots);
+  function runDemo(slots: number, request?: readonly Cue[]) {
+    const s = newStudio(slots, request);
     let changed = false;
     let replaced = false;
     for (let i = 0; i < 20; i++) {
@@ -266,6 +478,10 @@ describe('the demonstration', () => {
         playRun(s);
         finishRun(s);
         if (replaced) changed = true;
+      } else if (p === 'check') {
+        playRun(s);
+        finishRun(s);
+        checkRun(s);
       } else if ('slot' in p) {
         tapSlot(s, p.slot);
       } else {
@@ -283,6 +499,17 @@ describe('the demonstration', () => {
     expect(s.hints).toBe(0);
     expect(replaced).toBe(false);
     expect(s.program).toEqual(['W']);
+  });
+
+  it('level 3 watches, repairs both slots and checks before finishing without assistance', () => {
+    const { s, done, replaced } = runDemo(2, ['W', 'T']);
+    expect(done).toBe(true);
+    expect(replaced).toBe(true);
+    expect(s.program).toEqual(['W', 'T']);
+    expect(s.checked).toBe(true);
+    expect(canFinish(s)).toBe(true);
+    expect(s.misses).toBe(0);
+    expect(s.hints).toBe(0);
   });
 
   it('level 2 reaches a finishable state with no hints and makes a replacement', () => {
