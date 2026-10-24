@@ -8,7 +8,7 @@ describe('goToOrigin', () => {
   it('returns to the land, the home spot or the journal a game was opened from', () => {
     const fallback = vi.fn();
     const a = routes(); goToOrigin(a, { land: 'lantern-lake' }, fallback);
-    expect(a.land).toHaveBeenCalledWith('lantern-lake');
+    expect(a.land).toHaveBeenCalledWith('lantern-lake', undefined);
     const b = routes(); goToOrigin(b, { place: 'grownup' }, fallback);
     expect(b.place).toHaveBeenCalledWith('grownup');
     const c = routes(); goToOrigin(c, { journal: true }, fallback);
@@ -17,6 +17,11 @@ describe('goToOrigin', () => {
     expect(d.library).toHaveBeenCalled();
     expect(d.journal).not.toHaveBeenCalled();
     expect(fallback).not.toHaveBeenCalled();
+  });
+
+  it('returns to the page of a full land a game was opened from', () => {
+    const a = routes(); goToOrigin(a, { land: 'tinker-lab', page: 1 }, vi.fn());
+    expect(a.land).toHaveBeenCalledWith('tinker-lab', 1);
   });
 
   it('returns to the Explore page a game was opened from, the other ages still turned (RW08)', () => {

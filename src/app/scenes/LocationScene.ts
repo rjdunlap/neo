@@ -78,8 +78,8 @@ export class LocationScene extends LandScene {
   /** Opened at the root (with a Back to Places), where a visit is remembered for Explore's postcard. */
   private readonly opensAtRoot: boolean;
 
-  /** `back`, at the root (RW08), turns the corner button into a Back arrow to Explore's Places. */
-  constructor(app: App, id: LandId, back?: () => void) {
+  /** `back`, at the root (RW08), turns the corner button into a Back arrow to Explore's Places; `page` opens a full land at that page (a game's origin). */
+  constructor(app: App, id: LandId, back?: () => void, page?: number) {
     const place = LOCATIONS[id];
     if (!place) throw new Error(`${id} is not a location yet`);
     let resident: Companion | Resident | null = null;
@@ -113,6 +113,7 @@ export class LocationScene extends LandScene {
       headingColor: place.headingColor,
       hostSaysLine: true,
       hostLine,
+      page,
       // At the root Back carries Places' picture and a house beside it goes Home (RW14 slice 3).
       ...(back ? { home: back, homeIcon: () => fittedBack(entryArt('places'), 50, ink), root: { homeSays: () => voice.say('result.back', { place: ENTRY_NAMES.places }) } } : {}),
     });

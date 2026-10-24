@@ -1,6 +1,6 @@
 # Location capacity: a land takes a new game by turning a page
 
-Documentation packet, 2026-10-24, [PR #914](https://github.com/rjdunlap/neo/pull/914), branch `claude/location-capacity`, source base `edd6a74b`. It defines the READY line found by the [genetics G2 placement check](../deep-dives/subjects/genetics.md#build-slices-in-order) ([PR #912](https://github.com/rjdunlap/neo/pull/912)). This is a proposal: nothing is implemented, and the shipped "one screen per land" contract stays in force until the build lands.
+Documentation packet, 2026-10-24, [PR #914](https://github.com/rjdunlap/neo/pull/914), branch `claude/location-capacity`, source base `edd6a74b`. It defines the READY line found by the [genetics G2 placement check](../deep-dives/subjects/genetics.md#build-slices-in-order) ([PR #912](https://github.com/rjdunlap/neo/pull/912)). **Built 2026-10-24 ([PR #915](https://github.com/rjdunlap/neo/pull/915), `claude/location-pages`).** `LAND_SPOTS` stayed 13: the capacity sweep confirmed it, so it was not lowered. Beach, Painted Canyon and Music Mountain failed the sweep and their scenery plans were reworked (a shared `scanPlace` in `src/app/scenes/meadow.ts` keeps their minimum things); the other locations passed unchanged. The "contract text" below is now in DESIGN, ISLAND-REVAMP and AGENTS. The text that follows is the definition as written, in the future tense.
 
 **Recommendation.** A land whose screen would hold more than **13 spots** splits its games into pages of about equal size. Each page has the host, its share of the games, the signpost, and pictured arrow spots at both ends of the path. Every page fits on one screen through the same `landLayout`, and no target shrinks. A twelfth location, or splitting a land into two `LandId`s, stays the developer's call ([alternatives](#alternatives-considered)). It is not needed for this.
 
@@ -55,7 +55,7 @@ Classic `LandScene` and the root's `LocationScene`, which extends it, share all 
 
 Every other screen in today's catalog stays as it is.
 
-## Contract text the build changes (not edited now)
+## Contract text the build changes (done in the build)
 
 - [DESIGN.md](../DESIGN.md) **Lands** paragraph: "its games on one screen through `landLayout`" becomes "each page of its games on one screen", with `LAND_SPOTS`, balanced pages and arrows; the integration-contracts row for island lands follows.
 - [ISLAND-REVAMP.md](../rework/ISLAND-REVAMP.md#the-location-in-the-new-shell) "One screen" bullet: adds the page rule. Its "no land above the 13 that `landLayout` already fits" becomes "no page above `LAND_SPOTS`".

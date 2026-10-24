@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { LAND_IDS, landButtons, landFor, landLayout, olderIn, overlaps, visibleIn, type LandId } from '../../content/lands';
+import { LAND_IDS, landButtons, landFor, overlaps } from '../../content/lands';
 import { computeView } from '../../engine/view';
-import { GAMES } from '../../games/registry';
-import { BANDS, type Band } from '../../progress/bands';
 import { barnyardFence } from './barnyard';
 import { exploreIds } from './ExploreScene';
 import { farmPlan } from './farm';
 import { GARLAND_LOW, hungRect, lakeGarlands, lakePlan, WATER_ABOVE, WATER_BELOW } from './lakeside';
 import { LOCATIONS } from './LocationScene';
+import { landLayouts } from './resident-check';
 import { meadowKeepOut } from './meadow';
 
 const VIEWS = {
@@ -17,26 +16,9 @@ const VIEWS = {
   notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
 };
 
-/** Every layout a land uses: each band, both sides of the signpost, every view. */
-function* layouts(id: LandId) {
-  const land = landFor(id);
-  const catalog = GAMES;
-  for (const [name, view] of Object.entries(VIEWS)) {
-    const ground = view.h * land.backdrop.horizon;
-    for (const band of BANDS.map((b) => b.id) as Band[]) {
-      const mine = visibleIn(land, band, catalog).length;
-      const older = olderIn(land, band, catalog).length;
-      for (const n of older ? [mine, older] : [mine]) {
-        const layout = landLayout(n, older > 0, view, ground)!;
-        yield { view, ground, layout, where: `${band} ${name} n=${n}` };
-      }
-    }
-  }
-}
-
 describe('Barnyard as a location', () => {
-  it('plants an orchard in front of the fence, on screen and off every touch area, at every band, both sides of the signpost, in every view', () => {
-    for (const { view, ground, layout, where: where0 } of layouts('barnyard')) {
+  it('plants an orchard in front of the fence, on screen and off every touch area, in every layout up to the land budget, in every view', () => {
+    for (const { view, ground, layout, where: where0 } of landLayouts('barnyard')) {
       const keepOut = meadowKeepOut(layout, view);
       const plan = farmPlan(layout, view, ground);
       const fence = barnyardFence(layout, ground) + 22;
@@ -55,8 +37,8 @@ describe('Barnyard as a location', () => {
 });
 
 describe('Lantern Lake as a location', () => {
-  it('floats lanterns on the water and lights the bank, on screen and off every touch area, at every band, both sides of the signpost, in every view', () => {
-    for (const { view, ground, layout, where: where0 } of layouts('lantern-lake')) {
+  it('floats lanterns on the water and lights the bank, on screen and off every touch area, in every layout up to the land budget, in every view', () => {
+    for (const { view, ground, layout, where: where0 } of landLayouts('lantern-lake')) {
       const keepOut = meadowKeepOut(layout, view);
       const plan = lakePlan(layout, view, ground);
       // Lanterns in every layout: on the water and the bank where there is room, and strung across the sky.

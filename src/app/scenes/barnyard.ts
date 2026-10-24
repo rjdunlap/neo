@@ -1,12 +1,12 @@
 import { Graphics } from 'pixi.js';
 import { swatch, wood } from '../../art/palette';
 import { drawFarBarn } from '../../art/scenery';
-import { spotRect, type LandLayout } from '../../content/lands';
+import { layoutSpots, spotRect, type LandLayout } from '../../content/lands';
 import type { View } from '../../engine/view';
 
 /** Where the fence's rails run: above the first row's reserved drawing/touch rectangles. Its straw edge ends 22 below. */
 export function barnyardFence(layout: LandLayout, ground: number) {
-  const top = Math.min(...[layout.host, ...layout.games, ...(layout.sign ? [layout.sign] : [])].map((s) => spotRect(s, layout.box).y));
+  const top = Math.min(...layoutSpots(layout).map((s) => spotRect(s, layout.box).y));
   return Math.min(ground + 20, top - 24);
 }
 

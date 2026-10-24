@@ -153,6 +153,35 @@ export function olderIn(land: Land, band: Band, games: readonly GameModule[]): G
   return land.games.map((id) => games.find((g) => g.id === id)).filter((g): g is GameModule => !!g && !forAgeOrYounger(g, band));
 }
 
+/**
+ * The most spots one land screen holds: host, games, signpost and page arrows together. It is the most the tightest
+ * scenery passes at 4:3 landscape, and every location test sweeps up to it.
+ */
+export const LAND_SPOTS = 13;
+
+/**
+ * A side's games (hers, or the bigger kids' behind the signpost) split into pages, in land order. When the host, the
+ * games and the signpost fit in `LAND_SPOTS` it is one page; otherwise pages of near-equal size (earlier pages take the
+ * extra one), each leaving room for the host, both arrows and the signpost.
+ */
+export function landPages<T>(games: readonly T[], sign: boolean): T[][] {
+  const extra = sign ? 1 : 0;
+  if (1 + games.length + extra <= LAND_SPOTS) return [games.slice()];
+  const per = LAND_SPOTS - 3 - extra;
+  const count = Math.ceil(games.length / per);
+  const pages: T[][] = [];
+  let at = 0;
+  for (let p = 0; p < count; p++) {
+    const size = Math.floor(games.length / count) + (p < games.length % count ? 1 : 0);
+    pages.push(games.slice(at, at + size));
+    at += size;
+  }
+  return pages;
+}
+
+/** A remembered or carried page held inside a side's page count, as Explore's `clampPage` does. */
+export const clampLandPage = (page: number | undefined, pages: number) => Math.min(Math.max(0, Math.floor(page ?? 0) || 0), Math.max(1, pages) - 1);
+
 /** Every game for her age and younger, in catalog order: what the home spot lists. */
 export const visibleGames = (band: Band, games: readonly GameModule[]): GameModule[] => games.filter((g) => forAgeOrYounger(g, band));
 
@@ -213,7 +242,19 @@ export interface LandLayout {
   games: Spot[];
   /** The signpost to the bigger kids' games, when there are any. */
   sign: Spot | null;
+  /** A paged land's arrows: back a page (just after the host) and on a page (just before the signpost). */
+  prev: Spot | null;
+  next: Spot | null;
 }
+
+/** Which page arrows a land screen shows: none on a land that fits, no back arrow on its first page, no on arrow on its last. */
+export interface LandArrows {
+  prev: boolean;
+  next: boolean;
+}
+
+/** Every spot of a layout, in path order: host, back arrow, games, on arrow, signpost. */
+export const layoutSpots = (l: LandLayout): Spot[] => [l.host, ...(l.prev ? [l.prev] : []), ...l.games, ...(l.next ? [l.next] : []), ...(l.sign ? [l.sign] : [])];
 
 /** Drawing sizes to try, largest first. The touch areas stay over 100 units at every one. */
 const BOXES: Box[] = [
@@ -224,14 +265,15 @@ const BOXES: Box[] = [
 ];
 
 /**
- * Where the host, the games and the signpost stand in a land of `games` games, on one screen. Rows start on the
- * ground (`ground`, the backdrop's horizon) and below the corner buttons, end above the bottom edge, and keep
- * clear of the pet's corner. The host stands first and the signpost last. Null if they cannot fit at any
- * size; a test makes sure every land fits at every band, so a new game that would crowd a land fails a test
- * instead of shrinking the targets.
+ * Where the host, the games and the signpost (and a paged land's arrows) stand on one land screen of `games` games. Rows
+ * start on the ground (`ground`, the backdrop's horizon) and below the corner buttons, end above the bottom edge, and keep
+ * clear of the pet's corner. The host stands first, then the back arrow, the games, the on arrow and the signpost last.
+ * Null if they cannot fit at any size; a test sweeps every count up to `LAND_SPOTS`, so a full land pages
+ * (`landPages`) instead of shrinking the targets.
  */
-export function landLayout(games: number, sign: boolean, view: { w: number; h: number }, ground: number): LandLayout | null {
-  const need = games + 1 + (sign ? 1 : 0);
+export function landLayout(games: number, sign: boolean, view: { w: number; h: number }, ground: number, arrows: LandArrows = { prev: false, next: false }): LandLayout | null {
+  const pre = arrows.prev ? 1 : 0;
+  const need = games + 1 + pre + (arrows.next ? 1 : 0) + (sign ? 1 : 0);
   for (const box of BOXES) {
     const colGap = box.w + 30 + 10;
     const rowGap = box.h + 45 + 10;
@@ -272,7 +314,14 @@ export function landLayout(games: number, sign: boolean, view: { w: number; h: n
         const start = from + (right - from - width) / 2;
         for (let i = 0; i < n; i++) spots.push({ x: n === 1 ? (from + right) / 2 : start + (i * width) / (n - 1), y });
       });
-      return { box, host: spots[0], games: spots.slice(1, 1 + games), sign: sign ? spots[spots.length - 1] : null };
+      return {
+        box,
+        host: spots[0],
+        prev: arrows.prev ? spots[1] : null,
+        games: spots.slice(1 + pre, 1 + pre + games),
+        next: arrows.next ? spots[1 + pre + games] : null,
+        sign: sign ? spots[spots.length - 1] : null,
+      };
     }
   }
   return null;

@@ -1,14 +1,13 @@
 import { Texture } from 'pixi.js';
 import { describe, expect, it, vi } from 'vitest';
 import { sameArt } from '../../art/creatures/illustrated';
-import { landFor, landLayout, olderIn, overlaps, spotRect, visibleIn, type Rect } from '../../content/lands';
+import { landFor, overlaps, spotRect, type Rect } from '../../content/lands';
 import { Companion } from '../../creatures/companion';
 import { SPECIES } from '../../creatures/species';
 import { computeView } from '../../engine/view';
-import { GAMES } from '../../games/registry';
-import { BANDS, type Band } from '../../progress/bands';
 import { hostScale } from './LandScene';
 import { LOCATIONS } from './LocationScene';
+import { landLayouts } from './resident-check';
 import { meadowKeepOut } from './meadow';
 import { bambooLine, foothills, peaksPlan, ridge, ridgeHeight } from './peaks';
 
@@ -20,24 +19,9 @@ const VIEWS = {
 };
 const peaks = landFor('puzzle-peaks');
 
-/** Every layout Puzzle Peaks uses: each band, both sides of the signpost, every view. */
-function* layouts() {
-  for (const [name, view] of Object.entries(VIEWS)) {
-    const ground = view.h * peaks.backdrop.horizon;
-    for (const band of BANDS.map((b) => b.id) as Band[]) {
-      const mine = visibleIn(peaks, band, GAMES).length;
-      const older = olderIn(peaks, band, GAMES).length;
-      for (const n of older ? [mine, older] : [mine]) {
-        const layout = landLayout(n, older > 0, view, ground)!;
-        yield { view, ground, layout, where: `${band} ${name} n=${n}` };
-      }
-    }
-  }
-}
-
 describe('Puzzle Peaks as a location', () => {
-  it('keeps every mountain drawing on screen and off every touch area, at every band, both sides of the signpost, in every view', () => {
-    for (const { view, ground, layout, where: where0 } of layouts()) {
+  it('keeps every mountain drawing on screen and off every touch area, in every layout up to the land budget, in every view', () => {
+    for (const { view, ground, layout, where: where0 } of landLayouts('puzzle-peaks')) {
       const keepOut = meadowKeepOut(layout, view);
       const plan = peaksPlan(layout, view, ground);
       // A forest on the slopes, not a bare field, wherever the games leave the field room (three full rows leave none,
@@ -115,10 +99,10 @@ describe('Puzzle Peaks as a location', () => {
       // The illustration spans about 380 units before its fit.
       expect(box.maxX - box.minX).toBeGreaterThan(220);
       const hit = glider.touchArea(10);
-      const smallest = Math.min(...[...layouts()].map(({ layout }) => layout.box.w));
+      const smallest = Math.min(...[...landLayouts('puzzle-peaks')].map(({ layout }) => layout.box.w));
       expect(smallest, 'the crowded land reaches a smaller drawing size').toBeLessThan(170);
       const at = (b: typeof box, x: number, y: number, s: number): Rect => ({ x: x + b.minX * s, y: y + b.minY * s, w: (b.maxX - b.minX) * s, h: (b.maxY - b.minY) * s });
-      for (const { view, layout, where } of layouts()) {
+      for (const { view, layout, where } of landLayouts('puzzle-peaks')) {
         const s = hostScale(layout.box);
         const { x, y } = layout.host;
         const body = at(box, x, y, s);

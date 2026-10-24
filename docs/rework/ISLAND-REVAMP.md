@@ -36,7 +36,7 @@ A later twelfth location is possible (Savanna, the most expensive kit) but is no
 
 ## Every game's home
 
-Five moves, each to the place its own scene or subject already belongs. Counts after the moves: 7 · 10 · 13 · 5 · 5 · 4 · 12 · 10 · 11 · 8 · 12 = 97, every game in exactly one land, and no land above the 13 that `landLayout` already fits at every band, so no target shrinks.
+Five moves, each to the place its own scene or subject already belongs. Counts after the moves: 7 · 10 · 13 · 5 · 5 · 4 · 12 · 10 · 11 · 8 · 12 = 97, every game in exactly one land, and no page above `LAND_SPOTS` at any band, so no target shrinks.
 
 | Game | From | To | Why |
 | --- | --- | --- | --- |
@@ -68,7 +68,7 @@ Five moves, each to the place its own scene or subject already belongs. Counts a
 
 What a location is at the root, for the build slices to implement:
 
-- **One screen.** The location's backdrop, its resident standing where the host stands, its games as spots and its signpost to the bigger kids' games, all from `landLayout` and `visibleIn`/`olderIn` as today. Nothing gates; targets stay at least 100 units; the bottom-left pet corner stays clear; navigation never needs reading (the resident says the location's line when she arrives and when tapped).
+- **One screen.** The location's backdrop, its resident standing where the host stands, its games as spots and its signpost to the bigger kids' games, all from `landLayout` and `visibleIn`/`olderIn` as today. A side too full for one screen (`LAND_SPOTS`, 13 spots) turns pages: near-equal pages, each with a pictured arrow at each end of the path and the signpost ([location capacity](../definitions/location-capacity.md)). Nothing gates; targets stay at least 100 units; the bottom-left pet corner stays clear; navigation never needs reading (the resident says the location's line when she arrives and when tapped).
 - **The resident.** Tapping it pokes it (its rig's reaction) and it speaks the location's line; it suggests a game the way the host does (`suggest` in `lands.ts`). It is not her companion and is not collected by being seen (collecting is RW05/RW10's job).
 - **Routes reuse the land seam.** In the root entry, `go.land(id)` shows the location scene, and a game launched from it uses the existing land `origin`, so Home from a game returns to the location with no new origin variant. Until RW06/RW08 give the root a real home, the location's Home button returns to the root's entry scene, which is still the RW02b creature preview (RW05 slice 1 did not delete it, contrary to this packet's first wording; the preview's flower button is the entry).
 - **Explore.** RW03's Explore Places lists these locations by the same IDs; RW08 wires it. RW13 adds no Explore page of its own.

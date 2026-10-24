@@ -12,6 +12,10 @@
 
 - [ ] On an iPad, does the postcard above Explore's entries read as "back to my place", and is it clear of Back and Home in portrait?
 
+## Full lands turn pages (location capacity, 2026-10-24)
+
+- [ ] On an iPad, open Tinker Lab at school (12 games and a signpost, now 6 + 6): do the yellow arrow markers read as "more games this way" and not as a second signpost, does a tap turn the page at once, does a game opened from page 2 come back to page 2, and does the host's suggestion turn to its page? [PR #915](https://github.com/rjdunlap/neo/pull/915)
+
 ## Moving between screens (RW14 slice 9, 2026-10-23)
 
 - [ ] On an iPad, do the grow, shrink and crossfade between screens feel smooth, and does the full-screen snapshot cause no hitch or memory pressure? [PR #906](https://github.com/rjdunlap/neo/pull/906)

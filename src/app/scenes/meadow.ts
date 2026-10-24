@@ -1,6 +1,6 @@
 import { Graphics } from 'pixi.js';
 import { ink, swatch } from '../../art/palette';
-import { landButtons, overlaps, petCorner, spotRect, type LandLayout, type Rect } from '../../content/lands';
+import { landButtons, layoutSpots, overlaps, petCorner, spotRect, type LandLayout, type Rect } from '../../content/lands';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 
@@ -22,11 +22,36 @@ export interface MeadowItem {
 /** What the meadow keeps clear: the field's touch areas, the pet's corner, the corner buttons and the heading. */
 export function meadowKeepOut(layout: LandLayout, view: View): Rect[] {
   return [
-    ...[layout.host, ...layout.games, ...(layout.sign ? [layout.sign] : [])].map((s) => spotRect(s, layout.box)),
+    ...layoutSpots(layout).map((s) => spotRect(s, layout.box)),
     petCorner(view.h),
     ...landButtons(view.w),
     { x: view.w / 2 - 190, y: 20, w: 380, h: 90 },
   ];
+}
+
+/** The sizes a scenery thing steps down through when a full land screen leaves only small gaps. */
+const SHRINK = [1, 0.85, 0.7, 0.55];
+
+/**
+ * A clear place for a thing `size` wide and `tall` high whose feet are between `top` and `bottom`, for when a plan's
+ * random tries found none: every clear spot on a 6-unit grid at full size, else at the next smaller size, one picked by
+ * the plan's seeded `rng`. A full land screen (the `LAND_SPOTS` budget at 4:3 landscape) leaves only gaps at the row
+ * ends, and this finds them, so each location keeps its minimum things at every count. Null if none fits even small.
+ */
+export function scanPlace(clear: (r: Rect) => boolean, rng: Rng, w: number, size: number, tall: number, top: number, bottom: number): { x: number; y: number; k: number; rect: Rect } | null {
+  for (const k of SHRINK) {
+    const sw = size * k;
+    const st = tall * k;
+    const spots: { x: number; y: number; rect: Rect }[] = [];
+    for (let x = sw / 2; x <= w - sw / 2; x += 6) {
+      for (let y = top; y <= bottom; y += 6) {
+        const rect = { x: x - sw / 2, y: y - st, w: sw, h: st };
+        if (clear(rect)) spots.push({ x, y, rect });
+      }
+    }
+    if (spots.length) return { ...spots[rng.int(0, spots.length - 1)], k };
+  }
+  return null;
 }
 
 /** Where each meadow thing goes for this layout: seeded, so the same view always draws the same meadow. */
