@@ -107,6 +107,8 @@ _Built 2026-10-23 ([PR #905](https://github.com/rjdunlap/neo/pull/905)): `SaveDa
 
 ### Slice 9: moving between screens
 
+_Claimed 2026-10-23 by branch `claude/rw14-moving-screens` (draft PR). Files: `src/app/App.ts`, `src/app/Scene.ts`, a new `src/app/transition.ts` with tests, `ExploreScene.ts`, `LandScene.ts`, `LocationScene.ts`._
+
 - **Changes:** `App.show` gains an optional "from" point and picture. Opening a location from Places grows its postcard from the tapped card into the screen, and launching a game grows its spot. Back plays the reverse, about 0.35 s in all. A route without a point crossfades the old scene into the new one, with no flash of cream. Taps stay swallowed during the transition, as now.
 - **Files:** `src/app/App.ts`, `src/app/Scene.ts` (an optional snapshot of the old scene), `src/app/scenes/ExploreScene.ts`, `LandScene.ts`.
 - **Done when:** no route shows a bare colour between scenes; destroyed scenes' callbacks never run (the existing `Scene.test.ts` guarantees hold); transition time stays under 0.4 s.
