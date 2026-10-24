@@ -31,9 +31,9 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 ## Current checkpoint
 
 - Assigned RW14 slice6 only: chosen R22 duck preparation and Duck Pond sprite bob/squash; preserve hit circles and gameplay. Excludes other duck games, new generation, R23/R26, other RW14 slices and device decisions.
-- Worker `01a16b4c-36b7-77e3-b1aa-407cc4de269f`, host `local`, branch `codex/rw14-duck-pilot`; claim/PR pending. Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency check. No other active Codex implementation; preserve idle claims including Arcade #900.
+- Worker `01a16b4c-36b7-77e3-b1aa-407cc4de269f`, host `local`, branch `codex/rw14-duck-pilot`; claim `917eb6d9`, [PR #904](https://github.com/rjdunlap/neo/pull/904). Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from concurrency check. No other active Codex implementation; preserve idle claims including Arcade #900.
 - Current source fetched; branch starts at current origin/main. Fresh ordinary allowance/reset data checked privately and sufficient for the scoped gameplay estimate; new account metadata stays in this chat. No credit redemption or billing/model change.
-- Next: prepare the selected pair, implement only Duck Pond, run scoped typecheck/rules/play/demo/build, review portrait, publish through passing PR CI. Proof pending; do not dispatch a new slice.
+- Dispatch `rw14-duck-20261024T002426Z`. Prepared chosen R22 pair; implementation and typecheck/rules/build complete. Frozen snapshot `http://localhost:5202`: plays at 1/11/12 and demos at 11/12 (69.3/27.4s) passed; original hit circles asserted and portrait reviewed. Scoped production offline reload/duck decode passed at `http://localhost:4202`; current build entry filenames/precache confirmed. Full unchanged world/story/couch/offline suites not rerun; iPad judgement open. PR CI/publication pending. New account readings remain private in this chat; no new dispatch, finish #904 and stop.
 
 ## Usage observations
 
@@ -42,7 +42,6 @@ Record one row per admitted run and retain the latest ten. Percentage-point diff
 The allocation/debit column in old rows is historical only (retired 2026-10-12). New rows use that column for the admitted estimate instead.
 | UTC date | Slice / PR | Kind | Before → after five-hour usage / reset identity | Before → after weekly usage / reset identity | Slice estimate / retired daily allocation-debit | Outcome / attribution |
 | --- | --- | --- | --- | --- | --- | --- |
-| 2026-10-23 | Cue definition P1 / [#834](https://github.com/rjdunlap/neo/pull/834), dispatch `cue-definition-20261023T010821Z` | Docs-only definition | 45% → 61% / `1792724946` | 19% → 21% / `1793293746` | Provisional estimate8 / 0.5 points | Merged, stopped; aggregate16/2, worker-local14/2, reconciled once. Recalibrated docs20/2.5 |
 | 2026-10-23 | Spelling study / [#838](https://github.com/rjdunlap/neo/pull/838), dispatch `spelling-study-20261023T020951Z` | Docs-only research | 62% → 80% / `1792724946` | 21% → 24% / `1793293746` | Estimate20 / 2.5 points | Merged/deployed, stopped; aggregate18/3, worker-local16/2, reconciled once; docs estimate22.5/3.75 |
 | 2026-10-23 | Shape corners / [#842](https://github.com/rjdunlap/neo/pull/842), dispatch `shape-corners-20261023T031252Z` | Two-part level batch | 0% → 19% / `1792743182` | 24% → 27% / `1793293746` | Combined estimate51.25 / 7.5 points | Merged/deployed, stopped; aggregate19/3, worker-local16/3, reconciled once |
 | 2026-10-23 | Circuit definition E1 / [#846](https://github.com/rjdunlap/neo/pull/846), dispatch `circuit-definition-20261023T040722Z` | Docs-only definition | 20% → 36% / `1792743182` | 27% → 30% / `1793293746` | Estimate22.5 / 3.75 points | Merged/deployed, stopped; aggregate16/3, worker-local14/3, reconciled once |
@@ -51,7 +50,8 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 | 2026-10-23 | Mail key, dispatch `mail-key-20261023T171724Z` | Standalone new interaction | Private coordinator chat | Private coordinator chat | Admission checked privately | Merged/deployed #881, stopped; proof and final aggregate reconciled once privately |
 | 2026-10-23 | R22 duck pilot, dispatch `art-r22-20261023T191755Z` | Generated art pair, sources/docs only | Private coordinator chat | Private coordinator chat | Admission checked privately | Merged #888, stopped; generation/source/review proof passed; aggregate reconciled once privately |
 | 2026-10-23 | R23 meadow, dispatch `art-r23-20261023T201625Z` | Generated backdrop, source/docs only | Private coordinator chat | Private coordinator chat | Admission checked privately | Merged/deployed #891, stopped; source/review proof passed, aggregate reconciled once privately |
-| 2026-10-23 | RW14 hatch, dispatch `rw14-hatch-20261023T212325Z` | Bounded shell slice | Private coordinator chat | Private coordinator chat | Admission checked privately | Worker `01a16aa6-9188-7f30-bb36-bddebe24c0d1`; implementation/proof pending |
+| 2026-10-23 | RW14 hatch, dispatch `rw14-hatch-20261023T212325Z` | Bounded shell slice | Private coordinator chat | Private coordinator chat | Admission checked privately | Merged/deployed #895, stopped; proof passed, final aggregate reconciled once privately |
+| 2026-10-24 | RW14 duck, dispatch `rw14-duck-20261024T002426Z` | Bounded asset/game integration | Private coordinator chat | Private coordinator chat | Admission checked privately | Worker `01a16b4c-36b7-77e3-b1aa-407cc4de269f`; Prepared/integrated in [#904](https://github.com/rjdunlap/neo/pull/904); scoped proof passed; CI/publication pending |
 
 ## Fresh-worker dispatch and handoff
 

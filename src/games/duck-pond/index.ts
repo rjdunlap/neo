@@ -1,5 +1,5 @@
 import { Container, Graphics, Circle } from 'pixi.js';
-import { Critter, CRITTERS } from '../../art/critter';
+import { IllustratedDuck } from '../../art/friends/duck';
 import { RAINBOW, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -29,7 +29,7 @@ const plural = (n: number) => `${n} duck${n === 1 ? '' : 's'}`;
 
 /** A duck that waits on the bank, hops along an arc, and bobs on the water up to its middle. */
 class Duck extends Container {
-  readonly critter = new Critter(CRITTERS.duck);
+  readonly critter = new IllustratedDuck();
   swimming = false;
   pondOffset: [number, number] | null = null;
   /** Sitting this one out (for example once enough ducks are in). */
@@ -619,7 +619,7 @@ class DuckPond implements Game {
 
 /** The hub's little pond with two ducks bobbing about. */
 class PondIcon extends Container {
-  private readonly ducks: Critter[] = [];
+  private readonly ducks: IllustratedDuck[] = [];
   private clock = 0;
   private next = 2;
 
@@ -634,7 +634,7 @@ class PondIcon extends Container {
       .stroke({ width: 3, color: LILY.line });
     this.addChild(water);
     for (const x of [-40, 50]) {
-      const d = new Critter(CRITTERS.duck);
+      const d = new IllustratedDuck();
       d.scale.set(0.3);
       d.position.set(x, -28);
       this.ducks.push(d);
@@ -662,7 +662,7 @@ function sticker(seed: number): Container {
   const c = new Container();
   const n = stickerDucks(rng);
   for (let i = 0; i < n; i++) {
-    const d = new Critter(CRITTERS.duck);
+    const d = new IllustratedDuck();
     d.alive = false;
     d.scale.set(0.5);
     d.position.set((i - (n - 1) / 2) * 110, i % 2 ? 14 : 0);

@@ -157,3 +157,10 @@
 - Reviewed full size and at 120 px on white and a temporary sky-blue composite; closed outline, crest, feet, eye treatment and source identity checked.
 - Exact prompts, candidate rejection and padding/near-white background caveats in [R22 proof](../rework/concepts/generated/R22-PROMPTS.md). Links and diff checks passed.
 - Not run: local typecheck/tests/build/browser/offline (source art/docs only); preparation, rigging, integration, device acceptance and child judgement remain separate. Required PR CI tracked in #888.
+
+## 2026-10-23 — Fluffy Salon levels 6 and 7: Pat the fluff and Snip snip (slices 3–4)
+
+- [PR #864](https://github.com/rjdunlap/neo/pull/864), `claude/fluffy-salon-pat-snip`: lap and toddler `order [6, 1, 7, 2]`, range 1–7, `entryLevels [6, 7]`; level 6 (no buttons, floof shake, big mirror, self-finish) and level 7 (grow and snip buttons, long curly start, free-play mirror), no miss or hint at either.
+- Ran: typecheck; `npm test` (then failed only the shared `lab.test.ts` bench assertion, fixed on main by #877; after merging `origin/main` at `74c1009e`, 217 files and 2702 tests pass); new `logic.test.ts` tests; registry test updated.
+- Browser: `BROWSER_SUITE=batch BATCH_ONLY=salon FROM_LEVEL=6` passed (the `salon` case now covers 6 and 7, default `TO_LEVEL` 7); `fingerdemo` `FINGER_ONLY=fluffy-salon FINGER_LEVELS=6,7` clean (10.4 s, 10.8 s); one landscape screenshot of level 7 reviewed.
+- Not run: portrait screenshot, offline check, real device or touch ([open](../DEVICE-CHECKS.md) if a person should pat the fluff).

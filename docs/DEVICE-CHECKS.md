@@ -1,5 +1,9 @@
 # Needs a person or a device
 
+## Illustrated duck pilot (RW14 slice 6, 2026-10-23)
+
+- [ ] On an iPad, judge Duck Pond's R22 still duck beside the illustrated Rainbow Meadow from slice 4 once available: face/outline at play size, bob/squash, countability, and touch comfort in both orientations. Browser portrait proof: `test-results/browser/duck-pond-12-illustrated-portrait.png`; [PR #904](https://github.com/rjdunlap/neo/pull/904). Other duck games keep their drawings pending this judgement; a screenshot does not establish a child's response or device speech.
+
 ## Root buttons and cards (RW14 slice 7, 2026-10-23)
 
 - [ ] On an iPad, how do the finish and the release spring feel on Home's exits, Explore's cards and Places' postcards, and does the picture door read as the way to the island games?

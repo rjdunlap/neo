@@ -79,7 +79,7 @@ _Built 2026-10-23 ([PR #901](https://github.com/rjdunlap/neo/pull/901)): at the 
 
 ### Slice 6: the duck pilot
 
-_Claimed by worker `01a16b4c-36b7-77e3-b1aa-407cc4de269f`, branch `codex/rw14-duck-pilot`: prepare chosen R22 base/portrait, still-sprite bob/squash in Duck Pond only. Expected files: `src/art/friends/`, `src/games/duck-pond/index.ts`, scoped art/browser proof and documentation. No new rules, other duck games, new generation or other RW14 slices._
+_Built 2026-10-23 ([PR #904](https://github.com/rjdunlap/neo/pull/904)): chosen R22 pair prepared; Duck Pond's round, icon and sticker ducks use the base still with bob/squash, unchanged hit circles and gameplay. Portrait and code-driven motion reviewed in Chromium; iPad judgement remains open. [Build note](../archive/COMPLETED-2026-10-09.md#rw14-slice-6-the-duck-pilot-2026-10-23)._
 
 - **Needs:** `duck-base` and `duck-portrait` (R22) from batch 1, imported into `src/art/friends/`.
 - **Changes:** Duck Pond's ducks use the prepared duck sprite, with a code-driven bob and squash and the same hit circles, instead of `src/art/critter.ts`'s drawing. The fourteen other duck games keep the drawing until the developer judges the pair (this slice and slice 4) on the iPad, as the [catalog-wide art row](../archive/DECISIONS-2026-10-23.md#decisions) asks.
