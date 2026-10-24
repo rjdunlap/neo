@@ -114,7 +114,8 @@ class RhymeTime implements Game {
     this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h * (make ? 0.42 : 0.64)));
     // Level 7: the sound pair, the meaning pair, then the pet's mouth, in one row under the shelf.
     const row = [...this.chips.map((c) => c.node), ...(this.guessButton ? [this.guessButton] : [])];
-    const cx = spread(row.length, 180, v.w - 60, 165);
+    // Starts right of the corner pet, which the bottom row would otherwise reach.
+    const cx = spread(row.length, 240, v.w - 50, 165);
     row.forEach((n, i) => n.position.set(cx[i], Math.min(v.h - 90, v.h * 0.42 + 250)));
     this.prompt.position.set(v.w / 2, Math.max(170, v.h * 0.27));
     this.replay.position.set(v.w - 80, 90);
@@ -316,6 +317,12 @@ class RhymeTime implements Game {
   private act(c: Card, tag: Tag) {
     const { tw } = this.ctx;
     const n = c.node;
+    // A new motion starts from the card's slot, not from wherever the last one left it.
+    tw.kill(n);
+    tw.kill(n.scale);
+    n.rotation = 0;
+    n.scale.set(1);
+    this.resize(this.view);
     const { x, y } = n;
     switch (tag) {
       case 'fly':
