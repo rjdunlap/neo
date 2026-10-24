@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { GROUND_TOUCH, ITEM_NAMES, MISFIT, SHIELD, ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfitFor, outfits, SLOTS, STICKER_ITEMS, tripPlays, WARDROBE_PLANS, WEATHERS, wardrobePlan, type Item } from './logic';
+import { GROUND_TOUCH, ITEM_NAMES, MISFIT, SHIELD, ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfitFor, outfits, SLOTS, STICKER_ITEMS, tripPlays, WARDROBE_PLANS, WEATHERS, wardrobePlan, type Item, ALL_ITEMS, NOT_WORN, partFor, shieldFor, wardrobeFor } from './logic';
+import { PARTS } from '../../creatures/parts';
+import { SPECIES_IDS } from '../../creatures/species';
+
+/** What each species wears, from its parts table, as the game asks. */
+const WARDROBE = Object.fromEntries(SPECIES_IDS.map((sp) => [sp, wardrobeFor(sp, (p) => !!PARTS[sp].points[p]?.length)]));
 
 describe('Weather Wardrobe', () => {
   it('gives every weather at least two things to wear, each spoken plainly', () => {
@@ -148,6 +153,62 @@ describe('Weather Wardrobe', () => {
         expect(new Set(o.worn!.map((i) => SLOTS[i])).size).toBe(o.worn!.length);
         expect(o.worn).toHaveLength(2);
       }
+    }
+  });
+
+  it('dresses each species only in what it can wear, and every weather keeps something (RW05 slice 2b, decided 2026-10-23)', () => {
+    // The sprout wears everything; the river and the glider fewer, each for a recorded reason.
+    expect(WARDROBE.sprout).toEqual(ALL_ITEMS);
+    for (const sp of SPECIES_IDS) {
+      for (const item of ALL_ITEMS) {
+        const part = partFor(item, sp);
+        // An item it cannot wear is a missing part or a recorded reason, never a silent gap.
+        if (!WARDROBE[sp].includes(item)) expect(!PARTS[sp].points[part]?.length || !!NOT_WORN[sp][item], `${sp} ${item}`).toBe(true);
+        else expect(PARTS[sp].points[part]?.length, `${sp} ${item} on ${part}`).toBeGreaterThan(0);
+      }
+      // A held umbrella goes on the stand-in point where no hand is free, so every species can stay dry.
+      expect(WARDROBE[sp]).toContain('umbrella');
+      for (const w of WEATHERS) {
+        expect(itemsFor(w, WARDROBE[sp]).length, `${sp} ${w}`).toBeGreaterThanOrEqual(1);
+        expect(WARDROBE[sp]).toContain(shieldFor(w, WARDROBE[sp]));
+        expect(ITEMS[shieldFor(w, WARDROBE[sp])]).toBe(w);
+      }
+    }
+    expect(WARDROBE.glider).not.toContain('mittens');
+    expect(WARDROBE.glider).not.toContain('boots');
+    expect(WARDROBE.glider).not.toContain('scarf');
+    expect(shieldFor('snowy', WARDROBE.glider)).toBe('beanie');
+    expect(WARDROBE.river).not.toContain('mittens');
+  });
+
+  it('builds every level on every species from what it can wear, solvable and with a fitting answer', () => {
+    for (const sp of SPECIES_IDS) {
+      const wear = WARDROBE[sp];
+      WARDROBE_PLANS.forEach((plan, i) => {
+        for (let seed = 1; seed <= 40; seed++) {
+          const rounds = outfits(plan, new Rng(seed), wear);
+          expect(rounds.length, `${sp} level ${i + 1}`).toBe(plan.rounds);
+          for (const o of rounds) {
+            const label = `${sp} level ${i + 1} seed ${seed}`;
+            for (const item of [...o.needed, ...o.options, ...(o.remove ?? []), ...(o.worn ?? [])]) expect(wear, label).toContain(item);
+            // Everything needed is on offer and suits its weather; each weather of the round needs at least one thing.
+            for (const item of o.needed) {
+              expect(o.options, label).toContain(item);
+              expect(o.weathers, label).toContain(ITEMS[item]);
+            }
+            if (plan.mode !== 'sky' && plan.mode !== 'play') for (const w of plan.mode === 'change' ? o.weathers.slice(1) : o.weathers) expect(o.needed.some((n) => ITEMS[n] === w), label).toBe(true);
+            // A distractor never suits the weather it is offered for, so a choice is never ambiguous.
+            const target = plan.mode === 'change' ? [o.weathers[1]] : o.weathers;
+            for (const item of o.options) if (!o.needed.includes(item)) expect(target, label).not.toContain(ITEMS[item]);
+            if (plan.mode === 'pick' || plan.mode === 'try') expect(o.options.length, label).toBeGreaterThanOrEqual(2);
+            if (plan.mode === 'all') expect(o.options.length, label).toBeGreaterThan(o.needed.length);
+            if (plan.mode === 'sky') {
+              expect(o.worn!.length, label).toBeGreaterThanOrEqual(1);
+              expect(o.worn!.every((w) => ITEMS[w] === o.answer), label).toBe(true);
+            }
+          }
+        }
+      });
     }
   });
 });

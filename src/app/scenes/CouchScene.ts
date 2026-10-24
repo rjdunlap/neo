@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
-import { companionSpec, makeCompanion, makeStar } from '../../creatures/companion';
+import { makeCompanion, makeStar } from '../../creatures/companion';
 import { audio } from '../../audio/engine';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -757,7 +757,7 @@ export class CouchScene extends Scene {
     const run = course && courseOf(this.couch.data, course.spec).run;
     const resume = { board: run?.slides.length ?? 0, done: run?.slides.slice() ?? [], attempts: run?.attempts ?? 0, assisted: run?.assisted ?? false };
     const couch = course ? { versus: false, course: { id: course.spec.id, resume, progress: (p: CourseProgress) => this.courseProgress(p) } } : { versus: party!.mode === 'faceoff' && info.faceoff === 'shared' };
-    this.game = mod.create({ stage: this.stage, view: this.view, level: course ? course.info.level : levelFor(id, party!.rounds.length), band: info.band, couch, rng: new Rng(course ? course.token : seedFor(party!, party!.turn ? 1 : 0)), tw: this.tw, particles: this.particles, renderer: this.app.renderer, pet: this.pet, petSpec: companionSpec(), companion: makeStar, childName: 'friend', track: o => this.track(o), untrack: o => this.untrack(o),
+    this.game = mod.create({ stage: this.stage, view: this.view, level: course ? course.info.level : levelFor(id, party!.rounds.length), band: info.band, couch, rng: new Rng(course ? course.token : seedFor(party!, party!.turn ? 1 : 0)), tw: this.tw, particles: this.particles, renderer: this.app.renderer, pet: this.pet, companion: makeStar, childName: 'friend', track: o => this.track(o), untrack: o => this.untrack(o),
       instruct: (line, vars) => { const said = speak(line); this.instruction = { id: said, vars }; this.caption.textContent = voice.line(said, vars); return this.whileHere(voice.say(said, vars)); },
       say: (line, vars) => this.whileHere(voice.say(speak(line), vars)), finish: result => this.finish(result),
     });

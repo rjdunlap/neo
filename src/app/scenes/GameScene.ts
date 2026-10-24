@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics, Text } from 'pixi.js';
-import { companionSpec, GUIDE_SCALE, makeCompanion, makeGuide, makeStar } from '../../creatures/companion';
+import { GUIDE_SCALE, makeCompanion, makeGuide, makeStar } from '../../creatures/companion';
 import { ink, RAINBOW, swatch } from '../../art/palette';
 import { Particles } from '../../art/particles';
 import { stickerize } from '../../art/sticker';
@@ -192,7 +192,6 @@ export class GameScene extends Scene {
       particles: this.particles,
       renderer: this.app.renderer,
       pet: this.pet,
-      petSpec: companionSpec(),
       companion: makeStar,
       childName: store.data.profile.name,
       track: (o) => this.track(o),

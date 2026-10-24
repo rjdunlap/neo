@@ -1,6 +1,6 @@
 import { Container, Graphics, type Renderer } from 'pixi.js';
 import type { Updatable } from '../app/Scene';
-import { companionSpec, makeCompanion, makeStar, type Companion } from '../creatures/companion';
+import { makeCompanion, makeStar, type Companion } from '../creatures/companion';
 import { Particles } from '../art/particles';
 import { GhostFinger } from '../engine/ghost';
 import { Rng } from '../engine/random';
@@ -225,7 +225,6 @@ export class Demo {
       particles: fx,
       renderer: this.opts.renderer,
       pet,
-      petSpec: companionSpec(),
       companion: makeStar,
       childName: 'friend',
       track: (o) => (this.tracked.add(o), o),
