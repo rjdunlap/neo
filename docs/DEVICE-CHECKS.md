@@ -1,5 +1,12 @@
 # Needs a person or a device
 
+## Who Am I? levels 1–3 (zoo animals Z3, 2026-10-24)
+
+- [ ] On an iPad, hear the clue lines ("I have feathers", "I feed my babies milk" and the miss reasons) in device speech (the definition wanted this before merge; the 2026-10-23 delegation made the source check the only gate, so it stays open).
+- [ ] With a five-year-old: does a face-down card read as "gone, not lost", and does the peek read as free?
+- [ ] Do the picture signs (feathers, fur and milk especially) read without speech?
+- [ ] Does the half-turn on a keeps-tap read as "not that one"?
+
 ## Food Web Workshop levels 1-3 (2026-10-24)
 
 - [ ] On an iPad with a school-age child: can she drag a food badge between far stations (and turn a backwards arrow) comfortably in both orientations; is device speech for the `web.*` lines clear; and does she read the arrow as "the food goes to the eater" as intended? Chrome proved the flow, portrait targets of 100 units or more and the ghost finger only; understanding and a person's response are untested.
