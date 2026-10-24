@@ -1200,6 +1200,25 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: 'Tipping is how the seesaw explains weight; trying things is the game. A heavier side going down and equal sides lying flat are added to her discovery journal after she sees them.',
   },
+  'meadow-pens': {
+    goal: "Paint squares of grass for a friend's pen; the fence builds itself around them.",
+    steps: [
+      'Tap or drag to paint grass; tap a square again to lift it.',
+      { from: 1, to: 1, text: 'Paint as many squares as your friend asks, any shape, then ring the bell.' },
+      { from: 2, to: 2, text: "Count the field's rows and tap the card for the whole field." },
+      { from: 3, to: 3, text: 'Paint six squares so the fence uses every piece on the stack, then ring the bell.' },
+    ],
+    finish: [
+      { from: 1, to: 1, text: "When every friend has a pen, it's done." },
+      { from: 2, to: 2, text: "After five fields, it's done." },
+      { from: 3, to: 3, text: "When every friend has a pen, it's done." },
+    ],
+    note: [
+      { from: 1, to: 1, text: 'Painting and lifting are free; only a bell ring with the wrong pen counts as a miss, and two light up a pen that works. Grass is the area and the fence is the perimeter; the game says only squares of grass and fence pieces.' },
+      { from: 2, to: 2, text: 'A wrong card fills the field row by row; two light up the right card. Grass is the area and the fence is the perimeter; the game says only squares of grass and fence pieces.' },
+      { from: 3, to: 3, text: 'Painting and lifting are free; only a bell ring with the wrong pen or the wrong fence counts as a miss, and two light up a pen that works. Grass is the area and the fence is the perimeter; the game says only squares of grass and fence pieces.' },
+    ],
+  },
   'teddy-doctor': {
     goal: 'Look after the teddy patient.',
     steps: [
