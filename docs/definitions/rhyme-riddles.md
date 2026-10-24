@@ -1,6 +1,6 @@
 # Rhyme Riddles: Rhyme Time levels 5–7
 
-PW1 definition, 2026-10-22, branch `claude/define-rhyme-riddles` ([PR #844](https://github.com/rjdunlap/neo/pull/844)). Based on the [poetry-wordplay study](../deep-dives/subjects/poetry-wordplay.md) and its [packet](../deep-dives/subjects/RECOMMENDATIONS.md#poetry-and-wordplay-recommendations). **Docs only: nothing here is built.** Facts about `src/games/rhyme-time/` were read at `3fb24fd5`.
+PW1 definition, 2026-10-22, branch `claude/define-rhyme-riddles` ([PR #844](https://github.com/rjdunlap/neo/pull/844)). Based on the [poetry-wordplay study](../deep-dives/subjects/poetry-wordplay.md) and its [packet](../deep-dives/subjects/RECOMMENDATIONS.md#poetry-and-wordplay-recommendations). **Docs only: nothing here is built.** Facts about `src/games/rhyme-time/` were read at `3fb24fd5`. **Build claimed 2026-10-24, branch `claude/rhyme-riddles`.**
 
 ## Scope and identity
 
