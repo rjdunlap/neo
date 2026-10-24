@@ -5409,6 +5409,8 @@ async function third() {
         await mm.ready();
         if (g.done) break;
         const r = g.current;
+        // The food counted or shared this round (levels 4–8 pick it from the whole pool).
+        const k = r.kinds[0];
         if (mode === 'each') {
           const a = g.monsters[0];
           if (a.count('cookie') === 0) await mm.feed(mm.free(), a);
@@ -5423,15 +5425,15 @@ async function third() {
         } else if (mode === 'exact' || mode === 'two') {
           const m = g.monsters[0];
           if (mistakes === 0) { kit.tapOn(g.bell); await kit.sleep(500); mistakes++; }
-          for (const food of ['cookie', 'apple']) while (m.count(food) < r.want[food]) await mm.feed(mm.free(food), m);
-          if (mistakes === 1) { await mm.feed(mm.free('cookie'), m); mistakes++; }
-          if (m.count('cookie') !== r.want.cookie) throw new Error('A full monster accepted another cookie');
+          for (const food of r.kinds) while (m.count(food) < r.want[food]) await mm.feed(mm.free(food), m);
+          if (mistakes === 1) { await mm.feed(mm.free(k), m); mistakes++; }
+          if (m.count(k) !== r.want[k]) throw new Error('A full monster accepted another of its food');
           kit.tapOn(g.bell); await kit.sleep(500);
         } else if (mode === 'share') {
           if (g.pads.length) {
             // Two wrong answers in the first round bring the hint glow.
             const wrong = g.round === 0 && mistakes < 2;
-            kit.tapOn(g.pads.find((p) => (p.value !== r.want.cookie) === wrong).node); await kit.sleep(600);
+            kit.tapOn(g.pads.find((p) => (p.value !== r.want[k]) === wrong).node); await kit.sleep(600);
             if (wrong) {
               mistakes++;
               // A wrong number counts one monster's tummy together, icon by icon.
@@ -5444,28 +5446,28 @@ async function third() {
             const all = g.snacks.filter((s) => !s.eatenBy).length;
             for (let i = 0; i < all; i++) await mm.feed(mm.free(), g.monsters[0]);
             await kit.sleep(2200);
-            if (g.monsters[0].count('cookie') !== r.want.cookie) throw new Error('Unfair share was not handed back');
+            if (g.monsters[0].count(k) !== r.want[k]) throw new Error('Unfair share was not handed back');
           }
-          for (const m of g.monsters) while (m.count('cookie') < r.want.cookie && mm.free()) await mm.feed(mm.free(), m);
+          for (const m of g.monsters) while (m.count(k) < r.want[k] && mm.free()) await mm.feed(mm.free(), m);
           await kit.until(() => g.pads.length > 0 || g.done, 8000);
           await kit.sleep(400);
         } else if (mode === 'leftover') {
           if (g.pads.length) {
             // First how many each, then how many are left over.
-            kit.tapOn(g.pads.find((p) => p.value === (g.asking === 'left' ? r.left : r.want.cookie)).node); await kit.sleep(900);
+            kit.tapOn(g.pads.find((p) => p.value === (g.asking === 'left' ? r.left : r.want[k])).node); await kit.sleep(900);
             continue;
           }
           if (g.round === 0 && mistakes === 0) {
             // One cookie to the first monster, then the bell: not fair, so it comes back.
             await mm.feed(mm.free(), g.monsters[0]);
             kit.tapOn(g.bell); await kit.sleep(1500); await mm.ready();
-            if (g.monsters[0].count('cookie') !== 0) throw new Error('Unfair leftover share was not handed back');
+            if (g.monsters[0].count(k) !== 0) throw new Error('Unfair leftover share was not handed back');
             // Nothing shared yet and plenty left: everyone can have more.
             kit.tapOn(g.bell); await kit.sleep(1500); await mm.ready();
             mistakes = 2;
             if (g.misses !== 2 || g.hints !== 1) throw new Error(`Leftover hint ${g.misses} ${g.hints}`);
           }
-          for (const m of g.monsters) while (m.count('cookie') < r.want.cookie && mm.free()) await mm.feed(mm.free(), m);
+          for (const m of g.monsters) while (m.count(k) < r.want[k] && mm.free()) await mm.feed(mm.free(), m);
           if (g.snacks.filter((x) => !x.eatenBy).length !== r.left) throw new Error('Leftovers should remain on the tray');
           kit.tapOn(g.bell);
           await kit.until(() => g.pads.length > 0 || g.done, 8000);
