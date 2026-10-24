@@ -456,3 +456,5 @@
 - Ran (tree = branch HEAD): typecheck; `npm test` (211 files, 2556 tests pass); `BROWSER_SUITE=creative CREATIVE_ONLY=rhythm FROM_LEVEL=3` on a Vite dev server at port 5611 (levels 3-8 pass; the suite now plays 7 and 8); `fingerdemo` `FINGER_ONLY=rhythm-neighbors FINGER_LEVELS=7,8,6` clean in 15.6 s, 12.9 s and 35.2 s; one portrait screenshot of level 7 (tree and frog clear of the pet).
 - Not run: `npm run build`, offline check, iPad/device, a child's reaction.
 - Open: whether a one-year-old waits for the answer at 7 and reads the glow at 8 ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-22 — Stop and Go lap entry 9 Go car, stop car (slice 3)

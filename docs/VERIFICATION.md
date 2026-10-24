@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-24 — Location capacity definition (docs only)
+
+- [PR #914](https://github.com/rjdunlap/neo/pull/914), `claude/location-capacity`: [definition](definitions/location-capacity.md) of pages for a full land; no code changed.
+- Probe: a throwaway vitest probe of `landLayout`, `visibleIn` and `olderIn` on `origin/main` `edd6a74b`, deleted afterward. 4:3 landscape binds at 14 spots, Rainbow Meadow's scenery fails at 14, and portrait and phone fit 23 or more.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, unit tests, build, browser (docs only).
+- Open: the build.
+
 ## 2026-10-24 — Photo Safari levels 8, 9 and 12 (slices 5–7)
 
 - [PR #913](https://github.com/rjdunlap/neo/pull/913), `claude/photo-safari-5-7`, tested at `17fd6491` on a local Vite dev server: school 8 What changed?, school 9 Is it true? and the toddler Who is sleeping? entry (12).
@@ -100,8 +107,6 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, units, build, browser or device checks (docs only); nothing implemented.
 - Open: an ocean reviewer, Ocean Literacy Guide V3.1, any NGSS tide expectation, Bubble Beach placement (a 14th game), decisions 1–9 in the study.
-
-## 2026-10-22 — Stop and Go lap entry 9 Go car, stop car (slice 3)
 
 ## Coverage summary
 
