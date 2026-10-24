@@ -37,7 +37,7 @@ export const PLANS: readonly Plan[] = [
 ];
 
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
+  lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 3 },
   preschool: { min: 3, max: 5 },
   prek: { min: 5, max: 8 },

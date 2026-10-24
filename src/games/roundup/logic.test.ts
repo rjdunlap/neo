@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { animalsFor, sizeScale, emptierPen, enter, fairBell, fairNeeds, fleeFrom, fleeSpeed, FOLLOW_SPEED, nearestFinger, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, pensFull, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, usesBell, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted, type Kind } from './logic';
+import { animalsFor, BEACON_S, sizeScale, emptierPen, enter, fairBell, fairNeeds, fleeFrom, fleeSpeed, FOLLOW_SPEED, nearestFinger, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, pensFull, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, usesBell, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted, type Kind } from './logic';
 
 describe('Roundup', () => {
+  it('Come along: one tap ahead carries the herd at least half a screen before the beacon fades', () => {
+    expect(BEACON_S * FOLLOW_SPEED).toBeGreaterThanOrEqual(512);
+    expect(BEACON_S).toBeLessThanOrEqual(5);
+  });
+
   it('two shepherds: pushes add, capped at one finger\'s top speed, and one finger is unchanged', () => {
     const at = { x: 500, y: 400 };
     // One finger: exactly the old single-pointer flee.

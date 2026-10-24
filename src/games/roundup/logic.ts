@@ -228,6 +228,12 @@ export const FOLLOW_SPEED = 190;
  * How fast a following animal `d` units from the finger comes toward it: nothing inside `stop`, so the herd
  * gathers round the finger instead of under it, rising gently to `top` farther out.
  */
+/**
+ * Come along: after the finger lifts, the herd keeps walking to where it last was for this many seconds, so a child who
+ * taps a little ahead of them again and again leads them too (a lap finger rarely stays down for a whole drag).
+ */
+export const BEACON_S = 3;
+
 export function followSpeed(d: number, stop = FOLLOW_STOP, top = FOLLOW_SPEED): number {
   if (d <= stop) return 0;
   return Math.min(top, (d - stop) * 2.2);
