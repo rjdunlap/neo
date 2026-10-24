@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Rework RW07 slice 3, Welcome a New Friend: the ending, adoption and basket bed** (ready; slice 2, the song step, has landed; shell, save and navigation tier). [Packet](rework/WELCOME-BUILD.md#build-slices-in-order)
+- **Rework RW07 slice 3, Welcome a New Friend: the ending, adoption and basket bed** (claimed 2026-10-24 by `claude/rw07-welcome-ending`; slice 2, the song step, has landed; shell, save and navigation tier). [Packet](rework/WELCOME-BUILD.md#build-slices-in-order)
 - **Rework RW05 slice 2b, Splish Splash and Weather Wardrobe on `CompanionRig`, then drop `ctx.petSpec`** (ready: the misfit call was decided 2026-10-23, fewer parts per species and GAME-FIT's stand-in point for a held item ([record](archive/DECISIONS-2026-10-23.md#decisions)); shell tier plus one filtered regression and `fingerdemo` per game): slice 2 landed in part in [#642](https://github.com/rjdunlap/neo/pull/642) with the other eight large-pet games. [Packet](rework/CREATURE-COLLECTION.md#built-slice-2-in-part-2026-10-20)
 
 ## Queued
