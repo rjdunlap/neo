@@ -23,6 +23,13 @@
 
 - [ ] On an iPad with a school-age child: can she drag a food badge between far stations (and turn a backwards arrow) comfortably in both orientations; is device speech for the `web.*` lines clear; and does she read the arrow as "the food goes to the eater" as intended? Chrome proved the flow, portrait targets of 100 units or more and the ghost finger only; understanding and a person's response are untested.
 
+## Puddle Lens levels 1–4 (cells-microbes slice 2, 2026-10-24)
+
+- [ ] On an iPad with a lap child: does she link her tap on the lens to the swelling?
+- [ ] On an iPad with a toddler: does she keep the lens moving with one finger?
+- [ ] With a four-year-old: does "too close" make sense?
+- [ ] On the iPad's voice, how does "No swimmers" sound?
+
 ## Gear Garden levels 1–3 (machines-tools slice 2, 2026-10-24)
 
 - [ ] On an iPad with a lap child: does she connect a tap on the machine to the far flower turning, or only watch the flower?

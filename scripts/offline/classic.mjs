@@ -1,3 +1,4 @@
+import { publicSave, waitForSave } from './storage.mjs';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 // The island game is served at `classic/`; the site root is the creature-world rework. A bare origin gets `classic/`.
@@ -10,25 +11,7 @@ const page = await context.newPage();
 const errors = [];
 page.on('pageerror', (error) => errors.push(error.message));
 // This uses the public save format and IndexedDB, never the dev-only game helpers.
-const readSave = () => page.evaluate(() => new Promise((resolve, reject) => {
-  const open = indexedDB.open('keyval-store', 1);
-  open.onerror = () => reject(open.error);
-  open.onsuccess = () => {
-    const db = open.result, request = db.transaction('keyval').objectStore('keyval').get('neo.save');
-    request.onsuccess = () => { resolve(request.result); db.close(); };
-    request.onerror = () => { reject(request.error); db.close(); };
-  };
-}));
-const writeSave = (value) => page.evaluate((value) => new Promise((resolve, reject) => {
-  const open = indexedDB.open('keyval-store', 1);
-  open.onerror = () => reject(open.error);
-  open.onsuccess = () => {
-    const db = open.result, tx = db.transaction('keyval', 'readwrite');
-    tx.objectStore('keyval').put(value, 'neo.save');
-    tx.oncomplete = () => { resolve(); db.close(); };
-    tx.onerror = () => { reject(tx.error); db.close(); };
-  };
-}), value);
+const { read: readSave, write: writeSave } = publicSave(page);
 
 const fromStart = async (target, afterTarget) => {
   await page.waitForFunction(() => document.fonts.status === 'loaded');
@@ -146,7 +129,7 @@ try {
     await page.waitForTimeout(700);
     if ((await readSave())?.stickers?.length) break;
   }
-  const save = await readSave();
+  const save = await waitForSave(readSave, save => save?.stickers?.[0]?.game === 'monster-munch', 'Monster Munch did not save its completed round while offline');
   assert.equal(save?.stickers?.[0]?.game, 'monster-munch', 'Finished a new minigame while offline');
   assert.equal(save.games['monster-munch'].plays, 1);
   assert.deepEqual(save.creatures.owned.map((c) => c.name), ['Clover', 'Pebble'], 'Both friends kept offline');

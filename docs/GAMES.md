@@ -462,6 +462,14 @@ Tapping the turtle is free. Non-adjacent, visited and early-pond taps give speci
 
 **Levels.** Level 1 *Make a mound* (lap, toddler): one bay. Level 2 *Two little hills* (toddler, preschool): two bays. Level 3 *A landscape to show* (preschool, pre-K): three bays and the pail, from a seeded start and a pictured invitation. Levels 4–6 are reserved for the study's sediment rungs.
 
+### Puddle Lens
+
+*lap–school · after hand lenses, pond dips and science-centre microscopes; [definition](definitions/puddle-lens.md).* A big round hand lens hangs over a slide on a little puddle-side table. Level 1: tap the lens and each of a leaf, a drop and a pinch of sand swells to the lens view with a chime, holds two seconds and shrinks. Level 2: drag the lens over three things; the glass shows the table twice as big through a circular mask, held 0.6 s within 50 units of each, while the pet's paw beside them stays its size ("Same paw!" once). Level 3: four stop buttons without numbers on three drops; a drop looks empty until the third stop, and swimmers appear there. Level 4: the pet asks three questions of one sample and she sets the dial and presses Show.
+
+**Levels.** Level 1 *Tap the lens* (lap, toddler). Level 2 *Slide the lens* (toddler, preschool). Level 3 *Find the swimmers* (preschool, pre-K). Level 4 *Just enough view* (pre-K, school). Bands: lap 1, toddler 1–2, preschool 2–3, pre-K 3–4, school 4.
+
+**Misses and help.** Levels 1–2 count no misses. At level 3 "No swimmers" before stop 3 is free; a miss is a tap on a populated drop at stop 3 or 4 that does not fit, and the stop 3 button glows after two misses. At level 4 Show judged too small or too close is a miss, and accepted stops glow after two misses; Show a hint gives one counted hint per question. Start again keeps misses and hints. Code-drawn art; the title has a Kokoro clip, other lines use device speech. Not built: a visitor critter, and a separate dial knob (the dial is the brass ring with a pointer and stop marks).
+
 ### Food Web Workshop
 
 *school · after food-web models in early-grade science and the study's feeding-record idea; [definition](definitions/food-web-workshop.md).* Three big stations sit in the meadow, each a plant or creature (clover, caterpillar, bird; dandelion, snail, bunny and others across rounds), with two picture cards along the top, each one thing that was seen ("We saw the caterpillar eat clover leaves"). Tapping a card replays it for free: a small food symbol floats from the food into the eater's mouth. She drags a food badge (just under its station) onto the eater and an arrow grows from food to eater with dots flowing along it. A drag that makes an arrow not on the cards is allowed; building is exploring until she presses Show our web. Undo (the round arrow, top right) takes back her last change.

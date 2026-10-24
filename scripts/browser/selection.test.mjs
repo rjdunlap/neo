@@ -37,6 +37,7 @@ describe('browser check selections', () => {
     expect(Object.values(checks).every(f => typeof f === 'function')).toBe(true);
     expect(new Set(SUITES).size).toBe(SUITES.length);
     expect(ALL_SUITES.every(s => SUITES.includes(s))).toBe(true);
+    expect(ALL_SUITES).toEqual(expect.arrayContaining(['world', 'picnic', 'couch', 'clap', 'phonefit', 'howto', 'fingerdemo']));
   });
   it.each([['browser', 'BROWSER_SUITE'], ['offline', 'OFFLINE_SUITE']])('rejects a typo at the %s CLI before launching Chromium', (script, label) => {
     const result = spawnSync(process.execPath, [`scripts/${script}-check.mjs`], { encoding: 'utf8', env: { ...process.env, [label]: 'does-not-exist', BROWSER_EXECUTABLE: '/does-not-exist' } });

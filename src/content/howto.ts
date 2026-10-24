@@ -383,6 +383,25 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 11, to: 11, text: 'The hidden ducks paddle out one by one so both parts of the whole can be seen.' },
     ],
   },
+  'puddle-lens': {
+    goal: 'Look closer and closer with a lens.',
+    steps: [
+      { from: 1, to: 1, text: 'Tap the lens; each thing looks bigger, then goes back.' },
+      { from: 2, to: 2, text: 'Drag the lens over all three things; the paw outside it stays the same size.' },
+      { from: 3, to: 3, text: "Tap the dial's pictures to look closer; tap a swimmer, or No swimmers if the drop has none." },
+      { from: 4, to: 4, text: 'Tap the dial to just the view the friend asks for, then Show.' },
+    ],
+    finish: [
+      { from: 1, to: 2, text: 'Three things looked at.' },
+      { from: 3, to: 3, text: 'Every drop checked.' },
+      { from: 4, to: 4, text: 'All three views shown.' },
+    ],
+    note: [
+      { from: 1, to: 2, text: "The lens makes things look bigger; it doesn't make them bigger. Nothing here is ever wrong." },
+      { from: 3, to: 3, text: "Saying 'No swimmers' before the closest views is never wrong; it only asks to look closer. Show a hint turns the dial for her and counts as a hint, once per drop." },
+      { from: 4, to: 4, text: 'Too far and too close are both misses; turning the dial never is. Show a hint turns the dial for her and counts as a hint, once per question.' },
+    ],
+  },
   'gear-garden': {
     goal: 'Make the flowers spin with a machine of gears.',
     steps: [

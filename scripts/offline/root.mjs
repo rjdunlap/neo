@@ -1,3 +1,4 @@
+import { publicSave, waitForSave } from './storage.mjs';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 
@@ -9,26 +10,7 @@ export async function rootOffline(browser) {
   page.on('pageerror', e => errors.push(e.message));
   const output = 'test-results/offline/root';
   await mkdir(output, { recursive: true });
-  const read = () => page.evaluate(() => new Promise((resolve, reject) => {
-    const open = indexedDB.open('keyval-store', 1);
-    open.onerror = () => reject(open.error);
-    open.onsuccess = () => {
-      const db = open.result;
-      const r = db.transaction('keyval').objectStore('keyval').get('neo.save');
-      r.onsuccess = () => { resolve(r.result); db.close(); };
-      r.onerror = () => { reject(r.error); db.close(); };
-    };
-  }));
-  const write = value => page.evaluate(value => new Promise((resolve, reject) => {
-    const open = indexedDB.open('keyval-store', 1);
-    open.onerror = () => reject(open.error);
-    open.onsuccess = () => {
-      const db = open.result, tx = db.transaction('keyval', 'readwrite');
-      tx.objectStore('keyval').put(value, 'neo.save');
-      tx.oncomplete = () => { resolve(); db.close(); };
-      tx.onerror = () => { reject(tx.error); db.close(); };
-    };
-  }), value);
+  const { read, write } = publicSave(page);
   try {
     await page.goto(new URL('/', process.env.GAME_URL || 'http://localhost:4173').href);
     await page.locator('.chooser__add').waitFor();
@@ -55,7 +37,7 @@ export async function rootOffline(browser) {
       await page.mouse.click(167, 323); await page.waitForTimeout(2200);
       await page.screenshot({ path: `${output}/places.png` });
       await page.mouse.click(397, 200);
-      await assertEventually(async () => (await read())?.explore?.last === 'counting-cove');
+      await waitForSave(read, save => save?.explore?.last === 'counting-cove', 'Root navigation did not persist Counting Cove while offline');
     };
     await visit();
     const first = await read();
@@ -82,13 +64,4 @@ export async function rootOffline(browser) {
     await page.screenshot({ path: `${output}/failure.png` }).catch(() => {});
     throw error;
   } finally { await context.close(); }
-}
-
-async function assertEventually(check) {
-  const deadline = Date.now() + 8000;
-  while (Date.now() < deadline) {
-    if (await check()) return;
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-  throw new Error('Root navigation did not persist the visited Counting Cove while offline');
 }
