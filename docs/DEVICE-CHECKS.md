@@ -439,3 +439,5 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **Data/AI toy-model presentation and destination**: A pre-K window after the prototype.
 - **Ribbon Workshop**: Watch a pre-K child play Ribbon Workshop level 1 before opening a pre-K entry.
 - **RW05 slice 2b, Splish Splash and Weather Wardrobe on the companion rig**: On an iPad, the sprout's smaller cheek and ear splotches, the river and glider garments' size and legibility, and a child's read of hats on side-on faces.
+
+- [ ] **Sudoku Garden's wrong-digit line on a device (2026-10-24).** On an iPad, place a wrong (not clashing) number: does the gentle boing and red ring read as help rather than scolding, is the spoken "The 4 does not belong in that square…" clear and not repeated too often (once per four seconds at most)? Only headless Chromium has run it.

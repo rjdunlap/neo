@@ -230,7 +230,7 @@ Cost is not the deciding factor even with retakes (3–5×). Voice consistency f
 
 ## Lands: navigation and discovery
 
-**Decided 2026-10-23 (on the developer's delegation):** What counts as a miss in Lantern Lights by touch, and the other grown-up puzzles: Count a miss only where the game shows it: Lantern Lights stays 0; Sudoku Garden's wrong digit (against the solution) stays a miss and now gets the gentle boing and a spoken hint; Island Bridges' stray plank and Picture Logic's stray fill stop counting as misses (0, adapt on hints). ([record](archive/DECISIONS-2026-10-23.md))
+**Decided 2026-10-23 (on the developer's delegation):** What counts as a miss in Lantern Lights by touch, and the other grown-up puzzles: Count a miss only where the game shows it: Lantern Lights stays 0; Sudoku Garden's wrong digit (against the solution) stays a miss and now gets the gentle boing and a spoken hint; Island Bridges' stray plank and Picture Logic's stray fill stop counting as misses (0, adapt on hints); built 2026-10-24 ([PR #920](https://github.com/rjdunlap/neo/pull/920)). ([record](archive/DECISIONS-2026-10-23.md))
 
 **Rework scope:** the 2026-10-09 decision below describes the current map. RW03/RW08 may replace its landing/navigation model, and RW07/RW10 introduce authored permanent unlocks while ordinary learning and help remain accessible. “Nothing gates” does not prohibit those rework mechanics. Reconcile controller and Game night work before changing their routes.
 
