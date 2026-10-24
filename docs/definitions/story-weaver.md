@@ -1,6 +1,6 @@
 # Story Weaver 1–3: a story for a reader who was not there
 
-WC1 definition, 2026-10-22, [PR #835](https://github.com/rjdunlap/neo/pull/835), branch `claude/define-story-weaver`. Based on the [writing-composition study](../deep-dives/subjects/writing-composition.md) and its [recommendation packet](../deep-dives/subjects/RECOMMENDATIONS.md#writing-and-composition-recommendations). **Docs only; no game, registration, code or device evidence.** The rules below are a concrete proposal for developer review. The build waits on decision 1 (identity and land) and on the ordinary content review of every tile and line (decision 5).
+WC1 definition, 2026-10-22, [PR #835](https://github.com/rjdunlap/neo/pull/835), branch `claude/define-story-weaver`. Based on the [writing-composition study](../deep-dives/subjects/writing-composition.md) and its [recommendation packet](../deep-dives/subjects/RECOMMENDATIONS.md#writing-and-composition-recommendations). **Built 2026-10-24 (branch `claude/story-weaver`, [PR #939](https://github.com/rjdunlap/neo/pull/939)); see the build source check below. The planned voice ids below became `weaver.*` lines; device evidence is open.** The rules below are a concrete proposal for developer review. The build waits on decision 1 (identity and land) and on the ordinary content review of every tile and line (decision 5).
 
 ## Scope and identity
 
