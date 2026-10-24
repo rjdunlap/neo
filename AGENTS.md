@@ -21,6 +21,7 @@ Each activity needs a fun action and a clear learning purpose: sharing fills pla
 | [docs/READY.md](docs/READY.md) | The pick list: **Next ten** in priority order (eligible creature-world explorations first), then **Queued** slices grouped by game, unnumbered; a landed slice's line is deleted at closeout |
 | [docs/rework/](docs/rework/README.md) | Creature-world target, incremental structure and dependency-ordered exploration/implementation work items; proposed behavior until delivered |
 | [docs/WAITING-ON-DEVELOPER.md](docs/WAITING-ON-DEVELOPER.md), [docs/DEVICE-CHECKS.md](docs/DEVICE-CHECKS.md) | Decisions only the developer can make; checks that need a person or a device (both were roadmap sections until 2026-10-13) |
+| [docs/OBSERVATIONS.md](docs/OBSERVATIONS.md), [docs/USER-RESEARCH-2026-10-24.md](docs/USER-RESEARCH-2026-10-24.md) | What a person saw when someone really played (the only record of the users), and the research review with the observation protocol |
 | [docs/DESIGN.md](docs/DESIGN.md) | Current architecture, systems and contracts |
 | [docs/GAMES.md](docs/GAMES.md) | What each game does: rules, misses, hints, level steps |
 | [docs/IDEAS.md](docs/IDEAS.md) | The idea notebook: candidates, modes for existing games, gestures, references, overlaps. Not a mandate |
