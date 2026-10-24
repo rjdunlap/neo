@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { BrowserEventTarget } from '../test-support/events';
 import { GAMES } from '../games/registry';
 import { defaults } from '../progress/save';
 import { store } from '../progress/store';
@@ -114,7 +115,17 @@ describe('Make my mix: sessions', () => {
 });
 
 describe('Make my mix: layouts never shrink a target', () => {
-  beforeEach(() => { vi.stubGlobal('window', new EventTarget()); });
+  let win: BrowserEventTarget;
+  beforeEach(() => {
+    win = new BrowserEventTarget();
+    vi.stubGlobal('window', win);
+  });
+  afterEach(() => {
+    try {
+      expect(win.listenerCount('pointerup')).toBe(0);
+      expect(win.listenerCount('pointercancel')).toBe(0);
+    } finally { vi.unstubAllGlobals(); }
+  });
   const VIEWS = [{ w: 1024, h: 768 }, { w: 1024, h: 1365 }, { w: 1662, h: 768 }, { w: 1024, h: 2100 }].map(v => ({ ...v, scale: 1 }));
   it('the sheet holds one to five tiles at 150 or more, inside the design area, apart', () => {
     for (let n = 1; n <= MIX_MAX; n++) {

@@ -267,7 +267,7 @@ BROWSER_SUITE=smoke SMOKE_ONLY=my-new-game npm run test:browser   # a new game: 
 BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's own play-through
 ```
 
-Running `npm run test:browser` with no suite runs everything (about an hour); keep that for release checks a grown-up asks for. The [verification budget in AGENTS.md](AGENTS.md#verification-budget) says how much to run for which change, and the [verification log](docs/VERIFICATION.md) records which runs passed. To keep editing while a slow suite runs, `scripts/snapshot-serve.sh` serves a frozen copy of the tree on port 5180 (`GAME_URL=http://localhost:5180`). Screenshots go into ignored `test-results/`.
+`BROWSER_SUITE` is required; missing, empty or unknown selections fail. Use explicit `BROWSER_SUITE=all` only for a release check a grown-up asks for (about an hour). A comma-separated selection such as `BROWSER_SUITE=home,couchgames` runs sequentially, with each suite owning a fresh context, profile, error log and screenshot directory. Primary game filters reject empty, unknown and partially invalid selections; `FINGER_LEVELS` must be valid for every selected game. The [verification budget in AGENTS.md](AGENTS.md#verification-budget) says how much to run for which change, and the [verification log](docs/VERIFICATION.md) records which runs passed. To keep editing while a slow suite runs, `scripts/snapshot-serve.sh` serves a frozen copy of the tree on port 5180 (`GAME_URL=http://localhost:5180`). Browser screenshots go into ignored `test-results/browser/<suite>/`.
 
 | Suite | What it plays | Filter |
 | --- | --- | --- |
@@ -275,7 +275,7 @@ Running `npm run test:browser` with no suite runs everything (about an hour); ke
 | `howto` | The how-to card every time a game opens: every game's card fits in landscape and portrait with large Play and Back, a demonstration window exactly for the games with a bot (playing, touch-proof, destroyed with the card; a hand for a game with a ghost finger; every game the couch plays has one), the ghost finger (a mouse pointer until a touch, effects lowered while it plays, a real drag working after Play), stray taps, Back, Play, "again", a story request and the grown-up switch (about three minutes) | `HOWTO_ONLY=id,id`, `HOWTO_LEVEL=n` (measure the card at that level) |
 | `howtolevel` | The level arrows on the intro card: held to step (a tap does nothing), within her band, the "this level" line, steps and demonstration follow, the arrow at an end is dimmed, Play builds the chosen level and finishing it keeps it, a grown-up's pin stays, no arrows for a one-level band or on the "?" card (about 10 seconds) | |
 | `critternot` | Critter Crossing visible not entry (ID 8): two misses, supported glow, both rounds, one sticker, landscape/portrait | Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=critter-crossing FINGER_LEVELS=8` |
-| `fingerdemo` | The ghost finger's bot plays each game's demonstration to the end at the game's first and last level, with no wrong move and no hint, inside the 75 seconds a finger demonstration gets (a few seconds to about a minute a play) | `FINGER_ONLY=id,id`, `FINGER_LEVELS=3,4` (play these levels instead, to time the ones between; each is tried in a band whose level order includes it) |
+| `fingerdemo` | The ghost finger's bot plays each game's demonstration to the end at the first and last entries of its ordered band ladders, with no wrong move and no hint, inside the 75 seconds a finger demonstration gets (a few seconds to about a minute a play) | `FINGER_ONLY=id,id`, `FINGER_LEVELS=3,4` (play these levels instead, to time the ones between; each is tried in a band whose level order includes it) |
 | `phonefit` | A phone's needs: a faked notch and home indicator through the `--safe-*` properties (island inside them, the strips left plain cream, nothing on a scene's UI layer covered, a tap on a button, the grown-ups' gear and panel reachable), the turn prompt for an upright phone (390 × 844) on the island and not on **Who's playing?** (plain HTML that suits it), nor for a sideways phone, any tablet shape or a mouse (about 20 seconds) | |
 | `phone` | `phonefit`, then every game's middle level at 844 × 390: stray taps, nothing stranded at the origin or off the window on the UI layer, and a screenshot of each in `test-results/browser/phone/` (about 3 seconds a game) | `PHONE_ONLY=id,id` |
 | `grownups` | The gear on **Who's playing?** (a tap shows a hint, a mouse hold or held Enter opens the page without choosing a card, typing in the name field does not leave the page), Esc and the pause sheet in a game (the round holds still, Esc resumes, the sheet's gear opens the page and Esc closes that to the map, a Sudoku Garden round's Start again and Show a hint, and a pad moving over the sheet with A on release), no play timer, undoing a reset after a reload, and a touch tap and hold on the map's gear (about 45 seconds) | |
@@ -392,12 +392,18 @@ Two Node-only docs scripts: `node scripts/check-links.mjs` checks every relative
 
 `FROM_LEVEL=n` starts `next`, `creative`, `woods`, `shortlist` and `robot` at a later level; `TO_LEVEL=n` limits the robot, paint, salon, Tangram Town, Penguin Slide Goodnight Room or Critter Sort loop for a targeted level check (`WOODS_ONLY=sort FROM_LEVEL=12 TO_LEVEL=13` plays the two plant levels, with a portrait screenshot of 13).
 
+`scripts/browser-check.mjs` dispatches through `scripts/browser/registry.mjs` and `runner.mjs`; `fixture.mjs` owns readiness, context cleanup and artifacts. Individual play-throughs live in `scripts/browser/suites/`. Importing the registry also syntax-checks every suite module.
+
 With `npm run build-and-preview` running in another terminal:
 
 ```bash
-npm run test:offline
+npm run test:offline                         # both entry points, each in its own context
+OFFLINE_SUITE=root npm run test:offline      # creature world only
+OFFLINE_SUITE=classic npm run test:offline   # island game only
 ```
 
-The production check installs the service worker, disconnects the browser, reloads, opens the island map and her home spot (with subject cards), opens Counting Cove, plays Monster Munch, earns a sticker, and verifies the save survives another offline reload. It then opens the Windy Picnic from the map, finds the blanket, and checks that the step survives an offline reload; its seeded save predates stories, so it also checks that loading an older save adds the untold picnic. It also checks cached fonts and that the dev helpers are absent. Set `GAME_URL` to test another local port.
+`OFFLINE_SUITE=root|classic|all` defaults to `all`. The root check installs the service worker, disconnects, follows Home → Explore → Counting Cove twice, and checks that the visited location, companion and owned sticker survive an offline reload. It uses production canvas input and IndexedDB, without dev helpers; screenshots go to `test-results/offline/root/`.
+
+The classic production check installs the service worker, disconnects the browser, reloads, opens the island map and her home spot (with subject cards), opens Counting Cove, plays Monster Munch, earns a sticker, and verifies the save survives another offline reload. It then opens the Windy Picnic from the map, finds the blanket, and checks that the step survives an offline reload; its seeded save predates stories, so it also checks that loading an older save adds the untold picnic. It also checks cached fonts and that the dev helpers are absent. Set `GAME_URL` to test another local port.
 
 A real iPad check is still needed for device speech, touch feel, Guided Access, and Add to Home Screen behavior.
