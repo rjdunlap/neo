@@ -52,6 +52,8 @@ Implementation queue items are [same-game batches](GAME-BATCHES.md), normally 2â
 
 **Status words:** **ready**: defined, nothing blocks it. **sketch**: a draft definition; review it against the [planning rules](#planning-rules), then build. **define**: an idea only; the next slice is its definition of ready (docs only). **decision**: waits on the developer ([Waiting on the developer](WAITING-ON-DEVELOPER.md#waiting-on-the-developer)). **person**: waits on someone playing it ([Needs a person or a device](DEVICE-CHECKS.md#needs-a-person-or-a-device)).
 
+**In progress â€” test infrastructure review** (`codex/test-infrastructure-review`): validate browser selections, add shared input and delayed/failed-write tests, repair controller-level validation and scene-fixture cleanup, extract browser suite modules with isolated contexts, and add selectable root offline coverage. Expected files: `scripts/browser-check.mjs`, `scripts/browser/`, `scripts/offline-check.mjs`, `src/engine/*.test.ts`, `src/progress/store.test.ts`, `src/app/{input-in-use,nav-meaning}.test.ts`, README and verification docs. No game-content changes.
+
 ### Ready to build now
 
 The list lives in [READY.md](READY.md): **Next ten** in priority order, then **Queued** slices grouped by game, one bounded session per line with its check tier. Pick from it as the steps above say; a landed slice's line is deleted there at closeout.
