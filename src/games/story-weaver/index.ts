@@ -270,7 +270,10 @@ class StoryWeaver implements Game {
         s.art = null;
         if (id) {
           const pic = tilePicture(s.part, id);
-          pic.scale.set(Math.min(0.85, (b.w - 8) / 110));
+          // Shrink the tile's own drawing (a critter is already scaled down) to fit the slot.
+          const k = Math.min(0.85, (b.w - 8) / 110);
+          pic.scale.set(pic.scale.x * k);
+          pic.y *= k;
           pic.eventMode = 'none';
           s.node.addChild(pic);
           s.art = pic;

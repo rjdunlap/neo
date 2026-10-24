@@ -142,7 +142,7 @@ export function offeredFeelings(s: Story): Feeling[] {
 
 /** Which page a part sits on. */
 export const PAGE_OF: Record<Part, number> = { who: 1, where: 1, problem: 2, try: 2, ending: 3, feeling: 4, reason: 4 };
-export const PAGE_PARTS: Record<number, readonly Part[]> = { 1: ['who', 'where'], 2: ['problem', 'try'], 3: ['ending'], 4: ['feeling', 'reason'] };
+export const PAGE_PARTS: Record<number, readonly Part[]> = { 1: ['who', 'where'], 2: ['problem', 'try'], 3: ['ending'], 4: ['feeling'] };
 
 export interface WeaverPlan {
   level: number;
@@ -473,6 +473,8 @@ export interface WeaverLayout {
   controls: { x: number; y: number }[];
   /** The corner pet's space, kept empty. */
   pet: Box;
+  /** The Home and help buttons' space, kept empty. */
+  corner: Box;
 }
 
 export const TILE_W = 140;
@@ -480,16 +482,26 @@ export const TILE_H = 120;
 export const TILE_GAP = 16;
 export const CONTROL_R = 56;
 export const TOP = 108;
+/** The shell's Home and hold-for-help buttons, with their touch rings. */
+export const CORNER = { x: 0, y: 0, w: 114, h: 212 };
 
 /** Every rectangle of the scene, from the logical view only (portrait views are taller, never narrower than 1024). */
 export function layout(v: { w: number; h: number }, pages: number): WeaverLayout {
   const margin = 24;
-  const cardW = Math.min(280, (v.w - 2 * margin - (pages - 1) * 16) / pages);
+  // Pages sit right of the shell's Home and "?" column (x0–114, y0–212); a one-slot page is half as wide as a two-slot one.
+  const left = CORNER.w + 6;
+  const weights = Array.from({ length: pages }, (_, i) => PAGE_PARTS[i + 1].length);
+  const unit = Math.min(140, (v.w - left - 16 - (pages - 1) * 12) / weights.reduce((a, b) => a + b, 0));
   const cardH = 170;
-  const rowW = pages * cardW + (pages - 1) * 16;
+  const rowW = weights.reduce((a, b) => a + b * unit, 0) + (pages - 1) * 12;
   const extra = Math.max(0, Math.min(90, (v.h - 768) / 4));
   const pageY = TOP + extra / 2;
-  const pageBoxes = Array.from({ length: pages }, (_, i) => ({ x: (v.w - rowW) / 2 + i * (cardW + 16), y: pageY, w: cardW, h: cardH }));
+  let px = left + (v.w - left - 16 - rowW) / 2;
+  const pageBoxes = weights.map((wt) => {
+    const box = { x: px, y: pageY, w: wt * unit, h: cardH };
+    px += wt * unit + 12;
+    return box;
+  });
   const strip = { x: margin, y: pageY + cardH + 8, w: v.w - 2 * margin, h: 80 };
   const owl = { x: v.w - 184, y: strip.y + strip.h + 12 + extra, w: 168, h: 240 };
   const trayW = 3 * TILE_W + 2 * TILE_GAP;
@@ -510,7 +522,7 @@ export function layout(v: { w: number; h: number }, pages: number): WeaverLayout
     }
     return out;
   };
-  return { pages: pageBoxes, strip, tiles, tray, owl, controls, pet: { x: 0, y: v.h - 268, w: 160, h: 268 } };
+  return { pages: pageBoxes, strip, tiles, tray, owl, controls, pet: { x: 0, y: v.h - 268, w: 160, h: 268 }, corner: CORNER };
 }
 
 /** The two slots of a page card (one for page 3), in the card's own space. */

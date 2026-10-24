@@ -209,7 +209,7 @@ describe('layout', () => {
     for (const v of views) for (const pages of [3, 4]) {
       const L = layout(v, pages);
       const ctl = L.controls.map((c) => ({ x: c.x - CONTROL_R, y: c.y - CONTROL_R, w: 2 * CONTROL_R, h: 2 * CONTROL_R }));
-      const boxes: [string, Box][] = [...L.pages.map((b, i) => [`page${i}`, b] as [string, Box]), ['strip', L.strip], ['tray', L.tray], ['owl', L.owl], ['pet', L.pet], ...ctl.map((b, i) => [`ctl${i}`, b] as [string, Box])];
+      const boxes: [string, Box][] = [...L.pages.map((b, i) => [`page${i}`, b] as [string, Box]), ['strip', L.strip], ['tray', L.tray], ['owl', L.owl], ['pet', L.pet], ['corner', L.corner], ...ctl.map((b, i) => [`ctl${i}`, b] as [string, Box])];
       const tag = `${v.w}x${v.h} p${pages}`;
       for (const [n, b] of boxes) {
         expect(b.x >= 0 && b.y >= 0 && b.x + b.w <= v.w && b.y + b.h <= v.h, `${tag} ${n} inside`).toBe(true);
