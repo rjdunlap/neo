@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Cue Studio level 3, Fix the cue (programming P3, 2026-10-24)
+
+[PR #947](https://github.com/rjdunlap/neo/pull/947), `codex/cue-studio-p3`: school 3–3 in Tinker Lab, following the approved pre-K creative/school requested split. The pictured Wave→Turn request starts with Turn→Wave; Play/Step freely show the actual trace, selection/replacement repairs either slot, and Check deliberately compares the complete trace. Only wrong Checks count misses; two supply a clue, and Help gives a clue then local repairs with persistent per-round assistance identities. Undo/Start again preserve assistance accounting, edits invalidate successful Check, and restarting a running Check cancels its late result. The ghost finger watches, repairs both slots and Checks before Finish. One normal sticker follows either independent or supported completion. The next study packet is P4's separate event/repeat/message definition; no downstream implementation or practical puppet card ships. Checks: [verification entry](../VERIFICATION.md#2026-10-24--cue-studio-level-3-programming-p3); iPad and child checks remain open.
+
+
 ### Bond Beads levels 1–2 (chemistry slice 2, built 2026-10-24, PR #941)
 
 New game in Tinker Lab (its 15th, 14 shown at school), `bond-beads`, school 1–2. Level 1 holds every hand of three trays in one piece (ends itself; no misses or hints; a stuck tray pulses a link to break), level 2 copies a pictured shape with Check (a miss only if the build changed; two misses glow the fix and count one hint per card; a further wrong Check gives a supported finish). A graph model and canonical matcher in `logic.ts` with 43 rule tests; a tally strip, Undo and Start again; a ghost finger; a Kokoro title clip. Cut for now: "Tidy" (moving beads), the 6–7-bead layout. Levels 3–4 are chemistry slice 3. Checks: [VERIFICATION](../VERIFICATION.md#2026-10-24--bond-beads-levels-12-chemistry-slice-2)

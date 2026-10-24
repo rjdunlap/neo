@@ -269,14 +269,22 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'cue-studio': {
     goal: 'Choose moves for the pet and watch their order.',
     steps: [
-      { from: 1, to: 1, text: 'Tap the hand (Wave) or the circle arrow (Turn) to put that move in the empty place.' },
-      { from: 2, to: 2, text: 'Tap two moves to fill the two places; the pet does them left to right.' },
-      'Play runs the whole show; the arrow-and-bar button runs one move at a time. Each move\'s place glows as the pet does it.',
-      'To change a move, tap its place (an arrow points at it), then tap the new move. Undo takes back the last change.',
-      'The bulb offers help: a Wave in an empty place, then playing the show.',
+      { from: 1, to: 1, text: 'Tap the hand (Wave) or circle arrow (Turn) to fill the empty place.' },
+      { from: 2, to: 2, text: 'Choose two moves to fill the shelf.' },
+      { from: 3, to: 3, text: 'The top pictures ask for Wave, then Turn. Watch the swapped show freely.' },
+      'Play runs the whole show; the arrow-and-bar runs one move. Each place lights as it runs.',
+      'Tap an occupied place, then a move to replace it. Undo takes back one edit.',
+      { from: 1, to: 2, text: 'The bulb offers a Wave in an empty place, then plays the show.' },
+      { from: 3, to: 3, text: 'The bulb outlines the first mismatch and its request; press again to repair it, then repair the next. The orange Play button checks the whole show.' },
     ],
-    finish: 'After the whole show has played, the blue tick finishes it. Changing a move means playing the new show first.',
-    note: 'Any show is a good show: nothing here is ever a mistake. Using the bulb counts as help.',
+    finish: [
+      { from: 1, to: 2, text: 'After a complete run, the blue tick finishes your show. An edit needs a new run.' },
+      { from: 3, to: 3, text: 'A matching Check turns orange Play into the blue Finish tick. Edits and Undo require another Check.' },
+    ],
+    note: [
+      { from: 1, to: 2, text: 'Every complete show is welcome; nothing counts as a miss. Supplied help counts once, even after Undo or Start again.' },
+      { from: 3, to: 3, text: 'Only a wrong Check counts a miss. Two show a clue. Each clue or supplied repair counts once; Undo and Start again keep misses and help.' },
+    ],
   },
   'food-web-workshop': {
     goal: 'Make a picture of who ate what, from the cards.',
