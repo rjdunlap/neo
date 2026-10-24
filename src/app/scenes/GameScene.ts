@@ -112,6 +112,11 @@ export class GameScene extends Scene {
   /** Seconds since the celebration offered its buttons: a key mashed during the confetti must not press one the moment it appears. */
   private offeredFor = 0;
 
+  /** Back from a round shrinks it into the spot or card that launched it (RW14 slice 9). */
+  override transitionKey(): string {
+    return `game:${this.mod.id}`;
+  }
+
   constructor(
     app: App,
     private readonly mod: GameModule,
