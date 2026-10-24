@@ -222,26 +222,26 @@ class WhoAmI implements Game {
     const out = tap(this.play, i);
     if (out.kind === 'ignored') return;
     if (out.kind === 'peek') return void this.peek(card);
-    void this.lift(card);
     if (out.kind === 'fit') return void this.finale(i);
     if (out.kind === 'miss') {
       sfx.boing();
       void this.wobble(card);
+      const clue = this.play.clue;
       const line = out.reason ? this.reasonLine(out.reason) : null;
       if (line) await this.ctx.say(line.id, line.vars);
       else if (out.stays) await this.ctx.say('whoami.reason.stays', out.stays);
       if (!this.alive) return;
-      if (out.helped) this.showHelp();
+      // She may have finished the clue while the reason was spoken: the help belonged to that clue.
+      if (out.helped && this.play.clue === clue && !this.play.done) this.showHelp();
       return;
     }
-    // A flip.
+    // A flip. The last one of a clue holds every tap until the next clue has been given, so nothing is judged against a clue not yet shown.
+    if (out.next || out.done) { this.busy = true; this.glowOn = false; }
     sfx.whoosh();
     await this.flip(card, true);
     if (!this.alive) return;
     if (out.done) return void this.finale(this.round.gallery.indexOf(this.round.answer));
     if (out.next) {
-      this.busy = true;
-      this.glowOn = false;
       await this.ctx.tw.wait(0.6);
       if (!this.alive) return;
       this.showSign();
@@ -270,12 +270,6 @@ class WhoAmI implements Game {
     if (this.busy || this.play.done) return;
     if (requestHelp(this.play)) this.showHelp();
     else void this.ctx.say(this.clueLine(this.clue));
-  }
-
-  private async lift(card: Card) {
-    const n = card.node, s = card.base;
-    await this.ctx.tw.to(n.scale, { x: s * 1.06, y: s * 1.06 }, { duration: 0.08 });
-    if (this.alive && !n.destroyed && !card.back.visible) await this.ctx.tw.to(n.scale, { x: s, y: s }, { duration: 0.12 });
   }
 
   /** A keeps-tap or a wrong friend: a half-turn that comes straight back, not a flip. */

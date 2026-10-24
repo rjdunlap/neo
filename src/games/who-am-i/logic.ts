@@ -300,7 +300,7 @@ export interface Rect { x: number; y: number; w: number; h: number }
 
 export interface GalleryLayout {
   sign: Rect;
-  /** Where the next clues-so-far thumbnail goes, one per earlier clue (90 units square). */
+  /** Where the next clues-so-far thumbnail goes, one per earlier clue (100 units square). */
   strip: Rect[];
   cards: Rect[];
 }
@@ -308,7 +308,7 @@ export interface GalleryLayout {
 /** The pet's corner and the home button: nothing here may sit inside them. */
 export const PET_CORNER = 150;
 export const HOME_CORNER = 130;
-export const THUMB = 90;
+export const THUMB = 100;
 
 /**
  * Every rectangle on the stage for `n` friend cards. Three or four cards stand in one row; five or six in two rows of three.
