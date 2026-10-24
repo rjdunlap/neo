@@ -216,6 +216,8 @@ Cost is not the deciding factor even with retakes (3–5×). Voice consistency f
 
 ## Family experience: quality and range
 
+**User research review, 2026-10-24; recommendations, not built.** [The review](USER-RESEARCH-2026-10-24.md) finds that the child, an iPad and a controller have never been observed, that dragging is unreliable before three while 21 lap games describe one, and that a lap session needs eight adult decisions before the first round; its eight recommendations start with running the fifteen-minute iPad session and writing entries in [OBSERVATIONS](OBSERVATIONS.md), then a taps-only lap audit and a no-reading lap start.
+
 **Design review, 2026-10-12; proposals, not built.** The requested direction is a one-stop family play world in the spirit of Neopets and JumpStart. The [full review](FAMILY-EXPERIENCE.md) connects catalog gaps, primary research, navigation, levels, code-drawn visual design and game feel. It contains a matrix of experience families, concrete first-round sketches and a shortlist of research sessions. This does not change the existing game contracts, approved ladders or developer decisions.
 
 **Design priorities.** Make discovery and presentation grow alongside the library. A player should be able to find a favorite, choose something unfamiliar, understand its input and mode, enjoy a readable response, and return to where they started. Strong candidates offer different reasons to play: cause-and-effect toys, pretend play, making and performing, exploration, serving and planning, construction, investigation, deduction, movement and genuine shared roles. A theme variant adds worthwhile content; a new identity needs a distinct action or decision.
