@@ -224,7 +224,6 @@ class CueStudio implements Game {
     const sel = selected !== null ? this.slots[selected] : null;
     this.pointer.visible = !!sel;
     if (sel) this.pointer.position.set(sel.x, sel.y - BOX / 2 - 18);
-    for (const pad of this.slots) pad.face.alpha = 1;
     if (sel) {
       const ring = new Graphics().roundRect(-BOX / 2 - 6, -BOX / 2 - 6, BOX + 12, BOX + 12, 28).stroke({ width: 8, color: ink });
       sel.face.addChild(ring);
@@ -262,7 +261,8 @@ class CueStudio implements Game {
       sfx.pop(cue === 'W' ? 7 : 9);
       this.say(cue === 'W' ? 'cue.wave' : 'cue.turn');
       if (result === 'replace' && this.plan.slots > 1) this.changed = true;
-      this.lit = 0;
+      // The same move again changes nothing, so its lit trace stays.
+      if (result !== 'same') this.lit = 0;
     }
     this.draw();
     if (result !== 'full') this.pulse(this.slots[target]);
