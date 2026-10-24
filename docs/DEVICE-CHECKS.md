@@ -1,5 +1,9 @@
 # Needs a person or a device
 
+## Food Web Workshop levels 1-3 (2026-10-24)
+
+- [ ] On an iPad with a school-age child: can she drag a food badge between far stations (and turn a backwards arrow) comfortably in both orientations; is device speech for the `web.*` lines clear; and does she read the arrow as "the food goes to the eater" as intended? Chrome proved the flow, portrait targets of 100 units or more and the ghost finger only; understanding and a person's response are untested.
+
 ## Cue Studio levels 1–2 (2026-10-23)
 
 - [ ] On an iPad with a pre-K child and a grown-up: can she tap a Wave or Turn card, press Play and watch her own pet perform it without help, and does the lit slot and dot make sense as "what is happening now" (and at level 2 the replace-a-slot step with Undo)? Are the 100-unit cards, slots and Play, Step, Undo, Finish and bulb comfortable in both orientations, and is the spoken support clear on the device? Chrome proved the flow, portrait targets and the ghost finger only; understanding, preschool readiness and a child's reaction are untested.

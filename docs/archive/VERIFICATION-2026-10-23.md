@@ -256,3 +256,11 @@
 - Ran (commit e741893b on base eea1741e): typecheck; `npm test` (220 files, 2736 tests, including `finish.test.ts` hit-area checks); `npm run build`.
 - Browser: `GAME_URL=http://localhost:5743 BROWSER_SUITE=home HOME_ONLY=buttons` passed; portrait screenshots of Home, Explore and Places at 768×1024 reviewed.
 - Not run: offline (no assets or persistence changed), `world`, `fingerdemo`, device. Open: the door has no spoken label; PR #900's Arcade cards do not use the finish.
+
+## 2026-10-23 — RW14 slice 6: the duck pilot
+
+- [PR #904](https://github.com/rjdunlap/neo/pull/904): prepared chosen R22 base/portrait; Duck Pond alone uses the base still with bob/squash for round, icon and stickers. Hit circles and rules unchanged; shared texture survives instance destruction.
+- Tested base `917eb6d9` plus the final source diff, frozen at `http://localhost:5202` (temporary snapshot, own Vite cache). Typecheck, all 10 Duck Pond rules and production build passed (175 precache entries, 11762.20 KiB; base bundled, portrait not bundled).
+- Browser: `BROWSER_SUITE=originals ORIGINALS_ONLY=ducks DUCK_LEVELS=1,11,12` passed (first/deepest/entry, two misses and one hint at 11, reveal/sentence, completion and saved reward); loaded sprites and original 72/53-radius circles asserted. Portrait `test-results/browser/duck-pond-12-illustrated-portrait.png` reviewed. An earlier run was interrupted by Vite reloading a nested unrelated worktree; frozen rerun passed. The snapshot warned that symlinked local font files were outside its serving allow list, so screenshots may use fallback text; the illustrated texture and geometry checks passed, and the production build has its bundled fonts.
+- Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=duck-pond FINGER_LEVELS=11,12` clean in 69.3/27.4 seconds of the demo clock. Scoped production offline probe `node test-results/duck-pilot-offline.mjs` at `http://localhost:4202` passed: isolated classic reload and precached duck fetch/decode (451×486), no page errors; root/classic entry filenames matched current dist and duck base is in the precache.
+- Not run: full offline/story/treehouse, world, couch or other duck games (unchanged); no iPad, device speech or child check. Broader art judgement stays open in DEVICE-CHECKS. No new generation.

@@ -25,7 +25,7 @@ Open: the location opened from the postcard still goes Back to Places, not the E
 
 [PR #904](https://github.com/rjdunlap/neo/pull/904), branch `codex/rw14-duck-pilot`: prepared the chosen R22 `duck-base-2` and `duck-portrait-2` via the READY command (full provenance, dimensions, hashes and reproduction in `src/art/friends/README.md`). Duck Pond's round, icon and sticker ducks use the base still, fitted to the prior feet/height, with frame-driven bob, hop squash and a resting tilt. The portrait is prepared but has no new UI consumer. Decode completion guards destroyed instances, a failed decode retains the drawn fallback, cached art attaches synchronously for immediately rendered stickers, and destroying a duck leaves the shared texture intact. Existing duck/pad hit circles, rules, hint accounting, round flow and routes are unchanged; other duck games retain their drawings.
 
-Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-6-the-duck-pilot). Open: developer/iPad judgement with slice 4, device speech and child's response; no broader art rollout or new generation.
+Proof: [verification](VERIFICATION-2026-10-23.md#2026-10-23--rw14-slice-6-the-duck-pilot). Open: developer/iPad judgement with slice 4, device speech and child's response; no broader art rollout or new generation.
 
 
 ### RW14 slice 7: buttons and cards with a finish (2026-10-23)
