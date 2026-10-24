@@ -121,6 +121,7 @@ import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
 import { whoAmI } from './who-am-i';
 import { secondChanceShed } from './second-chance-shed';
+import { gearGarden } from './gear-garden';
 import { sandTable } from './sand-table';
 import { adventureWalk } from './adventure-walk';
 import { readyForAdventure } from './ready-for-adventure';
@@ -235,6 +236,7 @@ export const GAMES: GameModule[] = [
   lookItUp,
   whoAmI,
   secondChanceShed,
+  gearGarden,
   sandTable,
   adventureWalk,
   readyForAdventure,
