@@ -1,5 +1,9 @@
 # Needs a person or a device
 
+## Root buttons and cards (RW14 slice 7, 2026-10-23)
+
+- [ ] On an iPad, how do the finish and the release spring feel on Home's exits, Explore's cards and Places' postcards, and does the picture door read as the way to the island games?
+
 ## Adventure Walk levels 1–3
 
 - [ ] On an iPad, hear the way words: are "across" and "around" clearly distinct in device speech?

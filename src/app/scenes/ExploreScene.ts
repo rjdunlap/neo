@@ -14,7 +14,7 @@ import type { View } from '../../engine/view';
 import { GAMES } from '../../games/registry';
 import type { GameModule, HubIcon } from '../../games/types';
 import { store } from '../../progress/store';
-import { RoundButton } from '../../ui/buttons';
+import { finish, RoundButton, spring, squash } from '../../ui/buttons';
 import { arrowIcon, houseIcon } from '../../ui/icons';
 import { ENTRY_NAMES, entryArt, fitArt } from '../../ui/origin-art';
 import { label } from '../../ui/text';
@@ -141,13 +141,13 @@ export class ExploreScene extends Scene {
       if (this.leaving || this.covered || this.mixTouch !== null) return;
       this.mixTouch = e.pointerId;
       sfx.tick();
-      node.scale.set(0.94);
+      squash(node);
       this.mix!.holdStart(node, 0, 0, 70);
     });
     node.on('pointerup', (e: FederatedPointerEvent) => {
       if (this.mixTouch !== e.pointerId) return;
       this.mixTouch = null;
-      node.scale.set(1);
+      spring(node);
       if (this.mix!.consumeHold()) return; // the hold opened the table: this lift does not also start the mix
       voice.stop();
       this.mix!.start();
@@ -158,11 +158,14 @@ export class ExploreScene extends Scene {
 
   private cancelMix() {
     this.mixTouch = null;
-    for (const c of this.cards) if (c.kind === 'mix') c.node.scale.set(1);
+    for (const c of this.cards) if (c.kind === 'mix' && c.node.scale.y !== 1) spring(c.node);
     this.mix?.holdCancel();
   }
 
-  /** A 150-unit cream card with its picture and its name on a pill under it; it squishes and acts on touch-down (`act` null: the caller handles touches). */
+  /**
+   * A 150-unit cream card in the shared finish (RW14 slice 7) with its picture and its name on a pill under it; it
+   * squashes and acts on touch-down, then springs back (`act` null: the caller handles touches).
+   */
   private card(art: Container, name: string, act: (() => void) | null): Container {
     const node = new Container();
     const half = EXPLORE_CARD / 2;
@@ -171,12 +174,13 @@ export class ExploreScene extends Scene {
     text.y = half + 26;
     // The name sits on its own cream pill so it reads over the busy backdrop.
     const pill = new Graphics().roundRect(-text.width / 2 - 12, text.y - 17, text.width + 24, 34, 17).fill(cream);
-    node.addChild(new Graphics().roundRect(-half, -half, EXPLORE_CARD, EXPLORE_CARD, 28).fill(cream).stroke({ color: swatch.green.line, width: 5 }), art, pill, text);
+    node.addChild(finish({ w: EXPLORE_CARD, h: EXPLORE_CARD, corner: 28 }, swatch.green, cream), art, pill, text);
     node.hitArea = new Rectangle(-half, -half, EXPLORE_CARD, EXPLORE_CARD);
     if (act) onTap(node, () => {
       if (this.leaving || this.covered) return;
       sfx.tick();
-      node.scale.set(0.9);
+      squash(node);
+      spring(node, 110);
       act();
     }, { cooldown: 400 });
     return node;
