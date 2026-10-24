@@ -210,6 +210,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### peg-garden 3: Cup aiming and planting a bud
 
+Built 2026-10-24, [PR #923](https://github.com/rjdunlap/neo/pull/923); [closeout](archive/COMPLETED-2026-10-09.md#peg-garden-levels-6-into-the-cup-and-7-plant-a-bud-slices-5-6-2026-10-24). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`peg-garden`, level 6 Into the cup** (new interaction): aim the pearl into the cup with that many dots; every cup reachable with margin; pre-K top. [Slice 5](deep-dives/peg-garden.md#new-levels-on-top)
 - **`peg-garden`, level 7 Plant a bud** (new interaction, after level 6 *Into the cup*): drag a bud onto a marked place so the pearl reaches the cup, run, revise; pre-K. [Slice 6](deep-dives/peg-garden.md#new-levels-on-top)
 
