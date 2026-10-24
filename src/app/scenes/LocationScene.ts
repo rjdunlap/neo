@@ -2,6 +2,7 @@ import { Companion, makeCompanion } from '../../creatures/companion';
 import { RESIDENTS, Resident } from '../../creatures/resident';
 import { SPECIES, type SpeciesId } from '../../creatures/species';
 import { castArt, type CastId } from '../../art/creatures/cast';
+import { pictureSprite } from '../../art/locations';
 import { store } from '../../progress/store';
 import type { LineId } from '../../content/voice-script';
 import type { LandId, LandLayout } from '../../content/lands';
@@ -106,9 +107,12 @@ export class LocationScene extends LandScene {
       };
       hostLine = RESIDENTS[species as CastId].line;
     }
+    // Its illustrated picture where one is prepared and loaded (RW14 slice 4), else its code-drawn scenery.
+    const picture = pictureSprite(id);
     super(app, id, {
       host,
       scenery: place.scenery,
+      ...(picture ? { backdropImage: picture } : {}),
       backdrop: place.backdrop,
       headingColor: place.headingColor,
       hostSaysLine: true,

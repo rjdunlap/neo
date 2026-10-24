@@ -34,7 +34,7 @@ The script prepares files into the folders the game reads. Showing a new **kind*
 | --- | --- | --- |
 | Home backdrop | RW06 slice 2 (built) | Re-prepare with the README's command; the code is unchanged |
 | Companion species (pilot three, second-wave six) | RW02b steps 2–3 (built; production loading of the six is [POLISH slice 2](../POLISH.md#slice-2-residents-in-six-locations-and-her-own-friend-at-home)) | A re-rolled variant needs only the script, but a moved anchor needs its `*_ART` table checked |
-| Location backdrop and Places card | [POLISH slice 4](../POLISH.md#slice-4-the-illustrated-rainbow-meadow-and-postcards-in-places) | **Only the script**: the loader finds `src/art/locations/<land-id>.webp` by name, and a location without a file keeps its code-drawn scenery |
+| Location backdrop and Places card | [POLISH slice 4](../POLISH.md#slice-4-the-illustrated-rainbow-meadow-and-postcards-in-places) | **Only the script** once slice 4 is accepted (built on [draft PR #922](https://github.com/rjdunlap/neo/pull/922), pending): the loader finds `src/art/locations/<land-id>.webp` by name, and a location without a file keeps its code-drawn scenery |
 | Friend (the duck) | [POLISH slice 6](../POLISH.md#slice-6-the-duck-pilot) | Another game's duck is a small code change per game until the developer decides how far the friends go |
 
 ## After an import
