@@ -416,3 +416,4 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **May the island ship AI voice clips?**: Listening judgement of the Kokoro voice on the iPad.
 - **Data/AI toy-model presentation and destination**: A pre-K window after the prototype.
 - **Ribbon Workshop**: Watch a pre-K child play Ribbon Workshop level 1 before opening a pre-K entry.
+- **RW05 slice 2b, Splish Splash and Weather Wardrobe on the companion rig**: On an iPad, the sprout's smaller cheek and ear splotches, the river and glider garments' size and legibility, and a child's read of hats on side-on faces.
