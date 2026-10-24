@@ -130,7 +130,7 @@ The sun, the snowflake and the dial are big, code-drawn Pixi shapes at least 100
 All slices are future work, each separate. Definition tiers use links and `git diff --check`; a built slice uses the activity tier in AGENTS.md.
 
 1. **Definition packet** (docs; **defined 2026-10-22**, [definition](../../definitions/melt-and-freeze.md)): freeze the substance table, dial settings and levels 1–4 in one file; recheck overlap.
-2. **Levels 1–4**: state table in `logic.ts` with rule tests (every change authored, reversible flag correct, the same substance in every state); a new game tier of checks.
+2. **Levels 1–4** (building: `claude/melt-freeze`): state table in `logic.ts` with rule tests (every change authored, reversible flag correct, the same substance in every state); a new game tier of checks.
 3. **Levels 5–6**: predictions and the reversible sort; the journal entries.
 4. **Levels 7–9**: three states, the sealed-jar scale (shared with Seesaw Balance if possible) and the fair dial.
 5. **Particle Lens (levels 10–11)** after a science review of the dot picture.
