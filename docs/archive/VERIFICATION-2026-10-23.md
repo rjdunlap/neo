@@ -272,3 +272,10 @@
 - Browser: `GAME_URL=http://localhost:5622 BROWSER_SUITE=home HOME_ONLY=last-place` passed twice (second after a layout tweak); landscape and portrait screenshots.
 - Failed: `npm run test:offline` against `vite preview --port 5531` (served `main-CIe7D08c.js` matches `dist`), twice at "Finished a new minigame while offline": the offline reload and Monster Munch's cached open worked but the scripted cookie taps did not finish the toddler round, likely stale after Monster Munch's band-table change `c49948e9` (not touched here). Open, not a pass.
 - Not run: `world`, `fingerdemo`, device. Open: the postcard's location returns to Places, not Explore.
+
+## 2026-10-23 — RW14 slice 9: moving between screens
+
+- `App.show` renders the leaving scene to a texture, destroys it at once, then grows from the tapped box, shrinks into a returned box or crossfades (0.35 s / 0.3 s); rules in `src/app/transition.ts` ([PR #906](https://github.com/rjdunlap/neo/pull/906)). Classic shares `App`.
+- Ran on `52273ee9`: typecheck; `npm test` (221 files, 2744 passed); `npm run build`; `BROWSER_SUITE=home` with `HOME_ONLY=buttons` and `HOME_ONLY=last-place` (dev server `http://localhost:5353`); full `BROWSER_SUITE=world` (it has no filter) on port 5233, passed (about 6 minutes) after one harness fix: its grown-ups' recolor check read `pip.rig.mesh.filters`, and since the illustrated companion `recolor` filters `rig.skin` (the first run stopped there).
+- Probe (`test-results/rw14ms-probe.mjs`, ignored) froze the ticker mid-change: Places to Counting Cove grow, cove spot to Duck Pond grow, round Back shrink, cove Back shrink into its Places card, Places to Home fade; no cream frame, a tap during a change swallowed, no page errors.
+- Not run: offline check (no assets or persistence changed), `fingerdemo`. Open: DOM-overlay scenes still snap; iPad smoothness and snapshot cost ([device check](../DEVICE-CHECKS.md)).

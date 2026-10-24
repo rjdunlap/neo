@@ -13,7 +13,7 @@
 
 [PR #906](https://github.com/rjdunlap/neo/pull/906), branch `claude/rw14-moving-screens`: `App.show` (`src/app/App.ts`) renders the leaving scene to a view-sized Sprite, calls exit/destroy on it at once (before the new scene's `init`), then plays a grow (the new root out of the box recorded by `App.growFrom(node, route)`), a shrink (the old picture into `Scene.returnBox(key)` for the old scene's `Scene.transitionKey()`) or a crossfade; grow/shrink 0.35 s, fade 0.3 s, taps swallowed by a full-window blocker, a resize settles it. `chooseTransition`, `frameAt`, `usableBox` and `TRANSITION_SECONDS` are pure, in `src/app/transition.ts` with tests. `LandScene`/`LocationScene` answer `land:<id>`, `GameScene` `game:<id>`; `ExploreScene` answers for its Places cards and game cards, `LandScene` for its visible spots. Classic shares `App`, so its routes crossfade.
 
-Open: DOM-overlay scenes (chooser, couch, hatch name field) still snap; no iPad check. Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-9-moving-between-screens).
+Open: DOM-overlay scenes (chooser, couch, hatch name field) still snap; no iPad check. Proof: [verification](VERIFICATION-2026-10-23.md#2026-10-23--rw14-slice-9-moving-between-screens).
 
 ### RW14 slice 8: the last place first (2026-10-23)
 
@@ -1871,3 +1871,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--critter-sort
 ## Grown-up puzzle misses (2026-10-24)
 
 [PR #920](https://github.com/rjdunlap/neo/pull/920), `claude/grownup-puzzle-misses`, decided 2026-10-23 ([record](DECISIONS-2026-10-23.md#decisions)). Sudoku Garden's wrong digit (against the solution) stays a miss and now boings, rings the square red and speaks `sudoku.wrong`, at most once per four seconds; Island Bridges' stray plank and Picture Logic's stray fill count 0 misses (adapt on hints); touch and couch share each module; Lantern Lights stays 0. How-to notes updated; the harness assertions follow the new rule.
+
+## Better voice V2 part 1: build-time Kokoro clips (2026-10-24)
+
+[PR #921](https://github.com/rjdunlap/neo/pull/921), `claude/better-voice-v1`, roadmap chunk 29 ([A better voice](../ROADMAP.md#a-better-voice)), decided 2026-10-23 ([record](DECISIONS-2026-10-23.md#decisions)). `scripts/voice-clips/` (own npm package, kokoro-js 1.2.1, outside the root package so CI never installs it) renders slot-free variants of chosen line-id prefixes with Kokoro (onnx-community/Kokoro-82M-v1.0-ONNX, q8, voice `af_heart`, speed 0.95, pinned in `clips.mjs`), encodes mono 32 kbps AAC with afconvert to `src/audio/clips/<sha256(settings+text)[0:16]>.m4a` and writes `src/content/voice-clips.json`. First set: 215 clips, about 2.6 MB: prefixes game, praise, sticker, again, hub, nav, home, island, land, place, explore, parent, hatch, stickers, friends, keep, play, plus Bubble Pop (`bubble`) and Duck Pond (`duck`). `voice.ts` plays a clip on the new `audio.voiceOut` bus and falls back to device speech; vite never inlines m4a and the service worker precaches it. Slotted variants stay on device speech (a line with mixed variants may change voice between variants); Word Monsters' phonemes are not rendered. Run it: `cd scripts/voice-clips && npm ci && node render.mjs`. Left: render the rest of the slot-free script after the iPad listen; V3 slots and phonemes later.

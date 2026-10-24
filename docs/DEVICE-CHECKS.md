@@ -435,7 +435,7 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **Memory Match board, school extensions and toddler window**: Level 10 word legibility and 100-unit card minimum on an iPad.
 - **Are Memory Match 10–12's matching levels a bridge or a duplicate of Pet Kitchen **: Does she treat 10–12 as bridges.
 - **In what order the family's languages come, which variety of each, and who review**: An installed device voice for the chosen language.
-- **May the island ship AI voice clips?**: Listening judgement of the Kokoro voice on the iPad.
+- **May the island ship AI voice clips?**: Listening judgement of the Kokoro voice on the iPad. Clips now play for the shell (titles, praise, stickers, navigation, hub) and Bubble Pop and Duck Pond: check that they play on the iPad (first tap unlocks audio), their loudness against the music, that a line with a `{name}` or `{n}` variant switching to device speech is acceptable, and the voice itself; rendering the rest waits on this.
 - **Data/AI toy-model presentation and destination**: A pre-K window after the prototype.
 - **Ribbon Workshop**: Watch a pre-K child play Ribbon Workshop level 1 before opening a pre-K entry.
 - **RW05 slice 2b, Splish Splash and Weather Wardrobe on the companion rig**: On an iPad, the sprout's smaller cheek and ear splotches, the river and glider garments' size and legibility, and a child's read of hats on side-on faces.
