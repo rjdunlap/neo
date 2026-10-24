@@ -432,9 +432,11 @@ Proof: new-interaction tier, as the [definition's Build and check tier](definiti
 
 ### second-chance-shed 1: Levels 1–4
 
+Built 2026-10-24, [PR #930](https://github.com/rjdunlap/neo/pull/930); [closeout](archive/COMPLETED-2026-10-09.md#second-chance-shed-levels-1-4-slice-n2-2026-10-24). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`second-chance-shed`, levels 1–4 (N2)** (a new game, one subtask; toddler 1–2, preschool 2–3, pre-K 3–4, Cozy Village by default): used things arrive one at a time on a cart and she drags each to the worm bin, reuse shelf, mending table or Remake machine, one place added per level; each place visibly makes something, and level 1 counts no misses. [Definition](definitions/second-chance-shed.md), [nature-sustainability study slice N1](deep-dives/subjects/nature-sustainability.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/second-chance-shed.md#check-tier) sets it (typecheck, unit tests, a new `browser-check.mjs` case at levels 1 and 4, `fingerdemo` at both, one portrait screenshot of level 4, one build). Review gate: merges only after the developer's item-table review ([decision 1](definitions/second-chance-shed.md#open-decisions)); the build itself may proceed.
+Proof: new-game tier, as the [definition's check tier](definitions/second-chance-shed.md#check-tier) sets it (typecheck, unit tests, a new `browser-check.mjs` case at levels 1 and 4, `fingerdemo` at both, one portrait screenshot of level 4, one build). Review gate: the session's source check replaced the developer review (decided 2026-10-23); recorded in VERIFICATION.
 
 ### sand-table 1: Levels 1–3
 

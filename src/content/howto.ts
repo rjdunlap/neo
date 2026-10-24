@@ -383,6 +383,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 11, to: 11, text: 'The hidden ducks paddle out one by one so both parts of the whole can be seen.' },
     ],
   },
+  'second-chance-shed': {
+    goal: 'Take each used thing to the place on the island that gives it a second life.',
+    steps: [
+      'Drag the food bits to the worm bin.',
+      { from: 2, to: 4, text: 'Put whole things on the shelf to be used again.' },
+      { from: 3, to: 4, text: 'Take a toy that lost a piece to the mending table.' },
+      { from: 4, to: 4, text: 'Put squashed and worn-down things in the Remake machine.' },
+    ],
+    finish: 'Every thing has found its place, and the yard shows what each one made.',
+    note: [
+      { from: 1, to: 1, text: 'Nothing is counted here; she just feeds the worms.' },
+      { from: 2, to: 4, text: 'A drop in the wrong place counts as a miss and that place says why; after two, the right place glows, which counts as a hint.' },
+      { from: 1, to: 4, text: 'These are the island\'s own rules. Check what your town\'s recycling and compost take.' },
+    ],
+  },
   'who-am-i': {
     goal: 'Listen to the clue and find the friend it is about.',
     steps: [
