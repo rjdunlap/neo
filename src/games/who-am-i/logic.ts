@@ -325,7 +325,8 @@ export function galleryLayout(v: View, n: number): GalleryLayout {
   }
   const rows = n <= 4 ? 1 : 2;
   const cols = Math.ceil(n / rows);
-  const left = PET_CORNER + 20, right = portrait ? v.w - 30 : v.w - THUMB - 36;
+  // In portrait the cards end above the pet's corner, so they can use the whole width.
+  const left = portrait ? 30 : PET_CORNER + 20, right = portrait ? v.w - 30 : v.w - THUMB - 36;
   const top = portrait ? strip[0].y + THUMB + 30 : sign.y + sign.h + 30;
   const bottom = portrait ? Math.min(v.h - PET_CORNER - 20, top + rows * 300) : v.h - 30;
   const gap = 16;
