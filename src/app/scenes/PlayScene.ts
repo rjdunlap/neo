@@ -72,8 +72,8 @@ export class PlayScene extends Scene {
       .moveTo(-80, rim + 28).lineTo(80, rim + 28).moveTo(-75, rim + 52).lineTo(75, rim + 52).stroke({ width: 3, color: wood.line });
     bed.addChild(board, back);
     if (this.sleeper) {
-      this.sleeper.scale.set(0.42);
-      this.sleeper.position.set(0, rim + 34);
+      this.sleeper.scale.set(0.5);
+      this.sleeper.position.set(0, rim + 6);
       this.sleeper.setMood('sleepy');
       bed.addChild(this.sleeper);
     }

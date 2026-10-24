@@ -261,7 +261,6 @@ export class ProjectScene extends Scene {
     if (gone()) return;
     await this.sing();
     if (gone()) return;
-    this.ending = 'naming';
     const species = this.newcomer.species;
     for (const name of SPECIES[species].names) {
       const node = new Container();
@@ -273,6 +272,7 @@ export class ProjectScene extends Scene {
       this.ui.addChild(node);
     }
     this.resize(this.view);
+    this.ending = 'naming';
     await say('welcome.name');
   }
 

@@ -3865,7 +3865,7 @@ async function welcomeFlow() {
   await page.mouse.move(home.x, home.y); await page.mouse.down(); await page.waitForTimeout(900); await page.mouse.up();
   await scene('ProjectScene');
   assert.equal(await page.evaluate(() => neo.scene.from ?? null), null);
-  assert.deepEqual(await page.evaluate(() => kit.store.data.projects.welcome.steps), ['yummy']);
+  assert.deepEqual(await page.evaluate(() => kit.store.data.projects.welcome.steps), ['yummy', 'song']);
   // Reload: the chooser, Home, Continue, and the unfinished step comes up.
   await page.waitForTimeout(400);
   await page.reload(); await ready(); await scene('ChooserScene');
@@ -3894,7 +3894,7 @@ async function welcomeFlow() {
   assert.equal(await page.evaluate(() => JSON.stringify(kit.store.data.creations)), treehouse, 'the treehouse slots are unchanged');
   // The ending (slice 3): the last step's done line, the newcomer arrives, her tune plays, then the names.
   assert.ok((await said()).includes('welcome.done.pretty'));
-  const naming = () => page.waitForFunction(() => neo.scene.constructor.name === 'ProjectScene' && neo.scene.ending === 'naming', null, { timeout: 30000 });
+  const naming = () => page.waitForFunction(() => neo.scene.constructor.name === 'ProjectScene' && neo.scene.ending === 'naming', null, { timeout: 30000 }).then(() => page.waitForTimeout(400));
   await naming();
   assert.ok((await said()).includes('welcome.here'));
   assert.deepEqual(await page.evaluate(() => [neo.scene.names.map((n) => n.name), neo.scene.cards.some((c) => c.node.visible), neo.scene.arrow.visible]), [['Pebble', 'Ripple', 'Bubbles'], false, false]);
