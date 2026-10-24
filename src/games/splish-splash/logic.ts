@@ -1,3 +1,5 @@
+import type { SpeciesId } from '../../creatures/species';
+
 export type Part = 'tummy' | 'head' | 'cheeks' | 'ears' | 'nose';
 
 export interface Plan {
@@ -43,20 +45,54 @@ export function allowedParts(plan: Plan, index: number, clean: (p: Part) => bool
   return plan.ordered ? left.slice(0, 1) : left;
 }
 
-/** Where each part's mud sits on Pip (x, y, size), in Pip's own units. */
-export const PART_SPOTS: Record<Part, [number, number, number][]> = {
-  tummy: [[0, -72, 1]],
-  head: [[6, -214, 0.9]],
-  cheeks: [
-    [-98, -100, 0.62],
-    [98, -100, 0.62],
-  ],
-  ears: [
-    [-74, -226, 0.7],
-    [74, -226, 0.7],
-  ],
-  nose: [[0, -112, 0.42]],
+/** Each part's splotch size, against a `MUD_W` × `MUD_H` texture: the face's are smaller than the tummy's. */
+export const PART_SIZE: Record<Part, number> = { tummy: 1, head: 0.9, cheeks: 0.62, ears: 0.7, nose: 0.42 };
+
+/** The old pip's stage scale, at which the brush was `SCRUB_R` body units: a star drawn larger gets a smaller brush in its own units, so on screen it stays finger-sized. */
+export const PIP_SCALE = 1.2;
+
+/**
+ * How each species sits in the tub (RW05 slice 2b, docs/rework/CREATURE-COLLECTION.md): its stage scale, its splotches'
+ * share of `PART_SIZE` (the tummy's own share apart, since it has room), and the parts the bath asks for on it. Decided
+ * 2026-10-23: a species is asked only for parts its table has that sit far enough apart at stage scale for "not that
+ * part" to fire (`separable`). The river and the glider are side on, with the whole face in a small corner, so only the
+ * tummy and the head are far enough apart; the sprout keeps four, with smaller splotches than the pip had: its nose sits between a cheek and an eye, inside both one's reach.
+ */
+export const STAR: Record<SpeciesId, { scale: number; mud: number; tummy: number; parts: readonly Part[] }> = {
+  sprout: { scale: 1.2, mud: 0.55, tummy: 0.7, parts: ['tummy', 'head', 'cheeks', 'ears'] },
+  river: { scale: 1.7, mud: 0.7, tummy: 0.9, parts: ['tummy', 'head'] },
+  glider: { scale: 1.8, mud: 0.6, tummy: 0.5, parts: ['tummy', 'head'] },
 };
+
+/** The brush's width on a star at `scale`, as a share of `SCRUB_R` in its own units. */
+export const brushOn = (scale: number, brush = 1) => (brush * PIP_SCALE) / scale;
+
+/** A level's plan on one species: only the parts it is asked for there, in the plan's order. */
+export function planOn(plan: Plan, parts: readonly Part[]): Plan {
+  return { ...plan, parts: plan.parts.filter((p) => parts.includes(p)) };
+}
+
+export interface Spot {
+  part: Part;
+  x: number;
+  y: number;
+  size: number;
+}
+
+/** The splotches on a star whose part points (in its own units) are `points`: one on each point of each part asked for. */
+export function spotsOn(parts: readonly Part[], points: (p: Part) => readonly { x: number; y: number }[], star: { mud: number; tummy: number }): Spot[] {
+  return parts.flatMap((part) => points(part).map(({ x, y }) => ({ part, x, y, size: PART_SIZE[part] * (part === 'tummy' ? star.tummy : star.mud) })));
+}
+
+/** Whether a finger on `b`'s centre would scrub `a` too (it lies in `a`'s reach, exactly as the game tests a touch). */
+export const reaches = (a: Spot, b: Spot, brush = 1) => nearMud((b.x - a.x) / a.size, (b.y - a.y) / a.size, a.size, brush);
+
+/** Every pair of different parts' splotches that are too close for "not that part": each centre must lie outside the other's reach. */
+export function crowded(spots: readonly Spot[], brush = 1): [Part, Part][] {
+  const out: [Part, Part][] = [];
+  for (const a of spots) for (const b of spots) if (a.part !== b.part && reaches(a, b, brush)) out.push([a.part, b.part]);
+  return out;
+}
 
 /** A splotch's texture, and the scrub radius in Pip body units: the brush reaches `SCRUB_R / size` texture units. */
 export const MUD_W = 120;

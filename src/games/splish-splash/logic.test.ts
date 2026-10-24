@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
-import { allowedParts, askedParts, askedPhrase, cleanPhrase, IdleNudge, MUD_BOX, NAME_GAP, Namer, NUDGE_AFTER, PHRASES, nearMud, nearestIndex, nextToScrub, PART_SPOTS, PATS_PER_PATCH, PLANS, planFor, SCRUB_R, scrubPath, wrongTouches, type Part } from './logic';
+import { allowedParts, askedParts, askedPhrase, cleanPhrase, IdleNudge, MUD_BOX, NAME_GAP, Namer, NUDGE_AFTER, PHRASES, nearMud, nearestIndex, nextToScrub, PATS_PER_PATCH, PLANS, planFor, SCRUB_R, scrubPath, wrongTouches, brushOn, crowded, planOn, spotsOn, STAR, type Part, type Plan, type Spot } from './logic';
+import { restPoints } from '../../creatures/companion';
+import { PARTS } from '../../creatures/parts';
+import { SPECIES_IDS, type SpeciesId } from '../../creatures/species';
+
+/** A level's splotches on a species, in its own units, as the game lays them (one on each point of each part asked for). */
+const spotsFor = (species: SpeciesId, plan: Plan): Spot[] => spotsOn(planOn(plan, STAR[species].parts).parts, (q) => restPoints(species, q), STAR[species]);
+const ALL: readonly Part[] = ['tummy', 'head', 'cheeks', 'ears', 'nose'];
 
 describe('Splish Splash', () => {
   it('asks for every part exactly once, one or two at a time', () => {
@@ -57,9 +64,9 @@ describe('Splish Splash', () => {
   });
 
   it('draws a scrub path that leaves no mud behind on any splotch, however the mud falls', () => {
-    const sizes = new Set(Object.values(PART_SPOTS).flat().map(([, , size]) => size));
+    const sizes = new Set(SPECIES_IDS.flatMap((sp) => spotsOn(ALL, (q) => restPoints(sp, q), STAR[sp]).map((m) => m.size)));
     expect(sizes.size).toBeGreaterThanOrEqual(4);
-    const brushes = new Set(PLANS.map((p) => p.brush ?? 1));
+    const brushes = new Set(SPECIES_IDS.flatMap((sp) => PLANS.map((p) => brushOn(STAR[sp].scale, p.brush ?? 1))));
     expect(brushes).toContain(1.6);
     for (const brush of brushes) for (const size of sizes) {
       const reach = (SCRUB_R * brush) / size;
@@ -90,19 +97,22 @@ describe('Splish Splash', () => {
     expect(wrongTouches(['ears'], ['head'], false)).toEqual(['head']);
     // The reaches really do overlap, so the rule matters: scrubbing the path of every splotch of every level, some point is also near another part.
     let overlaps = 0;
-    for (const plan of PLANS.filter((p) => p.mode === 'parts')) {
-      for (let index = 0; index < plan.parts.length; index += askedParts(plan, index).length) {
-        const asked = askedParts(plan, index);
-        for (const part of asked) {
-          for (const [px, py, size] of PART_SPOTS[part]) {
-            for (const step of scrubPath(size)) {
+    for (const species of SPECIES_IDS) {
+      const brush = brushOn(STAR[species].scale);
+      for (const level of PLANS.filter((p) => p.mode === 'parts')) {
+        const plan = planOn(level, STAR[species].parts);
+        const spots = spotsFor(species, plan);
+        for (let index = 0; index < plan.parts.length; index += askedParts(plan, index).length) {
+          const asked = askedParts(plan, index);
+          for (const m of spots.filter((q) => asked.includes(q.part))) {
+            for (const step of scrubPath(m.size, brush)) {
               // The point in body units, then which splotches of the whole level it is near.
-              const body = { x: px + step.x * size, y: py + step.y * size };
-              const near = plan.parts.filter((q) => PART_SPOTS[q].some(([qx, qy, qs]) => nearMud((body.x - qx) / qs, (body.y - qy) / qs, qs)));
-              expect(near).toContain(part);
+              const body = { x: m.x + step.x * m.size, y: m.y + step.y * m.size };
+              const near = [...new Set(spots.filter((q) => nearMud((body.x - q.x) / q.size, (body.y - q.y) / q.size, q.size, brush)).map((q) => q.part))];
+              expect(near).toContain(m.part);
               if (near.some((q) => !asked.includes(q))) overlaps++;
               // Scrubbing the asked splotch is never "not that part", whatever neighbors are muddy.
-              const before = asked.slice(0, asked.indexOf(part));
+              const before = asked.slice(0, asked.indexOf(m.part));
               expect(wrongTouches(allowedParts(plan, index, (q) => before.includes(q)), near)).toEqual([]);
             }
           }
@@ -113,52 +123,72 @@ describe('Splish Splash', () => {
   });
 
   it('forgives a stroke rubbing on past a splotch it cleaned, but not a slide on to another part', () => {
-    const spots = Object.entries(PART_SPOTS).flatMap(([part, list]) => list.map(([x, y, size]) => ({ part: part as Part, x, y, size })));
-    /** Whether a point on Pip is within the reach of a splotch, as the game measures it: in that splotch's own texture units. */
-    const within = (p: { x: number; y: number }, m: { x: number; y: number; size: number }) => nearMud((p.x - m.x) / m.size, (p.y - m.y) / m.size, m.size);
-    // The whole scrub path of a splotch lies within that splotch's own reach, so a stroke that goes on after it is clean stays forgiven.
-    for (const m of spots) for (const step of scrubPath(m.size)) expect(within({ x: m.x + step.x * m.size, y: m.y + step.y * m.size }, m)).toBe(true);
-    // A finger that scrubbed one part and slides to the middle of a splotch of another part, outside the first's reach, is still told off for it
-    // (the "first this, then that" levels keep their correction).
-    let slides = 0;
-    for (const a of spots) {
-      for (const b of spots) {
-        if (a.part === b.part || within(b, a)) continue;
-        slides++;
-        expect(wrongTouches([a.part], [b.part], false)).toEqual([b.part]);
+    for (const species of SPECIES_IDS) {
+      const brush = brushOn(STAR[species].scale);
+      const spots = spotsOn(STAR[species].parts, (q) => restPoints(species, q), STAR[species]);
+      /** Whether a point on the star is within the reach of a splotch, as the game measures it: in that splotch's own texture units. */
+      const within = (p: { x: number; y: number }, m: Spot) => nearMud((p.x - m.x) / m.size, (p.y - m.y) / m.size, m.size, brush);
+      // The whole scrub path of a splotch lies within that splotch's own reach, so a stroke that goes on after it is clean stays forgiven.
+      for (const m of spots) for (const step of scrubPath(m.size, brush)) expect(within({ x: m.x + step.x * m.size, y: m.y + step.y * m.size }, m)).toBe(true);
+      // A finger that scrubbed one part and slides to the middle of a splotch of another part is outside the first's reach, so it is
+      // still told off for it (the "first this, then that" levels keep their correction).
+      let slides = 0;
+      for (const a of spots) {
+        for (const b of spots) {
+          if (a.part === b.part) continue;
+          expect(within(b, a), `${species}: ${b.part} inside ${a.part}'s reach`).toBe(false);
+          slides++;
+          expect(wrongTouches([a.part], [b.part], false)).toEqual([b.part]);
+        }
+      }
+      expect(slides).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('asks each species only for parts it has, far enough apart at stage scale for "not that part" (decided 2026-10-23)', () => {
+    for (const species of SPECIES_IDS) {
+      const star = STAR[species];
+      for (const part of star.parts) expect(PARTS[species].points[part]?.length, `${species} ${part}`).toBeGreaterThan(0);
+      // Every level still has at least two parts to name, and no two of a naming level's splotches sit in each other's reach.
+      for (const level of PLANS) {
+        const plan = planOn(level, star.parts);
+        expect(plan.parts.length, `${species} ${level.mode}`).toBeGreaterThanOrEqual(2);
+        if (plan.mode === 'parts') expect(crowded(spotsFor(species, plan), brushOn(star.scale)), species).toEqual([]);
       }
     }
-    expect(slides).toBeGreaterThan(8);
-    // The overlap that needs forgiving is real: the far end of the second ear's stroke is near the head, and inside the first ear's own reach.
-    expect(within({ x: -74 + 22, y: -226 }, { x: -74, y: -226, size: 0.7 })).toBe(true);
-    expect(nearMud((-74 + 22 - 6) / 0.9, (-226 + 214) / 0.9, 0.9)).toBe(true);
+    // The rule bites: the pip's old head and ear splotches, side by side at full size, are crowded.
+    expect(crowded([{ part: 'head', x: 6, y: -214, size: 0.9 }, { part: 'ears', x: 74, y: -226, size: 0.7 }]).length).toBeGreaterThan(0);
+    // A star drawn larger gets a smaller brush in its own units, the same on screen.
+    expect(brushOn(2.4)).toBeCloseTo(0.5);
   });
 
   it('Pat the bubbles (level 9): every touch makes progress, a round ends in few touches, and a touch anywhere reaches a patch', () => {
     const plan = planFor(9);
     expect(plan.mode).toBe('pat');
-    const patches = plan.parts.flatMap((p) => PART_SPOTS[p]);
-    expect(patches.length * PATS_PER_PATCH).toBeLessThanOrEqual(12);
-    // Pats anywhere on the screen (a grid, off the pet too) always pick a patch, and the same pats finish every patch.
-    const points = patches.map(([x, y]) => ({ x, y }));
-    const pats = patches.map(() => 0);
-    for (let n = 0; n < patches.length * PATS_PER_PATCH * 4; n++) {
-      const open = points.filter((_, i) => pats[i] < PATS_PER_PATCH);
-      if (!open.length) break;
-      const i = nearestIndex(open, ((n * 97) % 1200) - 600, ((n * 61) % 900) - 700);
-      expect(i).not.toBeNull();
-      pats[points.indexOf(open[i!])]++;
+    for (const species of SPECIES_IDS) {
+      const patches = spotsFor(species, plan).map((m) => [m.x, m.y] as const);
+      expect(patches.length * PATS_PER_PATCH).toBeLessThanOrEqual(12);
+      // Pats anywhere on the screen (a grid, off the pet too) always pick a patch, and the same pats finish every patch.
+      const points = patches.map(([x, y]) => ({ x, y }));
+      const pats = patches.map(() => 0);
+      for (let n = 0; n < patches.length * PATS_PER_PATCH * 4; n++) {
+        const open = points.filter((_, i) => pats[i] < PATS_PER_PATCH);
+        if (!open.length) break;
+        const i = nearestIndex(open, ((n * 97) % 1200) - 600, ((n * 61) % 900) - 700);
+        expect(i).not.toBeNull();
+        pats[points.indexOf(open[i!])]++;
+      }
+      expect(pats.every((c) => c === PATS_PER_PATCH)).toBe(true);
     }
-    expect(pats.every((c) => c === PATS_PER_PATCH)).toBe(true);
     expect(nearestIndex([], 0, 0)).toBeNull();
   });
 
   it('has a spoken word for every part that reads naturally in every bath line', () => {
-    const parts = Object.keys(PART_SPOTS) as Part[];
+    const parts = ALL;
     for (const p of parts) {
       expect(PHRASES[p].word.length).toBeGreaterThan(0);
       // Pairs on the body are spoken as plurals: "Those are my ears", not "That's my ears".
-      expect(PHRASES[p].plural).toBe(PART_SPOTS[p].length === 2);
+      expect(PHRASES[p].plural).toBe(PARTS.sprout.points[p]!.length === 2);
     }
     expect(askedPhrase(['ears', 'nose'])).toBe('my ears and my nose');
     expect(cleanPhrase(['ears', 'nose'])).toBe('ears and nose');
