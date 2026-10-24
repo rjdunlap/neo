@@ -2,6 +2,12 @@
 
 What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), one entry per sitting; the [user research review](USER-RESEARCH-2026-10-24.md#a-five-minute-observation-protocol-for-the-lap-band) has the five-minute protocol for watching her play.
 
+## Bond Beads levels 1–2 (chemistry slice 2, 2026-10-24)
+
+- [ ] On an iPad with a school-age child (6–8): does she read the small nubs as hands, and can she drag or tap one bead onto another and tap a link to break it comfortably in both orientations?
+- [ ] On the iPad's voice, are the level lines clear (the stuck-tray line, the Check hints, the tally strip words)?
+- [ ] Does she take the level 2 Check as "same shape as the card" and can she tell a rebuilt shape from the card's picture at a glance?
+
 ## Story Weaver levels 1–3 (writing-composition WC1, 2026-10-24)
 
 - [ ] With a six-year-old: does she understand that the owl cannot see the pictures, and does the owl's question read as a suggestion she may decline?
