@@ -2,7 +2,7 @@ import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { photoSafari } from './index';
 import { stepLevel } from '../../progress/difficulty';
-import { planFor, TELL_WHICH_PLAN, TELL_BOTH_PLAN, chipsFor, chipPhrase, fits, fewestChips, judgeTell, sameChip, tellHint, toggleChip, ACTIONS, animalToTap, describe, makeScene, matches, PLANS, request, nearestSighting, sightingPositions } from './logic';
+import { CHANGED_PLAN, TRUE_PLAN, WHO_DOING_PLAN, planFor, TELL_WHICH_PLAN, TELL_BOTH_PLAN, chipsFor, chipPhrase, fits, fewestChips, judgeTell, sameChip, tellHint, toggleChip, ACTIONS, animalToTap, describe, makeScene, matches, PLANS, request, nearestSighting, sightingPositions } from './logic';
 
 group('Photo Safari', () => {
   it('always has exactly one animal matching the request, with distinct spots in the original modes', () => {
@@ -143,11 +143,11 @@ group('Photo Safari', () => {
 group('telling a listener', () => {
   it('preserves IDs, reserved gaps and school difficulty order', () => {
     for (let i = 1; i <= 7; i++) expect(planFor(i)).toBe(PLANS[i - 1]);
-    expect(planFor(8)).toBe(PLANS[6]); expect(planFor(9)).toBe(PLANS[6]);
+    expect(planFor(8)).toBe(CHANGED_PLAN); expect(planFor(9)).toBe(TRUE_PLAN); expect(planFor(12)).toBe(WHO_DOING_PLAN);
     expect(planFor(10)).toBe(TELL_WHICH_PLAN); expect(planFor(11)).toBe(TELL_BOTH_PLAN);
     const range = photoSafari.levels('school');
-    expect(range).toEqual({ min: 4, max: 11, order: [4, 5, 6, 7, 10, 11] });
-    expect(stepLevel(7, 1, range)).toBe(10); expect(stepLevel(10, -1, range)).toBe(7);
+    expect(range).toEqual({ min: 4, max: 11, order: [4, 5, 6, 7, 8, 9, 10, 11] });
+    expect(stepLevel(7, 1, range)).toBe(8); expect(stepLevel(10, -1, range)).toBe(9);
   });
   it('speaks doing words before place words regardless of selection order', () => {
     expect(chipPhrase([{ kind: 'spot', value: 'pond' }, { kind: 'action', value: 'jumping' }])).toBe('jumping in the pond');
