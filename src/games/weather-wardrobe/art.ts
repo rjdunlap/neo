@@ -4,11 +4,48 @@ import type { Item } from './logic';
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
+/** The things worn in pairs, one on each point of their part: the companion wears each side on its own. */
+export const PAIRED: ReadonlySet<Item> = new Set<Item>(['boots', 'mittens', 'sandals', 'earmuffs']);
+
 /**
- * A piece of clothing in a critter's body coordinates (feet on 0, 0; about 250 tall),
- * ready for `Critter.attach`, so it squashes and hops along with the pet.
+ * The point of the drawing that sits on its part's point (RW05 slice 2b): a hat's brim on the head, the lenses on the
+ * eyes, a mitten on its hand, an umbrella's grip in the hand. The drawings are in the old pip's coordinates (feet on 0,
+ * 0; about 250 tall); for a pair, `side` is the one drawn (−1 left, 1 right).
  */
-export function clothing(item: Item): Container {
+export function anchorOf(item: Item, side = 1): { x: number; y: number } {
+  switch (item) {
+    case 'sunhat':
+      return { x: 0, y: -208 };
+    case 'beanie':
+      return { x: 0, y: -210 };
+    case 'rainhat':
+      return { x: 0, y: -198 };
+    case 'sunglasses':
+      return { x: 0, y: -143 };
+    case 'scarf':
+      return { x: 0, y: -60 };
+    case 'raincoat':
+      return { x: 0, y: -50 };
+    case 'puffycoat':
+      return { x: 0, y: -45 };
+    case 'umbrella':
+      return { x: 150, y: -60 };
+    case 'mittens':
+      return { x: side * 138, y: -96 };
+    case 'boots':
+      return { x: side * 40, y: -12 };
+    case 'sandals':
+      return { x: side * 40, y: -4 };
+    case 'earmuffs':
+      return { x: side * 110, y: -182 };
+  }
+}
+
+/**
+ * A piece of clothing in the old pip's body coordinates (feet on 0, 0; about 250 tall). `sides` draws one of a pair (the
+ * earmuffs' band only with both). The game hangs it on the companion's part by `anchorOf`; the tray shows it whole.
+ */
+export function clothing(item: Item, sides: readonly number[] = [-1, 1]): Container {
   const c = new Container();
   const g = new Graphics();
   switch (item) {
@@ -45,7 +82,7 @@ export function clothing(item: Item): Container {
       break;
     }
     case 'boots':
-      for (const side of [-1, 1]) {
+      for (const side of sides) {
         g.roundRect(side * 40 - 26, -30, 52, 40, 10).ellipse(side * 40 + side * 10, 6, 36, 12).fill(swatch.red.fill);
         g.roundRect(side * 40 - 26, -30, 52, 40, 10).stroke(line(swatch.red.line, 5));
         g.roundRect(side * 40 - 28, -34, 56, 12, 5).fill(swatch.red.light);
@@ -68,14 +105,14 @@ export function clothing(item: Item): Container {
       break;
     }
     case 'mittens':
-      for (const side of [-1, 1]) {
+      for (const side of sides) {
         g.ellipse(side * 138, -96, 28, 36).fill(swatch.purple.fill).stroke(line(swatch.purple.line, 5));
         g.ellipse(side * 138 - side * 24, -108, 11, 16).fill(swatch.purple.fill).stroke(line(swatch.purple.line, 4));
         g.roundRect(side * 138 - 26, -70, 52, 14, 6).fill(swatch.purple.light);
       }
       break;
     case 'sandals':
-      for (const side of [-1, 1]) {
+      for (const side of sides) {
         const x = side * 40;
         g.ellipse(x + side * 6, 4, 38, 13).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 5));
         g.moveTo(x - 26, -2).quadraticCurveTo(x, -26, x + 26, -2).stroke(line(swatch.pink.line, 13));
@@ -93,9 +130,11 @@ export function clothing(item: Item): Container {
     }
     case 'earmuffs': {
       const fluff = swatch.pink;
-      g.moveTo(-108, -186).quadraticCurveTo(-112, -324, 0, -326).quadraticCurveTo(112, -324, 108, -186).stroke(line(fluff.line, 16));
-      g.moveTo(-108, -186).quadraticCurveTo(-112, -324, 0, -326).quadraticCurveTo(112, -324, 108, -186).stroke(line(fluff.light, 8));
-      for (const side of [-1, 1]) {
+      if (sides.length > 1) {
+        g.moveTo(-108, -186).quadraticCurveTo(-112, -324, 0, -326).quadraticCurveTo(112, -324, 108, -186).stroke(line(fluff.line, 16));
+        g.moveTo(-108, -186).quadraticCurveTo(-112, -324, 0, -326).quadraticCurveTo(112, -324, 108, -186).stroke(line(fluff.light, 8));
+      }
+      for (const side of sides) {
         g.circle(side * 110, -182, 36).fill(fluff.fill).stroke(line(fluff.line, 5));
         for (const [dx, dy] of [[-12, -10], [12, -6], [0, 12]] as const) g.circle(side * 110 + dx, -182 + dy, 9).fill(fluff.light);
       }

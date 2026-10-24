@@ -8,7 +8,7 @@ import { voice } from '../../audio/voice';
 import { ageOf, allGames, clampPage, EXPLORE_ENTRIES, exploreMemory, favoriteGames, hasOthers, pageCount, pageOf, type ExploreEntry } from '../../content/explore';
 import { landFor, LANDS, type LandId } from '../../content/lands';
 import type { LineId } from '../../content/voice-script';
-import { CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, exploreGridLayout, exploreLayout, PAGE_ARROW_RADIUS } from '../../creatures/home-layout';
+import { CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, EXPLORE_POSTCARD, exploreGridLayout, exploreLayout, PAGE_ARROW_RADIUS } from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { GAMES } from '../../games/registry';
@@ -19,6 +19,7 @@ import { arrowIcon, houseIcon } from '../../ui/icons';
 import { ENTRY_NAMES, entryArt, fitArt } from '../../ui/origin-art';
 import { label } from '../../ui/text';
 import type { App } from '../App';
+import type { Box } from '../transition';
 import { Scene } from '../Scene';
 import { MixHost } from '../mix';
 import { mixSpotArt } from '../../ui/mix';
@@ -55,6 +56,8 @@ export class ExploreScene extends Scene {
   readonly next = new RoundButton(arrowIcon(1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(1));
   /** The cards on screen, in reading order. */
   cards: ExploreCard[] = [];
+  /** The last place she visited, as a postcard above the entries (RW14 slice 8), or null before her first visit. */
+  last: { id: LandId; node: Container } | null = null;
   /** The list a browse entry pages through (Favorites, All games), and whether it ends with the signpost. */
   readonly list: GameModule[];
   private readonly signpost: boolean;
@@ -103,11 +106,20 @@ export class ExploreScene extends Scene {
   /** The cards for this entry and page. */
   private build() {
     for (const c of this.cards) c.node.destroy({ children: true });
+    this.last?.node.destroy({ children: true });
+    this.last = null;
     for (const i of this.icons) this.untrack(i);
     this.icons = [];
     const e = this.entry;
+    const visited = store.data.explore.last;
+    if (!e && visited && this.ids.includes(visited)) {
+      const name = landFor(visited).name;
+      const node = this.card(landmarkFor(visited), name, (n) => this.leave(() => this.app.growFrom(n, () => this.app.go.land(visited)), voice.say('result.back', { place: name })), EXPLORE_POSTCARD);
+      this.last = { id: visited, node };
+      this.ui.addChild(node);
+    }
     if (!e) this.cards = EXPLORE_ENTRIES.map((entry) => ({ kind: 'entry', entry, node: this.card(entryArt(entry), ENTRY_NAMES[entry], () => this.open(entry)) }));
-    else if (e === 'places') this.cards = this.ids.map((id) => ({ kind: 'place', id, node: this.card(landmarkFor(id), landFor(id).name, () => this.leave(() => this.app.go.land(id))) }));
+    else if (e === 'places') this.cards = this.ids.map((id) => ({ kind: 'place', id, node: this.card(landmarkFor(id), landFor(id).name, (n) => this.leave(() => this.app.growFrom(n, () => this.app.go.land(id)))) }));
     else if (e === 'family') this.cards = [{ kind: 'family', node: this.card(entryArt('family'), ENTRY_NAMES.family, () => this.leave(() => this.app.go.couch(false, { explore: 'family', page: 0 }))) }];
     else if (e === 'favorites' && !this.list.length) this.cards = [{ kind: 'entry', entry: 'all', node: this.card(entryArt('all'), ENTRY_NAMES.all, () => this.open('all')) }];
     else {
@@ -120,7 +132,7 @@ export class ExploreScene extends Scene {
         }
         const icon = this.track(c.game.hubIcon());
         this.icons.push(icon);
-        return { kind: 'game', mod: c.game, node: this.card(icon, c.game.name, () => this.launch(c.game)) };
+        return { kind: 'game', mod: c.game, node: this.card(icon, c.game.name, (n) => this.launch(c.game, n)) };
       });
     }
     const pages = e === 'favorites' || e === 'all' ? pageCount(this.list.length, this.signpost, this.lead) : 1;
@@ -163,25 +175,25 @@ export class ExploreScene extends Scene {
   }
 
   /**
-   * A 150-unit cream card in the shared finish (RW14 slice 7) with its picture and its name on a pill under it; it
-   * squashes and acts on touch-down, then springs back (`act` null: the caller handles touches).
+   * A 150-unit cream card (or the larger postcard, `size`) in the shared finish (RW14 slice 7) with its picture and its
+   * name on a pill under it; it squashes and acts on touch-down, then springs back (`act` null: the caller handles touches).
    */
-  private card(art: Container, name: string, act: (() => void) | null): Container {
+  private card(art: Container, name: string, act: ((node: Container) => void) | null, size = { w: EXPLORE_CARD, h: EXPLORE_CARD }): Container {
     const node = new Container();
-    const half = EXPLORE_CARD / 2;
-    fitArt(art, EXPLORE_CARD - 30);
+    const { w, h } = size;
+    fitArt(art, Math.min(w, h) - 30);
     const text = label(name, 22, ink);
-    text.y = half + 26;
+    text.y = h / 2 + 26;
     // The name sits on its own cream pill so it reads over the busy backdrop.
     const pill = new Graphics().roundRect(-text.width / 2 - 12, text.y - 17, text.width + 24, 34, 17).fill(cream);
-    node.addChild(finish({ w: EXPLORE_CARD, h: EXPLORE_CARD, corner: 28 }, swatch.green, cream), art, pill, text);
-    node.hitArea = new Rectangle(-half, -half, EXPLORE_CARD, EXPLORE_CARD);
+    node.addChild(finish({ w, h, corner: 28 }, swatch.green, cream), art, pill, text);
+    node.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
     if (act) onTap(node, () => {
       if (this.leaving || this.covered) return;
       sfx.tick();
       squash(node);
       spring(node, 110);
-      act();
+      act(node);
     }, { cooldown: 400 });
     return node;
   }
@@ -193,12 +205,18 @@ export class ExploreScene extends Scene {
   }
 
   /** A game says its title (or, outside her band, who it is for), then plays at the band nearest hers it has. */
-  private launch(mod: GameModule) {
+  private launch(mod: GameModule, node: Container) {
     const age = ageOf(mod, store.data.profile.band);
     const say = age === 'hers' ? voice.say(mod.titleLine) : voice.say('explore.other-age', { who: age === 'bigger' ? 'bigger kids' : 'little ones' });
     const entry = this.entry as 'favorites' | 'all';
     const origin = { explore: entry, page: this.page, ...(entry === 'all' && this.others ? { others: true } : {}) };
-    this.leave(() => this.app.go.game(mod.id, undefined, undefined, false, origin), say);
+    this.leave(() => this.app.growFrom(node, () => this.app.go.game(mod.id, undefined, undefined, false, origin)), say);
+  }
+
+  /** Back from a location or a round shrinks it into the card that opened it, when that card is on this page (RW14 slice 9). */
+  override returnBox(key: string): Box | null {
+    const card = this.cards.find((c) => (c.kind === 'place' && key === `land:${c.id}`) || (c.kind === 'game' && key === `game:${c.mod.id}`));
+    return card ? this.app.boxOf(card.node) : null;
   }
 
   /** The signpost turns All games between hers and the other ages, from the first page. */
@@ -241,7 +259,8 @@ export class ExploreScene extends Scene {
       this.cards.forEach((c, i) => c.node.position.set(l.cards[i].x, l.cards[i].y));
       return;
     }
-    const l = exploreGridLayout(v, this.cards.length);
+    const l = exploreGridLayout(v, this.cards.length, !!this.last);
+    if (this.last && l.postcard) this.last.node.position.set(l.postcard.x, l.postcard.y);
     this.place(l.backdrop);
     this.back.position.set(l.back.x, l.back.y);
     this.home.position.set(l.home.x, l.home.y);

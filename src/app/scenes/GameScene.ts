@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics, Text } from 'pixi.js';
-import { companionSpec, GUIDE_SCALE, makeCompanion, makeGuide, makeStar } from '../../creatures/companion';
+import { GUIDE_SCALE, makeCompanion, makeGuide, makeStar } from '../../creatures/companion';
 import { ink, RAINBOW, swatch } from '../../art/palette';
 import { Particles } from '../../art/particles';
 import { stickerize } from '../../art/sticker';
@@ -112,6 +112,11 @@ export class GameScene extends Scene {
   /** Seconds since the celebration offered its buttons: a key mashed during the confetti must not press one the moment it appears. */
   private offeredFor = 0;
 
+  /** Back from a round shrinks it into the spot or card that launched it (RW14 slice 9). */
+  override transitionKey(): string {
+    return `game:${this.mod.id}`;
+  }
+
   constructor(
     app: App,
     private readonly mod: GameModule,
@@ -187,7 +192,6 @@ export class GameScene extends Scene {
       particles: this.particles,
       renderer: this.app.renderer,
       pet: this.pet,
-      petSpec: companionSpec(),
       companion: makeStar,
       childName: store.data.profile.name,
       track: (o) => this.track(o),

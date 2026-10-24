@@ -6,7 +6,7 @@ import type { LineId } from './voice-script';
 /**
  * Welcome a New Friend (RW07, docs/rework/WELCOME-BUILD.md): the first project at the root, for preschool and pre-K.
  * Three steps in any order, each an ordinary round at the project's level, get the house ready for a newcomer. Slice 1
- * builds `pretty` and `yummy`; `song` waits on the hello-song decision and the ending on all three.
+ * built `pretty` and `yummy`, slice 2 `song`; slice 3 the ending, which waits on all three and adopts the newcomer.
  */
 export const WELCOME_STEPS = ['pretty', 'yummy', 'song'] as const;
 export type WelcomeStep = (typeof WELCOME_STEPS)[number];
@@ -34,6 +34,11 @@ export interface WelcomeStepPlan {
   level: Record<WelcomeBand, number>;
   ask: Record<WelcomeBand, LineId>;
   done: Record<WelcomeBand, LineId>;
+  /**
+   * The one stated exception (decided 2026-10-23): a free-making level with no right answers may sit below the band's
+   * range. A story round never moves the saved level, and free play scores no misses. A test allows only this.
+   */
+  freeBelowRange?: true;
 }
 
 /**
@@ -52,6 +57,14 @@ export const WELCOME_PLAN: Partial<Record<WelcomeStep, WelcomeStepPlan>> = {
     level: { preschool: 2, prek: 5 },
     ask: { preschool: 'welcome.ask.yummy', prek: 'welcome.ask.yummy-prek' },
     done: { preschool: 'welcome.done.yummy', prek: 'welcome.done.yummy-prek' },
+  },
+  // Song Maker 2, free on a 6-beat loop: the only level that keeps her tune (the copy levels in range keep none).
+  song: {
+    game: 'song-maker',
+    level: { preschool: 2, prek: 2 },
+    ask: { preschool: 'welcome.ask.song', prek: 'welcome.ask.song' },
+    done: { preschool: 'welcome.done.song', prek: 'welcome.done.song' },
+    freeBelowRange: true,
   },
 };
 
@@ -87,10 +100,24 @@ export function cleanWelcome(raw: unknown): WelcomeProject {
   };
 }
 
-/** The first of river and glider she does not own yet, or river when she owns both. */
-export function newcomerFor(owned: readonly { species: SpeciesId }[]): SpeciesId {
+/** The adoption's `metAt` token: `meet` is idempotent on it, so the project adopts one friend however often it ends. */
+export const WELCOME_MET_AT = 'project:welcome';
+
+/** The friend the project adopted, if it has (it stays hers through a reset). */
+export const welcomeFriend = <T extends { metAt?: string }>(owned: readonly T[]): T | null => owned.find((o) => o.metAt === WELCOME_MET_AT) ?? null;
+
+/**
+ * The first of river and glider she does not own yet, or river when she owns both. Once the project has adopted, the
+ * same species again: after a reset the ending finds the friend already adopted, and the page shows that friend.
+ */
+export function newcomerFor(owned: readonly { species: SpeciesId; metAt?: string }[]): SpeciesId {
+  const adopted = welcomeFriend(owned);
+  if (adopted) return adopted.species;
   return (['river', 'glider'] as const).find((s) => !owned.some((o) => o.species === s)) ?? 'river';
 }
+
+/** Every step is done: the page plays the ending instead of the cards. */
+export const welcomeReady = (p: WelcomeProject) => WELCOME_STEPS.every((s) => p.steps.includes(s));
 
 /** The project's band once a step was launched, otherwise the band her profile would launch it at (null outside the project's bands). */
 export function welcomeBand(p: WelcomeProject, profile: Band): WelcomeBand | null {
@@ -101,7 +128,7 @@ export function welcomeBand(p: WelcomeProject, profile: Band): WelcomeBand | nul
 export const showsContinue = (p: WelcomeProject, profile: Band) => !p.ended && welcomeBand(p, profile) !== null;
 
 /** Launching a step fixes the project's band and newcomer the first time; later launches change nothing. */
-export function beginWelcome(p: WelcomeProject, band: WelcomeBand, owned: readonly { species: SpeciesId }[]): boolean {
+export function beginWelcome(p: WelcomeProject, band: WelcomeBand, owned: readonly { species: SpeciesId; metAt?: string }[]): boolean {
   if (p.band) return false;
   p.band = band;
   p.newcomer ??= newcomerFor(owned);
@@ -123,6 +150,12 @@ export function completeWelcome(p: WelcomeProject, step: WelcomeStep, made: Crea
     if (tune) p.results.song = tune;
   }
   return true;
+}
+
+/** The step's done line: for the song, the hum line when no tune was kept (fewer than two notes stayed lit). */
+export function welcomeDoneLine(p: WelcomeProject, step: WelcomeStep, band: WelcomeBand): LineId {
+  if (step === 'song' && !p.results.song) return 'welcome.done.song-hum';
+  return WELCOME_PLAN[step]!.done[band];
 }
 
 /** The first built step not done yet, or null when every built step is done. */

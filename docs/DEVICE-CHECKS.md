@@ -1,8 +1,20 @@
 # Needs a person or a device
 
+## Illustrated duck pilot (RW14 slice 6, 2026-10-23)
+
+- [ ] On an iPad, judge Duck Pond's R22 still duck beside the illustrated Rainbow Meadow from slice 4 once available: face/outline at play size, bob/squash, countability, and touch comfort in both orientations. Browser portrait proof: `test-results/browser/duck-pond-12-illustrated-portrait.png`; [PR #904](https://github.com/rjdunlap/neo/pull/904). Other duck games keep their drawings pending this judgement; a screenshot does not establish a child's response or device speech.
+
 ## Root buttons and cards (RW14 slice 7, 2026-10-23)
 
 - [ ] On an iPad, how do the finish and the release spring feel on Home's exits, Explore's cards and Places' postcards, and does the picture door read as the way to the island games?
+
+## Explore's last-place postcard (RW14 slice 8, 2026-10-23)
+
+- [ ] On an iPad, does the postcard above Explore's entries read as "back to my place", and is it clear of Back and Home in portrait?
+
+## Moving between screens (RW14 slice 9, 2026-10-23)
+
+- [ ] On an iPad, do the grow, shrink and crossfade between screens feel smooth, and does the full-screen snapshot cause no hitch or memory pressure? [PR #906](https://github.com/rjdunlap/neo/pull/906)
 
 ## Adventure Walk levels 1–3
 
@@ -94,7 +106,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 - [ ] **Size Parade support truth (slice 1, 2026-10-21, #714).** On an iPad at toddler and pre-K: does a two-year-old hear "bigger" and "smaller" at two friends and understand it; does big-low pitch feel natural; does the first drag at level 5 (40-unit lift) work; does "This spot first!" read as a nudge, not a scolding; does device speech say the new lines clearly?
 - [ ] **Size Parade levels 17 and 10 (2026-10-23).** On an iPad: does a toddler manage the first drag at level 17 (the lift); does a three-year-old understand "the middle one" at level 10; is the ringed-circle cue looked at?
 
-- [ ] **Welcome a New Friend, slice 1 (RW07, 2026-10-21, #712).** On an iPad at preschool and pre-K, does a child understand the invitation and the two step cards (tap a card to hear its ask, then the green Play arrow), and do the asks and done lines (`welcome.invite`, `welcome.ask.*`, `welcome.done.*`, `welcome.soon`, `home.continue`) sound right in device speech?
+- [ ] **Welcome a New Friend, slice 1 (RW07, 2026-10-21, #712).** On an iPad at preschool and pre-K, does a child understand the invitation and the two step cards (tap a card to hear its ask, then the green Play arrow), and do the asks and done lines (`welcome.invite`, `welcome.ask.*`, `welcome.done.*`, `home.continue`) sound right in device speech? **Slice 2 (2026-10-23, #907):** also the song card's `welcome.ask.song`, `welcome.done.song` and `welcome.done.song-hum`, and whether she understands the hum line when no tune was kept. **Slice 3 (2026-10-24, #908):** does she understand the arrival, can a child of three or four name the newcomer by tapping one of three names, does she read the newcomer as hers, does she find the basket bed and its tune, and do `welcome.here`, `welcome.name`, `welcome.joined`, `welcome.full`, `welcome.bed` and `welcome.bed-empty` sound right in device speech (`welcome.soon` is gone)?
 
 - [ ] **Roundup Two shepherds (levels 2–12, slice 9, 2026-10-21, #737).** On an iPad, can a grown-up and a child herd together with a finger each (a third and a resting palm too), and does the herd read as pushed from both sides? Scripted two-pointer play passed; real two-handed play and child play remain unobserved.
 
@@ -315,6 +327,7 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 **Later, at three to five**
 
 - [ ] Photo Safari level 7: on an iPad, hear both action/place clues clearly, distinguish the four animations at shared places, and observe whether a child combines them; browser play cannot establish understanding.
+- [ ] Photo Safari levels 8–9: on an iPad, observe whether a child compares the pinned meadow photo with the scene at level 8, and whether level 9's spoken claims and thumbs-up/down are understood; browser play cannot establish either.
 - [ ] Word Monsters, Photo Safari and Clap the Syllables: vocabulary, spoken prompts, answer clarity, and whether device speech produces usable letter sounds and clear words. Do not claim phonics coverage from letter-name playback alone.
 - [ ] Tangram Town: actual device pronunciation of square, triangle, rectangle and trapezoid, and whether once-per-piece pickup cues are clear while she moves and turns the shapes.
 - [ ] Teddy Doctor lap and toddler: whether a lap player can drag the level 2 bandage (else lap becomes 1 and 7), whether a toddler at level 7 looks at the faces or taps the nearer friend, and whether level 8’s before/after/first/last rules are clear in device speech; [deep dive](deep-dives/teddy-doctor.md#decisions-for-the-developer).
@@ -405,3 +418,4 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **May the island ship AI voice clips?**: Listening judgement of the Kokoro voice on the iPad.
 - **Data/AI toy-model presentation and destination**: A pre-K window after the prototype.
 - **Ribbon Workshop**: Watch a pre-K child play Ribbon Workshop level 1 before opening a pre-K entry.
+- **RW05 slice 2b, Splish Splash and Weather Wardrobe on the companion rig**: On an iPad, the sprout's smaller cheek and ear splotches, the river and glider garments' size and legibility, and a child's read of hats on side-on faces.

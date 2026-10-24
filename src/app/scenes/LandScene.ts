@@ -19,6 +19,7 @@ import { bookIcon, houseIcon, islandIcon } from '../../ui/icons';
 import { makeLandmark, type Landmark } from '../../ui/landmark';
 import { label } from '../../ui/text';
 import type { App } from '../App';
+import type { Box } from '../transition';
 import { ScreenKeys, type FocusSpot } from '../screen-keys';
 import { Scene, type Updatable } from '../Scene';
 import { drawBarnyard } from './barnyard';
@@ -304,6 +305,16 @@ export class LandScene extends Scene {
     else void tip();
   }
 
+  /** A round opened from here grows out of its spot, and shrinks back into it (RW14 slice 9). */
+  override transitionKey(): string {
+    return `land:${this.id}`;
+  }
+
+  override returnBox(key: string): Box | null {
+    const mark = this.showing.find((m) => `game:${m.mod.id}` === key && m.node.visible);
+    return mark ? this.app.boxOf(mark.node) : null;
+  }
+
   private launch(mark: Landmark) {
     if (this.leaving || !mark.node.visible) return;
     this.leaving = true;
@@ -314,7 +325,7 @@ export class LandScene extends Scene {
     this.tw.kill(mark.node.scale);
     void this.tw
       .to(mark.node.scale, { x: this.scale0 * 1.15, y: this.scale0 * 1.15 }, { duration: 0.2 })
-      .then(() => this.app.go.game(mod.id, playBand(mod.bands, this.band), undefined, false, { land: this.id }));
+      .then(() => this.app.growFrom(mark.node, () => this.app.go.game(mod.id, playBand(mod.bands, this.band), undefined, false, { land: this.id })));
   }
 
   private readonly goHome = () => (this.options.home ?? this.app.go.hub)();

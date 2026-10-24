@@ -1,5 +1,29 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Measurement M3–M5 definition packets (2026-10-23)
+
+[PR #911](https://github.com/rjdunlap/neo/pull/911), `codex/measurement-m3-m5`, worker `01a16bf1-ef75-72a3-8643-33da9b6cf91f`: [Measuring Post 1–4](../definitions/measuring-post.md) freezes tool/evidence records, common-unit comparison, observed kg/g table, accounting/help, layout, speech/how-to/demo and future checks. [One Weights Case candidate](../definitions/weights-case.md) freezes 1/3/9-block weights and parcels 2/5/8/13, both-pan semantics, exhaustive-search contract and optional par. Docs only: M3–M4 defined; M5 **provisional**, finalization after Box Balance remains outstanding. Approved placements retain their capacity gates; no downstream build admitted, registration/assets/gameplay changed or new developer decision. Removed the dispatched definition line from READY and reconciled the backlog/study/packet. Links/anchors and diff check passed; no code/browser/device checks. [Verification](../VERIFICATION.md#2026-10-23--measurement-m3m5-definition-packets-docs-only).
+
+
+### RW14 slice 9: moving between screens (2026-10-23)
+
+[PR #906](https://github.com/rjdunlap/neo/pull/906), branch `claude/rw14-moving-screens`: `App.show` (`src/app/App.ts`) renders the leaving scene to a view-sized Sprite, calls exit/destroy on it at once (before the new scene's `init`), then plays a grow (the new root out of the box recorded by `App.growFrom(node, route)`), a shrink (the old picture into `Scene.returnBox(key)` for the old scene's `Scene.transitionKey()`) or a crossfade; grow/shrink 0.35 s, fade 0.3 s, taps swallowed by a full-window blocker, a resize settles it. `chooseTransition`, `frameAt`, `usableBox` and `TRANSITION_SECONDS` are pure, in `src/app/transition.ts` with tests. `LandScene`/`LocationScene` answer `land:<id>`, `GameScene` `game:<id>`; `ExploreScene` answers for its Places cards and game cards, `LandScene` for its visible spots. Classic shares `App`, so its routes crossfade.
+
+Open: DOM-overlay scenes (chooser, couch, hatch name field) still snap; no iPad check. Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-9-moving-between-screens).
+
+### RW14 slice 8: the last place first (2026-10-23)
+
+[PR #905](https://github.com/rjdunlap/neo/pull/905), branch `claude/rw14-last-place`: new per-profile field `SaveData.explore: { last: LandId | null }` in `src/progress/save.ts` (default null, repaired on load with `isLandId`); `store.visitPlace(id)` writes only on change. `LocationScene.init()` records the visit when the location was opened at the root with a Back to Places, so another profile starts with none. `ExploreScene` (no entry) shows `last` as a 320 by 200 postcard (`EXPLORE_POSTCARD`: the location's landmark art and name) above the four entries, kept apart from `cards` so `cards[0..3]` are still the entries; a tap says "Back to {place}!" (existing `result.back`) and opens the location with `go.land`. It shows only after a visit and only for a built location; no new voice line and no spoken prompt. `exploreGridLayout(v, n, postcard)` returns `postcard: Spot | null`, sitting just above the cards and kept to the top, below Back and Home if it would reach across them; a unit test covers five views and 1-4 cards (clear of corners and other targets, no target shrunk). Browser case `BROWSER_SUITE=home HOME_ONLY=last-place`.
+
+Open: the location opened from the postcard still goes Back to Places, not the Explore root; the offline check failed (see the verification entry); no device check. Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-8-the-last-place-first).
+
+### RW14 slice 6: the duck pilot (2026-10-23)
+
+[PR #904](https://github.com/rjdunlap/neo/pull/904), branch `codex/rw14-duck-pilot`: prepared the chosen R22 `duck-base-2` and `duck-portrait-2` via the READY command (full provenance, dimensions, hashes and reproduction in `src/art/friends/README.md`). Duck Pond's round, icon and sticker ducks use the base still, fitted to the prior feet/height, with frame-driven bob, hop squash and a resting tilt. The portrait is prepared but has no new UI consumer. Decode completion guards destroyed instances, a failed decode retains the drawn fallback, cached art attaches synchronously for immediately rendered stickers, and destroying a duck leaves the shared texture intact. Existing duck/pad hit circles, rules, hint accounting, round flow and routes are unchanged; other duck games retain their drawings.
+
+Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-6-the-duck-pilot). Open: developer/iPad judgement with slice 4, device speech and child's response; no broader art rollout or new generation.
+
+
 ### RW14 slice 7: buttons and cards with a finish (2026-10-23)
 
 [PR #902](https://github.com/rjdunlap/neo/pull/902), branch `claude/rw14-button-finish`: `src/ui/buttons.ts` exports `finish(shape, sw, face?)` (one Graphics: short ground shadow in the new `shadow` tone from `src/art/palette.ts`, a rim in `sw.line`, a two-tone face with a lip blended 35% toward `line`, and a soft upper-left highlight; circle or rounded rect), `squash(node)` (pressed pose 1.07 x 0.86) and `spring(node, delay)` (about 0.34 s back with one overshoot, stops if the node is destroyed or pressed again). `RoundButton` and `HoldButton` use it (child order unchanged; `HoldButton` squashes on pointer-down and springs on lift, cancel or completion), so Home's exits wear it unchanged. Explore's entry cards and Places' postcards use a 150-unit rounded-rect finish and squash on touch-down; the Little surprises card squashes for the whole hold. The "Island games" pill (`.classic-link`) is a 56 x 63 px inline-SVG door with `aria-label` and `title`, same class, href, position and hiding. Hit areas unchanged (`src/ui/finish.test.ts`). The finish applies app-wide, so `classic/`'s RoundButtons get it too.
@@ -22,14 +46,14 @@ Open: location keep-out rects (`landButtons`) are not widened for the new house,
 
 [PR #895](https://github.com/rjdunlap/neo/pull/895), branch `codex/rw14-first-run`: HatchScene reuses Home's bottom-anchored backdrop and companion stage. The egg is sized from the full sprout artwork (including leaves), all egg stages share their feet, and the colour/name controls sit on a soft plate above the grass. Four taps → colour → name → Home and the saved sprout are unchanged. Classic boot is unchanged and uses the existing sky/grass fallback. No new image, save schema or route.
 
-Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-1-first-run-on-the-island); device speech/touch and child response remain unchecked.
+Proof: [verification](VERIFICATION-2026-10-23.md#2026-10-23--rw14-slice-1-first-run-on-the-island); device speech/touch and child response remain unchecked.
 
 
 ### Attic Finds levels 3–4 Lid and Lever (H3, 2026-10-23)
 
 Branch `claude/attic-lid-lever` (PR #870): the [definition](../definitions/lid-and-lever.md)'s giant-handle interaction built inside `attic-finds` (lap 3, toddler 3–4, `entryLevels` [3, 4]; bands now lap/toddler/preschool/prek/school). Each touch turns the handle half a turn and the bird or fish rises, then sinks; level 4's peek door (built 220 units wide, not ~240, at `DOOR_AT` (-40, 30)) shows the rod. Finish appears after three turns and only her tap ends the round; 0 misses, 0 hints, nothing kept. No new registration, so the game count is unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--attic-finds-levels-34-lid-and-lever-h3).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--attic-finds-levels-34-lid-and-lever-h3).
 
 ### Seesaw Balance batch 1: truthful support and varied weighing props (slices 1–2, 2026-10-23)
 
@@ -1820,7 +1844,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--fluffy-salon
 
 [PR #865](https://github.com/rjdunlap/neo/pull/865), `claude/critter-sort-sprouts` ([definition](../definitions/same-kind-different-sprouts.md), [deep dive](../deep-dives/critter-sort.md)). Level 12 *Like the big plant* (one hoop) and level 13 *Same and different* (overlapping hoops, leaf mat) sort little plants grown from one big plant's seeds by the big plant's leaf shape and petal marks; the family is stated, never deduced. Built: `makePlantRound`, `SPROUT_PLANS` and the plant rules in `src/games/critter-sort/logic.ts`, code-drawn plants (`PlantNode`) in `plants.ts`, `sort.plant.*` voice lines, how-to lines, logic tests and a `FROM_LEVEL`/`TO_LEVEL` screenshot in the `woods` sort loop. Ladder: pre-K order 6, 1, 12, 2, 3, 13 (max 13); school order 2, 12, 3, 13, 4, 5, 7, 8, 9, 11 (max 13).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--critter-sort-levels-1213-same-kind-different-sprouts-g4).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--critter-sort-levels-1213-same-kind-different-sprouts-g4).
 
 ## Weather Wardrobe batch 2: the trip happens and level 9 Which sky?, slices 5-6 (2026-10-23)
 

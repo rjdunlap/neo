@@ -21,11 +21,12 @@ import {
   type ProfileIndex,
 } from './profiles';
 import { flipItem, moveItem, tidy } from '../content/room';
-import type { SpeciesId } from '../creatures/species';
+import { SPECIES, type SpeciesId } from '../creatures/species';
+import type { LandId } from '../content/lands';
 import { changeWorn, type WearableId } from '../art/creatures/wear-slots';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
-import { beginWelcome, completeWelcome, type WelcomeBand, type WelcomeProject, type WelcomeStep } from '../content/welcome';
+import { beginWelcome, completeWelcome, newcomerFor, WELCOME_MET_AT, welcomeReady, type WelcomeBand, type WelcomeProject, type WelcomeStep } from '../content/welcome';
 import { isNew, toggleFavorite } from '../content/shelf';
 import { STORY_STEPS, type PetColor, type RoomItemId, type StoryId, type StoryStep } from '../content/world';
 import { companionOf, defaults, HISTORY_LENGTH, meetIn, migrate, remember, repairPrevious, swapWithPrevious, type GameStats, type Individual, type PreviousSave, type RoundRecord, type SaveData, type StoryProgress } from './save';
@@ -192,6 +193,13 @@ export class Store {
     return this.data.favorites.includes(gameId);
   }
 
+  /** The last location she visited at the root, for Explore's postcard (RW14 slice 8); writes only when it changes. */
+  visitPlace(id: LandId) {
+    if (this.data.explore.last === id) return;
+    this.data.explore.last = id;
+    this.save();
+  }
+
   /** Hearts a game or takes the heart back; returns whether it is hearted now. */
   toggleFavorite(gameId: string): boolean {
     this.data.favorites = toggleFavorite(this.data.favorites, gameId);
@@ -302,11 +310,28 @@ export class Store {
     return changed;
   }
 
-  /** A finished round completes its step and keeps what she made for it (a stamped picture), in one write. */
+  /** A finished round completes its step and keeps what she made for it (a stamped picture or her tune), in one write. */
   completeWelcomeStep(step: WelcomeStep, made: Creation | null): boolean {
     const done = completeWelcome(this.data.projects.welcome, step, made);
     if (done) this.save();
     return done;
+  }
+
+  /**
+   * The ending's green arrow: the newcomer joins her friends with the name she tapped (one of its species' three) and the
+   * project ends, in one write. Idempotent on the project's token, so a replay or a reset never adopts a second friend. A
+   * full collection ends the project without adopting and drops no one: null then. Undefined before every step is done.
+   */
+  adoptWelcome(name: string): Individual | null | undefined {
+    const p = this.data.projects.welcome;
+    if (!welcomeReady(p)) return undefined;
+    const species = p.newcomer ?? newcomerFor(this.data.creatures.owned);
+    const names: readonly string[] = SPECIES[species].names;
+    const met = meetIn(this.data.creatures, species, names.includes(name) ? name : names[0], SPECIES[species].color, WELCOME_MET_AT, this.makeId);
+    p.ended = true;
+    this.save();
+    this.flush();
+    return met;
   }
 
   get room() {

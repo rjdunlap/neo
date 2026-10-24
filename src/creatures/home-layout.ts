@@ -23,6 +23,8 @@ export const GUIDE_CORNER = { w: 200, h: 200 };
 export const LINK_CORNER = { w: 300, h: 100 };
 /** Home's top-right corner: the grown-ups' gear, with the island-games link below it until RW08's cutover. */
 export const GEAR_CORNER = { w: 300, h: 150 };
+/** The tune plaque's height (`PLAQUE` in `src/ui/creation-art.ts`, which this Pixi-free module does not import). */
+const PLAQUE_H = 130;
 
 export interface Floor {
   x0: number;
@@ -89,8 +91,16 @@ export interface PlayLayout {
   basket: Spot;
   /** The books on their shelf, to the library (RW08 slice 2): under Back and Home, on the wall. */
   books: Spot;
+  /** Welcome a New Friend's basket bed (RW07 slice 3): between the tune plaque and the basket, clear of the ball's floor. */
+  bed: Spot;
   floor: Floor;
 }
+
+/**
+ * The newcomer's basket bed in creature play (RW07 slice 3): her project picture on the upper part (a tap says whose bed
+ * it is), and the newcomer curled in the basket below it (a tap wakes it). Each part is at least 100 units tall.
+ */
+export const BED = { w: 180, h: 220, picture: 105 };
 
 export function playLayout(v: { w: number; h: number }): PlayLayout {
   const backdrop = backdropFit(v);
@@ -101,7 +111,9 @@ export function playLayout(v: { w: number; h: number }): PlayLayout {
   const board = { x: plaque.x - 80 - 40 - 130, y: top };
   const floor = { x0: GUIDE_CORNER.w + BALL_RADIUS, x1: basket.x - BASKET.w / 2 - BALL_RADIUS - 30, y0: Math.max(backdrop.floorTop + 40, v.h - 220), y1: v.h - BALL_RADIUS - 20 };
   const books = { x: Math.round((BACK.x + HOME_BUTTON.x) / 2), y: top };
-  return { backdrop, back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, stage, ball: { x: Math.round(v.w * 0.62), y: v.h - 100 }, board, plaque, basket, books, floor };
+  // Midway between the plaque's foot and the basket's top, over the basket.
+  const bed = { x: basket.x, y: Math.round((plaque.y + PLAQUE_H / 2 + basket.y - BASKET.h / 2) / 2) };
+  return { backdrop, back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, stage, ball: { x: Math.round(v.w * 0.62), y: v.h - 100 }, board, plaque, basket, books, bed, floor };
 }
 
 /**
@@ -155,7 +167,12 @@ export interface ExploreGridLayout {
   /** The previous and next arrows, under the cards (drawn only when they have somewhere to go). */
   prev: Spot;
   next: Spot;
+  /** The last place's postcard above the cards (RW14 slice 8), or null when there is none. */
+  postcard: Spot | null;
 }
+
+/** The last place's postcard on Explore (RW14 slice 8): a picture larger than a card, its name on a pill under it. */
+export const EXPLORE_POSTCARD = { w: 320, h: 200 };
 
 /**
  * Explore's five entries (three over two), a page of up to four games, or Family play's one card (RW08 slice 1,
@@ -163,13 +180,24 @@ export interface ExploreGridLayout {
  * when the view is wider than tall and two by two when it is taller; Back and Home top left as in creature play, and
  * the page arrows centred under the cards, clear of the guide corner.
  */
-export function exploreGridLayout(v: { w: number; h: number }, n: number): ExploreGridLayout {
+export function exploreGridLayout(v: { w: number; h: number }, n: number, postcard = false): ExploreGridLayout {
   if (n < 1 || n > EXPLORE_ENTRY_MAX) throw new Error(`An Explore page holds one to ${EXPLORE_ENTRY_MAX} cards, not ${n}`);
   const step = EXPLORE_CARD + 80;
   // Explore's five entries take two rows (three over two) even when the view is wide: five in a row would not fit 1024.
   const perRow = v.h > v.w && n > 2 ? 2 : n > EXPLORE_ROW ? Math.ceil(n / 2) : n;
   const rows = Math.ceil(n / perRow);
-  const y0 = rows === 1 ? Math.round(v.h * 0.42) : Math.round(v.h * 0.4 - ((rows - 1) * EXPLORE_PITCH) / 2);
+  let y0 = rows === 1 ? Math.round(v.h * 0.42) : Math.round(v.h * 0.4 - ((rows - 1) * EXPLORE_PITCH) / 2);
+  // The postcard stands just above where the cards would be; where that is too high it keeps to the top (below Back and
+  // Home where it would reach across them), and the cards come down under its name.
+  let card: Spot | null = null;
+  if (postcard) {
+    const { w, h } = EXPLORE_POSTCARD;
+    const above = h + 50 + 20 + EXPLORE_CARD / 2;
+    const highest = v.w / 2 - w / 2 < HOME_BUTTON.x + CORNER_RADIUS + 20 ? HOME_BUTTON.y + CORNER_RADIUS + 10 : 40;
+    const top = Math.max(highest, y0 - above);
+    card = { x: Math.round(v.w / 2), y: top + h / 2 };
+    y0 = top + above;
+  }
   const cards: Spot[] = [];
   for (let r = 0, left = n; r < rows; r++) {
     const inRow = Math.min(perRow, left);
@@ -186,6 +214,7 @@ export function exploreGridLayout(v: { w: number; h: number }, n: number): Explo
     cards,
     prev: { x: Math.round(v.w / 2 - 160), y: arrowY },
     next: { x: Math.round(v.w / 2 + 160), y: arrowY },
+    postcard: card,
   };
 }
 
@@ -221,4 +250,35 @@ export function projectLayout(v: { w: number; h: number }, n: number): ProjectLa
   const cards = Array.from({ length: n }, (_, i) => ({ x: Math.round(cx - span / 2 + i * step), y }));
   const plays = cards.map((c) => ({ x: c.x, y: c.y + PROJECT_CARD / 2 + 30 + PROJECT_PLAY_RADIUS }));
   return { backdrop, back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, basket, cards, plays };
+}
+
+/**
+ * The ending of Welcome a New Friend (RW07 slice 3, docs/rework/WELCOME-BUILD.md#the-ending-slice-3), on the page's
+ * layout: the newcomer's basket where it was, her picture hanging over it and the plates on the grass beside it, the
+ * companion who leads the newcomer in standing on the grass to its right, the newcomer's three names as 200 × 120 buttons
+ * where the cards were, and the green arrow under the middle name.
+ */
+export const NAME_BUTTON = { w: 200, h: 120 };
+/** The picture over the basket, as a scale of the 260 × 200 board, and the plates' box beside it. */
+export const ENDING_PICTURE = 0.6;
+export const ENDING_PLATES = { w: 150, h: 130 };
+
+export interface EndingLayout extends ProjectLayout {
+  names: Spot[];
+  arrow: Spot;
+  picture: Spot;
+  plates: Spot;
+  /** The companion's feet and scale. */
+  companion: Spot & { scale: number };
+}
+
+export function endingLayout(v: { w: number; h: number }): EndingLayout {
+  const l = projectLayout(v, 3);
+  const pitch = NAME_BUTTON.w + 20;
+  const names = l.cards.map((c, i) => ({ x: l.cards[1].x + (i - 1) * pitch, y: c.y }));
+  const arrow = { ...l.plays[1] };
+  const picture = { x: l.basket.x, y: l.basket.y - 70 - (200 * ENDING_PICTURE) / 2 - 10 };
+  const plates = { x: l.basket.x + NEWCOMER_REACH + ENDING_PLATES.w / 2 + 10, y: Math.round(l.basket.y + 60) };
+  const companion = { x: Math.round(Math.max(plates.x + ENDING_PLATES.w / 2 + 120, names[0].x)), y: Math.round(v.h - 40), scale: 0.8 };
+  return { ...l, names, arrow, picture, plates, companion };
 }

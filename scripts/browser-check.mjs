@@ -3293,6 +3293,14 @@ async function friendsFlow() {
   log('Friends: hatch meets a sprout, Friends previews and chooses, reload, profiles and reset keep the companion');
 }
 
+/** Makes a friend of this species the active companion, for the large-pet games' species checks. */
+async function useCompanion(species) {
+  await page.evaluate((species) => {
+    kit.store.data.creatures = { owned: [{ id: 'cmp0', species, name: 'Pebble', look: { color: 'blue', worn: [] }, metAt: `dev:${species}` }], companion: 'cmp0' };
+    kit.store.save(); kit.store.flush();
+  }, species);
+}
+
 async function dressFlow() {
   // RW06 slice 1: Friends → Dress → crown, scarf, then a sun hat that takes the crown's place → back, with the look kept everywhere.
   await page.evaluate(() => {
@@ -3550,6 +3558,47 @@ async function homeButtons() {
 }
 
 /**
+ * RW14 slice 8: the last place first (`HOME_ONLY=last-place`). Explore has no postcard before a visit; after Counting Cove
+ * its postcard stands above the four unchanged entries in both orientations, survives a reload, and opens the cove.
+ */
+async function homeLastPlace() {
+  await page.goto(new URL('/', process.env.GAME_URL || 'http://127.0.0.1:5173').href); await ready();
+  await scene('ChooserScene');
+  await page.evaluate(() => {
+    kit.store.data.creatures = { owned: [{ id: 'pip0', species: 'sprout', name: 'Clover', look: { color: 'pink', worn: [] }, metAt: 'start' }], companion: 'pip0' };
+    kit.store.data.profile.band = 'preschool';
+    kit.store.data.world.band = 'preschool';
+    kit.store.data.explore = { last: null };
+    kit.store.save(); kit.store.flush(); neo.go.start();
+  });
+  await pickFirst(); await scene('HomeScene');
+  const explore = () => page.waitForFunction(() => neo.scene.constructor.name === 'ExploreScene' && !neo.switching && neo.scene.entry === null);
+  await page.evaluate(() => neo.go.explore()); await explore();
+  assert.equal(await page.evaluate(() => neo.scene.last), null, 'no postcard before her first visit');
+  await page.evaluate(() => neo.go.land('counting-cove')); await scene('LocationScene');
+  assert.equal(await page.evaluate(() => kit.store.data.explore.last), 'counting-cove');
+  await page.evaluate(() => kit.store.flush()); await page.waitForTimeout(400);
+  await page.reload(); await ready(); await pickFirst(); await scene('HomeScene');
+  await page.evaluate(() => neo.go.explore()); await explore();
+  for (const [w, h] of [[1024, 768], [768, 1024]]) {
+    await page.setViewportSize({ width: w, height: h }); await page.waitForTimeout(500);
+    const st = await page.evaluate(() => {
+      const s = neo.scene, k = neo.view.scale, p = s.last.node.getBounds();
+      const apart = s.cards.every((c) => { const b = c.node.getBounds(); return b.y >= p.maxY || b.maxY <= p.y || b.x >= p.maxX || b.maxX <= p.x; });
+      return { id: s.last.id, entries: s.cards.map((c) => c.entry).join(), w: p.width / k, h: p.height / k, apart };
+    });
+    assert.deepEqual([st.id, st.entries, st.apart], ['counting-cove', 'places,favorites,all,family', true], JSON.stringify(st));
+    assert.ok(st.w >= 150 && st.h >= 150, JSON.stringify(st));
+    await screenshot(`explore-last-place-${w > h ? 'landscape' : 'portrait'}`);
+  }
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+  await tap('neo.scene.last.node'); await scene('LocationScene');
+  assert.equal(await page.evaluate(() => neo.scene.id), 'counting-cove');
+  assert.deepEqual(errors, []);
+  log('Last place: no postcard before a visit; Counting Cove\'s postcard above the four entries in both orientations, after a reload, opens the cove passed');
+}
+
+/**
  * RW14 slice 5: the result in its place (`HOME_ONLY=result`). Duck Pond launched from Counting Cove's spot finishes on the
  * cove's sky behind a soft veil, in both orientations, with the result buttons on their formulas, and Back returns to the
  * cove; from Story Grove it shows the grove's night; with no origin, the home backdrop.
@@ -3607,6 +3656,7 @@ async function homeFlow() {
   if (process.env.HOME_ONLY === 'result') return homeResult();
   if (process.env.HOME_ONLY === 'residents') return homeResidents();
   if (process.env.HOME_ONLY === 'buttons') return homeButtons();
+  if (process.env.HOME_ONLY === 'last-place') return homeLastPlace();
   await page.goto(new URL('/', process.env.GAME_URL || 'http://127.0.0.1:5173').href); await ready();
   await scene('ChooserScene');
   // A preschool person with a kept tune; a second, toddler profile with its own friend.
@@ -3782,7 +3832,7 @@ async function homeFlow() {
   log('Home: chooser → Home by band, creature play ball ×3 unrecorded, tune, Friends/Dress chain, mid-bounce leave, Explore entries → Places → Counting Cove → Back chain, All games page 2 → game → Back to All games (same page) → Home, Favorites older launch and empty, Family play → couch → Explore both orientations, second profile; RW08 slice 2: birthday once, the gear, books → library → journal → Back, a Windy blanket step at the root → Back → library, Little surprises on All games page 1 → stop → Home → sheet → Back');
 }
 
-/** Welcome a New Friend at the root (RW07 slice 1): Continue, the page, the two built steps, leaving mid-step, reload. */
+/** Welcome a New Friend at the root (RW07 slices 1–3): Continue, the page, the three steps, leaving mid-step, reload, the ending, the bed. */
 async function welcomeFlow() {
   await page.goto(new URL('/', process.env.GAME_URL || 'http://127.0.0.1:5173').href); await ready();
   await scene('ChooserScene');
@@ -3829,6 +3879,38 @@ async function welcomeFlow() {
   assert.deepEqual(await page.evaluate(() => kit.store.data.projects.welcome.steps), ['yummy']);
   await page.waitForFunction(() => neo.scene.raised === 'pretty', null, { timeout: 15000 });
   assert.ok((await said()).includes('welcome.done.yummy'));
+  // Song (slice 2): Song Maker 2, below the band's range, as the stated exception. A one-note song keeps nothing and hums.
+  const songLevel = await page.evaluate(() => kit.store.stats('song-maker').level);
+  const playSong = async () => {
+    await tap("neo.scene.cards.find(c => c.step === 'song').node"); await page.waitForTimeout(300);
+    await tap("neo.scene.cards.find(c => c.step === 'song').play");
+    await page.waitForFunction(() => neo.scene.constructor.name === 'GameScene' && !neo.switching && neo.scene.mod.id === 'song-maker', null, { timeout: 20000 });
+    assert.deepEqual(await page.evaluate(() => [neo.scene.band, neo.scene.level, neo.scene.game.plan.mode]), ['preschool', 2, 'free']);
+    await page.waitForTimeout(600);
+  };
+  await playSong();
+  await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0, creation: { kind: 'tune', cols: 6, rows: 4, notes: [{ col: 0, row: 0 }] } }));
+  await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 20000 }); await page.waitForTimeout(500);
+  await tap('neo.scene.after.home'); await scene('ProjectScene');
+  await page.waitForFunction(() => neo.scene.raised === 'pretty', null, { timeout: 15000 });
+  assert.ok((await said()).includes('welcome.done.song-hum'));
+  assert.deepEqual(await page.evaluate(() => [kit.store.data.projects.welcome.steps, kit.store.data.projects.welcome.results.song ?? null]), [['yummy', 'song'], null]);
+  // Make it again, tapping the jellies: her tune is kept on the project and shown on the card.
+  await playSong();
+  const lit = await page.evaluate(async () => {
+    const g = neo.scene.game;
+    for (let i = 0; i < g.plan.notes; i++) { kit.tapOn(g.beads[(i * 5) % g.beads.length]); await kit.sleep(260); }
+    return g.beads.filter((b) => b.lit).length;
+  });
+  await finished('song-maker');
+  await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 25000 }); await page.waitForTimeout(500);
+  await tap('neo.scene.after.home'); await scene('ProjectScene');
+  assert.equal(await page.evaluate(() => kit.store.data.projects.welcome.results.song?.notes.length), lit);
+  assert.equal(await page.evaluate(() => kit.store.stats('song-maker').level), songLevel, 'the out-of-range song round does not move the game level');
+  await page.waitForFunction(async () => (await import('/src/audio/voice.ts')).voice.__said.includes('welcome.done.song'), null, { timeout: 15000 });
+  await page.waitForFunction(() => neo.scene.raised === 'pretty', null, { timeout: 15000 });
+  await page.waitForTimeout(800);
+  await screenshot('welcome-landscape');
   // Pretty: Stamp Studio 3, left by Home mid-round: nothing stored, the page speaks no done line.
   await tap("neo.scene.cards.find(c => c.step === 'pretty').play");
   await page.waitForFunction(() => neo.scene.constructor.name === 'GameScene' && !neo.switching && neo.scene.mod.id === 'stamp-studio', null, { timeout: 20000 });
@@ -3838,7 +3920,7 @@ async function welcomeFlow() {
   await page.mouse.move(home.x, home.y); await page.mouse.down(); await page.waitForTimeout(900); await page.mouse.up();
   await scene('ProjectScene');
   assert.equal(await page.evaluate(() => neo.scene.from ?? null), null);
-  assert.deepEqual(await page.evaluate(() => kit.store.data.projects.welcome.steps), ['yummy']);
+  assert.deepEqual(await page.evaluate(() => kit.store.data.projects.welcome.steps), ['yummy', 'song']);
   // Reload: the chooser, Home, Continue, and the unfinished step comes up.
   await page.waitForTimeout(400);
   await page.reload(); await ready(); await scene('ChooserScene');
@@ -3860,17 +3942,60 @@ async function welcomeFlow() {
   await finished('stamp-studio');
   await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 25000 }); await page.waitForTimeout(500);
   await tap('neo.scene.after.home'); await scene('ProjectScene');
+  assert.equal(await page.evaluate(() => kit.store.data.projects.welcome.ended), false);
   const w = await page.evaluate(() => kit.store.data.projects.welcome);
-  assert.deepEqual(w.steps, ['pretty', 'yummy']);
+  assert.deepEqual(w.steps, ['pretty', 'yummy', 'song']);
   assert.equal(w.results.pretty.stamps.length, 3);
   assert.equal(await page.evaluate(() => JSON.stringify(kit.store.data.creations)), treehouse, 'the treehouse slots are unchanged');
-  await page.waitForFunction(async () => (await import('/src/audio/voice.ts')).voice.__said.includes('welcome.soon'), null, { timeout: 15000 });
+  // The ending (slice 3): the last step's done line, the newcomer arrives, her tune plays, then the names.
   assert.ok((await said()).includes('welcome.done.pretty'));
-  await screenshot('welcome-landscape');
+  const naming = () => page.waitForFunction(() => neo.scene.constructor.name === 'ProjectScene' && neo.scene.ending === 'naming', null, { timeout: 30000 }).then(() => page.waitForTimeout(400));
+  await naming();
+  assert.ok((await said()).includes('welcome.here'));
+  assert.deepEqual(await page.evaluate(() => [neo.scene.names.map((n) => n.name), neo.scene.cards.some((c) => c.node.visible), neo.scene.arrow.visible]), [['Pebble', 'Ripple', 'Bubbles'], false, false]);
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
-  await screenshot('welcome-portrait');
-  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
-  // A pre-K profile hears the pre-K ask; a toddler has no Continue.
+  await screenshot('welcome-ending-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+  // Leaving at the names adopts no one; Continue plays the ending again from the start.
+  await tap('neo.scene.home'); await scene('HomeScene');
+  assert.deepEqual(await page.evaluate(() => [kit.store.data.projects.welcome.ended, kit.store.data.creatures.owned.length]), [false, 1]);
+  await tap('neo.scene.cont'); await scene('ProjectScene');
+  await naming();
+  await tap('neo.scene.names[1].node');
+  assert.deepEqual(await page.evaluate(() => [neo.scene.chosen, neo.scene.arrow.visible]), ['Ripple', true]);
+  await tap('neo.scene.arrow'); await scene('HomeScene');
+  assert.ok((await said()).includes('welcome.joined'));
+  const ripple = await page.evaluate(() => kit.store.data.creatures.owned.find((o) => o.metAt === 'project:welcome'));
+  assert.deepEqual([ripple.species, ripple.name], ['river', 'Ripple']);
+  assert.deepEqual(await page.evaluate(() => [kit.store.data.projects.welcome.ended, kit.store.data.creatures.companion, kit.store.data.creatures.owned.length, neo.scene.cont]), [true, 'pip0', 2, null]);
+  // Creature play: the bed with her picture, and Ripple asleep in it, who wakes to her tune.
+  await page.evaluate(() => neo.go.room()); await scene('PlayScene');
+  await page.waitForTimeout(500);
+  assert.deepEqual(await page.evaluate(() => [!!neo.scene.bed, neo.scene.sleeper?.species, neo.scene.pet.species]), [true, 'river', 'sprout']);
+  await page.evaluate(() => kit.tapOn(neo.scene.bed, 0, 55 * neo.view.scale));
+  await page.waitForFunction(() => neo.scene.singing, null, { timeout: 5000 });
+  await page.waitForFunction(() => !neo.scene.singing, null, { timeout: 20000 });
+  await page.evaluate(() => kit.tapOn(neo.scene.bed, 0, -60 * neo.view.scale)); await page.waitForTimeout(300);
+  assert.equal((await said()).at(-1), 'welcome.bed');
+  await screenshot('welcome-bed-landscape');
+  assert.equal(await page.evaluate(() => JSON.stringify(kit.store.data.creations)), treehouse, 'the treehouse slots are still unchanged');
+  // Reload: Friends lists Ripple; Come with me makes Ripple the companion, and the bed waits empty.
+  await page.waitForTimeout(400);
+  await page.reload(); await ready(); await scene('ChooserScene');
+  await said();
+  await pickFirst(); await scene('HomeScene');
+  assert.equal(await page.evaluate(() => neo.scene.cont), null, 'no Continue after the ending');
+  await page.evaluate(() => neo.go.project()); await scene('ProjectScene');
+  await scene('HomeScene');
+  await page.evaluate(() => neo.go.friends()); await scene('FriendsScene');
+  assert.equal(await page.evaluate(() => neo.scene.cards.children.length), 2);
+  await tap('neo.scene.cards.children[1]');
+  assert.equal(await page.evaluate(() => neo.scene.stageFriend.species), 'river');
+  await tap('neo.scene.come'); await scene('PlayScene');
+  assert.deepEqual(await page.evaluate(() => [neo.scene.pet.species, !!neo.scene.bed, neo.scene.sleeper]), ['river', true, null]);
+  await page.evaluate(() => neo.go.hub()); await scene('HomeScene');
+  assert.equal(await page.evaluate(() => neo.scene.pet.species), 'river', 'the guide is the newcomer');
+  // A pre-K profile hears the pre-K ask and has no bed; a toddler has no Continue.
   await page.evaluate(async () => {
     const { selectPlayer } = await import('/src/app/players.ts');
     await selectPlayer(kit.store.addProfile());
@@ -3879,16 +4004,19 @@ async function welcomeFlow() {
     neo.go.hub();
   });
   await scene('HomeScene');
+  assert.equal(await page.evaluate(() => kit.store.data.creatures.owned.some((o) => o.metAt === 'project:welcome')), false);
   await tap('neo.scene.cont'); await scene('ProjectScene');
   await page.waitForFunction(() => neo.scene.raised === 'pretty', null, { timeout: 15000 });
   await tap("neo.scene.cards.find(c => c.step === 'yummy').node"); await page.waitForTimeout(200);
   assert.equal((await said()).at(-1), 'welcome.ask.yummy-prek');
   assert.equal(await page.evaluate(() => neo.scene.newcomer.species), 'river');
   await tap('neo.scene.home'); await scene('HomeScene');
+  await page.evaluate(() => neo.go.room()); await scene('PlayScene');
+  assert.equal(await page.evaluate(() => neo.scene.bed), null, 'no bed for another profile');
   await page.evaluate(() => { kit.store.data.profile.band = 'toddler'; neo.go.hub(); }); await scene('HomeScene');
   assert.equal(await page.evaluate(() => neo.scene.cont), null, 'no Continue for a toddler');
   assert.equal(errors.length, 0, errors.join('\n'));
-  log('Welcome: Continue → invitation → yummy (one wrong cut) → done line → pretty left mid-round stores nothing → reload → pretty finished, picture kept on the project, treehouse unchanged → soon; pre-K ask; toddler has no Continue');
+  log('Welcome: Continue → invitation → yummy (one wrong cut) → done line → song: one note keeps nothing and hums → song again with tapped jellies, tune kept, level unmoved → pretty left mid-round stores nothing → reload → pretty finished, picture kept on the project, treehouse unchanged → ending: arrival, names; leave at naming adopts no one → Continue replays → Ripple → Home without Continue → bed with picture, Ripple wakes to her tune → reload → Friends → Come with me → guide is Ripple, bed empty; pre-K ask, no bed; toddler has no Continue');
 }
 
 async function hatchingAndMap() {
@@ -3998,7 +4126,7 @@ async function hatchingAndMap() {
   await page.locator('#p-pet-color').selectOption('pink');
   await page.locator('[data-done]').click(); await scene('MapScene');
   // The grown-ups' page edits the companion: its name, its colour, and the map's friend turned to that colour.
-  assert.deepEqual(await page.evaluate(() => ({ name: kit.store.companion.name, color: kit.store.companion.look.color, recolored: neo.scene.pip.rig.mesh.filters.length })), { name: 'Clover', color: 'pink', recolored: 1 });
+  assert.deepEqual(await page.evaluate(() => ({ name: kit.store.companion.name, color: kit.store.companion.look.color, recolored: (neo.scene.pip.rig.skin ?? neo.scene.pip.rig.mesh).filters.length })), { name: 'Clover', color: 'pink', recolored: 1 });
   assert.deepEqual(await page.evaluate(() => kit.store.data.world), { band: 'prek' });
   await page.waitForTimeout(3000);
   await screenshot('map-prek');
@@ -4647,6 +4775,7 @@ async function conductorSign() {
 
 async function wardrobe7() {
   await page.setViewportSize({ width: 768, height: 1024 });
+  if (process.env.WARDROBE_SPECIES) await useCompanion(process.env.WARDROBE_SPECIES);
   await launch('weather-wardrobe', 7);
   await page.waitForTimeout(700);
   await page.evaluate(async () => {
@@ -4661,7 +4790,7 @@ async function wardrobe7() {
     for (let step = 0; g.changePhase === 'remove' && step < 6; step++) {
       const item = g.outfit.remove.find((i) => g.worn.has(i));
       if (!item) throw new Error('No removable clothing remains');
-      const node = g.worn.get(item);
+      const [node] = g.worn.get(item);
       const p = node.toGlobal(g.wornCenters.get(item));
       kit.tap(p.x, p.y); await kit.sleep(350);
     }
@@ -4674,7 +4803,7 @@ async function wardrobe7() {
       if (g.done) break;
       if (g.changePhase === 'remove') {
         const item = g.outfit.remove.find((i) => g.worn.has(i));
-        const node = g.worn.get(item), p = node.toGlobal(g.wornCenters.get(item));
+        const [node] = g.worn.get(item), p = node.toGlobal(g.wornCenters.get(item));
         kit.tap(p.x, p.y);
       } else {
         const option = g.options.find((o) => !o.used && g.outfit.needed.includes(o.item));
@@ -5464,6 +5593,8 @@ async function fourth() {
   }
 
   // Weather Wardrobe: free weather play, then dressing and packing.
+  // WARDROBE_SPECIES=river|glider dresses that species instead of the hatched sprout (RW05 slice 2b: only what it can wear).
+  if (process.env.WARDROBE_SPECIES && (!only || only === 'weather')) await useCompanion(process.env.WARDROBE_SPECIES);
   if (!only || only === 'weather') for (const level of [1, 2, 3, 4, 5, 6, 8]) {
     await launch('weather-wardrobe', level);
     await page.waitForTimeout(700);
@@ -5474,7 +5605,7 @@ async function fourth() {
         await kit.until(() => g.worn.size === 2, 3000);
         kit.tap(120, innerHeight - 40); await kit.sleep(150);
         if (!g.bursts.length || g.weather !== 'sunny') throw new Error('Wardrobe grass did not answer');
-        const [item, worn] = [...g.worn][0];
+        const [item, [worn]] = [...g.worn][0];
         const at = worn.toGlobal(g.wornCenters.get(item));
         kit.tap(at.x, at.y); await kit.sleep(300);
         if (g.named !== 1 || g.weather !== 'sunny') throw new Error('Wardrobe worn item was not named');
@@ -5645,11 +5776,13 @@ async function early() {
       for (let dy = -s; dy <= s && !m.clean; dy += s / 3) await kit.drag(kit.line([p.x - s * 1.2, p.y + dy], [p.x + s * 1.2, p.y + dy], 8), 1, 8);
     };
   });
+  // BATH_SPECIES=river|glider bathes that species instead of the hatched sprout (RW05 slice 2b: its own parts, fewer on a side-on face).
+  const bathSpecies = process.env.BATH_SPECIES;
+  if (bathSpecies && (!only || only === 'bath')) await useCompanion(bathSpecies);
   for (let level = 1; level <= 9 && (!only || only === 'bath'); level++) {
     await launch('splish-splash', level);
     await page.waitForTimeout(500);
-    const parts = await page.evaluate(() => neo.scene.game.plan.mode === 'parts');
-    await page.evaluate(async () => {
+    const parts = await page.evaluate(async () => {
       const g = neo.scene.game;
       if (g.plan.mode === 'pat') {
         // Pat the bubbles: touches far from the mud still wash the nearest patch.
@@ -5659,9 +5792,9 @@ async function early() {
         }
         if (!g.finished) throw new Error('PATSTATE ' + JSON.stringify(g.muds.map((m) => [m.pats, m.clean])) + ' ' + g.partIndex);
       }
-      if (g.plan.mode === 'parts') {
-        // In first-then levels the "then" part is the wrong one to start with.
-        const wrongPart = g.plan.ordered ? g.asked()[1] : g.plan.parts.find((p) => !g.asked().includes(p));
+      // In first-then levels the "then" part is the wrong one to start with. A two-part species asked for both at once has none.
+      const wrongPart = g.plan.mode === 'parts' && (g.plan.ordered ? g.asked()[1] : g.plan.parts.find((p) => !g.asked().includes(p)));
+      if (wrongPart) {
         // A short wiggle in the middle, so it can't reach a neighboring part that is allowed.
         const p = g.muds.find((m) => m.part === wrongPart).sprite.getGlobalPosition();
         await kit.drag(kit.line([p.x - 12, p.y], [p.x + 12, p.y], 6), 1, 12);
@@ -5673,6 +5806,7 @@ async function early() {
         if (next) await scrubMud(next);
         await kit.sleep(200);
       }
+      return !!wrongPart;
     });
     if ([1, 6, 8, 9].includes(level)) await screenshot(`splish-splash-${level}`);
     await finished('splish-splash');
@@ -7170,7 +7304,7 @@ async function batch() {
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.waitForTimeout(400);
     }
-    await page.evaluate(async () => {
+    const safariPlay = page.evaluate(async () => {
       const g = neo.scene.game;
       for (let p = 0; p < g.plan.photos; p++) {
         await kit.until(() => g.photos === p && !g.busy && g.actors.length, 15000);
@@ -7200,6 +7334,42 @@ async function batch() {
           await kit.until(() => g.photos > p, 10000);
           continue;
         }
+        if (g.plan.mode === 'changed') {
+          // The first tap, on the camera or any animal, photographs the meadow and is never a miss.
+          if (g.cameraButton.hitArea.width < 100 || g.cameraButton.hitArea.height < 100) throw new Error('Camera target');
+          const before = g.misses;
+          if (p === 0) kit.tapOn(g.actors[0], 0, -60); else kit.tapOn(g.cameraButton);
+          await kit.until(() => g.phase === 'find' && !g.busy, 10000);
+          if (g.misses !== before || !g.pinned.children.length) throw new Error('Meadow photo must be free and pinned');
+          const changed = g.target;
+          const was = g.scene.before[g.scene.target], now = changed.sighting;
+          if ((was.action !== now.action) === (was.spot !== now.spot)) throw new Error('Exactly one thing changes');
+          if (p === 0) {
+            const wrong = g.actors.find((a) => a !== changed);
+            for (let k = 0; k < 2; k++) { kit.tapOn(wrong, 0, -60); await kit.sleep(600); }
+            if (g.misses !== 2 || g.hints !== 1 || !changed.glow.visible) throw new Error(`Changed hint: ${g.misses} ${g.hints}`);
+            window.__safariShot = true;
+            await kit.until(() => !window.__safariShot, 20000);
+          }
+          kit.tapOn(changed, 0, -60);
+          await kit.until(() => g.photos > p, 10000);
+          continue;
+        }
+        if (g.plan.mode === 'true') {
+          kit.tapOn(right, 0, -60);
+          await kit.until(() => g.phase === 'judge' && !g.busy, 10000);
+          if (g.thumbs.some((b) => b.hitArea.width < 100 || b.hitArea.height < 100)) throw new Error('Thumb targets');
+          const good = g.thumbs[g.scene.truthy ? 0 : 1], bad = g.thumbs[g.scene.truthy ? 1 : 0];
+          if (p === 0) {
+            for (let k = 0; k < 2; k++) { kit.tapOn(bad); await kit.sleep(200); await kit.until(() => !g.busy, 10000); }
+            if (g.misses !== 2 || g.hints !== 1 || !good.children[0].visible) throw new Error(`Judge hint: ${g.misses} ${g.hints}`);
+            window.__safariShot = true;
+            await kit.until(() => !window.__safariShot, 20000);
+          }
+          kit.tapOn(good);
+          await kit.until(() => g.photos > p, 10000);
+          continue;
+        }
         if (p === 0 && g.target) {
           const wrong = g.actors.find((a) => a !== right && (!['both', 'clues'].includes(g.plan.mode) || a.sighting.spot === right.sighting.spot));
           for (let k = 0; k < 2; k++) { kit.tapOn(wrong, 0, -60); await kit.sleep(600); }
@@ -7209,6 +7379,17 @@ async function batch() {
         await kit.until(() => g.photos > p, 10000);
       }
     });
+    if (mode === 'changed' || mode === 'true') {
+      // The new screens in portrait: the pinned meadow photo or the held photo and thumbs, with the hint showing.
+      await page.waitForFunction(() => window.__safariShot, null, { timeout: 30000 });
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(500);
+      await screenshot(`photo-safari-${level}-portrait`);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+      await page.evaluate(() => { window.__safariShot = false; });
+    }
+    await safariPlay;
     await screenshot(`photo-safari-${level}`);
     await finished('photo-safari');
     const r = await page.evaluate(() => { const r = kit.store.stats('photo-safari').history.at(-1); return [r.misses, r.hints]; });
@@ -7543,6 +7724,13 @@ async function originals() {
     await launch('duck-pond', level);
     await page.waitForTimeout(400);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.waitForFunction(() => !neo.scene.game.busy);
+    await page.waitForFunction(() => [...neo.scene.game.bank, ...neo.scene.game.swimmers].every((d) =>
+      d.critter.craft.children.some((c) => c.texture?.width === 451)));
+    const duckTargets = await page.evaluate(() => [...neo.scene.game.bank, ...neo.scene.game.swimmers].map((d) =>
+      [d.hitArea.x, d.hitArea.y, d.hitArea.radius]));
+    assert(duckTargets.every(([x, y, radius]) => x === 0 && y === -46 && radius === (mode === 'bye' ? 53 : 72)), 'Duck sprite preserves hit circles');
+    if (level === duckTop) await screenshot(`duck-pond-${level}-illustrated-portrait`);
     const revealShot = mode === 'hide' ? (async () => {
       await page.waitForFunction(() => neo.scene.game.round === 0 && neo.scene.game.signText.text.includes('=') && neo.scene.game.swimmers.every((d) => d.critter.visible), null, { timeout: 60000 });
       await screenshot(`duck-pond-${level}-reveal-portrait`);

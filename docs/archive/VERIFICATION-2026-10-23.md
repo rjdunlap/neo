@@ -164,3 +164,59 @@
 - Ran: typecheck; `npm test` (then failed only the shared `lab.test.ts` bench assertion, fixed on main by #877; after merging `origin/main` at `74c1009e`, 217 files and 2702 tests pass); new `logic.test.ts` tests; registry test updated.
 - Browser: `BROWSER_SUITE=batch BATCH_ONLY=salon FROM_LEVEL=6` passed (the `salon` case now covers 6 and 7, default `TO_LEVEL` 7); `fingerdemo` `FINGER_ONLY=fluffy-salon FINGER_LEVELS=6,7` clean (10.4 s, 10.8 s); one landscape screenshot of level 7 reviewed.
 - Not run: portrait screenshot, offline check, real device or touch ([open](../DEVICE-CHECKS.md) if a person should pat the fluff).
+
+## 2026-10-23 — Waiting on the developer: every open question decided on delegation
+
+- [PR #886](https://github.com/rjdunlap/neo/pull/886), `claude/waiting-decisions`: the developer asked for every open question to be decided and acted on. 178 of 182 rows decided by [standing rules](DECISIONS-2026-10-23.md#standing-rules) and each row's lean; each decision is recorded in its source (about 130 docs) and in the [record](DECISIONS-2026-10-23.md). [Waiting](../WAITING-ON-DEVELOPER.md) keeps 4 questions (the `classic/` deletion, two on-device name lists, the first language's family reviewer).
+- Follow-on edits: READY ungated (11 lines) with 12 builds queued; 48 former gates moved to [DEVICE-CHECKS](../DEVICE-CHECKS.md#from-the-delegated-decisions-2026-10-23); AGENTS.md allows build-time Kokoro voice clips, a Sing-Along Barn tune exception and a grown-up wording rule; ROADMAP chunk 16, D4a and D4b set ready.
+- Ran: `node scripts/check-links.mjs`, `git diff --check`. Docs only; no code checks.
+- Not checked: each source edit was written by a subagent from its row and read back only by link check and spot checks, not line by line.
+
+## 2026-10-23 — Critter Sort levels 12–13: Same Kind, Different Sprouts (G4)
+
+- [PR #865](https://github.com/rjdunlap/neo/pull/865), `claude/critter-sort-sprouts`: little plants sorted by a stated big plant's leaf shape and petal marks, one hoop (12) then overlapping hoops with a leaf mat (13); pre-K and school.
+- Ran: typecheck; `critter-sort`, `howto` and registry vitest; full `npm test`: 2602 pass, 1 fail in `src/app/scenes/lab.test.ts` (Tinker Lab "prek landscape n=12"), which failed identically on `origin/main` then and was fixed there by [#877](https://github.com/rjdunlap/neo/pull/877); rerun green after merging `origin/main`.
+- Browser: `BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=12 TO_LEVEL=13` passed (wrong drops, hint, completion); portrait screenshot of 13 checked visually (the big plant moved above the example after the first look); `fingerdemo FINGER_ONLY=critter-sort` at levels 1, 12 and 13 passed.
+- Not run: build (no shared files), `world`, couch, offline; device speech and a child reading the plants ([open](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — R23 Rainbow Meadow source art
+
+- [PR #891](https://github.com/rjdunlap/neo/pull/891), `codex/art-r23`: five built-in imagegen calls, chosen untouched `land-meadow-5.png`, no missing source.
+- Tested `d30d7fff` plus art/docs diff; 1536 × 1024 RGB, 1,670,501 bytes; source/repository hash equality passed.
+- Reviewed full size, 120 px and static 1024 × 768 / 768 × 1024 cover previews with illustrative 100 px circles; about 38% horizon, clear ground; peripheral clipping caveats in [exact prompts/proof](../rework/concepts/generated/R23-PROMPTS.md).
+- Ran links and diff checks; required PR CI tracked in #891. No source cleanup or import/preparation.
+- Not run: local typecheck/tests/build/browser/offline (source art/docs only), actual in-game layout, device/child judgement; integration remains separate.
+
+## 2026-10-23 — Stop and Go levels 5-6 Whose light? and Busy crossing (slices 4-5)
+
+- [PR #869](https://github.com/rjdunlap/neo/pull/869), `claude/stop-and-go-whose-light`: level 5 (two lanes, own lights) and level 6 (eight arriving cars, thought clouds, idle point also at level 4); pre-K 3-6, preschool 2-5; voice lines, how-to steps, `go` browser case.
+- Ran: typecheck; `npm test` then failed only `src/app/scenes/lab.test.ts` (Tinker Lab, fixed on main by [#877](https://github.com/rjdunlap/neo/pull/877)); after merging `origin/main` (`2cd835b9`) typecheck clean and `npm test` 2708 passed.
+- Browser (port 5437): `BROWSER_SUITE=woods WOODS_ONLY=go FROM_LEVEL=5` played levels 5, 6 and 9 (a wrong answer and a hint at 5, a both-green miss at 6); `fingerdemo FINGER_LEVELS=4,5,6` clean in 8.1 / 11.5 / 17.4 s; landscape screenshots reviewed. After the merge, the same filter at `http://localhost:5541` passed 5, 6 and 9 again.
+- Not run: portrait screenshot, `npm run build`, iPad or device speech (the lane-specific red lines and the idle-point line).
+
+## 2026-10-23 — Typing Land reference review
+
+- `claude/typing-land-review-88a7ed`: [docs/TYPING-LAND.md](../TYPING-LAND.md), a review of higopage's Typing Land against the island's rules with seven proposals (P1–P7), plus pointers in [IDEAS](../IDEAS.md#typing-land-review-2026-10-23), the [keyboarding study](../deep-dives/subjects/keyboarding-editing.md#similar-games-and-tools) and the [Pond Typing definition](../definitions/pond-typing.md).
+- Ran: the browser edition played in the app's browser pane through setup, the tutorial, World 1 lesson 1 (three mini-games, the result) and the World 1, 2 and 6 maps; store, official and review pages opened; `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: no code changed; no sound heard (headless pane); later worlds, Challenge mode and the manual PDF not opened.
+
+## 2026-10-23 — Attic Finds levels 3–4 Lid and Lever (H3)
+
+- Branch `claude/attic-lid-lever` (PR #870): a giant-handle interaction in `attic-finds` (lap 3, toddler 3–4, `entryLevels` [3, 4]); peek door 220 units wide at (-40, 30); Finish after 3 turns; 0 misses and 0 hints.
+- Ran: typecheck; vitest on `src/games` and `src/content` (160 files pass); `npm run build`. Full `npm test` has one failure, `src/app/scenes/lab.test.ts` "prek landscape n=12", which also fails with the attic-finds bands reverted (not from this change). After merging `origin/main` (`1ca63fc6`, which has the lab fix [#877](https://github.com/rjdunlap/neo/pull/877)): typecheck clean, `npm test` 2716 of 2717 with only Block Garden's level-8 timing cap failing under machine load; that file passed on rerun (unchanged code, known flake).
+- Browser (Vite port 5437, stopped): `BROWSER_SUITE=atticlever` (fast swats make one turn plus one queued, Finish absent until turn 3, level 4 door free, Finish ends 0/0) passed; `fingerdemo FINGER_ONLY=attic-finds FINGER_LEVELS=3,4` passed (7.3 s, 9.4 s); portrait screenshot of level 4 reviewed.
+- Not run: `world`, offline check, iPad, device speech, a lap or toddler child ([open](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — Weather Wardrobe batch 2: the trip happens and level 9 Which sky? (slices 5–6)
+
+- [PR #876](https://github.com/rjdunlap/neo/pull/876): level 6 unpacks the suitcase, the pet wearing each weather's two items in forecast order; new level 9 *Which sky?* (toddler `[2, 9, 3, 4]`, preschool `[3, 9, 4, 5]`, `entryLevels: [8, 9]`). Wind (slice 7) not built.
+- Ran: typecheck; `vitest` src/games, src/content, src/progress, src/app (all pass except `src/app/scenes/lab.test.ts` Tinker Lab, which also fails on unchanged `origin/main`); new `BROWSER_SUITE=wardrobe9` (grey scene, wrong sky twice with consequence, hint, three rounds, saved round, 2 misses and 1 hint) and `BROWSER_SUITE=wardrobe6` (trip unpacks two items per weather); `fingerdemo` `FINGER_ONLY=weather-wardrobe FINGER_LEVELS=9` (6.4 s); one portrait screenshot of level 9 reviewed.
+- Not run: wind, `world`, `npm run build`, offline check, iPad/device.
+- Open: whether the trip reads as a payoff and how level 9 plays for a toddler ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — RW14 slice 1: first run on the island
+
+- HatchScene uses Home's backdrop, grass position and a full-companion-height egg, with a soft plate behind colour/name controls; step order and saved result unchanged ([PR #895](https://github.com/rjdunlap/neo/pull/895)).
+- Tested base `841999e3` plus the source/browser diff, `GAME_URL=http://localhost:5199`, `BROWSER_SUITE=home HOME_ONLY=first-run`: 1024×768 and 768×1024 backdrop/egg feet/height, four taps, ≥100-unit controls, colour/preset/custom name, save and reload passed; no page errors. Two portrait images reviewed (egg and colour plate).
+- Typecheck/build passed. Full unit run: 2708 passed, four skipped, five failures in untouched Fluffy Salon, Bumper Garden, Penguin Slide and Bolt Boards; one filtered rerun of those four files passed all 64 tests (transient failures; no game code/test changes).
+- Diff/link checks passed. No new assets, persistence or route changes; `world`, offline, couch and full-release suites not run under the scoped shell tier. No iPad, actual speech/touch or child-response claim.
