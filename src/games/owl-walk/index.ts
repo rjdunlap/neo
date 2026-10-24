@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
-import { Critter, type CritterSpec } from '../../art/critter';
+import type { Critter } from '../../art/critter';
+import { owlArt } from '../../art/animals';
 import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { Backdrop, Sun } from '../../art/scenery';
 import { puffs, shapePath, type ShapeKind } from '../../art/shapes';
@@ -26,18 +27,6 @@ const MARK: Partial<Record<ColorName, ShapeKind>> = { red: 'heart', blue: 'circl
 const OWL_COLORS: ColorName[] = ['purple', 'brown', 'pink'];
 const OWL_SCALE = 0.3;
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
-
-const owlSpec = (color: ColorName): CritterSpec => ({ color, ears: 'pointy', snout: 'none', wings: true, belly: true });
-
-/** A baby owl: a critter with eye rings, a little beak and ear tufts. */
-function makeOwl(color: ColorName): Critter {
-  const c = new Critter(owlSpec(color));
-  const face = new Graphics()
-    .circle(-40, -142, 36).circle(40, -142, 36).stroke({ width: 7, color: swatch.yellow.light, alpha: 0.9 })
-    .poly([-12, -112, 12, -112, 0, -92]).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 3));
-  c.attach(face);
-  return c;
-}
 
 function stoneArt(color: ColorName): Graphics {
   const sw = swatch[color];
@@ -156,7 +145,7 @@ class OwlWalk implements Game {
     this.touch.on('pointerdown', (e: FederatedPointerEvent) => this.tapAt(e));
     ctx.stage.addChild(this.backdrop, this.moon, this.sun, this.dawn, this.nest, this.trail, this.hintGlow, ...this.stones, this.flies, this.previews, this.layer, this.touch, this.deck, this.shown, this.fx);
     for (let i = 0; i < this.plan.owls; i++) {
-      const critter = ctx.track(makeOwl(OWL_COLORS[i]));
+      const critter = ctx.track(owlArt(OWL_COLORS[i]));
       critter.scale.set(OWL_SCALE);
       const glow = new Graphics().circle(0, -130, 170).fill({ color: 0xfff3a0, alpha: 0.85 });
       glow.visible = false;
@@ -643,7 +632,7 @@ class OwlIcon extends WigglyIcon {
       c.addChild(s);
     });
     OWL_COLORS.slice(0, 2).forEach((color, i) => {
-      const o = makeOwl(color);
+      const o = owlArt(color);
       o.alive = false;
       o.scale.set(0.4);
       o.position.set(-90 + i * 180, -14 - i * 36);
@@ -660,7 +649,7 @@ function sticker(seed: number): Container {
   c.addChild(nest);
   const n = rng.int(2, 3);
   for (let i = 0; i < n; i++) {
-    const o = makeOwl(OWL_COLORS[(i + seed) % OWL_COLORS.length]);
+    const o = owlArt(OWL_COLORS[(i + seed) % OWL_COLORS.length]);
     o.alive = false;
     o.scale.set(0.34);
     o.position.set((i - (n - 1) / 2) * 70, 62);

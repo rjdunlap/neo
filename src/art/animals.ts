@@ -1,9 +1,10 @@
 import { Container, Graphics } from 'pixi.js';
-import { ink, swatch, type Swatch } from './palette';
+import { Critter, type CritterSpec } from './critter';
+import { ink, swatch, type ColorName, type Swatch } from './palette';
 
 /**
  * Animal drawings shared between games: Frog Hop's frog, Penguin Slide's penguin, Mossy Path's turtle and Bubble Pop's
- * fish, moved here unchanged so Who Am I? can draw the same friends.
+ * fish (and Owl Walk's owl), moved here unchanged so Who Am I? can draw the same friends.
  */
 
 export function frogArt(): Container {
@@ -58,5 +59,17 @@ export function fishArt(color: Swatch): Container {
     .circle(18, -5, 3)
     .fill(ink);
   c.addChild(g);
+  return c;
+}
+
+const owlSpec = (color: ColorName): CritterSpec => ({ color, ears: 'pointy', snout: 'none', wings: true, belly: true });
+
+/** Owl Walk's baby owl: a critter with eye rings, a little beak and ear tufts. */
+export function owlArt(color: ColorName): Critter {
+  const c = new Critter(owlSpec(color));
+  const face = new Graphics()
+    .circle(-40, -142, 36).circle(40, -142, 36).stroke({ width: 7, color: swatch.yellow.light, alpha: 0.9 })
+    .poly([-12, -112, 12, -112, 0, -92]).fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line, join: 'round', cap: 'round' });
+  c.attach(face);
   return c;
 }

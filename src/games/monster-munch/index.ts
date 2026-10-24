@@ -1,6 +1,5 @@
 import { Circle, Container, Graphics } from 'pixi.js';
 import { swatch, wood } from '../../art/palette';
-import { puffs } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import type { LineVars } from '../../audio/voice';
@@ -14,8 +13,8 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol } from '../shared';
 import type { Game, GameContext, GameModule, HubIcon, TouchIntent } from '../types';
-import { foodArt, Monster, MONSTER_COLORS, monsterSticker, MOUTH_Y } from './art';
-import { complete, extras, isTapMode, missing, munchHint, munchPlan, munchRounds, munchTouch, numberChoices, orderWords, wantsMore, type Food, type MunchPlan, type MunchRound, type MunchTable, type Order } from './logic';
+import { drawPlace, FOOD_TINT, foodArt, Monster, monsterLooks, monsterSticker, MOUTH_Y, MUNCH_PLACES, type MunchPlace } from './art';
+import { complete, extras, foodWord, FOODS, isTapMode, missing, munchHint, munchPlan, munchRounds, munchTouch, noFood, numberChoices, orderWords, wantsMore, type Food, type MunchPlan, type MunchRound, type MunchTable, type Order } from './logic';
 
 interface Snack {
   food: Food;
@@ -24,7 +23,6 @@ interface Snack {
   eatenBy: Monster | null;
 }
 
-const plural = (food: Food) => `${food}s`;
 
 const LEVELS: BandLevels = {
   // Big bites (9) opens the lap band, One of each (10) sits between 3 and 4 at toddler.
@@ -55,6 +53,8 @@ class MonsterMunch implements Game {
   readonly bell: RoundButton;
   private view: View;
   private clock = 0;
+  /** Where this visit's feast happens. */
+  private readonly place: MunchPlace;
   /** Big bites show cookies at this scale. */
   private get foodScale() {
     return this.plan.mode === 'big' ? 1.4 : 1;
@@ -64,6 +64,7 @@ class MonsterMunch implements Game {
     this.view = ctx.view;
     this.plan = munchPlan(ctx.level);
     this.rounds = munchRounds(this.plan, ctx.rng);
+    this.place = ctx.rng.pick(MUNCH_PLACES);
     this.bell = new RoundButton(symbol('bell', 0, 34), swatch.yellow, 56, () => this.ring());
     this.bell.visible = this.plan.mode === 'exact' || this.plan.mode === 'two' || this.plan.mode === 'leftover';
     ctx.stage.addChild(this.background, this.tray, this.sign, this.bell, this.glow);
@@ -71,6 +72,16 @@ class MonsterMunch implements Game {
 
   get current() {
     return this.rounds[this.round];
+  }
+
+  /** The food counted or shared this round. */
+  get kind(): Food {
+    return this.current.kinds[0];
+  }
+
+  /** Speech slot values for this round's food: "cookies", "berries". */
+  private get kindVars(): LineVars {
+    return { kind: foodWord(this.kind, 2) };
   }
 
   start() {
@@ -88,8 +99,9 @@ class MonsterMunch implements Game {
     const { ctx } = this;
     this.wrong = 0;
     this.clear();
+    const looks = monsterLooks(r.monsters, ctx.rng);
     for (let i = 0; i < r.monsters; i++) {
-      const m = new Monster(MONSTER_COLORS[i % MONSTER_COLORS.length]);
+      const m = new Monster(looks[i]);
       m.showTummy = !isTapMode(this.plan.mode);
       m.grows = this.plan.mode === 'big';
       m.refresh();
@@ -106,7 +118,7 @@ class MonsterMunch implements Game {
       this.monsters.push(m);
       ctx.stage.addChildAt(m, ctx.stage.getChildIndex(this.tray) + 1);
     }
-    const foods: Food[] = ctx.rng.shuffle([...Array<Food>(r.tray.cookie).fill('cookie'), ...Array<Food>(r.tray.apple).fill('apple')]);
+    const foods: Food[] = ctx.rng.shuffle(r.kinds.flatMap((f) => Array<Food>(r.tray[f]).fill(f)));
     const big = this.plan.mode === 'big';
     foods.forEach((food, i) => {
       const node = foodArt(food);
@@ -133,8 +145,8 @@ class MonsterMunch implements Game {
       case 'eachkind': void this.instruct('munch.each-kind'); break;
       case 'count': void this.instruct('munch.count'); break;
       case 'each': void this.instruct('munch.each'); break;
-      case 'share': void this.instruct('munch.share'); break;
-      case 'leftover': void this.instruct('munch.leftover'); break;
+      case 'share': void this.instruct('munch.share', this.kindVars); break;
+      case 'leftover': void this.instruct('munch.leftover', this.kindVars); break;
       default: void this.instruct('munch.want', { food: orderWords(r.want) });
     }
     this.busy = false;
@@ -169,7 +181,8 @@ class MonsterMunch implements Game {
       .fill(wood.light)
       .stroke({ width: 7, color: wood.line });
     this.sign.addChild(board);
-    const items: [number, Food][] = (['cookie', 'apple'] as Food[]).filter((f) => want[f] > 0).map((f) => [want[f], f]);
+    // In FOODS order, as orderWords says them.
+    const items: [number, Food][] = FOODS.filter((f) => want[f] > 0).map((f) => [want[f], f]);
     items.forEach(([n, food], i) => {
       const one = items.length === 1;
       const x = one ? 0 : -68 + i * 136;
@@ -183,7 +196,8 @@ class MonsterMunch implements Game {
     });
     if (this.plan.dots) {
       const g = new Graphics();
-      for (let i = 0; i < want.cookie; i++) g.circle((i - (want.cookie - 1) / 2) * 34, 46, 12).fill(wood.fill).stroke({ width: 3, color: wood.line });
+      const n = want[this.kind];
+      for (let i = 0; i < n; i++) g.circle((i - (n - 1) / 2) * 34, 46, 12).fill(wood.fill).stroke({ width: 3, color: wood.line });
       this.sign.addChild(g);
     }
   }
@@ -204,7 +218,7 @@ class MonsterMunch implements Game {
       return false;
     }
     const r = this.current;
-    if (this.plan.mode === 'each' && monster.count('cookie') >= r.want.cookie) {
+    if (this.plan.mode === 'each' && monster.count(this.kind) >= r.want[this.kind]) {
       this.mistake(monster, 'munch.had');
       return false;
     }
@@ -213,7 +227,7 @@ class MonsterMunch implements Game {
       return false;
     }
     if ((this.plan.mode === 'exact' || this.plan.mode === 'two') && !wantsMore(r.want, this.have(monster), snack.food)) {
-      this.mistake(monster, 'munch.enough', { kind: plural(snack.food) });
+      this.mistake(monster, 'munch.enough', { kind: foodWord(snack.food, 2) });
       return false;
     }
     this.feed(monster, snack);
@@ -221,7 +235,9 @@ class MonsterMunch implements Game {
   }
 
   private have(m: Monster): Order {
-    return { cookie: m.count('cookie'), apple: m.count('apple') };
+    const o = noFood();
+    for (const f of FOODS) o[f] = m.count(f);
+    return o;
   }
 
   private feed(monster: Monster, snack: Snack) {
@@ -235,7 +251,7 @@ class MonsterMunch implements Game {
     void ctx.tw.to(snack.node.scale, { x: 0.3, y: 0.3 }, { duration: 0.22 }).then(() => { snack.node.visible = false; });
     sfx.munch();
     void ctx.tw.wait(0.22).then(() => sfx.munch());
-    ctx.particles.burst(mouth.x, mouth.y, { colors: [snack.food === 'apple' ? swatch.red.fill : wood.fill], count: 6, speed: [80, 180], gravity: 500, size: [0.25, 0.4] });
+    ctx.particles.burst(mouth.x, mouth.y, { colors: [FOOD_TINT[snack.food]], count: 6, speed: [80, 180], gravity: 500, size: [0.25, 0.4] });
     const left = this.snacks.filter((s) => !s.eatenBy).length;
     switch (this.plan.mode) {
       case 'tap':
@@ -260,7 +276,7 @@ class MonsterMunch implements Game {
       default: {
         // Exact and two: count each food of its kind, so the last number said is how many.
         const n = monster.count(snack.food);
-        void ctx.say('munch.bite', { food: orderWords({ cookie: 0, apple: 0, [snack.food]: n }) });
+        void ctx.say('munch.bite', { food: orderWords({ ...noFood(), [snack.food]: n }) });
         break;
       }
     }
@@ -296,25 +312,25 @@ class MonsterMunch implements Game {
   // Sharing -------------------------------------------------------------------
 
   private async checkShare() {
-    // Let the last cookie go down before judging.
+    // Let the last bite go down before judging.
     this.busy = true;
     await this.ctx.tw.wait(0.7);
     const r = this.current;
-    const back = extras(this.monsters.map((m) => m.count('cookie')), r.want.cookie);
+    const back = extras(this.monsters.map((m) => m.count(this.kind)), r.want[this.kind]);
     if (back.every((n) => n === 0)) {
       this.monsters.forEach((m) => m.beam(2));
       sfx.sparkle();
       await this.ctx.say('munch.fair');
-      this.showPads(r.want.cookie);
-      void this.instruct('munch.each-how');
+      this.showPads(r.want[this.kind]);
+      void this.instruct('munch.each-how', this.kindVars);
       this.busy = false;
       return;
     }
     // Monsters with too many hand their extras back to the tray.
-    this.mistake(null, 'munch.unfair');
+    this.mistake(null, 'munch.unfair', this.kindVars);
     this.monsters.forEach((m, i) => {
       for (let k = 0; k < back[i]; k++) {
-        m.giveBack('cookie');
+        m.giveBack(this.kind);
         const snack = this.snacks.filter((s) => s.eatenBy === m).at(-1)!;
         snack.eatenBy = null;
         snack.drag!.enabled = true;
@@ -333,13 +349,13 @@ class MonsterMunch implements Game {
   asking: 'each' | 'left' = 'each';
 
   /**
-   * The bell on leftover levels: fair is everyone the same with fewer cookies left than monsters.
+   * The bell on leftover levels: fair is everyone the same with fewer foods left than monsters.
    * Uneven shares give the extras back; an even share with enough left for another round is a nudge to keep going.
    */
   private async checkLeftover() {
     this.busy = true;
     const r = this.current;
-    const counts = this.monsters.map((m) => m.count('cookie'));
+    const counts = this.monsters.map((m) => m.count(this.kind));
     const left = this.snacks.filter((s) => !s.eatenBy).length;
     const even = counts.every((c) => c === counts[0]);
     if (even && left < this.monsters.length) {
@@ -347,21 +363,21 @@ class MonsterMunch implements Game {
       sfx.sparkle();
       await this.ctx.say('munch.fair');
       this.asking = 'each';
-      this.showPads(r.want.cookie);
-      void this.instruct('munch.each-how');
+      this.showPads(r.want[this.kind]);
+      void this.instruct('munch.each-how', this.kindVars);
       this.busy = false;
       return;
     }
     if (even) {
-      this.mistake(null, 'munch.more');
+      this.mistake(null, 'munch.more', this.kindVars);
       this.busy = false;
       return;
     }
-    this.mistake(null, 'munch.unfair');
+    this.mistake(null, 'munch.unfair', this.kindVars);
     const back = extras(counts, Math.min(...counts));
     this.monsters.forEach((m, i) => {
       for (let k = 0; k < back[i]; k++) {
-        m.giveBack('cookie');
+        m.giveBack(this.kind);
         const snack = this.snacks.filter((s) => s.eatenBy === m).at(-1)!;
         snack.eatenBy = null;
         snack.drag!.enabled = true;
@@ -406,7 +422,7 @@ class MonsterMunch implements Game {
     if (this.busy || this.done) return;
     if (value !== answer) {
       const left = this.plan.mode === 'leftover' && this.asking === 'left';
-      void this.countAlong(this.mistake(null, left ? 'munch.left-no' : 'munch.each-no'), left);
+      void this.countAlong(this.mistake(null, left ? 'munch.left-no' : 'munch.each-no', this.kindVars), left);
       return;
     }
     sfx.bell(5 + answer, 0.3);
@@ -416,7 +432,7 @@ class MonsterMunch implements Game {
       void this.ctx.say('munch.each-yes', { n: answer });
       const left = this.current.left!;
       this.showPads(left);
-      void this.instruct('munch.left-how');
+      void this.instruct('munch.left-how', this.kindVars);
       return;
     }
     if (this.plan.mode === 'leftover') {
@@ -429,7 +445,7 @@ class MonsterMunch implements Game {
 
   /**
    * After a wrong number: count one monster's tummy together, each icon ringed as it is said (or, for the leftovers, the
-   * cookies still on the tray), then she tries again.
+   * foods still on the tray), then she tries again.
    */
   private async countAlong(said: Promise<void>, leftovers: boolean) {
     this.busy = true;
@@ -443,7 +459,7 @@ class MonsterMunch implements Game {
       }
     } else {
       const m = this.monsters[0];
-      for (let i = 0; i < m.count('cookie'); i++) {
+      for (let i = 0; i < m.count(this.kind); i++) {
         m.light(i);
         await this.ctx.say('count', { n: i + 1 });
       }
@@ -481,19 +497,7 @@ class MonsterMunch implements Game {
     this.view = v;
     const rows = this.snacks.length > 7 ? 2 : 1;
     const trayTop = v.h - (rows === 2 ? 235 : 165);
-    const sea = v.h * 0.36;
-    this.background
-      .clear()
-      .rect(0, 0, v.w, v.h)
-      .fill(swatch.blue.light)
-      .rect(0, sea, v.w, v.h - sea)
-      .fill(swatch.teal.fill)
-      .rect(0, sea + 50, v.w, v.h - sea - 50)
-      .fill(swatch.yellow.light);
-    for (let x = 0; x < v.w + 60; x += 60) this.background.circle(x, sea + 50, 31).fill(swatch.yellow.light);
-    for (const [cx, cy, r] of [[v.w * 0.55, 95, 1], [v.w * 0.82, 210, 0.7]]) {
-      puffs(this.background, [[-46 * r, 8 * r, 34 * r], [0, -12 * r, 46 * r], [46 * r, 8 * r, 34 * r]].map(([x, y, rr]) => [cx + x, cy + y, rr] as [number, number, number]), swatch.white.fill, swatch.white.fill, 0);
-    }
+    drawPlace(this.background, this.place, v.w, v.h);
     this.tray.clear().roundRect(160, trayTop, v.w - 190, v.h - trayTop - 15, 32).fill({ color: wood.light, alpha: 0.85 }).stroke({ width: 5, color: wood.fill });
 
     const n = this.monsters.length;
@@ -531,7 +535,7 @@ class MonsterMunch implements Game {
     const r = this.current;
     switch (munchHint(this.plan, this.table())) {
       case 'pad': {
-        const want = this.plan.mode === 'leftover' && this.asking === 'left' ? r.left : r.want.cookie;
+        const want = this.plan.mode === 'leftover' && this.asking === 'left' ? r.left : r.want[this.kind];
         const p = this.pads.find((p) => p.value === want);
         if (p) ring(p.node.x, p.node.y, 76);
         return;
@@ -546,7 +550,7 @@ class MonsterMunch implements Game {
         return;
       }
       case 'monster':
-        // The monsters who still need cookies.
+        // The monsters who still need some.
         for (const m of this.monsters.filter((m) => !complete(r.want, this.have(m)))) {
           const p = m.mouthPoint();
           ring(p.x, p.y + 30 * m.scale.y, 150 * m.scale.x);
@@ -560,6 +564,7 @@ class MonsterMunch implements Game {
     const r = this.current;
     return {
       want: r.want,
+      kinds: r.kinds,
       left: r.left,
       snacks: this.snacks.map((s) => ({ food: s.food, eaten: !!s.eatenBy })),
       fed: this.monsters.map((m) => this.have(m)),
@@ -623,7 +628,7 @@ export const monsterMunch: GameModule = {
   entryLevels: [9, 10],
   describeLevel: (l) => munchPlan(l).name,
   music: STYLES.bubbles,
-  coplayHint: 'Count each cookie out loud with {name} as the monster munches.',
+  coplayHint: 'Count each bite out loud with {name} as the monster munches.',
   offScreen: 'At snack time, share crackers between two plates so each has the same, and count them together.',
   hubIcon: () => new MunchIcon(),
   touchDemo: true,

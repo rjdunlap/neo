@@ -35,9 +35,9 @@ import {CALLS,FREE_TAPS,LEVEL_IDS,PAUSE_SECONDS,PLANS,REPLIES,finaleEvents} from
 import {judgeEcho} from '../sound-garden/logic';
 const key=(g:readonly string[])=>g.join('');
 it('keys its plans by level ID',()=>{
- expect(LEVEL_IDS).toEqual([1,2,3,4,5,6,7,8]);
+ expect(LEVEL_IDS).toEqual([1,2,3,4,5,6,7,8,9]);
  for(const l of LEVEL_IDS)expect(planFor(l)).toBe(PLANS[l]);
- expect(planFor(9)).toBe(PLANS[8]);expect(planFor(0)).toBe(PLANS[1]);
+ expect(planFor(10)).toBe(PLANS[9]);expect(planFor(0)).toBe(PLANS[1]);
 });
 it('draws from twelve different reply shapes and calls of two or three knocks',()=>{
  expect(new Set(REPLIES.map(key)).size).toBe(12);
@@ -93,4 +93,51 @@ it('level 8: three different calls, each answered by a single frog tap with no t
   }
  }
  expect(planFor(8).timing).toBe(false);
+});
+
+import {BOT_CALLS,CALL_MAX,CALL_QUIET,CALL_ROUNDS,answerDelay,callEnded,callPhrase,gapsOf,reply,GAP_SECONDS} from './logic';
+import type {Gap} from '../sound-garden/logic';
+const shapes=(max:number):Gap[][]=>{let all:Gap[][]=[[]];let layer:Gap[][]=[[]];for(let n=1;n<=max;n++){layer=layer.flatMap(s=>[[...s,'S' as Gap],[...s,'L' as Gap]]);all=all.concat(layer);}return all;};
+const flipAll=(c:Gap[])=>c.map(g=>(g==='S'?'L':'S') as Gap);
+it('level 9: no phrases and a plan with no timing, and three calls finish',()=>{
+ for(let seed=1;seed<=20;seed++)expect(makePhrases(9,new Rng(seed))).toEqual([]);
+ expect(planFor(9).call).toBe(true);expect(planFor(9).timing).toBe(false);expect(CALL_ROUNDS).toBe(3);expect(CALL_MAX).toBe(5);
+});
+it('level 9: the reply has the call\'s count, reversed gaps (flipped for one gap or a mixed palindrome), and differs from any call with a rhythm',()=>{
+ expect(reply([])).toEqual(['S']);
+ for(const call of shapes(4).filter(s=>s.length)){
+  const r=reply(call),k=key(call),mixed=new Set(call).size>1,back=[...call].reverse();
+  expect(r.length,k).toBe(call.length);
+  if(call.length===1)expect(r).toEqual(flipAll(call));
+  else if(key(back)===k&&mixed)expect(r,k).toEqual(flipAll(call));
+  else expect(r,k).toEqual(back);
+  if(mixed)expect(key(r),k).not.toBe(k);
+ }
+});
+it('level 9: gapsOf reads every shape back from knock times, at the Sound Garden tempo and a slower one',()=>{
+ for(const shape of shapes(4).filter(s=>s.length))for(const scale of [1,1.6]){
+  const times=schedule(shape).map(t=>t*scale);
+  expect(gapsOf(times),`${key(shape)} x${scale}`).toEqual(shape);
+ }
+ expect(gapsOf([])).toEqual([]);expect(gapsOf([3])).toEqual([]);
+ expect(gapsOf([0,1,2,3,4])).toEqual(['L','L','L','L']);
+ expect(GAP_SECONDS.L).toBeGreaterThan(GAP_SECONDS.S);
+});
+it('level 9: a call ends at the fifth knock or after a quiet spell, never when empty',()=>{
+ expect(callEnded([],1000)).toBe(false);
+ expect(callEnded([0,0.3,0.6,0.9,1.2],1.2)).toBe(true);
+ expect(callEnded([0,0.3,0.6,0.9],0.9+CALL_QUIET-0.01)).toBe(false);expect(callEnded([0,0.3,0.6,0.9],0.9+CALL_QUIET)).toBe(true);
+ expect(callEnded([2],2)).toBe(false);expect(callEnded([2],2+CALL_QUIET)).toBe(true);
+ expect(answerDelay(CALL_MAX)).toBeGreaterThan(0);expect(answerDelay(CALL_MAX-1)).toBe(0);
+});
+it('level 9: the ghost finger gives one call of three or four knocks with short and long gaps, answered differently, on frog 0',()=>{
+ for(const rests of BOT_CALLS){
+  const times:number[]=[];let at=0;for(let i=0;i<=rests.length;i++){times.push(at);at+=MIN_TAP_GAP+(rests[i]??0.5);}
+  expect(times.length).toBeGreaterThanOrEqual(3);expect(times.length).toBeLessThanOrEqual(4);
+  for(let i=1;i<times.length;i++){expect(times[i]-times[i-1]).toBeLessThan(CALL_QUIET);expect(callEnded(times.slice(0,i),times[i])).toBe(false);}
+  const g=gapsOf(times);expect(g).toContain('S');expect(g).toContain('L');
+  const p=callPhrase(times);expect(p.call).toEqual(g);expect(key(p.gaps)).not.toBe(key(g));
+  expect(p.voices).toHaveLength(p.gaps.length+1);expect(p.voices.every(v=>v===0)).toBe(true);
+ }
+ expect(callPhrase([0]).gaps).toEqual(['S']);expect(callPhrase([0]).voices).toEqual([0,0]);
 });

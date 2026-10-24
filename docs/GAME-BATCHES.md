@@ -210,6 +210,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### peg-garden 3: Cup aiming and planting a bud
 
+Built 2026-10-24, [PR #923](https://github.com/rjdunlap/neo/pull/923); [closeout](archive/COMPLETED-2026-10-09.md#peg-garden-levels-6-into-the-cup-and-7-plant-a-bud-slices-5-6-2026-10-24). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`peg-garden`, level 6 Into the cup** (new interaction): aim the pearl into the cup with that many dots; every cup reachable with margin; pre-K top. [Slice 5](deep-dives/peg-garden.md#new-levels-on-top)
 - **`peg-garden`, level 7 Plant a bud** (new interaction, after level 6 *Into the cup*): drag a bud onto a marked place so the pearl reaches the cup, run, revise; pre-K. [Slice 6](deep-dives/peg-garden.md#new-levels-on-top)
 
@@ -235,14 +237,13 @@ Built 2026-10-23, [PR #863](https://github.com/rjdunlap/neo/pull/863); [closeout
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
-### monster-munch 1: Food variety, monsters and places (remaining)
+### monster-munch 1: Food variety, monsters and places (complete)
 
-Levels 9 *Big bites* and 10 *One of each* (slices 3–4) are built; only this content slice remains.
-
-- **`monster-munch`, foods, monsters and places** (content): five foods (two kinds at 6), monster variants, three backdrops, the sticker pool. [Slice 2](deep-dives/monster-munch.md#fresh-content-inside-existing-levels)
+All three subtasks are built (slice 2 on 2026-10-24); nothing remains in this batch.
 
 Built (reference only, do not recreate):
 
+- **`monster-munch`, foods, monsters and places** (content): five foods (two kinds at 6), monster variants, three backdrops, the sticker pool. [Slice 2](deep-dives/monster-munch.md#fresh-content-inside-existing-levels)
 - **`monster-munch`, level 9 Big bites** (new lap entry): three big cookies, the monster itself feeds, the belly grows; `BandLevels`, lap order 9, 1, 2, `entryLevels: [9, 10]`. [Slice 3](deep-dives/monster-munch.md#younger-band-openings)
 - **`monster-munch`, level 10 One of each** (new level, after *Big bites*): a cookie and an apple for each monster; toddler order 2, 3, 10, 4. [Slice 4](deep-dives/monster-munch.md#easier-entries-and-levels-between-existing-ones)
 
@@ -266,6 +267,8 @@ Built 2026-10-22, [PR #853](https://github.com/rjdunlap/neo/pull/853); [closeout
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
 ### rhythm-neighbors 2: Knock a call
+
+Built 2026-10-24, [PR #925](https://github.com/rjdunlap/neo/pull/925); [closeout](archive/COMPLETED-2026-10-09.md#rhythm-neighbors-level-9-knock-a-call-slice-4-2026-10-24). Scope retained below.
 
 - **`rhythm-neighbors`, level 9 Knock a call** (new interaction tier; after level 8): she knocks the tree two to five times and the frogs answer with the gaps reversed; toddler `[2, 8, 9, 3]`, preschool `[9, 3, 4]`, `entryLevels [7, 9]`. [Dive](deep-dives/rhythm-neighbors.md#new-levels-on-top)
 

@@ -5456,6 +5456,8 @@ async function third() {
         await mm.ready();
         if (g.done) break;
         const r = g.current;
+        // The food counted or shared this round (levels 4–8 pick it from the whole pool).
+        const k = r.kinds[0];
         if (mode === 'each') {
           const a = g.monsters[0];
           if (a.count('cookie') === 0) await mm.feed(mm.free(), a);
@@ -5470,15 +5472,15 @@ async function third() {
         } else if (mode === 'exact' || mode === 'two') {
           const m = g.monsters[0];
           if (mistakes === 0) { kit.tapOn(g.bell); await kit.sleep(500); mistakes++; }
-          for (const food of ['cookie', 'apple']) while (m.count(food) < r.want[food]) await mm.feed(mm.free(food), m);
-          if (mistakes === 1) { await mm.feed(mm.free('cookie'), m); mistakes++; }
-          if (m.count('cookie') !== r.want.cookie) throw new Error('A full monster accepted another cookie');
+          for (const food of r.kinds) while (m.count(food) < r.want[food]) await mm.feed(mm.free(food), m);
+          if (mistakes === 1) { await mm.feed(mm.free(k), m); mistakes++; }
+          if (m.count(k) !== r.want[k]) throw new Error('A full monster accepted another of its food');
           kit.tapOn(g.bell); await kit.sleep(500);
         } else if (mode === 'share') {
           if (g.pads.length) {
             // Two wrong answers in the first round bring the hint glow.
             const wrong = g.round === 0 && mistakes < 2;
-            kit.tapOn(g.pads.find((p) => (p.value !== r.want.cookie) === wrong).node); await kit.sleep(600);
+            kit.tapOn(g.pads.find((p) => (p.value !== r.want[k]) === wrong).node); await kit.sleep(600);
             if (wrong) {
               mistakes++;
               // A wrong number counts one monster's tummy together, icon by icon.
@@ -5491,28 +5493,28 @@ async function third() {
             const all = g.snacks.filter((s) => !s.eatenBy).length;
             for (let i = 0; i < all; i++) await mm.feed(mm.free(), g.monsters[0]);
             await kit.sleep(2200);
-            if (g.monsters[0].count('cookie') !== r.want.cookie) throw new Error('Unfair share was not handed back');
+            if (g.monsters[0].count(k) !== r.want[k]) throw new Error('Unfair share was not handed back');
           }
-          for (const m of g.monsters) while (m.count('cookie') < r.want.cookie && mm.free()) await mm.feed(mm.free(), m);
+          for (const m of g.monsters) while (m.count(k) < r.want[k] && mm.free()) await mm.feed(mm.free(), m);
           await kit.until(() => g.pads.length > 0 || g.done, 8000);
           await kit.sleep(400);
         } else if (mode === 'leftover') {
           if (g.pads.length) {
             // First how many each, then how many are left over.
-            kit.tapOn(g.pads.find((p) => p.value === (g.asking === 'left' ? r.left : r.want.cookie)).node); await kit.sleep(900);
+            kit.tapOn(g.pads.find((p) => p.value === (g.asking === 'left' ? r.left : r.want[k])).node); await kit.sleep(900);
             continue;
           }
           if (g.round === 0 && mistakes === 0) {
             // One cookie to the first monster, then the bell: not fair, so it comes back.
             await mm.feed(mm.free(), g.monsters[0]);
             kit.tapOn(g.bell); await kit.sleep(1500); await mm.ready();
-            if (g.monsters[0].count('cookie') !== 0) throw new Error('Unfair leftover share was not handed back');
+            if (g.monsters[0].count(k) !== 0) throw new Error('Unfair leftover share was not handed back');
             // Nothing shared yet and plenty left: everyone can have more.
             kit.tapOn(g.bell); await kit.sleep(1500); await mm.ready();
             mistakes = 2;
             if (g.misses !== 2 || g.hints !== 1) throw new Error(`Leftover hint ${g.misses} ${g.hints}`);
           }
-          for (const m of g.monsters) while (m.count('cookie') < r.want.cookie && mm.free()) await mm.feed(mm.free(), m);
+          for (const m of g.monsters) while (m.count(k) < r.want[k] && mm.free()) await mm.feed(mm.free(), m);
           if (g.snacks.filter((x) => !x.eatenBy).length !== r.left) throw new Error('Leftovers should remain on the tray');
           kit.tapOn(g.bell);
           await kit.until(() => g.pads.length > 0 || g.done, 8000);
@@ -6843,7 +6845,7 @@ async function batch() {
   }
 
   // Peg Garden: tap to drop; aim by dragging. Shots are chosen by simulating the real physics.
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 5) && (!only || only === 'pegs'); level++) {
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 7) && (!only || only === 'pegs'); level++) {
     await launch('peg-garden', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -6896,6 +6898,68 @@ async function batch() {
         // The hint shows where to act: a ring on the ledge, and a tap anywhere lets the pearl go there; a tap while it falls adds nothing.
         if (!g.finished && g.hintX === null) throw new Error('Peg color hint has no ledge ring');
         for (let guard = 0; guard < 40 && !g.finished; guard++) { const b = g.buds.find((b) => b.spot.kind === 'special' && !b.bloomed); if (!b) break; await drop(b.x); }
+        return;
+      }
+      if (g.plan.mode === 'plant') {
+        // Plant a bud: a free look, two runs with a bud on a place that misses, then the hint and the hinted place.
+        const { plantRun, plantings } = await import('/src/games/peg-garden/logic.ts');
+        const run = async () => { await done(); const p = screen(g.dropX, 40); kit.tap(p.x, p.y); await kit.until(() => g.ball, 2000); await done(); await kit.sleep(400); };
+        // A seed rides 40 units over the finger, so the finger lets go 40 below the place.
+        const plant = async (seed, place) => {
+          const from = screen(seed.bud.x, seed.bud.y);
+          const to = screen(g.places[place].x, g.places[place].y + 40);
+          await kit.drag(kit.line([from.x, from.y], [to.x, to.y], 12), 1, 20);
+          await kit.sleep(400);
+          if (seed.place !== place) throw new Error(`Peg plant: seed went to ${seed.place}, not ${place}`);
+        };
+        // Only the pearl button lets it go: a tap in the water does nothing.
+        const water = screen(BOARD.w / 2, 330);
+        kit.tap(water.x, water.y);
+        await kit.sleep(300);
+        if (g.ball) throw new Error('Peg plant: a tap in the water dropped a pearl');
+        await run();
+        if (g.misses !== 0) throw new Error(`Peg plant: a free look counted ${g.misses}`);
+        const spots = g.fixed.map((b) => b.spot);
+        const wrong = plantings(g.places.length).find((ix) => ix.length && plantRun(spots, ix.map((i) => g.places[i]), g.dropX) !== g.friendCup);
+        if (!wrong) throw new Error('Peg plant: no planting misses');
+        for (let k = 0; k < wrong.length; k++) await plant(g.seeds[k], wrong[k]);
+        await run();
+        await run();
+        if (g.misses !== 2 || g.hints !== 1 || !g.hinting) throw new Error(`Peg plant hint: ${g.misses} ${g.hints}`);
+        await kit.sleep(600);
+        if (g.seeds.some((q) => q.place !== null && q.place !== g.hintPlace)) throw new Error('Peg plant: a stray seed stayed after the hint');
+        if (!g.seeds.some((q) => q.place === g.hintPlace)) await plant(g.seeds.find((q) => q.place === null), g.hintPlace);
+        await run();
+        // The finish follows the praise line; a run that missed would have counted a third miss.
+        await kit.until(() => g.finished || g.misses > 2, 8000).catch(() => {});
+        if (!g.finished) throw new Error(`Peg plant: the hinted place did not reach the cup (misses ${g.misses})`);
+        if (!g.path.length) throw new Error('Peg plant: no faint trail after a run');
+        return;
+      }
+      if (g.plan.mode === 'cup') {
+        // Into the cup: aim with the landing table, as the ghost finger does. Two shots into another cup, then the hint, then hits.
+        const { aimInto } = await import('/src/games/peg-garden/logic.ts');
+        const into = async (cup) => {
+          await done();
+          const a = aimInto(g.world, g.table, cup);
+          if (a === null) throw new Error(`Peg cup ${cup} unreachable`);
+          const p = screen(BOARD.w / 2 + Math.sin(a) * 300, 40 + Math.cos(a) * 300);
+          const q = screen(BOARD.w / 2 + Math.sin(a) * 310, 40 + Math.cos(a) * 310);
+          await kit.drag([[p.x, p.y], [q.x, q.y]], 1, 30);
+          await kit.until(() => g.ball, 2000);
+          await done();
+        };
+        // Each shot into another cup is a miss with its count said.
+        for (let k = 0; k < 2; k++) { const before = g.misses; await into(g.dots.findIndex((d) => d !== g.target)); if (g.misses !== before + 1) throw new Error(`Peg cup wrong shot counted ${g.misses - before}`); }
+        if (g.misses !== 2 || g.hints !== 1 || !g.hinting) throw new Error(`Peg cup hint: ${g.misses} ${g.hints}`);
+        for (let guard = 0; guard < 8 && !g.finished; guard++) {
+          if (g.target === undefined) { await kit.sleep(300); continue; }
+          const goal = g.goal;
+          await into(g.dots.indexOf(g.target));
+          await done();
+          await kit.until(() => g.goal > goal || g.finished, 4000);
+        }
+        if (!g.path.length) throw new Error('Peg cup: no faint trail after a shot');
         return;
       }
       // A cancelled aim (a system gesture, a palm) lets nothing go.
@@ -8906,9 +8970,9 @@ async function creativeBatch() {
     await screenshot(`pet-kitchen-${level}`);if(level===10){await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[0,0]);}else{await tap('neo.scene.game.serve');await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[2,1]);}
     await page.setViewportSize({width:1024,height:768});log(`Pet Kitchen ${level}: equal sharing/recipe, retries, hints, saved round and sticker passed`);
   }
-  if (!only || only === 'rhythm') for(let level=fromLevel;level<=8;level++) {
+  if (!only || only === 'rhythm') for(let level=fromLevel;level<=9;level++) {
     await launch('rhythm-neighbors',level);
-    if(level===6||level===7){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
+    if(level===6||level===7||level===9){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
     await screenshot(`rhythm-neighbors-${level}`);
     await page.evaluate(async()=>{
       const g=neo.scene.game;
@@ -8919,6 +8983,21 @@ async function creativeBatch() {
         for(let i=0;i<8;i++){kit.tapOn(g.bird);await kit.sleep(250);}
         if(!await kit.until(()=>g.done,3000))throw new Error('Eight knocks did not end the round');
         if(croaks<8||g.misses!==0||g.hints!==0)throw new Error(`Knock answers ${croaks}/${g.misses}/${g.hints}`);return;
+      }
+      if(g.plan.call){
+        // Level 9: a one-knock call gets two croaks; a five-knock call ends at once and is answered with five; a long pause
+        // in between knocks nothing and records nothing; three calls finish with no misses or hints.
+        let croaks=0;const was=g.sound.bind(g);g.sound=v=>{if(v===0)croaks++;was(v);};
+        const answered=async(n)=>{if(!await kit.until(()=>g.phrase>=n||g.done,12000))throw new Error(`Call ${n} never answered`);};
+        kit.tapOn(g.bird);await answered(1);
+        if(croaks!==2||g.phrases[0].gaps.length!==1)throw new Error(`One knock got ${croaks} croaks`);
+        await kit.sleep(4000);if(g.callTimes.length||g.phrases.length!==1)throw new Error('A quiet spell recorded a call');
+        for(let i=0;i<5;i++){kit.tapOn(g.bird);await kit.sleep(i===2?650:350);}
+        if(!await kit.until(()=>g.busy,600))throw new Error('Five knocks did not end the call at once');
+        await answered(2);if(g.phrases[1].voices.length!==5)throw new Error(`Five knocks got ${g.phrases[1].voices.length}`);
+        for(let i=0;i<3;i++){kit.tapOn(g.bird);await kit.sleep(400);}
+        if(!await kit.until(()=>g.done,12000))throw new Error('Three calls did not end the round');
+        if(g.misses!==0||g.hints!==0)throw new Error(`Knock a call ${g.misses}/${g.hints}`);return;
       }
       if(g.plan.turn){
         // Level 8: a tap during the call croaks but is not counted; then one tap on the glowing frog answers, three times.
@@ -14588,6 +14667,51 @@ async function senseDetectivePlay() {
   log('Sense Detective 1 and 2: not-yet, wrong tick, found, look then listen, requested hint, portrait, saved score passed');
 }
 
+/** Who Am I?: level 1 with one wrong friend (the reason) then the right one; level 3 with a keeps-tap, a requested hint (the shimmer) and every ruled-out friend turned over, a peek, and a portrait screenshot with three cards face down. */
+async function whoAmIPlay() {
+  const score = () => page.evaluate(() => { const r = kit.store.stats('who-am-i').history.at(-1); return [r.misses, r.hints]; });
+  const settle = async () => { await page.waitForTimeout(300); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 25000 }); await page.waitForTimeout(250); };
+  const tapCard = (i) => page.evaluate((i) => kit.tapOn(neo.scene.game.cards[i].node), i);
+  const targets = () => page.evaluate(async () => { const L = await import('/src/games/who-am-i/logic.ts'); return L.helpTargets(neo.scene.game.play); });
+  const answerAt = () => page.evaluate(() => neo.scene.game.round.gallery.indexOf(neo.scene.game.round.answer));
+  await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+  await launch('who-am-i', 1);
+  await settle();
+  const wrong = await page.evaluate(() => { const g = neo.scene.game; return g.round.gallery.findIndex((f) => f !== g.round.answer); });
+  await tapCard(wrong); await settle();
+  assert.deepEqual(await page.evaluate(() => [neo.scene.game.play.misses, neo.scene.game.play.hints]), [1, 0]);
+  await tapCard(await answerAt());
+  await finished('who-am-i');
+  assert.deepEqual(await score(), [1, 0]);
+  await launch('who-am-i', 3, 'Mia', 'school');
+  await settle();
+  // The answer is kept by every clue: a miss with the stays line, and no card turns.
+  await tapCard(await answerAt()); await settle();
+  assert.deepEqual(await page.evaluate(() => [neo.scene.game.play.misses, neo.scene.game.play.down.size]), [1, 0]);
+  await page.evaluate(() => neo.scene.game.askForHint());
+  await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(() => neo.scene.game.play.hints), 1);
+  let shot = false;
+  for (let clue = 0; clue < 3; clue++) {
+    await settle();
+    for (const i of await targets()) { await tapCard(i); await page.waitForTimeout(450); }
+    if (!shot && clue < 2 && await page.evaluate(() => neo.scene.game.play.down.size) >= 3) {
+      await settle();
+      // A free peek at a face-down friend.
+      await tapCard(await page.evaluate(() => [...neo.scene.game.play.down][0])); await page.waitForTimeout(200);
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.play.misses, neo.scene.game.play.hints]), [1, 1]);
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(1300);
+      await screenshot('who-am-i-3-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+      shot = true;
+    }
+  }
+  await finished('who-am-i');
+  assert.deepEqual(await score(), [1, 1]);
+  assert.ok(shot, 'portrait screenshot with three cards down');
+  log('Who Am I? 1 and 3: wrong friend reason then fit, keeps-tap miss, requested shimmer hint, flips through three clues, a free peek, portrait, saved score passed');
+}
+
 /** Look It Up: level 1 touches every label on three pages; level 3 finds each visitor's page and row, with both wrong pictures first on the first visitor (the glow hint); level 3 in portrait. */
 async function lookItUpPlay() {
   const score = () => page.evaluate(() => { const r = kit.store.stats('look-it-up').history.at(-1); return [r.misses, r.hints]; });
@@ -16679,6 +16803,7 @@ try {
   if (suite === 'all' || suite === 'howto') await howToIntro();
   if (suite === 'all' || suite === 'howto' || suite === 'howtolevel') await howToLevelPick();
   if (suite === 'all' || suite === 'lookitup') await lookItUpPlay();
+  if (suite === 'all' || suite === 'whoami') await whoAmIPlay();
   if (suite === 'all' || suite === 'sensedetective') await senseDetectivePlay();
   if (suite === 'all' || suite === 'sandtable') await sandTablePlay();
   if (suite === 'all' || suite === 'adventurewalk') await adventureWalkPlay();
