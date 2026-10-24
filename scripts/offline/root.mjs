@@ -1,10 +1,11 @@
+import { createTestContext } from '../test-browser.mjs';
 import { publicSave, waitForSave } from './storage.mjs';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 
 /** Production-only proof: use real canvas clicks, the visible Home link and public IndexedDB, never neo/kit. */
 export async function rootOffline(browser) {
-  const context = await browser.newContext({ viewport: { width: 1024, height: 768 } });
+  const context = await createTestContext(browser, { viewport: { width: 1024, height: 768 } });
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));

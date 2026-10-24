@@ -261,6 +261,8 @@ Huge touch targets, responses on touch-down, no fail states (a wrong tap gets a 
 
 The checks create isolated browser contexts and never touch a real player's save. Install the test browser once with `npx playwright install chromium-headless-shell`. It is a plain command-line binary, so it runs inside a coding assistant's sandbox. Avoid `BROWSER_EXECUTABLE` pointing at the Google Chrome app: that is a Mac app, and when a sandbox blocks its window-server access it aborts on launch and macOS shows a "Google Chrome quit unexpectedly" dialog.
 
+Browser, production offline and abandon-card checks are silent by default: the shared `scripts/test-browser.mjs` mutes Chromium audio and sets native speech volume to zero while preserving speech callbacks and timing. Use `TEST_AUDIO=on` for deliberate audible testing; player settings and app assets are unchanged.
+
 With `npm run dev` running in another terminal, run **one suite at a time**, with a filter where there is one:
 
 ```bash
