@@ -52,6 +52,8 @@ Implementation queue items are [same-game batches](GAME-BATCHES.md), normally 2â
 
 **Status words:** **ready**: defined, nothing blocks it. **sketch**: a draft definition; review it against the [planning rules](#planning-rules), then build. **define**: an idea only; the next slice is its definition of ready (docs only). **decision**: waits on the developer ([Waiting on the developer](WAITING-ON-DEVELOPER.md#waiting-on-the-developer)). **person**: waits on someone playing it ([Needs a person or a device](DEVICE-CHECKS.md#needs-a-person-or-a-device)).
 
+**In progress â€” quiet automated tests** (`codex/quiet-test-audio`): mute Chromium audio and native text-to-speech in test contexts without changing playback, speech callbacks, player settings or the app build. Files: shared `scripts/test-browser.mjs` and tests, browser/offline/abandon harness entry points and context setup, README and verification docs.
+
 ### Ready to build now
 
 The list lives in [READY.md](READY.md): **Next ten** in priority order, then **Queued** slices grouped by game, one bounded session per line with its check tier. Pick from it as the steps above say; a landed slice's line is deleted there at closeout.
