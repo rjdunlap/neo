@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-24 — Who Am I? levels 1–3 (zoo animals Z3)
+
+- `claude/who-am-i-z3` ([PR #928](https://github.com/rjdunlap/neo/pull/928)), tested on the dev server `http://localhost:5617` at the commit before docs (5e1cf42d minus docs): new game in Barnyard, levels 1–3, Owl Walk's owl moved into `src/art/animals.ts`, a Kokoro clip for the title.
+- Ran: `npm run typecheck`; `npm test` 231 files / 2933 tests passed (35 new rule tests in `src/games/who-am-i/logic.test.ts`, plus registry, lands, how-to and voice-clip tests); `BROWSER_SUITE=whoami` passed (level 1 wrong friend then the fit, saved 1,0; level 3 keeps-tap miss, requested hint, three clues, a free peek, portrait screenshot, saved 1,1); `BROWSER_SUITE=fingerdemo FINGER_ONLY=who-am-i` level 1 (prek) 7.8 s and level 3 (school) 16.0 s; `npm run build` passed. game-reviewer fixes: taps judged during a clue change, stale help after a clue advanced, 90 to 100-unit clue thumbnails.
+- Not run: Owl Walk's filtered suite after the owl art move (typecheck proves the pure move), offline check, level 2 in the browser. Open: iPad speech, a child's reading of face-down cards and picture signs ([DEVICE-CHECKS](DEVICE-CHECKS.md#who-am-i-levels-13-zoo-animals-z3-2026-10-24)).
+
 ## 2026-10-24 — Peg Garden levels 6 and 7, Into the cup and Plant a bud (slices 5–6)
 
 - `claude/peg-garden-cup-and-bud` ([PR #923](https://github.com/rjdunlap/neo/pull/923)), tested commit 3b16f5e6 on base daa7b531: level 6 four cups with a count-saying miss and a two-miss full-path glow; level 7 drag seeds onto rings, run the pearl, free look, planted misses count, two misses outline one ring. Dev server `http://localhost:5318`.
@@ -88,13 +94,6 @@
 - Not run: build (no shared files or assets changed), offline, the unchanged levels.
 - Open: a toddler on entry 12, a child comparing the pinned photo at 8 and understanding 9's claims and thumbs on an iPad ([DEVICE-CHECKS](DEVICE-CHECKS.md)); the lap fewer-animals entry waits on a person check.
 
-## 2026-10-24 — Sprout Shuffle G2 placement check (blocked; docs only)
-
-- [PR #912](https://github.com/rjdunlap/neo/pull/912), `claude/sprout-shuffle-g2`: the G2 build stopped at its placement condition; the blocker and a location-capacity definition line are recorded in READY, the genetics dive and the definition.
-- Probe: with a stub `sprout-shuffle` module registered (school only), `npx vitest run src/content/lands.test.ts src/app/scenes/ src/app/nav-meaning.test.ts` was run once in each of the 11 lands. Every land failed. Rainbow Meadow failed `meadow.test.ts` at prek and school 4:3 landscape: 0 flowers, against a minimum of 6, and a free-cell grid found no 40-unit gap from y≈120 down. Tinker Lab and Puzzle Peaks failed `lands.test.ts` because `landLayout` returned null. Every other land failed its scene test, including small lands through the added signpost (Painted Canyon at preschool n=7, Music Mountain at toddler n=6).
-- Not run: typecheck, the unit suite, build and the browser checks. The stub and code were backed out, so only docs changed.
-- Open: the location-capacity definition, then G2 itself.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -103,6 +102,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | --- | --- | --- | --- |
 | Generated source art | 2026-10-23: R23 full-size/120 px/static landscape/portrait review, dimensions/hash, links/diff | [R23](archive/VERIFICATION-2026-10-23.md#2026-10-23--r23-rainbow-meadow-source-art) | Source only; peripheral clipping recorded; actual game integration/device judgement open |
 | Planning docs / study dispatch | 2026-10-21: batch task coverage, Next ten composition, links and diff checks | [Same-game batches](archive/VERIFICATION-2026-10-21.md#2026-10-21--same-game-level-batches) | Docs only; cache savings unmeasured; no gameplay/device proof |
+| `whoami`, `fingerdemo` (`who-am-i`) | 2026-10-24: level 1 wrong friend then fit, level 3 keeps-tap miss, requested hint, three clues, free peek, portrait screenshot; ghost finger 7.8 s (level 1) and 16.0 s (level 3) | [Who Am I? entry](#2026-10-24--who-am-i-levels-13-zoo-animals-z3) | Level 2 not played in the browser; Owl Walk suite and offline check not run after the owl art move; iPad speech and a child open |
 | `foodweb`, `fingerdemo`, `smoke` (`food-web-workshop`) | 2026-10-24: levels 1–3 extra-arrow miss, Undo, matching web, turn by drag in portrait (targets of 100 units or more), one requested hint; ghost finger 12.5 s (levels 1, 3); smoke levels 1–3 | [Food Web Workshop entry](#2026-10-24--food-web-workshop-levels-13-ecosystems-f2) | Station-tap and refused-drag-tick review fixes were checked by rule tests and typecheck only, not re-browsed; no iPad or device speech |
 | `cuestudio`, `fingerdemo` (`cue-studio`) | 2026-10-23: levels 1 and 2 inert Play/Finish, full shelf, replace, edit invalidating Finish, Undo, Step, counted-once help, portrait targets of 100 units or more, one sticker each; ghost finger clean (5.5 s, 14.5 s) | [Cue Studio entry](#2026-10-23--cue-studio-levels-12-programming-p2) | Chrome only; `lands`/`howto`/`smoke`, offline and iPad not run; understanding and a child's reaction open |
 | `comeback`, `fingerdemo` (`species-comeback`) | 2026-10-24: level 1 forbidden pair, undo, early Spring, one requested hint; level 3 unsuitable site, portrait sites, 64-unit cards, one sticker each; ghost finger clean at levels 1 and 3 (9.1 s, 15.2 s) | [Species Comeback entry](#2026-10-24--species-comeback-levels-13-lantern-lake) | Chrome only; offline and iPad not run; device speech and a person's reaction open |
