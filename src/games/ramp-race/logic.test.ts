@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { classifyFair, distance, EXPLORE_HEIGHTS, fairLine, fairRepair, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeStars, onStar, PLANS, rampTouch, waysTo, type FairKind, type FairQuestion, type Setup } from './logic';
+import { classifyFair, distance, EXPLORE_HEIGHTS, fairLine, fairRepair, farther, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeShelf, makeStars, onStar, planFor, PLANS, rampTouch, recordOf, shelfLayout, sideOf, tally, waysTo, type FairKind, type FairQuestion, type RampEvent, type Setup, type TrialRecord } from './logic';
 
 describe('Ramp Race', () => {
   it('higher ramps and slipperier floors always go farther', () => {
@@ -35,7 +35,7 @@ describe('Ramp Race', () => {
     }
   });
   it("the ghost finger plays every level through without a wrong move, never taps the floor where it cannot change, and never presses go on a miss", () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'shelf')) {
       for (let seed = 1; seed <= 60; seed++) {
         const rng = new Rng(seed);
         const stars = plan.mode === 'height' || plan.mode === 'both' ? makeStars(plan, rng) : [];
@@ -63,8 +63,9 @@ describe('Ramp Race', () => {
             index++;
             continue;
           }
-          const lane = lanes[move!.lane];
-          if (move!.change === 'ramp') lane.height = HEIGHTS[(HEIGHTS.indexOf(lane.height as 2 | 3 | 4) + 1) % HEIGHTS.length];
+          if (!move || !('lane' in move)) throw new Error('a lane touch');
+          const lane = lanes[move.lane];
+          if (move.change === 'ramp') lane.height = HEIGHTS[(HEIGHTS.indexOf(lane.height as 2 | 3 | 4) + 1) % HEIGHTS.length];
           else {
             expect(['both', 'fair']).toContain(plan.mode);
             lane.floor = FLOORS[(FLOORS.indexOf(lane.floor) + 1) % FLOORS.length];
@@ -127,9 +128,10 @@ describe('Ramp Race fair-test support', () => {
             expect(classifyFair(q, a, b)).toBe('fair');
             break;
           }
-          expect(move!.lane).toBe(1);
-          expect(fairRepair(q, a, b)).toBe(move!.change);
-          b = tap(b, move!.change);
+          if (!move || !('lane' in move)) throw new Error('a lane touch');
+          expect(move.lane).toBe(1);
+          expect(fairRepair(q, a, b)).toBe(move.change);
+          b = tap(b, move.change);
           expect(++taps, `${q.compare} from ${JSON.stringify([a, b0])}`).toBeLessThanOrEqual(3);
         }
         expect(fairRepair(q, a, b)).toBeNull();
@@ -148,5 +150,128 @@ describe('Ramp Race fair-test support', () => {
     expect(fairLine({ compare: 'floor' }, 'fair')).toBeNull();
     // A pair where only the wrong thing differs is told so, not that the named thing differs "too".
     expect(fairLine({ compare: 'floor' }, classifyFair({ compare: 'floor' }, { height: 2, floor: 'wood' }, { height: 4, floor: 'wood' }))).toBe('ramp.wrong.floor');
+  });
+});
+
+const wood = (height: number): Setup => ({ height, floor: 'wood' });
+
+describe('Ramp Race Trial Shelf', () => {
+  it('keeps levels 1–4 and appends the shelf as level 5', () => {
+    expect(PLANS.map((p) => [p.mode, p.rounds])).toEqual([['explore', 4], ['height', 3], ['both', 3], ['fair', 3], ['shelf', 2]]);
+    expect(planFor(5).mode).toBe('shelf');
+    expect(planFor(9).mode).toBe('shelf');
+  });
+
+  it('starts the pairs at 2 and 4, and every legal second roll makes the right card the top one in one pair and the bottom in the other', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const starts = makeShelf(new Rng(seed));
+      expect([...starts].sort()).toEqual([2, 4]);
+      const answers = starts.map((first) => {
+        const seconds = HEIGHTS.filter((h) => h !== first);
+        const sides = seconds.map((h) => {
+          const [a, b] = [recordOf(wood(first)), recordOf(wood(h))];
+          expect(a.stop).not.toBe(b.stop);
+          return farther(a, b);
+        });
+        expect(new Set(sides).size, `start ${first}: every second height agrees`).toBe(1);
+        return sides[0];
+      });
+      expect(answers[0]).not.toBe(answers[1]);
+    }
+  });
+
+  it('records agree with distance, in whole and half marks, and the past side is exactly the farther second card', () => {
+    for (const x of HEIGHTS) for (const y of HEIGHTS) {
+      if (x === y) continue;
+      const [a, b] = [recordOf(wood(x)), recordOf(wood(y), 'past')];
+      expect(a.stop).toBe(distance(x, 'wood'));
+      expect(Number.isInteger(a.stop * 2)).toBe(true);
+      expect(farther(a, b)).toBe(distance(y, 'wood') > distance(x, 'wood') ? 1 : 0);
+      expect(sideOf(b.stop, a.stop) === 'past').toBe(farther(a, b) === 1);
+      expect(b.guess).toBe('past');
+      expect(recordOf(wood(x)).guess).toBeUndefined();
+    }
+  });
+
+  it('counts only wrong cards and unfair Checks, with help once per kind', () => {
+    const t = (...e: RampEvent[]) => tally(e);
+    expect(t('free', 'free', 'free')).toEqual({ misses: 0, hints: 0 });
+    for (let n = 0; n <= 4; n++) {
+      expect(tally(Array(n).fill('unfair-check'))).toEqual({ misses: n, hints: Math.min(1, Math.max(0, n - 1)) });
+      expect(tally(Array(n).fill('wrong-card'))).toEqual({ misses: n, hints: Math.min(1, Math.max(0, n - 1)) });
+    }
+    expect(t('unfair-check', 'wrong-card', 'unfair-check', 'free', 'wrong-card', 'wrong-card', 'unfair-check')).toEqual({ misses: 6, hints: 2 });
+  });
+
+  it('the ghost finger plays both pairs with a different height, a guess by the stated rule and the farther card, never a counted event', () => {
+    const plan = planFor(5);
+    for (let seed = 1; seed <= 50; seed++) {
+      const starts = makeShelf(new Rng(seed));
+      for (const first of starts) {
+        let lane = wood(first);
+        const records: TrialRecord[] = [];
+        let guess: 'before' | 'past' | undefined;
+        const events: RampEvent[] = [];
+        let touches = 0;
+        let ramp = 0;
+        for (;;) {
+          expect(++touches, `seed ${seed}: finishes`).toBeLessThan(10);
+          const move = rampTouch(plan, [lane], { rolls: 0, records, guess });
+          expect(move, 'never stalls').not.toBeNull();
+          if (move === 'go') {
+            if (records.length === 1) expect(lane.height, 'never rolls the same height twice').not.toBe(records[0].setup.height);
+            records.push(recordOf(lane, records.length === 1 ? guess : undefined));
+            continue;
+          }
+          if ('card' in move!) {
+            expect(records).toHaveLength(2);
+            events.push(move.card === farther(records[0], records[1]) ? 'free' : 'wrong-card');
+            break;
+          }
+          if ('guess' in move!) {
+            guess = move.guess;
+            continue;
+          }
+          expect(move!.lane).toBe(0);
+          expect(move!.change).toBe('ramp');
+          expect(records, 'the ramp is locked until the first card').toHaveLength(1);
+          ramp++;
+          lane = { ...lane, height: HEIGHTS[(HEIGHTS.indexOf(lane.height as 2 | 3 | 4) + 1) % HEIGHTS.length] };
+        }
+        expect(ramp).toBe(1);
+        // The stated rule is right on wood, so the bot's guess always matches.
+        expect(sideOf(records[1].stop, records[0].stop)).toBe(records[1].guess);
+        expect(tally(events)).toEqual({ misses: 0, hints: 0 });
+      }
+    }
+  });
+
+  it('lays the cards and guess sides out large and clear of home, ?, the pet, go and the ramp', () => {
+    const inside = (b: { x: number; y: number; w: number; h: number }, x: number, y: number) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
+    const overlap = (p: { x: number; y: number; w: number; h: number }, q: { x: number; y: number; w: number; h: number }) => p.x < q.x + q.w && q.x < p.x + p.w && p.y < q.y + q.h && q.y < p.y + p.h;
+    for (const view of [{ w: 1024, h: 768 }, { w: 1024, h: 1365 }, { w: 1664, h: 768 }]) {
+      for (const first of [2, 4]) for (const second of HEIGHTS.filter((h) => h !== first)) {
+        void second;
+        const L = shelfLayout(view, distance(first, 'wood'));
+        const floorY = view.h * 0.66;
+        const go = { x: view.w - 140, y: view.h - 140, w: 120, h: 120 };
+        const pet = { x: 0, y: view.h - 160, w: 200, h: 160 };
+        const corner = { x: 0, y: 0, w: 112, h: 210 };
+        const ramp = { x: 130, y: floorY - 214, w: 200, h: 224 };
+        const pieces = [...L.cards, L.guess.before, L.guess.past];
+        for (const b of pieces) {
+          expect(Math.min(b.w, b.h), JSON.stringify([view, first, b])).toBeGreaterThanOrEqual(100);
+          for (const o of [go, pet, corner]) expect(overlap(b, o), JSON.stringify([view, b, o])).toBe(false);
+        }
+        for (const b of [...L.cards, L.badge]) expect(overlap(b, ramp)).toBe(false);
+        expect(overlap(L.cards[0], L.cards[1])).toBe(false);
+        expect(L.cards[0].x).toBe(L.cards[1].x);
+        expect(overlap(L.badge, L.cards[0]) || overlap(L.badge, L.cards[1])).toBe(false);
+        // The guess zone starts right of the ramp's touch pad, and the cards sit above the rolling car.
+        expect(L.guess.before.x).toBeGreaterThan(ramp.x + ramp.w);
+        expect(L.cards[1].y + L.cards[1].h).toBeLessThan(floorY - 60);
+        expect(inside(L.guess.past, L.guess.past.x + 1, floorY)).toBe(true);
+      }
+    }
   });
 });

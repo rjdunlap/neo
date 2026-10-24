@@ -201,7 +201,7 @@ export class ExploreScene extends Scene {
   /** An entry says its name, then opens where she last was in it this visit. */
   private open(entry: ExploreEntry) {
     const page = exploreMemory.pages[entry] ?? 0;
-    this.leave(() => this.app.go.explore(entry, page, entry === 'all' ? exploreMemory.others : undefined), `explore.${entry}`);
+    this.leave(() => this.app.go.explore(entry, page, entry === 'all' ? exploreMemory.others : undefined), entry === 'arcade' ? 'arcade.open' : `explore.${entry}`);
   }
 
   /** A game says its title (or, outside her band, who it is for), then plays at the band nearest hers it has. */

@@ -4,13 +4,15 @@ type AudioSessionNavigator = Navigator & { audioSession?: { type: string } };
 const HUSH = 0.4;
 
 /**
- * One AudioContext with three buses: effects, music and a master with a limiter.
+ * One AudioContext with four buses: effects, music, the voice's clips and a master with a limiter.
  * iOS only lets audio start inside a tap, so `unlock()` runs from the start screen.
  */
 class AudioEngine {
   ctx: AudioContext | null = null;
   sfxOut!: GainNode;
   musicOut!: GainNode;
+  /** Rendered voice clips; never hushed or ducked. */
+  voiceOut!: GainNode;
   private master!: GainNode;
   private volume = 0.8;
   private musicOn = true;
@@ -33,7 +35,10 @@ class AudioEngine {
       this.sfxOut = ctx.createGain();
       this.sfxOut.gain.value = this.hushed ? HUSH : 1;
       this.musicOut = ctx.createGain();
+      this.voiceOut = ctx.createGain();
+      this.voiceOut.gain.value = 1.1;
       this.sfxOut.connect(this.master);
+      this.voiceOut.connect(this.master);
       this.musicOut.connect(this.master);
       this.master.connect(limiter).connect(ctx.destination);
       this.ctx = ctx;

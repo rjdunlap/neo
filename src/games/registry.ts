@@ -106,7 +106,11 @@ import { tilePairs } from './tile-pairs';
 import { lanternLights } from './lantern-lights';
 import { pictureLogic } from './picture-logic';
 import { wordSearch } from './word-search';
+import { pondTyping } from './pond-typing';
 import { islandBridges } from './island-bridges';
+import { speciesComeback } from './species-comeback';
+import { cueStudio } from './cue-studio';
+import { foodWebWorkshop } from './food-web-workshop';
 import { lemonadeStand } from './lemonade-stand';
 import { habitatHelpers } from './habitat-helpers';
 import { fillDump } from './fill-dump';
@@ -240,8 +244,12 @@ export const GAMES: GameModule[] = [
   sudokuGarden,
   pictureLogic,
   wordSearch,
+  pondTyping,
   islandBridges,
   pondConga,
+  speciesComeback,
+  cueStudio,
+  foodWebWorkshop,
   numberNook,
   pyramidSolitaire,
   brainBreak,

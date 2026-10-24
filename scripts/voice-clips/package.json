@@ -1,0 +1,8 @@
+{
+  "name": "neo-voice-clips",
+  "private": true,
+  "type": "module",
+  "description": "Renders the island's spoken clips with Kokoro, locally. Kept out of the root package so CI never installs the model runtime.",
+  "scripts": { "render": "node render.mjs" },
+  "dependencies": { "kokoro-js": "1.2.1" }
+}

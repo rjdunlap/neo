@@ -774,8 +774,7 @@ class PictureLogic implements Game {
     this.marks[i] = out.mark;
     if (out.counted) {
       this.fills++;
-      // A filled square that the picture does not have is a miss; it is never refused, and never shown as one.
-      if (!this.puzzle.solution[i]) this.misses++;
+      // A fill the picture does not have is exploring, never shown as wrong, so it is not a miss either (decided 2026-10-23).
       sfx.pop(3 + (i % 7));
       this.report();
     } else sfx.tick();

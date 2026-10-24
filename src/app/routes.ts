@@ -28,7 +28,7 @@ export function createRoutes(app: App): Routes {
     explore: () => void app.show(new MapScene(app)),
     place: (band) => void app.show(store.data.settings.placeLayout === 'subjects' ? new SubjectPlaceScene(app, band) : new PlaceScene(app, band)),
     hatch: (quick) => void app.show(new HatchScene(app, quick)),
-    land: (id) => void app.show(new LandScene(app, id)),
+    land: (id, page) => void app.show(new LandScene(app, id, { page })),
     game: (id, band = store.data.profile.band, story, again = false, origin, level) => {
       const mod = gameById(id);
       if (!mod) return;

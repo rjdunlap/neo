@@ -3,7 +3,7 @@ import { ink, swatch } from '../../art/palette';
 import { overlaps, type LandLayout, type Rect } from '../../content/lands';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { meadowKeepOut } from './meadow';
+import { meadowKeepOut, scanPlace } from './meadow';
 
 /**
  * RW13 slice 5 (docs/rework/ISLAND-REVAMP.md): Bubble Beach as a rocky shore with tide pools, drawn in code over the
@@ -22,6 +22,8 @@ export interface BeachItem {
   x: number;
   y: number;
   rect: Rect;
+  /** Drawn at this size (a thing shrinks where a full land leaves only small gaps for it; a pool fills its box instead). */
+  k?: number;
 }
 
 /** What the `i`th pool holds: always a sea star or an anemone, and the three kinds take turns across the pools. */
@@ -62,6 +64,16 @@ function shorePlan(layout: LandLayout, view: View, ground: number, rocks: number
       placed++;
     }
   };
+  /** Makes sure of `need` more of a thing, scanning for room (smaller where it must) when random tries found none. */
+  const ensure = (kind: BeachThing, need: number, size: number, tall: number, top: number, bottom: number) => {
+    for (let i = 0; i < need; i++) {
+      const spot = scanPlace(clear, rng, w, size, tall, top, bottom);
+      if (!spot) return;
+      items.push({ kind, x: spot.x, y: spot.y, rect: spot.rect, ...(spot.k < 1 ? { k: spot.k } : {}) });
+      keepOut.push(spot.rect);
+    }
+  };
+  const count = (kind: BeachThing) => items.filter((p) => p.kind === kind).length;
   // The rock pools first, then the rocks, then the crabs walk the sand between them.
   place('pool', 3, 124, 46, ground + 50, h - 8);
   place('rock', rocks, 100, 54, ground + 30, h - 8);
@@ -70,6 +82,10 @@ function shorePlan(layout: LandLayout, view: View, ground: number, rocks: number
   place('pool', 3, 90, 36, ground + 40, h - 8);
   // Gulls over the sea, under the heading and clear of the sun.
   place('gull', 3, 56, 24, ground - 150, ground - 30);
+  // A full land screen leaves only gaps at the row ends: there the shore still keeps two pools, a crab and a gull.
+  ensure('pool', 2 - count('pool'), 90, 36, ground + 40, h - 8);
+  ensure('crab', 1 - count('crab'), 50, 36, ground + 30, h - 8);
+  ensure('gull', 1 - count('gull'), 56, 24, ground - 150, ground - 30);
   return items;
 }
 
@@ -87,12 +103,19 @@ export function drawBeach(g: Graphics, layout: LandLayout, view: View, ground: n
   for (let x = -10; x <= view.w + 20; x += 40) g.quadraticCurveTo(x + 20, ground + 14, x + 40, ground + 6);
   g.stroke({ color: 0xe8c77a, width: 6, cap: 'round' });
   let pools = 0;
-  for (const { kind, x, y, rect } of beachPlan(layout, view, ground)) {
+  for (const { kind, x, y, rect, k } of beachPlan(layout, view, ground)) {
     // A pool fills the box it was planned in (the rim is 124 across at full size).
-    if (kind === 'pool') pool(g, x, y, poolLife(pools++), (rect.w - 4) / 124);
-    else if (kind === 'rock') rock(g, x, y);
-    else if (kind === 'crab') crab(g, x, y, x > view.w / 2 ? -1 : 1);
-    else gull(g, x, y - 12);
+    if (kind === 'pool') {
+      pool(g, x, y, poolLife(pools++), (rect.w - 4) / 124);
+      continue;
+    }
+    // Anything else planned smaller (a full land's gap) is drawn at that size round its feet.
+    const s = k ?? 1;
+    g.save().translateTransform(x, y).scaleTransform(s, s);
+    if (kind === 'rock') rock(g, 0, 0);
+    else if (kind === 'crab') crab(g, 0, 0, x > view.w / 2 ? -1 : 1);
+    else gull(g, 0, -12);
+    g.restore();
   }
 }
 

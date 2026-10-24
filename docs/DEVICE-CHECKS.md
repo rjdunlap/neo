@@ -1,5 +1,21 @@
 # Needs a person or a device
 
+## Food Web Workshop levels 1-3 (2026-10-24)
+
+- [ ] On an iPad with a school-age child: can she drag a food badge between far stations (and turn a backwards arrow) comfortably in both orientations; is device speech for the `web.*` lines clear; and does she read the arrow as "the food goes to the eater" as intended? Chrome proved the flow, portrait targets of 100 units or more and the ghost finger only; understanding and a person's response are untested.
+
+## Cue Studio levels 1–2 (2026-10-23)
+
+- [ ] On an iPad with a pre-K child and a grown-up: can she tap a Wave or Turn card, press Play and watch her own pet perform it without help, and does the lit slot and dot make sense as "what is happening now" (and at level 2 the replace-a-slot step with Undo)? Are the 100-unit cards, slots and Play, Step, Undo, Finish and bulb comfortable in both orientations, and is the spoken support clear on the device? Chrome proved the flow, portrait targets and the ghost finger only; understanding, preschool readiness and a child's reaction are untested.
+
+## Species Comeback levels 1–3 (2026-10-24)
+
+- [ ] On an iPad, with a grown-up or older child: can she tap two turtles into a nest and read the tree's ♀/♂ tags and name tags at play size, does the named shared relative make a forbidden pair understandable, and are the level-3 release-site cards (64-unit targets) comfortable to choose between in both orientations? Chrome proved the flow and portrait layout only; device speech and a person's response are untested.
+
+## Pond Typing levels 1–3 (KE2, 2026-10-24)
+
+- [ ] With a child at a real laptop keyboard: can she find and press a letter on a waiting bubble, and does the name and the space-bar level read and feel fair? Also a real keyboard on a laptop rather than Chrome automation, and device speech for the prompts.
+
 ## Illustrated duck pilot (RW14 slice 6, 2026-10-23)
 
 - [ ] On an iPad, judge Duck Pond's R22 still duck beside the illustrated Rainbow Meadow from slice 4 once available: face/outline at play size, bob/squash, countability, and touch comfort in both orientations. Browser portrait proof: `test-results/browser/duck-pond-12-illustrated-portrait.png`; [PR #904](https://github.com/rjdunlap/neo/pull/904). Other duck games keep their drawings pending this judgement; a screenshot does not establish a child's response or device speech.
@@ -11,6 +27,10 @@
 ## Explore's last-place postcard (RW14 slice 8, 2026-10-23)
 
 - [ ] On an iPad, does the postcard above Explore's entries read as "back to my place", and is it clear of Back and Home in portrait?
+
+## Full lands turn pages (location capacity, 2026-10-24)
+
+- [ ] On an iPad, open Tinker Lab at school (12 games and a signpost, now 6 + 6): do the yellow arrow markers read as "more games this way" and not as a second signpost, does a tap turn the page at once, does a game opened from page 2 come back to page 2, and does the host's suggestion turn to its page? [PR #915](https://github.com/rjdunlap/neo/pull/915)
 
 ## Moving between screens (RW14 slice 9, 2026-10-23)
 
@@ -149,6 +169,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 - [ ] **Weather Wardrobe trip and Which sky? (batch 2, 2026-10-23, #876):** on an iPad, does the level-6 unpacking read as the trip happening, and can a toddler tell the weather from the grey scene and the outfit at level 9 (wrong-sky consequence tone, glow after two misses)?
 - [ ] **Dressing (RW06 slice 1, 2026-10-20, #637):** on an iPad, does the hanger on Friends read as "dress" to a child or only to a grown-up; do the nine items read at that size (crown, sun hat, beanie, sunglasses, scarf, raincoat, umbrella, mittens, boots) on each species; device speech of the new lines (`friends.dress`, `dress.pick`, `dress.on.*`, `dress.off`, `dress.none`); the frame rate with a dressed live rig on the guide, result star and treehouse; and whether she notices, wants to change, or is bothered by the guide never showing the umbrella. A child's reaction is not established.
 - [ ] **Home and creature play (RW06 slice 2, 2026-10-20, #638):** on an iPad at the site root, in both orientations: does a child read the ball as hers to throw (and, for the youngest, the ball on Home); do the people picture (Who's playing) and the house picture (Home) read to a grown-up and to an older child; device speech of the six new lines (`home.hello`, `home.play`, `home.explore`, `home.who`, `play.ball`, `play.fetch`); the frame rate of a dressed rig on the backdrop while the ball bounces and the friend runs; whether the "Island games" link in the top-right is easy for a grown-up to find and hard for a small hand to hit.
+- [ ] **Ramp Race Trial Shelf level 5 (inquiry Q4, 2026-10-24, #918):** on an iPad at school level 5, watch whether a child sees each card as that run, tells the paw guess from the flag without reading, finds the farther flag on the stacked cards, and wants another pair; and whether device speech says "farther" clearly.
 - [ ] **Ramp Race truthful support (inquiry Q2, 2026-10-20, #624):** on an iPad at the fair-test level, watch whether a child connects the orange glow (a ghost ramp, an outlined floor or a ring around go, after two unfair Checks on one question) to "change this part", and listen to whether device speech reads the half-marks ("two and a half") and the new `ramp.wrong.*` and `ramp.fairhint` lines well.
 - [ ] **Home/navigation RW03 (2026-10-17, #501):** run the [short observed-play script](rework/HOME-NAVIGATION.md#short-observed-play-script-and-open-observations) with lap/toddler co-play, preschool and school separately. Record Home/Back/Next-game interpretation, creature/dress discovery, younger-favorite retrieval, interrupted-project recovery and speech/reach on an iPad. Prototype only; real game/save/controller integration must first land in RW05–RW08. None run.
 
@@ -212,7 +233,7 @@ Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the 
 
 - [ ] **Music proposals, when defined/built:** can a child hear a pace change while the notes stay fixed, choose/compare without judged timing, and understand a waiting request? Check perceived loudness/timbre on an iPad, speech duck/replay, sound-off cues, tap parity for an optional baton, 100-unit targets, pet clearance, both layouts and ghost-finger action. Try Hat Band's alternative arrangements and role swaps with tweens/parents; observe voluntary replay and audible authorship. Automation establishes neither musical understanding, real-instrument recognition, appeal nor transfer; practical cards/demonstrations need named review ([study](deep-dives/subjects/music-instruments.md)).
 
-- [ ] **Programming proposals, when built:** P1 [Cue Studio 1–3 definition](definitions/cue-studio.md) is docs only (PR #834); all observations below remain open. can a child independently choose a command then Play, follow the highlighted trace, repair its first mismatch and use supported Finish? Observe preschool readiness before adding that entry; check sound-off command/event cues, iPad speech, 100-unit targets, pet clearance, both layouts and the ghost finger’s actual edits/help. Try Machine Line/Parcel Programs with older children and parents: voluntary replay, contrasting-test reasoning and author/tester role swaps remain untested. Automation cannot establish understanding, broad transfer or audience demand; practical puppet cards need named review ([study](deep-dives/subjects/programming.md)).
+- [ ] **Programming proposals, when built:** P1 [Cue Studio 1–3 definition](definitions/cue-studio.md) (PR #834) and P2 levels 1–2 (PR #917, built; its own check above) are done; level 3 and all observations below remain open. can a child independently choose a command then Play, follow the highlighted trace, repair its first mismatch and use supported Finish? Observe preschool readiness before adding that entry; check sound-off command/event cues, iPad speech, 100-unit targets, pet clearance, both layouts and the ghost finger’s actual edits/help. Try Machine Line/Parcel Programs with older children and parents: voluntary replay, contrasting-test reasoning and author/tester role swaps remain untested. Automation cannot establish understanding, broad transfer or audience demand; practical puppet cards need named review ([study](deep-dives/subjects/programming.md)).
 
 - [ ] **Space proposals, when defined/built:** review whether Moon Window's snapshot spacing, projected illumination, unseen-new-Moon treatment and reference orientation explain the model without implying a literal local sky or an eclipse. Observe independent matching/model repair, supported finish, replay speech, pet clearance and 100-unit targets in both orientations. Try Orbit Garden/Observatory Files with tweens and parents: do they choose to investigate and revise? A named reviewer precedes practical lamp/ball, sky or equipment instructions. Automation cannot establish scientific understanding, appeal, real-sky accuracy or transfer ([study](deep-dives/subjects/space.md)).
 - [ ] **Astronomy proposals, when defined/built:** an astronomy educator reviews Far Lights' inverse-square toy, the halo-size convention (brightness, not size), and the toy parallax wording. The same reviewer checks Moon Window 8–9's labelled edge-on tilt and the Observatory Files season and cluster models. On an iPad, watch whether a child reads halo size as size, and check that the 100-unit lights and stops fit in portrait with the pet clear and that the curtain and step buttons can be found without reading. Try whether 9–13-year-olds and parents choose "both could fit" puzzles. No real-sky accuracy is claimed ([study](deep-dives/subjects/astronomy.md#decisions-for-the-developer)).
@@ -415,7 +436,9 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **Memory Match board, school extensions and toddler window**: Level 10 word legibility and 100-unit card minimum on an iPad.
 - **Are Memory Match 10–12's matching levels a bridge or a duplicate of Pet Kitchen **: Does she treat 10–12 as bridges.
 - **In what order the family's languages come, which variety of each, and who review**: An installed device voice for the chosen language.
-- **May the island ship AI voice clips?**: Listening judgement of the Kokoro voice on the iPad.
+- **May the island ship AI voice clips?**: Listening judgement of the Kokoro voice on the iPad. Clips now play for the shell (titles, praise, stickers, navigation, hub) and Bubble Pop and Duck Pond: check that they play on the iPad (first tap unlocks audio), their loudness against the music, that a line with a `{name}` or `{n}` variant switching to device speech is acceptable, and the voice itself; rendering the rest waits on this.
 - **Data/AI toy-model presentation and destination**: A pre-K window after the prototype.
 - **Ribbon Workshop**: Watch a pre-K child play Ribbon Workshop level 1 before opening a pre-K entry.
 - **RW05 slice 2b, Splish Splash and Weather Wardrobe on the companion rig**: On an iPad, the sprout's smaller cheek and ear splotches, the river and glider garments' size and legibility, and a child's read of hats on side-on faces.
+
+- [ ] **Sudoku Garden's wrong-digit line on a device (2026-10-24).** On an iPad, place a wrong (not clashing) number: does the gentle boing and red ring read as help rather than scolding, is the spoken "The 4 does not belong in that square…" clear and not repeated too often (once per four seconds at most)? Only headless Chromium has run it.

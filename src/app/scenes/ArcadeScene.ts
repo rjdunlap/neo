@@ -422,7 +422,7 @@ export class ArcadeScene extends Scene {
     if (link) link.hidden = true;
     music.play(STYLES.hub);
     // The demonstrations' effects stay low, as on the how-to card.
-    // Explore's card already said `explore.arcade` on the way in.
+    // Explore's card already said `arcade.open` on the way in.
     audio.hush(true);
   }
 

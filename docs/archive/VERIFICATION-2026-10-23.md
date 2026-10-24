@@ -228,3 +228,60 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, units, build, browser or device checks (docs only); nothing implemented.
 - Open: an ocean reviewer, Ocean Literacy Guide V3.1, any NGSS tide expectation, Bubble Beach placement (a 14th game), decisions 1–9 in the study.
+
+## 2026-10-23 — RW14 slice 2: residents in six locations
+
+- The six second-wave creatures became the residents of Bubble Beach, Music Mountain, Painted Canyon, Cozy Village, Story Grove and Tinker Lab (`src/creatures/resident.ts`, `LOCATIONS`), with a poke reaction and hello line each; her own friend stands in where it is the resident's species, and the guide hides there. The 36 expression sprites ship as WebP (920 KB) ([PR #898](https://github.com/rjdunlap/neo/pull/898)).
+- Ran: typecheck; `npm test` (217 files, 2720 tests, including the six location tests through `residentProblems`); `npm run build` (precache 174 entries, 11532.26 KiB, zero cast PNGs in `dist/assets`).
+- Browser: `BROWSER_SUITE=home HOME_ONLY=residents RESIDENT_LAND=bubble-beach` at `http://localhost:5564`, passed twice (before and after Tote's fit changed from 0.85 to 0.95). `npm run test:offline` against `vite preview --port 5546` of the current build passed (167 cached assets).
+- Not run: the other five locations in the browser, `world`, `picnic`, couch suites (unchanged). Open for a person: an iPad, real speech of the six hello lines and the child's reaction ([DEVICE-CHECKS.md](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — RW14 slice 3: one meaning per button
+
+- At the root every house goes Home and every leaving control is a back arrow with its origin's picture (round hold, how-to card, result, location with a new house beside Back); root Back/Home speak their label on press; buttons carry `meaning`, and `src/app/nav-meaning.test.ts` presses them ([PR #899](https://github.com/rjdunlap/neo/pull/899)).
+- Ran: typecheck; `npm test` (218 files, 2729 tests); `npm run build` (precache 174 entries, 11534.22 KiB). Regression proof: pointing the location house at `goHome` failed the route test, then restored.
+- Browser: `GAME_URL=http://localhost:5883 BROWSER_SUITE=home HOME_ONLY=buttons` passed (Counting Cove Back and house in landscape and portrait, house at least 100 and left of the heading, how-to Back, round Back, result Back to the location, house to Home); five screenshots reviewed.
+- Not run: `world`, offline (no persistence or asset change), iPad or device speech. Open: location keep-out rects not widened for the house; Home itself not in the route test.
+
+## 2026-10-23 — RW14 slice 5: the result stands in its place
+
+- At the root the result draws its origin's sky and hills (or Home's backdrop with no origin) under a lighter veil; a story round and `classic/` keep flat cream; result buttons unchanged ([PR #901](https://github.com/rjdunlap/neo/pull/901)).
+- Ran (commit 125d13c9 on base fcb5d306): typecheck; `npm test` (219 files, 2732 tests, including `result-backdrop.test.ts`); `npm run build` (precache 174 entries, 11535.20 KiB).
+- Browser: `GAME_URL=http://localhost:5344 BROWSER_SUITE=home HOME_ONLY=result` passed (Duck Pond from Counting Cove's spot on the cove sky with Back to the cove, from a Story Grove origin on the night sky, and with no origin on the home backdrop, at 1024×768 and 768×1024; Again and Back at their formulas; no page errors); six screenshots reviewed.
+- Not run: offline (no new assets), `picnic` (stories untouched), `world`, `fingerdemo`, device. Open: an origin with a picture is not shown until slice 4's loader; location scenery is not drawn behind the result.
+
+## 2026-10-23 — RW14 slice 7: buttons and cards with a finish
+
+- One code-drawn finish (shadow, rim, two-tone face, highlight) and a press squash with a release spring for root buttons and cards; the "Island games" pill is a picture door; hit areas unchanged ([PR #902](https://github.com/rjdunlap/neo/pull/902)).
+- Ran (commit e741893b on base eea1741e): typecheck; `npm test` (220 files, 2736 tests, including `finish.test.ts` hit-area checks); `npm run build`.
+- Browser: `GAME_URL=http://localhost:5743 BROWSER_SUITE=home HOME_ONLY=buttons` passed; portrait screenshots of Home, Explore and Places at 768×1024 reviewed.
+- Not run: offline (no assets or persistence changed), `world`, `fingerdemo`, device. Open: the door has no spoken label; PR #900's Arcade cards do not use the finish.
+
+## 2026-10-23 — RW14 slice 6: the duck pilot
+
+- [PR #904](https://github.com/rjdunlap/neo/pull/904): prepared chosen R22 base/portrait; Duck Pond alone uses the base still with bob/squash for round, icon and stickers. Hit circles and rules unchanged; shared texture survives instance destruction.
+- Tested base `917eb6d9` plus the final source diff, frozen at `http://localhost:5202` (temporary snapshot, own Vite cache). Typecheck, all 10 Duck Pond rules and production build passed (175 precache entries, 11762.20 KiB; base bundled, portrait not bundled).
+- Browser: `BROWSER_SUITE=originals ORIGINALS_ONLY=ducks DUCK_LEVELS=1,11,12` passed (first/deepest/entry, two misses and one hint at 11, reveal/sentence, completion and saved reward); loaded sprites and original 72/53-radius circles asserted. Portrait `test-results/browser/duck-pond-12-illustrated-portrait.png` reviewed. An earlier run was interrupted by Vite reloading a nested unrelated worktree; frozen rerun passed. The snapshot warned that symlinked local font files were outside its serving allow list, so screenshots may use fallback text; the illustrated texture and geometry checks passed, and the production build has its bundled fonts.
+- Demo: `BROWSER_SUITE=fingerdemo FINGER_ONLY=duck-pond FINGER_LEVELS=11,12` clean in 69.3/27.4 seconds of the demo clock. Scoped production offline probe `node test-results/duck-pilot-offline.mjs` at `http://localhost:4202` passed: isolated classic reload and precached duck fetch/decode (451×486), no page errors; root/classic entry filenames matched current dist and duck base is in the precache.
+- Not run: full offline/story/treehouse, world, couch or other duck games (unchanged); no iPad, device speech or child check. Broader art judgement stays open in DEVICE-CHECKS. No new generation.
+
+## 2026-10-23 — RW14 slice 8: the last place first
+
+- Per-profile `explore.last` (default null, repaired on load) set when a location opens from Places at the root; Explore shows a postcard of it above the four entries only after a visit ([PR #905](https://github.com/rjdunlap/neo/pull/905)).
+- Ran: typecheck; `npm test` (220 files, 2738 passed, 1 failed: the block-garden hint-search timing test on untouched code, 33/33 on a filtered rerun); src/app, src/creatures, src/progress 286 passed after a final rename; `npm run build`.
+- Browser: `GAME_URL=http://localhost:5622 BROWSER_SUITE=home HOME_ONLY=last-place` passed twice (second after a layout tweak); landscape and portrait screenshots.
+- Failed: `npm run test:offline` against `vite preview --port 5531` (served `main-CIe7D08c.js` matches `dist`), twice at "Finished a new minigame while offline": the offline reload and Monster Munch's cached open worked but the scripted cookie taps did not finish the toddler round, likely stale after Monster Munch's band-table change `c49948e9` (not touched here). Open, not a pass.
+- Not run: `world`, `fingerdemo`, device. Open: the postcard's location returns to Places, not Explore.
+
+## 2026-10-23 — RW14 slice 9: moving between screens
+
+- `App.show` renders the leaving scene to a texture, destroys it at once, then grows from the tapped box, shrinks into a returned box or crossfades (0.35 s / 0.3 s); rules in `src/app/transition.ts` ([PR #906](https://github.com/rjdunlap/neo/pull/906)). Classic shares `App`.
+- Ran on `52273ee9`: typecheck; `npm test` (221 files, 2744 passed); `npm run build`; `BROWSER_SUITE=home` with `HOME_ONLY=buttons` and `HOME_ONLY=last-place` (dev server `http://localhost:5353`); full `BROWSER_SUITE=world` (it has no filter) on port 5233, passed (about 6 minutes) after one harness fix: its grown-ups' recolor check read `pip.rig.mesh.filters`, and since the illustrated companion `recolor` filters `rig.skin` (the first run stopped there).
+- Probe (`test-results/rw14ms-probe.mjs`, ignored) froze the ticker mid-change: Places to Counting Cove grow, cove spot to Duck Pond grow, round Back shrink, cove Back shrink into its Places card, Places to Home fade; no cream frame, a tap during a change swallowed, no page errors.
+- Not run: offline check (no assets or persistence changed), `fingerdemo`. Open: DOM-overlay scenes still snap; iPad smoothness and snapshot cost ([device check](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — RW07 slice 2: Welcome a New Friend's song step
+
+- Third card with Song Maker 2 (`freeBelowRange`, the test-guarded exception), her tune as a `TunePlaque`, and `welcome.done.song` or `welcome.done.song-hum` when fewer than two notes are kept ([PR #907](https://github.com/rjdunlap/neo/pull/907)).
+- Ran on `0b36dd8e` (base `5ca0ee69`): typecheck; `npm test` (221 files, 2745 passed); `npm run build`; `BROWSER_SUITE=welcome` on `http://localhost:5713` (one-note song says the hum line and stores nothing; replay with 14 tapped jellies keeps the tune, Song Maker level unmoved, treehouse unchanged; portrait and landscape screenshots reviewed).
+- Not run: `home`, `picnic`, offline (Home, `GameScene` and the save format unchanged). Open: device speech of the new lines and the hum line with a child ([device check](../DEVICE-CHECKS.md)); slice 3 not built.

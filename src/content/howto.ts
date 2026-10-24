@@ -196,7 +196,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Tap Hint to see which square to try next; Start over begins the bed again.',
     ],
     finish: 'The bed is done when every square holds the right number.',
-    note: 'A number that does not belong counts as a miss, and a hint counts as help. Taking a number out is free.',
+    note: 'A number that does not belong bumps, glows red and gets a spoken hint; it counts as a miss, and a hint counts as help. Taking a number out is free.',
   },
 
 
@@ -209,7 +209,18 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Hint rings a square; Start over empties the picture.',
     ],
     finish: 'The picture is done when every filled square matches its numbers.',
-    note: 'A fill outside the picture is a miss, and a hint is help. Crossing and emptying are free.',
+    note: 'Only a hint counts, as help: a fill outside the picture is not a miss, and crossing and emptying are free.',
+  },
+  'pond-typing': {
+    goal: 'Press the key a bubble shows, on a real keyboard. Played on the couch, on a laptop with its keyboard.',
+    steps: [
+      { from: 1, to: 1, text: 'A bubble holds one letter. Press that letter\'s key and the bubble pops.' },
+      { from: 2, to: 2, text: 'The bubbles spell her name, one letter each, in order.' },
+      { from: 3, to: 3, text: 'A bubble holds a word, typed letter by letter; two words need the space bar between them.' },
+      'The key cap under the bubble shows the key to press. Esc opens the pause menu: glow the key, or start this bubble again.',
+    ],
+    finish: 'The round ends when every bubble has popped.',
+    note: 'Nothing is timed and no bubble drifts away. The first wrong key on a letter is free; each wrong key after that counts a miss, and a second wrong key glows the key, which counts as help.',
   },
   'word-search': {
     goal: 'Find the hidden words in a grid of letters.',
@@ -230,7 +241,50 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Hint shows a bridge to try; Start over clears the sea.',
     ],
     finish: 'The puzzle is done when every island has its planks and all the islands are joined.',
-    note: 'A plank that is not in the answer counts as a miss, and a hint counts as help. Taking a plank off is free.',
+    note: 'Only a hint counts, as help: a plank that is not in the answer is not a miss, and taking a plank off is free.',
+  },
+  'species-comeback': {
+    goal: 'Pair the turtles so the next hatchlings come from distant relatives, then settle them somewhere with everything they need.',
+    steps: [
+      'Tap two turtles to put them in a nest; tap a nest to undo it. Each nest needs one mother and one father.',
+      { from: 1, to: 1, text: 'Brothers and sisters never share a nest.' },
+      { from: 2, to: 3, text: 'Nor cousins, nor an aunt or uncle with a niece or nephew: follow the lines up to the grandparents.' },
+      'Press Spring when every nest is full.',
+      { from: 3, to: 3, text: 'Then pick the place that has every need on the card.' },
+    ],
+    finish: [
+      { from: 1, to: 2, text: 'Hatchlings appear under every nest.' },
+      { from: 3, to: 3, text: 'The hatchlings walk to their new home.' },
+    ],
+    note: [
+      { text: 'Several plans are right; any plan the rule allows is a good plan.' },
+      { text: 'Undoing a nest, hearing a name and pressing Spring too early are never counted.' },
+      { text: 'A pair the rule forbids counts as a miss, with the shared relative shown; after two, the next good pair glows, which counts as a hint.' },
+      { from: 3, to: 3, text: 'A place missing a need counts as a miss, with the need named.' },
+    ],
+  },
+  'cue-studio': {
+    goal: 'Choose moves for the pet and watch their order.',
+    steps: [
+      { from: 1, to: 1, text: 'Tap the hand (Wave) or the circle arrow (Turn) to put that move in the empty place.' },
+      { from: 2, to: 2, text: 'Tap two moves to fill the two places; the pet does them left to right.' },
+      'Play runs the whole show; the arrow-and-bar button runs one move at a time. Each move\'s place glows as the pet does it.',
+      'To change a move, tap its place (an arrow points at it), then tap the new move. Undo takes back the last change.',
+      'The bulb offers help: a Wave in an empty place, then playing the show.',
+    ],
+    finish: 'After the whole show has played, the blue tick finishes it. Changing a move means playing the new show first.',
+    note: 'Any show is a good show: nothing here is ever a mistake. Using the bulb counts as help.',
+  },
+  'food-web-workshop': {
+    goal: 'Make a picture of who ate what, from the cards.',
+    steps: [
+      'Tap a card to watch what we saw.',
+      'Drag the food\'s badge onto the one who ate it. The arrow points to the eater.',
+      { from: 2, to: 2, text: 'One arrow points the wrong way: drag the food\'s badge onto the eater to turn it.' },
+      { from: 3, to: 3, text: 'One food can have two arrows.' },
+    ],
+    finish: 'Tap the web button when it matches the cards; a matching web earns a sticker. The round arrow takes back the last change.',
+    note: 'This is a small model of what the cards show. A pair with no card isn\'t wrong in nature, it just isn\'t on our cards. Only the web button can count a miss; after two, the cards and creatures to fix glow. Show a hint mends one arrow and counts as help.',
   },
   'pond-conga': {
     goal: 'Steer a line of ducklings to each crumb of bread, in order.',
@@ -1953,17 +2007,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 1, text: 'Tap the ramp to make it taller or shorter, then press go and watch how far the car rolls. The floor stays wood.' },
       { from: 2, to: 2, text: 'Tap the ramp to make it taller or shorter, then press go. Stop the car on the star; the floor stays wood.' },
       { from: 3, to: 3, text: 'Tap the ramp to change its height and the floor for carpet, wood or ice, then press go. Stop the car on the star.' },
-      { from: 4, text: 'The sign shows what to test: floors or ramps. Change only that on one lane, keep everything else the same, then press go to race both cars.' },
+      { from: 4, to: 4, text: 'The sign shows what to test: floors or ramps. Change only that on one lane, keep everything else the same, then press go to race both cars.' },
+      { from: 5, to: 5, text: 'Press go, and where the car stops goes on a card. Tap the ramp to change it, tap the floor to guess where the car will stop if you like, then press go again. Tap the card whose car went farther.' },
     ],
     finish: [
       { to: 1, text: 'The round ends after four rolls.' },
       { from: 2, to: 3, text: 'The round ends after the car stops on three stars.' },
-      { from: 4, text: 'The round ends after three fair tests.' },
+      { from: 4, to: 4, text: 'The round ends after three fair tests.' },
+      { from: 5, to: 5, text: 'The round ends after two pairs of cards.' },
     ],
     note: [
       { to: 1, text: 'Every roll is free: there is no star and nothing to get wrong.' },
       { from: 2, to: 3, text: 'A roll that stops short of the star or past it is a miss, and the pet says which way to change. After two on one star, the setup to try glows.' },
-      { from: 4, text: 'Two lanes that are just the same get a reminder, not a miss. Pressing go when anything besides the thing on the sign differs is a miss; after two on one test, the part of the orange lane to change glows.' },
+      { from: 4, to: 4, text: 'Two lanes that are just the same get a reminder, not a miss. Pressing go when anything besides the thing on the sign differs is a miss; after two on one test, the part of the orange lane to change glows.' },
+      { from: 5, to: 5, text: 'Guesses are free, and rolling the same ramp twice only gets a reminder. Tapping the card that went less far is a miss; after two on one pair, the farther card glows.' },
     ],
   },
   'critter-sort': {

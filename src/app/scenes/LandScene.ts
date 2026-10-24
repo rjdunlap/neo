@@ -1,12 +1,12 @@
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
-import { makeHost, Signpost } from '../../art/lands';
+import { makeHost, PageArrow, Signpost } from '../../art/lands';
 import { swatch } from '../../art/palette';
 import { makeCompanion } from '../../creatures/companion';
 import { Backdrop, type BackdropStyle } from '../../art/scenery';
 import { music } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import { landFor, landLayout, olderIn, spotRect, suggest, visibleIn, type Land, type LandId, type LandLayout } from '../../content/lands';
+import { clampLandPage, landFor, landLayout, landPages, olderIn, spotRect, suggest, visibleIn, type Land, type LandId, type LandLayout } from '../../content/lands';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
@@ -31,17 +31,27 @@ const HOST_HEIGHT = 0.95;
 /** The host's scale for a layout's drawing size (a host is about 250 units tall at scale 1). */
 export const hostScale = (box: { h: number }) => (box.h * HOST_HEIGHT) / 250;
 
-/** What the lands remember for this session: lands already greeted, open signposts, the last suggestion, the last land. */
+/** What the lands remember for this session: lands already greeted, open signposts, each side's page, the last suggestion, the last land. */
 const greeted = new Set<LandId>();
 const olderOpen = new Set<LandId>();
+const pageOf = new Map<LandId, { mine: number; older: number }>();
 const lastTip = new Map<LandId, string>();
 let lastLandId: LandId | null = null;
 /** The land she was in last this session, where the map's pet waits. */
 export const lastLand = () => lastLandId;
+/** The page of a land's side (hers, or the bigger kids') she was on this session; 0 if none. */
+export const rememberedPage = (id: LandId, older: boolean) => (older ? pageOf.get(id)?.older : pageOf.get(id)?.mine) ?? 0;
+/** Remembers the page of a land's side for the session (never saved). */
+export function rememberPage(id: LandId, older: boolean, page: number) {
+  const p = pageOf.get(id) ?? { mine: 0, older: 0 };
+  p[older ? 'older' : 'mine'] = page;
+  pageOf.set(id, p);
+}
 /** Another player is at the screen: what the lands remembered is not theirs. */
 export function forgetLands() {
   greeted.clear();
   olderOpen.clear();
+  pageOf.clear();
   lastTip.clear();
   lastLandId = null;
 }
@@ -79,12 +89,16 @@ export interface LandOptions {
   hostSaysLine?: boolean;
   /** What the host says then, in place of the land's line: a resident's hello (RW14). */
   hostLine?: LineId;
+  /** The page to open the side she sees on (a game's `{ land, page }` origin); the remembered page, or the first, without it. */
+  page?: number;
 }
 
 /**
- * One themed land on the island: its backdrop, its host, and its games for her age and younger on one screen.
+ * One themed land on the island: its backdrop, its host, and its games for her age and younger, a page at a time.
  * When the land has games for bigger kids, a signpost turns the land to show those (played at their easiest
- * band) and back. Tapping the host suggests a game; tapping a game plays it at the band nearest hers it has.
+ * band) and back. A side too full for one screen (`LAND_SPOTS`) splits into near-equal pages with a pictured arrow at
+ * each end of the path. Tapping the host suggests a game (turning to its page); tapping a game plays it at the band
+ * nearest hers it has.
  */
 export class LandScene extends Scene {
   readonly land: Land;
@@ -94,6 +108,10 @@ export class LandScene extends Scene {
   readonly mine: Landmark[] = [];
   readonly older: Landmark[] = [];
   showingOlder = false;
+  /** The page of the side she sees, and the arrows that turn it (shown only on a paged side). */
+  page = 0;
+  readonly prevArrow = new PageArrow(-1);
+  readonly nextArrow = new PageArrow(1);
   readonly host: Container;
   readonly hostCritter: LandHost['critter'];
   private readonly hostHit: Circle;
@@ -178,6 +196,16 @@ export class LandScene extends Scene {
     build(olderIn(this.land, this.band, GAMES), this.older);
     // A land with nothing yet for her age (Lantern Lake, for a child) opens with its signpost turned, rather than an empty field.
     this.showingOlder = !!this.sign && (olderOpen.has(this.id) || this.mine.length === 0);
+    // The page a game was opened from (its origin), else the one she was on, else the first.
+    if (this.options.page !== undefined) this.remember(this.options.page);
+    this.page = clampLandPage(this.remembered(), this.pages.length);
+
+    for (const arrow of [this.prevArrow, this.nextArrow]) {
+      arrow.hitArea = new Rectangle(-75, -150, 150, 160);
+      arrow.visible = false;
+      onTap(arrow, () => this.turnPage(arrow.dir));
+      this.field.addChild(arrow);
+    }
 
     // The host greets her and suggests a game; its touch area is round its body, not its feet.
     this.track(this.hostCritter);
@@ -199,14 +227,34 @@ export class LandScene extends Scene {
     this.backdrop.clouds.forEach((c) => onTap(c, () => { c.poke(); sfx.whoosh(); }, { radius: 90 }));
   }
 
-  /** The games standing in the land right now. */
-  get showing(): Landmark[] {
+  /** Every game on the side she sees (hers, or the bigger kids'), on every page. */
+  get side(): Landmark[] {
     return this.showingOlder ? this.older : this.mine;
+  }
+
+  /** The side's pages, in land order. */
+  get pages(): Landmark[][] {
+    return landPages(this.side, !!this.sign);
+  }
+
+  /** The games standing in the land right now: the page she is on. */
+  get showing(): Landmark[] {
+    const pages = this.pages;
+    return pages[clampLandPage(this.page, pages.length)];
+  }
+
+  private remembered(): number {
+    return rememberedPage(this.id, this.showingOlder);
+  }
+
+  private remember(page: number) {
+    rememberPage(this.id, this.showingOlder, page);
   }
 
   resize(v: View) {
     this.backdrop.resize(v);
-    const layout = landLayout(this.showing.length, !!this.sign, v, this.backdrop.groundY);
+    const arrows = { prev: this.page > 0, next: this.page < this.pages.length - 1 };
+    const layout = landLayout(this.showing.length, !!this.sign, v, this.backdrop.groundY, arrows);
     this.layout = layout;
     this.home.position.set(65, 65);
     this.house?.position.set(HOUSE_X, 65);
@@ -227,6 +275,13 @@ export class LandScene extends Scene {
     if (this.sign && layout.sign) {
       this.sign.position.set(layout.sign.x, layout.sign.y);
       this.sign.scale.set(layout.box.h / 155);
+    }
+    for (const [arrow, spot] of [[this.prevArrow, layout.prev], [this.nextArrow, layout.next]] as const) {
+      arrow.visible = !!spot;
+      if (spot) {
+        arrow.position.set(spot.x, spot.y);
+        arrow.scale.set(layout.box.h / 155);
+      }
     }
   }
 
@@ -250,7 +305,13 @@ export class LandScene extends Scene {
     const layout = this.layout;
     if (!layout) return [];
     const s = this.scale0;
-    const spots: FocusSpot[] = this.showing.map((m) => ({ id: m.mod.id, x: m.node.x, y: m.node.y - 55 * s, r: 85 * s, press: () => this.launch(m) }));
+    const arrow = (a: PageArrow): FocusSpot[] => (a.visible ? [{ id: a.dir < 0 ? 'prev' : 'next', x: a.x, y: a.y - 100 * a.scale.x, r: 85 * a.scale.x, press: () => this.turnPage(a.dir) }] : []);
+    // Along the path: the back arrow, the page's games, the on arrow.
+    const spots: FocusSpot[] = [
+      ...arrow(this.prevArrow),
+      ...this.showing.map((m) => ({ id: m.mod.id, x: m.node.x, y: m.node.y - 55 * s, r: 85 * s, press: () => this.launch(m) })),
+      ...arrow(this.nextArrow),
+    ];
     const hs = this.host.scale.x;
     spots.push({ id: 'host', x: this.host.x + this.hostHit.x * hs, y: this.host.y + this.hostHit.y * hs, r: this.hostHit.radius * hs, press: () => this.suggestGame() });
     if (this.sign && layout.sign) {
@@ -272,24 +333,62 @@ export class LandScene extends Scene {
     if (this.showingOlder) olderOpen.add(this.id);
     else olderOpen.delete(this.id);
     this.sign.point(this.showingOlder);
+    // The other side opens at the page she left it on, or its first.
+    this.page = clampLandPage(this.remembered(), this.pages.length);
     this.glowLeft = 0;
     this.suggested = null;
     sfx.whoosh();
     void voice.say(this.showingOlder ? 'land.bigger' : 'land.yours');
+    this.showPage();
+  }
+
+  /** Lays out the page she is on, its games growing in. */
+  private showPage() {
     this.resize(this.view);
     for (const mark of this.showing) {
+      this.tw.kill(mark.node.scale);
       mark.node.scale.set(this.scale0 * 0.6);
       void this.tw.to(mark.node.scale, { x: this.scale0, y: this.scale0 }, { duration: 0.3, ease: ease.outBack });
     }
+  }
+
+  /** Sets the page of the side she sees and remembers it for the session. */
+  private goToPage(page: number) {
+    this.page = clampLandPage(page, this.pages.length);
+    this.remember(this.page);
+    this.glowLeft = 0;
+    this.suggested = null;
+    sfx.whoosh();
+    this.showPage();
+    // The ring moves on to the new page's first game.
+    const first = this.showing[0];
+    if (first) this.keys.focus.focusOn(first.mod.id);
+  }
+
+  /** An arrow turns a full land a page back or on, saying how many games the new page has (as Explore's arrows do). */
+  turnPage(d: -1 | 1) {
+    if (this.leaving) return;
+    const page = this.page + d;
+    if (page < 0 || page >= this.pages.length) return;
+    const arrow = d < 0 ? this.prevArrow : this.nextArrow;
+    const s = arrow.scale.x;
+    this.tw.kill(arrow.scale);
+    void this.tw.to(arrow.scale, { x: s * 0.88, y: s * 0.88 }, { duration: 0.08 }).then(() => this.tw.to(arrow.scale, { x: s, y: s }, { duration: 0.25, ease: ease.outBack }));
+    this.goToPage(page);
+    void voice.say('explore.page', { n: this.showing.length });
   }
 
   /** The host points out a game: one she has not played yet, else the one she played longest ago. */
   private suggestGame() {
     if (this.leaving) return;
     this.hostCritter.poke();
-    const mod = suggest(this.showing.map((m) => m.mod), store.data.games, lastTip.get(this.id));
+    // From every game on this side: one on another page turns the land to it first, saying so, then glows.
+    const mod = suggest(this.side.map((m) => m.mod), store.data.games, lastTip.get(this.id));
     if (!mod) return;
     lastTip.set(this.id, mod.id);
+    const onPage = this.pages.findIndex((p) => p.some((m) => m.mod.id === mod.id));
+    const turned = onPage !== this.page;
+    if (turned) this.goToPage(onPage);
     this.suggested = mod.id;
     const mark = this.showing.find((m) => m.mod.id === mod.id)!;
     this.glowLeft = 2.6;
@@ -299,10 +398,15 @@ export class LandScene extends Scene {
     const tip = () => voice.say('land.try').then(() => {
       if (!this.leaving && this.suggested === mod.id) return voice.say(mod.titleLine);
     });
+    const page = () => (turned ? voice.say('explore.page', { n: this.showing.length }) : Promise.resolve());
     if (this.options.hostSaysLine) void voice.say(this.options.hostLine ?? this.land.line).then(() => {
+      if (!this.leaving && this.suggested === mod.id) return page().then(() => {
+        if (!this.leaving && this.suggested === mod.id) return tip();
+      });
+    });
+    else void page().then(() => {
       if (!this.leaving && this.suggested === mod.id) return tip();
     });
-    else void tip();
   }
 
   /** A round opened from here grows out of its spot, and shrinks back into it (RW14 slice 9). */
@@ -325,7 +429,7 @@ export class LandScene extends Scene {
     this.tw.kill(mark.node.scale);
     void this.tw
       .to(mark.node.scale, { x: this.scale0 * 1.15, y: this.scale0 * 1.15 }, { duration: 0.2 })
-      .then(() => this.app.growFrom(mark.node, () => this.app.go.game(mod.id, playBand(mod.bands, this.band), undefined, false, { land: this.id })));
+      .then(() => this.app.growFrom(mark.node, () => this.app.go.game(mod.id, playBand(mod.bands, this.band), undefined, false, { land: this.id, page: this.page })));
   }
 
   private readonly goHome = () => (this.options.home ?? this.app.go.hub)();

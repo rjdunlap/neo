@@ -16,7 +16,7 @@ describe('the puzzle shelf', () => {
   it('lists every puzzle at once, gentlest first, with nothing locked and nothing played', () => {
     const rows = shelf(couchDefaults());
     expect(rows.map(r => r.id)).toEqual([...COURSE_IDS]);
-    expect(rows.map(r => r.id)).toEqual(['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+    expect(rows.map(r => r.id)).toEqual(['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga', 'typing']);
     for (const row of rows) {
       expect(row).toMatchObject({ best: null, helped: false, over: null, runs: 0, inProgress: false });
       expect(row.minimum).toBe(courseInfo(row.id).minimum);

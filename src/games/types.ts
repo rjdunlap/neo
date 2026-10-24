@@ -127,6 +127,8 @@ export interface GameModule {
    * the controller implements `touchReturned()` to come back.
    */
   liveController?: true;
+  /** A keyboard typing game (Pond Typing): couch play hands it the letter keys pressed (`CouchControls.typed`) while its round is on screen. */
+  typing?: true;
   /** The game's `create()` returns a game with `autotouch()`, so its how-to card shows the ghost finger at her level. */
   touchDemo?: true;
   /** The sticker for finishing a round, rebuilt from its seed. */

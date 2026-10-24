@@ -92,6 +92,8 @@ class SudokuGarden implements Game {
   private readonly held = new HeldDirection();
   private dirty = true;
   private told = { clash: false, stuck: false };
+  /** When the wrong-number hint may speak again, so quick entries boing without stacking lines. */
+  private wrongQuietUntil = 0;
   private botWait = 0.8;
   private botPick: { cell: number; digit: number } | null = null;
   /** Couch challenge course: fixed beds in a row. Null in ordinary play, where beds are generated. */
@@ -425,6 +427,7 @@ class SudokuGarden implements Game {
     this.noting = false;
     this.botPick = null;
     this.told = { clash: false, stuck: false };
+    this.wrongQuietUntil = 0;
     this.cursor = Math.max(0, this.grid.findIndex((d) => !d));
     this.showBanner('');
     this.digits.removeChildren().forEach((c) => c.destroy());
@@ -665,7 +668,9 @@ class SudokuGarden implements Game {
     this.paintTray();
     if (this.hinted?.cell === i) this.dismissHint();
     this.report();
-    if (digit !== this.puzzle.solution[i]) this.misses++;
+    // A number the answer does not have is a miss, and the game says so: a boing, a red ring and a spoken hint.
+    const wrong = digit !== this.puzzle.solution[i];
+    if (wrong) this.misses++;
     const mine = geo.housesOf[i].find((h) => h.cells.some((c) => c !== i && this.grid[c] === digit));
     if (mine) {
       const twin = mine.cells.filter((c) => this.grid[c] === digit);
@@ -674,7 +679,13 @@ class SudokuGarden implements Game {
       if (!this.told.clash) {
         this.told.clash = true;
         void this.ctx.say('sudoku.clash', { house: houseName(mine) });
-      }
+      } else if (wrong) this.sayWrong(digit);
+      return;
+    }
+    if (wrong) {
+      this.flash = { cells: [i], color: swatch.red.fill, until: this.clock + 1.4 };
+      sfx.boing();
+      this.sayWrong(digit);
       return;
     }
     sfx.pop(4 + (i % 6));
@@ -685,6 +696,12 @@ class SudokuGarden implements Game {
       this.flash = { cells: deadEnds(this.grid, this.n), color: swatch.orange.fill, until: this.clock + 2.2 };
       void this.ctx.say('sudoku.stuck');
     }
+  }
+
+  private sayWrong(digit: number) {
+    if (this.clock < this.wrongQuietUntil) return;
+    this.wrongQuietUntil = this.clock + 4;
+    void this.ctx.say('sudoku.wrong', { n: digit });
   }
 
   private stagePoint(i: number): [number, number] {

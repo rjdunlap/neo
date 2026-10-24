@@ -46,7 +46,7 @@ describe('the Arcade lists (docs/rework/ARCADE.md)', () => {
       expect(filterName(f).length).toBeGreaterThan(0);
       expect((LINES as Record<string, unknown>)[filterLine(f)], f).toBeDefined();
     }
-    expect((LINES as Record<string, unknown>)['explore.arcade']).toBeDefined();
+    expect((LINES as Record<string, unknown>)['arcade.open']).toBeDefined();
     expect((LINES as Record<string, unknown>)['arcade.topics']).toBeDefined();
     expect((LINES as Record<string, unknown>)['arcade.empty']).toBeDefined();
     for (const s of SUBJECTS) expect(topicWord(s.id)).not.toBe(s.id);

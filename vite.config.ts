@@ -8,7 +8,12 @@ export default defineConfig({
   // Relative paths so the build works from any static host or sub-folder (e.g. GitHub Pages).
   base: './',
   // Two pages: the root is the creature-world rework (`src/rework.ts`), `classic/` the island game (`src/main.ts`).
-  build: { chunkSizeWarningLimit: 1500, rollupOptions: { input: { main: 'index.html', classic: 'classic/index.html' } } },
+  build: {
+    chunkSizeWarningLimit: 1500,
+    // Voice clips stay files (precached below) rather than base64 inside the bundle.
+    assetsInlineLimit: (file: string) => (file.endsWith('.m4a') ? false : undefined),
+    rollupOptions: { input: { main: 'index.html', classic: 'classic/index.html' } },
+  },
   plugins: [
     VitePWA({
       // Let a new build take over after the current play session closes. Auto-update
@@ -37,8 +42,8 @@ export default defineConfig({
       // The first worker still takes control at once, so the very first visit already works offline;
       // an update waits (no skipWaiting) until every open copy of the app has closed.
       // The code-drawn game catalog's routes bundle is just over 3 MiB; cache it offline with an explicit 4 MiB per-file bound.
-      // `webp` holds the root Home's backdrop (src/art/home/, kept under 1 MiB).
-      workbox: { maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff,woff2}'], clientsClaim: true },
+      // `webp` holds the root Home's backdrop (src/art/home/, kept under 1 MiB); `m4a` the rendered voice clips (src/audio/clips/).
+      workbox: { maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff,woff2,m4a}'], clientsClaim: true },
     }),
   ],
   // `scripts/creature-art/*.test.mjs` checks the sprite preparation tool's pixel rules on synthetic images.

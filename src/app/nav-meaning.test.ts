@@ -117,7 +117,7 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
   it('a round: its hold-to-leave is a back arrow to its origin, never a house', async () => {
     const mod = gameById('bubble-pop')!;
     for (const [origin, route, args] of [
-      [{ land: 'bubble-beach' }, 'land', ['bubble-beach']],
+      [{ land: 'bubble-beach' }, 'land', ['bubble-beach', undefined]],
       [{ explore: 'all', page: 1, others: false }, 'explore', ['all', 1, false]],
       [{ library: true }, 'library', []],
     ] as [Origin, string, unknown[]][]) {
@@ -133,7 +133,7 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
       const { home, house } = (s as GameScene).resultWayOut();
       return [home, ...(house ? [house] : [])] as Pressable[];
     };
-    expectOneMeaning(await walk(result({ land: 'counting-cove' }), ways), { route: 'land', args: ['counting-cove'] });
+    expectOneMeaning(await walk(result({ land: 'counting-cove' }), ways), { route: 'land', args: ['counting-cove', undefined] });
     expect(voice.say).toHaveBeenCalledWith('result.back', { place: 'Counting Cove' });
     expectOneMeaning(await walk(result({ explore: 'favorites', page: 0 }), ways), { route: 'explore', args: ['favorites', 0, undefined] });
     // No origin: Back to All games (`placeAtRoot` through `go.place`), and no house that would mean anything else.
@@ -147,7 +147,7 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
     app.scene = s;
     (s as unknown as { backFromIntro(): void }).backFromIntro();
     await new Promise((r) => setTimeout(r, 0));
-    expect(app.go.land).toHaveBeenCalledWith('counting-cove');
+    expect(app.go.land).toHaveBeenCalledWith('counting-cove', undefined);
     expect(app.go.hub).not.toHaveBeenCalled();
     expect(voice.say).toHaveBeenCalledWith('result.back', { place: 'Counting Cove' });
   });

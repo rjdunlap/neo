@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { landFor, landLayout, olderIn, overlaps, visibleIn } from '../../content/lands';
+import { landFor, overlaps } from '../../content/lands';
 import { computeView } from '../../engine/view';
-import { GAMES } from '../../games/registry';
-import { BANDS, type Band } from '../../progress/bands';
 import { exploreIds } from './ExploreScene';
 import { LOCATIONS } from './LocationScene';
-import { residentProblems } from './resident-check';
+import { residentProblems, landLayouts } from './resident-check';
 import { canyonPlan, canyonRim } from './canyon';
 import { meadowKeepOut } from './meadow';
 
@@ -17,24 +15,9 @@ const VIEWS = {
 };
 const canyon = landFor('treehouse');
 
-/** Every layout Painted Canyon uses: each band, both sides of the signpost, every view. */
-function* layouts() {
-  for (const [name, view] of Object.entries(VIEWS)) {
-    const ground = view.h * canyon.backdrop.horizon;
-    for (const band of BANDS.map((b) => b.id) as Band[]) {
-      const mine = visibleIn(canyon, band, GAMES).length;
-      const older = olderIn(canyon, band, GAMES).length;
-      for (const n of older ? [mine, older] : [mine]) {
-        const layout = landLayout(n, older > 0, view, ground)!;
-        yield { view, ground, layout, where: `${band} ${name} n=${n}` };
-      }
-    }
-  }
-}
-
 describe('Painted Canyon as a location', () => {
-  it('keeps every canyon drawing on screen and off every touch area, at every band, both sides of the signpost, in every view', () => {
-    for (const { view, ground, layout, where: where0 } of layouts()) {
+  it('keeps every canyon drawing on screen and off every touch area, in every layout up to the land budget, in every view', () => {
+    for (const { view, ground, layout, where: where0 } of landLayouts('treehouse')) {
       const keepOut = meadowKeepOut(layout, view);
       const plan = canyonPlan(layout, view, ground);
       // A desert with a spring, not bare sand: the spring, a cactus or yucca, and one of its animals.

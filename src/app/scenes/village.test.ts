@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { landFor, landLayout, olderIn, overlaps, visibleIn } from '../../content/lands';
+import { landFor, overlaps } from '../../content/lands';
 import { computeView } from '../../engine/view';
-import { GAMES } from '../../games/registry';
-import { BANDS, type Band } from '../../progress/bands';
 import { exploreIds } from './ExploreScene';
 import { LOCATIONS } from './LocationScene';
-import { residentProblems } from './resident-check';
+import { residentProblems, landLayouts } from './resident-check';
 import { meadowKeepOut } from './meadow';
 import { LANE_DEPTH, villageLane, villagePlan } from './village';
 
@@ -17,24 +15,9 @@ const VIEWS = {
 };
 const village = landFor('cozy-village');
 
-/** Every layout Cozy Village uses: each band, both sides of the signpost, every view. */
-function* layouts() {
-  for (const [name, view] of Object.entries(VIEWS)) {
-    const ground = view.h * village.backdrop.horizon;
-    for (const band of BANDS.map((b) => b.id) as Band[]) {
-      const mine = visibleIn(village, band, GAMES).length;
-      const older = olderIn(village, band, GAMES).length;
-      for (const n of older ? [mine, older] : [mine]) {
-        const layout = landLayout(n, older > 0, view, ground)!;
-        yield { view, ground, layout, where: `${band} ${name} n=${n}` };
-      }
-    }
-  }
-}
-
 describe('Cozy Village as a location', () => {
-  it('keeps every village drawing on screen and off every touch area, at every band, both sides of the signpost, in every view', () => {
-    for (const { view, ground, layout, where: where0 } of layouts()) {
+  it('keeps every village drawing on screen and off every touch area, in every layout up to the land budget, in every view', () => {
+    for (const { view, ground, layout, where: where0 } of landLayouts('cozy-village')) {
       const keepOut = meadowKeepOut(layout, view);
       const plan = villagePlan(layout, view, ground);
       // A village with hedgerows, not a bare green: a hedge, and one of the animals that lives in it.

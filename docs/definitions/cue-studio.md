@@ -2,6 +2,8 @@
 
 P1 definition, 2026-10-22, [PR #834](https://github.com/rjdunlap/neo/pull/834), worker `01a1664d-d24f-7b92-b6de-d9039e09f58a`, branch `codex/define-cue-studio`. Based on the [programming study](../deep-dives/subjects/programming.md) and [recommendation packet](../deep-dives/subjects/RECOMMENDATIONS.md#programming-recommendations). **Docs only; no game, registration, code or device evidence.** The rules below are a concrete proposal for developer review, not approval of the outstanding decisions.
 
+**Built 2026-10-23 (levels 1–2, pre-K, Tinker Lab), [PR #917](https://github.com/rjdunlap/neo/pull/917), `claude/cue-studio`.** Layout deviations from the specification below: the landscape palette sits 32 units further left (x 96 and 224) and the portrait palette is at y 600 with the controls at y 748, so the cards and buttons clear the shelf. Level 3 (requested repair with Check, school) is not built; it is the next slice, P3.
+
 ## Scope and identity
 
 Fun action: give the saved companion a tiny show to perform, watch each command light as it acts, then change the show. Learning purpose: distinguish choosing a symbolic instruction from executing it, follow order, and revise the first mismatch against a visible request. Only Wave and Turn, at most two slots, one actor and one terminating trace. IDs 1–3 and `cue-studio` are provisional until identity is accepted; no saved IDs are reserved by this definition.
@@ -54,7 +56,7 @@ Concrete conservative option for developer choice: initial `prek` range 1–2 an
 
 ## Land, layouts, art and sound
 
-Tinker Lab is the programming-first recommendation; Story Grove is the alternative only if identity becomes primarily storytelling. At source `ec0addb6`, each already has twelve listed games in `src/content/lands.ts`. That is an audit observation, not evidence a thirteenth fits. Neither destination nor a catalog rearrangement is approved. Before registration, run the existing `landLayout` capacity test for every band/four views with the proposed addition; a null result requires a developer placement decision. Do not shrink targets, invent a land or depend on Maker Harbor/Skywatch Isles.
+Tinker Lab is the programming-first recommendation; Story Grove is the alternative only if identity becomes primarily storytelling. At source `ec0addb6`, each already has twelve listed games in `src/content/lands.ts`. That is an audit observation, not evidence a thirteenth fits. Neither destination nor a catalog rearrangement is approved. Location capacity is built (2026-10-24, [definition](location-capacity.md)): a full land turns a page, so a thirteenth game no longer breaks the screen. Before registration, run the existing `landLayout` capacity sweep for every band/four views with the proposed addition; a null result now means a plan fails the sweep and is fixed, not a developer placement decision. Do not shrink targets, invent a land or depend on Maker Harbor/Skywatch Isles.
 
 Use the saved `ctx.companion()` and existing palette/code-drawn hand and spin icons. Optional short pentatonic action sounds are synthesized; meaning and trace remain clear with sound off. Existing quiet music style is sufficient because this is untimed non-musical action composition. No new asset generation/import is needed. “Turn” is a full spin, not an ambiguous facing change.
 

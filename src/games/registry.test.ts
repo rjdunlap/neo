@@ -252,8 +252,9 @@ describe('game registry', () => {
     expect(new Set(GAMES.map((g) => g.id)).size).toBe(GAMES.length);
     expect(couchGameById('penguin-slide')).toBe(gameById('penguin-slide'));
     expect(couchGameById('nope')).toBeUndefined();
-    // Every island game takes touch (Pond Conga was the last that took only a controller; the route to a couch course stays for the next).
-    for (const g of GAMES) expect(playsByTouch(g), g.id).toBe(true);
+    // Every island game takes touch except Pond Typing, played on a keyboard: the island opens its couch course.
+    expect(GAMES.filter((g) => !playsByTouch(g)).map((g) => g.id)).toEqual(['pond-typing']);
+    for (const g of GAMES) if (!playsByTouch(g)) expect(courseInfo(FIRST_COURSE[g.id]).game, g.id).toBe(g.id);
   });
 
   it('plays no background music in a game where she makes the music', () => {

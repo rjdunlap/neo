@@ -34,9 +34,9 @@ export type StoryRound =
 
 /**
  * Where a game was opened from, so its home button (and "again") go back there. A story round has its own way home.
- * `explore` is one of Explore's entries at the root (RW08), with the page she was on and whether All games showed the other ages.
+ * A `land` origin keeps the page of a full land she opened it from (clamped on arrival); `explore` is one of Explore's entries at the root (RW08), with the page she was on and whether All games showed the other ages.
  */
-export type Origin = { land: LandId } | { place: Band } | { journal: true } | { library: true } | { explore: ExploreEntry; page: number; others?: boolean };
+export type Origin = { land: LandId; page?: number } | { place: Band } | { journal: true } | { library: true } | { explore: ExploreEntry; page: number; others?: boolean };
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {
@@ -50,8 +50,11 @@ export interface Routes {
   start(): void;
   /** The island map: the themed lands, her home spot and the picnic. */
   hub(): void;
-  /** A themed land: its host and its games for her age and younger, with a signpost to the bigger kids' ones. */
-  land(id: LandId): void;
+  /**
+   * A themed land: its host and its games for her age and younger, with a signpost to the bigger kids' ones. `page` opens
+   * a full land's side at that page (a game's origin); without it, the page she was on this session, or the first.
+   */
+  land(id: LandId, page?: number): void;
   /**
    * Explore at the root (RW08): with no entry, its four entries (Places, Favorites, All games, Family play); with one,
    * that entry at `page` (All games showing the other ages with `others`). The island has no Explore and goes to the map.
