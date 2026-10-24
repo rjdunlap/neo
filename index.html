@@ -16,7 +16,20 @@
   <body>
     <!-- The creature-world rework (docs/rework/). The island game lives at classic/ until RW08's cutover. -->
     <div id="app"></div>
-    <a class="classic-link" href="classic/">Island games</a>
+    <!-- A picture door to the island games (RW14 slice 7); its name is for screen readers and a long press. -->
+    <a class="classic-link" href="classic/" aria-label="Island games" title="Island games">
+      <svg viewBox="0 0 64 72" width="56" height="63" aria-hidden="true">
+        <ellipse cx="32" cy="68" rx="24" ry="4" fill="#2b2440" opacity="0.2" />
+        <path d="M6 66V30a26 26 0 0 1 52 0v36z" fill="#9c6b3c" />
+        <path d="M12 66V31a20 20 0 0 1 40 0v35z" fill="#d9a066" />
+        <path d="M14 64V31a18 18 0 0 1 36 0v33z" fill="#f0c995" />
+        <path d="M18 30a14 14 0 0 1 28 0v6H18z" fill="#4fa3f7" />
+        <path d="M24 36c2-6 6-9 8-9s6 3 8 9z" fill="#7ccf5a" />
+        <path d="M31 28c-1-4 1-7 4-8m-4 8c-4-2-7-1-8 1m8-1c3-3 7-3 9-1" stroke="#4a9a35" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        <circle cx="42" cy="50" r="3.5" fill="#9c6b3c" />
+        <ellipse cx="22" cy="20" rx="6" ry="3" fill="#fff" opacity="0.35" />
+      </svg>
+    </a>
     <script type="module" src="/src/rework.ts"></script>
   </body>
 </html>

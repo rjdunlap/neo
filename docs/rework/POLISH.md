@@ -64,10 +64,13 @@ _Built 2026-10-23 ([PR #899](https://github.com/rjdunlap/neo/pull/899)): at the 
 - **Needs:** `land-meadow` (R23) from [batch 1](art-requests/CHATGPT-BATCH.md#batch-1-generate-these-first), imported.
 - **Changes:** a location draws `src/art/locations/<land-id>.webp` when the file exists, through a small loader that uses `import.meta.glob`. A location without the file keeps its code-drawn scenery, which also remains `classic/`'s. With the picture, the code-drawn sun and scenery are off, and each spot sits on a soft cream plate, so a code-drawn icon reads on a painted ground. Places shows `<land-id>-card.webp` as the card picture where it exists, and the icon otherwise. **After this slice, a new backdrop needs only the import script.**
 - **Files:** `src/art/locations/index.ts` (new), `src/app/scenes/LocationScene.ts`, `src/app/scenes/LandScene.ts` (a `backdropImage` option beside `backdrop`), `src/app/scenes/ExploreScene.ts` and its layout, `src/ui/landmark.ts` (the plate), and a test that every file in `src/art/locations/` names a real land.
+- **Also:** wire the location picture into slice 5's `resultPlace`/`ResultBackdrop` (`src/app/scenes/result-backdrop.ts`) and check the result screen over it in both orientations.
 - **Done when:** Rainbow Meadow shows the picture at every band, in both orientations and at four views; the picture's horizon sits behind the heading band and no landmark sits behind a spot (the R23 prompt asks for this, and the slice checks it at four views); the spots and the resident read against it; a location without a file is unchanged; Places shows the meadow's postcard; the WebP is under 1 MiB.
 - **Check tier:** shell (a new asset kind). Typecheck, unit tests, build, `BROWSER_SUITE=home` filtered to the meadow in both orientations, the offline check, and one screenshot per orientation for the developer's device judgement ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
 
 ### Slice 5: celebration and result in place
+
+_Built 2026-10-23 ([PR #901](https://github.com/rjdunlap/neo/pull/901)): at the root the result draws its origin location's own sky and hills (Story Grove's night, Tinker Lab's cave, else the land's day sky) or Home's backdrop with no origin, under a veil that drops from 0.8 to 0.45; a story round or `classic/` keeps flat cream; result buttons unchanged. Not done: an origin with a picture is not shown (slice 4's loader does not exist), and the location's code-drawn scenery is not drawn behind the result. [Build note](../archive/COMPLETED-2026-10-09.md#rw14-slice-5-the-result-stands-in-its-place-2026-10-23)._
 
 - **Changes:** at the root, `GameScene`'s celebration and result draw the round's place behind a soft veil instead of flat cream: the origin location's picture or code-drawn backdrop, or the home backdrop when the round has no origin. The companion stands on its ground, the confetti stays, and the result buttons keep their sizes and positions.
 - **Files:** `src/app/scenes/GameScene.ts` (the result and celebration layout), `src/ui/origin-art.ts` (expose the origin's backdrop), with slice 4's loader reused.
@@ -83,6 +86,8 @@ _Built 2026-10-23 ([PR #899](https://github.com/rjdunlap/neo/pull/899)): at the 
 - **Check tier:** existing-game change on an unchanged interaction. Typecheck, Duck Pond's rule tests, one filtered regression play, `fingerdemo` at the top level, and a build (a new asset).
 
 ### Slice 7: buttons and cards with a finish
+
+_Built 2026-10-23 ([PR #902](https://github.com/rjdunlap/neo/pull/902)): `finish`, `squash` and `spring` in `src/ui/buttons.ts` give `RoundButton`, `HoldButton` (so Home's exits), Explore's entry cards and Places' postcards one code-drawn finish and a press squash with a release spring; the root's "Island games" pill is a picture door (inline SVG, same link and position). Sizes, positions and hit areas unchanged. Not done: no spoken label on the door; no device check._
 
 - **Changes:** no images; this is code. `RoundButton`, `HoldButton` and the Explore and Places cards get one shared finish: a two-tone face with a soft upper-left highlight, a darker rim in the swatch's `line` colour, a short ground shadow, and a squash on press-down with a release spring. Home's three exits become picture buttons in that finish. The "Island games" text pill becomes a picture door, keeping its spoken label. Sizes, positions and hit areas do not change.
 - **Files:** `src/ui/buttons.ts`, `src/app/scenes/HomeScene.ts`, `src/app/scenes/ExploreScene.ts`, `src/art/palette.ts` (only if a shared shadow tone is missing).

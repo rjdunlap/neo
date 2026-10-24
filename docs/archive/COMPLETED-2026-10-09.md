@@ -1,5 +1,17 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### RW14 slice 7: buttons and cards with a finish (2026-10-23)
+
+[PR #902](https://github.com/rjdunlap/neo/pull/902), branch `claude/rw14-button-finish`: `src/ui/buttons.ts` exports `finish(shape, sw, face?)` (one Graphics: short ground shadow in the new `shadow` tone from `src/art/palette.ts`, a rim in `sw.line`, a two-tone face with a lip blended 35% toward `line`, and a soft upper-left highlight; circle or rounded rect), `squash(node)` (pressed pose 1.07 x 0.86) and `spring(node, delay)` (about 0.34 s back with one overshoot, stops if the node is destroyed or pressed again). `RoundButton` and `HoldButton` use it (child order unchanged; `HoldButton` squashes on pointer-down and springs on lift, cancel or completion), so Home's exits wear it unchanged. Explore's entry cards and Places' postcards use a 150-unit rounded-rect finish and squash on touch-down; the Little surprises card squashes for the whole hold. The "Island games" pill (`.classic-link`) is a 56 x 63 px inline-SVG door with `aria-label` and `title`, same class, href, position and hiding. Hit areas unchanged (`src/ui/finish.test.ts`). The finish applies app-wide, so `classic/`'s RoundButtons get it too.
+
+Open: the door has no spoken label (an HTML link navigates at once; a voice line would have collided with PR #900's voice-script edits); the Arcade cards in PR #900 do not use the finish yet; no device check. Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-7-buttons-and-cards-with-a-finish).
+
+### RW14 slice 5: the result stands in its place (2026-10-23)
+
+[PR #901](https://github.com/rjdunlap/neo/pull/901), branch `claude/rw14-result-in-place`: new `src/app/scenes/result-backdrop.ts`. `resultPlace(origin, {story, root})` returns null (flat cream) for a story round or on `classic/`, the origin location's own sky (`LOCATIONS[land].backdrop ?? landFor(land).backdrop`: Story Grove's night, Tinker Lab's cave, else the land's day sky) for a `{land}` origin that is a location, else `'home'` (Explore, library, home spot, no origin). `ResultBackdrop` draws that sky and hills (`Backdrop`) or Home's R06 backdrop (`backdropFit`), resizes and updates clouds and sun. `GameScene.celebrate`/`layoutResult` put the place under the veil (`eventMode` none, fading in with it); the veil drops from 0.8 to 0.45 alpha over a place and stays 0.8 over cream. Result button formulas, sizes and routes are unchanged; stories untouched.
+
+Open: slice 4's picture loader does not exist, so an origin with a picture is not shown (slice 4 wires it into `resultPlace` and checks the result); the location's code-drawn scenery is not drawn behind the result; no device check. Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-5-the-result-stands-in-its-place).
+
 ### RW14 slice 3: one meaning per button (2026-10-23)
 
 [PR #899](https://github.com/rjdunlap/neo/pull/899), branch `claude/rw14-one-meaning`: at the root (`app.creatureWorld`) every house goes `go.hub()` and the control that leaves to the screen's opener is a back arrow, with the origin's picture where `originArt` names one. The round's hold-to-leave (`GameScene.home`) is a back arrow (a plain arrow with no named origin); the result's Back without an origin is a plain arrow (`GameScene.resultWayOut()`); the how-to card's Back uses `HowToIntro.backIcon`. A root location shows Back with Places' picture and a house beside it (`HOUSE_X` = 190 via `LandOptions.root`), both in key and pad focus. Root Back/Home speak their label on press and wait up to 1.1 s ("Back to {place}!", new `nav.home`, `nav.back`); `HoldButton` gained `onDown`, `press()` and `setIcon()`. Buttons carry `meaning: 'home' | 'back'`; `src/app/nav-meaning.test.ts` (9 tests) presses each. Classic is unchanged. Home has no Back (RW03) and is not constructed in the test.
@@ -1802,7 +1814,7 @@ Typecheck,29 rule tests (300 seeded key mappings and valid delivery recipients),
 
 [PR #864](https://github.com/rjdunlap/neo/pull/864), `claude/fluffy-salon-pat-snip` ([deep dive](../deep-dives/fluffy-salon.md#build-slices-in-order)). Lap and toddler are now `order [6, 1, 7, 2]`, range 1–7, `entryLevels [6, 7]`. Level 6, *Pat the fluff*: no buttons; any touch grows fur from short fuzz; when the average length reaches 120 the pet does the floof shake and a big mirror (radius 70, top middle) appears; a tap on it finishes, or after 20 quiet seconds the pet looks by itself. No miss or hint is possible. Level 7, *Snip snip*: two big buttons, grow and snip (radius 54); the fur starts long and curly; the mirror is free play; no miss or hint. How-to card and voice lines added for both. `scripts/browser-check.mjs` `salon` now covers levels 6 and 7 (default `TO_LEVEL` 7). Slices 2 (customers, rooms, start looks) and 5 (level 8) are still queued.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--fluffy-salon-levels-6-and-7-pat-the-fluff-and-snip-snip-slices-34).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--fluffy-salon-levels-6-and-7-pat-the-fluff-and-snip-snip-slices-34).
 
 ## Critter Sort levels 12-13, Same Kind, Different Sprouts (genetics G4, 2026-10-23)
 
