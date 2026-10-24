@@ -75,6 +75,8 @@ export class LocationScene extends LandScene {
   readonly resident: Companion | Resident | null;
   /** Whether her own friend stands here as the resident, so the corner guide hides. */
   readonly atHome: boolean;
+  /** Opened at the root (with a Back to Places), where a visit is remembered for Explore's postcard. */
+  private readonly opensAtRoot: boolean;
 
   /** `back`, at the root (RW08), turns the corner button into a Back arrow to Explore's Places. */
   constructor(app: App, id: LandId, back?: () => void) {
@@ -116,10 +118,13 @@ export class LocationScene extends LandScene {
     });
     this.resident = resident;
     this.atHome = atHome;
+    this.opensAtRoot = !!back;
   }
 
   init() {
     super.init();
+    // Explore opens with this place's postcard next time (RW14 slice 8).
+    if (this.opensAtRoot) store.visitPlace(this.id);
     // Her friend is the resident here: one of her, not two.
     if (this.atHome) this.pip.visible = false;
   }

@@ -8,6 +8,10 @@
 
 - [ ] On an iPad, how do the finish and the release spring feel on Home's exits, Explore's cards and Places' postcards, and does the picture door read as the way to the island games?
 
+## Explore's last-place postcard (RW14 slice 8, 2026-10-23)
+
+- [ ] On an iPad, does the postcard above Explore's entries read as "back to my place", and is it clear of Back and Home in portrait?
+
 ## Adventure Walk levels 1–3
 
 - [ ] On an iPad, hear the way words: are "across" and "around" clearly distinct in device speech?

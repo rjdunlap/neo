@@ -22,6 +22,7 @@ import {
 } from './profiles';
 import { flipItem, moveItem, tidy } from '../content/room';
 import type { SpeciesId } from '../creatures/species';
+import type { LandId } from '../content/lands';
 import { changeWorn, type WearableId } from '../art/creatures/wear-slots';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
@@ -190,6 +191,13 @@ export class Store {
 
   isFavorite(gameId: string): boolean {
     return this.data.favorites.includes(gameId);
+  }
+
+  /** The last location she visited at the root, for Explore's postcard (RW14 slice 8); writes only when it changes. */
+  visitPlace(id: LandId) {
+    if (this.data.explore.last === id) return;
+    this.data.explore.last = id;
+    this.save();
   }
 
   /** Hearts a game or takes the heart back; returns whether it is hearted now. */

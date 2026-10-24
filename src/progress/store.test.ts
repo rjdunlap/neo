@@ -116,6 +116,18 @@ describe('switching profiles', () => {
     expect(savedAs(`neo.save.${b}`).profile.name).toBe('Bob');
   });
 
+  it('keeps each player\'s last place her own: another player starts with none (RW14 slice 8)', async () => {
+    const store = make();
+    await store.load();
+    const a = store.activeId;
+    store.visitPlace('counting-cove');
+    const b = store.addProfile()!;
+    expect(await store.switchTo(b)).toBe(true);
+    expect(store.data.explore.last).toBeNull();
+    expect(await store.switchTo(a)).toBe(true);
+    expect(store.data.explore.last).toBe('counting-cove');
+  });
+
   it('never shows default data while the other save is being read, and a save made meanwhile still lands on the old one', async () => {
     const store = make();
     await store.load();

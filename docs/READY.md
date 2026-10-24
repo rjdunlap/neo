@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-3. **RW14 slices 8 and 9, the last place first and moving between screens** (shell and navigation tiers; one at a time, both touch `ExploreScene.ts`). [POLISH.md](rework/POLISH.md#slice-8-the-last-place-first)
+3. **RW14 slice 9, moving between screens** (shell and navigation tiers; touches `ExploreScene.ts`). [POLISH.md](rework/POLISH.md#slice-9-moving-between-screens)
 
 ## Queued
 

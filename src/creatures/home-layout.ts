@@ -153,7 +153,12 @@ export interface ExploreGridLayout {
   /** The previous and next arrows, under the cards (drawn only when they have somewhere to go). */
   prev: Spot;
   next: Spot;
+  /** The last place's postcard above the cards (RW14 slice 8), or null when there is none. */
+  postcard: Spot | null;
 }
+
+/** The last place's postcard on Explore (RW14 slice 8): a picture larger than a card, its name on a pill under it. */
+export const EXPLORE_POSTCARD = { w: 320, h: 200 };
 
 /**
  * Explore's four entries, a page of up to four games, or Family play's one card (RW08 slice 1,
@@ -161,12 +166,23 @@ export interface ExploreGridLayout {
  * when the view is wider than tall and two by two when it is taller; Back and Home top left as in creature play, and
  * the page arrows centred under the cards, clear of the guide corner.
  */
-export function exploreGridLayout(v: { w: number; h: number }, n: number): ExploreGridLayout {
+export function exploreGridLayout(v: { w: number; h: number }, n: number, postcard = false): ExploreGridLayout {
   if (n < 1 || n > EXPLORE_ROW) throw new Error(`An Explore page holds one to ${EXPLORE_ROW} cards, not ${n}`);
   const step = EXPLORE_CARD + 80;
   const perRow = v.h > v.w && n > 2 ? 2 : n;
   const rows = Math.ceil(n / perRow);
-  const y0 = rows === 1 ? Math.round(v.h * 0.42) : Math.round(v.h * 0.4 - ((rows - 1) * EXPLORE_PITCH) / 2);
+  let y0 = rows === 1 ? Math.round(v.h * 0.42) : Math.round(v.h * 0.4 - ((rows - 1) * EXPLORE_PITCH) / 2);
+  // The postcard stands just above where the cards would be; where that is too high it keeps to the top (below Back and
+  // Home where it would reach across them), and the cards come down under its name.
+  let card: Spot | null = null;
+  if (postcard) {
+    const { w, h } = EXPLORE_POSTCARD;
+    const above = h + 50 + 20 + EXPLORE_CARD / 2;
+    const highest = v.w / 2 - w / 2 < HOME_BUTTON.x + CORNER_RADIUS + 20 ? HOME_BUTTON.y + CORNER_RADIUS + 10 : 40;
+    const top = Math.max(highest, y0 - above);
+    card = { x: Math.round(v.w / 2), y: top + h / 2 };
+    y0 = top + above;
+  }
   const cards: Spot[] = [];
   for (let r = 0, left = n; r < rows; r++) {
     const inRow = Math.min(perRow, left);
@@ -183,6 +199,7 @@ export function exploreGridLayout(v: { w: number; h: number }, n: number): Explo
     cards,
     prev: { x: Math.round(v.w / 2 - 160), y: arrowY },
     next: { x: Math.round(v.w / 2 + 160), y: arrowY },
+    postcard: card,
   };
 }
 

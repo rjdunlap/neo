@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computeView } from '../engine/view';
 import { BOARD, PLAQUE } from '../ui/creation-art';
 import { BACK } from './friends-layout';
-import { ACTION_RADIUS, BALL_RADIUS, BASKET, CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, exploreGridLayout, exploreLayout, PAGE_ARROW_RADIUS, GEAR_CORNER, GUIDE_CORNER, HOME_BUTTON, homeLayout, LINK_CORNER, NEWCOMER_REACH, playLayout, PROJECT_CARD, PROJECT_PLAY_RADIUS, projectLayout, type Floor } from './home-layout';
+import { ACTION_RADIUS, BALL_RADIUS, BASKET, CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, EXPLORE_POSTCARD, exploreGridLayout, exploreLayout, PAGE_ARROW_RADIUS, GEAR_CORNER, GUIDE_CORNER, HOME_BUTTON, homeLayout, LINK_CORNER, NEWCOMER_REACH, playLayout, PROJECT_CARD, PROJECT_PLAY_RADIUS, projectLayout, type Floor } from './home-layout';
 
 /** An iPad sideways and upright, a phone sideways, one with a notch, and a wide laptop. */
 const VIEWS = [
@@ -129,6 +129,26 @@ describe('the Explore entries and pages layout (RW08)', () => {
       }
     }
     expect(() => exploreGridLayout(VIEWS[0], 5)).toThrow();
+  });
+
+  it('fits the last place\'s postcard above the cards without shrinking a target (RW14 slice 8)', () => {
+    expect(EXPLORE_POSTCARD.w).toBeGreaterThan(EXPLORE_CARD);
+    expect(EXPLORE_POSTCARD.h).toBeGreaterThan(EXPLORE_CARD);
+    const NAME = 50;
+    for (const v of VIEWS) {
+      expect(exploreGridLayout(v, 4).postcard, `${v.w}×${v.h}`).toBeNull();
+      for (let n = 1; n <= 4; n++) {
+        const l = exploreGridLayout(v, n, true);
+        const where = `${v.w}×${v.h}, ${n} cards and the postcard`;
+        const cards = l.cards.map((c, i) => ({ ...rect(c, EXPLORE_CARD, EXPLORE_CARD, `card ${i}`), y1: c.y + EXPLORE_CARD / 2 + NAME }));
+        const post = { ...rect(l.postcard!, EXPLORE_POSTCARD.w, EXPLORE_POSTCARD.h, 'postcard'), y1: l.postcard!.y + EXPLORE_POSTCARD.h / 2 + NAME };
+        check(v, [disc(l.back, CORNER_RADIUS, 'back'), disc(l.home, CORNER_RADIUS, 'home'), post, ...cards, disc(l.prev, PAGE_ARROW_RADIUS, 'prev'), disc(l.next, PAGE_ARROW_RADIUS, 'next')], [], where);
+        const link: Box = { x0: v.w - LINK_CORNER.w, y0: 0, x1: v.w, y1: LINK_CORNER.h, what: 'link corner' };
+        for (const c of [post, ...cards]) expect(overlap(c, link), `${c.what} under the link, ${where}`).toBe(false);
+        // The cards keep their own layout's rows: the postcard only moves them down.
+        expect(new Set(l.cards.map((c) => c.y)).size, where).toBe(new Set(exploreGridLayout(v, n).cards.map((c) => c.y)).size);
+      }
+    }
   });
 });
 
