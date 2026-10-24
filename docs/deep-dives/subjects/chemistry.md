@@ -145,7 +145,7 @@ The first unsupported action is level 1's drag from one bead to another; touch-d
 All future work, one session each. Definitions use links and `git diff --check`; builds use the activity tier in AGENTS.md.
 
 1. **Define Bond Beads 1–4** (docs; **defined 2026-10-22**, [definition](../../definitions/bond-beads.md)): bead kinds (H, O, C hand counts; no N yet), link/break/undo gestures, the 6–7 bead cap, request pools, tally strip, accounting, hints, supported finish, speech and how-to steps, ghost-finger plan, layout audit in both orientations, land capacity.
-2. **Build Bond Beads 1–2:** graph model and canonical matcher in `logic.ts` with rule tests; new-game check tier.
+2. **Build Bond Beads 1–2** (**built 2026-10-24**, [PR #941](https://github.com/rjdunlap/neo/pull/941); the "Tidy" move and the 6–7-bead layout are cut for now): graph model and canonical matcher in `logic.ts` with rule tests; new-game check tier.
 3. **Build Bond Beads 3–4:** rearrangement, the tally, alternative acceptance.
 4. **Define Bond Beads 5–8** after a chemistry educator reviews the molecule list and limits line; then build 5–6 and 7–8.
 5. **Define Island Bridges molecule seas** after the same review: three authored seas with unique solutions (checked with the game's existing solver), a skin and naming; existing levels and pins preserved.

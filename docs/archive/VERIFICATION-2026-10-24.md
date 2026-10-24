@@ -64,3 +64,10 @@
 - `claude/grownup-puzzle-misses` ([PR #920](https://github.com/rjdunlap/neo/pull/920)), tested commit 7c33d40b on base `origin/main` 7f55ad94: Sudoku Garden's wrong digit boings, rings the square red and speaks `sudoku.wrong` (at most once per four seconds); a stray plank (Island Bridges) and a stray fill (Picture Logic) count 0 misses; touch and couch; Lantern Lights unchanged. The browser harness's course-list assertions gained `typing` (stale since Pond Typing).
 - Ran: typecheck; vitest for the three games and `src/content` (216 pass); on `http://localhost:5380` `BROWSER_SUITE` `sudokutouch` (red ring), `bridgestouch`, `picturetouch`, `couchpictures`, `couchbridges` and `couchbeds` passed (`sudokutouch` and `couchbeds` on 7c33d40b, the rest on a9a435bd with the same code for those games).
 - Not run: build (no shared or asset change), `fingerdemo` (bot unaffected), an iPad. Open: [device check](../DEVICE-CHECKS.md) for the spoken wrong-digit line.
+
+## 2026-10-24 — Better voice V2 part 1: build-time Kokoro clips
+
+- `claude/better-voice-v1` ([PR #921](https://github.com/rjdunlap/neo/pull/921)), commit 10a2eba7 on base `origin/main` b379b9e9: `scripts/voice-clips/` renders 215 slot-free clips (shell lines, Bubble Pop, Duck Pond); `voice.ts` plays them on a new `voiceOut` bus with device-speech fallback.
+- Ran: typecheck; `npm test` (230 files, 2864 tests, including the manifest/file/settings test and the clip lookup test); `npm run build` (precache 390 entries, 215 m4a in `dist` and `sw.js`); `npm run test:offline` PASSED on `vite preview --port 4817` (served `classic-DXt0k59h.js` matched `dist`); an offline probe found all 215 clips in the service-worker cache and fetched one offline (200).
+- Dev probe on `http://localhost:5743` (Playwright Chromium): a clip decoded (1.41 s), "Home!" played by clip with no device speech, `stop()` resolved a playing clip in about 240 ms, an unrendered line used device speech.
+- Not run: any browser suite (no navigation or game change), an iPad. Open: [device check](../DEVICE-CHECKS.md) for clip playback, loudness against music and the voice.

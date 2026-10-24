@@ -6,6 +6,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 - [ ] On an iPad at lap with a one-year-old: does a tap on a puzzle piece read as "it went in" or as a surprise; does a tap on the named part of the patient land on the right part with a small finger (the bandage still drags for a grown-up); in *Come along*, does the herd walking to where she last tapped read as following her, and is three seconds long enough between taps? Chrome play with synthetic taps finished all three with no misses ([entry](VERIFICATION.md#2026-10-24--taps-only-lap-levels-r2)); a child's hand and device speech remain unobserved.
 
+## Bond Beads levels 1–2 (chemistry slice 2, 2026-10-24)
+
+- [ ] On an iPad with a school-age child (6–8): does she read the small nubs as hands, and can she drag or tap one bead onto another and tap a link to break it comfortably in both orientations?
+- [ ] On the iPad's voice, are the level lines clear (the stuck-tray line, the Check hints, the tally strip words)?
+- [ ] Does she take the level 2 Check as "same shape as the card" and can she tell a rebuilt shape from the card's picture at a glance?
+
 ## Story Weaver levels 1–3 (writing-composition WC1, 2026-10-24)
 
 - [ ] With a six-year-old: does she understand that the owl cannot see the pictures, and does the owl's question read as a suggestion she may decline?
