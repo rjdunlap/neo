@@ -477,8 +477,7 @@ class IslandBridges implements Game {
     }
     this.planks[edge]++;
     this.entries++;
-    // A plank that is not in the answer is a miss for adaptation, never refused and never shown as one.
-    if (this.planks[edge] > this.puzzle.solution[edge]) this.misses++;
+    // A plank beyond the answer is exploring, never shown as wrong, so it is not a miss either (decided 2026-10-23).
     if (this.hinted?.edge === edge) this.hinted = null;
     sfx.pop(4 + (edge % 6));
     this.dirty = true;

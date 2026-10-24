@@ -665,7 +665,9 @@ class SudokuGarden implements Game {
     this.paintTray();
     if (this.hinted?.cell === i) this.dismissHint();
     this.report();
-    if (digit !== this.puzzle.solution[i]) this.misses++;
+    // A number the answer does not have is a miss, and the game says so: a boing, a red ring and a spoken hint.
+    const wrong = digit !== this.puzzle.solution[i];
+    if (wrong) this.misses++;
     const mine = geo.housesOf[i].find((h) => h.cells.some((c) => c !== i && this.grid[c] === digit));
     if (mine) {
       const twin = mine.cells.filter((c) => this.grid[c] === digit);
@@ -674,7 +676,13 @@ class SudokuGarden implements Game {
       if (!this.told.clash) {
         this.told.clash = true;
         void this.ctx.say('sudoku.clash', { house: houseName(mine) });
-      }
+      } else if (wrong) void this.ctx.say('sudoku.wrong', { n: digit });
+      return;
+    }
+    if (wrong) {
+      this.flash = { cells: [i], color: swatch.red.fill, until: this.clock + 1.4 };
+      sfx.boing();
+      void this.ctx.say('sudoku.wrong', { n: digit });
       return;
     }
     sfx.pop(4 + (i % 6));
