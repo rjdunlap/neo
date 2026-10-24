@@ -96,6 +96,8 @@ _Built 2026-10-23 ([PR #902](https://github.com/rjdunlap/neo/pull/902)): `finish
 
 ### Slice 8: the last place first
 
+_Built 2026-10-23 ([PR #905](https://github.com/rjdunlap/neo/pull/905)): `SaveData.explore.last` (a `LandId` or null, per profile) is written by `store.visitPlace` when a location opens from Places at the root; Explore shows a 320 by 200 postcard of it above the four unchanged entries, only after a visit. Not done: the location opened from the postcard still goes Back to Places (the existing root route), not the Explore root; the offline check did not pass (open); no device check._
+
 - **Changes:** Explore opens with a large postcard of the last location she visited ("Back to Counting Cove") before its four entries, so a returning child goes Home → Explore → her place → a spot → Play. The visit memory is per profile, cleared on a profile switch, and never a gate or a nag ([RW03](HOME-NAVIGATION.md#routes-and-meaning)).
 - **Files:** `src/app/scenes/ExploreScene.ts` and its layout, `src/app/origin.ts` or a small per-profile field in `src/progress/save.ts` (bounded and repaired, with tests).
 - **Done when:** the postcard appears only after a visit; it fits with the four entries at every view without shrinking a target (`exploreLayout`'s tests); a profile switch clears it.

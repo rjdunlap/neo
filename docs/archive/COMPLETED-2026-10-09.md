@@ -1,5 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### RW14 slice 8: the last place first (2026-10-23)
+
+[PR #905](https://github.com/rjdunlap/neo/pull/905), branch `claude/rw14-last-place`: new per-profile field `SaveData.explore: { last: LandId | null }` in `src/progress/save.ts` (default null, repaired on load with `isLandId`); `store.visitPlace(id)` writes only on change. `LocationScene.init()` records the visit when the location was opened at the root with a Back to Places, so another profile starts with none. `ExploreScene` (no entry) shows `last` as a 320 by 200 postcard (`EXPLORE_POSTCARD`: the location's landmark art and name) above the four entries, kept apart from `cards` so `cards[0..3]` are still the entries; a tap says "Back to {place}!" (existing `result.back`) and opens the location with `go.land`. It shows only after a visit and only for a built location; no new voice line and no spoken prompt. `exploreGridLayout(v, n, postcard)` returns `postcard: Spot | null`, sitting just above the cards and kept to the top, below Back and Home if it would reach across them; a unit test covers five views and 1-4 cards (clear of corners and other targets, no target shrunk). Browser case `BROWSER_SUITE=home HOME_ONLY=last-place`.
+
+Open: the location opened from the postcard still goes Back to Places, not the Explore root; the offline check failed (see the verification entry); no device check. Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-8-the-last-place-first).
+
 ### RW14 slice 7: buttons and cards with a finish (2026-10-23)
 
 [PR #902](https://github.com/rjdunlap/neo/pull/902), branch `claude/rw14-button-finish`: `src/ui/buttons.ts` exports `finish(shape, sw, face?)` (one Graphics: short ground shadow in the new `shadow` tone from `src/art/palette.ts`, a rim in `sw.line`, a two-tone face with a lip blended 35% toward `line`, and a soft upper-left highlight; circle or rounded rect), `squash(node)` (pressed pose 1.07 x 0.86) and `spring(node, delay)` (about 0.34 s back with one overshoot, stops if the node is destroyed or pressed again). `RoundButton` and `HoldButton` use it (child order unchanged; `HoldButton` squashes on pointer-down and springs on lift, cancel or completion), so Home's exits wear it unchanged. Explore's entry cards and Places' postcards use a 150-unit rounded-rect finish and squash on touch-down; the Little surprises card squashes for the whole hold. The "Island games" pill (`.classic-link`) is a 56 x 63 px inline-SVG door with `aria-label` and `title`, same class, href, position and hiding. Hit areas unchanged (`src/ui/finish.test.ts`). The finish applies app-wide, so `classic/`'s RoundButtons get it too.
@@ -1814,7 +1820,7 @@ Typecheck,29 rule tests (300 seeded key mappings and valid delivery recipients),
 
 [PR #864](https://github.com/rjdunlap/neo/pull/864), `claude/fluffy-salon-pat-snip` ([deep dive](../deep-dives/fluffy-salon.md#build-slices-in-order)). Lap and toddler are now `order [6, 1, 7, 2]`, range 1–7, `entryLevels [6, 7]`. Level 6, *Pat the fluff*: no buttons; any touch grows fur from short fuzz; when the average length reaches 120 the pet does the floof shake and a big mirror (radius 70, top middle) appears; a tap on it finishes, or after 20 quiet seconds the pet looks by itself. No miss or hint is possible. Level 7, *Snip snip*: two big buttons, grow and snip (radius 54); the fur starts long and curly; the mirror is free play; no miss or hint. How-to card and voice lines added for both. `scripts/browser-check.mjs` `salon` now covers levels 6 and 7 (default `TO_LEVEL` 7). Slices 2 (customers, rooms, start looks) and 5 (level 8) are still queued.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--fluffy-salon-levels-6-and-7-pat-the-fluff-and-snip-snip-slices-34).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--fluffy-salon-levels-6-and-7-pat-the-fluff-and-snip-snip-slices-34).
 
 ## Critter Sort levels 12-13, Same Kind, Different Sprouts (genetics G4, 2026-10-23)
 
