@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Rework RW07 slices 2 and 3, Welcome a New Friend** (slice 2, the song step, is ready: the hello-song call was decided 2026-10-23, Song Maker level 2 as a stated, test-guarded exception ([record](archive/DECISIONS-2026-10-23.md#decisions)); slice 3, the ending, adoption and basket bed, comes after slice 2; both shell, save and navigation tier). [Packet](rework/WELCOME-BUILD.md#build-slices-in-order)
+- **Rework RW07 slices 2 and 3, Welcome a New Friend** (slice 2, the song step, is ready: the hello-song call was decided 2026-10-23, Song Maker level 2 as a stated, test-guarded exception ([record](archive/DECISIONS-2026-10-23.md#decisions)); slice 3, the ending, adoption and basket bed, comes after slice 2; both shell, save and navigation tier). [Packet](rework/WELCOME-BUILD.md#build-slices-in-order) **Claimed 2026-10-23 by `claude/rw07-welcome-song`** (slice 2, then slice 3 if it fits; files: `src/content/welcome.ts`, `src/app/scenes/ProjectScene.ts`, `src/content/voice-script.ts`, tests and the welcome browser case; slice 3 adds `src/progress/store.ts`, `src/app/scenes/PlayScene.ts`, `src/creatures/home-layout.ts`).
 - **Rework RW05 slice 2b, Splish Splash and Weather Wardrobe on `CompanionRig`, then drop `ctx.petSpec`** (ready: the misfit call was decided 2026-10-23, fewer parts per species and GAME-FIT's stand-in point for a held item ([record](archive/DECISIONS-2026-10-23.md#decisions)); shell tier plus one filtered regression and `fingerdemo` per game): slice 2 landed in part in [#642](https://github.com/rjdunlap/neo/pull/642) with the other eight large-pet games. [Packet](rework/CREATURE-COLLECTION.md#built-slice-2-in-part-2026-10-20)
 
 ## Queued
