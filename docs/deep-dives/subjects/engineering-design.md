@@ -173,7 +173,7 @@ M: a new `logic.ts` with a path walker and a solver for tests; parts drawn with 
 
 ## Build slices, in order
 
-1. **Define Welcome Ways 1–4** (docs only): part and visitor tables, round plans, reasons and voice lines, accounting, layouts in portrait and landscape at 100 units, how-to card text with level-scoped steps, ghost-finger plan, the rule tests above, the Habitat Helpers overlap test, placement after a capacity check.
+1. **Define Welcome Ways 1–4** (docs only; claimed 2026-10-24, `codex/welcome-ways-definition`): part and visitor tables, round plans, reasons and voice lines, accounting, layouts in portrait and landscape at 100 units, how-to card text with level-scoped steps, ghost-finger plan, the rule tests above, the Habitat Helpers overlap test, placement after a capacity check.
 2. **Build Welcome Ways 1–4**: `logic.ts` with walker and solver tests, the game, voice, how-to, autotouch, registry and land; the tier for a new game.
 3. **Define Welcome Ways 5–7** (constraints, conflict, repair for a new friend), with enumeration tests per level.
 4. **Define Sink or Float 8: Garden Raft** after a float/balance model review, sharing `topples`-style exact positions.
@@ -184,3 +184,7 @@ M: a new `logic.ts` with a path walker and a solver for tests; parts drawn with 
 ## What was built and what ran
 
 Nothing was built. Docs only: the opened sources above, a source audit of the catalog, `node scripts/check-links.mjs` and `git diff --check`. No browser, device, child, tween or parent observation; no accessibility review.
+
+## Active definition claim — 2026-10-24
+
+Welcome Ways 1–4 only: freeze parts, visitor rules, accounting, layouts, spoken support, how-to, demonstration and build tests from this study and the 2026-10-23 decisions. Expected files: `docs/definitions/welcome-ways.md`, this study, `RECOMMENDATIONS.md`, `docs/STUDY-BACKLOG.md`, `docs/READY.md`, `docs/GAME-BATCHES.md`, `docs/ROADMAP.md`, `docs/VERIFICATION.md` and the completed-work archive. No gameplay, registration, assets, new research, human access representation or levels 5–9.
