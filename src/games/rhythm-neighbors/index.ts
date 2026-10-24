@@ -93,7 +93,8 @@ class RhythmNeighbors implements Game{
   const times=schedule(p.gaps,start);this.events=times.map((at,i)=>({at,voice:0,note:i}));this.busyUntil=times.at(-1)!+0.6;
  }
  private demonstrate(){
-  if(this.busy||this.done||this.tree)return; // Levels 7 and 9 have no bird call of their own.this.taps.length=0;this.busy=true;this.waiting=false;
+  if(this.busy||this.done||this.tree)return; // Levels 7 and 9 have no bird call of their own.
+  this.taps.length=0;this.busy=true;this.waiting=false;
   const p=this.phrases[this.phrase];
   const call=schedule(p.call,this.clock+0.3);this.events=call.map(at=>({at,voice:-1,note:-1}));
   if(this.plan.turn){this.busyUntil=call.at(-1)!+0.6;this.drawScore();return;} // Level 8: the call alone, then the frog waits.
