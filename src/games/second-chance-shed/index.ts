@@ -117,7 +117,7 @@ class SecondChanceShed implements Game {
   /** The next used thing rolls in on the cart and says its name. */
   private async bringItem() {
     this.busy = true;
-    this.tally.nextItem();
+    this.tally.nextItem(this.index);
     const id = this.round.items[this.index];
     const node = itemArt(id);
     node.hitArea = new Rectangle(-80, -80, 160, 160);
@@ -178,9 +178,9 @@ class SecondChanceShed implements Game {
   }
 
   private async explain(at: Place, glowed: boolean) {
-    const id = this.item?.id;
+    const node = this.item?.node;
     await this.ctx.say(`shed.reason.${at}` as 'shed.reason.worm');
-    if (!this.alive || this.item?.id !== id) return;
+    if (!this.alive || this.item?.node !== node) return;
     if (glowed) await this.ctx.say('shed.hint-glow');
   }
 

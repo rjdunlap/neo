@@ -151,3 +151,19 @@ describe('layout', () => {
     }
   }
 });
+
+
+describe('Start again', () => {
+  it('never counts the same item\'s hint twice', () => {
+    const t = new ShedTally(true);
+    t.nextItem(0);
+    t.drop('wrong'); t.drop('wrong');
+    t.nextItem(0);
+    t.drop('wrong'); t.drop('wrong');
+    expect(t.ask()).toBe('glow');
+    expect([t.misses, t.hints]).toEqual([4, 1]);
+    t.nextItem(1);
+    expect(t.ask()).toBe('glow');
+    expect(t.hints).toBe(2);
+  });
+});

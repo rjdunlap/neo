@@ -170,22 +170,24 @@ export class ShedTally {
   hints = 0;
   glowing = false;
   private wrongs = 0;
-  private hinted = false;
   private asks = 0;
+  private item = 0;
+  /** Round positions whose help has been counted, so Start again never counts the same item's hint twice. */
+  private readonly hinted = new Set<number>();
 
   constructor(readonly counts: boolean) {}
 
-  /** The next item arrives: its help starts fresh. */
-  nextItem() {
+  /** The item at round position `index` arrives (the next one by default): its glow and asks start fresh. */
+  nextItem(index = this.item + 1) {
+    this.item = index;
     this.wrongs = 0;
-    this.hinted = false;
     this.asks = 0;
     this.glowing = false;
   }
 
   private hint() {
     this.glowing = true;
-    if (this.counts && !this.hinted) { this.hinted = true; this.hints++; }
+    if (this.counts && !this.hinted.has(this.item)) { this.hinted.add(this.item); this.hints++; }
   }
 
   drop(v: Verdict) {
