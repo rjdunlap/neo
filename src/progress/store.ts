@@ -310,7 +310,7 @@ export class Store {
     return changed;
   }
 
-  /** A finished round completes its step and keeps what she made for it (a stamped picture), in one write. */
+  /** A finished round completes its step and keeps what she made for it (a stamped picture or her tune), in one write. */
   completeWelcomeStep(step: WelcomeStep, made: Creation | null): boolean {
     const done = completeWelcome(this.data.projects.welcome, step, made);
     if (done) this.save();

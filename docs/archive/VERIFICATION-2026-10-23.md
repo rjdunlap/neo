@@ -178,3 +178,11 @@
 - Ran: typecheck; `critter-sort`, `howto` and registry vitest; full `npm test`: 2602 pass, 1 fail in `src/app/scenes/lab.test.ts` (Tinker Lab "prek landscape n=12"), which failed identically on `origin/main` then and was fixed there by [#877](https://github.com/rjdunlap/neo/pull/877); rerun green after merging `origin/main`.
 - Browser: `BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=12 TO_LEVEL=13` passed (wrong drops, hint, completion); portrait screenshot of 13 checked visually (the big plant moved above the example after the first look); `fingerdemo FINGER_ONLY=critter-sort` at levels 1, 12 and 13 passed.
 - Not run: build (no shared files), `world`, couch, offline; device speech and a child reading the plants ([open](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — R23 Rainbow Meadow source art
+
+- [PR #891](https://github.com/rjdunlap/neo/pull/891), `codex/art-r23`: five built-in imagegen calls, chosen untouched `land-meadow-5.png`, no missing source.
+- Tested `d30d7fff` plus art/docs diff; 1536 × 1024 RGB, 1,670,501 bytes; source/repository hash equality passed.
+- Reviewed full size, 120 px and static 1024 × 768 / 768 × 1024 cover previews with illustrative 100 px circles; about 38% horizon, clear ground; peripheral clipping caveats in [exact prompts/proof](../rework/concepts/generated/R23-PROMPTS.md).
+- Ran links and diff checks; required PR CI tracked in #891. No source cleanup or import/preparation.
+- Not run: local typecheck/tests/build/browser/offline (source art/docs only), actual in-game layout, device/child judgement; integration remains separate.

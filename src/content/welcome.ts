@@ -6,7 +6,7 @@ import type { LineId } from './voice-script';
 /**
  * Welcome a New Friend (RW07, docs/rework/WELCOME-BUILD.md): the first project at the root, for preschool and pre-K.
  * Three steps in any order, each an ordinary round at the project's level, get the house ready for a newcomer. Slice 1
- * builds `pretty` and `yummy`; `song` waits on the hello-song decision and the ending on all three.
+ * built `pretty` and `yummy`, slice 2 `song`; the ending (slice 3) waits on all three.
  */
 export const WELCOME_STEPS = ['pretty', 'yummy', 'song'] as const;
 export type WelcomeStep = (typeof WELCOME_STEPS)[number];
@@ -34,6 +34,11 @@ export interface WelcomeStepPlan {
   level: Record<WelcomeBand, number>;
   ask: Record<WelcomeBand, LineId>;
   done: Record<WelcomeBand, LineId>;
+  /**
+   * The one stated exception (decided 2026-10-23): a free-making level with no right answers may sit below the band's
+   * range. A story round never moves the saved level, and free play scores no misses. A test allows only this.
+   */
+  freeBelowRange?: true;
 }
 
 /**
@@ -52,6 +57,14 @@ export const WELCOME_PLAN: Partial<Record<WelcomeStep, WelcomeStepPlan>> = {
     level: { preschool: 2, prek: 5 },
     ask: { preschool: 'welcome.ask.yummy', prek: 'welcome.ask.yummy-prek' },
     done: { preschool: 'welcome.done.yummy', prek: 'welcome.done.yummy-prek' },
+  },
+  // Song Maker 2, free on a 6-beat loop: the only level that keeps her tune (the copy levels in range keep none).
+  song: {
+    game: 'song-maker',
+    level: { preschool: 2, prek: 2 },
+    ask: { preschool: 'welcome.ask.song', prek: 'welcome.ask.song' },
+    done: { preschool: 'welcome.done.song', prek: 'welcome.done.song' },
+    freeBelowRange: true,
   },
 };
 
@@ -123,6 +136,12 @@ export function completeWelcome(p: WelcomeProject, step: WelcomeStep, made: Crea
     if (tune) p.results.song = tune;
   }
   return true;
+}
+
+/** The step's done line: for the song, the hum line when no tune was kept (fewer than two notes stayed lit). */
+export function welcomeDoneLine(p: WelcomeProject, step: WelcomeStep, band: WelcomeBand): LineId {
+  if (step === 'song' && !p.results.song) return 'welcome.done.song-hum';
+  return WELCOME_PLAN[step]!.done[band];
 }
 
 /** The first built step not done yet, or null when every built step is done. */

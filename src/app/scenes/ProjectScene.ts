@@ -3,7 +3,7 @@ import { cream, swatch, wood } from '../../art/palette';
 import { homeBackdrop } from '../../art/home/backdrop';
 import { music, STYLES } from '../../audio/music';
 import { voice } from '../../audio/voice';
-import { builtSteps, newcomerFor, nextWelcomeStep, WELCOME_PLAN, welcomeBand, type WelcomeBand, type WelcomeStep } from '../../content/welcome';
+import { builtSteps, newcomerFor, nextWelcomeStep, WELCOME_PLAN, welcomeBand, welcomeDoneLine, type WelcomeBand, type WelcomeStep } from '../../content/welcome';
 import { Companion } from '../../creatures/companion';
 import { SPECIES } from '../../creatures/species';
 import { CORNER_RADIUS, NEWCOMER_REACH, PROJECT_CARD, PROJECT_PLAY_RADIUS, projectLayout } from '../../creatures/home-layout';
@@ -11,7 +11,7 @@ import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
-import { pictureBoard } from '../../ui/creation-art';
+import { PLAQUE, pictureBoard, TunePlaque } from '../../ui/creation-art';
 import { arrowIcon, checkIcon, frameIcon, houseIcon, playIcon } from '../../ui/icons';
 import type { App } from '../App';
 import { Scene } from '../Scene';
@@ -23,10 +23,10 @@ interface Card {
 }
 
 /**
- * Welcome a New Friend's page (RW07 slice 1, docs/rework/WELCOME-BUILD.md#routes-and-scenes), reached from Home's
+ * Welcome a New Friend's page (RW07 slices 1–2, docs/rework/WELCOME-BUILD.md#routes-and-scenes), reached from Home's
  * Continue. The newcomer peeks from its basket; each built step is a card. The first tap on a card speaks its ask and
  * raises its green Play arrow; Play opens the round at the project's level. A finished card is ticked and shows what
- * the round made: her picture, or the plates the round guaranteed. Coming back from a finished round speaks that step's
+ * the round made: her picture, the plates the round guaranteed, or her tune. Coming back from a finished round speaks that step's
  * done line. With every built step done it says the friend is almost here (the ending is slice 3). Nothing here is a
  * round, and nothing is stored until a round finishes.
  */
@@ -96,7 +96,7 @@ export class ProjectScene extends Scene {
       .roundRect(-s / 2 + 4, -s / 2 + 8, s, s, 24).fill({ color: 0x000000, alpha: 0.12 })
       .roundRect(-s / 2, -s / 2, s, s, 24).fill(cream).stroke({ width: 6, color: done ? swatch.green.line : swatch.yellow.line }));
     node.hitArea = new Rectangle(-s / 2, -s / 2, s, s);
-    const art = step === 'pretty' ? this.prettyArt() : this.yummyArt(done);
+    const art = step === 'pretty' ? this.prettyArt() : step === 'yummy' ? this.yummyArt(done) : this.songArt();
     node.addChild(art);
     if (done) {
       const tick = new Container();
@@ -120,6 +120,15 @@ export class ProjectScene extends Scene {
     const board = pictureBoard(picture);
     board.scale.set(0.5);
     return board;
+  }
+
+  /** Her tune's jellies when she has kept one, else the plaque's soft note inviting one. */
+  private songArt(): Container {
+    const plaque = new TunePlaque();
+    plaque.set(store.welcome.results.song ?? null);
+    plaque.scale.set((PROJECT_CARD - 24) / PLAQUE.w);
+    plaque.eventMode = 'none';
+    return plaque;
   }
 
   /** What the round guarantees: four plates with a quarter each (preschool), or one bowl of two berries and two apples (pre-K). */
@@ -187,7 +196,7 @@ export class ProjectScene extends Scene {
     const say = (line: Parameters<typeof voice.say>[0]) => Promise.race([voice.say(line), this.tw.wait(6)]);
     if (this.from && p.steps.includes(this.from)) {
       this.newcomer.cheer();
-      await say(WELCOME_PLAN[this.from]!.done[this.band]);
+      await say(welcomeDoneLine(p, this.from, this.band));
     } else if (p.steps.length === 0) {
       await say('welcome.invite');
     }
