@@ -136,6 +136,23 @@ Z3 (levels 1–3) is the new-game tier: typecheck and unit tests (the rule prope
 
 Device checks stay open: whether a five-year-old reads a face-down card as "gone, not lost" and the peek as free; whether the picture signs read without the speech (feathers and fur most of all); whether the half-turn-and-flip-back on a keeps-tap reads as "not that one" rather than "broken"; device speech of "amphibian" is not needed (groups are never named in this slice) but the clue lines should be heard on an iPad before Z3 merges.
 
+## Trait-table source check (Z3, 2026-10-24)
+
+Done by the building session under the 2026-10-23 delegation; the table shipped unchanged. The cells checked and where:
+
+| Row or cell | Finding | Sources |
+| --- | --- | --- |
+| Mammals (`fur`, `milk`) | Mammals have hair on their bodies and every female feeds her babies milk from her own body | University of Michigan [BioKIDS, Mammalia](https://www.biokids.umich.edu/critters/Mammalia); Sam Noble Museum (University of Oklahoma) [Creature Features](https://samnoblemuseum.ou.edu/wp-content/uploads/2018/08/Creature-Features-1.pdf) |
+| ¹ Pig, `fur` | A pig's coat is coarse hair called bristles; even pink pigs carry it, so "fur or hair" is true and the pig's own reason says "bristly hair" | Acta Scientiarum, Animal Sciences (Universidade Estadual de Maringá), [hair coat of free-range sows](https://periodicos.uem.br/ojs/index.php/ActaSciAnimSci/article/view/63533) |
+| Birds (`feathers`, `beak`, `eggs`, `wings`, `two-legs`) | Feathers are the birds' defining feature; birds have beaks and lay hard-shelled eggs | Sam Noble Museum, as above |
+| ³ Duck, `beak` | "Beak" and "bill" mean the same thing | Cornell Lab of Ornithology, [beak or bill](https://www.allaboutbirds.org/news/what-is-the-difference-between-a-beak-and-a-bill/) |
+| Penguin (no `fly`) | A bird (feathers, eggs) whose wings became flippers; it cannot fly | PBS *Nature*, [The World of Penguins](https://www.pbs.org/wnet/nature/the-world-of-penguins-introduction); Britannica, [penguin form and function](https://britannica.com/animal/penguin/Form-and-function) (neither a museum or agency: the weakest row; `fly` is a Z4 clue, so recheck there) |
+| Frog (`smooth-skin`, `eggs`, `four-legs`) | Frogs have smooth, wet skin and lay eggs in water | Missouri Department of Conservation, [toad and frog facts](https://mdc.mo.gov/node/218390); National Park Service, [amphibians of the Everglades](https://www.nps.gov/ever/learn/kidsyouth/amphibians-of-the-everglades.htm) |
+| ² Turtle (`shell`, not `scales`; `eggs`) | The shell is bone covered by keratin scutes, which form differently from a lizard's scales; all turtles lay eggs on land | National Park Service, [turtles (Upper Delaware)](https://www.nps.gov/upde/learn/nature/turtles.htm) |
+| Fish (`scales`, `fins`, `gills`) and ⁴ `eggs` | Fish breathe with gills, move with fins and have scales; nearly all fish spawn, though some bear live young, so the first-person "I lay eggs" is said only of the island's fish | Sam Noble Museum, as above; NOAA Fishery Bulletin search results (no single NOAA page found) |
+
+Open from this check: the penguin row leans on a broadcaster and an encyclopedia, and the fish-eggs row on general sources; neither changes a cell in Z3. A zoo educator's read (study decision 5) still replaces this check for the printed cards if one is found.
+
 ## Open decisions
 
 Each has a default the build uses. Decision 1 is the one review the study asks for before anything ships; the rest block nothing.
