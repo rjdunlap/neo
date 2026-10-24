@@ -181,8 +181,11 @@ function chipIcon(chip: Chip): Container {
 }
 /** A thumbs-up hand (rotate it for thumbs-down). */
 function thumbIcon(sw: { fill: number; line: number }): Graphics {
-  return new Graphics().roundRect(-26, -8, 52, 46, 12).fill(sw.fill).stroke({ width: 4, color: sw.line })
-    .roundRect(-14, -44, 22, 42, 11).fill(sw.fill).stroke({ width: 4, color: sw.line });
+  const g = new Graphics().roundRect(-24, -44, 22, 46, 11).fill(sw.fill).stroke({ width: 4, color: sw.line })
+    .roundRect(-28, -8, 56, 48, 14).fill(sw.fill).stroke({ width: 4, color: sw.line });
+  // Curled fingers: three creases across the fist.
+  for (const y of [4, 16, 28]) g.moveTo(6, y).lineTo(26, y).stroke({ width: 3, color: sw.line, cap: 'round' });
+  return g;
 }
 function cameraIcon(): Graphics {
   return new Graphics().roundRect(-34, -22, 68, 44, 8).fill(0x5a5a6e).roundRect(-20, -30, 22, 12, 3).fill(0x5a5a6e)

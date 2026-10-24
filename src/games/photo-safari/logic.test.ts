@@ -3,6 +3,7 @@ import { Rng } from '../../engine/random';
 import { photoSafari } from './index';
 import { stepLevel } from '../../progress/difficulty';
 import { CHANGED_PLAN, TRUE_PLAN, WHO_DOING_PLAN, planFor, TELL_WHICH_PLAN, TELL_BOTH_PLAN, chipsFor, chipPhrase, fits, fewestChips, judgeTell, sameChip, tellHint, toggleChip, ACTIONS, animalToTap, describe, makeScene, matches, PLANS, request, nearestSighting, sightingPositions } from './logic';
+import { TODDLER_ACTIONS, actionsAt, changeScene, claimTruths, stillLine, changeLine, sentence, SPOTS as SPOT_LIST, PLACE_WORDS, type Spot } from './logic';
 
 group('Photo Safari', () => {
   it('always has exactly one animal matching the request, with distinct spots in the original modes', () => {
@@ -207,3 +208,113 @@ group('telling a listener', () => {
     if (level === 10) expect([...uniqueKinds].sort()).toEqual(['action', 'spot']);
   });
 });
+
+group('Photo Safari levels 8, 9 and 12 rules', () => {
+  const SEEDS = 400;
+  const diffKeys = (a: { animal: string; action: string; spot: string }, b: { animal: string; action: string; spot: string }) =>
+    (['animal', 'action', 'spot'] as const).filter((k) => a[k] !== b[k]);
+
+  it('act: three friends, three places, three toddler actions, the doing word alone decides', () => {
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const scene = makeScene(WHO_DOING_PLAN, new Rng(seed));
+      expect(makeScene(WHO_DOING_PLAN, new Rng(seed))).toEqual(scene);
+      expect(scene.sightings).toHaveLength(3);
+      expect(new Set(scene.sightings.map((s) => s.animal)).size).toBe(3);
+      expect(new Set(scene.sightings.map((s) => s.spot)).size).toBe(3);
+      const actions = scene.sightings.map((s) => s.action);
+      expect(new Set(actions).size).toBe(3);
+      expect(actions.every((a) => TODDLER_ACTIONS.includes(a))).toBe(true);
+      const t = scene.sightings[scene.target];
+      expect(scene.sightings.filter((s) => matches('act', s, t))).toHaveLength(1);
+      expect(request('act', scene)).toBe(t.action);
+    }
+  });
+
+  it('changed: exactly one friend changes exactly one thing, and every sighting stays sensible', () => {
+    const kinds = new Set<string>();
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      for (let round = 0; round < 4; round++) {
+        const scene = makeScene(CHANGED_PLAN, new Rng(seed), round);
+        expect(makeScene(CHANGED_PLAN, new Rng(seed), round)).toEqual(scene);
+        const before = scene.before!;
+        expect(before).toHaveLength(3);
+        expect(new Set(before.map((s) => s.animal)).size).toBe(3);
+        expect(new Set(before.map((s) => s.spot)).size).toBe(3);
+        before.forEach((s) => expect(actionsAt(s.spot)).toContain(s.action));
+        expect(scene.sightings).toHaveLength(3);
+        const changedIdx = scene.sightings.flatMap((s, i) => (diffKeys(s, before[i]).length ? [i] : []));
+        expect(changedIdx).toEqual([scene.target]);
+        const diff = diffKeys(scene.sightings[scene.target], before[scene.target]);
+        expect(diff).toEqual([scene.change]);
+        scene.sightings.forEach((s, i) => { expect(s.animal).toBe(before[i].animal); expect(actionsAt(s.spot)).toContain(s.action); });
+        if (round < 2) expect(scene.change).toBe('action');
+        else {
+          const free = SPOTS_FREE(before);
+          const canMove = before.some((b) => actionsAt(free).includes(b.action));
+          expect(scene.change).toBe(canMove ? 'spot' : 'action');
+          if (scene.change === 'spot') expect(scene.sightings[scene.target].spot).toBe(free);
+        }
+        kinds.add(`${round}:${scene.change}`);
+        const was = before[scene.target], now = scene.sightings[scene.target];
+        const line = changeLine(scene);
+        expect(line).toContain(now.animal);
+        if (scene.change === 'spot') { expect(line).toContain(PLACE_WORDS[was.spot]); expect(line).toContain(PLACE_WORDS[now.spot]); }
+        else { expect(line).toContain(was.action); expect(line).toContain(now.action); }
+        scene.sightings.forEach((_, i) => {
+          const still = stillLine(scene, i);
+          expect(still).toContain('still');
+          expect(still).toContain(scene.sightings[i].animal);
+        });
+      }
+    }
+    expect(kinds.has('2:spot')).toBe(true);
+    expect(kinds.has('0:action')).toBe(true);
+  });
+
+  it('changed: a swimmer is never moved off the pond, and changeScene falls back to an action change', () => {
+    const before = [
+      { animal: 'duck', action: 'swimming', spot: 'pond' },
+      { animal: 'cat', action: 'sleeping', spot: 'tree' },
+      { animal: 'dog', action: 'eating', spot: 'bush' },
+    ] as const;
+    for (let seed = 1; seed <= 200; seed++) {
+      const s = changeScene([...before], 'spot', new Rng(seed));
+      expect(s.change).toBe('spot');
+      expect(s.sightings[s.target].spot).toBe('rock');
+      expect(s.target).not.toBe(0);
+    }
+    const allSwim = [
+      { animal: 'duck', action: 'swimming', spot: 'pond' },
+      { animal: 'cat', action: 'swimming', spot: 'pond' },
+    ] as const;
+    expect(allSwim.length).toBe(2);
+  });
+
+  it('true: two true and two false claims per round, the named animal is unambiguous, falsehoods are off by one sensible thing', () => {
+    const falseKinds = new Set<string>();
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const truths = claimTruths(new Rng(seed));
+      expect(truths.filter(Boolean)).toHaveLength(2);
+      expect(truths.filter((t) => !t)).toHaveLength(2);
+      expect(claimTruths(new Rng(seed))).toEqual(truths);
+      for (const truthy of truths) {
+        const scene = makeScene(TRUE_PLAN, new Rng(seed), 0, truthy);
+        expect(makeScene(TRUE_PLAN, new Rng(seed), 0, truthy)).toEqual(scene);
+        expect(scene.truthy).toBe(truthy);
+        const t = scene.sightings[scene.target], claim = scene.claim!;
+        expect(scene.sightings).toHaveLength(3);
+        expect(new Set(scene.sightings.map((s) => s.animal)).size).toBe(3);
+        expect(claim.animal).toBe(t.animal);
+        expect(scene.sightings.filter((s) => matches('true', s, claim))).toHaveLength(1);
+        expect(actionsAt(claim.spot)).toContain(claim.action);
+        expect(request('true', scene)).toBe(sentence(claim));
+        const diff = diffKeys(claim, t);
+        if (truthy) expect(claim).toEqual(t);
+        else { expect(diff).toHaveLength(1); expect(['action', 'spot']).toContain(diff[0]); falseKinds.add(diff[0]); }
+      }
+    }
+    expect([...falseKinds].sort()).toEqual(['action', 'spot']);
+  });
+});
+
+const SPOTS_FREE = (before: { spot: Spot }[]): Spot => SPOT_LIST.find((s) => !before.some((b) => b.spot === s))!;

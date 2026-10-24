@@ -7257,7 +7257,7 @@ async function batch() {
       await page.setViewportSize({ width: 1024, height: 768 });
       await page.waitForTimeout(400);
     }
-    await page.evaluate(async () => {
+    const safariPlay = page.evaluate(async () => {
       const g = neo.scene.game;
       for (let p = 0; p < g.plan.photos; p++) {
         await kit.until(() => g.photos === p && !g.busy && g.actors.length, 15000);
@@ -7287,6 +7287,42 @@ async function batch() {
           await kit.until(() => g.photos > p, 10000);
           continue;
         }
+        if (g.plan.mode === 'changed') {
+          // The first tap, on the camera or any animal, photographs the meadow and is never a miss.
+          if (g.cameraButton.hitArea.width < 100 || g.cameraButton.hitArea.height < 100) throw new Error('Camera target');
+          const before = g.misses;
+          if (p === 0) kit.tapOn(g.actors[0], 0, -60); else kit.tapOn(g.cameraButton);
+          await kit.until(() => g.phase === 'find' && !g.busy, 10000);
+          if (g.misses !== before || !g.pinned.children.length) throw new Error('Meadow photo must be free and pinned');
+          const changed = g.target;
+          const was = g.scene.before[g.scene.target], now = changed.sighting;
+          if ((was.action !== now.action) === (was.spot !== now.spot)) throw new Error('Exactly one thing changes');
+          if (p === 0) {
+            const wrong = g.actors.find((a) => a !== changed);
+            for (let k = 0; k < 2; k++) { kit.tapOn(wrong, 0, -60); await kit.sleep(600); }
+            if (g.misses !== 2 || g.hints !== 1 || !changed.glow.visible) throw new Error(`Changed hint: ${g.misses} ${g.hints}`);
+            window.__safariShot = true;
+            await kit.until(() => !window.__safariShot, 20000);
+          }
+          kit.tapOn(changed, 0, -60);
+          await kit.until(() => g.photos > p, 10000);
+          continue;
+        }
+        if (g.plan.mode === 'true') {
+          kit.tapOn(right, 0, -60);
+          await kit.until(() => g.phase === 'judge' && !g.busy, 10000);
+          if (g.thumbs.some((b) => b.hitArea.width < 100 || b.hitArea.height < 100)) throw new Error('Thumb targets');
+          const good = g.thumbs[g.scene.truthy ? 0 : 1], bad = g.thumbs[g.scene.truthy ? 1 : 0];
+          if (p === 0) {
+            for (let k = 0; k < 2; k++) { kit.tapOn(bad); await kit.sleep(200); await kit.until(() => !g.busy, 10000); }
+            if (g.misses !== 2 || g.hints !== 1 || !good.children[0].visible) throw new Error(`Judge hint: ${g.misses} ${g.hints}`);
+            window.__safariShot = true;
+            await kit.until(() => !window.__safariShot, 20000);
+          }
+          kit.tapOn(good);
+          await kit.until(() => g.photos > p, 10000);
+          continue;
+        }
         if (p === 0 && g.target) {
           const wrong = g.actors.find((a) => a !== right && (!['both', 'clues'].includes(g.plan.mode) || a.sighting.spot === right.sighting.spot));
           for (let k = 0; k < 2; k++) { kit.tapOn(wrong, 0, -60); await kit.sleep(600); }
@@ -7296,6 +7332,17 @@ async function batch() {
         await kit.until(() => g.photos > p, 10000);
       }
     });
+    if (mode === 'changed' || mode === 'true') {
+      // The new screens in portrait: the pinned meadow photo or the held photo and thumbs, with the hint showing.
+      await page.waitForFunction(() => window.__safariShot, null, { timeout: 30000 });
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(500);
+      await screenshot(`photo-safari-${level}-portrait`);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(400);
+      await page.evaluate(() => { window.__safariShot = false; });
+    }
+    await safariPlay;
     await screenshot(`photo-safari-${level}`);
     await finished('photo-safari');
     const r = await page.evaluate(() => { const r = kit.store.stats('photo-safari').history.at(-1); return [r.misses, r.hints]; });
