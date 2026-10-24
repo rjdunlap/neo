@@ -251,7 +251,7 @@ export function layout(v: View, cards: number): WebLayout {
   return {
     cards: Array.from({ length: cards }, (_, i) => ({ x: cx + (i - (cards - 1) / 2) * 250, y: cardY })),
     stations,
-    badges: stations.map((s) => ({ x: s.x, y: s.y + 58 })),
+    badges: stations.map((s) => ({ x: s.x, y: s.y + 68 })),
     show: { x: v.w - 140, y: v.h - 100 },
     undo: { x: v.w - 80, y: 80 },
   };

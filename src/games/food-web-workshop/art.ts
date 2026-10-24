@@ -122,7 +122,8 @@ export function stationArt(o: Organism, r: number): Container {
   const c = new Container();
   c.addChild(new Graphics().circle(0, 0, r).fill(STATION_TINT[o]).stroke({ width: 6, color: 0xffffff }).circle(0, 0, r).stroke({ width: 3, color: swatch.white.line, alpha: 0.5 }));
   const art = organismArt(o);
-  art.y = -18;
+  art.scale.set(0.85);
+  art.y = -36;
   c.addChild(art);
   return c;
 }
