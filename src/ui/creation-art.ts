@@ -1,7 +1,9 @@
 import { Container, Graphics } from 'pixi.js';
 import { cream, swatch, wood, type ColorName } from '../art/palette';
 import { flower, musicNote } from '../art/shapes';
-import type { PictureCreation, TuneCreation } from '../content/creations';
+import { music } from '../audio/music';
+import { sfx } from '../audio/sfx';
+import { tuneBeats, type PictureCreation, type TuneCreation } from '../content/creations';
 import { stampArt } from '../games/stamp-studio/art';
 
 /** The picture board on the treehouse wall, in logical units. */
@@ -98,6 +100,24 @@ const ROW_COLORS: ColorName[] = ['pink', 'orange', 'yellow', 'green', 'blue'];
  * The tune plaque: her song as a little grid of colored jellies, lit where a note sits, with a play triangle under
  * it. `lightColumn` shows the beat that is sounding while it plays.
  */
+/** One column of a kept tune every this many seconds, as the plaque plays it. */
+export const TUNE_BEAT = 0.42;
+
+/**
+ * Plays a kept tune once on the marimba, a column a beat, ducking the island's loop under it; `onBeat` sees each column
+ * and its steps (to light a plaque, hop a friend). `wait` is the scene's own, so a destroyed scene's song stops; so does
+ * `going()` turning false between beats.
+ */
+export async function singTune(tune: TuneCreation, wait: (seconds: number) => Promise<unknown>, onBeat: (col: number, steps: readonly number[]) => void, going: () => boolean = () => true) {
+  const beats = tuneBeats(tune);
+  music.duck(beats.length * TUNE_BEAT + 0.6);
+  for (let col = 0; col < beats.length && going(); col++) {
+    for (const step of beats[col]) sfx.marimba(step, 0.45);
+    onBeat(col, beats[col]);
+    await wait(TUNE_BEAT);
+  }
+}
+
 export class TunePlaque extends Container {
   private readonly dots = new Graphics();
   private tune: TuneCreation | null = null;

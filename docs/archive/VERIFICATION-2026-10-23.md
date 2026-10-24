@@ -186,3 +186,10 @@
 - Reviewed full size, 120 px and static 1024 × 768 / 768 × 1024 cover previews with illustrative 100 px circles; about 38% horizon, clear ground; peripheral clipping caveats in [exact prompts/proof](../rework/concepts/generated/R23-PROMPTS.md).
 - Ran links and diff checks; required PR CI tracked in #891. No source cleanup or import/preparation.
 - Not run: local typecheck/tests/build/browser/offline (source art/docs only), actual in-game layout, device/child judgement; integration remains separate.
+
+## 2026-10-23 — Stop and Go levels 5-6 Whose light? and Busy crossing (slices 4-5)
+
+- [PR #869](https://github.com/rjdunlap/neo/pull/869), `claude/stop-and-go-whose-light`: level 5 (two lanes, own lights) and level 6 (eight arriving cars, thought clouds, idle point also at level 4); pre-K 3-6, preschool 2-5; voice lines, how-to steps, `go` browser case.
+- Ran: typecheck; `npm test` then failed only `src/app/scenes/lab.test.ts` (Tinker Lab, fixed on main by [#877](https://github.com/rjdunlap/neo/pull/877)); after merging `origin/main` (`2cd835b9`) typecheck clean and `npm test` 2708 passed.
+- Browser (port 5437): `BROWSER_SUITE=woods WOODS_ONLY=go FROM_LEVEL=5` played levels 5, 6 and 9 (a wrong answer and a hint at 5, a both-green miss at 6); `fingerdemo FINGER_LEVELS=4,5,6` clean in 8.1 / 11.5 / 17.4 s; landscape screenshots reviewed. After the merge, the same filter at `http://localhost:5541` passed 5, 6 and 9 again.
+- Not run: portrait screenshot, `npm run build`, iPad or device speech (the lane-specific red lines and the idle-point line).

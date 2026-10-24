@@ -655,6 +655,61 @@ describe('her friends (RW05)', () => {
     expect(store.welcome.steps).toEqual(['pretty']);
   });
 
+  it('adopts the welcome newcomer once, in one write, across a replay, a reload and a reset, leaving the companion (RW07)', async () => {
+    const store = make();
+    await store.load();
+    const mochi = store.meet('sprout', 'Mochi', 'pink', 'start')!;
+    const finishSteps = () => {
+      store.beginWelcome('preschool');
+      for (const step of ['pretty', 'yummy', 'song'] as const) store.completeWelcomeStep(step, null);
+    };
+    store.beginWelcome('preschool');
+    store.completeWelcomeStep('pretty', null);
+    expect(store.adoptWelcome('Ripple')).toBeUndefined();
+    expect(store.welcome.ended).toBe(false);
+    finishSteps();
+    const ripple = store.adoptWelcome('Ripple')!;
+    expect(ripple).toMatchObject({ species: 'river', name: 'Ripple', look: { color: 'orange' }, metAt: 'project:welcome' });
+    await Promise.resolve();
+    expect(savedAs('neo.save').projects.welcome.ended).toBe(true);
+    expect(savedAs('neo.save').creatures.owned).toHaveLength(2);
+    expect(store.companion).toEqual(mochi);
+    expect(store.adoptWelcome('Bubbles')).toEqual(ripple);
+    // A reload finds the same friend, and the project ended.
+    const again = make();
+    await again.load();
+    expect(again.welcome.ended).toBe(true);
+    expect(again.data.creatures.owned.filter((o) => o.metAt === 'project:welcome')).toEqual([ripple]);
+    // A reset clears the project; ending it again brings no one new, and the page would show the same species.
+    again.reset();
+    expect(again.welcome.ended).toBe(false);
+    again.beginWelcome('preschool');
+    expect(again.welcome.newcomer).toBe('river');
+    for (const step of ['pretty', 'yummy', 'song'] as const) again.completeWelcomeStep(step, null);
+    expect(again.adoptWelcome('Pebble')).toEqual(ripple);
+    expect(again.data.creatures.owned).toHaveLength(2);
+    // A name outside the species' three becomes its first.
+    const other = make();
+    await other.load();
+    other.reset();
+    other.data.creatures = { owned: [], companion: null };
+    other.beginWelcome('prek');
+    for (const step of ['pretty', 'yummy', 'song'] as const) other.completeWelcomeStep(step, null);
+    expect(other.adoptWelcome('Rex')?.name).toBe('Pebble');
+  });
+
+  it('ends the welcome project with a full collection without adopting or dropping a friend (RW07)', async () => {
+    const store = make();
+    await store.load();
+    for (let i = 0; i < 24; i++) store.meet('glider', `G${i}`, 'teal', `t${i}`);
+    const before = JSON.stringify(store.data.creatures);
+    store.beginWelcome('preschool');
+    for (const step of ['pretty', 'yummy', 'song'] as const) store.completeWelcomeStep(step, null);
+    expect(store.adoptWelcome('Pebble')).toBeNull();
+    expect(store.welcome.ended).toBe(true);
+    expect(JSON.stringify(store.data.creatures)).toBe(before);
+  });
+
   it('keeps each profile\'s friends to itself', async () => {
     const store = make();
     await store.load();
