@@ -7,6 +7,7 @@ import { cleanFavorites } from '../content/shelf';
 import { isSpecies, SPECIES, type SpeciesId } from '../creatures/species';
 import { cleanWelcome, emptyWelcome, type WelcomeProject } from '../content/welcome';
 import { cleanWorn, type WearableId } from '../art/creatures/wear-slots';
+import { isLandId, type LandId } from '../content/lands';
 
 export interface StickerPlacement {
   page: StickerPage;
@@ -109,6 +110,11 @@ export interface SaveData {
   creations: CreationsSave;
   /** Discoveries she has seen for herself (known entries only), and how many she had looked at when she last opened the journal. */
   journal: JournalSave;
+  /**
+   * The root's Explore (RW14 slice 8): the last location she visited, so Explore can open with its postcard first. Only a
+   * shortcut, kept per profile; null before her first visit. Never a gate or a reminder.
+   */
+  explore: { last: LandId | null };
 }
 
 export const HISTORY_LENGTH = 10;
@@ -129,6 +135,7 @@ export function defaults(): SaveData {
     favorites: [],
     creations: emptyCreations(),
     journal: emptyJournal(),
+    explore: { last: null },
   };
 }
 
@@ -281,6 +288,7 @@ export function migrate(raw: unknown): SaveData {
     favorites: cleanFavorites(raw.favorites),
     creations: cleanCreations(raw.creations),
     journal: cleanJournal(raw.journal),
+    explore: { last: isObj(raw.explore) && isLandId(raw.explore.last) ? raw.explore.last : null },
   };
 }
 

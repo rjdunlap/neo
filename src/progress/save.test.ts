@@ -284,6 +284,15 @@ describe('migrate', () => {
     expect(migrate({ favorites: Array.from({ length: 50 }, (_, i) => `g${i}`) }).favorites).toHaveLength(12);
   });
 
+  it('remembers no place at first, keeps a known last place through a backup, and drops a damaged one (RW14 slice 8)', () => {
+    expect(defaults().explore).toEqual({ last: null });
+    expect(migrate({ version: 3, profile: { name: 'Mia', band: 'prek' } }).explore).toEqual({ last: null });
+    for (const bad of [null, 'counting-cove', { last: 'nowhere' }, { last: 7 }, { last: ['counting-cove'] }]) expect(migrate({ explore: bad }).explore).toEqual({ last: null });
+    const save = defaults();
+    save.explore.last = 'counting-cove';
+    expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
+  });
+
   it('keeps hearts through a backup and restore', () => {
     const save = defaults();
     save.favorites = ['duck-pond', 'bubble-pop'];

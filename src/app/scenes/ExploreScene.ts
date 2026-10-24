@@ -8,7 +8,7 @@ import { voice } from '../../audio/voice';
 import { ageOf, allGames, clampPage, EXPLORE_ENTRIES, exploreMemory, favoriteGames, hasOthers, pageCount, pageOf, type ExploreEntry } from '../../content/explore';
 import { landFor, LANDS, type LandId } from '../../content/lands';
 import type { LineId } from '../../content/voice-script';
-import { CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, exploreGridLayout, exploreLayout, PAGE_ARROW_RADIUS } from '../../creatures/home-layout';
+import { CORNER_RADIUS, EXPLORE_CARD, EXPLORE_MAX, EXPLORE_POSTCARD, exploreGridLayout, exploreLayout, PAGE_ARROW_RADIUS } from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { GAMES } from '../../games/registry';
@@ -55,6 +55,8 @@ export class ExploreScene extends Scene {
   readonly next = new RoundButton(arrowIcon(1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(1));
   /** The cards on screen, in reading order. */
   cards: ExploreCard[] = [];
+  /** The last place she visited, as a postcard above the four entries (RW14 slice 8), or null before her first visit. */
+  last: { id: LandId; node: Container } | null = null;
   /** The list a browse entry pages through (Favorites, All games), and whether it ends with the signpost. */
   readonly list: GameModule[];
   private readonly signpost: boolean;
@@ -103,9 +105,18 @@ export class ExploreScene extends Scene {
   /** The cards for this entry and page. */
   private build() {
     for (const c of this.cards) c.node.destroy({ children: true });
+    this.last?.node.destroy({ children: true });
+    this.last = null;
     for (const i of this.icons) this.untrack(i);
     this.icons = [];
     const e = this.entry;
+    const visited = store.data.explore.last;
+    if (!e && visited && this.ids.includes(visited)) {
+      const name = landFor(visited).name;
+      const node = this.card(landmarkFor(visited), name, () => this.leave(() => this.app.go.land(visited), voice.say('result.back', { place: name })), EXPLORE_POSTCARD);
+      this.last = { id: visited, node };
+      this.ui.addChild(node);
+    }
     if (!e) this.cards = EXPLORE_ENTRIES.map((entry) => ({ kind: 'entry', entry, node: this.card(entryArt(entry), ENTRY_NAMES[entry], () => this.open(entry)) }));
     else if (e === 'places') this.cards = this.ids.map((id) => ({ kind: 'place', id, node: this.card(landmarkFor(id), landFor(id).name, () => this.leave(() => this.app.go.land(id))) }));
     else if (e === 'family') this.cards = [{ kind: 'family', node: this.card(entryArt('family'), ENTRY_NAMES.family, () => this.leave(() => this.app.go.couch(false, { explore: 'family', page: 0 }))) }];
@@ -163,19 +174,19 @@ export class ExploreScene extends Scene {
   }
 
   /**
-   * A 150-unit cream card in the shared finish (RW14 slice 7) with its picture and its name on a pill under it; it
-   * squashes and acts on touch-down, then springs back (`act` null: the caller handles touches).
+   * A 150-unit cream card (or the larger postcard, `size`) in the shared finish (RW14 slice 7) with its picture and its
+   * name on a pill under it; it squashes and acts on touch-down, then springs back (`act` null: the caller handles touches).
    */
-  private card(art: Container, name: string, act: (() => void) | null): Container {
+  private card(art: Container, name: string, act: (() => void) | null, size = { w: EXPLORE_CARD, h: EXPLORE_CARD }): Container {
     const node = new Container();
-    const half = EXPLORE_CARD / 2;
-    fitArt(art, EXPLORE_CARD - 30);
+    const { w, h } = size;
+    fitArt(art, Math.min(w, h) - 30);
     const text = label(name, 22, ink);
-    text.y = half + 26;
+    text.y = h / 2 + 26;
     // The name sits on its own cream pill so it reads over the busy backdrop.
     const pill = new Graphics().roundRect(-text.width / 2 - 12, text.y - 17, text.width + 24, 34, 17).fill(cream);
-    node.addChild(finish({ w: EXPLORE_CARD, h: EXPLORE_CARD, corner: 28 }, swatch.green, cream), art, pill, text);
-    node.hitArea = new Rectangle(-half, -half, EXPLORE_CARD, EXPLORE_CARD);
+    node.addChild(finish({ w, h, corner: 28 }, swatch.green, cream), art, pill, text);
+    node.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
     if (act) onTap(node, () => {
       if (this.leaving || this.covered) return;
       sfx.tick();
@@ -241,7 +252,8 @@ export class ExploreScene extends Scene {
       this.cards.forEach((c, i) => c.node.position.set(l.cards[i].x, l.cards[i].y));
       return;
     }
-    const l = exploreGridLayout(v, this.cards.length);
+    const l = exploreGridLayout(v, this.cards.length, !!this.last);
+    if (this.last && l.postcard) this.last.node.position.set(l.postcard.x, l.postcard.y);
     this.place(l.backdrop);
     this.back.position.set(l.back.x, l.back.y);
     this.home.position.set(l.home.x, l.home.y);
