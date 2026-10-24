@@ -146,7 +146,7 @@ describe('a host\'s suggestion', () => {
   });
 });
 
-
+describe('a land\'s layout', () => {
   it('fits every page of every land, at every band, both ways of looking, on one screen with large separate targets', () => {
     for (const [name, view] of Object.entries(VIEWS)) {
       for (const land of LANDS) {
