@@ -213,11 +213,8 @@ class RampRace implements Game {
     ctx.stage.addChild(this.marks, this.badge);
     if (this.plan.mode === 'shelf') {
       // The guess zone lies over the floor and above it, and takes touches only while she may guess.
+      onTap(this.guessHit, (e) => this.placeGuess(this.guessHit.toLocal(e.global).x), { cooldown: 200 });
       this.guessHit.eventMode = 'none';
-      this.guessHit.on('pointerdown', (e) => {
-        const p = this.guessHit.toLocal(e.global);
-        this.placeGuess(p.x);
-      });
       ctx.stage.addChild(this.guessHit);
       this.shelfStarts = makeShelf(ctx.rng);
     }
@@ -598,7 +595,8 @@ class RampRace implements Game {
     if (r.guess && this.records[0]) {
       const at = this.records[0].stop;
       const x = r.guess === 'before' ? CARD_RULER + (at * CARD_MARK) / 2 : CARD_RULER + ((at + 10) * CARD_MARK) / 2;
-      paw(g, x, 24, 10);
+      // Above the flags' pennants (they reach up to y 32), so a guess never touches or looks like a record.
+      paw(g, x, 16, 9);
     }
     const icon = carArt(color);
     icon.scale.set(0.5);
