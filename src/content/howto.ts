@@ -286,6 +286,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'Tap the web button when it matches the cards; a matching web earns a sticker. The round arrow takes back the last change.',
     note: 'This is a small model of what the cards show. A pair with no card isn\'t wrong in nature, it just isn\'t on our cards. Only the web button can count a miss; after two, the cards and creatures to fix glow. Show a hint mends one arrow and counts as help.',
   },
+  'word-glue': {
+    goal: 'Stick two pictures together to make a new thing, and hear the word they make.',
+    steps: [
+      { from: 1, to: 1, text: 'Drag one picture onto the other, or tap one, and they join.' },
+      { from: 2, to: 2, text: 'Listen for the word, then join the two pictures that make it.' },
+      { from: 3, to: 3, text: 'A friend needs the thing in the middle; join that friend to it.' },
+      'Touch a picture to hear its word.',
+    ],
+    finish: 'Every pair is joined and its new thing has come alive.',
+    note: [
+      { from: 1, to: 1, text: 'Every new word is two whole words she already knows. Nothing can go wrong here.' },
+      { from: 2, to: 2, text: 'Every new word is two whole words she already knows. A wrong pair is one miss and the pet says the word\'s parts; after two misses the right pictures glow, which counts as a hint. Hearing a word again never counts.' },
+      { from: 3, to: 3, text: 'Every new word is two whole words she already knows. A wrong friend makes a real thing, and the pet says who it is for; that is one miss. After two misses the friend who asked glows, which counts as a hint. Hearing a word again never counts.' },
+    ],
+  },
   'pond-conga': {
     goal: 'Steer a line of ducklings to each crumb of bread, in order.',
     steps: [

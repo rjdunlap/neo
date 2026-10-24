@@ -1,3 +1,4 @@
+import { createTestContext } from '../../test-browser.mjs';
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, browser, errors, output, islandUrl, log, scene, tap, screenshot }) {
@@ -75,7 +76,7 @@ async function phoneFit() {
   await page.setViewportSize({ width: 1024, height: 768 });
 
   // --- An upright phone is asked to turn; nothing else is.
-  const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2, reducedMotion: 'reduce' });
+  const phone = await createTestContext(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2, reducedMotion: 'reduce' });
   const p = await phone.newPage();
   const phoneErrors = [];
   p.on('pageerror', (error) => phoneErrors.push(error.message));

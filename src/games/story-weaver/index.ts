@@ -390,7 +390,8 @@ class StoryWeaver implements Game {
         if (r.afterAnswer()) return void this.finale();
       }
       if (res.storyDone) {
-        await this.readAloud(storyText(r.story, 3));
+        // An answer to the owl was just read in full.
+        if (!res.answered) await this.readAloud(storyText(r.story, 3));
         this.refresh();
         await this.ctx.say('weaver.feel', { who: this.who() });
       }
@@ -470,7 +471,7 @@ class StoryWeaver implements Game {
   }
 
   askForHint() {
-    if (this.finished || !this.round.showHint()) return;
+    if (this.busy || this.finished || !this.round.showHint()) return;
     this.placeButtons();
     void this.ctx.say('weaver.hint', { who: this.who(), feeling: this.round.story.feeling ?? '' });
   }

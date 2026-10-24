@@ -7,7 +7,7 @@ function browser() {
   const contexts = [];
   const host = { newContext: vi.fn(async () => {
     const page = { on: vi.fn(), goto: vi.fn(async () => {}), waitForFunction: vi.fn(async () => {}), evaluate: vi.fn(async () => ({})), screenshot: vi.fn(async () => {}) };
-    const context = { newPage: async () => page, close: vi.fn(async () => {}), page };
+    const context = { addInitScript: vi.fn(async () => {}), newPage: async () => page, close: vi.fn(async () => {}), page };
     contexts.push(context);
     return context;
   }) };
@@ -34,7 +34,7 @@ describe('browser suite ownership', () => {
   });
   it('closes a context if opening its initial page fails', async () => {
     const failure = new Error('page startup failed');
-    const context = { newPage: vi.fn(async () => { throw failure; }), close: vi.fn(async () => {}) };
+    const context = { addInitScript: vi.fn(async () => {}), newPage: vi.fn(async () => { throw failure; }), close: vi.fn(async () => {}) };
     const host = { newContext: vi.fn(async () => context) };
     await expect(runBrowserSuites(host, ['home'])).rejects.toBe(failure);
     expect(context.close).toHaveBeenCalledOnce();

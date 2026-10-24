@@ -300,3 +300,9 @@
 - Passed: repository Markdown links/anchors and `git diff --check`; reviewed finite records, equal/common-unit alternatives and both-pan witness arithmetic.
 - Open: Box Balance-first M5 finalization, placement/capacity and separate build admission; all implementation, search execution, layout/device/child observations remain pending.
 - Not run locally: typecheck, unit tests, build or browser checks (docs-only tier); PR CI runs separately as publication requires.
+
+## 2026-10-23 — Cue Studio levels 1–2 (programming P2)
+
+- `claude/cue-studio` ([PR #917](https://github.com/rjdunlap/neo/pull/917)) on base `origin/main` `3c88988d`: new pre-K game `cue-studio` (Wave and Turn cards, one then two slots, Play, Step, Undo, a complete-run-only Finish and counted-once help; free creation, so misses are always 0), home Tinker Lab (14 games; the school view pages 7 + 6, land-pages test updated). Plain words only (Wave, Turn, Play, Step, Undo); no computer-science terms are claimed.
+- Ran: typecheck; `npx vitest run` 226 files passed, with 26 new rule tests in `src/games/cue-studio/logic.test.ts`; `npm run build`; `BROWSER_SUITE=cuestudio` on `http://localhost:5991` (levels 1 and 2: empty Play and Finish inert, a full shelf, select-and-replace, an edit invalidating Finish, Undo, Step completing a run, help counted once, a helped play, portrait targets of 100 units or more, portrait and landscape screenshots, one sticker per round) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=cue-studio` clean (5.5 s, 14.5 s). `game-reviewer` found no bugs; two minor fixes applied.
+- Not run: `lands`, `howto` and `smoke` suites (harness unchanged; the lands unit test passed), offline check, an iPad. Open: level 3 (P3); [device check](../DEVICE-CHECKS.md#cue-studio-levels-12-2026-10-23).

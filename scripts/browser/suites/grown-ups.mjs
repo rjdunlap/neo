@@ -1,3 +1,4 @@
+import { createTestContext } from '../../test-browser.mjs';
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, browser, errors, islandUrl, log, ready, scene, screenshot, launch }) {
@@ -134,7 +135,7 @@ async function grownUps() {
   await page.locator('[data-done]').click(); await scene('ChooserScene');
 
   // A finger, not only a mouse: the same hold with real touch events, on the map (once a child is playing, the iPad's only way in).
-  const touchContext = await browser.newContext({ viewport: { width: 1024, height: 768 }, hasTouch: true });
+  const touchContext = await createTestContext(browser, { viewport: { width: 1024, height: 768 }, hasTouch: true });
   try {
     const finger = await touchContext.newPage();
     finger.on('pageerror', (error) => errors.push(error.message));
