@@ -241,9 +241,10 @@ class WeatherWardrobe implements Game {
     if (!this.worn.size) return false;
     const global = this.pet.toGlobal({ x, y });
     for (const pieces of this.worn.values()) {
-      const c = pieces[0];
-      const p = c.toLocal(global);
-      if ((c.hitArea as Rectangle | null)?.contains(p.x, p.y)) return true;
+      for (const c of pieces) {
+        const p = c.toLocal(global);
+        if ((c.hitArea as Rectangle | null)?.contains(p.x, p.y)) return true;
+      }
     }
     return false;
   }
@@ -253,13 +254,14 @@ class WeatherWardrobe implements Game {
     e.stopPropagation();
     if (this.done) return;
     let best: { item: Item; c: Container; d: number } | null = null;
-    for (const [item, [c]] of this.worn) {
-      const p = c.toLocal(e.global);
-      const area = c.hitArea as Rectangle | null;
-      const center = this.wornCenters.get(item);
-      if (!center || !Number.isFinite(p.x) || !area?.contains(p.x, p.y)) continue;
-      const d = Math.hypot(p.x - center.x, p.y - center.y);
-      if (!best || d < best.d) best = { item, c, d };
+    for (const [item, pieces] of this.worn) {
+      for (const c of pieces) {
+        const p = c.toLocal(e.global);
+        const area = c.hitArea as Rectangle | null;
+        if (!area || !Number.isFinite(p.x) || !area.contains(p.x, p.y)) continue;
+        const d = Math.hypot(p.x - (area.x + area.width / 2), p.y - (area.y + area.height / 2));
+        if (!best || d < best.d) best = { item, c, d };
+      }
     }
     if (!best) return;
     const { item, c } = best;
@@ -486,18 +488,17 @@ class WeatherWardrobe implements Game {
   /** Dresses the pet in one item, with a little pop; `touched` makes the worn item answer a touch. */
   private put(item: Item, touched?: (e: FederatedPointerEvent) => void) {
     const pieces = this.hang(item);
-    const [c] = pieces;
-    if (touched) {
-      // At least 130 units across on screen at the old pip's 0.8, whatever the piece's own size.
+    // Each piece answers (both boots), at least 104 units across on screen whatever its own size; the first one's middle is the bot's target.
+    if (touched) pieces.forEach((c, i) => {
       const least = 104 / (c.scale.x * this.pet.scale.x);
       const b = c.getLocalBounds();
       const width = Math.max(least, b.width + 48), height = Math.max(least, b.height + 48);
       const center = { x: b.x + b.width / 2, y: b.y + b.height / 2 };
-      this.wornCenters.set(item, center);
+      if (i === 0) this.wornCenters.set(item, center);
       c.hitArea = new Rectangle(center.x - width / 2, center.y - height / 2, width, height);
       c.eventMode = 'static';
       onTap(c, touched);
-    }
+    });
     this.worn.set(item, pieces);
     for (const p of pieces) {
       const k = p.scale.x;
