@@ -334,7 +334,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | Oceans | 2026-10-23 | [study](deep-dives/subjects/oceans.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#oceans-recommendations) |
 | Informational reading | 2026-10-22 | [study](deep-dives/subjects/informational-reading.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#informational-reading-recommendations) |
 | Vocabulary and word parts | 2026-10-22 | [study](deep-dives/subjects/vocabulary-word-parts.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#vocabulary-and-word-parts-recommendations) |
-| Measurement and units | 2026-10-21 | [study](deep-dives/subjects/measurement-units.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#measurement-and-units-recommendations) |
+| Measurement and units | 2026-10-21; M3–M4 defined 2026-10-23, M5 provisional after Box Balance | [study](deep-dives/subjects/measurement-units.md), [Measuring Post 1–4](definitions/measuring-post.md), [Weights Case dependency](definitions/weights-case.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#measurement-and-units-recommendations) |
 | Genetics | 2026-10-16 | [study](deep-dives/subjects/genetics.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#genetics-recommendations) |
 | Everyday life long ago | 2026-10-16 | [study](deep-dives/subjects/daily-life-long-ago.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations) |
 | Scientific inquiry | 2026-10-16 | [study](deep-dives/subjects/inquiry.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#scientific-inquiry-recommendations) |
