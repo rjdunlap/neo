@@ -249,3 +249,10 @@
 - Ran (commit 125d13c9 on base fcb5d306): typecheck; `npm test` (219 files, 2732 tests, including `result-backdrop.test.ts`); `npm run build` (precache 174 entries, 11535.20 KiB).
 - Browser: `GAME_URL=http://localhost:5344 BROWSER_SUITE=home HOME_ONLY=result` passed (Duck Pond from Counting Cove's spot on the cove sky with Back to the cove, from a Story Grove origin on the night sky, and with no origin on the home backdrop, at 1024×768 and 768×1024; Again and Back at their formulas; no page errors); six screenshots reviewed.
 - Not run: offline (no new assets), `picnic` (stories untouched), `world`, `fingerdemo`, device. Open: an origin with a picture is not shown until slice 4's loader; location scenery is not drawn behind the result.
+
+## 2026-10-23 — RW14 slice 7: buttons and cards with a finish
+
+- One code-drawn finish (shadow, rim, two-tone face, highlight) and a press squash with a release spring for root buttons and cards; the "Island games" pill is a picture door; hit areas unchanged ([PR #902](https://github.com/rjdunlap/neo/pull/902)).
+- Ran (commit e741893b on base eea1741e): typecheck; `npm test` (220 files, 2736 tests, including `finish.test.ts` hit-area checks); `npm run build`.
+- Browser: `GAME_URL=http://localhost:5743 BROWSER_SUITE=home HOME_ONLY=buttons` passed; portrait screenshots of Home, Explore and Places at 768×1024 reviewed.
+- Not run: offline (no assets or persistence changed), `world`, `fingerdemo`, device. Open: the door has no spoken label; PR #900's Arcade cards do not use the finish.

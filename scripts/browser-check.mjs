@@ -9941,7 +9941,7 @@ async function woodsBatch() {
     log(`Stop and Go ${level} (${mode}): ${mode === 'lamps' ? 'green and red lamps and the car, eight touches and no miss' : mode === 'toy' ? 'the light as a toy' : 'the light cycling or switched by hand'}, waiting for green, going on red as a miss, glow hint, saved score and sticker passed`);
   }
 
-  if (!only || only === 'ramp') for (let level = fromLevel; level <= 4; level++) {
+  if (!only || only === 'ramp') for (let level = fromLevel; level <= 5; level++) {
     await launch('ramp-race', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); await page.waitForTimeout(150); };
@@ -9960,7 +9960,60 @@ async function woodsBatch() {
       assert.deepEqual(await page.evaluate((lane) => neo.scene.game.lanes[lane].setup, lane), setup);
     };
     const go = async () => { await tap('neo.scene.game.go'); await settle(); };
-    if (mode === 'explore') {
+    if (mode === 'shelf') {
+      const card = async (k) => {
+        await page.evaluate((k) => { const c = neo.scene.game.cards[k]; const p = c.toGlobal({ x: 230, y: 52 }); kit.tap(p.x, p.y); }, k);
+        await settle();
+      };
+      const right = () => page.evaluate(() => { const [a, b] = neo.scene.game.records; return b.stop > a.stop ? 1 : 0; });
+      for (let n = 0; n < 2; n++) {
+        await idle(n);
+        if (n === 0) {
+          await page.evaluate(() => { const g = neo.scene.game, say = g.ctx.say, instruct = g.ctx.instruct; g.spoken = []; g.ctx.say = (id, ...args) => { g.spoken.push(id); return say(id, ...args); }; g.ctx.instruct = (id, ...args) => { g.spoken.push(id); return instruct(id, ...args); }; });
+          // The ramp is locked until the first card lands: a nudge, and the height stays.
+          const start = await page.evaluate(() => neo.scene.game.lanes[0].setup.height);
+          await touch(0, 'ramp');
+          assert.equal(await page.evaluate(() => neo.scene.game.lanes[0].setup.height), start, 'locked before the first card');
+          assert.equal(await page.evaluate(() => neo.scene.game.spoken.at(-1)), 'ramp.shelf.first');
+          await go();
+          assert.deepEqual(await page.evaluate(() => [neo.scene.game.records.length, neo.scene.game.phase]), [1, 'change']);
+          // The same ramp again: a nudge, nothing rolls, nothing counts.
+          await go();
+          assert.equal(await page.evaluate(() => neo.scene.game.spoken.at(-1)), 'ramp.shelf.same');
+          assert.deepEqual(await counts(), [0, 0]);
+          await touch(0, 'ramp');
+          // A guess on the side the taller-goes-farther rule says, placed in the guess zone.
+          await page.evaluate(async () => {
+            const R = await import('/src/games/ramp-race/logic.ts'); const g = neo.scene.game;
+            const side = g.lanes[0].setup.height > g.records[0].setup.height ? 'past' : 'before';
+            const z = R.shelfLayout(neo.view, g.records[0].stop).guess[side];
+            const p = g.guessHit.toGlobal({ x: z.x + z.w / 2, y: g.lanes[0].floorY - 40 }); kit.tap(p.x, p.y);
+          });
+          await page.waitForTimeout(250);
+          assert.ok(await page.evaluate(() => !!neo.scene.game.guess), 'a paw is placed');
+          await go();
+          assert.ok((await page.evaluate(() => neo.scene.game.spoken)).includes('ramp.guess.right'), 'the guess is told, never counted');
+          assert.deepEqual(await page.evaluate(() => [neo.scene.game.records.length, neo.scene.game.phase, neo.scene.game.records[1].guess !== undefined]), [2, 'ask', true]);
+          await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+          await screenshot('ramp-race-5-cards-portrait');
+          await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+          // Two wrong cards: two misses, then the ring on the farther card as one hint.
+          const r = await right();
+          await card(1 - r);
+          assert.deepEqual(await counts(), [1, 0]);
+          await card(1 - r);
+          assert.deepEqual(await counts(), [2, 1]);
+          assert.ok(await page.evaluate(() => neo.scene.game.ring), 'the farther card rings');
+          assert.equal(await page.evaluate(() => neo.scene.game.spoken.at(-1)), 'ramp.shelf.hint');
+          await card(r);
+        } else {
+          await go();
+          await touch(0, 'ramp');
+          await go();
+          await card(await right());
+        }
+      }
+    } else if (mode === 'explore') {
       for (let k = 0; k < 4; k++) { await touch(0, 'ramp'); await go(); }
     } else if (mode === 'height' || mode === 'both') {
       for (let n = 0; n < 3; n++) {
@@ -10007,7 +10060,7 @@ async function woodsBatch() {
     }
     await finished('ramp-race');
     assert.deepEqual(await score('ramp-race'), mode === 'explore' ? [0, 0] : mode === 'fair' ? [3, 2] : [2, 1]);
-    log(`Ramp Race ${level} (${mode}): ramps and floors changed by tapping, rolls, ${mode === 'fair' ? 'unfair tests as misses' : mode === 'explore' ? 'free exploring' : 'short and long rolls as misses, ghost-ramp hint'}, saved score and sticker passed`);
+    log(`Ramp Race ${level} (${mode}): ramps and floors changed by tapping, rolls, ${mode === 'shelf' ? 'locked first ramp, same-height nudge, free guess, two wrong cards and the ring' : mode === 'fair' ? 'unfair tests as misses' : mode === 'explore' ? 'free exploring' : 'short and long rolls as misses, ghost-ramp hint'}, saved score and sticker passed`);
   }
 
   if (!only || only === 'sort') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 5); level++) {

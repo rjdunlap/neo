@@ -9,7 +9,7 @@ import type { Rng } from '../../engine/random';
  * The model is deliberately simple and explainable: distance = height × floor glide, in floor
  * marks. Nothing here pretends to be more than that.
  */
-export type RampMode = 'explore' | 'height' | 'both' | 'fair';
+export type RampMode = 'explore' | 'height' | 'both' | 'fair' | 'shelf';
 
 export interface RampPlan {
   mode: RampMode;
@@ -23,6 +23,7 @@ export const PLANS: RampPlan[] = [
   { mode: 'height', rounds: 3, name: 'Pick the ramp height that stops the car on the star' },
   { mode: 'both', rounds: 3, name: 'Ramp height and floor (carpet, wood, ice) together reach the star' },
   { mode: 'fair', rounds: 3, name: 'Fair tests: compare two lanes, changing only one thing' },
+  { mode: 'shelf', rounds: 2, name: 'Trial Shelf: roll two ramps, keep both cards, tap the one that went farther' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -121,8 +122,87 @@ export function fairLine(q: FairQuestion, kind: FairKind): FairLine | null {
 /** The explore level's ramp heights, one per roll, low to high, so each roll beside the last shows that higher goes farther. */
 export const EXPLORE_HEIGHTS = [2, 3, 4, 2] as const;
 
-/** One touch of the ghost finger: change a lane's ramp or its floor (each tap moves to the next), or press go. */
-export type RampTouch = { lane: number; change: 'ramp' | 'floor' } | 'go';
+/** Trial Shelf: one roll kept as a record card. `guess` is the side of the first card's flag she guessed, if she did. */
+export interface TrialRecord {
+  setup: Setup;
+  stop: number;
+  guess?: 'before' | 'past';
+}
+
+export const recordOf = (s: Setup, guess?: TrialRecord['guess']): TrialRecord => ({ setup: { ...s }, stop: distance(s.height, s.floor), ...(guess ? { guess } : {}) });
+
+/** Which side of a flag a stop (or a paw) lands on; stops never tie on the shelf, so the flag itself counts as past. */
+export const sideOf = (stop: number, flag: number): 'before' | 'past' => (stop < flag ? 'before' : 'past');
+
+/** The index of the card whose car went farther. */
+export const farther = (a: TrialRecord, b: TrialRecord): 0 | 1 => (b.stop > a.stop ? 1 : 0);
+
+/**
+ * The two pairs' first heights, 2 and 4 in seeded order. The second roll of a pair must differ, so a pair started at 2
+ * always ends with the second card farther and one started at 4 with the first: the right card is the top one in one
+ * pair and the bottom one in the other, and tapping the same position twice never finishes a round.
+ */
+export function makeShelf(rng: Rng): [number, number] {
+  return rng.next() < 0.5 ? [2, 4] : [4, 2];
+}
+
+/** What a pair or question can count. Guesses, ramp changes, same-height nudges and locked-lane taps are all 'free'. */
+export type RampEvent = 'unfair-check' | 'wrong-card' | 'free';
+
+/** Misses and hints for one pair from its events: each counted event is a miss, and the second of a kind turns help on once. */
+export function tally(events: RampEvent[]): { misses: number; hints: number } {
+  const n = (k: RampEvent) => events.filter((e) => e === k).length;
+  const help = (k: number) => Math.min(1, Math.max(0, k - 1));
+  const unfair = n('unfair-check');
+  const wrong = n('wrong-card');
+  return { misses: unfair + wrong, hints: help(unfair) + help(wrong) };
+}
+
+export interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** The ramp's left edge and width, and how tall one height step stands, shared with the drawing in index.ts. */
+export const RAMP_X0 = 150;
+export const RAMP_W = 170;
+export const HEIGHT_PX = 46;
+export const CARD_W = 460;
+export const CARD_H = 104;
+
+/** One lane's floor: where it starts, how many units a mark is, and its height on screen (the single-lane levels). */
+export function laneOf(view: { w: number; h: number }): { rampEnd: number; unit: number; floorY: number } {
+  const rampEnd = RAMP_X0 + RAMP_W;
+  return { rampEnd, unit: (view.w - 150 - rampEnd) / (MAX_DISTANCE + 0.6), floorY: view.h * 0.66 };
+}
+
+/**
+ * The Trial Shelf's pieces: two stacked record cards right-aligned at the top, the decorative ask badge left of them,
+ * and the guess zone on the floor split at the first card's flag (`flag` in marks). Pure, so a rule test checks it.
+ */
+export function shelfLayout(view: { w: number; h: number }, flag: number): { cards: [Box, Box]; badge: Box; guess: { before: Box; past: Box } } {
+  const x = view.w - 40 - CARD_W;
+  const cards: [Box, Box] = [
+    { x, y: 36, w: CARD_W, h: CARD_H },
+    { x, y: 36 + CARD_H + 12, w: CARD_W, h: CARD_H },
+  ];
+  const lane = laneOf(view);
+  const split = lane.rampEnd + flag * lane.unit;
+  const top = lane.floorY - 110;
+  const h = 170;
+  // Start just past the ramp's touch pad (it reaches 10 units beyond the ramp's foot), so a guess never cycles the ramp.
+  const left = lane.rampEnd + 12;
+  return {
+    cards,
+    badge: { x: view.w - 630, y: 96, w: 100, h: 100 },
+    guess: { before: { x: left, y: top, w: split - left, h }, past: { x: split, y: top, w: view.w - 150 - split, h } },
+  };
+}
+
+/** One touch of the ghost finger: change a lane's ramp or its floor (each tap moves to the next), press go, guess a side of the flag, or tap a card. */
+export type RampTouch = { lane: number; change: 'ramp' | 'floor' } | 'go' | { guess: 'before' | 'past' } | { card: 0 | 1 };
 
 /** How many taps turn a value that cycles through `list` into `to`. */
 const turns = <T>(list: readonly T[], from: T, to: T) => (list.indexOf(to) - list.indexOf(from) + list.length) % list.length;
@@ -134,8 +214,21 @@ const turns = <T>(list: readonly T[], from: T, to: T) => (list.indexOf(to) - lis
  * recovers from any pair a person leaves behind). It never presses go on a setup that would miss the star or an unfair
  * test, so a demonstration makes no wrong move.
  */
-export function rampTouch(plan: RampPlan, lanes: Setup[], goal: { star?: number; question?: FairQuestion; rolls: number }): RampTouch | null {
+export function rampTouch(
+  plan: RampPlan,
+  lanes: Setup[],
+  goal: { star?: number; question?: FairQuestion; rolls: number; records?: TrialRecord[]; guess?: 'before' | 'past' },
+): RampTouch | null {
   const [a, b] = lanes;
+  if (plan.mode === 'shelf') {
+    // Roll, change the ramp, guess by the stated rule (taller goes past the flag), roll again, then read the cards.
+    const records = goal.records ?? [];
+    if (records.length === 0) return 'go';
+    if (records.length >= 2) return { card: farther(records[0], records[1]) };
+    const first = records[0].setup.height;
+    if (a.height === first) return { lane: 0, change: 'ramp' };
+    return goal.guess ? 'go' : { guess: a.height > first ? 'past' : 'before' };
+  }
   if (plan.mode === 'explore') {
     return a.height === EXPLORE_HEIGHTS[Math.min(goal.rolls, EXPLORE_HEIGHTS.length - 1)] ? 'go' : { lane: 0, change: 'ramp' };
   }

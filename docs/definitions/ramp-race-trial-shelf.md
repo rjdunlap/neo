@@ -1,6 +1,6 @@
 # Ramp Race: Trial Shelf and One Change (definition)
 
-Defined 2026-10-17 as slice **Q3** of the [scientific inquiry study](../deep-dives/subjects/inquiry.md#build-slices-in-order), which proposed the [ladder these levels come from](../deep-dives/subjects/inquiry.md#first-games-proposed-ladder-ramp-race-extensions). **Not built.** Q4 builds level 5, then level 6, in separate sessions. **Gated:** Q4 waits on [inquiry decisions 1–2](../deep-dives/subjects/inquiry.md#decisions-for-the-developer) (new-mode accounting and the school 1–6 window), listed in [Waiting on the developer](../WAITING-ON-DEVELOPER.md). It also waits on Q2, the [truthful support correction](ramp-race-support.md), because level 6 reuses Q2's `classifyFair`, `fairRepair`, voice lines and corrective glow.
+Defined 2026-10-17 as slice **Q3** of the [scientific inquiry study](../deep-dives/subjects/inquiry.md#build-slices-in-order), which proposed the [ladder these levels come from](../deep-dives/subjects/inquiry.md#first-games-proposed-ladder-ramp-race-extensions). **Level 5 built 2026-10-24 ([PR #918](https://github.com/rjdunlap/neo/pull/918)); level 6 not built.** Q4 builds level 5, then level 6, in separate sessions. Small deviations in the build: the guess zone starts 12 units right of the ramp foot so a guess never cycles the ramp, and the paw on card B sits above the flags (y 16). **Gated:** Q4 waits on [inquiry decisions 1–2](../deep-dives/subjects/inquiry.md#decisions-for-the-developer) (new-mode accounting and the school 1–6 window), listed in [Waiting on the developer](../WAITING-ON-DEVELOPER.md). It also waits on Q2, the [truthful support correction](ramp-race-support.md), because level 6 reuses Q2's `classifyFair`, `fairRepair`, voice lines and corrective glow.
 
 **What it adds:** two appended levels of `ramp-race` (`src/games/ramp-race/`), 5 and 6.
 - Levels 1–4, their IDs and pins, the pre-K 1–2 window and the stated toy model (distance = height × floor glide, in floor marks) do not change.
@@ -286,7 +286,7 @@ New interaction tier, once per level, in separate sessions (5 first):
 5. `npm run build` only if a shared file beyond `voice-script.ts` and `howto.ts` changes.
 - Closeout: the README row, GAMES.md entry and how-to card.
 
-**Not established by any check:** whether a child sees each card as *that run*, tells the paw from the flag without reading, finds the farther flag on stacked cards, or wants another pair. These go to [DEVICE-CHECKS](../DEVICE-CHECKS.md) when Q4 builds.
+**Not established by any check:** whether a child sees each card as *that run*, tells the paw from the flag without reading, finds the farther flag on stacked cards, or wants another pair. These went to [DEVICE-CHECKS](../DEVICE-CHECKS.md) when level 5 built.
 
 ## References
 
