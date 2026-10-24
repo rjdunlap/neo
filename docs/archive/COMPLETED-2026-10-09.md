@@ -1,5 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### RW14 slice 9: moving between screens (2026-10-23)
+
+[PR #906](https://github.com/rjdunlap/neo/pull/906), branch `claude/rw14-moving-screens`: `App.show` (`src/app/App.ts`) renders the leaving scene to a view-sized Sprite, calls exit/destroy on it at once (before the new scene's `init`), then plays a grow (the new root out of the box recorded by `App.growFrom(node, route)`), a shrink (the old picture into `Scene.returnBox(key)` for the old scene's `Scene.transitionKey()`) or a crossfade; grow/shrink 0.35 s, fade 0.3 s, taps swallowed by a full-window blocker, a resize settles it. `chooseTransition`, `frameAt`, `usableBox` and `TRANSITION_SECONDS` are pure, in `src/app/transition.ts` with tests. `LandScene`/`LocationScene` answer `land:<id>`, `GameScene` `game:<id>`; `ExploreScene` answers for its Places cards and game cards, `LandScene` for its visible spots. Classic shares `App`, so its routes crossfade.
+
+Open: DOM-overlay scenes (chooser, couch, hatch name field) still snap; no iPad check. Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-9-moving-between-screens).
+
 ### RW14 slice 8: the last place first (2026-10-23)
 
 [PR #905](https://github.com/rjdunlap/neo/pull/905), branch `claude/rw14-last-place`: new per-profile field `SaveData.explore: { last: LandId | null }` in `src/progress/save.ts` (default null, repaired on load with `isLandId`); `store.visitPlace(id)` writes only on change. `LocationScene.init()` records the visit when the location was opened at the root with a Back to Places, so another profile starts with none. `ExploreScene` (no entry) shows `last` as a 320 by 200 postcard (`EXPLORE_POSTCARD`: the location's landmark art and name) above the four entries, kept apart from `cards` so `cards[0..3]` are still the entries; a tap says "Back to {place}!" (existing `result.back`) and opens the location with `go.land`. It shows only after a visit and only for a built location; no new voice line and no spoken prompt. `exploreGridLayout(v, n, postcard)` returns `postcard: Spot | null`, sitting just above the cards and kept to the top, below Back and Home if it would reach across them; a unit test covers five views and 1-4 cards (clear of corners and other targets, no target shrunk). Browser case `BROWSER_SUITE=home HOME_ONLY=last-place`.
@@ -1833,7 +1839,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--fluffy-salon
 
 [PR #865](https://github.com/rjdunlap/neo/pull/865), `claude/critter-sort-sprouts` ([definition](../definitions/same-kind-different-sprouts.md), [deep dive](../deep-dives/critter-sort.md)). Level 12 *Like the big plant* (one hoop) and level 13 *Same and different* (overlapping hoops, leaf mat) sort little plants grown from one big plant's seeds by the big plant's leaf shape and petal marks; the family is stated, never deduced. Built: `makePlantRound`, `SPROUT_PLANS` and the plant rules in `src/games/critter-sort/logic.ts`, code-drawn plants (`PlantNode`) in `plants.ts`, `sort.plant.*` voice lines, how-to lines, logic tests and a `FROM_LEVEL`/`TO_LEVEL` screenshot in the `woods` sort loop. Ladder: pre-K order 6, 1, 12, 2, 3, 13 (max 13); school order 2, 12, 3, 13, 4, 5, 7, 8, 9, 11 (max 13).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--critter-sort-levels-1213-same-kind-different-sprouts-g4).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--critter-sort-levels-1213-same-kind-different-sprouts-g4).
 
 ## Weather Wardrobe batch 2: the trip happens and level 9 Which sky?, slices 5-6 (2026-10-23)
 
