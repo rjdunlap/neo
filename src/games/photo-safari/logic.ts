@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * different places. Tap one to take its photo. Requests grow from naming the animal to
  * what it's doing ("jumping") and where it is ("under the tree"), for verbs and positions.
  */
-export type SafariMode = 'snap' | 'who' | 'doing' | 'where' | 'both' | 'not' | 'clues' | 'tell';
+export type SafariMode = 'snap' | 'who' | 'doing' | 'where' | 'both' | 'not' | 'clues' | 'tell' | 'act' | 'changed' | 'true';
 export type Animal = 'cat' | 'dog' | 'bunny' | 'pig' | 'duck' | 'bear';
 export type Action = 'jumping' | 'sleeping' | 'eating' | 'dancing' | 'waving' | 'swimming';
 export type Spot = 'tree' | 'bush' | 'rock' | 'pond';
@@ -33,7 +33,17 @@ export const TELL_WHICH_LEVEL = 10;
 export const TELL_BOTH_LEVEL = 11;
 export const TELL_WHICH_PLAN: SafariPlan = { mode: 'tell', tell: 'which', photos: 4, animals: 3, name: 'Tell me which: tap the one picture word only the sparkly animal has, then Tell' };
 export const TELL_BOTH_PLAN: SafariPlan = { mode: 'tell', tell: 'both', photos: 4, animals: 4, name: 'Tell me both: every picture word fits two, so tell a doing word and a place word together' };
-const PLANS_BY_ID: Record<number, SafariPlan> = { ...Object.fromEntries(PLANS.map((p, i) => [i + 1, p])), 10: TELL_WHICH_PLAN, 11: TELL_BOTH_PLAN };
+export const CHANGED_LEVEL = 8;
+export const TRUE_LEVEL = 9;
+/** The toddler entry: appended above the ladder, played between 2 and 3 in the toddler order. */
+export const WHO_DOING_LEVEL = 12;
+export const CHANGED_PLAN: SafariPlan = { mode: 'changed', photos: 4, animals: 3, name: 'What changed? Photograph the meadow, then find the friend doing something new or in a new place' };
+export const TRUE_PLAN: SafariPlan = { mode: 'true', photos: 4, animals: 3, name: 'Is it true? Photograph the animal named, then thumbs up or down: does the photo show what was said?' };
+export const WHO_DOING_PLAN: SafariPlan = { mode: 'act', photos: 4, animals: 3, name: 'Doing words only: "Who is sleeping?"' };
+const PLANS_BY_ID: Record<number, SafariPlan> = {
+  ...Object.fromEntries(PLANS.map((p, i) => [i + 1, p])),
+  [CHANGED_LEVEL]: CHANGED_PLAN, [TRUE_LEVEL]: TRUE_PLAN, 10: TELL_WHICH_PLAN, 11: TELL_BOTH_PLAN, [WHO_DOING_LEVEL]: WHO_DOING_PLAN,
+};
 export const planFor = (level: number) => PLANS_BY_ID[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export const ANIMALS: Animal[] = ['cat', 'dog', 'bunny', 'pig', 'duck', 'bear'];
@@ -55,10 +65,21 @@ export interface Scene {
   target: number;
   /** 'not' levels: what every other animal is doing. */
   notAction?: Action;
+  /** 'changed' levels: the meadow as photographed, and the one thing that then changed. */
+  before?: Sighting[];
+  change?: 'action' | 'spot';
+  /** 'true' levels: what the pet says about the target, and whether the photo will bear it out. */
+  claim?: Sighting;
+  truthy?: boolean;
 }
 
+/** Actions a toddler can see at a glance, none tied to one place. */
+export const TODDLER_ACTIONS: Action[] = ['sleeping', 'eating', 'jumping', 'dancing'];
+/** Level 9 rounds: exactly two true claims and two false ones, in a seeded order. */
+export const claimTruths = (rng: Rng): boolean[] => rng.shuffle([true, true, false, false]);
+
 /** What a request talks about at each level. */
-const keys = (mode: SafariMode): (keyof Sighting)[] => (mode === 'clues' ? ['action', 'spot'] : mode === 'who' ? ['animal'] : mode === 'not' ? ['action'] : mode === 'doing' ? ['animal', 'action'] : mode === 'where' ? ['animal', 'spot'] : mode === 'both' ? ['animal', 'action', 'spot'] : []);
+const keys = (mode: SafariMode): (keyof Sighting)[] => (mode === 'act' ? ['action'] : mode === 'true' ? ['animal'] : mode === 'clues' ? ['action', 'spot'] : mode === 'who' ? ['animal'] : mode === 'not' ? ['action'] : mode === 'doing' ? ['animal', 'action'] : mode === 'where' ? ['animal', 'spot'] : mode === 'both' ? ['animal', 'action', 'spot'] : []);
 
 /** Does a sighting match the target on everything the request mentions? */
 export function matches(mode: SafariMode, s: Sighting, target: Sighting): boolean {
@@ -69,7 +90,22 @@ export function matches(mode: SafariMode, s: Sighting, target: Sighting): boolea
  * One scene with exactly one match. Both-clue modes share places so that neither
  * the action nor the place alone identifies the target; other modes use distinct spots.
  */
-export function makeScene(plan: SafariPlan, rng: Rng): Scene {
+export function makeScene(plan: SafariPlan, rng: Rng, round = 0, truthy = true): Scene {
+  if (plan.mode === 'act') {
+    // Three different friends in three places, each doing something different: the doing word alone decides.
+    const spots = rng.shuffle([...SPOTS]).slice(0, 3);
+    const animals = rng.shuffle([...ANIMALS]);
+    const actions = rng.shuffle([...TODDLER_ACTIONS]);
+    const sightings = spots.map((spot, i): Sighting => ({ animal: animals[i], action: actions[i], spot }));
+    const order = rng.shuffle([0, 1, 2]);
+    return { sightings: order.map((i) => sightings[i]), target: order.indexOf(0) };
+  }
+  if (plan.mode === 'changed') return changeScene(meadow(rng), round < 2 ? 'action' : 'spot', rng);
+  if (plan.mode === 'true') {
+    const sightings = meadow(rng);
+    const target = rng.int(0, sightings.length - 1);
+    return { sightings, target, claim: truthy ? { ...sightings[target] } : falseClaim(sightings[target], rng), truthy };
+  }
   if (plan.mode === 'both') {
     const [spot, otherSpot] = rng.shuffle([...SPOTS]);
     // Each action must occur at two distinct places, so pond-only swimming cannot be a clue.
@@ -135,17 +171,63 @@ export function makeScene(plan: SafariPlan, rng: Rng): Scene {
   throw new Error('No scene');
 }
 
+/** Three different animals in three of the four places, each doing something that suits its place. */
+function meadow(rng: Rng): Sighting[] {
+  const spots = rng.shuffle([...SPOTS]).slice(0, 3);
+  const animals = rng.shuffle([...ANIMALS]);
+  return spots.map((spot, i) => ({ animal: animals[i], action: rng.pick(actionsAt(spot)), spot }));
+}
+
+/** One friend changes exactly one thing: what it is doing, or (in later rounds) moving to the empty place. */
+export function changeScene(before: Sighting[], change: 'action' | 'spot', rng: Rng): Scene {
+  const free = SPOTS.find((s) => !before.some((b) => b.spot === s))!;
+  // A swimmer cannot climb out to dry land still swimming; those rounds change an action instead.
+  const movable = before.flatMap((b, i) => (actionsAt(free).includes(b.action) ? [i] : []));
+  const kind = change === 'spot' && movable.length ? 'spot' : 'action';
+  const target = kind === 'spot' ? rng.pick(movable) : rng.int(0, before.length - 1);
+  const was = before[target];
+  const now: Sighting = kind === 'spot' ? { ...was, spot: free } : { ...was, action: rng.pick(actionsAt(was.spot).filter((a) => a !== was.action)) };
+  return { sightings: before.map((b, i) => (i === target ? now : { ...b })), target, before, change: kind };
+}
+
+/** The same animal, wrong by one thing, and still a sensible sentence (nobody swims on a rock). */
+function falseClaim(s: Sighting, rng: Rng): Sighting {
+  const otherSpots = SPOTS.filter((p) => p !== s.spot && actionsAt(p).includes(s.action));
+  if (otherSpots.length && rng.chance(0.5)) return { ...s, spot: rng.pick(otherSpots) };
+  return { ...s, action: rng.pick(actionsAt(s.spot).filter((a) => a !== s.action)) };
+}
+
+/** "the duck is sleeping in the pond": a claim, or what a photo really shows. */
+export const sentence = (s: Sighting): string => `the ${s.animal} is ${s.action} ${PLACE_WORDS[s.spot]}`;
+
+/** A wrong pick on What changed?: that friend is just as it was in the photo. */
+export function stillLine(scene: Scene, i: number): string {
+  const s = scene.sightings[i];
+  return `the ${s.animal} is still ${scene.change === 'spot' ? PLACE_WORDS[s.spot] : s.action}`;
+}
+
+/** What changed, told after the right pick. */
+export function changeLine(scene: Scene): string {
+  const was = scene.before![scene.target];
+  const now = scene.sightings[scene.target];
+  return scene.change === 'spot'
+    ? `the ${now.animal} was ${PLACE_WORDS[was.spot]}, and now it is ${PLACE_WORDS[now.spot]}`
+    : `the ${now.animal} was ${was.action}, and now it is ${now.action}`;
+}
+
 /** "the bunny jumping behind the bush", for the voice. */
 export function describe(mode: SafariMode, s: Sighting): string {
   const parts = [mode === 'clues' ? 'the animal' : `the ${s.animal}`];
-  if (mode === 'clues' || mode === 'doing' || mode === 'both' || mode === 'snap' || mode === 'not') parts.push(s.action);
-  if (mode === 'clues' || mode === 'where' || mode === 'both') parts.push(PLACE_WORDS[s.spot]);
+  if (mode === 'clues' || mode === 'doing' || mode === 'both' || mode === 'snap' || mode === 'not' || mode === 'act' || mode === 'true') parts.push(s.action);
+  if (mode === 'clues' || mode === 'where' || mode === 'both' || mode === 'true') parts.push(PLACE_WORDS[s.spot]);
   return parts.join(' ');
 }
 
 /** What the voice asks for: the target's description, or on 'not' levels the thing it isn't doing. */
 export function request(mode: SafariMode, scene: Scene): string {
   if (mode === 'not') return `the animal that is not ${scene.notAction}`;
+  if (mode === 'act') return scene.sightings[scene.target].action;
+  if (mode === 'true') return sentence(scene.claim!);
   return describe(mode, scene.sightings[scene.target]);
 }
 

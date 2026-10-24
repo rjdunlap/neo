@@ -46,7 +46,7 @@ Open: location keep-out rects (`landButtons`) are not widened for the new house,
 
 [PR #895](https://github.com/rjdunlap/neo/pull/895), branch `codex/rw14-first-run`: HatchScene reuses Home's bottom-anchored backdrop and companion stage. The egg is sized from the full sprout artwork (including leaves), all egg stages share their feet, and the colour/name controls sit on a soft plate above the grass. Four taps → colour → name → Home and the saved sprout are unchanged. Classic boot is unchanged and uses the existing sky/grass fallback. No new image, save schema or route.
 
-Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-1-first-run-on-the-island); device speech/touch and child response remain unchecked.
+Proof: [verification](VERIFICATION-2026-10-23.md#2026-10-23--rw14-slice-1-first-run-on-the-island); device speech/touch and child response remain unchecked.
 
 
 ### Attic Finds levels 3–4 Lid and Lever (H3, 2026-10-23)

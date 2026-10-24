@@ -7,7 +7,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **`species-comeback`, levels 1–3** (existing [PR #733](https://github.com/rjdunlap/neo/pull/733); decision 1 settled 2026-10-23, the session's source check replaces the developer review, [record](archive/DECISIONS-2026-10-23.md#decisions)): finish and merge that PR after the source check; do not build a second version. [Definition](definitions/species-comeback.md).
-- **`photo-safari`, dive slices 5–7** (new levels; one batch): level 8, level 9 with thumbs-up/down for school only, and the action-only "Who is sleeping?" toddler entry, as decided 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#decisions)). [Build slices](deep-dives/photo-safari.md#build-slices-in-order)
 
 ## Queued
 

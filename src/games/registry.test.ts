@@ -24,15 +24,23 @@ describe('game registry', () => {
     expect(levelsInOrder(g.levels('toddler'))).toEqual([1, 11, 10, 2, 3]);
   });
 
-  it('appends Photo Safari telling only to school, skipping reserved IDs and keeping younger ranges', () => {
+  it('keeps Photo Safari 8–11 school only and the toddler entry 12 in the toddler order only', () => {
     const g = gameById('photo-safari')!;
-    expect(g.levels('school')).toEqual({ min: 4, max: 11, order: [4, 5, 6, 7, 10, 11] });
+    expect(g.levels('school')).toEqual({ min: 4, max: 11, order: [4, 5, 6, 7, 8, 9, 10, 11] });
     expect(g.levels('prek')).toEqual({ min: 3, max: 5 });
     expect(g.levels('preschool')).toEqual({ min: 2, max: 4 });
-    for (const band of ['lap', 'toddler'] as const) expect(g.levels(band)).toEqual({ min: 1, max: 2 });
+    expect(g.levels('lap')).toEqual({ min: 1, max: 2 });
+    expect(g.levels('toddler')).toEqual({ min: 1, max: 12, order: [1, 2, 12] });
+    expect(g.entryLevels).toEqual([12]);
+    // Younger players never hear a false claim: Is it true? (9) is in no band but school.
+    for (const band of g.bands) expect(levelsInOrder(g.levels(band)).includes(9)).toBe(band === 'school');
+    expect(stepLevel(2, 1, g.levels('toddler'))).toBe(12);
+    expect(landing(12, g.levels('preschool'), g.entryLevels)).toBe(2);
+    expect(landing(12, g.levels('school'), g.entryLevels)).toBe(4);
     for (const band of g.bands) for (const level of levelsInOrder(g.levels(band)).filter((l) => l <= 6)) expect(landing(level, g.levels(band))).toBe(level);
-    expect(stepLevel(7, 1, g.levels('school'))).toBe(10);
-    expect(stepLevel(10, -1, g.levels('school'))).toBe(7);
+    expect(stepLevel(7, 1, g.levels('school'))).toBe(8);
+    expect(stepLevel(9, 1, g.levels('school'))).toBe(10);
+    expect(stepLevel(10, -1, g.levels('school'))).toBe(9);
     expect(stepLevel(10, 1, g.levels('school'))).toBe(11);
   });
 
