@@ -129,3 +129,7 @@ Each is one session. Definitions are recommendations; their builds need their ow
 Nothing implemented. Opened the primary sources linked above, checked ownership in the related game dives and studies, and published a docs-only claim. Docs verification only: local links and `git diff --check`. No typecheck, tests, build, browser, iPad or child observation.
 
 M1's definition landed 2026-10-22 (docs only, PR #767); it dropped the optional third unit. Links and `git diff --check` only.
+
+## M3–M5 definition claim — 2026-10-23
+
+Worker `01a16bf1-ef75-72a3-8643-33da9b6cf91f`, branch `codex/measurement-m3-m5`: docs only, Measuring Post 1–4 and one provisional Weights Case packet. Expected files: this study, `docs/definitions/measuring-post.md`, `docs/definitions/weights-case.md`, READY, STUDY-BACKLOG, EXECUTION-QUEUE, VERIFICATION and completed-work archive. Preserve approved island/metric units, Measuring Post placement/capacity and Weights Case’s Box Balance-first/Lantern Lake dependencies. No gameplay, registration, assets, practical card or new decision.
