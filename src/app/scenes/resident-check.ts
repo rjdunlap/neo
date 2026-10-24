@@ -1,17 +1,15 @@
 import { Texture } from 'pixi.js';
 import type { CastId } from '../../art/creatures/cast';
 import { sameArt } from '../../art/creatures/illustrated';
-import { landFor, landLayout, olderIn, overlaps, spotRect, visibleIn, type LandId, type Rect } from '../../content/lands';
+import { LAND_SPOTS, landFor, landLayout, overlaps, spotRect, type LandArrows, type LandId, type Rect } from '../../content/lands';
 import { Resident, RESIDENTS } from '../../creatures/resident';
 import { computeView } from '../../engine/view';
-import { GAMES } from '../../games/registry';
-import { BANDS, type Band } from '../../progress/bands';
 import { hostScale } from './LandScene';
 import { meadowKeepOut } from './meadow';
 
 /**
  * The clearance check the six locations' tests make of their second-wave resident (RW14 slice 2, after `peaks.test.ts`):
- * at every band, both sides of the signpost and in four views, its touch circle is at least 100 units across, and
+ * in every layout the capacity sweep (`landLayouts`) gives, in four views, its touch circle is at least 100 units across, and
  * everything it covers at rest over five seconds, poked over its reaction, stays inside its own spot, so it clears every
  * game, the signpost, the guide corner, the corner buttons and the heading. Returns what is wrong; nothing when it fits.
  * Vitest-free, so a test asserts on the list.
@@ -24,17 +22,30 @@ export const VIEWS = {
   notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
 };
 
-/** Every layout a land uses: each band, both sides of the signpost, every view. */
+/** Which arrows a page can show: none (a land that fits), on only (a first page), both (a middle page), back only (a last page). */
+const ARROWS: LandArrows[] = [
+  { prev: false, next: false },
+  { prev: false, next: true },
+  { prev: true, next: true },
+  { prev: true, next: false },
+];
+
+/**
+ * Every layout a land screen can need, not only what today's catalog asks for: in every view, with and without the
+ * signpost and with each set of page arrows, every game count the `LAND_SPOTS` budget allows. A location's scenery that
+ * passes this never breaks when a game is added (a full land pages instead).
+ */
 export function* landLayouts(id: LandId) {
   const land = landFor(id);
   for (const [name, view] of Object.entries(VIEWS)) {
     const ground = view.h * land.backdrop.horizon;
-    for (const band of BANDS.map((b) => b.id) as Band[]) {
-      const mine = visibleIn(land, band, GAMES).length;
-      const older = olderIn(land, band, GAMES).length;
-      for (const n of older ? [mine, older] : [mine]) {
-        const layout = landLayout(n, older > 0, view, ground)!;
-        yield { view, ground, layout, where: `${band} ${name} n=${n}` };
+    for (const sign of [false, true]) {
+      for (const arrows of ARROWS) {
+        const fixed = 1 + (sign ? 1 : 0) + (arrows.prev ? 1 : 0) + (arrows.next ? 1 : 0);
+        for (let n = 1; n + fixed <= LAND_SPOTS; n++) {
+          const layout = landLayout(n, sign, view, ground, arrows)!;
+          yield { view, ground, layout, where: `${name} n=${n}${sign ? ' sign' : ''}${arrows.prev ? ' prev' : ''}${arrows.next ? ' next' : ''}` };
+        }
       }
     }
   }
