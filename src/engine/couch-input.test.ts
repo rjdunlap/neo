@@ -48,10 +48,24 @@ describe('the typed-letter channel', () => {
     key('keydown', 'Shift', 'ShiftLeft');
     expect(a.defaultPrevented).toBe(true);
     const out = input.poll();
-    expect(out.typed).toEqual(['a', 'W', ' ']);
+    expect(out.typed).toEqual(['a', 'W', ' ', 'Shift']);
     // W is a letter now, not a paddle; Space still presses as it always did.
     expect(out.players[1].direction).toBe(-1);
     expect(out.players[0].action).toBe(true);
+    expect(input.poll().typed).toEqual([]);
+    input.destroy();
+  });
+
+  it('delivers editor keys once in event order only to typing; chords and repeats stay out', () => {
+    const input = new CouchInput(() => {}, () => {});
+    input.typing = () => true; input.poll();
+    for (const [k, code] of [['Shift','ShiftLeft'], ['a','KeyA'], ['ArrowLeft','ArrowLeft'], ['Backspace','Backspace'], ['.','Period']]) {
+      key('keydown', k, code); key('keydown', k, code, { repeat: true }); key('keyup', k, code);
+    }
+    key('keydown', 'ArrowLeft', 'ArrowLeft', { metaKey: true });
+    key('keydown', 'Backspace', 'Backspace', { altKey: true });
+    expect(input.poll().typed).toEqual(['Shift','a','ArrowLeft','Backspace','.']);
+    key('keydown', 'Shift', 'ShiftRight'); win.dispatchEvent(new Event('blur'));
     expect(input.poll().typed).toEqual([]);
     input.destroy();
   });

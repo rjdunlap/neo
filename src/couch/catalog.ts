@@ -353,13 +353,15 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     controls: [
       { parts: [], text: 'Type the letter on the bubble.', keys: 'Letter keys' },
       { parts: [], text: 'The space bar, between two words.', keys: 'Space' },
-      { parts: ['start'], text: 'Pause menu: glow the key, or start this bubble again.', keys: 'Esc' },
+      { parts: [], text: 'Tap Shift, then a letter, for a capital. Finish a line with a full stop.', keys: 'Shift / .' },
+      { parts: ['dpad', 'left'], text: 'Move the caret and remove the letter before it.', keys: '← → / Backspace' },
+      { parts: ['start'], text: 'Pause: Show the key, glow a hint, or start this bubble again.', keys: 'Esc' },
     ],
     restart: 'Start this bubble again', hint: 'Glow the key',
     play: 'turns', faceoff: 'twin', score: { better: 'higher', unit: 'letters first try' },
     band: 'school', demoLevel: 2,
-    // Levels 1–3 are built: two stops at each.
-    level: (stop) => [1, 1, 2, 2, 3, 3][stop] ?? 3,
+    // A trip introduces lines; caret repair is on the island course.
+    level: (stop) => [1, 1, 2, 3, 4, 5][stop] ?? 5,
   },
   'word-search': {
     goal: 'couch.how.word-search',

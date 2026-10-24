@@ -168,7 +168,7 @@ None blocks the KE2 *definition*: the lean in each is the default. **Decision 4 
 
 1. **KE2 define: Pond Typing levels 1–6** (**done 2026-10-22**, [definition](../../definitions/pond-typing.md), PR #836; docs only: `docs/definitions/pond-typing.md` with the registration and land (decision 4), the word pool, the seeded course, the typed-letter channel, the bot rule and the layout; check tier is links and diff).
 2. **KE1 hand-off to the Read & Do dive** (a line in the dive's brief; the dive numbers its own levels).
-3. **KE2 build** (**levels 1–3 built 2026-10-24**; levels 4–6, pictures for words and the Show the key toggle remain; couch tier: `BROWSER_SUITE=couchgames` filtered to the new game; typecheck and rule tests).
+3. **KE2 build** (**levels 1–6 built 2026-10-24**, including word pictures, Show the key and typed-key diagram lighting ([PR #946](https://github.com/rjdunlap/neo/pull/946)); couch tier: `BROWSER_SUITE=couchgames` filtered to the new game; typecheck and rule tests).
 4. **KE3 hand-off to `spelling-sentences`** when that study runs.
 5. **KE5 define** after KE2 is played; **KE7 cards** to the off-screen-companions at-home card after a content review; **KE6** only after a lockout check.
 

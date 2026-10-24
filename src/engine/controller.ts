@@ -129,7 +129,7 @@ export class CouchInput {
   typing: () => boolean = () => false;
   private readonly down = (e: KeyboardEvent) => {
     if (e.metaKey || e.ctrlKey || e.altKey || typing(e) || !this.listening()) return;
-    if (e.key.length === 1 && this.typing()) {
+    if (this.typing() && (e.key.length === 1 || ['Shift', 'Backspace', 'ArrowLeft', 'ArrowRight'].includes(e.key))) {
       e.preventDefault();
       if (!e.repeat && this.typedKeys.length < 32) this.typedKeys.push(e.key);
       if (e.code === 'Space') this.keys.add(e.code);

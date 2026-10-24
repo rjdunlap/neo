@@ -1892,7 +1892,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--critter-sort
 
 [PR #925](https://github.com/rjdunlap/neo/pull/925), `claude/rhythm-neighbors-knock-a-call` ([deep dive](../deep-dives/rhythm-neighbors.md#build-slices-in-order)), batch `rhythm-neighbors 2`. New interaction: she is the caller. Toddler order `[2, 8, 9, 3]`, preschool `[9, 3, 4]`, `entryLevels [7, 9]`. She knocks the big tree one to five times; the call ends after a 1.6 s quiet spell (`CALL_QUIET`) or at once on the fifth knock (the frog starts 0.6 s later). Knock times become short/long gaps by `judgeEcho`'s relative rule (`gapsOf`), and `reply()` answers: one knock gets two croaks, one gap is flipped, two or more gaps are reversed, and mixed palindromes (S·L·S) are flipped so the answer differs whenever the call has two kinds of gap. Knocks during the answer sound but are not recorded. Three calls finish, then the finale replays her last call and answer; no misses, no hints. The ghost finger knocks three or four times with varied rests (`BOT_CALLS`). New voice lines `neighbors.call` and `neighbors.call-again`; how-to steps and finish scoped to level 9. Deviation from the dive: a 1.6 s quiet rather than 1 s, since the ghost finger's shortest tap gap is about 0.9 s and a long gap about 1.4 s. Review fix: a comment had swallowed `demonstrate()`'s busy/taps/waiting reset.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--rhythm-neighbors-level-9-knock-a-call-slice-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-24.md#2026-10-24--rhythm-neighbors-level-9-knock-a-call-slice-4).
 
 ## Peg Garden levels 6 Into the cup and 7 Plant a bud, slices 5-6 (2026-10-24)
 
@@ -1946,3 +1946,8 @@ New game in Story Grove (its 14th), subject story-grove; bands lap 1, toddler 1�
 ## 2026-10-24 — Welcome Ways early definition
 
 [PR #944](https://github.com/rjdunlap/neo/pull/944), `codex/welcome-ways-definition`: [Welcome Ways 1–4](../definitions/welcome-ways.md) defined from the completed engineering-design study and decided fictional cast/placement/accounting. Parts, visitors, accepted boards, repair hints, layouts, voice/how-to/bot and build checks fixed; implementation batch queued. Docs only; no game or device evidence. Links and diff checked.
+
+
+## Pond Typing KE2 part 2 — 2026-10-24
+
+[PR #946](https://github.com/rjdunlap/neo/pull/946): levels 4–6, sticky Shift capitals, visible copied lines with stops/Backspace, seeded one-letter caret repairs, word pictures, round-local Show the key and typed-key diagram lighting. Built 1–3/copying/accounting remain; Bubble Pond version 2 retains its three early ponds and adds capitals, line and repair ponds. Scope/actual differences/source check: [definition](../definitions/pond-typing.md#part-2-implementation-and-source-check-2026-10-24). No registration, land or other-game changes. Device/child checks remain open. Evidence: [verification](../VERIFICATION.md#2026-10-24--pond-typing-levels-46-ke2-part-2).
