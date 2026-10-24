@@ -1,5 +1,9 @@
 # Needs a person or a device
 
+## Species Comeback levels 1–3 (2026-10-24)
+
+- [ ] On an iPad, with a grown-up or older child: can she tap two turtles into a nest and read the tree's ♀/♂ tags and name tags at play size, does the named shared relative make a forbidden pair understandable, and are the level-3 release-site cards (64-unit targets) comfortable to choose between in both orientations? Chrome proved the flow and portrait layout only; device speech and a person's response are untested.
+
 ## Pond Typing levels 1–3 (KE2, 2026-10-24)
 
 - [ ] With a child at a real laptop keyboard: can she find and press a letter on a waiting bubble, and does the name and the space-bar level read and feel fair? Also a real keyboard on a laptop rather than Chrome automation, and device speech for the prompts.

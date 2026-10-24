@@ -6,18 +6,17 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`species-comeback`, levels 1–3** (existing [PR #733](https://github.com/rjdunlap/neo/pull/733); decision 1 settled 2026-10-23, the session's source check replaces the developer review, [record](archive/DECISIONS-2026-10-23.md#decisions)): finish and merge that PR after the source check; do not build a second version. [Definition](definitions/species-comeback.md).
-
-## Queued
-
-- **RW14 slice 4, the illustrated Rainbow Meadow and Places postcards** (shell tier, offline check): eligible once `land-meadow` from [ChatGPT batch 1](rework/art-requests/CHATGPT-BATCH.md#batch-1-generate-these-first) is imported; then it goes to the top of Next ten; it also wires the location picture into the result screen's `resultPlace`/`ResultBackdrop` and checks the result there (slice 5 built the sky and hills only). [POLISH.md](rework/POLISH.md#slice-4-the-illustrated-rainbow-meadow-and-postcards-in-places)
-- **RW14 slice 10, the other ten backdrops** (images only): after slices 4 and 6 pass their screenshot review. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 - **`cue-studio`, levels 1–2 (programming P2)** (one proposed same-game batch; new-game tier): one-command and any two-command executable performances, slot replacement/Undo, replay and supported deliberate Finish. Its open decisions were settled 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#decisions)). [P1 definition](definitions/cue-studio.md#bands-and-adaptation-proposal-awaiting-decision).
 - **`pond-typing`, build levels 4–6 (keyboarding-editing KE2, part 2)** (couch tier): levels 1–3 are built; remaining a sticky Shift capital (4), a line with a stop and Backspace (5), mending a letter with the arrow keys (6), pictures for the words and the "Show the key" toggle, with keyboard-diagram lighting; school, accuracy only. [Definition](definitions/pond-typing.md)
 - **`ramp-race`, Trial Shelf 5 and One Change 6 (inquiry Q4)** (new levels with one new interaction): the accounting table and the locked blue control lane at level 6 as decided 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#decisions)); What can we tell? 7 follows. [Definition](definitions/ramp-race-trial-shelf.md)
 - **`food-web-workshop`, build (ecosystems F2)** (new-game tier): the six feeding records pass with the session's source check, Rainbow Meadow else Barnyard; decided 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#decisions)). [Definition](definitions/food-web-workshop.md)
 - **Grown-up puzzle misses** (existing-game fix tier, three games): Sudoku Garden's wrong digit gets the gentle boing and a spoken hint; Island Bridges' stray plank and Picture Logic's stray fill stop counting as misses; Lantern Lights stays 0; decided 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#decisions)).
 - **Better voice V1: build-time Kokoro clips** (shell and assets tier, offline check): a repository script renders `voice-script.ts` lines with Kokoro locally, the clips are cached offline, and device speech remains the fallback; AGENTS.md's audio rule now allows it (decided 2026-10-23, [record](archive/DECISIONS-2026-10-23.md#decisions)). [A better voice](ROADMAP.md#a-better-voice)
+
+## Queued
+
+- **RW14 slice 4, the illustrated Rainbow Meadow and Places postcards** (shell tier, offline check): eligible once `land-meadow` from [ChatGPT batch 1](rework/art-requests/CHATGPT-BATCH.md#batch-1-generate-these-first) is imported; then it goes to the top of Next ten; it also wires the location picture into the result screen's `resultPlace`/`ResultBackdrop` and checks the result there (slice 5 built the sky and hills only). [POLISH.md](rework/POLISH.md#slice-4-the-illustrated-rainbow-meadow-and-postcards-in-places)
+- **RW14 slice 10, the other ten backdrops** (images only): after slices 4 and 6 pass their screenshot review. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 
 - **`weather-wardrobe`, Wind** (one implementation batch; 1 original subtask, slice 7; use the combined check tier): [scope and levels](GAME-BATCHES.md#weather-wardrobe-2-wind-remaining-part).
 - **`weather-wardrobe`, Two friends, two places** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#weather-wardrobe-3-two-friends-two-places).
