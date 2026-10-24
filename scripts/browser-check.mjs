@@ -2364,7 +2364,8 @@ async function sudokuTouchPlay() {
   await tapCell(wrong.i); await page.waitForTimeout(100);
   assert.equal((await state()).cursor, wrong.i, 'a tap on a square chooses it');
   await tapSlot({ kind: 'digit', d: wrong.d }); await page.waitForTimeout(200);
-  st = await state(); assert.equal(st.misses, 1, 'a wrong number is one miss'); assert.equal(st.empty, (await page.evaluate(() => neo.scene.game.puzzle.blanks)) - 1);
+  st = await state(); assert.equal(st.misses, 1, 'a wrong number is one miss');
+  assert.ok(await page.evaluate((i) => !!neo.scene.game.flash?.cells.includes(i), wrong.i), 'a wrong number glows red, clash or not'); assert.equal(st.empty, (await page.evaluate(() => neo.scene.game.puzzle.blanks)) - 1);
   await tapSlot({ kind: 'erase' }); await page.waitForTimeout(200);
   st = await state(); assert.equal(st.empty, await page.evaluate(() => neo.scene.game.puzzle.blanks), 'erase takes the number out'); assert.equal(st.misses, 1, 'taking it out is free and does not undo the miss');
   await tapSlot({ kind: 'marks' }); await tapSlot({ kind: 'digit', d: 3 }); await page.waitForTimeout(200);
@@ -2599,7 +2600,7 @@ async function bridgesTouchPlay() {
     if (sea.x < 0 || sea.y < 0 || sea.x + sea.w > neo.view.w || sea.y + sea.h > neo.view.h) out.push('sea off screen');
     return out.map((m) => `${label}: ${m} (${neo.view.w}x${neo.view.h}, scale ${neo.view.scale})`);
   }, label);
-  // Level 1 (7 by 7): a plank that is not in the answer is one miss, Take off lifts it for free, a hint counts once, then the sea is joined.
+  // Level 1 (7 by 7): a plank that is not in the answer is not a miss (decided 2026-10-23), Take off lifts it for free, a hint counts once, then the sea is joined.
   await launch('island-bridges', 1); await idle();
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);
   let st = await state();
@@ -2613,11 +2614,11 @@ async function bridgesTouchPlay() {
   assert.ok(wrong >= 0, 'a sea has a stretch that can take a stray plank');
   const right = st.sol[wrong];
   for (let i = 0; i <= right; i++) { await tapEdge(wrong); await page.waitForTimeout(150); }
-  st = await state(); assert.deepEqual([st.planks[wrong], st.misses, st.entries], [right + 1, 1, right + 1], 'a plank beyond the answer is one miss');
+  st = await state(); assert.deepEqual([st.planks[wrong], st.misses, st.entries], [right + 1, 0, right + 1], 'a plank beyond the answer is not a miss');
   await tapSlot('take'); await page.waitForTimeout(120);
   assert.equal((await state()).taking, true);
   await tapEdge(wrong); await page.waitForTimeout(150);
-  st = await state(); assert.deepEqual([st.planks[wrong], st.misses], [right, 1], 'taking it off is free and does not undo the miss');
+  st = await state(); assert.deepEqual([st.planks[wrong], st.misses], [right, 0], 'taking it off is free');
   await tapSlot('take'); await page.waitForTimeout(120);
   assert.equal((await state()).taking, false);
   await tapSlot('hint'); await page.waitForTimeout(300);
@@ -2635,7 +2636,7 @@ async function bridgesTouchPlay() {
   assert.ok((await state()).planks.every((n) => n === 0), 'start over clears the sea');
   await solveAll(); await finished('island-bridges');
   assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers + 1, 'one sticker');
-  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('island-bridges').history.at(-1); return [r.misses, r.hints]; }), [1, 1]);
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('island-bridges').history.at(-1); return [r.misses, r.hints]; }), [0, 1]);
   // Level 4 (11 by 11): every target still 64 or more, sideways and upright, solved by touch with no help.
   await launch('island-bridges', 4); await idle();
   assert.equal((await state()).size, 11);
@@ -2714,13 +2715,13 @@ async function pictureTouchPlay() {
   const stray = st.sol.findIndex((on) => !on);
   assert.ok(stray >= 0, 'a picture has an empty square');
   await tapCell(stray);
-  st = await state(); assert.deepEqual([st.marks[stray], st.misses, st.fills], [1, 1, 1], 'a fill outside the picture is a miss');
+  st = await state(); assert.deepEqual([st.marks[stray], st.misses, st.fills], [1, 0, 1], 'a fill outside the picture is not a miss');
   await tapCell(stray);
-  st = await state(); assert.deepEqual([st.marks[stray], st.misses, st.fills], [0, 1, 1], 'emptying it is free and does not undo the miss');
+  st = await state(); assert.deepEqual([st.marks[stray], st.misses, st.fills], [0, 0, 1], 'emptying it is free');
   await tapSlot('cross'); await page.waitForTimeout(100);
   assert.equal((await state()).tool, 'cross');
   await tapCell(stray);
-  st = await state(); assert.deepEqual([st.marks[stray], st.misses, st.fills], [2, 1, 1], 'a cross is free');
+  st = await state(); assert.deepEqual([st.marks[stray], st.misses, st.fills], [2, 0, 1], 'a cross is free');
   await tapCell(stray);
   assert.equal((await state()).marks[stray], 0, 'a second Cross lifts it');
   await tapSlot('fill'); await page.waitForTimeout(100);
@@ -2746,7 +2747,7 @@ async function pictureTouchPlay() {
   assert.ok((await state()).marks.every((m) => m === 0), 'start over empties the picture');
   await solveAll(); await finished('picture-logic');
   assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers + 1, 'one sticker');
-  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('picture-logic').history.at(-1); return [r.misses, r.hints]; }), [1, 1]);
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('picture-logic').history.at(-1); return [r.misses, r.hints]; }), [0, 1]);
   // Level 4 (15 by 15): the picture slides under its window with the clue numbers pinned; targets are still 64 or more.
   await launch('picture-logic', 4); await idle();
   st = await state();
@@ -11977,7 +11978,7 @@ async function couchBeds() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga', 'typing']);
   assert.equal(await page.locator('[data-course="beds"] small').innerText(), 'Not finished yet · par 124');
   assert.equal(await page.locator('[data-course="bigbeds"] small').innerText(), 'Not finished yet · par 149');
   await page.locator('[data-course="beds"]').click(); await screenIs('course');
@@ -12146,7 +12147,7 @@ async function couchLanterns() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga', 'typing']);
   assert.equal(await page.locator('[data-course="lanterns"] small').innerText(), 'Not finished yet · par 36');
   await page.locator('[data-course="lanterns"]').click(); await screenIs('course');
   assert.equal(await page.locator('.couch-sheet h1').innerText(), 'Dusk on the Pond');
@@ -12276,7 +12277,7 @@ async function couchPictures() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga', 'typing']);
   assert.equal(await page.locator('[data-course="pictures"] small').innerText(), 'Not finished yet · par 182');
   assert.equal(await page.locator('[data-course="bigpictures"] small').innerText(), 'Not finished yet · par 230');
   await page.locator('[data-course="pictures"]').click(); await screenIs('course');
@@ -12293,11 +12294,11 @@ async function couchPictures() {
   assert.deepEqual({ index: s.index, n: s.n, fills: s.fills, par: s.par, cursor: s.cursor }, { index: 0, n: 10, fills: 0, par: 46, cursor: 55 });
   await screenshot('couch-pictures-play');
 
-  // --- A fill that is not in the picture counts and is not refused; emptying it is free; a cross is free and lifts.
+  // --- A fill that is not in the picture is not a miss and is not refused; emptying it is free; a cross is free and lifts.
   assert.equal(s.solution[55], false, 'the middle square is not in the sailboat');
   await press(BOTTOM);
   s = await state();
-  assert.deepEqual({ fills: s.fills, misses: s.misses, mark: s.marks[55] }, { fills: 1, misses: 1, mark: 1 });
+  assert.deepEqual({ fills: s.fills, misses: s.misses, mark: s.marks[55] }, { fills: 1, misses: 0, mark: 1 });
   assert.equal((await stored()).courses.pictures.run.attempts, 1, 'the fill is saved at once');
   await press(BOTTOM);
   s = await state();
@@ -12401,7 +12402,7 @@ async function couchPictures() {
   assert.equal(await page.locator('[data-course="pictures"] small').innerText(), '182 fills · par: the fewest possible');
   assert.equal(await page.evaluate(() => JSON.stringify(kit.store.data)), childBefore, 'the child\'s save is untouched');
   assert.deepEqual(errors, []);
-  log('Couch Pond Pictures: shelf, course page, a wrong fill counted and not refused, free emptying and crosses, a held button painting a run, clues grey when done and red when impossible, a hint naming a wrong mark first and then a line, restart, reload resume, a perfect bot run with one sticker and both badges passed');
+  log('Couch Pond Pictures: shelf, course page, a wrong fill neither counted nor refused, free emptying and crosses, a held button painting a run, clues grey when done and red when impossible, a hint naming a wrong mark first and then a line, restart, reload resume, a perfect bot run with one sticker and both badges passed');
 }
 
 /**
@@ -12442,7 +12443,7 @@ async function couchHarbors() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga', 'typing']);
   assert.equal(await page.locator('[data-course="harbors"] small').innerText(), 'Not finished yet · par 64');
   await screenshot('couch-harbors-shelf');
   await page.locator('[data-course="harbors"]').click(); await screenIs('course');
@@ -12618,7 +12619,7 @@ async function couchWords() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga', 'typing']);
   assert.equal(await page.locator('[data-course="words"] small').innerText(), 'Not finished yet · par 25');
   assert.equal(await page.locator('[data-course="bigwords"] small').innerText(), 'Not finished yet · par 24');
   await page.locator('[data-course="words"]').click(); await screenIs('course');
@@ -12762,7 +12763,7 @@ async function couchConga() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga', 'typing']);
   assert.equal(await page.locator('[data-course="conga"] small').innerText(), 'Not finished yet · par 259');
   await page.locator('[data-course="conga"]').click(); await screenIs('course');
   assert.equal(await page.locator('.couch-sheet h1').innerText(), 'Crumb Trail');
@@ -12912,7 +12913,7 @@ async function couchBridges() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga', 'typing']);
   assert.equal(await page.locator('[data-course="bridges"] small').innerText(), 'Not finished yet · par 120');
   await page.locator('[data-course="bridges"]').click(); await screenIs('course');
   assert.equal(await page.locator('.couch-sheet h1').innerText(), 'Island Hopping');
@@ -12965,7 +12966,7 @@ async function couchBridges() {
   for (let n = 0; n < wrong.laying; n++) await press(PAD[wrong.dir]);
   s = await state();
   assert.ok(s.planks[wrong.edge] > s.solution[wrong.edge], 'more planks than the answer has');
-  assert.deepEqual({ misses: s.misses, entries: s.entries }, { misses: 1, entries: 2 + wrong.laying });
+  assert.deepEqual({ misses: s.misses, entries: s.entries }, { misses: 0, entries: 2 + wrong.laying });
   await press(START);
   assert.equal(await page.evaluate(() => neo.scene.screen), 'pause');
   assert.equal(await page.getByRole('button', { name: 'Show a hint', exact: true }).count(), 1);
@@ -13229,7 +13230,7 @@ async function couchCourse() {
   await screenshot('couch-course-modes');
   await page.locator('[data-mode="course"]').click();
   await page.waitForFunction(() => neo.scene.screen === 'courses'); await page.waitForTimeout(450);
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga', 'typing']);
   await screenshot('couch-course-menu');
   await page.locator('[data-course="ponds"]').click();
   await onCourse();

@@ -196,7 +196,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Tap Hint to see which square to try next; Start over begins the bed again.',
     ],
     finish: 'The bed is done when every square holds the right number.',
-    note: 'A number that does not belong counts as a miss, and a hint counts as help. Taking a number out is free.',
+    note: 'A number that does not belong bumps, glows red and gets a spoken hint; it counts as a miss, and a hint counts as help. Taking a number out is free.',
   },
 
 
@@ -209,7 +209,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Hint rings a square; Start over empties the picture.',
     ],
     finish: 'The picture is done when every filled square matches its numbers.',
-    note: 'A fill outside the picture is a miss, and a hint is help. Crossing and emptying are free.',
+    note: 'Only a hint counts, as help: a fill outside the picture is not a miss, and crossing and emptying are free.',
   },
   'pond-typing': {
     goal: 'Press the key a bubble shows, on a real keyboard. Played on the couch, on a laptop with its keyboard.',
@@ -241,7 +241,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Hint shows a bridge to try; Start over clears the sea.',
     ],
     finish: 'The puzzle is done when every island has its planks and all the islands are joined.',
-    note: 'A plank that is not in the answer counts as a miss, and a hint counts as help. Taking a plank off is free.',
+    note: 'Only a hint counts, as help: a plank that is not in the answer is not a miss, and taking a plank off is free.',
   },
   'species-comeback': {
     goal: 'Pair the turtles so the next hatchlings come from distant relatives, then settle them somewhere with everything they need.',

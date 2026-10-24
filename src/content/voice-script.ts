@@ -1326,6 +1326,7 @@ export const SCRIPT = {
   'sudoku.go': ['Every row, column and box needs each number once. Press the bottom button on a square to choose one.'],
   'sudoku.go-touch': ['Every row, column and box needs each number once. Tap a square, then tap a number.'],
   'sudoku.clash': ['That number is already in the same {house}.'],
+  'sudoku.wrong': ['The {n} does not belong in that square. Take it out and try another number.', 'That square needs a different number than the {n}.'],
   'sudoku.stuck': ['Some square has no number left that fits, so one of the numbers you placed has to come out.'],
   'sudoku.hint-lone': ['Look at the ringed square. Only the {n} fits there.'],
   'sudoku.hint-place': ['In this {house}, the {n} has only one square left. It is the ringed one.'],
