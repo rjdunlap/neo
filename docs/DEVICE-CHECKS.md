@@ -2,6 +2,12 @@
 
 What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), one entry per sitting; the [user research review](USER-RESEARCH-2026-10-24.md#a-five-minute-observation-protocol-for-the-lap-band) has the five-minute protocol for watching her play.
 
+## Story Weaver levels 1–3 (writing-composition WC1, 2026-10-24)
+
+- [ ] With a six-year-old: does she understand that the owl cannot see the pictures, and does the owl's question read as a suggestion she may decline?
+- [ ] On an iPad in portrait: do the page row, tiles and slots fit without crowding the Home and help buttons or the pet?
+- [ ] Do the words for the feelings (relieved, sleepy) and the composed sentences read clearly in device speech?
+
 ## Meadow Pens levels 1–3 (area-volume-space slice 1, 2026-10-24)
 
 - [ ] On an iPad with a school-age child: can she paint squares and ring the bell comfortably in both orientations; is device speech for the Meadow Pens lines (squares counted aloud, the fence ticking, the stack count) clear; does the level-2 card choice read as area against fence count; and do the finale friends and bell tune land? Chrome proved the flow, the portrait fence sides and the ghost finger only. The pre-K window ([decision 6](definitions/meadow-pens.md#open-decisions)) waits on a person check.

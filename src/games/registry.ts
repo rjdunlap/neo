@@ -66,6 +66,7 @@ import { littleConductor } from './little-conductor';
 import { clapSyllables } from './clap-syllables';
 import { chainReaction } from './chain-reaction';
 import { rhymeTime } from './rhyme-time';
+import { storyWeaver } from './story-weaver';
 import { stopAndGo } from './stop-and-go';
 import { rampRace } from './ramp-race';
 import { critterSort } from './critter-sort';
@@ -195,6 +196,7 @@ export const GAMES: GameModule[] = [
   beatBuilder,
   littleConductor,
   rhymeTime,
+  storyWeaver,
   stopAndGo,
   rampRace,
   critterSort,
