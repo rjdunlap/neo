@@ -7,7 +7,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **`species-comeback`, levels 1–3** (existing [PR #733](https://github.com/rjdunlap/neo/pull/733); decision 1 settled 2026-10-23, the session's source check replaces the developer review, [record](archive/DECISIONS-2026-10-23.md#decisions)): finish and merge that PR after the source check; do not build a second version. [Definition](definitions/species-comeback.md).
-- **Study `measurement-units`: define Measuring Post and Weights Case (M3–M5)** (docs only): placement and units as decided 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#decisions)). [Study](deep-dives/subjects/measurement-units.md)
 - **`sprout-shuffle`, build levels 1–2 (genetics G2)** (new-game tier): school level 1 with an "about 9 and up" note, Rainbow Meadow if its layout test passes; decided 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#decisions)). [Definition](definitions/sprout-shuffle.md)
 - **`photo-safari`, dive slices 5–7** (new levels; one batch): level 8, level 9 with thumbs-up/down for school only, and the action-only "Who is sleeping?" toddler entry, as decided 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#decisions)). [Build slices](deep-dives/photo-safari.md#build-slices-in-order)
 

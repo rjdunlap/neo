@@ -199,3 +199,10 @@
 - `claude/typing-land-review-88a7ed`: [docs/TYPING-LAND.md](../TYPING-LAND.md), a review of higopage's Typing Land against the island's rules with seven proposals (P1–P7), plus pointers in [IDEAS](../IDEAS.md#typing-land-review-2026-10-23), the [keyboarding study](../deep-dives/subjects/keyboarding-editing.md#similar-games-and-tools) and the [Pond Typing definition](../definitions/pond-typing.md).
 - Ran: the browser edition played in the app's browser pane through setup, the tutorial, World 1 lesson 1 (three mini-games, the result) and the World 1, 2 and 6 maps; store, official and review pages opened; `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: no code changed; no sound heard (headless pane); later worlds, Challenge mode and the manual PDF not opened.
+
+## 2026-10-23 — Attic Finds levels 3–4 Lid and Lever (H3)
+
+- Branch `claude/attic-lid-lever` (PR #870): a giant-handle interaction in `attic-finds` (lap 3, toddler 3–4, `entryLevels` [3, 4]); peek door 220 units wide at (-40, 30); Finish after 3 turns; 0 misses and 0 hints.
+- Ran: typecheck; vitest on `src/games` and `src/content` (160 files pass); `npm run build`. Full `npm test` has one failure, `src/app/scenes/lab.test.ts` "prek landscape n=12", which also fails with the attic-finds bands reverted (not from this change). After merging `origin/main` (`1ca63fc6`, which has the lab fix [#877](https://github.com/rjdunlap/neo/pull/877)): typecheck clean, `npm test` 2716 of 2717 with only Block Garden's level-8 timing cap failing under machine load; that file passed on rerun (unchanged code, known flake).
+- Browser (Vite port 5437, stopped): `BROWSER_SUITE=atticlever` (fast swats make one turn plus one queued, Finish absent until turn 3, level 4 door free, Finish ends 0/0) passed; `fingerdemo FINGER_ONLY=attic-finds FINGER_LEVELS=3,4` passed (7.3 s, 9.4 s); portrait screenshot of level 4 reviewed.
+- Not run: `world`, offline check, iPad, device speech, a lap or toddler child ([open](../DEVICE-CHECKS.md)).

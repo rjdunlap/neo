@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Measurement M3–M5 definition packets (2026-10-23)
+
+[PR #911](https://github.com/rjdunlap/neo/pull/911), `codex/measurement-m3-m5`, worker `01a16bf1-ef75-72a3-8643-33da9b6cf91f`: [Measuring Post 1–4](../definitions/measuring-post.md) freezes tool/evidence records, common-unit comparison, observed kg/g table, accounting/help, layout, speech/how-to/demo and future checks. [One Weights Case candidate](../definitions/weights-case.md) freezes 1/3/9-block weights and parcels 2/5/8/13, both-pan semantics, exhaustive-search contract and optional par. Docs only: M3–M4 defined; M5 **provisional**, finalization after Box Balance remains outstanding. Approved placements retain their capacity gates; no downstream build admitted, registration/assets/gameplay changed or new developer decision. Removed the dispatched definition line from READY and reconciled the backlog/study/packet. Links/anchors and diff check passed; no code/browser/device checks. [Verification](../VERIFICATION.md#2026-10-23--measurement-m3m5-definition-packets-docs-only).
+
+
 ### RW14 slice 9: moving between screens (2026-10-23)
 
 [PR #906](https://github.com/rjdunlap/neo/pull/906), branch `claude/rw14-moving-screens`: `App.show` (`src/app/App.ts`) renders the leaving scene to a view-sized Sprite, calls exit/destroy on it at once (before the new scene's `init`), then plays a grow (the new root out of the box recorded by `App.growFrom(node, route)`), a shrink (the old picture into `Scene.returnBox(key)` for the old scene's `Scene.transitionKey()`) or a crossfade; grow/shrink 0.35 s, fade 0.3 s, taps swallowed by a full-window blocker, a resize settles it. `chooseTransition`, `frameAt`, `usableBox` and `TRANSITION_SECONDS` are pure, in `src/app/transition.ts` with tests. `LandScene`/`LocationScene` answer `land:<id>`, `GameScene` `game:<id>`; `ExploreScene` answers for its Places cards and game cards, `LandScene` for its visible spots. Classic shares `App`, so its routes crossfade.
@@ -48,7 +53,7 @@ Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-1-first-run-on-t
 
 Branch `claude/attic-lid-lever` (PR #870): the [definition](../definitions/lid-and-lever.md)'s giant-handle interaction built inside `attic-finds` (lap 3, toddler 3–4, `entryLevels` [3, 4]; bands now lap/toddler/preschool/prek/school). Each touch turns the handle half a turn and the bird or fish rises, then sinks; level 4's peek door (built 220 units wide, not ~240, at `DOOR_AT` (-40, 30)) shows the rod. Finish appears after three turns and only her tap ends the round; 0 misses, 0 hints, nothing kept. No new registration, so the game count is unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--attic-finds-levels-34-lid-and-lever-h3).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--attic-finds-levels-34-lid-and-lever-h3).
 
 ### Seesaw Balance batch 1: truthful support and varied weighing props (slices 1–2, 2026-10-23)
 
