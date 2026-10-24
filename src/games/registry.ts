@@ -18,6 +18,7 @@ import { songMaker } from './song-maker';
 import { puzzlePals } from './puzzle-pals';
 import { weatherWardrobe } from './weather-wardrobe';
 import { sinkFloat } from './sink-float';
+import { meltFreeze } from './melt-freeze';
 import { bubblePop } from './bubble-pop';
 import { colorGarden } from './color-garden';
 import { duckPond } from './duck-pond';
@@ -159,6 +160,7 @@ export const GAMES: GameModule[] = [
   puzzlePals,
   weatherWardrobe,
   sinkFloat,
+  meltFreeze,
   ducklingParade,
   scoopShop,
   roundup,

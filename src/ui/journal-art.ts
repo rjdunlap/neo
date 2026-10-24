@@ -13,6 +13,8 @@ import { safariJournalPicture } from '../games/photo-safari';
 import type { Action } from '../games/photo-safari/logic';
 import { seesawJournalPicture } from '../games/seesaw-balance';
 import type { BalanceObservation } from '../games/seesaw-balance/logic';
+import { meltJournalPicture } from '../games/melt-freeze/art';
+import type { Substance } from '../games/melt-freeze/logic';
 import { thingArt } from '../games/sink-float/art';
 import type { Thing } from '../games/sink-float/logic';
 import { magnifierIcon } from './icons';
@@ -29,6 +31,7 @@ export function entryPicture(entry: JournalEntry): Container {
     case 'letter-trails': return letterPicture(entry.key);
     case 'rhythm-neighbors': return neighborsJournalPicture();
     case 'mail-carrier': return mailJournalPicture(entry.key as HelperId);
+    case 'melt-freeze': return meltJournalPicture(entry.key as Substance | 'stays');
   }
 }
 
