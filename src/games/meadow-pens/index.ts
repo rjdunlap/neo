@@ -154,7 +154,8 @@ class MeadowPens implements Game {
   update(dt: number) {
     this.clock += dt;
     if (this.index >= 0) drawGate(this.gate, this.lay.gate, this.gateOpen);
-    for (const c of this.cards) c.glow(this.tally.glowing && c.value === this.field?.right && !this.finished, this.clock);
+    const right = !this.finished && this.task?.kind === 'field' ? this.task.field.right : null;
+    for (const c of this.cards) c.glow(this.tally.glowing && c.value === right, this.clock);
     const g = this.glow.clear();
     if (this.hintPen && !this.finished) {
       const a = 0.7 + 0.25 * Math.sin(this.clock * 6);
@@ -257,6 +258,8 @@ class MeadowPens implements Game {
     this.ctx.stage.addChild(f);
     sfx.whoosh();
     await this.ctx.tw.to(f, { x: r.x + r.w / 2 }, { duration: 0.6, ease: ease.outBack });
+    // A rotation during the entrance moved the friend's spot: stand where the layout says now.
+    if (this.alive && this.friend === f) f.position.set(this.lay.friend.x + this.lay.friend.w / 2, this.lay.friend.y + this.lay.friend.h - 6);
   }
 
   // ----- the paint gesture -----
@@ -542,7 +545,8 @@ class MeadowPens implements Game {
     this.finished = true;
     this.busy = true;
     this.hintPen = null;
-    for (const c of this.cards) c.visible = false;
+    for (const c of this.cards) c.destroy({ children: true });
+    this.cards = [];
     this.painted = [];
     this.redraw();
     const colors = RAINBOW.map((c) => swatch[c].fill);
