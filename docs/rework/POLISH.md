@@ -87,6 +87,8 @@ _Built 2026-10-23 ([PR #901](https://github.com/rjdunlap/neo/pull/901)): at the 
 
 ### Slice 7: buttons and cards with a finish
 
+_Built 2026-10-23 ([PR #902](https://github.com/rjdunlap/neo/pull/902)): `finish`, `squash` and `spring` in `src/ui/buttons.ts` give `RoundButton`, `HoldButton` (so Home's exits), Explore's entry cards and Places' postcards one code-drawn finish and a press squash with a release spring; the root's "Island games" pill is a picture door (inline SVG, same link and position). Sizes, positions and hit areas unchanged. Not done: no spoken label on the door; no device check._
+
 - **Changes:** no images; this is code. `RoundButton`, `HoldButton` and the Explore and Places cards get one shared finish: a two-tone face with a soft upper-left highlight, a darker rim in the swatch's `line` colour, a short ground shadow, and a squash on press-down with a release spring. Home's three exits become picture buttons in that finish. The "Island games" text pill becomes a picture door, keeping its spoken label. Sizes, positions and hit areas do not change.
 - **Files:** `src/ui/buttons.ts`, `src/app/scenes/HomeScene.ts`, `src/app/scenes/ExploreScene.ts`, `src/art/palette.ts` (only if a shared shadow tone is missing).
 - **Done when:** every button and card in the root uses the finish; a unit test confirms each control's hit area is unchanged; press feedback starts on pointer-down.

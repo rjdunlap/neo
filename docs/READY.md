@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-1. **RW14 slice 7, buttons and cards with a finish** (shell tier): one code-drawn finish (face, highlight, rim, shadow, press squash) for every root button and card; Home's exits as picture buttons; hit areas unchanged. [POLISH.md](rework/POLISH.md#slice-7-buttons-and-cards-with-a-finish) Claimed 2026-10-23 by `claude/rw14-button-finish`: `src/ui/buttons.ts`, `HomeScene.ts`, `ExploreScene.ts`, `src/art/palette.ts`, `index.html`, `src/style.css`.
 2. **RW14 slice 6, the duck pilot in Duck Pond** (existing-game change tier): eligible now; the image routine delivered R22 (`duck-base-2`, `duck-portrait-2` chosen, [PR #888](https://github.com/rjdunlap/neo/pull/888)), so the slice prepares them with `prepare-sprite.mjs --set duck --shrink 2 --out-dir src/art/friends`. [POLISH.md](rework/POLISH.md#slice-6-the-duck-pilot)
 3. **RW14 slices 8 and 9, the last place first and moving between screens** (shell and navigation tiers; one at a time, both touch `ExploreScene.ts`). [POLISH.md](rework/POLISH.md#slice-8-the-last-place-first)
 
