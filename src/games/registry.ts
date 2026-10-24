@@ -124,6 +124,7 @@ import { secondChanceShed } from './second-chance-shed';
 import { gearGarden } from './gear-garden';
 import { meadowPens } from './meadow-pens';
 import { sandTable } from './sand-table';
+import { puddleLens } from './puddle-lens';
 import { adventureWalk } from './adventure-walk';
 import { readyForAdventure } from './ready-for-adventure';
 import { senseDetective } from './sense-detective';
@@ -240,6 +241,7 @@ export const GAMES: GameModule[] = [
   gearGarden,
   meadowPens,
   sandTable,
+  puddleLens,
   adventureWalk,
   readyForAdventure,
   senseDetective,
