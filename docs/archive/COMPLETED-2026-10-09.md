@@ -6,6 +6,13 @@
 
 Open: the location opened from the postcard still goes Back to Places, not the Explore root; the offline check failed (see the verification entry); no device check. Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-8-the-last-place-first).
 
+### RW14 slice 6: the duck pilot (2026-10-23)
+
+[PR #904](https://github.com/rjdunlap/neo/pull/904), branch `codex/rw14-duck-pilot`: prepared the chosen R22 `duck-base-2` and `duck-portrait-2` via the READY command (full provenance, dimensions, hashes and reproduction in `src/art/friends/README.md`). Duck Pond's round, icon and sticker ducks use the base still, fitted to the prior feet/height, with frame-driven bob, hop squash and a resting tilt. The portrait is prepared but has no new UI consumer. Decode completion guards destroyed instances, a failed decode retains the drawn fallback, cached art attaches synchronously for immediately rendered stickers, and destroying a duck leaves the shared texture intact. Existing duck/pad hit circles, rules, hint accounting, round flow and routes are unchanged; other duck games retain their drawings.
+
+Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-6-the-duck-pilot). Open: developer/iPad judgement with slice 4, device speech and child's response; no broader art rollout or new generation.
+
+
 ### RW14 slice 7: buttons and cards with a finish (2026-10-23)
 
 [PR #902](https://github.com/rjdunlap/neo/pull/902), branch `claude/rw14-button-finish`: `src/ui/buttons.ts` exports `finish(shape, sw, face?)` (one Graphics: short ground shadow in the new `shadow` tone from `src/art/palette.ts`, a rim in `sw.line`, a two-tone face with a lip blended 35% toward `line`, and a soft upper-left highlight; circle or rounded rect), `squash(node)` (pressed pose 1.07 x 0.86) and `spring(node, delay)` (about 0.34 s back with one overshoot, stops if the node is destroyed or pressed again). `RoundButton` and `HoldButton` use it (child order unchanged; `HoldButton` squashes on pointer-down and springs on lift, cancel or completion), so Home's exits wear it unchanged. Explore's entry cards and Places' postcards use a 150-unit rounded-rect finish and squash on touch-down; the Little surprises card squashes for the whole hold. The "Island games" pill (`.classic-link`) is a 56 x 63 px inline-SVG door with `aria-label` and `title`, same class, href, position and hiding. Hit areas unchanged (`src/ui/finish.test.ts`). The finish applies app-wide, so `classic/`'s RoundButtons get it too.

@@ -7538,6 +7538,13 @@ async function originals() {
     await launch('duck-pond', level);
     await page.waitForTimeout(400);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    await page.waitForFunction(() => !neo.scene.game.busy);
+    await page.waitForFunction(() => [...neo.scene.game.bank, ...neo.scene.game.swimmers].every((d) =>
+      d.critter.craft.children.some((c) => c.texture?.width === 451)));
+    const duckTargets = await page.evaluate(() => [...neo.scene.game.bank, ...neo.scene.game.swimmers].map((d) =>
+      [d.hitArea.x, d.hitArea.y, d.hitArea.radius]));
+    assert(duckTargets.every(([x, y, radius]) => x === 0 && y === -46 && radius === (mode === 'bye' ? 53 : 72)), 'Duck sprite preserves hit circles');
+    if (level === duckTop) await screenshot(`duck-pond-${level}-illustrated-portrait`);
     const revealShot = mode === 'hide' ? (async () => {
       await page.waitForFunction(() => neo.scene.game.round === 0 && neo.scene.game.signText.text.includes('=') && neo.scene.game.swimmers.every((d) => d.critter.visible), null, { timeout: 60000 });
       await screenshot(`duck-pond-${level}-reveal-portrait`);
