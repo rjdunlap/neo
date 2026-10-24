@@ -144,7 +144,7 @@ A Try walks the visitors in a fixed order. The first visitor who cannot pass a c
 
 ### A rule test
 
-For every level plan and every seeded round: (1) an accepted design exists inside the cells and plank count; (2) every tray part is used by at least one accepted design or is a stated distractor with a named visitor it blocks; (3) a Try reports the **first** blocking cell along the visitors' order, and its reason line matches the rule that blocked; (4) from level 6, at least two distinct accepted designs exist, and the naive design (rails on both sides; steps everywhere) fails for a named visitor; (5) at level 7, the starting entrance welcomes exactly the two old friends and blocks the new one; (6) at levels 8–9, the plank budget is feasible and a design that ignores the shared landing is over budget; (7) the glow from a hint is a part of some accepted design that extends the current one. Levels 1–4 also check that every slot choice shares one footprint and that no steep ramp appears. Enumeration is small (at most about 12 cells and 6 part kinds), so a brute-force solver in the test is enough.
+For every level plan and every seeded round: (1) an accepted design exists inside the cells and plank count; (2) every tray part is used by at least one accepted design or is a stated distractor with a named visitor it blocks; (3) a Try reports the **first** blocking cell along the visitors' order, and its reason line matches the rule that blocked; (4) from level 6, at least two distinct accepted designs exist, and the naive design (rails on both sides; steps everywhere) fails for a named visitor; (5) at level 7, the starting entrance welcomes exactly the two old friends and blocks the new one; (6) at levels 8–9, the plank budget is feasible and a design that ignores the shared landing is over budget; (7) the glow from a hint is a part of some accepted design reachable by replacing incorrect parts (see the levels 1–4 definition). Levels 1–4 also check that every slot choice shares one footprint and that no steep ramp appears. Enumeration is small (at most about 12 cells and 6 part kinds), so a brute-force solver in the test is enough.
 
 ### Cost
 
@@ -173,18 +173,15 @@ M: a new `logic.ts` with a path walker and a solver for tests; parts drawn with 
 
 ## Build slices, in order
 
-1. **Define Welcome Ways 1–4** (docs only; claimed 2026-10-24, `codex/welcome-ways-definition`): part and visitor tables, round plans, reasons and voice lines, accounting, layouts in portrait and landscape at 100 units, how-to card text with level-scoped steps, ghost-finger plan, the rule tests above, the Habitat Helpers overlap test, placement after a capacity check.
-2. **Build Welcome Ways 1–4**: `logic.ts` with walker and solver tests, the game, voice, how-to, autotouch, registry and land; the tier for a new game.
-3. **Define Welcome Ways 5–7** (constraints, conflict, repair for a new friend), with enumeration tests per level.
-4. **Define Sink or Float 8: Garden Raft** after a float/balance model review, sharing `topples`-style exact positions.
-5. **Define Gadget Bench Fix-It Day** inside Gadget Bench 4–7's definition (inventions packet I3).
-6. **Define Plaza Cases** (levels 8–9) and the 13+ registration decision.
-7. **Who can use it?** card after a named reviewer.
+Welcome Ways 1–4 is [defined](../../definitions/welcome-ways.md) (2026-10-24, [PR #944](https://github.com/rjdunlap/neo/pull/944)); no game is built. The packet fixes early socket footprints, replacement-aware hints and per-repair accounting under the decided Try-is-free rule.
+
+1. **Build Welcome Ways 1–4**: `logic.ts` with walker and solver tests, the game, voice, how-to, autotouch, registry and land; the tier for a new game.
+2. **Define Welcome Ways 5–7** (constraints, conflict, repair for a new friend), with enumeration tests per level.
+3. **Define Sink or Float 8: Garden Raft** after a float/balance model review, sharing `topples`-style exact positions.
+4. **Define Gadget Bench Fix-It Day** inside Gadget Bench 4–7's definition (inventions packet I3).
+5. **Define Plaza Cases** (levels 8–9) and the 13+ registration decision.
+6. **Who can use it?** card after a named reviewer.
 
 ## What was built and what ran
 
-Nothing was built. Docs only: the opened sources above, a source audit of the catalog, `node scripts/check-links.mjs` and `git diff --check`. No browser, device, child, tween or parent observation; no accessibility review.
-
-## Active definition claim — 2026-10-24
-
-Welcome Ways 1–4 only: freeze parts, visitor rules, accounting, layouts, spoken support, how-to, demonstration and build tests from this study and the 2026-10-23 decisions. Expected files: `docs/definitions/welcome-ways.md`, this study, `RECOMMENDATIONS.md`, `docs/STUDY-BACKLOG.md`, `docs/READY.md`, `docs/GAME-BATCHES.md`, `docs/ROADMAP.md`, `docs/VERIFICATION.md` and the completed-work archive. No gameplay, registration, assets, new research, human access representation or levels 5–9.
+Welcome Ways 1–4 is defined, not built; its packet supersedes the early ladder details where it supplies exact rules. Prior study proof: the opened sources above, a source audit of the catalog, `node scripts/check-links.mjs` and `git diff --check`. No browser, device, child, tween or parent observation; no accessibility review.

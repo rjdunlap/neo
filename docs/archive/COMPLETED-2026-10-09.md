@@ -1942,3 +1942,7 @@ New game in Story Grove (its 14th), subject story-grove; bands lap 1, toddler 1�
 ## Quiet automated tests (2026-10-24)
 
 [PR #938](https://github.com/rjdunlap/neo/pull/938), `codex/quiet-test-audio`. Shared test-browser helpers silence Chromium media/Web Audio and native text-to-speech across browser, offline and abandon-card checks, including extra touch and phone contexts. Real speech callbacks and timing remain active; `TEST_AUDIO=on` enables deliberate audible testing. No app settings, runtime source or assets changed. Nineteen targeted tests and a live native-speech volume probe passed across normal/touch contexts, new pages and reloads; [verification](../VERIFICATION.md#2026-10-24--quiet-automated-tests) records scope and gaps.
+
+## 2026-10-24 — Welcome Ways early definition
+
+[PR #944](https://github.com/rjdunlap/neo/pull/944), `codex/welcome-ways-definition`: [Welcome Ways 1–4](../definitions/welcome-ways.md) defined from the completed engineering-design study and decided fictional cast/placement/accounting. Parts, visitors, accepted boards, repair hints, layouts, voice/how-to/bot and build checks fixed; implementation batch queued. Docs only; no game or device evidence. Links and diff checked.
