@@ -279,3 +279,9 @@
 - Ran on `52273ee9`: typecheck; `npm test` (221 files, 2744 passed); `npm run build`; `BROWSER_SUITE=home` with `HOME_ONLY=buttons` and `HOME_ONLY=last-place` (dev server `http://localhost:5353`); full `BROWSER_SUITE=world` (it has no filter) on port 5233, passed (about 6 minutes) after one harness fix: its grown-ups' recolor check read `pip.rig.mesh.filters`, and since the illustrated companion `recolor` filters `rig.skin` (the first run stopped there).
 - Probe (`test-results/rw14ms-probe.mjs`, ignored) froze the ticker mid-change: Places to Counting Cove grow, cove spot to Duck Pond grow, round Back shrink, cove Back shrink into its Places card, Places to Home fade; no cream frame, a tap during a change swallowed, no page errors.
 - Not run: offline check (no assets or persistence changed), `fingerdemo`. Open: DOM-overlay scenes still snap; iPad smoothness and snapshot cost ([device check](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — RW07 slice 2: Welcome a New Friend's song step
+
+- Third card with Song Maker 2 (`freeBelowRange`, the test-guarded exception), her tune as a `TunePlaque`, and `welcome.done.song` or `welcome.done.song-hum` when fewer than two notes are kept ([PR #907](https://github.com/rjdunlap/neo/pull/907)).
+- Ran on `0b36dd8e` (base `5ca0ee69`): typecheck; `npm test` (221 files, 2745 passed); `npm run build`; `BROWSER_SUITE=welcome` on `http://localhost:5713` (one-note song says the hum line and stores nothing; replay with 14 tapped jellies keeps the tune, Song Maker level unmoved, treehouse unchanged; portrait and landscape screenshots reviewed).
+- Not run: `home`, `picnic`, offline (Home, `GameScene` and the save format unchanged). Open: device speech of the new lines and the hum line with a child ([device check](../DEVICE-CHECKS.md)); slice 3 not built.
