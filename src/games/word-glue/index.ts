@@ -28,7 +28,7 @@ const LEVELS: BandLevels = {
 /** The made thing is drawn about 160 across. */
 const MADE_ART = 160;
 /** A tap at level 1 lifts the picture but barely moves it: a release this close to home is a tap. */
-const TAP_SLOP = 30;
+const TAP_SLOP = 60;
 
 /** Each level's authored first round leads its first round of a session (and every demonstration). */
 const authoredShown = new Set<number>();
@@ -42,6 +42,8 @@ interface CardNode {
 interface ShelfThing {
   made: Made;
   t: number;
+  /** Still flying up to its slot; `join` puts it there when the flight ends. */
+  flying: boolean;
 }
 
 class WordGlue implements Game {
@@ -93,12 +95,11 @@ class WordGlue implements Game {
     const pts = this.points();
     this.cards.forEach((c, i) => {
       if (c.handle) c.handle.home = { ...pts[i] };
-      if (c.handle?.dragging || this.busy) return;
-      this.ctx.tw.kill(c.node);
-      c.node.position.set(pts[i].x, pts[i].y);
     });
+    if (!this.busy) this.relayout();
     const slots = shelfLayout(v, this.s.round.asks.length);
     this.shelf.forEach((th, i) => {
+      if (th.flying) return;
       this.ctx.tw.kill(th.made.node);
       th.made.node.position.set(slots[i].x, slots[i].y);
     });
@@ -166,6 +167,17 @@ class WordGlue implements Game {
 
   /* -------------------------------------------------------------------------------------------- */
 
+  /** Put every card not being held at its place (after a resize while busy). */
+  private relayout() {
+    const pts = this.points();
+    this.cards.forEach((c, i) => {
+      if (c.handle?.dragging) return;
+      this.ctx.tw.kill(c.node);
+      c.node.position.set(pts[i].x, pts[i].y);
+    });
+    this.placeBubble();
+  }
+
   private points(): Pt[] {
     return tableLayout(this.view, Math.max(2, this.cards.length));
   }
@@ -206,8 +218,8 @@ class WordGlue implements Game {
     } else {
       for (const c of this.cards) c.node.visible = true;
     }
-    this.placeBubble();
     this.busy = false;
+    this.relayout();
     if (this.restartWanted) return this.doRestart();
     if (this.level === 1) {
       if (first) void this.ctx.instruct('wordglue.instruct.stick');
@@ -294,6 +306,7 @@ class WordGlue implements Game {
     await this.ctx.say('wordglue.miss.make', { word: ask.entry.word, first: ask.entry.first, second: ask.entry.second });
     if (this.dead) return;
     this.busy = false;
+    this.relayout();
     if (this.restartWanted) this.doRestart();
   }
 
@@ -315,6 +328,7 @@ class WordGlue implements Game {
     card.node.visible = true;
     head.node.visible = true;
     this.busy = false;
+    this.relayout();
     if (this.restartWanted) return this.doRestart();
     this.hop(this.cardOf(ask.entry.first));
     void this.ctx.say('wordglue.ask', { head: ask.entry.second });
@@ -359,10 +373,17 @@ class WordGlue implements Game {
     const slot = shelfLayout(this.view, this.s.round.asks.length)[this.shelf.length];
     this.madeLayer.removeChild(made.node);
     this.shelfLayer.addChild(made.node);
-    this.shelf.push({ made, t: 3 });
-    await this.ctx.tw.to(made.node, { x: slot.x, y: slot.y }, { duration: 0.45, ease: ease.inOutSine });
+    const thing: ShelfThing = { made, t: 3, flying: true };
+    this.shelf.push(thing);
+    void this.ctx.tw.to(made.node, { x: slot.x, y: slot.y }, { duration: 0.45, ease: ease.inOutSine });
     void this.ctx.tw.to(made.node.scale, { x: SHELF / MADE_ART, y: SHELF / MADE_ART }, { duration: 0.45 });
+    // Waited on rather than the flight itself, so a resize mid-flight can never leave the round stuck.
+    await this.ctx.tw.wait(0.5);
     if (this.dead) return;
+    thing.flying = false;
+    const now = shelfLayout(this.view, this.s.round.asks.length)[this.shelf.length - 1];
+    this.ctx.tw.kill(made.node);
+    made.node.position.set(now.x, now.y);
     // The pictures go back to their places for the next ask (level 3 keeps them for its head's second ask).
     const pts = this.points();
     this.cards.forEach((c, i) => {
