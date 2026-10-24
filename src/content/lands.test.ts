@@ -4,7 +4,11 @@ import { computeView } from '../engine/view';
 import { GAMES } from '../games/registry';
 import { BANDS, bandRank, lowestBand, playBand, type Band } from '../progress/bands';
 import {
+  clampLandPage,
   forAgeOrYounger,
+  LAND_SPOTS,
+  landPages,
+  layoutSpots,
   LAND_IDS,
   landButtons,
   landLayout,
@@ -143,35 +147,76 @@ describe('a host\'s suggestion', () => {
 });
 
 describe('a land\'s layout', () => {
-  /** Every touch area in a land: host, games and signpost. */
-  const rects = (layout: NonNullable<ReturnType<typeof landLayout>>) =>
-    [layout.host, ...layout.games, ...(layout.sign ? [layout.sign] : [])].map((s) => spotRect(s, layout.box));
-
-  it('fits every land, at every band, both ways of looking, on one screen with large separate targets', () => {
+  it('fits every page of every land, at every band, both ways of looking, on one screen with large separate targets', () => {
     for (const [name, view] of Object.entries(VIEWS)) {
       for (const land of LANDS) {
         for (const band of bands as Band[]) {
-          const mine = visibleIn(land, band, GAMES).length;
-          const older = olderIn(land, band, GAMES).length;
-          // Her games with the signpost if there is one, and the signpost's own view.
-          for (const n of older ? [mine, older] : [mine]) {
-            const layout = landLayout(n, older > 0, view, groundOf(view.h));
-            expect(layout, `${land.id} ${band} ${name}`).not.toBeNull();
-            const all = rects(layout!);
-            expect(all.length).toBe(n + 1 + (older ? 1 : 0));
-            for (const [i, r] of all.entries()) {
-              const where = `${land.id} ${band} ${name} #${i}`;
-              expect(r.w, where).toBeGreaterThanOrEqual(100);
-              expect(r.h, where).toBeGreaterThanOrEqual(100);
-              expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= view.w && r.y + r.h <= view.h, where).toBe(true);
-              expect(overlaps(r, petCorner(view.h)), where).toBe(false);
-              for (const b of landButtons(view.w)) expect(overlaps(r, b), where).toBe(false);
-              for (const other of all.slice(i + 1)) expect(overlaps(r, other), where).toBe(false);
+          const mine = visibleIn(land, band, GAMES);
+          const older = olderIn(land, band, GAMES);
+          // Her games with the signpost if there is one, and the signpost's own view, each a page at a time.
+          for (const side of older.length ? [mine, older] : [mine]) {
+            const pages = landPages(side, older.length > 0);
+            for (const [p, page] of pages.entries()) {
+              const arrows = { prev: p > 0, next: p < pages.length - 1 };
+              const layout = landLayout(page.length, older.length > 0, view, groundOf(view.h), arrows);
+              expect(layout, `${land.id} ${band} ${name} page ${p}`).not.toBeNull();
+              const all = layoutSpots(layout!).map((s) => spotRect(s, layout!.box));
+              expect(all.length).toBe(page.length + 1 + (older.length ? 1 : 0) + (arrows.prev ? 1 : 0) + (arrows.next ? 1 : 0));
+              expect(all.length, `${land.id} ${band} page ${p}`).toBeLessThanOrEqual(LAND_SPOTS);
+              expect(!!layout!.prev).toBe(arrows.prev);
+              expect(!!layout!.next).toBe(arrows.next);
+              for (const [i, r] of all.entries()) {
+                const where = `${land.id} ${band} ${name} page ${p} #${i}`;
+                expect(r.w, where).toBeGreaterThanOrEqual(100);
+                expect(r.h, where).toBeGreaterThanOrEqual(100);
+                expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= view.w && r.y + r.h <= view.h, where).toBe(true);
+                expect(overlaps(r, petCorner(view.h)), where).toBe(false);
+                for (const b of landButtons(view.w)) expect(overlaps(r, b), where).toBe(false);
+                for (const other of all.slice(i + 1)) expect(overlaps(r, other), where).toBe(false);
+              }
             }
           }
         }
       }
     }
+  });
+
+  it('pages a full side in land order, near-equal pages within the budget, and leaves a side that fits on one page', () => {
+    for (const land of LANDS) {
+      for (const band of bands as Band[]) {
+        const mine = visibleIn(land, band, GAMES);
+        const older = olderIn(land, band, GAMES);
+        for (const side of [mine, older]) {
+          const sign = older.length > 0;
+          const pages = landPages(side, sign);
+          const where = `${land.id} ${band}`;
+          expect(pages.flat(), where).toEqual(side);
+          const sizes = pages.map((p) => p.length);
+          expect(Math.max(...sizes) - Math.min(...sizes), where).toBeLessThanOrEqual(1);
+          // Earlier pages take the extra game.
+          expect([...sizes].sort((a, b) => b - a), where).toEqual(sizes);
+          if (1 + side.length + (sign ? 1 : 0) <= LAND_SPOTS) expect(pages.length, where).toBe(1);
+          else for (const s of sizes) expect(1 + s + 2 + (sign ? 1 : 0), where).toBeLessThanOrEqual(LAND_SPOTS);
+        }
+      }
+    }
+    // The definition's own examples: 13 with a signpost becomes 7 + 6, 22 becomes 8 + 7 + 7; 12 with no signpost fits.
+    const ids = (n: number) => Array.from({ length: n }, (_, i) => i);
+    expect(landPages(ids(13), true).map((p) => p.length)).toEqual([7, 6]);
+    expect(landPages(ids(22), true).map((p) => p.length)).toEqual([8, 7, 7]);
+    expect(landPages(ids(12), false).map((p) => p.length)).toEqual([12]);
+    expect(landPages(ids(12), true).map((p) => p.length)).toEqual([6, 6]);
+    expect(landPages([], true)).toEqual([[]]);
+  });
+
+  it('holds a carried page inside the side\'s pages', () => {
+    expect(clampLandPage(undefined, 2)).toBe(0);
+    expect(clampLandPage(1, 2)).toBe(1);
+    expect(clampLandPage(5, 2)).toBe(1);
+    expect(clampLandPage(-3, 2)).toBe(0);
+    expect(clampLandPage(Number.NaN, 3)).toBe(0);
+    expect(clampLandPage(1.7, 3)).toBe(1);
+    expect(clampLandPage(2, 0)).toBe(0);
   });
 
   it('uses the largest drawings that fit, and never needs smaller than the last size', () => {

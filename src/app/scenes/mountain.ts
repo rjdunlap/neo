@@ -3,7 +3,7 @@ import { ink, swatch } from '../../art/palette';
 import { overlaps, type LandLayout, type Rect } from '../../content/lands';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { meadowKeepOut } from './meadow';
+import { meadowKeepOut, scanPlace } from './meadow';
 
 /**
  * RW13 slice 6 (docs/rework/ISLAND-REVAMP.md): Music Mountain as a tropical cloud forest, drawn in code over the land's
@@ -20,6 +20,8 @@ export interface ForestItem {
   x: number;
   y: number;
   rect: Rect;
+  /** Drawn at this size (a thing shrinks where a full land leaves only small gaps for it). */
+  k?: number;
 }
 
 /** The far mountains along the horizon: each a top and a half-width. Visual only, behind the field. */
@@ -62,6 +64,16 @@ export function mountainPlan(layout: LandLayout, view: View, ground: number): Fo
       placed++;
     }
   };
+  /** Makes sure of `need` more of a thing, scanning for room (smaller where it must) when random tries found none. */
+  const ensure = (kind: ForestThing, need: number, size: number, tall: number, top: number, bottom: number) => {
+    for (let i = 0; i < need; i++) {
+      const spot = scanPlace(clear, rng, w, size, tall, top, bottom);
+      if (!spot) return;
+      items.push({ kind, x: spot.x, y: spot.y, rect: spot.rect, ...(spot.k < 1 ? { k: spot.k } : {}) });
+      keepOut.push(spot.rect);
+    }
+  };
+  const count = (...kinds: ForestThing[]) => items.filter((p) => kinds.includes(p.kind)).length;
   // The big trees first, then tree ferns round them, then what grows and sits low between them.
   place('trunk', 3, 96, 166, ground + 60, h - 8);
   place('fern', 4, 90, 110, ground + 40, h - 8);
@@ -71,6 +83,10 @@ export function mountainPlan(layout: LandLayout, view: View, ground: number): Fo
   place('hummingbird', 3, 50, 36, ground + 10, h - 60);
   // Smaller tree ferns in the gaps (a fern is drawn to fill the box it was planned in, 90 across at full size).
   place('fern', 3, 62, 76, ground + 30, h - 8);
+  // A full land screen leaves only gaps at the row ends: there the forest still keeps two tree ferns, an orchid and a hummingbird.
+  ensure('fern', 2 - count('trunk', 'fern'), 62, 76, ground + 30, h - 8);
+  ensure('orchid', 1 - count('orchid'), 40, 40, ground + 30, h - 8);
+  ensure('hummingbird', 1 - count('hummingbird'), 50, 36, ground + 10, h - 60);
   return items;
 }
 
@@ -85,12 +101,19 @@ export function drawMountain(g: Graphics, layout: LandLayout, view: View, ground
     for (let k = -2; k <= 2; k++) g.circle(p.x + k * p.half * 0.18, p.top + Math.abs(k) * 7 + 4, 9).fill(farLine);
   }
   for (const m of mistBands(view, ground)) mist(g, m.x, m.y, m.w);
-  for (const { kind, x, y, rect } of mountainPlan(layout, view, ground)) {
-    if (kind === 'trunk') trunk(g, x, y);
-    else if (kind === 'fern') fern(g, x, y, rect.w / 90);
-    else if (kind === 'orchid') orchid(g, x, y);
-    else if (kind === 'frog') frog(g, x, y, x > view.w / 2 ? -1 : 1);
-    else hummingbird(g, x, y - 14, x > view.w / 2 ? -1 : 1);
+  for (const { kind, x, y, rect, k } of mountainPlan(layout, view, ground)) {
+    // A fern fills the box it was planned in; anything else planned smaller (a full land's gap) is drawn at that size round its feet.
+    if (kind === 'fern') {
+      fern(g, x, y, rect.w / 90);
+      continue;
+    }
+    const s = k ?? 1;
+    g.save().translateTransform(x, y).scaleTransform(s, s);
+    if (kind === 'trunk') trunk(g, 0, 0);
+    else if (kind === 'orchid') orchid(g, 0, 0);
+    else if (kind === 'frog') frog(g, 0, 0, x > view.w / 2 ? -1 : 1);
+    else hummingbird(g, 0, -14, x > view.w / 2 ? -1 : 1);
+    g.restore();
   }
 }
 

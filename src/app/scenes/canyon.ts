@@ -3,7 +3,7 @@ import { ink, swatch } from '../../art/palette';
 import { overlaps, type LandLayout, type Rect } from '../../content/lands';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { meadowKeepOut } from './meadow';
+import { meadowKeepOut, scanPlace } from './meadow';
 
 /**
  * RW13 slice 7 (docs/rework/ISLAND-REVAMP.md): Painted Canyon as a desert canyon with a spring, in the American
@@ -20,7 +20,7 @@ export interface CanyonItem {
   x: number;
   y: number;
   rect: Rect;
-  /** Drawn at this size (the spring shrinks a step where a full land leaves no room for it). */
+  /** Drawn at this size (a thing shrinks where a full land leaves only small gaps for it). */
   k?: number;
 }
 
@@ -88,17 +88,29 @@ export function canyonPlan(layout: LandLayout, view: View, ground: number): Cany
       placed++;
     }
   };
+  /** Makes sure of `need` more of a thing, scanning for room (smaller where it must) when random tries found none. */
+  const ensure = (kind: CanyonThing, need: number, size: number, tall: number, top: number) => {
+    for (let i = 0; i < need; i++) {
+      const spot = scanPlace(clear, rng, w, size, tall, top, h - 8);
+      if (!spot) return;
+      items.push({ kind, x: spot.x, y: spot.y, rect: spot.rect, ...(spot.k < 1 ? { k: spot.k } : {}) });
+      keepOut.push(spot.rect);
+    }
+  };
+  const count = (...kinds: CanyonThing[]) => items.filter((p) => kinds.includes(p.kind)).length;
   // The spring and its cottonwood first, searched for longest (in a full landscape field it fits only between two spots),
   // then the desert plants, then the animals between them.
   place('spring', 1, 140, 150, ground + 40, h - 8, 600);
   if (!items.length) place('spring', 1, 105, 113, ground + 40, h - 8, 600, 0.75);
+  if (!items.length) ensure('spring', 1, 140, 150, ground + 40);
   place('pear', 3, 60, 72, ground + 30, h - 8);
   place('yucca', 3, 50, 76, ground + 40, h - 8);
-  // A full field with a signpost leaves little room between the spots: a smaller cactus still makes it a desert.
-  if (items.filter((i) => i.kind === 'pear' || i.kind === 'yucca').length < 2) place('pear', 1, 42, 50, ground + 30, h - 8, 600, 0.7);
+  // A full land screen leaves only gaps at the row ends: there the canyon still keeps two of its plants and an animal.
+  ensure('pear', 2 - count('pear', 'yucca'), 60, 72, ground + 30);
   place('lizard', 2, 64, 36, ground + 30, h - 8);
   place('roadrunner', 1, 70, 52, ground + 30, h - 8);
   place('jackrabbit', 1, 50, 68, ground + 30, h - 8);
+  ensure('lizard', 1 - count('lizard', 'roadrunner', 'jackrabbit'), 64, 36, ground + 30);
   return items;
 }
 
@@ -122,17 +134,16 @@ export function drawCanyon(g: Graphics, layout: LandLayout, view: View, ground: 
   g.stroke({ color: FAR_LINE, width: 2, join: 'round' });
   for (const m of near) mesa(g, m, ground + 12, STRATA, ROCK_LINE, 2.5);
   for (const { kind, x, y, k } of canyonPlan(layout, view, ground)) {
-    if (kind === 'spring') {
-      g.save().translateTransform(x, y).scaleTransform(k ?? 1, k ?? 1);
-      spring(g, 0, 0);
-      g.restore();
-    }
-    else if (kind === 'pear' && k) { g.save().translateTransform(x, y).scaleTransform(k, k); pear(g, 0, 0); g.restore(); }
-    else if (kind === 'pear') pear(g, x, y);
-    else if (kind === 'yucca') yucca(g, x, y);
-    else if (kind === 'lizard') lizard(g, x, y, x > view.w / 2 ? -1 : 1);
-    else if (kind === 'roadrunner') roadrunner(g, x, y, x > view.w / 2 ? -1 : 1);
-    else jackrabbit(g, x, y, x > view.w / 2 ? -1 : 1);
+    // A thing planned smaller (a full land's gap) is drawn at that size round its feet.
+    g.save().translateTransform(x, y).scaleTransform(k ?? 1, k ?? 1);
+    const face = x > view.w / 2 ? -1 : 1;
+    if (kind === 'spring') spring(g, 0, 0);
+    else if (kind === 'pear') pear(g, 0, 0);
+    else if (kind === 'yucca') yucca(g, 0, 0);
+    else if (kind === 'lizard') lizard(g, 0, 0, face);
+    else if (kind === 'roadrunner') roadrunner(g, 0, 0, face);
+    else jackrabbit(g, 0, 0, face);
+    g.restore();
   }
 }
 

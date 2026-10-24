@@ -8,7 +8,7 @@ Fun action: a big bubble drifts in and **stops**; she presses the key it shows a
 
 Overlap test: Word Monsters owns choosing and placing letters into a word on glass; Letter Trails owns forming letters; `spelling-sentences` (unstarted) owns which letters, capitals and stops as rules. Pond Typing's rule is **the letters to press are shown or spoken** (copying), so it never tests spelling. Level 4 and 5 teach the *key press* for a capital and a stop only; the rule stays with `spelling-sentences`. Excluded: KE1 Mend the sign (Read & Do), KE3, KE5 key aliases on other games, KE6 key smash, KE7 grown-up cards, an on-screen QWERTY, the system keyboard or any DOM text input in a child's game, a grown-up drift mode, and any posture or finger-placement advice (needs a named reviewer; not drafted).
 
-> **Built 2026-10-24: levels 1–3** (typed-letter channel, couch registration, the Bubble Pond course). The land is **Treehouse (Painted Canyon)**, not Story Grove: Story Grove failed its drawing test at school landscape with 13 games. Letter groups are ABCD to UVWX and WXYZ (four consecutive letters each). Levels 4–6, pictures for words and the "Show the key" toggle are not built.
+> **Built 2026-10-24: levels 1–3** (typed-letter channel, couch registration, the Bubble Pond course). The land is **Story Grove** (its 13th game; it fits once lands turn pages, PR #915). Letter groups are ABCD to UVWX and WXYZ (four consecutive letters each). Levels 4–6, pictures for words and the "Show the key" toggle are not built.
 
 ## Registration, land and bands: proposal awaiting decision 4
 

@@ -35,9 +35,9 @@ async function boot() {
   await app.init(document.getElementById('app')!);
   const island = createRoutes(app);
   const query = new URLSearchParams(location.search);
-  const land: Routes['land'] = (id) => (isLocation(id) ? void app.show(new LocationScene(app, id)) : island.land(id));
+  const land: Routes['land'] = (id, page) => (isLocation(id) ? void app.show(new LocationScene(app, id, undefined, page)) : island.land(id, page));
   // At the root a location's Back returns to Explore's Places (RW08); its games' results come back to the location.
-  const atRoot: Routes['land'] = (id) => (isLocation(id) ? void app.show(new LocationScene(app, id, () => app.go.explore('places'))) : island.land(id));
+  const atRoot: Routes['land'] = (id, page) => (isLocation(id) ? void app.show(new LocationScene(app, id, () => app.go.explore('places'), page)) : island.land(id, page));
   // The page's link to the island games shows only on the root's entry scene (Home, or the preview).
   const link = document.querySelector<HTMLElement>('.classic-link');
   const withLink = (routes: Routes) =>

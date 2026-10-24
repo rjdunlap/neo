@@ -1822,6 +1822,12 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--adventure-wa
 
 Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--ready-for-adventure-levels-13-new-game-ra2).
 
+## Location capacity: pages for a full land (2026-10-24)
+
+[PR #915](https://github.com/rjdunlap/neo/pull/915), `claude/location-pages` ([definition](../definitions/location-capacity.md)). `LAND_SPOTS = 13` (confirmed by the sweep), balanced `landPages`, `clampLandPage` and `landLayout(..., arrows)` with `prev`/`next` spots; a `PageArrow` (yellow round marker with a white arrow on a post, no word). `LandScene` and the root's `LocationScene` remember a page per side for the session (`forgetLands` clears it), the arrows turn on touch-down and say `explore.page`, the signpost opens the other side's remembered page, the host turns to the page of its suggestion, and the key ring follows the path. Origin is `{ land, page }` and `go.land(id, page?)` carries it. Every location test runs `landLayouts(id)`; Beach, Painted Canyon and Music Mountain were reworked with `scanPlace`. Pages today: Puzzle Peaks and Tinker Lab at school, Tinker Lab at prek (6+6), both at grown-up (7+6), Lantern Lake's bigger-kids side at child bands and Puzzle Peaks' at lap (6+6). Unblocks `sprout-shuffle`, `food-web-workshop`, `cue-studio` and `species-comeback`, each with its own placement check.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--location-capacity-pages-for-a-full-land).
+
 ## Mail Carrier batch 3: Compare delivery routes (2026-10-23)
 
 [PR #874](https://github.com/rjdunlap/neo/pull/874), worker `01a16958-6380-7e22-b796-185ee2918505`: level14 / dive slice8 only. Two bags carry three letters each; every order works, with flags, free undo, a counted office return and an optional unscored second walk comparing shorter, longer or equal counts. The loop has one visible stone per segment and two bags award one sticker. School order is `[4, 5, 9, 12, 6, 13, 7, 8, 11, 14]`; level15 and developer decisions are excluded.
