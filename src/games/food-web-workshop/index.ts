@@ -89,7 +89,7 @@ class FoodWebWorkshop implements Game {
     }
     this.s.round.stations.forEach((organism, i) => {
       const node = stationArt(organism, STATION_R);
-      node.hitArea = new Rectangle(-STATION_R, -STATION_R, STATION_R * 2, STATION_R + 2);
+      node.hitArea = new Rectangle(-STATION_R, -STATION_R, STATION_R * 2, STATION_R + 12);
       onTap(node, () => this.name(i), { cooldown: 400 });
       this.stationLayer.addChild(node);
       const badge = badgeArt(organism, BADGE);
@@ -191,7 +191,8 @@ class FoodWebWorkshop implements Game {
   }
 
   private drop(i: number, x: number, y: number): boolean {
-    if (this.busy || this.finished) return false;
+    if (this.finished) return false;
+    if (this.busy) return void sfx.tick(), false;
     const target = dropTarget(this.stations.map((st) => ({ x: st.node.x, y: st.node.y })), i, x, y);
     if (target === null) return false;
     const from = this.stations[i].organism, to = this.stations[target].organism;
