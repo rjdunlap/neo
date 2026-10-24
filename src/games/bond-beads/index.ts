@@ -46,6 +46,7 @@ class BondBeads implements Game {
   private clock = 0;
   private view: View;
   private relayout = false;
+  private wasStuck = false;
 
   private readonly backdrop: Backdrop;
   private readonly board = new Container();
@@ -103,6 +104,7 @@ class BondBeads implements Game {
     this.bench = new Bench(s.kinds, s.card);
     this.tally.next();
     this.selected = null;
+    this.wasStuck = false;
     this.build();
   }
 
@@ -338,10 +340,13 @@ class BondBeads implements Game {
     if (this.level2) return;
     if (this.bench.done) { void this.stepDone(); return; }
     // Every hand that is free is on a bead that cannot reach another: show a link to break, never counted.
-    if (this.bench.stuck && this.help) {
-      void this.ctx.say('bondbeads.stuck');
+    const stuck = this.bench.stuck;
+    if (stuck && this.help) {
+      // Said once as the tray gets stuck; the pulse shows the link again on every later change.
+      if (!this.wasStuck) void this.ctx.say('bondbeads.stuck');
       void this.pulse(this.help);
     }
+    this.wasStuck = stuck;
   }
 
   /** Level 2's Check. */
