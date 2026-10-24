@@ -206,3 +206,17 @@
 - Ran: typecheck; vitest on `src/games` and `src/content` (160 files pass); `npm run build`. Full `npm test` has one failure, `src/app/scenes/lab.test.ts` "prek landscape n=12", which also fails with the attic-finds bands reverted (not from this change). After merging `origin/main` (`1ca63fc6`, which has the lab fix [#877](https://github.com/rjdunlap/neo/pull/877)): typecheck clean, `npm test` 2716 of 2717 with only Block Garden's level-8 timing cap failing under machine load; that file passed on rerun (unchanged code, known flake).
 - Browser (Vite port 5437, stopped): `BROWSER_SUITE=atticlever` (fast swats make one turn plus one queued, Finish absent until turn 3, level 4 door free, Finish ends 0/0) passed; `fingerdemo FINGER_ONLY=attic-finds FINGER_LEVELS=3,4` passed (7.3 s, 9.4 s); portrait screenshot of level 4 reviewed.
 - Not run: `world`, offline check, iPad, device speech, a lap or toddler child ([open](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — Weather Wardrobe batch 2: the trip happens and level 9 Which sky? (slices 5–6)
+
+- [PR #876](https://github.com/rjdunlap/neo/pull/876): level 6 unpacks the suitcase, the pet wearing each weather's two items in forecast order; new level 9 *Which sky?* (toddler `[2, 9, 3, 4]`, preschool `[3, 9, 4, 5]`, `entryLevels: [8, 9]`). Wind (slice 7) not built.
+- Ran: typecheck; `vitest` src/games, src/content, src/progress, src/app (all pass except `src/app/scenes/lab.test.ts` Tinker Lab, which also fails on unchanged `origin/main`); new `BROWSER_SUITE=wardrobe9` (grey scene, wrong sky twice with consequence, hint, three rounds, saved round, 2 misses and 1 hint) and `BROWSER_SUITE=wardrobe6` (trip unpacks two items per weather); `fingerdemo` `FINGER_ONLY=weather-wardrobe FINGER_LEVELS=9` (6.4 s); one portrait screenshot of level 9 reviewed.
+- Not run: wind, `world`, `npm run build`, offline check, iPad/device.
+- Open: whether the trip reads as a payoff and how level 9 plays for a toddler ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — RW14 slice 1: first run on the island
+
+- HatchScene uses Home's backdrop, grass position and a full-companion-height egg, with a soft plate behind colour/name controls; step order and saved result unchanged ([PR #895](https://github.com/rjdunlap/neo/pull/895)).
+- Tested base `841999e3` plus the source/browser diff, `GAME_URL=http://localhost:5199`, `BROWSER_SUITE=home HOME_ONLY=first-run`: 1024×768 and 768×1024 backdrop/egg feet/height, four taps, ≥100-unit controls, colour/preset/custom name, save and reload passed; no page errors. Two portrait images reviewed (egg and colour plate).
+- Typecheck/build passed. Full unit run: 2708 passed, four skipped, five failures in untouched Fluffy Salon, Bumper Garden, Penguin Slide and Bolt Boards; one filtered rerun of those four files passed all 64 tests (transient failures; no game code/test changes).
+- Diff/link checks passed. No new assets, persistence or route changes; `world`, offline, couch and full-release suites not run under the scoped shell tier. No iPad, actual speech/touch or child-response claim.

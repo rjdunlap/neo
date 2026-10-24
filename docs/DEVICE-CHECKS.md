@@ -326,6 +326,7 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 **Later, at three to five**
 
 - [ ] Photo Safari level 7: on an iPad, hear both action/place clues clearly, distinguish the four animations at shared places, and observe whether a child combines them; browser play cannot establish understanding.
+- [ ] Photo Safari levels 8–9: on an iPad, observe whether a child compares the pinned meadow photo with the scene at level 8, and whether level 9's spoken claims and thumbs-up/down are understood; browser play cannot establish either.
 - [ ] Word Monsters, Photo Safari and Clap the Syllables: vocabulary, spoken prompts, answer clarity, and whether device speech produces usable letter sounds and clear words. Do not claim phonics coverage from letter-name playback alone.
 - [ ] Tangram Town: actual device pronunciation of square, triangle, rectangle and trapezoid, and whether once-per-piece pickup cues are clear while she moves and turns the shapes.
 - [ ] Teddy Doctor lap and toddler: whether a lap player can drag the level 2 bandage (else lap becomes 1 and 7), whether a toddler at level 7 looks at the faces or taps the nearer friend, and whether level 8’s before/after/first/last rules are clear in device speech; [deep dive](deep-dives/teddy-doctor.md#decisions-for-the-developer).
