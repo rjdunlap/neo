@@ -6,13 +6,13 @@ import type { Rng } from '../../engine/random';
  * Every bud it touches blooms and chimes. Nothing is ever lost; the ladder asks for
  * particular flowers, then for aiming at numbers.
  */
-export type PegMode = 'drop' | 'bloom' | 'color' | 'number' | 'order' | 'big';
+export type PegMode = 'drop' | 'bloom' | 'color' | 'number' | 'order' | 'big' | 'cup' | 'plant';
 
 export interface PegPlan {
   mode: PegMode;
   /** Buds on the board. */
   pegs: number;
-  /** drop: balls in a round. color: special buds. number/order: numbered buds. */
+  /** drop: balls in a round. color: special buds. number/order: numbered buds. cup: asks in a round. plant: seeds in the tray. */
   count: number;
   name: string;
 }
@@ -23,6 +23,8 @@ export const PLANS: PegPlan[] = [
   { mode: 'color', pegs: 16, count: 4, name: 'Bloom the four orange flowers (counted aloud)' },
   { mode: 'number', pegs: 14, count: 5, name: 'Aim the launcher to hit a numbered flower: "hit 3"' },
   { mode: 'order', pegs: 14, count: 3, name: 'Hit numbered flowers 1, 2, 3 in order' },
+  { mode: 'cup', pegs: 12, count: 3, name: 'Into the cup: aim the pearl into the cup with that many dots' },
+  { mode: 'plant', pegs: 11, count: 2, name: 'Plant a bud: drag a seed onto a marked spot so the dropped pearl rolls into the cup' },
 ];
 
 /** Level 8, the lap entry: four huge buds, and every touch blooms one. Plans are keyed by ID, so it sits outside the ladder's order. */
@@ -91,7 +93,9 @@ export function grid(shape: BoardShape = 'rows'): { x: number; y: number }[] {
 
 export function makeBoard(plan: PegPlan, rng: Rng, shape: BoardShape = 'rows'): PegSpot[] {
   if (plan.mode === 'big') return BIG_SPOTS.map((p): PegSpot => ({ ...p, kind: 'plain', r: BIG_PEG }));
-  const spots = rng.shuffle(grid(shape)).slice(0, plan.pegs).map((p): PegSpot => ({ ...p, kind: 'plain' }));
+  // Into the cup and Plant a bud keep their buds a pearl's width above the cups along the sand.
+  const places = plan.mode === 'cup' || plan.mode === 'plant' ? grid(shape).filter((p) => p.y + BOARD.peg + 2 * BOARD.ball < CUP_TOP) : grid(shape);
+  const spots = rng.shuffle(places).slice(0, plan.pegs).map((p): PegSpot => ({ ...p, kind: 'plain' }));
   // Specials and numbers sit in the middle rows, where an aimed shot can reach them.
   const reachable = rng.shuffle(spots.filter((s) => s.x > 80 && s.x < BOARD.w - 80));
   if (plan.mode === 'color') reachable.slice(0, plan.count).forEach((s) => (s.kind = 'special'));
@@ -210,3 +214,163 @@ export const ledgeX = (x: number) => Math.max(BOARD.ball, Math.min(BOARD.w - BOA
  */
 export const guided = (mode: PegMode, stalled: number, hinting: boolean) =>
   (mode === 'bloom' || mode === 'big' || mode === 'color') && (stalled >= STALL_AT || (mode === 'color' && hinting));
+
+// Level 6, Into the cup ------------------------------------------------------------------------------------------------
+
+/** Cups along the sand, side by side across the whole board, so every pearl that rolls out lands in one of them. */
+export const CUPS = 4;
+/** The cups' rims, in board units. */
+export const CUP_TOP = BOARD.h - 56;
+export const CUP_W = BOARD.w / CUPS;
+/** The cup a pearl leaving the board at `x` falls into. */
+export const cupAt = (x: number) => Math.max(0, Math.min(CUPS - 1, Math.floor(x / CUP_W)));
+export const cupCentre = (i: number) => (i + 0.5) * CUP_W;
+
+/** A stuck pearl is let go after this long; it lands in no cup and counts nothing. */
+export const CUTOFF = 10;
+/** The physics sample both the rules and an aimed cup shot step by, so a shot in play is exactly the simulated one. */
+export const SAMPLE = 1 / 30;
+/** Aims sampled across the launcher's swing, and how far either side of a chosen aim must land in the same cup. */
+export const CUP_STEP = 0.005;
+export const CUP_MARGIN = 0.012;
+
+export const worldOf = (spots: PegSpot[]): BallWorld => ({ pegs: spots.map((s) => ({ x: s.x, y: s.y, r: s.r ?? BOARD.peg })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 });
+
+/** Where an aimed shot ends up: the cup it falls into, or null when it is still on the board at the cutoff. */
+export function landing(world: BallWorld, angle: number): number | null {
+  const { landed } = simulate({ x: BOARD.w / 2, y: 40, ...aimVelocity(angle), r: BOARD.ball }, world, BOARD.h, CUTOFF, SAMPLE);
+  return landed.y - BOARD.ball >= BOARD.h ? cupAt(landed.x) : null;
+}
+
+/** Every aim across the swing and the cup it lands in, worked out once per board. */
+export function landingTable(world: BallWorld): { angle: number; cup: number | null }[] {
+  const n = Math.round((2 * AIM_LIMIT) / CUP_STEP);
+  return Array.from({ length: n + 1 }, (_, i) => {
+    const angle = -AIM_LIMIT + i * CUP_STEP;
+    return { angle, cup: landing(world, angle) };
+  });
+}
+
+/**
+ * An aim that lands in `cup` with room to spare: a sampled aim (whose landing is exact) whose neighbours `CUP_MARGIN` either
+ * side land there too, checked by fresh shots since a shot between samples can bounce anywhere. Aims nearest the middle of
+ * the widest run of samples in that cup are tried first; null when none has the margin.
+ */
+export function aimInto(world: BallWorld, table: { angle: number; cup: number | null }[], cup: number): number | null {
+  const runs: { from: number; to: number }[] = [];
+  for (let i = 0; i < table.length; i++) {
+    if (table[i].cup !== cup) continue;
+    let j = i;
+    while (j + 1 < table.length && table[j + 1].cup === cup) j++;
+    runs.push({ from: i, to: j });
+    i = j;
+  }
+  // Only samples with sampled neighbours in the cup across the whole margin are worth a fresh check.
+  const span = Math.ceil(CUP_MARGIN / CUP_STEP);
+  runs.sort((a, b) => b.to - b.from - (a.to - a.from));
+  for (const r of runs) {
+    const mid = (r.from + r.to) / 2;
+    const order = Array.from({ length: r.to - r.from + 1 }, (_, k) => r.from + k)
+      .filter((k) => k - span >= r.from && k + span <= r.to)
+      .sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid));
+    for (const k of order) {
+      const a = table[k].angle;
+      if (landing(world, a - CUP_MARGIN) === cup && landing(world, a + CUP_MARGIN) === cup) return a;
+    }
+  }
+  return null;
+}
+
+/**
+ * A round of Into the cup: a board of plain buds on which every cup can be reached with room to spare (a board that
+ * fails is grown again from the same seed), the dots on each cup (1 to 4, shuffled), and three different counts to ask for.
+ */
+export function makeCupRound(plan: PegPlan, rng: Rng, shape: BoardShape) {
+  let spots = makeBoard(plan, rng, shape);
+  let table = landingTable(worldOf(spots));
+  for (let tries = 0; tries < 30 && !Array.from({ length: CUPS }, (_, c) => aimInto(worldOf(spots), table, c)).every((a) => a !== null); tries++) {
+    spots = makeBoard(plan, rng, shape);
+    table = landingTable(worldOf(spots));
+  }
+  const dots = rng.shuffle(Array.from({ length: CUPS }, (_, i) => i + 1));
+  // Only a cup some aim reaches with room to spare is ever asked for (every cup, unless thirty boards in a row failed).
+  const world = worldOf(spots);
+  const reachable = dots.filter((_, c) => aimInto(world, table, c) !== null);
+  const asks = rng.shuffle(Array.from({ length: CUPS }, (_, i) => i + 1)).filter((n) => reachable.includes(n)).slice(0, plan.count);
+  return { spots, table, dots, asks };
+}
+
+// Level 7, Plant a bud ---------------------------------------------------------------------------------------------------
+
+/** Marked places to plant on: at least this far apart, so each is its own target on screen (portrait scale is about 0.88). */
+export const PLACE_GAP = 120;
+/** At most this many marked places on a board. */
+export const PLACES = 5;
+/** How near a let-go seed must be to a marked place to snap onto it, and a seed's and the drop button's touch radius. */
+export const SNAP = 100;
+export const HIT = 62;
+/** The two seeds' homes in the tray, at the ends of the ledge, and where the pearl drop button may sit between them. */
+export const SEED_HOMES = [
+  { x: 60, y: 40 },
+  { x: BOARD.w - 60, y: 40 },
+];
+export const DROP_RANGE = { min: 200, max: BOARD.w - 200 };
+
+export type Place = { x: number; y: number };
+
+/** The deterministic drop: no drift, stepped by the shared sample, so the run in play is exactly this one. */
+export const plantDrop = (x: number) => ({ x, y: 40, vx: 0, vy: 60, r: BOARD.ball });
+
+/** Where the dropped pearl ends up with buds planted on `planted`: the cup it falls into, or null if still on the board at the cutoff. */
+export function plantRun(spots: PegSpot[], planted: Place[], dropX: number): number | null {
+  const world = worldOf([...spots, ...planted.map((p): PegSpot => ({ ...p, kind: 'plain' }))]);
+  const { landed } = simulate(plantDrop(dropX), world, BOARD.h, CUTOFF, SAMPLE);
+  return landed.y - BOARD.ball >= BOARD.h ? cupAt(landed.x) : null;
+}
+
+/** Every planting she can make: nothing, one place, or both seeds on two places. */
+export function plantings(n: number): number[][] {
+  const out: number[][] = [[]];
+  for (let i = 0; i < n; i++) out.push([i]);
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) out.push([i, j]);
+  return out;
+}
+
+/**
+ * A board of Plant a bud: plain buds, a fixed drop spot, marked empty places at least `PLACE_GAP` apart, and the friend's cup,
+ * which the pearl misses as the board stands and reaches with one bud planted on the `hint` place. Every planting she can make
+ * rolls out before the cutoff. A board that fails is grown again from the same seed.
+ */
+export function makePlantRound(plan: PegPlan, rng: Rng, shape: BoardShape) {
+  for (let tries = 0; tries < 80; tries++) {
+    const spots = makeBoard(plan, rng, shape);
+    const taken = (p: Place) => spots.some((s) => Math.hypot(s.x - p.x, s.y - p.y) < 1);
+    const places: Place[] = [];
+    for (const p of rng.shuffle(grid(shape).filter((p) => p.y + BOARD.peg + 2 * BOARD.ball < CUP_TOP && !taken(p)))) {
+      if (places.length < PLACES && places.every((q) => Math.hypot(q.x - p.x, q.y - p.y) >= PLACE_GAP)) places.push(p);
+    }
+    const dropX = Math.round(rng.range(DROP_RANGE.min, DROP_RANGE.max));
+    if (places.length < 3) continue;
+    const runs = plantings(places.length).map((ix) => ({ ix, cup: plantRun(spots, ix.map((i) => places[i]), dropX) }));
+    if (runs.some((r) => r.cup === null)) continue;
+    const bare = runs[0].cup;
+    const singles = runs.filter((r) => r.ix.length === 1 && r.cup !== bare);
+    if (!singles.length) continue;
+    const cup = rng.pick(singles).cup!;
+    // The hint is the place whose single bud reaches the cup nearest under the drop, where it is easiest to see.
+    const hint = singles.filter((r) => r.cup === cup).map((r) => r.ix[0]).sort((a, b) => Math.abs(places[a].x - dropX) - Math.abs(places[b].x - dropX))[0];
+    return { spots, dropX, places, cup, hint };
+  }
+  // Eighty failed boards in a row never happen on the shipped shapes (a rule test grows hundreds); this keeps the type total.
+  return { spots: [] as PegSpot[], dropX: BOARD.w / 2, places: [] as Place[], cup: 0, hint: -1 };
+}
+
+/** The marked place a let-go seed snaps onto: the nearest free place within `SNAP`, or null to go back to the tray. */
+export function snapPlace(places: Place[], x: number, y: number, taken: (i: number) => boolean): number | null {
+  let best: number | null = null;
+  places.forEach((p, i) => {
+    const d = Math.hypot(p.x - x, p.y - y);
+    if (d <= SNAP && !taken(i) && (best === null || d < Math.hypot(places[best].x - x, places[best].y - y))) best = i;
+  });
+  return best;
+}

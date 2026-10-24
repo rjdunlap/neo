@@ -1,17 +1,18 @@
-import { Container, Graphics, Rectangle, Sprite, type FederatedPointerEvent } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, Sprite, type FederatedPointerEvent } from 'pixi.js';
 import { ink, swatch, type ColorName } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { simulate, stepBall, type Ball, type BallWorld } from '../../engine/ball';
-import { palmOnGlass } from '../../engine/input';
+import { draggable, type DragHandle } from '../../engine/drag';
+import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, Spot, TouchIntent } from '../types';
 import { idle, type CouchControls } from '../../engine/controller';
-import { AIM_LIMIT, aimAt, aimVelocity, blooms, BOARD, driftOf, dropAt, guided, ledgeX, makeBoard, pickTheme, planFor, targets, TRAY, traySlot, type Backdrop, type BoardShape, type PegPlan, type PegSpot } from './logic';
+import { AIM_LIMIT, aimAt, aimInto, aimVelocity, blooms, BOARD, CUP_TOP, CUP_W, cupAt, cupCentre, CUPS, CUTOFF, driftOf, dropAt, guided, HIT, ledgeX, makeBoard, makeCupRound, makePlantRound, pickTheme, planFor, plantDrop, SAMPLE, SEED_HOMES, snapPlace, targets, TRAY, traySlot, worldOf, type Backdrop, type BoardShape, type PegPlan, type PegSpot, type Place } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { ease } from '../../engine/tween';
 
@@ -19,11 +20,13 @@ const LEVELS: BandLevels = {
   lap: { min: 1, max: 8, order: [8, 1] },
   toddler: { min: 1, max: 8, order: [8, 1, 2] },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
+  prek: { min: 3, max: 7 },
 };
 
 const PETALS: ColorName[] = ['pink', 'purple', 'blue', 'yellow', 'teal', 'red'];
 const SPECIAL: ColorName = 'orange';
+/** Into the cup's cups, left to right (never orange). */
+const CUP_COLORS: ColorName[] = ['teal', 'purple', 'blue', 'pink'];
 
 /** Each backdrop's sea (top and bottom of its gradient), its sand and what grows from the sand. */
 const SEAS: Record<Backdrop, { sea: [number, number]; sand: number }> = {
@@ -69,6 +72,12 @@ class Bud extends Container {
     this.wiggle = 1;
   }
 
+  /** A planted seed picked up again is a closed bud once more. */
+  close() {
+    this.bloomed = false;
+    this.draw();
+  }
+
   draw() {
     const g = this.art.clear();
     const sw = swatch[this.color];
@@ -106,11 +115,33 @@ const STEP = 1 / 240;
 /** Where along the ledge each drop is made on the first level, as a fraction of the board: all over, not one place. */
 const DROP_AT = [0.5, 0.2, 0.8, 0.35, 0.65, 0.1];
 
+/** Plant a bud: a seed from the tray, and the marked place it is planted on (null while it is in the tray). */
+interface Seed {
+  bud: Bud;
+  drag: DragHandle;
+  place: number | null;
+}
+
 class PegGarden implements Game {
   readonly plan: PegPlan;
-  readonly buds: Bud[];
+  /** The buds a pearl can touch, in the world's peg order (on Plant a bud, the board's own and then the planted seeds). */
+  buds: Bud[];
   readonly targets: number[];
-  readonly world: BallWorld;
+  world: BallWorld;
+  /** Into the cup: the dots on each cup, left to right, and where every aim across the swing lands. */
+  readonly dots: number[] = [];
+  readonly table: { angle: number; cup: number | null }[] = [];
+  /** Plant a bud: the board's own buds, the marked places, the drop spot, the friend's cup, the place that works alone, and the seeds. */
+  private fixed: Bud[] = [];
+  readonly places: Place[] = [];
+  dropX = BOARD.w / 2;
+  friendCup = 0;
+  hintPlace = -1;
+  readonly seeds: Seed[] = [];
+  /** The pearl reached the cup: nothing more runs or moves while the praise plays. */
+  private won = false;
+  private readonly marks = new Graphics();
+  private readonly dropButton = new Container();
   ball: Ball | null = null;
   aim = 0;
   shots = 0;
@@ -133,6 +164,10 @@ class PegGarden implements Game {
   private readonly tray = new Graphics();
   private readonly trayPearls = new Container();
   private collected = 0;
+  /** Into the cup: pearls already resting in each cup, and the cup shot's samples and last position (to draw it between samples). */
+  private inCup = [0, 0, 0, 0];
+  private samples = 0;
+  private prev = { x: 0, y: 0 };
   private readonly launcher = new Graphics();
   private readonly pearl = new Graphics();
   private readonly arrow = new Graphics();
@@ -165,15 +200,29 @@ class PegGarden implements Game {
     this.theme = pickTheme(ctx.couch ? null : ctx.rng);
     const look = SEAS[this.theme.backdrop];
     this.sea = new Sprite(gradientTexture(look.sea[0], look.sea[1]));
-    const spots = makeBoard(this.plan, ctx.rng, this.theme.shape);
-    this.targets = targets(this.plan, ctx.rng);
+    let spots: PegSpot[];
+    if (this.plan.mode === 'cup') {
+      const round = makeCupRound(this.plan, ctx.rng, this.theme.shape);
+      ({ spots, dots: this.dots, table: this.table } = round);
+      this.targets = round.asks;
+    } else if (this.plan.mode === 'plant') {
+      const round = makePlantRound(this.plan, ctx.rng, this.theme.shape);
+      ({ spots, places: this.places, dropX: this.dropX, cup: this.friendCup, hint: this.hintPlace } = round);
+      this.targets = [];
+    } else {
+      spots = makeBoard(this.plan, ctx.rng, this.theme.shape);
+      this.targets = targets(this.plan, ctx.rng);
+    }
     this.buds = spots.map((s) => new Bud(s, ctx.rng));
-    this.world = { pegs: spots.map((s) => ({ x: s.x, y: s.y, r: s.r ?? BOARD.peg })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 };
+    this.fixed = this.buds;
+    this.world = worldOf(spots);
     this.pearl.circle(0, 0, BOARD.ball).fill(0xfffaf0).stroke({ width: 3, color: 0xd9cbb0 }).circle(-5, -5, 5).fill({ color: 0xffffff, alpha: 0.9 });
     this.pearl.visible = false;
     this.drawTray();
-    for (const g of [this.trail, this.tray, this.trayPearls]) g.eventMode = 'none';
-    this.board.addChild(this.frame, this.trail, this.guide, ...this.buds, this.tray, this.trayPearls, this.arrow, this.launcher, this.pearl, this.touch);
+    // Into the cup's pearls rest in the cups instead of the tray.
+    this.tray.visible = this.plan.mode !== 'cup' && this.plan.mode !== 'plant';
+    for (const g of [this.trail, this.tray, this.trayPearls, this.marks]) g.eventMode = 'none';
+    this.board.addChild(this.frame, this.marks, this.trail, this.guide, ...this.buds, this.tray, this.trayPearls, this.arrow, this.launcher, this.pearl, this.touch);
     ctx.stage.addChild(this.sea, this.board);
     for (const b of this.buds) ctx.track(b);
 
@@ -185,10 +234,78 @@ class PegGarden implements Game {
     this.touch.on('pointerupoutside', (e: FederatedPointerEvent) => this.up(e));
     // Pixi does not pass a cancelled touch on, so the window is watched for it.
     window.addEventListener('pointercancel', this.cancel, { capture: true });
+    // Last, so its touch layer stays off.
+    if (this.plan.mode === 'plant') this.setUpPlanting();
+  }
+
+  /**
+   * Plant a bud takes its touches on the seeds and the drop button, so the board-wide touch layer is off. Each seed rides over
+   * the finger and snaps onto the nearest free marked place, or goes back to the tray.
+   */
+  private setUpPlanting() {
+    this.touch.eventMode = 'none';
+    this.drawMarks();
+    const b = this.dropButton;
+    b.position.set(this.dropX, 40);
+    b.addChild(new Graphics().circle(0, 0, 40).fill(swatch.pink.light).stroke({ width: 6, color: swatch.pink.line }));
+    b.addChild(new Graphics().circle(0, 0, BOARD.ball).fill(0xfffaf0).stroke({ width: 3, color: 0xd9cbb0 }).circle(-5, -5, 5).fill({ color: 0xffffff, alpha: 0.9 }));
+    onTap(b, () => this.runPlanted(), { radius: HIT });
+    // Under the pearl, so the pearl is seen leaving it.
+    this.board.addChildAt(b, this.board.getChildIndex(this.pearl));
+    SEED_HOMES.slice(0, this.plan.count).forEach((home) => {
+      const bud = new Bud({ x: home.x, y: home.y, kind: 'plain' }, this.ctx.rng);
+      bud.hitArea = new Circle(0, 0, HIT);
+      // A sprout on top tells her own seeds from the board's buds, planted or not.
+      const sprout = new Graphics().moveTo(0, -BOARD.peg + 2).lineTo(0, -BOARD.peg - 10).stroke({ width: 4, color: 0x4a9a35, cap: 'round' });
+      sprout.ellipse(-9, -BOARD.peg - 12, 9, 5).ellipse(9, -BOARD.peg - 12, 9, 5).fill(0x6cc04a).stroke({ width: 2, color: 0x4a9a35 });
+      bud.addChild(sprout);
+      this.board.addChild(bud);
+      this.ctx.track(bud);
+      const seed: Seed = { bud, place: null, drag: null! };
+      seed.drag = draggable(bud, this.ctx.tw, {
+        onPick: () => {
+          seed.place = null;
+          bud.close();
+          sfx.pop(6);
+        },
+        onDrop: (x, y) => {
+          const at = snapPlace(this.places, x, y, (i) => this.seeds.some((q) => q !== seed && q.place === i));
+          if (at === null) return false;
+          seed.place = at;
+          void this.ctx.tw.to(bud, this.places[at], { duration: 0.2, ease: ease.outBack });
+          sfx.pop(8);
+          return true;
+        },
+      });
+      this.seeds.push(seed);
+    });
+  }
+
+  /** Plant a bud: the marked empty places, faint rings in the water, and a seed's outline over the place that works once hinted. */
+  private drawMarks() {
+    const g = this.marks.clear();
+    for (const p of this.places) g.circle(p.x, p.y, BOARD.peg + 6).fill({ color: 0xffffff, alpha: 0.18 }).stroke({ width: 4, color: 0xffffff, alpha: 0.7 });
+    // The seeds' dishes at the ends of the ledge.
+    for (const h of SEED_HOMES.slice(0, this.plan.count)) g.ellipse(h.x, h.y + 18, 40, 14).fill({ color: swatch.pink.light, alpha: 0.9 }).stroke({ width: 4, color: swatch.pink.line });
+  }
+
+  /** The drop button: let the pearl go from the fixed spot, with whatever is planted. */
+  private runPlanted() {
+    if (this.ball || this.finished || this.won || this.seeds.some((q) => q.drag.dragging)) return void sfx.pop(2);
+    // In place order, as the rules check plantings, so two pegs touched in one step resolve the same way.
+    const planted = this.seeds.filter((q) => q.place !== null).sort((a, b) => a.place! - b.place!);
+    for (const q of planted) q.bud.position.copyFrom(this.places[q.place!]);
+    // The world is rebuilt with the buds on every run, so a bud the pearl touches is the one in `buds` at its index.
+    this.buds = [...this.fixed, ...planted.map((q) => q.bud)];
+    this.world = worldOf(this.buds.map((b) => ({ ...b.spot, x: b.x, y: b.y })));
+    for (const q of this.seeds) q.drag.enabled = false;
+    this.dropButton.scale.set(1.2);
+    void this.ctx.tw.to(this.dropButton.scale, { x: 1, y: 1 }, { duration: 0.2 });
+    this.fire(plantDrop(this.dropX));
   }
 
   private get aimed() {
-    return this.plan.mode === 'number' || this.plan.mode === 'order';
+    return this.plan.mode === 'number' || this.plan.mode === 'order' || this.plan.mode === 'cup';
   }
 
   get target(): number | undefined {
@@ -209,6 +326,10 @@ class PegGarden implements Game {
         return void this.ctx.instruct('peg.number', { n: this.target! });
       case 'order':
         return void this.ctx.instruct('peg.order');
+      case 'cup':
+        return void this.ctx.instruct('peg.cup', { n: this.target! });
+      case 'plant':
+        return void this.ctx.instruct('peg.plant');
     }
   }
 
@@ -232,6 +353,20 @@ class PegGarden implements Game {
     const b = this.ball;
     if (!b) return;
     this.ballAge += dt;
+    if (this.plan.mode === 'cup' || this.plan.mode === 'plant') {
+      // An aimed cup shot (and Plant a bud's drop) takes the rules' own samples, so it lands exactly where the landing table says; it is drawn between them.
+      this.stepLeft = Math.min(this.stepLeft + dt, 0.25);
+      for (; this.stepLeft >= SAMPLE && b.y - b.r < BOARD.h && this.samples < CUTOFF / SAMPLE; this.stepLeft -= SAMPLE) {
+        this.prev = { x: b.x, y: b.y };
+        for (const i of stepBall(b, this.world, SAMPLE)) this.touchBud(i);
+        this.samples++;
+        this.path.push({ x: b.x, y: b.y });
+      }
+      const k = Math.min(1, this.stepLeft / SAMPLE);
+      this.pearl.position.set(this.prev.x + (b.x - this.prev.x) * k, this.prev.y + (b.y - this.prev.y) * k);
+      if (b.y - b.r >= BOARD.h || this.samples >= CUTOFF / SAMPLE) void this.shotOver();
+      return;
+    }
     if (this.aimed) {
       for (const i of stepBall(b, this.world, dt)) this.touchBud(i);
       // Where the pearl actually went, for the faint trail it leaves.
@@ -249,6 +384,8 @@ class PegGarden implements Game {
 
   destroy() {
     this.touch.removeAllListeners();
+    for (const q of this.seeds) q.drag.destroy();
+    this.dropButton.removeAllListeners();
     this.sea.texture.destroy(true);
     window.removeEventListener('pointercancel', this.cancel, { capture: true });
   }
@@ -287,6 +424,11 @@ class PegGarden implements Game {
     return out;
   }
 
+  /** Into the cup: the cup with the asked dots, left to right. */
+  private get askedCup() {
+    return this.target === undefined ? -1 : this.dots.indexOf(this.target);
+  }
+
   /** An angle near the current one whose shot (and its neighbors) touches the wanted flower; straight down if none does. */
   private bestAim(): number {
     return aimAt(this.world, this.buds.findIndex((b) => b.spot.kind === this.target), this.aim, [0.012]) ?? 0;
@@ -304,7 +446,16 @@ class PegGarden implements Game {
       // After the last wanted flower the round is only waiting for the praise to end.
       if (this.target === undefined) return null;
       const finger = (a: number): Spot => ({ on: this.touch, x: BOARD.w / 2 + Math.sin(a) * 200, y: 40 + Math.cos(a) * 200 });
-      return { trace: finger(this.aim), via: [finger(aimAt(this.world, this.buds.findIndex((b) => b.spot.kind === this.target), this.aim) ?? 0)] };
+      const to = mode === 'cup' ? aimInto(this.world, this.table, this.askedCup) : aimAt(this.world, this.buds.findIndex((b) => b.spot.kind === this.target), this.aim);
+      return { trace: finger(this.aim), via: [finger(to ?? 0)] };
+    }
+    if (mode === 'plant') {
+      // Plant one seed on the place that works alone (moving any other planted seed back to its dish first), then let go.
+      const at = this.hintPlace;
+      const stray = this.seeds.find((q) => q.place !== null && q.place !== at);
+      if (stray) return { drag: { on: stray.bud }, to: { on: this.board, ...SEED_HOMES[this.seeds.indexOf(stray)] } };
+      if (!this.seeds.some((q) => q.place === at)) return { drag: { on: this.seeds[0].bud }, to: { on: this.board, ...this.places[at] } };
+      return { tap: { on: this.dropButton } };
     }
     if (mode === 'drop') return { tap: { on: this.touch, x: BOARD.w * DROP_AT[this.shots % DROP_AT.length], y: 40 } };
     // The pearl drifts a little as it is let go; the bot looks at the draw the game is about to make.
@@ -394,6 +545,8 @@ class PegGarden implements Game {
     this.trail.clear();
     this.ballAge = 0;
     this.stepLeft = 0;
+    this.samples = 0;
+    this.prev = { x: b.x, y: b.y };
     this.lit = [];
     this.freshThisShot = 0;
     this.freshSpecial = 0;
@@ -427,11 +580,14 @@ class PegGarden implements Game {
   private async shotOver() {
     if (!this.ball) return;
     const exit = this.ball.x;
+    const out = this.ball.y - this.ball.r >= BOARD.h;
     this.ball = null;
     this.pearl.visible = false;
     this.shots++;
-    this.collect(exit);
-    if (this.aimed) this.drawTrail();
+    const cupped = this.plan.mode === 'cup' || this.plan.mode === 'plant';
+    if (!cupped) this.collect(exit);
+    else if (out) this.rest(cupAt(exit));
+    if (this.aimed || this.plan.mode === 'plant') this.drawTrail();
     const lit = this.lit.map((i) => this.buds[i]);
     switch (this.plan.mode) {
       case 'drop': {
@@ -457,25 +613,61 @@ class PegGarden implements Game {
         this.hintX = this.hinting ? dropAt(this.world, (i) => this.wanted(i), 0, true).x : null;
         return;
       }
-      default: {
+      case 'cup': {
         const t = this.target!;
-        if (lit.some((b) => b.spot.kind === t)) {
-          this.wrongs = 0;
-          this.hinting = false;
-          this.goal++;
+        // A pearl still on the board at the cutoff landed in no cup, so it counts nothing; the ask is said again.
+        if (!out) return void this.ctx.instruct('peg.cup', { n: t });
+        const got = this.dots[cupAt(exit)];
+        if (got === t) return void this.hit('peg.cupNext');
+        this.miss('peg.cupMissed', { got, n: t });
+        return;
+      }
+      case 'plant': {
+        if (out && cupAt(exit) === this.friendCup) {
+          this.won = true;
           sfx.sparkle();
           this.ctx.pet.cheer();
           await this.ctx.say('praise');
-          if (this.target === undefined) return void this.finale();
-          await this.ctx.instruct('peg.next', { n: this.target });
-          return;
+          return void this.finale();
+        }
+        for (const q of this.seeds) q.drag.enabled = true;
+        // Nothing planted is a free look at where the pearl goes; a planted run that misses is her try, so it counts.
+        if (!this.seeds.some((q) => q.place !== null)) return void this.ctx.say('peg.plantLook');
+        this.miss('peg.plantMissed');
+        // Once hinted, a seed planted anywhere but the place that works goes back to the tray, so the hinted planting reaches the cup.
+        if (this.hinting) for (const q of this.seeds) if (q.place !== null && q.place !== this.hintPlace) this.unplant(q);
+        return;
+      }
+      default: {
+        const t = this.target!;
+        if (lit.some((b) => b.spot.kind === t)) {
+          return void this.hit('peg.next');
         }
         this.miss('peg.missed', { n: t });
       }
     }
   }
 
-  private miss(line: 'peg.miss' | 'peg.missed', vars?: { n: number }) {
+  /** The asked flower or cup was reached: praise, then the next ask or the finish. */
+  private async hit(next: 'peg.next' | 'peg.cupNext') {
+    this.wrongs = 0;
+    this.hinting = false;
+    this.goal++;
+    sfx.sparkle();
+    this.ctx.pet.cheer();
+    await this.ctx.say('praise');
+    if (this.target === undefined) return void this.finale();
+    await this.ctx.instruct(next, { n: this.target });
+  }
+
+  /** A planted seed floats back to its dish in the tray. */
+  private unplant(q: Seed) {
+    q.place = null;
+    q.bud.close();
+    void q.drag.floatHome();
+  }
+
+  private miss(line: 'peg.miss' | 'peg.missed' | 'peg.cupMissed' | 'peg.plantMissed', vars?: { n: number; got?: number }) {
     this.misses++;
     this.wrongs++;
     sfx.boing();
@@ -513,6 +705,30 @@ class PegGarden implements Game {
         for (let k = 1; k <= 4; k++) f.ellipse(x + (k % 2 ? 12 : -12), sandTop - k * 70, 14, 7).fill({ color: 0x7fb23a, alpha: 0.75 });
       }
     }
+    if (this.plan.mode === 'cup') this.drawCups(f);
+    if (this.plan.mode === 'plant') this.drawFriendCup(f);
+  }
+
+  /** Plant a bud: the friend's cup along the sand, with a little fish peeking over its rim. */
+  private drawFriendCup(f: Graphics) {
+    const i = this.friendCup;
+    const sw = swatch.yellow;
+    const x = cupCentre(i);
+    f.ellipse(x, CUP_TOP - 4, 26, 18).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line });
+    f.poly([x + 22, CUP_TOP - 4, x + 42, CUP_TOP - 18, x + 42, CUP_TOP + 10]).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line, join: 'round' });
+    f.circle(x - 10, CUP_TOP - 9, 4).fill(ink);
+    f.roundRect(i * CUP_W + 10, CUP_TOP, CUP_W - 20, 54, 18).fill(sw.light).stroke({ width: 5, color: sw.line });
+  }
+
+  /** Into the cup: four cups side by side along the sand, each showing its count as dots. */
+  private drawCups(f: Graphics) {
+    for (let i = 0; i < CUPS; i++) {
+      const sw = swatch[CUP_COLORS[i]];
+      const x = i * CUP_W + 10;
+      f.roundRect(x, CUP_TOP, CUP_W - 20, 54, 18).fill(sw.light).stroke({ width: 5, color: sw.line });
+      const n = this.dots[i];
+      for (let d = 0; d < n; d++) f.circle(cupCentre(i) + (d - (n - 1) / 2) * 26, BOARD.h - 28, 9).fill(0xffffff).stroke({ width: 3, color: ink });
+    }
   }
 
   /** A scalloped shell tray in the sand: finished pearls collect in it. */
@@ -538,6 +754,15 @@ class PegGarden implements Game {
     p.position.set(Math.max(10, Math.min(BOARD.w - 10, x)), TRAY.y - 30);
     this.trayPearls.addChild(p);
     void this.ctx.tw.to(p, { x: slot.x, y: slot.y }, { duration: 0.45, ease: ease.outBack });
+  }
+
+  /** Into the cup: a pearl that rolled out rests in the cup it fell into. */
+  private rest(cup: number) {
+    const k = this.inCup[cup]++;
+    const p = new Graphics().circle(0, 0, 10).fill(0xfffaf0).stroke({ width: 2, color: 0xd9cbb0 }).circle(-3, -3, 3).fill({ color: 0xffffff, alpha: 0.9 });
+    p.position.set(cupCentre(cup), BOARD.h - 70);
+    this.trayPearls.addChild(p);
+    void this.ctx.tw.to(p, { x: cupCentre(cup) + ((k % 5) - 2) * 22, y: BOARD.h - 58 }, { duration: 0.35, ease: ease.outBack });
   }
 
   /** At the finish the tray pours its pearls back up to the top. */
@@ -573,7 +798,7 @@ class PegGarden implements Game {
   /** While aiming: a short dotted guide, or the whole path once a hint is on. */
   private drawGuide() {
     const g = this.guide.clear();
-    const { path } = simulate(this.shotStart(), this.world, BOARD.h, this.hinting ? 6 : 0.35, 1 / 30);
+    const { path } = simulate(this.shotStart(), this.world, BOARD.h, this.hinting ? (this.plan.mode === 'cup' ? CUTOFF : 6) : 0.35, 1 / 30);
     for (let i = 1; i < path.length; i += 2) g.circle(path[i].x, path[i].y, 5).fill({ color: 0xffffff, alpha: 0.9 });
   }
 
@@ -581,6 +806,27 @@ class PegGarden implements Game {
   private drawArrow() {
     const g = this.arrow.clear();
     if (!this.hinting) return;
+    if (this.plan.mode === 'plant') {
+      // A seed's outline over the place that works alone, with the arrow over it.
+      const p = this.places[this.hintPlace];
+      if (!p) return;
+      const pulse = 1 + 0.08 * Math.sin(this.clock * 5);
+      g.circle(p.x, p.y, (BOARD.peg + 10) * pulse).fill({ color: swatch.yellow.light, alpha: 0.45 }).stroke({ width: 6, color: swatch.yellow.line });
+      const y = p.y - 44 - 8 * Math.abs(Math.sin(this.clock * 4));
+      g.poly([p.x - 16, y - 20, p.x + 16, y - 20, p.x, y]).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+      return;
+    }
+    if (this.plan.mode === 'cup') {
+      // The asked cup glows, with the arrow over it; the launcher's guide already shows the whole path.
+      const c = this.askedCup;
+      if (c < 0) return;
+      const pulse = 0.35 + 0.15 * Math.sin(this.clock * 5);
+      g.roundRect(c * CUP_W + 2, BOARD.h - 64, CUP_W - 4, 64, 20).fill({ color: swatch.yellow.light, alpha: pulse }).stroke({ width: 6, color: swatch.yellow.line });
+      const x = cupCentre(c);
+      const y = BOARD.h - 78 - 8 * Math.abs(Math.sin(this.clock * 4));
+      g.poly([x - 16, y - 20, x + 16, y - 20, x, y]).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+      return;
+    }
     let bud: Bud | undefined;
     if (this.plan.mode === 'color') bud = this.buds.find((b) => b.spot.kind === 'special' && !b.bloomed);
     else if (this.target !== undefined) bud = this.buds.find((b) => b.spot.kind === this.target);

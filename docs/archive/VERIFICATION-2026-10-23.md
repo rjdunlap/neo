@@ -292,3 +292,11 @@
 - Ran on `2889eadf` (dev server `http://localhost:5643`): typecheck; `npm test` (221 files, 2752 passed); `npm run build`; `BROWSER_SUITE=early EARLY_ONLY=bath` levels 1-9 on the sprout and, with `BATH_SPECIES=glider`, the glider; `BROWSER_SUITE=fourth FOURTH_ONLY=weather` levels 1-6 and 8 on sprout, glider and river (`WARDROBE_SPECIES`; the first sprout run timed out once at start with no other error and passed twice on rerun: likely a first-load flake); `wardrobe7` on glider and river; `fingerdemo` for `splish-splash` and `weather-wardrobe` at levels 1 and 9.
 - Screenshots reviewed: bath level 6 on all three species, wardrobe levels 1 (rain, snow) and 5 on all three, level 7 glider portrait. `game-reviewer`: no blocking issues.
 - Not run: offline check (no persistence or asset change), `world`, couch suites (CouchScene and the demo only lost a constructor field; the demo unit test passes). Open: iPad check of the sprout's smaller cheek and ear splotches and the river and glider garments, and a child's read of hats on side-on faces ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — Measurement M3–M5 definition packets (docs only)
+
+- [PR #911](https://github.com/rjdunlap/neo/pull/911), `codex/measurement-m3-m5`: Measuring Post 1–4 and one provisional Weights Case; study/READY/backlog/queue closeout.
+- Source: claim parent plus docs-only upstream dispatch integration; no runtime, registration or asset changes.
+- Passed: repository Markdown links/anchors and `git diff --check`; reviewed finite records, equal/common-unit alternatives and both-pan witness arithmetic.
+- Open: Box Balance-first M5 finalization, placement/capacity and separate build admission; all implementation, search execution, layout/device/child observations remain pending.
+- Not run locally: typecheck, unit tests, build or browser checks (docs-only tier); PR CI runs separately as publication requires.
