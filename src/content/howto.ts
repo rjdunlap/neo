@@ -263,6 +263,18 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'A place missing a need counts as a miss, with the need named.' },
     ],
   },
+  'cue-studio': {
+    goal: 'Choose moves for the pet and watch their order.',
+    steps: [
+      { from: 1, to: 1, text: 'Tap the hand (Wave) or the circle arrow (Turn) to put that move in the empty place.' },
+      { from: 2, to: 2, text: 'Tap two moves to fill the two places; the pet does them left to right.' },
+      'Play runs the whole show; the arrow-and-bar button runs one move at a time. Each move\'s place glows as the pet does it.',
+      'To change a move, tap its place (an arrow points at it), then tap the new move. Undo takes back the last change.',
+      'The bulb offers help: a Wave in an empty place, then playing the show.',
+    ],
+    finish: 'After the whole show has played, the blue tick finishes it. Changing a move means playing the new show first.',
+    note: 'Any show is a good show: nothing here is ever a mistake. Using the bulb counts as help.',
+  },
   'pond-conga': {
     goal: 'Steer a line of ducklings to each crumb of bread, in order.',
     steps: [

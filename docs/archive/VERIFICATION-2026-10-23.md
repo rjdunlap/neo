@@ -242,3 +242,10 @@
 - Ran: typecheck; `npm test` (218 files, 2729 tests); `npm run build` (precache 174 entries, 11534.22 KiB). Regression proof: pointing the location house at `goHome` failed the route test, then restored.
 - Browser: `GAME_URL=http://localhost:5883 BROWSER_SUITE=home HOME_ONLY=buttons` passed (Counting Cove Back and house in landscape and portrait, house at least 100 and left of the heading, how-to Back, round Back, result Back to the location, house to Home); five screenshots reviewed.
 - Not run: `world`, offline (no persistence or asset change), iPad or device speech. Open: location keep-out rects not widened for the house; Home itself not in the route test.
+
+## 2026-10-23 — RW14 slice 5: the result stands in its place
+
+- At the root the result draws its origin's sky and hills (or Home's backdrop with no origin) under a lighter veil; a story round and `classic/` keep flat cream; result buttons unchanged ([PR #901](https://github.com/rjdunlap/neo/pull/901)).
+- Ran (commit 125d13c9 on base fcb5d306): typecheck; `npm test` (219 files, 2732 tests, including `result-backdrop.test.ts`); `npm run build` (precache 174 entries, 11535.20 KiB).
+- Browser: `GAME_URL=http://localhost:5344 BROWSER_SUITE=home HOME_ONLY=result` passed (Duck Pond from Counting Cove's spot on the cove sky with Back to the cove, from a Story Grove origin on the night sky, and with no origin on the home backdrop, at 1024×768 and 768×1024; Again and Back at their formulas; no page errors); six screenshots reviewed.
+- Not run: offline (no new assets), `picnic` (stories untouched), `world`, `fingerdemo`, device. Open: an origin with a picture is not shown until slice 4's loader; location scenery is not drawn behind the result.
