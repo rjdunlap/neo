@@ -427,11 +427,12 @@ html.turning .pet-name-form {
   /* Below Home's grown-ups' gear (52px at 12px from the top) until RW08's cutover removes the link. */
   top: calc(var(--safe-top) + 76px);
   right: calc(var(--safe-right) + 12px);
-  padding: 10px 16px;
-  border-radius: 999px;
-  background: var(--card);
-  color: var(--ink);
-  font-weight: 600;
-  text-decoration: none;
-  box-shadow: 0 2px 6px rgb(0 0 0 / 0.15);
+  /* A picture door (RW14 slice 7), not a text pill: it squashes on touch-down like the canvas buttons. */
+  display: block;
+  line-height: 0;
+  transform-origin: 50% 100%;
+  transition: transform 0.18s cubic-bezier(0.3, 1.8, 0.5, 1);
+  -webkit-tap-highlight-color: transparent;
 }
+.classic-link[hidden] { display: none; }
+.classic-link:active { transform: scale(1.07, 0.86); transition-duration: 0.05s; }

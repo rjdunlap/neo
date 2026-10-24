@@ -25,6 +25,8 @@ export const RAINBOW: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue',
 
 export const ink = 0x2b2b3a;
 export const cream = 0xfff4e3;
+/** The ground shadow under a button or card (RW14 slice 7), drawn at low alpha. */
+export const shadow = 0x2b2440;
 export const cheek = 0xff8fa3;
 export const grass = 0xddf2cf;
 export const wood = { fill: 0xd9a066, line: 0x9c6b3c, light: 0xf0c995 };
