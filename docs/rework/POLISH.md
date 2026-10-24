@@ -11,7 +11,7 @@ Seen on the dev server at 1024 × 768 and 768 × 1024, a new preschool player at
 | Where | What it looks like now | Why it reads unfinished |
 | --- | --- | --- |
 | **First run** (`HatchScene`) | The illustrated R08 egg on a flat cream screen; the egg is small in portrait | It is a new player's first screen, and the barest one in the game |
-| **Every scene change** (`App.show`) | Each route fades to flat cream and back (0.22 s + 0.3 s) | Every tap blinks through an empty screen; nothing says where she is going |
+| **Every scene change** (`App.show`) | ~~Each route fades to flat cream and back (0.22 s + 0.3 s)~~ Resolved 2026-10-23 ([slice 9](#slice-9-moving-between-screens)): grow, shrink or crossfade, no bare colour | Chooser, couch and the hatch name field (DOM overlays) still snap |
 | **Home** (`HomeScene`) | The R06 illustrated backdrop with the illustrated sprout: the best screen | Its three exits are flat coloured circles; "Island games" is a text pill |
 | **Explore and Places** | The home backdrop behind flat icon cards with text labels; Places is eleven small icon cards | A place is a picture of an icon, not a view of the place |
 | **Locations** (11, `LocationScene`) | Code-drawn gradient hills, a smiling code-drawn sun, scenery shapes; a sparkle on every unplayed spot | Flat beside the illustrated creatures. For a new player every spot sparkles, so the mark means nothing. In Rainbow Meadow her own sprout appeared twice, as the resident and as the guide (fixed in slice 2) |
@@ -106,6 +106,8 @@ _Built 2026-10-23 ([PR #905](https://github.com/rjdunlap/neo/pull/905)): `SaveDa
 - **Check tier:** shell and save. Typecheck, unit tests, build, `BROWSER_SUITE=home` filtered to Explore, and the offline check (a save field).
 
 ### Slice 9: moving between screens
+
+_Built 2026-10-23 ([PR #906](https://github.com/rjdunlap/neo/pull/906)): `App.show` no longer fades through cream. It renders the leaving scene to a texture, destroys it at once, then grows the new scene out of the tapped box (`App.growFrom(node, route)`), shrinks the old picture into the box the new scene returns from `Scene.returnBox(key)` for the old scene's `Scene.transitionKey()` (`land:<id>`, `game:<id>`), or crossfades; 0.35 s grow/shrink, 0.3 s fade, rules and tests in `src/app/transition.ts`. Places cards, the slice-8 postcard, game cards and land spots grow; Back from a round and from a location shrink. Classic shares `App`, so its routes now crossfade. Not done: DOM-overlay scenes (chooser, couch, hatch name field) still snap their HTML in and out, as the picture captures only the canvas;  no iPad check of smoothness or texture cost (open)._
 
 - **Changes:** `App.show` gains an optional "from" point and picture. Opening a location from Places grows its postcard from the tapped card into the screen, and launching a game grows its spot. Back plays the reverse, about 0.35 s in all. A route without a point crossfades the old scene into the new one, with no flash of cream. Taps stay swallowed during the transition, as now.
 - **Files:** `src/app/App.ts`, `src/app/Scene.ts` (an optional snapshot of the old scene), `src/app/scenes/ExploreScene.ts`, `LandScene.ts`.

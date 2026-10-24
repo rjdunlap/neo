@@ -3,6 +3,7 @@ import { Particles } from '../art/particles';
 import { Tweener } from '../engine/tween';
 import type { View } from '../engine/view';
 import type { App } from './App';
+import type { Box } from './transition';
 import type { PauseAction } from './pause';
 
 export interface Updatable {
@@ -38,6 +39,19 @@ export abstract class Scene {
   /** Whether the Little surprises mix carries on into this scene: only its own round and the home spot it started from. */
   holdsMix(): boolean {
     return false;
+  }
+
+  /**
+   * What this screen is, for the screen after it (RW14 slice 9): a location says `land:<id>` and a round `game:<id>`, so
+   * the screen it goes back to can shrink it into the card or spot that opened it. Null: the change crossfades.
+   */
+  transitionKey(): string | null {
+    return null;
+  }
+
+  /** Where, in this freshly laid-out screen, the screen with `key` was opened from; null if it was not opened here. */
+  returnBox(_key: string): Box | null {
+    return null;
   }
 
   get view(): View {

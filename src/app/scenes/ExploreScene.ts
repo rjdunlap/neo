@@ -19,6 +19,7 @@ import { arrowIcon, houseIcon } from '../../ui/icons';
 import { ENTRY_NAMES, entryArt, fitArt } from '../../ui/origin-art';
 import { label } from '../../ui/text';
 import type { App } from '../App';
+import type { Box } from '../transition';
 import { Scene } from '../Scene';
 import { MixHost } from '../mix';
 import { mixSpotArt } from '../../ui/mix';
@@ -113,12 +114,12 @@ export class ExploreScene extends Scene {
     const visited = store.data.explore.last;
     if (!e && visited && this.ids.includes(visited)) {
       const name = landFor(visited).name;
-      const node = this.card(landmarkFor(visited), name, () => this.leave(() => this.app.go.land(visited), voice.say('result.back', { place: name })), EXPLORE_POSTCARD);
+      const node = this.card(landmarkFor(visited), name, (n) => this.leave(() => this.app.growFrom(n, () => this.app.go.land(visited)), voice.say('result.back', { place: name })), EXPLORE_POSTCARD);
       this.last = { id: visited, node };
       this.ui.addChild(node);
     }
     if (!e) this.cards = EXPLORE_ENTRIES.map((entry) => ({ kind: 'entry', entry, node: this.card(entryArt(entry), ENTRY_NAMES[entry], () => this.open(entry)) }));
-    else if (e === 'places') this.cards = this.ids.map((id) => ({ kind: 'place', id, node: this.card(landmarkFor(id), landFor(id).name, () => this.leave(() => this.app.go.land(id))) }));
+    else if (e === 'places') this.cards = this.ids.map((id) => ({ kind: 'place', id, node: this.card(landmarkFor(id), landFor(id).name, (n) => this.leave(() => this.app.growFrom(n, () => this.app.go.land(id)))) }));
     else if (e === 'family') this.cards = [{ kind: 'family', node: this.card(entryArt('family'), ENTRY_NAMES.family, () => this.leave(() => this.app.go.couch(false, { explore: 'family', page: 0 }))) }];
     else if (e === 'favorites' && !this.list.length) this.cards = [{ kind: 'entry', entry: 'all', node: this.card(entryArt('all'), ENTRY_NAMES.all, () => this.open('all')) }];
     else {
@@ -131,7 +132,7 @@ export class ExploreScene extends Scene {
         }
         const icon = this.track(c.game.hubIcon());
         this.icons.push(icon);
-        return { kind: 'game', mod: c.game, node: this.card(icon, c.game.name, () => this.launch(c.game)) };
+        return { kind: 'game', mod: c.game, node: this.card(icon, c.game.name, (n) => this.launch(c.game, n)) };
       });
     }
     const pages = e === 'favorites' || e === 'all' ? pageCount(this.list.length, this.signpost, this.lead) : 1;
@@ -177,7 +178,7 @@ export class ExploreScene extends Scene {
    * A 150-unit cream card (or the larger postcard, `size`) in the shared finish (RW14 slice 7) with its picture and its
    * name on a pill under it; it squashes and acts on touch-down, then springs back (`act` null: the caller handles touches).
    */
-  private card(art: Container, name: string, act: (() => void) | null, size = { w: EXPLORE_CARD, h: EXPLORE_CARD }): Container {
+  private card(art: Container, name: string, act: ((node: Container) => void) | null, size = { w: EXPLORE_CARD, h: EXPLORE_CARD }): Container {
     const node = new Container();
     const { w, h } = size;
     fitArt(art, Math.min(w, h) - 30);
@@ -192,7 +193,7 @@ export class ExploreScene extends Scene {
       sfx.tick();
       squash(node);
       spring(node, 110);
-      act();
+      act(node);
     }, { cooldown: 400 });
     return node;
   }
@@ -204,12 +205,18 @@ export class ExploreScene extends Scene {
   }
 
   /** A game says its title (or, outside her band, who it is for), then plays at the band nearest hers it has. */
-  private launch(mod: GameModule) {
+  private launch(mod: GameModule, node: Container) {
     const age = ageOf(mod, store.data.profile.band);
     const say = age === 'hers' ? voice.say(mod.titleLine) : voice.say('explore.other-age', { who: age === 'bigger' ? 'bigger kids' : 'little ones' });
     const entry = this.entry as 'favorites' | 'all';
     const origin = { explore: entry, page: this.page, ...(entry === 'all' && this.others ? { others: true } : {}) };
-    this.leave(() => this.app.go.game(mod.id, undefined, undefined, false, origin), say);
+    this.leave(() => this.app.growFrom(node, () => this.app.go.game(mod.id, undefined, undefined, false, origin)), say);
+  }
+
+  /** Back from a location or a round shrinks it into the card that opened it, when that card is on this page (RW14 slice 9). */
+  override returnBox(key: string): Box | null {
+    const card = this.cards.find((c) => (c.kind === 'place' && key === `land:${c.id}`) || (c.kind === 'game' && key === `game:${c.mod.id}`));
+    return card ? this.app.boxOf(card.node) : null;
   }
 
   /** The signpost turns All games between hers and the other ages, from the first page. */

@@ -171,3 +171,10 @@
 - Follow-on edits: READY ungated (11 lines) with 12 builds queued; 48 former gates moved to [DEVICE-CHECKS](../DEVICE-CHECKS.md#from-the-delegated-decisions-2026-10-23); AGENTS.md allows build-time Kokoro voice clips, a Sing-Along Barn tune exception and a grown-up wording rule; ROADMAP chunk 16, D4a and D4b set ready.
 - Ran: `node scripts/check-links.mjs`, `git diff --check`. Docs only; no code checks.
 - Not checked: each source edit was written by a subagent from its row and read back only by link check and spot checks, not line by line.
+
+## 2026-10-23 — Critter Sort levels 12–13: Same Kind, Different Sprouts (G4)
+
+- [PR #865](https://github.com/rjdunlap/neo/pull/865), `claude/critter-sort-sprouts`: little plants sorted by a stated big plant's leaf shape and petal marks, one hoop (12) then overlapping hoops with a leaf mat (13); pre-K and school.
+- Ran: typecheck; `critter-sort`, `howto` and registry vitest; full `npm test`: 2602 pass, 1 fail in `src/app/scenes/lab.test.ts` (Tinker Lab "prek landscape n=12"), which failed identically on `origin/main` then and was fixed there by [#877](https://github.com/rjdunlap/neo/pull/877); rerun green after merging `origin/main`.
+- Browser: `BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=12 TO_LEVEL=13` passed (wrong drops, hint, completion); portrait screenshot of 13 checked visually (the big plant moved above the example after the first look); `fingerdemo FINGER_ONLY=critter-sort` at levels 1, 12 and 13 passed.
+- Not run: build (no shared files), `world`, couch, offline; device speech and a child reading the plants ([open](../DEVICE-CHECKS.md)).

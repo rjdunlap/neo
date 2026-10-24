@@ -12,6 +12,10 @@
 
 - [ ] On an iPad, does the postcard above Explore's entries read as "back to my place", and is it clear of Back and Home in portrait?
 
+## Moving between screens (RW14 slice 9, 2026-10-23)
+
+- [ ] On an iPad, do the grow, shrink and crossfade between screens feel smooth, and does the full-screen snapshot cause no hitch or memory pressure? [PR #906](https://github.com/rjdunlap/neo/pull/906)
+
 ## Adventure Walk levels 1–3
 
 - [ ] On an iPad, hear the way words: are "across" and "around" clearly distinct in device speech?

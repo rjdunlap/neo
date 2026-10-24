@@ -1,10 +1,9 @@
-import { Application, Container, Graphics, type Renderer } from 'pixi.js';
+import { Application, Container, Graphics, Rectangle, Sprite, type Renderer, type Texture } from 'pixi.js';
 import { cream } from '../art/palette';
 import { initTextures } from '../art/textures';
 import { audio } from '../audio/engine';
 import { voice } from '../audio/voice';
 import { trackPointers } from '../engine/input';
-import { Tweener } from '../engine/tween';
 import { clampInsets, computeView, needsTurn, NO_INSETS, type Insets, type View } from '../engine/view';
 import { isParentPanelOpen, openParentPanel } from '../parent/panel';
 import { store } from '../progress/store';
@@ -20,6 +19,8 @@ import type { CourseId } from '../couch/courses';
 import type { WelcomeStep } from '../content/welcome';
 import type { ExploreEntry } from '../content/explore';
 import { mixMemory } from './discovery';
+import { chooseTransition, frameAt, TRANSITION_SECONDS, type Box, type Transition } from './transition';
+import { ease } from '../engine/tween';
 
 /**
  * A game round played as one story request: at the story's level, coming home to the story's scene. Without a
@@ -97,9 +98,13 @@ export class App {
 
   /** The scene on screen. */
   scene: Scene | null = null;
-  private readonly curtain = new Graphics();
-  private readonly tw = new Tweener();
+  /** Over the stage while a scene changes, swallowing taps; it draws nothing (RW14 slice 9: no screen blinks to cream). */
+  private readonly blocker = new Container();
   private switching = false;
+  /** The box of the card or spot just tapped, read once by the `show` its route calls (`growFrom`). */
+  private growBox: Box | null = null;
+  /** The change on screen: its kind, its progress, the old screen's picture and what it finishes. */
+  private moving: { how: Transition; t: number; layer: Container; picture: Sprite | null; done: () => void } | null = null;
   /** An invisible element whose padding is the safe area (see `#safe-area` in style.css). */
   private readonly probe = document.createElement('div');
   /** Cream over the strips the insets leave, so scenery the root draws past its edge never shows in them. */
@@ -131,7 +136,8 @@ export class App {
     });
     host.appendChild(this.pixi.canvas);
     this.pixi.stage.eventMode = 'static';
-    this.pixi.stage.addChild(this.root, this.frame, this.curtain, this.turn);
+    this.blocker.eventMode = 'none';
+    this.pixi.stage.addChild(this.root, this.frame, this.blocker, this.turn);
     initTextures(this.pixi.renderer);
     trackPointers();
     this.probe.id = 'safe-area';
@@ -148,17 +154,27 @@ export class App {
     this.pixi.ticker.add((t) => this.tick(Math.min(t.deltaMS / 1000, 0.05)));
   }
 
-  /** Fades through cream to the next scene. */
+  /**
+   * Shows the next scene without passing through a bare colour (RW14 slice 9). The old scene is pictured, then left and
+   * destroyed at once, before the new one starts. The new screen grows out of the box `growFrom` recorded for this
+   * route; Back shrinks the old picture into the box the new scene gives for where it came from (`returnBox`); any other
+   * change crossfades the old picture away over the new scene.
+   */
   async show(next: Scene) {
+    const from = this.growBox;
+    this.growBox = null;
     if (this.switching) return;
     this.switching = true;
     // Any scene other than the mix's own round or its home spot ends the mix.
     if (!next.holdsMix()) mixMemory.end();
     this.unpause();
-    this.curtain.eventMode = 'static'; // swallow taps mid-transition
+    this.blocker.eventMode = 'static'; // swallow taps mid-transition
     const old = this.scene;
+    let picture: Sprite | null = null;
+    let key: string | null = null;
     if (old) {
-      await this.tw.to(this.curtain, { alpha: 1 }, { duration: 0.22 });
+      key = old.transitionKey();
+      picture = this.picture(old);
       old.exit();
       this.root.removeChild(old.root);
       old.destroy();
@@ -168,10 +184,93 @@ export class App {
     next.resize(this.view);
     this.root.addChild(next.root);
     this.refreshTurn();
+    const how = picture ? chooseTransition(from, key ? next.returnBox(key) : null, this.view) : ({ kind: 'fade' } as const);
+    // A grow draws the new screen over the old picture; a shrink or fade draws the old picture over the new screen.
+    if (picture) this.root.addChildAt(picture, how.kind === 'grow' ? this.root.getChildIndex(next.root) : this.root.children.length);
+    const layer = how.kind === 'grow' ? next.root : picture ?? next.root;
     next.enter();
-    await this.tw.to(this.curtain, { alpha: 0 }, { duration: 0.3 });
-    this.curtain.eventMode = 'none';
+    await new Promise<void>((done) => {
+      this.moving = { how, t: 0, layer, picture, done };
+      this.step(0);
+    });
+    this.blocker.eventMode = 'none';
     this.switching = false;
+  }
+
+  /**
+   * Records the box of a tapped card or spot, then calls `route`: the scene it shows grows out of that box. The box is
+   * read only by a `show` the route calls at once; a route that shows nothing leaves no box behind for a later one.
+   */
+  growFrom(node: Container, route: () => void) {
+    this.growBox = this.boxOf(node);
+    try {
+      route();
+    } finally {
+      this.growBox = null;
+    }
+  }
+
+  /** Where `node` sits on the screen, in the root's logical units. */
+  boxOf(node: Container): Box {
+    const b = node.getBounds();
+    const a = this.root.toLocal({ x: b.minX, y: b.minY });
+    const z = this.root.toLocal({ x: b.maxX, y: b.maxY });
+    return { x: a.x, y: a.y, w: z.x - a.x, h: z.y - a.y };
+  }
+
+  /** The leaving scene as one picture the size of the view, drawn before it is destroyed. */
+  private picture(old: Scene): Sprite | null {
+    const { w, h, scale } = this.view;
+    try {
+      const texture: Texture = this.renderer.generateTexture({
+        target: old.root,
+        frame: new Rectangle(0, 0, w, h),
+        resolution: scale * this.renderer.resolution,
+      });
+      return new Sprite(texture);
+    } catch {
+      return null; // no picture (a lost context): the new scene simply appears
+    }
+  }
+
+  /** Moves the change on by `dt` seconds; at its end the layers settle where they belong and the picture is released. */
+  private step(dt: number) {
+    const m = this.moving;
+    if (!m) return;
+    m.t = Math.min(1, m.t + dt / TRANSITION_SECONDS[m.how.kind]);
+    const k = ease.outCubic(m.t);
+    const v = this.view;
+    if (m.how.kind === 'grow') {
+      const f = frameAt(m.how.from, v, k);
+      m.layer.position.set(f.x, f.y);
+      m.layer.scale.set(f.scale);
+      m.layer.alpha = Math.min(1, m.t * 2.5);
+    } else if (m.how.kind === 'shrink') {
+      const f = frameAt(m.how.into, v, 1 - k);
+      m.layer.position.set(f.x, f.y);
+      m.layer.scale.set(f.scale);
+      m.layer.alpha = 1 - Math.max(0, m.t - 0.4) / 0.6;
+    } else if (m.picture) m.layer.alpha = 1 - k;
+    if (m.t < 1) return;
+    this.settle();
+  }
+
+  /** Ends the change at once (its last frame, a resize or a new view): the new scene full size, the picture gone. */
+  private settle() {
+    const m = this.moving;
+    if (!m) return;
+    this.moving = null;
+    const scene = this.scene;
+    if (scene) {
+      scene.root.position.set(0, 0);
+      scene.root.scale.set(1);
+      scene.root.alpha = 1;
+    }
+    if (m.picture) {
+      m.picture.parent?.removeChild(m.picture);
+      m.picture.destroy({ texture: true, textureSource: true });
+    }
+    m.done();
   }
 
   private applyView() {
@@ -188,7 +287,9 @@ export class App {
     this.root.position.set(this.insets.left, this.insets.top);
     // Grown-up DOM screens (couch play) grow with the window so they stay readable from a couch.
     document.documentElement.style.setProperty('--u', String(Math.min(2.2, Math.max(1, this.view.scale))));
-    this.curtain.clear().rect(0, 0, w, h).fill(cream);
+    this.blocker.hitArea = new Rectangle(0, 0, w, h);
+    // A change on screen ends at once: its picture was the old size.
+    this.settle();
     this.drawFrame(w, h);
     this.turn.layout(w, h);
     this.refreshTurn();
@@ -280,7 +381,7 @@ export class App {
   }
 
   private tick(dt: number) {
-    this.tw.update(dt);
+    this.step(dt);
     if (this.turning) {
       this.turn.update(dt);
       return;
