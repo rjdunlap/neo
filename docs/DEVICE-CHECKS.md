@@ -1,5 +1,13 @@
 # Needs a person or a device
 
+## Second Chance Shed levels 1–4 (nature-sustainability N2, 2026-10-24)
+
+- [ ] With a two-year-old: does she drag the first scrap into the one worm bin unprompted, and does the sprout read as the result?
+- [ ] Do the four pictured keys (worm bin, shelf, mending table, Remake machine) read without speech?
+- [ ] Does "whole" against "squashed" read from the drawings alone (the box and tub drawn whole, the can drawn squashed)?
+- [ ] On an iPad, hear each place's reason line ("I only munch food bits" and the others) in device speech.
+- [ ] Does a child take the island's Remake machine for a real recycling bin? The card tells grown-ups to check their own town's rules; listen for what she says.
+
 ## Who Am I? levels 1–3 (zoo animals Z3, 2026-10-24)
 
 - [ ] On an iPad, hear the clue lines ("I have feathers", "I feed my babies milk" and the miss reasons) in device speech (the definition wanted this before merge; the 2026-10-23 delegation made the source check the only gate, so it stays open).
