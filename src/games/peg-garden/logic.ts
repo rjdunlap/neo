@@ -92,7 +92,9 @@ export function grid(shape: BoardShape = 'rows'): { x: number; y: number }[] {
 
 export function makeBoard(plan: PegPlan, rng: Rng, shape: BoardShape = 'rows'): PegSpot[] {
   if (plan.mode === 'big') return BIG_SPOTS.map((p): PegSpot => ({ ...p, kind: 'plain', r: BIG_PEG }));
-  const spots = rng.shuffle(grid(shape)).slice(0, plan.pegs).map((p): PegSpot => ({ ...p, kind: 'plain' }));
+  // Into the cup keeps its buds a pearl's width above the cups along the sand.
+  const places = plan.mode === 'cup' ? grid(shape).filter((p) => p.y + BOARD.peg + 2 * BOARD.ball < CUP_TOP) : grid(shape);
+  const spots = rng.shuffle(places).slice(0, plan.pegs).map((p): PegSpot => ({ ...p, kind: 'plain' }));
   // Specials and numbers sit in the middle rows, where an aimed shot can reach them.
   const reachable = rng.shuffle(spots.filter((s) => s.x > 80 && s.x < BOARD.w - 80));
   if (plan.mode === 'color') reachable.slice(0, plan.count).forEach((s) => (s.kind = 'special'));
@@ -216,6 +218,8 @@ export const guided = (mode: PegMode, stalled: number, hinting: boolean) =>
 
 /** Cups along the sand, side by side across the whole board, so every pearl that rolls out lands in one of them. */
 export const CUPS = 4;
+/** The cups' rims, in board units. */
+export const CUP_TOP = BOARD.h - 56;
 export const CUP_W = BOARD.w / CUPS;
 /** The cup a pearl leaving the board at `x` falls into. */
 export const cupAt = (x: number) => Math.max(0, Math.min(CUPS - 1, Math.floor(x / CUP_W)));
@@ -247,20 +251,33 @@ export function landingTable(world: BallWorld): { angle: number; cup: number | n
 }
 
 /**
- * An aim that lands in `cup` with room to spare: the middle of the widest run of neighbouring aims that all land there,
- * if that run reaches `CUP_MARGIN` either side; otherwise null.
+ * An aim that lands in `cup` with room to spare: a sampled aim (whose landing is exact) whose neighbours `CUP_MARGIN` either
+ * side land there too, checked by fresh shots since a shot between samples can bounce anywhere. Aims nearest the middle of
+ * the widest run of samples in that cup are tried first; null when none has the margin.
  */
-export function aimInto(table: { angle: number; cup: number | null }[], cup: number): number | null {
-  let best: { from: number; to: number } | null = null;
+export function aimInto(world: BallWorld, table: { angle: number; cup: number | null }[], cup: number): number | null {
+  const runs: { from: number; to: number }[] = [];
   for (let i = 0; i < table.length; i++) {
     if (table[i].cup !== cup) continue;
     let j = i;
     while (j + 1 < table.length && table[j + 1].cup === cup) j++;
-    if (!best || table[j].angle - table[i].angle > best.to - best.from) best = { from: table[i].angle, to: table[j].angle };
+    runs.push({ from: i, to: j });
     i = j;
   }
-  if (!best || best.to - best.from < 2 * CUP_MARGIN) return null;
-  return (best.from + best.to) / 2;
+  // Only samples with sampled neighbours in the cup across the whole margin are worth a fresh check.
+  const span = Math.ceil(CUP_MARGIN / CUP_STEP);
+  runs.sort((a, b) => b.to - b.from - (a.to - a.from));
+  for (const r of runs) {
+    const mid = (r.from + r.to) / 2;
+    const order = Array.from({ length: r.to - r.from + 1 }, (_, k) => r.from + k)
+      .filter((k) => k - span >= r.from && k + span <= r.to)
+      .sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid));
+    for (const k of order) {
+      const a = table[k].angle;
+      if (landing(world, a - CUP_MARGIN) === cup && landing(world, a + CUP_MARGIN) === cup) return a;
+    }
+  }
+  return null;
 }
 
 /**
@@ -270,7 +287,7 @@ export function aimInto(table: { angle: number; cup: number | null }[], cup: num
 export function makeCupRound(plan: PegPlan, rng: Rng, shape: BoardShape) {
   let spots = makeBoard(plan, rng, shape);
   let table = landingTable(worldOf(spots));
-  for (let tries = 0; tries < 30 && !Array.from({ length: CUPS }, (_, c) => aimInto(table, c)).every((a) => a !== null); tries++) {
+  for (let tries = 0; tries < 30 && !Array.from({ length: CUPS }, (_, c) => aimInto(worldOf(spots), table, c)).every((a) => a !== null); tries++) {
     spots = makeBoard(plan, rng, shape);
     table = landingTable(worldOf(spots));
   }

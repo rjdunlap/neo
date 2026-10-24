@@ -11,7 +11,7 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, Spot, TouchIntent } from '../types';
 import { idle, type CouchControls } from '../../engine/controller';
-import { AIM_LIMIT, aimAt, aimInto, aimVelocity, blooms, BOARD, CUP_W, cupAt, cupCentre, CUPS, CUTOFF, driftOf, dropAt, guided, ledgeX, makeBoard, makeCupRound, pickTheme, planFor, SAMPLE, targets, TRAY, traySlot, worldOf, type Backdrop, type BoardShape, type PegPlan, type PegSpot } from './logic';
+import { AIM_LIMIT, aimAt, aimInto, aimVelocity, blooms, BOARD, CUP_TOP, CUP_W, cupAt, cupCentre, CUPS, CUTOFF, driftOf, dropAt, guided, ledgeX, makeBoard, makeCupRound, pickTheme, planFor, SAMPLE, targets, TRAY, traySlot, worldOf, type Backdrop, type BoardShape, type PegPlan, type PegSpot } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { ease } from '../../engine/tween';
 
@@ -343,7 +343,7 @@ class PegGarden implements Game {
       // After the last wanted flower the round is only waiting for the praise to end.
       if (this.target === undefined) return null;
       const finger = (a: number): Spot => ({ on: this.touch, x: BOARD.w / 2 + Math.sin(a) * 200, y: 40 + Math.cos(a) * 200 });
-      const to = mode === 'cup' ? aimInto(this.table, this.askedCup) : aimAt(this.world, this.buds.findIndex((b) => b.spot.kind === this.target), this.aim);
+      const to = mode === 'cup' ? aimInto(this.world, this.table, this.askedCup) : aimAt(this.world, this.buds.findIndex((b) => b.spot.kind === this.target), this.aim);
       return { trace: finger(this.aim), via: [finger(to ?? 0)] };
     }
     if (mode === 'drop') return { tap: { on: this.touch, x: BOARD.w * DROP_AT[this.shots % DROP_AT.length], y: 40 } };
@@ -578,7 +578,7 @@ class PegGarden implements Game {
     for (let i = 0; i < CUPS; i++) {
       const sw = swatch[CUP_COLORS[i]];
       const x = i * CUP_W + 10;
-      f.roundRect(x, BOARD.h - 56, CUP_W - 20, 54, 18).fill(sw.light).stroke({ width: 5, color: sw.line });
+      f.roundRect(x, CUP_TOP, CUP_W - 20, 54, 18).fill(sw.light).stroke({ width: 5, color: sw.line });
       const n = this.dots[i];
       for (let d = 0; d < n; d++) f.circle(cupCentre(i) + (d - (n - 1) / 2) * 26, BOARD.h - 28, 9).fill(0xffffff).stroke({ width: 3, color: ink });
     }

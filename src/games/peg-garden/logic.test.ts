@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { simulate, stepBall, type Ball, type BallWorld } from '../../engine/ball';
 import { Rng } from '../../engine/random';
+import { CUP_MARGIN, CUP_TOP, CUP_W, CUPS, CUTOFF, SAMPLE, aimInto, cupAt, cupCentre, landing, makeCupRound, worldOf } from './logic';
 import { AIM_LIMIT, BIG_LEVEL, BIG_PEG, BIG_PLAN, aimAt, aimVelocity, BACKDROPS, blooms, BOARD, DRIFT, EDGE, driftOf, dropAt, grid, guided, ledgeX, makeBoard, pickTheme, PLANS, planFor, SHAPES, STALL_AT, targets, TRAY, traySlot } from './logic';
 
 describe('Peg Garden', () => {
@@ -258,5 +259,94 @@ describe('Peg Garden', () => {
   it('a stuck tapper on level 8 is guided over a waiting flower', () => {
     expect(guided('big', STALL_AT, false)).toBe(true);
     expect(guided('big', 0, false)).toBe(false);
+  });
+});
+
+describe('Peg Garden level 6, Into the cup', () => {
+  const SEEDS = Array.from({ length: 10 }, (_, i) => i * 7 + 1);
+  const rounds = SHAPES.flatMap((shape) => SEEDS.map((seed) => ({ shape, seed, round: makeCupRound(planFor(6), new Rng(seed), shape) })));
+
+  it('level 6 is the cup plan', () => {
+    expect(planFor(6).mode).toBe('cup');
+    expect(PLANS[5].mode).toBe('cup');
+  });
+
+  it('cups tile the whole board width and their centres map back to themselves', () => {
+    expect(cupAt(0)).toBe(0);
+    expect(cupAt(BOARD.w - 0.001)).toBe(CUPS - 1);
+    expect(cupAt(-50)).toBe(0);
+    expect(cupAt(BOARD.w + 50)).toBe(CUPS - 1);
+    expect(CUP_W * CUPS).toBeCloseTo(BOARD.w);
+    for (let i = 0; i < CUPS; i++) {
+      expect(cupAt(cupCentre(i))).toBe(i);
+      expect(cupAt(i * CUP_W)).toBe(i);
+    }
+  });
+
+  it('every round has plain buds, dots 1..CUPS once each, and distinct asks', () => {
+    const plan = planFor(6);
+    for (const { shape, seed, round } of rounds) {
+      const tag = `${shape} ${seed}`;
+      expect(round.spots.length, tag).toBe(plan.pegs);
+      for (const s of round.spots) { expect(s.kind, tag).toBe('plain'); expect(s.y + BOARD.peg + 2 * BOARD.ball, tag).toBeLessThan(CUP_TOP); }
+      expect([...round.dots].sort(), tag).toEqual(Array.from({ length: CUPS }, (_, i) => i + 1));
+      expect(round.asks.length, tag).toBe(plan.count);
+      expect(new Set(round.asks).size, tag).toBe(plan.count);
+      for (const a of round.asks) {
+        expect(a, tag).toBeGreaterThanOrEqual(1);
+        expect(a, tag).toBeLessThanOrEqual(CUPS);
+      }
+    }
+  });
+
+  it('every cup is reachable with room to spare, proved by fresh simulations at the margins', () => {
+    for (const { shape, seed, round } of rounds) {
+      const world = worldOf(round.spots);
+      for (let c = 0; c < CUPS; c++) {
+        const a = aimInto(worldOf(round.spots), round.table, c);
+        expect(a, `${shape} ${seed} cup ${c}`).not.toBeNull();
+        for (const d of [-CUP_MARGIN, 0, CUP_MARGIN]) expect(landing(world, a! + d), `${shape} ${seed} cup ${c} d ${d}`).toBe(c);
+      }
+    }
+  });
+
+  it("the ghost finger's aim lands each ask in the cup with that many dots", () => {
+    for (const { shape, seed, round } of rounds) {
+      const world = worldOf(round.spots);
+      for (const ask of round.asks) {
+        const cup = round.dots.indexOf(ask);
+        expect(cup, `${shape} ${seed}`).toBeGreaterThanOrEqual(0);
+        const a = aimInto(worldOf(round.spots), round.table, cup);
+        expect(a, `${shape} ${seed} ask ${ask}`).not.toBeNull();
+        expect(landing(world, a!), `${shape} ${seed} ask ${ask}`).toBe(cup);
+      }
+    }
+  });
+
+  it("the game's own stepping (SAMPLE steps from the shot start) lands where landing() says", () => {
+    for (const { shape, seed, round } of rounds.filter((r) => r.seed <= 22)) {
+      const world = worldOf(round.spots);
+      const angles = [-1, -0.6, -0.2, 0, 0.3, 0.7, 1.1, ...Array.from({ length: CUPS }, (_, c) => aimInto(worldOf(round.spots), round.table, c)!)];
+      for (const a of angles) {
+        const b: Ball = { x: BOARD.w / 2, y: 40, ...aimVelocity(a), r: BOARD.ball };
+        let samples = 0;
+        while (b.y - b.r < BOARD.h && samples < CUTOFF / SAMPLE) {
+          stepBall(b, world, SAMPLE);
+          samples++;
+        }
+        const cup = b.y - b.r >= BOARD.h ? cupAt(b.x) : null;
+        expect(cup, `${shape} ${seed} angle ${a}`).toBe(landing(world, a));
+      }
+    }
+  });
+
+  it('the same seed gives the same round', () => {
+    for (const shape of SHAPES) {
+      for (const seed of [3, 11, 29]) {
+        const x = makeCupRound(planFor(6), new Rng(seed), shape);
+        const y = makeCupRound(planFor(6), new Rng(seed), shape);
+        expect(y, `${shape} ${seed}`).toEqual(x);
+      }
+    }
   });
 });

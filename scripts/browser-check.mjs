@@ -6798,7 +6798,7 @@ async function batch() {
   }
 
   // Peg Garden: tap to drop; aim by dragging. Shots are chosen by simulating the real physics.
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 5) && (!only || only === 'pegs'); level++) {
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 6) && (!only || only === 'pegs'); level++) {
     await launch('peg-garden', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -6851,6 +6851,32 @@ async function batch() {
         // The hint shows where to act: a ring on the ledge, and a tap anywhere lets the pearl go there; a tap while it falls adds nothing.
         if (!g.finished && g.hintX === null) throw new Error('Peg color hint has no ledge ring');
         for (let guard = 0; guard < 40 && !g.finished; guard++) { const b = g.buds.find((b) => b.spot.kind === 'special' && !b.bloomed); if (!b) break; await drop(b.x); }
+        return;
+      }
+      if (g.plan.mode === 'cup') {
+        // Into the cup: aim with the landing table, as the ghost finger does. Two shots into another cup, then the hint, then hits.
+        const { aimInto } = await import('/src/games/peg-garden/logic.ts');
+        const into = async (cup) => {
+          await done();
+          const a = aimInto(g.world, g.table, cup);
+          if (a === null) throw new Error(`Peg cup ${cup} unreachable`);
+          const p = screen(BOARD.w / 2 + Math.sin(a) * 300, 40 + Math.cos(a) * 300);
+          const q = screen(BOARD.w / 2 + Math.sin(a) * 310, 40 + Math.cos(a) * 310);
+          await kit.drag([[p.x, p.y], [q.x, q.y]], 1, 30);
+          await kit.until(() => g.ball, 2000);
+          await done();
+        };
+        // Each shot into another cup is a miss with its count said.
+        for (let k = 0; k < 2; k++) { const before = g.misses; await into(g.dots.findIndex((d) => d !== g.target)); if (g.misses !== before + 1) throw new Error(`Peg cup wrong shot counted ${g.misses - before}`); }
+        if (g.misses !== 2 || g.hints !== 1 || !g.hinting) throw new Error(`Peg cup hint: ${g.misses} ${g.hints}`);
+        for (let guard = 0; guard < 8 && !g.finished; guard++) {
+          if (g.target === undefined) { await kit.sleep(300); continue; }
+          const goal = g.goal;
+          await into(g.dots.indexOf(g.target));
+          await done();
+          await kit.until(() => g.goal > goal || g.finished, 4000);
+        }
+        if (!g.path.length) throw new Error('Peg cup: no faint trail after a shot');
         return;
       }
       // A cancelled aim (a system gesture, a palm) lets nothing go.
