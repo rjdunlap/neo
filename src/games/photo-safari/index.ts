@@ -565,6 +565,8 @@ class PhotoSafari implements Game {
     if (this.busy || this.finished) return;
     // Any animal tapped before the meadow photo takes that photo; it is never a miss.
     if (this.phase === 'look') return void this.photographMeadow();
+    // While she judges a claim the photo is already taken; animal taps do nothing.
+    if (this.phase === 'judge') return;
     const t = this.target;
     const right = this.plan.mode === 'snap' || a === t;
     // Click! Every tap takes a picture; only the asked-for one goes in the album.
