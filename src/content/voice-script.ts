@@ -625,6 +625,8 @@ export const SCRIPT = {
   'neighbors.free': ['Tap the woodpecker to hear a call and an answer. Tap a frog to join in! The green arrow finishes our song.'],
   'neighbors.knock': ['Knock, knock! Tap the big tree and a frog answers.'],
   'neighbors.take': ['The woodpecker knocks, then it is your turn! Tap the glowing frog to answer.'],
+  'neighbors.call': ['You be the woodpecker! Knock on the tree, then stop and listen. The frog answers you.'],
+  'neighbors.call-again': ['Knock another call!'],
   'neighbors.my-turn': ['Your turn! Tap the glowing frog.'],
   'neighbors.turns': ['The bird calls, then the frogs answer. Listen, then play the frog pictures from left to right. Tap the green arrow when ready.'],
   'neighbors.rhythm': ['Listen to the bird and the frog reply. Now play the frog part, with short and long gaps. Tap the green arrow when ready.'],

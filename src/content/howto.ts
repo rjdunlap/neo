@@ -1286,6 +1286,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 2, text: 'Tap the woodpecker to hear its call, then tap frogs to answer.' },
       { from: 7, to: 7, text: 'Knock on the big tree. A frog answers every knock.' },
       { from: 8, to: 8, text: 'The woodpecker knocks. When the frog glows, tap it once to answer.' },
+      { from: 9, to: 9, text: 'Knock on the big tree, then stop. The frog answers your knocks with the gaps turned around.' },
       { from: 3, to: 3, text: 'Tap the woodpecker to hear its call, then answer with two or three frog notes.' },
       { from: 4, to: 4, text: 'Tap the woodpecker to hear its call, then play the pictured reply with the two frog voices.' },
       { from: 5, to: 5, text: 'Tap the woodpecker to hear its short call, then answer with a different long-and-short rhythm on the frogs.' },
@@ -1296,6 +1297,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 2, text: 'After eight frog taps, or sooner with the green arrow, the bird and the frogs sing a short song together and the round ends.' },
       { from: 7, to: 7, text: 'After eight knocks the bird and the frog sing a short song together and the round ends.' },
       { from: 8, to: 8, text: 'After three answers, the bird and the frog sing a short song together and the round ends.' },
+      { from: 9, to: 9, text: 'After three calls, the tree knocks the last call again, the frog answers once more and the round ends.' },
       { from: 3, to: 6, text: 'After three replies, the bird and the frogs sing a short song together; tap a frog to join in, then the round ends.' },
     ],
     note: [
