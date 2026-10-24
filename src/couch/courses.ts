@@ -138,10 +138,10 @@ const build: Record<CourseId, () => CourseInfo> = {
     },
   }),
   typing: () => ({
-    id: 'typing', game: 'pond-typing', level: 3, version: TYPING.typing.version, name: TYPING.typing.name, blurb: TYPING.typing.blurb,
-    card: 'Pond Typing, three ponds of bubbles on the keyboard: letters, words, then two words with a space. Every bubble waits.',
+    id: 'typing', game: 'pond-typing', level: 6, version: TYPING.typing.version, name: TYPING.typing.name, blurb: TYPING.typing.blurb,
+    card: 'Pond Typing, six ponds on the keyboard: letters, words, spaces, capitals, copying a line and mending it. Every bubble waits.',
     part: 'pond', unit: 'key', par: 'fewest', routes: false, best: typingBest('typing'), minimum: typingMinimum('typing'),
-    rule: 'Type every bubble with as few keys as you can: one for each letter and space. A wrong key counts too; nothing is timed.',
+    rule: 'Copy each bubble or mend its line. Each typed character counts, including a wrong one. Shift, arrows and Backspace are free; nothing is timed.',
     note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a pond starts it again, and the keys you pressed on it still count.',
     leaving: 'Leaving or refreshing starts the pond you are on again, and the keys you pressed on it still count. Finished ponds stay saved.',
     done: 'couch.course.typing',

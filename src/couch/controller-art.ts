@@ -25,6 +25,7 @@ export interface ControllerArt {
   el: SVGSVGElement;
   /** Light up exactly these parts. */
   light(parts: ReadonlySet<PadPart>): void;
+  lightTyped?(keys: readonly string[]): void;
 }
 
 /** A controller drawn in code, in the layout of a Pro Controller. Parts light up when `light` names them. */
@@ -124,3 +125,15 @@ export function keycaps(parts: PadPart[]): HTMLElement {
 
 /** What names the controls in a row of instructions: pictures of controller parts, or the keys. */
 export const prompts = (parts: PadPart[], place: 'tv' | 'laptop'): HTMLElement => place === 'tv' ? glyphs(parts) : keycaps(parts);
+
+/** Only the current typed key is printed, never an on-screen alphabet or a typing input. */
+export function typingKeyboardArt(): ControllerArt {
+  const art = keyboardArt();
+  const typed = svg('g', { class: 'typing-key' }, svg('rect', { x: 105, y: 28, width: 130, height: 50, rx: 9, class: 'part' }), Object.assign(svg('text', { x: 170, y: 61, 'text-anchor': 'middle', 'font-size': 20, class: 'key-label' }), { textContent: 'Letter' }));
+  art.el.append(typed);
+  return { ...art, lightTyped(keys) {
+    const key = keys[0];
+    typed.classList.toggle('on', !!key);
+    typed.querySelector('text')!.textContent = key === ' ' ? 'Space' : key || 'Letter';
+  } };
+}
