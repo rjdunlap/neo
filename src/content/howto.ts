@@ -1974,7 +1974,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 2, text: 'Tap the picture that rhymes with it.' },
       { from: 3, to: 3, text: 'Tap the two pictures that rhyme with each other.' },
       { from: 4, to: 4, text: 'Tap the picture that does not rhyme with the others.' },
-      { from: 5, to: 6, text: 'Listen to both clues, a sound ("it rhymes with bear") and a meaning ("you can sit on it"), and tap the one picture that fits both. Level 6 says the meaning first and adds a fourth picture.' },
+      { from: 5, to: 5, text: 'Listen to both clues, a sound ("it rhymes with bear") and then a meaning ("you can sit on it"), and tap the one picture of three that fits both.' },
+      { from: 6, to: 6, text: 'Listen to both clues, a meaning ("you can sit on it") and then a sound ("it rhymes with bear"), and tap the one picture of four that fits both.' },
       { from: 7, to: 7, text: 'The pet stars a picture. Tap a sound chip and a meaning chip that lead to it, then tap the pet\'s mouth to let it guess. A chip can be changed.' },
     ],
     finish: [
