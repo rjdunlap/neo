@@ -130,7 +130,7 @@ The sun, the snowflake and the dial are big, code-drawn Pixi shapes at least 100
 All slices are future work, each separate. Definition tiers use links and `git diff --check`; a built slice uses the activity tier in AGENTS.md.
 
 1. **Definition packet** (docs; **defined 2026-10-22**, [definition](../../definitions/melt-and-freeze.md)): freeze the substance table, dial settings and levels 1–4 in one file; recheck overlap.
-2. **Levels 1–4** (building: `claude/melt-freeze`): state table in `logic.ts` with rule tests (every change authored, reversible flag correct, the same substance in every state); a new game tier of checks.
+2. **Levels 1–4** (**built 2026-10-24**, [PR #943](https://github.com/rjdunlap/neo/pull/943)): state table in `logic.ts` with rule tests (every change authored, reversible flag correct, the same substance in every state); a new game tier of checks.
 3. **Levels 5–6**: predictions and the reversible sort; the journal entries.
 4. **Levels 7–9**: three states, the sealed-jar scale (shared with Seesaw Balance if possible) and the fair dial.
 5. **Particle Lens (levels 10–11)** after a science review of the dot picture.
@@ -139,4 +139,4 @@ All slices are future work, each separate. Definition tiers use links and `git d
 
 ## What was built and what ran
 
-Nothing was built. Docs only: Markdown links and `git diff --check`. NGSS pages were opened at their source for 2-PS1-1, 2-PS1-3, 2-PS1-4, 5-PS1-2, 5-PS1-4, MS-PS1-2 and MS-PS1-4; the PhET simulation page returned only navigation and was read through search summaries; the Toca Lab claims come from Common Sense Education, Engadget and search summaries, not from play. No device, child or science reviewer was involved, and the particle-diagram misconception risk is stated from general knowledge, not an opened study.
+Slice 2 built 2026-10-24 (PR #943): `src/games/melt-freeze/`, a new Bubble Beach game, levels 1–4 (ice; three things in turn; make it the way the card shows; a tray of four with a stone and a spoon that never change), four journal entries, a Kokoro title clip; 12 rule tests, the `meltfreeze` browser suite and the finger demo (levels 1 and 3) passed. The research above was docs only: Markdown links and `git diff --check`. NGSS pages were opened at their source for 2-PS1-1, 2-PS1-3, 2-PS1-4, 5-PS1-2, 5-PS1-4, MS-PS1-2 and MS-PS1-4; the PhET simulation page returned only navigation and was read through search summaries; the Toca Lab claims come from Common Sense Education, Engadget and search summaries, not from play. No device, child or science reviewer was involved, and the particle-diagram misconception risk is stated from general knowledge, not an opened study.
