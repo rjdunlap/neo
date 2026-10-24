@@ -1,3 +1,4 @@
+import { createTestContext } from '../test-browser.mjs';
 import { publicSave, waitForSave } from './storage.mjs';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
@@ -6,7 +7,7 @@ const islandUrl = (url) => (new URL(url).pathname === '/' ? new URL('classic/', 
 
 export async function classicOffline(browser) {
 await mkdir('test-results/offline', { recursive: true });
-const context = await browser.newContext({ viewport: { width: 1024, height: 768 } });
+const context = await createTestContext(browser, { viewport: { width: 1024, height: 768 } });
 const page = await context.newPage();
 const errors = [];
 page.on('pageerror', (error) => errors.push(error.message));

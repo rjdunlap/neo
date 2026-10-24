@@ -6,14 +6,14 @@
 //   GAME_ONLY=frog-hop,ferry-jam ROUNDS=9 node scripts/abandon-cards.mjs
 //
 // ROUNDS (default 3) is how many times every game is opened; 13 games at 9 rounds takes about 20 minutes.
-import { chromium } from 'playwright';
+import { launchTestBrowser, createTestContext } from './test-browser.mjs';
 // The island game is served at `classic/`; the site root is the creature-world rework. A bare origin gets `classic/`.
 const islandUrl = (url) => (new URL(url).pathname === '/' ? new URL('classic/', url).href : url);
 
 const only = process.env.GAME_ONLY?.split(',');
 const rounds = Number(process.env.ROUNDS || 3);
-const browser = await chromium.launch({ headless: true, ...(process.env.BROWSER_EXECUTABLE ? { executablePath: process.env.BROWSER_EXECUTABLE } : {}) });
-const page = await (await browser.newContext({ viewport: { width: 1024, height: 768 }, reducedMotion: 'reduce' })).newPage();
+const browser = await launchTestBrowser();
+const page = await (await createTestContext(browser, { viewport: { width: 1024, height: 768 }, reducedMotion: 'reduce' })).newPage();
 const errors = [];
 page.on('pageerror', (e) => {
   errors.push(e.stack || e.message);
