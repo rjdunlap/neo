@@ -306,7 +306,7 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### fluffy-salon 1: Customer variety and younger styling entries
 
-Status 2026-10-23: slices 3 and 4 (levels 6 and 7) are built ([PR #864](https://github.com/rjdunlap/neo/pull/864)); only slices 2 and 5 remain, so the batch is now two subtasks.
+Status 2026-10-23: slices 3 and 4 (levels 6 and 7) are built ([PR #864](https://github.com/rjdunlap/neo/pull/864)); only slices 2 and 5 remain, so the batch is now two subtasks. **Claimed 2026-10-24** by `claude/fluffy-salon-customers-pink` (slices 2 and 5 together; files `src/games/fluffy-salon/`, `src/content/voice-script.ts`, `src/content/howto.ts`, the salon case in the browser harness).
 
 - **`fluffy-salon`, customers, rooms and start looks, slice 2** (logic tier): seeded friends in the chair with `{who}` lines, seeded wall and cape colors, five free-play start looks. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 - **`fluffy-salon`, level 6 *Pat the fluff*, slice 3** (new interaction): no buttons, any touch grows the fur, the floof shake and a big mirror, the round finishes by itself; lap `order [6, 1, 2]`, toddler `order [6, 1, 2]`, `entryLevels: [6]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
