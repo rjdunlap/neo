@@ -3,6 +3,7 @@ import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
 import { puffs, starPoints } from '../../art/shapes';
+import type { Tag } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -145,6 +146,69 @@ export function picture(word: string): Container {
       break;
     default:
       g.circle(0, 0, 40).fill(0xeeeeee);
+  }
+  c.addChild(g);
+  return c;
+}
+
+/**
+ * A small sign for a meaning clue on a level-7 chip, about 90 units across: a shirt (wear), a bite (eat), a spoon (eat
+ * with), a seat (sit), a wheel (ride), a wing (fly), a ripple (swim), a heart (pet), a fluff (fur), a moon and star
+ * (sky), a leaf (grows), a box (holds), a keyhole (opens). Drawn in one ink so a sign never looks like a shelf picture.
+ */
+export function tagGlyph(tag: Tag): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const col = swatch.green.line;
+  const fill = swatch.green.light;
+  switch (tag) {
+    case 'wear':
+      g.poly([-22, -36, -46, -24, -38, -2, -26, -8, -26, 36, 26, 36, 26, -8, 38, -2, 46, -24, 22, -36, 0, -24]).fill(fill).stroke(line(col));
+      break;
+    case 'eat':
+      // A round thing with a bite out of its side.
+      g.circle(0, 0, 38).fill(fill).stroke(line(col));
+      g.circle(34, -16, 14).circle(38, 8, 12).fill(0xffffff);
+      break;
+    case 'eatwith':
+      g.ellipse(0, -18, 18, 24).fill(fill).stroke(line(col)).moveTo(0, 6).lineTo(0, 44).stroke(line(col, 9));
+      break;
+    case 'sit':
+      g.moveTo(-26, -40).lineTo(-26, 40).moveTo(-26, 4).lineTo(28, 4).lineTo(28, 40).stroke(line(col, 9));
+      break;
+    case 'ride':
+      g.circle(0, 0, 36).stroke(line(col, 9)).circle(0, 0, 8).fill(col);
+      for (let i = 0; i < 4; i++) g.moveTo(0, 0).lineTo(Math.cos((i * Math.PI) / 2) * 32, Math.sin((i * Math.PI) / 2) * 32);
+      g.stroke(line(col, 5));
+      break;
+    case 'fly':
+      g.moveTo(-40, 20).quadraticCurveTo(-30, -36, 40, -30).quadraticCurveTo(10, -16, 20, 0).quadraticCurveTo(-4, -2, 0, 14).quadraticCurveTo(-20, 8, -40, 20).closePath().fill(fill).stroke(line(col));
+      break;
+    case 'swim':
+      for (const y of [-18, 6, 30]) g.moveTo(-44, y).quadraticCurveTo(-22, y - 16, 0, y).quadraticCurveTo(22, y + 16, 44, y);
+      g.stroke(line(col, 7));
+      break;
+    case 'pet':
+      g.moveTo(0, 36).bezierCurveTo(-60, -6, -30, -50, 0, -18).bezierCurveTo(30, -50, 60, -6, 0, 36).closePath().fill(fill).stroke(line(col));
+      break;
+    case 'fur':
+      puffs(g, [[-22, 8, 20], [0, -12, 22], [22, 8, 20], [0, 18, 18]], fill, col, 6);
+      break;
+    case 'sky':
+      g.circle(-8, 0, 32).fill(fill).stroke(line(col)).circle(8, -10, 26).fill(0xffffff);
+      g.poly(starPoints(14, 6).map((p, i) => p + (i % 2 ? -24 : 30))).fill(col);
+      break;
+    case 'grows':
+      g.moveTo(-30, 34).quadraticCurveTo(-40, -30, 34, -38).quadraticCurveTo(30, 30, -30, 34).closePath().fill(fill).stroke(line(col));
+      g.moveTo(-30, 34).lineTo(16, -16).stroke(line(col, 4));
+      break;
+    case 'holds':
+      g.rect(-36, -14, 72, 50).fill(fill).stroke(line(col)).poly([-36, -14, -48, -34, 0, -24, 48, -34, 36, -14]).stroke(line(col));
+      break;
+    case 'opens':
+      g.roundRect(-36, -44, 72, 88, 12).fill(fill).stroke(line(col));
+      g.circle(0, -6, 12).fill(col).poly([-8, 0, 8, 0, 12, 26, -12, 26]).fill(col);
+      break;
   }
   c.addChild(g);
   return c;
