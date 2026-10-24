@@ -1,5 +1,12 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### RW14 slice 6: the duck pilot (2026-10-23)
+
+[PR #904](https://github.com/rjdunlap/neo/pull/904), branch `codex/rw14-duck-pilot`: prepared the chosen R22 `duck-base-2` and `duck-portrait-2` via the READY command (full provenance, dimensions, hashes and reproduction in `src/art/friends/README.md`). Duck Pond's round, icon and sticker ducks use the base still, fitted to the prior feet/height, with frame-driven bob, hop squash and a resting tilt. The portrait is prepared but has no new UI consumer. Decode completion guards destroyed instances, a failed decode retains the drawn fallback, cached art attaches synchronously for immediately rendered stickers, and destroying a duck leaves the shared texture intact. Existing duck/pad hit circles, rules, hint accounting, round flow and routes are unchanged; other duck games retain their drawings.
+
+Proof: [verification](../VERIFICATION.md#2026-10-23--rw14-slice-6-the-duck-pilot). Open: developer/iPad judgement with slice 4, device speech and child's response; no broader art rollout or new generation.
+
+
 ### RW14 slice 7: buttons and cards with a finish (2026-10-23)
 
 [PR #902](https://github.com/rjdunlap/neo/pull/902), branch `claude/rw14-button-finish`: `src/ui/buttons.ts` exports `finish(shape, sw, face?)` (one Graphics: short ground shadow in the new `shadow` tone from `src/art/palette.ts`, a rim in `sw.line`, a two-tone face with a lip blended 35% toward `line`, and a soft upper-left highlight; circle or rounded rect), `squash(node)` (pressed pose 1.07 x 0.86) and `spring(node, delay)` (about 0.34 s back with one overshoot, stops if the node is destroyed or pressed again). `RoundButton` and `HoldButton` use it (child order unchanged; `HoldButton` squashes on pointer-down and springs on lift, cancel or completion), so Home's exits wear it unchanged. Explore's entry cards and Places' postcards use a 150-unit rounded-rect finish and squash on touch-down; the Little surprises card squashes for the whole hold. The "Island games" pill (`.classic-link`) is a 56 x 63 px inline-SVG door with `aria-label` and `title`, same class, href, position and hiding. Hit areas unchanged (`src/ui/finish.test.ts`). The finish applies app-wide, so `classic/`'s RoundButtons get it too.
@@ -1814,7 +1821,7 @@ Typecheck,29 rule tests (300 seeded key mappings and valid delivery recipients),
 
 [PR #864](https://github.com/rjdunlap/neo/pull/864), `claude/fluffy-salon-pat-snip` ([deep dive](../deep-dives/fluffy-salon.md#build-slices-in-order)). Lap and toddler are now `order [6, 1, 7, 2]`, range 1–7, `entryLevels [6, 7]`. Level 6, *Pat the fluff*: no buttons; any touch grows fur from short fuzz; when the average length reaches 120 the pet does the floof shake and a big mirror (radius 70, top middle) appears; a tap on it finishes, or after 20 quiet seconds the pet looks by itself. No miss or hint is possible. Level 7, *Snip snip*: two big buttons, grow and snip (radius 54); the fur starts long and curly; the mirror is free play; no miss or hint. How-to card and voice lines added for both. `scripts/browser-check.mjs` `salon` now covers levels 6 and 7 (default `TO_LEVEL` 7). Slices 2 (customers, rooms, start looks) and 5 (level 8) are still queued.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-23--fluffy-salon-levels-6-and-7-pat-the-fluff-and-snip-snip-slices-34).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--fluffy-salon-levels-6-and-7-pat-the-fluff-and-snip-snip-slices-34).
 
 ## Critter Sort levels 12-13, Same Kind, Different Sprouts (genetics G4, 2026-10-23)
 
