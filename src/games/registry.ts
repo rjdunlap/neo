@@ -123,6 +123,7 @@ import { whoAmI } from './who-am-i';
 import { secondChanceShed } from './second-chance-shed';
 import { gearGarden } from './gear-garden';
 import { meadowPens } from './meadow-pens';
+import { wordGlue } from './word-glue';
 import { sandTable } from './sand-table';
 import { puddleLens } from './puddle-lens';
 import { adventureWalk } from './adventure-walk';
@@ -240,6 +241,7 @@ export const GAMES: GameModule[] = [
   secondChanceShed,
   gearGarden,
   meadowPens,
+  wordGlue,
   sandTable,
   puddleLens,
   adventureWalk,
