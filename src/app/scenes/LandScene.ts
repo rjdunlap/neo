@@ -1,4 +1,5 @@
-import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, type Sprite } from 'pixi.js';
+import { placePicture } from '../../art/locations';
 import { makeHost, PageArrow, Signpost } from '../../art/lands';
 import { swatch } from '../../art/palette';
 import { makeCompanion } from '../../creatures/companion';
@@ -85,6 +86,11 @@ export interface LandOptions {
   /** A backdrop in place of the land's own (a location's night sky), and the heading's colour over it. */
   backdrop?: BackdropStyle;
   headingColor?: number;
+  /**
+   * A location's illustrated picture (RW14 slice 4), laid over the backdrop with its horizon on the ground line. With it
+   * the code-drawn sun, clouds and scenery are off and each game stands on a cream plate.
+   */
+  backdropImage?: Sprite;
   /** Whether tapping the host says the land's line (or `hostLine`) before its suggestion. */
   hostSaysLine?: boolean;
   /** What the host says then, in place of the land's line: a resident's hello (RW14). */
@@ -151,7 +157,7 @@ export class LandScene extends Scene {
   ) {
     super(app);
     this.land = landFor(id);
-    this.drawScenery = options.scenery ?? (id === 'barnyard' ? drawBarnyard : null);
+    this.drawScenery = options.backdropImage ? null : options.scenery ?? (id === 'barnyard' ? drawBarnyard : null);
     this.scenery = this.drawScenery ? new Graphics() : null;
     this.band = store.data.profile.band;
     const host = options.host ? options.host() : { ...makeHost(this.land), hitArea: new Circle(0, -125, 115) };
@@ -174,9 +180,13 @@ export class LandScene extends Scene {
     lastLandId = this.id;
     this.heading.text = this.land.name;
     if (this.options.headingColor !== undefined) this.heading.style.fill = this.options.headingColor;
-    this.backdrop = this.track(new Backdrop(this.options.backdrop ?? this.land.backdrop, this.view));
+    const style = this.options.backdrop ?? this.land.backdrop;
+    const picture = this.options.backdropImage;
+    // Under a picture the backdrop only fills and keeps the ground line: no sun or clouds to draw or to take a tap.
+    this.backdrop = this.track(new Backdrop(picture ? { ...style, sun: false, clouds: 0 } : style, this.view));
     this.glow.eventMode = 'none';
     this.content.addChild(this.backdrop);
+    if (picture) this.content.addChild(picture);
     if (this.scenery) {
       this.scenery.eventMode = 'none';
       this.content.addChild(this.scenery);
@@ -184,7 +194,7 @@ export class LandScene extends Scene {
     this.content.addChild(this.glow, this.field);
     const build = (mods: typeof GAMES, into: Landmark[]) => {
       for (const mod of mods) {
-        const mark = makeLandmark(mod, BOX, store.isNew(mod.id), spotRect({ x: 0, y: 0 }, BOX));
+        const mark = makeLandmark(mod, BOX, store.isNew(mod.id), spotRect({ x: 0, y: 0 }, BOX), !!this.options.backdropImage);
         this.track(mark.icon);
         if (mark.sparkle) this.track(mark.sparkle);
         onTap(mark.node, () => this.launch(mark));
@@ -253,6 +263,7 @@ export class LandScene extends Scene {
 
   resize(v: View) {
     this.backdrop.resize(v);
+    if (this.options.backdropImage) placePicture(this.options.backdropImage, this.id, v, this.backdrop.groundY);
     const arrows = { prev: this.page > 0, next: this.page < this.pages.length - 1 };
     const layout = landLayout(this.showing.length, !!this.sign, v, this.backdrop.groundY, arrows);
     this.layout = layout;

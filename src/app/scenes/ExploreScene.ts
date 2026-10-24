@@ -1,7 +1,8 @@
-import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
+import { Container, Graphics, Rectangle, Sprite, type FederatedPointerEvent } from 'pixi.js';
 import { landmarkFor, Signpost } from '../../art/lands';
 import { cream, ink, swatch } from '../../art/palette';
 import { homeBackdrop } from '../../art/home/backdrop';
+import { locationCard } from '../../art/locations';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
@@ -27,6 +28,20 @@ import { LOCATIONS } from './LocationScene';
 
 /** The built locations, in the order RW13 built them (the page holds every one there will be). */
 export const exploreIds = (): LandId[] => (Object.keys(LOCATIONS) as LandId[]).slice(0, EXPLORE_MAX);
+
+/** A place's picture on its card: its prepared postcard (RW14 slice 4) on a soft rim, else its code-drawn landmark. */
+export function placeArt(id: LandId): Container {
+  const tex = locationCard(id);
+  if (!tex) return landmarkFor(id);
+  const art = new Container();
+  const pic = new Sprite(tex);
+  pic.anchor.set(0.5);
+  const rim = new Graphics().roundRect(-tex.width / 2 - 12, -tex.height / 2 - 12, tex.width + 24, tex.height + 24, 36).fill(swatch.green.line);
+  const mask = new Graphics().roundRect(-tex.width / 2, -tex.height / 2, tex.width, tex.height, 28).fill(0xffffff);
+  pic.mask = mask;
+  art.addChild(rim, pic, mask);
+  return art;
+}
 
 /** What one card on the screen stands for, so a script can find and press it. */
 export type ExploreCard =
@@ -114,12 +129,12 @@ export class ExploreScene extends Scene {
     const visited = store.data.explore.last;
     if (!e && visited && this.ids.includes(visited)) {
       const name = landFor(visited).name;
-      const node = this.card(landmarkFor(visited), name, (n) => this.leave(() => this.app.growFrom(n, () => this.app.go.land(visited)), voice.say('result.back', { place: name })), EXPLORE_POSTCARD);
+      const node = this.card(placeArt(visited), name, (n) => this.leave(() => this.app.growFrom(n, () => this.app.go.land(visited)), voice.say('result.back', { place: name })), EXPLORE_POSTCARD);
       this.last = { id: visited, node };
       this.ui.addChild(node);
     }
     if (!e) this.cards = EXPLORE_ENTRIES.map((entry) => ({ kind: 'entry', entry, node: this.card(entryArt(entry), ENTRY_NAMES[entry], () => this.open(entry)) }));
-    else if (e === 'places') this.cards = this.ids.map((id) => ({ kind: 'place', id, node: this.card(landmarkFor(id), landFor(id).name, (n) => this.leave(() => this.app.growFrom(n, () => this.app.go.land(id)))) }));
+    else if (e === 'places') this.cards = this.ids.map((id) => ({ kind: 'place', id, node: this.card(placeArt(id), landFor(id).name, (n) => this.leave(() => this.app.growFrom(n, () => this.app.go.land(id)))) }));
     else if (e === 'family') this.cards = [{ kind: 'family', node: this.card(entryArt('family'), ENTRY_NAMES.family, () => this.leave(() => this.app.go.couch(false, { explore: 'family', page: 0 }))) }];
     else if (e === 'favorites' && !this.list.length) this.cards = [{ kind: 'entry', entry: 'all', node: this.card(entryArt('all'), ENTRY_NAMES.all, () => this.open('all')) }];
     else {
