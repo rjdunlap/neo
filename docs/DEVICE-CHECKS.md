@@ -1,5 +1,9 @@
 # Needs a person or a device
 
+## Illustrated Rainbow Meadow (RW14 slice 4, 2026-10-24)
+
+- [ ] On an iPad in both orientations ([draft PR #922](https://github.com/rjdunlap/neo/pull/922)): does the painted Rainbow Meadow read well behind the games, are the cream plates under each game readable, and do the horizon and landmarks (trees, rabbit, rocks) sit acceptably against the spots (games stand in front of the far band; the developer's call is in [WAITING-ON-DEVELOPER](WAITING-ON-DEVELOPER.md))? Does the Places postcard look right? Chrome proved the layout at four views and the flow only.
+
 ## Food Web Workshop levels 1-3 (2026-10-24)
 
 - [ ] On an iPad with a school-age child: can she drag a food badge between far stations (and turn a backwards arrow) comfortably in both orientations; is device speech for the `web.*` lines clear; and does she read the arrow as "the food goes to the eater" as intended? Chrome proved the flow, portrait targets of 100 units or more and the ghost finger only; understanding and a person's response are untested.
