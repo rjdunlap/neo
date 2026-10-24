@@ -417,6 +417,23 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'Too far and too close are both misses; turning the dial never is. Show a hint turns the dial for her and counts as a hint, once per question.' },
     ],
   },
+  'bond-beads': {
+    goal: 'Link beads together hand to hand until every hand is held.',
+    steps: [
+      'Drag from one bead to another to link them (or tap one bead, then the other), and tap a link to break it.',
+      { from: 1, to: 1, text: 'Link until every hand is held and all the beads are one piece.' },
+      { from: 2, to: 2, text: 'Build the shape on the card, then tap Check.' },
+      'The yellow arrow undoes one step; the round arrow takes every link apart.',
+    ],
+    finish: [
+      { from: 1, to: 1, text: 'Every hand is held and all the beads are one piece, three times.' },
+      { from: 2, to: 2, text: 'Two shapes match their cards.' },
+    ],
+    note: [
+      { from: 1, to: 1, text: 'Linking, breaking and undo never count as mistakes, and nothing here is ever wrong. If no free hands can reach each other, a link to break pulses, with no count. This is a puzzle about beads and hands, not a model of real substances.' },
+      { from: 2, to: 2, text: 'Linking, breaking and undo never count. A Check that is not the card is one miss (checking the same build again is not) and the pet names a bead or link to look at; after two misses the one to change glows, which counts as a hint, and a third wrong Check finishes the shape by itself. This is a puzzle about beads and hands, not a model of real substances.' },
+    ],
+  },
   'gear-garden': {
     goal: 'Make the flowers spin with a machine of gears.',
     steps: [
