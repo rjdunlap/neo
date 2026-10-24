@@ -2,7 +2,7 @@
 
 P1 definition, 2026-10-22, [PR #834](https://github.com/rjdunlap/neo/pull/834), worker `01a1664d-d24f-7b92-b6de-d9039e09f58a`, branch `codex/define-cue-studio`. Based on the [programming study](../deep-dives/subjects/programming.md) and [recommendation packet](../deep-dives/subjects/RECOMMENDATIONS.md#programming-recommendations). **Docs only; no game, registration, code or device evidence.** The rules below are a concrete proposal for developer review, not approval of the outstanding decisions.
 
-**Built 2026-10-23 (levels 1–2, pre-K, Tinker Lab), [PR #917](https://github.com/rjdunlap/neo/pull/917), `claude/cue-studio`.** Layout deviations from the specification below: the landscape palette sits 32 units further left (x 96 and 224) and the portrait palette is at y 600 with the controls at y 748, so the cards and buttons clear the shelf. Level 3 (requested repair with Check, school) is not built; it is the next slice, P3.
+**Built 2026-10-23 (levels 1–2, pre-K, Tinker Lab), [PR #917](https://github.com/rjdunlap/neo/pull/917), `claude/cue-studio`.** Layout deviations from the specification below: the landscape palette sits 32 units further left (x 96 and 224) and the portrait palette is at y 600 with the controls at y 748, so the cards and buttons clear the shelf. Level 3 (requested repair with Check, school) is claimed for P3 on `codex/cue-studio-p3` (2026-10-24). Scope: requested/actual traces, wrong-Check accounting, local repair, graduated help, Undo and restart, school 3–3, level-scoped card/voice and ghost finger. Expected files: `src/games/cue-studio/*`, voice script/how-to, browser harness, README and game/roadmap/study/verification closeout docs. No later programming levels or shell/save changes.
 
 ## Scope and identity
 
