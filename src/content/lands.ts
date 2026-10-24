@@ -67,7 +67,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cow' },
     backdrop: { sky: [0xbfe6fb, 0xfff6e0], hills: [0xcde8a4, 0xa8dc8f, 0x8fcf73], horizon: 0.4, clouds: 3, sun: true, seed: 109 },
     music: tune(53, 'marimba', 96),
-    games: ['peekaboo-barn', 'duckling-parade', 'roundup', 'egg-catch', 'animal-snack', 'critter-sort', 'sing-along-barn', 'orchard-rows', 'bolt-boards', 'look-it-up', 'adventure-walk', 'ready-for-adventure', 'species-comeback'],
+    games: ['peekaboo-barn', 'duckling-parade', 'roundup', 'egg-catch', 'animal-snack', 'critter-sort', 'sing-along-barn', 'orchard-rows', 'bolt-boards', 'look-it-up', 'adventure-walk', 'ready-for-adventure'],
   },
   {
     id: 'counting-cove',
@@ -131,7 +131,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cat', color: 'purple' },
     backdrop: { sky: [0xd9c8f2, 0xffe9c4], hills: [0xb9c8f2, 0x9ed6d8, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: false, seed: 151 },
     music: tune(127, 'bell', 72),
-    games: ['snowball-merge', 'brain-break', 'pyramid-solitaire', 'number-nook', 'gem-swap', 'tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'],
+    games: ['snowball-merge', 'brain-break', 'pyramid-solitaire', 'number-nook', 'gem-swap', 'tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga', 'species-comeback'],
   },
 ];
 
