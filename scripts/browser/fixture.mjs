@@ -1,3 +1,4 @@
+import { createTestContext } from '../test-browser.mjs';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 // The island game is served at `classic/`; the site root is the creature-world rework. A bare origin gets `classic/`.
@@ -6,7 +7,7 @@ const islandUrl = (url) => (new URL(url).pathname === '/' ? new URL('classic/', 
 export async function createFixture(browser, suite) {
 const output = `test-results/browser/${suite}`;
 await mkdir(output, { recursive: true });
-const context = await browser.newContext({ viewport: { width: 1024, height: 768 }, reducedMotion: 'reduce' });
+const context = await createTestContext(browser, { viewport: { width: 1024, height: 768 }, reducedMotion: 'reduce' });
 try {
 const page = await context.newPage();
 const errors = [];
