@@ -3777,7 +3777,7 @@ async function homeFlow() {
   log('Home: chooser → Home by band, creature play ball ×3 unrecorded, tune, Friends/Dress chain, mid-bounce leave, Explore entries → Places → Counting Cove → Back chain, All games page 2 → game → Back to All games (same page) → Home, Favorites older launch and empty, Family play → couch → Explore both orientations, second profile; RW08 slice 2: birthday once, the gear, books → library → journal → Back, a Windy blanket step at the root → Back → library, Little surprises on All games page 1 → stop → Home → sheet → Back');
 }
 
-/** Welcome a New Friend at the root (RW07 slice 1): Continue, the page, the two built steps, leaving mid-step, reload. */
+/** Welcome a New Friend at the root (RW07 slices 1–2): Continue, the page, the three steps, leaving mid-step, reload. */
 async function welcomeFlow() {
   await page.goto(new URL('/', process.env.GAME_URL || 'http://127.0.0.1:5173').href); await ready();
   await scene('ChooserScene');
@@ -3859,8 +3859,40 @@ async function welcomeFlow() {
   assert.deepEqual(w.steps, ['pretty', 'yummy']);
   assert.equal(w.results.pretty.stamps.length, 3);
   assert.equal(await page.evaluate(() => JSON.stringify(kit.store.data.creations)), treehouse, 'the treehouse slots are unchanged');
-  await page.waitForFunction(async () => (await import('/src/audio/voice.ts')).voice.__said.includes('welcome.soon'), null, { timeout: 15000 });
+  await page.waitForFunction(() => neo.scene.raised === 'song', null, { timeout: 15000 });
   assert.ok((await said()).includes('welcome.done.pretty'));
+  assert.ok((await said()).includes('welcome.ask.song'));
+  // Song (slice 2): Song Maker 2, below the band's range, as the stated exception. A one-note song keeps nothing and hums.
+  const songLevel = await page.evaluate(() => kit.store.stats('song-maker').level);
+  const playSong = async () => {
+    await tap("neo.scene.cards.find(c => c.step === 'song').play");
+    await page.waitForFunction(() => neo.scene.constructor.name === 'GameScene' && !neo.switching && neo.scene.mod.id === 'song-maker', null, { timeout: 20000 });
+    assert.deepEqual(await page.evaluate(() => [neo.scene.band, neo.scene.level, neo.scene.game.plan.mode]), ['preschool', 2, 'free']);
+    await page.waitForTimeout(600);
+  };
+  await playSong();
+  await page.evaluate(() => neo.scene.finish({ misses: 0, hints: 0, creation: { kind: 'tune', cols: 6, rows: 4, notes: [{ col: 0, row: 0 }] } }));
+  await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 20000 }); await page.waitForTimeout(500);
+  await tap('neo.scene.after.home'); await scene('ProjectScene');
+  await page.waitForFunction(async () => (await import('/src/audio/voice.ts')).voice.__said.includes('welcome.soon'), null, { timeout: 15000 });
+  assert.ok((await said()).includes('welcome.done.song-hum'));
+  assert.deepEqual(await page.evaluate(() => [kit.store.data.projects.welcome.steps, kit.store.data.projects.welcome.results.song ?? null]), [['pretty', 'yummy', 'song'], null]);
+  // Make it again, tapping the jellies: her tune is kept on the project and shown on the card.
+  await tap("neo.scene.cards.find(c => c.step === 'song').node"); await page.waitForTimeout(300);
+  await playSong();
+  const lit = await page.evaluate(async () => {
+    const g = neo.scene.game;
+    for (let i = 0; i < g.plan.notes; i++) { kit.tapOn(g.beads[(i * 5) % g.beads.length]); await kit.sleep(260); }
+    return g.beads.filter((b) => b.lit).length;
+  });
+  await finished('song-maker');
+  await page.waitForFunction(() => !!neo.scene.after, null, { timeout: 25000 }); await page.waitForTimeout(500);
+  await tap('neo.scene.after.home'); await scene('ProjectScene');
+  assert.equal(await page.evaluate(() => kit.store.data.projects.welcome.results.song?.notes.length), lit);
+  assert.equal(await page.evaluate(() => kit.store.stats('song-maker').level), songLevel, 'the out-of-range song round does not move the game level');
+  await page.waitForFunction(async () => (await import('/src/audio/voice.ts')).voice.__said.includes('welcome.done.song'), null, { timeout: 15000 });
+  assert.equal(await page.evaluate(() => JSON.stringify(kit.store.data.creations)), treehouse, 'the treehouse slots are still unchanged');
+  await page.waitForTimeout(800);
   await screenshot('welcome-landscape');
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
   await screenshot('welcome-portrait');
@@ -3883,7 +3915,7 @@ async function welcomeFlow() {
   await page.evaluate(() => { kit.store.data.profile.band = 'toddler'; neo.go.hub(); }); await scene('HomeScene');
   assert.equal(await page.evaluate(() => neo.scene.cont), null, 'no Continue for a toddler');
   assert.equal(errors.length, 0, errors.join('\n'));
-  log('Welcome: Continue → invitation → yummy (one wrong cut) → done line → pretty left mid-round stores nothing → reload → pretty finished, picture kept on the project, treehouse unchanged → soon; pre-K ask; toddler has no Continue');
+  log('Welcome: Continue → invitation → yummy (one wrong cut) → done line → pretty left mid-round stores nothing → reload → pretty finished, picture kept on the project, treehouse unchanged → song: one note keeps nothing and hums → soon → song again with tapped jellies, tune kept, level unmoved; pre-K ask; toddler has no Continue');
 }
 
 async function hatchingAndMap() {
