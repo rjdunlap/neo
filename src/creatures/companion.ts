@@ -1,5 +1,5 @@
 import { Assets, Circle, ColorMatrixFilter, Container, Graphics, Rectangle, Sprite, type Texture } from 'pixi.js';
-import { CRITTERS, type CritterSpec, type Mood } from '../art/critter';
+import type { Mood } from '../art/critter';
 import { swatch, type ColorName } from '../art/palette';
 import { makeCreature } from '../art/creatures';
 import type { Creature } from '../art/creatures/creature';
@@ -20,8 +20,7 @@ import { SPECIES, SPECIES_IDS, type SpeciesId } from './species';
  * RW05 slice 1 (docs/rework/CREATURE-COLLECTION.md#the-companion-in-code-one-seam-two-slices): the friend who travels
  * with her, drawn by its species' illustrated rig (RW02b, `src/art/creatures/<species>-illustrated.ts`). The shell, the
  * guide and the island build it with `makeCompanion()`. Slice 2 gives it the surface the large-pet games need
- * (`CompanionRig`: named parts, `spin`, `wiggle`, a body bounds); a game builds one with `ctx.companion()`, and the games
- * not yet moved still build a `Critter` from `companionSpec()`.
+ * (`CompanionRig`: named parts, `spin`, `wiggle`, a body bounds); a game builds one with `ctx.companion()`.
  *
  * The art is loaded once at boot (`loadCollectionArt()`), so building a companion never waits. Without it (a unit test,
  * or a load that failed) a species falls back to its Graphics rig, a portrait to a frozen rig and the egg to `drawEgg`.
@@ -458,14 +457,6 @@ export function makeStar(): Companion {
 
 /** Draws one individual, for Friends and for another profile's card. */
 export const makeIndividual = (who: Individual): Companion => new Companion(who);
-
-/**
- * The ten large-pet games' stand-in until slice 2: today's pip, in the companion's colour. A glider's child sees a
- * lavender pip in Splish Splash; the verification entry names it.
- */
-export function companionSpec(): CritterSpec {
-  return { ...CRITTERS.pip, color: companion()?.look.color ?? 'teal' };
-}
 
 /**
  * A collection card's picture: the species' portrait over the card paper, the paper washed with her colour. `size` is

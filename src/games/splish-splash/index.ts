@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics, Rectangle, RenderTexture, Sprite, type FederatedPointerEvent, type Renderer } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
+import type { CompanionRig } from '../../creatures/companion';
 import { RAINBOW, swatch } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { textures } from '../../art/textures';
@@ -11,7 +12,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { allowedParts, askedParts, askedPhrase, cleanPhrase, IdleNudge, MUD_H, MUD_W, Namer, nearestIndex, nearMud, nextToScrub, PATS_PER_PATCH, PART_SPOTS, PHRASES, planFor, reach, scrubPath, wrongTouches, type Part, type Plan } from './logic';
+import { allowedParts, askedParts, askedPhrase, cleanPhrase, IdleNudge, MUD_H, MUD_W, Namer, nearestIndex, nearMud, nextToScrub, PATS_PER_PATCH, PHRASES, planFor, planOn, reach, scrubPath, brushOn, spotsOn, STAR, wrongTouches, type Part, type Plan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -24,7 +25,8 @@ const LEVELS: BandLevels = {
 const MUD = { fill: 0x8b5a2b, dark: 0x6b4423, light: 0xa8743f };
 /** A spot counts as clean when this much of it is gone; the last specks vanish on their own. */
 const CLEAN_ENOUGH = 0.75;
-const PIP_SCALE = 1.2;
+/** The old pip's tummy splotch sat this far above the tub's line, just over the foam: every star sits with its lowest splotch there. */
+const TUMMY_Y = -86;
 
 /** One splotch of mud, drawn into its own texture so scrubbing can erase it bit by bit. */
 class Mud {
@@ -110,7 +112,11 @@ class SplishSplash implements Game {
   private readonly room = new Graphics();
   private readonly tubFront = new Graphics();
   private readonly foam = new Graphics();
-  private readonly pip: Critter;
+  private readonly pip: CompanionRig;
+  /** The brush, as a share of `SCRUB_R` in the star's own units: finger-sized on screen whatever the species' scale. */
+  private readonly brush: number;
+  /** How far the star sits up out of the water (down into it, for the floating glider), so its lowest splotch just clears the foam. */
+  private readonly rise: number;
   private readonly rubberDuck = new Critter(CRITTERS.duck);
   private readonly scrubZone = new Container();
   private readonly eraser = new Sprite();
@@ -141,26 +147,32 @@ class SplishSplash implements Game {
   };
 
   constructor(private readonly ctx: GameContext) {
-    this.pip = new Critter(ctx.petSpec);
-    this.plan = planFor(ctx.level);
+    this.pip = ctx.companion();
+    const star = STAR[this.pip.species];
+    // Only the parts this species is asked for (decided 2026-10-23): on a side-on face, the tummy and the head.
+    this.plan = planOn(planFor(ctx.level), star.parts);
     if (this.plan.shuffle) this.plan = { ...this.plan, parts: ctx.rng.shuffle([...this.plan.parts]) };
     this.view = ctx.view;
-    // Pip is the star of this one, so the corner guide steps out.
+    // The companion is the star of this one, so the corner guide steps out.
     ctx.pet.visible = false;
 
     this.eraser.texture = textures().brush;
     this.eraser.anchor.set(0.5);
     this.eraser.blendMode = 'erase';
 
-    this.pip.scale.set(PIP_SCALE);
+    this.pip.scale.set(star.scale);
+    this.brush = brushOn(star.scale, this.plan.brush ?? 1);
+    // Each splotch rides its part (a leaf, an ear, the river's head as it rears), one on each of the part's points.
     for (const part of this.plan.parts) {
-      for (const [x, y, size] of PART_SPOTS[part]) {
-        const mud = new Mud(part, x, y, size, this.plan.brush ?? 1, ctx.rng, ctx.renderer);
-        this.pip.attach(mud.glow);
-        this.pip.attach(mud.sprite);
+      const spots = spotsOn([part], (q) => this.pip.partPoints(q), star);
+      this.pip.part(part).forEach((node, i) => {
+        const mud = new Mud(part, 0, 0, spots[i].size, this.brush, ctx.rng, ctx.renderer);
+        node.addChild(mud.glow, mud.sprite);
         this.muds.push(mud);
-      }
+      });
     }
+    const lowest = Math.max(...spotsOn(this.plan.parts, (q) => this.pip.partPoints(q), star).map((m) => m.y));
+    this.rise = lowest * star.scale - TUMMY_Y;
     this.rubberDuck.scale.set(0.24);
     // The bath is one big scrub surface. The duck stays above it as a generous replay target,
     // so asking for the instruction never cleans mud or advances the round.
@@ -204,7 +216,7 @@ class SplishSplash implements Game {
     r.roundRect(cx + 150, 40, 14, 120, 6).fill(0xb9c6d1).roundRect(cx + 110, 150, 90, 26, 12).fill(0xb9c6d1);
 
     // Sitting in the tub: feet and bottom hidden behind the rim, tummy just above the foam.
-    this.pip.position.set(cx, tubTop - 4);
+    this.pip.position.set(cx, tubTop - 4 - this.rise);
     const t = this.tubFront.clear();
     t.circle(cx - 220, tubTop + 172, 20).circle(cx + 220, tubTop + 172, 20).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
     t.roundRect(cx - 280, tubTop - 14, 560, 180, 70).fill(0xffffff).stroke({ width: 6, color: 0xb9c6d1 });
@@ -232,7 +244,7 @@ class SplishSplash implements Game {
       const part = nextToScrub(this.plan, 0, (p) => this.partClean(p));
       const m = part && this.muds.find((x) => x.part === part && !x.clean);
       if (m) m.glow.visible = true;
-      this.pip.poke();
+      this.pip.wiggle();
     }
     if (this.plan.mode === 'pat' && !this.finished) {
       // Quiet for a while: sparkle the next patch (an invitation, not a hint).
@@ -256,7 +268,7 @@ class SplishSplash implements Game {
     const part = nextToScrub(this.plan, this.partIndex, (p) => this.partClean(p));
     const mud = part && this.muds.find((m) => m.part === part && !m.clean);
     if (!mud) return null;
-    const [start, ...via] = scrubPath(mud.size, this.plan.brush).map((p) => ({ on: mud.sprite, x: p.x, y: p.y }));
+    const [start, ...via] = scrubPath(mud.size, this.brush).map((p) => ({ on: mud.sprite, x: p.x, y: p.y }));
     return { trace: start, via, receiver: this.scrubZone };
   }
 
@@ -327,7 +339,7 @@ class SplishSplash implements Game {
     }
     if (this.clock - this.lastGiggle > 1.6) {
       this.lastGiggle = this.clock;
-      this.pip.poke();
+      this.pip.poke(true);
       sfx.giggle();
     }
   }
@@ -347,14 +359,14 @@ class SplishSplash implements Game {
     const p = this.ctx.stage.toLocal(e.global);
     this.ctx.particles.burst(p.x, p.y, { colors: [0xffffff, 0xd6eefa], count: 8, speed: [40, 140], gravity: -160, size: [0.3, 0.7], life: [0.6, 1.1] });
     sfx.squeak(7 + Math.floor(Math.random() * 4));
-    this.pip.poke();
+    this.pip.poke(true);
     if (m.pats >= PATS_PER_PATCH) void this.cleaned(m);
   }
 
   /** Scrub at one point (canvas pixels). Returns true if the point was on Pip. */
   private scrubPoint(global: { x: number; y: number }, pointerId: number): boolean {
     const body = this.pip.toLocal(global);
-    const onPip = Math.abs(body.x) < 170 && body.y < 20 && body.y > -320;
+    const onPip = this.pip.touchArea(60).contains(body.x, body.y);
     // The splotches this point is on. A point on one that is asked for is scrubbing it, even where a neighbor's reach overlaps.
     const touched = this.muds.filter((m) => {
       if (m.clean) return false;
@@ -440,8 +452,9 @@ class SplishSplash implements Game {
     this.pip.cheer();
     void this.ctx.say('bath.clean');
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    const p = this.ctx.stage.toLocal(this.pip.getGlobalPosition());
-    this.ctx.particles.burst(p.x, p.y - 180, { kind: 'star', colors: [0xffffff, 0xfff3a0, ...colors], count: 30, speed: [150, 400], gravity: 0, life: [0.8, 1.3] });
+    const t = this.pip.touch;
+    const p = this.ctx.stage.toLocal(this.pip.toGlobal({ x: t.x, y: t.y - t.r * 0.5 }));
+    this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, ...colors], count: 30, speed: [150, 400], gravity: 0, life: [0.8, 1.3] });
     sfx.tada();
     await this.ctx.tw.wait(2);
     this.ctx.finish({ misses: this.misses, hints: this.hints });

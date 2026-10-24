@@ -1,11 +1,13 @@
-import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
-import { Critter } from '../../art/critter';
+import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { grass, swatch, wood } from '../../art/palette';
 import { puffs, starPoints } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import type { LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
+import type { CompanionRig } from '../../creatures/companion';
+import type { PartName } from '../../creatures/parts';
+import type { SpeciesId } from '../../creatures/species';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
@@ -13,8 +15,8 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { clothing, itemIcon } from './art';
-import { GROUND_TOUCH, ITEM_NAMES, tripPlays, MISFIT, ITEM_WORDS, ITEMS, itemToTap, outfitFor, outfits, SLOTS, STICKER_ITEMS, wardrobePlan, WEATHERS, type Item, type Misfit, type Outfit, type WardrobePlan, type Weather } from './logic';
+import { anchorOf, clothing, itemIcon, PAIRED } from './art';
+import { GROUND_TOUCH, ITEM_NAMES, tripPlays, MISFIT, ITEM_WORDS, ITEMS, itemToTap, outfitFor, outfits, partFor, STICKER_ITEMS, wardrobeFor, wardrobePlan, WEATHERS, type Item, type Misfit, type Outfit, type WardrobePlan, type Weather } from './logic';
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -67,13 +69,28 @@ interface Option {
   used: boolean;
 }
 
+/**
+ * How each species stands in the wardrobe (RW05 slice 2b): its stage scale, and the size of the old pip's clothes on each
+ * of its parts. The side-on river and glider have small faces, so they stand larger and their hats are smaller.
+ */
+const DRESS: Record<SpeciesId, { scale: number; parts: Partial<Record<PartName, number>> }> = {
+  sprout: { scale: 0.8, parts: { head: 0.85, eyes: 0.8, ears: 0.85, neck: 0.85, tummy: 0.85, hands: 0.85, feet: 0.85 } },
+  river: { scale: 1.2, parts: { head: 0.36, eyes: 0.3, ears: 0.4, neck: 0.42, feet: 0.45, back: 0.55 } },
+  glider: { scale: 1.25, parts: { head: 0.34, eyes: 0.3, ears: 0.4, back: 0.55 } },
+};
+
+/** The parts' stacking, bottom first: pinned in this order, a coat lies under a scarf and boots, and a hat over the ears. */
+const LAYERS: readonly PartName[] = ['tummy', 'feet', 'neck', 'hands', 'eyes', 'ears', 'head', 'back'];
+
 class WeatherWardrobe implements Game {
   readonly plan: WardrobePlan;
   readonly rounds: Outfit[];
-  readonly pet: Critter;
+  readonly pet: CompanionRig;
+  /** What this companion can wear (decided 2026-10-23: fewer parts per species). */
+  readonly wearable: Item[];
   readonly options: Option[] = [];
-  /** Clothing on the pet, by item. */
-  readonly worn = new Map<Item, Container>();
+  /** Clothing on the pet, by item: a piece on each point of its part (two boots), the first one answering a touch. */
+  readonly worn = new Map<Item, Container[]>();
   private readonly wornCenters = new Map<Item, { x: number; y: number }>();
   weather: Weather = 'sunny';
   q = 0;
@@ -115,17 +132,19 @@ class WeatherWardrobe implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = wardrobePlan(ctx.level);
-    this.rounds = outfits(this.plan, ctx.rng);
     // The pet is the one getting dressed, so the corner guide steps out; tapping the big pet repeats instead.
     ctx.pet.visible = false;
-    this.pet = new Critter(ctx.petSpec);
-    this.pet.scale.set(0.8);
-    const body = new Circle(0, -125, 150);
-    // At level 1 the worn clothes answer too, so the pet's area reaches each of them without taking the sky.
-    this.pet.hitArea =
-      this.plan.mode === 'change' ? new Circle(0, -220, 370) : this.plan.mode === 'play' ? { contains: (x, y) => body.contains(x, y) || this.onWorn(x, y) } : body;
+    this.pet = ctx.companion();
+    this.wearable = wardrobeFor(this.pet.species, (p) => this.pet.partPoints(p).length > 0);
+    this.rounds = outfits(this.plan, ctx.rng, this.wearable);
+    this.pet.scale.set(DRESS[this.pet.species].scale);
+    for (const p of LAYERS) this.pet.part(p);
+    const body = this.pet.touchArea(30);
+    // At level 1 and when changing, the worn clothes answer too, so the pet's area reaches each of them without taking the sky.
+    this.pet.hitArea = this.plan.mode === 'change' || this.plan.mode === 'play' ? { contains: (x, y) => body.contains(x, y) || this.onWorn(x, y) } : body;
     onTap(this.pet, () => {
-      this.pet.poke();
+      // A quiet poke: clothes hang on its parts, and a rear or a flap would throw them about.
+      this.pet.poke(true);
       sfx.giggle();
       if (this.instruction && !this.busy) void ctx.say(this.instruction.id, this.instruction.vars);
     });
@@ -173,7 +192,7 @@ class WeatherWardrobe implements Game {
     const item = itemToTap(this.outfit, new Set(this.options.filter((o) => o.used).map((o) => o.item)));
     if (this.changePhase === 'remove') {
       const worn = this.outfit.remove?.find((i) => this.worn.has(i));
-      const node = worn ? this.worn.get(worn) : null;
+      const node = worn ? this.worn.get(worn)?.[0] : null;
       const center = worn ? this.wornCenters.get(worn) : null;
       return node && center ? { tap: { on: node, x: center.x, y: center.y }, pause: 0.35 } : null;
     }
@@ -221,9 +240,11 @@ class WeatherWardrobe implements Game {
   private onWorn(x: number, y: number) {
     if (!this.worn.size) return false;
     const global = this.pet.toGlobal({ x, y });
-    for (const c of this.worn.values()) {
-      const p = c.toLocal(global);
-      if ((c.hitArea as Rectangle | null)?.contains(p.x, p.y)) return true;
+    for (const pieces of this.worn.values()) {
+      for (const c of pieces) {
+        const p = c.toLocal(global);
+        if ((c.hitArea as Rectangle | null)?.contains(p.x, p.y)) return true;
+      }
     }
     return false;
   }
@@ -233,13 +254,14 @@ class WeatherWardrobe implements Game {
     e.stopPropagation();
     if (this.done) return;
     let best: { item: Item; c: Container; d: number } | null = null;
-    for (const [item, c] of this.worn) {
-      const p = c.toLocal(e.global);
-      const area = c.hitArea as Rectangle | null;
-      const center = this.wornCenters.get(item);
-      if (!center || !Number.isFinite(p.x) || !area?.contains(p.x, p.y)) continue;
-      const d = Math.hypot(p.x - center.x, p.y - center.y);
-      if (!best || d < best.d) best = { item, c, d };
+    for (const [item, pieces] of this.worn) {
+      for (const c of pieces) {
+        const p = c.toLocal(e.global);
+        const area = c.hitArea as Rectangle | null;
+        if (!area || !Number.isFinite(p.x) || !area.contains(p.x, p.y)) continue;
+        const d = Math.hypot(p.x - (area.x + area.width / 2), p.y - (area.y + area.height / 2));
+        if (!best || d < best.d) best = { item, c, d };
+      }
     }
     if (!best) return;
     const { item, c } = best;
@@ -258,7 +280,7 @@ class WeatherWardrobe implements Game {
   private dressFor(w: Weather) {
     this.undress();
     // Quick taps can change the weather again before everything is on; only dress for the current one.
-    outfitFor(w, this.ctx.rng).forEach((item, i) => void this.ctx.tw.wait(0.25 + i * 0.2).then(() => this.weather === w && !this.worn.has(item) && this.put(item, (e) => this.nameWorn(e))));
+    outfitFor(w, this.ctx.rng, this.wearable).forEach((item, i) => void this.ctx.tw.wait(0.25 + i * 0.2).then(() => this.weather === w && !this.worn.has(item) && this.put(item, (e) => this.nameWorn(e))));
   }
 
   // Rounds -------------------------------------------------------------------------
@@ -441,24 +463,48 @@ class WeatherWardrobe implements Game {
     }
   }
 
+  /**
+   * Hangs an item on the companion (RW05 slice 2b): a piece on its part's point, or one on each for a pair, each the old
+   * pip's drawing placed by its `anchorOf` and sized for the species. A held thing goes in the hand on her right. Returns
+   * the pieces at their worn size.
+   */
+  private hang(item: Item): Container[] {
+    const part = partFor(item, this.pet.species);
+    const k = DRESS[this.pet.species].parts[part] ?? 0.5;
+    const points = this.pet.partPoints(part);
+    let nodes = this.pet.part(part).map((node, i) => ({ node, x: points[i].x }));
+    if (!PAIRED.has(item)) nodes = nodes.sort((a, b) => b.x - a.x).slice(0, 1);
+    return nodes.map(({ node, x }) => {
+      const side = x < this.pet.touch.x ? -1 : 1;
+      const c = clothing(item, PAIRED.has(item) ? [side] : undefined);
+      const a = anchorOf(item, side);
+      c.pivot.set(a.x, a.y);
+      c.scale.set(k);
+      node.addChild(c);
+      return c;
+    });
+  }
+
   /** Dresses the pet in one item, with a little pop; `touched` makes the worn item answer a touch. */
   private put(item: Item, touched?: (e: FederatedPointerEvent) => void) {
-    const c = clothing(item);
-    if (touched) {
+    const pieces = this.hang(item);
+    // Each piece answers (both boots), at least 104 units across on screen whatever its own size; the first one's middle is the bot's target.
+    if (touched) pieces.forEach((c, i) => {
+      const least = 104 / (c.scale.x * this.pet.scale.x);
       const b = c.getLocalBounds();
-      const width = Math.max(130, b.width + 48), height = Math.max(130, b.height + 48);
+      const width = Math.max(least, b.width + 48), height = Math.max(least, b.height + 48);
       const center = { x: b.x + b.width / 2, y: b.y + b.height / 2 };
-      this.wornCenters.set(item, center);
+      if (i === 0) this.wornCenters.set(item, center);
       c.hitArea = new Rectangle(center.x - width / 2, center.y - height / 2, width, height);
       c.eventMode = 'static';
       onTap(c, touched);
+    });
+    this.worn.set(item, pieces);
+    for (const p of pieces) {
+      const k = p.scale.x;
+      p.scale.set(0.6 * k);
+      void this.ctx.tw.to(p.scale, { x: k, y: k }, { duration: 0.3, ease: ease.outBack });
     }
-    this.pet.attach(c);
-    // A coat goes on under everything else, so a scarf put on first still shows over it.
-    if (SLOTS[item] === 'body') for (const node of this.worn.values()) this.pet.attach(node);
-    this.worn.set(item, c);
-    c.scale.set(0.6);
-    void this.ctx.tw.to(c.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
     this.pet.hop(0.5);
     sfx.pop(8);
   }
@@ -469,7 +515,7 @@ class WeatherWardrobe implements Game {
     if (!worn) return;
     this.worn.delete(item);
     this.wornCenters.delete(item);
-    worn.destroy({ children: true });
+    for (const p of worn) p.destroy({ children: true });
     this.pet.hop(0.45);
     sfx.pop(6);
     if (this.outfit.remove?.every((i) => !this.worn.has(i))) {
@@ -482,7 +528,7 @@ class WeatherWardrobe implements Game {
   }
 
   private undress() {
-    for (const c of this.worn.values()) c.destroy({ children: true });
+    for (const pieces of this.worn.values()) for (const c of pieces) c.destroy({ children: true });
     this.worn.clear();
     this.wornCenters.clear();
   }
@@ -495,10 +541,12 @@ class WeatherWardrobe implements Game {
     const { ctx, pet } = this;
     this.busy = true;
     opt.node.alpha = 0.35;
-    const c = clothing(opt.item);
-    pet.attach(c);
-    c.scale.set(0.6);
-    void ctx.tw.to(c.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    const pieces = this.hang(opt.item);
+    for (const p of pieces) {
+      const k = p.scale.x;
+      p.scale.set(0.6 * k);
+      void ctx.tw.to(p.scale, { x: k, y: k }, { duration: 0.2, ease: ease.outBack });
+    }
     sfx.pop(8);
     const fx = this.misfitFx(MISFIT[this.weather]);
     // A shiver or a fan-wiggle on the pet's whole body, then back to where it stood.
@@ -507,11 +555,11 @@ class WeatherWardrobe implements Game {
       for (const dx of [-5, 5, -5, 5, 0]) await ctx.tw.to(pet, { x: x + dx }, { duration: 0.07 });
       pet.x = x;
       await ctx.tw.wait(0.25);
-      c.destroy({ children: true });
+      for (const p of pieces) p.destroy({ children: true });
       fx.destroy();
       pet.setMood('happy', 0.4);
       const back = itemIcon(opt.item, 96);
-      back.position.set(pet.x, pet.y - 150);
+      back.position.copyFrom(this.middle());
       ctx.stage.addChild(back);
       await ctx.tw.to(back, { x: opt.node.x, y: opt.node.y }, { duration: 0.3, ease: ease.outBack });
       back.destroy({ children: true });
@@ -523,7 +571,12 @@ class WeatherWardrobe implements Game {
   /** The weather's trouble drawn on the pet (drops, sweat or frost), with its little sound and mood; the caller destroys it. */
   private misfitFx(kind: Misfit): Graphics {
     const { ctx, pet } = this;
+    // Drawn about the old pip's head (0, −214), carried to this species' head at no less than half size.
     const fx = new Graphics();
+    const head = pet.partPoints('head')[0] ?? { x: 0, y: -214 };
+    fx.pivot.set(0, -214);
+    fx.position.set(head.x, head.y);
+    fx.scale.set(Math.max(0.5, DRESS[pet.species].parts.head ?? 1));
     pet.attach(fx);
     if (kind === 'wet') {
       for (const [x, y] of [[-46, -176], [4, -150], [52, -184], [-14, -214]]) fx.circle(x, y, 9).fill(swatch.blue.fill).stroke(line(swatch.blue.line, 3));
@@ -704,12 +757,20 @@ class WeatherWardrobe implements Game {
     this.shield = Math.max(0, this.shield - dt);
     const t = 2.2 - this.shield;
     const color = this.weather === 'sunny' ? swatch.yellow.fill : this.weather === 'rainy' ? swatch.blue.fill : swatch.white.fill;
+    const mid = this.middle();
+    // The old pip's body reached about 120 units from its middle at 0.8.
+    const reach = (this.pet.touch.r * this.pet.scale.x) / 120;
     for (let i = 0; i < 7; i++) {
       const phase = (t * 1.6 + i / 7) % 1;
       const a = -Math.PI / 2 + (i - 3) * 0.42;
-      const r = 150 + 90 * phase;
-      fx.circle(this.pet.x + Math.cos(a) * r, this.pet.y - 140 + Math.sin(a) * r * 0.9, 8 * (1 - phase) + 3).fill({ color, alpha: 1 - phase });
+      const r = (150 + 90 * phase) * reach;
+      fx.circle(mid.x + Math.cos(a) * r, mid.y + Math.sin(a) * r * 0.9, 8 * (1 - phase) + 3).fill({ color, alpha: 1 - phase });
     }
+  }
+
+  /** The middle of the pet's body on the stage. */
+  private middle(): { x: number; y: number } {
+    return this.ctx.stage.toLocal(this.pet.toGlobal({ x: this.pet.touch.x, y: this.pet.touch.y }));
   }
 
   private drawBursts(dt: number) {

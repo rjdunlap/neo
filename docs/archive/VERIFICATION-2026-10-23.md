@@ -193,3 +193,9 @@
 - Ran: typecheck; `npm test` then failed only `src/app/scenes/lab.test.ts` (Tinker Lab, fixed on main by [#877](https://github.com/rjdunlap/neo/pull/877)); after merging `origin/main` (`2cd835b9`) typecheck clean and `npm test` 2708 passed.
 - Browser (port 5437): `BROWSER_SUITE=woods WOODS_ONLY=go FROM_LEVEL=5` played levels 5, 6 and 9 (a wrong answer and a hint at 5, a both-green miss at 6); `fingerdemo FINGER_LEVELS=4,5,6` clean in 8.1 / 11.5 / 17.4 s; landscape screenshots reviewed. After the merge, the same filter at `http://localhost:5541` passed 5, 6 and 9 again.
 - Not run: portrait screenshot, `npm run build`, iPad or device speech (the lane-specific red lines and the idle-point line).
+
+## 2026-10-23 — Typing Land reference review
+
+- `claude/typing-land-review-88a7ed`: [docs/TYPING-LAND.md](../TYPING-LAND.md), a review of higopage's Typing Land against the island's rules with seven proposals (P1–P7), plus pointers in [IDEAS](../IDEAS.md#typing-land-review-2026-10-23), the [keyboarding study](../deep-dives/subjects/keyboarding-editing.md#similar-games-and-tools) and the [Pond Typing definition](../definitions/pond-typing.md).
+- Ran: the browser edition played in the app's browser pane through setup, the tutorial, World 1 lesson 1 (three mini-games, the result) and the World 1, 2 and 6 maps; store, official and review pages opened; `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: no code changed; no sound heard (headless pane); later worlds, Challenge mode and the manual PDF not opened.

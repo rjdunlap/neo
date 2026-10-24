@@ -3293,6 +3293,14 @@ async function friendsFlow() {
   log('Friends: hatch meets a sprout, Friends previews and chooses, reload, profiles and reset keep the companion');
 }
 
+/** Makes a friend of this species the active companion, for the large-pet games' species checks. */
+async function useCompanion(species) {
+  await page.evaluate((species) => {
+    kit.store.data.creatures = { owned: [{ id: 'cmp0', species, name: 'Pebble', look: { color: 'blue', worn: [] }, metAt: `dev:${species}` }], companion: 'cmp0' };
+    kit.store.save(); kit.store.flush();
+  }, species);
+}
+
 async function dressFlow() {
   // RW06 slice 1: Friends → Dress → crown, scarf, then a sun hat that takes the crown's place → back, with the look kept everywhere.
   await page.evaluate(() => {
@@ -4720,6 +4728,7 @@ async function conductorSign() {
 
 async function wardrobe7() {
   await page.setViewportSize({ width: 768, height: 1024 });
+  if (process.env.WARDROBE_SPECIES) await useCompanion(process.env.WARDROBE_SPECIES);
   await launch('weather-wardrobe', 7);
   await page.waitForTimeout(700);
   await page.evaluate(async () => {
@@ -4734,7 +4743,7 @@ async function wardrobe7() {
     for (let step = 0; g.changePhase === 'remove' && step < 6; step++) {
       const item = g.outfit.remove.find((i) => g.worn.has(i));
       if (!item) throw new Error('No removable clothing remains');
-      const node = g.worn.get(item);
+      const [node] = g.worn.get(item);
       const p = node.toGlobal(g.wornCenters.get(item));
       kit.tap(p.x, p.y); await kit.sleep(350);
     }
@@ -4747,7 +4756,7 @@ async function wardrobe7() {
       if (g.done) break;
       if (g.changePhase === 'remove') {
         const item = g.outfit.remove.find((i) => g.worn.has(i));
-        const node = g.worn.get(item), p = node.toGlobal(g.wornCenters.get(item));
+        const [node] = g.worn.get(item), p = node.toGlobal(g.wornCenters.get(item));
         kit.tap(p.x, p.y);
       } else {
         const option = g.options.find((o) => !o.used && g.outfit.needed.includes(o.item));
@@ -5537,6 +5546,8 @@ async function fourth() {
   }
 
   // Weather Wardrobe: free weather play, then dressing and packing.
+  // WARDROBE_SPECIES=river|glider dresses that species instead of the hatched sprout (RW05 slice 2b: only what it can wear).
+  if (process.env.WARDROBE_SPECIES && (!only || only === 'weather')) await useCompanion(process.env.WARDROBE_SPECIES);
   if (!only || only === 'weather') for (const level of [1, 2, 3, 4, 5, 6, 8]) {
     await launch('weather-wardrobe', level);
     await page.waitForTimeout(700);
@@ -5547,7 +5558,7 @@ async function fourth() {
         await kit.until(() => g.worn.size === 2, 3000);
         kit.tap(120, innerHeight - 40); await kit.sleep(150);
         if (!g.bursts.length || g.weather !== 'sunny') throw new Error('Wardrobe grass did not answer');
-        const [item, worn] = [...g.worn][0];
+        const [item, [worn]] = [...g.worn][0];
         const at = worn.toGlobal(g.wornCenters.get(item));
         kit.tap(at.x, at.y); await kit.sleep(300);
         if (g.named !== 1 || g.weather !== 'sunny') throw new Error('Wardrobe worn item was not named');
@@ -5718,11 +5729,13 @@ async function early() {
       for (let dy = -s; dy <= s && !m.clean; dy += s / 3) await kit.drag(kit.line([p.x - s * 1.2, p.y + dy], [p.x + s * 1.2, p.y + dy], 8), 1, 8);
     };
   });
+  // BATH_SPECIES=river|glider bathes that species instead of the hatched sprout (RW05 slice 2b: its own parts, fewer on a side-on face).
+  const bathSpecies = process.env.BATH_SPECIES;
+  if (bathSpecies && (!only || only === 'bath')) await useCompanion(bathSpecies);
   for (let level = 1; level <= 9 && (!only || only === 'bath'); level++) {
     await launch('splish-splash', level);
     await page.waitForTimeout(500);
-    const parts = await page.evaluate(() => neo.scene.game.plan.mode === 'parts');
-    await page.evaluate(async () => {
+    const parts = await page.evaluate(async () => {
       const g = neo.scene.game;
       if (g.plan.mode === 'pat') {
         // Pat the bubbles: touches far from the mud still wash the nearest patch.
@@ -5732,9 +5745,9 @@ async function early() {
         }
         if (!g.finished) throw new Error('PATSTATE ' + JSON.stringify(g.muds.map((m) => [m.pats, m.clean])) + ' ' + g.partIndex);
       }
-      if (g.plan.mode === 'parts') {
-        // In first-then levels the "then" part is the wrong one to start with.
-        const wrongPart = g.plan.ordered ? g.asked()[1] : g.plan.parts.find((p) => !g.asked().includes(p));
+      // In first-then levels the "then" part is the wrong one to start with. A two-part species asked for both at once has none.
+      const wrongPart = g.plan.mode === 'parts' && (g.plan.ordered ? g.asked()[1] : g.plan.parts.find((p) => !g.asked().includes(p)));
+      if (wrongPart) {
         // A short wiggle in the middle, so it can't reach a neighboring part that is allowed.
         const p = g.muds.find((m) => m.part === wrongPart).sprite.getGlobalPosition();
         await kit.drag(kit.line([p.x - 12, p.y], [p.x + 12, p.y], 6), 1, 12);
@@ -5746,6 +5759,7 @@ async function early() {
         if (next) await scrubMud(next);
         await kit.sleep(200);
       }
+      return !!wrongPart;
     });
     if ([1, 6, 8, 9].includes(level)) await screenshot(`splish-splash-${level}`);
     await finished('splish-splash');
