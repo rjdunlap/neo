@@ -786,7 +786,6 @@ export const SCRIPT = {
   'pt.that': ['That was {pressed}. Find {wanted}.'],
   'pt.space': ['That was space. The next letter is {wanted}.'],
   'pt.spacewant': ['Press the space bar.'],
-  'pt.pop': ['Pop!', 'Got it!', 'Yes!'],
   'pt.said': ['{word}!'],
   'pt.done': ['Every bubble popped!', 'The pond is all popped!'],
   'game.island-bridges': ['Island bridges!'],

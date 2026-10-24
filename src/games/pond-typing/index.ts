@@ -55,12 +55,16 @@ class PondTyping implements Game {
   private readonly chars = new Container();
   private readonly cap = new Container();
   private radius = 150;
+  private allDone = false;
+  private bubbleY = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.level = typingLevel(ctx.level);
     const run = ctx.couch?.course;
     if (run && isTypingCourse(run.id)) {
       this.ponds = COURSES[run.id].ponds.map((p) => p.slice());
+      // Every pond saved but the run never settled (left during the last speech): the round ends at once.
+      this.allDone = run.resume.board >= this.ponds.length;
       this.pond = Math.min(run.resume.board, this.ponds.length - 1);
       this.done = run.resume.done.slice();
       this.carry = run.resume.attempts;
@@ -82,6 +86,11 @@ class PondTyping implements Game {
   }
 
   start() {
+    if (this.allDone) {
+      this.finished = true;
+      void this.ctx.tw.wait(0.3).then(() => this.ctx.finish({ misses: 0, hints: 0, score: 0 }));
+      return;
+    }
     void this.ctx.instruct(this.instruction());
     this.busy = false;
     this.draw();
@@ -94,7 +103,8 @@ class PondTyping implements Game {
     for (const [fx, fy, r] of [[0.18, 0.8, 70], [0.84, 0.74, 56], [0.7, 0.9, 44]] as const) {
       this.water.ellipse(w * fx, h * fy, r, r * 0.45).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
     }
-    this.bubble.position.set(w / 2, portrait ? h * 0.32 : h * 0.4);
+    this.bubbleY = portrait ? h * 0.32 : h * 0.4;
+    this.bubble.position.set(w / 2, this.bubbleY);
     this.cap.position.set(w / 2, portrait ? h * 0.72 : h * 0.83);
   }
 
@@ -147,6 +157,9 @@ class PondTyping implements Game {
     }
     sfx.pop(3 + (this.typist.presses % 5));
     if (!r.bubbleDone) { this.draw(); this.report(); return; }
+    // Saved before the pop and its speech, so leaving in the middle of them loses no key.
+    if (r.roundDone && this.ctx.couch?.course) { this.done.push(this.carry + this.typist.presses); this.carry = 0; this.report(true); }
+    else this.report();
     void this.popped(r.roundDone);
   }
 
@@ -175,7 +188,6 @@ class PondTyping implements Game {
   private async pondDone() {
     const t = this.typist;
     this.misses += t.misses; this.hints = Math.max(this.hints, t.hints); this.firstTry += t.firstTry;
-    if (this.ctx.couch?.course) { this.done.push(this.carry + t.presses); this.carry = 0; }
     this.ctx.pet.cheer();
     sfx.sparkle();
     if (this.level === 2 && !this.ctx.couch?.course) await this.ctx.say('pt.said', { word: t.bubbles.join('') });
@@ -218,7 +230,7 @@ class PondTyping implements Game {
   restart() {
     // Every bubble already popped stays popped: there is nothing on a pond to put back except the bubble in play.
     if (this.finished || this.typist.done) return;
-    this.typist.at = 0;
+    this.typist.at = 0; this.typist.wrongHere = 0; this.typist.glowing = false;
     this.draw();
   }
 
@@ -241,7 +253,7 @@ class PondTyping implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    if (!this.busy) this.bubble.y += Math.sin(this.clock * 2) * 0.25;
+    this.bubble.y = this.bubbleY + Math.sin(this.clock * 2) * 6;
     const glow = this.cap.children[0];
     if (glow && this.typist.glowing) glow.alpha = 0.75 + 0.25 * Math.sin(this.clock * 6);
   }
