@@ -1,5 +1,9 @@
 # Needs a person or a device
 
+## Meadow Pens levels 1–3 (area-volume-space slice 1, 2026-10-24)
+
+- [ ] On an iPad with a school-age child: can she paint squares and ring the bell comfortably in both orientations; is device speech for the Meadow Pens lines (squares counted aloud, the fence ticking, the stack count) clear; does the level-2 card choice read as area against fence count; and do the finale friends and bell tune land? Chrome proved the flow, the portrait fence sides and the ghost finger only. The pre-K window ([decision 6](definitions/meadow-pens.md#open-decisions)) waits on a person check.
+
 ## Second Chance Shed levels 1–4 (nature-sustainability N2, 2026-10-24)
 
 - [ ] With a two-year-old: does she drag the first scrap into the one worm bin unprompted, and does the sprout read as the result?

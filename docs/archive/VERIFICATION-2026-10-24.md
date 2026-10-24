@@ -27,3 +27,10 @@
 - Probe: a throwaway vitest probe of `landLayout`, `visibleIn` and `olderIn` on `origin/main` `edd6a74b`, deleted afterward. 4:3 landscape binds at 14 spots, Rainbow Meadow's scenery fails at 14, and portrait and phone fit 23 or more.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, unit tests, build, browser (docs only).
 - Open: the build.
+
+## 2026-10-24 — Location capacity: pages for a full land
+
+- [PR #915](https://github.com/rjdunlap/neo/pull/915), `claude/location-pages` on `origin/main` `af1b3074`: `LAND_SPOTS = 13`, balanced pages with arrows in `landLayout`, a page in the land origin, and a capacity sweep (`landLayouts`) in all ten location tests; Beach, Painted Canyon and Music Mountain reworked with `scanPlace`.
+- Ran: `npm run typecheck`; `npm test` (222 files, all passing); `BROWSER_SUITE=lands` (every page of every land, all bands landscape, lap/school/grownup portrait, arrow touch areas); `BROWSER_SUITE=world` (first run failed on two harness expectations of the old `{ land }` origin, updated to `{ land, page: 0 }`; rerun PASS); `npm run build`; `npm run test:offline` against `vite preview --port 5444` (served `classic-BU0HtDNI.js` matched `dist`). Dev server `http://localhost:5298`.
+- Scripted look (Tinker Lab at school, root): pages 6+6; the next arrow turns to page 1; a game launched there returns to page 1; the host's suggestion turns back to page 0; portrait page 1 fine; no page errors.
+- Not run: couch suites (untouched). Open: iPad check of the arrows (no fitting section in [device checks](../DEVICE-CHECKS.md) yet).
