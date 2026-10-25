@@ -157,7 +157,7 @@ The brief's collection includes "child-made patterns" and asks that an education
 
 Each is one session. Definitions are docs only; builds follow the AGENTS verification tier for a new game or new levels.
 
-1. **VA1 · Define Little Loom 1–3** (docs only): the drawdown model and island rule in prose with test cases; pedal, shuttle and beater layout in both orientations with the pet clear; yarn marks and contrast; voice lines; accounting (decision 3); how-to card per level; ghost-finger plan; Paint Pier capacity check; kept-cloth shape (decision 4).
+1. **VA1 · Define Little Loom 1–3** (docs only; claimed by worker `01a172be-55d8-7bd1-8b37-28f2695f581d`, branch `codex/little-loom-va1-definition`): the drawdown model and island rule in prose with test cases; pedal, shuttle and beater layout in both orientations with the pet clear; yarn marks and contrast; voice lines; accounting (decision 3); how-to card per level; ghost-finger plan; Paint Pier capacity check; kept-cloth shape (decision 4).
 2. **VA2 · Build Little Loom 1–3**: new-game tier (typecheck, unit tests for the drawdown and float rule, one filtered play of first and last level with one wrong pedal and one hint, a portrait screenshot, `fingerdemo`).
 3. **VA3 · Picture Talk card** (plain HTML on the grown-ups' page; light copy review). Can run beside VA1–VA2.
 4. **VA4 · Define and build Little Loom 4–5** (checks, diagonal): new-levels tier.
