@@ -52,7 +52,7 @@ The allocation/debit column in old rows is historical only (retired 2026-10-12).
 | 2026-10-25 | Meadow Pens4–5 definition, dispatch `meadow-pens-definition-20261025T065435Z`, #957 | Docs-only definition | Private worker/coordinator chats | Private worker/coordinator chats | Admission checked privately | Worker `01a171d7-c22d-7e23-97e3-744d68311bf1`; packet/proof complete; CI/publication next |
 | 2026-10-25 | Scoop Shop EF1, dispatch `scoop-shop-ef1-definition-20261025T075636Z` | Docs-only definition | Private coordinator chat | Private coordinator chat | Admission checked privately | Worker `01a17210-8cc6-7a52-8379-fb03a6d20f87`; EF1 definition/proof complete; [#959](https://github.com/rjdunlap/neo/pull/959) CI/publication next |
 | 2026-10-25 | World languages, dispatch `world-languages-research-20261025T085907Z`, #961 | Docs-only subject research | Private worker/coordinator chats | Private worker/coordinator chats | Admission checked privately | Worker `01a17249-8d27-7123-93e2-b90d9133ca5d`; subject/proof complete; CI/publication next |
-| 2026-10-25 | Portuguese WL1, dispatch `portuguese-wl1-definition-20261025T100307Z` | Docs-only definition | Private coordinator chat | Private coordinator chat | Admission checked privately | Worker `01a17284-357d-7b71-8c4e-285c4afdf9c5`; definition/proof pending |
+| 2026-10-25 | Portuguese WL1, dispatch `portuguese-wl1-definition-20261025T100307Z` | Docs-only definition | Private coordinator chat | Private coordinator chat | Admission checked privately | Worker `01a17284-357d-7b71-8c4e-285c4afdf9c5`; [#963](https://github.com/rjdunlap/neo/pull/963), definition `ffa2dae4`, links/diff/manual proof passed; mandatory CI/publication next |
 
 ## Fresh-worker dispatch and handoff
 
