@@ -8,7 +8,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 ## Taps-only lap levels: Puzzle Pals 1–2, Teddy Doctor 2, Roundup 11 (R2, 2026-10-24)
 
-- [ ] On an iPad at lap with a one-year-old: does a tap on a puzzle piece read as "it went in" or as a surprise; does a tap on the named part of the patient land on the right part with a small finger (the bandage still drags for a grown-up); in *Come along*, does the herd walking to where she last tapped read as following her, and is three seconds long enough between taps? Chrome play with synthetic taps finished all three with no misses ([entry](VERIFICATION.md#2026-10-24--taps-only-lap-levels-r2)); a child's hand and device speech remain unobserved.
+- [ ] On an iPad at lap with a one-year-old: does a tap on a puzzle piece read as "it went in" or as a surprise; does a tap on the named part of the patient land on the right part with a small finger (the bandage still drags for a grown-up); in *Come along*, does the herd walking to where she last tapped read as following her, and is three seconds long enough between taps? Chrome play with synthetic taps finished all three with no misses ([entry](archive/VERIFICATION-2026-10-24.md#2026-10-24--taps-only-lap-levels-r2)); a child's hand and device speech remain unobserved.
 
 ## Bond Beads levels 1–2 (chemistry slice 2, 2026-10-24)
 

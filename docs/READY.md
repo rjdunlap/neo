@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Study `networks-citizenship`: define Relay Woods** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#networks-and-digital-citizenship-recommendations).
 
 - **Better voice V1 (remaining): render the rest of the slot-free script** (assets tier, offline check): after the iPad listening check of the first 215 clips passes ([device check](DEVICE-CHECKS.md)), add more line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally; device speech stays the fallback. Slotted lines (V3) and Word Monsters' phonemes stay later. [A better voice](ROADMAP.md#a-better-voice)
 
@@ -25,6 +24,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`swap-meet`, levels 1–4 (ME2)** (one same-game new-game batch): [ME1 packet](definitions/swap-meet.md), [batch](GAME-BATCHES.md#swap-meet-1-levels-14-me2). Match requests, two-way pairs, then a two-trade chain; exact Undo and all-state BFS hints. Separate admission, source/contract review, actual full-size layouts/current Cozy Village 13→14 placement and rule/play/demo proof required. Person/device, levels5–6 and later money/card gates remain.
 
 - **`village-vote`, levels 1–3 (CC4)** (one same-game new-game batch): [CC1 packet](definitions/village-vote.md), [batch](GAME-BATCHES.md#village-vote-1-levels-13-cc4). Count two groups, cast one free pet vote (which may lose), then compare three tallies; seeded tie-free families, replayable counts and capped assistance. Separate admission, building-session source/contract review, actual full-size both-orientation/current Cozy Village placement and rule/play/demo proof required. Later levels, persistence, cards and person/device gates remain.
+
+- **`relay-woods`, levels 1–4 (NC2)** (one same-game new-game batch): [NC1 packet](definitions/relay-woods.md), [batch](GAME-BATCHES.md#relay-woods-1-levels-14-nc2). Follow connected friends, either way, visible log, then fewest hops; finite graphs, recoverable retracing and capped support. Separate admission, building-session source/contract review, actual full-size both-layout/current Cozy Village or Story Grove placement, five bounded pictures/Keep and rule/play/demo proof required. Later pieces/privacy/locks/cases/story/card and person/device evidence remain separate.
 
 ## Queued
 
