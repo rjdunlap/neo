@@ -165,7 +165,7 @@ Levels 1–3: one session to define, one to build (strip, sound pads, a premiere
 
 ## Build slices, in order
 
-1. **MM1 · Define Movie Night 1–3** (docs only): sets, shots and facts, sound pads and event matches, premiere reactions and voice lines, accounting choice, how-to and ghost finger, both orientations, Paint Pier layout check.
+1. **MM1 · Define Movie Night 1–3** — claimed by worker `01a170f9-90ac-7bb1-9218-fab3c1fbf5b0`, branch `codex/movie-night-mm1` (docs only): sets, shots and facts, sound pads and event matches, premiere reactions and voice lines, accounting choice, how-to and ghost finger, both orientations, Paint Pier layout check.
 2. **MM2 · Build Movie Night 1–3** at the new-game tier.
 3. **MM3 · Define 4–5**: the shot-fact model, briefs, enumerated accepted strips, the Story Steps overlap test.
 4. **MM4 · Build 4–5.**
@@ -178,3 +178,7 @@ Levels 1–3: one session to define, one to build (strip, sound pads, a premiere
 ## What was built and what ran
 
 Nothing was built. Docs only: `node scripts/check-links.mjs` and `git diff --check`. No reference game was played; no child, tween or parent has seen any proposal.
+
+### MM1 definition claim (2026-10-24)
+
+Docs-only packet: Movie Night levels 1–3 shots/facts, sound pads/event matches, accepted strips, audience reactions, decided premiere accounting, speech/how-to/ghost finger, orientation and Paint Pier placement requirements. Expected files: `docs/definitions/movie-night.md`, this study, `RECOMMENDATIONS.md`, `docs/deep-dives/subjects.md`, `docs/STUDY-BACKLOG.md`, `docs/READY.md`, `docs/VERIFICATION.md`, completed-work archive and assigned-worker checkpoint in `docs/EXECUTION-QUEUE.md`. Dependencies: completed study and 2026-10-23 decisions. No gameplay, registration, assets, later levels, storage/flipbook build or unresolved decisions. Review, placement and downstream build gates stay open.
