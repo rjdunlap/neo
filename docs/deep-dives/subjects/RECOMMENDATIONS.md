@@ -853,7 +853,7 @@ Completion with spoken support is not evidence of independent understanding of t
 
 ## World languages recommendations
 
-**Recommended 2026-10-25:** [study](world-languages.md), [PR #961](https://github.com/rjdunlap/neo/pull/961). Opened ACTFL's eleven named standards, CEFR/young-learner guidance, Head Start and two developmental experiments; five first-party digital descriptions and a physical family equivalent. No translations or game play. **Define WL1 first by refining the existing [Additional languages stage-1 packet](../../definitions/additional-languages.md)** in English: European Portuguese follows English per profile in the three familiar hosts. This is contextual exposure; English supplies the referent, so a correct round establishes no independent Portuguese comprehension.
+**Recommended 2026-10-25:** [study](world-languages.md), [PR #961](https://github.com/rjdunlap/neo/pull/961). Opened ACTFL's eleven named standards, CEFR/young-learner guidance, Head Start and two developmental experiments; five first-party digital descriptions and a physical family equivalent. No translations or game play. **WL1 defined in the existing [Additional languages stage-1 packet](../../definitions/additional-languages.md)** in English (20 semantic keys, sequencing/save/fallback and evidence scope); WL2 stays gated on family review/device acceptance: European Portuguese follows English per profile in the three familiar hosts. This is contextual exposure; English supplies the referent, so a correct round establishes no independent Portuguese comprehension.
 
 | Candidate | Next action | Complete slice / boundary |
 | --- | --- | --- |
