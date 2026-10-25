@@ -148,7 +148,7 @@ All future work, one session each. Definitions use links and `git diff --check`;
 
 1. **Define Meadow Pens 1–3** (docs; defined 2026-10-22, [definition](../../definitions/meadow-pens.md)): the grid and fence stack in both orientations, connectivity and the lone-square flower, requests per level, the level-2 card sets, the level-3 fence cases, accounting, hints and supported finish, speech within decision 3's lean, how-to steps, ghost-finger plan, land capacity.
 2. **Build Meadow Pens 1–3 (built 2026-10-24, [PR #932](https://github.com/rjdunlap/neo/pull/932)):** the cell-set model in `logic.ts` with the rule tests above; new-game check tier.
-3. **Define and build Meadow Pens 4–5:** comparison pairs and the split L.
+3. **Define and build Meadow Pens 4–5:** comparison pairs and the split L. Definition claimed by worker `01a171d7-c22d-7e23-97e3-744d68311bf1`, branch `codex/meadow-pens-4-5-definition` (draft PR pending); docs only, build separately admitted after review/layout gates.
 4. **Define Meadow Pens 6–7** after decisions 4 and 5; then build.
 5. **A Treasure Map game dive** that takes four quadrants and translations (decision 7).
 6. **Skyline View** inside a Peekaround Island dive; **Fold a Box** and **Rooftops** definitions after their capacity and placement checks; **Stencil Moves** after Tangram Town 9.
