@@ -516,4 +516,4 @@ Proof: new-game tier, as the [definition's Check tier](definitions/timeline-trai
 
 ### welcome-ways 1: Levels 1–4
 
-One new-game batch from the [definition](definitions/welcome-ways.md), three related substeps: pure plans/walker/repair solver and exhaustive rules; the one/two-socket building interaction and visitor parade; voice/how-to/demonstration/registration and the Tinker Lab then Cozy Village capacity check. Toddler 1–2, preschool 1–3, pre-K 2–4, school 3–4. Try always free; no save field, human access representation or later parts. Use the definition’s new-game check tier, first/last play, failure/help, each new bot level and one portrait screenshot. Levels 5–7 wait until this batch is built.
+Built; [batch record](archive/COMPLETED-2026-10-09.md#welcome-ways-levels-14-2026-10-24). Levels 5–7 need their own definition.

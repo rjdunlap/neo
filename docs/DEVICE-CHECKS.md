@@ -2,6 +2,10 @@
 
 What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), one entry per sitting; the [user research review](USER-RESEARCH-2026-10-24.md#a-five-minute-observation-protocol-for-the-lap-band) has the five-minute protocol for watching her play.
 
+## Welcome Ways levels 1–4 (2026-10-24)
+
+- [ ] On an iPad, check part drag/tap cancellation and comfort, replayable visitor needs and stop reasons; watch whether the child notices Bunny passing the step before Roly stops, and Roly entering before Bear needs a wider door. Browser play and four demonstrations establish scripted behavior only ([verification](VERIFICATION.md#2026-10-24--welcome-ways-levels-14)). No human access representation or practical access advice is included.
+
 ## Taps-only lap levels: Puzzle Pals 1–2, Teddy Doctor 2, Roundup 11 (R2, 2026-10-24)
 
 - [ ] On an iPad at lap with a one-year-old: does a tap on a puzzle piece read as "it went in" or as a surprise; does a tap on the named part of the patient land on the right part with a small finger (the bandage still drags for a grown-up); in *Come along*, does the herd walking to where she last tapped read as following her, and is three seconds long enough between taps? Chrome play with synthetic taps finished all three with no misses ([entry](VERIFICATION.md#2026-10-24--taps-only-lap-levels-r2)); a child's hand and device speech remain unobserved.

@@ -173,9 +173,9 @@ M: a new `logic.ts` with a path walker and a solver for tests; parts drawn with 
 
 ## Build slices, in order
 
-Welcome Ways 1–4 is [defined](../../definitions/welcome-ways.md) (2026-10-24, [PR #944](https://github.com/rjdunlap/neo/pull/944)); no game is built. The packet fixes early socket footprints, replacement-aware hints and per-repair accounting under the decided Try-is-free rule.
+Welcome Ways 1–4 is [defined](../../definitions/welcome-ways.md) (2026-10-24, [PR #944](https://github.com/rjdunlap/neo/pull/944)); levels 1–4 are built in [PR #951](https://github.com/rjdunlap/neo/pull/951), in Tinker Lab. The packet fixes early socket footprints, replacement-aware hints and per-repair accounting under the decided Try-is-free rule.
 
-1. **Build Welcome Ways 1–4**: `logic.ts` with walker and solver tests, the game, voice, how-to, autotouch, registry and land; the tier for a new game.
+1. Welcome Ways 1–4 built; [batch record](../../archive/COMPLETED-2026-10-09.md#welcome-ways-levels-14-2026-10-24).
 2. **Define Welcome Ways 5–7** (constraints, conflict, repair for a new friend), with enumeration tests per level.
 3. **Define Sink or Float 8: Garden Raft** after a float/balance model review, sharing `topples`-style exact positions.
 4. **Define Gadget Bench Fix-It Day** inside Gadget Bench 4–7's definition (inventions packet I3).
@@ -184,4 +184,4 @@ Welcome Ways 1–4 is [defined](../../definitions/welcome-ways.md) (2026-10-24, 
 
 ## What was built and what ran
 
-Welcome Ways 1–4 is defined, not built; its packet supersedes the early ladder details where it supplies exact rules. Prior study proof: the opened sources above, a source audit of the catalog, `node scripts/check-links.mjs` and `git diff --check`. No browser, device, child, tween or parent observation; no accessibility review.
+Welcome Ways 1–4 is built; [verification](../../VERIFICATION.md#2026-10-24--welcome-ways-levels-14); its packet supersedes the early ladder details where it supplies exact rules. Prior study proof: the opened sources above, a source audit of the catalog, `node scripts/check-links.mjs` and `git diff --check`. No browser, device, child, tween or parent observation; no accessibility review.
