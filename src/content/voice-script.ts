@@ -3167,6 +3167,22 @@ export const SCRIPT = {
   'brain.hint': ['Find {n}. Its stone has a golden outline.'],
   'brain.done': ['All {n} stones are lit! You found them in order.'],
 
+  'mn.title': ['Movie Night'],
+  'mn.instruction1': ['Choose sounds for the pictures. Watch your show, then take a bow.'],
+  'mn.instruction2': ['Give Duck a splash when Duck lands in the water. Show your friends.'],
+  'mn.instruction3': ['Give the door a knock and the waving friends a hello. Show your friends.'],
+  'mn.splashRequest': ['Put the splash where Duck lands in the water.'],
+  'mn.knockRequest': ['Put the knock where Bunny taps the door.'],
+  'mn.helloRequest': ['Put hello where our friends wave.'],
+  'mn.success': ['Our sounds go with those moments!'],
+  'mn.empty': ['Choose a sound for a picture.'],
+  'mn.ack': ['You put sounds in our show!', 'Those are your sounds in our show!'],
+  'mn.yourTurn': ['Now choose sounds for your own show.'],
+  'mn.splash': ['Splash'], 'mn.boing': ['Boing'], 'mn.whoosh': ['Whoosh'],
+  'mn.bell': ['Bell'], 'mn.knock': ['Knock'], 'mn.hello': ['Hello. A little tune for our waving friends.'],
+  'mn.watch': ['Watch'], 'mn.showFriends': ['Show your friends.'], 'mn.premiere': ['Show our friends'],
+  'mn.stop': ['Stop'], 'mn.bow': ['Take a bow'], 'mn.return': ['Put it back'], 'mn.undo': ['Undo'], 'mn.help': ['Show me'],
+
   count: ['{n}!'],
 } satisfies Record<string, string[]>;
 

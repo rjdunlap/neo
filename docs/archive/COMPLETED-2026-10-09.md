@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Movie Night 1–3 (MM2, 2026-10-25)
+
+[PR #974](https://github.com/rjdunlap/neo/pull/974), worker `01a174ec-f163-70a1-a705-68e44b768831`, `codex/movie-night-mm2`: fixed Pond/Door footage with reusable synthesized sounds, free Watch versus one/two event-match Premiere, round-wide support/accounting, tap/drag/return/Undo, Stop and Bow; voice/card/demo and ninth Painted Canyon registration. Source/decision/finite-state and current-contract/layout review passed; no later levels, storage, unlocks or imported/generated/recorded media. [Verification](../VERIFICATION.md#2026-10-25--movie-night-13-mm2) records units/build, filtered play, demos and geometry/visual proof. Person/device speech, touch and observation gates remain; MM3 and all later slices separately admitted.
+
+
 ### Scoop Shop 7–9 definition (EF1, 2026-10-25)
 
 [PR #959](https://github.com/rjdunlap/neo/pull/959), `codex/scoop-shop-ef1-definition`: [existing dive reconciled](../deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25) under the October23 school/three-scoop/peek-help decision. Frozen: cone selection versus friend peek, independent help identities, one-change/reversal finite cases, voice IDs, scoped how-to, two-order bot and full-size layout requirements. Built IDs1–6/10–13 and all existing orders preserved. EF1 docs only; EF1b 8–9 then7 separately queued, with building-session review, actual placement/layout, implementation and person/device gates. No code, assets, other EF items or benefit claims. Links/diff and manual current-contract review; no local gameplay checks. [Verification](../VERIFICATION.md#2026-10-25--scoop-shop-79-definition-ef1-docs-only).
@@ -1969,7 +1974,7 @@ New game in Story Grove (its 14th), subject story-grove; bands lap 1, toddler 1�
 
 ## Pond Typing KE2 part 2 — 2026-10-24
 
-[PR #946](https://github.com/rjdunlap/neo/pull/946): levels 4–6, sticky Shift capitals, visible copied lines with stops/Backspace, seeded one-letter caret repairs, word pictures, round-local Show the key and typed-key diagram lighting. Built 1–3/copying/accounting remain; Bubble Pond version 2 retains its three early ponds and adds capitals, line and repair ponds. Scope/actual differences/source check: [definition](../definitions/pond-typing.md#part-2-implementation-and-source-check-2026-10-24). No registration, land or other-game changes. Device/child checks remain open. Evidence: [verification](../VERIFICATION.md#2026-10-24--pond-typing-levels-46-ke2-part-2).
+[PR #946](https://github.com/rjdunlap/neo/pull/946): levels 4–6, sticky Shift capitals, visible copied lines with stops/Backspace, seeded one-letter caret repairs, word pictures, round-local Show the key and typed-key diagram lighting. Built 1–3/copying/accounting remain; Bubble Pond version 2 retains its three early ponds and adds capitals, line and repair ponds. Scope/actual differences/source check: [definition](../definitions/pond-typing.md#part-2-implementation-and-source-check-2026-10-24). No registration, land or other-game changes. Device/child checks remain open. Evidence: [verification](VERIFICATION-2026-10-24.md#2026-10-24--pond-typing-levels-46-ke2-part-2).
 
 ## Ramp Race One Change 6 — 2026-10-24
 
