@@ -1,5 +1,9 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Scoop Shop 7–9 definition (EF1, 2026-10-25)
+
+[PR #959](https://github.com/rjdunlap/neo/pull/959), `codex/scoop-shop-ef1-definition`: [existing dive reconciled](../deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25) under the October23 school/three-scoop/peek-help decision. Frozen: cone selection versus friend peek, independent help identities, one-change/reversal finite cases, voice IDs, scoped how-to, two-order bot and full-size layout requirements. Built IDs1–6/10–13 and all existing orders preserved. EF1 docs only; EF1b 8–9 then7 separately queued, with building-session review, actual placement/layout, implementation and person/device gates. No code, assets, other EF items or benefit claims. Links/diff and manual current-contract review; no local gameplay checks. [Verification](../VERIFICATION.md#2026-10-25--scoop-shop-79-definition-ef1-docs-only).
+
 ### Example Express 1–3 definition (D1, 2026-10-24)
 
 [PR #955](https://github.com/rjdunlap/neo/pull/955), worker `01a171a1-fcdd-70b0-aeff-8baa24cddb58`, branch `codex/example-express-d1`: [packet](../definitions/example-express.md) freezes six-rule fitting/ties, eight parcels and complete first seeds, all ten level-2 repairs and level-3 accepted family, free Test versus Check, solver support, speech/how-to/demo and layout/placement requirements. Docs only; D2 levels1–2 is separately queued, D3 follows; source-review, actual capacity/layout, later cases and person/device gates retained. Links/diff checked; no code/assets or local gameplay verification. [Verification](../VERIFICATION.md#2026-10-24--example-express-13-definition-d1-docs-only).
@@ -1944,7 +1948,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-24.md#2026-10-24--meadow-pens-
 
 ### Puddle Lens levels 1–4 (cells-microbes slice 2, built 2026-10-24, PR #935)
 
-New game in Bubble Beach (its 11th), subject tinker-lab; bands lap 1, toddler 1–2, preschool 2–3, pre-K 3–4, school 4. Level 1 tap the lens (leaf, drop, sand swell and shrink), level 2 slide a hand lens over three things beside a same-size paw, level 3 four stops on three drops (No swimmers free before stop 3), level 4 three just-enough-view questions on one sample with Show judged too small or too close. Code-drawn art, one Kokoro title clip. Review fixes: Start again cancels a step under way, the hint glide holds the table, the bot waits for a swimmer. Known gaps: no visitor critter, no separate dial knob. Stop order and feature windows were source-checked (hand lens ~10× shows trichomes; cells and chloroplasts ~100–400×; swimmers 40–100×, cilia near 400×). Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--puddle-lens-levels-14-cells-microbes-slice-2).
+New game in Bubble Beach (its 11th), subject tinker-lab; bands lap 1, toddler 1–2, preschool 2–3, pre-K 3–4, school 4. Level 1 tap the lens (leaf, drop, sand swell and shrink), level 2 slide a hand lens over three things beside a same-size paw, level 3 four stops on three drops (No swimmers free before stop 3), level 4 three just-enough-view questions on one sample with Show judged too small or too close. Code-drawn art, one Kokoro title clip. Review fixes: Start again cancels a step under way, the hint glide holds the table, the bot waits for a swimmer. Known gaps: no visitor critter, no separate dial knob. Stop order and feature windows were source-checked (hand lens ~10× shows trichomes; cells and chloroplasts ~100–400×; swimmers 40–100×, cilia near 400×). Checks are in [VERIFICATION](VERIFICATION-2026-10-24.md#2026-10-24--puddle-lens-levels-14-cells-microbes-slice-2).
 
 ### Story Weaver levels 1–3 (writing-composition WC1, built 2026-10-24, PR #939)
 

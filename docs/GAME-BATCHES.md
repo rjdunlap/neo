@@ -80,6 +80,19 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
+### scoop-shop 3: Change and reverse
+
+- **`scoop-shop`, level 8 Change of mind**: exactly one bottom/middle/top replacement before input; final-order peek and accounting.
+- **`scoop-shop`, level 9 Top first**: reverse a spoken distinct triple; upright peek.
+
+EF1b first batch, school only, [canonical EF1 requirements](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25). Retain built IDs/order; separate admission and building-session review/placement/layout/person gates. Proof: typecheck, rule tests, filtered top-level9 play, demos8/9; other checks only at the applicable tier. No level7 implementation in this batch.
+
+### scoop-shop 4: Two cones
+
+- **`scoop-shop`, level 7 Two cones**: after batch3 and built11; one pair, three scoops total, free cone selection distinct from friend peek, independent state/accounting and both service orders.
+
+Standalone EF1b new interaction, [canonical EF1 requirements](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25). Separate admission, current source/contract review, actual full-size layout/placement, rules, filtered wrong-scoop/peek/completion play, portrait and two-order demo; shared-file/asset build tier as applicable. Person/device gates stay open.
+
 ### shape-sorter 1: Sorting entry, shape pool and three sizes
 
 Built 2026-10-22, [PR #817](https://github.com/rjdunlap/neo/pull/817); [closeout](archive/COMPLETED-2026-10-09.md#shape-sorter-batch-1-round-or-square-shape-pool-sizes-and-big-middle-little-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
