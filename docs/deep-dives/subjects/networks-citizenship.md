@@ -162,7 +162,7 @@ M. Ten levels, four bands, a graph model, piece textures, two layouts (the map m
 
 ## Build slices, in order
 
-1. **NC1, docs:** define Relay Woods 1–4 (the map generator's constraints, the five pictures, voice lines, both layouts, the how-to card by level, the ghost finger's BFS). Decisions 1, 2, 4.
+1. **NC1, docs — claimed 2026-10-25:** worker `01a17363-aa1a-7b72-aa7d-a38463bed13e`, branch `codex/relay-woods-nc1-definition`; exact scope: Relay Woods levels1–4 definition only. Expected files: `docs/definitions/relay-woods.md`, this study, recommendations/tracker, READY/STUDY-BACKLOG/GAME-BATCHES/ROADMAP, execution checkpoint, verification and completed-work archive. No code/assets or later slices. Define Relay Woods 1–4 (the map generator's constraints, the five pictures, voice lines, both layouts, the how-to card by level, the ghost finger's BFS). Decisions 1, 2, 4.
 2. **NC2, build:** Relay Woods 1–4 with rule tests, the card and the bot; register, land it, README/GAMES rows. Verification: typecheck, rule tests, one scripted play (levels 1 and 4, one wrong tap, one hint), one portrait screenshot, `fingerdemo`.
 3. **NC3, build:** levels 5–7 (pieces, slots, the lost piece, ticks). Rule tests above; a browser play of 7 only.
 4. **NC4, build:** levels 8–10 (postcard or envelope, the lock, the extra path). Decision 5 first. Rule tests for bridges and the unique private request.
