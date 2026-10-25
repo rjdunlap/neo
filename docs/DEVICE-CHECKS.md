@@ -463,7 +463,7 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **Sense Detective**: A three-year-old tries Sense Detective level 1.
 - **Melt and Freeze**: Does a lap child enjoy Melt and Freeze 1–2.
 - **Mirror Brush fold button**: Does a two-year-old link the fold press to the copy, and is the squish pleasant.
-- **Visual art**: Can a lap child manage Little Loom level 1.
+- **Visual art**: Can a lap child manage Little Loom level 1 (still a gate before lap registration; VA1 defines toddler–pre-K only). After VA2, check actual iPad pedal/shuttle touch, speech, yarn marks/contrast, over-under readability, retry/glow comprehension and child enjoyment; [definition](definitions/little-loom.md). Browser success establishes none of these.
 - **Sound Garden**: iPad speaker loud/quiet contrast (for Little Conductor plan 5).
 - **Rhythm Neighbors**: Does a five-year-old play level 10 (before any pre-K window for 11).
 - **Garden Grow**: Would a toddler enjoy Garden Grow level 8.

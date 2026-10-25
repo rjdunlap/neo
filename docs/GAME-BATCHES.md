@@ -530,3 +530,14 @@ Proof: new-game tier, as the [definition's Check tier](definitions/timeline-trai
 ### welcome-ways 1: Levels 1–4
 
 Built; [batch record](archive/COMPLETED-2026-10-09.md#welcome-ways-levels-14-2026-10-24). Levels 5–7 need their own definition.
+
+### little-loom 1: Levels 1–3 (VA2)
+
+Source: [VA1 packet](definitions/little-loom.md), visual-art VA2; one declared new-game batch after separate admission.
+
+- Level 1 Zoom the shuttle: eight eligible taps, automatic alternating lifts and beater.
+- Level 2 Pick the yarn: three marked pots, free choice then fixed shuttle control, no color target.
+- Level 3 Two pedals: latched A/B, deliberate shuttle submission, reject/retry same lift with one miss, capped per-row support and supported finish.
+- Shared drawdown/finite rules, Graphics loom, palette/marks, level-scoped speech/how-to, three ghost-finger plans, current Painted Canyon registration/layout and bounded six-by-eight cloth Keep with validation/backup/profile/offline coverage.
+
+Toddler 1–2, preschool 2–3, pre-K 3 only. No school/lap registration, later patterns, wardrobe, Gallery Walk, Loom Logic or craft instructions. Before implementation retain building-session source/contract review and actual controls/guide/land geometry. Use the packet’s union of new-game and shared persistence/navigation checks, one filtered entry-layout/miss/help play and demos, within budget. If the whole slice cannot fit, declare named complete parts before claiming; Keep remains explicitly unbuilt until delivered. Lap and other person/device/reviewer gates remain open.
