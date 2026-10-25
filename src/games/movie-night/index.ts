@@ -1,4 +1,4 @@
-import {Container,Graphics,Rectangle,Text} from 'pixi.js';
+import {Container,Graphics,Rectangle,Text,type FederatedPointerEvent} from 'pixi.js';
 import {frogArt} from '../../art/animals';
 import {Critter,CRITTERS} from '../../art/critter';
 import {cream,ink,swatch,wood} from '../../art/palette';
@@ -40,8 +40,18 @@ export class MovieNight implements Game {
   private secondTone=-1;private pendingLabel:{line:LineId;time:number}|null=null;
   get busy(){return this.round.busy||this.opening;}
   get misses(){return this.round.misses;} get hints(){return this.round.hints;}
+  // Pixi can dispatch a captured up before later window-capture listeners run.
+  // Register this on the object before the shared drag's release handler.
+  private readonly guardRelease=(e:FederatedPointerEvent)=>{
+    const p=this.root.toLocal(e.global);
+    if(!this.background.hitArea?.contains(p.x,p.y))this.cancelled=true;
+  };
   private readonly cancelDrag=()=>{this.cancelled=true;this.hover=null;this.handles.forEach(h=>{if(h.dragging)void h.floatHome();});};
-  private readonly outsideUp=(e:PointerEvent)=>{if(!(e.target instanceof HTMLCanvasElement))this.cancelDrag();};
+  private readonly outsideUp=(e:PointerEvent)=>{
+    if(!(e.target instanceof HTMLCanvasElement)){this.cancelDrag();return;}
+    const r=e.target.getBoundingClientRect();
+    if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)this.cancelDrag();
+  };
   constructor(private readonly ctx:GameContext){
     this.round=new Round(ctx.level);this.plan=this.round.plan;if(this.plan.level>1)this.askForHint=()=>this.help();this.boxes=layout(ctx.view,this.plan.shots.length);
     ctx.stage.addChild(this.root);this.root.addChild(this.background,this.request);
@@ -51,6 +61,7 @@ export class MovieNight implements Game {
       const image=footage(this.plan.shots[i]);image.scale.set(this.boxes.tall?.5:.38);image.y=-10;socket.face.addChild(image);
       for(let dot=0;dot<=i;dot++)socket.face.addChild(new Graphics().circle((dot-i/2)*11,-b.h/2+10,3).fill(ink));
       this.root.addChild(socket);this.slots.push(socket);
+      socket.on('pointerup',this.guardRelease);socket.on('pointerupoutside',this.guardRelease);
       const h=draggable(socket,ctx.tw,{onPick:()=>{this.cancelled=false;},onDrop:()=>{
         const remove=!this.cancelled&&!this.busy&&this.round.strip[i]!==null&&this.boxes.tray.some(b=>Math.abs(socket.x-b.x)<b.w/2&&Math.abs(socket.y-b.y)<b.h/2);
         if(remove)this.edit(i,null);return false;
@@ -61,6 +72,7 @@ export class MovieNight implements Game {
         if(this.busy||this.finished)return;
         this.selectedPad=pad;this.selectedSocket=null;this.audition(pad);this.pendingLabel={line:padLines[pad],time:.65};this.draw();
       });const pic=glyph(pad);pic.y=-13;button.face.addChild(pic);this.trays.set(pad,button);this.root.addChild(button);
+      button.on('pointerup',this.guardRelease);button.on('pointerupoutside',this.guardRelease);
       const h=draggable(button,ctx.tw,{
         onPick:()=>{this.cancelled=false;},
         onMove:(x,y)=>{this.hover=this.nearest(x,y);this.drawOutlines();},
