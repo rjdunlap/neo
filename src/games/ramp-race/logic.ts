@@ -9,7 +9,7 @@ import type { Rng } from '../../engine/random';
  * The model is deliberately simple and explainable: distance = height × floor glide, in floor
  * marks. Nothing here pretends to be more than that.
  */
-export type RampMode = 'explore' | 'height' | 'both' | 'fair' | 'shelf';
+export type RampMode = 'explore' | 'height' | 'both' | 'fair' | 'shelf' | 'change';
 
 export interface RampPlan {
   mode: RampMode;
@@ -24,6 +24,7 @@ export const PLANS: RampPlan[] = [
   { mode: 'both', rounds: 3, name: 'Ramp height and floor (carpet, wood, ice) together reach the star' },
   { mode: 'fair', rounds: 3, name: 'Fair tests: compare two lanes, changing only one thing' },
   { mode: 'shelf', rounds: 2, name: 'Trial Shelf: roll two ramps, keep both cards, tap the one that went farther' },
+  { mode: 'change', rounds: 2, name: 'One Change: fix the orange lane so only one thing differs, then read the cards' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -42,6 +43,15 @@ export const MAX_DISTANCE = distance(4, 'ice');
 export interface Setup {
   height: number;
   floor: Floor;
+}
+
+/** The blue lane stays fixed throughout One Change. */
+export const CONTROL: Readonly<Setup> = { height: 3, floor: 'wood' };
+
+/** One floor and one height question, with distinct confounded orange starts. */
+export function makeChange(rng: Rng): { question: FairQuestion; start: Setup }[] {
+  const starts = rng.shuffle<Setup>([2, 4].flatMap((height) => (['carpet', 'ice'] as const).map((floor) => ({ height, floor }))));
+  return rng.shuffle<FairQuestion['compare']>(['floor', 'height']).map((compare, i) => ({ question: { compare }, start: starts[i] }));
 }
 
 /** Stars: on the 'height' level the floor is wood; on 'both' any combination may reach it. */
@@ -232,7 +242,8 @@ export function rampTouch(
   if (plan.mode === 'explore') {
     return a.height === EXPLORE_HEIGHTS[Math.min(goal.rolls, EXPLORE_HEIGHTS.length - 1)] ? 'go' : { lane: 0, change: 'ramp' };
   }
-  if (plan.mode === 'fair') {
+  if (plan.mode === 'fair' || plan.mode === 'change') {
+    if (plan.mode === 'change' && (goal.records?.length ?? 0) >= 2) return { card: farther(goal.records![0], goal.records![1]) };
     if (!goal.question || !b) return null;
     const fix = fairRepair(goal.question, a, b);
     return fix ? { lane: 1, change: fix } : 'go';

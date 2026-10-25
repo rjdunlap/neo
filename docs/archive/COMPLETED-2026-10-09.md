@@ -1903,7 +1903,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-24.md#2026-10-24--rhythm-neigh
 
 Branch `claude/peg-garden-cup-and-bud` (batch `peg-garden 3`, [PR #923](https://github.com/rjdunlap/neo/pull/923), [deep dive](../deep-dives/peg-garden.md#build-slices-in-order)). Level 6: four cups with 1-4 dots, three distinct asks, a wrong cup says its count, two misses show the full path and glow the asked cup, fixed stepping, the cutoff counts nothing. Level 7: a fixed pearl button, the friend's cup missed as the board stands, 3-5 rings at least 120 board units apart, two seeds in dishes (snap to the nearest free ring within 100); an empty run is a free look, each planted miss counts, two misses outline one working ring and return seeds on other rings; voice `peg.plant`, `peg.plantLook`, `peg.plantMissed`; the ghost finger plants on the hinted ring and taps the pearl. Pre-K window is 3-7. Couch levels unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--peg-garden-levels-6-and-7-into-the-cup-and-plant-a-bud-slices-56).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-24.md#2026-10-24--peg-garden-levels-6-and-7-into-the-cup-and-plant-a-bud-slices-56).
 
 ## Who Am I? levels 1-3, slice Z3 (2026-10-24)
 
@@ -1956,3 +1956,7 @@ New game in Story Grove (its 14th), subject story-grove; bands lap 1, toddler 1�
 ## Pond Typing KE2 part 2 — 2026-10-24
 
 [PR #946](https://github.com/rjdunlap/neo/pull/946): levels 4–6, sticky Shift capitals, visible copied lines with stops/Backspace, seeded one-letter caret repairs, word pictures, round-local Show the key and typed-key diagram lighting. Built 1–3/copying/accounting remain; Bubble Pond version 2 retains its three early ponds and adds capitals, line and repair ponds. Scope/actual differences/source check: [definition](../definitions/pond-typing.md#part-2-implementation-and-source-check-2026-10-24). No registration, land or other-game changes. Device/child checks remain open. Evidence: [verification](../VERIFICATION.md#2026-10-24--pond-typing-levels-46-ke2-part-2).
+
+## Ramp Race One Change 6 — 2026-10-24
+
+Inquiry Q4 is built: Trial Shelf5 (#918) followed by One Change6 ([PR #949](https://github.com/rjdunlap/neo/pull/949)). Level6 locks blue at3/wood, seeds one floor and one height repair with distinct confounded starts, accepts either fair repair, then asks from two evidence cards. Only unfair Checks and wrong cards miss; setup and reading help each count once per question. School1–6; pre-K1–2 and level4 rules unchanged. No level7, practical guidance, save or navigation change. Typecheck/59 scoped tests, woods6 supported play/portrait and ghost-finger6 passed; device/child checks remain open.

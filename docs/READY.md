@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`ramp-race`, One Change 6 (inquiry Q4, part 2; Trial Shelf 5 is built)** (new level with one new interaction): the locked blue control lane at level 6 and the accounting table as decided 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#decisions)); What can we tell? 7 follows. [Definition](definitions/ramp-race-trial-shelf.md)
 - **Better voice V1 (remaining): render the rest of the slot-free script** (assets tier, offline check): after the iPad listening check of the first 215 clips passes ([device check](DEVICE-CHECKS.md)), add more line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally; device speech stays the fallback. Slotted lines (V3) and Word Monsters' phonemes stay later. [A better voice](ROADMAP.md#a-better-voice)
 
 - **`welcome-ways`, build levels 1–4** (one new-game batch, three related substeps): one shared entrance for rolling/hopping friends, then two ramps and a wide door for Roly and Bear; Try is free, hints repair placed parts. Tinker Lab by the actual capacity/layout sweep, else Cozy Village. [Definition](definitions/welcome-ways.md), [batch](GAME-BATCHES.md#welcome-ways-1-levels-14).
