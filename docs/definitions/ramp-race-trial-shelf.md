@@ -65,6 +65,8 @@ The pairs she can roll always have distinct stops (wood: 3, 4.5 and 6 marks), so
 
 ## Level 6: One Change
 
+**Claimed:** worker `01a1708c-0cd2-7b50-9a59-9a141c5985d2`, branch `codex/ramp-race-one-change`, Q4 part2 only. Expected files: `src/games/ramp-race/{logic.ts,logic.test.ts,index.ts}`, `src/content/{voice-script.ts,howto.ts}`, the filtered woods browser case, README and Ramp Race inquiry/definition/queue/verification closeout. Reuse Q2 and level5; exclude level7, other levels’ rules, new bands and unresolved decisions.
+
 **Setup:** two lanes, as on level 4, with one difference: **lane A (blue, top) is the locked control**, always `{ height: 3, floor: 'wood' }` (`CONTROL`).
 - Tapping lane A's ramp or floor says `ramp.keepblue`, with a soft tick and no other effect. It is not a miss.
 - Only lane B (orange, bottom) changes.
