@@ -157,7 +157,7 @@ A cozy Lantern Lake puzzle: nine ballots, three pictured candidates (which ride 
 
 ## Build slices, in order
 
-1. **CC1, docs:** define Village Vote 1–3 (preschool through school entry): generator, accepted taps, misses and hints, voice lines, both layouts, the bot, band windows and the Cozy Village capacity test. Decisions 1 and 2.
+1. **CC1, docs — claimed 2026-10-25:** worker `01a1732f-dac2-7d23-a542-8d7f0c2f45b0`, branch `codex/village-vote-cc1-definition`. Scope: only this definition; expected files `docs/definitions/village-vote.md`, READY, STUDY-BACKLOG, subject study/recommendations/tracker, ROADMAP, GAME-BATCHES, VERIFICATION/archive and EXECUTION-QUEUE. No code/assets, CC3/CC5 or family cards; preserve source/review, layout/placement, implementation and person/device gates. Define Village Vote 1–3 (preschool through school entry): generator, accepted taps, misses and hints, voice lines, both layouts, the bot, band windows and the Cozy Village capacity test. Decisions 1 and 2.
 2. **CC2, docs:** a Mail Carrier deep dive with *Who can help?* (level 9) and *Which door?* (toddler rung): the problem-and-tool pool, the key's job tools, misses and a journal discovery per helper. Decision 5. **Done 2026-10-19:** defined as levels 9 and 10 in the [Mail Carrier deep dive](../mail-carrier.md#new-levels-on-top) (decision 5 at its lean: six helpers, no police or fire).
 3. **CC3, docs:** define Count the Ballots 1–2 with its deal generator and the plurality-versus-run-off assertion. Decision 3.
 4. **CC4, build:** Village Vote 1–3 after CC1 (new-game tier: typecheck, rule tests, one scripted play, one portrait screenshot).
