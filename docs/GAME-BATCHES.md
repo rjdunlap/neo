@@ -530,3 +530,36 @@ Proof: new-game tier, as the [definition's Check tier](definitions/timeline-trai
 ### welcome-ways 1: Levels 1–4
 
 Built; [batch record](archive/COMPLETED-2026-10-09.md#welcome-ways-levels-14-2026-10-24). Levels 5–7 need their own definition.
+
+### little-loom 1: Levels 1–3 (VA2)
+
+Source: [VA1 packet](definitions/little-loom.md), visual-art VA2; one declared new-game batch after separate admission.
+
+- Level 1 Zoom the shuttle: eight eligible taps, automatic alternating lifts and beater.
+- Level 2 Pick the yarn: three marked pots, free choice then fixed shuttle control, no color target.
+- Level 3 Two pedals: latched A/B, deliberate shuttle submission, reject/retry same lift with one miss, capped per-row support and supported finish.
+- Shared drawdown/finite rules, Graphics loom, palette/marks, level-scoped speech/how-to, three ghost-finger plans, current Painted Canyon registration/layout and bounded six-by-eight cloth Keep with validation/backup/profile/offline coverage.
+
+Toddler 1–2, preschool 2–3, pre-K 3 only. No school/lap registration, later patterns, wardrobe, Gallery Walk, Loom Logic or craft instructions. Before implementation retain building-session source/contract review and actual controls/guide/land geometry. Use the packet’s union of new-game and shared persistence/navigation checks, one filtered entry-layout/miss/help play and demos, within budget. If the whole slice cannot fit, declare named complete parts before claiming; Keep remains explicitly unbuilt until delivered. Lap and other person/device/reviewer gates remain open.
+
+
+### swap-meet 1: Levels 1–4 (ME2)
+
+Source: [ME1 packet](definitions/swap-meet.md), money-economy ME2; one declared four-level new-game batch after separate admission.
+
+- Level1 Give it: three sequential authored requests, two basket slots, both objects cross, zero misses.
+- Level2 Two friends: either order of two simultaneous requests and visible returned objects.
+- Level3 Swap!: two reciprocal pairs among four friends, both pair orders/drag directions.
+- Level4 Chain of two: both authored basket/goal chains, exactly two forward exchanges.
+- Shared bounded exact Undo, all-reachable-state BFS/recovery/shortest-action hints, intentional offers and capped support, voice/card/four demos, Graphics art/sticker and unique Cozy Village registration with current paged capacity and actual full-size geometry.
+
+Toddler1–2, preschool2–3, prek3–4, school4. No lap/grownup, levels5–6, persistent currency/unlocks/inventory, other money games or practical cards. Preserve source/contract review before code, all-state rule proof, filtered first/top/miss/help/Undo plus levels2/3 layout and all demo coverage, portrait screenshot and build for shared registry/voice/land changes. Actual land/control layouts and person/device acceptance are separate evidence. Split into named complete parts before claiming if the whole batch cannot fit; never silently drop a level.
+
+### village-vote 1: Levels 1–3 (CC4)
+
+- **Status:** ready for separate admission; [CC1 packet](definitions/village-vote.md), [study slices](deep-dives/subjects/community-civics.md#build-slices-in-order). No implementation delivered by CC1.
+- **Whole batch:** 1 Two choices (count and choose larger); 2 Your pet votes too (free preference, one pet vote, losing cheerfully); 3 Three choices (partial tallies/replay, unique largest including3–2–2). Preschool1–2, pre-K1–3, school3. One election/sticker per round; wrong declarations only are misses, counting/preference free; manual/automatic support caps at1 and remains assisted.
+- **Files:** eventual `src/games/village-vote/{logic,index}.ts` and meaningful tests, registry, lands, voice-script, howto, browser filtered case, README/GAMES and normal doc closeout. Reuse onTap/companion/shell timing and finish. No new saves/assets assumed.
+- **Admission gates:** building-session source/contract and applicable game/rules review; actual transformed controls at least100 units in both orientations, level2 five-in-one-column and level3 seven-visible-voter layouts; recount current Cozy Village (13 at CC1 base,14 with this game, potentially15 after Swap Meet), actual paged registry/lands/layout proof and both route origins. Proposed fallback lands cannot be silently created.
+- **Shared final proof:** typecheck, units for every family/choice/count/acceptance/support invariant; filtered first/top play plus level2 losing-pet/phase/replay boundary, wrong declaration/help; all three public-input demos, one densest portrait screenshot, build for shared catalog/voice/card changes; relevant world/offline tier only for actual shared contract changes. Record tested commit/filter/URL and stop servers.
+- **Out:** levels4–6, Count the Ballots, persistent square, practical cards, historical/cultural/safety content. CC5 waits until1–3 are played; iPad speech/touch/child understanding/replay remain person/device evidence, not a browser pass.

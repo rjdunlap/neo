@@ -8,7 +8,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 ## Taps-only lap levels: Puzzle Pals 1–2, Teddy Doctor 2, Roundup 11 (R2, 2026-10-24)
 
-- [ ] On an iPad at lap with a one-year-old: does a tap on a puzzle piece read as "it went in" or as a surprise; does a tap on the named part of the patient land on the right part with a small finger (the bandage still drags for a grown-up); in *Come along*, does the herd walking to where she last tapped read as following her, and is three seconds long enough between taps? Chrome play with synthetic taps finished all three with no misses ([entry](VERIFICATION.md#2026-10-24--taps-only-lap-levels-r2)); a child's hand and device speech remain unobserved.
+- [ ] On an iPad at lap with a one-year-old: does a tap on a puzzle piece read as "it went in" or as a surprise; does a tap on the named part of the patient land on the right part with a small finger (the bandage still drags for a grown-up); in *Come along*, does the herd walking to where she last tapped read as following her, and is three seconds long enough between taps? Chrome play with synthetic taps finished all three with no misses ([entry](archive/VERIFICATION-2026-10-24.md#2026-10-24--taps-only-lap-levels-r2)); a child's hand and device speech remain unobserved.
 
 ## Bond Beads levels 1–2 (chemistry slice 2, 2026-10-24)
 
@@ -364,7 +364,7 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 - [ ] **Rhythm Neighbors level 9, Knock a call, with small hands (2026-10-24).** A two- or three-year-old at 9: does a 1.6 s quiet spell feel like the right moment for the frog to answer (not so soon it interrupts a slow knocker, not so late she taps again), does she read the answer as the frog replying to her call, and does knocking through the answer confuse her? Not established by Chrome automation.
 - [ ] **The quiet music-making games on the iPad (2026-10-09).** Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors, Clap the Syllables and the treehouse tune plaque no longer have the island's loop under them (a probe in headless Chrome shows the loop at about zero and the beat clock still running; the plaque's dip came back after the duck). Does the bare room feel empty to a small child or does her own sound carry it, is Song Maker's playhead still easy to follow, and does Pattern Train's bell level want the same treatment?
 - [ ] **Sound Garden's whole cast on the iPad (2026-10-21).** Level 1 seats five of six singers: do the bunny's four quick beats and the turtle's two slow tocks sound clearly different from the speaker, does the pitched ribbit read as low next to the bird's chirp, and does a small child tap through the whole garden?
-- [ ] **Speech voices for other languages on the iPad (2026-10-11).** Which voices her iPad has for the languages under consideration (Settings, Accessibility, Spoken Content, Voices), whether one needs a download, how they sound at the game's rate (0.95) and pitch (1.15), which were tuned on English voices, and whether a native speaker would accept them for a toddler. Blocks the stage 1 build of [Additional languages](ROADMAP.md#additional-languages); the definition does not wait. First pilot is European Portuguese (`pt-PT`): the developer-named family reviewer must accept every shipped word on the actual voice at game rate/pitch, including offline, replay and interruption; installed generic `pt`/`pt-BR` is not acceptance. Record device/OS, voice identity, reviewed content version/date and result; no acceptance performed by the [world-languages study](deep-dives/subjects/world-languages.md#decisions-and-acceptance-gates).
+- [ ] **Speech voices for other languages on the iPad.** European Portuguese first; the [WL1 checklist and evidence template](definitions/additional-languages.md#review-evidence-template-and-open-device-checklist) and [device checklist below](#european-portuguese-stage-1-pilot-wl1) define the open first-pilot acceptance. Other languages stay later; no listening acceptance performed.
 - [ ] Play couch trips with real Pro Controllers on a TV and write down what is wrong: text size from the couch (pages scale to about 1.4 times at 1080p), how-to pacing (Secret Code's and Bumper Garden's demos run 30–40 seconds), whether the bots are a good example, how fast trips open new games (one tier per trip is a guess), how face-off feels to whoever loses, and whether the finale's four-second ceremony is a treat or a wait.
 - [ ] Judge the challenge courses: whether Pond Practice is easy enough and the Five Ponds hard enough, whether Cloud Hopper's small clouds suit a stick, whether any of the three gives a reason to run again, whether a hint after three extra slides or two missed launches is too soon for a score chase, and whether the squashing spring reads well or the launcher wants to become a catapult. Five to ten minutes per course is a hypothesis, not a timer.
 - [ ] Compare three versus four choices per stop, and the pacing of a whole trip, before adding a dice board or more party structure.
@@ -464,7 +464,7 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **Sense Detective**: A three-year-old tries Sense Detective level 1.
 - **Melt and Freeze**: Does a lap child enjoy Melt and Freeze 1–2.
 - **Mirror Brush fold button**: Does a two-year-old link the fold press to the copy, and is the squish pleasant.
-- **Visual art**: Can a lap child manage Little Loom level 1.
+- **Visual art**: Can a lap child manage Little Loom level 1 (still a gate before lap registration; VA1 defines toddler–pre-K only). After VA2, check actual iPad pedal/shuttle touch, speech, yarn marks/contrast, over-under readability, retry/glow comprehension and child enjoyment; [definition](definitions/little-loom.md). Browser success establishes none of these.
 - **Sound Garden**: iPad speaker loud/quiet contrast (for Little Conductor plan 5).
 - **Rhythm Neighbors**: Does a five-year-old play level 10 (before any pre-K window for 11).
 - **Garden Grow**: Would a toddler enjoy Garden Grow level 8.
@@ -477,7 +477,7 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **Programming**: Preschool readiness for Cue Studio level 1.
 - **Ratio and proportion**: iPad art check of the authored colour pairs (blue + yellow stays unauthored until it passes).
 - **Chance and statistics**: A two-year-old plays Spinner Fair level 1 (informs adding a toddler entry).
-- **Money and economy**: Child playtest of Lemonade Stand 6's stopped top-up.
+- **Money and economy**: After separately admitted ME2, check Swap Meet actual iPad drag/cancel, two-way object/want legibility, full-size targets/guide in both orientations, speech/replay, toddler returned-object/Undo understanding and pre-K chain order/enjoyment ([ME1 packet](definitions/swap-meet.md#admission-review-and-remaining-evidence)). Definition only: no device or child evidence yet; levels5–6 wait on1–4 played. Child playtest of Lemonade Stand 6's stopped top-up remains later.
 - **Area, volume and space**: Device speech check of "area"/"perimeter.
 - **Weather/water subject**: A tween and parent try the older robust-layout/mystery cases.
 - **Bouncy Launch’s near-or-far entry, lap pull, spring variable and supports**: A one-year-old drags the lap pull level.
@@ -507,3 +507,13 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **RW05 slice 2b, Splish Splash and Weather Wardrobe on the companion rig**: On an iPad, the sprout's smaller cheek and ear splotches, the river and glider garments' size and legibility, and a child's read of hats on side-on faces.
 
 - [ ] **Sudoku Garden's wrong-digit line on a device (2026-10-24).** On an iPad, place a wrong (not clashing) number: does the gentle boing and red ring read as help rather than scolding, is the spoken "The 4 does not belong in that square…" clear and not repeated too often (once per four seconds at most)? Only headless Chromium has run it.
+
+## European Portuguese stage-1 pilot (WL1)
+
+Definition complete, **all person/device checks open**. [Packet and per-line evidence template](definitions/additional-languages.md#review-evidence-template-and-open-device-checklist); [reviewer designation](WAITING-ON-DEVELOPER.md#waiting-on-the-developer). No Portuguese entries, designated reviewer or iPad acceptance supplied by WL1.
+
+- [ ] Developer names family reviewer; explicit acceptance of all 20 keys and every supplied line/variant, with reviewed commit/date, meaning/articles/gender/number/context and alternatives.
+- [ ] Reviewer listens to every entry after English in its pictured host context, including game sounds, using the actual iPad local pt-PT voice; record voice identity/URI/lang/local flag, OS, Safari/PWA, rate/pitch/volume/date and accept/revise/reject per line.
+- [ ] Hear accepted voice offline after cold restart; missing/unaccepted/pt/pt-BR-only voice leaves English and accurate parent status. Revalidate changed content, voice or settings.
+- [ ] Test fast touches, pet replay, interrupted English/tail, finish, Home/Back, mute, setting/profile and voice-list changes: no stale/backlogged words, controls stay responsive.
+- [ ] Current-format backup/restore and isolated profile switching work offline; recheck integrated host playback after WL2. Browser stubs do not satisfy this checklist.

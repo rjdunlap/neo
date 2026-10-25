@@ -1,0 +1,106 @@
+# Swap Meet levels 1–4 (ME1)
+
+Defined 2026-10-25 from the [money-and-economy study](../deep-dives/subjects/money-economy.md#first-games-proposed-ladder-swap-meet), [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#money-and-economy-recommendations) and adopted 2026-10-23 decisions. Worker `01a172f8-7a55-72e2-b09d-c76c3796e586`, branch `codex/swap-meet-me1-definition`, [PR #967](https://github.com/rjdunlap/neo/pull/967). **Definition only: no game, registration, asset or runtime behavior delivered.** ME2 requires separate admission and the review/layout/proof gates below.
+
+Fun action: offer a pictured object and watch both objects cross between baskets. Learning purpose: match a visible request, recognize a mutually wanted swap, then order two trades to obtain a goal. These are the island friends' explicit toy rules; no claim about real prices, universal preferences, generosity, financial habits or developmental thresholds. Market Stall owns coin arithmetic and Lemonade Stand price/demand. No coins or payment are needed at 1–4; a shell here is one pictured object, never a balance.
+
+## Scope and whole rounds
+
+Stable ID `swap-meet`, spoken/grown-up title “Swap Meet”, subject `cozy-village` (everyday skills) and land `cozy-village` (Cozy Village), separate catalog concepts sharing the current stable ID. ME2 bands/ranges: toddler 1–2, preschool 2–3, prek 3–4, school 4–4, default each range's minimum. No lap or grownup registration; do not advertise unbuilt levels 5–6. The full study's toddler–school window remains adopted. Do not renumber these levels later.
+
+| Level / grown-up description | Complete round and accepted action | Completion |
+| --- | --- | --- |
+| 1 Give it — match three pictured requests, one friend at a time | Three fixed stages below. Two reusable-looking but finite basket slots; drag the matching held object to the sole friend; the friend hands back its held object. Return objects visibly arrive before the next stage. | All three exchanges, then shell-owned finish |
+| 2 Two friends — give each friend the pictured object and receive one back | Two simultaneous friends, two basket objects; either matching offer first. Satisfied friend keeps its received object; its returned reward stays visible but is not draggable in this round. | Both friends satisfied, two exchanges |
+| 3 Swap! — find two pairs who each want the other's held object | Four friends, no player basket. Drag one active friend's object to another active friend; accept only if both wants match. Both objects cross, both friends satisfied. Either direction of either pair is accepted. | Both pairs satisfied, two exchanges |
+| 4 Chain of two — trade the basket object twice to reach the companion's pictured goal | One basket object, two friends and one separate companion goal picture. Only basket-to-friend offers; no friend-to-friend shortcut. Each accepted trade replaces the carried object. | Basket holds the goal after exactly two forward trades; companion flies its kite automatically |
+
+One sticker per complete round, with or without help, through `ctx.finish({ misses, hints })` exactly once after the last exchange/goal animation. No per-stage sticker, score for fewer trades, time limit, fail state, persistent inventory, discovery/Keep, project/unlock, currency or new save field. Leaving discards round-local objects and undo history; shell progress/adaptation/pins remain normal. Happy friends never imply a needy companion or an obligation to return.
+
+## Authored cases and replay
+
+ME2 uses these finite authored cases; seeded RNG may permute friend positions, basket slots and independent stage order, never wants/holds or the goal. No random graph generation. Choose the level4 first trader on both sides across seeds, rather than making leftmost always the answer. Color and shape distinguish objects together; text is optional.
+
+| Level / case | Initial holds and wants | Accepted plan (all orders below are examples, not privileged answers) |
+| --- | --- | --- |
+| 1a | Basket ball + leaf; Bunny holds carrot, wants ball | Ball → Bunny, receive carrot |
+| 1b | Basket berry + shell; Duck holds ribbon, wants berry | Berry → Duck, receive ribbon |
+| 1c | Basket flower + acorn; Otter holds star, wants flower | Flower → Otter, receive star |
+| 2 | Basket ball + leaf; Bunny holds carrot, wants ball; Duck holds ribbon, wants leaf | Ball → Bunny and leaf → Duck, either order |
+| 3 | Otter holds berry/wants shell; Duck holds shell/wants berry; Bunny holds leaf/wants flower; Frog holds flower/wants leaf | Otter↔Duck and Bunny↔Frog, either pair first and either drag direction |
+| 4a | Basket leaf; Duck holds shell/wants leaf; Frog holds kite/wants shell; companion goal kite | Leaf → Duck, then shell → Frog |
+| 4b | Basket acorn; Otter holds ribbon/wants acorn; Bunny holds flower/wants ribbon; companion goal flower | Acorn → Otter, then ribbon → Bunny |
+
+Level1 stages replace the active basket only after showing its received object in a noninteractive completed-stage strip; old rewards cannot become new offers. There are always only two active objects. Level2 returned carrot/ribbon are similarly display-only. Level3 satisfied pairs remain visibly exchanged, with a check mark, but cannot be offered again. Level4 current held objects and wants remain visible even for satisfied friends; mark them done, and retain Undo. Completed-stage strips never add hit targets or hide an active want.
+
+## Want graph, acceptance and Undo
+
+The eventual `logic.ts` owns immutable authored case data, a canonical state, legal actions, transitions, goal test and solver. Objects have unique IDs within an active case; no duplication/destruction in an exchange. Friend wants are fixed pictured object IDs, not changing tastes. A satisfied friend is inactive for forward trades. A want may refer to an object now held by its satisfied friend; satisfied bubbles get a check mark so the child sees why the friend is done. Before satisfaction every want refers to an object present in the active case.
+
+State includes case/stage index, all current object locations, satisfied flags and the bounded accepted-action history. Keep counters and transient drag/selection/animation outside solver identity. No object is both in two baskets or both draggable and a reward. At levels1–2 a directed offer edge exists when the offered **active basket** object equals the target active friend's want. It exchanges the two objects and satisfies that friend. Level3 an edge needs two active friends A/B with `hold[A] == want[B]` **and** `hold[B] == want[A]`; swap holds and satisfy both atomically. Level4 an edge exists when `basket == want[F]` for an active friend F; swap its hold with the basket and satisfy F. No direct giving to the companion before obtaining the goal, and no silent removal of the returned object.
+
+**Undo is an explicit control, not an exception to a friend's want.** On an accepted exchange, append its exact pre-state (including stage/holds/flags) to a stack. Undo pops and restores that state, with both objects visibly crossing back and “Let's trade back.” It restores the want/active markers too. New forward play after Undo replaces the undone future; no Redo. Stack is at most three entries in level1 (stage boundaries included), two at levels2–4. In level1 Undo can restore the preceding stage and its original two objects. Reversing a trade by dragging an unwanted reward onto a satisfied friend is never required or interpreted as a new offer. This settles the study's informal “trading back” rule without claiming every original want accepts its former holding.
+
+Serialize bounded history as part of the search node: equal holds with different undo options are not automatically the same legal state. Forward edges cannot exceed remaining unsatisfied requests; Undo reduces history length. Thus the state graph is finite. Reverse edges restore every accepted step to its predecessor, so every reachable nonterminal state can recover to the authored start. Accept only legal authored input; malformed IDs/stale input are programming errors or ignored events, never child misses. Terminal state is absorbing once finish starts; Undo during final animation does not race saving.
+
+## Solver and required rule proof in ME2
+
+BFS enumerates **every reachable legal state** from each authored initial state, including Undo, stage changes and both pair directions, modulo semantic equality of otherwise equivalent histories. Search edges are accepted exchanges or explicit Undo, each cost one; stage advance/animation is automatic and cost zero. A hint seeks the fewest remaining legal actions to whole-round completion, including recovery if needed. “Two trades” describes the forward solution from the initial level4 case, not a claim that undo costs nothing or that minimum action count is an economy score. Use fixed case/friend/object ID ordering for deterministic ties, independent of drawing order; accept all solutions. Do not precompute only the initial recipe or count animation frames as steps.
+
+ME2 rule tests must establish, rather than this definition claiming to have tested:
+
+- All cases well formed, unique holds, every active want/goal present, exactly the objects/slots and request counts above; seeded cosmetic permutations preserve this.
+- Initial minimum forward exchanges: three for whole level1 (one per stage), two for level2, two for level3 (one per pair), exactly two for each level4 case; level4 cannot finish in one trade. Level3 accepts both directions and orders, level2 both orders.
+- Enumerate reachable states with production transition rules and independently check conservation, history bounds, satisfied/inactive rules and exact Undo restoration, including level1 stage boundaries. Rejected offers leave logical state/history unchanged.
+- From **each** reachable nonterminal state BFS finds a finish; each returned hint is an available action whose successor distance is exactly one less. Goal distance zero gives no fabricated trade. Every legal alternate ordering works; Undo never strands a round. Reject a deliberately broken Undo/acceptance/goal fixture so a solver cannot merely agree with its own erroneous rules.
+- Bot follows current-state shortest paths through public input, finishes every level/case/cosmetic permutation, and recomputes after Undo. Tests of input accounting cover invalid deliberate offers, free inspection/cancel, automatic/manual support overlap, completion idempotence and cleanup.
+
+These cases have no level5 side-trade branch; adding one or a shell market expands scope and needs ME5 after 1–4 are played. Recovery here is shown by Undo and alternate pair/request orders, not invented extra chain levels.
+
+## Exploration, offers and support accounting
+
+An **intentional offer** is a drag released within an active friend's full-size receiving area from a valid draggable source. A mere press names the held thing and pictured want, with lift/highlight; it is inspection. Dropping into empty space, back in the source, over a completed friend, the companion picture or a canceled/lost pointer is free and restores the object. No state changes until a release is accepted. A valid-source drop onto an active but incompatible friend is one rejected offer, returns the object, gives gentle boing and a spoken pictured want. At level3 also explain the unmet reciprocal want. Never count each animation/touch-move as another attempt.
+
+Level1 counts **zero misses**, including repeated incompatible offers; still teach the request. Levels2–4 count one miss per rejected intentional offer. Accepted trades, an alternate solution, Undo, inspection and exploration never count as misses, regardless of path length. A deliberate re-offer may count again, but repeated events from the same pointer release cannot. This is explicit-offer accounting, not a test of freely looking at an unseen want.
+
+Track a local rejection streak for the current unsatisfied task; two rejections glow the next solver action and record help even at level1. At level2 a task is the current state until an accepted trade; at level3 a pair exchange; at level4 the current carried object. Reset streak on accepted exchange/Undo/stage change; do not erase round misses or help. Shell manual Hint and automatic glow share one support flag per state/task: repeated glow/replay in that task adds no extra hint. Round hint count caps at two; two **distinct** assisted tasks produce two. Key the assistance ledger by authored case/stage plus task identity (request, pair or carried-object step), never the transient undo-history length. Undo cannot reset the assistance ledger to turn helped completion into independent completion. Any solver action performed by demonstration/help records assistance before acting. Passive instruction replay, object naming and rejected-offer speech alone are not help. Preserve nonzero help through finish even when the answer becomes obvious.
+
+Manual Hint always available: speak/highlight the next legal shortest-path action (including Undo if required); another request can demonstrate that one action with a ghost finger through the same public input, then recompute. Continue until supported completion; never silently replace a state with success. Automatic glow is nonblocking and does not intercept drag hits. No neglect, guilt, fewer-sticker penalty or praise for fastest/fewest trades.
+
+## Voice, how-to and demonstration
+
+ME2 adds every child-facing line to `src/content/voice-script.ts`; stable `swap-meet.*` IDs, `ctx.instruct` for replayable main instruction and `ctx.say` for wants/feedback. Proposed wording, to review in the build:
+
+| Scope | Spoken line / presentation |
+| --- | --- |
+| Level1 instruction | “Bunny wants the ball. Give Bunny the ball. Bunny gives you a carrot.” Use current stage's names/objects. |
+| Level2 instruction | “Give each friend the thing in their picture. See what comes back.” |
+| Level3 instruction | “Find two friends who want each other's things. Swap them.” |
+| Level4 instruction | “Our friend wants a kite. Trade what you carry to get it.” Use flower case variant. |
+| Inspect | “Duck has a shell. Duck wants a leaf.” Say both names, never require reading the bubble. |
+| Reject | “Duck wants a leaf.” Level3: “Duck wants the berry. Otter wants the shell.” |
+| Accept / Undo | “A leaf for a shell. Both things trade places.” / “Let's trade back.” |
+| Hint | Current solver edge: “Give the leaf to Duck,” “Swap Otter and Duck,” or “Use the back arrow to trade back.” |
+| Finish | “Everyone made a swap,” or “You traded for the kite!” No price/value claims. |
+
+The one `howto.ts` card is level-scoped: 1 pictured matching/receiving and three visits; 2 either friend first; 3 reciprocal pair; 4 current basket, goal and chain order. Explain Undo pictorially at every level, repeat speech on touch, and offer normal Play. Grown-up description states what she does, not a benefit claim. Co-play: grown-up voices one friend's pictured request and child chooses an offer; then exchange roles. Off-screen suggestion only: “With a grown-up, each hold a toy and say which toy you would like to swap.” No practical money/family card delivered or implied reviewed.
+
+`autotouch()` uses current-state solver edges and actual `drag.ts` input (both objects visibly cross). For Undo it taps the real control. Wait for animation/input-ready state; no direct mutation, skipping pairs or calling finish. Demonstrate each of levels1–4, including both level4 cases; first action is matching/ordering, never a text answer. Scene-owned scheduling only; cancellation/resize/destroy must release drag handles, listeners, tracked objects and owned textures; no late callback touches a destroyed friend. Respect the 40-unit drag lift and shared palm rejection.
+
+## Full-size controls and placement gate
+
+In ME2 `resize()` lays out from safe-area `view`, not window dimensions. Four creatures are the maximum at level3; other levels show at most two friends. Active held-object sources, friend receiving areas, Undo and hint controls each need at least 100 logical units after all parent scales. Prefer 120-unit objects/receivers with separate noninteractive bubble pictures. A receiver may contain its own held object for levels1/2/4, but at level3 source/receiver ownership must resolve by drag origin and nearest distinct target, never stacking two independent tap areas. Bubble/animation/glow graphics have no pointer interception. Keep guide, shell corner buttons, drag paths and speech readable.
+
+Proposed control envelopes to verify with the actual shell (rectangles are x,y,w,h): in 1024×768 landscape, reserve y<150 for shell/Undo and x<210,y>560 for guide. Four friend panels at (230,180,170,160), (440,180,170,160), (650,180,170,160), (440,390,170,160); receiver/source inside each at least120 square. Basket slots at (250,590,140,120) and (450,590,140,120); level4 companion goal at (700,550,140,140), display-only. Undo at (200,20,120,120). In 1024×1365 logical portrait use friend panels (230,220,200,200), (600,220,200,200), (230,540,200,200), (600,540,200,200), basket slots (260,930,140,140)/(500,930,140,140), companion goal (740,920,140,160), Undo (200,20,120,120); reserve x<210,y>1160 for guide. Center a one/two-friend case in the available friend rows. These are proposed envelopes, not measured hit areas or a screenshot pass. ME2 must fit actual art/bubbles, all shell controls, safe insets and drag paths in both orientations, adjust positions without shrinking controls, and test bounds/overlap after transforms. No full-screen overlay while the child is deciding.
+
+**Current capacity at base `26869cfc`: Cozy Village has 13 games**, not the study's historical 12: `splish-splash`, `feelings-faces`, `weather-wardrobe`, `scoop-shop`, `mail-carrier`, `teddy-doctor`, `market-stall`, `clock-tower`, `day-by-day`, `stop-and-go`, `pet-says`, `lemonade-stand`, `second-chance-shed`. Proposed addition makes14; `LAND_SPOTS=13` includes host, sign and arrows. Use current `visibleIn`/`olderIn` and `landPages` for every band and side; never treat14 as fourteen game slots on one screen. If all14 on one side without a sign, current arithmetic gives balanced pages7/7, each with host/arrows; with a sign it also gives7/7. Per-band counts and actual geometry still need proof. Maker Harbor is proposed and cannot be a silent fallback registration.
+
+ME2 must recount current main including other landed games; run registry/lands tests for unique membership, levels/descriptions/voice/card and every page/band in the existing view sweep, using Cozy Village's actual scenery horizon, host, guide, arrows and signpost. Review root Explore/Places and `classic/` launch/return origins at the real page and `playBand`, both orientations. A passing count alone is insufficient. If full-size paged placement fails, stop/checkpoint that gate or define a separate placement solution; do not shrink, overflow, create a land or claim this packet proves capacity.
+
+## Admission, review and remaining evidence
+
+ME1 closes only this definition. ME2 is one four-level new-game batch with exact subtasks in [GAME-BATCHES](../GAME-BATCHES.md#swap-meet-1-levels-14-me2). Before coding, read current source/contract rows and the study's opened sources where needed for claims; reconcile its fixed-want fiction, bands, input and existing overlap. No new curriculum research is claimed here. Keep source/reviewer checks; this docs-only packet has had manual semantic/scope review, not an independent game-reviewer or rules-tester pass. This assigned ME1 worker uses no subagents; ME2 follows its own applicable review instructions.
+
+ME2 proof: typecheck and meaningful unit tests above; one filtered play covering first and top, one rejected offer, help and Undo plus level2/3 entry/action layouts and all four demos (both top cases); one portrait screenshot. Build because shared registry/voice/land assets change. Add a filtered browser case and README suite entry. Reuse existing world/offline evidence for untouched shell behavior; any changed navigation/assets/persistence contract adds its relevant tier and production offline check. No blanket release suite. Record tested commit/filter/server URL and stop session servers. README/GAMES inventory, how-to and normal verification close out only when built, not during ME1.
+
+Person/device gates after ME2: actual iPad drag cancellation, two-way animation/want legibility, 100-unit targets in both orientations, speech/guide replay, whether a toddler understands the returned object and Undo, whether a pre-K child follows the two-step chain, and whether children enjoy/replay it. No Chrome test establishes these or transfer to everyday trading. Levels5–6 wait until1–4 have been played; persistent tickets remain parked per October23, real currencies require a family choice, other money games and practical family cards retain their own definitions/reviews. Nothing in ME1 opens them.
