@@ -188,7 +188,7 @@ These are proposals only, against the [rework brief](../../rework/README.md).
 
 ## Build slices, in order
 
-1. **ME1 · Define Swap Meet 1–4** (docs): the want-graph model, the trade rule, the misses and hints above, the BFS tests, voice, the how-to card, the ghost finger, land capacity.
+1. **ME1 · Define Swap Meet 1–4** — claimed by worker `01a172f8-7a55-72e2-b09d-c76c3796e586`, branch `codex/swap-meet-me1-definition` (docs only; PR pending). Expected files: `docs/definitions/swap-meet.md`, this study, recommendations/tracker, READY, STUDY-BACKLOG, ROADMAP, GAME-BATCHES, DEVICE-CHECKS, VERIFICATION/archive and EXECUTION-QUEUE. No code/assets or later money slices. Scope: the want-graph model, the trade rule, the misses and hints above, the BFS tests, voice, the how-to card, the ghost finger, land capacity.
 2. **ME2 · Build Swap Meet 1–4** (new-game tier).
 3. **ME3 · Define Market Stall 12 *Pick one*** inside the [Market Stall dive](../market-stall.md) with its decision 7 (docs).
 4. **ME4 · Define Lemonade Stand 5 *Save for the awning*** (docs) after decision 6: a goal jar, a tested plan that reaches it every seeded week, no failed week.
