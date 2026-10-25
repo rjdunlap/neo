@@ -21,7 +21,7 @@
 
 ### Bond Beads levels 1–2 (chemistry slice 2, built 2026-10-24, PR #941)
 
-New game in Tinker Lab (its 15th, 14 shown at school), `bond-beads`, school 1–2. Level 1 holds every hand of three trays in one piece (ends itself; no misses or hints; a stuck tray pulses a link to break), level 2 copies a pictured shape with Check (a miss only if the build changed; two misses glow the fix and count one hint per card; a further wrong Check gives a supported finish). A graph model and canonical matcher in `logic.ts` with 43 rule tests; a tally strip, Undo and Start again; a ghost finger; a Kokoro title clip. Cut for now: "Tidy" (moving beads), the 6–7-bead layout. Levels 3–4 are chemistry slice 3. Checks: [VERIFICATION](../VERIFICATION.md#2026-10-24--bond-beads-levels-12-chemistry-slice-2)
+New game in Tinker Lab (its 15th, 14 shown at school), `bond-beads`, school 1–2. Level 1 holds every hand of three trays in one piece (ends itself; no misses or hints; a stuck tray pulses a link to break), level 2 copies a pictured shape with Check (a miss only if the build changed; two misses glow the fix and count one hint per card; a further wrong Check gives a supported finish). A graph model and canonical matcher in `logic.ts` with 43 rule tests; a tally strip, Undo and Start again; a ghost finger; a Kokoro title clip. Cut for now: "Tidy" (moving beads), the 6–7-bead layout. Levels 3–4 are chemistry slice 3. Checks: [VERIFICATION](VERIFICATION-2026-10-24.md#2026-10-24--bond-beads-levels-12-chemistry-slice-2)
 
 ### Rhyme Time levels 5–7, Rhyme Riddles (poetry-wordplay PW1, 2026-10-24)
 
@@ -1999,3 +1999,7 @@ Inquiry Q4 is built: Trial Shelf5 (#918) followed by One Change6 ([PR #949](http
 ## ME1 Swap Meet 1–4 definition (2026-10-25)
 
 [PR #967](https://github.com/rjdunlap/neo/pull/967), worker `01a172f8-7a55-72e2-b09d-c76c3796e586`, branch `codex/swap-meet-me1-definition`: [definition](../definitions/swap-meet.md) freezes finite authored cases/complete rounds, fixed wants and atomic exchange, exact Undo, every-reachable-state BFS recovery/shortest hints, deliberate-offer/free-exploration accounting, capped support, bands, voice/how-to/demo and proposed both-orientation full-size envelopes. Recounts current Cozy Village13→14 and requires actual paged placement proof. October23 decisions applied. Docs only; ME2 separately admitted batch queued, source/reviewer/actual implementation/layout/person/device gates preserved. No code/assets or later money/card scope. Links/diff and manual semantics/current-source/scope review passed; local code/build/browser/offline/device not run.
+
+## CC1 Village Vote 1–3 definition (2026-10-25)
+
+[PR #969](https://github.com/rjdunlap/neo/pull/969), worker `01a1732f-dac2-7d23-a542-8d7f0c2f45b0`: [packet](../definitions/village-vote.md) freezes seeded finite vote families/rounds, actual-vote declarations and partial/replayed counts, one free pet vote that can lose, tie exclusion, misses/capped help, voice/card/bot, bands and proposed full-size layouts/current Cozy Village13→14 capacity requirements. CC1 READY line removed; CC4 batch promoted, next queued definition refills cadence. No runtime/assets delivered. Links/diff/manual semantic review only; separate CC4 source/contract review, actual layouts/placement, implementation and person/device gates remain. Later levels/cards/persistence stay separate.

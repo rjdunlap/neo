@@ -32,7 +32,7 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 - Coordinator `01a12db9-1a9e-7131-bda8-dc99bd6dea8d` exempt from worker concurrency check; locked checkout preserved. Swap Meet ME1 complete in #967. Current worker only: Village Vote CC1 docs-only definition; worker `01a1732f-dac2-7d23-a542-8d7f0c2f45b0`, host `local`, branch `codex/village-vote-cc1-definition`, source `origin/main` after #967. No competing active Neo implementation or matching claim; idle claims preserved.
 - Scope: Village Vote levels1–3 only, seeded votes/rounds and accepted taps, free pet voting, ties, support/accounting, voice/card/bot, bands and actual current Cozy Village capacity/layout requirements. Apply October23 decisions. No code/assets/build, later levels/Count the Ballots, persistence, family cards, historical/cultural or safety content.
-- Admission rechecked privately: ordinary allowance and both reset identities permit the bounded docs packet/proof/publication; exact readings remain in chat. No credits/model/billing changes. Claim publication next, then definition, links/diff/manual scope review, mandatory PR CI and publication. No further worker or coordinator messages.
+- Admission rechecked privately: ordinary allowance and both reset identities permit the bounded docs packet/proof/publication; exact readings remain in chat. No credits/model/billing changes. Claim `4796460e`, [PR #969](https://github.com/rjdunlap/neo/pull/969). CC1 packet and links/diff/manual semantic/current-source review complete; mandatory PR CI and publication next. CC4 separately admitted with source/review, actual layout/placement, implementation and person/device gates. No further worker or coordinator messages.
 
 ## Usage observations
 
