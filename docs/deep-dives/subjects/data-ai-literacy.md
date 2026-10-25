@@ -143,13 +143,12 @@ Round variety changes request feature, parcel decorations, contrastive evidence 
 
 ## Build slices in order
 
-D1 is defined in the [Example Express 1–3 packet](../../definitions/example-express.md) ([PR #955](https://github.com/rjdunlap/neo/pull/955)); the precise seeds, accepted sets, accounting and initial selected-rule presentation there supersede the proposed ladder above for levels 1–3. D2 remains a separate build with source-review and actual placement/layout gates.
+D1 is defined in the [Example Express 1–3 packet](../../definitions/example-express.md) ([PR #955](https://github.com/rjdunlap/neo/pull/955)); the precise seeds, accepted sets, accounting and initial selected-rule presentation there supersede the proposed ladder above for levels 1–3. D2 school levels 1–2 are built in Tinker Lab; D3 remains a separately admitted build with its own source review and rule/play/demo proof.
 
 Definitions are docs-only, links and diff checks. Builds below are later sessions explicitly selected by the developer, not a dispatch queue.
 
 | Slice | Complete scope | Verification when selected |
 | --- | --- | --- |
-| **D2 — build levels 1–2** | One playable teach/test/repair loop with replay and truthful hints | Typecheck and unit properties above; one filtered first/top play with failed Check and hint, portrait screenshot and ghost-finger demonstration; build because registration/shared content changes. Navigation/offline checks only for affected contracts |
 | **D3 — build level 3** | Choose a bounded training set using the same interaction | Typecheck, game rule tests, top-level browser play and fingerdemo; no broad suites |
 | **D4 — define Sorter Inspector** | One older case with informative test, explicit practice/fresh evaluation policy, contradiction and model-limit rules; choose range/destination | Docs links/diff |
 | **D5 — build one Inspector case** | Level 4 first; label contradiction and missing-sensor interactions separate sessions | New interaction tier, filtered to this mode; preserve existing levels |
@@ -159,4 +158,4 @@ Definitions are docs-only, links and diff checks. Builds below are later session
 
 ## What was built
 
-D1 definition only: [Example Express 1–3](../../definitions/example-express.md), 2026-10-24; no game built. Research and Markdown only. The tracker, IDEAS candidate table, roadmap recommendation packet and verification log accompany this study. No source, tests, assets, installed reference games, browser play, device speech or real family observation. Link/diff results are recorded in [VERIFICATION](../../archive/VERIFICATION-2026-10-16.md#2026-10-15--data-and-ai-literacy-subject-research). Publication was explicitly authorized by the developer on 2026-10-16 after the initial approval-review block.
+D2 school levels 1–2 built 2026-10-25: [build note](../../archive/COMPLETED-2026-10-09.md#example-express-levels-12-d2-2026-10-25), [verification](../../VERIFICATION.md#2026-10-25--example-express-12-d2). D1 defined the [Example Express 1–3 packet](../../definitions/example-express.md); its 2026-10-24 work was research and Markdown only. The tracker, IDEAS candidate table, roadmap recommendation packet and verification log accompany this study. The original study had no runtime checks; actual device speech and family observation remain open after D2. Original link/diff results are recorded in [VERIFICATION](../../archive/VERIFICATION-2026-10-16.md#2026-10-15--data-and-ai-literacy-subject-research). Publication was explicitly authorized by the developer on 2026-10-16 after the initial approval-review block.
