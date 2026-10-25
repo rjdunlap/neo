@@ -165,20 +165,15 @@ Levels 1–3: one session to define, one to build (strip, sound pads, a premiere
 
 ## Build slices, in order
 
-1. **MM1 · Define Movie Night 1–3** — claimed by worker `01a170f9-90ac-7bb1-9218-fab3c1fbf5b0`, branch `codex/movie-night-mm1` (docs only): sets, shots and facts, sound pads and event matches, premiere reactions and voice lines, accounting choice, how-to and ghost finger, both orientations, Paint Pier layout check.
-2. **MM2 · Build Movie Night 1–3** at the new-game tier.
-3. **MM3 · Define 4–5**: the shot-fact model, briefs, enumerated accepted strips, the Story Steps overlap test.
-4. **MM4 · Build 4–5.**
-5. **MM5 · Define 6–8**: the viewfinder grid, sizes, hiding facts, the two-audience factual briefs; Photo Safari overlap test.
-6. **MM6 · Define 9 and the 13+ cases** after the registration decision; open Media Arts grade 8 first.
-7. **MM7 · Define Pixel Flipbook** in the Pixel Pictures dive, after the storage decision.
-8. **MM8 · Make a movie at home** card, after the practical-card review.
-9. **MM9 · Picture Show**, after the rework home cutover.
+1. **MM2 · Build Movie Night 1–3** from the [MM1 packet](../../definitions/movie-night.md) at the new-game tier; retain source/contract review, actual Painted Canyon (`treehouse`, formerly Paint Pier) capacity/layout proof and separate implementation admission.
+2. **MM3 · Define 4–5**: the shot-fact model, briefs, enumerated accepted strips, the Story Steps overlap test.
+3. **MM4 · Build 4–5.**
+4. **MM5 · Define 6–8**: the viewfinder grid, sizes, hiding facts, the two-audience factual briefs; Photo Safari overlap test.
+5. **MM6 · Define 9 and the 13+ cases** after the registration decision; open Media Arts grade 8 first.
+6. **MM7 · Define Pixel Flipbook** in the Pixel Pictures dive, after the storage decision.
+7. **MM8 · Make a movie at home** card, after the practical-card review.
+8. **MM9 · Picture Show**, after the rework home cutover.
 
 ## What was built and what ran
 
-Nothing was built. Docs only: `node scripts/check-links.mjs` and `git diff --check`. No reference game was played; no child, tween or parent has seen any proposal.
-
-### MM1 definition claim (2026-10-24)
-
-Docs-only packet: Movie Night levels 1–3 shots/facts, sound pads/event matches, accepted strips, audience reactions, decided premiere accounting, speech/how-to/ghost finger, orientation and Paint Pier placement requirements. Expected files: `docs/definitions/movie-night.md`, this study, `RECOMMENDATIONS.md`, `docs/deep-dives/subjects.md`, `docs/STUDY-BACKLOG.md`, `docs/READY.md`, `docs/VERIFICATION.md`, completed-work archive and assigned-worker checkpoint in `docs/EXECUTION-QUEUE.md`. Dependencies: completed study and 2026-10-23 decisions. No gameplay, registration, assets, later levels, storage/flipbook build or unresolved decisions. Review, placement and downstream build gates stay open.
+MM1 levels1–3 [defined](../../definitions/movie-night.md) 2026-10-24 ([PR #953](https://github.com/rjdunlap/neo/pull/953)); this packet supersedes the early-level proposals above where more specific, including decided accounting and the current land name/count. [Closeout](../../archive/COMPLETED-2026-10-09.md#movie-night-13-definition-mm1-2026-10-24). No gameplay was built. Original study checks, docs only: `node scripts/check-links.mjs` and `git diff --check`. No reference game was played; no child, tween or parent has seen any proposal.
