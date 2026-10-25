@@ -1,3 +1,4 @@
+import { welcomeWays } from './welcome-ways';
 import { marbleJump } from './marble-jump';
 import { logRoll } from './log-roll';
 import { snowballMerge } from './snowball-merge';
@@ -137,6 +138,7 @@ import type { GameModule } from './types';
  * Every minigame. Within each island region, registry order determines game spots.
  */
 export const GAMES: GameModule[] = [
+  welcomeWays,
   bubblePop,
   rainbowFingers,
   jellyDrums,

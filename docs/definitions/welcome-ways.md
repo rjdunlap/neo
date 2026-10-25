@@ -1,12 +1,12 @@
 # Welcome Ways 1–4
 
-Defined 2026-10-24 from the [engineering-design study](../deep-dives/subjects/engineering-design.md#a-first-games-ladder-welcome-ways) and its [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#engineering-design-recommendations), under the [2026-10-23 decisions](../archive/DECISIONS-2026-10-23.md#decisions). **Docs only, ready for a separate build.** No game, registration, artwork, speech, device fit or learning outcome is established by this packet. [PR #944](https://github.com/rjdunlap/neo/pull/944).
+Defined 2026-10-24 from the [engineering-design study](../deep-dives/subjects/engineering-design.md#a-first-games-ladder-welcome-ways) and its [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#engineering-design-recommendations), under the [2026-10-23 decisions](../archive/DECISIONS-2026-10-23.md#decisions). **Levels 1–4 built in [PR #951](https://github.com/rjdunlap/neo/pull/951).** This remains the scope/rules contract; browser proof is in [VERIFICATION](../VERIFICATION.md#2026-10-24--welcome-ways-levels-14). Device fit and learning outcomes remain unobserved. [PR #944](https://github.com/rjdunlap/neo/pull/944).
 
 Fun action: put big wooden parts into an entrance, tap Try and watch friends hop or roll into the house. Learning purpose: test a design against the stated needs of everyone who will use it, notice the first blocking part and revise it. The parade, door chimes and friends waving from the window supply the payoff. No timer or minimum-parts score.
 
-## Build claim
+## Build record
 
-Worker `01a170c0-46c1-7561-ac1d-b39bb265291b`, branch `codex/welcome-ways-1-4`, claims all three substeps of levels 1–4 together: pure rules/repair tests; building/parade/input; speech/how-to/bot/catalog and scoped checks. Expected files: `src/games/welcome-ways/`, registry, lands, howto, voice-script, browser harness, README and relevant game/roadmap/verification/queue documentation. No later levels, save fields or shared navigation changes. Definition dependencies are resolved; Tinker Lab placement remains subject to the actual capacity sweep.
+Worker `01a170c0-46c1-7561-ac1d-b39bb265291b`, branch `codex/welcome-ways-1-4`, [PR #951](https://github.com/rjdunlap/neo/pull/951). All three substeps landed together; Tinker Lab passed the actual capacity/layout sweep. Build notes live in the [completed archive](../archive/COMPLETED-2026-10-09.md#welcome-ways-levels-14-2026-10-24).
 
 ## Scope, bands and overlap
 
@@ -131,4 +131,4 @@ Required meaningful rule tests in `logic.test.ts`:
 
 Build tier: typecheck and unit tests; one filtered scripted play covering first/last levels, a step that blocks Roly, narrow door that blocks Bear, hint and supported finish; demonstrate each new layout/level with `fingerdemo`; one portrait screenshot of level 4 and a landscape inspection. Build because registration/content files change. Add the suite/filter to the existing browser harness and README. Navigation/assets/persistence checks follow only what the implementation actually changes, under AGENTS' budget; do not claim offline fit from this document.
 
-Definition checks: Markdown links and `git diff --check` only. Implementation checks, iPad drag/tap comfort, spoken reasons on device, whether the child notices two visitors' needs, and human access representation review are **not run**. These observations remain future build/device evidence, not blockers on writing this fictional toy packet. No unresolved developer decision gates levels 1–4; later human representation, practical access cards and later geometry retain their study gates.
+Definition proof was Markdown links and `git diff --check` only. Build checks are recorded in [VERIFICATION](../VERIFICATION.md#2026-10-24--welcome-ways-levels-14). iPad drag/tap comfort, spoken reasons on device, whether the child notices two visitors' needs, and human access representation review remain **not run**. No unresolved developer decision gates levels 1–4; later human representation, practical access cards and later geometry retain their study gates.
