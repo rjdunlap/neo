@@ -476,7 +476,7 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **Programming**: Preschool readiness for Cue Studio level 1.
 - **Ratio and proportion**: iPad art check of the authored colour pairs (blue + yellow stays unauthored until it passes).
 - **Chance and statistics**: A two-year-old plays Spinner Fair level 1 (informs adding a toddler entry).
-- **Money and economy**: Child playtest of Lemonade Stand 6's stopped top-up.
+- **Money and economy**: After separately admitted ME2, check Swap Meet actual iPad drag/cancel, two-way object/want legibility, full-size targets/guide in both orientations, speech/replay, toddler returned-object/Undo understanding and pre-K chain order/enjoyment ([ME1 packet](definitions/swap-meet.md#admission-review-and-remaining-evidence)). Definition only: no device or child evidence yet; levels5–6 wait on1–4 played. Child playtest of Lemonade Stand 6's stopped top-up remains later.
 - **Area, volume and space**: Device speech check of "area"/"perimeter.
 - **Weather/water subject**: A tween and parent try the older robust-layout/mystery cases.
 - **Bouncy Launch’s near-or-far entry, lap pull, spring variable and supports**: A one-year-old drags the lap pull level.
