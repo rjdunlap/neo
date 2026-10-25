@@ -1909,7 +1909,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-24.md#2026-10-24--peg-garden-l
 
 [PR #928](https://github.com/rjdunlap/neo/pull/928), `claude/who-am-i-z3`, per [the definition](../definitions/who-am-i.md): new game `who-am-i` in Barnyard (region barnyard; pre-K 1-2, school 2-3). Level 1 One clue: three friends, tap the friend the picture-sign clue fits. Level 2 Turn them over: four friends, two clues, turn over every friend a clue rules out, the last one jumps out. Level 3 Groups by features: six friends from at least four groups, three clues, at least two from covering, babies and breathing. Cast: the six mammal critters, duck, owl (Owl Walk's owl moved unchanged into `src/art/animals.ts` as `owlArt`), penguin, frog, turtle, fish. Misses: level 1 a friend the clue does not fit; levels 2-3 a face-up friend the clue keeps (half-turn back, reason spoken). After two misses (per round at 1, per clue at 2-3) the answer glows or the ruled-out friends shimmer, one hint; the pause sheet's "Show a hint" does the same, counted once. Sign and thumbnail taps and peeks at face-down cards are free; taps are held while a clue changes; clue thumbnails are 100 units. Ghost finger at every level; no restart in the island pause sheet; no journal entry. Level 2 answers can only be mammals, frog or turtle and level 3 answers only frog or turtle (a test brute-forces it; `WhoPlan.answers`). The trait table shipped unchanged after the source check. A Kokoro clip for the title "Who am I?" was rendered. Level 4 (the bat) is slice Z4.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--who-am-i-levels-13-zoo-animals-z3).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-24.md#2026-10-24--who-am-i-levels-13-zoo-animals-z3).
 
 ## Second Chance Shed levels 1-4, slice N2 (2026-10-24)
 
@@ -1956,3 +1956,7 @@ New game in Story Grove (its 14th), subject story-grove; bands lap 1, toddler 1�
 ## Pond Typing KE2 part 2 — 2026-10-24
 
 [PR #946](https://github.com/rjdunlap/neo/pull/946): levels 4–6, sticky Shift capitals, visible copied lines with stops/Backspace, seeded one-letter caret repairs, word pictures, round-local Show the key and typed-key diagram lighting. Built 1–3/copying/accounting remain; Bubble Pond version 2 retains its three early ponds and adds capitals, line and repair ponds. Scope/actual differences/source check: [definition](../definitions/pond-typing.md#part-2-implementation-and-source-check-2026-10-24). No registration, land or other-game changes. Device/child checks remain open. Evidence: [verification](../VERIFICATION.md#2026-10-24--pond-typing-levels-46-ke2-part-2).
+
+## Ramp Race One Change 6 — 2026-10-24
+
+Inquiry Q4 is built: Trial Shelf5 (#918) followed by One Change6 ([PR #949](https://github.com/rjdunlap/neo/pull/949)). Level6 locks blue at3/wood, seeds one floor and one height repair with distinct confounded starts, accepts either fair repair, then asks from two evidence cards. Only unfair Checks and wrong cards miss; setup and reading help each count once per question. School1–6; pre-K1–2 and level4 rules unchanged. No level7, practical guidance, save or navigation change. Typecheck/59 scoped tests, woods6 supported play/portrait and ghost-finger6 passed; device/child checks remain open.
