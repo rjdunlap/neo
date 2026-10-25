@@ -1,5 +1,10 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Example Express 1–3 definition (D1, 2026-10-24)
+
+[PR #955](https://github.com/rjdunlap/neo/pull/955), worker `01a171a1-fcdd-70b0-aeff-8baa24cddb58`, branch `codex/example-express-d1`: [packet](../definitions/example-express.md) freezes six-rule fitting/ties, eight parcels and complete first seeds, all ten level-2 repairs and level-3 accepted family, free Test versus Check, solver support, speech/how-to/demo and layout/placement requirements. Docs only; D2 levels1–2 is separately queued, D3 follows; source-review, actual capacity/layout, later cases and person/device gates retained. Links/diff checked; no code/assets or local gameplay verification. [Verification](../VERIFICATION.md#2026-10-24--example-express-13-definition-d1-docs-only).
+
+
 ### Movie Night 1–3 definition (MM1, 2026-10-24)
 
 [PR #953](https://github.com/rjdunlap/neo/pull/953), worker `01a170f9-90ac-7bb1-9218-fab3c1fbf5b0`, branch `codex/movie-night-mm1`: [packet](../definitions/movie-night.md) defines fixed Pond/Door footage and facts, synthesized pads/event matches, exact accepted sets, first-unmet reactions and decided Premiere accounting, touch/Stop/Undo/Help, speech/how-to/demos, both logical orientations and current Painted Canyon placement requirements. MM1 is docs only; no gameplay, registration/assets or persistence. MM2 is separately queued at the new-game tier with review and actual capacity/layout gates. Later levels/flipbook/storage/family-card/rework-home dependencies and device/child evidence stay open. Links and diff checks passed; no local code/browser checks. [Verification](../VERIFICATION.md#2026-10-24--movie-night-13-definition-mm1-docs-only).
@@ -1931,7 +1936,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--gear-garden-levels-1
 
 [PR #932](https://github.com/rjdunlap/neo/pull/932), `claude/meadow-pens`, per [the definition](../definitions/meadow-pens.md): new game `meadow-pens` (school 1-3) in Rainbow Meadow (region rainbow-meadow; the land now holds 14 games and pages, so no fallback land was needed). She paints squares of grass on a 6 by 4 grid (4 by 6 in portrait); the fence builds itself round the largest connected group, other squares are flowers and enclosed holes are ponds. Level 1 Enough grass, level 2 Rows of grass (card table, three cards, a wrong card fills the field row by row), level 3 Same grass, new fence (a stack of 10, 12 or 14). Two misses or Show a hint glow a pen that works and count one hint; ringing under the glow is a supported finish. One new Kokoro clip (the title). Review fixes: a level-2 finale crash after a helped last field, a stale friend position after rotation, and the portrait fence drawn on untransposed sides (found by the portrait screenshot). Deliberate simplifications: the wrong-ring fence count ticks piece by piece rather than being spoken per piece, the stack and cards sit under the grid in landscape, the finale has no tap to skip and friends play on the meadow rather than in kept pens, and level 1's ghost finger taps squares rather than showing a drag. Levels 4-5 are a later definition.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-24--meadow-pens-levels-13-area-volume-space-slice-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-24.md#2026-10-24--meadow-pens-levels-13-area-volume-space-slice-1).
 
 ## Test infrastructure review (2026-10-24)
 

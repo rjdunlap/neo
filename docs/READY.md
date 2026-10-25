@@ -8,12 +8,14 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **Better voice V1 (remaining): render the rest of the slot-free script** (assets tier, offline check): after the iPad listening check of the first 215 clips passes ([device check](DEVICE-CHECKS.md)), add more line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally; device speech stays the fallback. Slotted lines (V3) and Word Monsters' phonemes stay later. [A better voice](ROADMAP.md#a-better-voice)
 
-- **Study `data-ai-literacy`: define Example Express** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#data-and-ai-literacy-recommendations).
+- **Study `area-volume-space`: define Meadow Pens 4–5** (docs only; status `define`): more grass or more fence, and the split L; the first three levels are built. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [study](deep-dives/subjects/area-volume-space.md#build-slices-in-order).
 - **Study `executive-function`: define Scoop Shop 7–9** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#executive-function-recommendations).
 - **Research subject `world-languages`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 
 - **Study `visual-art`: define Little Loom 1–3** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#visual-art-recommendations).
 - **`movie-night`, levels 1–3 (MM2)** (standalone new interaction, new-game tier): [MM1 definition](definitions/movie-night.md); fixed footage with free sound play, one event match, then two. Separate build admission; source/contract review, actual Painted Canyon (`treehouse`, formerly Paint Pier) capacity/layout and first/last play/demo gates retained. No later levels, storage or unresolved decisions.
+
+- **`example-express`, levels 1–2 (D2)** (one same-game new-game batch: Show, then send; A surprising parcel): [D1 packet](definitions/example-express.md), school 1–2; six-rule local fitter, free Test, ten accepted repairs, deliberate Check and solver-backed support. Separate admission; source-check, actual Tinker Lab capacity/layout, first/top play and demos required. Level 3 (D3), older cases and unresolved person/device decisions stay later.
 
 ## Queued
 
@@ -52,7 +54,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
 
-- **Study `area-volume-space`: define Meadow Pens 4–5** (docs only; status `define`): more grass or more fence, and the split L; the first three levels are built. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [study](deep-dives/subjects/area-volume-space.md#build-slices-in-order).
 - **Study `money-economy`: define Swap Meet 1–4** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#money-and-economy-recommendations).
 - **Study `community-civics`: define Village Vote 1–3** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#community-and-civics-recommendations).
 - **Study `networks-citizenship`: define Relay Woods** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#networks-and-digital-citizenship-recommendations).

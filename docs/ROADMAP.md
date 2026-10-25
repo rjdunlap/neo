@@ -367,7 +367,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | Inventions | 2026-10-15 | [study](deep-dives/subjects/inventions.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#inventions-recommendations) |
 | Engineering design | 2026-10-17 | [study](deep-dives/subjects/engineering-design.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#engineering-design-recommendations); Welcome Ways 1–4 built; next: define 5–7, keeping later representation/review gates |
 | Making media | 2026-10-17 | [study](deep-dives/subjects/making-media.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#making-media-recommendations) |
-| Data and AI literacy | 2026-10-15 | [study](deep-dives/subjects/data-ai-literacy.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#data-and-ai-literacy-recommendations) |
+| Data and AI literacy | 2026-10-15 | [study](deep-dives/subjects/data-ai-literacy.md) | D1 [defined](definitions/example-express.md); D2 levels1–2 next with source-review and capacity/layout gates; [recommendations](deep-dives/subjects/RECOMMENDATIONS.md#data-and-ai-literacy-recommendations) |
 | Executive function | 2026-10-17 | [study](deep-dives/subjects/executive-function.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#executive-function-recommendations) |
 | Visual art | 2026-10-17 | [study](deep-dives/subjects/visual-art.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#visual-art-recommendations) |
 | Money and economy | 2026-10-17 | [study](deep-dives/subjects/money-economy.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#money-and-economy-recommendations) |
