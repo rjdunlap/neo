@@ -4,6 +4,10 @@
 
 Research and ideation only: nothing under `src/` changed. This write-up also answers item EF1 of the [executive-function study](subjects/executive-function.md#a-first-games-ladder-scoop-shop-79), which asked for Scoop Shop 7–9 to be defined in this file; their rows are carried into the ladder below unchanged in substance and stay behind that study's decision 2.
 
+## EF1 definition claim (2026-10-25)
+
+Worker `01a17210-8cc6-7a52-8379-fb03a6d20f87`, branch `codex/scoop-shop-ef1-definition`: docs-only reconciliation of levels 7–9; two-cone selection/peek accounting, one-change and reverse rules, seeded examples, voice IDs, scoped how-to and bot/layout requirements. Expected files: this dive, the executive-function study/recommendations, READY, STUDY-BACKLOG, ROADMAP, deep-dive tracker, EXECUTION-QUEUE, VERIFICATION and completed-work archive. No source, gameplay, assets or EF1b build. Existing IDs/orders and review/placement/person/device gates stay intact.
+
 ## The game today
 
 A customer walks up to the counter and asks for a cone. She taps a flavour tub, a scoop arcs across the counter and lands on the cone with a squish and a burst of the flavour's colour; when the cone matches the order it slides over to the customer, who munches it scoop by scoop, cheers and leaves. Three customers a round (two at level 1), one sticker. The fun action is the scoop's flight and the munch; the learning is colour words, counting, stacking in a stated order and holding an order in mind.
