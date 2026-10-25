@@ -6,10 +6,11 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
+- **Study `networks-citizenship`: define Relay Woods** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#networks-and-digital-citizenship-recommendations).
+
 - **Better voice V1 (remaining): render the rest of the slot-free script** (assets tier, offline check): after the iPad listening check of the first 215 clips passes ([device check](DEVICE-CHECKS.md)), add more line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally; device speech stays the fallback. Slotted lines (V3) and Word Monsters' phonemes stay later. [A better voice](ROADMAP.md#a-better-voice)
 
 
-- **Study `community-civics`: define Village Vote 1–3** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#community-and-civics-recommendations).
 
 - **`meadow-pens`, levels 4–5 (area-volume-space slice 3 build)** (one same-game batch, two new interactions): [definition](definitions/meadow-pens.md#levels-45-definition-2026-10-25-slice-3); compare grass/fence with a same choice, then count a split L. Separate admission, building-session curriculum source check, actual full-size layout/placement, rules, filtered play and demos required. School only; levels 6–7 and person/device decisions remain gated.
 
@@ -22,6 +23,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`little-loom`, levels 1–3 (VA2)** (one same-game new-game batch): [VA1 packet](definitions/little-loom.md), [batch](GAME-BATCHES.md#little-loom-1-levels-13-va2). Automatic shuttle, free yarn stripes, then two pedals; toddler 1–2, preschool 2–3, pre-K 3. Separate admission, building-session source/contract review, actual Painted Canyon/control layouts, capped support, all three demos and bounded cloth Keep/backup/offline proof required. Lap/person/device and later levels/wardrobe/tradition gates remain.
 
 - **`swap-meet`, levels 1–4 (ME2)** (one same-game new-game batch): [ME1 packet](definitions/swap-meet.md), [batch](GAME-BATCHES.md#swap-meet-1-levels-14-me2). Match requests, two-way pairs, then a two-trade chain; exact Undo and all-state BFS hints. Separate admission, source/contract review, actual full-size layouts/current Cozy Village 13→14 placement and rule/play/demo proof required. Person/device, levels5–6 and later money/card gates remain.
+
+- **`village-vote`, levels 1–3 (CC4)** (one same-game new-game batch): [CC1 packet](definitions/village-vote.md), [batch](GAME-BATCHES.md#village-vote-1-levels-13-cc4). Count two groups, cast one free pet vote (which may lose), then compare three tallies; seeded tie-free families, replayable counts and capped assistance. Separate admission, building-session source/contract review, actual full-size both-orientation/current Cozy Village placement and rule/play/demo proof required. Later levels, persistence, cards and person/device gates remain.
 
 ## Queued
 
@@ -62,7 +65,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
 
-- **Study `networks-citizenship`: define Relay Woods** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#networks-and-digital-citizenship-recommendations).
 - **Study `ancient-river-civilizations`: define River Tablets 1–3** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#ancient-river-civilizations-recommendations).
 - **Study `china-india-silk-road`: define Caravan Days 1–3** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#china-india-and-the-silk-road-recommendations).
 - **Study `medieval-life`: define Keep House A–3** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#medieval-life-recommendations).
