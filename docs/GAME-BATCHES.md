@@ -541,3 +541,16 @@ Source: [VA1 packet](definitions/little-loom.md), visual-art VA2; one declared n
 - Shared drawdown/finite rules, Graphics loom, palette/marks, level-scoped speech/how-to, three ghost-finger plans, current Painted Canyon registration/layout and bounded six-by-eight cloth Keep with validation/backup/profile/offline coverage.
 
 Toddler 1–2, preschool 2–3, pre-K 3 only. No school/lap registration, later patterns, wardrobe, Gallery Walk, Loom Logic or craft instructions. Before implementation retain building-session source/contract review and actual controls/guide/land geometry. Use the packet’s union of new-game and shared persistence/navigation checks, one filtered entry-layout/miss/help play and demos, within budget. If the whole slice cannot fit, declare named complete parts before claiming; Keep remains explicitly unbuilt until delivered. Lap and other person/device/reviewer gates remain open.
+
+
+### swap-meet 1: Levels 1–4 (ME2)
+
+Source: [ME1 packet](definitions/swap-meet.md), money-economy ME2; one declared four-level new-game batch after separate admission.
+
+- Level1 Give it: three sequential authored requests, two basket slots, both objects cross, zero misses.
+- Level2 Two friends: either order of two simultaneous requests and visible returned objects.
+- Level3 Swap!: two reciprocal pairs among four friends, both pair orders/drag directions.
+- Level4 Chain of two: both authored basket/goal chains, exactly two forward exchanges.
+- Shared bounded exact Undo, all-reachable-state BFS/recovery/shortest-action hints, intentional offers and capped support, voice/card/four demos, Graphics art/sticker and unique Cozy Village registration with current paged capacity and actual full-size geometry.
+
+Toddler1–2, preschool2–3, prek3–4, school4. No lap/grownup, levels5–6, persistent currency/unlocks/inventory, other money games or practical cards. Preserve source/contract review before code, all-state rule proof, filtered first/top/miss/help/Undo plus levels2/3 layout and all demo coverage, portrait screenshot and build for shared registry/voice/land changes. Actual land/control layouts and person/device acceptance are separate evidence. Split into named complete parts before claiming if the whole batch cannot fit; never silently drop a level.

@@ -9,7 +9,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **Better voice V1 (remaining): render the rest of the slot-free script** (assets tier, offline check): after the iPad listening check of the first 215 clips passes ([device check](DEVICE-CHECKS.md)), add more line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally; device speech stays the fallback. Slotted lines (V3) and Word Monsters' phonemes stay later. [A better voice](ROADMAP.md#a-better-voice)
 
 
-- **Study `money-economy`: define Swap Meet 1–4** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#money-and-economy-recommendations).
 - **Study `community-civics`: define Village Vote 1–3** (docs only; status `define`): one bounded packet from the completed study; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#community-and-civics-recommendations).
 
 - **`meadow-pens`, levels 4–5 (area-volume-space slice 3 build)** (one same-game batch, two new interactions): [definition](definitions/meadow-pens.md#levels-45-definition-2026-10-25-slice-3); compare grass/fence with a same choice, then count a split L. Separate admission, building-session curriculum source check, actual full-size layout/placement, rules, filtered play and demos required. School only; levels 6–7 and person/device decisions remain gated.
@@ -21,6 +20,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`scoop-shop`, levels 8–9 (EF1b first batch)** (two new levels on existing input): [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25), [batch](GAME-BATCHES.md#scoop-shop-3-change-and-reverse). School only; exactly-one-change and reversed distinct triples, peek help; separate admission, building-session review, actual placement/layout and demos required. Level 7 follows as a separate interaction; person/device gates remain.
 
 - **`little-loom`, levels 1–3 (VA2)** (one same-game new-game batch): [VA1 packet](definitions/little-loom.md), [batch](GAME-BATCHES.md#little-loom-1-levels-13-va2). Automatic shuttle, free yarn stripes, then two pedals; toddler 1–2, preschool 2–3, pre-K 3. Separate admission, building-session source/contract review, actual Painted Canyon/control layouts, capped support, all three demos and bounded cloth Keep/backup/offline proof required. Lap/person/device and later levels/wardrobe/tradition gates remain.
+
+- **`swap-meet`, levels 1–4 (ME2)** (one same-game new-game batch): [ME1 packet](definitions/swap-meet.md), [batch](GAME-BATCHES.md#swap-meet-1-levels-14-me2). Match requests, two-way pairs, then a two-trade chain; exact Undo and all-state BFS hints. Separate admission, source/contract review, actual full-size layouts/current Cozy Village 13→14 placement and rule/play/demo proof required. Person/device, levels5–6 and later money/card gates remain.
 
 ## Queued
 
