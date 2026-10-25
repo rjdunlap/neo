@@ -22,6 +22,10 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] On an iPad in portrait: do the page row, tiles and slots fit without crowding the Home and help buttons or the pet?
 - [ ] Do the words for the feelings (relieved, sleepy) and the composed sentences read clearly in device speech?
 
+## Meadow Pens levels 4–5 (area-volume-space slice 3, 2026-10-25)
+
+- [ ] On an iPad with a school-age child: are grass/fence comparisons, the matching-piles same choice, and separate-part/whole counts clear in device speech; can she distinguish badges/textures and comfortably reach count regions and answer cards in both orientations; does she understand grass versus fence and counting two parts, with co-play if useful? Chrome proved touch flow, capped support, portrait layouts and demos only. Terminology, pre-K, levels 6–7 placement and hay-loft decisions remain open.
+
 ## Meadow Pens levels 1–3 (area-volume-space slice 1, 2026-10-24)
 
 - [ ] On an iPad with a school-age child: can she paint squares and ring the bell comfortably in both orientations; is device speech for the Meadow Pens lines (squares counted aloud, the fence ticking, the stack count) clear; does the level-2 card choice read as area against fence count; and do the finale friends and bell tune land? Chrome proved the flow, the portrait fence sides and the ghost finger only. The pre-K window ([decision 6](definitions/meadow-pens.md#open-decisions)) waits on a person check.

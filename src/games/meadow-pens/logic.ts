@@ -250,12 +250,14 @@ export function drawnRows(f: Field, tall: boolean): Cell[][] {
 
 // ----- plans and rounds -----
 
-export interface Plan { level: 1 | 2 | 3; name: string; count: number }
+export interface Plan { level: 1 | 2 | 3 | 4 | 5; name: string; count: number }
 
 export const PLANS: readonly Plan[] = [
   { level: 1, name: 'Enough grass: paint a pen with as many squares as a friend asks (3 to 8), any shape', count: 3 },
   { level: 2, name: 'Rows of grass: count a fenced field by its rows and tap the card for the whole field', count: 5 },
   { level: 3, name: 'Same grass, new fence: six squares whose fence uses every piece on the stack (10, 12 or 14)', count: 3 },
+  { level: 4, name: 'More grass, or more fence? Compare two pens, including equal counts', count: 5 },
+  { level: 5, name: 'Two parts: count all the grass in a bent field made of two rectangles', count: 5 },
 ];
 
 export const planFor = (level: number): Plan => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
@@ -269,6 +271,7 @@ export const cardsFor = (f: Field, rng: Rng) => rng.shuffle([f.right, f.fence, f
 
 /** A round's pens or fields: the first authored (4 squares; the 2 by 3 field; ten fence pieces), the rest seeded. */
 export function makeTasks(plan: Plan, rng: Rng, count = plan.count): Task[] {
+  if (plan.level >= 4) throw new Error('Fixed fields use fixedTasks');
   if (plan.level === 2) {
     const rest = rng.shuffle(FIELDS.slice(1));
     return [FIELDS[0], ...rest].slice(0, count).map((field) => ({ kind: 'field', field, cards: cardsFor(field, rng) }));
@@ -279,6 +282,78 @@ export function makeTasks(plan: Plan, rng: Rng, count = plan.count): Task[] {
   }
   const sizes = [4, ...rng.shuffle([3, 5, 6, 7, 8])];
   return sizes.slice(0, count).map((squares) => ({ kind: 'pen', request: { squares } }));
+}
+
+// ----- fixed comparisons and two-part fields (levels 4–5) -----
+
+export type Material = 'grass' | 'fence';
+export type Choice = 'a' | 'b' | 'same';
+export type Badge = 'daisy' | 'tulip';
+export const COMPARISONS = [
+  { id: 'C1', a: [6, 1], b: [3, 2] },
+  { id: 'C2', a: [6, 1], b: [4, 2] },
+  { id: 'C3', a: [5, 1], b: [4, 2] },
+  { id: 'C4', a: [4, 1], b: [2, 2] },
+  { id: 'C5', a: [5, 1], b: [3, 2] },
+] as const;
+export const BENT_FIELDS = [
+  { id: 'L1', w: 3, h: 3, cutW: 1, cutH: 1, split: 'vertical', third: 9 },
+  { id: 'L2', w: 4, h: 3, cutW: 2, cutH: 1, split: 'horizontal', third: 12 },
+  { id: 'L3', w: 4, h: 3, cutW: 1, cutH: 2, split: 'vertical', third: 12 },
+  { id: 'L4', w: 4, h: 4, cutW: 2, cutH: 2, split: 'vertical', third: 8 },
+  { id: 'L5', w: 5, h: 3, cutW: 2, cutH: 1, split: 'horizontal', third: 15 },
+  { id: 'L6', w: 6, h: 4, cutW: 3, cutH: 2, split: 'horizontal', third: 24 },
+] as const;
+export type BentField = typeof BENT_FIELDS[number];
+export function rectangleCells(w: number, h: number, x0 = 0, y0 = 0): Cell[] {
+  return Array.from({ length: w * h }, (_, i) => cellOf(x0 + i % w, y0 + Math.floor(i / w)));
+}
+/** Only the authored split is played; the alternate split is inspectable for rule verification. */
+export function bentParts(f: BentField, mirror = false, split: 'vertical' | 'horizontal' = f.split): [Cell[], Cell[]] {
+  const parts: [Cell[], Cell[]] = split === 'vertical'
+    ? [rectangleCells(f.w - f.cutW, f.h), rectangleCells(f.cutW, f.h - f.cutH, f.w - f.cutW, f.cutH)]
+    : [rectangleCells(f.w, f.h - f.cutH, 0, f.cutH), rectangleCells(f.w - f.cutW, f.cutH)];
+  const ox = Math.floor((COLS - f.w) / 2), oy = Math.floor((ROWS - f.h) / 2);
+  return parts.map((part) => part.map((c) => cellOf(ox + (mirror ? f.w - 1 - xOf(c) : xOf(c)), oy + yOf(c)))) as [Cell[], Cell[]];
+}
+export interface CompareTask {
+  kind: 'compare'; id: string; parts: [Cell[], Cell[]]; material: Material;
+  badges: [Badge, Badge]; cards: Choice[];
+}
+export interface PartsTask {
+  kind: 'parts'; id: string; parts: [Cell[], Cell[]]; cards: number[];
+}
+export type FixedTask = CompareTask | PartsTask;
+export const materialCount = (cells: readonly Cell[], material: Material) => material === 'grass' ? cells.length : fenceEdges(new Set(cells)).length;
+export function correctChoice(t: FixedTask): Choice | number {
+  if (t.kind === 'parts') return t.parts[0].length + t.parts[1].length;
+  const a = materialCount(t.parts[0], t.material), b = materialCount(t.parts[1], t.material);
+  return a === b ? 'same' : a > b ? 'a' : 'b';
+}
+export function fixedTasks(level: number, rng: Rng, authored = true): FixedTask[] {
+  if (level === 5) {
+    const fields = authored ? [BENT_FIELDS[0], ...rng.shuffle(BENT_FIELDS.slice(1)).slice(0, 4)] : rng.shuffle([...BENT_FIELDS]).slice(0, 5);
+    return fields.map((f, i) => {
+      const parts = bentParts(f, !(authored && i === 0) && rng.chance(0.5));
+      const cards = [parts.flat().length, fenceEdges(new Set(parts.flat())).length, f.third];
+      return { kind: 'parts', id: f.id, parts, cards: authored && i === 0 ? cards : rng.shuffle(cards) };
+    });
+  }
+  const families = authored ? [COMPARISONS[0], COMPARISONS[2], COMPARISONS[1]] : [rng.pick([COMPARISONS[0], COMPARISONS[3]]), COMPARISONS[2], rng.pick([COMPARISONS[1], COMPARISONS[4]])];
+  const startGrass = authored || rng.chance(0.5);
+  const out: CompareTask[] = [];
+  families.forEach((f, i) => {
+    const parts: [Cell[], Cell[]] = [rectangleCells(f.a[0], f.a[1]), rectangleCells(f.b[0], f.b[1], 0, 2)];
+    const badges: [Badge, Badge] = rng.chance(0.5) ? ['daisy', 'tulip'] : ['tulip', 'daisy'];
+    const cards = rng.shuffle<Choice>(['a', 'b', 'same']);
+    for (let j = 0; j < (i < 2 ? 2 : 1); j++) out.push({ kind: 'compare', id: f.id, parts, badges, cards, material: (out.length % 2 === 0) === startGrass ? 'grass' : 'fence' });
+  });
+  return out;
+}
+/** Rows follow the current logical orientation, preserving membership after resize. */
+export function rowsOf(cells: readonly Cell[], tall: boolean): Cell[][] {
+  const key = (c: Cell) => tall ? xOf(c) : yOf(c);
+  return [...new Set(cells.map(key))].sort((a, b) => a - b).map((k) => cells.filter((c) => key(c) === k).sort((a, b) => tall ? yOf(a) - yOf(b) : xOf(a) - xOf(b)));
 }
 
 // ----- accounting -----
@@ -363,6 +438,7 @@ export interface MeadowLayout {
   /** Level 2: the three cards. */
   cards: Rect[] | null;
   companion: { x: number; y: number };
+  fixed?: boolean;
 }
 
 export const CELL = 100;
@@ -396,8 +472,8 @@ export function meadowLayout(view: View, level: number): MeadowLayout | null {
       friend: { x: col, y: gy, w: 130, h: 140 },
       bubble: { x: gx + gw / 2 - 140, y: 18, w: 280, h: 124 },
       bell: { x: col + 5, y: gy + 172, w: 120, h: 120 },
-      stack: level === 2 ? null : { x: gx + 40, y: gy + gh + 32, w: gw - 80, h: 130 },
-      cards: level === 2 ? cardsRow(gx + gw / 2 - (3 * CARD + 2 * CARD_GAP) / 2, gy + gh + 32) : null,
+      stack: (level === 2 || level >= 4) ? null : { x: gx + 40, y: gy + gh + 32, w: gw - 80, h: 130 },
+      cards: (level === 2 || level >= 4) ? cardsRow(gx + gw / 2 - (3 * CARD + 2 * CARD_GAP) / 2, gy + gh + 32) : null,
       companion: { x: col + 65, y: gy + gh + 10 },
     };
   } else {
@@ -413,11 +489,12 @@ export function meadowLayout(view: View, level: number): MeadowLayout | null {
       friend: { x: left + cardsW + 60, y: rowY, w: 130, h: 140 },
       bubble: { x: w / 2 - 140, y: 40, w: 280, h: 124 },
       bell: { x: left + cardsW + 60 + 130 + 30, y: rowY + 10, w: 120, h: 120 },
-      stack: level === 2 ? null : { x: left, y: rowY + 5, w: cardsW, h: 130 },
-      cards: level === 2 ? cardsRow(left, rowY + 5) : null,
+      stack: (level === 2 || level >= 4) ? null : { x: left, y: rowY + 5, w: cardsW, h: 130 },
+      cards: (level === 2 || level >= 4) ? cardsRow(left, rowY + 5) : null,
       companion: { x: gx + gw + 90, y: gy + gh },
     };
   }
+  out.fixed = level >= 4;
   return fits(out, view) ? out : null;
 }
 
@@ -425,7 +502,7 @@ const gridRect = (l: MeadowLayout): Rect => ({ x: l.grid.x, y: l.grid.y, w: l.gr
 
 /** The touch targets of a layout: grid, bubble, friend, bell and cards (the stack and gate take no touch). */
 export function targets(l: MeadowLayout): Rect[] {
-  return [gridRect(l), l.bubble, l.friend, l.bell, ...(l.cards ?? [])];
+  return [gridRect(l), l.bubble, l.friend, ...(l.fixed ? [] : [l.bell]), ...(l.cards ?? [])];
 }
 
 const apart = (a: Rect, b: Rect, d: number) => a.x + a.w + d <= b.x || b.x + b.w + d <= a.x || a.y + a.h + d <= b.y || b.y + b.h + d <= a.y;
