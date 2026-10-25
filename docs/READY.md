@@ -11,7 +11,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 
-- **`meadow-pens`, levels 4–5 (area-volume-space slice 3 build)** (one same-game batch, two new interactions): [definition](definitions/meadow-pens.md#levels-45-definition-2026-10-25-slice-3); compare grass/fence with a same choice, then count a split L. Separate admission, building-session curriculum source check, actual full-size layout/placement, rules, filtered play and demos required. School only; levels 6–7 and person/device decisions remain gated.
 
 - **`movie-night`, levels 1–3 (MM2)** (standalone new interaction, new-game tier): [MM1 definition](definitions/movie-night.md); fixed footage with free sound play, one event match, then two. Separate build admission; source/contract review, actual Painted Canyon (`treehouse`, formerly Paint Pier) capacity/layout and first/last play/demo gates retained. No later levels, storage or unresolved decisions.
 

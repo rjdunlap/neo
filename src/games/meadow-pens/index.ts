@@ -9,9 +9,11 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
+import { store } from '../../progress/store';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { FixedMeadow } from './fixed';
 import {
   bellArt, bubbleFrame, Card, drawGate, edgeLine, fencePiece, fieldPicture, flowerCell, loosePiece, meadowCell, penArt, pondCell,
   requestPicture, turfCell,
@@ -23,7 +25,7 @@ import {
 } from './logic';
 
 const LEVELS: BandLevels = {
-  school: { min: 1, max: 3 },
+  school: { min: 1, max: 5 },
 };
 
 const FRIENDS = ['bunny', 'duck', 'pig', 'cat', 'dog', 'cow', 'bear'] as const;
@@ -650,9 +652,9 @@ export const meadowPens: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   touchDemo: true,
-  coplayHint: 'Take turns: one of you names a number and the other paints a pen that size with {name}; then swap, and count the fence together.',
-  offScreen: 'Cover a placemat with sticky notes and count them, then run a finger round the edge and count the sides you pass.',
+  coplayHint: 'Take turns counting squares of grass or fence pieces with {name}; compare the pens, or count both parts of a bent field together.',
+  offScreen: 'Cover a placemat with sticky notes and count them, then count the edges. Make an L with two blocks of notes and count both parts.',
   hubIcon: () => new MeadowIcon(),
   sticker,
-  create: (ctx) => new MeadowPens(ctx),
+  create: (ctx) => ctx.level >= 4 ? new FixedMeadow(ctx, !store.stats('meadow-pens').history.some((r) => r.level === ctx.level)) : new MeadowPens(ctx),
 };
