@@ -4,6 +4,10 @@ Defined 2026-10-24 from the [engineering-design study](../deep-dives/subjects/en
 
 Fun action: put big wooden parts into an entrance, tap Try and watch friends hop or roll into the house. Learning purpose: test a design against the stated needs of everyone who will use it, notice the first blocking part and revise it. The parade, door chimes and friends waving from the window supply the payoff. No timer or minimum-parts score.
 
+## Build claim
+
+Worker `01a170c0-46c1-7561-ac1d-b39bb265291b`, branch `codex/welcome-ways-1-4`, claims all three substeps of levels 1–4 together: pure rules/repair tests; building/parade/input; speech/how-to/bot/catalog and scoped checks. Expected files: `src/games/welcome-ways/`, registry, lands, howto, voice-script, browser harness, README and relevant game/roadmap/verification/queue documentation. No later levels, save fields or shared navigation changes. Definition dependencies are resolved; Tinker Lab placement remains subject to the actual capacity sweep.
+
 ## Scope, bands and overlap
 
 New touch game `welcome-ways`, subject `tinker-lab` (the existing reasoning/engineering subject); proposed ranges: toddler 1–2, preschool 1–3, prek 2–4, school 3–4, defaults at each range's minimum. No lap or grownup registration in this build. School 5–7 and Plaza Cases 8–9 remain later definitions. The existing shell owns difficulty, stickers, guide, how-to, celebration and saving. No new profile field, construction collection, visitor unlock or home visit is implemented; a successful entrance lives only for its round. Use `ctx.companion()` for the guide.
