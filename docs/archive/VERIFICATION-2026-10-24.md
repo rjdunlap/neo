@@ -135,3 +135,11 @@
 - Browser `http://localhost:5187`: final `BROWSER_SUITE=lens` passed levels 1 and 4 with misses, hint, portrait and saved score. Earlier `BROWSER_SUITE=home,couchgames HOME_ONLY=last-place COUCH_ONLY=memory-match` passed in sequential isolated contexts; `BROWSER_SUITE=fingerdemo FINGER_ONLY=bubble-pop FINGER_LEVELS=15` passed clean (22.5 s) before final runner logging/startup-cleanup refinements; that evidence covers unchanged behavior.
 - Production `http://localhost:4187`: served `main-DW_5o5Bm.js` and `classic-CR2Y7kLm.js` matched `dist`; final `GAME_URL=http://localhost:4187 OFFLINE_SUITE=all npm run test:offline` passed root and classic sequentially (classic: 388 cached assets). Root visited Home → Explore → Counting Cove offline twice, preserving location and owned progress. An initial integrated classic run asserted before celebration/save settled; screenshot and code inspection identified the missing wait. Both offline checks now use shared public-save helpers and wait for saved predicates.
 - Not run: full-release/world sweep, every extracted browser suite, iPad, installed-PWA behavior, controller hardware or child checks. Existing device checks remain open.
+
+## 2026-10-24 — Quiet automated tests
+
+- `codex/quiet-test-audio` ([PR #938](https://github.com/rjdunlap/neo/pull/938)), tested base `origin/main` `8d9eb5c1` plus working diff: shared test-browser launch/context helpers silence Chromium media/Web Audio and native speech by default across browser, offline and abandon-card harnesses, including extra touch/phone contexts.
+- Native utterances use volume 0 but call the real speech engine, retaining text, voice, callbacks and timing; `TEST_AUDIO=on` explicitly restores audible output. App settings, `.env.local`, runtime source and production assets are unchanged.
+- Ran: `npx vitest run scripts/test-browser.test.mjs scripts/browser` (19 passed, including 6 new audio tests); launch arguments and natural completion timing covered.
+- Live `node test-results/quiet-audio-probe.mjs` passed in normal and touch contexts, on new pages and after reloads: actual native utterance volume was 0. No app server was needed or started.
+- Not rerun for this test-only change: app typecheck/build, full unit/game/browser/offline suites; PR CI runs unit tests/build. No device or subjective audio check claimed.

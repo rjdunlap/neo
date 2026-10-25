@@ -1960,7 +1960,7 @@ New game in Story Grove (its 14th), subject story-grove; bands lap 1, toddler 1â
 
 ## Quiet automated tests (2026-10-24)
 
-[PR #938](https://github.com/rjdunlap/neo/pull/938), `codex/quiet-test-audio`. Shared test-browser helpers silence Chromium media/Web Audio and native text-to-speech across browser, offline and abandon-card checks, including extra touch and phone contexts. Real speech callbacks and timing remain active; `TEST_AUDIO=on` enables deliberate audible testing. No app settings, runtime source or assets changed. Nineteen targeted tests and a live native-speech volume probe passed across normal/touch contexts, new pages and reloads; [verification](../VERIFICATION.md#2026-10-24--quiet-automated-tests) records scope and gaps.
+[PR #938](https://github.com/rjdunlap/neo/pull/938), `codex/quiet-test-audio`. Shared test-browser helpers silence Chromium media/Web Audio and native text-to-speech across browser, offline and abandon-card checks, including extra touch and phone contexts. Real speech callbacks and timing remain active; `TEST_AUDIO=on` enables deliberate audible testing. No app settings, runtime source or assets changed. Nineteen targeted tests and a live native-speech volume probe passed across normal/touch contexts, new pages and reloads; [verification](VERIFICATION-2026-10-24.md#2026-10-24--quiet-automated-tests) records scope and gaps.
 
 ## 2026-10-24 â€” Welcome Ways early definition
 
@@ -1986,3 +1986,7 @@ Inquiry Q4 is built: Trial Shelf5 (#918) followed by One Change6 ([PR #949](http
 ## World languages subject study (2026-10-25)
 
 [PR #961](https://github.com/rjdunlap/neo/pull/961): [research packet](../deep-dives/subjects/world-languages.md) and [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#world-languages-recommendations) complete; all audiences, five first-party digital descriptions, primary curriculum/developmental sources and access limits, adjacent ownership and first-host/later receptive ladder. Research entry removed from READY; WL1 English-only refinement of the existing stage-1 pilot queued. No code, assets, translations or reference play; Portuguese family review/device acceptance and later-language/mode/cultural gates remain. Links/diff and manual documentation review passed; gameplay/device checks not run.
+
+## WL1 European Portuguese stage-1 definition (2026-10-25)
+
+[PR #963](https://github.com/rjdunlap/neo/pull/963), worker `01a17284-357d-7b71-8c4e-285c4afdf9c5`, branch `codex/wl1-portuguese-definition`: refined the [existing packet](../definitions/additional-languages.md) in English. Current first-host bands/events, 20 semantic keys, deterministic Animal Snack arbitration, round repeats/cancellation, exact accepted local pt-PT fallback, bounded per-profile setting/current-format reset and review/device evidence/future checks specified. No translations/code/assets/clips or ready-build promotion. WL1 removed from READY; WL2 remains gated on named family review of every Portuguese line and actual iPad acceptance. Links/diff and manual source/scope/gate review passed; local gameplay/device checks not run.
