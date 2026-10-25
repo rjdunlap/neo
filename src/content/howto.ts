@@ -14,6 +14,19 @@ import type { GameHowTo, GameModule, LevelCard, LevelLine } from '../games/types
  * Couch play has its own how-to screens (`src/couch/catalog.ts`); these describe touch play.
  */
 export const HOW_TO: Record<string, GameHowTo> = {
+  'welcome-ways': {
+    goal: 'Build one entrance that every pictured visitor can use.',
+    steps: [
+      {to:1,text:'Put the ramp in the gap. Tap Try and watch Roly roll in.'},
+      {from:2,to:2,text:'Put a step or a ramp in the gap. Tap Try to see whether Roly can roll in.'},
+      {from:3,to:3,text:'Bunny hops; Roly rolls. Build one entrance for both. Tap Try, then change any part that stops a friend.'},
+      {from:4,text:'Fill both gaps and choose a door. Roly needs ramps; Bear needs a wide door. Tap Try and invite both friends.'},
+      'Drag a part, or tap a part then a gap. Tap an installed part to select it, then Out to remove it. Undo restores the last edit.',
+      'Show me outlines a useful part and its destination; you still place it.',
+    ],
+    finish: 'One successful Try brings everyone inside and ends the round.',
+    note: 'Trying, changing parts and replaying a visitor’s need are free observations. Help counts once per distinct repair.',
+  },
   'snowball-merge': {
     goal: 'Slide matching snowballs together until one reaches the target number.',
     steps: [
