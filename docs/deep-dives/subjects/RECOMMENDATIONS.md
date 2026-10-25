@@ -850,3 +850,16 @@ Completion with spoken support is not evidence of independent phonological aware
 | **Tide Tables** · 13+ / parents | sketch; after a Lantern Lake capacity test | A cozy scheduling puzzle that fits jobs into tide windows |
 
 Completion with spoken support is not evidence of independent understanding of tides, and nothing scores a recited fact.
+
+## World languages recommendations
+
+**Recommended 2026-10-25:** [study](world-languages.md), [PR #961](https://github.com/rjdunlap/neo/pull/961). Opened ACTFL's eleven named standards, CEFR/young-learner guidance, Head Start and two developmental experiments; five first-party digital descriptions and a physical family equivalent. No translations or game play. **Define WL1 first by refining the existing [Additional languages stage-1 packet](../../definitions/additional-languages.md)** in English: European Portuguese follows English per profile in the three familiar hosts. This is contextual exposure; English supplies the referent, so a correct round establishes no independent Portuguese comprehension.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **WL1 Familiar words pilot** | **define**, queued docs-only follow-up | Exact current keys/events/bands in Peekaboo Barn, Animal Snack and Bubble Pop; choose one word when a line names animal and food; per-round repetition, lifetime/cancellation, exact pt-PT voice/fallback and current profile/save contracts. English semantic placeholders and reviewer/device evidence template only; no Portuguese strings or new levels |
+| **WL2 stage-1 implementation** | person/device/dependency | Separate admission after WL1, developer-named family member's review of every Portuguese line and actual iPad voice acceptance. Preserve current host learning/accounting, repair, profile isolation, backup/restore and offline. No generic `pt`/pt-BR voice substitution |
+| **WL3 more colors/final counts; WL4 Animal Snack requests** | later definitions | Add reviewed vocabulary in existing hosts after the pilot. Receptive-only requests need a separate older-mode policy/definition; the stage-1 setting never silently removes English. Preschool requests and harder contrasts stay later |
+| **WL5 Message Bridge; WL6 family card; WL7 greetings/songs/stories** | sketch / later define | Older comparison/clarification puzzle with a visible bilingual key; optional plain-HTML family talk; one reviewed language-specific song/story scope. Audit adjacent studies/hosts first; no new language land, generic localization service or speech scoring |
+
+[Ordered slices](world-languages.md#build-slices-in-order) retain the Portuguese family reviewer and actual device gates. Arabic/French/Spanish remain later with unresolved varieties/reviewers; songs/phonics/rhyme and cultural material need their own review. Age is not language proficiency. Sources do not establish tablet learning, transfer, or older-child/parent appeal. No build promoted from this study.

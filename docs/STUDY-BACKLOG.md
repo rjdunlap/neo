@@ -15,6 +15,7 @@ The research is complete for every row below; `define` means the next session wr
 
 | Subject | Status | Next bounded action | Source |
 | --- | --- | --- | --- |
+| `world-languages` | define / person / device | WL1: refine the existing stage-1 pilot definition in English, no translations; WL2 build waits on the developer-named family reviewer for every Portuguese line and actual pt-PT iPad voice acceptance | [Study](deep-dives/subjects/world-languages.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#world-languages-recommendations), [existing definition](definitions/additional-languages.md) |
 | `deep-time` | ready | D3 [defined](definitions/trace-prints.md) and built (2026-10-22, PR #777) | [Study](deep-dives/subjects/deep-time.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#deep-time-recommendations) |
 | `genetics` | ready / define | G4 [defined and built](definitions/same-kind-different-sprouts.md) as Critter Sort levels 12–13; next definition G7 Patchwork Conservatory (after G5, which is defined) | [Study](deep-dives/subjects/genetics.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#genetics-recommendations) |
 | `daily-life-long-ago` | ready / define | H3 [built](definitions/lid-and-lever.md) (Attic Finds levels 3–4, 2026-10-23); next definition H4 Same Job, Different Tools | [Study](deep-dives/subjects/daily-life-long-ago.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations) |
@@ -79,7 +80,6 @@ One subject per docs-only session using the [subject procedure](deep-dives/subje
 
 | Subject | Status | Next action |
 | --- | --- | --- |
-| `world-languages` | research | Words, songs, greetings and numbers in a second language; comparing languages; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `theatre-puppetry` | research | Pretend, character voices, puppet shows, acting a story for an audience; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `philosophy-reasoning` | research | Is it fair? What if? Reasons, counterexamples, disagreeing kindly; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `media-literacy` | research | Real or made up? Who made this and why? Ads, edited pictures, checking a claim; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
