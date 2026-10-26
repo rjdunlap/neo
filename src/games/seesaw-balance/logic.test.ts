@@ -17,7 +17,7 @@ describe('Seesaw Balance', () => {
     expect(landing(12, g.levels('preschool'), g.entryLevels)).toBe(2);
     expect(landing(13, g.levels('prek'), g.entryLevels)).toBe(3);
     expect(levelsInOrder(g.levels('prek'))).toEqual([3, 4, 14, 5, 6, 7, 15]);
-    expect(levelsInOrder(g.levels('school'))).toEqual([6, 7, 15, 16, 8, 9, 10, 11]);
+    expect(levelsInOrder(g.levels('school'))).toEqual([6, 7, 15, 16, 17, 8, 9, 10, 11]);
   });
 
   it('offers four strictly heavier lifters and three uniquely answerable alternating comparisons', () => {
@@ -81,6 +81,11 @@ describe('Seesaw Balance', () => {
             expect(items[move.item].thing.weight).toBe(round.answer);
             break;
           }
+          if (move.kind === 'predict') {
+            expect(move.side).toBe(downSide(total(round.fixed), total(round.across ?? [])) ?? 'level');
+            break;
+          }
+          if (move.kind !== 'move') throw new Error('Expected drag');
           const item = items[move.item];
           expect(item.fixed).toBe(false);
           if (typeof move.to === 'number') { item.shelf = move.to; item.side = null; }
@@ -330,7 +335,7 @@ describe('Seesaw Balance', () => {
     const goal = (items: readonly SeesawTouchItem[]) => gap(items) === 0 && aloneSide(sidesOf(items)) !== null;
 
     it('reads the square box, then weighs a different round box with it', () => {
-      expect(PLANS).toHaveLength(16);
+      expect(PLANS).toHaveLength(17);
       expect(PAIR.mode).toBe('pair');
       for (let seed = 1; seed <= 300; seed++) {
         const rounds = makeRounds(PAIR, new Rng(seed));
@@ -495,5 +500,37 @@ describe('faces, wrappings and box looks', () => {
     }
     expect(wraps.size).toBe(3);
     expect(looks.size).toBe(2);
+  });
+});
+
+
+describe('level17 prediction cases', () => {
+  it('covers left, right and equal over 300 deterministic seeds with truthful sums and bot choices', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const rounds = makeRounds(planFor(17), new Rng(seed));
+      expect(rounds).toEqual(makeRounds(planFor(17), new Rng(seed)));
+      expect(rounds).toHaveLength(3);
+      const outcomes = [];
+      for (const r of rounds) {
+        expect(r.fixedSide).toBe('left');
+        expect(r.fixed).toHaveLength(2);
+        expect(r.across).toHaveLength(2);
+        expect(r.offered).toEqual([]);
+        const left = total(r.fixed), right = total(r.across!);
+        for (const sum of [left, right]) { expect(sum).toBeGreaterThanOrEqual(2); expect(sum).toBeLessThanOrEqual(8); }
+        for (const t of [...r.fixed, ...r.across!]) { expect(t.kind).toBe('weight'); expect(t.weight).toBeGreaterThan(0); }
+        expect(r.answer).toBe(left - right);
+        const outcome = downSide(left, right) ?? 'level';
+        outcomes.push(outcome);
+        expect(seesawTouch(planFor(17), r, [])).toEqual({ kind: 'predict', side: outcome });
+        expect(Math.sign(tilt(left, right))).toBe(left === right ? 0 : left > right ? -1 : 1);
+        // Recording any prediction cannot change the weights or the release's answer.
+        for (const choice of ['left', 'right', 'level'] as const) {
+          r.tipPrediction = choice;
+          expect(total(r.fixed) - total(r.across!)).toBe(r.answer);
+        }
+      }
+      expect(outcomes.sort()).toEqual(['left', 'level', 'right']);
+    }
   });
 });

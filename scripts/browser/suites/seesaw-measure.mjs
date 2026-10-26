@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, launch, finished, screenshot }) {
   async function seesawMeasure() {
-    for (const level of [14, 15, 16]) {
+    for (const level of (process.env.SEESAW_LEVELS ?? '14,15,16').split(',').map(Number)) {
+      if (level === 17) { await predictPlay(); continue; }
       await launch('seesaw-balance', level, 'Mia', level === 16 ? 'school' : 'prek');
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForTimeout(400);
@@ -74,6 +75,54 @@ export function createSuite({ page, log, launch, finished, screenshot }) {
       log(`Seesaw ${level}: real drag/tap play, free exploration, two misses/one help, supported reward and portrait passed`);
       await page.setViewportSize({ width: 1024, height: 768 });
     }
+  }
+  async function predictPlay() {
+    await launch('seesaw-balance', 17, 'Mia', 'school');
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.evaluate(async () => { await kit.until(() => !neo.scene.game.busy, 10000); await kit.sleep(100); });
+    await screenshot('seesaw-17-held-portrait');
+    const result = await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const history = kit.store.stats('seesaw-balance').history.length;
+      const stickers = kit.store.data.stickers.length;
+      const spoken = [];
+      const say = g.ctx.say;
+      g.ctx.say = (id, params) => { spoken.push({ id, params }); return say(id, params); };
+      const outcomes = [];
+      for (let index = 0; index < 3; index++) {
+        await kit.until(() => !g.busy, 12000);
+        await kit.sleep(120);
+        if (g.index !== index || g.released || !g.prop.visible || Math.abs(g.angle) > 0.001) throw new Error('Prop did not hold case ' + index);
+        const { left, right } = g.weights;
+        const outcome = left === right ? 'level' : left > right ? 'left' : 'right';
+        outcomes.push(outcome);
+        for (const target of Object.values(g.predictionTargets)) {
+          const area = target.hitArea;
+          const w = area.width ?? area.radius * 2, h = area.height ?? area.radius * 2;
+          if (w < 100 || h < 100) throw new Error('Small prediction target');
+        }
+        // Every case deliberately predicts something else. No penalty or retry is allowed.
+        const wrong = outcome === 'left' ? 'right' : 'left';
+        kit.tapOn(g.predictionTargets[wrong]);
+        await kit.until(() => g.released && !g.busy, 12000);
+        if (g.round.tipPrediction !== wrong || g.misses || g.hints || g.prop.visible || !g.continueButton.visible) throw new Error('Wrong prediction scored or failed to release');
+        if (Math.abs(g.angle - (left === right ? 0 : Math.sign(right - left) * Math.min(0.24, 0.1 + 0.04 * (Math.abs(right - left) - 1)))) > 0.02) throw new Error('Wrong release angle');
+        const sums = spoken.filter(s => s.id === 'seesaw.predict-sums').at(-1).params;
+        if (sums.left !== left || sums.right !== right || sums.a + sums.b !== left || sums.c + sums.d !== right) throw new Error('Untruthful spoken sums');
+        if (g.observations.size) throw new Error('Prediction journal observation');
+        // The answer waits for Continue, and rapid repeated taps cannot skip a case.
+        await kit.sleep(300);
+        if (g.index !== index) throw new Error('Advanced before Continue');
+        kit.tapOn(g.continueButton); kit.tapOn(g.continueButton);
+        await kit.until(() => g.index > index || g.finished, 10000);
+      }
+      await kit.until(() => kit.store.stats('seesaw-balance').history.length > history, 10000);
+      return { outcomes: outcomes.sort(), misses: g.misses, hints: g.hints, history: kit.store.stats('seesaw-balance').history.length - history, stickers: kit.store.data.stickers.length - stickers };
+    });
+    assert.deepEqual(result, { outcomes: ['left', 'level', 'right'], misses: 0, hints: 0, history: 1, stickers: 1 });
+    await finished('seesaw-balance');
+    log('Seesaw17: three wrong predictions unscored, held/released sums, Continue, no journal, single saved reward and portrait passed');
+    await page.setViewportSize({ width: 1024, height: 768 });
   }
   return { seesawMeasure };
 }

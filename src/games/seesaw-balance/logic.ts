@@ -9,7 +9,7 @@ import { Rng } from '../../engine/random';
  * balanced with a box and blocks on one side: take the same off both sides until the box is alone. The top step,
  * after SolveMe Mobiles, weighs a square box first and then uses its number to find a round box (substitution).
  */
-export type SeesawMode = 'sort' | 'guess' | 'difference' | 'bounce' | 'compare' | 'up' | 'heavy' | 'level' | 'heaviest' | 'parts' | 'mystery' | 'same' | 'share' | 'pair';
+export type SeesawMode = 'predict' | 'sort' | 'guess' | 'difference' | 'bounce' | 'compare' | 'up' | 'heavy' | 'level' | 'heaviest' | 'parts' | 'mystery' | 'same' | 'share' | 'pair';
 export type Side = 'left' | 'right';
 
 export interface SeesawPlan {
@@ -36,6 +36,7 @@ export const PLANS: SeesawPlan[] = [
   { mode: 'sort', rounds: 3, name: 'Line them up: test three presents, then order them from light to heavy' },
   { mode: 'guess', rounds: 3, name: 'Guess the pumpkin: guess freely, measure with blocks, then say its weight' },
   { mode: 'difference', rounds: 3, name: 'How much heavier? Add blocks to the light side, then say the difference' },
+  { mode: 'predict', rounds: 3, name: 'Which way will it tip? Predict a side or level, release the prop, then compare the sums' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -84,6 +85,7 @@ export interface SeesawRound {
   phase?: 'read' | 'pair';
   prediction?: number;
   asked?: 'heavier' | 'lighter';
+  tipPrediction?: Side | 'level';
 }
 
 export const other = (side: Side): Side => (side === 'left' ? 'right' : 'left');
@@ -141,9 +143,24 @@ export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
     for (let tries = 0; n === last && max > min && tries < 10; tries++) n = rng.int(min, max);
     return (last = n);
   };
+  const outcomes = plan.mode === 'predict' ? rng.shuffle(['left', 'right', 'level'] as const) : [];
   for (let r = 0; r < plan.rounds; r++) {
     const fixedSide: Side = rng.chance(0.5) ? 'left' : 'right';
     switch (plan.mode) {
+      case 'predict': {
+        const outcome = outcomes[r % 3];
+        const small = rng.int(2, 7);
+        const big = outcome === 'level' ? small : rng.int(small + 1, 8);
+        const left = outcome === 'left' ? big : small;
+        const right = outcome === 'right' ? big : small;
+        const split = (sum: number): Thing[] => {
+          const first = rng.int(1, sum - 1);
+          return [first, sum - first].map(weight => ({ kind: 'weight', weight }));
+        };
+        // Physical sides are explicit: the explanation and bot use these same visible sums.
+        rounds.push({ fixed: split(left), fixedSide: 'left', across: split(right), offered: [], answer: left - right });
+        break;
+      }
       case 'bounce': {
         const rider = r === 0 ? 1 : fresh(1, 2);
         rounds.push({ fixed: [r === 0 ? { kind: 'friend', weight: 1, face: 'duck' } : friend(rider)], fixedSide, offered: [friend(rng.int(rider + 1, 4))], answer: rider });
@@ -308,7 +325,7 @@ export interface SeesawTouchItem {
   shelf?: number;
 }
 
-export type SeesawTouch = { kind: 'tray'; side: Side } | { kind: 'friend'; item: number } | { kind: 'move'; item: number; to: Side | 'ground' | 'wagon' | number } | { kind: 'answer'; value: number };
+export type SeesawTouch = { kind: 'predict'; side: Side | 'level' } | { kind: 'tray'; side: Side } | { kind: 'friend'; item: number } | { kind: 'move'; item: number; to: Side | 'ground' | 'wagon' | number } | { kind: 'answer'; value: number };
 
 /** Indexes of a subset that makes `need`, or null when none does. */
 function completion(items: readonly SeesawTouchItem[], indexes: readonly number[], need: number): number[] | null {
@@ -325,6 +342,7 @@ function completion(items: readonly SeesawTouchItem[], indexes: readonly number[
  * removes a matching thing from the heavy side after each deliberate tip.
  */
 export function seesawTouch(plan: SeesawPlan, round: SeesawRound, items: readonly SeesawTouchItem[], numbers = false): SeesawTouch | null {
+  if (plan.mode === 'predict') return { kind: 'predict', side: downSide(total(round.fixed), total(round.across ?? [])) ?? 'level' };
   if (plan.mode === 'bounce') return { kind: 'tray', side: other(round.fixedSide) };
   if (plan.mode === 'compare') {
     const item = items.findIndex((i) => i.thing.weight === round.answer);
