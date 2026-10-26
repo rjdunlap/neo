@@ -42,6 +42,8 @@ Puddle Island is an iPad learning game for the developer's daughter, who turns o
 
 ## Next up
 
+**Docs cleanup claim (2026-10-26):** `codex/settled-planning-records` reconciles settled October 23 decisions and already-recorded deliveries in ROADMAP, READY, STUDY-BACKLOG, WAITING-ON-DEVELOPER and the rework README/WORK-ITEMS; records docs-only verification and closeout. No gameplay, new definitions or implementation dispatch; preserve active game/art claims and real device/family-review dependencies.
+
 The Codex coordinator's scheduled runs use the [execution queue](EXECUTION-QUEUE.md): one fresh session per slice, usage checks before dispatch, and the same claim and verification rules as a session a person starts. A session a person starts picks from [READY.md](READY.md) directly; the queue is one dispatch path, not the only one, and it selects from this section too. It does not change readiness or settle a developer decision. Checks that need a person or a device never block building. Check effort follows the [verification budget](../AGENTS.md#verification-budget).
 
 **How to pick a slice (routines and people alike):**
