@@ -237,7 +237,7 @@ async function batch() {
       },
     };
   });
-  for (let level = 1; level <= (process.env.TO_LEVEL ? Number(process.env.TO_LEVEL) : 7) && (!only || only === 'salon'); level++) {
+  for (let level = 1; level <= (process.env.TO_LEVEL ? Number(process.env.TO_LEVEL) : 8) && (!only || only === 'salon'); level++) {
     if (process.env.FROM_LEVEL && level < Number(process.env.FROM_LEVEL)) continue;
     await launch('fluffy-salon', level);
     await page.waitForTimeout(600);
@@ -270,25 +270,38 @@ async function batch() {
         kit.tapOn(g.mirror);
         return;
       }
+      // A friend in the chair (levels 3–5, seeded) keeps the corner guide and is named in the lines; her pet sends the guide out.
+      if ((g.customer !== null) !== neo.scene.pet.visible) throw new Error('The corner guide does not match who is in the chair');
+      if (g.customer && !g.who) throw new Error('A friend in the chair has no name');
+      if (g.plan.mode === 'color') {
+        if (g.buttons.length !== 5 || g.buttons.some((b) => b.radius < 54) || g.mirror.visible) throw new Error('Pink, please has more than the five big bottles, or a mirror');
+      }
       for (let r = 0; r < g.requests.length; r++) {
         await kit.until(() => g.request === r && !g.busy, 10000);
         const look = g.look;
-        if (r === 0 && g.plan.mode !== 'ask') {
+        if (r === 0 && g.plan.mode === 'color') {
+          // Two wrong bottles: each paints (no miss) and is named once; after the second the asked bottle glows (one hint).
+          const wrong = g.buttons.filter((b) => b.tool !== look.color).slice(0, 2);
+          for (const b of wrong) { await salon.pick(b.tool); await salon.zigzag(); await kit.sleep(300); }
+          if (g.misses !== 0 || g.hints !== 1 || !g.buttons.find((b) => b.tool === look.color).glow.visible) throw new Error(`Pink, please naming: ${g.misses} ${g.hints}`);
+          if (!g.strands.some((s) => s.color === wrong[1].tool)) throw new Error('A wrong bottle did not paint');
+        }
+        if (r === 0 && g.plan.mode !== 'ask' && g.plan.mode !== 'color') {
           // Checking the mirror too soon: two gentle "almost"s, then the right tool glows.
           for (let k = 0; k < 2; k++) { kit.tapOn(g.mirror); await kit.sleep(500); await kit.until(() => !g.busy, 8000); }
           if (g.misses !== 2 || g.hints !== 1 || !g.buttons.some((b) => b.glow.visible)) throw new Error(`Salon hint: ${g.misses} ${g.hints}`);
         }
         await salon.style(look);
-        // One request at a time has no mirror: it never appears, so it never invites a miss.
-        if (g.plan.mode === 'ask' && g.mirror.visible) throw new Error('The mirror showed at a one-at-a-time request');
-        if (g.plan.mode !== 'ask') { await kit.until(() => !g.busy, 8000); kit.tapOn(g.mirror); }
+        // One request at a time and Pink, please have no mirror: it never appears, so it never invites a miss.
+        if ((g.plan.mode === 'ask' || g.plan.mode === 'color') && g.mirror.visible) throw new Error('The mirror showed at a self-checking request');
+        if (g.plan.mode !== 'ask' && g.plan.mode !== 'color') { await kit.until(() => !g.busy, 8000); kit.tapOn(g.mirror); }
         await kit.until(() => g.request > r || g.finished, 15000);
       }
     });
     await screenshot(`fluffy-salon-${level}`);
     await finished('fluffy-salon');
     const r = await page.evaluate(() => { const r = kit.store.stats('fluffy-salon').history.at(-1); return [r.misses, r.hints]; });
-    assert.deepEqual(r, mode === 'two' || mode === 'match' ? [2, 1] : [0, 0], `salon ${level} score`);
+    assert.deepEqual(r, mode === 'two' || mode === 'match' ? [2, 1] : mode === 'color' ? [0, 1] : [0, 0], `salon ${level} score`);
     log(`Fluffy Salon ${level} (${mode}): tools, requests, mirror, hint, saved score and sticker passed`);
   }
 
