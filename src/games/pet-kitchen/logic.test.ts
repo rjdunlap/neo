@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { dealCut, dealFriends, dealTo, DEAL_LEVEL, fruitPair, FRUITS, pieceCount, wholeFor, WHOLES, doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, PLANS, plateAt, PLATE_REACH, recipe, servesFraction, serveTrouble, countAloud, cutShares, fairAreas, pieceAreas, LOPSIDED_AREAS, isPizzaLevel } from './logic';
+import { allCut, CUT_WAYS, nextWay, overlayPair, pieceShape, SHAPES_LEVEL, SHAPES_PLAN, shapesLine, type CutWay, type PieceShape, dealCut, dealFriends, dealTo, DEAL_LEVEL, fruitPair, FRUITS, pieceCount, wholeFor, WHOLES, doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, PLANS, plateAt, PLATE_REACH, recipe, servesFraction, serveTrouble, countAloud, cutShares, fairAreas, pieceAreas, LOPSIDED_AREAS, isPizzaLevel } from './logic';
 it('can share every meal fairly and accepts alternative equal cuts',()=>{
  for(const p of PLANS.filter(p=>p.mode==='share')) {
    expect(p.cuts.some(c=>p.wholes*c%p.friends===0)).toBe(true);
@@ -140,4 +140,31 @@ it('level 12 shares two pizzas among three only as thirds; halves and quarters l
  expect(wholeFor(12,new Rng(1))).toBe('pie');expect(isPizzaLevel(12)).toBe(true);expect(isPizzaLevel(9)).toBe(true);
  // The ghost finger hands out the six slices and they come out two each.
  const plates=[0,0,0];for(let i=0;i<6;i++)plates[nextPlate(plates)]++;expect(plates).toEqual([2,2,2]);
+});
+it('level 14 cuts one sandwich down and one across: both ways make two halves, one of each or two alike on a plate is fair, and the bot cuts one each way',()=>{
+ expect(planFor(SHAPES_LEVEL)).toBe(SHAPES_PLAN);expect(planFor(SHAPES_LEVEL+1)).toBe(SHAPES_PLAN);expect(planFor(12)).toBe(PLANS[11]);
+ expect(SHAPES_PLAN.wholes).toBe(2);expect(SHAPES_PLAN.friends).toBe(2);
+ // Each way halves one sandwich: two pieces of half the area, a tall half from the down cut and a wide one from across.
+ for(const way of CUT_WAYS){expect(pieceAreas(2,1)).toEqual([0.5,0.5]);expect(pieceShape(way)).toBe(way==='down'?'tall':'wide');}
+ expect(new Set(CUT_WAYS.map(pieceShape)).size).toBe(2);
+ // A plate with a tall half and a wide half holds the same as the other; so does a plate with two of one shape.
+ expect(fair([2,2],4)).toBe(true);expect(fairAreas([0.5+0.5,0.5+0.5])).toBe(true);
+ expect(fair([3,1],4)).toBe(false);expect(serveTrouble([3,1],4,[1.5,0.5])).toBe('unequal');
+ // The bot's cuts: down first, then across, then nothing is left to cut.
+ const done:CutWay[]=[];expect(allCut(SHAPES_PLAN,done)).toBe(false);
+ done.push(nextWay(done));expect(done).toEqual(['down']);expect(allCut(SHAPES_PLAN,done)).toBe(false);
+ done.push(nextWay(done));expect(done).toEqual(['down','across']);expect(allCut(SHAPES_PLAN,done)).toBe(true);
+ expect(nextWay(['across'])).toBe('down');
+ // Dealt the bot's way, each friend gets one tall half and one wide half.
+ const shapes=done.flatMap(w=>[pieceShape(w),pieceShape(w)]),plates:PieceShape[][]=[[],[]];
+ for(const s of shapes)plates[nextPlate(plates.map(p=>p.length))].push(s);
+ for(const p of plates)expect([...p].sort()).toEqual(['tall','wide']);
+ // What the overlay shows and says: a tall over a wide half when both shapes were served, else two of the one shape.
+ const served=[{shape:'tall' as const,id:0},{shape:'tall' as const,id:1},{shape:'wide' as const,id:2},{shape:'wide' as const,id:3}];
+ expect(overlayPair(served)?.map(p=>p.shape)).toEqual(['tall','wide']);
+ expect(shapesLine(['tall','wide'])).toEqual({line:'kitchen.same-share',shape:'tall'});
+ const alike=[{shape:'wide' as const,id:0},{shape:'wide' as const,id:1}];
+ expect(overlayPair(alike)?.map(p=>p.id)).toEqual([0,1]);expect(shapesLine(['wide','wide'])).toEqual({line:'kitchen.same-shape',shape:'wide'});
+ expect(shapesLine(['tall','tall'])).toEqual({line:'kitchen.same-shape',shape:'tall'});
+ expect(overlayPair([{shape:'tall' as const}])).toBeNull();
 });
