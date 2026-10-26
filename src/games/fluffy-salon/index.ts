@@ -177,8 +177,8 @@ class FluffySalon implements Game {
   private wrongs = 0;
   private sinceProgress = 0;
   private hintTool: Tool | null = null;
-  /** Pink, please: the wrong bottle already named this request, so a second stroke with it stays quiet. */
-  private named: ColorName | null = null;
+  /** Pink, please: the wrong bottles already named this request, so a second stroke with one stays quiet and is not counted again. */
+  private named = new Set<ColorName>();
   /** Pink, please: she has tapped a bottle this request; a stroke with the one preselected (the fur's own colour) is named but not counted. */
   private chosen = false;
   /** Once she has been told the colour is not all there yet, the strands still the old colour glow until they are painted. */
@@ -250,9 +250,10 @@ class FluffySalon implements Game {
   start() {
     if (this.free) {
       const mode = this.plan.mode;
-      const color = this.ctx.rng.pick(HAIR_COLORS);
-      if (mode === 'pat' || mode === 'snip') this.setHair(mode === 'pat' ? { ...PAT_START, color } : { ...SNIP_START, color });
-      else {
+      if (mode === 'pat' || mode === 'snip') {
+        const color = this.ctx.rng.pick(HAIR_COLORS);
+        this.setHair(mode === 'pat' ? { ...PAT_START, color } : { ...SNIP_START, color });
+      } else {
         const start = startLook(this.ctx.rng);
         this.startLook = start.look;
         this.strands = start.strands;
@@ -443,8 +444,8 @@ class FluffySalon implements Game {
   private nameBottle() {
     const look = this.look;
     const got = look && wrongBottle(look, this.tool);
-    if (!got || this.named === got) return;
-    this.named = got;
+    if (!got || this.named.has(got)) return;
+    this.named.add(got);
     if (this.chosen) this.wrongs++;
     this.pet.poke(true);
     void this.ctx.say('salon.wrong-color', { got, want: look.color ?? '' });
@@ -463,7 +464,7 @@ class FluffySalon implements Game {
     this.busy = true;
     this.request++;
     this.wrongs = 0;
-    this.named = null;
+    this.named.clear();
     this.chosen = false;
     this.hintTool = null;
     this.oldGlow = null;
