@@ -1199,6 +1199,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { from: 6, to: 6, text: 'Pat or stroke the fluffy fur on the pet: it grows under your finger.' },
       { from: 7, to: 7, text: 'Tap grow and drag over the fur to make it long, then tap snip and drag over it to cut it short.' },
+      { from: 8, to: 8, text: 'Listen for the color the pet wants, tap that bottle, then drag over the fur to paint it.' },
       { to: 5, text: 'Tap a tool, then drag or tap on the pet to use it.' },
       { from: 3, to: 4, text: 'Listen for what the pet wants (like "make it long", or "short and blue") and use the tools to do it.' },
       { from: 5, to: 5, text: 'Look at the pictured style and use the tools to copy its length, curls and color.' },
@@ -1208,11 +1209,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 7, to: 7, text: 'After some styling a mirror appears and the pet asks for it: tap the mirror to finish.' },
       { to: 2, text: 'After some styling a mirror appears and the pet asks for it: tap the mirror to finish.' },
       { from: 3, to: 3, text: 'Each request finishes by itself as soon as the hair is right; the round ends after the last one.' },
+      { from: 8, to: 8, text: 'Each color finishes by itself as soon as it covers the fur; the round ends after the second one.' },
       { from: 4, to: 5, text: 'Tap the mirror to check each request; the round ends after the last one.' },
     ],
     note: [
       { to: 2, text: 'Any look is welcome in free play and nothing counts as a miss; a touch off the fur makes the pet giggle.' },
       { from: 6, to: 7, text: 'Any look is welcome and nothing counts as a miss or a hint; a touch off the fur makes the pet giggle.' },
+      { from: 8, to: 8, text: 'A wrong bottle still paints and the pet only names its color; after two wrong bottles the asked one glows (one hint).' },
       { from: 3, to: 3, text: 'Nothing counts as a miss. After 15 seconds without working on what was asked, the tool that helps glows, which counts as a hint.' },
       { from: 4, to: 5, text: 'Looking in the mirror too early counts as a miss, and the pet says what is still missing (when the color is nearly there, the strands still the old color glow); after two, the tool that helps glows, which counts as a hint.' },
     ],
