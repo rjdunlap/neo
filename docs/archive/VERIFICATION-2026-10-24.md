@@ -212,3 +212,10 @@
 - Source/decision/diff review reconciled the making-media study and October23 decisions with current `sfx.ts`, `view.ts` and `lands.ts`: Knock exists; Paint Pier is now Painted Canyon (`treehouse`), eight games; its actual added-game layout is unverified. No new research or gameplay.
 - Ran: `node scripts/check-links.mjs`; `git diff --check`. Definition, recommendations, tracker, backlog, READY and archive reconciled; downstream review/placement/build gates retained.
 - Not run locally: typecheck, unit tests, build, browser/offline or device checks (docs-only tier). No iPad speech/effect distinction, touch, child/coplayer or learning evidence; separate MM2 implementation still required.
+
+## 2026-10-24 — Example Express 1–3 definition (D1, docs only)
+
+- Worker `01a171a1-fcdd-70b0-aeff-8baa24cddb58`, `codex/example-express-d1`, [PR #955](https://github.com/rjdunlap/neo/pull/955), base `184578a3` plus working diff: [packet](../definitions/example-express.md) freezes six rules/ties, eight parcels, labelled seeds, accepted repairs, Test/Check accounting, solver help, speech/how-to/demo and layout/capacity requirements.
+- Source/decision/manual diff review reconciled study and October23 selected-rule/S1 decisions with current lands/view/module contracts: Tinker Lab has 16 games; actual added-game capacity remains unverified. No new research or gameplay. Ignored finite sanity probe reproduced L1 combinations, L2 repair subsets and L3 acceptance counts; shipped rules/tests still required.
+- Ran: `node scripts/check-links.mjs`; `git diff --check`. Backlog/tracker/recommendations, READY cadence, roadmap and archive reconciled; D2 separately queued with source-review/placement/build gates.
+- Not run locally: typecheck, unit tests, build, browser/offline or device checks (docs-only tier). No iPad speech/touch, child/coplayer appeal or learning evidence. Later cases and unresolved decisions unchanged.
