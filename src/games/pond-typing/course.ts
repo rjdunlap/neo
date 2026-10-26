@@ -11,24 +11,29 @@ export interface Course {
   name: string;
   blurb: string;
   /** Each pond's bubbles, typed in order; ' ' is the space bar. */
+  levels: readonly number[];
   ponds: readonly (readonly string[])[];
 }
 
 export const COURSES: Record<TypingCourseId, Course> = {
   typing: {
     id: 'typing',
-    version: 1,
+    version: 2,
     name: 'Bubble Pond',
-    blurb: 'Three ponds of bubbles: single letters, then words, then two words with a space. Every bubble waits for its key.',
+    blurb: 'Six ponds: letters, words, spaces, capitals, a line with a stop, then a line to mend. Every bubble waits.',
+    levels: [1, 3, 3, 4, 5, 6],
     ponds: [
       ['a', 'd', 'b', 'c', 'a', 'd', 'c', 'b'],
       ['duck', 'frog', 'pond'],
       ['wet duck', 'green frog'],
+      ['Pip', 'Duck', 'Hat'],
+      ['Pip has a hat.'],
+      ['The duck is wet.'],
     ],
   },
 };
 
 export const isTypingCourse = (v: unknown): v is TypingCourseId => v === 'typing';
 /** The fewest keys for each pond: one for each character. */
-export const courseBest = (id: TypingCourseId): number[] => COURSES[id].ponds.map((p) => p.join('').length);
+export const courseBest = (id: TypingCourseId): number[] => COURSES[id].ponds.map((p, i) => COURSES[id].levels[i] === 6 ? p.length : p.join('').length);
 export const courseMinimum = (id: TypingCourseId) => courseBest(id).reduce((n, b) => n + b, 0);

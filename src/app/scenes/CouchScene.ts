@@ -6,7 +6,7 @@ import { sfx } from '../../audio/sfx';
 import { voice, type LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import { COUCH_INFO, couchLine, type CouchInfo } from '../../couch/catalog';
-import { keyName, padArt, prompts, type ControllerArt } from '../../couch/controller-art';
+import { keyName, padArt, typingKeyboardArt, prompts, type ControllerArt } from '../../couch/controller-art';
 import { Demo } from '../../couch/demo';
 import { finaleOf, namerOf, stopLabel, type Finale } from '../../couch/finale';
 import { FinaleStage } from '../../couch/finale-stage';
@@ -633,7 +633,7 @@ export class CouchScene extends Scene {
     title.append(node('p', 'HOW TO PLAY', 'couch-eyebrow'), node('h1', mod.name), node('span', this.playLabel(info), 'couch-chip'));
     head.append(this.iconCanvas(mod), title);
     const place = this.place();
-    this.pad = padArt(place);
+    this.pad = mod.typing ? typingKeyboardArt() : padArt(place);
     const list = node('ul', '', 'couch-rows');
     this.rows = info.controls.map(row => {
       const li = node('li');
@@ -727,7 +727,12 @@ export class CouchScene extends Scene {
     // Without a bot, walk through the rows so the diagram still explains each control.
     const lit = demo.hasBot ? demo.lit : new Set(info.controls[Math.floor(this.age / 2) % info.controls.length].parts);
     this.pad?.light(lit);
-    this.rows.forEach((li, i) => li.classList.toggle('on', info.controls[i].parts.some(p => lit.has(p))));
+    this.pad?.lightTyped?.(demo.typed);
+    if (gameById(this.howId!)?.typing) {
+      const key = demo.typed[0] ?? '';
+      this.rows.forEach((row, i) => row.classList.toggle('on', i === 0 ? /^[a-z]$/i.test(key) : i === 1 ? key === ' ' : i === 2 ? key === 'Shift' || key === '.' : i === 3 ? ['Backspace', 'ArrowLeft', 'ArrowRight'].includes(key) : false));
+    }
+    else this.rows.forEach((li, i) => li.classList.toggle('on', info.controls[i].parts.some(p => lit.has(p))));
   }
 
   private startGame() {
@@ -749,7 +754,8 @@ export class CouchScene extends Scene {
       item.append(prompts(row.parts, place), node('span', row.text));
       help.append(item);
     }
-    this.overlay.append(hud, help);
+    this.overlay.append(hud);
+    if (!mod.typing) this.overlay.append(help); // Typing has its own key coach; the reminder would cover it.
     this.content.addChild(this.stage); this.ui.addChild(this.pet); this.pet.scale.set(0.42); this.track(this.pet);
     this.pet.position.set(74, this.view.h - 18);
     // The couch versions of lines that tell a touch player to tap or pull.
@@ -814,6 +820,8 @@ export class CouchScene extends Scene {
     if (again && this.game?.restart) this.button(sheet, again, () => { const game = this.game; this.resume(); game?.restart?.(); });
     const help = COUCH_INFO[id].hint;
     if (help && this.game?.askForHint) this.button(sheet, help, () => { const game = this.game; this.resume(); game?.askForHint?.(); });
+    const coach = this.game?.keyCoach;
+    if (coach) this.button(sheet, `Show the key: ${coach.shown ? 'on' : 'off'}`, () => { coach.toggle(); this.modal?.remove(); this.buttons = []; this.pauseSheet(reason); });
     this.quickSettings(sheet);
     if (this.course) { const id = this.course.spec.id; this.button(sheet, 'Back to the course page', () => this.go(id)); }
     else this.button(sheet, 'Choose a different game', () => { this.couch.data.party!.selected = null; this.couch.save(); this.go(); });

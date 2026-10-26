@@ -40,7 +40,7 @@ function walk(points: readonly Point[], tol: number, from = 0): number {
 describe('Draw the Pattern ladder', () => {
   it('has eight levels and the defined bands', () => {
     expect(PLANS).toHaveLength(8);
-    expect(LEVELS).toEqual({ lap: { min: 1, max: 2 }, toddler: { min: 1, max: 3 }, preschool: { min: 3, max: 5 }, prek: { min: 5, max: 8 } });
+    expect(LEVELS).toEqual({ lap: { min: 1, max: 1 }, toddler: { min: 1, max: 3 }, preschool: { min: 3, max: 5 }, prek: { min: 5, max: 8 } });
     expect(markCount(planFor(1))).toBe(4);
     expect(planFor(1).mode).toBe('mark');
     expect(planFor(7).mode).toBe('choose');

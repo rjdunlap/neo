@@ -88,7 +88,7 @@ try {
           frame: null,
         },
         creations: {
-          picture: { current: { kind: 'picture', stamps: [{ kind: 'star', color: 'pink', x: 0.25, y: 0.4, size: 1.5, turns: 1 }] }, previous: null },
+          picture: { current: { kind: 'picture', medium: 'cloth', version: 1, cols: 6, rows: 8, cells: Array.from({length:48}, (_,i)=>i%4) }, previous: { kind:'picture', stamps:[{kind:'star',color:'pink',x:.25,y:.4,size:1.5,turns:1}] } },
           tune: { current: { kind: 'tune', cols: 4, rows: 3, notes: [{ col: 0, row: 0 }, { col: 2, row: 2 }] }, previous: null },
         },
         journal: { found: ['sink-float:duck', 'animal-snack:bunny'], seen: 0 },
@@ -159,7 +159,9 @@ try {
   await openRoomAndJournalOffline('test-results/offline/treehouse.png', 'test-results/offline/journal.png');
   const roomSave = await readSave();
   assert.deepEqual(roomSave.room.items.find((item) => item.id === 'bed'), { id: 'bed', x: 0.78, y: 0.82, flip: true }, 'The rearranged bed loaded offline');
-  assert.equal(roomSave.creations.picture.current.stamps[0].kind, 'star', 'The kept picture loaded offline');
+  assert.equal(roomSave.creations.picture.current.medium, 'cloth', 'The kept cloth loaded offline');
+  assert.deepEqual(roomSave.creations.picture.current.cells, Array.from({length:48},(_,i)=>i%4), 'All rectangular cloth cells loaded offline');
+  assert.equal(roomSave.creations.picture.previous.stamps[0].kind, 'star', 'Previous picture ownership survived');
   assert.deepEqual(roomSave.creations.tune.current.notes, [{ col: 0, row: 0 }, { col: 2, row: 2 }], 'The kept tune loaded offline');
   assert.deepEqual((await readSave()).journal, { found: ['sink-float:duck', 'animal-snack:bunny'], seen: 2 }, 'Opening the journal offline keeps and marks its discoveries seen');
   // Reset only the looked-at marker in the public save. Opening the journal after the next reload must advance it

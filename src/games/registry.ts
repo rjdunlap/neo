@@ -1,3 +1,10 @@
+import { relayWoods } from './relay-woods';
+import { villageVote } from './village-vote';
+import { swapMeet } from './swap-meet';
+import { littleLoom } from './little-loom';
+import { exampleExpress } from './example-express';
+import { movieNight } from './movie-night';
+import { welcomeWays } from './welcome-ways';
 import { marbleJump } from './marble-jump';
 import { logRoll } from './log-roll';
 import { snowballMerge } from './snowball-merge';
@@ -124,6 +131,7 @@ import { lookItUp } from './look-it-up';
 import { whoAmI } from './who-am-i';
 import { secondChanceShed } from './second-chance-shed';
 import { gearGarden } from './gear-garden';
+import { bondBeads } from './bond-beads';
 import { meadowPens } from './meadow-pens';
 import { wordGlue } from './word-glue';
 import { sandTable } from './sand-table';
@@ -137,6 +145,13 @@ import type { GameModule } from './types';
  * Every minigame. Within each island region, registry order determines game spots.
  */
 export const GAMES: GameModule[] = [
+  relayWoods,
+  villageVote,
+  swapMeet,
+  littleLoom,
+  exampleExpress,
+  movieNight,
+  welcomeWays,
   bubblePop,
   rainbowFingers,
   jellyDrums,
@@ -244,6 +259,7 @@ export const GAMES: GameModule[] = [
   whoAmI,
   secondChanceShed,
   gearGarden,
+  bondBeads,
   meadowPens,
   wordGlue,
   sandTable,

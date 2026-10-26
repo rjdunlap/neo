@@ -2,11 +2,57 @@
 
 What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), one entry per sitting; the [user research review](USER-RESEARCH-2026-10-24.md#a-five-minute-observation-protocol-for-the-lap-band) has the five-minute protocol for watching her play.
 
+## Seesaw Balance 12–13 (2026-10-26)
+
+- [ ] On iPad, check comfortable empty-half/rider pokes at lap/toddler12 and body-centred friend taps at preschool13 in both orientations, real palm handling and guide replay. Listen to actual heavier/lighter questions, directional explanations and wheee timing. Observe whether the lap child repeats the lift and a preschool child uses down/heavier and up/lighter; record enjoyment/replay/stopping only after play. [Scripted proof](VERIFICATION.md#2026-10-26--seesaw-balance-lap-bounce-and-heavierlighter) does not establish these.
+
+## Weather Wardrobe level 10 (2026-10-26)
+
+- [ ] On iPad, check friend sign/item readability, long drags in portrait and landscape, finger lift, palm/second-finger rejection, cancellation and actual spoken weather reasons/guide replay. Observe whether a pre-K child uses both weather signs to give each friend what it needs, and record enjoyment/replay/stopping only after play. [Scripted proof](VERIFICATION.md#2026-10-26--weather-wardrobe-two-friends-level-10) does not establish these.
+
+## Village Vote levels 1–3 (CC4, 2026-10-26)
+
+- [ ] On an iPad, check actual count speech ordering, singular/zero/comparison wording and guide replay; distinguish free pet preference from winner declaration. Confirm comfortable paw/board/picture/Hint reach, legibility and cancellation/outside releases in both orientations. Browser proof checks geometry/input, not small hands or device speech.
+- [ ] Observe a preschool child and coplayer: do they distinguish preference from tally, accept a losing preference and notice that every friend plays? Record enjoyment, replay, comfortable stopping and any explanations only when observed. No transfer or developmental benefit is claimed. CC5 waits until1–3 have been played. [Scripted proof](VERIFICATION.md#2026-10-26--village-vote-13-cc4).
+
+## Swap Meet levels 1–4 (ME2, 2026-10-25)
+
+- [ ] On an iPad, check full-size sources, receiving panels, back arrow and yellow Hint in both orientations, two-way/Undo animation, pictured wants and actual speech/guide replay. Try cancellation, leaving the canvas and a second finger with a real hand. [Scripted proof](VERIFICATION.md#2026-10-25--swap-meet-14-me2) does not establish device comfort or legibility.
+- [ ] Observe whether a toddler notices receiving the other object and understands Undo, and whether a pre-K child follows the two-step chain. Record enjoyment, replay/stopping and coplayer reactions only when observed. Level5–6 wait until1–4 have been played; no transfer to everyday trading is claimed.
+
+## Example Express levels 1–2 (D2, 2026-10-25)
+
+- [ ] On an iPad, listen to the request, fitted-rule replay, actual/requested routes, missing-label explanation and Show me. Check that leaf/star stamps, selected cards, tree/house docks, Test/Check and All delivered are distinguishable without reading, and narration finishes before the next delivery.
+- [ ] Try selecting, labelling, inserting, removing, Undo/Reset, Stop and cancellation with a real hand in both orientations. Observe a school-age child and coplayer teaching, noticing the surprise, revising and choosing to stop; record only what actually happens in OBSERVATIONS. [Scripted proof](VERIFICATION.md#2026-10-25--example-express-12-d2) establishes neither comfort, enjoyment nor transfer to other AI. Pre-K/person and older-case decisions remain open.
+
+## Movie Night levels 1–3 (MM2, 2026-10-25)
+
+- [ ] On an iPad, check pad auditions, event cues and speech do not compete; Splash/Knock and the two-note Hello convention are distinguishable and replayable. Muted play should still communicate the request and cue through pictures/pulses. No sound-recognition or film-comprehension attainment is established by browser automation.
+- [ ] Check drag/tap alternatives, chip return, cancellation, Stop and four-shot portrait/landscape comfort with a real hand. Observe a child and coplayer choosing a free sound, finding the landing/door tap/wave, revising after a request and choosing Bow; record actual reactions in OBSERVATIONS. No verbal answer is required. [Scripted proof](VERIFICATION.md#2026-10-25--movie-night-13-mm2).
+
+## Welcome Ways levels 1–4 (2026-10-24)
+
+- [ ] On an iPad, check part drag/tap cancellation and comfort, replayable visitor needs and stop reasons; watch whether the child notices Bunny passing the step before Roly stops, and Roly entering before Bear needs a wider door. Browser play and four demonstrations establish scripted behavior only ([verification](archive/VERIFICATION-2026-10-24.md#2026-10-24--welcome-ways-levels-14)). No human access representation or practical access advice is included.
+
+## Taps-only lap levels: Puzzle Pals 1–2, Teddy Doctor 2, Roundup 11 (R2, 2026-10-24)
+
+- [ ] On an iPad at lap with a one-year-old: does a tap on a puzzle piece read as "it went in" or as a surprise; does a tap on the named part of the patient land on the right part with a small finger (the bandage still drags for a grown-up); in *Come along*, does the herd walking to where she last tapped read as following her, and is three seconds long enough between taps? Chrome play with synthetic taps finished all three with no misses ([entry](archive/VERIFICATION-2026-10-24.md#2026-10-24--taps-only-lap-levels-r2)); a child's hand and device speech remain unobserved.
+
+## Bond Beads levels 1–2 (chemistry slice 2, 2026-10-24)
+
+- [ ] On an iPad with a school-age child (6–8): does she read the small nubs as hands, and can she drag or tap one bead onto another and tap a link to break it comfortably in both orientations?
+- [ ] On the iPad's voice, are the level lines clear (the stuck-tray line, the Check hints, the tally strip words)?
+- [ ] Does she take the level 2 Check as "same shape as the card" and can she tell a rebuilt shape from the card's picture at a glance?
+
 ## Story Weaver levels 1–3 (writing-composition WC1, 2026-10-24)
 
 - [ ] With a six-year-old: does she understand that the owl cannot see the pictures, and does the owl's question read as a suggestion she may decline?
 - [ ] On an iPad in portrait: do the page row, tiles and slots fit without crowding the Home and help buttons or the pet?
 - [ ] Do the words for the feelings (relieved, sleepy) and the composed sentences read clearly in device speech?
+
+## Meadow Pens levels 4–5 (area-volume-space slice 3, 2026-10-25)
+
+- [ ] On an iPad with a school-age child: are grass/fence comparisons, the matching-piles same choice, and separate-part/whole counts clear in device speech; can she distinguish badges/textures and comfortably reach count regions and answer cards in both orientations; does she understand grass versus fence and counting two parts, with co-play if useful? Chrome proved touch flow, capped support, portrait layouts and demos only. Terminology, pre-K, levels 6–7 placement and hay-loft decisions remain open.
 
 ## Meadow Pens levels 1–3 (area-volume-space slice 1, 2026-10-24)
 
@@ -68,6 +114,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 ## Pond Typing levels 1–3 (KE2, 2026-10-24)
 
+- [ ] Part2: sticky Shift reach and held Shift/Caps Lock, non-US layouts, following the caret/Backspace, the hidden coach and line/picture readability in both views; real speech for capital, stop and repair prompts. Browser proof cannot establish these.
 - [ ] With a child at a real laptop keyboard: can she find and press a letter on a waiting bubble, and does the name and the space-bar level read and feel fair? Also a real keyboard on a laptop rather than Chrome automation, and device speech for the prompts.
 
 ## Illustrated duck pilot (RW14 slice 6, 2026-10-23)
@@ -354,7 +401,7 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 - [ ] **Rhythm Neighbors level 9, Knock a call, with small hands (2026-10-24).** A two- or three-year-old at 9: does a 1.6 s quiet spell feel like the right moment for the frog to answer (not so soon it interrupts a slow knocker, not so late she taps again), does she read the answer as the frog replying to her call, and does knocking through the answer confuse her? Not established by Chrome automation.
 - [ ] **The quiet music-making games on the iPad (2026-10-09).** Jelly Drums, Song Maker, Sound Garden, Rhythm Neighbors, Clap the Syllables and the treehouse tune plaque no longer have the island's loop under them (a probe in headless Chrome shows the loop at about zero and the beat clock still running; the plaque's dip came back after the duck). Does the bare room feel empty to a small child or does her own sound carry it, is Song Maker's playhead still easy to follow, and does Pattern Train's bell level want the same treatment?
 - [ ] **Sound Garden's whole cast on the iPad (2026-10-21).** Level 1 seats five of six singers: do the bunny's four quick beats and the turtle's two slow tocks sound clearly different from the speaker, does the pitched ribbit read as low next to the bird's chirp, and does a small child tap through the whole garden?
-- [ ] **Speech voices for other languages on the iPad (2026-10-11).** Which voices her iPad has for the languages under consideration (Settings, Accessibility, Spoken Content, Voices), whether one needs a download, how they sound at the game's rate (0.95) and pitch (1.15), which were tuned on English voices, and whether a native speaker would accept them for a toddler. Blocks the stage 1 build of [Additional languages](ROADMAP.md#additional-languages); the definition does not wait.
+- [ ] **Speech voices for other languages on the iPad.** European Portuguese first; the [WL1 checklist and evidence template](definitions/additional-languages.md#review-evidence-template-and-open-device-checklist) and [device checklist below](#european-portuguese-stage-1-pilot-wl1) define the open first-pilot acceptance. Other languages stay later; no listening acceptance performed.
 - [ ] Play couch trips with real Pro Controllers on a TV and write down what is wrong: text size from the couch (pages scale to about 1.4 times at 1080p), how-to pacing (Secret Code's and Bumper Garden's demos run 30–40 seconds), whether the bots are a good example, how fast trips open new games (one tier per trip is a guess), how face-off feels to whoever loses, and whether the finale's four-second ceremony is a treat or a wait.
 - [ ] Judge the challenge courses: whether Pond Practice is easy enough and the Five Ponds hard enough, whether Cloud Hopper's small clouds suit a stick, whether any of the three gives a reason to run again, whether a hint after three extra slides or two missed launches is too soon for a score chase, and whether the squashing spring reads well or the launcher wants to become a catapult. Five to ten minutes per course is a hypothesis, not a timer.
 - [ ] Compare three versus four choices per stop, and the pacing of a whole trip, before adding a dice board or more party structure.
@@ -427,6 +474,7 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 - [ ] **Read & Do with a child and on an iPad.** Are the hats, duck sizes and jump/sleep icons understood, are individual word taps and the speaker easy to replay, and does the device speak each word naturally (especially "the" and "can")? Observe independent reading separately from completion with listening support.
 - [ ] **Lemonade Stand with an older child or a grown-up.** Is the weather sign readable without reading, is a weak first batch an experiment or a failure to her, does the lightbulb get found and does what it says change the next choice, are the friends and the SOLD OUT sign fun to watch or slow after the third day, is a lemon making two cups clear on level 4, is a five-day week too long for one sitting, and does anyone want a saved week or a "close the stand" button? Does the pet's closing comparison say something the table did not already show?
 - [ ] **A real controller on the island pause sheet (Lands stage C3, 2026-10-15).** In a Sudoku Garden round press Start: do the d-pad and stick move the focus ring over the buttons and wrap, does A on Start again reset the grid without the round seeing that A, and does Start close the sheet? Only a synthetic gamepad in headless Chromium has been used.
+- [ ] **Scoop Shop 7–9, after EF1b is implemented** ([EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25), 2026-10-25). On iPad, check full-size portrait cone-selection and separate friend-peek targets, clear ownership/selected outline and comfortable hiding; listen to bottom/middle/top, changed-colour and top-first speech. Observe school players using either service order and supported completion. Definition only today; gameplay/device/child understanding and older-player appeal remain unestablished.
 - [ ] **Scoop Shop with her (lap through preschool, 2026-10-20, [dive](deep-dives/scoop-shop.md#build-slices-in-order)).** Does a one-year-old wait for the scoop's flight, and does the tub wobble and pop on her extra taps satisfy her rather than seem broken; does a poke at the customer read as a giggle and the order again; does the level-4 row of scoops read as "that many" for a three-year-old, and does the counting aloud land on device speech? Batch 2 (2026-10-22): do outlined missing slots and spoken count-on support read clearly at 12, and can she use both colour-count rows at 13 on the iPad? Batch 1 (2026-10-22): does one scoop then munch invite another tap at lap 10, and can a toddler match the prepared scoop to a customer picture at 11, including the persistent waiting customer and the hint glow? Slice 2 (2026-10-21): do the six flavour names ("Yum, strawberry!", mint, blueberry, lemon, chocolate, grape) sound clear on the iPad voice, and does a paper cup or waffle bowl read as well as a cone at tub scale to a three-year-old?
 - [ ] **Seesaw Balance level 11 *Two boxes* (school, 2026-10-21, #710).** On an iPad with an eight-year-old: does she treat the tagged square box as its number of blocks on her own, does the orange round hatbox read as a different box, and does the "closer" line help or chatter? Browser play cannot show any of these; [definition](definitions/seesaw-two-boxes.md).
 - [ ] **Swing Pals (levels 1–6, 2026-10-20, #689).** On an iPad with a child: does a lap child connect her tap with the push; at level 2 does the waiting push read as "wait for them" rather than lag; are the parting swings at levels 4–6 clear enough that a miss explains itself.
@@ -453,7 +501,7 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **Sense Detective**: A three-year-old tries Sense Detective level 1.
 - **Melt and Freeze**: Does a lap child enjoy Melt and Freeze 1–2.
 - **Mirror Brush fold button**: Does a two-year-old link the fold press to the copy, and is the squish pleasant.
-- **Visual art**: Can a lap child manage Little Loom level 1.
+- **Visual art**: Can a lap child manage Little Loom level 1 (still a gate before lap registration; VA1 defines toddler–pre-K only). After VA2, check actual iPad pedal/shuttle touch, speech, yarn marks/contrast, over-under readability, retry/glow comprehension and child enjoyment; [definition](definitions/little-loom.md). Browser success establishes none of these.
 - **Sound Garden**: iPad speaker loud/quiet contrast (for Little Conductor plan 5).
 - **Rhythm Neighbors**: Does a five-year-old play level 10 (before any pre-K window for 11).
 - **Garden Grow**: Would a toddler enjoy Garden Grow level 8.
@@ -466,7 +514,7 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **Programming**: Preschool readiness for Cue Studio level 1.
 - **Ratio and proportion**: iPad art check of the authored colour pairs (blue + yellow stays unauthored until it passes).
 - **Chance and statistics**: A two-year-old plays Spinner Fair level 1 (informs adding a toddler entry).
-- **Money and economy**: Child playtest of Lemonade Stand 6's stopped top-up.
+- **Money and economy**: After separately admitted ME2, check Swap Meet actual iPad drag/cancel, two-way object/want legibility, full-size targets/guide in both orientations, speech/replay, toddler returned-object/Undo understanding and pre-K chain order/enjoyment ([ME1 packet](definitions/swap-meet.md#admission-review-and-remaining-evidence)). Definition only: no device or child evidence yet; levels5–6 wait on1–4 played. Child playtest of Lemonade Stand 6's stopped top-up remains later.
 - **Area, volume and space**: Device speech check of "area"/"perimeter.
 - **Weather/water subject**: A tween and parent try the older robust-layout/mystery cases.
 - **Bouncy Launch’s near-or-far entry, lap pull, spring variable and supports**: A one-year-old drags the lap pull level.
@@ -496,3 +544,34 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **RW05 slice 2b, Splish Splash and Weather Wardrobe on the companion rig**: On an iPad, the sprout's smaller cheek and ear splotches, the river and glider garments' size and legibility, and a child's read of hats on side-on faces.
 
 - [ ] **Sudoku Garden's wrong-digit line on a device (2026-10-24).** On an iPad, place a wrong (not clashing) number: does the gentle boing and red ring read as help rather than scolding, is the spoken "The 4 does not belong in that square…" clear and not repeated too often (once per four seconds at most)? Only headless Chromium has run it.
+
+## European Portuguese stage-1 pilot (WL1)
+
+Definition complete, **all person/device checks open**. [Packet and per-line evidence template](definitions/additional-languages.md#review-evidence-template-and-open-device-checklist); [reviewer designation](WAITING-ON-DEVELOPER.md#waiting-on-the-developer). No Portuguese entries, designated reviewer or iPad acceptance supplied by WL1.
+
+- [ ] Developer names family reviewer; explicit acceptance of all 20 keys and every supplied line/variant, with reviewed commit/date, meaning/articles/gender/number/context and alternatives.
+- [ ] Reviewer listens to every entry after English in its pictured host context, including game sounds, using the actual iPad local pt-PT voice; record voice identity/URI/lang/local flag, OS, Safari/PWA, rate/pitch/volume/date and accept/revise/reject per line.
+- [ ] Hear accepted voice offline after cold restart; missing/unaccepted/pt/pt-BR-only voice leaves English and accurate parent status. Revalidate changed content, voice or settings.
+- [ ] Test fast touches, pet replay, interrupted English/tail, finish, Home/Back, mute, setting/profile and voice-list changes: no stale/backlogged words, controls stay responsive.
+- [ ] Current-format backup/restore and isolated profile switching work offline; recheck integrated host playback after WL2. Browser stubs do not satisfy this checklist.
+
+## Little Loom levels 1–3 (VA2, 2026-10-25)
+
+- Open: iPad release/cancel/palm behavior, large targets and guide clearance in both orientations; pedal preview/latch/other-pedal glow and busy-tap comfort.
+- Open: actual device speech for all three instructions, color names, slip/support/replay; over-under strand direction and dot/stripe/ring/white-cross readability in grayscale and sound-off play.
+- Open: child/coplayer enjoyment, free stripe choices, independent/support-assisted pedal use and a comfortable stop. Browser/finite-rule proof establishes no learning or developmental threshold.
+- Lap stays unregistered until a person/device check supports it. Later levels, practical cards, wardrobe and cultural-tradition review remain separate gates.
+
+## Relay Woods levels 1–4 (NC2, 2026-10-26)
+
+Open: actual iPad speech/name and hop-count playback, small-hand release/cancel/reach, five-mosaic recognition (especially portrait/note), receiver identification, equivalent-way/retracing/log understanding, fewest-hop retry comprehension, and child/coplayer enjoyment or replay. Automated browser and manual visual review do not establish these. Fictional friend-chain play makes no internet, safety or transfer claim. No obligation to return to an unfinished delivery.
+
+### Monster Munch school 11–12 (2026-10-26)
+
+- [ ] On an iPad, check cave/sign recognition, four-friend reach, spoken group size, zero and the two separate food questions; do the counted tummy icons/friends/tray make wrong pads useful?
+- [ ] With a child/coplayer, check whether an insufficient cave call reads as a welcome experiment, whole groups and fair amounts of each kind are understandable, and stopping/replaying remains comfortable. Automation establishes neither comprehension nor learning transfer.
+
+## Seesaw Balance 14–16 (2026-10-26)
+
+- [ ] On an iPad, check drag release/cancel/palm behavior, shelf reach, small/middle/big block cues, pumpkin guess sign and tagged number readability in both orientations, and actual instruction/count/comparison speech.
+- [ ] With a child/coplayer, check whether freely testing pairs supports ordering, a guess feels welcome even when different, and adding blocks explains how much heavier. Check supported completion and comfortable stopping. Browser play and seeded rules establish no learning transfer or developmental acceptance.

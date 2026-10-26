@@ -856,3 +856,15 @@ describe('asynchronous save writes', () => {
     warn.mockRestore();
   });
 });
+
+it('cloth Keep survives profile switching, reload and backup restore with previous ownership intact', async () => {
+  const store=make();await store.load();const a=store.activeId;
+  const cloth={kind:'picture' as const,medium:'cloth' as const,version:1 as const,cols:6 as const,rows:8 as const,cells:Array.from({length:48},(_,i)=>i%4)};
+  const stamp={kind:'picture' as const,stamps:[{kind:'star' as const,color:'pink' as const,x:.5,y:.5,size:1,turns:0}]};
+  store.keepCreation(stamp);store.keepCreation(cloth);store.flush();
+  const b=store.addProfile()!;await store.switchTo(b);expect(store.creations.picture.current).toBeNull();store.keepCreation(stamp);store.flush();
+  await store.switchTo(a);expect(store.creations.picture).toEqual({current:cloth,previous:stamp});
+  const file=await store.exportAll();store.takeDownCreation('picture');expect(store.creations.picture.current).toBeNull();
+  await store.restoreAll(file);expect(store.creations.picture).toEqual({current:cloth,previous:stamp});
+  store.flush();const loaded=make();await loaded.load();expect(loaded.creations.picture.current).toEqual(cloth);await loaded.switchTo(b);expect(loaded.creations.picture.current).toEqual(stamp);
+});

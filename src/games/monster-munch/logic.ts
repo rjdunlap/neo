@@ -18,7 +18,7 @@ export function foodWord(food: Food, n: number): string {
   if (n === 1) return food;
   return food === 'berry' ? 'berries' : `${food}s`;
 }
-export type MunchMode = 'tap' | 'big' | 'count' | 'each' | 'eachkind' | 'exact' | 'two' | 'share' | 'leftover';
+export type MunchMode = 'tap' | 'big' | 'count' | 'each' | 'eachkind' | 'exact' | 'two' | 'share' | 'leftover' | 'friends' | 'sharekind';
 
 export interface MunchPlan {
   mode: MunchMode;
@@ -48,6 +48,8 @@ export const MUNCH_PLANS: MunchPlan[] = [
   { mode: 'leftover', rounds: 2, min: 2, max: 3, monsters: [2, 3], pool: true, name: 'Share fairly when it does not come out even: how many each, and how many left over?' },
   { mode: 'big', rounds: 2, min: 3, max: 3, amounts: [3, 3], name: 'Tap three big cookies (or the monster) and its belly grows' },
   { mode: 'eachkind', rounds: 2, min: 1, max: 1, monsters: [2, 3], name: 'Give each monster a cookie and an apple' },
+  { mode: 'friends', rounds: 2, min: 2, max: 3, dots: true, name: 'Call friends for groups of 2 or 3 cookies, then count friends and leftovers (including zero)' },
+  { mode: 'sharekind', rounds: 2, min: 1, max: 3, monsters: [2], name: 'Share cookies and apples fairly, then count how many of each per monster' },
 ];
 
 /** Tapping levels: a tap feeds the next cookie, and nothing can go wrong. */
@@ -76,7 +78,7 @@ const order = (kinds: Food[], a: number, b = 0): Order => {
 
 /** This round's foods: from the whole pool (a different first food from last round, two that don't look alike at two), else cookies and apples. */
 function pickKinds(plan: MunchPlan, rng: Rng, last: Food | undefined): Food[] {
-  const two = plan.mode === 'two' || plan.mode === 'eachkind';
+  const two = plan.mode === 'two' || plan.mode === 'eachkind' || plan.mode === 'sharekind';
   if (!plan.pool) return two ? ['cookie', 'apple'] : ['cookie'];
   const first = rng.pick(FOODS.filter((f) => f !== last));
   if (!two) return [first];
@@ -124,6 +126,19 @@ export function munchRounds(plan: MunchPlan, rng: Rng): MunchRound[] {
         rounds.push({ monsters, kinds, want: of(first, second), tray: of(first + 2, second + 2) });
         break;
       }
+      case 'friends': {
+        const each = r === 0 ? 2 : rng.int(2, 3);
+        const friends = r === 0 ? 3 : rng.int(2, Math.min(4, Math.floor(TRAY_MAX / each)));
+        const left = r === 0 ? 1 : rng.int(0, Math.min(each - 1, TRAY_MAX - friends * each));
+        rounds.push({ monsters: friends, kinds, want: of(each), tray: of(each * friends + left), left });
+        break;
+      }
+      case 'sharekind': {
+        const a = r === 0 ? 2 : rng.int(1, 3);
+        const b = r === 0 ? 1 : rng.int(1, Math.min(3, Math.floor(TRAY_MAX / monsters) - a));
+        rounds.push({ monsters, kinds, want: of(a, b), tray: of(a * monsters, b * monsters) });
+        break;
+      }
       case 'share': {
         const each = rng.int(plan.min, Math.min(plan.max, Math.floor(9 / monsters)));
         rounds.push({ monsters, kinds, want: of(each), tray: of(each * monsters) });
@@ -163,7 +178,7 @@ export function extras(counts: number[], each: number): number[] {
 
 /** Three different answers from 1 to 10, including `answer`. */
 export function numberChoices(answer: number, rng: Rng): number[] {
-  const near = [answer - 2, answer - 1, answer + 1, answer + 2].filter((v) => v >= 1 && v <= 10);
+  const near = [answer - 2, answer - 1, answer + 1, answer + 2].filter((v) => v >= (answer === 0 ? 0 : 1) && v <= 10);
   return rng.shuffle([answer, ...rng.shuffle(near).slice(0, 2)]);
 }
 
@@ -174,7 +189,7 @@ export function orderWords(o: Order, more = false): string {
 }
 
 /** One touch of the ghost finger: tap a waiting food, carry one to a monster, ring the bell, or tap a number (by its value). */
-export type MunchTouch = { tap: number } | { give: number; to: number } | 'bell' | { pad: number };
+export type MunchTouch = { tap: number } | { give: number; to: number } | 'bell' | 'call' | { pad: number };
 
 /** What the table looks like to the finger. */
 export interface MunchTable {
@@ -189,7 +204,7 @@ export interface MunchTable {
   /** The numbers on the answer pads, when there are any. */
   pads: number[];
   /** Leftover levels: whether the pads ask how many each monster got, or how many are left. */
-  asking: 'each' | 'left';
+  asking: MunchQuestion;
 }
 
 /**
@@ -201,7 +216,7 @@ export interface MunchTable {
 export function munchTouch(plan: MunchPlan, t: MunchTable): MunchTouch | null {
   const waiting = (food?: Food) => t.snacks.findIndex((s) => !s.eaten && (!food || s.food === food));
   if (t.pads.length) {
-    const answer = plan.mode === 'leftover' && t.asking === 'left' ? t.left : t.want[t.kinds[0]];
+    const answer = munchAnswer(t);
     return answer !== undefined && t.pads.includes(answer) ? { pad: answer } : null;
   }
   switch (plan.mode) {
@@ -209,6 +224,14 @@ export function munchTouch(plan: MunchPlan, t: MunchTable): MunchTouch | null {
     case 'big': {
       const i = waiting();
       return i < 0 ? null : { tap: i };
+    }
+    case 'sharekind': {
+      for (const food of t.kinds) {
+        const to = t.fed.reduce((best, f, i) => f[food] < t.fed[best][food] ? i : best, 0);
+        const i = t.fed[to][food] < t.want[food] ? waiting(food) : -1;
+        if (i >= 0) return { give: i, to };
+      }
+      return null;
     }
     case 'eachkind': {
       // A food a monster lacks, to the monster that lacks it.
@@ -219,6 +242,15 @@ export function munchTouch(plan: MunchPlan, t: MunchTable): MunchTouch | null {
         }
       }
       return null;
+    }
+    case 'friends': {
+      for (let to = 0; to < t.fed.length; to++) {
+        if (t.fed[to][t.kinds[0]] < t.want[t.kinds[0]]) {
+          const i = waiting();
+          return i < 0 ? null : { give: i, to };
+        }
+      }
+      return canCallFriend(t) ? 'call' : 'bell';
     }
     case 'count': {
       const i = waiting();
@@ -249,16 +281,50 @@ export function munchTouch(plan: MunchPlan, t: MunchTable): MunchTouch | null {
 }
 
 /** Where the glow after two misses points, so the hint line can name it. */
-export type MunchHint = 'food' | 'bell' | 'monster' | 'pad';
+export type MunchHint = 'food' | 'bell' | 'monster' | 'pad' | 'call';
 
 /** The thing that glows after two misses: the same next useful thing `munchTouch` would touch. Tapping levels have no misses. */
 export function munchHint(plan: MunchPlan, t: MunchTable): MunchHint | null {
   if (isTapMode(plan.mode) || plan.mode === 'count') return null;
   if (t.pads.length) return 'pad';
+  if (plan.mode === 'friends') {
+    const move = munchTouch(plan, t);
+    return move === 'call' ? 'call' : move === 'bell' ? 'bell' : 'monster';
+  }
   if (plan.mode === 'exact' || plan.mode === 'two') {
     const need = missing(t.want, t.fed[0]);
     return total(need) === 0 ? 'bell' : 'food';
   }
   if (plan.mode === 'leftover' && t.fed.every((f) => f[t.kinds[0]] >= t.want[t.kinds[0]])) return 'bell';
   return 'monster';
+}
+
+/** Both food questions and quotitive sharing keep their answers tied to the visible table. */
+export type MunchQuestion = 'each' | 'second' | 'friends' | 'left';
+export function munchAnswer(t: MunchTable): number | undefined {
+  if (t.asking === 'left') return t.left;
+  if (t.asking === 'friends') return t.fed.length;
+  return t.want[t.kinds[t.asking === 'second' ? 1 : 0]];
+}
+
+/** Reserve the food still owed to the friends already outside before admitting another. */
+export function canCallFriend(t: MunchTable): boolean {
+  const each = t.want[t.kinds[0]];
+  const waiting = t.snacks.filter((s) => !s.eaten).length;
+  const owed = t.fed.reduce((n, f) => n + Math.max(0, each - f[t.kinds[0]]), 0);
+  return t.fed.length < 4 && waiting - owed >= each;
+}
+
+/** All called friends have exactly their group, and no further complete group remains. */
+export function friendsReady(t: MunchTable): boolean {
+  return t.fed.every((f) => complete(t.want, f)) && t.snacks.filter((s) => !s.eaten).length < t.want[t.kinds[0]];
+}
+
+/** Return only the overfull food of each kind; matching totals alone are not fair shares. */
+export function shareReturns(want: Order, fed: Order[]): Order[] {
+  return fed.map((have) => {
+    const back = noFood();
+    for (const f of FOODS) back[f] = Math.max(0, have[f] - want[f]);
+    return back;
+  });
 }

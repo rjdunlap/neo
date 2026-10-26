@@ -14,6 +14,103 @@ import type { GameHowTo, GameModule, LevelCard, LevelLine } from '../games/types
  * Couch play has its own how-to screens (`src/couch/catalog.ts`); these describe touch play.
  */
 export const HOW_TO: Record<string, GameHowTo> = {
+  'relay-woods': {
+    goal: 'Pass a picture along visible paths to the waving receiver.',
+    steps: [
+      'Tap a connected friend to move the picture one hop. Wait for it to arrive before tapping again.',
+      {from:2,to:2,text:'Either route works. You can retrace your steps.'},
+      {from:3,to:3,text:'A log blocks one path. Retrace to find a clear way, or use the blue Start over arrow.'},
+      {from:4,to:4,text:'Compare the hop ribbons. A longer arrival is shown, then the same picture starts again. Find the route with the fewest hops.'},
+      'The blue arrow starts this picture again. The yellow light shows a next step; ask again to watch the finger carry it through.',
+    ],
+    finish: [{to:3,text:'Any clear walk that reaches the receiver finishes the round.'},{from:4,text:'Reach the receiver using exactly the fewest hops.'}],
+    note: 'A fictional chain of friends. Retracing and restarting are free. Help stays recorded through retries. You may optionally Keep the delivered mosaic in the shared picture slot.',
+  },
+  'village-vote': {
+    goal: 'Count the toy preferences and carry out the choice with the most votes.',
+    steps: [
+      { from: 2, to: 2, text: 'First choose either picture for your pet. Wait for the pet to join that group.' },
+      'Tap a friend’s whole paw panel to count it once. Tap it again or tap the tally board to replay its count.',
+      { to: 2, text: 'Tap the toy picture with more votes. You can choose it without counting first.' },
+      { from: 3, to: 3, text: 'Compare all three groups. Tap the toy picture with the most votes, even when the other two groups are equal.' },
+    ],
+    finish: 'Everyone tries the chosen toy, then the round ends with one sticker.',
+    note: [
+      { from: 2, to: 2, text: 'The pet’s free preference can be on the smaller side. The pet still plays first. Counting and replays are free; help stays assisted.' },
+      { text: 'Tallies show only the friends counted so far. A winner is checked against all actual votes. Help counts all groups and guides the winning tap.' },
+    ],
+  },
+  'swap-meet': {
+    goal: 'Trade pictured toys to meet the friends’ requests.',
+    steps: [
+      {to:1,text:'Drag the pictured thing from your basket to the friend. Watch the other toy come back. Visit three friends.'},
+      {from:2,to:2,text:'Drag each requested toy from your basket to its friend. Either friend can go first; returned toys stay on display.'},
+      {from:3,to:3,text:'Drag one friend’s toy to a friend who wants it. Both friends must want the other’s toy. Find both pairs in either order.'},
+      {from:4,text:'Look at your companion’s goal. Trade your basket toy for the thing the second friend wants, then trade for the goal.'},
+      'Touch a friend or held toy to hear its name and request. The blue back arrow undoes an accepted exchange, including a previous visit.',
+      'The yellow light shows the next trade. Ask again to watch one ghost-finger trade, then continue playing.',
+    ],
+    finish: [
+      {to:1,text:'All three visits finish one round.'},
+      {from:2,to:3,text:'Complete both exchanges to finish one round.'},
+      {from:4,text:'Trade twice to hold the companion’s goal.'},
+    ],
+    note: [
+      {to:1,text:'Incompatible offers teach the pictured request without misses. Two rejections glow a useful trade and record help. Undo and exploring are free.'},
+      {from:2,text:'A deliberate incompatible offer to an active friend counts one miss. Dropping elsewhere, inspecting and Undo are free. Two rejections glow a useful trade. Help persists through Undo, capped at two distinct tasks.'},
+    ],
+  },
+  'little-loom': {
+    goal: 'Send yarn over and under threads to make a scarf.',
+    steps: [
+      {to:1,text:'Tap the loom. Watch the shuttle cross and the beater pack each row.'},
+      {from:2,to:2,text:'Choose any marked yarn pot, then tap the shuttle. Keep or change yarn freely.'},
+      {from:3,text:'Press either pedal, then tap the shuttle. Use the other pedal for the next row.'},
+      {from:3,text:'A repeated lift slips back. Choose the other pedal and try again; no row is lost.'},
+    ],
+    finish: 'Eight rows make a scarf. Keep offers it to the shared picture board.',
+    note: [
+      {to:2,text:'Every choice is welcome. These modes have no misses or hints.'},
+      {from:3,text:'Repeating a submitted lift is one miss under this island toy rule. Two slips glow the other pedal; help counts at most once per row. Exploring pedals and replaying speech are free.'},
+      {text:'Take turns choosing yarn or pressing a pedal and sending the shuttle. Find a stripe on your clothes together.'},
+    ],
+  },
+  'example-express': {
+    goal: 'Change examples so circles go to the tree and squares to the house.',
+    steps: [
+      {to:1,text:'Tap an example without a dock, then the tree or house. The first two examples stay fixed.'},
+      {from:2,text:'Watch the free surprise. Back → Examples: choose a labelled card, then a slot. Any offered card can repair this lesson.'},
+      'Test opens practice: arrows choose a parcel; Send shows its route for free. Back returns. Check submits the lesson.',
+      'Show me makes one useful change for one hint. Change opens Undo/Reset; select an added example to Remove. Stop cancels delivery.',
+    ],
+    finish: 'After a successful Check, tap Back, then All delivered. Editing requires another Check.',
+    note: 'Each failed Check counts one miss; Test and edits are free. This toy fits six fixed rules by fewest disagreements, breaking ties in color/shape/stamp order. Practice may overlap training. Swap choosing examples and tests.',
+  },
+  'movie-night': {
+    goal: 'Put sounds with pictures and watch what your friends hear.',
+    steps: [
+      {to:1,text:'Choose any sound and put it on any picture. Watch your show; every sound choice is welcome.'},
+      {from:2,to:2,text:'Put Splash on the picture where Duck lands in the water. Watch is a free preview; Premiere shows your friends.'},
+      {from:3,to:3,text:'Put Knock on Bunny’s door tap and Hello on the waving friends. Watch is a free preview; Premiere shows your friends.'},
+      'Drag a sound to a picture, or tap a sound then a picture. Tap an installed chip then Return, or drag it back to the tray, to remove it. Undo restores the last edit.',
+      {from:2,text:'Show me places the first requested sound for one hint. You still choose Premiere, then Bow.'},
+    ],
+    finish: [{to:1,text:'After watching your show with at least one sound, tap Bow.'},{from:2,text:'After a Premiere with the requested sounds, tap Bow. Other sound choices stay free.'}],
+    note: [{to:1,text:'Any sound on any picture is welcome. Stop keeps your choices. Swap placing sounds and watching with a friend.'},{from:2,text:'The first unmet Premiere is free; the second counts one miss and one automatic hint. Further unmet premieres count a miss. Stop cancels a showing. Swap placing sounds and watching with a friend.'}],
+  },
+  'welcome-ways': {
+    goal: 'Build one entrance that every pictured visitor can use.',
+    steps: [
+      {to:1,text:'Put the ramp in the gap. Tap Try and watch Roly roll in.'},
+      {from:2,to:2,text:'Put a step or a ramp in the gap. Tap Try to see whether Roly can roll in.'},
+      {from:3,to:3,text:'Bunny hops; Roly rolls. Build one entrance for both. Tap Try, then change any part that stops a friend.'},
+      {from:4,text:'Fill both gaps and choose a door. Roly needs ramps; Bear needs a wide door. Tap Try and invite both friends.'},
+      'Drag a part, or tap a part then a gap. Tap an installed part to select it, then Out to remove it. Undo restores the last edit.',
+      'Show me outlines a useful part and its destination; you still place it.',
+    ],
+    finish: 'One successful Try brings everyone inside and ends the round.',
+    note: 'Trying, changing parts and replaying a visitor’s need are free observations. Help counts once per distinct repair.',
+  },
   'snowball-merge': {
     goal: 'Slide matching snowballs together until one reaches the target number.',
     steps: [
@@ -217,7 +314,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 1, to: 1, text: 'A bubble holds one letter. Press that letter\'s key and the bubble pops.' },
       { from: 2, to: 2, text: 'The bubbles spell her name, one letter each, in order.' },
       { from: 3, to: 3, text: 'A bubble holds a word, typed letter by letter; two words need the space bar between them.' },
-      'The key cap under the bubble shows the key to press. Esc opens the pause menu: glow the key, or start this bubble again.',
+      { from: 4, to: 4, text: 'Copy a word or name with a capital first: tap Shift, then the letter. Holding Shift works too.' },
+      { from: 5, to: 5, text: 'Copy the model line, including its capital, spaces and full stop. A wrong letter stays on your line until Backspace removes it.' },
+      { from: 6, to: 6, text: 'Compare the two lines. Move the caret with Left and Right. Backspace removes the letter before it; type the right letter in the gap.' },
+      'Esc opens the pause menu: turn Show the key on or off, glow a hint, or start this bubble again.',
     ],
     finish: 'The round ends when every bubble has popped.',
     note: 'Nothing is timed and no bubble drifts away. The first wrong key on a letter is free; each wrong key after that counts a miss, and a second wrong key glows the key, which counts as help.',
@@ -266,14 +366,22 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'cue-studio': {
     goal: 'Choose moves for the pet and watch their order.',
     steps: [
-      { from: 1, to: 1, text: 'Tap the hand (Wave) or the circle arrow (Turn) to put that move in the empty place.' },
-      { from: 2, to: 2, text: 'Tap two moves to fill the two places; the pet does them left to right.' },
-      'Play runs the whole show; the arrow-and-bar button runs one move at a time. Each move\'s place glows as the pet does it.',
-      'To change a move, tap its place (an arrow points at it), then tap the new move. Undo takes back the last change.',
-      'The bulb offers help: a Wave in an empty place, then playing the show.',
+      { from: 1, to: 1, text: 'Tap the hand (Wave) or circle arrow (Turn) to fill the empty place.' },
+      { from: 2, to: 2, text: 'Choose two moves to fill the shelf.' },
+      { from: 3, to: 3, text: 'The top pictures ask for Wave, then Turn. Watch the swapped show freely.' },
+      'Play runs the whole show; the arrow-and-bar runs one move. Each place lights as it runs.',
+      'Tap an occupied place, then a move to replace it. Undo takes back one edit.',
+      { from: 1, to: 2, text: 'The bulb offers a Wave in an empty place, then plays the show.' },
+      { from: 3, to: 3, text: 'The bulb outlines the first mismatch and its request; press again to repair it, then repair the next. The orange Play button checks the whole show.' },
     ],
-    finish: 'After the whole show has played, the blue tick finishes it. Changing a move means playing the new show first.',
-    note: 'Any show is a good show: nothing here is ever a mistake. Using the bulb counts as help.',
+    finish: [
+      { from: 1, to: 2, text: 'After a complete run, the blue tick finishes your show. An edit needs a new run.' },
+      { from: 3, to: 3, text: 'A matching Check turns orange Play into the blue Finish tick. Edits and Undo require another Check.' },
+    ],
+    note: [
+      { from: 1, to: 2, text: 'Every complete show is welcome; nothing counts as a miss. Supplied help counts once, even after Undo or Start again.' },
+      { from: 3, to: 3, text: 'Only a wrong Check counts a miss. Two show a clue. Each clue or supplied repair counts once; Undo and Start again keep misses and help.' },
+    ],
   },
   'food-web-workshop': {
     goal: 'Make a picture of who ate what, from the cards.',
@@ -358,7 +466,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'splish-splash': {
     goal: 'Give the pet a bath.',
     steps: [
-      { to: 2, text: 'Rub a finger over the mud to scrub it off.' },
+      { to: 2, text: 'Rub or pat a finger over the mud to scrub it off.' },
       { from: 9, to: 9, text: 'Pat anywhere on the screen: each pat washes a third of the nearest patch of mud away.' },
       { from: 3, to: 6, text: 'Rub a finger over the body part the pet names to wash it, then the next one it asks for.' },
       { from: 7, to: 7, text: 'Rub a finger over each of the two body parts the pet names.' },
@@ -415,6 +523,23 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 1, to: 2, text: "The lens makes things look bigger; it doesn't make them bigger. Nothing here is ever wrong." },
       { from: 3, to: 3, text: "Saying 'No swimmers' before the closest views is never wrong; it only asks to look closer. Show a hint turns the dial for her and counts as a hint, once per drop." },
       { from: 4, to: 4, text: 'Too far and too close are both misses; turning the dial never is. Show a hint turns the dial for her and counts as a hint, once per question.' },
+    ],
+  },
+  'bond-beads': {
+    goal: 'Link beads together hand to hand until every hand is held.',
+    steps: [
+      'Drag from one bead to another to link them (or tap one bead, then the other), and tap a link to break it.',
+      { from: 1, to: 1, text: 'Link until every hand is held and all the beads are one piece.' },
+      { from: 2, to: 2, text: 'Build the shape on the card, then tap Check.' },
+      'The yellow arrow undoes one step; the round arrow takes every link apart.',
+    ],
+    finish: [
+      { from: 1, to: 1, text: 'Every hand is held and all the beads are one piece, three times.' },
+      { from: 2, to: 2, text: 'Two shapes match their cards.' },
+    ],
+    note: [
+      { from: 1, to: 1, text: 'Linking, breaking and undo never count as mistakes, and nothing here is ever wrong. If no free hands can reach each other, a link to break pulses, with no count. This is a puzzle about beads and hands, not a model of real substances.' },
+      { from: 2, to: 2, text: 'Linking, breaking and undo never count. A Check that is not the card is one miss (checking the same build again is not) and the pet names a bead or link to look at; after two misses the one to change glows, which counts as a hint, and a third wrong Check finishes the shape by itself. This is a puzzle about beads and hands, not a model of real substances.' },
     ],
   },
   'gear-garden': {
@@ -836,11 +961,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 5, text: 'Feed the monster the number of foods asked for (cookies, apples, carrots, berries or crackers); it counts each one aloud. Ring the bell when done.' },
       { from: 6, to: 6, text: 'Feed the two foods asked for, like "2 carrots and 1 apple"; it counts each kind aloud. Then ring the bell.' },
       { from: 7, to: 7, text: 'Move every food from the tray to the monsters; when the tray is empty they check it is fair. Then tap how many each monster got.' },
+      { from: 12, to: 12, text: 'Share every cookie and apple fairly. When the tray is empty, tap how many cookies each monster got, then how many apples each got.' },
+      { from: 11, to: 11, text: 'The sign shows 2 or 3 cookies each. Tap the cave to call friends and feed each a whole share. Ring when another friend cannot have a whole share; tap how many friends ate, then how many cookies remain (zero is possible).' },
       { from: 8, to: 8, text: 'Share the food fairly; some may be left over. Ring the bell, then tap how many each monster got and how many are left over.' },
     ],
     finish: [
       { to: 6, text: 'The round ends when the monster has the right amount.' },
       { from: 9, to: 10, text: 'The round ends when every monster has been fed.' },
+      { from: 11, to: 12, text: 'The round ends when the sharing is fair and both counting questions are answered.' },
       { from: 7, to: 8, text: 'The round ends when the sharing is fair and the counting questions are answered.' },
     ],
   },
@@ -866,7 +994,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'puzzle-pals': {
     goal: 'Put a picture together.',
     steps: [
-      'Drag a piece to where it belongs and let go.',
+      { to: 2, text: 'Tap a piece and it hops into its place. Dragging it there works too.' },
+      { from: 3, text: 'Drag a piece to where it belongs and let go.' },
       { to: 1, text: 'One half is already in place: fit the other half to finish the picture.' },
       { from: 2, to: 4, text: 'A faint picture under the frame shows where each piece goes.' },
       { from: 5, to: 7, text: 'The frame is empty. Thick flat sides belong along its outside edge; corners have two.' },
@@ -875,7 +1004,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'After two wrong places, one piece and its place glow, and the pet names where it goes. Help starts with a corner, then builds beside completed pieces.',
   },
   'weather-wardrobe': {
-    goal: 'Dress the pet for the weather.',
+    goal: 'Choose clothes to suit the weather.',
     steps: [
       { to: 1, text: 'Tap the sky to change the weather; the pet dresses itself.' },
       { to: 1, text: 'Tap the grass to splash, crunch or pop up a flower, and tap the clothes on the pet to hear their names.' },
@@ -884,17 +1013,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 5, text: 'Tap every thing that suits the weather.' },
       { from: 6, to: 6, text: 'Tap the clothes that suit each kind of weather, to pack for the trip.' },
       { from: 7, to: 7, text: 'Tap each worn item that does not suit the new weather to take it off, then tap clothes for the new weather.' },
+      { from: 10, to: 10, text: 'Look at each friend’s weather sign. Drag each of the four things to the friend whose weather it suits.' },
       { from: 9, to: 9, text: 'Look at what the pet is wearing, then tap the sky it is dressed for.' },
     ],
     finish: [
       { to: 6, text: 'The round ends when the pet is dressed for the weather (or the trip, which then plays out weather by weather).' },
       { from: 8, to: 8, text: 'Each of three weathers ends when the fitting thing is on the pet.' },
       { from: 7, to: 7, text: 'The round ends when the pet has changed clothes for each new weather.' },
+      { from: 10, to: 10, text: 'Dress both friends in each of three rounds. Each friend receives two things.' },
       { from: 9, to: 9, text: 'Each of three rounds ends when the right sky is picked.' },
     ],
     note: [
       { from: 2, to: 7, text: 'A wrong choice goes on the pet for a moment to show what the weather does, is told which weather it is for, and the glowing one helps.' },
       { from: 8, to: 8, text: 'There are no wrong answers here: everything can be tried on.' },
+      { from: 10, to: 10, text: 'A wrong friend hands the item back and names why. Two misses glow one item and its friend, counting one hint per round. Dropping elsewhere is free; tapping a friend repeats the instruction.' },
       { from: 9, to: 9, text: 'A wrong sky plays over the pet for a moment to show what that weather does, then clears; after two wrong skies the right card glows.' },
     ],
   },
@@ -988,7 +1120,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'The pen already holds some animals. Count them, then shoo in just enough more to match the numeral and dots (4 or 5). Ring the bell when it is full.' },
       { from: 8, to: 8, text: 'Shoo the animals into the two pens so each pen holds the same number, then ring the bell. The sign shows no number: how many is her choice.' },
       { from: 10, to: 10, text: 'Wiggle a finger behind the single animal to shoo it through the wide gate.' },
-      { from: 11, to: 11, text: 'Put a finger on the grass and the animals gather round it. Drag slowly to lead them through the wide gate into the pen.' },
+      { from: 11, to: 11, text: 'Put a finger on the grass and the animals gather round it. Drag slowly, or tap a little ahead of them again and again, to lead them through the wide gate into the pen.' },
     ],
     finish: [{ from: 12, to: 12, text: 'All six pigs sorted by size finish the round. No bell is needed.' }, { from: 9, to: 9, text: 'The bell finishes the round when the pen holds exactly its requested total, including the animals already inside.' }, { from: 7, to: 7, text: 'Both pigs and both bunnies in their own pens finish the round, with the cows still outside. No bell is needed.' }, { to: 6, text: 'The round ends when every animal is where it was asked to go.' }, { from: 10, to: 10, text: 'Help one animal home, then a second one. Both successes make one round and one sticker.' }, { from: 11, to: 11, text: 'The round ends when all three animals are in the pen, in any order.' }, { from: 8, to: 8, text: 'A bell with the same number in each pen finishes the round, even with some left on the grass (two and two out of six is fair; an empty pen is not).' }],
     note: [{ from: 12, to: 12, text: 'A wrong gate counts a miss: the pig hops out and the pet names the pen’s size. Two misses or fifteen idle seconds glow the animals and matching gates (one hint), with a spoken size reminder. A thirty-second trot-home counts another hint.' }, { from: 9, to: 9, text: 'A wrong bell counts one miss. The pet counts the pen aloud and says how many more are needed; extras hop back out. Two wrong bells or fifteen idle seconds glow the needed animals and gate (one hint), with a spoken recount. A thirty-second trot-home counts another hint.' }, { from: 7, to: 7, text: 'An animal entering a wrong pen counts a miss and hops back out. After two misses only animals that need a pen and their gates glow (one hint); cows never glow. After thirty seconds without progress, a needed animal trots home (another hint).' }, { to: 6, text: 'A wrong pen or a wrong bell counts a miss. If no animal gets home for thirty seconds, the nearest one trots home by itself, and that counts as a hint.' }, { from: 10, to: 10, text: 'Nothing counts as a miss. After ten seconds without a success the animal and gate glow (one hint); at twenty seconds it trots home (another hint). Support starts afresh for the second animal.' }, { from: 8, to: 8, text: 'An unequal bell counts a miss: the pet says each pen\'s number and the extras hop out of the fuller pen (none while the other is empty). Two wrong bells glow the emptier pen (one hint). Thirty idle seconds with uneven pens trot one in (another hint).' }, { from: 11, to: 11, text: 'Nothing counts as a miss. After fifteen seconds without an animal getting home, the herd glows and drifts toward the gate by itself for the rest of the round (one hint). If one still is not home thirty seconds after the last, it trots in (another hint).' }],
@@ -1250,8 +1382,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The round ends when the asked-for dots are cleared.',
   },
   'seesaw-balance': {
-    goal: 'Make the seesaw go up, balance, or show how heavy something is.',
+    goal: 'Make the seesaw go up, balance, or show which friend is heavier or lighter.',
     steps: [
+      { from: 14, to: 14, text: 'Drag pairs of presents onto the trays to compare freely. Drag each present to the light, middle or heavy shelf spot, marked by small, middle and big blocks. Either end can be filled first.' },
+      { from: 15, to: 15, text: 'Tap a number to guess how heavy the pumpkin is; guessing is never wrong. Drag blocks to the other tray until balanced, then tap its measured weight. Your guess stays on the sign.' },
+      { from: 16, to: 16, text: 'Drag blocks to the lighter, raised tray until the two tagged weights balance. Then tap how many blocks you added: the difference. A block on the heavy side comes back freely.' },
+      { from: 12, to: 12, text: 'Touch anywhere on the empty half of the plank to send a bigger friend hopping on and lift the rider. Touching the rider is free play.' },
+      { from: 13, to: 13, text: 'Listen for heavier or lighter, then tap that friend. The heavier friend goes down; the lighter one goes up. After two wrong taps the asked friend glows.' },
       { to: 2, text: 'Tap a friend, or drag it, to put it on the other side of the seesaw.' },
       { from: 3, to: 3, text: 'Tap blocks to put them on the other side until the seesaw balances.' },
       { from: 4, to: 4, text: 'Put the presents on the seesaw to see which side drops; the heaviest goes in the wagon.' },
@@ -1259,38 +1396,46 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 6, to: 7, text: 'Tap blocks onto the other side until the seesaw balances, then tap the answer button for how heavy the box is.' },
       { from: 8, to: 9, text: 'Take the same thing off both sides, one at a time, until a box is alone; then tap the answer button for how heavy it is.' },
       { from: 10, to: 10, text: 'Take the same things off both sides. When two boxes balance the blocks, share the blocks fairly and tap how many belong to each box.' },
-      { from: 11, text: 'First tap how heavy the square box is, and it wears its number. Then take the same off both sides, counting the square box as its number of blocks, until the round box is alone; then tap how heavy the round box is.' },
+      { from: 11, to: 11, text: 'First tap how heavy the square box is, and it wears its number. Then take the same off both sides, counting the square box as its number of blocks, until the round box is alone; then tap how heavy the round box is.' },
     ],
     finish: [
+      { from: 14, to: 16, text: 'Three completed puzzles finish the round, including with help. Two wrong shelf or final-number choices glow the right destination or answer.' },
+      { from: 12, to: 12, text: 'Four wheees finish the round, with no wrong touches.' },
+      { from: 13, to: 13, text: 'Three comparisons finish the round, including with help.' },
       { to: 4, text: 'The round ends when the seesaw is balanced or the heaviest is chosen, as asked.' },
-      { from: 5, text: 'The round ends when the seesaw is balanced as asked and the weight is chosen.' },
+      { from: 5, to: 11, text: 'The round ends when the seesaw is balanced as asked and the weight is chosen.' },
     ],
     note: 'Tipping is how the seesaw explains weight; trying things is the game. A heavier side going down and equal sides lying flat are added to her discovery journal after she sees them.',
   },
   'meadow-pens': {
-    goal: "Paint squares of grass for a friend's pen; the fence builds itself around them.",
+    goal: "Count grass squares and fence pieces to help friends with their pens.",
     steps: [
-      'Tap or drag to paint grass; tap a square again to lift it.',
+      { from: 1, to: 3, text: 'Tap or drag to paint grass; tap a square again to lift it.' },
       { from: 1, to: 1, text: 'Paint as many squares as your friend asks, any shape, then ring the bell.' },
       { from: 2, to: 2, text: "Count the field's rows and tap the card for the whole field." },
       { from: 3, to: 3, text: 'Paint six squares so the fence uses every piece on the stack, then ring the bell.' },
+      { from: 4, to: 4, text: 'Listen for grass or fence; touch both pens to count; choose a flower pen or the same.' },
+      { from: 5, to: 5, text: 'Touch each part to count it; choose the card for all the grass.' },
     ],
     finish: [
       { from: 1, to: 1, text: "When every friend has a pen, it's done." },
       { from: 2, to: 2, text: "After five fields, it's done." },
       { from: 3, to: 3, text: "When every friend has a pen, it's done." },
+      { from: 4, to: 5, text: "After five questions, it's done." },
     ],
     note: [
       { from: 1, to: 1, text: 'Painting and lifting are free; only a bell ring with the wrong pen counts as a miss, and two light up a pen that works. Grass is the area and the fence is the perimeter; the game says only squares of grass and fence pieces.' },
       { from: 2, to: 2, text: 'A wrong card fills the field row by row; two light up the right card. Grass is the area and the fence is the perimeter; the game says only squares of grass and fence pieces.' },
       { from: 3, to: 3, text: 'Painting and lifting are free; only a bell ring with the wrong pen or the wrong fence counts as a miss, and two light up a pen that works. Grass is the area and the fence is the perimeter; the game says only squares of grass and fence pieces.' },
+      { from: 4, to: 4, text: 'Compare area and perimeter, including equal counts. Only wrong answer cards miss; count replay is free. Two misses or Show a hint glow the correct card; then touching any answer card completes with help.' },
+      { from: 5, to: 5, text: 'Add the areas of two rectangles. Only wrong answer cards miss; counting either part is free. Two misses or Show a hint glow the correct card; then touching any answer card completes with help.' },
     ],
   },
   'teddy-doctor': {
     goal: 'Look after the teddy patient.',
     steps: [
       { to: 1, text: 'Tap the patient anywhere: the nearest boo-boo gets a bandage.' },
-      { from: 2, to: 2, text: 'Listen to where the patient hurts, then drag the bandage onto that place.' },
+      { from: 2, to: 2, text: 'Listen to where the patient hurts, then tap that place on the patient, or drag the bandage there.' },
       { from: 3, to: 3, text: 'Look at what is wrong, then drag what helps onto the patient.' },
       { from: 4, to: 4, text: 'Listen to what hurts, then use the right thing in the right place.' },
       { from: 5, to: 5, text: 'Do the check-up in the order shown on the picture card.' },
@@ -2165,18 +2310,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Tap the ramp to change its height and the floor for carpet, wood or ice, then press go. Stop the car on the star.' },
       { from: 4, to: 4, text: 'The sign shows what to test: floors or ramps. Change only that on one lane, keep everything else the same, then press go to race both cars.' },
       { from: 5, to: 5, text: 'Press go, and where the car stops goes on a card. Tap the ramp to change it, tap the floor to guess where the car will stop if you like, then press go again. Tap the card whose car went farther.' },
+      { from: 6, to: 6, text: 'The sign shows what to test: floors or ramps. The blue lane stays put; change the orange lane until only that thing is different, press go, then tap the card whose car went farther.' },
     ],
     finish: [
       { to: 1, text: 'The round ends after four rolls.' },
       { from: 2, to: 3, text: 'The round ends after the car stops on three stars.' },
       { from: 4, to: 4, text: 'The round ends after three fair tests.' },
       { from: 5, to: 5, text: 'The round ends after two pairs of cards.' },
+      { from: 6, to: 6, text: 'The round ends after two fair tests, one of floors and one of ramps.' },
     ],
     note: [
       { to: 1, text: 'Every roll is free: there is no star and nothing to get wrong.' },
       { from: 2, to: 3, text: 'A roll that stops short of the star or past it is a miss, and the pet says which way to change. After two on one star, the setup to try glows.' },
       { from: 4, to: 4, text: 'Two lanes that are just the same get a reminder, not a miss. Pressing go when anything besides the thing on the sign differs is a miss; after two on one test, the part of the orange lane to change glows.' },
       { from: 5, to: 5, text: 'Guesses are free, and rolling the same ramp twice only gets a reminder. Tapping the card that went less far is a miss; after two on one pair, the farther card glows.' },
+      { from: 6, to: 6, text: 'Two lanes that are just the same get a reminder, not a miss. Pressing go when anything besides the thing on the sign is different is a miss, and so is tapping the card that went less far; after two of either on one test, what to change or tap glows.' },
     ],
   },
   'critter-sort': {

@@ -4,7 +4,7 @@
 
 **Research and proposals only.** The island already paints, stamps, mixes color, builds pictures from shapes and solves pixel pictures ([Paint Pier](../../GAMES.md#painted-canyon-art)), and those games have researched ladders of their own ([Rainbow Fingers](../rainbow-fingers.md), [Stamp Studio](../stamp-studio.md), [Tangram Town](../tangram-town.md), [Puzzle Pals](../puzzle-pals.md)). This study looks for what is still missing. It finds two gaps. **Textiles:** no game, notebook row or study weaves. **Responding to art:** looking closely, giving the evidence for what a picture shows, and noticing how a picture was made. The standards give these as much weight as making, and the island has nothing for them.
 
-It recommends one new identity, **Little Loom**: press a pedal, throw the shuttle, and watch over-and-under turn single threads into cloth. The ladder runs from a lap-and-toddler toy to pattern cards and color-and-weave puzzles for the upper years, and the finished cloth is a natural **child-made pattern** for a creature to wear (the rework brief names child-made patterns in the collection). The second recommendation is a cheap family card, **Picture Talk**: three museum questions to ask about any picture. The third develops the notebook's existing JumpStart seed **Gallery Walk** (hang code-drawn pictures in the portrait, landscape and still-life rooms; sort by style) into a later looking game that also answers "what do you see that makes you say that?" by tapping evidence in original island pictures. Everything else extends a built game or a proposal that already exists. Nothing is built: no game, band, land, registration or save change.
+It recommends one new identity, **Little Loom**: press a pedal, throw the shuttle, and watch over-and-under turn single threads into cloth. The ladder runs from a lap-and-toddler toy to pattern cards and color-and-weave puzzles for the upper years, and the finished cloth is a natural **child-made pattern** for a creature to wear (the rework brief names child-made patterns in the collection). The second recommendation is a cheap family card, **Picture Talk**: three museum questions to ask about any picture. The third develops the notebook's existing JumpStart seed **Gallery Walk** (hang code-drawn pictures in the portrait, landscape and still-life rooms; sort by style) into a later looking game that also answers "what do you see that makes you say that?" by tapping evidence in original island pictures. Everything else extends a built game or a proposal that already exists. Little Loom1–3 is now built; see the [VA2 build note](../../archive/COMPLETED-2026-10-09.md#little-loom-levels-13-va2-2026-10-25). All higher rungs remain proposals.
 
 ## Anchors and evidence limits
 
@@ -103,6 +103,8 @@ Source audit of [GAMES](../../GAMES.md), the [notebook](../../IDEAS.md), the dee
 
 ## A first game's ladder: Little Loom
 
+VA1 levels 1–3 are [defined](../../definitions/little-loom.md) (docs only, 2026-10-25); that packet freezes the island rule, exact entry ranges, accounting, layout/placement and Keep contract for VA2. The remaining ladder below is proposed. Historical Paint Pier/four-game notes below are superseded by the packet’s current Painted Canyon count.
+
 **Fun action.** A wooden loom with big colored warp threads. Press a pedal: half the threads lift with a creak. Throw the shuttle: it zips across, a ribbon of yarn tucks over and under, and a beater thumps it into place. The cloth grows row by row and, at the end, is cut off the loom and becomes a scarf or blanket for a friend. **Learning.** Weaving is interlacing: alternate lifts make cloth that holds; the visible pattern comes from which thread is on top; a plan (the pedal order, the lift cards, the yarn colors) produces a predictable cloth, and revising the plan revises the cloth.
 
 **The model (inspectable, exact).** A cloth is `cols × rows` (at most 8 × 8). Warp colors `warp[c]`, weft colors `weft[r]`, lifts `lift[r][c]` (true means the warp thread is on top). The visible cell is `lift ? warp[c] : weft[r]`. That drawdown is true of a real loom by construction (NPS: harnesses lift threads; plain weave needs two, twill three or more). **Island rule, stated as the island's:** a row holds only if it lifts at least one thread and leaves at least one down, no thread floats over more than three neighbors in a row or column, and a row never repeats the lift of the row just before it (on a real loom the same shed twice lets the new pick pull out at the edge: **recalled, not opened**; the island makes it a simple rule). A row that breaks the rule does not lock in: the ribbon slides loose and the shuttle returns, with a spoken reason ("Every thread went the same way, so the yarn slipped out").
@@ -153,12 +155,12 @@ The brief's collection includes "child-made patterns" and asks that an education
 7. **Loom Logic for grown-ups.** `GROWNUP_GAMES` registration and a Lantern Lake capacity check before definition; lean later than Loom 6–7.
 8. **Practical review** of the Paper Weaving card (scissors, small children) before it is shown.
 
+Little Loom levels1–3 built in VA2; [build note](../../archive/COMPLETED-2026-10-09.md#little-loom-levels-13-va2-2026-10-25).
+
 ## Build slices, in order
 
 Each is one session. Definitions are docs only; builds follow the AGENTS verification tier for a new game or new levels.
 
-1. **VA1 · Define Little Loom 1–3** (docs only): the drawdown model and island rule in prose with test cases; pedal, shuttle and beater layout in both orientations with the pet clear; yarn marks and contrast; voice lines; accounting (decision 3); how-to card per level; ghost-finger plan; Paint Pier capacity check; kept-cloth shape (decision 4).
-2. **VA2 · Build Little Loom 1–3**: new-game tier (typecheck, unit tests for the drawdown and float rule, one filtered play of first and last level with one wrong pedal and one hint, a portrait screenshot, `fingerdemo`).
 3. **VA3 · Picture Talk card** (plain HTML on the grown-ups' page; light copy review). Can run beside VA1–VA2.
 4. **VA4 · Define and build Little Loom 4–5** (checks, diagonal): new-levels tier.
 5. **VA5 · Define Little Loom 6–7** (lift cards, color-and-weave), with the Picture Bytes overlap test restated, then **VA6** build.
@@ -170,4 +172,4 @@ Sketches not scheduled: Clay Corner; Paper Weaving card (after review); Picture 
 
 ## What was built and checked
 
-Nothing built. Docs only: this study, the tracker row, the notebook candidate row, the roadmap's [Visual art recommendations](RECOMMENDATIONS.md#visual-art-recommendations), a decision row and a verification entry. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks; no reference game was played, and child, tween and parent appeal are unestablished.
+No Little Loom gameplay built. VA1 definition complete ([packet](../../definitions/little-loom.md)); [closeout](../../archive/COMPLETED-2026-10-09.md#va1-little-loom-13-definition-2026-10-25). Original study evidence: docs only, this study, the tracker row, the notebook candidate row, the roadmap's [Visual art recommendations](RECOMMENDATIONS.md#visual-art-recommendations), a decision row and a verification entry. Ran `node scripts/check-links.mjs` and `git diff --check`. No code, tests, browser or device checks; no reference game was played, and child, tween and parent appeal are unestablished.

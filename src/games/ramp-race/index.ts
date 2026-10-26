@@ -17,6 +17,8 @@ import {
   CARD_H,
   CARD_W,
   classifyFair,
+  CONTROL,
+  makeChange,
   distance,
   fairLine,
   fairRepair,
@@ -47,7 +49,7 @@ import {
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 1, max: 5 },
+  school: { min: 1, max: 6 },
 };
 
 /** Trial Shelf card art: a mark on a card's ruler, and where the ruler and the mini ramp's foot sit. */
@@ -167,6 +169,7 @@ class RampRace implements Game {
   questions: FairQuestion[] = [];
   /** Trial Shelf: each pair's first height, the cards so far, the paw she placed (in marks) and where the pair is. */
   shelfStarts: number[] = [];
+  changeStarts: Setup[] = [];
   records: TrialRecord[] = [];
   guess: { side: 'before' | 'past'; at: number } | null = null;
   phase: 'first' | 'change' | 'ask' = 'first';
@@ -197,7 +200,7 @@ class RampRace implements Game {
     this.star.eventMode = 'none';
     this.sign.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.sign);
-    const two = this.plan.mode === 'fair';
+    const two = this.plan.mode === 'fair' || this.plan.mode === 'change';
     for (const color of two ? [swatch.blue.fill, swatch.orange.fill] : [swatch.blue.fill]) {
       const lane = new Lane(color);
       if (this.plan.mode === 'height') lane.setup = { height: 2, floor: 'wood' };
@@ -221,6 +224,11 @@ class RampRace implements Game {
     ctx.stage.addChild(this.star, this.glow, this.go);
     if (this.plan.mode === 'height' || this.plan.mode === 'both') this.stars = makeStars(this.plan, ctx.rng);
     if (this.plan.mode === 'fair') this.questions = makeQuestions(ctx.rng, this.plan.rounds);
+    if (this.plan.mode === 'change') {
+      const changes = makeChange(ctx.rng);
+      this.questions = changes.map((c) => c.question);
+      this.changeStarts = changes.map((c) => c.start);
+    }
   }
 
   start() {
@@ -235,7 +243,7 @@ class RampRace implements Game {
     this.go.position.set(v.w - 80, v.h - 80);
     this.sign.position.set(v.w / 2 + 60, 80);
     this.drawStar();
-    if (this.plan.mode === 'shelf') this.layoutShelf();
+    if (this.plan.mode === 'shelf' || this.plan.mode === 'change') this.layoutShelf();
   }
 
   update(dt: number) {
@@ -337,7 +345,7 @@ class RampRace implements Game {
     this.fairGlow = false;
     for (const l of this.lanes) l.reset();
     const mode = this.plan.mode;
-    const total = mode === 'fair' ? this.questions.length : mode === 'shelf' ? this.shelfStarts.length : this.stars.length;
+    const total = mode === 'fair' || mode === 'change' ? this.questions.length : mode === 'shelf' ? this.shelfStarts.length : this.stars.length;
     if (mode !== 'explore' && this.index >= total) return void this.finale();
     if (mode === 'shelf') {
       // A fresh pair: the ramp at its start height, no cards, a blue car.
@@ -349,17 +357,38 @@ class RampRace implements Game {
       this.events[this.index] = [];
       paintCar(this.lanes[0].car, swatch.blue.fill);
     }
+    if (mode === 'change') {
+      this.lanes[0].setup = { ...CONTROL };
+      this.lanes[1].setup = { ...this.changeStarts[this.index] };
+      this.records = [];
+      this.ring = false;
+      this.phase = 'first';
+      this.events[this.index] = [];
+      this.sign.visible = true;
+    }
     this.resize(this.view);
     this.drawSign();
     this.busy = false;
     if (mode === 'explore') return this.index === 0 ? this.ctx.instruct('ramp.explore') : undefined;
     if (mode === 'shelf') return this.ctx.instruct('ramp.shelf');
+    if (mode === 'change') return this.ctx.instruct(this.questions[this.index].compare === 'floor' ? 'ramp.change.floor' : 'ramp.change.height');
     if (mode === 'fair') return this.ctx.instruct(this.questions[this.index].compare === 'floor' ? 'ramp.fair.floor' : 'ramp.fair.height');
     if (this.index === 0) return this.ctx.instruct(mode === 'height' ? 'ramp.height' : 'ramp.both');
   }
 
+  /** A locked control is a free nudge; while reading, all lane controls are inert. */
+  private changeLocked(l: Lane): boolean {
+    if (this.plan.mode !== 'change') return false;
+    if (this.phase === 'ask') return true;
+    if (l !== this.lanes[0]) return false;
+    sfx.tick();
+    void this.ctx.say('ramp.keepblue');
+    return true;
+  }
+
   private cycleHeight(l: Lane) {
     if (this.busy || this.finished) return;
+    if (this.changeLocked(l)) return;
     if (this.plan.mode === 'shelf') {
       // Locked until the first card lands, so every pair really starts at 2 or 4; inert while the cards ask.
       if (this.phase === 'first') return void this.ctx.say('ramp.shelf.first');
@@ -373,7 +402,8 @@ class RampRace implements Game {
   }
 
   private cycleFloor(l: Lane) {
-    if (this.busy || this.finished || (this.plan.mode === 'shelf' && this.phase === 'ask')) return;
+    if (this.busy || this.finished || ((this.plan.mode === 'shelf' || this.plan.mode === 'change') && this.phase === 'ask')) return;
+    if (this.changeLocked(l)) return;
     if (this.plan.mode === 'height' || this.plan.mode === 'explore' || this.plan.mode === 'shelf') return void this.ctx.say('ramp.woodonly');
     const i = FLOORS.indexOf(l.setup.floor);
     l.setup = { ...l.setup, floor: FLOORS[(i + 1) % FLOORS.length] };
@@ -382,10 +412,10 @@ class RampRace implements Game {
   }
 
   private async roll() {
-    if (this.busy || this.finished || (this.plan.mode === 'shelf' && this.phase === 'ask')) return;
+    if (this.busy || this.finished || ((this.plan.mode === 'shelf' || this.plan.mode === 'change') && this.phase === 'ask')) return;
     this.busy = true;
     const mode = this.plan.mode;
-    if (mode === 'fair') return void this.fairTest();
+    if (mode === 'fair' || mode === 'change') return void this.fairTest();
     if (mode === 'shelf') return void this.shelfRoll();
     const d = await this.lanes[0].roll(this.ctx.tw);
     if (mode === 'explore') {
@@ -431,11 +461,12 @@ class RampRace implements Game {
       return;
     }
     if (line) {
-      this.misses++;
+      if (this.plan.mode === 'change') this.count('unfair-check');
+      else this.misses++;
       this.wrongs++;
       sfx.boing();
       await this.ctx.say(line);
-      if (this.wrongs >= 2) this.hints++;
+      if (this.wrongs >= 2 && this.plan.mode === 'fair') this.hints++;
       if (this.wrongs >= 2 && !this.fairGlow) {
         // The glow turns on once per question and is never restarted or re-announced.
         this.fairGlow = true;
@@ -445,6 +476,19 @@ class RampRace implements Game {
       return;
     }
     const [da, db] = await Promise.all([a.roll(this.ctx.tw), b.roll(this.ctx.tw)]);
+    if (this.plan.mode === 'change') {
+      this.fairGlow = false;
+      this.sign.visible = false;
+      this.records = [recordOf(a.setup), recordOf(b.setup)];
+      sfx.bell(4, 0.25);
+      await Promise.all([this.slideCard(0), this.slideCard(1)]);
+      a.reset();
+      b.reset();
+      this.phase = 'ask';
+      this.busy = false;
+      void this.ctx.instruct('ramp.shelf.ask');
+      return;
+    }
     const winner = da > db ? a : b;
     sfx.sparkle();
     this.ctx.particles.burst(winner.car.x, winner.car.y - 40, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
@@ -528,8 +572,11 @@ class RampRace implements Game {
       sfx.sparkle();
       this.ctx.pet.cheer();
       this.ctx.particles.burst(card.x + CARD_W / 2, card.y + CARD_H / 2, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
-      // On wood the taller ramp always goes farther.
-      await this.ctx.say('ramp.shelf.yay', { what: 'taller' });
+      if (this.plan.mode === 'change') {
+        const winner = this.records[right].setup;
+        const what = this.questions[this.index].compare === 'floor' ? winner.floor : winner.height === Math.max(a.setup.height, b.setup.height) ? 'taller ramp' : 'shorter ramp';
+        await this.ctx.say('ramp.fairyay', { what });
+      } else await this.ctx.say('ramp.shelf.yay', { what: 'taller' });
       this.badge.visible = false;
       await Promise.all(this.cards.splice(0).map(async (c) => {
         await this.ctx.tw.to(c, { x: this.view.w + 40 }, { duration: 0.35, ease: ease.inQuad });
@@ -634,7 +681,7 @@ class RampRace implements Game {
     this.busy = true;
     sfx.tada();
     const mode = this.plan.mode;
-    await this.ctx.say(mode === 'explore' ? 'ramp.done.explore' : mode === 'fair' ? 'ramp.done' : mode === 'shelf' ? 'ramp.done.shelf' : 'ramp.done.stars');
+    await this.ctx.say(mode === 'explore' ? 'ramp.done.explore' : mode === 'fair' || mode === 'change' ? 'ramp.done' : mode === 'shelf' ? 'ramp.done.shelf' : 'ramp.done.stars');
     await this.ctx.tw.wait(0.4);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }

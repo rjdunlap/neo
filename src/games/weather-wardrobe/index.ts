@@ -15,6 +15,7 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { WeatherFriends } from './friends';
 import { anchorOf, clothing, itemIcon, PAIRED } from './art';
 import { GROUND_TOUCH, ITEM_NAMES, tripPlays, MISFIT, ITEM_WORDS, ITEMS, itemToTap, outfitFor, outfits, partFor, STICKER_ITEMS, wardrobeFor, wardrobePlan, WEATHERS, type Item, type Misfit, type Outfit, type WardrobePlan, type Weather } from './logic';
 
@@ -59,7 +60,7 @@ const LEVELS: BandLevels = {
   lap: { min: 1, max: 8, order: [1, 8, 2] },
   toddler: { min: 2, max: 9, order: [2, 9, 3, 4] },
   preschool: { min: 3, max: 9, order: [3, 9, 4, 5] },
-  prek: { min: 4, max: 7 },
+  prek: { min: 4, max: 10, order: [4, 5, 10, 6, 7] },
 };
 const TRY_IDLE = 6;
 
@@ -843,5 +844,5 @@ export const weatherWardrobe: GameModule = {
     return new WigglyIcon(c);
   },
   sticker: (seed) => wardrobeArt(seed),
-  create: (ctx) => new WeatherWardrobe(ctx),
+  create: (ctx) => ctx.level === 10 ? new WeatherFriends(ctx, weatherIcon) : new WeatherWardrobe(ctx),
 };

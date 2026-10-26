@@ -80,6 +80,19 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
+### scoop-shop 3: Change and reverse
+
+- **`scoop-shop`, level 8 Change of mind**: exactly one bottom/middle/top replacement before input; final-order peek and accounting.
+- **`scoop-shop`, level 9 Top first**: reverse a spoken distinct triple; upright peek.
+
+EF1b first batch, school only, [canonical EF1 requirements](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25). Retain built IDs/order; separate admission and building-session review/placement/layout/person gates. Proof: typecheck, rule tests, filtered top-level9 play, demos8/9; other checks only at the applicable tier. No level7 implementation in this batch.
+
+### scoop-shop 4: Two cones
+
+- **`scoop-shop`, level 7 Two cones**: after batch3 and built11; one pair, three scoops total, free cone selection distinct from friend peek, independent state/accounting and both service orders.
+
+Standalone EF1b new interaction, [canonical EF1 requirements](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25). Separate admission, current source/contract review, actual full-size layout/placement, rules, filtered wrong-scoop/peek/completion play, portrait and two-order demo; shared-file/asset build tier as applicable. Person/device gates stay open.
+
 ### shape-sorter 1: Sorting entry, shape pool and three sizes
 
 Built 2026-10-22, [PR #817](https://github.com/rjdunlap/neo/pull/817); [closeout](archive/COMPLETED-2026-10-09.md#shape-sorter-batch-1-round-or-square-shape-pool-sizes-and-big-middle-little-2026-10-22). Scope retained for dependency references; this batch is no longer eligible for dispatch.
@@ -187,6 +200,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### weather-wardrobe 3: Two friends, two places
 
+Built 2026-10-26, [PR #987](https://github.com/rjdunlap/neo/pull/987); [closeout](archive/COMPLETED-2026-10-09.md#weather-wardrobe-two-friends-two-places-level-10-2026-10-26). Retained for scope references; no longer eligible for dispatch.
+
 - **`weather-wardrobe`, level 10 Two friends, two places** (new drag interaction): drag each item to the friend whose weather it suits; pre-K. [Slice 8](deep-dives/weather-wardrobe.md#build-slices-in-order)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
@@ -251,6 +266,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### monster-munch 2: Sharing two kinds and choosing group counts
 
+Built 2026-10-26, [PR #989](https://github.com/rjdunlap/neo/pull/989); [closeout](archive/COMPLETED-2026-10-09.md#monster-munch-batch-2-two-kinds-and-how-many-friends-2026-10-26). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
 - **`monster-munch`, level 12 Share two kinds** (new level, after *Big bites*): deal cookies and apples fairly, then how many of each; school order 6, 7, 12, 8. [Slice 5](deep-dives/monster-munch.md#new-levels-on-top)
 - **`monster-munch`, level 11 How many friends?** (new interaction, after *Big bites*): call friends from a cave, two each, ring when no one else can have two, then how many friends and how many left; school top. [Slice 6](deep-dives/monster-munch.md#new-levels-on-top)
 
@@ -285,12 +302,16 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### seesaw-balance 2: Lap bounce and heavier-or-lighter choices
 
+Built 2026-10-26, [PR #991](https://github.com/rjdunlap/neo/pull/991); [closeout](archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-2-lap-bounce-and-heavierlighter-slices-34-2026-10-26). Scope retained below.
+
 - **`seesaw-balance`, level 12 *Wheee!* with the lap band, slice 3** (new interaction tier: typecheck, units, one scripted play at lap and toddler, one portrait screenshot, `fingerdemo` at 12): the `bounce` mode, any touch on the empty tray sends a duck up; `bands` gains `lap`, lap `order [12]`, toddler `order [12, 1, 2]`, `entryLevels: [12]`. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 - **`seesaw-balance`, level 13 *Who is heavier?*, slice 4** (new interaction tier, taps on friends: typecheck, rule tests, one play of 13 with one wrong tap and one hint, `fingerdemo` at 13): tap the heavier or lighter of two tipped friends; preschool `order [2, 13, 3, 4]`, `entryLevels: [12, 13]`. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
 ### seesaw-balance 3: Order weights, estimate and find the difference
+
+Built 2026-10-26, [PR #993](https://github.com/rjdunlap/neo/pull/993); [closeout](archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-3-order-estimate-and-difference-slices-57-2026-10-26). Scope retained below.
 
 - **`seesaw-balance`, level 14 *Line them up*, slice 5** (new levels on an existing interaction: typecheck, rule tests, one play of 14, `fingerdemo` at 14): three look-alike presents tested in pairs then dragged to light, middle and heavy spots; pre-K `order [3, 4, 14, 5, 6, 7]`. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 - **`seesaw-balance`, level 15 *Guess the pumpkin*, slice 6** (new levels tier, plus a portrait screenshot for the guess sign): an unscored guess, then blocks until level, then the real number; pre-K `order [3, 4, 14, 5, 6, 7, 15]`, school `order [6, 7, 15, 8, 9, 10, 11]` (without 11 until it lands). [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
@@ -513,3 +534,35 @@ Built; [completed scope and proof](archive/COMPLETED-2026-10-09.md#photo-safari-
 - **`timeline-trail`, levels 1–3 (T2)** (a new game, one declared batch; preschool 1–2, pre-K 1–3, school 2–3, Barnyard by default): a clothesline between a "long ago" post and a "now" post; level 1 taps the older of two pictures, level 2 drags a third picture into the right of three gaps, level 3 builds a line of four one card at a time; a finished line plays as a flipbook of the place growing. Level 4 (a clue inside the picture) is a later batch on the same game. [Definition](definitions/timeline-trail.md), [time-and-change study slice 2](deep-dives/subjects/time-change.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's Check tier](definitions/timeline-trail.md#check-tier) sets it (typecheck, unit tests, one scripted play at levels 2–3, `fingerdemo` at levels 1–3, one portrait screenshot of level 3, one build).
+
+### welcome-ways 1: Levels 1–4
+
+Built; [batch record](archive/COMPLETED-2026-10-09.md#welcome-ways-levels-14-2026-10-24). Levels 5–7 need their own definition.
+
+### little-loom 1: Levels 1–3 (VA2)
+
+Built; [build note](archive/COMPLETED-2026-10-09.md#little-loom-levels-13-va2-2026-10-25). Later levels and person/device gates remain separate.
+
+
+### swap-meet 1: Levels 1–4 (ME2)
+
+Source: [ME1 packet](definitions/swap-meet.md), money-economy ME2; one declared four-level new-game batch after separate admission.
+
+- Level1 Give it: three sequential authored requests, two basket slots, both objects cross, zero misses.
+- Level2 Two friends: either order of two simultaneous requests and visible returned objects.
+- Level3 Swap!: two reciprocal pairs among four friends, both pair orders/drag directions.
+- Level4 Chain of two: both authored basket/goal chains, exactly two forward exchanges.
+- Shared bounded exact Undo, all-reachable-state BFS/recovery/shortest-action hints, intentional offers and capped support, voice/card/four demos, Graphics art/sticker and unique Cozy Village registration with current paged capacity and actual full-size geometry.
+
+Toddler1–2, preschool2–3, prek3–4, school4. No lap/grownup, levels5–6, persistent currency/unlocks/inventory, other money games or practical cards. Preserve source/contract review before code, all-state rule proof, filtered first/top/miss/help/Undo plus levels2/3 layout and all demo coverage, portrait screenshot and build for shared registry/voice/land changes. Actual land/control layouts and person/device acceptance are separate evidence. Split into named complete parts before claiming if the whole batch cannot fit; never silently drop a level.
+
+### village-vote 1: Levels 1–3 (CC4)
+
+Built2026-10-26, [PR #983](https://github.com/rjdunlap/neo/pull/983); [packet](definitions/village-vote.md), [archived build note](archive/COMPLETED-2026-10-09.md#village-vote-levels-13-cc4-2026-10-26). Whole three-level new-game batch. Person/device checks and CC5 play gate remain.
+
+## Relay Woods 1: levels 1–4 (NC2)
+
+- **Scope:** [NC1 packet](definitions/relay-woods.md), one worker/branch/PR for Pass it along1, Two ways2, Fallen log3, The short way4; finite seeded templates and five picture payloads, hop/backtrack/log/long-arrival/reset rules, capped support, voice/how-to/BFS bot. Toddler1–2, preschool1–4, pre-K2–4, school4.
+- **Admission:** separate from docs NC1; current contract/source review and overlap required. Cozy Village after actual current full-size capacity/layout checks, else existing Story Grove with its own checks; no count increment before build. Existing optional picture Keep, no mailbox/save architecture.
+- **Proof:** independent rule tests/typecheck; filtered first/top wrong/help play plus branch/log recovery, all4 demos and dense portrait screenshot; build for shared catalog/card/voice. Relevant Keep/backup/offline and world proof for actual persistence/navigation changes. Record tested commit/filter/URL; stop servers. Person/device recognition/reach/speech/child response remains unestablished.
+- **Out:** NC3+, pieces, privacy, locks, resilience, Relay Cases, story, practical family card, real network/contact/safety. No outside reviewer approval invented; October23 source-check rule applies.
