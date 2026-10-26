@@ -23,6 +23,9 @@ async function fingerDemos() {
       if (g.id === 'block-tower' && level === 6 && process.env.TOWER_SEED) {
         await page.evaluate(seed => { const d = neo.scene.helpCard.intro.demo; d.opts.seed = seed; d.restart(); }, Number(process.env.TOWER_SEED));
       }
+      if (g.id === 'swap-meet' && level === 4 && process.env.SWAP_SEED) {
+        await page.evaluate(seed => { const d = neo.scene.helpCard.intro.demo; d.opts.seed = seed; d.restart(); }, Number(process.env.SWAP_SEED));
+      }
       assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo.hasBot), true, `${g.id}: the game has a bot for its demonstration`);
       const limit = await page.evaluate(() => neo.scene.helpCard.intro.demo.limit);
       // The demonstration's own clock decides, not the wall: on a busy Mac it runs at a fraction of real time (a quarter, once), so the

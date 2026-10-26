@@ -1,5 +1,16 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Swap Meet levels 1–4 (ME2, 2026-10-25)
+
+[PR #981](https://github.com/rjdunlap/neo/pull/981), worker `01a17677-f36a-7281-938f-5b54e60a9fdd`, `codex/swap-meet-me2`: one whole new-game batch from the [ME1 packet](../definitions/swap-meet.md). Three sequential requests/visible returns, two simultaneous requests, two reciprocal pairs, both two-trade goal cases; bounded exact Undo across stages, all-state shortest BFS hints, deliberate-offer/capped support accounting, voice/card/four public-input demos and Graphics art. Fourteenth Cozy Village entry at full-size paged capacity; root/classic launch/playBand/page return checked. No new save field, currency, assets, unlock or land. [Proof and limitations](../VERIFICATION.md#2026-10-25--swap-meet-14-me2); device/person and levels5–6 gates stay open. Dispatch prohibited subagents; source/game/rules/doc self-review is explicitly recorded.
+
+The original idea’s pictured request/reciprocal pair/two-trade action is delivered; its longer-chain and shell-stall proposal remains in IDEAS as levels5–6 after child play. Original idea row:
+
+| Idea | Action | Notes | Size |
+| --- | --- | --- | --- |
+| **Swap Meet / toddler–school, older chains** (proposal, researched 2026-10-17) | Drag the thing a friend pictures wanting, and both things cross; then plan a chain of trades when no direct swap works, and at school top compare barter with a Harbor stall that buys and sells for shells; trade is two-way, money makes exchange easier (C3 D2.Eco.4/5.3-5) | Define levels 1–4 first (give it; two friends; swap pairs; a chain of two). An unacceptable offer is a miss from level 2; off-path trades and trading back are free; BFS-checked minimum trades and hints. Shells only inside a round. Overlap test: paying an amount belongs to Market Stall. [Study](../deep-dives/subjects/money-economy.md) | M |
+
+
 ### Example Express levels 1–2 (D2, 2026-10-25)
 
 [PR #976](https://github.com/rjdunlap/neo/pull/976), `codex/example-express-d2`, worker `01a17520-b379-7cc3-929c-3f71af64088f`. One complete school new-game batch: **Show, then send** and **A surprising parcel**, from the [D1 packet](../definitions/example-express.md). Six-rule minimum-error/tie fitter; exact seeds, ten accepted repairs, selected-rule pictures, free Test, deliberate Check, shortest-path support and one shell-owned reward through All delivered. Spoken/card/demo support, Undo/Reset/Remove/Stop and seventeenth Tinker Lab entry. Original Example Express idea’s teach/test/repair action is delivered; level 3 curation remains D3, not a new game.
@@ -1988,7 +1999,7 @@ Inquiry Q4 is built: Trial Shelf5 (#918) followed by One Change6 ([PR #949](http
 
 ## Welcome Ways levels 1–4 (2026-10-24)
 
-[PR #951](https://github.com/rjdunlap/neo/pull/951), `codex/welcome-ways-1-4`, worker `01a170c0-46c1-7561-ac1d-b39bb265291b`. One declared new-game batch, all three substeps: exhaustive plans/walker/repair tests; one/two-socket building with snapshot parades and supported finish; voice/how-to/ghost finger and catalog integration. Toddler 1–2, preschool 1–3, pre-K 2–4, school 3–4. Tinker Lab's every-band/view/side/page sweep passed; Cozy Village fallback was unnecessary. Roly rolls over ramps, Bunny hops over steps or ramps, Bear needs the wide door. Try and edits never miss; help caps each socket/part repair, including replacing a step, across automatic/manual replay and Undo. Touch has drag and tap alternatives, remove and one undo. No persistence fields, new route, human representation, practical guidance or later parts. Manual review under the queue's no-subagent rule found shell-help overlap and a slightly too-wide Bear silhouette; both fixed with geometry checks. [Verification](../VERIFICATION.md#2026-10-24--welcome-ways-levels-14); real iPad/child evidence stays open.
+[PR #951](https://github.com/rjdunlap/neo/pull/951), `codex/welcome-ways-1-4`, worker `01a170c0-46c1-7561-ac1d-b39bb265291b`. One declared new-game batch, all three substeps: exhaustive plans/walker/repair tests; one/two-socket building with snapshot parades and supported finish; voice/how-to/ghost finger and catalog integration. Toddler 1–2, preschool 1–3, pre-K 2–4, school 3–4. Tinker Lab's every-band/view/side/page sweep passed; Cozy Village fallback was unnecessary. Roly rolls over ramps, Bunny hops over steps or ramps, Bear needs the wide door. Try and edits never miss; help caps each socket/part repair, including replacing a step, across automatic/manual replay and Undo. Touch has drag and tap alternatives, remove and one undo. No persistence fields, new route, human representation, practical guidance or later parts. Manual review under the queue's no-subagent rule found shell-help overlap and a slightly too-wide Bear silhouette; both fixed with geometry checks. [Verification](VERIFICATION-2026-10-24.md#2026-10-24--welcome-ways-levels-14); real iPad/child evidence stays open.
 
 ## Meadow Pens levels 4–5 definition (2026-10-25)
 

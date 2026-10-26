@@ -184,4 +184,4 @@ Welcome Ways 1–4 is [defined](../../definitions/welcome-ways.md) (2026-10-24, 
 
 ## What was built and what ran
 
-Welcome Ways 1–4 is built; [verification](../../VERIFICATION.md#2026-10-24--welcome-ways-levels-14); its packet supersedes the early ladder details where it supplies exact rules. Prior study proof: the opened sources above, a source audit of the catalog, `node scripts/check-links.mjs` and `git diff --check`. No browser, device, child, tween or parent observation; no accessibility review.
+Welcome Ways 1–4 is built; [verification](../../archive/VERIFICATION-2026-10-24.md#2026-10-24--welcome-ways-levels-14); its packet supersedes the early ladder details where it supplies exact rules. Prior study proof: the opened sources above, a source audit of the catalog, `node scripts/check-links.mjs` and `git diff --check`. No browser, device, child, tween or parent observation; no accessibility review.
