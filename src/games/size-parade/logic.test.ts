@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { CRITTER_H, dropSpot, FRIEND_SCALE, paradeLayout, SIZE_PLANS, askRank, middleAsks, MIDDLE_ONE, sizePlan, TWO_IN_A_LINE, sizeBell, sizeOrder, sizeScale, sizeTouch, sizeWord, TARGET } from './logic';
+import {
+  askRank, BIG_LITTLE, BIG_LITTLE_ASKS, CRITTER_H, CYCLE, CYCLE_SCALE, CYCLE_TAPS, cycleAt, dealSteps, dropSpot, FLAG_COLORS, FRIEND_SCALE, FRIENDS, middleAsks, MIDDLE_ONE, MIN_RATIO, paradeLayout,
+  pickRounds, SIZE_CYCLE, SIZE_PLANS, sizeBell, sizeOrder, sizePlan, sizeScale, sizeTouch, sizeWord, stepBell, STEPS, stepScale, TARGET, TWO_IN_A_LINE,
+} from './logic';
 
 /** An iPad sideways and upright, and a phone sideways: the logical width is never below the 1024 design width. */
 const VIEWS = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390)];
@@ -105,5 +108,87 @@ describe('Size Parade', () => {
     }
     expect(askRank('middle')).toBe(1);
     expect(sizeWord(MIDDLE_ONE, 'middle')).toBe('middle-sized');
+  });
+
+  it('deals the even spread to every line level and a pick level’s first row, then varied steps that keep a fair ratio', () => {
+    const gameH = (step: number) => stepScale(step) * FRIEND_SCALE * CRITTER_H;
+    for (const plan of [...SIZE_PLANS, TWO_IN_A_LINE, MIDDLE_ONE, BIG_LITTLE]) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const rng = new Rng(seed);
+        for (let row = 0; row < 4; row++) {
+          const steps = dealSteps(rng, plan, row);
+          expect(steps, plan.name).toHaveLength(plan.count);
+          // Littlest first, every step distinct and on the five-step scale, so rank still means size and neighbours differ by at least 18 units.
+          for (let r = 1; r < plan.count; r++) { expect(steps[r], plan.name).toBeGreaterThan(steps[r - 1]); expect(gameH(steps[r]) - gameH(steps[r - 1])).toBeGreaterThanOrEqual(18); }
+          for (const st of steps) expect(st).toBeGreaterThanOrEqual(0), expect(st).toBeLessThan(STEPS);
+          if (plan.mode === 'line' || row === 0 || plan.bigLittle) { expect(steps[0]).toBe(0); expect(steps[plan.count - 1]).toBe(STEPS - 1); }
+          // Two friends stay at least two steps apart, a ratio of at least 1.4; the first row's 2.4 needs no adult.
+          if (plan.count === 2) expect(stepScale(steps[1]) / stepScale(steps[0])).toBeGreaterThanOrEqual(1.4);
+          // In a varied pick row the asked friend is never a near call against its neighbours.
+          if (plan.mode === 'pick' && row > 0) { const asked = plan.order === 'small' ? 0 : plan.count - 1, ratio = (a: number, b: number) => Math.max(stepScale(a), stepScale(b)) / Math.min(stepScale(a), stepScale(b));
+          for (const n of [asked - 1, asked + 1]) if (steps[n] !== undefined) expect(ratio(steps[n], steps[asked]), plan.name).toBeGreaterThanOrEqual(MIN_RATIO); }
+          if (plan.count === 2 && row === 0) expect(stepScale(steps[1]) / stepScale(steps[0])).toBeCloseTo(2.38, 1);
+        }
+      }
+    }
+    // Later rows do vary at the pick levels, and the middle one of level 10 keeps both neighbours a fair step away.
+    for (const plan of [SIZE_PLANS[0], SIZE_PLANS[2], SIZE_PLANS[3]]) {
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 30; seed++) seen.add(dealSteps(new Rng(seed), plan, 1).join(','));
+      expect(seen.size, plan.name).toBeGreaterThan(1);
+    }
+    for (let seed = 1; seed <= 40; seed++) {
+      const steps = dealSteps(new Rng(seed), MIDDLE_ONE, 1, 1);
+      expect(steps).toHaveLength(3);
+      for (const n of [0, 2]) expect(Math.max(stepScale(steps[n]), stepScale(steps[1])) / Math.min(stepScale(steps[n]), stepScale(steps[1]))).toBeGreaterThanOrEqual(MIN_RATIO);
+    }
+    expect(FRIENDS).toHaveLength(8);
+    expect(new Set(FRIENDS).size).toBe(8);
+    expect(new Set(FLAG_COLORS).size).toBe(FLAG_COLORS.length);
+    for (let st = 1; st < STEPS; st++) expect(stepBell(st)).toBeLessThan(stepBell(st - 1));
+    expect(sizeBell(0, 5)).toBe(stepBell(0));
+  });
+
+  it('level 16 cycles one friend through three sizes and back, ending after a bounded number of taps, big enough to see and small enough to touch', () => {
+    expect(sizePlan(16)).toBe(SIZE_CYCLE);
+    expect(cycleAt(0)).toEqual({ step: 0, word: null });
+    const steps = [0], words: string[] = [];
+    for (let t = 1; t <= CYCLE.length; t++) { const c = cycleAt(t); steps.push(c.step); words.push(c.word!); }
+    expect(steps).toEqual([0, 2, 4, 2, 0]);
+    expect(words).toEqual(['bigger', 'biggest', 'smaller', 'littlest']);
+    expect(new Set(steps).size).toBe(3);
+    expect(CYCLE_TAPS).toBe(12);
+    for (let t = 1; t <= CYCLE_TAPS; t++) expect(cycleAt(t)).toEqual(cycleAt(((t - 1) % CYCLE.length) + 1));
+    const h = (step: number) => stepScale(step) * FRIEND_SCALE * CYCLE_SCALE * CRITTER_H;
+    // The littlest keeps a full target; the biggest, standing 90 from the bottom, keeps its head below the cue strip in a sideways iPad view.
+    expect(h(0)).toBeGreaterThanOrEqual(100);
+    expect(TARGET.w).toBeGreaterThanOrEqual(100);
+    for (const v of VIEWS) expect(v.h - 90 - h(4)).toBeGreaterThanOrEqual(150);
+  });
+
+  it('level 9 asks for the big one, then the little one, then the big one, at a 2.4 ratio, far apart, and the bot finds each', () => {
+    expect(sizePlan(9)).toBe(BIG_LITTLE);
+    expect(pickRounds(BIG_LITTLE)).toBe(3);
+    expect(pickRounds(SIZE_PLANS[0])).toBe(4);
+    expect(BIG_LITTLE_ASKS).toEqual(['big', 'small', 'big']);
+    for (let i = 1; i < BIG_LITTLE_ASKS.length; i++) expect(BIG_LITTLE_ASKS[i]).not.toBe(BIG_LITTLE_ASKS[i - 1]);
+    expect(askRank('big', 2)).toBe(1);
+    expect(askRank('small', 2)).toBe(0);
+    expect(askRank('big')).toBe(2);
+    expect(sizeWord(BIG_LITTLE, 'big')).toBe('big');
+    expect(sizeWord(BIG_LITTLE, 'small')).toBe('little');
+    const steps = dealSteps(new Rng(3), BIG_LITTLE, 1);
+    expect(stepScale(steps[1]) / stepScale(steps[0])).toBeGreaterThanOrEqual(2);
+    for (const v of VIEWS) {
+      const { friends, targetW } = paradeLayout(2, 0, v.w, 420);
+      expect(friends[1] - friends[0]).toBeGreaterThanOrEqual(400);
+      expect(targetW).toBeGreaterThanOrEqual(100);
+      expect(friends[0] - targetW / 2).toBeGreaterThanOrEqual(165);
+      expect(friends[1] + targetW / 2).toBeLessThanOrEqual(v.w);
+    }
+    for (const ask of BIG_LITTLE_ASKS) {
+      const order = [askRank(ask, 2)], friends = [{ rank: 1, placed: false }, { rank: 0, placed: false }];
+      expect(friends[sizeTouch(order, 0, friends)!].rank).toBe(ask === 'big' ? 1 : 0);
+    }
   });
 });

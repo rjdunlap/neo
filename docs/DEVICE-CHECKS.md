@@ -6,6 +6,10 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 - [ ] On iPad, check comfortable empty-half/rider pokes at lap/toddler12 and body-centred friend taps at preschool13 in both orientations, real palm handling and guide replay. Listen to actual heavier/lighter questions, directional explanations and wheee timing. Observe whether the lap child repeats the lift and a preschool child uses down/heavier and up/lighter; record enjoyment/replay/stopping only after play. [Scripted proof](VERIFICATION.md#2026-10-26--seesaw-balance-lap-bounce-and-heavierlighter) does not establish these.
 
+## Weather Wardrobe wind (2026-10-26)
+
+- [ ] On an iPad, check whether wind reads to a toddler without a label (drifting clouds, streaming leaves, the leaning pet), whether the blown-away piece reads as funny rather than unkind, and how the kite looks on the river and glider in portrait. Device speech of `weather.windy` is unchecked. [Scripted proof](VERIFICATION.md#2026-10-26--weather-wardrobe-wind-slice-7) does not establish these.
+
 ## Weather Wardrobe level 10 (2026-10-26)
 
 - [ ] On iPad, check friend sign/item readability, long drags in portrait and landscape, finger lift, palm/second-finger rejection, cancellation and actual spoken weather reasons/guide replay. Observe whether a pre-K child uses both weather signs to give each friend what it needs, and record enjoyment/replay/stopping only after play. [Scripted proof](VERIFICATION.md#2026-10-26--weather-wardrobe-two-friends-level-10) does not establish these.
@@ -23,12 +27,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 ## Example Express levels 1–2 (D2, 2026-10-25)
 
 - [ ] On an iPad, listen to the request, fitted-rule replay, actual/requested routes, missing-label explanation and Show me. Check that leaf/star stamps, selected cards, tree/house docks, Test/Check and All delivered are distinguishable without reading, and narration finishes before the next delivery.
-- [ ] Try selecting, labelling, inserting, removing, Undo/Reset, Stop and cancellation with a real hand in both orientations. Observe a school-age child and coplayer teaching, noticing the surprise, revising and choosing to stop; record only what actually happens in OBSERVATIONS. [Scripted proof](VERIFICATION.md#2026-10-25--example-express-12-d2) establishes neither comfort, enjoyment nor transfer to other AI. Pre-K/person and older-case decisions remain open.
+- [ ] Try selecting, labelling, inserting, removing, Undo/Reset, Stop and cancellation with a real hand in both orientations. Observe a school-age child and coplayer teaching, noticing the surprise, revising and choosing to stop; record only what actually happens in OBSERVATIONS. [Scripted proof](archive/VERIFICATION-2026-10-25.md#2026-10-25--example-express-12-d2) establishes neither comfort, enjoyment nor transfer to other AI. Pre-K/person and older-case decisions remain open.
 
 ## Movie Night levels 1–3 (MM2, 2026-10-25)
 
 - [ ] On an iPad, check pad auditions, event cues and speech do not compete; Splash/Knock and the two-note Hello convention are distinguishable and replayable. Muted play should still communicate the request and cue through pictures/pulses. No sound-recognition or film-comprehension attainment is established by browser automation.
-- [ ] Check drag/tap alternatives, chip return, cancellation, Stop and four-shot portrait/landscape comfort with a real hand. Observe a child and coplayer choosing a free sound, finding the landing/door tap/wave, revising after a request and choosing Bow; record actual reactions in OBSERVATIONS. No verbal answer is required. [Scripted proof](VERIFICATION.md#2026-10-25--movie-night-13-mm2).
+- [ ] Check drag/tap alternatives, chip return, cancellation, Stop and four-shot portrait/landscape comfort with a real hand. Observe a child and coplayer choosing a free sound, finding the landing/door tap/wave, revising after a request and choosing Bow; record actual reactions in OBSERVATIONS. No verbal answer is required. [Scripted proof](archive/VERIFICATION-2026-10-25.md#2026-10-25--movie-night-13-mm2).
 
 ## Welcome Ways levels 1–4 (2026-10-24)
 
@@ -83,6 +87,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] With a three-year-old (and a lap child at level 1): does she read a join as making a new thing?
 - [ ] Is each joined drawing legible at 140 units on the iPad?
 - [ ] With a pre-K child: are the level 3 meanings understood as "for" (a house for a dog)?
+
+## Melt and Freeze levels 1–4 (matter slice 2, 2026-10-24)
+
+- [ ] On an iPad with a lap child: does she notice the puddle after the cube melts?
+- [ ] With a three- or four-year-old: do the sun and the snowflake read as warm and cool?
+- [ ] On an iPad: are the drip and the chime comfortable, and how does device speech say the `meltfreeze` lines?
 
 ## Puddle Lens levels 1–4 (cells-microbes slice 2, 2026-10-24)
 
@@ -215,11 +225,13 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 - [ ] **Explore's four entries and Back versus Home (RW08 slice 1, 2026-10-21, #744).** On an iPad at toddler, preschool and school: does a child tap one of the four pictures (Places, Favorites, All games, Family play) without reading, do the 150-unit cards and the 120-unit page arrows suit a small hand in both orientations, does device speech say `explore.pick`, `explore.other-age`, `explore.page` and `result.back` clearly, and does she tell the result screen's blue Back to [place] from the white Home house? Scripted Chrome play passed; device speech and child comprehension remain unobserved.
 - [ ] **Residents in six locations (RW14 slice 2, 2026-10-23, #898).** On an iPad: do Tote, Trill, Dapple, Bramble, Lumen and Mossback each read clearly in their location, does a poke reaction feel right, are the six hello lines spoken by device speech, and does a sprout child's friend at home in Rainbow Meadow (guide hidden) read well? Open until a person tries it.
 
+- [ ] **Fluffy Salon customers and level 8 (batch 1, slices 2 and 5, 2026-10-26, #995).** On an iPad at toddler and preschool: does device speech say "That's blue! I want pink." (`salon.wrong-color`) and the friend lines (`salon.want-friend`, `salon.check-friend`) clearly; do the five bottles at level 8 read as big, calm choices for a two-year-old; does a seeded friend in the chair (guide kept) read well in portrait. Open until a person tries it.
 - [ ] **Fluffy Salon support truth (slice 1, 2026-10-21, #717).** On an iPad at lap and pre-K: does the giggle on a pat off the fur read as a welcome to a lap child; does device speech say "Look in the mirror when you are done!" (`salon.mirror`) and "A little more {fix}, where it glows" (`salon.more-color`) clearly; and is the warm-yellow glow on the old-colour strands visible on the iPad?
 - [ ] **Pet Kitchen meals and lap tap-sharing (batch 1, slices 2-3, 2026-10-23, #860).** On an iPad at lap and toddler: does a one-year-old's tap land on a tray piece at level 10 (and does a miss off the piece read as a wiggle, not a failure); does the chew at the end read as eating; do the critter faces (calm, then happy) read well in portrait; does the fraction bubble at level 7 invite a tap; is the pie clearly a whole to cut. The `picnic` suite's sandwiches step at lap (level 10) was not run in a browser.
 - [ ] **Pet Kitchen support truth (slice 1, 2026-10-21, #716).** On an iPad at toddler and school: does a two-year-old read the uncut food's wiggle and the cut buttons' bounce after quiet as an invitation, not a scolding; does device speech say `kitchen.empty` and `kitchen.short` clearly; and does the counted line at level 7 ("one quarter, two quarters, three quarters. That is three quarters!") sound natural over the hopping pieces?
 - [ ] **Size Parade support truth (slice 1, 2026-10-21, #714).** On an iPad at toddler and pre-K: does a two-year-old hear "bigger" and "smaller" at two friends and understand it; does big-low pitch feel natural; does the first drag at level 5 (40-unit lift) work; does "This spot first!" read as a nudge, not a scolding; does device speech say the new lines clearly?
 - [ ] **Size Parade levels 17 and 10 (2026-10-23).** On an iPad: does a toddler manage the first drag at level 17 (the lift); does a three-year-old understand "the middle one" at level 10; is the ringed-circle cue looked at?
+- [ ] **Size Parade parade and lap entries (batch 1, slices 2-3, 2026-10-26, #996).** On an iPad at lap, toddler and pre-K: does the strut after a pick hold attention or delay the next question too long; does a one-year-old tap the one friend at level 16 at all and read the grow and shrink as "big" and "little"; does a two-year-old look at the ringed-circle cue at level 9; is the drum loud enough against the music without startling; does device speech say "Littlest!" and "That's the little one! Where's the big one?" clearly?
 
 - [ ] **Welcome a New Friend, slice 1 (RW07, 2026-10-21, #712).** On an iPad at preschool and pre-K, does a child understand the invitation and the two step cards (tap a card to hear its ask, then the green Play arrow), and do the asks and done lines (`welcome.invite`, `welcome.ask.*`, `welcome.done.*`, `home.continue`) sound right in device speech? **Slice 2 (2026-10-23, #907):** also the song card's `welcome.ask.song`, `welcome.done.song` and `welcome.done.song-hum`, and whether she understands the hum line when no tune was kept. **Slice 3 (2026-10-24, #908):** does she understand the arrival, can a child of three or four name the newcomer by tapping one of three names, does she read the newcomer as hers, does she find the basket bed and its tune, and do `welcome.here`, `welcome.name`, `welcome.joined`, `welcome.full`, `welcome.bed` and `welcome.bed-empty` sound right in device speech (`welcome.soon` is gone)?
 
@@ -565,3 +577,8 @@ Open: actual iPad speech/name and hop-count playback, small-hand release/cancel/
 
 - [ ] On an iPad, check cave/sign recognition, four-friend reach, spoken group size, zero and the two separate food questions; do the counted tummy icons/friends/tray make wrong pads useful?
 - [ ] With a child/coplayer, check whether an insufficient cave call reads as a welcome experiment, whole groups and fair amounts of each kind are understandable, and stopping/replaying remains comfortable. Automation establishes neither comprehension nor learning transfer.
+
+## Seesaw Balance 14–16 (2026-10-26)
+
+- [ ] On an iPad, check drag release/cancel/palm behavior, shelf reach, small/middle/big block cues, pumpkin guess sign and tagged number readability in both orientations, and actual instruction/count/comparison speech.
+- [ ] With a child/coplayer, check whether freely testing pairs supports ordering, a guess feels welcome even when different, and adding blocks explains how much heavier. Check supported completion and comfortable stopping. Browser play and seeded rules establish no learning transfer or developmental acceptance.

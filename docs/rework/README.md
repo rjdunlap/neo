@@ -1,8 +1,8 @@
 # Creature-world rework
 
-[GitHub epic #484](https://github.com/rjdunlap/neo/issues/484) tracks the twelve work items.
+[GitHub epic #484](https://github.com/rjdunlap/neo/issues/484) tracks the rework work items.
 
-**Direction recorded 2026-10-16; implementation is staged, not built.** The developer wants a broad educational play journey with collectible, customizable creatures, meaningful unlocks, a personal world and manageable navigation, drawing on Neopets, Pokémon, JumpStart and Khan Academy. The title, final cast and visual treatment remain explorations. Puddle Island is still the shipped title.
+**Direction recorded 2026-10-16; delivered slices are listed in WORK-ITEMS.** The developer wants a broad educational play journey with collectible, customizable creatures, meaningful unlocks, a personal world and manageable navigation, drawing on Neopets, Pokémon, JumpStart and Khan Academy. The October 23 decisions retain Puddle Island and approve the illustrated nine-species cast/treatment; later expansions remain proposals.
 
 Start with the [work items](WORK-ITEMS.md). The [Arcade](ARCADE.md) (2026-10-23) is a portal-style Explore entry: a grid of every game with one live bot spotlight, researched from Kongregate, Newgrounds and Apple Arcade. [READY.md](../READY.md) remains the one dispatch queue; GitHub issues carry discussion, claims and execution state. This document holds the rework's direction and boundaries. [DESIGN.md](../DESIGN.md) continues to describe implemented behavior, not this target.
 
@@ -14,7 +14,7 @@ Start with the [work items](WORK-ITEMS.md). The [Arcade](ARCADE.md) (2026-10-23)
 | Developer clarified | **“It's all development, saves aren't a issue.”** Old development saves and backups may become incompatible or be reset as a rework slice needs. Do not build compatibility layers or migration projects to protect them |
 | Implementation approach for this plan | Change the existing application in place, keep reusable games and research, replace surrounding systems in complete slices, and use Git history for removed code |
 | Working recommendation | Home with creatures → a chosen discovery/project → a few games → a visible result → a creature, item, interaction or new adventure; Explore keeps the catalog available |
-| Working recommendation from RW01 (2026-10-17) | World-led title **Puddlewild**, Puddle Island its first region, with a plain descriptive line for grown-ups. "Discovery Club" is the story premise only (a 2021 DISCOVERY CLUB PSP application covers children's educational apps; its current status was not checked); the on-screen club is provisionally the Puddlewild Club. See the [name and story packet](NAME-AND-STORY.md). No rename is approved |
+| Decided 2026-10-23 | Keep **Puddle Island** and on-screen **Puddle Island Club**; Puddlewild is an unadopted exploration, no public rename. The illustrated mesh-rig direction and nine-species CAST roster are the production treatment/cast; names and colours remain editable. [Decision record](../archive/DECISIONS-2026-10-23.md#decisions) |
 | Working recommendation from RW06 (2026-10-20) | `look.worn` per individual with slots, dressing from Friends, the root Home with RW03's per-band exits and one ball toy in creature play; all nine items free for now (default). See [home packet](HOME.md) |
 | Working recommendation from RW03 (2026-10-17) | Home offers a project, creature play and Explore; Back retains browse origin, Home goes to the creature home. Complete paged direct-play index, explicit family entry, interrupted-step restart. See [navigation packet](HOME-NAVIGATION.md); no production cutover until RW08 |
 | Explore in RW02 | Expressive illustrated adventure, built from clean layered 2D shapes, varied creature silhouettes and quieter backgrounds. The concept sheet is reference material, not approved production art |
@@ -28,7 +28,7 @@ The save exception overrides older preservation/migration requirements **for thi
 
 ## Learning belongs in the story
 
-The **Discovery Club** is a working story premise: the child and their creatures explore the island, investigate questions, make things and help a community. A home base holds tools, creatures, creations and a journal of what they actually did. A recurring question leads into a playable project, and its answer visibly changes the world.
+The **Puddle Island Club** is the settled on-screen story identity (October 23): the child and their creatures explore the island, investigate questions, make things and help a community. A home base holds tools, creatures, creations and a journal of what they actually did. A recurring question leads into a playable project, and its answer visibly changes the world.
 
 Examples to develop, not new game registrations:
 
@@ -71,9 +71,9 @@ Each future region pack should add a small cast, new uses or looks for existing 
 
 [Three-treatment concept sheet](concepts/art-directions-2026-10-16.png): Playful flat, Illustrated adventure, Soft toy. Generated during this design conversation; concept/reference only. The middle treatment is the current recommendation, with the simpler treatment's gameplay clarity. Its dense/painterly background detail is not a runtime requirement.
 
-**Art requests (2026-10-17):** [art-requests/](art-requests/README.md) holds the routine's brief, the [nine-species cast](art-requests/CAST.md), the [request queue](art-requests/QUEUE.md) with prompts and the [game-fit review](art-requests/GAME-FIT.md). The queue is what an image-generating routine works through; its cast is proposed, not approved. The routine delivered R01–R15 on 2026-10-17/18; the [review of 2026-10-19](ART-REVIEW-2026-10-19.md) judges the sets, adds R17–R23 and sets the code slices that follow. [PET-INTEGRATION.md](PET-INTEGRATION.md) (2026-10-17) reviews how the creatures go further into the games themselves: a guide with a job, her creatures as the cast, one talent per species, what a round makes coming home, and meeting a creature inside a game, with a recommended order and the developer's calls.
+**Art requests (2026-10-17):** [art-requests/](art-requests/README.md) holds the routine's brief, the [nine-species cast](art-requests/CAST.md), the [request queue](art-requests/QUEUE.md) with prompts and the [game-fit review](art-requests/GAME-FIT.md). The queue is what an image-generating routine works through; its nine-species cast was approved October 23. The routine delivered R01–R15 on 2026-10-17/18; the [review of 2026-10-19](ART-REVIEW-2026-10-19.md) judges the sets, adds R17–R23 and sets the code slices that follow. [PET-INTEGRATION.md](PET-INTEGRATION.md) (2026-10-17) reviews how the creatures go further into the games themselves: a guide with a job, her creatures as the cast, one talent per species, what a round makes coming home, and meeting a creature inside a game, with a recommended order and the developer's calls.
 
-The production baseline remains Pixi Graphics and the shared palette. RW02 proves varied body families, readable expressions, simple shading and compatible wearables in code before a large cast is promised. A different asset pipeline is a separate explicit decision, not implied by the concept sheet. Compare creatures at small collection size, with clothing, in motion and against a playable scene in landscape/portrait. A picture alone does not establish child appeal or touch readability.
+The approved creature production pipeline uses generated illustrated sprites and mesh rigs, with the shared palette as a guide. RW02’s Graphics prototype remains a comparison/reuse source; controls, hub icons and stickers remain code-drawn. The nine-species cast and treatment were settled October 23; later art integration still needs its preparation and visual checks. Compare creatures at small collection size, with clothing, in motion and against a playable scene in landscape/portrait. A picture alone does not establish child appeal or touch readability.
 
 ## Change in place
 

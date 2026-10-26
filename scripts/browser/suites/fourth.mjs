@@ -85,7 +85,9 @@ async function fourth() {
         const at = worn.toGlobal(g.wornCenters.get(item));
         kit.tap(at.x, at.y); await kit.sleep(300);
         if (g.named !== 1 || g.weather !== 'sunny') throw new Error('Wardrobe worn item was not named');
-        for (let i = 0; i < 6; i++) { kit.tap(500, 200); await kit.sleep(600); }
+        // Seven sky taps end free play once all four weathers have shown (wind came last, slice 7).
+        for (let i = 0; i < 7; i++) { kit.tap(500, 200); await kit.sleep(600); }
+        if (!g.done) throw new Error('Wardrobe free play did not end after seven sky taps');
         return;
       }
       const wrong = g.options.find((o) => !g.outfit.needed.includes(o.item));

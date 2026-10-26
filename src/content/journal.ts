@@ -3,6 +3,7 @@ import { WORDS } from '../games/letter-trails/pictures';
 import { ACTIONS, type Action } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats, type Thing } from '../games/sink-float/logic';
 import { HELPER, HELPERS } from '../games/mail-carrier/logic';
+import { CHANGERS } from '../games/melt-freeze/logic';
 import type { LineId } from './voice-script';
 
 /**
@@ -11,7 +12,7 @@ import type { LineId } from './voice-script';
  * is found. A game reports what it actually showed during a round (`RoundResult.discoveries`); the shell files it.
  */
 
-export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails' | 'mail-carrier' | 'rhythm-neighbors';
+export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails' | 'mail-carrier' | 'rhythm-neighbors' | 'melt-freeze';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -191,6 +192,23 @@ export const JOURNAL: readonly JournalEntry[] = [
       found: `the ${helper} fixed the ${HELPER[helper].problem} with ${HELPER[helper].toolName}`,
     },
   })),
+  // Melt and Freeze, level 4: each thing she watched melt and go hard again on the tray, and the things that stayed the same.
+  ...CHANGERS.map((s): JournalEntry => ({
+    id: entryId('melt-freeze', s),
+    game: 'melt-freeze',
+    key: s,
+    name: cap(s),
+    line: `journal.melt.${s}` as LineId,
+    source: { find: `warm and cool a tray with the ${s} on it`, found: `the ${s} melted in the warm and went hard again in the cool` },
+  })),
+  {
+    id: entryId('melt-freeze', 'stays'),
+    game: 'melt-freeze',
+    key: 'stays',
+    name: 'Stays the same',
+    line: 'journal.melt.stays',
+    source: { find: 'warm a tray that has a stone or a spoon on it', found: 'the stone and the spoon stayed the same in the warm' },
+  },
 ];
 
 export const JOURNAL_IDS: readonly string[] = JOURNAL.map((e) => e.id);

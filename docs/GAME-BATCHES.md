@@ -190,13 +190,9 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
-### weather-wardrobe 2: Wind (remaining part)
+### weather-wardrobe 2: Wind (built)
 
-*Slices 5 (the trip happens) and 6 (level 9 Which sky?) are built; wind is the remaining part.*
-
-- **`weather-wardrobe`, wind** (content, after *more items* and *a miss that shows why*): a fourth weather with a kite and a windbreaker; a sun hat blows off; level-1 finish and trip pairs adjusted. [Slice 7](deep-dives/weather-wardrobe.md#build-slices-in-order)
-
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Built 2026-10-26 ([PR #994](https://github.com/rjdunlap/neo/pull/994)): slice 7 (a fourth weather with a kite, a windbreaker and a hat with a strap, the `blown` misfit, level-1 finish and trip pairs adjusted). Nothing remains in this batch. [Slice 7](deep-dives/weather-wardrobe.md#build-slices-in-order)
 
 ### weather-wardrobe 3: Two friends, two places
 
@@ -311,6 +307,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### seesaw-balance 3: Order weights, estimate and find the difference
 
+Built 2026-10-26, [PR #993](https://github.com/rjdunlap/neo/pull/993); [closeout](archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-3-order-estimate-and-difference-slices-57-2026-10-26). Scope retained below.
+
 - **`seesaw-balance`, level 14 *Line them up*, slice 5** (new levels on an existing interaction: typecheck, rule tests, one play of 14, `fingerdemo` at 14): three look-alike presents tested in pairs then dragged to light, middle and heavy spots; pre-K `order [3, 4, 14, 5, 6, 7]`. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 - **`seesaw-balance`, level 15 *Guess the pumpkin*, slice 6** (new levels tier, plus a portrait screenshot for the guess sign): an unscored guess, then blocks until level, then the real number; pre-K `order [3, 4, 14, 5, 6, 7, 15]`, school `order [6, 7, 15, 8, 9, 10, 11]` (without 11 until it lands). [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 - **`seesaw-balance`, level 16 *How much heavier?*, slice 7** (new levels tier): add blocks to the light side until level, then say the difference; school `order [6, 7, 15, 16, 8, 9, 10, 11]`. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
@@ -325,7 +323,7 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### fluffy-salon 1: Customer variety and younger styling entries
 
-Status 2026-10-23: slices 3 and 4 (levels 6 and 7) are built ([PR #864](https://github.com/rjdunlap/neo/pull/864)); only slices 2 and 5 remain, so the batch is now two subtasks.
+Status 2026-10-26: built. Slices 3 and 4 (levels 6 and 7) landed 2026-10-23 ([PR #864](https://github.com/rjdunlap/neo/pull/864)); slices 2 and 5 landed 2026-10-26 ([PR #995](https://github.com/rjdunlap/neo/pull/995)).
 
 - **`fluffy-salon`, customers, rooms and start looks, slice 2** (logic tier): seeded friends in the chair with `{who}` lines, seeded wall and cape colors, five free-play start looks. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 - **`fluffy-salon`, level 6 *Pat the fluff*, slice 3** (new interaction): no buttons, any touch grows the fur, the floof shake and a big mirror, the round finishes by itself; lap `order [6, 1, 2]`, toddler `order [6, 1, 2]`, `entryLevels: [6]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
@@ -350,9 +348,9 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### size-parade 1: Parade variety and younger size entries
 
-- **`size-parade`, the parade happens, eight friends and a seeded ground, slice 2** (fresh content): the strut after a pick, the march with the size scale after a line, five new friends, flag and bunting by seed, the round's friend on the sticker, varied dealt sizes at levels 1–4. [Dive](deep-dives/size-parade.md#build-slices-in-order)
-- **`size-parade`, levels 16 *Big duck, little duck* and 9 *Big one, little one* with the lap band, slice 3** (new interaction, plus a portrait screenshot): the size cycle under her finger, then big or little of two; `bands` gains `lap`, lap `order [16, 9]`, toddler `order [9, 1, 2, 3, 4]`, `entryLevels: [9, 16]`, the per-band accounting of decision 1. [Dive](deep-dives/size-parade.md#build-slices-in-order)
-- **`size-parade`, level 17 *Two in a line*, slice 4** (landed 2026-10-23, without slices 2–3; toddler order is `[1, 2, 3, 4, 17]` until slice 3 adds 9; remaining text kept for `entryLevels` [9, 16, 17]) (new levels on an existing interaction): the two-friend line plan, the first drag a toddler meets; toddler `order [9, 1, 2, 3, 4, 17]`, preschool `order [3, 4, 17, 5, 6]`, `entryLevels: [9, 16, 17]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
+- **`size-parade`, the parade happens, eight friends and a seeded ground, slice 2** (landed 2026-10-26) (fresh content): the strut after a pick, the march with the size scale after a line, five new friends, flag and bunting by seed, the round's friend on the sticker, varied dealt sizes at levels 1–4. [Dive](deep-dives/size-parade.md#build-slices-in-order)
+- **`size-parade`, levels 16 *Big duck, little duck* and 9 *Big one, little one* with the lap band, slice 3** (landed 2026-10-26) (new interaction, plus a portrait screenshot): the size cycle under her finger, then big or little of two; `bands` gains `lap`, lap `order [16, 9]`, toddler `order [9, 1, 2, 3, 4]`, `entryLevels: [9, 16]`, the per-band accounting of decision 1. [Dive](deep-dives/size-parade.md#build-slices-in-order)
+- **`size-parade`, level 17 *Two in a line*, slice 4** (landed 2026-10-23; slice 3 then added 9 and `entryLevels` [9, 16, 17]) (new levels on an existing interaction): the two-friend line plan, the first drag a toddler meets; toddler `order [9, 1, 2, 3, 4, 17]`, preschool `order [3, 4, 17, 5, 6]`, `entryLevels: [9, 16, 17]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 - **`size-parade`, level 10 *Big, middle, little*, slice 5** (landed 2026-10-23) (new levels on an existing interaction): the middle of three with a ringed-middle cue, at least two of four questions asking for it; preschool `order [3, 4, 17, 10, 5, 6]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
@@ -393,11 +391,11 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### pet-kitchen 2: Fair shares, thirds and equivalent shapes
 
-**Part A built 2026-10-23** (slices 4-5, levels 11 and 12; [PR #879](https://github.com/rjdunlap/neo/pull/879), `claude/pet-kitchen-same-or-not`; [closeout](archive/COMPLETED-2026-10-09.md#pet-kitchen-batch-2-part-a-same-or-not-the-same-and-two-pizzas-three-friends-slices-4-5-2026-10-23)). **Slice 6 (level 14, a cut per whole) stays open** as the second part; the preschool, pre-K and school orders below that include 14 are applied when it lands (until then they exclude it).
+**Part A built 2026-10-23** (slices 4-5, levels 11 and 12; [PR #879](https://github.com/rjdunlap/neo/pull/879), `claude/pet-kitchen-same-or-not`; [closeout](archive/COMPLETED-2026-10-09.md#pet-kitchen-batch-2-part-a-same-or-not-the-same-and-two-pizzas-three-friends-slices-4-5-2026-10-23)). **Part B built 2026-10-26** (slice 6, level 14, a cut per whole; [PR #998](https://github.com/rjdunlap/neo/pull/998), `claude/pet-kitchen-different-shape`; [closeout](archive/COMPLETED-2026-10-09.md#pet-kitchen-batch-2-part-b-different-shape-same-share-slice-6-2026-10-26)). Scope retained for dependency references; this batch is no longer eligible for dispatch.
 
 - **`pet-kitchen`, level 11 *Same or not the same?*, slice 4 (built)** (new levels on the cut-and-drag, plus the overlay: typecheck, rule tests, one play of 11 serving the lopsided pieces once, `fingerdemo` at 11): piece areas, the lopsided icon and drawing; preschool `order [1, 11, 2, 3, 4]`, pre-K `order [11, 3, 4, 5, 6]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 - **`pet-kitchen`, level 12 *Two pizzas, three friends*, slice 5 (built)** (new levels tier: typecheck, rule tests, one play of 12 with a halves serve, `fingerdemo` at 12): thirds of two wholes; school `order [5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
-- **`pet-kitchen`, level 14 *Different shape, same share*, slice 6** (new interaction tier, a cut per whole: typecheck, rule tests, one play of 14, a portrait screenshot of the overlay, `fingerdemo` at 14): two shapes of one share; pre-K `order [11, 3, 4, 14, 5, 6]`, school `order [14, 5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
+- **`pet-kitchen`, level 14 *Different shape, same share*, slice 6 (built)** (new interaction tier, a cut per whole: typecheck, rule tests, one play of 14, a portrait screenshot of the overlay, `fingerdemo` at 14): two shapes of one share; pre-K `order [11, 3, 4, 14, 5, 6]`, school `order [14, 5, 6, 7, 8, 9, 12]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 

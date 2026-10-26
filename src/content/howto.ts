@@ -860,6 +860,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'size-parade': {
     goal: 'Compare sizes of friends.',
     steps: [
+      { from: 16, to: 16, text: 'Tap the one friend: each tap makes it a size bigger, then smaller again, and the pet says the size word.' },
+      { from: 9, to: 9, text: 'Tap the big one, then the little one, then the big one again, as asked.' },
       { to: 2, text: 'Tap the friend who is bigger or smaller, as asked.' },
       { from: 3, to: 4, text: 'Tap the friend who is biggest or smallest, as asked.' },
       { from: 5, to: 8, text: 'Drag the friend asked for to the glowing spot, then the next one in size, until the line is full.' },
@@ -868,12 +870,16 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'A tap on the sky or the ground makes the friends hop and repeats the question; it never counts as a miss.',
     ],
     finish: [
+      { from: 16, to: 16, text: 'The round ends after three rounds of growing and shrinking.' },
+      { from: 9, to: 9, text: 'The round ends after three rows, one right friend chosen from each.' },
       { to: 4, text: 'The round ends after four rows, one right friend chosen from each.' },
       { from: 5, to: 8, text: 'The round ends when the friends are lined up correctly.' },
       { from: 10, to: 10, text: 'The round ends after four rows, one right friend chosen from each.' },
       { from: 17, to: 17, text: 'The round ends when the two friends are lined up correctly.' },
     ],
     note: [
+      { from: 16, to: 16, text: 'Nothing is wrong here: every tap answers, and a tap beside the friend makes it hop.' },
+      { from: 9, to: 9, text: 'The other friend wiggles and says its own size word. On the lap the first such touch in a row is free, and the second makes the right friend glow (a hint); from toddler on, each counts as a miss and the second glows.' },
       { to: 4, text: 'A wrong friend counts as a miss; after two in one row the right friend glows.' },
       { from: 5, to: 8, text: 'A wrong friend on the glowing spot counts as a miss, and after two the right friend glows. A friend put on another spot is not a miss: the line fills from the glowing spot.' },
       { from: 10, to: 10, text: 'A wrong friend counts as a miss and the pet says why the middle one is the middle; after two in one row the right friend glows.' },
@@ -1006,8 +1012,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'weather-wardrobe': {
     goal: 'Choose clothes to suit the weather.',
     steps: [
-      { to: 1, text: 'Tap the sky to change the weather; the pet dresses itself.' },
-      { to: 1, text: 'Tap the grass to splash, crunch or pop up a flower, and tap the clothes on the pet to hear their names.' },
+      { to: 1, text: 'Tap the sky to change the weather (sun, rain, snow, then wind); the pet dresses itself.' },
+      { to: 1, text: 'Tap the grass to splash, crunch, scatter leaves or pop up a flower, and tap the clothes on the pet to hear their names.' },
       { from: 8, to: 8, text: 'Tap either thing to try it on the pet. The one that fits stops the weather; the other shows what the weather does and hops back.' },
       { from: 2, to: 3, text: 'Tap the one thing that suits the weather.' },
       { from: 4, to: 5, text: 'Tap every thing that suits the weather.' },
@@ -1024,10 +1030,28 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'Each of three rounds ends when the right sky is picked.' },
     ],
     note: [
-      { from: 2, to: 7, text: 'A wrong choice goes on the pet for a moment to show what the weather does, is told which weather it is for, and the glowing one helps.' },
+      { from: 2, to: 7, text: 'A wrong choice goes on the pet for a moment to show what the weather does (in wind it blows away), is told which weather it is for, and the glowing one helps.' },
       { from: 8, to: 8, text: 'There are no wrong answers here: everything can be tried on.' },
       { from: 10, to: 10, text: 'A wrong friend hands the item back and names why. Two misses glow one item and its friend, counting one hint per round. Dropping elsewhere is free; tapping a friend repeats the instruction.' },
       { from: 9, to: 9, text: 'A wrong sky plays over the pet for a moment to show what that weather does, then clears; after two wrong skies the right card glows.' },
+    ],
+  },
+  'melt-freeze': {
+    goal: 'Warm and cool things, and see which ones melt and which go hard again.',
+    steps: [
+      { to: 2, text: 'Tap the sun to warm the thing, and the snowflake to cool it.' },
+      { from: 3, to: 3, text: 'Make the thing the way the card shows: choose the sun or the snowflake.' },
+      { from: 4, to: 4, text: 'Warm and cool the whole tray and see which things change.' },
+    ],
+    finish: [
+      { to: 2, text: 'She has seen the thing melt and go hard again.' },
+      { from: 3, to: 3, text: 'The thing is the way the card shows, three times.' },
+      { from: 4, to: 4, text: 'Both tools used on each of two trays.' },
+    ],
+    note: [
+      { to: 2, text: 'Nothing here counts as a mistake.' },
+      { from: 3, to: 3, text: 'Choosing the wrong tool shows what it does; the pet gives a hint, and after two it glows.' },
+      { from: 4, to: 4, text: 'Nothing here counts as a mistake. Each thing she watches melt on the tray is added to her discovery journal in the treehouse.' },
     ],
   },
   'sink-float': {
@@ -1181,6 +1205,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { from: 6, to: 6, text: 'Pat or stroke the fluffy fur on the pet: it grows under your finger.' },
       { from: 7, to: 7, text: 'Tap grow and drag over the fur to make it long, then tap snip and drag over it to cut it short.' },
+      { from: 8, to: 8, text: 'Listen for the color the pet wants, tap that bottle, then drag over the fur to paint it.' },
       { to: 5, text: 'Tap a tool, then drag or tap on the pet to use it.' },
       { from: 3, to: 4, text: 'Listen for what the pet wants (like "make it long", or "short and blue") and use the tools to do it.' },
       { from: 5, to: 5, text: 'Look at the pictured style and use the tools to copy its length, curls and color.' },
@@ -1190,11 +1215,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 7, to: 7, text: 'After some styling a mirror appears and the pet asks for it: tap the mirror to finish.' },
       { to: 2, text: 'After some styling a mirror appears and the pet asks for it: tap the mirror to finish.' },
       { from: 3, to: 3, text: 'Each request finishes by itself as soon as the hair is right; the round ends after the last one.' },
+      { from: 8, to: 8, text: 'Each color finishes by itself as soon as it covers the fur; the round ends after the second one.' },
       { from: 4, to: 5, text: 'Tap the mirror to check each request; the round ends after the last one.' },
     ],
     note: [
       { to: 2, text: 'Any look is welcome in free play and nothing counts as a miss; a touch off the fur makes the pet giggle.' },
       { from: 6, to: 7, text: 'Any look is welcome and nothing counts as a miss or a hint; a touch off the fur makes the pet giggle.' },
+      { from: 8, to: 8, text: 'A wrong bottle still paints and the pet only names its color; after two wrong bottles the asked one glows (one hint).' },
       { from: 3, to: 3, text: 'Nothing counts as a miss. After 15 seconds without working on what was asked, the tool that helps glows, which counts as a hint.' },
       { from: 4, to: 5, text: 'Looking in the mirror too early counts as a miss, and the pet says what is still missing (when the color is nearly there, the strands still the old color glow); after two, the tool that helps glows, which counts as a hint.' },
     ],
@@ -1366,6 +1393,9 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'seesaw-balance': {
     goal: 'Make the seesaw go up, balance, or show which friend is heavier or lighter.',
     steps: [
+      { from: 14, to: 14, text: 'Drag pairs of presents onto the trays to compare freely. Drag each present to the light, middle or heavy shelf spot, marked by small, middle and big blocks. Either end can be filled first.' },
+      { from: 15, to: 15, text: 'Tap a number to guess how heavy the pumpkin is; guessing is never wrong. Drag blocks to the other tray until balanced, then tap its measured weight. Your guess stays on the sign.' },
+      { from: 16, to: 16, text: 'Drag blocks to the lighter, raised tray until the two tagged weights balance. Then tap how many blocks you added: the difference. A block on the heavy side comes back freely.' },
       { from: 12, to: 12, text: 'Touch anywhere on the empty half of the plank to send a bigger friend hopping on and lift the rider. Touching the rider is free play.' },
       { from: 13, to: 13, text: 'Listen for heavier or lighter, then tap that friend. The heavier friend goes down; the lighter one goes up. After two wrong taps the asked friend glows.' },
       { to: 2, text: 'Tap a friend, or drag it, to put it on the other side of the seesaw.' },
@@ -1378,6 +1408,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 11, to: 11, text: 'First tap how heavy the square box is, and it wears its number. Then take the same off both sides, counting the square box as its number of blocks, until the round box is alone; then tap how heavy the round box is.' },
     ],
     finish: [
+      { from: 14, to: 16, text: 'Three completed puzzles finish the round, including with help. Two wrong shelf or final-number choices glow the right destination or answer.' },
       { from: 12, to: 12, text: 'Four wheees finish the round, with no wrong touches.' },
       { from: 13, to: 13, text: 'Three comparisons finish the round, including with help.' },
       { to: 4, text: 'The round ends when the seesaw is balanced or the heaviest is chosen, as asked.' },
@@ -1498,7 +1529,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'Cut the pizza into three equal slices, then give one slice to each friend.' },
       { from: 11, to: 11, text: 'Choose the cutting picture that makes two pieces the same size, then give one piece to each friend.' },
       { from: 12, to: 12, text: 'Cut the two pizzas so three friends can each have the same number of slices, then share them out.' },
-      { from: 11, to: 12, text: 'Tap the green arrow to serve. The friends eat what was shared fairly.' },
+      { from: 14, to: 14, text: 'Cut one sandwich down and the other across (the two cutting pictures are on the right), then give each friend a tall half and a wide half.' },
+      { from: 11, to: 14, text: 'Tap the green arrow to serve. The friends eat what was shared fairly.' },
       { to: 9, text: 'Tap the green arrow to serve. The friends eat what was shared fairly.' },
     ],
     finish: 'The round ends when the food is served fairly.',
