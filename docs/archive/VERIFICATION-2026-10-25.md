@@ -13,3 +13,10 @@
 - Manual study/current-logic/input/accounting/order/diff review; finite-case sanity probe checks 180 pairs, 1,080 one-change cases and 120 reverse orders. Fixture labels are not invented runtime seed evidence; EF1b must record actual numeric seeds.
 - Ran: `node scripts/check-links.mjs`; `git diff --check`. READY definition removed, 8–9 batch promoted then7 separately queued; definition/research cadence retained. No new research, gameplay or assets.
 - Not run locally: typecheck, unit tests, build, browser/offline or device checks (docs-only tier). Building-session source/rules/game review, actual placement/layout, implementation, iPad speech/touch and child understanding remain future evidence; creature hooks/other EF work stay separate.
+
+## 2026-10-25 — World languages subject research (docs only)
+
+- Worker `01a17249-8d27-7123-93e2-b90d9133ca5d`, `codex/world-languages-study`, [PR #961](https://github.com/rjdunlap/neo/pull/961), base `a56d56ea` plus docs diff; coordinator dispatch `a03471a7` integrated. [Study](../deep-dives/subjects/world-languages.md) records opened sources/sections and access failures; no translations or reference game play.
+- Opened ACTFL named standards, CEFR/young-learner guidance, Head Start and two developmental experiments; five first-party digital descriptions plus original family equivalent. Reused adjacent studies; first-host/later receptive ladder, every audience, candidates/recommendations and dependency-ordered slices documented.
+- Manual source/ownership/audience/English-first/gate review; links and `git diff --check` passed. Research READY line removed, WL1 docs-only refinement queued; tracker/backlog/notebook/roadmap/device evidence scope reconciled. Exact account metadata remains private.
+- Not run: local typecheck, unit tests, build, browser/offline, child/device/learning checks (docs-only tier). Developer-named family review of every Portuguese line and actual pt-PT voice acceptance remain before build; Arabic/French/Spanish, cultural/song/phonics review and older-mode policy/placement gates retained.

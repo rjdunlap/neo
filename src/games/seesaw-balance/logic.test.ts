@@ -1,8 +1,52 @@
 import { describe, expect, it } from 'vitest';
+import { seesawBalance } from './index';
+import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import { Rng } from '../../engine/random';
 import { aloneSide, balanceObservation, BOX_LOOKS, downSide, FACES_FOR, FRIEND_FOR, friendScale, WRAPPINGS, makeRounds, MAX_TILT, numberChoices, other, pairHint, PLANS, planFor, progress, seesawTouch, shareSide, stays, tilt, total, ways, weigh, type SeesawRound, type SeesawTouchItem, type Side, type Thing } from './logic';
 
 describe('Seesaw Balance', () => {
+  it('keeps appended entries in their intended band order and out of older birthday landings', () => {
+    const g = seesawBalance;
+    expect(g.entryLevels).toEqual([12, 13]);
+    expect(levelsInOrder(g.levels('lap'))).toEqual([12]);
+    expect(levelsInOrder(g.levels('toddler'))).toEqual([12, 1, 2]);
+    expect(levelsInOrder(g.levels('preschool'))).toEqual([2, 13, 3, 4]);
+    expect(stepLevel(12, 1, g.levels('toddler'))).toBe(1);
+    expect(stepLevel(2, 1, g.levels('preschool'))).toBe(13);
+    expect(stepLevel(13, 1, g.levels('preschool'))).toBe(3);
+    expect(landing(12, g.levels('preschool'), g.entryLevels)).toBe(2);
+    expect(landing(13, g.levels('prek'), g.entryLevels)).toBe(3);
+    expect(levelsInOrder(g.levels('prek'))).toEqual([3, 4, 5, 6, 7]);
+    expect(levelsInOrder(g.levels('school'))).toEqual([6, 7, 8, 9, 10, 11]);
+  });
+
+  it('offers four strictly heavier lifters and three uniquely answerable alternating comparisons', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const bounce = makeRounds(planFor(12), new Rng(seed));
+      expect(bounce).toHaveLength(4);
+      expect(bounce[0].fixed[0]).toEqual({ kind: 'friend', weight: 1, face: 'duck' });
+      for (const r of bounce) {
+        expect(r.offered).toHaveLength(1);
+        expect(r.offered[0].weight).toBeGreaterThan(r.fixed[0].weight);
+        const items = r.fixed.map(thing => ({ thing, fixed: true, side: r.fixedSide }));
+        expect(seesawTouch(planFor(12), r, items)).toEqual({ kind: 'tray', side: other(r.fixedSide) });
+      }
+      const comparisons = makeRounds(planFor(13), new Rng(seed));
+      expect(comparisons.map(r => r.asked)).toEqual(['heavier', 'lighter', 'heavier']);
+      expect(comparisons).toEqual(makeRounds(planFor(13), new Rng(seed)));
+      for (const r of comparisons) {
+        const weights = [r.fixed[0].weight, r.across![0].weight];
+        expect(weights[0]).not.toBe(weights[1]);
+        expect(r.offered).toHaveLength(0);
+        expect(r.answer).toBe(r.asked === 'heavier' ? Math.max(...weights) : Math.min(...weights));
+        const items = [...r.fixed, ...r.across!].map(thing => ({ thing, fixed: true, side: r.fixedSide }));
+        const touch = seesawTouch(planFor(13), r, items);
+        expect(touch?.kind).toBe('friend');
+        if (touch?.kind === 'friend') expect(items[touch.item].thing.weight).toBe(r.answer);
+      }
+    }
+  });
+
   it('demonstrates every mode with only moves that lead to its answer', () => {
     for (const plan of PLANS) for (let seed = 1; seed <= 50; seed++) {
       for (const round of makeRounds(plan, new Rng(seed))) {
@@ -26,6 +70,15 @@ describe('Seesaw Balance', () => {
           if (move.kind === 'answer') {
             expect(move.value).toBe(round.answer);
             answered = true;
+            break;
+          }
+          if (move.kind === 'tray') {
+            expect(move.side).toBe(target);
+            expect(round.offered[0].weight).toBeGreaterThan(total(round.fixed));
+            break;
+          }
+          if (move.kind === 'friend') {
+            expect(items[move.item].thing.weight).toBe(round.answer);
             break;
           }
           const item = items[move.item];
@@ -207,7 +260,7 @@ describe('Seesaw Balance', () => {
     const goal = (items: readonly SeesawTouchItem[]) => gap(items) === 0 && aloneSide(sidesOf(items)) !== null;
 
     it('reads the square box, then weighs a different round box with it', () => {
-      expect(PLANS).toHaveLength(11);
+      expect(PLANS).toHaveLength(13);
       expect(PAIR.mode).toBe('pair');
       for (let seed = 1; seed <= 300; seed++) {
         const rounds = makeRounds(PAIR, new Rng(seed));
