@@ -4,6 +4,10 @@ Defined 2026-10-25 from the [money-and-economy study](../deep-dives/subjects/mon
 
 Fun action: offer a pictured object and watch both objects cross between baskets. Learning purpose: match a visible request, recognize a mutually wanted swap, then order two trades to obtain a goal. These are the island friends' explicit toy rules; no claim about real prices, universal preferences, generosity, financial habits or developmental thresholds. Market Stall owns coin arithmetic and Lemonade Stand price/demand. No coins or payment are needed at 1–4; a shell here is one pictured object, never a balance.
 
+## ME2 implementation claim
+
+Worker `01a17677-f36a-7281-938f-5b54e60a9fdd`, branch `codex/swap-meet-me2`, PR pending. Claims the whole levels1–4 batch: requests/returns, simultaneous requests, reciprocal pairs, both two-trade chains; exact Undo/BFS/support, voice/card/demos and Cozy Village placement. Expected files: `src/games/swap-meet/*`, registry/lands/voice/howto, filtered browser harness, README/GAMES/ROADMAP/READY/verification and queue. Source/contract review complete: fixed-want toy fiction only, no transfer or money claims; Market Stall/Lemonade Stand retain arithmetic/economy scope. Full-size paged land and root/classic route gate is being checked before gameplay code. No other slice, save field, imported art or device/person decision claimed.
+
 ## Scope and whole rounds
 
 Stable ID `swap-meet`, spoken/grown-up title “Swap Meet”, subject `cozy-village` (everyday skills) and land `cozy-village` (Cozy Village), separate catalog concepts sharing the current stable ID. ME2 bands/ranges: toddler 1–2, preschool 2–3, prek 3–4, school 4–4, default each range's minimum. No lap or grownup registration; do not advertise unbuilt levels 5–6. The full study's toddler–school window remains adopted. Do not renumber these levels later.
