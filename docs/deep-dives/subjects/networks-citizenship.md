@@ -162,7 +162,7 @@ M. Ten levels, four bands, a graph model, piece textures, two layouts (the map m
 
 ## Build slices, in order
 
-2. **NC2, build — ready for separate admission:** [NC1 packet](../../definitions/relay-woods.md), [batch](../../GAME-BATCHES.md#relay-woods-1-levels-14-nc2). Relay Woods 1–4 with rule tests, the card and the bot; register, land it, README/GAMES rows. Verification: typecheck, rule tests, one scripted play (levels 1 and 4, one wrong tap, one hint), one portrait screenshot, `fingerdemo`.
+2. **NC2 built:** Relay Woods1–4 in Cozy Village, existing optional picture Keep, card/bot; [build note](../../archive/COMPLETED-2026-10-09.md#relay-woods-levels-14-nc2-2026-10-26). Later slices and person/device gates remain separate.
 3. **NC3, build:** levels 5–7 (pieces, slots, the lost piece, ticks). Rule tests above; a browser play of 7 only.
 4. **NC4, build:** levels 8–10 (postcard or envelope, the lock, the extra path). Decision 5 first. Rule tests for bridges and the unique private request.
 5. **NC5, docs then build:** Feelings Faces 9 *Picture post* through its dive and the social-emotional study's feeling rules.
@@ -174,4 +174,4 @@ M. Ten levels, four bands, a graph model, piece textures, two layouts (the map m
 
 ## What was built and what ran
 
-NC1 defined 2026-10-25: [packet](../../definitions/relay-woods.md), [PR #971](https://github.com/rjdunlap/neo/pull/971); no playable game. NC2 retains source/review, actual layout/placement, implementation and person/device proof. NC1 uses bounded optional picture Keep under current contracts, no new save system. Original study closeout: docs only: this study, the tracker row, the [recommendations packet](RECOMMENDATIONS.md#networks-and-digital-citizenship-recommendations), the roadmap's subject table row, two notebook rows, a developer-decisions row and a VERIFICATION entry. `node scripts/check-links.mjs` and `git diff --check` at closeout. No code, tests, build, browser, device or child checks; no reference game was played beyond opening its pages. Sources marked "via search" or "recalled" were not opened at their origin.
+NC1 defined 2026-10-25: [packet](../../definitions/relay-woods.md), [PR #971](https://github.com/rjdunlap/neo/pull/971); NC2 now built with [recorded proof](../../VERIFICATION.md#2026-10-26--relay-woods-14-nc2); person/device proof stays open. NC1 uses bounded optional picture Keep under current contracts, no new save system. Original study closeout: docs only: this study, the tracker row, the [recommendations packet](RECOMMENDATIONS.md#networks-and-digital-citizenship-recommendations), the roadmap's subject table row, two notebook rows, a developer-decisions row and a VERIFICATION entry. `node scripts/check-links.mjs` and `git diff --check` at closeout. No code, tests, build, browser, device or child checks; no reference game was played beyond opening its pages. Sources marked "via search" or "recalled" were not opened at their origin.

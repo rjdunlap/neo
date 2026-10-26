@@ -256,6 +256,14 @@ Misses and hints: Check on an empty bench is free, and so is a refused overfull 
 
 ## Cozy Village (everyday life)
 
+### Relay Woods
+
+*toddler–school.* Tap a connected friend to pass an actual6×6 mosaic toward the waving receiver. Level1 has three friends in a line;2 offers two equal routes;3 places a visible log across one edge, with retracing back through the sender always possible;4 compares a two-hop route with a three- or four-hop route. Toddler1–2, preschool1–4, pre-K2–4, school4. Finite seeded graphs have3–6 carriers, all still reachable by clear paths. The sender is the customized companion; the receiver remains pictured in the request.
+
+Every clear adjacent hop is allowed, including revisits. Level1 unjoined exploration is free; at2–4 deliberate unjoined taps count one miss. Crossing the visible log counts one miss, visiting that arm does not. At4 a longer arrival celebrates, compares actual/fewest hop ribbons, counts one miss, then retries the same graph and picture. Start over clears the walk for free and preserves errors/help. Help is capped at one per round, including automatic glow after two errors; BFS from the holder suggests a clear next friend or Start over when a shortest finish is no longer possible. Repeated Help can finish through ghost-finger inputs. Cancellation, outside releases, holder/busy/stale taps do not count. Down feedback is immediate, inside release commits one hop; reduced motion transfers immediately.
+
+Flower, cake, kite, a captured-color toy-face portrait and a musical-note picture are five fixed bounded mosaics. One accepted delivery finishes through the shell once for one sticker and optional Keep in the existing shared picture slot; arrival alone changes no picture ownership. No tune recording, real contact, network access, mailbox, inventory, privacy/lock lesson or later levels. Voice, a level-scoped card and four public-input demos are included. Level4’s instructional demo shows one longer arrival/retry before its shortest route. Device speech/reach and child recognition/enjoyment remain open.
+
 ### Village Vote
 
 *preschool–school.* One election chooses a slide, swing or sandpit and everyone tries it. Level1 counts two groups (3–1 or4–2). Level2 first lets the pet freely choose either toy, then counts the four friends plus exactly one pet vote (NPC families3–1 or4–0). Its preference can lose; the pet still plays first. Level3 compares seven friends across three tallies (4–2–1 or3–2–2). Preschool1–2, pre-K1–3, school3. Families, toy slots and NPC assignments are seeded; every election has one unique largest group.

@@ -19,7 +19,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 
-- **`relay-woods`, levels 1–4 (NC2)** (one same-game new-game batch): [NC1 packet](definitions/relay-woods.md), [batch](GAME-BATCHES.md#relay-woods-1-levels-14-nc2). Follow connected friends, either way, visible log, then fewest hops; finite graphs, recoverable retracing and capped support. Separate admission, building-session source/contract review, actual full-size both-layout/current Cozy Village or Story Grove placement, five bounded pictures/Keep and rule/play/demo proof required. Later pieces/privacy/locks/cases/story/card and person/device evidence remain separate.
 
 ## Queued
 
