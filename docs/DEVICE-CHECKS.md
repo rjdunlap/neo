@@ -547,3 +547,7 @@ Definition complete, **all person/device checks open**. [Packet and per-line evi
 - Open: actual device speech for all three instructions, color names, slip/support/replay; over-under strand direction and dot/stripe/ring/white-cross readability in grayscale and sound-off play.
 - Open: child/coplayer enjoyment, free stripe choices, independent/support-assisted pedal use and a comfortable stop. Browser/finite-rule proof establishes no learning or developmental threshold.
 - Lap stays unregistered until a person/device check supports it. Later levels, practical cards, wardrobe and cultural-tradition review remain separate gates.
+
+## Relay Woods levels 1–4 (NC2, 2026-10-26)
+
+Open: actual iPad speech/name and hop-count playback, small-hand release/cancel/reach, five-mosaic recognition (especially portrait/note), receiver identification, equivalent-way/retracing/log understanding, fewest-hop retry comprehension, and child/coplayer enjoyment or replay. Automated browser and manual visual review do not establish these. Fictional friend-chain play makes no internet, safety or transfer claim. No obligation to return to an unfinished delivery.

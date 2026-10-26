@@ -28,7 +28,7 @@ The original idea’s pictured request/reciprocal pair/two-trade action is deliv
 
 ### Example Express 1–3 definition (D1, 2026-10-24)
 
-[PR #955](https://github.com/rjdunlap/neo/pull/955), worker `01a171a1-fcdd-70b0-aeff-8baa24cddb58`, branch `codex/example-express-d1`: [packet](../definitions/example-express.md) freezes six-rule fitting/ties, eight parcels and complete first seeds, all ten level-2 repairs and level-3 accepted family, free Test versus Check, solver support, speech/how-to/demo and layout/placement requirements. Docs only; D2 levels1–2 is separately queued, D3 follows; source-review, actual capacity/layout, later cases and person/device gates retained. Links/diff checked; no code/assets or local gameplay verification. [Verification](../VERIFICATION.md#2026-10-24--example-express-13-definition-d1-docs-only).
+[PR #955](https://github.com/rjdunlap/neo/pull/955), worker `01a171a1-fcdd-70b0-aeff-8baa24cddb58`, branch `codex/example-express-d1`: [packet](../definitions/example-express.md) freezes six-rule fitting/ties, eight parcels and complete first seeds, all ten level-2 repairs and level-3 accepted family, free Test versus Check, solver support, speech/how-to/demo and layout/placement requirements. Docs only; D2 levels1–2 is separately queued, D3 follows; source-review, actual capacity/layout, later cases and person/device gates retained. Links/diff checked; no code/assets or local gameplay verification. [Verification](VERIFICATION-2026-10-24.md#2026-10-24--example-express-13-definition-d1-docs-only).
 
 
 ### Movie Night 1–3 definition (MM1, 2026-10-24)
@@ -2047,3 +2047,7 @@ Lap, school/higher levels, wardrobe, traditions and practical cards excluded; ac
 Archived idea row (built portion1–3 only; later levels remain proposals in the study):
 
 | **Village Vote / preschool–upper school** (proposal, researched 2026-10-17) | The friends stand by the picture they want on the square; count the paws, tap the bigger group's choice, and it is built and used by everyone. Later a three-way vote with a run-off, who is left out by the winner and a fix, and chipping in shells for the shared thing | [Community-civics study](../deep-dives/subjects/community-civics.md#first-games-proposed-ladder-village-vote), [packet](../deep-dives/subjects/RECOMMENDATIONS.md#community-and-civics-recommendations). Define levels 1–3 (two choices, her pet votes, three choices); no mayor, no vote on facts, Cozy Village only after the capacity test | M |
+
+## Relay Woods levels 1–4 (NC2, 2026-10-26)
+
+[PR #985](https://github.com/rjdunlap/neo/pull/985), worker `01a17790-d5e1-71e3-bdba-610aee6d5ff0`: whole [NC2 batch](../GAME-BATCHES.md#relay-woods-1-levels-14-nc2), connected/equivalent routes, log/retracing and fewest-hop retry, capped BFS support, five bounded mosaics/existing optional Keep, voice/card/four public-input demos. Cozy Village16th paged entry,140 total games. [Review](../definitions/relay-woods.md#nc2-building-session-review--2026-10-26), [proof](../VERIFICATION.md#2026-10-26--relay-woods-14-nc2). No mailbox, inventory, save architecture or later content; person/device gates stay open. Moved the built1–4 scope out of READY/IDEAS; later pieces/privacy/locks remain proposals.
