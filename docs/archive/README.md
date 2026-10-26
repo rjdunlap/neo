@@ -1,5 +1,8 @@
 # Archived documents
 
+- [Superseded Harbor progression proposal](PROGRESSION-PROPOSAL-2026-10-26.md): old ticket/wheel/bank specification, moved from the roadmap after reconciliation with the October 23 decisions.
+
+
 These files are **history, not instructions**. They record proposals, research and checks as they stood when they were written. Where they disagree with the current docs, the current docs win: [roadmap](../ROADMAP.md), [design](../DESIGN.md), [games](../GAMES.md), [ideas](../IDEAS.md), [verification](../VERIFICATION.md).
 
 | File | What it is | Where its live content went |
