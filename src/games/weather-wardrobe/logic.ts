@@ -2,7 +2,8 @@ import type { Rng } from '../../engine/random';
 import type { PartName } from '../../creatures/parts';
 import type { SpeciesId } from '../../creatures/species';
 
-export const WEATHERS = ['sunny', 'rainy', 'snowy'] as const;
+/** Four weathers; the sky at level 1 steps through them in this order. Wind came last (slice 7, 2026-10-26). */
+export const WEATHERS = ['sunny', 'rainy', 'snowy', 'windy'] as const;
 export type Weather = (typeof WEATHERS)[number];
 
 /** Every piece of clothing belongs to exactly one weather, so a choice is never ambiguous. */
@@ -19,6 +20,9 @@ export const ITEMS = {
   rainhat: 'rainy',
   earmuffs: 'snowy',
   puffycoat: 'snowy',
+  kite: 'windy',
+  windbreaker: 'windy',
+  straphat: 'windy',
 } as const satisfies Record<string, Weather>;
 export type Item = keyof typeof ITEMS;
 export const ALL_ITEMS = Object.keys(ITEMS) as Item[];
@@ -41,6 +45,9 @@ export const SLOTS: Record<Item, Slot> = {
   rainhat: 'head',
   earmuffs: 'head',
   puffycoat: 'body',
+  kite: 'held',
+  windbreaker: 'body',
+  straphat: 'head',
 };
 
 /**
@@ -68,10 +75,12 @@ export const NOT_WORN: Record<SpeciesId, Partial<Record<Item, string>>> = {
     mittens: 'its front paws walk: boots go on them, and mittens would be a second pair of shoes',
     raincoat: 'drawn upright from the front, and its body runs level from the neck to the tail, so it would hang off the back like a flag',
     puffycoat: 'drawn upright from the front, like the raincoat',
+    windbreaker: 'drawn upright from the front, like the raincoat',
   },
   glider: {
     raincoat: 'a coat wants a body and arms; the glider is one wing, which a coat would hide',
     puffycoat: 'a coat wants a body and arms, like the raincoat',
+    windbreaker: 'a coat wants a body and arms, like the raincoat',
   },
 };
 
@@ -93,6 +102,8 @@ export function outfitFor(w: Weather, rng: Rng, wearable: readonly Item[] = ALL_
 
 /** The items the sticker draws from: the original eight, so stickers from before the new clothes look the same. */
 export const STICKER_ITEMS: readonly Item[] = ['sunhat', 'sunglasses', 'raincoat', 'umbrella', 'boots', 'beanie', 'scarf', 'mittens'];
+/** The weathers the sticker draws from: the original three, every one with a sticker item, so old seeds keep their picture. */
+export const STICKER_WEATHERS: readonly Weather[] = ['sunny', 'rainy', 'snowy'];
 
 /** How each item is spoken in "___ for snowy days". */
 export const ITEM_WORDS: Record<Item, string> = {
@@ -108,6 +119,9 @@ export const ITEM_WORDS: Record<Item, string> = {
   rainhat: 'A rain hat is',
   earmuffs: 'Earmuffs are',
   puffycoat: 'A puffy coat is',
+  kite: 'A kite is',
+  windbreaker: 'A windbreaker is',
+  straphat: 'A hat with a strap is',
 };
 
 /** Each item's name, said when she touches it on the pet at level 1. */
@@ -124,25 +138,29 @@ export const ITEM_NAMES: Record<Item, string> = {
   rainhat: 'A rain hat',
   earmuffs: 'Earmuffs',
   puffycoat: 'A puffy coat',
+  kite: 'A kite',
+  windbreaker: 'A windbreaker',
+  straphat: 'A hat with a strap',
 };
 
-/** What the grass does when she touches it at level 1: a puddle splashes, snow crunches, a flower pops up. */
-export const GROUND_TOUCH = { sunny: 'flower', rainy: 'splash', snowy: 'crunch' } as const satisfies Record<Weather, string>;
+/** What the grass does when she touches it at level 1: a puddle splashes, snow crunches, a flower pops up, leaves scatter. */
+export const GROUND_TOUCH = { sunny: 'flower', rainy: 'splash', snowy: 'crunch', windy: 'leaves' } as const satisfies Record<Weather, string>;
 
 /** What a wrong item shows for a moment before it hops back: the weather it was not made for. */
-export type Misfit = 'cold' | 'hot' | 'wet';
+export type Misfit = 'cold' | 'hot' | 'wet' | 'blown';
 
-/** The consequence of wearing the wrong thing in each weather (sunglasses in rain run with drops, mittens in sun sweat). */
-export const MISFIT: Record<Weather, Misfit> = { sunny: 'hot', rainy: 'wet', snowy: 'cold' };
+/** The consequence of wearing the wrong thing in each weather (sunglasses in rain run with drops, mittens in sun sweat, a sun hat in wind blows off). */
+export const MISFIT: Record<Weather, Misfit> = { sunny: 'hot', rainy: 'wet', snowy: 'cold', windy: 'blown' };
 
-/** The one item per weather that stops it on the pet at level 8: a hat in sun, an umbrella in rain, a coat in snow. */
-export const SHIELD: Record<Weather, Item> = { sunny: 'sunhat', rainy: 'umbrella', snowy: 'puffycoat' };
+/** The one item per weather that stops it on the pet at level 8: a hat in sun, an umbrella in rain, a coat in snow, a zipped windbreaker in wind. */
+export const SHIELD: Record<Weather, Item> = { sunny: 'sunhat', rainy: 'umbrella', snowy: 'puffycoat', windy: 'windbreaker' };
 
-/** What stops a weather, best first, for a pet that cannot wear the `SHIELD` (a glider in snow gets the warm hat). */
+/** What stops a weather, best first, for a pet that cannot wear the `SHIELD` (a glider in snow gets the warm hat; in wind, the hat with a strap). */
 const SHIELDS: Record<Weather, Item[]> = {
   sunny: ['sunhat', 'sunglasses', 'sandals'],
   rainy: ['umbrella', 'raincoat', 'rainhat', 'boots'],
   snowy: ['puffycoat', 'beanie', 'earmuffs', 'scarf', 'mittens'],
+  windy: ['windbreaker', 'straphat', 'kite'],
 };
 export const shieldFor = (w: Weather, wearable: readonly Item[] = ALL_ITEMS): Item => SHIELDS[w].find((i) => wearable.includes(i))!;
 
@@ -211,7 +229,9 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
       // Each round is a different weather, and the pet wears two things made for it: exactly one offered sky fits.
       if (!order.length) order = rng.shuffle([...WEATHERS]);
       const answer = order.shift()!;
-      out.push({ weathers: [answer], needed: [], options: [], worn: rng.shuffle(outfitFor(answer, rng, wearable)).slice(0, 2), skies: rng.shuffle([...WEATHERS]).slice(0, plan.choices), answer });
+      // The answer is always among the skies on offer; the others come from the rest (there are four weathers, three cards).
+      const skies = rng.shuffle([answer, ...rng.shuffle(WEATHERS.filter((w) => w !== answer)).slice(0, plan.choices - 1)]);
+      out.push({ weathers: [answer], needed: [], options: [], worn: rng.shuffle(outfitFor(answer, rng, wearable)).slice(0, 2), skies, answer });
       continue;
     }
     if (plan.mode === 'change') {
@@ -225,7 +245,7 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
     }
     if (order.length < (plan.mode === 'trip' ? 2 : 1)) order = rng.shuffle([...WEATHERS]);
     const weathers = plan.mode === 'trip' ? [order.shift()!, order.shift()!] : [order.shift()!];
-    // Every weather fills at least three slots, so "everything" at level 5 is always three, one per slot.
+    // Every weather fills at least three slots (wind: head, body, held), so "everything" at level 5 is always three, one per slot.
     const needed =
       plan.mode === 'try'
         ? [shieldFor(weathers[0], wearable)]

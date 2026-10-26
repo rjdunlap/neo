@@ -3113,6 +3113,7 @@ export const SCRIPT = {
   'weather.sunny': ['Sunny! Hats and sunglasses on.'],
   'weather.rainy': ['Rainy! Pitter patter. Umbrella up!'],
   'weather.snowy': ['Snowy! Brr! Bundle up.'],
+  'weather.windy': ['Windy! Whoosh! Hold on to your hat.'],
   'weather.try': ['It is {weather} today! Try something on {pet}!'],
   'weather.pick': ['It is {weather} today! What should {pet} wear?'],
   'weather.all': ['It is {weather} today! Find everything {pet} needs.'],

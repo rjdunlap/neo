@@ -190,13 +190,9 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
-### weather-wardrobe 2: Wind (remaining part)
+### weather-wardrobe 2: Wind (built)
 
-*Slices 5 (the trip happens) and 6 (level 9 Which sky?) are built; wind is the remaining part.*
-
-- **`weather-wardrobe`, wind** (content, after *more items* and *a miss that shows why*): a fourth weather with a kite and a windbreaker; a sun hat blows off; level-1 finish and trip pairs adjusted. [Slice 7](deep-dives/weather-wardrobe.md#build-slices-in-order)
-
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Built 2026-10-26 ([PR #994](https://github.com/rjdunlap/neo/pull/994)): slice 7 (a fourth weather with a kite, a windbreaker and a hat with a strap, the `blown` misfit, level-1 finish and trip pairs adjusted). Nothing remains in this batch. [Slice 7](deep-dives/weather-wardrobe.md#build-slices-in-order)
 
 ### weather-wardrobe 3: Two friends, two places
 

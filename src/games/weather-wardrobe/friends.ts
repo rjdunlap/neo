@@ -82,6 +82,12 @@ export class WeatherFriends implements Game {
       card.roundRect(-166, -65, 332, 80, 24).fill(weather === 'snowy' ? swatch.white.fill : grass);
       if (weather === 'rainy') card.ellipse(0, -12, 105, 18).fill(swatch.blue.fill);
       if (weather === 'snowy') for (const x of [-120, -65, 65, 120]) card.circle(x, -85, 6).fill(swatch.white.fill);
+      if (weather === 'windy') {
+        // Leaves streaming across the card and grass bent the way they go.
+        for (const [x, y] of [[-130, -180], [-80, -120], [100, -200], [130, -140]] as const) card.ellipse(x, y, 13, 7).fill(swatch.green.fill).stroke({ width: 2, color: swatch.green.line });
+        for (const x of [-120, -40, 40, 120]) for (const dx of [-10, 0, 10]) card.moveTo(x + dx, -60).quadraticCurveTo(x + dx + 12, -80, x + dx + 30, -84);
+        card.stroke({ width: 4, color: swatch.green.line, cap: 'round' });
+      }
       const sign = new Container();
       sign.addChild(tile(116, 106), this.icon(weather, 80));
       sign.y = -310;
