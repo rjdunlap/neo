@@ -29,7 +29,7 @@ The original idea’s pictured request/reciprocal pair/two-trade action is deliv
 
 [PR #976](https://github.com/rjdunlap/neo/pull/976), `codex/example-express-d2`, worker `01a17520-b379-7cc3-929c-3f71af64088f`. One complete school new-game batch: **Show, then send** and **A surprising parcel**, from the [D1 packet](../definitions/example-express.md). Six-rule minimum-error/tie fitter; exact seeds, ten accepted repairs, selected-rule pictures, free Test, deliberate Check, shortest-path support and one shell-owned reward through All delivered. Spoken/card/demo support, Undo/Reset/Remove/Stop and seventeenth Tinker Lab entry. Original Example Express idea’s teach/test/repair action is delivered; level 3 curation remains D3, not a new game.
 
-[Building-session CSTA/AI4K12 S1 review](../definitions/example-express.md#d2-building-session-review-2026-10-25), finite model/accounting/layout tests and proportionate [verification](../VERIFICATION.md#2026-10-25--example-express-12-d2). No shared navigation/save infrastructure, external assets, recordings or services. Level 3, all-six inspector, older registrations, pre-K and real speech/touch/child/coplayer gates remain separate.
+[Building-session CSTA/AI4K12 S1 review](../definitions/example-express.md#d2-building-session-review-2026-10-25), finite model/accounting/layout tests and proportionate [verification](VERIFICATION-2026-10-25.md#2026-10-25--example-express-12-d2). No shared navigation/save infrastructure, external assets, recordings or services. Level 3, all-six inspector, older registrations, pre-K and real speech/touch/child/coplayer gates remain separate.
 
 ### Movie Night 1–3 (MM2, 2026-10-25)
 
@@ -2089,3 +2089,8 @@ Typecheck, seeded rules, units with focused recovery, build, scoped play of all 
 ## Settled roadmap and backlog records (2026-10-26)
 
 [PR #997](https://github.com/rjdunlap/neo/pull/997), `codex/settled-planning-records`: reconciled live roadmap/READY/study/rework summaries with the October 23 decisions and already-recorded deliveries; removed the settled RW14 default from the developer waiting list. Replaced stale named-reviewer gates with building-session source checks, retained actual admission/capacity/device/family conditions and deferred sensitive scopes, and archived the superseded [Harbor progression proposal](PROGRESSION-PROPOSAL-2026-10-26.md). No gameplay or new implementation dispatch. [Docs verification](../VERIFICATION.md#2026-10-26--settled-roadmap-and-backlog-records).
+
+
+### Seesaw Balance batch 4: predict the tip (slice 8, 2026-10-26)
+
+[PR #1000](https://github.com/rjdunlap/neo/pull/1000), branch `codex/seesaw-predict-tip`, worker `01a17a65-04cf-7ad1-8961-f4ad8603ffe4`. Level17 adds three unscored predictions from tagged sums (left-down, right-down, equal), visible props/release, spoken sums and an explicit Continue. School order [6,7,15,16,17,8,9,10,11]; all existing IDs/band orders preserved. No journal entry, generated asset or person/device acceptance. Old research claim6e7a5e19 preserved. Proof is in [verification](../VERIFICATION.md#2026-10-26--seesaw-balance-predict-the-tip).

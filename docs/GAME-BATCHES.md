@@ -317,9 +317,7 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### seesaw-balance 4: Which way will it tip
 
-- **`seesaw-balance`, level 17 *Which way will it tip?*, slice 8** (new interaction tier: typecheck, rule tests over 300 seeds, one play of 17 with a wrong prediction, one portrait screenshot, `fingerdemo` at 17): an unscored prediction of which side goes down or level, explained by the release; school `order [6, 7, 15, 16, 17, 8, 9, 10, 11]`. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
-
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Built: level17 prediction/release, slice8 ([PR #1000](https://github.com/rjdunlap/neo/pull/1000)); [build note](archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-4-predict-the-tip-slice-8-2026-10-26). No open implementation subtask; person/device acceptance stays open.
 
 ### fluffy-salon 1: Customer variety and younger styling entries
 

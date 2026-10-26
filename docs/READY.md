@@ -28,7 +28,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **RW14 slice 10, the other ten backdrops** (images only): after slices 4 and 6 pass their screenshot review. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 
 
-- **`seesaw-balance`, Which way will it tip** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#seesaw-balance-4-which-way-will-it-tip).
 - **`fluffy-salon`, Two customers and comparative styling** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#fluffy-salon-2-two-customers-and-comparative-styling).
 - **`fluffy-salon`, Two colours and changed requests** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#fluffy-salon-3-two-colours-and-changed-requests).
 - **`size-parade`, Who fits** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-2-who-fits).
