@@ -1006,7 +1006,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'weather-wardrobe': {
     goal: 'Choose clothes to suit the weather.',
     steps: [
-      { to: 1, text: 'Tap the sky to change the weather; the pet dresses itself.' },
+      { to: 1, text: 'Tap the sky to change the weather (sun, rain, snow, then wind); the pet dresses itself.' },
       { to: 1, text: 'Tap the grass to splash, crunch or pop up a flower, and tap the clothes on the pet to hear their names.' },
       { from: 8, to: 8, text: 'Tap either thing to try it on the pet. The one that fits stops the weather; the other shows what the weather does and hops back.' },
       { from: 2, to: 3, text: 'Tap the one thing that suits the weather.' },
@@ -1024,7 +1024,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'Each of three rounds ends when the right sky is picked.' },
     ],
     note: [
-      { from: 2, to: 7, text: 'A wrong choice goes on the pet for a moment to show what the weather does, is told which weather it is for, and the glowing one helps.' },
+      { from: 2, to: 7, text: 'A wrong choice goes on the pet for a moment to show what the weather does (in wind it blows away), is told which weather it is for, and the glowing one helps.' },
       { from: 8, to: 8, text: 'There are no wrong answers here: everything can be tried on.' },
       { from: 10, to: 10, text: 'A wrong friend hands the item back and names why. Two misses glow one item and its friend, counting one hint per round. Dropping elsewhere is free; tapping a friend repeats the instruction.' },
       { from: 9, to: 9, text: 'A wrong sky plays over the pet for a moment to show what that weather does, then clears; after two wrong skies the right card glows.' },

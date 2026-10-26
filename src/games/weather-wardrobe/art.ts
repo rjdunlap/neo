@@ -38,6 +38,12 @@ export function anchorOf(item: Item, side = 1): { x: number; y: number } {
       return { x: side * 40, y: -4 };
     case 'earmuffs':
       return { x: side * 110, y: -182 };
+    case 'kite':
+      return { x: 150, y: -60 };
+    case 'windbreaker':
+      return { x: 0, y: -50 };
+    case 'straphat':
+      return { x: 0, y: -206 };
   }
 }
 
@@ -146,6 +152,42 @@ export function clothing(item: Item, sides: readonly number[] = [-1, 1]): Contai
       g.moveTo(-128, -78).quadraticCurveTo(-154, -42, -126, -6).lineTo(126, -6).quadraticCurveTo(154, -42, 128, -78).quadraticCurveTo(0, -96, -128, -78).closePath().fill(down.fill).stroke(line(down.line));
       for (const y of [-62, -34]) g.moveTo(-140, y + 4).quadraticCurveTo(0, y - 12, 140, y + 4).stroke(line(down.line, 5));
       g.moveTo(0, -80).lineTo(0, -6).stroke(line(down.light, 6));
+      break;
+    }
+    case 'kite': {
+      // Held by its string in the hand on her right, like the umbrella; the diamond flies up and away with a bow tail.
+      const sail = swatch.purple;
+      g.moveTo(150, -40).quadraticCurveTo(190, -200, 236, -330).stroke(line(ink, 5));
+      g.moveTo(236, -330).quadraticCurveTo(196, -360, 190, -400).quadraticCurveTo(170, -340, 150, -330).stroke(line(sail.line, 5));
+      for (const [x, y] of [[214, -352], [192, -372], [180, -340]] as const) g.poly([x - 12, y, x, y - 10, x + 12, y, x, y + 10]).fill(swatch.red.fill).stroke(line(swatch.red.line, 3));
+      g.poly([236, -330, 300, -400, 236, -500, 172, -400]).fill(sail.fill).stroke(line(sail.line));
+      g.moveTo(236, -330).lineTo(236, -500).moveTo(172, -400).lineTo(300, -400).stroke(line(sail.light, 5));
+      g.poly([236, -330, 268, -400, 236, -470]).fill({ color: swatch.yellow.fill, alpha: 0.55 });
+      break;
+    }
+    case 'windbreaker': {
+      // Green with a hood and two drawstrings, zipped up against the wind; never yellow like the raincoat or blue like the puffy coat.
+      const shell = swatch.green;
+      g.moveTo(-120, -70).quadraticCurveTo(-138, -40, -118, -22).lineTo(118, -22).quadraticCurveTo(138, -40, 120, -70).quadraticCurveTo(0, -90, -120, -70).closePath().fill(shell.fill).stroke(line(shell.line));
+      g.moveTo(-60, -76).quadraticCurveTo(-54, -100, 0, -104).quadraticCurveTo(54, -100, 60, -76).quadraticCurveTo(0, -62, -60, -76).closePath().fill(shell.light).stroke(line(shell.line, 4));
+      for (const side of [-1, 1]) {
+        g.moveTo(side * 22, -72).quadraticCurveTo(side * 30, -50, side * 20, -30).stroke(line(swatch.white.fill, 4));
+        g.circle(side * 20, -28, 6).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 2));
+      }
+      g.moveTo(0, -76).lineTo(0, -24).stroke(line(shell.line, 4));
+      for (const y of [-66, -56, -46, -36]) g.rect(-4, y, 8, 5).fill(shell.light);
+      break;
+    }
+    case 'straphat': {
+      // A snug orange cap with a brim and a chin strap, so it stays on when the sun hat would blow away.
+      const cap = swatch.orange;
+      g.moveTo(-82, -248).quadraticCurveTo(-60, -180, -40, -150).moveTo(82, -248).quadraticCurveTo(60, -180, 40, -150).stroke(line(cap.line, 7));
+      g.moveTo(-40, -150).quadraticCurveTo(0, -126, 40, -150).stroke(line(cap.line, 7));
+      g.circle(0, -138, 9).fill(cap.light).stroke(line(cap.line, 3));
+      g.moveTo(-84, -232).quadraticCurveTo(-80, -312, 0, -316).quadraticCurveTo(80, -312, 84, -232).closePath().fill(cap.fill).stroke(line(cap.line));
+      g.moveTo(-10, -314).quadraticCurveTo(-30, -280, -34, -236).moveTo(10, -314).quadraticCurveTo(30, -280, 34, -236).stroke(line(cap.line, 4));
+      g.roundRect(-92, -242, 184, 20, 10).fill(cap.light).stroke(line(cap.line, 5));
+      g.roundRect(-20, -266, 40, 18, 8).fill(swatch.white.fill).stroke(line(cap.line, 3));
       break;
     }
   }
