@@ -19,6 +19,7 @@ Puddle Island is an iPad learning game for the developer's daughter, who turns o
 
 ## Where we are
 
+- Seesaw Balance’s lap/toddler level 12 *Wheee!* and preschool level 13 *Who is heavier?* are built, with empty-half bounce and heavier/lighter taps; [remaining slices](deep-dives/seesaw-balance.md#build-slices-in-order) start at 14.
 - Weather Wardrobe’s pre-K level 10 *Two friends, two places* is built: four clothes dragged to two friends in different weather, paired support and a public-input demonstration; [remaining slices](deep-dives/weather-wardrobe.md#build-slices-in-order) retain the separate Wind claim and later scope.
 
 - Scoop Shop’s entries 10–11, prefilled count-on cones at 12 and two-colour counts at 13 are built; [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25) freezes school 7–9 under the October 23 decision; separate EF1b builds retain review, placement/layout and person/device gates, with creature customers later.

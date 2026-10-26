@@ -41,8 +41,9 @@ import {
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 4 },
+  lap: { min: 12, max: 12, order: [12] },
+  toddler: { min: 1, max: 12, order: [12, 1, 2] },
+  preschool: { min: 2, max: 13, order: [2, 13, 3, 4] },
   prek: { min: 3, max: 7 },
   school: { min: 6, max: 11 },
 };
@@ -261,6 +262,7 @@ class SeesawBalance implements Game {
   /** Presents already compared on a tray during the how-to demonstration. */
   private readonly demoTested = new Set<Item>();
 
+  readonly bounceTargets: Record<Side, Container> = { left: new Container(), right: new Container() };
   private readonly backdrop: Backdrop;
   private readonly stand = new Graphics();
   private readonly plank = new Container();
@@ -295,7 +297,13 @@ class SeesawBalance implements Game {
       .fill(0xb0b0b0);
     this.wagon.addChild(cart);
     this.wagon.visible = this.plan.mode === 'heaviest';
-    ctx.stage.addChild(this.backdrop, this.stand, this.plank, this.trays.left, this.trays.right, this.wagon, this.glow, this.layer);
+    this.glow.eventMode = 'none';
+    for (const side of ['left', 'right'] as Side[]) {
+      const target = this.bounceTargets[side];
+      target.visible = this.plan.mode === 'bounce';
+      onTap(target, () => void this.bounce(side));
+    }
+    ctx.stage.addChild(this.backdrop, this.stand, this.plank, this.trays.left, this.trays.right, this.wagon, this.glow, this.layer, this.bounceTargets.left, this.bounceTargets.right);
   }
 
   /** The rider's face, for the voice line's `{animal}`. */
@@ -335,6 +343,11 @@ class SeesawBalance implements Game {
       .fill({ color: swatch.green.line, alpha: 0.25 });
     this.plank.position.set(x, y);
     this.wagon.position.set(v.w - 130, v.h - 30);
+    for (const side of ['left', 'right'] as Side[]) {
+      const target = this.bounceTargets[side];
+      target.position.set(side === 'left' ? 0 : v.w / 2, y - 260);
+      target.hitArea = new Rectangle(0, 0, v.w / 2, 370);
+    }
     this.layoutGround();
     this.layoutPads();
   }
@@ -440,6 +453,11 @@ class SeesawBalance implements Game {
       tested: this.demoTested.has(item),
     })), this.pads.length > 0);
     if (!move) return null;
+    if (move.kind === 'tray') return { tap: { on: this.bounceTargets[move.side], x: this.view.w / 4, y: 200 } };
+    if (move.kind === 'friend') {
+      const item = this.items[move.item];
+      return { tap: { on: item.node, x: 0, y: -item.height / 2 } };
+    }
     if (move.kind === 'answer') {
       const pad = this.pads.find((p) => p.value === move.value);
       return pad ? { tap: { on: pad } } : null;
@@ -523,7 +541,7 @@ class SeesawBalance implements Game {
     const reading = r.phase === 'read';
     const held = (thing: Thing) => (this.plan.mode === 'pair' ? reading || stays(thing) : !same);
     r.fixed.forEach((thing, i) => this.addItem(thing, i, held(thing), r.fixedSide));
-    r.across?.forEach((thing, i) => this.addItem(thing, i, reading, other(r.fixedSide)));
+    r.across?.forEach((thing, i) => this.addItem(thing, i, reading || this.plan.mode === 'compare', other(r.fixedSide)));
     r.offered.forEach((thing, i) => this.addItem(thing, i, false, null));
     this.layoutGround();
     for (const item of this.items) {
@@ -533,7 +551,9 @@ class SeesawBalance implements Game {
     await this.ctx.tw.wait(0.4);
     const animal = this.animalOf(r);
     const mode = this.plan.mode;
-    if (mode === 'up') await this.ctx.instruct('seesaw.up', { animal });
+    if (mode === 'bounce') await this.ctx.instruct('seesaw.bounce');
+    else if (mode === 'compare') await this.ctx.instruct(r.asked === 'heavier' ? 'seesaw.ask-heavy' : 'seesaw.ask-light');
+    else if (mode === 'up') await this.ctx.instruct('seesaw.up', { animal });
     else if (mode === 'heavy') await this.ctx.instruct('seesaw.heavy', { animal });
     else if (mode === 'level') await this.ctx.instruct('seesaw.level');
     else if (mode === 'heaviest') await this.ctx.instruct('seesaw.heaviest');
@@ -558,7 +578,12 @@ class SeesawBalance implements Game {
     // The square box keeps the number it was given on the reading for the rest of its pair.
     if (thing.shape === 'square' && this.round.phase === 'pair') made.sign!.text = String(thing.weight);
     if (stays(thing)) onTap(made.node, () => this.roundStays(made.node), { cooldown: 800 });
-    if (!fixed) {
+    if (this.plan.mode === 'compare') {
+      // Body-centred circles stay at least 140 units wide even for the smallest friend.
+      made.node.hitArea = new Circle(0, -made.height / 2, Math.max(70, made.height / 2 + 10));
+      onTap(made.node, () => void this.compare(item), { cooldown: 400 });
+    }
+    if (!fixed && this.plan.mode !== 'bounce') {
       item.drag = draggable(made.node, this.ctx.tw, {
         onPick: () => {
           item.pickedAt = { x: made.node.x, y: made.node.y };
@@ -571,6 +596,52 @@ class SeesawBalance implements Game {
     this.layer.addChild(made.node);
     this.items.push(item);
     if (side) made.node.position.set(this.slotFor(item).x, this.slotFor(item).y);
+  }
+
+  /** Any touch on the empty half lifts the rider; touching the rider is free exploration. */
+  private async bounce(side: Side) {
+    if (this.busy || this.finished) return;
+    if (side === this.round.fixedSide) {
+      this.items[0].critter?.poke();
+      sfx.tick();
+      void this.ctx.instruct('seesaw.bounce');
+      return;
+    }
+    this.busy = true;
+    const lifter = this.items.find((i) => !i.fixed)!;
+    lifter.critter?.poke();
+    sfx.pop();
+    lifter.side = side;
+    lifter.settling = true;
+    await this.ctx.tw.to(lifter.node, this.slotFor(lifter), { duration: 0.4, ease: ease.outBack });
+    lifter.settling = false;
+    this.observations.add('heavy-down');
+    await this.ctx.say('seesaw.wee', { animal: this.animalOf(this.round) });
+    await this.won();
+  }
+
+  private async compare(item: Item) {
+    if (this.busy || this.finished) return;
+    this.busy = true;
+    item.critter?.poke();
+    sfx.tick();
+    if (item.thing.weight !== this.round.answer) {
+      this.miss();
+      if (this.wrongs === 2) {
+        this.hintItem = this.items.find((i) => i.thing.weight === this.round.answer)!;
+      }
+      await this.ctx.say(this.round.asked === 'heavier' ? 'seesaw.hint-heavy' : 'seesaw.hint-light');
+      this.busy = false;
+      return;
+    }
+    this.hintItem = null;
+    this.observations.add('heavy-down');
+    const heavy = this.round.asked === 'heavier';
+    sfx.bell(heavy ? 2 : 7);
+    await this.ctx.tw.wait(0.18);
+    sfx.bell(heavy ? 7 : 2);
+    await this.ctx.say(heavy ? 'seesaw.yes-heavy' : 'seesaw.yes-light');
+    await this.won();
   }
 
   /** A touch on the round box: a wiggle and a reminder, never a miss. */
@@ -972,7 +1043,8 @@ export const seesawBalance: GameModule = {
   titleLine: 'game.seesaw-balance',
   region: 'tinker-lab',
   skills: ['comparison', 'measurement', 'equality', 'counting'],
-  bands: ['toddler', 'preschool', 'prek', 'school'],
+  bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
+  entryLevels: [12, 13],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,

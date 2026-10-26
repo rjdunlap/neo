@@ -8,6 +8,14 @@
 - 2026-10-24 re-merge (main's voice clips, location pages): the Arcade's spoken intro moved to `arcade.open` (outside the clipped prefixes; clips render only on macOS), then typecheck, `npm test` (232 files, 2871 tests), build, `HOME_ONLY=arcade` and full `home` passed again at `http://localhost:5191`. Later the same day the Arcade check moved into main's split harness (`scripts/browser/suites/home-arcade.mjs`); on that merge typecheck, `npm test` (246 files, 3209 tests), build, `HOME_ONLY=arcade` and full `home` passed.
 - Not run: offline check (no new assets), `world`, how-to cards on while launching from the Arcade (scripts turn them off). Open for a person: iPad frame rate with the spotlight, device speech, a child's tap-to-watch/tap-to-play reading ([DEVICE-CHECKS.md](DEVICE-CHECKS.md)).
 
+## 2026-10-26 — Seesaw Balance lap bounce and heavier/lighter
+
+- [PR #991](https://github.com/rjdunlap/neo/pull/991), worker `01a17915-0de5-7412-bada-85b291a34662`, `codex/seesaw-bounce-comparison`: whole batch2/slices3–4, levels12/13. Tested base `bd149b70` plus implementation diff; docs-only dispatch integration `53d30926` changes no game dependencies. Self-reviewed against rules/input/layout/cleanup contracts; dispatch prohibits subagents, no independent review claimed.
+- Passed typecheck, full3358 unit tests (4 existing skips), final18 Seesaw rules and production build. Rules cover300 seeds, heavier lifters, first duck, unique heavier/lighter answers, deterministic question order, band order/steps and birthday entry landing; IDs1–11/pre-K/school preserved.
+- `GAME_URL=http://localhost:5197 BROWSER_SUITE=seesawentry npm run test:browser`: level12 at lap and toddler, four lifts/free rider-half poke, visible touch-down response and saved0/0; preschool13 heavier/lighter/heavier, two wrong taps/one nonblocking glow, supported finish and saved2/1 passed. Shell reward checked for each play. Phone390×844 bounce and tablet768×1024 comparison/help portraits reviewed; logical tap targets at least100, pet/corner clearance retained.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=seesaw-balance FINGER_LEVELS=12,13` at the same URL: both clean demos finished,12 lap19.2s/13 preschool13.0s. Session server stopped; ignored screenshots/logs in `test-results/`.
+- Not run: broad world/story/offline suites (no shared engine/navigation/persistence/assets changed); actual iPad speech/touch, child/coplayer response remain [open](DEVICE-CHECKS.md#seesaw-balance-1213-2026-10-26). Levels14–17/other games/art excluded. Required PR CI/publication next.
+
 ## 2026-10-26 — Monster Munch two kinds and friend groups
 
 - [PR #989](https://github.com/rjdunlap/neo/pull/989), worker `01a1783a-8226-7510-8330-58f9f8f910a8`, branch `codex/monster-munch-sharing-groups`; tested base `fb124d92` plus implementation diff, then docs-only dispatch integration `d080e3da` (remote base `fc9d3707`). Whole batch2 / dive slices5–6 only; school order `[6,7,12,8,11]`, old IDs/bands/pins retained. Self-reviewed source/rules/game/docs; dispatch prohibited subagents, so no independent reviewer claimed.
@@ -114,19 +122,13 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check`; READY/backlog/study/recommendations/roadmap/batch/archive reconciled. VA2 remains separately admitted with source/contract review and actual layout/persistence proof.
 - Not run locally: typecheck, unit tests, build, browser/offline or iPad/child checks (docs-only tier). Lap gate, device speech/touch/child understanding and later traditions/wardrobe/craft review stay open.
 
-## 2026-10-25 — European Portuguese stage-1 definition (WL1, docs only)
-
-- Worker `01a17284-357d-7b71-8c4e-285c4afdf9c5`, `codex/wl1-portuguese-definition`, [PR #963](https://github.com/rjdunlap/neo/pull/963), base `9cdf7e49` plus docs diff; claim `8881c86c`; coordinator dispatch `609184a4`/`f7e7d0f3` integrated (docs only). [Existing packet](definitions/additional-languages.md) refined; no translations/code/assets/clips.
-- Read current first-host logic/bands/events, palette, Voice and GameScene: 20 semantic keys, one-word Snack arbitration, round repeat/priority/cancellation, exact accepted local pt-PT fallback, bounded profile save/reset and per-line/device evidence/future filtered checks.
-- Manual inventory/event/mode/contract/scope/gate review; `node scripts/check-links.mjs` and `git diff --check` passed. READY WL1 removed, backlog/study/recommendations/roadmap/archive reconciled; no ready-build promotion.
-- Not run locally: typecheck, unit tests, build, browser/offline or device/child play (docs-only tier). Named family review of every Portuguese line and actual iPad voice acceptance remain open; no learning or pronunciation acceptance established.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `seesawentry`, `fingerdemo` (`seesaw-balance`12/13) | 2026-10-26: typecheck/full3358 units/final18 rules/build; lap+toddler12, preschool13 wrong taps/glow/reward, phone/tablet portraits and clean demos19.2/13.0s passed | [Batch2](#2026-10-26--seesaw-balance-lap-bounce-and-heavierlighter) | iPad speech/touch and child/coplayer checks open; no broad/offline rerun; final CI required |
 | `relaywoods`, `fingerdemo` (`relay-woods`), exact mosaic Keep/offline | 2026-10-26: whole1–4 rules/play/demos, targets/portrait, current paged capacity, optional Keep/profile/backup, root+classic routes and exact production offline payloads passed; typecheck/full3351 units/final9 focused/build | [NC2](#2026-10-26--relay-woods-14-nc2) | Root test setup repaired; gameplay evidence reused. Real iPad/child evidence open; CI required |
 | `villagevote`, `fingerdemo` (`village-vote`) | 2026-10-26: typecheck/full3342 units/final12 game tests/build; three levels, both pet choices/families, zero/partial/repeat counts, help/ghost finish, control edges/cancel, portrait, both routes and three clean demos passed | [CC4](#2026-10-26--village-vote-13-cc4) | iPad speech/touch and child/coplayer evidence open; broad world/offline reused; final CI required |
 | `swapmeet`, `fingerdemo` (`swap-meet`) | 2026-10-25: focused91/typecheck/build, all four modes and both chains, exact Undo/help/native cancel/second-pointer regression, both routes and clean1–4 demos passed | [ME2](#2026-10-25--swap-meet-14-me2) | Real iPad speech/touch/child/coplayer gates open; full local units had two unrelated timing limits, isolated reruns passed; broad/offline reused |

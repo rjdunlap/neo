@@ -302,6 +302,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### seesaw-balance 2: Lap bounce and heavier-or-lighter choices
 
+Built 2026-10-26, [PR #991](https://github.com/rjdunlap/neo/pull/991); [closeout](archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-2-lap-bounce-and-heavierlighter-slices-34-2026-10-26). Scope retained below.
+
 - **`seesaw-balance`, level 12 *Wheee!* with the lap band, slice 3** (new interaction tier: typecheck, units, one scripted play at lap and toddler, one portrait screenshot, `fingerdemo` at 12): the `bounce` mode, any touch on the empty tray sends a duck up; `bands` gains `lap`, lap `order [12]`, toddler `order [12, 1, 2]`, `entryLevels: [12]`. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 - **`seesaw-balance`, level 13 *Who is heavier?*, slice 4** (new interaction tier, taps on friends: typecheck, rule tests, one play of 13 with one wrong tap and one hint, `fingerdemo` at 13): tap the heavier or lighter of two tipped friends; preschool `order [2, 13, 3, 4]`, `entryLevels: [12, 13]`. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
 

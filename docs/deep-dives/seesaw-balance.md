@@ -126,12 +126,14 @@ Each has a default below; the build proceeds on it.
 
 **Batch 1 (slices 1–2) built 2026-10-23** on `claude/seesaw-support-truth` ([PR #858](https://github.com/rjdunlap/neo/pull/858)); build note in the [archive](../archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-1-truthful-support-and-varied-weighing-props-slices-12-2026-10-23).
 
+**Batch 2 (slices 3–4) built 2026-10-26** on `codex/seesaw-bounce-comparison` ([PR #991](https://github.com/rjdunlap/neo/pull/991)); [build note](../archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-2-lap-bounce-and-heavierlighter-slices-34-2026-10-26). Research claim `6e7a5e19` preserved.
+
 **Routine batching (developer, 2026-10-21):** the numbered slices below are scope/dependency substeps. [READY](../READY.md) dispatches related substeps together using the [`seesaw-balance` batch plans](../GAME-BATCHES.md#batch-plans): one declared batch per worker/PR, prerequisite substeps first, with existing gates and special checks preserved. Do not create a new session for each numbered level in a claimed batch.
 
 1. **Support truth (built)** (existing-game bug fix tier: typecheck, `logic.test.ts`, one filtered play of levels 1 and 6, `fingerdemo` at 1): a tap on a loose friend hops it to the empty tray at 1–2; the glow after two overs rings the next block on the grass when the tray is under; the how-to's levels 1–2 line says tap or drag; the new voice variants. IDs and windows unchanged.
 2. **Two faces per weight, wrappings and boxes (built)** (logic tier, plus one filtered play of 2 and 4): the friend pool per weight with its distinct-faces test, seeded present wrappings, parcel and crate boxes at 6–7.
-3. **Level 12 *Wheee!* with the lap band** (new interaction tier: typecheck, units, one scripted play at lap and toddler, one portrait screenshot, `fingerdemo` at 12): the `bounce` mode, `bands` gains `lap`, lap `order [12]`, toddler `order [12, 1, 2]`, `entryLevels: [12]`.
-4. **Level 13 *Who is heavier?*** (new interaction tier, taps on friends: typecheck, rule tests, one play of 13 with one wrong tap and one hint, `fingerdemo` at 13): preschool `order [2, 13, 3, 4]`, `entryLevels: [12, 13]`.
+3. **Level 12 *Wheee!* with the lap band (built)** (new interaction tier: typecheck, units, one scripted play at lap and toddler, one portrait screenshot, `fingerdemo` at 12): the `bounce` mode, `bands` gains `lap`, lap `order [12]`, toddler `order [12, 1, 2]`, `entryLevels: [12]`.
+4. **Level 13 *Who is heavier?* (built)** (new interaction tier, taps on friends: typecheck, rule tests, one play of 13 with one wrong tap and one hint, `fingerdemo` at 13): preschool `order [2, 13, 3, 4]`, `entryLevels: [12, 13]`.
 5. **Level 14 *Line them up*** (new levels on an existing interaction: typecheck, rule tests, one play of 14, `fingerdemo` at 14): pre-K `order [3, 4, 14, 5, 6, 7]`.
 6. **Level 15 *Guess the pumpkin*** (new levels tier, plus a portrait screenshot for the guess sign): pre-K `order [3, 4, 14, 5, 6, 7, 15]`, school `order [6, 7, 15, 8, 9, 10, 11]` (without 11 until it lands).
 7. **Level 16 *How much heavier?*** (new levels tier): school `order [6, 7, 15, 16, 8, 9, 10, 11]`.
