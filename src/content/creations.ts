@@ -78,8 +78,16 @@ export interface PixelPictureCreation {
   pixels: PixelPictureCell[];
 }
 
-/** The one picture-board slot is shared by stamped pictures, finger paintings and pixel pictures. */
-export type PictureCreation = StampPictureCreation | PaintingCreation | PixelPictureCreation;
+/** Version 1 indices are stable: purple dot, blue stripe, red ring, white cross. */
+export const CLOTH_PALETTE = ['purple', 'blue', 'red', 'white'] as const;
+/** Versioned yarn shades: the palette outlines give all three yarns >=3:1 against white warp. */
+export const CLOTH_COLORS = [swatch.purple.line, swatch.blue.line, swatch.red.line, swatch.white.fill] as const;
+export interface ClothCreation {
+  kind: 'picture'; medium: 'cloth'; version: 1; cols: 6; rows: 8; cells: number[];
+}
+
+/** The one picture-board slot is shared by stamped pictures, finger paintings, pixel pictures and rectangular cloth. */
+export type PictureCreation = StampPictureCreation | PaintingCreation | PixelPictureCreation | ClothCreation;
 
 /** A song on a loop: which beat (column) and pitch (row, 0 = top) each jelly sits on. */
 export interface TuneCreation {
@@ -160,6 +168,11 @@ function cleanPixelPicture(raw: Record<string, unknown>): PixelPictureCreation |
 /** A visual work from anything: damaged marks are dropped and the rest bounded; null if too little remains. */
 export function cleanPicture(raw: unknown): PictureCreation | null {
   if (!isObj(raw)) return null;
+  // A malformed tagged cloth never falls through to a different picture representation.
+  if ('medium' in raw || 'cells' in raw) {
+    if (raw.kind !== 'picture' || raw.medium !== 'cloth' || raw.version !== 1 || raw.cols !== 6 || raw.rows !== 8 || !Array.isArray(raw.cells) || raw.cells.length !== 48 || !Array.from(raw.cells).every(c => Number.isInteger(c) && c >= 0 && c < CLOTH_PALETTE.length)) return null;
+    return { kind: 'picture', medium: 'cloth', version: 1, cols: 6, rows: 8, cells: [...raw.cells] };
+  }
   if (Array.isArray(raw.stamps)) {
     const stamps = raw.stamps.map(cleanStamp).filter((s): s is PictureStamp => !!s).slice(0, PICTURE_MAX);
     return stamps.length ? { kind: 'picture', stamps } : null;

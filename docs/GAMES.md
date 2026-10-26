@@ -84,6 +84,12 @@ Level 10, Copy the shape, plays two two-note contours (up, down), then four seed
 
 ## Painted Canyon (art)
 
+### Little Loom
+
+*toddler–pre-K · over-under making; [definition](definitions/little-loom.md).* Eight accepted rows make a six-thread scarf. **1 Zoom the shuttle:** tap the loom; lifts alternate and the beater packs automatically. **2 Pick the yarn:** choose any of three reusable marked yarn pots, then tap the fixed shuttle pad. Every stripe schedule is valid. **3 Two pedals:** latch either pedal, then send the shuttle; subsequent rows use the other lift. Pedal exploration and unselected shuttle cues are free. A repeated submitted lift slips back for one miss without losing rows or direction. Two slips glow the other pedal; manual/automatic help counts at most once per row. Replay stays free. Busy taps are ignored; cancellation before release weaves nothing.
+
+Toddler 1–2, preschool 2–3, pre-K 3. The two-pedal restriction is the island toy's rule. No lap/school/grownup registration. Each completed scarf gets one sticker through the shell, even with help. Optional shell Keep saves exactly 48 palette indices on the shared picture board, with previous-picture undo, profile isolation and backup/restore. No wardrobe or unfinished draft. Three clean ghost-finger plans demonstrate the same taps. Take turns choosing yarn or pressing pedals and sending; find a stripe on your clothes together. Actual iPad speech/touch/over-under reading and child enjoyment remain untested.
+
 ### Movie Night
 
 *preschool–school · fixed footage and sound placement; [definition](definitions/movie-night.md).* Put reusable synthesized sound pads on already filmed pictures: Duck waddles, jumps and lands in the pond, or Bunny arrives, knocks, Bear opens the door and both wave. Each picture has one socket. Drag, or tap a pad then a picture; Return or drag a chip back to the tray removes it, and Undo restores one edit. The same glyph identifies a sound on its pad, picture and pictured request. Playback cues it at the action, with a visible pulse even when muted. The island music is silenced.
@@ -249,6 +255,12 @@ Levels (school only, 1–3): 1 a whole from halves and quarters (two halves, a h
 Misses and hints: Check on an empty bench is free, and so is a refused overfull place. A non-empty bench that is the wrong length is one miss, and the gap (too short) or the overhang (too long) flashes. The second miss glows the solver-led next step (a place, a return or a snip) as one hint; the pause sheet's "Show a hint" counts one unless the glow is already up. The ghost finger follows the same hint path, and the demonstration plays one gift (the snip gift at levels 2–3). Touch only; no couch play.
 
 ## Cozy Village (everyday life)
+
+### Swap Meet
+
+*toddler–school.* Drag pictured toys to make two-way exchanges. Level1 visits three friends in seeded order, each with one request and two basket choices; the returned object arrives before the next visit, and rejected offers count no misses. Level2 has two simultaneous requests, accepted in either order; returned toys stay visible but inactive. Level3 finds two reciprocal pairs among four friends, in either direction/order. Level4 carries one toy through two trades for a pictured kite or flower; a shell is one toy, never currency. Toddler1–2, preschool2–3, pre-K3–4, school4.
+
+Blue back arrow restores the exact pre-trade holds, requests, flags and visit, with both objects crossing back. A deliberate incompatible drop onto an active friend counts one miss at2–4; inspection, empty/cancelled drops, completed friends and Undo are free. Two rejections glow a current-state shortest BFS action; yellow Hint speaks it and another request demonstrates one drag. Assistance persists through Undo, coalesces automatic/manual support per authored task and caps at two. All requests/pairs/the chain finish one shell-owned round/sticker, including supported completion. Graphics art, spoken wants/replay, level-scoped how-to and solver-driven finger demos; no saved inventory, currency, unlock or Keep. Level5–6 wait for children to play1–4.
 
 ### Splish Splash
 

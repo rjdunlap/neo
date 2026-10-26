@@ -58,7 +58,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cat' },
     backdrop: { sky: [0xffd6e3, 0xfff6e0], hills: [0xb8e1f7, 0x8fd0ef, 0xf3dcb0], horizon: 0.4, clouds: 3, sun: true, seed: 107 },
     music: tune(41, 'bell', 84),
-    games: ['movie-night', 'rainbow-fingers', 'fluffy-salon', 'stamp-studio', 'pixel-pictures', 'cut-along', 'draw-the-pattern', 'recipe-workshop', 'gear-garden'],
+    games: ['little-loom', 'movie-night', 'rainbow-fingers', 'fluffy-salon', 'stamp-studio', 'pixel-pictures', 'cut-along', 'draw-the-pattern', 'recipe-workshop', 'gear-garden'],
   },
   {
     id: 'barnyard',
@@ -85,7 +85,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'hazel' },
     backdrop: { sky: [0xffe2c4, 0xfff6e0], hills: [0xd8ecb0, 0xbfe39a, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 127 },
     music: tune(71, 'bell', 92),
-    games: ['splish-splash', 'feelings-faces', 'weather-wardrobe', 'scoop-shop', 'mail-carrier', 'teddy-doctor', 'market-stall', 'clock-tower', 'day-by-day', 'stop-and-go', 'pet-says', 'lemonade-stand', 'second-chance-shed'],
+    games: ['splish-splash', 'feelings-faces', 'weather-wardrobe', 'scoop-shop', 'mail-carrier', 'teddy-doctor', 'market-stall', 'clock-tower', 'day-by-day', 'stop-and-go', 'pet-says', 'lemonade-stand', 'second-chance-shed', 'swap-meet'],
   },
   {
     id: 'rainbow-meadow',

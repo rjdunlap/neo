@@ -249,3 +249,7 @@ Choose examples by the mechanic being built. Do not copy a game's assumptions ab
 - Lay out every touchable object when a round creates it; the `smoke` suite fails if one is stranded at the origin (Animal Snack's first level once was).
 - `Graphics.arc()` joins to the previous point: `moveTo` its start first. Use `puffs()` instead of stroking overlapping circles with visible inner outlines.
 - Render parentless containers into textures: `renderer.render({ container, target, clear: false })`; erase with `blendMode = 'erase'`. Free game-owned textures when leaving.
+
+### Little Loom cloth keepsake
+
+The shared picture union includes `medium:'cloth', version:1, cols:6, rows:8, cells:number[48]`. Version1 indices refer to purple/blue/red outline shades and white fill from the existing palette; marks derive only from identity. `cleanPicture` rejects a whole malformed cloth, including unknown version, dimensions or indices, without falling through to another picture shape. `pictureBoard` fits a rectangular six-by-eight grid without stretching. It uses the existing picture current/previous slots, explicit completed-round Keep, profile storage and backup/restore; it stores no partial rows, lift history, wearable or story result. Existing Reset progress/new-profile paths can reseed development data; this addition resets nothing.

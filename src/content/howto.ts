@@ -14,6 +14,41 @@ import type { GameHowTo, GameModule, LevelCard, LevelLine } from '../games/types
  * Couch play has its own how-to screens (`src/couch/catalog.ts`); these describe touch play.
  */
 export const HOW_TO: Record<string, GameHowTo> = {
+  'swap-meet': {
+    goal: 'Trade pictured toys to meet the friends’ requests.',
+    steps: [
+      {to:1,text:'Drag the pictured thing from your basket to the friend. Watch the other toy come back. Visit three friends.'},
+      {from:2,to:2,text:'Drag each requested toy from your basket to its friend. Either friend can go first; returned toys stay on display.'},
+      {from:3,to:3,text:'Drag one friend’s toy to a friend who wants it. Both friends must want the other’s toy. Find both pairs in either order.'},
+      {from:4,text:'Look at your companion’s goal. Trade your basket toy for the thing the second friend wants, then trade for the goal.'},
+      'Touch a friend or held toy to hear its name and request. The blue back arrow undoes an accepted exchange, including a previous visit.',
+      'The yellow light shows the next trade. Ask again to watch one ghost-finger trade, then continue playing.',
+    ],
+    finish: [
+      {to:1,text:'All three visits finish one round.'},
+      {from:2,to:3,text:'Complete both exchanges to finish one round.'},
+      {from:4,text:'Trade twice to hold the companion’s goal.'},
+    ],
+    note: [
+      {to:1,text:'Incompatible offers teach the pictured request without misses. Two rejections glow a useful trade and record help. Undo and exploring are free.'},
+      {from:2,text:'A deliberate incompatible offer to an active friend counts one miss. Dropping elsewhere, inspecting and Undo are free. Two rejections glow a useful trade. Help persists through Undo, capped at two distinct tasks.'},
+    ],
+  },
+  'little-loom': {
+    goal: 'Send yarn over and under threads to make a scarf.',
+    steps: [
+      {to:1,text:'Tap the loom. Watch the shuttle cross and the beater pack each row.'},
+      {from:2,to:2,text:'Choose any marked yarn pot, then tap the shuttle. Keep or change yarn freely.'},
+      {from:3,text:'Press either pedal, then tap the shuttle. Use the other pedal for the next row.'},
+      {from:3,text:'A repeated lift slips back. Choose the other pedal and try again; no row is lost.'},
+    ],
+    finish: 'Eight rows make a scarf. Keep offers it to the shared picture board.',
+    note: [
+      {to:2,text:'Every choice is welcome. These modes have no misses or hints.'},
+      {from:3,text:'Repeating a submitted lift is one miss under this island toy rule. Two slips glow the other pedal; help counts at most once per row. Exploring pedals and replaying speech are free.'},
+      {text:'Take turns choosing yarn or pressing a pedal and sending the shuttle. Find a stripe on your clothes together.'},
+    ],
+  },
   'example-express': {
     goal: 'Change examples so circles go to the tree and squares to the house.',
     steps: [

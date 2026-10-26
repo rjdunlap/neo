@@ -1,3 +1,5 @@
+import { swapMeet } from './swap-meet';
+import { littleLoom } from './little-loom';
 import { exampleExpress } from './example-express';
 import { movieNight } from './movie-night';
 import { welcomeWays } from './welcome-ways';
@@ -140,6 +142,8 @@ import type { GameModule } from './types';
  * Every minigame. Within each island region, registry order determines game spots.
  */
 export const GAMES: GameModule[] = [
+  swapMeet,
+  littleLoom,
   exampleExpress,
   movieNight,
   welcomeWays,
