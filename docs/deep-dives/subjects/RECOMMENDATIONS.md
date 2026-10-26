@@ -483,11 +483,12 @@ The [ordered slices](executive-function.md#build-slices-in-order) separate defin
 
 ## Visual art recommendations
 
+Little Loom1–3 built with bounded cloth Keep in VA2; [build note](../../archive/COMPLETED-2026-10-09.md#little-loom-levels-13-va2-2026-10-25). Lap, person/device, later-level and wardrobe gates remain.
+
 **Recommended 2026-10-17:** [the visual-art study](visual-art.md), [PR #547](https://github.com/rjdunlap/neo/pull/547), covers every audience. It opened England art and design KS1–3, EYFS expressive arts, the Core Arts visual-arts standards for K, 2, 4 and 7 (Washington's adoption, read on an aggregator; no pre-K code opened) and the National Park Service's weaving page (Lowenfeld, Gardner and VTS from summaries only). The gaps are textiles and responding to art. Define **Little Loom** first: press a pedal, throw the shuttle, and alternate lifts make cloth that holds. Color mixing stays with Rainbow Fingers, symmetry with Mirror Brush and Fold a Friend, repeat tiles with Stamp Studio, bit-decoding with Picture Bytes, sequences with Pattern Train, function with engineering design. Lap gets none new unless a person check opens Loom 1.
 
 | Candidate | Next action | Complete slice / boundary |
 | --- | --- | --- |
-| **Little Loom 1–3** · toddler–pre-K · new identity | [VA1 defined](../../definitions/little-loom.md), separate VA2 build next | *Zoom the shuttle* (any touch weaves), *Pick the yarn* (free stripes, no sequence asked), *Two pedals* (the same pedal twice slips: one miss, the other pedal glows after two). Drawdown `lift ? warp : weft` and the island's holding rule in `logic.ts`; pedals 120 across, marked yarns with value contrast, pet clear in both orientations; how-to, voice, ghost finger; current Painted Canyon (`treehouse`) capacity/layout check (8 built games at definition); kept cloth as a validated 6×8 picture variant |
 | **Picture Talk** card · family | define and build, plain HTML (VA3) | Three questions for any picture ("What's going on? What do you see that makes you say that? What more can we find?"); accept every answer that points at something |
 | **Little Loom 4–5** · pre-K–school | define and build after 1–3 (VA4) | *Checks* (weft colors over a striped warp match a sample; wrong-colored row woven, one miss, Undo free); *Diagonal* (three pedals in order make a twill line) |
 | **Little Loom 6–7** · upper school | define after 4–5 (VA5, VA6) | Lift cards on six striped threads with a striped weft weave a motif under the float rule (on solid colors the card is the picture: Picture Bytes' rung); then fixed cards with chosen yarn orders |

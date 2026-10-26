@@ -530,3 +530,10 @@ Definition complete, **all person/device checks open**. [Packet and per-line evi
 - [ ] Hear accepted voice offline after cold restart; missing/unaccepted/pt/pt-BR-only voice leaves English and accurate parent status. Revalidate changed content, voice or settings.
 - [ ] Test fast touches, pet replay, interrupted English/tail, finish, Home/Back, mute, setting/profile and voice-list changes: no stale/backlogged words, controls stay responsive.
 - [ ] Current-format backup/restore and isolated profile switching work offline; recheck integrated host playback after WL2. Browser stubs do not satisfy this checklist.
+
+## Little Loom levels 1–3 (VA2, 2026-10-25)
+
+- Open: iPad release/cancel/palm behavior, large targets and guide clearance in both orientations; pedal preview/latch/other-pedal glow and busy-tap comfort.
+- Open: actual device speech for all three instructions, color names, slip/support/replay; over-under strand direction and dot/stripe/ring/white-cross readability in grayscale and sound-off play.
+- Open: child/coplayer enjoyment, free stripe choices, independent/support-assisted pedal use and a comfortable stop. Browser/finite-rule proof establishes no learning or developmental threshold.
+- Lap stays unregistered until a person/device check supports it. Later levels, practical cards, wardrobe and cultural-tradition review remain separate gates.

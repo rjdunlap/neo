@@ -1,3 +1,4 @@
+import { clothPreview } from '../games/little-loom/art';
 import { Container, Graphics } from 'pixi.js';
 import { cream, swatch, wood, type ColorName } from '../art/palette';
 import { flower, musicNote } from '../art/shapes';
@@ -32,6 +33,13 @@ export function pictureBoard(picture: PictureCreation | null): Container {
     const hint = stampArt('star', 'yellow', 34);
     hint.alpha = 0.3;
     c.addChild(hint);
+    return c;
+  }
+  if ('medium' in picture) {
+    const cell = Math.min((paperW-20)/6, (paperH-20)/8);
+    const cloth = clothPreview(picture, cell);
+    cloth.position.set(-cell*3, -cell*4);
+    c.addChild(cloth);
     return c;
   }
   if ('stamps' in picture) {
