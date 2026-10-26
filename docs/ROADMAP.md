@@ -441,7 +441,7 @@ Everything in the three right-hand columns is proposed; steps already built are 
 
 | Family | Early elementary | Middle elementary | Upper elementary |
 | --- | --- | --- | --- |
-| **Duck Pond, Monster Munch, Little Helpers, Scoop Shop, Lasso Loops** | Compose and decompose small totals; explain how many more are needed | Arrays, division with visible leftovers, equal pieces of a whole | Equivalent fractions, decimal amounts, scaling a small order or recipe with visual models |
+| **Duck Pond, Monster Munch, Little Helpers, Scoop Shop, Lasso Loops** | Compose and decompose small totals; explain how many more are needed | Arrays, division with visible leftovers (Monster Munch school 11 calls groups of 2–3; 12 shares two kinds), equal pieces of a whole | Equivalent fractions, decimal amounts, scaling a small order or recipe with visual models |
 | **Word Monsters, Letter Trails** | Reviewed sound and word combinations; short labels that matter in a scene | Prefixes and suffixes; choosing a word that fits a clue or sentence | Word parts and context for unfamiliar words; compose or revise a short message with spoken support |
 | **Story Steps, Photo Safari** | Retell a sequence; match a spoken clue to an event | Infer a cause; choose an ending supported by clues; organize a short narrative | Compare two accounts; select supporting details; revise an explanation or create a branching story |
 | **Robot Path, Egg Catch, Mail Carrier** | Repair one wrong command; compare two routes | Simple conditions, reusable route chunks, debugging a visible trace | Small functions or nested loops, several constraints, explaining a revision |
