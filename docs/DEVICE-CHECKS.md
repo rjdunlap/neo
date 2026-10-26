@@ -2,6 +2,10 @@
 
 What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), one entry per sitting; the [user research review](USER-RESEARCH-2026-10-24.md#a-five-minute-observation-protocol-for-the-lap-band) has the five-minute protocol for watching her play.
 
+## Weather Wardrobe level 10 (2026-10-26)
+
+- [ ] On iPad, check friend sign/item readability, long drags in portrait and landscape, finger lift, palm/second-finger rejection, cancellation and actual spoken weather reasons/guide replay. Observe whether a pre-K child uses both weather signs to give each friend what it needs, and record enjoyment/replay/stopping only after play. [Scripted proof](VERIFICATION.md#2026-10-26--weather-wardrobe-two-friends-level-10) does not establish these.
+
 ## Village Vote levels 1–3 (CC4, 2026-10-26)
 
 - [ ] On an iPad, check actual count speech ordering, singular/zero/comparison wording and guide replay; distinguish free pet preference from winner declaration. Confirm comfortable paw/board/picture/Hint reach, legibility and cancellation/outside releases in both orientations. Browser proof checks geometry/input, not small hands or device speech.
@@ -548,3 +552,12 @@ Definition complete, **all person/device checks open**. [Packet and per-line evi
 - Open: actual device speech for all three instructions, color names, slip/support/replay; over-under strand direction and dot/stripe/ring/white-cross readability in grayscale and sound-off play.
 - Open: child/coplayer enjoyment, free stripe choices, independent/support-assisted pedal use and a comfortable stop. Browser/finite-rule proof establishes no learning or developmental threshold.
 - Lap stays unregistered until a person/device check supports it. Later levels, practical cards, wardrobe and cultural-tradition review remain separate gates.
+
+## Relay Woods levels 1–4 (NC2, 2026-10-26)
+
+Open: actual iPad speech/name and hop-count playback, small-hand release/cancel/reach, five-mosaic recognition (especially portrait/note), receiver identification, equivalent-way/retracing/log understanding, fewest-hop retry comprehension, and child/coplayer enjoyment or replay. Automated browser and manual visual review do not establish these. Fictional friend-chain play makes no internet, safety or transfer claim. No obligation to return to an unfinished delivery.
+
+### Monster Munch school 11–12 (2026-10-26)
+
+- [ ] On an iPad, check cave/sign recognition, four-friend reach, spoken group size, zero and the two separate food questions; do the counted tummy icons/friends/tray make wrong pads useful?
+- [ ] With a child/coplayer, check whether an insufficient cave call reads as a welcome experiment, whole groups and fair amounts of each kind are understandable, and stopping/replaying remains comfortable. Automation establishes neither comprehension nor learning transfer.

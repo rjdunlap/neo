@@ -19,7 +19,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 
-- **`relay-woods`, levels 1–4 (NC2)** (one same-game new-game batch): [NC1 packet](definitions/relay-woods.md), [batch](GAME-BATCHES.md#relay-woods-1-levels-14-nc2). Follow connected friends, either way, visible log, then fewest hops; finite graphs, recoverable retracing and capped support. Separate admission, building-session source/contract review, actual full-size both-layout/current Cozy Village or Story Grove placement, five bounded pictures/Keep and rule/play/demo proof required. Later pieces/privacy/locks/cases/story/card and person/device evidence remain separate.
 
 ## Queued
 
@@ -30,8 +29,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 - **`weather-wardrobe`, Wind** (one implementation batch; 1 original subtask, slice 7; use the combined check tier): [scope and levels](GAME-BATCHES.md#weather-wardrobe-2-wind-remaining-part).
-- **`weather-wardrobe`, Two friends, two places** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#weather-wardrobe-3-two-friends-two-places).
-- **`monster-munch`, Sharing two kinds and choosing group counts** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#monster-munch-2-sharing-two-kinds-and-choosing-group-counts).
 - **`seesaw-balance`, Lap bounce and heavier-or-lighter choices** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#seesaw-balance-2-lap-bounce-and-heavier-or-lighter-choices).
 - **`seesaw-balance`, Order weights, estimate and find the difference** (one implementation batch; 3 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#seesaw-balance-3-order-weights-estimate-and-find-the-difference).
 - **`seesaw-balance`, Which way will it tip** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#seesaw-balance-4-which-way-will-it-tip).

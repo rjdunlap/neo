@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { isTapMode, complete, extras, FOODS, foodWord, lookAlike, missing, MUNCH_PLANS, munchHint, munchRounds, munchTouch, noFood, numberChoices, orderWords, total, TRAY_MAX, wantsMore, type Food, type MunchRound, type MunchTable, type Order } from './logic';
+import { canCallFriend, friendsReady, munchAnswer, shareReturns, isTapMode, complete, extras, FOODS, foodWord, lookAlike, missing, MUNCH_PLANS, munchHint, munchRounds, munchTouch, noFood, numberChoices, orderWords, total, TRAY_MAX, wantsMore, type Food, type MunchRound, type MunchTable, type Order } from './logic';
 
 /** The foods on a round's tray, one entry each. */
 const trayFoods = (r: MunchRound): Food[] => r.kinds.flatMap((k) => Array<Food>(r.tray[k]).fill(k));
@@ -115,7 +115,7 @@ describe('Monster Munch rounds', () => {
             kinds: r.kinds,
             left: r.left,
             snacks: rng.shuffle(foods).map((food) => ({ food, eaten: false })),
-            fed: Array.from({ length: r.monsters }, (): Order => noFood()),
+            fed: Array.from({ length: plan.mode === 'friends' ? 1 : r.monsters }, (): Order => noFood()),
             pads: [],
             asking: 'each',
           };
@@ -127,11 +127,19 @@ describe('Monster Munch rounds', () => {
             const hint = munchHint(plan, t);
             if (isTapMode(plan.mode) || plan.mode === 'count') expect(hint).toBeNull();
             else {
-              const kind = move === 'bell' ? 'bell' : 'pad' in move! ? 'pad' : plan.mode === 'exact' || plan.mode === 'two' ? 'food' : 'monster';
+              const kind = move === 'call' ? 'call' : move === 'bell' ? 'bell' : typeof move === 'object' && move && 'pad' in move ? 'pad' : plan.mode === 'exact' || plan.mode === 'two' ? 'food' : 'monster';
               expect(hint, `${plan.mode} seed ${seed} step ${step}`).toBe(kind);
             }
-            if (move === 'bell') {
-              if (plan.mode === 'leftover') {
+            if (move === 'call') {
+              expect(canCallFriend(t)).toBe(true);
+              t.fed.push(noFood());
+            } else if (move === 'bell') {
+              if (plan.mode === 'friends') {
+                expect(friendsReady(t)).toBe(true);
+                expect(t.fed).toHaveLength(r.monsters);
+                t.asking = 'friends';
+                t.pads = numberChoices(r.monsters, rng);
+              } else if (plan.mode === 'leftover') {
                 // The game's own judgment: even shares and fewer left than monsters, so the pads come.
                 const counts = t.fed.map((f) => f[k]);
                 expect(counts.every((c) => c === counts[0]), 'even shares').toBe(true);
@@ -143,12 +151,15 @@ describe('Monster Munch rounds', () => {
                 won = true;
               }
             } else if ('pad' in move!) {
-              const answer = plan.mode === 'leftover' && t.asking === 'left' ? r.left : r.want[k];
+              const answer = munchAnswer(t);
               expect(move.pad, 'the right number').toBe(answer);
               expect(t.pads).toContain(move.pad);
-              if (plan.mode === 'leftover' && t.asking === 'each') {
+              if ((plan.mode === 'leftover' || plan.mode === 'friends') && t.asking !== 'left') {
                 t.asking = 'left';
                 t.pads = numberChoices(r.left!, rng);
+              } else if (plan.mode === 'sharekind' && t.asking === 'each') {
+                t.asking = 'second';
+                t.pads = numberChoices(r.want[r.kinds[1]], rng);
               } else won = true;
             } else if ('tap' in move!) {
               expect(isTapMode(plan.mode)).toBe(true);
@@ -164,8 +175,8 @@ describe('Monster Munch rounds', () => {
               t.fed[move!.to][snack.food]++;
               if (plan.mode === 'count' && t.snacks.every((x) => x.eaten)) won = true;
               if ((plan.mode === 'each' || plan.mode === 'eachkind') && t.fed.every((f) => complete(r.want, f))) won = true;
-              if (plan.mode === 'share' && t.snacks.every((x) => x.eaten)) {
-                expect(extras(t.fed.map((f) => f[k]), r.want[k]).every((n) => n === 0), 'a fair share').toBe(true);
+              if ((plan.mode === 'share' || plan.mode === 'sharekind') && t.snacks.every((x) => x.eaten)) {
+                for (const f of r.kinds) expect(extras(t.fed.map((o) => o[f]), r.want[f]).every((n) => n === 0), 'fair for each kind').toBe(true);
                 t.pads = numberChoices(r.want[k], rng);
               }
             }
@@ -183,7 +194,7 @@ describe('Monster Munch foods', () => {
 
   it('pools exactly levels 4 to 8, and keeps 1, 2, 3, 9 and 10 off the pool', () => {
     expect(pooled.map((x) => x.level)).toEqual([4, 5, 6, 7, 8]);
-    expect(fixed.map((x) => x.level)).toEqual([1, 2, 3, 9, 10]);
+    expect(fixed.map((x) => x.level)).toEqual([1, 2, 3, 9, 10, 11, 12]);
   });
 
   it('never repeats the first food from the previous round, and the kinds are real foods', () => {
@@ -239,7 +250,7 @@ describe('Monster Munch foods', () => {
     for (const { p, level } of fixed) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const r of munchRounds(p, new Rng(seed))) {
-          expect(r.kinds, `level ${level}`).toEqual(level === 10 ? ['cookie', 'apple'] : ['cookie']);
+          expect(r.kinds, `level ${level}`).toEqual(level === 10 || level === 12 ? ['cookie', 'apple'] : ['cookie']);
           for (const f of FOODS) if (!r.kinds.includes(f)) expect(r.tray[f]).toBe(0);
         }
       }
@@ -310,5 +321,72 @@ describe('Monster Munch band tables', () => {
     expect(monsterMunch.levels('toddler')).toEqual({ min: 2, max: 10, order: [2, 3, 10, 4] });
     expect(rangeFor).toBeTypeOf('function');
     expect(monsterMunch.entryLevels).toEqual([9, 10]);
+    expect(monsterMunch.levels('school')).toEqual({ min: 6, max: 12, order: [6, 7, 12, 8, 11] });
+  });
+});
+
+
+describe('Monster Munch sharing both kinds and choosing group counts', () => {
+  it('starts with the promised visible quantities, and generates bounded divisible pairs', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const rounds = munchRounds(MUNCH_PLANS[11], new Rng(seed));
+      expect(rounds[0].tray).toEqual({ ...noFood(), cookie: 4, apple: 2 });
+      for (const r of rounds) {
+        expect(r.kinds).toEqual(['cookie', 'apple']);
+        expect(r.monsters).toBe(2);
+        expect(total(r.tray)).toBeLessThanOrEqual(10);
+        for (const f of r.kinds) {
+          expect(r.want[f]).toBeGreaterThanOrEqual(1);
+          expect(r.want[f]).toBeLessThanOrEqual(3);
+          expect(r.tray[f]).toBe(r.want[f] * r.monsters);
+        }
+      }
+    }
+  });
+
+  it('returns the overfull kind even when total food per monster matches', () => {
+    const want = { ...noFood(), cookie: 2, apple: 1 };
+    const fed = [{ ...noFood(), cookie: 3 }, { ...noFood(), cookie: 1, apple: 2 }];
+    expect(shareReturns(want, fed)).toEqual([{ ...noFood(), cookie: 1 }, { ...noFood(), apple: 1 }]);
+    expect(shareReturns(want, [want, want])).toEqual([noFood(), noFood()]);
+  });
+
+  it('covers 2–4 friends, 2–3 each and every allowed remainder including zero', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 500; seed++) {
+      const rounds = munchRounds(MUNCH_PLANS[10], new Rng(seed));
+      expect(rounds[0]).toMatchObject({ monsters: 3, want: { cookie: 2 }, tray: { cookie: 7 }, left: 1 });
+      for (const r of rounds) {
+        expect(r.monsters).toBeGreaterThanOrEqual(2);
+        expect(r.monsters).toBeLessThanOrEqual(4);
+        expect(r.want.cookie).toBeGreaterThanOrEqual(2);
+        expect(r.want.cookie).toBeLessThanOrEqual(3);
+        expect(r.left).toBeGreaterThanOrEqual(0);
+        expect(r.left).toBeLessThan(r.want.cookie);
+        expect(r.tray.cookie).toBe(r.monsters * r.want.cookie + r.left!);
+        expect(total(r.tray)).toBeLessThanOrEqual(10);
+        seen.add(`${r.want.cookie}/${r.monsters}/${r.left}`);
+      }
+    }
+    for (const key of ['2/4/0', '2/4/1', '3/2/0', '3/2/1', '3/2/2', '3/3/0', '3/3/1']) expect(seen.has(key), key).toBe(true);
+    for (let seed = 1; seed <= 30; seed++) expect(numberChoices(0, new Rng(seed)).sort()).toEqual([0, 1, 2]);
+  });
+
+  it('reserves existing shares, accepts calls before dealing, and guides a premature bell toward useful play', () => {
+    const r = munchRounds(MUNCH_PLANS[10], new Rng(3))[0];
+    const t: MunchTable = { want: r.want, kinds: r.kinds, left: r.left,
+      snacks: trayFoods(r).map((food) => ({ food, eaten: false })), fed: [noFood()], pads: [], asking: 'each' };
+    expect(friendsReady(t)).toBe(false);
+    expect(canCallFriend(t)).toBe(true);
+    t.fed.push(noFood(), noFood());
+    expect(canCallFriend(t)).toBe(false); // seven visible cookies, six already owed
+    expect(munchHint(MUNCH_PLANS[10], t)).toBe('monster');
+    t.fed.forEach((f) => { f.cookie = 2; });
+    t.snacks.slice(0, 6).forEach((s) => { s.eaten = true; });
+    expect(friendsReady(t)).toBe(true);
+    expect(munchHint(MUNCH_PLANS[10], t)).toBe('bell');
+    t.fed.pop(); t.snacks.slice(4, 6).forEach((s) => { s.eaten = false; });
+    expect(friendsReady(t)).toBe(false);
+    expect(munchHint(MUNCH_PLANS[10], t)).toBe('call');
   });
 });

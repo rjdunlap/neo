@@ -64,14 +64,26 @@ async function third() {
       },
     };
   };
-  const expected = { 1: [0, 0], 2: [0, 0], 3: [2, 1], 4: [2, 1], 5: [2, 1], 6: [2, 1], 7: [3, 1], 8: [2, 1], 9: [0, 0], 10: [2, 1] };
+  const expected = { 1: [0, 0], 2: [0, 0], 3: [2, 1], 4: [2, 1], 5: [2, 1], 6: [2, 1], 7: [3, 1], 8: [2, 1], 9: [0, 0], 10: [2, 1], 11: [5, 1], 12: [4, 1] };
   const levels = munchLevels ?? Array.from({ length: 11 - Number(process.env.FROM_LEVEL || 1) }, (_, i) => i + Number(process.env.FROM_LEVEL || 1));
   for (const level of levels) {
     await launch('monster-munch', level);
+    if (level === 11) await page.evaluate(async () => {
+      // Seeded second board exercises four friends and zero leftovers in the real scene.
+      const { munchRounds, munchPlan } = await import('/src/games/monster-munch/logic.ts');
+      const { Rng } = await import('/src/engine/random.ts');
+      let seed = 1;
+      for (; seed < 1000; seed++) {
+        const r = munchRounds(munchPlan(11), new Rng(seed))[1];
+        if (r.monsters === 4 && r.left === 0) { neo.scene.game.rounds[1] = r; break; }
+      }
+      if (seed === 1000) throw new Error('No seeded four-friend board');
+    });
+    if (level === 11) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); }
     await page.evaluate(feedHelpers);
     await page.waitForTimeout(700);
     if ([1, 3, 6, 7, 9, 10].includes(level)) await screenshot(`monster-munch-${level}`);
-    await page.evaluate(async () => {
+    const playing = page.evaluate(async () => {
       const g = mm.g();
       const mode = g.plan.mode;
       if (mode === 'tap' || mode === 'big' || mode === 'count') {
@@ -105,13 +117,67 @@ async function third() {
         return;
       }
       let mistakes = 0;
+      let guard = 0;
       while (!g.done) {
+        if (++guard > 80) throw new Error(`Munch stuck: ${g.plan.mode} round ${g.round} ${g.asking}, misses ${g.misses}`);
         await mm.ready();
         if (g.done) break;
         const r = g.current;
         // The food counted or shared this round (levels 4–8 pick it from the whole pool).
         const k = r.kinds[0];
-        if (mode === 'each') {
+        if (mode === 'sharekind') {
+          if (g.pads.length) {
+            const food = r.kinds[g.asking === 'second' ? 1 : 0];
+            const wrong = g.round === 0 && (mistakes < 2 || (g.asking === 'second' && mistakes === 2));
+            kit.tapOn(g.pads.find((p) => (p.value !== r.want[food]) === wrong).node);
+            if (wrong) {
+              mistakes++;
+              await kit.until(() => g.monsters[0].lit >= 0, 8000);
+              const lit = g.monsters[0].lit;
+              if (g.monsters[0].eaten[lit] !== food) throw new Error('Wrong pad counted the other food');
+            }
+            await kit.sleep(600); continue;
+          }
+          if (g.round === 0 && g.misses === 0) {
+            // Total food alone is insufficient: both kinds must be shared fairly.
+            while (mm.free()) await mm.feed(mm.free(), g.monsters[0]);
+            await kit.until(() => !g.busy, 8000); await kit.sleep(800);
+            for (const food of r.kinds) if (g.monsters[0].count(food) !== r.want[food]) throw new Error('Wrong-kind extras not returned');
+          }
+          for (const food of r.kinds) for (const m of g.monsters) while (m.count(food) < r.want[food]) await mm.feed(mm.free(food), m);
+          await kit.until(() => g.pads.length > 0, 8000); await kit.sleep(450);
+        } else if (mode === 'friends') {
+          if (g.pads.length) {
+            const answer = g.asking === 'friends' ? r.monsters : r.left;
+            // One wrong quotient and remainder, with counted visible evidence.
+            const wrong = g.round === 0 && ((g.asking === 'friends' && mistakes === 3) || (g.asking === 'left' && mistakes === 4));
+            kit.tapOn(g.pads.find((p) => (p.value !== answer) === wrong).node);
+            if (wrong) mistakes++;
+            await kit.sleep(600); continue;
+          }
+          if (g.round === 0 && mistakes === 0) {
+            await mm.feed(mm.free(), g.monsters[0]);
+            for (let i = 0; i < 2; i++) { kit.tapOn(g.bell); await kit.sleep(400); await mm.ready(); }
+            if (g.misses !== 2 || g.hints !== 1 || g.monsters[0].count(k) !== 1) throw new Error('Premature bell did not teach and preserve partial group');
+            mistakes = 2;
+          }
+          // Calling before dealing is also legitimate; shares already owed are reserved.
+          while (g.monsters.length < r.monsters) { kit.tapOn(g.cave); await kit.sleep(400); await mm.ready(); }
+          const before = [g.misses, g.hints, g.monsters.length, g.snacks.filter((s) => !s.eatenBy).length].join();
+          kit.tapOn(g.cave); await kit.sleep(500); await mm.ready();
+          if ([g.misses, g.hints, g.monsters.length, g.snacks.filter((s) => !s.eatenBy).length].join() !== before) throw new Error('Insufficient call changed a share or counted as wrong');
+          for (const m of g.monsters) {
+            if (m.hitArea.radius * m.scale.x * 2 < 100) throw new Error('Monster target below 100');
+            while (m.count(k) < r.want[k]) await mm.feed(mm.free(), m);
+          }
+          if (g.round === 0 && mistakes === 2) {
+            await mm.feed(mm.free(), g.monsters[0]); mistakes++;
+            if (g.monsters[0].count(k) !== r.want[k]) throw new Error('Full friend accepted an extra');
+          }
+          if (g.snacks.filter((s) => !s.eatenBy).length !== r.left) throw new Error('Wrong remainder');
+          if (g.monsters.length === 4) { window.munchPortraitReady = true; await kit.until(() => window.munchPortraitTaken, 8000); }
+          kit.tapOn(g.bell); await kit.until(() => g.pads.length > 0, 8000); await kit.sleep(450);
+        } else if (mode === 'each') {
           const a = g.monsters[0];
           if (a.count('cookie') === 0) await mm.feed(mm.free(), a);
           if (mistakes < 2) { await mm.feed(mm.free(), a); mistakes++; continue; }
@@ -176,8 +242,16 @@ async function third() {
         await kit.sleep(300);
       }
     });
+    if (level === 11) {
+      await page.waitForFunction(() => window.munchPortraitReady, null, { timeout: 90000 });
+      await screenshot('monster-munch-11-four-friends-portrait');
+      await page.evaluate(() => { window.munchPortraitTaken = true; });
+    }
+    await playing;
+    if (level === 12) await screenshot('monster-munch-12-finished');
     await finished('monster-munch');
     assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('monster-munch').history.at(-1); return [r.misses, r.hints]; }), expected[level], `munch ${level} score`);
+    await page.setViewportSize({ width: 1024, height: 768 });
     log(`Monster Munch ${level}: feeding, mistakes, hints, saved round and sticker passed`);
   }
   if (munchLevels) return;

@@ -200,6 +200,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### weather-wardrobe 3: Two friends, two places
 
+Built 2026-10-26, [PR #987](https://github.com/rjdunlap/neo/pull/987); [closeout](archive/COMPLETED-2026-10-09.md#weather-wardrobe-two-friends-two-places-level-10-2026-10-26). Retained for scope references; no longer eligible for dispatch.
+
 - **`weather-wardrobe`, level 10 Two friends, two places** (new drag interaction): drag each item to the friend whose weather it suits; pre-K. [Slice 8](deep-dives/weather-wardrobe.md#build-slices-in-order)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
@@ -263,6 +265,8 @@ Built (reference only, do not recreate):
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
 ### monster-munch 2: Sharing two kinds and choosing group counts
+
+Built 2026-10-26, [PR #989](https://github.com/rjdunlap/neo/pull/989); [closeout](archive/COMPLETED-2026-10-09.md#monster-munch-batch-2-two-kinds-and-how-many-friends-2026-10-26). Scope retained for dependency references; this batch is no longer eligible for dispatch.
 
 - **`monster-munch`, level 12 Share two kinds** (new level, after *Big bites*): deal cookies and apples fairly, then how many of each; school order 6, 7, 12, 8. [Slice 5](deep-dives/monster-munch.md#new-levels-on-top)
 - **`monster-munch`, level 11 How many friends?** (new interaction, after *Big bites*): call friends from a cave, two each, ring when no one else can have two, then how many friends and how many left; school top. [Slice 6](deep-dives/monster-munch.md#new-levels-on-top)

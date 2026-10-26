@@ -14,6 +14,18 @@ import type { GameHowTo, GameModule, LevelCard, LevelLine } from '../games/types
  * Couch play has its own how-to screens (`src/couch/catalog.ts`); these describe touch play.
  */
 export const HOW_TO: Record<string, GameHowTo> = {
+  'relay-woods': {
+    goal: 'Pass a picture along visible paths to the waving receiver.',
+    steps: [
+      'Tap a connected friend to move the picture one hop. Wait for it to arrive before tapping again.',
+      {from:2,to:2,text:'Either route works. You can retrace your steps.'},
+      {from:3,to:3,text:'A log blocks one path. Retrace to find a clear way, or use the blue Start over arrow.'},
+      {from:4,to:4,text:'Compare the hop ribbons. A longer arrival is shown, then the same picture starts again. Find the route with the fewest hops.'},
+      'The blue arrow starts this picture again. The yellow light shows a next step; ask again to watch the finger carry it through.',
+    ],
+    finish: [{to:3,text:'Any clear walk that reaches the receiver finishes the round.'},{from:4,text:'Reach the receiver using exactly the fewest hops.'}],
+    note: 'A fictional chain of friends. Retracing and restarting are free. Help stays recorded through retries. You may optionally Keep the delivered mosaic in the shared picture slot.',
+  },
   'village-vote': {
     goal: 'Count the toy preferences and carry out the choice with the most votes.',
     steps: [
@@ -949,11 +961,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 5, text: 'Feed the monster the number of foods asked for (cookies, apples, carrots, berries or crackers); it counts each one aloud. Ring the bell when done.' },
       { from: 6, to: 6, text: 'Feed the two foods asked for, like "2 carrots and 1 apple"; it counts each kind aloud. Then ring the bell.' },
       { from: 7, to: 7, text: 'Move every food from the tray to the monsters; when the tray is empty they check it is fair. Then tap how many each monster got.' },
+      { from: 12, to: 12, text: 'Share every cookie and apple fairly. When the tray is empty, tap how many cookies each monster got, then how many apples each got.' },
+      { from: 11, to: 11, text: 'The sign shows 2 or 3 cookies each. Tap the cave to call friends and feed each a whole share. Ring when another friend cannot have a whole share; tap how many friends ate, then how many cookies remain (zero is possible).' },
       { from: 8, to: 8, text: 'Share the food fairly; some may be left over. Ring the bell, then tap how many each monster got and how many are left over.' },
     ],
     finish: [
       { to: 6, text: 'The round ends when the monster has the right amount.' },
       { from: 9, to: 10, text: 'The round ends when every monster has been fed.' },
+      { from: 11, to: 12, text: 'The round ends when the sharing is fair and both counting questions are answered.' },
       { from: 7, to: 8, text: 'The round ends when the sharing is fair and the counting questions are answered.' },
     ],
   },
@@ -989,7 +1004,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'After two wrong places, one piece and its place glow, and the pet names where it goes. Help starts with a corner, then builds beside completed pieces.',
   },
   'weather-wardrobe': {
-    goal: 'Dress the pet for the weather.',
+    goal: 'Choose clothes to suit the weather.',
     steps: [
       { to: 1, text: 'Tap the sky to change the weather; the pet dresses itself.' },
       { to: 1, text: 'Tap the grass to splash, crunch or pop up a flower, and tap the clothes on the pet to hear their names.' },
@@ -998,17 +1013,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 5, text: 'Tap every thing that suits the weather.' },
       { from: 6, to: 6, text: 'Tap the clothes that suit each kind of weather, to pack for the trip.' },
       { from: 7, to: 7, text: 'Tap each worn item that does not suit the new weather to take it off, then tap clothes for the new weather.' },
+      { from: 10, to: 10, text: 'Look at each friend’s weather sign. Drag each of the four things to the friend whose weather it suits.' },
       { from: 9, to: 9, text: 'Look at what the pet is wearing, then tap the sky it is dressed for.' },
     ],
     finish: [
       { to: 6, text: 'The round ends when the pet is dressed for the weather (or the trip, which then plays out weather by weather).' },
       { from: 8, to: 8, text: 'Each of three weathers ends when the fitting thing is on the pet.' },
       { from: 7, to: 7, text: 'The round ends when the pet has changed clothes for each new weather.' },
+      { from: 10, to: 10, text: 'Dress both friends in each of three rounds. Each friend receives two things.' },
       { from: 9, to: 9, text: 'Each of three rounds ends when the right sky is picked.' },
     ],
     note: [
       { from: 2, to: 7, text: 'A wrong choice goes on the pet for a moment to show what the weather does, is told which weather it is for, and the glowing one helps.' },
       { from: 8, to: 8, text: 'There are no wrong answers here: everything can be tried on.' },
+      { from: 10, to: 10, text: 'A wrong friend hands the item back and names why. Two misses glow one item and its friend, counting one hint per round. Dropping elsewhere is free; tapping a friend repeats the instruction.' },
       { from: 9, to: 9, text: 'A wrong sky plays over the pet for a moment to show what that weather does, then clears; after two wrong skies the right card glows.' },
     ],
   },
