@@ -332,6 +332,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### fluffy-salon 2: Two customers and comparative styling
 
+Claimed 2026-10-26 by worker `01a17a9e-a79d-7a50-b8c3-91ea1c8f5837`, branch `codex/fluffy-salon-two-customers`: whole slices 6–7, levels 9–10 only; depends on shipped batch 1 #995. Expected files: `src/games/fluffy-salon/{index,logic,logic.test}.ts`, `src/content/{howto,voice-script}.ts`, browser harness, README and scoped roadmap/deep-dive/verification/queue closeout. No levels 11–13, saved styles, assets or person/device acceptance.
+
 - **`fluffy-salon`, level 9 *Two customers*, slice 6** (new interaction, plus a portrait screenshot): two friends in two chairs with a two-part card each, either order finishes; preschool `order [2, 8, 3, 4, 9]`, pre-K `order [3, 4, 5, 9]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 - **`fluffy-salon`, level 10 *Longer than Pip's*, slice 7** (new interaction): make the pet's fur longer or shorter than a friend's, with a comparison line drawn in the mirror; pre-K `order [3, 4, 5, 9, 10]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 

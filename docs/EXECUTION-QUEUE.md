@@ -30,10 +30,9 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Worker `01a17a65-04cf-7ad1-8961-f4ad8603ffe4`, host local, Neo project; dispatch `seesaw-balance-17-20261026T224602Z`; branch `codex/seesaw-predict-tip`, [PR #1000](https://github.com/rjdunlap/neo/pull/1000). Only Seesaw Balance batch4/slice8 level17 *Which way will it tip?*: three unscored predictions, props/release, spoken sums and Continue. School order[6,7,15,16,17,8,9,10,11]; existing IDs/bands preserved. [Scope](deep-dives/seesaw-balance.md#build-slices-in-order).
-- Admission/pre-implementation/pre-verification ordinary allowance and both reset identities available privately; whole slice fits. No competing active implementation; coordinator exempt. Batch3#993 merged/deployed. Preserve docs-only research claim6e7a5e19, unrelated claims/worktrees and person/device gates. Exact usage/reset metadata stays in worker chat.
-- Local proof complete: typecheck,21 game rules (300 seeds), full units3382 pass/4 skipped with one how-to wording failure then40 focused tests passing, final build; `seesawmeasure SEESAW_LEVELS=17` three wrong predictions0/0, truthful sums/release/Continue/no journal/single reward and reviewed portrait; clean demo17 in21.4s. [Proof](VERIFICATION.md#2026-10-26--seesaw-balance-predict-the-tip). Source frozen during passing browser runs; upstream dispatch-only docs integrated without invalidating gameplay evidence.
-- Next: publish implementation/closeout, wait required PR CI, merge/deploy only#1000, stop server, report here and stop. Resume this same worker if unfinished. No dispatch, subagents or coordinator messages; other levels/games/assets/new journal entries/person-device acceptance excluded.
+- Worker `01a17a9e-a79d-7a50-b8c3-91ea1c8f5837`, host local, Neo project; branch `codex/fluffy-salon-two-customers`. Only Fluffy Salon batch 2, slices 6–7, level 9 *Two customers* and level 10 *Longer than Pip's*. [Scope](GAME-BATCHES.md#fluffy-salon-2-two-customers-and-comparative-styling). Batch 1 #995 shipped; preserve old research/batch1 claims.
+- Admission: ordinary usage allowed, both reset identities available privately; remaining allowance fits provisional whole-gameplay estimate 15 five-hour / 2 weekly percentage points. No competing active implementation; coordinator exempt. Exact usage/reset metadata stays in worker chat.
+- Next: publish docs claim/draft PR, implement both interactions, rules and distinct play/demo/portrait proof, required CI and standing merge/deploy workflow. No other levels/games/assets/person-device acceptance, dispatch, subagents or coordinator messages. Resume this same worker if unfinished.
 
 ## Usage observations
 
