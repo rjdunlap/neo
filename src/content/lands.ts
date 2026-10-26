@@ -58,7 +58,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cat' },
     backdrop: { sky: [0xffd6e3, 0xfff6e0], hills: [0xb8e1f7, 0x8fd0ef, 0xf3dcb0], horizon: 0.4, clouds: 3, sun: true, seed: 107 },
     music: tune(41, 'bell', 84),
-    games: ['rainbow-fingers', 'fluffy-salon', 'stamp-studio', 'pixel-pictures', 'cut-along', 'draw-the-pattern', 'recipe-workshop', 'gear-garden'],
+    games: ['movie-night', 'rainbow-fingers', 'fluffy-salon', 'stamp-studio', 'pixel-pictures', 'cut-along', 'draw-the-pattern', 'recipe-workshop', 'gear-garden'],
   },
   {
     id: 'barnyard',
@@ -121,7 +121,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'cat', color: 'blue' },
     backdrop: { sky: [0xc8f0ec, 0xfff6e0], hills: [0xa9e0d6, 0xc5e7a8, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 149 },
     music: tune(113, 'pluck', 100),
-    games: ['log-roll', 'robot-path', 'bug-builder', 'bouncy-launch', 'seesaw-balance', 'light-lab', 'ramp-race', 'inchworm', 'block-tower', 'chain-reaction', 'shape-buddies', 'fossil-dig', 'sense-detective', 'cue-studio', 'bond-beads', 'welcome-ways'],
+    games: ['log-roll', 'robot-path', 'bug-builder', 'bouncy-launch', 'seesaw-balance', 'light-lab', 'ramp-race', 'inchworm', 'block-tower', 'chain-reaction', 'shape-buddies', 'fossil-dig', 'sense-detective', 'cue-studio', 'bond-beads', 'welcome-ways', 'example-express'],
   },
   {
     // The grown-up puzzles. Every game here is for the `grownup` band, so everyone younger sees them behind the signpost.

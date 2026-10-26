@@ -2,6 +2,16 @@
 
 What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), one entry per sitting; the [user research review](USER-RESEARCH-2026-10-24.md#a-five-minute-observation-protocol-for-the-lap-band) has the five-minute protocol for watching her play.
 
+## Example Express levels 1–2 (D2, 2026-10-25)
+
+- [ ] On an iPad, listen to the request, fitted-rule replay, actual/requested routes, missing-label explanation and Show me. Check that leaf/star stamps, selected cards, tree/house docks, Test/Check and All delivered are distinguishable without reading, and narration finishes before the next delivery.
+- [ ] Try selecting, labelling, inserting, removing, Undo/Reset, Stop and cancellation with a real hand in both orientations. Observe a school-age child and coplayer teaching, noticing the surprise, revising and choosing to stop; record only what actually happens in OBSERVATIONS. [Scripted proof](VERIFICATION.md#2026-10-25--example-express-12-d2) establishes neither comfort, enjoyment nor transfer to other AI. Pre-K/person and older-case decisions remain open.
+
+## Movie Night levels 1–3 (MM2, 2026-10-25)
+
+- [ ] On an iPad, check pad auditions, event cues and speech do not compete; Splash/Knock and the two-note Hello convention are distinguishable and replayable. Muted play should still communicate the request and cue through pictures/pulses. No sound-recognition or film-comprehension attainment is established by browser automation.
+- [ ] Check drag/tap alternatives, chip return, cancellation, Stop and four-shot portrait/landscape comfort with a real hand. Observe a child and coplayer choosing a free sound, finding the landing/door tap/wave, revising after a request and choosing Bow; record actual reactions in OBSERVATIONS. No verbal answer is required. [Scripted proof](VERIFICATION.md#2026-10-25--movie-night-13-mm2).
+
 ## Welcome Ways levels 1–4 (2026-10-24)
 
 - [ ] On an iPad, check part drag/tap cancellation and comfort, replayable visitor needs and stop reasons; watch whether the child notices Bunny passing the step before Roly stops, and Roly entering before Bear needs a wider door. Browser play and four demonstrations establish scripted behavior only ([verification](VERIFICATION.md#2026-10-24--welcome-ways-levels-14)). No human access representation or practical access advice is included.

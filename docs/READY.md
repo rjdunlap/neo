@@ -12,9 +12,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 
-- **`movie-night`, levels 1–3 (MM2)** (standalone new interaction, new-game tier): [MM1 definition](definitions/movie-night.md); fixed footage with free sound play, one event match, then two. Separate build admission; source/contract review, actual Painted Canyon (`treehouse`, formerly Paint Pier) capacity/layout and first/last play/demo gates retained. No later levels, storage or unresolved decisions.
 
-- **`example-express`, levels 1–2 (D2)** (one same-game new-game batch: Show, then send; A surprising parcel): [D1 packet](definitions/example-express.md), school 1–2; six-rule local fitter, free Test, ten accepted repairs, deliberate Check and solver-backed support. Separate admission; source-check, actual Tinker Lab capacity/layout, first/top play and demos required. Level 3 (D3), older cases and unresolved person/device decisions stay later.
 
 - **`scoop-shop`, levels 8–9 (EF1b first batch)** (two new levels on existing input): [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25), [batch](GAME-BATCHES.md#scoop-shop-3-change-and-reverse). School only; exactly-one-change and reversed distinct triples, peek help; separate admission, building-session review, actual placement/layout and demos required. Level 7 follows as a separate interaction; person/device gates remain.
 

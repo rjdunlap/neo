@@ -1,5 +1,16 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Example Express levels 1–2 (D2, 2026-10-25)
+
+[PR #976](https://github.com/rjdunlap/neo/pull/976), `codex/example-express-d2`, worker `01a17520-b379-7cc3-929c-3f71af64088f`. One complete school new-game batch: **Show, then send** and **A surprising parcel**, from the [D1 packet](../definitions/example-express.md). Six-rule minimum-error/tie fitter; exact seeds, ten accepted repairs, selected-rule pictures, free Test, deliberate Check, shortest-path support and one shell-owned reward through All delivered. Spoken/card/demo support, Undo/Reset/Remove/Stop and seventeenth Tinker Lab entry. Original Example Express idea’s teach/test/repair action is delivered; level 3 curation remains D3, not a new game.
+
+[Building-session CSTA/AI4K12 S1 review](../definitions/example-express.md#d2-building-session-review-2026-10-25), finite model/accounting/layout tests and proportionate [verification](../VERIFICATION.md#2026-10-25--example-express-12-d2). No shared navigation/save infrastructure, external assets, recordings or services. Level 3, all-six inspector, older registrations, pre-K and real speech/touch/child/coplayer gates remain separate.
+
+### Movie Night 1–3 (MM2, 2026-10-25)
+
+[PR #974](https://github.com/rjdunlap/neo/pull/974), worker `01a174ec-f163-70a1-a705-68e44b768831`, `codex/movie-night-mm2`: fixed Pond/Door footage with reusable synthesized sounds, free Watch versus one/two event-match Premiere, round-wide support/accounting, tap/drag/return/Undo, Stop and Bow; voice/card/demo and ninth Painted Canyon registration. Source/decision/finite-state and current-contract/layout review passed; no later levels, storage, unlocks or imported/generated/recorded media. [Verification](../VERIFICATION.md#2026-10-25--movie-night-13-mm2) records units/build, filtered play, demos and geometry/visual proof. Person/device speech, touch and observation gates remain; MM3 and all later slices separately admitted.
+
+
 ### Scoop Shop 7–9 definition (EF1, 2026-10-25)
 
 [PR #959](https://github.com/rjdunlap/neo/pull/959), `codex/scoop-shop-ef1-definition`: [existing dive reconciled](../deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25) under the October23 school/three-scoop/peek-help decision. Frozen: cone selection versus friend peek, independent help identities, one-change/reversal finite cases, voice IDs, scoped how-to, two-order bot and full-size layout requirements. Built IDs1–6/10–13 and all existing orders preserved. EF1 docs only; EF1b 8–9 then7 separately queued, with building-session review, actual placement/layout, implementation and person/device gates. No code, assets, other EF items or benefit claims. Links/diff and manual current-contract review; no local gameplay checks. [Verification](../VERIFICATION.md#2026-10-25--scoop-shop-79-definition-ef1-docs-only).
@@ -16,7 +27,7 @@
 
 ### Cue Studio level 3, Fix the cue (programming P3, 2026-10-24)
 
-[PR #947](https://github.com/rjdunlap/neo/pull/947), `codex/cue-studio-p3`: school 3–3 in Tinker Lab, following the approved pre-K creative/school requested split. The pictured Wave→Turn request starts with Turn→Wave; Play/Step freely show the actual trace, selection/replacement repairs either slot, and Check deliberately compares the complete trace. Only wrong Checks count misses; two supply a clue, and Help gives a clue then local repairs with persistent per-round assistance identities. Undo/Start again preserve assistance accounting, edits invalidate successful Check, and restarting a running Check cancels its late result. The ghost finger watches, repairs both slots and Checks before Finish. One normal sticker follows either independent or supported completion. The next study packet is P4's separate event/repeat/message definition; no downstream implementation or practical puppet card ships. Checks: [verification entry](../VERIFICATION.md#2026-10-24--cue-studio-level-3-programming-p3); iPad and child checks remain open.
+[PR #947](https://github.com/rjdunlap/neo/pull/947), `codex/cue-studio-p3`: school 3–3 in Tinker Lab, following the approved pre-K creative/school requested split. The pictured Wave→Turn request starts with Turn→Wave; Play/Step freely show the actual trace, selection/replacement repairs either slot, and Check deliberately compares the complete trace. Only wrong Checks count misses; two supply a clue, and Help gives a clue then local repairs with persistent per-round assistance identities. Undo/Start again preserve assistance accounting, edits invalidate successful Check, and restarting a running Check cancels its late result. The ghost finger watches, repairs both slots and Checks before Finish. One normal sticker follows either independent or supported completion. The next study packet is P4's separate event/repeat/message definition; no downstream implementation or practical puppet card ships. Checks: [verification entry](VERIFICATION-2026-10-24.md#2026-10-24--cue-studio-level-3-programming-p3); iPad and child checks remain open.
 
 
 ### Bond Beads levels 1–2 (chemistry slice 2, built 2026-10-24, PR #941)
