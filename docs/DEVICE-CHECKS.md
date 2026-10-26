@@ -555,3 +555,8 @@ Definition complete, **all person/device checks open**. [Packet and per-line evi
 ## Relay Woods levels 1–4 (NC2, 2026-10-26)
 
 Open: actual iPad speech/name and hop-count playback, small-hand release/cancel/reach, five-mosaic recognition (especially portrait/note), receiver identification, equivalent-way/retracing/log understanding, fewest-hop retry comprehension, and child/coplayer enjoyment or replay. Automated browser and manual visual review do not establish these. Fictional friend-chain play makes no internet, safety or transfer claim. No obligation to return to an unfinished delivery.
+
+### Monster Munch school 11–12 (2026-10-26)
+
+- [ ] On an iPad, check cave/sign recognition, four-friend reach, spoken group size, zero and the two separate food questions; do the counted tummy icons/friends/tray make wrong pads useful?
+- [ ] With a child/coplayer, check whether an insufficient cave call reads as a welcome experiment, whole groups and fair amounts of each kind are understandable, and stopping/replaying remains comfortable. Automation establishes neither comprehension nor learning transfer.
