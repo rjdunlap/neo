@@ -550,7 +550,7 @@ Toddler1–2, preschool2–3, prek3–4, school4. No lap/grownup, levels5–6, p
 
 ### village-vote 1: Levels 1–3 (CC4)
 
-- **Status:** ready for separate admission; [CC1 packet](definitions/village-vote.md), [study slices](deep-dives/subjects/community-civics.md#build-slices-in-order). No implementation delivered by CC1.
+- **Status:** claimed by worker `01a176ea-3190-7f83-80a3-e41d2259e4de`, branch `codex/village-vote-cc4`; pre-code source/contract/current-capacity gates under review; [CC1 packet](definitions/village-vote.md), [study slices](deep-dives/subjects/community-civics.md#build-slices-in-order). No implementation delivered by CC1.
 - **Whole batch:** 1 Two choices (count and choose larger); 2 Your pet votes too (free preference, one pet vote, losing cheerfully); 3 Three choices (partial tallies/replay, unique largest including3–2–2). Preschool1–2, pre-K1–3, school3. One election/sticker per round; wrong declarations only are misses, counting/preference free; manual/automatic support caps at1 and remains assisted.
 - **Files:** eventual `src/games/village-vote/{logic,index}.ts` and meaningful tests, registry, lands, voice-script, howto, browser filtered case, README/GAMES and normal doc closeout. Reuse onTap/companion/shell timing and finish. No new saves/assets assumed.
 - **Admission gates:** building-session source/contract and applicable game/rules review; actual transformed controls at least100 units in both orientations, level2 five-in-one-column and level3 seven-visible-voter layouts; recount current Cozy Village (13 at CC1 base,14 with this game, potentially15 after Swap Meet), actual paged registry/lands/layout proof and both route origins. Proposed fallback lands cannot be silently created.
