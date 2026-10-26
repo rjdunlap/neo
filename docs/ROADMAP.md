@@ -19,6 +19,8 @@ Puddle Island is an iPad learning game for the developer's daughter, who turns o
 
 ## Where we are
 
+- Weather Wardrobe’s pre-K level 10 *Two friends, two places* is built: four clothes dragged to two friends in different weather, paired support and a public-input demonstration; [remaining slices](deep-dives/weather-wardrobe.md#build-slices-in-order) retain the separate Wind claim and later scope.
+
 - Scoop Shop’s entries 10–11, prefilled count-on cones at 12 and two-colour counts at 13 are built; [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25) freezes school 7–9 under the October 23 decision; separate EF1b builds retain review, placement/layout and person/device gates, with creature customers later.
 
 - Roundup’s toddler bridge *Shoo one* (level 10), the lap/toddler follow mode *Come along* (level 11), pre-K *Leave the cows* (level 7), pre-K *Make it fair* (level 8), *Fill it up* (level 9) and *Big and little* (level 12) are built, and every finger on the grass now shoos at levels 2–12 (two shepherds, slice 9); the [remaining slices](deep-dives/roundup.md#build-slices-in-order) are gated (13 *Two things at once*, a school window).

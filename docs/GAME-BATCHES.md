@@ -200,6 +200,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### weather-wardrobe 3: Two friends, two places
 
+Built 2026-10-26, [PR #987](https://github.com/rjdunlap/neo/pull/987); [closeout](archive/COMPLETED-2026-10-09.md#weather-wardrobe-two-friends-two-places-level-10-2026-10-26). Retained for scope references; no longer eligible for dispatch.
+
 - **`weather-wardrobe`, level 10 Two friends, two places** (new drag interaction): drag each item to the friend whose weather it suits; pre-K. [Slice 8](deep-dives/weather-wardrobe.md#build-slices-in-order)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.

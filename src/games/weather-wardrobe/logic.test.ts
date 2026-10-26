@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { GROUND_TOUCH, ITEM_NAMES, MISFIT, SHIELD, ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfitFor, outfits, SLOTS, STICKER_ITEMS, tripPlays, WARDROBE_PLANS, WEATHERS, wardrobePlan, type Item, ALL_ITEMS, NOT_WORN, partFor, shieldFor, wardrobeFor } from './logic';
+import { GROUND_TOUCH, ITEM_NAMES, MISFIT, SHIELD, ITEM_WORDS, ITEMS, itemsFor, itemToTap, outfitFor, outfits, SLOTS, STICKER_ITEMS, tripPlays, WARDROBE_PLANS, WEATHERS, wardrobePlan, type Item, ALL_ITEMS, NOT_WORN, partFor, shieldFor, wardrobeFor, friendFor } from './logic';
 import { PARTS } from '../../creatures/parts';
 import { SPECIES_IDS } from '../../creatures/species';
 
@@ -23,7 +23,7 @@ describe('Weather Wardrobe', () => {
   });
 
   it('offers the right things to wear among distinct choices from other weathers', () => {
-    for (const plan of WARDROBE_PLANS.filter((p) => !['play', 'sky'].includes(p.mode))) {
+    for (const plan of WARDROBE_PLANS.filter((p) => !['play', 'sky', 'friends'].includes(p.mode))) {
       for (let seed = 1; seed <= 300; seed++) {
         const rounds = outfits(plan, new Rng(seed));
         expect(rounds).toHaveLength(plan.rounds);
@@ -64,7 +64,7 @@ describe('Weather Wardrobe', () => {
         expect(new Set(slotsOf(outfit)).size).toBe(outfit.length);
         expect(new Set(slotsOf(outfit))).toEqual(new Set(slotsOf(itemsFor(w))));
       }
-      for (const plan of WARDROBE_PLANS.filter((p) => !['play', 'sky'].includes(p.mode))) {
+      for (const plan of WARDROBE_PLANS.filter((p) => !['play', 'sky', 'friends'].includes(p.mode))) {
         for (const o of outfits(plan, new Rng(seed))) {
           const sets = plan.mode === 'trip' ? o.weathers.map((w) => o.needed.filter((i) => ITEMS[i] === w)) : [o.needed, ...(o.remove ? [o.remove] : [])];
           for (const set of sets) expect(new Set(slotsOf(set)).size, plan.name).toBe(set.length);
@@ -87,7 +87,7 @@ describe('Weather Wardrobe', () => {
   });
 
   it("gives the ghost finger's bot only things that fit the weather, each once, until the outfit is complete", () => {
-    for (const plan of WARDROBE_PLANS.filter((p) => !['play', 'sky'].includes(p.mode))) {
+    for (const plan of WARDROBE_PLANS.filter((p) => !['play', 'sky', 'friends'].includes(p.mode))) {
       for (let seed = 1; seed <= 100; seed++) {
         for (const o of outfits(plan, new Rng(seed))) {
           const used = new Set<Item>();
@@ -100,6 +100,34 @@ describe('Weather Wardrobe', () => {
           }
           expect([...used].sort()).toEqual([...o.needed].sort());
         }
+      }
+    }
+  });
+
+  it('level 10 gives each friend two distinct-slot items, each fitting exactly one sign, with a complete hint path', () => {
+    expect(wardrobePlan(10).mode).toBe('friends');
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const rounds = outfits(wardrobePlan(10), rng);
+      expect(rounds).toEqual(outfits(wardrobePlan(10), new Rng(seed)));
+      for (const o of rounds) {
+        expect(new Set(o.weathers).size).toBe(2);
+        expect(o.options).toHaveLength(4);
+        expect(new Set(o.options).size).toBe(4);
+        expect([...o.options].sort()).toEqual([...o.needed].sort());
+        for (let friend = 0; friend < 2; friend++) {
+          const items = o.options.filter((item) => friendFor(o, item) === friend);
+          expect(items).toHaveLength(2);
+          expect(new Set(items.map((i) => SLOTS[i])).size).toBe(2);
+        }
+        const used = new Set<Item>();
+        for (let item = itemToTap(o, used); item; item = itemToTap(o, used)) {
+          const friend = friendFor(o, item)!;
+          expect(ITEMS[item]).toBe(o.weathers[friend]);
+          expect(ITEMS[item]).not.toBe(o.weathers[1 - friend]);
+          used.add(item);
+        }
+        expect(used.size).toBe(4);
       }
     }
   });
@@ -185,6 +213,7 @@ describe('Weather Wardrobe', () => {
     for (const sp of SPECIES_IDS) {
       const wear = WARDROBE[sp];
       WARDROBE_PLANS.forEach((plan, i) => {
+        if (plan.mode === 'friends') return; // Friends use the full wardrobe, not companion anatomy.
         for (let seed = 1; seed <= 40; seed++) {
           const rounds = outfits(plan, new Rng(seed), wear);
           expect(rounds.length, `${sp} level ${i + 1}`).toBe(plan.rounds);

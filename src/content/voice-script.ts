@@ -3048,6 +3048,10 @@ export const SCRIPT = {
   'puzzle.hint.middle': ['Try the glowing piece in the middle!'],
   'puzzle.done': ['You made {what}!'],
 
+  'weather.friends': ['Two friends, two places! One is in {a} weather, and one is in {b} weather. Drag each thing to the friend who needs it.'],
+  'weather.friend.wrong': ['{item} for {weather} days. This friend has {other} weather. Try the other friend.'],
+  'weather.friend.hint': ['Drag the glowing thing to the glowing friend in {weather} weather.'],
+  'weather.friends.ready': ['Both friends are dressed for their weather!'],
   'weather.play': ['Tap the sky to change the weather!'],
   'weather.sunny': ['Sunny! Hats and sunglasses on.'],
   'weather.rainy': ['Rainy! Pitter patter. Umbrella up!'],

@@ -2,6 +2,10 @@
 
 What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), one entry per sitting; the [user research review](USER-RESEARCH-2026-10-24.md#a-five-minute-observation-protocol-for-the-lap-band) has the five-minute protocol for watching her play.
 
+## Weather Wardrobe level 10 (2026-10-26)
+
+- [ ] On iPad, check friend sign/item readability, long drags in portrait and landscape, finger lift, palm/second-finger rejection, cancellation and actual spoken weather reasons/guide replay. Observe whether a pre-K child uses both weather signs to give each friend what it needs, and record enjoyment/replay/stopping only after play. [Scripted proof](VERIFICATION.md#2026-10-26--weather-wardrobe-two-friends-level-10) does not establish these.
+
 ## Village Vote levels 1–3 (CC4, 2026-10-26)
 
 - [ ] On an iPad, check actual count speech ordering, singular/zero/comparison wording and guide replay; distinguish free pet preference from winner declaration. Confirm comfortable paw/board/picture/Hint reach, legibility and cancellation/outside releases in both orientations. Browser proof checks geometry/input, not small hands or device speech.
