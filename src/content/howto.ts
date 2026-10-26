@@ -860,6 +860,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'size-parade': {
     goal: 'Compare sizes of friends.',
     steps: [
+      { from: 16, to: 16, text: 'Tap the one friend: each tap makes it a size bigger, then smaller again, and the pet says the size word.' },
+      { from: 9, to: 9, text: 'Tap the big one, then the little one, then the big one again, as asked.' },
       { to: 2, text: 'Tap the friend who is bigger or smaller, as asked.' },
       { from: 3, to: 4, text: 'Tap the friend who is biggest or smallest, as asked.' },
       { from: 5, to: 8, text: 'Drag the friend asked for to the glowing spot, then the next one in size, until the line is full.' },
@@ -868,12 +870,16 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'A tap on the sky or the ground makes the friends hop and repeats the question; it never counts as a miss.',
     ],
     finish: [
+      { from: 16, to: 16, text: 'The round ends after three rounds of growing and shrinking.' },
+      { from: 9, to: 9, text: 'The round ends after three rows, one right friend chosen from each.' },
       { to: 4, text: 'The round ends after four rows, one right friend chosen from each.' },
       { from: 5, to: 8, text: 'The round ends when the friends are lined up correctly.' },
       { from: 10, to: 10, text: 'The round ends after four rows, one right friend chosen from each.' },
       { from: 17, to: 17, text: 'The round ends when the two friends are lined up correctly.' },
     ],
     note: [
+      { from: 16, to: 16, text: 'Nothing is wrong here: every tap answers, and a tap beside the friend makes it hop.' },
+      { from: 9, to: 9, text: 'The other friend wiggles and says its own size word. On the lap the first such touch in a row is free, and the second makes the right friend glow (a hint); from toddler on, each counts as a miss and the second glows.' },
       { to: 4, text: 'A wrong friend counts as a miss; after two in one row the right friend glows.' },
       { from: 5, to: 8, text: 'A wrong friend on the glowing spot counts as a miss, and after two the right friend glows. A friend put on another spot is not a miss: the line fills from the glowing spot.' },
       { from: 10, to: 10, text: 'A wrong friend counts as a miss and the pet says why the middle one is the middle; after two in one row the right friend glows.' },
