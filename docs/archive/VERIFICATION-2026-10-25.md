@@ -49,3 +49,10 @@
 - Manual finite-vote-family/phase/count/replay/acceptance/accounting/band/current-source/layout-capacity/scope review; proposed envelopes are not measured hit areas or play evidence.
 - Ran `node scripts/check-links.mjs` and `git diff --check`; READY/backlog/study/recommendations/tracker/roadmap/batch/archive reconciled. CC4 separately admitted, review/actual placement/layout and implementation proof retained.
 - Not run: local typecheck/unit/build/browser/offline or child/iPad checks (docs-only tier). No solvability tests, game review, speech or learning acceptance claimed. Later levels, persistence/cards and person/device gates remain open.
+
+## 2026-10-25 — Relay Woods 1–4 definition (NC1, docs only)
+
+- [NC1 packet](../definitions/relay-woods.md), base `a530d3fd` plus docs diff, claim `6178226a`, coordinator docs dispatch `62c4434d`, [PR #971](https://github.com/rjdunlap/neo/pull/971); no runtime/assets changes.
+- Manual finite-graph/authored-case/five-picture, walk/BFS/recovery/accounting, bands/voice/bot, current save/Keep and capacity/scope review. Proposed coordinates are not measured fit proof; existing study used without fresh source opening.
+- Ran `node scripts/check-links.mjs` and `git diff --check`; READY/backlog/study/recommendations/tracker/roadmap/batch/archive reconciled. NC2 separately admitted, source/review/actual placement/layout and implementation proof retained.
+- Not run: local typecheck/unit/build/browser/offline or child/iPad checks (docs-only tier). No play, game/rules-review, picture recognition, source-check or learning acceptance claimed; later content and person/device evidence remain separate.
