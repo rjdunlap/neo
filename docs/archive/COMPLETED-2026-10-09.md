@@ -33,7 +33,7 @@ The original idea’s pictured request/reciprocal pair/two-trade action is deliv
 
 ### Movie Night 1–3 (MM2, 2026-10-25)
 
-[PR #974](https://github.com/rjdunlap/neo/pull/974), worker `01a174ec-f163-70a1-a705-68e44b768831`, `codex/movie-night-mm2`: fixed Pond/Door footage with reusable synthesized sounds, free Watch versus one/two event-match Premiere, round-wide support/accounting, tap/drag/return/Undo, Stop and Bow; voice/card/demo and ninth Painted Canyon registration. Source/decision/finite-state and current-contract/layout review passed; no later levels, storage, unlocks or imported/generated/recorded media. [Verification](../VERIFICATION.md#2026-10-25--movie-night-13-mm2) records units/build, filtered play, demos and geometry/visual proof. Person/device speech, touch and observation gates remain; MM3 and all later slices separately admitted.
+[PR #974](https://github.com/rjdunlap/neo/pull/974), worker `01a174ec-f163-70a1-a705-68e44b768831`, `codex/movie-night-mm2`: fixed Pond/Door footage with reusable synthesized sounds, free Watch versus one/two event-match Premiere, round-wide support/accounting, tap/drag/return/Undo, Stop and Bow; voice/card/demo and ninth Painted Canyon registration. Source/decision/finite-state and current-contract/layout review passed; no later levels, storage, unlocks or imported/generated/recorded media. [Verification](VERIFICATION-2026-10-25.md#2026-10-25--movie-night-13-mm2) records units/build, filtered play, demos and geometry/visual proof. Person/device speech, touch and observation gates remain; MM3 and all later slices separately admitted.
 
 
 ### Scoop Shop 7–9 definition (EF1, 2026-10-25)
@@ -1876,6 +1876,12 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--pet-kitchen-
 [PR #879](https://github.com/rjdunlap/neo/pull/879), `claude/pet-kitchen-same-or-not` ([deep dive](../deep-dives/pet-kitchen.md#build-slices-in-order)). Level 11: one sandwich, two friends, a cut choice of the middle or a lopsided third and two-thirds (side seeded); pieces now carry an area and a serve is fair only by area. Serving one piece each of unequal area is a miss shown as an overlay of the two pieces that then return; the second miss glows the round arrow (`kitchen.recut-other`). Preschool `order [1, 11, 2, 3, 4]`, pre-K `order [11, 3, 4, 5, 6]`, `entryLevels [10, 11]`. Level 12: two pizzas, three friends, cuts 2/3/4; only thirds share, and halves or quarters leave a piece in the tray (a new `leftover` trouble, `kitchen.leftover`); school `order [5, 6, 7, 8, 9, 12]`. The orders exclude level 14, which (slice 6, a cut per whole) is the open part of the batch. Rule tests added in `src/games/pet-kitchen/logic.test.ts`; the `creative` kitchen harness now plays level 12 with level-11 and 12 branches.
 
 Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--pet-kitchen-batch-2-part-a-levels-11-12-slices-45).
+
+## Pet Kitchen batch 2 part B: Different shape, same share (slice 6, 2026-10-26)
+
+[PR #998](https://github.com/rjdunlap/neo/pull/998), `claude/pet-kitchen-different-shape` ([deep dive](../deep-dives/pet-kitchen.md#build-slices-in-order)). Level 14: two sandwiches, two friends, two cut pictures (down and across); each sandwich takes its own cut, one tap per sandwich, giving two tall or two wide halves of equal area. A plate with a tall and a wide half, or two alike, is fair; serving with a sandwich still whole is a miss (`kitchen.shapes-whole`), and the second miss glows the cutting picture not yet used (`kitchen.shapes-other`); unequal plates are the usual miss. After a fair serve one tall and one wide half lift and overlay (`kitchen.same-share`, or `kitchen.same-shape` when both were cut the same way, accepted with no miss), then the friends eat. Rules in `logic.ts`: `SHAPES_LEVEL`, `SHAPES_PLAN`, `CUT_WAYS`, `pieceShape`, `nextWay`, `allCut`, `shapesLine`, `overlayPair`. Pre-K `order [11, 3, 4, 14, 5, 6]` (max 14), school `order [14, 5, 6, 7, 8, 9, 12]` (min 5, max 14), 14 an entry level; 13 is not built and no order lists it. The how-to gains a 14 step and the serve step widens to 11-14; the `creative` kitchen harness plays level 14 (`KITCHEN_LEVELS=14`).
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-26--pet-kitchen-14-different-shape-same-share).
 
 ## Adventure Walk levels 1–3 (AW2, 2026-10-23)
 
