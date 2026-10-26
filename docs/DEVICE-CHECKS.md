@@ -2,6 +2,11 @@
 
 What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), one entry per sitting; the [user research review](USER-RESEARCH-2026-10-24.md#a-five-minute-observation-protocol-for-the-lap-band) has the five-minute protocol for watching her play.
 
+## Swap Meet levels 1–4 (ME2, 2026-10-25)
+
+- [ ] On an iPad, check full-size sources, receiving panels, back arrow and yellow Hint in both orientations, two-way/Undo animation, pictured wants and actual speech/guide replay. Try cancellation, leaving the canvas and a second finger with a real hand. [Scripted proof](VERIFICATION.md#2026-10-25--swap-meet-14-me2) does not establish device comfort or legibility.
+- [ ] Observe whether a toddler notices receiving the other object and understands Undo, and whether a pre-K child follows the two-step chain. Record enjoyment, replay/stopping and coplayer reactions only when observed. Level5–6 wait until1–4 have been played; no transfer to everyday trading is claimed.
+
 ## Example Express levels 1–2 (D2, 2026-10-25)
 
 - [ ] On an iPad, listen to the request, fitted-rule replay, actual/requested routes, missing-label explanation and Show me. Check that leaf/star stamps, selected cards, tree/house docks, Test/Check and All delivered are distinguishable without reading, and narration finishes before the next delivery.
@@ -14,7 +19,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 ## Welcome Ways levels 1–4 (2026-10-24)
 
-- [ ] On an iPad, check part drag/tap cancellation and comfort, replayable visitor needs and stop reasons; watch whether the child notices Bunny passing the step before Roly stops, and Roly entering before Bear needs a wider door. Browser play and four demonstrations establish scripted behavior only ([verification](VERIFICATION.md#2026-10-24--welcome-ways-levels-14)). No human access representation or practical access advice is included.
+- [ ] On an iPad, check part drag/tap cancellation and comfort, replayable visitor needs and stop reasons; watch whether the child notices Bunny passing the step before Roly stops, and Roly entering before Bear needs a wider door. Browser play and four demonstrations establish scripted behavior only ([verification](archive/VERIFICATION-2026-10-24.md#2026-10-24--welcome-ways-levels-14)). No human access representation or practical access advice is included.
 
 ## Taps-only lap levels: Puzzle Pals 1–2, Teddy Doctor 2, Roundup 11 (R2, 2026-10-24)
 

@@ -17,7 +17,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`scoop-shop`, levels 8–9 (EF1b first batch)** (two new levels on existing input): [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25), [batch](GAME-BATCHES.md#scoop-shop-3-change-and-reverse). School only; exactly-one-change and reversed distinct triples, peek help; separate admission, building-session review, actual placement/layout and demos required. Level 7 follows as a separate interaction; person/device gates remain.
 
 
-- **`swap-meet`, levels 1–4 (ME2)** (one same-game new-game batch): [ME1 packet](definitions/swap-meet.md), [batch](GAME-BATCHES.md#swap-meet-1-levels-14-me2). Match requests, two-way pairs, then a two-trade chain; exact Undo and all-state BFS hints. Separate admission, source/contract review, actual full-size layouts/current Cozy Village 13→14 placement and rule/play/demo proof required. Person/device, levels5–6 and later money/card gates remain.
 
 - **`village-vote`, levels 1–3 (CC4)** (one same-game new-game batch): [CC1 packet](definitions/village-vote.md), [batch](GAME-BATCHES.md#village-vote-1-levels-13-cc4). Count two groups, cast one free pet vote (which may lose), then compare three tallies; seeded tie-free families, replayable counts and capped assistance. Separate admission, building-session source/contract review, actual full-size both-orientation/current Cozy Village placement and rule/play/demo proof required. Later levels, persistence, cards and person/device gates remain.
 

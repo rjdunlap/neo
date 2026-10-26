@@ -190,9 +190,8 @@ These are proposals only, against the [rework brief](../../rework/README.md).
 
 ## Build slices, in order
 
-ME1 levels1–4 [defined](../../definitions/swap-meet.md) 2026-10-25; [closeout](../../archive/COMPLETED-2026-10-09.md#me1-swap-meet-14-definition-2026-10-25). No game built. Remaining slices retain their original IDs.
+ME1 levels1–4 [defined](../../definitions/swap-meet.md) 2026-10-25; [closeout](../../archive/COMPLETED-2026-10-09.md#me1-swap-meet-14-definition-2026-10-25). Swap Meet 1–4 (ME2) built 2026-10-25; [build note](../../archive/COMPLETED-2026-10-09.md#swap-meet-levels-14-me2-2026-10-25). Later slices retain their original IDs and gates.
 
-2. **ME2 · Build Swap Meet 1–4** (ready after separate admission, new-game tier): [ME1 definition](../../definitions/swap-meet.md), [batch](../../GAME-BATCHES.md#swap-meet-1-levels-14-me2). Review, actual full-size control/Cozy Village placement and person/device gates remain.
 3. **ME3 · Define Market Stall 12 *Pick one*** inside the [Market Stall dive](../market-stall.md) with its decision 7 (docs).
 4. **ME4 · Define Lemonade Stand 5 *Save for the awning*** (docs) after decision 6: a goal jar, a tested plan that reaches it every seeded week, no failed week.
 5. **ME5 · Define Swap Meet 5–6** after 1–4 have been played.
