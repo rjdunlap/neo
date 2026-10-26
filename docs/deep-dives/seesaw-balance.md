@@ -124,6 +124,8 @@ Each has a default below; the build proceeds on it.
 
 ## Build slices, in order
 
+**Batch 3 claimed 2026-10-26:** worker `01a1794b-ef2b-76d0-bc36-5b92e5a9ac4f`, branch `codex/seesaw-order-estimate-difference`: slices 5–7, levels 14–16 together. Files: game logic/rendering/tests, how-to/voice, filtered browser suite/registry, README and game/roadmap/batch/verification/queue docs. Reuses completed slices 1–4; excludes level 17, assets, other games and person/device acceptance. Draft PR pending. Research claim `6e7a5e19` preserved.
+
 **Batch 1 (slices 1–2) built 2026-10-23** on `claude/seesaw-support-truth` ([PR #858](https://github.com/rjdunlap/neo/pull/858)); build note in the [archive](../archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-1-truthful-support-and-varied-weighing-props-slices-12-2026-10-23).
 
 **Batch 2 (slices 3–4) built 2026-10-26** on `codex/seesaw-bounce-comparison` ([PR #991](https://github.com/rjdunlap/neo/pull/991)); [build note](../archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-2-lap-bounce-and-heavierlighter-slices-34-2026-10-26). Research claim `6e7a5e19` preserved.
