@@ -1,3 +1,4 @@
+import { createSuite as createWardrobe10 } from './suites/wardrobe10.mjs';
 import { createSuite as createRelayWoods } from './suites/relay-woods-play.mjs';
 import { createSuite as createVillageVote } from './suites/village-vote-play.mjs';
 import { createSuite as createSwapMeet } from './suites/swap-meet-play.mjs';
@@ -209,6 +210,7 @@ export const SUITES = [
   "robot",
   "wardrobe7",
   "wardrobe9",
+  "wardrobe10",
   "wardrobe6",
   "conductor",
   "expansion",
@@ -334,6 +336,7 @@ export const ALL_SUITES = [
   "robot",
   "wardrobe7",
   "wardrobe9",
+  "wardrobe10",
   "wardrobe6",
   "conductor",
   "expansion",
@@ -405,7 +408,7 @@ export function createChecks(fixture) {
     };
   };
   // Cross-suite helpers are bound to this fixture; no page or save is shared across runs.
-  for (const name of ["ribbonPlay","feelingsPoke","critterNotEntry","marbleJumpPlay","logRollPlay","snowballMergePlay","storyTheaterPlay","brainBreakPlay","cueStudioPlay","foodWebPlay","pyramidPlay","mossyPathPlay","numberNookPlay","gemSwapPlay","tilePairsPlay","lanternTouchPlay","pileMatchPlay","boltBoardsPlay","jarSortPlay","dominoRunPlay","fruitSlicePlay","cutAlongPlay","drawPatternPlay","puddleGobblePlay","swingPalsPlay","liftItPlay","fossilDigPlay","atticFindsPlay","atticLeverPlay","trackwayTalesPlay","recipeWorkshopPlay","seaLiftPlay","lostLayersPlay","blockGardenPlay","sudokuTouchPlay","wordSearchTouchPlay","comebackPlay","bridgesTouchPlay","pictureTouchPlay","singBarnPlay","numberTrailsPlay","fruitSumsPlay","buddiesPlay","weekPlay","orchardPlay","readDoPlay","friendsFlow","useCompanion","dressFlow","homeFirstRun","homeResidents","homeButtons","homeLastPlace","homeResult","homeFlow","welcomeFlow","hatchingAndMap","grownUps","subjectPlaces","patterns","memory","traceRound","robots","conductor","conductorSign","wardrobe7","wardrobe9","wardrobe6","stickerBook","expansion","third","feelingsBatch","feelingsAsk","feelings8","fourth","early","arcade","batch","originals","next","encoreTricks","creativeBatch","woodsBatch","shortlistBatch","picnicStory","woodlandStory","couchPlay","couchBeds","couchLanterns","couchPictures","couchHarbors","couchWords","couchConga","couchBridges","couchGames","couchGuide","couchCourse","couchNames","couchSettings","couchSolo","smoke","phoneFit","phoneGames","howToIntro","howToLevelPick","readyForAdventurePlay","adventureWalkPlay","sandTablePlay","senseDetectivePlay","shedPlay","gearsPlay","meadowPlay","lensPlay","wordGluePlay","whoAmIPlay","lookItUpPlay","fingerDemos","congaTouchPlay","roomPlay","islandShelf","creationsRoom","landsTour","journalPlay","clapPlay","clapTrainPlay","clapShortPlay","clapComparePlay","chainPlay","habitatPlay","profiles","landKeys","liveSwitchPlay","discoveryDirectNext","discoveryMyMix","discoveryMix"]) shared[name] = (...args) => checks[name](...args);
+  for (const name of ["ribbonPlay","feelingsPoke","critterNotEntry","marbleJumpPlay","logRollPlay","snowballMergePlay","storyTheaterPlay","brainBreakPlay","cueStudioPlay","foodWebPlay","pyramidPlay","mossyPathPlay","numberNookPlay","gemSwapPlay","tilePairsPlay","lanternTouchPlay","pileMatchPlay","boltBoardsPlay","jarSortPlay","dominoRunPlay","fruitSlicePlay","cutAlongPlay","drawPatternPlay","puddleGobblePlay","swingPalsPlay","liftItPlay","fossilDigPlay","atticFindsPlay","atticLeverPlay","trackwayTalesPlay","recipeWorkshopPlay","seaLiftPlay","lostLayersPlay","blockGardenPlay","sudokuTouchPlay","wordSearchTouchPlay","comebackPlay","bridgesTouchPlay","pictureTouchPlay","singBarnPlay","numberTrailsPlay","fruitSumsPlay","buddiesPlay","weekPlay","orchardPlay","readDoPlay","friendsFlow","useCompanion","dressFlow","homeFirstRun","homeResidents","homeButtons","homeLastPlace","homeResult","homeFlow","welcomeFlow","hatchingAndMap","grownUps","subjectPlaces","patterns","memory","traceRound","robots","conductor","conductorSign","wardrobe7","wardrobe9","wardrobe10","wardrobe6","stickerBook","expansion","third","feelingsBatch","feelingsAsk","feelings8","fourth","early","arcade","batch","originals","next","encoreTricks","creativeBatch","woodsBatch","shortlistBatch","picnicStory","woodlandStory","couchPlay","couchBeds","couchLanterns","couchPictures","couchHarbors","couchWords","couchConga","couchBridges","couchGames","couchGuide","couchCourse","couchNames","couchSettings","couchSolo","smoke","phoneFit","phoneGames","howToIntro","howToLevelPick","readyForAdventurePlay","adventureWalkPlay","sandTablePlay","senseDetectivePlay","shedPlay","gearsPlay","meadowPlay","lensPlay","wordGluePlay","whoAmIPlay","lookItUpPlay","fingerDemos","congaTouchPlay","roomPlay","islandShelf","creationsRoom","landsTour","journalPlay","clapPlay","clapTrainPlay","clapShortPlay","clapComparePlay","chainPlay","habitatPlay","profiles","landKeys","liveSwitchPlay","discoveryDirectNext","discoveryMyMix","discoveryMix"]) shared[name] = (...args) => checks[name](...args);
   install(create0(shared));
   install(create1(shared));
   install(create2(shared));
@@ -473,6 +476,7 @@ export function createChecks(fixture) {
   install(create64(shared));
   install(create65(shared));
   install(create66(shared));
+  install(createWardrobe10(shared));
   install(create67(shared));
   install(create68(shared));
   install(create69(shared));
@@ -559,7 +563,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'discovery' && process.env.DISCOVERY_ONLY !== undefined) selectValue(process.env.DISCOVERY_ONLY, ['direct-next', 'mix', 'my-mix'], 'DISCOVERY_ONLY');
   const completed = [];
   const { page, errors, ready, pickFirst, scene } = fixture;
-  const { relayWoodsPlay, ribbonPlay, feelingsPoke, critterNotEntry, marbleJumpPlay, logRollPlay, snowballMergePlay, storyTheaterPlay, brainBreakPlay, cueStudioPlay, foodWebPlay, pyramidPlay, mossyPathPlay, numberNookPlay, gemSwapPlay, tilePairsPlay, lanternTouchPlay, pileMatchPlay, boltBoardsPlay, jarSortPlay, dominoRunPlay, fruitSlicePlay, cutAlongPlay, drawPatternPlay, puddleGobblePlay, swingPalsPlay, liftItPlay, fossilDigPlay, atticFindsPlay, atticLeverPlay, trackwayTalesPlay, recipeWorkshopPlay, seaLiftPlay, lostLayersPlay, blockGardenPlay, sudokuTouchPlay, wordSearchTouchPlay, comebackPlay, bridgesTouchPlay, pictureTouchPlay, singBarnPlay, numberTrailsPlay, fruitSumsPlay, buddiesPlay, weekPlay, orchardPlay, readDoPlay, friendsFlow, useCompanion, dressFlow, homeFirstRun, homeResidents, homeButtons, homeLastPlace, homeResult, homeFlow, welcomeFlow, hatchingAndMap, grownUps, subjectPlaces, patterns, memory, traceRound, robots, conductor, conductorSign, wardrobe7, wardrobe9, wardrobe6, stickerBook, expansion, third, feelingsBatch, feelingsAsk, feelings8, fourth, early, arcade, batch, originals, next, encoreTricks, creativeBatch, woodsBatch, shortlistBatch, picnicStory, woodlandStory, couchPlay, couchBeds, couchLanterns, couchPictures, couchHarbors, couchWords, couchConga, couchBridges, couchGames, couchGuide, couchCourse, couchNames, couchSettings, couchSolo, smoke, phoneFit, phoneGames, howToIntro, howToLevelPick, readyForAdventurePlay, adventureWalkPlay, sandTablePlay, senseDetectivePlay, shedPlay, gearsPlay, meadowPlay, lensPlay, wordGluePlay, bondBeadsPlay, villageVotePlay, swapMeetPlay, littleLoomPlay, movieNightPlay, exampleExpressPlay, welcomeWaysPlay, whoAmIPlay, lookItUpPlay, fingerDemos, congaTouchPlay, roomPlay, islandShelf, creationsRoom, landsTour, journalPlay, clapPlay, clapTrainPlay, clapShortPlay, clapComparePlay, chainPlay, habitatPlay, profiles, landKeys, liveSwitchPlay, discoveryDirectNext, discoveryMyMix, discoveryMix , storyWeaverPlay } = createChecks({ ...fixture, recordCheck: name => completed.push(name) });
+  const { relayWoodsPlay, ribbonPlay, feelingsPoke, critterNotEntry, marbleJumpPlay, logRollPlay, snowballMergePlay, storyTheaterPlay, brainBreakPlay, cueStudioPlay, foodWebPlay, pyramidPlay, mossyPathPlay, numberNookPlay, gemSwapPlay, tilePairsPlay, lanternTouchPlay, pileMatchPlay, boltBoardsPlay, jarSortPlay, dominoRunPlay, fruitSlicePlay, cutAlongPlay, drawPatternPlay, puddleGobblePlay, swingPalsPlay, liftItPlay, fossilDigPlay, atticFindsPlay, atticLeverPlay, trackwayTalesPlay, recipeWorkshopPlay, seaLiftPlay, lostLayersPlay, blockGardenPlay, sudokuTouchPlay, wordSearchTouchPlay, comebackPlay, bridgesTouchPlay, pictureTouchPlay, singBarnPlay, numberTrailsPlay, fruitSumsPlay, buddiesPlay, weekPlay, orchardPlay, readDoPlay, friendsFlow, useCompanion, dressFlow, homeFirstRun, homeResidents, homeButtons, homeLastPlace, homeResult, homeFlow, welcomeFlow, hatchingAndMap, grownUps, subjectPlaces, patterns, memory, traceRound, robots, conductor, conductorSign, wardrobe7, wardrobe9, wardrobe10, wardrobe6, stickerBook, expansion, third, feelingsBatch, feelingsAsk, feelings8, fourth, early, arcade, batch, originals, next, encoreTricks, creativeBatch, woodsBatch, shortlistBatch, picnicStory, woodlandStory, couchPlay, couchBeds, couchLanterns, couchPictures, couchHarbors, couchWords, couchConga, couchBridges, couchGames, couchGuide, couchCourse, couchNames, couchSettings, couchSolo, smoke, phoneFit, phoneGames, howToIntro, howToLevelPick, readyForAdventurePlay, adventureWalkPlay, sandTablePlay, senseDetectivePlay, shedPlay, gearsPlay, meadowPlay, lensPlay, wordGluePlay, bondBeadsPlay, villageVotePlay, swapMeetPlay, littleLoomPlay, movieNightPlay, exampleExpressPlay, welcomeWaysPlay, whoAmIPlay, lookItUpPlay, fingerDemos, congaTouchPlay, roomPlay, islandShelf, creationsRoom, landsTour, journalPlay, clapPlay, clapTrainPlay, clapShortPlay, clapComparePlay, chainPlay, habitatPlay, profiles, landKeys, liveSwitchPlay, discoveryDirectNext, discoveryMyMix, discoveryMix , storyWeaverPlay } = createChecks({ ...fixture, recordCheck: name => completed.push(name) });
 
   if (suite === 'all' || suite === 'world') { await hatchingAndMap(); await subjectPlaces(); }
   else if (suite === 'friends') await friendsFlow();
@@ -628,6 +632,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'robot') await robots();
   if (suite === 'all' || suite === 'wardrobe7') await wardrobe7();
   if (suite === 'all' || suite === 'wardrobe9') await wardrobe9();
+  if (suite === 'all' || suite === 'wardrobe10') await wardrobe10();
   if (suite === 'all' || suite === 'wardrobe6') await wardrobe6();
   if (suite === 'all' || suite === 'conductor') await conductor();
   if (suite === 'all' || suite === 'expansion') await expansion();

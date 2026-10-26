@@ -29,7 +29,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 - **`weather-wardrobe`, Wind** (one implementation batch; 1 original subtask, slice 7; use the combined check tier): [scope and levels](GAME-BATCHES.md#weather-wardrobe-2-wind-remaining-part).
-- **`weather-wardrobe`, Two friends, two places** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#weather-wardrobe-3-two-friends-two-places).
 - **`monster-munch`, Sharing two kinds and choosing group counts** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#monster-munch-2-sharing-two-kinds-and-choosing-group-counts).
 - **`seesaw-balance`, Lap bounce and heavier-or-lighter choices** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#seesaw-balance-2-lap-bounce-and-heavier-or-lighter-choices).
 - **`seesaw-balance`, Order weights, estimate and find the difference** (one implementation batch; 3 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#seesaw-balance-3-order-weights-estimate-and-find-the-difference).

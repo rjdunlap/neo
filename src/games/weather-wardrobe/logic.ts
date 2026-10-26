@@ -146,7 +146,7 @@ const SHIELDS: Record<Weather, Item[]> = {
 };
 export const shieldFor = (w: Weather, wearable: readonly Item[] = ALL_ITEMS): Item => SHIELDS[w].find((i) => wearable.includes(i))!;
 
-export type WardrobeMode = 'play' | 'pick' | 'all' | 'trip' | 'change' | 'try' | 'sky';
+export type WardrobeMode = 'play' | 'pick' | 'all' | 'trip' | 'change' | 'try' | 'sky' | 'friends';
 
 export interface WardrobePlan {
   mode: WardrobeMode;
@@ -168,6 +168,7 @@ export const WARDROBE_PLANS: WardrobePlan[] = [
   { mode: 'change', choices: 5, need: 0, rounds: 3, name: 'Take off clothes that do not fit the new weather, then dress for it' },
   { mode: 'try', choices: 2, need: 1, rounds: 3, name: 'Try things on in the weather: the one that fits stops it (no mistakes)' },
   { mode: 'sky', choices: 3, need: 1, rounds: 3, name: 'See what the pet is wearing and pick the weather it is dressed for' },
+  { mode: 'friends', choices: 4, need: 4, rounds: 3, name: 'Drag four items to two friends in different weather' },
 ];
 
 export const wardrobePlan = (level: number) => WARDROBE_PLANS[Math.max(0, Math.min(WARDROBE_PLANS.length - 1, level - 1))];
@@ -199,6 +200,13 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
   // Weather-change rounds wear one outfit per weather all game, so the clothes to take off are the ones she just put on.
   const dress = plan.mode === 'change' ? new Map(WEATHERS.map((w) => [w, outfitFor(w, rng, wearable)])) : null;
   for (let r = 0; r < plan.rounds; r++) {
+    if (plan.mode === 'friends') {
+      // These upright critters wear the full wardrobe, independently of the player's companion species.
+      const weathers = rng.shuffle([...WEATHERS]).slice(0, 2);
+      const needed = weathers.flatMap((w) => rng.shuffle(outfitFor(w, rng)).slice(0, 2));
+      out.push({ weathers, needed, options: rng.shuffle([...needed]) });
+      continue;
+    }
     if (plan.mode === 'sky') {
       // Each round is a different weather, and the pet wears two things made for it: exactly one offered sky fits.
       if (!order.length) order = rng.shuffle([...WEATHERS]);
@@ -233,3 +241,9 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
 
 /** The first thing to wear (or pack) that she has not chosen yet, or null once she has them all. Always a right one. */
 export const itemToTap = (outfit: Outfit, used: ReadonlySet<Item>): Item | null => outfit.needed.find((i) => !used.has(i)) ?? null;
+
+/** The one friend whose sign fits this item, or null for something outside this round. */
+export const friendFor = (outfit: Outfit, item: Item): number | null => {
+  const index = outfit.weathers.indexOf(ITEMS[item]);
+  return index < 0 ? null : index;
+};
