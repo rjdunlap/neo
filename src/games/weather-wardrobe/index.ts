@@ -770,6 +770,8 @@ class WeatherWardrobe implements Game {
     this.drawBursts(dt);
     const fx = this.fx.clear();
     if (this.shield > 0) this.drawShield(fx, dt);
+    // The lean belongs to wind alone: level 9's grey scene after a wrong windy sky stands the pet straight again.
+    if (this.blank || this.weather !== 'windy') this.pet.rotation = 0;
     if (this.blank) return;
     if (this.weather === 'rainy') {
       for (const d of this.drops) {
