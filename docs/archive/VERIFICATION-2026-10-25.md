@@ -34,3 +34,11 @@
 - Manual finite-case/drawdown/current-band/land/creation/input/guide/voice/how-to review: exact island rules, row transaction/retry/capped help, layout plans, marks/contrast, three bots and bounded cloth Keep. Eight-game source count is capacity planning, not a layout pass.
 - Ran `node scripts/check-links.mjs` and `git diff --check`; READY/backlog/study/recommendations/roadmap/batch/archive reconciled. VA2 remains separately admitted with source/contract review and actual layout/persistence proof.
 - Not run locally: typecheck, unit tests, build, browser/offline or iPad/child checks (docs-only tier). Lap gate, device speech/touch/child understanding and later traditions/wardrobe/craft review stay open.
+
+## 2026-10-25 — Swap Meet 1–4 definition (ME1, docs only)
+
+- Defined [ME1](../definitions/swap-meet.md) at base `26869cfc` plus this docs diff, claim `1ef57b23`, [PR #967](https://github.com/rjdunlap/neo/pull/967); no runtime changes.
+- Manual authored-case/Undo/BFS/accounting/band/current-source/capacity/scope/gate review; Cozy Village now13 games, proposed14 requires actual paged layout proof.
+- Ran `node scripts/check-links.mjs` and `git diff --check`; READY/backlog/study/recommendations/tracker/roadmap/batch/archive reconciled.
+- ME2 separate admission and source/reviewer/control/placement/rules/play/demo proof remain. Person/device and levels5–6/later games/cards stay gated.
+- Not run: local typecheck/unit/build/browser/offline or child/device checks (docs-only tier). No solvability tests or play claimed.

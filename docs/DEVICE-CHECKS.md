@@ -6,6 +6,10 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 - [ ] On iPad, check comfortable empty-half/rider pokes at lap/toddler12 and body-centred friend taps at preschool13 in both orientations, real palm handling and guide replay. Listen to actual heavier/lighter questions, directional explanations and wheee timing. Observe whether the lap child repeats the lift and a preschool child uses down/heavier and up/lighter; record enjoyment/replay/stopping only after play. [Scripted proof](VERIFICATION.md#2026-10-26--seesaw-balance-lap-bounce-and-heavierlighter) does not establish these.
 
+## Weather Wardrobe wind (2026-10-26)
+
+- [ ] On an iPad, check whether wind reads to a toddler without a label (drifting clouds, streaming leaves, the leaning pet), whether the blown-away piece reads as funny rather than unkind, and how the kite looks on the river and glider in portrait. Device speech of `weather.windy` is unchecked. [Scripted proof](VERIFICATION.md#2026-10-26--weather-wardrobe-wind-slice-7) does not establish these.
+
 ## Weather Wardrobe level 10 (2026-10-26)
 
 - [ ] On iPad, check friend sign/item readability, long drags in portrait and landscape, finger lift, palm/second-finger rejection, cancellation and actual spoken weather reasons/guide replay. Observe whether a pre-K child uses both weather signs to give each friend what it needs, and record enjoyment/replay/stopping only after play. [Scripted proof](VERIFICATION.md#2026-10-26--weather-wardrobe-two-friends-level-10) does not establish these.
