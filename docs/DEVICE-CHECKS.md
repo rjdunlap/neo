@@ -84,6 +84,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] Is each joined drawing legible at 140 units on the iPad?
 - [ ] With a pre-K child: are the level 3 meanings understood as "for" (a house for a dog)?
 
+## Melt and Freeze levels 1–4 (matter slice 2, 2026-10-24)
+
+- [ ] On an iPad with a lap child: does she notice the puddle after the cube melts?
+- [ ] With a three- or four-year-old: do the sun and the snowflake read as warm and cool?
+- [ ] On an iPad: are the drip and the chime comfortable, and how does device speech say the `meltfreeze` lines?
+
 ## Puddle Lens levels 1–4 (cells-microbes slice 2, 2026-10-24)
 
 - [ ] On an iPad with a lap child: does she link her tap on the lens to the swelling?

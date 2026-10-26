@@ -19,7 +19,7 @@ describe('the entries', () => {
     expect(entriesOf('letter-trails').map((e) => e.key)).toEqual(Object.keys(WORDS));
     expect(entriesOf('mail-carrier').map((e) => e.key)).toEqual([...HELPERS]);
     expect(entriesOf('rhythm-neighbors').map((e) => e.key)).toEqual(['frogs-answer']);
-    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1);
+    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 4);
   });
 
   it('gives each a stable, unique id from its game and key', () => {
@@ -70,6 +70,11 @@ describe('the entries', () => {
           expect(said, e.id).toContain('food');
           expect(said, e.id).toContain('water');
           expect(said, e.id).toContain('shelter');
+          break;
+        case 'melt-freeze':
+          expect(said, e.id).toContain(e.key === 'stays' ? 'stay the same' : e.key);
+          expect(said, e.id).toContain(e.key === 'stays' ? 'warm or cool' : 'melts');
+          if (e.key !== 'stays') expect(said, e.id).toContain('hard again');
           break;
         case 'mail-carrier':
           expect(said, e.id).toContain(e.key);
@@ -127,6 +132,9 @@ describe('the entries', () => {
       } else if (e.game === 'rhythm-neighbors') {
         expect(find).toContain('woodpecker');
         expect(found).toContain('frog answered');
+      } else if (e.game === 'melt-freeze') {
+        expect(find.toLowerCase()).toContain('warm');
+        expect(found).toContain(e.key === 'stays' ? 'stayed the same' : 'melted');
       } else if (e.game === 'letter-trails') {
         expect(find).toContain(`letter ${e.key}`);
         expect(found).toContain(`letter ${e.key}`);

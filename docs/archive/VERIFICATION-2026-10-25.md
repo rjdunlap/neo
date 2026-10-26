@@ -27,3 +27,10 @@
 - Read current first-host logic/bands/events, palette, Voice and GameScene: 20 semantic keys, one-word Snack arbitration, round repeat/priority/cancellation, exact accepted local pt-PT fallback, bounded profile save/reset and per-line/device evidence/future filtered checks.
 - Manual inventory/event/mode/contract/scope/gate review; `node scripts/check-links.mjs` and `git diff --check` passed. READY WL1 removed, backlog/study/recommendations/roadmap/archive reconciled; no ready-build promotion.
 - Not run locally: typecheck, unit tests, build, browser/offline or device/child play (docs-only tier). Named family review of every Portuguese line and actual iPad voice acceptance remain open; no learning or pronunciation acceptance established.
+
+## 2026-10-25 — Little Loom 1–3 definition (VA1, docs only)
+
+- Worker `01a172be-55d8-7bd1-8b37-28f2695f581d`, `codex/little-loom-va1-definition`, [PR #965](https://github.com/rjdunlap/neo/pull/965), base `3a2e29b9` plus docs diff; coordinator dispatch integrated at `bb747ad6`; claim `2f69a41a`. [Packet](../definitions/little-loom.md) defines the three-mode batch; no code/assets/save changes.
+- Manual finite-case/drawdown/current-band/land/creation/input/guide/voice/how-to review: exact island rules, row transaction/retry/capped help, layout plans, marks/contrast, three bots and bounded cloth Keep. Eight-game source count is capacity planning, not a layout pass.
+- Ran `node scripts/check-links.mjs` and `git diff --check`; READY/backlog/study/recommendations/roadmap/batch/archive reconciled. VA2 remains separately admitted with source/contract review and actual layout/persistence proof.
+- Not run locally: typecheck, unit tests, build, browser/offline or iPad/child checks (docs-only tier). Lap gate, device speech/touch/child understanding and later traditions/wardrobe/craft review stay open.
