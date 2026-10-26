@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-10-26 — Village Vote 1–3 (CC4)
+
+- [PR #983](https://github.com/rjdunlap/neo/pull/983), worker `01a176ea-3190-7f83-80a3-e41d2259e4de`, `codex/village-vote-cc4`; tested `53490baf` plus final working diff. Whole CC4 batch and fifteenth Cozy Village entry. [Source/contracts/manual review](definitions/village-vote.md#cc4-implementation-and-review-2026-10-26); assignment forbids subagents, no independent reviewer claimed.
+- Passed typecheck,72 focused rules/interaction/catalog/card/lands/village tests and full units3342 passed/4 existing skips. After final Hint-edge/singular-zero speech correction: typecheck,12 game rule/interaction tests and build passed. Finite family conservation/unique maximum, deterministic randomized winners, either pet choice, partial/repeated counts, truthful comparison, deliberate misses, support cap, public-input bots across36 seeded rounds, cancel/resize/destroy and once-only completion covered. Final PR CI required before merge.
+- `GAME_URL=http://localhost:5216 BROWSER_SUITE=villagevote` passed all three levels, both pet choices for both level2 families, losing preference, zero/five votes,3–2–2, partial/repeated/replay counts, wrong declaration/automatic/manual help and real ghost-assisted finish. Final regression passes every control center/corner; restoring old Hint y235 fails interception before corrected280 passes. Native cancellation, leaving during pet travel, actual classic younger-signpost launch/playBand/return page and root Explore/Places return page passed. Logs/probes remain ignored in test-results.
+- Same URL `BROWSER_SUITE=fingerdemo FINGER_ONLY=village-vote FINGER_LEVELS=1,2,3`: all clean,7.6/10.6/11.6 demo seconds, public taps only. Inspected five-vote and seven-visible-voter portrait screenshots; guide/controls clear. No real-player save touched; no new audio clips.
+- Pre-code capacity14→15:48 actual band/side/page/view cases, current scenery0.4 horizon, full targets; lands/village four-view/full-budget/resident tests passed. No shared navigation/persistence contract or imported assets changed: unchanged broad world, stories, couch and production offline evidence reused, not rerun. Source review used NCSS position statement and accessible primary C3 extract; blocked dissertation is not a new efficacy source.
+- Not run: real iPad speech/count order, small-hand cancellation/reach/legibility, preschool preference-versus-declaration understanding, losing-preference acceptance, enjoyment/replay or transfer. [Device/person gates](DEVICE-CHECKS.md#village-vote-levels-13-cc4-2026-10-26) stay open; CC5 waits until1–3 have been played. Later content, persistent square, practical/historical/cultural/safety cards and other games excluded.
+
 ## 2026-10-25 — Swap Meet 1–4 (ME2)
 
 - [PR #981](https://github.com/rjdunlap/neo/pull/981), worker `01a17677-f36a-7281-938f-5b54e60a9fdd`, `codex/swap-meet-me2`; tested claim `188ad88e` plus implementation diff on `0028f758`. Integrated coordinator-only main `34cbf70e` with no runtime change; recorded play/demo evidence remains applicable. Whole four-level batch, both authored chains, exact Undo/BFS/support and fourteenth Cozy Village entry. [Source/contracts and self-review](definitions/swap-meet.md#me2-building-session-review-2026-10-25); dispatch prohibited subagents. No separate independent reviewer claimed.
@@ -106,19 +115,13 @@
 - Ran: `node scripts/check-links.mjs`; `git diff --check`. Backlog/tracker/recommendations, READY cadence, roadmap and archive reconciled; D2 separately queued with source-review/placement/build gates.
 - Not run locally: typecheck, unit tests, build, browser/offline or device checks (docs-only tier). No iPad speech/touch, child/coplayer appeal or learning evidence. Later cases and unresolved decisions unchanged.
 
-## 2026-10-24 — Movie Night 1–3 definition (MM1, docs only)
-
-- `codex/movie-night-mm1`, [PR #953](https://github.com/rjdunlap/neo/pull/953), base `043188e3` plus working diff: [packet](definitions/movie-night.md) defines footage/facts, pads/events, exact accepted strips, audience/accounting, input/help, speech/how-to/demo and orientation/placement requirements.
-- Source/decision/diff review reconciled the making-media study and October23 decisions with current `sfx.ts`, `view.ts` and `lands.ts`: Knock exists; Paint Pier is now Painted Canyon (`treehouse`), eight games; its actual added-game layout is unverified. No new research or gameplay.
-- Ran: `node scripts/check-links.mjs`; `git diff --check`. Definition, recommendations, tracker, backlog, READY and archive reconciled; downstream review/placement/build gates retained.
-- Not run locally: typecheck, unit tests, build, browser/offline or device checks (docs-only tier). No iPad speech/effect distinction, touch, child/coplayer or learning evidence; separate MM2 implementation still required.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `villagevote`, `fingerdemo` (`village-vote`) | 2026-10-26: typecheck/full3342 units/final12 game tests/build; three levels, both pet choices/families, zero/partial/repeat counts, help/ghost finish, control edges/cancel, portrait, both routes and three clean demos passed | [CC4](#2026-10-26--village-vote-13-cc4) | iPad speech/touch and child/coplayer evidence open; broad world/offline reused; final CI required |
 | `swapmeet`, `fingerdemo` (`swap-meet`) | 2026-10-25: focused91/typecheck/build, all four modes and both chains, exact Undo/help/native cancel/second-pointer regression, both routes and clean1–4 demos passed | [ME2](#2026-10-25--swap-meet-14-me2) | Real iPad speech/touch/child/coplayer gates open; full local units had two unrelated timing limits, isolated reruns passed; broad/offline reused |
 | `littleloom`, `fingerdemo` (`little-loom`) | 2026-10-25: three modes/capped help/cancel/Keep, full units/typecheck/build, filtered play, all three clean demos, portrait and classic/root return origins passed | [VA2](#2026-10-25--little-loom-13-va2) | iPad speech/touch/cloth readability and child/coplayer evidence open; lap and later levels absent |
 | Cloth creation | 2026-10-25: strict 48-cell validation, rectangular render bounds, previous ownership and actual Store profile/reload/backup round trip passed | [VA2](#2026-10-25--little-loom-13-va2) | Classic production offline 48-cell/previous picture/tune reload passed; root offline not rerun |

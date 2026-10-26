@@ -256,6 +256,12 @@ Misses and hints: Check on an empty bench is free, and so is a refused overfull 
 
 ## Cozy Village (everyday life)
 
+### Village Vote
+
+*preschool–school.* One election chooses a slide, swing or sandpit and everyone tries it. Level1 counts two groups (3–1 or4–2). Level2 first lets the pet freely choose either toy, then counts the four friends plus exactly one pet vote (NPC families3–1 or4–0). Its preference can lose; the pet still plays first. Level3 compares seven friends across three tallies (4–2–1 or3–2–2). Preschool1–2, pre-K1–3, school3. Families, toy slots and NPC assignments are seeded; every election has one unique largest group.
+
+Tap a whole friend/paw panel to count it once; repeating it or tapping its tally board replays the current partial count. Marks/numerals show only counted friends. Tap a toy picture to declare the actual winner, with no counting prerequisite. Only a deliberate wrong declaration counts a miss; feedback recounts without naming the answer. After two misses the answer glows and assistance is recorded. Hint counts all groups and explains the comparison; another Hint demonstrates the winning tap. All support stays capped at1 for this single decision, including after resize and phase changes. Counts, replay, free preference, cancelled/outside release and stale/busy input are free. Down feedback is immediate; a matching inside release commits the action. Automatic shared play finishes once through the shell for one sticker, including with help. No persistent toy, Keep, unlock or later tie/run-off levels. Voice, level-scoped card and public-input finger demos included; device/child evidence remains open.
+
 ### Swap Meet
 
 *toddler–school.* Drag pictured toys to make two-way exchanges. Level1 visits three friends in seeded order, each with one request and two basket choices; the returned object arrives before the next visit, and rejected offers count no misses. Level2 has two simultaneous requests, accepted in either order; returned toys stay visible but inactive. Level3 finds two reciprocal pairs among four friends, in either direction/order. Level4 carries one toy through two trades for a pictured kite or flower; a shell is one toy, never currency. Toddler1–2, preschool2–3, pre-K3–4, school4.
