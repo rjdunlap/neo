@@ -42,3 +42,10 @@
 - Ran `node scripts/check-links.mjs` and `git diff --check`; READY/backlog/study/recommendations/tracker/roadmap/batch/archive reconciled.
 - ME2 separate admission and source/reviewer/control/placement/rules/play/demo proof remain. Person/device and levels5–6/later games/cards stay gated.
 - Not run: local typecheck/unit/build/browser/offline or child/device checks (docs-only tier). No solvability tests or play claimed.
+
+## 2026-10-25 — Village Vote 1–3 definition (CC1, docs only)
+
+- [CC1 packet](../definitions/village-vote.md), base `da20f87c` plus docs diff, claim `4796460e`, [PR #969](https://github.com/rjdunlap/neo/pull/969); no runtime/assets changes.
+- Manual finite-vote-family/phase/count/replay/acceptance/accounting/band/current-source/layout-capacity/scope review; proposed envelopes are not measured hit areas or play evidence.
+- Ran `node scripts/check-links.mjs` and `git diff --check`; READY/backlog/study/recommendations/tracker/roadmap/batch/archive reconciled. CC4 separately admitted, review/actual placement/layout and implementation proof retained.
+- Not run: local typecheck/unit/build/browser/offline or child/iPad checks (docs-only tier). No solvability tests, game review, speech or learning acceptance claimed. Later levels, persistence/cards and person/device gates remain open.
