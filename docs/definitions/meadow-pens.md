@@ -1,6 +1,6 @@
 # Meadow Pens: levels 1–5 built
 
-Built 2026-10-25: `codex/meadow-pens-compare-parts`, [PR #972](https://github.com/rjdunlap/neo/pull/972), delivers slice 3, levels 4–5 together: finite grass/fence comparisons and two-part L fields. The [source check](#building-session-curriculum-source-check-2026-10-25) meets the decided curriculum gate; [verification](../VERIFICATION.md#2026-10-25--meadow-pens-levels-45-area-volume-space-slice-3) records implementation proof. No levels 6–7, persistence, assets or navigation changes.
+Built 2026-10-25: `codex/meadow-pens-compare-parts`, [PR #972](https://github.com/rjdunlap/neo/pull/972), delivers slice 3, levels 4–5 together: finite grass/fence comparisons and two-part L fields. The [source check](#building-session-curriculum-source-check-2026-10-25) meets the decided curriculum gate; [verification](../archive/VERIFICATION-2026-10-25.md#2026-10-25--meadow-pens-levels-45-area-volume-space-slice-3) records implementation proof. No levels 6–7, persistence, assets or navigation changes.
 
 Defined 2026-10-22 as slice 1 of the [area, volume and space study](../deep-dives/subjects/area-volume-space.md#build-slices-in-order), from its [first game's ladder](../deep-dives/subjects/area-volume-space.md#a-first-games-ladder-meadow-pens) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#area-volume-and-space-recommendations). The original packet was docs only; levels 1–3 are now implemented. Levels 4–5 are now implemented under the extension below; levels 6–7 remain gated.
 
