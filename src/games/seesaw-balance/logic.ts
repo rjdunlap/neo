@@ -9,7 +9,7 @@ import { Rng } from '../../engine/random';
  * balanced with a box and blocks on one side: take the same off both sides until the box is alone. The top step,
  * after SolveMe Mobiles, weighs a square box first and then uses its number to find a round box (substitution).
  */
-export type SeesawMode = 'up' | 'heavy' | 'level' | 'heaviest' | 'parts' | 'mystery' | 'same' | 'share' | 'pair';
+export type SeesawMode = 'bounce' | 'compare' | 'up' | 'heavy' | 'level' | 'heaviest' | 'parts' | 'mystery' | 'same' | 'share' | 'pair';
 export type Side = 'left' | 'right';
 
 export interface SeesawPlan {
@@ -31,6 +31,8 @@ export const PLANS: SeesawPlan[] = [
   { mode: 'same', rounds: 3, boxes: 2, name: 'Boxes on both sides: take a box for a box and a block for a block until one box is alone' },
   { mode: 'share', rounds: 3, name: 'Take the same off both sides, then share the blocks between two identical boxes' },
   { mode: 'pair', rounds: 2, name: 'Two different boxes: read the square box, then take the same off both sides until the round box is alone' },
+  { mode: 'bounce', rounds: 4, name: 'Wheee! Touch the empty end to lift a little friend' },
+  { mode: 'compare', rounds: 3, name: 'Who is heavier? Tap the heavier or lighter friend on the tipped trays' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -77,6 +79,7 @@ export interface SeesawRound {
   across?: Thing[];
   /** Level 11: a pair is a reading of the square box, then the round box weighed with it. */
   phase?: 'read' | 'pair';
+  asked?: 'heavier' | 'lighter';
 }
 
 export const other = (side: Side): Side => (side === 'left' ? 'right' : 'left');
@@ -137,6 +140,18 @@ export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
   for (let r = 0; r < plan.rounds; r++) {
     const fixedSide: Side = rng.chance(0.5) ? 'left' : 'right';
     switch (plan.mode) {
+      case 'bounce': {
+        const rider = r === 0 ? 1 : fresh(1, 2);
+        rounds.push({ fixed: [r === 0 ? { kind: 'friend', weight: 1, face: 'duck' } : friend(rider)], fixedSide, offered: [friend(rng.int(rider + 1, 4))], answer: rider });
+        break;
+      }
+      case 'compare': {
+        const weights = rng.shuffle([1, 2, 3, 4]).slice(0, 2);
+        const asked = r % 2 === 0 ? 'heavier' : 'lighter';
+        rounds.push({ fixed: [friend(weights[0])], fixedSide, across: [friend(weights[1])], offered: [], asked,
+          answer: asked === 'heavier' ? Math.max(...weights) : Math.min(...weights) });
+        break;
+      }
       case 'up': {
         const rider = fresh(1, 2);
         const bigger = rng.shuffle([2, 3, 4].filter((w) => w > rider)).slice(0, 2);
@@ -276,7 +291,7 @@ export interface SeesawTouchItem {
   tested?: boolean;
 }
 
-export type SeesawTouch = { kind: 'move'; item: number; to: Side | 'ground' | 'wagon' } | { kind: 'answer'; value: number };
+export type SeesawTouch = { kind: 'tray'; side: Side } | { kind: 'friend'; item: number } | { kind: 'move'; item: number; to: Side | 'ground' | 'wagon' } | { kind: 'answer'; value: number };
 
 /** Indexes of a subset that makes `need`, or null when none does. */
 function completion(items: readonly SeesawTouchItem[], indexes: readonly number[], need: number): number[] | null {
@@ -293,6 +308,11 @@ function completion(items: readonly SeesawTouchItem[], indexes: readonly number[
  * removes a matching thing from the heavy side after each deliberate tip.
  */
 export function seesawTouch(plan: SeesawPlan, round: SeesawRound, items: readonly SeesawTouchItem[], numbers = false): SeesawTouch | null {
+  if (plan.mode === 'bounce') return { kind: 'tray', side: other(round.fixedSide) };
+  if (plan.mode === 'compare') {
+    const item = items.findIndex((i) => i.thing.weight === round.answer);
+    return item < 0 ? null : { kind: 'friend', item };
+  }
   if (numbers) return { kind: 'answer', value: round.answer };
   const target = other(round.fixedSide);
   const loose = items.map((item, index) => ({ item, index })).filter(({ item }) => !item.fixed && !item.inWagon);
