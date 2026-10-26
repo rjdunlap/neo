@@ -9,7 +9,7 @@ import { Rng } from '../../engine/random';
  * balanced with a box and blocks on one side: take the same off both sides until the box is alone. The top step,
  * after SolveMe Mobiles, weighs a square box first and then uses its number to find a round box (substitution).
  */
-export type SeesawMode = 'bounce' | 'compare' | 'up' | 'heavy' | 'level' | 'heaviest' | 'parts' | 'mystery' | 'same' | 'share' | 'pair';
+export type SeesawMode = 'sort' | 'guess' | 'difference' | 'bounce' | 'compare' | 'up' | 'heavy' | 'level' | 'heaviest' | 'parts' | 'mystery' | 'same' | 'share' | 'pair';
 export type Side = 'left' | 'right';
 
 export interface SeesawPlan {
@@ -33,6 +33,9 @@ export const PLANS: SeesawPlan[] = [
   { mode: 'pair', rounds: 2, name: 'Two different boxes: read the square box, then take the same off both sides until the round box is alone' },
   { mode: 'bounce', rounds: 4, name: 'Wheee! Touch the empty end to lift a little friend' },
   { mode: 'compare', rounds: 3, name: 'Who is heavier? Tap the heavier or lighter friend on the tipped trays' },
+  { mode: 'sort', rounds: 3, name: 'Line them up: test three presents, then order them from light to heavy' },
+  { mode: 'guess', rounds: 3, name: 'Guess the pumpkin: guess freely, measure with blocks, then say its weight' },
+  { mode: 'difference', rounds: 3, name: 'How much heavier? Add blocks to the light side, then say the difference' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -54,7 +57,7 @@ export interface Thing {
 
 export type Wrapping = 'plain' | 'dots' | 'stripes';
 export const WRAPPINGS: readonly Wrapping[] = ['plain', 'dots', 'stripes'];
-export type BoxLook = 'parcel' | 'crate';
+export type BoxLook = 'parcel' | 'crate' | 'pumpkin';
 export const BOX_LOOKS: readonly BoxLook[] = ['parcel', 'crate'];
 
 /** Friends by weight: the bigger the friend, the heavier. */
@@ -79,6 +82,7 @@ export interface SeesawRound {
   across?: Thing[];
   /** Level 11: a pair is a reading of the square box, then the round box weighed with it. */
   phase?: 'read' | 'pair';
+  prediction?: number;
   asked?: 'heavier' | 'lighter';
 }
 
@@ -170,6 +174,7 @@ export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
         rounds.push({ fixed: [friend(w)], fixedSide, offered: blocks(w + 2), answer: w });
         break;
       }
+      case 'sort':
       case 'heaviest': {
         const weights = rng.shuffle([1, 2, 3, 4]).slice(0, 3);
         rounds.push({ fixed: [], fixedSide, offered: weights.map((weight) => ({ kind: 'present', weight, wrap: looks.pick([...WRAPPINGS]) })), answer: Math.max(...weights) });
@@ -214,6 +219,17 @@ export function makeRounds(plan: SeesawPlan, rng: Rng): SeesawRound[] {
         const square = (): Thing => ({ kind: 'box', weight: s, shape: 'square' });
         rounds.push({ fixed: [square()], fixedSide, offered: [], across: blocks(s), answer: s, phase: 'read' });
         rounds.push({ fixed: [square(), { kind: 'box', weight: r, shape: 'round' }, ...blocks(k)], fixedSide, offered: [], across: blocks(s + r + k), answer: r, phase: 'pair' });
+        break;
+      }
+      case 'difference': {
+        const heavy = fresh(3, 6);
+        const light = rng.int(2, heavy - 1);
+        rounds.push({ fixed: [{ kind: 'weight', weight: heavy }], fixedSide, across: [{ kind: 'weight', weight: light }], offered: blocks(6), answer: heavy - light });
+        break;
+      }
+      case 'guess': {
+        const m = fresh(2, 6);
+        rounds.push({ fixed: [{ kind: 'box', weight: m, look: 'pumpkin' }], fixedSide, offered: blocks(6), answer: m });
         break;
       }
       case 'mystery': {
@@ -289,9 +305,10 @@ export interface SeesawTouchItem {
   inWagon?: boolean;
   /** Heaviest mode: this present has already taken a turn on a tray. */
   tested?: boolean;
+  shelf?: number;
 }
 
-export type SeesawTouch = { kind: 'tray'; side: Side } | { kind: 'friend'; item: number } | { kind: 'move'; item: number; to: Side | 'ground' | 'wagon' } | { kind: 'answer'; value: number };
+export type SeesawTouch = { kind: 'tray'; side: Side } | { kind: 'friend'; item: number } | { kind: 'move'; item: number; to: Side | 'ground' | 'wagon' | number } | { kind: 'answer'; value: number };
 
 /** Indexes of a subset that makes `need`, or null when none does. */
 function completion(items: readonly SeesawTouchItem[], indexes: readonly number[], need: number): number[] | null {
@@ -313,6 +330,7 @@ export function seesawTouch(plan: SeesawPlan, round: SeesawRound, items: readonl
     const item = items.findIndex((i) => i.thing.weight === round.answer);
     return item < 0 ? null : { kind: 'friend', item };
   }
+  if (plan.mode === 'guess' && round.prediction === undefined) return { kind: 'answer', value: round.answer };
   if (numbers) return { kind: 'answer', value: round.answer };
   const target = other(round.fixedSide);
   const loose = items.map((item, index) => ({ item, index })).filter(({ item }) => !item.fixed && !item.inWagon);
@@ -328,8 +346,8 @@ export function seesawTouch(plan: SeesawPlan, round: SeesawRound, items: readonl
     const pick = ground.find(({ item }) => item.thing.weight > round.answer);
     return pick ? { kind: 'move', item: pick.index, to: target } : null;
   }
-  if (plan.mode === 'level' || plan.mode === 'mystery' || plan.mode === 'parts') {
-    const need = total(round.fixed) - weight(target);
+  if (plan.mode === 'level' || plan.mode === 'mystery' || plan.mode === 'parts' || plan.mode === 'guess' || plan.mode === 'difference') {
+    const need = total(round.fixed) - total(round.across ?? []) - weight(target);
     if (need <= 0) return null;
     const way = completion(items, ground.map(({ index }) => index), need);
     return way?.length ? { kind: 'move', item: way[0], to: target } : null;
@@ -382,4 +400,25 @@ export function seesawTouch(plan: SeesawPlan, round: SeesawRound, items: readonl
   const side: Side = on(round.fixedSide).some(({ item }) => item.thing.kind === 'block') ? round.fixedSide : other(round.fixedSide);
   const block = on(side).find(({ item }) => item.thing.kind === 'block');
   return block ? { kind: 'move', item: block.index, to: 'ground' } : null;
+}
+
+/** A visible pair result, recorded only after both presents have landed on the trays. */
+export interface PairReading { lighter: number; heavier: number }
+
+/** Sort by three observed pair tests. This planner never reads an item's hidden weight. */
+export function sortTouch(items: readonly SeesawTouchItem[], readings: readonly PairReading[]): SeesawTouch | null {
+  const indexes = items.map((_, i) => i);
+  for (let a = 0; a < indexes.length; a++) for (let b = a + 1; b < indexes.length; b++) {
+    if (readings.some(r => (r.lighter === a && r.heavier === b) || (r.lighter === b && r.heavier === a))) continue;
+    if (items[a].side !== 'left') return { kind: 'move', item: a, to: 'left' };
+    if (items[b].side !== 'right') return { kind: 'move', item: b, to: 'right' };
+    return null; // Wait for the trays to settle and record their result.
+  }
+  const ordered = indexes.sort((a, b) => readings.filter(r => r.heavier === a).length - readings.filter(r => r.heavier === b).length);
+  const slot = ordered.findIndex((i, rank) => items[i].shelf !== rank);
+  return slot < 0 ? null : { kind: 'move', item: ordered[slot], to: slot };
+}
+
+export function predictionComparison(guess: number, answer: number): 'exact' | 'close' | 'more' | 'less' {
+  return guess === answer ? 'exact' : Math.abs(guess - answer) === 1 ? 'close' : answer > guess ? 'more' : 'less';
 }

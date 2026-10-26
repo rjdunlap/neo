@@ -20,3 +20,10 @@
 - Opened ACTFL named standards, CEFR/young-learner guidance, Head Start and two developmental experiments; five first-party digital descriptions plus original family equivalent. Reused adjacent studies; first-host/later receptive ladder, every audience, candidates/recommendations and dependency-ordered slices documented.
 - Manual source/ownership/audience/English-first/gate review; links and `git diff --check` passed. Research READY line removed, WL1 docs-only refinement queued; tracker/backlog/notebook/roadmap/device evidence scope reconciled. Exact account metadata remains private.
 - Not run: local typecheck, unit tests, build, browser/offline, child/device/learning checks (docs-only tier). Developer-named family review of every Portuguese line and actual pt-PT voice acceptance remain before build; Arabic/French/Spanish, cultural/song/phonics review and older-mode policy/placement gates retained.
+
+## 2026-10-25 — European Portuguese stage-1 definition (WL1, docs only)
+
+- Worker `01a17284-357d-7b71-8c4e-285c4afdf9c5`, `codex/wl1-portuguese-definition`, [PR #963](https://github.com/rjdunlap/neo/pull/963), base `9cdf7e49` plus docs diff; claim `8881c86c`; coordinator dispatch `609184a4`/`f7e7d0f3` integrated (docs only). [Existing packet](../definitions/additional-languages.md) refined; no translations/code/assets/clips.
+- Read current first-host logic/bands/events, palette, Voice and GameScene: 20 semantic keys, one-word Snack arbitration, round repeat/priority/cancellation, exact accepted local pt-PT fallback, bounded profile save/reset and per-line/device evidence/future filtered checks.
+- Manual inventory/event/mode/contract/scope/gate review; `node scripts/check-links.mjs` and `git diff --check` passed. READY WL1 removed, backlog/study/recommendations/roadmap/archive reconciled; no ready-build promotion.
+- Not run locally: typecheck, unit tests, build, browser/offline or device/child play (docs-only tier). Named family review of every Portuguese line and actual iPad voice acceptance remain open; no learning or pronunciation acceptance established.

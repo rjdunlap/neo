@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { seesawBalance } from './index';
 import { landing, levelsInOrder, stepLevel } from '../../progress/difficulty';
 import { Rng } from '../../engine/random';
-import { aloneSide, balanceObservation, BOX_LOOKS, downSide, FACES_FOR, FRIEND_FOR, friendScale, WRAPPINGS, makeRounds, MAX_TILT, numberChoices, other, pairHint, PLANS, planFor, progress, seesawTouch, shareSide, stays, tilt, total, ways, weigh, type SeesawRound, type SeesawTouchItem, type Side, type Thing } from './logic';
+import { sortTouch, predictionComparison, type PairReading, aloneSide, balanceObservation, BOX_LOOKS, downSide, FACES_FOR, FRIEND_FOR, friendScale, WRAPPINGS, makeRounds, MAX_TILT, numberChoices, other, pairHint, PLANS, planFor, progress, seesawTouch, shareSide, stays, tilt, total, ways, weigh, type SeesawRound, type SeesawTouchItem, type Side, type Thing } from './logic';
 
 describe('Seesaw Balance', () => {
   it('keeps appended entries in their intended band order and out of older birthday landings', () => {
@@ -16,8 +16,8 @@ describe('Seesaw Balance', () => {
     expect(stepLevel(13, 1, g.levels('preschool'))).toBe(3);
     expect(landing(12, g.levels('preschool'), g.entryLevels)).toBe(2);
     expect(landing(13, g.levels('prek'), g.entryLevels)).toBe(3);
-    expect(levelsInOrder(g.levels('prek'))).toEqual([3, 4, 5, 6, 7]);
-    expect(levelsInOrder(g.levels('school'))).toEqual([6, 7, 8, 9, 10, 11]);
+    expect(levelsInOrder(g.levels('prek'))).toEqual([3, 4, 14, 5, 6, 7, 15]);
+    expect(levelsInOrder(g.levels('school'))).toEqual([6, 7, 15, 16, 8, 9, 10, 11]);
   });
 
   it('offers four strictly heavier lifters and three uniquely answerable alternating comparisons', () => {
@@ -48,7 +48,7 @@ describe('Seesaw Balance', () => {
   });
 
   it('demonstrates every mode with only moves that lead to its answer', () => {
-    for (const plan of PLANS) for (let seed = 1; seed <= 50; seed++) {
+    for (const plan of PLANS.filter(p => !['sort', 'guess', 'difference'].includes(p.mode))) for (let seed = 1; seed <= 50; seed++) {
       for (const round of makeRounds(plan, new Rng(seed))) {
         const same = plan.mode === 'same' || plan.mode === 'share';
         const items: SeesawTouchItem[] = [
@@ -83,7 +83,8 @@ describe('Seesaw Balance', () => {
           }
           const item = items[move.item];
           expect(item.fixed).toBe(false);
-          if (move.to === 'wagon') {
+          if (typeof move.to === 'number') { item.shelf = move.to; item.side = null; }
+          else if (move.to === 'wagon') {
             expect(item.thing.weight).toBe(round.answer);
             item.side = null;
             item.inWagon = true;
@@ -100,6 +101,75 @@ describe('Seesaw Balance', () => {
         if (plan.mode === 'heaviest') expect(items.some((item) => item.inWagon && item.thing.weight === round.answer)).toBe(true);
       }
     }
+  });
+
+  it('sorts three distinct presents using exactly three visible pair readings, without hidden-weight decisions', () => {
+    for (let seed = 1; seed <= 300; seed++) for (const round of makeRounds(planFor(14), new Rng(seed))) {
+      expect(new Set(round.offered.map(t => t.weight)).size).toBe(3);
+      const items: SeesawTouchItem[] = round.offered.map(thing => ({ thing, fixed: false, side: null }));
+      const readings: PairReading[] = [];
+      for (let step = 0; step < 15; step++) {
+        const a = items.findIndex(i => i.side === 'left'), b = items.findIndex(i => i.side === 'right');
+        if (a >= 0 && b >= 0 && !readings.some(r => [r.lighter, r.heavier].includes(a) && [r.lighter, r.heavier].includes(b))) {
+          readings.push(items[a].thing.weight < items[b].thing.weight ? { lighter: a, heavier: b } : { lighter: b, heavier: a });
+        }
+        const next = sortTouch(items, readings);
+        // A different set of hidden weights cannot change the planner's choice for the same observations.
+        expect(sortTouch(items.map(i => ({ ...i, thing: { ...i.thing, weight: 99 } })), readings)).toEqual(next);
+        if (!next) break;
+        if (next.kind !== 'move') throw new Error('sort needs a drag');
+        const item = items[next.item];
+        if (typeof next.to === 'number') {
+          expect(readings).toHaveLength(3);
+          expect(next.to).toBe(items.filter(i => i.thing.weight < item.thing.weight).length);
+          item.shelf = next.to; item.side = null;
+        } else if (next.to === 'left' || next.to === 'right') {
+          for (const otherItem of items) if (otherItem.side === next.to) otherItem.side = null;
+          item.side = next.to;
+        }
+      }
+      expect(readings).toHaveLength(3);
+      expect(items.every(i => i.shelf !== undefined)).toBe(true);
+    }
+  });
+
+  it('provides enough unit blocks for every estimate and difference, with valid unique choices and a clean demo solution', () => {
+    for (const level of [15, 16]) for (let seed = 1; seed <= 300; seed++) {
+      const plan = planFor(level);
+      expect(makeRounds(plan, new Rng(seed))).toEqual(makeRounds(plan, new Rng(seed)));
+      for (const r of makeRounds(plan, new Rng(seed))) {
+        const light = total(r.across ?? []), heavy = total(r.fixed);
+        expect(r.answer).toBe(heavy - light);
+        expect(heavy).toBeGreaterThanOrEqual(2); expect(heavy).toBeLessThanOrEqual(6);
+        expect(r.answer).toBeGreaterThanOrEqual(level === 15 ? 2 : 1);
+        expect(r.answer).toBeLessThanOrEqual(level === 15 ? 6 : 4);
+        if (level === 16) { expect(light).toBeGreaterThanOrEqual(2); expect(downSide(heavy, light)).toBe('left'); }
+        const choices = numberChoices(new Rng(seed), r.answer);
+        expect(new Set(choices).size).toBe(3); expect(choices).toContain(r.answer);
+        expect(choices.every(n => n >= 1)).toBe(true);
+        expect(r.offered).toHaveLength(6);
+        const items: SeesawTouchItem[] = [
+          ...r.fixed.map(thing => ({ thing, fixed: true, side: r.fixedSide })),
+          ...(r.across ?? []).map(thing => ({ thing, fixed: true, side: other(r.fixedSide) })),
+          ...r.offered.map(thing => ({ thing, fixed: false, side: null })),
+        ];
+        if (level === 15) r.prediction = choices[0];
+        for (let n = 0; n < r.answer; n++) {
+          const next = seesawTouch(plan, r, items);
+          if (next?.kind !== 'move' || (next.to !== 'left' && next.to !== 'right')) throw new Error('missing block move');
+          expect(next.to).toBe(other(r.fixedSide));
+          expect(items[next.item].thing.kind).toBe('block');
+          items[next.item].side = next.to;
+        }
+        expect(total(items.filter(i => i.side === r.fixedSide).map(i => i.thing))).toBe(total(items.filter(i => i.side === other(r.fixedSide)).map(i => i.thing)));
+        expect(seesawTouch(plan, r, items, true)).toEqual({ kind: 'answer', value: r.answer });
+      }
+    }
+    expect(predictionComparison(3, 3)).toBe('exact');
+    expect(predictionComparison(3, 4)).toBe('close');
+    expect(predictionComparison(4, 3)).toBe('close');
+    expect(predictionComparison(2, 6)).toBe('more');
+    expect(predictionComparison(6, 2)).toBe('less');
   });
 
   it('leans toward the heavier side, more for a bigger difference, and is level only when equal', () => {
@@ -260,7 +330,7 @@ describe('Seesaw Balance', () => {
     const goal = (items: readonly SeesawTouchItem[]) => gap(items) === 0 && aloneSide(sidesOf(items)) !== null;
 
     it('reads the square box, then weighs a different round box with it', () => {
-      expect(PLANS).toHaveLength(13);
+      expect(PLANS).toHaveLength(16);
       expect(PAIR.mode).toBe('pair');
       for (let seed = 1; seed <= 300; seed++) {
         const rounds = makeRounds(PAIR, new Rng(seed));

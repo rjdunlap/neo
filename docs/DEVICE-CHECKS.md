@@ -564,3 +564,8 @@ Open: actual iPad speech/name and hop-count playback, small-hand release/cancel/
 
 - [ ] On an iPad, check cave/sign recognition, four-friend reach, spoken group size, zero and the two separate food questions; do the counted tummy icons/friends/tray make wrong pads useful?
 - [ ] With a child/coplayer, check whether an insufficient cave call reads as a welcome experiment, whole groups and fair amounts of each kind are understandable, and stopping/replaying remains comfortable. Automation establishes neither comprehension nor learning transfer.
+
+## Seesaw Balance 14–16 (2026-10-26)
+
+- [ ] On an iPad, check drag release/cancel/palm behavior, shelf reach, small/middle/big block cues, pumpkin guess sign and tagged number readability in both orientations, and actual instruction/count/comparison speech.
+- [ ] With a child/coplayer, check whether freely testing pairs supports ordering, a guess feels welcome even when different, and adding blocks explains how much heavier. Check supported completion and comfortable stopping. Browser play and seeded rules establish no learning transfer or developmental acceptance.

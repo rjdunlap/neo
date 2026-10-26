@@ -124,7 +124,7 @@ Each has a default below; the build proceeds on it.
 
 ## Build slices, in order
 
-**Batch 3 claimed 2026-10-26:** worker `01a1794b-ef2b-76d0-bc36-5b92e5a9ac4f`, branch `codex/seesaw-order-estimate-difference`: slices 5–7, levels 14–16 together. Files: game logic/rendering/tests, how-to/voice, filtered browser suite/registry, README and game/roadmap/batch/verification/queue docs. Reuses completed slices 1–4; excludes level 17, assets, other games and person/device acceptance. Draft PR pending. Research claim `6e7a5e19` preserved.
+**Batch 3 (slices 5–7) built 2026-10-26** on `codex/seesaw-order-estimate-difference` ([PR #993](https://github.com/rjdunlap/neo/pull/993)); [build note](../archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-3-order-estimate-and-difference-slices-57-2026-10-26). Research claim `6e7a5e19` preserved.
 
 **Batch 1 (slices 1–2) built 2026-10-23** on `claude/seesaw-support-truth` ([PR #858](https://github.com/rjdunlap/neo/pull/858)); build note in the [archive](../archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-1-truthful-support-and-varied-weighing-props-slices-12-2026-10-23).
 
@@ -136,9 +136,9 @@ Each has a default below; the build proceeds on it.
 2. **Two faces per weight, wrappings and boxes (built)** (logic tier, plus one filtered play of 2 and 4): the friend pool per weight with its distinct-faces test, seeded present wrappings, parcel and crate boxes at 6–7.
 3. **Level 12 *Wheee!* with the lap band (built)** (new interaction tier: typecheck, units, one scripted play at lap and toddler, one portrait screenshot, `fingerdemo` at 12): the `bounce` mode, `bands` gains `lap`, lap `order [12]`, toddler `order [12, 1, 2]`, `entryLevels: [12]`.
 4. **Level 13 *Who is heavier?* (built)** (new interaction tier, taps on friends: typecheck, rule tests, one play of 13 with one wrong tap and one hint, `fingerdemo` at 13): preschool `order [2, 13, 3, 4]`, `entryLevels: [12, 13]`.
-5. **Level 14 *Line them up*** (new levels on an existing interaction: typecheck, rule tests, one play of 14, `fingerdemo` at 14): pre-K `order [3, 4, 14, 5, 6, 7]`.
-6. **Level 15 *Guess the pumpkin*** (new levels tier, plus a portrait screenshot for the guess sign): pre-K `order [3, 4, 14, 5, 6, 7, 15]`, school `order [6, 7, 15, 8, 9, 10, 11]` (without 11 until it lands).
-7. **Level 16 *How much heavier?*** (new levels tier): school `order [6, 7, 15, 16, 8, 9, 10, 11]`.
+5. **Level 14 *Line them up* (built)** (new levels on an existing interaction: typecheck, rule tests, one play of 14, `fingerdemo` at 14): pre-K `order [3, 4, 14, 5, 6, 7]`.
+6. **Level 15 *Guess the pumpkin* (built)** (new levels tier, plus a portrait screenshot for the guess sign): pre-K `order [3, 4, 14, 5, 6, 7, 15]`, school `order [6, 7, 15, 8, 9, 10, 11]` (without 11 until it lands).
+7. **Level 16 *How much heavier?* (built)** (new levels tier): school `order [6, 7, 15, 16, 8, 9, 10, 11]`.
 8. **Level 17 *Which way will it tip?*** (new interaction tier: typecheck, rule tests over 300 seeds, one play of 17 with a wrong prediction, one portrait screenshot, `fingerdemo` at 17): school `order [6, 7, 15, 16, 17, 8, 9, 10, 11]`.
 
 Level 11 *Two boxes* is built from its [definition](../definitions/seesaw-two-boxes.md) (2026-10-21). Each slice that touches `voice-script.ts` or `howto.ts` runs `npm run build`. Gated: nothing; every decision above has a default.
