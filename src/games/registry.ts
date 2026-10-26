@@ -1,3 +1,4 @@
+import { villageVote } from './village-vote';
 import { swapMeet } from './swap-meet';
 import { littleLoom } from './little-loom';
 import { exampleExpress } from './example-express';
@@ -142,6 +143,7 @@ import type { GameModule } from './types';
  * Every minigame. Within each island region, registry order determines game spots.
  */
 export const GAMES: GameModule[] = [
+  villageVote,
   swapMeet,
   littleLoom,
   exampleExpress,

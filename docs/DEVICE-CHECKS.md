@@ -2,6 +2,11 @@
 
 What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), one entry per sitting; the [user research review](USER-RESEARCH-2026-10-24.md#a-five-minute-observation-protocol-for-the-lap-band) has the five-minute protocol for watching her play.
 
+## Village Vote levels 1–3 (CC4, 2026-10-26)
+
+- [ ] On an iPad, check actual count speech ordering, singular/zero/comparison wording and guide replay; distinguish free pet preference from winner declaration. Confirm comfortable paw/board/picture/Hint reach, legibility and cancellation/outside releases in both orientations. Browser proof checks geometry/input, not small hands or device speech.
+- [ ] Observe a preschool child and coplayer: do they distinguish preference from tally, accept a losing preference and notice that every friend plays? Record enjoyment, replay, comfortable stopping and any explanations only when observed. No transfer or developmental benefit is claimed. CC5 waits until1–3 have been played. [Scripted proof](VERIFICATION.md#2026-10-26--village-vote-13-cc4).
+
 ## Swap Meet levels 1–4 (ME2, 2026-10-25)
 
 - [ ] On an iPad, check full-size sources, receiving panels, back arrow and yellow Hint in both orientations, two-way/Undo animation, pictured wants and actual speech/guide replay. Try cancellation, leaving the canvas and a second finger with a real hand. [Scripted proof](VERIFICATION.md#2026-10-25--swap-meet-14-me2) does not establish device comfort or legibility.

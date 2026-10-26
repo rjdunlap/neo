@@ -550,12 +550,7 @@ Toddler1–2, preschool2–3, prek3–4, school4. No lap/grownup, levels5–6, p
 
 ### village-vote 1: Levels 1–3 (CC4)
 
-- **Status:** ready for separate admission; [CC1 packet](definitions/village-vote.md), [study slices](deep-dives/subjects/community-civics.md#build-slices-in-order). No implementation delivered by CC1.
-- **Whole batch:** 1 Two choices (count and choose larger); 2 Your pet votes too (free preference, one pet vote, losing cheerfully); 3 Three choices (partial tallies/replay, unique largest including3–2–2). Preschool1–2, pre-K1–3, school3. One election/sticker per round; wrong declarations only are misses, counting/preference free; manual/automatic support caps at1 and remains assisted.
-- **Files:** eventual `src/games/village-vote/{logic,index}.ts` and meaningful tests, registry, lands, voice-script, howto, browser filtered case, README/GAMES and normal doc closeout. Reuse onTap/companion/shell timing and finish. No new saves/assets assumed.
-- **Admission gates:** building-session source/contract and applicable game/rules review; actual transformed controls at least100 units in both orientations, level2 five-in-one-column and level3 seven-visible-voter layouts; recount current Cozy Village (13 at CC1 base,14 with this game, potentially15 after Swap Meet), actual paged registry/lands/layout proof and both route origins. Proposed fallback lands cannot be silently created.
-- **Shared final proof:** typecheck, units for every family/choice/count/acceptance/support invariant; filtered first/top play plus level2 losing-pet/phase/replay boundary, wrong declaration/help; all three public-input demos, one densest portrait screenshot, build for shared catalog/voice/card changes; relevant world/offline tier only for actual shared contract changes. Record tested commit/filter/URL and stop servers.
-- **Out:** levels4–6, Count the Ballots, persistent square, practical cards, historical/cultural/safety content. CC5 waits until1–3 are played; iPad speech/touch/child understanding/replay remain person/device evidence, not a browser pass.
+Built2026-10-26, [PR #983](https://github.com/rjdunlap/neo/pull/983); [packet](definitions/village-vote.md), [archived build note](archive/COMPLETED-2026-10-09.md#village-vote-levels-13-cc4-2026-10-26). Whole three-level new-game batch. Person/device checks and CC5 play gate remain.
 
 ## Relay Woods 1: levels 1–4 (NC2)
 
