@@ -517,6 +517,11 @@ export const SCRIPT = {
   'explore.page': ['{n} more!', 'Here are {n} more!'],
   'explore.others': ['Games for other ages!'],
   'explore.mine': ['Back to your games!'],
+  // The Arcade's lines stay on device speech until a clip render takes the `arcade` prefix (scripts/voice-clips/clips.mjs).
+  'arcade.open': ['The arcade! Watch a game play, then tap it to play.'],
+  'arcade.played': ['Games you played before!'],
+  'arcade.topics': ['What kind of game? Tap a picture!'],
+  'arcade.empty': ['Nothing here yet. Play a game, and it waits here!'],
   'result.back': ['Back to {place}!'],
   'nav.home': ['Home!'],
   'nav.back': ['Back!'],

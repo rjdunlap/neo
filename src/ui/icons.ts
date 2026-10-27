@@ -219,3 +219,16 @@ export function padIcon(): Graphics {
     .circle(13, -4, 4).fill(swatch.yellow.fill)
     .circle(21, 4, 4).fill(swatch.red.fill);
 }
+
+/** A little arcade cabinet with a star on its screen: Explore's Arcade (docs/rework/ARCADE.md). */
+export function arcadeIcon(): Graphics {
+  return new Graphics()
+    .roundRect(-24, -34, 48, 68, 10).fill(swatch.purple.fill).stroke(line(4, swatch.purple.line))
+    .roundRect(-16, -26, 32, 24, 5).fill(swatch.teal.light).stroke(line(3, swatch.purple.line))
+    .star(0, -14, 5, 8, 3.5).fill(swatch.yellow.fill)
+    .roundRect(-18, 6, 36, 10, 4).fill(swatch.purple.light)
+    .moveTo(-8, 11).lineTo(-8, 2).stroke(line(3, ink))
+    .circle(-8, 1, 4).fill(swatch.red.fill)
+    .circle(6, 11, 3.5).fill(swatch.yellow.fill)
+    .circle(14, 11, 3.5).fill(swatch.teal.fill);
+}

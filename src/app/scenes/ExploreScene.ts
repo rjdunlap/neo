@@ -71,7 +71,7 @@ export class ExploreScene extends Scene {
   readonly next = new RoundButton(arrowIcon(1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(1));
   /** The cards on screen, in reading order. */
   cards: ExploreCard[] = [];
-  /** The last place she visited, as a postcard above the four entries (RW14 slice 8), or null before her first visit. */
+  /** The last place she visited, as a postcard above the entries (RW14 slice 8), or null before her first visit. */
   last: { id: LandId; node: Container } | null = null;
   /** The list a browse entry pages through (Favorites, All games), and whether it ends with the signpost. */
   readonly list: GameModule[];
@@ -216,7 +216,7 @@ export class ExploreScene extends Scene {
   /** An entry says its name, then opens where she last was in it this visit. */
   private open(entry: ExploreEntry) {
     const page = exploreMemory.pages[entry] ?? 0;
-    this.leave(() => this.app.go.explore(entry, page, entry === 'all' ? exploreMemory.others : undefined), `explore.${entry}`);
+    this.leave(() => this.app.go.explore(entry, page, entry === 'all' ? exploreMemory.others : undefined), entry === 'arcade' ? 'arcade.open' : `explore.${entry}`);
   }
 
   /** A game says its title (or, outside her band, who it is for), then plays at the band nearest hers it has. */

@@ -1,10 +1,11 @@
 import { selectValue } from '../selection.mjs';
 import assert from 'node:assert/strict';
 
-export function createSuite({ homeMeadow, page, errors, log, ready, scene, pickFirst, tap, screenshot, homeFirstRun, homeResidents, homeButtons, homeLastPlace, homeResult, next }) {
+export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, screenshot, homeFirstRun, homeResidents, homeButtons, homeLastPlace, homeResult, homeArcade, homeMeadow, next }) {
 async function homeFlow() {
+  if (process.env.HOME_ONLY !== undefined) selectValue(process.env.HOME_ONLY, ['first-run', 'result', 'residents', 'buttons', 'last-place', 'arcade', 'meadow'], 'HOME_ONLY');
+  if (process.env.HOME_ONLY === 'arcade') return homeArcade();
   if (process.env.HOME_ONLY === 'meadow') return homeMeadow();
-  if (process.env.HOME_ONLY !== undefined) selectValue(process.env.HOME_ONLY, ['first-run', 'result', 'residents', 'buttons', 'last-place'], 'HOME_ONLY');
   if (process.env.HOME_ONLY === 'first-run') return homeFirstRun();
   if (process.env.HOME_ONLY === 'result') return homeResult();
   if (process.env.HOME_ONLY === 'residents') return homeResidents();
@@ -87,7 +88,7 @@ async function homeFlow() {
   // RW08: Explore's four entries → Places → Counting Cove → its Back → Places → Back → Explore → Back → Home.
   const explore = (entry, at = 0) => page.waitForFunction(({ entry, at }) => neo.scene.constructor.name === 'ExploreScene' && !neo.switching && neo.scene.entry === entry && (entry === null || neo.scene.page === at), { entry, at });
   await tap('neo.scene.explore'); await explore(null);
-  assert.deepEqual(await page.evaluate(() => neo.scene.cards.map((c) => c.entry)), ['places', 'favorites', 'all', 'family']);
+  assert.deepEqual(await page.evaluate(() => neo.scene.cards.map((c) => c.entry)), ['places', 'favorites', 'all', 'arcade', 'family']);
   assert.equal(await page.evaluate(() => document.querySelector('.classic-link')?.hidden), true);
   await screenshot('explore');
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
@@ -139,7 +140,7 @@ async function homeFlow() {
   // Family play → couch play → leave → back to Explore's Family play, in both orientations.
   for (const size of [{ width: 1024, height: 768 }, { width: 768, height: 1024 }]) {
     await page.setViewportSize(size); await page.evaluate(() => neo.go.explore()); await explore(null);
-    await tap('neo.scene.cards[3].node'); await explore('family', 0);
+    await tap('neo.scene.cards.find((c) => c.entry === \'family\').node'); await explore('family', 0);
     if (size.width < size.height) await screenshot('explore-family-portrait');
     await tap('neo.scene.cards[0].node'); await scene('CouchScene');
     await page.waitForTimeout(500);
