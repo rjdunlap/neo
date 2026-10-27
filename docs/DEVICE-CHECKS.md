@@ -12,7 +12,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 ## Weather Wardrobe wind (2026-10-26)
 
-- [ ] On an iPad, check whether wind reads to a toddler without a label (drifting clouds, streaming leaves, the leaning pet), whether the blown-away piece reads as funny rather than unkind, and how the kite looks on the river and glider in portrait. Device speech of `weather.windy` is unchecked. [Scripted proof](VERIFICATION.md#2026-10-26--weather-wardrobe-wind-slice-7) does not establish these.
+- [ ] On an iPad, check whether wind reads to a toddler without a label (drifting clouds, streaming leaves, the leaning pet), whether the blown-away piece reads as funny rather than unkind, and how the kite looks on the river and glider in portrait. Device speech of `weather.windy` is unchecked. [Scripted proof](archive/VERIFICATION-2026-10-26.md#2026-10-26--weather-wardrobe-wind-slice-7) does not establish these.
 
 ## Weather Wardrobe level 10 (2026-10-26)
 
@@ -188,6 +188,10 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] Watch a school-age child at level 4: does she read the card numerals as counts of stops (not as stops), and does the friend's two-part count ("three stops to the water, and four more") help her fix a wrong card?
 - [ ] Watch a child at level 5: do the two brackets make "the same distance from the water" visible, and does she find the dock friend as its own twin?
 - [ ] On an iPad, hear the new lines (`sealift.instruct.howfar`, `instruct.twin`, `ask.howfar`, `ask.twin`, `howfar.count`, `miss.twin`, `twin.here`) and check they never say minus or negative; check the level-4 card column clear of the landings in portrait with the pet clear.
+
+## Helper House levels 1–3
+
+- [ ] On an iPad, check that the sensor, card and helper pulse reads as one chain (the eye or sun sensor lighting its card, then the door or lamp), how a five-year-old reads the pictures without words, and whether the twelve-step day's pace suits Watch and Step, in portrait with the pet clear.
 
 ## Sorting Machine levels 1–2
 
