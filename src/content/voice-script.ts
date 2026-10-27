@@ -869,7 +869,6 @@ export const SCRIPT = {
   'sprout.card-plain': ['A plain sprout.'],
   'sprout.counter-plain': ['Look at this way: a plain copy and a plain copy. That makes a plain sprout, so plain can grow too.'],
   'sprout.counter-spotted': ['Look at this way: it gives a spot copy. One spot copy is enough, so a spotted sprout can grow too.'],
-  'sprout.no-way': ['No way makes that sprout from these two plants. Look at the buds.'],
   'sprout.glow': ['The glowing bud shows a sprout you have not chosen yet.'],
   'sprout.both-grow': ['Spotted or plain: both can grow. Nice work!'],
   'sprout.help.give': ['I gave this copy for you. It goes to its own slot.'],

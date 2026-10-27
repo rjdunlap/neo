@@ -687,7 +687,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: [
       { text: 'A toy rule, made for about 9 and up: a plant holds two copies, and one spot copy is enough for spots. Building a way is not choosing what a real plant makes. Letters on the tiles are for you; they are never spoken.' },
-      { from: 2, to: 2, text: 'A wrong Check is one miss; the pet replays the way that was missed, and the second miss makes it glow. Show me does the next step for one hint.' },
+      { from: 2, to: 2, text: 'A wrong Check is one miss; the pet replays the way that was missed, and the second miss makes it glow. Show me does the next step; its first use in each part of the round counts one hint.' },
     ],
   },
   'helper-house': {

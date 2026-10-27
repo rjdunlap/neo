@@ -425,13 +425,11 @@ class SproutShuffle implements Game {
     this.wrong++;
     sfx.boing();
     if (this.wrong === 2 && !this.glowHinted) { this.glowHinted = true; this.hints++; }
-    if ('missing' in verdict) {
-      const i = this.setup.routes.indexOf(verdict.route);
-      if (this.wrong >= 2) { this.glowBud = i; this.glowCard = verdict.missing; }
-      void this.counter(i, verdict.missing);
-    } else {
-      void this.ctx.say('sprout.no-way');
-    }
+    // Both looks are always makeable at level 2, so a wrong set is always one look short; the `extra` verdict waits for a later cross.
+    if (!('missing' in verdict)) return;
+    const i = this.setup.routes.indexOf(verdict.route);
+    if (this.wrong >= 2) { this.glowBud = i; this.glowCard = verdict.missing; }
+    void this.counter(i, verdict.missing);
   }
 
   private async counter(i: number, missing: Look) {
