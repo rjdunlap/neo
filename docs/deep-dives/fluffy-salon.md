@@ -142,8 +142,8 @@ Each has a default below; the build proceeds on it.
 5. **Level 8 *Pink, please*** (built 2026-10-26 with 2, `claude/fluffy-salon-batch1`, [PR #995](https://github.com/rjdunlap/neo/pull/995); new levels on an existing interaction, with the wrong-color naming: one play of 8, `fingerdemo` at 8): toddler `order [6, 1, 7, 2, 8]`, preschool `order [2, 8, 3, 4]`.
 6. **Level 9 *Two customers*** (built 2026-10-26 with 7, [PR #1002](https://github.com/rjdunlap/neo/pull/1002); new interaction tier, plus a portrait screenshot for two heads): preschool `order [2, 8, 3, 4, 9]`, pre-K `order [3, 4, 5, 9]`.
 7. **Level 10 *Longer than Pip's*** (built 2026-10-26 with 6, [PR #1002](https://github.com/rjdunlap/neo/pull/1002); new interaction tier: the comparison drawing in the mirror): pre-K `order [3, 4, 5, 9, 10]`.
-8. **Level 11 *Two colors*** (new levels tier): pre-K `order [3, 4, 5, 9, 10, 11]`.
-9. **Level 12 *Changed my mind*** (new levels tier): pre-K `order [3, 4, 5, 9, 10, 11, 12]`.
+8. **Level 11 *Two colors*** (built with 9, [PR #1009](https://github.com/rjdunlap/neo/pull/1009); new levels tier): pre-K `order [3, 4, 5, 9, 10, 11]`.
+9. **Level 12 *Changed my mind*** (built with 8, [PR #1009](https://github.com/rjdunlap/neo/pull/1009); new levels tier): pre-K `order [3, 4, 5, 9, 10, 11, 12]`.
 
 Gated: the style coming home (decision 2, after RW05/RW06), accessories (decision 3, after RW02's slots), 13 *Six beads long* and a school window (decision 4), owned creatures in the chair (decision 5, after RW05 casting).
 
@@ -155,4 +155,6 @@ Slices 3–4 (levels 6 and 7, 2026-10-23, [PR #864](https://github.com/rjdunlap/
 
 Slice 1 (support truth, 2026-10-21, [PR #717](https://github.com/rjdunlap/neo/pull/717)) is built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#fluffy-salon-support-truth-slice-1-2026-10-21), the checks in [VERIFICATION](../archive/VERIFICATION-2026-10-21.md#2026-10-21--fluffy-salon-support-truth-slice-1). It also found and fixed a bug the audit missed: the mirror appeared at level 3, which has no mirror, and a tap on it counted a miss. The deep dive session itself was research and ideation only.
 
-Slices 6–7 (two customers and comparative styling, 2026-10-26, [PR #1002](https://github.com/rjdunlap/neo/pull/1002)) are built; [build note](../archive/COMPLETED-2026-10-09.md#fluffy-salon-batch-2-two-customers-and-comparative-styling-slices-67-2026-10-26), [verification](../VERIFICATION.md#2026-10-26--fluffy-salon-two-customers-and-comparative-styling). Levels 11–12 remain ready; saved styles, owned customers, accessories and school measuring retain their gates.
+Slices 6–7 (two customers and comparative styling, 2026-10-26, [PR #1002](https://github.com/rjdunlap/neo/pull/1002)) are built; [build note](../archive/COMPLETED-2026-10-09.md#fluffy-salon-batch-2-two-customers-and-comparative-styling-slices-67-2026-10-26), [verification](../VERIFICATION.md#2026-10-26--fluffy-salon-two-customers-and-comparative-styling). Levels 11–12 are built below; saved styles, owned customers, accessories and school measuring retain their gates.
+
+Slices 8–9 (two colors and changed requests, 2026-10-26, [PR #1009](https://github.com/rjdunlap/neo/pull/1009)) are built; [build note](../archive/COMPLETED-2026-10-09.md#fluffy-salon-batch-3-two-colors-and-changed-requests-slices-89-2026-10-26), [verification](../VERIFICATION.md#2026-10-26--fluffy-salon-two-colors-and-changed-requests). All ungated dive slices are built; person/device acceptance and the existing saved-style/owned-customer/accessory/school gates remain open.

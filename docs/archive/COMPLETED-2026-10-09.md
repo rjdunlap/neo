@@ -2096,7 +2096,7 @@ Archived idea row (built portion1–3 only; later levels remain proposals in the
 
 [PR #993](https://github.com/rjdunlap/neo/pull/993), `codex/seesaw-order-estimate-difference`, worker `01a1794b-ef2b-76d0-bc36-5b92e5a9ac4f`: whole levels 14–16. Three freely pair-tested presents go to light/middle/heavy shelf spots; a free pumpkin guess remains on a sign before measured weight is chosen; tagged weights are balanced with unit blocks to find the difference. Existing IDs and younger orders remain intact; pre-K [3,4,14,5,6,7,15], school [6,7,15,16,8,9,10,11]. Sort demo uses three observed results, never hidden weights. Shelf and measured-number misses give truthful support; guesses, pair tests and heavy-side difference drops are free. Ordinary shell rewards supported finishes.
 
-Typecheck, seeded rules, units with focused recovery, build, scoped play of all three levels with help/rewards and portrait review, and three clean demos: [verification](../VERIFICATION.md#2026-10-26--seesaw-balance-order-estimate-and-difference). Level17 and person/device acceptance remain separate. Old research claim `6e7a5e19` and unrelated claims preserved.
+Typecheck, seeded rules, units with focused recovery, build, scoped play of all three levels with help/rewards and portrait review, and three clean demos: [verification](VERIFICATION-2026-10-26.md#2026-10-26--seesaw-balance-order-estimate-and-difference). Level17 and person/device acceptance remain separate. Old research claim `6e7a5e19` and unrelated claims preserved.
 
 ## Weather Wardrobe: wind, a fourth weather (slice 7, 2026-10-26)
 
@@ -2121,3 +2121,9 @@ Typecheck, 18 rules (300 seeds/both customer orders/both comparison directions),
 ## Off-screen lines per band, study slices 1–3 (2026-10-26)
 
 [PR #1006](https://github.com/rjdunlap/neo/pull/1006). `offScreenFor`/`offScreenIdeas` and the `OffScreenLines` type resolve the grown-ups' page's off-screen ideas per play band (`null` withholds, `{name}` filled); removal-only lap/toddler swaps and seven school lines shipped with the word-list test. Gap: Bumper Garden's school line is held because the game has no school band.
+
+## Fluffy Salon batch 3: two colors and changed requests, slices 8–9 (2026-10-26)
+
+[PR #1009](https://github.com/rjdunlap/neo/pull/1009), `codex/fluffy-salon-two-colors-reversal`, worker `01a17bb9-6505-7053-938f-9e578417107c`. Level 11 accepts any arrangement with at least 35% in each of two distinct seeded colors; its pictured card, missing-color speech, reserved-color strand glow and bottle hint keep both colors welcome. The demo paints opposite halves. Level 12 loves a one-part length/curl style, keeps the exact hair, and asks for the opposite on that same attribute with a replayable “Actually…” line; all four reversal directions are reachable. Both use the mirror, permit free styling without misses and award one shell sticker per complete round. Pre-K order `[3,4,5,9,10,11,12]`; younger orders and IDs preserved.
+
+Typecheck, 20 rules, full 3485 units/4 skips, production build, filtered portrait play with retries/hints/cancellation/single reward, and both ghost fingers passed; [proof and limits](../VERIFICATION.md#2026-10-26--fluffy-salon-two-colors-and-changed-requests). Browser launch caught the old two-chair factory bound, corrected to levels 9–10 only. A small logging probe identified a render-frame wait in the glow check. Single-chair cancellation/blur now ends a contact and releases listeners on destroy. No subagents per the handoff; internal source review completed. All ungated Fluffy dive slices built; saved styles, owned customers, accessories, school and person/device acceptance retain their gates.

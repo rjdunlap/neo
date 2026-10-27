@@ -237,12 +237,84 @@ async function batch() {
       },
     };
   });
-  for (let level = 1; level <= (process.env.TO_LEVEL ? Number(process.env.TO_LEVEL) : 10) && (!only || only === 'salon'); level++) {
+  for (let level = 1; level <= (process.env.TO_LEVEL ? Number(process.env.TO_LEVEL) : 12) && (!only || only === 'salon'); level++) {
     if (process.env.FROM_LEVEL && level < Number(process.env.FROM_LEVEL)) continue;
     if (level >= 9) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('fluffy-salon', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (level === 11 || level === 12) {
+      await screenshot(`fluffy-salon-${level}-portrait`);
+      await page.evaluate(async (level) => {
+        const g = neo.scene.game;
+        const { needs, toolFor, strokePath, stats, colorTargets } = await import('/src/games/fluffy-salon/logic.ts');
+        window.salonBatchRewards = kit.store.data.stickers.length;
+        const beforeLove = [];
+        let reversal = false;
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, vars) => {
+          if (id === 'salon.love') beforeLove.push(JSON.stringify(g.strands));
+          return say(id, vars);
+        };
+        const instruct = g.ctx.instruct.bind(g.ctx);
+        g.ctx.instruct = (id, vars) => {
+          if (id === 'salon.actually') {
+            reversal = true;
+            if (JSON.stringify(g.strands) !== beforeLove[0]) throw new Error('Changed request reset the loved hair');
+            if (!needs(g.look, g.strands)) throw new Error('Changed request was already met');
+            if (vars.look !== g.look.length && vars.look !== g.look.curl) throw new Error('Changed request spoke another attribute');
+          }
+          return instruct(id, vars);
+        };
+        const check = async () => {
+          kit.tapOn(g.mirror); await kit.sleep(400);
+          if (!await kit.until(() => !g.busy || g.finished, 10000)) throw new Error('Mirror stayed busy');
+          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        };
+        const stroke = async (tool, look, back = false) => {
+          await salon.pick(tool);
+          const corners = strokePath(tool, back, look);
+          const path = corners.slice(1).flatMap((p, j) => kit.line([corners[j].x, corners[j].y], [p.x, p.y], 20)).map(([x, y]) => { const q = g.hair.toGlobal({ x, y }); return [q.x, q.y]; });
+          await kit.drag(path, 1, 12);
+        };
+        // Cancellation ends a contact before another pointer movement can alter the fur.
+        const p = g.hair.toGlobal(g.an[10]);
+        const canvas = document.querySelector('canvas');
+        canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: p.x, clientY: p.y, pointerId: 1, pointerType: 'touch', bubbles: true }));
+        const cancelled = JSON.stringify(g.strands);
+        window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 1 }));
+        canvas.dispatchEvent(new PointerEvent('pointermove', { clientX: p.x, clientY: p.y, pointerId: 1, bubbles: true }));
+        if (g.pointer !== null || JSON.stringify(g.strands) !== cancelled) throw new Error('Cancelled pointer kept styling');
+        await kit.sleep(100);
+        for (let r = 0; r < g.requests.length; r++) {
+          if (!await kit.until(() => g.request === r && !g.busy, 10000)) throw new Error('Request did not open');
+          const look = g.look;
+          // Both requests at 12 get independent retry/support checks, including the reversing tool.
+          await check(); await check();
+          if (g.misses !== (r + 1) * 2 || g.hints !== r + 1) throw new Error('Support did not count once per request');
+          if (!g.buttons.find(b => b.tool === toolFor(needs(look, g.strands))).glow.visible) throw new Error('Missing tool did not glow');
+          if (level === 11) {
+            // Painting the whole head with just one asked color is not sufficient.
+            await stroke(look.colors[0], undefined);
+            if (stats(g.strands).share(look.colors[0]) < 0.8 || needs(look, g.strands) !== look.colors[1]) throw new Error('A single color completed a two-color ask');
+            await check();
+            if (g.oldGlow !== look.colors[1] || !g.buttons.find(b => b.tool === look.colors[1]).glow.visible) throw new Error('Hint did not follow the missing color');
+            const reserved = g.strands.filter((s, i) => s.color === look.colors[0] && !colorTargets(look, g.strands, look.colors[1]).includes(i)).length;
+            if (reserved < Math.ceil(g.strands.length * 0.35)) throw new Error('Hint asked to erase the other required color');
+          }
+          for (let n = 0; needs(look, g.strands) && n < 20; n++) await stroke(toolFor(needs(look, g.strands)), look, n % 2 === 1);
+          if (needs(look, g.strands)) throw new Error(`Unmet request ${r}`);
+          if (g.finished || kit.store.data.stickers.length !== salonBatchRewards) throw new Error('Reward before the last mirror');
+          await check();
+        }
+        if (!g.finished || (level === 12 && !reversal)) throw new Error('Did not complete both stages');
+      }, level);
+      await finished('fluffy-salon');
+      const proof = await page.evaluate(() => ({ score: kit.store.stats('fluffy-salon').history.at(-1), rewards: kit.store.data.stickers.length - salonBatchRewards }));
+      assert.deepEqual([proof.score.misses, proof.score.hints, proof.rewards], level === 11 ? [3, 1, 1] : [4, 2, 1]);
+      log(`Fluffy Salon ${level}: real strokes, truthful support, retained reversal, cancellation and one reward passed`);
+      continue;
+    }
     if (level >= 9) {
       await screenshot(`fluffy-salon-${level}-portrait`);
       await page.evaluate(async (level) => {

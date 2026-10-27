@@ -7,7 +7,7 @@ import type { Rng } from '../../engine/random';
  * Grow it, snip it, comb it straight, curl it and color it. Free play at first, then requests
  * ("long and pink") checked in the mirror.
  */
-export type SalonMode = 'play' | 'tools' | 'ask' | 'two' | 'match' | 'pat' | 'snip' | 'color' | 'customers' | 'compare';
+export type SalonMode = 'play' | 'tools' | 'ask' | 'two' | 'match' | 'pat' | 'snip' | 'color' | 'customers' | 'compare' | 'colors' | 'reverse';
 
 /** Modes with no request: she styles freely and the mirror ends the round. */
 export const isFree = (mode: SalonMode) => mode === 'play' || mode === 'tools' || mode === 'pat' || mode === 'snip';
@@ -34,6 +34,8 @@ export const PLANS: SalonPlan[] = [
   { mode: 'color', requests: 2, name: 'Pink, please: the five bottles and one color at a time' },
   { mode: 'customers', requests: 2, name: 'Two customers: match each visible two-part request, in either order' },
   { mode: 'compare', requests: 1, name: "Longer than Pip’s: grow or snip fur to compare two lengths" },
+  { mode: 'colors', requests: 1, name: 'Two colors: put at least 35% of each requested color in the fur' },
+  { mode: 'reverse', requests: 2, name: 'Changed my mind: reverse a loved length or curl request on the same hair' },
 ];
 
 /** The buttons a mode shows: tools along the bottom, then the colour bottles. */
@@ -111,6 +113,7 @@ const LONG = 145;
 const CURLY = 0.6;
 const STRAIGHT = 0.2;
 const MOSTLY = 0.8;
+export const TWO_COLOR_SHARE = 0.35;
 export const COMPARE_MARGIN = 25;
 
 export interface Strand {
@@ -124,6 +127,8 @@ export interface Look {
   length?: 'short' | 'long';
   curl?: 'curly' | 'straight';
   color?: ColorName;
+  /** Two distinct colors, each covering at least 35% of the strands. */
+  colors?: [ColorName, ColorName];
   /** Level 10: compare average strand length against a fixed friend's, with a clear margin. */
   comparison?: { direction: 'longer' | 'shorter'; length: number };
 }
@@ -155,6 +160,7 @@ export function needs(look: Look, strands: Strand[]): Fix | null {
   }
   if (look.length === 'long' && s.length < LONG) return 'longer';
   if (look.length === 'short' && s.length > SHORT) return 'shorter';
+  if (look.colors) for (const color of look.colors) if (s.share(color) < TWO_COLOR_SHARE) return color;
   if (look.color && s.share(look.color) < MOSTLY) return look.color;
   if (look.curl === 'curly' && s.curl < CURLY) return 'curlier';
   if (look.curl === 'straight' && s.curl > STRAIGHT) return 'straighter';
@@ -176,11 +182,23 @@ export function helps(look: Look, strands: Strand[], tool: Tool): boolean {
  */
 export function moreLine(look: Look, strands: Strand[]): 'salon.more' | 'salon.more-color' {
   const fix = needs(look, strands);
-  return fix && look.color === fix && stats(strands).share(fix) >= 0.5 ? 'salon.more-color' : 'salon.more';
+  return fix && (look.colors?.includes(fix as ColorName) || (look.color === fix && stats(strands).share(fix) >= 0.5)) ? 'salon.more-color' : 'salon.more';
 }
 
 /** The strands not yet the asked colour, which glow once she has been told about them. */
 export const oldStrands = (strands: Strand[], color: ColorName): number[] => strands.flatMap((s, i) => (s.color === color ? [] : [i]));
+
+/** Glow paintable strands while reserving enough of the other requested color to keep it satisfied. */
+export function colorTargets(look: Look, strands: Strand[], color: ColorName): number[] {
+  if (!look.colors) return oldStrands(strands, color);
+  const other = look.colors.find((c) => c !== color)!;
+  let reserve = Math.ceil(strands.length * TWO_COLOR_SHARE);
+  return strands.flatMap((s, i) => {
+    if (s.color === color) return [];
+    if (s.color === other && reserve-- > 0) return [];
+    return [i];
+  });
+}
 
 /** Which tool fixes what. */
 export type Tool = 'grow' | 'cut' | 'comb' | 'curl' | ColorName;
@@ -188,6 +206,7 @@ export const toolFor = (fix: Fix): Tool => (fix === 'longer' ? 'grow' : fix === 
 
 /** "long", "short and blue", "long, curly and pink". */
 export function describe(look: Look): string {
+  if (look.colors) return look.colors.join(' and ');
   if (look.comparison) return `${look.comparison.direction} than Pip’s`;
   const parts = [look.length, look.curl, look.color].filter(Boolean) as string[];
   if (parts.length <= 1) return parts[0] ?? '';
@@ -200,7 +219,9 @@ function pickLook(mode: SalonMode, rng: Rng, avoid: string[]): Look {
     const curl = rng.pick(['curly', 'straight'] as const);
     const color = rng.pick(HAIR_COLORS);
     let look: Look;
-    if (mode === 'ask') look = rng.pick<Look>([{ length }, { color }, { curl }]);
+    if (mode === 'colors') look = { colors: [color, rng.pick(HAIR_COLORS.filter((c) => c !== color))] };
+    else if (mode === 'reverse') look = rng.pick<Look>([{ length }, { curl }]);
+    else if (mode === 'ask') look = rng.pick<Look>([{ length }, { color }, { curl }]);
     else if (mode === 'color') look = { color };
     else if (mode === 'two' || mode === 'customers') look = rng.pick<Look>([{ length, color }, { length, curl }, { curl, color }]);
     else look = { length, curl, color };
@@ -214,10 +235,11 @@ function pickLook(mode: SalonMode, rng: Rng, avoid: string[]): Look {
 export function makeRequests(plan: SalonPlan, rng: Rng): Request[] {
   const out: Request[] = [];
   for (let i = 0; i < plan.requests; i++) {
-    const look: Look = plan.mode === 'compare' ? { comparison: { direction: rng.pick(['longer', 'shorter'] as const), length: rng.int(60, 150) } } : pickLook(plan.mode, rng, out.map((r) => describe(r.look)));
+    const previous = out[0]?.look;
+    const look: Look = plan.mode === 'reverse' && previous ? (previous.length ? { length: previous.length === 'long' ? 'short' : 'long' } : { curl: previous.curl === 'curly' ? 'straight' : 'curly' }) : plan.mode === 'compare' ? { comparison: { direction: rng.pick(['longer', 'shorter'] as const), length: rng.int(60, 150) } } : pickLook(plan.mode, rng, out.map((r) => describe(r.look)));
     const length = look.comparison ? look.comparison.length : look.length === 'long' ? 70 : look.length === 'short' ? 130 : 95;
     const curl = look.curl === 'curly' ? 0.1 : look.curl === 'straight' ? 0.75 : 0.35;
-    const color = rng.pick(HAIR_COLORS.filter((c) => c !== look.color));
+    const color = rng.pick(HAIR_COLORS.filter((c) => c !== look.color && !look.colors?.includes(c)));
     out.push({ look, start: { length, curl, color } });
   }
   return out;
@@ -437,11 +459,14 @@ export function salonMove(s: SalonState): SalonMove | null {
  * 190 units from the middle of the head (about 64 from the roots), where the first point of each strand in reach is the third or
  * fourth, so the fur is cut back to about 30 and not shaved; its path has more corners, so it keeps that distance.
  */
-export function strokePath(tool: Tool, back = false): Pt[] {
+export function strokePath(tool: Tool, back = false, look?: Look): Pt[] {
   const cut = tool === 'cut';
   const r = cut ? 190 : 120;
   const n = cut ? 7 : 4;
-  const turns = Array.from({ length: n }, (_, i) => -1.12 + (1.24 * i) / (n - 1));
+  const side = look?.colors?.indexOf(tool as ColorName);
+  const from = side === 0 ? -1.12 : side === 1 ? -0.44 : -1.12;
+  const span = side === 0 || side === 1 ? 0.56 : 1.24;
+  const turns = Array.from({ length: n }, (_, i) => from + (span * i) / (n - 1));
   const path = turns.map((q) => ({ x: Math.cos(Math.PI * q) * r, y: -122 + Math.sin(Math.PI * q) * r }));
   return back ? path.reverse() : path;
 }
