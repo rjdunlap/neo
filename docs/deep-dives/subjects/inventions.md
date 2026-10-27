@@ -154,7 +154,7 @@ A part lifts and sways the moment a finger lands on it (touch-down feedback), th
 ## Build slices, in order
 
 1. **Define Gadget Bench 1–3** (docs packet; **done 2026-10-23**, [definition](../../definitions/gadget-bench.md); the home land is Treehouse because Tinker Lab is full): the part, socket, condition and request tables, accounting, speech, how-to steps, ghost finger, both layouts, the land capacity audit and the overlap test against Habitat Helpers and Chain Reaction.
-2. **Build levels 1–3** with rule tests (passing designs, socket-only distractors, useful hints). New game tier: one scripted play and one portrait screenshot.
+2. **Build levels 1–3** with rule tests (passing designs, socket-only distractors, useful hints). New game tier: one scripted play and one portrait screenshot. Claimed 2026-10-27 on `claude/gadget-bench-1-3` (`src/games/gadget-bench/`, registry, lands, voice, how-to, a `gadgetbench` browser case).
 3. **Add level 4**, the multi-condition path, failure points and the same-condition hint rule.
 4. **Add levels 5–6:** the constraint and the new-kit transfer round, with their enumeration tests.
 5. **Add level 7**, two neighbors and trade-offs.
