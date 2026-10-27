@@ -72,3 +72,11 @@
 - `BROWSER_SUITE=batch BATCH_ONLY=salon` at level 4 and at level 8 (`FROM_LEVEL=8 TO_LEVEL=8`, run before and after the review fixes) passed: five big bottles, no mirror, two wrong bottles gave 0 misses and 1 hint with the asked bottle glowing, score [0,1]; `BROWSER_SUITE=fingerdemo FINGER_ONLY=fluffy-salon FINGER_LEVELS=8` finished in 10.3 s.
 - A probe (`test-results/salon-probe.mjs`) seated Dog at level 3 with the guide kept and a seeded room, no page errors, with a portrait screenshot; six free-play launches gave five distinct start looks across mohawk, two-tone, fuzz and sleek.
 - Not run: `npm run build` (no shared assets changed), levels 1–3 and 5–7 replays (unchanged interactions), iPad or child checks. Open: [device checks](../DEVICE-CHECKS.md).
+
+## 2026-10-26 — Size Parade: the parade, eight friends, levels 16 and 9 with the lap band
+
+- [PR #996](https://github.com/rjdunlap/neo/pull/996), branch `claude/size-parade-parade-lap`; Vite on `http://localhost:5471`, tested commit `0031ebae`. Changed: the strut and march with bells and drum, eight friends, seeded flag, bunting and shadows, varied dealt sizes, levels 16 and 9 and the `lap` band (12 levels).
+- Ran: `npm run typecheck`; `npx vitest run src/games/size-parade src/content/lands.test.ts src/content/howto src/games/registry` 68 passed; full `npm test` 264 files, 3385 tests (before the review fixes; the size-parade file, 11 tests, re-run after them); `npm run build`.
+- `BROWSER_SUITE=expansion EXPANSION_ONLY=size SIZE_LEVELS=2,8 SIZE_PORTRAIT=1` passed (portrait of 8 reviewed: flag, bunting, shadows, hint glow), again with `SIZE_LEVELS=4,8` after the fixes; `BROWSER_SUITE=fingerdemo FINGER_ONLY=size-parade FINGER_LEVELS=16,9` clean (16 lap 18.0 s, 9 lap 5.0 s) and `FINGER_LEVELS=9,4` after the fixes (5.5 s, 6.5 s).
+- Probe `test-results/size-lap-probe.mjs` (untracked): level 16 at lap in portrait (sky tap hops without counting, 12 taps cycle the scale 1, 1.69, 2.38, 1.69, 1, 0 misses 0 hints, portrait reviewed); level 9 at lap (two wrong: misses [0, 0], hints [0, 1], asks big, little, big) and at toddler (two wrong: [2, 1]); no page errors.
+- Not run: the `expansion` size case at the other levels, `world`, the offline check, an iPad or a child. Open: a rotation during a strut re-spreads the row (cosmetic); [device checks](../DEVICE-CHECKS.md).

@@ -178,4 +178,4 @@ Earlier session: a deep dive session is research and ideation only. The write-up
 - **Windows now:** lap `order [16, 9]`; toddler `order [9, 1, 2, 3, 4, 17]`; `entryLevels [9, 16, 17]`; the other bands unchanged. Voice lines `size.pick.big/little`, `size.other.big/little`, `size.cycle*`; how-to card lines for 16 and 9.
 - Known small gap: a rotation during a 0.9 s strut re-spreads the row's remaining friends (cosmetic).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-26--size-parade-the-parade-eight-friends-levels-16-and-9-with-the-lap-band). Still open: the person checks in DEVICE-CHECKS.
+Checks are in [VERIFICATION](../archive/VERIFICATION-2026-10-26.md#2026-10-26--size-parade-the-parade-eight-friends-levels-16-and-9-with-the-lap-band). Still open: the person checks in DEVICE-CHECKS.
