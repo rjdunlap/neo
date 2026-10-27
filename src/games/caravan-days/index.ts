@@ -323,7 +323,7 @@ class CaravanDays implements Game {
       const pts = via === undefined ? [from, to] : [from, centre(l.stops[via]), to];
       g.moveTo(pts[0].x, pts[0].y);
       for (const p of pts.slice(1)) g.lineTo(p.x, p.y);
-      g.stroke({ width: 12, color: swatch.yellow.fill, cap: 'round', join: 'round', alpha: 0.85 });
+      g.stroke({ width: 18, color: swatch.yellow.fill, cap: 'round', join: 'round' });
       this.flagLayer.addChild(g);
       const f = flagArt(i + 1);
       f.position.set(to.x - 50, to.y - 24);
