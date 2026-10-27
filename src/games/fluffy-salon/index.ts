@@ -14,14 +14,14 @@ import type { CompanionRig } from '../../creatures/companion';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { anchors, BOTTLE_RADIUS, CUSTOMER_NAMES, describe, FACE_TAP, faceSpot, FLOOF, furFit, growFor, HAIR_COLORS, helps, isFree, makeRoom, PAT_MIRROR, PAT_QUIET, PAT_START, pickCustomer, selfChecks, SNIP_START, SNIP_TOOL_RADIUS, startLook, stats, scalpFor, makeRequests, moreLine, needs, oldStrands, PIP_SCALP, planFor, QUIET_HINT, salonMove, strandPoints, strokePath, toolFor, toolsFor, touchStrands, WRONG_BOTTLES, wrongBottle, type Anchor, type Look, type Request, type Room, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
+import { anchors, colorTargets, BOTTLE_RADIUS, CUSTOMER_NAMES, describe, FACE_TAP, faceSpot, FLOOF, furFit, growFor, HAIR_COLORS, helps, isFree, makeRoom, PAT_MIRROR, PAT_QUIET, PAT_START, pickCustomer, selfChecks, SNIP_START, SNIP_TOOL_RADIUS, startLook, stats, scalpFor, makeRequests, moreLine, needs, oldStrands, PIP_SCALP, planFor, QUIET_HINT, salonMove, strandPoints, strokePath, toolFor, toolsFor, touchStrands, WRONG_BOTTLES, wrongBottle, type Anchor, type Look, type Request, type Room, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 7, order: [6, 1, 7, 2] },
   toddler: { min: 1, max: 8, order: [6, 1, 7, 2, 8] },
   preschool: { min: 2, max: 9, order: [2, 8, 3, 4, 9] },
-  prek: { min: 3, max: 10, order: [3, 4, 5, 9, 10] },
+  prek: { min: 3, max: 12, order: [3, 4, 5, 9, 10, 11, 12] },
 };
 
 const PET_SCALE = 1.15;
@@ -169,6 +169,7 @@ class FluffySalon implements Game {
   /** Free play has no request card, so a tap on the pet's clear face repeats instead. */
   private readonly faceReplay = new Container();
   private pointer: number | null = null;
+  private readonly cancel = () => { this.pointer = null; };
   /** Strokes the demonstration has made: free play tours its tools by this count, and each stroke goes the other way from the last. */
   private sweeps = 0;
   private dirty = true;
@@ -228,6 +229,8 @@ class FluffySalon implements Game {
     const up = (e: { pointerId: number }) => e.pointerId === this.pointer && (this.pointer = null);
     this.touch.on('pointerup', up);
     this.touch.on('pointerupoutside', up);
+    window.addEventListener('pointercancel', this.cancel, true);
+    window.addEventListener('blur', this.cancel);
 
     this.card.visible = false;
     this.card.hitArea = new Rectangle(-110, -130, 220, 250);
@@ -316,7 +319,12 @@ class FluffySalon implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    const glow = this.oldGlow ? oldStrands(this.strands, this.oldGlow) : [];
+    if (this.plan.mode === 'colors' && (this.hintTool || this.oldGlow) && this.look) {
+      const fix = needs(this.look, this.strands);
+      if (this.hintTool) this.hintTool = fix ? toolFor(fix) : null;
+      this.oldGlow = fix as ColorName | null;
+    }
+    const glow = this.oldGlow && this.look ? colorTargets(this.look, this.strands, this.oldGlow) : [];
     if (this.dirty || glow.length) {
       drawHair(this.hair, this.an, this.strands, glow, 0.55 + 0.35 * Math.sin(this.clock * 6));
       this.dirty = false;
@@ -383,11 +391,14 @@ class FluffySalon implements Game {
       return button ? { tap: { on: button } } : null;
     }
     if (move.do === 'mirror') return { tap: { on: this.mirror }, when: () => (this.finished ? 'cancel' : !this.busy && (!this.look || needs(this.look, this.strands) === null)) };
-    const [start, ...via] = strokePath(this.tool, this.sweeps++ % 2 === 1).map((p) => ({ on: this.hair, x: p.x, y: p.y }));
+    const [start, ...via] = strokePath(this.tool, this.sweeps++ % 2 === 1, this.look).map((p) => ({ on: this.hair, x: p.x, y: p.y }));
     return { trace: start, via, receiver: this.touch, pause: 0.1 };
   }
 
   destroy() {
+    this.cancel();
+    window.removeEventListener('pointercancel', this.cancel, true);
+    window.removeEventListener('blur', this.cancel);
     this.touch.removeAllListeners();
     this.wall.texture.destroy(true);
   }
@@ -421,6 +432,7 @@ class FluffySalon implements Game {
 
   /** The finger is in the fur: whichever strands it touches get the current tool. Returns how many it touched. */
   private work1(e: FederatedPointerEvent): number {
+    if (this.busy || this.finished || palmOnGlass()) return 0;
     const p = this.hair.toLocal(e.global);
     const progress = !!this.look && helps(this.look, this.strands, this.tool);
     const { touched, snipped } = touchStrands(this.tool, this.strands, this.an, p);
@@ -462,6 +474,7 @@ class FluffySalon implements Game {
 
   private async nextRequest() {
     this.busy = true;
+    this.pointer = null;
     this.request++;
     this.wrongs = 0;
     this.named.clear();
@@ -472,13 +485,15 @@ class FluffySalon implements Game {
     this.sinceProgress = 0;
     const r = this.requests[this.request];
     if (!r) return void this.finale();
-    this.setHair(r.start);
+    // A changed request keeps the exact style she just made and loved.
+    if (this.plan.mode !== 'reverse' || this.request === 0) this.setHair(r.start);
     // Pink, please: the fur's own bottle starts chosen, so the first stroke changes nothing and the pet names what it sees.
     if (this.plan.mode === 'color') this.choose(r.start.color, true);
     this.showCard(r.look);
     this.mirror.visible = !selfChecks(this.plan.mode);
     this.busy = false;
     const look = describe(r.look);
+    if (this.plan.mode === 'reverse' && this.request === 1) return void await this.instruct('salon.actually', { look });
     await (this.who ? this.instruct('salon.want-friend', { who: this.who, look }) : this.instruct('salon.want', { look }));
   }
 
@@ -496,7 +511,7 @@ class FluffySalon implements Game {
     const hair = new Graphics();
     const length = look.length === 'long' ? 190 : look.length === 'short' ? 30 : 95;
     const curl = look.curl === 'curly' ? 0.9 : look.curl === 'straight' ? 0 : 0.3;
-    drawHair(hair, this.an, this.an.map(() => ({ length, curl, color: look.color ?? 'yellow' })));
+    drawHair(hair, this.an, this.an.map((_, i) => ({ length, curl, color: look.colors ? look.colors[i % 2] : look.color ?? 'yellow' })));
     wearFur(head, hair, this.scalp);
     head.update(0);
     const clip = new Graphics().roundRect(-97, -117, 194, 224, 24).fill(0xffffff);
@@ -534,7 +549,7 @@ class FluffySalon implements Game {
     sfx.boing();
     this.pet.poke(true);
     const line = moreLine(look, this.strands);
-    if (line === 'salon.more-color') this.oldGlow = look.color ?? null;
+    if (line === 'salon.more-color') this.oldGlow = fix as ColorName;
     await (this.who && line === 'salon.more' ? this.ctx.say('salon.more-friend', { who: this.who, fix }) : this.ctx.say(line, { fix }));
     if (this.wrongs >= 2 && !this.hintTool) this.hint();
     this.busy = false;
@@ -545,7 +560,7 @@ class FluffySalon implements Game {
     const fix = look && needs(look, this.strands);
     if (!fix) return;
     this.hintTool = toolFor(fix);
-    if (fix === look.color) this.oldGlow = fix;
+    if (fix === look.color || look.colors?.includes(fix as ColorName)) this.oldGlow = fix as ColorName;
     this.hints++;
   }
 
@@ -898,5 +913,5 @@ export const fluffySalon: GameModule = {
   offScreen: 'Play hair salon with a doll or stuffed animal: brushing, ribbons, and a mirror.',
   hubIcon: () => new SalonIcon(),
   sticker,
-  create: (ctx) => ctx.level >= 9 ? new SalonPair(ctx) : new FluffySalon(ctx),
+  create: (ctx) => (ctx.level === 9 || ctx.level === 10) ? new SalonPair(ctx) : new FluffySalon(ctx),
 };

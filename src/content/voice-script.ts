@@ -2463,6 +2463,7 @@ export const SCRIPT = {
   'salon.pat': ['Pat the fluffy fur!'],
   'salon.floof': ['So fluffy! Look in the mirror!'],
   'salon.snip': ['Grow the fur, then snip it! Snip snip!'],
+  'salon.actually': ['I love it! Actually, could you make it {look} now?'],
   'salon.want': ['Can you make my hair {look}, please?'],
   'salon.want-friend': ['{who} wants it {look}, please!'],
   'salon.wrong-color': ["That's {got}! I want {want}."],

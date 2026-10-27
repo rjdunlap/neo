@@ -341,6 +341,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### fluffy-salon 3: Two colours and changed requests
 
+Built 2026-10-26: slices 8–9, levels 11–12 ([PR #1009](https://github.com/rjdunlap/neo/pull/1009)); [build note](archive/COMPLETED-2026-10-09.md#fluffy-salon-batch-3-two-colors-and-changed-requests-slices-89-2026-10-26). No open implementation subtask; person/device acceptance stays open.
+
 - **`fluffy-salon`, level 11 *Two colors*, slice 8** (new levels): "pink and blue, please", at least 35 % of strands in each; pre-K `order [3, 4, 5, 9, 10, 11]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 - **`fluffy-salon`, level 12 *Changed my mind*, slice 9** (new levels): a loved style is asked to be the opposite, so snip undoes grow and comb undoes curl; pre-K `order [3, 4, 5, 9, 10, 11, 12]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 
