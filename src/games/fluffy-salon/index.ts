@@ -20,8 +20,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 7, order: [6, 1, 7, 2] },
   toddler: { min: 1, max: 8, order: [6, 1, 7, 2, 8] },
-  preschool: { min: 2, max: 8, order: [2, 8, 3, 4] },
-  prek: { min: 3, max: 5 },
+  preschool: { min: 2, max: 9, order: [2, 8, 3, 4, 9] },
+  prek: { min: 3, max: 10, order: [3, 4, 5, 9, 10] },
 };
 
 const PET_SCALE = 1.15;
@@ -574,6 +574,280 @@ class FluffySalon implements Game {
   }
 }
 
+/** Two visible customers share the tools, but keep their own hair, request and support history. */
+class SalonPair implements Game {
+  readonly plan: SalonPlan;
+  readonly requests: Request[];
+  readonly an = anchors();
+  readonly seats: { pet: Seat; scalp: Scalp; hair: Graphics; strands: Strand[]; card: Container; frame: Graphics; done: boolean; wrongs: number; hint: Tool | null; oldGlow: ColorName | null; who: string }[] = [];
+  readonly buttons: ToolButton[] = [];
+  readonly mirror: RoundButton;
+  readonly touch = new Container();
+  readonly comparison = new Graphics();
+  readonly background = new Graphics();
+  selected = 0;
+  tool: Tool = 'grow';
+  misses = 0;
+  hints = 0;
+  busy = false;
+  finished = false;
+  private pointer: number | null = null;
+  private sweeps = 0;
+  private lastSound = 0;
+  private clock = 0;
+  private looked = false;
+  private destroyed = false;
+  private readonly cancel = () => { this.pointer = null; };
+
+  constructor(private readonly ctx: GameContext) {
+    this.plan = planFor(ctx.level);
+    this.requests = makeRequests(this.plan, ctx.rng);
+    ctx.pet.visible = false;
+    const compare = this.plan.mode === 'compare';
+    const friend = compare ? 'pip' : ctx.rng.pick(['cat', 'bunny', 'bear', 'dog', 'pig'] as const);
+    ctx.stage.addChild(this.background, this.comparison);
+    this.comparison.eventMode = 'none';
+    for (let i = 0; i < 2; i++) {
+      const pet: Seat = i === 0 ? ctx.companion() : new FriendInChair(CRITTERS[friend]);
+      const scalp = scalpFor(pet.bodyBounds());
+      pet.scale.set(0.85 * growFor(scalp));
+      ctx.track(pet);
+      const hair = new Graphics();
+      wearFur(pet, hair, scalp);
+      const request = this.requests[compare ? 0 : i];
+      const start = compare && i === 1 ? { ...request.start, length: request.look.comparison!.length } : request.start;
+      const strands = this.an.map(() => ({ ...start }));
+      const card = new Container();
+      const frame = new Graphics();
+      card.hitArea = new Rectangle(-110, -75, 220, 150);
+      const who = i === 0 ? 'Your pet' : CUSTOMER_NAMES[friend];
+      this.seats.push({ pet, scalp, hair, strands, card, frame, done: false, wrongs: 0, hint: null, oldGlow: null, who });
+      ctx.stage.addChild(pet);
+      // A card is also an explicit, generous selection target; both requests stay pictured throughout.
+      onTap(card, () => {
+        if (this.busy || this.finished) return;
+        if (!compare) this.select(i);
+        this.speak(i);
+      }, { cooldown: 350 });
+      this.drawCard(i, friend);
+    }
+    ctx.stage.addChild(this.comparison, this.touch, ...this.seats.map((s) => s.card));
+    this.touch.eventMode = 'static';
+    this.touch.on('pointerdown', (e: FederatedPointerEvent) => {
+      if (palmOnGlass() || this.busy || this.finished || this.pointer !== null) return;
+      const p = ctx.stage.toLocal(e.global);
+      const i = Math.abs(p.x - this.headX(0)) <= Math.abs(p.x - this.headX(1)) ? 0 : 1;
+      if (compare && i === 1) { this.speak(1); return; }
+      this.select(i);
+      if (this.seats[i].done) { this.seats[i].pet.cheer(); return; }
+      this.pointer = e.pointerId;
+      if (!this.workAt(e)) { this.seats[i].pet.poke(true); sfx.giggle(); }
+    });
+    this.touch.on('globalpointermove', (e: FederatedPointerEvent) => {
+      if (e.pointerId !== this.pointer) return;
+      const p = ctx.stage.toLocal(e.global);
+      const area = this.touch.hitArea as Rectangle;
+      if (p.x < area.x || p.x > area.x + area.width || p.y < area.y || p.y > area.y + area.height || palmOnGlass()) return this.cancel();
+      this.workAt(e);
+    });
+    const up = (e: { pointerId: number }) => { if (e.pointerId === this.pointer) this.cancel(); };
+    this.touch.on('pointerup', up);
+    this.touch.on('pointerupoutside', up);
+    window.addEventListener('pointercancel', this.cancel, true);
+    window.addEventListener('blur', this.cancel);
+    window.addEventListener('pointerup', up, true);
+    this.releaseUp = () => window.removeEventListener('pointerup', up, true);
+    for (const tool of toolsFor(this.plan.mode)) {
+      const b = new ToolButton(tool, 50, () => {
+        if (this.busy || this.finished) return;
+        this.choose(tool);
+        sfx.pop(6);
+      });
+      this.buttons.push(b);
+      ctx.stage.addChild(b);
+    }
+    const icon = new Graphics().ellipse(0, 0, 24, 30).fill(0xd6eefa).stroke({ width: 6, color: wood.line }).moveTo(-8, -12).lineTo(4, -20).stroke({ width: 4, color: 0xffffff });
+    this.mirror = new RoundButton(icon, swatch.white, 54, () => void this.check());
+    ctx.stage.addChild(this.mirror);
+    this.choose('grow');
+    this.paintFrames();
+  }
+  private readonly releaseUp: () => void;
+  get seat() { return this.seats[this.selected]; }
+  get look() { return this.requests[this.plan.mode === 'compare' ? 0 : this.selected].look; }
+  private headX(i: number) {
+    const s = this.seats[i];
+    return s.pet.x + s.scalp.x * s.pet.scale.x;
+  }
+  start() {
+    if (this.plan.mode === 'compare') this.speak(0, true);
+    else void this.ctx.instruct('salon.two-customers', { first: describe(this.requests[0].look), who: this.seats[1].who, second: describe(this.requests[1].look) });
+  }
+  private select(i: number) {
+    this.selected = i;
+    this.pointer = null;
+    this.paintFrames();
+  }
+  private speak(i: number, instruction = false) {
+    if (this.busy || this.finished) return;
+    this.seats[i].pet.poke(true);
+    const line: LineId = this.plan.mode === 'compare' ? (i === 1 ? 'salon.fixed-friend' : 'salon.compare') : this.seats[i].done ? 'salon.love-friend' : 'salon.want-friend';
+    const vars = { who: this.seats[i].who, look: describe(this.requests[this.plan.mode === 'compare' ? 0 : i].look), direction: this.requests[0].look.comparison?.direction ?? '' };
+    if (instruction || (this.plan.mode === 'customers' && !this.seats[i].done)) void this.ctx.instruct(line, vars);
+    else void this.ctx.say(line, vars);
+  }
+  private choose(tool: Tool) {
+    this.tool = tool;
+    for (const b of this.buttons) b.setChosen(b.tool === tool);
+  }
+  private drawCard(i: number, friend: CritterName) {
+    const s = this.seats[i];
+    const compare = this.plan.mode === 'compare';
+    const look = this.requests[compare ? 0 : i].look;
+    const preview: Seat = i === 0 ? this.ctx.companion() : new FriendInChair(CRITTERS[friend]);
+    preview.alive = false;
+    const scalp = scalpFor(preview.bodyBounds());
+    const k = 0.25 * growFor(scalp);
+    preview.scale.set(k);
+    preview.position.set(-scalp.x * k, 64);
+    const length = compare ? look.comparison!.length + (i === 0 ? (look.comparison!.direction === 'longer' ? 60 : -45) : 0) : look.length === 'long' ? 190 : look.length === 'short' ? 30 : 95;
+    const hair = new Graphics();
+    drawHair(hair, this.an, this.an.map(() => ({ length, curl: look.curl === 'curly' ? 0.9 : look.curl === 'straight' ? 0 : 0.3, color: look.color ?? 'yellow' })));
+    wearFur(preview, hair, scalp);
+    preview.update(0);
+    const mask = new Graphics().roundRect(-105, -70, 210, 140, 20).fill(0xffffff);
+    preview.mask = mask;
+    s.card.addChild(s.frame, preview, mask);
+  }
+  private paintFrames() {
+    this.seats.forEach((s, i) => {
+      s.card.pivot.y = this.selected === i ? 12 : 0;
+      s.frame.clear().roundRect(-110, -75, 220, 150, 24).fill(s.done ? 0xe5f7db : 0xffffff).stroke({ width: this.selected === i ? 9 : 4, color: this.selected === i ? swatch.purple.line : wood.fill });
+      if (s.done) s.frame.moveTo(65, 40).lineTo(80, 55).lineTo(100, 25).stroke({ width: 8, color: swatch.green.line, cap: 'round', join: 'round' });
+      if (this.selected === i) s.frame.moveTo(-15, 82).lineTo(0, 98).lineTo(15, 82).fill(swatch.purple.fill);
+    });
+  }
+  resize(v: View) {
+    this.cancel();
+    const g = this.background.clear();
+    g.rect(0, 0, v.w, v.h).fill(swatch.pink.light);
+    const offsetY = (v.h - 768) / 2;
+    this.seats.forEach((s, i) => {
+      const x = v.w * (i === 0 ? 0.30 : 0.70);
+      g.roundRect(x - 200, offsetY + 200, 400, 348, 45).fill(0xe2f4fc).stroke({ width: 10, color: wood.fill });
+      g.roundRect(x - 145, offsetY + 493, 290, 50, 18).fill(swatch.red.fill).stroke({ width: 5, color: swatch.red.line });
+      s.pet.position.set(x - s.scalp.x * s.pet.scale.x, offsetY + 513);
+      s.card.position.set(x, offsetY + 110);
+    });
+    this.touch.hitArea = new Rectangle(110, offsetY + 205, v.w - 220, 343);
+    const tools = this.buttons.filter((b) => !HAIR_COLORS.includes(b.tool as ColorName));
+    const colors = this.buttons.filter((b) => HAIR_COLORS.includes(b.tool as ColorName));
+    spread(tools.length, 190, v.w - 110, 128).forEach((x, i) => tools[i].position.set(x, v.h - 175));
+    spread(colors.length, 190, v.w - 110, 125).forEach((x, i) => colors[i].position.set(x, v.h - 60));
+    this.mirror.position.set(v.w - 66, 66);
+    this.paintComparison();
+  }
+  update(dt: number) {
+    this.clock += dt;
+    for (const s of this.seats) drawHair(s.hair, this.an, s.strands, s.oldGlow ? oldStrands(s.strands, s.oldGlow) : [], 0.65 + 0.3 * Math.sin(this.clock * 6));
+    // Support belongs to the selected head and follows its current unmet attribute, never a stale tool.
+    const fix = needs(this.look, this.seat.strands);
+    for (const b of this.buttons) {
+      b.glow.visible = !this.seat.done && !!this.seat.hint && !!fix && b.tool === toolFor(fix);
+      b.glow.alpha = 0.7 + 0.3 * Math.sin(this.clock * 7);
+    }
+    if (this.looked) this.paintComparison();
+  }
+  private workAt(e: FederatedPointerEvent) {
+    if (this.busy || this.finished || this.seat.done) return 0;
+    const s = this.seat;
+    const { touched, snipped } = touchStrands(this.tool, s.strands, this.an, s.hair.toLocal(e.global));
+    if (touched && this.clock - this.lastSound > 0.12) {
+      this.lastSound = this.clock;
+      if (this.tool === 'cut') sfx.tick(); else sfx.squish();
+    }
+    for (const cut of snipped) {
+      const p = this.ctx.stage.toLocal(s.hair.toGlobal(cut.tip));
+      this.ctx.particles.burst(p.x, p.y, { colors: [swatch[cut.color].fill], count: 3, gravity: 500, speed: [40, 110] });
+    }
+    return touched;
+  }
+  private paintComparison() {
+    const g = this.comparison.clear();
+    if (this.plan.mode !== 'compare') return;
+    const x = (this.headX(0) + this.headX(1)) / 2;
+    const direction = this.requests[0].look.comparison!.direction;
+    // The card's arrow names the requested direction, without reading.
+    const d = direction === 'longer' ? 1 : -1;
+    const cy = this.seats[0].card.y;
+    g.moveTo(x, cy - 40).lineTo(x, cy + 30).moveTo(x - 14, cy - 5 + d * 35 - d * 18).lineTo(x, cy - 5 + d * 35).lineTo(x + 14, cy - 5 + d * 35 - d * 18).stroke({ width: 7, color: swatch.purple.line, cap: 'round', join: 'round' });
+    if (!this.looked) return;
+    // Straight sample locks in the mirror share an origin and scale; their tips show the actual mean lengths.
+    const y = this.seats[0].pet.y - 200;
+    const ends = this.seats.map((s) => y + stats(s.strands).length);
+    g.roundRect(x - 55, y - 15, 110, 255, 18).fill({ color: 0xffffff, alpha: 0.95 }).stroke({ width: 3, color: wood.fill });
+    for (let i = 0; i < 2; i++) g.moveTo(x + (i === 0 ? -28 : 28), y).lineTo(x + (i === 0 ? -28 : 28), ends[i]).stroke({ width: 13, color: i === 0 ? swatch.purple.fill : swatch.yellow.fill, cap: 'round' });
+    for (const end of ends) g.moveTo(x - 43, end).lineTo(x + 43, end).stroke({ width: 3, color: swatch.blue.line });
+    g.moveTo(x, ends[0]).lineTo(x, ends[1]).stroke({ width: 4, color: swatch.blue.line });
+  }
+  private async check() {
+    if (this.busy || this.finished || this.seat.done) return;
+    this.cancel();
+    this.busy = true;
+    const s = this.seat;
+    this.looked = true;
+    this.paintComparison();
+    const fix = needs(this.look, s.strands);
+    if (fix) {
+      this.misses++;
+      s.wrongs++;
+      sfx.boing();
+      s.pet.poke(true);
+      if (fix === this.look.color) s.oldGlow = fix;
+      if (s.wrongs >= 2 && !s.hint) { s.hint = toolFor(fix); this.hints++; }
+      if (this.plan.mode === 'compare') await this.ctx.say('salon.compare-more', { direction: fix });
+      else if (moreLine(this.look, s.strands) === 'salon.more-color') await this.ctx.say('salon.more-color-friend', { who: s.who, fix });
+      else await this.ctx.say('salon.more-friend', { who: s.who, fix });
+      if (!this.destroyed) this.busy = false;
+      return;
+    }
+    s.done = true;
+    s.hint = null;
+    s.oldGlow = null;
+    s.pet.cheer();
+    sfx.sparkle();
+    this.paintFrames();
+    await this.ctx.say('salon.love-friend', { who: s.who });
+    if (this.destroyed) return;
+    if (this.plan.mode === 'compare' || this.seats.every((s) => s.done)) {
+      this.finished = true;
+      await this.ctx.tw.wait(0.6);
+      if (!this.destroyed) this.ctx.finish({ misses: this.misses, hints: this.hints });
+    } else {
+      this.busy = false;
+      this.select(this.seats.findIndex((s) => !s.done));
+      this.speak(this.selected, true);
+    }
+  }
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.seat.done) return null;
+    const move = salonMove({ mode: this.plan.mode, look: this.look, strands: this.seat.strands, tool: this.tool, strokes: this.sweeps, mirror: true });
+    if (!move) return null;
+    if (move.do === 'tool') return { tap: { on: this.buttons.find((b) => b.tool === move.tool)! } };
+    if (move.do === 'mirror') return { tap: { on: this.mirror } };
+    const [trace, ...via] = strokePath(this.tool, this.sweeps++ % 2 === 1).map((p) => ({ on: this.seat.hair, x: p.x, y: p.y }));
+    return { trace, via, receiver: this.touch, pause: 0.1 };
+  }
+  destroy() {
+    this.destroyed = true;
+    this.cancel();
+    this.touch.removeAllListeners();
+    window.removeEventListener('pointercancel', this.cancel, true);
+    window.removeEventListener('blur', this.cancel);
+    this.releaseUp();
+  }
+}
+
 class SalonIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
@@ -624,5 +898,5 @@ export const fluffySalon: GameModule = {
   offScreen: 'Play hair salon with a doll or stuffed animal: brushing, ribbons, and a mirror.',
   hubIcon: () => new SalonIcon(),
   sticker,
-  create: (ctx) => new FluffySalon(ctx),
+  create: (ctx) => ctx.level >= 9 ? new SalonPair(ctx) : new FluffySalon(ctx),
 };
