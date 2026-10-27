@@ -95,3 +95,11 @@
 - Archived the superseded Harbor ticket/wheel/bank proposal; preserved its roadmap anchors with current-status pointers. No new product decisions, game definitions, implementation dispatch or runtime changes.
 - Passed `node scripts/check-links.mjs` and `git diff --check`; manual status/provenance review. Rechecked overlap; active Size Parade/art/writing claims remain untouched in scope.
 - Not run locally: typecheck, unit tests, build, browser/offline suites (docs only). Required PR CI is the publication gate. Cutover iPad condition, Portuguese family review/voice acceptance, actual person/device observations and deferred practical-care/cultural scopes remain open.
+
+## 2026-10-26 — Seesaw Balance predict the tip
+
+- [PR #1000](https://github.com/rjdunlap/neo/pull/1000), `codex/seesaw-predict-tip`; tested `2f3f7fbd` plus runtime diff, upstream `b6b1fb73` changes queue docs only; server `http://localhost:5198`. Level17 adds unscored tagged-sum predictions, held props/release, spoken comparisons and explicit Continue; no journal entry.
+- Passed typecheck; 21 game tests including 300 deterministic seeds covering all three outcomes, bounded sums and true bot choices; full units 3382 passed/4 skipped with one how-to wording failure, fixed and recovered by 40 focused game/how-to tests. Final build passed.
+- `GAME_URL=http://localhost:5198 BROWSER_SUITE=seesawmeasure SEESAW_LEVELS=17 npm run test:browser`: three deliberately wrong predictions scored0/0; held/released geometry, truthful speech parameters, Continue gating, no journal, exactly one saved history/sticker passed. Portrait `test-results/browser/seesawmeasure/seesaw-17-held-portrait.png` reviewed.
+- `BROWSER_SUITE=fingerdemo FINGER_ONLY=seesaw-balance FINGER_LEVELS=17` passed clean in21.4s. Initial play interrupted by own HMR edit; repeated once after freezing source. Internal diff review found no remaining input/layout/cleanup/accounting gaps; no subagents per assigned scope.
+- Not run: other games/levels, world, picnic, production offline (no asset/persistence/navigation change), real speech/iPad/controller/child checks. Those acceptance gates remain open; required PR CI is the publication gate.
