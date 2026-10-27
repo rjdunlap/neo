@@ -572,6 +572,12 @@ Toddler1–2, preschool2–3, prek3–4, school4. No lap/grownup, levels5–6, p
 
 Built2026-10-26, [PR #983](https://github.com/rjdunlap/neo/pull/983); [packet](definitions/village-vote.md), [archived build note](archive/COMPLETED-2026-10-09.md#village-vote-levels-13-cc4-2026-10-26). Whole three-level new-game batch. Person/device checks and CC5 play gate remain.
 
+### keep-house 1: Who's at the door, who works where, the cook's walk and fit the household
+
+- **`keep-house`, levels 1–4 (slice ML2)** (a new game, one declared batch; toddler 1, preschool 1–3, pre-K 2–4, school 4, Cozy Village by decision 2 if the lands test passes, else Story Grove): tap the castle doors and the well and a figure comes out, nothing counted ([level 1](definitions/keep-house.md#level-1-whos-at-the-door-doors)); drag each figure to its workplace, the first wrong drop per figure free then a miss each, one glow per yard ([level 2](definitions/keep-house.md#level-2-who-works-where-workplaces)); put the kitchen then the stable on a near or far spot and watch the soup arrive, a placement never a miss, Keep it twice counting one hint ([level 3](definitions/keep-house.md#level-3-the-cooks-walk-walk)); fit five room tiles on a 3×3 plan to five spoken needs and ring the Finish bell, a miss per unmet bell, a BFS-backed glow after two misses, at least two solutions per seed ([level 4](definitions/keep-house.md#level-4-fit-the-household-plan)). [Definition](definitions/keep-house.md), [medieval life study slice ML2](deep-dives/subjects/medieval-life.md)
+
+Proof: new-game tier, as the [definition's check tier](definitions/keep-house.md#check-tier-for-ml2) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `browser-check.mjs` case filtered to Keep House with level 1 to the waves, level 2 with one figure dropped wrong twice and the glow, level 3 with the far spot kept twice, level 4 with one unmet bell and the glow to a solution, `fingerdemo` at level 4, one portrait screenshot of level 4, one build). The one history line is source-checked in the building session. If the allowance cannot take all four levels, levels 1–3 ship first and level 4 resumes in the same worker. No review gate.
+
 ## Relay Woods 1: levels 1–4 (NC2)
 
 - **Scope:** [NC1 packet](definitions/relay-woods.md), one worker/branch/PR for Pass it along1, Two ways2, Fallen log3, The short way4; finite seeded templates and five picture payloads, hop/backtrack/log/long-arrival/reset rules, capped support, voice/how-to/BFS bot. Toddler1–2, preschool1–4, pre-K2–4, school4.
