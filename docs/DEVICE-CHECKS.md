@@ -1,5 +1,13 @@
 # Needs a person or a device
 
+## Keep House levels 1–4
+
+- [ ] Watch a two-year-old at level 1: does she find the doors before the well?
+- [ ] Does "the horse can't work there" read as funny rather than a scold at level 2?
+- [ ] At level 3, is the cold soup read from the walk and the tile, not only from the voice?
+- [ ] On an iPad: are the 3 × 3 plan's cells reliably hit at level 4, in portrait and landscape?
+- [ ] On the iPad, how are the five need lines spoken: device speech or the rendered clips?
+
 ## Caravan Days levels 1–3
 
 - [ ] Watch a two-year-old at level 1: does she find the kneel on her own, or does she need the glow?
