@@ -69,6 +69,10 @@ The original idea’s pictured request/reciprocal pair/two-trade action is deliv
 
 [PR #1017](https://github.com/rjdunlap/neo/pull/1017), branch `claude/define-keep-house`: [definition](../definitions/keep-house.md) for the who's-at-the-door, who-works-where, cook's-walk and fit-the-household levels (saved levels 1–4; toddler 1, preschool 1–3, pre-K 2–4, school 4, Cozy Village by default, Story Grove as fallback) and a batch plan in `GAME-BATCHES.md`; docs only, nothing built. ML2 (build levels 1–4) is queued in READY and ML3 (levels 5–6 definition) follows it.
 
+### Water Road 1–3 definition (AM1, 2026-10-27)
+
+[PR #1018](https://github.com/rjdunlap/neo/pull/1018), branch `claude/define-water-road`: [definition](../definitions/water-road.md) for the keystone, which-one-stands and hold-it-up levels (toddler 1, preschool 1–2, pre-K 2–3, school 3, Tinker Lab by default, Storybook Square when it exists as fallback) and a batch plan in `GAME-BATCHES.md`; docs only, nothing built. AM2 (build levels 1–3) is queued in READY and AM3 (levels 4–5 definition) follows it.
+
 ### Movie Night 1–3 definition (MM1, 2026-10-24)
 
 [PR #953](https://github.com/rjdunlap/neo/pull/953), worker `01a170f9-90ac-7bb1-9218-fab3c1fbf5b0`, branch `codex/movie-night-mm1`: [packet](../definitions/movie-night.md) defines fixed Pond/Door footage and facts, synthesized pads/event matches, exact accepted sets, first-unmet reactions and decided Premiere accounting, touch/Stop/Undo/Help, speech/how-to/demos, both logical orientations and current Painted Canyon placement requirements. MM1 is docs only; no gameplay, registration/assets or persistence. MM2 is separately queued at the new-game tier with review and actual capacity/layout gates. Later levels/flipbook/storage/family-card/rework-home dependencies and device/child evidence stay open. Links and diff checks passed; no local code/browser checks. [Verification](VERIFICATION-2026-10-24.md#2026-10-24--movie-night-13-definition-mm1-docs-only).
