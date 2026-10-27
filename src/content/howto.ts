@@ -526,20 +526,26 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'bond-beads': {
-    goal: 'Link beads together hand to hand until every hand is held.',
+    goal: 'Link beads together hand to hand, and see that the same beads can make different shapes.',
     steps: [
       'Drag from one bead to another to link them (or tap one bead, then the other), and tap a link to break it.',
       { from: 1, to: 1, text: 'Link until every hand is held and all the beads are one piece.' },
       { from: 2, to: 2, text: 'Build the shape on the card, then tap Check.' },
-      'The yellow arrow undoes one step; the round arrow takes every link apart.',
+      { from: 3, to: 3, text: 'Take the built shapes apart and make the two on the card with every bead, then tap Check.' },
+      { from: 4, to: 4, text: 'Build either shape on the card and tap Check, then rearrange the same beads into the other and Check again.' },
+      { from: 1, to: 2, text: 'The yellow arrow undoes one step; the round arrow takes every link apart.' },
+      { from: 3, to: 4, text: 'The yellow arrow undoes one step; the round arrow puts the beads back as they were when the card came up.' },
     ],
     finish: [
       { from: 1, to: 1, text: 'Every hand is held and all the beads are one piece, three times.' },
       { from: 2, to: 2, text: 'Two shapes match their cards.' },
+      { from: 3, to: 3, text: 'Two cards: the built shapes become the two on the card, with no bead left over.' },
+      { from: 4, to: 4, text: 'Two sets: both shapes made from the same beads, one after the other.' },
     ],
     note: [
       { from: 1, to: 1, text: 'Linking, breaking and undo never count as mistakes, and nothing here is ever wrong. If no free hands can reach each other, a link to break pulses, with no count. This is a puzzle about beads and hands, not a model of real substances.' },
       { from: 2, to: 2, text: 'Linking, breaking and undo never count. A Check that is not the card is one miss (checking the same build again is not) and the pet names a bead or link to look at; after two misses the one to change glows, which counts as a hint, and a third wrong Check finishes the shape by itself. This is a puzzle about beads and hands, not a model of real substances.' },
+      { from: 3, to: 4, text: 'Linking, breaking and undo never count. A wrong Check is one miss (the same build again is not) and the pet names a bead or link; after two the one to change glows (one hint), and a third wrong Check finishes it by itself. A puzzle about beads and hands, not real substances.' },
     ],
   },
   'gear-garden': {
