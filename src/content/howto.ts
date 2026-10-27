@@ -687,6 +687,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: 'Sending is never counted. A wrong Check only costs a gentle hint.' },
     ],
   },
+  'helper-house': {
+    goal: 'Set up the helper, then watch the house run its day.',
+    steps: [
+      { from: 1, to: 1, text: 'Drag the eye to the door.' },
+      { from: 2, to: 2, text: 'Pick the sensor the lamp needs.' },
+      { from: 3, to: 3, text: 'Add the missing row so the lamp turns off too.' },
+      'Tap Watch and see what the helper does.',
+    ],
+    finish: 'The helper does its job all day by itself.',
+    note: [
+      { from: 1, to: 2, text: 'This is a try-out, not a test. Watching is never counted; if it does not work, look at what the friend and the helper did.' },
+      { from: 3, to: 3, text: 'Watching is never counted. If it does not work, look at what the friend and the lamp did; the same trouble twice makes the part to change glow.' },
+    ],
+  },
   'sense-detective': {
     goal: 'Find out what is in the parcel, then put its toy on the shelf.',
     steps: [

@@ -41,8 +41,8 @@ export default defineConfig({
       },
       // The first worker still takes control at once, so the very first visit already works offline;
       // an update waits (no skipWaiting) until every open copy of the app has closed.
-      // The code-drawn game catalog's routes bundle is just over 4 MiB; cache it offline with an explicit 5 MiB per-file bound.
-      // `webp` holds the root Home's backdrop (src/art/home/, kept under 1 MiB); `m4a` the rendered voice clips (src/audio/clips/).
+      // The code-drawn game catalog's routes bundle passed 4 MiB with Helper House (2026-10-27); cache it offline with an explicit
+      // 5 MiB per-file bound. `webp` holds the root Home's backdrop (src/art/home/, kept under 1 MiB); `m4a` the rendered voice clips (src/audio/clips/).
       workbox: { maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff,woff2,m4a}'], clientsClaim: true },
     }),
   ],

@@ -196,6 +196,10 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] Watch a child at level 5: do the two brackets make "the same distance from the water" visible, and does she find the dock friend as its own twin?
 - [ ] On an iPad, hear the new lines (`sealift.instruct.howfar`, `instruct.twin`, `ask.howfar`, `ask.twin`, `howfar.count`, `miss.twin`, `twin.here`) and check they never say minus or negative; check the level-4 card column clear of the landings in portrait with the pet clear.
 
+## Helper House levels 1–3
+
+- [ ] On an iPad, check that the sensor, card and helper pulse reads as one chain (the eye or sun sensor lighting its card, then the door or lamp), how a five-year-old reads the pictures without words, and whether the twelve-step day's pace suits Watch and Step, in portrait with the pet clear.
+
 ## Sorting Machine levels 1–2
 
 - [ ] On an iPad, check that the sign's door pictures (property to open door) read without words, and that the star, hollow ring and dotted ring with "?" are clear in portrait with the pet clear.
