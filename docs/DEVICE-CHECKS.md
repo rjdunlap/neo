@@ -179,6 +179,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] On an iPad, hear "three below the water" (and the other spoken counts) and check it never sounds like "minus" or a bare number; check the splash and tick at zero and portrait/landscape touches with the pet clear.
 - [ ] Watch a six- to eight-year-old: does she read the zig-zag landings as one line with the water at zero, notice the splash at zero, and tap the deepest friend first at level 3 (not the biggest number)? Does a grown-up take the caller part?
 
+## Sea Lift levels 4–5
+
+- [ ] Watch a school-age child at level 4: does she read the card numerals as counts of stops (not as stops), and does the friend's two-part count ("three stops to the water, and four more") help her fix a wrong card?
+- [ ] Watch a child at level 5: do the two brackets make "the same distance from the water" visible, and does she find the dock friend as its own twin?
+- [ ] On an iPad, hear the new lines (`sealift.instruct.howfar`, `instruct.twin`, `ask.howfar`, `ask.twin`, `howfar.count`, `miss.twin`, `twin.here`) and check they never say minus or negative; check the level-4 card column clear of the landings in portrait with the pet clear.
+
 ## Sound Garden pitch drawing and copying (levels 9–10)
 
 - [ ] On iPad, hear six distinct snapped pitches and the friends joining below; verify speech stays clear before the model sings.
