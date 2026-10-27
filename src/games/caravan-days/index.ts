@@ -110,8 +110,8 @@ class CaravanDays implements Game {
 
   start() {
     this.build();
-    void this.ctx.instruct(`cd.instruct.${this.level}` as LineId);
-    if (this.level >= 2) void this.ctx.say(`cd.history.${this.level}` as LineId);
+    const ask = this.ctx.instruct(`cd.instruct.${this.level}` as LineId);
+    if (this.level >= 2) void ask.then(() => { if (this.alive) void this.ctx.say(`cd.history.${this.level}` as LineId); });
   }
 
   destroy() {
@@ -422,7 +422,6 @@ class CaravanDays implements Game {
       sfx.sigh();
       void this.ctx.say('cd.kneel');
       void this.ctx.tw.to(camel, { fold: 1 }, { duration: 0.5, ease: ease.outQuad });
-      for (const b of this.baleNodes) if (b.parent === this.board) void this.ctx.tw.to(b.position, { x: b.x - 16 }, { duration: 0.4, ease: ease.outQuad });
     } else if (event === 'one-more') {
       void this.ctx.say('cd.one-more');
       const next = nextLoad(this.plan, state);
@@ -594,10 +593,28 @@ class CaravanDays implements Game {
     this.bob(node);
     if (this.busy) return;
     const { state, event } = tapStop(this.map, s, stop);
+    const stood = camelAt(this.map, s);
     this.state = state;
     if (event === 'flag') { sfx.pop(8); this.redrawPlan(); }
-    else if (event === 'take-out') { sfx.tick(); this.redrawPlan(); }
+    else if (event === 'take-out') {
+      sfx.tick();
+      this.redrawPlan();
+      // Taking out a flag the camel has reached: it ambles back to the last flag that stays (or home).
+      const now = camelAt(this.map, state);
+      if (now !== stood && this.camel) void this.amble(this.standAt(now));
+    }
     else if (event === 'not-adjacent') { this.wobble(node); void this.ctx.say('cd.not-straight'); }
+  }
+
+  /** The camel ambles back to the last flag that stays; inputs wait for it, as for every walk. */
+  private async amble(to: Pt) {
+    const epoch = this.epoch;
+    this.busy = true;
+    await this.walkTo(to, this.stepSeconds);
+    if (!this.live(epoch)) return;
+    if (this.camel) this.camel.scale.x = Math.abs(this.camel.scale.x);
+    this.busy = false;
+    if (this.relayout) this.build();
   }
 
   tapGo() {
@@ -710,10 +727,12 @@ class CaravanDays implements Game {
   askForHint() {
     if (this.finished) return;
     if (this.plan.level === 1) { void this.ctx.instruct('cd.instruct.1'); return; }
-    if (this.busy) return;
+    const line = this.plan.level === 2 ? 'cd.help.reach' : 'cd.help.plan';
+    // During a walk the answer is spoken but the glow (and its one hint) waits for the road to be hers again.
+    if (this.busy) { void this.ctx.say(line); return; }
     this.tallies.help();
-    if (this.plan.level === 2) { this.redrawOases(); void this.ctx.say('cd.help.reach'); return; }
-    void this.ctx.say('cd.help.plan');
+    if (this.plan.level === 2) this.redrawOases();
+    void this.ctx.say(line);
   }
 
   update(dt: number) {
