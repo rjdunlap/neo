@@ -12,7 +12,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 ## Weather Wardrobe level 10 (2026-10-26)
 
-- [ ] On iPad, check friend sign/item readability, long drags in portrait and landscape, finger lift, palm/second-finger rejection, cancellation and actual spoken weather reasons/guide replay. Observe whether a pre-K child uses both weather signs to give each friend what it needs, and record enjoyment/replay/stopping only after play. [Scripted proof](VERIFICATION.md#2026-10-26--weather-wardrobe-two-friends-level-10) does not establish these.
+- [ ] On iPad, check friend sign/item readability, long drags in portrait and landscape, finger lift, palm/second-finger rejection, cancellation and actual spoken weather reasons/guide replay. Observe whether a pre-K child uses both weather signs to give each friend what it needs, and record enjoyment/replay/stopping only after play. [Scripted proof](archive/VERIFICATION-2026-10-26.md#2026-10-26--weather-wardrobe-two-friends-level-10) does not establish these.
 
 ## Village Vote levels 1–3 (CC4, 2026-10-26)
 
@@ -178,6 +178,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 - [ ] On an iPad, hear "three below the water" (and the other spoken counts) and check it never sounds like "minus" or a bare number; check the splash and tick at zero and portrait/landscape touches with the pet clear.
 - [ ] Watch a six- to eight-year-old: does she read the zig-zag landings as one line with the water at zero, notice the splash at zero, and tap the deepest friend first at level 3 (not the biggest number)? Does a grown-up take the caller part?
+
+## Sea Lift levels 4–5
+
+- [ ] Watch a school-age child at level 4: does she read the card numerals as counts of stops (not as stops), and does the friend's two-part count ("three stops to the water, and four more") help her fix a wrong card?
+- [ ] Watch a child at level 5: do the two brackets make "the same distance from the water" visible, and does she find the dock friend as its own twin?
+- [ ] On an iPad, hear the new lines (`sealift.instruct.howfar`, `instruct.twin`, `ask.howfar`, `ask.twin`, `howfar.count`, `miss.twin`, `twin.here`) and check they never say minus or negative; check the level-4 card column clear of the landings in portrait with the pet clear.
 
 ## Sound Garden pitch drawing and copying (levels 9–10)
 

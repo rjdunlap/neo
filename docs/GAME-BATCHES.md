@@ -481,7 +481,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/sea-lift.md#c
 
 ### sea-lift 2: Levels 4–5
 
-Defined 2026-10-22. **Gated, not eligible for routines:** starts only after the mathematics educator reads the level-4 card table (study decision 8; Waiting row "Sea Lift 4–5: the educator's read of the level-4 cards").
+Built 2026-10-27, branch `claude/sea-lift-4-5`, [PR #1005](https://github.com/rjdunlap/neo/pull/1005); [closeout](archive/COMPLETED-2026-10-09.md#sea-lift-levels-45-2026-10-27). Scope retained for dependency references; this batch is no longer eligible for dispatch.
 
 - **`sea-lift`, levels 4–5 (IN2)** (new levels with one new interaction, number cards; school, upper-school content): How far? (number cards for the interval across zero, the magnitude and both-ends mistakes as distractors) at level 4, Twin stops (the opposite across the water; the dock is its own twin) at level 5. [Definition](definitions/sea-lift-4-5.md), [integers study](deep-dives/subjects/integers.md)
 
