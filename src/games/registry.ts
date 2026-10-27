@@ -137,6 +137,7 @@ import { meadowPens } from './meadow-pens';
 import { wordGlue } from './word-glue';
 import { sandTable } from './sand-table';
 import { sortingMachine } from './sorting-machine';
+import { gadgetBench } from './gadget-bench';
 import { helperHouse } from './helper-house';
 import { sproutShuffle } from './sprout-shuffle';
 import { puddleLens } from './puddle-lens';
@@ -269,6 +270,7 @@ export const GAMES: GameModule[] = [
   wordGlue,
   sandTable,
   sortingMachine,
+  gadgetBench,
   helperHouse,
   sproutShuffle,
   puddleLens,
