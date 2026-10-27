@@ -1,10 +1,11 @@
 import { selectValue } from '../selection.mjs';
 import assert from 'node:assert/strict';
 
-export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, screenshot, homeFirstRun, homeResidents, homeButtons, homeLastPlace, homeResult, homeArcade, next }) {
+export function createSuite({ page, errors, log, ready, scene, pickFirst, tap, screenshot, homeFirstRun, homeResidents, homeButtons, homeLastPlace, homeResult, homeArcade, homeMeadow, next }) {
 async function homeFlow() {
-  if (process.env.HOME_ONLY !== undefined) selectValue(process.env.HOME_ONLY, ['first-run', 'result', 'residents', 'buttons', 'last-place', 'arcade'], 'HOME_ONLY');
+  if (process.env.HOME_ONLY !== undefined) selectValue(process.env.HOME_ONLY, ['first-run', 'result', 'residents', 'buttons', 'last-place', 'arcade', 'meadow'], 'HOME_ONLY');
   if (process.env.HOME_ONLY === 'arcade') return homeArcade();
+  if (process.env.HOME_ONLY === 'meadow') return homeMeadow();
   if (process.env.HOME_ONLY === 'first-run') return homeFirstRun();
   if (process.env.HOME_ONLY === 'result') return homeResult();
   if (process.env.HOME_ONLY === 'residents') return homeResidents();

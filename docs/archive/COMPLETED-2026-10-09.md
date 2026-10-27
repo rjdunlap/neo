@@ -1,5 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### RW14 slice 4: illustrated Rainbow Meadow and postcards (2026-10-26)
+
+[PR #922](https://github.com/rjdunlap/neo/pull/922) prepares accepted R23 source `land-meadow-5` as the meadow backdrop and Places card, with reproducible import instructions in `src/art/locations/README.md`. Root boot loads `<land-id>.webp` and `<land-id>-card.webp` by name; missing or failed art retains the drawn fallback. The picture follows the existing ground line, game icons stand on cream plates, Places and Explore show its postcard, and the result uses the same picture. Classic keeps its drawn lands.
+
+Under the standing delegation, the pilot accepts games standing in front of distant tree trunks, rabbit and rocks as depth, replacing its no-overlap acceptance condition while preserving targets and page capacity. The iPad visual judgement remains open. Typecheck/full units/build, filtered play in both views, screenshot review and exact production assets/navigation offline passed; [verification](../VERIFICATION.md#2026-10-26--illustrated-rainbow-meadow-review-and-integration) records scope and reused broad offline evidence. Other backdrops remain a separate slice.
+
 ### The Arcade: portal catalog and live preview (2026-10-26)
 
 [PR #900](https://github.com/rjdunlap/neo/pull/900) adds the root Explore page’s fifth entry: a paged catalog with derived subject/age/input tags, a Topics sheet and one live bot spotlight. A first tap selects a preview; another tap or Play launches it, and Back retains its page, filter and spotlight. Profile changes clear that memory; browsing creates no round progress. The denser grid and attract mode from preschool upward are accepted under the standing delegation; lap/toddler keep the spotlight still. Later shelves, poster frames and grown-up filters remain proposals in [the packet](../rework/ARCADE.md).
@@ -14,7 +20,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-26--fluffy-salon-custome
 
 ### Seesaw Balance batch 2: lap bounce and heavier/lighter (slices 3–4, 2026-10-26)
 
-[PR #991](https://github.com/rjdunlap/neo/pull/991), worker `01a17915-0de5-7412-bada-85b291a34662`, `codex/seesaw-bounce-comparison`: delivered level12 *Wheee!* (four empty-half lifts, free rider pokes) and level13 *Who is heavier?* (heavier/lighter/heavier taps, directional spoken support, second-miss glow). Lap order[12], toddler[12,1,2], preschool[2,13,3,4], entryLevels[12,13]; prior IDs/plans and pre-K/school unchanged. Both use shell rewards and the existing heavy-down observation only after it is shown. [Verification](../VERIFICATION.md#2026-10-26--seesaw-balance-lap-bounce-and-heavierlighter): typecheck/full units/rules/build, both interactions/rewards/portrait and clean demos. Person/device acceptance stays open; excludes14–17, other games and generated art. Dispatch prohibits subagents; self-review only. Old research claim `6e7a5e19` preserved.
+[PR #991](https://github.com/rjdunlap/neo/pull/991), worker `01a17915-0de5-7412-bada-85b291a34662`, `codex/seesaw-bounce-comparison`: delivered level12 *Wheee!* (four empty-half lifts, free rider pokes) and level13 *Who is heavier?* (heavier/lighter/heavier taps, directional spoken support, second-miss glow). Lap order[12], toddler[12,1,2], preschool[2,13,3,4], entryLevels[12,13]; prior IDs/plans and pre-K/school unchanged. Both use shell rewards and the existing heavy-down observation only after it is shown. [Verification](VERIFICATION-2026-10-26.md#2026-10-26--seesaw-balance-lap-bounce-and-heavierlighter): typecheck/full units/rules/build, both interactions/rewards/portrait and clean demos. Person/device acceptance stays open; excludes14–17, other games and generated art. Dispatch prohibits subagents; self-review only. Old research claim `6e7a5e19` preserved.
 
 ### Monster Munch batch 2: two kinds and how many friends (2026-10-26)
 

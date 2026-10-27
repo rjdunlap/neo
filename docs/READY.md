@@ -24,7 +24,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **`scoop-shop`, level 7 Two cones (EF1b second batch)** (standalone new interaction): after EF1b 8–9 and built 11; [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25), [batch](GAME-BATCHES.md#scoop-shop-4-two-cones). Free cone selection, friend peek, independent stacks/help, three scoops total; two-order bot and full-size layout proof required.
 
-- **RW14 slice 4, the illustrated Rainbow Meadow and Places postcards** (shell tier, offline check): eligible once `land-meadow` from [ChatGPT batch 1](rework/art-requests/CHATGPT-BATCH.md#batch-1-generate-these-first) is imported; then it goes to the top of Next ten; it also wires the location picture into the result screen's `resultPlace`/`ResultBackdrop` and checks the result there (slice 5 built the sky and hills only). [POLISH.md](rework/POLISH.md#slice-4-the-illustrated-rainbow-meadow-and-postcards-in-places)
 - **RW14 slice 10, the other ten backdrops** (images only): after slices 4 and 6 pass their screenshot review. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 
 

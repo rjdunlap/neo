@@ -19,6 +19,7 @@ import { LibraryScene } from './app/scenes/LibraryScene';
 import { PlayScene } from './app/scenes/PlayScene';
 import { ProjectScene } from './app/scenes/ProjectScene';
 import { loadHomeBackdrop } from './art/home/backdrop';
+import { loadLocationArt } from './art/locations';
 import { store } from './progress/store';
 
 /**
@@ -59,8 +60,8 @@ async function boot() {
     app.go = withLink({ ...island, hub: entry, land });
     app.go.hub();
   } else {
-    // The residents' art (RW14 slice 2) loads with the collection's, so a location never waits for it.
-    await Promise.all([loadCollectionArt(), loadHomeBackdrop(), loadCastArt()]);
+    // The residents' art (RW14 slice 2) and the location pictures (slice 4) load with the collection's, so a location never waits for them.
+    await Promise.all([loadCollectionArt(), loadHomeBackdrop(), loadCastArt(), loadLocationArt()]);
     app.creatureWorld = true;
     app.go = withLink({
       ...island,
