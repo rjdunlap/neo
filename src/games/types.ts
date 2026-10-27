@@ -6,6 +6,12 @@ import type { RegionId } from '../content/world';
 import type { Particles } from '../art/particles';
 import type { MusicStyle } from '../audio/music';
 import type { LineVars } from '../audio/voice';
+
+/**
+ * Off-screen lines by band: `all` for every band without its own entry, a band key for that band's own sentence, `null` to
+ * withhold the line at that band (the grown-ups' page then skips the game). Keys name only bands the game lists (a test checks).
+ */
+export type OffScreenLines = { all: string } & Partial<Record<Band, string | null>>;
 import type { LineId } from '../content/voice-script';
 import type { Rng } from '../engine/random';
 import type { Tweener } from '../engine/tween';
@@ -110,8 +116,12 @@ export interface GameModule {
   music: MusicStyle;
   /** A prompt for the grown-up in early bands. `{name}` is the child's name. */
   coplayHint?: string;
-  /** A real-world activity that carries the same skill off the screen, for the parent zone. */
-  offScreen?: string;
+  /**
+   * A real-world activity that carries the same skill off the screen, for the parent zone. A plain string serves every band;
+   * `OffScreenLines` gives a band its own sentence (`null` withholds it there). Read through `offScreenFor` (`src/content/offscreen.ts`),
+   * which picks the band she plays the game at and fills `{name}`.
+   */
+  offScreen?: string | OffScreenLines;
   hubIcon(): HubIcon;
   /**
    * What can play it on the island: `touch` (a finger or a mouse; the default) and/or `controller` (keys and gamepad, through

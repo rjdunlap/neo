@@ -719,7 +719,13 @@ export const gardenGrow: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'One of you plants, one is the weather: tap the cloud. Say "Rain, rain... it grows!"',
-  offScreen: 'Plant a bean in a cup and water it together; look at it each morning.',
+  offScreen: {
+    // The daily-routine clause ("look at it each morning") is dropped: no line asks for a routine.
+    all: 'Plant a bean in a cup and water it together.',
+    // Under 3: withheld (a bean and a water cup are the whole sentence) until a reviewed line exists.
+    lap: null,
+    toddler: null,
+  },
   entryLevels: [8],
   hubIcon: () => new GardenIcon(),
   touchDemo: true,
