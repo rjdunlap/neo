@@ -54,8 +54,59 @@ async function seaLiftPlay() {
   await screenshot('sea-lift-2-portrait');
   await idle();
   await page.setViewportSize({ width: 1024, height: 768 });
+
+  // Level 4, the authored round: the fish at three below, the duck at four above, cards 1, 7 and 8. A landing is free; the 1 is one
+  // miss (the lift rides it out and comes back, the card dims); the same card again is nothing; Show a hint glows the 7.
+  const tapCard = (value) => page.evaluate((value) => { const g = neo.scene.game; const i = g.cards.findIndex((c) => c.value === value); const b = g.C.cards[i]; const p = g.tapLayer.toGlobal({ x: b.x + b.w / 2, y: b.y + b.h / 2 }); kit.tap(p.x, p.y); }, value);
+  const cardAlpha = (value) => page.evaluate((value) => neo.scene.game.cards.find((c) => c.value === value).node.alpha, value);
+  await launch('sea-lift', 4); await idle();
+  n = await page.evaluate(() => kit.store.data.stickers.length);
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.cards.map((c) => c.value)), [1, 7, 8], 'the authored cards');
+  assert.equal((await state()).car, -3, 'the lift waits with the fish at three below');
+  await tapStop(4); await page.waitForTimeout(200);
+  assert.equal((await state()).misses, 0, 'a landing tap is free at level 4');
+  await tapStop(1); await page.waitForTimeout(300);
+  st = await state(); assert.deepEqual([st.misses, st.index, st.busy], [0, 0, false], "a landing whose number matches a card is still free, not that card");
+  await tapCard(1); await idle();
+  st = await state(); assert.deepEqual([st.misses, st.car, st.index], [1, -3, 0], 'a wrong card is one miss and the lift returns to the fish');
+  assert.ok((await cardAlpha(1)) < 0.5, 'the wrong card dims');
+  await tapCard(1); await page.waitForTimeout(200);
+  assert.equal((await state()).misses, 1, 'a dimmed card counts nothing more');
+  await page.evaluate(() => neo.scene.game.askForHint()); await page.waitForTimeout(150);
+  st = await state(); assert.deepEqual([st.hints, st.hinted], [1, true], 'Show a hint glows the right card once');
+  await screenshot('sea-lift-4');
+  await tapCard(7); await idle();
+  st = await state(); assert.deepEqual([st.index, st.car, st.misses], [1, -1, 1], 'the 7 sends the lift to the duck, then the penguin case begins');
+  await playOut(n);
+  st = await state(); assert.deepEqual([st.misses, st.hints], [1, 1]);
+
+  // Level 5, the authored round: the duck at four above. Its own stop is free; two below is one miss; four below is the twin. The
+  // turtle at the dock is its own twin.
+  await launch('sea-lift', 5); await idle();
+  n = await page.evaluate(() => kit.store.data.stickers.length);
+  assert.equal((await state()).car, 4, 'the duck rides at four above');
+  await tapStop(4); await page.waitForTimeout(200);
+  assert.equal((await state()).misses, 0, "the friend's own stop is free");
+  await tapStop(-2); await idle();
+  st = await state(); assert.deepEqual([st.misses, st.car, st.index], [1, 4, 0], 'a wrong stop is one miss and the lift returns to the duck');
+  await tapStop(-4); await idle();
+  st = await state(); assert.deepEqual([st.index, st.car], [1, -2], 'the twin at four below, then the fish case begins');
+  for (let guard = 0; guard < 40 && (await state()).index < 3; guard++) await botStep();
+  await idle();
+  st = await state(); assert.deepEqual([st.index, st.car], [3, 0], 'the turtle waits at the dock');
+  await tapStop(0); await idle();
+  assert.equal((await state()).index, 4, 'the dock is its own twin');
+  await playOut(n);
+  st = await state(); assert.deepEqual([st.misses, st.hints], [1, 0]);
+
+  // Level 4 upright: the card column beside the shaft.
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await launch('sea-lift', 4); await idle(); await page.waitForTimeout(300);
+  assert.ok(await page.evaluate(() => !!neo.scene.game.C), 'the card column lays out upright');
+  await screenshot('sea-lift-4-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, [], 'page errors');
-  log('Sea Lift: level 1 with the dock tap free, one wrong stop twice and a requested hint, level 3 with the deeper-friend miss, level 2 upright mid-ride');
+  log('Sea Lift: level 1 with the dock tap free, one wrong stop twice and a requested hint, level 3 with the deeper-friend miss, level 2 upright mid-ride, level 4 with a free landing, one wrong card (dimmed, free again) and a requested hint, level 5 with the own stop free, one wrong stop and the dock twin, level 4 upright');
 }
 
 return { seaLiftPlay };
