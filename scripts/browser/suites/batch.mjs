@@ -304,6 +304,16 @@ async function batch() {
           }
           for (let n = 0; needs(look, g.strands) && n < 20; n++) await stroke(toolFor(needs(look, g.strands)), look, n % 2 === 1);
           if (needs(look, g.strands)) throw new Error(`Unmet request ${r}`);
+          if (level === 11) {
+            await kit.sleep(100);
+            if (g.buttons.some(b => b.glow.visible)) throw new Error('A correct two-color style still glows');
+            // Revising a correct but unchecked style keeps this request's existing support, rather than charging it again.
+            await stroke(look.colors[0], undefined);
+            await check();
+            if (g.hints !== 1 || g.misses !== 4) throw new Error('Repainting charged the same request hint twice');
+            for (let n = 0; needs(look, g.strands) && n < 20; n++) await stroke(toolFor(needs(look, g.strands)), look, n % 2 === 1);
+            if (needs(look, g.strands)) throw new Error('Repainted style could not finish with support');
+          }
           if (g.finished || kit.store.data.stickers.length !== salonBatchRewards) throw new Error('Reward before the last mirror');
           await check();
         }
@@ -311,7 +321,7 @@ async function batch() {
       }, level);
       await finished('fluffy-salon');
       const proof = await page.evaluate(() => ({ score: kit.store.stats('fluffy-salon').history.at(-1), rewards: kit.store.data.stickers.length - salonBatchRewards }));
-      assert.deepEqual([proof.score.misses, proof.score.hints, proof.rewards], level === 11 ? [3, 1, 1] : [4, 2, 1]);
+      assert.deepEqual([proof.score.misses, proof.score.hints, proof.rewards], level === 11 ? [4, 1, 1] : [4, 2, 1]);
       log(`Fluffy Salon ${level}: real strokes, truthful support, retained reversal, cancellation and one reward passed`);
       continue;
     }
