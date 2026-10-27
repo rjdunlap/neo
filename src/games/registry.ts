@@ -141,6 +141,7 @@ import { gadgetBench } from './gadget-bench';
 import { helperHouse } from './helper-house';
 import { timelineTrail } from './timeline-trail';
 import { sproutShuffle } from './sprout-shuffle';
+import { riverTablets } from './river-tablets';
 import { puddleLens } from './puddle-lens';
 import { adventureWalk } from './adventure-walk';
 import { readyForAdventure } from './ready-for-adventure';
@@ -275,6 +276,7 @@ export const GAMES: GameModule[] = [
   helperHouse,
   timelineTrail,
   sproutShuffle,
+  riverTablets,
   puddleLens,
   adventureWalk,
   readyForAdventure,
