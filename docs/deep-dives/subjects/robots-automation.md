@@ -168,7 +168,7 @@ M–L: a new `logic.ts` simulator and solver, `Graphics` house, helpers and gaug
 ## Build slices, in order
 
 1. **RA1 — Define Helper House 1–4** (**defined 2026-10-23:** [definition](../../definitions/helper-house.md)) (docs only): the step model, sensor and helper tables, round plans, voice reasons, accounting (after decision 2), layouts at 100 units in both orientations, the how-to card with level-scoped steps, the ghost-finger plan, the rule tests above and the overlap test, placement after the capacity check.
-2. **RA2 — Build Helper House 1–3** (new-game tier): one scripted play, portrait screenshot.
+2. **RA2 — Build Helper House 1–3** (new-game tier): one scripted play, portrait screenshot. Claimed 2026-10-27 on `claude/helper-house-1-3` ([PR #TBD](https://github.com/rjdunlap/neo/pull/TBD)): `src/games/helper-house/` (logic, art, scene, rule tests), registry, lands (Cozy Village), voice lines `hh.*`, how-to card, a `helperhouse` browser case; level 4 (RA3) stays later.
 3. **RA3 — Build level 4** (new levels on an existing interaction tier).
 4. **RA4 — Define and build 5–7** (sensor placement, the comfy line, two lines).
 5. **RA5 — Define Helper House Cases 8–9** and decide registration (decision 4).
