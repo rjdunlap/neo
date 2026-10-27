@@ -35,7 +35,7 @@ export async function rootOffline(browser) {
       // At 1024×768: toddler Home Explore, Explore Places, then Counting Cove's place card.
       await page.mouse.click(914, 403); await page.waitForTimeout(1400);
       await page.locator('.classic-link').waitFor({ state: 'hidden' });
-      await page.mouse.click(167, 323); await page.waitForTimeout(2200);
+      await page.mouse.click(282, 197); await page.waitForTimeout(2200);
       await page.screenshot({ path: `${output}/places.png` });
       await page.mouse.click(397, 200);
       await waitForSave(read, save => save?.explore?.last === 'counting-cove', 'Root navigation did not persist Counting Cove while offline');

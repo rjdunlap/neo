@@ -12,6 +12,7 @@ import { loadWearables } from './art/creatures/wearables';
 import { isLocation, LocationScene } from './app/scenes/LocationScene';
 import { loadCollectionArt } from './creatures/companion';
 import { CreaturePreview } from './dev/creature-preview';
+import { ArcadeScene } from './app/scenes/ArcadeScene';
 import { ExploreScene } from './app/scenes/ExploreScene';
 import { HomeScene } from './app/scenes/HomeScene';
 import { LibraryScene } from './app/scenes/LibraryScene';
@@ -67,7 +68,8 @@ async function boot() {
       room: () => void app.show(new PlayScene(app)),
       library: () => void app.show(new LibraryScene(app)),
       project: (from) => void app.show(new ProjectScene(app, from)),
-      explore: (entry, page, others) => void app.show(new ExploreScene(app, entry ?? null, page ?? 0, others ?? false)),
+      // The Arcade is Explore's fifth entry with its own scene (docs/rework/ARCADE.md).
+      explore: (entry, page, others) => void app.show(entry === 'arcade' ? new ArcadeScene(app, page ?? 0) : new ExploreScene(app, entry ?? null, page ?? 0, others ?? false)),
       land: atRoot,
       // No age places at the root (RW08 slice 2): Little surprises' stops, its Explore and a game with no origin come back to All games.
       place: () => placeAtRoot(app.go),

@@ -9,6 +9,7 @@ import { defaults } from '../progress/save';
 import { store } from '../progress/store';
 import type { Meaning } from '../ui/origin-art';
 import type { Origin } from './App';
+import { ArcadeScene } from './scenes/ArcadeScene';
 import type { Scene } from './Scene';
 import { sceneFixture } from '../test-support/scenes';
 import { ExploreScene } from './scenes/ExploreScene';
@@ -95,6 +96,12 @@ describe('one meaning per button at the root (RW14 slice 3)', () => {
       expect(calls.map((c) => c.meaning).sort()).toEqual(['back', 'home']);
       expectOneMeaning(calls, { route: 'explore', args: [] });
     }
+  });
+
+  it('the Arcade: the house goes Home, Back goes up to Explore', async () => {
+    const calls = await walk((app) => keep(new ArcadeScene(app as never)));
+    expect(calls.map((c) => c.meaning).sort()).toEqual(['back', 'home']);
+    expectOneMeaning(calls, { route: 'explore', args: [] });
   });
 
   it('the library: Back goes to creature play, the house goes Home', async () => {

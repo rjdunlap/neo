@@ -43,6 +43,7 @@ async function subjectPlaces() {
           await tap('neo.scene.cards.filter(c => c.node.visible).at(-1).node');
           if (!touch) {
             await scene('CouchScene');
+            await page.waitForFunction(() => neo.scene.age >= 0.35);
             await page.getByRole('button', { name: 'Back to the island', exact: true }).first().click(); await scene('SubjectPlaceScene');
             assert.deepEqual(await page.evaluate(() => ({ ...neo.scene.state })), saved, 'the couch course returns to the card it came from');
             { await tap('neo.scene.back'); await page.waitForTimeout(450); }
