@@ -61,6 +61,10 @@ The original idea’s pictured request/reciprocal pair/two-trade action is deliv
 
 [PR #1015](https://github.com/rjdunlap/neo/pull/1015), branch `claude/define-river-tablets`: [definition](../definitions/river-tablets.md) for the one-token-each, envelope and which-row levels (preschool 1–2, pre-K 2–3, school 3, Story Grove by default) and a batch plan in `GAME-BATCHES.md`; docs only, nothing built. AR2 (build levels 1–3) is queued in READY and AR3 (levels 4–6 definition) follows it.
 
+### Caravan Days 1–3 definition (CS1, 2026-10-27)
+
+[PR #1016](https://github.com/rjdunlap/neo/pull/1016), branch `claude/define-caravan-days`: [definition](../definitions/caravan-days.md) for the kneel-and-load, can-we-reach-it and day-by-day levels (toddler 1, preschool 1–2, pre-K 2–3, school 3, Cozy Village by default) and a batch plan in `GAME-BATCHES.md`; docs only, nothing built. CS2 (build levels 1–3) is queued in READY and CS3 (levels 4–5 definition) follows it.
+
 ### Movie Night 1–3 definition (MM1, 2026-10-24)
 
 [PR #953](https://github.com/rjdunlap/neo/pull/953), worker `01a170f9-90ac-7bb1-9218-fab3c1fbf5b0`, branch `codex/movie-night-mm1`: [packet](../definitions/movie-night.md) defines fixed Pond/Door footage and facts, synthesized pads/event matches, exact accepted sets, first-unmet reactions and decided Premiere accounting, touch/Stop/Undo/Help, speech/how-to/demos, both logical orientations and current Painted Canyon placement requirements. MM1 is docs only; no gameplay, registration/assets or persistence. MM2 is separately queued at the new-game tier with review and actual capacity/layout gates. Later levels/flipbook/storage/family-card/rework-home dependencies and device/child evidence stay open. Links and diff checks passed; no local code/browser checks. [Verification](VERIFICATION-2026-10-24.md#2026-10-24--movie-night-13-definition-mm1-docs-only).
@@ -2113,7 +2117,7 @@ Typecheck, seeded rules, units with focused recovery, build, scoped play of all 
 
 ### Seesaw Balance batch 4: predict the tip (slice 8, 2026-10-26)
 
-[PR #1000](https://github.com/rjdunlap/neo/pull/1000), branch `codex/seesaw-predict-tip`, worker `01a17a65-04cf-7ad1-8961-f4ad8603ffe4`. Level17 adds three unscored predictions from tagged sums (left-down, right-down, equal), visible props/release, spoken sums and an explicit Continue. School order [6,7,15,16,17,8,9,10,11]; all existing IDs/band orders preserved. No journal entry, generated asset or person/device acceptance. Old research claim6e7a5e19 preserved. Proof is in [verification](../VERIFICATION.md#2026-10-26--seesaw-balance-predict-the-tip).
+[PR #1000](https://github.com/rjdunlap/neo/pull/1000), branch `codex/seesaw-predict-tip`, worker `01a17a65-04cf-7ad1-8961-f4ad8603ffe4`. Level17 adds three unscored predictions from tagged sums (left-down, right-down, equal), visible props/release, spoken sums and an explicit Continue. School order [6,7,15,16,17,8,9,10,11]; all existing IDs/band orders preserved. No journal entry, generated asset or person/device acceptance. Old research claim6e7a5e19 preserved. Proof is in [verification](VERIFICATION-2026-10-26.md#2026-10-26--seesaw-balance-predict-the-tip).
 
 ## Fluffy Salon batch 2: two customers and comparative styling, slices 6–7 (2026-10-26)
 
