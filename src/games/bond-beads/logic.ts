@@ -425,12 +425,12 @@ export class CheckTally {
   private helped = false;
   private last: string | null = null;
 
-  /** A new card: the glow and the per-card counts start over. */
-  next() {
+  /** A new card: the glow and the per-card counts start over. `checked` is a build already judged (level 4's first shape). */
+  next(checked: string | null = null) {
     this.cardMisses = 0;
     this.glowing = false;
     this.helped = false;
-    this.last = null;
+    this.last = checked;
   }
 
   check(bench: Bench): Verdict {

@@ -160,7 +160,7 @@
 
 - `claude/bond-beads-1-2` ([PR #941](https://github.com/rjdunlap/neo/pull/941)), tested on the branch head before the docs commit, dev server `http://localhost:5200` (since stopped): new game in Tinker Lab (15 games, 14 shown at school, land-page test updated to 7 + 7), school levels 1–2, a Kokoro title clip.
 - Ran: `npm run typecheck`; `npm test` passed except two timing tests in block-garden and fluffy-salon that failed under full-suite load and pass alone (known load flake); 43 new rule tests in `src/games/bond-beads/logic.test.ts` (they caught a real bug: a 4-bead landscape layout put two link midpoints 20 units apart, fixed with jitter); `npm run build`; `BROWSER_SUITE=bondbeads` (level 1 0/0, level 2 2/1, portrait screenshot of level 2) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=bond-beads FINGER_LEVELS=1,2` passed (22.9 s, 20.4 s). `game-reviewer` fix applied: the stuck line is said once as a tray gets stuck.
-- Not run: offline check (no persistence or navigation change). Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md#bond-beads-levels-12-chemistry-slice-2-2026-10-24) (nubs read as hands, device speech, iPad portrait comfort). Levels 3–4, the 6–7-bead layout and "Tidy" are not built.
+- Not run: offline check (no persistence or navigation change). Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md#bond-beads-levels-14-chemistry-slices-23-2026-10-24-and-2026-10-26) (nubs read as hands, device speech, iPad portrait comfort). Levels 3–4, the 6–7-bead layout and "Tidy" are not built.
 
 ## 2026-10-24 — Taps-only lap levels (R2)
 

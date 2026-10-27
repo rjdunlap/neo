@@ -534,7 +534,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Take the built shapes apart and make the two on the card with every bead, then tap Check.' },
       { from: 4, to: 4, text: 'Build either shape on the card and tap Check, then rearrange the same beads into the other and Check again.' },
       { from: 1, to: 2, text: 'The yellow arrow undoes one step; the round arrow takes every link apart.' },
-      { from: 3, to: 4, text: 'The yellow arrow undoes one step; the round arrow puts the beads back as they were when the card came up.' },
+      { from: 3, to: 4, text: 'The yellow arrow undoes one step; the round arrow puts the beads back to where this shape started.' },
     ],
     finish: [
       { from: 1, to: 1, text: 'Every hand is held and all the beads are one piece, three times.' },

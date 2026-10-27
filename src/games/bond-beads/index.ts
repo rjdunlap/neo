@@ -410,7 +410,7 @@ class BondBeads implements Game {
 
   /** One fact about the build: a free hand, a bead left over, or a link the card does not have. */
   private factLine(h: Help | null): LineId {
-    if (!h) return this.instruction();
+    if (!h) return this.first ? 'bondbeads.other' : this.instruction();
     if (h.kind === 'free') return 'bondbeads.free';
     if (h.kind === 'left') return 'bondbeads.left';
     return allHeld(this.bench.kinds, this.bench.links) ? 'bondbeads.notcard' : 'bondbeads.break';
@@ -487,7 +487,8 @@ class BondBeads implements Game {
       this.first = made ? made[0] : null;
       const other = (s.requests ?? []).filter((r) => !made || r[0] !== made[0]);
       this.bench = new Bench(s.kinds, other.length ? other : s.requests, this.bench.links);
-      this.tally.next();
+      // The shape she just made is the last Check: pressing Check again before changing anything is not a miss.
+      this.tally.next(this.bench.state);
       this.selected = null;
       this.busy = false;
       this.build();
