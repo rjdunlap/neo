@@ -9,7 +9,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawLitOutline, drawMoon, drawWall, frameArt, iconArt, laterArt, requestArt, shutterArt, stickerArt, windowArt } from './art';
-import { AMOUNT_WORDS, amountOf, CardRound, center, compareBoards, LOOK_PRESSES, lookStart, lookViews, moonPlan, sameBoards, viewLine, windowLayout, type Plan, type WindowLayout } from './logic';
+import { AMOUNT_WORDS, amountOf, CardRound, center, compareBoards, LOOK_PRESSES, lookStart, lookViews, missSpot, moonPlan, sameBoards, viewLine, windowLayout, type Plan, type WindowLayout } from './logic';
 
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
 const authoredShown = new Set<number>();
@@ -238,8 +238,7 @@ class MoonWindow implements Game {
     if (this.plan.mode === 'same') {
       // The card slides beside the window so both show together, then returns.
       const home = { x: card.node.x, y: card.node.y };
-      const w = center(this.layout.window);
-      const beside = this.view.h > this.view.w ? { x: w.x, y: this.layout.window.y + this.layout.window.h + 10 + CARD / 2 } : { x: this.layout.window.x + this.layout.window.w + 20 + CARD / 2, y: w.y };
+      const beside = center(missSpot(this.view, this.layout));
       await this.ctx.tw.to(card.node, beside, { duration: 0.35, ease: ease.outQuad });
       await this.ctx.say('moonwindow.miss.same', { has: AMOUNT_WORDS[amountOf(card.k)], want: AMOUNT_WORDS[amountOf(b.target!)] });
       await this.ctx.tw.to(card.node, home, { duration: 0.35, ease: ease.outQuad });
@@ -292,7 +291,7 @@ class MoonWindow implements Game {
 
   /** Show a hint from the pause sheet: the right card glows; one counted hint per board, none once it already glows. */
   private hint() {
-    if (this.finished || !this.round || this.round.finished) return;
+    if (this.finished || this.busy || !this.round || this.round.finished) return;
     this.round.ask();
     this.hints = this.round.hints;
     this.drawGlow();

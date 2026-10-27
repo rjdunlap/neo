@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { SCRIPT } from '../../content/voice-script';
-import { AMOUNT_WORDS, amountOf, AUTHORED_COMPARE, AUTHORED_LOOK, AUTHORED_SAME, CardRound, compareAnswer, compareBoards, CORNER, differsEnough, inside, later, lit, LOOK_PRESSES, lookStart, lookViews, MIN_DIFFERENCE, moonPlan, moonShape, overlaps, petCorner, PLANS, polygonArea, sameBoards, shownBoxes, STOPS, viewLine, windowLayout, type Board } from './logic';
+import { AMOUNT_WORDS, amountOf, AUTHORED_COMPARE, AUTHORED_LOOK, AUTHORED_SAME, CardRound, compareAnswer, compareBoards, CORNER, differsEnough, inside, later, lit, LOOK_PRESSES, lookStart, lookViews, MIN_DIFFERENCE, missSpot, moonPlan, moonShape, overlaps, petCorner, PLANS, polygonArea, sameBoards, shownBoxes, STOPS, viewLine, windowLayout, type Board } from './logic';
 
 const seeds = Array.from({ length: 500 }, (_, i) => new Rng(i + 1));
 const VIEWS = {
@@ -228,6 +228,17 @@ describe('the layout', () => {
         else expect(L.cardMoonR).toBeLessThan(L.moonR);
         expect(L.cardMoonR * 2 + 20).toBeLessThanOrEqual(L.cards[0].w);
       }
+    }
+  });
+
+  it('slides a wrong level-2 card to a spot that covers neither card nor the guide and stays on screen', () => {
+    for (const [name, view] of Object.entries(VIEWS)) {
+      const L = windowLayout(view, 2)!;
+      const spot = missSpot(view, L);
+      expect(inside(spot, view), name).toBe(true);
+      for (const c of L.cards) expect(overlaps(spot, c), `${name} card`).toBe(false);
+      expect(overlaps(spot, petCorner(view)), `${name} pet`).toBe(false);
+      expect(overlaps(spot, L.window), `${name} window`).toBe(false);
     }
   });
 

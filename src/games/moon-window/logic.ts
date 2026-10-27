@@ -316,6 +316,15 @@ export function shownBoxes(L: WindowLayout, level: number): Box[] {
   return [L.window, ...L.cards, L.request];
 }
 
+/** Where a wrong level-2 card slides so it shows beside the window without covering the other card: left of the window in portrait, below the cards in landscape. */
+export function missSpot(view: View, L: WindowLayout): Box {
+  const portrait = view.h > view.w;
+  const w = center(L.window);
+  return portrait
+    ? { x: L.window.x - CARD - 10, y: w.y - CARD / 2 + 20, w: CARD, h: CARD }
+    : { x: L.cards[0].x, y: L.cards[0].y + CARD + 10, w: CARD, h: CARD };
+}
+
 export const overlaps = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 export const inside = (b: Box, view: View) => b.x >= 0 && b.y >= 0 && b.x + b.w <= view.w && b.y + b.h <= view.h;
 export const petCorner = (view: View): Box => ({ x: 0, y: view.h - PET.h, w: PET.w, h: PET.h });
