@@ -17,6 +17,36 @@ export const PLANS = [
 /** Level 11 offers the middle cut beside a lopsided one; level 12 shares two pizzas among three. */
 export const SAME_LEVEL = 11;
 export const PIZZAS_LEVEL = 12;
+/**
+ * Level 14 *Different shape, same share*: two sandwiches, two friends and two cut pictures (down and across). Each
+ * sandwich takes its own cut, so a plate can hold a tall half and a wide half. Level 13 is not built yet, so the plan
+ * table skips it (no band's order lists 13).
+ */
+export const SHAPES_LEVEL = 14;
+export const SHAPES_PLAN = { mode: 'share', wholes: 2, friends: 2, cuts: [2], shapes: true, name: 'Different shape, same share: cut one sandwich down and one across, then give each friend a tall half and a wide half' } as const;
+/** The two ways a level-14 sandwich is cut in half and the shape of the piece each way makes. */
+export const CUT_WAYS = ['down', 'across'] as const;
+export type CutWay = typeof CUT_WAYS[number];
+export type PieceShape = 'tall' | 'wide';
+export const pieceShape = (way: CutWay): PieceShape => (way === 'down' ? 'tall' : 'wide');
+/** The cut the ghost finger makes next at level 14: the way not used yet, so one sandwich goes each way. */
+export const nextWay = (done: readonly CutWay[]): CutWay => CUT_WAYS.find((w) => !done.includes(w)) ?? CUT_WAYS[0];
+/** Every whole has been cut; serving earlier leaves a sandwich whole on the counter (a miss at 14). */
+export const allCut = (plan: { wholes: number }, done: readonly CutWay[]) => done.length >= plan.wholes;
+/**
+ * What the overlay says after a fair serve at 14: a tall half over a wide half when both shapes were served, or two
+ * halves of the one shape when both sandwiches were cut the same way (accepted, and no miss).
+ */
+export function shapesLine(shapes: readonly PieceShape[]): { line: 'kitchen.same-share' | 'kitchen.same-shape'; shape: PieceShape } {
+  const tall = shapes.includes('tall'), wide = shapes.includes('wide');
+  return tall && wide ? { line: 'kitchen.same-share', shape: 'tall' } : { line: 'kitchen.same-shape', shape: tall ? 'tall' : 'wide' };
+}
+/** Two served pieces to lie one over the other: one of each shape when both were served, else any two. */
+export function overlayPair<T extends { shape?: PieceShape }>(served: readonly T[]): [T, T] | null {
+  const tall = served.find((p) => p.shape === 'tall'), wide = served.find((p) => p.shape === 'wide');
+  if (tall && wide) return [tall, wide];
+  return served.length >= 2 ? [served[0], served[1]] : null;
+}
 /** The two pieces of a lopsided cut, by share of the whole (one third, two thirds). */
 export const LOPSIDED_AREAS = [1/3, 2/3] as const;
 /** Areas of the pieces one cut makes in each whole: equal parts, or the lopsided pair when `lopsided`. */
@@ -32,7 +62,7 @@ export function fairAreas(sums: readonly number[]): boolean {
 export const cutShares = (plan: { wholes: number; friends: number }, cut: number) => cut > 0 && (plan.wholes * cut) % plan.friends === 0;
 /** The level whose pieces are already cut and dealt by tapping (the lap rung). */
 export const DEAL_LEVEL = 10;
-export const planFor = (l: number) => PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))];
+export const planFor = (l: number) => (l >= SHAPES_LEVEL ? SHAPES_PLAN : PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))]);
 export const fair = (plates: number[], pieces: number) => pieces > 0 && plates.length > 0 && plates.every(n => n > 0 && n === pieces / plates.length);
 export function nextPlate(plates: number[]) { return plates.indexOf(Math.min(...plates)); }
 export function recipe(level: number, rng: Rng): [number,number] {

@@ -1,6 +1,6 @@
 # Rhyme Riddles: Rhyme Time levels 5–7
 
-PW1 definition, 2026-10-22, branch `claude/define-rhyme-riddles` ([PR #844](https://github.com/rjdunlap/neo/pull/844)). Based on the [poetry-wordplay study](../deep-dives/subjects/poetry-wordplay.md) and its [packet](../deep-dives/subjects/RECOMMENDATIONS.md#poetry-and-wordplay-recommendations). **Docs only: nothing here is built.** Facts about `src/games/rhyme-time/` were read at `3fb24fd5`.
+PW1 definition, 2026-10-22, branch `claude/define-rhyme-riddles` ([PR #844](https://github.com/rjdunlap/neo/pull/844)). Based on the [poetry-wordplay study](../deep-dives/subjects/poetry-wordplay.md) and its [packet](../deep-dives/subjects/RECOMMENDATIONS.md#poetry-and-wordplay-recommendations). **Built 2026-10-24 (levels 5–7), [PR #927](https://github.com/rjdunlap/neo/pull/927), branch `claude/rhyme-riddles`; the text below is the definition as written, and the build differs where noted in the [archive note](../archive/COMPLETED-2026-10-09.md).** Facts about `src/games/rhyme-time/` were read at `3fb24fd5`.
 
 ## Scope and identity
 
@@ -114,6 +114,8 @@ One implementation slice, **existing-interaction-plus-new-levels tier** (one dec
 - **Browser check (budget):** typecheck, rule tests, one scripted play of level 7 (right chips; then a fun-wrong combination; no misses recorded) and one of level 6 with a mate miss and a trap miss, `fingerdemo` at 5 and 7, one portrait screenshot of the level-6 shelf. No `world`, offline or build run unless shared files change.
 
 ## Gates and open decisions
+
+**Source check (S1, at build 2026-10-24):** rhyme recognition and production is CCSS [RF.K.2](https://www.thecorestandards.org/ELA-Literacy/RF/K/2/); fish as food follows the USDA MyPlate Protein Foods group, which includes seafood ([NMSU extension guide](https://pubs.nmsu.edu/_e/E143/)); bats are furry flying mammals ([Smithsonian](https://www.si.edu/spotlight/bats)); the remaining tags are everyday facts about the drawn pictures, checked against each drawing. Only mate facts are spoken as failures, and none is false for any reachable riddle.
 
 - **Content review (study decision 2):** the tag table and failure/clue lines need an ordinary review before merge. Treat the build like the other review-gated games: it may be built and checked, and merges only when the developer approves the table (or edits it). Until then it is not eligible for a routine.
 - **Confirm with the developer:** (a) `prek` gets level 5 only (the lean) or none of the riddles; (b) the pet marks the star (this definition) versus her choosing the picture; (c) whether a fish counts as something to `eat` and a frog as a `pet`.

@@ -28,7 +28,7 @@ describe('location pictures', () => {
   });
 
   // The spots' feet stand on the calm ground. Their drawings still rise in front of the painted trees, rabbit and rocks on
-  // every real meadow page (measured 2026-10-24; a question for the developer in WAITING-ON-DEVELOPER), so that is not asserted.
+  // every real meadow page (measured 2026-10-24; foreground depth accepted 2026-10-26 in POLISH.md), so that is not asserted.
   it('stands every Rainbow Meadow spot on the calm painted ground below the horizon, in every layout and view', () => {
     for (const { ground, layout, where } of landLayouts('rainbow-meadow')) {
       for (const spot of layoutSpots(layout)) expect(spot.y, where).toBeGreaterThan(ground);

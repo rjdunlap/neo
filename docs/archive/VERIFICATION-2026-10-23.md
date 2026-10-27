@@ -285,3 +285,24 @@
 - Third card with Song Maker 2 (`freeBelowRange`, the test-guarded exception), her tune as a `TunePlaque`, and `welcome.done.song` or `welcome.done.song-hum` when fewer than two notes are kept ([PR #907](https://github.com/rjdunlap/neo/pull/907)).
 - Ran on `0b36dd8e` (base `5ca0ee69`): typecheck; `npm test` (221 files, 2745 passed); `npm run build`; `BROWSER_SUITE=welcome` on `http://localhost:5713` (one-note song says the hum line and stores nothing; replay with 14 tapped jellies keeps the tune, Song Maker level unmoved, treehouse unchanged; portrait and landscape screenshots reviewed).
 - Not run: `home`, `picnic`, offline (Home, `GameScene` and the save format unchanged). Open: device speech of the new lines and the hum line with a child ([device check](../DEVICE-CHECKS.md)); slice 3 not built.
+
+## 2026-10-23 — RW05 slice 2b: Splish Splash and Weather Wardrobe on the companion rig
+
+- `ctx.companion()` in both games, fewer parts per species (rule test: asked parts lie outside each other's reach), species-sized garments; `ctx.petSpec` and `companionSpec()` removed ([PR #909](https://github.com/rjdunlap/neo/pull/909)).
+- Ran on `2889eadf` (dev server `http://localhost:5643`): typecheck; `npm test` (221 files, 2752 passed); `npm run build`; `BROWSER_SUITE=early EARLY_ONLY=bath` levels 1-9 on the sprout and, with `BATH_SPECIES=glider`, the glider; `BROWSER_SUITE=fourth FOURTH_ONLY=weather` levels 1-6 and 8 on sprout, glider and river (`WARDROBE_SPECIES`; the first sprout run timed out once at start with no other error and passed twice on rerun: likely a first-load flake); `wardrobe7` on glider and river; `fingerdemo` for `splish-splash` and `weather-wardrobe` at levels 1 and 9.
+- Screenshots reviewed: bath level 6 on all three species, wardrobe levels 1 (rain, snow) and 5 on all three, level 7 glider portrait. `game-reviewer`: no blocking issues.
+- Not run: offline check (no persistence or asset change), `world`, couch suites (CouchScene and the demo only lost a constructor field; the demo unit test passes). Open: iPad check of the sprout's smaller cheek and ear splotches and the river and glider garments, and a child's read of hats on side-on faces ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-10-23 — Measurement M3–M5 definition packets (docs only)
+
+- [PR #911](https://github.com/rjdunlap/neo/pull/911), `codex/measurement-m3-m5`: Measuring Post 1–4 and one provisional Weights Case; study/READY/backlog/queue closeout.
+- Source: claim parent plus docs-only upstream dispatch integration; no runtime, registration or asset changes.
+- Passed: repository Markdown links/anchors and `git diff --check`; reviewed finite records, equal/common-unit alternatives and both-pan witness arithmetic.
+- Open: Box Balance-first M5 finalization, placement/capacity and separate build admission; all implementation, search execution, layout/device/child observations remain pending.
+- Not run locally: typecheck, unit tests, build or browser checks (docs-only tier); PR CI runs separately as publication requires.
+
+## 2026-10-23 — Cue Studio levels 1–2 (programming P2)
+
+- `claude/cue-studio` ([PR #917](https://github.com/rjdunlap/neo/pull/917)) on base `origin/main` `3c88988d`: new pre-K game `cue-studio` (Wave and Turn cards, one then two slots, Play, Step, Undo, a complete-run-only Finish and counted-once help; free creation, so misses are always 0), home Tinker Lab (14 games; the school view pages 7 + 6, land-pages test updated). Plain words only (Wave, Turn, Play, Step, Undo); no computer-science terms are claimed.
+- Ran: typecheck; `npx vitest run` 226 files passed, with 26 new rule tests in `src/games/cue-studio/logic.test.ts`; `npm run build`; `BROWSER_SUITE=cuestudio` on `http://localhost:5991` (levels 1 and 2: empty Play and Finish inert, a full shelf, select-and-replace, an edit invalidating Finish, Undo, Step completing a run, help counted once, a helped play, portrait targets of 100 units or more, portrait and landscape screenshots, one sticker per round) passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=cue-studio` clean (5.5 s, 14.5 s). `game-reviewer` found no bugs; two minor fixes applied.
+- Not run: `lands`, `howto` and `smoke` suites (harness unchanged; the lands unit test passed), offline check, an iPad. Open: level 3 (P3); [device check](../DEVICE-CHECKS.md#cue-studio-levels-12-2026-10-23).

@@ -133,7 +133,7 @@ The collecting world already gives creatures things to hold and want, and the is
 
 ## First game's proposed ladder: Swap Meet
 
-**The island rule (fiction, stated as the island's):** each friend holds one thing and shows a thought bubble of the one thing it wants. A friend trades only for the thing in its bubble; it then gives back what it held and is happy. From level 4, she is the trader with a basket: she can trade what she carries with any friend who wants it, and take that friend's thing. Trading back is an undo: the same two friends swap back the things they just traded, so no state is a dead end (ME1 settles the exact rule).
+**The island rule (fiction, stated as the island's):** each friend holds one thing and shows a thought bubble of the one thing it wants. A friend trades only for the thing in its bubble; it then gives back what it held and is happy. From level 4, she is the trader with a basket: she can trade what she carries with any friend who wants it, and take that friend's thing. Trading back uses the explicit Undo control: restore the last accepted exchange and its satisfaction state, not a new offer against an unchanged want. The [ME1 definition](../../definitions/swap-meet.md#want-graph-acceptance-and-undo) settles the exact rule for levels 1–4.
 
 | Level | Band | First round | What she decides | Mistakes and help |
 | --- | --- | --- | --- | --- |
@@ -144,16 +144,18 @@ The collecting world already gives creatures things to hold and want, and the is
 | 5 *Chain of three, a side trade* | school | A three-step chain plus one tempting legal trade that leads away | Plan before trading; recover by trading back | As 4; the hint names the friend who has the goal ("Frog has the kite. What does Frog want?") |
 | 6 *Shells make it easier* | school (top) | The same kind of chain, then the Harbor stall opens: it buys anything for 2 shells and sells anything for 2. Reach the goal again | Barter or shells; the pet asks which way took fewer trades (both count) | The comparison is never a miss; it is spoken from the counted trades |
 
-**What a rule test proves.**
+**What a rule test must prove (not tests run by this study).**
 
-- **Every round:** solvable by breadth-first search over basket states. Minimum trades of 1 per request at levels 1–3, exactly 2 at level 4 and exactly 3 at level 5. No round is trivially solvable by the first trade drawn on the left.
+For levels 1–4 the [ME1 cases and solver contract](../../definitions/swap-meet.md#solver-and-required-rule-proof-in-me2) supersede the shorthand below: level1 is three requests, levels2/3 each two exchanges, and Undo is part of the search state.
+
+- **Every round:** solvable by breadth-first search over basket states. Minimum trades of 1 per request at levels 1–3, exactly 2 at level 4 and exactly 3 at level 5. Permute positions so the correct first trade is not always drawn on the left; level4 is never solvable in one exchange.
 - **Level 5:** at least one legal off-path trade, and the goal still reachable from every state, because trading back is allowed.
 - **Level 6:** the shell route is always exactly 2 trades (sell, then buy), so a level-6 barter chain must need at least 3 trades for the shell route to be strictly shorter.
 - **Every bubble:** names a thing that exists in the round.
 - **The hint:** always lies on a shortest path from the current state.
 - **The ghost finger:** follows the solver's path.
 
-**Accounting.** Misses are offers a friend cannot accept. Off-path trades and trading back are free. Hints are the glow after two misses or the lightbulb. Supported completion awards the sticker as usual.
+**Accounting.** The [ME1 intentional-offer/support contract](../../definitions/swap-meet.md#exploration-offers-and-support-accounting) governs levels1–4. Misses are deliberate offers a friend cannot accept from level2; level1 records none. Off-path trades and trading back are free. Hints are the glow after two misses or the lightbulb. Supported completion awards the sticker as usual.
 
 **Cost.** A new game with `drag.ts`, `logic.ts`, voice lines (each friend's want spoken on touch-down), a how-to card, a ghost finger, a land and a sticker. Creatures come from `CRITTERS` until RW05's creatures exist.
 
@@ -163,7 +165,7 @@ The collecting world already gives creatures things to hold and want, and the is
 - **Touch-down feedback:** the thing lifts and the friend's bubble pulses, and the voice names the thing.
 - **On a trade:** both things fly at once (the two-way rule shown) and the friend does a happy hop.
 - **Replay variety:** seeded friends, things and chain shapes.
-- **Placement:** Cozy Village already holds 12 games (Market Stall and Lemonade Stand among them), so placement needs the land capacity test. The lean is Cozy Village if it fits, otherwise the future Maker Harbor.
+- **Placement:** Cozy Village held 12 games at the study; ME1 recounts 13 at its base, and a new game would make 14. The [current placement gate](../../definitions/swap-meet.md#full-size-controls-and-placement-gate) uses paged land capacity and actual full-size layouts; Maker Harbor remains proposed.
 - **Off-screen:** a swap day with toys at home, saying aloud what each person wants.
 
 ## Fit with the creature-world rework
@@ -188,8 +190,8 @@ These are proposals only, against the [rework brief](../../rework/README.md).
 
 ## Build slices, in order
 
-1. **ME1 · Define Swap Meet 1–4** (docs): the want-graph model, the trade rule, the misses and hints above, the BFS tests, voice, the how-to card, the ghost finger, land capacity.
-2. **ME2 · Build Swap Meet 1–4** (new-game tier).
+ME1 levels1–4 [defined](../../definitions/swap-meet.md) 2026-10-25; [closeout](../../archive/COMPLETED-2026-10-09.md#me1-swap-meet-14-definition-2026-10-25). Swap Meet 1–4 (ME2) built 2026-10-25; [build note](../../archive/COMPLETED-2026-10-09.md#swap-meet-levels-14-me2-2026-10-25). Later slices retain their original IDs and gates.
+
 3. **ME3 · Define Market Stall 12 *Pick one*** inside the [Market Stall dive](../market-stall.md) with its decision 7 (docs).
 4. **ME4 · Define Lemonade Stand 5 *Save for the awning*** (docs) after decision 6: a goal jar, a tested plan that reaches it every seeded week, no failed week.
 5. **ME5 · Define Swap Meet 5–6** after 1–4 have been played.

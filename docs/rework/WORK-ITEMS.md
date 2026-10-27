@@ -4,22 +4,22 @@
 
 Scope source: [rework brief](README.md). The [ready list](../READY.md) is the dispatch queue; an eligible exploration goes at the top of its Next ten. GitHub issue links below record execution; dependency satisfaction and a defined packet, not issue age, make an implementation ready. One issue can have several small PRs: claim the first slice listed, report remaining acceptance criteria, and close only when the whole item is delivered.
 
-**Development saves may reset.** Do not add compatibility/migration work to any item. Validate the current schema and its writes/profile isolation. Title/cast/style names in exploration are provisional; no global rename is needed to begin.
+**Development saves may reset.** Do not add compatibility/migration work to any item. Validate the current schema and its writes/profile isolation. The October 23 decisions retain Puddle Island and approve the illustrated nine-species cast; later names/colours may be edited without reopening an approval gate.
 
 ## Sequence
 
 | ID | Work item | Readiness | Depends on |
 | --- | --- | --- | --- |
-| [RW01](https://github.com/rjdunlap/neo/issues/485) | Name and story | packet written 2026-10-17 ([NAME-AND-STORY.md](NAME-AND-STORY.md)); final name is a developer decision | None |
-| [RW02](https://github.com/rjdunlap/neo/issues/486) | Creature art and animation prototype | prototype and packet done 2026-10-17 ([CREATURE-ART.md](CREATURE-ART.md)); production style is a developer decision | None; use provisional names |
+| [RW01](https://github.com/rjdunlap/neo/issues/485) | Name and story | packet written 2026-10-17 ([NAME-AND-STORY.md](NAME-AND-STORY.md)); title settled October 23: Puddle Island; on-screen Puddle Island Club | None |
+| [RW02](https://github.com/rjdunlap/neo/issues/486) | Creature art and animation prototype | prototype and packet done 2026-10-17 ([CREATURE-ART.md](CREATURE-ART.md)); illustrated mesh-rig style and nine-species production cast settled October 23 | None; use provisional names |
 | [RW02b](#rw02b-generated-creature-art-and-animation-pilot) | Generated creature art and animation pilot | partly done 2026-10-17 ([PR #503](https://github.com/rjdunlap/neo/pull/503), [result](GENERATED-CREATURE-PILOT.md#pilot-result-2026-10-17)): pipeline, rig and comparison proven on a concept-sheet stand-in; step 1 done 2026-10-18: the [art request queue](art-requests/QUEUE.md) delivered R01–R15 (all nine species, dressing, surfaces, looks), [reviewed 2026-10-19](ART-REVIEW-2026-10-19.md) with every set passing the alignment rule; step 2 done 2026-10-19 ([PR #609](https://github.com/rjdunlap/neo/pull/609), [result](GENERATED-CREATURE-PILOT.md#step-2-result-2026-10-19)): the pilot three prepared at half size and rigged on one mesh each with whole-texture expressions, beside the Graphics rigs in `/?creatures`; RW05 slice 1, the wearables fit (#632), all nine species (#633) and the river head layer (#663) built 2026-10-20; see the pilot results for remaining art observations; the developer chose the illustrated direction; final cast and treatment decided 2026-10-23 (the nine-species cast as proposed) | RW02 prototype; no RW03 dependency |
 | [RW03](https://github.com/rjdunlap/neo/issues/487) | Home and navigation packet | packet and wireframe done 2026-10-17 ([HOME-NAVIGATION.md](HOME-NAVIGATION.md)); production cutover waits for RW08 | Reconciled D1b; RW01 informs language |
 | [RW04](https://github.com/rjdunlap/neo/issues/488) | Welcome adventure and learning packet | done 2026-10-17: [packet](WELCOME-ADVENTURE.md) | Existing game/source audit; coordinate RW01–RW03 |
 | [RW05](https://github.com/rjdunlap/neo/issues/489) | Creature collection and active companion | defined 2026-10-17 ([CREATURE-COLLECTION.md](CREATURE-COLLECTION.md)); slice 1 built 2026-10-20 ([PR #630](https://github.com/rjdunlap/neo/pull/630)), slice 2 built 2026-10-20 in part ([PR #642](https://github.com/rjdunlap/neo/pull/642): `CompanionRig` and eight large-pet games) and finished 2026-10-23 ([PR #909](https://github.com/rjdunlap/neo/pull/909), slice 2b: Splish Splash and Weather Wardrobe with fewer parts per species ([record](../archive/DECISIONS-2026-10-23.md#decisions)); `ctx.petSpec` removed) | RW02, RW03 |
 | [RW06](https://github.com/rjdunlap/neo/issues/490) | Playable home and customization | defined 2026-10-20 ([HOME.md](HOME.md)): `look.worn` with slots, dressing from Friends, then a root Home and creature play with one ball toy; slice 1 (the saved look and dressing) built 2026-10-20 ([PR #637](https://github.com/rjdunlap/neo/pull/637)); slice 2 (Home and creature play at the root) built 2026-10-20 ([PR #638](https://github.com/rjdunlap/neo/pull/638)) | RW03, RW05 |
 | [RW07](https://github.com/rjdunlap/neo/issues/491) | Welcome adventure and visible reward | defined 2026-10-21 ([WELCOME-BUILD.md](WELCOME-BUILD.md)); slice 1 built 2026-10-21 ([PR #712](https://github.com/rjdunlap/neo/pull/712)); slice 2 (song) built 2026-10-23 ([PR #907](https://github.com/rjdunlap/neo/pull/907); Song Maker 2 as a stated, test-guarded exception); slice 3 (ending, adoption, basket bed) built 2026-10-24 ([PR #908](https://github.com/rjdunlap/neo/pull/908)); the packet is delivered, device checks open | RW04, RW06 |
-| [RW08](https://github.com/rjdunlap/neo/issues/492) | Explore and default-home cutover | defined 2026-10-21 ([RW08-CUTOVER.md](RW08-CUTOVER.md)): Explore's four entries, slice 1 built 2026-10-21 (PR #744), slice 2 (the library, stories, mix, birthday and gear at the root) built 2026-10-21 (PR #745), then the cutover (slice 3 waits on the developer's go-ahead) | RW03, RW07; reconcile D1b |
-| [RW09](https://github.com/rjdunlap/neo/issues/493) | Learning evidence and family recap | define after upstream packets | RW04, RW07 |
+| [RW08](https://github.com/rjdunlap/neo/issues/492) | Explore and default-home cutover | defined 2026-10-21 ([RW08-CUTOVER.md](RW08-CUTOVER.md)): Explore's four entries, slice 1 built 2026-10-21 (PR #744), slice 2 (the library, stories, mix, birthday and gear at the root) built 2026-10-21 (PR #745), then the cutover (slice 3 approved October 23; starts after the developer reports playing slices 1–2 on the iPad) | RW03, RW07; reconcile D1b |
+| [RW09](https://github.com/rjdunlap/neo/issues/493) | Learning evidence and family recap | define; RW04/RW07 delivered, no new packet or implementation claimed | RW04, RW07 |
 | [RW10](https://github.com/rjdunlap/neo/issues/494) | Collection book and chosen unlock goals | define after upstream packets | RW05, RW07, RW08 |
 | [RW11](https://github.com/rjdunlap/neo/issues/495) | Optional forms and useful talents | sketch, definition first | RW02, RW10 |
 | [RW12](https://github.com/rjdunlap/neo/issues/496) | First expansion and later-school coverage | sketch, definition first | RW08, RW09, RW10; RW11 only if used |
@@ -38,7 +38,7 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 - Explain the child's role, creatures' roles, why mini-games matter and what a completed project changes; distinguish factual learning from fantasy lore.
 - Show lap/toddler shared play, a preschool adventure and an older-child investigation in the same world; no required reading for navigation.
 - Include pronunciation/recall/parent-understanding criteria and a practical name-conflict screen; record uncertainty, not a claim of legal clearance.
-- Record the chosen working recommendation and any final-brand decision in the existing decision ledger. Continue implementation with placeholders while the final name is unresolved.
+- Record the chosen working recommendation and any final-brand decision in the existing decision ledger. The October 23 decision keeps Puddle Island and the Puddle Island Club; Puddlewild remains an unadopted exploration.
 
 **Delivered 2026-10-17:** [name and story packet](NAME-AND-STORY.md). Human name/appeal checks are listed there and in device checks, not run.
 
@@ -107,9 +107,9 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 
 **Likely files:** a definition under `docs/rework/`, references to existing game logic/how-to/voice and picnic contracts. **Proof:** source/rule audit, links and diff; no claim of observed engagement or learning transfer.
 
-**Delivered 2026-10-17:** [Welcome a New Friend packet](WELCOME-ADVENTURE.md): Stamp Studio 3/4, Pet Kitchen 2/5 (fixed plates the round guarantees) and Song Maker 2 (free loop, a stated out-of-range exception awaiting the developer), typed step results kept with the project, once-only adoption/item, evidence classes and the RW07a/RW07 slice. Observed play and learning not run.
+**Delivered 2026-10-17:** [Welcome a New Friend packet](WELCOME-ADVENTURE.md): Stamp Studio 3/4, Pet Kitchen 2/5 (fixed plates the round guarantees) and Song Maker 2 (free loop, a stated out-of-range exception approved October 23), typed step results kept with the project, once-only adoption/item, evidence classes and the RW07a/RW07 slice. Observed play and learning not run.
 
-**Defined 2026-10-21:** [build packet](WELCOME-BUILD.md): three slices (the project record, page, Continue, `pretty` and `yummy`; the song step, awaiting the hello-song decision; the ending, adoption and basket bed), five defaults recorded. Observed play not run.
+**Defined 2026-10-21:** [build packet](WELCOME-BUILD.md): three slices (the project record, page, Continue, `pretty` and `yummy`; the song step, approved October 23; the ending, adoption and basket bed), five defaults recorded. Observed play not run.
 
 ## RW05: Creature collection and active companion
 
@@ -128,7 +128,7 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 
 **Defined 2026-10-17:** [creature collection packet](CREATURE-COLLECTION.md): the species/individual/companion model, the version-3 save and its reset/reseed path, the Friends selection scene, the call sites to regress and two build slices.
 
-**Slice 1 built 2026-10-20 ([PR #630](https://github.com/rjdunlap/neo/pull/630)):** save v3 `creatures`, `store.meet/choose`, the hatch meeting a sprout, Friends from the treehouse basket, and the guide, chooser and island scenes on `src/creatures/companion.ts`; the differences from the packet are [listed there](CREATURE-COLLECTION.md#built-slice-1-2026-10-20). **Slice 2a built ([PR #642](https://github.com/rjdunlap/neo/pull/642)):** `CompanionRig` and eight large-pet games. Slice 2b (Splish Splash and Weather Wardrobe) waits on the [misfit decision](../archive/DECISIONS-2026-10-23.md#decisions); child and device checks stay open.
+**Slice 1 built 2026-10-20 ([PR #630](https://github.com/rjdunlap/neo/pull/630)):** save v3 `creatures`, `store.meet/choose`, the hatch meeting a sprout, Friends from the treehouse basket, and the guide, chooser and island scenes on `src/creatures/companion.ts`; the differences from the packet are [listed there](CREATURE-COLLECTION.md#built-slice-1-2026-10-20). **Slice 2a built ([PR #642](https://github.com/rjdunlap/neo/pull/642)):** `CompanionRig` and eight large-pet games. Slice 2b (Splish Splash and Weather Wardrobe) built 2026-10-23 ([PR #909](https://github.com/rjdunlap/neo/pull/909)) under the settled fewer-parts-per-species rule; child and device checks stay open.
 
 **Likely files:** `src/creatures/`, `src/creatures/`, `src/art/creatures/`, `src/progress/`, hatch/profile/guide call sites. **Proof:** shell/save tier, focused pet-game regressions and current-format offline check; no legacy fixtures required.
 

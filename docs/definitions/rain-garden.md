@@ -181,6 +181,6 @@ Each has a default the build uses; decision 1 is the developer's confirmation th
 2. **Science reader.** Default: the build proceeds with the explanation lines above as a toy model, labelled as such on the grown-ups' card; a reader (not yet named) checks those lines before release and must approve anything about real soaking, wet ground or the water cycle.
 3. **Level 1's ending.** Default: a deliberate leaf tap, with the comfort nudge after three rains. Alternative: the round finishes by itself after the third rain, if watching shows toddlers rarely tap the leaf.
 4. **Surfaces.** Default: stone and soil only. Alternative: a third surface (grass, capacity 1) at level 3 for more seeded variety, after the science reader's note on ordering grass between stone and garden bed.
-5. **Home land.** Default Tinker Lab, fallback Rainbow Meadow; `lands.test.ts` decides between them at every band and view.
+5. **Home land.** Default Tinker Lab (full at 14 games since 2026-10-24: Gear Garden went to Painted Canyon for that reason), fallback Rainbow Meadow; `lands.test.ts` decides between them at every band and view.
 
 **Decided 2026-10-23 (on the developer's delegation):** every default stands: register Rain Garden as a new game (toddler 1, preschool 1–2, pre-K 2–3, school 3; Tinker Lab, fallback Rainbow Meadow), and decision 2's science reader is the building session's source check against EPA/NOAA, recorded in its verification entry.

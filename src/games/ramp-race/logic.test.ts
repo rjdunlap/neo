@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { classifyFair, distance, EXPLORE_HEIGHTS, fairLine, fairRepair, farther, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeShelf, makeStars, onStar, planFor, PLANS, rampTouch, recordOf, shelfLayout, sideOf, tally, waysTo, type FairKind, type FairQuestion, type RampEvent, type Setup, type TrialRecord } from './logic';
+import { classifyFair, CONTROL, makeChange, distance, EXPLORE_HEIGHTS, fairLine, fairRepair, farther, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeShelf, makeStars, onStar, planFor, PLANS, rampTouch, recordOf, shelfLayout, sideOf, tally, waysTo, type FairKind, type FairQuestion, type RampEvent, type Setup, type TrialRecord } from './logic';
 
 describe('Ramp Race', () => {
   it('higher ramps and slipperier floors always go farther', () => {
@@ -35,7 +35,7 @@ describe('Ramp Race', () => {
     }
   });
   it("the ghost finger plays every level through without a wrong move, never taps the floor where it cannot change, and never presses go on a miss", () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'shelf')) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'shelf' && p.mode !== 'change')) {
       for (let seed = 1; seed <= 60; seed++) {
         const rng = new Rng(seed);
         const stars = plan.mode === 'height' || plan.mode === 'both' ? makeStars(plan, rng) : [];
@@ -157,9 +157,10 @@ const wood = (height: number): Setup => ({ height, floor: 'wood' });
 
 describe('Ramp Race Trial Shelf', () => {
   it('keeps levels 1–4 and appends the shelf as level 5', () => {
-    expect(PLANS.map((p) => [p.mode, p.rounds])).toEqual([['explore', 4], ['height', 3], ['both', 3], ['fair', 3], ['shelf', 2]]);
+    expect(PLANS.map((p) => [p.mode, p.rounds])).toEqual([['explore', 4], ['height', 3], ['both', 3], ['fair', 3], ['shelf', 2], ['change', 2]]);
     expect(planFor(5).mode).toBe('shelf');
-    expect(planFor(9).mode).toBe('shelf');
+    expect(planFor(6).mode).toBe('change');
+    expect(planFor(9).mode).toBe('change');
   });
 
   it('starts the pairs at 2 and 4, and every legal second roll makes the right card the top one in one pair and the bottom in the other', () => {
@@ -271,6 +272,84 @@ describe('Ramp Race Trial Shelf', () => {
         expect(L.guess.before.x).toBeGreaterThan(ramp.x + ramp.w);
         expect(L.cards[1].y + L.cards[1].h).toBeLessThan(floorY - 60);
         expect(inside(L.guess.past, L.guess.past.x + 1, floorY)).toBe(true);
+      }
+    }
+  });
+});
+
+
+describe('One Change', () => {
+  it('seeds one question of each kind with distinct confounded starts', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const changes = makeChange(new Rng(seed));
+      expect(changes).toEqual(makeChange(new Rng(seed)));
+      expect(changes.map((c) => c.question.compare).sort()).toEqual(['floor', 'height']);
+      expect(changes[0].start).not.toEqual(changes[1].start);
+      for (const { question, start } of changes) {
+        expect(classifyFair(question, CONTROL, start)).toBe('both-changed');
+        seen.add(JSON.stringify(start));
+      }
+    }
+    expect(seen.size).toBe(4);
+  });
+
+  it('accepts exactly two repairs per question, both with different stops from the control, and repair reaches either side', () => {
+    for (const q of QUESTIONS) {
+      const fair = SETUPS.filter((s) => classifyFair(q, CONTROL, s) === 'fair');
+      expect(fair).toHaveLength(2);
+      expect(fair.map((s) => farther(recordOf(CONTROL), recordOf(s))).sort()).toEqual([0, 1]);
+      for (const initial of SETUPS) {
+        let b = { ...initial };
+        let taps = 0;
+        while (classifyFair(q, CONTROL, b) !== 'fair') {
+          const fix = fairRepair(q, CONTROL, b);
+          expect(fix).not.toBeNull();
+          b = tap(b, fix!);
+          expect(++taps).toBeLessThanOrEqual(3);
+        }
+        if (initial.height !== CONTROL.height && initial.floor !== CONTROL.floor) expect(taps).toBeLessThanOrEqual(2);
+        expect(distance(b.height, b.floor)).not.toBe(distance(CONTROL.height, CONTROL.floor));
+      }
+    }
+  });
+
+  it('the bot repairs and reads both questions, never touching blue or missing, for 50 seeds', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      for (const { question, start } of makeChange(new Rng(seed))) {
+        const lanes = [{ ...CONTROL }, { ...start }];
+        let records: TrialRecord[] = [];
+        const events: RampEvent[] = [];
+        let touches = 0;
+        for (;;) {
+          expect(++touches).toBeLessThan(7);
+          const move = rampTouch(planFor(6), lanes, { question, rolls: 0, records });
+          expect(move).not.toBeNull();
+          if (move === 'go') {
+            expect(classifyFair(question, lanes[0], lanes[1])).toBe('fair');
+            records = lanes.map((s) => recordOf(s));
+          } else if (move && 'lane' in move) {
+            expect(move.lane).toBe(1);
+            lanes[1] = tap(lanes[1], move.change);
+          } else if (move && 'card' in move) {
+            expect(records).toHaveLength(2);
+            events.push(move.card === farther(records[0], records[1]) ? 'free' : 'wrong-card');
+            break;
+          } else throw new Error('One Change never guesses');
+        }
+        expect(lanes[0]).toEqual(CONTROL);
+        expect(tally(events)).toEqual({ misses: 0, hints: 0 });
+      }
+    }
+  });
+
+  it('keeps the two-lane cards clear of ramp pads and the top car band in each view', () => {
+    for (const view of [{ w: 1024, h: 768 }, { w: 1024, h: 1365 }, { w: 1664, h: 768 }]) {
+      const { cards } = shelfLayout(view, 4.5);
+      for (const c of cards) {
+        expect(Math.min(c.w, c.h)).toBeGreaterThanOrEqual(100);
+        expect(c.x).toBeGreaterThan(330);
+        expect(c.y + c.h).toBeLessThan(view.h * 0.42 - 50);
       }
     }
   });

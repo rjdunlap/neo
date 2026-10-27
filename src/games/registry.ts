@@ -1,3 +1,10 @@
+import { relayWoods } from './relay-woods';
+import { villageVote } from './village-vote';
+import { swapMeet } from './swap-meet';
+import { littleLoom } from './little-loom';
+import { exampleExpress } from './example-express';
+import { movieNight } from './movie-night';
+import { welcomeWays } from './welcome-ways';
 import { marbleJump } from './marble-jump';
 import { logRoll } from './log-roll';
 import { snowballMerge } from './snowball-merge';
@@ -18,6 +25,8 @@ import { songMaker } from './song-maker';
 import { puzzlePals } from './puzzle-pals';
 import { weatherWardrobe } from './weather-wardrobe';
 import { sinkFloat } from './sink-float';
+import { meltFreeze } from './melt-freeze';
+import { moonWindow } from './moon-window';
 import { bubblePop } from './bubble-pop';
 import { colorGarden } from './color-garden';
 import { duckPond } from './duck-pond';
@@ -66,6 +75,7 @@ import { littleConductor } from './little-conductor';
 import { clapSyllables } from './clap-syllables';
 import { chainReaction } from './chain-reaction';
 import { rhymeTime } from './rhyme-time';
+import { storyWeaver } from './story-weaver';
 import { stopAndGo } from './stop-and-go';
 import { rampRace } from './ramp-race';
 import { critterSort } from './critter-sort';
@@ -119,7 +129,14 @@ import { numberTrails } from './number-trails';
 import { fruitSums } from './fruit-sums';
 import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
+import { whoAmI } from './who-am-i';
+import { secondChanceShed } from './second-chance-shed';
+import { gearGarden } from './gear-garden';
+import { bondBeads } from './bond-beads';
+import { meadowPens } from './meadow-pens';
+import { wordGlue } from './word-glue';
 import { sandTable } from './sand-table';
+import { puddleLens } from './puddle-lens';
 import { adventureWalk } from './adventure-walk';
 import { readyForAdventure } from './ready-for-adventure';
 import { senseDetective } from './sense-detective';
@@ -129,6 +146,13 @@ import type { GameModule } from './types';
  * Every minigame. Within each island region, registry order determines game spots.
  */
 export const GAMES: GameModule[] = [
+  relayWoods,
+  villageVote,
+  swapMeet,
+  littleLoom,
+  exampleExpress,
+  movieNight,
+  welcomeWays,
   bubblePop,
   rainbowFingers,
   jellyDrums,
@@ -152,6 +176,8 @@ export const GAMES: GameModule[] = [
   puzzlePals,
   weatherWardrobe,
   sinkFloat,
+  meltFreeze,
+  moonWindow,
   ducklingParade,
   scoopShop,
   roundup,
@@ -189,6 +215,7 @@ export const GAMES: GameModule[] = [
   beatBuilder,
   littleConductor,
   rhymeTime,
+  storyWeaver,
   stopAndGo,
   rampRace,
   critterSort,
@@ -231,7 +258,14 @@ export const GAMES: GameModule[] = [
   fruitSums,
   readDo,
   lookItUp,
+  whoAmI,
+  secondChanceShed,
+  gearGarden,
+  bondBeads,
+  meadowPens,
+  wordGlue,
   sandTable,
+  puddleLens,
   adventureWalk,
   readyForAdventure,
   senseDetective,

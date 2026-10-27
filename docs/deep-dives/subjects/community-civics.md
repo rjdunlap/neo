@@ -157,15 +157,17 @@ A cozy Lantern Lake puzzle: nine ballots, three pictured candidates (which ride 
 
 ## Build slices, in order
 
-1. **CC1, docs:** define Village Vote 1–3 (preschool through school entry): generator, accepted taps, misses and hints, voice lines, both layouts, the bot, band windows and the Cozy Village capacity test. Decisions 1 and 2.
+1. **CC1, docs — defined 2026-10-25:** [Village Vote 1–3 packet](../../definitions/village-vote.md), [PR #969](https://github.com/rjdunlap/neo/pull/969). CC4 levels1–3 built; person/device and later-content gates remain.
 2. **CC2, docs:** a Mail Carrier deep dive with *Who can help?* (level 9) and *Which door?* (toddler rung): the problem-and-tool pool, the key's job tools, misses and a journal discovery per helper. Decision 5. **Done 2026-10-19:** defined as levels 9 and 10 in the [Mail Carrier deep dive](../mail-carrier.md#new-levels-on-top) (decision 5 at its lean: six helpers, no police or fire).
 3. **CC3, docs:** define Count the Ballots 1–2 with its deal generator and the plurality-versus-run-off assertion. Decision 3.
-4. **CC4, build:** Village Vote 1–3 after CC1 (new-game tier: typecheck, rule tests, one scripted play, one portrait screenshot).
-5. **CC5, docs then build:** Village Vote 4–6 (a tie, everyone can use it, chip in). Decisions 4 and 6.
+4. **CC4 built 2026-10-26:** Village Vote1–3, [PR #983](https://github.com/rjdunlap/neo/pull/983), [packet](../../definitions/village-vote.md). Source/contracts, current Cozy Village14→15 paged fit, rules/play/demos and both routes checked; person/device gates remain.
+5. **CC5, person then define/build — wait until1–3 are played:** Village Vote 4–6 (a tie, everyone can use it, chip in). Decisions 4 and 6.
 6. **CC6, docs:** Rule Parade's civics case inside Rule Parade's own definition when that proposal is defined.
 7. **CC7, docs:** the family meeting card, after decision 7's reviewer reads it.
 8. **Routed:** the village then-and-now case to `time-change`; police, fire and road safety to `safety`.
 
 ## What was built and checked
 
-Nothing was built. This session opened the C3 Framework PDF (text extracted locally), both England citizenship programmes, the England history programme, the NCSS early-childhood statement PDF, the Kim dissertation record, the Cinamon and Yeshayahu summary page, iCivics' games list and Counties Work page, and the Animal Crossing: New Leaf and Democracy Wikipedia pages; Smetana, Vogelsang et al., Helwig et al., Corriveau and Harris, Kids Voting USA, Responsive Classroom and Toca Life World came from search summaries. Checks: `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
+CC1 definition completed 2026-10-25 ([packet](../../definitions/village-vote.md), [PR #969](https://github.com/rjdunlap/neo/pull/969)); manual semantic/current-source review and links/diff only. CC4 built2026-10-26: levels1–3, [verification](../../archive/VERIFICATION-2026-10-26.md#2026-10-26--village-vote-13-cc4). Historical research details below remain as recorded.
+
+The original research session built nothing. It opened the C3 Framework PDF (text extracted locally), both England citizenship programmes, the England history programme, the NCSS early-childhood statement PDF, the Kim dissertation record, the Cinamon and Yeshayahu summary page, iCivics' games list and Counties Work page, and the Animal Crossing: New Leaf and Democracy Wikipedia pages; Smetana, Vogelsang et al., Helwig et al., Corriveau and Harris, Kids Voting USA, Responsive Classroom and Toca Life World came from search summaries. Checks: `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.

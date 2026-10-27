@@ -1,3 +1,4 @@
+import type { CritterName } from '../../art/critter';
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 
@@ -6,10 +7,14 @@ import type { Rng } from '../../engine/random';
  * Grow it, snip it, comb it straight, curl it and color it. Free play at first, then requests
  * ("long and pink") checked in the mirror.
  */
-export type SalonMode = 'play' | 'tools' | 'ask' | 'two' | 'match' | 'pat' | 'snip';
+export type SalonMode = 'play' | 'tools' | 'ask' | 'two' | 'match' | 'pat' | 'snip' | 'color' | 'customers' | 'compare';
 
 /** Modes with no request: she styles freely and the mirror ends the round. */
 export const isFree = (mode: SalonMode) => mode === 'play' || mode === 'tools' || mode === 'pat' || mode === 'snip';
+/** Request modes with no mirror: each request finishes by itself as soon as the fur is right. */
+export const selfChecks = (mode: SalonMode) => mode === 'ask' || mode === 'color';
+/** Request modes where a seeded friend may sit in the chair instead of her pet (levels 3–5). */
+export const hasCustomers = (mode: SalonMode) => mode === 'ask' || mode === 'two' || mode === 'match';
 
 export interface SalonPlan {
   mode: SalonMode;
@@ -26,7 +31,63 @@ export const PLANS: SalonPlan[] = [
   { mode: 'match', requests: 2, name: 'Copy a pictured style: length, curls and color' },
   { mode: 'pat', requests: 0, name: 'Pat the fluff: no buttons, any touch grows the fur' },
   { mode: 'snip', requests: 0, name: 'Snip snip: grow the fur, then snip it' },
+  { mode: 'color', requests: 2, name: 'Pink, please: the five bottles and one color at a time' },
+  { mode: 'customers', requests: 2, name: 'Two customers: match each visible two-part request, in either order' },
+  { mode: 'compare', requests: 1, name: "Longer than Pip’s: grow or snip fur to compare two lengths" },
 ];
+
+/** The buttons a mode shows: tools along the bottom, then the colour bottles. */
+export function toolsFor(mode: SalonMode): Tool[] {
+  const tools: Tool[] = mode === 'pat' || mode === 'color' ? [] : mode === 'play' ? ['grow'] : mode === 'snip' ? ['grow', 'cut'] : ['grow', 'cut', 'comb', 'curl'];
+  return mode === 'pat' || mode === 'snip' ? tools : [...tools, ...HAIR_COLORS];
+}
+
+/** Pink, please: the bottles are the only buttons, drawn big along the bottom. */
+export const BOTTLE_RADIUS = 54;
+
+/**
+ * Pink, please: a bottle that is not the asked colour still paints, and the first stroke with it names what it is ("That's blue! I want
+ * pink"): no miss. Null for the asked colour or a tool that is not a bottle.
+ */
+export const wrongBottle = (look: Look, tool: Tool): ColorName | null => (look.color && HAIR_COLORS.includes(tool as ColorName) && tool !== look.color ? (tool as ColorName) : null);
+/** Wrong bottles named before the asked one glows (one hint). */
+export const WRONG_BOTTLES = 2;
+
+// ----- who sits in the chair, and the room -----
+
+/** The friends who may take the chair at levels 3–5; her pet sits there most often. */
+export const CUSTOMERS: CritterName[] = ['cat', 'bunny', 'bear', 'dog', 'pig'];
+/** How often a friend, rather than her pet, is in the chair at a level with customers. */
+export const FRIEND_CHANCE = 0.45;
+/** Spoken names, said as the request line's `{who}`. */
+export const CUSTOMER_NAMES: Record<CritterName, string> = { pip: 'Pip', cow: 'Cow', duck: 'Duck', pig: 'Pig', cat: 'Cat', bear: 'Bear', dog: 'Dog', bunny: 'Bunny' };
+
+/** Who is in the chair this round: null is her own pet. */
+export function pickCustomer(mode: SalonMode, rng: Rng): CritterName | null {
+  if (!hasCustomers(mode)) return null;
+  return rng.next() < FRIEND_CHANCE ? rng.pick(CUSTOMERS) : null;
+}
+
+export interface Room {
+  /** The wall's gradient, top and bottom. */
+  wall: [ColorName, ColorName];
+  /** The cape's stripes: never the customer's own colour, so the cape shows. */
+  stripe: ColorName;
+  /** The floor's check. */
+  floor: ColorName;
+}
+
+const WALLS: ColorName[] = ['pink', 'purple', 'blue', 'teal', 'yellow', 'green'];
+const STRIPES: ColorName[] = ['purple', 'teal', 'blue', 'pink', 'green', 'orange'];
+const FLOORS: ColorName[] = ['brown', 'orange', 'yellow', 'teal', 'purple'];
+
+/** A seeded salon: wall pair, cape stripe and floor check (art only). */
+export function makeRoom(rng: Rng, customer: ColorName): Room {
+  const top = rng.pick(WALLS);
+  const bottom = rng.pick(WALLS.filter((c) => c !== top));
+  const stripe = rng.pick(STRIPES.filter((c) => c !== customer));
+  return { wall: [top, bottom], stripe, floor: rng.pick(FLOORS) };
+}
 
 /** Pat the fluff: the fur starts as short fuzz; at this average length the pet does the floof shake and the big mirror appears. */
 export const PAT_START = { length: 20, curl: 0.3 };
@@ -50,6 +111,7 @@ const LONG = 145;
 const CURLY = 0.6;
 const STRAIGHT = 0.2;
 const MOSTLY = 0.8;
+export const COMPARE_MARGIN = 25;
 
 export interface Strand {
   length: number;
@@ -62,6 +124,8 @@ export interface Look {
   length?: 'short' | 'long';
   curl?: 'curly' | 'straight';
   color?: ColorName;
+  /** Level 10: compare average strand length against a fixed friend's, with a clear margin. */
+  comparison?: { direction: 'longer' | 'shorter'; length: number };
 }
 
 export interface Request {
@@ -85,6 +149,10 @@ export type Fix = 'longer' | 'shorter' | 'curlier' | 'straighter' | ColorName;
 /** What still needs doing for this look, first thing first; null when it's done. */
 export function needs(look: Look, strands: Strand[]): Fix | null {
   const s = stats(strands);
+  if (look.comparison) {
+    const { direction, length } = look.comparison;
+    if (direction === 'longer' ? s.length < length + COMPARE_MARGIN : s.length > length - COMPARE_MARGIN) return direction;
+  }
   if (look.length === 'long' && s.length < LONG) return 'longer';
   if (look.length === 'short' && s.length > SHORT) return 'shorter';
   if (look.color && s.share(look.color) < MOSTLY) return look.color;
@@ -120,6 +188,7 @@ export const toolFor = (fix: Fix): Tool => (fix === 'longer' ? 'grow' : fix === 
 
 /** "long", "short and blue", "long, curly and pink". */
 export function describe(look: Look): string {
+  if (look.comparison) return `${look.comparison.direction} than Pip’s`;
   const parts = [look.length, look.curl, look.color].filter(Boolean) as string[];
   if (parts.length <= 1) return parts[0] ?? '';
   return `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}`;
@@ -132,7 +201,8 @@ function pickLook(mode: SalonMode, rng: Rng, avoid: string[]): Look {
     const color = rng.pick(HAIR_COLORS);
     let look: Look;
     if (mode === 'ask') look = rng.pick<Look>([{ length }, { color }, { curl }]);
-    else if (mode === 'two') look = rng.pick<Look>([{ length, color }, { length, curl }, { curl, color }]);
+    else if (mode === 'color') look = { color };
+    else if (mode === 'two' || mode === 'customers') look = rng.pick<Look>([{ length, color }, { length, curl }, { curl, color }]);
     else look = { length, curl, color };
     const key = describe(look);
     if (!avoid.includes(key)) return look;
@@ -144,8 +214,8 @@ function pickLook(mode: SalonMode, rng: Rng, avoid: string[]): Look {
 export function makeRequests(plan: SalonPlan, rng: Rng): Request[] {
   const out: Request[] = [];
   for (let i = 0; i < plan.requests; i++) {
-    const look = pickLook(plan.mode, rng, out.map((r) => describe(r.look)));
-    const length = look.length === 'long' ? 70 : look.length === 'short' ? 130 : 95;
+    const look: Look = plan.mode === 'compare' ? { comparison: { direction: rng.pick(['longer', 'shorter'] as const), length: rng.int(60, 150) } } : pickLook(plan.mode, rng, out.map((r) => describe(r.look)));
+    const length = look.comparison ? look.comparison.length : look.length === 'long' ? 70 : look.length === 'short' ? 130 : 95;
     const curl = look.curl === 'curly' ? 0.1 : look.curl === 'straight' ? 0.75 : 0.35;
     const color = rng.pick(HAIR_COLORS.filter((c) => c !== look.color));
     out.push({ look, start: { length, curl, color } });
@@ -159,6 +229,36 @@ export const STRANDS = 26;
 export const SEG = 12;
 /** How close (in body units) the finger has to come to a strand to work on it. */
 export const REACH = 38;
+
+/** Free play's start looks, one seeded per round, so it starts somewhere new. */
+export const START_LOOKS = ['fuzz', 'mop', 'sleek', 'two-tone', 'mohawk'] as const;
+export type StartLook = (typeof START_LOOKS)[number];
+
+/** The strands a start look begins with: short fuzz, a wild curly mop, long straight hair, two colours already on, or a mohawk of long middle strands. */
+export function startStrands(look: StartLook, color: ColorName, other: ColorName): Strand[] {
+  return Array.from({ length: STRANDS }, (_, i) => {
+    switch (look) {
+      case 'fuzz':
+        return { length: 25, curl: 0.3, color };
+      case 'mop':
+        return { length: 110, curl: 0.9, color };
+      case 'sleek':
+        return { length: 160, curl: 0, color };
+      case 'two-tone':
+        return { length: 80, curl: 0.3, color: i < STRANDS / 2 ? color : other };
+      default:
+        return { length: i >= 9 && i <= 16 ? 150 : 25, curl: 0.2, color };
+    }
+  });
+}
+
+/** A seeded start for free play at levels 1–2. */
+export function startLook(rng: Rng): { look: StartLook; strands: Strand[] } {
+  const look = rng.pick(START_LOOKS);
+  const color = rng.pick(HAIR_COLORS);
+  const other = rng.pick(HAIR_COLORS.filter((c) => c !== color));
+  return { look, strands: startStrands(look, color, other) };
+}
 
 export interface Pt {
   x: number;
@@ -326,7 +426,7 @@ export function salonMove(s: SalonState): SalonMove | null {
     return s.tool === want ? { do: 'stroke' } : { do: 'tool', tool: want };
   }
   const fix = needs(s.look, s.strands);
-  if (!fix) return s.mode === 'ask' ? null : { do: 'mirror' };
+  if (!fix) return selfChecks(s.mode) ? null : { do: 'mirror' };
   const tool = toolFor(fix);
   return s.tool === tool ? { do: 'stroke' } : { do: 'tool', tool };
 }

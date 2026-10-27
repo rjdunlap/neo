@@ -562,7 +562,12 @@ export const fillDump: GameModule = {
   describeLevel: describeFill,
   music: STYLES.stickers,
   coplayHint: 'Tip the container together and say "out they come!", then count aloud as {name} puts each piece back in: "one, two, three".',
-  offScreen: 'Give a big bowl and some soft toys, blocks or dry beans in a tub: filling, dumping and scooping is the same game.',
+  offScreen: {
+    all: 'Give a big bowl and some soft toys, blocks or dry beans in a tub: filling, dumping and scooping is the same game.',
+    // Under 3: no dry beans (small parts).
+    lap: 'Give a big bowl and some soft toys or blocks in a tub: filling, dumping and scooping is the same game.',
+    toddler: 'Give a big bowl and some soft toys or blocks in a tub: filling, dumping and scooping is the same game.',
+  },
   hubIcon: () => new BasketIcon(),
   touchDemo: true,
   sticker,

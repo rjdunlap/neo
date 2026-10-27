@@ -15,16 +15,24 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { WeatherFriends } from './friends';
 import { anchorOf, clothing, itemIcon, PAIRED } from './art';
-import { GROUND_TOUCH, ITEM_NAMES, tripPlays, MISFIT, ITEM_WORDS, ITEMS, itemToTap, outfitFor, outfits, partFor, STICKER_ITEMS, wardrobeFor, wardrobePlan, WEATHERS, type Item, type Misfit, type Outfit, type WardrobePlan, type Weather } from './logic';
+import { GROUND_TOUCH, ITEM_NAMES, tripPlays, MISFIT, ITEM_WORDS, ITEMS, itemToTap, outfitFor, outfits, partFor, STICKER_ITEMS, STICKER_WEATHERS, wardrobeFor, wardrobePlan, WEATHERS, type Item, type Misfit, type Outfit, type WardrobePlan, type Weather } from './logic';
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
-/** A small picture of a weather: a sun, a rain cloud or a snowflake, centered on (0, 0). */
+/** A small picture of a weather: a sun, a rain cloud, a snowflake or three wind curls with a leaf, centered on (0, 0). */
 export function weatherIcon(w: Weather, size = 60): Graphics {
   const g = new Graphics();
   const s = size / 60;
-  if (w === 'sunny') {
+  if (w === 'windy') {
+    for (const [y, len] of [[-16, 44], [2, 56], [20, 40]] as const) {
+      const x0 = -len / 2;
+      g.moveTo(x0 * s, y * s).lineTo((x0 + len - 12) * s, y * s).quadraticCurveTo((x0 + len + 4) * s, (y - 2) * s, (x0 + len) * s, (y - 12) * s).quadraticCurveTo((x0 + len - 6) * s, (y - 18) * s, (x0 + len - 10) * s, (y - 10) * s);
+    }
+    g.stroke(line(swatch.blue.line, 5 * s));
+    g.ellipse(-22 * s, 24 * s, 11 * s, 6 * s).fill(swatch.green.fill).stroke(line(swatch.green.line, 2 * s));
+  } else if (w === 'sunny') {
     for (let i = 0; i < 8; i++) {
       const a = (i * Math.PI) / 4;
       g.moveTo(Math.cos(a) * 30 * s, Math.sin(a) * 30 * s).lineTo(Math.cos(a) * 42 * s, Math.sin(a) * 42 * s);
@@ -59,7 +67,7 @@ const LEVELS: BandLevels = {
   lap: { min: 1, max: 8, order: [1, 8, 2] },
   toddler: { min: 2, max: 9, order: [2, 9, 3, 4] },
   preschool: { min: 3, max: 9, order: [3, 9, 4, 5] },
-  prek: { min: 4, max: 7 },
+  prek: { min: 4, max: 10, order: [4, 5, 10, 6, 7] },
 };
 const TRY_IDLE = 6;
 
@@ -214,7 +222,8 @@ class WeatherWardrobe implements Game {
     this.setWeather(next);
     this.dressFor(next);
     void this.ctx.say(`weather.${next}`);
-    if (this.taps >= 6 && this.seen.size === WEATHERS.length) {
+    // Seven taps once every weather has shown: each of the four comes round at least twice (sunny opens the game).
+    if (this.taps >= 7 && this.seen.size === WEATHERS.length) {
       this.done = true;
       void this.ctx.tw.wait(2.2).then(() => {
         this.pet.cheer();
@@ -233,6 +242,7 @@ class WeatherWardrobe implements Game {
     if (this.bursts.length > 8) this.bursts.shift();
     if (kind === 'splash') sfx.splash();
     else if (kind === 'crunch') sfx.squish();
+    else if (kind === 'leaves') sfx.whoosh();
     else sfx.pluck(5 + this.ctx.rng.int(0, 4), 0.3);
   }
 
@@ -554,7 +564,11 @@ class WeatherWardrobe implements Game {
     void (async () => {
       for (const dx of [-5, 5, -5, 5, 0]) await ctx.tw.to(pet, { x: x + dx }, { duration: 0.07 });
       pet.x = x;
-      await ctx.tw.wait(0.25);
+      if (MISFIT[this.weather] === 'blown') {
+        // The wind takes it: the piece lifts off the pet, tumbles up and away, and its tile gets it back below.
+        sfx.whoosh();
+        await Promise.all(pieces.map((p) => ctx.tw.to(p, { x: p.x + 110, y: p.y - 170, rotation: 0.7, alpha: 0.2 }, { duration: 0.5, ease: ease.outQuad })));
+      } else await ctx.tw.wait(0.25);
       for (const p of pieces) p.destroy({ children: true });
       fx.destroy();
       pet.setMood('happy', 0.4);
@@ -586,6 +600,15 @@ class WeatherWardrobe implements Game {
       for (const side of [-1, 1]) fx.poly([side * 112, -250, side * 100, -226, side * 124, -226]).fill(swatch.blue.light).stroke(line(swatch.blue.line, 3)).circle(side * 112, -222, 12).fill(swatch.blue.light);
       pet.setMood('calm', 0.9);
       [4, 5, 7].forEach((s, i) => void ctx.tw.wait(0.12 + i * 0.1).then(() => sfx.bell(s, 0.2)));
+    } else if (kind === 'blown') {
+      // Three wind curls streaming past the head, the way the sky icon draws them.
+      for (const [y, len] of [[-262, 120], [-232, 150], [-200, 110]] as const) {
+        const x0 = -170;
+        fx.moveTo(x0, y).lineTo(x0 + len - 20, y).quadraticCurveTo(x0 + len + 6, y - 4, x0 + len, y - 22).quadraticCurveTo(x0 + len - 12, y - 32, x0 + len - 18, y - 16);
+      }
+      fx.stroke(line(swatch.blue.line, 7));
+      pet.setMood('surprised', 0.9);
+      [4, 6, 9].forEach((s, i) => void ctx.tw.wait(0.08 + i * 0.08).then(() => sfx.bell(s, 0.18)));
     } else {
       puffs(fx, [[-46, -298, 26], [0, -318, 32], [48, -298, 26]], swatch.white.fill, swatch.blue.light, 4);
       pet.setMood('surprised', 0.9);
@@ -618,10 +641,13 @@ class WeatherWardrobe implements Game {
     this.seen.add(w);
     if (w === 'rainy') sfx.splash();
     if (w === 'snowy') sfx.sparkle();
+    if (w === 'windy') sfx.whoosh();
     if (w === 'sunny') [5, 7, 9].forEach((s, i) => void this.ctx.tw.wait(i * 0.12).then(() => sfx.bell(s, 0.2)));
     if (w !== 'sunny' && !this.worn.size) this.pet.setMood('surprised', 0.8);
+    if (w !== 'windy') this.pet.rotation = 0;
     const v = this.view;
-    this.drops = Array.from({ length: w === 'sunny' ? 0 : w === 'rainy' ? 70 : 55 }, () => ({ x: this.ctx.rng.range(0, v.w), y: this.ctx.rng.range(0, v.h), v: w === 'rainy' ? this.ctx.rng.range(500, 700) : this.ctx.rng.range(40, 80), d: this.ctx.rng.range(0, 6) }));
+    // Rain falls fast, snow drifts down, and in wind the "drops" are leaves that stream across the screen (`v` is sideways speed).
+    this.drops = Array.from({ length: w === 'sunny' ? 0 : w === 'rainy' ? 70 : w === 'windy' ? 18 : 55 }, () => ({ x: this.ctx.rng.range(0, v.w), y: this.ctx.rng.range(0, v.h), v: w === 'rainy' ? this.ctx.rng.range(500, 700) : w === 'windy' ? this.ctx.rng.range(260, 420) : this.ctx.rng.range(40, 80), d: this.ctx.rng.range(0, 6) }));
     this.drawWeather();
   }
 
@@ -638,7 +664,10 @@ class WeatherWardrobe implements Game {
       return;
     }
     if (w === 'rainy') s.rect(0, 0, v.w, groundY + 20).fill({ color: swatch.white.line, alpha: 0.4 });
-    if (w === 'sunny') {
+    if (w === 'windy') {
+      // The clouds move in `update()`; the sky itself keeps a low sun peeking out so wind reads as its own weather, not grey.
+      s.circle(v.w * 0.22, 200, 44).fill(swatch.yellow.light).stroke(line(swatch.yellow.line, 5));
+    } else if (w === 'sunny') {
       const cx = v.w * 0.84;
       for (let i = 0; i < 10; i++) {
         const a = (i * Math.PI) / 5;
@@ -656,6 +685,14 @@ class WeatherWardrobe implements Game {
     if (w === 'rainy') for (const [x, y] of [[0.25, 0.72], [0.78, 0.7]]) g.ellipse(v.w * x, v.h * y, 90, 18).fill(swatch.blue.light);
     if (w === 'snowy') for (const [x, y] of [[0.2, 0.68], [0.82, 0.7]]) g.ellipse(v.w * x, v.h * y, 110, 22).fill(swatch.blue.light);
     if (w === 'sunny') for (let i = 0; i < 6; i++) g.poly(starPoints(9, 4).map((p, k) => p + (k % 2 ? v.h * 0.7 + (i % 2) * 30 : v.w * (0.1 + i * 0.16)))).fill(swatch.yellow.light);
+    if (w === 'windy') {
+      // Grass tufts bent the way the wind goes.
+      for (let i = 0; i < 7; i++) {
+        const x = v.w * (0.06 + i * 0.145), y = v.h * (0.7 + (i % 2) * 0.06);
+        for (const dx of [-14, 0, 14]) g.moveTo(x + dx, y).quadraticCurveTo(x + dx + 18, y - 26, x + dx + 44, y - 30);
+      }
+      g.stroke(line(swatch.green.line, 5));
+    }
   }
 
   private drawForecast(o: Outfit) {
@@ -733,6 +770,8 @@ class WeatherWardrobe implements Game {
     this.drawBursts(dt);
     const fx = this.fx.clear();
     if (this.shield > 0) this.drawShield(fx, dt);
+    // The lean belongs to wind alone: level 9's grey scene after a wrong windy sky stands the pet straight again.
+    if (this.blank || this.weather !== 'windy') this.pet.rotation = 0;
     if (this.blank) return;
     if (this.weather === 'rainy') {
       for (const d of this.drops) {
@@ -749,14 +788,37 @@ class WeatherWardrobe implements Game {
         fx.circle(d.x, d.y, 5 + (d.d % 3));
       }
       fx.fill(swatch.white.fill).stroke({ width: 2, color: swatch.blue.light });
+    } else if (this.weather === 'windy') this.drawWind(fx, dt);
+  }
+
+  /** Wind: clouds drift across the sky, leaves stream sideways and bob, and the pet leans into it. */
+  private drawWind(fx: Graphics, dt: number) {
+    const v = this.view;
+    const groundY = v.h * 0.62;
+    const gust = Math.sin(this.clock * 1.7) * 0.5 + 0.5;
+    for (const [x, y, k, speed] of [[0.1, 100, 1.1, 70], [0.45, 70, 0.9, 95], [0.8, 120, 1.0, 60]] as const) {
+      // Each cloud is stretched flat by the wind and wraps round once it leaves on the right.
+      const cx = ((v.w * x + this.clock * speed) % (v.w + 260)) - 130;
+      puffs(fx, [[-70 * k, 6, 32 * k], [0, -10, 44 * k], [70 * k, 6, 32 * k], [120 * k, 12, 22 * k]].map(([dx, dy, r]) => [cx + dx, y + dy, r] as [number, number, number]), swatch.white.fill, swatch.white.line, 5);
     }
+    for (const d of this.drops) {
+      d.x += d.v * (0.7 + 0.6 * gust) * dt;
+      d.y += Math.sin(this.clock * 3 + d.d) * 60 * dt;
+      if (d.x > v.w + 30) [d.x, d.y] = [-30, this.ctx.rng.range(groundY * 0.3, v.h - 40)];
+      const r = 7 + (d.d % 3) * 2;
+      const tilt = 0.3 + Math.sin(this.clock * 4 + d.d) * 0.5;
+      fx.moveTo(d.x, d.y).quadraticCurveTo(d.x + r * 1.6 * Math.cos(tilt), d.y - r * 1.4, d.x + r * 3 * Math.cos(tilt), d.y + r * 0.3 * Math.sin(tilt)).quadraticCurveTo(d.x + r * 1.6 * Math.cos(tilt), d.y + r * 1.4, d.x, d.y).closePath();
+    }
+    fx.fill(swatch.green.fill).stroke({ width: 2, color: swatch.green.line });
+    // A lean into the wind that the gusts push a little further, pivoting at the feet; `setWeather` stands it straight again.
+    this.pet.rotation = -0.045 - 0.035 * gust;
   }
 
   /** Level 8: the fitting item stops the weather, so a few drops, flakes or sun sparks bounce off the pet. */
   private drawShield(fx: Graphics, dt: number) {
     this.shield = Math.max(0, this.shield - dt);
     const t = 2.2 - this.shield;
-    const color = this.weather === 'sunny' ? swatch.yellow.fill : this.weather === 'rainy' ? swatch.blue.fill : swatch.white.fill;
+    const color = this.weather === 'sunny' ? swatch.yellow.fill : this.weather === 'rainy' ? swatch.blue.fill : this.weather === 'windy' ? swatch.green.fill : swatch.white.fill;
     const mid = this.middle();
     // The old pip's body reached about 120 units from its middle at 0.8.
     const reach = (this.pet.touch.r * this.pet.scale.x) / 120;
@@ -789,6 +851,13 @@ class WeatherWardrobe implements Game {
           const a = (j * Math.PI) / 3 + 0.3;
           g.circle(b.x + Math.cos(a) * 60 * k, b.y + Math.sin(a) * 30 * k - 30 * Math.sin(Math.PI * k), 12 * (1 - k * 0.5)).fill({ color: swatch.white.fill, alpha }).stroke({ width: 2, color: swatch.blue.light, alpha });
         }
+      } else if (b.kind === 'leaves') {
+        // A handful of leaves scatter downwind from the touch, each on its own arc.
+        for (let j = 0; j < 5; j++) {
+          const x = b.x + (30 + j * 22) * k * 3, y = b.y - Math.sin(Math.PI * k) * (40 + j * 14) + (j - 2) * 10;
+          const r = 9 + (j % 2) * 3;
+          g.ellipse(x, y, r * 1.6, r * 0.8).fill({ color: swatch.green.fill, alpha }).stroke({ width: 2, color: swatch.green.line, alpha });
+        }
       } else {
         const grow = Math.min(1, b.t / 0.25);
         const top = b.y - 70 * grow;
@@ -803,13 +872,15 @@ class WeatherWardrobe implements Game {
   }
 
   destroy() {
+    this.pet.rotation = 0;
     this.ctx.pet.visible = true;
   }
 }
 
 function wardrobeArt(seed = 1): Container {
   const rng = new Rng(seed);
-  const w = rng.pick(WEATHERS);
+  // Pinned to the original three weathers and eight items: a seed's sticker looks as it did before wind.
+  const w = rng.pick(STICKER_WEATHERS);
   const c = new Container();
   const item = itemIcon(rng.pick(STICKER_ITEMS.filter((i) => ITEMS[i] === w)), 120);
   item.y = -70;
@@ -843,5 +914,5 @@ export const weatherWardrobe: GameModule = {
     return new WigglyIcon(c);
   },
   sticker: (seed) => wardrobeArt(seed),
-  create: (ctx) => new WeatherWardrobe(ctx),
+  create: (ctx) => ctx.level === 10 ? new WeatherFriends(ctx, weatherIcon) : new WeatherWardrobe(ctx),
 };

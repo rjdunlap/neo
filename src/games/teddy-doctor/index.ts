@@ -301,6 +301,15 @@ class TeddyDoctor implements Game {
       // Boo-boos sit close together, so a tap goes to the nearest one rather than whichever is drawn on top.
       p.hitArea = this.plan.mode === 'choose' ? new Rectangle(-125, -330, 250, 370) : new Rectangle(-175, -340, 350, 390);
       onTap(p, (e) => void (this.choosing ? this.choose(true) : this.tapAt(e.global)), { cooldown: 250 });
+    } else if (this.plan.mode === 'part') {
+      // Lap: a tap on the patient uses the bandage where the finger landed, so no drag is needed; the named part still has to be the one touched.
+      p.hitArea = new Rectangle(-175, -340, 350, 390);
+      onTap(p, (e) => {
+        const tool = this.tools[0];
+        if (!tool || tool.drag.dragging) return;
+        const at = this.ctx.stage.toLocal(e.global);
+        void this.use(tool, at.x, at.y);
+      }, { cooldown: 250 });
     }
     this.setTools(r.tools);
     this.showSymptoms();
@@ -773,7 +782,11 @@ export const teddyDoctor: GameModule = {
   touchDemo: true,
   entryLevels: [7],
   coplayHint: 'Be the patient! Tell {name} where it hurts, and say thank you when you feel better.',
-  offScreen: 'Play doctor with a teddy and a box of plasters: where does it hurt, and what will help?',
+  offScreen: {
+    all: 'Play doctor with a teddy and a box of plasters: where does it hurt, and what will help?',
+    // School: a build or test with a result, predicting first.
+    school: 'Give a teddy a check-up: measure how tall it is with blocks or a ruler, and write it on a chart with what will help.',
+  },
   hubIcon: () => new WigglyIcon(teddyArt(1)),
   sticker: (seed) => teddyArt(seed),
   create: (ctx) => new TeddyDoctor(ctx),

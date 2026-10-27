@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // IndexedDB is replaced by a Map: set() copies what it is given, as IndexedDB does, and get() can be made to fail or wait.
 const { disk, ctl } = vi.hoisted(() => ({
   disk: new Map<string, unknown>(),
-  ctl: { fail: ((_key: string) => false) as (key: string) => boolean, gate: new Map<string, Promise<void>>() },
+  ctl: { writes: new Map<string, Promise<unknown>>(), writeGate: new Map<string, Promise<void>>(), failWrite: ((_key: string) => false) as (key: string) => boolean, fail: ((_key: string) => false) as (key: string) => boolean, gate: new Map<string, Promise<void>>() },
 }));
 vi.mock('idb-keyval', () => ({
   get: async (key: string) => {
@@ -11,8 +11,26 @@ vi.mock('idb-keyval', () => ({
     if (ctl.fail(key)) throw new Error('cannot read');
     return structuredClone(disk.get(key));
   },
-  set: async (key: string, value: unknown) => void disk.set(key, structuredClone(value)),
-  del: async (key: string) => void disk.delete(key),
+  set: (key: string, value: unknown) => {
+    // IndexedDB clones at submission and serializes read/write transactions on its store.
+    const snapshot = structuredClone(value);
+    const commit = () => {
+      if (ctl.failWrite(key)) throw new Error('cannot write');
+      disk.set(key, snapshot);
+    };
+    const gate = ctl.writeGate.get(key);
+    const previous = ctl.writes.get(key);
+    if (!gate && !previous) {
+      try { commit(); return Promise.resolve(); } catch (error) { return Promise.reject(error); }
+    }
+    const write = (previous ?? Promise.resolve()).catch(() => {}).then(() => gate).then(commit);
+    ctl.writes.set(key, write);
+    return write;
+  },
+  del: async (key: string) => {
+    await ctl.writes.get(key)?.catch(() => {});
+    disk.delete(key);
+  },
 }));
 
 import { MAX_PROFILES, INDEX_KEY, type ProfileIndex } from './profiles';
@@ -32,11 +50,15 @@ beforeEach(() => {
   disk.clear();
   ctl.fail = () => false;
   ctl.gate.clear();
+  ctl.writes.clear();
+  ctl.writeGate.clear();
+  ctl.failWrite = () => false;
   vi.useFakeTimers();
 });
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 describe('the first profile', () => {
@@ -755,4 +777,94 @@ describe('her friends (RW05)', () => {
     await store.switchTo(a);
     expect(store.companion?.look.worn).toEqual(['sunhat']);
   });
+});
+
+describe('asynchronous save writes', () => {
+  it('keeps an in-flight write on its original profile with the snapshot submitted before switching', async () => {
+    const store = make();
+    await store.load();
+    const a = store.activeId;
+    const b = store.addProfile()!;
+    let release!: () => void;
+    ctl.writeGate.set('neo.save', new Promise<void>(r => { release = r; }));
+    store.data.profile.name = 'Alice';
+    store.save();
+    store.flush();
+    store.data.profile.name = 'Changed after submission';
+    await store.switchTo(b);
+    store.data.profile.name = 'Bob';
+    store.save();
+    store.flush();
+    release();
+    await ctl.writes.get('neo.save');
+    expect(savedAs('neo.save').profile.name).toBe('Alice');
+    expect(savedAs(`neo.save.${b}`).profile.name).toBe('Bob');
+    expect(store.activeId).toBe(b);
+    expect(a).not.toBe(b);
+  });
+
+  it('deletes a removed profile after its in-flight write, without resurrecting it', async () => {
+    const store = make();
+    await store.load();
+    const b = store.addProfile()!;
+    await store.switchTo(b);
+    const key = `neo.save.${b}`;
+    let release!: () => void;
+    ctl.writeGate.set(key, new Promise<void>(r => { release = r; }));
+    store.data.profile.name = 'Bob';
+    store.save();
+    store.flush();
+    const removing = store.removeProfile(b);
+    release();
+    expect(await removing).toBe(true);
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(disk.has(key)).toBe(false);
+    expect(store.profiles.some(p => p.id === b)).toBe(false);
+  });
+
+  it('reports a rejected progress write and persists the latest state on the next save', async () => {
+    const store = make();
+    await store.load();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    ctl.failWrite = key => key === 'neo.save';
+    store.data.profile.name = 'Alice';
+    store.save();
+    await vi.advanceTimersByTimeAsync(300);
+    expect(disk.has('neo.save')).toBe(false);
+    expect(warn).toHaveBeenCalledWith('Could not save progress', expect.any(Error));
+    ctl.failWrite = () => false;
+    store.data.profile.name = 'Alice recovered';
+    store.save();
+    await vi.advanceTimersByTimeAsync(300);
+    expect(savedAs('neo.save').profile.name).toBe('Alice recovered');
+    warn.mockRestore();
+  });
+
+  it('reports a rejected index write and recovers on the next index change', async () => {
+    const store = make();
+    await store.load();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const before = structuredClone(indexOnDisk());
+    ctl.failWrite = key => key === INDEX_KEY;
+    const b = store.addProfile()!;
+    await Promise.resolve();
+    expect(indexOnDisk()).toEqual(before);
+    expect(warn).toHaveBeenCalledWith('Could not save the list of players', expect.any(Error));
+    ctl.failWrite = () => false;
+    store.setBirth(b, { month: 1, year: 2020 });
+    expect(indexOnDisk().profiles.some(p => p.id === b)).toBe(true);
+    warn.mockRestore();
+  });
+});
+
+it('cloth Keep survives profile switching, reload and backup restore with previous ownership intact', async () => {
+  const store=make();await store.load();const a=store.activeId;
+  const cloth={kind:'picture' as const,medium:'cloth' as const,version:1 as const,cols:6 as const,rows:8 as const,cells:Array.from({length:48},(_,i)=>i%4)};
+  const stamp={kind:'picture' as const,stamps:[{kind:'star' as const,color:'pink' as const,x:.5,y:.5,size:1,turns:0}]};
+  store.keepCreation(stamp);store.keepCreation(cloth);store.flush();
+  const b=store.addProfile()!;await store.switchTo(b);expect(store.creations.picture.current).toBeNull();store.keepCreation(stamp);store.flush();
+  await store.switchTo(a);expect(store.creations.picture).toEqual({current:cloth,previous:stamp});
+  const file=await store.exportAll();store.takeDownCreation('picture');expect(store.creations.picture.current).toBeNull();
+  await store.restoreAll(file);expect(store.creations.picture).toEqual({current:cloth,previous:stamp});
+  store.flush();const loaded=make();await loaded.load();expect(loaded.creations.picture.current).toEqual(cloth);await loaded.switchTo(b);expect(loaded.creations.picture.current).toEqual(stamp);
 });

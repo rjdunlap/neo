@@ -393,7 +393,11 @@ export const jellyDrums: GameModule = {
   },
   music: silenced(STYLES.jelly),
   coplayHint: 'Sing along! Big jellies sing low, little jellies sing high.',
-  offScreen: 'Make a pots-and-pans band: big pot, low sound; small pot, high sound.',
+  offScreen: {
+    all: 'Make a pots-and-pans band: big pot, low sound; small pot, high sound.',
+    // School: a build or test with a result, predicting first.
+    school: 'Line up pots by size and guess which one will sound lowest before you tap it. Then play a tune from low to high.',
+  },
   hubIcon: () => new JellyStand(),
   touchDemo: true,
   sticker,

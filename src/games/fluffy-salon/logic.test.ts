@@ -2,7 +2,7 @@ import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { bodyBox, restPoints } from '../../creatures/companion';
 import { SPECIES_IDS } from '../../creatures/species';
-import { anchors, describe, FACE_TAP, faceSpot, furFit, growFor, helps, makeRequests, moreLine, oldStrands, PIP_SCALP, QUIET_HINT, scalpFor, MAX_LENGTH, MIN_LENGTH, needs, PLAY_STROKES, PLANS, FLOOF, isFree, PAT_START, SNIP_START, SNIP_TOUR, REACH, SEG, salonMove, STRANDS, strandPoints, strokePath, TOUR, toolFor, touchStrands, type Pt, type SalonState, type Strand, type Tool } from './logic';
+import { anchors, BOTTLE_RADIUS, CUSTOMER_NAMES, CUSTOMERS, describe, FACE_TAP, faceSpot, FRIEND_CHANCE, furFit, growFor, HAIR_COLORS, hasCustomers, helps, makeRequests, makeRoom, moreLine, oldStrands, pickCustomer, PIP_SCALP, planFor, QUIET_HINT, scalpFor, MAX_LENGTH, MIN_LENGTH, needs, PLAY_STROKES, PLANS, FLOOF, isFree, PAT_START, selfChecks, SNIP_START, SNIP_TOUR, REACH, SEG, salonMove, START_LOOKS, startLook, startStrands, stats, STRANDS, strandPoints, strokePath, toolsFor, TOUR, toolFor, touchStrands, WRONG_BOTTLES, wrongBottle, type Pt, type SalonState, type Strand, type Tool } from './logic';
 
 const head = (length: number, curl: number, color: Strand['color'], n = 20): Strand[] => Array.from({ length: n }, () => ({ length, curl, color }));
 
@@ -15,11 +15,52 @@ group('Fluffy Salon', () => {
         expect(new Set(rs.map((r) => describe(r.look))).size).toBe(rs.length);
         for (const r of rs) {
           const parts = Object.keys(r.look).length;
-          expect(parts, plan.name).toBe(plan.mode === 'ask' ? 1 : plan.mode === 'two' ? 2 : 3);
+          expect(parts, plan.name).toBe(['ask', 'color', 'compare'].includes(plan.mode) ? 1 : ['two', 'customers'].includes(plan.mode) ? 2 : 3);
           expect(needs(r.look, head(r.start.length, r.start.curl, r.start.color))).not.toBeNull();
         }
       }
     }
+  });
+
+  it('keeps two distinct visible requests independent and reachable in either customer order', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const requests = makeRequests(planFor(9), new Rng(seed));
+      expect(requests).toHaveLength(2);
+      expect(describe(requests[0].look)).not.toBe(describe(requests[1].look));
+      for (const order of [[0, 1], [1, 0]]) {
+        const heads = requests.map((r) => anchors().map(() => ({ ...r.start })));
+        for (const i of order) {
+          const other = JSON.stringify(heads[1 - i]);
+          expect(Object.keys(requests[i].look)).toHaveLength(2);
+          for (let n = 0; needs(requests[i].look, heads[i]) && n < 16; n++) sweep(toolFor(needs(requests[i].look, heads[i])!), n % 2 === 0, heads[i], 21);
+          expect(needs(requests[i].look, heads[i])).toBeNull();
+          expect(JSON.stringify(heads[1 - i])).toBe(other);
+        }
+        expect(heads.every((h, i) => needs(requests[i].look, h) === null)).toBe(true);
+      }
+    }
+  });
+
+  it('compares against a fixed reachable length, starts unmet, and requires the full clear margin in either direction', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const [r] = makeRequests(planFor(10), new Rng(seed));
+      const { length, direction } = r.look.comparison!;
+      seen.add(direction);
+      expect(length).toBeGreaterThanOrEqual(60);
+      expect(length).toBeLessThanOrEqual(150);
+      expect(r.start.length).toBe(length);
+      const sign = direction === 'longer' ? 1 : -1;
+      expect(needs(r.look, head(length, 0.3, 'pink'))).toBe(direction);
+      expect(needs(r.look, head(length + sign * 24, 0.3, 'pink'))).toBe(direction);
+      expect(needs(r.look, head(length + sign * 25, 0.3, 'pink'))).toBeNull();
+      // A hint's named tool and the demonstration use the same rule and reach the accepted side in a few real sweeps.
+      const strands = anchors().map(() => ({ ...r.start }));
+      for (let n = 0; needs(r.look, strands) && n < 16; n++) sweep(toolFor(needs(r.look, strands)!), n % 2 === 0, strands, 21);
+      expect(needs(r.look, strands), `seed ${seed} ${direction}`).toBeNull();
+      expect(sign * (stats(strands).length - length)).toBeGreaterThanOrEqual(25);
+    }
+    expect([...seen].sort()).toEqual(['longer', 'shorter']);
   });
 
   it('asks for a little more of a colour that is mostly there, and points at the strands still the old colour', () => {
@@ -169,7 +210,7 @@ group('Fluffy Salon', () => {
           let finished = false;
           for (let step = 0, back = false; step < 60 && !finished; step++) {
             const m = salonMove(st);
-            if (!m) { expect(plan.mode).toBe('ask'); expect(needs(req.look, st.strands)).toBeNull(); finished = true; break; }
+            if (!m) { expect(selfChecks(plan.mode)).toBe(true); expect(needs(req.look, st.strands)).toBeNull(); finished = true; break; }
             if (m.do === 'tool') st.tool = m.tool;
             else if (m.do === 'stroke') {
               sweep(st.tool, back, st.strands, 21);
@@ -243,5 +284,113 @@ group('Fluffy Salon', () => {
     expect(salonMove({ ...base, strokes: SNIP_TOUR.length, mirror: true })).toEqual({ do: 'mirror' });
     expect(PLANS[5].mode).toBe('pat');
     expect(PLANS[6].mode).toBe('snip');
+  });
+  it('Pink, please (level 8): colour-only requests that start in another colour and never repeat, with the asked bottle on screen and nothing else', () => {
+    const plan = planFor(8);
+    expect(plan.mode).toBe('color');
+    expect(selfChecks('color')).toBe(true);
+    expect(isFree('color')).toBe(false);
+    expect(toolsFor('color')).toEqual(HAIR_COLORS);
+    expect(BOTTLE_RADIUS * 2).toBeGreaterThanOrEqual(100);
+    for (let seed = 1; seed <= 200; seed++) {
+      const rs = makeRequests(plan, new Rng(seed));
+      expect(rs).toHaveLength(2);
+      expect(rs[0].look.color).not.toBe(rs[1].look.color);
+      for (const r of rs) {
+        expect(Object.keys(r.look)).toEqual(['color']);
+        expect(r.start.color).not.toBe(r.look.color);
+        expect(toolsFor('color')).toContain(r.look.color);
+        // The fur is mid length and a little wavy, so nothing but the colour is asked or needed.
+        expect(needs(r.look, head(r.start.length, r.start.curl, r.start.color))).toBe(r.look.color);
+        expect(needs(r.look, head(r.start.length, r.start.curl, r.look.color!))).toBeNull();
+      }
+    }
+  });
+
+  it('Pink, please: a wrong bottle still paints and is only named; two wrong bottles are the glow', () => {
+    const look = { color: 'pink' as const };
+    expect(wrongBottle(look, 'blue')).toBe('blue');
+    expect(wrongBottle(look, 'pink')).toBeNull();
+    expect(wrongBottle(look, 'grow')).toBeNull();
+    expect(wrongBottle({ length: 'long' }, 'blue')).toBeNull();
+    expect(WRONG_BOTTLES).toBe(2);
+    // The wrong bottle paints: the strands take the colour, and the asked colour is still what is needed.
+    const strands = head(95, 0.35, 'yellow');
+    const an = anchors();
+    strands.length = STRANDS;
+    for (let i = 0; i < STRANDS; i++) strands[i] = { length: 95, curl: 0.35, color: 'yellow' };
+    for (const p of strokePath('blue')) touchStrands('blue', strands, an, p);
+    expect(stats(strands).share('blue')).toBeGreaterThan(0);
+    expect(needs(look, strands)).toBe('pink');
+    expect(toolFor('pink')).toBe('pink');
+  });
+
+  it('seats her pet most often and otherwise one of five friends, only at levels with customers, each with a spoken name', () => {
+    expect(CUSTOMERS).toEqual(['cat', 'bunny', 'bear', 'dog', 'pig']);
+    for (const c of CUSTOMERS) expect(CUSTOMER_NAMES[c].length).toBeGreaterThan(1);
+    expect(FRIEND_CHANCE).toBeLessThan(0.5);
+    for (const plan of PLANS) {
+      const friends = new Set<string>();
+      let pet = 0;
+      for (let seed = 1; seed <= 300; seed++) {
+        const who = pickCustomer(plan.mode, new Rng(seed));
+        if (who) friends.add(who);
+        else pet++;
+      }
+      if (hasCustomers(plan.mode)) {
+        expect([3, 4, 5]).toContain(PLANS.indexOf(plan) + 1);
+        expect(pet).toBeGreaterThan(150);
+        expect(friends.size).toBe(5);
+      } else {
+        expect(pet).toBe(300);
+      }
+    }
+  });
+
+  it('dresses a seeded room: two different wall colours, a cape stripe that is never the customer\'s colour, and a floor check', () => {
+    const walls = new Set<string>();
+    const stripes = new Set<string>();
+    const floors = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      for (const customer of ['teal', 'purple', 'orange', 'brown', 'pink', 'white'] as const) {
+        const room = makeRoom(new Rng(seed), customer);
+        expect(room.wall[0]).not.toBe(room.wall[1]);
+        expect(room.stripe).not.toBe(customer);
+        walls.add(room.wall.join('/'));
+        stripes.add(room.stripe);
+        floors.add(room.floor);
+      }
+    }
+    expect(walls.size).toBeGreaterThan(10);
+    expect(stripes.size).toBeGreaterThanOrEqual(5);
+    expect(floors.size).toBeGreaterThanOrEqual(4);
+  });
+
+  it('starts free play at one of five looks, each inside the fur\'s bounds and different from the others', () => {
+    expect(START_LOOKS).toHaveLength(5);
+    const seen = new Set<string>();
+    const shapes = START_LOOKS.map((look) => startStrands(look, 'pink', 'blue'));
+    for (const strands of shapes) {
+      expect(strands).toHaveLength(STRANDS);
+      for (const s of strands) {
+        expect(s.length).toBeGreaterThanOrEqual(MIN_LENGTH);
+        expect(s.length).toBeLessThanOrEqual(MAX_LENGTH);
+        expect(s.curl).toBeGreaterThanOrEqual(0);
+        expect(s.curl).toBeLessThanOrEqual(1);
+      }
+      seen.add(strands.map((s) => `${s.length}:${s.curl}:${s.color}`).join(','));
+    }
+    expect(seen.size).toBe(5);
+    // Two-tone really has two colours on; the mohawk is long only in the middle.
+    expect(new Set(startStrands('two-tone', 'pink', 'blue').map((s) => s.color)).size).toBe(2);
+    const mohawk = startStrands('mohawk', 'pink', 'blue');
+    expect(mohawk[0].length).toBeLessThan(mohawk[12].length);
+    expect(mohawk[STRANDS - 1].length).toBeLessThan(mohawk[12].length);
+    for (let seed = 1; seed <= 100; seed++) {
+      const { look, strands } = startLook(new Rng(seed));
+      expect(START_LOOKS).toContain(look);
+      expect(strands).toHaveLength(STRANDS);
+    }
+    expect(new Set(Array.from({ length: 60 }, (_, i) => startLook(new Rng(i + 1)).look)).size).toBe(5);
   });
 });

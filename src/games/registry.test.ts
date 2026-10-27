@@ -114,6 +114,10 @@ describe('game registry', () => {
     expect(stepLevel(8, 1, lap)).toBe(2);
     expect(levelsInOrder(toddler)).toEqual([2, 9, 3, 4]);
     expect(levelsInOrder(g.levels('preschool'))).toEqual([3, 9, 4, 5]);
+    expect(levelsInOrder(g.levels('prek'))).toEqual([4, 5, 10, 6, 7]);
+    expect(stepLevel(5, 1, g.levels('prek'))).toBe(10);
+    expect(stepLevel(10, 1, g.levels('prek'))).toBe(6);
+    for (const level of [4, 5, 6, 7, 10]) expect(nextLevel(level, [], g.levels('prek'))).toBe(level);
     expect(g.entryLevels).toContain(9);
     expect(landing(8, toddler, g.entryLevels)).toBe(2);
     for (const l of [1, 8, 2]) expect(nextLevel(l, [], lap)).toBe(l);
@@ -179,13 +183,15 @@ describe('game registry', () => {
     expect(landing(4, school, g.entryLevels)).toBe(4); // birthday from pre-K
   });
 
-  it('places Rhythm Neighbors 7 first for lap and 8 between 2 and 3 for toddlers without moving saved levels', () => {
+  it('places Rhythm Neighbors 7 first for lap, 8 and 9 between 2 and 3 for toddlers and 9 first for preschool without moving saved levels', () => {
     const g = gameById('rhythm-neighbors')!;
-    expect(g.entryLevels).toEqual([7]);
-    expect(levelsInOrder(g.levels('toddler'))).toEqual([2, 8, 3]);
+    expect(g.entryLevels).toEqual([7, 9]);
+    expect(levelsInOrder(g.levels('toddler'))).toEqual([2, 8, 9, 3]);
     expect(stepLevel(2, 1, g.levels('toddler'))).toBe(8);
-    expect(stepLevel(8, 1, g.levels('toddler'))).toBe(3);
-    expect(levelsInOrder(g.levels('preschool'))).toEqual([3, 4]);
+    expect(stepLevel(8, 1, g.levels('toddler'))).toBe(9);
+    expect(stepLevel(9, 1, g.levels('toddler'))).toBe(3);
+    expect(levelsInOrder(g.levels('preschool'))).toEqual([9, 3, 4]);
+    expect(landing(3, g.levels('preschool'), g.entryLevels)).toBe(3);
     expect(landing(7, g.levels('toddler'), g.entryLevels)).toBe(2);
     expect(landing(3, g.levels('toddler'), g.entryLevels)).toBe(3);
   });
@@ -259,7 +265,7 @@ describe('game registry', () => {
 
   it('plays no background music in a game where she makes the music', () => {
     // Her own sounds are the music; the island's loop would compete with them.
-    const makingMusic = ['beat-builder', 'clap-syllables', 'jelly-drums', 'little-conductor', 'pet-says', 'rhythm-neighbors', 'sense-detective', 'sing-along-barn', 'song-maker', 'sound-garden'];
+    const makingMusic = ['movie-night', 'beat-builder', 'clap-syllables', 'jelly-drums', 'little-conductor', 'pet-says', 'rhythm-neighbors', 'sense-detective', 'sing-along-barn', 'song-maker', 'sound-garden'];
     for (const id of makingMusic) {
       const game = gameById(id)!;
       expect(game, id).toBeDefined();

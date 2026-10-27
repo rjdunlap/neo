@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics, Rectangle, Sprite, type FederatedPointerEvent } from 'pixi.js';
-import { Critter } from '../../art/critter';
+import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { swatch, wood, type ColorName } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -14,20 +14,45 @@ import type { CompanionRig } from '../../creatures/companion';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { anchors, describe, FACE_TAP, faceSpot, FLOOF, furFit, growFor, HAIR_COLORS, helps, isFree, PAT_MIRROR, PAT_QUIET, PAT_START, SNIP_START, SNIP_TOOL_RADIUS, stats, scalpFor, makeRequests, moreLine, needs, oldStrands, planFor, QUIET_HINT, salonMove, strandPoints, strokePath, toolFor, touchStrands, type Anchor, type Look, type Request, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
+import { anchors, BOTTLE_RADIUS, CUSTOMER_NAMES, describe, FACE_TAP, faceSpot, FLOOF, furFit, growFor, HAIR_COLORS, helps, isFree, makeRoom, PAT_MIRROR, PAT_QUIET, PAT_START, pickCustomer, selfChecks, SNIP_START, SNIP_TOOL_RADIUS, startLook, stats, scalpFor, makeRequests, moreLine, needs, oldStrands, PIP_SCALP, planFor, QUIET_HINT, salonMove, strandPoints, strokePath, toolFor, toolsFor, touchStrands, WRONG_BOTTLES, wrongBottle, type Anchor, type Look, type Request, type Room, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 7, order: [6, 1, 7, 2] },
-  toddler: { min: 1, max: 7, order: [6, 1, 7, 2] },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
+  toddler: { min: 1, max: 8, order: [6, 1, 7, 2, 8] },
+  preschool: { min: 2, max: 9, order: [2, 8, 3, 4, 9] },
+  prek: { min: 3, max: 10, order: [3, 4, 5, 9, 10] },
 };
 
 const PET_SCALE = 1.15;
 
+/** What the chair needs of whoever sits in it: her companion's rig, or a code-drawn friend wearing the same surface. */
+type Seat = Pick<CompanionRig, 'alive' | 'part' | 'partPoints' | 'bodyBounds' | 'attach' | 'poke' | 'cheer' | 'update'> & Container & { readonly color: ColorName };
+
+/**
+ * A friend from `CRITTERS` in the chair (levels 3–5, until the rework's casting seats her own creatures): the fur, cape and face spot
+ * read the critter as the old pip, whose scalp is `PIP_SCALP`, with its neck where the cape's collar was drawn.
+ */
+class FriendInChair extends Critter implements Seat {
+  get color() {
+    return this.spec.color;
+  }
+  part(): readonly Container[] {
+    return [];
+  }
+  partPoints(name: string): readonly { x: number; y: number }[] {
+    if (name === 'neck') return [{ x: 0, y: -92 }];
+    if (name === 'eyes') return [{ x: 0, y: -142 }];
+    return [];
+  }
+  bodyBounds(): Rectangle {
+    const top = PIP_SCALP.y - PIP_SCALP.r;
+    return new Rectangle(-PIP_SCALP.r, top, PIP_SCALP.r * 2, -top);
+  }
+}
+
 /** Hangs the fur (drawn in the pip's units) on the companion's head, riding the picture as it moves. */
-function wearFur(pet: CompanionRig, hair: Graphics, scalp: Scalp) {
+function wearFur(pet: Seat, hair: Graphics, scalp: Scalp) {
   const fit = furFit(scalp);
   const [head] = pet.part('head');
   const at = head ? pet.partPoints('head')[0] : { x: 0, y: 0 };
@@ -122,9 +147,16 @@ class FluffySalon implements Game {
   /** How much styling has happened, so free play offers the mirror once there's something to see. */
   work = 0;
 
-  private readonly wall = new Sprite(gradientTexture(0xfde2f0, 0xf6e7ff));
-  private readonly room = new Graphics();
-  readonly pet: CompanionRig;
+  /** Who is in the chair: a friend from `CRITTERS`, or null for her own pet. */
+  readonly customer: CritterName | null;
+  /** The chair's customer, spoken as `{who}`: null when it is her pet, who speaks for itself. */
+  readonly who: string | null;
+  readonly room: Room;
+  /** Free play's seeded start look at 1–2, for the record. */
+  startLook: string | null = null;
+  private readonly wall: Sprite;
+  private readonly floor = new Graphics();
+  readonly pet: Seat;
   /** The head the fur grows on, in the companion's units, and how much larger than the pip the chair draws it. */
   readonly scalp: Scalp;
   private readonly grow: number;
@@ -145,6 +177,10 @@ class FluffySalon implements Game {
   private wrongs = 0;
   private sinceProgress = 0;
   private hintTool: Tool | null = null;
+  /** Pink, please: the wrong bottles already named this request, so a second stroke with one stays quiet and is not counted again. */
+  private named = new Set<ColorName>();
+  /** Pink, please: she has tapped a bottle this request; a stroke with the one preselected (the fur's own colour) is named but not counted. */
+  private chosen = false;
   /** Once she has been told the colour is not all there yet, the strands still the old colour glow until they are painted. */
   private oldGlow: ColorName | null = null;
   /** When a pat that missed the fur last giggled, so a held or drumming finger does not giggle every frame. */
@@ -161,9 +197,13 @@ class FluffySalon implements Game {
     this.plan = planFor(ctx.level);
     this.free = isFree(this.plan.mode);
     this.requests = makeRequests(this.plan, ctx.rng);
-    // The pet is in the chair, so the corner guide steps out (tapping the mirror repeats the ask).
-    ctx.pet.visible = false;
-    this.pet = ctx.companion();
+    this.customer = pickCustomer(this.plan.mode, ctx.rng);
+    this.who = this.customer ? CUSTOMER_NAMES[this.customer] : null;
+    // Her pet is in the chair, so the corner guide steps out (tapping the card repeats the ask); with a friend in the chair it stays.
+    ctx.pet.visible = this.customer !== null;
+    this.pet = this.customer ? new FriendInChair(CRITTERS[this.customer]) : ctx.companion();
+    this.room = makeRoom(ctx.rng, this.pet.color);
+    this.wall = new Sprite(gradientTexture(swatch[this.room.wall[0]].light, swatch[this.room.wall[1]].light));
     this.scalp = scalpFor(this.pet.bodyBounds());
     this.grow = growFor(this.scalp);
     this.pet.scale.set(PET_SCALE * this.grow);
@@ -171,7 +211,7 @@ class FluffySalon implements Game {
     this.drawCape(this.pet);
     this.pet.attach(this.cape);
     wearFur(this.pet, this.hair, this.scalp);
-    ctx.stage.addChild(this.wall, this.room, this.pet, this.touch, this.card, this.faceReplay);
+    ctx.stage.addChild(this.wall, this.floor, this.pet, this.touch, this.card, this.faceReplay);
 
     this.touch.eventMode = 'static';
     this.touch.on('pointerdown', (e: FederatedPointerEvent) => {
@@ -197,22 +237,28 @@ class FluffySalon implements Game {
     onTap(this.faceReplay, () => this.repeatInstruction(), { cooldown: 500 });
 
     const mode = this.plan.mode;
-    const tools: Tool[] = mode === 'pat' ? [] : mode === 'play' ? ['grow'] : mode === 'snip' ? ['grow', 'cut'] : ['grow', 'cut', 'comb', 'curl'];
-    for (const tool of [...tools, ...(mode === 'pat' || mode === 'snip' ? [] : HAIR_COLORS)]) {
-      const b = new ToolButton(tool, mode === 'snip' ? SNIP_TOOL_RADIUS : 44, () => this.choose(tool));
+    for (const tool of toolsFor(mode)) {
+      const b = new ToolButton(tool, mode === 'snip' ? SNIP_TOOL_RADIUS : mode === 'color' ? BOTTLE_RADIUS : 44, () => this.choose(tool));
       this.buttons.push(b);
       ctx.stage.addChild(b);
     }
     this.mirror = new RoundButton(this.mirrorIcon(), swatch.white, mode === 'pat' ? PAT_MIRROR : 54, () => void this.lookInMirror());
     ctx.stage.addChild(this.mirror);
-    this.choose('grow', true);
+    this.choose(mode === 'color' ? HAIR_COLORS[0] : 'grow', true);
   }
 
   start() {
     if (this.free) {
       const mode = this.plan.mode;
-      const color = this.ctx.rng.pick(HAIR_COLORS);
-      this.setHair(mode === 'pat' ? { ...PAT_START, color } : mode === 'snip' ? { ...SNIP_START, color } : { length: 55, curl: 0.3, color });
+      if (mode === 'pat' || mode === 'snip') {
+        const color = this.ctx.rng.pick(HAIR_COLORS);
+        this.setHair(mode === 'pat' ? { ...PAT_START, color } : { ...SNIP_START, color });
+      } else {
+        const start = startLook(this.ctx.rng);
+        this.startLook = start.look;
+        this.strands = start.strands;
+        this.dirty = true;
+      }
       this.mirror.visible = false;
       void this.instruct(mode === 'pat' ? 'salon.pat' : mode === 'snip' ? 'salon.snip' : 'salon.play');
       return;
@@ -229,7 +275,7 @@ class FluffySalon implements Game {
   }
 
   /** The pip's cape, from the companion's neck to the bottom of its pinned body; a friend with no neck (the glider) goes without. */
-  private drawCape(pet: CompanionRig) {
+  private drawCape(pet: Seat) {
     const box = pet.bodyBounds();
     const neck = pet.partPoints('neck')[0];
     const c = this.cape.clear();
@@ -239,7 +285,7 @@ class FluffySalon implements Game {
     const ky = Math.min(kx, Math.max(0.2, (bottom - neck.y) / 98));
     this.cape.scale.set(kx, ky);
     this.cape.position.set(box.x + box.width / 2, bottom - 6 * ky);
-    const stripe = pet.color === 'purple' ? swatch.teal : swatch.purple;
+    const stripe = swatch[this.room.stripe];
     c.moveTo(-150, 6).quadraticCurveTo(-140, -70, -70, -92).quadraticCurveTo(0, -80, 70, -92).quadraticCurveTo(140, -70, 150, 6).closePath().fill(0xffffff).stroke({ width: 6, color: 0xb9c6d1, join: 'round' });
     for (let x = -120; x <= 120; x += 40) c.moveTo(x, -70).lineTo(x * 1.15, 4).stroke({ width: 10, color: stripe.light });
   }
@@ -247,18 +293,19 @@ class FluffySalon implements Game {
   resize(v: View) {
     this.wall.width = v.w;
     this.wall.height = v.h;
-    const r = this.room.clear();
-    // A big salon mirror behind the chair and a checked floor.
+    const r = this.floor.clear();
+    // A big salon mirror behind the chair and a checked floor in the room's colour.
     r.roundRect(v.w * 0.5 - 230, 60, 460, v.h - 260, 60).fill({ color: 0xd6eefa, alpha: 0.8 }).stroke({ width: 14, color: wood.fill });
     r.rect(0, v.h - 150, v.w, 150).fill(0xf3e3c8);
-    for (let x = 0; x < v.w; x += 60) for (let y = v.h - 150; y < v.h; y += 60) if (((x + y) / 60) % 2 < 1) r.rect(x, y, 60, 60).fill(0xe8d3b0);
+    for (let x = 0; x < v.w; x += 60) for (let y = v.h - 150; y < v.h; y += 60) if (((x + y) / 60) % 2 < 1) r.rect(x, y, 60, 60).fill(swatch[this.room.floor].light);
     r.roundRect(v.w * 0.5 - 170, v.h - 190, 340, 60, 20).fill(swatch.red.fill).stroke({ width: 6, color: swatch.red.line });
     // The head is centred in the mirror (a side-on friend's body reaches back from it).
     this.pet.position.set(v.w * 0.5 - this.scalp.x * this.pet.scale.x, v.h - 150);
     this.touch.hitArea = new Rectangle(160, 0, v.w - 300, v.h - 130);
-    // Tools along the bottom; colors in a column down the right.
-    const tools = this.buttons.filter((b) => !HAIR_COLORS.includes(b.tool as ColorName));
-    const colors = this.buttons.filter((b) => HAIR_COLORS.includes(b.tool as ColorName));
+    // Tools along the bottom; colors in a column down the right. Pink, please has only the bottles, big, along the bottom.
+    const bottom = this.plan.mode === 'color';
+    const tools = this.buttons.filter((b) => bottom || !HAIR_COLORS.includes(b.tool as ColorName));
+    const colors = bottom ? [] : this.buttons.filter((b) => HAIR_COLORS.includes(b.tool as ColorName));
     spread(tools.length, 150, v.w - 160, 120).forEach((x, i) => tools[i].position.set(x, v.h - 62));
     colors.forEach((b, i) => b.position.set(v.w - 64, 184 + i * 100));
     this.mirror.position.set(this.plan.mode === 'pat' ? v.w * 0.5 : v.w - 64, this.plan.mode === 'pat' ? 90 : 62);
@@ -280,8 +327,8 @@ class FluffySalon implements Game {
     }
     if (this.finished || this.busy) return;
     this.sinceProgress += dt;
-    // One-at-a-time requests: after a quiet while (no touch, no tool picked), light the tool that would help.
-    if (this.plan.mode === 'ask' && this.sinceProgress > QUIET_HINT && !this.hintTool) this.hint();
+    // Self-checking requests (one at a time, Pink please): after a quiet while (no touch, no tool picked), light the tool that would help.
+    if (selfChecks(this.plan.mode) && this.sinceProgress > QUIET_HINT && !this.hintTool) this.hint();
     // Free play's mirror appears once there is something to see; at one-at-a-time requests there is no mirror.
     if (this.plan.mode === 'pat') return this.updatePat(dt);
     const free = this.free;
@@ -342,6 +389,7 @@ class FluffySalon implements Game {
 
   destroy() {
     this.touch.removeAllListeners();
+    this.wall.texture.destroy(true);
   }
 
   private setHair(start: { length: number; curl: number; color: ColorName }) {
@@ -366,6 +414,7 @@ class FluffySalon implements Game {
     if (this.look && helps(this.look, this.strands, tool)) this.sinceProgress = 0;
     for (const b of this.buttons) b.setChosen(b.tool === tool);
     if (quiet) return;
+    this.chosen = true;
     sfx.pop(6);
     void this.ctx.say(HAIR_COLORS.includes(tool as ColorName) ? (`color.${tool}` as `color.${ColorName}`) : (`salon.tool.${tool}` as 'salon.tool.grow'));
   }
@@ -386,8 +435,21 @@ class FluffySalon implements Game {
       else if (this.tool === 'grow') sfx.bell(6 + Math.floor(Math.random() * 4), 0.1);
       else sfx.squish();
     }
-    if (this.plan.mode === 'ask') this.checkAsk();
+    if (this.plan.mode === 'color') this.nameBottle();
+    if (selfChecks(this.plan.mode)) this.checkAsk();
     return touched;
+  }
+
+  /** Pink, please: the first stroke with a bottle that is not the asked colour names it (no miss); after two such bottles the asked one glows. */
+  private nameBottle() {
+    const look = this.look;
+    const got = look && wrongBottle(look, this.tool);
+    if (!got || this.named.has(got)) return;
+    this.named.add(got);
+    if (this.chosen) this.wrongs++;
+    this.pet.poke(true);
+    void this.ctx.say('salon.wrong-color', { got, want: look.color ?? '' });
+    if (this.wrongs >= WRONG_BOTTLES && !this.hintTool) this.hint();
   }
 
   /** A snipped bit of fluff tumbles away. */
@@ -402,6 +464,8 @@ class FluffySalon implements Game {
     this.busy = true;
     this.request++;
     this.wrongs = 0;
+    this.named.clear();
+    this.chosen = false;
     this.hintTool = null;
     this.oldGlow = null;
     this.dirty = true;
@@ -409,10 +473,13 @@ class FluffySalon implements Game {
     const r = this.requests[this.request];
     if (!r) return void this.finale();
     this.setHair(r.start);
+    // Pink, please: the fur's own bottle starts chosen, so the first stroke changes nothing and the pet names what it sees.
+    if (this.plan.mode === 'color') this.choose(r.start.color, true);
     this.showCard(r.look);
-    this.mirror.visible = this.plan.mode !== 'ask';
+    this.mirror.visible = !selfChecks(this.plan.mode);
     this.busy = false;
-    await this.instruct('salon.want', { look: describe(r.look) });
+    const look = describe(r.look);
+    await (this.who ? this.instruct('salon.want-friend', { who: this.who, look }) : this.instruct('salon.want', { look }));
   }
 
   /** A little picture of the asked-for style, using the same fur drawing. */
@@ -420,8 +487,8 @@ class FluffySalon implements Game {
     this.card.visible = true;
     this.card.removeChildren().forEach((c) => c.destroy({ children: true }));
     const frame = new Graphics().roundRect(-100, -120, 200, 230, 26).fill(0xffffff).stroke({ width: 6, color: swatch.purple.line });
-    // A second companion, its head where the pip's sat on the card, clipped to the frame where a long friend reaches out of it.
-    const head = this.ctx.companion();
+    // A second copy of the customer, its head where the pip's sat on the card, clipped to the frame where a long friend reaches out of it.
+    const head: Seat = this.customer ? new FriendInChair(CRITTERS[this.customer]) : this.ctx.companion();
     head.alive = false;
     const k = 0.42 * this.grow;
     head.scale.set(k);
@@ -456,7 +523,7 @@ class FluffySalon implements Game {
     const look = this.look;
     if (!look) return;
     this.busy = true;
-    await this.ctx.say('salon.check');
+    await (this.who ? this.ctx.say('salon.check-friend', { who: this.who }) : this.ctx.say('salon.check'));
     const fix = needs(look, this.strands);
     if (fix === null) {
       this.busy = false;
@@ -468,7 +535,7 @@ class FluffySalon implements Game {
     this.pet.poke(true);
     const line = moreLine(look, this.strands);
     if (line === 'salon.more-color') this.oldGlow = look.color ?? null;
-    await this.ctx.say(line, { fix });
+    await (this.who && line === 'salon.more' ? this.ctx.say('salon.more-friend', { who: this.who, fix }) : this.ctx.say(line, { fix }));
     if (this.wrongs >= 2 && !this.hintTool) this.hint();
     this.busy = false;
   }
@@ -489,7 +556,7 @@ class FluffySalon implements Game {
     sfx.sparkle();
     const p = this.ctx.stage.toLocal(this.hair.toGlobal({ x: 0, y: -260 }));
     this.ctx.particles.burst(p.x, p.y, { kind: 'heart', colors: [swatch.pink.fill, swatch.red.fill], count: 10, speed: [80, 200], gravity: -40, size: [0.35, 0.5] });
-    await this.ctx.say('salon.love');
+    await (this.who ? this.ctx.say('salon.love-friend', { who: this.who }) : this.ctx.say('salon.love'));
     await this.ctx.tw.wait(0.6);
     await this.nextRequest();
   }
@@ -504,6 +571,280 @@ class FluffySalon implements Game {
     await this.ctx.say('salon.done');
     await this.ctx.tw.wait(0.8);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
+  }
+}
+
+/** Two visible customers share the tools, but keep their own hair, request and support history. */
+class SalonPair implements Game {
+  readonly plan: SalonPlan;
+  readonly requests: Request[];
+  readonly an = anchors();
+  readonly seats: { pet: Seat; scalp: Scalp; hair: Graphics; strands: Strand[]; card: Container; frame: Graphics; done: boolean; wrongs: number; hint: Tool | null; oldGlow: ColorName | null; who: string }[] = [];
+  readonly buttons: ToolButton[] = [];
+  readonly mirror: RoundButton;
+  readonly touch = new Container();
+  readonly comparison = new Graphics();
+  readonly background = new Graphics();
+  selected = 0;
+  tool: Tool = 'grow';
+  misses = 0;
+  hints = 0;
+  busy = false;
+  finished = false;
+  private pointer: number | null = null;
+  private sweeps = 0;
+  private lastSound = 0;
+  private clock = 0;
+  private looked = false;
+  private destroyed = false;
+  private readonly cancel = () => { this.pointer = null; };
+
+  constructor(private readonly ctx: GameContext) {
+    this.plan = planFor(ctx.level);
+    this.requests = makeRequests(this.plan, ctx.rng);
+    ctx.pet.visible = false;
+    const compare = this.plan.mode === 'compare';
+    const friend = compare ? 'pip' : ctx.rng.pick(['cat', 'bunny', 'bear', 'dog', 'pig'] as const);
+    ctx.stage.addChild(this.background, this.comparison);
+    this.comparison.eventMode = 'none';
+    for (let i = 0; i < 2; i++) {
+      const pet: Seat = i === 0 ? ctx.companion() : new FriendInChair(CRITTERS[friend]);
+      const scalp = scalpFor(pet.bodyBounds());
+      pet.scale.set(0.85 * growFor(scalp));
+      ctx.track(pet);
+      const hair = new Graphics();
+      wearFur(pet, hair, scalp);
+      const request = this.requests[compare ? 0 : i];
+      const start = compare && i === 1 ? { ...request.start, length: request.look.comparison!.length } : request.start;
+      const strands = this.an.map(() => ({ ...start }));
+      const card = new Container();
+      const frame = new Graphics();
+      card.hitArea = new Rectangle(-110, -75, 220, 150);
+      const who = i === 0 ? 'Your pet' : CUSTOMER_NAMES[friend];
+      this.seats.push({ pet, scalp, hair, strands, card, frame, done: false, wrongs: 0, hint: null, oldGlow: null, who });
+      ctx.stage.addChild(pet);
+      // A card is also an explicit, generous selection target; both requests stay pictured throughout.
+      onTap(card, () => {
+        if (this.busy || this.finished) return;
+        if (!compare) this.select(i);
+        this.speak(i);
+      }, { cooldown: 350 });
+      this.drawCard(i, friend);
+    }
+    ctx.stage.addChild(this.comparison, this.touch, ...this.seats.map((s) => s.card));
+    this.touch.eventMode = 'static';
+    this.touch.on('pointerdown', (e: FederatedPointerEvent) => {
+      if (palmOnGlass() || this.busy || this.finished || this.pointer !== null) return;
+      const p = ctx.stage.toLocal(e.global);
+      const i = Math.abs(p.x - this.headX(0)) <= Math.abs(p.x - this.headX(1)) ? 0 : 1;
+      if (compare && i === 1) { this.speak(1); return; }
+      this.select(i);
+      if (this.seats[i].done) { this.seats[i].pet.cheer(); return; }
+      this.pointer = e.pointerId;
+      if (!this.workAt(e)) { this.seats[i].pet.poke(true); sfx.giggle(); }
+    });
+    this.touch.on('globalpointermove', (e: FederatedPointerEvent) => {
+      if (e.pointerId !== this.pointer) return;
+      const p = ctx.stage.toLocal(e.global);
+      const area = this.touch.hitArea as Rectangle;
+      if (p.x < area.x || p.x > area.x + area.width || p.y < area.y || p.y > area.y + area.height || palmOnGlass()) return this.cancel();
+      this.workAt(e);
+    });
+    const up = (e: { pointerId: number }) => { if (e.pointerId === this.pointer) this.cancel(); };
+    this.touch.on('pointerup', up);
+    this.touch.on('pointerupoutside', up);
+    window.addEventListener('pointercancel', this.cancel, true);
+    window.addEventListener('blur', this.cancel);
+    window.addEventListener('pointerup', up, true);
+    this.releaseUp = () => window.removeEventListener('pointerup', up, true);
+    for (const tool of toolsFor(this.plan.mode)) {
+      const b = new ToolButton(tool, 50, () => {
+        if (this.busy || this.finished) return;
+        this.choose(tool);
+        sfx.pop(6);
+      });
+      this.buttons.push(b);
+      ctx.stage.addChild(b);
+    }
+    const icon = new Graphics().ellipse(0, 0, 24, 30).fill(0xd6eefa).stroke({ width: 6, color: wood.line }).moveTo(-8, -12).lineTo(4, -20).stroke({ width: 4, color: 0xffffff });
+    this.mirror = new RoundButton(icon, swatch.white, 54, () => void this.check());
+    ctx.stage.addChild(this.mirror);
+    this.choose('grow');
+    this.paintFrames();
+  }
+  private readonly releaseUp: () => void;
+  get seat() { return this.seats[this.selected]; }
+  get look() { return this.requests[this.plan.mode === 'compare' ? 0 : this.selected].look; }
+  private headX(i: number) {
+    const s = this.seats[i];
+    return s.pet.x + s.scalp.x * s.pet.scale.x;
+  }
+  start() {
+    if (this.plan.mode === 'compare') this.speak(0, true);
+    else void this.ctx.instruct('salon.two-customers', { first: describe(this.requests[0].look), who: this.seats[1].who, second: describe(this.requests[1].look) });
+  }
+  private select(i: number) {
+    this.selected = i;
+    this.pointer = null;
+    this.paintFrames();
+  }
+  private speak(i: number, instruction = false) {
+    if (this.busy || this.finished) return;
+    this.seats[i].pet.poke(true);
+    const line: LineId = this.plan.mode === 'compare' ? (i === 1 ? 'salon.fixed-friend' : 'salon.compare') : this.seats[i].done ? 'salon.love-friend' : 'salon.want-friend';
+    const vars = { who: this.seats[i].who, look: describe(this.requests[this.plan.mode === 'compare' ? 0 : i].look), direction: this.requests[0].look.comparison?.direction ?? '' };
+    if (instruction || (this.plan.mode === 'customers' && !this.seats[i].done)) void this.ctx.instruct(line, vars);
+    else void this.ctx.say(line, vars);
+  }
+  private choose(tool: Tool) {
+    this.tool = tool;
+    for (const b of this.buttons) b.setChosen(b.tool === tool);
+  }
+  private drawCard(i: number, friend: CritterName) {
+    const s = this.seats[i];
+    const compare = this.plan.mode === 'compare';
+    const look = this.requests[compare ? 0 : i].look;
+    const preview: Seat = i === 0 ? this.ctx.companion() : new FriendInChair(CRITTERS[friend]);
+    preview.alive = false;
+    const scalp = scalpFor(preview.bodyBounds());
+    const k = 0.25 * growFor(scalp);
+    preview.scale.set(k);
+    preview.position.set(-scalp.x * k, 64);
+    const length = compare ? look.comparison!.length + (i === 0 ? (look.comparison!.direction === 'longer' ? 60 : -45) : 0) : look.length === 'long' ? 190 : look.length === 'short' ? 30 : 95;
+    const hair = new Graphics();
+    drawHair(hair, this.an, this.an.map(() => ({ length, curl: look.curl === 'curly' ? 0.9 : look.curl === 'straight' ? 0 : 0.3, color: look.color ?? 'yellow' })));
+    wearFur(preview, hair, scalp);
+    preview.update(0);
+    const mask = new Graphics().roundRect(-105, -70, 210, 140, 20).fill(0xffffff);
+    preview.mask = mask;
+    s.card.addChild(s.frame, preview, mask);
+  }
+  private paintFrames() {
+    this.seats.forEach((s, i) => {
+      s.card.pivot.y = this.selected === i ? 12 : 0;
+      s.frame.clear().roundRect(-110, -75, 220, 150, 24).fill(s.done ? 0xe5f7db : 0xffffff).stroke({ width: this.selected === i ? 9 : 4, color: this.selected === i ? swatch.purple.line : wood.fill });
+      if (s.done) s.frame.moveTo(65, 40).lineTo(80, 55).lineTo(100, 25).stroke({ width: 8, color: swatch.green.line, cap: 'round', join: 'round' });
+      if (this.selected === i) s.frame.moveTo(-15, 82).lineTo(0, 98).lineTo(15, 82).fill(swatch.purple.fill);
+    });
+  }
+  resize(v: View) {
+    this.cancel();
+    const g = this.background.clear();
+    g.rect(0, 0, v.w, v.h).fill(swatch.pink.light);
+    const offsetY = (v.h - 768) / 2;
+    this.seats.forEach((s, i) => {
+      const x = v.w * (i === 0 ? 0.30 : 0.70);
+      g.roundRect(x - 200, offsetY + 200, 400, 348, 45).fill(0xe2f4fc).stroke({ width: 10, color: wood.fill });
+      g.roundRect(x - 145, offsetY + 493, 290, 50, 18).fill(swatch.red.fill).stroke({ width: 5, color: swatch.red.line });
+      s.pet.position.set(x - s.scalp.x * s.pet.scale.x, offsetY + 513);
+      s.card.position.set(x, offsetY + 110);
+    });
+    this.touch.hitArea = new Rectangle(110, offsetY + 205, v.w - 220, 343);
+    const tools = this.buttons.filter((b) => !HAIR_COLORS.includes(b.tool as ColorName));
+    const colors = this.buttons.filter((b) => HAIR_COLORS.includes(b.tool as ColorName));
+    spread(tools.length, 190, v.w - 110, 128).forEach((x, i) => tools[i].position.set(x, v.h - 175));
+    spread(colors.length, 190, v.w - 110, 125).forEach((x, i) => colors[i].position.set(x, v.h - 60));
+    this.mirror.position.set(v.w - 66, 66);
+    this.paintComparison();
+  }
+  update(dt: number) {
+    this.clock += dt;
+    for (const s of this.seats) drawHair(s.hair, this.an, s.strands, s.oldGlow ? oldStrands(s.strands, s.oldGlow) : [], 0.65 + 0.3 * Math.sin(this.clock * 6));
+    // Support belongs to the selected head and follows its current unmet attribute, never a stale tool.
+    const fix = needs(this.look, this.seat.strands);
+    for (const b of this.buttons) {
+      b.glow.visible = !this.seat.done && !!this.seat.hint && !!fix && b.tool === toolFor(fix);
+      b.glow.alpha = 0.7 + 0.3 * Math.sin(this.clock * 7);
+    }
+    if (this.looked) this.paintComparison();
+  }
+  private workAt(e: FederatedPointerEvent) {
+    if (this.busy || this.finished || this.seat.done) return 0;
+    const s = this.seat;
+    const { touched, snipped } = touchStrands(this.tool, s.strands, this.an, s.hair.toLocal(e.global));
+    if (touched && this.clock - this.lastSound > 0.12) {
+      this.lastSound = this.clock;
+      if (this.tool === 'cut') sfx.tick(); else sfx.squish();
+    }
+    for (const cut of snipped) {
+      const p = this.ctx.stage.toLocal(s.hair.toGlobal(cut.tip));
+      this.ctx.particles.burst(p.x, p.y, { colors: [swatch[cut.color].fill], count: 3, gravity: 500, speed: [40, 110] });
+    }
+    return touched;
+  }
+  private paintComparison() {
+    const g = this.comparison.clear();
+    if (this.plan.mode !== 'compare') return;
+    const x = (this.headX(0) + this.headX(1)) / 2;
+    const direction = this.requests[0].look.comparison!.direction;
+    // The card's arrow names the requested direction, without reading.
+    const d = direction === 'longer' ? 1 : -1;
+    const cy = this.seats[0].card.y;
+    g.moveTo(x, cy - 40).lineTo(x, cy + 30).moveTo(x - 14, cy - 5 + d * 35 - d * 18).lineTo(x, cy - 5 + d * 35).lineTo(x + 14, cy - 5 + d * 35 - d * 18).stroke({ width: 7, color: swatch.purple.line, cap: 'round', join: 'round' });
+    if (!this.looked) return;
+    // Straight sample locks in the mirror share an origin and scale; their tips show the actual mean lengths.
+    const y = this.seats[0].pet.y - 200;
+    const ends = this.seats.map((s) => y + stats(s.strands).length);
+    g.roundRect(x - 55, y - 15, 110, 255, 18).fill({ color: 0xffffff, alpha: 0.95 }).stroke({ width: 3, color: wood.fill });
+    for (let i = 0; i < 2; i++) g.moveTo(x + (i === 0 ? -28 : 28), y).lineTo(x + (i === 0 ? -28 : 28), ends[i]).stroke({ width: 13, color: i === 0 ? swatch.purple.fill : swatch.yellow.fill, cap: 'round' });
+    for (const end of ends) g.moveTo(x - 43, end).lineTo(x + 43, end).stroke({ width: 3, color: swatch.blue.line });
+    g.moveTo(x, ends[0]).lineTo(x, ends[1]).stroke({ width: 4, color: swatch.blue.line });
+  }
+  private async check() {
+    if (this.busy || this.finished || this.seat.done) return;
+    this.cancel();
+    this.busy = true;
+    const s = this.seat;
+    this.looked = true;
+    this.paintComparison();
+    const fix = needs(this.look, s.strands);
+    if (fix) {
+      this.misses++;
+      s.wrongs++;
+      sfx.boing();
+      s.pet.poke(true);
+      if (fix === this.look.color) s.oldGlow = fix;
+      if (s.wrongs >= 2 && !s.hint) { s.hint = toolFor(fix); this.hints++; }
+      if (this.plan.mode === 'compare') await this.ctx.say('salon.compare-more', { direction: fix });
+      else if (moreLine(this.look, s.strands) === 'salon.more-color') await this.ctx.say('salon.more-color-friend', { who: s.who, fix });
+      else await this.ctx.say('salon.more-friend', { who: s.who, fix });
+      if (!this.destroyed) this.busy = false;
+      return;
+    }
+    s.done = true;
+    s.hint = null;
+    s.oldGlow = null;
+    s.pet.cheer();
+    sfx.sparkle();
+    this.paintFrames();
+    await this.ctx.say('salon.love-friend', { who: s.who });
+    if (this.destroyed) return;
+    if (this.plan.mode === 'compare' || this.seats.every((s) => s.done)) {
+      this.finished = true;
+      await this.ctx.tw.wait(0.6);
+      if (!this.destroyed) this.ctx.finish({ misses: this.misses, hints: this.hints });
+    } else {
+      this.busy = false;
+      this.select(this.seats.findIndex((s) => !s.done));
+      this.speak(this.selected, true);
+    }
+  }
+  autotouch(): TouchIntent | null {
+    if (this.busy || this.finished || this.seat.done) return null;
+    const move = salonMove({ mode: this.plan.mode, look: this.look, strands: this.seat.strands, tool: this.tool, strokes: this.sweeps, mirror: true });
+    if (!move) return null;
+    if (move.do === 'tool') return { tap: { on: this.buttons.find((b) => b.tool === move.tool)! } };
+    if (move.do === 'mirror') return { tap: { on: this.mirror } };
+    const [trace, ...via] = strokePath(this.tool, this.sweeps++ % 2 === 1).map((p) => ({ on: this.seat.hair, x: p.x, y: p.y }));
+    return { trace, via, receiver: this.touch, pause: 0.1 };
+  }
+  destroy() {
+    this.destroyed = true;
+    this.cancel();
+    this.touch.removeAllListeners();
+    window.removeEventListener('pointercancel', this.cancel, true);
+    window.removeEventListener('blur', this.cancel);
+    this.releaseUp();
   }
 }
 
@@ -557,5 +898,5 @@ export const fluffySalon: GameModule = {
   offScreen: 'Play hair salon with a doll or stuffed animal: brushing, ribbons, and a mirror.',
   hubIcon: () => new SalonIcon(),
   sticker,
-  create: (ctx) => new FluffySalon(ctx),
+  create: (ctx) => ctx.level >= 9 ? new SalonPair(ctx) : new FluffySalon(ctx),
 };
