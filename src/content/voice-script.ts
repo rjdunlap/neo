@@ -978,7 +978,6 @@ export const SCRIPT = {
   'kh.door.groom': ['The groom! He looks after the horses.'],
   'kh.door.ringer': ['The ringer! She rings the bell.'],
   'kh.door.steward': ['The steward! He keeps the keys to the stores.'],
-  'kh.well': ['Up comes the bucket!'],
   'kh.at-work.cook': ['The cook is at the hearth. The soup is bubbling!'],
   'kh.at-work.groom': ['The groom is in the stable, forking the hay.'],
   'kh.at-work.ringer': ['The ringer is in the loft. Ding, dong!'],

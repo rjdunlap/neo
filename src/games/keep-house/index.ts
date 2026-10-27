@@ -556,6 +556,8 @@ class KeepHouse implements Game {
     this.busy = true;
     f.drag.enabled = false;
     f.node.eventMode = 'none';
+    // One walk at a time: the other figures wait until this one is at work.
+    for (const [other, o] of this.figureNodes) if (other !== figure && !this.yard.placed[other]) o.drag.enabled = false;
     const r = l.rooms[roomIndex];
     sfx.pluck(6);
     await this.ctx.tw.to(f.node.position, { x: r.x + r.w / 2, y: r.y + r.h - 14 }, { duration: this.ctx.demo ? 0.3 : 0.5, ease: ease.inOutSine });
@@ -565,6 +567,7 @@ class KeepHouse implements Game {
     AT_WORK_SOUND[figure]();
     this.redrawRooms();
     void this.ctx.say(`kh.at-work.${figure}` as LineId);
+    for (const [other, o] of this.figureNodes) if (!this.yard.placed[other]) o.drag.enabled = true;
     if (!yardDone(this.yardBrief, this.yard)) {
       this.busy = false;
       if (this.relayout) this.build();
@@ -671,11 +674,10 @@ class KeepHouse implements Game {
     if (this.finished || this.busy || !this.keepShown || this.placement.done || this.placement.spot !== 'far') return;
     const k = this.keepNode;
     if (k) { k.scale.set(0.94); void this.ctx.tw.to(k.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack }); }
-    const was = this.placement;
-    this.placements[this.placementIndex] = keep(was);
+    this.placements[this.placementIndex] = keep(this.placement);
     const now = this.placement;
-    if (now.hinted && !was.hinted) {
-      // Kept twice: the near spot glows (the placement's one hint), the reason is said, and the far placement stands.
+    if (now.done) {
+      // Kept twice: the near spot glows (the placement's one hint, unless Help already spent it), the reason is said, and the far placement stands.
       this.redrawSpots();
       void this.ctx.say('kh.keep-shown');
     }
