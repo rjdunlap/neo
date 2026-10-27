@@ -220,9 +220,15 @@ function scratchGround(g: Graphics, x: number, y: number, w: number) {
 }
 
 function longTable(g: Graphics, x: number, y: number) {
-  g.rect(x - 44, y - 30, 88, 10).fill(wood.fill).stroke(line(wood.line, 3));
-  for (const d of [-36, 36]) g.rect(x + d - 4, y - 20, 8, 20).fill(wood.line);
-  hearth(g, x + 70, y, true);
+  // A long table with a bench and a feast on it: the hall reads as the eating place, not a second kitchen.
+  g.rect(x - 60, y - 34, 120, 12).fill(wood.fill).stroke(line(wood.line, 3));
+  for (const d of [-50, 50]) g.rect(x + d - 4, y - 22, 8, 22).fill(wood.line);
+  g.rect(x - 50, y - 10, 100, 6).fill(wood.fill).stroke(line(wood.line, 2));
+  g.ellipse(x - 24, y - 40, 14, 7).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 2));
+  g.circle(x + 6, y - 42, 8).fill(swatch.red.fill).stroke(line(swatch.red.line, 2));
+  g.roundRect(x + 22, y - 54, 12, 20, 4).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 2));
+  g.moveTo(x + 28, y - 54).lineTo(x + 28, y - 62).stroke(line(ink, 2));
+  g.circle(x + 28, y - 66, 4).fill(FIRE.fill);
 }
 
 function windowSeat(g: Graphics, x: number, y: number) {
@@ -241,7 +247,7 @@ function furnish(g: Graphics, room: Room | PlanRoom, working: boolean, scale = 1
     case 'loft': loftBell(g, 0, 0, working); break;
     case 'storeroom': barrels(g, 0, 0, working); break;
     case 'henyard': scratchGround(g, 0, -6, 120); break;
-    case 'hall': longTable(g, -30, 0); break;
+    case 'hall': longTable(g, 0, 0); break;
     case 'solar': windowSeat(g, 0, 0); break;
   }
 }

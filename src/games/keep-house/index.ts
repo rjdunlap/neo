@@ -565,13 +565,16 @@ class KeepHouse implements Game {
     AT_WORK_SOUND[figure]();
     this.redrawRooms();
     void this.ctx.say(`kh.at-work.${figure}` as LineId);
-    this.busy = false;
-    if (this.relayout) { this.build(); return; }
-    if (!yardDone(this.yardBrief, this.yard)) return;
+    if (!yardDone(this.yardBrief, this.yard)) {
+      this.busy = false;
+      if (this.relayout) this.build();
+      return;
+    }
     await this.ctx.tw.wait(1.2);
     if (!this.live(epoch)) return;
     if (this.yardIndex + 1 >= this.yards.length) { this.celebrate(); return; }
     this.yardIndex++;
+    this.busy = false;
     this.build();
     void this.ctx.say('kh.next-yard');
   }
@@ -639,7 +642,6 @@ class KeepHouse implements Game {
       if (!this.live(epoch)) return;
       await this.ctx.tw.wait(0.3);
       if (!this.live(epoch)) return;
-      this.busy = false;
       void this.nextPlacement();
       return;
     }
@@ -649,7 +651,6 @@ class KeepHouse implements Game {
     if (!this.live(epoch)) return;
     if (this.placement.done) {
       // Kept twice: the walk replayed cold and the placement stands as she left it.
-      this.busy = false;
       void this.nextPlacement();
       return;
     }
@@ -681,6 +682,7 @@ class KeepHouse implements Game {
     void this.walkTo('far');
   }
 
+  /** Called while busy: the next placement's yard, or the finish. */
   private async nextPlacement() {
     const epoch = this.epoch;
     this.tileDrag!.enabled = false;
@@ -689,6 +691,7 @@ class KeepHouse implements Game {
     if (!this.live(epoch)) return;
     this.placementIndex++;
     this.keepShown = false;
+    this.busy = false;
     for (const c of this.walkLayer.removeChildren()) c.destroy({ children: true });
     this.build();
     void this.ctx.say('kh.next-stable');
