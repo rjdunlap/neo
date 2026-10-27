@@ -4,7 +4,7 @@
  * line of four one card at a time), then watch the finished line play as a flipbook of the place growing.
  * Rules: ./logic.ts; definition: docs/definitions/timeline-trail.md.
  */
-import { Container, Graphics, Rectangle } from 'pixi.js';
+import { Container, type FederatedPointerEvent, Graphics, Rectangle } from 'pixi.js';
 import { swatch, type ColorName } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -61,8 +61,9 @@ class TimelineTrail implements Game {
   frame: Container | null = null;
   private nearGap: number | null = null;
   private dragging: CardNode | null = null;
+  /** How far the finger itself has moved since it touched the card in hand (the card rides 40 above it). */
   private travel = 0;
-  private dragFrom: Pt | null = null;
+  private downAt: Pt | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -101,6 +102,12 @@ class TimelineTrail implements Game {
     this.view = v;
     this.backdrop.resize(v);
     if (!this.layoutNow && !this.cards.length) return;
+    if (this.frame) {
+      // Mid-flipbook: the frame follows the new view; the rest is already out of play.
+      const l = lineLayout(this.round, this.line, this.loose.length, v);
+      if (l) { this.layoutNow = l; this.frame.position.copyFrom(centre(l.frame)); }
+      return;
+    }
     if (this.dragging || this.busy || this.finished) { this.relayout = true; return; }
     this.build();
   }
@@ -179,8 +186,15 @@ class TimelineTrail implements Game {
       const c: CardNode = { stage, node, hung: false, handle: null as unknown as DragHandle };
       c.handle = draggable(node, this.ctx.tw, {
         onPick: () => this.picked(c),
-        onMove: (x, y) => this.moved(c, x, y),
+        onMove: (x, y) => this.moved(x, y),
         onDrop: (x, y) => this.dropped(c, x, y),
+      });
+      // The finger's own travel decides tap or drag; the card's position lifts away from it while it is held.
+      node.on('pointerdown', (e: FederatedPointerEvent) => { this.downAt = this.board.toLocal(e.global); this.travel = 0; });
+      node.on('globalpointermove', (e: FederatedPointerEvent) => {
+        if (!c.handle.dragging || !this.downAt) return;
+        const q = this.board.toLocal(e.global);
+        this.travel = Math.max(this.travel, Math.hypot(q.x - this.downAt.x, q.y - this.downAt.y));
       });
       this.cards.push(c);
     });
@@ -217,17 +231,13 @@ class TimelineTrail implements Game {
   private picked(c: CardNode) {
     if (this.finished || this.busy) { c.handle.enabled = false; return; }
     this.dragging = c;
-    this.travel = 0;
-    this.dragFrom = null;
     sfx.pop(6);
     // Washing on the line sways a little when lifted.
     this.ctx.tw.kill(c.node);
     void this.ctx.tw.to(c.node, { rotation: 0.06 }, { duration: 0.18, ease: ease.outQuad }).then(() => { if (this.alive && c.handle.dragging) void this.ctx.tw.to(c.node, { rotation: -0.04 }, { duration: 0.3 }); });
   }
 
-  private moved(_c: CardNode, x: number, y: number) {
-    if (!this.dragFrom) this.dragFrom = { x, y };
-    this.travel = Math.max(this.travel, Math.hypot(x - this.dragFrom.x, y - this.dragFrom.y));
+  private moved(x: number, y: number) {
     const i = this.nearestGap(x, y);
     if (i !== this.nearGap) { this.nearGap = i; this.redrawGaps(); }
   }
@@ -248,10 +258,12 @@ class TimelineTrail implements Game {
   private dropped(c: CardNode, x: number, y: number): boolean {
     this.dragging = null;
     this.nearGap = null;
+    this.ctx.tw.kill(c.node);
     c.node.rotation = 0;
     if (this.finished || this.busy) return false;
     const tapped = this.travel < TAP_TRAVEL;
     this.travel = 0;
+    this.downAt = null;
     if (tapped) {
       // A tap: at level 1 it answers "long ago"; otherwise it says what the picture shows (free).
       if (this.level === 1) { this.answer(c, 0); return this.line.includes(c.stage); }
@@ -263,7 +275,7 @@ class TimelineTrail implements Game {
     if (gap === null) {
       // Let go away from every gap: it settles back, nothing said.
       this.redrawGaps();
-      if (this.relayout) this.build();
+      if (this.relayout) { this.ctx.tw.kill(c.node.scale); this.build(); return true; }
       return false;
     }
     this.answer(c, gap);
@@ -277,7 +289,8 @@ class TimelineTrail implements Game {
     if (!result.ok) {
       const { lit } = this.tally.missed(c.stage, gap);
       sfx.boing();
-      void this.ctx.say(this.level === 1 ? 'trail.not-first' : 'trail.other', { reason: result.reason, place: this.placeName });
+      const line: LineId = this.level !== 1 ? 'trail.other' : c.stage === Math.max(...this.round.cards) ? 'trail.not-first' : 'trail.not-now';
+      void this.ctx.say(line, { reason: result.reason, place: this.placeName });
       if (lit) void this.ctx.say('trail.hint-glow');
       this.redrawGaps();
       return;
@@ -287,6 +300,8 @@ class TimelineTrail implements Game {
     this.loose = this.loose.filter((s) => s !== c.stage);
     c.hung = true;
     c.handle.enabled = false;
+    this.ctx.tw.kill(c.node);
+    this.ctx.tw.kill(c.node.scale);
     sfx.bell(4 + this.line.length, 0.3);
     void this.ctx.say('trail.yes', { caption: stages[c.stage].caption });
     if (this.level === 1 && this.loose.length) {

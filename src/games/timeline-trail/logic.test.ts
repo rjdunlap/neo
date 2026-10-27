@@ -32,12 +32,14 @@ describe('the places', () => {
     }
   });
 
-  it('come from a bag that gives all three before any repeats', () => {
+  it('come from a bag that gives all three before any repeats, which rounds share across a session', () => {
     const bag = new PlaceBag(new Rng(7));
     for (let round = 0; round < 5; round++) {
       const seen = new Set([bag.next(), bag.next(), bag.next()]);
       expect(seen.size).toBe(3);
     }
+    const places = Array.from({ length: 9 }, (_, i) => roundFor(1 + (i % 3), new Rng(i)).place);
+    for (let i = 0; i < 9; i += 3) expect(new Set(places.slice(i, i + 3)).size).toBe(3);
   });
 });
 
@@ -78,7 +80,7 @@ describe('rounds', () => {
   });
 
   it('is the same round for the same seed', () => {
-    for (const level of [1, 2, 3]) expect(roundFor(level, new Rng(42))).toEqual(roundFor(level, new Rng(42)));
+    for (const level of [1, 2, 3]) expect(roundFor(level, new Rng(42), 'tree')).toEqual(roundFor(level, new Rng(42), 'tree'));
   });
 
   it('clamps levels to the plans', () => {

@@ -934,6 +934,7 @@ export const SCRIPT = {
   'trail.yes': ['Yes! {caption}.', 'That is it: {caption}.'],
   'trail.other': ['Not there. {reason}'],
   'trail.not-first': ["That is the {place} now. {reason} Which one is from long ago?"],
+  'trail.not-now': ['That one is from long ago. {reason} Hang it on the left post.'],
   'trail.hint-glow': ['Look, the glowing gap is where it belongs.'],
   'trail.help': ['The glowing gap is where this picture goes.'],
   'trail.flipbook': ['Watch the {place} grow!'],

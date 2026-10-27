@@ -5,7 +5,7 @@
  * answers with a reason about what the picture shows. Everything here is pure; the scene draws it.
  * Definition: docs/definitions/timeline-trail.md (levels 1–3 built; level 4, a clue inside, is T3).
  */
-import type { Rng } from '../../engine/random';
+import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 
 // ——— Places and stages ———
@@ -107,12 +107,15 @@ export class PlaceBag {
   }
 }
 
+/** The session's bag: rounds take places from it in turn, so consecutive rounds never repeat a place until all three have shown. */
+const sessionBag = new PlaceBag(new Rng());
+
 /**
  * A round: the place, the stages in play and which hang first. Level 1 shows two stages at least one stage apart, both
  * loose; level 2 drops one stage of the four, hangs two of the remaining three and leaves one loose (any of the three);
  * level 3 uses every stage, hangs the first, and the three others wait in a seeded order.
  */
-export function roundFor(level: number, rng: Rng, place: PlaceId = new PlaceBag(rng).next()): Round {
+export function roundFor(level: number, rng: Rng, place: PlaceId = sessionBag.next()): Round {
   const plan = planFor(level);
   const n = PLACES[place].stages.length;
   if (plan.level === 1) {
