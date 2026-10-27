@@ -404,7 +404,12 @@ export const dotLink: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'Trace the line together and count the dots as you go: "one, two, three, four!"',
-  offScreen: 'Line up colored blocks or buttons, then count how many of each color.',
+  offScreen: {
+    all: 'Line up colored blocks or buttons, then count how many of each color.',
+    // Under 3: no buttons (small parts).
+    lap: 'Line up colored blocks, then count how many of each color.',
+    toddler: 'Line up colored blocks, then count how many of each color.',
+  },
   hubIcon: () => new DotsIcon(),
   sticker,
   touchDemo: true,

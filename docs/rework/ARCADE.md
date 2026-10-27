@@ -1,6 +1,6 @@
 # The Arcade: a portal-style game grid
 
-Requested by the developer, 2026-10-23: explore a web-portal or arcade way to browse the mini-games, with a grid of games, the bot demonstrations playing, topic tags and the games' names, researched from Kongregate, Newgrounds and Apple Arcade first. This packet holds the research, the plan and the first slice's scope. **Slice 1 is built on branch `claude/compassionate-gates-ecuvw3`;** later slices are proposals.
+Requested by the developer, 2026-10-23: explore a web-portal or arcade way to browse the mini-games, with a grid of games, the bot demonstrations playing, topic tags and the games' names, researched from Kongregate, Newgrounds and Apple Arcade first. This packet holds the research, the plan and the first slice's scope. **Slice 1 is built in [PR #900](https://github.com/rjdunlap/neo/pull/900), reviewed against current main on 2026-10-26;** later slices are proposals.
 
 ## What the portals do (research, 2026-10-23)
 
@@ -56,7 +56,7 @@ Kongregate, the Poki and CrazyGames developer pages, Coolmath and Apple's Games-
 
 ## For the developer
 
-The Arcade departs from two RW03 working recommendations for Explore: it shows six or more cards a page (RW03: at most four), and its spotlight moves along the page by itself until she taps (RW03: no carousel that advances itself), which is off at lap and toddler. Both follow the request for a portal grid with the demos playing. Whether the attract mode stays, and from which band, is listed in [WAITING-ON-DEVELOPER.md](../WAITING-ON-DEVELOPER.md).
+The Arcade departs from two RW03 working recommendations for Explore: it shows six or more cards a page (RW03: at most four), and its spotlight moves along the page by itself until she taps (RW03: no carousel that advances itself), which is off at lap and toddler. Both follow the request for a portal grid with the demos playing. Decided 2026-10-26 under the developer’s standing delegation: retain the portal grid and attract mode from preschool upward; lap and toddler keep the selected preview still. The larger grid is an optional Explore destination, and a tap stops the changing spotlight. Keep the iPad and child-observation checks in [DEVICE-CHECKS.md](../DEVICE-CHECKS.md); they can inform a later adjustment.
 
 ## Not established
 

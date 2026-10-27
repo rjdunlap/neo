@@ -151,6 +151,10 @@ export const storySteps: GameModule = {
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => l >= 12 ? THEATER_PLANS[l >= 13 ? 1 : 0].name : l >= 11 ? PREDICTION_PLAN.name : l === 10 ? UNTANGLE_PLAN.name : l === 9 ? REPAIR_PLAN.name : LEVEL_PLANS[Math.max(0, Math.min(LEVEL_PLANS.length - 1, l - 1))].name,
   music: STYLES.paint, touchDemo: true, coplayHint: 'Talk with {name} about the pictures: what happened first, and what changed?',
-  offScreen: 'Talk through photos of a familiar activity, or draw the steps for planting a seed together.',
+  offScreen: {
+    all: 'Talk through photos of a familiar activity, or draw the steps for planting a seed together.',
+    // Under 3 (the game starts at toddler): no seed (small parts).
+    toddler: 'Talk through photos of a familiar activity.',
+  },
   hubIcon: () => new WigglyIcon(storySticker()), sticker: () => storySticker(), create: (ctx) => ctx.level >= 12 ? new TheaterStoryGame(ctx) : ctx.level >= 11 ? new PredictStory(ctx) : ctx.level === 10 ? new UntangleStory(ctx) : ctx.level === 9 ? new RepairStory(ctx) : new StorySteps(ctx),
 };

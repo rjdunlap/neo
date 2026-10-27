@@ -467,7 +467,11 @@ export const mailCarrier: GameModule = {
   touchDemo: true,
   entryLevels: [10],
   coplayHint: 'Read the house numbers together as you pass them: "two, four, five..."',
-  offScreen: 'Find the number on your own front door, then spot numbers on a walk.',
+  offScreen: {
+    all: 'Find the number on your own front door, then spot numbers on a walk.',
+    // School: a build or test with a result, predicting first.
+    school: 'Draw a map of your rooms with a number on each door, hide a note behind one and give directions to find it.',
+  },
   hubIcon: () => new MailIcon(),
   sticker,
   create: (ctx) => (isMapMode(planFor(ctx.level).mode) ? new WoodsMail(ctx) : new MailCarrier(ctx)),

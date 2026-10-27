@@ -935,7 +935,11 @@ export const blockTower: GameModule = {
   music: STYLES.stickers,
   touchDemo: true,
   coplayHint: 'Stack real blocks or cups with {name} and knock them down together: "One, two, three... crash!"',
-  offScreen: 'On the floor, build towers with blocks or cups: which is taller? Try shifting the top block a little and see whether it stands.',
+  offScreen: {
+    all: 'On the floor, build towers with blocks or cups: which is taller? Try shifting the top block a little and see whether it stands.',
+    // School: a build or test with a result, predicting first.
+    school: 'Build two towers from the same blocks, one wide at the bottom and one narrow. Guess which stands taller before it wobbles, then try.',
+  },
   hubIcon: () => new TowerIcon(),
   sticker,
   create: (ctx) => new BlockTower(ctx),

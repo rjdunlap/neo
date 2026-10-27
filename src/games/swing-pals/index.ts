@@ -781,7 +781,12 @@ export const swingPals: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'One of you pushes; the other says "now!" when the friend comes back. On the rope levels, both guess the rope aloud before tapping.',
-  offScreen: 'Tie a sock to a string and swing it short and long: count the swings together. At the playground, push in time and feel it go higher.',
+  offScreen: {
+    all: 'Tie a sock to a string and swing it short and long: count the swings together. At the playground, push in time and feel it go higher.',
+    // Under 3: no string (a cord).
+    lap: 'At the playground, push in time and feel it go higher.',
+    toddler: 'At the playground, push in time and feel it go higher.',
+  },
   touchDemo: true,
   hubIcon: () => new SwingIcon(),
   sticker,

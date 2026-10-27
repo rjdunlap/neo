@@ -152,7 +152,7 @@ export const logRoll: GameModule = {
   levels: band => rangeFor({ grownup: { min: 1, max: 3 } }, band),
   describeLevel: level => planFor(level).name, music: STYLES.lullaby,
   coplayHint: 'Predict which stones the log will cover before each roll. Take turns planning and tipping.',
-  offScreen: 'Tip a small rectangular box across a paper grid. Mark a space where it must finish standing.',
+  offScreen: 'Tip a small rectangular box across a paper grid. Mark a space where it should finish standing.',
   hubIcon: () => new WigglyIcon(iconArt()),
   sticker: seed => { const c = iconArt(seed); c.pivot.set(0, -100); c.scale.set(0.65); return c; },
   create: ctx => new LogRoll(ctx),
