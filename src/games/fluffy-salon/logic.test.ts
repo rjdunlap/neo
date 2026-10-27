@@ -15,11 +15,52 @@ group('Fluffy Salon', () => {
         expect(new Set(rs.map((r) => describe(r.look))).size).toBe(rs.length);
         for (const r of rs) {
           const parts = Object.keys(r.look).length;
-          expect(parts, plan.name).toBe(plan.mode === 'ask' || plan.mode === 'color' ? 1 : plan.mode === 'two' ? 2 : 3);
+          expect(parts, plan.name).toBe(['ask', 'color', 'compare'].includes(plan.mode) ? 1 : ['two', 'customers'].includes(plan.mode) ? 2 : 3);
           expect(needs(r.look, head(r.start.length, r.start.curl, r.start.color))).not.toBeNull();
         }
       }
     }
+  });
+
+  it('keeps two distinct visible requests independent and reachable in either customer order', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const requests = makeRequests(planFor(9), new Rng(seed));
+      expect(requests).toHaveLength(2);
+      expect(describe(requests[0].look)).not.toBe(describe(requests[1].look));
+      for (const order of [[0, 1], [1, 0]]) {
+        const heads = requests.map((r) => anchors().map(() => ({ ...r.start })));
+        for (const i of order) {
+          const other = JSON.stringify(heads[1 - i]);
+          expect(Object.keys(requests[i].look)).toHaveLength(2);
+          for (let n = 0; needs(requests[i].look, heads[i]) && n < 16; n++) sweep(toolFor(needs(requests[i].look, heads[i])!), n % 2 === 0, heads[i], 21);
+          expect(needs(requests[i].look, heads[i])).toBeNull();
+          expect(JSON.stringify(heads[1 - i])).toBe(other);
+        }
+        expect(heads.every((h, i) => needs(requests[i].look, h) === null)).toBe(true);
+      }
+    }
+  });
+
+  it('compares against a fixed reachable length, starts unmet, and requires the full clear margin in either direction', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const [r] = makeRequests(planFor(10), new Rng(seed));
+      const { length, direction } = r.look.comparison!;
+      seen.add(direction);
+      expect(length).toBeGreaterThanOrEqual(60);
+      expect(length).toBeLessThanOrEqual(150);
+      expect(r.start.length).toBe(length);
+      const sign = direction === 'longer' ? 1 : -1;
+      expect(needs(r.look, head(length, 0.3, 'pink'))).toBe(direction);
+      expect(needs(r.look, head(length + sign * 24, 0.3, 'pink'))).toBe(direction);
+      expect(needs(r.look, head(length + sign * 25, 0.3, 'pink'))).toBeNull();
+      // A hint's named tool and the demonstration use the same rule and reach the accepted side in a few real sweeps.
+      const strands = anchors().map(() => ({ ...r.start }));
+      for (let n = 0; needs(r.look, strands) && n < 16; n++) sweep(toolFor(needs(r.look, strands)!), n % 2 === 0, strands, 21);
+      expect(needs(r.look, strands), `seed ${seed} ${direction}`).toBeNull();
+      expect(sign * (stats(strands).length - length)).toBeGreaterThanOrEqual(25);
+    }
+    expect([...seen].sort()).toEqual(['longer', 'shorter']);
   });
 
   it('asks for a little more of a colour that is mostly there, and points at the strands still the old colour', () => {

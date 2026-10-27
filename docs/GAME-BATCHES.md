@@ -332,6 +332,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### fluffy-salon 2: Two customers and comparative styling
 
+Built 2026-10-26: slices 6–7, levels 9–10 ([PR #1002](https://github.com/rjdunlap/neo/pull/1002)); [build note](archive/COMPLETED-2026-10-09.md#fluffy-salon-batch-2-two-customers-and-comparative-styling-slices-67-2026-10-26). No open implementation subtask; person/device acceptance stays open.
+
 - **`fluffy-salon`, level 9 *Two customers*, slice 6** (new interaction, plus a portrait screenshot): two friends in two chairs with a two-part card each, either order finishes; preschool `order [2, 8, 3, 4, 9]`, pre-K `order [3, 4, 5, 9]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 - **`fluffy-salon`, level 10 *Longer than Pip's*, slice 7** (new interaction): make the pet's fur longer or shorter than a friend's, with a comparison line drawn in the mirror; pre-K `order [3, 4, 5, 9, 10]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 

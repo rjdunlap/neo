@@ -7,7 +7,7 @@ import type { Rng } from '../../engine/random';
  * Grow it, snip it, comb it straight, curl it and color it. Free play at first, then requests
  * ("long and pink") checked in the mirror.
  */
-export type SalonMode = 'play' | 'tools' | 'ask' | 'two' | 'match' | 'pat' | 'snip' | 'color';
+export type SalonMode = 'play' | 'tools' | 'ask' | 'two' | 'match' | 'pat' | 'snip' | 'color' | 'customers' | 'compare';
 
 /** Modes with no request: she styles freely and the mirror ends the round. */
 export const isFree = (mode: SalonMode) => mode === 'play' || mode === 'tools' || mode === 'pat' || mode === 'snip';
@@ -32,6 +32,8 @@ export const PLANS: SalonPlan[] = [
   { mode: 'pat', requests: 0, name: 'Pat the fluff: no buttons, any touch grows the fur' },
   { mode: 'snip', requests: 0, name: 'Snip snip: grow the fur, then snip it' },
   { mode: 'color', requests: 2, name: 'Pink, please: the five bottles and one color at a time' },
+  { mode: 'customers', requests: 2, name: 'Two customers: match each visible two-part request, in either order' },
+  { mode: 'compare', requests: 1, name: "Longer than Pip’s: grow or snip fur to compare two lengths" },
 ];
 
 /** The buttons a mode shows: tools along the bottom, then the colour bottles. */
@@ -109,6 +111,7 @@ const LONG = 145;
 const CURLY = 0.6;
 const STRAIGHT = 0.2;
 const MOSTLY = 0.8;
+export const COMPARE_MARGIN = 25;
 
 export interface Strand {
   length: number;
@@ -121,6 +124,8 @@ export interface Look {
   length?: 'short' | 'long';
   curl?: 'curly' | 'straight';
   color?: ColorName;
+  /** Level 10: compare average strand length against a fixed friend's, with a clear margin. */
+  comparison?: { direction: 'longer' | 'shorter'; length: number };
 }
 
 export interface Request {
@@ -144,6 +149,10 @@ export type Fix = 'longer' | 'shorter' | 'curlier' | 'straighter' | ColorName;
 /** What still needs doing for this look, first thing first; null when it's done. */
 export function needs(look: Look, strands: Strand[]): Fix | null {
   const s = stats(strands);
+  if (look.comparison) {
+    const { direction, length } = look.comparison;
+    if (direction === 'longer' ? s.length < length + COMPARE_MARGIN : s.length > length - COMPARE_MARGIN) return direction;
+  }
   if (look.length === 'long' && s.length < LONG) return 'longer';
   if (look.length === 'short' && s.length > SHORT) return 'shorter';
   if (look.color && s.share(look.color) < MOSTLY) return look.color;
@@ -179,6 +188,7 @@ export const toolFor = (fix: Fix): Tool => (fix === 'longer' ? 'grow' : fix === 
 
 /** "long", "short and blue", "long, curly and pink". */
 export function describe(look: Look): string {
+  if (look.comparison) return `${look.comparison.direction} than Pip’s`;
   const parts = [look.length, look.curl, look.color].filter(Boolean) as string[];
   if (parts.length <= 1) return parts[0] ?? '';
   return `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}`;
@@ -192,7 +202,7 @@ function pickLook(mode: SalonMode, rng: Rng, avoid: string[]): Look {
     let look: Look;
     if (mode === 'ask') look = rng.pick<Look>([{ length }, { color }, { curl }]);
     else if (mode === 'color') look = { color };
-    else if (mode === 'two') look = rng.pick<Look>([{ length, color }, { length, curl }, { curl, color }]);
+    else if (mode === 'two' || mode === 'customers') look = rng.pick<Look>([{ length, color }, { length, curl }, { curl, color }]);
     else look = { length, curl, color };
     const key = describe(look);
     if (!avoid.includes(key)) return look;
@@ -204,8 +214,8 @@ function pickLook(mode: SalonMode, rng: Rng, avoid: string[]): Look {
 export function makeRequests(plan: SalonPlan, rng: Rng): Request[] {
   const out: Request[] = [];
   for (let i = 0; i < plan.requests; i++) {
-    const look = pickLook(plan.mode, rng, out.map((r) => describe(r.look)));
-    const length = look.length === 'long' ? 70 : look.length === 'short' ? 130 : 95;
+    const look: Look = plan.mode === 'compare' ? { comparison: { direction: rng.pick(['longer', 'shorter'] as const), length: rng.int(60, 150) } } : pickLook(plan.mode, rng, out.map((r) => describe(r.look)));
+    const length = look.comparison ? look.comparison.length : look.length === 'long' ? 70 : look.length === 'short' ? 130 : 95;
     const curl = look.curl === 'curly' ? 0.1 : look.curl === 'straight' ? 0.75 : 0.35;
     const color = rng.pick(HAIR_COLORS.filter((c) => c !== look.color));
     out.push({ look, start: { length, curl, color } });
