@@ -168,6 +168,6 @@ A cozy Lantern Lake puzzle: nine ballots, three pictured candidates (which ride 
 
 ## What was built and checked
 
-CC1 definition completed 2026-10-25 ([packet](../../definitions/village-vote.md), [PR #969](https://github.com/rjdunlap/neo/pull/969)); manual semantic/current-source review and links/diff only. CC4 built2026-10-26: levels1–3, [verification](../../VERIFICATION.md#2026-10-26--village-vote-13-cc4). Historical research details below remain as recorded.
+CC1 definition completed 2026-10-25 ([packet](../../definitions/village-vote.md), [PR #969](https://github.com/rjdunlap/neo/pull/969)); manual semantic/current-source review and links/diff only. CC4 built2026-10-26: levels1–3, [verification](../../archive/VERIFICATION-2026-10-26.md#2026-10-26--village-vote-13-cc4). Historical research details below remain as recorded.
 
 The original research session built nothing. It opened the C3 Framework PDF (text extracted locally), both England citizenship programmes, the England history programme, the NCSS early-childhood statement PDF, the Kim dissertation record, the Cinamon and Yeshayahu summary page, iCivics' games list and Counties Work page, and the Animal Crossing: New Leaf and Democracy Wikipedia pages; Smetana, Vogelsang et al., Helwig et al., Corriveau and Harris, Kids Voting USA, Responsive Classroom and Toca Life World came from search summaries. Checks: `node scripts/check-links.mjs` and `git diff --check`. No code, tests, build, browser or device checks.
