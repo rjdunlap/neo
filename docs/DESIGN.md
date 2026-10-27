@@ -105,7 +105,7 @@ Grown-up controls are plain HTML in `src/parent/panel.ts`. They are reached by t
 
 ### Delivery and verification
 
-Vite builds a static site; `vite-plugin-pwa` generates the manifest and offline cache, with an explicit 4 MiB per-file precache bound (raised from 3 MiB when the routes bundle reached about 3.15 MB) so the code-drawn catalog bundle is included (the precache globs include `webp`, for the Home backdrop and the 36 cast sprites, 920 KB; 174 entries, 11532 KiB at RW14 slice 2). Pushes to `main` deploy through GitHub Actions. Commit and push only when asked.
+Vite builds a static site; `vite-plugin-pwa` generates the manifest and offline cache, with an explicit 5 MiB per-file precache bound (raised from 3 MiB when the routes bundle reached about 3.15 MB, and from 4 MiB when Gadget Bench took it to about 4.2 MB) so the code-drawn catalog bundle is included (the precache globs include `webp`, for the Home backdrop and the 36 cast sprites, 920 KB; 174 entries, 11532 KiB at RW14 slice 2). Pushes to `main` deploy through GitHub Actions. Commit and push only when asked.
 
 Unit tests cover saves, difficulty, game registry constraints, view geometry, critters, and the musical scale. The dev-only `neo` and `kit` browser helpers support scripted play-throughs. New game verification should include a completed round, wrong answers, hints, and resizing. Production offline behavior must be checked with the built app, separately from the dev server.
 

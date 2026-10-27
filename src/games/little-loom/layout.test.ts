@@ -15,6 +15,6 @@ it('all controls fit and clear shell/guide with separated pedal targets',()=>{
 import {GAMES} from '../registry';
 import {landFor,visibleIn,olderIn,landPages,landLayout} from '../../content/lands';
 it('Painted Canyon capacity retains all bands, both sides/pages in every supported view',()=>{
- const land=landFor('treehouse');expect(land.games.length).toBe(10);
+ const land=landFor('treehouse');expect(land.games.length).toBe(11);
  for(const band of ['lap','toddler','preschool','prek','school','grownup'] as const){const younger=visibleIn(land,band,GAMES),older=olderIn(land,band,GAMES);for(const list of [younger,older])for(const v of [{w:1024,h:768},{w:1024,h:1365},{w:1105,h:768},{w:1024,h:1474}]){const pages=landPages(list,true);pages.forEach((page,i)=>expect(landLayout(page.length,true,v,v.h*land.backdrop.horizon,{prev:i>0,next:i<pages.length-1})).not.toBeNull());}}
 });
