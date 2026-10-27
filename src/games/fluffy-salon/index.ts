@@ -321,7 +321,8 @@ class FluffySalon implements Game {
     this.clock += dt;
     if (this.plan.mode === 'colors' && (this.hintTool || this.oldGlow) && this.look) {
       const fix = needs(this.look, this.strands);
-      if (this.hintTool) this.hintTool = fix ? toolFor(fix) : null;
+      // Keep the support marker through a correct-but-unchecked style, so repainting does not charge another hint.
+      if (this.hintTool && fix) this.hintTool = toolFor(fix);
       this.oldGlow = fix as ColorName | null;
     }
     const glow = this.oldGlow && this.look ? colorTargets(this.look, this.strands, this.oldGlow) : [];
@@ -330,7 +331,7 @@ class FluffySalon implements Game {
       this.dirty = false;
     }
     for (const b of this.buttons) {
-      b.glow.visible = b.tool === this.hintTool;
+      b.glow.visible = b.tool === this.hintTool && (!this.look?.colors || needs(this.look, this.strands) !== null);
       if (b.glow.visible) b.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 7);
     }
     if (this.finished || this.busy) return;
