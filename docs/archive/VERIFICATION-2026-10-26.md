@@ -80,3 +80,18 @@
 - `BROWSER_SUITE=expansion EXPANSION_ONLY=size SIZE_LEVELS=2,8 SIZE_PORTRAIT=1` passed (portrait of 8 reviewed: flag, bunting, shadows, hint glow), again with `SIZE_LEVELS=4,8` after the fixes; `BROWSER_SUITE=fingerdemo FINGER_ONLY=size-parade FINGER_LEVELS=16,9` clean (16 lap 18.0 s, 9 lap 5.0 s) and `FINGER_LEVELS=9,4` after the fixes (5.5 s, 6.5 s).
 - Probe `test-results/size-lap-probe.mjs` (untracked): level 16 at lap in portrait (sky tap hops without counting, 12 taps cycle the scale 1, 1.69, 2.38, 1.69, 1, 0 misses 0 hints, portrait reviewed); level 9 at lap (two wrong: misses [0, 0], hints [0, 1], asks big, little, big) and at toddler (two wrong: [2, 1]); no page errors.
 - Not run: the `expansion` size case at the other levels, `world`, the offline check, an iPad or a child. Open: a rotation during a strut re-spreads the row (cosmetic); [device checks](../DEVICE-CHECKS.md).
+
+## 2026-10-26 — Pet Kitchen 14, Different shape, same share
+
+- [PR #998](https://github.com/rjdunlap/neo/pull/998), branch `claude/pet-kitchen-different-shape`; Vite on `http://localhost:5382`, tested commit `87e9f5ef`. Changed: Pet Kitchen level 14 (a cut per sandwich, tall and wide halves, the overlay), pre-K and school orders, voice lines, how-to step.
+- Ran: `npm run typecheck`; `npx vitest run src/games/pet-kitchen` 16 passed; full `npm test` 264 files, 3386 tests; `npm run build`.
+- `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen KITCHEN_LEVELS=14` passed in portrait (two misses/one hint from serving with a sandwich whole, one of each per plate, overlay asserted, screenshot `test-results/browser/creative/pet-kitchen-14.png`, saved round [2, 1]); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-kitchen FINGER_LEVELS=14` clean (pre-K, 19.1 s). `game-reviewer` found one issue (the generic share line after a cut), fixed before the commit.
+- Not run: other Pet Kitchen levels (interaction unchanged), the `picnic` suite, an iPad or a child. Open: [device checks](../DEVICE-CHECKS.md).
+
+## 2026-10-26 — Settled roadmap and backlog records
+
+- [PR #997](https://github.com/rjdunlap/neo/pull/997), `codex/settled-planning-records`; reviewed base `88f11c7d` plus docs diff, integrated Size Parade `0a47657f` without changing its implementation; checked against the October 23 decision record and already-recorded deliveries.
+- Reconciled roadmap, READY, study backlog, developer waiting list and rework summaries: settled identity/band/accounting/physics/reviewer holds, delivered Welcome/companion/Pond Typing/Swap Meet work, approved discovery directions and RW09 prerequisites.
+- Archived the superseded Harbor ticket/wheel/bank proposal; preserved its roadmap anchors with current-status pointers. No new product decisions, game definitions, implementation dispatch or runtime changes.
+- Passed `node scripts/check-links.mjs` and `git diff --check`; manual status/provenance review. Rechecked overlap; active Size Parade/art/writing claims remain untouched in scope.
+- Not run locally: typecheck, unit tests, build, browser/offline suites (docs only). Required PR CI is the publication gate. Cutover iPad condition, Portuguese family review/voice acceptance, actual person/device observations and deferred practical-care/cultural scopes remain open.
