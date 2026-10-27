@@ -189,6 +189,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] Watch a child at level 5: do the two brackets make "the same distance from the water" visible, and does she find the dock friend as its own twin?
 - [ ] On an iPad, hear the new lines (`sealift.instruct.howfar`, `instruct.twin`, `ask.howfar`, `ask.twin`, `howfar.count`, `miss.twin`, `twin.here`) and check they never say minus or negative; check the level-4 card column clear of the landings in portrait with the pet clear.
 
+## Sorting Machine levels 1–2
+
+- [ ] On an iPad, check that the sign's door pictures (property to open door) read without words, and that the star, hollow ring and dotted ring with "?" are clear in portrait with the pet clear.
+- [ ] Watch a seven-year-old: how does she read the hollow ring (no) and the dotted ring (no sensor yet), and does she fix a wrong sensor from the failing friend's run?
+- [ ] Judge level 1's value: does the fixed-sensor first look earn its place, or does she want level 2 straight away?
+
 ## Sound Garden pitch drawing and copying (levels 9–10)
 
 - [ ] On iPad, hear six distinct snapped pitches and the friends joining below; verify speech stays clear before the model sings.

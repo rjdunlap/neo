@@ -656,6 +656,23 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'The picture is an idea to try, never a target. The sand follows a made-up toy rule; real sand behaves differently.' },
     ],
   },
+  'sorting-machine': {
+    goal: 'Build the machine the sign asks for, then check it on every friend.',
+    steps: [
+      'Tap a friend, then Send, and watch the sensor and the door.',
+      { from: 1, to: 1, text: 'Send both friends, then tap the tick.' },
+      { from: 2, to: 2, text: 'Tap the slot to choose the sensor.' },
+      { from: 2, to: 2, text: 'Check tries every friend at once.' },
+    ],
+    finish: [
+      { from: 1, to: 1, text: 'Both friends have been through the machine.' },
+      { from: 2, to: 2, text: 'Every friend gets the answer the sign wants.' },
+    ],
+    note: [
+      { from: 1, to: 1, text: 'This first look is a try-out, not a test. Sending is never counted.' },
+      { from: 2, to: 2, text: 'Sending is never counted. A wrong Check only costs a gentle hint.' },
+    ],
+  },
   'sense-detective': {
     goal: 'Find out what is in the parcel, then put its toy on the shelf.',
     steps: [
