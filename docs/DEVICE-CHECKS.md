@@ -1,5 +1,12 @@
 # Needs a person or a device
 
+## Gadget Bench levels 1–3 (inventions I2, 2026-10-27)
+
+- [ ] Watch a four-year-old at level 1: does she read the stop from the cart (it tips, sinks, gets wet or goes dark) rather than from the voice, and does she then give the gadget that works?
+- [ ] On an iPad with a small hand: does the socket snap forgive a drop that is near but not on the socket, in both orientations?
+- [ ] Does level 3 feel like building (choosing and placing parts) or like a guess among four tray parts?
+- [ ] On the iPad, how are "umbrella" and "lantern" spoken (device speech or the rendered clips)?
+
 ## Illustrated Rainbow Meadow (RW14 slice 4, 2026-10-26)
 
 - [ ] On an iPad in both orientations: does the painted meadow read well behind the games and cream plates, including games in front of the distant tree trunks, rabbit and rocks? Foreground overlap is accepted as depth under the standing delegation; revise the art if person/device observation shows confusion. Check the Places and Explore postcards too.
@@ -12,7 +19,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 ## Weather Wardrobe wind (2026-10-26)
 
-- [ ] On an iPad, check whether wind reads to a toddler without a label (drifting clouds, streaming leaves, the leaning pet), whether the blown-away piece reads as funny rather than unkind, and how the kite looks on the river and glider in portrait. Device speech of `weather.windy` is unchecked. [Scripted proof](VERIFICATION.md#2026-10-26--weather-wardrobe-wind-slice-7) does not establish these.
+- [ ] On an iPad, check whether wind reads to a toddler without a label (drifting clouds, streaming leaves, the leaning pet), whether the blown-away piece reads as funny rather than unkind, and how the kite looks on the river and glider in portrait. Device speech of `weather.windy` is unchecked. [Scripted proof](archive/VERIFICATION-2026-10-26.md#2026-10-26--weather-wardrobe-wind-slice-7) does not establish these.
 
 ## Weather Wardrobe level 10 (2026-10-26)
 
