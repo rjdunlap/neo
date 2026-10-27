@@ -136,6 +136,7 @@ import { bondBeads } from './bond-beads';
 import { meadowPens } from './meadow-pens';
 import { wordGlue } from './word-glue';
 import { sandTable } from './sand-table';
+import { sortingMachine } from './sorting-machine';
 import { puddleLens } from './puddle-lens';
 import { adventureWalk } from './adventure-walk';
 import { readyForAdventure } from './ready-for-adventure';
@@ -265,6 +266,7 @@ export const GAMES: GameModule[] = [
   meadowPens,
   wordGlue,
   sandTable,
+  sortingMachine,
   puddleLens,
   adventureWalk,
   readyForAdventure,
