@@ -1,5 +1,12 @@
 # Needs a person or a device
 
+## Caravan Days levels 1–3
+
+- [ ] Watch a two-year-old at level 1: does she find the kneel on her own, or does she need the glow?
+- [ ] On an iPad: do suns against drops read as "can we reach it" at level 2?
+- [ ] On an iPad in portrait: is the level-3 fork tappable without the branches crowding?
+- [ ] On the iPad, how are the count slots (counts One–Four, suns One–Five, too-far 3–4, too-long 3–5) spoken: device speech or the rendered clips?
+
 ## River Tablets levels 1–3
 
 - [ ] Watch a three-year-old at level 1: does she wait for each sheep to walk in and its token, or tap ahead of the walk?

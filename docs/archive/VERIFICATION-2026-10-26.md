@@ -119,3 +119,10 @@
 - `BROWSER_SUITE=bondbeads` levels 1–4 passed (drag link, tap break, Undo, Start again, tap-tap link; level 2 two misses, repeat ignored, glow hint; level 3 opening shapes, miss, Start again, rebuilt; level 4 seven beads, miss, Show a hint, first shape fading, both ways); reviewed portrait screenshot `test-results/browser/bondbeads/bond-beads-4-portrait.png`.
 - `BROWSER_SUITE=fingerdemo FINGER_ONLY=bond-beads FINGER_LEVELS=3,4` passed (level 3 21.0 s, level 4 49.9 s).
 - Not run: offline check (no persistence or navigation change), iPad, device speech, a child's reaction (nubs as hands, the tally, seven beads and two cards in portrait); open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-10-26 — Off-screen lines per band
+
+- [PR #1006](https://github.com/rjdunlap/neo/pull/1006), branch `claude/off-screen-lines`, tested commit `2a655245` (base `3e8885ec`): `GameModule.offScreen` accepts `string | OffScreenLines`; `offScreenFor`/`offScreenIdeas` in `src/content/offscreen.ts` resolve per play band and fill `{name}`; the grown-ups' page uses them (Weather Wardrobe's literal `{name}` fixed); removal-only lap/toddler swaps; seven school lines.
+- Ran: `npm run typecheck`; `npm test` 266 files, 3465 tests; `npm run build`; `git diff --check`. New `src/content/offscreen.test.ts` (7 tests: under-3 word list over every game and profile band, every-band wording, key shape and length, Garden Grow withholding, name fallback, band resolution); restoring Peg Garden's marble at lap failed the under-3 test, then was put back.
+- Not run: browser look at the grown-ups' page (no screenshot), any game suite, fingerdemo, `world`, offline check.
+- Open: Bumper Garden's school line is held (no school band); nothing establishes whether a family uses a line, or the safety of a line beyond the word-list classes.

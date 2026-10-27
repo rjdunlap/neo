@@ -748,6 +748,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'A wrong row bounces the mark back and counts one miss; on the second wrong press the pet moves the mark itself, which counts as one hint. Long ago, by the big rivers, people pressed marks in clay to remember how many.' },
     ],
   },
+  'caravan-days': {
+    goal: 'Load the camel and walk it to the next water, a day at a time.',
+    steps: [
+      { from: 1, to: 1, text: 'Tap the camel so it kneels, then tap each bale; tap the camel again and off it goes.' },
+      { from: 2, to: 2, text: 'Count the suns on each road; tap the water the camel can reach with two days in its skin.' },
+      { from: 3, to: 3, text: 'Tap the stops one at a time all the way to the city so no leg is longer than the skin, then tap Go.' },
+    ],
+    finish: 'The camel drinks for a long moment at the water.',
+    note: [
+      { from: 1, to: 1, text: 'Nothing is counted. Loading, unloading and the walk are all free; after a quiet moment the next thing to tap glows.' },
+      { from: 2, to: 2, text: 'Counting suns and tapping the skin are never counted; only tapping an oasis is. The far water is one miss, and after two the near water glows, which counts as one hint. Long ago, on the long road from the east, the stopping places were a day\'s walk apart, so there was water at the end of every day.' },
+      { from: 3, to: 3, text: 'Flagging, taking a flag out and counting suns are never counted; only Go is. A leg longer than the skin is one miss and the camel comes back to its last stop; after two the next good stop glows, which counts as one hint. Nobody walked the whole road: each caravan went a few stops and handed its load on.' },
+    ],
+  },
   'timeline-trail': {
     goal: 'Hang pictures of one place on the clothesline, from long ago to now.',
     steps: [
