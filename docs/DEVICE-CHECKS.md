@@ -1,5 +1,12 @@
 # Needs a person or a device
 
+## River Tablets levels 1–3
+
+- [ ] Watch a three-year-old at level 1: does she wait for each sheep to walk in and its token, or tap ahead of the walk?
+- [ ] On an iPad: does the 8-cell face at level 2 read as one mark per token, and are the cells comfortable for a small finger?
+- [ ] Does the child follow the read-back counts at level 3 ("Three sheep marks, three sheep...")?
+- [ ] On the iPad, how are the count words (One to Six) spoken: device speech or the rendered clips?
+
 ## Gadget Bench levels 1–3 (inventions I2, 2026-10-27)
 
 - [ ] Watch a four-year-old at level 1: does she read the stop from the cart (it tips, sinks, gets wet or goes dark) rather than from the voice, and does she then give the gadget that works?

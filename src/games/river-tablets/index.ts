@@ -1,0 +1,835 @@
+/**
+ * River Tablets: make a clay record of real things, then open it up and see it match them one to one. Level 1 drops a token
+ * in the jar for each sheep and tips the jar; level 2 presses one mark per token on a clay envelope and cracks it open;
+ * level 3 presses each mark in the row with its picture and reads the tablet back. Rules: ./logic.ts; definition:
+ * docs/definitions/river-tablets.md.
+ */
+import { Container, Ellipse, Graphics, Rectangle } from 'pixi.js';
+import { swatch } from '../../art/palette';
+import { Backdrop } from '../../art/scenery';
+import { STYLES } from '../../audio/music';
+import { sfx } from '../../audio/sfx';
+import { onTap } from '../../engine/input';
+import { Rng } from '../../engine/random';
+import { ease } from '../../engine/tween';
+import type { View } from '../../engine/view';
+import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { WigglyIcon } from '../shared';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import type { LineId } from '../../content/voice-script';
+import { ballArt, cartArt, cellArt, crackArt, goodArt, iconArt, jarArt, penArt, riverArt, rowArt, sheepArt, signArt, stickerArt, storeArt, tokenArt, wedgeArt } from './art';
+import {
+  arrive, askEnvelope, askTablet, briefFor, CELL, centre, crackEnvelope, envelopeTally, hintFor, KINDS, markCount, planFor, press, pressRow, readBack, readyToTip, ROW_CELLS, SIGN, startEnvelope, startPen, startTablet, tabletLayout, tabletTally, tapJar, waiting,
+  type Brief, type EnvelopeState, type Kind, type PenState, type Pt, type TabletLayout, type TabletState,
+} from './logic';
+
+const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 2 },
+  prek: { min: 2, max: 3 },
+  school: { min: 3, max: 3 },
+};
+
+/** Spoken counts come from bounded slots, never free text. */
+const WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];
+const word = (n: number) => WORDS[Math.min(n, WORDS.length - 1)];
+/** The jar glows when a sheep has waited this long for its token. */
+const IDLE_GLOW = 8;
+const PEEK_SECONDS = 2;
+
+class RiverTablets implements Game {
+  readonly brief: Brief;
+  pen: PenState | null = null;
+  envelopes: EnvelopeState[] = [];
+  envelopeIndex = 0;
+  tablets: TabletState[] = [];
+  tabletIndex = 0;
+  /** An animation is running; inputs wait. */
+  busy = false;
+  finished = false;
+  private alive = true;
+  private epoch = 0;
+  private clock = 0;
+  private idle = 0;
+  peekLeft = 0;
+  private peeked = false;
+  /** The envelope's tokens are inside (the fill has ended). */
+  private filled = false;
+  /** The ball is shown open (filling or cracked). */
+  private opened = false;
+  private firstToken = true;
+  private view: View;
+  private relayout = false;
+  layoutNow: TabletLayout | null = null;
+  private readonly walkSeconds: number;
+
+  private readonly backdrop: Backdrop;
+  private readonly board = new Container();
+  private readonly glow = new Graphics();
+  jarNode: Container | null = null;
+  ballNode: Container | null = null;
+  cellNodes: Container[] = [];
+  crackNode: Container | null = null;
+  rowNodes: Container[] = [];
+  private signNodes: Container[] = [];
+  private storeNode: Container | null = null;
+  private cartNode: Container | null = null;
+  private goodNode: Container | null = null;
+  private sheepNodes: Container[] = [];
+  private tokenNodes: Container[] = [];
+  private insideNodes: Container[] = [];
+  private readonly lineupLayer = new Container();
+
+  constructor(private readonly ctx: GameContext) {
+    this.view = ctx.view;
+    this.brief = briefFor(ctx.level, ctx.rng);
+    this.walkSeconds = ctx.demo ? 0.5 : 1.2;
+    this.backdrop = new Backdrop({ sky: [0xcfe9f7, 0xfff6e0], hills: [0xd9c58f, 0xcfe0a3], horizon: 0.42, clouds: 2, sun: true, seed: 211 }, ctx.view);
+    this.glow.eventMode = 'none';
+    this.lineupLayer.eventMode = 'none';
+    ctx.stage.addChild(this.backdrop, this.board);
+    if (this.brief.id === 'tokens') this.pen = startPen(this.brief.sheep);
+    if (this.brief.id === 'envelope') this.envelopes = this.brief.envelopes.map((n) => startEnvelope(n));
+    if (this.brief.id === 'rows') this.tablets = this.brief.deliveries.map((d) => startTablet(d));
+  }
+
+  get level() {
+    return this.brief.level;
+  }
+
+  get envelope(): EnvelopeState {
+    return this.envelopes[this.envelopeIndex];
+  }
+
+  get tablet(): TabletState {
+    return this.tablets[this.tabletIndex];
+  }
+
+  /** Round totals so far, for a check or the finish. */
+  get tally() {
+    if (this.brief.id === 'envelope') return envelopeTally(this.envelopes);
+    if (this.brief.id === 'rows') return tabletTally(this.tablets);
+    return { misses: 0, hints: 0 };
+  }
+
+  start() {
+    this.build();
+    void this.ctx.instruct(`rt.instruct.${this.level}` as LineId);
+    if (this.level >= 2) void this.ctx.say('rt.history');
+    void this.begin();
+  }
+
+  destroy() {
+    this.alive = false;
+  }
+
+  resize(v: View) {
+    this.view = v;
+    this.backdrop.resize(v);
+    if (!this.layoutNow) return;
+    if (this.busy || this.finished) { this.relayout = true; return; }
+    this.build();
+  }
+
+  /** A guard after every await: the scene is alive and nothing rebuilt the board meanwhile. */
+  private live(epoch: number) {
+    return this.alive && epoch === this.epoch && !this.finished;
+  }
+
+  // ——— Building ———
+
+  private build() {
+    this.epoch++;
+    this.relayout = false;
+    this.jarNode = this.ballNode = this.crackNode = this.storeNode = this.cartNode = this.goodNode = null;
+    this.cellNodes = [];
+    this.rowNodes = [];
+    this.signNodes = [];
+    this.sheepNodes = [];
+    this.tokenNodes = [];
+    this.insideNodes = [];
+    this.glow.removeFromParent();
+    this.lineupLayer.removeFromParent();
+    for (const c of this.lineupLayer.removeChildren()) c.destroy({ children: true });
+    for (const c of this.board.removeChildren()) c.destroy({ children: true });
+    if (this.finished) return;
+    const l = tabletLayout(this.level, this.view);
+    this.layoutNow = l;
+    if (!l) return;
+    const river = riverArt(l.lane.w, l.lane.h * 0.5);
+    river.position.set(l.lane.x, l.lane.y);
+    this.board.addChild(river);
+    if (this.brief.id === 'tokens') this.buildPen(l);
+    else if (this.brief.id === 'envelope') this.buildEnvelope(l);
+    else this.buildRows(l);
+    this.board.addChild(this.lineupLayer, this.glow);
+  }
+
+  private buildPen(l: TabletLayout) {
+    const b = this.brief;
+    if (b.id !== 'tokens' || !this.pen) return;
+    const pen = penArt(l.lane.w, l.lane.h, b.gate);
+    pen.position.set(l.lane.x, l.lane.y);
+    this.board.addChild(pen);
+    // Sheep already in the pen stand at their slots; the walking one is placed by the walk.
+    for (let i = 0; i < this.pen.arrived; i++) {
+      const s = sheepArt(b.colors[i], 110);
+      s.position.copyFrom(this.sheepSlot(i));
+      this.board.addChild(s);
+      this.sheepNodes.push(s);
+    }
+    const jar = new Container();
+    const r = l.jar!;
+    jar.position.set(r.x + r.w / 2, r.y + r.h);
+    jar.addChild(jarArt(r.w, r.h));
+    jar.hitArea = new Rectangle(-r.w / 2 - 10, -r.h - 10, r.w + 20, r.h + 20);
+    onTap(jar, () => this.tapJar(), { cooldown: 200 });
+    this.board.addChild(jar);
+    this.jarNode = jar;
+    for (let i = 0; i < this.pen.tokens; i++) this.tokenNodes.push(this.tokenInJar(i));
+    this.redrawJar();
+  }
+
+  private buildEnvelope(l: TabletLayout) {
+    // A small jar of tokens waits in the lane.
+    const jar = new Container();
+    jar.position.set(l.lane.x + 120, l.lane.y + l.lane.h - 10);
+    jar.addChild(jarArt(120, 130));
+    jar.eventMode = 'none';
+    this.board.addChild(jar);
+    this.jarNode = jar;
+    const r = l.ball!;
+    const ball = new Container();
+    ball.position.copyFrom(centre(r));
+    ball.hitArea = new Ellipse(0, 0, r.w / 2, r.h / 2);
+    onTap(ball, () => this.peek(), { cooldown: 200 });
+    this.board.addChild(ball);
+    this.ballNode = ball;
+    this.cellNodes = l.cells!.map((c, i) => {
+      const node = new Container();
+      node.position.set(centre(c).x - ball.x, centre(c).y - ball.y);
+      node.hitArea = new Rectangle(-c.w / 2, -c.h / 2, c.w, c.h);
+      onTap(node, (e) => { e.stopPropagation(); this.pressCell(i); }, { cooldown: 150 });
+      ball.addChild(node);
+      return node;
+    });
+    const cr = l.crack!;
+    const crack = new Container();
+    crack.position.copyFrom(centre(cr));
+    crack.addChild(crackArt(cr.w, cr.h));
+    crack.hitArea = new Rectangle(-cr.w / 2 - 8, -cr.h / 2 - 8, cr.w + 16, cr.h + 16);
+    onTap(crack, () => this.crack(), { cooldown: 400 });
+    this.board.addChild(crack);
+    this.crackNode = crack;
+    // A rebuilt (rotated) envelope that was already filled keeps its tokens inside, hidden until a peek or the crack.
+    if (this.filled) {
+      for (let i = 0; i < this.envelope.tokens; i++) {
+        const t = tokenArt(24);
+        const at = this.insideAt(i);
+        t.position.set(at.x, at.y);
+        t.visible = false;
+        this.board.addChildAt(t, this.board.getChildIndex(ball));
+        this.insideNodes.push(t);
+      }
+    }
+    this.redrawBall();
+  }
+
+  private buildRows(l: TabletLayout) {
+    const store = new Container();
+    const sr = l.store!;
+    store.position.set(sr.x, sr.y);
+    store.eventMode = 'none';
+    this.board.addChild(store);
+    this.storeNode = store;
+    this.rowNodes = KINDS.map((kind, i) => {
+      const r = l.rows![i];
+      const node = new Container();
+      node.position.copyFrom(centre(r));
+      node.hitArea = new Rectangle(-r.w / 2 - 6, -r.h / 2 - 6, r.w + 12, r.h + 12);
+      onTap(node, () => this.pressRowFor(kind), { cooldown: 250 });
+      this.board.addChild(node);
+      return node;
+    });
+    const cart = cartArt(150);
+    cart.position.set(l.lane.x + l.lane.w * 0.5, l.lane.y + l.lane.h - 12);
+    this.board.addChild(cart);
+    this.cartNode = cart;
+    this.redrawRows();
+    this.redrawStore(false);
+    // The waiting good is on the cart (its arrival already shown, or shown when the walk ends).
+    const good = waiting(this.tablet);
+    if (good && !this.busy) this.placeGood(good);
+  }
+
+  // ——— Redrawing from the model ———
+
+  private sheepSlot(i: number): Pt {
+    const lane = this.layoutNow!.lane;
+    const b = this.brief as { sheep: number; gate: 'left' | 'right' };
+    const spacing = Math.min(150, (lane.w - 160) / Math.max(1, b.sheep - 1));
+    const start = b.gate === 'left' ? lane.x + lane.w - 90 : lane.x + 90;
+    const dir = b.gate === 'left' ? -1 : 1;
+    return { x: start + dir * spacing * i, y: lane.y + lane.h - 18 };
+  }
+
+  private redrawJar() {
+    const j = this.jarNode;
+    const l = this.layoutNow;
+    if (!j || !l?.jar || !this.pen) return;
+    const art = j.children[0] as Graphics;
+    const glowing = this.idle >= IDLE_GLOW && this.pen.tokens < this.pen.arrived && !this.pen.walking;
+    const ready = readyToTip(this.pen);
+    art.destroy();
+    j.addChildAt(jarArt(l.jar.w, l.jar.h, glowing || ready), 0);
+  }
+
+  private tokenInJar(i: number): Container {
+    const t = tokenArt(26);
+    const r = this.layoutNow!.jar!;
+    const j = this.jarNode!;
+    t.position.set(j.x + ((i % 3) - 1) * 36, j.y - r.h * 0.35 - Math.floor(i / 3) * 22);
+    this.board.addChild(t);
+    return t;
+  }
+
+  private redrawBall() {
+    const ball = this.ballNode;
+    const l = this.layoutNow;
+    if (!ball || !l?.ball) return;
+    const e = this.envelope;
+    const open = this.opened || this.peekLeft > 0;
+    if (ball.children[0] && !this.cellNodes.includes(ball.children[0] as Container)) ball.children[0].destroy();
+    ball.addChildAt(ballArt(l.ball.w, l.ball.h, open), 0);
+    const h = e.glowing ? hintFor(e) : null;
+    this.cellNodes.forEach((node, i) => {
+      for (const c of node.removeChildren()) c.destroy({ children: true });
+      node.addChild(cellArt(CELL, e.marks[i], h?.cell === i));
+      node.alpha = this.peekLeft > 0 ? 0.3 : 1;
+    });
+    for (const t of this.insideNodes) t.visible = open;
+  }
+
+  private redrawRows() {
+    const l = this.layoutNow;
+    if (!l?.rows) return;
+    const t = this.tablet;
+    KINDS.forEach((kind, i) => {
+      const node = this.rowNodes[i];
+      const r = l.rows![i];
+      for (const c of node.removeChildren()) c.destroy({ children: true });
+      node.addChild(rowArt(r.w, r.h, SIGN, t.rows[kind], ROW_CELLS, CELL * 0.8));
+      const sign = signArt(kind, SIGN - 10, this.glowRow() === kind);
+      sign.position.set(-r.w / 2 + SIGN / 2 + 4, 0);
+      node.addChild(sign);
+      this.signNodes[i] = sign;
+    });
+  }
+
+  /** The row whose heading glows: the waiting good's, for the rest of a tablet that has had its hint. */
+  private glowRow(): Kind | null {
+    const t = this.tablet;
+    return t && t.hinted ? waiting(t) : null;
+  }
+
+  private redrawStore(open: boolean) {
+    const s = this.storeNode;
+    const r = this.layoutNow?.store;
+    if (!s || !r) return;
+    for (const c of s.removeChildren()) c.destroy();
+    s.addChild(storeArt(r.w, r.h, open));
+  }
+
+  /** The good waits on the cart, shown large. */
+  private placeGood(kind: Kind) {
+    this.goodNode?.destroy({ children: true });
+    const g = goodArt(kind, 110);
+    const cart = this.cartNode!;
+    g.position.set(cart.x, cart.y - 150);
+    this.board.addChild(g);
+    this.goodNode = g;
+  }
+
+  /** The centre of a row's next empty cell. */
+  private cellAt(kind: Kind, index: number): Pt {
+    const i = KINDS.indexOf(kind);
+    const r = this.layoutNow!.rows![i];
+    const x0 = r.x + SIGN + 6;
+    const step = (r.w - SIGN - 12) / ROW_CELLS;
+    return { x: x0 + step * (Math.min(index, ROW_CELLS - 1) + 0.5), y: r.y + r.h / 2 };
+  }
+
+  // ——— The round's beginning ———
+
+  private async begin() {
+    if (this.brief.id === 'tokens') { void this.walkNext(); return; }
+    if (this.brief.id === 'envelope') { void this.fillEnvelope(); return; }
+    void this.arrival();
+  }
+
+  // ——— Level 1: one token each ———
+
+  /** The walking sheep comes along the path into its slot. */
+  private async walkNext() {
+    const p = this.pen;
+    const l = this.layoutNow;
+    const b = this.brief;
+    if (!p || !p.walking || !l || b.id !== 'tokens') return;
+    const epoch = this.epoch;
+    this.busy = true;
+    const i = p.arrived;
+    const s = sheepArt(b.colors[i], 110);
+    const slot = this.sheepSlot(i);
+    const from = b.gate === 'left' ? l.lane.x - 80 : l.lane.x + l.lane.w + 80;
+    s.position.set(from, slot.y);
+    s.scale.x = b.gate === 'left' ? 1 : -1;
+    this.board.addChild(s);
+    this.sheepNodes[i] = s;
+    await this.ctx.tw.to(s.position, { x: slot.x }, { duration: this.walkSeconds, ease: ease.inOutSine });
+    if (!this.live(epoch)) return;
+    s.scale.x = 1;
+    sfx.pop(9);
+    this.pen = arrive(this.pen!);
+    this.busy = false;
+    this.idle = 0;
+    if (this.relayout) this.build();
+  }
+
+  tapJar() {
+    const p = this.pen;
+    const j = this.jarNode;
+    if (!p || !j || this.finished) return;
+    this.idle = 0;
+    // Touch-down feedback before any rule.
+    j.scale.set(1.06, 0.92);
+    void this.ctx.tw.to(j.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
+    if (this.busy) { sfx.pop(5); return; }
+    const { state, result } = tapJar(p);
+    this.pen = state;
+    if (result === 'token') {
+      const n = state.tokens;
+      sfx.marimba(2 + n, 0.4);
+      const t = this.tokenInJar(n - 1);
+      this.tokenNodes.push(t);
+      const y = t.y;
+      t.y = y - 120;
+      void this.ctx.tw.to(t.position, { y }, { duration: 0.3, ease: ease.inQuad });
+      if (this.firstToken) { this.firstToken = false; void this.ctx.say('rt.token-in'); }
+      this.redrawJar();
+      if (state.walking) void this.walkNext();
+      else if (readyToTip(state)) void this.ctx.say('rt.tip');
+      return;
+    }
+    if (result === 'tip') { void this.tip(); return; }
+    // A wobble: nothing changes.
+    sfx.pop(4);
+    void this.ctx.tw.to(j, { rotation: 0.08 }, { duration: 0.1 }).then(() => this.ctx.tw.to(j, { rotation: 0 }, { duration: 0.2, ease: ease.outElastic }));
+    const last = this.tokenNodes.at(-1);
+    if (last) {
+      const y = last.y;
+      void this.ctx.tw.to(last.position, { y: y - 40 }, { duration: 0.12 }).then(() => this.ctx.tw.to(last.position, { y }, { duration: 0.2, ease: ease.inQuad }));
+    }
+    void this.ctx.say(readyToTip(state) ? 'rt.tip' : 'rt.already');
+  }
+
+  /** The jar tips: the tokens roll out and line up under the sheep, one to one, and the pet counts both. */
+  private async tip() {
+    const j = this.jarNode;
+    const p = this.pen;
+    if (!j || !p) return;
+    const epoch = this.epoch;
+    this.busy = true;
+    this.redrawJar();
+    sfx.whoosh();
+    await this.ctx.tw.to(j, { rotation: -0.9 }, { duration: 0.5, ease: ease.outBack });
+    if (!this.live(epoch)) return;
+    const l = this.layoutNow!;
+    for (let i = 0; i < p.sheep; i++) {
+      const t = this.tokenNodes[i];
+      const slot = this.sheepSlot(i);
+      void this.ctx.tw.to(t.position, { x: slot.x, y: l.lineup.y + 40 }, { duration: 0.5, delay: i * 0.12, ease: ease.outQuad });
+    }
+    await this.ctx.tw.wait(0.6 + p.sheep * 0.12);
+    if (!this.live(epoch)) return;
+    for (let i = 0; i < p.sheep; i++) {
+      const t = this.tokenNodes[i];
+      const s = this.sheepNodes[i];
+      t.scale.set(1.3);
+      void this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.3 });
+      s.scale.set(1.1);
+      void this.ctx.tw.to(s.scale, { x: 1, y: 1 }, { duration: 0.3 });
+      sfx.marimba(4 + i, 0.4);
+      await this.ctx.say(`rt.count.${i + 1}` as LineId);
+      if (!this.live(epoch)) return;
+    }
+    await this.ctx.say('rt.tip-count', { count: word(p.sheep), lower: word(p.sheep).toLowerCase() });
+    if (!this.live(epoch)) return;
+    this.celebrate();
+  }
+
+  // ——— Level 2: marks on the envelope ———
+
+  /** The tokens drop into the open ball one by one, then it closes. */
+  private async fillEnvelope() {
+    const ball = this.ballNode;
+    const l = this.layoutNow;
+    if (!ball || !l?.ball) return;
+    const epoch = this.epoch;
+    this.busy = true;
+    this.peeked = false;
+    this.filled = false;
+    this.opened = true;
+    this.redrawBall();
+    const e = this.envelope;
+    for (let i = 0; i < e.tokens; i++) {
+      const t = tokenArt(24);
+      const to = this.insideAt(i);
+      t.position.set(this.jarNode!.x, this.jarNode!.y - 110);
+      this.board.addChildAt(t, this.board.getChildIndex(ball));
+      this.insideNodes.push(t);
+      sfx.marimba(2 + i, 0.35);
+      await this.ctx.tw.to(t.position, { x: to.x, y: to.y }, { duration: this.ctx.demo ? 0.25 : 0.45, ease: ease.inOutSine });
+      if (!this.live(epoch)) return;
+    }
+    await this.ctx.tw.wait(this.ctx.demo ? 0.3 : 0.7);
+    if (!this.live(epoch)) return;
+    this.opened = false;
+    this.filled = true;
+    this.busy = false;
+    for (const t of this.insideNodes) t.visible = false;
+    this.redrawBall();
+    sfx.squish();
+    if (this.relayout) this.build();
+  }
+
+  /** Where a token sits inside the ball (a loose heap, so counting them is the point of the marks). */
+  private insideAt(i: number): Pt {
+    const b = this.ballNode!;
+    return { x: b.x - 90 + (i % 3) * 70 + (Math.floor(i / 3) % 2) * 20, y: b.y + 40 - Math.floor(i / 3) * 44 };
+  }
+
+  pressCell(i: number) {
+    if (this.finished || this.busy) return;
+    const node = this.cellNodes[i];
+    node.scale.set(0.92);
+    void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    const before = markCount(this.envelope);
+    this.envelopes[this.envelopeIndex] = press(this.envelope, i);
+    const after = markCount(this.envelope);
+    if (after > before) sfx.marimba(1 + after, 0.35); else sfx.pop(5);
+    this.redrawBall();
+  }
+
+  /** Tapping the ball shows the tokens inside for a moment; never counted. */
+  peek() {
+    if (this.finished || this.busy) return;
+    this.peekLeft = this.ctx.demo ? 1 : PEEK_SECONDS;
+    if (!this.peeked) { this.peeked = true; void this.ctx.say('rt.peek'); }
+    sfx.pop(8);
+    this.redrawBall();
+  }
+
+  /** Crack is the one commit: the ball splits and the tokens line up under the marks. */
+  private async crack() {
+    if (this.finished || this.busy || !this.crackNode) return;
+    const epoch = this.epoch;
+    this.busy = true;
+    this.peekLeft = 0;
+    const c = this.crackNode;
+    c.scale.set(0.9);
+    void this.ctx.tw.to(c.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
+    const { state, crack } = crackEnvelope(this.envelope);
+    this.envelopes[this.envelopeIndex] = state;
+    sfx.clunk();
+    this.opened = true;
+    this.redrawBall();
+    for (const t of this.insideNodes) t.visible = true;
+    // The marks in reading order along the lineup, the tokens under them.
+    const l = this.layoutNow!;
+    const n = Math.max(crack.marks, crack.tokens);
+    const spacing = Math.min(100, (l.lineup.w - 60) / Math.max(1, n - 1));
+    const x0 = l.lineup.x + l.lineup.w / 2 - spacing * (n - 1) / 2;
+    for (let i = 0; i < crack.marks; i++) {
+      const m = wedgeArt(40);
+      m.position.set(x0 + i * spacing, l.lineup.y + 26);
+      this.lineupLayer.addChild(m);
+    }
+    this.insideNodes.forEach((t, i) => {
+      void this.ctx.tw.to(t.position, { x: x0 + i * spacing, y: l.lineup.y + 80 }, { duration: 0.45, delay: i * 0.1, ease: ease.outQuad });
+    });
+    await this.ctx.tw.wait(0.6 + crack.tokens * 0.1);
+    if (!this.live(epoch)) return;
+    if (crack.verdict === 'match') {
+      sfx.sparkle();
+      await this.ctx.say('rt.match', { count: word(crack.marks), lower: word(crack.marks).toLowerCase() });
+      if (!this.live(epoch)) return;
+      if (this.envelopeIndex + 1 >= this.envelopes.length) { this.celebrate(); return; }
+      this.envelopeIndex++;
+      this.clearLineup();
+      this.build();
+      void this.ctx.say('rt.next-envelope');
+      void this.fillEnvelope();
+      return;
+    }
+    // The unmatched ones wiggle alone.
+    sfx.boing();
+    const loners = crack.verdict === 'fewer' ? this.insideNodes.slice(crack.paired) : this.lineupLayer.children.slice(crack.paired);
+    for (const t of loners) {
+      void this.ctx.tw.to(t, { rotation: 0.3 }, { duration: 0.15 }).then(() => this.ctx.tw.to(t, { rotation: -0.3 }, { duration: 0.3 })).then(() => this.ctx.tw.to(t, { rotation: 0 }, { duration: 0.15 }));
+    }
+    const vars = { marks: word(crack.marks), tokens: word(crack.tokens).toLowerCase(), diff: word(crack.diff) };
+    await this.ctx.say(`rt.${crack.verdict}.${crack.diff === 1 ? 'one' : 'many'}` as LineId, vars);
+    if (!this.live(epoch)) return;
+    // The ball closes again with her marks kept.
+    this.clearLineup();
+    this.insideNodes.forEach((t, i) => { const to = this.insideAt(i); t.position.set(to.x, to.y); t.visible = false; });
+    this.opened = false;
+    this.busy = false;
+    this.redrawBall();
+    if (state.glowing) void this.ctx.say('rt.glow');
+    if (this.relayout) this.build();
+  }
+
+  private clearLineup() {
+    for (const c of this.lineupLayer.removeChildren()) c.destroy({ children: true });
+  }
+
+  // ——— Level 3: which row? ———
+
+  /** The next good arrives on the cart. */
+  private async arrival() {
+    const cart = this.cartNode;
+    const l = this.layoutNow;
+    const good = waiting(this.tablet);
+    if (!cart || !l || good === null) return;
+    const epoch = this.epoch;
+    this.busy = true;
+    this.placeGood(good);
+    const g = this.goodNode!;
+    const toX = l.lane.x + l.lane.w * 0.5;
+    cart.x = l.lane.x + 60;
+    g.x = cart.x;
+    sfx.ratchet(3);
+    void this.ctx.tw.to(cart.position, { x: toX }, { duration: this.ctx.demo ? 0.4 : 0.9, ease: ease.inOutSine });
+    await this.ctx.tw.to(g.position, { x: toX }, { duration: this.ctx.demo ? 0.4 : 0.9, ease: ease.inOutSine });
+    if (!this.live(epoch)) return;
+    this.busy = false;
+    if (this.relayout) this.build();
+  }
+
+  pressRowFor(kind: Kind) {
+    if (this.finished) return;
+    const i = KINDS.indexOf(kind);
+    const node = this.rowNodes[i];
+    // The row lifts on touch-down, before any rule.
+    node.y -= 8;
+    void this.ctx.tw.to(node.position, { y: node.y + 8 }, { duration: 0.2, ease: ease.outQuad });
+    if (this.busy || waiting(this.tablet) === null) { sfx.pop(5); return; }
+    const good = waiting(this.tablet)!;
+    const r = pressRow(this.tablet, kind);
+    this.tablets[this.tabletIndex] = r.state;
+    if (r.accepted) { void this.landMark(kind, false); return; }
+    if (r.moved) { void this.landMark(good, true); return; }
+    void this.bounceMark(kind, good);
+  }
+
+  /** A wrong row: the mark bounces back out and the good stays waiting. */
+  private async bounceMark(row: Kind, good: Kind) {
+    const epoch = this.epoch;
+    this.busy = true;
+    sfx.boing();
+    const at = this.cellAt(row, this.tablet.rows[row]);
+    const m = wedgeArt(44);
+    m.position.set(at.x, at.y);
+    this.board.addChild(m);
+    void this.ctx.say(`rt.wrong-row.${good}` as LineId);
+    await this.ctx.tw.to(m.position, { y: at.y - 90 }, { duration: 0.25, ease: ease.outQuad });
+    if (!this.live(epoch)) { m.destroy(); return; }
+    await this.ctx.tw.to(m, { alpha: 0 }, { duration: 0.2 });
+    m.destroy();
+    if (!this.live(epoch)) return;
+    this.busy = false;
+    if (this.relayout) this.build();
+  }
+
+  /** The mark lands in the right row's next cell and the good rolls into the storehouse; `moved` when the pet did it. */
+  private async landMark(row: Kind, moved: boolean) {
+    const epoch = this.epoch;
+    this.busy = true;
+    const l = this.layoutNow!;
+    const index = this.tablet.rows[row] - 1;
+    const to = this.cellAt(row, index);
+    const m = wedgeArt(44);
+    const g = this.goodNode;
+    m.position.set(g ? g.x : to.x, g ? g.y - 40 : to.y - 100);
+    this.board.addChild(m);
+    if (moved) { void this.ctx.say('rt.moved'); this.redrawRows(); }
+    await this.ctx.tw.to(m.position, { x: to.x, y: to.y }, { duration: moved ? 0.7 : 0.35, ease: ease.inOutSine });
+    if (!this.live(epoch)) { m.destroy(); return; }
+    m.destroy();
+    sfx.squish();
+    this.redrawRows();
+    if (g) {
+      const s = l.store!;
+      await this.ctx.tw.to(g.position, { x: s.x + s.w / 2, y: s.y + s.h - 100 }, { duration: 0.45, ease: ease.inQuad });
+      if (!this.live(epoch)) return;
+      g.destroy({ children: true });
+      this.goodNode = null;
+      sfx.tick();
+    }
+    if (waiting(this.tablet) !== null) {
+      this.busy = false;
+      void this.arrival();
+      return;
+    }
+    void this.readBackTablet();
+  }
+
+  /** The storehouse opens and the goods line up under their rows while the pet reads the tablet. */
+  private async readBackTablet() {
+    const epoch = this.epoch;
+    this.busy = true;
+    const l = this.layoutNow!;
+    this.redrawStore(true);
+    const counts = readBack(this.tablet.delivery);
+    const s = l.store!;
+    sfx.whoosh();
+    let shown = 0;
+    for (const kind of KINDS) {
+      for (let i = 0; i < counts[kind]; i++) {
+        const g = goodArt(kind, 70);
+        g.position.set(s.x + s.w / 2, s.y + s.h - 70);
+        const cell = this.cellAt(kind, i);
+        this.lineupLayer.addChild(g);
+        void this.ctx.tw.to(g.position, { x: cell.x, y: l.lineup.y + (kind === 'sheep' ? 0 : 50) }, { duration: 0.5, delay: shown * 0.1, ease: ease.outQuad });
+        shown++;
+      }
+    }
+    await this.ctx.tw.wait(0.6 + shown * 0.1);
+    if (!this.live(epoch)) return;
+    await this.ctx.say('rt.read-back', { sheep: word(counts.sheep), sheepLower: word(counts.sheep).toLowerCase(), jars: word(counts.jar), jarsLower: word(counts.jar).toLowerCase() });
+    if (!this.live(epoch)) return;
+    if (this.tabletIndex + 1 >= this.tablets.length) { this.celebrate(); return; }
+    this.tabletIndex++;
+    this.clearLineup();
+    this.build();
+    void this.ctx.say('rt.next-tablet');
+    void this.arrival();
+  }
+
+  // ——— Finishing and help ———
+
+  private celebrate() {
+    if (this.finished) return;
+    this.busy = true;
+    sfx.tada();
+    this.ctx.pet.cheer();
+    const l = this.layoutNow;
+    if (l) this.ctx.particles.burst(l.lineup.x + l.lineup.w / 2, l.lineup.y + 40, { colors: [swatch.yellow.fill, swatch.orange.fill, 0xffffff], count: 14 });
+    const result = this.tally;
+    void this.ctx.say('rt.done').then(() => {
+      if (!this.alive || this.finished) return;
+      this.finished = true;
+      this.ctx.finish(result);
+    });
+  }
+
+  hintLabel = 'Help';
+
+  /** The pet's Help: at level 1 the ask again (free); at levels 2–3 the glow, the part's one hint if not yet spent. */
+  askForHint() {
+    if (this.finished) return;
+    if (this.brief.id === 'tokens') { void this.ctx.instruct('rt.instruct.1'); return; }
+    if (this.busy) return;
+    if (this.brief.id === 'envelope') {
+      this.envelopes[this.envelopeIndex] = askEnvelope(this.envelope);
+      this.redrawBall();
+      void this.ctx.say(markCount(this.envelope) === this.envelope.tokens ? 'rt.help.crack' : 'rt.help.cell');
+      return;
+    }
+    this.tablets[this.tabletIndex] = askTablet(this.tablet);
+    this.redrawRows();
+    const good = waiting(this.tablet);
+    if (good) void this.ctx.say(`rt.help.${good}` as LineId);
+  }
+
+  update(dt: number) {
+    this.clock += dt;
+    if (this.relayout && !this.busy && !this.finished) this.build();
+    if (this.brief.id === 'tokens' && this.pen && !this.busy && !this.finished) {
+      const was = this.idle >= IDLE_GLOW;
+      this.idle += dt;
+      if (!was && this.idle >= IDLE_GLOW) this.redrawJar();
+    }
+    if (this.peekLeft > 0) {
+      this.peekLeft -= dt;
+      if (this.peekLeft <= 0) { this.peekLeft = 0; this.redrawBall(); }
+    }
+    this.glow.clear();
+    if (this.finished || !this.layoutNow) return;
+    const r = 1 + 0.05 * Math.sin(this.clock * 5);
+    if (this.brief.id === 'envelope' && this.envelope.glowing && !this.busy) {
+      const h = hintFor(this.envelope);
+      if (h) {
+        const c = this.layoutNow.cells![h.cell];
+        this.glow.roundRect(c.x - 8 * r, c.y - 8 * r, c.w + 16 * r, c.h + 16 * r, 24).stroke({ width: 8, color: swatch.yellow.fill });
+      } else if (this.crackNode) {
+        const c = this.layoutNow.crack!;
+        this.glow.roundRect(c.x - 10 * r, c.y - 10 * r, c.w + 20 * r, c.h + 20 * r, 30).stroke({ width: 8, color: swatch.yellow.fill });
+      }
+    }
+    const glowRow = this.brief.id === 'rows' ? this.glowRow() : null;
+    if (glowRow && !this.busy) {
+      const i = KINDS.indexOf(glowRow);
+      const row = this.layoutNow.rows![i];
+      this.glow.roundRect(row.x - 8 * r, row.y - 8 * r, SIGN + 16 * r, row.h + 16 * r, 24).stroke({ width: 8, color: swatch.yellow.fill });
+    }
+  }
+
+  /** The ghost finger: the jar for each sheep then the tip; peek, one mark per token, Crack; each good's row. Never a wrong row. */
+  autotouch(): TouchIntent | null {
+    if (this.finished || this.busy || !this.layoutNow) return null;
+    if (this.brief.id === 'tokens') {
+      if (!this.pen || this.pen.walking || this.pen.tipped) return null;
+      return this.jarNode ? { tap: { on: this.jarNode, y: -this.layoutNow.jar!.h / 2 }, pause: 0.5 } : null;
+    }
+    if (this.brief.id === 'envelope') {
+      const e = this.envelope;
+      if (!this.peeked && this.ballNode) return { tap: { on: this.ballNode, y: -this.layoutNow.ball!.h / 2 + 36 }, pause: 1.1 };
+      const h = hintFor(e);
+      if (h) return { tap: { on: this.cellNodes[h.cell] }, pause: 0.4 };
+      return this.crackNode ? { tap: { on: this.crackNode }, pause: 0.5 } : null;
+    }
+    const good = waiting(this.tablet);
+    if (good === null) return null;
+    return { tap: { on: this.rowNodes[KINDS.indexOf(good)] }, pause: 0.5 };
+  }
+}
+
+class TabletIcon extends WigglyIcon {
+  constructor() {
+    super(iconArt());
+  }
+}
+
+/** A seeded sticker: a tablet with a sheep row and a jar row filled. */
+function sticker(seed: number): Container {
+  const rng = new Rng(seed);
+  return stickerArt(rng.int(1, 4), rng.int(1, 4), rng.pick(['white', 'brown', 'pink'] as const));
+}
+
+export const riverTablets: GameModule = {
+  id: 'river-tablets',
+  name: 'River Tablets',
+  titleLine: 'game.river-tablets',
+  region: 'story-grove',
+  skills: ['counting', 'one-to-one', 'symbols', 'checking'],
+  bands: ['preschool', 'prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
+  describeLevel: (level) => planFor(level).name,
+  music: STYLES.paint,
+  coplayHint: 'Counter and scribe: one of you counts the goods aloud as they pass, the other presses the marks; swap after each tablet.',
+  hubIcon: () => new TabletIcon(),
+  touchDemo: true,
+  sticker,
+  create: (ctx) => new RiverTablets(ctx),
+};

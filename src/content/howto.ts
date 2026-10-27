@@ -718,6 +718,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Watching is never counted. If it does not work, look at what the friend and the lamp did; the same trouble twice makes the part to change glow.' },
     ],
   },
+  'river-tablets': {
+    goal: 'Make a clay record, then open it up and see it match.',
+    steps: [
+      { from: 1, to: 1, text: 'Tap the jar each time a sheep comes in, then tap it again to tip it.' },
+      { from: 2, to: 2, text: 'Press one mark for each token, then tap Crack to open the ball. Tap the ball to peek inside.' },
+      { from: 3, to: 3, text: 'Press the row with the picture of the thing on the cart.' },
+    ],
+    finish: 'The marks and the things line up, one for one.',
+    note: [
+      { from: 1, to: 1, text: 'Nothing is counted. A tap while a sheep is still walking just wobbles the jar.' },
+      { from: 2, to: 2, text: 'Pressing, lifting a mark and peeking are never counted; only cracking the ball is. After two wrong cracks the fix glows, which counts as one hint. Long ago, by the big rivers, people pressed marks in clay to remember how many.' },
+      { from: 3, to: 3, text: 'A wrong row bounces the mark back and counts one miss; on the second wrong press the pet moves the mark itself, which counts as one hint. Long ago, by the big rivers, people pressed marks in clay to remember how many.' },
+    ],
+  },
   'timeline-trail': {
     goal: 'Hang pictures of one place on the clothesline, from long ago to now.',
     steps: [

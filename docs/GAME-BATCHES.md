@@ -537,9 +537,7 @@ Proof: new-game tier, as the [definition's Check tier](definitions/timeline-trai
 
 ### river-tablets 1: One token each, the envelope and which row
 
-- **`river-tablets`, levels 1–3 (slice AR2)** (a new game, one declared batch; preschool 1–2, pre-K 2–3, school 3, Story Grove by decision 2 if the lands test passes, else Counting Cove): sheep walk into a pen and a token drops in the jar for each, tipped and counted against the sheep (level 1, nothing counted); tokens sealed in a clay ball with an 8-cell face, one pressed mark each, cracked open and lined up (level 2, a miss per wrong crack, one glow per envelope); goods arrive mixed and each mark goes in the row with its picture, read back at the end (level 3, a miss per wrong row, the mark moved after the second with one hint). [Definition](definitions/river-tablets.md), [ancient river civilizations study slice AR2](deep-dives/subjects/ancient-river-civilizations.md#build-slices-in-order)
-
-Proof: new-game tier, as the [definition's check tier](definitions/river-tablets.md#check-tier-for-ar2) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `browser-check.mjs` case filtered to River Tablets with level 1 to the tip, one wrong crack and glow at level 2 and one wrong row and moved mark at level 3, `fingerdemo` at level 3, one portrait screenshot, one build). The one history line is source-checked in the building session. If the allowance cannot cover all three, stop after a complete level 1 (or 1–2) with a draft-PR checkpoint. No review gate.
+Built 2026-10-27, [PR #1019](https://github.com/rjdunlap/neo/pull/1019); [definition](definitions/river-tablets.md), [archived build note](archive/COMPLETED-2026-10-09.md#river-tablets-levels-13-ancient-river-civilizations-ar2-2026-10-27). Whole three-level new-game batch. Device checks remain; levels 4–6 (AR3) need their own definition.
 
 ### caravan-days 1: Kneel and load, can we reach it, and day by day
 
