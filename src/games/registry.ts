@@ -139,6 +139,7 @@ import { sandTable } from './sand-table';
 import { sortingMachine } from './sorting-machine';
 import { gadgetBench } from './gadget-bench';
 import { helperHouse } from './helper-house';
+import { sproutShuffle } from './sprout-shuffle';
 import { puddleLens } from './puddle-lens';
 import { adventureWalk } from './adventure-walk';
 import { readyForAdventure } from './ready-for-adventure';
@@ -271,6 +272,7 @@ export const GAMES: GameModule[] = [
   sortingMachine,
   gadgetBench,
   helperHouse,
+  sproutShuffle,
   puddleLens,
   adventureWalk,
   readyForAdventure,

@@ -64,3 +64,11 @@
 - `BROWSER_SUITE=fourth FOURTH_ONLY=weather` (levels 1, 2, 3, 4, 5, 6, 8: weather, dressing, mistakes, hint, saved round, sticker; level 1 taps the sky seven times and asserts free play ended), `BROWSER_SUITE=wardrobe9` and `BROWSER_SUITE=fingerdemo FINGER_ONLY=weather-wardrobe FINGER_LEVELS=1` (12.2 s) passed.
 - A probe (`test-results/wind-probe.mjs`) screenshotted the windy level-1 scene with all three items worn and a leaves burst, a blown misfit at level 2, and Lemonade Stand's three forecast icons beside the four weather icons (unchanged).
 - Not run: `npm run build` (no shared files or assets changed), `wardrobe7`, `wardrobe6`, `wardrobe10`, the production offline check. Open: [device checks](../DEVICE-CHECKS.md#weather-wardrobe-wind-2026-10-26) (wind without a label, the blown hat's tone, an iPad look at the kite on the river and glider).
+
+## 2026-10-26 — Fluffy Salon customers, rooms, start looks and level 8 Pink, please (batch 1)
+
+- [PR #995](https://github.com/rjdunlap/neo/pull/995), branch `claude/fluffy-salon-batch1`; Vite on `http://localhost:5929`, tested commit `25ca1258` (`e57540c2` plus the two review fixes). Changed: a seeded friend or her pet in the chair at levels 3–5, seeded rooms, five free-play start looks, and level 8 (five bottles, colour-only requests, a wrong bottle named without a miss).
+- Ran: `npm run typecheck`; `npx vitest run src/games/fluffy-salon src/content src/games/registry.test.ts src/games/lands.test.ts` 179 passed (the salon file 16, with new tests for colour-only requests, wrong-bottle naming, customers, rooms and start looks).
+- `BROWSER_SUITE=batch BATCH_ONLY=salon` at level 4 and at level 8 (`FROM_LEVEL=8 TO_LEVEL=8`, run before and after the review fixes) passed: five big bottles, no mirror, two wrong bottles gave 0 misses and 1 hint with the asked bottle glowing, score [0,1]; `BROWSER_SUITE=fingerdemo FINGER_ONLY=fluffy-salon FINGER_LEVELS=8` finished in 10.3 s.
+- A probe (`test-results/salon-probe.mjs`) seated Dog at level 3 with the guide kept and a seeded room, no page errors, with a portrait screenshot; six free-play launches gave five distinct start looks across mohawk, two-tone, fuzz and sleek.
+- Not run: `npm run build` (no shared assets changed), levels 1–3 and 5–7 replays (unchanged interactions), iPad or child checks. Open: [device checks](../DEVICE-CHECKS.md).

@@ -530,7 +530,7 @@ Keep these open until someone actually does them. None of them blocks [Next up](
 Added when the open questions were decided on the developer's delegation ([record](archive/DECISIONS-2026-10-23.md#decisions)). Each was a gate before; now it is a check that informs a later change and blocks nothing. Remove a line once it is done, as elsewhere in this file.
 
 - **Catalog-wide art uplift beyond the companions**: The illustrated duck and meadow beside untouched lands on the iPad.
-- **Genetics**: A grown-up watches a child try Sprout Shuffle level 1.
+- **Genetics**: A grown-up watches a child try Sprout Shuffle levels 1–2 on an iPad (built 2026-10-27, [PR #1014](https://github.com/rjdunlap/neo/pull/1014)): device speech of "spot copy" and "plain copy"; whether the tiles read as distinct without letters or colour; whether building a route reads as controlling reproduction; whether a child grasps the choice unaided; target comfort. This is the "about 9 and up" watched prototype.
 - **Scientific inquiry**: A three-to-four-year-old tries Ramp Race before a preschool window.
 - **Photo Safari**: A toddler plays the "Who is sleeping?" entry.
 - **Fill and Dump**: A person watches level 7 played.
