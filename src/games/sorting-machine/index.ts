@@ -334,7 +334,7 @@ class SortingMachine implements Game {
   // ——— Fixtures and sending ———
 
   select(i: number) {
-    if (this.finished || this.run) return;
+    if (this.finished || this.busy || this.run) return;
     this.selected = i;
     sfx.pop(6);
     this.critters[i].hop(0.6);
@@ -454,7 +454,7 @@ class SortingMachine implements Game {
   // ——— The slot and its picker ———
 
   togglePicker() {
-    if (this.finished || this.run || this.level < 2) return;
+    if (this.finished || this.busy || this.run || this.level < 2) return;
     if (this.pickerOpen) this.closePicker();
     else this.openPicker();
   }
@@ -485,7 +485,7 @@ class SortingMachine implements Game {
   }
 
   pick(prop: Prop) {
-    if (this.finished || this.run) return;
+    if (this.finished || this.busy || this.run) return;
     this.history.push(this.graph);
     this.graph = setSlot(this.graph, 0, prop);
     this.closePicker();
@@ -495,7 +495,7 @@ class SortingMachine implements Game {
   }
 
   undo() {
-    if (this.finished || this.run) return;
+    if (this.finished || this.busy || this.run) return;
     const g = this.history.pop();
     if (!g) return;
     this.graph = g;
@@ -506,7 +506,7 @@ class SortingMachine implements Game {
 
   /** The pause sheet's Start again: the opening machine; Undo can bring the choice back. Marks and counts stay. */
   restart() {
-    if (this.finished || this.run) return;
+    if (this.finished || this.busy || this.run) return;
     this.history.push(this.graph);
     this.graph = this.brief.graph;
     this.closePicker();
@@ -523,7 +523,7 @@ class SortingMachine implements Game {
   // ——— Check and Done ———
 
   check() {
-    if (this.finished || this.run || this.level < 2) return;
+    if (this.finished || this.busy || this.run || this.level < 2) return;
     const v = check(this.graph, this.brief);
     if (v.status === 'incomplete') {
       void this.ctx.say('sm.pick-first');
@@ -562,7 +562,7 @@ class SortingMachine implements Game {
 
   /** Level 1's Done: both friends sent. Otherwise the unsent friend hops; nothing counts. */
   done() {
-    if (this.finished || this.run || this.level !== 1) return;
+    if (this.finished || this.busy || this.run || this.level !== 1) return;
     const i = this.sent.findIndex((s) => !s);
     if (i >= 0) {
       void this.ctx.say('sm.send-other');
@@ -603,7 +603,7 @@ class SortingMachine implements Game {
 
   /** The pet's Help: one hint a press. Level 1 hops the unsent friend; level 2 runs a telling friend, then installs the sensor. */
   askForHint() {
-    if (this.finished || this.run) return;
+    if (this.finished || this.busy || this.run) return;
     const presses = this.tally.help();
     if (this.level === 1) {
       const i = this.sent.findIndex((s) => !s);
