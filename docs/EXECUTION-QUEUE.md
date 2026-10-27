@@ -30,10 +30,10 @@ Do not implement Duck Pond's new stopping/hint rules, Puzzle Pals' box lid, or o
 
 ## Current checkpoint
 
-- Worker `01a17a9e-a79d-7a50-b8c3-91ea1c8f5837`, host local, Neo project; dispatch `fluffy-salon-batch2-20261026T234905Z`; branch `codex/fluffy-salon-two-customers`, [PR #1002](https://github.com/rjdunlap/neo/pull/1002). Only Fluffy Salon batch 2, slices 6–7, level 9 *Two customers* and level 10 *Longer than Pip's*. [Scope](GAME-BATCHES.md#fluffy-salon-2-two-customers-and-comparative-styling). Batch 1 #995 shipped; old research/batch1 claims preserved.
-- Admission, pre-implementation and pre-verification ordinary usage allowed; both reset identities available privately and allowance fits the whole batch. No competing active implementation; coordinator exempt. Exact aggregate usage/reset metadata stays in worker chat.
-- Local proof: typecheck, 18 rules including 300 seeds in both customer orders and both comparison directions, full units 3385 passed/4 skipped, build; portrait filtered levels 9–10 real strokes/right-first/independent support/cancellation/single reward, clean demos 30.3s/5.0s. Final comparison layer placed above fur after visual review; final level10 portrait/play and build passed, showing the opposite comparison direction. [Proof](VERIFICATION.md#2026-10-26--fluffy-salon-two-customers-and-comparative-styling).
-- Next: publish whole implementation and docs, wait required PR CI, merge/deploy only #1002, stop server and report here. Resume this worker if unfinished. No levels11–13/saved styles/other games/assets/person-device acceptance, dispatch, subagents or coordinator messages.
+- Worker `01a17bb9-6505-7053-938f-9e578417107c`, host local, Neo project; branch `codex/fluffy-salon-two-colors-reversal`, PR pending. Only Fluffy Salon batch 3, slices 8–9: level 11 *Two colors* (at least 35% each), level 12 *Changed my mind* (loved first style reversed on the same attribute). [Scope](GAME-BATCHES.md#fluffy-salon-3-two-colours-and-changed-requests). Batch 2 #1002 shipped; idle external claims preserved.
+- Admission: ordinary usage allowed; both window resets present privately, remaining allowance fits the default 15/2 percentage-point whole-batch estimate. Coordinator exempt; no other active implementation chat. Exact usage/reset metadata remains in this worker chat.
+- Expected files: Fluffy Salon logic, tests and scene; voice/how-to; browser harness; README, GAMES, READY, ROADMAP, batch/deep-dive/archive/verification and this queue.
+- Next: publish claim/draft PR, implement the whole batch, run scoped rules/typecheck/play and both demos, document proof, required PR CI, merge/deploy and stop. Exclude level 13/school, saves/owned creatures/accessories, other games, generated assets and person/device acceptance. No dispatch, subagents or coordinator messages.
 
 ## Usage observations
 
