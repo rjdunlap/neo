@@ -746,6 +746,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Flagging, taking a flag out and counting suns are never counted; only Go is. A leg longer than the skin is one miss and the camel comes back to its last stop; after two the next good stop glows, which counts as one hint. Nobody walked the whole road: each caravan went a few stops and handed its load on.' },
     ],
   },
+  'water-road': {
+    goal: 'Close the ring of stones and pull the frame away: does the arch stand?',
+    steps: [
+      { from: 1, to: 1, text: 'Tap, and a stone flies onto the frame; the last one is the keystone. Then tap the frame to pull it away.' },
+      { from: 2, to: 2, text: 'Pull the frames and see which ring stands; on the last pair, tap the one you think will stand first.' },
+      { from: 3, to: 3, text: 'Drag the block to the side with no wall, then pull the frame.' },
+    ],
+    finish: 'The arch stands on its own and the pet walks through.',
+    note: [
+      { from: 1, to: 1, text: 'Nothing is counted. Every tap places a stone, a pull before the ring is closed only wobbles the frame, and the handle glows after a quiet moment.' },
+      { from: 2, to: 2, text: 'Pulling a frame to see what happens is never counted; only the last asked guess is. A wrong guess is one miss, and after two the ring that stands glows, which counts as one hint. A ring that is closed and pushed back at both ends stands. Long ago, by the middle sea, people built rings of stone like this one; some of them are still standing.' },
+      { from: 3, to: 3, text: 'Dragging the block anywhere before the pull is never counted; only a pull with the block in the wrong place is, one miss, and after two the side that needs it glows, which counts as one hint. A ring that is closed and pushed back at both ends stands. Long ago, by the middle sea, people built rings of stone like this one; some of them are still standing.' },
+    ],
+  },
   'timeline-trail': {
     goal: 'Hang pictures of one place on the clothesline, from long ago to now.',
     steps: [
