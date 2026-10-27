@@ -718,6 +718,16 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Watching is never counted. If it does not work, look at what the friend and the lamp did; the same trouble twice makes the part to change glow.' },
     ],
   },
+  'timeline-trail': {
+    goal: 'Hang pictures of one place on the clothesline, from long ago to now.',
+    steps: [
+      { from: 1, to: 1, text: 'Tap the picture from long ago, or drag it to the left post.' },
+      { from: 2, to: 2, text: 'Drag the loose picture into the gap where it belongs.' },
+      { from: 3, to: 3, text: 'Add the pictures one at a time; each fits against the ones already hung.' },
+    ],
+    finish: 'The pictures play like a flipbook and the place grows.',
+    note: 'A picture put in the wrong place slides back with a reason; after two tries on one picture its gap glows, which counts as a hint. Looking and listening are never counted. The place is made up for the island; no real dates are taught.',
+  },
   'sense-detective': {
     goal: 'Find out what is in the parcel, then put its toy on the shelf.',
     steps: [

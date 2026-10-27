@@ -87,3 +87,11 @@
 - Ran: `npm run typecheck`; `npx vitest run src/games/pet-kitchen` 16 passed; full `npm test` 264 files, 3386 tests; `npm run build`.
 - `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen KITCHEN_LEVELS=14` passed in portrait (two misses/one hint from serving with a sandwich whole, one of each per plate, overlay asserted, screenshot `test-results/browser/creative/pet-kitchen-14.png`, saved round [2, 1]); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-kitchen FINGER_LEVELS=14` clean (pre-K, 19.1 s). `game-reviewer` found one issue (the generic share line after a cut), fixed before the commit.
 - Not run: other Pet Kitchen levels (interaction unchanged), the `picnic` suite, an iPad or a child. Open: [device checks](../DEVICE-CHECKS.md).
+
+## 2026-10-26 — Settled roadmap and backlog records
+
+- [PR #997](https://github.com/rjdunlap/neo/pull/997), `codex/settled-planning-records`; reviewed base `88f11c7d` plus docs diff, integrated Size Parade `0a47657f` without changing its implementation; checked against the October 23 decision record and already-recorded deliveries.
+- Reconciled roadmap, READY, study backlog, developer waiting list and rework summaries: settled identity/band/accounting/physics/reviewer holds, delivered Welcome/companion/Pond Typing/Swap Meet work, approved discovery directions and RW09 prerequisites.
+- Archived the superseded Harbor ticket/wheel/bank proposal; preserved its roadmap anchors with current-status pointers. No new product decisions, game definitions, implementation dispatch or runtime changes.
+- Passed `node scripts/check-links.mjs` and `git diff --check`; manual status/provenance review. Rechecked overlap; active Size Parade/art/writing claims remain untouched in scope.
+- Not run locally: typecheck, unit tests, build, browser/offline suites (docs only). Required PR CI is the publication gate. Cutover iPad condition, Portuguese family review/voice acceptance, actual person/device observations and deferred practical-care/cultural scopes remain open.

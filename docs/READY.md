@@ -34,7 +34,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`size-parade`, The measuring ribbon** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-5-the-measuring-ribbon).
 - **`pet-kitchen`, Compare shares** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#pet-kitchen-3-compare-shares).
 - **`pet-kitchen`, Equivalent cup measures** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#pet-kitchen-4-equivalent-cup-measures).
-- **`timeline-trail`, build levels 1–3 (time-change T2)** (new-game tier): hang pictures of one island place on a clothesline from long ago to now (tap the older of two, insert a third into the right gap, grow a line of four), then watch the place grow as a flipbook; preschool 1–2, pre-K 1–3, school 2–3, Barnyard by default (fallback Treehouse); nothing kept. [Definition](definitions/timeline-trail.md), [batch](GAME-BATCHES.md#timeline-trail-1-levels-13)
 
 
 ### Study follow-ups (docs-only definitions)
