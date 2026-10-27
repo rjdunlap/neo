@@ -21,7 +21,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 ## Swap Meet levels 1–4 (ME2, 2026-10-25)
 
-- [ ] On an iPad, check full-size sources, receiving panels, back arrow and yellow Hint in both orientations, two-way/Undo animation, pictured wants and actual speech/guide replay. Try cancellation, leaving the canvas and a second finger with a real hand. [Scripted proof](VERIFICATION.md#2026-10-25--swap-meet-14-me2) does not establish device comfort or legibility.
+- [ ] On an iPad, check full-size sources, receiving panels, back arrow and yellow Hint in both orientations, two-way/Undo animation, pictured wants and actual speech/guide replay. Try cancellation, leaving the canvas and a second finger with a real hand. [Scripted proof](archive/VERIFICATION-2026-10-25.md#2026-10-25--swap-meet-14-me2) does not establish device comfort or legibility.
 - [ ] Observe whether a toddler notices receiving the other object and understands Undo, and whether a pre-K child follows the two-step chain. Record enjoyment, replay/stopping and coplayer reactions only when observed. Level5–6 wait until1–4 have been played; no transfer to everyday trading is claimed.
 
 ## Example Express levels 1–2 (D2, 2026-10-25)
@@ -42,11 +42,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 - [ ] On an iPad at lap with a one-year-old: does a tap on a puzzle piece read as "it went in" or as a surprise; does a tap on the named part of the patient land on the right part with a small finger (the bandage still drags for a grown-up); in *Come along*, does the herd walking to where she last tapped read as following her, and is three seconds long enough between taps? Chrome play with synthetic taps finished all three with no misses ([entry](archive/VERIFICATION-2026-10-24.md#2026-10-24--taps-only-lap-levels-r2)); a child's hand and device speech remain unobserved.
 
-## Bond Beads levels 1–2 (chemistry slice 2, 2026-10-24)
+## Bond Beads levels 1–4 (chemistry slices 2–3, 2026-10-24 and 2026-10-26)
 
 - [ ] On an iPad with a school-age child (6–8): does she read the small nubs as hands, and can she drag or tap one bead onto another and tap a link to break it comfortably in both orientations?
 - [ ] On the iPad's voice, are the level lines clear (the stuck-tray line, the Check hints, the tally strip words)?
 - [ ] Does she take the level 2 Check as "same shape as the card" and can she tell a rebuilt shape from the card's picture at a glance?
+- [ ] Levels 3–4: does she read the before/now tally strip, and are seven beads plus a two-shape card comfortable on an iPad in portrait (nubs reachable, nothing crowding the pet or corner buttons)? Does she understand the made shape fading on the card as "now build the other"?
 
 ## Story Weaver levels 1–3 (writing-composition WC1, 2026-10-24)
 
