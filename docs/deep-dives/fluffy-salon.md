@@ -149,7 +149,7 @@ Gated: the style coming home (decision 2, after RW05/RW06), accessories (decisio
 
 ## What was built in this session
 
-Slices 2 and 5 (customers, rooms, start looks and level 8, 2026-10-26, [PR #995](https://github.com/rjdunlap/neo/pull/995)) are built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#fluffy-salon-batch-1-customers-rooms-start-looks-and-level-8-pink-please-slices-2-and-5-2026-10-26), the checks in [VERIFICATION](../VERIFICATION.md#2026-10-26--fluffy-salon-customers-rooms-start-looks-and-level-8-pink-please-batch-1).
+Slices 2 and 5 (customers, rooms, start looks and level 8, 2026-10-26, [PR #995](https://github.com/rjdunlap/neo/pull/995)) are built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#fluffy-salon-batch-1-customers-rooms-start-looks-and-level-8-pink-please-slices-2-and-5-2026-10-26), the checks in [VERIFICATION](../archive/VERIFICATION-2026-10-26.md#2026-10-26--fluffy-salon-customers-rooms-start-looks-and-level-8-pink-please-batch-1).
 
 Slices 3–4 (levels 6 and 7, 2026-10-23, [PR #864](https://github.com/rjdunlap/neo/pull/864)) are built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#fluffy-salon-levels-6-and-7-pat-the-fluff-and-snip-snip-slices-34-2026-10-23), the checks in [VERIFICATION](../archive/VERIFICATION-2026-10-23.md#2026-10-23--fluffy-salon-levels-6-and-7-pat-the-fluff-and-snip-snip-slices-34).
 
