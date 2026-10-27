@@ -2,7 +2,7 @@
 
 Defined 2026-10-22 on `claude/define-sea-lift-4-5` ([PR #823](https://github.com/rjdunlap/neo/pull/823)) as slice IN2 of the [integers study](../deep-dives/subjects/integers.md#build-slices-in-order), from its [ladder](../deep-dives/subjects/integers.md#a-first-games-ladder-sea-lift) (levels 4–5) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#integers-recommendations). It extends the built [Sea Lift 1–3](sea-lift.md) (`src/games/sea-lift/`) and changes none of its rules.
 
-**Status: defined; the build waits on one read.** The study's [decision 8](../deep-dives/subjects/integers.md#decisions-for-the-developer) asks a mathematics educator to read the level-4 card distractors before they are built. The [card table](#the-level-4-card-table-for-the-educator) below is what they read; the Waiting row "Sea Lift 4–5: the educator's read of the level-4 cards" holds it. Level 5 needs no reviewer, but it sits above level 4 on the ladder, so both build in one batch once the read is done. The [open decisions](#open-decisions) all have defaults.
+**Status: building on `claude/sea-lift-4-5` (claimed 2026-10-27; both levels, `src/games/sea-lift/`, `voice-script.ts`, `howto.ts`, the `sealift` browser suite).** The educator's read of the level-4 card table was replaced on 2026-10-23 by the building session's own check against reputable sources ([decision 1](#open-decisions)); the [card table](#the-level-4-card-table-for-the-educator) below is what that check covers. Level 5 needs no reviewer, but it sits above level 4 on the ladder, so both build in one batch. The [open decisions](#open-decisions) all have defaults.
 
 **What it adds:** two new school levels at the top of the ladder.
 
