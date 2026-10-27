@@ -526,20 +526,26 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'bond-beads': {
-    goal: 'Link beads together hand to hand until every hand is held.',
+    goal: 'Link beads together hand to hand, and see that the same beads can make different shapes.',
     steps: [
       'Drag from one bead to another to link them (or tap one bead, then the other), and tap a link to break it.',
       { from: 1, to: 1, text: 'Link until every hand is held and all the beads are one piece.' },
       { from: 2, to: 2, text: 'Build the shape on the card, then tap Check.' },
-      'The yellow arrow undoes one step; the round arrow takes every link apart.',
+      { from: 3, to: 3, text: 'Take the built shapes apart and make the two on the card with every bead, then tap Check.' },
+      { from: 4, to: 4, text: 'Build either shape on the card and tap Check, then rearrange the same beads into the other and Check again.' },
+      { from: 1, to: 2, text: 'The yellow arrow undoes one step; the round arrow takes every link apart.' },
+      { from: 3, to: 4, text: 'The yellow arrow undoes one step; the round arrow puts the beads back to where this shape started.' },
     ],
     finish: [
       { from: 1, to: 1, text: 'Every hand is held and all the beads are one piece, three times.' },
       { from: 2, to: 2, text: 'Two shapes match their cards.' },
+      { from: 3, to: 3, text: 'Two cards: the built shapes become the two on the card, with no bead left over.' },
+      { from: 4, to: 4, text: 'Two sets: both shapes made from the same beads, one after the other.' },
     ],
     note: [
       { from: 1, to: 1, text: 'Linking, breaking and undo never count as mistakes, and nothing here is ever wrong. If no free hands can reach each other, a link to break pulses, with no count. This is a puzzle about beads and hands, not a model of real substances.' },
       { from: 2, to: 2, text: 'Linking, breaking and undo never count. A Check that is not the card is one miss (checking the same build again is not) and the pet names a bead or link to look at; after two misses the one to change glows, which counts as a hint, and a third wrong Check finishes the shape by itself. This is a puzzle about beads and hands, not a model of real substances.' },
+      { from: 3, to: 4, text: 'Linking, breaking and undo never count. A wrong Check is one miss (the same build again is not) and the pet names a bead or link; after two the one to change glows (one hint), and a third wrong Check finishes it by itself. A puzzle about beads and hands, not real substances.' },
     ],
   },
   'gear-garden': {
@@ -1036,6 +1042,24 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'A wrong sky plays over the pet for a moment to show what that weather does, then clears; after two wrong skies the right card glows.' },
     ],
   },
+  'moon-window': {
+    goal: 'Look at the Moon through the window and notice how its lit part changes.',
+    steps: [
+      { from: 1, to: 1, text: 'Press the big button to see how the Moon looks a few days on.' },
+      { from: 1, to: 1, text: 'Tap a picture along the bottom to hear it again.' },
+      { from: 2, to: 2, text: 'Tap the card that looks the same as the Moon in the window.' },
+      { from: 3, to: 3, text: 'Tap the Moon that shows more light, or less, as asked.' },
+    ],
+    finish: [
+      { from: 1, to: 1, text: 'Three looks, then a sticker.' },
+      { from: 2, to: 3, text: 'Every card answered.' },
+    ],
+    note: [
+      { from: 1, to: 1, text: 'Each view is a few days after the one before; the game never reads today\'s date and never asks you to come back on another night. There is nothing here to get wrong: finishing shows she looked, not that she knows why the Moon changes.' },
+      { from: 2, to: 2, text: 'Each view is a few days after the one before. A wrong card is one miss, and then the right card glows; Show a hint before trying counts as a hint.' },
+      { from: 3, to: 3, text: 'More light means more of the Moon is lit, not a brighter Moon. A wrong card is one miss, and then the right card glows; Show a hint before trying counts as a hint.' },
+    ],
+  },
   'melt-freeze': {
     goal: 'Warm and cool things, and see which ones melt and which go hard again.',
     steps: [
@@ -1203,6 +1227,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'fluffy-salon': {
     goal: 'Give the pet a fluffy makeover.',
     steps: [
+      { from: 9, to: 9, text: 'Two customers keep their own pictured two-part requests. Tap either head or card to choose, then use the tools on that head. Tap a card to hear its request again.' },
+      { from: 10, to: 10, text: 'Grow or snip your pet’s fur to make it clearly longer or shorter than Pip’s, as asked. Pip’s fur stays fixed; tap the cards to hear the comparison again.' },
       { from: 6, to: 6, text: 'Pat or stroke the fluffy fur on the pet: it grows under your finger.' },
       { from: 7, to: 7, text: 'Tap grow and drag over the fur to make it long, then tap snip and drag over it to cut it short.' },
       { from: 8, to: 8, text: 'Listen for the color the pet wants, tap that bottle, then drag over the fur to paint it.' },
@@ -1211,6 +1237,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'Look at the pictured style and use the tools to copy its length, curls and color.' },
     ],
     finish: [
+      { from: 9, to: 9, text: 'Tap the mirror to check the chosen customer. Both requests must be met; either order finishes the round.' },
+      { from: 10, to: 10, text: 'Tap the mirror to compare two straight sample locks with aligned tops and lines across their tips. A clear difference in the asked direction finishes the round.' },
       { from: 6, to: 6, text: 'When the fur is fluffy the pet shakes and a big mirror appears: tap it to finish. If nobody taps, the pet looks in the mirror by itself after 20 seconds.' },
       { from: 7, to: 7, text: 'After some styling a mirror appears and the pet asks for it: tap the mirror to finish.' },
       { to: 2, text: 'After some styling a mirror appears and the pet asks for it: tap the mirror to finish.' },
@@ -1219,6 +1247,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 5, text: 'Tap the mirror to check each request; the round ends after the last one.' },
     ],
     note: [
+      { from: 9, to: 10, text: 'Styling is exploration. Only an unfinished mirror check counts as a miss; after two for that customer, the tool for what still needs doing glows (one hint). The style is not saved.' },
+      { from: 10, to: 10, text: 'Practice directly comparing lengths: longer and shorter (K.MD.A.2). No counting or units are asked.' },
       { to: 2, text: 'Any look is welcome in free play and nothing counts as a miss; a touch off the fur makes the pet giggle.' },
       { from: 6, to: 7, text: 'Any look is welcome and nothing counts as a miss or a hint; a touch off the fur makes the pet giggle.' },
       { from: 8, to: 8, text: 'A wrong bottle still paints and the pet only names its color; after two wrong bottles the asked one glows (one hint).' },
@@ -1393,6 +1423,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'seesaw-balance': {
     goal: 'Make the seesaw go up, balance, or show which friend is heavier or lighter.',
     steps: [
+      { from: 17, to: 17, text: 'The prop holds both trays flat. Add the tagged weights and tap a tray to predict it goes down, or the equal sign in the middle for a balance. Watch the release and listen to the sums, then tap the green Continue arrow.' },
       { from: 14, to: 14, text: 'Drag pairs of presents onto the trays to compare freely. Drag each present to the light, middle or heavy shelf spot, marked by small, middle and big blocks. Either end can be filled first.' },
       { from: 15, to: 15, text: 'Tap a number to guess how heavy the pumpkin is; guessing is never wrong. Drag blocks to the other tray until balanced, then tap its measured weight. Your guess stays on the sign.' },
       { from: 16, to: 16, text: 'Drag blocks to the lighter, raised tray until the two tagged weights balance. Then tap how many blocks you added: the difference. A block on the heavy side comes back freely.' },
@@ -1408,13 +1439,17 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 11, to: 11, text: 'First tap how heavy the square box is, and it wears its number. Then take the same off both sides, counting the square box as its number of blocks, until the round box is alone; then tap how heavy the round box is.' },
     ],
     finish: [
+      { from: 17, to: 17, text: 'Three predictions and Continue taps finish. Predictions are unscored, including when the seesaw shows something different.' },
       { from: 14, to: 16, text: 'Three completed puzzles finish the round, including with help. Two wrong shelf or final-number choices glow the right destination or answer.' },
       { from: 12, to: 12, text: 'Four wheees finish the round, with no wrong touches.' },
       { from: 13, to: 13, text: 'Three comparisons finish the round, including with help.' },
       { to: 4, text: 'The round ends when the seesaw is balanced or the heaviest is chosen, as asked.' },
       { from: 5, to: 11, text: 'The round ends when the seesaw is balanced as asked and the weight is chosen.' },
     ],
-    note: 'Tipping is how the seesaw explains weight; trying things is the game. A heavier side going down and equal sides lying flat are added to her discovery journal after she sees them.',
+    note: [
+      { to: 16, text: 'Tipping is how the seesaw explains weight; trying things is the game. A heavier side going down and equal sides lying flat are added to her discovery journal after she sees them.' },
+      { from: 17, to: 17, text: 'Predictions compare weight only: distance never changes. Try a shared prediction; there is no penalty and no journal entry.' },
+    ],
   },
   'meadow-pens': {
     goal: "Count grass squares and fence pieces to help friends with their pens.",

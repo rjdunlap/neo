@@ -139,7 +139,7 @@ Each has a default below; the build proceeds on it.
 5. **Level 14 *Line them up* (built)** (new levels on an existing interaction: typecheck, rule tests, one play of 14, `fingerdemo` at 14): pre-K `order [3, 4, 14, 5, 6, 7]`.
 6. **Level 15 *Guess the pumpkin* (built)** (new levels tier, plus a portrait screenshot for the guess sign): pre-K `order [3, 4, 14, 5, 6, 7, 15]`, school `order [6, 7, 15, 8, 9, 10, 11]` (without 11 until it lands).
 7. **Level 16 *How much heavier?* (built)** (new levels tier): school `order [6, 7, 15, 16, 8, 9, 10, 11]`.
-8. **Level 17 *Which way will it tip?*** (new interaction tier: typecheck, rule tests over 300 seeds, one play of 17 with a wrong prediction, one portrait screenshot, `fingerdemo` at 17): school `order [6, 7, 15, 16, 17, 8, 9, 10, 11]`.
+8. **Level 17 *Which way will it tip?* (built)** (new interaction tier: typecheck, rule tests over 300 seeds, one play of 17 with a wrong prediction, one portrait screenshot, `fingerdemo` at 17): school `order [6, 7, 15, 16, 17, 8, 9, 10, 11]`. [PR #1000](https://github.com/rjdunlap/neo/pull/1000), `codex/seesaw-predict-tip`; [build note](../archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-4-predict-the-tip-slice-8-2026-10-26).
 
 Level 11 *Two boxes* is built from its [definition](../definitions/seesaw-two-boxes.md) (2026-10-21). Each slice that touches `voice-script.ts` or `howto.ts` runs `npm run build`. Gated: nothing; every decision above has a default.
 

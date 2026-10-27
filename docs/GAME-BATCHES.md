@@ -317,9 +317,7 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### seesaw-balance 4: Which way will it tip
 
-- **`seesaw-balance`, level 17 *Which way will it tip?*, slice 8** (new interaction tier: typecheck, rule tests over 300 seeds, one play of 17 with a wrong prediction, one portrait screenshot, `fingerdemo` at 17): an unscored prediction of which side goes down or level, explained by the release; school `order [6, 7, 15, 16, 17, 8, 9, 10, 11]`. [Dive](deep-dives/seesaw-balance.md#build-slices-in-order)
-
-Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
+Built: level17 prediction/release, slice8 ([PR #1000](https://github.com/rjdunlap/neo/pull/1000)); [build note](archive/COMPLETED-2026-10-09.md#seesaw-balance-batch-4-predict-the-tip-slice-8-2026-10-26). No open implementation subtask; person/device acceptance stays open.
 
 ### fluffy-salon 1: Customer variety and younger styling entries
 
@@ -333,6 +331,8 @@ Status 2026-10-26: built. Slices 3 and 4 (levels 6 and 7) landed 2026-10-23 ([PR
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
 ### fluffy-salon 2: Two customers and comparative styling
+
+Built 2026-10-26: slices 6–7, levels 9–10 ([PR #1002](https://github.com/rjdunlap/neo/pull/1002)); [build note](archive/COMPLETED-2026-10-09.md#fluffy-salon-batch-2-two-customers-and-comparative-styling-slices-67-2026-10-26). No open implementation subtask; person/device acceptance stays open.
 
 - **`fluffy-salon`, level 9 *Two customers*, slice 6** (new interaction, plus a portrait screenshot): two friends in two chairs with a two-part card each, either order finishes; preschool `order [2, 8, 3, 4, 9]`, pre-K `order [3, 4, 5, 9]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)
 - **`fluffy-salon`, level 10 *Longer than Pip's*, slice 7** (new interaction): make the pet's fur longer or shorter than a friend's, with a comparison line drawn in the mirror; pre-K `order [3, 4, 5, 9, 10]`. [Dive](deep-dives/fluffy-salon.md#build-slices-in-order)

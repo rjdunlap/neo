@@ -237,11 +237,77 @@ async function batch() {
       },
     };
   });
-  for (let level = 1; level <= (process.env.TO_LEVEL ? Number(process.env.TO_LEVEL) : 8) && (!only || only === 'salon'); level++) {
+  for (let level = 1; level <= (process.env.TO_LEVEL ? Number(process.env.TO_LEVEL) : 10) && (!only || only === 'salon'); level++) {
     if (process.env.FROM_LEVEL && level < Number(process.env.FROM_LEVEL)) continue;
+    if (level >= 9) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('fluffy-salon', level);
     await page.waitForTimeout(600);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (level >= 9) {
+      await screenshot(`fluffy-salon-${level}-portrait`);
+      await page.evaluate(async (level) => {
+        const g = neo.scene.game;
+        const { needs, toolFor, strokePath } = await import('/src/games/fluffy-salon/logic.ts');
+        const beforeRewards = kit.store.data.stickers.length;
+        window.salonPairRewards = beforeRewards;
+        window.salonPairLines = [];
+        const say = g.ctx.say.bind(g.ctx);
+        g.ctx.say = (id, vars) => { salonPairLines.push({ id, vars }); return say(id, vars); };
+        const idle = async () => { if (!await kit.until(() => !g.busy || g.finished, 8000)) throw new Error('Pair stayed busy'); };
+        const check = async () => { kit.tapOn(g.mirror); await kit.sleep(350); await idle(); };
+        const select = async (i) => { kit.tapOn(g.seats[i].card); await kit.sleep(400); if (g.selected !== i) throw new Error('Card did not select its own customer'); };
+        // Right customer first: the starting request, hair and support of the other head must stay untouched.
+        if (level === 9) await select(1);
+        const first = g.selected;
+        const untouched = JSON.stringify(g.seats[1 - first].strands);
+        await check(); await check();
+        if (g.misses !== 2 || g.hints !== 1 || !g.buttons.some(b => b.glow.visible)) throw new Error('Pair mirror support did not count two misses / one hint');
+        if (level === 10 && !g.comparison.context.instructions.length) throw new Error('No comparison drawing at mirror look');
+        if (level === 9) {
+          await select(0);
+          if (g.buttons.some(b => b.glow.visible)) throw new Error('Hint leaked to other customer');
+          await select(1);
+        }
+        // A cancelled contact must never style on a later move without a fresh down.
+        const s = g.seat;
+        const p = s.hair.toGlobal(g.an[10]);
+        const canvas = document.querySelector('canvas');
+        canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: p.x, clientY: p.y, pointerId: 1, pointerType: 'touch', bubbles: true }));
+        const beforeCancel = JSON.stringify(s.strands);
+        window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 1 }));
+        canvas.dispatchEvent(new PointerEvent('pointermove', { clientX: p.x, clientY: p.y, pointerId: 1, bubbles: true }));
+        if (g.pointer !== null || JSON.stringify(s.strands) !== beforeCancel) throw new Error('Cancelled pointer kept styling');
+        await kit.sleep(100);
+        window.salonPairSnapshotReady = true;
+        const order = level === 9 ? [1, 0] : [0];
+        for (const i of order) {
+          await select(i);
+          const seat = g.seats[i];
+          const look = g.requests[level === 10 ? 0 : i].look;
+          for (let n = 0; needs(look, seat.strands) && n < 20; n++) {
+            const tool = toolFor(needs(look, seat.strands));
+            kit.tapOn(g.buttons.find(b => b.tool === tool));
+            await kit.sleep(250);
+            const corners = strokePath(tool, n % 2 === 1);
+            const path = corners.slice(1).flatMap((p, j) => kit.line([corners[j].x, corners[j].y], [p.x, p.y], 20)).map(([x, y]) => { const q = seat.hair.toGlobal({ x, y }); return [q.x, q.y]; });
+            await kit.drag(path, 1, 12);
+          }
+          if (needs(look, seat.strands)) throw new Error(`Unmet pair request ${i}: ${needs(look, seat.strands)}`);
+          if (i === first && JSON.stringify(g.seats[1 - first].strands) !== untouched) throw new Error('A stroke edited the other customer');
+          await check();
+          if (!seat.done) throw new Error('Mirror did not accept its own completed request');
+          if (level === 9 && i === 1 && g.finished) throw new Error('Finished before both customers');
+        }
+        if (!g.finished) throw new Error('Pair did not finish');
+        if (level === 10 && !salonPairLines.some(l => l.id === 'salon.compare-more' && l.vars.direction === g.requests[0].look.comparison.direction)) throw new Error('Comparison hint named the wrong direction');
+      }, level);
+      await screenshot(`fluffy-salon-${level}-mirror-portrait`);
+      await finished('fluffy-salon');
+      const proof = await page.evaluate(() => ({ score: kit.store.stats('fluffy-salon').history.at(-1), rewards: kit.store.data.stickers.length - salonPairRewards }));
+      assert.deepEqual([proof.score.misses, proof.score.hints, proof.rewards], [2, 1, 1]);
+      log(`Fluffy Salon ${level}: real strokes, separate requests/support, mirror retries, cancellation and single reward passed`);
+      continue;
+    }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       if (g.plan.mode === 'pat') {

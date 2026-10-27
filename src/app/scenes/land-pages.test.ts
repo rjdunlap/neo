@@ -17,12 +17,12 @@ describe('a full land\'s pages', () => {
     expect(rememberedPage('tinker-lab', true)).toBe(0);
   });
 
-  it('pages Tinker Lab at school (16 games and a signpost) as 8 and 8, and holds a page past the end on the last', () => {
+  it('pages Tinker Lab at school (17 games and a signpost) as 9 and 8, and holds a page past the end on the last', () => {
     const lab = landFor('tinker-lab');
     const sign = olderIn(lab, 'school', GAMES).length > 0;
     const pages = landPages(visibleIn(lab, 'school', GAMES), sign);
     expect(sign).toBe(true);
-    expect(pages.map((p) => p.length)).toEqual([8, 8]);
+    expect(pages.map((p) => p.length)).toEqual([9, 8]);
     expect(clampLandPage(4, pages.length)).toBe(1);
   });
 });

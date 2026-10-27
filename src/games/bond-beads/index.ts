@@ -17,13 +17,19 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { beadBody, beadTrio, cardArt, drawHands, drawLinks, LINK_COLOR, shapePicture, tableArt } from './art';
 import {
-  allHeld, BEAD_R, beadAt, beadLayout, Bench, canLink, centre, CheckTally, helpFor, linkAt, linked, nextMove, planFor, roundFor, tally,
-  type BeadLayout, type Help, type Kind, type Link, type Plan, type Pt, type Step,
+  allHeld, BEAD_R, beadAt, beadLayout, Bench, canLink, centre, CheckTally, helpFor, linkAt, linked, nextMove, planFor, roundFor, shapeKey, tally,
+  type BeadLayout, type Help, type Kind, type Link, type Plan, type Pt, type Shape, type Step,
 } from './logic';
 
 const LEVELS: BandLevels = {
-  school: { min: 1, max: 2 },
+  school: { min: 1, max: 4 },
 };
+
+/** The shapes a step's card pictures: one (level 2), the two to build (level 3), or the two ways (level 4). */
+function cardShapes(s: Step): Shape[] {
+  if (!s.requests) return [];
+  return s.twoWays ? s.requests.map((r) => r[0]) : s.requests[0];
+}
 
 /** Finger travel below this is a tap on a bead (select it, or link to the selected one), not a carry. */
 const PRESS_TRAVEL = 15;
@@ -34,6 +40,8 @@ class BondBeads implements Game {
   readonly tally = new CheckTally();
   index = 0;
   bench!: Bench;
+  /** Level 4: the shape she built first, now faded on the card while she makes the other. */
+  first: Shape | null = null;
   finished = false;
   busy = false;
   /** Tap-tap linking: the bead tapped first, waiting for a second. */
@@ -71,12 +79,18 @@ class BondBeads implements Game {
     ctx.stage.addChild(this.backdrop, this.board);
   }
 
-  private get level2() {
-    return this.plan.level === 2;
+  /** Levels 2–4 have a card and a Check; level 1 ends by itself. */
+  private get checks() {
+    return this.plan.level >= 2;
   }
 
   private instruction(): LineId {
-    return this.level2 ? 'bondbeads.instruct.copy' : 'bondbeads.instruct.hold';
+    switch (this.plan.level) {
+      case 2: return 'bondbeads.instruct.copy';
+      case 3: return 'bondbeads.instruct.rebuild';
+      case 4: return 'bondbeads.instruct.twoways';
+      default: return 'bondbeads.instruct.hold';
+    }
   }
 
   start() {
@@ -101,7 +115,8 @@ class BondBeads implements Game {
 
   private openStep() {
     const s = this.steps[this.index];
-    this.bench = new Bench(s.kinds, s.card);
+    this.bench = new Bench(s.kinds, s.requests, s.opening);
+    this.first = null;
     this.tally.next();
     this.selected = null;
     this.wasStuck = false;
@@ -122,7 +137,8 @@ class BondBeads implements Game {
     for (const c of this.board.removeChildren()) c.destroy({ children: true });
     if (this.finished) return;
     const s = this.steps[this.index];
-    const l = beadLayout(this.view, s.kinds.length, s.card !== null);
+    const shapes = cardShapes(s);
+    const l = beadLayout(this.view, s.kinds.length, shapes.length);
     this.layoutNow = l;
     if (!l) return;
 
@@ -143,16 +159,11 @@ class BondBeads implements Game {
     this.board.addChild(this.glow);
 
     this.buildTally(l, s.kinds);
-    if (s.card && l.card) {
+    if (shapes.length && l.card) {
       const card = new Container();
       card.eventMode = 'none';
       card.position.copyFrom(centre(l.card));
-      const pic = shapePicture(s.card, 64, 24);
-      const fit = Math.min(1.6, (l.card.w - 40) / Math.max(1, pic.width), (l.card.h - 40) / Math.max(1, pic.height));
-      pic.scale.set(fit);
-      const b = pic.getLocalBounds();
-      pic.position.set(-(b.x + b.width / 2) * fit, -(b.y + b.height / 2) * fit);
-      card.addChild(cardArt(l.card.w, l.card.h), pic);
+      card.addChild(cardArt(l.card.w, l.card.h), this.cardPictures(shapes, l.card.w - 40, l.card.h - 40));
       this.board.addChild(card);
     }
     if (l.check) {
@@ -166,6 +177,42 @@ class BondBeads implements Game {
     this.againButton.position.copyFrom(centre(l.again));
     this.board.addChild(this.undoButton, this.againButton);
     this.redraw();
+  }
+
+  /**
+   * The card's pictures, centred: one shape, or two side by side (stacked in a tall card). At level 4 the shape she has
+   * already made fades and the one still to make stays bright.
+   */
+  private cardPictures(shapes: Shape[], w: number, h: number): Container {
+    const c = new Container();
+    const pics = shapes.map((shape) => {
+      const pic = shapePicture(shape, 64, 24);
+      const b = pic.getLocalBounds();
+      pic.position.set(-(b.x + b.width / 2), -(b.y + b.height / 2));
+      const wrap = new Container();
+      wrap.addChild(pic);
+      if (this.first && shapeKey(shape) === shapeKey(this.first)) {
+        wrap.alpha = 0.35;
+        const tick = checkIcon();
+        tick.scale.set(0.9);
+        tick.position.set(b.width / 2 - 10, -b.height / 2 + 6);
+        wrap.addChild(tick);
+      }
+      return { wrap, w: b.width, h: b.height };
+    });
+    const gap = 24;
+    const stacked = pics.length > 1 && h > w * 0.9;
+    const totalW = stacked ? Math.max(...pics.map((p) => p.w)) : pics.reduce((a, p) => a + p.w, 0) + gap * (pics.length - 1);
+    const totalH = stacked ? pics.reduce((a, p) => a + p.h, 0) + gap * (pics.length - 1) : Math.max(...pics.map((p) => p.h));
+    const fit = Math.min(1.6, w / Math.max(1, totalW), h / Math.max(1, totalH));
+    let along = stacked ? -totalH / 2 : -totalW / 2;
+    for (const p of pics) {
+      if (stacked) { p.wrap.position.set(0, along + p.h / 2); along += p.h + gap; }
+      else { p.wrap.position.set(along + p.w / 2, 0); along += p.w + gap; }
+      c.addChild(p.wrap);
+    }
+    c.scale.set(fit);
+    return c;
   }
 
   private buildBead(kind: Kind, i: number, at: Pt) {
@@ -216,7 +263,7 @@ class BondBeads implements Game {
       return { c, w: x };
     };
     const now = row();
-    if (this.level2) {
+    if (this.checks) {
       const before = row();
       const arrow = arrowIcon(1);
       arrow.scale.set(0.6);
@@ -337,7 +384,7 @@ class BondBeads implements Game {
   /** After a link, a break or an undo: redraw, then a finished tray (level 1) or a stuck one. */
   private changed() {
     this.redraw();
-    if (this.level2) return;
+    if (this.checks) return;
     if (this.bench.done) { void this.stepDone(); return; }
     // Every hand that is free is on a bead that cannot reach another: show a link to break, never counted.
     const stuck = this.bench.stuck;
@@ -349,9 +396,9 @@ class BondBeads implements Game {
     this.wasStuck = stuck;
   }
 
-  /** Level 2's Check. */
+  /** Levels 2–4's Check. */
   check() {
-    if (this.busy || this.finished || !this.level2) return;
+    if (this.busy || this.finished || !this.checks) return;
     const v = this.tally.check(this.bench);
     if (v === 'match') { void this.stepDone(); return; }
     if (v === 'assist') { void this.assist(); return; }
@@ -363,7 +410,7 @@ class BondBeads implements Game {
 
   /** One fact about the build: a free hand, a bead left over, or a link the card does not have. */
   private factLine(h: Help | null): LineId {
-    if (!h) return 'bondbeads.instruct.copy';
+    if (!h) return this.first ? 'bondbeads.other' : this.instruction();
     if (h.kind === 'free') return 'bondbeads.free';
     if (h.kind === 'left') return 'bondbeads.left';
     return allHeld(this.bench.kinds, this.bench.links) ? 'bondbeads.notcard' : 'bondbeads.break';
@@ -431,12 +478,39 @@ class BondBeads implements Game {
     for (const b of l.beads) this.ctx.particles.burst(b.x, b.y, { colors: [swatch.yellow.fill, swatch.red.fill, 0xffffff], count: 6 });
     this.ctx.pet.cheer();
     for (const n of this.beadNodes) void this.hop(n);
-    await this.ctx.say(this.level2 ? 'bondbeads.match' : 'bondbeads.held');
+    const s = this.steps[this.index];
+    if (s.twoWays && !this.first) {
+      // Level 4, the first shape: keep the beads as they are and ask for the other shape from the same beads.
+      const made = this.bench.matched();
+      await this.ctx.say('bondbeads.match');
+      if (!this.alive || epoch !== this.epoch) return;
+      this.first = made ? made[0] : null;
+      const other = (s.requests ?? []).filter((r) => !made || r[0] !== made[0]);
+      this.bench = new Bench(s.kinds, other.length ? other : s.requests, this.bench.links);
+      // The shape she just made is the last Check: pressing Check again before changing anything is not a miss.
+      this.tally.next(this.bench.state);
+      this.selected = null;
+      this.busy = false;
+      this.build();
+      void this.ctx.say('bondbeads.other');
+      return;
+    }
+    await this.ctx.say(this.stepLine());
     if (!this.alive || epoch !== this.epoch) return;
     if (this.index + 1 >= this.steps.length) return this.finale();
     this.index++;
     this.busy = false;
     this.openStep();
+  }
+
+  /** What the pet says when a tray, card, puzzle or set is finished. */
+  private stepLine(): LineId {
+    switch (this.plan.level) {
+      case 2: return 'bondbeads.match';
+      case 3: return 'bondbeads.rebuilt';
+      case 4: return 'bondbeads.twoways';
+      default: return 'bondbeads.held';
+    }
   }
 
   private async hop(n: Container) {
@@ -463,10 +537,10 @@ class BondBeads implements Game {
     this.glow.circle(at.x, at.y, r).stroke({ width: 8, color: swatch.yellow.fill });
   }
 
-  /** The pause sheet's Show a hint: at level 2 the glow (one hint per card); at level 1 a free pulse, never counted. */
+  /** The pause sheet's Show a hint: at levels 2–4 the glow (one hint per card); at level 1 a free pulse, never counted. */
   askForHint() {
     if (this.busy || this.finished || !this.help) return;
-    if (this.level2) {
+    if (this.checks) {
       this.tally.ask();
       void this.ctx.say('bondbeads.hint');
       return;
@@ -477,7 +551,7 @@ class BondBeads implements Game {
 
   hintLabel = 'Show a hint';
 
-  /** The ghost finger: carry a bead to the one the next link needs, tap a link that has to go, then (level 2) Check. */
+  /** The ghost finger: carry a bead to the one the next link needs, tap a link that has to go, then (levels 2–4) Check. */
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || this.drags.some((d) => d.dragging) || !this.layoutNow) return null;
     const m = nextMove(this.bench);
