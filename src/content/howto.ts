@@ -718,6 +718,22 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Watching is never counted. If it does not work, look at what the friend and the lamp did; the same trouble twice makes the part to change glow.' },
     ],
   },
+  'keep-house': {
+    goal: "Put the castle's people and rooms where their work needs them.",
+    steps: [
+      { from: 1, to: 1, text: 'Tap a door and see who comes out; tap the well too.' },
+      { from: 2, to: 2, text: 'Drag each one to the room where its work is.' },
+      { from: 3, to: 3, text: 'Put the kitchen down and watch the soup: does it reach the hall hot? Then the stable, for the horses.' },
+      { from: 4, to: 4, text: 'Fit the five rooms to the five needs, then ring the bell. Tap a need card to hear it again.' },
+    ],
+    finish: 'Everyone is at work in the right place.',
+    note: [
+      { from: 1, to: 1, text: 'Nothing is counted. Every door, the well and a wave are free.' },
+      { from: 2, to: 2, text: "A first wrong room for each figure is never counted; the next wrong room is a miss. After two misses the right room glows, which counts as one hint. This is the island's castle, like the castles people built long ago: a home, and a workplace for everyone in it." },
+      { from: 3, to: 3, text: "A placement is never a miss: either spot finishes. After a cold walk, Keep it once replays it; Keep it twice shows the near spot, which counts as one hint. This is the island's castle, like the castles people built long ago: a home, and a workplace for everyone in it." },
+      { from: 4, to: 4, text: "Moving rooms around and hearing a need again are never counted; the bell is what checks, one miss per unmet need. After two misses the next move glows, which counts as one hint. This is the island's castle, like the castles people built long ago: a home, and a workplace for everyone in it." },
+    ],
+  },
   'river-tablets': {
     goal: 'Make a clay record, then open it up and see it match.',
     steps: [
