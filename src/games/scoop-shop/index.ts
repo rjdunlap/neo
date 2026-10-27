@@ -746,7 +746,12 @@ export const scoopShop: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Be the customer! Ask {name} for "pink, please!" and say thank you.',
-  offScreen: 'Play ice cream shop with colored pom-poms or blocks stacked in a cup.',
+  offScreen: {
+    all: 'Play ice cream shop with colored pom-poms or blocks stacked in a cup.',
+    // Under 3: no pom-poms (small parts).
+    lap: 'Play ice cream shop with blocks stacked in a cup.',
+    toddler: 'Play ice cream shop with blocks stacked in a cup.',
+  },
   hubIcon: () => new ShopIcon(),
   touchDemo: true,
   sticker,

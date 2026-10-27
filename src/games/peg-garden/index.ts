@@ -897,7 +897,12 @@ export const pegGarden: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Guess together where the pearl will land before {name} lets go.',
-  offScreen: 'Roll a marble down a tilted tray with toy blocks as bumpers.',
+  offScreen: {
+    all: 'Roll a marble down a tilted tray with toy blocks as bumpers.',
+    // Under 3: a large soft ball instead of a marble (small parts).
+    lap: 'Roll a large soft ball down a tilted tray with toy blocks as bumpers.',
+    toddler: 'Roll a large soft ball down a tilted tray with toy blocks as bumpers.',
+  },
   hubIcon: () => new PegIcon(),
   touchDemo: true,
   entryLevels: [8],

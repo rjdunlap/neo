@@ -782,7 +782,11 @@ export const teddyDoctor: GameModule = {
   touchDemo: true,
   entryLevels: [7],
   coplayHint: 'Be the patient! Tell {name} where it hurts, and say thank you when you feel better.',
-  offScreen: 'Play doctor with a teddy and a box of plasters: where does it hurt, and what will help?',
+  offScreen: {
+    all: 'Play doctor with a teddy and a box of plasters: where does it hurt, and what will help?',
+    // School: a build or test with a result, predicting first.
+    school: 'Give a teddy a check-up: measure how tall it is with blocks or a ruler, and write it on a chart with what will help.',
+  },
   hubIcon: () => new WigglyIcon(teddyArt(1)),
   sticker: (seed) => teddyArt(seed),
   create: (ctx) => new TeddyDoctor(ctx),

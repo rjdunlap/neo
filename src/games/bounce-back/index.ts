@@ -620,7 +620,11 @@ export const bounceBack: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Take the pink paddle on the left and play with {name}! Count the bounces out loud.',
-  offScreen: 'Roll a ball back and forth across the floor, counting each roll.',
+  offScreen: {
+    all: 'Roll a ball back and forth across the floor, counting each roll.',
+    // School: a build or test with a result, predicting first.
+    school: 'Roll a ball at a wall from three different spots. Before each roll, point to where it will come back, then check.',
+  },
   hubIcon: () => new BounceIcon(),
   touchDemo: true,
   sticker,

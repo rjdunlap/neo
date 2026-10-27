@@ -12,7 +12,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 ## Weather Wardrobe level 10 (2026-10-26)
 
-- [ ] On iPad, check friend sign/item readability, long drags in portrait and landscape, finger lift, palm/second-finger rejection, cancellation and actual spoken weather reasons/guide replay. Observe whether a pre-K child uses both weather signs to give each friend what it needs, and record enjoyment/replay/stopping only after play. [Scripted proof](VERIFICATION.md#2026-10-26--weather-wardrobe-two-friends-level-10) does not establish these.
+- [ ] On iPad, check friend sign/item readability, long drags in portrait and landscape, finger lift, palm/second-finger rejection, cancellation and actual spoken weather reasons/guide replay. Observe whether a pre-K child uses both weather signs to give each friend what it needs, and record enjoyment/replay/stopping only after play. [Scripted proof](archive/VERIFICATION-2026-10-26.md#2026-10-26--weather-wardrobe-two-friends-level-10) does not establish these.
 
 ## Village Vote levels 1–3 (CC4, 2026-10-26)
 

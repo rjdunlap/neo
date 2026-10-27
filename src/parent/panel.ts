@@ -7,6 +7,7 @@ import { levelsInOrder } from '../progress/difficulty';
 import { bandForYears, cardName, checkBirthInput, completedYears, isBlankProfile } from '../progress/profiles';
 import { store } from '../progress/store';
 import { visibleGames } from '../content/lands';
+import { offScreenIdeas } from '../content/offscreen';
 import { placeFor } from '../content/places';
 import { PET_COLORS, type PetColor } from '../content/world';
 import { SPECIES, SPECIES_IDS } from '../creatures/species';
@@ -414,7 +415,8 @@ function weekSummary(): string {
   }
   const played = games.filter((g) => store.stats(g.id).history.some((r) => r.at >= since));
   const stickers = store.data.stickers.filter((s) => s.at >= since).length;
-  const ideas = (played.length ? played : games).filter((g) => g.offScreen).slice(0, 2);
+  // Each idea is the line for the band she plays that game at, with her name; a game that withholds its line there is skipped.
+  const ideas = offScreenIdeas(played.length ? played : games, band, store.data.profile.name);
   return `
     <p class="muted">Levels adjust on their own: two easy rounds step up, two hard ones step down. Pick a level to stay on it instead. Every game for her age and younger is shown with the levels it plays for her, plus any game for bigger kids she played this week.</p>
     <table>
@@ -423,7 +425,7 @@ function weekSummary(): string {
     </table>
     <p class="muted" style="margin-top:8px">${stickers} sticker${stickers === 1 ? '' : 's'} this week, ${store.data.stickers.length} in all. Rounds counts only the most recent ten per game.</p>
     <p><strong>The Windy Picnic</strong> (a story on the island map): ${picnicSummary()}</p>
-    ${ideas.map((g) => `<p><strong>Off-screen idea:</strong> ${esc(g.offScreen!)}</p>`).join('')}`;
+    ${ideas.map((i) => `<p><strong>Off-screen idea:</strong> ${esc(i.line)}</p>`).join('')}`;
 }
 
 function picnicSummary(): string {
