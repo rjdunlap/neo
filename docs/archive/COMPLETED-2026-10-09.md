@@ -57,6 +57,10 @@ The original idea’s pictured request/reciprocal pair/two-trade action is deliv
 [PR #955](https://github.com/rjdunlap/neo/pull/955), worker `01a171a1-fcdd-70b0-aeff-8baa24cddb58`, branch `codex/example-express-d1`: [packet](../definitions/example-express.md) freezes six-rule fitting/ties, eight parcels and complete first seeds, all ten level-2 repairs and level-3 accepted family, free Test versus Check, solver support, speech/how-to/demo and layout/placement requirements. Docs only; D2 levels1–2 is separately queued, D3 follows; source-review, actual capacity/layout, later cases and person/device gates retained. Links/diff checked; no code/assets or local gameplay verification. [Verification](VERIFICATION-2026-10-24.md#2026-10-24--example-express-13-definition-d1-docs-only).
 
 
+### River Tablets 1–3 definition (AR1, 2026-10-27)
+
+[PR #1015](https://github.com/rjdunlap/neo/pull/1015), branch `claude/define-river-tablets`: [definition](../definitions/river-tablets.md) for the one-token-each, envelope and which-row levels (preschool 1–2, pre-K 2–3, school 3, Story Grove by default) and a batch plan in `GAME-BATCHES.md`; docs only, nothing built. AR2 (build levels 1–3) is queued in READY and AR3 (levels 4–6 definition) follows it.
+
 ### Movie Night 1–3 definition (MM1, 2026-10-24)
 
 [PR #953](https://github.com/rjdunlap/neo/pull/953), worker `01a170f9-90ac-7bb1-9218-fab3c1fbf5b0`, branch `codex/movie-night-mm1`: [packet](../definitions/movie-night.md) defines fixed Pond/Door footage and facts, synthesized pads/event matches, exact accepted sets, first-unmet reactions and decided Premiere accounting, touch/Stop/Undo/Help, speech/how-to/demos, both logical orientations and current Painted Canyon placement requirements. MM1 is docs only; no gameplay, registration/assets or persistence. MM2 is separately queued at the new-game tier with review and actual capacity/layout gates. Later levels/flipbook/storage/family-card/rework-home dependencies and device/child evidence stay open. Links and diff checks passed; no local code/browser checks. [Verification](VERIFICATION-2026-10-24.md#2026-10-24--movie-night-13-definition-mm1-docs-only).
@@ -1897,7 +1901,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-23.md#2026-10-23--pet-kitchen-
 
 [PR #998](https://github.com/rjdunlap/neo/pull/998), `claude/pet-kitchen-different-shape` ([deep dive](../deep-dives/pet-kitchen.md#build-slices-in-order)). Level 14: two sandwiches, two friends, two cut pictures (down and across); each sandwich takes its own cut, one tap per sandwich, giving two tall or two wide halves of equal area. A plate with a tall and a wide half, or two alike, is fair; serving with a sandwich still whole is a miss (`kitchen.shapes-whole`), and the second miss glows the cutting picture not yet used (`kitchen.shapes-other`); unequal plates are the usual miss. After a fair serve one tall and one wide half lift and overlay (`kitchen.same-share`, or `kitchen.same-shape` when both were cut the same way, accepted with no miss), then the friends eat. Rules in `logic.ts`: `SHAPES_LEVEL`, `SHAPES_PLAN`, `CUT_WAYS`, `pieceShape`, `nextWay`, `allCut`, `shapesLine`, `overlayPair`. Pre-K `order [11, 3, 4, 14, 5, 6]` (max 14), school `order [14, 5, 6, 7, 8, 9, 12]` (min 5, max 14), 14 an entry level; 13 is not built and no order lists it. The how-to gains a 14 step and the serve step widens to 11-14; the `creative` kitchen harness plays level 14 (`KITCHEN_LEVELS=14`).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-26--pet-kitchen-14-different-shape-same-share).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-26.md#2026-10-26--pet-kitchen-14-different-shape-same-share).
 
 ## Adventure Walk levels 1–3 (AW2, 2026-10-23)
 
