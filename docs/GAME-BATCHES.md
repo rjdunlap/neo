@@ -541,9 +541,7 @@ Built 2026-10-27, [PR #1019](https://github.com/rjdunlap/neo/pull/1019); [defini
 
 ### caravan-days 1: Kneel and load, can we reach it, and day by day
 
-- **`caravan-days`, levels 1–3 (slice CS2)** (a new game, one declared batch; toddler 1, preschool 1–2, pre-K 2–3, school 3, Cozy Village by decision 2 if the lands test passes, else Rainbow Meadow): tap the camel to kneel, tap each bale to load it, tap the camel to walk to the water (level 1, nothing counted); a fork with suns on each branch and a two-day waterskin, tap the reachable oasis (level 2, a miss per far tap, one glow per road); day by day across the map, two branches of 2–3 landmark oases with one 3-sun leg, flag the stops in order then Go (level 3, a miss per Go with an over-long leg, one glow per map). [Definition](definitions/caravan-days.md), [China, India and the Silk Road study slice CS2](deep-dives/subjects/china-india-silk-road.md#build-slices-in-order)
-
-Proof: new-game tier, as the [definition's check tier](definitions/caravan-days.md#check-tier-for-cs2) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `browser-check.mjs` case filtered to Caravan Days with level 1 to the drink, one far tap and glow at level 2 and one over-long Go and glow at level 3, `fingerdemo` at level 3, one portrait screenshot, one build). The two history lines are source-checked in the building session. If the allowance cannot cover all three, stop after a complete level 1 (or 1–2) with a draft-PR checkpoint. No review gate.
+Built 2026-10-27, [PR #1020](https://github.com/rjdunlap/neo/pull/1020); [definition](definitions/caravan-days.md), [archived build note](archive/COMPLETED-2026-10-09.md#caravan-days-levels-13-china-india-and-the-silk-road-cs2-2026-10-27). Whole three-level new-game batch. Device checks remain; levels 4–5 (CS3) need their own definition.
 
 ### welcome-ways 1: Levels 1–4
 
