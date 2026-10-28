@@ -7,6 +7,13 @@
 - [ ] On an iPad at pre-K: is the shoulder gap visible enough to compare the two rings?
 - [ ] On an iPad at level 3: do the push arrows read as "push"?
 - [ ] On the iPad, how are "keystone" and "buttress" spoken: device speech or the rendered clips?
+## Keep House levels 1–4
+
+- [ ] Watch a two-year-old at level 1: does she find the doors before the well?
+- [ ] Does "the horse can't work there" read as funny rather than a scold at level 2?
+- [ ] At level 3, is the cold soup read from the walk and the tile, not only from the voice?
+- [ ] On an iPad: are the 3 × 3 plan's cells reliably hit at level 4, in portrait and landscape?
+- [ ] On the iPad, how are the five need lines spoken: device speech or the rendered clips?
 
 ## Caravan Days levels 1–3
 

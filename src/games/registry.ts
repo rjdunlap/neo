@@ -144,6 +144,7 @@ import { sproutShuffle } from './sprout-shuffle';
 import { riverTablets } from './river-tablets';
 import { caravanDays } from './caravan-days';
 import { waterRoad } from './water-road';
+import { keepHouse } from './keep-house';
 import { puddleLens } from './puddle-lens';
 import { adventureWalk } from './adventure-walk';
 import { readyForAdventure } from './ready-for-adventure';
@@ -281,6 +282,7 @@ export const GAMES: GameModule[] = [
   riverTablets,
   caravanDays,
   waterRoad,
+  keepHouse,
   puddleLens,
   adventureWalk,
   readyForAdventure,
