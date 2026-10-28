@@ -1,7 +1,7 @@
 import { spread } from '../../engine/view';
 
 export interface SizePlan {
-  count: number; order: 'big' | 'small'; mode: 'pick' | 'line' | 'cycle'; name: string;
+  count: number; order: 'big' | 'small'; mode: 'pick' | 'line' | 'cycle' | 'fit'; name: string;
   /** Some questions ask for the middle one. */
   middle?: boolean;
   /** *Big one, little one*: the big one, then the little one, then the big one again, in plain words. */
@@ -25,10 +25,12 @@ export const TWO_IN_A_LINE: SizePlan = { count: 2, order: 'small', mode: 'line',
 export const MIDDLE_ONE: SizePlan = { count: 3, order: 'big', mode: 'pick', middle: true, name: 'Find the middle-sized friend of three' };
 export const BIG_LITTLE: SizePlan = { count: 2, order: 'big', mode: 'pick', bigLittle: true, name: 'Tap the big one, then the little one' };
 export const SIZE_CYCLE: SizePlan = { count: 1, order: 'big', mode: 'cycle', name: 'Tap one friend to make it bigger, then smaller' };
+/** 11 *Who fits?* (preschool top and pre-K, after 6): a bed, a chair, a bowl and a door, each fitting exactly one of three friends. */
+export const WHO_FITS: SizePlan = { count: 3, order: 'big', mode: 'fit', name: 'Tap the friend who fits the bed, chair, bowl and door' };
 export const sizePlan = (level: number): SizePlan =>
-  level === 17 ? TWO_IN_A_LINE : level === 10 ? MIDDLE_ONE : level === 9 ? BIG_LITTLE : level === 16 ? SIZE_CYCLE
+  level === 17 ? TWO_IN_A_LINE : level === 10 ? MIDDLE_ONE : level === 9 ? BIG_LITTLE : level === 16 ? SIZE_CYCLE : level === 11 ? WHO_FITS
     : SIZE_PLANS[Math.max(0, Math.min(SIZE_PLANS.length - 1, level - 1))];
-/** How many questions a pick level asks: three at *Big one, little one*, otherwise four. */
+/** How many questions a pick level asks: three at *Big one, little one*, otherwise four (one per prop at *Who fits?*). */
 export const pickRounds = (plan: SizePlan): number => plan.bigLittle ? 3 : 4;
 
 export type SizeAsk = 'big' | 'middle' | 'small';
@@ -37,6 +39,30 @@ export function middleAsks(rng: { shuffle<T>(a: T[]): T[]; pick<T>(a: readonly T
   const extra = rng.pick(['big', 'small'] as const), other = rng.pick(['big', 'middle', 'small'] as const);
   return rng.shuffle<SizeAsk>(['middle', 'middle', extra, other]);
 }
+/**
+ * *Who fits?*: the four props in the order they are asked, each sized as a fixed multiple of the friend who fits it (its main
+ * measure over that friend's height): a bed as long as the friend lying down, a chair whose back reaches its shoulders, a bowl it
+ * sits in, a door it walks through. Goldilocks without the house.
+ */
+export type FitProp = 'bed' | 'chair' | 'bowl' | 'door';
+export const FIT_PROPS: readonly { kind: FitProp; ratio: number }[] = [
+  { kind: 'bed', ratio: 1.35 }, { kind: 'chair', ratio: 0.8 }, { kind: 'bowl', ratio: 0.9 }, { kind: 'door', ratio: 1.2 },
+];
+/** A prop's main measure (the bed's length, the chair's and door's height, the bowl's width) for the friend `height` tall who fits it. */
+export const propSize = (kind: FitProp, height: number): number => FIT_PROPS.find((p) => p.kind === kind)!.ratio * height;
+/**
+ * Which of the three friends fits each of the four props: one rank per prop, never the same twice running, so "always the
+ * biggest" fails, and every rank fits at least once.
+ */
+export function fitAsks(rng: { shuffle<T>(a: T[]): T[]; pick<T>(a: readonly T[]): T }): SizeAsk[] {
+  const all: SizeAsk[] = ['big', 'middle', 'small'];
+  const asks = rng.shuffle([...all]);
+  asks.push(rng.pick(all.filter((a) => a !== asks[asks.length - 1])));
+  return asks;
+}
+/** How a friend fares at a prop: it fits, or hangs over the end (too big), or vanishes into it (too little). */
+export const fitTry = (rank: number, fitting: number): 'fits' | 'big' | 'little' => rank === fitting ? 'fits' : rank > fitting ? 'big' : 'little';
+
 /** The three asks of *Big one, little one*: big and little alternate, the big one first. */
 export const BIG_LITTLE_ASKS: readonly SizeAsk[] = ['big', 'small', 'big'];
 /** The rank an ask names among `count` friends (the middle one is always of three). */
@@ -69,7 +95,7 @@ function combos(count: number, from = 0): number[][] {
  * the question stays the same.
  */
 export function dealSteps(rng: { int(min: number, max: number): number; pick<T>(a: readonly T[]): T }, plan: SizePlan, row: number, asked = plan.order === 'small' ? 0 : plan.count - 1): number[] {
-  if (plan.mode !== 'pick' || row === 0 || plan.bigLittle) return evenSteps(plan.count);
+  if ((plan.mode !== 'pick' && plan.mode !== 'fit') || row === 0 || plan.bigLittle) return evenSteps(plan.count);
   if (plan.count === 2) { const lo = rng.int(0, STEPS - 3); return [lo, rng.int(lo + 2, STEPS - 1)]; }
   const fair = combos(plan.count).filter((steps) => [asked - 1, asked + 1].every((n) => steps[n] === undefined || Math.max(stepScale(steps[n]), stepScale(steps[asked])) / Math.min(stepScale(steps[n]), stepScale(steps[asked])) >= MIN_RATIO));
   return rng.pick(fair);
