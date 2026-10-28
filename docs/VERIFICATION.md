@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-27 — Theatre and puppetry subject research (docs only)
+
+- [PR #1025](https://github.com/rjdunlap/neo/pull/1025), branch `claude/subject-theatre-puppetry`: the [theatre-and-puppetry study](deep-dives/subjects/theatre-puppetry.md) (anchors, evidence, island fit, an answer for every audience, candidates, the Puppet Stage 1–6 ladder, decisions with leans, ordered slices), its [recommendations packet](deep-dives/subjects/RECOMMENDATIONS.md#theatre-and-puppetry-recommendations), the tracker row, backlog, READY (the research line replaced by the TP1 definition), the notebook row, the roadmap studies table and device checks.
+- Ran: `git fetch origin --prune`, `scripts/overlap.sh theatre-puppetry …` (no claim), `node scripts/check-links.mjs`, `git diff --check`. Sources: Core Arts theatre PK/K/2 through a standards mirror, the EYFS 2026 framework and the Core Arts at-a-glance PDF extracted locally (the latter yielded one page), Hainselin 2018 and two Common Sense Media reviews opened; Lillard 2013, Råde 2021, Sock Puppets, Toca Life and the shadow-theatre pages are search summaries; the Head Start drama goal is recalled (403).
+- Not run: code checks (no code changed); any device or child check. Open: the puppet-voice presets on an iPad and a child's reaction to a pop-up puppet, in [DEVICE-CHECKS](DEVICE-CHECKS.md). The verification trim (`archive-verification.mjs --keep=15`) was not applied this session because it repoints a link inside the execution queue; seventeen entries stay live for the next closeout.
+
 ## 2026-10-28 — Size Parade Who fits (level 11)
 
 - [PR #1023](https://github.com/rjdunlap/neo/pull/1023), branch `claude/size-parade-who-fits`, tested commit `40ede5d0`: level 11 *Who fits?* (bed, chair, bowl, door each fitting one of three friends; too big and too little tried on screen); preschool `order [3, 4, 17, 10, 5, 6, 11]`, pre-K `{ min 5, max 11, order [5, 6, 11, 7, 8] }`.

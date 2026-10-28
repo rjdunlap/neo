@@ -1,5 +1,11 @@
 # Needs a person or a device
 
+## Puppet Stage (theatre-puppetry study, 2026-10-27; proposed, not built)
+
+- [ ] On the iPad, with the selected voice, are three device-speech presets (sleepy: low and slow; tiny: high and fast; big: low and loud) distinct and pleasant, not creepy? Decides the study's decision 3 before TP1 is defined.
+- [ ] Watch a one-year-old with a puppet that pops up where she touched (Peekaboo Barn is the stand-in until it is built): does she touch again to make it rise, or wait for it?
+- [ ] Watch a six-year-old at Story Theater 12: does she want to move the characters herself, or is watching enough? Decides whether TP2's performed scenes are worth their cost.
+
 ## Water Road levels 1–3
 
 - [ ] Watch a two-year-old at level 1: does she keep tapping until the ring closes, and does she find the frame to pull?
