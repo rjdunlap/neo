@@ -359,7 +359,7 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### size-parade 2: Who fits
 
-- **`size-parade`, level 11 *Who fits?*, slice 6** (new interaction, plus a portrait screenshot): a bed, chair, bowl and door each fitting exactly one of three friends, too big and too little tried on screen; preschool `order [3, 4, 17, 10, 5, 6, 11]`, pre-K `order [5, 6, 11, 7, 8]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
+- **`size-parade`, level 11 *Who fits?*, slice 6** (landed 2026-10-28) (new interaction, plus a portrait screenshot): a bed, chair, bowl and door each fitting exactly one of three friends, too big and too little tried on screen; preschool `order [3, 4, 17, 10, 5, 6, 11]`, pre-K `order [5, 6, 11, 7, 8]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
