@@ -260,6 +260,14 @@ Levels (school only, 1–3): 1 a whole from halves and quarters (two halves, a h
 
 Misses and hints: Check on an empty bench is free, and so is a refused overfull place. A non-empty bench that is the wrong length is one miss, and the gap (too short) or the overhang (too long) flashes. The second miss glows the solver-led next step (a place, a return or a snip) as one hint; the pause sheet's "Show a hint" counts one unless the glow is already up. The ghost finger follows the same hint path, and the demonstration plays one gift (the snip gift at levels 2–3). Touch only; no couch play.
 
+### Paint Mixer
+
+*school · levels 1–2 · after the ratio and proportion study; [definition](definitions/paint-mixer.md).* A sample jar shows a colour and its recipe as a row of drops; four pots (red, yellow, blue, white, each with a shape mark) sit below a bucket. Tap a pot to pour a drop; the bucket's colour is the drop-weighted mean of the pots in linear RGB, so equal ratios are the same colour. The bucket's drop rows show complete copies of the sample's row, outlined missing places and loose drops (wrapped in rows of six). Undo takes back the last drop, Tip out empties the bucket, Check compares; tapping the jar says the recipe (free). A round has two buckets, each a different authored pair (red and yellow orange, red and white pink, blue and white sky blue, red and blue purple; cream is withheld).
+
+Levels (school only, 1–2): 1 "Copy the row": the recipe is 1:1, 1:2 or 2:1 of the pair and the bucket holds one row; 2 "Twice as much": the pool adds 1:3 and the bucket holds two rows, so the sample shows one row and she makes twice the drops of each. One row on Check at level 2 is "more, the same way" and not a miss.
+
+Misses and hints: only a Check that does not match is a miss. It names the pot farthest from the target as too much ("Too much red") or "one more", and an empty bucket says "start with one {pot}". The second miss on a bucket glows the next useful control (the pot of the first missing place, Undo for a loose last drop, Tip out for a buried loose drop, Check when it matches) and counts one hint for that bucket. The pause sheet's Show me lights the glow (one hint) and a second press pours the rest as a ghost, one tap a second, with no extra hint. Nothing is kept; one sticker per round. Not built: levels 3–4 (batch paint-mixer 2), 5–8 and the Mixing Room.
+
 ## Cozy Village (everyday life)
 
 ### Relay Woods

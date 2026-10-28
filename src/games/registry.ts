@@ -127,6 +127,7 @@ import { fillDump } from './fill-dump';
 import { pileMatch } from './pile-match';
 import { numberTrails } from './number-trails';
 import { fruitSums } from './fruit-sums';
+import { paintMixer } from './paint-mixer';
 import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
 import { whoAmI } from './who-am-i';
@@ -265,6 +266,7 @@ export const GAMES: GameModule[] = [
   fillDump,
   numberTrails,
   fruitSums,
+  paintMixer,
   readDo,
   lookItUp,
   whoAmI,

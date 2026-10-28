@@ -6,6 +6,14 @@
 - [ ] Watch a one-year-old with a puppet that pops up where she touched (Peekaboo Barn is the stand-in until it is built): does she touch again to make it rise, or wait for it?
 - [ ] Watch a six-year-old at Story Theater 12: does she want to move the characters herself, or is watching enough? Decides whether TP2's performed scenes are worth their cost.
 
+## Paint Mixer levels 1–2
+
+- [ ] On an iPad in daylight: does a matching bucket read as the same swatch as the sample, and 1:1 against 1:2 as different?
+- [ ] Is one more of each seen side by side as a different colour (level 2)?
+- [ ] Do the drop rows read as "for every"?
+- [ ] In portrait with pots at 120, are twelve drops still readable?
+- [ ] On the iPad, how are the recipe line's digits spoken ("1 red and 2 yellow")?
+
 ## Water Road levels 1–3
 
 - [ ] Watch a two-year-old at level 1: does she keep tapping until the ring closes, and does she find the frame to pull?
