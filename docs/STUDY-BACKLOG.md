@@ -18,6 +18,7 @@ The research is complete for every row below; `define` means the next session wr
 | Subject | Status | Next bounded action | Source |
 | --- | --- | --- | --- |
 | `world-languages` | person / device | WL1 defined in the existing packet: 20 English semantic keys, sequencing/save/fallback and evidence scope; no build promotion. WL2 build waits on the developer-named family reviewer for every Portuguese line and actual pt-PT iPad voice acceptance | [Study](deep-dives/subjects/world-languages.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#world-languages-recommendations), [existing definition](definitions/additional-languages.md) |
+| `theatre-puppetry` | define | Puppet Stage 1–3 is the next definition (a new game; a stick puppet pops up where she touches and talks in its voice, make the named puppet talk, say it the sleepy, tiny or big way); Music Mountain placement by the study's lean and the puppet-voice device check are its gates; Read it in a voice is handed to the Story Weaver dive and Shadow Play waits on a Lantern Lake capacity test | [Study](deep-dives/subjects/theatre-puppetry.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#theatre-and-puppetry-recommendations) |
 | `deep-time` | ready | D3 [defined](definitions/trace-prints.md) and built (2026-10-22, PR #777) | [Study](deep-dives/subjects/deep-time.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#deep-time-recommendations) |
 | `genetics` | ready / define | G4 [defined and built](definitions/same-kind-different-sprouts.md) as Critter Sort levels 12–13; next definition G7 Patchwork Conservatory (after G5, which is defined) | [Study](deep-dives/subjects/genetics.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#genetics-recommendations) |
 | `daily-life-long-ago` | ready / define | H3 [built](definitions/lid-and-lever.md) (Attic Finds levels 3–4, 2026-10-23); next definition H4 Same Job, Different Tools | [Study](deep-dives/subjects/daily-life-long-ago.md), [packet](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations) |
@@ -82,7 +83,6 @@ One subject per docs-only session using the [subject procedure](deep-dives/subje
 
 | Subject | Status | Next action |
 | --- | --- | --- |
-| `theatre-puppetry` | research | Pretend, character voices, puppet shows, acting a story for an audience; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `philosophy-reasoning` | research | Is it fair? What if? Reasons, counterexamples, disagreeing kindly; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `media-literacy` | research | Real or made up? Who made this and why? Ads, edited pictures, checking a claim; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
 | `strategy-games` | research | Two-player thinking games: Nim, mancala, tic-tac-toe, dots and boxes, chess puzzles; a kind bot and a "show me why" replay; use the [tracker](deep-dives/subjects.md#tracker) and check overlap first |
