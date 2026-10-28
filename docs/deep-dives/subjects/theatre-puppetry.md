@@ -140,7 +140,7 @@ The companion sits in the front row and claps, and can be one of the puppets at 
 
 ## Decisions for the developer
 
-Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#standing-rules) the building session adopts each lean; only the device checks wait on a person.
+Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#standing-rules) the building session adopts each lean; only the device checks wait on a person. The leans were adopted on 2026-10-27 in the [Puppet Stage definition](../../definitions/puppet-stage.md).
 
 1. **Identity.** A new game, Puppet Stage, rather than a Story Steps level: Story Steps 1–13 are ordering and choosing; a puppet under the finger is a different interaction with a different lap entry. **Lean: new game.**
 2. **Land.** Music Mountain (six games; room for seven more) for a stage whose kindergarten core is voice and sound; Story Grove already pages at sixteen. **Lean: Music Mountain**, with Story Grove recorded as the subject-row alternative.
@@ -153,7 +153,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 ## Build slices, in order
 
-1. **Define Puppet Stage 1–3** (docs only, `define`): the stage, four puppets, the voice presets and their margins, the asks, accounting, how-to and bot, land placement by decision 2, tests. Claimed 2026-10-27 on branch `claude/define-puppet-stage` (docs only: `docs/definitions/puppet-stage.md`, a batch plan in `GAME-BATCHES.md`, READY, the backlog, this line).
+1. **Define Puppet Stage 1–3** (docs only, `define`): the stage, four puppets, the voice presets and their margins, the asks, accounting, how-to and bot, land placement by decision 2, tests. **Defined 2026-10-27** ([definition](../../definitions/puppet-stage.md), [PR #1027](https://github.com/rjdunlap/neo/pull/1027)); the decisions 1–6 leans were adopted under the October 23 standing rules, with the listening judgement as a device check on the built game (S6, S9).
 2. **Build Puppet Stage 1–3** (new-game tier): one batch.
 3. **Define Puppet Stage 4–6** (docs only): the three story cards and their spoken lines, the shown-only premiere, the director's-chair co-play role and `coplayHint`.
 4. **Build Puppet Stage 4–6** (new levels on an existing interaction, plus the premiere).
