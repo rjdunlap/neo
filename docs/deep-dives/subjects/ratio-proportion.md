@@ -153,7 +153,7 @@ A paint shelf in the journal (colour, recipe, the first round that mixed it), a 
 
 All future work, one session each. Definitions use links and `git diff --check`; builds use the activity tier in AGENTS.md.
 
-1. **Define Paint Mixer 1–4** (docs, ready now): pots, the colour rule and its visibility test, tap/undo/tip-out/Check, the sample's drop row, the fill line, the ratio table, authored sample pools per level, accounting, hints, supported finish, speech and how-to steps, ghost-finger plan, the 12-drop cap and layout audit in both orientations, land capacity.
+1. **Define Paint Mixer 1–4** (docs, ready now; **claimed 2026-10-27**, branch `claude/define-paint-mixer`: `docs/definitions/paint-mixer.md`, a `GAME-BATCHES.md` batch and the READY, backlog, roadmap, ideas, packet and verification closeout lines; no code): pots, the colour rule and its visibility test, tap/undo/tip-out/Check, the sample's drop row, the fill line, the ratio table, authored sample pools per level, accounting, hints, supported finish, speech and how-to steps, ghost-finger plan, the 12-drop cap and layout audit in both orientations, land capacity.
 2. **Build Paint Mixer 1–2:** ratio model and mean colour in `logic.ts` with rule tests; new-game check tier.
 3. **Build Paint Mixer 3–4:** the table, any-amount acceptance, two ways.
 4. **Define and build Paint Mixer 5–6:** three pots, lidded jars, seeded jar sets.
