@@ -576,6 +576,18 @@ Built 2026-10-27, [PR #1021](https://github.com/rjdunlap/neo/pull/1021); [defini
 
 Built 2026-10-27, [PR #1022](https://github.com/rjdunlap/neo/pull/1022); [definition](definitions/water-road.md), [archived build note](archive/COMPLETED-2026-10-09.md#water-road-levels-13-greece-and-rome-am2-2026-10-27). Whole three-level new-game batch. Device checks remain; levels 4–5 (AM3) need their own definition.
 
+### paint-mixer 1: Copy the row and twice as much
+
+- **`paint-mixer`, levels 1–2 (study slice 2)** (a new game, one declared batch; school 1–2, Counting Cove by decision 3 if the lands test passes, else Rainbow Meadow): tap a pot to pour a drop into the bucket and copy the sample jar's row of drops (1:1, 1:2, 2:1 of an authored pair; level 1), then make twice as much as two rows of the sample (level 2; "more, the same way" is not a miss). Pots, the mean-colour rule and its measured distances, the drop rows, Undo, Tip out, Check, one glow and ghost pour per bucket. [Definition](definitions/paint-mixer.md), [ratio and proportion study slice 2](deep-dives/subjects/ratio-proportion.md#build-slices-in-order)
+
+Proof: new-game tier, as the [definition's check tier](definitions/paint-mixer.md#check-tier-for-the-builds) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `browser-check.mjs` case filtered to Paint Mixer with one wrong Check and the glow at level 1 and "more, the same way" then a match at level 2, `fingerdemo` at level 2, one portrait screenshot, one build). The "for every" wording is source-checked in the building session. If the allowance cannot cover both, stop after a complete level 1 with a draft-PR checkpoint. No review gate.
+
+### paint-mixer 2: Fill to the line and any amount
+
+- **`paint-mixer`, levels 3–4 (study slice 3)** (after batch `paint-mixer 1`; school 3–4): fill the bucket to a line two or three batches deep while the ratio table fills a column per complete batch and the pet says "for every 1 red, 2 yellow" (level 3, a stray pot on screen), then any whole multiple of the sample and the same colour again at a different amount (level 4; "the same way" is not a miss). [Definition](definitions/paint-mixer.md), [study slice 3](deep-dives/subjects/ratio-proportion.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a filtered play of levels 3–4 with the table filling, one wrong Check, a first way, the same way again and a second way, `fingerdemo` at level 4, one portrait screenshot of level 3, one build for the card and voice). Levels 5–6 (RP2) need their own definition.
+
 ## Relay Woods 1: levels 1–4 (NC2)
 
 - **Scope:** [NC1 packet](definitions/relay-woods.md), one worker/branch/PR for Pass it along1, Two ways2, Fallen log3, The short way4; finite seeded templates and five picture payloads, hop/backtrack/log/long-arrival/reset rules, capped support, voice/how-to/BFS bot. Toddler1–2, preschool1–4, pre-K2–4, school4.

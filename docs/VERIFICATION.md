@@ -8,6 +8,12 @@
 - `game-reviewer` found no defects. Not run: other Size Parade levels (unchanged interactions), couch suites, the production offline check, an iPad, a child.
 - Open: [DEVICE-CHECKS](DEVICE-CHECKS.md).
 
+## 2026-10-27 — Paint Mixer 1–4 definition (RP1, docs only)
+
+- [PR #1024](https://github.com/rjdunlap/neo/pull/1024), branch `claude/define-paint-mixer`: [definition](definitions/paint-mixer.md), two batches in [GAME-BATCHES](GAME-BATCHES.md#paint-mixer-1-copy-the-row-and-twice-as-much) and the study's measured-colour note; READY, backlog, roadmap, ideas and packet point to it. Nothing built, no code changed.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`, run by the session after this closeout.
+- Not run: typecheck, tests, build, browser suites (docs only). Open: the builds run the new-game and new-interaction tiers; device checks are named in the definition.
+
 ## 2026-10-27 — Water Road levels 1–3 (Greece and Rome AM2)
 
 - [PR #1022](https://github.com/rjdunlap/neo/pull/1022), branch `claude/water-road-1-3`, commit `bbf25727`: new game `water-road` (toddler 1, preschool 1–2, pre-K 2–3, school 3; Tinker Lab, now 20 games) levels 1–3 ([definition](definitions/water-road.md)); nothing kept, no save change. Two count-based tests updated for the 20-game Tinker Lab (`land-pages.test.ts`, `example-express/capacity.test.ts`). Levels 4–8 and The Water Commissioner not built.
