@@ -830,6 +830,16 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: 'Zero has no things: the round ends with “zero” said aloud. Wandering off the trail is a gentle miss; counting things can never be wrong.',
   },
+  'paint-mixer': {
+    goal: "Pour drops until the bucket is the sample's colour, then make more of the same.",
+    steps: [
+      { from: 1, to: 1, text: "Tap a pot to pour a drop; copy the sample's row of drops into the bucket, then tap Check." },
+      { from: 2, to: 2, text: "Make twice as much: fill two rows of the sample's drops, then tap Check." },
+      'Undo takes the last drop back and Tip out empties the bucket; tapping the jar says its recipe.',
+    ],
+    finish: 'Check holds the bucket beside the jar; a match chimes, and the round ends after two buckets.',
+    note: "Pouring, undo and tipping out are never counted; only a Check that doesn't match is, and after two misses the next pot or button glows (one hint). Colour words are labels. This is a toy: the bucket's colour is an average of its drops; real paint doesn't mix by averaging, and more paint is not a stronger colour.",
+  },
   'fruit-sums': {
     goal: 'Make the number on the sign from two numbered fruit, and then find a different way to make it.',
     steps: [
