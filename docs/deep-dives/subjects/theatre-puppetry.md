@@ -153,7 +153,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 ## Build slices, in order
 
-1. **Define Puppet Stage 1–3** (docs only, `define`): the stage, four puppets, the voice presets and their margins, the asks, accounting, how-to and bot, land placement by decision 2, tests.
+1. **Define Puppet Stage 1–3** (docs only, `define`): the stage, four puppets, the voice presets and their margins, the asks, accounting, how-to and bot, land placement by decision 2, tests. Claimed 2026-10-27 on branch `claude/define-puppet-stage` (docs only: `docs/definitions/puppet-stage.md`, a batch plan in `GAME-BATCHES.md`, READY, the backlog, this line).
 2. **Build Puppet Stage 1–3** (new-game tier): one batch.
 3. **Define Puppet Stage 4–6** (docs only): the three story cards and their spoken lines, the shown-only premiere, the director's-chair co-play role and `coplayHint`.
 4. **Build Puppet Stage 4–6** (new levels on an existing interaction, plus the premiere).
