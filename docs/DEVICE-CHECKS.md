@@ -664,3 +664,12 @@ Open: actual iPad speech/name and hop-count playback, small-hand release/cancel/
 
 - [ ] On an iPad, check that a toddler presses Later alone and the thumbnail ribbon is understood, that a slice of Moon reads at iPad size in both orientations, the miss slide and pet clearance, and actual instruction and amount-word speech (no light, a little light, half, most, all).
 - [ ] With a child/coplayer, check that "more light" and "less light" are heard as more or less lit, and ask the grown-up's guess at what the views show. Browser play and seeded rules establish no understanding of why the Moon changes, and levels 1–3 claim none.
+
+## Puppet Stage levels 1–3 (TP1, 2026-10-27)
+
+Performed on the built game, which is not yet built ([definition](definitions/puppet-stage.md#check-tier-for-the-build)).
+
+- [ ] On the iPad's selected voice, check that the four base puppet voices and the three presets (sleepy, tiny, big) are distinct, pleasant and intelligible, and whether `pitch` is honoured at all; if not, retune the preset table by constants.
+- [ ] With a one-year-old, watch her reaction to a puppet rising where she touched and following her finger.
+- [ ] With a three-year-old, check whether she picks the slow low voice for "the sleepy way".
+- [ ] In portrait, check that the 140-unit puppets and the floor's touch surface are comfortable for a small hand.

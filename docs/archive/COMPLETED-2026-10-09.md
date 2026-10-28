@@ -65,6 +65,10 @@ The original idea’s pictured request/reciprocal pair/two-trade action is deliv
 
 [PR #1016](https://github.com/rjdunlap/neo/pull/1016), branch `claude/define-caravan-days`: [definition](../definitions/caravan-days.md) for the kneel-and-load, can-we-reach-it and day-by-day levels (toddler 1, preschool 1–2, pre-K 2–3, school 3, Cozy Village by default) and a batch plan in `GAME-BATCHES.md`; docs only, nothing built. CS2 (build levels 1–3) is queued in READY and CS3 (levels 4–5 definition) follows it.
 
+### Puppet Stage 1–3 definition (TP1, 2026-10-27)
+
+[PR #1027](https://github.com/rjdunlap/neo/pull/1027), branch `claude/define-puppet-stage`: [definition](../definitions/puppet-stage.md) for the pop-up, make-Bunny-talk and say-it-like levels (lap 1, toddler 1–2, preschool 2–3, pre-K 3, Music Mountain, puppet voices as device-speech presets through a new `sayIn`, nothing kept) and one batch plan in `GAME-BATCHES.md`; docs only, nothing built. The build is queued in READY and TP2 (levels 4–6 definition) follows it.
+
 ### Paint Mixer 1–4 definition (RP1, 2026-10-27)
 
 [PR #1024](https://github.com/rjdunlap/neo/pull/1024), branch `claude/define-paint-mixer`: [definition](../definitions/paint-mixer.md) for the copy-the-row, twice-as-much, fill-to-the-line and any-amount levels (school 1–4, Counting Cove by default) with the colour rule measured (one more of each is about two Oklab units apart, so the drop rows judge the ratio on screen and the colour is the feel; cream withheld, blue + yellow averages to grey) and two batch plans in `GAME-BATCHES.md`; docs only, nothing built. The builds are queued in READY and RP2 (levels 5–6 definition) follows them.
