@@ -1,5 +1,13 @@
 # Needs a person or a device
 
+## Water Road levels 1–3
+
+- [ ] Watch a two-year-old at level 1: does she keep tapping until the ring closes, and does she find the frame to pull?
+- [ ] Watch a four-year-old at level 2: does she read the fall from the tumble itself rather than the pet's voice?
+- [ ] On an iPad at pre-K: is the shoulder gap visible enough to compare the two rings?
+- [ ] On an iPad at level 3: do the push arrows read as "push"?
+- [ ] On the iPad, how are "keystone" and "buttress" spoken: device speech or the rendered clips?
+
 ## Caravan Days levels 1–3
 
 - [ ] Watch a two-year-old at level 1: does she find the kneel on her own, or does she need the glow?
