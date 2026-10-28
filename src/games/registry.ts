@@ -143,6 +143,7 @@ import { timelineTrail } from './timeline-trail';
 import { sproutShuffle } from './sprout-shuffle';
 import { riverTablets } from './river-tablets';
 import { caravanDays } from './caravan-days';
+import { waterRoad } from './water-road';
 import { keepHouse } from './keep-house';
 import { puddleLens } from './puddle-lens';
 import { adventureWalk } from './adventure-walk';
@@ -280,6 +281,7 @@ export const GAMES: GameModule[] = [
   sproutShuffle,
   riverTablets,
   caravanDays,
+  waterRoad,
   keepHouse,
   puddleLens,
   adventureWalk,
