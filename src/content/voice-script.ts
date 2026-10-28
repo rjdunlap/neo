@@ -3195,7 +3195,7 @@ export const SCRIPT = {
   'pm.recipe': ['The sample is {a} {potA} and {b} {potB}.'],
   'pm.start': ['Start with one {pot}.'],
   'pm.short': ['One more {pot}.', 'It needs more {pot}.'],
-  'pm.too-many': ['Too much {pot}. Take one out.', 'Too {pot}. Undo one.'],
+  'pm.too-many': ['Too much {pot}. Take one out.', 'Too much {pot}. Undo one.'],
   'pm.stray': ['No {pot} in this one. Tip it out.'],
   'pm.full': ["It's full. Tip out or undo."],
   'pm.more-same-way': ["That's the colour! More, the same way, until the rows are full."],

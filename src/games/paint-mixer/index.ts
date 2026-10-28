@@ -130,7 +130,8 @@ class PaintMixer implements Game {
     const r = rows(this.sample, counts, this.plan.batches);
     const n = total(this.sample);
     const template = this.rowOf(this.sample);
-    const rowCount = this.plan.batches + (r.loose.length > 0 ? 1 : 0);
+    const looseRows = Math.ceil(r.loose.length / 6);
+    const rowCount = this.plan.batches + looseRows;
     for (let i = 0; i < this.plan.batches; i++) {
       const places = r.rows[i];
       for (let j = 0; j < n; j++) {
@@ -143,7 +144,8 @@ class PaintMixer implements Game {
     }
     r.loose.forEach((pot, j) => {
       const d = dropArt(pot);
-      const at = dropAt(this.plan.batches, j, r.loose.length, rowCount);
+      const row = Math.floor(j / 6), inRow = Math.min(6, r.loose.length - row * 6);
+      const at = dropAt(this.plan.batches + row, j - row * 6, inRow, rowCount);
       d.position.set(at.x, at.y);
       d.rotation = j % 2 ? 0.35 : -0.35;
       this.rowsNode.addChild(d);
@@ -153,8 +155,8 @@ class PaintMixer implements Game {
 
   // ---- play ----
 
-  private pour(pot: Pot) {
-    if (this.busy || this.finished) return;
+  private pour(pot: Pot, ghost = false) {
+    if (this.busy || this.finished || (this.pouring && !ghost)) return;
     const node = this.potNodes.get(pot)!;
     this.ctx.tw.kill(node.scale);
     node.scale.set(1.08, 0.9);
@@ -192,7 +194,7 @@ class PaintMixer implements Game {
   }
 
   private tapButton(kind: Button) {
-    if (this.busy || this.finished) return;
+    if (this.busy || this.finished || this.pouring) return;
     const n = this.buttons.get(kind)!;
     this.ctx.tw.kill(n.scale);
     n.scale.set(0.92);
@@ -202,7 +204,8 @@ class PaintMixer implements Game {
     else this.checkBucket();
   }
 
-  undo() {
+  undo(ghost = false) {
+    if (this.pouring && !ghost) return;
     if (this.drops.length === 0) { sfx.pop(3); return; }
     const pot = this.drops.pop()!;
     sfx.pop(5);
@@ -213,7 +216,8 @@ class PaintMixer implements Game {
     void this.ctx.tw.to(d.position, { x: to?.x ?? l.bucket.x, y: (to?.y ?? l.bucket.y) - POT_H * 0.8 }, { duration: 0.28, ease: ease.inQuad }).then(() => { if (!d.destroyed) d.destroy(); });
   }
 
-  tipOut() {
+  tipOut(ghost = false) {
+    if (this.pouring && !ghost) return;
     if (this.drops.length === 0) { sfx.pop(3); return; }
     this.drops = [];
     sfx.splash();
@@ -242,8 +246,11 @@ class PaintMixer implements Game {
   }
 
   private async hearWrong(line: 'pm.stray' | 'pm.too-many' | 'pm.start' | 'pm.short', words: Record<string, string | number>) {
+    const bucket = this.bucketIndex;
     await this.ctx.say(line, words);
-    if (this.finished) return;
+    // She may have fixed the bucket and matched while the line played: no hint for a bucket she solved unaided.
+    if (this.finished || this.busy || bucket !== this.bucketIndex) return;
+    if (check(this.plan, this.sample, this.counts).kind === 'match') return;
     if (this.bucketMisses >= 2 && this.lightHint()) await this.ctx.say('pm.help');
   }
 
@@ -270,16 +277,18 @@ class PaintMixer implements Game {
 
   private async ghostPour() {
     this.pouring = true;
-    const steps = solveFrom(this.plan, this.sample, this.drops);
-    if (steps.some((g) => g.at === 'tip')) void this.ctx.say('pm.plan', { a: this.sample.counts[0], potA: this.sample.pair[0], b: this.sample.counts[1], potB: this.sample.pair[1] });
-    for (const g of steps) {
-      if (this.finished || this.busy) break;
+    const bucket = this.bucketIndex;
+    if (solveFrom(this.plan, this.sample, this.drops).some((g) => g.at === 'tip')) void this.ctx.say('pm.plan', { a: this.sample.counts[0], potA: this.sample.pair[0], b: this.sample.counts[1], potB: this.sample.pair[1] });
+    // One tap a second, each read from the bucket as it is now, until Check is the glowing one (at most 24 steps).
+    for (let i = 0; i < 24; i++) {
+      if (this.finished || this.busy || bucket !== this.bucketIndex) break;
+      const g = glowFor(this.plan, this.sample, this.drops);
       if (g.at === 'check') break;
       await this.ctx.tw.wait(1);
-      if (this.finished || this.busy) break;
-      if (g.at === 'pot') this.pour(g.pot);
-      else if (g.at === 'undo') this.undo();
-      else this.tipOut();
+      if (this.finished || this.busy || bucket !== this.bucketIndex) break;
+      if (g.at === 'pot') this.pour(g.pot, true);
+      else if (g.at === 'undo') this.undo(true);
+      else this.tipOut(true);
     }
     this.pouring = false;
   }
@@ -300,7 +309,7 @@ class PaintMixer implements Game {
     this.ctx.particles.burst(l.bucket.x, l.bucket.y - 60, { kind: 'star', colors: [mix(this.counts)!, swatch.yellow.fill, 0xffffff], count: 20, speed: [120, 280], gravity: 320, life: [0.5, 0.9] });
     // The bucket lifts toward the jar and settles: the two swatches are one colour.
     void this.ctx.tw.to(this.bucketNode, { y: l.bucket.y - 30 }, { duration: 0.25, ease: ease.outQuad })
-      .then(() => this.ctx.tw.to(this.bucketNode, { y: l.bucket.y }, { duration: 0.35, ease: ease.outBack }));
+      .then(() => this.ctx.tw.to(this.bucketNode, { y: this.layoutNow.bucket.y }, { duration: 0.35, ease: ease.outBack }));
     await this.ctx.say('pm.match', { colour: mixName(this.sample.pair) });
     if (this.finished) return;
     if (this.bucketIndex + 1 >= this.samples.length) {
