@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  askRank, BIG_LITTLE, BIG_LITTLE_ASKS, CRITTER_H, CYCLE, CYCLE_SCALE, CYCLE_TAPS, cycleAt, dealSteps, dropSpot, FLAG_COLORS, FRIEND_SCALE, FRIENDS, middleAsks, MIDDLE_ONE, MIN_RATIO, paradeLayout,
-  pickRounds, SIZE_CYCLE, SIZE_PLANS, sizeBell, sizeOrder, sizePlan, sizeScale, sizeTouch, sizeWord, stepBell, STEPS, stepScale, TARGET, TWO_IN_A_LINE,
+  askRank, BIG_LITTLE, BIG_LITTLE_ASKS, CRITTER_H, CYCLE, CYCLE_SCALE, CYCLE_TAPS, cycleAt, dealSteps, dropSpot, FIT_PROPS, fitAsks, fitTry, FLAG_COLORS, FRIEND_SCALE, FRIENDS, middleAsks, MIDDLE_ONE, MIN_RATIO, paradeLayout,
+  pickRounds, propSize, SIZE_CYCLE, SIZE_PLANS, sizeBell, sizeOrder, sizePlan, sizeScale, sizeTouch, sizeWord, stepBell, STEPS, stepScale, TARGET, TWO_IN_A_LINE, WHO_FITS,
 } from './logic';
+import { fitPose } from './props';
+import { sizeParade } from './index';
 
 /** An iPad sideways and upright, and a phone sideways: the logical width is never below the 1024 design width. */
 const VIEWS = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390)];
@@ -190,5 +192,79 @@ describe('Size Parade', () => {
       const order = [askRank(ask, 2)], friends = [{ rank: 1, placed: false }, { rank: 0, placed: false }];
       expect(friends[sizeTouch(order, 0, friends)!].rank).toBe(ask === 'big' ? 1 : 0);
     }
+  });
+
+  it('level 11 asks four props in a fixed order, each sized as a fixed multiple of the friend who fits it, scaling with that friend', () => {
+    expect(sizePlan(11)).toBe(WHO_FITS);
+    expect(WHO_FITS.mode).toBe('fit');
+    expect(WHO_FITS.count).toBe(3);
+    expect(pickRounds(WHO_FITS)).toBe(4);
+    expect(FIT_PROPS.map((p) => p.kind)).toEqual(['bed', 'chair', 'bowl', 'door']);
+    const h = (step: number) => stepScale(step) * FRIEND_SCALE * CRITTER_H;
+    for (const { kind, ratio } of FIT_PROPS) {
+      for (let step = 0; step < STEPS; step++) expect(propSize(kind, h(step)) / h(step)).toBeCloseTo(ratio, 6);
+      for (let step = 1; step < STEPS; step++) expect(propSize(kind, h(step))).toBeGreaterThan(propSize(kind, h(step - 1)));
+      // The biggest friend's prop still stands above the row and below the progress dots in a landscape view.
+      expect(propSize(kind, h(4)) * (kind === 'bed' ? 0.62 : kind === 'door' ? 1.04 : 1)).toBeLessThan(768 - 330 - 140);
+    }
+  });
+
+  it('level 11: exactly one of three friends fits each prop, the fitting rank is never the same twice running, and every rank fits once', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const asks = fitAsks(new Rng(seed));
+      expect(asks).toHaveLength(4);
+      const ranks = asks.map((a) => askRank(a, 3));
+      for (let i = 1; i < ranks.length; i++) expect(ranks[i]).not.toBe(ranks[i - 1]);
+      expect(new Set(ranks)).toEqual(new Set([0, 1, 2]));
+      for (const fitting of ranks) {
+        expect([0, 1, 2].filter((rank) => fitTry(rank, fitting) === 'fits')).toEqual([fitting]);
+        for (const rank of [0, 1, 2]) if (rank !== fitting) expect(fitTry(rank, fitting)).toBe(rank > fitting ? 'big' : 'little');
+      }
+    }
+    // Over many rounds no rank fits more often than chance would make "always the biggest" a strategy.
+    const count = [0, 0, 0];
+    for (let seed = 1; seed <= 300; seed++) for (const a of fitAsks(new Rng(seed))) count[askRank(a, 3)]++;
+    for (const c of count) expect(c / 1200).toBeGreaterThan(0.25);
+  });
+
+  it('level 11 deals the even spread first, then varied sizes that keep the fitting friend clearly apart from each neighbour, and the bot taps it', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const rng = new Rng(seed), asks = fitAsks(rng);
+      asks.forEach((ask, row) => {
+        const fitting = askRank(ask, 3), steps = dealSteps(rng, WHO_FITS, row, fitting);
+        if (row === 0) expect(steps).toEqual([0, 2, 4]);
+        expect(new Set(steps).size).toBe(3);
+        for (const n of [fitting - 1, fitting + 1]) if (steps[n] !== undefined) {
+          const a = stepScale(steps[n]), b = stepScale(steps[fitting]);
+          expect(Math.max(a, b) / Math.min(a, b)).toBeGreaterThanOrEqual(MIN_RATIO);
+        }
+        const friends = rng.shuffle([0, 1, 2]).map((rank) => ({ rank, placed: false }));
+        expect(friends[sizeTouch([fitting], 0, friends)!].rank).toBe(fitting);
+      });
+    }
+  });
+
+  it('level 11: the fitting friend lies within the bed while one rank bigger hangs its feet over the end', () => {
+    const h = (step: number) => stepScale(step) * FRIEND_SCALE * CRITTER_H;
+    // A dealt neighbour is at least `MIN_RATIO` bigger than the fitting friend (`dealSteps`), and such a friend hangs over the end.
+    for (let fit = 0; fit < STEPS; fit++) {
+      const size = propSize('bed', h(fit));
+      expect(fitPose('bed', size, h(fit)).x).toBeLessThanOrEqual(size / 2);
+      for (let big = fit + 1; big < STEPS; big++) if (h(big) / h(fit) >= MIN_RATIO) expect(fitPose('bed', size, h(big)).x).toBeGreaterThan(size / 2);
+      expect(fitPose('bed', size, h(fit) * MIN_RATIO).x).toBeGreaterThan(size / 2);
+    }
+    // In the other props the friend stands or sits at the prop, and the biggest friend's try stays inside the landscape sky.
+    for (const kind of ['chair', 'bowl', 'door'] as const) {
+      const pose = fitPose(kind, propSize(kind, h(2)), h(4));
+      expect(Math.abs(pose.x)).toBeLessThan(40);
+      expect(pose.rotation).toBe(0);
+    }
+  });
+
+  it('level 11 sits at the top of the preschool order and after 6 in pre-K, and is described', () => {
+    expect(sizeParade.levels('preschool')).toEqual({ min: 3, max: 17, order: [3, 4, 17, 10, 5, 6, 11] });
+    expect(sizeParade.levels('prek')).toEqual({ min: 5, max: 11, order: [5, 6, 11, 7, 8] });
+    expect(sizeParade.levels('school')).toEqual({ min: 7, max: 8 });
+    expect(sizeParade.describeLevel(11)).toMatch(/bed, chair, bowl and door/);
   });
 });

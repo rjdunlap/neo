@@ -4,7 +4,7 @@
 
 [PR #922](https://github.com/rjdunlap/neo/pull/922) prepares accepted R23 source `land-meadow-5` as the meadow backdrop and Places card, with reproducible import instructions in `src/art/locations/README.md`. Root boot loads `<land-id>.webp` and `<land-id>-card.webp` by name; missing or failed art retains the drawn fallback. The picture follows the existing ground line, game icons stand on cream plates, Places and Explore show its postcard, and the result uses the same picture. Classic keeps its drawn lands.
 
-Under the standing delegation, the pilot accepts games standing in front of distant tree trunks, rabbit and rocks as depth, replacing its no-overlap acceptance condition while preserving targets and page capacity. The iPad visual judgement remains open. Typecheck/full units/build, filtered play in both views, screenshot review and exact production assets/navigation offline passed; [verification](../VERIFICATION.md#2026-10-26--illustrated-rainbow-meadow-review-and-integration) records scope and reused broad offline evidence. Other backdrops remain a separate slice.
+Under the standing delegation, the pilot accepts games standing in front of distant tree trunks, rabbit and rocks as depth, replacing its no-overlap acceptance condition while preserving targets and page capacity. The iPad visual judgement remains open. Typecheck/full units/build, filtered play in both views, screenshot review and exact production assets/navigation offline passed; [verification](VERIFICATION-2026-10-26.md#2026-10-26--illustrated-rainbow-meadow-review-and-integration) records scope and reused broad offline evidence. Other backdrops remain a separate slice.
 
 ### The Arcade: portal catalog and live preview (2026-10-26)
 

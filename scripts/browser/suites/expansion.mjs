@@ -6,7 +6,7 @@ async function expansion() {
   const only = process.env.EXPANSION_ONLY;
   if (only !== undefined) selectValue(only, ['size', 'bug', 'story'], 'EXPANSION_ONLY');
   // Both the smallest supported band and the upper ladder are exercised through real pointer events.
-  const sizeLevels = (process.env.SIZE_LEVELS || '1,2,3,4,5,6,7,8,10,17').split(',').map(Number);
+  const sizeLevels = (process.env.SIZE_LEVELS || '1,2,3,4,5,6,7,8,10,11,17').split(',').map(Number);
   for (const level of sizeLevels.filter(() => !only || only === 'size')) {
     if (process.env.SIZE_PORTRAIT) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('size-parade', level);
@@ -29,22 +29,22 @@ async function expansion() {
     await page.evaluate(async () => {
       const g = neo.scene.game;
       const act = async (choice) => {
-        if (g.plan.mode === 'pick') { kit.tapOn(choice.node, 0, -50); await kit.sleep(220); }
+        if (g.plan.mode !== 'line') { kit.tapOn(choice.node, 0, -50); await kit.sleep(220); }
         else { const p = g.slots[g.step].getGlobalPosition(); await kit.dragTo(choice.node, { x: p.x, y: p.y + 40 * neo.view.scale }); await kit.sleep(550); }
       };
       const wrong = g.choices.find((c) => c.rank !== g.order[g.step]);
       await act(wrong); await act(wrong);
     });
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, `size ${level} hint`);
-    if (level === 4 || level === 8 || level === 10 || level === 17) await screenshot(`size-parade-${level}`);
-    if (level === 8 || level === 10 || (process.env.SIZE_PORTRAIT && level === 7)) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot(`size-parade-portrait-${level}`); }
+    if (level === 4 || level === 8 || level === 10 || level === 11 || level === 17) await screenshot(`size-parade-${level}`);
+    if (level === 8 || level === 10 || level === 11 || (process.env.SIZE_PORTRAIT && level === 7)) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot(`size-parade-portrait-${level}`); }
     await page.evaluate(async () => {
       const g = neo.scene.game;
       for (let step = 0; !g.done && step < 10; step++) {
         if (!await kit.until(() => !g.busy || g.done)) throw new Error('Size question stuck');
         if (g.done) break;
         const c = g.choices.find((c) => !c.placed && c.rank === g.order[g.step]);
-        if (g.plan.mode === 'pick') { kit.tapOn(c.node, 0, -50); await kit.sleep(950); }
+        if (g.plan.mode !== 'line') { kit.tapOn(c.node, 0, -50); await kit.sleep(950); }
         else { const p = g.slots[g.step].getGlobalPosition(); await kit.dragTo(c.node, { x: p.x, y: p.y + 40 * neo.view.scale }); await kit.sleep(220); }
       }
     });
