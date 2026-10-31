@@ -109,7 +109,7 @@ These are existing games awaiting research, not new game implementations. One do
 | --- | --- | --- |
 | Pixel Pictures (`pixel-pictures`) | designed | [Dive](deep-dives/pixel-pictures.md) |
 | Ferry Jam (`ferry-jam`) | research | [Game tracker](deep-dives/README.md#tracker) |
-| Garden Rows (`garden-rows`) | research | [Game tracker](deep-dives/README.md#tracker) |
+| Garden Rows (`garden-rows`) | designed | [Dive](deep-dives/garden-rows.md) |
 | Habitat Helpers (`habitat-helpers`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Inchworm Measure (`inchworm`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Island Bridges (`island-bridges`) | research | [Game tracker](deep-dives/README.md#tracker) |

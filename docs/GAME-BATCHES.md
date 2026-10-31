@@ -812,3 +812,27 @@ Proof: typecheck, rule tests (4×4 with exactly two colours, `order` complete, e
 Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests (fewer than four squares cannot finish, kept creation equals the board); one scripted play to Done with a kept design, one portrait screenshot, `fingerdemo` at 10; the `creations` suite filtered to Pixel Pictures only if the kept shape changes. Person and device checks stay open.
+
+### garden-rows 1: Seeded flower sets and Mend the bed
+
+- **`garden-rows`, seeded flower sets and level 7 Mend the bed (dive slice 1)** (existing interaction, new level; school): F1 seeded flower sets and level 7 Mend the bed as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).
+
+Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: typecheck and Garden Rows rule tests (the F1 and Mend the bed assertions in the dive); one browser play of level 7 with one wrong replant and the glow, and level 3 with a non-default flower set; `fingerdemo` at 7. Person and device checks stay open.
+
+### garden-rows 2: Hedge boxes
+
+- **`garden-rows`, levels 8–9 Hedge boxes (dive slice 2, after batch 1)** (new rule on the existing interaction, new drawing; school): shares `PLANS` and the school range with batch 1, as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).
+
+Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: typecheck, rule tests; one play of level 8 with a box clash and one of level 9 to its sticker; one portrait screenshot of the hedges; `fingerdemo` at 9. Person and device checks stay open.
+
+### garden-rows 3: One row
+
+- **`garden-rows`, level 10 One row, preschool opening (dive slice 3, after batch 1)** (new band; adds `order`/`entryLevels` to the same `LEVELS`), as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).
+
+Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/lands.ts` or registry tests as needed, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: typecheck and unit tests including the lands and registry band tests; one play of level 10 at preschool; `fingerdemo` at 10; the preschool Puzzle Peaks page screenshot. Person and device checks stay open.
