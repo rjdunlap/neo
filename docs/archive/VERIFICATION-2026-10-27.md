@@ -71,3 +71,9 @@
 - [PR #1016](https://github.com/rjdunlap/neo/pull/1016), branch `claude/define-caravan-days`: docs only. [Definition](../definitions/caravan-days.md) for levels 1–3 and a batch plan in `docs/GAME-BATCHES.md`; the study, backlog, recommendations, roadmap, ideas and ready lists point to it. Nothing built; no code changed.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`, run by the session after this closeout.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the build (CS2) runs the new-game tier; device checks are named in the definition.
+
+## 2026-10-27 — Keep House A–3 definition (medieval life ML1, docs only)
+
+- [PR #1017](https://github.com/rjdunlap/neo/pull/1017), branch `claude/define-keep-house`: docs only. [Definition](../definitions/keep-house.md) for saved levels 1–4 and a batch plan in `docs/GAME-BATCHES.md`; the study, backlog, recommendations, roadmap, ideas and ready lists point to it. Nothing built; no code changed.
+- Ran: `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean).
+- Not run: typecheck, tests, build, browser suites, device (docs only). Open: the build (ML2) runs the new-game tier.

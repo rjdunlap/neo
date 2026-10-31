@@ -85,7 +85,7 @@ Rule tests: route looks for `Aa × Aa` are `{spotted: 3, plain: 1}`, and the gen
 
 **Decided 2026-10-23 (on the developer's delegation):** 1: the session's source check replaces the named reviewer (voice lines no longer marked draft once checked). 2: option (a), register for school at level 1 with the "about 9 and up" note; the watched prototype becomes a device check. 3: option (a). 4: Rainbow Meadow if its layout test passes. G2 is unblocked.
 
-Built 2026-10-27 as levels 1–2 ([PR #1014](https://github.com/rjdunlap/neo/pull/1014)); the placement check passed with location capacity.
+Built 2026-10-27 as levels 1–2 ([PR #1014](https://github.com/rjdunlap/neo/pull/1014)); the placement check passed with location capacity. Level 3 built 2026-10-30 ([PR #1033](https://github.com/rjdunlap/neo/pull/1033), G3), with one deviation: Try one grows the drawn route in its bud card, not the centre sprout, because the claim cards stand in the sprout's place.
 
 **Placement check, 2026-10-24 (the G2 session, [PR #912](https://github.com/rjdunlap/neo/pull/912)):** decision 4's condition fails. Rainbow Meadow now holds 12 games, not 7. With this school-only game added, the school view has 13 spots and the prek view has 12 plus a signpost. Either way, at 4:3 landscape the field fills the screen from y≈120 down, leaving no free 40-unit cell, so `meadow.test.ts` finds no room for its six flowers. A fallback to the hill behind the field cannot help, because the top row of spots already sits above the horizon. Every other land fails its own location test with the game added, and Tinker Lab and Puzzle Peaks also fail `lands.test.ts` (`landLayout` returns null). Under standing rule S8 the home stays Rainbow Meadow, and G2 waited for location capacity. The code was backed out; the build itself is unchanged. The [location-capacity build](location-capacity.md) landed 2026-10-24 ([PR #915](https://github.com/rjdunlap/neo/pull/915)): a full land now turns a page, so G2 re-runs its placement check against the capacity sweep.
 
@@ -101,5 +101,5 @@ Not decided here: Hidden Sprouts (G5) and any 13+ or Lantern Lake entry, Patchwo
 ## Checks for the builds
 
 - **G2 (levels 1–2):** new-game tier. Typecheck; unit tests (the rule properties above, plus registry, lands and how-to tests); one filtered scripted play of level 1 and level 2 with one wrong Check and one Show me; one portrait screenshot; `fingerdemo` at level 2; build, because the registry, lands, voice and how-to files change.
-- **G3 (level 3):** the new-interaction tier for the claim cards and Try one, with the top level played and `fingerdemo` at it.
+- **G3 (level 3), built 2026-10-30:** the new-interaction tier for the claim cards and Try one, with the top level played and `fingerdemo` at it.
 - **Device and person checks, open until done:** device speech of "spot copy" and "plain copy," whether tiles read as distinct without letters or color, whether building a route reads as controlling reproduction, whether a child grasps sometimes versus always unaided, and target comfort. None of these is established by this definition.
