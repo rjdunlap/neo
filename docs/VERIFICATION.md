@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Caravan Days levels 6–7 definition (china-india-silk-road CS4, docs only)
+
+- [PR #1074](https://github.com/rjdunlap/neo/pull/1074), branch `claude/define-caravan-days-6-7`: [definition](definitions/caravan-days.md#levels-67-cs4-mountains-or-sand-a-well-every-days-walk) of level 6 (mountains or sand, either road accepted, a day card before Go) and level 7 (a well every day's walk, fewest wells by search, any minimal placement accepted); the reviewer gate is now the building session's source check. Study, packet, backlog, [batch caravan-days 3](GAME-BATCHES.md#caravan-days-3-mountains-or-sand-and-a-well-every-days-walk), READY and roadmap updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the build and its device checks.
+
 ## 2026-10-31 — Ferry Jam deep dive (docs only)
 
 - [PR #1073](https://github.com/rjdunlap/neo/pull/1073), branch `claude/dive-ferry-jam-2`: [dive](deep-dives/ferry-jam.md). Found the hint fires on a raw slide count rather than lack of progress, and each harbor pool sits at the bottom of its plan's range. Four slices queued ([batches](GAME-BATCHES.md#ferry-jam-1-fair-hints-and-fuller-harbors): fair hints and fuller harbors, level 7 rocks, level 8 two ferries, levels 9–10 pre-K entry and who's in the way); the preschool opening is filed in [waiting-on-developer](WAITING-ON-DEVELOPER.md); tracker, READY, backlog and ideas updated.
@@ -85,12 +91,6 @@
 - [PR #1060](https://github.com/rjdunlap/neo/pull/1060), branch `claude/research-number-structure`: [study](deep-dives/subjects/number-structure.md) and [packet](deep-dives/subjects/RECOMMENDATIONS.md#number-structure-recommendations) (Orchard Rows 4–6: equal rows with the leftover in the basket, every way to plant a number, the basket that only makes one row; a grouping card, Lunch boxes and Two frogs follow; hundreds and decimals stay sketches), tracker, backlog, READY, ideas, roadmap and device checks updated.
 - Ran: `git fetch origin --prune`, a search of pull requests and remote branches for the subject (no claim), `node scripts/check-links.mjs` and `git diff --check`. Sources: CCSS 3.OA, 4.OA, 6.NS, 2.NBT, 5.NBT, NRICH *Factors and Multiples Game* notes and the Melbourne decimals table opened; the rest from search summaries or recall, marked in the study.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the NS1 definition and three [person checks](DEVICE-CHECKS.md#orchard-rows-46-number-structure-study-2026-10-31-proposed-nothing-built).
-
-## 2026-10-31 — Tide Line levels 1–2 (oceans slice 1)
-
-- [PR #1059](https://github.com/rjdunlap/neo/pull/1059), branch `claude/tide-line-1-2`: new game `tide-line` in Bubble Beach (13 games), levels 1–2 and the shared `src/art/shore.ts`; batch tide-line 1.
-- Ran (tested at b63fee70 on base e025bcae, Vite dev on http://localhost:5330): typecheck; full `npm test` 285 files / 3,938 tests (the clip test failed until the title clip was rendered with `scripts/voice-clips/render.mjs`); 35 rule tests (500 seeds where seeded, layout at four views); `npm run build`; `BROWSER_SUITE=tideline` PASS, rerun after the review fixes (level 1 by two pulls 0/0; level 2 two floats then the glow, a dry pail in portrait and a second dry pail, saved 2 misses/1 hint); `BROWSER_SUITE=fingerdemo FINGER_ONLY=tide-line FINGER_LEVELS=1,2` PASS (level 1 lap 8.2 s, level 2 toddler 14.1 s; before the review fixes, which did not touch the bot's targets); one portrait screenshot of level 2 with the glow and one landscape probe of level 1. game-reviewer: nothing serious, four small fixes applied.
-- Not run: offline check (no persistence change). Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#tide-line-levels-12-oceans-study-slice-1-2026-10-31)): a one-year-old pulling or tapping the wave, a toddler holding a pail, the seaweed line in sunlight on an iPad, device speech for "anemone".
 
 ## Coverage summary
 

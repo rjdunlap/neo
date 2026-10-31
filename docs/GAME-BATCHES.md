@@ -585,6 +585,14 @@ Built 2026-10-30, [PR #1037](https://github.com/rjdunlap/neo/pull/1037) (defined
 
 Proof: new-interaction tier, as the [definition's check tier](definitions/caravan-days.md#levels-45-check-tier-for-the-build) sets it (typecheck, rule tests, one scripted play per level with one miss and asked-for help, a portrait screenshot of each, `fingerdemo` at level 5, one build).
 
+### caravan-days 3: Mountains or sand and a well every day's walk
+
+Defined 2026-10-31 in [PR #1074](https://github.com/rjdunlap/neo/pull/1074); not built. One worker, branch and PR for both levels.
+
+- **`caravan-days`, levels 6–7 (the build of study slice CS4)** (two new interactions on an existing game; school only, `school: { min: 3, max: 7 }`, no renumbering): two roads to one city, the pass road (3–5 one-sun legs plus a drawn snow day, the coat a visible cost) or the sand road (4–6 days), either accepted, she sets a day card (3–7) before Go and a wrong count is the miss (level 6, `pass`); tap sites on a switchback road so no stretch between water exceeds a day's walk of four hoofprint marks, the fewest wells by search, every minimal placement accepted, extra wells accepted (not a miss) with a minimal set ghosted, the hint glowing the farthest site within a day of the first too-long stretch (level 7, `wells`). Files: `src/games/caravan-days/` (logic, art, scene, rule tests), voice lines `cd.*`, the how-to card, the `caravandays` browser case. [Definition](definitions/caravan-days.md#levels-67-cs4-mountains-or-sand-a-well-every-days-walk), [study build slices](deep-dives/subjects/china-india-silk-road.md#build-slices-in-order)
+
+Proof: new-interaction tier (typecheck, rule tests, `caravandays` filtered play of levels 6 and 7, a portrait screenshot of each, `fingerdemo` at levels 6 and 7, one build).
+
 ### welcome-ways 1: Levels 1–4
 
 Built; [batch record](archive/COMPLETED-2026-10-09.md#welcome-ways-levels-14-2026-10-24). Levels 5–7 need their own definition.
