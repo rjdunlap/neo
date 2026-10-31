@@ -1,12 +1,13 @@
 /**
  * Keep House's code-drawn pieces: the castle front and its doors, the well, the household with their tools, the yard rooms,
- * the plan's cells and room tiles, the need cards, the bell, Keep it, the icon and the sticker. Stone, thatch, straw and fire from
+ * the plan's cells and room tiles, the need cards, the bell, Keep it, the ruin's cells, clues and picture labels, the timber and
+ * stone halls with their rows, bags and year bar, the icon and the sticker. Stone, thatch, straw and fire from
  * the palette; no sepia, no "olde" lettering.
  */
 import { Container, Graphics } from 'pixi.js';
 import { cream, ink, shadow, swatch, wood } from '../../art/palette';
 import { finish } from '../../ui/buttons';
-import type { Figure, PlanRoom, Room } from './logic';
+import type { Build, Clue, Figure, Hall, PlanRoom, Room } from './logic';
 
 const at = <T extends Container>(node: T, x: number, y: number): T => { node.position.set(x, y); return node; };
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
@@ -471,5 +472,219 @@ export function stickerArt(cells: number[], cook: number): Container {
   const s = new Graphics();
   s.ellipse(0, 64, 56, 8).fill({ color: shadow, alpha: 0.15 });
   c.addChildAt(s, 0);
+  return c;
+}
+
+// ——— Level 5: the ruin ———
+
+/** One clue, drawn small (about 44 units) with its floor at (x, y). Mangers carry no hay, so they never match the stable's label. */
+function clue(g: Graphics, c: Clue, x: number, y: number) {
+  switch (c) {
+    case 'hearth':
+      g.roundRect(x - 24, y - 34, 48, 34, 4).fill(STONE.dark).stroke(line(STONE.line, 3));
+      g.roundRect(x - 15, y - 24, 30, 24, 3).fill(0x3a2f2a);
+      g.circle(x - 5, y - 4, 3).fill(0x8a837a).circle(x + 6, y - 5, 3).fill(0x8a837a);
+      break;
+    case 'oven':
+      g.moveTo(x - 22, y).arc(x, y, 22, Math.PI, 0).closePath().fill(STONE.dark).stroke(line(STONE.line, 3));
+      g.moveTo(x - 9, y).arc(x, y, 9, Math.PI, 0).closePath().fill(0x3a2f2a);
+      break;
+    case 'dais':
+      g.rect(x - 26, y - 12, 52, 12).fill(STONE.light).stroke(line(STONE.line, 3));
+      g.rect(x - 18, y - 22, 36, 10).fill(STONE.light).stroke(line(STONE.line, 3));
+      break;
+    case 'drain':
+      g.rect(x - 24, y - 10, 48, 10).fill(STONE.dark).stroke(line(STONE.line, 3));
+      g.rect(x - 20, y - 7, 40, 4).fill(0x4f8fb3);
+      g.moveTo(x + 24, y - 5).lineTo(x + 30, y - 5).stroke(line(0x4f8fb3, 4));
+      break;
+    case 'mangers':
+      for (const d of [-14, 14]) g.moveTo(x + d - 13, y - 20).lineTo(x + d + 13, y - 20).lineTo(x + d + 9, y).lineTo(x + d - 9, y).closePath().fill(STONE.fill).stroke(line(STONE.line, 3));
+      break;
+    case 'wide-door':
+      g.rect(x - 24, y - 40, 48, 40).fill(STONE.fill).stroke(line(STONE.line, 3));
+      g.moveTo(x - 18, y).lineTo(x - 18, y - 22).arc(x, y - 22, 18, Math.PI, 0).lineTo(x + 18, y).closePath().fill(0x3a2f2a);
+      break;
+    case 'window-seat':
+      g.roundRect(x - 14, y - 40, 28, 24, 10).fill(0xbfe6ff).stroke(line(STONE.line, 3));
+      for (const d of [-20, 20]) g.rect(x + d - 7, y - 14, 14, 14).fill(STONE.light).stroke(line(STONE.line, 3));
+      break;
+    case 'cellar-steps':
+      g.rect(x - 22, y - 30, 44, 30).fill(0x3a2f2a).stroke(line(STONE.line, 3));
+      for (let i = 0; i < 3; i++) g.rect(x - 22 + i * 7, y - 30 + i * 10, 44 - i * 7, 10).fill(STONE.fill).stroke(line(STONE.line, 2));
+      break;
+  }
+}
+
+/** A roofless ruin cell, `size` square from its top-left: broken low walls and the remains inside. `lit` while a label hovers, `glow` on the deciding clue named. */
+export function ruinCellArt(size: number, shown: readonly Clue[], lit = false, glow: Clue | null = null): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const g = new Graphics();
+  g.roundRect(0, 0, size, size, 14).fill(lit ? swatch.yellow.light : 0xcdbfa6).stroke(line(STONE.line, 4));
+  // Broken low walls: a ragged top edge on three sides.
+  g.moveTo(6, 22).lineTo(30, 22).lineTo(36, 12).lineTo(58, 12).lineTo(64, 20).lineTo(size - 22, 20).lineTo(size - 14, 8).lineTo(size - 6, 8).stroke(line(STONE.dark, 6));
+  g.moveTo(8, 26).lineTo(8, size - 30).moveTo(size - 8, 14).lineTo(size - 8, size - 40).stroke(line(STONE.dark, 6));
+  c.addChild(g);
+  const n = shown.length;
+  const slots = n === 1 ? [[size / 2, size * 0.78]] : n === 2 ? [[size * 0.3, size * 0.78], [size * 0.7, size * 0.78]] : [[size * 0.28, size * 0.52], [size * 0.72, size * 0.52], [size / 2, size * 0.9]];
+  shown.forEach((k, i) => {
+    const d = new Graphics();
+    const [x, y] = slots[i];
+    if (glow === k) d.circle(x, y - 18, 32).fill({ color: swatch.yellow.fill, alpha: 0.5 }).stroke({ width: 6, color: swatch.yellow.fill });
+    clue(d, k, x, y);
+    c.addChild(d);
+  });
+  return c;
+}
+
+/** A label's picture, never one of the clues: the hall a table with cups, the kitchen a pot, the stable hay, the storeroom a chest, the solar a bed. Floor at (0, 0), about 90 wide. */
+function labelPicture(g: Graphics, room: PlanRoom) {
+  switch (room) {
+    case 'hall':
+      g.rect(-40, -30, 80, 10).fill(wood.fill).stroke(line(wood.line, 3));
+      for (const d of [-32, 32]) g.rect(d - 4, -20, 8, 20).fill(wood.line);
+      for (const d of [-20, 0, 20]) g.roundRect(d - 6, -46, 12, 16, 3).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 2));
+      break;
+    case 'kitchen': pot(g, 0, -34, 52); break;
+    case 'stable':
+      g.moveTo(-40, 0).quadraticCurveTo(-30, -44, 0, -50).quadraticCurveTo(30, -44, 40, 0).closePath().fill(HAY).stroke(line(THATCH.line, 3));
+      for (const d of [-18, 0, 18]) g.moveTo(d, -6).lineTo(d + 6, -34).stroke(line(THATCH.line, 2));
+      break;
+    case 'storeroom':
+      g.roundRect(-34, -40, 68, 40, 6).fill(wood.fill).stroke(line(wood.line, 3));
+      g.moveTo(-34, -26).lineTo(34, -26).stroke(line(wood.line, 3));
+      g.rect(-6, -32, 12, 12).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 2));
+      break;
+    case 'solar':
+      g.rect(-40, -24, 80, 16).fill(swatch.pink.fill).stroke(line(swatch.pink.line, 3));
+      g.rect(-44, -44, 10, 44).fill(wood.fill).stroke(line(wood.line, 2));
+      g.rect(34, -32, 10, 32).fill(wood.fill).stroke(line(wood.line, 2));
+      g.ellipse(-22, -30, 12, 7).fill(0xffffff).stroke(line(STONE.line, 2));
+      break;
+  }
+}
+
+/** A picture label card, `size` square centred on (0, 0). */
+export function labelArt(room: PlanRoom, size: number, glow = false): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const g = new Graphics();
+  if (glow) g.roundRect(-size / 2 - 8, -size / 2 - 8, size + 16, size + 16, 24).stroke({ width: 8, color: swatch.yellow.fill });
+  g.roundRect(-size / 2, -size / 2 + 5, size, size, 16).fill(wood.line);
+  g.roundRect(-size / 2, -size / 2, size, size, 16).fill(cream).stroke(line(wood.line, 4));
+  c.addChild(g);
+  const p = new Graphics();
+  p.position.set(0, size * 0.3);
+  p.scale.set(size / 110);
+  labelPicture(p, room);
+  c.addChild(p);
+  return c;
+}
+
+// ——— Level 6: timber or stone ———
+
+/** A hall at the site, `w` wide with its floor at (0, 0) centred: timber, greying timber, a rotted heap, scaffolding (with the shelter), stone, or stone half up. */
+export function hallArt(hall: Hall, w: number): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const g = new Graphics();
+  const h = w * 0.55;
+  const TIMBER = { fill: 0xc8935a, line: 0x7a5530 };
+  const grey = { fill: 0xa89c8c, line: 0x6e655a };
+  if (hall === 'timber' || hall === 'old-timber') {
+    const t = hall === 'timber' ? TIMBER : grey;
+    const sag = hall === 'old-timber' ? 10 : 0;
+    g.rect(-w / 2, -h, w, h).fill(t.fill).stroke(line(t.line, 4));
+    for (let x = -w / 2 + 20; x < w / 2; x += 26) g.moveTo(x, -h).lineTo(x, 0).stroke(line(t.line, 2));
+    g.moveTo(-w / 2 - 14, -h).lineTo(0, -h - w * 0.32 + sag).lineTo(w / 2 + 14, -h + sag).closePath().fill(THATCH.fill).stroke(line(THATCH.line, 4));
+    g.roundRect(-24, -60, 48, 60, 6).fill(0x3a2f2a);
+  } else if (hall === 'rotted') {
+    g.moveTo(-w / 2, 0).lineTo(-w / 3, -30).lineTo(-w / 8, -18).lineTo(w / 6, -40).lineTo(w / 2, 0).closePath().fill(grey.fill).stroke(line(grey.line, 4));
+    for (const d of [-0.3, 0, 0.25]) g.moveTo(w * d, -6).lineTo(w * d + 30, -46).stroke(line(grey.line, 6));
+  } else if (hall === 'scaffold' || hall === 'half-up') {
+    const wh = hall === 'scaffold' ? h * 0.6 : h * 0.35;
+    stoneWall(g, -w / 2, -wh, w, wh);
+    if (hall === 'scaffold') {
+      for (let x = -w / 2; x <= w / 2; x += w / 4) g.moveTo(x, 0).lineTo(x, -h - 10).stroke(line(wood.line, 4));
+      for (const y of [-h * 0.5, -h]) g.moveTo(-w / 2, y).lineTo(w / 2, y).stroke(line(wood.line, 4));
+    }
+    // The household's small shelter beside the works.
+    g.rect(w / 2 + 14, -46, 50, 46).fill(TIMBER.fill).stroke(line(TIMBER.line, 3));
+    g.moveTo(w / 2 + 6, -46).lineTo(w / 2 + 39, -72).lineTo(w / 2 + 72, -46).closePath().fill(THATCH.fill).stroke(line(THATCH.line, 3));
+  } else {
+    stoneWall(g, -w / 2, -h, w, h);
+    crenels(g, -w / 2, -h, w);
+    g.moveTo(-26, 0).lineTo(-26, -40).arc(0, -40, 26, Math.PI, 0).lineTo(26, 0).closePath().fill(0x3a2f2a);
+  }
+  c.addChild(g);
+  return c;
+}
+
+/** A bag of the purse, `size` tall with its floor at (0, 0) centred; `spent` greys it. */
+export function bagArt(size: number, spent = false): Graphics {
+  const g = new Graphics();
+  g.eventMode = 'none';
+  const k = size / 60;
+  const f = spent ? { fill: 0xe8e2d6, line: 0xc9c3b8 } : { fill: 0xd9a35a, line: 0x8a5a24 };
+  g.moveTo(-22 * k, 0).quadraticCurveTo(-28 * k, -36 * k, -10 * k, -46 * k).lineTo(10 * k, -46 * k).quadraticCurveTo(28 * k, -36 * k, 22 * k, 0).closePath().fill(f.fill).stroke(line(f.line, 3));
+  g.moveTo(-12 * k, -46 * k).lineTo(0, -58 * k).lineTo(12 * k, -46 * k).stroke(line(f.line, 3));
+  return g;
+}
+
+/** The year bar: one mark per 5 years of the stay, filled up to `now`; `w` wide from (0, 0). */
+export function yearBarArt(years: number, now: number, w: number): Graphics {
+  const g = new Graphics();
+  g.eventMode = 'none';
+  const n = years / 5;
+  const step = w / n;
+  for (let i = 0; i < n; i++) {
+    g.roundRect(i * step + 2, 0, step - 4, 24, 6).fill(i * 5 < now ? swatch.green.fill : cream).stroke(line(STONE.line, 2));
+    if ((i + 1) % 3 === 0) g.moveTo((i + 1) * step - 1, -6).lineTo((i + 1) * step - 1, 30).stroke(line(swatch.orange.line, 3));
+  }
+  return g;
+}
+
+/** A choice row on the build card, `w` × `h` centred on (0, 0): the hall, its bags, and its life in 5-year marks (timber 3 then rot; stone 8 years of scaffold then standing). */
+export function rowArt(build: Build, w: number, h: number, lifted: boolean, glow: boolean): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const g = new Graphics();
+  if (glow) g.roundRect(-w / 2 - 10, -h / 2 - 10, w + 20, h + 20, 26).stroke({ width: 8, color: swatch.yellow.fill });
+  g.roundRect(-w / 2, -h / 2 + 5, w, h, 18).fill(STONE.line);
+  g.roundRect(-w / 2, -h / 2, w, h, 18).fill(lifted ? swatch.yellow.light : cream).stroke(line(STONE.line, 4));
+  c.addChild(g);
+  const hall = hallArt(build === 'timber' ? 'timber' : 'stone', 70);
+  hall.position.set(-w / 2 + 52, h / 2 - 16);
+  c.addChild(hall);
+  const n = build === 'timber' ? 2 : 5;
+  for (let i = 0; i < n; i++) {
+    const b = bagArt(30);
+    b.position.set(-w / 2 + 110 + i * 26, -2);
+    c.addChild(b);
+  }
+  const life = new Graphics();
+  const x0 = -w / 2 + 104, y0 = 14, cell = 22;
+  if (build === 'timber') {
+    for (let i = 0; i < 3; i++) life.roundRect(x0 + i * cell, y0, cell - 4, 18, 4).fill(0xc8935a).stroke(line(0x7a5530, 2));
+    life.moveTo(x0 + 3 * cell + 4, y0 + 18).lineTo(x0 + 3 * cell + 16, y0 + 4).lineTo(x0 + 3 * cell + 28, y0 + 18).stroke(line(0x6e655a, 4));
+  } else {
+    for (let i = 0; i < 2; i++) life.roundRect(x0 + i * cell, y0, cell - 4, 18, 4).fill(wood.fill).stroke(line(wood.line, 2));
+    for (let i = 2; i < 8; i++) life.roundRect(x0 + i * cell, y0, cell - 4, 18, 4).fill(STONE.fill).stroke(line(STONE.line, 2));
+  }
+  c.addChild(life);
+  return c;
+}
+
+/** The Build button: a mallet on a button face; `again` adds a turn-around arrow. */
+export function buildButtonArt(w: number, h: number, on: boolean, again: boolean): Container {
+  const c = new Container();
+  c.addChild(finish({ w, h, corner: 28 }, on ? swatch.green : swatch.white, on ? swatch.green.fill : STONE.light));
+  const g = new Graphics();
+  g.eventMode = 'none';
+  g.moveTo(-10, 30).lineTo(16, -14).stroke(line(wood.line, 8));
+  g.roundRect(-4, -36, 46, 26, 6).fill(STONE.fill).stroke(line(STONE.line, 4));
+  if (again) g.arc(-30, 0, 18, -0.5, Math.PI * 1.3).stroke(line(ink, 5)).moveTo(-48, -10).lineTo(-48, 6).lineTo(-34, 0).stroke(line(ink, 5));
+  c.addChild(g);
   return c;
 }

@@ -18,6 +18,9 @@ async function keepHousePlay() {
     await page.waitForTimeout(200);
   };
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+  // KEEPHOUSE_FROM=5 skips the unchanged levels 1–4.
+  const from = Number(process.env.KEEPHOUSE_FROM ?? 1);
+  if (from <= 4) {
 
   // Level 1: a door, the well twice, a repeat tap (a wave), the rest of the doors; nothing counts.
   await launch('keep-house', 1, 'Mia', 'preschool');
@@ -140,6 +143,62 @@ async function keepHousePlay() {
   assert.deepEqual(await score(), [missesSoFar, 1], 'level 4 saved the misses and one hint');
   void logic;
   log(`Keep House 1–4: three doors, the well and a wave (0/0); a figure wrong twice and another wrong twice then the glow (2/1); the far spot kept twice then the near spot (0/1); an empty bell, ${missesSoFar} misses over a wrong plan, the glow to a solution, the second plan solved (${missesSoFar}/1), two portrait screenshots, passed`);
+  }
+
+  // Level 5: a room looked at (free), one label wrong twice on another room (two misses, the glow: one hint), the glow followed, the second ruin clean.
+  await launch('keep-house', 5, 'Mia', 'school');
+  await settle();
+  const label = (r) => `neo.scene.game.labelNodes.get('${r}').node`;
+  const ruinCell = (c) => `neo.scene.game.ruinCells[${c}]`;
+  const rooms = await page.evaluate(() => neo.scene.game.ruinBrief.rooms.map((r) => ({ room: r.room, cell: r.cell })));
+  assert.equal(rooms.length, 4, 'four rooms in the ruin');
+  await tapOn(ruinCell(rooms[0].cell), 60, 60);
+  assert.equal(await page.evaluate(() => neo.scene.game.looked), true, 'a room was looked at');
+  assert.deepEqual(await tally(), [0, 0], 'looking is free');
+  await dragTo(label(rooms[1].room), ruinCell(rooms[0].cell), 60, 60); await settle();
+  assert.deepEqual(await tally(), [1, 0], 'a wrong label is one miss');
+  await dragTo(label(rooms[1].room), ruinCell(rooms[0].cell), 60, 60); await settle();
+  assert.deepEqual(await tally(), [2, 1], 'the second miss lights the glow, one hint');
+  for (let i = 0; i < 4; i++) {
+    const h = await page.evaluate(async () => { const { ruinHint } = await import('/src/games/keep-house/logic.ts'); const g = neo.scene.game; return ruinHint(g.ruinBrief, g.ruin, null); });
+    assert.ok(h && !h.spare, 'the glow names a room');
+    await dragTo(label(h.label), ruinCell(h.cell), 60, 60); await settle();
+  }
+  assert.equal(await page.evaluate(() => neo.scene.game.ruinIndex), 1, 'following the glow finishes the first ruin');
+  assert.deepEqual(await tally(), [2, 1]);
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  await screenshot('keep-house-5-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  const rooms2 = await page.evaluate(() => neo.scene.game.ruinBrief.rooms.map((r) => ({ room: r.room, cell: r.cell })));
+  for (const r of rooms2) { await dragTo(label(r.room), ruinCell(r.cell), 60, 60); await settle(); }
+  await finished('keep-house');
+  assert.deepEqual(await score(), [2, 1], 'level 5 saved two misses and one hint');
+
+  // Level 6: the first lord built the other way, Keep it twice (one hint, no miss); the second lord built the fitting way.
+  await launch('keep-house', 6, 'Mia', 'school');
+  await settle();
+  const row = (b) => `neo.scene.game.rowNodes[${b === 'timber' ? 0 : 1}]`;
+  const fitNow = () => page.evaluate(async () => { const { fits } = await import('/src/games/keep-house/logic.ts'); return fits(neo.scene.game.situation); });
+  let want = await fitNow();
+  const other = want === 'timber' ? 'stone' : 'timber';
+  await tapOn(row(other)); await tapOn('neo.scene.game.buildNode'); await settle();
+  let bs = await page.evaluate(() => ({ ...neo.scene.game.buildState, keepShown: neo.scene.game.keepShown }));
+  assert.deepEqual([bs.choice, bs.done, bs.keepShown], [other, false, true], 'the other choice plays out and asks; Keep it appears');
+  assert.deepEqual(await tally(), [0, 0], 'a choice is never a miss');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  await screenshot('keep-house-6-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await tapOn('neo.scene.game.keepNode'); await settle();
+  bs = await page.evaluate(() => ({ ...neo.scene.game.buildState }));
+  assert.deepEqual([bs.refusals, bs.hinted, bs.done], [1, false, false], 'the first Keep it replays the years');
+  await tapOn('neo.scene.game.keepNode'); await settle();
+  assert.equal(await page.evaluate(() => neo.scene.game.buildIndex), 1, 'the second Keep it finishes the situation as she left it');
+  assert.deepEqual(await tally(), [0, 1], 'one hint, no miss');
+  want = await fitNow();
+  await tapOn(row(want)); await tapOn('neo.scene.game.buildNode');
+  await finished('keep-house');
+  assert.deepEqual(await score(), [0, 1], 'level 6 saved 0 misses, 1 hint');
+  log('Keep House 5–6: a look, a label wrong twice then the glow followed, the second ruin clean (2/1); the other build kept twice, then the fitting build (0/1); two portrait screenshots, passed');
 }
 return { keepHousePlay };
 }
