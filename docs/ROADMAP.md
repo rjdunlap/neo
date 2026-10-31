@@ -317,7 +317,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | Subject | Researched | Study | Packet |
 | --- | --- | --- | --- |
 | Number structure | 2026-10-31 | [study](deep-dives/subjects/number-structure.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#number-structure-recommendations) |
-| Strategy games | 2026-10-31 | [study](deep-dives/subjects/strategy-games.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#strategy-games-recommendations) |
+| Strategy games | 2026-10-31; Shell Rows 1–3 [defined](definitions/shell-rows.md) 2026-10-31 | [study](deep-dives/subjects/strategy-games.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#strategy-games-recommendations) |
 | Media literacy | 2026-10-31; Notice Board 1–3 [defined](definitions/notice-board.md) 2026-10-31 | [study](deep-dives/subjects/media-literacy.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#media-literacy-recommendations) |
 | Philosophy and reasoning | 2026-10-31; Not Always 1–3 [defined](definitions/not-always.md) 2026-10-31 | [study](deep-dives/subjects/philosophy-reasoning.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#philosophy-and-reasoning-recommendations) |
 | Theatre and puppetry | 2026-10-27 | [study](deep-dives/subjects/theatre-puppetry.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#theatre-and-puppetry-recommendations) |

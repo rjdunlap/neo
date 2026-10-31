@@ -132,7 +132,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 ## Build slices, in order
 
-1. **SG1 · Define Shell Rows 1–3** (docs only): the board model and minimax, the puzzle positions and their rule tests, square sizes and layout, the replay, accounting, how-to and bot, land placement by decision 2.
+1. **SG1 · Define Shell Rows 1–3** (docs only; **defined 2026-10-31**, [PR #1062](https://github.com/rjdunlap/neo/pull/1062), [definition](../../definitions/shell-rows.md)): the board model and minimax, the puzzle positions and their rule tests, square sizes and layout, the replay, accounting, how-to and bot, land placement by decision 2.
 2. **Build Shell Rows 1–3** (new-game tier).
 3. **SG5 · Table games card** (grown-ups' page, plain HTML).
 4. **SG2 · Define Shell Rows 4–5**, after 1–3 are played; then build.
@@ -141,4 +141,4 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 ## What was built and what ran
 
-Nothing built. The research session ran `git fetch origin --prune` and `scripts/overlap.sh strategy-games` (no claim on this subject), opened the sources marked **opened** above (MP1 and MP7, NRICH's *Got It* teachers' notes, the Oware article), and used search summaries for the rest (the Crowley and Siegler abstract listing, Siegler and Ramani, Sala and Gobet, the retail listings and reviews); the Waterloo museum page failed with a certificate error and the Ludii page held no game text; recalled items are marked. At closeout: `node scripts/check-links.mjs` and `git diff --check`. No code changed.
+Nothing built. The Shell Rows 1–3 definition was written 2026-10-31 (docs only; [definition](../../definitions/shell-rows.md); a throwaway enumeration counted the pool classes 39, 69 and 81; the build recounts them). The research session ran `git fetch origin --prune` and `scripts/overlap.sh strategy-games` (no claim on this subject), opened the sources marked **opened** above (MP1 and MP7, NRICH's *Got It* teachers' notes, the Oware article), and used search summaries for the rest (the Crowley and Siegler abstract listing, Siegler and Ramani, Sala and Gobet, the retail listings and reviews); the Waterloo museum page failed with a certificate error and the Ludii page held no game text; recalled items are marked. At closeout: `node scripts/check-links.mjs` and `git diff --check`. No code changed.
