@@ -11,8 +11,9 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { cartArt, itemArt, madeArt, placeArt } from './art';
+import { PlanShed } from './plan';
 import {
-  centre, ITEMS, judge, nextDrop, PLACE_H, PLACE_W, placeAt, planFor, roundFor, shedLayout, ShedTally,
+  centre, ITEMS, judge, nextDrop, PLACE_H, PLACE_W, placeAt, planFor, roundFor, shedLayout, ShedTally, SORT_MAX,
   type ItemId, type Place, type Plan, type Round, type ShedLayout,
 } from './logic';
 
@@ -20,6 +21,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 4 },
+  school: { min: 4, max: 6 },
 };
 
 interface PlaceNode { place: Place; node: Container }
@@ -361,8 +363,8 @@ export const secondChanceShed: GameModule = {
   name: 'Second Chance Shed',
   titleLine: 'game.second-chance-shed',
   region: 'cozy-village',
-  skills: ['sorting', 'materials', 'cause-and-effect', 'reuse'],
-  bands: ['toddler', 'preschool', 'prek'],
+  skills: ['sorting', 'materials', 'cause-and-effect', 'reuse', 'planning'],
+  bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
@@ -371,5 +373,8 @@ export const secondChanceShed: GameModule = {
   hubIcon: () => new ShedIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => new SecondChanceShed(ctx),
+  create: (ctx) => {
+    const plan = planFor(ctx.level);
+    return plan.level > SORT_MAX ? new PlanShed(ctx, plan) : new SecondChanceShed(ctx);
+  },
 };

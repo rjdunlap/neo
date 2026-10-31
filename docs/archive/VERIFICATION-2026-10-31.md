@@ -11,3 +11,10 @@
 - [PR #1036](https://github.com/rjdunlap/neo/pull/1036), branch `claude/define-spinner-fair`: [definition](../definitions/spinner-fair.md) (levels 1–5 of a new game; preschool 1–2, pre-K 2–3, school 3–5; Counting Cove becoming 14 games), two batch plans in [GAME-BATCHES](../GAME-BATCHES.md#spinner-fair-1-spin-see-and-pick), READY, backlog, roadmap and study updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the builds run the new-game tier (batch 1) and the new-interaction tier (batch 2); device checks (spinner tapping, "still the better chance", sure/maybe/no way faces, wedge grab size, critter speech) stay open at the build.
+
+## 2026-10-31 — Keep House levels 5–6 (medieval life ML3)
+
+- [PR #1038](https://github.com/rjdunlap/neo/pull/1038), branch `claude/keep-house-5-6`, code at `c7bc3cac` (tested at its parent plus a no-op deletion): level 5 Read the ruin and level 6 Stone or timber (school 4–6), from the [definition](../definitions/keep-house.md#levels-56-ml3-read-the-ruin-stone-or-timber).
+- Ran: `npm run typecheck`; keep-house rule tests 36 passed; full `npm test` 3,791 passed with 2 failures that pass in isolation (the fluffy-salon frame-rate test and the unchanged keep-house level-4 hint search, both timeouts under full-suite load); `npm run build`.
+- Ran: `BROWSER_SUITE=keephouse KEEPHOUSE_FROM=5` on `http://localhost:5929`: level 5 a look, one label wrong twice (2/1, glow followed), second ruin clean, saved 2/1; level 6 other build kept twice (0/1), fitting build, saved 0/1; portrait screenshots of each. `BROWSER_SUITE=fingerdemo FINGER_ONLY=keep-house FINGER_LEVELS=5,6` passed.
+- Not run: levels 1–4 browser play (unchanged), offline check. Open in [DEVICE-CHECKS](../DEVICE-CHECKS.md#keep-house-levels-56-ml3-2026-10-30): clues read or elimination, the shared hearth noticed, the years followed, device speech, the unchecked history lines.
