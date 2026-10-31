@@ -688,3 +688,15 @@ Proof: new-game tier, as the [definition's check tier](definitions/puppet-stage.
 - **Admission:** separate from docs NC1; current contract/source review and overlap required. Cozy Village after actual current full-size capacity/layout checks, else existing Story Grove with its own checks; no count increment before build. Existing optional picture Keep, no mailbox/save architecture.
 - **Proof:** independent rule tests/typecheck; filtered first/top wrong/help play plus branch/log recovery, all4 demos and dense portrait screenshot; build for shared catalog/card/voice. Relevant Keep/backup/offline and world proof for actual persistence/navigation changes. Record tested commit/filter/URL; stop servers. Person/device recognition/reach/speech/child response remains unestablished.
 - **Out:** NC3+, pieces, privacy, locks, resilience, Relay Cases, story, practical family card, real network/contact/safety. No outside reviewer approval invented; October23 source-check rule applies.
+
+### sprout-shuffle 1: which pairs always make spotted
+
+- **`sprout-shuffle`, level 4 *which pairs always make spotted?*** (new level on the existing interaction; school; the first build of Hidden Sprouts, genetics G5, whose levels 5 and 6 follow as later complete parts): choose which parent pairs guarantee a spotted sprout and keep every explanation compatible with what was seen. Scope, rules and the school range are in the [definition](definitions/hidden-sprouts.md); depends on Sprout Shuffle levels 1–3, built 2026-10-30.
+
+Proof: new-levels tier, as the [definition's checks](definitions/hidden-sprouts.md#checks-for-the-builds) set it (typecheck, the rule tests, one browser play of level 4, `fingerdemo` at 4). Device and person checks stay open there.
+
+### sprout-shuffle 2: Patchwork Conservatory
+
+- **`sprout-shuffle`, levels 7–8 Patchwork Conservatory** (genetics G7; a new interaction on the same game, school and up; level 7 one accepted pair with a trap plant, level 8 two accepted plans plus a free "Another way?"): plan a cross guaranteed to satisfy a two-trait planting brief over two explicitly independent toy loci. [Definition](definitions/patchwork-conservatory.md). Depends on Sprout Shuffle level 6 (Hidden Sprouts, [definition](definitions/hidden-sprouts.md)) being built.
+
+Proof: new-interaction tier, as the [definition's checks](definitions/patchwork-conservatory.md#checks-for-the-builds) set it (typecheck; unit tests for the rule properties, how-to and registry; one filtered scripted play of level 7 with a Check on `AA bb` × `Aa Bb`, a second miss and the glow, then the accepted pair, and of level 8 with both plans found; one portrait screenshot with a lens open; `fingerdemo` at 7 and 8; build). Device and person checks stay open there.

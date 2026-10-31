@@ -18,3 +18,11 @@
 - [PR #1030](https://github.com/rjdunlap/neo/pull/1030), branch `claude/define-river-tablets-4-6`: [definition](../definitions/river-tablets.md#levels-46-ar3-a-ten-mark-check-the-delivery-two-tablets-disagree) (level 4 a ten-mark, level 5 check the delivery, level 6 two tablets disagree; school range 3–6), batch plans [river-tablets 2](../GAME-BATCHES.md#river-tablets-2-a-ten-mark-and-check-the-delivery) and [3](../GAME-BATCHES.md#river-tablets-3-two-tablets-disagree); READY, backlog, roadmap, packet and study point to it. Nothing built, no code changed.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the building session's source check of the history line; each build runs the new-interaction tier; the four [device checks](../DEVICE-CHECKS.md#river-tablets-levels-46-ar3-2026-10-30) wait for the built levels.
+
+## 2026-10-30 — Size Parade levels 12 and 15 (insert a friend and order shades)
+
+- [PR #1031](https://github.com/rjdunlap/neo/pull/1031), branch `claude/size-parade-insert-shades`, tested commit `1f8e4992`: level 12 *Where does this one go?* (nearest-gap insert into an ordered line) and level 15 *Darkest first* (five shades, new `shade` swatch on `CritterSpec`); pre-K `order [5, 6, 11, 7, 8, 12, 15]`, school `order [7, 8, 12, 15]`.
+- Ran at `GAME_URL=http://localhost:5587`: `npm run typecheck`; full `npm test` (282 files, 3,772 tests; Size Parade rules 25, including insert-gap, layout and reason properties over 300 seeds and three views, and shade luminance and neighbour contrast >= 1.35); `npm run build` (shared art changed).
+- `BROWSER_SUITE=expansion EXPANSION_ONLY=size SIZE_LEVELS=12,15`: sky tap, off-line drop and line-friend touch free at 12; two wrong gaps = 1 hint; finished with [2 misses, 1 hint] saved; portrait screenshots of 12 and 15 reviewed; level 12 re-run after the review fixes. `BROWSER_SUITE=fingerdemo FINGER_ONLY=size-parade FINGER_LEVELS=12,15` passed (17.9 s, 31.0 s).
+- `game-reviewer`: three low findings, fixed. Not run: other suites (unchanged), couch suites, the production offline check, an iPad, a child.
+- Open: the shades on an iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
