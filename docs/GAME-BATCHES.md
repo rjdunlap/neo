@@ -403,6 +403,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### pet-kitchen 3: Compare shares
 
+**Claimed 2026-10-30** by `claude/pet-kitchen-who-has-more` (level 13 and the three journal entries; expected files `src/games/pet-kitchen/*`, `src/content/voice-script.ts`, `src/content/howto.ts`, the journal list and the browser harness case).
+
 - **`pet-kitchen`, level 13 *Who has more?*, slice 7** (new interaction tier, the question after the serve: typecheck, rule tests over the fraction pairs, one play of 13 with one wrong "more", `fingerdemo` at 13): compare two shares; school `order [14, 5, 6, 7, 8, 9, 12, 13]`, and the three journal entries land here. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
