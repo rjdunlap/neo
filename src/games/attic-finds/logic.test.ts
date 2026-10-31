@@ -8,7 +8,12 @@ import {
   canFinish, finishLever, leverState, makeLeverRound, press, toggleDoor, turnEnded, TURNS_TO_FINISH, FINISH_R,
 } from './logic';
 import { atticFinds } from './index';
-import { landing } from '../../progress/difficulty';
+import { landing, stepLevel } from '../../progress/difficulty';
+import {
+  addToCart, CART_H, CART_SLOT, CART_W, checkJob, CONTEXT_TOOLS, decidingPart, glowingTools, helpJob, jobLayout, JOB_CHECK_R, JOBS, jobState,
+  LENS_R, makeJobRound, PROPS, reason, removeFromCart, SETS, TOOL_BOX, TOOLS, tryTool, works, workingSet,
+  type JobId, type ToolId,
+} from './logic';
 
 const VIEWS = {
   landscape: computeView(1024, 768),
@@ -300,15 +305,19 @@ describe('levels 3-4: the giant handle', () => {
     expect(seen.size).toBe(2);
   });
 
-  it('registers for lap 3, toddler 3-4 and leaves the older bands, with entry levels 3 and 4', () => {
+  it('registers the five bands with their ladders and entry levels 3 and 4', () => {
     expect(atticFinds.levels('lap')).toEqual({ min: 3, max: 3 });
     expect(atticFinds.levels('toddler')).toEqual({ min: 3, max: 4 });
     expect(atticFinds.levels('preschool')).toEqual({ min: 1, max: 1 });
-    expect(atticFinds.levels('prek')).toEqual({ min: 1, max: 2 });
-    expect(atticFinds.levels('school')).toEqual({ min: 2, max: 2 });
+    expect(atticFinds.levels('prek')).toEqual({ min: 1, max: 5, order: [1, 2, 5] });
+    expect(atticFinds.levels('school')).toEqual({ min: 2, max: 6, order: [2, 5, 6] });
     expect(atticFinds.entryLevels).toEqual([3, 4]);
     expect(landing(4, atticFinds.levels('prek'), atticFinds.entryLevels)).toBe(1);
     expect(landing(3, atticFinds.levels('preschool'), atticFinds.entryLevels)).toBe(1);
+    expect(landing(3, atticFinds.levels('prek'), [3, 4])).toBe(1);
+    expect(landing(4, atticFinds.levels('school'), [3, 4])).toBe(2);
+    expect(stepLevel(2, 1, atticFinds.levels('school'))).toBe(5);
+    expect(stepLevel(5, 1, atticFinds.levels('school'))).toBe(6);
   });
 
   it('lays out a handle, door and Finish of at least 100 units that never overlap each other, the pet or the shell buttons', () => {
@@ -331,6 +340,231 @@ describe('levels 3-4: the giant handle', () => {
           expect(overlap(L.door, finish)).toBe(false);
         }
       }
+    }
+  });
+});
+
+describe('levels 5-6: same job, different tools', () => {
+  const TOOL_IDS = Object.keys(TOOLS) as ToolId[];
+  const JOB_IDS = Object.keys(JOBS) as JobId[];
+  const same = planFor(5), context = planFor(6);
+  const subsets = <T,>(xs: readonly T[]): T[][] => xs.reduce<T[][]>((acc, x) => [...acc, ...acc.map((a) => [...a, x])], [[]]);
+  const sameKey = (a: readonly string[], b: readonly string[]) => [...a].sort().join() === [...b].sort().join();
+  /** Every job with the tools it is dealt: both level-5 sets and the three level-6 jobs. */
+  const CASES: { name: string; job: JobId; tools: readonly ToolId[] }[] = [
+    { name: '5 leaves', job: 'leaves', tools: SETS.leaves }, { name: '5 acorns', job: 'acorns', tools: SETS.acorns },
+    ...JOB_IDS.map((job) => ({ name: `6 ${job}`, job, tools: CONTEXT_TOOLS })),
+  ];
+
+  it('plans 5 and 6 are the jobs modes', () => {
+    expect(same.mode).toBe('same');
+    expect(context.mode).toBe('context');
+  });
+
+  it('works is exactly needs within props, and reason names the first missing property', () => {
+    for (const t of TOOL_IDS) for (const j of JOB_IDS) {
+      const needs = JOBS[j].needs, props = TOOLS[t].props;
+      expect(works(t, j), `${t}/${j}`).toBe(needs.every((p) => props.includes(p)));
+      const missing = PROPS.find((p) => needs.includes(p) && !props.includes(p));
+      if (works(t, j)) {
+        expect(reason(t, j)).toBeNull();
+        expect(decidingPart(t, j).has).toBe(true);
+        expect(TOOLS[t].parts).toContain(decidingPart(t, j));
+      } else {
+        const expected = missing === 'bottom' ? 'fell' : missing === 'rim' ? (j === 'water' ? 'sloshed' : 'rolled') : 'dripped';
+        expect(reason(t, j), `${t}/${j}`).toBe(expected);
+        const part = decidingPart(t, j);
+        expect(part.prop).toBe(missing);
+        expect(part.has).toBe(false);
+        expect(TOOLS[t].parts).toContain(part);
+      }
+    }
+  });
+
+  it('level-5 sets have two working tools and one look-alike that fails in one property', () => {
+    for (const j of ['leaves', 'acorns'] as const) {
+      expect(SETS[j]).toHaveLength(3);
+      expect(workingSet(j, SETS[j])).toHaveLength(2);
+      expect(SETS[j].filter((t) => !works(t, j))).toHaveLength(1);
+    }
+    expect(SETS.leaves.filter((t) => !works(t, 'leaves'))).toEqual(['hoop']);
+    expect(reason('hoop', 'leaves')).toBe('fell');
+    expect(SETS.acorns.filter((t) => !works(t, 'acorns'))).toEqual(['tray']);
+    expect(reason('tray', 'acorns')).toBe('rolled');
+    expect(TOOLS.tray.props.includes('rim')).toBe(false);
+    expect(TOOLS.hoop.props.includes('bottom')).toBe(false);
+  });
+
+  it('level 6 uses one set of three whose working tools shrink job by job, and no tool does everything', () => {
+    expect(sameKey(workingSet('leaves', CONTEXT_TOOLS), ['basket', 'tray', 'pail'])).toBe(true);
+    expect(sameKey(workingSet('acorns', CONTEXT_TOOLS), ['basket', 'pail'])).toBe(true);
+    expect(sameKey(workingSet('water', CONTEXT_TOOLS), ['pail'])).toBe(true);
+    for (const t of ['basket', 'tray'] as const) {
+      const ok = JOB_IDS.filter((j) => works(t, j)), bad = JOB_IDS.filter((j) => !works(t, j));
+      expect(ok, t).toHaveLength(1 + (t === 'basket' ? 1 : 0));
+      expect(ok.length).toBeGreaterThanOrEqual(1);
+      expect(bad.length).toBeGreaterThanOrEqual(1);
+    }
+    // The same tool is chosen for some jobs and not others, so no one tool completes every job.
+    for (const t of CONTEXT_TOOLS) {
+      const completes = JOB_IDS.every((j) => sameKey(workingSet(j, CONTEXT_TOOLS), [t]));
+      expect(completes, t).toBe(false);
+    }
+  });
+
+  it('checks every subset of the cart: done, miss, one-more or empty, and a miss keeps the working tools', () => {
+    for (const c of CASES) {
+      const good = workingSet(c.job, c.tools);
+      for (const sub of subsets(c.tools)) {
+        const s = jobState(c.job, c.tools);
+        for (const t of sub) expect(addToCart(s, t)).toBeGreaterThanOrEqual(0);
+        const r = checkJob(s);
+        const label = `${c.name} [${sub}]`;
+        const failing = sub.filter((t) => !works(t, c.job));
+        if (sub.length === 0) {
+          expect(r.result, label).toBe('empty');
+        } else if (failing.length) {
+          expect(r.result, label).toBe('miss');
+          expect(sameKey(r.failing, failing), label).toBe(true);
+          expect(s.misses).toBe(1);
+          expect(s.done).toBe(false);
+          expect(sameKey(s.cart.filter((t): t is ToolId => t !== null), sub.filter((t) => works(t, c.job))), label).toBe(true);
+        } else if (sameKey(sub, good)) {
+          expect(r.result, label).toBe('done');
+          expect(s.done).toBe(true);
+          expect(s.misses).toBe(0);
+        } else {
+          expect(r.result, label).toBe('one-more');
+          expect(s.misses).toBe(0);
+          expect(s.done).toBe(false);
+        }
+      }
+    }
+  });
+
+  describe('rounds', () => {
+    const N = 500;
+    it('level 5 deals leaves and acorns in both orders with permuted rugs, and the hoop wears the basket colour', () => {
+      const orders = new Set<string>();
+      for (let seed = 0; seed < N; seed++) {
+        const r = makeJobRound(same, new Rng(seed), false);
+        expect(r.jobs).toHaveLength(2);
+        orders.add(r.jobs.map((j) => j.job).join());
+        expect(sameKey(r.jobs.map((j) => j.job), ['leaves', 'acorns'])).toBe(true);
+        for (const d of r.jobs) expect(sameKey(d.tools, SETS[d.job as 'leaves' | 'acorns']), `seed ${seed}`).toBe(true);
+        expect(r.colors.hoop).toBe(r.colors.basket);
+      }
+      expect(orders.size).toBe(2);
+    });
+
+    it('level 6 deals all three jobs in several orders with permuted rugs', () => {
+      const orders = new Set<string>();
+      for (let seed = 0; seed < N; seed++) {
+        const r = makeJobRound(context, new Rng(seed), false);
+        expect(r.jobs).toHaveLength(3);
+        orders.add(r.jobs.map((j) => j.job).join());
+        expect(sameKey(r.jobs.map((j) => j.job), JOB_IDS)).toBe(true);
+        for (const d of r.jobs) expect(sameKey(d.tools, CONTEXT_TOOLS), `seed ${seed}`).toBe(true);
+        expect(r.colors.hoop).toBe(r.colors.basket);
+      }
+      expect(orders.size).toBeGreaterThan(1);
+    });
+
+    it('is deterministic per seed and starts the authored first round with leaves', () => {
+      for (const plan of [same, context]) {
+        for (let seed = 0; seed < 50; seed++) {
+          expect(makeJobRound(plan, new Rng(seed), false)).toEqual(makeJobRound(plan, new Rng(seed), false));
+          expect(makeJobRound(plan, new Rng(seed), true)).toEqual(makeJobRound(plan, new Rng(seed), true));
+        }
+        const first = makeJobRound(plan, new Rng(1), true);
+        expect(first.jobs[0].job).toBe('leaves');
+        for (const d of first.jobs) expect(sameKey(d.tools, plan === same ? SETS[d.job as 'leaves' | 'acorns'] : CONTEXT_TOOLS)).toBe(true);
+      }
+    });
+  });
+
+  describe('hints', () => {
+    it('glow is empty before help and is the working set after; following it finishes the job', () => {
+      for (const c of CASES) {
+        const s = jobState(c.job, c.tools);
+        expect(glowingTools(s), c.name).toEqual([]);
+        expect(helpJob(s)).toBe(true);
+        const glow = glowingTools(s);
+        expect(sameKey(glow, workingSet(c.job, c.tools)), c.name).toBe(true);
+        expect(glow.length).toBeGreaterThan(0);
+        for (const t of glow) addToCart(s, t);
+        expect(checkJob(s).result, c.name).toBe('done');
+        expect(s.misses).toBe(0);
+        expect(s.hints).toBe(1);
+      }
+    });
+
+    it('help counts at most once per job', () => {
+      const s = jobState('acorns', SETS.acorns);
+      expect(helpJob(s)).toBe(true);
+      expect(helpJob(s)).toBe(false);
+      expect(s.hints).toBe(1);
+    });
+
+    it('a scripted water job: two misses, help counted once, then the pail', () => {
+      const s = jobState('water', CONTEXT_TOOLS);
+      addToCart(s, 'basket');
+      expect(checkJob(s).result).toBe('miss');
+      expect(s.hints).toBe(0);
+      addToCart(s, 'basket');
+      addToCart(s, 'tray');
+      expect(checkJob(s).result).toBe('miss');
+      expect(s.hints).toBe(1);
+      expect(glowingTools(s)).toEqual(['pail']);
+      expect(helpJob(s)).toBe(false);
+      expect(s.hints).toBe(1);
+      removeFromCart(s, 'basket');
+      addToCart(s, 'pail');
+      expect(checkJob(s).result).toBe('done');
+      expect(s.misses).toBe(2);
+      expect(s.hints).toBe(1);
+    });
+
+    it('trying tools any number of times is free', () => {
+      for (const c of CASES) {
+        const s = jobState(c.job, c.tools);
+        for (let i = 0; i < 4; i++) for (const t of c.tools) expect(tryTool(s, t)).toBe(reason(t, c.job));
+        expect(s.misses).toBe(0);
+        expect(s.hints).toBe(0);
+        expect(s.tried.size).toBe(c.tools.length);
+      }
+    });
+  });
+
+  it('lays out tools, cart slots and Check as large, clear targets with the magnifier and shelf inside the view', () => {
+    for (const [name, v] of Object.entries(VIEWS)) {
+      const L = jobLayout(v);
+      const tools = L.tools.map((p) => box(p, TOOL_BOX));
+      const slots = L.slots.map((p) => box(p, CART_SLOT));
+      const cart = box(L.cart, CART_W, CART_H);
+      const check = circle(L.check, JOB_CHECK_R);
+      const lens = circle(L.lens, LENS_R);
+      expect(TOOL_BOX).toBeGreaterThanOrEqual(100);
+      expect(CART_SLOT).toBeGreaterThanOrEqual(100);
+      expect(JOB_CHECK_R * 2).toBeGreaterThanOrEqual(100);
+      expect(L.tools).toHaveLength(3);
+      expect(L.slots).toHaveLength(3);
+      const targets = { ...Object.fromEntries(tools.map((r, i) => [`tool${i}`, r])), ...Object.fromEntries(slots.map((r, i) => [`slot${i}`, r])), check };
+      for (const [label, r] of Object.entries(targets)) {
+        expect(inside(r, v), `${name} ${label} inside`).toBe(true);
+        expect(overlap(r, petCorner(v)), `${name} ${label}/pet`).toBe(false);
+        for (const b of shellButtons(v)) expect(overlap(r, b), `${name} ${label}/shell`).toBe(false);
+      }
+      for (let i = 0; i < 3; i++) {
+        expect(overlap(tools[i], cart), `${name} tool${i}/cart`).toBe(false);
+        expect(overlap(tools[i], check), `${name} tool${i}/check`).toBe(false);
+        expect(overlap(tools[i], lens), `${name} tool${i}/lens`).toBe(false);
+        for (let j = i + 1; j < 3; j++) expect(overlap(tools[i], tools[j]), `${name} tools ${i}/${j}`).toBe(false);
+      }
+      expect(overlap(check, cart), `${name} check/cart`).toBe(false);
+      expect(inside(lens, v), `${name} lens`).toBe(true);
+      for (const p of L.shelf) expect(inside(circle(p, 1), v), `${name} shelf`).toBe(true);
+      expect(L.shelf).toHaveLength(3);
     }
   });
 });

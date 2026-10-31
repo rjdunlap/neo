@@ -2167,7 +2167,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'attic-finds': {
-    goal: 'Crank an attic thing, watch what it does, and find what makes it move.',
+    goal: 'Turn, crank and try attic things: watch what they do, and find what makes them work.',
     steps: [
       { from: 1, to: 2, text: 'Tap the parts to see them up close. Tap Turn to see the back.' },
       { from: 1, to: 1, text: 'Tap a picture to try it, or tap the crank. Watch what really happens.' },
@@ -2175,16 +2175,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: "Tap each round chip to look at its part, then drag the part that proves the crank moves it into the card's slot and tap Check." },
       { from: 3, to: 3, text: 'Tap anywhere, or the big handle. The bird or fish goes up; tap again and it comes down.' },
       { from: 4, to: 4, text: 'Tap the big handle: the bird goes up, then down. Tap the little door to open it and see the rod inside.' },
-      'Crank it again any time to watch.',
+      { from: 1, to: 4, text: 'Crank it again any time to watch.' },
+      { from: 5, to: 6, text: 'Tap a thing on the rug to try it on the job and watch what happens.' },
+      { from: 5, to: 6, text: 'Drag every thing that can do the job into the cart, then tap Check.' },
     ],
     finish: [
       { from: 1, to: 2, text: 'Both things sit on the shelf.' },
       { from: 3, to: 4, text: 'After three turns of the handle a shelf picture appears; she taps it when she is ready, and the toy goes onto the shelf.' },
+      { from: 5, to: 5, text: 'Both jobs are done; their loads sit on the shelf.' },
+      { from: 6, to: 6, text: 'Leaves, acorns and water are carried; all three sit on the shelf.' },
     ],
     note: [
       { from: 1, to: 1, text: 'Looking, turning and trying are never counted against her, and a guess before the crank turns is never a miss. After two wrong picks the right picture glows, which counts as a hint. Everything in the attic is made up for the island; nothing here is a real old thing.' },
       { from: 2, to: 2, text: 'Looking, turning and swapping parts are never counted against her. A Check with a part that does not move the bird or fish counts as a miss; after two the right part glows, which counts as a hint. Everything in the attic is made up for the island; nothing here is a real old thing.' },
       { from: 3, to: 4, text: 'Every touch is play: nothing is ever counted as a miss or a hint, and the round ends only when she taps the shelf. Everything in the attic is made up for the island; nothing here is a real old thing.' },
+      { from: 5, to: 6, text: 'Trying things is never counted against her. A Check with a thing that cannot do the job counts as a miss; a Check that leaves out a thing that could is not, and the pet asks for one more. After two misses on a job the right things glow, which counts as a hint. Everything in the attic is made up for the island; nothing here is a real old thing.' },
     ],
   },
   'fossil-dig': {

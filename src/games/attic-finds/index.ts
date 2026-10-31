@@ -10,9 +10,10 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { AtticJobs } from './jobs';
 import {
   atticLayout, canFinish, CARD, check, CHECK_R, CHIP_R, CLAIM, CLAIM_H, CLAIM_W, clueOf, CRANK_HIT, DOOR_AT, DOOR_H, DOOR_W, encounterState,
-  FINISH_R, finishLever, glowing, glowTarget, help, isFree, leverState, look, makeLeverRound, makeRound, OBJ, objectOf, pick, place, planFor,
+  FINISH_R, finishLever, glowing, glowTarget, help, isFree, isJobs, leverState, look, makeLeverRound, makeRound, OBJ, objectOf, pick, place, planFor,
   press, SLOT, SPOT_R, toggleDoor, TURN_R, turnEnded, tryIt, WINDOW_R, type AtticLayout, type Clue, type ClueId, type Effect,
   type EncounterState, type LeverRound, type ObjectId, type Plan, type Pt, type Round, type Side,
 } from './logic';
@@ -1216,5 +1217,5 @@ export const atticFinds: GameModule = {
   touchDemo: true,
   hubIcon: () => new AtticIcon(),
   sticker,
-  create: (ctx) => new AtticFinds(ctx),
+  create: (ctx) => (isJobs(planFor(ctx.level)) ? new AtticJobs(ctx) : new AtticFinds(ctx)),
 };
