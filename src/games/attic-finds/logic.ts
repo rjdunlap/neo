@@ -92,16 +92,20 @@ export function glowTarget(obj: AtticObject, claim: ClaimId): Clue | null {
 
 /* Levels and rounds ----------------------------------------------------------------------------- */
 
-export interface Plan { id: 1 | 2 | 3 | 4; name: string; mode: 'try' | 'prove' | 'lever' | 'peek' }
+export interface Plan { id: 1 | 2 | 3 | 4 | 5 | 6; name: string; mode: 'try' | 'prove' | 'lever' | 'peek' | 'same' | 'context' }
 export const PLANS: readonly Plan[] = [
   { id: 1, name: 'Try it: crank it, then pick the picture of what it did', mode: 'try' },
   { id: 2, name: 'Show the clue: the part that proves the crank makes it bob', mode: 'prove' },
   { id: 3, name: 'Up and down: tap the big handle and the bird or fish goes up, then down', mode: 'lever' },
   { id: 4, name: 'Peek inside: open the little door and watch the rod lift the bird', mode: 'peek' },
+  { id: 5, name: 'Same job: find every thing that can carry the load (two can, one only looks right)', mode: 'same' },
+  { id: 6, name: 'Right for the job: leaves, acorns, then water, and which things can carry each', mode: 'context' },
 ];
 /** The plan with this level's ID; an unknown level is level 1. */
 export const planFor = (level: number): Plan => PLANS.find((p) => p.id === level) ?? PLANS[0];
 export const isFree = (plan: Plan): boolean => plan.mode === 'lever' || plan.mode === 'peek';
+/** Levels 5-6: the carrying jobs, a separate screen with its own rules below. */
+export const isJobs = (plan: Plan): boolean => plan.mode === 'same' || plan.mode === 'context';
 
 /* Levels 3-4: a giant handle. Every touch is play, so nothing here is ever a miss or a hint. ------- */
 
@@ -392,5 +396,268 @@ function classicLayout(v: View): AtticLayout {
     slot: { x: right - 250, y: 410 },
     check: { x: right - 90, y: 410 },
     chips: [-230, -120, -10].map((dx) => ({ x: right - 50 + dx, y: 560 })),
+  };
+}
+
+/* Levels 5-6: same job, different tools. ---------------------------------------------------------
+ * A job needs some visible properties; a tool works for it exactly when it has every one. Trying a tool is free;
+ * a Check with a tool that cannot do the job is one miss; a Check that leaves out a working tool is not.
+ */
+
+export type Prop = 'bottom' | 'rim' | 'tight';
+export type ToolId = 'basket' | 'tray' | 'pail' | 'hoop';
+export type JobId = 'leaves' | 'acorns' | 'water';
+export type Reason = 'fell' | 'rolled' | 'sloshed' | 'dripped';
+
+/** The order a failing try is explained in: a missing floor first, then a low edge, then gaps. */
+export const PROPS: readonly Prop[] = ['bottom', 'rim', 'tight'];
+
+export interface ToolPart {
+  /** The property it shows, and whether the tool has it (the hoop's open bottom shows a missing floor). */
+  prop: Prop;
+  has: boolean;
+  line: LineId;
+}
+
+export interface Tool { id: ToolId; props: readonly Prop[]; parts: readonly ToolPart[] }
+
+export const TOOLS: Record<ToolId, Tool> = {
+  basket: {
+    id: 'basket', props: ['bottom', 'rim'],
+    parts: [
+      { prop: 'bottom', has: true, line: 'attic-finds.part-woven-floor' },
+      { prop: 'rim', has: true, line: 'attic-finds.part-tall-sides' },
+      { prop: 'tight', has: false, line: 'attic-finds.part-gaps' },
+    ],
+  },
+  tray: {
+    id: 'tray', props: ['bottom', 'tight'],
+    parts: [
+      { prop: 'bottom', has: true, line: 'attic-finds.part-flat-floor' },
+      { prop: 'tight', has: true, line: 'attic-finds.part-solid' },
+      { prop: 'rim', has: false, line: 'attic-finds.part-low-edge' },
+    ],
+  },
+  pail: {
+    id: 'pail', props: ['bottom', 'rim', 'tight'],
+    parts: [
+      { prop: 'bottom', has: true, line: 'attic-finds.part-flat-floor' },
+      { prop: 'rim', has: true, line: 'attic-finds.part-tall-sides' },
+      { prop: 'tight', has: true, line: 'attic-finds.part-staves' },
+    ],
+  },
+  hoop: {
+    id: 'hoop', props: ['rim'],
+    parts: [
+      { prop: 'rim', has: true, line: 'attic-finds.part-tall-sides' },
+      { prop: 'bottom', has: false, line: 'attic-finds.part-no-floor' },
+    ],
+  },
+};
+
+export interface Job { id: JobId; needs: readonly Prop[]; line: LineId }
+export const JOBS: Record<JobId, Job> = {
+  leaves: { id: 'leaves', needs: ['bottom'], line: 'attic-finds.job-leaves' },
+  acorns: { id: 'acorns', needs: ['bottom', 'rim'], line: 'attic-finds.job-acorns' },
+  water: { id: 'water', needs: ['bottom', 'rim', 'tight'], line: 'attic-finds.job-water' },
+};
+
+/** The rule: a tool can do a job when it has everything the job needs. Nothing else (colour, place, order) enters. */
+export const works = (tool: ToolId, job: JobId): boolean => JOBS[job].needs.every((p) => TOOLS[tool].props.includes(p));
+
+/** What a failing try shows: the first needed property the tool lacks, as it looks with this load. Null if it works. */
+export function reason(tool: ToolId, job: JobId): Reason | null {
+  const missing = PROPS.find((p) => JOBS[job].needs.includes(p) && !TOOLS[tool].props.includes(p));
+  if (!missing) return null;
+  if (missing === 'bottom') return 'fell';
+  if (missing === 'rim') return job === 'water' ? 'sloshed' : 'rolled';
+  return 'dripped';
+}
+
+/** The part the magnifier shows after a try: the missing one that failed it, or the hardest need it met. */
+export function decidingPart(tool: ToolId, job: JobId): ToolPart {
+  const t = TOOLS[tool];
+  const missing = PROPS.find((p) => JOBS[job].needs.includes(p) && !t.props.includes(p));
+  if (missing) return t.parts.find((x) => x.prop === missing && !x.has)!;
+  const hardest = [...PROPS].reverse().find((p) => JOBS[job].needs.includes(p))!;
+  return t.parts.find((x) => x.prop === hardest && x.has)!;
+}
+
+export const workingSet = (job: JobId, tools: readonly ToolId[]): ToolId[] => tools.filter((t) => works(t, job));
+
+/** Level 5's two sets: two tools that work and one that only looks as if it could. */
+export const SETS: Record<'leaves' | 'acorns', readonly ToolId[]> = {
+  leaves: ['basket', 'tray', 'hoop'],
+  acorns: ['basket', 'pail', 'tray'],
+};
+/** Level 6: the same three for every job. */
+export const CONTEXT_TOOLS: readonly ToolId[] = ['basket', 'tray', 'pail'];
+
+/** The palette names a round's tools are coloured from; the hoop always takes the basket's. */
+export const TOOL_COLORS = ['orange', 'yellow', 'red', 'blue', 'green', 'purple'] as const;
+export type ToolColor = (typeof TOOL_COLORS)[number];
+/** The friends who need things carried. */
+export const JOB_FRIENDS = ['bunny', 'duck', 'bear', 'cat', 'pig'] as const;
+export type JobFriend = (typeof JOB_FRIENDS)[number];
+
+export interface JobDeal { job: JobId; tools: ToolId[] }
+export interface JobRound { jobs: JobDeal[]; colors: Record<ToolId, ToolColor>; friend: JobFriend }
+
+/** The definition's first rounds, shown once per level per session. */
+function authoredJobs(plan: Plan): JobDeal[] {
+  if (plan.mode === 'same') return [{ job: 'leaves', tools: ['hoop', 'basket', 'tray'] }, { job: 'acorns', tools: ['basket', 'tray', 'pail'] }];
+  return [
+    { job: 'leaves', tools: ['basket', 'tray', 'pail'] },
+    { job: 'acorns', tools: ['pail', 'basket', 'tray'] },
+    { job: 'water', tools: ['tray', 'pail', 'basket'] },
+  ];
+}
+
+export function makeJobRound(plan: Plan, rng: Rng, first = false): JobRound {
+  const picked = rng.shuffle([...TOOL_COLORS]);
+  const colors: Record<ToolId, ToolColor> = { basket: picked[0], hoop: picked[0], tray: picked[1], pail: picked[2] };
+  const friend = rng.pick([...JOB_FRIENDS]);
+  if (first) return { jobs: authoredJobs(plan), colors, friend };
+  const order: JobId[] = plan.mode === 'same' ? rng.shuffle<JobId>(['leaves', 'acorns']) : rng.shuffle<JobId>(['leaves', 'acorns', 'water']);
+  const jobs = order.map((job) => ({
+    job,
+    tools: rng.shuffle([...(plan.mode === 'same' ? SETS[job as 'leaves' | 'acorns'] : CONTEXT_TOOLS)]),
+  }));
+  return { jobs, colors, friend };
+}
+
+/** One job's state: the cart's three slots, and its own misses and help (help counts at most once per job). */
+export interface JobState {
+  job: JobId;
+  tools: readonly ToolId[];
+  cart: (ToolId | null)[];
+  tried: Set<ToolId>;
+  wrong: number;
+  misses: number;
+  hints: number;
+  glow: boolean;
+  done: boolean;
+}
+
+export const CART_SLOTS = 3;
+
+export const jobState = (job: JobId, tools: readonly ToolId[]): JobState =>
+  ({ job, tools, cart: Array(CART_SLOTS).fill(null), tried: new Set(), wrong: 0, misses: 0, hints: 0, glow: false, done: false });
+
+export const inCart = (s: JobState): ToolId[] => s.cart.filter((t): t is ToolId => t !== null);
+export const slotOf = (s: JobState, tool: ToolId): number => s.cart.indexOf(tool);
+
+/** A free try: never counted. Returns what happened (null when it held). */
+export function tryTool(s: JobState, tool: ToolId): Reason | null {
+  s.tried.add(tool);
+  return reason(tool, s.job);
+}
+
+/** Put a tool in a free slot (the given one if free, else the first). Returns the slot, or -1. Free. */
+export function addToCart(s: JobState, tool: ToolId, slot = -1): number {
+  if (s.done || !s.tools.includes(tool)) return -1;
+  const at = slotOf(s, tool);
+  if (at >= 0) return at;
+  const free = slot >= 0 && slot < CART_SLOTS && s.cart[slot] === null ? slot : s.cart.indexOf(null);
+  if (free < 0) return -1;
+  s.cart[free] = tool;
+  return free;
+}
+
+export function removeFromCart(s: JobState, tool: ToolId): boolean {
+  const at = slotOf(s, tool);
+  if (at < 0 || s.done) return false;
+  s.cart[at] = null;
+  return true;
+}
+
+/** Help: the working tools glow. Counts once per job, whether it came from two misses or was asked for. */
+export function helpJob(s: JobState): boolean {
+  s.glow = true;
+  if (s.hints > 0 || s.done) return false;
+  s.hints = 1;
+  return true;
+}
+
+export type JobCheck = 'empty' | 'miss' | 'one-more' | 'done';
+
+/** Check: a failing tool in the cart is one miss (and hops back); all working but one left out asks for one more. */
+export function checkJob(s: JobState): { result: JobCheck; failing: ToolId[] } {
+  const cart = inCart(s);
+  if (s.done || cart.length === 0) return { result: 'empty', failing: [] };
+  const failing = cart.filter((t) => !works(t, s.job));
+  if (failing.length) {
+    s.misses++;
+    s.wrong++;
+    for (const t of failing) removeFromCart(s, t);
+    if (s.wrong >= 2) helpJob(s);
+    return { result: 'miss', failing };
+  }
+  if (cart.length === workingSet(s.job, s.tools).length) {
+    s.done = true;
+    return { result: 'done', failing: [] };
+  }
+  return { result: 'one-more', failing: [] };
+}
+
+/** The tools that glow once help is shown: the job's working set. */
+export const glowingTools = (s: JobState): ToolId[] => (s.glow && !s.done ? workingSet(s.job, s.tools) : []);
+
+/** What the pet says when a job is done. */
+export const doneLine = (plan: Plan, job: JobId): LineId =>
+  plan.mode === 'same' ? (job === 'acorns' ? 'attic-finds.same-acorns' : 'attic-finds.same-leaves') : (`attic-finds.context-${job}` as LineId);
+
+/* Levels 5-6 layout ------------------------------------------------------------------------------- */
+
+export const TOOL_BOX = 150;
+export const TOOL_GAP = 40;
+export const CART_W = 360;
+export const CART_H = 140;
+export const CART_SLOT = 110;
+export const JOB_CARD_W = 300;
+export const JOB_CARD_H = 150;
+export const JOB_CHECK_R = 52;
+export const LENS_R = 150;
+
+export interface JobLayout {
+  portrait: boolean;
+  card: Pt;
+  tools: Pt[];
+  cart: Pt;
+  slots: Pt[];
+  check: Pt;
+  lens: Pt;
+  shelf: Pt[];
+  shelfY: number;
+}
+
+export function jobLayout(v: View): JobLayout {
+  const portrait = v.h > v.w;
+  const shelfY = 150;
+  const shelf = [-150, 0, 150].map((dx) => ({ x: v.w / 2 + dx, y: shelfY }));
+  const step = TOOL_BOX + TOOL_GAP;
+  if (portrait) {
+    const toolsY = v.h / 2 + 20;
+    const cart = { x: v.w - 30 - CART_W / 2, y: toolsY + TOOL_BOX / 2 + 40 + CART_H / 2 };
+    return {
+      portrait, shelf, shelfY,
+      card: { x: v.w / 2 - 125, y: shelfY + 150 },
+      lens: { x: v.w - 25 - LENS_R, y: shelfY + 150 },
+      tools: [-1, 0, 1].map((k) => ({ x: v.w / 2 + k * step, y: toolsY })),
+      cart,
+      slots: [-1, 0, 1].map((k) => ({ x: cart.x + k * (CART_SLOT + 10), y: cart.y - 6 })),
+      check: { x: cart.x - CART_W / 2 - 30 - JOB_CHECK_R, y: cart.y },
+    };
+  }
+  const cx = v.w / 2 - 22;
+  const cart = { x: v.w - 20 - CART_W / 2, y: v.h - 20 - CART_H / 2 };
+  return {
+    portrait, shelf, shelfY,
+    card: { x: cx, y: shelfY + 140 },
+    lens: { x: v.w - 25 - LENS_R, y: shelfY + 150 },
+    tools: [-1, 0, 1].map((k) => ({ x: cx + k * step, y: 530 })),
+    cart,
+    slots: [-1, 0, 1].map((k) => ({ x: cart.x + k * (CART_SLOT + 10), y: cart.y - 6 })),
+    check: { x: cart.x - CART_W / 2 - 30 - JOB_CHECK_R, y: cart.y },
   };
 }

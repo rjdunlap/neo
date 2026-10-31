@@ -12,3 +12,9 @@
 - [PR #1029](https://github.com/rjdunlap/neo/pull/1029), branch `claude/define-caravan-days-4-5`: [definition](../definitions/caravan-days.md#levels-45-cs3-swap-at-the-stop-worth-more-far-away) (level 4 Swap at the stop, level 5 Worth more far away; school range 3–5), a batch plan in [GAME-BATCHES](../GAME-BATCHES.md#caravan-days-2-swap-at-the-stop-and-worth-more-far-away); READY, backlog, roadmap, ideas, packet and study point to it. Nothing built, no code changed.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the building session's source check of the history lines; the build runs the new-interaction tier; the three [device checks](../DEVICE-CHECKS.md#caravan-days-levels-45-cs3-2026-10-30) wait for the built levels.
+
+## 2026-10-30 — River Tablets 4–6 definition (AR3, docs only)
+
+- [PR #1030](https://github.com/rjdunlap/neo/pull/1030), branch `claude/define-river-tablets-4-6`: [definition](../definitions/river-tablets.md#levels-46-ar3-a-ten-mark-check-the-delivery-two-tablets-disagree) (level 4 a ten-mark, level 5 check the delivery, level 6 two tablets disagree; school range 3–6), batch plans [river-tablets 2](../GAME-BATCHES.md#river-tablets-2-a-ten-mark-and-check-the-delivery) and [3](../GAME-BATCHES.md#river-tablets-3-two-tablets-disagree); READY, backlog, roadmap, packet and study point to it. Nothing built, no code changed.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs only). Open: the building session's source check of the history line; each build runs the new-interaction tier; the four [device checks](../DEVICE-CHECKS.md#river-tablets-levels-46-ar3-2026-10-30) wait for the built levels.

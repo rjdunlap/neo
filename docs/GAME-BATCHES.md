@@ -453,6 +453,8 @@ Proof: new-interaction tier, as the [definition's Build and check tier](definiti
 
 ### attic-finds 2: Same job and right for the job
 
+**Built 2026-10-31 ([PR #1045](https://github.com/rjdunlap/neo/pull/1045)).** Both levels shipped; see the [archive note](archive/COMPLETED-2026-10-09.md#attic-finds-levels-56-same-job-and-right-for-the-job-h4-2026-10-31).
+
 - **`attic-finds`, levels 5 *Same job* (pre-K, school) and 6 *Right for the job* (school)** (a new tap-to-try plus drag-into-a-three-slot-cart interaction inside the existing game; pre-K {1,5, order [1,2,5]}, school {2,6, order [2,5,6]}): try each old thing, then put every one that does the job into the cart (level 5), then choose the right tool for a job where one fails (level 6); a free failing try is not a miss. [Definition](definitions/same-job.md), [everyday-life study slice H4](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the [definition's Build and check tier](definitions/same-job.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticjobs` scripted play at levels 5–6, `fingerdemo` at both, one portrait screenshot of level 6, one build).
