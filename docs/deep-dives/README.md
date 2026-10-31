@@ -92,7 +92,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Jelly Drums | `jelly-drums` | LTPKS | 9 | 2 | designed (One big jelly built as level 10) | `claude/fervent-keller-f86ol8` ([PR 104](https://github.com/rjdunlap/neo/pull/104)) | [jelly-drums.md](jelly-drums.md) |
 | Lantern Lights | `lantern-lights` | G | 6 | 4 | not started (island touch built 2026-10-13) | — | — |
 | Lasso Loops | `lasso-loops` | PKS | 6 | 4 | not started (level 6 *About how many?* [built](../definitions/lasso-loops-about-how-many.md) from the estimation study; the game dive starts new IDs at 7) | — | — |
-| Lemonade Stand | `lemonade-stand` | S | 4 | 4 | not started | — | — |
+| Lemonade Stand | `lemonade-stand` | S | 4 | 4 | in progress | `claude/dive-lemonade-stand` | — |
 | Letter Trails | `letter-trails` | PKS | 8 | 3 | building (slices 1, 3 (PR #442) and 4, journal entries (PR #363), built; slice 2 next) | `claude/tender-faraday-xt9q70` ([PR 122](https://github.com/rjdunlap/neo/pull/122)); slice 1: `codex/letter-trails-capital-start` ([PR #172](https://github.com/rjdunlap/neo/pull/172)) | [letter-trails.md](letter-trails.md) |
 | Light Lab | `light-lab` | KS | 7 | 4 | not started | — | — |
 | Little Helpers | `little-helpers` | LTPKS | 6 | 4 | designed (7 slices ready: every touch answers, a badge that fills and level 2 for lap, things to carry, level 6 teams she builds, 9 *Whistle when it's full*, 7 *Everyone helps*, 8 *Strong helpers*; *Make ten*, *Share the crowd* and rework hooks need decisions) | `claude/dive-little-helpers` ([PR #546](https://github.com/rjdunlap/neo/pull/546)) | [little-helpers.md](little-helpers.md) |
