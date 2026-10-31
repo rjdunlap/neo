@@ -107,7 +107,6 @@ These are existing games awaiting research, not new game implementations. One do
 
 | Game | Status | Source |
 | --- | --- | --- |
-| Lemonade Stand (`lemonade-stand`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Pixel Pictures (`pixel-pictures`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Ferry Jam (`ferry-jam`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Garden Rows (`garden-rows`) | research | [Game tracker](deep-dives/README.md#tracker) |
