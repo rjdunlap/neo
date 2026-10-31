@@ -1,7 +1,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { cream, ink, swatch, wood } from '../../art/palette';
-import { ITEM_IDS, ITEMS, KIND_OF_PLACE, type Consequence, type ItemId, type Place } from './logic';
+import { ITEM_IDS, ITEMS, KIND_OF_PLACE, type Consequence, type ItemId, type Place, type RequestId } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -72,6 +72,13 @@ export function itemArt(id: ItemId, size = 150, mended = false): Container {
       g.moveTo(0, -60).lineTo(0, 40).moveTo(-40, -10).lineTo(40, -10).stroke(line(swatch.blue.line, 3));
       g.moveTo(0, 40).quadraticCurveTo(14, 56, 0, mended ? 72 : 52).stroke(line(ink, 3));
       if (mended) for (const y of [52, 66]) g.poly([-6, y, 6, y - 4, 6, y + 4]).fill(swatch.yellow.fill);
+      break;
+    case 'tin':
+      // A whole tin: rolled rim, fitted lid, no sharp edge, no label.
+      g.roundRect(-44, -30, 88, 78, 12).fill(swatch.white.light).stroke(line(swatch.white.line));
+      for (const y of [-8, 14, 34]) g.moveTo(-44, y).lineTo(44, y).stroke(line(swatch.white.line, 2));
+      g.roundRect(-50, -46, 100, 22, 10).fill(swatch.blue.light).stroke(line(swatch.blue.line));
+      g.roundRect(-14, -54, 28, 10, 5).fill(swatch.blue.fill).stroke(line(swatch.blue.line, 3));
       break;
     case 'can':
       g.poly([-30, -44, 30, -44, 22, -6, 34, 12, 26, 46, -26, 46, -34, 12, -22, -6]).fill(swatch.white.light).stroke(line(swatch.white.line));
@@ -203,10 +210,116 @@ export function madeArt(made: Consequence, from: ItemId): Container {
       g.rect(-30, -24, 60, 54).stroke(line(ink, 3)).poly([-30, -24, 0, -54, 30, -24]).fill(swatch.pink.light).stroke(line(ink, 3));
       break;
     }
+    case 'buttons': {
+      // The pet keeps buttons in the tin.
+      c.addChild(itemArt('tin', 110));
+      for (const [x, y, col] of [[-16, -42, swatch.red], [8, -48, swatch.yellow], [22, -38, swatch.green]] as const) {
+        g.circle(x, y, 11).fill(col.fill).stroke(line(col.line, 3));
+        g.circle(x - 3, y, 2).circle(x + 3, y, 2).fill(col.line);
+      }
+      c.setChildIndex(g, 0);
+      break;
+    }
     case 'bead':
       g.circle(0, 0, 30).fill(swatch.pink.fill).stroke(line(swatch.pink.line));
       for (const [x, y] of [[-9, -9], [9, -9], [-9, 9], [9, 9]]) g.circle(x, y, 5).fill(swatch.pink.line);
       break;
   }
+  return c;
+}
+
+/** The cart bell on its post, in a 120-unit box centred on (0, 0); `swing` it by rotating `bell`. */
+export function bellArt(): { node: Container; bell: Container } {
+  const node = new Container();
+  const g = new Graphics();
+  g.roundRect(-8, -40, 16, 96, 6).fill(wood.fill).stroke(line(wood.line, 4));
+  g.roundRect(-44, 48, 88, 14, 6).fill(wood.fill).stroke(line(wood.line, 4));
+  node.addChild(g);
+  const bell = new Container();
+  const b = new Graphics();
+  b.moveTo(-34, 30).quadraticCurveTo(-34, -30, 0, -32).quadraticCurveTo(34, -30, 34, 30).closePath().fill(swatch.yellow.fill).stroke(line(swatch.yellow.line));
+  b.roundRect(-40, 26, 80, 12, 6).fill(swatch.yellow.line);
+  b.circle(0, 44, 8).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 3));
+  b.circle(0, -36, 7).fill(swatch.yellow.line);
+  bell.addChild(b);
+  bell.position.set(0, -34);
+  b.position.set(0, 34);
+  bell.pivot.set(0, 0);
+  node.addChild(bell);
+  return { node, bell };
+}
+
+function pencils(g: Graphics, x: number, y: number, scale = 1) {
+  const cols = [swatch.red, swatch.blue, swatch.green];
+  cols.forEach((col, i) => {
+    const px = x + (i - 1) * 12 * scale, tilt = (i - 1) * 6 * scale;
+    g.poly([px - 5 * scale, y, px + 5 * scale, y, px + 5 * scale + tilt, y - 44 * scale, px - 5 * scale + tilt, y - 44 * scale]).fill(col.fill).stroke(line(col.line, 2));
+    g.poly([px - 5 * scale + tilt, y - 44 * scale, px + 5 * scale + tilt, y - 44 * scale, px + tilt, y - 56 * scale]).fill(wood.light).stroke(line(wood.line, 2));
+  });
+}
+
+/** A friend's picture bubble, about 130×90, centred on (0, 0): what they need, never the thing that fits it. */
+export function bubbleArt(r: RequestId): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-66, -44, 132, 88, 30).fill(0xffffff).stroke(line(ink, 4));
+  g.poly([-10, 42, 10, 42, -4, 60]).fill(0xffffff).stroke(line(ink, 4));
+  g.rect(-12, 38, 24, 6).fill(0xffffff);
+  c.addChild(g);
+  const p = new Graphics();
+  if (r === 'pencils') {
+    // Pencils standing in a dotted outline: something to stand them in.
+    pencils(p, 0, 6, 0.8);
+    p.roundRect(-24, 0, 48, 34, 6).stroke({ width: 3, color: ink, alpha: 0.45 });
+  } else if (r === 'bed') {
+    const bunny = new Critter(CRITTERS.bunny);
+    bunny.alive = false;
+    bunny.scale.set(0.16);
+    bunny.setMood('sleepy');
+    bunny.position.set(0, 26);
+    c.addChild(bunny);
+    p.roundRect(-46, 18, 92, 18, 8).stroke({ width: 3, color: ink, alpha: 0.45 });
+    p.moveTo(30, -30).lineTo(42, -30).lineTo(30, -18).lineTo(42, -18).stroke(line(swatch.blue.line, 3));
+  } else {
+    madeSeedling(p, 0, 4);
+    p.poly([-22, 6, 22, 6, 16, 34, -16, 34]).stroke({ width: 3, color: ink, alpha: 0.45 });
+    for (const x of [-6, 0, 6]) p.moveTo(x, 38).lineTo(x, 44).stroke(line(swatch.blue.fill, 3));
+  }
+  c.addChild(p);
+  return c;
+}
+
+function madeSeedling(g: Graphics, x: number, y: number) {
+  g.moveTo(x, y + 4).lineTo(x, y - 24).stroke(line(swatch.green.line, 5));
+  g.ellipse(x - 12, y - 26, 12, 7).fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
+  g.ellipse(x + 12, y - 30, 12, 7).fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
+}
+
+/** Who asks: Bunny for a bed; a cat with pencils; a duck with a seedling. Feet on (0, 0), about 120 tall. */
+export function friendArt(r: RequestId): Critter {
+  const critter = new Critter(r === 'bed' ? CRITTERS.bunny : r === 'pencils' ? CRITTERS.cat : CRITTERS.duck);
+  critter.scale.set(0.48);
+  if (r === 'bed') critter.setMood('sleepy');
+  const held = new Graphics();
+  if (r === 'pencils') pencils(held, 0, 0, 1.4);
+  else if (r === 'seedling') {
+    madeSeedling(held, 0, 0);
+    held.ellipse(0, 6, 24, 12).fill(wood.fill).stroke(line(wood.line, 3));
+  }
+  held.scale.set(1 / 0.48 * 0.5);
+  held.position.set(78, -80);
+  critter.attach(held);
+  return critter;
+}
+
+/** The friend using the gift: pencils standing in it, Bunny curled in it or the seedling planted in it. */
+export function filledArt(r: RequestId, gift: ItemId): Container {
+  if (r === 'bed' && gift === 'box') return madeArt('nap', 'box');
+  if (r === 'seedling' && gift === 'tub') return madeArt('planter', 'tub');
+  const c = new Container();
+  const g = new Graphics();
+  if (r === 'pencils') pencils(g, 0, -20, 1.1);
+  else if (r === 'seedling') madeSeedling(g, 0, -36);
+  c.addChild(g, itemArt(gift, 110));
   return c;
 }
