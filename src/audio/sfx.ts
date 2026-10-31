@@ -310,6 +310,23 @@ export const sfx = {
     tone(o.ctx, o.dest, 'sine', hz, o.t + 0.09, 0.2, 0.005, 0.08, hz * 1.4);
   },
 
+  /** The sea on the sand: filtered noise swelling up the beach (`rise`) or hissing back down it. */
+  wave(rise: boolean) {
+    const o = out();
+    if (!o) return;
+    if (rise) noise(o.ctx, o.dest, o.t, 1.1, 0.2, { type: 'lowpass', hz: 300, q: 0.7, sweepTo: 1800 });
+    else noise(o.ctx, o.dest, o.t, 1.3, 0.12, { type: 'bandpass', hz: 3200, q: 0.6, sweepTo: 900 });
+  },
+
+  /** A gull's call over the water: two falling cries on pentatonic steps. */
+  gull() {
+    const o = out();
+    if (!o) return;
+    const hz = stepHz(14);
+    tone(o.ctx, o.dest, 'sawtooth', hz, o.t, 0.12, 0.01, 0.18, stepHz(9));
+    tone(o.ctx, o.dest, 'sawtooth', hz * 0.98, o.t + 0.26, 0.1, 0.01, 0.24, stepHz(7));
+  },
+
   /** A frog's low croak. */
   croak() {
     const o = out();

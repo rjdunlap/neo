@@ -1,5 +1,5 @@
 import { Graphics } from 'pixi.js';
-import { ink, swatch } from '../../art/palette';
+import { crab, gull, pool, rock, type PoolLife } from '../../art/shore';
 import { overlaps, type LandLayout, type Rect } from '../../content/lands';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
@@ -14,8 +14,7 @@ import { meadowKeepOut, scanPlace } from './meadow';
  * corner buttons and the heading, and it takes no touches itself.
  */
 export type BeachThing = 'pool' | 'rock' | 'crab' | 'gull';
-/** What lives in a rock pool. */
-export type PoolLife = 'star' | 'anemone' | 'kelp';
+export type { PoolLife };
 /** One thing on the shore: where its feet are and the box it is drawn in. */
 export interface BeachItem {
   kind: BeachThing;
@@ -117,81 +116,4 @@ export function drawBeach(g: Graphics, layout: LandLayout, view: View, ground: n
     else gull(g, 0, -12);
     g.restore();
   }
-}
-
-const ROCK = 0x9a93b0;
-const ROCK_LINE = 0x6f6888;
-
-function rock(g: Graphics, x: number, y: number) {
-  g.moveTo(x - 48, y).quadraticCurveTo(x - 50, y - 30, x - 20, y - 46).quadraticCurveTo(x + 10, y - 56, x + 34, y - 38).quadraticCurveTo(x + 50, y - 22, x + 48, y).closePath().fill(ROCK).stroke({ color: ROCK_LINE, width: 2.5 });
-  // Weed along the wet foot, and barnacles crowded on the face.
-  g.moveTo(x - 46, y - 4).quadraticCurveTo(x, y - 12, x + 46, y - 4).stroke({ color: 0x5c8a4a, width: 5, cap: 'round' });
-  for (const [dx, dy] of [[-22, -30], [-12, -36], [-28, -20], [8, -40], [18, -30], [-4, -26]]) barnacle(g, x + dx, y + dy);
-}
-
-function barnacle(g: Graphics, x: number, y: number) {
-  g.moveTo(x - 4.5, y + 3).lineTo(x - 2, y - 3).lineTo(x + 2, y - 3).lineTo(x + 4.5, y + 3).closePath().fill(0xf4efe4).stroke({ color: ROCK_LINE, width: 1.2 });
-  g.moveTo(x - 1.2, y - 2.5).lineTo(x + 1.2, y - 2.5).stroke({ color: ink, width: 1 });
-}
-
-/** A rock pool seen from the shore: a rim of rock round still water, with what lives in it. */
-function pool(g: Graphics, x: number, y: number, life: PoolLife[], s: number) {
-  const cy = y - 22 * s;
-  g.ellipse(x, cy, 60 * s, 22 * s).fill(ROCK).stroke({ color: ROCK_LINE, width: 2.5 });
-  g.ellipse(x, cy + 2 * s, 48 * s, 15 * s).fill(0x8fd3ec).stroke({ color: swatch.blue.line, width: 1.5, alpha: 0.6 });
-  g.moveTo(x - 30 * s, cy - 4 * s).lineTo(x - 14 * s, cy - 4 * s).stroke({ color: 0xffffff, width: 2, cap: 'round', alpha: 0.8 });
-  for (const [i, kind] of life.entries()) {
-    const px = x + (i === 0 ? -18 : 20) * s;
-    const py = cy + 4 * s;
-    if (kind === 'star') star(g, px, py, s, i === 0 ? swatch.orange : swatch.purple);
-    else if (kind === 'anemone') anemone(g, px, py, s);
-    else kelp(g, px, py, s);
-  }
-  // Barnacles on the rim.
-  barnacle(g, x + 46 * s, cy - 8 * s);
-  barnacle(g, x - 50 * s, cy + 4 * s);
-}
-
-function star(g: Graphics, x: number, y: number, s: number, c: { fill: number; line: number }) {
-  const pts: number[] = [];
-  for (let i = 0; i < 10; i++) {
-    const a = -Math.PI / 2 + (i * Math.PI) / 5;
-    const r = (i % 2 ? 4.5 : 12) * s;
-    pts.push(x + Math.cos(a) * r, y + Math.sin(a) * r * 0.6);
-  }
-  g.poly(pts).fill(c.fill).stroke({ color: c.line, width: 1.5 });
-  g.circle(x, y, 1.6 * s).fill(c.line);
-}
-
-function anemone(g: Graphics, x: number, y: number, s: number) {
-  for (let i = -3; i <= 3; i++) {
-    g.moveTo(x + i * 2.5 * s, y - 4 * s).quadraticCurveTo(x + i * 4.5 * s, y - 12 * s, x + i * 5 * s + (i % 2) * 2 * s, y - 16 * s);
-  }
-  g.stroke({ color: swatch.pink.fill, width: 3 * s, cap: 'round' });
-  g.ellipse(x, y - 2 * s, 9 * s, 5 * s).fill(swatch.green.fill).stroke({ color: swatch.green.line, width: 1.5 });
-}
-
-function kelp(g: Graphics, x: number, y: number, s: number) {
-  for (const d of [-4, 3]) {
-    g.moveTo(x + d * s, y + 2 * s).quadraticCurveTo(x + (d - 8) * s, y - 10 * s, x + (d + 2) * s, y - 22 * s).stroke({ color: 0x8a6a2e, width: 4 * s, cap: 'round' });
-  }
-}
-
-function crab(g: Graphics, x: number, y: number, face: 1 | -1) {
-  // A hermit crab in a borrowed whelk shell: the shell behind, the claws and eyes poking out the front.
-  const shell = swatch.yellow;
-  g.moveTo(x - face * 18, y - 6).quadraticCurveTo(x - face * 22, y - 30, x - face * 2, y - 32).quadraticCurveTo(x + face * 10, y - 22, x + face * 4, y - 6).closePath().fill(shell.light).stroke({ color: shell.line, width: 2.5 });
-  g.moveTo(x - face * 14, y - 18).quadraticCurveTo(x - face * 6, y - 26, x + face * 2, y - 20).stroke({ color: shell.line, width: 1.5 });
-  const body = swatch.red;
-  for (const d of [0, 6, 12]) g.moveTo(x + face * (2 + d * 0.5), y - 6).lineTo(x + face * (6 + d), y).stroke({ color: body.line, width: 2.5, cap: 'round' });
-  g.ellipse(x + face * 14, y - 10, 7, 5).fill(body.fill).stroke({ color: body.line, width: 2 });
-  for (const d of [-2, 4]) {
-    g.moveTo(x + face * (8 + d), y - 12).lineTo(x + face * (10 + d), y - 22).stroke({ color: body.line, width: 1.5 });
-    g.circle(x + face * (10 + d), y - 23, 2.4).fill(ink);
-  }
-}
-
-function gull(g: Graphics, x: number, y: number) {
-  g.moveTo(x - 26, y - 2).quadraticCurveTo(x - 14, y - 14, x, y).quadraticCurveTo(x + 14, y - 14, x + 26, y - 2).stroke({ color: swatch.white.line, width: 5, cap: 'round' });
-  g.moveTo(x - 26, y - 2).quadraticCurveTo(x - 14, y - 14, x, y).quadraticCurveTo(x + 14, y - 14, x + 26, y - 2).stroke({ color: 0xffffff, width: 2.5, cap: 'round' });
 }
