@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Garden Rows deep dive (docs only)
+
+- [PR #1072](https://github.com/rjdunlap/neo/pull/1072), branch `claude/dive-garden-rows`: [dive](deep-dives/garden-rows.md). Three slices queued ([batches](GAME-BATCHES.md#garden-rows-1-seeded-flower-sets-and-mend-the-bed): seeded flower sets and level 7 Mend the bed, levels 8–9 Hedge boxes, level 10 One row); Two-flower beds stays a later level 11.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
+
 ## 2026-10-31 — Pixel Pictures deep dive (docs only)
 
 - [PR #1071](https://github.com/rjdunlap/neo/pull/1071), branch `claude/dive-pixel-pictures`: [dive](deep-dives/pixel-pictures.md). Found levels 2 and 6 repeat exactly (the pool equals the pictures shown) and level 6 has no colour-logic solvability check, so its hint and bot walk reading order. Four slices queued ([batches](GAME-BATCHES.md#pixel-pictures-1-fresh-pictures-and-colour-logic): fresh pictures and colour logic, levels 7–8, level 9 entry, level 10 own picture); the toddler opening is filed in [waiting-on-developer](WAITING-ON-DEVELOPER.md); tracker, READY, backlog and ideas updated.
@@ -86,12 +92,6 @@
 - Ran (tested at e3ebcbba, Vite dev on http://localhost:5347): typecheck; full `npx vitest run` 3903 tests, the one failure (voice-clip manifest) fixed by rendering the title clip, rerun of clips, content and registry 181/181, spinner-fair rule tests 19/19, lands test passing with 14 games; `BROWSER_SUITE=spinnerfair` PASS (level 1 to its sticker 0/0; portrait level 3 with two wrong picks, 2 misses, 1 hint and the glow, ten spins, second pick, saved 2/1); `BROWSER_SUITE=fingerdemo FINGER_ONLY=spinner-fair FINGER_LEVELS=3` PASS (44.2 s, pre-K); `npm run build`; portrait glow screenshot (test-results/browser/spinnerfair/); the portrait bars screenshot was taken on the earlier commit with the same layout. game-reviewer: no blocking bugs (the touch-down jiggle during a spin fixed; the repeated idle spin kept as defined).
 - Source check: "chance" and "a better chance" consistent with [CCSS 7.SP.C.5](https://www.thecorestandards.org/Math/Content/7/SP/C/5/) and [Illustrative Mathematics](https://tasks.illustrativemathematics.org/content-standards/7/SP/C/5) (unlikely / neither / likely); "fair", "sure", "maybe", "no way" stay with batch 2; England's Year 2 vocabulary not checked (no probability in Key Stage 1).
 - Not run: the landscape screenshot, level 2 in the browser (rules unit-tested), `fingerdemo` at levels 1–2, the offline check. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#spinner-fair-levels-13-chance-statistics-cs1-2026-10-31)): preschool six-spin reading, pre-K "still the better chance", device speech; the toddler check stays open.
-
-## 2026-10-31 — Strategy games subject research (docs only)
-
-- [PR #1055](https://github.com/rjdunlap/neo/pull/1055), branch `claude/research-strategy-games`: [study](deep-dives/subjects/strategy-games.md) and [packet](deep-dives/subjects/RECOMMENDATIONS.md#strategy-games-recommendations) (a new game, Shell Rows: one-move puzzles on a 3 by 3 sand grid with a show-me-why replay; a table-games card, forks and a whole match, then Last Pebble follow; Seed Bowls held for a cultural-source review), tracker, backlog, READY, ideas, roadmap and device checks updated.
-- Ran: `git fetch origin --prune`, `scripts/overlap.sh strategy-games` (no claim), `node scripts/check-links.mjs` and `git diff --check`. Sources: MP1, MP7, NRICH *Got It* notes and the Oware article opened; the rest from search summaries or recall, marked in the study.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the SG1 definition and three [person checks](DEVICE-CHECKS.md#shell-rows-strategy-games-study-2026-10-31-proposed-nothing-built).
 
 ## Coverage summary
 
