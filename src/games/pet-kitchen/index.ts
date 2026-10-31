@@ -388,13 +388,14 @@ class PetKitchen implements Game {
   private async showServings(words:{more:string;less:string}){
     this.overlaying=true;
     const tw=this.ctx.tw, v=this.view, cx=v.w/2, cy=this.wholesY(v);
-    const served=this.pieces.filter(p=>p.plate>=0);
+    const served=this.pieces.filter(p=>p.plate>=0), homes=served.map(p=>({x:p.node.x,y:p.node.y}));
     await Promise.all(served.map(p=>{const plate=this.plates[p.plate];p.node.alpha=0.7;return tw.to(p.node,{x:cx+p.node.x-plate.x,y:cy+p.node.y-plate.y},{duration:0.45});}));
     void this.ctx.say('kitchen.compare-wrong',words);
     await tw.wait(1.2);
     for(const p of served)p.node.alpha=1;
-    this.layoutPieces(true);
-    await tw.wait(0.3);
+    // Back to the plates they came from (the pieces no longer drag, so they slide rather than snap).
+    await Promise.all(served.map((p,i)=>tw.to(p.node,{x:homes[i].x,y:homes[i].y},{duration:0.3})));
+    this.layoutPieces();
     this.overlaying=false;
   }
   private check(){
