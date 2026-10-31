@@ -53,3 +53,9 @@
 - Ran: `npm run typecheck` clean; caravan-days rule tests 37 pass (level 4 plan and all four pick sequences, level 5 plan, totals, reversal and bot order, layout at four views, a voice-slot test); full `npm test` 3789/3793, the 4 timeouts (bumper-garden, keep-house, penguin-slide) are unrelated games under machine load and pass alone (69/69); `npm run build` passed.
 - Browser: `GAME_URL=http://localhost:5191 BROWSER_SUITE=caravandays CARAVAN_FROM=4` passed (level 4: Go before picking free, a decoy Go a miss, asked help a hint, right goods on both roads, saved 1/1; level 5: Go before looking free, the smaller load a miss, asked help a hint, the better load reversing between cases, saved 1/1; a portrait screenshot of each); `BROWSER_SUITE=fingerdemo FINGER_ONLY=caravan-days FINGER_LEVELS=4,5` clean in 17.5 s and 17.3 s.
 - Not run: levels 1–3 browser play (unchanged; `CARAVAN_FROM` defaults to 1 so the full case still covers them), the offline check, an iPad, a child. Open: the three [device checks](../DEVICE-CHECKS.md#caravan-days-levels-45-cs3-2026-10-30), including the withdraw clause. Code review (game-reviewer, fresh context): no blocking findings; its notes that a wrong good stays picked after a miss and that Go sends the last-looked load match the definition and were kept.
+
+## 2026-10-30 — Critter Daily reference review (docs only)
+
+- Branch `claude/critter-daily-research-d94b87`: [docs/CRITTER-DAILY.md](../CRITTER-DAILY.md), a review of critterdaily.com's six animal-led puzzles and how their animals are drawn and animated, with six proposals (P1–P6), plus a pointer in [IDEAS](../IDEAS.md#critter-daily-review-2026-10-30).
+- Seen: the home page and one Burrow practice round in the browser pane; every game's page, stylesheet and script read; a local pose sheet rendered in the session scratchpad (not committed).
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, tests, build, browser suites (docs only).
