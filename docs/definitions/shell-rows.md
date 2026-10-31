@@ -38,7 +38,7 @@ Stated once and binding on every level:
 
 The pool sizes were counted by a throwaway enumeration in the defining session (canonical classes; level 1 at most five pieces has 39 classes of all 68, level 2 has 69 of all 117 after the honesty filter); the build's tests recount them rather than trust these numbers.
 
-- **A round** is three positions from one level. The first position of a level's round is authored and plain, a straight row or column with no diagonal threat:
+- **A round** is three positions from one level. Every round opens on the level's authored position, plain, a straight row or column with no diagonal threat, under a seeded symmetry (the eight symmetries map a row or column to a row or column, never to a diagonal, so the board differs without losing its plainness; the game keeps no round count, so there is no "first round only" rule):
 
   | Level | Shells | Pebbles | Right | Wrong reply shown |
   | --- | --- | --- | --- | --- |
@@ -46,7 +46,7 @@ The pool sizes were counted by a throwaway enumeration in the defining session (
   | 2 | centre | bottom-left, bottom-middle (the pet went first) | bottom-right | the pet completes the bottom row |
   | 3 | top-left, top-middle | bottom-left, bottom-middle | top-right | bottom-right blocks: the pet takes top-right; elsewhere: the pet takes bottom-right |
 
-  Positions two and three are drawn by the seeded RNG from the level's pool, two different classes, neither the authored one's class, each with a seeded symmetry. From the second round on, the authored position is replaced by a drawn one; a level's first round is the only place the plain row is guaranteed.
+  Positions two and three are drawn by the seeded RNG from the level's pool, two different classes, neither the authored one's class, each with a seeded symmetry.
 
 ### Bands and ranges
 
@@ -56,7 +56,7 @@ The pool sizes were counted by a throwaway enumeration in the defining session (
 
 - **The board.** Nine squares of 150 with 12-unit grooves: 474 square, inside a 20-unit sand border (514). The board sits right of the pet's corner in landscape and centred above the pet's row in portrait. A small pile of her shells sits at the board's left edge and the pet's pebble pile at its right; both are decoration (`eventMode = 'none'`) so they never steal a tap.
 - **Landscape (1024 × 768).** Corner buttons 90, gap 30, board 514, leaving about 130 for insets and the pet's speech. The board's left edge clears the pet's bottom-left zone.
-- **Portrait (768 × 1024).** Corner buttons 90, gap 60, board 514 centred, gap 40, then the pet's row: about 704, nothing shrinks. Squares stay 150 at every view; `layout(view)` returns null rather than shrink one below 100.
+- **Portrait (768 × 1024).** Corner buttons 90, gap 60, board 514 centred, gap 40, then the pet's row: about 704, nothing shrinks. Squares are 150 at the iPad views and never below 100 at the phone-inset views; `layout(view)` returns null rather than shrink one below 100.
 - **Feel.** `STYLES.hub` keeps the island's loop. Touch-down darkens the square; the shell settles with a soft pentatonic tap (`src/audio/notes.ts`); a finished row of three shines left to right with a rising three-note step; a pebble lands with a lower tap; a wrong square's reply ends on a gentle boing, never a buzzer. The pet claps on her win and does a surprised hop on her block ("Oh! You saw it!").
 - **Replay timing.** Shell settles 0.3 s, pause 0.4 s, the pebble slides from its pile 0.6 s, the deciding row glows 0.8 s while the pet speaks, then the shell and pebble lift away 0.5 s. Reduced motion halves the movement and keeps the glow. Taps are ignored from the set until the rewind ends. The pet's line is awaited through `ctx.say`; the game's own timers are guarded so a destroyed scene stops cleanly.
 - **Speech.** `ctx.instruct` states each level's ask and the pet repeats it: "Two shells in a row! Where does the third one go?" / "The pet has two pebbles in a row. Can you stop it?" / "You have two in a row, and so does the pet. What's the best move?" Tapping the pet repeats it. Nothing needs reading.
@@ -81,7 +81,7 @@ The pool sizes were counted by a throwaway enumeration in the defining session (
 - **Pools:** every pool position is reachable (legal counts, no completed line, her to move); each level's filter holds for every position; each pool has at least 20 canonical classes (the defining count was 39, 69 and 81); the authored first positions are in their pools.
 - **Exactly one right square:** for every pool position, `rightSquare(level, board)` is the only square the level accepts; at level 3 it differs from the block.
 - **Honest replies:** for every pool position and every wrong empty square, `petReply` is legal and minimax-optimal; at level 1 it is the gap; at level 2 and level 3's neither-square it completes the pet's row; at level 3's block it takes her winning square. After a right square at level 2, `value` is at least 0.
-- **Rounds:** over 300 seeds per level the same seed gives the same three positions, symmetries and shell colours; the three are different classes; the first round of each level starts with the authored position.
+- **Rounds:** over 300 seeds per level the same seed gives the same three positions, symmetries and shell colours; the three are different classes; every round starts with the authored position's class, and its symmetry keeps the row straight (never a diagonal).
 - **Accounting:** an occupied square and a tap during the replay count nothing; each wrong empty square is one miss; a second miss on one position glows the right square and counts one hint; *Show me* then the ghost counts one hint in all; hints never exceed one per position.
 - **Help leads somewhere:** from every position, following the glow (or the ghost's move) is the right square and ends the position.
 - **Layout:** `layout(view)` at the four views as above.
@@ -92,7 +92,7 @@ The pool sizes were counted by a throwaway enumeration in the defining session (
 - **Ghost finger:** `touchDemo: true`, `autotouch()` through the public squares, reading `game.state` and the current layout after every resize; it taps `rightSquare` for each position after the instruction ends and never calls finish.
 - **How-to card** (`src/content/howto.ts`). Goal: "Set a shell on the sand to make or stop a row of three." Steps: "Two shells in a row: tap the square that makes three" `{ from: 1, to: 1 }`; "The pet has two pebbles in a row: tap the square that stops it" `{ from: 2, to: 2 }`; "Both have two in a row: take the square that makes your three first" `{ from: 3, to: 3 }`. Finish: "Three puzzles make a round; one sticker." Note: "A wrong square is answered by the pet's move, then the board goes back to her turn; that reply is the lesson."
 - **Voice lines** under `sr.*`: `intro`, `instruct.1`–`instruct.3`, `took-spot`, `got-three`, `could-have`, `saw-it`, `three-in-a-row`, `full` (an occupied square, said at most once per position), `look-again`, `done`. `{pet}` optional. "Three in a row" and "stop the row" are plain words; the building session checks them against device speech, and no rule wording claims a source.
-- **Registration:** ID `shell-rows`, name "Shell Rows", spoken title `game.shell-rows`, region `puzzle-peaks`, skills `['planning', 'prediction', 'logic']` (names already used in the registry). Bands `['prek', 'school']`. Hub icon: a 3 by 3 sand grid with two shells and a pebble. Sticker: a seeded grid with a shining row of three shells. Music `STYLES.hub`.
+- **Registration:** ID `shell-rows`, name "Shell Rows", spoken title `game.shell-rows`, region `puzzle-peaks`, skills `['planning', 'prediction', 'logic']` (names already used in the registry). Bands `['prek', 'school']`. `describeLevel`: 1 "Finish the row: set the third shell", 2 "Stop the row: block the pet's two pebbles", 3 "Win first: make her own row rather than block" (no planning claim). Hub icon: a 3 by 3 sand grid with two shells and a pebble. Sticker: a seeded grid with a shining row of three shells. Music `STYLES.hub`.
 - **Home land:** **Puzzle Peaks** (decision 2), beside Secret Code and Garden Rows. It holds 13 today, exactly `LAND_SPOTS`; Rule Machine is queued as its fourteenth, so Shell Rows is its fourteenth or fifteenth. Where they are all visible the land **pages** (under `landPages`, as Story Grove's sixteen already do; nothing shrinks). The build's lands test decides; no text may say "one page". Bubble Beach (the study's sand alternative) is the fallback only if the lands test fails.
 - **Co-play:** the grown-up asks before she taps, "What will the pet do if you go there?", and lets the replay answer. **Off-screen:** noughts and crosses on paper or a steamy window; each player says aloud which square they are watching (the study's SG5 table-games card is a later, separate slice).
 - **Couch:** none.
