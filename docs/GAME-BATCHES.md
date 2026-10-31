@@ -563,7 +563,7 @@ Built 2026-10-27, [PR #1020](https://github.com/rjdunlap/neo/pull/1020); [defini
 
 ### caravan-days 2: Swap at the stop and worth more far away
 
-Ready (defined 2026-10-30, [PR #1029](https://github.com/rjdunlap/neo/pull/1029)). One worker, branch and PR for both levels. **In progress 2026-10-30** on branch `claude/caravan-days-4-5` (claim PR below).
+Built 2026-10-30, [PR #1037](https://github.com/rjdunlap/neo/pull/1037) (defined in [PR #1029](https://github.com/rjdunlap/neo/pull/1029)); [archived build note](archive/COMPLETED-2026-10-09.md#caravan-days-levels-45-china-india-and-the-silk-road-cs3-2026-10-30). One worker, branch and PR for both levels.
 
 - **`caravan-days`, levels 4–5 (the build of study slice CS3)** (two new interactions on an existing game; school only, `school: { min: 3, max: 5 }`, no renumbering): give the camel the good the next stop's bubble wants, one pick of two offers per oasis on a one-way road, Go walks there or back (level 4); tap two three-bale loads to count their shells at the named stop and send the one that brings more, the better load reversing between the far city and the near oasis (level 5). Shells are counters for one case only; nothing accrues. Files: `src/games/caravan-days/` (logic, art, scene, rule tests), voice lines `cd.*`, the how-to card, the `caravandays` browser case. Withdraw clause: if level 4 plays as Swap Meet 4 with a camel, it goes to Swap Meet instead. [Definition](definitions/caravan-days.md#levels-45-cs3-swap-at-the-stop-worth-more-far-away), [study build slices](deep-dives/subjects/china-india-silk-road.md#build-slices-in-order)
 

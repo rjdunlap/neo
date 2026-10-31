@@ -678,11 +678,11 @@ Performed on the built game (levels 1–3, PR #1028; browser play passed, nothin
 
 ## Caravan Days levels 4–5 (CS3, 2026-10-30)
 
-Performed on the built levels, which are not yet built ([definition](definitions/caravan-days.md#levels-45-check-tier-for-the-build)).
+Performed on the built levels (built 2026-10-30, [PR #1037](https://github.com/rjdunlap/neo/pull/1037); [definition](definitions/caravan-days.md#levels-45-check-tier-for-the-build)).
 
-- [ ] With a school child, check whether she reads the next stop's bubble or the city's when choosing what to swap.
+- [ ] With a school child, check whether she reads the next stop's bubble or the city's when choosing what to swap, and whether level 4 plays as Swap Meet 4 with a camel (the definition's withdraw clause).
 - [ ] Check whether the reversal at level 5 (the better load flips between the far city and the near oasis) is noticed or played as two separate guesses.
-- [ ] On an iPad, check device speech for the good and shell slots.
+- [ ] On an iPad, check device speech for the good and shell slots, including composed lines such as "This stop wants" + "Salt." + "not" + "Tea.".
 
 ## River Tablets levels 4–6 (AR3, 2026-10-30)
 
