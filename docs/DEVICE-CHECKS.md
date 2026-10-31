@@ -1,5 +1,11 @@
 # Needs a person or a device
 
+## Maker Lane (food-fiber-systems study, 2026-10-31; proposed, nothing built)
+
+- [ ] Once built: does a four-year-old pick the sheep for the sock because it is soft, and does the replay change her next pick?
+- [ ] Once built: does the thought bubble tell her which maker comes next, or does she try every stall?
+- [ ] Once built: does a grown-up use the "Where did it begin?" label card?
+
 ## Thought Bubbles (literature-meaning study, 2026-10-31; proposed, nothing built)
 
 - [ ] Once built: does a four- or five-year-old read the empty bubble as "what he thinks", or as a place to put the right object?
