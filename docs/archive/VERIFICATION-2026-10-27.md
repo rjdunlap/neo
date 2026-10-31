@@ -65,3 +65,9 @@
 - `BROWSER_SUITE=rivertablets` (passed twice, before and after the review fixes): level 1 a token per sheep, a wobble while a sheep walks, the tip, saved 0/0, landscape screenshot; level 2 peek, one mark short, two wrong cracks (miss, then glow and hint), the glowing cell then a match, the second envelope exact, portrait screenshot, saved 2/1; level 3 a wrong row (miss), the same good wrong again (moved mark, hint, glow), every good in its row, saved 2/1. `BROWSER_SUITE=fingerdemo FINGER_ONLY=river-tablets` passed at level 1 (preschool, 9.5 s) and level 3 (school, 19.5 s).
 - `game-reviewer` in a fresh context; fixed a cell press bubbling to the ball's peek, a rotation mid-envelope losing the tokens inside the ball, the heading glow following the waiting good, and Help ignored during an animation.
 - Not run: the production offline check (no persistence or navigation change), other suites, an iPad, device speech, a child. Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md#river-tablets-levels-13).
+
+## 2026-10-27 — Caravan Days 1–3 definition (CS1, docs only)
+
+- [PR #1016](https://github.com/rjdunlap/neo/pull/1016), branch `claude/define-caravan-days`: docs only. [Definition](../definitions/caravan-days.md) for levels 1–3 and a batch plan in `docs/GAME-BATCHES.md`; the study, backlog, recommendations, roadmap, ideas and ready lists point to it. Nothing built; no code changed.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`, run by the session after this closeout.
+- Not run: typecheck, tests, build, browser suites (docs only). Open: the build (CS2) runs the new-game tier; device checks are named in the definition.

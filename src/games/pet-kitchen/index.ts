@@ -12,8 +12,9 @@ import { againIcon, arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { countAloud, CUT_WAYS, SHAPES_LEVEL, cutShares, dealCut, dealFriends, dealTo, DEAL_LEVEL, doubled, fair, fairAreas, fairCut, fractionCut, fractionRequest, fruitPair, halfIngredientHint, halved, ingredientHint, isPizzaLevel, nextPlate, nextWay, overlayPair, pieceAreas, pieceShape, PIZZAS_LEVEL, planFor, plateAt, recipe, SAME_LEVEL, servesFraction, serveTrouble, shapesLine, wholeFor, type CutWay, type FractionRequest, type PieceShape, type Whole } from './logic';
+import { compareCut, compareFriends, comparePair, firstUnmet, kitchenDiscoveries, morePlate, needs, servesBoth, type ComparePair, countAloud, CUT_WAYS, SHAPES_LEVEL, cutShares, dealCut, dealFriends, dealTo, DEAL_LEVEL, doubled, fair, fairAreas, fairCut, fractionCut, fractionRequest, fruitPair, halfIngredientHint, halved, ingredientHint, isPizzaLevel, nextPlate, nextWay, overlayPair, pieceAreas, pieceShape, PIZZAS_LEVEL, planFor, plateAt, recipe, SAME_LEVEL, servesFraction, serveTrouble, shapesLine, wholeFor, type CutWay, type FractionRequest, type PieceShape, type Whole } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { entryId } from '../../content/journal';
 
 function sandwich(parts = 1) {
   if (parts === 3) {
@@ -139,6 +140,17 @@ class PetKitchen implements Game {
   /** Level 14: each sandwich takes its own cut, so the cuts made so far are listed one per whole. */
   private readonly shapes: boolean;
   private readonly cutWays: CutWay[] = [];
+  /**
+   * Level 13: the two asks, one per friend, then a question after the serve. `asking` is the question stage: the
+   * plates take taps, and the serve, the round arrow and the pieces do not. Each stage has its own misses, and each
+   * charges at most one hint, at its own second miss.
+   */
+  readonly compare: boolean;
+  readonly pair: ComparePair | null;
+  private readonly names: string[] = [];
+  private readonly bubbles: Container[] = [];
+  asking = false;
+  private askWrong = 0;
   misses = 0; hints = 0; done = false;
   private wrong = 0;
   private assisted = false;
@@ -154,6 +166,7 @@ class PetKitchen implements Game {
     const lopsided='lopsided' in this.plan&&this.plan.lopsided===true;
     this.smallFirst=lopsided?ctx.rng.chance(0.5):true;
     this.shapes='shapes' in this.plan&&this.plan.shapes===true;
+    this.compare=this.plan.mode==='compare';this.pair=this.compare?comparePair(ctx.rng):null;
     if(this.shapes)for(const way of CUT_WAYS)this.cutKinds.push({parts:2,lopsided:false,way});
     else for(const parts of this.plan.cuts)this.cutKinds.push({parts,lopsided:false});
     if(lopsided){this.cutKinds.push({parts:2,lopsided:true});if(ctx.rng.chance(0.5))this.cutKinds.reverse();}
@@ -164,10 +177,10 @@ class PetKitchen implements Game {
     this.undo=new RoundButton(arrowIcon(-1),swatch.white,48,()=>{
       const last=this.additions.pop(); if(last!==undefined) {this.made[last]--;this.drawMeal();this.drawHint();}
     });
-    this.recut=new RoundButton(againIcon(),swatch.white,48,()=>{if(this.done)return;this.clearPieces();this.split=0;this.splitLopsided=false;this.cutWays.length=0;this.idle=0;this.resize(this.view);this.instruction();});
+    this.recut=new RoundButton(againIcon(),swatch.white,48,()=>{if(this.done||this.asking||this.overlaying)return;this.clearPieces();this.split=0;this.splitLopsided=false;this.cutWays.length=0;this.idle=0;this.resize(this.view);this.instruction();});
     ctx.stage.addChild(this.serve,this.undo,this.recut);
-    if(this.plan.mode==='share'||this.plan.mode==='fraction'||this.tapDeal) {
-      const names=dealFriends(ctx.rng,this.plan.friends);
+    if(this.plan.mode==='share'||this.plan.mode==='fraction'||this.compare||this.tapDeal) {
+      const names=this.compare?compareFriends(ctx.rng):dealFriends(ctx.rng,this.plan.friends);this.names.push(...names);
       for(let i=0;i<this.plan.friends;i++) {
         const p=new Container();
         p.addChild(new Graphics().circle(0,0,76).fill(swatch.white.fill).stroke({width:6,color:swatch.blue.line}));
@@ -175,7 +188,14 @@ class PetKitchen implements Game {
         const friend=new Critter(CRITTERS[names[i]]);friend.scale.set(0.45);friend.position.set(0,-62);friend.setMood('calm');
         friend.eventMode='none';p.addChild(friend);ctx.track(friend);this.friends.push(friend);
         ctx.stage.addChildAt(p,1);this.plates.push(p);
+        // Level 13: after the serve, a tap on a plate answers "who has more?".
+        if(this.compare)onTap(p,()=>this.pickMore(i),{radius:76});
       }
+      if(this.pair)this.pair.forEach((r,i)=>{
+        // Each friend's ask as a shaded picture in a bubble beside that friend; a tap says it again.
+        const b=askBubble(r);onTap(b,()=>{this.idle=0;void ctx.say('kitchen.compare-ask',{friend:names[i],amount:r.name});},{radius:60});
+        ctx.stage.addChild(b);this.bubbles.push(b);
+      });
       if(this.plan.mode==='fraction') {
         this.bubble.addChild(askBubble(this.request));
         onTap(this.bubble,()=>{this.idle=0;void ctx.say('kitchen.fraction-ask',{amount:this.request.name});},{radius:60});
@@ -250,6 +270,7 @@ class PetKitchen implements Game {
     if(this.shapes){this.instruction();return;}
     if(this.ctx.level===9) void this.ctx.instruct('kitchen.thirds-share');
     else if(this.ctx.level===PIZZAS_LEVEL) void this.ctx.instruct('kitchen.pizzas-share');
+    else if(this.compare) void this.ctx.instruct('kitchen.compare-share');
     else void this.ctx.instruct(this.plan.mode==='fraction'?'kitchen.fraction-share':'kitchen.share',this.plan.mode==='fraction'?{amount:this.request.name}:{n:this.plan.friends});
   }
   /** A tap on a tray piece sends it to the plate with the fewest; nothing a touch can do here is wrong. */
@@ -261,7 +282,7 @@ class PetKitchen implements Game {
     this.layoutPieces(true);
     if(this.pieces.every(p=>p.plate>=0)){
       this.done=true;
-      void this.eat().then(()=>this.ctx.say('kitchen.done')).then(()=>this.ctx.tw.wait(0.4)).then(()=>this.ctx.finish({misses:0,hints:0}));
+      void this.eat().then(()=>this.ctx.say('kitchen.done')).then(()=>this.ctx.tw.wait(0.4)).then(()=>this.ctx.finish({misses:0,hints:0,discoveries:this.discoveries()}));
     }
   }
   private wiggle(f:Container){
@@ -327,12 +348,63 @@ class PetKitchen implements Game {
     await tw.wait(0.4);
     this.overlaying=false;
   }
+  /** The journal entries this round showed, filed by the shell when it ends. */
+  private discoveries(){return kitchenDiscoveries(this.plan.mode,this.split,this.splitLopsided,this.counts(),this.pieces.length).map(k=>entryId('pet-kitchen',k));}
+  /** Level 13's serve: both friends must have what their bubble shows; then the question. */
+  private checkCompare(){
+    const pair=this.pair!;
+    if(this.split&&servesBoth(pair,this.split,this.counts())){
+      this.asking=true;this.glow.clear();sfx.sparkle();
+      for(const p of this.pieces){if(p.drag)p.drag.enabled=false;p.node.eventMode='none';}
+      this.resize(this.view);this.instruction();return;
+    }
+    this.misses++;this.wrong++;sfx.boing();
+    if(this.wrong===2){this.assisted=true;this.hints++;}
+    if(!this.split)this.instruction();
+    // Halves cannot make a quarter: the round arrow (glowing from the second miss) and quarters fix it.
+    else if(compareCut(pair,[this.split])!==this.split)void this.ctx.say('kitchen.recut');
+    else{const i=firstUnmet(pair,this.split,this.counts());void this.ctx.say('kitchen.compare-unmet',{friend:this.names[i],amount:pair[i].name});}
+    this.drawHint();
+  }
+  /** Level 13's question: a tap on the plate with more finishes; the other plate lays both servings one over the other. */
+  private pickMore(i:number){
+    if(!this.asking||this.done||this.overlaying)return;
+    this.idle=0;
+    const pair=this.pair!, more=morePlate(pair), words={more:pair[more].name,less:pair[1-more].name};
+    if(i===more){
+      this.done=true;this.glow.clear();sfx.sparkle();
+      void this.ctx.say('kitchen.compare-right',words).then(()=>this.eat()).then(()=>this.ctx.tw.wait(0.4)).then(()=>this.ctx.finish({misses:this.misses,hints:this.hints,discoveries:this.discoveries()}));
+      return;
+    }
+    this.misses++;this.askWrong++;sfx.boing();
+    if(this.askWrong===2)this.hints++;
+    void this.showServings(words);
+    this.drawHint();
+  }
+  /**
+   * Level 13's wrong "more": each friend's serving slides to the middle of the counter, keeping its shape, the two
+   * lying one over the other at 0.7 so the bigger one is seen sticking out; then they go back to the plates.
+   */
+  private async showServings(words:{more:string;less:string}){
+    this.overlaying=true;
+    const tw=this.ctx.tw, v=this.view, cx=v.w/2, cy=this.wholesY(v);
+    const served=this.pieces.filter(p=>p.plate>=0), homes=served.map(p=>({x:p.node.x,y:p.node.y}));
+    await Promise.all(served.map(p=>{const plate=this.plates[p.plate];p.node.alpha=0.7;return tw.to(p.node,{x:cx+p.node.x-plate.x,y:cy+p.node.y-plate.y},{duration:0.45});}));
+    void this.ctx.say('kitchen.compare-wrong',words);
+    await tw.wait(1.2);
+    for(const p of served)p.node.alpha=1;
+    // Back to the plates they came from (the pieces no longer drag, so they slide rather than snap).
+    await Promise.all(served.map((p,i)=>tw.to(p.node,{x:homes[i].x,y:homes[i].y},{duration:0.3})));
+    this.layoutPieces();
+    this.overlaying=false;
+  }
   private check(){
-    if(this.done||this.overlaying)return;
+    if(this.done||this.overlaying||this.asking)return;
+    if(this.compare){this.checkCompare();return;}
     const ok=this.plan.mode==='share'?fair(this.counts(),this.pieces.length)&&fairAreas(this.areaSums())&&!this.uncutWholes():this.plan.mode==='fraction'?servesFraction(this.request,this.split,this.counts()[0]):this.plan.mode==='half-recipe'?halved(this.base,this.made):doubled(this.base,this.made);
     if(ok){
       this.done=true;this.pieces.forEach(p=>{if(p.drag)p.drag.enabled=false;});this.glow.clear();sfx.sparkle();
-      const finish=()=>this.ctx.finish({misses:this.misses,hints:this.hints});
+      const finish=()=>this.ctx.finish({misses:this.misses,hints:this.hints,discoveries:this.discoveries()});
       if(this.plan.mode==='fraction'){
         // Count the served pieces aloud, each one hopping as it is named: "one quarter, two quarters: one half".
         const served=this.pieces.filter(p=>p.plate===0);
@@ -361,7 +433,9 @@ class PetKitchen implements Game {
     this.drawHint();
   }
   private drawHint(){
-    this.glow.clear();if(!this.assisted||this.done)return;
+    this.glow.clear();
+    if(this.compare){if(!this.done)this.drawCompareHint();return;}
+    if(!this.assisted||this.done)return;
     if(this.plan.mode==='share'||this.plan.mode==='fraction') {
       if(this.shapes&&this.uncutWholes()){
         // A sandwich still whole: glow the cutting picture not used yet (or the first, after the round arrow).
@@ -385,6 +459,17 @@ class PetKitchen implements Game {
       const b=this.made[i]>wanted?this.undo:this.ingredients[i];this.glow.circle(b.x,b.y,65).stroke({width:8,color:swatch.yellow.line});
     }
   }
+  /** Level 13's glow: the plate with more after the second wrong tap; while serving, the next useful control. */
+  private drawCompareHint(){
+    const pair=this.pair!, ring=(b:{x:number;y:number},r=62)=>this.glow.circle(b.x,b.y,r).stroke({width:8,color:swatch.yellow.line});
+    if(this.asking){if(this.askWrong>=2)ring(this.plates[morePlate(pair)],84);return;}
+    if(!this.assisted)return;
+    const wanted=compareCut(pair,this.plan.cuts);
+    if(!this.split){ring(this.cuts[Math.max(0,this.cutKinds.findIndex(k=>k.parts===wanted))]);return;}
+    if(this.split!==wanted){ring(this.recut);return;}
+    const i=firstUnmet(pair,this.split,this.counts());
+    if(i<0)ring(this.serve);else ring(this.plates[i],84);
+  }
   private layoutPieces(animate=false){
     const v=this.view, offsets=this.plates.map(()=>0);
     const xs=spread(4,200,v.w-80,145), dx=this.shapes?36:32;
@@ -405,6 +490,7 @@ class PetKitchen implements Game {
   }
   private instruction(){
     if(this.tapDeal){void this.ctx.instruct('kitchen.deal');return;}
+    if(this.compare){void this.ctx.instruct(this.asking?'kitchen.compare-which':this.split?'kitchen.compare-share':'kitchen.compare');return;}
     if(this.shapes){void this.ctx.instruct(!this.cutWays.length?'kitchen.shapes-cut':this.uncutWholes()?'kitchen.shapes-other':'kitchen.shapes-share');return;}
     if(this.ctx.level===9) { void this.ctx.instruct(this.split?'kitchen.thirds-share':'kitchen.thirds-cut'); return; }
     if(this.ctx.level===SAME_LEVEL&&!this.split) { void this.ctx.instruct('kitchen.same'); return; }
@@ -428,16 +514,18 @@ class PetKitchen implements Game {
   this.view=v;
     this.background.clear().rect(0,0,v.w,v.h).fill(swatch.orange.light).roundRect(165,v.h-260,v.w-190,245,30).fill(cream);
     this.serve.position.set(v.w-75,65);this.undo.position.set(v.w-75,v.h-80);this.recut.position.set(205,65);
-    this.serve.visible=!this.tapDeal;this.undo.visible=this.plan.mode==='recipe'||this.plan.mode==='half-recipe';this.recut.visible=(this.plan.mode==='share'||this.plan.mode==='fraction')&&this.split>0;
+    this.serve.visible=!this.tapDeal&&!this.asking;this.undo.visible=this.plan.mode==='recipe'||this.plan.mode==='half-recipe';this.recut.visible=(this.plan.mode==='share'||this.plan.mode==='fraction'||this.compare)&&this.split>0&&!this.asking;
     const px=spread(this.plates.length,180,v.w-50,185);
-    this.plates.forEach((p,i)=>{p.position.set(px[i],Math.max(310,v.h*0.36));p.visible=this.split>0||this.shapes;});
+    this.plates.forEach((p,i)=>{p.position.set(px[i],Math.max(310,v.h*0.36));p.visible=this.split>0||this.shapes||this.compare;});
+    // Level 13's bubbles stand on the outer side of their own friends, clear of the other plate.
+    this.bubbles.forEach((b,i)=>b.position.set(px[i]+(i?110:-110),Math.max(310,v.h*0.36)-150));
     this.bubble.position.set(px[0]+125,Math.max(310,v.h*0.36)-150);
     for(const c of this.food.removeChildren()){this.ctx.tw.kill(c);c.destroy({children:true});}
     const uncut=this.uncutWholes();
-    if(uncut&&(this.plan.mode==='share'||this.plan.mode==='fraction'))for(let i=this.plan.wholes-uncut;i<this.plan.wholes;i++){
+    if(uncut&&(this.plan.mode==='share'||this.plan.mode==='fraction'||this.compare))for(let i=this.plan.wholes-uncut;i<this.plan.wholes;i++){
       const f=wholeOf(this.whole,this.ctx.level);onTap(f,()=>this.poke(f),{radius:90});this.food.addChild(f);
       // Level 14 keeps the plates in view, so its sandwiches sit between the plates and the counter, each at its own place.
-      if(this.shapes){f.scale.set(0.9);f.position.set(v.w/2+(i-(this.plan.wholes-1)/2)*240,this.wholesY(v));}
+      if(this.shapes||this.compare){f.scale.set(0.9);f.position.set(v.w/2+(i-(this.plan.wholes-1)/2)*240,this.wholesY(v));}
       else{f.scale.set(1.2);f.position.set(v.w/2+(i-(this.plan.wholes-1)/2)*240,v.h*0.4);}
     }
     const xs=spread(this.cuts.length,250,v.w-180,200);
@@ -467,6 +555,7 @@ class PetKitchen implements Game {
       const i=this.plan.mode==='half-recipe'?halfIngredientHint(this.base,this.made):ingredientHint(this.base,this.made);
       return i>=0?{tap:{on:this.ingredients[i]}}:{tap:{on:this.serve}};
     }
+    if(this.compare)return this.compareTouch();
     if(this.shapes&&this.uncutWholes()){
       // One sandwich each way: down first, then across.
       const way=nextWay(this.cutWays);const cut=this.cuts[this.cutKinds.findIndex(k=>k.way===way)];
@@ -483,10 +572,22 @@ class PetKitchen implements Game {
     if(loose)return {drag:{on:loose.node},to:{on:this.plates[nextPlate(this.counts())]}};
     return {tap:{on:this.serve}};
   }
+  /** Level 13's ghost finger: cut quarters, fill each plate to its ask, serve, then tap the plate with more. */
+  private compareTouch():TouchIntent|null{
+    const pair=this.pair!;
+    if(this.overlaying||this.pieces.some(p=>p.drag?.dragging))return null;
+    if(this.asking)return {tap:{on:this.plates[morePlate(pair)]}};
+    const wanted=compareCut(pair,this.plan.cuts);
+    if(!this.split){const cut=this.cuts[this.cutKinds.findIndex(k=>k.parts===wanted)];return cut?{tap:{on:cut}}:null;}
+    if(this.split!==wanted)return {tap:{on:this.recut}};
+    const counts=this.counts(), need=needs(pair,this.split), i=need.findIndex((n,j)=>counts[j]<n), loose=this.pieces.find(p=>p.plate<0);
+    if(i>=0&&loose)return {drag:{on:loose.node},to:{on:this.plates[i]}};
+    return {tap:{on:this.serve}};
+  }
   destroy(){this.clearPieces();}
 }
-/** Level 10 (tap dealing) is the lap band's only level and toddler's first; it steps to the cutting levels after two smooth rounds. Level 13 is not built, so no order lists it. */
-const LEVELS:BandLevels={lap:{min:10,max:10},toddler:{min:1,max:10,order:[10,1]},preschool:{min:1,max:11,order:[1,11,2,3,4]},prek:{min:3,max:14,order:[11,3,4,14,5,6]},school:{min:5,max:14,order:[14,5,6,7,8,9,12]}};
+/** Level 10 (tap dealing) is the lap band's only level and toddler's first; it steps to the cutting levels after two smooth rounds. */
+const LEVELS:BandLevels={lap:{min:10,max:10},toddler:{min:1,max:10,order:[10,1]},preschool:{min:1,max:11,order:[1,11,2,3,4]},prek:{min:3,max:14,order:[11,3,4,14,5,6]},school:{min:5,max:14,order:[14,5,6,7,8,9,12,13]}};
 export const petKitchen:GameModule={
   id:'pet-kitchen',name:'Pet Kitchen',titleLine:'game.pet-kitchen',region:'counting-cove',
   skills:['equal-shares','fractions','doubling'],bands:['lap','toddler','preschool','prek','school'],

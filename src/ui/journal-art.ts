@@ -14,6 +14,8 @@ import type { Action } from '../games/photo-safari/logic';
 import { seesawJournalPicture } from '../games/seesaw-balance';
 import type { BalanceObservation } from '../games/seesaw-balance/logic';
 import { meltJournalPicture } from '../games/melt-freeze/art';
+import { kitchenJournalPicture } from '../games/pet-kitchen/art';
+import type { KitchenDiscovery } from '../games/pet-kitchen/logic';
 import type { Substance } from '../games/melt-freeze/logic';
 import { thingArt } from '../games/sink-float/art';
 import type { Thing } from '../games/sink-float/logic';
@@ -32,6 +34,7 @@ export function entryPicture(entry: JournalEntry): Container {
     case 'rhythm-neighbors': return neighborsJournalPicture();
     case 'mail-carrier': return mailJournalPicture(entry.key as HelperId);
     case 'melt-freeze': return meltJournalPicture(entry.key as Substance | 'stays');
+    case 'pet-kitchen': return kitchenJournalPicture(entry.key as KitchenDiscovery);
   }
 }
 

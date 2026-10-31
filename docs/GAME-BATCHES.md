@@ -403,7 +403,9 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### pet-kitchen 3: Compare shares
 
-- **`pet-kitchen`, level 13 *Who has more?*, slice 7** (new interaction tier, the question after the serve: typecheck, rule tests over the fraction pairs, one play of 13 with one wrong "more", `fingerdemo` at 13): compare two shares; school `order [14, 5, 6, 7, 8, 9, 12, 13]`, and the three journal entries land here. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
+Built 2026-10-30, [PR #1032](https://github.com/rjdunlap/neo/pull/1032); [closeout](archive/COMPLETED-2026-10-09.md#pet-kitchen-batch-3-level-13-who-has-more-slice-7-2026-10-30). Scope retained for dependency references; this batch is no longer eligible for dispatch.
+
+- **`pet-kitchen`, level 13 *Who has more?*, slice 7 (built)** (new interaction tier, the question after the serve: typecheck, rule tests over the fraction pairs, one play of 13 with one wrong "more", `fingerdemo` at 13): compare two shares; school `order [14, 5, 6, 7, 8, 9, 12, 13]`, and the three journal entries land here. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
