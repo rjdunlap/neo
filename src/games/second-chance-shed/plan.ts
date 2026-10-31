@@ -110,9 +110,12 @@ export class PlanShed implements Game {
     const l = this.layoutNow = planLayout(this.view, this.round);
     this.moveCache = null;
     const row = l.row;
+    // Drawn about the row's centre so the cart rattles in place.
+    const cx = row.x + row.w / 2, cy = row.y + row.h;
+    this.plank.position.set(cx, cy);
     this.plank.clear()
-      .roundRect(row.x - 16, row.y + row.h - 4, row.w + 32, 24, 10).fill(wood.fill).stroke({ width: 5, color: wood.line });
-    for (const x of [row.x + 40, row.x + row.w - 40]) this.plank.circle(x, row.y + row.h + 28, 16).fill(0x2b2b3a).circle(x, row.y + row.h + 28, 6).fill(swatch.white.light);
+      .roundRect(-row.w / 2 - 16, -4, row.w + 32, 24, 10).fill(wood.fill).stroke({ width: 5, color: wood.line });
+    for (const x of [-row.w / 2 + 40, row.w / 2 - 40]) this.plank.circle(x, 28, 16).fill(0x2b2b3a).circle(x, 28, 6).fill(swatch.white.light);
     for (const [place, node] of this.places) {
       const c = centre(l.places[place]!);
       node.position.set(c.x, c.y);
@@ -137,12 +140,13 @@ export class PlanShed implements Game {
     const f = friendOf(s);
     if (f !== null) {
       const r = l.friends[f];
-      return { x: r.x + r.w / 2 + 34, y: r.y + r.h - 50 };
+      return { x: r.x + r.w / 2 + 20, y: r.y + r.h - 50 };
     }
+    // Every thing in a place stays grabbable (not only the top one), so Show me one and the ghost finger can always reach it.
     const here = this.spots.flatMap((t, k) => (t === s ? [k] : [])).sort((a, b) => this.things[a].stamp - this.things[b].stamp);
     const k = here.indexOf(i), n = here.length;
     const c = centre(l.places[s as Place]!);
-    return { x: c.x + (k - (n - 1) / 2) * 14, y: c.y + 24 - k * 12 };
+    return { x: c.x + (k - (n - 1) / 2) * 22, y: c.y + 24 - k * 12 };
   }
 
   private placeThings(animate: boolean) {
@@ -325,7 +329,8 @@ export class PlanShed implements Game {
       if (!this.alive) return;
     }
     for (const place of this.round.open) {
-      const here = this.spots.flatMap((s, i) => (s === place ? [i] : []));
+      // Every thing in a place stays grabbable (not only the top one), so Show me one and the ghost finger can always reach it.
+    const here = this.spots.flatMap((s, i) => (s === place ? [i] : []));
       for (const i of here) {
         if (!this.alive) return;
         await this.make(place, i);

@@ -69,7 +69,8 @@ async function shedPlanPlay() {
   assert.deepEqual(s.requests, ['pencils']);
   await ring();
   assert.deepEqual([(await state()).misses], [0], 'ringing with everything on the cart is free');
-  for (const id of s.items) await put(id, id === 'tin' ? 'remake' : await home(id));
+  for (const id of s.items) if (id !== 'tin') await put(id, await home(id));
+  await put('tin', 'remake');
   s = await state();
   assert.equal(s.spots[s.items.indexOf('tin')], 'remake');
   await ring();
