@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Lantern Lights deep dive (docs only)
+
+- [PR #1079](https://github.com/rjdunlap/neo/pull/1079), branch `claude/dive-lantern-lights`: [dive](deep-dives/lantern-lights.md). Three slices queued ([batches](GAME-BATCHES.md#lantern-lights-1-a-6-by-6-pond): a 6 by 6 pond at levels 7–8 with the portrait counts fix, named hints and Show me a short way, lily-pad ponds at level 9); the school opening is a queued definition and three-colour lanterns a later one; tracker, READY, backlog and ideas updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
+
 ## 2026-10-31 — Drift Cards levels 1–2 (oceans slice 6)
 
 - [PR #1078](https://github.com/rjdunlap/neo/pull/1078), branch `claude/drift-cards-1-2`: new game `drift-cards` in Bubble Beach (14 games), school levels 1–2; batch drift-cards 1.
@@ -86,12 +92,6 @@
 - [PR #1065](https://github.com/rjdunlap/neo/pull/1065), branch `claude/define-thought-bubbles`: [definition](definitions/thought-bubbles.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Story Grove, paging; what she wants, where he will look, how we know), batch plan [thought-bubbles 1](GAME-BATCHES.md#thought-bubbles-1-what-does-she-want-where-will-he-look-how-do-we-know), READY, backlog, study, packet and roadmap updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); the four person and device checks in the definition (the bubble read as "what he thinks", the window story fair after the away story, *show me how you know* as treasure or test, the reach at iPad size).
-
-## 2026-10-31 — Literature and meaning subject research (docs only)
-
-- [PR #1064](https://github.com/rjdunlap/neo/pull/1064), branch `claude/research-literature-meaning`: [study](deep-dives/subjects/literature-meaning.md) and [packet](deep-dives/subjects/RECOMMENDATIONS.md#literature-and-meaning-recommendations) (Thought Bubbles 1–3: what she wants, where he will look, how we know; a story-talk card, two-bubble stories and Who is telling? follow; folktale versions wait for a reviewer), tracker, backlog, READY, ideas, roadmap and device checks updated.
-- Ran: `git fetch origin --prune`, `scripts/overlap.sh` (no claim), `node scripts/check-links.mjs` and `git diff --check`. Sources: CCSS RL.K, RL.2, RL.3, RL.6 and the Kendeou et al. 2008 abstract opened; the rest from search summaries or recall, marked in the study.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the LM1 definition and three [person checks](DEVICE-CHECKS.md#thought-bubbles-literature-meaning-study-2026-10-31-proposed-nothing-built).
 
 ## Coverage summary
 

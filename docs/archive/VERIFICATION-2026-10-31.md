@@ -151,3 +151,9 @@
 - [PR #1063](https://github.com/rjdunlap/neo/pull/1063), branch `claude/define-orchard-rows-4-6`: [definition](../definitions/orchard-rows.md) (levels 4–6 on the built game; school; equal rows, every way, only one long row; the study's ladder changed at four points), batch plan [orchard-rows 1](../GAME-BATCHES.md#orchard-rows-1-equal-rows-every-way-only-one-long-row), READY, backlog, study, packet and roadmap updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-interaction tier); the study's four person checks (leftover saplings used or arrows pressed at random, "every way" as collection or test, "one long row" without the word *prime*, deal lines in device speech), opened at the build.
+
+## 2026-10-31 — Literature and meaning subject research (docs only)
+
+- [PR #1064](https://github.com/rjdunlap/neo/pull/1064), branch `claude/research-literature-meaning`: [study](../deep-dives/subjects/literature-meaning.md) and [packet](../deep-dives/subjects/RECOMMENDATIONS.md#literature-and-meaning-recommendations) (Thought Bubbles 1–3: what she wants, where he will look, how we know; a story-talk card, two-bubble stories and Who is telling? follow; folktale versions wait for a reviewer), tracker, backlog, READY, ideas, roadmap and device checks updated.
+- Ran: `git fetch origin --prune`, `scripts/overlap.sh` (no claim), `node scripts/check-links.mjs` and `git diff --check`. Sources: CCSS RL.K, RL.2, RL.3, RL.6 and the Kendeou et al. 2008 abstract opened; the rest from search summaries or recall, marked in the study.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the LM1 definition and three [person checks](../DEVICE-CHECKS.md#thought-bubbles-literature-meaning-study-2026-10-31-proposed-nothing-built).
