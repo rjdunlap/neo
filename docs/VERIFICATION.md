@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Orchard Rows 4–6 definition (number-structure NS1, docs only)
+
+- [PR #1063](https://github.com/rjdunlap/neo/pull/1063), branch `claude/define-orchard-rows-4-6`: [definition](definitions/orchard-rows.md) (levels 4–6 on the built game; school; equal rows, every way, only one long row; the study's ladder changed at four points), batch plan [orchard-rows 1](GAME-BATCHES.md#orchard-rows-1-equal-rows-every-way-only-one-long-row), READY, backlog, study, packet and roadmap updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-interaction tier); the study's four person checks (leftover saplings used or arrows pressed at random, "every way" as collection or test, "one long row" without the word *prime*, deal lines in device speech), opened at the build.
+
 ## 2026-10-31 — Shell Rows 1–3 definition (strategy-games SG1, docs only)
 
 - [PR #1062](https://github.com/rjdunlap/neo/pull/1062), branch `claude/define-shell-rows`: [definition](definitions/shell-rows.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Puzzle Peaks, paging; finish the row, stop the row, win first, with a show-me-why replay), batch plan [shell-rows 1](GAME-BATCHES.md#shell-rows-1-finish-the-row-stop-the-row-win-first), READY, backlog, study and packet updated.
@@ -85,12 +91,6 @@
 - [PR #1047](https://github.com/rjdunlap/neo/pull/1047), branch `claude/define-second-chance-shed-5-6`: [definition](definitions/second-chance-shed-5-6.md) (a friend's request, whole-plan check with the cart bell, the greedy-fails case at level 6), batch plan [second-chance-shed 2](GAME-BATCHES.md#second-chance-shed-2-someone-needs-it); Beach Day Pack-up weighed and kept as a proposed picnic set for levels 2–4.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-interaction tier) with its source check of the item fits; the person and device checks listed in the definition's check tier.
-
-## 2026-10-31 — Patchwork Conservatory definition (genetics G7, docs only)
-
-- [PR #1046](https://github.com/rjdunlap/neo/pull/1046), branch `claude/define-patchwork-conservatory`: [definition](definitions/patchwork-conservatory.md) (Sprout Shuffle levels 7–8, two-locus guarantee brief), two batch plans in [GAME-BATCHES](GAME-BATCHES.md#sprout-shuffle-1-which-pairs-always-make-spotted) (Hidden Sprouts level 4 and Patchwork 7–8).
-- Ran: `node scripts/check-links.mjs` and `git diff --check`; source check against OpenStax Biology 2e 12.3 (opened 2026-10-31).
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the builds (new-levels tier for level 4, new-interaction tier for 7–8, after level 6); the device and person checks listed in the definition (tile marks by ear and eye, "always" across two lenses, the trap as discovery).
 
 ## Coverage summary
 

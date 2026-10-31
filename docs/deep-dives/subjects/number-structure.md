@@ -106,7 +106,7 @@ The scene is the built orchard. A basket of saplings sits beside it; above the b
 | **5 · Every way** · school | 12 saplings and a page of empty shape frames, one per factor pair (1 and 12, 2 and 6, 3 and 4) | Which row counts she has not tried yet | Plant with saplings left over is one miss, as at 4. A shape already found replays its frame's sparkle and is free ("We have that one. Turn it and it's the same orchard"). After two misses the row counts still missing ring (one hint). Done when every frame is filled | Frames are the factor pairs; one row and N rows are the same pair as turned; frames are never more than four (N to 24) |
 | **6 · Only one long row** · school, "about 9 and up" | Three baskets (for example 12, 13 and 15); try any of them | Which basket can only be planted in one long row | Trying is free and every arrangement is shown. Tapping a basket that makes another shape: the pet plants that shape beside it, "This one makes rows of 3", one miss; two misses glow the one-row basket (one hint). Right: "13 only makes one long row. Numbers like that are called prime" | Exactly one basket in each set is prime; the others each have at least one equal shape; primes from 5 to 23 |
 
-Levels 4–6 are the first slice. **Cost:** M. A row-count control, the equal deal with its leftover, the shape page and the prime basket set; the bot reads the rule in `logic.ts` (a divisor at 4, the next missing pair at 5, the prime basket at 6). No new save field; nothing kept.
+The [definition](../../definitions/orchard-rows.md#where-the-studys-text-changes) changes this ladder at four points (a picture orchard rather than 100-unit rows, a row-count range per level, level 6 primes 13–23 within baskets of 12 to 24, and a separate try versus answer at level 6); it binds the build. Levels 4–6 are the first slice. **Cost:** M. A row-count control, the equal deal with its leftover, the shape page and the prime basket set; the bot reads the rule in `logic.ts` (a divisor at 4, the next missing pair at 5, the prime basket at 6). No new save field; nothing kept.
 
 ## Experience and presentation
 
@@ -133,7 +133,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 ## Build slices, in order
 
-1. **NS1 · Define Orchard Rows 4–6** (docs only): the row-count control and its layout at 100 units, the equal deal with its leftover, the basket pools and their rule tests, the shape page, the prime basket sets, accounting, how-to steps, voice lines and the bot.
+1. **NS1 · Define Orchard Rows 4–6** (docs only; **defined** 2026-10-31, [definition](../../definitions/orchard-rows.md), [PR #1063](https://github.com/rjdunlap/neo/pull/1063); build batch `orchard-rows 1` next): the row-count control and its layout at 100 units, the equal deal with its leftover, the basket pools and their rule tests, the shape page, the prime basket sets, accounting, how-to steps, voice lines and the bot.
 2. **Build Orchard Rows 4–6** (new-interaction tier).
 3. **NS4 · Grouping card** (grown-ups' page, plain HTML).
 4. **NS2 Lunch boxes** and **NS3 Two frogs**, each handed to its game's dive as a candidate.
@@ -142,3 +142,5 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 ## What was built and what ran
 
 Nothing built. The research session ran `git fetch origin --prune`, `scripts/overlap.sh` for the queue's earlier lines, and a search of open and merged pull requests and remote branches for this subject (no claim), opened the sources marked **opened** above (CCSS 3.OA, 4.OA, 6.NS, 2.NBT and 5.NBT; NRICH's *Factors and Multiples Game* notes; the Melbourne decimals incidence table), and used search summaries for the rest (Squire and Bryant through their citers, England's Year 5 programme through secondary sites, the Factor Game and Prime Climb). The Downton 2008 MERGA PDF did not extract; the NAEP bus item and Silver, Shapiro and Deutsch (1993) are recalled and marked. At closeout: `node scripts/check-links.mjs` and `git diff --check`. No code changed.
+
+The definition session ([PR #1063](https://github.com/rjdunlap/neo/pull/1063), docs only) ran `node scripts/check-links.mjs` and `git diff --check`; nothing was built or tested in code.
