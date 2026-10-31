@@ -108,3 +108,9 @@
 - `game-reviewer` in a fresh context; fixed the level-3 push arrows (`eventMode` static), Help on a both-walled arch counting a hint, the invisible level-2 frame press and the unspoken rule line. Title clip rendered with `scripts/voice-clips/render.mjs`.
 - Not run: `world`, `picnic` and couch suites, the production offline check, an iPad, device speech, a child. Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md#water-road-levels-13).
 - Finished by a later run (2026-10-28 UTC): the stalled closeout applied, `origin/main` `198f26f9` (Keep House) merged at `dfb3b3a8` with counts re-derived (151 games); `npm run typecheck`, full `npm test` 3,702 passed (279 files), `npm run build`, `check-links`, and `BROWSER_SUITE=waterroad` at `GAME_URL=http://localhost:5612` passed again on the merged tree.
+
+## 2026-10-27 — Paint Mixer 1–4 definition (RP1, docs only)
+
+- [PR #1024](https://github.com/rjdunlap/neo/pull/1024), branch `claude/define-paint-mixer`: [definition](../definitions/paint-mixer.md), two batches in [GAME-BATCHES](../GAME-BATCHES.md#paint-mixer-1-copy-the-row-and-twice-as-much) and the study's measured-colour note; READY, backlog, roadmap, ideas and packet point to it. Nothing built, no code changed.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`, run by the session after this closeout.
+- Not run: typecheck, tests, build, browser suites (docs only). Open: the builds run the new-game and new-interaction tiers; device checks are named in the definition.

@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-30 — Critter Daily reference review (docs only)
+
+- Branch `claude/critter-daily-research-d94b87`: [docs/CRITTER-DAILY.md](CRITTER-DAILY.md), a review of critterdaily.com's six animal-led puzzles and how their animals are drawn and animated, with six proposals (P1–P6), plus a pointer in [IDEAS](IDEAS.md#critter-daily-review-2026-10-30).
+- Seen: the home page and one Burrow practice round in the browser pane; every game's page, stylesheet and script read; a local pose sheet rendered in the session scratchpad (not committed).
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, tests, build, browser suites (docs only).
+
 ## 2026-10-30 — Caravan Days levels 4–5 (swap at the stop and worth more far away, CS3)
 
 - [PR #1037](https://github.com/rjdunlap/neo/pull/1037), branch `claude/caravan-days-4-5`, build commit `d2a8e4dd`: levels 4 and 5 for school (range 3–5), batch caravan-days 2 ([build note](archive/COMPLETED-2026-10-09.md#caravan-days-levels-45-china-india-and-the-silk-road-cs3-2026-10-30)).
@@ -92,12 +98,6 @@
 - `BROWSER_SUITE=expansion EXPANSION_ONLY=size SIZE_LEVELS=11 SIZE_PORTRAIT=1`: sky tap free, two wrong tries = 2 misses and 1 hint, round finished with a sticker, landscape and portrait screenshots. `BROWSER_SUITE=fingerdemo FINGER_ONLY=size-parade FINGER_LEVELS=11` passed (8.3 s). A probe captured just-right and too-big poses for each prop (reviewed by eye). A bug found and fixed in the play: fit mode fell into the drag branch of `deal()`, so friends took no taps.
 - `game-reviewer` found no defects. Not run: other Size Parade levels (unchanged interactions), couch suites, the production offline check, an iPad, a child.
 - Open: [DEVICE-CHECKS](DEVICE-CHECKS.md).
-
-## 2026-10-27 — Paint Mixer 1–4 definition (RP1, docs only)
-
-- [PR #1024](https://github.com/rjdunlap/neo/pull/1024), branch `claude/define-paint-mixer`: [definition](definitions/paint-mixer.md), two batches in [GAME-BATCHES](GAME-BATCHES.md#paint-mixer-1-copy-the-row-and-twice-as-much) and the study's measured-colour note; READY, backlog, roadmap, ideas and packet point to it. Nothing built, no code changed.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`, run by the session after this closeout.
-- Not run: typecheck, tests, build, browser suites (docs only). Open: the builds run the new-game and new-interaction tiers; device checks are named in the definition.
 
 ## Coverage summary
 
