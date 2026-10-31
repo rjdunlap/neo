@@ -150,7 +150,8 @@ describe('plans', () => {
     expect(planFor(1).id).toBe('keystone');
     expect(planFor(2).id).toBe('pairs');
     expect(planFor(3).id).toBe('buttress');
-    expect(planFor(9).level).toBe(3);
+    expect(planFor(4).id).toBe('downhill');
+    expect(planFor(9).level).toBe(5);
   });
 });
 
