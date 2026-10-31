@@ -1421,7 +1421,6 @@ export const SCRIPT = {
   'shed.filled.seedling': ['My seedling has a pot. Thank you!'],
   'shed.bell.cart': ['Find a place for everything first.'],
   'shed.made.buttons': ['The tin keeps my buttons safe!'],
-  'shed.plan-ok': ['Ding ding! The plan works!'],
   'shed.ring-now': ['Your plan works. Ring the bell!'],
   'game.who-am-i': ['Who am I?'],
   'whoami.instruct-fit': ['Who am I? Listen to my clue, then tap the friend it fits.'],

@@ -122,7 +122,7 @@ export class PlanShed implements Game {
       f.node.position.set(r.x + r.w / 2, r.y);
       f.node.hitArea = new Rectangle(-r.w / 2, 0, r.w, r.h);
       f.bubble.position.set(0, 46);
-      f.critter.position.set(-18, r.h - 6);
+      f.critter.position.set(-30, r.h - 6);
     });
     const bell = centre(l.bell);
     this.bell.position.set(bell.x, bell.y);
@@ -137,7 +137,7 @@ export class PlanShed implements Game {
     const f = friendOf(s);
     if (f !== null) {
       const r = l.friends[f];
-      return { x: r.x + r.w / 2 + 22, y: r.y + r.h - 50 };
+      return { x: r.x + r.w / 2 + 34, y: r.y + r.h - 50 };
     }
     const here = this.spots.flatMap((t, k) => (t === s ? [k] : [])).sort((a, b) => this.things[a].stamp - this.things[b].stamp);
     const k = here.indexOf(i), n = here.length;
@@ -319,7 +319,11 @@ export class PlanShed implements Game {
     this.glow.clear();
     for (const t of this.things) t.drag.enabled = false;
     this.ctx.pet.cheer();
-    await this.ctx.say('shed.plan-ok');
+    for (const step of [5, 7, 9]) {
+      sfx.bell(step, 0.3);
+      await this.ctx.tw.wait(0.14);
+      if (!this.alive) return;
+    }
     for (const place of this.round.open) {
       const here = this.spots.flatMap((s, i) => (s === place ? [i] : []));
       for (const i of here) {
