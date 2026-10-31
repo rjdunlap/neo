@@ -33,6 +33,12 @@ Ferry Jam dive (2026-10-31), one call that waits on you; the build slices that d
 | --- | --- | --- |
 | **A preschool opening, "Push the boat out"?** | Adds the `preschool` band to a pre-K and school game with a one-slide 3×3 level; otherwise Ferry Jam stays at pre-K and up. Recommended answer: not yet; build level 9 (the one-slide pre-K entry) first and decide after a person sees a three-year-old try it | [Ferry Jam dive](deep-dives/ferry-jam.md#decisions-for-the-developer) |
 
+Habitat Helpers dive (2026-10-31), one call that waits on you; the build slices that do not need it go ahead ([the dive](deep-dives/habitat-helpers.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **Habitat Helpers toddler opening, level 10 *Bring Bunny*?** | Adds the `toddler` band to a preschool–school game. Recommended: wait until she plays level 1 at preschool | [Habitat Helpers dive](deep-dives/habitat-helpers.md#decisions-for-the-developer) |
+
 ## Adding a question
 
 Add a row here only for a call the developer alone can make (money, accounts, the child's data, a family reviewer, an irreversible step), with a recommended answer. Anything else: decide it by the [standing rules](archive/DECISIONS-2026-10-23.md#standing-rules), record it in its source, and go on. Checks that need a person or a device go in [DEVICE-CHECKS](DEVICE-CHECKS.md).
