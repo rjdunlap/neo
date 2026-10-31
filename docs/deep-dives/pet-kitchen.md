@@ -145,4 +145,4 @@ Slice 1 (support truth, 2026-10-21, [PR #716](https://github.com/rjdunlap/neo/pu
 
 Slice 6 (level 14, 2026-10-26, [PR #998](https://github.com/rjdunlap/neo/pull/998)) is built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#pet-kitchen-batch-2-part-b-different-shape-same-share-slice-6-2026-10-26), the checks in [VERIFICATION](../archive/VERIFICATION-2026-10-26.md#2026-10-26--pet-kitchen-14-different-shape-same-share).
 
-Slice 7 (level 13 and the three journal entries, 2026-10-30, [PR #1032](https://github.com/rjdunlap/neo/pull/1032)) is built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#pet-kitchen-batch-3-level-13-who-has-more-slice-7-2026-10-30), the checks in [VERIFICATION](../VERIFICATION.md#2026-10-30--pet-kitchen-13-who-has-more).
+Slice 7 (level 13 and the three journal entries, 2026-10-30, [PR #1032](https://github.com/rjdunlap/neo/pull/1032)) is built; the build note is in the [archive](../archive/COMPLETED-2026-10-09.md#pet-kitchen-batch-3-level-13-who-has-more-slice-7-2026-10-30), the checks in [VERIFICATION](../archive/VERIFICATION-2026-10-30.md#2026-10-30--pet-kitchen-13-who-has-more).
