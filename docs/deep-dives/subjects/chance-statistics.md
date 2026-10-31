@@ -146,7 +146,7 @@ Her creatures are the sections: whichever she owns can stand on the wheel, and t
 
 ## Build slices, in order
 
-1. **CS1 definition** (docs only): Spinner Fair levels 1–5 in `docs/deep-dives/definitions/spinner-fair.md` with the accounting rule, seeds, voice lines and rule tests above; decisions 1–3 answered or defaulted. Links and `git diff --check`.
+1. **CS1 definition** (docs only; **defined 2026-10-31**, [definition](../../definitions/spinner-fair.md), PR #1036): Spinner Fair levels 1–5 in `docs/definitions/spinner-fair.md` with the accounting rule, seeds, voice lines and rule tests above; decisions 1–3 answered or defaulted. Links and `git diff --check`.
 2. **CS1 build**: the new-game tier (typecheck, unit tests, one scripted play through a filter at the first and last level with one wrong answer and one hint, one portrait screenshot, `fingerdemo`); the bot answers from the picture, so it finishes every level without depending on a spin.
 3. **CS2 definition and build**: levels 6–8 (new levels on an existing interaction: typecheck, rule tests, one browser play of the top level and `fingerdemo` at it; level 8's levelling drag is a new interaction and takes the new-interaction tier).
 4. **CS3**: levels 9–10 after decisions 4 and 6.
@@ -154,4 +154,4 @@ Her creatures are the sections: whichever she owns can stand on the wheel, and t
 
 ## What was built and what ran
 
-Nothing built. Docs only; links checked with `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, unit tests, build, browser suites and `fingerdemo` (no code changed). Not established: any child's, tween's, parent's or educator's response; no reference game or simulation was played; the Nuffield summary and full reports and the Denison and Xu papers were not read beyond their summaries.
+Nothing built. Slice 1 (the CS1 definition, [Spinner Fair 1–5](../../definitions/spinner-fair.md)) landed 2026-10-31, docs only; the builds are batches spinner-fair 1 and 2. Docs only; links checked with `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, unit tests, build, browser suites and `fingerdemo` (no code changed). Not established: any child's, tween's, parent's or educator's response; no reference game or simulation was played; the Nuffield summary and full reports and the Denison and Xu papers were not read beyond their summaries.
