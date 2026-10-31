@@ -237,6 +237,7 @@ export class Demo {
       untrack: (o) => void this.tracked.delete(o),
       instruct: talk,
       say: talk,
+      sayIn: talk,
       finish: () => {
         this.done = true;
       },

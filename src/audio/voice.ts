@@ -5,6 +5,15 @@ import { chooseVoice, voiceLabel, voiceQuality, type VoiceQuality } from './voic
 
 export type LineVars = Record<string, string | number>;
 
+/**
+ * A device-speech voice other than the pet's: a puppet's, say. `pitch` and `rate` are the Web Speech ranges the
+ * islands' voices stay intelligible in (about 0.5–2 and 0.6–1.3); `volume` scales the app's voice volume (1 by default).
+ */
+export interface VoicePreset { pitch: number; rate: number; volume?: number }
+
+/** The pet's own device voice, so a preset can keep clear of it (`src/games/puppet-stage/logic.ts` tests the margin). */
+export const PET_VOICE: VoicePreset = { pitch: 1.15, rate: 0.95 };
+
 /** Set `VITE_SPEECH=off` in an untracked `.env.local` to silence speech on that machine whatever the setting says; deployed builds never see it. */
 const envMuted = import.meta.env.VITE_SPEECH === 'off';
 const hasSpeech = typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -56,6 +65,18 @@ class Voice {
 
   say(id: LineId, vars?: LineVars): Promise<void> {
     return this.speak(this.line(id, vars));
+  }
+
+  /**
+   * Speaks a line in another voice: always the device's speech with the preset, never a rendered clip (the clips are the
+   * pet's single voice). Keeps the muted-environment pacing, the turn counter, ducking and the no-`end` timeout of `say`.
+   */
+  sayIn(id: LineId, preset: VoicePreset, vars?: LineVars): Promise<void> {
+    const text = this.line(id, vars);
+    if (envMuted || !this.enabled) return new Promise((resolve) => window.setTimeout(resolve, 600 + text.length * 45));
+    this.cutClip();
+    this.turn++;
+    return this.device(text, preset);
   }
 
   speak(text: string): Promise<void> {
@@ -145,17 +166,17 @@ class Voice {
     }
   }
 
-  /** The device's built-in speech. */
-  private device(text: string): Promise<void> {
+  /** The device's built-in speech, in the pet's voice unless a preset says otherwise. */
+  private device(text: string, preset: VoicePreset = PET_VOICE): Promise<void> {
     if (!hasSpeech) return Promise.resolve();
     speechSynthesis.cancel();
     if (!this.chosen) this.pickVoice();
     return new Promise((resolve) => {
       const u = new SpeechSynthesisUtterance(text);
       if (this.chosen) u.voice = this.chosen;
-      u.rate = 0.95;
-      u.pitch = 1.15;
-      u.volume = Math.min(1, audio.getVolume() * 1.1);
+      u.rate = preset.rate;
+      u.pitch = preset.pitch;
+      u.volume = Math.min(1, audio.getVolume() * 1.1 * (preset.volume ?? 1));
       let done = false;
       const finish = () => {
         if (done) return;

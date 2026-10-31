@@ -128,6 +128,7 @@ import { pileMatch } from './pile-match';
 import { numberTrails } from './number-trails';
 import { fruitSums } from './fruit-sums';
 import { paintMixer } from './paint-mixer';
+import { puppetStage } from './puppet-stage';
 import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
 import { whoAmI } from './who-am-i';
@@ -267,6 +268,7 @@ export const GAMES: GameModule[] = [
   numberTrails,
   fruitSums,
   paintMixer,
+  puppetStage,
   readDo,
   lookItUp,
   whoAmI,

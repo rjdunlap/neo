@@ -201,6 +201,7 @@ export class GameScene extends Scene {
         return this.whileHere(voice.say(id, vars));
       },
       say: (id, vars) => this.whileHere(voice.say(id, vars)),
+      sayIn: (id, preset, vars) => this.whileHere(voice.sayIn(id, preset, vars)),
       finish: (result) => this.finish(result),
     };
     return (this.game = this.mod.create(ctx));
