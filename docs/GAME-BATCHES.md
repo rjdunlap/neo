@@ -549,7 +549,7 @@ Built 2026-10-27, [PR #1019](https://github.com/rjdunlap/neo/pull/1019); [defini
 
 ### river-tablets 2: A ten-mark and check the delivery
 
-Ready (defined 2026-10-30, [PR #1030](https://github.com/rjdunlap/neo/pull/1030)). One worker, branch and PR for both levels.
+Ready (defined 2026-10-30, [PR #1030](https://github.com/rjdunlap/neo/pull/1030)). One worker, branch and PR for both levels. **Claimed 2026-10-31** on branch `claude/river-tablets-4-5`.
 
 - **`river-tablets`, levels 4–5 (the build of study slice AR3, first part)** (two new interactions on an existing game; school only, `school: { min: 3, max: 5 }` for this batch, appended after `rows` without renumbering): hand in a clay tablet written with a big ten-mark and small ones-marks for crates and loose baskets, any equal longer reading accepted and then shown the shorter way, the yard count and tablet reading free (level 4); say whether a cart is short, right or extra against a tablet written at the farm, then by how many (level 5). Marks are invented island signs; nothing is paid. Files: `src/games/river-tablets/` (logic, art, scene, rule tests), voice lines `rt.*`, the how-to card, the `rivertablets` browser case. Withdraw clause: if level 4 plays as Lasso Loops with a stamp, it becomes a Lasso Loops mode and level 5 still stands. [Definition](definitions/river-tablets.md#levels-46-ar3-a-ten-mark-check-the-delivery-two-tablets-disagree), [study build slices](deep-dives/subjects/ancient-river-civilizations.md#build-slices-in-order)
 
