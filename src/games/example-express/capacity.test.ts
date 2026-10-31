@@ -3,10 +3,10 @@ import {GAMES} from '../registry';
 import {BANDS} from '../../progress/bands';
 import {computeView} from '../../engine/view';
 import {LANDS,visibleIn,olderIn,landPages,landLayout,layoutSpots,spotRect,overlaps,petCorner,landButtons} from '../../content/lands';
-it('fits the actual 21-entry Tinker Lab, every band, side, page and safe view without shrinking',()=>{
+it('fits the actual 22-entry Tinker Lab, every band, side, page and safe view without shrinking',()=>{
  const land=LANDS.find(l=>l.id==='tinker-lab')!;
  const games=GAMES;expect(GAMES.find(g=>g.id==='example-express')?.bands).toEqual(['school']);
- expect(land.games.filter(id=>id==='example-express')).toHaveLength(1);expect(land.games).toHaveLength(21);
+ expect(land.games.filter(id=>id==='example-express')).toHaveLength(1);expect(land.games).toHaveLength(22);
  for(const view of [computeView(1024,768),computeView(768,1024),computeView(1024,768,{top:20,bottom:20,left:30,right:30}),computeView(768,1024,{top:24,bottom:21,left:0,right:0})])for(const {id:band} of BANDS){
   const mine=visibleIn(land,band,games),older=olderIn(land,band,games);
   for(const side of [mine,older]){const pages=landPages(side,older.length>0);for(const [p,page] of pages.entries()){
