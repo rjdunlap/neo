@@ -136,7 +136,7 @@ function jobPicture(job: JobId): Container {
 }
 
 /** The magnifier's close-up of one part. */
-function partArt(tool: ToolId, part: ToolPart, colorName: keyof typeof swatch): Container {
+function partArt(tool: ToolId, part: ToolPart, colorName: keyof typeof swatch, job: JobId): Container {
   const c = new Container();
   const sw = swatch[colorName];
   const g = new Graphics();
@@ -168,7 +168,8 @@ function partArt(tool: ToolId, part: ToolPart, colorName: keyof typeof swatch): 
     // The very low edge, with an acorn rolling off it.
     g.roundRect(-115, 10, 230, 60, 8).fill(sw.light).stroke({ width: 6, color: sw.line });
     g.roundRect(-115, 54, 230, 22, 6).fill(tone(sw.fill, 0.8)).stroke({ width: 5, color: sw.line });
-    g.ellipse(70, 0, 20, 23).fill(0xb7773e).stroke({ width: 4, color: 0x7a4a22 }).ellipse(70, -19, 23, 12).fill(0x7a4a22);
+    if (job === 'water') g.ellipse(-10, 8, 90, 10).fill(swatch.blue.fill).poly([96, 10, 120, 30, 112, 60, 100, 34]).fill(swatch.blue.fill).circle(118, 78, 8).fill(swatch.blue.fill);
+    else g.ellipse(70, 0, 20, 23).fill(0xb7773e).stroke({ width: 4, color: 0x7a4a22 }).ellipse(70, -19, 23, 12).fill(0x7a4a22);
     g.moveTo(20, -40).lineTo(90, -40).stroke({ width: 6, color: ink, cap: 'round' }).poly([84, -50, 102, -40, 84, -30]).fill(ink);
   } else if (part.has) {
     // Tight: solid wood, or staves pressed together by a hoop.
@@ -512,7 +513,7 @@ export class AtticJobs implements Game {
 
   private openLens(tool: ToolId) {
     this.lens.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.lens.addChild(partArt(tool, decidingPart(tool, this.state.job), this.round.colors[tool]));
+    this.lens.addChild(partArt(tool, decidingPart(tool, this.state.job), this.round.colors[tool], this.state.job));
     this.lens.visible = true;
     this.lens.scale.set(0.6);
     void this.ctx.tw.to(this.lens.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
