@@ -99,6 +99,10 @@ class PuppetStage implements Game {
     if (this.plan.level === 1) {
       onTap(this.floorSurface, (e) => this.touchFloor(e));
       this.floorSurface.on('globalpointermove', (e: FederatedPointerEvent) => this.follow(e));
+      // The ghost finger lifts on the floor itself, never on the window; a real finger may lift on either (release is idempotent).
+      const lift = (e: FederatedPointerEvent) => this.release(e.pointerId);
+      this.floorSurface.on('pointerup', lift);
+      this.floorSurface.on('pointerupoutside', lift);
       window.addEventListener('pointerup', this.onWindowUp);
       window.addEventListener('pointercancel', this.onWindowUp);
     } else this.floorSurface.eventMode = 'none';
@@ -553,9 +557,16 @@ class PuppetStage implements Game {
         return { tap: { on: this.floorSurface, x, y: l.floorTouch.y }, pause: 0.9 };
       }
       if (!this.dragged) {
-        const p = this.standing[this.standing.length - 1];
-        const node = this.puppetNodes.get(p)!;
-        const to = node.x + 120 <= l.stand.max ? node.x + 120 : node.x - 120;
+        // A hand's width whichever way and whichever puppet really moves it: a puppet blocked by its neighbour or the
+        // stand's edge would land back where it was, which counts as a tap and never as the drag.
+        let node = this.puppetNodes.get(this.standing[0])!, to = node.x, moved = -1;
+        for (const p of this.standing) {
+          const n = this.puppetNodes.get(p)!;
+          for (const d of [120, -120]) {
+            const lands = standAt(n.x + d, this.othersX(p), l.stand);
+            if (Math.abs(lands - n.x) > moved) { node = n; to = lands; moved = Math.abs(lands - n.x); }
+          }
+        }
         return { drag: { on: node, x: 0, y: -20 }, to: { on: this.ctx.stage, x: to, y: l.stage.floor - 20 }, lift: 0, pause: 0.8 };
       }
       return this.bowShown ? { tap: { on: this.bowNode }, pause: 0.6 } : null;

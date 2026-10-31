@@ -265,7 +265,7 @@ export function layout(level: number, view: { w: number; h: number }): Layout {
     } else if (portrait) {
       const y = floor + 20 + BUBBLE / 2;
       bubbles = WAYS.map((_, i) => box(cx + (i - 1) * (BUBBLE + 15), y, BUBBLE, BUBBLE));
-      seats = seats.map((_, i) => ({ x: cx + (i - 1) * 110, y: y + BUBBLE / 2 + 55 }));
+      seats = seats.map((_, i) => ({ x: cx + (i - 1) * 110, y: y + BUBBLE / 2 + 100 })); // the heads clear the bubbles
     } else {
       // A short landscape (a phone): the row sits between the guide and Bow, beneath the slot.
       const step = BUBBLE + 10;
