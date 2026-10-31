@@ -673,3 +673,11 @@ Performed on the built game (levels 1–3, PR #1028; browser play passed, nothin
 - [ ] With a one-year-old, watch her reaction to a puppet rising where she touched and following her finger.
 - [ ] With a three-year-old, check whether she picks the slow low voice for "the sleepy way".
 - [ ] In portrait, check that the 140-unit puppets and the floor's touch surface are comfortable for a small hand.
+
+## Caravan Days levels 4–5 (CS3, 2026-10-30)
+
+Performed on the built levels, which are not yet built ([definition](definitions/caravan-days.md#levels-45-check-tier-for-the-build)).
+
+- [ ] With a school child, check whether she reads the next stop's bubble or the city's when choosing what to swap.
+- [ ] Check whether the reversal at level 5 (the better load flips between the far city and the near oasis) is noticed or played as two separate guesses.
+- [ ] On an iPad, check device speech for the good and shell slots.
