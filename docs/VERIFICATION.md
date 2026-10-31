@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Shell Rows 1–3 definition (strategy-games SG1, docs only)
+
+- [PR #1062](https://github.com/rjdunlap/neo/pull/1062), branch `claude/define-shell-rows`: [definition](definitions/shell-rows.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Puzzle Peaks, paging; finish the row, stop the row, win first, with a show-me-why replay), batch plan [shell-rows 1](GAME-BATCHES.md#shell-rows-1-finish-the-row-stop-the-row-win-first), READY, backlog, study and packet updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`; a throwaway enumeration script counted the pool classes (39, 69 and 81 for levels 1–3).
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); the study's person checks (does a five-year-old look at the pet's pebbles at level 2, does the replay read as a lesson, device speech for "three in a row").
+
 ## 2026-10-31 — Notice Board 1–3 definition (media-literacy ML1, docs only)
 
 - [PR #1061](https://github.com/rjdunlap/neo/pull/1061), branch `claude/define-notice-board`: [definition](definitions/notice-board.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Cozy Village, fallback Tinker Lab; match the stamp to the maker, tap the friend who saw it, to tell or to sell), batch plan [notice-board 1](GAME-BATCHES.md#notice-board-1-who-made-it-who-saw-it-to-tell-or-to-sell), READY, backlog, study and packet updated.
@@ -85,14 +91,6 @@
 - [PR #1046](https://github.com/rjdunlap/neo/pull/1046), branch `claude/define-patchwork-conservatory`: [definition](definitions/patchwork-conservatory.md) (Sprout Shuffle levels 7–8, two-locus guarantee brief), two batch plans in [GAME-BATCHES](GAME-BATCHES.md#sprout-shuffle-1-which-pairs-always-make-spotted) (Hidden Sprouts level 4 and Patchwork 7–8).
 - Ran: `node scripts/check-links.mjs` and `git diff --check`; source check against OpenStax Biology 2e 12.3 (opened 2026-10-31).
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the builds (new-levels tier for level 4, new-interaction tier for 7–8, after level 6); the device and person checks listed in the definition (tile marks by ear and eye, "always" across two lenses, the trap as discovery).
-
-## 2026-10-31 — Attic Finds levels 5–6 (Same job and right for the job, H4)
-
-- [PR #1045](https://github.com/rjdunlap/neo/pull/1045), branch `claude/attic-finds-5-6`, tested at `c862d756` on base `fdf4cfa3`: level 5 *Same job* (pre-K, school) and level 6 *Right for the job* (school) from the [definition](definitions/same-job.md): free tries, a three-slot cart, Check (failing thing one miss, left-out thing not a miss, hint once per job).
-- Ran: `npm run typecheck`; full `npm test` 283 files / 3,863 tests (attic-finds rule tests 41, new block: rule purity, sets, context, all 8 subsets per job for Check, 500 seeds per level, hints once per job, bands, layout at four views); `npm run build`.
-- Ran: `BROWSER_SUITE=atticjobs` on `http://localhost:5976`: level 5 free failing try, failing Check (one miss), partial Check (one more), done; level 6 requested hint on water counted once; portrait screenshot. `fingerdemo FINGER_ONLY=attic-finds FINGER_LEVELS=5,6 FINGER_BAND=school` clean (30.2 s, 38.2 s).
-- `game-reviewer` findings fixed (relayout deferred until animations end, Start again cancels old animations, pointer guards, try no longer blocks input during speech). Not run: a browser probe of resize or Start again mid-animation (code review only), pre-K level 5 browser play (same screen), offline check.
-- Open in [DEVICE-CHECKS](DEVICE-CHECKS.md): the hoop's missing floor read before or after trying, "every one" understood or needs one-more, the water drip at iPad size, device speech of the 27 new lines.
 
 ## Coverage summary
 
