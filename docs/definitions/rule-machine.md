@@ -1,0 +1,113 @@
+# Rule Machine, levels 1–4 (definition)
+
+Defined 2026-10-31 as slice 1 (AB1) of the [algebra and balance study](../deep-dives/subjects/algebra-balance.md#build-slices-in-order) ([packet row](../deep-dives/subjects/RECOMMENDATIONS.md#algebra-and-balance-recommendations)), [PR #1039](https://github.com/rjdunlap/neo/pull/1039). The study's decisions were taken 2026-10-23 on the developer's delegation ([study](../deep-dives/subjects/algebra-balance.md#decisions-for-the-developer)): a new game rather than Pattern Train's top levels; Puzzle Peaks if `landLayout` passes, else Tinker Lab, else Counting Cove; a first wrong prediction on a new rule is never a miss; the wording and the equal-sign reading ship after the building session's source check; the hat joins the pet's wearables (a rework hook, not part of these levels). Levels 5–6 (AB2) are their own definition and build; 7–8 (AB3) wait on the band decision and a mathematics educator's read. Two build batches follow ([batch plans](../GAME-BATCHES.md#rule-machine-1-the-hat-machine-and-one-more-goes-in)).
+
+**Fun action and purpose:** feed a creature or a car into a big chugging machine and watch what comes out of the chute; the pair is written into a table. Then say what will come out *before* it does, name the machine's rule from a shelf of three cards, and, with the machine covered, choose which cars to feed so the table tells the cards apart. Learning goal: *a rule does the same thing to whatever goes in; the table of in and out is the record, and the record, not a guess, tells you the rule.* No island game shows a rule acting on an input: Pattern Train asks what comes next in a line, Seesaw Balance what keeps two trays level, Secret Code which code the marks allow, Critter Sort where a thing goes.
+
+## The accounting rule
+
+Stated once and binding on every level:
+
+- **Feeding is never a miss.** Choosing a car, feeding it, watching, feeding the same kind of thing again and (level 4) feeding a car that tells nothing new are exploration. The machine never refuses an input, never runs out and is never wrong.
+- **A first wrong prediction on a new rule is never a miss.** While the table holds fewer than two rows of the current rule (level 1: until a rule's first prediction has been answered), a wrong prediction is answered by the machine and counts nothing. This is the decision 6 default and copies Chain Reaction 8's bell and Seesaw 15's guess.
+- **Counted:** a wrong prediction once the table holds two rows of the rule (level 1: the second wrong prediction on a rule); a wrong rule card; at level 4, a card the table already rules out. Each is one miss.
+- **No "=" anywhere.** The table writes *in → out* with the machine's small picture between, and the pet says "went in" and "came out". No `3 + 2 =` blank, at any level (the [equal-sign rule](../deep-dives/subjects/algebra-balance.md#the-equal-sign-rule-stated-once)).
+
+## Overlap and reuse
+
+- **Critters** are `src/art/critter.ts`'s `Critter` with `CRITTERS` specs (pip, duck, pig, cat, bear, dog, bunny; cow is left out of level 1 because it already has spots). Level 1's changes are spec changes the class already draws (`color: 'blue'`, `spots: true`), a scale (big), and a hat drawn in the game's own `art.ts`; nothing new in the shared art.
+- **Cars and counters** follow Pattern Train's car look (a rounded wagon on two wheels) drawn in the game's `art.ts`, each car carrying its counters in rows of five (so 7 reads as five and two) and, from level 2, its numeral on the side. ×2 and ×3 outputs draw as two or three rows of the input's counters (the study's "twice as many drawn as two rows").
+- **Prediction** follows Chain Reaction 8: three big pads under the chute, one tap, then the run shows the truth beside the pad she chose. **Help** follows Paint Mixer and Spinner Fair: `askForHint` with `hintLabel = 'Show me'`, a glow after two counted misses, the ghost's move on a second ask.
+- Reuse `onTap` for creatures, pads, cards and Peek; `src/engine/drag.ts` for dragging a car or creature to the hopper (a tap also sends it); `ctx.particles` for the chute puff; `src/audio/notes.ts` for the chug. No new engine, save field, render texture or shared helper; nothing is kept or filed in levels 1–4 (the journal's *rules I found* page and the hat wearable are rework hooks, not these builds).
+
+## The model (`logic.ts`)
+
+**Rules.** A rule is `{ kind: 'look', change: 'hat' | 'blue' | 'big' | 'spots' }` (level 1) or `{ kind: 'num', a: 1 | 2 | 3, b: number }` meaning *a × in + b* (levels 2–4; the study's a·n + b model, so 5–8 extend it without a new type). `apply(rule, input)` is the only place a rule acts; `fits(rule, rows)` is true iff `apply` gives every row's out. Cards show `+b`, `−b` or `×a` as a picture (counters with a plus, a crossed-out counter, two or three stacked rows), never as a symbol to read.
+
+| Level | ID | Window | A round | Rule pool and inputs | The question (only places a miss can happen) |
+| --- | --- | --- | --- | --- | --- |
+| 1 Hat machine | `hats` | pre-K | Two machines, two different looks. On each, three creatures walk through by themselves (she may tap one to send it sooner); then two creatures wait at the hopper in turn: "What will it look like?" | Looks `hat`, `blue`, `big`, `spots`; creatures drawn from the seven critters, never one that already shows the look (no blue critter for `blue`) | Tap one of three pictures: the look applied, no change, a different look from the pool. Then the creature goes through |
+| 2 One more goes in | `more` | school | Two machines (+1 and +2, seeded order). A tray of five cars with 1–5 counters; she sends four, one at a time; pads appear before each run | +1, +2; inputs 1–5; outputs 2–7 | Three pads: the right count, one too few, one too many (seeded order) |
+| 3 What does it do? | `what` | school | Two machines, two different rules from the pool. A tray of five cars; she sends three (pads before each), then the **rule shelf** of three cards appears; she taps a card; the card hangs on the machine and she sends one more car with pads | +2, +3, −1; tray five distinct counts from 1–9, outputs 0–12 | The pads as at 2; the card that fits every row |
+| 4 Covered machine | `covered` | school | Two machines, two different rules. The machine is boxed (the counters' change is hidden; only the output car comes out) and the shelf of three cards is shown **from the start**; a tray of five cars with 0–4 counters; she feeds cars in any order, taps a card when she likes, then predicts one more car | ×2, ×3, +2, +4; tray 0, 1, 2, 3, 4; outputs 0–12 | A card tap; the final prediction |
+
+**Level 4's shelf.** The shelf is the rule and two **trap cards**: pool rules that give the same output as the rule on at least one tray car (×2 and +2 both send 2 to 4; ×3 and +2 both send 1 to 3; ×2 and ×3 both send the empty car to 0; ×3 and +4 both send 2 to 6; ×2 and +4 both send 4 to 8). Every pool rule has at least two trap partners on the tray 0–4, which is why +3 and +5 stay out of level 4 (+3 shares only one car with ×2 and +5 none). Feeding a trap car leaves two cards fitting; any two different cars always settle it (two different rules of the form *a × in + b* agree on at most one input), so **at most two rows** are ever needed, and a well-chosen first car settles it in one. That is the level's decision: *which car tells the cards apart?*
+
+**Level 4's card tap.** A card is judged by the table, not by luck:
+
+- the table already rules the card out (some row breaks it): **one miss**, that row circled and spoken ("2 went in and 4 came out; plus four would make 6");
+- two cards still fit every row (or no car has gone in yet): **never a miss**: "Two cards still fit. Feed another car." The card wiggles and nothing is chosen, so a lucky early tap cannot finish the machine;
+- only the tapped card fits: right; it hangs on the machine.
+
+**Level 3's shelf.** The shelf is always the three pool cards (+2, +3, −1) in seeded order. Two different adds or takes never give the same output, so every row breaks both wrong cards: the study's "each distractor fits at least one shown row" cannot hold at level 3 and is replaced by "every shown row breaks both wrong cards", which still means the table decides. The trap property is level 4's.
+
+**Pads.** Levels 2–4: three pads, the right output and the outputs one below and one above, in seeded order, all within 0–12 (one below 0 is replaced by two above). Level 4's last prediction is on the lowest-numbered car not yet fed. Two rows always settle the card, so at least three cars remain unless she chose to feed more; if she fed all five before tapping the card, the last prediction is skipped and the machine ends on the card.
+
+**Rounds and finishing.** A round is the level's two machines; it finishes after the second machine's last run, with a chime and `ctx.finish({ misses, hints })`. Levels 1–2 always finish (a wrong prediction is answered and play moves on); levels 3–4 finish when the right card hangs on the machine and the last car has run.
+
+### Bands and ranges
+
+`BandLevels`: `prek: { min: 1, max: 1 }`, `school: { min: 2, max: 4 }`. No `lap`, `toddler`, `preschool` or `grownup` window and no `order`. School's ceiling of 4 leaves 5–6 (AB2) and 7–8 (AB3, school's top by decision 4) to append without renumbering; pins stay valid. A pre-K child who finds level 1 easy does not step into level 2 (counters and a table are school work); she sees the game only at level 1 until her band changes.
+
+## Screen and controls
+
+- **Landscape (1024 × 768).** The **table** across the top (up to five rows of *in → out*, each row 64 high; pictures at level 1, a car with counters and its numeral from 2, numerals beside a small car at 4). The **machine** across the middle: the **hopper** on its left (160 × 160 mouth, a drop and tap target), the body (360 wide, see-through at 1–3 so the hat drops on or the counters fall in or lift out; boxed at 4), the **chute** on its right (140 wide) ending in a landing pad where the output stands. The **tray** of five cars (or the waiting creature at level 1) along the bottom right, each car 120 × 110, clear of the pet in the bottom left and the corner buttons. The three **pads** (level 1: 150 × 150 pictures; 2–4: 120 × 120 numerals with counters) under the chute; the **shelf** of three cards (150 × 120) to the right of the table; **Peek** (level 4, 110 × 110, an eye) on the machine's lid.
+- **Portrait.** The table on top, the machine beneath it at the same sizes, then the pads and the shelf in one row of three (they never show together: pads appear only while a prediction is open, the shelf only while a card is open, except at level 4 where the shelf stays and the pads replace the tray during the last prediction), then the tray as a row of five (portrait width 768 allows 5 × 120 with gaps) above the pet's row. Portrait stacks; nothing shrinks below the sizes above.
+- **Input.** A car or creature is dragged to the hopper (it rides 40 units above the finger, resolves to the hopper if released within 160 units of it, else returns) or tapped (it hops in on its own). Touch-down squashes it at once and the chug starts as it drops in. While the machine runs (about 1.2 seconds, 0.6 with reduced motion) the tray, pads and cards ignore taps. A creature or car that has gone through rolls on to a siding beyond the chute; nothing can be fed twice.
+- **Feel.** `STYLES.hub` keeps the island's loop playing. A chug that rises one pentatonic step per row of the current machine, a thunk when the output lands, a chime on a right pad or card, a soft "huh?" boing on a wrong one (never a buzzer), and a little whistle when a card hangs on the machine.
+- **Speech.** `ctx.instruct` states each level's ask: "Watch what the machine does. What will it look like?" / "Send a car in. How many will come out?" / "What does the machine do? Find the card that fits" / "The machine is covered. Send cars in and find its card". The pet repeats it; tapping the pet repeats it. Each run is spoken from bounded number slots ("Three went in. Five came out.", counts 0–12), so nothing needs reading; the card's meaning is spoken on touch ("plus two", "take one away", "twice as many", "three times as many").
+- **Layout audit.** `layout(level, view)` is pure and tested at the lands test's four views (landscape, portrait, two phone insets): every input at least 100 units, nothing under the pet or the corner buttons, no two targets overlapping, portrait stacks rather than shrinks.
+
+## Accounting, help and finishing
+
+| Level | Counts a miss | Counts a hint (at most one per machine) | Never counted |
+| --- | --- | --- | --- |
+| 1 | the second wrong picture on a machine | the glow after it, or *Show me* | the first wrong picture; watching; sending a creature sooner |
+| 2 | a wrong pad once the table holds two rows of that machine | the glow after two counted misses on a machine, or *Show me* | the pads before two rows; feeding |
+| 3 | as 2; a wrong card (the newest row circled) | the same | feeding; the pads before two rows |
+| 4 | a card the table rules out; a wrong last pad | the glow, *Show me* or **Peek** | feeding any car, including a trap car; a card tap while two still fit |
+
+- **Spoken reasons.** Level 1: "Look at the ones that came out. What did the machine give them?" Level 2: the last row re-read, "Three went in and five came out: two more." Level 3: "Four went in and three came out. Plus two would make six." Level 4: the breaking row as above, or for an open trap "Two went in and four came out. Twice as many fits, and plus two fits too."
+- **Help.** After two counted misses on a machine, or on *Show me*: level 1 glows the right picture; 2–3 glow the right pad (or, with the shelf open, the right card); level 4 glows the car that settles the open cards (the bot's choice below) or, once settled, the right card. Asked again while the glow is on, the ghost finger makes that move: the supported finish, still one hint. **Peek** (level 4) lifts the cover for the next run so the counters show; it counts the machine's hint if none was counted yet.
+- **Finishing.** Every round ends in `ctx.finish({ misses, hints })` and one ordinary sticker, help or not. No creation is kept and nothing is filed.
+- **Adaptation.** Level 1 counts at most one miss per machine; pre-K's window is level 1 alone, so `difficulty.ts` keeps her there whatever the round. At school the levels are 2–4. Assisted completion is one sticker, not evidence of mastery. The game claims she predicted outputs and chose the card a table fits, not that she understands functions.
+
+## Rule tests (`logic.test.ts`)
+
+- **Pools and bounds:** for every level, every rule in its pool and every tray input, `apply` stays within 0–12 (level 1: the result differs from the input picture); level 4's tray is exactly 0–4 and level 2's 1–5; level 3's trays hold five distinct counts that keep every pool rule's output in 0–12 (for −1, inputs at least 1; for +3, at most 9). Over 300 seeds per level the same seed gives the same machines, trays, creatures and pad order; the two machines of a round differ.
+- **Level 1:** every waiting creature lacks the machine's look; the three pictures are distinct (look applied, unchanged, a different look); the right picture is the applied one; no cow under `spots`, no blue critter under `blue`.
+- **Pads:** three distinct values in 0–12 including the right output and its neighbours; exactly one is right.
+- **Level 3 shelf:** for every rule and every three distinct tray inputs, exactly one shelf card fits the rows and every shown row breaks both other cards.
+- **Level 4 shelf (by enumeration):** every pool rule has at least two trap partners in the pool on 0–4; the generated shelf is the rule and two of its trap partners; for every non-empty set of fed cars, `open(shelf, rows)` (the cards that fit every row) always contains the rule, and has exactly one card whenever two different cars have been fed; every feeding order settles within two rows; `settlingCar(shelf, rows)` (the hint and the bot) returns a car that leaves exactly one card; the last prediction's car is unfed and its output within 0–12.
+- **Card judging:** `judgeCard` returns `ruled-out` (with a breaking row), `still-open` or `right`, and `still-open` is never counted.
+- **Accounting:** pads before two rows never count; level 1's first wrong never counts and its second does; hints are counted at most once per machine, Peek included.
+- **Help:** for every question state the glow names a picture, pad, car or card; following it (or the ghost's move) from any state reaches the right answer and the round's end.
+- **Layout:** `layout(level, view)` at the four views as above.
+- **Registry, lands, how-to and off-screen tests** pass with the new game: Puzzle Peaks 13 → 14 games (below).
+
+## Ghost finger, how-to card, voice and registration
+
+- **Ghost finger:** `touchDemo: true`, `autotouch()` through the public inputs, reading `game.state` and the current layout after every resize; it never calls finish. Level 1: wait for the three walkers, tap the applied picture. Levels 2–3: drag the lowest car to the hopper, tap the pad `apply` gives; at 3 tap the fitting card. Level 4: feed `settlingCar`, tap the one open card, tap the pad.
+- **How-to card** (`src/content/howto.ts`). Goal: "Feed the machine, watch what comes out, then say what it will do." Steps: "Watch three go through, then tap what the next one will look like" `{ from: 1, to: 1 }`; "Send a car in; before it runs, tap how many will come out" `{ from: 2, to: 2 }`; "After three cars, tap the card that fits every row of the table" `{ from: 3, to: 3 }`; "The machine is covered: choose cars that tell the cards apart, then tap the card" `{ from: 4, to: 4 }`. Finish: "The round ends after two machines; one sticker." Note: "Feeding the machine is never a mistake, and neither is the first guess about a new machine: the machine's answer is the lesson. At the covered machine a card is only judged when the table can tell."
+- **Voice lines** under `rm.*`: `intro`, `instruct.1`–`instruct.4`, `look.hat`, `look.blue`, `look.big`, `look.spots`, `what-look`, `look-again`, `went-in` and `came-out` (count slots 0–12), `how-many`, `two-more`/`one-more` (or a slotted `more`), `card.plus` (slotted 2–4), `card.take-one`, `card.twice`, `card.three-times`, `would-make` (slotted), `still-fit`, `feed-another`, `both-fit` (slotted), `covered`, `peek`, `hangs`, `done`. `{pet}` optional. "Plus two", "take one away", "twice as many" and "what went in, what came out" are source-checked against CCSS 3.OA.D.9 and 4.OA.C.5 and England's Year 6 "express missing number problems" in the building session, as the October 23 rule requires.
+- **Registration:** ID `rule-machine`, name "Rule Machine", spoken title `game.rule-machine`, region `puzzle-peaks` (Pattern Train's and Secret Code's), skills `['patterns', 'prediction', 'deduction', 'adding']` (names already used in the registry). Bands `['prek', 'school']`. Hub icon: a little machine with a hopper and a car rolling out of its chute. Sticker: a seeded machine with an in-car and an out-car. Music `STYLES.hub`.
+- **Home land:** **Puzzle Peaks**, beside Pattern Train and Secret Code (decision 3). It holds 13 today, exactly `LAND_SPOTS`, so where all fourteen are visible it **pages** (two near-equal pages under `landPages`, as five lands already do; nothing shrinks). At pre-K the school-only games are hidden and the page may still fit; the build's lands test decides, and no text may say "one page". Tinker Lab (20) and Counting Cove (13) are the study's fallbacks, taken only if the lands test fails in Puzzle Peaks.
+- **Co-play:** one person feeds, the other predicts out loud before each run; at level 4 a grown-up asks "which car would tell you?" before she feeds. **Off-screen:** *Guess my rule*, the study's conversation card: one person thinks of a rule ("I add two"), the other says numbers and hears what comes out, then guesses the rule; no materials.
+- **Couch:** none.
+
+## Check tier (for the builds)
+
+- **Batch `rule-machine 1` (levels 1–2), new-game tier:** `npm run typecheck`; the rule tests above for levels 1–2 with the registry, lands, how-to and off-screen tests; one scripted play through a `browser-check.mjs` filter (level 1 with a free wrong picture then a counted one and the glow; level 2 to its sticker with one wrong pad after two rows); one portrait screenshot of level 2; `fingerdemo` at level 2; `npm run build` because the registry, lands, voice and how-to change. Record the tested commit, filter and server URL.
+- **Batch `rule-machine 2` (levels 3–4), new-interaction tier** (the shelf, the covered machine and Peek): typecheck, the rule tests for 3–4; one scripted play (level 3 with a wrong card; level 4 with a trap car first, a still-open card tap that counts nothing, a ruled-out card, Peek, and the last prediction); one portrait screenshot of level 4; `fingerdemo` at levels 3 and 4; `npm run build` because the card and voice change.
+- Not run in this docs slice: everything but `node scripts/check-links.mjs` and `git diff --check`. Device checks open at the build: whether a pre-K child reads the three pictures as "what it will look like"; whether the free first guess feels like a game or a trick; whether five cars and a table fit an iPad portrait comfortably; whether "twice as many" as two rows of counters is clear; device speech for "take one away" and the count slots.
+
+## Open decisions
+
+Each has a default the build uses; none blocks the first batch.
+
+1. **Level 4's pool.** Default: ×2, ×3, +2, +4, because each has two trap partners on 0–4. Adding +3 or +5 (the study's "+2…+5") needs a wider tray or a second distractor rule that is not a trap; left for a later level.
+2. **Level 3's distractors.** Default: the shelf is always +2, +3 and −1, and any row breaks the wrong cards (see *Level 3's shelf*). A harder level-3 variant with ×2 as a distractor would bring the trap in earlier; level 4 already has it.
+3. **Pre-K window.** Default: level 1 only. A preschool window would wait for a person check that a three-year-old reads the pictures.
+4. **The wrong-prediction run.** Default: after any prediction the machine runs and the round moves on. If play shows children mashing pads at level 2, a right prediction on the last car of a machine could be required (supported by the glow), a one-line change.
+5. **Land.** Default: Puzzle Peaks, paging at 14; fallbacks as above.
+6. **The supported finish.** Default: a second *Show me* while the glow is on makes the move as a ghost, one hint per machine in all.
