@@ -4,6 +4,8 @@ import { computeView } from '../../engine/view';
 import {
   afterTooLong, applyHint, camelAt, caravanMap, choose, corners, go, good, goLive, hintFor, legSuns, legsOf, loadPlan, loadStart,
   loaded, nextLoad, nextPlanMove, overlaps, planPlan, planStart, reachable, reachPlan, roadLayout, safePlan, SKIN, sunPoints,
+  swapPlan, swapStart, pickOffer, goSwap, swapHint, offersAt, worthPlan, worthStart, nextWorthMove, sell, total, better, planFor,
+  type SwapState, type WorthPlan, type WorthStop,
   tapBale, tapCamel, tapStop, Tally, MIN_TARGET, type CaravanMap, type LoadPlan, type LoadState, type PlanState, type Rect,
 } from './logic';
 
@@ -462,3 +464,213 @@ describe('layout', () => {
 });
 
 function centre(r: Rect) { return { x: r.x + r.w / 2, y: r.y + r.h / 2 }; }
+
+describe('level 4: swap at the stop', () => {
+  const roadsOf = (seed: number) => swapPlan(new Rng(seed)).roads;
+
+  it('plans two legal roads with distinct wants, the next want offered once, and seeded decoys', () => {
+    const sides = new Set<number>();
+    for (const seed of SEEDS) {
+      const plan = swapPlan(new Rng(seed));
+      expect(plan.level).toBe(4);
+      expect(plan.roads).toHaveLength(2);
+      for (const r of plan.roads) {
+        for (const l of r.legs) { expect(l).toBeGreaterThanOrEqual(1); expect(l).toBeLessThanOrEqual(SKIN); }
+        expect(new Set(r.wants).size).toBe(3);
+        expect(r.carry0).toBe(r.wants[0]);
+        expect(r.offers[0].filter((g) => g === r.wants[1])).toHaveLength(1);
+        expect(r.offers[1].filter((g) => g === r.wants[2])).toHaveLength(1);
+        const d1 = r.offers[0].find((g) => g !== r.wants[1])!;
+        const d2 = r.offers[1].find((g) => g !== r.wants[2])!;
+        expect(d1 === r.wants[2] || !r.wants.includes(d1)).toBe(true);
+        expect(d2).not.toBe(r.wants[2]);
+        expect(d2).not.toBe(r.wants[1]);
+        sides.add(r.offers[0].indexOf(r.wants[1]));
+        sides.add(10 + r.offers[1].indexOf(r.wants[2]));
+      }
+      expect(plan.roads.some((r) => r.offers[0].includes(r.wants[2]))).toBe(true);
+    }
+    expect(sides).toEqual(new Set([0, 1, 10, 11]));
+  });
+
+  it('the same seed gives the same plan', () => {
+    for (const seed of SEEDS.slice(0, 40)) expect(roadsOf(seed)).toEqual(roadsOf(seed));
+  });
+
+  it('exactly one of the four pick sequences reaches the city, and it is the hinted one', () => {
+    for (const seed of SEEDS) for (const road of roadsOf(seed)) {
+      const winners: string[] = [];
+      for (const a of [0, 1] as const) for (const b of [0, 1] as const) {
+        let st = pickOffer(road, swapStart(), a);
+        const carried1 = st.carried!;
+        const g1 = goSwap(road, st);
+        if (g1.event === 'not-wanted') {
+          expect(g1.wants).toBe(road.wants[1]);
+          expect(g1.carried).toBe(carried1);
+          expect(st).toEqual({ at: 1, carried: carried1 });
+          expect(offersAt(road, st)).toEqual(road.offers[0]);
+          continue;
+        }
+        expect(g1.event).toBe('wanted');
+        if (g1.event !== 'wanted') continue;
+        expect(g1.city).toBe(false);
+        st = pickOffer(road, g1.state, b);
+        const carried2 = st.carried!;
+        const g2 = goSwap(road, st);
+        if (g2.event === 'not-wanted') {
+          expect(g2.wants).toBe(road.wants[2]);
+          expect(g2.carried).toBe(carried2);
+          expect(st).toEqual({ at: 2, carried: carried2 });
+          expect(offersAt(road, st)).toEqual(road.offers[1]);
+          continue;
+        }
+        expect(g2.event).toBe('wanted');
+        if (g2.event === 'wanted') { expect(g2.city).toBe(true); winners.push(`${a}${b}`); }
+      }
+      expect(winners).toEqual([`${road.offers[0].indexOf(road.wants[1])}${road.offers[1].indexOf(road.wants[2])}`]);
+    }
+  });
+
+  it('Go with nothing carried is pick-first, and the hint always leads to the city', () => {
+    for (const seed of SEEDS) for (const road of roadsOf(seed)) {
+      expect(goSwap(road, swapStart())).toEqual({ event: 'pick-first' });
+      // every reachable state: at oasis 1 or 2, carrying nothing or either offer
+      for (const at of [1, 2] as const) for (const carried of [null, ...road.offers[at - 1]]) {
+        let st: SwapState = { at, carried };
+        let steps = 0;
+        while (st.at !== 3) {
+          const h = swapHint(road, st)!;
+          expect(h).not.toBeNull();
+          if ('go' in h) {
+            expect(st.carried).toBe(road.wants[st.at]);
+            const r = goSwap(road, st);
+            expect(r.event).toBe('wanted');
+            if (r.event === 'wanted') st = r.state;
+          } else {
+            expect(offersAt(road, st)![h.side]).toBe(road.wants[st.at]);
+            st = pickOffer(road, st, h.side);
+          }
+          expect(++steps).toBeLessThan(6);
+        }
+        expect(swapHint(road, st)).toBeNull();
+      }
+    }
+  });
+});
+
+describe('level 5: worth more far away', () => {
+  const stopOf = (n: number) => n as WorthStop;
+
+  it('plans price rows, three-bale loads with different up counts, and ends-only named stops', () => {
+    const rows = new Set<string>();
+    const named = new Set<string>();
+    for (const seed of SEEDS) {
+      const p = worthPlan(new Rng(seed));
+      expect(p.level).toBe(5);
+      expect([[1, 2, 4], [1, 3, 5]]).toContainEqual(p.up);
+      expect(p.down).toEqual([...p.up].reverse());
+      rows.add(p.up.join());
+      expect(p.loads[0][0]).not.toBe(p.loads[1][0]);
+      for (const l of p.loads) expect(l[0] + l[1]).toBe(3);
+      expect(p.named).not.toContain(2);
+      expect([[1, 3], [3, 1]]).toContainEqual(p.named);
+      named.add(p.named.join());
+      expect(worthPlan(new Rng(seed))).toEqual(p);
+    }
+    expect(rows.size).toBe(2);
+    expect(named.size).toBe(2);
+  });
+
+  it('the totals differ, are in 3..20, the better load reverses between cases, and selling reports both sums', () => {
+    for (const seed of SEEDS) {
+      const p: WorthPlan = worthPlan(new Rng(seed));
+      for (const c of [0, 1]) {
+        const stop = p.named[c];
+        const t0 = total(p, 0, stop), t1 = total(p, 1, stop);
+        expect(t0).not.toBe(t1);
+        for (const t of [t0, t1]) { expect(t).toBeGreaterThanOrEqual(3); expect(t).toBeLessThanOrEqual(20); }
+        const b = better(p, c);
+        expect(total(p, b, stop)).toBe(Math.max(t0, t1));
+        const w = b === 0 ? 1 : 0;
+        expect(sell(p, c, b)).toEqual({ better: true, got: total(p, b, stop) });
+        expect(sell(p, c, w)).toEqual({ better: false, got: total(p, w, stop), other: total(p, b, stop) });
+      }
+      expect(better(p, 0)).not.toBe(better(p, 1));
+      expect(stopOf(p.named[0])).not.toBe(p.named[1]);
+    }
+  });
+
+  it('the bot looks at the other load, then the better one, then Go, and never sends the smaller', () => {
+    for (const seed of SEEDS) {
+      const p = worthPlan(new Rng(seed));
+      for (const c of [0, 1]) {
+        const b = better(p, c);
+        let st = worthStart();
+        expect(st.looked).toBeNull();
+        const seen = new Set<number>();
+        const moves: string[] = [];
+        for (let i = 0; i < 5; i++) {
+          const m = nextWorthMove(p, c, st, seen);
+          if ('go' in m) { moves.push('go'); expect(st.looked).toBe(b); break; }
+          moves.push(String(m.load));
+          seen.add(m.load);
+          st = { looked: m.load };
+        }
+        expect(moves).toEqual([String(b === 0 ? 1 : 0), String(b), 'go']);
+      }
+    }
+  });
+});
+
+describe('levels 4-5 plumbing and layout', () => {
+  it('planFor names the new plans and leaves levels 1-3 alone', () => {
+    expect(planFor(1).id).toBe('load');
+    expect(planFor(2).id).toBe('reach');
+    expect(planFor(3).id).toBe('plan');
+    expect(planFor(4).id).toBe('swap');
+    expect(planFor(5).id).toBe('worth');
+  });
+
+  it('every input is large, inside the view, clear of the corners and apart', () => {
+    for (const [name, v] of Object.entries(VIEWS)) for (const seed of SEEDS.slice(0, 10)) {
+      const cases: [number, ReturnType<typeof swapPlan> | ReturnType<typeof worthPlan>, number[]][] = [
+        [4, swapPlan(new Rng(seed)), [0, 1]],
+        [5, worthPlan(new Rng(seed)), [0]],
+      ];
+      for (const [level, plan, indexes] of cases) for (const index of indexes) {
+        const lay = roadLayout(level, plan, v, index);
+        expect(lay, `${name} level ${level} seed ${seed}`).not.toBeNull();
+        const rects: Rect[] = [...(lay!.offers ?? []), ...(lay!.bubbles ?? []), ...(lay!.boards ?? []), ...(lay!.loads ?? []), lay!.go!];
+        expect(rects.length).toBe(level === 4 ? 6 : 6);
+        for (const r of rects) {
+          expect(r.w).toBeGreaterThanOrEqual(MIN_TARGET);
+          expect(r.h).toBeGreaterThanOrEqual(MIN_TARGET);
+          expect(r.x).toBeGreaterThanOrEqual(0);
+          expect(r.y).toBeGreaterThanOrEqual(0);
+          expect(r.x + r.w).toBeLessThanOrEqual(v.w);
+          expect(r.y + r.h).toBeLessThanOrEqual(v.h);
+          for (const c of corners(v)) expect(overlaps(r, c)).toBe(false);
+        }
+        for (let i = 0; i < rects.length; i++) for (let j = i + 1; j < rects.length; j++) expect(overlaps(rects[i], rects[j])).toBe(false);
+        if (lay!.offers) {
+          const [a, b] = lay!.offers;
+          expect(b.x - (a.x + a.w)).toBeGreaterThanOrEqual(40);
+        }
+      }
+    }
+  });
+});
+
+describe('levels 4-5: spoken slots', () => {
+  it('every good and every reachable shell total has a line', async () => {
+    const { SCRIPT } = await import('../../content/voice-script');
+    const { GOODS, worthPlan, total } = await import('./logic');
+    for (const g of GOODS) expect(SCRIPT[`cd.good.${g}` as keyof typeof SCRIPT]).toBeTruthy();
+    for (const s of SEEDS) {
+      const p = worthPlan(new Rng(s));
+      for (const stop of [1, 2, 3] as const) for (const load of [0, 1] as const) {
+        expect(SCRIPT[`cd.shells.${total(p, load, stop)}` as keyof typeof SCRIPT]).toBeTruthy();
+      }
+    }
+  });
+});

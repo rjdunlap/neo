@@ -2,7 +2,7 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import { cream, ink, shadow, swatch, type ColorName } from '../../art/palette';
 import { finish } from '../../ui/buttons';
-import { SKIN, type Landmark } from './logic';
+import { SKIN, type Good, type Landmark } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 export const SAND = { fill: 0xf2d9a4, line: 0xc99d58, dark: 0xd9b472 };
@@ -244,6 +244,143 @@ export function goArt(w: number, h: number, live = true): Container {
   t.y = -2;
   c.addChild(t);
   c.alpha = live ? 1 : 0.8;
+  return c;
+}
+
+// ——— Goods, bubbles, boards and loads (levels 4–5) ———
+
+const GOOD_COLORS: Record<Good, { fill: number; line: number; light: number }> = {
+  silk: { fill: 0xb57be0, line: 0x6f3fa0, light: 0xe2c6f6 },
+  tea: { fill: 0x7a5236, line: 0x4a2f1c, light: 0xa9805f },
+  salt: { fill: 0xffffff, line: 0x9aa7b4, light: 0xe6eef5 },
+  glass: { fill: 0x6fcf8e, line: 0x2f8a4f, light: 0xc4f0d2 },
+  paper: { fill: 0xfff4d6, line: 0xc9a86a, light: 0xffffff },
+  beads: { fill: 0xf26d6d, line: 0xb03a3a, light: 0x5aa6d8 },
+};
+
+/** One pictured good, told apart by shape and colour: a rolled bolt, a pressed brick, a white block, a green jug, a roll, a string of beads. */
+export function goodArt(good: Good, size = 90): Graphics {
+  const c = GOOD_COLORS[good];
+  const g = new Graphics();
+  const r = size / 2;
+  if (good === 'silk') {
+    g.roundRect(-r * 0.85, -r * 0.4, r * 1.5, r * 0.8, r * 0.2).fill(c.fill).stroke(line(c.line, 4));
+    g.ellipse(r * 0.65, 0, r * 0.22, r * 0.4).fill(c.light).stroke(line(c.line, 4));
+    g.ellipse(r * 0.65, 0, r * 0.08, r * 0.15).fill(c.line);
+    g.moveTo(-r * 0.6, -r * 0.4).quadraticCurveTo(-r * 0.4, 0, -r * 0.6, r * 0.4).stroke(line(c.light, 4));
+  } else if (good === 'tea') {
+    g.roundRect(-r * 0.8, -r * 0.55, r * 1.6, r * 1.1, 8).fill(c.fill).stroke(line(c.line, 4));
+    g.roundRect(-r * 0.6, -r * 0.35, r * 1.2, r * 0.7, 6).stroke(line(c.light, 3));
+    for (const [x, y] of [[-0.25, -0.1], [0.2, 0.1], [0, -0.05]]) g.ellipse(x * r, y * r, r * 0.16, r * 0.08).fill(c.light);
+  } else if (good === 'salt') {
+    g.moveTo(-r * 0.7, -r * 0.2).lineTo(-r * 0.2, -r * 0.6).lineTo(r * 0.75, -r * 0.6).lineTo(r * 0.75, r * 0.45).lineTo(r * 0.25, r * 0.7).lineTo(-r * 0.7, r * 0.7).closePath().fill(c.fill).stroke(line(c.line, 4));
+    g.moveTo(-r * 0.7, -r * 0.2).lineTo(r * 0.25, -r * 0.2).lineTo(r * 0.75, -r * 0.6).moveTo(r * 0.25, -r * 0.2).lineTo(r * 0.25, r * 0.7).stroke(line(c.line, 3));
+    g.moveTo(-r * 0.35, r * 0.1).lineTo(-r * 0.35, r * 0.4).moveTo(-r * 0.5, r * 0.25).lineTo(-r * 0.2, r * 0.25).stroke(line(TILE.fill, 3));
+  } else if (good === 'glass') {
+    g.moveTo(-r * 0.2, -r * 0.75).lineTo(r * 0.2, -r * 0.75).lineTo(r * 0.2, -r * 0.4).quadraticCurveTo(r * 0.75, -r * 0.2, r * 0.6, r * 0.45)
+      .quadraticCurveTo(r * 0.5, r * 0.8, 0, r * 0.8).quadraticCurveTo(-r * 0.5, r * 0.8, -r * 0.6, r * 0.45).quadraticCurveTo(-r * 0.75, -r * 0.2, -r * 0.2, -r * 0.4).closePath()
+      .fill({ color: c.fill, alpha: 0.9 }).stroke(line(c.line, 4));
+    g.moveTo(r * 0.4, -r * 0.25).quadraticCurveTo(r * 0.95, -r * 0.1, r * 0.55, r * 0.3).stroke(line(c.line, 5));
+    g.ellipse(-r * 0.25, r * 0.15, r * 0.1, r * 0.25).fill({ color: 0xffffff, alpha: 0.6 });
+  } else if (good === 'paper') {
+    g.roundRect(-r * 0.75, -r * 0.45, r * 1.4, r * 0.9, 6).fill(c.fill).stroke(line(c.line, 4));
+    g.ellipse(-r * 0.75, 0, r * 0.18, r * 0.45).fill(c.light).stroke(line(c.line, 4));
+    for (const y of [-0.2, 0, 0.2]) g.moveTo(-r * 0.4, y * r).lineTo(r * 0.45, y * r).stroke(line(c.line, 2));
+  } else {
+    g.circle(0, -r * 0.05, r * 0.6).stroke(line(c.line, 3));
+    for (let i = 0; i < 9; i++) {
+      const a = (i / 9) * Math.PI * 2;
+      g.circle(Math.cos(a) * r * 0.6, -r * 0.05 + Math.sin(a) * r * 0.6, r * 0.17).fill(i % 2 ? c.light : c.fill).stroke(line(ink, 2));
+    }
+  }
+  return g;
+}
+
+/** A card holding one good: an offer at an oasis (level 4). */
+export function offerArt(good: Good, size = 120, picked = false): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-size / 2, -size / 2, size, size, 22).fill(picked ? 0xfff6c8 : cream).stroke(line(picked ? swatch.yellow.line : SAND.line, picked ? 7 : 5));
+  c.addChild(g, goodArt(good, size * 0.72));
+  return c;
+}
+
+/** The speech bubble above a stop: the good that stop wants. */
+export function bubbleArt(good: Good, size = 110): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const r = size / 2;
+  g.roundRect(-r, -r, size, size * 0.86, 26).fill(0xffffff).stroke(line(SAND.line, 4));
+  g.moveTo(-10, r * 0.7).lineTo(0, r).lineTo(12, r * 0.7).closePath().fill(0xffffff);
+  g.moveTo(-10, r * 0.72).lineTo(0, r).lineTo(12, r * 0.72).stroke(line(SAND.line, 4));
+  const art = goodArt(good, size * 0.62);
+  art.y = -r * 0.08;
+  c.addChild(g, art);
+  return c;
+}
+
+/** One shell, a counter worth one. */
+export function shellArt(size = 18): Graphics {
+  const g = new Graphics();
+  const r = size / 2;
+  g.moveTo(0, r).lineTo(-r, -r * 0.1).quadraticCurveTo(0, -r * 1.3, r, -r * 0.1).closePath().fill(0xffd9c9).stroke(line(0xd98a6a, 2));
+  g.moveTo(0, r).lineTo(-r * 0.4, -r * 0.5).moveTo(0, r).lineTo(0, -r * 0.65).moveTo(0, r).lineTo(r * 0.4, -r * 0.5).stroke(line(0xd98a6a, 1.5));
+  return g;
+}
+
+/** A row of `n` shells centred on 0, wrapping after `per` shells. */
+export function shellRow(n: number, size = 18, per = 5): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const rows = Math.ceil(n / per);
+  for (let i = 0; i < n; i++) {
+    const row = Math.floor(i / per);
+    const inRow = Math.min(per, n - row * per);
+    const s = shellArt(size);
+    s.position.set((i % per - (inRow - 1) / 2) * (size + 2), (row - (rows - 1) / 2) * (size + 2));
+    c.addChild(s);
+  }
+  return c;
+}
+
+/** A stop's price board: each good with as many shells as it costs there. */
+export function boardArt(goods: [Good, Good], prices: [number, number], w = 150, h = 110, named = false): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-w / 2, -h / 2, w, h, 16).fill(named ? 0xfff6c8 : cream).stroke(line(named ? swatch.yellow.line : SAND.line, named ? 6 : 4));
+  c.addChild(g);
+  goods.forEach((good, i) => {
+    const y = -h / 4 + i * (h / 2);
+    const art = goodArt(good, 40);
+    art.position.set(-w / 2 + 28, y);
+    const row = shellRow(prices[i], 16, 5);
+    row.position.set(18, y);
+    c.addChild(art, row);
+  });
+  return c;
+}
+
+/**
+ * A three-bale load: each bale is its good; when `prices` is given (she has looked), each bale shows its shells at the
+ * named stop underneath.
+ */
+export function loadArt(goods: Good[], w = 230, h = 150, prices: number[] | null = null, lifted = false): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-w / 2, -h / 2, w, h, 22).fill(lifted ? 0xfff6c8 : cream).stroke(line(lifted ? swatch.yellow.line : SAND.line, lifted ? 7 : 5));
+  c.addChild(g);
+  const step = w / goods.length;
+  goods.forEach((good, i) => {
+    const x = -w / 2 + step * (i + 0.5);
+    const art = goodArt(good, 58);
+    art.position.set(x, prices ? -h * 0.2 : 0);
+    c.addChild(art);
+    if (prices) {
+      const row = shellRow(prices[i], 14, 3);
+      row.position.set(x, h * 0.26);
+      c.addChild(row);
+    }
+  });
   return c;
 }
 
