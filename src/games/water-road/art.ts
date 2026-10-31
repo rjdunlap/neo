@@ -257,7 +257,7 @@ export function cardArt(w: number, h: number, hs: number[], state: 'idle' | 'cho
   g.moveTo(pts[0].x, pts[0].y); for (const p of pts.slice(1)) g.lineTo(p.x, p.y);
   g.stroke(line(STONE[0].line, 14));
   g.moveTo(pts[0].x, pts[0].y); for (const p of pts.slice(1)) g.lineTo(p.x, p.y);
-  g.stroke(line(WATER.fill, 6));
+  g.stroke(line(STONE[2].fill, 6));
   g.circle(pts[3].x, pts[3].y - 4, 9).fill(STONE[2].fill).stroke(line(STONE[2].line, 3));
   g.eventMode = 'none';
   c.addChild(g);

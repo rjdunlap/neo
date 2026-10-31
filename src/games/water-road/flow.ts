@@ -235,9 +235,14 @@ export class WaterFlow implements Game {
     // The channel comes off the hill on the near bank and carries on to the town on the far bank.
     const springAt = { x: ends.near.x + 30, y: l.deck - 46 };
     this.board.addChild(channelArt([springAt, { x: ends.near.x + END_SLOT.w, y: l.deck - 14 }]));
-    const fountainAt = { x: ends.far.x + END_SLOT.w / 2 + 10, y: l.deck - 30 };
+    const fountainAt = { x: ends.far.x + END_SLOT.w / 2 + 10, y: l.deck - 40 };
     this.board.addChild(channelArt([{ x: ends.far.x, y: l.deck - 12 }, { x: fountainAt.x - 24, y: l.deck - 10 }]));
-    this.board.addChild(townArt(fountainAt.x, fountainAt.y, l.deck + SPAN.h));
+    this.board.addChild(townArt(fountainAt.x, fountainAt.y, l.deck - 14));
+    const spring = new Graphics();
+    spring.roundRect(springAt.x - 30, springAt.y - 18, 52, 30, 10).fill(0xdfd3bd).stroke({ width: 4, color: 0xa89a82 });
+    spring.ellipse(springAt.x - 4, springAt.y - 10, 18, 6).fill(WATER.fill);
+    spring.eventMode = 'none';
+    this.board.addChild(spring);
     this.board.addChild(this.water);
     // The places pieces go, and the tray's spots.
     const place = (r: Rect) => { const n = new Container(); n.position.copyFrom(centre(r)); n.eventMode = 'none'; this.board.addChild(n); return n; };
