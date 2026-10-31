@@ -238,7 +238,7 @@ class DropsJourney implements Game {
       await this.ctx.tw.to(this.dropNode.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
     }
     if (this.finished) return;
-    await this.afterStop();
+    await this.afterStop(said);
   }
 
   private async animateMove(from: Place, to: Place, process: Process, driver: Driver, time: number) {
@@ -273,7 +273,8 @@ class DropsJourney implements Game {
     });
   }
 
-  private async afterStop() {
+  /** `said` is the stop's own line: the postcard, a repeated request or the leaf line waits for it rather than cut it off. */
+  private async afterStop(said: Promise<void>) {
     if (this.round.level === 2 && !this.reached && this.canFinish) {
       this.reached = true;
       sfx.bell(7, 0.3);
@@ -283,6 +284,10 @@ class DropsJourney implements Game {
     this.leaf.visible = this.canFinish;
     this.dealCards();
     this.busy = false;
+    const stops = this.journey.stops.length;
+    await said;
+    // She may already have tapped on to another stop; that stop speaks for itself.
+    if (this.finished || this.journey.stops.length !== stops) return;
     if (this.reached && this.round.level === 2 && this.journey.stops.length && here(this.journey) === this.round.goal) {
       await this.ctx.say('drop.postcard', { place: SPOKEN[this.round.goal!] });
     } else if (this.round.level === 2 && !this.reached && this.journey.stops.length % 4 === 0) {
