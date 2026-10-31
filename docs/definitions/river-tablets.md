@@ -1,4 +1,6 @@
-# River Tablets, levels 1–3 (definition)
+# River Tablets, levels 1–6 (definition)
+
+Levels 1–3 are defined below. Levels 4–6 (AR3) are defined in [their own section](#levels-46-ar3-a-ten-mark-check-the-delivery-two-tablets-disagree) at the end of this file.
 
 Defined 2026-10-27 as slice AR1 of the [ancient river civilizations study](../deep-dives/subjects/ancient-river-civilizations.md#build-slices-in-order) ([packet](../deep-dives/subjects/RECOMMENDATIONS.md#ancient-river-civilizations-recommendations)), [PR #1015](https://github.com/rjdunlap/neo/pull/1015). Decisions 1–2 were taken 2026-10-23 on the developer's delegation: invented island marks on the child's screen, Story Grove if the lands test passes (else Counting Cove), and a first build of levels 1–3 only. **Nothing is built.** AR2 builds levels 1–3 as one [batch](../GAME-BATCHES.md#river-tablets-1-one-token-each-the-envelope-and-which-row); levels 4–6 (AR3), 7–8 (AR4) and Two Tablets (AR5) are separate definitions.
 
@@ -92,3 +94,198 @@ Each has a default the build uses; none blocks AR2.
 3. **School window.** Default: `school: { 3, 3 }` now, extended by AR3. The alternative of leaving school out until AR3 would still play level 3 through `playBand`'s fallback but would leave no school pin space.
 4. **Land.** Default: Story Grove (16th game). Fallback by decision 2: Counting Cove.
 5. **The history line.** Default: the single sentence above, source-checked in the building session (museum pages and the KS2 depth study the research opened). If the check finds the token-and-envelope story is contested enough to drop, the line becomes "Long ago, people pressed marks in clay to remember how many" with no river.
+
+## Levels 4–6 (AR3): a ten-mark, check the delivery, two tablets disagree
+
+Defined 2026-10-30 as slice AR3 of the [study](../deep-dives/subjects/ancient-river-civilizations.md#build-slices-in-order), [PR #1030](https://github.com/rjdunlap/neo/pull/1030). Docs only. The build is two batches: [river-tablets 2](../GAME-BATCHES.md#river-tablets-2-a-ten-mark-and-check-the-delivery) builds levels 4–5, and [river-tablets 3](../GAME-BATCHES.md#river-tablets-3-two-tablets-disagree) builds level 6 after it. Decision 7 was taken 2026-10-23 on the developer's delegation: additive tens-and-ones at school (Egyptian-style, order never matters), positional base sixty only as a note for the number-structure study. All three levels are school only. They are appended after `rows` in `PLANS` without renumbering, so open decision 3's school pin space at level 3 stays valid.
+
+**Fun action and purpose:** level 4: a cart unloads crates and loose baskets of grain. She presses a big mark for ten and small marks for ones on the storehouse tablet, then hands it in. The crates and baskets line up under the marks while the pet reads the tablet. Level 5: the tablet was written at the farm before the cart left. The cart arrives, and she says whether it is short, right or extra, and by how many. Level 6: the farm's tablet and the storehouse's tablet record the same cart, and they disagree. She decides which one the cart agrees with, or that neither does, or that nobody can tell any more. Learning goal: a record is a promise about things that are not in front of you. A different mark for ten makes a big count short. A record can be checked against the goods, and a record can be wrong, or impossible to check. Levels 1–3 make records. Levels 4–6 make bigger ones, then **use** and **doubt** them, which is what the study means by a record being central.
+
+### Levels 4–6: overlap and the identity check
+
+- **Lasso Loops** owns *making* tens: a free loop around loose fireflies fills a jar of ten, and its `tens` plan asks for the number (34 is three tens and four). River Tablets never asks her to group anything. At level 4, nine of every ten baskets she sees come already packed in a crate, and a spilled crate is a pile she counts with the pet's help (below). The action is *writing the count down* with two kinds of mark and reading it back. If the build finds level 4 playing as Lasso Loops with a stamp, the study's fallback applies: the rung becomes a Lasso Loops mode and levels 5–6 still stand.
+- **Picture Graph** owns tallies and bars, and **Pet Kitchen / Little Helpers** own fair shares. Level 5's "short by two" is a difference between a record and a delivery, not a share. **Secret Code** owns deduction from clues. Level 6 has no hidden code: the cart is either there to count or not.
+- **Market Stall** owns coins and change. The marks here are counts of goods and are never paid.
+- **Reuse:** `wedgeArt` draws the small mark. The ten-mark is a new code-drawn corner wedge, twice the size, in `art.ts` (the study's "thick short wedge and a corner wedge"). `jarGoodArt`/`cartArt`/`storeArt` cover the goods, cart and storehouse. A basket and a crate of ten are code-drawn: the crate shows ten basket rims through its slats. Level 2's `crack`/lineup step player drives every read-back. There is still no drag, no freehand, no new engine, save field, render texture or shared helper.
+
+### Level 4, A ten is a different mark (`tens`)
+
+- **Plan:** two tablets per round, counts `n` 12–29, different from each other.
+  - Tablet 1 arrives as `floor(n / 10)` crates plus `n % 10` loose baskets (2–9).
+  - Tablet 2 arrives **spilled**: one crate burst on the way. The spilled crate's ten baskets lie loose, and any whole crates stay crates. Loose baskets are 11–19 in tablet 2, crates 0–1, total 12–29.
+  - Loose baskets sit in a seeded, non-overlapping scatter in the yard. They are never in rows of ten, since grouping is Lasso Loops'. They are display only (`eventMode = 'none'`).
+- **The tablet** has two strips. The ten strip holds up to **3** ten-marks. The ones strip holds up to **19** small marks, drawn in two lines. Its 19-mark cap is what lets her write a spilled crate as ten small marks. Marks are display only, about 40 units wide.
+- **Controls, every one at least 100 units:**
+  - the **ten stamp** and the **one stamp** (about 140 × 120 each);
+  - the **ten strip** and the **ones strip** (about 460 × 120 each);
+  - **Hand in** (about 140 × 110, the pet's hands holding the tablet up);
+  - the **yard** (the whole unloading area).
+- **Pressing and lifting:** a stamp adds its mark on touch-down with a "thup", low for a ten, high for a one. A stamp press at its strip's cap wobbles the stamp and changes nothing. Tapping a strip lifts its last mark. Tapping the tablet face between the strips reads it aloud ("two big marks and three small marks: twenty-three"). Tapping the yard makes the pet count it: crates first ("ten, twenty"), then each loose basket with a bounce ("twenty-one, twenty-two, twenty-three"). Tapping a crate inside the yard opens it for about two seconds and counts its ten. **None of these is ever counted.**
+- **The model:** `value(tens, ones) = 10 × tens + ones`. Marks are additive and grouped by strip, so order never matters. `shortest(n) = { tens: floor(n / 10), ones: n % 10 }`.
+- **Verdict on Hand in:**
+  - `value === n` in shortest form: the crates line up under the ten-marks and the baskets under the small marks. The pet says "Two big marks, three small marks. Twenty-three baskets!"
+  - `value === n` in a longer form (for example 1 ten and 13 ones for 23): **accepted, no miss and no hint**. The pet says "That's right!", then shows the shorter way: ten small marks slide together into one big mark ("Ten small marks can be one big mark"). The tablet keeps the short form for the read-back.
+  - `value !== n`: one **miss**. The lineup leaves unmatched goods (or empty marks) wiggling. The pet reads both sides ("Your tablet says twenty-one. The cart brought twenty-three."), and the tablet comes back with her marks kept.
+- **Help:** after the second miss on a tablet, or on asked-for help, the next step glows, and `hints++` once for that tablet.
+  - If `value === n`, Hand in glows.
+  - Otherwise the glow leads toward `shortest(n)`: a ten to lift if `tens > T`; else the ten stamp if `tens < T`; else a one to lift if `ones > O`; else the one stamp.
+  - The glow retargets after every press. It moves monotonically, so it reaches an equal reading within `|tens − T| + |ones − O|` steps. Because `T ≤ 2` it never asks for a press at a cap, and it never presses for her.
+
+### Level 5, Check the delivery (`check`)
+
+- **Plan:** two carts per round. The tablet for each was written at the farm in shortest form (pre-pressed, not hers to change), with count `t` 12–29. The cart brings `c = t + d`, where `d` ∈ {−3…3}. The cart shows `floor(c / 10)` crates and `c % 10` loose baskets.
+- **Distribution:**
+  - At least one of the two carts has `d ≠ 0`.
+  - Across seeds, *short*, *right* and *extra* all occur, as do every `|d|` from 1 to 3.
+  - The two tablets' counts differ.
+  - A cart whose difference crosses a ten (`t` = 21, `c` = 19) is allowed, so the crate count can differ from the tablet's ten-marks. That is the point of checking.
+- **Controls:**
+  - three verdict buttons, each at least 120 × 120 and pictured, never worded:
+    - *short*: the tablet's outline with a gap in the cart;
+    - *right*: the tablet and the cart joined by a band;
+    - *extra*: a basket spilling over the cart's edge;
+  - for *short* and *extra*, three number buttons (one, two and three dots with the numeral).
+
+  Each verdict button says its name on touch-down. **Right** is the commit by itself. *Short* and *extra* open the numbers beside them, and tapping a number commits the pair. Changing the verdict before a number is free.
+- **Free, never counted:** tapping the tablet reads it. Tapping a crate opens it and counts its ten. The yard is **not** counted aloud at this level, because counting the cart *is* the check. The plan keeps loose baskets at 9 or fewer so that counting stays within reach.
+- **Verdict:**
+  - Right verdict and number: the goods line up against the marks. The pet says "The tablet says twenty-one. Nineteen came. Two short!"
+  - Any wrong commit (wrong verdict, or right verdict with the wrong number) is one **miss**. The pet says the two counts side by side ("The tablet says twenty-one. Let's count the cart again."), and she answers again.
+- **Help:** after the second miss on a cart, or on asked-for help, the lineup plays and holds. Crates stand under ten-marks and baskets under small marks. The uncounted goods (extra) or the empty marks (short) glow. The pet counts the glowing ones once, and `hints++` once for that cart. After the lineup the answer is in plain view, so the finish is always reachable.
+
+### Level 6, Two tablets disagree (`disagree`)
+
+- **Plan:** two cases per round, in seeded order. Each case has a **farm tablet** (at the left, by the field) and a **storehouse tablet** (at the right, by the storehouse door). Both are in shortest form, with counts 12–29 that **always differ**, by 1–3. So at most one tablet can match any cart. One case is always `one`. The other is drawn from `neither` and `gone`, and both occur across seeds.
+  - `one`: the cart stands in the yard and matches exactly one tablet. Which tablet matches is seeded, and both sides occur.
+  - `neither`: the cart stands in the yard and matches neither tablet. It differs from each by 1–3.
+  - `gone`: the cart is empty. The pet says, "The baskets were already shared out before anyone counted them." There is nothing to count.
+- **What "right" means:** a tablet is right if it agrees with the cart in front of her. The answer set is fixed and enumerated: `farm`, `storehouse`, `neither`, `cantTell`. `readings(case)` lists every answer consistent with what is on screen.
+  - A present cart has exactly one consistent reading, out of `farm`, `storehouse` or `neither`.
+  - An empty cart is consistent with all three. When more than one reading is consistent, the only accepted answer is `cantTell`.
+  - So `cantTell` is accepted **only** for `gone`, and it is never a dodge. That is the study's "can't tell is a right answer."
+- **Controls:**
+  - each tablet, where tapping reads it aloud for free;
+  - under each tablet, a **this one** button (a hand pointing at it);
+  - **neither** (both tablets with a cross-wedge);
+  - **can't tell** (the pet's shrug over an empty cart).
+
+  That is six inputs, each at least 110 × 110. Tapping a crate opens it for free, as at level 5. Picking is the commit.
+- **Misses:** every wrong pick is one **miss**, with a reason:
+  - a wrong tablet: "That tablet says twenty-two. The cart has twenty-four.";
+  - *neither* when one matches: "Look again. One tablet says twenty-four.";
+  - *can't tell* when the cart is there: "The cart is here, so we can count it and tell.";
+  - any tablet or *neither* for `gone`: "Nothing is left to count. Nothing here shows which tablet is right."
+- **Help:** after the second miss on a case, or on asked-for help, `hints++` once for that case.
+  - If the cart is present, the lineup plays against each tablet in turn, with its leftovers glowing.
+  - For `gone`, the empty cart glows, and the pet says "Nothing to count. Can we tell?"
+
+  Either way, the next answer is plain.
+- **Ending:** on the right answer for `one` and `neither`, the cart's goods line up under the agreeing tablet, or under neither. For `gone`, the pet says "We can't tell. Both tablets could be wrong, and the baskets are gone." The second case's ending finishes the round.
+
+### Levels 4–6: bands and ranges
+
+`school: { min: 3, max: 6 }`. Preschool `{1, 2}` and pre-K `{2, 3}` are unchanged. No `order`, because the ladder is `min..max`. `describeLevel` adds:
+- "A ten is a different mark: press big marks for tens and small marks for ones";
+- "Check the delivery: short, right or extra, and by how many";
+- "Two tablets disagree: which one matches the cart, or can we tell?"
+
+A saved school pin of 3 stays valid. Levels 4–6 are never offered below school.
+
+### Levels 4–6: screen and controls
+
+- **Landscape:** the yard and the cart sit along the top, the tablet(s) centred, and stamps or answer buttons along the bottom right, clear of the pet and the corner buttons. **Portrait** stacks the yard above the tablet above the controls, and on level 6 puts the two tablets side by side, each with its own button below.
+- **Planned sizes:**
+  - level 4: strips 460 × 120, stamps 140 × 120, Hand in 140 × 110;
+  - level 5: verdict buttons 120 × 120, number buttons 110 × 110;
+  - level 6: tablets about 300 × 260, each with its button below, and *neither* and *can't tell* at 120 × 120.
+- **Fit:** the ones strip's 19 display marks fit in two lines of ten inside 460 units. `tabletLayout` stacks, never shrinks. Loose baskets in the yard are about 50 units and display only.
+- **Speech:** `ctx.instruct` per level:
+  - "Press a big mark for each ten and a small mark for each one, then hand in the tablet";
+  - "Is the cart short, right or extra? Then how many?";
+  - "Which tablet matches the cart? Or can we tell?"
+- **Spoken counts:** counts up to 32 are passed as numeric slots (as Lasso Loops passes `{n}`), not the 1–6 word table. Device speech says them until V3's slotted clips exist ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+- **Music:** the game's existing style, unchanged. The ten and the one each have their own pentatonic note.
+- **History line (level 4):** at most one new spoken line, printed on the card: "Long ago, scribes by the big rivers used a different mark for ten, so big numbers took fewer marks."
+  - It is checked in the building session against the Egyptian and Sumerian numeral pages the study opened, plus a museum or KS2 source.
+  - If the check finds it too strong, it becomes "Long ago, people used a different mark for ten."
+  - Levels 5–6 add no history claim. The existing line stays on their card note.
+
+### Levels 4–6: accounting
+
+| Level | Counts a miss | Counts a hint | Never counted |
+| --- | --- | --- | --- |
+| 4 | each Hand in whose reading is not the count | the glow after the second miss on a tablet, or asked-for help; at most one per tablet | pressing, lifting, reading the tablet, the yard count, opening a crate, an equal longer reading |
+| 5 | each committed verdict or number that is wrong | the held lineup after the second miss on a cart, or asked-for help; at most one per cart | choosing a verdict before a number, reading the tablet, opening a crate |
+| 6 | each wrong pick (tablet, *neither* or *can't tell*) | the lineup or empty-cart glow after the second miss on a case, or asked-for help; at most one per case | reading a tablet, opening a crate, *can't tell* when it is the answer |
+
+Every round finishes through `ctx.finish({ misses, hints })` for one shell-awarded sticker, with help or without. There is no new save field, journal entry or creation. Adaptation follows the shell: a longer-but-equal level 4 reading is smooth. Assisted completion is not evidence that she reads or checks records on her own.
+
+### Levels 4–6: rule tests
+
+- **Plans (300 seeds per level):**
+  - Level 4: the counts are 12–29 and differ. Tablet 1 has 2–9 loose. Tablet 2 has 11–19 loose and 0–1 crates. `crates × 10 + loose === n`.
+  - Level 5: `|d| ≤ 3`, at least one `d ≠ 0` per round, and *short*, *right* and *extra* plus each `|d|` from 1 to 3 all occur across seeds. Loose ≤ 9.
+  - Level 6: the tablets always differ by 1–3. Each round has one `one` case. `neither` and `gone` both occur, as do both matching sides.
+  - The same seed gives the same plan.
+- **Marks:**
+  - `value` equals `10 × tens + ones` and is independent of press order (every permutation of a mark sequence).
+  - `shortest(n)` is the **unique** minimum of `tens + ones` among all `(tens, ones)` with `value === n`, for every `n` from 12 to 29.
+  - Every equal reading within the caps (3 tens, 19 ones) is accepted.
+  - Presses at a cap change nothing.
+- **Level 4 hint:** from every `(tens, ones)` within the caps and every `n`, following the glow reaches `value === n` within `|tens − T| + |ones − O|` steps. It never targets a stamp at its cap. It counts at most one hint per tablet.
+- **Level 5:** `verdictFor(t, c)` is `right` iff `t === c`, otherwise `short` or `extra` with `|t − c|`. Every committed pair other than the correct one is one miss. A verdict without a number commits nothing.
+- **Level 6:** `readings(case)` has exactly one element for a present cart and three for `gone`. `accepts(case, answer)` is true for exactly one of the four answers in every case. `cantTell` is accepted only for `gone`.
+- **Layout:** `tabletLayout` for levels 4–6 at the four views the lands test uses: every input at least 100 units, 19 ones-marks and 3 ten-marks fit, nothing under the pet or the corner buttons, and portrait stacks rather than shrinks.
+- **How-to:** the how-to test passes with the level-scoped steps below.
+
+### Levels 4–6: ghost finger, how-to card and voice
+
+- **Ghost finger:** `autotouch()` through the public inputs.
+  - Level 4: tap the yard to count, press `T` tens and `O` ones, and Hand in.
+  - Level 5: read the plan's verdict and tap it, then its number.
+  - Level 6: tap the accepted answer.
+
+  It reads `game.state` and the current layout after every resize, never presses a wrong answer, and never calls finish.
+- **How-to steps:**
+  - "Press the big stamp for each ten and the small stamp for each one, then hand in the tablet. Tap the yard to count the cart" `{ from: 4, to: 4 }`;
+  - "Is the cart short, right or extra? Tap one, then how many" `{ from: 5, to: 5 }`;
+  - "Tap the tablet that matches the cart, or neither, or can't tell when the cart is empty" `{ from: 6, to: 6 }`.
+- **How-to notes:**
+  - Level 4: "Pressing, lifting and counting the yard are never counted; only handing in is. Ten small marks for a ten is right, and the pet shows the shorter way." Plus the level-4 history line.
+  - Levels 5–6: "Only an answer counts; a wrong one is a miss and the pet says why. After two misses the goods line up, which counts as one hint."
+  - Level 6 adds: "Can't tell is the right answer when nothing is left to count."
+- **Voice lines** (`rt.*`, new):
+  - `instruct.4`–`instruct.6`, `history.tens`;
+  - `read-tablet` (`{tens}`, `{ones}`, `{n}`), `yard-count`, `crate-ten`, `tens.match`, `tens.longer`, `tens.shorter-way`, `tens.wrong`, `tens.help`;
+  - `verdict.short`, `verdict.right`, `verdict.extra`, `check.right`, `check.wrong`, `check.help`;
+  - `disagree.farm`, `disagree.store`, `disagree.wrong-tablet`, `disagree.wrong-neither`, `disagree.wrong-cant`, `disagree.wrong-gone`, `disagree.gone`, `disagree.cant-tell`, `disagree.help`.
+
+  Count slots are numbers, never free text.
+- **Co-play:** keep counter and scribe. At level 6, one person keeps the farm's tablet and the other the storehouse's, and they argue it out before counting the cart.
+
+### Levels 4–6: check tier (for the builds)
+
+Each of levels 4, 5 and 6 brings a new interaction: stamps and strips, verdict-then-number, and a four-way pick. So each batch uses the **new-interaction tier**, not the levels tier:
+- typecheck and the rule tests above;
+- one scripted `rivertablets` filtered play:
+  - river-tablets 2: level 4 with one wrong Hand in and the glow, and level 5 with one wrong number;
+  - river-tablets 3: level 6 with a *can't tell* miss and the `gone` case;
+- one portrait screenshot of each new screen;
+- `fingerdemo` at the batch's top level (5, then 6);
+- `npm run build` because voice and how-to change.
+
+Not run in this docs slice: everything but `node scripts/check-links.mjs` and `git diff --check`. **Device checks open at the build:**
+- does a six-year-old read a spilled crate as a ten, or press ten small marks every time?
+- are the three verdict pictures understood without their spoken names?
+- is *can't tell* heard as permission to guess?
+- device speech for counts up to 32.
+
+### Levels 4–6: open decisions
+
+Each has a default the builds use; none blocks them.
+
+1. **Ration row.** The study's "each worker gets two bowls" cart quietly adds counting in twos. Default: **omitted** from level 5, which keeps one question (the difference). A later mode can add it after the build.
+2. **Yard count at level 4.** Default: free and spoken, so the level is about writing the count, not counting it. The alternative (silent yard) would make level 4 a counting rung.
+3. **Neither versus can't tell.** Default: both answers exist, and *can't tell* only when the cart is gone. A deeper case with partial evidence (half the baskets left) waits for someone watching a child find `gone` too easy.
+4. **Batches.** Default: levels 4–5 build together (shared marks and lineup), and level 6 builds after them on its own. If the 4–5 batch runs long, level 5 moves into the level 6 batch.
+5. **The history line.** Default as above, source-checked in the building session.
