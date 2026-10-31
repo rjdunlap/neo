@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Philosophy and reasoning subject research (docs only)
+
+- [PR #1051](https://github.com/rjdunlap/neo/pull/1051), branch `claude/research-philosophy-reasoning`: [study](deep-dives/subjects/philosophy-reasoning.md) and [packet](deep-dives/subjects/RECOMMENDATIONS.md#philosophy-and-reasoning-recommendations) (a new game, Not Always: claims about picture cards on screen, tap the card that breaks the claim, *Every one!* stamp, mended claim; a question card and a co-play role follow), tracker, backlog, READY, ideas and roadmap updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the PR1 definition, the build's source check, and the person check (does a four-year-old listen to the claim or tap the odd one out; does a grown-up use the question card beyond one exchange).
+
 ## 2026-10-31 — Drift Cards 1–3 definition (oceans slice 6, docs only)
 
 - [PR #1050](https://github.com/rjdunlap/neo/pull/1050), branch `claude/define-drift-cards`: [definition](definitions/drift-cards.md) (a new game, levels 1–3; school 1–3; Bubble Beach, fallback Tinker Lab; a pretend current map, predict the landing, choose the boat, find the fogged current from returned cards; wooden cards not bottles, 1992 spill counts unused), batch plans [drift-cards 1](GAME-BATCHES.md#drift-cards-1-where-will-it-wash-up-and-send-it-to-a-friend) and [2](GAME-BATCHES.md#drift-cards-2-find-the-hidden-current), READY, backlog, study, packet and ideas updated.
@@ -90,12 +96,6 @@
 - Ran: `npm run typecheck` clean; caravan-days rule tests 37 pass (level 4 plan and all four pick sequences, level 5 plan, totals, reversal and bot order, layout at four views, a voice-slot test); full `npm test` 3789/3793, the 4 timeouts (bumper-garden, keep-house, penguin-slide) are unrelated games under machine load and pass alone (69/69); `npm run build` passed.
 - Browser: `GAME_URL=http://localhost:5191 BROWSER_SUITE=caravandays CARAVAN_FROM=4` passed (level 4: Go before picking free, a decoy Go a miss, asked help a hint, right goods on both roads, saved 1/1; level 5: Go before looking free, the smaller load a miss, asked help a hint, the better load reversing between cases, saved 1/1; a portrait screenshot of each); `BROWSER_SUITE=fingerdemo FINGER_ONLY=caravan-days FINGER_LEVELS=4,5` clean in 17.5 s and 17.3 s.
 - Not run: levels 1–3 browser play (unchanged; `CARAVAN_FROM` defaults to 1 so the full case still covers them), the offline check, an iPad, a child. Open: the three [device checks](DEVICE-CHECKS.md#caravan-days-levels-45-cs3-2026-10-30), including the withdraw clause. Code review (game-reviewer, fresh context): no blocking findings; its notes that a wrong good stays picked after a miss and that Go sends the last-looked load match the definition and were kept.
-
-## 2026-10-31 — Spinner Fair 1–5 definition (CS1, docs only)
-
-- [PR #1036](https://github.com/rjdunlap/neo/pull/1036), branch `claude/define-spinner-fair`: [definition](definitions/spinner-fair.md) (levels 1–5 of a new game; preschool 1–2, pre-K 2–3, school 3–5; Counting Cove becoming 14 games), two batch plans in [GAME-BATCHES](GAME-BATCHES.md#spinner-fair-1-spin-see-and-pick), READY, backlog, roadmap and study updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs only). Open: the builds run the new-game tier (batch 1) and the new-interaction tier (batch 2); device checks (spinner tapping, "still the better chance", sure/maybe/no way faces, wedge grab size, critter speech) stay open at the build.
 
 ## Coverage summary
 

@@ -1,5 +1,9 @@
 # Needs a person or a device
 
+## Not Always (philosophy-reasoning study, 2026-10-31; proposed, nothing built)
+
+- [ ] Once built: does a four-year-old find the counterexample from the spoken claim, or tap the odd one out without listening (watch the *Every one!* rounds)? Does a grown-up use the question card beyond one exchange?
+
 ## Puppet Stage (theatre-puppetry study, 2026-10-27; levels 1–3 built 2026-10-30)
 
 - [ ] On the iPad, with the selected voice, are three device-speech presets (sleepy: low and slow; tiny: high and fast; big: low and loud) distinct and pleasant, not creepy? Decides the study's decision 3 before TP1 is defined.
