@@ -53,3 +53,9 @@
 - Ran: `BROWSER_SUITE=atticjobs` on `http://localhost:5976`: level 5 free failing try, failing Check (one miss), partial Check (one more), done; level 6 requested hint on water counted once; portrait screenshot. `fingerdemo FINGER_ONLY=attic-finds FINGER_LEVELS=5,6 FINGER_BAND=school` clean (30.2 s, 38.2 s).
 - `game-reviewer` findings fixed (relayout deferred until animations end, Start again cancels old animations, pointer guards, try no longer blocks input during speech). Not run: a browser probe of resize or Start again mid-animation (code review only), pre-K level 5 browser play (same screen), offline check.
 - Open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): the hoop's missing floor read before or after trying, "every one" understood or needs one-more, the water drip at iPad size, device speech of the 27 new lines.
+
+## 2026-10-31 — Patchwork Conservatory definition (genetics G7, docs only)
+
+- [PR #1046](https://github.com/rjdunlap/neo/pull/1046), branch `claude/define-patchwork-conservatory`: [definition](../definitions/patchwork-conservatory.md) (Sprout Shuffle levels 7–8, two-locus guarantee brief), two batch plans in [GAME-BATCHES](../GAME-BATCHES.md#sprout-shuffle-1-which-pairs-always-make-spotted) (Hidden Sprouts level 4 and Patchwork 7–8).
+- Ran: `node scripts/check-links.mjs` and `git diff --check`; source check against OpenStax Biology 2e 12.3 (opened 2026-10-31).
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the builds (new-levels tier for level 4, new-interaction tier for 7–8, after level 6); the device and person checks listed in the definition (tile marks by ear and eye, "always" across two lenses, the trap as discovery).
