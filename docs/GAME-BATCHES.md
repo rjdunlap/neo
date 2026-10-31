@@ -697,6 +697,12 @@ Proof: new-game tier, as the [definition's check tier](definitions/puppet-stage.
 - **Proof:** independent rule tests/typecheck; filtered first/top wrong/help play plus branch/log recovery, all4 demos and dense portrait screenshot; build for shared catalog/card/voice. Relevant Keep/backup/offline and world proof for actual persistence/navigation changes. Record tested commit/filter/URL; stop servers. Person/device recognition/reach/speech/child response remains unestablished.
 - **Out:** NC3+, pieces, privacy, locks, resilience, Relay Cases, story, practical family card, real network/contact/safety. No outside reviewer approval invented; October23 source-check rule applies.
 
+### drops-journey 1: Where can the drop go, send it to the snow and can it go there
+
+- **`drops-journey`, levels 1-3 (weather-water study slice 8)** (a new game, one declared batch; preschool 1, pre-K 1-2, school 2-3; Tinker Lab, fallback Bubble Beach): tap a picture card to send a water drop to a lawful next stop among five places, finishing after three stops (level 1); reach a postcard goal such as the snow by any lawful route, with the pet replaying the story (level 2); then one uphill can't-go card is a miss, with a glow after two (level 3). [Definition](definitions/drops-journey.md), [study build slices](deep-dives/subjects/weather-water.md#build-slices-in-order)
+
+Proof: new-game tier, as the [definition's check tier](definitions/drops-journey.md#check-tier) sets it (typecheck, rule tests with registry, lands and how-to, a `browser-check.mjs` case with level 1 to its sticker and level 3 with one can't-go card, the glow and its hint, then Finish, one portrait screenshot of level 2 mid-move, `fingerdemo` at levels 1 and 3, one build). The building session's source check of the speech lines goes in its verification entry. If the allowance cannot cover all three levels, stop after complete levels 1-2 with a draft-PR checkpoint. Device checks stay open.
+
 ### sprout-shuffle 1: which pairs always make spotted
 
 - **`sprout-shuffle`, level 4 *which pairs always make spotted?*** (new level on the existing interaction; school; the first build of Hidden Sprouts, genetics G5, whose levels 5 and 6 follow as later complete parts): choose which parent pairs guarantee a spotted sprout and keep every explanation compatible with what was seen. Scope, rules and the school range are in the [definition](definitions/hidden-sprouts.md); depends on Sprout Shuffle levels 1–3, built 2026-10-30.
