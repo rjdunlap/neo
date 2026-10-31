@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-10-31 — Drift Cards levels 1–2 (oceans slice 6)
+
+- [PR #1078](https://github.com/rjdunlap/neo/pull/1078), branch `claude/drift-cards-1-2`: new game `drift-cards` in Bubble Beach (14 games), school levels 1–2; batch drift-cards 1.
+- Ran (tested at 12d3e0c8 on base 035164c0, Vite dev on http://localhost:5797): typecheck; full `npm test` 288 files / 4,021 tests (24 drift rule tests: 300-seed finiteness, no crossing over about 10,000 random seas, accounting, four-view layout); `npm run build`; `BROWSER_SUITE=driftcards` (level 1 free first guess wrong, two counted wrongs, glow, saved 2 misses/1 hint; level 2 wrong boat to the penguin and back, then a right boat, portrait screenshot mid-drift, saved 1/0), re-run after the review fixes; `fingerdemo` `FINGER_ONLY=drift-cards` levels 1 (22.9 s) and 2 (24.7 s). game-reviewer: no serious defects; fixed the beach touch-down press and the wrong-beach trace length.
+- Source check (S1, opened 2026-10-31): NatureBridge Elwha 2015 drift-card study (4x6 inch orange plywood, biodegradable, finders report by email) supports `drift.real`; NOAA Ocean Service "What is a current?" (driven by wind, water density differences and tides) supports the how-to note, reworded to wind, tides and differences in the water; the NOAA Ocean Exploration page was not reopened. No line names a real ocean, spill or rubbish.
+- Not run: offline check. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#drift-cards-levels-12-oceans-slice-6-2026-10-31)): a card mid-drift during a rotation finishes at its old coordinates (rare, self-corrects on the next card); the device and person checks below.
+
 ## 2026-10-31 — Island Bridges deep dive (docs only)
 
 - [PR #1077](https://github.com/rjdunlap/neo/pull/1077), branch `claude/dive-island-bridges`: [dive](deep-dives/island-bridges.md). Four slices queued ([batches](GAME-BATCHES.md#island-bridges-1-a-small-sea-to-start-and-named-hints): a small sea to start and named hints, level 6 keep them joined, level 7 up to three planks, couch course Joined Seas); the school opening is a queued definition; tracker, READY, backlog and ideas updated.
@@ -86,12 +93,6 @@
 - Ran: `git fetch origin --prune`, `scripts/overlap.sh` (no claim), `node scripts/check-links.mjs` and `git diff --check`. Sources: CCSS RL.K, RL.2, RL.3, RL.6 and the Kendeou et al. 2008 abstract opened; the rest from search summaries or recall, marked in the study.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the LM1 definition and three [person checks](DEVICE-CHECKS.md#thought-bubbles-literature-meaning-study-2026-10-31-proposed-nothing-built).
 
-## 2026-10-31 — Orchard Rows 4–6 definition (number-structure NS1, docs only)
-
-- [PR #1063](https://github.com/rjdunlap/neo/pull/1063), branch `claude/define-orchard-rows-4-6`: [definition](definitions/orchard-rows.md) (levels 4–6 on the built game; school; equal rows, every way, only one long row; the study's ladder changed at four points), batch plan [orchard-rows 1](GAME-BATCHES.md#orchard-rows-1-equal-rows-every-way-only-one-long-row), READY, backlog, study, packet and roadmap updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-interaction tier); the study's four person checks (leftover saplings used or arrows pressed at random, "every way" as collection or test, "one long row" without the word *prime*, deal lines in device speech), opened at the build.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -99,6 +100,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Grown-ups' page off-screen lines (`src/content/offscreen.test.ts`) | 2026-10-26: typecheck, full 3465 units, build; 7 rule tests (under-3 word list, wording, resolution, `{name}`) | [Off-screen lines](archive/VERIFICATION-2026-10-26.md#2026-10-26--off-screen-lines-per-band) | No browser look at the page; Bumper Garden school line held; no reader evidence |
+| `driftcards`, `fingerdemo` (`drift-cards`) | 2026-10-31: typecheck, 24 rule tests, full 4,021 units, build; levels 1–2 (level 1 free first guess, counted wrongs, glow, 2/1; level 2 wrong boat and back, portrait mid-drift, 1/0) and ghost finger levels 1 and 2 (22.9 s, 24.7 s) | [Drift Cards](#2026-10-31--drift-cards-levels-12-oceans-slice-6) | Whether school-age children read the arrows cell by cell, the two-cell trace and iPad speech for "South-west" unestablished; offline not run |
 | `forecastdetective`, `fingerdemo` (`forecast-detective`) | 2026-10-31: typecheck, 27 rule tests, registry/lands/how-to/capacity/clip tests, build; levels 1–2 (level 1 free not-yet and repeat Checks, ruled-out Checks, glow, 2/1; level 2 portrait, missing flap, overclaim, Can't tell yet, 1/0) and ghost finger levels 1 and 2 (15.5 s, 16.3 s) | [Forecast Detective](#2026-10-31--forecast-detective-levels-12-weather-water-slice-9) | Real iPad speech for "Lighthouse Isle", whether school-age children open clues on purpose and tween/parent appeal unestablished; offline not run |
 | `dropsjourney`, `fingerdemo` (`drops-journey`) | 2026-10-31: typecheck, 32 rule tests, full 3,970 units, build; levels 1–3 (level 1 mid-move tap ignored 0/0, level 2 portrait sea to cloud to snow 0/0, level 3 two can't-go cards, glow, requested hint, 2/1) and ghost finger levels 1 and 3 (7.0 s, 9.2 s) | [Drop's Journey](#2026-10-31--drops-journey-levels-13-weather-water-slice-8) | Real iPad speech for "vapour", a four-year-old reading the dotted drop and school-age explanations unestablished; offline not run |
 | `puppetstage`, `fingerdemo` (`puppet-stage`) | 2026-10-30: typecheck, full units 3,763, build; levels 1–3 play (three pops/drag/Bow 0/0, wrong puppet twice 2/1 with glow, free try then wrong bubble 1/0, portrait) and demos at levels 1/2/3 clean 10.5/10.0/12.2 s; `phone`, `howto` and device speech not run | [Puppet Stage](archive/VERIFICATION-2026-10-30.md#2026-10-30--puppet-stage-levels-13-theatre-and-puppetry-tp1) |
