@@ -156,11 +156,11 @@ async function creativeBatch() {
     }
     await page.setViewportSize({width:1024,height:768});log(`Stamp Studio ${level}: creative choices, arrangement, undo, late editing/held-drag guards, frozen kept picture, saved round and sticker passed`);
   }
-  // Level 13 is not built yet; `KITCHEN_LEVELS=14` plays just the shapes level.
-  const kitchenLevels=process.env.KITCHEN_LEVELS?process.env.KITCHEN_LEVELS.split(',').map(Number):[1,2,3,4,5,6,7,8,9,10,11,12,14].filter(l=>l>=fromLevel);
+  // `KITCHEN_LEVELS=13` (or 14) plays just that level.
+  const kitchenLevels=process.env.KITCHEN_LEVELS?process.env.KITCHEN_LEVELS.split(',').map(Number):[1,2,3,4,5,6,7,8,9,10,11,12,13,14].filter(l=>l>=fromLevel);
   if (!only || only === 'kitchen') for(const level of kitchenLevels) {
     await launch('pet-kitchen',level);
-    if(level===4||level===6||level===10||level===11||level===14){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
+    if(level===4||level===6||level===10||level===11||level===13||level===14){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
     await screenshot(`pet-kitchen-${level}-start`);
     await page.evaluate(async()=>{
       const g=neo.scene.game;
@@ -182,6 +182,24 @@ async function creativeBatch() {
         if(g.misses!==2||g.hints!==1)throw new Error(`Kitchen 11 hint ${g.misses}/${g.hints}`);
         kit.tapOn(g.recut);await kit.sleep(500);kit.tapOn(g.cuts[g.cutKinds.findIndex(k=>!k.lopsided)]);await kit.sleep(500);
         for(let i=0;i<2;i++){const p=g.plates[i].getGlobalPosition();await kit.dragTo(g.pieces[i].node,{x:p.x,y:p.y+40*neo.view.scale},18);await kit.sleep(220);}
+      }else if(g.compare){
+        // Level 13: halves served is a miss (the round arrow fixes it); quarters to each ask, serve, then one wrong
+        // "more" overlays the two servings before the right plate finishes.
+        if(g.bubbles.length!==2||!g.plates.every(p=>p.visible))throw new Error('Kitchen 13 did not start with two bubbles over two friends');
+        kit.tapOn(g.cuts[g.cutKinds.findIndex(k=>k.parts===2)]);await kit.sleep(450);
+        kit.tapOn(g.serve);await kit.sleep(600);
+        if(g.misses!==1||g.hints!==0)throw new Error(`Kitchen 13 halves ${g.misses}/${g.hints}`);
+        kit.tapOn(g.recut);await kit.sleep(500);kit.tapOn(g.cuts[g.cutKinds.findIndex(k=>k.parts===4)]);await kit.sleep(500);
+        const need=g.pair.map(r=>4*r.numerator/r.denominator);let next=0;
+        for(let i=0;i<2;i++)for(let n=0;n<need[i];n++){const p=g.plates[i].getGlobalPosition();await kit.dragTo(g.pieces[next++].node,{x:p.x,y:p.y+40*neo.view.scale},18);await kit.sleep(220);}
+        kit.tapOn(g.serve);await kit.sleep(600);
+        if(!g.asking||g.serve.visible||g.recut.visible)throw new Error('Kitchen 13 did not ask who has more');
+        const more=need[0]>need[1]?0:1;
+        kit.tapOn(g.plates[1-more]);await kit.sleep(700);
+        if(g.misses!==2||g.hints!==0||!g.overlaying)throw new Error(`Kitchen 13 wrong more ${g.misses}/${g.hints}/${g.overlaying}`);
+        await kit.sleep(1500);if(g.overlaying)throw new Error('Kitchen 13 overlay did not end');
+        kit.tapOn(g.plates[more]);await kit.sleep(900);
+        if(!g.done)throw new Error('Kitchen 13 right plate did not finish');
       }else if(g.plan.mode==='share'&&g.ctx.level===14){
         // Level 14: one sandwich cut down and served one half each is a miss while the other is whole (the second miss
         // glows the across picture); then the across cut, a wide half to each friend, and the overlay before the meal.
@@ -233,7 +251,7 @@ async function creativeBatch() {
         for(let i=0;i<2;i++)for(let n=0;n<multiplier*g.base[i];n++){kit.tapOn(g.ingredients[i]);await kit.sleep(450);}
       }
     });
-    await screenshot(`pet-kitchen-${level}`);if(level===10){await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[0,0]);}else if(level===14){await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[2,1]);}else{await tap('neo.scene.game.serve');await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[2,1]);}
+    await screenshot(`pet-kitchen-${level}`);if(level===10){await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[0,0]);}else if(level===14){await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[2,1]);}else if(level===13){await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[2,0]);}else{await tap('neo.scene.game.serve');await finished('pet-kitchen');assert.deepEqual(await score('pet-kitchen'),[2,1]);}
     await page.setViewportSize({width:1024,height:768});log(`Pet Kitchen ${level}: equal sharing/recipe, retries, hints, saved round and sticker passed`);
   }
   if (!only || only === 'rhythm') for(let level=fromLevel;level<=9;level++) {

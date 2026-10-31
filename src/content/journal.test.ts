@@ -19,7 +19,8 @@ describe('the entries', () => {
     expect(entriesOf('letter-trails').map((e) => e.key)).toEqual(Object.keys(WORDS));
     expect(entriesOf('mail-carrier').map((e) => e.key)).toEqual([...HELPERS]);
     expect(entriesOf('rhythm-neighbors').map((e) => e.key)).toEqual(['frogs-answer']);
-    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 4);
+    expect(entriesOf('pet-kitchen').map((e) => e.key)).toEqual(['half', 'quarter', 'third']);
+    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 4 + 3);
   });
 
   it('gives each a stable, unique id from its game and key', () => {
@@ -87,6 +88,9 @@ describe('the entries', () => {
         case 'letter-trails':
           expect(said, e.id).toContain(`${e.key.toLowerCase()} is for ${WORDS[e.key]}`);
           break;
+        case 'pet-kitchen':
+          expect(said, e.id).toContain({ half: 'two halves make a whole', quarter: 'two quarters make a half', third: 'three thirds make a pizza' }[e.key]);
+          break;
       }
     }
   });
@@ -135,6 +139,9 @@ describe('the entries', () => {
       } else if (e.game === 'melt-freeze') {
         expect(find.toLowerCase()).toContain('warm');
         expect(found).toContain(e.key === 'stays' ? 'stayed the same' : 'melted');
+      } else if (e.game === 'pet-kitchen') {
+        expect(find).toContain(e.key === 'third' ? 'thirds' : e.key === 'half' ? 'halves' : 'two quarters');
+        expect(found).toContain(e.key === 'third' ? 'three equal slices' : e.key === 'half' ? 'two halves' : 'one half');
       } else if (e.game === 'letter-trails') {
         expect(find).toContain(`letter ${e.key}`);
         expect(found).toContain(`letter ${e.key}`);

@@ -13,14 +13,16 @@ export const PLANS = [
   { mode: 'deal', wholes: 1, friends: 2, cuts: [2,4], name: 'Tap a piece to deal it, one for you and one for me (halves or quarters, no wrong touch)' },
   { mode: 'share', wholes: 1, friends: 2, cuts: [2], lopsided: true, name: 'Same or not the same? Choose the cut that gives two friends equal pieces, not a big one and a little one' },
   { mode: 'share', wholes: 2, friends: 3, cuts: [2,3,4], lopsided: false, name: 'Two pizzas for three friends: only thirds share them out' },
+  { mode: 'compare', wholes: 1, friends: 2, cuts: [2,4], name: 'Who has more? Serve two friends the amounts they ask for from one sandwich, then tap the friend with more' },
 ] as const;
 /** Level 11 offers the middle cut beside a lopsided one; level 12 shares two pizzas among three. */
 export const SAME_LEVEL = 11;
 export const PIZZAS_LEVEL = 12;
+/** Level 13 *Who has more?*: two asks from one sandwich, then a question about the two servings. */
+export const COMPARE_LEVEL = 13;
 /**
  * Level 14 *Different shape, same share*: two sandwiches, two friends and two cut pictures (down and across). Each
- * sandwich takes its own cut, so a plate can hold a tall half and a wide half. Level 13 is not built yet, so the plan
- * table skips it (no band's order lists 13).
+ * sandwich takes its own cut, so a plate can hold a tall half and a wide half.
  */
 export const SHAPES_LEVEL = 14;
 export const SHAPES_PLAN = { mode: 'share', wholes: 2, friends: 2, cuts: [2], shapes: true, name: 'Different shape, same share: cut one sandwich down and one across, then give each friend a tall half and a wide half' } as const;
@@ -162,3 +164,51 @@ export function dealCut(rng: Rng): 2 | 4 { return rng.chance(0.5) ? 2 : 4; }
  * `pieces` taps leave the plates equal.
  */
 export function dealTo(plates: readonly number[]): number { return nextPlate([...plates]); }
+
+/**
+ * Level 13's asks: two different fractions of one sandwich that fit in it together (one half and one quarter, or three
+ * quarters and one quarter; one half and three quarters is more than the sandwich). Never two of the same, so one
+ * friend always has more.
+ */
+export const COMPARE_PAIRS = FRACTIONS.flatMap((a, i) => FRACTIONS.slice(i + 1).map((b) => [a, b] as const))
+  .filter(([a, b]) => a.numerator / a.denominator + b.numerator / b.denominator <= 1);
+export type ComparePair = readonly [FractionRequest, FractionRequest];
+/** A seeded pair, in a seeded plate order. */
+export function comparePair(rng: Rng): ComparePair {
+  const [a, b] = rng.pick(COMPARE_PAIRS);
+  return rng.chance(0.5) ? [a, b] : [b, a];
+}
+/** How many pieces of a cut make each ask (fractional when the cut cannot make it). */
+export const needs = (pair: ComparePair, cut: number) => pair.map((r) => (cut * r.numerator) / r.denominator);
+/** The cut that serves both asks: the fewest pieces that make each a whole number of pieces (quarters). */
+export const compareCut = (pair: ComparePair, cuts: readonly number[]) =>
+  [...cuts].sort((a, b) => a - b).find((c) => pair.every((r) => fractionCut(r, [c]) === c));
+/** The first plate whose serving is not its friend's ask, or -1 when both are right. */
+export function firstUnmet(pair: ComparePair, cut: number, counts: readonly number[]): number {
+  return pair.findIndex((r, i) => !servesFraction(r, cut, counts[i] ?? 0));
+}
+/** Both friends have exactly what they asked for. */
+export const servesBoth = (pair: ComparePair, cut: number, counts: readonly number[]) => cut > 0 && firstUnmet(pair, cut, counts) < 0;
+/** The plate with more: the larger ask (the two always differ). */
+export const morePlate = (pair: ComparePair) => (pair[0].numerator / pair[0].denominator > pair[1].numerator / pair[1].denominator ? 0 : 1);
+
+/**
+ * The journal entries a finished round showed (decision 6): two halves of one whole served (`half`), two quarters on
+ * one plate, which is one half (`quarter`), and every third of a pizza served (`third`). Only a fair or asked-for serve
+ * counts; a lopsided cut is not two halves.
+ */
+export type KitchenDiscovery = 'half' | 'quarter' | 'third';
+export const KITCHEN_DISCOVERIES: readonly KitchenDiscovery[] = ['half', 'quarter', 'third'];
+export function kitchenDiscoveries(mode: string, cut: number, lopsided: boolean, counts: readonly number[], pieces: number): KitchenDiscovery[] {
+  const found: KitchenDiscovery[] = [];
+  const everyPiece = counts.reduce((a, b) => a + b, 0) === pieces && pieces > 0;
+  const shares = mode === 'share' || mode === 'deal';
+  if (shares && everyPiece && cut === 2 && !lopsided) found.push('half');
+  if (cut === 4 && counts.some((n) => n === 2)) found.push('quarter');
+  if (shares && everyPiece && cut === 3) found.push('third');
+  return found;
+}
+/** Level 13's two friends are named aloud ("the cat asked for…"), so the island's own pip is never one of them. */
+export function compareFriends(rng: Rng): CritterName[] {
+  return rng.shuffle((Object.keys(CRITTERS) as CritterName[]).filter((n) => n !== 'pip')).slice(0, 2);
+}

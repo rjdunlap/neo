@@ -4,6 +4,7 @@ import { ACTIONS, type Action } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats, type Thing } from '../games/sink-float/logic';
 import { HELPER, HELPERS } from '../games/mail-carrier/logic';
 import { CHANGERS } from '../games/melt-freeze/logic';
+import { KITCHEN_DISCOVERIES, type KitchenDiscovery } from '../games/pet-kitchen/logic';
 import type { LineId } from './voice-script';
 
 /**
@@ -12,7 +13,7 @@ import type { LineId } from './voice-script';
  * is found. A game reports what it actually showed during a round (`RoundResult.discoveries`); the shell files it.
  */
 
-export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails' | 'mail-carrier' | 'rhythm-neighbors' | 'melt-freeze';
+export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails' | 'mail-carrier' | 'rhythm-neighbors' | 'melt-freeze' | 'pet-kitchen';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -35,6 +36,13 @@ export interface JournalEntry {
 export const entryId = (game: JournalGame, key: string) => `${game}:${key}`;
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const KITCHEN_NAMES: Record<KitchenDiscovery, string> = { half: 'Two halves make a whole', quarter: 'Two quarters make a half', third: 'Three thirds make a pizza' };
+const KITCHEN_SOURCES: Record<KitchenDiscovery, JournalEntry['source']> = {
+  half: { find: 'cut food in halves and share every half fairly', found: 'the two halves of the food were shared out' },
+  quarter: { find: 'give a friend two quarters', found: 'a friend had two quarters, the same as one half' },
+  third: { find: 'cut a pizza in thirds and share every slice', found: 'the pizza was cut in three equal slices and shared out' },
+};
 
 /** Observations, in the words a grown-up would say. One line per thing and per animal. */
 const SINK_LINES: Record<Thing, LineId> = {
@@ -209,6 +217,15 @@ export const JOURNAL: readonly JournalEntry[] = [
     line: 'journal.melt.stays',
     source: { find: 'warm a tray that has a stone or a spoon on it', found: 'the stone and the spoon stayed the same in the warm' },
   },
+  // Pet Kitchen: what a fair or asked-for serve showed (decision 6 of its dive).
+  ...KITCHEN_DISCOVERIES.map((k): JournalEntry => ({
+    id: entryId('pet-kitchen', k),
+    game: 'pet-kitchen',
+    key: k,
+    name: KITCHEN_NAMES[k],
+    line: `journal.kitchen.${k}` as LineId,
+    source: KITCHEN_SOURCES[k],
+  })),
 ];
 
 export const JOURNAL_IDS: readonly string[] = JOURNAL.map((e) => e.id);

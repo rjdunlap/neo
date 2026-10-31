@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { COMPARE_PAIRS, comparePair, compareCut, needs, servesBoth, firstUnmet, morePlate, compareFriends, kitchenDiscoveries, COMPARE_LEVEL } from './logic';
 import { allCut, CUT_WAYS, nextWay, overlayPair, pieceShape, SHAPES_LEVEL, SHAPES_PLAN, shapesLine, type CutWay, type PieceShape, dealCut, dealFriends, dealTo, DEAL_LEVEL, fruitPair, FRUITS, pieceCount, wholeFor, WHOLES, doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, PLANS, plateAt, PLATE_REACH, recipe, servesFraction, serveTrouble, countAloud, cutShares, fairAreas, pieceAreas, LOPSIDED_AREAS, isPizzaLevel } from './logic';
 it('can share every meal fairly and accepts alternative equal cuts',()=>{
  for(const p of PLANS.filter(p=>p.mode==='share')) {
@@ -167,4 +168,60 @@ it('level 14 cuts one sandwich down and one across: both ways make two halves, o
  expect(overlayPair(alike)?.map(p=>p.id)).toEqual([0,1]);expect(shapesLine(['wide','wide'])).toEqual({line:'kitchen.same-shape',shape:'wide'});
  expect(shapesLine(['tall','tall'])).toEqual({line:'kitchen.same-shape',shape:'tall'});
  expect(overlayPair([{shape:'tall' as const}])).toBeNull();
+});
+const ids = (p: readonly { id: string }[]) => p.map(r => r.id).sort();
+it('level 13 asks are exactly half+quarter and three-quarters+quarter, distinct and within one sandwich',()=>{
+ expect(COMPARE_PAIRS.map(p=>ids(p)).sort()).toEqual([['half','quarter'],['quarter','three-quarters']]);
+ for(const [a,b] of COMPARE_PAIRS){expect(a.id).not.toBe(b.id);expect(a.numerator/a.denominator+b.numerator/b.denominator).toBeLessThanOrEqual(1);}
+ const seen=new Set<string>(),orders=new Set<string>();
+ for(let seed=1;seed<=200;seed++){const pair=comparePair(new Rng(seed));
+  expect(COMPARE_PAIRS.some(p=>ids(p).join()===ids(pair).join())).toBe(true);
+  seen.add(ids(pair).join());orders.add(pair.map(r=>r.id).join());
+  expect(comparePair(new Rng(seed)).map(r=>r.id)).toEqual(pair.map(r=>r.id));}
+ expect(seen.size).toBe(2);expect(orders.size).toBe(4);
+});
+it('level 13 cut, needs, serving checks, and the larger ask',()=>{
+ for(const pair of COMPARE_PAIRS){
+  expect(compareCut(pair,[2,4])).toBe(4);expect(compareCut(pair,[2])).toBeUndefined();
+  expect(needs(pair,2).some(n=>!Number.isInteger(n))).toBe(true);
+ }
+ for(let seed=1;seed<=100;seed++){
+  const pair=comparePair(new Rng(seed)),cut=4,want=needs(pair,cut);
+  expect(want.every(Number.isInteger)).toBe(true);
+  expect(servesBoth(pair,cut,want)).toBe(true);expect(firstUnmet(pair,cut,want)).toBe(-1);
+  if(pair.some(r=>r.id==='half'))expect(want.reduce((a,b)=>a+b,0)).toBe(3); // one tray piece left over is fine
+  for(let a=0;a<=cut;a++)for(let b=0;b<=cut;b++){
+   const counts=[a,b],i=firstUnmet(pair,cut,counts);
+   if(a===want[0]&&b===want[1]){expect(i).toBe(-1);continue;}
+   expect(i).toBeGreaterThanOrEqual(0);expect(counts[i]).not.toBe(want[i]);
+   expect(servesBoth(pair,cut,counts)).toBe(false);
+  }
+  expect(servesBoth(pair,0,[0,0])).toBe(false);
+  const m=morePlate(pair),frac=(r:typeof pair[0])=>r.numerator/r.denominator;
+  expect(frac(pair[m])).toBeGreaterThan(frac(pair[1-m]));
+ }
+ // Halves cannot serve a quarter.
+ const q=COMPARE_PAIRS[0].find(r=>r.id==='quarter')!;
+ for(let n=0;n<=2;n++)expect(servesFraction(q,2,n)).toBe(false);
+});
+it('plan table: level 13 is compare, neighbours unchanged',()=>{
+ expect(COMPARE_LEVEL).toBe(13);expect(planFor(13).mode).toBe('compare');
+ expect(planFor(12)).toBe(PLANS[11]);expect(planFor(12).mode).toBe('share');expect((planFor(12) as {wholes:number}).wholes).toBe(2);
+ expect(planFor(14)).toBe(SHAPES_PLAN);
+});
+it('compare friends are two distinct critters and never pip',()=>{
+ for(let seed=1;seed<=100;seed++){const f=compareFriends(new Rng(seed));
+  expect(f).toHaveLength(2);expect(f[0]).not.toBe(f[1]);expect(f).not.toContain('pip');}
+});
+it('journal discoveries only record what the round really showed',()=>{
+ expect(kitchenDiscoveries('share',2,false,[1,1],2)).toEqual(['half']);
+ expect(kitchenDiscoveries('share',2,true,[1,1],2)).toEqual([]);
+ expect(kitchenDiscoveries('share',4,false,[2,2],4)).toContain('quarter');
+ expect(kitchenDiscoveries('compare',4,false,[2,1],3)).toContain('quarter');
+ expect(kitchenDiscoveries('share',4,false,[2,2,2,2],8)).toContain('quarter');
+ expect(kitchenDiscoveries('compare',4,false,[3,1],4)).not.toContain('quarter');
+ for(const pieces of [3,6])expect(kitchenDiscoveries('share',3,false,Array(3).fill(pieces/3),pieces)).toContain('third');
+ expect(kitchenDiscoveries('share',2,false,[1,0],2)).toEqual([]);
+ expect(kitchenDiscoveries('share',3,false,[1,1,0],3)).not.toContain('third');
+ expect(kitchenDiscoveries('recipe',0,false,[0],0)).toEqual([]);
 });
