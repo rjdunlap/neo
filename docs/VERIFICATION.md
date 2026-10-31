@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Media literacy subject research (docs only)
+
+- [PR #1053](https://github.com/rjdunlap/neo/pull/1053), branch `claude/research-media-literacy`: [study](deep-dives/subjects/media-literacy.md) and [packet](deep-dives/subjects/RECOMMENDATIONS.md#media-literacy-recommendations) (a new game, Notice Board: match the stamp to the maker, tap the friend who saw it, to tell or to sell; a "Who made this?" card and a hand-frame co-play role follow; two Photo Safari modes handed to its dive), tracker, backlog, READY, ideas, roadmap and device checks updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. Sources: NAMLE, RI.K, RI.4 and ISTE opened; the rest from search summaries or recall, marked in the study.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the ML1 definition and three [person checks](DEVICE-CHECKS.md#notice-board-media-literacy-study-2026-10-31-proposed-nothing-built).
+
 ## 2026-10-31 — Not Always 1–3 definition (philosophy-reasoning PR1, docs only)
 
 - [PR #1052](https://github.com/rjdunlap/neo/pull/1052), branch `claude/define-not-always`: [definition](definitions/not-always.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Story Grove, fallback Puzzle Peaks; claims about picture cards on screen, tap the breaker, *Every one!* stamp, mended claim), batch plan [not-always 1](GAME-BATCHES.md#not-always-1-not-all-of-them-every-one-and-say-it-better), READY, backlog, study, packet and ideas updated.
@@ -89,12 +95,6 @@
 - [PR #1041](https://github.com/rjdunlap/neo/pull/1041), branch `claude/define-same-job`: [definition](definitions/same-job.md) (Attic Finds levels 5 *Same job* and 6 *Right for the job*; pre-K and school), batch plan [attic-finds 2](GAME-BATCHES.md#attic-finds-2-same-job-and-right-for-the-job), READY, backlog, study, ideas and device-check updates.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the build runs the new-interaction tier (`atticjobs`, `fingerdemo` at 5 and 6, one portrait screenshot); device checks in [DEVICE-CHECKS](DEVICE-CHECKS.md) stay open.
-
-## 2026-10-30 — Critter Daily reference review (docs only)
-
-- Branch `claude/critter-daily-research-d94b87`: [docs/CRITTER-DAILY.md](CRITTER-DAILY.md), a review of critterdaily.com's six animal-led puzzles and how their animals are drawn and animated, with six proposals (P1–P6), plus a pointer in [IDEAS](IDEAS.md#critter-daily-review-2026-10-30).
-- Seen: the home page and one Burrow practice round in the browser pane; every game's page, stylesheet and script read; a local pose sheet rendered in the session scratchpad (not committed).
-- Ran: `node scripts/check-links.mjs` and `git diff --check`. Not run: typecheck, tests, build, browser suites (docs only).
 
 ## Coverage summary
 

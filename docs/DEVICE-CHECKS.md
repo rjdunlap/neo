@@ -1,5 +1,11 @@
 # Needs a person or a device
 
+## Notice Board (media-literacy study, 2026-10-31; proposed, nothing built)
+
+- [ ] Once built: does a four-year-old pick the witness from the memory picture, or just the friend nearest the poster?
+- [ ] Once built: does a seven-year-old's basket choice (to tell or to sell) follow the price and stall cue or the maker's words?
+- [ ] Once the card is built: does a grown-up use the "Who made this?" card with a real box or advert?
+
 ## Not Always (philosophy-reasoning study, 2026-10-31; proposed, nothing built)
 
 - [ ] Once built: does a four-year-old find the counterexample from the spoken claim, or tap the odd one out without listening (watch the *Every one!* rounds)? Does a grown-up use the question card beyond one exchange?
