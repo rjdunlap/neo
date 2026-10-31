@@ -868,6 +868,16 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'Check holds the bucket beside the jar; a match chimes, and the round ends after two buckets.',
     note: "Pouring, undo and tipping out are never counted; only a Check that doesn't match is, and after two misses the next pot or button glows (one hint). Colour words are labels. This is a toy: the bucket's colour is an average of its drops; real paint doesn't mix by averaging, and more paint is not a stronger colour.",
   },
+  'spinner-fair': {
+    goal: "Spin the spinner and watch the blocks; then use the spinner's picture to say what's likely.",
+    steps: [
+      { from: 1, to: 1, text: 'Tap the spinner; a block drops on the bar of the critter it lands on.' },
+      { from: 2, to: 2, text: 'After eight spins, tap the bar of the critter that came up most.' },
+      { from: 3, to: 3, text: "Pick the spinner with more of the pet's favourite, then spin it ten times." },
+    ],
+    finish: 'The round ends after the last spins; one sticker, whatever the spinner did.',
+    note: "A spin is never a mistake; only a question the spinner's picture answers can be. A better chance can still lose: that is the lesson, not a bug. Nothing in the game is won, bet or unlocked by a spin.",
+  },
   'puppet-stage': {
     goal: 'Make a puppet pop up and talk in its own voice.',
     steps: [

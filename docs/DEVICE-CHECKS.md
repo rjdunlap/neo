@@ -141,6 +141,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] On an iPad, hear each place's reason line ("I only munch food bits" and the others) in device speech.
 - [ ] Does a child take the island's Remake machine for a real recycling bin? The card tells grown-ups to check their own town's rules; listen for what she says.
 
+## Spinner Fair levels 1–3 (chance-statistics CS1, 2026-10-31)
+
+- [ ] With a preschooler: does she keep tapping the spinner for six spins and read a block as "that one came up"?
+- [ ] With a pre-K child: does she accept "still the better chance" after a losing pick?
+- [ ] On an iPad, hear the critter calls and the `sf.*` lines in device speech.
+
 ## Second Chance Shed levels 5–6 (nature-sustainability N3, 2026-10-31)
 
 - [ ] With a school-age child: does she read a friend's picture bubble (a cat with pencils, Bunny, a duck) without the spoken line?

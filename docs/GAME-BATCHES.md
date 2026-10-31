@@ -648,6 +648,8 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 ### spinner-fair 1: Spin, see and pick
 
+**Status: built 2026-10-31, PR #1058.**
+
 - **`spinner-fair`, levels 1-3 (chance-statistics study slice CS1)** (a new game, one declared batch; preschool 1-2, pre-K 2-3, school 3-5; Counting Cove, 13 games becoming 14, so the land now pages): tap a big spinner and a critter's block drops on its bar, six spins with nothing counted (level 1), then which came up most (level 2), then pick the spinner that gives the pet the better chance and watch ten spins; a spin is never a miss and the better spinner may lose (level 3). [Definition](definitions/spinner-fair.md), [study build slices](deep-dives/subjects/chance-statistics.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's check tier](definitions/spinner-fair.md#check-tier-for-the-builds) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `browser-check.mjs` case filtered to Spinner Fair with level 1 to its sticker and level 3 with one wrong pick, the glow on the second and ten spins, one portrait screenshot of level 3, `fingerdemo` at level 3, one build). Device checks stay open. Levels 4-5 are batch `spinner-fair 2`; levels 6-10 need their own definitions.
