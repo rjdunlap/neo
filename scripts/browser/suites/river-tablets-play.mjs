@@ -107,9 +107,14 @@ async function riverTablets45({ score, tally, settle, tapOn }) {
   await page.waitForTimeout(200);
   assert.ok(await page.evaluate(() => neo.scene.game.yardCounted), 'the yard is being counted');
   await settle();
-  // One ten-mark only: wrong.
+  // One ten-mark only: wrong. A crate opened just before must not stall the Hand in (its art closes in place).
+  // A crate's origin is its bottom edge: aim at its middle.
+  await page.evaluate(() => kit.tapOn(neo.scene.game.crateNodes[0], 0, -50)); await page.waitForTimeout(150);
+  assert.equal(await page.evaluate(() => neo.scene.game.busy), false, 'opening a crate is free and keeps the board live');
   await tapOn('neo.scene.game.stampNodes[0]');
   await tapOn('neo.scene.game.handInNode'); await settle();
+  await page.waitForTimeout(1500);
+  assert.equal(await page.evaluate(() => neo.scene.game.busy), false, 'a crate opened during the commit leaves the board live');
   s = await page.evaluate(() => ({ ...neo.scene.game.tensNow }));
   assert.deepEqual([s.misses, s.glowing, s.tens, s.ones], [1, false, 1, 0], 'a wrong Hand in is one miss, her marks kept');
   await tapOn('neo.scene.game.handInNode'); await settle();

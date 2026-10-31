@@ -928,6 +928,13 @@ class RiverTablets implements Game {
     return this.stampNodes[h === 'stampTen' ? 0 : 1];
   }
 
+  /** The ghost finger's spot for a step: strips are drawn from their top-left, so it aims at their middle. */
+  private tensSpot(h: ReturnType<typeof tensHint>) {
+    const on = this.tensTarget(h);
+    const strip = h === 'liftTen' ? this.layoutNow!.strips![0] : h === 'liftOne' ? this.layoutNow!.strips![1] : null;
+    return strip ? { on, x: strip.w / 2, y: strip.h / 2 } : { on };
+  }
+
   /** Tapping the tablet's face reads it aloud; never counted. */
   readTablet() {
     if (this.finished || this.busy || !this.tabletNode) return;
@@ -939,16 +946,25 @@ class RiverTablets implements Game {
   /** Tapping a crate opens it for a moment and counts its ten; never counted. */
   private async openCrateAt(i: number) {
     if (this.finished || this.busy) return;
-    const epoch = this.epoch;
+    // Only this crate's art changes, so nothing else on the board (and no running commit) is rebuilt.
+    const node = this.crateNodes[i];
     this.openCrate = i;
-    this.build();
+    this.redrawCrate(node, true);
     sfx.pop(8);
     await this.ctx.say('rt.crate-ten');
-    if (!this.live(epoch)) return;
     await this.ctx.tw.wait(this.ctx.demo ? 0.3 : 0.8);
-    if (!this.live(epoch)) return;
+    if (!this.alive || this.openCrate !== i) return;
     this.openCrate = -1;
-    this.build();
+    // A rebuild meanwhile made a new node for this crate; close whichever stands there now.
+    const now = this.crateNodes[i];
+    if (now) this.redrawCrate(now, false);
+  }
+
+  private redrawCrate(node: Container, open: boolean) {
+    const r = this.layoutNow?.crates?.[0];
+    if (!r || node.destroyed) return;
+    for (const c of node.removeChildren()) c.destroy({ children: true });
+    node.addChild(crateArt(r.w - 10, r.h - 40, open));
   }
 
   /** Level 4: tapping the yard makes the pet count it, crates by tens then each loose basket with a bounce; never counted. */
@@ -1223,11 +1239,13 @@ class RiverTablets implements Game {
       return;
     }
     if (this.brief.id === 'tens') {
+      if (this.tensNow.done) return;
       this.tens[this.cartIndex] = askTens(this.tensNow);
       void this.ctx.say('rt.tens.help');
       return;
     }
     if (this.brief.id === 'check') {
+      if (this.check.done) return;
       this.checks[this.cartIndex] = askCheck(this.check);
       this.drawLineup(shortest(this.check.t), cartOf(this.check.c), true);
       void this.ctx.say('rt.check.help');
@@ -1297,7 +1315,7 @@ class RiverTablets implements Game {
       const s = this.tensNow;
       if (s.done) return null;
       if (!this.yardCounted && this.yardNode) return { tap: { on: this.yardNode, x: this.layoutNow.baskets!.x + this.layoutNow.baskets!.w / 2 - this.yardNode.x, y: this.layoutNow.lane.h / 2 }, pause: 0.6 };
-      return { tap: { on: this.tensTarget(tensHint(s)) }, pause: 0.4 };
+      return { tap: this.tensSpot(tensHint(s)), pause: 0.4 };
     }
     if (this.brief.id === 'check') {
       const c = this.check;
