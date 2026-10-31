@@ -8,13 +8,13 @@ export function selectNames(value, available, label) {
   return [...new Set(picked)];
 }
 
-export function fingerPlays(games, requestedLevels) {
+export function fingerPlays(games, requestedLevels, band) {
   const levels = requestedLevels === undefined ? null : requestedLevels.split(',').map(x => Number(x.trim()));
   if (levels && (!levels.length || levels.some(x => !Number.isInteger(x) || x < 1))) throw new Error('FINGER_LEVELS: expected positive integer levels');
   return games.map(game => {
     const plays = levels ? [...new Set(levels)].map(level => {
-      const range = game.ranges.find(r => r.levels.includes(level));
-      if (!range) throw new Error(`FINGER_LEVELS: ${game.id} has no level ${level}`);
+      const range = game.ranges.find(r => (!band || r.band === band) && r.levels.includes(level));
+      if (!range) throw new Error(`FINGER_LEVELS: ${game.id} has no level ${level}${band ? ` at ${band}` : ''}`);
       return { band: range.band, level };
     }) : [
       { band: game.ranges[0].band, level: game.ranges[0].levels[0] },

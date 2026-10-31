@@ -705,9 +705,10 @@ Performed on the built levels (built 2026-10-31, [PR #1038](https://github.com/r
 
 ## Water Road levels 4–5 (AM3, 2026-10-31)
 
-Performed on the built levels, which are not yet built ([definition](definitions/water-road.md#levels-45-check-tier-for-the-build)).
+Performed on the built levels (PR #1043; [definition](definitions/water-road.md#levels-45-check-tier-for-the-build)).
 
 - [ ] With a four-year-old, check whether she reads the climbing channel from the drawing before opening the spring.
 - [ ] With a school child, check whether she links the arrows to the pier's height, and whether a flat stretch reads as "stood still" rather than as a bug.
 - [ ] Check whether the push arrows read at the ends of the arch row at level 5.
 - [ ] On an iPad, check device speech for "abutment", if a line uses it, and for "the middle sea".
+- [ ] Check whether the push arrows read at the ends of a row (level 5), and whether a flat stretch at level 4 reads as "stood still" and not as a bug.

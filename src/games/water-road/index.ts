@@ -3,7 +3,7 @@
  * the keystone chimes, then pulls the frame and the pet walks through (nothing counted); level 2 pulls pairs of frames,
  * one ring closed and one with a gap, and asks on the last pair which will stand; level 3 drags a buttress block to the
  * side with no wall and pulls. One rule decides every pull: a ring that is closed and pushed back at both ends stands.
- * Rules: ./logic.ts; definition: docs/definitions/water-road.md.
+ * Levels 4–5 (the water road and the arches over the valley) are their own scene in ./flow.ts. Rules: ./logic.ts; definition: docs/definitions/water-road.md.
  */
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { swatch } from '../../art/palette';
@@ -20,6 +20,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import type { CompanionRig } from '../../creatures/companion';
+import { WaterFlow } from './flow';
 import { arrowArt, blockArt, frameArt, groundArt, iconArt, SKY, slotArt, stickerArt, stoneArt, wallArt } from './art';
 import {
   BLOCK, botMove, buttressPlan, buttressStart, centre, explain, hintFor, inner, isAsked, keystone, keystoneArch, keystonePlan, keystoneStart, nextArch, nextPair, outer, pairsPlan,
@@ -30,8 +31,8 @@ import {
 const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 3 },
-  school: { min: 3, max: 3 },
+  prek: { min: 2, max: 4 },
+  school: { min: 3, max: 5 },
 };
 
 /** The handle glows brighter when nothing has been tapped for this long after the ring closes (level 1, uncounted). */
@@ -92,7 +93,7 @@ class WaterRoad implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    this.level = planFor(ctx.level).level;
+    this.level = planFor(ctx.level).level as 1 | 2 | 3;
     this.plan = this.level === 1 ? keystonePlan(ctx.band, ctx.rng) : this.level === 2 ? pairsPlan(ctx.band, ctx.rng) : buttressPlan(ctx.band, ctx.rng);
     if (this.plan.level === 1) this.ks = keystoneStart();
     else if (this.plan.level === 2) this.ps = pairsStart();
@@ -821,10 +822,10 @@ export const waterRoad: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
-  coplayHint: 'Frame-puller and stone counter: one of you counts the stones aloud (or says which ring has the gap), the other taps and pulls; swap after each arch.',
+  coplayHint: 'Frame-puller and stone counter: one of you counts the stones aloud (or says which ring has the gap), the other taps and pulls; swap after each arch. On the water roads, a spring-keeper says "open!" only when both agree every stretch goes down.',
   hubIcon: () => new ArchIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => new WaterRoad(ctx),
+  create: (ctx) => (planFor(ctx.level).level >= 4 ? new WaterFlow(ctx) : new WaterRoad(ctx)),
 };
 
