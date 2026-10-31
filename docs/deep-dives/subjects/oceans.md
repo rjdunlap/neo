@@ -98,7 +98,7 @@ Effort as in the other studies (S small mode, M bounded new interaction, L model
 | **Rock Pool scene** (content in Photo Safari) | Find what is in the pool, then what shows when the sea is out | P–S | S. Uses the Tide Pool Friends art |
 | **Shore zones** (cases in Habitat Helpers) | Who lives high on the shore and who lives low; needs, not trivia (5h) | K–S | S–M. Handed to the Habitat Helpers dive |
 | **Down We Go** (new game, later) | Lower a lantern; the light meter drops by stops; choose the seaweed's place; the deep is dark so the lantern is the light | P–U | M. Light meter, depth stops; define after Tide Line |
-| **Drift Cards** (new game, later; U/M) | Send a bottle; arrows show wind and currents; predict where it lands, then check | U–M; MS-ESS2-6, 1c | M–L. After Drop's Journey is defined |
+| **Drift Cards** (new game, later; U/M; levels 1–3 [defined](../../definitions/drift-cards.md) 2026-10-31) | Send a wooden card (not a bottle); arrows show wind and currents; predict where it lands, then check | U–M; MS-ESS2-6, 1c | M–L. Defined; build queued |
 | **Tide Tables** (grown-up puzzle, later) | Fit jobs into the tide windows of a day | G; 13+ | M. Placement (Lantern Lake capacity) unresolved |
 | Rejected | Fishing derby / overfishing, aquarium keeper, oil or plastic spill clean-up, coral-bleaching rescue, shark feeding, sea-monster descent, whale-watching ship, "Below the Waves" integers (Sea Lift has it) | | Violates the no-predation-as-fun, tone and overlap rules |
 
@@ -162,7 +162,7 @@ Each row is one future session. Definitions are docs only (links and `git diff -
 | **3 — Define Tide Line 5–7** | Sky arc, day strip, chart and the fortnight set | Docs only; level 7 held for the reviewer |
 | **4 — Handoffs** | Salty or Fresh to the Sink or Float dive; Beach Day Pack-up weighed in the Second Chance Shed 5–6 definition (2026-10-31) and kept as a proposed picnic set for its levels 2–4; Beach Tally to the Picture Graph dive; Rock Pool to Photo Safari; shore zones to the Habitat Helpers dive | Each through its own game's workflow; stable IDs and pins kept |
 | **5 — Define Down We Go** | The light meter, stops, the seaweed question and the school levels | Docs only, after slice 2 so the shore art exists |
-| **6 — Define Drift Cards** | Maps with currents; the route puzzle | Docs only; eligible since Drop's Journey was [defined](../../definitions/drops-journey.md) 2026-10-31 |
+| **6 — Define Drift Cards** (defined 2026-10-31: [definition](../../definitions/drift-cards.md), levels 1–3) | Maps with currents; the route puzzle | Docs only; done, wooden cards not bottles, the 1992 spill counts unused; build queued in READY |
 | **7 — Define Tide Tables** | Grown-up cases; placement | Docs only, after capacity is measured |
 
 ## What was built and what ran

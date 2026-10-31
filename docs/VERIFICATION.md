@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Drift Cards 1–3 definition (oceans slice 6, docs only)
+
+- [PR #1050](https://github.com/rjdunlap/neo/pull/1050), branch `claude/define-drift-cards`: [definition](definitions/drift-cards.md) (a new game, levels 1–3; school 1–3; Bubble Beach, fallback Tinker Lab; a pretend current map, predict the landing, choose the boat, find the fogged current from returned cards; wooden cards not bottles, 1992 spill counts unused), batch plans [drift-cards 1](GAME-BATCHES.md#drift-cards-1-where-will-it-wash-up-and-send-it-to-a-friend) and [2](GAME-BATCHES.md#drift-cards-2-find-the-hidden-current), READY, backlog, study, packet and ideas updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. Sources opened and listed in the definition, including NatureBridge's 2015 Elwha drift-card study.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the builds (new-game then new-interaction tier) with their S1 source check of every speech line; person and device checks in the definition's check tier (reading arrows cell by cell, the two-cell trace, level 3 as detective work, iPad speech for "South-west").
+
 ## 2026-10-31 — Forecast Detective 1–2 definition (weather-water slice 9, docs only)
 
 - [PR #1049](https://github.com/rjdunlap/neo/pull/1049), branch `claude/define-forecast-detective`: [definition](definitions/forecast-detective.md) (a new game, levels 1–2; school 1–2; Tinker Lab, fallback Cozy Village; a pretend valley's wind rule, possible weathers after every clue, *Can't tell yet*), batch plan [forecast-detective 1](GAME-BATCHES.md#forecast-detective-1-which-way-is-the-wind-and-a-postcard-didnt-come), READY, backlog, study, packet and ideas updated.
@@ -90,12 +96,6 @@
 - [PR #1036](https://github.com/rjdunlap/neo/pull/1036), branch `claude/define-spinner-fair`: [definition](definitions/spinner-fair.md) (levels 1–5 of a new game; preschool 1–2, pre-K 2–3, school 3–5; Counting Cove becoming 14 games), two batch plans in [GAME-BATCHES](GAME-BATCHES.md#spinner-fair-1-spin-see-and-pick), READY, backlog, roadmap and study updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the builds run the new-game tier (batch 1) and the new-interaction tier (batch 2); device checks (spinner tapping, "still the better chance", sure/maybe/no way faces, wedge grab size, critter speech) stay open at the build.
-
-## 2026-10-31 — Water Road 4–5 definition (AM3, docs only)
-
-- [PR #1035](https://github.com/rjdunlap/neo/pull/1035), branch `claude/define-water-road-4-5`: [definition](definitions/water-road.md#levels-45-am3-downhill-all-the-way-over-the-valley) (level 4 Downhill all the way, level 5 Over the valley; pre-K range 2–4, school 3–5), a batch plan in [GAME-BATCHES](GAME-BATCHES.md#water-road-2-downhill-all-the-way-and-over-the-valley); READY, backlog, roadmap, ideas, packet and study point to it. Nothing built, no code changed.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs only). Open: the building session's source check of the aqueduct lines; the build runs the new-interaction tier.
 
 ## Coverage summary
 
