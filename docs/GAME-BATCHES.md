@@ -618,7 +618,7 @@ Built 2026-10-27, [PR #1022](https://github.com/rjdunlap/neo/pull/1022); [defini
 
 ### water-road 2: Downhill all the way and over the valley
 
-Ready (defined 2026-10-31, [PR #1035](https://github.com/rjdunlap/neo/pull/1035)). One worker, branch and PR for both levels.
+Built 2026-10-31, [PR #1043](https://github.com/rjdunlap/neo/pull/1043) (defined in [PR #1035](https://github.com/rjdunlap/neo/pull/1035)); both levels in one worker, branch and PR. [Archived build note](archive/COMPLETED-2026-10-09.md#water-road-levels-45-greece-and-rome-am3-2026-10-31).
 
 - **`water-road`, levels 4–5 (the build of study slice AM3)** (two new interactions on an existing game; `prek: { min: 2, max: 4 }`, `school: { min: 3, max: 5 }`, no renumbering): pre-K picks one of two whole channels and school sets two piers with up and down arrows, then **Open the spring** is the commit and a pooled opening is one miss (level 4); school drags arches across 3–4 spans with an abutment on each earth end, one end usually rock, under the arcade rule (level 5). Files: `src/games/water-road/` (logic, art, scene, rule tests), voice lines, the how-to card, the `waterroad` browser case. Rain Garden and Welcome Ways boundaries are recorded in the [definition](definitions/water-road.md#levels-45-am3-downhill-all-the-way-over-the-valley). [Definition](definitions/water-road.md#levels-45-am3-downhill-all-the-way-over-the-valley), [study build slices](deep-dives/subjects/ancient-mediterranean.md)
 

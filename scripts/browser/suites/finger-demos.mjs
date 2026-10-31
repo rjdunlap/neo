@@ -12,7 +12,7 @@ async function fingerDemos() {
     }));
   });
   const ids = selectNames(process.env.FINGER_ONLY, games.map(g => g.id), 'FINGER_ONLY');
-  const picked = fingerPlays(games.filter(g => ids.includes(g.id)), process.env.FINGER_LEVELS);
+  const picked = fingerPlays(games.filter(g => ids.includes(g.id)), process.env.FINGER_LEVELS, process.env.FINGER_BAND);
   await page.evaluate(() => {
     kit.store.data.profile.name = 'Mia'; kit.store.data.settings.howToCards = true;
   });
