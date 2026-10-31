@@ -924,3 +924,35 @@ Proof: new interaction: typecheck, rule tests, one play of level 9 with one wron
 Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new interaction: typecheck, rule tests, one play of level 10 with one drop away from the slot (no miss), the second-part pad (a miss), a second for the glow, then the answer; one portrait screenshot with the chalk mark; `fingerdemo` at 10.
+
+### island-bridges 1: A small sea to start and named hints
+
+- **`island-bridges`, a small sea to start and named hints (dive slice 1)** (new level on the existing interaction; grown-up): level 5 (order `[5, 1, 2, 3, 4]`, `entryLevels: [5]`) and the `full`, `every-way` and `last-way` hints with their voice lines. [Dive](deep-dives/island-bridges.md#build-slices-in-order)
+
+Files expected: `src/games/island-bridges/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new level on the existing interaction: typecheck, the game's rule tests, one browser play of level 5 with one hint (its named line), `fingerdemo` at 5.
+
+### island-bridges 2: Keep them joined
+
+- **`island-bridges`, level 6 Keep them joined (dive slice 2, after batch 1)** (new rule on the existing interaction; grown-up): shares `hintFor`'s kinds and the order with batch 1; the isolation step, generator filter, `isolation` hint and its ring. [Dive](deep-dives/island-bridges.md#build-slices-in-order)
+
+Files expected: `src/games/island-bridges/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: typecheck, rule tests, one play of level 6 asking for hints until the isolation one (ring and line), then to the sticker; one portrait screenshot of the ring; `fingerdemo` at 6.
+
+### island-bridges 3: Up to three planks
+
+- **`island-bridges`, level 7 Up to three planks (dive slice 3, after batch 2)** (new rule on the existing tap; grown-up): shares the order with batch 2. [Dive](deep-dives/island-bridges.md#build-slices-in-order)
+
+Files expected: `src/games/island-bridges/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`. The shared rules change, so the couch suite follows.
+
+Proof: new rule on the existing tap: typecheck, rule tests including the brute force at three, one play of level 7 with a third plank tap and a fourth that bumps, to the sticker; one portrait screenshot of a triple bridge; `fingerdemo` at 7; `BROWSER_SUITE=couchgames` filtered to Island Bridges.
+
+### island-bridges 4: Joined Seas course
+
+- **`island-bridges`, couch course *Joined Seas* (dive slice 4, after batch 2)** (couch catalog; grown-up): five frozen level-6 seas (each with one answer, none `bycounting`) as a second `course.ts` entry, version 1, beside Island Hopping. [Dive](deep-dives/island-bridges.md#build-slices-in-order)
+
+Files expected: `src/couch/` course and catalog files (`course.ts` and its tests), `src/games/island-bridges/logic.ts`, `docs/COUCH-PLAY.md`, the README row and `docs/GAMES.md`.
+
+Proof: couch catalog tier: typecheck, course tests, `BROWSER_SUITE=couchgames` filtered to Island Bridges.
