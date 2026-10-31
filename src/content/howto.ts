@@ -1281,6 +1281,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'Nothing here counts as a mistake. Each thing she watches melt on the tray is added to her discovery journal in the treehouse.' },
     ],
   },
+  'tide-line': {
+    goal: 'Watch the sea come in and go out, and use the seaweed line to keep things dry.',
+    steps: [
+      { from: 1, to: 1, text: 'Pull the wave up the sand and let it go; on a lap, a tap on the sea sends one wave.' },
+      { from: 2, to: 2, text: 'Put the pail above the seaweed line; then the sea comes in.' },
+    ],
+    finish: [
+      { from: 1, to: 1, text: 'The round ends when the sea has been in and out twice.' },
+      { from: 2, to: 2, text: 'The round ends when both pails stay dry.' },
+    ],
+    note: [
+      { from: 1, to: 1, text: 'Nothing here counts as a mistake. Some anemones close up out of the water and open again in it.' },
+      { from: 2, to: 2, text: 'The seaweed line is where the last high tide reached. A pail below it floats (one miss) and the pet fetches it back, never lost; after two, the line and the dry sand glow, and Show me does the same.' },
+    ],
+  },
   'sink-float': {
     goal: 'Find out which things float and which sink.',
     steps: [

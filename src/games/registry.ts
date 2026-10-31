@@ -26,6 +26,7 @@ import { puzzlePals } from './puzzle-pals';
 import { weatherWardrobe } from './weather-wardrobe';
 import { sinkFloat } from './sink-float';
 import { meltFreeze } from './melt-freeze';
+import { tideLine } from './tide-line';
 import { moonWindow } from './moon-window';
 import { bubblePop } from './bubble-pop';
 import { colorGarden } from './color-garden';
@@ -189,6 +190,7 @@ export const GAMES: GameModule[] = [
   weatherWardrobe,
   sinkFloat,
   meltFreeze,
+  tideLine,
   moonWindow,
   ducklingParade,
   scoopShop,
