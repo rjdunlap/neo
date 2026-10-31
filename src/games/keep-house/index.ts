@@ -1035,7 +1035,6 @@ class KeepHouse implements Game {
     const keepNode = new Container();
     keepNode.position.copyFrom(centre(k));
     keepNode.addChild(keepArt(k.w, k.h));
-    keepNode.scale.set(k.w / 180 > 1 ? 1 : 1);
     keepNode.hitArea = new Rectangle(-k.w / 2 - 6, -k.h / 2 - 6, k.w + 12, k.h + 12);
     onTap(keepNode, () => this.keepBuildIt(), { cooldown: 500 });
     keepNode.visible = this.keepShown;
