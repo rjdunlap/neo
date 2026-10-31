@@ -596,11 +596,11 @@ Built2026-10-26, [PR #983](https://github.com/rjdunlap/neo/pull/983); [packet](d
 
 ### keep-house 1: Who's at the door, who works where, the cook's walk and fit the household
 
-Built 2026-10-27, [PR #1021](https://github.com/rjdunlap/neo/pull/1021); [definition](definitions/keep-house.md), [archived build note](archive/COMPLETED-2026-10-09.md#keep-house-levels-14-medieval-life-ml2-2026-10-27). Whole four-level new-game batch. Device checks remain; levels 5–6 are defined (ML3) as batch keep-house 2.
+Built 2026-10-27, [PR #1021](https://github.com/rjdunlap/neo/pull/1021); [definition](definitions/keep-house.md), [archived build note](archive/COMPLETED-2026-10-09.md#keep-house-levels-14-medieval-life-ml2-2026-10-27). Whole four-level new-game batch. Device checks remain; levels 5–6 are built as batch keep-house 2.
 
 ### keep-house 2: Read the ruin and stone or timber
 
-Ready (defined 2026-10-30, [PR #1034](https://github.com/rjdunlap/neo/pull/1034)). One worker, branch and PR for both levels. **Claimed 2026-10-31** by branch `claude/keep-house-5-6` (draft PR).
+Built 2026-10-31, [PR #1038](https://github.com/rjdunlap/neo/pull/1038) (defined 2026-10-30, [PR #1034](https://github.com/rjdunlap/neo/pull/1034)); [archived build note](archive/COMPLETED-2026-10-09.md#keep-house-levels-56-medieval-life-ml3-2026-10-31). Both levels in one worker, branch and PR. Device checks remain.
 
 - **`keep-house`, levels 5–6 (the build of study slice ML3)** (two new interactions on an existing game; school only, `school: { min: 4, max: 6 }`, no renumbering): drag picture labels onto the roofless rooms of a 3 × 3 ruin by their remains, four rooms and five labels, a hearth or drain shared by two rooms so a deciding clue decides, a wrong label is a miss (level 5); build a lord's hall in timber (2 bags, lasts 15 years, rebuilt) or stone (5 bags, 8 years, stands) for a purse and a stay, the years play out and a choice is never a miss, in level 3's Keep it grammar (level 6). Bags are counters; nothing accrues. Files: `src/games/keep-house/` (logic, art, scene, rule tests), voice lines `kh.*`, the how-to card, the `keephouse` browser case. Withdraw clause: if level 6 plays as a worksheet, it goes to Household Casebook instead. [Definition](definitions/keep-house.md#levels-56-ml3-read-the-ruin-stone-or-timber), [study build slices](deep-dives/subjects/medieval-life.md)
 
