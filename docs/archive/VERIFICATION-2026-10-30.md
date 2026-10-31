@@ -26,3 +26,10 @@
 - `BROWSER_SUITE=expansion EXPANSION_ONLY=size SIZE_LEVELS=12,15`: sky tap, off-line drop and line-friend touch free at 12; two wrong gaps = 1 hint; finished with [2 misses, 1 hint] saved; portrait screenshots of 12 and 15 reviewed; level 12 re-run after the review fixes. `BROWSER_SUITE=fingerdemo FINGER_ONLY=size-parade FINGER_LEVELS=12,15` passed (17.9 s, 31.0 s).
 - `game-reviewer`: three low findings, fixed. Not run: other suites (unchanged), couch suites, the production offline check, an iPad, a child.
 - Open: the shades on an iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-30 — Pet Kitchen 13 (Who has more?)
+
+- [PR #1032](https://github.com/rjdunlap/neo/pull/1032), branch `claude/pet-kitchen-who-has-more`, play tested at `abc89096`: level 13 *Who has more?* (school) and the `pet-kitchen:half`, `:quarter` and `:third` journal entries.
+- Ran: `npm run typecheck`; full `npm test` (3,777 passed at the prior commit; Pet Kitchen rules 21 plus journal tests); `npm run build`. `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen KITCHEN_LEVELS=13` at `http://localhost:5515` (halves serve miss, quarters, one wrong "more" with overlay, right plate, score [2,0]), rerun after the overlay fix; `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-kitchen FINGER_LEVELS=13` passed (14.1 s); portrait screenshots (768x1024) reviewed.
+- `game-reviewer`: one cosmetic fix (servings slide back after the overlay). Not run: other kitchen levels' browser play (their journal reporting is unit-tested only), the offline check, an iPad, a child.
+- Open: leftover quarter and bubble legibility ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).

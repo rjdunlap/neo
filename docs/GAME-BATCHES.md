@@ -467,6 +467,14 @@ Built 2026-10-24, [PR #930](https://github.com/rjdunlap/neo/pull/930); [closeout
 
 Proof: new-game tier, as the [definition's check tier](definitions/second-chance-shed.md#check-tier) sets it (typecheck, unit tests, a new `browser-check.mjs` case at levels 1 and 4, `fingerdemo` at both, one portrait screenshot of level 4, one build). Review gate: the session's source check replaced the developer review (decided 2026-10-23); recorded in VERIFICATION.
 
+### second-chance-shed 2: Someone needs it
+
+Not built. Dispatched from [READY](READY.md); defined 2026-10-31 (nature-sustainability N3).
+
+- **`second-chance-shed`, levels 5–6 (N3)** (new interaction on the built game; school {4–6}): everything is laid out on the cart at once, a friend's picture bubble asks for something (pencils a pot, Bunny a nap), she plans every place and the friend's gift, then rings the cart bell; level 6 has two friends and one thing that fits both, and the tempting plan fails. One miss per failed ring, never per thing. [Definition](definitions/second-chance-shed-5-6.md), [nature-sustainability study slice N3](deep-dives/subjects/nature-sustainability.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the [definition's check tier](definitions/second-chance-shed-5-6.md#check-tier) sets it (typecheck and rule tests with the registry, lands and how-to tests; a filtered `browser-check.mjs` play at level 5 with the tin to Remake, a failing ring, a repeated ring counting nothing, then the tin to the friend, and at level 6 with the tempting plan, two failed rings and the glow, one Show me one and the finish; one portrait screenshot at level 6; `fingerdemo` at 5 and 6; one build). Review gate: the building session's source check of the new item and its fits, recorded in VERIFICATION.
+
 ### sand-table 1: Levels 1–3
 
 Built 2026-10-23; [build note](archive/COMPLETED-2026-10-09.md#sand-table-levels-13-e2-2026-10-23). Home land is Rainbow Meadow (see the note). No longer eligible for dispatch.
