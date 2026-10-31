@@ -926,3 +926,18 @@ Completion with spoken support is not evidence of independent understanding of t
 | **SG6 Fence the Field** · Lantern Lake, 13+ | sketch; after a Lantern Lake capacity test | Dots and boxes or chain puzzles against the pet |
 
 [Ordered slices](strategy-games.md#build-slices-in-order). Solving a one-move puzzle with spoken support is not evidence of independent planning; whether a five-year-old looks at the pet's pebbles before setting a shell, and whether the replay reads as a lesson rather than a loss, are person checks.
+
+## Number structure recommendations
+
+**Recommended 2026-10-31:** [the number-structure study](number-structure.md), [PR #1060](https://github.com/rjdunlap/neo/pull/1060). Opened: CCSS 3.OA, 4.OA, 6.NS, 2.NBT and 5.NBT, NRICH's *Factors and Multiples Game* notes and the Melbourne decimals incidence table; the rest are search summaries or recall, marked in the study. The island already covers equal groups and sharing, so the first slice is the structure of a number: how many equal rows, what a leftover means, which numbers make only one row.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **NS1 Orchard Rows 4–6** · school · levels | define (docs only) | A basket of 12 to 24 saplings and a row-count control (two 100-unit arrows); the saplings deal into equal rows and the leftover stays in the basket. 4 *Equal rows*: any row count that fills every row; 5 *Every way*: fill a page of shape frames, one per factor pair; 6 *Only one long row* ("about 9 and up"): which basket makes only one row. Rules in `logic.ts` with tests; the Orchard Rows dive numbers its own levels from 7; nothing kept |
+| **NS4 Grouping card** · grown-ups' page | write after NS1 is defined | Spoons in rows, biscuits into boxes, two counts on the stairs; plain HTML; no learning claim |
+| **NS2 Lunch boxes** · Monster Munch levels | candidate for Monster Munch's dive | Pack cookies four to a box: how many boxes, how many full boxes, how many for the pet (a remainder read three ways) |
+| **NS3 Two frogs** · Frog Hop levels | candidate for Frog Hop's dive | Two frogs hop by 3 and 4; tap the first pad both land on |
+| **NS6 Hundred crates** · place value | define after picking a home game | Bundle ten jars of ten into a crate; build a three-digit number |
+| **NS5 Square tiles**, **NS7 Tenths of a jar**, **NS8 Factor Chain** | sketches | Greatest common factor (waits on the area study's Meadow Pens), decimal place value (waits on NS6 and the fractions study), and a factor game for Lantern Lake after a capacity test |
+
+[Ordered slices](number-structure.md#build-slices-in-order). Decision leans: extend Orchard Rows rather than a new game; baskets of 12 to 24; *factor*, *multiple* and *composite* on the grown-up card only and *prime* spoken once at the level 6 answer; Lunch boxes to Monster Munch, not Pet Kitchen; hundreds and decimals stay sketches. Solving a level with spoken support is not evidence of independent understanding; whether a seven-year-old uses the leftover saplings to pick the next row count, whether "every way" feels like a collection, and whether "only one long row" carries the idea without the word *prime* are person checks.
