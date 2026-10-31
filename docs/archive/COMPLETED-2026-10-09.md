@@ -2220,7 +2220,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-31.md#2026-10-31--attic-finds-
 
 Branch `claude/second-chance-shed-5-6` ([PR #1057](https://github.com/rjdunlap/neo/pull/1057)), batch second-chance-shed 2, [definition](../definitions/second-chance-shed-5-6.md): levels 5 *Someone needs it* and 6 *Two friends* for school {4-6} (bands gain school, skills gain planning). The cart is laid out with a bell; things move among the cart, four places and friends with picture bubbles. Code: `plan.ts` (`PlanShed`) plus `logic.ts` additions (`planRoundFor`, `checkPlan`, `solutions`, `nearestSolution`, `nextMove`, `greedyWorks`, `planLayout`), new art (tin, bell, bubbles, friends, filled gifts), voice lines and an extended how-to card; browser case `shedplan`. Deviations: every thing in a place stays grabbable (fanned 22 units apart, newest on top), and the finale chimes instead of speaking "the plan works". No new registration, so the game count is unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-31--second-chance-shed-levels-56-nature-sustainability-n3).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-31.md#2026-10-31--second-chance-shed-levels-56-nature-sustainability-n3).
 
 ## Spinner Fair levels 1-3, slice CS1 (2026-10-31)
 
