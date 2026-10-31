@@ -50,7 +50,8 @@ class ForecastDetective implements Game {
   private readonly cardBacks: Graphics[] = [];
   private readonly crosses: Graphics[] = [];
   private gone = false;
-  private lastCheck: { key: string; verdict: Verdict } | null = null;
+  /** Every Check this round, by answer and open clues: the same Check again repeats its line and counts nothing. */
+  private readonly checks = new Map<string, Verdict>();
   private layoutNow: Layout;
   private clock = 0;
   private readonly backdrop: Backdrop;
@@ -215,16 +216,17 @@ class ForecastDetective implements Game {
     if (this.selected === null) { void this.instruct(); return; }
     const key = `${this.selected}|${[...this.open].sort().join(',')}`;
     // The same Check again repeats its line and counts nothing.
-    if (this.lastCheck?.key === key) { void this.explain(this.lastCheck.verdict, this.selected); return; }
+    const seen = this.checks.get(key);
+    if (seen) { void this.explain(seen, this.selected); return; }
     const v = check(this.case, this.open, this.selected);
-    this.lastCheck = { key, verdict: v };
+    this.checks.set(key, v);
     if (v.kind === 'right') { void this.reveal(); return; }
     if (v.kind === 'ruled-out' || v.kind === 'overclaim') {
       this.misses++;
       sfx.boing();
     }
     void this.explain(v, this.selected).then(() => {
-      if (this.dead || this.glowOn || this.misses < 2) return;
+      if (this.dead || this.busy || this.glowOn || this.misses < 2) return;
       this.glow();
     });
     if (v.kind === 'not-yet') this.bobClosed();
@@ -288,13 +290,16 @@ class ForecastDetective implements Game {
 
   askForHint() {
     if (this.dead || this.busy) return;
-    this.hints++;
     const k = usefulClue(this.case, this.open);
     if (!k) {
+      // Crossing out counts only when it crosses something new; asking again just repeats the line.
+      const before = this.crossed.size;
       this.updateCrosses();
+      if (this.crossed.size > before) this.hints++;
       void this.ctx.say('forecast.hint.cross');
       return;
     }
+    this.hints++;
     const line: LineId = k === 'wind' ? 'forecast.hint.wind' : k === 'temp' ? 'forecast.hint.temp' : 'forecast.hint.postcard';
     this.bob(k);
     this.openFlap(k);
@@ -308,7 +313,6 @@ class ForecastDetective implements Game {
       if (this.busy) { void this.ctx.tw.wait(0.2).then(go); return; }
       this.open = [];
       this.selected = null;
-      this.lastCheck = null;
       for (const k of CLUES) {
         const f = this.flaps[k];
         f.inside.removeChildren(1).forEach((c) => c.destroy({ children: true }));
@@ -393,7 +397,7 @@ class ForecastDetective implements Game {
     this.scene.eventMode = 'none';
     this.ctx.stage.addChildAt(this.scene, this.ctx.stage.getChildIndex(old));
     old.destroy();
-    if (this.streaks && this.open.includes('wind')) this.showInScene('wind');
+    if (this.streaks) this.showInScene('wind');
     this.vane.position.set(l.town.x, l.town.y - 120);
     this.thermo.position.set(l.town.x + 152, l.town.y);
     this.rule.position.set(l.rule.x, l.rule.y);
