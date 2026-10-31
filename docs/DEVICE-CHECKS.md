@@ -172,6 +172,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] With a pre-K child: does she accept "still the better chance" after a losing pick?
 - [ ] On an iPad, hear the critter calls and the `sf.*` lines in device speech.
 
+## Drift Cards levels 1–2 (oceans slice 6, 2026-10-31)
+
+- [ ] With a school-age child: does she read the arrows cell by cell, or guess the beach?
+- [ ] Does the two-cell trace help or frustrate?
+- [ ] On an iPad, does device speech say "South-west" clearly?
+
 ## Forecast Detective levels 1–2 (weather-water slice 9, 2026-10-31)
 
 - [ ] With a school-age child: does she open clues on purpose, or just all of them?

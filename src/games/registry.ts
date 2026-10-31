@@ -27,6 +27,7 @@ import { weatherWardrobe } from './weather-wardrobe';
 import { sinkFloat } from './sink-float';
 import { meltFreeze } from './melt-freeze';
 import { tideLine } from './tide-line';
+import { driftCards } from './drift-cards';
 import { moonWindow } from './moon-window';
 import { bubblePop } from './bubble-pop';
 import { colorGarden } from './color-garden';
@@ -193,6 +194,7 @@ export const GAMES: GameModule[] = [
   sinkFloat,
   meltFreeze,
   tideLine,
+  driftCards,
   moonWindow,
   ducklingParade,
   scoopShop,
