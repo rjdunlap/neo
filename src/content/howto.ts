@@ -840,6 +840,22 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'Check holds the bucket beside the jar; a match chimes, and the round ends after two buckets.',
     note: "Pouring, undo and tipping out are never counted; only a Check that doesn't match is, and after two misses the next pot or button glows (one hint). Colour words are labels. This is a toy: the bucket's colour is an average of its drops; real paint doesn't mix by averaging, and more paint is not a stronger colour.",
   },
+  'puppet-stage': {
+    goal: 'Make a puppet pop up and talk in its own voice.',
+    steps: [
+      { from: 1, to: 1, text: 'Touch the stage floor: a puppet pops up there and says hello. Drag it along, tap it to make it talk again.' },
+      { from: 2, to: 2, text: "Listen for the puppet's name, then tap that puppet to make it talk." },
+      { from: 3, to: 3, text: 'Tap the sleepy, tiny or big bubble to make the puppet say its line that way; the first tap is a free try.' },
+    ],
+    finish: [
+      { from: 1, to: 1, text: 'After a few pops, tap Bow; the puppets bow and the round ends.' },
+      { from: 2, text: 'After four right answers the puppets bow and the round ends.' },
+    ],
+    note: [
+      { from: 1, to: 1, text: 'Nothing is counted here; the curtains and the tassel are just for fun.' },
+      { from: 2, text: "Tapping the other puppet or bubble is one try; after two, the right one glows. Puppet voices are the device's own voice at a different pitch and speed." },
+    ],
+  },
   'fruit-sums': {
     goal: 'Make the number on the sign from two numbered fruit, and then find a different way to make it.',
     steps: [

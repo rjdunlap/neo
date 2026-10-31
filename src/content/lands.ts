@@ -49,7 +49,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'bear' },
     backdrop: { sky: [0xd9c8f2, 0xfff6e0], hills: [0xc9b5ec, 0xb7e3d4, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 103 },
     music: tune(31, 'marimba', 100),
-    games: ['jelly-drums', 'song-maker', 'sound-garden', 'rhythm-neighbors', 'beat-builder', 'little-conductor'],
+    games: ['jelly-drums', 'song-maker', 'sound-garden', 'rhythm-neighbors', 'beat-builder', 'little-conductor', 'puppet-stage'],
   },
   {
     id: 'treehouse',

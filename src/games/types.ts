@@ -5,7 +5,7 @@ import type { Creation } from '../content/creations';
 import type { RegionId } from '../content/world';
 import type { Particles } from '../art/particles';
 import type { MusicStyle } from '../audio/music';
-import type { LineVars } from '../audio/voice';
+import type { LineVars, VoicePreset } from '../audio/voice';
 
 /**
  * Off-screen lines by band: `all` for every band without its own entry, a band key for that band's own sentence, `null` to
@@ -219,6 +219,8 @@ export interface GameContext {
   /** Speak an instruction; the pet repeats the latest one when tapped. */
   instruct(id: LineId, vars?: LineVars): Promise<void>;
   say(id: LineId, vars?: LineVars): Promise<void>;
+  /** Speak a line in another voice (a puppet's): always device speech with the preset, never the pet's rendered clip. */
+  sayIn(id: LineId, preset: VoicePreset, vars?: LineVars): Promise<void>;
   /**
    * Set only by couch play. `versus`: a face-off on one shared board, so the game alternates the two players.
    * `course`: a challenge run on fixed boards, played in a row as one round.
