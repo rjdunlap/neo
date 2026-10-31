@@ -112,7 +112,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Garden Rows (`garden-rows`) | designed | [Dive](deep-dives/garden-rows.md) |
 | Habitat Helpers (`habitat-helpers`) | designed | [Dive](deep-dives/habitat-helpers.md) |
 | Inchworm Measure (`inchworm`) | designed | [Dive](deep-dives/inchworm.md) |
-| Island Bridges (`island-bridges`) | research | [Game tracker](deep-dives/README.md#tracker) |
+| Island Bridges (`island-bridges`) | designed | [Dive](deep-dives/island-bridges.md) |
 | Lantern Lights (`lantern-lights`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Lasso Loops (`lasso-loops`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Light Lab (`light-lab`) | research | [Game tracker](deep-dives/README.md#tracker) |
