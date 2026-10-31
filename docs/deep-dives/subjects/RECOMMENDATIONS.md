@@ -843,7 +843,7 @@ Completion with spoken support is not evidence of independent phonological aware
 
 | Candidate | Next action | Complete slice / boundary |
 | --- | --- | --- |
-| **Tide Line** · lap–school · new identity | define levels 1–4 (docs only); build waits on identity, Bubble Beach placement and an ocean reviewer | Pull the sea in and out (L–T, exploratory); keep a pail above the seaweed line (T–P); read only the line to place three things (P–K); complete "high, low, high, low" (K). Shore creatures and wave/gull synthesis are built with it. The cause of tides is not drawn below school |
+| **Tide Line** · lap–school · new identity | defined 2026-10-31 ([definition](../../definitions/tide-line.md)); builds next as batches tide-line 1 and 2 (Bubble Beach 13th game, source check done in the definition, no named reviewer) | Pull the sea in and out (L–T, exploratory); keep a pail above the seaweed line (T–P); read only the line to place three things (P–K); complete "high, low, high, low" (K). Shore creatures and wave/gull synthesis are built with it. The cause of tides is not drawn below school |
 | **Tide Line 5–7** · pre-K–school | define after 1–4; level 7 held for a reviewer and Moon Window | Find when the rock pool shows; read a height chart and fit jobs to windows; bigger and smaller tides |
 | **Salty or Fresh** · school–upper school · mode in Sink or Float | hand to the Sink or Float dive | The same thing in two tanks; it sits higher in salt water (5-ESS2-2). No reviewer if worded only as "sits higher" |
 | **Beach Day Pack-up / Beach Tally** · T–S · modes in Second Chance Shed and Picture Graph | hand to those definitions | Pack away the picnic; line up shells, stones and driftwood by kind. No litter scene |
