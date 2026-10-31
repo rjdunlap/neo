@@ -132,7 +132,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 ## Build slices, in order
 
-1. **LM1 · Define Thought Bubbles 1–3** (docs only): the stage, the bubble and cards at 110 units, the authored story pools (about eight per level) and their beats, the belief model and its rule tests, the away/watching mix, accounting, how-to steps, voice lines, the land decision and the bot.
+1. **LM1 · Define Thought Bubbles 1–3** (docs only; **defined 2026-10-31**, [definition](../../definitions/thought-bubbles.md), PR #1065): the stage, the bubble and cards at 110 units, the authored story pools (about eight per level) and their beats, the belief model and its rule tests, the away/watching mix, accounting, how-to steps, voice lines, the land decision and the bot.
 2. **Build Thought Bubbles 1–3** (new-game tier).
 3. **LM3 · Story-talk card** (grown-ups' page, plain HTML).
 4. **LM2 · Define Thought Bubbles 4** after 1–3 are played; then **LM4 Who is telling?**
@@ -141,3 +141,5 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 ## What was built and what ran
 
 Nothing built. The research session ran `git fetch origin --prune` and `scripts/overlap.sh` for the queue's earlier lines and this subject (no claim), opened CCSS RL.K, RL.2, RL.3 and RL.6 and the Kendeou et al. 2008 abstract, and used search summaries for Wellman, Cross and Watson 2001, Wellman, Hollander and Schult 1996, the HSE picture-story study (its host did not resolve), the What Works Clearinghouse dialogic-reading reports, the Nosy Crow and Living Books reviews (HBook returned 403), *Unpacking*'s reviews and the Scieszka lesson plans; *Obra Dinn* and the Sally-Anne task are recalled. At closeout: `node scripts/check-links.mjs` and `git diff --check`.
+
+LM1 defined 2026-10-31 as [Thought Bubbles 1–3](../../definitions/thought-bubbles.md) (docs only, PR #1065); build queued as batch `thought-bubbles 1`. Ran `node scripts/check-links.mjs` and `git diff --check`.
