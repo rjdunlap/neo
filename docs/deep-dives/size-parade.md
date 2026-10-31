@@ -186,7 +186,7 @@ Checks are in [VERIFICATION](../archive/VERIFICATION-2026-10-26.md#2026-10-26--s
 - **The try.** The tapped friend tries it as a copy: lying on the bed, sitting on the chair, sitting in the bowl (behind its front), standing in the doorway. Too big thumps and hangs over, then fades ("Too big! ..."); too little sinks in and fades ("Too little! ..."); the fitting one settles ("Just right!") until the next prop 1.4 s later.
 - **Rules.** `fitAsks`: the fitting rank is never the same twice running and every rank fits once; the first row deals the even spread, later rows varied sizes keeping the fitting friend at least `MIN_RATIO` 1.3 from each neighbour. A wrong try is a miss; the second wrong in a row glows the fitting friend (one hint). The ghost finger taps the fitting friend.
 - **Windows now:** preschool `order [3, 4, 17, 10, 5, 6, 11]`; pre-K `{ min 5, max 11, order [5, 6, 11, 7, 8] }`.
-- Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-28--size-parade-who-fits-level-11). Still open: whether a three- or four-year-old reads the lying pose as "too big", and whether the littlest friend's small bed (about 85 units long) reads on an iPad (DEVICE-CHECKS).
+- Checks are in [VERIFICATION](../archive/VERIFICATION-2026-10-28.md#2026-10-28--size-parade-who-fits-level-11). Still open: whether a three- or four-year-old reads the lying pose as "too big", and whether the littlest friend's small bed (about 85 units long) reads on an iPad (DEVICE-CHECKS).
 
 **Slices 7 and 8, levels 12 and 15** (`claude/size-parade-insert-shades`, [PR #1031](https://github.com/rjdunlap/neo/pull/1031), 2026-10-30; batch 3 complete):
 

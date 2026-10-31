@@ -54,6 +54,10 @@ Examples use existing games: Little surprises (Bubble Pop, Sing-Along Barn, Fill
 
 [Typing Land](TYPING-LAND.md) (higopage, 2021), a free typing trainer of 81 lessons that are each three short mini-games over one key pool, was played in its browser edition and reviewed against the island's rules. It confirms the [keyboarding study](deep-dives/subjects/keyboarding-editing.md) (physical keyboard, letters read by `key`, no gates, spoken support, gentle misses) and offers four presentation patterns: a round of three short scenes over one pool (for [Pond Typing](definitions/pond-typing.md)), a calm result readout with the threshold drawn on the bar (school and couch only, no speed), a play count that only grows and never judges (an RW10 precedent), and a map of round picture-portholes with the buttons in front (RW14 Places). Its speed stars, crowns, locks, silent wrong keys and finger-posture lessons stay out. Seven proposals, P1–P7, are in the review; P7 (a grown-up's word list for Pond Typing and Word Monsters) needs a developer decision.
 
+## Critter Daily review (2026-10-30)
+
+[Critter Daily](CRITTER-DAILY.md), a free site of six daily adult puzzles each led by one animal, was opened in the browser pane (one Burrow practice round) and its drawing and animation code read. Its flat, unoutlined style differs from the [art bible](rework/ART-BIBLE.md), but its methods carry over: the animal *is* the progress meter, poses are one function of the game's state, motion is a few short loops around part pivots, and an object wakes up as an answer gets closer. Proposals P1–P6 (the companion walks the round, warmer-not-wrong, more creature verbs and a travel helper, paths that draw in, stickers that show what she reached, calm motion everywhere) each need a definition. The daily rotation, the one-minute timer, rarity scores, stats, trackers and a napping animal as the face of a lost puzzle stay out.
+
 ## Design lessons
 
 ### What to borrow from JumpStart and Neopets
