@@ -107,7 +107,7 @@ These are existing games awaiting research, not new game implementations. One do
 
 | Game | Status | Source |
 | --- | --- | --- |
-| Pixel Pictures (`pixel-pictures`) | research | [Game tracker](deep-dives/README.md#tracker) |
+| Pixel Pictures (`pixel-pictures`) | designed | [Dive](deep-dives/pixel-pictures.md) |
 | Ferry Jam (`ferry-jam`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Garden Rows (`garden-rows`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Habitat Helpers (`habitat-helpers`) | research | [Game tracker](deep-dives/README.md#tracker) |

@@ -21,6 +21,12 @@ Lemonade Stand dive (2026-10-31), two calls that wait on you; the build slices t
 | **A pre-K opening, "Enough cups for the line"?** | Adds the `prek` band to a school game; otherwise counting a line stays with Scoop Shop and Monster Munch. Recommended: wait until the school levels are played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
 | **A market-week chart in the journal?** | Whether a finished week files its table as a discovery, and which weeks (the first sold-out day, the first boat saving). Recommended: wait for the boats to be played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
 
+Pixel Pictures dive (2026-10-31), one call that waits on you; the build slices that do not need it go ahead ([the dive](deep-dives/pixel-pictures.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **A toddler opening, "Light the picture"?** | Adds the `toddler` band to a preschool–school game: a 3×3 board whose picture squares are outlined, any tap on one fills it, a tap elsewhere only twinkles (never a miss). Recommended: wait until she plays level 1 at preschool | [Pixel Pictures dive](deep-dives/pixel-pictures.md#decisions-for-the-developer) |
+
 ## Adding a question
 
 Add a row here only for a call the developer alone can make (money, accounts, the child's data, a family reviewer, an irreversible step), with a recommended answer. Anything else: decide it by the [standing rules](archive/DECISIONS-2026-10-23.md#standing-rules), record it in its source, and go on. Checks that need a person or a device go in [DEVICE-CHECKS](DEVICE-CHECKS.md).

@@ -113,7 +113,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Photo Safari | `photo-safari` | LTPKS | 7 | 4 | building (slices 1–4 and 8 built, PRs #468–#474 and #827; slices 5–7 built in PR #913: levels 8–9 and toddler entry 12; the lap entry with fewer animals waits on a person check) | `claude/photo-safari-deep-dive` ([PR #420](https://github.com/rjdunlap/neo/pull/420)) | [photo-safari.md](photo-safari.md) |
 | Picture Graph | `picture-graph` | KS | 6 | 4 | not started | — | — |
 | Picture Logic | `picture-logic` | G | 4 | 4 | not started (island touch built 2026-10-13) | — | — |
-| Pixel Pictures | `pixel-pictures` | PKS | 5 | 4 | not started | — | — |
+| Pixel Pictures | `pixel-pictures` | PKS | 5 | 4 | designed (four ready slices: fresh pictures and colour logic, levels 7–8, level 9 entry, level 10 own picture; toddler opening needs a decision) | `claude/dive-pixel-pictures` ([PR #1071](https://github.com/rjdunlap/neo/pull/1071)) | [pixel-pictures.md](pixel-pictures.md) |
 | Pond Conga | `pond-conga` | G | 6 | 4 | not started (island touch built 2026-10-13) | — | — |
 | Puzzle Pals | `puzzle-pals` | LTPKS | 7 | 1 | designed; slice 2 built; slice 1 fairness built 2026-10-14 ([PR #292](https://github.com/rjdunlap/neo/pull/292)); lid person-dependent | `claude/zealous-franklin-64zmgc` ([PR 89](https://github.com/rjdunlap/neo/pull/89)) | [puzzle-pals.md](puzzle-pals.md) |
 | Quick Tricks | `quick-tricks` | TPKS | 6 | 4 | not started | — | — |

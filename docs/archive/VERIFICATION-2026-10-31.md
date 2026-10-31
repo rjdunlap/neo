@@ -102,3 +102,9 @@
 - [PR #1052](https://github.com/rjdunlap/neo/pull/1052), branch `claude/define-not-always`: [definition](../definitions/not-always.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Story Grove, fallback Puzzle Peaks; claims about picture cards on screen, tap the breaker, *Every one!* stamp, mended claim), batch plan [not-always 1](../GAME-BATCHES.md#not-always-1-not-all-of-them-every-one-and-say-it-better), READY, backlog, study, packet and ideas updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); person and device checks in the definition's check tier (breaker from the claim versus the odd one out, sign pictograms without words, wing clarity on an iPad).
+
+## 2026-10-31 — Media literacy subject research (docs only)
+
+- [PR #1053](https://github.com/rjdunlap/neo/pull/1053), branch `claude/research-media-literacy`: [study](../deep-dives/subjects/media-literacy.md) and [packet](../deep-dives/subjects/RECOMMENDATIONS.md#media-literacy-recommendations) (a new game, Notice Board: match the stamp to the maker, tap the friend who saw it, to tell or to sell; a "Who made this?" card and a hand-frame co-play role follow; two Photo Safari modes handed to its dive), tracker, backlog, READY, ideas, roadmap and device checks updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. Sources: NAMLE, RI.K, RI.4 and ISTE opened; the rest from search summaries or recall, marked in the study.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the ML1 definition and three [person checks](../DEVICE-CHECKS.md#notice-board-media-literacy-study-2026-10-31-proposed-nothing-built).
