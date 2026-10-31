@@ -882,3 +882,18 @@ Completion with spoken support is not evidence of independent understanding of t
 | **TP7 Read it in a voice** · school · mode in Story Weaver | hand to the Story Weaver dive | The reader takes her tile story in a chosen puppet voice; needs TP1's voice presets |
 
 [Ordered slices](theatre-puppetry.md#build-slices-in-order). Completion with spoken support is not evidence of independent understanding, nothing scores how well she acted, and a chosen synthetic voice is the nearest a microphone-free app comes to the kindergarten "use voice and sound" standard.
+
+## Philosophy and reasoning recommendations
+
+**Recommended 2026-10-31:** [the philosophy-and-reasoning study](philosophy-reasoning.md), [PR #1051](https://github.com/rjdunlap/neo/pull/1051). Opened: Common Core MP3 (counterexamples, "concrete referents such as objects, drawings") and Speaking and Listening SL.K.1, SL.K.3, SL.4.1 and SL.4.3; Sloane 2012, Fehr 2008, German and Nichols 2003, the P4C enquiry guides, the EEF trials, Socrates Jones, Quandary and Argument Wars are search summaries, and Wason, Noveck and the tabletop references are recalled. The EEF's 2021 effectiveness trial found no reading gain, so no line claims that reasoning games raise attainment. One new identity, **Not Always**; every claim is about the cards on screen, and values (*is it fair?*) and imagination (*what if?*) are talk, never scored.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **PR1 Not Always 1–3** · pre-K–school · new identity | define (docs only) | A friend on a crate makes a claim about a row of picture cards; tap the card that breaks it and the claim sign changes (1); stamp *Every one!* when nothing breaks it (2); pick the one mended claim literally true of every card (3). Closed-world claim model in `logic.ts` with rule tests; no *Can't tell yet* (Forecast Detective's); nothing kept; land by `landLayout` (lean Story Grove, pages at seventeen) |
+| **PR3 Question card** · grown-ups' page | write after PR1 is built | One stimulus, one open question, "Why do you think that?" and "Can you think of a time when it isn't so?"; no right answer to a fair or what-if question; no learning claim |
+| **PR4 "But what about…?"** · co-play role | with or after the PR1 build | The grown-up makes the claim from a printed strip, she breaks it, then they swap; supported completion (S5) |
+| **PR2 Not Always 4–6** · school top, about 10 and up | define after 1–3 are played | Only the red ones count (a card that fails the "if" is not a counterexample); show me why (a reason card versus being sure, SL.4.3); both can be true, with an uncounted kind/rude reply |
+| **PR5 What if? in Story Steps** | hand to the Story Steps dive | Two changed endings after a story, both accepted |
+| **PR6 Truth Bridge** · 13+ / parents | sketch; after a Lantern Lake capacity test | Knights-and-knaves islanders on a bridge; a solver accepts every consistent marking, generated puzzles have a unique solution |
+
+[Ordered slices](philosophy-reasoning.md#build-slices-in-order). Finding a counterexample with spoken support is not evidence of independent reasoning; whether a four-year-old listens to the claim or just taps the odd one out is a person check.
