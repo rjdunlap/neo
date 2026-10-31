@@ -1,5 +1,11 @@
 # Needs a person or a device
 
+## Shell Rows (strategy-games study, 2026-10-31; proposed, nothing built)
+
+- [ ] Once built: does a five-year-old look at the pet's pebbles before setting a shell at level 2, or tap the last empty-looking square?
+- [ ] Once built: does the *show me why* replay read as a lesson rather than a loss?
+- [ ] Once *play it out* is built: how does she react when the pet wins?
+
 ## Notice Board (media-literacy study, 2026-10-31; proposed, nothing built)
 
 - [ ] Once built: does a four-year-old pick the witness from the memory picture, or just the friend nearest the poster?

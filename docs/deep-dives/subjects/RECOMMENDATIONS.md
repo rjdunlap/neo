@@ -911,3 +911,18 @@ Completion with spoken support is not evidence of independent understanding of t
 | **ML5 Photo Safari *Outside the frame* and *Pasted in*** | hand to the [Photo Safari dive](../photo-safari.md) | Widen a cropped photo and judge it with the thumbs; find what was stuck onto one of two photos of one moment |
 
 [Ordered slices](media-literacy.md#build-slices-in-order). Finding the witness with spoken support is not evidence of independent source checking; whether a four-year-old uses the memory picture or taps the nearest friend is a person check.
+
+## Strategy games recommendations
+
+**Recommended 2026-10-31:** [the strategy-games study](strategy-games.md), [PR #1055](https://github.com/rjdunlap/neo/pull/1055). Opened: Common Core MP1 and MP7, NRICH's *Got It* teachers' notes and the Oware article; the Crowley and Siegler abstract listing, Siegler and Ramani, Sala and Gobet and the retail listings are search summaries, and the Waterloo museum page failed with a certificate error. Children add tic-tac-toe rules one at a time, so the early levels are one-move puzzles, not whole matches.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **SG1 Shell Rows 1–3** · pre-K–school · new game | define (docs only) | A 3 by 3 grid drawn in the sand; she and the pet take turns. One-move puzzles from a match in progress: finish your row (1), stop the pet's row (2), win first then block (3). A wrong move is answered by the pet's reply (its row glows, it says what happened) and the board rewinds to her turn. Board model and full minimax in `logic.ts` with rule tests (one right move per rule); Puzzle Peaks by decision 2; nothing kept |
+| **SG5 Table games card** · grown-ups' page | write after SG1 is built | Nim, noughts and crosses and egg-carton sowing at the table; plain HTML; no learning claim |
+| **SG2 Shell Rows 4–5** · school | define after 1–3 are played | Two ways to win (a fork); play it out, a whole gentle match where a tie is a good ending |
+| **SG3 Last Pebble** · school top, 13+ | define after Shell Rows 5 | Nim and *Got It* as stepping stones across a stream, working backwards from the far bank; reuses the replay |
+| **SG4 Seed Bowls** · preschool–school · *needs review* | after a cultural-source review | Sowing with the pet toward a shared store; generic until reviewed, no mancala or oware line |
+| **SG6 Fence the Field** · Lantern Lake, 13+ | sketch; after a Lantern Lake capacity test | Dots and boxes or chain puzzles against the pet |
+
+[Ordered slices](strategy-games.md#build-slices-in-order). Solving a one-move puzzle with spoken support is not evidence of independent planning; whether a five-year-old looks at the pet's pebbles before setting a shell, and whether the replay reads as a lesson rather than a loss, are person checks.

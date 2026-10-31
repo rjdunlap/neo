@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Strategy games subject research (docs only)
+
+- [PR #1055](https://github.com/rjdunlap/neo/pull/1055), branch `claude/research-strategy-games`: [study](deep-dives/subjects/strategy-games.md) and [packet](deep-dives/subjects/RECOMMENDATIONS.md#strategy-games-recommendations) (a new game, Shell Rows: one-move puzzles on a 3 by 3 sand grid with a show-me-why replay; a table-games card, forks and a whole match, then Last Pebble follow; Seed Bowls held for a cultural-source review), tracker, backlog, READY, ideas, roadmap and device checks updated.
+- Ran: `git fetch origin --prune`, `scripts/overlap.sh strategy-games` (no claim), `node scripts/check-links.mjs` and `git diff --check`. Sources: MP1, MP7, NRICH *Got It* notes and the Oware article opened; the rest from search summaries or recall, marked in the study.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the SG1 definition and three [person checks](DEVICE-CHECKS.md#shell-rows-strategy-games-study-2026-10-31-proposed-nothing-built).
+
 ## 2026-10-31 — Media literacy subject research (docs only)
 
 - [PR #1053](https://github.com/rjdunlap/neo/pull/1053), branch `claude/research-media-literacy`: [study](deep-dives/subjects/media-literacy.md) and [packet](deep-dives/subjects/RECOMMENDATIONS.md#media-literacy-recommendations) (a new game, Notice Board: match the stamp to the maker, tap the friend who saw it, to tell or to sell; a "Who made this?" card and a hand-frame co-play role follow; two Photo Safari modes handed to its dive), tracker, backlog, READY, ideas, roadmap and device checks updated.
@@ -89,12 +95,6 @@
 - Ran: `npm run typecheck`; keep-house rule tests 36 passed; full `npm test` 3,791 passed with 2 failures that pass in isolation (the fluffy-salon frame-rate test and the unchanged keep-house level-4 hint search, both timeouts under full-suite load); `npm run build`.
 - Ran: `BROWSER_SUITE=keephouse KEEPHOUSE_FROM=5` on `http://localhost:5929`: level 5 a look, one label wrong twice (2/1, glow followed), second ruin clean, saved 2/1; level 6 other build kept twice (0/1), fitting build, saved 0/1; portrait screenshots of each. `BROWSER_SUITE=fingerdemo FINGER_ONLY=keep-house FINGER_LEVELS=5,6` passed.
 - Not run: levels 1–4 browser play (unchanged), offline check. Open in [DEVICE-CHECKS](DEVICE-CHECKS.md#keep-house-levels-56-ml3-2026-10-30): clues read or elimination, the shared hearth noticed, the years followed, device speech, the unchecked history lines.
-
-## 2026-10-30 — Same Job, Different Tools definition (H4, docs only)
-
-- [PR #1041](https://github.com/rjdunlap/neo/pull/1041), branch `claude/define-same-job`: [definition](definitions/same-job.md) (Attic Finds levels 5 *Same job* and 6 *Right for the job*; pre-K and school), batch plan [attic-finds 2](GAME-BATCHES.md#attic-finds-2-same-job-and-right-for-the-job), READY, backlog, study, ideas and device-check updates.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs only). Open: the build runs the new-interaction tier (`atticjobs`, `fingerdemo` at 5 and 6, one portrait screenshot); device checks in [DEVICE-CHECKS](DEVICE-CHECKS.md) stay open.
 
 ## Coverage summary
 
