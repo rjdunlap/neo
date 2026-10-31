@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Rule Machine 1–4 definition (AB1, docs only)
+
+- [PR #1039](https://github.com/rjdunlap/neo/pull/1039), branch `claude/define-rule-machine`: [definition](definitions/rule-machine.md) (levels 1–4 of a new game; pre-K 1, school 2–4; Puzzle Peaks becoming 14 games), two batch plans in [GAME-BATCHES](GAME-BATCHES.md#rule-machine-1-the-hat-machine-and-one-more-goes-in), READY, backlog, roadmap, ideas and study updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs only). Open: the builds run the new-game tier (batch 1) and the new-interaction tier (batch 2); device checks (pre-K reading of the three pictures, whether the free first guess feels like a game, five cars and a table on an iPad portrait, "twice as many" as rows of counters, device speech for "take one away") stay open at the build.
+
 ## 2026-10-31 — Keep House levels 5–6 (medieval life ML3)
 
 - [PR #1038](https://github.com/rjdunlap/neo/pull/1038), branch `claude/keep-house-5-6`, code at `c7bc3cac` (tested at its parent plus a no-op deletion): level 5 Read the ruin and level 6 Stone or timber (school 4–6), from the [definition](definitions/keep-house.md#levels-56-ml3-read-the-ruin-stone-or-timber).
