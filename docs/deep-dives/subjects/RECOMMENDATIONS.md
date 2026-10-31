@@ -849,7 +849,7 @@ Completion with spoken support is not evidence of independent phonological aware
 | **Beach Day Pack-up / Beach Tally** · T–S · modes in Second Chance Shed and Picture Graph | hand to those definitions (Pack-up weighed 2026-10-31 in the Shed 5–6 definition: proposed picnic set for levels 2–4) | Pack away the picnic; line up shells, stones and driftwood by kind. No litter scene |
 | **Rock Pool / shore zones** · P–S · content in Photo Safari and Habitat Helpers | hand to those dives | The pool shows when the sea is out; who lives high and low by what they need |
 | **Down We Go** · pre-K–upper school | define after Tide Line is built | A lantern on a rope, light that dims by stops, a seaweed question (plants need light). Ordered stops, never metres or percentages |
-| **Drift Cards** · upper school–M | define (eligible now; Drop's Journey [defined](../../definitions/drops-journey.md) 2026-10-31) | Send a bottle on a current map and predict where it lands (MS-ESS2-6). Counts of the 1992 toy spill disagree between sources |
+| **Drift Cards** · upper school–M | defined 2026-10-31 ([levels 1–3](../../definitions/drift-cards.md); build queued; wooden cards, not bottles) | Send a bottle on a current map and predict where it lands (MS-ESS2-6). Counts of the 1992 toy spill disagree between sources |
 | **Tide Tables** · 13+ / parents | sketch; after a Lantern Lake capacity test | A cozy scheduling puzzle that fits jobs into tide windows |
 
 Completion with spoken support is not evidence of independent understanding of tides, and nothing scores a recited fact.
