@@ -687,12 +687,13 @@ Performed on the built levels (built 2026-10-30, [PR #1037](https://github.com/r
 
 ## River Tablets levels 4–6 (AR3, 2026-10-30)
 
-Performed on the built levels, which are not yet built ([definition](definitions/river-tablets.md#levels-46-check-tier-for-the-builds)).
+Performed on the built levels (levels 4–5 built 2026-10-31, [PR #1044](https://github.com/rjdunlap/neo/pull/1044); level 6 not yet built; [definition](definitions/river-tablets.md#levels-46-check-tier-for-the-builds)).
 
 - [ ] With a six-year-old, check whether she reads a spilled crate as a ten or presses ten small marks every time.
 - [ ] Check whether the three verdict pictures (short, right, extra) are understood without their spoken names.
-- [ ] Check whether *can't tell* is heard as permission to guess.
-- [ ] On an iPad, check device speech for counts up to 32.
+- [ ] Check whether *can't tell* is heard as permission to guess (level 6, not yet built).
+- [ ] On an iPad, check device speech for counts up to 32 (levels 4–5 are built).
+- [ ] Check whether the history line "Long ago, people used a different mark for ten." is heard clearly; it shipped as the softer fallback with no museum or KS2 source read, so a person with a source in hand may still tighten it.
 
 ## Keep House levels 5–6 (ML3, 2026-10-30)
 

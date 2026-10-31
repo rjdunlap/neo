@@ -1,14 +1,15 @@
 /**
  * River Tablets rules: a record of real things, lined up against them one to one.
  * Level 1 drops a token in the jar for each sheep and tips the jar; level 2 presses one mark per token on a clay envelope and
- * cracks it open; level 3 presses each mark in the row with its picture and reads the tablet back. Definition:
- * docs/definitions/river-tablets.md.
+ * cracks it open; level 3 presses each mark in the row with its picture and reads the tablet back; level 4 writes a cart's
+ * crates and baskets with a big mark for ten and small marks for ones; level 5 checks a cart against a tablet written at the
+ * farm: short, right or extra, and by how many. Definition: docs/definitions/river-tablets.md.
  */
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 
-export type PlanId = 'tokens' | 'envelope' | 'rows';
+export type PlanId = 'tokens' | 'envelope' | 'rows' | 'tens' | 'check';
 export type Kind = 'sheep' | 'jar';
 export const KINDS: readonly Kind[] = ['sheep', 'jar'];
 
@@ -22,6 +23,8 @@ export const PLANS: readonly Plan[] = [
   { level: 1, id: 'tokens', name: 'One token each: tap the jar for each sheep, then tip it (3–5 sheep)' },
   { level: 2, id: 'envelope', name: 'Marks on the envelope: one pressed mark per token, crack it open (two balls of 3–6)' },
   { level: 3, id: 'rows', name: 'Which row? each mark in the row with its picture (two tablets of 4–6 mixed goods)' },
+  { level: 4, id: 'tens', name: 'A ten is a different mark: press big marks for tens and small marks for ones (two carts of 12–29)' },
+  { level: 5, id: 'check', name: 'Check the delivery: short, right or extra, and by how many (two carts against tablets of 12–29)' },
 ];
 export const MAX_LEVEL = PLANS.length;
 
@@ -63,7 +66,34 @@ export interface RowsBrief {
   deliveries: [Kind[], Kind[]];
 }
 
-export type Brief = TokensBrief | EnvelopeBrief | RowsBrief;
+/** A cart as it stands in the yard: whole crates of ten and loose baskets. */
+export interface Cart {
+  crates: number;
+  loose: number;
+}
+export const cartCount = (c: Cart) => 10 * c.crates + c.loose;
+
+export interface TensBrief {
+  level: 4;
+  id: 'tens';
+  /** Tablet 1 arrives packed (2–9 loose); tablet 2 arrives with a crate spilled (11–19 loose, 0–1 crates). Counts differ. */
+  carts: [Cart, Cart];
+  /** Where each loose basket stands in the yard: distinct slots of the scatter grid, one list per cart. */
+  scatter: [number[], number[]];
+}
+
+export interface CheckBrief {
+  level: 5;
+  id: 'check';
+  /** Each tablet's count `t` (written at the farm, shortest form) and the cart that came, `t + d` with |d| ≤ 3. */
+  deliveries: [Delivery, Delivery];
+}
+export interface Delivery {
+  t: number;
+  c: number;
+}
+
+export type Brief = TokensBrief | EnvelopeBrief | RowsBrief | TensBrief | CheckBrief;
 
 /** How many times the kind changes along a delivery; a mixed delivery changes at least twice. */
 export function kindChanges(goods: readonly Kind[]): number {
@@ -92,8 +122,38 @@ export function deliveryFor(sheep: number, jars: number, rng: Rng): Kind[] {
   return [many, ...Array<Kind>(nFew).fill(few), ...Array<Kind>(nMany - 1).fill(many)];
 }
 
+/** The yard's scatter grid: loose baskets take distinct slots, never a row of ten. */
+export const SCATTER_COLS = 11;
+export const SCATTER_ROWS = 3;
+
+/** `count` distinct slots of the scatter grid, seeded. */
+export function scatterFor(count: number, rng: Rng): number[] {
+  const slots = Array.from({ length: SCATTER_COLS * SCATTER_ROWS }, (_, i) => i);
+  return rng.shuffle(slots).slice(0, count);
+}
+
 export function briefFor(level: number, rng: Rng): Brief {
   const plan = planFor(level);
+  if (plan.id === 'tens') {
+    // Tablet 1 packed: a count whose ones are 2–9. Tablet 2 spilled: 12–19 (no crate) or 21–29 (one crate burst).
+    const first = (): number => { const n = rng.int(12, 29); return n % 10 >= 2 ? n : first(); };
+    const a = first();
+    const spilled = (): number => { const n = rng.int(12, 28); return n >= 20 ? n + 1 : n; };
+    let b = spilled();
+    while (b === a) b = spilled();
+    const carts: [Cart, Cart] = [{ crates: Math.floor(a / 10), loose: a % 10 }, b >= 20 ? { crates: 1, loose: b - 10 } : { crates: 0, loose: b }];
+    return { level: 4, id: 'tens', carts, scatter: [scatterFor(carts[0].loose, rng), scatterFor(carts[1].loose, rng)] };
+  }
+  if (plan.id === 'check') {
+    const t1 = rng.int(12, 29);
+    let t2 = rng.int(12, 28);
+    if (t2 >= t1) t2++;
+    const d1 = rng.int(-3, 3);
+    // At least one cart is off.
+    const d2 = d1 === 0 ? rng.pick([-3, -2, -1, 1, 2, 3]) : rng.int(-3, 3);
+    const deliveries: [Delivery, Delivery] = rng.chance(0.5) ? [{ t: t1, c: t1 + d1 }, { t: t2, c: t2 + d2 }] : [{ t: t2, c: t2 + d2 }, { t: t1, c: t1 + d1 }];
+    return { level: 5, id: 'check', deliveries };
+  }
   if (plan.id === 'tokens') {
     const sheep = rng.int(3, 5);
     const colors = Array.from({ length: sheep }, () => rng.pick(SHEEP_COLORS));
@@ -296,6 +356,175 @@ export function readBack(delivery: readonly Kind[]): Record<Kind, number> {
   return { sheep: delivery.filter((k) => k === 'sheep').length, jar: delivery.filter((k) => k === 'jar').length };
 }
 
+// ——— Levels 4–5: a ten is a different mark ———
+
+/** The ten strip holds up to 3 big marks; the ones strip up to 19 small ones, so a spilled crate can be written as ten small marks. */
+export const TEN_CAP = 3;
+export const ONE_CAP = 19;
+
+export interface Reading {
+  tens: number;
+  ones: number;
+}
+
+/** What a tablet says: marks are additive, so the order they were pressed in never matters. */
+export const value = (r: Reading) => 10 * r.tens + r.ones;
+/** The fewest marks for `n`. */
+export const shortest = (n: number): Reading => ({ tens: Math.floor(n / 10), ones: n % 10 });
+export const cartOf = (n: number): Cart => ({ crates: Math.floor(n / 10), loose: n % 10 });
+
+export interface TensState extends Reading {
+  n: number;
+  misses: number;
+  hinted: boolean;
+  glowing: boolean;
+  done: boolean;
+}
+
+export function startTens(n: number): TensState {
+  return { n, tens: 0, ones: 0, misses: 0, hinted: false, glowing: false, done: false };
+}
+
+export type Mark = 'ten' | 'one';
+
+/** A stamp adds its mark; at its strip's cap it changes nothing (`capped`). Free. */
+export function stamp(s: TensState, mark: Mark): { state: TensState; capped: boolean } {
+  if (s.done) return { state: s, capped: false };
+  if (mark === 'ten') return s.tens >= TEN_CAP ? { state: s, capped: true } : { state: { ...s, tens: s.tens + 1 }, capped: false };
+  return s.ones >= ONE_CAP ? { state: s, capped: true } : { state: { ...s, ones: s.ones + 1 }, capped: false };
+}
+
+/** Tapping a strip lifts its last mark. Free. */
+export function lift(s: TensState, mark: Mark): TensState {
+  if (s.done) return s;
+  if (mark === 'ten') return s.tens > 0 ? { ...s, tens: s.tens - 1 } : s;
+  return s.ones > 0 ? { ...s, ones: s.ones - 1 } : s;
+}
+
+export type HandIn = 'match' | 'longer' | 'wrong';
+
+/** Hand in: the count in fewest marks, an equal longer reading (right, no miss), or one miss with the glow after the second. */
+export function handIn(s: TensState): { state: TensState; result: HandIn } {
+  if (s.done) return { state: s, result: 'match' };
+  if (value(s) === s.n) {
+    const short = shortest(s.n);
+    const result: HandIn = s.tens === short.tens && s.ones === short.ones ? 'match' : 'longer';
+    return { state: { ...s, ...short, done: true, glowing: false }, result };
+  }
+  const misses = s.misses + 1;
+  const glowing = s.glowing || misses >= 2;
+  return { state: { ...s, misses, glowing, hinted: s.hinted || glowing }, result: 'wrong' };
+}
+
+/** Asked-for help: the glow, counted once per tablet. */
+export function askTens(s: TensState): TensState {
+  if (s.done) return s;
+  return { ...s, glowing: true, hinted: true };
+}
+
+export type TensHint = 'handIn' | 'liftTen' | 'stampTen' | 'liftOne' | 'stampOne';
+
+/** The glow: Hand in once the reading is equal, else one step toward the fewest marks, tens first. Never presses for her. */
+export function tensHint(s: Reading & { n: number }): TensHint {
+  if (value(s) === s.n) return 'handIn';
+  const t = shortest(s.n);
+  if (s.tens > t.tens) return 'liftTen';
+  if (s.tens < t.tens) return 'stampTen';
+  if (s.ones > t.ones) return 'liftOne';
+  return 'stampOne';
+}
+
+// ——— Level 5: check the delivery ———
+
+export type CartVerdict = 'short' | 'right' | 'extra';
+export const CART_VERDICTS: readonly CartVerdict[] = ['short', 'right', 'extra'];
+
+export function verdictFor(t: number, c: number): { verdict: CartVerdict; by: number } {
+  return { verdict: c === t ? 'right' : c < t ? 'short' : 'extra', by: Math.abs(t - c) };
+}
+
+export interface CheckState extends Delivery {
+  /** Short or extra chosen, waiting for its number (free to change). */
+  open: CartVerdict | null;
+  misses: number;
+  hinted: boolean;
+  /** The lineup plays and holds (help). */
+  lined: boolean;
+  done: boolean;
+}
+
+export function startCheck(d: Delivery): CheckState {
+  return { ...d, open: null, misses: 0, hinted: false, lined: false, done: false };
+}
+
+export type CheckCommit = 'none' | 'right' | 'wrong';
+
+function commit(s: CheckState, verdict: CartVerdict, by: number): { state: CheckState; result: CheckCommit } {
+  const want = verdictFor(s.t, s.c);
+  if (verdict === want.verdict && (verdict === 'right' || by === want.by)) return { state: { ...s, open: null, done: true }, result: 'right' };
+  const misses = s.misses + 1;
+  const lined = s.lined || misses >= 2;
+  return { state: { ...s, open: null, misses, lined, hinted: s.hinted || lined }, result: 'wrong' };
+}
+
+/** A verdict button: Right commits by itself; short and extra open their numbers and commit nothing. */
+export function chooseVerdict(s: CheckState, verdict: CartVerdict): { state: CheckState; result: CheckCommit } {
+  if (s.done) return { state: s, result: 'none' };
+  if (verdict === 'right') return commit(s, 'right', 0);
+  return { state: { ...s, open: verdict }, result: 'none' };
+}
+
+/** A number button beside an open verdict commits the pair. */
+export function chooseNumber(s: CheckState, by: number): { state: CheckState; result: CheckCommit } {
+  if (s.done || s.open === null) return { state: s, result: 'none' };
+  return commit(s, s.open, by);
+}
+
+/** Asked-for help: the lineup plays and holds, once per cart. */
+export function askCheck(s: CheckState): CheckState {
+  if (s.done) return s;
+  return { ...s, lined: true, hinted: true };
+}
+
+// ——— The lineup: goods under marks ———
+
+export interface Lineup {
+  /** Under each ten-mark: a whole crate, or `filled` loose baskets of its ten. */
+  tens: { crate: boolean; filled: number }[];
+  /** Under each one-mark: a basket or nothing. */
+  ones: boolean[];
+  /** Baskets left over with no mark. */
+  extra: number;
+  /** Empty places under marks. */
+  gaps: number;
+}
+
+/**
+ * Line a cart up against a reading: crates under ten-marks; a crate with no ten-mark opens into loose baskets; loose
+ * baskets fill the one-marks, then any empty ten-mark's places; the rest are extra.
+ */
+export function lineUp(r: Reading, cart: Cart): Lineup {
+  const crates = Math.min(r.tens, cart.crates);
+  let loose = cart.loose + 10 * (cart.crates - crates);
+  const ones = Array.from({ length: r.ones }, () => (loose > 0 ? (loose--, true) : false));
+  const tens = Array.from({ length: r.tens }, (_, i) => {
+    if (i < crates) return { crate: true, filled: 10 };
+    const filled = Math.min(10, loose);
+    loose -= filled;
+    return { crate: false, filled };
+  });
+  const gaps = ones.filter((o) => !o).length + tens.reduce((n, t) => n + (10 - t.filled), 0);
+  return { tens, ones, extra: loose, gaps };
+}
+
+export function tensTally(tablets: readonly TensState[]): RoundTally {
+  return { misses: tablets.reduce((n, t) => n + t.misses, 0), hints: tablets.filter((t) => t.hinted).length };
+}
+
+export function checkTally(carts: readonly CheckState[]): RoundTally {
+  return { misses: carts.reduce((n, t) => n + t.misses, 0), hints: carts.filter((t) => t.hinted).length };
+}
+
 // ——— Round accounting ———
 
 export interface RoundTally {
@@ -317,7 +546,7 @@ export interface Rect { x: number; y: number; w: number; h: number }
 export interface Pt { x: number; y: number }
 export const centre = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
 export const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-const inside = (a: Rect, v: View) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
+const inside = (a: Rect, v: { x?: number; y?: number; w: number; h: number }) => a.x >= (v.x ?? 0) && a.y >= (v.y ?? 0) && a.x + a.w <= (v.x ?? 0) + v.w && a.y + a.h <= (v.y ?? 0) + v.h;
 
 /** The home and ? buttons (top left) and the guide (bottom left). */
 export const HOME_CORNER = { w: 130, h: 215 };
@@ -332,6 +561,14 @@ export const JAR = { w: 180, h: 200 };
 export const CRACK = { w: 140, h: 110 };
 export const ROW = { w: 460, h: 120 };
 export const SIGN = 110;
+/** Levels 4–5: the yard's height, a crate place, a strip, the tablet's read-aloud band above the strips, a stamp, a verdict and a number button. */
+export const YARD_H = 180;
+export const CRATE = { w: 104, h: 100 };
+export const STRIP = { w: 460, h: 120 };
+export const READ_H = 100;
+export const STAMP = { w: 140, h: 120 };
+export const VERDICT = 120;
+export const NUMBER = 110;
 const M = 20;
 const GAP = 16;
 
@@ -347,6 +584,18 @@ export interface TabletLayout {
   /** Level 3: the two rows (sheep, then jar), each a full-height target, and the storehouse. */
   rows?: Rect[];
   store?: Rect;
+  /** Levels 4–5: the yard (the lane; tapping it counts the cart at level 4), its crate places, and the loose baskets' area. */
+  crates?: Rect[];
+  baskets?: Rect;
+  /** Levels 4–5: the tablet (tapping its face reads it) and its ten and ones strips. */
+  tablet?: Rect;
+  strips?: Rect[];
+  /** Level 4: the ten and one stamps, and Hand in. */
+  stamps?: Rect[];
+  handIn?: Rect;
+  /** Level 5: short, right and extra, and the numbers one to three. */
+  verdicts?: Rect[];
+  numbers?: Rect[];
   /** Where the record lines up against the things (visual, never a target). */
   lineup: Rect;
   /** Every tap target. */
@@ -361,7 +610,8 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
   const wide = v.w >= v.h;
   const plan = planFor(level);
   const left = HOME_CORNER.w + M;
-  const lane: Rect = { x: left, y: M, w: v.w - left - M, h: 200 };
+  const yardLevel = plan.id === 'tens' || plan.id === 'check';
+  const lane: Rect = { x: left, y: M, w: v.w - left - M, h: yardLevel ? YARD_H : 200 };
   const free: Rect = { x: PET_CORNER.w + M, y: lane.y + lane.h + M, w: v.w - PET_CORNER.w - 2 * M, h: v.h - lane.y - lane.h - 2 * M };
   const cx = free.x + free.w / 2;
   let l: TabletLayout;
@@ -385,6 +635,26 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
       : { x: cx - CRACK.w / 2, y: ball.y + ball.h + GAP, w: CRACK.w, h: CRACK.h };
     const lineup: Rect = { x: free.x, y: (wide ? ball.y + ball.h : crack.y + crack.h) + GAP, w: free.w, h: 110 };
     l = { lane, ball, cells, crack, lineup, inputs: [ball, crack] };
+  } else if (yardLevel) {
+    const crates = [0, 1, 2].map((i) => ({ x: lane.x + 16 + i * (CRATE.w + 8), y: lane.y + lane.h - CRATE.h - 8, w: CRATE.w, h: CRATE.h }));
+    const bx = crates[2].x + CRATE.w + 12;
+    const baskets: Rect = { x: bx, y: lane.y + 16, w: lane.x + lane.w - 16 - bx, h: lane.h - 26 };
+    const tabletH = READ_H + 2 * STRIP.h + 2 * 12 + 20;
+    // Portrait has room to spare below: the tablet and its lineup sit a third of the way down it rather than at the top.
+    const spare = wide ? 0 : Math.max(0, free.h - tabletH - 12 - 110 - 6) / 3;
+    const tablet: Rect = { x: free.x, y: free.y + 6 + Math.round(spare), w: STRIP.w + 40, h: tabletH };
+    const strips = [0, 1].map((i) => ({ x: tablet.x + 20, y: tablet.y + READ_H + 8 + i * (STRIP.h + 12), w: STRIP.w, h: STRIP.h }));
+    const col = tablet.x + tablet.w + GAP;
+    const lineup: Rect = { x: free.x, y: tablet.y + tablet.h + 12, w: plan.id === 'tens' ? free.w : tablet.w, h: 110 };
+    if (plan.id === 'tens') {
+      const stamps = strips.map((r) => ({ x: col, y: r.y, w: STAMP.w, h: STAMP.h }));
+      const handIn: Rect = { x: col + STAMP.w + GAP, y: (strips[0].y + strips[1].y + STRIP.h) / 2 - CRACK.h / 2, w: CRACK.w, h: CRACK.h };
+      l = { lane, crates, baskets, tablet, strips, stamps, handIn, lineup, inputs: [tablet, ...strips, ...stamps, handIn] };
+    } else {
+      const verdicts = [0, 1, 2].map((i) => ({ x: col, y: tablet.y + i * (VERDICT + GAP), w: VERDICT, h: VERDICT }));
+      const numbers = verdicts.map((r) => ({ x: col + VERDICT + GAP, y: r.y + (VERDICT - NUMBER) / 2, w: NUMBER, h: NUMBER }));
+      l = { lane, crates, baskets, tablet, strips, verdicts, numbers, lineup, inputs: [tablet, ...verdicts, ...numbers] };
+    }
   } else {
     const rowsX = wide ? free.x + 10 : cx - ROW.w / 2;
     const rows = [0, 1].map((i) => ({ x: rowsX, y: free.y + 10 + i * (ROW.h + GAP), w: ROW.w, h: ROW.h }));
@@ -394,12 +664,14 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
     const lineup: Rect = { x: free.x, y: (wide ? rows[1].y + ROW.h : store.y + store.h) + GAP, w: free.w, h: 110 };
     l = { lane, rows, store, lineup, inputs: rows.slice() };
   }
-  const parts = [l.lane, ...(l.cells ?? []), ...l.inputs, ...(l.store ? [l.store] : []), l.lineup];
+  const parts = [l.lane, ...(l.cells ?? []), ...l.inputs, ...(l.store ? [l.store] : []), l.lineup, ...(l.crates ?? [])];
   if (!parts.every((p) => inside(p, v))) return null;
   if (l.inputs.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;
   if (l.cells?.some((c) => !inside(c, v))) return null;
-  // Targets never cover one another (the cells sit on the ball on purpose).
-  const targets = [...l.inputs.filter((p) => p !== l.ball), ...(l.cells ?? [])];
+  // Targets never cover one another (the cells sit on the ball and the strips on the tablet on purpose).
+  const targets = [...l.inputs.filter((p) => p !== l.ball && p !== l.tablet), ...(l.cells ?? []), ...(l.crates ?? [])];
+  if (l.crates?.some((c) => !inside(c, l.lane) || overlaps(c, l.baskets!))) return null;
+  if (l.inputs.some((p) => overlaps(p, l.lineup)) && l.verdicts) return null;
   if (targets.some((p, i) => targets.some((q, j) => i < j && overlaps(p, q)))) return null;
   if (l.store && l.inputs.some((p) => overlaps(p, l.store!))) return null;
   if (l.inputs.some((p) => overlaps(p, l.lane))) return null;

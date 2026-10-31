@@ -381,3 +381,330 @@ describe('layout', () => {
     }
   });
 });
+
+// ——— Levels 4–5 ———
+import {
+  ONE_CAP, SCATTER_COLS, SCATTER_ROWS, STRIP, TEN_CAP, askCheck, askTens, cartCount, cartOf, checkTally, chooseNumber, chooseVerdict,
+  handIn, lift, lineUp, shortest, stamp, startCheck, startTens, tensHint, tensTally, value, verdictFor,
+  type CheckBrief, type Cart, type CheckState, type Mark, type TensBrief, type TensState,
+} from './logic';
+
+const READINGS: { tens: number; ones: number }[] = [];
+for (let t = 0; t <= TEN_CAP; t++) for (let o = 0; o <= ONE_CAP; o++) READINGS.push({ tens: t, ones: o });
+const NS = Array.from({ length: 18 }, (_, i) => 12 + i);
+const withReading = (n: number, r: { tens: number; ones: number }): TensState => ({ ...startTens(n), ...r });
+
+describe('level 4 briefs', () => {
+  it('draws two carts of 12-29 that differ, packed then spilled', () => {
+    for (const s of SEEDS) {
+      const b = briefFor(4, new Rng(s)) as TensBrief;
+      expect(b.id).toBe('tens');
+      const [a, c] = b.carts;
+      expect(cartCount(a)).toBeGreaterThanOrEqual(12);
+      expect(cartCount(a)).toBeLessThanOrEqual(29);
+      expect(cartCount(c)).toBeGreaterThanOrEqual(12);
+      expect(cartCount(c)).toBeLessThanOrEqual(29);
+      expect(cartCount(a)).not.toBe(cartCount(c));
+      expect(a.loose).toBeGreaterThanOrEqual(2);
+      expect(a.loose).toBeLessThanOrEqual(9);
+      expect(c.loose).toBeGreaterThanOrEqual(11);
+      expect(c.loose).toBeLessThanOrEqual(19);
+      expect(c.crates).toBeLessThanOrEqual(1);
+      expect(c.crates).toBeGreaterThanOrEqual(0);
+    }
+  });
+  it('scatters one distinct in-grid slot per loose basket', () => {
+    for (const s of SEEDS) {
+      const b = briefFor(4, new Rng(s)) as TensBrief;
+      b.carts.forEach((cart, i) => {
+        const slots = b.scatter[i];
+        expect(slots).toHaveLength(cart.loose);
+        expect(new Set(slots).size).toBe(slots.length);
+        for (const x of slots) {
+          expect(Number.isInteger(x)).toBe(true);
+          expect(x).toBeGreaterThanOrEqual(0);
+          expect(x).toBeLessThanOrEqual(SCATTER_COLS * SCATTER_ROWS - 1);
+        }
+      });
+    }
+  });
+  it('is deterministic per seed', () => {
+    for (const s of SEEDS) expect(briefFor(4, new Rng(s))).toEqual(briefFor(4, new Rng(s)));
+  });
+});
+
+describe('level 5 briefs', () => {
+  it('draws two counts of 12-29 that differ, each cart within 3, at least one off', () => {
+    const seen = new Set<string>();
+    for (const s of SEEDS) {
+      const b = briefFor(5, new Rng(s)) as CheckBrief;
+      expect(b.id).toBe('check');
+      const [x, y] = b.deliveries;
+      expect(x.t).not.toBe(y.t);
+      let off = 0;
+      for (const d of b.deliveries) {
+        expect(d.t).toBeGreaterThanOrEqual(12);
+        expect(d.t).toBeLessThanOrEqual(29);
+        expect(Math.abs(d.c - d.t)).toBeLessThanOrEqual(3);
+        expect(d.c).toBeGreaterThanOrEqual(0);
+        expect(cartOf(d.c).loose).toBeLessThanOrEqual(9);
+        if (d.c !== d.t) off++;
+        const v = verdictFor(d.t, d.c);
+        seen.add(`${v.verdict}${v.by}`);
+      }
+      expect(off).toBeGreaterThanOrEqual(1);
+    }
+    for (const by of [1, 2, 3]) {
+      expect(seen.has(`short${by}`)).toBe(true);
+      expect(seen.has(`extra${by}`)).toBe(true);
+    }
+    expect(seen.has('right0')).toBe(true);
+  });
+  it('is deterministic per seed', () => {
+    for (const s of SEEDS) expect(briefFor(5, new Rng(s))).toEqual(briefFor(5, new Rng(s)));
+  });
+});
+
+describe('tablet reading', () => {
+  it('value ignores the order marks were pressed in', () => {
+    const run = (seq: Mark[]) => seq.reduce((st, m) => stamp(st, m).state, startTens(20));
+    const base: Mark[] = ['ten', 'ten', 'one', 'one', 'one', 'ten'];
+    const perms = (a: Mark[]): Mark[][] => (a.length <= 1 ? [a] : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map((p) => [x, ...p])));
+    for (const p of perms(base)) {
+      const r = run(p);
+      expect(value(r)).toBe(33);
+      expect({ t: r.tens, o: r.ones }).toEqual({ t: 3, o: 3 });
+    }
+  });
+  it('shortest(n) is the unique minimum of marks among readings of n within caps', () => {
+    for (const n of NS) {
+      const eq = READINGS.filter((r) => value(r) === n);
+      const min = Math.min(...eq.map((r) => r.tens + r.ones));
+      const best = eq.filter((r) => r.tens + r.ones === min);
+      expect(best).toEqual([shortest(n)]);
+    }
+  });
+  it('stamping at a cap changes nothing and reports capped; lift on empty is a no-op', () => {
+    const full = withReading(20, { tens: TEN_CAP, ones: ONE_CAP });
+    const a = stamp(full, 'ten');
+    expect(a.capped).toBe(true);
+    expect(a.state).toEqual(full);
+    const b = stamp(full, 'one');
+    expect(b.capped).toBe(true);
+    expect(b.state).toEqual(full);
+    expect(stamp(startTens(20), 'ten').capped).toBe(false);
+    const empty = startTens(20);
+    expect(lift(empty, 'ten')).toEqual(empty);
+    expect(lift(empty, 'one')).toEqual(empty);
+  });
+});
+
+describe('handing in a tablet', () => {
+  it('the shortest reading matches; any other equal reading is longer, free, and tidied', () => {
+    for (const n of NS) {
+      for (const r of READINGS.filter((q) => value(q) === n)) {
+        const out = handIn(withReading(n, r));
+        const isShort = r.tens === shortest(n).tens && r.ones === shortest(n).ones;
+        expect(out.result).toBe(isShort ? 'match' : 'longer');
+        expect(out.state.misses).toBe(0);
+        expect(out.state.hinted).toBe(false);
+        expect(out.state.done).toBe(true);
+        expect({ tens: out.state.tens, ones: out.state.ones }).toEqual(shortest(n));
+      }
+    }
+  });
+  it('unequal readings are one miss each, glow after the second, one hint per tablet', () => {
+    for (const n of NS) {
+      const r = READINGS.find((q) => value(q) !== n)!;
+      let st = withReading(n, r);
+      const first = handIn(st);
+      expect(first.result).toBe('wrong');
+      expect(first.state.misses).toBe(1);
+      expect(first.state.glowing).toBe(false);
+      expect(first.state.hinted).toBe(false);
+      const second = handIn(first.state);
+      expect(second.state.misses).toBe(2);
+      expect(second.state.glowing).toBe(true);
+      expect(second.state.hinted).toBe(true);
+      const third = handIn(second.state);
+      expect(third.state.misses).toBe(3);
+      const other = withReading(n + 1, r);
+      expect(tensTally([third.state, other])).toEqual({ misses: 3, hints: 1 });
+      st = askTens(askTens(third.state));
+      expect(tensTally([st, st])).toEqual({ misses: 6, hints: 2 });
+      expect(tensTally([st]).hints).toBe(1);
+    }
+  });
+  it('asking counts once per tablet', () => {
+    const a = askTens(askTens(startTens(15)));
+    expect(a.glowing).toBe(true);
+    expect(tensTally([a, startTens(20)])).toEqual({ misses: 0, hints: 1 });
+  });
+});
+
+describe('level 4 hint', () => {
+  it('leads from every state to an equal reading within the distance to the shortest, never stamping at a cap', () => {
+    for (const n of NS) {
+      const T = shortest(n);
+      for (const r of READINGS) {
+        let st = withReading(n, r);
+        const bound = Math.abs(r.tens - T.tens) + Math.abs(r.ones - T.ones);
+        let steps = 0;
+        while (value(st) !== n) {
+          const h = tensHint(st);
+          expect(h).not.toBe('handIn');
+          if (h === 'stampTen') {
+            expect(st.tens).toBeLessThan(TEN_CAP);
+            st = stamp(st, 'ten').state;
+          } else if (h === 'stampOne') {
+            expect(st.ones).toBeLessThan(ONE_CAP);
+            st = stamp(st, 'one').state;
+          } else if (h === 'liftTen') {
+            expect(st.tens).toBeGreaterThan(0);
+            st = lift(st, 'ten');
+          } else {
+            expect(st.ones).toBeGreaterThan(0);
+            st = lift(st, 'one');
+          }
+          steps++;
+          expect(steps).toBeLessThanOrEqual(bound);
+        }
+        expect(tensHint(st)).toBe('handIn');
+        expect(handIn(st).state.done).toBe(true);
+      }
+    }
+  });
+});
+
+describe('level 5 checking', () => {
+  const D = { t: 24, c: 21 };
+  it('verdictFor names short, right or extra with the gap', () => {
+    expect(verdictFor(24, 21)).toEqual({ verdict: 'short', by: 3 });
+    expect(verdictFor(24, 24)).toEqual({ verdict: 'right', by: 0 });
+    expect(verdictFor(24, 26)).toEqual({ verdict: 'extra', by: 2 });
+  });
+  it('right commits at once; short and extra only open', () => {
+    const ok = chooseVerdict(startCheck({ t: 20, c: 20 }), 'right');
+    expect(ok.result).toBe('right');
+    expect(ok.state.done).toBe(true);
+    const bad = chooseVerdict(startCheck(D), 'right');
+    expect(bad.result).toBe('wrong');
+    expect(bad.state.misses).toBe(1);
+    for (const v of ['short', 'extra'] as const) {
+      const o = chooseVerdict(startCheck(D), v);
+      expect(o.result).toBe('none');
+      expect(o.state.open).toBe(v);
+      expect(o.state.misses).toBe(0);
+      expect(o.state.done).toBe(false);
+    }
+  });
+  it('changing an open verdict is free, and a number with none open commits nothing', () => {
+    let st = startCheck(D);
+    for (const v of ['extra', 'short', 'extra', 'short'] as const) st = chooseVerdict(st, v).state;
+    expect(st.open).toBe('short');
+    expect(st.misses).toBe(0);
+    const n = chooseNumber(startCheck(D), 3);
+    expect(n.result).toBe('none');
+    expect(n.state).toEqual(startCheck(D));
+  });
+  it('every wrong committed pair is exactly one miss, and the right pair finishes', () => {
+    for (const d of [-3, -2, -1, 0, 1, 2, 3]) {
+      const cs = startCheck({ t: 20, c: 20 + d });
+      const want = verdictFor(20, 20 + d);
+      for (const v of ['short', 'extra'] as const) {
+        for (const by of [1, 2, 3]) {
+          const r = chooseNumber(chooseVerdict(cs, v).state, by);
+          if (v === want.verdict && by === want.by) {
+            expect(r.result).toBe('right');
+            expect(r.state.done).toBe(true);
+            expect(r.state.misses).toBe(0);
+          } else {
+            expect(r.result).toBe('wrong');
+            expect(r.state.misses).toBe(1);
+            expect(r.state.open).toBeNull();
+          }
+        }
+      }
+      const rr = chooseVerdict(cs, 'right');
+      expect(rr.result).toBe(d === 0 ? 'right' : 'wrong');
+    }
+  });
+  it('the lineup comes after the second miss; one hint per cart', () => {
+    let st: CheckState = startCheck(D);
+    st = chooseVerdict(st, 'right').state;
+    expect(st.misses).toBe(1);
+    expect(st.lined).toBe(false);
+    expect(st.hinted).toBe(false);
+    st = chooseVerdict(st, 'right').state;
+    expect(st.misses).toBe(2);
+    expect(st.lined).toBe(true);
+    expect(st.hinted).toBe(true);
+    st = chooseVerdict(st, 'right').state;
+    expect(checkTally([st, startCheck(D)])).toEqual({ misses: 3, hints: 1 });
+  });
+  it('asking lines up once per cart', () => {
+    const a = askCheck(askCheck(startCheck(D)));
+    expect(a.lined).toBe(true);
+    expect(checkTally([a, askCheck(startCheck(D))])).toEqual({ misses: 0, hints: 2 });
+    expect(checkTally([a, startCheck(D)]).hints).toBe(1);
+  });
+});
+
+describe('lineUp', () => {
+  const check = (r: { tens: number; ones: number }, cart: Cart) => {
+    const l = lineUp(r, cart);
+    const count = cartCount(cart);
+    const v = value(r);
+    expect(l.gaps).toBe(Math.max(0, v - count));
+    expect(l.extra).toBe(Math.max(0, count - v));
+    const placed = l.tens.reduce((n, t) => n + t.filled, 0) + l.ones.filter(Boolean).length;
+    expect(placed + l.extra).toBe(count);
+    expect(l.tens).toHaveLength(r.tens);
+    expect(l.ones).toHaveLength(r.ones);
+  };
+  it('level 5: shortest reading against the cart that came', () => {
+    for (let t = 12; t <= 29; t++) for (let d = -3; d <= 3; d++) check(shortest(t), cartOf(t + d));
+  });
+  it('level 4: any reading within caps against any cart shape', () => {
+    for (let crates = 0; crates <= 2; crates++) {
+      for (let loose = 0; loose <= 19; loose++) {
+        const cart = { crates, loose };
+        if (cartCount(cart) < 12 || cartCount(cart) > 29) continue;
+        for (const r of READINGS) check(r, cart);
+      }
+    }
+  });
+});
+
+describe('levels 4-5 layout', () => {
+  const views = [
+    computeView(1024, 768),
+    computeView(768, 1024),
+    computeView(844, 390),
+    computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+  ];
+  for (const level of [4, 5]) {
+    it(`level ${level} fits every view with full-size, non-overlapping targets`, () => {
+      for (const v of views) {
+        const l = tabletLayout(level, v);
+        expect(l).not.toBeNull();
+        if (!l) continue;
+        for (const p of l.inputs) expect(Math.min(p.w, p.h)).toBeGreaterThanOrEqual(100);
+        for (const c of l.crates!) {
+          expect(Math.min(c.w, c.h)).toBeGreaterThanOrEqual(100);
+          expect(c.x).toBeGreaterThanOrEqual(l.lane.x);
+          expect(c.y).toBeGreaterThanOrEqual(l.lane.y);
+          expect(c.x + c.w).toBeLessThanOrEqual(l.lane.x + l.lane.w);
+          expect(c.y + c.h).toBeLessThanOrEqual(l.lane.y + l.lane.h);
+        }
+        for (const p of [...l.inputs, ...l.crates!, l.lane, l.lineup]) {
+          for (const q of corners(v)) if (p !== l.lane && p !== l.lineup) expect(overlaps(p, q)).toBe(false);
+        }
+        const solo = l.inputs.filter((p) => p !== l.tablet);
+        solo.forEach((p, i) => solo.forEach((q, j) => { if (i < j) expect(overlaps(p, q)).toBe(false); }));
+        expect(STRIP.w).toBeGreaterThanOrEqual(10 * 40);
+        if (level === 5) for (const p of l.inputs) expect(overlaps(p, l.lineup)).toBe(false);
+      }
+    });
+  }
+});

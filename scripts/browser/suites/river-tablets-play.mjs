@@ -7,6 +7,12 @@ async function riverTabletsPlay() {
   const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 30000 }); await page.waitForTimeout(150); };
   const tapOn = async (expr) => { await page.evaluate((expr) => kit.tapOn(Function(`return (${expr})`)()), expr); await page.waitForTimeout(150); };
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+  const fromLevel = Number(process.env.FROM_LEVEL || 1);
+  if (fromLevel <= 3) await riverTablets13({ score, tally, settle, tapOn });
+  await riverTablets45({ score, tally, settle, tapOn });
+}
+
+async function riverTablets13({ score, tally, settle, tapOn }) {
 
   // Level 1: a token per sheep (a tap while the next sheep walks only wobbles), then the tip; nothing counts.
   await launch('river-tablets', 1);
@@ -86,6 +92,88 @@ async function riverTabletsPlay() {
   await finished('river-tablets');
   assert.deepEqual(await score(), [2, 1], 'level 3 saved 2 misses, 1 hint');
   log('River Tablets 1–3: a token per sheep and the tip (0/0), a short envelope cracked twice then the glowing cell (2/1), a wrong row twice then the moved mark (2/1), a portrait screenshot, passed');
+}
+
+// Level 4: one wrong Hand in, a second (the glow, one hint), the glow followed to a match; the second cart written the long way (accepted).
+// Level 5: one wrong number (a miss), then the right verdict and number; the second cart answered right. Portrait screenshots of both.
+async function riverTablets45({ score, tally, settle, tapOn }) {
+  const logic = '/src/games/river-tablets/logic.ts';
+  await launch('river-tablets', 4);
+  await settle();
+  let s = await page.evaluate(() => ({ ...neo.scene.game.tensNow }));
+  assert.ok(s.n >= 12 && s.n <= 29, 'a count of 12–29');
+  // The yard count and reading the tablet are free.
+  await page.evaluate(() => { const g = neo.scene.game; const l = g.layoutNow; const p = g.yardNode.toGlobal({ x: l.baskets.x - l.lane.x + 20, y: 30 }); kit.tap(p.x, p.y); });
+  await page.waitForTimeout(200);
+  assert.ok(await page.evaluate(() => neo.scene.game.yardCounted), 'the yard is being counted');
+  await settle();
+  // One ten-mark only: wrong. A crate opened just before must not stall the Hand in (its art closes in place).
+  // A crate's origin is its bottom edge: aim at its middle.
+  await page.evaluate(() => kit.tapOn(neo.scene.game.crateNodes[0], 0, -50)); await page.waitForTimeout(150);
+  assert.equal(await page.evaluate(() => neo.scene.game.busy), false, 'opening a crate is free and keeps the board live');
+  await tapOn('neo.scene.game.stampNodes[0]');
+  await tapOn('neo.scene.game.handInNode'); await settle();
+  await page.waitForTimeout(1500);
+  assert.equal(await page.evaluate(() => neo.scene.game.busy), false, 'a crate opened during the commit leaves the board live');
+  s = await page.evaluate(() => ({ ...neo.scene.game.tensNow }));
+  assert.deepEqual([s.misses, s.glowing, s.tens, s.ones], [1, false, 1, 0], 'a wrong Hand in is one miss, her marks kept');
+  await tapOn('neo.scene.game.handInNode'); await settle();
+  s = await page.evaluate(() => ({ ...neo.scene.game.tensNow }));
+  assert.deepEqual([s.misses, s.glowing, s.hinted], [2, true, true], 'the second miss glows (one hint)');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  await screenshot('river-tablets-4-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  for (let guard = 0; guard < 30; guard++) {
+    const h = await page.evaluate(async (logic) => { const { tensHint } = await import(logic); const g = neo.scene.game; return g.tensNow.done ? null : tensHint(g.tensNow); }, logic);
+    if (h === null) break;
+    const node = { handIn: 'neo.scene.game.handInNode', liftTen: 'neo.scene.game.stripNodes[0]', liftOne: 'neo.scene.game.stripNodes[1]', stampTen: 'neo.scene.game.stampNodes[0]', stampOne: 'neo.scene.game.stampNodes[1]' }[h];
+    await tapOn(node);
+    if (h === 'handIn') await settle();
+  }
+  await settle();
+  assert.equal(await page.evaluate(() => neo.scene.game.cartIndex), 1, 'the match moved to the second cart');
+  assert.deepEqual(await tally(), [2, 1]);
+  // The second cart the long way: one fewer ten, ten more small marks. Right, no miss.
+  const n2 = await page.evaluate(() => neo.scene.game.tensNow.n);
+  const tens = Math.floor(n2 / 10);
+  const longTens = Math.max(0, tens - 1);
+  const longOnes = n2 - 10 * longTens;
+  for (let i = 0; i < longTens; i++) await tapOn('neo.scene.game.stampNodes[0]');
+  for (let i = 0; i < longOnes; i++) await tapOn('neo.scene.game.stampNodes[1]');
+  if (longOnes > 19) throw new Error('long reading over the cap');
+  await tapOn('neo.scene.game.handInNode');
+  await finished('river-tablets');
+  assert.deepEqual(await score(), [2, 1], 'level 4 saved 2 misses, 1 hint');
+
+  await launch('river-tablets', 5);
+  await settle();
+  const want = await page.evaluate(async (logic) => { const { verdictFor } = await import(logic); const c = neo.scene.game.check; return verdictFor(c.t, c.c); }, logic);
+  const vIndex = (v) => ['short', 'right', 'extra'].indexOf(v);
+  // One wrong number: pick short or extra (the right one if the cart is off), then a wrong count.
+  const off = want.verdict === 'right' ? 'short' : want.verdict;
+  await tapOn(`neo.scene.game.verdictNodes[${vIndex(off)}]`);
+  assert.equal(await page.evaluate(() => neo.scene.game.check.open), off, 'short or extra opens the numbers');
+  assert.equal(await page.evaluate(() => neo.scene.game.check.misses), 0, 'choosing a verdict is free');
+  const wrongBy = want.verdict === 'right' ? 1 : (want.by % 3) + 1;
+  await tapOn(`neo.scene.game.numberNodes[${wrongBy - 1}]`); await settle();
+  let c = await page.evaluate(() => ({ ...neo.scene.game.check }));
+  assert.deepEqual([c.misses, c.done, c.lined], [1, false, false], 'a wrong number is one miss');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  await screenshot('river-tablets-5-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  for (let guard = 0; guard < 6; guard++) {
+    const st = await page.evaluate(async (logic) => { const { verdictFor } = await import(logic); const g = neo.scene.game; if (neo.scene.finished) return null; const c = g.check; return { want: verdictFor(c.t, c.c), open: c.open }; }, logic);
+    if (!st) break;
+    if (st.want.verdict === 'right') await tapOn(`neo.scene.game.verdictNodes[1]`);
+    else {
+      await tapOn(`neo.scene.game.verdictNodes[${vIndex(st.want.verdict)}]`);
+      await tapOn(`neo.scene.game.numberNodes[${st.want.by - 1}]`);
+    }
+    await settle();
+  }
+  await finished('river-tablets');
+  assert.deepEqual(await score(), [1, 0], 'level 5 saved 1 miss, 0 hints');
+  log('River Tablets 4–5: the yard counted, two wrong tablets then the glow to a match (2/1), a long reading accepted; a wrong number then two right checks (1/0), two portrait screenshots, passed');
 }
 return { riverTabletsPlay };
 }
