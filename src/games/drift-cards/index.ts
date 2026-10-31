@@ -126,7 +126,9 @@ class DriftCards implements Game {
     window.addEventListener('pointercancel', this.onSeaUp, true);
 
     for (const beach of beachesFor(this.plan.split)) {
+      // The plate draws its own sand, so a touch-down press shows on it.
       const plate = new Container();
+      plate.addChild(new Graphics());
       this.plates.set(beach, plate);
       ctx.stage.addChild(plate);
       if (this.plan.mode === 'predict') onTap(plate, () => this.pickBeach(beach));
@@ -284,7 +286,7 @@ class DriftCards implements Game {
     this.wobble(this.friends.get(beach)!.art);
     const cells = traceAhead(this.sea, { r: 0, c: col }, 1);
     const dirs = cells.map((c) => DIR_WORD[this.sea.cells[c.r][c.c]]);
-    this.showTrace(traceAhead(this.sea, { r: 0, c: col }));
+    this.showTrace(cells);
     void this.ctx.say('drift.wrong.1', { dir: dirs[0], dir2: dirs[1] ?? dirs[0] });
     if (out.glow) this.drawGlow();
   }
@@ -502,8 +504,8 @@ class DriftCards implements Game {
     // The harbour wall along the top of the sea.
     g.roundRect(L.wall.x, L.wall.y, L.wall.w, L.wall.h, 6).fill(WALL).stroke({ color: WALL_LINE, width: 3 });
     for (const [beach, b] of Object.entries(L.beaches) as [Beach, (typeof L.beaches)[Beach] & object][]) {
-      g.roundRect(b.x + 3, b.y + 3, b.w - 6, b.h - 6, 16).fill(SAND).stroke({ color: SAND_LINE, width: 3 });
       const plate = this.plates.get(beach)!;
+      (plate.children[0] as Graphics).clear().roundRect(-b.w / 2 + 3, -b.h / 2 + 3, b.w - 6, b.h - 6, 16).fill(SAND).stroke({ color: SAND_LINE, width: 3 });
       plate.position.set(b.x + b.w / 2, b.y + b.h / 2);
       plate.hitArea = new Rectangle(-b.w / 2, -b.h / 2, b.w, b.h);
       plate.pivot.set(0, 0);
