@@ -762,12 +762,16 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 1, to: 1, text: 'Tap the camel so it kneels, then tap each bale; tap the camel again and off it goes.' },
       { from: 2, to: 2, text: 'Count the suns on each road; tap the water the camel can reach with two days in its skin.' },
       { from: 3, to: 3, text: 'Tap the stops one at a time all the way to the city so no leg is longer than the skin, then tap Go.' },
+      { from: 4, to: 4, text: 'At each stop, give the camel what the next stop wants (look at its bubble), then tap Go.' },
+      { from: 5, to: 5, text: 'Tap each load to count its shells at the glowing stop; send the one that brings more.' },
     ],
     finish: 'The camel drinks for a long moment at the water.',
     note: [
       { from: 1, to: 1, text: 'Nothing is counted. Loading, unloading and the walk are all free; after a quiet moment the next thing to tap glows.' },
       { from: 2, to: 2, text: 'Counting suns and tapping the skin are never counted; only tapping an oasis is. The far water is one miss, and after two the near water glows, which counts as one hint. Long ago, on the long road from the east, the stopping places were a day\'s walk apart, so there was water at the end of every day.' },
       { from: 3, to: 3, text: 'Flagging, taking a flag out and counting suns are never counted; only Go is. A leg longer than the skin is one miss and the camel comes back to its last stop; after two the next good stop glows, which counts as one hint. Nobody walked the whole road: each caravan went a few stops and handed its load on.' },
+      { from: 4, to: 4, text: 'Picking and swapping offers and tapping the bubbles are never counted; only Go is. A good the next stop does not want is one miss and the camel walks back; after two the right offer glows, which counts as one hint. The suns are always within the skin here. Long ago, goods changed hands again and again along the road, each trader taking them a little way.' },
+      { from: 5, to: 5, text: 'Looking at the loads and the price boards is never counted; only Go is. The smaller load is one miss, with both sums spoken, and after two the better load glows, which counts as one hint. The better load swaps between the near oasis and the far city. Shells are counters for one sale only; nothing is kept. The same thing can be worth more in one place than another.' },
     ],
   },
   'water-road': {
