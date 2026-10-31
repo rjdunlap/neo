@@ -162,7 +162,7 @@ Each row is one future session. Definitions are docs only (links and `git diff -
 | **3 — Define Tide Line 5–7** | Sky arc, day strip, chart and the fortnight set | Docs only; level 7 held for the reviewer |
 | **4 — Handoffs** | Salty or Fresh to the Sink or Float dive; Beach Day Pack-up weighed in the Second Chance Shed 5–6 definition (2026-10-31) and kept as a proposed picnic set for its levels 2–4; Beach Tally to the Picture Graph dive; Rock Pool to Photo Safari; shore zones to the Habitat Helpers dive | Each through its own game's workflow; stable IDs and pins kept |
 | **5 — Define Down We Go** | The light meter, stops, the seaweed question and the school levels | Docs only, after slice 2 so the shore art exists |
-| **6 — Define Drift Cards** | Maps with currents; the route puzzle | Docs only, after Drop's Journey is defined |
+| **6 — Define Drift Cards** | Maps with currents; the route puzzle | Docs only; eligible since Drop's Journey was [defined](../../definitions/drops-journey.md) 2026-10-31 |
 | **7 — Define Tide Tables** | Grown-up cases; placement | Docs only, after capacity is measured |
 
 ## What was built and what ran

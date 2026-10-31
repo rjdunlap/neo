@@ -33,3 +33,10 @@
 - Ran: `npm run typecheck`; full `npm test` (3,777 passed at the prior commit; Pet Kitchen rules 21 plus journal tests); `npm run build`. `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen KITCHEN_LEVELS=13` at `http://localhost:5515` (halves serve miss, quarters, one wrong "more" with overlay, right plate, score [2,0]), rerun after the overlay fix; `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-kitchen FINGER_LEVELS=13` passed (14.1 s); portrait screenshots (768x1024) reviewed.
 - `game-reviewer`: one cosmetic fix (servings slide back after the overlay). Not run: other kitchen levels' browser play (their journal reporting is unit-tested only), the offline check, an iPad, a child.
 - Open: leftover quarter and bubble legibility ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-30 — Sprout Shuffle level 3 (could be or always, genetics G3)
+
+- [PR #1033](https://github.com/rjdunlap/neo/pull/1033), branch `claude/sprout-shuffle-g3`, tested at `25309fc9`: level 3 (Aa × Aa, four built buds, "sometimes" or "always" claim cards, free Try one); school range now 1–3.
+- Ran: `npm run typecheck`; full `npm test` (282 files, 3,783 passed; 19 Sprout Shuffle rule tests incl. level 3); `npm run build`. `BROWSER_SUITE=sproutshuffle` at `http://localhost:5497` (levels 1–3: level 3 four built buds, two free Try one draws, wrong "always" Check = 1 miss, "sometimes" finishes, saved 1 miss/0 hints; portrait screenshot). `BROWSER_SUITE=fingerdemo FINGER_ONLY=sprout-shuffle FINGER_LEVELS=3` clean in 29.8 s.
+- `game-reviewer`: no defects. Not run: the offline check (no persistence or asset change), other suites, device speech, an iPad, a child.
+- Open: whether a child grasps sometimes versus always, and the claim cards' small marks at card size ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
