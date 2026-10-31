@@ -537,7 +537,23 @@ Proof: new-game tier, as the [definition's Check tier](definitions/timeline-trai
 
 ### river-tablets 1: One token each, the envelope and which row
 
-Built 2026-10-27, [PR #1019](https://github.com/rjdunlap/neo/pull/1019); [definition](definitions/river-tablets.md), [archived build note](archive/COMPLETED-2026-10-09.md#river-tablets-levels-13-ancient-river-civilizations-ar2-2026-10-27). Whole three-level new-game batch. Device checks remain; levels 4–6 (AR3) need their own definition.
+Built 2026-10-27, [PR #1019](https://github.com/rjdunlap/neo/pull/1019); [definition](definitions/river-tablets.md), [archived build note](archive/COMPLETED-2026-10-09.md#river-tablets-levels-13-ancient-river-civilizations-ar2-2026-10-27). Whole three-level new-game batch. Device checks remain; levels 4–6 are defined (AR3) as batches river-tablets 2 and 3.
+
+### river-tablets 2: A ten-mark and check the delivery
+
+Ready (defined 2026-10-30, [PR #1030](https://github.com/rjdunlap/neo/pull/1030)). One worker, branch and PR for both levels.
+
+- **`river-tablets`, levels 4–5 (the build of study slice AR3, first part)** (two new interactions on an existing game; school only, `school: { min: 3, max: 5 }` for this batch, appended after `rows` without renumbering): hand in a clay tablet written with a big ten-mark and small ones-marks for crates and loose baskets, any equal longer reading accepted and then shown the shorter way, the yard count and tablet reading free (level 4); say whether a cart is short, right or extra against a tablet written at the farm, then by how many (level 5). Marks are invented island signs; nothing is paid. Files: `src/games/river-tablets/` (logic, art, scene, rule tests), voice lines `rt.*`, the how-to card, the `rivertablets` browser case. Withdraw clause: if level 4 plays as Lasso Loops with a stamp, it becomes a Lasso Loops mode and level 5 still stands. [Definition](definitions/river-tablets.md#levels-46-ar3-a-ten-mark-check-the-delivery-two-tablets-disagree), [study build slices](deep-dives/subjects/ancient-river-civilizations.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the [definition's check tier](definitions/river-tablets.md#levels-46-check-tier-for-the-builds) sets it (typecheck, rule tests, one scripted `rivertablets` play of level 4 with one wrong Hand in and the glow and of level 5 with one wrong number, a portrait screenshot of each, `fingerdemo` at level 5, one build because voice and how-to change).
+
+### river-tablets 3: Two tablets disagree
+
+Queued after river-tablets 2 (defined 2026-10-30, [PR #1030](https://github.com/rjdunlap/neo/pull/1030)). One worker, branch and PR.
+
+- **`river-tablets`, level 6 (the build of study slice AR3, second part)** (a new interaction on an existing game; school only, `school: { min: 3, max: 6 }`): a farm tablet and a storehouse tablet record the same cart and disagree; pick the one that matches, neither, or can't tell, and can't tell is right only when the cart is empty (`gone`). Files: `src/games/river-tablets/` (logic, scene, rule tests), voice lines `rt.*`, the how-to card, the `rivertablets` browser case. Depends on river-tablets 2 for the marks and the lineup. [Definition](definitions/river-tablets.md#levels-46-ar3-a-ten-mark-check-the-delivery-two-tablets-disagree), [study build slices](deep-dives/subjects/ancient-river-civilizations.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the [definition's check tier](definitions/river-tablets.md#levels-46-check-tier-for-the-builds) sets it (typecheck, rule tests, one scripted `rivertablets` play of level 6 with a can't-tell miss and the `gone` case, a portrait screenshot, `fingerdemo` at level 6, one build).
 
 ### caravan-days 1: Kneel and load, can we reach it, and day by day
 

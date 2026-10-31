@@ -51,3 +51,9 @@
 - Ran on tested commit `9dd29295`, then again after the review fixes in `b1acf4cd` (finger-travel taps, the level-1 long-ago line, one place bag a session: typecheck, 20 rule tests, the `timelinetrail` suite and the demos at 1 and 3 reran and passed), `GAME_URL=http://localhost:5631`: `npm run typecheck`; full `npm test` (274 files, 3,568 tests; 16 new rule tests: places table and voice per stage, place bag, 500 seeded rounds per level, one valid gap per card over every legal build order, reasons, ghost-finger order, accounting, layout at landscape and portrait iPad views); the first local run failed only the rendered-clip coverage of `game.timeline-trail` until the one clip was rendered; `npm run build` (406 precache entries, 15,350 KiB).
 - `BROWSER_SUITE=timelinetrail`: level 2 (one wrong gap = 1 miss, the same gap again nothing more, Show a hint twice = 1 hint, valid gap, finish saved 1/1); level 3 (free caption tap, three drags oldest first, portrait screenshot of the two-row line, finish 0/0). `BROWSER_SUITE=fingerdemo FINGER_ONLY=timeline-trail FINGER_LEVELS=1,2,3` passed (3.9 s, 5.5 s, 9.6 s). A probe screenshot of level 1 and its flipbook was reviewed.
 - Not run: the offline check, other suites, an iPad, device speech, a child. Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md#timeline-trail-levels-13).
+
+## 2026-10-27 — River Tablets 1–3 definition (ancient river civilizations AR1)
+
+- [PR #1015](https://github.com/rjdunlap/neo/pull/1015), branch `claude/define-river-tablets`: docs only. [Definition](../definitions/river-tablets.md) for levels 1–3 and a batch plan in `docs/GAME-BATCHES.md`; the study, backlog, recommendations, roadmap, ideas and ready lists point to it. Nothing built; no code changed.
+- Ran: `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean).
+- Not run: typecheck, tests, build, browser suites, device (docs only).

@@ -1,4 +1,6 @@
-# River Tablets, levels 1–3 (definition)
+# River Tablets, levels 1–6 (definition)
+
+Levels 1–3 are defined below. Levels 4–6 (AR3) are defined in [their own section](#levels-46-ar3-a-ten-mark-check-the-delivery-two-tablets-disagree) at the end of this file.
 
 Defined 2026-10-27 as slice AR1 of the [ancient river civilizations study](../deep-dives/subjects/ancient-river-civilizations.md#build-slices-in-order) ([packet](../deep-dives/subjects/RECOMMENDATIONS.md#ancient-river-civilizations-recommendations)), [PR #1015](https://github.com/rjdunlap/neo/pull/1015). Decisions 1–2 were taken 2026-10-23 on the developer's delegation: invented island marks on the child's screen, Story Grove if the lands test passes (else Counting Cove), and a first build of levels 1–3 only. **Nothing is built.** AR2 builds levels 1–3 as one [batch](../GAME-BATCHES.md#river-tablets-1-one-token-each-the-envelope-and-which-row); levels 4–6 (AR3), 7–8 (AR4) and Two Tablets (AR5) are separate definitions.
 

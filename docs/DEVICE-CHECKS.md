@@ -681,3 +681,12 @@ Performed on the built levels, which are not yet built ([definition](definitions
 - [ ] With a school child, check whether she reads the next stop's bubble or the city's when choosing what to swap.
 - [ ] Check whether the reversal at level 5 (the better load flips between the far city and the near oasis) is noticed or played as two separate guesses.
 - [ ] On an iPad, check device speech for the good and shell slots.
+
+## River Tablets levels 4–6 (AR3, 2026-10-30)
+
+Performed on the built levels, which are not yet built ([definition](definitions/river-tablets.md#levels-46-check-tier-for-the-builds)).
+
+- [ ] With a six-year-old, check whether she reads a spilled crate as a ten or presses ten small marks every time.
+- [ ] Check whether the three verdict pictures (short, right, extra) are understood without their spoken names.
+- [ ] Check whether *can't tell* is heard as permission to guess.
+- [ ] On an iPad, check device speech for counts up to 32.
