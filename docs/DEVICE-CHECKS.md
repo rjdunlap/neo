@@ -141,6 +141,13 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] On an iPad, hear each place's reason line ("I only munch food bits" and the others) in device speech.
 - [ ] Does a child take the island's Remake machine for a real recycling bin? The card tells grown-ups to check their own town's rules; listen for what she says.
 
+## Tide Line levels 1–2 (oceans study slice 1, 2026-10-31)
+
+- [ ] With a one-year-old on a lap: does she pull the foam crest, or tap the sea for one wave, and watch it slide back?
+- [ ] With a toddler: can she hold a pail and drop it above the seaweed line, and does a floated pail and its fetch feel gentle?
+- [ ] On an iPad in sunlight: is the seaweed line easy to see against the sand?
+- [ ] On an iPad, hear device speech for "anemone" and the `tl.*` lines.
+
 ## Spinner Fair levels 1–3 (chance-statistics CS1, 2026-10-31)
 
 - [ ] With a preschooler: does she keep tapping the spinner for six spins and read a block as "that one came up"?

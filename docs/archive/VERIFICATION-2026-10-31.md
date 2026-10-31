@@ -24,3 +24,9 @@
 - [PR #1039](https://github.com/rjdunlap/neo/pull/1039), branch `claude/define-rule-machine`: [definition](../definitions/rule-machine.md) (levels 1–4 of a new game; pre-K 1, school 2–4; Puzzle Peaks becoming 14 games), two batch plans in [GAME-BATCHES](../GAME-BATCHES.md#rule-machine-1-the-hat-machine-and-one-more-goes-in), READY, backlog, roadmap, ideas and study updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs only). Open: the builds run the new-game tier (batch 1) and the new-interaction tier (batch 2); device checks (pre-K reading of the three pictures, whether the free first guess feels like a game, five cars and a table on an iPad portrait, "twice as many" as rows of counters, device speech for "take one away") stay open at the build.
+
+## 2026-10-31 — Tide Line 1–4 definition (oceans study slice 1, docs only)
+
+- [PR #1042](https://github.com/rjdunlap/neo/pull/1042), branch `claude/define-tide-line`: [definition](../definitions/tide-line.md) (levels 1–4 of a new game; lap 1, toddler 1–2, preschool 2–3, pre-K 3–4; Bubble Beach becoming 13 games), two batch plans in [GAME-BATCHES](../GAME-BATCHES.md#tide-line-1-come-in-go-out-and-stop-at-the-line), READY, backlog, roadmap, ideas, study and packet updated; S1 source check done in the definition.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the builds run the new-game tier (batch 1) and the new-interaction tier (batch 2); device checks (a lap child pulling the wave, a toddler placing a pail, the seaweed line in sunlight, pre-K telling the in-between picture from high and low, device speech for "anemone") stay open at the build.
