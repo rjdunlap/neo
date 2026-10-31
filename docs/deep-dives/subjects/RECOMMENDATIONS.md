@@ -941,3 +941,17 @@ Completion with spoken support is not evidence of independent understanding of t
 | **NS5 Square tiles**, **NS7 Tenths of a jar**, **NS8 Factor Chain** | sketches | Greatest common factor (waits on the area study's Meadow Pens), decimal place value (waits on NS6 and the fractions study), and a factor game for Lantern Lake after a capacity test |
 
 [Ordered slices](number-structure.md#build-slices-in-order). Decision leans: extend Orchard Rows rather than a new game; baskets of 12 to 24; *factor*, *multiple* and *composite* on the grown-up card only and *prime* spoken once at the level 6 answer; Lunch boxes to Monster Munch, not Pet Kitchen; hundreds and decimals stay sketches. Solving a level with spoken support is not evidence of independent understanding; whether a seven-year-old uses the leftover saplings to pick the next row count, whether "every way" feels like a collection, and whether "only one long row" carries the idea without the word *prime* are person checks.
+
+## Literature and meaning recommendations
+
+**Recommended 2026-10-31:** [the literature-and-meaning study](literature-meaning.md), [PR #1064](https://github.com/rjdunlap/neo/pull/1064). Opened: CCSS RL.K, RL.2, RL.3 and RL.6 and the Kendeou et al. 2008 abstract; the rest are search summaries or recall, marked in the study. Story Steps orders events, so the first slice is reading a character: what she wants, what he saw and so where he will look, and how the picture shows it.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **LM1 Thought Bubbles 1–3** · new game · pre-K, school | define (docs only) | Watch a two-to-four-beat picture story, then drag one of three picture cards (110 units) into a friend's empty thought bubble; the friend acts on it. 1 *What does she want?*: the object the reach or gaze points to; 2 *Where will he look?*: the place he last saw the thing (away or watching stories); 3 *How do we know?*: the supported reason, then the clue in the picture. Belief model and story pools in `logic.ts` with tests; Story Grove (paging), Cozy Village the fallback; nothing kept |
+| **LM3 Story-talk card** · grown-ups' page | write after LM1 is built | Questions for any picture book; plain HTML; no learning claim |
+| **LM2 Thought Bubbles 4** · two bubbles | define after 1–3 are played | Two friends, two bubbles, different things seen |
+| **LM4 Who is telling?** · Thought Bubbles 5 | define after LM2 | Tap the friend who could have told this version |
+| **LM5 Two tellings**, **LM6 What did Fox learn?**, **LM7 Who Knew** | sketches | Comparing versions and a story's message (both need a named reviewer for any real story) and a Lantern Lake belief puzzle (after a capacity test) |
+
+[Ordered slices](literature-meaning.md#build-slices-in-order). Decision leans: a new game rather than Story Steps 14–16; invented island stories only; nobody is tricked (things move by tidying, sharing, wind); *point of view*, *inference* and *narrator* on the grown-up card only. Solving a level with spoken support is not evidence of independent understanding; whether a four- or five-year-old reads the empty bubble as "what he thinks", whether the window story feels fair after the away story, and whether *show me how you know* feels like finding treasure are person checks.

@@ -1,5 +1,11 @@
 # Needs a person or a device
 
+## Thought Bubbles (literature-meaning study, 2026-10-31; proposed, nothing built)
+
+- [ ] Once built: does a four- or five-year-old read the empty bubble as "what he thinks", or as a place to put the right object?
+- [ ] Once built: does the window story feel fair after the away story, or like a trick?
+- [ ] Once built: does *show me how you know* feel like finding treasure or like a test?
+
 ## Orchard Rows 4–6 (number-structure study, 2026-10-31; proposed, nothing built)
 
 - [ ] Once built: does a seven-year-old use the leftover saplings to choose the next row count, or press arrows at random?

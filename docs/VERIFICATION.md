@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Literature and meaning subject research (docs only)
+
+- [PR #1064](https://github.com/rjdunlap/neo/pull/1064), branch `claude/research-literature-meaning`: [study](deep-dives/subjects/literature-meaning.md) and [packet](deep-dives/subjects/RECOMMENDATIONS.md#literature-and-meaning-recommendations) (Thought Bubbles 1–3: what she wants, where he will look, how we know; a story-talk card, two-bubble stories and Who is telling? follow; folktale versions wait for a reviewer), tracker, backlog, READY, ideas, roadmap and device checks updated.
+- Ran: `git fetch origin --prune`, `scripts/overlap.sh` (no claim), `node scripts/check-links.mjs` and `git diff --check`. Sources: CCSS RL.K, RL.2, RL.3, RL.6 and the Kendeou et al. 2008 abstract opened; the rest from search summaries or recall, marked in the study.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the LM1 definition and three [person checks](DEVICE-CHECKS.md#thought-bubbles-literature-meaning-study-2026-10-31-proposed-nothing-built).
+
 ## 2026-10-31 — Orchard Rows 4–6 definition (number-structure NS1, docs only)
 
 - [PR #1063](https://github.com/rjdunlap/neo/pull/1063), branch `claude/define-orchard-rows-4-6`: [definition](definitions/orchard-rows.md) (levels 4–6 on the built game; school; equal rows, every way, only one long row; the study's ladder changed at four points), batch plan [orchard-rows 1](GAME-BATCHES.md#orchard-rows-1-equal-rows-every-way-only-one-long-row), READY, backlog, study, packet and roadmap updated.
@@ -85,12 +91,6 @@
 - Ran (tested at the branch tip, Vite dev on http://localhost:5335): typecheck; `npm test` 3884 passed before the last small edits, then 234 content/shed/registry tests after them (57 shed rule tests: 500-seed level 5/6 rounds, unique level-6 pairing, greedy failing with pencils first in at least half per case, help leads somewhere from random plans, layout at five views); `BROWSER_SUITE=shedplan` (level 5 free ring, tin in Remake 1 miss, unchanged ring free, tin to the friend, saved 1/0; level 6 tempting plan, tin on the wrong friend, 2 misses and glow, Show a hint then Show me one, saved 2/2; portrait screenshot); `fingerdemo` `FINGER_ONLY=second-chance-shed FINGER_LEVELS=5,6 FINGER_BAND=school` (27.8 s, 25.7 s); `npm run build`. The first shedplan run caught a buried-thing grab (the script now puts the tin in Remake last).
 - Source check (the definition's gate): tin reused whole for pencils is consistent with [EPA Reducing and Reusing Basics](https://www.epa.gov/recycle/reducing-and-reusing-basics); tin and steel cans are a standard accepted metal in [EPA's standardized terms](https://19january2025snapshot.epa.gov/circulareconomy/standardized-terms-materials-accepted-municipal-recycling-programs), so Remake taking the tin holds on "our island"; a seedling needs a pot with a drainage hole per [Mississippi State University Extension](https://extension.msstate.edu/blog/so-why-do-plant-containers-have-drain-holes); box as a bed and the cloth bag fitting nothing are picture-reading choices with no factual claim.
 - Not run: other suites, the offline check. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#second-chance-shed-levels-56-nature-sustainability-n3-2026-10-31)): bubble reading, tin to a friend versus Remake, fairness of the tempting plan, device speech, buried things on an iPad.
-
-## 2026-10-31 — Second Chance Shed 5–6 definition (nature-sustainability N3, docs only)
-
-- [PR #1047](https://github.com/rjdunlap/neo/pull/1047), branch `claude/define-second-chance-shed-5-6`: [definition](definitions/second-chance-shed-5-6.md) (a friend's request, whole-plan check with the cart bell, the greedy-fails case at level 6), batch plan [second-chance-shed 2](GAME-BATCHES.md#second-chance-shed-2-someone-needs-it); Beach Day Pack-up weighed and kept as a proposed picnic set for levels 2–4.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-interaction tier) with its source check of the item fits; the person and device checks listed in the definition's check tier.
 
 ## Coverage summary
 
