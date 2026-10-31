@@ -206,7 +206,7 @@ function cartArt(): Container {
 
 /* The game --------------------------------------------------------------------------------------- */
 
-interface ToolNode { id: ToolId; node: Container; drag: DragHandle; rug: { x: number; y: number }; travel: number; down: { x: number; y: number } | null }
+interface ToolNode { id: ToolId; node: Container; drag: DragHandle; rug: { x: number; y: number }; travel: number; down: { x: number; y: number; id: number } | null }
 
 export class AtticJobs implements Game {
   readonly plan: Plan;
@@ -239,6 +239,10 @@ export class AtticJobs implements Game {
   private finaleT: number | null = null;
   private t = 0;
   private destroyed = false;
+  /** Bumped by Start again, so animations from before it stop at their next step. */
+  private gen = 0;
+  /** A resize arrived mid-animation: lay out again once it ends. */
+  private relayout = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -289,8 +293,7 @@ export class AtticJobs implements Game {
   start() {
     void this.ctx.say(this.plan.mode === 'same' ? 'attic-finds.instruct-same' : 'attic-finds.instruct-context')
       .then(() => { if (!this.destroyed && !this.finished) void this.ctx.instruct(JOBS[this.deal.job].line); });
-    this.busy = false;
-    this.syncDrags();
+    this.setBusy(false);
   }
 
   /* Building -------------------------------------------------------------------------------------- */
@@ -319,6 +322,12 @@ export class AtticJobs implements Game {
     this.lens.position.set(L.lens.x, L.lens.y);
     this.slotMarks.clear();
     for (const p of L.slots) this.slotMarks.roundRect(p.x - CART_SLOT / 2, p.y - CART_SLOT / 2, CART_SLOT, CART_SLOT, 16).fill({ color: cream, alpha: 0.6 }).stroke({ width: 3, color: wood.line, alpha: 0.5 });
+    if (this.busy && this.state) {
+      // Moving things mid-animation would strand its tweens; the tools follow when it ends.
+      this.relayout = true;
+      this.drawCheck();
+      return;
+    }
     for (const [i, tn] of this.tools.entries()) {
       tn.rug = { ...L.tools[i] };
       const at = this.state ? slotOf(this.state, tn.id) : -1;
@@ -336,6 +345,8 @@ export class AtticJobs implements Game {
     this.closeLens();
     for (const tn of this.tools) {
       tn.drag.destroy();
+      this.ctx.tw.kill(tn.node);
+      this.ctx.tw.kill(tn.node.scale);
       tn.node.destroy({ children: true });
     }
     this.tools = [];
@@ -352,12 +363,13 @@ export class AtticJobs implements Game {
       tn.drag = draggable(node, this.ctx.tw, { onDrop: (x, y) => this.dropTool(tn, x, y) });
       // Told apart from a drag by how far the finger went, since a held thing rides above the finger.
       node.on('pointerdown', (e: FederatedPointerEvent) => {
-        tn.down = { x: e.global.x, y: e.global.y };
+        if (this.busy || this.finished) return;
+        tn.down = { x: e.global.x, y: e.global.y, id: e.pointerId };
         tn.travel = 0;
         sfx.pop(6);
       });
       node.on('globalpointermove', (e: FederatedPointerEvent) => {
-        if (tn.down && tn.drag.dragging) tn.travel = Math.max(tn.travel, Math.hypot(e.global.x - tn.down.x, e.global.y - tn.down.y) / this.view.scale);
+        if (tn.down && tn.down.id === e.pointerId && tn.drag.dragging) tn.travel = Math.max(tn.travel, Math.hypot(e.global.x - tn.down.x, e.global.y - tn.down.y) / this.view.scale);
       });
       this.tools.push(tn);
     });
@@ -426,26 +438,35 @@ export class AtticJobs implements Game {
   private setBusy(b: boolean) {
     this.busy = b;
     this.syncDrags();
+    if (!b && this.relayout) {
+      this.relayout = false;
+      this.layout();
+    }
+  }
+
+  private gone(run: number) {
+    return this.destroyed || run !== this.gen;
   }
 
   /** A tap: the thing takes the load and carries it a little way; it holds, or the load shows why not. Never counted. */
   private async tryOne(tn: ToolNode, byHer: boolean) {
+    const run = this.gen;
     this.setBusy(true);
     this.closeLens();
     const why = byHer ? tryTool(this.state, tn.id) : reason(tn.id, this.state.job);
     await this.playTry(tn, why, true);
-    if (this.destroyed) return;
+    if (this.gone(run)) return;
     if (byHer) {
       this.openLens(tn.id);
-      await this.ctx.say(why ? `attic-finds.${why}` : 'attic-finds.held');
-      if (this.destroyed) return;
-      void this.ctx.say(decidingPart(tn.id, this.state.job).line);
+      const part = decidingPart(tn.id, this.state.job).line;
+      void this.ctx.say(why ? `attic-finds.${why}` : 'attic-finds.held').then(() => { if (!this.gone(run) && this.lens.visible) void this.ctx.say(part); });
     }
     this.setBusy(false);
   }
 
   /** The animation of one try where the thing sits: the load drops in, it sways along, and holds or fails. */
   private async playTry(tn: ToolNode, why: Reason | null, full: boolean) {
+    const run = this.gen;
     const n = tn.node, home = { x: n.x, y: n.y }, k = n.scale.x;
     const woven = tn.id === 'basket' || tn.id === 'hoop';
     sfx.pop(woven ? 5 : 3);
@@ -458,33 +479,34 @@ export class AtticJobs implements Game {
     const restY = home.y + (tn.id === 'tray' ? -20 : -14) * k;
     void this.ctx.tw.to(load, { alpha: 1 }, { duration: 0.15 });
     await this.ctx.tw.to(load, { y: restY }, { duration: 0.35, ease: ease.outBack });
-    if (this.destroyed) return;
+    if (this.gone(run)) return;
     const sway = full ? 26 : 16;
     const lift = (dx: number, dy: number, t: number) => Promise.all([
       this.ctx.tw.to(n, { x: home.x + dx, y: home.y + dy }, { duration: t, ease: ease.inOutSine }),
       this.ctx.tw.to(load, { x: home.x + dx, y: restY + dy }, { duration: t, ease: ease.inOutSine }),
     ]);
     await lift(sway, -18, 0.25);
-    if (this.destroyed) return;
+    if (this.gone(run)) return;
     if (!why) {
       sfx.pluck(8);
       sfx.pluck(11, 0.12);
       await lift(-sway, -18, 0.35);
-      if (this.destroyed) return;
+      if (this.gone(run)) return;
       await lift(0, 0, 0.25);
     } else {
       sfx.pluck(9);
       sfx.pluck(5, 0.14);
       await this.playFail(why, load, n, home, k);
-      if (this.destroyed) return;
+      if (this.gone(run)) return;
       await this.ctx.tw.to(n, { x: home.x, y: home.y }, { duration: 0.25, ease: ease.inOutSine });
     }
-    if (this.destroyed) return;
+    if (this.gone(run)) return;
     await this.ctx.tw.to(load, { alpha: 0 }, { duration: 0.2 });
     load.destroy({ children: true });
   }
 
   private async playFail(why: Reason, load: Container, n: Container, home: { x: number; y: number }, k: number) {
+    const run = this.gen;
     const p = this.ctx.particles;
     if (why === 'fell') {
       // Straight through the open bottom, onto the rug.
@@ -505,7 +527,7 @@ export class AtticJobs implements Game {
       for (let i = 0; i < 3; i++) {
         p.burst(n.x + (i - 1) * 30 * k, n.y + 40 * k, { kind: 'dot', colors: [swatch.blue.fill, swatch.blue.light], count: 5, speed: [20, 60], angle: Math.PI / 2, spread: 0.4, gravity: 500, life: [0.4, 0.7] });
         await this.ctx.tw.wait(0.2);
-        if (this.destroyed) return;
+        if (this.gone(run)) return;
       }
       await this.ctx.tw.to(load.scale, { y: 0.2 * k, x: 0.6 * k }, { duration: 0.3 });
     }
@@ -526,6 +548,7 @@ export class AtticJobs implements Game {
   /* Check ----------------------------------------------------------------------------------------- */
 
   private async pressCheck() {
+    const run = this.gen;
     if (this.busy || this.finished) return;
     const s = this.state;
     const cart = inCart(s).map((id) => this.tools.find((t) => t.id === id)!).sort((a, b) => slotOf(s, a.id) - slotOf(s, b.id));
@@ -540,7 +563,7 @@ export class AtticJobs implements Game {
     this.closeLens();
     for (const tn of cart) {
       await this.playTry(tn, reason(tn.id, s.job), false);
-      if (this.destroyed) return;
+      if (this.gone(run)) return;
     }
     if (result === 'miss') {
       sfx.boing();
@@ -572,12 +595,13 @@ export class AtticJobs implements Game {
   }
 
   private async jobDone(cart: ToolNode[]) {
+    const run = this.gen;
     const job = this.state.job;
     // The cart rolls toward the friend and back; the friend cheers; the load goes up on the shelf.
     const nodes = [this.cart, ...cart.map((t) => t.node)];
     const dx = -50;
     await Promise.all(nodes.map((n) => this.ctx.tw.to(n, { x: n.x + dx }, { duration: 0.4, ease: ease.inOutSine })));
-    if (this.destroyed) return;
+    if (this.gone(run)) return;
     this.friend.cheer();
     sfx.bell(9);
     sfx.bell(12, 0.15);
@@ -590,11 +614,11 @@ export class AtticJobs implements Game {
     void this.ctx.tw.to(pic, { x: spot.x, y: this.L.shelfY + 20 }, { duration: 0.6, ease: ease.inOutSine });
     void this.ctx.tw.to(pic.scale, { x: 0.8, y: 0.8 }, { duration: 0.6 });
     await Promise.all(nodes.map((n) => this.ctx.tw.to(n, { x: n.x - dx }, { duration: 0.4, ease: ease.inOutSine })));
-    if (this.destroyed) return;
+    if (this.gone(run)) return;
     sfx.bell(7, 0.2);
     this.ctx.pet.cheer();
     await this.ctx.say(doneLine(this.plan, job));
-    if (this.destroyed) return;
+    if (this.gone(run)) return;
     this.banked.misses += this.state.misses;
     this.banked.hints += this.state.hints;
     this.state.misses = 0;
@@ -610,20 +634,21 @@ export class AtticJobs implements Game {
   }
 
   private async finale() {
+    const run = this.gen;
     this.finished = true;
     this.syncDrags();
     this.finaleT = 0;
     sfx.tada();
     void this.ctx.say('attic-finds.jobs-done');
     await this.ctx.tw.wait(1.4);
-    if (this.destroyed) return;
+    if (this.gone(run)) return;
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
 
   /* Help ------------------------------------------------------------------------------------------ */
 
   askForHint() {
-    if (this.finished || this.state.done) return;
+    if (this.finished || this.busy || this.state.done) return;
     helpJob(this.state);
     const failing = this.state.tools.find((t) => !works(t, this.state.job));
     this.openLens(failing ?? workingSet(this.state.job, this.state.tools)[0]);
@@ -631,14 +656,25 @@ export class AtticJobs implements Game {
   }
 
   restart() {
-    if (this.finished) return;
+    if (this.finished || this.state.done) return;
+    this.gen++;
+    this.finaleT = null;
+    this.relayout = false;
     this.banked.misses += this.state.misses;
     this.banked.hints += this.state.hints;
     for (const n of this.shelved) n.destroy({ children: true });
     this.shelved = [];
-    for (const n of this.fx.removeChildren()) n.destroy({ children: true });
+    for (const n of this.fx.removeChildren()) {
+      this.ctx.tw.kill(n);
+      this.ctx.tw.kill(n.scale);
+      n.destroy({ children: true });
+    }
+    this.ctx.tw.kill(this.cart);
     this.index = 0;
+    this.busy = false;
     this.buildJob();
+    this.cart.rotation = 0;
+    this.layout();
     this.setBusy(false);
   }
 
