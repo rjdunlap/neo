@@ -40,3 +40,9 @@
 - Ran: `npm run typecheck`; full `npm test` (282 files, 3,783 passed; 19 Sprout Shuffle rule tests incl. level 3); `npm run build`. `BROWSER_SUITE=sproutshuffle` at `http://localhost:5497` (levels 1–3: level 3 four built buds, two free Try one draws, wrong "always" Check = 1 miss, "sometimes" finishes, saved 1 miss/0 hints; portrait screenshot). `BROWSER_SUITE=fingerdemo FINGER_ONLY=sprout-shuffle FINGER_LEVELS=3` clean in 29.8 s.
 - `game-reviewer`: no defects. Not run: the offline check (no persistence or asset change), other suites, device speech, an iPad, a child.
 - Open: whether a child grasps sometimes versus always, and the claim cards' small marks at card size ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-10-30 — Keep House 5–6 definition (ML3, docs only)
+
+- [PR #1034](https://github.com/rjdunlap/neo/pull/1034), branch `claude/define-keep-house-5-6`: [definition](../definitions/keep-house.md#levels-56-ml3-read-the-ruin-stone-or-timber) (level 5 Read the ruin, level 6 Stone or timber; school range 4–6), a batch plan in [GAME-BATCHES](../GAME-BATCHES.md#keep-house-2-read-the-ruin-and-stone-or-timber); READY, backlog, roadmap, ideas, packet and study point to it. Nothing built, no code changed.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs only). Open: the building session's source check of the history lines; the build runs the new-interaction tier.
