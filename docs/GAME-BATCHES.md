@@ -451,6 +451,12 @@ Built 2026-10-23, [PR #865](https://github.com/rjdunlap/neo/pull/865); [closeout
 
 Proof: new-interaction tier, as the [definition's Build and check tier](definitions/lid-and-lever.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticlever` scripted play at levels 3–4, `fingerdemo` at both, one portrait screenshot of level 4 with the door open, one build).
 
+### attic-finds 2: Same job and right for the job
+
+- **`attic-finds`, levels 5 *Same job* (pre-K, school) and 6 *Right for the job* (school)** (a new tap-to-try plus drag-into-a-three-slot-cart interaction inside the existing game; pre-K {1,5, order [1,2,5]}, school {2,6, order [2,5,6]}): try each old thing, then put every one that does the job into the cart (level 5), then choose the right tool for a job where one fails (level 6); a free failing try is not a miss. [Definition](definitions/same-job.md), [everyday-life study slice H4](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the [definition's Build and check tier](definitions/same-job.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticjobs` scripted play at levels 5–6, `fingerdemo` at both, one portrait screenshot of level 6, one build).
+
 ### second-chance-shed 1: Levels 1–4
 
 Built 2026-10-24, [PR #930](https://github.com/rjdunlap/neo/pull/930); [closeout](archive/COMPLETED-2026-10-09.md#second-chance-shed-levels-1-4-slice-n2-2026-10-24). Scope retained for dependency references; this batch is no longer eligible for dispatch.
