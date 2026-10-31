@@ -21,8 +21,8 @@ const LEVELS: BandLevels = {
   lap: { min: 3, max: 3 },
   toddler: { min: 3, max: 4 },
   preschool: { min: 1, max: 1 },
-  prek: { min: 1, max: 2 },
-  school: { min: 2, max: 2 },
+  prek: { min: 1, max: 5, order: [1, 2, 5] },
+  school: { min: 2, max: 6, order: [2, 5, 6] },
 };
 
 /** Each level's authored first round leads its first round of a session. */
@@ -1205,13 +1205,13 @@ export const atticFinds: GameModule = {
   name: 'Attic Finds',
   titleLine: 'game.attic-finds',
   region: 'story-grove',
-  skills: ['observation', 'cause-and-effect', 'evidence', 'prediction'],
+  skills: ['observation', 'cause-and-effect', 'evidence', 'prediction', 'comparing'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   entryLevels: [3, 4],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'One of you cranks while the other finds the clue. When it asks for proof, both say which part you would pick before Check.',
+  coplayHint: 'Take turns: one tries a thing while the other watches what happens. Before Check, both say which ones you would pick.',
   offScreen: "With a grown-up, look at one ordinary thing at home that has a handle or a lid, and say what it is for. \"I don't know\" is a fine answer.",
   touchDemo: true,
   hubIcon: () => new AtticIcon(),
