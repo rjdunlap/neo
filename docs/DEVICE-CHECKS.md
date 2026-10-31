@@ -700,3 +700,12 @@ Performed on the built levels, which are not yet built ([definition](definitions
 - [ ] With a school child, check whether she reads a room's clues or places labels by elimination, and whether the shared hearth (or drain) is noticed before the deciding clue.
 - [ ] Check whether the years' playback at level 6 is followed (bags spent, the timber hall rotting and rebuilt) rather than waited through.
 - [ ] On an iPad, check device speech for the clue, bag and year slots.
+
+## Water Road levels 4–5 (AM3, 2026-10-31)
+
+Performed on the built levels, which are not yet built ([definition](definitions/water-road.md#levels-45-check-tier-for-the-build)).
+
+- [ ] With a four-year-old, check whether she reads the climbing channel from the drawing before opening the spring.
+- [ ] With a school child, check whether she links the arrows to the pier's height, and whether a flat stretch reads as "stood still" rather than as a bug.
+- [ ] Check whether the push arrows read at the ends of the arch row at level 5.
+- [ ] On an iPad, check device speech for "abutment", if a line uses it, and for "the middle sea".

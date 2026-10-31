@@ -77,3 +77,17 @@
 - [PR #1017](https://github.com/rjdunlap/neo/pull/1017), branch `claude/define-keep-house`: docs only. [Definition](../definitions/keep-house.md) for saved levels 1–4 and a batch plan in `docs/GAME-BATCHES.md`; the study, backlog, recommendations, roadmap, ideas and ready lists point to it. Nothing built; no code changed.
 - Ran: `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean).
 - Not run: typecheck, tests, build, browser suites, device (docs only). Open: the build (ML2) runs the new-game tier.
+
+## 2026-10-27 — Water Road 1–3 definition (Greece and Rome AM1, docs only)
+
+- [PR #1018](https://github.com/rjdunlap/neo/pull/1018), branch `claude/define-water-road`: docs only. [Definition](../definitions/water-road.md) for levels 1–3 and a batch plan in `docs/GAME-BATCHES.md`; the study, backlog, recommendations, roadmap, ideas and ready lists point to it. Nothing built, no code changed.
+- Ran: `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean).
+- Not run: typecheck, tests, build, browser suites, device (docs only). Open: the build (AM2) runs the new-game tier.
+
+## 2026-10-27 — Caravan Days levels 1–3 (China, India and the Silk Road CS2)
+
+- [PR #1020](https://github.com/rjdunlap/neo/pull/1020), branch `claude/caravan-days-1-3`: new game `caravan-days` (toddler 1, preschool 1–2, pre-K 2–3, school 3; Cozy Village, now 18 games on two pages) levels 1–3 ([definition](../definitions/caravan-days.md)); nothing kept, no save change; two history lines source-checked this session. Levels 4–8 and The Ledger not built or defined.
+- Ran on the working diff over `origin/main` `10f79c41`, `GAME_URL=http://localhost:5471` (Vite `--strictPort`): `npm run typecheck`; `npx vitest run src/games/caravan-days src/games/registry.test.ts src/content/lands.test.ts src/content/howto.test.ts src/content/offscreen.test.ts` (91 passed; 27 Caravan Days rule tests: plans over 300 seeds, level-1 invariants, choose and reachable, level-3 good, legSuns, tapStop, go, afterTooLong, safePlan, hintFor and nextPlanMove including following hints from every reachable plan state, Tally, layout at landscape, portrait, phone and notch); full `npm test` 3,654 passed; `npm run build` passed. The rule tests found and fixed one bug in the reused rules file (a flag could be planted backwards along a branch).
+- `BROWSER_SUITE=caravandays` (passed three times, the last after the review fixes): level 1 a bale tap while standing, kneel, every bale on with one off and on again, the walk, saved 0/0, landscape screenshot; level 2 the far oasis twice (miss, then glow and hint) then the near one, the second road, saved 2/1; level 3 the city straight from home refused, Go before the city uncounted, the long branch flagged and Go (miss, flags before the leg kept, camel at its last flag), the same again (glow, hint), portrait screenshot, the safe plan, saved 2/1. `BROWSER_SUITE=fingerdemo FINGER_ONLY=caravan-days` passed at level 1 (toddler, 7.8 s) and level 3 (school, 16.7 s).
+- `game-reviewer` in a fresh context; fixed the camel left standing at a stop whose flag she took out, Help lost during a walk, and the history line racing the instruction.
+- Not run: the production offline check (no persistence or navigation change), other suites, an iPad, device speech, a child. Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md#caravan-days-levels-13).
