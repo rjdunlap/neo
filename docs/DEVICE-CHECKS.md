@@ -1,5 +1,11 @@
 # Needs a person or a device
 
+## Orchard Rows 4–6 (number-structure study, 2026-10-31; proposed, nothing built)
+
+- [ ] Once built: does a seven-year-old use the leftover saplings to choose the next row count, or press arrows at random?
+- [ ] Once built: does "every way" feel like a collection to complete or like a test?
+- [ ] Once built: does the word *prime* stick, or does "only one long row" carry the idea on its own?
+
 ## Shell Rows (strategy-games study, 2026-10-31; proposed, nothing built)
 
 - [ ] Once built: does a five-year-old look at the pet's pebbles before setting a shell at level 2, or tap the last empty-looking square?

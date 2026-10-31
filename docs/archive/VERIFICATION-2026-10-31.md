@@ -30,3 +30,10 @@
 - [PR #1042](https://github.com/rjdunlap/neo/pull/1042), branch `claude/define-tide-line`: [definition](../definitions/tide-line.md) (levels 1–4 of a new game; lap 1, toddler 1–2, preschool 2–3, pre-K 3–4; Bubble Beach becoming 13 games), two batch plans in [GAME-BATCHES](../GAME-BATCHES.md#tide-line-1-come-in-go-out-and-stop-at-the-line), READY, backlog, roadmap, ideas, study and packet updated; S1 source check done in the definition.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the builds run the new-game tier (batch 1) and the new-interaction tier (batch 2); device checks (a lap child pulling the wave, a toddler placing a pail, the seaweed line in sunlight, pre-K telling the in-between picture from high and low, device speech for "anemone") stay open at the build.
+
+## 2026-10-31 — Water Road levels 4–5 (ancient-mediterranean AM3)
+
+- [PR #1043](https://github.com/rjdunlap/neo/pull/1043), branch `claude/water-road-4-5`, tested commit `bb7a2e2d` on base `8551cbeb`: levels 4 and 5 (prek 2–4, school 3–5), batch water-road 2 ([build note](COMPLETED-2026-10-09.md#water-road-levels-45-greece-and-rome-am3-2026-10-31)).
+- Ran: `npm run typecheck`; `npm test` 3828 passed in 283 files (24 new `water.test.ts` rule tests); `npm run build`. Browser, `GAME_URL=http://localhost:5820`: `BROWSER_SUITE=waterflow` passed (pre-K level 4 1/0, school level 4 2/1, level 5 1/1, a four-span valley portrait screenshot); `fingerdemo` `FINGER_ONLY=water-road FINGER_LEVELS=4,5 FINGER_BAND=school` clean (9.7 s, 19.7 s) and `FINGER_LEVELS=4 FINGER_BAND=prek` clean (6.6 s).
+- Review: game-reviewer found no defects; two polish items fixed.
+- Not run: the offline check (no persistence or asset change), the `waterroad` suite for levels 1–3 (code unchanged), an iPad, device speech, a child. Open: the [device checks](../DEVICE-CHECKS.md#water-road-levels-45-am3-2026-10-31).
