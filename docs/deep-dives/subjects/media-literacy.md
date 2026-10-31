@@ -136,7 +136,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 ## Build slices, in order
 
-1. **ML1 · Define Notice Board 1–3** (docs only): the poster model, badges, memory pictures and baskets, their sizes, spoken posters, accounting, how-to and bot, land placement by decision 2, rule tests.
+1. **ML1 · Define Notice Board 1–3** (docs only; **defined 2026-10-31**, [definition](../../definitions/notice-board.md)): the poster model, badges, memory pictures and baskets, their sizes, spoken posters, accounting, how-to and bot, land placement by decision 2, rule tests.
 2. **Build Notice Board 1–3** (new-game tier), after its definition.
 3. **ML3 · "Who made this?" card** (grown-ups' page, plain HTML, sources on the card).
 4. **ML4 · Hand frame co-play role** (with the build or right after it).
@@ -145,4 +145,4 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 ## What was built and what ran
 
-Nothing built. The research session ran `git fetch origin --prune` and `scripts/overlap.sh` (no claim on this subject), opened the sources marked **opened** above (NAMLE's Key Questions and Core Principles, RI.K, RI.4, ISTE students, the *American Educator* article), and used search summaries for the rest (the APA report page returned no text; AAP from secondary coverage); recalled items are marked. At closeout: `node scripts/check-links.mjs` and `git diff --check`. No code changed.
+Nothing built. The Notice Board 1–3 definition was written 2026-10-31 (docs only; [definition](../../definitions/notice-board.md)). The research session ran `git fetch origin --prune` and `scripts/overlap.sh` (no claim on this subject), opened the sources marked **opened** above (NAMLE's Key Questions and Core Principles, RI.K, RI.4, ISTE students, the *American Educator* article), and used search summaries for the rest (the APA report page returned no text; AAP from secondary coverage); recalled items are marked. At closeout: `node scripts/check-links.mjs` and `git diff --check`. No code changed.
