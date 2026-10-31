@@ -692,3 +692,11 @@ Performed on the built levels, which are not yet built ([definition](definitions
 - [ ] Check whether the three verdict pictures (short, right, extra) are understood without their spoken names.
 - [ ] Check whether *can't tell* is heard as permission to guess.
 - [ ] On an iPad, check device speech for counts up to 32.
+
+## Keep House levels 5–6 (ML3, 2026-10-30)
+
+Performed on the built levels, which are not yet built ([definition](definitions/keep-house.md#levels-56-check-tier-for-the-build)).
+
+- [ ] With a school child, check whether she reads a room's clues or places labels by elimination, and whether the shared hearth (or drain) is noticed before the deciding clue.
+- [ ] Check whether the years' playback at level 6 is followed (bags spent, the timber hall rotting and rebuilt) rather than waited through.
+- [ ] On an iPad, check device speech for the clue, bag and year slots.
