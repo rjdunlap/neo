@@ -2214,5 +2214,4 @@ Final same-batch accounting correction [#1010](https://github.com/rjdunlap/neo/p
 
 [PR #1045](https://github.com/rjdunlap/neo/pull/1045), branch `claude/attic-finds-5-6`, tip `c862d756`, batch attic-finds 2 from the [definition](../definitions/same-job.md): level 5 *Same job* (pre-K, school) and level 6 *Right for the job* (school) inside `attic-finds` (pre-K {1,5, order [1,2,5]}, school {2,6, order [2,5,6]}; lap/toddler/preschool unchanged). New screen `src/games/attic-finds/jobs.ts`: tap to try a thing on the load (free), drag every working thing into a three-slot cart, Check. A failing thing in a Check is one miss; a Check that leaves one out is not; two misses on a job glow the working things (one hint, once per job with Show a hint). Deviations: tries animate in place, a cart thing tapped returns to the rug, the context line is spoken at the start. 27 new voice lines (device speech, no clips rendered). No new registration, so the game count is unchanged.
 
-Checks are in [VERIFICATION](VERIFICATION.md#2026-10-31--attic-finds-levels-56-same-job-and-right-for-the-job-h4).
-
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-31--attic-finds-levels-56-same-job-and-right-for-the-job-h4).
