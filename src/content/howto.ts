@@ -1054,7 +1054,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 17, to: 17, text: 'A wrong friend on the glowing spot counts as a miss, and after two the right friend glows. A friend put on the other spot is not a miss: the line fills from the glowing spot.' },
       { from: 11, to: 11, text: 'A friend who does not fit counts as a miss and the pet says too big or too little; after two in one row the fitting friend glows. The fitting friend is never the same size twice running.' },
       { from: 12, to: 12, text: 'A wrong gap counts as a miss: the friend goes back and the pet says why, of the friend beside the gap; after two in one line the right gap glows. A drop away from the line just goes back, and touching a friend in the line makes it hop; neither is a miss.' },
-      { from: 15, to: 15, text: 'A wrong friend on the glowing spot counts as a miss and the pet says it is lighter (or darker) than one still waiting; after two the right friend glows. A friend put on another spot is not a miss. How far apart the shades look on an iPad is still to be checked.' },
+      { from: 15, to: 15, text: 'A wrong friend on the glowing spot counts as a miss and the pet says it is lighter (or darker) than one still waiting; after two the right friend glows. A friend put on another spot is not a miss.' },
     ],
   },
   'bug-builder': {

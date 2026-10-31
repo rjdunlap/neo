@@ -84,6 +84,7 @@ class SizeParade implements Game {
   private clock = 0;
   private pulse = 0;
   private lastGroundTap = -Infinity;
+  private lastOut = -Infinity;
   private targetW: number = TARGET.w;
 
   constructor(private readonly ctx: GameContext) {
@@ -247,7 +248,11 @@ class SizeParade implements Game {
     const gap = this.busy || this.done ? null : insertGap(x, y, insertLayout(this.view.w, null).rest, this.lineY());
     if (gap === null) {
       this.openAt(null);
-      if (!this.busy && !this.done) { sfx.tick(); void this.ctx.say('size.insert.out'); }
+      if (!this.busy && !this.done) {
+        sfx.tick();
+        // Fiddling with the newcomer is answered every time but hears the reminder once every few seconds.
+        if (this.clock - this.lastOut >= 3) { this.lastOut = this.clock; void this.ctx.say('size.insert.out'); }
+      }
       return false;
     }
     const ask = this.inserts![this.rounds], why = insertWhy(ask, gap);
@@ -263,6 +268,7 @@ class SizeParade implements Game {
     this.wrong = 0; sfx.bell(stepBell(choice.step), 0.3); this.ctx.pet.cheer();
     choice.placed = true; choice.drag!.enabled = false;
     this.rounds++; this.busy = true;
+    this.openAt(gap);
     const five = insertLayout(this.view.w, gap).five, y0 = this.lineY();
     void this.ctx.tw.to(choice.node, { x: five[gap], y: y0 }, { duration: 0.25 });
     // The full line of five marches off in order, a bell for each, the next question dealt behind it.
