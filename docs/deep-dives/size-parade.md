@@ -193,4 +193,4 @@ Checks are in [VERIFICATION](../archive/VERIFICATION-2026-10-26.md#2026-10-26--s
 - **Level 12.** The line slides apart to open the nearest gap (nearest midpoint of the closed line's gaps) under the carried friend; a wrong gap is a miss, with only the one friend named by the reason hopping (a deviation from the dive's two neighbours, so "this one" is unambiguous); the second wrong glows the right gap. Drops away from the line and touches on line friends are free.
 - **Level 15.** Five shades of blue, purple or red (green and teal dropped: their pale steps were about 1.2 contrast apart); new optional `shade` swatch on `CritterSpec` (`src/art/critter.ts`).
 - **Windows now:** pre-K `{ min 5, max 15, order [5, 6, 11, 7, 8, 12, 15] }`, school `{ min 7, max 15, order [7, 8, 12, 15] }`.
-- Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-30--size-parade-levels-12-and-15-insert-a-friend-and-order-shades). Still open: the shades on an iPad (DEVICE-CHECKS).
+- Checks are in [VERIFICATION](../archive/VERIFICATION-2026-10-30.md#2026-10-30--size-parade-levels-12-and-15-insert-a-friend-and-order-shades). Still open: the shades on an iPad (DEVICE-CHECKS).

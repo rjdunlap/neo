@@ -96,7 +96,7 @@ The developer makes these calls. Each has a proposal, and none is settled.
 3. **Level 1 accounting.** Level 1 always finishes 0 misses, so it steps up after two plays without showing understanding. Options: **(a)** accept it as adaptation, not mastery. Free creative rounds already finish 0/0 and step up the same way (Stamp Studio's `finish({ misses: 0, hints: 0, … })`), and the grown-up page must not read level 2 as "understands inheritance"; **(b)** drop level 1 as a separate level and make its build-and-open fan the first task of every level 2 round, so every round has a graded Check. Proposal: (a), since it keeps the first round complete and unpressured. The study's warning stays on the record either way.
 4. **Home land.** Rainbow Meadow is proposed above. Discovery Marsh remains proposed only and is not a destination.
 
-Not decided here: Hidden Sprouts (G5) and any 13+ or Lantern Lake entry, Patchwork Conservatory (G7), younger comparisons (G4) and Paper Sprouts (G8).
+Not decided here: Hidden Sprouts (G5) and any 13+ or Lantern Lake entry, Patchwork Conservatory (G7, since [defined](patchwork-conservatory.md) as levels 7–8), younger comparisons (G4) and Paper Sprouts (G8).
 
 ## Checks for the builds
 
