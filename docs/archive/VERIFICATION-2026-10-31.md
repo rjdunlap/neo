@@ -96,3 +96,9 @@
 - [PR #1051](https://github.com/rjdunlap/neo/pull/1051), branch `claude/research-philosophy-reasoning`: [study](../deep-dives/subjects/philosophy-reasoning.md) and [packet](../deep-dives/subjects/RECOMMENDATIONS.md#philosophy-and-reasoning-recommendations) (a new game, Not Always: claims about picture cards on screen, tap the card that breaks the claim, *Every one!* stamp, mended claim; a question card and a co-play role follow), tracker, backlog, READY, ideas and roadmap updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the PR1 definition, the build's source check, and the person check (does a four-year-old listen to the claim or tap the odd one out; does a grown-up use the question card beyond one exchange).
+
+## 2026-10-31 — Not Always 1–3 definition (philosophy-reasoning PR1, docs only)
+
+- [PR #1052](https://github.com/rjdunlap/neo/pull/1052), branch `claude/define-not-always`: [definition](../definitions/not-always.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Story Grove, fallback Puzzle Peaks; claims about picture cards on screen, tap the breaker, *Every one!* stamp, mended claim), batch plan [not-always 1](../GAME-BATCHES.md#not-always-1-not-all-of-them-every-one-and-say-it-better), READY, backlog, study, packet and ideas updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); person and device checks in the definition's check tier (breaker from the claim versus the odd one out, sign pictograms without words, wing clarity on an iPad).

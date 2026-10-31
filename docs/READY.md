@@ -52,6 +52,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **`sprout-shuffle`, level 4 *which pairs always make spotted?* (batch sprout-shuffle 1)** (new-levels tier: typecheck, the rule tests, one browser play of level 4, `fingerdemo` at 4; first build of Hidden Sprouts, G5; unblocked since G3 was built 2026-10-30): [definition](definitions/hidden-sprouts.md), [batch](GAME-BATCHES.md#sprout-shuffle-1-which-pairs-always-make-spotted).
 - **`sprout-shuffle`, levels 7–8 Patchwork Conservatory (batch sprout-shuffle 2)** (new-interaction tier: the bench, pots and lenses are new; play level 7 with a wrong Check and the glow and level 8 with both plans found, one portrait screenshot, `fingerdemo` at 7 and 8): after Sprout Shuffle level 6 (Hidden Sprouts) is built; [definition](definitions/patchwork-conservatory.md), [batch](GAME-BATCHES.md#sprout-shuffle-2-patchwork-conservatory).
+- **`lemonade-stand`, level 5 Two lemon boats with the co-play hint (batch lemonade-stand 1)** (new-interaction tier: the boat pick before the batch cards; play level 5 with one wrong boat, a second for the glow, then the right boat, and the lightbulb on a different day, one portrait screenshot of the jetty, `fingerdemo` at 5): [dive](deep-dives/lemonade-stand.md#build-slices-in-order), [batch](GAME-BATCHES.md#lemonade-stand-1-two-lemon-boats).
 
 ### Study follow-ups (docs-only definitions)
 
@@ -66,7 +67,6 @@ Each line is selected for routine dispatch; claim one packet, then enqueue its u
 
 ### Game research (docs only)
 
-- **Research game `lemonade-stand` — Lemonade Stand** (docs only; one game): extend its existing interaction and reuse relevant subject studies; queue the first unblocked build slice. [Backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives); [procedure](deep-dives/README.md#one-session-one-game).
 - **Research game `pixel-pictures` — Pixel Pictures** (docs only; one game): extend its existing interaction and reuse relevant subject studies; queue the first unblocked build slice. [Backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives); [procedure](deep-dives/README.md#one-session-one-game).
 - **Research game `ferry-jam` — Ferry Jam** (docs only; one game): extend its existing interaction and reuse relevant subject studies; queue the first unblocked build slice. [Backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives); [procedure](deep-dives/README.md#one-session-one-game).
 - **Research game `garden-rows` — Garden Rows** (docs only; one game): extend its existing interaction and reuse relevant subject studies; queue the first unblocked build slice. [Backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives); [procedure](deep-dives/README.md#one-session-one-game).

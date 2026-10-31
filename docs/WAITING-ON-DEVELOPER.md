@@ -14,6 +14,13 @@ The developer answered the last four questions on 2026-10-23 ([record](archive/D
 | **Name the Portuguese reviewer** | Portuguese comes first, in European Portuguese (decided 2026-10-23); its lines are reviewed by that family member before anything in Portuguese ships | [Additional languages](definitions/additional-languages.md) |
 | **How phones meet the shared screen** (parked, low priority: the developer will raise it when wanted) | The developer approved second screens in principle (2026-10-23). Phones still need somewhere to meet: a hosted relay (an account, maybe money, and a service that sees a child's app's traffic), WebRTC introduced through a relay, or a QR exchange that needs a camera. Recommended: a small relay with no accounts and nothing stored, used only by couch play's phone mode (the island stays offline), built with the first phone slice (phones as couch gamepads) | [Phone party play](PHONE-PARTY.md#hosting-where-the-phones-meet) |
 
+Lemonade Stand dive (2026-10-31), two calls that wait on you; the build slices that do not need them go ahead ([the dive](deep-dives/lemonade-stand.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **A pre-K opening, "Enough cups for the line"?** | Adds the `prek` band to a school game; otherwise counting a line stays with Scoop Shop and Monster Munch. Recommended: wait until the school levels are played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
+| **A market-week chart in the journal?** | Whether a finished week files its table as a discovery, and which weeks (the first sold-out day, the first boat saving). Recommended: wait for the boats to be played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
+
 ## Adding a question
 
 Add a row here only for a call the developer alone can make (money, accounts, the child's data, a family reviewer, an irreversible step), with a recommended answer. Anything else: decide it by the [standing rules](archive/DECISIONS-2026-10-23.md#standing-rules), record it in its source, and go on. Checks that need a person or a device go in [DEVICE-CHECKS](DEVICE-CHECKS.md).
