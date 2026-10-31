@@ -65,7 +65,7 @@ None was played; pages and documents were read. The study's own [similar-games t
 | 1 | **Try it** | preschool, pre-K | Which side to look at, which clues to open, which trial to run first, and which card shows what happened | Both objects shelved after a matching pick each |
 | 2 | **Show the clue** | pre-K, school | Which clue to put in the claim's slot, when to Check, and whether to Turn or crank again first | Both objects shelved after a supported Check each |
 
-Steps 3–7 of the study's ladder (Same need, Context, Two sources, What can we tell?, Mend the exhibit) are later definitions (H4, H5), numbered from 5 when defined; the lap/toddler opening A is H3, [defined 2026-10-22](lid-and-lever.md) as levels 3 *Up and down* and 4 *Peek inside* (lap and toddler ranges with `entryLevels`), so a saved level never shifts.
+Steps 3–7 of the study's ladder (Same need, Context, Two sources, What can we tell?, Mend the exhibit) are later definitions (H4, H5); H4 is [defined](same-job.md) as levels 5–6 and H5 numbers from 7; the lap/toddler opening A is H3, [defined 2026-10-22](lid-and-lever.md) as levels 3 *Up and down* and 4 *Peek inside* (lap and toddler ranges with `entryLevels`), so a saved level never shifts.
 
 ### First rounds
 
@@ -116,7 +116,7 @@ Device checks stay open: whether a three-year-old reads the crank as "turn me" a
 
 Each has a default the build uses. None blocks it. The study's decisions 1–2 (fictional scope and younger finish; placement and windows) are settled here as defaults.
 
-1. **Bands.** Default preschool 1, pre-K 1–2, school 2 (a one-level school window until H4 appends its levels, now numbered from 5). Alternative: leave school out until H4 lands. The lap/toddler opening A (giant handle, three activations, free finish) is H3, [defined](lid-and-lever.md) as levels 3–4 and not in this build.
+1. **Bands.** Default preschool 1, pre-K 1–2, school 2 (a one-level school window until H4 appends its levels, [defined](same-job.md) as 5–6). Alternative: leave school out until H4 lands. The lap/toddler opening A (giant handle, three activations, free finish) is H3, [defined](lid-and-lever.md) as levels 3–4 and not in this build.
 2. **Accounting.** Default: level 1 records no misses, so adaptation there moves only through hints, as the study asks for observation-only steps; level 2's unsupported Check is a miss. Alternative: no misses at pre-K either, counting only from school.
 3. **Home land.** Default Story Grove (10 with this game), the study's destination. Alternatives: Treehouse (4 games; an attic above the treehouse is the natural scene, and the shelf would sit beside RW06's home) or Tinker Lab (14th game; its capacity at every band is the question).
 4. **Region (subject).** Default `story-grove`. Alternative `tinker-lab` if the developer reads it as a mechanism game rather than an evidence game; `REGION_IDS` has no history subject and this slice does not add one.
