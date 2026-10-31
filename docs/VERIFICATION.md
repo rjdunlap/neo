@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Habitat Helpers deep dive (docs only)
+
+- [PR #1075](https://github.com/rjdunlap/neo/pull/1075), branch `claude/dive-habitat-helpers`: [dive](deep-dives/habitat-helpers.md). Three slices queued ([batches](GAME-BATCHES.md#habitat-helpers-1-equivalent-pieces-and-pooled-gardens): equivalent pieces and pooled gardens, level 7 Something changed (the ecosystems study's F3), levels 8–9 the rocky shore); the toddler opening is filed in [waiting-on-developer](WAITING-ON-DEVELOPER.md); tracker, READY, backlog, ideas and the oceans and ecosystems studies updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
+
 ## 2026-10-31 — Caravan Days levels 6–7 definition (china-india-silk-road CS4, docs only)
 
 - [PR #1074](https://github.com/rjdunlap/neo/pull/1074), branch `claude/define-caravan-days-6-7`: [definition](definitions/caravan-days.md#levels-67-cs4-mountains-or-sand-a-well-every-days-walk) of level 6 (mountains or sand, either road accepted, a day card before Go) and level 7 (a well every day's walk, fewest wells by search, any minimal placement accepted); the reviewer gate is now the building session's source check. Study, packet, backlog, [batch caravan-days 3](GAME-BATCHES.md#caravan-days-3-mountains-or-sand-and-a-well-every-days-walk), READY and roadmap updated.
@@ -85,12 +91,6 @@
 - [PR #1061](https://github.com/rjdunlap/neo/pull/1061), branch `claude/define-notice-board`: [definition](definitions/notice-board.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Cozy Village, fallback Tinker Lab; match the stamp to the maker, tap the friend who saw it, to tell or to sell), batch plan [notice-board 1](GAME-BATCHES.md#notice-board-1-who-made-it-who-saw-it-to-tell-or-to-sell), READY, backlog, study and packet updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); person and device checks in the definition's check tier (witness from the memory picture versus the friend nearest the poster, basket by price versus maker's words, badge and place pictures at bubble size on an iPad).
-
-## 2026-10-31 — Number structure subject research (docs only)
-
-- [PR #1060](https://github.com/rjdunlap/neo/pull/1060), branch `claude/research-number-structure`: [study](deep-dives/subjects/number-structure.md) and [packet](deep-dives/subjects/RECOMMENDATIONS.md#number-structure-recommendations) (Orchard Rows 4–6: equal rows with the leftover in the basket, every way to plant a number, the basket that only makes one row; a grouping card, Lunch boxes and Two frogs follow; hundreds and decimals stay sketches), tracker, backlog, READY, ideas, roadmap and device checks updated.
-- Ran: `git fetch origin --prune`, a search of pull requests and remote branches for the subject (no claim), `node scripts/check-links.mjs` and `git diff --check`. Sources: CCSS 3.OA, 4.OA, 6.NS, 2.NBT, 5.NBT, NRICH *Factors and Multiples Game* notes and the Melbourne decimals table opened; the rest from search summaries or recall, marked in the study.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the NS1 definition and three [person checks](DEVICE-CHECKS.md#orchard-rows-46-number-structure-study-2026-10-31-proposed-nothing-built).
 
 ## Coverage summary
 

@@ -876,3 +876,27 @@ Proof: typecheck, rule tests; one play of level 8 with a box clash and one of le
 Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/lands.ts` or registry tests as needed, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: typecheck and unit tests including the lands and registry band tests; one play of level 10 at preschool; `fingerdemo` at 10; the preschool Puzzle Peaks page screenshot. Person and device checks stay open.
+
+### habitat-helpers 1: Equivalent pieces and pooled gardens
+
+- **`habitat-helpers`, equivalent pieces and pooled prediction gardens (dive slice 1)** (existing interaction; preschool to school, no new level): four new pieces so each role has two pictured options, seeded per-role picks at levels 1–3, and six pooled level-4 gardens. [Dive](deep-dives/habitat-helpers.md#build-slices-in-order)
+
+Files expected: `src/games/habitat-helpers/logic.ts`, `logic.test.ts`, `art.ts`, `index.ts`, `docs/GAMES.md`.
+
+Proof: existing-interaction tier: typecheck and the game's rule tests; one filtered regression play at level 3 and level 4 with a non-default seed (the new cards visible, one incomplete test) and one portrait screenshot of level 3. The bot rule is unchanged, so `fingerdemo` only if its play changes; one build for the new art.
+
+### habitat-helpers 2: Something changed
+
+- **`habitat-helpers`, level 7 Something changed (dive slice 2)** (new interaction; school 4–7): a working garden loses one need and she names which need is missing and restores it; the need question is the game's first counted miss; satisfies the ecosystems study's F3 definition. [Dive](deep-dives/habitat-helpers.md#build-slices-in-order)
+
+Files expected: `src/games/habitat-helpers/logic.ts`, `logic.test.ts`, `art.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck and rule tests; one scripted play of level 7 with one wrong need, a second for the glow, then the right need, one non-restoring card and the right one; one portrait screenshot with the before card; `fingerdemo` at 7; one build. Level 7 at pre-K stays a person check.
+
+### habitat-helpers 3: The rocky shore
+
+- **`habitat-helpers`, levels 8–9 The rocky shore (dive slice 3, after batch 2)** (new interaction; school 4–9): who lives high and who lives low on a rocky shore, decided by needs rather than trivia; shares the level table and the bot rule with batch 2. [Dive](deep-dives/habitat-helpers.md#build-slices-in-order)
+
+Files expected: `src/games/habitat-helpers/logic.ts`, `logic.test.ts`, `art.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck and rule tests; one scripted play of level 8 with the anemone on the high rock first and level 9 to its sticker; one portrait screenshot of the shore; `fingerdemo` at 8 and 9; one build.
