@@ -7,7 +7,13 @@ async function caravanDaysPlay() {
   const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 40000 }); await page.waitForTimeout(150); };
   const tapOn = async (expr) => { await page.evaluate((expr) => kit.tapOn(Function(`return (${expr})`)()), expr); await page.waitForTimeout(150); };
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+  // CARAVAN_FROM=4 skips levels 1–3 (unchanged) and plays only the levels built later.
+  const from = Number(process.env.CARAVAN_FROM ?? 1);
+  if (from <= 3) await levelsOneToThree();
+  await levelsFourFive();
+  log('Caravan Days: passed');
 
+  async function levelsOneToThree() {
   // Level 1: a bale tap while the camel stands only wobbles; kneel, every bale on (one off and on again), the camel walks and drinks; nothing counts.
   await launch('caravan-days', 1);
   await settle();
@@ -92,6 +98,75 @@ async function caravanDaysPlay() {
   await finished('caravan-days');
   assert.deepEqual(await score(), [2, 1], 'level 3 saved 2 misses, 1 hint');
   log('Caravan Days 1–3: kneel, load and walk (0/0), the far water twice then the near one (2/1), the long branch twice then the safe plan (2/1), a portrait screenshot, passed');
+  }
+
+  async function levelsFourFive() {
+  const logic = '/src/games/caravan-days/logic.ts';
+  // Level 4: Go before picking counts nothing; a decoy and Go (one miss, the camel back at the same oasis with the same good); asked-for help (one hint); then the right goods to the city on both roads; a portrait screenshot.
+  await launch('caravan-days', 4);
+  await settle();
+  assert.equal(await page.evaluate(() => neo.scene.game.walkedIn), true, 'the camel walks in to oasis 1');
+  await tapOn('neo.scene.game.goNode'); await page.waitForTimeout(200);
+  assert.deepEqual(await tally(), [0, 0], 'Go before picking counts nothing');
+  const hint4 = () => page.evaluate(async (logic) => { const { swapHint } = await import(logic); const g = neo.scene.game; return neo.scene.finished ? null : { road: g.roadIndex, h: swapHint(g.swapRoad, g.swap) }; }, logic);
+  let h = await hint4();
+  const decoy = 1 - h.h.side;
+  await tapOn(`neo.scene.game.offerNodes[${decoy}]`);
+  const picked = await page.evaluate(() => neo.scene.game.swap.carried);
+  await tapOn('neo.scene.game.goNode'); await settle();
+  assert.deepEqual(await tally(), [1, 0], 'a good the next stop does not want is one miss');
+  assert.deepEqual(await page.evaluate(() => ({ ...neo.scene.game.swap })), { at: 1, carried: picked }, 'the camel is back at oasis 1 with the same good');
+  await page.evaluate(() => neo.scene.game.askForHint()); await page.waitForTimeout(200);
+  assert.deepEqual(await tally(), [1, 1], 'asked-for help is one hint');
+  let shot4 = false;
+  for (let guard = 0; guard < 30; guard++) {
+    h = await hint4();
+    if (!h) break;
+    if (!h.h) { await settle(); continue; }
+    if (h.road === 1 && !shot4) {
+      shot4 = true;
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+      await screenshot('caravan-days-4-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+    }
+    if ('go' in h.h) { await tapOn('neo.scene.game.goNode'); await settle(); }
+    else await tapOn(`neo.scene.game.offerNodes[${h.h.side}]`);
+  }
+  await finished('caravan-days');
+  assert.deepEqual(await score(), [1, 1], 'level 4 saved 1 miss, 1 hint');
+
+  // Level 5: Go before looking counts nothing; the smaller load sent (one miss, home again, look cleared); asked-for help (one hint); then the better load at both named stops (it reverses); a portrait screenshot.
+  await launch('caravan-days', 5);
+  await settle();
+  await tapOn('neo.scene.game.goNode'); await page.waitForTimeout(200);
+  assert.deepEqual(await tally(), [0, 0], 'Go before looking counts nothing');
+  const info5 = () => page.evaluate(async (logic) => { const { better, nextWorthMove } = await import(logic); const g = neo.scene.game; return neo.scene.finished ? null : { c: g.roadIndex, better: better(g.plan, g.roadIndex), move: nextWorthMove(g.plan, g.roadIndex, g.worth, g.seen) }; }, logic);
+  let w = await info5();
+  const firstBetter = w.better;
+  await tapOn(`neo.scene.game.loadNodes[${1 - w.better}]`);
+  await tapOn('neo.scene.game.goNode'); await settle();
+  assert.deepEqual(await tally(), [1, 0], 'the smaller load is one miss');
+  assert.equal(await page.evaluate(() => neo.scene.game.worth.looked), null, 'home again, nothing chosen');
+  await page.evaluate(() => neo.scene.game.askForHint()); await page.waitForTimeout(200);
+  assert.deepEqual(await tally(), [1, 1], 'asked-for help is one hint');
+  let shot5 = false;
+  for (let guard = 0; guard < 20; guard++) {
+    w = await info5();
+    if (!w) break;
+    if (w.c === 1 && !shot5) {
+      shot5 = true;
+      assert.notEqual(w.better, firstBetter, 'the better load reverses at the other end of the road');
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+      await screenshot('caravan-days-5-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+    }
+    if ('go' in w.move) { await tapOn('neo.scene.game.goNode'); await settle(); }
+    else await tapOn(`neo.scene.game.loadNodes[${w.move.load}]`);
+  }
+  await finished('caravan-days');
+  assert.deepEqual(await score(), [1, 1], 'level 5 saved 1 miss, 1 hint');
+  log('Caravan Days 4–5: Go before picking free, a decoy (miss), help (hint), the right goods on both roads (1/1); Go before looking free, the smaller load (miss), help (hint), the better load reversing between cases (1/1); portrait screenshots, passed');
+  }
 }
 return { caravanDaysPlay };
 }
