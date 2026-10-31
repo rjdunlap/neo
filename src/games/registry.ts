@@ -129,6 +129,7 @@ import { numberTrails } from './number-trails';
 import { fruitSums } from './fruit-sums';
 import { paintMixer } from './paint-mixer';
 import { puppetStage } from './puppet-stage';
+import { spinnerFair } from './spinner-fair';
 import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
 import { whoAmI } from './who-am-i';
@@ -268,6 +269,7 @@ export const GAMES: GameModule[] = [
   numberTrails,
   fruitSums,
   paintMixer,
+  spinnerFair,
   puppetStage,
   readDo,
   lookItUp,
