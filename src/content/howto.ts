@@ -1314,6 +1314,22 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'Nothing here counts as a mistake. Each thing she watches melt on the tray is added to her discovery journal in the treehouse.' },
     ],
   },
+  'drift-cards': {
+    goal: "Read the sea's current arrows to say where a floating card will wash up, and which boat sends one to a friend.",
+    steps: [
+      { text: 'The arrows show which way the water moves; a card follows them until it reaches a beach.' },
+      { from: 1, to: 1, text: 'Tap the beach where the card will wash up.' },
+      { from: 2, to: 2, text: 'Tap the boat that should drop the card so it reaches the friend.' },
+    ],
+    finish: 'The round ends when every card has been found.',
+    note: [
+      { text: 'Tracing the arrows with a finger is always free: a dotted line shows the next two squares.' },
+      { from: 1, to: 1, text: 'The first card of each round is a free guess; after that a wrong beach is a miss, and after two the right beach glows (one hint). Show me traces the whole drift (one hint).' },
+      { from: 2, to: 2, text: 'Any boat that reaches the friend is right. A wrong boat is a miss: its card drifts to whoever finds it and comes back; after two, a right boat glows (one hint), as Show me does.' },
+      { text: 'A pretend sea whose currents stay still. Real currents are driven by wind, tides and differences in the water, so they shift; scientists really do learn about them from drift cards that finders report.' },
+      { text: 'Rounds without hints move her up, which means she read the pretend sea, not that she knows real ocean currents.' },
+    ],
+  },
   'tide-line': {
     goal: 'Watch the sea come in and go out, and use the seaweed line to keep things dry.',
     steps: [
