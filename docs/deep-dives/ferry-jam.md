@@ -109,7 +109,7 @@ With `order`, pre-K's window is `[9, 1, 10, 2, 3, 4]` and school's stays `min..m
 
 ## Decisions for the developer
 
-1. **A preschool opening** (*Push the boat out*): add `preschool` to Ferry Jam's bands with a one-slide 3×3 level, or keep the game at pre-K and up.
+1. **A preschool opening** (*Push the boat out*): add `preschool` to Ferry Jam's bands with a one-slide 3×3 level, or keep the game at pre-K and up. Lean: not yet; build level 9 (the one-slide pre-K entry) first and decide after a person sees a three-year-old try it.
 
 ## Build slices, in order
 
