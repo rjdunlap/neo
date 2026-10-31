@@ -18,3 +18,9 @@
 - Ran: `npm run typecheck`; keep-house rule tests 36 passed; full `npm test` 3,791 passed with 2 failures that pass in isolation (the fluffy-salon frame-rate test and the unchanged keep-house level-4 hint search, both timeouts under full-suite load); `npm run build`.
 - Ran: `BROWSER_SUITE=keephouse KEEPHOUSE_FROM=5` on `http://localhost:5929`: level 5 a look, one label wrong twice (2/1, glow followed), second ruin clean, saved 2/1; level 6 other build kept twice (0/1), fitting build, saved 0/1; portrait screenshots of each. `BROWSER_SUITE=fingerdemo FINGER_ONLY=keep-house FINGER_LEVELS=5,6` passed.
 - Not run: levels 1–4 browser play (unchanged), offline check. Open in [DEVICE-CHECKS](../DEVICE-CHECKS.md#keep-house-levels-56-ml3-2026-10-30): clues read or elimination, the shared hearth noticed, the years followed, device speech, the unchecked history lines.
+
+## 2026-10-31 — Rule Machine 1–4 definition (AB1, docs only)
+
+- [PR #1039](https://github.com/rjdunlap/neo/pull/1039), branch `claude/define-rule-machine`: [definition](../definitions/rule-machine.md) (levels 1–4 of a new game; pre-K 1, school 2–4; Puzzle Peaks becoming 14 games), two batch plans in [GAME-BATCHES](../GAME-BATCHES.md#rule-machine-1-the-hat-machine-and-one-more-goes-in), READY, backlog, roadmap, ideas and study updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs only). Open: the builds run the new-game tier (batch 1) and the new-interaction tier (batch 2); device checks (pre-K reading of the three pictures, whether the free first guess feels like a game, five cars and a table on an iPad portrait, "twice as many" as rows of counters, device speech for "take one away") stay open at the build.

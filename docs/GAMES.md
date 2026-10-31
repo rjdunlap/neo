@@ -272,6 +272,14 @@ Levels (school only, 1–3): 1 a whole from halves and quarters (two halves, a h
 
 Misses and hints: Check on an empty bench is free, and so is a refused overfull place. A non-empty bench that is the wrong length is one miss, and the gap (too short) or the overhang (too long) flashes. The second miss glows the solver-led next step (a place, a return or a snip) as one hint; the pause sheet's "Show a hint" counts one unless the glow is already up. The ghost finger follows the same hint path, and the demonstration plays one gift (the snip gift at levels 2–3). Touch only; no couch play.
 
+### Spinner Fair
+
+*preschool–school · levels 1–3 · after the chance and statistics study; [definition](definitions/spinner-fair.md).* Tap a big spinner and it whirrs round, slows and stops on a critter's section; that critter hops and a block drops onto its bar. A spin is an honest seeded draw and never a miss.
+
+Levels (preschool 1–2, pre-K 2–3, school 3): 1 "Spin and see": one 2–2–2 spinner and six spins she taps, nothing counted; after ten quiet seconds the pet spins for her and that spin counts toward the six. 2 "Which came up most?": two sets of eight spins, then she taps the tallest bar (a tie accepts either tied bar). 3 "Pick the spinner": two picks between two spinners, the pet's favourite critter having a pair of wedge counts from (1,3), (1,4), (1,5), (2,4), (2,5) or (3,5) with the side seeded; then she spins the picked one ten times. If the favourite does not come up most the pet says it was still the better chance. Levels 4–5 (sure, maybe, no way; make it fair) are not built.
+
+Misses and hints: level 1 has none. A wrong bar (level 2) or a wrong pick (level 3) is a miss; the second miss glows the tallest bars, or the favourite's section on the better spinner (one hint per set or pick). The pause sheet's Show me glows the answer and a second Show me answers for her (still one hint). Nothing is kept.
+
 ### Paint Mixer
 
 *school · levels 1–2 · after the ratio and proportion study; [definition](definitions/paint-mixer.md).* A sample jar shows a colour and its recipe as a row of drops; four pots (red, yellow, blue, white, each with a shape mark) sit below a bucket. Tap a pot to pour a drop; the bucket's colour is the drop-weighted mean of the pots in linear RGB, so equal ratios are the same colour. The bucket's drop rows show complete copies of the sample's row, outlined missing places and loose drops (wrapped in rows of six). Undo takes back the last drop, Tip out empties the bucket, Check compares; tapping the jar says the recipe (free). A round has two buckets, each a different authored pair (red and yellow orange, red and white pink, blue and white sky blue, red and blue purple; cream is withheld).
