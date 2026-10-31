@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Tide Line 1–4 definition (oceans study slice 1, docs only)
+
+- [PR #1042](https://github.com/rjdunlap/neo/pull/1042), branch `claude/define-tide-line`: [definition](definitions/tide-line.md) (levels 1–4 of a new game; lap 1, toddler 1–2, preschool 2–3, pre-K 3–4; Bubble Beach becoming 13 games), two batch plans in [GAME-BATCHES](GAME-BATCHES.md#tide-line-1-come-in-go-out-and-stop-at-the-line), READY, backlog, roadmap, ideas, study and packet updated; S1 source check done in the definition.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the builds run the new-game tier (batch 1) and the new-interaction tier (batch 2); device checks (a lap child pulling the wave, a toddler placing a pail, the seaweed line in sunlight, pre-K telling the in-between picture from high and low, device speech for "anemone") stay open at the build.
+
 ## 2026-10-31 — Rule Machine 1–4 definition (AB1, docs only)
 
 - [PR #1039](https://github.com/rjdunlap/neo/pull/1039), branch `claude/define-rule-machine`: [definition](definitions/rule-machine.md) (levels 1–4 of a new game; pre-K 1, school 2–4; Puzzle Peaks becoming 14 games), two batch plans in [GAME-BATCHES](GAME-BATCHES.md#rule-machine-1-the-hat-machine-and-one-more-goes-in), READY, backlog, roadmap, ideas and study updated.
@@ -90,12 +96,6 @@
 - Ran: typecheck; `npm test` 282 files, 3,763 tests passed; `npm run build` passed; a fresh-context game review found no defects.
 - `BROWSER_SUITE=puppetstage` passed: level 1 three pops, a drag and Bow (0/0); level 2 the wrong puppet twice (2 misses, glow, 1 hint) and voice asks; level 3 the free try, a wrong bubble (1/0), a portrait screenshot. `fingerdemo` with `FINGER_ONLY=puppet-stage` clean at lap level 1 (10.5 s) and pre-K level 3 (12.2 s), and with `FINGER_LEVELS=2` at toddler (10.0 s). Fixed in the build: the ghost finger's lift left the level-1 floor touch held, the bot tried a blocked puppet, and the portrait front row sat under the bubbles.
 - Not run: `phone`, `howto` suites. Open: the four [device checks](DEVICE-CHECKS.md#puppet-stage-levels-13-tp1-2026-10-27) (iPad voice pitch and distinct presets, a one-year-old's reaction, a three-year-old hearing "the sleepy way", portrait comfort of the 140-unit puppets); real speech and a child's play are not established.
-
-## 2026-10-27 — Puppet Stage 1–3 definition (TP1, docs only)
-
-- [PR #1027](https://github.com/rjdunlap/neo/pull/1027), branch `claude/define-puppet-stage`: [definition](definitions/puppet-stage.md), a batch plan in [GAME-BATCHES](GAME-BATCHES.md#puppet-stage-1-pop-up-make-bunny-talk-and-say-it-like); READY, backlog, ideas, packet, study and device checks point to it. Nothing built, no code changed.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`, run by the session after this closeout.
-- Not run: typecheck, tests, build, browser suites (docs only). Open: the build runs the new-game tier; the four [device checks](DEVICE-CHECKS.md#puppet-stage-levels-13-tp1-2026-10-27) wait for the built game.
 
 ## Coverage summary
 

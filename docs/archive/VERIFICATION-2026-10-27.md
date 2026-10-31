@@ -127,3 +127,9 @@
 - `npm run typecheck`; 24 rule tests (palette, mean colours equal for k×counts, excluded pairs, distance thresholds, pools over 300 seeds, rows sweep, verdicts, glow reaching a match from every swept state, layouts); registry, lands, how-to and off-screen tests 64; full `npm test` 3,729 of 3,731 (block-garden hint timing, passed alone, and the voice-clip coverage, fixed by rendering the title clip); `npm run build`.
 - `BROWSER_SUITE=paintmixer` at `GAME_URL=http://localhost:5547` (twice, before and after the review): level 1 empty Check, glow and one hint, second bucket, saved 2/1; level 2 one row not a miss, loose extra drop, portrait, saved 1/0; screenshots. `fingerdemo FINGER_ONLY=paint-mixer FINGER_LEVELS=2` passed. `game-reviewer` fixes: late hint after a match, stale ghost pour, loose drops outside the bucket, celebration after resize.
 - Not run: the offline check, other suites. Open: the five [device checks](../DEVICE-CHECKS.md#paint-mixer-levels-12) (swatch match in daylight, side by side, "for every", portrait twelve drops, digit speech).
+
+## 2026-10-27 — Puppet Stage 1–3 definition (TP1, docs only)
+
+- [PR #1027](https://github.com/rjdunlap/neo/pull/1027), branch `claude/define-puppet-stage`: [definition](../definitions/puppet-stage.md), a batch plan in [GAME-BATCHES](../GAME-BATCHES.md#puppet-stage-1-pop-up-make-bunny-talk-and-say-it-like); READY, backlog, ideas, packet, study and device checks point to it. Nothing built, no code changed.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`, run by the session after this closeout.
+- Not run: typecheck, tests, build, browser suites (docs only). Open: the build runs the new-game tier; the four [device checks](../DEVICE-CHECKS.md#puppet-stage-levels-13-tp1-2026-10-27) wait for the built game.
