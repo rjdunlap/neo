@@ -630,6 +630,18 @@ Proof: new-game tier, as the [definition's check tier](definitions/paint-mixer.m
 
 Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a filtered play of levels 3–4 with the table filling, one wrong Check, a first way, the same way again and a second way, `fingerdemo` at level 4, one portrait screenshot of level 3, one build for the card and voice). Levels 5–6 (RP2) need their own definition.
 
+### spinner-fair 1: Spin, see and pick
+
+- **`spinner-fair`, levels 1-3 (chance-statistics study slice CS1)** (a new game, one declared batch; preschool 1-2, pre-K 2-3, school 3-5; Counting Cove, 13 games becoming 14, so the land now pages): tap a big spinner and a critter's block drops on its bar, six spins with nothing counted (level 1), then which came up most (level 2), then pick the spinner that gives the pet the better chance and watch ten spins; a spin is never a miss and the better spinner may lose (level 3). [Definition](definitions/spinner-fair.md), [study build slices](deep-dives/subjects/chance-statistics.md#build-slices-in-order)
+
+Proof: new-game tier, as the [definition's check tier](definitions/spinner-fair.md#check-tier-for-the-builds) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `browser-check.mjs` case filtered to Spinner Fair with level 1 to its sticker and level 3 with one wrong pick, the glow on the second and ten spins, one portrait screenshot of level 3, `fingerdemo` at level 3, one build). Device checks stay open. Levels 4-5 are batch `spinner-fair 2`; levels 6-10 need their own definitions.
+
+### spinner-fair 2: Sure, maybe, no way and make it fair
+
+- **`spinner-fair`, levels 4-5 (chance-statistics study slice CS1)** (after batch `spinner-fair 1`; pre-K and school ranges as the definition sets): drag cards onto *sure*, *maybe* and *no way* spinners (level 4), then hand wedges from one critter to the other to make an unfair race fair, with a wrong *fair* and an uneven Check answered gently and the race run honestly (level 5). [Definition](definitions/spinner-fair.md), [study build slices](deep-dives/subjects/chance-statistics.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a filtered play of level 4 with one card on the wrong spinner and level 5 with a wrong *fair*, an uneven Check, two wedge moves and the race, one portrait screenshot of level 5, `fingerdemo` at levels 4 and 5, one build for the card and voice).
+
 ### puppet-stage 1: Pop up, make Bunny talk and say it like
 
 **Built 2026-10-30** (PR #1028): levels 1–3 of `puppet-stage`; levels 4–6 (TP2) need their own definition.
