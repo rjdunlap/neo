@@ -6,7 +6,7 @@ async function sproutShufflePlay() {
   const tally = () => page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]);
   const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 30000 }); await page.waitForTimeout(250); };
   const tapOn = async (expr) => { await page.evaluate((expr) => kit.tapOn(Function(`return (${expr})`)()), expr); await settle(); };
-  const state = () => page.evaluate(() => { const g = neo.scene.game; const r = g.round; return { phase: r.phase, slots: [...r.slots], opened: [...r.opened], built: [...r.built], chosen: [...r.chosen].sort(), missing: g.setup.missing, check: !!g.checkButton?.visible, finished: neo.scene.finished === true }; });
+  const state = () => page.evaluate(() => { const g = neo.scene.game; const r = g.round; return { phase: r.phase, slots: [...r.slots], opened: [...r.opened], built: [...r.built], chosen: [...r.chosen].sort(), missing: g.setup.build.length === 1 ? g.setup.build[0] : null, build: [...g.setup.build], claim: r.claim, tries: g.tries, check: !!g.checkButton?.visible, finished: neo.scene.finished === true }; });
   const tapTile = async (side, index) => tapOn(`neo.scene.game.tiles.find((t) => t.side === ${side} && t.index === ${index}).node`);
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
 
@@ -51,7 +51,7 @@ async function sproutShufflePlay() {
   await tapTile(1, 1);
   await page.waitForFunction(() => neo.scene.game.round.phase === 'fan', null, { timeout: 15000 });
   await settle();
-  const route = await page.evaluate(() => neo.scene.game.setup.routes[neo.scene.game.setup.missing].from);
+  const route = await page.evaluate(() => neo.scene.game.setup.routes[neo.scene.game.setup.build[0]].from);
   await tapTile(0, 1 - route[0]);
   s = await state();
   assert.deepEqual([s.built, await tally()], [[false, false], [0, 0]], 'a tile that is not the missing bud\'s source does nothing and costs nothing');
@@ -66,7 +66,7 @@ async function sproutShufflePlay() {
   await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
   s = await state();
   assert.deepEqual([s.opened, s.check], [[true, true, true, true], false], 'all four buds open; Check is not shown before a choice');
-  await tapOn('neo.scene.game.cards.find((c) => c.look === "spotted")');
+  await tapOn('neo.scene.game.cards.find((c) => c.key === "spotted")');
   s = await state();
   assert.deepEqual([s.chosen, s.check], [['spotted'], true], 'one card chosen, Check shown');
   await tapOn('neo.scene.game.checkButton');
@@ -85,7 +85,46 @@ async function sproutShufflePlay() {
   await tapOn('neo.scene.game.checkButton');
   await finished('sprout-shuffle');
   assert.deepEqual(await score(), [2, 2], 'level 2 saved 2 misses, 2 hints');
-  log('Sprout Shuffle 1 and 2: cross-slot spring-back, swap, four buds, missing bud from lit tiles, two wrong Checks (glow), Show me, finish, passed');
+  // Level 3: two spotted plants; all four buds closed and built in turn from their lit tiles; Try one is free; "Always" is one miss with the plain route replayed; "Sometimes" finishes.
+  await launch('sprout-shuffle', 3);
+  await settle();
+  s = await state();
+  assert.deepEqual([s.phase, s.build, s.opened], ['give', [0, 1, 2, 3], [false, false, false, false]], 'level 3 opens with every bud closed, all four to build');
+  await tapTile(0, 0);
+  await tapTile(1, 0);
+  await page.waitForFunction(() => neo.scene.game.round.phase === 'fan', null, { timeout: 15000 });
+  await settle();
+  for (let b = 0; b < 4; b++) {
+    const from = await page.evaluate((b) => neo.scene.game.setup.routes[b].from, b);
+    await tapTile(0, from[0]);
+    await tapTile(1, from[1]);
+    await page.waitForFunction((b) => neo.scene.game.round.opened[b] && !neo.scene.game.busy, b, { timeout: 15000 });
+    await settle();
+  }
+  s = await state();
+  assert.deepEqual([s.phase, s.opened, await tally()], ['choose', [true, true, true, true], [0, 0]], 'four buds built, no miss, the claim cards appear');
+  const plainBuds = await page.evaluate(() => neo.scene.game.setup.routes.filter((r) => r.sprout[0] === 'a' && r.sprout[1] === 'a').length);
+  assert.equal(plainBuds, 1, 'one of the four ways is plain');
+  await tapOn('neo.scene.game.tryButton');
+  await tapOn('neo.scene.game.tryButton');
+  s = await state();
+  assert.deepEqual([s.tries, await tally(), s.check], [2, [0, 0], false], 'Try one draws are free and do not bring Check');
+  await tapOn('neo.scene.game.cards.find((c) => c.key === "always")');
+  s = await state();
+  assert.deepEqual([s.claim, s.check], ['always', true], '"Always" chosen, Check shown');
+  await tapOn('neo.scene.game.checkButton');
+  await settle();
+  assert.deepEqual(await tally(), [1, 0], '"Always spotted" is one miss');
+  await tapOn('neo.scene.game.cards.find((c) => c.key === "sometimes")');
+  s = await state();
+  assert.equal(s.claim, 'sometimes', 'choosing "sometimes" lets go of "always"');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  await screenshot('sprout-shuffle-3-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await tapOn('neo.scene.game.checkButton');
+  await finished('sprout-shuffle');
+  assert.deepEqual(await score(), [1, 0], 'level 3 saved 1 miss, 0 hints');
+  log('Sprout Shuffle 1–3: cross-slot spring-back, swap, four buds, missing bud from lit tiles, two wrong Checks (glow), Show me, four built buds, free Try one, wrong claim, finish, passed');
 }
 return { sproutShufflePlay };
 }

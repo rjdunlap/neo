@@ -1,5 +1,5 @@
 /**
- * Sprout Shuffle's model and plans (genetics G2; definition: docs/definitions/sprout-shuffle.md).
+ * Sprout Shuffle's model and plans (genetics G2–G3; definition: docs/definitions/sprout-shuffle.md).
  *
  * One invented plant, one petal marking, two kinds of copy. Each plant holds two copies and gives a sprout one of
  * them; a pair of plants therefore has exactly four routes, and duplicate routes stay separate. One spot copy is
@@ -60,19 +60,39 @@ export function checkLooks(chosen: Iterable<Look>, rs: readonly Route[]): Verdic
   return { ok: true };
 }
 
+/** Level 3's claim about two spotted plants' sprouts: spotted sometimes (plain can grow too), or always spotted. */
+export type Claim = 'sometimes' | 'always';
+
+/** The claim that fits these routes: "always spotted" only when every route is spotted. */
+export function acceptedClaim(rs: readonly Route[]): Claim {
+  return always('spotted', rs) ? 'always' : 'sometimes';
+}
+
+export type ClaimVerdict =
+  | { ok: true }
+  /** A wrong claim, with a route that shows it (null only when "sometimes" is said of a cross that is always spotted). */
+  | { ok: false; route: Route | null };
+
+/** "Always" is wrong whenever one route is not spotted, and that route is the counterexample. */
+export function checkClaim(claim: Claim, rs: readonly Route[]): ClaimVerdict {
+  if (claim === acceptedClaim(rs)) return { ok: true };
+  return { ok: false, route: rs.find((r) => looks(r.sprout) !== 'spotted') ?? null };
+}
+
 export interface Plan {
   level: number;
   name: string;
-  /** The spotted plant's copies and the plain plant's; which side each stands on is seeded. */
-  spotted: Genotype;
-  plain: Genotype;
-  /** After the sprout: open every bud (1), or finish the missing bud and choose every look that could grow (2). */
-  task: 'open-all' | 'choose-could';
+  /** The two parents' copies; which side each stands on, and each tray's order, are seeded. */
+  parents: readonly [Genotype, Genotype];
+  /** After the sprout: open every bud (1), finish the missing bud and choose every look that could grow (2), or
+   * build all four buds and say whether spotted is always (3). */
+  task: 'open-all' | 'choose-could' | 'choose-always';
 }
 
 export const PLANS: readonly Plan[] = [
-  { level: 1, name: 'One route, then every route', spotted: ['A', 'A'], plain: ['a', 'a'], task: 'open-all' },
-  { level: 2, name: 'Which sprouts could grow?', spotted: ['A', 'a'], plain: ['a', 'a'], task: 'choose-could' },
+  { level: 1, name: 'One route, then every route', parents: [['A', 'A'], ['a', 'a']], task: 'open-all' },
+  { level: 2, name: 'Which sprouts could grow?', parents: [['A', 'a'], ['a', 'a']], task: 'choose-could' },
+  { level: 3, name: 'Could be, or always?', parents: [['A', 'a'], ['A', 'a']], task: 'choose-always' },
 ];
 
 export function planFor(level: number): Plan {
@@ -92,19 +112,21 @@ export interface Setup {
   colors: readonly [ColorName, ColorName];
   /** The four routes of this cross, in fan order. */
   routes: Route[];
-  /** Level 2: the one bud that opens closed, for her to build. Level 1: none, she opens all four. */
-  missing: number | null;
+  /** The buds she builds by tapping their source tiles, in order: level 2's one missing bud, level 3's all four,
+   * level 1's none (she opens them). The other buds open already at level 2. */
+  build: readonly number[];
 }
 
 export function setupFor(level: number, rng: Rng): Setup {
   const plan = planFor(level);
   const shuffle = (g: Genotype): Genotype => (rng.chance(0.5) ? [g[1], g[0]] : [g[0], g[1]]);
-  const spottedLeft = rng.chance(0.5);
-  const left = shuffle(spottedLeft ? plan.spotted : plan.plain);
-  const right = shuffle(spottedLeft ? plan.plain : plan.spotted);
+  const firstLeft = rng.chance(0.5);
+  const left = shuffle(plan.parents[firstLeft ? 0 : 1]);
+  const right = shuffle(plan.parents[firstLeft ? 1 : 0]);
   const [c0, c1] = rng.shuffle([...PETAL_COLORS]);
   const rs = routes(left, right);
-  return { plan, left, right, colors: [c0, c1], routes: rs, missing: plan.task === 'choose-could' ? rng.int(0, 3) : null };
+  const build = plan.task === 'choose-could' ? [rng.int(0, 3)] : plan.task === 'choose-always' ? [0, 1, 2, 3] : [];
+  return { plan, left, right, colors: [c0, c1], routes: rs, build };
 }
 
 /** Where a round is: giving the sprout its copies, the bud fan, the choice, or finished. */
@@ -117,9 +139,11 @@ export interface Round {
   slots: readonly [0 | 1 | null, 0 | 1 | null];
   /** Which buds of the fan are open. */
   opened: readonly boolean[];
-  /** At level 2, which source tiles of the missing bud she has tapped: the left plant's and the right plant's. */
+  /** Which source tiles of the bud she is building she has tapped: the left plant's and the right plant's. */
   built: readonly [boolean, boolean];
   chosen: ReadonlySet<Look>;
+  /** Level 3's chosen claim card. */
+  claim: Claim | null;
 }
 
 export function freshRound(setup: Setup): Round {
@@ -127,10 +151,16 @@ export function freshRound(setup: Setup): Round {
     setup,
     phase: 'give',
     slots: [null, null],
-    opened: setup.routes.map((_, i) => setup.missing !== null && i !== setup.missing),
+    opened: setup.routes.map((_, i) => setup.build.length > 0 && !setup.build.includes(i)),
     built: [false, false],
     chosen: new Set(),
+    claim: null,
   };
+}
+
+/** The bud she is building now: the first of the setup's build list still closed, or null. */
+export function buildingBud(r: Round): number | null {
+  return r.setup.build.find((i) => !r.opened[i]) ?? null;
 }
 
 /** The next thing a capable child would do, for the ghost finger and for Show me; null when the round is done or waiting. */
@@ -139,6 +169,7 @@ export type Step =
   | { open: number }
   | { build: number; side: 0 | 1; tile: 0 | 1 }
   | { choose: Look }
+  | { claim: Claim }
   | { check: true };
 
 export function nextStep(r: Round): Step | null {
@@ -150,16 +181,22 @@ export function nextStep(r: Round): Step | null {
       return null;
     }
     case 'fan': {
-      if (s.missing === null) {
+      if (s.build.length === 0) {
         const i = r.opened.findIndex((o) => !o);
         return i < 0 ? null : { open: i };
       }
-      const route = s.routes[s.missing];
-      if (!r.built[0]) return { build: s.missing, side: 0, tile: route.from[0] };
-      if (!r.built[1]) return { build: s.missing, side: 1, tile: route.from[1] };
+      const b = buildingBud(r);
+      if (b === null) return null;
+      const route = s.routes[b];
+      if (!r.built[0]) return { build: b, side: 0, tile: route.from[0] };
+      if (!r.built[1]) return { build: b, side: 1, tile: route.from[1] };
       return null;
     }
     case 'choose': {
+      if (s.plan.task === 'choose-always') {
+        const want = acceptedClaim(s.routes);
+        return r.claim === want ? { check: true } : { claim: want };
+      }
       for (const look of ['spotted', 'plain'] as const) if (support(s.routes).has(look) && !r.chosen.has(look)) return { choose: look };
       if (r.chosen.size > 0 && checkLooks(r.chosen, s.routes).ok) return { check: true };
       return null;
