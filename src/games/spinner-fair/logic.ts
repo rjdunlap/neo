@@ -222,8 +222,8 @@ export function layout(view: { w: number; h: number }, bars: number): Layout {
   return {
     portrait,
     spinner,
-    pair: [{ x: cx - 40, y: 130 + SMALL, r: SMALL }, { x: cx - 40, y: 130 + SMALL * 3 + 70, r: SMALL }],
-    favourite: box(Math.min(w - 90, cx + SMALL + 110), 130 + SMALL * 2 + 35, 120, 120),
+    pair: [{ x: cx - 40, y: 130 + SMALL, r: SMALL }, { x: cx - 40, y: 130 + SMALL * 3 + 110, r: SMALL }],
+    favourite: box(Math.min(w - 90, cx + SMALL + 110), 130 + SMALL * 2 + 55, 120, 120),
     base,
     columns: cols(cx - span / 2 + 40, base),
   };

@@ -152,11 +152,12 @@ class SpinnerFair implements Game {
   // ---- play ----
 
   private tapSpinner(i: number) {
-    if (this.busy || this.finished || this.spinning) return;
+    if (this.finished) return;
     const node = this.spinners[i].node;
     this.ctx.tw.kill(node);
     node.rotation = 0.04;
     void this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.3, ease: ease.outElastic });
+    if (this.busy || this.spinning) return;
     if (this.phase === 'pick') { void this.pick(i); return; }
     if (this.phase === 'ask') { sfx.pop(2); void this.ctx.say('sf.no-more-spins'); return; }
     void this.doSpin();
