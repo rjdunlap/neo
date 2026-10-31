@@ -900,3 +900,27 @@ Proof: new-interaction tier: typecheck and rule tests; one scripted play of leve
 Files expected: `src/games/habitat-helpers/logic.ts`, `logic.test.ts`, `art.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck and rule tests; one scripted play of level 8 with the anemone on the high rock first and level 9 to its sticker; one portrait screenshot of the shore; `fingerdemo` at 8 and 9; one build.
+
+### inchworm 1: Fresh things and the broken ruler
+
+- **`inchworm`, fresh things and the broken ruler (dive slice 1)** (existing interaction; school): five new things with voice words, the long-jump round at level 3, and level 8 *The broken ruler* (school order `[1, 2, 7, 3, 4, 8, 5, 6]`, school max 8). [Dive](deep-dives/inchworm.md#build-slices-in-order)
+
+Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new levels on the existing interaction: typecheck, the game's rule tests, one browser play of level 8 with the end-mark pad, a second miss for the glow, then the right pad; one level-3 play with a long-jump round; `fingerdemo` at 8; one portrait screenshot of the broken ruler; one build for the new art.
+
+### inchworm 2: One worm, hop by hop
+
+- **`inchworm`, level 9 One worm, hop by hop (dive slice 2, after batch 1)** (new interaction; school): shares the order and the `THINGS` list with batch 1; school order `[1, 2, 7, 9, 3, 4, 8, 5, 6]`. [Dive](deep-dives/inchworm.md#build-slices-in-order)
+
+Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new interaction: typecheck, rule tests, one play of level 9 with one wrong count, a second for the glow, then the right pad; one portrait screenshot mid-hop; `fingerdemo` at 9.
+
+### inchworm 3: Longer than the ruler
+
+- **`inchworm`, level 10 Longer than the ruler (dive slice 3, after batch 1)** (new interaction; school top). [Dive](deep-dives/inchworm.md#build-slices-in-order)
+
+Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new interaction: typecheck, rule tests, one play of level 10 with one drop away from the slot (no miss), the second-part pad (a miss), a second for the glow, then the answer; one portrait screenshot with the chalk mark; `fingerdemo` at 10.

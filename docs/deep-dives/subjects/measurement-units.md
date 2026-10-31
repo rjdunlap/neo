@@ -45,7 +45,7 @@ Read [GAMES](../../GAMES.md#inchworm-measure), the deep dives for [Fill and Dump
 
 | Attribute | Built | Already planned elsewhere (not re-proposed here) |
 | --- | --- | --- |
-| Length | Inchworm Measure 1–6 (end to end, how many, compare, ruler not starting at 0, how much longer, two end to end); Size Parade; Block Tower heights; Teddy Doctor's height chart | Inchworm's own game dive (queued in READY); Ribbon Workshop composes fractional lengths ([fractions study](fractions.md)) |
+| Length | Inchworm Measure 1–6 (end to end, how many, compare, ruler not starting at 0, how much longer, two end to end); Size Parade; Block Tower heights; Teddy Doctor's height chart | Inchworm's own game [dive](../inchworm.md) (2026-10-31; levels 8–10 queued); Ribbon Workshop composes fractional lengths ([fractions study](fractions.md)) |
 | Mass | Seesaw Balance 1–11 (heavier, blocks to level, mystery box weighed in blocks, unknowns); Teddy Doctor's scale | Seesaw 12–17 in [its dive](../seesaw-balance.md) (*Guess the pumpkin* in blocks, *How much heavier?*, prediction); its decision 3 keeps the unit at blocks |
 | Capacity | Fill and Dump 5 pour to a line, 6 full/empty, 7 *Which holds more?* | Fill and Dump 8 *Tricky pairs*, 9 *How many cups?*; *Two jugs* sketch (decision 4) |
 | Time | Clock Tower 1–7 (hours to five-minute times, one hour later, a routine) | Clock Tower 8–11 (earlier, half an hour from now, *How long?*, *Time for a visit*) |
