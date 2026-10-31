@@ -608,7 +608,15 @@ Proof: new-interaction tier, as the [definition's check tier](definitions/keep-h
 
 ### water-road 1: Keystone, which one stands and hold it up
 
-Built 2026-10-27, [PR #1022](https://github.com/rjdunlap/neo/pull/1022); [definition](definitions/water-road.md), [archived build note](archive/COMPLETED-2026-10-09.md#water-road-levels-13-greece-and-rome-am2-2026-10-27). Whole three-level new-game batch. Device checks remain; levels 4–5 (AM3) need their own definition.
+Built 2026-10-27, [PR #1022](https://github.com/rjdunlap/neo/pull/1022); [definition](definitions/water-road.md), [archived build note](archive/COMPLETED-2026-10-09.md#water-road-levels-13-greece-and-rome-am2-2026-10-27). Whole three-level new-game batch. Device checks remain; levels 4–5 are defined (AM3) as batch water-road 2.
+
+### water-road 2: Downhill all the way and over the valley
+
+Ready (defined 2026-10-31, [PR #1035](https://github.com/rjdunlap/neo/pull/1035)). One worker, branch and PR for both levels.
+
+- **`water-road`, levels 4–5 (the build of study slice AM3)** (two new interactions on an existing game; `prek: { min: 2, max: 4 }`, `school: { min: 3, max: 5 }`, no renumbering): pre-K picks one of two whole channels and school sets two piers with up and down arrows, then **Open the spring** is the commit and a pooled opening is one miss (level 4); school drags arches across 3–4 spans with an abutment on each earth end, one end usually rock, under the arcade rule (level 5). Files: `src/games/water-road/` (logic, art, scene, rule tests), voice lines, the how-to card, the `waterroad` browser case. Rain Garden and Welcome Ways boundaries are recorded in the [definition](definitions/water-road.md#levels-45-am3-downhill-all-the-way-over-the-valley). [Definition](definitions/water-road.md#levels-45-am3-downhill-all-the-way-over-the-valley), [study build slices](deep-dives/subjects/ancient-mediterranean.md)
+
+Proof: new-interaction tier, as the [definition's check tier](definitions/water-road.md#levels-45-check-tier-for-the-build) sets it (typecheck, rule tests, one scripted play covering pre-K level 4, school level 4 and level 5 with their misses and hints, a portrait screenshot of level 5, `fingerdemo` at levels 4 and 5, one build).
 
 ### paint-mixer 1: Copy the row and twice as much
 
