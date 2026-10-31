@@ -10,6 +10,8 @@ export type Mood = 'happy' | 'surprised' | 'sing' | 'sleepy' | 'sad' | 'calm';
 /** Everything that makes one critter different from another. All parts share one body and face. */
 export interface CritterSpec {
   color: ColorName;
+  /** A body colour outside the palette's names (Size Parade's shades); `color` still names its family. */
+  shade?: Swatch;
   ears?: Ears;
   earColor?: ColorName;
   snout?: Snout;
@@ -85,7 +87,7 @@ export class Critter extends Container {
   constructor(spec: CritterSpec) {
     super();
     this.spec = spec;
-    this.sw = swatch[spec.color];
+    this.sw = spec.shade ?? swatch[spec.color];
     this.eyeY = spec.snout === 'muzzle' ? -150 : -142;
     this.eyeX = spec.snout === 'muzzle' ? 35 : 40;
     this.mouthAt =
@@ -221,7 +223,7 @@ export class Critter extends Container {
 
   private buildBack() {
     const s = this.spec;
-    const ear = swatch[s.earColor ?? s.color];
+    const ear = s.earColor ? swatch[s.earColor] : this.sw;
     const back = new Graphics();
     this.body.addChild(back);
 
@@ -324,7 +326,7 @@ export class Critter extends Container {
     }
     if (s.belly) this.body.addChild(new Graphics().ellipse(0, -65, 80, 54).fill(sw.light));
 
-    const feet = s.feet === 'hoof' ? HOOF : swatch[s.feet ?? s.color];
+    const feet = s.feet === 'hoof' ? HOOF : s.feet ? swatch[s.feet] : this.sw;
     const f = new Graphics();
     for (const side of [-1, 1]) f.ellipse(side * 40, 0, 30, 14).fill(feet.fill).stroke(stroke(feet.line, 6));
     this.body.addChild(f);

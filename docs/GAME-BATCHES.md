@@ -365,8 +365,8 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### size-parade 3: Insert a friend and order shades
 
-- **`size-parade`, level 12 *Where does this one go?*, slice 7** (new interaction, plus a portrait screenshot): a fifth friend dropped into the nearest gap of an ordered line that opens under the finger; pre-K `order [5, 6, 11, 7, 8, 12]`, school `order [7, 8, 12]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
-- **`size-parade`, level 15 *Darkest first*, slice 8** (new levels on an existing interaction, plus a device contrast check): five shades of one friend lined up darkest or lightest first; pre-K `order [5, 6, 11, 7, 8, 12, 15]`, school `order [7, 8, 12, 15]`; Shade Lineup leaves the notebook. [Dive](deep-dives/size-parade.md#build-slices-in-order)
+- **`size-parade`, level 12 *Where does this one go?*, slice 7** (landed 2026-10-30, PR #1031) (new interaction, plus a portrait screenshot): a fifth friend dropped into the nearest gap of an ordered line that opens under the finger; pre-K `order [5, 6, 11, 7, 8, 12]`, school `order [7, 8, 12]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
+- **`size-parade`, level 15 *Darkest first*, slice 8** (landed 2026-10-30, PR #1031) (new levels on an existing interaction, plus a device contrast check): five shades of one friend lined up darkest or lightest first; pre-K `order [5, 6, 11, 7, 8, 12, 15]`, school `order [7, 8, 12, 15]`; Shade Lineup leaves the notebook. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
