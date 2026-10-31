@@ -186,8 +186,10 @@ export const hAt = (L: ShoreLayout, y: number) => (L.low - y) / (L.low - L.dunes
 
 /** Where a dropped thing's feet stand: inside the sand and grass, and out of the pet's corner. */
 export function clampFeet(L: ShoreLayout, view: View, x: number, y: number): { x: number; y: number } {
-  const fx = Math.max(L.sand.x, Math.min(L.sand.x + L.sand.w, x));
   const fy = Math.max(L.sand.y, Math.min(L.sand.y + L.sand.h, y));
+  // High on the grass a pail would reach up beside the corner buttons: keep it between them.
+  const edge = fy - PAIL < CORNER ? CORNER + PAIL / 2 : L.sand.x;
+  const fx = Math.max(edge, Math.min(view.w - edge, Math.max(L.sand.x, Math.min(L.sand.x + L.sand.w, x))));
   const pet = petCorner(view);
   // A pail is drawn 60 either side of its feet and 120 above them.
   if (fx - PAIL / 2 < pet.x + pet.w && fy > pet.y) return { x: pet.x + pet.w + PAIL / 2, y: fy };

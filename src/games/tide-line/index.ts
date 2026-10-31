@@ -117,7 +117,9 @@ class TideLine implements Game {
     const authored = !!ctx.demo || !authoredShown.has(ctx.level);
     authoredShown.add(ctx.level);
     this.high = authored ? AUTHORED_HIGH : highFor(ctx.rng);
-    for (const g of [this.line, this.glow, this.critterLayer, this.water]) g.eventMode = 'none';
+    for (const g of [this.line, this.glow, this.water]) g.eventMode = 'none';
+    // The creatures take pokes; the layer itself does not.
+    this.critterLayer.eventMode = 'passive';
     ctx.stage.addChild(this.shore, this.line, this.glow, this.critterLayer, this.water, this.seaHit, this.pailLayer, this.board);
     if (this.plan.mode === 'wave') {
       this.seaHit.eventMode = 'static';
@@ -182,7 +184,8 @@ class TideLine implements Game {
   }
 
   private readonly onDown = (e: FederatedPointerEvent) => {
-    if (this.finished || this.grab || palmOnGlass()) return;
+    // A wave already sent runs its course (a lap child's second tap does not snap it back).
+    if (this.finished || this.grab || this.auto || palmOnGlass()) return;
     const p = this.ctx.stage.toLocal(e.global);
     this.grab = { id: e.pointerId, peak: this.sea.h, y0: p.y, moved: false };
     this.auto = null;
@@ -444,7 +447,10 @@ class TideLine implements Game {
     if (this.pail && !this.pail.at && !this.ctx.tw.busy(this.pail.node)) this.pail.node.position.set(L.tray.x, L.tray.y);
     if (this.pail) this.pail.handle.home = { ...L.tray };
     for (const p of [...this.placed, ...(this.pail?.at ? [this.pail] : [])]) {
-      if (p.at && !this.ctx.tw.busy(p.node)) p.node.position.set(Math.min(p.at.x, L.sand.x + L.sand.w), yAt(L, p.at.h));
+      if (!p.at || this.ctx.tw.busy(p.node)) continue;
+      const f = clampFeet(L, v, p.at.x, yAt(L, p.at.h));
+      p.at.x = f.x;
+      p.node.position.set(f.x, yAt(L, p.at.h));
     }
     this.drawGlow();
     this.drawSea();
