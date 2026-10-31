@@ -60,10 +60,10 @@ Each line is selected for routine dispatch; claim one packet, then enqueue its u
 
 - **Study `theatre-puppetry`: define Puppet Stage 4–6 (TP2)** (docs only; status `define`): after batch puppet-stage 1 is built and played; the three story cards and their spoken lines, the shown-only premiere restated from Movie Night, the director's-chair co-play role and coplayHint, school 4–6 and pre-K 4–5; retain its review, placement and device-check gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#theatre-and-puppetry-recommendations).
 - **Study `daily-life-long-ago`: define Household Casebook (H5)** (docs only; status `define`): one fictional three-source/three-claim case for 5–7 numbering from level 7, unknowns, solver model and captions; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#everyday-life-long-ago-recommendations).
+- **Study `food-fiber-systems`: define Maker Lane 1–3 (FS1)** (docs only; status `define`): new game; the form graph for four chains (fleece→scarf, cotton→sock, wheat→loaf, tree→box) with rule tests, the beginnings table with each thing's tempting wrong card, lane layout, accounting, replay, review-marked voice lines, how-to, co-play hint (FS4) and the FS3 card text; home land by standing rule S8; retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#food-and-fiber-systems-recommendations).
 
 
 ### Subject research (docs only)
-- **Research subject `food-fiber-systems`** (docs only; one subject): follow the subject procedure, reuse completed adjacent studies, and queue the first eligible definition. [Backlog](STUDY-BACKLOG.md#unstarted-subject-research); [tracker](deep-dives/subjects.md#tracker).
 
 ### Game research (docs only)
 
