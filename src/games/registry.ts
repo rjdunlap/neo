@@ -130,6 +130,7 @@ import { numberTrails } from './number-trails';
 import { fruitSums } from './fruit-sums';
 import { paintMixer } from './paint-mixer';
 import { dropsJourney } from './drops-journey';
+import { forecastDetective } from './forecast-detective';
 import { puppetStage } from './puppet-stage';
 import { spinnerFair } from './spinner-fair';
 import { readDo } from './read-do';
@@ -273,6 +274,7 @@ export const GAMES: GameModule[] = [
   fruitSums,
   paintMixer,
   dropsJourney,
+  forecastDetective,
   spinnerFair,
   puppetStage,
   readDo,

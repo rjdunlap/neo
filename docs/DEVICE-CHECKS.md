@@ -172,6 +172,13 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] With a pre-K child: does she accept "still the better chance" after a losing pick?
 - [ ] On an iPad, hear the critter calls and the `sf.*` lines in device speech.
 
+## Forecast Detective levels 1–2 (weather-water slice 9, 2026-10-31)
+
+- [ ] With a school-age child: does she open clues on purpose, or just all of them?
+- [ ] Does *Can't tell yet* feel like a win, or a dodge?
+- [ ] On an iPad, is "Lighthouse Isle" clear in device speech?
+- [ ] With a tween or parent: is the case appealing, or too much like a worksheet?
+
 ## Drop's Journey levels 1–3 (weather-water slice 8, 2026-10-31)
 
 - [ ] With a four-year-old: does she read the dotted drop as still the drop?
