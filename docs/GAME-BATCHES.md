@@ -469,7 +469,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/second-chance
 
 ### second-chance-shed 2: Someone needs it
 
-Not built. Dispatched from [READY](READY.md); defined 2026-10-31 (nature-sustainability N3).
+Built 2026-10-31, [PR #1057](https://github.com/rjdunlap/neo/pull/1057); [closeout](archive/COMPLETED-2026-10-09.md#second-chance-shed-levels-5-6-slice-n3-2026-10-31). Scope retained for dependency reference; defined 2026-10-31 (nature-sustainability N3).
 
 - **`second-chance-shed`, levels 5–6 (N3)** (new interaction on the built game; school {4–6}): everything is laid out on the cart at once, a friend's picture bubble asks for something (pencils a pot, Bunny a nap), she plans every place and the friend's gift, then rings the cart bell; level 6 has two friends and one thing that fits both, and the tempting plan fails. One miss per failed ring, never per thing. [Definition](definitions/second-chance-shed-5-6.md), [nature-sustainability study slice N3](deep-dives/subjects/nature-sustainability.md#build-slices-in-order)
 

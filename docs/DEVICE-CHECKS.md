@@ -141,6 +141,14 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] On an iPad, hear each place's reason line ("I only munch food bits" and the others) in device speech.
 - [ ] Does a child take the island's Remake machine for a real recycling bin? The card tells grown-ups to check their own town's rules; listen for what she says.
 
+## Second Chance Shed levels 5–6 (nature-sustainability N3, 2026-10-31)
+
+- [ ] With a school-age child: does she read a friend's picture bubble (a cat with pencils, Bunny, a duck) without the spoken line?
+- [ ] Does giving the tin to a friend read as better than Remake, or only as a different choice?
+- [ ] Does the tempting plan at level 6 feel fair when the ring fails, and does the reason line explain it?
+- [ ] On an iPad, hear the new lines (request, need, nofit, only, filled for each friend, bell, made buttons) in device speech.
+- [ ] On an iPad, are things buried in a crowded place easy to grab from the fan?
+
 ## Who Am I? levels 1–3 (zoo animals Z3, 2026-10-24)
 
 - [ ] On an iPad, hear the clue lines ("I have feathers", "I feed my babies milk" and the miss reasons) in device speech (the definition wanted this before merge; the 2026-10-23 delegation made the source check the only gate, so it stays open).
