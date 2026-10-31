@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Ferry Jam deep dive (docs only)
+
+- [PR #1073](https://github.com/rjdunlap/neo/pull/1073), branch `claude/dive-ferry-jam-2`: [dive](deep-dives/ferry-jam.md). Found the hint fires on a raw slide count rather than lack of progress, and each harbor pool sits at the bottom of its plan's range. Four slices queued ([batches](GAME-BATCHES.md#ferry-jam-1-fair-hints-and-fuller-harbors): fair hints and fuller harbors, level 7 rocks, level 8 two ferries, levels 9–10 pre-K entry and who's in the way); the preschool opening is filed in [waiting-on-developer](WAITING-ON-DEVELOPER.md); tracker, READY, backlog and ideas updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds.
+
 ## 2026-10-31 — Garden Rows deep dive (docs only)
 
 - [PR #1072](https://github.com/rjdunlap/neo/pull/1072), branch `claude/dive-garden-rows`: [dive](deep-dives/garden-rows.md). Three slices queued ([batches](GAME-BATCHES.md#garden-rows-1-seeded-flower-sets-and-mend-the-bed): seeded flower sets and level 7 Mend the bed, levels 8–9 Hedge boxes, level 10 One row); Two-flower beds stays a later level 11.
@@ -85,13 +91,6 @@
 - [PR #1059](https://github.com/rjdunlap/neo/pull/1059), branch `claude/tide-line-1-2`: new game `tide-line` in Bubble Beach (13 games), levels 1–2 and the shared `src/art/shore.ts`; batch tide-line 1.
 - Ran (tested at b63fee70 on base e025bcae, Vite dev on http://localhost:5330): typecheck; full `npm test` 285 files / 3,938 tests (the clip test failed until the title clip was rendered with `scripts/voice-clips/render.mjs`); 35 rule tests (500 seeds where seeded, layout at four views); `npm run build`; `BROWSER_SUITE=tideline` PASS, rerun after the review fixes (level 1 by two pulls 0/0; level 2 two floats then the glow, a dry pail in portrait and a second dry pail, saved 2 misses/1 hint); `BROWSER_SUITE=fingerdemo FINGER_ONLY=tide-line FINGER_LEVELS=1,2` PASS (level 1 lap 8.2 s, level 2 toddler 14.1 s; before the review fixes, which did not touch the bot's targets); one portrait screenshot of level 2 with the glow and one landscape probe of level 1. game-reviewer: nothing serious, four small fixes applied.
 - Not run: offline check (no persistence change). Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#tide-line-levels-12-oceans-study-slice-1-2026-10-31)): a one-year-old pulling or tapping the wave, a toddler holding a pail, the seaweed line in sunlight on an iPad, device speech for "anemone".
-
-## 2026-10-31 — Spinner Fair levels 1–3 (chance-statistics CS1)
-
-- [PR #1058](https://github.com/rjdunlap/neo/pull/1058), branch `claude/spinner-fair-levels-1-3`: new game `spinner-fair` in Counting Cove (14 games), levels 1–3; batch spinner-fair 1.
-- Ran (tested at e3ebcbba, Vite dev on http://localhost:5347): typecheck; full `npx vitest run` 3903 tests, the one failure (voice-clip manifest) fixed by rendering the title clip, rerun of clips, content and registry 181/181, spinner-fair rule tests 19/19, lands test passing with 14 games; `BROWSER_SUITE=spinnerfair` PASS (level 1 to its sticker 0/0; portrait level 3 with two wrong picks, 2 misses, 1 hint and the glow, ten spins, second pick, saved 2/1); `BROWSER_SUITE=fingerdemo FINGER_ONLY=spinner-fair FINGER_LEVELS=3` PASS (44.2 s, pre-K); `npm run build`; portrait glow screenshot (test-results/browser/spinnerfair/); the portrait bars screenshot was taken on the earlier commit with the same layout. game-reviewer: no blocking bugs (the touch-down jiggle during a spin fixed; the repeated idle spin kept as defined).
-- Source check: "chance" and "a better chance" consistent with [CCSS 7.SP.C.5](https://www.thecorestandards.org/Math/Content/7/SP/C/5/) and [Illustrative Mathematics](https://tasks.illustrativemathematics.org/content-standards/7/SP/C/5) (unlikely / neither / likely); "fair", "sure", "maybe", "no way" stay with batch 2; England's Year 2 vocabulary not checked (no probability in Key Stage 1).
-- Not run: the landscape screenshot, level 2 in the browser (rules unit-tested), `fingerdemo` at levels 1–2, the offline check. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#spinner-fair-levels-13-chance-statistics-cs1-2026-10-31)): preschool six-spin reading, pre-K "still the better chance", device speech; the toddler check stays open.
 
 ## Coverage summary
 

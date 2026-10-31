@@ -813,6 +813,38 @@ Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`
 
 Proof: new-interaction tier: typecheck, unit tests (fewer than four squares cannot finish, kept creation equals the board); one scripted play to Done with a kept design, one portrait screenshot, `fingerdemo` at 10; the `creations` suite filtered to Pixel Pictures only if the kept shape changes. Person and device checks stay open.
 
+### ferry-jam 1: Fair hints and fuller harbors
+
+- **`ferry-jam`, fair hints and fuller harbors (dive slice 1)** (existing interaction; pre-K and school, no new level): the progress-based `stuck` hint replaces the raw slide count, harbors fill each plan's range (the pools now sit at the bottom of it) with a strict pool test, and a `coplayHint` adopts the Penguin Slide/Ferry Jam co-play split. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
+
+Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, `docs/GAMES.md`.
+
+Proof: typecheck and the game's rule tests; one filtered regression play of level 6 that wanders (a loop of slides earns one hint) and one that progresses on a longer route (no hint). The bot is unchanged, so no `fingerdemo`. Person and device checks stay open.
+
+### ferry-jam 2: Rocks in the harbor
+
+- **`ferry-jam`, level 7 Rocks in the harbor (dive slice 2)** (new level on the existing drag; school): rocks that never move share the harbor; every rock must matter and `focusPath` must still reach every boat; a rounded grey `Graphics` boulder with a foam ring drawn from existing palette colours. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
+
+Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new level tier: typecheck, rule tests (every rock matters, `focusPath` reaches every boat); one browser play of level 7 with a drag on a rock, `fingerdemo` at 7, one portrait screenshot.
+
+### ferry-jam 3: Two ferries
+
+- **`ferry-jam`, level 8 Two ferries (dive slice 3, after batch 2)** (new rule on the existing drag; school): two ferries leave by two docks, so the plan serves both; shares the `Harbor` and `parse` changes with batch 2. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
+
+Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new rule tier: typecheck and rule tests; one play of level 8 to its sticker with the yellow ferry sailing first, `fingerdemo` at 8, one portrait screenshot of the bottom dock.
+
+### ferry-jam 4: Pre-K entry and who's in the way
+
+- **`ferry-jam`, levels 9 and 10 Pre-K entry and Who's in the way (dive slice 4)** (level 9 an easier entry with one slide; level 10 a new tap step naming the boat in the way; pre-K and school): per-band `order` and `entryLevels` as the dive sets them, and level 10's blocker question with its glow after two wrong taps. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
+
+Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests (order, entry and landing); one scripted play of level 9 and of level 10 with one wrong tap, a second for the glow, then the blocker; `fingerdemo` at 9 and 10; one portrait screenshot of level 10's question. Person and device checks stay open.
+
 ### garden-rows 1: Seeded flower sets and Mend the bed
 
 - **`garden-rows`, seeded flower sets and level 7 Mend the bed (dive slice 1)** (existing interaction, new level; school): F1 seeded flower sets and level 7 Mend the bed as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).

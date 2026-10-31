@@ -867,7 +867,7 @@ No second row for the same game. [Buddy Delivery](#candidates), Complementary jo
 
 | Game | The two roles | What it adds |
 | --- | --- | --- |
-| Penguin Slide, Ferry Jam | One owns left and right (the horizontal boats), the other up and down (the vertical ones) | Making Faces' split; the existing solvers give par and hints, and the couch's seeded twin boards show the pattern |
+| Penguin Slide, Ferry Jam | One owns left and right (the horizontal boats), the other up and down (the vertical ones) | Making Faces' split; the existing solvers give par and hints, and the couch's seeded twin boards show the pattern; see the [Ferry Jam dive](deep-dives/ferry-jam.md) |
 | Secret Code | Maker and breaker | Make One for Me |
 | Pattern Train | Take turns adding a car; "continue my pattern" | Co-creation of a pattern |
 | Market Stall, Lemonade Stand | Shopkeeper and customer swap; she is the expert, and a task card tells the grown-up to pay a shell short, a mistake she can catch | Teaching the grown-up (the teachable-agent idea, recalled) |
