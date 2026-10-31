@@ -598,7 +598,7 @@ export function hallArt(hall: Hall, w: number): Container {
     g.rect(-w / 2, -h, w, h).fill(t.fill).stroke(line(t.line, 4));
     for (let x = -w / 2 + 20; x < w / 2; x += 26) g.moveTo(x, -h).lineTo(x, 0).stroke(line(t.line, 2));
     g.moveTo(-w / 2 - 14, -h).lineTo(0, -h - w * 0.32 + sag).lineTo(w / 2 + 14, -h + sag).closePath().fill(THATCH.fill).stroke(line(THATCH.line, 4));
-    g.roundRect(-24, -60, 48, 60, 6).fill(0x3a2f2a);
+    g.roundRect(-w * 0.1, -h * 0.55, w * 0.2, h * 0.55, 6).fill(0x3a2f2a);
   } else if (hall === 'rotted') {
     g.moveTo(-w / 2, 0).lineTo(-w / 3, -30).lineTo(-w / 8, -18).lineTo(w / 6, -40).lineTo(w / 2, 0).closePath().fill(grey.fill).stroke(line(grey.line, 4));
     for (const d of [-0.3, 0, 0.25]) g.moveTo(w * d, -6).lineTo(w * d + 30, -46).stroke(line(grey.line, 6));
@@ -615,7 +615,8 @@ export function hallArt(hall: Hall, w: number): Container {
   } else {
     stoneWall(g, -w / 2, -h, w, h);
     crenels(g, -w / 2, -h, w);
-    g.moveTo(-26, 0).lineTo(-26, -40).arc(0, -40, 26, Math.PI, 0).lineTo(26, 0).closePath().fill(0x3a2f2a);
+    const d = w * 0.1;
+    g.moveTo(-d, 0).lineTo(-d, -h * 0.4).arc(0, -h * 0.4, d, Math.PI, 0).lineTo(d, 0).closePath().fill(0x3a2f2a);
   }
   c.addChild(g);
   return c;

@@ -1085,7 +1085,7 @@ class KeepHouse implements Game {
     const bar = yearBarArt(sit.years, this.shown ? this.shown.year + YEAR_STEP : 0, barW);
     bar.position.set(bx, l.lord.y + 80);
     this.strip.addChild(bar);
-    if (this.lifted && !this.shown) {
+    if (this.lifted && !this.busy) {
       // The lifted row's life along the stay: timber's 15-year halls side by side, or stone's 8 building years then one hall to the end.
       const g = new Graphics();
       const per = barW / sit.years;
@@ -1221,8 +1221,8 @@ class KeepHouse implements Game {
     await this.ctx.say(`kh.bags.${cost(sit, want)}` as LineId);
     if (!this.live(epoch)) return;
     void this.ctx.say('kh.which-build');
+    // The account stays on the site until she builds again.
     this.busy = false;
-    this.shown = null;
     this.keepShown = true;
     if (this.keepNode) this.keepNode.visible = true;
     this.redrawRows();
