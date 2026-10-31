@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-30 — Keep House 5–6 definition (ML3, docs only)
+
+- [PR #1034](https://github.com/rjdunlap/neo/pull/1034), branch `claude/define-keep-house-5-6`: [definition](definitions/keep-house.md#levels-56-ml3-read-the-ruin-stone-or-timber) (level 5 Read the ruin, level 6 Stone or timber; school range 4–6), a batch plan in [GAME-BATCHES](GAME-BATCHES.md#keep-house-2-read-the-ruin-and-stone-or-timber); READY, backlog, roadmap, ideas, packet and study point to it. Nothing built, no code changed.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs only). Open: the building session's source check of the history lines; the build runs the new-interaction tier.
+
 ## 2026-10-30 — Sprout Shuffle level 3 (could be or always, genetics G3)
 
 - [PR #1033](https://github.com/rjdunlap/neo/pull/1033), branch `claude/sprout-shuffle-g3`, tested at `25309fc9`: level 3 (Aa × Aa, four built buds, "sometimes" or "always" claim cards, free Try one); school range now 1–3.
