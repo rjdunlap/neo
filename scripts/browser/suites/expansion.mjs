@@ -24,10 +24,25 @@ async function expansion() {
         await kit.sleep(550);
         if (g.step !== 0 || right.placed) throw new Error('A friend on a later spot was placed');
       }
+      if (g.plan.mode === 'insert') {
+        // A drop away from the line goes home, and a touch on a friend in the line hops it: neither is a miss.
+        const n = g.choices[0].node, home = { ...g.choices[0].drag.home };
+        await kit.dragTo(n, g.ground.toGlobal({ x: home.x + 120, y: home.y - 150 })); await kit.sleep(650);
+        if (Math.abs(n.x - home.x) > 2 || g.openGap !== null) throw new Error('A drop away from the line was kept');
+        kit.tapOn(g.lineUp[1].node, 0, -60); await kit.sleep(300);
+      }
       if (g.misses !== 0 || g.hints !== 0) throw new Error(`Free touches counted: ${g.misses} misses, ${g.hints} hints`);
     });
     await page.evaluate(async () => {
       const g = neo.scene.game;
+      if (g.plan.mode === 'insert') {
+        // Two drops in a wrong gap: each a miss with the reason, the second glows the right gap.
+        const right = g.autotouch().to.x, xs = g.lineUp.map((c) => c.node.x), step = xs[1] - xs[0];
+        const mids = [xs[0] - step / 2, ...xs.slice(1).map((x, i) => (xs[i] + x) / 2), xs[3] + step / 2];
+        const wrong = mids.find((m) => Math.abs(m - right) > 1), y = neo.view.h - 90 + 40;
+        for (let i = 0; i < 2; i++) { await kit.dragTo(g.choices[0].node, g.ground.toGlobal({ x: wrong, y })); await kit.sleep(900); }
+        return;
+      }
       const act = async (choice) => {
         if (g.plan.mode !== 'line') { kit.tapOn(choice.node, 0, -50); await kit.sleep(220); }
         else { const p = g.slots[g.step].getGlobalPosition(); await kit.dragTo(choice.node, { x: p.x, y: p.y + 40 * neo.view.scale }); await kit.sleep(550); }
@@ -37,12 +52,17 @@ async function expansion() {
     });
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, `size ${level} hint`);
     if (level === 4 || level === 8 || level === 10 || level === 11 || level === 17) await screenshot(`size-parade-${level}`);
-    if (level === 8 || level === 10 || level === 11 || (process.env.SIZE_PORTRAIT && level === 7)) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot(`size-parade-portrait-${level}`); }
+    if (level === 8 || level === 10 || level === 11 || level === 12 || level === 15 || (process.env.SIZE_PORTRAIT && level === 7)) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot(`size-parade-portrait-${level}`); }
     await page.evaluate(async () => {
       const g = neo.scene.game;
-      for (let step = 0; !g.done && step < 10; step++) {
+      for (let step = 0; !g.done && step < 14; step++) {
         if (!await kit.until(() => !g.busy || g.done)) throw new Error('Size question stuck');
         if (g.done) break;
+        if (g.plan.mode === 'insert') {
+          await kit.sleep(750);
+          const to = g.autotouch().to; await kit.dragTo(g.choices[0].node, g.ground.toGlobal({ x: to.x, y: to.y + 40 })); await kit.sleep(300);
+          continue;
+        }
         const c = g.choices.find((c) => !c.placed && c.rank === g.order[g.step]);
         if (g.plan.mode !== 'line') { kit.tapOn(c.node, 0, -50); await kit.sleep(950); }
         else { const p = g.slots[g.step].getGlobalPosition(); await kit.dragTo(c.node, { x: p.x, y: p.y + 40 * neo.view.scale }); await kit.sleep(220); }

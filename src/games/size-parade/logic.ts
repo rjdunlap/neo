@@ -1,7 +1,10 @@
 import { spread } from '../../engine/view';
+import { swatch, type Swatch } from '../../art/palette';
 
 export interface SizePlan {
-  count: number; order: 'big' | 'small'; mode: 'pick' | 'line' | 'cycle' | 'fit'; name: string;
+  count: number; order: 'big' | 'small'; mode: 'pick' | 'line' | 'cycle' | 'fit' | 'insert'; name: string;
+  /** *Darkest first*: the ranks are shades of one colour (rank 0 the darkest), every friend one size, and a second line runs lightest first. */
+  shade?: boolean;
   /** Some questions ask for the middle one. */
   middle?: boolean;
   /** *Big one, little one*: the big one, then the little one, then the big one again, in plain words. */
@@ -27,9 +30,13 @@ export const BIG_LITTLE: SizePlan = { count: 2, order: 'big', mode: 'pick', bigL
 export const SIZE_CYCLE: SizePlan = { count: 1, order: 'big', mode: 'cycle', name: 'Tap one friend to make it bigger, then smaller' };
 /** 11 *Who fits?* (preschool top and pre-K, after 6): a bed, a chair, a bowl and a door, each fitting exactly one of three friends. */
 export const WHO_FITS: SizePlan = { count: 3, order: 'big', mode: 'fit', name: 'Tap the friend who fits the bed, chair, bowl and door' };
+/** 12 *Where does this one go?* (pre-K top, school first): a fifth friend dragged into its gap in an ordered line of four. */
+export const WHERE_DOES_IT_GO: SizePlan = { count: 5, order: 'small', mode: 'insert', name: 'Put a fifth friend into its place in a line of four' };
+/** 15 *Darkest first* (pre-K top and school, after 8): five friends of one size in five shades, darkest first, then lightest first. */
+export const DARKEST_FIRST: SizePlan = { count: 5, order: 'small', mode: 'line', shade: true, name: 'Line up five friends by shade, darkest first, then lightest first' };
+const HIGH_LEVELS: Record<number, SizePlan> = { 9: BIG_LITTLE, 10: MIDDLE_ONE, 11: WHO_FITS, 12: WHERE_DOES_IT_GO, 15: DARKEST_FIRST, 16: SIZE_CYCLE, 17: TWO_IN_A_LINE };
 export const sizePlan = (level: number): SizePlan =>
-  level === 17 ? TWO_IN_A_LINE : level === 10 ? MIDDLE_ONE : level === 9 ? BIG_LITTLE : level === 16 ? SIZE_CYCLE : level === 11 ? WHO_FITS
-    : SIZE_PLANS[Math.max(0, Math.min(SIZE_PLANS.length - 1, level - 1))];
+  HIGH_LEVELS[level] ?? SIZE_PLANS[Math.max(0, Math.min(SIZE_PLANS.length - 1, level - 1))];
 /** How many questions a pick level asks: three at *Big one, little one*, otherwise four (one per prop at *Who fits?*). */
 export const pickRounds = (plan: SizePlan): number => plan.bigLittle ? 3 : 4;
 
@@ -62,6 +69,90 @@ export function fitAsks(rng: { shuffle<T>(a: T[]): T[]; pick<T>(a: readonly T[])
 }
 /** How a friend fares at a prop: it fits, or hangs over the end (too big), or vanishes into it (too little). */
 export const fitTry = (rank: number, fitting: number): 'fits' | 'big' | 'little' => rank === fitting ? 'fits' : rank > fitting ? 'big' : 'little';
+
+/**
+ * *Where does this one go?*: four questions, each a newcomer's rank among five friends of the five steps and the line's order.
+ * Two lines run smallest first and two biggest first, and in at least two the newcomer belongs inside the line, not at an end.
+ */
+export interface InsertAsk { rank: number; order: 'big' | 'small' }
+export function insertAsks(rng: { shuffle<T>(a: T[]): T[]; pick<T>(a: readonly T[]): T }): InsertAsk[] {
+  const inner = [1, 2, 3] as const, any = [0, 1, 2, 3, 4] as const;
+  const ranks = rng.shuffle([rng.pick(inner), rng.pick(inner), rng.pick(any), rng.pick(any)]);
+  const orders = rng.shuffle<'big' | 'small'>(['small', 'small', 'big', 'big']);
+  return ranks.map((rank, i) => ({ rank, order: orders[i] }));
+}
+/** The four friends already in the line, in line order: every rank of five but the newcomer's. */
+export const insertLine = (ask: InsertAsk): number[] => sizeOrder(5, ask.order).filter((r) => r !== ask.rank);
+/** The gap the newcomer belongs in (0 before the first friend of the line, 4 after the last): the one between the one smaller and the one bigger. */
+export const insertGapFor = (ask: InsertAsk): number => insertLine(ask).filter((r) => ask.order === 'small' ? r < ask.rank : r > ask.rank).length;
+/** The middle of each of the five gaps of a closed line of four friends standing at `rest`, both ends included. */
+export function gapMids(rest: number[]): number[] {
+  const step = rest[1] - rest[0];
+  return [rest[0] - step / 2, ...rest.slice(1).map((x, i) => (rest[i] + x) / 2), rest[rest.length - 1] + step / 2];
+}
+/**
+ * The gap a carried friend at (x, y) (its feet, as `draggable` reports it) is over: the nearest middle of the closed line's
+ * gaps, so a gap opening under the finger never changes which gap is nearest; null when it is not beside the line.
+ */
+export function insertGap(x: number, y: number, rest: number[], lineY: number): number | null {
+  if (y < lineY - 230 || y > lineY + 80) return null;
+  const mids = gapMids(rest), half = (rest[1] - rest[0]) / 2;
+  if (x < mids[0] - half || x > mids[mids.length - 1] + half) return null;
+  let best = 0;
+  mids.forEach((m, i) => { if (Math.abs(x - m) < Math.abs(x - mids[best])) best = i; });
+  return best;
+}
+/**
+ * Where the friends of the line stand: at `rest` with no gap open, otherwise on five evenly spread places with `gap` left empty.
+ * Returns the four line friends' x and the open gap's middle.
+ */
+export function insertLayout(w: number, gap: number | null) {
+  const five = spread(5, 165, w - 40, 175), rest = spread(4, 165, w - 40, 175);
+  return { rest, five, xs: gap === null ? rest : rest.map((_, i) => five[i < gap ? i : i + 1]), openW: five[1] - five[0] };
+}
+/**
+ * Why a wrong gap is wrong, said of the one friend beside it that shows it: dropped too early, the friend after the gap comes
+ * before the newcomer; too late, the friend before the gap comes after it. `friend` is that friend's place in the line, `cmp`
+ * how the newcomer compares with it, and `side` where it goes, so the words point to the right gap.
+ */
+export function insertWhy(ask: InsertAsk, gap: number): { friend: number; cmp: 'bigger' | 'smaller'; side: 'after' | 'before' } | null {
+  const right = insertGapFor(ask);
+  if (gap === right) return null;
+  const line = insertLine(ask), friend = gap < right ? gap : gap - 1;
+  return { friend, cmp: ask.rank > line[friend] ? 'bigger' : 'smaller', side: gap < right ? 'after' : 'before' };
+}
+
+/**
+ * *Darkest first*: five shades of one palette colour, darkest first, made by setting the colour's lightness to five evenly
+ * spaced values; each shade's outline is the same hue darker, so a pale friend still has an edge.
+ */
+/** Colours whose five shades step at least 1.35 apart in contrast (green's and teal's pale steps are nearer 1.2). */
+export const SHADE_COLORS = ['blue', 'purple', 'red'] as const;
+export const SHADE_LIGHTNESS = [0.3, 0.42, 0.54, 0.66, 0.78] as const;
+/** The friends' one size step at *Darkest first*: large enough that the colour reads. */
+export const SHADE_STEP = 3;
+function hsl(color: number): [number, number, number] {
+  const r = (color >> 16 & 255) / 255, g = (color >> 8 & 255) / 255, b = (color & 255) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+  if (d === 0) return [0, 0, l];
+  const s = d / (1 - Math.abs(2 * l - 1));
+  const h = max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return [h * 60, s, l];
+}
+export function fromHsl(h: number, s: number, l: number): number {
+  const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = l - c / 2;
+  const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  return (Math.round((r + m) * 255) << 16) | (Math.round((g + m) * 255) << 8) | Math.round((b + m) * 255);
+}
+export function shades(color: (typeof SHADE_COLORS)[number]): Swatch[] {
+  const [h, s] = hsl(swatch[color].fill), sat = Math.min(0.75, s);
+  return SHADE_LIGHTNESS.map((l) => ({ fill: fromHsl(h, sat, l), line: fromHsl(h, sat, Math.max(0.12, l - 0.2)), light: fromHsl(h, sat, Math.min(0.92, l + 0.12)) }));
+}
+/** WCAG relative luminance of a colour, for the shade steps' rule test. */
+export function luminance(color: number): number {
+  const ch = (v: number) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * ch(color >> 16 & 255) + 0.7152 * ch(color >> 8 & 255) + 0.0722 * ch(color & 255);
+}
 
 /** The three asks of *Big one, little one*: big and little alternate, the big one first. */
 export const BIG_LITTLE_ASKS: readonly SizeAsk[] = ['big', 'small', 'big'];

@@ -1030,6 +1030,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 10, to: 10, text: 'Tap the friend who is middle-sized, bigger than one and smaller than the other; the picture shows which circle is asked for. Some rows ask for the biggest or the smallest.' },
       { from: 17, to: 17, text: 'Drag the smaller friend to the glowing spot, then the bigger one.' },
       { from: 11, to: 11, text: 'A bed, then a chair, a bowl and a door stands above three friends, sized for just one of them: tap the friend who fits it. The tapped friend tries it: too big hangs over the end, too little disappears into it.' },
+      { from: 12, to: 12, text: 'Four friends stand in a line in size order, smallest or biggest first; drag the fifth friend into its place. The line opens a gap where the friend is carried, and the drop goes to the nearest gap.' },
+      { from: 15, to: 15, text: 'Five friends of one size in five shades of one colour: drag them to the glowing spots darkest first, then the same five lightest first. The strip of colour at the top shows which way.' },
       'A tap on the sky or the ground makes the friends hop and repeats the question; it never counts as a miss.',
     ],
     finish: [
@@ -1040,6 +1042,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 10, to: 10, text: 'The round ends after four rows, one right friend chosen from each.' },
       { from: 17, to: 17, text: 'The round ends when the two friends are lined up correctly.' },
       { from: 11, to: 11, text: 'The round ends after four props, one fitting friend found for each.' },
+      { from: 12, to: 12, text: 'The round ends after four lines, the fifth friend put in its place in each.' },
+      { from: 15, to: 15, text: 'The round ends when both lines are done, darkest first and lightest first.' },
     ],
     note: [
       { from: 16, to: 16, text: 'Nothing is wrong here: every tap answers, and a tap beside the friend makes it hop.' },
@@ -1049,6 +1053,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 10, to: 10, text: 'A wrong friend counts as a miss and the pet says why the middle one is the middle; after two in one row the right friend glows.' },
       { from: 17, to: 17, text: 'A wrong friend on the glowing spot counts as a miss, and after two the right friend glows. A friend put on the other spot is not a miss: the line fills from the glowing spot.' },
       { from: 11, to: 11, text: 'A friend who does not fit counts as a miss and the pet says too big or too little; after two in one row the fitting friend glows. The fitting friend is never the same size twice running.' },
+      { from: 12, to: 12, text: 'A wrong gap counts as a miss: the friend goes back and the pet says why, of the friend beside the gap; after two in one line the right gap glows. A drop away from the line just goes back, and touching a friend in the line makes it hop; neither is a miss.' },
+      { from: 15, to: 15, text: 'A wrong friend on the glowing spot counts as a miss and the pet says it is lighter (or darker) than one still waiting; after two the right friend glows. A friend put on another spot is not a miss. How far apart the shades look on an iPad is still to be checked.' },
     ],
   },
   'bug-builder': {

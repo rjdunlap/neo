@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  askRank, BIG_LITTLE, BIG_LITTLE_ASKS, CRITTER_H, CYCLE, CYCLE_SCALE, CYCLE_TAPS, cycleAt, dealSteps, dropSpot, FIT_PROPS, fitAsks, fitTry, FLAG_COLORS, FRIEND_SCALE, FRIENDS, middleAsks, MIDDLE_ONE, MIN_RATIO, paradeLayout,
+  askRank, BIG_LITTLE, DARKEST_FIRST, fromHsl, gapMids, insertAsks, insertGap, insertGapFor, insertLayout, insertLine, insertWhy, luminance, SHADE_COLORS, SHADE_LIGHTNESS, SHADE_STEP, shades, WHERE_DOES_IT_GO, BIG_LITTLE_ASKS, CRITTER_H, CYCLE, CYCLE_SCALE, CYCLE_TAPS, cycleAt, dealSteps, dropSpot, FIT_PROPS, fitAsks, fitTry, FLAG_COLORS, FRIEND_SCALE, FRIENDS, middleAsks, MIDDLE_ONE, MIN_RATIO, paradeLayout,
   pickRounds, propSize, SIZE_CYCLE, SIZE_PLANS, sizeBell, sizeOrder, sizePlan, sizeScale, sizeTouch, sizeWord, stepBell, STEPS, stepScale, TARGET, TWO_IN_A_LINE, WHO_FITS,
 } from './logic';
 import { fitPose } from './props';
@@ -10,6 +10,9 @@ import { sizeParade } from './index';
 
 /** An iPad sideways and upright, and a phone sideways: the logical width is never below the 1024 design width. */
 const VIEWS = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390)];
+
+/** Smallest acceptable WCAG contrast ratio between neighbouring shades. */
+const CONTRAST_FLOOR = 1.35; // measured minimum neighbour ratio is 1.381 (purple's darkest step)
 
 describe('Size Parade', () => {
   it('orders ranks from smallest or biggest, and bigger ranks are bigger', () => {
@@ -263,8 +266,129 @@ describe('Size Parade', () => {
 
   it('level 11 sits at the top of the preschool order and after 6 in pre-K, and is described', () => {
     expect(sizeParade.levels('preschool')).toEqual({ min: 3, max: 17, order: [3, 4, 17, 10, 5, 6, 11] });
-    expect(sizeParade.levels('prek')).toEqual({ min: 5, max: 11, order: [5, 6, 11, 7, 8] });
-    expect(sizeParade.levels('school')).toEqual({ min: 7, max: 8 });
+    expect(sizeParade.levels('prek')).toEqual({ min: 5, max: 15, order: [5, 6, 11, 7, 8, 12, 15] });
+    expect(sizeParade.levels('school')).toEqual({ min: 7, max: 15, order: [7, 8, 12, 15] });
     expect(sizeParade.describeLevel(11)).toMatch(/bed, chair, bowl and door/);
+  });
+
+  it('levels 12 and 15 are planned and sit in the pre-K and school ladders', () => {
+    expect(sizePlan(12).mode).toBe('insert');
+    expect(sizePlan(12)).toBe(WHERE_DOES_IT_GO);
+    expect(sizePlan(15)).toBe(DARKEST_FIRST);
+    expect(sizePlan(15).shade).toBe(true);
+    expect(sizePlan(15).mode).toBe('line');
+    expect(sizePlan(15).count).toBe(5);
+    for (const band of ['prek', 'school'] as const) {
+      const r = sizeParade.levels(band);
+      expect(r.order).toContain(12);
+      expect(r.order).toContain(15);
+      expect(r.max).toBeGreaterThanOrEqual(15);
+    }
+  });
+
+  it('level 12 asks four questions, two each way, with the newcomer inside the line in at least two', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const asks = insertAsks(new Rng(seed));
+      expect(asks).toHaveLength(4);
+      expect(asks.filter((a) => a.order === 'small')).toHaveLength(2);
+      expect(asks.filter((a) => a.order === 'big')).toHaveLength(2);
+      for (const a of asks) expect(a.rank).toBeGreaterThanOrEqual(0), expect(a.rank).toBeLessThanOrEqual(4);
+      const inner = asks.filter((a) => { const g = insertGapFor(a); return g !== 0 && g !== 4; });
+      expect(inner.length, `seed ${seed}`).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('level 12 is deterministic by seed', () => {
+    expect(insertAsks(new Rng(7))).toEqual(insertAsks(new Rng(7)));
+  });
+
+  it('level 12 has a line of four in strict order and exactly one right gap', () => {
+    for (let seed = 1; seed <= 300; seed++) for (const ask of insertAsks(new Rng(seed))) {
+      const line = insertLine(ask);
+      expect(line).toHaveLength(4);
+      expect(new Set(line).size).toBe(4);
+      expect(line).not.toContain(ask.rank);
+      line.forEach((r, i) => { if (i) ask.order === 'small' ? expect(r).toBeGreaterThan(line[i - 1]) : expect(r).toBeLessThan(line[i - 1]); });
+      const right = insertGapFor(ask);
+      expect(right).toBeGreaterThanOrEqual(0);
+      expect(right).toBeLessThanOrEqual(4);
+      // Inserting at the right gap gives a full line in order; any other gap breaks it.
+      for (let g = 0; g <= 4; g++) {
+        const full = [...line.slice(0, g), ask.rank, ...line.slice(g)];
+        const ordered = full.every((r, i) => !i || (ask.order === 'small' ? r > full[i - 1] : r < full[i - 1]));
+        expect(ordered, `gap ${g}`).toBe(g === right);
+        expect(insertWhy(ask, g) === null).toBe(g === right);
+      }
+    }
+  });
+
+  it('level 12 reads a drop at each gap as that gap, and a drop far from the line as none', () => {
+    for (const view of VIEWS) {
+      const lineY = view.h - 90, { rest } = insertLayout(view.w, null), mids = gapMids(rest);
+      expect(mids).toHaveLength(5);
+      mids.forEach((x, g) => {
+        for (const up of [0, 50, 100, 150]) expect(insertGap(x, lineY - up, rest, lineY), `gap ${g} up ${up}`).toBe(g);
+        expect(insertGap(x, view.h - 400, rest, lineY)).toBeNull();
+      });
+    }
+  });
+
+  it('level 12 opens a wide gap and never overlaps two friends', () => {
+    for (const view of VIEWS) {
+      const none = insertLayout(view.w, null);
+      expect(none.rest).toHaveLength(4);
+      none.rest.forEach((x, i) => { if (i) expect(x - none.rest[i - 1]).toBeGreaterThanOrEqual(TARGET.w); });
+      for (let g = 0; g <= 4; g++) {
+        const l = insertLayout(view.w, g);
+        expect(l.xs).toHaveLength(4);
+        expect(l.openW).toBeGreaterThanOrEqual(100);
+        l.xs.forEach((x, i) => { if (i) expect(x - l.xs[i - 1], `gap ${g}`).toBeGreaterThanOrEqual(TARGET.w); });
+        if (g > 0 && g < 4) expect(l.xs[g] - l.xs[g - 1]).toBeCloseTo(2 * l.openW, 5);
+        else expect(l.xs[1] - l.xs[0]).toBeCloseTo(l.openW, 5);
+      }
+    }
+  });
+
+  it('level 12 explains a wrong gap truthfully, pointing toward the right one', () => {
+    for (let seed = 1; seed <= 300; seed++) for (const ask of insertAsks(new Rng(seed))) {
+      const line = insertLine(ask), right = insertGapFor(ask);
+      for (let g = 0; g <= 4; g++) {
+        const why = insertWhy(ask, g);
+        if (g === right) { expect(why).toBeNull(); continue; }
+        expect(why).not.toBeNull();
+        expect(why!.side).toBe(g < right ? 'after' : 'before');
+        expect([g, g - 1]).toContain(why!.friend);
+        expect(why!.friend).toBeGreaterThanOrEqual(0);
+        expect(why!.friend).toBeLessThan(4);
+        expect(why!.cmp).toBe(ask.rank > line[why!.friend] ? 'bigger' : 'smaller');
+        // The friend named really is on the wrong side of the newcomer in the line's order.
+        const comesFirst = ask.order === 'small' ? line[why!.friend] < ask.rank : line[why!.friend] > ask.rank;
+        expect(comesFirst).toBe(why!.side === 'before' ? false : true);
+      }
+    }
+  });
+
+  it('level 15 shades are five distinct, evenly stepped, readable steps from darkest to lightest', () => {
+    expect(SHADE_STEP).toBeGreaterThanOrEqual(0);
+    for (let i = 1; i < SHADE_LIGHTNESS.length; i++) expect(SHADE_LIGHTNESS[i] - SHADE_LIGHTNESS[i - 1]).toBeCloseTo(SHADE_LIGHTNESS[1] - SHADE_LIGHTNESS[0], 9);
+    for (const color of SHADE_COLORS) {
+      const five = shades(color);
+      expect(five).toHaveLength(5);
+      expect(new Set(five.map((s) => s.fill)).size).toBe(5);
+      five.forEach((s, i) => {
+        expect(luminance(s.line), `${color} ${i} line darker`).toBeLessThan(luminance(s.fill));
+        if (!i) return;
+        const lo = luminance(five[i - 1].fill), hi = luminance(s.fill);
+        expect(hi, `${color} ${i}`).toBeGreaterThan(lo);
+        expect((hi + 0.05) / (lo + 0.05), `${color} ${i} contrast`).toBeGreaterThanOrEqual(CONTRAST_FLOOR);
+      });
+    }
+  });
+
+  it('fromHsl round-trips the primaries', () => {
+    expect(fromHsl(0, 1, 0.5)).toBe(0xff0000);
+    expect(fromHsl(120, 1, 0.5)).toBe(0x00ff00);
+    expect(fromHsl(240, 1, 0.5)).toBe(0x0000ff);
+    expect(fromHsl(0, 0, 1)).toBe(0xffffff);
   });
 });

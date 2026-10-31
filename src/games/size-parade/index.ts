@@ -1,6 +1,6 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import { cream, swatch } from '../../art/palette';
+import { cream, swatch, type Swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -12,13 +12,14 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import {
   askRank, BIG_LITTLE_ASKS, CRITTER_H, CYCLE_SCALE, CYCLE_TAPS, cycleAt, dealSteps, dropSpot, FIT_PROPS, fitAsks, fitTry, FLAG_COLORS, type Friend, FRIEND_SCALE, FRIENDS,
-  middleAsks, paradeLayout, pickRounds, propSize, type SizeAsk, sizePlan, sizeTouch, sizeWord, stepBell, stepScale, TARGET,
+  gapMids, type InsertAsk, insertAsks, insertGap, insertGapFor, insertLayout, insertLine, insertWhy, middleAsks, paradeLayout, pickRounds, propSize, SHADE_COLORS, SHADE_STEP,
+  shades, type SizeAsk, sizePlan, sizeTouch, sizeWord, stepBell, stepScale, TARGET,
 } from './logic';
 import { fitPose, fitProp } from './props';
 
-/** A friend at a step of the size scale: a ground shadow and the critter, both inside `body`, which hops and (at level 16) grows. */
-function friend(step: number, animal: Friend, extra = 1): Container {
-  const node = new Container(), body = new Container(), pet = new Critter(CRITTERS[animal]);
+/** A friend at a step of the size scale (in one of five shades at level 15): a ground shadow and the critter, both inside `body`, which hops and (at level 16) grows. */
+function friend(step: number, animal: Friend, extra = 1, shade?: Swatch): Container {
+  const node = new Container(), body = new Container(), pet = new Critter(shade ? { ...CRITTERS[animal], shade } : CRITTERS[animal]);
   pet.alive = false;
   const s = stepScale(step) * FRIEND_SCALE * extra;
   pet.scale.set(s);
@@ -34,7 +35,7 @@ function paradeArt(animal: Friend = 'duck'): Container {
   for (let i = 0; i < 3; i++) { const f = friend(i * 2, animal); f.x = (i - 1) * 95; c.addChild(f); }
   return c;
 }
-interface Choice { rank: number; step: number; node: Container; drag?: DragHandle; placed: boolean }
+interface Choice { rank: number; step: number; node: Container; drag?: DragHandle; placed: boolean; shade?: Swatch }
 class SizeParade implements Game {
   readonly plan;
   order: number[];
@@ -43,8 +44,15 @@ class SizeParade implements Game {
   private readonly asks: readonly SizeAsk[] | null;
   readonly choices: Choice[] = [];
   readonly slots: Container[] = [];
-  /** The friends lined up so far, in line order, and their sizes: they march off together when the line is full. */
-  private readonly line: { node: Container; step: number }[] = [];
+  /** The friends lined up so far, in line order, and their bells: they march off together when the line is full. */
+  private readonly line: { node: Container; bell: number }[] = [];
+  /** Level 12: this round's four questions, the four friends already in the line, and the gap opened under the carried newcomer. */
+  private readonly inserts: InsertAsk[] | null;
+  readonly lineUp: Choice[] = [];
+  openGap: number | null = null;
+  /** Level 15: the round's five shades, darkest first, and how many lines are done (darkest first, then lightest first). */
+  private readonly shadeSet: Swatch[] | null;
+  lines = 0;
   /** Friends strutting or marching off; destroyed when they leave the screen. */
   private readonly marchers: Container[] = [];
   private readonly background = new Graphics();
@@ -84,6 +92,8 @@ class SizeParade implements Game {
     this.order = this.ranks = this.plan.mode === 'cycle' ? [0] : Array.from({ length: this.plan.count }, (_, i) => i);
     if (this.plan.mode !== 'cycle') this.order = this.plan.order === 'small' ? [...this.ranks] : [...this.ranks].reverse();
     this.asks = this.plan.middle ? middleAsks(ctx.rng) : this.plan.bigLittle ? BIG_LITTLE_ASKS : this.plan.mode === 'fit' ? fitAsks(ctx.rng) : null;
+    this.inserts = this.plan.mode === 'insert' ? insertAsks(ctx.rng) : null;
+    this.shadeSet = this.plan.shade ? shades(ctx.rng.pick(SHADE_COLORS)) : null;
     this.animal = ctx.rng.pick(FRIENDS);
     this.direction = ctx.rng.chance(0.5) ? 1 : -1;
     this.flag = ctx.rng.pick(FLAG_COLORS);
@@ -103,6 +113,8 @@ class SizeParade implements Game {
   private instruction() {
     const ask = this.ask();
     if (this.plan.mode === 'cycle') void this.ctx.instruct('size.cycle');
+    else if (this.plan.mode === 'insert') void this.ctx.instruct('size.insert');
+    else if (this.plan.shade) void this.ctx.instruct(this.lines === 0 ? 'size.shade.dark' : 'size.shade.light');
     else if (this.plan.mode === 'fit') void this.ctx.instruct('size.fit', { prop: this.propKind() });
     else if (this.plan.bigLittle) void this.ctx.instruct(ask === 'small' ? 'size.pick.little' : 'size.pick.big');
     else void this.ctx.instruct(this.plan.mode === 'line' ? 'size.line' : ask === 'middle' ? 'size.pick.middle' : 'size.pick', { size: sizeWord(this.plan, ask) });
@@ -116,7 +128,7 @@ class SizeParade implements Game {
   private propAt(): number { return propSize(this.propKind(), friendHeight(this.fitting().step)); }
   private groundTap() {
     if (this.busy || this.done) return;
-    for (const c of this.choices) if (!c.placed && !c.drag?.dragging) this.hop(c.node);
+    for (const c of [...this.choices, ...this.lineUp]) if ((!c.placed || this.plan.mode === 'insert') && !c.drag?.dragging) this.hop(c.node);
     // A hand mashing the ground hops the friends every time but hears the ask once every few seconds.
     if (this.clock - this.lastGroundTap < 3) return;
     this.lastGroundTap = this.clock;
@@ -157,15 +169,16 @@ class SizeParade implements Game {
   private deal() {
     for (const c of this.choices) { c.drag?.destroy(); this.ctx.tw.kill(c.node); this.ctx.tw.kill(c.node.scale); this.ctx.tw.kill(bodyOf(c.node)); c.node.destroy({ children: true }); }
     this.choices.length = 0;
+    if (this.plan.mode === 'insert') { this.dealInsert(); return; }
     const ask = this.ask();
     if (ask) this.order = [askRank(ask, this.plan.count)];
     const steps = dealSteps(this.ctx.rng, this.plan, this.rounds, this.order[0]);
     const cycle = this.plan.mode === 'cycle';
     for (const rank of cycle ? [0] : this.ctx.rng.shuffle([...this.ranks])) {
-      const step = cycle ? 0 : steps[rank];
-      const node = friend(step, this.animal, cycle ? CYCLE_SCALE : 1);
+      const step = cycle ? 0 : this.shadeSet ? SHADE_STEP : steps[rank], shade = this.shadeSet?.[rank];
+      const node = friend(step, this.animal, cycle ? CYCLE_SCALE : 1, shade);
       node.hitArea = new Rectangle(-TARGET.w / 2, -175, TARGET.w, TARGET.h);
-      const choice: Choice = { rank, step, node, placed: false };
+      const choice: Choice = { rank, step, node, placed: false, shade };
       this.ctx.stage.addChild(node);
       if (cycle) onTap(node, () => this.grow(choice));
       else if (this.plan.mode === 'pick' || this.plan.mode === 'fit') onTap(node, () => this.choose(choice));
@@ -192,6 +205,78 @@ class SizeParade implements Game {
       this.fitLayer.addChild(this.prop);
     }
     this.resize(this.view);
+  }
+  /** Level 12: the line of four (the newcomer's rank left out) on the ground, and the newcomer walking in from the side. */
+  private dealInsert() {
+    for (const c of this.lineUp) { this.ctx.tw.kill(c.node); this.ctx.tw.kill(bodyOf(c.node)); c.node.destroy({ children: true }); }
+    this.lineUp.length = 0;
+    const ask = this.inserts![this.rounds];
+    this.order = [ask.rank]; this.step = 0; this.openGap = null;
+    for (const rank of insertLine(ask)) {
+      // The five steps are the five ranks; a friend already in the line hops when touched, which is never a miss.
+      const node = friend(rank, this.animal), c: Choice = { rank, step: rank, node, placed: true };
+      onTap(node, () => { if (!this.busy && !this.done) { this.hop(node); sfx.tick(); } });
+      this.ctx.stage.addChild(node); this.lineUp.push(c);
+    }
+    const node = friend(ask.rank, this.animal), choice: Choice = { rank: ask.rank, step: ask.rank, node, placed: false };
+    choice.drag = draggable(node, this.ctx.tw, {
+      onPick: () => sfx.tick(),
+      onMove: (x, y) => this.openAt(this.busy || this.done ? null : insertGap(x, y, insertLayout(this.view.w, null).rest, this.lineY())),
+      onDrop: (x, y) => this.insertDrop(choice, x, y),
+    });
+    this.ctx.stage.addChild(node); this.choices.push(choice);
+    this.resize(this.view);
+    // The newcomer walks in from the side the parade comes from.
+    const home = choice.drag.home;
+    node.x = this.direction > 0 ? -150 : this.view.w + 150;
+    void this.ctx.tw.to(node, { x: home.x }, { duration: 0.7 });
+  }
+  private lineY() { return this.view.h - 90; }
+  /** Level 12: the friends of the line slide apart to open `gap` under the carried newcomer, or close up again. */
+  private openAt(gap: number | null) {
+    if (gap === this.openGap) return;
+    this.openGap = gap;
+    const xs = insertLayout(this.view.w, gap).xs;
+    this.lineUp.forEach((c, i) => { this.ctx.tw.kill(c.node); void this.ctx.tw.to(c.node, { x: xs[i] }, { duration: 0.18 }); });
+  }
+  /**
+   * Level 12: a drop beside the line is the gap nearest it. The right gap takes the newcomer and the whole line marches; a wrong
+   * one sends it back with the reason, said of the friend beside the gap that shows it; a drop away from the line goes home.
+   */
+  private insertDrop(choice: Choice, x: number, y: number): boolean {
+    const gap = this.busy || this.done ? null : insertGap(x, y, insertLayout(this.view.w, null).rest, this.lineY());
+    if (gap === null) {
+      this.openAt(null);
+      if (!this.busy && !this.done) { sfx.tick(); void this.ctx.say('size.insert.out'); }
+      return false;
+    }
+    const ask = this.inserts![this.rounds], why = insertWhy(ask, gap);
+    if (why) {
+      this.openAt(null);
+      this.wrong++; this.misses++; sfx.boing();
+      void this.ctx.tw.wait(0.45).then(() => this.wiggle(choice.node));
+      this.hop(this.lineUp[why.friend].node);
+      void this.ctx.say(`size.insert.${why.cmp}.${why.side}`);
+      if (this.wrong === 2) { this.hints++; void this.ctx.say('size.insert.hint'); }
+      this.drawGlow(); return false;
+    }
+    this.wrong = 0; sfx.bell(stepBell(choice.step), 0.3); this.ctx.pet.cheer();
+    choice.placed = true; choice.drag!.enabled = false;
+    this.rounds++; this.busy = true;
+    const five = insertLayout(this.view.w, gap).five, y0 = this.lineY();
+    void this.ctx.tw.to(choice.node, { x: five[gap], y: y0 }, { duration: 0.25 });
+    // The full line of five marches off in order, a bell for each, the next question dealt behind it.
+    const line = [...this.lineUp];
+    line.splice(gap, 0, choice);
+    choice.drag!.destroy(); choice.drag = undefined;
+    this.lineUp.length = 0; this.choices.length = 0;
+    void this.ctx.tw.wait(0.5).then(() => line.forEach((c, i) => void this.ctx.tw.wait(0.18 * i).then(() => { sfx.bell(stepBell(c.step), 0.3); this.strut(c.node, true); })));
+    if (this.rounds === this.inserts!.length) this.finish();
+    else {
+      void this.ctx.say('size.insert.yes');
+      void this.ctx.tw.wait(2.2).then(() => { this.deal(); this.busy = false; this.instruction(); });
+    }
+    this.drawGlow(); return true;
   }
   private clearTry() {
     const t = this.tryNode;
@@ -270,22 +355,30 @@ class SizeParade implements Game {
         if (this.ctx.band !== 'lap') this.misses++;
       } else {
         this.misses++;
-        void this.ctx.say(ask === 'middle' ? 'size.wrong.middle' : this.plan.mode === 'pick' ? 'size.wrong.pick' : 'size.wrong', { size: sizeWord(this.plan, ask) });
+        if (this.shadeSet) void this.ctx.say(this.lines === 0 ? 'size.shade.wrong.dark' : 'size.shade.wrong.light');
+        else void this.ctx.say(ask === 'middle' ? 'size.wrong.middle' : this.plan.mode === 'pick' ? 'size.wrong.pick' : 'size.wrong', { size: sizeWord(this.plan, ask) });
       }
       if (this.wrong === 2) { this.hints++; void this.ctx.say('size.hint'); }
       this.drawGlow(); return false;
     }
-    if (this.plan.bigLittle) { if (ask === 'small') sfx.squeak(); else sfx.drum(); } else sfx.bell(stepBell(choice.step), 0.3);
+    const bell = stepBell(this.shadeSet ? choice.rank : choice.step);
+    if (this.plan.bigLittle) { if (ask === 'small') sfx.squeak(); else sfx.drum(); } else sfx.bell(bell, 0.3);
     this.ctx.pet.cheer();
     this.wrong = 0;
     if (this.plan.mode === 'line') {
       choice.placed = true; choice.drag!.enabled = false; choice.node.visible = false;
-      const copy = friend(choice.step, this.animal); copy.scale.set(0.8);
+      const copy = friend(choice.step, this.animal, 1, choice.shade); copy.scale.set(0.8);
       this.slots[this.step].addChild(copy);
-      this.line.push({ node: copy, step: choice.step });
+      this.line.push({ node: copy, bell });
       this.step++;
-      if (this.step === this.order.length) this.finish();
-      else void this.ctx.say('size.next');
+      if (this.step < this.order.length) void this.ctx.say('size.next');
+      else if (this.shadeSet && this.lines === 0) {
+        // Darkest first is done: it marches off, and the same five come back to line up lightest first.
+        this.lines++; this.busy = true;
+        void this.ctx.say('size.shade.yes');
+        this.march();
+        void this.ctx.tw.wait(2.4).then(() => { this.step = 0; this.order = [...this.order].reverse(); this.deal(); this.busy = false; this.instruction(); });
+      } else this.finish();
     } else if (this.plan.mode === 'fit') {
       // Just right: the friend settles in the prop until the next prop is dealt.
       this.busy = true;
@@ -307,12 +400,12 @@ class SizeParade implements Game {
   }
   /** The finished line marches off in order, each friend setting off a beat after the last with its bell, so the line sounds like a scale. */
   private march() {
-    this.line.forEach(({ node, step }, i) => {
+    this.line.forEach(({ node, bell }, i) => {
       // A copy sits at its slot's origin, and the shelf is at the stage's: the slot's position is the copy's on the stage.
       const slot = node.parent;
       if (slot) { slot.removeChild(node); node.position.set(slot.x, slot.y); }
       this.ctx.stage.addChild(node);
-      void this.ctx.tw.wait(0.18 * i).then(() => { sfx.bell(stepBell(step), 0.3); this.strut(node, true); });
+      void this.ctx.tw.wait(0.18 * i).then(() => { sfx.bell(bell, 0.3); this.strut(node, true); });
     });
     this.line.length = 0;
   }
@@ -322,7 +415,7 @@ class SizeParade implements Game {
     if (this.plan.mode === 'line') this.march();
     this.drawGlow();
     // The last marcher sets off at 0.72 s and hops for about 1.5 s; a strutting friend is off within 1.5 s.
-    void this.ctx.tw.wait(this.plan.mode === 'line' ? 2.4 : 1.5).then(() => this.ctx.finish({ misses: this.misses, hints: this.hints }));
+    void this.ctx.tw.wait(this.plan.mode === 'line' || this.plan.mode === 'insert' ? 2.4 : 1.5).then(() => this.ctx.finish({ misses: this.misses, hints: this.hints }));
   }
   resize(v: View) {
     this.view = v;
@@ -344,16 +437,22 @@ class SizeParade implements Game {
     const layout = paradeLayout(this.choices.length, this.slots.length, v.w, this.plan.bigLittle ? 420 : 175);
     const xs = layout.friends;
     this.targetW = layout.targetW;
+    const insert = this.plan.mode === 'insert';
     this.choices.forEach((c, i) => {
-      const p = { x: xs[i], y: v.h - 90 };
+      // Level 12's newcomer waits above the line, clear of the tallest friend's head.
+      const p = insert ? { x: v.w / 2, y: v.h - 330 } : { x: xs[i], y: v.h - 90 };
       if (c.drag) c.drag.home = p;
       if (this.plan.mode === 'cycle') {
         // The one friend's target grows with it and never shrinks below a row friend's.
         const h = friendHeight(c.step, CYCLE_SCALE), w = Math.max(TARGET.w, h * 0.9), th = Math.max(TARGET.h, h + 20);
         c.node.hitArea = new Rectangle(-w / 2, -th + 15, w, th);
       } else c.node.hitArea = new Rectangle(-this.targetW / 2, -175, this.targetW, TARGET.h);
-      if (!c.drag?.dragging) { this.ctx.tw.kill(c.node); c.node.position.set(p.x, p.y); }
+      if (!c.drag?.dragging && !(insert && c.placed)) { this.ctx.tw.kill(c.node); c.node.position.set(p.x, p.y); }
     });
+    if (insert) {
+      const at = insertLayout(v.w, this.openGap).xs;
+      this.lineUp.forEach((c, i) => { this.ctx.tw.kill(c.node); c.node.position.set(at[i], this.lineY()); c.node.hitArea = new Rectangle(-TARGET.w / 2, -175, TARGET.w, TARGET.h); });
+    }
     const spots = layout.spots;
     this.slots.forEach((s, i) => s.position.set(spots[i], v.h * 0.44));
     // The prop stands above the row, clear of the tallest friend's head.
@@ -362,6 +461,9 @@ class SizeParade implements Game {
     if (this.plan.mode === 'cycle') {
       // One circle per cycle of growing and shrinking, filled as each finishes.
       for (let i = 0; i < 3; i++) g.circle(v.w / 2 + (i - 1) * 40, 125, 11).fill(i < Math.floor(this.taps / 4) ? swatch.teal.fill : swatch.white.fill);
+    } else if (insert) {
+      // One circle per question; the line itself shows its order.
+      for (let i = 0; i < 4; i++) g.circle(v.w / 2 + (i - 1.5) * 40, 125, 11).fill(i < this.rounds ? swatch.teal.fill : swatch.white.fill);
     } else if (this.plan.mode === 'pick' || this.plan.mode === 'fit') {
       // A visual size cue reinforces the spoken comparison without identifying an answer's position.
       const n = pickRounds(this.plan);
@@ -384,6 +486,13 @@ class SizeParade implements Game {
         g.moveTo(v.w / 2 - 10, 290).lineTo(v.w / 2 + 15, 290).lineTo(v.w / 2 + 4, 278).moveTo(v.w / 2 + 15, 290).lineTo(v.w / 2 + 4, 302).stroke({ width: 6, color: swatch.teal.line });
       }
     } else {
+      if (this.shadeSet) {
+        // The shade strip: five swatches from the first in the line to the last, an arrow after them.
+        const strip = this.lines === 0 ? this.shadeSet : [...this.shadeSet].reverse();
+        strip.forEach((c, i) => g.roundRect(v.w / 2 + (i - 2.5) * 52, 128, 44, 44, 10).fill(c.fill).stroke({ width: 3, color: c.line }));
+        const ax = v.w / 2 + 2.5 * 52 + 6;
+        g.moveTo(ax, 150).lineTo(ax + 30, 150).lineTo(ax + 18, 138).moveTo(ax + 30, 150).lineTo(ax + 18, 162).stroke({ width: 6, color: swatch.teal.line });
+      }
       for (let i = 0; i < this.slots.length - 1; i++) {
         const x = (spots[i] + spots[i + 1]) / 2, y = v.h * 0.44;
         g.moveTo(x - 8, y - 10).lineTo(x + 4, y).lineTo(x - 8, y + 10).stroke({ width: 4, color: swatch.teal.line });
@@ -394,13 +503,24 @@ class SizeParade implements Game {
   private drawGlow() {
     this.glow.clear(); this.hintsGlow.clear();
     if (this.done) return;
-    if (this.plan.mode === 'line') { const p = this.slots[this.step]; this.glow.ellipse(p.x, p.y, 74, 34).stroke({ width: 7, color: swatch.yellow.line }); }
+    if (this.plan.mode === 'line') { const p = this.slots[this.step]; if (p) this.glow.ellipse(p.x, p.y, 74, 34).stroke({ width: 7, color: swatch.yellow.line }); }
+    if (this.plan.mode === 'insert') {
+      // After two wrong gaps the right one glows on the ground, between the friends it belongs between.
+      const ask = this.inserts![this.rounds];
+      if (this.wrong >= 2 && ask) { const x = gapMids(insertLayout(this.view.w, null).rest)[insertGapFor(ask)]; this.hintsGlow.ellipse(x, this.lineY() + 4, 46, 22).stroke({ width: 7, color: swatch.yellow.line }).moveTo(x, this.lineY() - 30).lineTo(x, this.lineY() - 170).stroke({ width: 7, color: swatch.yellow.line, cap: 'round' }); }
+      return;
+    }
     if (this.wrong >= 2) { const c = this.choices.find((c) => c.rank === this.order[this.step])!, w = this.targetW + 6; this.hintsGlow.roundRect((c.drag?.home.x ?? c.node.x) - w / 2, (c.drag?.home.y ?? c.node.y) - 180, w, 200, 24).stroke({ width: 7, color: swatch.yellow.line }); }
   }
   /** The ghost finger: tap the biggest or smallest friend, carry the next friend in size to its place in the line, or (level 16) tap the one friend. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.done) return null;
     if (this.plan.mode === 'cycle') { const c = this.choices[0]; return c ? { tap: { on: c.node, y: -friendHeight(c.step, CYCLE_SCALE) / 2 } } : null; }
+    if (this.plan.mode === 'insert') {
+      const c = this.choices[0], ask = this.inserts![this.rounds];
+      if (!c || c.placed || !ask) return null;
+      return { drag: { on: c.node, y: -80 }, to: { on: this.ground, x: gapMids(insertLayout(this.view.w, null).rest)[insertGapFor(ask)], y: this.lineY() } };
+    }
     const i = sizeTouch(this.order, this.step, this.choices);
     if (i === null) return null;
     // A friend's body is the middle of its tap area; its feet are the origin.
@@ -417,6 +537,7 @@ class SizeParade implements Game {
   destroy() {
     this.clearTry();
     this.choices.forEach((c) => { c.drag?.destroy(); this.ctx.tw.kill(bodyOf(c.node)); this.ctx.tw.kill(bodyOf(c.node).scale); });
+    this.lineUp.forEach((c) => { this.ctx.tw.kill(c.node); this.ctx.tw.kill(bodyOf(c.node)); });
     this.marchers.forEach((m) => { this.ctx.tw.kill(m); this.ctx.tw.kill(bodyOf(m)); });
   }
 }
@@ -424,14 +545,14 @@ const LEVELS: BandLevels = {
   lap: { min: 9, max: 16, order: [16, 9] },
   toddler: { min: 1, max: 17, order: [9, 1, 2, 3, 4, 17] },
   preschool: { min: 3, max: 17, order: [3, 4, 17, 10, 5, 6, 11] },
-  prek: { min: 5, max: 11, order: [5, 6, 11, 7, 8] },
-  school: { min: 7, max: 8 },
+  prek: { min: 5, max: 15, order: [5, 6, 11, 7, 8, 12, 15] },
+  school: { min: 7, max: 15, order: [7, 8, 12, 15] },
 };
 export const sizeParade: GameModule = {
   id: 'size-parade', name: 'Size Parade', titleLine: 'game.size-parade', region: 'puzzle-peaks',
   skills: ['comparison', 'measurement', 'ordering'], bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),
-  // Levels 16, 9, 17, 10 and 11 have high IDs and sit in the order where they fit; 16 is the lap's one growing friend, 9 its big-or-little pair, 17 the first drag a toddler meets, 11 the props after the lines of three.
+  // Levels 16, 9, 17, 10, 11, 12 and 15 have high IDs and sit in the order where they fit; 16 is the lap's one growing friend, 9 its big-or-little pair, 17 the first drag a toddler meets, 11 the props after the lines of three, 12 and 15 the lines after the lines of five.
   entryLevels: [9, 16, 17],
   describeLevel: (l) => sizePlan(l).name,
   music: STYLES.hub, coplayHint: 'Use your hands to show {name} small and big, then compare the friends.',
