@@ -161,7 +161,7 @@ export class WaterFlow implements Game {
     node.position.copyFrom(centre(r));
     node.addChild(art);
     node.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
-    onTap(node, () => { this.dip(node); fn(); }, { cooldown: 200 });
+    onTap(node, () => { if (this.busy) return; this.dip(node); fn(); }, { cooldown: 200 });
     this.board.addChild(node);
     return node;
   }
@@ -559,12 +559,12 @@ export class WaterFlow implements Game {
 
   /** The pet's Help: the glow, counted once per road or valley; free when there is nothing left to fix. */
   askForHint() {
-    if (this.finished) return;
+    if (this.finished || this.busy) return;
     const nothing = this.plan.level === 4
       ? !!this.ds && this.plan.kind === 'piers' && !pierHint(roadNow(this.plan, this.ds)!)
       : !!this.valley && !!this.vs && !firstUnsupported(this.valley, this.vs.arcade);
     if (nothing || (this.plan.level === 4 && !!this.ds && this.ds.chosen === this.plan.roads[this.ds.road].good)) { void this.ctx.say('wr.open'); return; }
-    if (!this.busy) this.tallies.help();
+    this.tallies.help();
     this.sayGlow();
   }
 
