@@ -36,7 +36,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **`size-parade`, Hidden heights** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-4-hidden-heights).
 - **`size-parade`, The measuring ribbon** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-5-the-measuring-ribbon).
-- **`pet-kitchen`, Compare shares** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#pet-kitchen-3-compare-shares).
 - **`pet-kitchen`, Equivalent cup measures** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#pet-kitchen-4-equivalent-cup-measures).
 
 
