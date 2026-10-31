@@ -1,6 +1,6 @@
 # Needs a person or a device
 
-## Puppet Stage (theatre-puppetry study, 2026-10-27; proposed, not built)
+## Puppet Stage (theatre-puppetry study, 2026-10-27; levels 1–3 built 2026-10-30)
 
 - [ ] On the iPad, with the selected voice, are three device-speech presets (sleepy: low and slow; tiny: high and fast; big: low and loud) distinct and pleasant, not creepy? Decides the study's decision 3 before TP1 is defined.
 - [ ] Watch a one-year-old with a puppet that pops up where she touched (Peekaboo Barn is the stand-in until it is built): does she touch again to make it rise, or wait for it?
@@ -667,7 +667,7 @@ Open: actual iPad speech/name and hop-count playback, small-hand release/cancel/
 
 ## Puppet Stage levels 1–3 (TP1, 2026-10-27)
 
-Performed on the built game, which is not yet built ([definition](definitions/puppet-stage.md#check-tier-for-the-build)).
+Performed on the built game (levels 1–3, PR #1028; browser play passed, nothing below has been done on a device; [definition](definitions/puppet-stage.md#check-tier-for-the-build)).
 
 - [ ] On the iPad's selected voice, check that the four base puppet voices and the three presets (sleepy, tiny, big) are distinct, pleasant and intelligible, and whether `pitch` is honoured at all; if not, retune the preset table by constants.
 - [ ] With a one-year-old, watch her reaction to a puppet rising where she touched and following her finger.

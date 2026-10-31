@@ -590,6 +590,8 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 ### puppet-stage 1: Pop up, make Bunny talk and say it like
 
+**Built 2026-10-30** (PR #1028): levels 1–3 of `puppet-stage`; levels 4–6 (TP2) need their own definition.
+
 - **`puppet-stage`, levels 1–3 (study slice 2)** (a new game, one declared batch; lap 1, toddler 1–2, preschool 2–3, pre-K 3; Music Mountain by decision 2, six games becoming seven, one page): touch the stage floor and a stick puppet rises there, says hello in its own voice and follows her finger, a tap bobs it and talks again (level 1, nothing counted); the pet names a puppet or a voice and she makes that one talk (level 2, by name, then by voice); one puppet holds a line and she chooses the sleepy, tiny or big way to say it (level 3, a free try first). Puppet voices are device-speech `pitch`/`rate` presets through a new `voice.sayIn`/`ctx.sayIn`, the one small shared change; nothing is kept. [Definition](definitions/puppet-stage.md), [study build slices](deep-dives/subjects/theatre-puppetry.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's check tier](definitions/puppet-stage.md#check-tier-for-the-build) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, a `sayIn` unit test, a `browser-check.mjs` case filtered to Puppet Stage covering levels 1–3 with one wrong puppet and the glow, `fingerdemo` at level 3, one portrait screenshot, one build). The listening judgement is a device check on the built game, not a build blocker. Levels 4–6 (TP2) need their own definition.
