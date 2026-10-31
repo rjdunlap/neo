@@ -1,8 +1,8 @@
 /**
  * Keep House rules: put the castle's household where its work needs it. Level 1 opens doors and people step out with their
  * tools (nothing counted); level 2 drags each figure to its workplace; level 3 puts the kitchen, then the stable, on a near or
- * far spot and watches the walk; level 4 fits five room tiles on a 3 × 3 plan to five needs and rings the bell to check.
- * Definition: docs/definitions/keep-house.md. Every draw is seeded; nothing here reads the clock.
+ * far spot and watches the walk; level 4 fits five room tiles on a 3 × 3 plan to five needs and rings the bell to check; level 5 reads a roofless ruin's remains and drags a picture label onto each room; level 6 builds a lord's
+ * hall in timber or stone and watches the years. Definition: docs/definitions/keep-house.md. Every draw is seeded; nothing here reads the clock.
  */
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
@@ -10,7 +10,7 @@ import type { Band } from '../../progress/bands';
 
 // ——— Plans ———
 
-export type PlanId = 'doors' | 'workplaces' | 'walk' | 'plan';
+export type PlanId = 'doors' | 'workplaces' | 'walk' | 'plan' | 'ruin' | 'build';
 
 export interface Plan {
   level: number;
@@ -18,13 +18,15 @@ export interface Plan {
   name: string;
 }
 
-export const MAX_LEVEL = 4;
+export const MAX_LEVEL = 6;
 
 const PLANS: readonly Plan[] = [
   { level: 1, id: 'doors', name: "Who's at the door: tap each castle door and a worker comes out with their tool (2 doors under 3, else 3; nothing counted)" },
   { level: 2, id: 'workplaces', name: 'Who works where: drag each of three figures to the room its tool belongs in (two yards; a first wrong room per figure is free)' },
   { level: 3, id: 'walk', name: "The cook's walk: put the kitchen, then the stable, on a near or far spot and watch whether the soup arrives hot (never a miss)" },
   { level: 4, id: 'plan', name: 'Fit the household: five rooms on a 3 × 3 plan to five needs, then ring the bell to check (two plans; a miss per unmet need)' },
+  { level: 5, id: 'ruin', name: 'Read the ruin: drag a picture label onto each roofless room its remains say it was (two ruins; a miss per wrong label)' },
+  { level: 6, id: 'build', name: "Stone or timber: build the hall for a lord's purse and stay, then watch the years (never a miss)" },
 ];
 
 export function planFor(level: number): Plan {
@@ -107,7 +109,19 @@ export interface PlanBrief {
   boards: Board[];
 }
 
-export type Brief = DoorsBrief | WorkplacesBrief | WalkBrief | PlanBrief;
+export interface RuinBrief {
+  level: 5;
+  id: 'ruin';
+  ruins: Ruin[];
+}
+
+export interface BuildBrief {
+  level: 6;
+  id: 'build';
+  situations: Situation[];
+}
+
+export type Brief = DoorsBrief | WorkplacesBrief | WalkBrief | PlanBrief | RuinBrief | BuildBrief;
 
 /** How many doors the castle front shows: a two-year-old gets two, everyone else three. */
 export function doorCount(band: Band): number {
@@ -124,7 +138,10 @@ export function briefFor(level: number, band: Band, rng: Rng): Brief {
   if (plan.id === 'walk') {
     return { level: 3, id: 'walk', placements: [drawPlacement('kitchen', rng), drawPlacement('stable', rng)] };
   }
-  return { level: 4, id: 'plan', boards: [drawBoard(rng), drawBoard(rng)] };
+  if (plan.id === 'plan') return { level: 4, id: 'plan', boards: [drawBoard(rng), drawBoard(rng)] };
+  if (plan.id === 'ruin') return { level: 5, id: 'ruin', ruins: [drawRuin(rng), drawRuin(rng)] };
+  const kinds = rng.shuffle<Build>(['timber', 'stone']);
+  return { level: 6, id: 'build', situations: kinds.map((k) => drawSituation(rng, k)) };
 }
 
 /** Three figures with three different workplaces (so never the groom with the horse), and their rooms in a seeded order. */
@@ -491,6 +508,295 @@ export function planTally(states: PlanState[]) {
   return { misses: states.reduce((n, s) => n + s.misses, 0), hints: states.filter((s) => s.hinted).length };
 }
 
+// ——— Level 5: read the ruin ———
+
+/** The remains a roofless room can show, in table order (the order `decidingClue` reads). */
+export type Clue = 'hearth' | 'oven' | 'dais' | 'drain' | 'mangers' | 'wide-door' | 'window-seat' | 'cellar-steps';
+export const CLUES: readonly Clue[] = ['hearth', 'oven', 'dais', 'drain', 'mangers', 'wide-door', 'window-seat', 'cellar-steps'];
+
+const ROOM_CLUES: Record<PlanRoom, readonly Clue[]> = {
+  hall: ['hearth', 'dais'],
+  kitchen: ['hearth', 'oven', 'drain'],
+  stable: ['drain', 'mangers', 'wide-door'],
+  storeroom: ['cellar-steps'],
+  solar: ['window-seat'],
+};
+
+/** What a room of this kind always leaves behind, in table order. Fixed and true for every ruin. */
+export function cluesOf(room: PlanRoom): readonly Clue[] {
+  return ROOM_CLUES[room];
+}
+
+/** A clue two rooms share (the hearth: hall and kitchen; the drain: kitchen and stable): alone it does not decide. */
+export function isShared(clue: Clue): boolean {
+  return PLAN_ROOMS.filter((r) => ROOM_CLUES[r].includes(clue)).length > 1;
+}
+
+export interface RuinRoom {
+  room: PlanRoom;
+  cell: number;
+  /** The remains drawn in the cell, in table order: at least one deciding clue, up to three. */
+  shown: Clue[];
+}
+
+export interface Ruin {
+  board: Board;
+  /** Four of the five rooms, in cell order. */
+  rooms: RuinRoom[];
+}
+
+/** Rooms in this many cells; the fifth label stays in the tray. */
+export const RUIN_ROOMS = 4;
+
+/** The first deciding clue a room shows, in table order. */
+export function decidingClue(ruin: Ruin, room: PlanRoom): Clue {
+  const r = ruin.rooms.find((x) => x.room === room);
+  const shown = r ? r.shown : ROOM_CLUES[room];
+  return shown.find((c) => !isShared(c)) ?? ROOM_CLUES[room].find((c) => !isShared(c))!;
+}
+
+/** Some clue shared by two rooms is shown in both of them, so one clue alone never settles the ruin. */
+export function sharedShownTwice(ruin: Ruin): boolean {
+  return CLUES.filter(isShared).some((c) => ruin.rooms.filter((r) => r.shown.includes(c)).length >= 2);
+}
+
+/** Four rooms in four non-feature cells, each showing a deciding clue and a seeded choice of its shared ones; redrawn until a shared clue shows twice. */
+export function drawRuin(rng: Rng): Ruin {
+  const board = drawBoard(rng);
+  for (let tries = 0; tries < 200; tries++) {
+    const rooms = rng.shuffle([...PLAN_ROOMS]).slice(0, RUIN_ROOMS);
+    const cells = rng.shuffle(freeCells(board)).slice(0, RUIN_ROOMS);
+    const placed: RuinRoom[] = rooms.map((room, i) => {
+      const own = ROOM_CLUES[room];
+      const deciding = own.filter((c) => !isShared(c));
+      const keep = new Set<Clue>([rng.pick(deciding)]);
+      for (const c of own) if (isShared(c) && keep.size < 3 && rng.chance(0.6)) keep.add(c);
+      // A second deciding clue sometimes, room permitting.
+      for (const c of deciding) if (keep.size < 3 && rng.chance(0.3)) keep.add(c);
+      return { room, cell: cells[i], shown: CLUES.filter((c) => keep.has(c)) };
+    }).sort((a, b) => a.cell - b.cell);
+    const ruin = { board, rooms: placed };
+    if (sharedShownTwice(ruin)) return ruin;
+  }
+  // The typed fallback (every seed in the tests finds a ruin before it): the hall and the kitchen share a hearth.
+  const cells = freeCells(board).slice(0, RUIN_ROOMS);
+  return {
+    board,
+    rooms: [
+      { room: 'hall', cell: cells[0], shown: ['hearth', 'dais'] },
+      { room: 'kitchen', cell: cells[1], shown: ['hearth', 'oven'] },
+      { room: 'stable', cell: cells[2], shown: ['mangers'] },
+      { room: 'solar', cell: cells[3], shown: ['window-seat'] },
+    ],
+  };
+}
+
+export interface RuinState {
+  /** Labels settled on their rooms. */
+  settled: PlanRoom[];
+  misses: number;
+  /** The ruin's one hint is spent and the glow is on until it is done. */
+  hinted: boolean;
+}
+
+export function startRuin(): RuinState {
+  return { settled: [], misses: 0, hinted: false };
+}
+
+export const roomInCell = (ruin: Ruin, cell: number) => ruin.rooms.find((r) => r.cell === cell);
+
+export interface LabelResult {
+  state: RuinState;
+  settled: boolean;
+  /** A wrong room: one miss, and the room's deciding clue to name. */
+  missed: boolean;
+  clue?: Clue;
+  /** This miss lit the ruin's glow (its one hint). */
+  glowed: boolean;
+}
+
+/** Drop a label on a cell: it settles on its own room; on another room it is one miss; anywhere else nothing happens. */
+export function label(ruin: Ruin, s: RuinState, labelId: PlanRoom, cell: number): LabelResult {
+  const none = { state: s, settled: false, missed: false, glowed: false };
+  const at = roomInCell(ruin, cell);
+  if (!at || s.settled.includes(at.room) || s.settled.includes(labelId)) return none;
+  if (at.room === labelId) return { state: { ...s, settled: [...s.settled, labelId] }, settled: true, missed: false, glowed: false };
+  const misses = s.misses + 1;
+  const glowed = !s.hinted && misses >= 2;
+  return { state: { ...s, misses, hinted: s.hinted || glowed }, settled: false, missed: true, clue: decidingClue(ruin, at.room), glowed };
+}
+
+/** Asked-for help: the glow, the ruin's one hint if not yet spent. */
+export function askRuin(s: RuinState): RuinState {
+  return s.hinted ? s : { ...s, hinted: true };
+}
+
+export const ruinDone = (ruin: Ruin, s: RuinState) => ruin.rooms.every((r) => s.settled.includes(r.room));
+
+/** The room the label belongs on is not in this ruin: it stays in the tray. */
+export const spareLabel = (ruin: Ruin) => PLAN_ROOMS.find((r) => !ruin.rooms.some((x) => x.room === r))!;
+
+export type RuinHint = { spare: true } | { spare?: false; cell: number; clue: Clue; label: PlanRoom };
+
+/** What the glow shows: the held label's room and its deciding clue; holding nothing, the first unlabelled room in cell order; holding the spare, the tray. */
+export function ruinHint(ruin: Ruin, s: RuinState, held: PlanRoom | null = null): RuinHint | null {
+  if (!s.hinted || ruinDone(ruin, s)) return null;
+  if (held && held === spareLabel(ruin)) return { spare: true };
+  const target = (held && !s.settled.includes(held) && ruin.rooms.find((r) => r.room === held)) || ruin.rooms.find((r) => !s.settled.includes(r.room))!;
+  return { cell: target.cell, clue: decidingClue(ruin, target.room), label: target.room };
+}
+
+export function ruinTally(states: RuinState[]) {
+  return { misses: states.reduce((n, s) => n + s.misses, 0), hints: states.filter((s) => s.hinted).length };
+}
+
+// ——— Level 6: stone or timber ———
+
+export type Build = 'timber' | 'stone';
+export const BUILDS_ORDER: readonly Build[] = ['timber', 'stone'];
+
+/** Island numbers (decision 10): timber 2 bags, up in a season, lasts 15 years; stone 5 bags, 8 years to build, then stands. */
+export const BUILDS = {
+  timber: { bags: 2, lasts: 15 },
+  stone: { bags: 5, building: 8 },
+} as const;
+
+export const TIMBER_FIT_YEARS = [10, 15, 20, 25, 30] as const;
+export const STONE_FIT_YEARS = [35, 40, 45, 50] as const;
+export const STONE_FIT_BAGS = [5, 6, 7, 8] as const;
+/** The year bar marks, and the playback steps. */
+export const YEAR_STEP = 5;
+
+export interface Situation {
+  /** Which island critter is the lord (an index into the scene's list). */
+  lord: number;
+  bags: number;
+  years: number;
+  /** Which choice this situation was drawn to fit. */
+  kind: Build;
+}
+
+/** How many timber halls a stay needs: one per 15 years, the last lasting to the end. */
+export const timberHalls = (years: number) => Math.ceil(years / BUILDS.timber.lasts);
+
+/** What a choice would cost over the whole stay, purse or no purse. */
+export function cost(s: Situation, b: Build): number {
+  return b === 'timber' ? BUILDS.timber.bags * timberHalls(s.years) : BUILDS.stone.bags;
+}
+
+export const affordable = (s: Situation, b: Build) => cost(s, b) <= s.bags;
+
+export function drawSituation(rng: Rng, kind: Build): Situation {
+  const lord = rng.int(0, 5);
+  if (kind === 'timber') {
+    const years = rng.pick([...TIMBER_FIT_YEARS]);
+    return { lord, years, bags: rng.int(cost({ lord, years, bags: 0, kind }, 'timber'), 6), kind };
+  }
+  return { lord, years: rng.pick([...STONE_FIT_YEARS]), bags: rng.pick([...STONE_FIT_BAGS]), kind };
+}
+
+/** The choice that is affordable and costs fewer bags over the stay. */
+export function fits(s: Situation): Build {
+  const ok = BUILDS_ORDER.filter((b) => affordable(s, b));
+  return ok.reduce((best, b) => (cost(s, b) < cost(s, best) ? b : best), ok[0] ?? 'timber');
+}
+
+export type Hall = 'timber' | 'old-timber' | 'rotted' | 'scaffold' | 'stone' | 'half-up';
+
+export interface YearStep {
+  year: number;
+  /** Bags left in the purse after this step. */
+  purse: number;
+  hall: Hall;
+  /** What happened at this mark, for the sound and the pet. */
+  event: 'built' | 'rebuilt' | 'rotted' | 'building' | 'finished' | 'ran-out' | null;
+}
+
+export interface Account {
+  spent: number;
+  end: 'standing' | 'rotted' | 'half-up';
+  steps: YearStep[];
+}
+
+/** Play a choice over the stay in 5-year steps from year 0 to the last year. */
+export function account(s: Situation, b: Build): Account {
+  const steps: YearStep[] = [];
+  let purse = s.bags;
+  if (b === 'timber') {
+    let hall: Hall = 'rotted';
+    for (let year = 0; year <= s.years; year += YEAR_STEP) {
+      const age = year % BUILDS.timber.lasts;
+      let event: YearStep['event'] = null;
+      // A new hall at year 0 and at each 15-year mark the stay goes on past.
+      if (age === 0 && year < s.years) {
+        if (purse >= BUILDS.timber.bags) {
+          purse -= BUILDS.timber.bags;
+          event = year === 0 ? 'built' : 'rebuilt';
+          hall = 'timber';
+        } else {
+          event = year === 0 ? 'ran-out' : 'rotted';
+          hall = 'rotted';
+        }
+      } else if (hall !== 'rotted') {
+        hall = age === 0 || age >= BUILDS.timber.lasts - YEAR_STEP ? 'old-timber' : 'timber';
+      }
+      steps.push({ year, purse, hall, event });
+    }
+    const end = steps[steps.length - 1].hall === 'rotted' ? 'rotted' : 'standing';
+    return { spent: s.bags - purse, end, steps };
+  }
+  if (purse < BUILDS.stone.bags) {
+    // The masons work while the bags last; the walls stop half up.
+    for (let year = 0; year <= s.years; year += YEAR_STEP) {
+      steps.push({ year, purse: 0, hall: year === 0 ? 'scaffold' : 'half-up', event: year === 0 ? 'building' : year === YEAR_STEP ? 'ran-out' : null });
+    }
+    return { spent: s.bags, end: 'half-up', steps };
+  }
+  purse -= BUILDS.stone.bags;
+  for (let year = 0; year <= s.years; year += YEAR_STEP) {
+    const up = year >= BUILDS.stone.building;
+    const first = up && year - YEAR_STEP < BUILDS.stone.building;
+    steps.push({ year, purse, hall: up ? 'stone' : 'scaffold', event: year === 0 ? 'building' : first ? 'finished' : null });
+  }
+  return { spent: BUILDS.stone.bags, end: 'standing', steps };
+}
+
+export interface BuildState {
+  /** The choice the last Build played out. */
+  choice: Build | null;
+  /** Keep it presses after the other choice. */
+  refusals: number;
+  hinted: boolean;
+  done: boolean;
+}
+
+export function startBuild(): BuildState {
+  return { choice: null, refusals: 0, hinted: false, done: false };
+}
+
+/** Build: the years play out. The fitting choice finishes the situation; the other asks (never a miss). Building again is free. */
+export function placeBuild(sit: Situation, s: BuildState, b: Build): BuildState {
+  if (s.done) return s;
+  return { ...s, choice: b, done: b === fits(sit) };
+}
+
+/** Keep it after the other choice: the first replays and asks again; the second glows (one hint) and finishes as she left it. */
+export function keepBuild(sit: Situation, s: BuildState): BuildState {
+  if (s.done || !s.choice || s.choice === fits(sit)) return s;
+  const refusals = s.refusals + 1;
+  if (refusals >= 2) return { ...s, refusals, hinted: true, done: true };
+  return { ...s, refusals };
+}
+
+/** Asked-for help before the situation is done: the fitting row glows, its one hint. */
+export function askBuild(s: BuildState): BuildState {
+  return s.hinted || s.done ? s : { ...s, hinted: true };
+}
+
+export function buildTally(states: BuildState[]) {
+  return { misses: 0, hints: states.filter((s) => s.hinted).length };
+}
+
 // ——— Layout ———
 
 export interface Rect { x: number; y: number; w: number; h: number }
@@ -518,6 +824,8 @@ export const CELL_GAP = 8;
 export const CARD = { w: 220, h: 100 };
 export const BELL = { w: 140, h: 110 };
 export const KEEP = { w: 180, h: 100 };
+export const ROW = { w: 340, h: 110 };
+export const BUTTON = { w: 140, h: 110 };
 /** One walking step across the yard at level 3, in units. */
 export const STEP = 75;
 const M = 20;
@@ -539,6 +847,11 @@ export interface KeepLayout {
   cells?: Rect[];
   cards?: Rect[];
   bell?: Rect;
+  /** Level 6: the lord's strip (lord, purse and year bar), the hall's site, the timber and stone rows, Build and Keep it. Level 5 uses `tray` (five labels) and `cells`. */
+  lord?: Rect;
+  site?: Rect;
+  rows?: Rect[];
+  build?: Rect;
   /** The ground line things stand on. */
   ground: number;
   /** Every touch target, for the fit checks. */
@@ -594,6 +907,28 @@ export function keepLayout(brief: Brief, v: View): KeepLayout | null {
       if (!inside(fixed, v) || !inside(s.near, v) || !inside(s.far, v) || overlaps(s.near, s.far) || overlaps(s.near, fixed) || overlaps(s.far, fixed)) return null;
       if (corners(v).some((c) => overlaps(s.near, c) || overlaps(s.far, c))) return null;
     }
+  } else if (brief.id === 'build') {
+    const lord: Rect = wide ? { x: left, y: 30, w: Math.min(v.w - M - left, 760), h: 130 } : { x: left, y: 110, w: Math.min(v.w - M - left, 760), h: 130 };
+    let rows: Rect[], build: Rect, keep: Rect, site: Rect;
+    if (wide) {
+      const top = lord.y + lord.h + 30;
+      rows = [0, 1].map((i) => ({ x: left, y: top + i * (ROW.h + GAP), w: ROW.w, h: ROW.h }));
+      const cy = top + 2 * (ROW.h + GAP) + 10;
+      build = { x: left, y: cy, w: BUTTON.w, h: BUTTON.h };
+      keep = { x: left + ROW.w - BUTTON.w, y: cy, w: BUTTON.w, h: BUTTON.h };
+      const sx = left + ROW.w + 40;
+      site = { x: sx, y: top, w: Math.min(v.w - M - sx, 520), h: cy + BUTTON.h - top };
+    } else {
+      const top = lord.y + lord.h + 30;
+      site = { x: cx - 300, y: top, w: 600, h: 360 };
+      const ry = top + site.h + 30;
+      rows = [0, 1].map((i) => ({ x: cx - ROW.w / 2, y: ry + i * (ROW.h + GAP), w: ROW.w, h: ROW.h }));
+      const cy = ry + 2 * (ROW.h + GAP) + 10;
+      build = { x: cx - ROW.w / 2, y: cy, w: BUTTON.w, h: BUTTON.h };
+      keep = { x: cx + ROW.w / 2 - BUTTON.w, y: cy, w: BUTTON.w, h: BUTTON.h };
+    }
+    if (site.w < 300 || !inside(site, v) || corners(v).some((c) => overlaps(site, c))) return null;
+    l = { lord, site, rows, build, keep, ground: site.y + site.h, inputs: [...rows, build, keep] };
   } else {
     const trayY = wide ? 30 : 120;
     const trayW = 5 * TILE.w + 4 * 14;
@@ -615,7 +950,10 @@ export function keepLayout(brief: Brief, v: View): KeepLayout | null {
         const k = r === 0 ? i : i - 3;
         return { x: cx - (n * CARD.w + (n - 1) * GAP) / 2 + k * (CARD.w + GAP), y: bell.y + BELL.h + 30 + r * (CARD.h + 8), w: CARD.w, h: CARD.h };
       });
-    l = { tray, cells, cards, bell, ground: gridY + gridW, inputs: [...tray, ...cells, ...cards, bell] };
+    // The ruin (level 5) is the same tray and plan with no bell or need cards: a label's drop is the commit.
+    l = brief.id === 'ruin'
+      ? { tray, cells, ground: gridY + gridW, inputs: [...tray, ...cells] }
+      : { tray, cells, cards, bell, ground: gridY + gridW, inputs: [...tray, ...cells, ...cards, bell] };
   }
   if (!l.inputs.every((p) => inside(p, v))) return null;
   if (l.inputs.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;

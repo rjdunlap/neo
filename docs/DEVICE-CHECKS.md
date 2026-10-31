@@ -695,11 +695,12 @@ Performed on the built levels, which are not yet built ([definition](definitions
 
 ## Keep House levels 5–6 (ML3, 2026-10-30)
 
-Performed on the built levels, which are not yet built ([definition](definitions/keep-house.md#levels-56-check-tier-for-the-build)).
+Performed on the built levels (built 2026-10-31, [PR #1038](https://github.com/rjdunlap/neo/pull/1038); [definition](definitions/keep-house.md#levels-56-check-tier-for-the-build)).
 
 - [ ] With a school child, check whether she reads a room's clues or places labels by elimination, and whether the shared hearth (or drain) is noticed before the deciding clue.
 - [ ] Check whether the years' playback at level 6 is followed (bags spent, the timber hall rotting and rebuilt) rather than waited through.
 - [ ] On an iPad, check device speech for the clue, bag and year slots.
+- [ ] Check whether the two history lines ("The stones that stayed tell us which room was which"; "Stone took much longer to build than timber, and lasted much longer") still need the building session's source check; they shipped as fallbacks.
 
 ## Water Road levels 4–5 (AM3, 2026-10-31)
 

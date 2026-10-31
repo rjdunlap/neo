@@ -2,9 +2,11 @@
  * Keep House: put the castle's household where its work needs it. Level 1 taps the doors and the well and a worker comes out
  * with their tool; level 2 drags each figure to its workplace; level 3 puts the kitchen, then the stable, on a near or far spot
  * and watches whether the soup (or the horses) arrive well; level 4 fits five rooms on a 3 × 3 plan to five needs and rings the
- * bell to check. Rules: ./logic.ts; definition: docs/definitions/keep-house.md.
+ * bell to check; level 5 reads a roofless ruin and drags a picture label onto each room; level 6 builds a lord's hall in timber
+ * or stone and plays the years. Rules: ./logic.ts; definition: docs/definitions/keep-house.md.
  */
 import { Container, Graphics, Rectangle } from 'pixi.js';
+import { Critter, CRITTERS } from '../../art/critter';
 import { swatch } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -18,17 +20,18 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import { bellArt, cellArt, doorArt, figureArt, fixedArt, frontArt, iconArt, keepArt, needArt, roomArt, spotArt, steamArt, stickerArt, tileArt, wellArt } from './art';
+import { bagArt, bellArt, buildButtonArt, cellArt, hallArt, labelArt, rowArt, ruinCellArt, yearBarArt, doorArt, figureArt, fixedArt, frontArt, iconArt, keepArt, needArt, roomArt, spotArt, steamArt, stickerArt, tileArt, wellArt } from './art';
 import {
+  account, askBuild, decidingClue as decidingClueOf, askRuin, BUILDS_ORDER, buildTally, cost, fits, keepBuild, label, placeBuild, roomInCell, ruinDone, ruinHint, ruinTally, spareLabel, startBuild, startRuin, YEAR_STEP,
   allPlaced, askPlacement, askPlan, askYard, briefFor, CELL, centre, doorsDone, drop, fixedRect, glowTarget, hintFor, keep, keepLayout, movePlan, NEEDS, nextDoor, place, PLAN_ROOMS, planFor, planTally, ringBell, solutions, SPOT, spotRects, startDoors, startPlacement, startPlan, startYard, stepsTo, tapDoor, tapWell, TILE, walkTally, workplaceOf, yardDone, yardTally,
-  type Board, type Brief, type DoorsState, type Figure, type KeepLayout, type Move, type Person, type Placement, type PlacementState, type PlanRoom, type PlanState, type Rect, type Room, type Spot, type YardState,
+  type Board, type Brief, type Build, type BuildState, type Hall, type Ruin, type RuinState, type Situation, type DoorsState, type Figure, type KeepLayout, type Move, type Person, type Placement, type PlacementState, type PlanRoom, type PlanState, type Rect, type Room, type Spot, type YardState,
 } from './logic';
 
 const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 3 },
   prek: { min: 2, max: 4 },
-  school: { min: 4, max: 4 },
+  school: { min: 4, max: 6 },
 };
 
 /** A closed door glows after this long with no tap (entry guidance; it records nothing). */
@@ -47,6 +50,10 @@ const AT_WORK_SOUND: Record<Figure, () => void> = {
   horse: () => sfx.munch(),
   hens: () => sfx.animal('cluck'),
 };
+/** Who comes back for a moment when a ruin's room is named. */
+const RUIN_FIGURE: Record<PlanRoom, Figure> = { hall: 'ringer', kitchen: 'cook', stable: 'horse', storeroom: 'steward', solar: 'groom' };
+/** The lords of level 6, island critters. */
+const LORDS: (keyof typeof CRITTERS)[] = ['bunny', 'bear', 'pig', 'cow', 'cat', 'duck'];
 /** The castle's own bell, step by step, as the Finish sound. */
 const BELL_STEPS = [4, 7, 9];
 
@@ -99,6 +106,26 @@ class KeepHouse implements Game {
   bellNode: Container | null = null;
   /** The last bell's verdict per need, shown on the cards until she moves a room. */
   private verdict: Map<number, boolean> | null = null;
+  ruins: RuinState[] = [];
+  ruinIndex = 0;
+  /** The label she holds (level 5). */
+  heldLabel: PlanRoom | null = null;
+  /** A room has been tapped on this ruin (the bot's one look). */
+  looked = false;
+  private lookToken = 0;
+  ruinCells: Container[] = [];
+  labelNodes = new Map<PlanRoom, { node: Container; drag: DragHandle }>();
+  builds: BuildState[] = [];
+  buildIndex = 0;
+  /** The row lifted on the card (level 6), and the rows looked at this situation. */
+  lifted: Build | null = null;
+  rowsSeen = new Set<Build>();
+  rowNodes: Container[] = [];
+  buildNode: Container | null = null;
+  private strip = new Container();
+  private site = new Container();
+  /** The year and purse the playback shows, or null before a build. */
+  private shown: { year: number; purse: number; hall: Hall } | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -111,6 +138,8 @@ class KeepHouse implements Game {
     if (this.brief.id === 'workplaces') this.yards = this.brief.yards.map(() => startYard());
     if (this.brief.id === 'walk') this.placements = this.brief.placements.map(() => startPlacement());
     if (this.brief.id === 'plan') this.plans = this.brief.boards.map(() => startPlan());
+    if (this.brief.id === 'ruin') this.ruins = this.brief.ruins.map(() => startRuin());
+    if (this.brief.id === 'build') this.builds = this.brief.situations.map(() => startBuild());
   }
 
   get level() {
@@ -141,18 +170,38 @@ class KeepHouse implements Game {
     return (this.brief as { boards: Board[] }).boards[this.planIndex];
   }
 
+  get ruin() {
+    return this.ruins[this.ruinIndex];
+  }
+
+  get ruinBrief(): Ruin {
+    return (this.brief as { ruins: Ruin[] }).ruins[this.ruinIndex];
+  }
+
+  get buildState() {
+    return this.builds[this.buildIndex];
+  }
+
+  get situation(): Situation {
+    return (this.brief as { situations: Situation[] }).situations[this.buildIndex];
+  }
+
   /** Round totals so far, for a check or the finish. */
   get tally() {
     if (this.brief.id === 'workplaces') return yardTally(this.yards);
     if (this.brief.id === 'walk') return walkTally(this.placements);
     if (this.brief.id === 'plan') return planTally(this.plans);
+    if (this.brief.id === 'ruin') return ruinTally(this.ruins);
+    if (this.brief.id === 'build') return buildTally(this.builds);
     return { misses: 0, hints: 0 };
   }
 
   start() {
     this.build();
     void this.ctx.instruct(`kh.instruct.${this.level}` as LineId);
-    if (this.level >= 2) void this.ctx.say('kh.history');
+    if (this.level >= 5) void this.ctx.say(`kh.history.${this.level}` as LineId);
+    else if (this.level >= 2) void this.ctx.say('kh.history');
+    if (this.brief.id === 'build') void this.introduceLord();
   }
 
   destroy() {
@@ -164,7 +213,7 @@ class KeepHouse implements Game {
     this.view = v;
     this.backdrop.resize(v);
     if (!this.layoutNow) return;
-    if (this.busy || this.finished || this.held || this.heldRoom || this.tileHeld) { this.relayout = true; return; }
+    if (this.busy || this.finished || this.held || this.heldRoom || this.tileHeld || this.heldLabel) { this.relayout = true; return; }
     this.build();
   }
 
@@ -180,7 +229,9 @@ class KeepHouse implements Game {
     this.tileDrag = null;
     for (const t of this.planTiles.values()) t.drag.destroy();
     this.planTiles.clear();
-    this.held = this.heldRoom = null;
+    for (const t of this.labelNodes.values()) t.drag.destroy();
+    this.labelNodes.clear();
+    this.held = this.heldRoom = this.heldLabel = null;
     this.tileHeld = false;
   }
 
@@ -195,7 +246,13 @@ class KeepHouse implements Game {
     this.roomNodes = [];
     this.cellNodes = [];
     this.cardNodes = [];
-    this.wellNode = this.tileNode = this.keepNode = this.bellNode = null;
+    this.ruinCells = [];
+    this.rowNodes = [];
+    this.wellNode = this.tileNode = this.keepNode = this.bellNode = this.buildNode = null;
+    this.strip.removeFromParent();
+    this.site.removeFromParent();
+    for (const c of this.strip.removeChildren()) c.destroy({ children: true });
+    for (const c of this.site.removeChildren()) c.destroy({ children: true });
     this.spotNodes = null;
     this.glow.removeFromParent();
     this.walkLayer.removeFromParent();
@@ -208,6 +265,8 @@ class KeepHouse implements Game {
     if (this.brief.id === 'doors') this.buildDoors(l);
     else if (this.brief.id === 'workplaces') this.buildYard(l);
     else if (this.brief.id === 'walk') this.buildWalk(l);
+    else if (this.brief.id === 'ruin') this.buildRuin(l);
+    else if (this.brief.id === 'build') this.buildCard(l);
     else this.buildPlan(l);
     this.board.addChild(this.walkLayer, this.glow);
   }
@@ -785,6 +844,408 @@ class KeepHouse implements Game {
     void this.ctx.say('kh.next-plan');
   }
 
+  // ——— Level 5 ———
+
+  private buildRuin(l: KeepLayout) {
+    const ruin = this.ruinBrief;
+    this.ruinCells = l.cells!.map((r, c) => {
+      const node = new Container();
+      node.position.set(r.x, r.y);
+      if (roomInCell(ruin, c)) {
+        node.hitArea = new Rectangle(0, 0, CELL, CELL);
+        onTap(node, () => this.lookRoom(c), { cooldown: 400 });
+      } else node.eventMode = 'none';
+      this.board.addChild(node);
+      return node;
+    });
+    PLAN_ROOMS.forEach((room, i) => {
+      if (this.ruin.settled.includes(room)) return;
+      const node = new Container();
+      node.addChild(labelArt(room, TILE.w));
+      node.hitArea = new Rectangle(-TILE.w / 2 - 8, -TILE.h / 2 - 8, TILE.w + 16, TILE.h + 16);
+      node.position.copyFrom(centre(l.tray![i]));
+      this.board.addChild(node);
+      const drag = draggable(node, this.ctx.tw, {
+        onPick: () => this.pickLabel(room),
+        onMove: () => this.redrawRuin(),
+        onDrop: (x, y) => this.dropLabel(room, x, y),
+      });
+      this.labelNodes.set(room, { node, drag });
+    });
+    this.redrawRuin();
+  }
+
+  /** The cells (with the glow's clue), the settled labels and the glowing label, from the model. */
+  private redrawRuin() {
+    const l = this.layoutNow;
+    if (!l?.cells || this.brief.id !== 'ruin') return;
+    const ruin = this.ruinBrief;
+    const hint = this.busy ? null : ruinHint(ruin, this.ruin, this.heldLabel);
+    const held = this.heldLabel ? this.labelNodes.get(this.heldLabel)?.node : null;
+    this.ruinCells.forEach((node, c) => {
+      for (const ch of node.removeChildren()) ch.destroy({ children: true });
+      const at = roomInCell(ruin, c);
+      if (!at) {
+        node.addChild(cellArt(CELL, c === ruin.board.well ? 'well' : c === ruin.board.gate ? 'gate' : 'ground'));
+        return;
+      }
+      const lit = !!held && contains(l.cells![c], held.x, held.y, 10);
+      node.addChild(ruinCellArt(CELL, at.shown, lit, hint && !hint.spare && hint.cell === c ? hint.clue : null));
+      if (this.ruin.settled.includes(at.room)) {
+        const tag = labelArt(at.room, 50);
+        tag.position.set(CELL - 26, 26);
+        node.addChild(tag);
+      }
+    });
+    for (const [room, t] of this.labelNodes) {
+      const glow = !!hint && (hint.spare ? room === spareLabel(ruin) : hint.label === room);
+      for (const ch of t.node.removeChildren()) ch.destroy({ children: true });
+      t.node.addChild(labelArt(room, TILE.w, glow));
+    }
+  }
+
+  private pickLabel(room: PlanRoom) {
+    this.heldLabel = room;
+    this.lookToken++;
+    sfx.pop(7);
+    const hint = ruinHint(this.ruinBrief, this.ruin, room);
+    void this.ctx.say(hint?.spare ? 'kh.not-here' : (`kh.label.${room}` as LineId));
+    this.redrawRuin();
+  }
+
+  /** The free look: the cell brightens and the pet names what is left in it, one clue after another. */
+  async lookRoom(c: number) {
+    if (this.finished || this.busy || this.heldLabel) return;
+    const at = roomInCell(this.ruinBrief, c);
+    if (!at) return;
+    this.looked = true;
+    const node = this.ruinCells[c];
+    node.alpha = 0.7;
+    void this.ctx.tw.to(node, { alpha: 1 }, { duration: 0.4 });
+    sfx.tick();
+    const token = ++this.lookToken;
+    const epoch = this.epoch;
+    for (const k of at.shown) {
+      await this.ctx.say(`kh.clue.${k}` as LineId);
+      if (!this.live(epoch) || token !== this.lookToken) return;
+    }
+  }
+
+  private dropLabel(room: PlanRoom, x: number, y: number): boolean {
+    this.heldLabel = null;
+    const l = this.layoutNow;
+    if (!l?.cells || this.finished || this.busy) { this.redrawRuin(); return false; }
+    const c = l.cells.findIndex((r) => contains(r, x, y, 10));
+    if (c < 0) { this.redrawRuin(); return false; }
+    const r = label(this.ruinBrief, this.ruin, room, c);
+    this.ruins[this.ruinIndex] = r.state;
+    if (r.settled) { void this.settleLabel(room, c); return true; }
+    this.redrawRuin();
+    if (!r.missed) return false;
+    sfx.boing();
+    const node = this.ruinCells[c];
+    void this.ctx.tw.to(node, { x: node.x + 8 }, { duration: 0.06 }).then(() => this.ctx.tw.to(node, { x: l.cells![c].x }, { duration: 0.3, ease: ease.outElastic }));
+    const epoch = this.epoch;
+    void this.ctx.say('kh.has').then(() => {
+      if (!this.live(epoch)) return;
+      return this.ctx.say(`kh.clue.${r.clue}` as LineId).then(() => { if (r.glowed && this.live(epoch)) void this.ctx.say('kh.glow-clue'); });
+    });
+    return false;
+  }
+
+  /** The label settles on its room, the room's people come back for a moment, and the pet names the deciding clue. */
+  private async settleLabel(room: PlanRoom, c: number) {
+    const epoch = this.epoch;
+    const l = this.layoutNow!;
+    const t = this.labelNodes.get(room);
+    this.busy = true;
+    if (t) {
+      t.drag.enabled = false;
+      await this.ctx.tw.to(t.node.position, centre(l.cells![c]), { duration: 0.2, ease: ease.outBack });
+      if (!this.live(epoch)) return;
+      t.drag.destroy();
+      t.node.destroy({ children: true });
+      this.labelNodes.delete(room);
+    }
+    sfx.pluck(4 + this.ruin.settled.length * 2);
+    this.redrawRuin();
+    const r = l.cells![c];
+    const who = figureArt(RUIN_FIGURE[room], true);
+    who.scale.set(0.5);
+    who.position.set(r.x + CELL / 2 - 14, r.y + CELL - 6);
+    who.alpha = 0;
+    this.walkLayer.addChild(who);
+    void this.ctx.tw.to(who, { alpha: 1 }, { duration: 0.25 });
+    AT_WORK_SOUND[RUIN_FIGURE[room]]();
+    await this.ctx.say(`kh.clue.${decidingClueOf(this.ruinBrief, room)}` as LineId);
+    if (!this.live(epoch)) return;
+    await this.ctx.say(`kh.was.${room}` as LineId);
+    if (!this.live(epoch)) return;
+    await this.ctx.tw.to(who, { alpha: 0 }, { duration: 0.4 });
+    if (!this.live(epoch)) return;
+    who.destroy({ children: true });
+    if (!ruinDone(this.ruinBrief, this.ruin)) {
+      this.busy = false;
+      this.redrawRuin();
+      if (this.relayout) this.build();
+      return;
+    }
+    // The household walks back into every room for a moment, then the ruin is quiet again.
+    for (const [i, step] of BELL_STEPS.entries()) void this.ctx.tw.wait(i * 0.25).then(() => { if (this.alive) sfx.bell(step, 0.35); });
+    for (const rr of this.ruinBrief.rooms) {
+      const cell = l.cells![rr.cell];
+      const f = figureArt(RUIN_FIGURE[rr.room], true);
+      f.scale.set(0.5);
+      f.position.set(cell.x + CELL / 2 - 14, cell.y + CELL - 6);
+      this.walkLayer.addChild(f);
+    }
+    await this.ctx.say('kh.ruin-done');
+    if (!this.live(epoch)) return;
+    await this.ctx.tw.wait(this.ctx.demo ? 0.3 : 0.6);
+    if (!this.live(epoch)) return;
+    if (this.ruinIndex + 1 >= this.ruins.length) { this.celebrate(); return; }
+    this.ruinIndex++;
+    this.looked = false;
+    this.busy = false;
+    for (const ch of this.walkLayer.removeChildren()) ch.destroy({ children: true });
+    this.build();
+    void this.ctx.say('kh.next-ruin');
+  }
+
+  // ——— Level 6 ———
+
+  private buildCard(l: KeepLayout) {
+    this.board.addChild(this.strip, this.site);
+    this.rowNodes = l.rows!.map((r, i) => {
+      const node = new Container();
+      node.position.copyFrom(centre(r));
+      node.hitArea = new Rectangle(-r.w / 2 - 6, -r.h / 2 - 6, r.w + 12, r.h + 12);
+      onTap(node, () => this.lookRow(BUILDS_ORDER[i]), { cooldown: 300 });
+      this.board.addChild(node);
+      return node;
+    });
+    const b = l.build!;
+    const build = new Container();
+    build.position.copyFrom(centre(b));
+    build.hitArea = new Rectangle(-b.w / 2 - 6, -b.h / 2 - 6, b.w + 12, b.h + 12);
+    onTap(build, () => this.doBuild(), { cooldown: 500 });
+    this.board.addChild(build);
+    this.buildNode = build;
+    const k = l.keep!;
+    const keepNode = new Container();
+    keepNode.position.copyFrom(centre(k));
+    keepNode.addChild(keepArt(k.w, k.h));
+    keepNode.hitArea = new Rectangle(-k.w / 2 - 6, -k.h / 2 - 6, k.w + 12, k.h + 12);
+    onTap(keepNode, () => this.keepBuildIt(), { cooldown: 500 });
+    keepNode.visible = this.keepShown;
+    this.board.addChild(keepNode);
+    this.keepNode = keepNode;
+    this.redrawRows();
+    this.redrawStrip();
+    this.redrawSite();
+  }
+
+  private redrawRows() {
+    const l = this.layoutNow;
+    if (!l?.rows || this.brief.id !== 'build') return;
+    const s = this.buildState;
+    const want = fits(this.situation);
+    this.rowNodes.forEach((node, i) => {
+      for (const ch of node.removeChildren()) ch.destroy({ children: true });
+      const b = BUILDS_ORDER[i];
+      node.addChild(rowArt(b, l.rows![i].w, l.rows![i].h, this.lifted === b, s.hinted && b === want && !this.busy));
+      node.y = centre(l.rows![i]).y - (this.lifted === b ? 6 : 0);
+    });
+    if (this.buildNode) {
+      for (const ch of this.buildNode.removeChildren()) ch.destroy({ children: true });
+      this.buildNode.addChild(buildButtonArt(l.build!.w, l.build!.h, !!this.lifted && !s.done && !this.busy, s.choice !== null));
+    }
+  }
+
+  /** The lord, the purse and the year bar; during playback the purse empties and the bar fills; a lifted row lays its life under the bar. */
+  private redrawStrip() {
+    const l = this.layoutNow;
+    if (!l?.lord) return;
+    for (const c of this.strip.removeChildren()) c.destroy({ children: true });
+    const sit = this.situation;
+    const lord = new Critter(CRITTERS[LORDS[sit.lord % LORDS.length]]);
+    lord.alive = false;
+    lord.scale.set(0.45);
+    lord.position.set(l.lord.x + 50, l.lord.y + l.lord.h - 6);
+    this.strip.addChild(lord);
+    const purse = this.shown ? this.shown.purse : sit.bags;
+    const bx = l.lord.x + 120;
+    for (let i = 0; i < sit.bags; i++) {
+      const b = bagArt(54, i >= purse);
+      b.position.set(bx + 24 + i * 50, l.lord.y + 56);
+      this.strip.addChild(b);
+    }
+    const barW = Math.min(l.lord.w - 130, (sit.years / YEAR_STEP) * 48);
+    const bar = yearBarArt(sit.years, this.shown ? this.shown.year + YEAR_STEP : 0, barW);
+    bar.position.set(bx, l.lord.y + 80);
+    this.strip.addChild(bar);
+    if (this.lifted && !this.busy) {
+      // The lifted row's life along the stay: timber's 15-year halls side by side, or stone's 8 building years then one hall to the end.
+      const g = new Graphics();
+      const per = barW / sit.years;
+      const y = l.lord.y + 110;
+      if (this.lifted === 'timber') {
+        for (let t = 0; t < sit.years; t += 15) g.roundRect(bx + t * per + 2, y, Math.min(15, sit.years - t) * per - 4, 16, 6).fill(0xc8935a).stroke({ width: 2, color: 0x7a5530 });
+      } else {
+        g.roundRect(bx + 2, y, 8 * per - 4, 16, 6).fill(0xd9b36a).stroke({ width: 2, color: 0x9c7a35 });
+        g.roundRect(bx + 8 * per + 2, y, (sit.years - 8) * per - 4, 16, 6).fill(0xc9c3b8).stroke({ width: 2, color: 0x8a837a });
+      }
+      this.strip.addChild(g);
+    }
+  }
+
+  private redrawSite() {
+    const l = this.layoutNow;
+    if (!l?.site) return;
+    for (const c of this.site.removeChildren()) c.destroy({ children: true });
+    const g = new Graphics();
+    g.roundRect(l.site.x, l.site.y + l.site.h - 40, l.site.w, 40, 16).fill({ color: 0x8fc277, alpha: 0.8 });
+    this.site.addChild(g);
+    if (!this.shown) return;
+    const hall = hallArt(this.shown.hall, Math.min(l.site.w - 150, 280));
+    hall.position.set(l.site.x + l.site.w / 2 - 40, l.site.y + l.site.h - 24);
+    this.site.addChild(hall);
+  }
+
+  /** A new situation: the lord says what the purse holds and how long the stay is. */
+  private async introduceLord() {
+    const epoch = this.epoch;
+    const sit = this.situation;
+    await this.ctx.say('kh.lord');
+    if (!this.live(epoch)) return;
+    await this.ctx.say(`kh.bags.${sit.bags}` as LineId);
+    if (!this.live(epoch)) return;
+    await this.ctx.say('kh.stay');
+    if (!this.live(epoch)) return;
+    await this.ctx.say(`kh.years.${sit.years}` as LineId);
+  }
+
+  /** The free look: the row lifts and its life is laid along the year bar; no total is spoken. */
+  lookRow(b: Build) {
+    if (this.finished || this.busy || this.buildState.done) return;
+    this.lifted = b;
+    this.rowsSeen.add(b);
+    sfx.pop(b === 'timber' ? 6 : 8);
+    void this.ctx.say(`kh.build.${b}` as LineId);
+    this.redrawRows();
+    this.redrawStrip();
+  }
+
+  doBuild() {
+    if (this.finished || this.busy || this.buildState.done) return;
+    const node = this.buildNode;
+    if (node) { node.scale.set(0.94); void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack }); }
+    if (!this.lifted) {
+      sfx.shake();
+      void this.ctx.say('kh.pick-build');
+      for (const r of this.rowNodes) void this.ctx.tw.to(r, { rotation: 0.05 }, { duration: 0.08 }).then(() => this.ctx.tw.to(r, { rotation: 0 }, { duration: 0.3, ease: ease.outElastic }));
+      return;
+    }
+    this.builds[this.buildIndex] = placeBuild(this.situation, this.buildState, this.lifted);
+    void this.playYears(this.lifted);
+  }
+
+  keepBuildIt() {
+    if (this.finished || this.busy || !this.keepShown || this.buildState.done || !this.buildState.choice) return;
+    const k = this.keepNode;
+    if (k) { k.scale.set(0.94); void this.ctx.tw.to(k.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack }); }
+    this.builds[this.buildIndex] = keepBuild(this.situation, this.buildState);
+    this.lifted = this.buildState.choice;
+    void this.playYears(this.buildState.choice!);
+  }
+
+  /** The years in 5-year steps: bags leave the purse as each hall goes up, timber greys and is rebuilt, stone stands in scaffolding, then the account. */
+  private async playYears(b: Build) {
+    const epoch = this.epoch;
+    this.busy = true;
+    this.keepShown = false;
+    if (this.keepNode) this.keepNode.visible = false;
+    const sit = this.situation;
+    const acc = account(sit, b);
+    this.redrawRows();
+    const stepSeconds = this.ctx.demo ? 0.15 : 0.55;
+    for (const [i, st] of acc.steps.entries()) {
+      this.shown = { year: st.year, purse: st.purse, hall: st.hall };
+      this.redrawStrip();
+      this.redrawSite();
+      if (st.event === 'built' || st.event === 'rebuilt' || st.event === 'building') sfx.knock();
+      else if (st.event === 'rotted' || st.event === 'ran-out') sfx.pluck(1);
+      else if (st.event === 'finished') sfx.bell(7, 0.4);
+      else sfx.pluck(3 + (i % 5));
+      await this.ctx.tw.wait(stepSeconds);
+      if (!this.live(epoch)) return;
+    }
+    // The account: what it cost, and the hall at the end of the stay.
+    await this.ctx.say('kh.spent');
+    if (!this.live(epoch)) return;
+    await this.ctx.say(`kh.bags.${acc.spent}` as LineId);
+    if (!this.live(epoch)) return;
+    await this.ctx.say(`kh.${acc.end}` as LineId);
+    if (!this.live(epoch)) return;
+    const s = this.buildState;
+    const want = fits(sit);
+    if (s.done && s.choice === want) {
+      sfx.tada();
+      const l = this.layoutNow!;
+      this.ctx.particles.burst(l.site!.x + l.site!.w / 2, l.site!.y + 60, { colors: [swatch.yellow.fill, swatch.green.fill, 0xffffff], count: 14 });
+      for (const [i, f] of (['cook', 'steward', 'ringer'] as Figure[]).entries()) {
+        const a = figureArt(f, true);
+        a.scale.set(0.55);
+        a.position.set(l.site!.x + 40 + i * 50, l.site!.y + l.site!.h - 20);
+        this.walkLayer.addChild(a);
+      }
+      await this.ctx.say('kh.cheer');
+      if (!this.live(epoch)) return;
+      void this.nextSituation();
+      return;
+    }
+    if (s.done) {
+      // Kept twice: the fitting row glows and the reason is said; the situation stands as she left it.
+      this.busy = false;
+      this.redrawRows();
+      this.busy = true;
+      await this.ctx.say(want === 'stone' ? 'kh.long-for-timber' : 'kh.short-for-stone');
+      if (!this.live(epoch)) return;
+      void this.nextSituation();
+      return;
+    }
+    // The other choice: both accounts, then the question; Build again (free) or Keep it.
+    await this.ctx.say(`kh.would-cost.${want}` as LineId);
+    if (!this.live(epoch)) return;
+    await this.ctx.say(`kh.bags.${cost(sit, want)}` as LineId);
+    if (!this.live(epoch)) return;
+    void this.ctx.say('kh.which-build');
+    // The account stays on the site until she builds again.
+    this.busy = false;
+    this.keepShown = true;
+    if (this.keepNode) this.keepNode.visible = true;
+    this.redrawRows();
+    this.redrawStrip();
+    if (this.relayout) this.build();
+  }
+
+  private async nextSituation() {
+    const epoch = this.epoch;
+    if (this.buildIndex + 1 >= this.builds.length) { this.celebrate(); return; }
+    await this.ctx.tw.wait(this.ctx.demo ? 0.3 : 0.8);
+    if (!this.live(epoch)) return;
+    this.buildIndex++;
+    this.lifted = null;
+    this.rowsSeen.clear();
+    this.shown = null;
+    this.keepShown = false;
+    this.busy = false;
+    for (const c of this.walkLayer.removeChildren()) c.destroy({ children: true });
+    this.build();
+    await this.ctx.say('kh.next-lord');
+    if (this.live(this.epoch)) void this.introduceLord();
+  }
+
   // ——— Finishing and help ———
 
   private celebrate() {
@@ -819,6 +1280,19 @@ class KeepHouse implements Game {
       void this.ctx.say('kh.help-near');
       return;
     }
+    if (this.brief.id === 'ruin') {
+      this.ruins[this.ruinIndex] = askRuin(this.ruin);
+      this.redrawRuin();
+      void this.ctx.say('kh.help-clue');
+      return;
+    }
+    if (this.brief.id === 'build') {
+      if (this.buildState.done) return;
+      this.builds[this.buildIndex] = askBuild(this.buildState);
+      this.redrawRows();
+      void this.ctx.say('kh.help');
+      return;
+    }
     this.plans[this.planIndex] = askPlan(this.plan);
     this.redrawCells();
     void this.ctx.say('kh.help');
@@ -826,7 +1300,7 @@ class KeepHouse implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    if (this.relayout && !this.busy && !this.finished && !this.held && !this.heldRoom && !this.tileHeld) this.build();
+    if (this.relayout && !this.busy && !this.finished && !this.held && !this.heldRoom && !this.tileHeld && !this.heldLabel) this.build();
     if (this.brief.id === 'doors' && this.doors && !this.busy && !this.finished) {
       const was = this.idle >= IDLE_GLOW;
       this.idle += dt;
@@ -870,6 +1344,25 @@ class KeepHouse implements Game {
     if (this.brief.id === 'walk') {
       if (this.placement.done || this.placement.spot || !this.tileNode || !this.spotNodes) return null;
       return { drag: { on: this.tileNode }, to: { on: this.spotNodes.near }, pause: 0.8 };
+    }
+    if (this.brief.id === 'ruin') {
+      const ruin = this.ruinBrief;
+      const next = ruin.rooms.find((r) => !this.ruin.settled.includes(r.room));
+      if (!next) return null;
+      const i = ruin.rooms.indexOf(next);
+      if (!this.looked) return { tap: { on: this.ruinCells[next.cell], x: CELL / 2, y: CELL / 2 }, pause: 1.2 };
+      const t = this.labelNodes.get(next.room);
+      if (!t || i < 0) return null;
+      return { drag: { on: t.node }, to: { on: this.ruinCells[next.cell], x: CELL / 2, y: CELL / 2 }, pause: 0.8 };
+    }
+    if (this.brief.id === 'build') {
+      if (this.buildState.done || this.keepShown) return null;
+      const want = fits(this.situation);
+      const unseen = BUILDS_ORDER.find((b) => !this.rowsSeen.has(b));
+      const row = (b: Build) => this.rowNodes[BUILDS_ORDER.indexOf(b)];
+      if (unseen) return { tap: { on: row(unseen) }, pause: 1.0 };
+      if (this.lifted !== want) return { tap: { on: row(want) }, pause: 0.8 };
+      return this.buildNode ? { tap: { on: this.buildNode }, pause: 0.6 } : null;
     }
     if (this.plan.done) return null;
     const target = solutions(this.boardNow)[0];

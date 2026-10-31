@@ -3,6 +3,8 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
   allPlaced, applyMove, arrives, askPlacement, askPlan, askYard, briefFor, check, CORNERS, distance, doorCount, doorsDone, drawBoard, drop, EDGES, FIGURES, fixedRect, freeCells, glowTarget, hintFor, HOT_STEPS, keep, keepLayout, movePlan, NEEDS, nextDoor, place, PLAN_ROOMS, planFor, planTally, ringBell, SIDE_MIDDLES, solutions, spotRects, startDoors, startPlacement, startPlan, startYard, tapDoor, tapWell, walkTally, workplaceOf, yardDone, yardTally,
+  account, askRuin, askBuild, buildTally, cluesOf, cost, decidingClue, fits, isShared, keepBuild, label, placeBuild, ruinDone, ruinHint, spareLabel, startBuild, startRuin, CLUES,
+  type Build, type BuildBrief, type RuinBrief,
   type Board, type DoorsBrief, type Figure, type Layout, type PlanBrief, type Room, type WalkBrief, type WorkplacesBrief,
 } from './logic';
 
@@ -332,7 +334,7 @@ describe('level 4, fit the household', () => {
 
 describe('layout', () => {
   const views = { landscape: computeView(1024, 768), portrait: computeView(768, 1024), phone: computeView(844, 390), notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }) };
-  const briefs = [briefFor(1, 'toddler', new Rng(1)), briefFor(1, 'preschool', new Rng(2)), briefFor(2, 'preschool', new Rng(3)), briefFor(3, 'prek', new Rng(4)), briefFor(3, 'prek', new Rng(5)), briefFor(4, 'school', new Rng(6))];
+  const briefs = [briefFor(1, 'toddler', new Rng(1)), briefFor(1, 'preschool', new Rng(2)), briefFor(2, 'preschool', new Rng(3)), briefFor(3, 'prek', new Rng(4)), briefFor(3, 'prek', new Rng(5)), briefFor(4, 'school', new Rng(6)), briefFor(5, 'school', new Rng(7)), briefFor(5, 'school', new Rng(17)), briefFor(5, 'school', new Rng(27)), briefFor(6, 'school', new Rng(8)), briefFor(6, 'school', new Rng(18)), briefFor(6, 'school', new Rng(28))];
 
   it('keeps every input at least 100 units, inside the view, off the corners and apart, at every view', () => {
     for (const [name, v] of Object.entries(views)) {
@@ -374,5 +376,277 @@ describe('layout', () => {
   it('returns null rather than shrink when the view is too small', () => {
     const tiny = { ...views.landscape, w: 600, h: 300 };
     for (const b of briefs) expect(keepLayout(b, tiny)).toBeNull();
+  });
+});
+
+describe('level 5, read the ruin', () => {
+  const ruinsOf = (seed: number) => (briefFor(5, 'school', new Rng(seed)) as RuinBrief).ruins;
+  const shared = CLUES.filter(isShared);
+
+  it('fixes the clue table: hearth and drain are the only shared clues, every room has a deciding one', () => {
+    expect(shared.sort()).toEqual(['drain', 'hearth']);
+    expect(cluesOf('hall')).toEqual(['hearth', 'dais']);
+    expect(cluesOf('kitchen')).toEqual(['hearth', 'oven', 'drain']);
+    expect(cluesOf('stable')).toEqual(['drain', 'mangers', 'wide-door']);
+    expect(cluesOf('storeroom')).toEqual(['cellar-steps']);
+    expect(cluesOf('solar')).toEqual(['window-seat']);
+    for (const r of PLAN_ROOMS) expect(cluesOf(r).some((c) => !isShared(c))).toBe(true);
+  });
+
+  it('draws two ruins of four distinct rooms in distinct free cells with fair clues', () => {
+    for (const seed of seeds()) {
+      const ruins = ruinsOf(seed);
+      expect(ruins.length).toBe(2);
+      for (const ruin of ruins) {
+        expect(ruin.rooms.length).toBe(4);
+        expect(new Set(ruin.rooms.map((r) => r.room)).size).toBe(4);
+        expect(new Set(ruin.rooms.map((r) => r.cell)).size).toBe(4);
+        const free = freeCells(ruin.board);
+        for (const r of ruin.rooms) {
+          expect(free).toContain(r.cell);
+          expect(r.cell).not.toBe(ruin.board.well);
+          expect(r.cell).not.toBe(ruin.board.gate);
+          expect(r.shown.length).toBeGreaterThanOrEqual(1);
+          expect(r.shown.length).toBeLessThanOrEqual(3);
+          expect(r.shown.some((c) => !isShared(c))).toBe(true);
+          for (const c of r.shown) expect(cluesOf(r.room)).toContain(c);
+          // The shown set identifies the room among all five.
+          const matches = PLAN_ROOMS.filter((o) => r.shown.every((c) => cluesOf(o).includes(c)));
+          expect(matches).toEqual([r.room]);
+          expect(cluesOf(r.room)).toContain(decidingClue(ruin, r.room));
+          expect(isShared(decidingClue(ruin, r.room))).toBe(false);
+          expect(r.shown).toContain(decidingClue(ruin, r.room));
+        }
+        // A shared clue is shown in two rooms.
+        expect(shared.some((c) => ruin.rooms.filter((r) => r.shown.includes(c)).length >= 2)).toBe(true);
+      }
+    }
+  });
+
+  it('gives the same seed the same ruins', () => {
+    for (const seed of seeds(40)) expect(ruinsOf(seed)).toEqual(ruinsOf(seed));
+  });
+
+  it('settles a label only on its own room; a wrong label is one miss naming that room\'s deciding clue', () => {
+    for (const seed of seeds(100)) {
+      for (const ruin of ruinsOf(seed)) {
+        const s0 = startRuin();
+        for (const target of ruin.rooms) {
+          for (const lab of PLAN_ROOMS) {
+            const r = label(ruin, s0, lab, target.cell);
+            if (lab === target.room) {
+              expect(r.settled).toBe(true);
+              expect(r.missed).toBe(false);
+              expect(r.state.settled).toEqual([lab]);
+              expect(r.state.misses).toBe(0);
+            } else {
+              expect(r.settled).toBe(false);
+              expect(r.missed).toBe(true);
+              expect(r.state.misses).toBe(1);
+              expect(r.state.settled).toEqual([]);
+              expect(r.clue).toBe(decidingClue(ruin, target.room));
+              expect(target.shown).toContain(r.clue);
+            }
+          }
+        }
+        expect(spareLabel(ruin)).toBe(PLAN_ROOMS.find((x) => !ruin.rooms.some((r) => r.room === x)));
+        for (const r of ruin.rooms) expect(label(ruin, s0, spareLabel(ruin), r.cell).settled).toBe(false);
+      }
+    }
+  });
+
+  it('changes nothing for drops on labelled, feature or empty cells', () => {
+    for (const seed of seeds(100)) {
+      for (const ruin of ruinsOf(seed)) {
+        const first = ruin.rooms[0];
+        const s1 = label(ruin, startRuin(), first.room, first.cell).state;
+        for (const lab of PLAN_ROOMS) {
+          const again = label(ruin, s1, lab, first.cell);
+          expect(again.state).toEqual(s1);
+          expect(again.missed).toBe(false);
+          expect(again.settled).toBe(false);
+        }
+        const used = ruin.rooms.map((r) => r.cell);
+        const others = Array.from({ length: 9 }, (_, c) => c).filter((c) => !used.includes(c));
+        expect(others.length).toBe(5);
+        for (const c of others) {
+          for (const lab of PLAN_ROOMS) {
+            const r = label(ruin, s1, lab, c);
+            expect(r.state).toEqual(s1);
+            expect(r.missed || r.settled).toBe(false);
+          }
+        }
+      }
+    }
+  });
+
+  it('counts at most one hint per ruin, and following ruinHint from sampled states finishes it', () => {
+    for (const seed of seeds(50)) {
+      const rng = new Rng(seed + 99);
+      for (const ruin of ruinsOf(seed)) {
+        expect(ruinHint(ruin, startRuin())).toBeNull();
+        // Settle a random prefix of a random order, then get the glow by two misses or by asking.
+        const order = rng.shuffle(ruin.rooms.map((r) => r.room));
+        let s = startRuin();
+        const k = rng.int(0, 3);
+        for (const room of order.slice(0, k)) s = label(ruin, s, room, ruin.rooms.find((r) => r.room === room)!.cell).state;
+        const askFirst = rng.chance(0.5);
+        let hinted = 0;
+        if (askFirst) s = askRuin(s);
+        else {
+          const rest = ruin.rooms.filter((r) => !s.settled.includes(r.room));
+          for (let i = 0; i < 2; i++) {
+            const wrong = rng.pick(PLAN_ROOMS.filter((x) => x !== rest[i % rest.length].room && !s.settled.includes(x)));
+            const r = label(ruin, s, wrong, rest[i % rest.length].cell);
+            expect(r.missed).toBe(true);
+            if (r.glowed) hinted++;
+            s = r.state;
+          }
+          expect(s.hinted).toBe(true);
+          expect(hinted).toBe(1);
+        }
+        expect(ruinTallyHints(s)).toBe(1);
+        const missesBefore = s.misses;
+        // Holding the spare shows the tray; anything else leads to a room.
+        expect(ruinHint(ruin, s, spareLabel(ruin))).toEqual({ spare: true });
+        let guard = 0;
+        while (!ruinDone(ruin, s)) {
+          expect(guard++).toBeLessThan(10);
+          const held = rng.chance(0.5) ? null : rng.pick(order.filter((o) => !s.settled.includes(o)));
+          const h = ruinHint(ruin, s, held);
+          expect(h && 'cell' in h).toBe(true);
+          if (!h || !('cell' in h)) return;
+          if (held) expect(h.label).toBe(held);
+          expect(s.settled).not.toContain(h.label);
+          expect(ruin.rooms.find((r) => r.cell === h.cell)!.shown).toContain(h.clue);
+          const r = label(ruin, s, h.label, h.cell);
+          expect(r.settled).toBe(true);
+          s = r.state;
+        }
+        expect(s.misses).toBe(missesBefore);
+        expect(ruinHint(ruin, s)).toBeNull();
+        expect(s.hinted).toBe(true);
+      }
+    }
+  });
+});
+
+function ruinTallyHints(s: { hinted: boolean }) {
+  return s.hinted ? 1 : 0;
+}
+
+describe('level 6, stone or timber', () => {
+  const sitsOf = (seed: number) => (briefFor(6, 'school', new Rng(seed)) as BuildBrief).situations;
+
+  it('draws one timber-fit and one stone-fit situation from the stated sets, and the same seed the same', () => {
+    for (const seed of seeds()) {
+      const sits = sitsOf(seed);
+      expect(sits.map((x) => x.kind).sort()).toEqual(['stone', 'timber']);
+      expect(sitsOf(seed)).toEqual(sits);
+      for (const x of sits) {
+        if (x.kind === 'timber') {
+          expect([10, 15, 20, 25, 30]).toContain(x.years);
+          expect(x.bags).toBeGreaterThanOrEqual(cost(x, 'timber'));
+          expect(x.bags).toBeLessThanOrEqual(6);
+        } else {
+          expect([35, 40, 45, 50]).toContain(x.years);
+          expect([5, 6, 7, 8]).toContain(x.bags);
+        }
+        expect(x.bags).toBeGreaterThanOrEqual(1);
+        expect(x.bags).toBeLessThanOrEqual(8);
+        expect(x.years).toBeGreaterThanOrEqual(10);
+        expect(x.years).toBeLessThanOrEqual(50);
+        expect(x.years % 5).toBe(0);
+      }
+    }
+  });
+
+  it('costs timber 2 per 15 years and stone 5, never tied, and fits names the affordable cheaper choice', () => {
+    for (const seed of seeds()) {
+      for (const x of sitsOf(seed)) {
+        expect(cost(x, 'timber')).toBe(2 * Math.ceil(x.years / 15));
+        expect(cost(x, 'stone')).toBe(5);
+        expect(cost(x, 'timber')).not.toBe(cost(x, 'stone'));
+        const f = fits(x);
+        const other: Build = f === 'timber' ? 'stone' : 'timber';
+        const ok = (['timber', 'stone'] as Build[]).filter((b) => cost(x, b) <= x.bags);
+        expect(ok).toContain(f);
+        expect(cost(x, f)).toBeLessThan(cost(x, other));
+        // Exactly one choice fits: the other is unaffordable or dearer.
+        expect(cost(x, other) > x.bags || cost(x, other) > cost(x, f)).toBe(true);
+        const a = account(x, f);
+        expect(a.end).toBe('standing');
+        expect(a.spent).toBe(cost(x, f));
+      }
+    }
+  });
+
+  it('accounts timber as capped by the purse and stone as half up when bags run short', () => {
+    for (const years of [10, 15, 20, 25, 30, 35, 40, 45, 50]) {
+      for (let bags = 1; bags <= 8; bags++) {
+        const x = { lord: 0, years, bags, kind: 'timber' as Build };
+        const t = account(x, 'timber');
+        expect(t.spent).toBe(Math.min(cost(x, 'timber'), 2 * Math.floor(bags / 2)));
+        const s = account(x, 'stone');
+        if (bags < 5) {
+          expect(s.end).toBe('half-up');
+          expect(s.spent).toBe(bags);
+        } else {
+          expect(s.end).toBe('standing');
+          expect(s.spent).toBe(5);
+        }
+        for (const a of [t, s]) {
+          expect(a.steps.map((st) => st.year)).toEqual(Array.from({ length: years / 5 + 1 }, (_, i) => i * 5));
+          for (const st of a.steps) {
+            expect(st.purse).toBeGreaterThanOrEqual(0);
+            expect(st.purse).toBeLessThanOrEqual(8);
+          }
+        }
+      }
+    }
+  });
+
+  it('finishes on the fit, keeps the other choice open, and finishes on the second keep with one hint', () => {
+    for (const seed of seeds()) {
+      for (const x of sitsOf(seed)) {
+        const f = fits(x);
+        const other: Build = f === 'timber' ? 'stone' : 'timber';
+        expect(placeBuild(x, startBuild(), f).done).toBe(true);
+        const wrong = placeBuild(x, startBuild(), other);
+        expect(wrong.done).toBe(false);
+        expect(wrong.hinted).toBe(false);
+        const k1 = keepBuild(x, wrong);
+        expect(k1.done).toBe(false);
+        expect(k1.hinted).toBe(false);
+        const k2 = keepBuild(x, k1);
+        expect(k2.done).toBe(true);
+        expect(k2.hinted).toBe(true);
+        expect(buildTally([k2]).hints).toBe(1);
+        // Build again with the fit after one keep counts no hint.
+        const again = placeBuild(x, k1, f);
+        expect(again.done).toBe(true);
+        expect(again.hinted).toBe(false);
+        expect(buildTally([again, startBuild()])).toEqual({ misses: 0, hints: 0 });
+        // Asked-for help is one hint, repeated free.
+        const asked = askBuild(startBuild());
+        expect(asked.hinted).toBe(true);
+        expect(askBuild(asked)).toEqual(asked);
+        expect(buildTally([k2, asked, wrong, again]).misses).toBe(0);
+      }
+    }
+  });
+
+  it('keeps every row and control at least 100 units and apart at the four views', () => {
+    const views = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390), computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 })];
+    for (const seed of seeds(20)) {
+      const b = briefFor(6, 'school', new Rng(seed));
+      for (const v of views) {
+        const l = keepLayout(b, v)!;
+        expect(l).not.toBeNull();
+        const parts = [...l.rows!, l.build!, l.keep!];
+        for (const r of parts) expect(Math.min(r.w, r.h)).toBeGreaterThanOrEqual(100);
+        parts.forEach((p, i) => parts.forEach((q, j) => { if (i < j) expect(p.x < q.x + q.w && q.x < p.x + p.w && p.y < q.y + q.h && q.y < p.y + p.h).toBe(false); }));
+      }
+    }
   });
 });
