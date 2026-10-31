@@ -780,3 +780,35 @@ Proof: new-game tier, as the [definition's check tier](definitions/maker-lane.md
 Files expected: `src/games/lemonade-stand/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, `src/content/voice-script.ts`, `src/content/howto.ts` (a step scoped `{ from: 5 }`), `scripts/browser/suites/woods-batch.mjs`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier, as the [dive's slice 1](deep-dives/lemonade-stand.md#build-slices-in-order) sets it (typecheck; unit tests for the offer pool, no-loss and affordability with the cheaper boat, true comparisons and the savings insight; one scripted play `BROWSER_SUITE=woods WOODS_ONLY=lemon` at level 5 with one wrong boat, a second for the glow, then the right boat, and the lightbulb on a different day, so the round pays 2 misses and 2 hints; one portrait screenshot of the jetty; `fingerdemo` at level 5). Build only if shared files change. Person and device checks stay open.
+
+### pixel-pictures 1: Fresh pictures and colour logic
+
+- **`pixel-pictures`, fresh pictures and colour logic (dive slice 1)** (extends the built game; preschool to school, no new level): level 2 pool 3 → 6 two-colour 5×5 pictures (strawberry, duckling, mushroom) and level 6 pool 2 → 5 two-colour 6×6 pictures (sun, frog, fish), each accepted only if `colorLineSolvable` solves it (same-colour runs need a gap, different colours may touch, matching `colorRuns`); the level-6 hint and ghost finger use the colour deduction as levels 4–5 use `deduce`; a strict pool-larger-than-shown test. A picture that fails the check leaves the level-6 pool and a new one replaces it. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#proposed-ladder)
+
+Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `scripts/browser/suites/woods-batch.mjs` only if the level-6 case needs an update, and `docs/GAMES.md`.
+
+Proof: typecheck and the game's rule tests (pool sizes, solvability, hint leads to a settled square); one filtered regression play of level 6 (the `woods` suite's Pixel Pictures 6 case) and `fingerdemo` at 6. Person and device checks stay open.
+
+### pixel-pictures 2: Both ways and Twice as big
+
+- **`pixel-pictures`, level 7 Both ways and level 8 Twice as big (dive slice 2, after batch 1)** (new levels on an existing interaction; school): level 7 copies a drawn 6×6 quarter across two mirror lines into the other three (`PixelMode` gains `mirror2`; `pixel.notmirror2`, hint glows an open square whose mirror is drawn); level 8 copies a 3×3 model at double size into 2×2 blocks (`scaleUp(p, 2)`; `pixel.notbig`, hint glows one block). Authored four-fold pictures and five 3×3 models; how-to steps scoped from 7; bot through `pixelTouch`. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#proposed-ladder)
+
+Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the suite case, the README row and `docs/GAMES.md`.
+
+Proof: new levels tier: typecheck and rule tests (symmetry, quarter determines the rest, aligned blocks, hint and bot never wrong); one browser play of level 8 with one wrong square and the glow, a level-7 case in the same filtered run, `fingerdemo` at 7 and 8, one portrait screenshot of level 8. Stop after level 7 if the allowance cannot cover 8.
+
+### pixel-pictures 3: Two colours, small
+
+- **`pixel-pictures`, level 9 Two colours, small (dive slice 3, after batch 2)** (new level; preschool and pre-K, placed between 1 and 2 by `order`: 1, 9, 2, …): four new 4×4 two-colour pictures (ladybird first), picked as level 2 picks (`pixel.notcolor`); per-band `order` lists every ID once, `entryLevels` unchanged. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#easier-entries-and-levels-between-existing-ones)
+
+Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: typecheck, rule tests (4×4 with exactly two colours, `order` complete, entry level 1); one browser play of level 9 and `fingerdemo` at 9.
+
+### pixel-pictures 4: My own picture
+
+- **`pixel-pictures`, level 10 My own picture (dive slice 4, after batch 3)** (new interaction; pre-K and school, last in each band's order as a free level): a blank 5×5 with four swatches, a tap on a filled square empties it, a Done button (at least 100 units) appears after four squares; no misses or hints; the kept creation uses the existing pixel shape; adds a `coplayHint`; the demo shows the bot drawing a heart. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#easier-entries-and-levels-between-existing-ones)
+
+Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests (fewer than four squares cannot finish, kept creation equals the board); one scripted play to Done with a kept design, one portrait screenshot, `fingerdemo` at 10; the `creations` suite filtered to Pixel Pictures only if the kept shape changes. Person and device checks stay open.
