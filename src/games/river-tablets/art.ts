@@ -1,5 +1,5 @@
-/** River Tablets' code-drawn pieces: sheep, tokens, the jar, the clay ball and its cells, Crack, the tablet rows and signs, cart, storehouse, pen, icon and sticker. */
-import { Container, Graphics } from 'pixi.js';
+/** River Tablets' code-drawn pieces: sheep, tokens, the jar, the clay ball and its cells, Crack, the tablet rows and signs, cart, storehouse, pen, icon and sticker; for levels 4–5 the yard, baskets, crates of ten, the ten-mark, the tablet and strips, the stamps, Hand in, the verdicts and numbers. */
+import { Container, Graphics, Text } from 'pixi.js';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { finish } from '../../ui/buttons';
 import { CELL, type Kind } from './logic';
@@ -259,3 +259,166 @@ export function stickerArt(sheep: number, jars: number, color: ColorName): Conta
 }
 
 export { CELL };
+
+// ——— Levels 4–5: tens and ones ———
+
+/** The ten-mark: a corner wedge, twice the size of the small mark, pointing left. */
+export function tenWedgeArt(size = 54, color = CLAY.line): Graphics {
+  const g = new Graphics();
+  const h = size / 2;
+  g.moveTo(h, -h * 0.75).lineTo(h, h * 0.75).lineTo(-h, 0).closePath().fill(color);
+  g.moveTo(h, -h * 0.75).lineTo(-h, 0).lineTo(h, h * 0.75).stroke(line(CLAY.dark, Math.max(2, size * 0.05)));
+  g.moveTo(h * 0.2, -h * 0.35).lineTo(-h * 0.6, 0).stroke(line(CLAY.dark, Math.max(2, size * 0.04)));
+  g.eventMode = 'none';
+  return g;
+}
+
+/** A basket of grain standing on (0, 0), about `size` wide. */
+export function basketArt(size = 40): Graphics {
+  const g = new Graphics();
+  const w = size;
+  const h = size * 0.7;
+  g.ellipse(0, -h, w * 0.42, h * 0.22).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
+  g.moveTo(-w / 2, -h).lineTo(w / 2, -h).lineTo(w * 0.36, 0).lineTo(-w * 0.36, 0).closePath().fill(wood.light).stroke(line(wood.line, 3));
+  g.moveTo(-w * 0.44, -h * 0.55).lineTo(w * 0.44, -h * 0.55).stroke(line(wood.line, 2));
+  g.eventMode = 'none';
+  return g;
+}
+
+/** A crate of ten baskets, `w` × `h` standing on (0, 0); `open` shows its ten baskets in a 5 × 2 block above it. */
+export function crateArt(w: number, h: number, open = false): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-w / 2, -h, w, h, 8).fill(wood.fill).stroke(line(wood.line, 5));
+  // Ten basket rims show through the slats.
+  for (let i = 0; i < 10; i++) {
+    const x = -w / 2 + w * (0.14 + (i % 5) * 0.18);
+    const y = -h + h * (i < 5 ? 0.3 : 0.62);
+    g.ellipse(x, y, w * 0.07, h * 0.08).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 2));
+  }
+  for (const y of [0.15, 0.47, 0.8]) g.moveTo(-w / 2 + 4, -h + h * y).lineTo(w / 2 - 4, -h + h * y).stroke(line(wood.line, 3));
+  c.addChild(g);
+  if (open) {
+    for (let i = 0; i < 10; i++) {
+      const b = basketArt(w * 0.2);
+      b.position.set(-w * 0.4 + (i % 5) * w * 0.2, -h - 6 - Math.floor(i / 5) * w * 0.17);
+      c.addChild(b);
+    }
+  }
+  c.eventMode = 'none';
+  return c;
+}
+
+/** The yard: packed earth `w` × `h` at (0, 0) top-left, with the cart under the crates. */
+export function yardArt(w: number, h: number): Graphics {
+  const g = new Graphics();
+  g.roundRect(0, 0, w, h, 24).fill(0xe8d3a3).stroke(line(0xc9ad74, 5));
+  g.ellipse(w * 0.2, h * 0.3, w * 0.06, h * 0.05).fill({ color: 0xc9ad74, alpha: 0.5 });
+  g.ellipse(w * 0.75, h * 0.8, w * 0.08, h * 0.05).fill({ color: 0xc9ad74, alpha: 0.5 });
+  return g;
+}
+
+/** The clay tablet `w` × `h` at (0, 0) top-left; its read band (`readH` tall) carries a small mouth-and-waves sign: tap to hear it. */
+export function tabletArt(w: number, h: number, readH: number): Graphics {
+  const g = new Graphics();
+  g.roundRect(0, 8, w, h, 30).fill(CLAY.dark);
+  g.roundRect(0, 0, w, h, 30).fill(CLAY.fill).stroke(line(CLAY.line, 6));
+  g.roundRect(14, 12, w * 0.3, 16, 8).fill({ color: CLAY.light, alpha: 0.6 });
+  const cx = w / 2;
+  const cy = readH / 2 + 8;
+  g.circle(cx - 30, cy, 22).fill(CLAY.light).stroke(line(CLAY.line, 4));
+  g.moveTo(cx - 40, cy + 4).quadraticCurveTo(cx - 30, cy + 14, cx - 20, cy + 4).stroke(line(ink, 4));
+  for (const r of [14, 28]) g.arc(cx + 2, cy, r, -0.7, 0.7).stroke(line(CLAY.line, 4));
+  return g;
+}
+
+/** A strip of the tablet `w` × `h` at (0, 0) top-left: `tens` big marks in one line, or `ones` small marks in two lines of ten. */
+export function stripArt(w: number, h: number, mark: 'ten' | 'one', count: number, glow = false): Container {
+  const c = new Container();
+  const g = new Graphics();
+  if (glow) g.roundRect(-8, -8, w + 16, h + 16, 24).fill({ color: swatch.yellow.fill, alpha: 0.5 });
+  g.roundRect(0, 0, w, h, 18).fill(CLAY.light).stroke(line(CLAY.line, 4));
+  c.addChild(g);
+  // A faint guide mark at the left says which strip this is.
+  const guide = mark === 'ten' ? tenWedgeArt(56, CLAY.dark) : wedgeArt(36, CLAY.dark);
+  guide.alpha = 0.35;
+  guide.position.set(36, h / 2);
+  c.addChild(guide);
+  g.moveTo(70, 10).lineTo(70, h - 10).stroke(line(CLAY.dark, 3));
+  for (let i = 0; i < count; i++) {
+    const m = mark === 'ten' ? tenWedgeArt(80) : wedgeArt(36);
+    if (mark === 'ten') m.position.set(130 + i * 110, h / 2);
+    else m.position.set(96 + (i % 10) * ((w - 110) / 10), i < 10 ? h * 0.3 : h * 0.72);
+    c.addChild(m);
+  }
+  c.eventMode = 'none';
+  return c;
+}
+
+/** A stamp `w` × `h` centred on (0, 0): a wooden handle over the big or small mark it presses. */
+export function stampArt(w: number, h: number, mark: 'ten' | 'one', glow = false): Container {
+  const c = new Container();
+  if (glow) c.addChild(new Graphics().roundRect(-w / 2 - 10, -h / 2 - 10, w + 20, h + 20, 30).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  c.addChild(finish({ w, h, corner: 28 }, mark === 'ten' ? swatch.orange : swatch.yellow));
+  const g = new Graphics();
+  g.roundRect(-14, -h * 0.4, 28, h * 0.32, 10).fill(wood.fill).stroke(line(wood.line, 4));
+  c.addChild(g);
+  const m = mark === 'ten' ? tenWedgeArt(62) : wedgeArt(36);
+  m.position.set(0, h * 0.14);
+  c.addChild(m);
+  c.eventMode = 'none';
+  return c;
+}
+
+/** Hand in: the pet's two hands holding a little tablet up. */
+export function handInArt(w: number, h: number, glow = false): Container {
+  const c = new Container();
+  if (glow) c.addChild(new Graphics().roundRect(-w / 2 - 10, -h / 2 - 10, w + 20, h + 20, 34).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  c.addChild(finish({ w, h, corner: 28 }, swatch.green));
+  const g = new Graphics();
+  g.roundRect(-26, -30, 52, 40, 8).fill(CLAY.fill).stroke(line(CLAY.line, 4));
+  g.moveTo(-10, -18).lineTo(10, -18).lineTo(0, -4).closePath().fill(CLAY.line);
+  for (const s of [-1, 1]) g.roundRect(s * 34 - 12, -4, 24, 34, 10).fill(swatch.yellow.light).stroke(line(ink, 4));
+  c.addChild(g);
+  c.eventMode = 'none';
+  return c;
+}
+
+/** A verdict button `size` square centred on (0, 0), pictured, never worded: short (a gap in the cart), right (tablet and cart joined), extra (a basket over the edge). */
+export function verdictArt(kind: 'short' | 'right' | 'extra', size: number, chosen = false, glow = false): Container {
+  const c = new Container();
+  if (glow) c.addChild(new Graphics().roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  c.addChild(finish({ w: size, h: size, corner: 28 }, chosen ? swatch.blue : swatch.purple));
+  const g = new Graphics();
+  // A small tablet above a small cart bed.
+  g.roundRect(-30, -42, 60, 30, 6).fill(CLAY.fill).stroke(line(CLAY.line, 3));
+  g.roundRect(-34, 8, 68, 18, 5).fill(wood.fill).stroke(line(wood.line, 3));
+  for (const x of [-20, 20]) g.circle(x, 30, 7).fill(wood.line);
+  const slots = kind === 'short' ? 2 : 3;
+  for (let i = 0; i < 3; i++) {
+    const x = -20 + i * 20;
+    if (i < slots) g.circle(x, 2, 7).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 2));
+    else g.circle(x, 2, 7).stroke(line(ink, 2));
+  }
+  if (kind === 'right') g.roundRect(-4, -12, 8, 14, 3).fill(swatch.green.fill).stroke(line(swatch.green.line, 2));
+  if (kind === 'extra') g.circle(40, -4, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 2));
+  c.addChild(g);
+  c.eventMode = 'none';
+  return c;
+}
+
+/** A number button `size` square centred on (0, 0): `n` dots over the numeral. */
+export function numberArt(n: number, size: number, glow = false): Container {
+  const c = new Container();
+  if (glow) c.addChild(new Graphics().roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  c.addChild(finish({ w: size, h: size, corner: 26 }, swatch.blue));
+  const g = new Graphics();
+  for (let i = 0; i < n; i++) g.circle((i - (n - 1) / 2) * 22, -26, 8).fill(cream);
+  c.addChild(g);
+  const t = new Text({ text: String(n), style: { fontFamily: 'Nunito, sans-serif', fontSize: 44, fontWeight: '800', fill: cream, align: 'center' } });
+  t.anchor.set(0.5);
+  t.position.set(0, 14);
+  c.addChild(t);
+  c.eventMode = 'none';
+  return c;
+}

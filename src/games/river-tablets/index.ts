@@ -1,11 +1,13 @@
 /**
  * River Tablets: make a clay record of real things, then open it up and see it match them one to one. Level 1 drops a token
  * in the jar for each sheep and tips the jar; level 2 presses one mark per token on a clay envelope and cracks it open;
- * level 3 presses each mark in the row with its picture and reads the tablet back. Rules: ./logic.ts; definition:
+ * level 3 presses each mark in the row with its picture and reads the tablet back; level 4 writes a cart's crates and
+ * baskets with big marks for tens and small marks for ones; level 5 checks a cart against the farm's tablet: short, right or
+ * extra, and by how many. Rules: ./logic.ts; definition:
  * docs/definitions/river-tablets.md.
  */
 import { Container, Ellipse, Graphics, Rectangle } from 'pixi.js';
-import { swatch } from '../../art/palette';
+import { ink, swatch } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -17,16 +19,21 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import { ballArt, cartArt, cellArt, crackArt, goodArt, iconArt, jarArt, penArt, riverArt, rowArt, sheepArt, signArt, stickerArt, storeArt, tokenArt, wedgeArt } from './art';
 import {
-  arrive, askEnvelope, askTablet, briefFor, CELL, centre, crackEnvelope, envelopeTally, hintFor, KINDS, markCount, planFor, press, pressRow, readBack, readyToTip, ROW_CELLS, SIGN, startEnvelope, startPen, startTablet, tabletLayout, tabletTally, tapJar, waiting,
-  type Brief, type EnvelopeState, type Kind, type PenState, type Pt, type TabletLayout, type TabletState,
+  ballArt, basketArt, cartArt, cellArt, crackArt, crateArt, goodArt, handInArt, iconArt, jarArt, numberArt, penArt, riverArt, rowArt, sheepArt, signArt, stampArt, stickerArt, storeArt, stripArt,
+  tabletArt, tenWedgeArt, tokenArt, verdictArt, wedgeArt, yardArt,
+} from './art';
+import {
+  arrive, askCheck, askEnvelope, askTablet, askTens, briefFor, CART_VERDICTS, cartOf, CELL, centre, checkTally, chooseNumber, chooseVerdict, crackEnvelope, envelopeTally, handIn, hintFor, KINDS, lift, lineUp,
+  markCount, planFor, press, pressRow, readBack, readyToTip, ROW_CELLS, SCATTER_COLS, SCATTER_ROWS, scatterFor, shortest, SIGN, stamp, startCheck, startEnvelope, startPen, startTablet, startTens, tabletLayout,
+  tabletTally, tapJar, tensHint, tensTally, value, verdictFor, waiting,
+  type Brief, type Cart, type CartVerdict, type CheckState, type EnvelopeState, type Kind, type Mark, type PenState, type Pt, type Reading, type Rect, type TabletLayout, type TabletState, type TensState,
 } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 3 },
+  school: { min: 3, max: 5 },
 };
 
 /** Spoken counts come from bounded slots, never free text. */
@@ -43,6 +50,12 @@ class RiverTablets implements Game {
   envelopeIndex = 0;
   tablets: TabletState[] = [];
   tabletIndex = 0;
+  /** Level 4: one tablet per cart; level 5: one check per cart. `cartIndex` is the cart in the yard. */
+  tens: TensState[] = [];
+  checks: CheckState[] = [];
+  cartIndex = 0;
+  /** Level 4: the pet has counted the yard for this cart (the ghost finger asks once). */
+  yardCounted = false;
   /** An animation is running; inputs wait. */
   busy = false;
   finished = false;
@@ -78,6 +91,16 @@ class RiverTablets implements Game {
   private tokenNodes: Container[] = [];
   private insideNodes: Container[] = [];
   private readonly lineupLayer = new Container();
+  yardNode: Container | null = null;
+  tabletNode: Container | null = null;
+  stripNodes: Container[] = [];
+  stampNodes: Container[] = [];
+  handInNode: Container | null = null;
+  verdictNodes: Container[] = [];
+  numberNodes: Container[] = [];
+  crateNodes: Container[] = [];
+  private basketNodes: Container[] = [];
+  private openCrate = -1;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -90,6 +113,8 @@ class RiverTablets implements Game {
     if (this.brief.id === 'tokens') this.pen = startPen(this.brief.sheep);
     if (this.brief.id === 'envelope') this.envelopes = this.brief.envelopes.map((n) => startEnvelope(n));
     if (this.brief.id === 'rows') this.tablets = this.brief.deliveries.map((d) => startTablet(d));
+    if (this.brief.id === 'tens') this.tens = this.brief.carts.map((c) => startTens(10 * c.crates + c.loose));
+    if (this.brief.id === 'check') this.checks = this.brief.deliveries.map((d) => startCheck(d));
   }
 
   get level() {
@@ -108,13 +133,16 @@ class RiverTablets implements Game {
   get tally() {
     if (this.brief.id === 'envelope') return envelopeTally(this.envelopes);
     if (this.brief.id === 'rows') return tabletTally(this.tablets);
+    if (this.brief.id === 'tens') return tensTally(this.tens);
+    if (this.brief.id === 'check') return checkTally(this.checks);
     return { misses: 0, hints: 0 };
   }
 
   start() {
     this.build();
     void this.ctx.instruct(`rt.instruct.${this.level}` as LineId);
-    if (this.level >= 2) void this.ctx.say('rt.history');
+    if (this.level === 4) void this.ctx.say('rt.history.tens');
+    else if (this.level >= 2) void this.ctx.say('rt.history');
     void this.begin();
   }
 
@@ -141,6 +169,13 @@ class RiverTablets implements Game {
     this.epoch++;
     this.relayout = false;
     this.jarNode = this.ballNode = this.crackNode = this.storeNode = this.cartNode = this.goodNode = null;
+    this.yardNode = this.tabletNode = this.handInNode = null;
+    this.stripNodes = [];
+    this.stampNodes = [];
+    this.verdictNodes = [];
+    this.numberNodes = [];
+    this.crateNodes = [];
+    this.basketNodes = [];
     this.cellNodes = [];
     this.rowNodes = [];
     this.signNodes = [];
@@ -155,6 +190,13 @@ class RiverTablets implements Game {
     const l = tabletLayout(this.level, this.view);
     this.layoutNow = l;
     if (!l) return;
+    if (this.brief.id === 'tens' || this.brief.id === 'check') {
+      this.buildYard(l);
+      this.buildTablet(l);
+      this.board.addChild(this.lineupLayer, this.glow);
+      if (this.brief.id === 'check' && this.check.lined) this.drawLineup(shortest(this.check.t), cartOf(this.check.c), true);
+      return;
+    }
     const river = riverArt(l.lane.w, l.lane.h * 0.5);
     river.position.set(l.lane.x, l.lane.y);
     this.board.addChild(river);
@@ -363,6 +405,7 @@ class RiverTablets implements Game {
   private async begin() {
     if (this.brief.id === 'tokens') { void this.walkNext(); return; }
     if (this.brief.id === 'envelope') { void this.fillEnvelope(); return; }
+    if (this.brief.id === 'tens' || this.brief.id === 'check') return;
     void this.arrival();
   }
 
@@ -716,6 +759,439 @@ class RiverTablets implements Game {
     void this.arrival();
   }
 
+  // ——— Levels 4–5: the yard and the tablet ———
+
+  get tensNow(): TensState {
+    return this.tens[this.cartIndex];
+  }
+
+  get check(): CheckState {
+    return this.checks[this.cartIndex];
+  }
+
+  /** The cart in the yard: level 4's brief, or the cart that came at level 5. */
+  private get cart(): Cart {
+    if (this.brief.id === 'tens') return this.brief.carts[this.cartIndex];
+    return cartOf(this.check.c);
+  }
+
+  /** Where each loose basket stands: level 4's seeded scatter, or one seeded by the delivery at level 5. */
+  private get scatter(): number[] {
+    if (this.brief.id === 'tens') return this.brief.scatter[this.cartIndex];
+    const c = this.check;
+    return scatterFor(this.cart.loose, new Rng(c.t * 41 + c.c));
+  }
+
+  /** What the tablet says now: her marks at level 4, the farm's at level 5. */
+  private get reading(): Reading {
+    return this.brief.id === 'tens' ? this.tensNow : shortest(this.check.t);
+  }
+
+  private buildYard(l: TabletLayout) {
+    const yard = new Container();
+    yard.position.set(l.lane.x, l.lane.y);
+    yard.addChild(yardArt(l.lane.w, l.lane.h));
+    yard.hitArea = new Rectangle(0, 0, l.lane.w, l.lane.h);
+    onTap(yard, () => this.countYard(), { cooldown: 300 });
+    this.board.addChild(yard);
+    this.yardNode = yard;
+    const cart = this.cart;
+    this.crateNodes = l.crates!.slice(0, cart.crates).map((r, i) => {
+      const node = new Container();
+      // The crate stands on the yard's ground; opened, its ten baskets show above it.
+      node.position.set(r.x + r.w / 2 - l.lane.x, r.y + r.h - l.lane.y);
+      node.addChild(crateArt(r.w - 10, r.h - 40, this.openCrate === i));
+      node.hitArea = new Rectangle(-r.w / 2, -r.h, r.w, r.h);
+      onTap(node, (e) => { e.stopPropagation(); void this.openCrateAt(i); }, { cooldown: 300 });
+      yard.addChild(node);
+      return node;
+    });
+    const b = l.baskets!;
+    this.basketNodes = this.scatter.map((slot) => {
+      const col = slot % SCATTER_COLS;
+      const row = Math.floor(slot / SCATTER_COLS);
+      const jitter = ((slot * 37) % 9) - 4;
+      const g = basketArt(Math.min(40, b.w / SCATTER_COLS - 4));
+      g.position.set(b.x - l.lane.x + (col + 0.5) * (b.w / SCATTER_COLS) + jitter, b.y - l.lane.y + (row + 1) * (b.h / SCATTER_ROWS) - 6 + jitter / 2);
+      yard.addChild(g);
+      return g;
+    });
+  }
+
+  private buildTablet(l: TabletLayout) {
+    const t = l.tablet!;
+    const tablet = new Container();
+    tablet.position.set(t.x, t.y);
+    tablet.addChild(tabletArt(t.w, t.h, l.strips![0].y - t.y - 8));
+    tablet.hitArea = new Rectangle(0, 0, t.w, t.h);
+    onTap(tablet, () => this.readTablet(), { cooldown: 400 });
+    this.board.addChild(tablet);
+    this.tabletNode = tablet;
+    const tens = this.brief.id === 'tens';
+    this.stripNodes = (['ten', 'one'] as Mark[]).map((mark, i) => {
+      const r = l.strips![i];
+      const node = new Container();
+      node.position.set(r.x - t.x, r.y - t.y);
+      if (tens) {
+        node.hitArea = new Rectangle(0, 0, r.w, r.h);
+        onTap(node, (e) => { e.stopPropagation(); this.liftMark(mark); }, { cooldown: 150 });
+      } else node.eventMode = 'none';
+      tablet.addChild(node);
+      return node;
+    });
+    if (tens) {
+      this.stampNodes = (['ten', 'one'] as Mark[]).map((mark, i) => {
+        const r = l.stamps![i];
+        const node = new Container();
+        node.position.copyFrom(centre(r));
+        node.addChild(stampArt(r.w, r.h, mark));
+        node.hitArea = new Rectangle(-r.w / 2 - 6, -r.h / 2 - 6, r.w + 12, r.h + 12);
+        onTap(node, () => this.pressStamp(mark), { cooldown: 150 });
+        this.board.addChild(node);
+        return node;
+      });
+      const h = l.handIn!;
+      const hand = new Container();
+      hand.position.copyFrom(centre(h));
+      hand.addChild(handInArt(h.w, h.h));
+      hand.hitArea = new Rectangle(-h.w / 2 - 8, -h.h / 2 - 8, h.w + 16, h.h + 16);
+      onTap(hand, () => void this.handInTablet(), { cooldown: 400 });
+      this.board.addChild(hand);
+      this.handInNode = hand;
+    } else {
+      this.verdictNodes = CART_VERDICTS.map((v, i) => {
+        const r = l.verdicts![i];
+        const node = new Container();
+        node.position.copyFrom(centre(r));
+        node.hitArea = new Rectangle(-r.w / 2 - 6, -r.h / 2 - 6, r.w + 12, r.h + 12);
+        onTap(node, () => void this.pickVerdict(v), { cooldown: 300 });
+        this.board.addChild(node);
+        return node;
+      });
+      this.numberNodes = [1, 2, 3].map((n, i) => {
+        const r = l.numbers![i];
+        const node = new Container();
+        node.position.copyFrom(centre(r));
+        node.addChild(numberArt(n, r.w));
+        node.hitArea = new Rectangle(-r.w / 2 - 4, -r.h / 2 - 4, r.w + 8, r.h + 8);
+        onTap(node, () => void this.pickNumber(n), { cooldown: 300 });
+        this.board.addChild(node);
+        return node;
+      });
+    }
+    this.redrawTablet();
+  }
+
+  /** The strips from the model; at level 5 the verdicts show which is chosen and the numbers only while short or extra is open. */
+  private redrawTablet() {
+    const l = this.layoutNow;
+    if (!l?.strips) return;
+    const r = this.reading;
+    (['ten', 'one'] as Mark[]).forEach((mark, i) => {
+      const node = this.stripNodes[i];
+      if (!node) return;
+      for (const c of node.removeChildren()) c.destroy({ children: true });
+      node.addChild(stripArt(l.strips![i].w, l.strips![i].h, mark, mark === 'ten' ? r.tens : r.ones));
+    });
+    if (this.brief.id !== 'check') return;
+    const c = this.check;
+    this.verdictNodes.forEach((node, i) => {
+      for (const ch of node.removeChildren()) ch.destroy({ children: true });
+      node.addChild(verdictArt(CART_VERDICTS[i], l.verdicts![i].w, c.open === CART_VERDICTS[i]));
+    });
+    // The numbers stand beside the open verdict.
+    const open = c.open ? CART_VERDICTS.indexOf(c.open) : -1;
+    this.numberNodes.forEach((node, i) => {
+      node.visible = open >= 0;
+      node.eventMode = open >= 0 ? 'static' : 'none';
+      const at = l.numbers![i];
+      node.position.set(at.x + at.w / 2, at.y + at.h / 2);
+      if (open >= 0) node.alpha = 1;
+    });
+  }
+
+  /** The rect the level-4 glow rings: the next step toward the fewest marks. */
+  private tensGlowRect(): Rect | null {
+    const l = this.layoutNow;
+    if (!l?.strips) return null;
+    const h = tensHint(this.tensNow);
+    if (h === 'handIn') return l.handIn!;
+    if (h === 'liftTen') return l.strips[0];
+    if (h === 'liftOne') return l.strips[1];
+    return l.stamps![h === 'stampTen' ? 0 : 1];
+  }
+
+  private tensTarget(h: ReturnType<typeof tensHint>): Container {
+    if (h === 'handIn') return this.handInNode!;
+    if (h === 'liftTen') return this.stripNodes[0];
+    if (h === 'liftOne') return this.stripNodes[1];
+    return this.stampNodes[h === 'stampTen' ? 0 : 1];
+  }
+
+  /** Tapping the tablet's face reads it aloud; never counted. */
+  readTablet() {
+    if (this.finished || this.busy || !this.tabletNode) return;
+    const r = this.reading;
+    sfx.pop(7);
+    void this.ctx.say('rt.read-tablet', { tens: r.tens, ones: r.ones, n: value(r) });
+  }
+
+  /** Tapping a crate opens it for a moment and counts its ten; never counted. */
+  private async openCrateAt(i: number) {
+    if (this.finished || this.busy) return;
+    const epoch = this.epoch;
+    this.openCrate = i;
+    this.build();
+    sfx.pop(8);
+    await this.ctx.say('rt.crate-ten');
+    if (!this.live(epoch)) return;
+    await this.ctx.tw.wait(this.ctx.demo ? 0.3 : 0.8);
+    if (!this.live(epoch)) return;
+    this.openCrate = -1;
+    this.build();
+  }
+
+  /** Level 4: tapping the yard makes the pet count it, crates by tens then each loose basket with a bounce; never counted. */
+  private async countYard() {
+    if (this.finished || this.busy || this.brief.id !== 'tens') return;
+    const epoch = this.epoch;
+    this.busy = true;
+    this.yardCounted = true;
+    let n = 0;
+    const bounce = (node: Container) => {
+      const y = node.y;
+      void this.ctx.tw.to(node.position, { y: y - 16 }, { duration: 0.12 }).then(() => this.ctx.tw.to(node.position, { y }, { duration: 0.18, ease: ease.inQuad }));
+    };
+    for (const crate of this.crateNodes) {
+      n += 10;
+      bounce(crate);
+      sfx.marimba(2, 0.4);
+      await this.ctx.say('rt.number', { n });
+      if (!this.live(epoch)) return;
+    }
+    for (const basket of this.basketNodes) {
+      n += 1;
+      bounce(basket);
+      sfx.marimba(4 + (n % 5), 0.3);
+      await this.ctx.say('rt.number', { n });
+      if (!this.live(epoch)) return;
+    }
+    await this.ctx.say('rt.yard-count', { n });
+    if (!this.live(epoch)) return;
+    this.busy = false;
+    if (this.relayout) this.build();
+  }
+
+  pressStamp(mark: Mark) {
+    if (this.finished || this.busy || this.brief.id !== 'tens') return;
+    const node = this.stampNodes[mark === 'ten' ? 0 : 1];
+    node.scale.set(0.9);
+    void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    const { state, capped } = stamp(this.tensNow, mark);
+    if (capped) {
+      sfx.pop(3);
+      void this.ctx.tw.to(node, { rotation: 0.12 }, { duration: 0.08 }).then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.25, ease: ease.outElastic }));
+      return;
+    }
+    this.tens[this.cartIndex] = state;
+    // A low thup for a ten, a high one for a one.
+    sfx.marimba(mark === 'ten' ? 0 : 7, 0.4);
+    this.redrawTablet();
+  }
+
+  liftMark(mark: Mark) {
+    if (this.finished || this.busy || this.brief.id !== 'tens') return;
+    const before = this.tensNow;
+    this.tens[this.cartIndex] = lift(before, mark);
+    sfx.pop(5);
+    this.redrawTablet();
+  }
+
+  /** Hand in is level 4's one commit: the goods line up under the marks while the pet reads both. */
+  private async handInTablet() {
+    if (this.finished || this.busy || this.brief.id !== 'tens' || !this.handInNode) return;
+    const epoch = this.epoch;
+    this.busy = true;
+    const node = this.handInNode;
+    node.scale.set(0.9);
+    void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
+    const hers: Reading = { tens: this.tensNow.tens, ones: this.tensNow.ones };
+    const { state, result } = handIn(this.tensNow);
+    this.tens[this.cartIndex] = state;
+    sfx.clunk();
+    const n = state.n;
+    if (result === 'longer') {
+      // Right as it is; then ten small marks slide together into one big mark.
+      sfx.sparkle();
+      await this.ctx.say('rt.tens.longer', { n });
+      if (!this.live(epoch)) return;
+      this.redrawTablet();
+      sfx.whoosh();
+      await this.ctx.say('rt.tens.shorter-way');
+      if (!this.live(epoch)) return;
+    }
+    const mismatched = this.drawLineup(result === 'wrong' ? hers : state, this.cart, false);
+    await this.ctx.tw.wait(0.7);
+    if (!this.live(epoch)) return;
+    if (result !== 'wrong') {
+      sfx.sparkle();
+      await this.ctx.say('rt.tens.match', { tens: state.tens, ones: state.ones, n });
+      if (!this.live(epoch)) return;
+      void this.nextCart(this.tens.length);
+      return;
+    }
+    sfx.boing();
+    for (const t of mismatched) {
+      void this.ctx.tw.to(t, { rotation: 0.3 }, { duration: 0.15 }).then(() => this.ctx.tw.to(t, { rotation: -0.3 }, { duration: 0.3 })).then(() => this.ctx.tw.to(t, { rotation: 0 }, { duration: 0.15 }));
+    }
+    await this.ctx.say('rt.tens.wrong', { says: value(hers), n });
+    if (!this.live(epoch)) return;
+    // The tablet comes back with her marks kept.
+    this.clearLineup();
+    this.busy = false;
+    if (state.glowing) void this.ctx.say('rt.tens.help');
+    if (this.relayout) this.build();
+  }
+
+  /** Level 5: a verdict button says its name; Right commits, short and extra open the numbers. */
+  private async pickVerdict(v: CartVerdict) {
+    if (this.finished || this.busy || this.brief.id !== 'check') return;
+    const node = this.verdictNodes[CART_VERDICTS.indexOf(v)];
+    node.scale.set(0.9);
+    void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    void this.ctx.say(`rt.verdict.${v}` as LineId);
+    const r = chooseVerdict(this.check, v);
+    this.checks[this.cartIndex] = r.state;
+    if (r.result === 'none') { sfx.pop(7); this.redrawTablet(); return; }
+    await this.settleCheck(r.result === 'right');
+  }
+
+  private async pickNumber(n: number) {
+    if (this.finished || this.busy || this.brief.id !== 'check' || !this.check.open) return;
+    const node = this.numberNodes[n - 1];
+    node.scale.set(0.9);
+    void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    const r = chooseNumber(this.check, n);
+    this.checks[this.cartIndex] = r.state;
+    await this.settleCheck(r.result === 'right');
+  }
+
+  private async settleCheck(right: boolean) {
+    const epoch = this.epoch;
+    this.busy = true;
+    this.redrawTablet();
+    const c = this.check;
+    if (right) {
+      this.drawLineup(shortest(c.t), cartOf(c.c), false);
+      await this.ctx.tw.wait(0.7);
+      if (!this.live(epoch)) return;
+      sfx.sparkle();
+      const want = verdictFor(c.t, c.c);
+      await this.ctx.say(want.verdict === 'right' ? 'rt.check.right.same' : `rt.check.right.${want.verdict}` as LineId, { t: c.t, c: c.c, by: want.by });
+      if (!this.live(epoch)) return;
+      void this.nextCart(this.checks.length);
+      return;
+    }
+    sfx.boing();
+    await this.ctx.say('rt.check.wrong', { t: c.t });
+    if (!this.live(epoch)) return;
+    if (c.lined) {
+      // The lineup plays and holds while she answers again.
+      this.drawLineup(shortest(c.t), cartOf(c.c), true);
+      await this.ctx.say('rt.check.help');
+      if (!this.live(epoch)) return;
+    }
+    this.busy = false;
+    if (this.relayout) this.build();
+  }
+
+  /** The next cart rolls into the yard, or the round is done. */
+  private async nextCart(count: number) {
+    if (this.cartIndex + 1 >= count) { this.celebrate(); return; }
+    this.cartIndex++;
+    this.yardCounted = false;
+    this.openCrate = -1;
+    this.clearLineup();
+    this.busy = false;
+    this.build();
+    sfx.ratchet(3);
+    void this.ctx.say('rt.next-cart');
+  }
+
+  /**
+   * The goods under the marks: each ten-mark over a crate (or its loose baskets, with empty places), each small mark over a
+   * basket or an empty place, then any extra baskets. `glow` lights what does not match. Returns the mismatched pieces.
+   */
+  private drawLineup(r: Reading, cart: Cart, glow: boolean): Container[] {
+    this.clearLineup();
+    const l = this.layoutNow;
+    if (!l) return [];
+    const area = l.lineup;
+    const lu = lineUp(r, cart);
+    const TEN = 2.4;
+    const units = lu.tens.length * TEN + lu.ones.length + (lu.extra > 0 ? lu.extra + 0.6 : 0);
+    const step = Math.min(46, (area.w - 20) / Math.max(1, units));
+    const odd: Container[] = [];
+    const lit = (c: Container) => {
+      if (glow) {
+        const g = new Graphics().circle(0, -step * 0.35, step * 0.55).fill({ color: swatch.yellow.fill, alpha: 0.6 });
+        c.addChildAt(g, 0);
+      }
+      odd.push(c);
+    };
+    let x = area.x + 10;
+    const markY = area.y + 22;
+    const goodsY = area.y + area.h - 8;
+    for (const t of lu.tens) {
+      const w = step * TEN;
+      const m = tenWedgeArt(Math.min(44, w * 0.7));
+      m.position.set(x + w / 2, markY);
+      this.lineupLayer.addChild(m);
+      if (t.crate) {
+        const crate = crateArt(w - 6, Math.min(50, step * 1.2));
+        crate.position.set(x + w / 2, goodsY);
+        this.lineupLayer.addChild(crate);
+      } else {
+        // Ten places in a 5 × 2 block, filled with what loose baskets there are.
+        for (let i = 0; i < 10; i++) {
+          const px = x + (i % 5 + 0.5) * (w / 5);
+          const py = goodsY - (i < 5 ? 0 : step * 0.5);
+          const c = new Container();
+          c.position.set(px, py);
+          if (i < t.filled) c.addChild(basketArt(w / 5 - 2));
+          else { c.addChild(new Graphics().circle(0, -w / 14, w / 14).stroke({ width: 3, color: ink })); lit(c); }
+          this.lineupLayer.addChild(c);
+        }
+      }
+      x += w;
+    }
+    for (const filled of lu.ones) {
+      const m = wedgeArt(Math.min(28, step * 0.7));
+      m.position.set(x + step / 2, markY);
+      this.lineupLayer.addChild(m);
+      const c = new Container();
+      c.position.set(x + step / 2, goodsY);
+      if (filled) c.addChild(basketArt(step * 0.85));
+      else { c.addChild(new Graphics().circle(0, -step * 0.3, step * 0.3).stroke({ width: 3, color: ink })); lit(c); }
+      this.lineupLayer.addChild(c);
+      x += step;
+    }
+    x += step * 0.6;
+    for (let i = 0; i < lu.extra; i++) {
+      const c = new Container();
+      c.position.set(x + step / 2, goodsY);
+      c.addChild(basketArt(step * 0.85));
+      lit(c);
+      this.lineupLayer.addChild(c);
+      x += step;
+    }
+    for (const c of this.lineupLayer.children) {
+      c.scale.set(0.4);
+      void this.ctx.tw.to(c.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
+    }
+    return odd;
+  }
+
   // ——— Finishing and help ———
 
   private celebrate() {
@@ -744,6 +1220,17 @@ class RiverTablets implements Game {
       this.envelopes[this.envelopeIndex] = askEnvelope(this.envelope);
       this.redrawBall();
       void this.ctx.say(markCount(this.envelope) === this.envelope.tokens ? 'rt.help.crack' : 'rt.help.cell');
+      return;
+    }
+    if (this.brief.id === 'tens') {
+      this.tens[this.cartIndex] = askTens(this.tensNow);
+      void this.ctx.say('rt.tens.help');
+      return;
+    }
+    if (this.brief.id === 'check') {
+      this.checks[this.cartIndex] = askCheck(this.check);
+      this.drawLineup(shortest(this.check.t), cartOf(this.check.c), true);
+      void this.ctx.say('rt.check.help');
       return;
     }
     this.tablets[this.tabletIndex] = askTablet(this.tablet);
@@ -777,6 +1264,10 @@ class RiverTablets implements Game {
         this.glow.roundRect(c.x - 10 * r, c.y - 10 * r, c.w + 20 * r, c.h + 20 * r, 30).stroke({ width: 8, color: swatch.yellow.fill });
       }
     }
+    if (this.brief.id === 'tens' && this.tensNow.glowing && !this.busy) {
+      const c = this.tensGlowRect();
+      if (c) this.glow.roundRect(c.x - 10 * r, c.y - 10 * r, c.w + 20 * r, c.h + 20 * r, 28).stroke({ width: 8, color: swatch.yellow.fill });
+    }
     const glowRow = this.brief.id === 'rows' ? this.glowRow() : null;
     if (glowRow && !this.busy) {
       const i = KINDS.indexOf(glowRow);
@@ -785,7 +1276,10 @@ class RiverTablets implements Game {
     }
   }
 
-  /** The ghost finger: the jar for each sheep then the tip; peek, one mark per token, Crack; each good's row. Never a wrong row. */
+  /**
+   * The ghost finger: the jar for each sheep then the tip; peek, one mark per token, Crack; each good's row; the yard, the
+   * stamps toward the fewest marks, Hand in; the cart's verdict, then its number. Never a wrong answer.
+   */
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;
     if (this.brief.id === 'tokens') {
@@ -798,6 +1292,19 @@ class RiverTablets implements Game {
       const h = hintFor(e);
       if (h) return { tap: { on: this.cellNodes[h.cell] }, pause: 0.4 };
       return this.crackNode ? { tap: { on: this.crackNode }, pause: 0.5 } : null;
+    }
+    if (this.brief.id === 'tens') {
+      const s = this.tensNow;
+      if (s.done) return null;
+      if (!this.yardCounted && this.yardNode) return { tap: { on: this.yardNode, x: this.layoutNow.baskets!.x + this.layoutNow.baskets!.w / 2 - this.yardNode.x, y: this.layoutNow.lane.h / 2 }, pause: 0.6 };
+      return { tap: { on: this.tensTarget(tensHint(s)) }, pause: 0.4 };
+    }
+    if (this.brief.id === 'check') {
+      const c = this.check;
+      if (c.done) return null;
+      const want = verdictFor(c.t, c.c);
+      if (want.verdict !== 'right' && c.open === want.verdict) return { tap: { on: this.numberNodes[want.by - 1] }, pause: 0.6 };
+      return { tap: { on: this.verdictNodes[CART_VERDICTS.indexOf(want.verdict)] }, pause: 0.9 };
     }
     const good = waiting(this.tablet);
     if (good === null) return null;
