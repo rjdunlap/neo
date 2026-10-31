@@ -34,7 +34,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **RW14 slice 10, the other ten backdrops** (images only): after slices 4 and 6 pass their screenshot review. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 
 
-- **`size-parade`, Insert a friend and order shades** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-3-insert-a-friend-and-order-shades).
+- **`size-parade`, Insert a friend and order shades** (one implementation batch; 2 original subtasks; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-3-insert-a-friend-and-order-shades). **Claimed 2026-10-30** on branch `claude/size-parade-insert-shades` (levels 12 and 15; files `src/games/size-parade/`, `src/content/voice-script.ts`, `src/content/howto.ts`, `scripts/browser/suites/expansion.mjs`, possibly `src/art/critter.ts`).
 - **`size-parade`, Hidden heights** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-4-hidden-heights).
 - **`size-parade`, The measuring ribbon** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-5-the-measuring-ribbon).
 - **`pet-kitchen`, Compare shares** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#pet-kitchen-3-compare-shares).
