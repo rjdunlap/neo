@@ -897,3 +897,17 @@ Completion with spoken support is not evidence of independent understanding of t
 | **PR6 Truth Bridge** · 13+ / parents | sketch; after a Lantern Lake capacity test | Knights-and-knaves islanders on a bridge; a solver accepts every consistent marking, generated puzzles have a unique solution |
 
 [Ordered slices](philosophy-reasoning.md#build-slices-in-order). Finding a counterexample with spoken support is not evidence of independent reasoning; whether a four-year-old listens to the claim or just taps the odd one out is a person check.
+
+## Media literacy recommendations
+
+**Recommended 2026-10-31:** [the media-literacy study](media-literacy.md), [PR #1053](https://github.com/rjdunlap/neo/pull/1053). Opened: NAMLE's Key Questions (authorship, purpose, techniques, omissions) and Core Principles, Common Core RI.K.6, RI.K.8, RI.4.7 and RI.4.8, ISTE 1.3.b and the *American Educator* civic online reasoning article (82% of middle schoolers missed a "sponsored content" label); Koenig and Harris 2005, the APA 2004 advertising task force, the AAP 2020 statement, Bad News, Interland and NewsFeed Defenders are search summaries, and Harmony Square, Factitious, Checkology, Fakey and the unplugged exercises are recalled. Persuasive intent is reported from about 7–8, so *to tell or to sell?* is school only; recognizing an advert does not reliably protect a child (AAP), so no line claims protection.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **ML1 Notice Board 1–3** · pre-K–school · new identity | define (docs only) | Island friends pin picture posters to a village board: match the poster's stamp to its maker's badge (1); tap the friend who saw it (was there, not elsewhere or only heard it) and their photo settles the poster, true or exaggerated (2); sort *Here's what happened* from *Come and get some!* and hear the maker say why, school only (3). Closed-world poster model in `logic.ts` with rule tests; fictional island posters only, no real brands, news or AI talk; selling named, never judged; nothing kept; land by `landLayout` (lean Cozy Village) |
+| **ML3 "Who made this?" card** · grown-ups' page | write after ML1 is built | Three NAMLE questions for a real box, advert or video watched together; the AAP caution; no learning or protection claim |
+| **ML4 Hand frame** · co-play role | with or after the ML1 build | Cover part of a picture, make a claim, lift; swap; supported completion (S5) |
+| **ML2 Notice Board 4–5** · school top, about 10 and up | define after 1–3 are played | What did it leave out (poster versus the real stand); who's behind it (walk to a club's door, lateral reading); absorbs data-ai-literacy's *Story Stamp Checker* (lean) |
+| **ML5 Photo Safari *Outside the frame* and *Pasted in*** | hand to the [Photo Safari dive](../photo-safari.md) | Widen a cropped photo and judge it with the thumbs; find what was stuck onto one of two photos of one moment |
+
+[Ordered slices](media-literacy.md#build-slices-in-order). Finding the witness with spoken support is not evidence of independent source checking; whether a four-year-old uses the memory picture or taps the nearest friend is a person check.
