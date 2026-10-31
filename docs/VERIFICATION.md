@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Maker Lane 1–3 definition (food-fiber-systems FS1, docs only)
+
+- [PR #1068](https://github.com/rjdunlap/neo/pull/1068), branch `claude/define-maker-lane`: [definition](definitions/maker-lane.md) (a new game, levels 1–3; toddler 1, preschool 1–2, pre-K 2–3, school 2–3; Cozy Village, fallback Painted Canyon; who can use it now, where did it begin), batch plan [maker-lane 1](GAME-BATCHES.md#maker-lane-1-along-the-lane-who-can-use-it-now-where-did-it-begin), READY, backlog, study, packet, tracker and roadmap updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); the person, device and review checks in the definition (a four-year-old's sheep-for-the-sock pick and whether the replay changes the next one, the thought bubble versus trying every stall, the grown-ups' label card, the named agricultural-literacy or textile review).
+
 ## 2026-10-31 — Food and fiber systems subject research (docs only)
 
 - [PR #1067](https://github.com/rjdunlap/neo/pull/1067), branch `claude/research-food-fiber-systems`: [study](deep-dives/subjects/food-fiber-systems.md) and [packet](deep-dives/subjects/RECOMMENDATIONS.md#food-and-fiber-systems-recommendations) (Maker Lane 1–3: a bundle that changes form at each maker, who can use it now, where did it begin; a grown-ups' label card and co-play role follow; Maker Lane 4–5 after 1–3 are played; a plan puzzle and goods from far away stay sketches), tracker, backlog, READY, ideas, roadmap and device checks updated.
@@ -85,12 +91,6 @@
 - [PR #1051](https://github.com/rjdunlap/neo/pull/1051), branch `claude/research-philosophy-reasoning`: [study](deep-dives/subjects/philosophy-reasoning.md) and [packet](deep-dives/subjects/RECOMMENDATIONS.md#philosophy-and-reasoning-recommendations) (a new game, Not Always: claims about picture cards on screen, tap the card that breaks the claim, *Every one!* stamp, mended claim; a question card and a co-play role follow), tracker, backlog, READY, ideas and roadmap updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the PR1 definition, the build's source check, and the person check (does a four-year-old listen to the claim or tap the odd one out; does a grown-up use the question card beyond one exchange).
-
-## 2026-10-31 — Drift Cards 1–3 definition (oceans slice 6, docs only)
-
-- [PR #1050](https://github.com/rjdunlap/neo/pull/1050), branch `claude/define-drift-cards`: [definition](definitions/drift-cards.md) (a new game, levels 1–3; school 1–3; Bubble Beach, fallback Tinker Lab; a pretend current map, predict the landing, choose the boat, find the fogged current from returned cards; wooden cards not bottles, 1992 spill counts unused), batch plans [drift-cards 1](GAME-BATCHES.md#drift-cards-1-where-will-it-wash-up-and-send-it-to-a-friend) and [2](GAME-BATCHES.md#drift-cards-2-find-the-hidden-current), READY, backlog, study, packet and ideas updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`. Sources opened and listed in the definition, including NatureBridge's 2015 Elwha drift-card study.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the builds (new-game then new-interaction tier) with their S1 source check of every speech line; person and device checks in the definition's check tier (reading arrows cell by cell, the two-cell trace, level 3 as detective work, iPad speech for "South-west").
 
 ## Coverage summary
 

@@ -125,7 +125,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 ## Build slices, in order
 
-1. **FS1 · Define Maker Lane 1–3** (docs only; status `define`): the form graph for four chains and its rule tests, the beginnings table with each thing's tempting wrong card, the lane layout at 100 units with the pet clear, accounting, the replay, voice lines marked for review, how-to steps, the co-play hint (FS4) and the FS3 card text.
+1. **FS1 · Define Maker Lane 1–3** (docs only; **defined 2026-10-31**, [definition](../../definitions/maker-lane.md), PR #1068): the form graph for four chains and its rule tests, the beginnings table with each thing's tempting wrong card, the lane layout at 100 units with the pet clear, accounting, the replay, voice lines marked for review, how-to steps, the co-play hint (FS4) and the FS3 card text.
 2. **Build Maker Lane 1–3** (new-game tier).
 3. **FS3 · Where did it begin? card** (grown-ups' page, plain HTML), with the build or after it.
 4. **FS2 · Define Maker Lane 4–5** after the first build is played.
@@ -134,3 +134,5 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 ## What was built and what ran
 
 Nothing built. The research session ran `git fetch origin --prune` and `scripts/overlap.sh` for the queue's earlier lines and this subject (no claim), opened the sources marked **opened** above (the NALO booklet, England's D&T programme, the Australian Curriculum food-and-fibre page, ACER's survey article, the Maine State Museum wool PDF and Wikipedia's Dyeing), and used search summaries for the rest as marked. Checks: `node scripts/check-links.mjs` and `git diff --check`; no code changed.
+
+FS1 defined 2026-10-31 as [Maker Lane 1–3](../../definitions/maker-lane.md) (docs only, PR #1068); build queued as batch `maker-lane 1`. Ran `node scripts/check-links.mjs` and `git diff --check`.

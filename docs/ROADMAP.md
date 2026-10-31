@@ -316,7 +316,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 
 | Subject | Researched | Study | Packet |
 | --- | --- | --- | --- |
-| Food and fiber systems | 2026-10-31 | [study](deep-dives/subjects/food-fiber-systems.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#food-and-fiber-systems-recommendations) |
+| Food and fiber systems | 2026-10-31; Maker Lane 1–3 [defined](definitions/maker-lane.md) 2026-10-31 | [study](deep-dives/subjects/food-fiber-systems.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#food-and-fiber-systems-recommendations) |
 | Literature and meaning | 2026-10-31; Thought Bubbles 1–3 [defined](definitions/thought-bubbles.md) 2026-10-31 | [study](deep-dives/subjects/literature-meaning.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#literature-and-meaning-recommendations) |
 | Number structure | 2026-10-31; Orchard Rows 4–6 [defined](definitions/orchard-rows.md) 2026-10-31 | [study](deep-dives/subjects/number-structure.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#number-structure-recommendations) |
 | Strategy games | 2026-10-31; Shell Rows 1–3 [defined](definitions/shell-rows.md) 2026-10-31 | [study](deep-dives/subjects/strategy-games.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#strategy-games-recommendations) |
