@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Inchworm Measure deep dive (docs only)
+
+- [PR #1076](https://github.com/rjdunlap/neo/pull/1076), branch `claude/dive-inchworm`: [dive](deep-dives/inchworm.md). Three slices queued ([batches](GAME-BATCHES.md#inchworm-1-fresh-things-and-the-broken-ruler): fresh things and the broken ruler, level 9 one worm hop by hop, level 10 longer than the ruler); the centimetre ruler and the preschool opening are filed in [waiting-on-developer](WAITING-ON-DEVELOPER.md); tracker, READY, backlog, ideas and the measurement and ancient-Mediterranean studies updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
+
 ## 2026-10-31 — Habitat Helpers deep dive (docs only)
 
 - [PR #1075](https://github.com/rjdunlap/neo/pull/1075), branch `claude/dive-habitat-helpers`: [dive](deep-dives/habitat-helpers.md). Three slices queued ([batches](GAME-BATCHES.md#habitat-helpers-1-equivalent-pieces-and-pooled-gardens): equivalent pieces and pooled gardens, level 7 Something changed (the ecosystems study's F3), levels 8–9 the rocky shore); the toddler opening is filed in [waiting-on-developer](WAITING-ON-DEVELOPER.md); tracker, READY, backlog, ideas and the oceans and ecosystems studies updated.
@@ -85,12 +91,6 @@
 - [PR #1062](https://github.com/rjdunlap/neo/pull/1062), branch `claude/define-shell-rows`: [definition](definitions/shell-rows.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Puzzle Peaks, paging; finish the row, stop the row, win first, with a show-me-why replay), batch plan [shell-rows 1](GAME-BATCHES.md#shell-rows-1-finish-the-row-stop-the-row-win-first), READY, backlog, study and packet updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`; a throwaway enumeration script counted the pool classes (39, 69 and 81 for levels 1–3).
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); the study's person checks (does a five-year-old look at the pet's pebbles at level 2, does the replay read as a lesson, device speech for "three in a row").
-
-## 2026-10-31 — Notice Board 1–3 definition (media-literacy ML1, docs only)
-
-- [PR #1061](https://github.com/rjdunlap/neo/pull/1061), branch `claude/define-notice-board`: [definition](definitions/notice-board.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Cozy Village, fallback Tinker Lab; match the stamp to the maker, tap the friend who saw it, to tell or to sell), batch plan [notice-board 1](GAME-BATCHES.md#notice-board-1-who-made-it-who-saw-it-to-tell-or-to-sell), READY, backlog, study and packet updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); person and device checks in the definition's check tier (witness from the memory picture versus the friend nearest the poster, basket by price versus maker's words, badge and place pictures at bubble size on an iPad).
 
 ## Coverage summary
 

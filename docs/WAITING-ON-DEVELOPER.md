@@ -39,6 +39,13 @@ Habitat Helpers dive (2026-10-31), one call that waits on you; the build slices 
 | --- | --- | --- |
 | **Habitat Helpers toddler opening, level 10 *Bring Bunny*?** | Adds the `toddler` band to a preschool–school game. Recommended: wait until she plays level 1 at preschool | [Habitat Helpers dive](deep-dives/habitat-helpers.md#decisions-for-the-developer) |
 
+Inchworm Measure dive (2026-10-31), two calls that wait on you; the three build slices go ahead without them ([the dive](deep-dives/inchworm.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **Centimetres on a picture ruler?** | An iPad picture ruler is not true to scale. Recommended: allow "cm" only with a grown-up note that the pictures are not life size, and only after Measuring Post has a cm level; otherwise keep island units. No level is proposed until answered | [Inchworm dive](deep-dives/inchworm.md#decisions-for-the-developer) |
+| **Inchworm preschool opening, level 11 *Cover the leaf*?** | Adds the `preschool` band to a pre-K and school game. Recommended: yes, built with roadmap chunk 18's preschool batch after its band audit and device fit check | [Inchworm dive](deep-dives/inchworm.md#decisions-for-the-developer) |
+
 ## Adding a question
 
 Add a row here only for a call the developer alone can make (money, accounts, the child's data, a family reviewer, an irreversible step), with a recommended answer. Anything else: decide it by the [standing rules](archive/DECISIONS-2026-10-23.md#standing-rules), record it in its source, and go on. Checks that need a person or a device go in [DEVICE-CHECKS](DEVICE-CHECKS.md).
