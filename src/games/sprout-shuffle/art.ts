@@ -5,7 +5,7 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import { cream, ink, swatch, type ColorName } from '../../art/palette';
 import { finish } from '../../ui/buttons';
-import type { Copy, Look } from './logic';
+import type { Claim, Copy, Look } from './logic';
 
 export const TILE = 120;
 export const SLOT = 130;
@@ -13,6 +13,7 @@ export const BUD_W = 180;
 export const BUD_H = 200;
 export const CARD = 200;
 export const CHECK_R = 70;
+export const PACKET_R = 56;
 
 /** Three dark ovals (a spot copy) or one outlined ring (a plain copy), as a child Container so the ovals can lean. */
 export function marks(copy: Copy, r: number): Container {
@@ -193,17 +194,35 @@ export class BudCard extends Container {
   }
 }
 
-/** A choice card: a picture of one sprout look, with a tick badge while chosen. */
-export class ChoiceCard extends Container {
+/** A choice card's picture of one sprout look. */
+export function lookPic(look: Look, color: ColorName): Container {
+  const pic = plantArt(look, color, 150);
+  pic.position.set(0, CARD / 2 - 24);
+  return pic;
+}
+
+/** A claim card's picture: a spotted sprout beside a plain one (sometimes), or a row of three spotted sprouts (always). */
+export function claimPic(claim: Claim, color: ColorName): Container {
+  const c = new Container();
+  const row: readonly Look[] = claim === 'sometimes' ? ['spotted', 'plain'] : ['spotted', 'spotted', 'spotted'];
+  const gap = claim === 'sometimes' ? 82 : 60;
+  for (const [i, look] of row.entries()) {
+    const p = plantArt(look, color, claim === 'sometimes' ? 128 : 112);
+    p.position.set((i - (row.length - 1) / 2) * gap, CARD / 2 - 26);
+    c.addChild(p);
+  }
+  return c;
+}
+
+/** A choice card: a picture of a sprout look or a claim, with a tick badge while chosen. */
+export class ChoiceCard<K extends string = Look | Claim> extends Container {
   private readonly badge = new Graphics();
   private readonly glowRing = new Graphics();
   chosen = false;
 
-  constructor(readonly look: Look, color: ColorName) {
+  constructor(readonly key: K, pic: Container) {
     super();
     const face = finish({ w: CARD, h: CARD, corner: 28 }, swatch.blue, cream);
-    const pic = plantArt(look, color, 150);
-    pic.position.set(0, CARD / 2 - 24);
     pic.eventMode = 'none';
     this.badge.eventMode = this.glowRing.eventMode = 'none';
     this.addChild(this.glowRing, face, pic, this.badge);
@@ -223,6 +242,20 @@ export class ChoiceCard extends Container {
     if (r === null) return;
     this.glowRing.roundRect(-CARD / 2 - 10 * r, -CARD / 2 - 10 * r, CARD + 20 * r, CARD + 20 * r, 34).stroke({ width: 8, color: swatch.yellow.fill });
   }
+}
+
+/** The Try one button's seed packet: a paper packet with a sprout on its front and three seeds spilling out. */
+export function packetArt(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-26, -32, 52, 62, 6).fill(cream).stroke({ width: 4, color: swatch.brown.line });
+  g.moveTo(-26, -22).lineTo(26, -22).stroke({ width: 3, color: swatch.brown.line });
+  g.moveTo(0, 22).lineTo(0, -4).stroke({ width: 4, color: swatch.green.line, cap: 'round' });
+  g.ellipse(-8, 0, 9, 5).fill(swatch.green.fill);
+  g.ellipse(8, -6, 9, 5).fill(swatch.green.fill);
+  for (const [x, y] of [[30, 18], [36, 30], [24, 32]] as const) g.ellipse(x, y, 4, 6).fill(swatch.brown.line);
+  c.addChild(g);
+  return c;
 }
 
 /** The green leaf on the Check button. */
