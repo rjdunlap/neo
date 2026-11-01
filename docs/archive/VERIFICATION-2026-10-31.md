@@ -256,3 +256,9 @@
 - [PR #1080](https://github.com/rjdunlap/neo/pull/1080), branch `claude/dive-lasso-loops`: [dive](../deep-dives/lasso-loops.md). One slice queued ([batch](../GAME-BATCHES.md#lasso-loops-2-teens-decades-and-a-fresh-meadow): teens, decades and a fresh meadow); *Make the number* and *Ten more, ten less* wait on the level-numbering decision, a toddler opening on a device observation.
 - Ran: a one-off probe that a hint loop can enclose the answer over 500 seeds per level (no failure); `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.
+
+## 2026-10-31 — Light Lab deep dive (docs only)
+
+- [PR #1081](https://github.com/rjdunlap/neo/pull/1081), branch `claude/dive-light-lab`: [dive](../deep-dives/light-lab.md). Four slices queued ([batches](../GAME-BATCHES.md#light-lab-1-fair-starts-nearest-hints-and-a-sun-on-either-side): fair starts, nearest hints and a sun on either side; couch course Sunbeam Run; levels 8–9 *Place a mirror* and *Two to place*; level 10 *Where's the mirror?*); two definitions queued; tracker, READY, backlog and ideas updated.
+- Ran: a throwaway probe of the generator (400 seeds a level, not committed) that found starts often nearly solved at levels 4–7 and the hint following the built path rather than the nearest solution in 2–3% of boards at levels 6–7; `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.
