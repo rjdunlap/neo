@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { blankSpot, BRUSH_RADIUS, Coverage, fillPath, frameShows, inside, MARGIN, mix, NUDGE_AFTER, nudges, paintStep, PAINTED, PET_CLEAR, pickThings, PLANS, POT_MARKS, POT_RADIUS, POT_SPACING, potLayout, pours, RECIPES, scribble, scribbleArea, SPACING, SPLAT_RADIUS, strokesCounted, THINGS, touchKind, type PaintState, type Primary, type Touch } from './logic';
+import { blankSpot, BRUSH_RADIUS, capMarks, FOLD_AFTER, FOLD_RADIUS, foldButtonPlace, foldMarks, foldScribbleArea, halvedIndex, mirrorX, pageKind, Coverage, fillPath, frameShows, inside, MARGIN, mix, NUDGE_AFTER, nudges, paintStep, PAINTED, PET_CLEAR, pickThings, PLANS, POT_MARKS, POT_RADIUS, POT_SPACING, potLayout, pours, RECIPES, scribble, scribbleArea, SPACING, SPLAT_RADIUS, strokesCounted, THINGS, touchKind, type PaintState, type Primary, type Touch } from './logic';
 import { RAINBOW } from '../../art/palette';
 import type { ColorName } from '../../art/palette';
+import { PAINTING_MAX_MARKS, type PaintingMark } from '../../content/creations';
+import { computeView } from '../../engine/view';
 
 describe('Rainbow Fingers', () => {
   it('pours in both mixing modes and directly selects paint in every other mode', () => {
@@ -181,5 +183,142 @@ describe('Rainbow Fingers', () => {
     const spots = [{ x: 200, y: 200 }, { x: 800, y: 500 }, { x: 500, y: 300 }];
     expect(blankSpot([{ x: 210, y: 210 }, { x: 520, y: 290 }], spots)).toEqual(spots[1]);
     expect(blankSpot([], spots)).toEqual(spots[0]);
+  });
+
+  describe('fold pages', () => {
+    const dab = (x: number, y = 0.5, r = 0.03): PaintingMark => ({ shape: 'dab', x, y, r, color: 0xff0000 });
+
+    it('mirrors across the middle of the paper and stays inside it', () => {
+      for (let x = 0; x <= 1; x += 0.01) {
+        expect(mirrorX(mirrorX(x))).toBeCloseTo(x, 10);
+        expect(mirrorX(x)).toBeGreaterThanOrEqual(0);
+        expect(mirrorX(x)).toBeLessThanOrEqual(1);
+      }
+      expect(mirrorX(0.5)).toBe(0.5);
+    });
+
+    it('prints a mirror copy of each mark since the last fold, flowers as flowers, and nothing twice', () => {
+      const old = [dab(0.1), dab(0.2)];
+      const fresh: PaintingMark[] = [dab(0.3, 0.4), { shape: 'flower', x: 0.8, y: 0.2, r: 0.05, color: 'pink' }];
+      const once = foldMarks([...old, ...fresh], old.length);
+      expect(once.slice(0, 4)).toEqual([...old, ...fresh]);
+      expect(once.slice(4)).toEqual([
+        { ...fresh[0], x: mirrorX(0.3) },
+        { shape: 'flower', x: mirrorX(0.8), y: 0.2, r: 0.05, color: 'pink' },
+      ]);
+      // Folding again with nothing new adds nothing.
+      expect(foldMarks(once, once.length)).toEqual(once);
+      for (const m of once) for (const v of [m.x, m.y]) expect(v >= 0 && v <= 1).toBe(true);
+    });
+
+    it('does not copy a mark that already sits across the crease, measured in paper units', () => {
+      expect(foldMarks([dab(0.49, 0.5, 0.03)], 0)).toHaveLength(1);
+      expect(foldMarks([dab(0.45, 0.5, 0.03)], 0)).toHaveLength(2);
+      // On wide paper the same fraction is farther from the crease.
+      expect(foldMarks([dab(0.48, 0.5, 0.03)], 0, 1)).toHaveLength(1);
+      expect(foldMarks([dab(0.48, 0.5, 0.03)], 0, 2)).toHaveLength(2);
+    });
+
+    it("keeps a folded painting within the cap by the painting's own halving", () => {
+      const full = Array.from({ length: PAINTING_MAX_MARKS }, (_, i) => dab(0.05 + (i % 10) * 0.03, (i % 17) / 17));
+      const folded = foldMarks(full, 100);
+      expect(folded.length).toBeLessThanOrEqual(PAINTING_MAX_MARKS);
+      expect(folded.length).toBeGreaterThan(PAINTING_MAX_MARKS / 2);
+      expect(capMarks(full).halvings).toBe(0);
+      expect(capMarks([...full, dab(0.1)]).halvings).toBe(1);
+      // The fold point moves with the halving: the marks before it are the even-indexed ones that survive.
+      const marks = Array.from({ length: 9 }, (_, i) => dab(i / 10));
+      for (const since of [0, 1, 4, 5, 9]) {
+        const kept = capMarks(marks, 5);
+        const before = marks.slice(0, since).filter((_, i) => i % 2 === 0);
+        expect(kept.marks.slice(0, halvedIndex(since, kept.halvings))).toEqual(before);
+      }
+    });
+
+    it('draws fold pages only at level 2, about half of them, the same for the same seed', () => {
+      for (const level of [1, 3, 4, 5, 6, 7]) for (let seed = 1; seed <= 50; seed++) expect(pageKind(level, new Rng(seed))).toBe('plain');
+      let folds = 0;
+      for (let seed = 1; seed <= 300; seed++) {
+        const kind = pageKind(2, new Rng(seed));
+        expect(pageKind(2, new Rng(seed))).toBe(kind);
+        if (kind === 'fold') folds++;
+      }
+      expect(folds / 300).toBeGreaterThan(0.4);
+      expect(folds / 300).toBeLessThan(0.6);
+      // Other levels take nothing from the round's random numbers, so their pictures do not change.
+      const a = new Rng(7);
+      const b = new Rng(7);
+      pageKind(4, a);
+      expect(a.next()).toBe(b.next());
+    });
+
+    const views = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390), computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }), { w: 1365, h: 768 }, { w: 1024, h: 1638 }];
+
+    it('puts a 104-unit fold button on the crease, clear of the pots, the pet and the corner buttons', () => {
+      for (const { w, h } of views) {
+        const b = foldButtonPlace(w, h);
+        expect(FOLD_RADIUS * 2).toBeGreaterThanOrEqual(104);
+        expect(b.x).toBe(w / 2);
+        expect(b.x - FOLD_RADIUS).toBeGreaterThanOrEqual(MARGIN);
+        expect(b.y - FOLD_RADIUS).toBeGreaterThanOrEqual(MARGIN);
+        expect(b.y + FOLD_RADIUS).toBeLessThanOrEqual(h - MARGIN);
+        const clear = (x: number, y: number) => expect(Math.hypot(b.x - x, b.y - y)).toBeGreaterThanOrEqual(104);
+        for (const pot of potLayout(7, w, h).pots) clear(pot.x, pot.y);
+        clear(62, 62); // home
+        clear(62, 160); // help
+        clear(w - 80, 80); // frame
+        expect(b.x - FOLD_RADIUS).toBeGreaterThan(PET_CLEAR);
+      }
+    });
+
+    it('scribbles the ghost finger on the left half only, clear of the crease and the fold button', () => {
+      for (const { w, h } of views) {
+        const area = foldScribbleArea(w, h);
+        const b = foldButtonPlace(w, h);
+        for (let i = 0; i < 5; i++) {
+          const path = scribble(i, area);
+          for (const p of path) {
+            expect(p.x).toBeLessThanOrEqual(w / 2 - BRUSH_RADIUS);
+            expect(Math.hypot(p.x - b.x, p.y - b.y)).toBeGreaterThan(FOLD_RADIUS + BRUSH_RADIUS);
+          }
+          const len = path.slice(1).reduce((n, p, k) => n + Math.hypot(p.x - path[k].x, p.y - path[k].y), 0);
+          expect(len).toBeGreaterThan(40);
+        }
+      }
+    });
+
+    it('has the ghost finger fold once on a fold page, after its strokes and before the frame, and never elsewhere', () => {
+      const run = (fold: boolean) => {
+        const moves: string[] = [];
+        let st: PaintState = { mode: 'pots', strokes: 0, brush: null, poured: [], picture: null, frame: false, fold, folded: false };
+        let folds = 0;
+        for (let k = 0; k < 40; k++) {
+          const m = paintStep(st)!;
+          moves.push(m.do);
+          if (m.do === 'frame') break;
+          if (m.do === 'pot') st = { ...st, brush: m.pot };
+          if (m.do === 'stroke') st = { ...st, strokes: st.strokes + 1 };
+          if (m.do === 'fold') {
+            st = { ...st, folded: true };
+            folds++;
+          }
+          st = { ...st, frame: frameShows(st.strokes + folds, 0) };
+        }
+        return moves;
+      };
+      const folding = run(true);
+      expect(folding.filter((m) => m === 'fold')).toHaveLength(1);
+      expect(folding.indexOf('fold')).toBeGreaterThan(folding.lastIndexOf('stroke'));
+      expect(folding.filter((m) => m === 'stroke')).toHaveLength(FOLD_AFTER);
+      expect(folding.at(-1)).toBe('frame');
+      const plain = run(false);
+      expect(plain).not.toContain('fold');
+      expect(plain.at(-1)).toBe('frame');
+      expect(paintStep({ mode: 'free', strokes: 9, brush: null, poured: [], picture: null, frame: false })).toEqual({ do: 'stroke' });
+      // The frame came early (one touch and a long look): the fold still comes first, then the frame.
+      const early: PaintState = { mode: 'pots', strokes: 2, brush: 'red', poured: [], picture: null, frame: true, fold: true, folded: false };
+      expect(paintStep(early)).toEqual({ do: 'fold' });
+      expect(paintStep({ ...early, folded: true })).toEqual({ do: 'frame' });
+    });
   });
 });
