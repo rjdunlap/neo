@@ -11,7 +11,7 @@ import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { miniBoard, pebblePiece, pile, sandBoard, shellPiece } from './art';
 import {
-  BORDER, GROOVE, LEVELS, Score, decidingLine, layout, makeRound, petReply, place, planFor, replyKind, stickerBoard, wonLine,
+  BORDER, GROOVE, LEVELS, SHELL_COLORS, Score, decidingLine, layout, makeRound, petReply, place, planFor, replyKind, stickerBoard, wonLine,
   type Board, type Layout, type Plan, type Round,
 } from './logic';
 
@@ -315,8 +315,7 @@ function sticker(seed: number): Container {
   const c = new Container();
   c.addChild(tile(260, 260, 'white'));
   const { board, line } = stickerBoard(seed);
-  const colors = ['pink', 'orange', 'purple', 'teal', 'yellow'] as const;
-  c.addChild(miniBoard(board, 62, colors[seed % colors.length], line));
+  c.addChild(miniBoard(board, 62, SHELL_COLORS[seed % SHELL_COLORS.length], line));
   return c;
 }
 

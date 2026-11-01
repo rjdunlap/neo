@@ -202,7 +202,7 @@ export function decidingLine(b: Board, wrong: number, reply: number): readonly [
 
 // ---- a round ----
 
-export const SHELL_COLORS = ['pink', 'orange', 'purple', 'teal', 'yellow'] as const;
+export const SHELL_COLORS = ['pink', 'orange', 'purple', 'teal', 'blue'] as const;
 export type ShellColor = typeof SHELL_COLORS[number];
 
 export interface Position { board: Board; right: number; symmetry: number }
