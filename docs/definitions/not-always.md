@@ -2,7 +2,7 @@
 
 Defined 2026-10-31 as slice 1 (PR1) of the [philosophy and reasoning study](../deep-dives/subjects/philosophy-reasoning.md#build-slices-in-order), from its [ladder](../deep-dives/subjects/philosophy-reasoning.md#a-first-games-ladder-not-always) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#philosophy-and-reasoning-recommendations). The study's seven decisions were adopted on its leans under the [October 23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) ([study](../deep-dives/subjects/philosophy-reasoning.md#decisions-for-the-developer)). Docs only: no game, ID registration, voice line, art or save field exists yet.
 
-**Status: ready to build** as one same-game batch, `not-always 1` (levels 1–3, new-game tier). Registration, bands and land take the defaults below under standing rule S8; the spoken lines are plain descriptions of the cards on screen and need no outside source check (S1 has nothing to check: no real-world claim is made, decision 4). It depends on no other unbuilt game.
+**Status: built 2026-11-01** (levels 1–3, batch `not-always 1`; see the built notes at the end) as one same-game batch, `not-always 1` (levels 1–3, new-game tier). Registration, bands and land take the defaults below under standing rule S8; the spoken lines are plain descriptions of the cards on screen and need no outside source check (S1 has nothing to check: no real-world claim is made, decision 4). It depends on no other unbuilt game.
 
 **Fun action and purpose:** a creature friend stands on a little crate above a row of picture cards and announces, very sure of itself, "All of these have hats!" She taps the one card that breaks it; the card flips up, the friend gasps and laughs at itself, and the sign above the crate changes from *all* to *not all*. Later she checks a whole row and stamps *Every one!* when nothing breaks the claim, then picks the claim the friend could have said instead that is true of every card. The learning purpose is **testing a general claim against cases: one counterexample is enough to show "all" is wrong, and "every one" is shown only by checking every one** (Common Core MP3, "constructing arguments… using concrete referents such as objects, drawings"; counterexamples; SL.K.3, asking and answering about what a speaker says, as read in the [study's anchors](../deep-dives/subjects/philosophy-reasoning.md#anchors-opened-at-their-source)). Every claim is about the cards on screen and nothing else. The how-to card claims no reading, attainment or attention benefit (the study found the 2021 EEF trial showed no reading gain).
 
@@ -119,3 +119,14 @@ Each has a default the build uses; none waits on the developer (S8).
 3. **The decoy rule.** Default: every false claim at levels 1–2 has a non-breaker that is the odd one out on another attribute. Alternative: plain odd-one-out rows for pre-K; not chosen, because then the round could be finished without listening to the claim.
 4. **No talk moment in 1–3.** Default: deferred to PR3 and PR4. Alternative: one skippable *What if?* per round; not chosen, because it has nothing to ask about a row of cards.
 5. **Four attributes.** Default: colour, hat, wings, spots, with wings dropped if illegible at 0.45. Alternative: ears or horns; not chosen, as too small at card scale.
+
+## Built notes (2026-11-01)
+
+Deviations from this definition:
+
+- **Decoy rule.** It holds at level 1 and in level 2's one-true rows only. With two true claims, five distinct cards differ on just two dimensions and no card can be another's odd one out, so two-true rows relax it (open decision 3).
+- **Wings.** Critter's own wings did not read at card scale, so a custom white feathered wing pair (`wingsArt` in `art.ts`) draws them; wings stay in the vocabulary.
+- **Stamp.** It sits centred under the row in both orientations.
+- **Extra voice lines:** `notalways.too.*`, `notalways.mends`, `notalways.hint`, `notalways.done`.
+- **How-to note.** One level-scoped line per level (the card type shows one note per level).
+- **Shared change.** Critter Sort's `hatArt` moved to `src/art/props.ts`; Critter Sort and Critter Crossing import it and look unchanged. New title clip `game.not-always` rendered.

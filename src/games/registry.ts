@@ -135,6 +135,7 @@ import { forecastDetective } from './forecast-detective';
 import { puppetStage } from './puppet-stage';
 import { spinnerFair } from './spinner-fair';
 import { ruleMachine } from './rule-machine';
+import { notAlways } from './not-always';
 import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
 import { whoAmI } from './who-am-i';
@@ -280,6 +281,7 @@ export const GAMES: GameModule[] = [
   forecastDetective,
   spinnerFair,
   ruleMachine,
+  notAlways,
   puppetStage,
   readDo,
   lookItUp,

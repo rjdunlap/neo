@@ -59,9 +59,12 @@
 - [ ] Once built: does a seven-year-old's basket choice (to tell or to sell) follow the price and stall cue or the maker's words?
 - [ ] Once the card is built: does a grown-up use the "Who made this?" card with a real box or advert?
 
-## Not Always (philosophy-reasoning study, 2026-10-31; proposed, nothing built)
+## Not Always (philosophy-reasoning study, 2026-10-31; levels 1–3 built 2026-11-01)
 
-- [ ] Once built: does a four-year-old find the counterexample from the spoken claim, or tap the odd one out without listening (watch the *Every one!* rounds)? Does a grown-up use the question card beyond one exchange?
+- [ ] Does a four-year-old find the breaker from the spoken claim, or tap the odd one out without listening (watch the decoys and the *Every one!* rounds)?
+- [ ] Do the mended signs' pictograms read without words?
+- [ ] On an iPad, is the custom feathered wing clear at card size?
+- [ ] Once the question card is built: does a grown-up use it beyond one exchange?
 
 ## Puppet Stage (theatre-puppetry study, 2026-10-27; levels 1–3 built 2026-10-30)
 
