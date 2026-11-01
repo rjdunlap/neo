@@ -18,11 +18,13 @@ import { FriendsScene } from './scenes/FriendsScene';
 import { DressScene } from './scenes/DressScene';
 import { StickerBookScene } from './scenes/StickerBookScene';
 import { CouchScene } from './scenes/CouchScene';
+import { DailyScene } from './scenes/DailyScene';
 
 export function createRoutes(app: App): Routes {
   return {
     couch: (play, origin) => void app.show(new CouchScene(app, play, origin)),
     start: () => void app.show(new ChooserScene(app)),
+    daily: () => void app.show(new DailyScene(app)),
     hub: () => void app.show(new MapScene(app)),
     // Explore is the root's (src/rework.ts); the island never makes an Explore origin, so it falls back to the map.
     explore: () => void app.show(new MapScene(app)),

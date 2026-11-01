@@ -213,3 +213,9 @@
 - [PR #1073](https://github.com/rjdunlap/neo/pull/1073), branch `claude/dive-ferry-jam-2`: [dive](../deep-dives/ferry-jam.md). Found the hint fires on a raw slide count rather than lack of progress, and each harbor pool sits at the bottom of its plan's range. Four slices queued ([batches](../GAME-BATCHES.md#ferry-jam-1-fair-hints-and-fuller-harbors): fair hints and fuller harbors, level 7 rocks, level 8 two ferries, levels 9–10 pre-K entry and who's in the way); the preschool opening is filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog and ideas updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds.
+
+## 2026-10-31 — Caravan Days levels 6–7 definition (china-india-silk-road CS4, docs only)
+
+- [PR #1074](https://github.com/rjdunlap/neo/pull/1074), branch `claude/define-caravan-days-6-7`: [definition](../definitions/caravan-days.md#levels-67-cs4-mountains-or-sand-a-well-every-days-walk) of level 6 (mountains or sand, either road accepted, a day card before Go) and level 7 (a well every day's walk, fewest wells by search, any minimal placement accepted); the reviewer gate is now the building session's source check. Study, packet, backlog, [batch caravan-days 3](../GAME-BATCHES.md#caravan-days-3-mountains-or-sand-and-a-well-every-days-walk), READY and roadmap updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the build and its device checks.

@@ -13,6 +13,7 @@ import { isLocation, LocationScene } from './app/scenes/LocationScene';
 import { loadCollectionArt } from './creatures/companion';
 import { CreaturePreview } from './dev/creature-preview';
 import { ArcadeScene } from './app/scenes/ArcadeScene';
+import { DailyScene } from './app/scenes/DailyScene';
 import { ExploreScene } from './app/scenes/ExploreScene';
 import { HomeScene } from './app/scenes/HomeScene';
 import { LibraryScene } from './app/scenes/LibraryScene';
@@ -26,7 +27,7 @@ import { store } from './progress/store';
  * The site root: the creature-world rework as it stands (docs/rework/). It boots to "Who's playing?", then the person's
  * Home (RW06 slice 2, docs/rework/HOME.md#routes-and-the-root-front-door): `hub` is Home, `room` is creature play, and a
  * built location (RW13) replaces its land. RW02b's creature preview stays behind `?preview`, in production too, until
- * RW08 replaces the root's interim Explore. The island game boots from `src/main.ts` at `classic/` (decided by the
+ * RW08 replaces the root's interim Explore. `?daily` puts today's six (`DailyScene`) in Home's place. The island game boots from `src/main.ts` at `classic/` (decided by the
  * developer 2026-10-19); RW08 decides what becomes of it.
  */
 async function boot() {
@@ -37,6 +38,7 @@ async function boot() {
   await app.init(document.getElementById('app')!);
   const island = createRoutes(app);
   const query = new URLSearchParams(location.search);
+  const daily = query.has('daily');
   const land: Routes['land'] = (id, page) => (isLocation(id) ? void app.show(new LocationScene(app, id, undefined, page)) : island.land(id, page));
   // At the root a location's Back returns to Explore's Places (RW08); its games' results come back to the location.
   const atRoot: Routes['land'] = (id, page) => (isLocation(id) ? void app.show(new LocationScene(app, id, () => app.go.explore('places'), page)) : island.land(id, page));
@@ -65,7 +67,8 @@ async function boot() {
     app.creatureWorld = true;
     app.go = withLink({
       ...island,
-      hub: () => void app.show(new HomeScene(app)),
+      // `?daily` (a trial, the developer's call 2026-10-31): after "Who's playing?" the day's six stand where Home would.
+      hub: () => void app.show(daily ? new DailyScene(app) : new HomeScene(app)),
       room: () => void app.show(new PlayScene(app)),
       library: () => void app.show(new LibraryScene(app)),
       project: (from) => void app.show(new ProjectScene(app, from)),

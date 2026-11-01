@@ -1,5 +1,9 @@
 # Needs a person or a device
 
+## Today's six (`?daily`, 2026-10-31)
+
+- [ ] Open `?daily` at the site root on the iPad as a grown-up: do the six cards read at a glance, does a tap launch a game at a sensible level, and does Back to today's six land on the ticks?
+
 ## Maker Lane (food-fiber-systems study, 2026-10-31; proposed, nothing built)
 
 - [ ] Once built: does a four-year-old pick the sheep for the sock because it is soft, and does the replay change her next pick?
