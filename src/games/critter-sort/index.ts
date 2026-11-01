@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
+import { hatArt } from '../../art/props';
 import { ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -22,10 +23,6 @@ const LEVELS: BandLevels = {
 
 const SCALE = 0.32;
 export const KIND_WORDS: Record<string, string> = { cow: 'cow', duck: 'duck', pig: 'pig', cat: 'cat', bear: 'bear', dog: 'dog', bunny: 'bunny' };
-
-export function hatArt(): Graphics {
-  return new Graphics().ellipse(0, -232, 74, 16).fill(ink).roundRect(-44, -320, 88, 90, 10).fill(ink).rect(-44, -258, 88, 16).fill(swatch.red.fill);
-}
 
 /** A little picture of a rule, for the sign above a hoop. */
 export function ruleIcon(rule: Rule): Graphics {

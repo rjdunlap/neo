@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
-import { swatch, type ColorName } from './palette';
+import { ink, swatch, type ColorName } from './palette';
 
 /** Things to sort, each drawn about 100 units across and centered on (0, 0). Each has one obvious color. */
 export type PropKind = 'apple' | 'orange' | 'lemon' | 'pear' | 'blueberries' | 'grapes' | 'balloon' | 'flower';
@@ -110,4 +110,9 @@ export function prop(kind: PropKind, color: ColorName): Container {
   }
   c.addChild(shine);
   return c;
+}
+
+/** A black top hat with a red band, in a critter's body coordinates (it sits on the head); Critter Sort's, shared. */
+export function hatArt(): Graphics {
+  return new Graphics().ellipse(0, -232, 74, 16).fill(ink).roundRect(-44, -320, 88, 90, 10).fill(ink).rect(-44, -258, 88, 16).fill(swatch.red.fill);
 }
