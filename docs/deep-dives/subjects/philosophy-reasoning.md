@@ -141,7 +141,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 ## Build slices, in order
 
 1. **PR1 · Define Not Always 1–3** (docs only; **defined 2026-10-31**, [definition](../../definitions/not-always.md)): the claim model and attribute vocabulary, the cards and their sizes, the crate, sign and stamp, spoken claims, accounting, how-to and bot, land placement by decision 2, rule tests.
-2. **Build Not Always 1–3** (new-game tier; ready, batch [not-always 1](../../GAME-BATCHES.md#not-always-1-not-all-of-them-every-one-and-say-it-better)).
+2. **Build Not Always 1–3** (new-game tier; **built 2026-11-01**, batch [not-always 1](../../GAME-BATCHES.md#not-always-1-not-all-of-them-every-one-and-say-it-better); [build note](../../archive/COMPLETED-2026-10-09.md#not-always-levels-13-philosophy-reasoning-pr1-not-always-1-2026-11-01)).
 3. **PR3 · Question card** (grown-ups' page, plain HTML, sources on the card).
 4. **PR4 · "But what about…?" co-play role** (with the build or right after it).
 5. **PR2 · Define Not Always 4–6**, after 1–3 are played; then build.
@@ -149,4 +149,4 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 ## What was built and what ran
 
-Nothing built. Slice 1 was defined 2026-10-31 (docs only, [definition](../../definitions/not-always.md)). The research session ran `git fetch origin --prune` and `scripts/overlap.sh` (no claim on this subject), opened the sources marked **opened** above (MP3, SL.K, SL.4), and used search summaries for the rest (the EEF pages returned 403, two PDFs could not be text-extracted); recalled items are marked. At closeout: `node scripts/check-links.mjs` and `git diff --check`. No code changed.
+Slice 1 was defined 2026-10-31 (docs only, [definition](../../definitions/not-always.md)). The research session ran `git fetch origin --prune` and `scripts/overlap.sh` (no claim on this subject), opened the sources marked **opened** above (MP3, SL.K, SL.4), and used search summaries for the rest (the EEF pages returned 403, two PDFs could not be text-extracted); recalled items are marked. At closeout: `node scripts/check-links.mjs` and `git diff --check`. No code changed in the research session; Not Always 1–3 was then built 2026-11-01.

@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-11-01 — Not Always levels 1–3 (philosophy-reasoning PR1)
+
+- Branch `claude/not-always-1-3`: new game `not-always` in Story Grove (17 games), pre-K 1–2 and school 1–3; batch not-always 1. Critter Sort's `hatArt` moved to `src/art/props.ts` (looks unchanged).
+- Ran (commit 44faac49 on base 205a5d4e, Vite dev on http://localhost:5648): typecheck; full unit suite 4128 passed (29 Not Always rule tests: authored rounds, 300-seed rows per level, decoy, mends, accounting, hint targets finish every round, layout at four views); `npm run build`; `BROWSER_SUITE=notalways` (pre-K level 1 two fitting cards then glow then breaker 2/1; portrait level 2 false stamp then true claim 1/0; level 3 free card tap, one false mend, then true 1/0; screenshots of level 1, portrait level 2 and level 3 mends); `BROWSER_SUITE=fingerdemo FINGER_ONLY=not-always FINGER_LEVELS=2,3` (7.3 s, 8.5 s).
+- `game-reviewer` found two minor issues, fixed (mend reading token, narrow-view rows); rule tests re-ran, the browser play was not re-run after them.
+- Not run: offline check, any device or child check.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#not-always-philosophy-reasoning-study-2026-10-31-levels-13-built-2026-11-01)): the person and device checks there.
+
 ## 2026-11-01 — Word Search deep dive (docs only)
 
 - [PR #1104](https://github.com/rjdunlap/neo/pull/1104), branch `claude/dive-word-search`: [dive](deep-dives/word-search.md). Four slices queued ([batches](GAME-BATCHES.md#word-search-1-fresh-themes-and-root-families): fresh themes and root families, *A small grid to start*, *A message in the leftovers*, *Just the theme*); the school opening is a queued definition. Tracker, READY, batches, backlog, ideas and the vocabulary study handoffs updated.
@@ -88,12 +96,6 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds.
 
-## 2026-11-01 — Picture Logic deep dive (docs only)
-
-- [PR #1089](https://github.com/rjdunlap/neo/pull/1089), branch `claude/dive-picture-logic`: [dive](deep-dives/picture-logic.md). Three slices queued (fresh pictures and named hints; level 5 a small 5 by 5 with level 7 a harder 15 by 15; level 6 *Two colours*, after Pixel Pictures batch 1) with batch plans picture-logic 1–3; tracker, READY, backlog and ideas updated. No developer decision.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -101,6 +103,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Grown-ups' page off-screen lines (`src/content/offscreen.test.ts`) | 2026-10-26: typecheck, full 3465 units, build; 7 rule tests (under-3 word list, wording, resolution, `{name}`) | [Off-screen lines](archive/VERIFICATION-2026-10-26.md#2026-10-26--off-screen-lines-per-band) | No browser look at the page; Bumper Garden school line held; no reader evidence |
+| `notalways`, `fingerdemo` (`not-always`) | 2026-11-01: typecheck, full unit suite 4128, 29 rule tests; `notalways` (pre-K level 1 glow then breaker 2/1; portrait level 2 false stamp then true claim 1/0; level 3 free card tap, false mend, true mend 1/0) and ghost finger levels 2–3; build | [Not Always](#2026-11-01--not-always-levels-13-philosophy-reasoning-pr1) | Browser play not re-run after the review fixes; offline, iPad, four-year-old reading of the spoken claim and the pictogram signs not run |
 | `rulemachine`, `fingerdemo` (`rule-machine`) | 2026-11-01: typecheck, 25 rule tests, registry/lands/how-to units; `rulemachine` ×3 (level 1 free first guess, counted wrongs, glow, 2/1; portrait level 2 one wrong pad, 1/0) and ghost finger level 2 (43 s); build | [Rule Machine](#2026-11-01--rule-machine-levels-12-algebra-balance-ab1) | Level-1 finger demo, offline and the CCSS/England wording check not run; pre-K reading of three pictures and iPad speech unestablished |
 | `driftcards`, `fingerdemo` (`drift-cards`) | 2026-10-31: typecheck, 24 rule tests, full 4,021 units, build; levels 1–2 (level 1 free first guess, counted wrongs, glow, 2/1; level 2 wrong boat and back, portrait mid-drift, 1/0) and ghost finger levels 1 and 2 (22.9 s, 24.7 s) | [Drift Cards](archive/VERIFICATION-2026-10-31.md#2026-10-31--drift-cards-levels-12-oceans-slice-6) | Whether school-age children read the arrows cell by cell, the two-cell trace and iPad speech for "South-west" unestablished; offline not run |
 | `forecastdetective`, `fingerdemo` (`forecast-detective`) | 2026-10-31: typecheck, 27 rule tests, registry/lands/how-to/capacity/clip tests, build; levels 1–2 (level 1 free not-yet and repeat Checks, ruled-out Checks, glow, 2/1; level 2 portrait, missing flap, overclaim, Can't tell yet, 1/0) and ghost finger levels 1 and 2 (15.5 s, 16.3 s) | [Forecast Detective](archive/VERIFICATION-2026-10-31.md#2026-10-31--forecast-detective-levels-12-weather-water-slice-9) | Real iPad speech for "Lighthouse Isle", whether school-age children open clues on purpose and tween/parent appeal unestablished; offline not run |

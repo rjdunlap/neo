@@ -803,6 +803,8 @@ Proof: new-interaction tier, as the [definition's check tier](definitions/drift-
 
 ### not-always 1: Not all of them, Every one? and Say it better
 
+**Built 2026-11-01** (levels 1–3 together; [build note](archive/COMPLETED-2026-10-09.md#not-always-levels-13-philosophy-reasoning-pr1-not-always-1-2026-11-01)).
+
 - **`not-always`, levels 1–3 (philosophy-reasoning study slice 1, PR1)** (a new game, one declared batch; pre-K 1–2, school 1–3; Story Grove, fallback Puzzle Peaks): a friend on a crate makes a claim about a row of picture cards; tap the card that breaks it (level 1); tap a breaker or stamp *Every one!* when nothing breaks the claim (level 2); break the claim, then pick the mended claim true of every card (level 3). [Definition](definitions/not-always.md), [study build slices](deep-dives/subjects/philosophy-reasoning.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's check tier](definitions/not-always.md#check-tier) sets it (typecheck, rule tests 1–8 with registry, lands and how-to, a `browser-check.mjs` case with its README row: level 1 with one fitting card then a second for the glow and the breaker, level 2 with a false stamp then a true claim stamped, level 3 with one false mend then the true one, one portrait screenshot of level 2, `fingerdemo` at levels 2 and 3, one build). If the allowance cannot cover level 3, stop after complete levels 1–2 with a draft-PR checkpoint. Person and device checks stay open.
