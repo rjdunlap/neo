@@ -162,7 +162,7 @@ class PaintMixer implements Game {
       if (p.loose) d.rotation = j++ % 2 ? 0.35 : -0.35;
       this.rowsNode.addChild(d);
     }
-    this.tableNode.removeChildren().forEach((c) => c.destroy());
+    this.tableNode.removeChildren().forEach((c) => c.destroy({ children: true }));
     if (this.plan.level >= 3) this.tableNode.addChild(ratioTable(tableFor(this.plan, this.sample, counts), this.sample.pair, this.done));
     if (this.glow) this.glow = glowFor(this.plan, this.sample, this.drops, this.done);
   }
