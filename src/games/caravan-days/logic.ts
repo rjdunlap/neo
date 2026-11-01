@@ -1031,7 +1031,7 @@ function wellsLayout(road: WellRoad, v: View): RoadLayout | null {
   };
   const marks = Array.from({ length: L + 1 }, (_, i) => at(i * step));
   const sites = road.sites.map((m) => around(marks[m], SITE));
-  const stick = around({ x: xL + STICK.w / 2, y: y0 - 150 }, STICK.w, STICK.h);
+  const stick = around({ x: xL + STICK.w / 2 + 90, y: y0 - 150 }, STICK.w, STICK.h);
   const go = around({ x: v.w - 110, y: v.h - 70 }, GO.w, GO.h);
   return {
     camel: around(marks[0], CAMEL.w * 0.45, CAMEL.h * 0.45), start: marks[0], bales: [], skin: { x: -999, y: -999 },

@@ -7,10 +7,11 @@ async function caravanDaysPlay() {
   const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 40000 }); await page.waitForTimeout(150); };
   const tapOn = async (expr) => { await page.evaluate((expr) => kit.tapOn(Function(`return (${expr})`)()), expr); await page.waitForTimeout(150); };
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
-  // CARAVAN_FROM=4 skips levels 1–3 (unchanged) and plays only the levels built later.
+  // CARAVAN_FROM=4 skips levels 1–3 (unchanged), CARAVAN_FROM=6 levels 1–5, and plays only the levels built later.
   const from = Number(process.env.CARAVAN_FROM ?? 1);
   if (from <= 3) await levelsOneToThree();
-  await levelsFourFive();
+  if (from <= 5) await levelsFourFive();
+  await levelsSixSeven();
   log('Caravan Days: passed');
 
   async function levelsOneToThree() {
@@ -166,6 +167,79 @@ async function caravanDaysPlay() {
   await finished('caravan-days');
   assert.deepEqual(await score(), [1, 1], 'level 5 saved 1 miss, 1 hint');
   log('Caravan Days 4–5: Go before picking free, a decoy (miss), help (hint), the right goods on both roads (1/1); Go before looking free, the smaller load (miss), help (hint), the better load reversing between cases (1/1); portrait screenshots, passed');
+  }
+
+  async function levelsSixSeven() {
+  const logic = '/src/games/caravan-days/logic.ts';
+  // Level 6: Go before both is free; the slower road with a wrong card (one miss, home again, road and card kept); asked-for help (one hint);
+  // then that slower road's right count is accepted (either road); the second map by the ghost-finger moves; a portrait screenshot.
+  await launch('caravan-days', 6);
+  await settle();
+  await tapOn('neo.scene.game.goNode'); await page.waitForTimeout(200);
+  assert.deepEqual(await tally(), [0, 0], 'Go before a road and a card counts nothing');
+  const info6 = () => page.evaluate(async (logic) => { const { days, quicker, nextPassMove } = await import(logic); const g = neo.scene.game; if (neo.scene.finished) return null; const m = g.passMap; return { c: g.roadIndex, slow: quicker(m) === 'pass' ? 'sand' : 'pass', days: { pass: days(m, 'pass'), sand: days(m, 'sand') }, move: nextPassMove(m, g.pass) }; }, logic);
+  let p6 = await info6();
+  const slowBand = p6.slow === 'pass' ? 0 : 1;
+  const right = p6.days[p6.slow];
+  const wrong = right === 3 ? 7 : right - 1;
+  await tapOn(`neo.scene.game.bandNodes[${slowBand}]`);
+  await tapOn(`neo.scene.game.cardNodes[${[3, 4, 5, 6, 7].indexOf(wrong)}]`);
+  await tapOn('neo.scene.game.goNode'); await settle();
+  assert.deepEqual(await tally(), [1, 0], 'a wrong day count is one miss');
+  assert.deepEqual(await page.evaluate(() => ({ ...neo.scene.game.pass })), { road: p6.slow, guess: wrong }, 'the road and card stay set');
+  await page.evaluate(() => neo.scene.game.askForHint()); await page.waitForTimeout(200);
+  assert.deepEqual(await tally(), [1, 1], 'asked-for help is one hint');
+  await tapOn(`neo.scene.game.cardNodes[${[3, 4, 5, 6, 7].indexOf(right)}]`);
+  await tapOn('neo.scene.game.goNode'); await settle();
+  assert.equal(await page.evaluate(() => neo.scene.game.roadIndex), 1, 'the slower road with its right count is accepted');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  await screenshot('caravan-days-6-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  for (let guard = 0; guard < 10; guard++) {
+    p6 = await info6();
+    if (!p6) break;
+    if ('go' in p6.move) { await tapOn('neo.scene.game.goNode'); await settle(); }
+    else if ('road' in p6.move) await tapOn(`neo.scene.game.bandNodes[${p6.move.road === 'pass' ? 0 : 1}]`);
+    else await tapOn(`neo.scene.game.cardNodes[${[3, 4, 5, 6, 7].indexOf(p6.move.card)}]`);
+  }
+  await finished('caravan-days');
+  assert.deepEqual(await score(), [1, 1], 'level 6 saved 1 miss, 1 hint');
+
+  // Level 7: Done with no wells is free; one well leaves a stretch too long (one miss); asked-for help (one hint); a fewest
+  // placement plus one extra well works (not a miss); the second road by the ghost-finger moves; a portrait screenshot.
+  await launch('caravan-days', 7);
+  await settle();
+  await tapOn('neo.scene.game.goNode'); await page.waitForTimeout(200);
+  assert.deepEqual(await tally(), [0, 0], 'Done with no wells counts nothing');
+  const info7 = () => page.evaluate(async (logic) => { const { checkWells, minimalPlacements, nextWellMove } = await import(logic); const g = neo.scene.game; if (neo.scene.finished) return null; const r = g.wellRoad; return { c: g.roadIndex, sites: r.sites, wells: g.wells.slice(), min: minimalPlacements(r)[0], ok: checkWells(r, g.wells).ok, move: nextWellMove(r, g.wells) }; }, logic);
+  let w7 = await info7();
+  await tapOn('neo.scene.game.siteNodes[0]');
+  await tapOn('neo.scene.game.goNode'); await settle();
+  assert.deepEqual(await tally(), [1, 0], 'a stretch longer than a day is one miss');
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.wells.slice()), [w7.sites[0]], 'the wells stay where she put them');
+  await page.evaluate(() => neo.scene.game.askForHint()); await page.waitForTimeout(200);
+  assert.deepEqual(await tally(), [1, 1], 'asked-for help is one hint');
+  const extra = w7.sites.find((s) => !w7.min.includes(s));
+  const want = [...w7.min, extra];
+  for (const s of w7.sites) {
+    const has = (await page.evaluate(() => neo.scene.game.wells.slice())).includes(s);
+    if (has !== want.includes(s)) await tapOn(`neo.scene.game.siteNodes[${w7.sites.indexOf(s)}]`);
+  }
+  await tapOn('neo.scene.game.goNode'); await settle();
+  assert.equal(await page.evaluate(() => neo.scene.game.roadIndex), 1, 'a road that works with an extra well ends the road');
+  assert.deepEqual(await tally(), [1, 1], 'an extra well is not a miss');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  await screenshot('caravan-days-7-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  for (let guard = 0; guard < 20; guard++) {
+    w7 = await info7();
+    if (!w7) break;
+    if ('done' in w7.move) { await tapOn('neo.scene.game.goNode'); await settle(); }
+    else await tapOn(`neo.scene.game.siteNodes[${w7.sites.indexOf(w7.move.site)}]`);
+  }
+  await finished('caravan-days');
+  assert.deepEqual(await score(), [1, 1], 'level 7 saved 1 miss, 1 hint');
+  log('Caravan Days 6–7: Go before both free, the slower road with a wrong count (miss), help (hint), its right count accepted, portrait (1/1); Done empty free, one well too far apart (miss), help (hint), a fewest placement plus an extra accepted, portrait (1/1), passed');
   }
 }
 return { caravanDaysPlay };
