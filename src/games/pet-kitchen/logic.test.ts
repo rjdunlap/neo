@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { COMPARE_PAIRS, comparePair, compareCut, needs, servesBoth, firstUnmet, morePlate, compareFriends, kitchenDiscoveries, COMPARE_LEVEL } from './logic';
+import { COMPARE_PAIRS, comparePair, compareCut, needs, servesBoth, firstUnmet, morePlate, compareFriends, kitchenDiscoveries, COMPARE_LEVEL , CUP_LEVEL, CUP_PLAN, CUP, CUP_CAP, CUP_WAYS, SCOOPS, canPour, cupFix, cupFull, cupTotal, cupTrouble, cupWay, cupWords, wayStep, type Scoop } from './logic';
 import { allCut, CUT_WAYS, nextWay, overlayPair, pieceShape, SHAPES_LEVEL, SHAPES_PLAN, shapesLine, type CutWay, type PieceShape, dealCut, dealFriends, dealTo, DEAL_LEVEL, fruitPair, FRUITS, pieceCount, wholeFor, WHOLES, doubled, fair, fairCut, fractionCut, FRACTIONS, halfIngredientHint, halved, ingredientHint, nextPlate, planFor, PLANS, plateAt, PLATE_REACH, recipe, servesFraction, serveTrouble, countAloud, cutShares, fairAreas, pieceAreas, LOPSIDED_AREAS, isPizzaLevel } from './logic';
 it('can share every meal fairly and accepts alternative equal cuts',()=>{
  for(const p of PLANS.filter(p=>p.mode==='share')) {
@@ -143,7 +143,7 @@ it('level 12 shares two pizzas among three only as thirds; halves and quarters l
  const plates=[0,0,0];for(let i=0;i<6;i++)plates[nextPlate(plates)]++;expect(plates).toEqual([2,2,2]);
 });
 it('level 14 cuts one sandwich down and one across: both ways make two halves, one of each or two alike on a plate is fair, and the bot cuts one each way',()=>{
- expect(planFor(SHAPES_LEVEL)).toBe(SHAPES_PLAN);expect(planFor(SHAPES_LEVEL+1)).toBe(SHAPES_PLAN);expect(planFor(12)).toBe(PLANS[11]);
+ expect(planFor(SHAPES_LEVEL)).toBe(SHAPES_PLAN);expect(planFor(CUP_LEVEL+1)).toBe(CUP_PLAN);expect(planFor(12)).toBe(PLANS[11]);
  expect(SHAPES_PLAN.wholes).toBe(2);expect(SHAPES_PLAN.friends).toBe(2);
  // Each way halves one sandwich: two pieces of half the area, a tall half from the down cut and a wide one from across.
  for(const way of CUT_WAYS){expect(pieceAreas(2,1)).toEqual([0.5,0.5]);expect(pieceShape(way)).toBe(way==='down'?'tall':'wide');}
@@ -224,4 +224,72 @@ it('journal discoveries only record what the round really showed',()=>{
  expect(kitchenDiscoveries('share',2,false,[1,0],2)).toEqual([]);
  expect(kitchenDiscoveries('share',3,false,[1,1,0],3)).not.toContain('third');
  expect(kitchenDiscoveries('recipe',0,false,[0],0)).toEqual([]);
+});
+
+it('level 15 is One cup, many ways, and 14 stays Different shape', () => {
+  expect(planFor(CUP_LEVEL)).toBe(CUP_PLAN);
+  expect(planFor(SHAPES_LEVEL)).toBe(SHAPES_PLAN);
+});
+
+/** Every pour sequence the jug can hold, from empty (taps past the brim are not poured). */
+function allPours(): Scoop[][] {
+  const out: Scoop[][] = [[]];
+  for (let i = 0; i < out.length; i++) for (const s of SCOOPS) if (canPour(out[i], s)) out.push([...out[i], s]);
+  return out;
+}
+
+it('level 15 accepts exactly the pours that make one cup, and every way to make it', () => {
+  const seqs = allPours();
+  for (const p of seqs) {
+    const quarters = p.filter((s) => s === 'quarter').length + 2 * p.filter((s) => s === 'half').length;
+    expect(cupFull(p)).toBe(quarters === 4);
+    expect(cupTotal(p)).toBeLessThanOrEqual(CUP_CAP);
+  }
+  // Two halves, a half and two quarters (in any of its three orders), four quarters: five sequences.
+  const full = seqs.filter(cupFull).map((p) => p.join(' '));
+  expect(full.sort()).toEqual(['half half', 'half quarter quarter', 'quarter half quarter', 'quarter quarter half', 'quarter quarter quarter quarter']);
+  for (const way of CUP_WAYS) expect(cupFull(way)).toBe(true);
+  expect(cupTrouble([])).toBe('empty');
+  expect(cupTrouble(['half', 'quarter'])).toBe('short');
+  expect(cupTrouble(['half', 'half', 'quarter'])).toBe('over');
+  expect(cupTrouble(['quarter', 'half', 'quarter'])).toBeNull();
+});
+
+it('level 15 help reaches one cup from every reachable state, the back arrow taking the last scoop', () => {
+  for (const start of allPours()) {
+    const p = [...start];
+    for (let step = 0; step < 20 && !cupFull(p); step++) {
+      const fix = cupFix(p);
+      expect(fix).not.toBeNull();
+      if (fix === 'undo') { expect(cupTrouble(p)).toBe('over'); p.pop(); }
+      else { expect(canPour(p, fix!)).toBe(true); p.push(fix!); expect(cupTotal(p)).toBeLessThanOrEqual(CUP); }
+    }
+    expect(cupFull(p)).toBe(true);
+  }
+  expect(cupFix(['half', 'half'])).toBeNull();
+});
+
+it('level 15 ghost finger fills the cup its seeded way from any state', () => {
+  for (let seed = 1; seed <= 40; seed++) {
+    const way = cupWay(new Rng(seed));
+    expect(cupFull(way)).toBe(true);
+    for (const start of allPours()) {
+      const p = [...start];
+      for (let step = 0; step < 20; step++) {
+        const s = wayStep(way, p);
+        if (s === null) break;
+        if (s === 'undo') p.pop(); else { expect(canPour(p, s)).toBe(true); p.push(s); }
+      }
+      expect(p).toEqual(way);
+    }
+  }
+  const seen = new Set(Array.from({ length: 40 }, (_, i) => cupWay(new Rng(i + 1)).length));
+  expect([...seen].sort()).toEqual([2, 3, 4]);
+});
+
+it('level 15 says the scoops that made the cup', () => {
+  expect(cupWords(['half', 'half'])).toBe('two halves');
+  expect(cupWords(['quarter', 'half', 'quarter'])).toBe('one half and two quarters');
+  expect(cupWords(['quarter', 'quarter', 'quarter', 'quarter'])).toBe('four quarters');
+  expect(kitchenDiscoveries('cup', 0, false, [], 0)).toEqual([]);
 });

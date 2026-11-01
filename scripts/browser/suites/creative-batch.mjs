@@ -156,11 +156,11 @@ async function creativeBatch() {
     }
     await page.setViewportSize({width:1024,height:768});log(`Stamp Studio ${level}: creative choices, arrangement, undo, late editing/held-drag guards, frozen kept picture, saved round and sticker passed`);
   }
-  // `KITCHEN_LEVELS=13` (or 14) plays just that level.
-  const kitchenLevels=process.env.KITCHEN_LEVELS?process.env.KITCHEN_LEVELS.split(',').map(Number):[1,2,3,4,5,6,7,8,9,10,11,12,13,14].filter(l=>l>=fromLevel);
+  // `KITCHEN_LEVELS=13` (or 14, or 15) plays just that level.
+  const kitchenLevels=process.env.KITCHEN_LEVELS?process.env.KITCHEN_LEVELS.split(',').map(Number):[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].filter(l=>l>=fromLevel);
   if (!only || only === 'kitchen') for(const level of kitchenLevels) {
     await launch('pet-kitchen',level);
-    if(level===4||level===6||level===10||level===11||level===13||level===14){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
+    if(level===4||level===6||level===10||level===11||level===13||level===14||level===15){await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);}
     await screenshot(`pet-kitchen-${level}-start`);
     await page.evaluate(async()=>{
       const g=neo.scene.game;
@@ -200,6 +200,23 @@ async function creativeBatch() {
         await kit.sleep(1500);if(g.overlaying)throw new Error('Kitchen 13 overlay did not end');
         kit.tapOn(g.plates[more]);await kit.sleep(900);
         if(!g.done)throw new Error('Kitchen 13 right plate did not finish');
+      }else if(g.plan.mode==='cup'){
+        // Level 15: one half served is short (a miss, twice: the half scoop glows); three halves go past the cup line, a
+        // fourth scoop past the brim is not poured, and the back arrow takes scoops out (never a miss); then a half and
+        // two quarters fill the cup.
+        if(g.ingredients.length!==2||!g.undo.visible||g.plates.length||g.cuts.length)throw new Error('Kitchen 15 did not start with two scoops, the back arrow and no plates');
+        kit.tapOn(g.ingredients[0]);await kit.sleep(450);
+        for(let k=0;k<2;k++){kit.tapOn(g.serve);await kit.sleep(600);}
+        if(g.misses!==2||g.hints!==1||g.glow.getLocalBounds().width===0)throw new Error(`Kitchen 15 short ${g.misses}/${g.hints}`);
+        const glowX=g.glow.getLocalBounds().x+g.glow.getLocalBounds().width/2;
+        if(Math.abs(glowX-g.ingredients[0].x)>2)throw new Error('Kitchen 15 glow is not on the half scoop');
+        for(let k=0;k<2;k++){kit.tapOn(g.ingredients[0]);await kit.sleep(450);}
+        kit.tapOn(g.ingredients[1]);await kit.sleep(450);
+        if(g.pours.length!==3)throw new Error(`Kitchen 15 poured past the brim: ${g.pours.join(',')}`);
+        const over=g.glow.getLocalBounds();if(Math.abs(over.x+over.width/2-g.undo.x)>2)throw new Error('Kitchen 15 glow is not on the back arrow when over');
+        kit.tapOn(g.undo);await kit.sleep(450);kit.tapOn(g.undo);await kit.sleep(450);
+        for(let k=0;k<2;k++){kit.tapOn(g.ingredients[1]);await kit.sleep(450);}
+        if(g.pours.join(',')!=='half,quarter,quarter'||g.misses!==2)throw new Error(`Kitchen 15 pours ${g.pours.join(',')}/${g.misses}`);
       }else if(g.plan.mode==='share'&&g.ctx.level===14){
         // Level 14: one sandwich cut down and served one half each is a miss while the other is whole (the second miss
         // glows the across picture); then the across cut, a wide half to each friend, and the overlay before the meal.

@@ -1829,7 +1829,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'Any way that makes the length counts: two quarters are as long as a half.',
   },
   'pet-kitchen': {
-    goal: 'Share food fairly with friends.',
+    goal: 'Share food fairly with friends and make recipes.',
     steps: [
       { from: 10, to: 10, text: 'Tap a piece and it hops to the friend who has less. Keep tapping until every piece is on a plate.' },
       { to: 4, text: 'Tap a cutting picture to cut the food into equal pieces. Touching the food says what to do again.' },
@@ -1845,9 +1845,11 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 14, to: 14, text: 'Cut one sandwich down and the other across (the two cutting pictures are on the right), then give each friend a tall half and a wide half.' },
       { from: 11, to: 12, text: 'Tap the green arrow to serve. The friends eat what was shared fairly.' },
       { from: 14, to: 14, text: 'Tap the green arrow to serve. The friends eat what was shared fairly.' },
+      { from: 15, to: 15, text: 'The recipe needs one cup. Tap the half-cup or quarter-cup scoop (each strip shows its share of a cup) to pour it into the jug; each scoop says its name.' },
+      { from: 15, to: 15, text: 'Fill the jug exactly to the blue cup line: two halves, four quarters, or a half and two quarters all work. Too much? The back arrow takes the last scoop out. Then tap the green arrow.' },
       { to: 9, text: 'Tap the green arrow to serve. The friends eat what was shared fairly.' },
     ],
-    finish: 'The round ends when the food is served fairly.',
+    finish: 'The round ends when the food is served fairly or the recipe is made.',
     note: [
       { from: 10, to: 10, text: 'No touch is wrong here: a tap away from a piece just wiggles one, and the friends eat when the plates are equal.' },
       { to: 4, text: 'If a friend has less, or there are too few pieces, the kitchen says so; the round arrow puts the food back to cut again, and nothing is lost.' },
@@ -1858,6 +1860,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 11, to: 11, text: 'Choosing the uneven cut is fine to explore. If you serve unequal pieces, they are laid one over the other to show which is bigger, then come back.' },
       { from: 12, to: 12, text: 'A cut that leaves a piece in the tray gets a hint; the round arrow puts the pizzas back together to cut again.' },
       { from: 13, to: 13, text: 'A piece may stay in the tray. A plate that is not what its friend asked for is named aloud; tapping the plate with less lays the two servings one over the other to show which is more.' },
+      { from: 15, to: 15, text: 'Pouring and taking scoops out is free; only serving too little or too much counts as a miss. After two, the useful scoop or the back arrow glows.' },
     ],
   },
   'tangram-town': {
