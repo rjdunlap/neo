@@ -294,3 +294,76 @@ export function stickerArt(look: Look, color: ColorName): Container {
   c.addChild(plant);
   return c;
 }
+
+export const PAIR_W = 220;
+export const PAIR_H = 200;
+export const LENS_R = 50;
+
+/** Level 4's pair card: two small plants, each over its two open copies, with a tick badge while chosen. */
+export class PairCard extends Container {
+  private readonly badge = new Graphics();
+  private readonly glowRing = new Graphics();
+  chosen = false;
+
+  constructor(pair: readonly [readonly [Copy, Copy], readonly [Copy, Copy]], colors: readonly [ColorName, ColorName]) {
+    super();
+    const face = finish({ w: PAIR_W, h: PAIR_H, corner: 28 }, swatch.blue, cream);
+    this.badge.eventMode = this.glowRing.eventMode = 'none';
+    this.addChild(this.glowRing, face);
+    for (const side of [0, 1] as const) {
+      const g = pair[side];
+      const x = (side === 0 ? -1 : 1) * PAIR_W * 0.25;
+      const plant = plantArt(g[0] === 'A' || g[1] === 'A' ? 'spotted' : 'plain', colors[side], 104);
+      plant.position.set(x, 24);
+      plant.eventMode = 'none';
+      this.addChild(plant);
+      for (const i of [0, 1] as const) {
+        const t = tileArt(g[i], 42, false);
+        t.position.set(x + (i === 0 ? -1 : 1) * 23, PAIR_H / 2 - 36);
+        t.eventMode = 'none';
+        this.addChild(t);
+      }
+    }
+    this.addChild(this.badge);
+  }
+
+  setChosen(on: boolean) {
+    this.chosen = on;
+    this.badge.clear();
+    if (!on) return;
+    this.badge.circle(PAIR_W / 2 - 28, -PAIR_H / 2 + 28, 26).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
+    this.badge.moveTo(PAIR_W / 2 - 40, -PAIR_H / 2 + 28).lineTo(PAIR_W / 2 - 31, -PAIR_H / 2 + 38).lineTo(PAIR_W / 2 - 15, -PAIR_H / 2 + 18).stroke({ width: 6, color: 0xffffff, cap: 'round', join: 'round' });
+  }
+
+  glow(r: number | null) {
+    this.glowRing.clear();
+    if (r === null) return;
+    this.glowRing.roundRect(-PAIR_W / 2 - 10 * r, -PAIR_H / 2 - 10 * r, PAIR_W + 20 * r, PAIR_H + 20 * r, 34).stroke({ width: 8, color: swatch.yellow.fill });
+  }
+}
+
+/** The magnifier on a pair card's button: a glass ring with a handle. */
+export function lensArt(): Graphics {
+  const g = new Graphics();
+  g.moveTo(10, 10).lineTo(30, 30).stroke({ width: 12, color: swatch.brown.line, cap: 'round' });
+  g.circle(-6, -6, 22).fill({ color: 0xffffff, alpha: 0.7 }).stroke({ width: 7, color: swatch.brown.line });
+  g.ellipse(-13, -14, 7, 4).fill({ color: 0xffffff, alpha: 0.9 });
+  return g;
+}
+
+/** The friend's wish: a little flower bed sign with three spotted sprouts. */
+export function bedArt(color: ColorName): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const g = new Graphics();
+  g.moveTo(0, 40).lineTo(0, 90).stroke({ width: 10, color: swatch.brown.line, cap: 'round' });
+  g.roundRect(-95, -70, 190, 120, 18).fill(cream).stroke({ width: 5, color: swatch.brown.line });
+  g.ellipse(0, 34, 80, 12).fill(swatch.brown.fill);
+  c.addChild(g);
+  for (const i of [-1, 0, 1]) {
+    const p = plantArt('spotted', color, 84);
+    p.position.set(i * 56, 36);
+    c.addChild(p);
+  }
+  return c;
+}

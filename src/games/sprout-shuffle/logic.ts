@@ -219,3 +219,93 @@ export function lookCounts(rs: readonly Route[]): Record<Look, number> {
   for (const r of rs) counts[looks(r.sprout)]++;
   return counts;
 }
+
+// ——— Level 4: which pairs always make spotted? (Hidden Sprouts G5; definition: docs/definitions/hidden-sprouts.md) ———
+
+/** The top level; level 4 plays the pair cards, not a cross, so `planFor` and `setupFor` stay levels 1–3's. */
+export const PAIRS_LEVEL = 4;
+export const PAIRS_NAME = 'Which pairs always make spotted?';
+
+/** The grown-up name of any level, 1 to 4. */
+export function levelName(level: number): string {
+  return Math.round(level) >= PAIRS_LEVEL ? PAIRS_NAME : planFor(level).name;
+}
+
+/** Two plants on one pair card: the left plant's copies and the right plant's, as their trays show them. */
+export type Pair = readonly [Genotype, Genotype];
+
+const AA: Genotype = ['A', 'A'];
+const Aa: Genotype = ['A', 'a'];
+const aa: Genotype = ['a', 'a'];
+
+/** The definition's authored pools, one per round: each has an accepted and a rejected pair, and pool C two accepted. */
+export const PAIR_POOLS: readonly (readonly Pair[])[] = [
+  [[AA, aa], [Aa, aa], [aa, aa]],
+  [[AA, Aa], [Aa, Aa], [aa, aa]],
+  [[AA, AA], [Aa, aa], [AA, aa]],
+];
+
+/** The pairs (by index) whose every route makes this look. */
+export function pairsAlways(pool: readonly Pair[], look: Look): number[] {
+  return pool.flatMap((p, i) => (always(look, routes(p[0], p[1])) ? [i] : []));
+}
+
+/** A route of this pair that makes a plain sprout, or null when every route is spotted. */
+export function counterexample(pair: Pair): Route | null {
+  return routes(pair[0], pair[1]).find((r) => looks(r.sprout) === 'plain') ?? null;
+}
+
+export interface PairsSetup {
+  /** Which of `PAIR_POOLS` the round plays. */
+  pool: number;
+  /** The three pair cards in order, each as its card shows it. Card order, sides and tile order are seeded. */
+  pairs: readonly Pair[];
+  /** Each card's left and right petal colours (two different ones). */
+  colors: readonly (readonly [ColorName, ColorName])[];
+  /** The cards whose sprouts are always spotted. */
+  accepted: ReadonlySet<number>;
+}
+
+export function pairsSetupFor(rng: Rng): PairsSetup {
+  const pool = rng.int(0, PAIR_POOLS.length - 1);
+  const flip = (g: Genotype): Genotype => (rng.chance(0.5) ? [g[1], g[0]] : [g[0], g[1]]);
+  const pairs = rng.shuffle([...PAIR_POOLS[pool]]).map((p): Pair => {
+    const swap = rng.chance(0.5);
+    return [flip(swap ? p[1] : p[0]), flip(swap ? p[0] : p[1])];
+  });
+  const colors = pairs.map((): readonly [ColorName, ColorName] => {
+    const [c0, c1] = rng.shuffle([...PETAL_COLORS]);
+    return [c0, c1];
+  });
+  return { pool, pairs, colors, accepted: new Set(pairsAlways(pairs, 'spotted')) };
+}
+
+export type PairsVerdict =
+  | { ok: true }
+  /** A chosen card that can make a plain sprout, with the route that makes it. */
+  | { ok: false; extra: number; route: Route }
+  /** An always-spotted card she did not choose. */
+  | { ok: false; missing: number };
+
+/** The only accepted choice is exactly the always-spotted cards (equivalent cards are all accepted together). */
+export function checkPairs(chosen: Iterable<number>, s: PairsSetup): PairsVerdict {
+  const picked = [...new Set(chosen)].sort((a, b) => a - b);
+  for (const i of picked) if (!s.accepted.has(i)) return { ok: false, extra: i, route: counterexample(s.pairs[i])! };
+  for (const i of [...s.accepted].sort((a, b) => a - b)) if (!picked.includes(i)) return { ok: false, missing: i };
+  return { ok: true };
+}
+
+/** The next thing a capable child would do: let go of a wrong card, choose a missing one, then Check. */
+export type PairsStep = { choose: number } | { unchoose: number } | { check: true };
+
+export function pairsNextStep(chosen: ReadonlySet<number>, s: PairsSetup): PairsStep {
+  for (const i of [...chosen].sort((a, b) => a - b)) if (!s.accepted.has(i)) return { unchoose: i };
+  for (const i of [...s.accepted].sort((a, b) => a - b)) if (!chosen.has(i)) return { choose: i };
+  return { check: true };
+}
+
+/** A plant's copies as a spoken key, spot copies first: two spot, one of each, or two plain. */
+export function copiesKey(g: Genotype): 'AA' | 'Aa' | 'aa' {
+  const spots = g.filter((c) => c === 'A').length;
+  return spots === 2 ? 'AA' : spots === 1 ? 'Aa' : 'aa';
+}

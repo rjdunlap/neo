@@ -3,6 +3,8 @@ import { Rng } from '../../engine/random';
 import {
   PETAL_COLORS, PLANS, acceptedClaim, always, buildingBud, builtBud, checkClaim, checkLooks, freshRound, lookCounts, looks, nextStep, planFor, routes, setupFor, support,
   type Copy, type Genotype, type Look, type Round,
+  PAIRS_NAME, PAIR_POOLS, checkPairs, copiesKey, counterexample, levelName, pairsAlways, pairsNextStep, pairsSetupFor,
+  type Pair, type PairsSetup,
 } from './logic';
 
 const SEEDS = Array.from({ length: 200 }, (_, i) => i);
@@ -307,5 +309,160 @@ describe('builtBud', () => {
       expect(idx).not.toBeNull();
       expect(r0.setup.routes[idx!].from).toEqual([i, j]);
     }
+  });
+});
+
+describe('level 4: which pairs always make spotted?', () => {
+  const key = (p: Pair) => `${copiesKey(p[0])}x${copiesKey(p[1])}`;
+  const canon = (p: Pair) => [copiesKey(p[0]), copiesKey(p[1])].sort().join('x');
+  const names = (pool: number) => pairsAlways(PAIR_POOLS[pool], 'spotted').map((i) => key(PAIR_POOLS[pool][i]));
+
+  it('pairsAlways matches the definition table', () => {
+    expect(names(0)).toEqual(['AAxaa']);
+    expect(names(1)).toEqual(['AAxAa']);
+    expect(names(2)).toEqual(['AAxAA', 'AAxaa']);
+  });
+
+  it('every pool has an accepted and a rejected pair; pool C has two accepted', () => {
+    expect(PAIR_POOLS).toHaveLength(3);
+    PAIR_POOLS.forEach((pool, i) => {
+      const n = pairsAlways(pool, 'spotted').length;
+      expect(n).toBeGreaterThanOrEqual(1);
+      expect(n).toBeLessThan(pool.length);
+      if (i === 2) expect(n).toBe(2);
+    });
+  });
+
+  it('counterexamples are real plain routes for rejected pairs; accepted pairs have none and four spotted routes', () => {
+    for (const pool of PAIR_POOLS) {
+      const ok = new Set(pairsAlways(pool, 'spotted'));
+      pool.forEach((p, i) => {
+        const c = counterexample(p);
+        const rs = routes(p[0], p[1]);
+        if (ok.has(i)) {
+          expect(c).toBeNull();
+          expect(rs).toHaveLength(4);
+          expect(rs.every((r) => looks(r.sprout) === 'spotted')).toBe(true);
+        } else {
+          expect(c).not.toBeNull();
+          expect(looks(c!.sprout)).toBe('plain');
+          expect(rs).toContainEqual(c);
+        }
+      });
+    }
+  });
+
+  it('pairsSetupFor deals three valid cards from one pool and reaches every pool', () => {
+    const seen = new Set<number>();
+    for (const seed of SEEDS) {
+      const s = pairsSetupFor(new Rng(seed));
+      seen.add(s.pool);
+      expect(PAIR_POOLS[s.pool]).toBeDefined();
+      expect(s.pairs).toHaveLength(3);
+      expect(s.colors).toHaveLength(3);
+      s.colors.forEach(([a, b]) => expect(a).not.toBe(b));
+      expect(s.pairs.map(canon).sort()).toEqual(PAIR_POOLS[s.pool].map(canon).sort());
+      const always = s.pairs.flatMap((p, i) => (routes(p[0], p[1]).every((r) => looks(r.sprout) === 'spotted') ? [i] : []));
+      expect([...s.accepted].sort()).toEqual(always);
+      expect(s.accepted.size).toBe(pairsAlways(PAIR_POOLS[s.pool], 'spotted').length);
+    }
+    expect([...seen].sort()).toEqual([0, 1, 2]);
+  });
+
+  it('the same seed deals the same cards', () => {
+    for (const seed of SEEDS.slice(0, 30)) {
+      const a = pairsSetupFor(new Rng(seed));
+      const b = pairsSetupFor(new Rng(seed));
+      expect(b.pairs).toEqual(a.pairs);
+      expect(b.colors).toEqual(a.colors);
+      expect([...b.accepted]).toEqual([...a.accepted]);
+    }
+  });
+
+  const subsets = (): number[][] => Array.from({ length: 8 }, (_, m) => [0, 1, 2].filter((i) => m & (1 << i)));
+
+  it('checkPairs accepts exactly the accepted set, in any order, duplicates ignored', () => {
+    for (const seed of SEEDS) {
+      const s = pairsSetupFor(new Rng(seed));
+      for (const sub of subsets()) {
+        const v = checkPairs(sub, s);
+        const exact = sub.length === s.accepted.size && sub.every((i) => s.accepted.has(i));
+        expect('ok' in v && v.ok).toBe(exact);
+        if (!exact) expect(v.ok).toBe(false);
+        if (!v.ok && 'extra' in v) {
+          expect(s.accepted.has(v.extra)).toBe(false);
+          expect(sub).toContain(v.extra);
+          expect(looks(v.route.sprout)).toBe('plain');
+          expect(routes(s.pairs[v.extra][0], s.pairs[v.extra][1])).toContainEqual(v.route);
+        }
+        if (!v.ok && 'missing' in v) {
+          expect(s.accepted.has(v.missing)).toBe(true);
+          expect(sub).not.toContain(v.missing);
+        }
+      }
+      const acc = [...s.accepted];
+      expect(checkPairs([...acc].reverse().concat(acc), s)).toEqual({ ok: true });
+      for (const i of [0, 1, 2].filter((x) => !s.accepted.has(x))) {
+        const v = checkPairs([...acc, i], s);
+        expect(v).toMatchObject({ ok: false, extra: i });
+      }
+      for (const m of acc) {
+        const v = checkPairs(acc.filter((x) => x !== m), s);
+        expect(v).toEqual({ ok: false, missing: m });
+      }
+    }
+  });
+
+  it('pool C: choosing only one of its two accepted cards is not ok', () => {
+    let tested = 0;
+    for (const seed of SEEDS) {
+      const s: PairsSetup = pairsSetupFor(new Rng(seed));
+      if (s.pool !== 2) continue;
+      tested++;
+      expect(s.accepted.size).toBe(2);
+      for (const i of s.accepted) expect(checkPairs([i], s).ok).toBe(false);
+    }
+    expect(tested).toBeGreaterThan(0);
+  });
+
+  it('pairsNextStep walks choose then check from empty, and heals any starting subset within 4 steps', () => {
+    for (const seed of SEEDS) {
+      const s = pairsSetupFor(new Rng(seed));
+      const empty = new Set<number>();
+      const first = pairsNextStep(empty, s);
+      expect(first).toHaveProperty('choose');
+      for (const sub of subsets()) {
+        const chosen = new Set(sub);
+        let steps = 0;
+        for (; steps < 4; steps++) {
+          const st = pairsNextStep(chosen, s);
+          if ('check' in st) break;
+          if ('choose' in st) {
+            expect(s.accepted.has(st.choose)).toBe(true);
+            expect(chosen.has(st.choose)).toBe(false);
+            chosen.add(st.choose);
+          } else {
+            expect(s.accepted.has(st.unchoose)).toBe(false);
+            expect(chosen.has(st.unchoose)).toBe(true);
+            chosen.delete(st.unchoose);
+          }
+        }
+        expect('check' in pairsNextStep(chosen, s)).toBe(true);
+        expect([...chosen].sort()).toEqual([...s.accepted].sort());
+        expect(checkPairs(chosen, s)).toEqual({ ok: true });
+      }
+    }
+  });
+
+  it('copiesKey names a plant by its spot copies', () => {
+    expect(copiesKey(g('A', 'A'))).toBe('AA');
+    expect(copiesKey(g('A', 'a'))).toBe('Aa');
+    expect(copiesKey(g('a', 'A'))).toBe('Aa');
+    expect(copiesKey(g('a', 'a'))).toBe('aa');
+  });
+
+  it('levelName keeps levels 1-3 and names 4 and above as the pairs level', () => {
+    for (const l of [1, 2, 3]) expect(levelName(l)).toBe(planFor(l).name);
+    for (const l of [4, 5, 9]) expect(levelName(l)).toBe(PAIRS_NAME);
   });
 });

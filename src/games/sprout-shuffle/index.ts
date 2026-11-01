@@ -2,7 +2,8 @@
  * Sprout Shuffle: two plants each hand a sprout one copy of a petal tile, and the sprout opens spotted or plain. Then
  * she opens every bud the same two plants could make (level 1), finishes the one missing bud and chooses every
  * sprout that could grow (level 2), or builds all four buds of two spotted plants and says whether their sprouts are
- * always spotted (level 3, with a free Try one draw). The model and plans: ./logic.ts; definition: docs/definitions/sprout-shuffle.md.
+ * always spotted (level 3, with a free Try one draw). Level 4's pair cards are ./pairs.ts. The model and plans: ./logic.ts;
+ * definitions: docs/definitions/sprout-shuffle.md and docs/definitions/hidden-sprouts.md.
  */
 import { Container, Graphics } from 'pixi.js';
 import { swatch, type ColorName } from '../../art/palette';
@@ -20,10 +21,11 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { BUD_H, BUD_W, BudCard, CARD, CHECK_R, ChoiceCard, claimPic, iconArt, leafArt, lookPic, PACKET_R, packetArt, plantArt, slotArt, Sprout, stickerArt, TILE, tileArt } from './art';
-import { acceptedClaim, buildingBud, builtBud, checkClaim, checkLooks, freshRound, looks, nextStep, PETAL_COLORS, planFor, setupFor, support, type Claim, type Look, type Round, type Setup } from './logic';
+import { acceptedClaim, buildingBud, builtBud, checkClaim, checkLooks, freshRound, levelName, looks, nextStep, PAIRS_LEVEL, PETAL_COLORS, setupFor, support, type Claim, type Look, type Round, type Setup } from './logic';
+import { SproutPairs } from './pairs';
 
 const LEVELS: BandLevels = {
-  school: { min: 1, max: 3 },
+  school: { min: 1, max: 4 },
 };
 
 type Side = 0 | 1;
@@ -663,12 +665,12 @@ export const sproutShuffle: GameModule = {
   skills: ['inheritance', 'modeling', 'possible outcomes'],
   bands: ['school'],
   levels: (band) => rangeFor(LEVELS, band),
-  describeLevel: (level) => planFor(level).name,
+  describeLevel: levelName,
   music: STYLES.paint,
   coplayHint: 'Before the buds open, one of you says which sprouts the two plants could make; the other opens the buds to check.',
   offScreen: 'Draw two plants and four arrows between them on paper, and talk about which sprout each arrow would make.',
   hubIcon: () => new SproutIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => new SproutShuffle(ctx),
+  create: (ctx) => (Math.round(ctx.level) >= PAIRS_LEVEL ? new SproutPairs(ctx) : new SproutShuffle(ctx)),
 };
