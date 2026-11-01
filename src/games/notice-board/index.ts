@@ -179,7 +179,7 @@ class NoticeBoard implements Game {
     if (this.plan.mode === 'maker') line = `noticeboard.notme.${f.badge}`;
     else line = f.memory === 'heard' ? 'noticeboard.heard' : `noticeboard.elsewhere.${f.memory}`;
     await this.ctx.say(line as LineId);
-    if (this.alive && out.glow) void this.ctx.say('noticeboard.hint');
+    if (this.alive && out.glow && this.play.glowing && this.play.item === out.item) void this.ctx.say('noticeboard.hint');
   }
 
   private async tapBasket(purpose: Purpose) {
@@ -198,7 +198,7 @@ class NoticeBoard implements Game {
         .then(() => { if (this.alive && !p.destroyed) void this.ctx.tw.to(p, home, { duration: 0.25 }); });
     }
     await this.ctx.say(`noticeboard.want.${out.item.poster.id}` as LineId);
-    if (this.alive && out.glow) void this.ctx.say('noticeboard.hint');
+    if (this.alive && out.glow && this.play.glowing && this.play.item === out.item) void this.ctx.say('noticeboard.hint');
   }
 
   private async settle(out: Extract<Outcome, { kind: 'right' }>, slot: number | null) {
