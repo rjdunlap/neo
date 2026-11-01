@@ -411,7 +411,9 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### pet-kitchen 4: Equivalent cup measures
 
-- **`pet-kitchen`, level 15 *One cup, many ways*, slice 8** (new interaction tier per the cooking packet: typecheck, rule tests over every half-and-quarter combination, one play of 15 with an oversupply undo, a portrait screenshot, `fingerdemo` at 15): the packet's equivalent-measures round; school `order [14, 5, 6, 7, 8, 9, 12, 13, 15]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
+Built 2026-10-31, [PR #1084](https://github.com/rjdunlap/neo/pull/1084); [closeout](archive/COMPLETED-2026-10-09.md#pet-kitchen-batch-4-level-15-one-cup-many-ways-slice-8-2026-10-31). Scope retained for dependency references; this batch is not requeued.
+
+- **`pet-kitchen`, level 15 *One cup, many ways*, slice 8 (built)** (new interaction tier per the cooking packet: typecheck, rule tests over every half-and-quarter combination, one play of 15 with an oversupply undo, a portrait screenshot, `fingerdemo` at 15): the packet's equivalent-measures round; school `order [14, 5, 6, 7, 8, 9, 12, 13, 15]`. [Dive](deep-dives/pet-kitchen.md#new-levels-on-top)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 

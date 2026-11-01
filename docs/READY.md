@@ -33,7 +33,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 - **`size-parade`, The measuring ribbon** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-5-the-measuring-ribbon).
-- **`pet-kitchen`, Equivalent cup measures** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#pet-kitchen-4-equivalent-cup-measures). **Claimed 2026-10-31, branch `claude/pet-kitchen-one-cup`.**
 
 
 - **`spinner-fair`, levels 4–5 (batch spinner-fair 2)** (new-interaction tier: card drag and wedge drag; play level 4 with a card on the wrong spinner and level 5 with a wrong *fair* and an uneven Check, and run `fingerdemo` at levels 4 and 5): after batch spinner-fair 1 (built); [definition](definitions/spinner-fair.md), [batch](GAME-BATCHES.md#spinner-fair-2-sure-maybe-no-way-and-make-it-fair). Sure, maybe, no way and make it fair; unfair race made fair by handing wedges; every spin an honest seeded draw.
