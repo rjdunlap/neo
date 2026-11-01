@@ -281,3 +281,9 @@
 - Ran: `npm run typecheck` clean; 73 rule tests in the game file pass (300-seed plans, exhaustive answers and misses, layout at four views); `BROWSER_SUITE=rivertablets FROM_LEVEL=6` on http://localhost:5191 passed (a tablet read free, can't tell on a present cart one miss, the match, can't tell on the empty cart, saved 1 miss / 0 hints, portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=river-tablets FINGER_LEVELS=6` passed (3.4 s); a manual browser-pane probe of two misses showed both lineups held with the extra basket glowing. `game-reviewer`: no findings.
 - Full `npm test`: 4047 of 4051 passed; four untouched games' rule files (Block Garden, Fluffy Salon, Keep House, Penguin Slide) failed under load and passed when re-run alone (110/110). `npm run build` passed.
 - Not run: other browser suites, the offline check. Device checks (can't tell heard as permission to guess, the hand, cross and shrug buttons, speech to 32) are in [DEVICE-CHECKS](../DEVICE-CHECKS.md#river-tablets-levels-46-ar3-2026-10-30).
+
+## 2026-10-31 — Today's six, `?daily` landing trial
+
+- [PR #1088](https://github.com/rjdunlap/neo/pull/1088), branch `claude/daily-activity-landing-page-27a89c`: `DailyScene`, `dailySix` in `src/content/daily.ts`, the `{ daily: true }` origin and `Routes.daily()`; only active with `?daily`.
+- Ran: `npm run typecheck`; `npm test` (289 files, 4064+ tests, 13 new in `daily.test.ts`); `npm run build`. Browser (dev server, VITE_SPEECH=off, fresh grown-up profile): 800×600, 1180×820 and 820×1180 screenshots; Lemonade Stand opened at level 3 with origin `{ daily: true }`, a scripted round returned to the scene with its tick; no console errors.
+- Not run: `home` and `world` suites, offline check (no persistence or asset change), iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md)). The two voice lines use device speech (no Kokoro clip).
