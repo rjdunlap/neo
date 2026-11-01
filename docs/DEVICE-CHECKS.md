@@ -47,10 +47,11 @@
 - [ ] Once built: does "every way" feel like a collection to complete or like a test?
 - [ ] Once built: does the word *prime* stick, or does "only one long row" carry the idea on its own?
 
-## Shell Rows (strategy-games study, 2026-10-31; proposed, nothing built)
+## Shell Rows (strategy-games study, 2026-10-31; levels 1–3 built 2026-11-01)
 
-- [ ] Once built: does a five-year-old look at the pet's pebbles before setting a shell at level 2, or tap the last empty-looking square?
-- [ ] Once built: does the *show me why* replay read as a lesson rather than a loss?
+- [ ] Does a five-year-old look at the pet's pebbles before setting a shell at level 2, or tap the last empty-looking square?
+- [ ] Does the *show me why* replay read as a lesson rather than a loss?
+- [ ] In device speech, are "three in a row" and the pet's replay lines clear? Listen to the rendered "Shell Rows!" title clip.
 - [ ] Once *play it out* is built: how does she react when the pet wins?
 
 ## Notice Board (media-literacy study, 2026-10-31; levels 1–3 built 2026-11-01)
