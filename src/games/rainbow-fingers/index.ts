@@ -270,7 +270,9 @@ class RainbowFingers implements Game {
   private readonly wetSprite = new Sprite();
   private wetPaint = false;
   private readonly foldButton: RoundButton | null = null;
+  /** Folds that printed paint: each counts as one touch toward the frame. */
   private folds = 0;
+  private folded = false;
   /** The first saved mark made since the last fold: the ones before it are dry and already printed. */
   private foldSince = 0;
   private folding: Folding | null = null;
@@ -510,6 +512,8 @@ class RainbowFingers implements Game {
   }
 
   resize(v: View) {
+    // The flap is drawn for the old view and holds the painting textures that may be replaced below.
+    this.endFold();
     this.view = v;
     this.backing.clear().rect(0, 0, v.w, v.h).fill(wood.fill);
     this.sheet
@@ -615,7 +619,7 @@ class RainbowFingers implements Game {
     if (this.done || this.folding || this.strokes.size > 0) return null;
     const pic = this.picture;
     const fold = this.kind === 'fold';
-    const move = paintStep({ mode: this.plan.mode, strokes: this.touches.length, brush: this.brushName, poured: this.poured, picture: pic?.thing.color ?? null, frame: this.frameButton.visible, fold, folded: this.folds > 0 });
+    const move = paintStep({ mode: this.plan.mode, strokes: this.touches.length, brush: this.brushName, poured: this.poured, picture: pic?.thing.color ?? null, frame: this.frameButton.visible, fold, folded: this.folded });
     if (!move) return null;
     if (move.do === 'frame') return { tap: { on: this.frameButton } };
     if (move.do === 'fold') return this.foldButton?.visible ? { tap: { on: this.foldButton } } : null;
@@ -636,6 +640,7 @@ class RainbowFingers implements Game {
     this.pool.forEach((s) => s.destroy());
     this.stamps.destroy({ children: true });
     for (const pic of this.pictures) pic.node.destroy({ children: true, texture: true, textureSource: true });
+    this.done = true; // nothing prints into textures about to go
     this.endFold();
     this.blank.destroy();
     this.wet?.destroy(true);
@@ -647,8 +652,10 @@ class RainbowFingers implements Game {
     if (this.done || this.folding || !this.rt) return;
     for (const id of [...this.strokes.keys()]) this.lift(id);
     this.idle = 0;
-    this.folds++;
     this.flush();
+    // Folding again with nothing new is still a fold to watch, but only one that prints counts toward the frame.
+    if (this.wetPaint) this.folds++;
+    this.folded = true;
     sfx.whoosh();
     const v = this.view;
     const half = v.w / 2 - MARGIN;
@@ -702,9 +709,11 @@ class RainbowFingers implements Game {
     if (t >= FOLD_TOTAL) this.endFold();
   }
 
+  /** Stop a fold (the round ending, or the view changing under it), pressing the print first if it had not yet. */
   private endFold() {
     const f = this.folding;
     if (!f) return;
+    if (!f.printed && !this.done) this.print();
     this.folding = null;
     f.cover.destroy();
     f.flap.destroy({ children: true });
@@ -905,11 +914,11 @@ class RainbowFingers implements Game {
   /** Done: the painting shrinks into a wooden frame on the wall. */
   private async hangItUp() {
     if (this.done) return;
+    this.endFold();
     this.done = true;
     this.strokes.clear();
     void this.ctx.tw.to(this.frameButton.scale, { x: 0, y: 0 }, { duration: 0.2 });
     if (this.foldButton) void this.ctx.tw.to(this.foldButton.scale, { x: 0, y: 0 }, { duration: 0.2 });
-    this.endFold();
     this.pots.visible = false;
     const v = this.view;
     const k = 0.72;
