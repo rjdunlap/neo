@@ -1829,7 +1829,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'Any way that makes the length counts: two quarters are as long as a half.',
   },
   'pet-kitchen': {
-    goal: 'Share food fairly with friends, and measure for a recipe.',
+    goal: 'Share food fairly with friends and make recipes.',
     steps: [
       { from: 10, to: 10, text: 'Tap a piece and it hops to the friend who has less. Keep tapping until every piece is on a plate.' },
       { to: 4, text: 'Tap a cutting picture to cut the food into equal pieces. Touching the food says what to do again.' },
@@ -1849,7 +1849,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 15, to: 15, text: 'Fill the jug exactly to the blue cup line: two halves, four quarters, or a half and two quarters all work. Too much? The back arrow takes the last scoop out. Then tap the green arrow.' },
       { to: 9, text: 'Tap the green arrow to serve. The friends eat what was shared fairly.' },
     ],
-    finish: 'The round ends when the food is served fairly, or the jug holds exactly one cup.',
+    finish: 'The round ends when the food is served fairly or the recipe is made.',
     note: [
       { from: 10, to: 10, text: 'No touch is wrong here: a tap away from a piece just wiggles one, and the friends eat when the plates are equal.' },
       { to: 4, text: 'If a friend has less, or there are too few pieces, the kitchen says so; the round arrow puts the food back to cut again, and nothing is lost.' },
