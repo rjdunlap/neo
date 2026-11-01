@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
-import { repairBoards, repairTarget, repairGate, simulateFlipflop, flipflopBoards, laneChoice, pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, PLANS, targetsFor, predictGates, type EggInAir, type Shell, HEN_SHELLS, HEN_NOTES, SHELL } from './logic';
+import { repairBoards, repairTarget, repairGate, simulateFlipflop, flipflopBoards, laneChoice, pairBoards, pairExits, pairGateToFlip, pairNeeds, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, PLANS, targetsFor, predictGates, BARN_ASPECT, exitOffsets, farBarnAt, HORIZON, laneXs, routeCx, type EggInAir, type Shell, HEN_SHELLS, HEN_NOTES, SHELL } from './logic';
 
 describe('Egg Catch', () => {
   it('lays eggs in changing lanes, with white eggs only where asked and never three in a row', () => {
@@ -381,4 +381,46 @@ it('simulates the spring after each passage and deals one unique working start f
       expect(simulateFlipflop(gates).exits).toEqual([board.basket, board.nest]);
     }
   }
+});
+
+describe('Egg Catch far barn', () => {
+  // Logical views: iPad landscape, an iPad Air, a wide phone, iPad portrait and the tallest view before the turn prompt.
+  const VIEWS = [[1024, 768], [1105, 768], [1365, 768], [768, 1024], [1024, 1365], [1024, 1638]] as const;
+  const overlaps = (a: number[], b: number[]) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+
+  it('stands a far barn, 60 to 80 tall, on the horizon at the left of every level, at every view', () => {
+    for (const plan of PLANS) {
+      for (const [w, h] of VIEWS) {
+        const barn = farBarnAt(plan, w, h);
+        expect(barn, `${plan.name} ${w}x${h}`).not.toBeNull();
+        expect(barn!.height).toBeGreaterThanOrEqual(60);
+        expect(barn!.height).toBeLessThanOrEqual(80);
+        expect(barn!.base).toBe(h * HORIZON);
+      }
+    }
+  });
+
+  it('keeps the barn on screen, above the pet, and clear of every lane, hay pile, tap column, chute and bin', () => {
+    for (const plan of PLANS) {
+      const routing = !['tap', 'lane', 'catch', 'brown'].includes(plan.mode);
+      for (const [w, h] of VIEWS) {
+        const barn = farBarnAt(plan, w, h)!;
+        const half = (barn.height * BARN_ASPECT) / 2 + 4; // the trim overhangs the walls by 4
+        const box = [barn.x - half, barn.base - barn.height - 3, barn.x + half, barn.base];
+        const at = `${plan.name} ${w}x${h}`;
+        expect(box[0], at).toBeGreaterThanOrEqual(0);
+        expect(box[3], at).toBeLessThan(h - 205); // the pet's corner
+        if (routing) {
+          for (const dx of exitOffsets(!!plan.singleGate)) {
+            const x = routeCx(w) + dx;
+            expect(overlaps(box, [x - 17, 0, x + 17, h]), `${at} chute`).toBe(false);
+            expect(overlaps(box, [x - 80, h - 160, x + 80, h]), `${at} bin`).toBe(false);
+          }
+        } else {
+          for (const x of laneXs(plan.mode, w)) expect(overlaps(box, [x - 85, 0, x + 85, h]), `${at} lane`).toBe(false);
+          if (plan.mode === 'lane') expect(box[2], `${at} tap columns`).toBeLessThan(150);
+        }
+      }
+    }
+  });
 });

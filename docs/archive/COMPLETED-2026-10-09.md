@@ -1,6 +1,12 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
 
+### Egg Catch far barn (visual identity V1 slice, 2026-11-01)
+
+[PR #1109](https://github.com/rjdunlap/neo/pull/1109), from the [definition](../definitions/visual-identity.md): the Barnyard's far barn stands on Egg Catch's horizon (0.72) at the left, 60-80 units tall, in the strip no lane, hay pile, lane-game tap column, chute or bin reaches, at all 11 levels and every view. Placement is `farBarnAt()` in `src/games/egg-catch/logic.ts` (lane and exit positions moved there as `laneXs`, `routeCx`, `exitOffsets`), drawn with the shared `drawFarBarn()`, `eventMode = 'none'`. Egg Catch completes the V1 games with room; Critter Sort and Roundup have low horizons and Duckling Parade keeps its meadow.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-01--egg-catch-far-barn-visual-identity-v1).
+
 ### Rule Machine levels 1-2, algebra-balance AB1 (2026-11-01)
 
 [PR #1091](https://github.com/rjdunlap/neo/pull/1091), branch `claude/rule-machine-1-2`, batch rule-machine 1, [definition](../definitions/rule-machine.md): a new game, `rule-machine`, Puzzle Peaks' 14th (so the land now pages), pre-K level 1 "Hat machine" and school level 2 "One more goes in" (LEVELS prek 1-1, school 2-2; the school ceiling rises with batch rule-machine 2). Level 1 predicts the look of the next creature from three pictures, level 2 the count on three pads once two rows show; the first prediction on each machine is free, a counted wrong gives a spoken reason, a second glows, and the right answer rings green beside her pick. Decisions: Pip excluded under blue; one slotted run line `rm.ran` rather than separate went-in and came-out lines. Levels 3-4 stay in batch rule-machine 2.

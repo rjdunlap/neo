@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import { spread } from '../../engine/view';
 
 /**
  * Egg Catch, after the Atari 2600's Big Bird's Egg Catch (made for preschoolers) and Kaboom!:
@@ -290,3 +291,36 @@ export function simulateFlipflop(start: readonly boolean[]): { exits: [number, n
 }
 /** Opposite destination branches make all three starting directions matter. */
 export const flipflopBoards = (rng: Rng, count: number) => pairBoards(rng, count);
+
+/* Layout shared with the scene, so the far barn can stay clear of it ----------------------------- */
+
+/** Where the four lanes sit across the view: the lane game's tap columns start at 150, the catching lanes leave room for the hens. */
+export const laneXs = (mode: EggMode, w: number): number[] =>
+  mode === 'lane' ? spread(LANES, 150, w - 40, 220) : spread(LANES, 230, w - 110, 190);
+
+/** The routing levels' run: the chute's centre line, and the exits' (and bins') offsets from it. */
+export const routeCx = (w: number) => w / 2 + 40;
+export const exitOffsets = (singleGate: boolean): number[] => (singleGate ? [-190, 190] : [-285, -95, 95, 285]);
+
+export const HORIZON = 0.72;
+/** A far barn is this many times as wide as it is tall (the walls), plus 4 units of trim either side. */
+export const BARN_ASPECT = 1.1;
+/** A chute's drawn half-width, a hay pile's or the basket's half-width, and the lane game's first tap column. */
+const CHUTE_HALF = 17;
+const PILE_HALF = 85;
+const LANE_TOUCH_LEFT = 150;
+
+/**
+ * The Barnyard's far barn (visual identity V1): on the horizon at the left, in the strip no lane, egg, chute, bin or
+ * tap column reaches, 60 to 80 tall. Null when the strip is too narrow for a 60-unit barn.
+ */
+export function farBarnAt(plan: EggPlan, w: number, h: number): { x: number; base: number; height: number } | null {
+  const routing = plan.mode !== 'tap' && plan.mode !== 'lane' && plan.mode !== 'catch' && plan.mode !== 'brown';
+  const clear = routing
+    ? routeCx(w) + exitOffsets(!!plan.singleGate)[0] - CHUTE_HALF
+    : Math.min(laneXs(plan.mode, w)[0] - PILE_HALF, plan.mode === 'lane' ? LANE_TOUCH_LEFT : Infinity);
+  const left = 12, right = clear - 10;
+  const height = Math.min(80, Math.floor((right - left - 8) / BARN_ASPECT));
+  if (height < 60) return null;
+  return { x: (left + right) / 2, base: h * HORIZON, height };
+}
