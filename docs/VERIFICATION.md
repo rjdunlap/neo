@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-01 — Sudoku Garden deep dive (docs only)
+
+- [PR #1102](https://github.com/rjdunlap/neo/pull/1102), branch `claude/dive-sudoku-garden`: [dive](deep-dives/sudoku-garden.md). Four slices queued ([batches](GAME-BATCHES.md#sudoku-garden-1-a-4-by-4-bed-to-start): a 4 by 4 bed to start, fill marks on big beds, a crossing pair of rows, patchwork beds); cage beds are a queued definition.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built under `src/`). Open: the four builds.
+
 ## 2026-11-01 — Sink or Float deep dive (docs only)
 
 - [PR #1101](https://github.com/rjdunlap/neo/pull/1101), branch `claude/dive-sink-or-float`: [dive](deep-dives/sink-float.md). Two builds queued (batches sink-float 1 *Fresh things* and 2 *Big and small*); level 10 *Salty or fresh* definition queued; level 11 waits for the Garden Raft definition. Tracker, READY, batches, backlog, ideas and the oceans, recommendations and engineering handoffs updated.
@@ -87,12 +93,6 @@
 - [PR #1087](https://github.com/rjdunlap/neo/pull/1087), branch `claude/dive-picture-graph`: [dive](deep-dives/picture-graph.md). Five slices queued (fair meadows; levels 8 *Line them up*, 9 *A key of five*, 10 *Two pictures, one meadow*, 11 *What the graph can say*) with batch plans picture-graph 1–5; tracker, READY, backlog, ideas, four subject studies and WAITING-ON-DEVELOPER (preschool opening) updated.
 - Ran: a throwaway probe (5,000 rounds a level at 1024×768, deleted) found two critters overlapping in 10.7% of level-7 rounds, 0.1% at level 3 and none at levels 1–2; `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, no code changed). Open: the builds; the level-11 person check.
-
-## 2026-11-01 — Penguin Slide deep dive (docs only)
-
-- [PR #1086](https://github.com/rjdunlap/neo/pull/1086), branch `claude/dive-penguin-slide`: [dive](deep-dives/penguin-slide.md). Five slices queued (fair ponds and seeded looks; levels 10 *Three fish*, 11 *Where will it stop?*, 12 *A block onto the star*, 13 *Two penguins*); tracker, READY, backlog and WAITING-ON-DEVELOPER (toddler opening) updated.
-- Ran: a throwaway probe of 300 seeds per level (deleted) found ponds where a slide strands the penguin (level 1: 29, level 2: 44, level 3: 36, level 4: 53 of 300) and 145 of 300 level-1 ponds solved in one slide; `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites; nothing played (docs tier, no code changed). Open: the builds.
 
 ## Coverage summary
 
