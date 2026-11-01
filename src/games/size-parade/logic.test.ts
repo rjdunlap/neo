@@ -3,6 +3,7 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
   askRank, BIG_LITTLE, DARKEST_FIRST, fromHsl, gapMids, insertAsks, insertGap, insertGapFor, insertLayout, insertLine, insertWhy, luminance, SHADE_COLORS, SHADE_LIGHTNESS, SHADE_STEP, shades, WHERE_DOES_IT_GO, BIG_LITTLE_ASKS, CRITTER_H, CYCLE, CYCLE_SCALE, CYCLE_TAPS, cycleAt, dealSteps, dropSpot, FIT_PROPS, fitAsks, fitTry, FLAG_COLORS, FRIEND_SCALE, FRIENDS, middleAsks, MIDDLE_ONE, MIN_RATIO, paradeLayout,
+  BOOT_COLORS, HIDDEN_HEIGHTS, HIDDEN_LINES, hiddenStart, inversions, isSorted, mixedPair, pairTest, SWEEP_START, sweepAfter, sweepNext, type Sweep,
   pickRounds, propSize, SIZE_CYCLE, SIZE_PLANS, sizeBell, sizeOrder, sizePlan, sizeScale, sizeTouch, sizeWord, stepBell, STEPS, stepScale, TARGET, TWO_IN_A_LINE, WHO_FITS,
 } from './logic';
 import { fitPose } from './props';
@@ -267,7 +268,7 @@ describe('Size Parade', () => {
   it('level 11 sits at the top of the preschool order and after 6 in pre-K, and is described', () => {
     expect(sizeParade.levels('preschool')).toEqual({ min: 3, max: 17, order: [3, 4, 17, 10, 5, 6, 11] });
     expect(sizeParade.levels('prek')).toEqual({ min: 5, max: 15, order: [5, 6, 11, 7, 8, 12, 15] });
-    expect(sizeParade.levels('school')).toEqual({ min: 7, max: 15, order: [7, 8, 12, 15] });
+    expect(sizeParade.levels('school')).toEqual({ min: 7, max: 15, order: [7, 8, 12, 13, 15] });
     expect(sizeParade.describeLevel(11)).toMatch(/bed, chair, bowl and door/);
   });
 
@@ -390,5 +391,91 @@ describe('Size Parade', () => {
     expect(fromHsl(120, 1, 0.5)).toBe(0x00ff00);
     expect(fromHsl(240, 1, 0.5)).toBe(0x0000ff);
     expect(fromHsl(0, 0, 1)).toBe(0xffffff);
+  });
+  describe('level 13 Hidden heights', () => {
+    const perms = (n: number): number[][] => n === 0 ? [[]] : perms(n - 1).flatMap(p => Array.from({ length: n }, (_, i) => [...p.slice(0, i), n - 1, ...p.slice(i)]));
+    const ALL = [...perms(4), ...perms(5)];
+
+    it('is planned as a hidden littlest-first level in the school ladder', () => {
+      expect(sizePlan(13)).toBe(HIDDEN_HEIGHTS);
+      expect(HIDDEN_HEIGHTS.mode).toBe('hidden');
+      expect(HIDDEN_HEIGHTS.order).toBe('small');
+      expect(sizeParade.describeLevel(13).length).toBeGreaterThan(0);
+      expect(sizeParade.levels('school')).toEqual({ min: 7, max: 15, order: [7, 8, 12, 13, 15] });
+      expect(new Set(HIDDEN_LINES)).toEqual(new Set([4, 5]));
+      expect(new Set(BOOT_COLORS).size).toBeGreaterThanOrEqual(Math.max(...HIDDEN_LINES));
+    });
+
+    it('seeded starts are permutations that are never sorted and repeat per seed', () => {
+      for (const n of HIDDEN_LINES) for (let seed = 1; seed <= 300; seed++) {
+        const line = hiddenStart(new Rng(seed), n);
+        expect([...line].sort((a, b) => a - b)).toEqual(Array.from({ length: n }, (_, i) => i));
+        expect(isSorted(line)).toBe(false);
+        expect(inversions(line)).toBeGreaterThanOrEqual(2);
+        expect(hiddenStart(new Rng(seed), n)).toEqual(line);
+      }
+    });
+
+    it('a pair test swaps only when the left friend is bigger, and only ever helps', () => {
+      for (const line of ALL) for (let a = 0; a < line.length; a++) for (let b = 0; b < line.length; b++) {
+        if (a === b) continue;
+        const copy = [...line], { line: out, swapped } = pairTest(line, a, b);
+        expect(line).toEqual(copy);
+        const [l, r] = a < b ? [a, b] : [b, a];
+        expect(swapped).toBe(line[l] > line[r]);
+        if (swapped) {
+          expect(out[l]).toBe(line[r]); expect(out[r]).toBe(line[l]);
+          expect(inversions(out)).toBeLessThan(inversions(line));
+        } else expect(out).toEqual(line);
+        expect(inversions(out)).toBeLessThanOrEqual(inversions(line));
+      }
+    });
+
+    it('isSorted matches zero inversions, and mixedPair points at a swap that mends exactly one', () => {
+      for (const line of ALL) {
+        expect(isSorted(line)).toBe(inversions(line) === 0);
+        const i = mixedPair(line);
+        if (isSorted(line)) { expect(i).toBeNull(); continue; }
+        expect(i).not.toBeNull();
+        expect(line[i!]).toBeGreaterThan(line[i! + 1]);
+        const t = pairTest(line, i!, i! + 1);
+        expect(t.swapped).toBe(true);
+        expect(inversions(t.line)).toBe(inversions(line) - 1);
+      }
+    });
+
+    it('the ghost sweep always sorts within n(n-1)/2 tests, even after interference', () => {
+      const run = (start: number[], s0: Sweep) => {
+        let line = start, s = s0, tests = 0;
+        for (;;) {
+          const step = sweepNext(s);
+          if (step === 'gate') return { line, tests };
+          const t = pairTest(line, step[0], step[1]);
+          line = t.line; tests++;
+          s = sweepAfter(s, line.length, t.swapped);
+          expect(tests).toBeLessThanOrEqual(50);
+        }
+      };
+      for (const line of ALL) {
+        const r = run(line, SWEEP_START);
+        expect(isSorted(r.line)).toBe(true);
+        expect(r.tests).toBeLessThanOrEqual(line.length * (line.length - 1) / 2);
+      }
+      for (const n of HIDDEN_LINES) for (let seed = 1; seed <= 200; seed++) {
+        const rng = new Rng(seed);
+        let line = hiddenStart(rng, n);
+        for (let k = rng.int(0, 6); k > 0; k--) line = pairTest(line, rng.int(0, n - 1), rng.int(0, n - 1)).line;
+        expect(isSorted(run(line, SWEEP_START).line)).toBe(true);
+      }
+    });
+
+    it('following the hint pair repeatedly sorts in exactly the line\'s inversions', () => {
+      for (const start of ALL) {
+        let line = start, tests = 0;
+        for (let i = mixedPair(line); i !== null; i = mixedPair(line)) { line = pairTest(line, i, i + 1).line; tests++; }
+        expect(isSorted(line)).toBe(true);
+        expect(tests).toBe(inversions(start));
+      }
+    });
   });
 });

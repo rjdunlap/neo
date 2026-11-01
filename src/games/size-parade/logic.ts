@@ -2,7 +2,7 @@ import { spread } from '../../engine/view';
 import { swatch, type Swatch } from '../../art/palette';
 
 export interface SizePlan {
-  count: number; order: 'big' | 'small'; mode: 'pick' | 'line' | 'cycle' | 'fit' | 'insert'; name: string;
+  count: number; order: 'big' | 'small'; mode: 'pick' | 'line' | 'cycle' | 'fit' | 'insert' | 'hidden'; name: string;
   /** *Darkest first*: the ranks are shades of one colour (rank 0 the darkest), every friend one size, and a second line runs lightest first. */
   shade?: boolean;
   /** Some questions ask for the middle one. */
@@ -34,7 +34,9 @@ export const WHO_FITS: SizePlan = { count: 3, order: 'big', mode: 'fit', name: '
 export const WHERE_DOES_IT_GO: SizePlan = { count: 5, order: 'small', mode: 'insert', name: 'Put a fifth friend into its place in a line of four' };
 /** 15 *Darkest first* (pre-K top and school, after 8): five friends of one size in five shades, darkest first, then lightest first. */
 export const DARKEST_FIRST: SizePlan = { count: 5, order: 'small', mode: 'line', shade: true, name: 'Line up five friends by shade, darkest first, then lightest first' };
-const HIGH_LEVELS: Record<number, SizePlan> = { 9: BIG_LITTLE, 10: MIDDLE_ONE, 11: WHO_FITS, 12: WHERE_DOES_IT_GO, 15: DARKEST_FIRST, 16: SIZE_CYCLE, 17: TWO_IN_A_LINE };
+/** 13 *Hidden heights* (school, after 12): friends behind a fence, only their boots showing, sorted littlest first by pair tests; four friends, then five. */
+export const HIDDEN_HEIGHTS: SizePlan = { count: 4, order: 'small', mode: 'hidden', name: 'Behind a fence, tap pairs to swap them into order, four friends then five, littlest first' };
+const HIGH_LEVELS: Record<number, SizePlan> = { 9: BIG_LITTLE, 10: MIDDLE_ONE, 11: WHO_FITS, 12: WHERE_DOES_IT_GO, 13: HIDDEN_HEIGHTS, 15: DARKEST_FIRST, 16: SIZE_CYCLE, 17: TWO_IN_A_LINE };
 export const sizePlan = (level: number): SizePlan =>
   HIGH_LEVELS[level] ?? SIZE_PLANS[Math.max(0, Math.min(SIZE_PLANS.length - 1, level - 1))];
 /** How many questions a pick level asks: three at *Big one, little one*, otherwise four (one per prop at *Who fits?*). */
@@ -120,6 +122,57 @@ export function insertWhy(ask: InsertAsk, gap: number): { friend: number; cmp: '
   if (gap === right) return null;
   const line = insertLine(ask), friend = gap < right ? gap : gap - 1;
   return { friend, cmp: ask.rank > line[friend] ? 'bigger' : 'smaller', side: gap < right ? 'after' : 'before' };
+}
+
+/**
+ * *Hidden heights*: the lines of a round (four friends, then five) and the boots' colours. A line is the friends' ranks in
+ * place order, left to right; the friends are sorted when it reads littlest first. The boots are one size for everyone, so
+ * nothing but a pair test tells their heights.
+ */
+export const HIDDEN_LINES = [4, 5] as const;
+export const BOOT_COLORS = ['red', 'blue', 'yellow', 'green', 'purple'] as const;
+export const isSorted = (line: readonly number[]): boolean => line.every((r, i) => i === 0 || line[i - 1] < r);
+/** How many pairs stand the wrong way round: each swap of mixed-up neighbours mends exactly one. */
+export function inversions(line: readonly number[]): number {
+  let n = 0;
+  for (let i = 0; i < line.length; i++) for (let j = i + 1; j < line.length; j++) if (line[i] > line[j]) n++;
+  return n;
+}
+/** A line's seeded start: a shuffle at least two swaps from sorted, so the gate never opens on a lucky first look. */
+export function hiddenStart(rng: { shuffle<T>(a: T[]): T[] }, count: number): number[] {
+  for (;;) {
+    const line = rng.shuffle(Array.from({ length: count }, (_, i) => i));
+    if (inversions(line) >= 2) return line;
+  }
+}
+/**
+ * The pair test, the only thing the fence lets through: the friends at places `a` and `b` swap iff the left one is the
+ * bigger, so a test never makes the line worse and says nothing about heights but which of the two is bigger.
+ */
+export function pairTest(line: readonly number[], a: number, b: number): { line: number[]; swapped: boolean } {
+  const [l, r] = a < b ? [a, b] : [b, a], next = [...line];
+  if (line[l] < line[r]) return { line: next, swapped: false };
+  [next[l], next[r]] = [next[r], next[l]];
+  return { line: next, swapped: true };
+}
+/** The hint after a second wrong gate: the first two neighbours that are still mixed up (the left place), or null when sorted. */
+export function mixedPair(line: readonly number[]): number | null {
+  const i = line.findIndex((r, i) => i + 1 < line.length && r > line[i + 1]);
+  return i < 0 ? null : i;
+}
+/**
+ * The ghost finger's plan, a bubble sort by pair tests: pass `pass` tests neighbours from the left up to the last place not yet
+ * settled; a pass without a swap, or the last pass, ends at the gate. It never looks behind the fence, only at what swapped,
+ * and needs at most n(n−1)/2 tests.
+ */
+export interface Sweep { pass: number; pos: number; swapped: boolean; done: boolean }
+export const SWEEP_START: Sweep = { pass: 0, pos: 0, swapped: false, done: false };
+export const sweepNext = (s: Sweep): [number, number] | 'gate' => s.done ? 'gate' : [s.pos, s.pos + 1];
+export function sweepAfter(s: Sweep, count: number, swapped: boolean): Sweep {
+  const next = { ...s, pos: s.pos + 1, swapped: s.swapped || swapped };
+  if (next.pos <= count - 2 - s.pass) return next;
+  if (!next.swapped || s.pass + 1 >= count - 1) return { ...next, done: true };
+  return { pass: s.pass + 1, pos: 0, swapped: false, done: false };
 }
 
 /**

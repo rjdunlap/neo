@@ -32,7 +32,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **RW14 slice 10, the other ten backdrops** (images only): after slices 4 and 6 pass their screenshot review. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 
 
-- **`size-parade`, Hidden heights** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-4-hidden-heights).
 - **`size-parade`, The measuring ribbon** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-5-the-measuring-ribbon).
 - **`pet-kitchen`, Equivalent cup measures** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#pet-kitchen-4-equivalent-cup-measures).
 

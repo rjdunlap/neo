@@ -31,10 +31,26 @@ async function expansion() {
         if (Math.abs(n.x - home.x) > 2 || g.openGap !== null) throw new Error('A drop away from the line was kept');
         kit.tapOn(g.lineUp[1].node, 0, -60); await kit.sleep(300);
       }
+      if (g.plan.mode === 'hidden') {
+        // A pair test behind the fence (neighbours, so one swap at most and the line stays mixed up) is never a miss.
+        const before = g.hidden.join();
+        kit.tapOn(g.choices[0].node, 0, -100 * neo.view.scale); await kit.sleep(250);
+        if (g.picked !== 0) throw new Error('The first tap of a pair held nothing');
+        kit.tapOn(g.choices[1].node, 0, -100 * neo.view.scale); await kit.sleep(250);
+        await kit.until(() => !g.busy);
+        const [a, b] = before.split(',').map(Number);
+        if ((a > b) !== (g.hidden.join() !== before)) throw new Error(`The pair test swapped wrongly: ${before} -> ${g.hidden.join()}`);
+      }
       if (g.misses !== 0 || g.hints !== 0) throw new Error(`Free touches counted: ${g.misses} misses, ${g.hints} hints`);
     });
     await page.evaluate(async () => {
       const g = neo.scene.game;
+      if (g.plan.mode === 'hidden') {
+        // The gate on a mixed-up line, twice: each a miss, the second glows two mixed-up neighbours.
+        for (let i = 0; i < 2; i++) { kit.tapOn(g.gate); await kit.sleep(500); }
+        if (g.hidden.join() === [...g.hidden].sort().join()) throw new Error('The line sorted itself');
+        return;
+      }
       if (g.plan.mode === 'insert') {
         // Two drops in a wrong gap: each a miss with the reason, the second glows the right gap.
         const right = g.autotouch().to.x, xs = g.lineUp.map((c) => c.node.x), step = xs[1] - xs[0];
@@ -52,12 +68,17 @@ async function expansion() {
     });
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, `size ${level} hint`);
     if (level === 4 || level === 8 || level === 10 || level === 11 || level === 17) await screenshot(`size-parade-${level}`);
-    if (level === 8 || level === 10 || level === 11 || level === 12 || level === 15 || (process.env.SIZE_PORTRAIT && level === 7)) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot(`size-parade-portrait-${level}`); }
+    if (level === 8 || level === 10 || level === 11 || level === 12 || level === 13 || level === 15 || (process.env.SIZE_PORTRAIT && level === 7)) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot(`size-parade-portrait-${level}`); }
     await page.evaluate(async () => {
       const g = neo.scene.game;
-      for (let step = 0; !g.done && step < 14; step++) {
+      for (let step = 0; !g.done && step < (g.plan.mode === 'hidden' ? 60 : 14); step++) {
         if (!await kit.until(() => !g.busy || g.done)) throw new Error('Size question stuck');
         if (g.done) break;
+        if (g.plan.mode === 'hidden') {
+          // The ghost finger's sweep: pair tests left to right, then the gate, four friends and then five.
+          const t = g.autotouch().tap; kit.tapOn(t.on, 0, (t.y ?? 0) * neo.view.scale); await kit.sleep(t.on === g.gate ? 400 : 650);
+          continue;
+        }
         if (g.plan.mode === 'insert') {
           await kit.sleep(750);
           const to = g.autotouch().to; await kit.dragTo(g.choices[0].node, g.ground.toGlobal({ x: to.x, y: to.y + 40 })); await kit.sleep(300);
