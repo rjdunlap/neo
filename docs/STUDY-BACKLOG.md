@@ -122,7 +122,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Picture Graph (`picture-graph`) | designed | [Dive](deep-dives/picture-graph.md) |
 | Picture Logic (`picture-logic`) | designed | [Dive](deep-dives/picture-logic.md) |
 | Pond Conga (`pond-conga`) | designed | [Dive](deep-dives/pond-conga.md) |
-| Quick Tricks (`quick-tricks`) | research | [Game tracker](deep-dives/README.md#tracker) |
+| Quick Tricks (`quick-tricks`) | designed | [Dive](deep-dives/quick-tricks.md) |
 | Read & Do (`read-do`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Rhyme Time (`rhyme-time`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Secret Code (`secret-code`) | research | [Game tracker](deep-dives/README.md#tracker) |

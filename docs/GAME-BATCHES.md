@@ -1150,3 +1150,27 @@ Proof: new-interaction tier: typecheck, unit tests (order, entry, no movement wi
 Files expected: `src/games/pond-conga/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-level tier: typecheck, rule tests, one play of level 9 with a tail bonk, `fingerdemo` at 9, one portrait screenshot.
+
+### quick-tricks 1: Truthful accounting, a seeded cast and a bow
+
+- **`quick-tricks`, Truthful accounting, a seeded cast and a bow for the second show (dive slice 1)** (extends the built game; no new level): a leaf dropped below Bunny is free in level 1, show two hides the yellow arrow during Picnic Places and repeats `tricks.next` after ten quiet seconds, ends with a cast bow and `tricks.done`, its friends are `Critter`s, payoffs for the mailbox flag, friend wiggle and berry gulp, and a seeded friend, crosser and monster colour in show one with per-critter instruction lines. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
+
+Files expected: `src/games/quick-tricks/index.ts`, `logic.ts`, `logic.test.ts`, `src/content/voice-script.ts`, `src/content/howto.ts` and `docs/GAMES.md`.
+
+Proof: existing-game fix tier: typecheck, the game's rule tests, one filtered regression play of level 1 with a leaf dropped below Bunny (no miss) and of level 4 to its sticker; `fingerdemo` at 4 only if the bot's play changes; one build if voice lines are added.
+
+### quick-tricks 2: Two at once
+
+- **`quick-tricks`, Level 7, *Two at once* (dive slice 2)**, after batch quick-tricks 1 (shares `index.ts` and the cast) (new rule on the existing interaction): two tricks asked at once across three friends. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
+
+Files expected: `src/games/quick-tricks/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-rule tier: typecheck, rule tests, one play of level 7 with one leaf over only two friends (kept, no miss), one wrong sock and the glow, then to the sticker, one portrait screenshot of the three friends, `fingerdemo` at 7.
+
+### quick-tricks 3: A tiny show, the toddler entry
+
+- **`quick-tricks`, Level 8, *A tiny show*, the toddler entry (dive slice 3)**, after batch quick-tricks 1 (new level with `order`): an easy toddler opening. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
+
+Files expected: `src/games/quick-tricks/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-level tier with `order`: typecheck, unit tests including the registry, lands and order/entry tests, one play of level 8 at toddler with a leaf in front of Bunny (succeeds) and a short pull past halfway, `fingerdemo` at 8.

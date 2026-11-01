@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-01 — Quick Tricks deep dive (docs only)
+
+- [PR #1092](https://github.com/rjdunlap/neo/pull/1092), branch `claude/dive-quick-tricks`: [dive](deep-dives/quick-tricks.md). Three slices queued (truthful accounting, a seeded cast and a bow for the second show; level 7 *Two at once*; level 8 *A tiny show*, the toddler entry) with batch plans quick-tricks 1–3, plus a third-show definition; tracker, READY, backlog, ideas and waiting list updated. Two developer decisions: a lap toy shelf, and retiring the couch chunk 9 candidate.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
+
 ## 2026-11-01 — Pond Conga deep dive (docs only)
 
 - [PR #1090](https://github.com/rjdunlap/neo/pull/1090), branch `claude/dive-pond-conga`: [dive](deep-dives/pond-conga.md). Four slices queued (duck-friendly food and a seeded bank; level 7 *Choose the order*; level 8 *Step by step*; level 9 *A long conga*) with batch plans pond-conga 1–4, plus a school-opening definition; tracker, READY, backlog, ideas and waiting list updated. One developer decision: whether a bonk counts as a miss for adaptation.
@@ -85,12 +91,6 @@
 - [PR #1077](https://github.com/rjdunlap/neo/pull/1077), branch `claude/dive-island-bridges`: [dive](deep-dives/island-bridges.md). Four slices queued ([batches](GAME-BATCHES.md#island-bridges-1-a-small-sea-to-start-and-named-hints): a small sea to start and named hints, level 6 keep them joined, level 7 up to three planks, couch course Joined Seas); the school opening is a queued definition; tracker, READY, backlog and ideas updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds.
-
-## 2026-10-31 — Inchworm Measure deep dive (docs only)
-
-- [PR #1076](https://github.com/rjdunlap/neo/pull/1076), branch `claude/dive-inchworm`: [dive](deep-dives/inchworm.md). Three slices queued ([batches](GAME-BATCHES.md#inchworm-1-fresh-things-and-the-broken-ruler): fresh things and the broken ruler, level 9 one worm hop by hop, level 10 longer than the ruler); the centimetre ruler and the preschool opening are filed in [waiting-on-developer](WAITING-ON-DEVELOPER.md); tracker, READY, backlog, ideas and the measurement and ancient-Mediterranean studies updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
 
 ## Coverage summary
 

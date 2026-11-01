@@ -22,6 +22,13 @@ Lemonade Stand dive (2026-10-31), two calls that wait on you; the build slices t
 | **A pre-K opening, "Enough cups for the line"?** | Adds the `prek` band to a school game; otherwise counting a line stays with Scoop Shop and Monster Munch. Recommended: wait until the school levels are played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
 | **A market-week chart in the journal?** | Whether a finished week files its table as a discovery, and which weeks (the first sold-out day, the first boat saving). Recommended: wait for the boats to be played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
 
+Quick Tricks dive (2026-11-01), two calls that wait on you; the build slices that do not need them go ahead ([the dive](deep-dives/quick-tricks.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **A lap toy shelf for Quick Tricks?** | Adds the `lap` band to a game, with tap-only, no-completion versions of show one's scenes; otherwise the game opens at toddler (level 8 *A tiny show*) | [Quick Tricks dive](deep-dives/quick-tricks.md#decisions-for-the-developer) |
+| **Retire Quick Tricks as roadmap chunk 9's couch candidate?** | Show one's tricks are trivial for adults and the only way to score them is speed, which the game removes. Recommended: retire it, or replace it with a grown-up remix defined separately | [Quick Tricks dive](deep-dives/quick-tricks.md#decisions-for-the-developer) |
+
 Pond Conga dive (2026-11-01), one call that waits on you; the build slices that do not need it go ahead ([the dive](deep-dives/pond-conga.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
