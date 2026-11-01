@@ -37,6 +37,7 @@ export function originArt(origin: Origin | undefined): { picture: Container; pla
   if (origin && 'land' in origin) return { picture: landmarkFor(origin.land), place: landFor(origin.land).name };
   if (origin && 'explore' in origin) return { picture: entryArt(origin.explore), place: ENTRY_NAMES[origin.explore] };
   if (origin && 'library' in origin) return { picture: libraryIcon(), place: 'the library' };
+  if (origin && 'daily' in origin) return { picture: tilesIcon(), place: "today's six" };
   // At the root a home spot is All games' first page (`placeAtRoot`), where Little surprises' stops come back to.
   if (origin && 'place' in origin) return { picture: entryArt('all'), place: ENTRY_NAMES.all };
   return null;
