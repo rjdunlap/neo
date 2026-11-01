@@ -2,7 +2,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { ink, swatch } from '../../art/palette';
 import { label } from '../../ui/text';
-import { BUCKET, DROP, JAR_H, JAR_W, POT_COLOR, POT_H, POT_W, TABLE_CELL, TABLE_H, TABLE_LABEL, TABLE_ROW, TABLE_W, type Pot, type Table } from './logic';
+import { BUCKET, DROP, JAR_H, JAR_W, POT_COLOR, POT_H, POT_W, TABLE_CELL, TABLE_H, TABLE_LABEL, TABLE_ROW, type Pot, type Table } from './logic';
 
 const line = (pot: Pot) => swatch[pot].line;
 const TIN = 0xbfc6d2, TIN_LINE = 0x6f7a8c, TIN_LIGHT = 0xe3e8f0;
@@ -125,12 +125,13 @@ export function button(kind: 'undo' | 'tip' | 'check', w: number, h: number): Co
 export function ratioTable(t: Table, pair: readonly [Pot, Pot], star: number | null): Container {
   const c = new Container();
   const w = TABLE_LABEL + t.columns * TABLE_CELL, h = TABLE_H;
-  const left = -TABLE_W / 2, top = -h / 2;
+  const left = -w / 2, top = -h / 2;
   c.addChild(new Graphics().roundRect(left - 8, top - 8, w + 16, h + 16, 16).fill({ color: 0xffffff, alpha: 0.88 }).stroke({ width: 3, color: TIN_LINE, alpha: 0.6 }));
   const g = new Graphics();
   c.addChild(g);
   for (let k = 0; k < t.columns; k++) {
     const x = left + TABLE_LABEL + k * TABLE_CELL + TABLE_CELL / 2;
+    if (star === k + 1) c.addChild(starAt(x, top + TABLE_ROW / 2));
     const head = label(String(k + 1), 20, ink);
     head.alpha = 0.55;
     head.position.set(x, top + TABLE_ROW / 2);
@@ -147,17 +148,6 @@ export function ratioTable(t: Table, pair: readonly [Pot, Pot], star: number | n
         c.addChild(n);
       }
     }
-    if (star === k + 1) {
-      const s = new Graphics();
-      for (let i = 0; i < 5; i++) {
-        const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5, b = a + Math.PI / 5;
-        if (i === 0) s.moveTo(Math.cos(a) * 13, Math.sin(a) * 13); else s.lineTo(Math.cos(a) * 13, Math.sin(a) * 13);
-        s.lineTo(Math.cos(b) * 6, Math.sin(b) * 6);
-      }
-      s.closePath().fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line });
-      s.position.set(x, top - 12);
-      c.addChild(s);
-    }
   }
   pair.forEach((pot, i) => {
     const d = drop(pot);
@@ -166,6 +156,19 @@ export function ratioTable(t: Table, pair: readonly [Pot, Pot], star: number | n
     c.addChild(d);
   });
   return c;
+}
+
+/** Level 4's first way: a gold star behind its column's number. */
+function starAt(x: number, y: number): Graphics {
+  const s = new Graphics();
+  for (let i = 0; i < 5; i++) {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5, b = a + Math.PI / 5;
+    if (i === 0) s.moveTo(Math.cos(a) * 18, Math.sin(a) * 18); else s.lineTo(Math.cos(a) * 18, Math.sin(a) * 18);
+    s.lineTo(Math.cos(b) * 8, Math.sin(b) * 8);
+  }
+  s.closePath().fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line });
+  s.position.set(x, y + 2);
+  return s;
 }
 
 /** Level 3's fill line across the bucket at `y`, dashed. */

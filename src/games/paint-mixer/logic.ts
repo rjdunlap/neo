@@ -387,11 +387,14 @@ export function follow(glow: Glow, drops: readonly Pot[]): Pot[] {
   return drops.slice();
 }
 
-/** The taps from this state to a match, following the glow: the ghost pour's list (at most 24 steps). */
+/** The most glow steps from any bucket to a match: every drop out one Undo at a time, a full bucket poured back, then Check. */
+export const SOLVE_STEPS = 2 * CAP + 1;
+
+/** The taps from this state to a match, following the glow: the ghost pour's list (at most `SOLVE_STEPS`). */
 export function solveFrom(plan: Plan, s: Sample, drops: readonly Pot[], done: number | null = null): Glow[] {
   const steps: Glow[] = [];
   let state = drops.slice();
-  for (let i = 0; i < 24; i++) {
+  for (let i = 0; i < SOLVE_STEPS; i++) {
     const g = glowFor(plan, s, state, done);
     steps.push(g);
     if (g.at === 'check') return steps;

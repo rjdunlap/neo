@@ -12,7 +12,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bucket as bucketArt, button, drop as dropArt, fillInside, fillLine, jar as jarArt, pot as potArt, ratioTable } from './art';
 import {
   BUTTON_H, BUTTON_W, CAP, JAR_H, JAR_W, LEVELS, POT_H, POT_W, check, completeBatches, countsOf, glowFor, layout, makeRound, mix,
-  mixName, multipleOf, picture, planFor, potsFor, ratioTable as tableFor, sizeFor, solveFrom, stickerSample, type Glow, type Layout,
+  mixName, multipleOf, picture, SOLVE_STEPS, planFor, potsFor, ratioTable as tableFor, sizeFor, solveFrom, stickerSample, type Glow, type Layout,
   type Plan, type Pot, type Sample,
 } from './logic';
 
@@ -299,8 +299,8 @@ class PaintMixer implements Game {
     this.pouring = true;
     const turn = this.turn;
     if (solveFrom(this.plan, this.sample, this.drops, this.done).some((g) => g.at === 'tip')) void this.ctx.say('pm.plan', { a: this.sample.counts[0], potA: this.sample.pair[0], b: this.sample.counts[1], potB: this.sample.pair[1] });
-    // One tap a second, each read from the bucket as it is now, until Check is the glowing one (at most 24 steps).
-    for (let i = 0; i < 24; i++) {
+    // One tap a second, each read from the bucket as it is now, until Check is the glowing one.
+    for (let i = 0; i < SOLVE_STEPS; i++) {
       if (this.finished || this.busy || turn !== this.turn) break;
       const g = glowFor(this.plan, this.sample, this.drops, this.done);
       if (g.at === 'check') break;
