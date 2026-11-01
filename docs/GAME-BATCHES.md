@@ -609,7 +609,7 @@ Proof: new-interaction tier, as the [definition's check tier](definitions/river-
 
 ### river-tablets 3: Two tablets disagree
 
-Ready now that river-tablets 2 is built (defined 2026-10-30, [PR #1030](https://github.com/rjdunlap/neo/pull/1030)). One worker, branch and PR. **Claimed 2026-10-31, branch `claude/river-tablets-disagree`** (files: `src/games/river-tablets/`, the voice script, the how-to card, the `rivertablets` browser case).
+Built 2026-10-31, [PR #1085](https://github.com/rjdunlap/neo/pull/1085) (defined 2026-10-30, [PR #1030](https://github.com/rjdunlap/neo/pull/1030)); one worker, branch and PR; [archived build note](archive/COMPLETED-2026-10-09.md#river-tablets-level-6-ancient-river-civilizations-ar3-second-part-2026-10-31).
 
 - **`river-tablets`, level 6 (the build of study slice AR3, second part)** (a new interaction on an existing game; school only, `school: { min: 3, max: 6 }`): a farm tablet and a storehouse tablet record the same cart and disagree; pick the one that matches, neither, or can't tell, and can't tell is right only when the cart is empty (`gone`). Files: `src/games/river-tablets/` (logic, scene, rule tests), voice lines `rt.*`, the how-to card, the `rivertablets` browser case. Depends on river-tablets 2 for the marks and the lineup. [Definition](definitions/river-tablets.md#levels-46-ar3-a-ten-mark-check-the-delivery-two-tablets-disagree), [study build slices](deep-dives/subjects/ancient-river-civilizations.md#build-slices-in-order)
 

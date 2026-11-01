@@ -189,3 +189,9 @@
 - [PR #1068](https://github.com/rjdunlap/neo/pull/1068), branch `claude/define-maker-lane`: [definition](../definitions/maker-lane.md) (a new game, levels 1–3; toddler 1, preschool 1–2, pre-K 2–3, school 2–3; Cozy Village, fallback Painted Canyon; who can use it now, where did it begin), batch plan [maker-lane 1](../GAME-BATCHES.md#maker-lane-1-along-the-lane-who-can-use-it-now-where-did-it-begin), READY, backlog, study, packet, tracker and roadmap updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); the person, device and review checks in the definition (a four-year-old's sheep-for-the-sock pick and whether the replay changes the next one, the thought bubble versus trying every stall, the grown-ups' label card, the named agricultural-literacy or textile review).
+
+## 2026-10-31 — Lemonade Stand deep dive (docs only)
+
+- [PR #1070](https://github.com/rjdunlap/neo/pull/1070), branch `claude/dive-lemonade-stand`: [dive](../deep-dives/lemonade-stand.md) (levels 5 *Two lemon boats*, 6 *Best buy*, 7 *A typical sunny day*; a pre-K opening and a journal chart as decisions), batch plan [lemonade-stand 1](../GAME-BATCHES.md#lemonade-stand-1-two-lemon-boats), READY, backlog, tracker, ideas, two subject studies and waiting-on-developer updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-interaction tier); the existing Lemonade Stand device checks and the dive's person checks (whether "for 2 lemons" reads as cheaper per cup, whether levelling towers feels fair).
