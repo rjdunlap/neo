@@ -136,6 +136,7 @@ import { puppetStage } from './puppet-stage';
 import { spinnerFair } from './spinner-fair';
 import { ruleMachine } from './rule-machine';
 import { notAlways } from './not-always';
+import { noticeBoard } from './notice-board';
 import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
 import { whoAmI } from './who-am-i';
@@ -282,6 +283,7 @@ export const GAMES: GameModule[] = [
   spinnerFair,
   ruleMachine,
   notAlways,
+  noticeBoard,
   puppetStage,
   readDo,
   lookItUp,
