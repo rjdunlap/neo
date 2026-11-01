@@ -72,13 +72,15 @@
 - [ ] Watch a one-year-old with a puppet that pops up where she touched (Peekaboo Barn is the stand-in until it is built): does she touch again to make it rise, or wait for it?
 - [ ] Watch a six-year-old at Story Theater 12: does she want to move the characters herself, or is watching enough? Decides whether TP2's performed scenes are worth their cost.
 
-## Paint Mixer levels 1–2
+## Paint Mixer levels 1–4
 
 - [ ] On an iPad in daylight: does a matching bucket read as the same swatch as the sample, and 1:1 against 1:2 as different?
 - [ ] Is one more of each seen side by side as a different colour (level 2)?
 - [ ] Do the drop rows read as "for every"?
 - [ ] In portrait with pots at 120, are twelve drops still readable?
 - [ ] On the iPad, how are the recipe line's digits spoken ("1 red and 2 yellow")?
+- [ ] Levels 3–4 (2026-11-01): on an iPad, do the ratio table and the dashed fill line read, and how is "for every 1 red, 2 yellow" spoken by device speech?
+- [ ] Does the stray pot read as a trick or as a choice, and is the second level-3 bucket a chore?
 
 ## Water Road levels 1–3
 

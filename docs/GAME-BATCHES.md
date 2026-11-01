@@ -704,9 +704,9 @@ Proof: new-game tier, as the [definition's check tier](definitions/paint-mixer.m
 
 ### paint-mixer 2: Fill to the line and any amount
 
-- **`paint-mixer`, levels 3–4 (study slice 3)** (after batch `paint-mixer 1`; school 3–4): fill the bucket to a line two or three batches deep while the ratio table fills a column per complete batch and the pet says "for every 1 red, 2 yellow" (level 3, a stray pot on screen), then any whole multiple of the sample and the same colour again at a different amount (level 4; "the same way" is not a miss). [Definition](definitions/paint-mixer.md), [study slice 3](deep-dives/subjects/ratio-proportion.md#build-slices-in-order)
+- **`paint-mixer`, levels 3–4 (study slice 3)** (**built 2026-11-01**, [PR #1107](https://github.com/rjdunlap/neo/pull/1107); after batch `paint-mixer 1`; school 3–4): fill the bucket to a line two or three batches deep while the ratio table fills a column per complete batch and the pet says "for every 1 red, 2 yellow" (level 3, a stray pot on screen), then any whole multiple of the sample and the same colour again at a different amount (level 4; "the same way" is not a miss). [Definition](definitions/paint-mixer.md), [study slice 3](deep-dives/subjects/ratio-proportion.md#build-slices-in-order)
 
-Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a filtered play of levels 3–4 with the table filling, one wrong Check, a first way, the same way again and a second way, `fingerdemo` at level 4, one portrait screenshot of level 3, one build for the card and voice). Levels 5–6 (RP2) need their own definition.
+Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a filtered play of levels 3–4 with the table filling, one wrong Check, a first way, the same way again and a second way, `fingerdemo` at level 4, one portrait screenshot of level 3, one build for the card and voice). Levels 5–6 (RP2) need their own definition. Built notes: [definition](definitions/paint-mixer.md#built-levels-34-2026-11-01).
 
 ### spinner-fair 1: Spin, see and pick
 

@@ -156,7 +156,7 @@ All future work, one session each. Definitions use links and `git diff --check`;
 
 1. **Define Paint Mixer 1–4** (docs; **defined 2026-10-27:** [definition](../../definitions/paint-mixer.md), [PR #1024](https://github.com/rjdunlap/neo/pull/1024); the builds are batches [paint-mixer 1](../../GAME-BATCHES.md#paint-mixer-1-copy-the-row-and-twice-as-much) and [paint-mixer 2](../../GAME-BATCHES.md#paint-mixer-2-fill-to-the-line-and-any-amount)): pots, the colour rule and its visibility test, tap/undo/tip-out/Check, the sample's drop row, the fill line, the ratio table, authored sample pools per level, accounting, hints, supported finish, speech and how-to steps, ghost-finger plan, the 12-drop cap and layout audit in both orientations, land capacity.
 2. **Build Paint Mixer 1–2** (**built 2026-10-27**, [PR #1026](https://github.com/rjdunlap/neo/pull/1026)): ratio model and mean colour in `logic.ts` with rule tests; new-game check tier.
-3. **Build Paint Mixer 3–4:** the table, any-amount acceptance, two ways.
+3. **Build Paint Mixer 3–4** (**built 2026-11-01**, [PR #1107](https://github.com/rjdunlap/neo/pull/1107)): the table, any-amount acceptance, two ways.
 4. **Define and build Paint Mixer 5–6:** three pots, lidded jars, seeded jar sets.
 5. **Define Paint Mixer 7–8** after decision 4 and the educator's read; then build.
 6. **Define Mixing Room** after the Lantern Lake capacity test: jar sets, par by search, the skin; build at the grown-up tier.
