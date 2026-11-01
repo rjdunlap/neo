@@ -16,6 +16,12 @@
 - Not run: offline check, level-1 finger demo. Source check of the "went in / came out" and "one more / two more" wording against CCSS 3.OA.D.9, 4.OA.C.5 and England Year 6 not done (open).
 - Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#rule-machine-levels-12-algebra-balance-ab1-2026-11-01)): the device and person checks there.
 
+## 2026-11-01 — Read & Do deep dive (docs only)
+
+- [PR #1094](https://github.com/rjdunlap/neo/pull/1094), branch `claude/dive-read-do`: [dive](deep-dives/read-do.md). Two builds queued (batch read-do 1, fresh words and pictures; batch read-do 2, levels 4–6 *Capital and stop*) and definitions queued for *Make the sign* (level 7) and *Mend the sign* (levels 8–9); tracker, READY, batches, backlog, ideas and the two subject studies updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the two builds and two definitions.
+
 ## 2026-11-01 — Quick Tricks deep dive (docs only)
 
 - [PR #1092](https://github.com/rjdunlap/neo/pull/1092), branch `claude/dive-quick-tricks`: [dive](deep-dives/quick-tricks.md). Three slices queued (truthful accounting, a seeded cast and a bow for the second show; level 7 *Two at once*; level 8 *A tiny show*, the toddler entry) with batch plans quick-tricks 1–3, plus a third-show definition; tracker, READY, backlog, ideas and waiting list updated. Two developer decisions: a lap toy shelf, and retiring the couch chunk 9 candidate.
@@ -88,12 +94,6 @@
 - [PR #1080](https://github.com/rjdunlap/neo/pull/1080), branch `claude/dive-lasso-loops`: [dive](deep-dives/lasso-loops.md). One slice queued ([batch](GAME-BATCHES.md#lasso-loops-2-teens-decades-and-a-fresh-meadow): teens, decades and a fresh meadow); *Make the number* and *Ten more, ten less* wait on the level-numbering decision, a toddler opening on a device observation.
 - Ran: a one-off probe that a hint loop can enclose the answer over 500 seeds per level (no failure); `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.
-
-## 2026-10-31 — Lantern Lights deep dive (docs only)
-
-- [PR #1079](https://github.com/rjdunlap/neo/pull/1079), branch `claude/dive-lantern-lights`: [dive](deep-dives/lantern-lights.md). Three slices queued ([batches](GAME-BATCHES.md#lantern-lights-1-a-6-by-6-pond): a 6 by 6 pond at levels 7–8 with the portrait counts fix, named hints and Show me a short way, lily-pad ponds at level 9); the school opening is a queued definition and three-colour lanterns a later one; tracker, READY, backlog and ideas updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
 
 ## Coverage summary
 

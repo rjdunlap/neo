@@ -95,9 +95,9 @@ Enumerate the small edit-state space (capital on/off × stop on/off) and prove e
 
 **Settled by this packet (proposal):** SS1 is a mode of Read & Do (no new game, land or registration); three signs per round; three-word clauses from the eight-clause table; stamp-and-toggle controls with a separate Send; misses are failed Sends only; one hint per sign after two failed Sends or on request; help is never mastery; one sticker per round.
 
-**Gates that remain (no implementation is authorized):**
+**Gates (gate 1 settled; 2 is the building session's S1 content check; 4 takes the default):**
 
-1. **Read & Do game dive** (queued, `deep-dives/README.md` tracker): assigns the level IDs and order after built 1–3, confirms the pre-K and school ranges, and reconciles this packet with WC3 *Make the sign* and KE1 *Mend the sign* (shared tile row and drag code; one level-ID order for all three).
+1. **Read & Do game dive: settled 2026-11-01** ([dive](../deep-dives/read-do.md#new-levels-on-top), [PR #1094](https://github.com/rjdunlap/neo/pull/1094)). A, B and C are levels **4, 5 and 6**; pre-K is `{ min: 1, max: 5, order: [1, 2, 4, 5] }` (level 3 stays school-only) and school rises to 6. WC3 *Make the sign* is level 7 and KE1 *Mend the sign* levels 8–9, school only, sharing this slice's sign row, Send and a free **Show it**. The build follows the dive's slice 1 (fresh words, which adds *pig* and *dog*).
 2. **Ordinary content review** of the eight clauses, the two new verb forms and the voice wording above.
 3. **Touch layout proof** at the four views and 100-unit targets once built.
 4. **Developer decision, if raised by the dive:** whether a “do it for me” control exists (default: no; apply the shown change by hand).

@@ -1176,3 +1176,19 @@ Proof: new-rule tier: typecheck, rule tests, one play of level 7 with one leaf o
 Files expected: `src/games/quick-tricks/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-level tier with `order`: typecheck, unit tests including the registry, lands and order/entry tests, one play of level 8 at toddler with a leaf in front of Bunny (succeeds) and a short pull past halfway, `fingerdemo` at 8.
+
+### read-do 1: Fresh words and pictures
+
+- **`read-do`, Fresh words and pictures (dive slice 1)** (extends the built game; no new level): level 1's five-colour pool, level 2's seeded animal and third round, level 3's seeded pair, *green, pink, pig, dog* voice lines, and the GAMES.md entry moved under Story Grove. [Dive](deep-dives/read-do.md#build-slices-in-order)
+
+Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts` and `docs/GAMES.md`.
+
+Proof: existing-interaction tier: typecheck, the game's rule tests, one filtered regression play at level 3 on a seed with a pig or dog, one build for the voice lines; bot unchanged, no `fingerdemo`.
+
+### read-do 2: Capital and stop
+
+- **`read-do`, Levels 4–6, *Capital and stop* (dive slice 2; SS1 A–C)**, after batch read-do 1 (adds *pig* and *dog*; new interaction): capital, full stop, Send and Show it, *jumps/sleeps* and pre-K's `order`. [Dive](deep-dives/read-do.md#build-slices-in-order), [definition](definitions/read-do-capital-stop.md#build-order-for-the-dive)
+
+Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, a `scripts/browser-check.mjs` case, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests, one filtered `readdo` play of level 4 and level 6 with one failed Send and one hint, one portrait screenshot, `fingerdemo` at 4, 5 and 6.

@@ -4,7 +4,7 @@
 
 **Recommendation.** Keyboarding is two skills that the island's rules pull apart. **Finding keys** (where the letters, space, capital and stop live) belongs to a *physical* keyboard: a full on-screen keyboard cannot meet the child's 100-unit target rule (arithmetic below), the evidence does not show that tapping letters teaches letters better than writing them, and no source found shows that tablet typing transfers to a real keyboard. **Editing verbs** (take a word out, put one in at a gap, swap one, move one) are a different skill: they are what makes digital text different from ink, they survive on touch with tiles at 100 units or more, and the sign a pet acts on is a natural place to learn them, because the pet's act shows what the edit did. So:
 
-1. **Touch, child bands: no keyboard.** Letters stay with Letter Trails (handwriting) and Word Monsters (a bounded shelf); the edit verbs go to Read & Do as *Mend the sign*, handed to its dive.
+1. **Touch, child bands: no keyboard.** Letters stay with Letter Trails (handwriting) and Word Monsters (a bounded shelf); the edit verbs go to Read & Do as *Mend the sign*, handed to its dive (placed as levels 8–9, define next: [Read & Do dive](../read-do.md)).
 2. **Physical keyboard: the couch's Laptop setting.** Letters reach a game for the first time (the couch reads only arrows, Enter, Space, Backspace and Escape today). The first definition is **Pond Typing, reshaped**: bubbles wait, nothing drifts, a wrong key is a wobble and a name, and backspace and the arrow keys are the edit verbs, never misses.
 3. **No system keyboard and no free text in a child's game.** Every text input in the app today is for a grown-up.
 
@@ -167,7 +167,7 @@ None blocks the KE2 *definition*: the lean in each is the default. **Decision 4 
 ## Build slices, in order
 
 1. **KE2 define: Pond Typing levels 1–6** (**done 2026-10-22**, [definition](../../definitions/pond-typing.md), PR #836; docs only: `docs/definitions/pond-typing.md` with the registration and land (decision 4), the word pool, the seeded course, the typed-letter channel, the bot rule and the layout; check tier is links and diff).
-2. **KE1 hand-off to the Read & Do dive** (a line in the dive's brief; the dive numbers its own levels).
+2. **KE1 hand-off to the Read & Do dive** (a line in the dive's brief; the dive numbers its own levels). Done 2026-11-01: levels 8–9, define next ([dive](../read-do.md)).
 3. **KE2 build** (**levels 1–6 built 2026-10-24**, including word pictures, Show the key and typed-key diagram lighting ([PR #946](https://github.com/rjdunlap/neo/pull/946)); couch tier: `BROWSER_SUITE=couchgames` filtered to the new game; typecheck and rule tests).
 4. **KE3 hand-off to `spelling-sentences`** when that study runs.
 5. **KE5 define** after KE2 is played; **KE7 cards** to the off-screen-companions at-home card after a content review; **KE6** only after a lockout check.

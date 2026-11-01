@@ -52,7 +52,7 @@ I read the [Story Steps](../story-steps.md), [Mail Carrier](../mail-carrier.md) 
 | Movie Night ([making-media](making-media.md)) | Shots and sounds arranged for a film audience | Picture-and-sound media. Story Weaver is the picture-book and words form, which that study left to Story Weaver ("Not redefined") |
 | `spelling-sentences`, `keyboarding-editing` (unstarted) | Encoding words, capitals, punctuation; typing, delete, cursor | **Not pre-empted.** This study decides *what to say and for whom*; those decide how the letters get onto a page. Tile text uses no typed or spelled word |
 | Letter Trails | Handwriting (letters, name) | Out of scope |
-| Read & Do (levels 1–3 built; its game dive is queued) | Reading a sign and acting it out | Its reverse, *Make the sign* (WC3), is **handed to that dive** rather than levelled here |
+| Read & Do (levels 1–3 built; its game dive is queued) | Reading a sign and acting it out | Its reverse, *Make the sign* (WC3), is **handed to that dive** rather than levelled here (the dive placed it as level 7, define next: [Read & Do dive](../read-do.md)) |
 | Look It Up (IR1, [defined](../../definitions/look-it-up.md)) | Finding a fact in a book page | Its reverse, *Write a guide page* (WC5), is defined after Look It Up is built |
 | Mail Carrier (four queued batches, levels to 15) | Reading envelopes and maps; *Make the key* (15) | A note or address a neighbour acts on would be a level after those batches; not proposed here |
 
@@ -80,7 +80,7 @@ Descriptions only; nothing was played. Vendor text is marked.
 | --- | --- | --- | --- | --- | --- |
 | **WC1 Story Weaver 1–3** | Build a three-page story from tiles; an owl asks about a part you left out | Story parts in order with a reaction (W.K.3, W.1.3); respond to a reader's question and add a detail (W.K.5); *because* (W.3.1c) | S | M–L | A new game: scene, `logic.ts` story model, tile art, about 40 clause voice lines |
 | **WC2 Pet scribes** | Pick who and where; the pet writes the page and reads it | Dictation and read-back | P, K | S | A Story Weaver opening; decision 4 |
-| **WC3 Make the sign** | Build a sign from word tiles so the pet acts it out | Write for a reader who acts on the exact words | K, S | S–M | **Handed to the Read & Do dive** |
+| **WC3 Make the sign** | Build a sign from word tiles so the pet acts it out | Write for a reader who acts on the exact words | K, S | S–M | **Handed to the Read & Do dive** (placed as level 7, define next: [dive](../read-do.md)) |
 | **WC4 My favorite** | Choose a favorite and a reason that is true of it | Opinion with a reason (W.K.1, W.1.1, W.3.1b–c) | S, U | S | A Story Weaver genre after WC1 |
 | **WC5 Write a guide page** | Choose true facts for an animal's page; a younger friend uses it to find the animal's food | Informative text for a reader who must use it (W.K.2, W.1.2) | S, U | M | Reuses Look It Up's animal facts; after Look It Up is built |
 | **WC6 Same news, two readers** | Pick tiles for a postcard to a friend, then for a notice to the mayor | Audience and register (W.5.4) | U, M | S | A Story Weaver genre |
@@ -135,7 +135,7 @@ None of these blocks the WC1 definition: the lean in each is the default, and de
 1. **WC1 define: Story Weaver levels 1–3** (**done 2026-10-22**, [definition](../../definitions/story-weaver.md), PR #835; docs only: `docs/definitions/story-weaver.md` with the tile tables, support table, clause lines, layout in both orientations, rule tests and the bot rule; check tier is links and diff). The pointer line in the Story Steps dive's "Left out on purpose" was added with this study.
 2. **WC1 build** (**built 2026-10-24**, [PR #939](https://github.com/rjdunlap/neo/pull/939): Story Weaver levels 1–3 in Story Grove; the scripted play covered the owl's question and "That's my story", plus a portrait screenshot).
 3. **WC9 and WC12 cards, WC10 and WC11** handed to the off-screen-companions at-home card (their slice 4) after an ordinary content review.
-4. **WC3 Make the sign** noted for the Read & Do dive.
+4. **WC3 Make the sign** noted for the Read & Do dive (placed as level 7, define next: [dive](../read-do.md)).
 5. **WC5 Write a guide page** defined after Look It Up is built.
 6. **WC4 My favorite** and **WC6 Same news, two readers** defined after a child has played WC1.
 7. **WC7 Claim, reason, example** after `keyboarding-editing` and the `philosophy-reasoning`/`media-literacy` studies; **WC8 Cut to What Matters** after Fewest Clues' decision (speaking-listening decision 3) and the Lantern Lake capacity test.
