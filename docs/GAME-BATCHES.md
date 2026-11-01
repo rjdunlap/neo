@@ -771,7 +771,7 @@ Proof: new-interaction tier, as the [definition's checks](definitions/patchwork-
 
 - **`forecast-detective`, levels 1-2 (weather-water study slice 9)** (**built 2026-10-31**, [PR #1069](https://github.com/rjdunlap/neo/pull/1069), branch `claude/forecast-detective-1-2`; a new game, one declared batch; school 1-2; Tinker Lab, fallback Cozy Village): lift covered flaps on a wind vane, two island postcards and a thermometer, work out which weathers a disclosed pretend wind rule still allows, and answer with one weather card (level 1); then one clue is missing, so she names the weather when the rest still decide or taps *Can't tell yet* when they cannot (level 2). [Definition](definitions/forecast-detective.md), [study build slices](deep-dives/subjects/weather-water.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/forecast-detective.md#check-tier) sets it (typecheck, rule tests with registry, lands and how-to, a `browser-check.mjs` case with level 1 using one not-yet Check, one ruled-out Check, a second miss for the glow and its hint, then the right card to the sticker, and level 2's authored case with an overclaimed weather then *Can't tell yet*, one portrait screenshot of level 2 with the missing flap and five cards, `fingerdemo` at levels 1 and 2, one build). The building session's source check of the speech lines goes in its verification entry. Both levels shipped; proof is in [VERIFICATION](VERIFICATION.md#2026-10-31--forecast-detective-levels-12-weather-water-slice-9). Device checks stay open.
+Proof: new-game tier, as the [definition's check tier](definitions/forecast-detective.md#check-tier) sets it (typecheck, rule tests with registry, lands and how-to, a `browser-check.mjs` case with level 1 using one not-yet Check, one ruled-out Check, a second miss for the glow and its hint, then the right card to the sticker, and level 2's authored case with an overclaimed weather then *Can't tell yet*, one portrait screenshot of level 2 with the missing flap and five cards, `fingerdemo` at levels 1 and 2, one build). The building session's source check of the speech lines goes in its verification entry. Both levels shipped; proof is in [VERIFICATION](archive/VERIFICATION-2026-10-31.md#2026-10-31--forecast-detective-levels-12-weather-water-slice-9). Device checks stay open.
 
 ### drift-cards 1: Where will it wash up and send it to a friend
 
@@ -1020,3 +1020,35 @@ Proof: new interaction: typecheck, rule tests (hint kinds by `ways`/`best` count
 Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`, `src/games/lantern-lights/course.test.ts` (since `parsePond` changes), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`. The shared rules change, so the couch suite follows.
 
 Proof: new rule: typecheck, rule tests including the brute force on every shape and the free-dimension cap, one play of level 9 with a tap on a pad (nothing counted) and a hint, to the sticker; one portrait screenshot; `fingerdemo` at 9; `BROWSER_SUITE=couchgames` filtered to Lantern Lights.
+
+### peekaround-island 1: Truthful support and real choices
+
+- **`peekaround-island`, truthful support and real choices (dive slice 1)** (existing-game fix; all bands): a level-scoped how-to, the level-2 hint on the hider when visible, level 4's three shore friends, level 5's pair rule so the turn always names someone, and `lap` dropped from `LEVELS` and the repeated guard. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
+
+Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: existing-game fix tier: typecheck, rule tests (every request leaving a wrong spot, all three words at level 4, behind in level 5's first pair, the level-2 hint target), one filtered regression play at levels 2 and 5, `fingerdemo` at 5.
+
+### peekaround-island 2: Level 5 Who will be in front?
+
+- **`peekaround-island`, level 5 *Who will be in front?* (dive slice 2)**, after batch 1 (existing level, new tap): she predicts who will be in front after the turn before it happens; a wrong prediction is exploration, not a miss. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
+
+Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: typecheck, rule tests, one play of level 5 with one wrong prediction (no miss) and one right, `fingerdemo` at 5.
+
+### peekaround-island 3: Level 6 Who can't see it?
+
+- **`peekaround-island`, level 6 *Who can't see it?* (dive slice 3)**, after batch 1 (new interaction; pre-K and school): she taps the friend who cannot see the pictured spot from where they stand; a wrong friend turns to show it can see; pre-K max 6, school max 6. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
+
+Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, rule tests, one play of level 6 with one wrong friend (the turn shows it can see), a second for the glow, then the right friend, one portrait screenshot with the picture card, `fingerdemo` at 6.
+
+### peekaround-island 4: Level 7 What does the duck see?
+
+- **`peekaround-island`, level 7 *What does the duck see?* (dive slice 4)**, after batch 3 (shares the turn-to-viewer helper; new interaction): she chooses which of three picture cards shows what the duck sees from where it stands; pre-K and school max 7. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
+
+Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, rule tests, one play of level 7 with one wrong card and its turn, a second for the glow, then the right card, one portrait screenshot of the three cards, `fingerdemo` at 7, one build for the render textures.

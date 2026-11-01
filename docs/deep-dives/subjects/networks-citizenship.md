@@ -166,7 +166,7 @@ M. Ten levels, four bands, a graph model, piece textures, two layouts (the map m
 3. **NC3, build:** levels 5–7 (pieces, slots, the lost piece, ticks). Rule tests above; a browser play of 7 only.
 4. **NC4, build:** levels 8–10 (postcard or envelope, the lock, the extra path). Decision 5 first. Rule tests for bridges and the unique private request.
 5. **NC5, docs then build:** Feelings Faces 9 *Picture post* through its dive and the social-emotional study's feeling rules.
-6. **NC6, docs then build:** Peekaround Island 6 *Who can see it?* through its dive.
+6. **NC6, docs then build:** Peekaround Island 6 *Who can see it?* through its dive (done 2026-10-31: planned as level 6 *Who can't see it?*, [slice 3](../peekaround-island.md#build-slices-in-order)).
 7. **NC7, docs:** Relay Cases, six cases (two of each kind) with pars by search; decision 3.
 8. **NC8, review then build:** *Our Family Message Rules* card under the practical-card review; decision 6.
 9. **NC9, docs:** The Mixed-Up Invitations story definition; decision 7.
