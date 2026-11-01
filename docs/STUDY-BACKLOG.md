@@ -115,7 +115,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Island Bridges (`island-bridges`) | designed | [Dive](deep-dives/island-bridges.md) |
 | Lantern Lights (`lantern-lights`) | designed | [Dive](deep-dives/lantern-lights.md) |
 | Lasso Loops (`lasso-loops`) | designed | [Dive](deep-dives/lasso-loops.md) |
-| Light Lab (`light-lab`) | research | [Game tracker](deep-dives/README.md#tracker) |
+| Light Lab (`light-lab`) | designed | [Dive](deep-dives/light-lab.md) |
 | Orchard Rows (`orchard-rows`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Peekaround Island (`peekaround-island`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Penguin Slide (`penguin-slide`) | research | [Game tracker](deep-dives/README.md#tracker) |
