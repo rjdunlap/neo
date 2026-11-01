@@ -755,7 +755,7 @@ The [ordered slices](speaking-listening.md#build-slices-in-order) separate defin
 | **VW3 *Name the new thing*** · school top, U | define after VW2 | Coin a name for an invented object; any name that puts the thing last is accepted |
 | **VW4 Suffix Workshop** · U | define after VW2 | -er, -ful, -less joined to whole words with meaning tiles; spoken as whole words |
 | **VW5 Root Garden** · U, M | sketch; after decision 4 (reading at the school top) | Greek and Latin roots, guess then check (L.4–6.4b, L.6.4d) |
-| **VW6 Root Words** · 13+ | first a Word Search root-family theme list (ordinary review); the Lantern Lake game after its capacity test | Any valid build accepted; boards checked against a word list; no timer |
+| **VW6 Root Words** · 13+ | first a Word Search root-family theme list (ordinary review; queued as [Word Search batch 1](../word-search.md#build-slices-in-order)); the Lantern Lake game after its capacity test | Any valid build accepted; boards checked against a word list; no timer |
 | **VW7 Silly Compounds / word-inside-a-word** · G co-play and page | hand to off-screen companions after an ordinary content review | Plain HTML; any home language |
 
 ## Informational reading recommendations

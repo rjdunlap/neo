@@ -1436,3 +1436,35 @@ Proof: new-interaction tier: typecheck, rule tests; one play with one wrong squa
 Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, the README row, and the lands and registry tests.
 
 Proof: new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests; one play of level 9 at preschool with one wrong line then two right; `fingerdemo` at 9; the preschool Rainbow Meadow page screenshot.
+
+### word-search 1: Fresh themes and root families
+
+- **`word-search`, Fresh themes and root families (dive slice 1)** (existing-game content): six new everyday themes of at least twelve plain words, two root-family themes (*Words that carry*, *Words that look*) drawn only for plans they can fill, the pet's one-line root meaning (`wordsearch.root`), and RAIN removed from `weather`. [Dive](deep-dives/word-search.md#build-slices-in-order)
+
+Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `docs/GAMES.md`.
+
+Proof: existing-interaction tier: typecheck, rule tests (no theme word contains another, every eligible theme makes a grid, root themes only for eligible plans, block list, course grids still parse); one filtered regression play of level 1 with a root theme forced by seed; one build for the voice line; bot unchanged, no `fingerdemo`. The root lists need an ordinary content review.
+
+### word-search 2: A small grid to start
+
+- **`word-search`, Level 5 *A small grid to start* (dive slice 2)** (grown-up entry): a 6 by 6 grid, four words of three to six letters, across and down only, at the largest square the view allows (at least 96 units); `order` `[5, 1, 2, 3, 4]` and `entryLevels: [5]`. [Dive](deep-dives/word-search.md#build-slices-in-order)
+
+Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, `docs/GAMES.md`, the README row.
+
+Proof: new-level tier: typecheck, rule tests including order and entry; one play of level 5 with one wrong line and one hint; one portrait and one landscape screenshot; `fingerdemo` at 5.
+
+### word-search 3: A message in the leftovers
+
+- **`word-search`, Level 6 *A message in the leftovers* (dive slice 3, after batch 2)**: an 8 by 8 grid of nine words with at most eight stones; the unused letters spell a short themed sentence revealed when the last word is found. Appends ID 6; `order` becomes `[5, 1, 2, 3, 4, 6]`. [Dive](deep-dives/word-search.md#build-slices-in-order)
+
+Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`. `makeGrid` changes, so the couch suite follows.
+
+Proof: new-rule tier: typecheck, rule tests (leftovers in reading order equal the message, stones at most eight and never in a word, every word once, no blocked word readable, messages pass the block list); one play of level 6 with one wrong line and one hint, then to the message reveal; one portrait screenshot of the revealed message; `fingerdemo` at 6; `BROWSER_SUITE=couchgames` filtered to Word Search.
+
+### word-search 4: Just the theme
+
+- **`word-search`, Level 7 *Just the theme* (dive slice 4, after batch 3)**: a 10 by 10 grid, six hidden words shown only as a theme and blanks with lengths; a non-theme line is free ("Not one of the hidden words"); a two-step hint (first letter, then ring the start). Appends ID 7; `order` becomes `[5, 1, 2, 3, 4, 6, 7]`. [Dive](deep-dives/word-search.md#build-slices-in-order)
+
+Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`. The couch trip stays on levels 1–3.
+
+Proof: new-interaction tier: typecheck, rule tests (no other theme word readable in the grid, blanks match lengths, hint letter correct, the free-line rule never adds a miss); one play of level 7 with a free non-theme line and two hints on one word, then to the sticker; one portrait screenshot of the blanks; `fingerdemo` at 7.

@@ -52,7 +52,7 @@ U and M are planning audiences, not runtime bands: ages through 12 are `school`,
 | S, about 6–8 | Word Glue level 4 *What kind of thing?*: "Is a goldfish a fish or gold?", two pictures | Level 5 *Which way round?*: houseboat or boathouse, two real words from the same parts. Opposites 9 (un-) and 10 (two meanings) and Word Monsters G2 (re-, -ing, -ed, -s) are the other school rungs, each with its owner |
 | U, about 9–12 | **Suffix Workshop** (a Word Glue rung): join a word to a meaning tile (a person silhouette for "someone who", an empty cup for "without"); the voice says the whole word (painter, careless) | Level 6 *Name the new thing*: an invented object (a hat for a snail) gets a name built from tiles, any order accepted that puts the thing last (Berko-style coinage). Root Garden at its first rung |
 | M, about 11–14 | **Root Garden** (sketch): a root tile (*photo*, light; *graph*, write; *tele*, far) grows a branch of words; guess what an unknown branch word means, then check (L.4–6.4b, L.6.4d) | Connotation (L.6.5c) is left to reading with people; nothing here scores a shade of feeling. Appeal to this age is untested |
-| G, own play | **Root Words** (a Lantern Lake candidate after its capacity test): build each clued word from a tray of morpheme tiles; any valid build is accepted, and every board is checked against its word list | A cheaper first step: a **Word Search theme list of words sharing a root** (the built game's lists are themed already); each found word's meaning is spoken |
+| G, own play | **Root Words** (a Lantern Lake candidate after its capacity test): build each clued word from a tray of morpheme tiles; any valid build is accepted, and every board is checked against its word list | A cheaper first step: a **Word Search theme list of words sharing a root** (the built game's lists are themed already); each found word's meaning is spoken (queued 2026-11-01 as [Word Search batch 1](../word-search.md#build-slices-in-order)) |
 | G, co-play | **Silly Compounds**: grown-up and child invent names for things in the room (a spoon hat, a sock house) and draw one; Word Glue level 6 is the on-screen version | Turn-taking, with the child naming first; no right answer |
 | G, page | A **word-inside-a-word card** for reading together: find a word inside a longer word (rainbow, lighthouse) and ask what the long word is for; a co-play line for Word Glue | Plain HTML after an ordinary content review; any home language, with no claim that its compounds work the same way |
 
@@ -144,7 +144,7 @@ Product details are **recalled** unless marked; nothing was played.
 2. **VW1 build** (**built 2026-10-24**, PR #937; see [what was built](#what-was-built-vw1-word-glue-levels-13)).
 3. **VW2 define and build: levels 4–5** after a child has played level 3.
 4. **VW3 *Name the new thing*** and **VW4 Suffix Workshop** define, after VW2.
-5. **VW6 first step: a Word Search root-family theme list** (content only, after an ordinary review); Root Words and Root Garden stay sketches until decision 4.
+5. **VW6 first step: a Word Search root-family theme list** (content only, after an ordinary review; queued 2026-11-01 as [Word Search batch 1](../word-search.md#build-slices-in-order)); Root Words and Root Garden stay sketches until decision 4.
 6. **VW7 cards** to the off-screen companions work after an ordinary content review.
 
 ## What was built
