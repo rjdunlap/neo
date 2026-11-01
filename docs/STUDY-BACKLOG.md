@@ -119,7 +119,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Orchard Rows (`orchard-rows`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Peekaround Island (`peekaround-island`) | designed | [Dive](deep-dives/peekaround-island.md) |
 | Penguin Slide (`penguin-slide`) | designed | [Dive](deep-dives/penguin-slide.md) |
-| Picture Graph (`picture-graph`) | research | [Game tracker](deep-dives/README.md#tracker) |
+| Picture Graph (`picture-graph`) | designed | [Dive](deep-dives/picture-graph.md) |
 | Picture Logic (`picture-logic`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Pond Conga (`pond-conga`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Quick Tricks (`quick-tricks`) | research | [Game tracker](deep-dives/README.md#tracker) |
