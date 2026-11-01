@@ -47,3 +47,9 @@
 - [PR #1095](https://github.com/rjdunlap/neo/pull/1095), branch `claude/dive-rhyme-time`: [dive](../deep-dives/rhyme-time.md). Four builds queued (batches rhyme-time 1–4: fresh families, level 8 *Silly pairs*, the level 9 preschool opening, level 10 *Rhyme baskets*); *Change the start* stays a sketch; tracker, READY, batches, backlog, ideas, the poetry study and device checks updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds and the two device checks ([DEVICE-CHECKS](../DEVICE-CHECKS.md#rhyme-time-dive-2026-11-01-proposed-nothing-built)).
+
+## 2026-11-01 — Secret Code deep dive (docs only)
+
+- [PR #1096](https://github.com/rjdunlap/neo/pull/1096), branch `claude/dive-secret-code`: [dive](../deep-dives/secret-code.md). Six builds queued (batches secret-code 1–6: fair rows and a refreshed hint, level 8 *Four slots*, level 9 *Be the door*, the level 10 preschool opening, level 11 *A bigger detective door*, the couch course *The Code Doors*) and the maker/breaker definition after level 9; tracker, READY, batches, backlog, ideas, roadmap and device checks updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the six builds and the three device checks ([DEVICE-CHECKS](../DEVICE-CHECKS.md#secret-code-dive-2026-11-01-proposed-levels-not-yet-built)).
