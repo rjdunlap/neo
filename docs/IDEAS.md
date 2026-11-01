@@ -411,7 +411,7 @@ The audience widens from "two grown-ups with controllers" to **parents and grand
 | Lantern Lights, Sudoku Garden | Natural | Tap a lantern; tap a square, then a number tray of large buttons |
 | Word Search, Island Bridges | Natural | Drag a line, or drag island to island, with a drag that holds on a jittery finger (Island Bridges' ladder: [dive](deep-dives/island-bridges.md)). Word Search runs 8, 10, 12 and 14 across and Island Bridges 7, 9 and 11: past 7 needs a zoom under the 100-unit rule, past about 9 to 13 under the older-adult range |
 | Picture Logic | Good | A tap fills, a drag paints a run; the 6 across picture fits, and the 10 and 15 across pictures need a zoom under either rule (the clues take room too) |
-| Pond Conga | Fair | A real-time steer by a drag or four large arrows, with Game pace |
+| Pond Conga | Fair | A real-time steer by a drag or four large arrows, with Game pace ([dive](deep-dives/pond-conga.md)) |
 | Lander and Drift | Fair | Large turn and thrust buttons or a slider; the continuous control suits a stick better |
 | Block Garden, Marble Jump, Photo Hunt, the card games, dominoes, bingo | Natural | A tap or a drag; these suit touch better than a controller |
 
@@ -609,7 +609,7 @@ Nothing was blocked this time. The gaps are in the last two rows, and the [promp
 | Classic | Existing row or game | What the research adds |
 | --- | --- | --- |
 | Kaboom! | **Egg Catch** (built; [GAMES.md](GAMES.md#egg-catch) credits Kaboom!) | The Mad Bomber's face changes with how the player is doing, and critics singled it out for praise: a hen whose face reacts is the right kind of feedback. The ports added a **Pitch and Catch** mode where one player drops and the other catches: a two-player Egg Catch where the grown-up chooses where the eggs fall. The difficulty switches could halve the bucket's width: a visible basket-width setting is a clean handicap. A bucket lost per miss is the part already softened to hay |
-| Snake | **Pond Conga** (built, couch) | The genre began as *Blockade* (1976), a two-player game; *Nibbler* (1982) put the snake in a maze; *Snake Byte* (1982) ends a level when the apples are eaten. A two-line Blockade-style duet on one pond, where a bump is a bonk, is the only unbuilt shape; check the couch face-off code first |
+| Snake | **Pond Conga** (built, couch) | The genre began as *Blockade* (1976), a two-player game; *Nibbler* (1982) put the snake in a maze; *Snake Byte* (1982) ends a level when the apples are eaten. A two-line Blockade-style duet on one pond, where a bump is a bonk, is the only unbuilt shape; check the couch face-off code first ([dive](deep-dives/pond-conga.md)) |
 | Pac-Man | **Munch Maze** (90s edutainment table) | Sourced ghost rules and the design intent (Iwatani wanted a nonviolent game about eating; ghost personalities were added so it was neither boring nor impossible; intermissions were added to ease the tension). New: **Wisp Maze**, below |
 | Minesweeper | **Set aside** at the end of the couch table | The set-aside note is now reopened (see **Garden Sweep**, below) |
 | Breakout | **Brick Garden** (Atari table); **Pond Pinball and Brick Breaker** | The sourced setup is eight rows with bricks worth 1, 3, 5 and 7 by color, a ball that speeds up after four and twelve hits, a paddle that halves, and two screens before the game stops. The speed-up and the shrinking paddle are the pressure to leave out; a brick row with its own number to add is worth keeping |

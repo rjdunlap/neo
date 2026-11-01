@@ -1118,3 +1118,35 @@ Proof: new-level tier: typecheck, rule tests (order, entry, the 5 by 5 frame), o
 Files expected: `src/games/picture-logic/logic.ts`, `pictures.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests, one play of level 6 with one wrong-colour fill and a hint naming it, then to the sticker; one portrait screenshot of the colour pots and clues; `fingerdemo` at 6; one build. The building session confirms the couch trip keeps to its built levels.
+
+### pond-conga 1: Duck-friendly food and a seeded bank
+
+- **`pond-conga`, Duck-friendly food and a seeded bank (dive slice 1)** (extends the built game; grown-up, no new level): `foodArt(kind)` with peas, sweetcorn and oats, one kind per pond by seed; reeds on one seeded bank edge; voice, how-to and couch catalog wording without bread. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
+
+Files expected: `src/games/pond-conga/index.ts`, `logic.ts`, `logic.test.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md` and `docs/COUCH-PLAY.md`.
+
+Proof: existing-interaction tier: typecheck, the game's rule tests (kind is seeded; pond unchanged; Crumb Trail par unchanged), one filtered regression play at level 1; bot unchanged, no `fingerdemo`; one build for the art.
+
+### pond-conga 2: Choose the order
+
+- **`pond-conga`, Level 7, *Choose the order* (dive slice 2)**, after batch pond-conga 1 (shares the food art and `index.ts` drawing) (new rule on the existing interaction; grown-up): groups of food eaten in an order she chooses, par over orders, a group-aware demo pond and a hint to a best-order item. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
+
+Files expected: `src/games/pond-conga/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-rule tier: typecheck, rule tests (par over orders, group-aware demo pond, hint to a best-order item), one play of level 7 eating a group in a longer order then with one hint, `fingerdemo` at 7, one portrait screenshot of a group of three.
+
+### pond-conga 3: Step by step
+
+- **`pond-conga`, Level 8, *Step by step* (dive slice 3)**, after batch pond-conga 1 (shares `index.ts`) (new interaction; grown-up, easy entry): the conga moves one step per input, with no movement without input. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
+
+Files expected: `src/games/pond-conga/index.ts`, `logic.ts`, `logic.test.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `scripts/browser-check.mjs` if a case is needed, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests (order, entry, no movement without input), one scripted play of level 8 to its sticker with one bonk, one portrait screenshot, `fingerdemo` at 8, `BROWSER_SUITE=couchgames` filtered to Pond Conga (the controller path changes).
+
+### pond-conga 4: A long conga
+
+- **`pond-conga`, Level 9, *A long conga* (dive slice 4)**, after batch pond-conga 2 (shares the level table and `order`) (new level; grown-up): a longer tail on a pond that rewards planning. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
+
+Files expected: `src/games/pond-conga/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-level tier: typecheck, rule tests, one play of level 9 with a tail bonk, `fingerdemo` at 9, one portrait screenshot.
