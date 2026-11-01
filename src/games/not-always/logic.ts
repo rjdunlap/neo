@@ -324,7 +324,7 @@ export function notAlwaysLayout(view: { w: number; h: number }, level: number): 
   const foot = { x: cx, y: sign.y + sign.h + 12 + FRIEND_H };
   const friend: Rect = { x: cx - 80, y: foot.y - FRIEND_H, w: 160, h: FRIEND_H + CRATE_H };
   const top = foot.y + CRATE_H + 20;
-  const perRow = portrait && plan.cards === 5 ? [3, 2] : [plan.cards];
+  const perRow = plan.cards === 5 && (portrait || view.w < 850) ? [3, 2] : [plan.cards];
   const cards: Rect[] = [];
   perRow.forEach((n, r) => {
     const rowW = n * CARD_W + (n - 1) * GAP;

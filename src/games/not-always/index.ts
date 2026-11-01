@@ -46,6 +46,7 @@ class NotAlways implements Game {
   private readonly mendHolder = new Container();
   private mendNodes: Container[] = [];
   private sign: Container | null = null;
+  private reading = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -256,8 +257,9 @@ class NotAlways implements Game {
 
   /** The friend reads each mended sign as it lifts; stops when she has chosen. */
   private async readMends() {
-    const claim = this.play.claim;
-    const still = () => this.alive && this.play.phase === 'mend' && this.play.claim === claim;
+    const claim = this.play.claim, reading = ++this.reading;
+    // A newer reading (the friend tapped again) or her choice stops this one.
+    const still = () => this.alive && this.reading === reading && this.play.phase === 'mend' && this.play.claim === claim;
     await this.ctx.say('notalways.mends');
     for (let j = 0; j < this.mendNodes.length; j++) {
       if (!still()) return;
