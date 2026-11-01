@@ -65,7 +65,7 @@ None was played; pages and documents were read. The study's own [similar-games t
 | 1 | **Try it** | preschool, pre-K | Which side to look at, which clues to open, which trial to run first, and which card shows what happened | Both objects shelved after a matching pick each |
 | 2 | **Show the clue** | pre-K, school | Which clue to put in the claim's slot, when to Check, and whether to Turn or crank again first | Both objects shelved after a supported Check each |
 
-Steps 3–7 of the study's ladder (Same need, Context, Two sources, What can we tell?, Mend the exhibit) are later definitions (H4, H5); H4 is [defined](same-job.md) as levels 5–6 and H5 numbers from 7; the lap/toddler opening A is H3, [defined 2026-10-22](lid-and-lever.md) as levels 3 *Up and down* and 4 *Peek inside* (lap and toddler ranges with `entryLevels`), so a saved level never shifts.
+Steps 3–7 of the study's ladder (Same need, Context, Two sources, What can we tell?, Mend the exhibit) are later definitions (H4, H5); H4 is [defined](same-job.md) as levels 5–6 and H5 numbers from 7 and is [defined](household-casebook.md) as levels 7–9; the lap/toddler opening A is H3, [defined 2026-10-22](lid-and-lever.md) as levels 3 *Up and down* and 4 *Peek inside* (lap and toddler ranges with `entryLevels`), so a saved level never shifts.
 
 ### First rounds
 
