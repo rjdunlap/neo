@@ -206,6 +206,13 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] With a pre-K child: does she accept "still the better chance" after a losing pick?
 - [ ] On an iPad, hear the critter calls and the `sf.*` lines in device speech.
 
+## Spinner Fair levels 4–5 (chance-statistics CS1, batch spinner-fair 2, 2026-11-01)
+
+- [ ] With a school child: does she read the sure, maybe and no-way faces without the words?
+- [ ] On an iPad in portrait: is a wedge piece (about 110 units of arc at mid-radius) easy to grab and drop on a racer?
+- [ ] Is "a fair race can end level" heard as fair rather than as a loss?
+- [ ] On an iPad, hear device speech for the new `sf.*` lines.
+
 ## Rule Machine levels 1–2 (algebra-balance AB1, 2026-11-01)
 
 - [ ] With a pre-K child: does she read the three pictures (look applied, unchanged, another look) and tap one?

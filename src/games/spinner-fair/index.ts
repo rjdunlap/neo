@@ -14,6 +14,8 @@ import {
   BAR_H, BIG, COL_W, FACE, LEVELS, NAME_OF, SMALL, kindsOf, layout, makeRound, planFor, spin, stickerSet, stopRotation,
   tallest, tally, wedgeAt, type Kind, type Layout, type Plan, type SetSpec,
 } from './logic';
+import { RaceGame } from './race';
+import { SureGame } from './sure';
 
 type Phase = 'spin' | 'ask' | 'pick';
 
@@ -418,8 +420,9 @@ export const spinnerFair: GameModule = {
   skills: ['counting', 'data', 'graphs', 'comparing'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.hub,
-  coplayHint: 'Spinner and counter: one of you taps the spins, the other says each critter and points at its bar before the block lands. Before a pick, ask: which would you choose for your favourite?',
+  coplayHint: 'Spinner and counter: one of you taps the spins, the other says each critter and points at its bar before the block lands. Before a pick, ask: which would you choose for your favourite? Before a race, ask: is this fair, and how could we make it fair?',
   offScreen: 'Flip a coin twenty times and make a mark for each side. Was it fair? How could you tell?',
-  hubIcon: () => new WigglyIcon(icon()), sticker, create: (ctx) => new SpinnerFair(ctx),
+  hubIcon: () => new WigglyIcon(icon()), sticker,
+  create: (ctx) => { const ask = planFor(ctx.level).ask; return ask === 'sure' ? new SureGame(ctx) : ask === 'fair' ? new RaceGame(ctx) : new SpinnerFair(ctx); },
   touchDemo: true,
 };

@@ -1,7 +1,8 @@
 /**
  * Spinner Fair rules: six-wedge spinners whose spins are honest seeded draws, and questions the spinner's picture answers.
  * A spin is never a miss; only a question decides one: which bar is tallest after the spins (level 2) and which of two
- * spinners has more of the pet's favourite (level 3). Levels 1–3 are built; 4–5 (sure/maybe/no way, fair races) append later.
+ * spinners has more of the pet's favourite (level 3), whether the favourite is sure, maybe or no way on a spinner (level 4), and
+ * whether a two-critter race is fair and the wheel is even at Check (level 5).
  * Definition: docs/definitions/spinner-fair.md.
  */
 import type { Rng } from '../../engine/random';
@@ -20,14 +21,14 @@ export const WEDGE_DEG = 360 / WEDGES;
 export const EDGE_DEG = 12;
 export type Wheel = readonly Kind[];
 
-export type Ask = 'see' | 'most' | 'pick';
+export type Ask = 'see' | 'most' | 'pick' | 'sure' | 'fair';
 export interface Plan {
   level: number;
   ask: Ask;
   name: string;
-  /** Sets (levels 1–2) or picks (level 3) in a round. */
+  /** Sets (levels 1–2, 4), picks (level 3) or races (level 5) in a round. */
   sets: number;
-  /** Spins in a set; the spinner stops taking spins after this many. */
+  /** Spins in a set (level 4: one showing spin per spinner; level 5: the race); the spinner stops taking spins after this many. */
   spins: number;
 }
 
@@ -35,12 +36,14 @@ const PLANS: readonly Plan[] = [
   { level: 1, ask: 'see', name: 'Spin and see', sets: 1, spins: 6 },
   { level: 2, ask: 'most', name: 'Which came up most?', sets: 2, spins: 8 },
   { level: 3, ask: 'pick', name: 'Pick the spinner', sets: 2, spins: 10 },
+  { level: 4, ask: 'sure', name: 'Sure, maybe, no way', sets: 2, spins: 1 },
+  { level: 5, ask: 'fair', name: 'Fair or unfair?', sets: 2, spins: 6 },
 ];
 
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 3 },
+  school: { min: 3, max: 5 },
 };
 
 export function planFor(level: number): Plan {
@@ -51,11 +54,15 @@ export function planFor(level: number): Plan {
 export const PICK_PAIRS: readonly (readonly [number, number])[] = [[1, 3], [1, 4], [1, 5], [2, 4], [2, 5], [3, 5]];
 
 export interface SetSpec {
-  /** One spinner (levels 1–2) or two side by side (level 3). */
+  /** One spinner (levels 1–2, 5), two side by side (level 3) or three in a row (level 4). */
   wheels: Wheel[];
-  /** Level 3: the pet's favourite and the spinner (0 or 1) with more of it. */
+  /** Levels 3–4: the pet's favourite; level 3: the spinner (0 or 1) with more of it. */
   favourite?: Kind;
   better?: number;
+  /** Level 4: the three cards in the tray, left to right. */
+  cards?: Card[];
+  /** Level 5: the two racers; the wheel holds the first's wedges, then the second's. */
+  racers?: [Kind, Kind];
 }
 
 // ---- wheels ----
@@ -88,10 +95,36 @@ export function wheelWith(rng: Rng, fav: Kind, count: number): Wheel {
   return [...Array(count).fill(fav), ...Array(k).fill(others[0]), ...(split ? Array(rest - k).fill(others[1]) : [])];
 }
 
+/** Level 4: six of the favourite, some (2–4), and none (one or two other critters), in a seeded order. */
+export function sureSet(rng: Rng, fav: Kind): SetSpec {
+  const none = (): Wheel => {
+    const others = pickCritters(rng, rng.chance(0.5) ? 2 : 1, [fav]);
+    if (others.length === 1) return Array(WEDGES).fill(others[0]);
+    const k = rng.int(2, 4);
+    return [...Array(k).fill(others[0]), ...Array(WEDGES - k).fill(others[1])];
+  };
+  const wheels = rng.shuffle([Array(WEDGES).fill(fav) as Wheel, wheelWith(rng, fav, rng.int(2, 4)), none()]);
+  return { wheels, favourite: fav, cards: rng.shuffle([...CARDS]) };
+}
+
+/** Level 5: two racers sharing one wheel. Race 1 starts uneven (4–2 or 5–1); race 2 is fair or uneven, seeded. */
+export function raceSet(rng: Rng, first: boolean): SetSpec {
+  const racers = pickCritters(rng, 2) as [Kind, Kind];
+  const big = first || rng.chance(0.5) ? rng.pick([4, 5]) : 3;
+  const a = rng.chance(0.5) ? big : WEDGES - big;
+  return { wheels: [raceWheel(racers, a)], racers };
+}
+
 export function makeRound(level: number, rng: Rng): SetSpec[] {
   const plan = planFor(level);
   const out: SetSpec[] = [];
   for (let i = 0; i < plan.sets; i++) {
+    if (plan.ask === 'sure') {
+      const fav = pickCritters(rng, 1, out.map((s) => s.favourite!))[0] ?? pickCritters(rng, 1)[0];
+      out.push(sureSet(rng, fav));
+      continue;
+    }
+    if (plan.ask === 'fair') { out.push(raceSet(rng, i === 0)); continue; }
     if (plan.ask !== 'pick') { out.push({ wheels: [evenWheel(rng)] }); continue; }
     const [a, b] = rng.pick(PICK_PAIRS);
     const flip = rng.chance(0.5);
@@ -128,6 +161,54 @@ export function contiguous(wheel: Wheel): boolean {
 export function betterOf(set: SetSpec): number {
   const [a, b] = set.wheels.map((w) => countOf(w, set.favourite!));
   return a > b ? 0 : 1;
+}
+
+// ---- level 4: sure, maybe, no way ----
+
+export type Card = 'sure' | 'maybe' | 'none';
+export const CARDS: readonly Card[] = ['sure', 'maybe', 'none'];
+
+/** The card a spinner fits for a critter: all six wedges is sure, none is no way, anything between is maybe. */
+export function cardFor(wheel: Wheel, kind: Kind): Card {
+  const n = countOf(wheel, kind);
+  return n === WEDGES ? 'sure' : n === 0 ? 'none' : 'maybe';
+}
+
+export const fits = (card: Card, wheel: Wheel, kind: Kind) => cardFor(wheel, kind) === card;
+
+/** The spinner (index) each card fits on a level-4 set. */
+export const homeOf = (set: SetSpec, card: Card) => set.wheels.findIndex((w) => fits(card, w, set.favourite!));
+
+// ---- level 5: fair or unfair? ----
+
+/** The racers' wheel: `a` wedges of the first racer, then the rest of the second, so each owner is one section. */
+export const raceWheel = (racers: readonly [Kind, Kind], a: number): Wheel =>
+  [...Array(a).fill(racers[0]), ...Array(WEDGES - a).fill(racers[1])];
+
+/** Fair means both racers have the same share: three wedges each. */
+export const isFair = (wheel: Wheel, racers: readonly [Kind, Kind]) => countOf(wheel, racers[0]) === countOf(wheel, racers[1]);
+
+/**
+ * Hand one wedge to `to` from the other racer; the wheel re-sorts so each owner stays one section. A racer always keeps at
+ * least one wedge (so both stay on the wheel); a give that would take the last one returns null and changes nothing.
+ */
+export function give(wheel: Wheel, racers: readonly [Kind, Kind], to: Kind): Wheel | null {
+  const from = to === racers[0] ? racers[1] : racers[0];
+  if (countOf(wheel, from) <= 1) return null;
+  return raceWheel(racers, countOf(wheel, racers[0]) + (to === racers[0] ? 1 : -1));
+}
+
+/** The racer the next wedge should go to (the hint and the ghost): the one with fewer, or null once the wheel is fair. */
+export function nextGive(wheel: Wheel, racers: readonly [Kind, Kind]): Kind | null {
+  const [a, b] = racers.map((k) => countOf(wheel, k));
+  return a === b ? null : a < b ? racers[0] : racers[1];
+}
+
+/** The track: a racer moves one step for each spin it wins. */
+export const TRACK = 6;
+export function racePositions(racers: readonly [Kind, Kind], results: readonly Kind[]): [number, number] {
+  const [a, b] = tally(racers, results);
+  return [Math.min(TRACK, a), Math.min(TRACK, b)];
 }
 
 // ---- spins ----
@@ -226,6 +307,101 @@ export function layout(view: { w: number; h: number }, bars: number): Layout {
     favourite: box(Math.min(w - 90, cx + SMALL + 110), 130 + SMALL * 2 + 55, 120, 120),
     base,
     columns: cols(cx - span / 2 + 40, base),
+  };
+}
+
+/** Level 4: three 240-unit spinners (each a drop zone), a slot under or beside each for its card, and the tray of three cards. */
+export const MID = 120, CARD_W = 130, CARD_H = 150;
+export interface SureLayout {
+  portrait: boolean;
+  spinners: Circle[];
+  /** Where a card that fits sits, one per spinner. */
+  slots: Box[];
+  tray: Box[];
+  /** The pet's favourite, in a bubble out of the way. */
+  favourite: Box;
+}
+
+export function sureLayout(view: { w: number; h: number }): SureLayout {
+  const { w, h } = view;
+  const rim = MID + 8;
+  if (h <= w) {
+    // A row of spinners, each card's slot under its spinner, and the tray along the bottom.
+    const cy = Math.min(320, h - 450);
+    const mid = Math.min(w / 2 + 40, w - 140 - 2 * (rim + 12));
+    const xs = [mid - 280, mid, mid + 280];
+    const trayY = h - 20 - CARD_H / 2;
+    return {
+      portrait: false,
+      spinners: xs.map((x) => ({ x, y: cy, r: MID })),
+      slots: xs.map((x) => box(x, cy + rim + 2 + CARD_H / 2, CARD_W, CARD_H)),
+      tray: [-170, 0, 170].map((dx) => box(mid + dx, trayY, CARD_W, CARD_H)),
+      favourite: box(w - 30 - 55, trayY, 110, 110),
+    };
+  }
+  // Upright: a column of spinners clear of the pet, each card's slot beside it, and the tray as a column on the right.
+  const cx = Math.min(300, w - 428);
+  const top = 160, bottom = h - 170 - rim;
+  const ys = [top, (top + bottom) / 2, bottom];
+  const trayX = w - 20 - CARD_W / 2;
+  const trayTop = 130 + CARD_H / 2 + 10;
+  return {
+    portrait: true,
+    spinners: ys.map((y) => ({ x: cx, y, r: MID })),
+    slots: ys.map((y) => box(cx + rim + 10 + CARD_W / 2, y, CARD_W, CARD_H)),
+    tray: [0, 1, 2].map((i) => box(trayX, trayTop + i * ((bottom - trayTop) / 2), CARD_W, CARD_H)),
+    favourite: box(w - 30 - 55, h - 30 - 55, 110, 110),
+  };
+}
+
+/** Level 5: one 420-unit spinner with its wedges, two racers on six-step tracks, and the fair, unfair and Check buttons. */
+export const RACER = 140, BTN_W = 140, BTN_H = 110, CHECK_W = 130;
+export interface RaceLayout {
+  portrait: boolean;
+  spinner: Circle;
+  /** Each racer's box at step `s` of its track (0 = the start). */
+  racerAt(i: number, s: number): Box;
+  /** Each track's whole length, start to finish. */
+  tracks: Box[];
+  fair: Box;
+  unfair: Box;
+  check: Box;
+}
+
+export function raceLayout(view: { w: number; h: number }): RaceLayout {
+  const { w, h } = view;
+  const rim = BIG + 8;
+  if (h <= w) {
+    const cy = Math.min(350, h - 140 - rim);
+    const spinner = { x: 140 + BIG, y: cy, r: BIG };
+    const by = h - 20 - BTN_H / 2;
+    const right = w - 30 - RACER / 2;
+    const xs = [right - RACER - 30, right];
+    const top = 140, bottom = h - 20;
+    const step = (bottom - top - RACER) / TRACK;
+    return {
+      portrait: false,
+      spinner,
+      racerAt: (i, s) => box(xs[i], bottom - RACER / 2 - s * step, RACER, RACER),
+      tracks: xs.map((x) => box(x, (top + bottom) / 2, RACER, bottom - top)),
+      fair: box(220 + BTN_W / 2, by, BTN_W, BTN_H),
+      unfair: box(220 + BTN_W * 1.5 + 20, by, BTN_W, BTN_H),
+      check: box(220 + 2 * BTN_W + 40 + CHECK_W / 2, by, CHECK_W, BTN_H),
+    };
+  }
+  const spinner = { x: w / 2, y: 120 + BIG, r: BIG };
+  const ys = [spinner.y + rim + 10 + RACER / 2, spinner.y + rim + 20 + RACER * 1.5];
+  const left = 30, right = w - 30;
+  const step = (right - left - RACER) / TRACK;
+  const by = h - 20 - BTN_H / 2;
+  return {
+    portrait: true,
+    spinner,
+    racerAt: (i, s) => box(left + RACER / 2 + s * step, ys[i], RACER, RACER),
+    tracks: ys.map((y) => box((left + right) / 2, y, right - left, RACER)),
+    fair: box(190 + BTN_W / 2, by, BTN_W, BTN_H),
+    unfair: box(190 + BTN_W * 1.5 + 20, by, BTN_W, BTN_H),
+    check: box(190 + 2 * BTN_W + 40 + CHECK_W / 2, by, CHECK_W, BTN_H),
   };
 }
 

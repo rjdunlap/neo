@@ -718,6 +718,8 @@ Proof: new-game tier, as the [definition's check tier](definitions/spinner-fair.
 
 ### spinner-fair 2: Sure, maybe, no way and make it fair
 
+**Status: built 2026-11-01, PR #1111.**
+
 - **`spinner-fair`, levels 4-5 (chance-statistics study slice CS1)** (after batch `spinner-fair 1`; pre-K and school ranges as the definition sets): drag cards onto *sure*, *maybe* and *no way* spinners (level 4), then hand wedges from one critter to the other to make an unfair race fair, with a wrong *fair* and an uneven Check answered gently and the race run honestly (level 5). [Definition](definitions/spinner-fair.md), [study build slices](deep-dives/subjects/chance-statistics.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a filtered play of level 4 with one card on the wrong spinner and level 5 with a wrong *fair*, an uneven Check, two wedge moves and the race, one portrait screenshot of level 5, `fingerdemo` at levels 4 and 5, one build for the card and voice).
