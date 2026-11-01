@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-01 — Penguin Slide deep dive (docs only)
+
+- [PR #1086](https://github.com/rjdunlap/neo/pull/1086), branch `claude/dive-penguin-slide`: [dive](deep-dives/penguin-slide.md). Five slices queued (fair ponds and seeded looks; levels 10 *Three fish*, 11 *Where will it stop?*, 12 *A block onto the star*, 13 *Two penguins*); tracker, READY, backlog and WAITING-ON-DEVELOPER (toddler opening) updated.
+- Ran: a throwaway probe of 300 seeds per level (deleted) found ponds where a slide strands the penguin (level 1: 29, level 2: 44, level 3: 36, level 4: 53 of 300) and 145 of 300 level-1 ponds solved in one slide; `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites; nothing played (docs tier, no code changed). Open: the builds.
+
 ## 2026-10-31 — River Tablets level 6 (ancient river civilizations AR3, second part)
 
 - [PR #1085](https://github.com/rjdunlap/neo/pull/1085), branch `claude/river-tablets-disagree`, tested commit `e37ffbef` on base `e40f4f63`: school level 6 (a farm and a storehouse tablet disagree about one cart; neither or can't tell for an empty cart), school range 3–6.
@@ -85,12 +91,6 @@
 - [PR #1072](https://github.com/rjdunlap/neo/pull/1072), branch `claude/dive-garden-rows`: [dive](deep-dives/garden-rows.md). Three slices queued ([batches](GAME-BATCHES.md#garden-rows-1-seeded-flower-sets-and-mend-the-bed): seeded flower sets and level 7 Mend the bed, levels 8–9 Hedge boxes, level 10 One row); Two-flower beds stays a later level 11.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
-
-## 2026-10-31 — Pixel Pictures deep dive (docs only)
-
-- [PR #1071](https://github.com/rjdunlap/neo/pull/1071), branch `claude/dive-pixel-pictures`: [dive](deep-dives/pixel-pictures.md). Found levels 2 and 6 repeat exactly (the pool equals the pictures shown) and level 6 has no colour-logic solvability check, so its hint and bot walk reading order. Four slices queued ([batches](GAME-BATCHES.md#pixel-pictures-1-fresh-pictures-and-colour-logic): fresh pictures and colour logic, levels 7–8, level 9 entry, level 10 own picture); the toddler opening is filed in [waiting-on-developer](WAITING-ON-DEVELOPER.md); tracker, READY, backlog and ideas updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds; the dive's person checks (second mirror line read as a rule, sixteen squares for a four-square model, colour pick before tapping at three or four).
 
 ## Coverage summary
 

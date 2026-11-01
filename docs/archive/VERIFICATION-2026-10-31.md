@@ -195,3 +195,9 @@
 - [PR #1070](https://github.com/rjdunlap/neo/pull/1070), branch `claude/dive-lemonade-stand`: [dive](../deep-dives/lemonade-stand.md) (levels 5 *Two lemon boats*, 6 *Best buy*, 7 *A typical sunny day*; a pre-K opening and a journal chart as decisions), batch plan [lemonade-stand 1](../GAME-BATCHES.md#lemonade-stand-1-two-lemon-boats), READY, backlog, tracker, ideas, two subject studies and waiting-on-developer updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-interaction tier); the existing Lemonade Stand device checks and the dive's person checks (whether "for 2 lemons" reads as cheaper per cup, whether levelling towers feels fair).
+
+## 2026-10-31 — Pixel Pictures deep dive (docs only)
+
+- [PR #1071](https://github.com/rjdunlap/neo/pull/1071), branch `claude/dive-pixel-pictures`: [dive](../deep-dives/pixel-pictures.md). Found levels 2 and 6 repeat exactly (the pool equals the pictures shown) and level 6 has no colour-logic solvability check, so its hint and bot walk reading order. Four slices queued ([batches](../GAME-BATCHES.md#pixel-pictures-1-fresh-pictures-and-colour-logic): fresh pictures and colour logic, levels 7–8, level 9 entry, level 10 own picture); the toddler opening is filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog and ideas updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds; the dive's person checks (second mirror line read as a rule, sixteen squares for a four-square model, colour pick before tapping at three or four).

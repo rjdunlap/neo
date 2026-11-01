@@ -53,6 +53,12 @@ Lasso Loops dive (2026-10-31), two calls that wait on you; the first slice goes 
 | **Lasso Loops level numbering?** | Keep 7 for the estimation study's E2 and build *Make the number* only after E2 (lean), or let it take ID 7 now and give E2 the next free ID placed after 6 with `order` | [Lasso Loops dive](deep-dives/lasso-loops.md#decisions-for-the-developer) |
 | **A Lasso Loops toddler opening, a loop that always catches?** | Adds the `toddler` band. Only after watching a two-year-old try to close a loop; nothing is built until then | [Lasso Loops dive](deep-dives/lasso-loops.md#decisions-for-the-developer) |
 
+Penguin Slide dive (2026-10-31), one call that waits on you; the build slices go ahead without it ([the dive](deep-dives/penguin-slide.md#younger-band-openings)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **A Penguin Slide toddler opening?** | A one-slide 4×3 pond for `toddler` (the fish always one straight slide away), or keep the game preschool and up. Adds the `toddler` band, so the band audit comes with it | [Penguin Slide dive](deep-dives/penguin-slide.md#younger-band-openings) |
+
 Peekaround Island dive (2026-10-31), three calls that wait on you; the build slices that do not need them go ahead ([the dive](deep-dives/peekaround-island.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
