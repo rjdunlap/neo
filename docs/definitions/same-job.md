@@ -10,7 +10,7 @@ Defined 2026-10-30 on `claude/define-same-job` ([PR #1041](https://github.com/rj
 **Fun action and purpose:** tap a thing and watch the pet use it: the leaves ride along in the basket, or fall straight through the bottomless hoop; the acorns roll off the flat tray; the water drips out between the basket's strips. The goal is **function over appearance** (two things that look different can do the same job, and a thing that looks right can fail it) and **suitability depends on the task** (what a job needs decides which tools work). It is the study's K–S comparison step, practised on invented objects; nothing claims a tool is old, new, better or a culture's.
 
 - Levels 1–4, their IDs, rules, pins and their how-to wording do not change. No band, land, save field, journal entry, creation, couch entry or new registration is added.
-- **Numbering.** The study's "steps 3–4" are planning labels; they take **IDs 5 and 6**, the next free IDs, as the [Lid and Lever definition](lid-and-lever.md) set. The study's later steps (Two sources, What can we tell?, Mend the exhibit) stay with H5 and will number from 7.
+- **Numbering.** The study's "steps 3–4" are planning labels; they take **IDs 5 and 6**, the next free IDs, as the [Lid and Lever definition](lid-and-lever.md) set. The study's later steps (Two sources, What can we tell?, Mend the exhibit) stay with H5 ([defined](household-casebook.md) as levels 7–9) and number from 7.
 
 ## Overlap and the boundary with H1 and machines/tools
 

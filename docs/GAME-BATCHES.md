@@ -461,6 +461,18 @@ Proof: new-interaction tier, as the [definition's Build and check tier](definiti
 
 Proof: new-interaction tier, as the [definition's Build and check tier](definitions/same-job.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticjobs` scripted play at levels 5–6, `fingerdemo` at both, one portrait screenshot of level 6, one build).
 
+### attic-finds 3: Two sources and What can we tell?
+
+- **`attic-finds`, levels 7 *Two sources* and 8 *What can we tell?*** (school only; a new paper-copy drag into claim slots plus a two-stamp interaction inside the existing game, one invented bird-box case; school `{2, 8, order [2,5,6,7,8]}`): drag a copy of the paper that shows each claim (level 7), then stamp each claim *The papers show it* or *Can't tell*, where no paper from a house is no proof it had no bird box (level 8); a free read is not a miss. [Definition](definitions/household-casebook.md), [everyday-life study slice H5](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the [definition's Build and check tier](definitions/household-casebook.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticcase` scripted play at levels 7–8, `fingerdemo` at both, one portrait screenshot of level 8, one build). Expected files: `src/games/attic-finds/` (`logic.ts`, a new `cases.ts` and its tests, `index.ts`), `src/content/howto.ts`, `src/content/voice-script.ts`, `scripts/browser-check.mjs`, README, `docs/GAMES.md`, `docs/VERIFICATION.md`.
+
+### attic-finds 4: Mend the exhibit
+
+- **`attic-finds`, level 9 *Mend the exhibit*** (school only; caption strips and a question slot on the same case, after batch attic-finds 3; school `{2, 9, order [2,5,6,7,8,9]}`): swap each of three over-claiming captions for one the papers support, then pick the new paper that could answer a question the papers leave open. [Definition](definitions/household-casebook.md), [everyday-life study slice H5](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the [definition's Build and check tier](definitions/household-casebook.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticcase` scripted play of level 9, `fingerdemo` at level 9, one portrait screenshot with a strip open, one build). Expected files: as attic-finds 3.
+
 ### second-chance-shed 1: Levels 1–4
 
 Built 2026-10-24, [PR #930](https://github.com/rjdunlap/neo/pull/930); [closeout](archive/COMPLETED-2026-10-09.md#second-chance-shed-levels-1-4-slice-n2-2026-10-24). Scope retained for dependency references; this batch is no longer eligible for dispatch.

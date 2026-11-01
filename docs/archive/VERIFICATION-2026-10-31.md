@@ -268,3 +268,9 @@
 - [PR #1082](https://github.com/rjdunlap/neo/pull/1082), branch `claude/dive-peekaround-island`: [dive](../deep-dives/peekaround-island.md). Four slices queued ([batches](../GAME-BATCHES.md#peekaround-island-1-truthful-support-and-real-choices): truthful support and real choices; level 5 *Who will be in front?*; level 6 *Who can't see it?*; level 7 *What does the duck see?*); *From the sky* queued as a definition; tracker, READY, backlog, ideas and subject back-pointers updated; three decisions in WAITING-ON-DEVELOPER.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.
+
+## 2026-10-31 — Pet Kitchen 15 One cup, many ways (pet-kitchen batch 4, slice 8)
+
+- [PR #1084](https://github.com/rjdunlap/neo/pull/1084), branch `claude/pet-kitchen-one-cup`: school level 15 (half and quarter scoops fill one cup; undo; seeded ghost finger), school range 5–15.
+- Ran: `npm run typecheck`; `npm test` 288 files / 4032 tests passed (26 pet-kitchen rule tests: every pour sequence up to the brim is accepted iff it is one cup; the help reaches one cup from every reachable state; the seeded ghost-finger way from any state); `BROWSER_SUITE=creative CREATIVE_ONLY=kitchen KITCHEN_LEVELS=15` passed on http://localhost:5560 (portrait 768x1024: short serve twice, hint on the half scoop; three halves over, glow on the back arrow; brim refused; undo twice; half and two quarters; score [2,1]; sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pet-kitchen FINGER_LEVELS=15` passed, 6.4 s. `game-reviewer`: no blocking findings (how-to wording fixed).
+- Not run: `npm run build` (no shared assets), landscape screenshot, device and child checks (in [DEVICE-CHECKS](../DEVICE-CHECKS.md)).
