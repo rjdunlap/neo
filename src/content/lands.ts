@@ -85,7 +85,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'hazel' },
     backdrop: { sky: [0xffe2c4, 0xfff6e0], hills: [0xd8ecb0, 0xbfe39a, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 127 },
     music: tune(71, 'bell', 92),
-    games: ['splish-splash', 'feelings-faces', 'weather-wardrobe', 'scoop-shop', 'mail-carrier', 'teddy-doctor', 'market-stall', 'clock-tower', 'day-by-day', 'stop-and-go', 'pet-says', 'lemonade-stand', 'second-chance-shed', 'swap-meet', 'village-vote', 'relay-woods', 'helper-house', 'caravan-days', 'keep-house'],
+    games: ['splish-splash', 'feelings-faces', 'weather-wardrobe', 'scoop-shop', 'mail-carrier', 'teddy-doctor', 'market-stall', 'clock-tower', 'day-by-day', 'stop-and-go', 'pet-says', 'lemonade-stand', 'second-chance-shed', 'swap-meet', 'village-vote', 'relay-woods', 'helper-house', 'caravan-days', 'keep-house', 'notice-board'],
   },
   {
     id: 'rainbow-meadow',

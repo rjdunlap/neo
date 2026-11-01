@@ -815,6 +815,8 @@ Proof: new-game tier, as the [definition's check tier](definitions/not-always.md
 
 ### notice-board 1: Who made it, who saw it, to tell or to sell
 
+**Built 2026-11-01** (levels 1–3 together, [PR #1113](https://github.com/rjdunlap/neo/pull/1113); [build note](archive/COMPLETED-2026-10-09.md#notice-board-levels-13-media-literacy-ml1-notice-board-1-2026-11-01)).
+
 - **`notice-board`, levels 1–3 (media-literacy study slice 1, ML1)** (a new game, one declared batch; pre-K 1–2, school 1–3; Cozy Village, fallback Tinker Lab): island friends pin made-up picture posters to a village board; tap the friend whose badge matches the poster's stamp (level 1); tap the friend who actually saw it and their photo settles the poster (level 2); sort each poster into *Here's what happened* or *Come and get some!* (level 3, school only). [Definition](definitions/notice-board.md), [study build slices](deep-dives/subjects/media-literacy.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's check tier](definitions/notice-board.md#check-tier) sets it (typecheck, rule tests 1–7 with registry, lands, how-to and off-screen tests, a `browser-check.mjs` case with its README row: level 1 with two wrong friends for the glow then the maker, level 2 with the heard-it friend (a miss) then the witness through one stretched and one true poster, level 3 with one wrong basket then the right one, one portrait screenshot of level 2 with the memory bubbles and the photo, `fingerdemo` at levels 2 and 3, one build). If the allowance cannot cover level 3, stop after complete levels 1–2 with a draft-PR checkpoint. Person and device checks stay open.

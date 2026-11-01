@@ -107,7 +107,7 @@
 
 - [PR #1053](https://github.com/rjdunlap/neo/pull/1053), branch `claude/research-media-literacy`: [study](../deep-dives/subjects/media-literacy.md) and [packet](../deep-dives/subjects/RECOMMENDATIONS.md#media-literacy-recommendations) (a new game, Notice Board: match the stamp to the maker, tap the friend who saw it, to tell or to sell; a "Who made this?" card and a hand-frame co-play role follow; two Photo Safari modes handed to its dive), tracker, backlog, READY, ideas, roadmap and device checks updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`. Sources: NAMLE, RI.K, RI.4 and ISTE opened; the rest from search summaries or recall, marked in the study.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the ML1 definition and three [person checks](../DEVICE-CHECKS.md#notice-board-media-literacy-study-2026-10-31-proposed-nothing-built).
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the ML1 definition and three [person checks](../DEVICE-CHECKS.md#notice-board-media-literacy-study-2026-10-31-levels-13-built-2026-11-01).
 
 ## 2026-10-31 — Strategy games subject research (docs only)
 

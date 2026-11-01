@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-11-01 — Notice Board levels 1–3 (media-literacy ML1)
+
+- [PR #1113](https://github.com/rjdunlap/neo/pull/1113): new game `notice-board` (pre-K 1–2, school 1–3, Cozy Village): *Who made it?*, *Who saw it?*, *To tell or to sell?*.
+- Ran (base origin/main 7ffc22b1; commit 177663fc plus review fix e68dc0a0, Vite on http://localhost:5589): typecheck; full `npm test` 292 files / 4243 tests (32 Notice Board rule tests); `BROWSER_SUITE=noticeboard` (pre-K level 1 two wrong badges, the glow, then the maker 2/1; portrait level 2 heard-it friend then the witness through a stretched and a true poster 1/0; level 3 a free friend tap, a wrong basket then the right one 1/0; screenshots reviewed incl. level 2 portrait); `BROWSER_SUITE=fingerdemo FINGER_ONLY=notice-board FINGER_LEVELS=2,3` (10.8 s, 11.3 s); `npm run build`.
+- `game-reviewer` fix: a late hint line after the poster has moved on is guarded; a level-1 how-to note scoped.
+- Not run: offline check, other suites.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#notice-board-media-literacy-study-2026-10-31-levels-13-built-2026-11-01)): witness versus nearest friend at four, basket by price or words at seven, badges and place pictures at bubble size on an iPad, a grown-up using the card.
+
 ## 2026-11-01 — Tide Line levels 3–4 (oceans slice 1, batch tide-line 2)
 
 - [PR #1112](https://github.com/rjdunlap/neo/pull/1112): level 3 *Read the line* (pail, flag and towel placed with the sea out, then the wave; round 2 a higher windy-day line) and level 4 *In, out, in, out* (strip of four, three cards); bands now preschool 2–3, pre-K 3–4.
@@ -99,12 +107,6 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds and the four device checks ([DEVICE-CHECKS](DEVICE-CHECKS.md#sing-along-barn-dive-2026-11-01-proposed-new-tunes-and-levels-not-yet-built)).
 
-## 2026-11-01 — Shape Buddies deep dive (docs only)
-
-- [PR #1097](https://github.com/rjdunlap/neo/pull/1097), branch `claude/dive-shape-buddies`: [dive](deep-dives/shape-buddies.md). Five builds queued (batches shape-buddies 1–5: what grows, level 4 *Down and catch*, level 5 *A cup on the ledge*, level 6 *Which way round?*, the level 7 preschool opening) and the shared-roles definition after batch 5; tracker, READY, batches, backlog, ideas, roadmap and device checks updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the five builds and the four device checks ([DEVICE-CHECKS](DEVICE-CHECKS.md#shape-buddies-dive-2026-11-01-proposed-levels-not-yet-built)).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -112,6 +114,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Grown-ups' page off-screen lines (`src/content/offscreen.test.ts`) | 2026-10-26: typecheck, full 3465 units, build; 7 rule tests (under-3 word list, wording, resolution, `{name}`) | [Off-screen lines](archive/VERIFICATION-2026-10-26.md#2026-10-26--off-screen-lines-per-band) | No browser look at the page; Bumper Garden school line held; no reader evidence |
+| `noticeboard`, `fingerdemo` (`notice-board`) | 2026-11-01: typecheck, full unit suite 4243, 32 rule tests; `noticeboard` (pre-K level 1 two wrong badges, glow, maker 2/1; portrait level 2 heard-it friend then witness through a stretched and a true poster 1/0; level 3 free friend tap, wrong basket, right basket 1/0) and ghost finger levels 2–3; build | [Notice Board](#2026-11-01--notice-board-levels-13-media-literacy-ml1) | Offline check not run; no device or iPad check |
 | `notalways`, `fingerdemo` (`not-always`) | 2026-11-01: typecheck, full unit suite 4128, 29 rule tests; `notalways` (pre-K level 1 glow then breaker 2/1; portrait level 2 false stamp then true claim 1/0; level 3 free card tap, false mend, true mend 1/0) and ghost finger levels 2–3; build | [Not Always](#2026-11-01--not-always-levels-13-philosophy-reasoning-pr1) | Browser play not re-run after the review fixes; offline, iPad, four-year-old reading of the spoken claim and the pictogram signs not run |
 | `rulemachine`, `fingerdemo` (`rule-machine`) | 2026-11-01: typecheck, 25 rule tests, registry/lands/how-to units; `rulemachine` ×3 (level 1 free first guess, counted wrongs, glow, 2/1; portrait level 2 one wrong pad, 1/0) and ghost finger level 2 (43 s); build | [Rule Machine](#2026-11-01--rule-machine-levels-12-algebra-balance-ab1) | Level-1 finger demo, offline and the CCSS/England wording check not run; pre-K reading of three pictures and iPad speech unestablished |
 | `driftcards`, `fingerdemo` (`drift-cards`) | 2026-10-31: typecheck, 24 rule tests, full 4,021 units, build; levels 1–2 (level 1 free first guess, counted wrongs, glow, 2/1; level 2 wrong boat and back, portrait mid-drift, 1/0) and ghost finger levels 1 and 2 (22.9 s, 24.7 s) | [Drift Cards](archive/VERIFICATION-2026-10-31.md#2026-10-31--drift-cards-levels-12-oceans-slice-6) | Whether school-age children read the arrows cell by cell, the two-cell trace and iPad speech for "South-west" unestablished; offline not run |
