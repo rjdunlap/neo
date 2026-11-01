@@ -56,7 +56,7 @@ describe('colour', () => {
 });
 
 describe('pools, sizes and rounds', () => {
-  it('only levels 1-2 are planned', () => expect(LEVELS).toEqual({ school: { min: 1, max: 2 } }));
+  it('levels 1-4 are planned', () => expect(LEVELS).toEqual({ school: { min: 1, max: 4 } }));
   for (const level of [1, 2]) {
     it(`level ${level}: samples come from the pool, sizes are whole multiples within the cap`, () => {
       const plan = planFor(level);

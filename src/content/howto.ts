@@ -906,9 +906,11 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { from: 1, to: 1, text: "Tap a pot to pour a drop; copy the sample's row of drops into the bucket, then tap Check." },
       { from: 2, to: 2, text: "Make twice as much: fill two rows of the sample's drops, then tap Check." },
+      { from: 3, to: 3, text: "Fill the bucket to the line, batch by batch; the table fills a column when a row is complete. One pot on the shelf isn't in this sample." },
+      { from: 4, to: 4, text: 'Any amount works if it is the same way; then make it again, a different amount (the same amount again is named, not counted).' },
       'Undo takes the last drop back and Tip out empties the bucket; tapping the jar says its recipe.',
     ],
-    finish: 'Check holds the bucket beside the jar; a match chimes, and the round ends after two buckets.',
+    finish: 'Check holds the bucket beside the jar; a match chimes, and the round ends after two matches.',
     note: "Pouring, undo and tipping out are never counted; only a Check that doesn't match is, and after two misses the next pot or button glows (one hint). Colour words are labels. This is a toy: the bucket's colour is an average of its drops; real paint doesn't mix by averaging, and more paint is not a stronger colour.",
   },
   'spinner-fair': {
