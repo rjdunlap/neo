@@ -1,5 +1,12 @@
 # Needs a person or a device
 
+## Shape Buddies (dive, 2026-11-01; proposed, levels not yet built)
+
+- [ ] Once level 6 is built: does a pre-K child choose Turn without prompting?
+- [ ] Once level 5 is built: does the ledge read as "something under the cup"?
+- [ ] Once level 7 is built: does a preschooler link "Cup" to "catch" without the bridge role?
+- [ ] On the iPad: does device speech read the new Shape Buddies lines clearly?
+
 ## Secret Code (dive, 2026-11-01; proposed, levels not yet built)
 
 - [ ] Once level 10 is built: does a four-year-old read the gray cross as "not this one" without the card?
