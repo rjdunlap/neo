@@ -8,6 +8,12 @@
 - Not run: offline check, level-1 finger demo. Source check of the "went in / came out" and "one more / two more" wording against CCSS 3.OA.D.9, 4.OA.C.5 and England Year 6 not done (open).
 - Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#rule-machine-levels-12-algebra-balance-ab1-2026-11-01)): the device and person checks there.
 
+## 2026-11-01 — Quick Tricks deep dive (docs only)
+
+- [PR #1092](https://github.com/rjdunlap/neo/pull/1092), branch `claude/dive-quick-tricks`: [dive](deep-dives/quick-tricks.md). Three slices queued (truthful accounting, a seeded cast and a bow for the second show; level 7 *Two at once*; level 8 *A tiny show*, the toddler entry) with batch plans quick-tricks 1–3, plus a third-show definition; tracker, READY, backlog, ideas and waiting list updated. Two developer decisions: a lap toy shelf, and retiring the couch chunk 9 candidate.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
+
 ## 2026-11-01 — Pond Conga deep dive (docs only)
 
 - [PR #1090](https://github.com/rjdunlap/neo/pull/1090), branch `claude/dive-pond-conga`: [dive](deep-dives/pond-conga.md). Four slices queued (duck-friendly food and a seeded bank; level 7 *Choose the order*; level 8 *Step by step*; level 9 *A long conga*) with batch plans pond-conga 1–4, plus a school-opening definition; tracker, READY, backlog, ideas and waiting list updated. One developer decision: whether a bonk counts as a miss for adaptation.
@@ -87,12 +93,6 @@
 - Ran (tested at 12d3e0c8 on base 035164c0, Vite dev on http://localhost:5797): typecheck; full `npm test` 288 files / 4,021 tests (24 drift rule tests: 300-seed finiteness, no crossing over about 10,000 random seas, accounting, four-view layout); `npm run build`; `BROWSER_SUITE=driftcards` (level 1 free first guess wrong, two counted wrongs, glow, saved 2 misses/1 hint; level 2 wrong boat to the penguin and back, then a right boat, portrait screenshot mid-drift, saved 1/0), re-run after the review fixes; `fingerdemo` `FINGER_ONLY=drift-cards` levels 1 (22.9 s) and 2 (24.7 s). game-reviewer: no serious defects; fixed the beach touch-down press and the wrong-beach trace length.
 - Source check (S1, opened 2026-10-31): NatureBridge Elwha 2015 drift-card study (4x6 inch orange plywood, biodegradable, finders report by email) supports `drift.real`; NOAA Ocean Service "What is a current?" (driven by wind, water density differences and tides) supports the how-to note, reworded to wind, tides and differences in the water; the NOAA Ocean Exploration page was not reopened. No line names a real ocean, spill or rubbish.
 - Not run: offline check. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#drift-cards-levels-12-oceans-slice-6-2026-10-31)): a card mid-drift during a rotation finishes at its old coordinates (rare, self-corrects on the next card); the device and person checks below.
-
-## 2026-10-31 — Island Bridges deep dive (docs only)
-
-- [PR #1077](https://github.com/rjdunlap/neo/pull/1077), branch `claude/dive-island-bridges`: [dive](deep-dives/island-bridges.md). Four slices queued ([batches](GAME-BATCHES.md#island-bridges-1-a-small-sea-to-start-and-named-hints): a small sea to start and named hints, level 6 keep them joined, level 7 up to three planks, couch course Joined Seas); the school opening is a queued definition; tracker, READY, backlog and ideas updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds.
 
 ## Coverage summary
 
