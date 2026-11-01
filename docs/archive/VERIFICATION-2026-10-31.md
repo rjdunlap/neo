@@ -231,3 +231,9 @@
 - [PR #1076](https://github.com/rjdunlap/neo/pull/1076), branch `claude/dive-inchworm`: [dive](../deep-dives/inchworm.md). Three slices queued ([batches](../GAME-BATCHES.md#inchworm-1-fresh-things-and-the-broken-ruler): fresh things and the broken ruler, level 9 one worm hop by hop, level 10 longer than the ruler); the centimetre ruler and the preschool opening are filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog, ideas and the measurement and ancient-Mediterranean studies updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
+
+## 2026-10-31 — Island Bridges deep dive (docs only)
+
+- [PR #1077](https://github.com/rjdunlap/neo/pull/1077), branch `claude/dive-island-bridges`: [dive](../deep-dives/island-bridges.md). Four slices queued ([batches](../GAME-BATCHES.md#island-bridges-1-a-small-sea-to-start-and-named-hints): a small sea to start and named hints, level 6 keep them joined, level 7 up to three planks, couch course Joined Seas); the school opening is a queued definition; tracker, READY, backlog and ideas updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds.

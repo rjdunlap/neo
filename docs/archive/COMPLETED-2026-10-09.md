@@ -1,5 +1,12 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+
+### Rule Machine levels 1-2, algebra-balance AB1 (2026-11-01)
+
+[PR #1091](https://github.com/rjdunlap/neo/pull/1091), branch `claude/rule-machine-1-2`, batch rule-machine 1, [definition](../definitions/rule-machine.md): a new game, `rule-machine`, Puzzle Peaks' 14th (so the land now pages), pre-K level 1 "Hat machine" and school level 2 "One more goes in" (LEVELS prek 1-1, school 2-2; the school ceiling rises with batch rule-machine 2). Level 1 predicts the look of the next creature from three pictures, level 2 the count on three pads once two rows show; the first prediction on each machine is free, a counted wrong gives a spoken reason, a second glows, and the right answer rings green beside her pick. Decisions: Pip excluded under blue; one slotted run line `rm.ran` rather than separate went-in and came-out lines. Levels 3-4 stay in batch rule-machine 2.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-01--rule-machine-levels-12-algebra-balance-ab1).
+
 ### RW14 slice 4: illustrated Rainbow Meadow and postcards (2026-10-26)
 
 [PR #922](https://github.com/rjdunlap/neo/pull/922) prepares accepted R23 source `land-meadow-5` as the meadow backdrop and Places card, with reproducible import instructions in `src/art/locations/README.md`. Root boot loads `<land-id>.webp` and `<land-id>-card.webp` by name; missing or failed art retains the drawn fallback. The picture follows the existing ground line, game icons stand on cream plates, Places and Explore show its postcard, and the result uses the same picture. Classic keeps its drawn lands.

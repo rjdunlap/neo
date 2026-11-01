@@ -103,7 +103,7 @@ export const LANDS: readonly Land[] = [
     host: { kind: 'dog' },
     backdrop: { sky: [0xcfe0ff, 0xfff6e0], hills: [0xb3c7f2, 0x9ed6c6, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 137 },
     music: tune(97, 'marimba', 92),
-    games: ['marble-jump', 'pattern-train', 'memory-match', 'size-parade', 'puzzle-pals', 'quick-tricks', 'peekaround-island', 'penguin-slide', 'secret-code', 'garden-rows', 'ferry-jam', 'critter-crossing', 'mossy-path'],
+    games: ['marble-jump', 'pattern-train', 'memory-match', 'size-parade', 'puzzle-pals', 'quick-tricks', 'peekaround-island', 'penguin-slide', 'secret-code', 'rule-machine', 'garden-rows', 'ferry-jam', 'critter-crossing', 'mossy-path'],
   },
   {
     id: 'story-grove',

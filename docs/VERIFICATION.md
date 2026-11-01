@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-11-01 — Rule Machine levels 1–2 (algebra-balance AB1)
+
+- [PR #1091](https://github.com/rjdunlap/neo/pull/1091), branch `claude/rule-machine-1-2`: new game `rule-machine` in Puzzle Peaks (14 games), pre-K level 1 and school level 2; batch rule-machine 1.
+- Ran (tested at 4a1c763e, Vite dev on http://localhost:5821, `VITE_SPEECH=off`): typecheck; 25 rule tests with the registry, lands, how-to and content tests (215 passed); `BROWSER_SUITE=rulemachine` three consecutive passes after a script race fix (level 1 at pre-K a free wrong first guess, two counted wrongs and the glow, saved 2 misses/1 hint; portrait level 2 one wrong pad after two rows, saved 1/0; screenshots of the glow and the portrait); `BROWSER_SUITE=fingerdemo FINGER_ONLY=rule-machine FINGER_LEVELS=2` (43 s); `npm run build`; `game-reviewer`, its two findings fixed (a resize during the car's hop could softlock; the truth now shows beside her pick).
+- Full `npm test` ran once: 6 failures: timing tests in other games (penguin-slide, block-garden, fluffy-salon, keep-house) that passed in isolation under machine load (flakes), and the voice-clip test, which needed the new title's Kokoro clip (rendered with `scripts/voice-clips/render.mjs`; clip tests 4 passed).
+- Not run: offline check, level-1 finger demo. Source check of the "went in / came out" and "one more / two more" wording against CCSS 3.OA.D.9, 4.OA.C.5 and England Year 6 not done (open).
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#rule-machine-levels-12-algebra-balance-ab1-2026-11-01)): the device and person checks there.
+
 ## 2026-11-01 — Quick Tricks deep dive (docs only)
 
 - [PR #1092](https://github.com/rjdunlap/neo/pull/1092), branch `claude/dive-quick-tricks`: [dive](deep-dives/quick-tricks.md). Three slices queued (truthful accounting, a seeded cast and a bow for the second show; level 7 *Two at once*; level 8 *A tiny show*, the toddler entry) with batch plans quick-tricks 1–3, plus a third-show definition; tracker, READY, backlog, ideas and waiting list updated. Two developer decisions: a lap toy shelf, and retiring the couch chunk 9 candidate.
@@ -86,12 +94,6 @@
 - Source check (S1, opened 2026-10-31): NatureBridge Elwha 2015 drift-card study (4x6 inch orange plywood, biodegradable, finders report by email) supports `drift.real`; NOAA Ocean Service "What is a current?" (driven by wind, water density differences and tides) supports the how-to note, reworded to wind, tides and differences in the water; the NOAA Ocean Exploration page was not reopened. No line names a real ocean, spill or rubbish.
 - Not run: offline check. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#drift-cards-levels-12-oceans-slice-6-2026-10-31)): a card mid-drift during a rotation finishes at its old coordinates (rare, self-corrects on the next card); the device and person checks below.
 
-## 2026-10-31 — Island Bridges deep dive (docs only)
-
-- [PR #1077](https://github.com/rjdunlap/neo/pull/1077), branch `claude/dive-island-bridges`: [dive](deep-dives/island-bridges.md). Four slices queued ([batches](GAME-BATCHES.md#island-bridges-1-a-small-sea-to-start-and-named-hints): a small sea to start and named hints, level 6 keep them joined, level 7 up to three planks, couch course Joined Seas); the school opening is a queued definition; tracker, READY, backlog and ideas updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -99,6 +101,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Grown-ups' page off-screen lines (`src/content/offscreen.test.ts`) | 2026-10-26: typecheck, full 3465 units, build; 7 rule tests (under-3 word list, wording, resolution, `{name}`) | [Off-screen lines](archive/VERIFICATION-2026-10-26.md#2026-10-26--off-screen-lines-per-band) | No browser look at the page; Bumper Garden school line held; no reader evidence |
+| `rulemachine`, `fingerdemo` (`rule-machine`) | 2026-11-01: typecheck, 25 rule tests, registry/lands/how-to units; `rulemachine` ×3 (level 1 free first guess, counted wrongs, glow, 2/1; portrait level 2 one wrong pad, 1/0) and ghost finger level 2 (43 s); build | [Rule Machine](#2026-11-01--rule-machine-levels-12-algebra-balance-ab1) | Level-1 finger demo, offline and the CCSS/England wording check not run; pre-K reading of three pictures and iPad speech unestablished |
 | `driftcards`, `fingerdemo` (`drift-cards`) | 2026-10-31: typecheck, 24 rule tests, full 4,021 units, build; levels 1–2 (level 1 free first guess, counted wrongs, glow, 2/1; level 2 wrong boat and back, portrait mid-drift, 1/0) and ghost finger levels 1 and 2 (22.9 s, 24.7 s) | [Drift Cards](#2026-10-31--drift-cards-levels-12-oceans-slice-6) | Whether school-age children read the arrows cell by cell, the two-cell trace and iPad speech for "South-west" unestablished; offline not run |
 | `forecastdetective`, `fingerdemo` (`forecast-detective`) | 2026-10-31: typecheck, 27 rule tests, registry/lands/how-to/capacity/clip tests, build; levels 1–2 (level 1 free not-yet and repeat Checks, ruled-out Checks, glow, 2/1; level 2 portrait, missing flap, overclaim, Can't tell yet, 1/0) and ghost finger levels 1 and 2 (15.5 s, 16.3 s) | [Forecast Detective](archive/VERIFICATION-2026-10-31.md#2026-10-31--forecast-detective-levels-12-weather-water-slice-9) | Real iPad speech for "Lighthouse Isle", whether school-age children open clues on purpose and tween/parent appeal unestablished; offline not run |
 | `dropsjourney`, `fingerdemo` (`drops-journey`) | 2026-10-31: typecheck, 32 rule tests, full 3,970 units, build; levels 1–3 (level 1 mid-move tap ignored 0/0, level 2 portrait sea to cloud to snow 0/0, level 3 two can't-go cards, glow, requested hint, 2/1) and ghost finger levels 1 and 3 (7.0 s, 9.2 s) | [Drop's Journey](archive/VERIFICATION-2026-10-31.md#2026-10-31--drops-journey-levels-13-weather-water-slice-8) | Real iPad speech for "vapour", a four-year-old reading the dotted drop and school-age explanations unestablished; offline not run |

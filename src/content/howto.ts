@@ -913,6 +913,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: 'The round ends after the last spins; one sticker, whatever the spinner did.',
     note: "A spin is never a mistake; only a question the spinner's picture answers can be. A better chance can still lose: that is the lesson, not a bug. Nothing in the game is won, bet or unlocked by a spin.",
   },
+  'rule-machine': {
+    goal: 'Feed the machine, watch what comes out, then say what it will do.',
+    steps: [
+      { from: 1, to: 1, text: 'Watch three go through, then tap what the next one will look like.' },
+      { from: 2, to: 2, text: 'Send a car in; before it runs, tap how many will come out.' },
+    ],
+    finish: 'The round ends after two machines; one sticker.',
+    note: "Feeding the machine is never a mistake, and neither is a guess made before the machine has shown what it does: its answer is the lesson. After two wrong taps on one guess the right one glows (one hint).",
+  },
   'puppet-stage': {
     goal: 'Make a puppet pop up and talk in its own voice.',
     steps: [
