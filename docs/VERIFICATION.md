@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Lasso Loops deep dive (docs only)
+
+- [PR #1080](https://github.com/rjdunlap/neo/pull/1080), branch `claude/dive-lasso-loops`: [dive](deep-dives/lasso-loops.md). One slice queued ([batch](GAME-BATCHES.md#lasso-loops-2-teens-decades-and-a-fresh-meadow): teens, decades and a fresh meadow); *Make the number* and *Ten more, ten less* wait on the level-numbering decision, a toddler opening on a device observation.
+- Ran: a one-off probe that a hint loop can enclose the answer over 500 seeds per level (no failure); `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.
+
 ## 2026-10-31 — Lantern Lights deep dive (docs only)
 
 - [PR #1079](https://github.com/rjdunlap/neo/pull/1079), branch `claude/dive-lantern-lights`: [dive](deep-dives/lantern-lights.md). Three slices queued ([batches](GAME-BATCHES.md#lantern-lights-1-a-6-by-6-pond): a 6 by 6 pond at levels 7–8 with the portrait counts fix, named hints and Show me a short way, lily-pad ponds at level 9); the school opening is a queued definition and three-colour lanterns a later one; tracker, READY, backlog and ideas updated.
@@ -86,12 +92,6 @@
 - Ran (tested at 5226669e on base e09b6cf8, Vite dev on http://localhost:5818): typecheck; full `npm test` 286 files / 3,970 tests; 32 rule tests (300-seed offered-card enumeration, shortest-route hint, layout at four views and 2–5 cards); `npm run build`; `BROWSER_SUITE=dropsjourney` PASS, rerun after a review fix (level 1 three stops with a mid-move tap ignored 0/0; level 2 in portrait sea to cloud to snow with the vapour screenshot 0/0; level 3 two can't-go cards, glow, requested hint, four moves, 2 misses/1 hint); `BROWSER_SUITE=fingerdemo FINGER_ONLY=drops-journey FINGER_LEVELS=1,3` PASS (7.0 s, 9.2 s). game-reviewer: two minor speech-cut findings fixed (a stop's line finishes before the postcard, request or leaf line).
 - Source check (S1): [USGS water cycle for schools, advanced](https://water.usgs.gov/edu/watercycle-kids-adv.html) supports the sun driving evaporation (about 90% from oceans), sublimation straight to vapour, snowmelt, rain soaking in as groundwater, groundwater flowing into rivers, snow when cold, oceans, ice and ground as large stores, and invisible vapour condensing; it does not call groundwater discharge slow (so "slowly" was dropped) and gives no residence times. [USGS condensation](https://www.usgs.gov/water-science-school/science/condensation-and-water-cycle) supports vapour usually invisible, rising air cooling into cloud droplets, and droplets growing and falling as precipitation. Every shipped line is supported.
 - Not run: the offline check (no persistence change). Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#drops-journey-levels-13-weather-water-slice-8-2026-10-31)): a four-year-old reading the dotted drop, iPad speech for "vapour", a school-age child explaining a can't-go card.
-
-## 2026-10-31 — Thought Bubbles 1–3 definition (literature-meaning LM1, docs only)
-
-- [PR #1065](https://github.com/rjdunlap/neo/pull/1065), branch `claude/define-thought-bubbles`: [definition](definitions/thought-bubbles.md) (a new game, levels 1–3; pre-K 1–2, school 1–3; Story Grove, paging; what she wants, where he will look, how we know), batch plan [thought-bubbles 1](GAME-BATCHES.md#thought-bubbles-1-what-does-she-want-where-will-he-look-how-do-we-know), READY, backlog, study, packet and roadmap updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the build (new-game tier); the four person and device checks in the definition (the bubble read as "what he thinks", the window story fair after the away story, *show me how you know* as treasure or test, the reach at iPad size).
 
 ## Coverage summary
 
