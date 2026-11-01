@@ -1272,3 +1272,43 @@ Proof: new-level tier with a layout check: typecheck, rule tests (uniqueness and
 Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/couch/course.ts`, the couch catalog, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 
 Proof: couch catalog tier: course tests, `BROWSER_SUITE=couchgames` filtered to Secret Code.
+
+### shape-buddies 1: What grows
+
+- **`shape-buddies`, What grows: three seeds and sprouts (dive slice 1)** (extends the built game; no new level): a seeded bean, sunflower or acorn with its own code-drawn sprout, and the guidance test over every `PLANS` level. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
+
+Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: existing-interaction tier: typecheck, the game's rule tests, one filtered regression play of level 1 to its sticker, one portrait screenshot of a non-bean sprout; bot unchanged, no `fingerdemo`.
+
+### shape-buddies 2: Level 4 Down and catch
+
+- **`shape-buddies`, Level 4 *Down and catch* (dive slice 2)** (new level): the near half is raised like level 2's bridge dock and the far half sits at the low bank, so the handle must slope down to a cup. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
+
+Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-level tier: typecheck, rule tests (the exact accepted set, the step-aware joined lines), one play of level 4 with a flat path first then to its sticker, one portrait screenshot of the raised near half, `fingerdemo` at 4, one build for the voice lines.
+
+### shape-buddies 3: Level 5 A cup on the ledge
+
+- **`shape-buddies`, Level 5 *A cup on the ledge* (dive slice 3)**, after batch shape-buddies 2 (shares `PLANS`, `LEVELS` and the joined-line changes; new rule): a rocky crack with a ledge, solved by a bridge plus a cup or by one cup on the ledge. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
+
+Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-rule tier: typecheck, rule tests (both families, guidance keeps a working friend, the carry from either dock), one play of level 5 solved with the cup on the ledge and a replay solved with bridge and cup, one portrait screenshot of the ledge, `fingerdemo` at 5, one build.
+
+### shape-buddies 4: Level 6 Which way round
+
+- **`shape-buddies`, Level 6 *Which way round?* (dive slice 4)**, after batch shape-buddies 3 (new interaction): the stream runs the other way and she presses a new Turn button so a slope faces down toward the low bank; school only. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
+
+Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests including the four-view layout with Turn, one scripted play with an unturned slope then Turn to the sticker, one portrait screenshot of the mirrored stream, `fingerdemo` at 6, one build.
+
+### shape-buddies 5: Level 7 One friend, one job, the preschool opening
+
+- **`shape-buddies`, Level 7 *One friend, one job*, the preschool opening (dive slice 5)**, after batch shape-buddies 2 (shares `LEVELS`; new band): one friend, a fixed plank over the gap and a cup at the catch; Shape Buddies joins Tinker Lab's preschool page and pre-K gains `order: [7, 1, 2, 3, 4, 5]` with `entryLevels: [7]`. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
+
+Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the lands and registry band tests only if their expectations change.
+
+Proof: new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests, one play of level 7 at preschool with a Flat friend at the catch first, `fingerdemo` at 7, the preschool Tinker Lab page screenshot.

@@ -262,3 +262,9 @@
 - [PR #1081](https://github.com/rjdunlap/neo/pull/1081), branch `claude/dive-light-lab`: [dive](../deep-dives/light-lab.md). Four slices queued ([batches](../GAME-BATCHES.md#light-lab-1-fair-starts-nearest-hints-and-a-sun-on-either-side): fair starts, nearest hints and a sun on either side; couch course Sunbeam Run; levels 8–9 *Place a mirror* and *Two to place*; level 10 *Where's the mirror?*); two definitions queued; tracker, READY, backlog and ideas updated.
 - Ran: a throwaway probe of the generator (400 seeds a level, not committed) that found starts often nearly solved at levels 4–7 and the hint following the built path rather than the nearest solution in 2–3% of boards at levels 6–7; `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.
+
+## 2026-10-31 — Peekaround Island deep dive (docs only)
+
+- [PR #1082](https://github.com/rjdunlap/neo/pull/1082), branch `claude/dive-peekaround-island`: [dive](../deep-dives/peekaround-island.md). Four slices queued ([batches](../GAME-BATCHES.md#peekaround-island-1-truthful-support-and-real-choices): truthful support and real choices; level 5 *Who will be in front?*; level 6 *Who can't see it?*; level 7 *What does the duck see?*); *From the sky* queued as a definition; tracker, READY, backlog, ideas and subject back-pointers updated; three decisions in WAITING-ON-DEVELOPER.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.
