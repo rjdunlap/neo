@@ -250,3 +250,9 @@
 - [PR #1079](https://github.com/rjdunlap/neo/pull/1079), branch `claude/dive-lantern-lights`: [dive](../deep-dives/lantern-lights.md). Three slices queued ([batches](../GAME-BATCHES.md#lantern-lights-1-a-6-by-6-pond): a 6 by 6 pond at levels 7–8 with the portrait counts fix, named hints and Show me a short way, lily-pad ponds at level 9); the school opening is a queued definition and three-colour lanterns a later one; tracker, READY, backlog and ideas updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
+
+## 2026-10-31 — Lasso Loops deep dive (docs only)
+
+- [PR #1080](https://github.com/rjdunlap/neo/pull/1080), branch `claude/dive-lasso-loops`: [dive](../deep-dives/lasso-loops.md). One slice queued ([batch](../GAME-BATCHES.md#lasso-loops-2-teens-decades-and-a-fresh-meadow): teens, decades and a fresh meadow); *Make the number* and *Ten more, ten less* wait on the level-numbering decision, a toddler opening on a device observation.
+- Ran: a one-off probe that a hint loop can enclose the answer over 500 seeds per level (no failure); `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.

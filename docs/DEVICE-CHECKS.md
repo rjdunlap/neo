@@ -1,5 +1,10 @@
 # Needs a person or a device
 
+## Rhyme Time (dive, 2026-11-01; proposed, nothing built)
+
+- [ ] On the iPad: does device speech say *dog*, *log* and *frog* with one vowel, and *sock*, *clock* and *rock* with one vowel (the rhyme pairs rely on it)?
+- [ ] Once level 8 and level 9 are built: does a three-year-old hear "who rides in the truck?" as a rhyme question, or does she answer by meaning alone?
+
 ## Today's six (`?daily`, 2026-10-31)
 
 - [ ] Open `?daily` at the site root on the iPad as a grown-up: do the six cards read at a glance, does a tap launch a game at a sensible level, and does Back to today's six land on the ticks?

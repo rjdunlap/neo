@@ -108,7 +108,7 @@ The search for children's wordplay apps returned mostly paid rhyme drills; **the
 
 ## A first game's ladder: Rhyme Riddles (Rhyme Time 5–7)
 
-Rhyme Time currently stands at pre-K 1–3 and school 2–4. These are new plans after level 4, kept at pre-K 5 and school 5–7. A definition may renumber them.
+Rhyme Time currently stands at pre-K 1–3 and school 2–4 (its game dive, 2026-11-01, adds fresh families and levels 8–10: [rhyme-time.md](../rhyme-time.md)). These are new plans after level 4, kept at pre-K 5 and school 5–7. A definition may renumber them.
 
 | Level | Round | What she decides | Notes |
 | --- | --- | --- | --- |

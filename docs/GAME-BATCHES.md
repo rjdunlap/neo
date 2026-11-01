@@ -1192,3 +1192,35 @@ Proof: existing-interaction tier: typecheck, the game's rule tests, one filtered
 Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, a `scripts/browser-check.mjs` case, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests, one filtered `readdo` play of level 4 and level 6 with one failed Send and one hint, one portrait screenshot, `fingerdemo` at 4, 5 and 6.
+
+### rhyme-time 1: Fresh families: bug, sock and snail
+
+- **`rhyme-time`, Fresh families: bug, sock and snail (dive slice 1)** (extends the built game; no new level): nine pictures (seven new drawings in `pictures.ts`, `rock` and `pail` from `src/art/shore.ts`), the `ug`, `ock` and `ail` families, the reviewed meaning tags, the re-pinned riddle pool and the GAMES.md counts (38 pictures in fifteen families). [Dive](deep-dives/rhyme-time.md#build-slices-in-order)
+
+Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `pictures.ts`, `index.ts` and `docs/GAMES.md`.
+
+Proof: existing-interaction tier: typecheck, the game's rule tests with the re-pinned riddle pool, one filtered regression play at level 4 on a seed showing a new family; bot unchanged, no `fingerdemo`.
+
+### rhyme-time 2: Level 8 Silly pairs
+
+- **`rhyme-time`, Level 8 *Silly pairs* (dive slice 2)**, after batch rhyme-time 1 (its three new pairs; new interaction): a place in the middle and three riders below, the one that rhymes hops in; pre-K `order: [1, 8, 2, 3, 5]`, school `order: [2, 8, 3, 4, 5, 6, 7]`. [Dive](deep-dives/rhyme-time.md#build-slices-in-order)
+
+Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the browser harness's Rhyme Time case, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests including order and entry, one scripted play of level 8 with one wrong rider and a second for the glow then the rider, one portrait screenshot of a scene, `fingerdemo` at 8, one build for the voice lines.
+
+### rhyme-time 3: Level 9, the preschool opening
+
+- **`rhyme-time`, Level 9, *Silly pairs, two to choose* (dive slice 3; chunk 18 preschool entry)**, after batch rhyme-time 2 (new band): level 8's scenes with two choices and three scenes per round; preschool `{ min: 8, max: 9, order: [9, 8] }`, `entryLevels: [9]`; Rhyme Time joins Story Grove's preschool page. [Dive](deep-dives/rhyme-time.md#build-slices-in-order)
+
+Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the lands and registry band tests, the README row and `docs/GAMES.md`.
+
+Proof: new-band tier: typecheck, unit tests including the lands and registry band tests, one play of level 9 at preschool, `fingerdemo` at 9, the preschool Story Grove page screenshot.
+
+### rhyme-time 4: Level 10 Rhyme baskets
+
+- **`rhyme-time`, Level 10 *Rhyme baskets* (dive slice 4)**, after batch rhyme-time 1 (new interaction): drag each picture into the basket whose key picture it rhymes with; school range 2–10. [Dive](deep-dives/rhyme-time.md#build-slices-in-order)
+
+Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the browser harness's Rhyme Time case, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests, one scripted play with a wrong basket, a second for the glow and an empty-space drop, one portrait screenshot, `fingerdemo` at 10.
