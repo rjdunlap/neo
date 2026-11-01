@@ -143,7 +143,7 @@ Rhyme Time currently stands at pre-K 1–3 and school 2–4 (its game dive, 2026
 
 1. **PW1 define: Rhyme Riddles, Rhyme Time levels 5–7** (docs only, one packet): meaning tags and clue sentences for the existing 29 pictures, the round table, the level-7 builder, accounting, voice lines, how-to lines, bot, rule tests. Open the ELOF PDF for its anchors. **Defined 2026-10-22:** [definitions/rhyme-riddles.md](../../definitions/rhyme-riddles.md) (ELOF not opened; a trap picture added so each clue alone leaves two).
 2. **PW1 build, built 2026-10-24 ([PR #927](https://github.com/rjdunlap/neo/pull/927))** (existing-interaction-plus-new-levels tier: typecheck, rule tests, one play of the top level, `fingerdemo`).
-3. **PW2 define: Finish the line** after decision 2 (a reviewed verse table first).
+3. **PW2 define: Finish the line** after decision 2 (a reviewed verse table first). *Update 2026-11-01:* the [Sing-Along Barn dive](../sing-along-barn.md#build-slices-in-order) designed it as levels 7–8; decision 2 is answered by the October 23 S1 session source check.
 4. **PW3 define** after decision 5.
 5. **PW4 define: Two Meanings** after decision 3 and the word list.
 6. **PW8 cards** to the off-screen companions work after an ordinary content review.

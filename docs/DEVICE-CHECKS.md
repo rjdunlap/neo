@@ -1,5 +1,12 @@
 # Needs a person or a device
 
+## Sing-Along Barn (dive, 2026-11-01; proposed, new tunes and levels not yet built)
+
+- [ ] Once level 7 is built: does a pause read as "your turn" to a two-year-old?
+- [ ] Once batch 1 is built: do the fa/ti exception tunes sound right on the iPad marimba?
+- [ ] Once level 8 is built: does a pre-K child hear the rhyme between two spoken pictures?
+- [ ] Once Wheels on the Bus is built: does a ~30-note verse hold a toddler?
+
 ## Shape Buddies (dive, 2026-11-01; proposed, levels not yet built)
 
 - [ ] Once level 6 is built: does a pre-K child choose Turn without prompting?
