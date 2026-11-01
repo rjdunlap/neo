@@ -9,7 +9,8 @@ async function riverTabletsPlay() {
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
   const fromLevel = Number(process.env.FROM_LEVEL || 1);
   if (fromLevel <= 3) await riverTablets13({ score, tally, settle, tapOn });
-  await riverTablets45({ score, tally, settle, tapOn });
+  if (fromLevel <= 5) await riverTablets45({ score, tally, settle, tapOn });
+  await riverTablets6({ score, tally, settle, tapOn });
 }
 
 async function riverTablets13({ score, tally, settle, tapOn }) {
@@ -174,6 +175,42 @@ async function riverTablets45({ score, tally, settle, tapOn }) {
   await finished('river-tablets');
   assert.deepEqual(await score(), [1, 0], 'level 5 saved 1 miss, 0 hints');
   log('River Tablets 4–5: the yard counted, two wrong tablets then the glow to a match (2/1), a long reading accepted; a wrong number then two right checks (1/0), two portrait screenshots, passed');
+}
+// Level 6: a round with an empty cart (relaunched until the seed gives one). Reading a tablet is free; can't tell on the cart
+// that is there is one miss; then each case answered right, can't tell for the empty cart. Portrait screenshot.
+async function riverTablets6({ score, tally, settle, tapOn }) {
+  const logic = '/src/games/river-tablets/logic.ts';
+  let cases = null;
+  for (let tries = 0; tries < 12 && !cases; tries++) {
+    await launch('river-tablets', 6);
+    await settle();
+    const got = await page.evaluate(() => neo.scene.game.brief.cases.map((c) => ({ ...c })));
+    if (got.some((c) => c.kind === 'gone')) cases = got;
+  }
+  assert.ok(cases, 'a round with an empty cart within twelve launches');
+  assert.equal(cases.filter((c) => c.kind === 'one').length, 1, 'one case matches one tablet');
+  await tapOn('neo.scene.game.pairNodes[0]');
+  assert.deepEqual(await tally(), [0, 0], 'reading a tablet is free');
+  const nodeFor = (a) => ({ farm: 'neo.scene.game.pickNodes[0]', storehouse: 'neo.scene.game.pickNodes[1]', neither: 'neo.scene.game.neitherNode', cantTell: 'neo.scene.game.cantTellNode' }[a]);
+  let missed = false;
+  for (let guard = 0; guard < 4; guard++) {
+    const st = await page.evaluate(async (logic) => { const { answerFor } = await import(logic); if (neo.scene.finished) return null; const c = neo.scene.game.pairCase; return { want: answerFor(c), gone: c.cart === null }; }, logic);
+    if (!st) break;
+    if (!st.gone && !missed) {
+      await tapOn(nodeFor('cantTell')); await settle();
+      const c = await page.evaluate(() => ({ ...neo.scene.game.pairCase }));
+      assert.deepEqual([c.misses, c.done, c.lined], [1, false, false], "can't tell on a cart that is there is one miss");
+      missed = true;
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+      await screenshot('river-tablets-6-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+    }
+    if (st.gone) assert.equal(st.want, 'cantTell', "the empty cart's answer is can't tell");
+    await tapOn(nodeFor(st.want)); await settle();
+  }
+  await finished('river-tablets');
+  assert.deepEqual(await score(), [1, 0], 'level 6 saved 1 miss, 0 hints');
+  log("River Tablets 6: a tablet read for free, can't tell on a present cart (one miss), the match, can't tell on the empty cart (1/0), portrait screenshot, passed");
 }
 return { riverTabletsPlay };
 }
