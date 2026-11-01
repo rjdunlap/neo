@@ -801,6 +801,15 @@ Performed on the built levels (built 2026-10-30, [PR #1037](https://github.com/r
 - [ ] Check whether the reversal at level 5 (the better load flips between the far city and the near oasis) is noticed or played as two separate guesses.
 - [ ] On an iPad, check device speech for the good and shell slots, including composed lines such as "This stop wants" + "Salt." + "not" + "Tea.".
 
+## Caravan Days levels 6–7 (CS4, 2026-11-01)
+
+Performed on the built levels (built 2026-11-01, [PR #1106](https://github.com/rjdunlap/neo/pull/1106); [definition](definitions/caravan-days.md#levels-67-check-tier-for-the-build)).
+
+- [ ] With a school child, check whether she counts the snow day or reads the road's length when setting the day card.
+- [ ] On an iPad in portrait, check whether the level 7 switchback reads as one road.
+- [ ] Check whether fewer wells is pursued when extra wells are accepted.
+- [ ] On an iPad, check device speech for the day and hoofprint count slots.
+
 ## River Tablets levels 4–6 (AR3, 2026-10-30)
 
 Performed on the built levels (levels 4–5 built 2026-10-31, [PR #1044](https://github.com/rjdunlap/neo/pull/1044); level 6 built 2026-10-31, [PR #1085](https://github.com/rjdunlap/neo/pull/1085); [definition](definitions/river-tablets.md#levels-46-check-tier-for-the-builds)).

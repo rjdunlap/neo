@@ -23,3 +23,9 @@
 - [PR #1089](https://github.com/rjdunlap/neo/pull/1089), branch `claude/dive-picture-logic`: [dive](../deep-dives/picture-logic.md). Three slices queued (fresh pictures and named hints; level 5 a small 5 by 5 with level 7 a harder 15 by 15; level 6 *Two colours*, after Pixel Pictures batch 1) with batch plans picture-logic 1–3; tracker, READY, backlog and ideas updated. No developer decision.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
+
+## 2026-11-01 — Pond Conga deep dive (docs only)
+
+- [PR #1090](https://github.com/rjdunlap/neo/pull/1090), branch `claude/dive-pond-conga`: [dive](../deep-dives/pond-conga.md). Four slices queued (duck-friendly food and a seeded bank; level 7 *Choose the order*; level 8 *Step by step*; level 9 *A long conga*) with batch plans pond-conga 1–4, plus a school-opening definition; tracker, READY, backlog, ideas and waiting list updated. One developer decision: whether a bonk counts as a miss for adaptation.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds.
