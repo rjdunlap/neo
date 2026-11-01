@@ -126,6 +126,7 @@ export class RaceGame implements Game {
   private dressSet() {
     if (this.art) { this.ctx.tw.kill(this.art.wheel); this.art.node.destroy({ children: true }); }
     for (const n of this.racerNodes) { this.ctx.tw.kill(n); n.destroy({ children: true }); }
+    for (const p of this.pieces) p.drag.destroy();
     this.pieces = [];
     this.art = spinnerArt(this.wheel, BIG, { stand: false, bare: true });
     this.art.node.hitArea = new Circle(0, 0, BIG + 12);
