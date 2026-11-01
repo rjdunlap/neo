@@ -2,7 +2,7 @@
 
 A home-made iPad learning game in the spirit of JumpStart and Neopets: playful learning, a familiar pet, and an island to explore. Current age bands run from lap play through early school (ages 6–8); the long-term plan grows through elementary school, roughly grade 5 / age eleven. Art uses Pixi Graphics and prepared illustrated sprites; sound is synthesized with Web Audio.
 
-**Play it:** <https://rjdunlap.github.io/neo/classic/> is the island game; the site root <https://rjdunlap.github.io/neo/> is the creature-world rework as it grows (Home, creature play, Friends and dressing, Explore and the library; the welcome adventure is partly built). Every push to `main` redeploys via GitHub Actions
+**Play it:** <https://rjdunlap.github.io/neo/classic/> is the island game; the site root <https://rjdunlap.github.io/neo/> is the creature-world rework as it grows (Home, creature play, Friends and dressing, Explore and the library; the welcome adventure is partly built). Add `?daily` to the root URL to try **Today's six**, a daily landing page of six games in place of Home (a trial; All games stays one tap away). Every push to `main` redeploys via GitHub Actions
 
 [Roadmap](docs/ROADMAP.md) · [Design and architecture](docs/DESIGN.md) · [Games](docs/GAMES.md) · [Ideas](docs/IDEAS.md) · [Couch play guide](docs/COUCH-PLAY.md) · [Verification log](docs/VERIFICATION.md) · [Contributor guidance](AGENTS.md) · [Development workflow review](docs/DEVELOPMENT-WORKFLOW.md)
 

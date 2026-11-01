@@ -36,7 +36,7 @@ export type StoryRound =
  * Where a game was opened from, so its home button (and "again") go back there. A story round has its own way home.
  * A `land` origin keeps the page of a full land she opened it from (clamped on arrival); `explore` is one of Explore's entries at the root (RW08), with the page she was on and whether All games showed the other ages.
  */
-export type Origin = { land: LandId; page?: number } | { place: Band } | { journal: true } | { library: true } | { explore: ExploreEntry; page: number; others?: boolean };
+export type Origin = { land: LandId; page?: number } | { place: Band } | { journal: true } | { library: true } | { explore: ExploreEntry; page: number; others?: boolean } | { daily: true };
 
 /** Where scenes can send the player. Implemented in routes.ts so scenes don't import each other. */
 export interface Routes {
@@ -48,6 +48,8 @@ export interface Routes {
   couch(play?: boolean | CourseId, origin?: Origin): void;
   /** "Who's playing?": the front door, and the way back to it from the map. */
   start(): void;
+  /** Today's six (`?daily` at the root, a trial): six games for the day, played from one page. The island opens it too. */
+  daily(): void;
   /** The island map: the themed lands, her home spot and the picnic. */
   hub(): void;
   /**

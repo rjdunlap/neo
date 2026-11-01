@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-10-31 — Today's six, `?daily` landing trial
+
+- [PR #1088](https://github.com/rjdunlap/neo/pull/1088), branch `claude/daily-activity-landing-page-27a89c`: `DailyScene`, `dailySix` in `src/content/daily.ts`, the `{ daily: true }` origin and `Routes.daily()`; only active with `?daily`.
+- Ran: `npm run typecheck`; `npm test` (289 files, 4064+ tests, 13 new in `daily.test.ts`); `npm run build`. Browser (dev server, VITE_SPEECH=off, fresh grown-up profile): 800×600, 1180×820 and 820×1180 screenshots; Lemonade Stand opened at level 3 with origin `{ daily: true }`, a scripted round returned to the scene with its tick; no console errors.
+- Not run: `home` and `world` suites, offline check (no persistence or asset change), iPad ([DEVICE-CHECKS](DEVICE-CHECKS.md)). The two voice lines use device speech (no Kokoro clip).
+
 ## 2026-11-01 — Picture Graph deep dive (docs only)
 
 - [PR #1087](https://github.com/rjdunlap/neo/pull/1087), branch `claude/dive-picture-graph`: [dive](deep-dives/picture-graph.md). Five slices queued (fair meadows; levels 8 *Line them up*, 9 *A key of five*, 10 *Two pictures, one meadow*, 11 *What the graph can say*) with batch plans picture-graph 1–5; tracker, READY, backlog, ideas, four subject studies and WAITING-ON-DEVELOPER (preschool opening) updated.
@@ -85,12 +91,6 @@
 - [PR #1074](https://github.com/rjdunlap/neo/pull/1074), branch `claude/define-caravan-days-6-7`: [definition](definitions/caravan-days.md#levels-67-cs4-mountains-or-sand-a-well-every-days-walk) of level 6 (mountains or sand, either road accepted, a day card before Go) and level 7 (a well every day's walk, fewest wells by search, any minimal placement accepted); the reviewer gate is now the building session's source check. Study, packet, backlog, [batch caravan-days 3](GAME-BATCHES.md#caravan-days-3-mountains-or-sand-and-a-well-every-days-walk), READY and roadmap updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the build and its device checks.
-
-## 2026-10-31 — Ferry Jam deep dive (docs only)
-
-- [PR #1073](https://github.com/rjdunlap/neo/pull/1073), branch `claude/dive-ferry-jam-2`: [dive](deep-dives/ferry-jam.md). Found the hint fires on a raw slide count rather than lack of progress, and each harbor pool sits at the bottom of its plan's range. Four slices queued ([batches](GAME-BATCHES.md#ferry-jam-1-fair-hints-and-fuller-harbors): fair hints and fuller harbors, level 7 rocks, level 8 two ferries, levels 9–10 pre-K entry and who's in the way); the preschool opening is filed in [waiting-on-developer](WAITING-ON-DEVELOPER.md); tracker, READY, backlog and ideas updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds.
 
 ## Coverage summary
 
