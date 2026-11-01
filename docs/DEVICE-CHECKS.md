@@ -200,6 +200,13 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] On an iPad in sunlight: is the seaweed line easy to see against the sand?
 - [ ] On an iPad, hear device speech for "anemone" and the `tl.*` lines.
 
+## Tide Line levels 3–4 (oceans study slice 1, batch tide-line 2, 2026-11-01)
+
+- [ ] On an iPad in sunlight: does the seaweed line read, and do the two lines at level 3 (the windy-day line higher) read as different lines?
+- [ ] With a pre-K child: does she tell the halfway picture from in and out at level 4?
+- [ ] With a preschooler: does she place all three things before tapping the wave, and does a floated thing and its fetch feel gentle?
+- [ ] On an iPad, hear device speech for the new `tl.*` lines (and "anemone" still open above).
+
 ## Spinner Fair levels 1–3 (chance-statistics CS1, 2026-10-31)
 
 - [ ] With a preschooler: does she keep tapping the spinner for six spins and read a block as "that one came up"?

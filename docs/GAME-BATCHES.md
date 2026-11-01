@@ -726,13 +726,15 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 ### tide-line 1: Come in, go out and stop at the line
 
-**Built 2026-10-31** ([PR #1059](https://github.com/rjdunlap/neo/pull/1059)); levels 3-4 are batch `tide-line 2`.
+**Built 2026-10-31** ([PR #1059](https://github.com/rjdunlap/neo/pull/1059)); levels 3-4 are batch `tide-line 2` (built 2026-11-01).
 
 - **`tide-line`, levels 1-2 and the shore art kit (oceans study slice 1)** (a new game, one declared batch; lap 1, toddler 1-2, preschool 2; Bubble Beach, 12 games becoming 13, fallback Counting Cove only if the lands test fails): pull the big wave up the sand and let it slide back while the shore answers, with nothing wrong (level 1); then drag a pail above the seaweed line and only then watch the sea come in, a floated pail fetched back by the pet (level 2). The shared `src/art/shore.ts` creatures, `sfx.wave` and `sfx.gull` ship here. [Definition](definitions/tide-line.md), [study build slices](deep-dives/subjects/oceans.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's check tier](definitions/tide-line.md#check-tier-for-the-builds) sets it (typecheck, rule tests for levels 1-2 with the registry, lands, how-to, off-screen and `beach.test.ts`, a `browser-check.mjs` case filtered to Tide Line with level 1 to its sticker and level 2 with one pail below the line, the float and fetch, a second miss and the glow, then a dry pail, one portrait screenshot of level 2, `fingerdemo` at level 2, one build). Device checks stay open. Levels 3-4 are batch `tide-line 2`; levels 5-7 need their own definition.
 
 ### tide-line 2: Read the line and in, out, in, out
+
+**Status: built 2026-11-01, [PR #1112](https://github.com/rjdunlap/neo/pull/1112).**
 
 - **`tide-line`, levels 3-4 (oceans study slice 1)** (batch `tide-line 1` built; preschool 2-3 and pre-K 3-4 ranges as the definition sets): with the sea out, read the seaweed line to place a pail, a flag and a towel and tap the wave, the second round with a higher windy-day line that the sea reaches (level 3); then complete a four-picture strip of in, out, in, out from three cards, one the in-between picture (level 4). [Definition](definitions/tide-line.md), [study build slices](deep-dives/subjects/oceans.md#build-slices-in-order)
 

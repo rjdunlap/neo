@@ -10,9 +10,11 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { DUNE, GRASS_GREEN, iconArt, SAND, SEA, SEA_DEEP, WET_SAND } from './art';
+import { DUNE, flag, GRASS_GREEN, iconArt, SAND, SEA, SEA_DEEP, shorePicture, towel, waveButton, WET_SAND } from './art';
 import {
+  answerOf,
   AUTHORED_HIGH,
+  AUTHORED_STRIP,
   BAND,
   BAND_LEVELS,
   clampFeet,
@@ -21,21 +23,37 @@ import {
   CycleCounter,
   CYCLES,
   drySpot,
+  drySpots,
   fifthCrossed,
   FIFTH_STEPS,
   hAt,
   highFor,
+  hitSize,
+  lineTray,
+  linesFor,
+  LineRound,
+  makeStrip,
   PailTurn,
   reach,
+  ROUNDS,
   seaGrab,
+  seaReach,
   shoreLayout,
+  SIZES,
+  STRIPS,
+  StripTurn,
+  stripLayout,
+  THINGS,
   tidePlan,
   UP,
   wrack,
+  wrongLine,
   yAt,
   type Creature,
+  type Pic,
   type Plan,
   type ShoreLayout,
+  type Thing,
 } from './logic';
 
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
@@ -64,6 +82,17 @@ interface Pail {
   /** Where its feet stand once placed: x and a height on the sand; null while in the tray or being fetched. */
   at: { x: number; h: number } | null;
   floating: boolean;
+}
+
+/** Level 3: a pail, a flag or a towel. `settled` once a wave has left it dry; it then stays where it is for the round. */
+interface Item extends Pail {
+  kind: Thing;
+  settled: boolean;
+}
+
+interface Card {
+  kind: Pic;
+  node: Container;
 }
 
 class TideLine implements Game {
@@ -96,6 +125,19 @@ class TideLine implements Game {
   pail: Pail | null = null;
   private readonly placed: Pail[] = [];
 
+  // Level 3.
+  round = 0;
+  readonly rounds: LineRound[] = [];
+  readonly items: Item[] = [];
+  readonly waveBtn = new Container();
+  private secondHigh = AUTHORED_HIGH;
+
+  // Level 4.
+  readonly strips: StripTurn[] = [];
+  private readonly picLayer = new Container();
+  private readonly pics: Container[] = [];
+  readonly cards: Card[] = [];
+
   private readonly shore = new Graphics();
   private readonly line = new Graphics();
   private readonly glow = new Graphics();
@@ -120,7 +162,7 @@ class TideLine implements Game {
     for (const g of [this.line, this.glow, this.water]) g.eventMode = 'none';
     // The creatures take pokes; the layer itself does not.
     this.critterLayer.eventMode = 'passive';
-    ctx.stage.addChild(this.shore, this.line, this.glow, this.critterLayer, this.water, this.seaHit, this.pailLayer, this.board);
+    ctx.stage.addChild(this.shore, this.line, this.glow, this.critterLayer, this.water, this.seaHit, this.pailLayer, this.waveBtn, this.picLayer, this.board);
     if (this.plan.mode === 'wave') {
       this.seaHit.eventMode = 'static';
       this.seaHit.cursor = 'grab';
@@ -132,17 +174,34 @@ class TideLine implements Game {
       window.addEventListener('pointerup', this.release);
       window.addEventListener('pointercancel', this.release, true);
       for (const c of CREATURES) this.addCritter(c.kind, c.h);
-    } else {
+    } else if (this.plan.mode === 'pail') {
       this.askForHint = () => this.hint();
       this.hintLabel = 'Show me';
       for (let i = 0; i < PAILS; i++) this.turns.push(new PailTurn());
       this.spawnPail();
+    } else if (this.plan.mode === 'line') {
+      this.askForHint = () => this.lineHint();
+      this.hintLabel = 'Show me';
+      if (!authored) this.secondHigh = highFor(ctx.rng);
+      this.rounds.push(new LineRound(linesFor(0, this.high)));
+      const g = new Graphics();
+      waveButton(g);
+      this.waveBtn.addChild(g);
+      this.waveBtn.hitArea = new Rectangle(0, 0, 130, 120);
+      onTap(this.waveBtn, () => this.tapWave());
+      for (const kind of THINGS) this.addItem(kind);
+    } else {
+      this.askForHint = () => this.stripHint();
+      this.hintLabel = 'Show me';
+      this.strips.push(new StripTurn(authored ? AUTHORED_STRIP : makeStrip(ctx.rng)));
+      this.buildStrip();
     }
     this.layoutAll();
   }
 
   start() {
-    void this.ctx.instruct(this.plan.mode === 'wave' ? 'tl.instruct.1' : 'tl.instruct.2');
+    const mode = this.plan.mode;
+    void this.ctx.instruct(mode === 'wave' ? 'tl.instruct.1' : mode === 'pail' ? 'tl.instruct.2' : mode === 'line' ? 'tl.instruct.3' : 'tl.instruct.4');
   }
 
   // Level 1: the wave ---------------------------------------------------------------------------
@@ -377,6 +436,262 @@ class TideLine implements Game {
     }
   }
 
+  // Level 3: read the line ----------------------------------------------------------------------------
+
+  get lines(): readonly number[] {
+    return this.rounds[this.round]?.lines ?? [this.high];
+  }
+
+  private addItem(kind: Thing) {
+    const node = new Container();
+    const g = new Graphics();
+    if (kind === 'pail') pail(g, 0, 0, swatch.red);
+    else if (kind === 'flag') flag(g, 0, 0);
+    else towel(g, 0, 0);
+    node.addChild(g);
+    const hs = hitSize(kind);
+    node.hitArea = new Rectangle(-hs.w / 2, -hs.h, hs.w, hs.h + 6);
+    this.pailLayer.addChild(node);
+    const it: Item = { kind, node, handle: null as unknown as DragHandle, at: null, floating: false, settled: false };
+    it.handle = draggable(node, this.ctx.tw, {
+      onPick: () => sfx.pop(5),
+      onDrop: (x, y) => {
+        if (this.busy || this.finished || it.settled) return false;
+        const f = clampFeet(this.L, this.view, x, y, SIZES[kind]);
+        node.position.set(f.x, f.y);
+        it.at = { x: f.x, h: hAt(this.L, f.y) };
+        sfx.clunk();
+        return true;
+      },
+    });
+    const spot = lineTray(this.L, this.view).spots[kind];
+    node.position.set(spot.x, spot.y);
+    it.handle.home = { ...spot };
+    this.items.push(it);
+  }
+
+  /** The wave button: only once all three things are on the sand does the sea come in. Tapping it early is never counted. */
+  private tapWave() {
+    if (this.busy || this.finished) return;
+    void this.ctx.tw.to(this.waveBtn.scale, { x: 1.08, y: 1.08 }, { duration: 0.08 }).then(() => this.ctx.tw.to(this.waveBtn.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack }));
+    if (this.items.some((it) => !it.at || it.handle.dragging)) {
+      sfx.tick();
+      void this.ctx.say('tl.place-all');
+      return;
+    }
+    void this.runLineSea();
+  }
+
+  private async runLineSea() {
+    const round = this.rounds[this.round];
+    if (!round || this.items.some((it) => !it.at)) return;
+    this.busy = true;
+    for (const it of this.items) it.handle.enabled = false;
+    const tw = this.ctx.tw;
+    sfx.wave(true);
+    await tw.to(this.sea, { h: seaReach(round.lines) }, { duration: RISE, ease: ease.inOutSine });
+    const feet = {} as Record<Thing, number>;
+    for (const it of this.items) feet[it.kind] = it.at!.h;
+    const out = round.wave(feet);
+    this.misses = this.rounds.reduce((n, r) => n + r.misses, 0);
+    this.hints = this.rounds.filter((r) => r.hint).length;
+    await tw.wait(0.35);
+    if (!out.wet.length) {
+      sfx.sparkle();
+      this.ctx.pet.cheer();
+      void this.ctx.say('tl.dry-all');
+      this.drawGlow();
+      sfx.wave(false);
+      await tw.to(this.sea, { h: 0 }, { duration: BACK, ease: ease.inOutSine });
+      this.round++;
+      if (this.round >= ROUNDS) return void this.end();
+      await tw.wait(0.5);
+      if (this.finished) return;
+      // Round 2: a windy day has left a higher line; everything comes back to the rocks.
+      this.rounds.push(new LineRound(linesFor(1, this.secondHigh)));
+      this.layoutAll();
+      void this.ctx.say('tl.windy');
+      await Promise.all(
+        this.items.map((it) => {
+          it.at = null;
+          it.settled = false;
+          const spot = lineTray(this.L, this.view).spots[it.kind];
+          return tw.to(it.node, { x: spot.x, y: spot.y }, { duration: 0.6, ease: ease.inOutSine });
+        }),
+      );
+      if (this.finished) return;
+      for (const it of this.items) it.handle.enabled = true;
+      // A resize during the flight left them at the old spots.
+      this.layoutAll();
+      this.busy = false;
+      return;
+    }
+    // The wet ones float; the sea goes out; the pet fetches them back to the rocks. The dry ones stay put.
+    sfx.boing();
+    void this.ctx.say(this.round === 0 ? (`tl.wet.${out.wet[0]}` as const) : 'tl.top-line');
+    sfx.wave(false);
+    await tw.to(this.sea, { h: 0 }, { duration: BACK, ease: ease.inOutSine });
+    if (this.finished) return;
+    this.ctx.pet.hop();
+    sfx.whoosh();
+    const fetches: Promise<unknown>[] = [];
+    for (const it of this.items) {
+      it.floating = false;
+      if (!out.wet.includes(it.kind)) {
+        it.settled = true;
+        continue;
+      }
+      it.at = null;
+      const spot = lineTray(this.L, this.view).spots[it.kind];
+      fetches.push(tw.to(it.node, { x: spot.x, y: spot.y, rotation: 0 }, { duration: 0.7, ease: ease.inOutSine }));
+    }
+    await Promise.all(fetches);
+    if (this.finished) return;
+    this.layoutAll();
+    for (const it of this.items) it.handle.enabled = !it.settled;
+    if (out.glow) {
+      this.drawGlow();
+      void this.ctx.say('tl.look-line');
+    }
+    this.busy = false;
+  }
+
+  /** Show me: the line the sea will reach glows with the dry sand above; asked again, the pet carries the things up there. */
+  private lineHint() {
+    const round = this.rounds[this.round];
+    if (this.finished || !round || this.busy || this.items.some((it) => it.handle.dragging)) return;
+    const what = round.ask();
+    this.hints = this.rounds.filter((r) => r.hint).length;
+    this.drawGlow();
+    if (what === 'glow') void this.ctx.say('tl.look-line');
+    else if (what === 'carry') {
+      const spots = drySpots(this.L, this.view, round.lines);
+      this.busy = true;
+      for (const it of this.items) it.handle.enabled = false;
+      sfx.whoosh();
+      const moves = this.items
+        .filter((it) => !it.settled)
+        .map((it) => this.ctx.tw.to(it.node, { x: spots[it.kind].x, y: spots[it.kind].y }, { duration: 0.8, ease: ease.inOutSine }).then(() => {
+          it.at = { x: spots[it.kind].x, h: hAt(this.L, spots[it.kind].y) };
+        }));
+      void Promise.all(moves).then(() => {
+        if (this.finished) return;
+        this.layoutAll();
+        this.busy = false;
+        void this.runLineSea();
+      });
+    }
+  }
+
+  /** A thing that sits where the coming sea will leave it dry (the ghost finger's test). */
+  private dryNow(it: Item) {
+    return !!it.at && it.at.h > Math.max(...this.lines.map((h) => wrack(h).top));
+  }
+
+  // Level 4: in, out, in, out ---------------------------------------------------------------------------
+
+  get strip(): StripTurn | undefined {
+    return this.strips[this.index];
+  }
+
+  private buildStrip() {
+    const turn = this.strip;
+    if (!turn) return;
+    this.picLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.pics.length = 0;
+    this.cards.length = 0;
+    turn.strip.pics.forEach((kind, i) => {
+      const node = new Container();
+      const g = new Graphics();
+      if (i === turn.strip.gap) this.drawGap(g);
+      else shorePicture(g, kind, 200, 160, i);
+      node.addChild(g);
+      node.hitArea = new Rectangle(0, 0, 200, 160);
+      if (i !== turn.strip.gap) onTap(node, () => {
+        sfx.tick();
+        void this.ctx.say(kind === 'high' ? 'tl.pic-in' : 'tl.pic-out');
+      });
+      this.pics.push(node);
+      this.picLayer.addChild(node);
+    });
+    for (const kind of turn.strip.cards) {
+      const node = new Container();
+      const g = new Graphics();
+      shorePicture(g, kind, 200, 160, null);
+      node.addChild(g);
+      node.hitArea = new Rectangle(0, 0, 200, 160);
+      node.pivot.set(100, 80);
+      const card: Card = { kind, node };
+      onTap(node, () => this.tapCard(card));
+      this.cards.push(card);
+      this.picLayer.addChild(node);
+    }
+  }
+
+  private drawGap(g: Graphics) {
+    g.clear();
+    for (let x = 0; x < 200; x += 24) g.moveTo(x, 0).lineTo(Math.min(200, x + 12), 0).moveTo(x, 160).lineTo(Math.min(200, x + 12), 160);
+    for (let y = 0; y < 160; y += 24) g.moveTo(0, y).lineTo(0, Math.min(160, y + 12)).moveTo(200, y).lineTo(200, Math.min(160, y + 12));
+    g.stroke({ color: swatch.blue.line, width: 5, cap: 'round' });
+    g.roundRect(4, 4, 192, 152, 14).fill({ color: 0xffffff, alpha: 0.35 });
+  }
+
+  private tapCard(card: Card) {
+    const turn = this.strip;
+    if (this.busy || this.finished || !turn || this.ctx.tw.busy(card.node)) return;
+    // Touch-down: the card lifts.
+    card.node.scale.set(1.06);
+    const out = turn.tap(card.kind);
+    this.misses = this.strips.reduce((n, t) => n + t.misses, 0);
+    this.hints = this.strips.filter((t) => t.hint).length;
+    if (out.right) return void this.placeCard(card);
+    sfx.boing();
+    void this.ctx.say(wrongLine(turn.strip, card.kind));
+    const x = card.node.x;
+    void this.ctx.tw
+      .to(card.node, { x: x + 14 }, { duration: 0.06 })
+      .then(() => this.ctx.tw.to(card.node, { x: x - 14 }, { duration: 0.1 }))
+      .then(() => this.ctx.tw.to(card.node, { x }, { duration: 0.12, ease: ease.outBack }))
+      .then(() => card.node.scale.set(1));
+    if (out.glow) this.drawGlow();
+  }
+
+  private async placeCard(card: Card) {
+    const turn = this.strip;
+    if (!turn) return;
+    this.busy = true;
+    this.drawGlow();
+    const gapBox = stripLayout(this.view).pics[turn.strip.gap];
+    sfx.whoosh();
+    await this.ctx.tw.to(card.node, { x: gapBox.x + 100, y: gapBox.y + 80 }, { duration: 0.5, ease: ease.inOutSine });
+    card.node.scale.set(1);
+    sfx.sparkle();
+    this.ctx.pet.cheer();
+    await this.ctx.say('tl.right');
+    if (this.finished) return;
+    this.index++;
+    if (this.index >= STRIPS) return void this.end();
+    this.strips.push(new StripTurn(makeStrip(this.ctx.rng)));
+    this.buildStrip();
+    this.layoutAll();
+    void this.ctx.say('tl.next-strip');
+    this.busy = false;
+  }
+
+  /** Show me: the right card glows; asked again while it glows, the pet taps it. One hint a strip. */
+  private stripHint() {
+    const turn = this.strip;
+    if (this.finished || !turn || this.busy) return;
+    const what = turn.ask();
+    this.hints = this.strips.filter((t) => t.hint).length;
+    this.drawGlow();
+    if (what === 'glow') void this.ctx.say('tl.look-card');
+    else if (what === 'tap') {
+      const card = this.cards.find((c) => c.kind === answerOf(turn.strip));
+      if (card) this.tapCard(card);
+    }
+  }
+
   // The ghost finger --------------------------------------------------------------------------------
 
   autotouch(): TouchIntent | null {
@@ -386,6 +701,19 @@ class TideLine implements Game {
       const x = this.view.w * 0.6;
       const crest = yAt(this.L, this.sea.h) + 20;
       return { trace: { on: this.seaHit, x, y: crest }, via: [{ on: this.seaHit, x, y: yAt(this.L, 0.75) }, { on: this.seaHit, x, y: yAt(this.L, 0.92) }], receiver: this.seaHit, pause: 0.4 };
+    }
+    if (this.plan.mode === 'line') {
+      if (this.items.some((it) => it.handle.dragging || this.ctx.tw.busy(it.node))) return null;
+      const spots = drySpots(this.L, this.view, this.lines);
+      const next = this.items.find((it) => !it.settled && !this.dryNow(it));
+      if (next) return { drag: { on: next.node, y: -hitSize(next.kind).h / 2 }, to: { on: this.board, x: spots[next.kind].x, y: spots[next.kind].y } };
+      return { tap: { on: this.waveBtn, x: 65, y: 60 } };
+    }
+    if (this.plan.mode === 'cycle') {
+      const turn = this.strip;
+      const card = turn && this.cards.find((c) => c.kind === answerOf(turn.strip));
+      if (!card || this.ctx.tw.busy(card.node)) return null;
+      return { tap: { on: card.node, x: 100, y: 80 } };
     }
     const p = this.pail;
     if (!p || p.handle.dragging || p.at || this.ctx.tw.busy(p.node)) return null;
@@ -432,11 +760,38 @@ class TideLine implements Game {
     if (this.plan.mode === 'pail') {
       g.ellipse(L.tray.x, L.tray.y + 8, 82, 22).fill(0x9a93b0).stroke({ color: 0x6f6888, width: 3 });
     }
+    if (this.plan.mode === 'line') {
+      const tray = lineTray(L, v);
+      for (const t of THINGS) g.ellipse(tray.spots[t].x, tray.spots[t].y + 8, hitSize(t).w / 2 + 14, 20).fill(0x9a93b0).stroke({ color: 0x6f6888, width: 3 });
+      this.waveBtn.position.set(tray.button.x, tray.button.y);
+      for (const it of this.items) {
+        it.handle.home = { ...tray.spots[it.kind] };
+        if (!it.at && !this.ctx.tw.busy(it.node) && !it.handle.dragging) it.node.position.set(tray.spots[it.kind].x, tray.spots[it.kind].y);
+        else if (it.at && !this.ctx.tw.busy(it.node) && !it.handle.dragging) {
+          const f = clampFeet(L, v, it.at.x, yAt(L, it.at.h), SIZES[it.kind]);
+          it.at.x = f.x;
+          it.node.position.set(f.x, yAt(L, it.at.h));
+        }
+      }
+    }
+    if (this.plan.mode === 'cycle') {
+      const S = stripLayout(v);
+      this.pics.forEach((n, i) => n.position.set(S.pics[i].x, S.pics[i].y));
+      const turn = this.strip;
+      this.cards.forEach((c, i) => {
+        if (this.ctx.tw.busy(c.node)) return;
+        // The right card, once placed, sits in the gap.
+        if (turn?.done && c.kind === answerOf(turn.strip)) {
+          const b = S.pics[turn.strip.gap];
+          c.node.position.set(b.x + 100, b.y + 80);
+        } else c.node.position.set(S.cards[i].x + 100, S.cards[i].y + 80);
+      });
+    }
     this.line.clear();
-    if (this.plan.mode === 'pail') {
-      const w = wrack(this.high);
+    if (this.plan.mode === 'pail' || this.plan.mode === 'line') {
       const bandPx = BAND * (L.low - L.dunes);
-      drawWrack(this.line, 0, v.w, yAt(L, w.mid), bandPx, 11);
+      const highs = this.plan.mode === 'pail' ? [this.high] : this.lines;
+      highs.forEach((h, i) => drawWrack(this.line, 0, v.w, yAt(L, wrack(h).mid), bandPx, 11 + i * 6));
     }
     this.critters.forEach((c, i) => {
       const s = creatureSpot(L, v, CREATURES[i]);
@@ -458,9 +813,17 @@ class TideLine implements Game {
 
   private drawGlow() {
     const g = this.glow.clear();
-    const turn = this.turns[this.index];
+    if (this.plan.mode === 'cycle') {
+      const turn = this.strip;
+      if (this.finished || this.busy || !turn || !turn.glow || turn.done) return;
+      const i = this.cards.findIndex((c) => c.kind === answerOf(turn.strip));
+      const b = stripLayout(this.view).cards[i];
+      if (b) g.roundRect(b.x - 12, b.y - 12, b.w + 24, b.h + 24, 24).stroke({ color: swatch.orange.line, width: 10 });
+      return;
+    }
+    const turn = this.plan.mode === 'line' ? this.rounds[this.round] : this.turns[this.index];
     if (this.finished || !turn || !turn.glow || turn.done) return;
-    const w = wrack(this.high);
+    const w = wrack(this.plan.mode === 'line' ? Math.max(...this.lines) : this.high);
     const top = yAt(this.L, w.top);
     g.rect(0, this.L.sand.y - 34, this.view.w, top - (this.L.sand.y - 34)).fill({ color: 0xffffff, alpha: 0.55 });
     g.rect(-10, top - 4, this.view.w + 20, yAt(this.L, w.bottom) - top + 8).stroke({ color: swatch.orange.line, width: 10 });
@@ -488,7 +851,15 @@ class TideLine implements Game {
     this.clock += dt;
     this.glow.alpha = 0.65 + 0.35 * Math.sin(this.clock * 4);
     if (this.plan.mode === 'wave' && !this.finished) this.waveFrame(dt);
-    // A pail on wet sand floats up with the sea and bobs.
+    // A thing on wet sand floats up with the sea and bobs.
+    if (this.busy) {
+      for (const it of this.items) {
+        if (!it.at || !(it.floating || this.sea.h > it.at.h)) continue;
+        it.floating = true;
+        it.node.y = yAt(this.L, this.sea.h) + 8 + Math.sin(this.clock * 5 + it.node.x) * 4;
+        it.node.rotation = Math.sin(this.clock * 3 + it.node.x) * 0.1;
+      }
+    }
     const p = this.pail;
     if (p?.at && (p.floating || this.sea.h > p.at.h) && this.busy) {
       p.floating = true;
@@ -503,6 +874,7 @@ class TideLine implements Game {
     window.removeEventListener('pointercancel', this.release, true);
     this.pail?.handle.destroy();
     for (const p of this.placed) p.handle.destroy();
+    for (const it of this.items) it.handle.destroy();
   }
 }
 
@@ -512,7 +884,7 @@ export const tideLine: GameModule = {
   titleLine: 'game.tide-line',
   region: 'tinker-lab',
   skills: ['science', 'patterns', 'prediction'],
-  bands: ['lap', 'toddler', 'preschool'],
+  bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (b) => rangeFor(BAND_LEVELS, b),
   describeLevel: (l) => tidePlan(l).name,
   music: STYLES.bubbles,
