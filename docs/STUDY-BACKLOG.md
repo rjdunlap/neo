@@ -120,7 +120,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Peekaround Island (`peekaround-island`) | designed | [Dive](deep-dives/peekaround-island.md) |
 | Penguin Slide (`penguin-slide`) | designed | [Dive](deep-dives/penguin-slide.md) |
 | Picture Graph (`picture-graph`) | designed | [Dive](deep-dives/picture-graph.md) |
-| Picture Logic (`picture-logic`) | research | [Game tracker](deep-dives/README.md#tracker) |
+| Picture Logic (`picture-logic`) | designed | [Dive](deep-dives/picture-logic.md) |
 | Pond Conga (`pond-conga`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Quick Tricks (`quick-tricks`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Read & Do (`read-do`) | research | [Game tracker](deep-dives/README.md#tracker) |
