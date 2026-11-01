@@ -207,3 +207,9 @@
 - [PR #1072](https://github.com/rjdunlap/neo/pull/1072), branch `claude/dive-garden-rows`: [dive](../deep-dives/garden-rows.md). Three slices queued ([batches](../GAME-BATCHES.md#garden-rows-1-seeded-flower-sets-and-mend-the-bed): seeded flower sets and level 7 Mend the bed, levels 8–9 Hedge boxes, level 10 One row); Two-flower beds stays a later level 11.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
+
+## 2026-10-31 — Ferry Jam deep dive (docs only)
+
+- [PR #1073](https://github.com/rjdunlap/neo/pull/1073), branch `claude/dive-ferry-jam-2`: [dive](../deep-dives/ferry-jam.md). Found the hint fires on a raw slide count rather than lack of progress, and each harbor pool sits at the bottom of its plan's range. Four slices queued ([batches](../GAME-BATCHES.md#ferry-jam-1-fair-hints-and-fuller-harbors): fair hints and fuller harbors, level 7 rocks, level 8 two ferries, levels 9–10 pre-K entry and who's in the way); the preschool opening is filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog and ideas updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds.
