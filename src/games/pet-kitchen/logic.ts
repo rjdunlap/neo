@@ -64,7 +64,7 @@ export function fairAreas(sums: readonly number[]): boolean {
 export const cutShares = (plan: { wholes: number; friends: number }, cut: number) => cut > 0 && (plan.wholes * cut) % plan.friends === 0;
 /** The level whose pieces are already cut and dealt by tapping (the lap rung). */
 export const DEAL_LEVEL = 10;
-export const planFor = (l: number) => (l >= SHAPES_LEVEL ? SHAPES_PLAN : PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))]);
+export const planFor = (l: number) => (l >= CUP_LEVEL ? CUP_PLAN : l >= SHAPES_LEVEL ? SHAPES_PLAN : PLANS[Math.max(0,Math.min(PLANS.length-1,l-1))]);
 export const fair = (plates: number[], pieces: number) => pieces > 0 && plates.length > 0 && plates.every(n => n > 0 && n === pieces / plates.length);
 export function nextPlate(plates: number[]) { return plates.indexOf(Math.min(...plates)); }
 export function recipe(level: number, rng: Rng): [number,number] {
@@ -211,4 +211,52 @@ export function kitchenDiscoveries(mode: string, cut: number, lopsided: boolean,
 /** Level 13's two friends are named aloud ("the cat asked for…"), so the island's own pip is never one of them. */
 export function compareFriends(rng: Rng): CritterName[] {
   return rng.shuffle((Object.keys(CRITTERS) as CritterName[]).filter((n) => n !== 'pip')).slice(0, 2);
+}
+
+/**
+ * Level 15 *One cup, many ways* (the cooking packet's equivalent-measures round): the recipe needs one cup, and the
+ * tools are a half-cup and a quarter-cup scoop. Amounts are whole quarters of the one cup, so a half scoop is 2 and the
+ * cup is 4; two halves, four quarters, or a half and two quarters (in any order) fill it.
+ */
+export const CUP_LEVEL = 15;
+export const CUP_PLAN = { mode: 'cup', wholes: 0, friends: 0, cuts: [], name: 'One cup, many ways: fill exactly one cup with half-cup and quarter-cup scoops (two halves, four quarters, or a half and two quarters)' } as const;
+export type Scoop = 'half' | 'quarter';
+export const SCOOPS: readonly Scoop[] = ['half', 'quarter'];
+export const SCOOP_QUARTERS: Record<Scoop, number> = { half: 2, quarter: 1 };
+/** One cup in quarters. */
+export const CUP = 4;
+/** The most the jug holds, in quarters: a cup and a half. A scoop past it is not poured (the back arrow is the way on). */
+export const CUP_CAP = 6;
+export const cupTotal = (pours: readonly Scoop[]) => pours.reduce((a, s) => a + SCOOP_QUARTERS[s], 0);
+/** The scoop fits in the jug (a tap that would go past the brim says to take one out instead; never a miss). */
+export const canPour = (pours: readonly Scoop[], scoop: Scoop) => cupTotal(pours) + SCOOP_QUARTERS[scoop] <= CUP_CAP;
+/** Exactly one cup, whatever the scoops. */
+export const cupFull = (pours: readonly Scoop[]) => cupTotal(pours) === CUP;
+export type CupTrouble = 'empty' | 'short' | 'over';
+export function cupTrouble(pours: readonly Scoop[]): CupTrouble | null {
+  const t = cupTotal(pours);
+  return t === 0 ? 'empty' : t < CUP ? 'short' : t > CUP ? 'over' : null;
+}
+/**
+ * The useful next step the glow shows: too much, take the last scoop out; two or more quarters short, a half; one
+ * short, a quarter; full, nothing (serve).
+ */
+export function cupFix(pours: readonly Scoop[]): 'undo' | Scoop | null {
+  const t = cupTotal(pours);
+  return t > CUP ? 'undo' : t === CUP ? null : CUP - t >= 2 ? 'half' : 'quarter';
+}
+/** Every way to fill the cup, as scoop counts: two halves, a half and two quarters, four quarters. */
+export const CUP_WAYS: readonly (readonly Scoop[])[] = [['half', 'half'], ['half', 'quarter', 'quarter'], ['quarter', 'quarter', 'quarter', 'quarter']];
+/** A seeded way for the ghost finger to fill the cup, its scoops in a seeded order. */
+export const cupWay = (rng: Rng): Scoop[] => rng.shuffle([...rng.pick(CUP_WAYS)]);
+/** The ghost finger's next step towards `way`: undo anything off the way, else the next scoop, else serve (null). */
+export function wayStep(way: readonly Scoop[], pours: readonly Scoop[]): 'undo' | Scoop | null {
+  if (pours.some((s, i) => way[i] !== s)) return 'undo';
+  return pours.length < way.length ? way[pours.length] : null;
+}
+/** The scoops said aloud when the cup is full: "two halves", "one half and two quarters", "four quarters". */
+export function cupWords(pours: readonly Scoop[]): string {
+  const h = pours.filter((s) => s === 'half').length, q = pours.length - h;
+  const part = (n: number, one: string, many: string) => `${NUMBER_WORDS[n - 1] ?? n} ${n === 1 ? one : many}`;
+  return [h && part(h, 'half', 'halves'), q && part(q, 'quarter', 'quarters')].filter(Boolean).join(' and ');
 }
