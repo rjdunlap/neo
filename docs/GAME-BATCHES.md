@@ -823,6 +823,8 @@ Proof: new-game tier, as the [definition's check tier](definitions/notice-board.
 
 ### shell-rows 1: Finish the row, stop the row, win first
 
+**Built 2026-11-01** ([PR #1115](https://github.com/rjdunlap/neo/pull/1115), branch `claude/shell-rows-1-3`): all of batch shell-rows 1, levels 1–3. Checks are in [VERIFICATION](VERIFICATION.md#2026-11-01--shell-rows-levels-13-strategy-games-sg1).
+
 - **`shell-rows`, levels 1–3 (strategy-games study slice 1, SG1)** (a new game, one declared batch; pre-K 1–2, school 1–3; Puzzle Peaks, paging, fallback Bubble Beach): a 3 by 3 grid in wet sand with a match already under way; set one shell to finish her row (level 1), to stop the pet's row (level 2), or to win first when both rows are on the board (level 3); a wrong square is answered by the pet's honest reply, then the board rewinds. [Definition](definitions/shell-rows.md), [study build slices](deep-dives/subjects/strategy-games.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's check tier](definitions/shell-rows.md#check-tier-for-the-build) sets it (typecheck, rule tests with registry, lands, how-to and off-screen tests, a `browser-check.mjs` case: level 1 with one wrong square then a second for the glow and its hint then the right square to the next position, level 3 with the block then the right square to its sticker, one portrait screenshot of level 3 mid-replay, `fingerdemo` at levels 1 and 3, one build). Person and device checks stay open.
