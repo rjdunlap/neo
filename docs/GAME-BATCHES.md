@@ -543,6 +543,38 @@ Files expected: `src/games/lasso-loops/logic.ts`, `logic.test.ts`, `index.ts`, `
 
 Proof: fresh content on the existing interaction: typecheck, the game's rule tests (every plan's fireflies fit one per cell; a teen, a decade and a 21–39 round all occur at level 4 within a few hundred seeds; level 6 still 21–39; pads stay three distinct positive numbers including the answer; no leaf when there are no ones), one filtered regression play of level 4 on a decade seed with one wrong total, `fingerdemo` at 4 (the bot meets a round with no leaf).
 
+### light-lab 1: Fair starts, nearest hints and a sun on either side
+
+- **`light-lab`, fair starts, nearest hints and a sun on either side (dive slice 1)** (existing interaction; pre-K, school): the generator stops handing out nearly solved starts at levels 4–7, the hint follows the nearest solution rather than the built path, and the sun can sit on either side. [Dive](deep-dives/light-lab.md#build-slices-in-order)
+
+Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts` (reads the sun's side), `docs/GAMES.md`.
+
+Proof: existing-interaction tier: typecheck, the game's rule tests (starts are not nearly solved at 4–7, the hint always leads to a nearest solution, either sun side is solvable), one filtered regression play at level 6 with a right-hand sun and one hint; `fingerdemo` at 6 only if the bot's play changes.
+
+### light-lab 2: Couch course Sunbeam Run
+
+- **`light-lab`, couch course Sunbeam Run (dive slice 2)**, after batch 1 (couch catalog): a par course of frozen boards with par from batch 1's minimum, the remaining Light Lab par course of roadmap chunk 8. [Dive](deep-dives/light-lab.md#build-slices-in-order)
+
+Files expected: `src/couch/` catalog and course entries, the course tests, `docs/COUCH-PLAY.md`.
+
+Proof: couch catalog tier: a frozen board list, course tests, `BROWSER_SUITE=couchgames` filtered to Light Lab.
+
+### light-lab 3: Levels 8–9 Place a mirror and Two to place
+
+- **`light-lab`, levels 8–9 *Place a mirror* and *Two to place* (dive slice 3)** (new interaction; school): she drops a mirror from a tray onto the board so the beam reaches the target, then two mirrors; the school range rises to 9. [Dive](deep-dives/light-lab.md#build-slices-in-order)
+
+Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, rule tests, one play of level 8 with a drop off the board, a missed shine and the glowing cell, level 9 to its sticker, one portrait screenshot with the tray, `fingerdemo` at 8 and 9; stop after 8 if the allowance cannot cover 9.
+
+### light-lab 4: Level 10 Where's the mirror?
+
+- **`light-lab`, level 10 *Where's the mirror?* (dive slice 4)**, after batch 3 (the school range rises past 9): a cloud hides one mirror and she chooses its cell from where the beam goes. [Dive](deep-dives/light-lab.md#build-slices-in-order)
+
+Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, rule tests, one play with one wrong cell and its ghost beam, a second for the glow, then the right cell, one portrait screenshot of the cloud, `fingerdemo` at 10.
+
 ### look-it-up 1: Levels 1–3
 
 - **`look-it-up`, levels 1–3 (IR1)** (a new game, one subtask; toddler 1, preschool 1–2, pre-K 2–3, school 3, Barnyard by default): a picture guide of seven real animals (cow, pig, duck, rabbit, brown bear, common frog, African penguin), each page with a fact box of *Eats*, *Where* and *Baby*; touch labels to hear them (level 1), find a hungry visitor's page by its tab and feed it (level 2), find the asked row and help it there (level 3). Turning pages is free; only a wrong food or place given to the animal is a miss. [Definition](definitions/look-it-up.md), [informational-reading study slice IR1](deep-dives/subjects/informational-reading.md#build-slices-in-order)
@@ -721,7 +753,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/puppet-stage.
 
 - **`drops-journey`, levels 1-3 (weather-water study slice 8)** (**built 2026-10-31**, [PR #1066](https://github.com/rjdunlap/neo/pull/1066), branch `claude/drops-journey-1-3`; a new game, one declared batch; preschool 1, pre-K 1-2, school 2-3; Tinker Lab): tap a picture card to send a water drop to a lawful next stop among five places, finishing after three stops (level 1); reach a postcard goal such as the snow by any lawful route, with the pet replaying the story (level 2); then one uphill can't-go card is a miss, with a glow after two (level 3). [Definition](definitions/drops-journey.md), [study build slices](deep-dives/subjects/weather-water.md#build-slices-in-order)
 
-Proof: new-game tier, as the [definition's check tier](definitions/drops-journey.md#check-tier) sets it (typecheck, rule tests with registry, lands and how-to, a `browser-check.mjs` case with level 1 to its sticker and level 3 with one can't-go card, the glow and its hint, then Finish, one portrait screenshot of level 2 mid-move, `fingerdemo` at levels 1 and 3, one build). The building session's source check of the speech lines goes in its verification entry. All three levels shipped; proof is in [VERIFICATION](VERIFICATION.md#2026-10-31--drops-journey-levels-13-weather-water-slice-8). Device checks stay open.
+Proof: new-game tier, as the [definition's check tier](definitions/drops-journey.md#check-tier) sets it (typecheck, rule tests with registry, lands and how-to, a `browser-check.mjs` case with level 1 to its sticker and level 3 with one can't-go card, the glow and its hint, then Finish, one portrait screenshot of level 2 mid-move, `fingerdemo` at levels 1 and 3, one build). The building session's source check of the speech lines goes in its verification entry. All three levels shipped; proof is in [VERIFICATION](archive/VERIFICATION-2026-10-31.md#2026-10-31--drops-journey-levels-13-weather-water-slice-8). Device checks stay open.
 
 ### sprout-shuffle 1: which pairs always make spotted
 
