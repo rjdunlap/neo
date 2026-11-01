@@ -3172,7 +3172,7 @@ export const SCRIPT = {
   'size.hidden.swap': ['They were the wrong way round, so they swapped!'],
   'size.hidden.stay': ['Those two stay put: the littler one is already first.'],
   'size.hidden.wrong': ['The gate stays shut. Some neighbours are still mixed up. Test more pairs!'],
-  'size.hidden.hint': ['Test the two glowing friends!'],
+  'size.hidden.hint': ['The gate stays shut. Test the two glowing friends!'],
   'size.hidden.yes': ['Littlest first! The gate opens. Here come five more friends.'],
   'size.shade.dark': ['Line them up, darkest first! Drag the darkest friend to the glowing spot.'],
   'size.shade.light': ['Now lightest first! Drag the lightest friend to the glowing spot.'],

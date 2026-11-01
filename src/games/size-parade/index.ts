@@ -325,17 +325,19 @@ class SizeParade implements Game {
     if (!isSorted(this.hidden)) {
       this.wrong++; this.misses++; sfx.boing();
       void tw.to(this.gate, { rotation: -0.1 }, { duration: 0.08 }).then(() => tw.to(this.gate, { rotation: 0.1 }, { duration: 0.1 })).then(() => tw.to(this.gate, { rotation: 0 }, { duration: 0.08 }));
-      void this.ctx.say('size.hidden.wrong');
       if (this.wrong === 2) this.hints++;
+      // From the second shut gate on, the hint line alone, so it is not cut off by the reason.
       if (this.wrong >= 2) {
         const i = mixedPair(this.hidden)!;
         this.wiggle(this.choices[i].node); this.wiggle(this.choices[i + 1].node);
         void this.ctx.say('size.hidden.hint');
-      }
+      } else void this.ctx.say('size.hidden.wrong');
       this.drawGlow(); return;
     }
     this.busy = true; this.wrong = 0; this.lines++; this.ctx.pet.cheer(); sfx.tada();
     void tw.to(this.fence, { y: 260, alpha: 0 }, { duration: 0.45 });
+    // The line's progress circle fills as the fence comes down; the fence is still drawn around the friends it hid.
+    this.resize(this.view);
     const line = [...this.choices];
     this.choices.length = 0;
     line.forEach((c) => unbooted(c.node));
