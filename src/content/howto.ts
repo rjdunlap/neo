@@ -697,24 +697,28 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'sprout-shuffle': {
-    goal: 'Two plants each give a sprout one copy. Open every way their sprouts can grow.',
+    goal: 'Two plants each give a sprout one copy. Work out what their sprouts can be.',
     steps: [
-      'Tap one copy under each plant, or drag it to its own slot. The sprout opens spotted or plain. Tapping the other copy swaps it, for free.',
+      { from: 1, to: 3, text: 'Tap one copy under each plant, or drag it to its own slot. The sprout opens spotted or plain. Tapping the other copy swaps it, for free.' },
       { from: 1, to: 1, text: 'Then open all four buds. Each one is a way the two plants can give their copies.' },
       { from: 2, to: 2, text: 'Three buds are open. Tap the two glowing copies to grow the last one.' },
       { from: 2, to: 2, text: 'Choose every sprout these plants could make, then tap the leaf to check.' },
       { from: 3, to: 3, text: 'Both plants are spotted. Every bud is closed: tap the two glowing copies of each bud in turn to grow all four.' },
       { from: 3, to: 3, text: 'Choose a card: spotted sometimes, or always spotted. Then tap the leaf. The seed packet grows one way by chance, as often as she likes; it is free and never needed.' },
+      { from: 4, to: 4, text: 'A friend wants a bed of spotted sprouts. Each of three cards shows a pair of plants with their copies. The magnifier above a card opens that pair\'s four ways, free, as often as she likes.' },
+      { from: 4, to: 4, text: 'Tap every pair whose sprouts are always spotted, then tap the leaf. Sometimes two pairs both fit.' },
     ],
     finish: [
       { from: 1, to: 1, text: 'Every bud is open: all four ways make a spotted sprout.' },
       { from: 2, to: 2, text: 'The leaf agrees: both sprouts can grow.' },
       { from: 3, to: 3, text: 'The leaf agrees: spotted three ways, plain one way, so spotted is not always.' },
+      { from: 4, to: 4, text: 'The leaf agrees: the chosen pairs make a spotted sprout every way.' },
     ],
     note: [
       { text: 'A toy rule, made for about 9 and up: a plant holds two copies, and one spot copy is enough for spots. Building a way is not choosing what a real plant makes. Letters on the tiles are for you; they are never spoken.' },
       { from: 2, to: 2, text: 'A wrong Check is one miss; the pet replays the way that was missed, and the second miss makes it glow. Show me does the next step; its first use in each part of the round counts one hint.' },
       { from: 3, to: 3, text: '"Always spotted" is one miss; the pet replays the plain way, and the second miss makes it glow. Try one never counts: four draws need not show all four ways. Show me does the next step; its first use in each part of the round counts one hint.' },
+      { from: 4, to: 4, text: 'Made for about 10 and up. Opening a pair\'s four ways is free. A wrong Check is one miss: the pet replays a plain way of a chosen pair, or shows every way of a missed pair spotted, and the second miss makes the right pairs glow. Show me chooses them and counts one hint; she taps the leaf herself.' },
     ],
   },
   'helper-house': {

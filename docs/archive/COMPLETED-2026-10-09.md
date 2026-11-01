@@ -2261,7 +2261,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-31.md#2026-10-31--forecast-det
 
 Branch `claude/drift-cards-1-2` ([PR #1078](https://github.com/rjdunlap/neo/pull/1078)), batch drift-cards 1, [definition](../definitions/drift-cards.md): a new game, `drift-cards`, Bubble Beach's 14th (region tinker-lab, school 1-2, quiet music, code-drawn art, ghost-finger demo). Level 1 predicts the beach (West, South, East) for three wooden cards on a 5x4 current sea; the first card of a round is a free guess. Level 2 picks a boat so a card reaches the friend who asked, on 6x4 seas with four beaches. Free two-cell tracing, Show me, one hint per card or request. Level 3 (the fogged patch) stays in batch drift-cards 2.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-31--drift-cards-levels-12-oceans-slice-6).
+Checks are in [VERIFICATION](VERIFICATION-2026-10-31.md#2026-10-31--drift-cards-levels-12-oceans-slice-6).
 
 ## Size Parade level 13: Hidden heights (size-parade batch 4, slice 9, 2026-11-01)
 
@@ -2270,3 +2270,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-31--drift-cards-levels-1
 ## Pet Kitchen batch 4: level 15 One cup, many ways (slice 8, 2026-10-31)
 
 [PR #1084](https://github.com/rjdunlap/neo/pull/1084), branch `claude/pet-kitchen-one-cup`. Level 15 (school, `order [14, 5, 6, 7, 8, 9, 12, 13, 15]`, range now 5–15) is the cooking packet's equivalent-measures round: half-cup and quarter-cup scoops pour into a quarter-marked jug until it reaches the bold one-cup line; a scoop past the brim (six quarters) is refused with a spoken line, never a miss; a back arrow undoes the last scoop; a serve of exactly one cup in any combination passes, anything else is a miss with a spoken reason, and the second miss glows the useful step. The pour rules live in `logic.ts` (rule tests: every sequence up to the brim accepted iff one cup; help reaches one cup from every reachable state; seeded ghost-finger way from any state). No journal entry (decision 6 covers half, quarter and third only); the `measuring` skill was added. Checks are in [VERIFICATION](../VERIFICATION.md#2026-10-31--pet-kitchen-15-one-cup-many-ways-pet-kitchen-batch-4-slice-8).
+
+## Sprout Shuffle level 4: Which pairs always make spotted? (genetics G5 first build, sprout-shuffle batch 1, 2026-11-01)
+
+[PR #1093](https://github.com/rjdunlap/neo/pull/1093), branch `claude/sprout-shuffle-4`, [definition](../definitions/hidden-sprouts.md) (level 4 only; levels 5 and 6 remain). School range 1–3 becomes 1–4. A seeded friend asks for a bed of spotted sprouts; three pair cards (seeded from the definition's pools A/B/C, sides and tile order seeded) each show two plants over their copies, and a free yellow magnifier opens that pair's four-bud fan. A wrong Check is one miss and replays the chosen pair's counterexample (plain route with a glow, or all four spotted for a missed always-spotted pair); a second glows the accepted cards (one hint); Show me chooses them. Pool C accepts two pairs. Code: new `src/games/sprout-shuffle/pairs.ts`, `PAIR_POOLS`, `pairsAlways`, `counterexample`, `checkPairs` in `logic.ts`, `PairCard`/`lensArt`/`bedArt` in `art.ts`, 16 `sprout.*` lines on device speech. The `sproutshuffle` browser suite gains a level-4 case and a `SPROUT_LEVELS` filter.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5).
