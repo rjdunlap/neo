@@ -134,6 +134,7 @@ import { dropsJourney } from './drops-journey';
 import { forecastDetective } from './forecast-detective';
 import { puppetStage } from './puppet-stage';
 import { spinnerFair } from './spinner-fair';
+import { ruleMachine } from './rule-machine';
 import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
 import { whoAmI } from './who-am-i';
@@ -278,6 +279,7 @@ export const GAMES: GameModule[] = [
   dropsJourney,
   forecastDetective,
   spinnerFair,
+  ruleMachine,
   puppetStage,
   readDo,
   lookItUp,
