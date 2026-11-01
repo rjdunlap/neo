@@ -11,3 +11,9 @@
 - [PR #1086](https://github.com/rjdunlap/neo/pull/1086), branch `claude/dive-penguin-slide`: [dive](../deep-dives/penguin-slide.md). Five slices queued (fair ponds and seeded looks; levels 10 *Three fish*, 11 *Where will it stop?*, 12 *A block onto the star*, 13 *Two penguins*); tracker, READY, backlog and WAITING-ON-DEVELOPER (toddler opening) updated.
 - Ran: a throwaway probe of 300 seeds per level (deleted) found ponds where a slide strands the penguin (level 1: 29, level 2: 44, level 3: 36, level 4: 53 of 300) and 145 of 300 level-1 ponds solved in one slide; `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites; nothing played (docs tier, no code changed). Open: the builds.
+
+## 2026-11-01 — Picture Graph deep dive (docs only)
+
+- [PR #1087](https://github.com/rjdunlap/neo/pull/1087), branch `claude/dive-picture-graph`: [dive](../deep-dives/picture-graph.md). Five slices queued (fair meadows; levels 8 *Line them up*, 9 *A key of five*, 10 *Two pictures, one meadow*, 11 *What the graph can say*) with batch plans picture-graph 1–5; tracker, READY, backlog, ideas, four subject studies and WAITING-ON-DEVELOPER (preschool opening) updated.
+- Ran: a throwaway probe (5,000 rounds a level at 1024×768, deleted) found two critters overlapping in 10.7% of level-7 rounds, 0.1% at level 3 and none at levels 1–2; `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, no code changed). Open: the builds; the level-11 person check.

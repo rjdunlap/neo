@@ -1396,3 +1396,43 @@ Proof: new rule on the existing tap: typecheck, rule tests, one play of level 8 
 Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`. The shared geometry changes, so the couch suite follows.
 
 Proof: new-interaction tier: typecheck, unit tests including order, one play of level 9 with one wrong number and one hint naming a patch; one portrait screenshot; `fingerdemo` at 9; `BROWSER_SUITE=couchgames` filtered to Sudoku Garden.
+
+### treasure-map 1: Fresh maps and true hints
+
+- **`treasure-map`, Fresh maps and true hints (dive slice 1)** (existing-game fix): seeded level 1 headers from a pool of seven pictures and shuffled colours via `headersFor(plan, rng)`, seeded map dressing, level 5's own `map.cluehint`, level 4's hint lighting the first leg, and the how-to level-3 step as a tap.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
+
+Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: existing-game fix tier: typecheck, rule tests, one filtered regression play of levels 1 and 4 with two wrong digs each; one portrait screenshot of level 1; one build for the voice lines; bot unchanged, no `fingerdemo`.
+
+### treasure-map 2: Write the card
+
+- **`treasure-map`, Level 6 *Write the card* (dive slice 2, after batch 1)** (new interaction; school): a two-slot card of number and arrow tiles beside the map, footprints as she sets it, Go walks it and a miss names the leg that was off; shares the footprints and the step hint with batch 1. Not on the couch.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
+
+Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, rule tests; one scripted play with one card whose up leg is one too many, a second wrong card for the glow, then the right card; one portrait screenshot of the card tiles; `fingerdemo` at 6.
+
+### treasure-map 3: How far?
+
+- **`treasure-map`, Level 7 *How far?* (dive slice 3, after batch 1)** (new rule on the same tap; school): footprint stacks and a spoken distance after each dig on a 4 by 4 map; the still-fits set; ruled-out digs are misses with a reason. Shares the footprints with batch 1. Not on the couch.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
+
+Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-rule tier: typecheck, rule tests including the five-dig bound for fitting digs over every hiding square; one play of level 7 with two fitting digs, a ruled-out dig, then to the sticker; `fingerdemo` at 7; one portrait screenshot of the footprints.
+
+### treasure-map 4: Slide it
+
+- **`treasure-map`, Level 8 *Slide it* (dive slice 4, after batch 1)** (new interaction; school): a three-square raft slides by a vector, she taps where the flag lands, then picks the slid outline among three cards. Not on the couch.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
+
+Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, rule tests; one play with one wrong square and one wrong outline (named reason), then right; one portrait screenshot of the outline cards; `fingerdemo` at 8.
+
+### treasure-map 5: One line
+
+- **`treasure-map`, Level 9 *One line*, the preschool opening (dive slice 5, after batches 1–4)** (new band; preschool): a 3 by 3 map where any square in the named row or column is right; `order` 9, 1, 2, …, 8 and `entryLevels: [9]`, Treasure Map on the preschool Rainbow Meadow page. Shares the headers with batch 1 and follows ID 8 (IDs stay contiguous).** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
+
+Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, the README row, and the lands and registry tests.
+
+Proof: new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests; one play of level 9 at preschool with one wrong line then two right; `fingerdemo` at 9; the preschool Rainbow Meadow page screenshot.

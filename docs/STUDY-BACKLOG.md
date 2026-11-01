@@ -130,7 +130,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Sing-Along Barn (`sing-along-barn`) | designed | Researched 2026-11-01 ([PR #1098](https://github.com/rjdunlap/neo/pull/1098)); tunes with their own notes (Twinkle, Wheels on the Bus), level 7 *Finish the line* and level 8 *Which one finishes it?* queued; Itsy Bitsy's second line and a hen friend stay in the dive | [Dive](deep-dives/sing-along-barn.md) |
 | Sink or Float (`sink-float`) | designed | Researched 2026-11-01 ([PR #1101](https://github.com/rjdunlap/neo/pull/1101)); fresh things and level 9 *Big and small* queued; level 10 *Salty or fresh* definition queued; level 11 (Build a Boat) defined after the Garden Raft definition | [Dive](deep-dives/sink-float.md) |
 | Sudoku Garden (`sudoku-garden`) | designed | [Dive](deep-dives/sudoku-garden.md) |
-| Treasure Map (`treasure-map`) | research | [Game tracker](deep-dives/README.md#tracker) |
+| Treasure Map (`treasure-map`) | designed | Researched 2026-11-01 ([PR #1103](https://github.com/rjdunlap/neo/pull/1103)); fresh maps and true hints, levels 6–8 (*Write the card*, *How far?*, *Slide it*) and the level 9 preschool opening queued; *Across the river* (levels 10–11) definition queued | [Dive](deep-dives/treasure-map.md) |
 | Word Search (`word-search`) | research | [Game tracker](deep-dives/README.md#tracker) |
 
 ## Dependencies outside research dispatch
