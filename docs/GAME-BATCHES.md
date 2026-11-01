@@ -1348,3 +1348,19 @@ Proof: new-level tier with `order`: typecheck, unit tests including order, lands
 Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests for the rhyme table and seeded side, one play of level 8 with one wrong picture, a second for the glow, then the rhyme, one portrait screenshot, `fingerdemo` at 8.
+
+### sink-float 1: Fresh things
+
+- **`sink-float`, Fresh things (dive slice 1)** (extends the built game; fresh content in levels 1–4 and 6): feather, marble, wooden log, ice cube and paperclip with `thingArt`, journal lines and ordering, and property tests replacing the pinned-draws test. [Dive](deep-dives/sink-float.md#build-slices-in-order)
+
+Files expected: `src/games/sink-float/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, the journal source and tests, `docs/GAMES.md`.
+
+Proof: existing-interaction tier plus art: typecheck, the game's rule tests and the journal tests, one filtered regression play of level 4 on a seed with a new thing and of level 6 with a new surprise, one portrait screenshot of the new art in the tank, one build (journal and voice lines are shared). Bot unchanged.
+
+### sink-float 2: Big and small
+
+- **`sink-float`, Level 9 *Big and small* (dive slice 2)**, after batch sink-float 1 (the log and pebble art; converts the plans to a table keyed by level ID and moves the bands to `order`; level ID 8 stays reserved for Garden Raft; new level): three pairs of one material at two sizes; the big one is tested, then she guesses the small one, then tests it; guesses are never misses. [Dive](deep-dives/sink-float.md#build-slices-in-order)
+
+Files expected: `src/games/sink-float/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the lands and registry tests only if their expectations change.
+
+Proof: new-level tier with `order`: typecheck, unit tests including order, lands and the keyed-plan clamp, one play of level 9 at school with a surprise guess, `fingerdemo` at 9, one portrait screenshot.
