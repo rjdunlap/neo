@@ -1054,3 +1054,43 @@ Proof: new-interaction tier: typecheck, rule tests, one play of level 6 with one
 Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests, one play of level 7 with one wrong card and its turn, a second for the glow, then the right card, one portrait screenshot of the three cards, `fingerdemo` at 7, one build for the render textures.
+
+### picture-graph 1: Fair meadows and a visible first pick
+
+- **`picture-graph`, Fair meadows, a visible first pick and hints that show why (dive slice 1)** (existing-game fix; pre-K and school): the placement fixes for levels 1–3 and 7, a visible first pick on every level, hints that show why, the `bear` critter and two seeded backdrops. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
+
+Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/`, `src/content/voice-script.ts`, `docs/GAMES.md`.
+
+Proof: existing-game fix tier: typecheck, rule tests including the placement sweep for levels 1–3 and 7 and the "how many more" distractor, one filtered regression play at levels 4 and 7 with a double tap on one bar and two wrong "how many more" answers; `fingerdemo` only if the bot's taps change.
+
+### picture-graph 2: Level 8 Line them up
+
+- **`picture-graph`, Level 8, *Line them up* (dive slice 2)** (new interaction; pre-K and school): she lines real things (shells, stones, driftwood, feathers; never litter) in rows by kind and reads which row has more; first in pre-K's `order`, declared in `entryLevels`, second-tier in school's order after level 2. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
+
+Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests including order, entry and lands, one scripted play at pre-K and one at school with one wrong row and the matching-lines hint, one portrait screenshot of the tray, `fingerdemo` at 8, one build for the art and voice.
+
+### picture-graph 3: Level 9 A key of five
+
+- **`picture-graph`, Level 9, *A key of five* (dive slice 3)**, after batch picture-graph 2 (independent except for the level number) (new level on an existing interaction): a keyed graph where one mark stands for five, with a one-per-mark bar and the blocks answer; school. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
+
+Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-level tier: typecheck, rule tests, one play of level 9 with a one-per-mark bar and the blocks answer, `fingerdemo` at 9, one portrait screenshot.
+
+### picture-graph 4: Level 10 Two pictures, one meadow
+
+- **`picture-graph`, Level 10, *Two pictures, one meadow* (dive slice 4)**, after batch picture-graph 1 (the first-pick lift) (new interaction): she compares two different-looking pictures of one meadow and picks the pair that show the same counts, with a trap picture that does not. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
+
+Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, rule tests, one play with the trap then the right pair, one portrait screenshot, `fingerdemo` at 10.
+
+### picture-graph 5: Level 11 What the graph can say
+
+- **`picture-graph`, Level 11, *What the graph can say* (dive slice 5)**, after batch picture-graph 4 (new interaction): every claim is decided by what is on the screen; she stamps a claim as what the graph says or what it can't say (it does not measure that), never a guess about another meadow. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
+
+Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, rule tests, one play with one wrong can't-say stamp and the glow, one portrait screenshot, `fingerdemo` at 11, one build for the voice. A person check stays open.

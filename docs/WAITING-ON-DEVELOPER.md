@@ -59,6 +59,12 @@ Penguin Slide dive (2026-10-31), one call that waits on you; the build slices go
 | --- | --- | --- |
 | **A Penguin Slide toddler opening?** | A one-slide 4×3 pond for `toddler` (the fish always one straight slide away), or keep the game preschool and up. Adds the `toddler` band, so the band audit comes with it | [Penguin Slide dive](deep-dives/penguin-slide.md#younger-band-openings) |
 
+Picture Graph dive (2026-11-01), one call that waits on you; the build slices go ahead without it ([the dive](deep-dives/picture-graph.md#younger-band-openings)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **A Picture Graph preschool opening on level 8 *Line them up*?** | Adds the `preschool` band, so the band audit comes with it. Recommended: yes, after level 8 is built and played at pre-K, with roadmap chunk 18's preschool batch | [Picture Graph dive](deep-dives/picture-graph.md#younger-band-openings) |
+
 Peekaround Island dive (2026-10-31), three calls that wait on you; the build slices that do not need them go ahead ([the dive](deep-dives/peekaround-island.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
