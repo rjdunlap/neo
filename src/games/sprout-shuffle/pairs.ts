@@ -202,7 +202,8 @@ export class SproutPairs implements Game {
     this.grows.push(grow);
     sfx.pluck(2 + k * 2, 0.2);
     await this.ctx.tw.to(p, { v: 1 }, { duration: 0.5, delay, ease: ease.outBack });
-    if (!this.alive) return;
+    // A newer grow of the same bud (a second tap) supersedes this one.
+    if (!this.alive || !this.grows.includes(grow)) return;
     this.grows = this.grows.filter((g) => g !== grow);
     if (!card.destroyed) card.open(look, color, 1);
   }
@@ -309,9 +310,13 @@ export class SproutPairs implements Game {
   askForHint() {
     if (this.finished || this.busy) return;
     if (!this.showMeUsed) { this.showMeUsed = true; this.hints++; }
+    const shown = this.checkButton.visible;
     for (const i of [0, 1, 2]) this.setChosen(i, this.setup.accepted.has(i));
-    this.checkButton.scale.set(1.15);
-    void this.ctx.tw.to(this.checkButton.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outElastic });
+    // A leaf that just appeared already springs in; only a leaf already there pulses.
+    if (shown) {
+      this.checkButton.scale.set(1.15);
+      void this.ctx.tw.to(this.checkButton.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outElastic });
+    }
     void this.ctx.say('sprout.help.pairs');
   }
 
