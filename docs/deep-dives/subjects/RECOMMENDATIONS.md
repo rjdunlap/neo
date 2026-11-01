@@ -828,7 +828,7 @@ The [ordered slices](spelling-sentences.md#build-slices-in-order) stop this sess
 | Candidate | Next action | Complete slice / boundary |
 | --- | --- | --- |
 | **PW1 Rhyme Riddles** · pre-K, school | define (docs only) | Rhyme Time levels 5–7: a rhyme clue and a meaning clue about one of three pictures, both needed; level 7 has her build the riddle for the pet. Rule tests: exactly one picture fits both, each clue alone leaves two |
-| **PW2 Finish the line** · L, T, P | define after decision 2 (reviewed verses) | A Sing-Along Barn mode: the tune stops before the rhyming word and she touches the picture that finishes it; no choice at lap |
+| **PW2 Finish the line** · L, T, P | designed 2026-11-01 as Sing-Along Barn levels 7–8 ([dive](../sing-along-barn.md#build-slices-in-order)); decision 2 answered by the October 23 S1 session source check | A Sing-Along Barn mode: the tune stops before the rhyming word and she touches the picture that finishes it; no choice at lap |
 | **PW3 Same first sound** · P, K | define after decision 5 (owner) | Tap the pictures that begin like the twister the pet says; never graded speech |
 | **PW4 Two Meanings** · school, upper school | sketch; after a reviewed word list | A sentence fits two pictures; no pun joke below about 7 |
 | **PW5 Literal or meant?** · upper school | sketch after PW4 | Idiom beside a literal picture (L.5.5b) |

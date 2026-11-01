@@ -1312,3 +1312,27 @@ Proof: new-interaction tier: typecheck, unit tests including the four-view layou
 Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the lands and registry band tests only if their expectations change.
 
 Proof: new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests, one play of level 7 at preschool with a Flat friend at the catch first, `fingerdemo` at 7, the preschool Tinker Lab page screenshot.
+
+### sing-along-barn 1: Tunes with their own notes
+
+- **`sing-along-barn`, Twinkle and Wheels on the Bus (dive slice 1)** (extends the built game; two new tunes): the test-guarded exception for tunes with their own notes, the two tunes, the name placeholder, the two-row chooser and the voice lines; the notes source-checked from a score and cited in GAMES. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
+
+Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, `src/audio/sfx.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: existing-interaction tier plus layout: typecheck, the game's rule tests (exception allow-list, one note per syllable, answers, the placeholder), one filtered play at level 5 choosing Twinkle and at level 1 on a Wheels seed, one portrait screenshot of the ten-card chooser, `fingerdemo` at 5, one build for the voice lines and `sfx` change.
+
+### sing-along-barn 2: Level 7 Finish the line
+
+- **`sing-along-barn`, Level 7 *Finish the line* (dive slice 2)**, after batch sing-along-barn 1 (shares the tune tables; Twinkle's gap word; new level): the tune stops before the rhyming word and a picture waits at the door; any touch sings it. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
+
+Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the lands and registry tests only if their expectations change.
+
+Proof: new-level tier with `order`: typecheck, unit tests including order, lands and the gap table, one play of level 7 at toddler mashing through the pause, one portrait screenshot of the picture at the door, `fingerdemo` at 7, one build.
+
+### sing-along-barn 3: Level 8 Which one finishes it?
+
+- **`sing-along-barn`, Level 8 *Which one finishes it?* (dive slice 3)**, after batch sing-along-barn 2 (shares `LEVELS` and the gap table; new interaction): two pictures at the pause, only the rhyming word finishes the line, a non-rhyming pick is a miss. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
+
+Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, rule tests for the rhyme table and seeded side, one play of level 8 with one wrong picture, a second for the glow, then the rhyme, one portrait screenshot, `fingerdemo` at 8.
