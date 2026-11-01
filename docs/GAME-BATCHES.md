@@ -372,7 +372,7 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### size-parade 4: Hidden heights
 
-- **`size-parade`, level 13 *Hidden heights*, slice 9** (new interaction, plus a portrait screenshot): boots behind a fence, a tapped pair swaps only when out of order, a gate that opens on a sorted line, a bot that sorts by pair tests; school `order [7, 8, 12, 13, 15]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
+- **`size-parade`, level 13 *Hidden heights*, slice 9** (landed 2026-11-01, PR #1083) (new interaction, plus a portrait screenshot): boots behind a fence, a tapped pair swaps only when out of order, a gate that opens on a sorted line, a bot that sorts by pair tests; school `order [7, 8, 12, 13, 15]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
