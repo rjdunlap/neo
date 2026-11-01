@@ -41,3 +41,9 @@
 - [PR #1094](https://github.com/rjdunlap/neo/pull/1094), branch `claude/dive-read-do`: [dive](../deep-dives/read-do.md). Two builds queued (batch read-do 1, fresh words and pictures; batch read-do 2, levels 4–6 *Capital and stop*) and definitions queued for *Make the sign* (level 7) and *Mend the sign* (levels 8–9); tracker, READY, batches, backlog, ideas and the two subject studies updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the two builds and two definitions.
+
+## 2026-11-01 — Rhyme Time deep dive (docs only)
+
+- [PR #1095](https://github.com/rjdunlap/neo/pull/1095), branch `claude/dive-rhyme-time`: [dive](../deep-dives/rhyme-time.md). Four builds queued (batches rhyme-time 1–4: fresh families, level 8 *Silly pairs*, the level 9 preschool opening, level 10 *Rhyme baskets*); *Change the start* stays a sketch; tracker, READY, batches, backlog, ideas, the poetry study and device checks updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the four builds and the two device checks ([DEVICE-CHECKS](../DEVICE-CHECKS.md#rhyme-time-dive-2026-11-01-proposed-nothing-built)).
