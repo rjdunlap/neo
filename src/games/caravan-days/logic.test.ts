@@ -6,6 +6,8 @@ import {
   loaded, nextLoad, nextPlanMove, overlaps, planPlan, planStart, reachable, reachPlan, roadLayout, safePlan, SKIN, sunPoints,
   swapPlan, swapStart, pickOffer, goSwap, swapHint, offersAt, worthPlan, worthStart, nextWorthMove, sell, total, better, planFor,
   type SwapState, type WorthPlan, type WorthStop,
+  passPlan, days, goPass, passHint, quicker, nextPassMove, passStart, DAY_CARDS, DAY, wellsPlan, stretches, minWells, checkWells,
+  minimalPlacements, ghostFor, wellHint, nextWellMove, MARK_MIN, type PassRoad, type WellRoad,
   tapBale, tapCamel, tapStop, Tally, MIN_TARGET, type CaravanMap, type LoadPlan, type LoadState, type PlanState, type Rect,
 } from './logic';
 
@@ -670,6 +672,210 @@ describe('levels 4-5: spoken slots', () => {
       const p = worthPlan(new Rng(s));
       for (const stop of [1, 2, 3] as const) for (const load of [0, 1] as const) {
         expect(SCRIPT[`cd.shells.${total(p, load, stop)}` as keyof typeof SCRIPT]).toBeTruthy();
+      }
+    }
+  });
+});
+
+const subsetsOf = (sites: readonly number[]): number[][] => {
+  const out: number[][] = [];
+  for (let m = 0; m < 1 << sites.length; m++) out.push(sites.filter((_, i) => m & (1 << i)));
+  return out;
+};
+const ROADS: PassRoad[] = ['pass', 'sand'];
+
+describe('level 6: mountains or sand', () => {
+  it('plans: two cases, bounded days, one case each way, snow both ways, deterministic', () => {
+    const snowWhenPass = new Set<number>();
+    const snowWhenSand = new Set<number>();
+    for (const s of SEEDS) {
+      const plan = passPlan(new Rng(s));
+      expect(plan.maps).toHaveLength(2);
+      let passFirst = 0;
+      for (const m of plan.maps) {
+        const p = days(m, 'pass');
+        const d = days(m, 'sand');
+        expect(m.passLegs + m.snow).toBe(p);
+        expect(p).toBeGreaterThanOrEqual(3);
+        expect(p).toBeLessThanOrEqual(6);
+        expect(d).toBeGreaterThanOrEqual(4);
+        expect(d).toBeLessThanOrEqual(6);
+        expect(m.sandLegs.length).toBeGreaterThanOrEqual(2);
+        expect(m.sandLegs.length).toBeLessThanOrEqual(3);
+        for (const l of m.sandLegs) { expect(l).toBeGreaterThanOrEqual(1); expect(l).toBeLessThanOrEqual(2); expect(l).toBeLessThanOrEqual(SKIN); }
+        expect(1).toBeLessThanOrEqual(SKIN);
+        expect(p).not.toBe(d);
+        if (p < d) { passFirst++; if (m.snow) snowWhenPass.add(s); } else if (m.snow) snowWhenSand.add(s);
+        expect(DAY_CARDS).toContain(p);
+        expect(DAY_CARDS).toContain(d);
+      }
+      expect(passFirst).toBe(1);
+      expect(passPlan(new Rng(s))).toEqual(plan);
+    }
+    expect(snowWhenPass.size).toBeGreaterThan(0);
+    expect(snowWhenSand.size).toBeGreaterThan(0);
+  });
+
+  it('verdicts: right iff the guess is the chosen road\'s days; wrong names the days and direction', () => {
+    for (const s of SEEDS) {
+      for (const m of passPlan(new Rng(s)).maps) {
+        for (const road of ROADS) {
+          const d = days(m, road);
+          for (const g of DAY_CARDS) {
+            const r = goPass(m, road, g);
+            if (g === d) expect(r).toEqual({ right: true });
+            else expect(r).toEqual({ right: false, days: d, short: g < d });
+          }
+          expect(passHint(m, road)).toEqual({ road, days: d });
+        }
+        expect(passHint(m, null)).toEqual({ road: 'pass', days: days(m, 'pass') });
+      }
+    }
+  });
+
+  it('the ghost finger reaches go within three steps on the quicker road and its days', () => {
+    for (const s of SEEDS) {
+      for (const m of passPlan(new Rng(s)).maps) {
+        const st = passStart();
+        const q = quicker(m);
+        expect(days(m, q)).toBe(Math.min(days(m, 'pass'), days(m, 'sand')));
+        let steps = 0;
+        for (;;) {
+          const mv = nextPassMove(m, st);
+          if ('go' in mv) break;
+          if ('road' in mv) st.road = mv.road; else st.guess = mv.card;
+          expect(++steps).toBeLessThanOrEqual(2);
+        }
+        expect(st.road).toBe(q);
+        expect(st.guess).toBe(days(m, q));
+        expect(goPass(m, st.road!, st.guess!)).toEqual({ right: true });
+      }
+    }
+  });
+});
+
+describe('level 7: a well every day\'s walk', () => {
+  it('plans: lengths, sites, validity, fewest wells, a choice of placements, deterministic', () => {
+    for (const s of SEEDS) {
+      const plan = wellsPlan(new Rng(s));
+      expect(plan.roads).toHaveLength(2);
+      for (const r of plan.roads) {
+        expect(r.length).toBeGreaterThanOrEqual(12);
+        expect(r.length).toBeLessThanOrEqual(16);
+        expect(r.sites.length).toBeGreaterThanOrEqual(5);
+        expect(r.sites.length).toBeLessThanOrEqual(7);
+        expect(new Set(r.sites).size).toBe(r.sites.length);
+        r.sites.forEach((x, i) => {
+          expect(x).toBeGreaterThanOrEqual(2);
+          expect(x).toBeLessThanOrEqual(r.length - 2);
+          if (i) expect(x - r.sites[i - 1]).toBeGreaterThanOrEqual(2);
+        });
+        expect(checkWells(r, r.sites).ok).toBe(true);
+        expect(minWells(r)).toBeGreaterThanOrEqual(2);
+        expect(minWells(r)).toBeLessThanOrEqual(r.sites.length - 2);
+      }
+      expect(plan.roads.some((r) => minimalPlacements(r).length > 1)).toBe(true);
+      expect(wellsPlan(new Rng(s))).toEqual(plan);
+    }
+  });
+
+  it('enumerated over every subset: verdict, fewest, minimal placements, ghost, hint, ghost-finger', () => {
+    for (const s of SEEDS.slice(0, 100)) {
+      for (const r of wellsPlan(new Rng(s)).roads) {
+        const subs = subsetsOf(r.sites);
+        const okOf = (w: number[]) => stretches(r, w).every(([a, b]) => b - a <= DAY);
+        const oks = subs.filter(okOf);
+        const min = Math.min(...oks.map((w) => w.length));
+        expect(minWells(r)).toBe(min);
+        const minimal = oks.filter((w) => w.length === min);
+        const key = (w: number[]) => w.join(',');
+        expect(minimalPlacements(r).map(key).sort()).toEqual(minimal.map(key).sort());
+        for (const w of subs) {
+          const c = checkWells(r, w);
+          expect(c.ok).toBe(okOf(w));
+          if (c.ok) expect(c.extra).toBe(w.length === min ? 0 : w.length - min);
+          else {
+            const first = stretches(r, w).find(([a, b]) => b - a > DAY)!;
+            expect([c.from, c.to]).toEqual(first);
+          }
+          const g = ghostFor(r, w);
+          expect(minimal.map(key)).toContain(key(g));
+          const shared = (p: number[]) => p.filter((x) => w.includes(x)).length;
+          expect(shared(g)).toBe(Math.max(...minimal.map(shared)));
+          // the hint from here
+          let cur = w.slice();
+          if (c.ok) expect(wellHint(r, w)).toEqual({ done: true });
+          let steps = 0;
+          while (!checkWells(r, cur).ok) {
+            const h = wellHint(r, cur);
+            expect('site' in h).toBe(true);
+            if (!('site' in h)) break;
+            expect(r.sites).toContain(h.site);
+            expect(cur).not.toContain(h.site);
+            cur = [...cur, h.site];
+            expect(++steps).toBeLessThanOrEqual(r.sites.length);
+          }
+          expect(checkWells(r, cur).ok).toBe(true);
+          expect(wellHint(r, cur)).toEqual({ done: true });
+        }
+        // the ghost finger from nothing, and from a wrong start
+        for (const start of [[], r.sites.slice(0, 2)]) {
+          let cur = start.slice();
+          let n = 0;
+          for (;;) {
+            const mv = nextWellMove(r, cur);
+            if ('done' in mv) break;
+            cur = cur.includes(mv.site) ? cur.filter((x) => x !== mv.site) : [...cur, mv.site];
+            expect(++n).toBeLessThanOrEqual(2 * r.sites.length);
+          }
+          expect(minimal.map(key)).toContain(key(cur.slice().sort((a, b) => a - b)));
+        }
+      }
+    }
+  });
+});
+
+describe('levels 6-7: layout', () => {
+  it('planFor names the levels', () => {
+    expect(planFor(6).id).toBe('pass');
+    expect(planFor(7).id).toBe('wells');
+  });
+
+  it('every target is big, inside, clear of the corners and each other at every view', () => {
+    for (const [name, v] of Object.entries(VIEWS)) {
+      for (const s of SEEDS.slice(0, 10)) {
+        for (const level of [6, 7] as const) {
+          const plan = level === 6 ? passPlan(new Rng(s)) : wellsPlan(new Rng(s));
+          for (const index of [0, 1]) {
+            const lay = roadLayout(level, plan, v, index);
+            const tag = `${name} L${level} seed ${s} #${index}`;
+            expect(lay, tag).not.toBeNull();
+            if (!lay) continue;
+            const rects: Rect[] = [...(lay.bands ?? []), ...(lay.cards ?? []), ...(lay.sites ?? []), ...(lay.stick ? [lay.stick] : []), ...(lay.go ? [lay.go] : [])];
+            if (level === 6) { expect(lay.bands, tag).toHaveLength(2); expect(lay.cards, tag).toHaveLength(DAY_CARDS.length); }
+            if (level === 7) {
+              expect(lay.sites, tag).toHaveLength((plan as ReturnType<typeof wellsPlan>).roads[index].sites.length);
+              expect(lay.stick, tag).toBeTruthy();
+            }
+            expect(lay.go, tag).toBeTruthy();
+            for (const r of rects) {
+              expect(r.w, tag).toBeGreaterThanOrEqual(MIN_TARGET);
+              expect(r.h, tag).toBeGreaterThanOrEqual(MIN_TARGET);
+              expect(r.x, tag).toBeGreaterThanOrEqual(0);
+              expect(r.y, tag).toBeGreaterThanOrEqual(0);
+              expect(r.x + r.w, tag).toBeLessThanOrEqual(v.w);
+              expect(r.y + r.h, tag).toBeLessThanOrEqual(v.h);
+              for (const c of corners(v)) expect(overlaps(r, c), tag).toBe(false);
+            }
+            for (let i = 0; i < rects.length; i++) for (let j = i + 1; j < rects.length; j++) expect(overlaps(rects[i], rects[j]), tag).toBe(false);
+            if (level === 7) {
+              const road = (plan as ReturnType<typeof wellsPlan>).roads[index] as WellRoad;
+              const marks = lay.marks!;
+              expect(marks, tag).toHaveLength(road.length + 1);
+              for (let i = 1; i < marks.length; i++) expect(Math.hypot(marks[i].x - marks[i - 1].x, marks[i].y - marks[i - 1].y), tag).toBeGreaterThanOrEqual(MARK_MIN);
+            }
+          }
+        }
       }
     }
   });
