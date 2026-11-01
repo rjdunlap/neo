@@ -1224,3 +1224,51 @@ Proof: new-band tier: typecheck, unit tests including the lands and registry ban
 Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the browser harness's Rhyme Time case, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests, one scripted play with a wrong basket, a second for the glow and an empty-space drop, one portrait screenshot, `fingerdemo` at 10.
+
+### secret-code 1: Fair rows, a hint that keeps up and three doors
+
+- **`secret-code`, Fair rows, a hint that keeps up and three doors (dive slice 1)** (extends the built game; no new level): misses counted only from tries on screen, the refreshed hint, the "no more of that stone" line and three seeded doors. [Dive](deep-dives/secret-code.md#build-slices-in-order)
+
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: existing-game fix tier: typecheck, the game's rule tests including the hidden-row case and the refreshed hint, one filtered regression play of level 5 in landscape with seven tries and a stone ruled out only by a hidden row (no miss), one portrait screenshot of the gate; bot unchanged, no `fingerdemo`.
+
+### secret-code 2: Level 8 Four slots, a repeat
+
+- **`secret-code`, Level 8 *Four slots, a repeat* (dive slice 2)**, after batch secret-code 1 (shares the plan table and the visible-rows rule; new level): four slots with a repeated colour. [Dive](deep-dives/secret-code.md#build-slices-in-order)
+
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-level tier: typecheck, rule tests, one play of level 8 to its sticker, `fingerdemo` at 8.
+
+### secret-code 3: Level 9 Be the door
+
+- **`secret-code`, Level 9 *Be the door* (dive slice 3)**, after batch secret-code 1 (new interaction): she chooses the code and marks the pet's tries with gray, yellow and green discs; pre-K and school `order` gain 9. [Dive](deep-dives/secret-code.md#build-slices-in-order)
+
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests including `order`, one scripted play of level 9 with a made code, one wrong mark and a second for the glow, then to the sticker, one portrait screenshot with the mark discs, `fingerdemo` at 9.
+
+### secret-code 4: Level 10 One slot, the preschool opening
+
+- **`secret-code`, Level 10 *One slot*, the preschool opening (dive slice 4; chunk 18 preschool entry)**, after batch secret-code 1 (new band): one slot, a tap and the key give a green or a crossed-out gray at once; Secret Code joins Puzzle Peaks' preschool page. [Dive](deep-dives/secret-code.md#build-slices-in-order)
+
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-band tier: typecheck, unit tests including the lands and registry band tests, one play of level 10 at preschool with one crossed-out stone tried, `fingerdemo` at 10, the preschool Puzzle Peaks page screenshot.
+
+### secret-code 5: Level 11 A bigger detective door
+
+- **`secret-code`, Level 11 *A bigger detective door* (dive slice 5)**, after batch secret-code 2 (shares the order; new level): a larger deduction door built on level 8's four slots. [Dive](deep-dives/secret-code.md#build-slices-in-order)
+
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-level tier with a layout check: typecheck, rule tests (uniqueness and the time bound), one play of level 11 with one contradicting try, one portrait screenshot of four shown rows, `fingerdemo` at 11.
+
+### secret-code 6: Couch course The Code Doors
+
+- **`secret-code`, Couch course *The Code Doors* (dive slice 6)**, after batch secret-code 1 (couch catalog): five frozen codes at levels 4–6, par from the fixed reference solver (`nextMove`) per the October 23 rule. [Dive](deep-dives/secret-code.md#build-slices-in-order)
+
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/couch/course.ts`, the couch catalog, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: couch catalog tier: course tests, `BROWSER_SUITE=couchgames` filtered to Secret Code.

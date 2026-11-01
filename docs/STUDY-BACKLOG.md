@@ -125,7 +125,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Quick Tricks (`quick-tricks`) | designed | [Dive](deep-dives/quick-tricks.md) |
 | Read & Do (`read-do`) | designed | Researched 2026-11-01 ([PR #1094](https://github.com/rjdunlap/neo/pull/1094)); fresh words and pictures, levels 4–6 *Capital and stop*, and definitions for *Make the sign* (level 7) and *Mend the sign* (levels 8–9) queued | [Dive](deep-dives/read-do.md) |
 | Rhyme Time (`rhyme-time`) | designed | Researched 2026-11-01 ([PR #1095](https://github.com/rjdunlap/neo/pull/1095)); fresh families, level 8 *Silly pairs*, the level 9 preschool opening and level 10 *Rhyme baskets* queued; *Change the start* stays a sketch | [Dive](deep-dives/rhyme-time.md) |
-| Secret Code (`secret-code`) | research | [Game tracker](deep-dives/README.md#tracker) |
+| Secret Code (`secret-code`) | designed | Researched 2026-11-01 ([PR #1096](https://github.com/rjdunlap/neo/pull/1096)); fair rows and a refreshed hint, levels 8–11 (*Four slots*, *Be the door*, the preschool opening, a bigger detective door) and the couch course queued; maker/breaker definition queued after level 9 | [Dive](deep-dives/secret-code.md) |
 | Shape Buddies (`shape-buddies`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Sing-Along Barn (`sing-along-barn`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Sink or Float (`sink-float`) | research | [Game tracker](deep-dives/README.md#tracker) |

@@ -16,6 +16,12 @@
 - Not run: offline check, level-1 finger demo. Source check of the "went in / came out" and "one more / two more" wording against CCSS 3.OA.D.9, 4.OA.C.5 and England Year 6 not done (open).
 - Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#rule-machine-levels-12-algebra-balance-ab1-2026-11-01)): the device and person checks there.
 
+## 2026-11-01 — Secret Code deep dive (docs only)
+
+- [PR #1096](https://github.com/rjdunlap/neo/pull/1096), branch `claude/dive-secret-code`: [dive](deep-dives/secret-code.md). Six builds queued (batches secret-code 1–6: fair rows and a refreshed hint, level 8 *Four slots*, level 9 *Be the door*, the level 10 preschool opening, level 11 *A bigger detective door*, the couch course *The Code Doors*) and the maker/breaker definition after level 9; tracker, READY, batches, backlog, ideas, roadmap and device checks updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the six builds and the three device checks ([DEVICE-CHECKS](DEVICE-CHECKS.md#secret-code-dive-2026-11-01-proposed-levels-not-yet-built)).
+
 ## 2026-11-01 — Rhyme Time deep dive (docs only)
 
 - [PR #1095](https://github.com/rjdunlap/neo/pull/1095), branch `claude/dive-rhyme-time`: [dive](deep-dives/rhyme-time.md). Four builds queued (batches rhyme-time 1–4: fresh families, level 8 *Silly pairs*, the level 9 preschool opening, level 10 *Rhyme baskets*); *Change the start* stays a sketch; tracker, READY, batches, backlog, ideas, the poetry study and device checks updated.
@@ -87,12 +93,6 @@
 
 - [PR #1082](https://github.com/rjdunlap/neo/pull/1082), branch `claude/dive-peekaround-island`: [dive](deep-dives/peekaround-island.md). Four slices queued ([batches](GAME-BATCHES.md#peekaround-island-1-truthful-support-and-real-choices): truthful support and real choices; level 5 *Who will be in front?*; level 6 *Who can't see it?*; level 7 *What does the duck see?*); *From the sky* queued as a definition; tracker, READY, backlog, ideas and subject back-pointers updated; three decisions in WAITING-ON-DEVELOPER.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.
-
-## 2026-10-31 — Light Lab deep dive (docs only)
-
-- [PR #1081](https://github.com/rjdunlap/neo/pull/1081), branch `claude/dive-light-lab`: [dive](deep-dives/light-lab.md). Four slices queued ([batches](GAME-BATCHES.md#light-lab-1-fair-starts-nearest-hints-and-a-sun-on-either-side): fair starts, nearest hints and a sun on either side; couch course Sunbeam Run; levels 8–9 *Place a mirror* and *Two to place*; level 10 *Where's the mirror?*); two definitions queued; tracker, READY, backlog and ideas updated.
-- Ran: a throwaway probe of the generator (400 seeds a level, not committed) that found starts often nearly solved at levels 4–7 and the hint following the built path rather than the nearest solution in 2–3% of boards at levels 6–7; `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites; nothing played (docs tier, nothing built). Open: the builds.
 
 ## Coverage summary

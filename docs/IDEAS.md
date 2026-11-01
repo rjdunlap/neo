@@ -300,7 +300,7 @@ Proposals for the couch route, written after the first grown-up playtest (2026-1
 | Idea (after) | Play and skill | Smallest useful version and controls | Effort |
 | --- | --- | --- | --- |
 | **Ice Blocks** (Sokoban, Pengo; a mode of Penguin Slide) | The penguin pushes a block of ice that slides until it hits something; park it to open a path | **Level 6 built 2026-10-10** on Penguin Slide's solver (one block, one fish). Still open: a second block level (two fish or soft snow) and a third couch course on frozen ponds with blocks | S–M |
-| **More par courses** (built games) | Light Lab (fewest turns), Robot Path (fewest steps), Memory Match (fewest flips on a fixed board), Secret Code (guesses) | Each needs a frozen board list, a solver or search for the minimum, and a `couchcourse` entry. Secret Code has no obvious exact minimum; choose a par rule before building | S each |
+| **More par courses** (built games) | Light Lab (fewest turns), Robot Path (fewest steps), Memory Match (fewest flips on a fixed board), Secret Code (guesses) | Each needs a frozen board list, a solver or search for the minimum, and a `couchcourse` entry. Secret Code uses the October 23 fixed reference-solver par (the [dive](deep-dives/secret-code.md#build-slices-in-order)'s batch secret-code 6, *The Code Doors*) | S each |
 | **Snowball Merge extensions** (finite first slice built; [integration](archive/SESSION-CLEANUP-2026-10-14.md)) | Seeded spawning and controller play beyond the finite merging trays | A seeded sequence and a "reach 512" course remain proposals; do not rebuild the 16/32/64 first slice | S |
 | **Mend the sign / school, upper school** (sketch, researched 2026-10-22) | The pet acts out the sign as printed; she takes a word out, puts one in at a gap, swaps one | Edit verbs on touch tiles at 100 units or more; levels 8–9 in the Read & Do dive, see [dive](deep-dives/read-do.md). See [the study](deep-dives/subjects/keyboarding-editing.md) | M |
 | **Keys as aliases, Key smash, Find her letters / all** (proposals, researched 2026-10-22) | A letter tile accepts its own key; any key on a laptop makes a shape and says a letter; find her name's letters on a real keyboard | Aliases never required; key smash needs a shortcut-lockout check and has no evidence; the card gives no posture advice without a reviewer | S |
@@ -829,7 +829,7 @@ No second row for the same game. [Buddy Delivery](#candidates), Complementary jo
 | Bowser Party's one seat as the weather; Bluey's Keepy Uppy†, where the father's fans make the balloon harder | **Keepy Uppy**, Bounce Back | The **breeze seat** seed |
 | Twenty questions; Guess Who? (**recalled**) | **Who Is It?** (board games table) | **Mystery Friend**, below this table |
 | Wii Party's Friend Connection and Buddy Quiz; Match! That! Item! | None | **Same Pick** |
-| Mastermind's maker and breaker | **Secret Code** | A mode: seat 1 sets the code, the machine marks each guess, seat 2 breaks it, then swap (**Make One for Me**) |
+| Mastermind's maker and breaker | **Secret Code** | A mode: seat 1 sets the code, the machine marks each guess, seat 2 breaks it, then swap (**Make One for Me**); level 9 *Be the door* is the solo half ([dive](deep-dives/secret-code.md#build-slices-in-order)) |
 | Wii Party's Hide and Hunt | Peekaboo Barn, Photo Safari | The hider is a person: the **Chime Hunt** seed, and **Count and Hide**, where the screen counts |
 | Wii Party's Time Bomb and Word Bomb; Pass the Parcel (Bluey†) | **Pet Says** (its freeze dance) | **Pass the Pet**, for a circle of three or more |
 | Wii Party U's Lost-and-Found Square | Peekaround Island (position words) | **Where Am I?**, a variant of Mission Cards |
@@ -868,7 +868,7 @@ No second row for the same game. [Buddy Delivery](#candidates), Complementary jo
 | Game | The two roles | What it adds |
 | --- | --- | --- |
 | Penguin Slide, Ferry Jam | One owns left and right (the horizontal boats), the other up and down (the vertical ones) | Making Faces' split; the existing solvers give par and hints, and the couch's seeded twin boards show the pattern; see the [Ferry Jam dive](deep-dives/ferry-jam.md) |
-| Secret Code | Maker and breaker | Make One for Me |
+| Secret Code | Maker and breaker | Make One for Me (solo half: level 9 *Be the door*, [dive](deep-dives/secret-code.md#build-slices-in-order)) |
 | Pattern Train | Take turns adding a car; "continue my pattern" | Co-creation of a pattern |
 | Market Stall, Lemonade Stand | Shopkeeper and customer swap; she is the expert, and a task card tells the grown-up to pay a shell short, a mistake she can catch | Teaching the grown-up (the teachable-agent idea, recalled) |
 | Pet Kitchen | One cuts and one serves; the pieces must be fair | Fractions as sharing between two people |

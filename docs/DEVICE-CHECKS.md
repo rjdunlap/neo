@@ -1,5 +1,11 @@
 # Needs a person or a device
 
+## Secret Code (dive, 2026-11-01; proposed, levels not yet built)
+
+- [ ] Once level 10 is built: does a four-year-old read the gray cross as "not this one" without the card?
+- [ ] Once level 9 is built: does marking the pet's try feel like being the boss of the door, or like a test?
+- [ ] On an iPad in daylight: are the faint hint stones noticed?
+
 ## Rhyme Time (dive, 2026-11-01; proposed, nothing built)
 
 - [ ] On the iPad: does device speech say *dog*, *log* and *frog* with one vowel, and *sock*, *clock* and *rock* with one vowel (the rhyme pairs rely on it)?
