@@ -24,7 +24,7 @@ interface Column { node: Container }
 
 const LOOK_LINE = { hat: 'rm.look.hat', blue: 'rm.look.blue', big: 'rm.look.big', spots: 'rm.look.spots' } as const;
 /** Height of a creature standing at the hopper or chute. */
-const STAND = 120;
+const STAND = 100;
 
 class RuleMachine implements Game {
   readonly plan: Plan;
@@ -43,6 +43,8 @@ class RuleMachine implements Game {
   rows: { in: Picture | number; out: Picture | number }[] = [];
   /** The pad or picture she chose on the open question (the truth runs beside it). */
   chosen: number | null = null;
+  /** After a prediction's run, the right pad shown beside her choice. */
+  reveal: number | null = null;
   finished = false;
   private readonly reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   private layoutNow: Layout;
@@ -85,7 +87,7 @@ class RuleMachine implements Game {
 
   /** The open question's options, in pad order, and which is right. */
   get options(): { values: (Picture | number)[]; right: number } | null {
-    if (this.phase !== 'predict') return null;
+    if (this.phase !== 'predict' && !(this.phase === 'run' && this.padNodes.length)) return null;
     if (isLook(this.machine)) {
       const m = this.machine;
       const values = m.pictures[this.asked];
@@ -131,6 +133,7 @@ class RuleMachine implements Game {
     const r = this.machine.rule;
     this.art.badge.addChild(r.kind === 'look' ? badge(r) : badge({ kind: 'num', b: r.b }));
     this.rows = [];
+    this.reveal = null;
     this.walked = 0;
     this.asked = 0;
     this.fed = [];
@@ -229,11 +232,13 @@ class RuleMachine implements Game {
     this.ctx.tw.kill(node);
     sfx.pop(4);
     const at = this.layoutNow.waitAt;
-    this.waiting = node;
     this.actors.addChild(node);
     const m = this.index;
+    // Not `waiting` until it lands: a resize kills a waiting thing's tween, and this one is awaited.
     await this.ctx.tw.to(node, { x: at.x, y: at.y }, { duration: this.reduce ? 0.15 : 0.35, ease: ease.outQuad });
     if (this.finished || m !== this.index) return;
+    this.waiting = node;
+    node.position.set(this.layoutNow.waitAt.x, this.layoutNow.waitAt.y);
     this.trayLayer.visible = false;
     this.openQuestion();
   }
@@ -336,6 +341,10 @@ class RuleMachine implements Game {
       await this.run(n, apply(this.count.rule, n));
     }
     if (this.finished || m !== this.index) return;
+    this.reveal = this.options?.right ?? null;
+    await this.ctx.tw.wait(0.9);
+    if (this.finished || m !== this.index) return;
+    this.reveal = null;
     this.asked++;
     this.clearPads();
     if (this.asked >= this.plan.predictions) { await this.endMachine(); return; }
@@ -454,6 +463,16 @@ class RuleMachine implements Game {
       if (this.idle > (this.walked === 0 ? 3.5 : 2)) { this.idle = 0; void this.runWalker(); }
     }
     this.glowRing.clear();
+    if (this.reveal !== null) {
+      // The truth beside her pick: the right one ringed green, her other pick (if any) ringed softly.
+      const r = this.layoutNow.pads[this.reveal];
+      this.glowRing.roundRect(r.x - r.w / 2 - 8, r.y - r.h / 2 - 8, r.w + 16, r.h + 16, 22).stroke({ width: 8, color: swatch.green.fill });
+      if (this.chosen !== null && this.chosen !== this.reveal) {
+        const c = this.layoutNow.pads[this.chosen];
+        this.glowRing.roundRect(c.x - c.w / 2 - 8, c.y - c.h / 2 - 8, c.w + 16, c.h + 16, 22).stroke({ width: 5, color: ink, alpha: 0.35 });
+      }
+      return;
+    }
     if (!this.score.glowing || this.phase !== 'predict') return;
     const b = this.layoutNow.pads[this.options!.right];
     const pulse = 7 + 3 * Math.sin(this.clock * 5);

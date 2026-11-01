@@ -210,9 +210,9 @@ export function layout(view: { w: number; h: number }, level: number): Layout {
   const { w, h } = view;
   const portrait = h > w;
   const cx = w / 2;
-  const tableY = portrait ? 200 : 95 + COL_H / 2;
-  const machineY = portrait ? tableY + COL_H / 2 + 60 + BODY_H / 2 : tableY + COL_H / 2 + 20 + BODY_H / 2;
-  const rowY = portrait ? machineY + BODY_H / 2 + 70 + CAR_H / 2 : machineY + BODY_H / 2 + 30 + 75;
+  const tableY = portrait ? 230 : 95 + COL_H / 2;
+  const machineY = portrait ? tableY + COL_H / 2 + 90 + BODY_H / 2 : tableY + COL_H / 2 + 20 + BODY_H / 2;
+  const rowY = portrait ? machineY + BODY_H / 2 + 120 + CAR_H / 2 : machineY + BODY_H / 2 + 30 + 75;
   const span = 5 * COL_W + 4 * COL_GAP;
   const columns = Array.from({ length: 5 }, (_, i) => box(cx - span / 2 + COL_W / 2 + i * (COL_W + COL_GAP), tableY, COL_W, COL_H));
   const mw = HOPPER + BODY_W + CHUTE_W;
@@ -230,8 +230,9 @@ export function layout(view: { w: number; h: number }, level: number): Layout {
   const pads = Array.from({ length: 3 }, (_, i) => box(padsCx - padsW / 2 + p / 2 + i * (p + PAD_GAP), rowY, p, p));
   return {
     portrait, columns, hopper, body, chute, pads, tray,
-    waitAt: { x: hopper.x, y: hopper.y - HOPPER / 2 - 10 },
-    out: { x: chute.x + 20, y: machineY + BODY_H / 2 - 4 },
+    // Waiting things stand in the hopper's mouth (below the table); outputs land at the chute's far end.
+    waitAt: { x: hopper.x, y: hopper.y + 10 },
+    out: { x: chute.x + CHUTE_W / 2, y: machineY + BODY_H / 2 - 4 },
   };
 }
 

@@ -130,7 +130,7 @@ export function badge(rule: { kind: 'look'; change: Picture['look'] } | { kind: 
   } else if (rule.change === 'blue') {
     d.circle(0, 4, 10).poly([-9, 0, 9, 0, 0, -16]).fill(swatch.blue.fill);
   } else if (rule.change === 'big') {
-    d.poly([-20, 10, -10, 10, -10, -2, -16, -2]).fill(ink).rect(-4, -12, 24, 24).stroke({ width: 4, color: ink });
+    d.rect(-26, 0, 12, 12).rect(-4, -14, 26, 26).stroke({ width: 4, color: ink });
   } else {
     d.circle(-14, 0, 6).circle(2, -6, 5).circle(14, 4, 6).fill(ink);
   }
