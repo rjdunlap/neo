@@ -726,7 +726,7 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 ### rule-machine 1: The hat machine and one more goes in
 
-**Status: claimed 2026-11-01, branch `claude/rule-machine-1-2` (draft PR). Files: `src/games/rule-machine/`, the registry, lands, voice script, how-to and off-screen content, the browser harness case, docs closeout.**
+**Status: built 2026-11-01, PR #1091.**
 
 - **`rule-machine`, levels 1-2 (algebra-balance study slice AB1)** (a new game, one declared batch; pre-K 1, school 2; Puzzle Peaks, 13 games becoming 14, so the land now pages): creatures go into a hat machine and come out wearing a hat, and she taps what the fourth will look like from three pictures (level 1); then cars with counters go in and come out with one or two more, and she taps the count on the pads once two rows show; feeding is never a miss and a first wrong prediction on a new rule is free (level 2). [Definition](definitions/rule-machine.md), [study build slices](deep-dives/subjects/algebra-balance.md#build-slices-in-order)
 

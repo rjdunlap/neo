@@ -176,6 +176,14 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] With a pre-K child: does she accept "still the better chance" after a losing pick?
 - [ ] On an iPad, hear the critter calls and the `sf.*` lines in device speech.
 
+## Rule Machine levels 1–2 (algebra-balance AB1, 2026-11-01)
+
+- [ ] With a pre-K child: does she read the three pictures (look applied, unchanged, another look) and tap one?
+- [ ] Does the free first guess on each new machine feel like a game rather than a test?
+- [ ] On an iPad in portrait, do five cars and the in → out table fit and stay easy to tap?
+- [ ] On an iPad, does device speech say the slotted count lines ("{n} went in. {m} came out.") clearly?
+- [ ] Source check (desk): the "went in / came out" and "one more / two more" wording against CCSS 3.OA.D.9, 4.OA.C.5 and England Year 6.
+
 ## Drift Cards levels 1–2 (oceans slice 6, 2026-10-31)
 
 - [ ] With a school-age child: does she read the arrows cell by cell, or guess the beach?
