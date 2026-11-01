@@ -53,6 +53,14 @@ Lasso Loops dive (2026-10-31), two calls that wait on you; the first slice goes 
 | **Lasso Loops level numbering?** | Keep 7 for the estimation study's E2 and build *Make the number* only after E2 (lean), or let it take ID 7 now and give E2 the next free ID placed after 6 with `order` | [Lasso Loops dive](deep-dives/lasso-loops.md#decisions-for-the-developer) |
 | **A Lasso Loops toddler opening, a loop that always catches?** | Adds the `toddler` band. Only after watching a two-year-old try to close a loop; nothing is built until then | [Lasso Loops dive](deep-dives/lasso-loops.md#decisions-for-the-developer) |
 
+Peekaround Island dive (2026-10-31), three calls that wait on you; the build slices that do not need them go ahead ([the dive](deep-dives/peekaround-island.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **Peekaround Island level 6 in preschool?** | Whether *Who can't see it?* joins a preschool `order` `[2, 3, 4, 6]`. Recommended: no; level 6 builds for pre-K and school | [Peekaround Island dive](deep-dives/peekaround-island.md#decisions-for-the-developer) |
+| **Doghouse Directions (in, on, under, out, off) as a Peekaround mode?** | "under" is Adventure Walk's path word and its test forbids any Peekaround position word in its phrases, so it needs a separate word set or a change of which game owns "under". Recommended: leave it out | [Peekaround Island dive](deep-dives/peekaround-island.md#decisions-for-the-developer) |
+| **A lap opening beside Peekaboo Barn?** | Adds the `lap` band to Peekaround Island. Recommended: no, until an observation of her with level 1 says it is needed | [Peekaround Island dive](deep-dives/peekaround-island.md#decisions-for-the-developer) |
+
 ## Adding a question
 
 Add a row here only for a call the developer alone can make (money, accounts, the child's data, a family reviewer, an irreversible step), with a recommended answer. Anything else: decide it by the [standing rules](archive/DECISIONS-2026-10-23.md#standing-rules), record it in its source, and go on. Checks that need a person or a device go in [DEVICE-CHECKS](DEVICE-CHECKS.md).

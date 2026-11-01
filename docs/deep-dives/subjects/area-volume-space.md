@@ -151,7 +151,7 @@ All future work, one session each. Definitions use links and `git diff --check`;
 3. **Meadow Pens 4–5 definition built (docs only, 2026-10-25):** [packet](../../definitions/meadow-pens.md#levels-45-definition-2026-10-25-slice-3), [PR #957](https://github.com/rjdunlap/neo/pull/957), worker `01a171d7-c22d-7e23-97e3-744d68311bf1`, `codex/meadow-pens-4-5-definition`. Levels 4–5 built 2026-10-25 ([PR #972](https://github.com/rjdunlap/neo/pull/972)): comparison choices and split-L counting, with the October23 curriculum source gate met and actual layout/placement, rule/play/demo proof recorded. Person/device gates remain; no levels 6–7 authorized.
 4. **Define Meadow Pens 6–7** after decisions 4 and 5; then build.
 5. **A Treasure Map game dive** that takes four quadrants and translations (decision 7).
-6. **Skyline View** inside a Peekaround Island dive; **Fold a Box** and **Rooftops** definitions after their capacity and placement checks; **Stencil Moves** after Tangram Town 9.
+6. **Skyline View** inside a Peekaround Island dive (the [dive](../peekaround-island.md) defines the island's *From the sky* first; the block-tower version stays a sketch); **Fold a Box** and **Rooftops** definitions after their capacity and placement checks; **Stencil Moves** after Tangram Town 9.
 7. **The Cover it and Open a box cards** after an ordinary content review.
 
 ## What was built and what ran
