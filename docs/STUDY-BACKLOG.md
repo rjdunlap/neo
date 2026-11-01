@@ -114,7 +114,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Inchworm Measure (`inchworm`) | designed | [Dive](deep-dives/inchworm.md) |
 | Island Bridges (`island-bridges`) | designed | [Dive](deep-dives/island-bridges.md) |
 | Lantern Lights (`lantern-lights`) | designed | [Dive](deep-dives/lantern-lights.md) |
-| Lasso Loops (`lasso-loops`) | research | [Game tracker](deep-dives/README.md#tracker) |
+| Lasso Loops (`lasso-loops`) | designed | [Dive](deep-dives/lasso-loops.md) |
 | Light Lab (`light-lab`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Orchard Rows (`orchard-rows`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Peekaround Island (`peekaround-island`) | research | [Game tracker](deep-dives/README.md#tracker) |

@@ -535,6 +535,14 @@ Proof: new-game tier, as the [definition's check tier](definitions/gadget-bench.
 
 Built; [completed scope and proof](archive/COMPLETED-2026-10-09.md#2026-10-22--lasso-loops-about-how-many-estimation-e1).
 
+### lasso-loops 2: Teens, decades and a fresh meadow
+
+- **`lasso-loops`, teens, decades and a fresh meadow (dive slice 1)** (fresh content on the existing interaction; preschool, pre-K, school): level 1's seeded 6–9 fireflies; level 3's 1–3 jars with an occasional no-ones round; level 4's teen, decade and 21–39 mix; the no-ones voice lines and pad choices. Level 6 unchanged. [Dive](deep-dives/lasso-loops.md#build-slices-in-order)
+
+Files expected: `src/games/lasso-loops/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts` only if a step's wording changes, the README row and `docs/GAMES.md`.
+
+Proof: fresh content on the existing interaction: typecheck, the game's rule tests (every plan's fireflies fit one per cell; a teen, a decade and a 21–39 round all occur at level 4 within a few hundred seeds; level 6 still 21–39; pads stay three distinct positive numbers including the answer; no leaf when there are no ones), one filtered regression play of level 4 on a decade seed with one wrong total, `fingerdemo` at 4 (the bot meets a round with no leaf).
+
 ### look-it-up 1: Levels 1–3
 
 - **`look-it-up`, levels 1–3 (IR1)** (a new game, one subtask; toddler 1, preschool 1–2, pre-K 2–3, school 3, Barnyard by default): a picture guide of seven real animals (cow, pig, duck, rabbit, brown bear, common frog, African penguin), each page with a fact box of *Eats*, *Where* and *Baby*; touch labels to hear them (level 1), find a hungry visitor's page by its tab and feed it (level 2), find the asked row and help it there (level 3). Turning pages is free; only a wrong food or place given to the animal is a miss. [Definition](definitions/look-it-up.md), [informational-reading study slice IR1](deep-dives/subjects/informational-reading.md#build-slices-in-order)
