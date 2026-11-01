@@ -137,6 +137,8 @@ class ShellRows implements Game {
     this.pieceLayer.addChild(p);
     this.pieces[i] = p;
     await this.ctx.tw.to(p, { x: b.x, y: b.y }, { duration: this.reduce ? 0.3 : 0.6, ease: ease.outQuad });
+    // A resize during the slide moved the squares; land on the square's current place.
+    if (!p.destroyed) p.position.set(this.L.squares[i].x, this.L.squares[i].y);
     sfx.pluck(1, 0.3);
   }
 
@@ -277,8 +279,10 @@ class ShellRows implements Game {
     });
     this.shellPile.position.set(L.shellPile.x, L.shellPile.y);
     this.pebblePile.position.set(L.pebblePile.x, L.pebblePile.y);
-    // A replay in flight finishes on its own; the pieces it moves are redrawn at the next rewind.
-    if (this.phase !== 'replay') this.drawPieces();
+    // On her turn nothing is awaited on the pieces, so they are redrawn; mid-replay or mid-settle a piece's tween is
+    // awaited (a killed tween never resolves), so the pieces only move to their new squares.
+    if (this.phase === 'turn') this.drawPieces();
+    else this.pieces.forEach((p, i) => { if (p && !p.destroyed) p.position.set(L.squares[i].x, L.squares[i].y); });
   }
 
   update(dt: number) {
