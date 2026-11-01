@@ -1094,3 +1094,27 @@ Proof: new-interaction tier: typecheck, rule tests, one play with the trap then 
 Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests, one play with one wrong can't-say stamp and the glow, one portrait screenshot, `fingerdemo` at 11, one build for the voice. A person check stays open.
+
+### picture-logic 1: Fresh pictures and named hints
+
+- **`picture-logic`, Fresh pictures and named hints (dive slice 1)** (extends the built game; grown-up, no new level): eight easier and eight harder 10 by 10 pictures and five 15 by 15 pictures, and a `why` on fill and cross hints with four voice lines. [Dive](deep-dives/picture-logic.md#build-slices-in-order)
+
+Files expected: `src/games/picture-logic/logic.ts`, `pictures.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts` and `docs/GAMES.md`.
+
+Proof: existing-interaction tier: typecheck, the game's rule tests, one filtered regression play at level 2 asking for one hint (its named line); bot unchanged, no `fingerdemo`.
+
+### picture-logic 2: A small 5 by 5 to start and a harder 15 by 15
+
+- **`picture-logic`, Level 5 a small 5 by 5 to start and level 7 a 15 by 15 that needs more care (dive slice 2)**, after batch picture-logic 1 (shares `pictures.ts` and the bank tests) (new levels on an existing interaction; grown-up): order `[5, 1, 2, 3, 4, 7]` with `entryLevels: [5]`. [Dive](deep-dives/picture-logic.md#build-slices-in-order)
+
+Files expected: `src/games/picture-logic/logic.ts`, `pictures.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-level tier: typecheck, rule tests (order, entry, the 5 by 5 frame), one browser play of level 5 and of level 7 with one hint, `fingerdemo` at 5 and 7, one portrait screenshot of level 5.
+
+### picture-logic 3: Two colours
+
+- **`picture-logic`, Level 6, *Two colours* (dive slice 3)**, after batch picture-logic 2 (shares the order) and [Pixel Pictures batch 1](#pixel-pictures-1-fresh-pictures-and-colour-logic) (its `colorLineSolvable`) (new interaction; grown-up): colour pots and colour clues, a wrong-colour fill and a hint naming it. [Dive](deep-dives/picture-logic.md#build-slices-in-order)
+
+Files expected: `src/games/picture-logic/logic.ts`, `pictures.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, rule tests, one play of level 6 with one wrong-colour fill and a hint naming it, then to the sticker; one portrait screenshot of the colour pots and clues; `fingerdemo` at 6; one build. The building session confirms the couch trip keeps to its built levels.
