@@ -3943,6 +3943,8 @@ export const SCRIPT = {
   'bath.clean': ['Squeaky clean!', 'All clean! Thank you!'],
 
   'paint.pots': ['Pick a color and paint!'],
+  'paint.fold': ['Paint one side. Then press fold!'],
+  'paint.folded': ['Squish… open! It matches!', 'Look, two sides the same!', 'A butterfly print!'],
   'paint.rainbow': ['Rainbow!'],
   'paint.ask': ['Paint the {thing} {color}!'],
   'paint.what': ['Paint the {thing}! What color is it?'],

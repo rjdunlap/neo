@@ -1,4 +1,5 @@
 import { RAINBOW, type ColorName } from '../../art/palette';
+import { PAINTING_MAX_MARKS, type PaintingMark } from '../../content/creations';
 import type { Rng } from '../../engine/random';
 
 export type Primary = 'red' | 'yellow' | 'blue';
@@ -118,9 +119,15 @@ export interface PaintState {
   picture: ColorName | null;
   /** The hang-it-up button is showing. */
   frame: boolean;
+  /** A fold page, and whether it has been folded yet. */
+  fold?: boolean;
+  folded?: boolean;
 }
 
-export type PaintMove = { do: 'pot'; pot: ColorName } | { do: 'bowl' } | { do: 'stroke' } | { do: 'frame' };
+export type PaintMove = { do: 'pot'; pot: ColorName } | { do: 'bowl' } | { do: 'stroke' } | { do: 'frame' } | { do: 'fold' };
+
+/** On a fold page the ghost finger presses fold after this many strokes (or sooner, once the frame shows); with the fold that makes the five touches the frame needs. */
+export const FOLD_AFTER = 4;
 
 /**
  * What a capable child does next. Free painting: five strokes, then the frame. Pots: a different color for each of five strokes.
@@ -128,6 +135,8 @@ export type PaintMove = { do: 'pot'; pot: ColorName } | { do: 'bowl' } | { do: '
  * frame. It never paints with a color that is not the picture's, which is the one wrong move.
  */
 export function paintStep(s: PaintState): PaintMove | null {
+  // A fold page is folded once before it is hung up, even when the frame came early (one touch and a long look).
+  if (s.fold && !s.folded && (s.strokes >= FOLD_AFTER || (s.frame && s.strokes > 0))) return { do: 'fold' };
   if (s.frame) return { do: 'frame' };
   if (s.mode === 'free') return { do: 'stroke' };
   if (s.mode === 'pots') {
@@ -255,4 +264,56 @@ export function fillPath(circles: Circle[], scale: number): Pt[] {
     path.push(...(k % 2 ? [{ x: x1, y }, { x: x0, y }] : [{ x: x0, y }, { x: x1, y }]));
   }
   return path;
+}
+
+/** A level-2 page is plain or a fold page (paint, then press the paper closed to print a mirror copy); every other level is plain. */
+export type PageKind = 'plain' | 'fold';
+export function pageKind(level: number, rng: Rng): PageKind {
+  // Only level 2 draws, so every other level's seeded pictures stay as they were.
+  if (level !== 2) return 'plain';
+  return rng.next() < 0.5 ? 'fold' : 'plain';
+}
+
+/** The fold line is the middle of the paper: a mirror sends x (a fraction of the paper's width) to 1 - x. */
+export const mirrorX = (x: number) => Math.min(1, Math.max(0, 1 - x));
+
+/**
+ * The painting after a fold: everything already there, plus a mirror copy of each mark made since index `since` (the marks before it
+ * are dry and already printed). A mark that already sits across the crease (nearer to it than its own radius, in paper units, where
+ * `aspect` is the paper's width over its shorter side) is not copied. The result keeps to `max` marks by the same halving the
+ * painting uses while it grows.
+ */
+export function foldMarks(marks: readonly PaintingMark[], since: number, aspect = 1, max = PAINTING_MAX_MARKS): PaintingMark[] {
+  const copies = marks.slice(since).filter((m) => Math.abs(m.x - 0.5) * aspect >= m.r).map((m) => ({ ...m, x: mirrorX(m.x) }));
+  return capMarks([...marks, ...copies], max).marks;
+}
+
+/** Halve a painting's marks (every second one) until it fits `max`; `halvings` says how many times, so sampling can coarsen to match. */
+export function capMarks(marks: PaintingMark[], max = PAINTING_MAX_MARKS): { marks: PaintingMark[]; halvings: number } {
+  let halvings = 0;
+  while (marks.length > max) {
+    marks = marks.filter((_, i) => i % 2 === 0);
+    halvings++;
+  }
+  return { marks, halvings };
+}
+
+/** Where `since` lands after the marks are halved `halvings` times: the even-indexed marks before it survive. */
+export function halvedIndex(since: number, halvings: number): number {
+  for (let k = 0; k < halvings; k++) since = Math.ceil(since / 2);
+  return since;
+}
+
+/** Fold button: radius 52 (104 across), on the crease just above the top row of pots. */
+export const FOLD_RADIUS = 52;
+export function foldButtonPlace(w: number, h: number): Pt {
+  const top = Math.min(...potLayout(7, w, h).pots.map((p) => p.y));
+  return { x: w / 2, y: top - 126 };
+}
+
+/** Where the ghost finger paints on a fold page: the left half only, clear of the crease and the fold button, so the print makes the right. */
+export function foldScribbleArea(w: number, h: number) {
+  const a = scribbleArea(w, h);
+  const right = w / 2 - FOLD_RADIUS - BRUSH_RADIUS - 8;
+  return { ...a, w: Math.max(120, right - a.x) };
 }

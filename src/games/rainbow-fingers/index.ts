@@ -11,9 +11,9 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
-import { frameIcon } from '../../ui/icons';
+import { foldIcon, frameIcon } from '../../ui/icons';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { blankSpot, BRUSH_RADIUS, Coverage, fillPath, frameShows, MARGIN, mix, NUDGE_AFTER, nudges, paintStep, PAINTED, pickThings, planFor, POT_MARKS, POT_RADIUS, potLayout, pours, RECIPES, scribble, scribbleArea, SPACING, SPLAT_RADIUS, strokesCounted, touchKind, type PaintPlan, type PotMark, type Primary, type Pt, type Thing, type Touch } from './logic';
+import { blankSpot, BRUSH_RADIUS, capMarks, Coverage, fillPath, FOLD_RADIUS, foldButtonPlace, foldMarks, foldScribbleArea, frameShows, halvedIndex, MARGIN, pageKind, mix, NUDGE_AFTER, nudges, paintStep, PAINTED, pickThings, planFor, POT_MARKS, POT_RADIUS, potLayout, pours, RECIPES, scribble, scribbleArea, SPACING, SPLAT_RADIUS, strokesCounted, touchKind, type PageKind, type PaintPlan, type PotMark, type Primary, type Pt, type Thing, type Touch } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const PAPER = 0xfffdf6;
@@ -31,6 +31,22 @@ const LEVELS: BandLevels = {
 const POTS: (ColorName | 'rainbow')[] = ['rainbow', ...RAINBOW];
 const PRIMARIES: Primary[] = ['red', 'yellow', 'blue'];
 const LINE = 0x5a4a3c;
+/** A fold: the right half swings over, presses, and swings back open; touches on the paper wait until it is done. */
+const FOLD_CLOSE = 0.35;
+const FOLD_PRESS = 0.3;
+const FOLD_OPEN = 0.35;
+const FOLD_TOTAL = 1.2;
+
+interface Folding {
+  t: number;
+  flap: Container;
+  face: Container;
+  back: Graphics;
+  /** The paper's lifted right half: the easel shows through. */
+  cover: Graphics;
+  printed: boolean;
+  opened: boolean;
+}
 
 /** A coloring-page picture: an outline that stays on top of the paint, plus its painting progress. */
 class Picture {
@@ -247,6 +263,20 @@ class RainbowFingers implements Game {
   private readonly potHome = new Map<ColorName | 'rainbow', Pt>();
   private clock = 0;
   private done = false;
+  /** A fold page (level 2, about half the time): new paint stays wet on its own layer until the fold prints it. */
+  private readonly kind: PageKind;
+  private readonly crease = new Graphics();
+  private wet: RenderTexture | null = null;
+  private readonly wetSprite = new Sprite();
+  private wetPaint = false;
+  private readonly foldButton: RoundButton | null = null;
+  /** Folds that printed paint: each counts as one touch toward the frame. */
+  private folds = 0;
+  private folded = false;
+  /** The first saved mark made since the last fold: the ones before it are dry and already printed. */
+  private foldSince = 0;
+  private folding: Folding | null = null;
+  private readonly blank = new Container();
   private readonly endStroke = (e: PointerEvent | FederatedPointerEvent) => this.lift(e.pointerId);
 
   constructor(private readonly ctx: GameContext) {
@@ -254,7 +284,9 @@ class RainbowFingers implements Game {
     this.paper.eventMode = 'static';
     this.plan = planFor(ctx.level);
     this.things = pickThings(this.plan, ctx.rng);
-    this.paper.addChild(this.sheet, this.canvas, this.pictureLayer, this.live);
+    this.kind = pageKind(ctx.level, ctx.rng);
+    this.crease.eventMode = 'none';
+    this.paper.addChild(this.sheet, this.crease, this.canvas, this.wetSprite, this.pictureLayer, this.live);
     this.paper.on('pointerdown', (e) => this.press(e));
     this.paper.on('globalpointermove', (e) => this.move(e));
     this.paper.on('pointerup', this.endStroke);
@@ -265,11 +297,17 @@ class RainbowFingers implements Game {
     this.frameButton = new RoundButton(frameIcon(), swatch.white, 52, () => void this.hangItUp());
     this.frameButton.visible = false;
     ctx.stage.addChild(this.backing, this.paper, this.frameButton);
+    if (this.kind === 'fold') {
+      this.foldButton = new RoundButton(foldIcon(), swatch.white, FOLD_RADIUS, () => this.fold());
+      this.foldButton.visible = false;
+      ctx.stage.addChild(this.foldButton);
+    }
     if (this.plan.mode !== 'free') this.buildPots();
   }
 
   start() {
     if (this.plan.mode === 'free') void this.ctx.instruct('paint.start');
+    else if (this.kind === 'fold') void this.ctx.instruct('paint.fold');
     else if (this.plan.mode === 'pots') void this.ctx.instruct('paint.pots');
     else void this.ask();
   }
@@ -474,6 +512,8 @@ class RainbowFingers implements Game {
   }
 
   resize(v: View) {
+    // The flap is drawn for the old view and holds the painting textures that may be replaced below.
+    this.endFold();
     this.view = v;
     this.backing.clear().rect(0, 0, v.w, v.h).fill(wood.fill);
     this.sheet
@@ -483,29 +523,60 @@ class RainbowFingers implements Game {
       .stroke({ width: 5, color: wood.line });
     this.paper.hitArea = new Rectangle(MARGIN, MARGIN, v.w - MARGIN * 2, v.h - MARGIN * 2);
     this.frameButton.position.set(v.w - 80, 80);
+    if (this.foldButton) {
+      const at = foldButtonPlace(v.w, v.h);
+      this.foldButton.position.set(at.x, at.y);
+      this.drawCrease(v);
+    }
     this.layoutPots(v);
     this.layoutPictures(v);
 
     // Grow the painting surface if the view got bigger, keeping what's already painted.
-    const res = v.scale * Math.min(2, window.devicePixelRatio || 1);
-    if (!this.rt || this.rt.width < v.w || this.rt.height < v.h) {
-      const next = RenderTexture.create({ width: Math.ceil(v.w), height: Math.ceil(v.h), resolution: res });
-      this.ctx.renderer.render({ container: new Container(), target: next, clear: true, clearColor: [0, 0, 0, 0] });
-      if (this.rt) {
-        const old = new Sprite(this.rt);
-        this.ctx.renderer.render({ container: old, target: next, clear: false });
-        old.destroy();
-        this.rt.destroy(true);
-      }
-      this.rt = next;
-      this.canvas.texture = next;
+    this.rt = this.grow(this.rt, v);
+    this.canvas.texture = this.rt;
+    if (this.kind === 'fold') {
+      this.wet = this.grow(this.wet, v);
+      this.wetSprite.texture = this.wet;
     }
+  }
+
+  /** A painting surface at least as big as the view, carrying over what is already painted on `old`. */
+  private grow(old: RenderTexture | null, v: View): RenderTexture {
+    if (old && old.width >= v.w && old.height >= v.h) return old;
+    const res = v.scale * Math.min(2, window.devicePixelRatio || 1);
+    const next = RenderTexture.create({ width: Math.ceil(v.w), height: Math.ceil(v.h), resolution: res });
+    this.ctx.renderer.render({ container: this.blank, target: next, clear: true, clearColor: [0, 0, 0, 0] });
+    if (old) {
+      const keep = new Sprite(old);
+      this.ctx.renderer.render({ container: keep, target: next, clear: false });
+      keep.destroy();
+      old.destroy(true);
+    }
+    return next;
+  }
+
+  /** A dashed crease down the middle and two faint wings, one each side, under the paint. */
+  private drawCrease(v: View) {
+    const g = this.crease.clear();
+    const cx = v.w / 2;
+    const [top, bottom] = [MARGIN + 18, v.h - MARGIN - 18];
+    for (let y = top; y < bottom; y += 30) g.moveTo(cx, y).lineTo(cx, Math.min(bottom, y + 16));
+    g.stroke({ width: 4, color: wood.line, alpha: 0.45, cap: 'round' });
+    const cy = v.h * 0.42;
+    const ww = Math.min(cx - MARGIN - 60, 360);
+    const hh = Math.min(v.h * 0.3, 300);
+    for (const side of [-1, 1]) {
+      g.moveTo(cx + side * 8, cy - 30)
+        .bezierCurveTo(cx + side * ww * 0.6, cy - hh * 1.1, cx + side * ww * 1.05, cy - hh * 0.3, cx + side * 8, cy)
+        .bezierCurveTo(cx + side * ww * 0.85, cy + hh * 0.1, cx + side * ww * 0.6, cy + hh * 0.9, cx + side * 8, cy + 40);
+    }
+    g.stroke({ width: 5, color: wood.line, alpha: 0.16, join: 'round' });
   }
 
   update(dt: number) {
     this.clock += dt;
     const coloring = this.pictures.length > 0;
-    const ready = coloring ? !this.picture : frameShows(strokesCounted(this.touches), this.clock);
+    const ready = coloring ? !this.picture : frameShows(strokesCounted(this.touches) + this.folds, this.clock);
     this.idle += dt;
     if (nudges(this.plan.mode) && !this.done && !this.frameButton.visible && this.idle > NUDGE_AFTER && this.strokes.size === 0) this.nudge();
     if (coloring && this.picture && !this.done) {
@@ -521,7 +592,15 @@ class RainbowFingers implements Game {
       sfx.sparkle();
     }
     if (this.frameButton.visible && !this.done) this.frameButton.rotation = 0.06 * Math.sin(this.clock * 3);
+    // The fold button pops in after her first mark.
+    if (this.foldButton && !this.foldButton.visible && !this.done && this.touches.length + this.strokes.size > 0) {
+      this.foldButton.visible = true;
+      this.foldButton.scale.set(0);
+      void this.ctx.tw.to(this.foldButton.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outBack });
+      this.ctx.pet.wiggle();
+    }
     this.flush();
+    if (this.folding) this.stepFold(dt);
   }
 
   private drawGlow() {
@@ -537,11 +616,13 @@ class RainbowFingers implements Game {
    * picture's color, then a fill over the whole picture, and the frame once the page is done. Never a stroke in a wrong color.
    */
   autotouch(): TouchIntent | null {
-    if (this.done || this.strokes.size > 0) return null;
+    if (this.done || this.folding || this.strokes.size > 0) return null;
     const pic = this.picture;
-    const move = paintStep({ mode: this.plan.mode, strokes: this.touches.length, brush: this.brushName, poured: this.poured, picture: pic?.thing.color ?? null, frame: this.frameButton.visible });
+    const fold = this.kind === 'fold';
+    const move = paintStep({ mode: this.plan.mode, strokes: this.touches.length, brush: this.brushName, poured: this.poured, picture: pic?.thing.color ?? null, frame: this.frameButton.visible, fold, folded: this.folded });
     if (!move) return null;
     if (move.do === 'frame') return { tap: { on: this.frameButton } };
+    if (move.do === 'fold') return this.foldButton?.visible ? { tap: { on: this.foldButton } } : null;
     if (move.do === 'bowl') return { tap: { on: this.bowl } };
     if (move.do === 'pot') {
       const pot = this.potNodes.get(move.pot);
@@ -549,7 +630,7 @@ class RainbowFingers implements Game {
     }
     const [start, ...via] = pic
       ? fillPath(pic.thing.circles, pic.scale).map((p) => ({ on: pic.node, x: p.x, y: p.y }))
-      : scribble(this.touches.length, scribbleArea(this.view.w, this.view.h)).map((p) => ({ on: this.paper, x: p.x, y: p.y }));
+      : scribble(this.touches.length, (fold ? foldScribbleArea : scribbleArea)(this.view.w, this.view.h)).map((p) => ({ on: this.paper, x: p.x, y: p.y }));
     return { trace: start, via, receiver: this.paper };
   }
 
@@ -559,11 +640,116 @@ class RainbowFingers implements Game {
     this.pool.forEach((s) => s.destroy());
     this.stamps.destroy({ children: true });
     for (const pic of this.pictures) pic.node.destroy({ children: true, texture: true, textureSource: true });
+    this.done = true; // nothing prints into textures about to go
+    this.endFold();
+    this.blank.destroy();
+    this.wet?.destroy(true);
     this.rt?.destroy(true);
   }
 
+  /** Press the paper closed: lift any strokes, then swing the right half over (`stepFold` runs it from `update`). */
+  private fold() {
+    if (this.done || this.folding || !this.rt) return;
+    for (const id of [...this.strokes.keys()]) this.lift(id);
+    this.idle = 0;
+    this.flush();
+    // Folding again with nothing new is still a fold to watch, but only one that prints counts toward the frame.
+    if (this.wetPaint) this.folds++;
+    this.folded = true;
+    sfx.whoosh();
+    const v = this.view;
+    const half = v.w / 2 - MARGIN;
+    const [y0, h] = [MARGIN, v.h - MARGIN * 2];
+    const cover = new Graphics().rect(v.w / 2, y0 - 4, half + 6, h + 8).fill(wood.fill);
+    // The face is the right half as painted (the live textures, so it shows the print when it opens); the back is plain paper.
+    const face = new Container();
+    const mask = new Graphics().rect(0, y0, half, h).fill(0xffffff);
+    const sheet = new Graphics().roundRect(-24, y0, half + 24, h, 22).fill(PAPER).stroke({ width: 5, color: wood.line });
+    const dry = new Sprite(this.rt);
+    const wet = new Sprite(this.wet ?? undefined);
+    dry.x = wet.x = -v.w / 2;
+    face.addChild(sheet, dry, wet, mask);
+    face.mask = mask;
+    const back = new Graphics().roundRect(0, y0, half, h, 22).fill(0xf1e6d2).stroke({ width: 5, color: wood.line });
+    const flap = new Container();
+    flap.addChild(face, back);
+    flap.position.set(v.w / 2, 0);
+    this.paper.addChild(cover, flap);
+    this.folding = { t: 0, flap, face, back, cover, printed: false, opened: false };
+  }
+
+  private stepFold(dt: number) {
+    const f = this.folding!;
+    f.t += dt;
+    const t = f.t;
+    const smooth = (u: number) => u * u * (3 - 2 * Math.min(1, Math.max(0, u)));
+    let sx = 1;
+    if (t < FOLD_CLOSE) sx = 1 - 2 * smooth(t / FOLD_CLOSE);
+    else if (t < FOLD_CLOSE + FOLD_PRESS) sx = -1;
+    else if (t < FOLD_CLOSE + FOLD_PRESS + FOLD_OPEN) sx = -1 + 2 * smooth((t - FOLD_CLOSE - FOLD_PRESS) / FOLD_OPEN);
+    f.flap.scale.x = sx;
+    // A little darker as it stands on edge; the back shows while it is over the left half.
+    const shade = Math.round(255 * (0.78 + 0.22 * Math.abs(sx)));
+    f.flap.tint = (shade << 16) | (shade << 8) | shade;
+    f.face.visible = sx > 0;
+    f.back.visible = sx <= 0;
+    const pressing = t >= FOLD_CLOSE && t < FOLD_CLOSE + FOLD_PRESS;
+    f.flap.scale.y = pressing ? 1 - 0.025 * Math.sin(((t - FOLD_CLOSE) / FOLD_PRESS) * Math.PI) : 1;
+    if (!f.printed && t >= FOLD_CLOSE) {
+      f.printed = true;
+      sfx.squish();
+      this.print();
+    }
+    if (!f.opened && t >= FOLD_CLOSE + FOLD_PRESS + FOLD_OPEN) {
+      f.opened = true;
+      sfx.bell(9, 0.3);
+      this.ctx.pet.cheer();
+      void this.ctx.say('paint.folded');
+    }
+    if (t >= FOLD_TOTAL) this.endFold();
+  }
+
+  /** Stop a fold (the round ending, or the view changing under it), pressing the print first if it had not yet. */
+  private endFold() {
+    const f = this.folding;
+    if (!f) return;
+    if (!f.printed && !this.done) this.print();
+    this.folding = null;
+    f.cover.destroy();
+    f.flap.destroy({ children: true });
+  }
+
+  /** The fold presses the wet paint onto the other half: draw it as it is and mirrored about the crease, a little lighter, then it is dry. */
+  private print() {
+    const v = this.view;
+    if (!this.rt || !this.wet) return;
+    // Flowers still growing are wet too: print them at full size now, and they will not bake again.
+    for (const child of [...this.live.children]) {
+      if (!child.visible) continue;
+      child.scale.set(1);
+      this.ctx.renderer.render({ container: child, target: this.wet, clear: false });
+      child.visible = false;
+    }
+    const asIs = new Sprite(this.wet);
+    const mirrored = new Sprite(this.wet);
+    mirrored.scale.x = -1;
+    mirrored.x = v.w;
+    mirrored.alpha = 0.85;
+    this.ctx.renderer.render({ container: asIs, target: this.rt, clear: false });
+    this.ctx.renderer.render({ container: mirrored, target: this.rt, clear: false });
+    asIs.destroy();
+    mirrored.destroy();
+    this.ctx.renderer.render({ container: this.blank, target: this.wet, clear: true, clearColor: [0, 0, 0, 0] });
+    this.wetPaint = false;
+    const aspect = Math.max(1, v.w - MARGIN * 2) / this.paperSize();
+    const { marks, halvings } = capMarks(foldMarks(this.paintingMarks, this.foldSince, aspect, Infinity));
+    this.paintingMarks = marks;
+    this.dabEvery *= 2 ** halvings;
+    this.foldSince = marks.length;
+  }
+
   private press(e: FederatedPointerEvent) {
-    if (this.done || palmOnGlass() || this.strokes.size >= 5) return;
+    if (this.done || this.folding || palmOnGlass() || this.strokes.size >= 5) return;
     const p = this.paper.toLocal(e.global);
     const step = this.stepAt(p.y);
     this.idle = 0;
@@ -577,7 +763,7 @@ class RainbowFingers implements Game {
 
   private move(e: FederatedPointerEvent) {
     const s = this.strokes.get(e.pointerId);
-    if (!s || this.done) return;
+    if (!s || this.done || this.folding) return;
     const p = this.paper.toLocal(e.global);
     const dist = Math.hypot(p.x - s.x, p.y - s.y);
     if (dist < 1) return;
@@ -623,6 +809,13 @@ class RainbowFingers implements Game {
   /** Nobody has touched for a while: a blank spot on the page twinkles and the pet wiggles. Not a hint, and nothing is counted. */
   private nudge() {
     this.idle = 0;
+    if (this.foldButton?.visible && this.wetPaint && !this.folding) {
+      // Paint waiting on a fold page: the fold button wiggles and the pet looks toward it.
+      const b = this.foldButton;
+      void this.ctx.tw.to(b, { rotation: 0.25 }, { duration: 0.12 }).then(() => this.ctx.tw.to(b, { rotation: -0.25 }, { duration: 0.2 })).then(() => this.ctx.tw.to(b, { rotation: 0 }, { duration: 0.12 }));
+      this.ctx.pet.wiggle();
+      return;
+    }
     const area = scribbleArea(this.view.w, this.view.h);
     const candidates = Array.from({ length: 8 }, () => ({ x: area.x + Math.random() * area.w, y: area.y + Math.random() * area.h }));
     const w = this.view.w - MARGIN * 2;
@@ -651,8 +844,10 @@ class RainbowFingers implements Game {
 
   /** Bake this frame's stamps into the painting in one draw. */
   private flush() {
-    if (!this.rt || this.stamps.children.length === 0) return;
-    this.ctx.renderer.render({ container: this.stamps, target: this.rt, clear: false });
+    const target = this.kind === 'fold' ? this.wet : this.rt;
+    if (!target || this.stamps.children.length === 0) return;
+    if (target === this.wet) this.wetPaint = true;
+    this.ctx.renderer.render({ container: this.stamps, target, clear: false });
     for (const s of this.stamps.removeChildren()) this.pool.push(s as Sprite);
   }
 
@@ -669,11 +864,14 @@ class RainbowFingers implements Game {
     this.live.addChild(f);
     sfx.bell(this.stepAt(y) + 2, 0.2);
     this.ctx.particles.burst(x, y, { colors: [color.fill, 0xffffff], count: 14, speed: [100, 240], gravity: 200, size: [0.25, 0.45], life: [0.4, 0.8] });
+    if (this.kind === 'fold') this.wetPaint = true;
     void this.ctx.tw.to(f.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack }).then(async () => {
       await this.ctx.tw.wait(0.4);
-      if (!this.rt || f.destroyed) return;
+      const target = this.kind === 'fold' ? this.wet : this.rt;
+      if (!target || f.destroyed) return;
       this.live.removeChild(f);
-      this.ctx.renderer.render({ container: f, target: this.rt, clear: false });
+      // A fold that came first has already printed it.
+      if (f.visible) this.ctx.renderer.render({ container: f, target, clear: false });
       f.destroy();
     });
   }
@@ -690,6 +888,7 @@ class RainbowFingers implements Game {
       // Keep the whole painting represented instead of retaining only its beginning. Future dabs are sampled at
       // the same coarser interval; flowers remain in the sequence but are bounded with everything else.
       this.paintingMarks = this.paintingMarks.filter((_, i) => i % 2 === 0);
+      this.foldSince = halvedIndex(this.foldSince, 1);
       this.dabEvery *= 2;
     }
     this.paintingMarks.push(mark);
@@ -715,9 +914,11 @@ class RainbowFingers implements Game {
   /** Done: the painting shrinks into a wooden frame on the wall. */
   private async hangItUp() {
     if (this.done) return;
+    this.endFold();
     this.done = true;
     this.strokes.clear();
     void this.ctx.tw.to(this.frameButton.scale, { x: 0, y: 0 }, { duration: 0.2 });
+    if (this.foldButton) void this.ctx.tw.to(this.foldButton.scale, { x: 0, y: 0 }, { duration: 0.2 });
     this.pots.visible = false;
     const v = this.view;
     const k = 0.72;

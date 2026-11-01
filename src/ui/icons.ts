@@ -56,6 +56,26 @@ export function frameIcon(): Graphics {
     .fill(0xffd54a);
 }
 
+/** A sheet with its right half folding over to the left along a dashed crease: Rainbow Fingers' fold button. */
+export function foldIcon(): Graphics {
+  return new Graphics()
+    .roundRect(-28, -24, 28, 48, 5)
+    .fill(0xffffff)
+    .stroke(line(5, 0x9c6b3c))
+    .poly([0, -24, 16, -18, 16, 30, 0, 24])
+    .fill(0xf3e6d0)
+    .stroke(line(5, 0x9c6b3c))
+    .circle(-14, -6, 6)
+    .fill(0xff7aa8)
+    .circle(-12, 10, 5)
+    .fill(0x6ab0ff)
+    .moveTo(22, -14)
+    .quadraticCurveTo(34, -32, 6, -34)
+    .stroke(line(5, ink))
+    .poly([10, -42, -2, -34, 10, -26])
+    .fill(ink);
+}
+
 export function bookIcon(): Graphics {
   return new Graphics()
     .roundRect(-26, -30, 52, 60, 6)

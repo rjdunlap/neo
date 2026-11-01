@@ -26,6 +26,22 @@ async function fingerDemos() {
       if (g.id === 'swap-meet' && level === 4 && process.env.SWAP_SEED) {
         await page.evaluate(seed => { const d = neo.scene.helpCard.intro.demo; d.opts.seed = seed; d.restart(); }, Number(process.env.SWAP_SEED));
       }
+      if (g.id === 'rainbow-fingers' && level === 2 && process.env.RAINBOW_FOLD) {
+        // About half of level 2's pages are fold pages: step the demo's seed until it draws one.
+        const seed = await page.evaluate(async () => {
+          const d = neo.scene.helpCard.intro.demo;
+          for (let seed = 1; seed < 40; seed++) {
+            d.opts.seed = seed; d.restart();
+            await new Promise(r => setTimeout(r, 50));
+            if (d.game?.kind === 'fold') return seed;
+          }
+          return null;
+        });
+        assert.ok(seed, 'rainbow-fingers: a seed draws a fold page');
+        log(`Finger demo: rainbow-fingers level 2 on a fold page (seed ${seed})`);
+        await page.waitForFunction(() => neo.scene.helpCard.intro.demo.game?.folds > 0, null, { timeout: 60000, polling: 100 });
+        log(`Finger demo: the bot pressed fold at ${(await page.evaluate(() => neo.scene.helpCard.intro.demo.age)).toFixed(1)}s`);
+      }
       assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo.hasBot), true, `${g.id}: the game has a bot for its demonstration`);
       const limit = await page.evaluate(() => neo.scene.helpCard.intro.demo.limit);
       // The demonstration's own clock decides, not the wall: on a busy Mac it runs at a fraction of real time (a quarter, once), so the

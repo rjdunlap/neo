@@ -165,6 +165,8 @@ These are easier than levels that exist, or fall between them, so they are place
 
 Each is sized for one session. Slices that add a level are built in level order so saved IDs stay unbroken. Each level slice also updates the `early` paint loop in `scripts/browser-check.mjs`, the `fingerdemo` levels, the how-to `LevelLine`s, `describeLevel`, the README row and [GAMES.md](../GAMES.md).
 
+**The fold button is built (2026-11-01; [definition](../definitions/mirror-brush-fold.md)).** Level 2 draws a fold page about half the time (plain or fold); the dashed crease, faint wings, wet layer and `mirrorX` already exist. Slice 7 (crease pages, a live mirror with no button) will add the third page kind at levels 1–2 and must reuse the crease and wings, and give level 2 its third-each share.
+
 **Slices 1 and 2 are built:** level 7 uses the bowl in recall mode ([build note](../archive/COMPLETED-2026-10-09.md#rainbow-fingers-level-7-mixing-fix-2026-10-10)); every touch counts, marked 104-unit pots and the free-play nudge ([build note](../archive/COMPLETED-2026-10-09.md#rainbow-fingers-slice-2-every-touch-counts-pots-nudge-2026-10-17)). The hint rule still waits on decision 5. The next open slice is 3.
 
 2. **Every touch counts, pots, nudge** (built; the hint rule waits on decision 5). Gestures that count with a palm-sized splat, pots of 104 with marks and a two-row layout, the free-play nudge; the hint rule if decision 5 is yes. Tier: rule tests, `EARLY_ONLY=paint FROM_LEVEL=1 TO_LEVEL=2`, `fingerdemo` at level 1, one portrait screenshot of the pots with the pet.
