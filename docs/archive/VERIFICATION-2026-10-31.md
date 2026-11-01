@@ -219,3 +219,9 @@
 - [PR #1074](https://github.com/rjdunlap/neo/pull/1074), branch `claude/define-caravan-days-6-7`: [definition](../definitions/caravan-days.md#levels-67-cs4-mountains-or-sand-a-well-every-days-walk) of level 6 (mountains or sand, either road accepted, a day card before Go) and level 7 (a well every day's walk, fewest wells by search, any minimal placement accepted); the reviewer gate is now the building session's source check. Study, packet, backlog, [batch caravan-days 3](../GAME-BATCHES.md#caravan-days-3-mountains-or-sand-and-a-well-every-days-walk), READY and roadmap updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the build and its device checks.
+
+## 2026-10-31 — Habitat Helpers deep dive (docs only)
+
+- [PR #1075](https://github.com/rjdunlap/neo/pull/1075), branch `claude/dive-habitat-helpers`: [dive](../deep-dives/habitat-helpers.md). Three slices queued ([batches](../GAME-BATCHES.md#habitat-helpers-1-equivalent-pieces-and-pooled-gardens): equivalent pieces and pooled gardens, level 7 Something changed (the ecosystems study's F3), levels 8–9 the rocky shore); the toddler opening is filed in [waiting-on-developer](../WAITING-ON-DEVELOPER.md); tracker, READY, backlog, ideas and the oceans and ecosystems studies updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.

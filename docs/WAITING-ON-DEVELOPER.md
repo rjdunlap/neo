@@ -22,6 +22,12 @@ Lemonade Stand dive (2026-10-31), two calls that wait on you; the build slices t
 | **A pre-K opening, "Enough cups for the line"?** | Adds the `prek` band to a school game; otherwise counting a line stays with Scoop Shop and Monster Munch. Recommended: wait until the school levels are played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
 | **A market-week chart in the journal?** | Whether a finished week files its table as a discovery, and which weeks (the first sold-out day, the first boat saving). Recommended: wait for the boats to be played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
 
+Pond Conga dive (2026-11-01), one call that waits on you; the build slices that do not need it go ahead ([the dive](deep-dives/pond-conga.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **Should a bonk count as a miss for level adaptation?** | Today four bonks make a struggling round and two drop a level. Options: keep it; count only hints (as Picture Logic does); or count a bonk as a miss only past a threshold. The couch score is unaffected either way | [Pond Conga dive](deep-dives/pond-conga.md#decisions-for-the-developer) |
+
 Pixel Pictures dive (2026-10-31), one call that waits on you; the build slices that do not need it go ahead ([the dive](deep-dives/pixel-pictures.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |

@@ -121,7 +121,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Penguin Slide (`penguin-slide`) | designed | [Dive](deep-dives/penguin-slide.md) |
 | Picture Graph (`picture-graph`) | designed | [Dive](deep-dives/picture-graph.md) |
 | Picture Logic (`picture-logic`) | designed | [Dive](deep-dives/picture-logic.md) |
-| Pond Conga (`pond-conga`) | research | [Game tracker](deep-dives/README.md#tracker) |
+| Pond Conga (`pond-conga`) | designed | [Dive](deep-dives/pond-conga.md) |
 | Quick Tricks (`quick-tricks`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Read & Do (`read-do`) | research | [Game tracker](deep-dives/README.md#tracker) |
 | Rhyme Time (`rhyme-time`) | research | [Game tracker](deep-dives/README.md#tracker) |
