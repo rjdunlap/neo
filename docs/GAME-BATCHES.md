@@ -1364,3 +1364,35 @@ Proof: existing-interaction tier plus art: typecheck, the game's rule tests and 
 Files expected: `src/games/sink-float/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the lands and registry tests only if their expectations change.
 
 Proof: new-level tier with `order`: typecheck, unit tests including order, lands and the keyed-plan clamp, one play of level 9 at school with a surprise guess, `fingerdemo` at 9, one portrait screenshot.
+
+### sudoku-garden 1: A 4 by 4 bed to start
+
+- **`sudoku-garden`, level 7 A 4 by 4 bed to start (dive slice 1)** (new level on the existing interaction; grown-up): `Size` 4, per-size box width, the plan, `order` `[7, 1, 2, 3, 4, 5, 6]` and `entryLevels: [7]`. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
+
+Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new level on the existing interaction: typecheck, the game's rule tests, one play of level 7 with one wrong number and one hint, to the sticker; one portrait screenshot of the 4 by 4 bed; `fingerdemo` at 7.
+
+### sudoku-garden 2: Fill marks on big beds
+
+- **`sudoku-garden`, Fill marks on big beds (dive slice 2)** (new interaction; grown-up): the button, its layout on 9 by 9 beds and its sweep. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
+
+Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new interaction: typecheck, unit tests (marks equal candidates; button only on 9 by 9 plans), one scripted play of level 4 with Fill marks then a placement that clears its peers' marks; one portrait and one landscape screenshot of the tray; bot unchanged, no `fingerdemo`.
+
+### sudoku-garden 3: A crossing pair of rows
+
+- **`sudoku-garden`, level 8 A crossing pair of rows (dive slice 3, after batch 1)** (new rule on the existing tap; grown-up): shares the `order` with batch 1; tier 4, the `xwing` step, generator or authored list, the hint and its lines. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
+
+Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new rule on the existing tap: typecheck, rule tests, one play of level 8 asking for hints until the X-Wing one (rings and line), then to the sticker; one portrait screenshot of the hint; `fingerdemo` at 8.
+
+### sudoku-garden 4: Patchwork beds
+
+- **`sudoku-garden`, level 9 Patchwork beds (dive slice 4, after batch 1)** (new bed drawing; grown-up): shares the `order` and the geometry change with batch 1; patch layouts in `geometry`, the borders and tints, the patch hint wording. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
+
+Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`. The shared geometry changes, so the couch suite follows.
+
+Proof: new-interaction tier: typecheck, unit tests including order, one play of level 9 with one wrong number and one hint naming a patch; one portrait screenshot; `fingerdemo` at 9; `BROWSER_SUITE=couchgames` filtered to Sudoku Garden.
