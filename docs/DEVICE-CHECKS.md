@@ -53,10 +53,11 @@
 - [ ] Once built: does the *show me why* replay read as a lesson rather than a loss?
 - [ ] Once *play it out* is built: how does she react when the pet wins?
 
-## Notice Board (media-literacy study, 2026-10-31; proposed, nothing built)
+## Notice Board (media-literacy study, 2026-10-31; levels 1–3 built 2026-11-01)
 
-- [ ] Once built: does a four-year-old pick the witness from the memory picture, or just the friend nearest the poster?
-- [ ] Once built: does a seven-year-old's basket choice (to tell or to sell) follow the price and stall cue or the maker's words?
+- [ ] Does a four-year-old pick the witness from the memory picture, or just the friend nearest the poster?
+- [ ] Does a seven-year-old's basket choice (to tell or to sell) follow the price and stall cue or the maker's words?
+- [ ] On an iPad, are the six badges and the six place pictures told apart at memory-bubble size?
 - [ ] Once the card is built: does a grown-up use the "Who made this?" card with a real box or advert?
 
 ## Not Always (philosophy-reasoning study, 2026-10-31; levels 1–3 built 2026-11-01)
