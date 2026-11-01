@@ -57,7 +57,9 @@ export function spinner(w: Wheel, r: number, opts: SpinnerOptions = {}): Spinner
   for (const s of sections(w)) {
     const a0 = rad(s.start * WEDGE_DEG), a1 = rad((s.start + s.count) * WEDGE_DEG);
     const c = sw(s.kind);
-    g.moveTo(0, 0).arc(0, 0, r, a0, a1).closePath().fill(c.fill).stroke({ width: 4, color: c.line });
+    // A whole wheel of one critter (level 4's sure spinner) is a plain disc, with no seam from the hub.
+    if (s.count === w.length) g.circle(0, 0, r).fill(c.fill).stroke({ width: 4, color: c.line });
+    else g.moveTo(0, 0).arc(0, 0, r, a0, a1).closePath().fill(c.fill).stroke({ width: 4, color: c.line });
   }
   wheel.addChild(g);
   for (const s of sections(w)) {

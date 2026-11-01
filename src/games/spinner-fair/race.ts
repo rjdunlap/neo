@@ -146,7 +146,8 @@ export class RaceGame implements Game {
   /** One movable piece per wedge, in the wheel's frame; the hub caps them. */
   private buildPieces() {
     for (const p of this.pieces) { p.drag.destroy(); this.ctx.tw.kill(p.node); p.node.destroy({ children: true }); }
-    this.art.wheel.removeChildren(1).forEach((c) => c.destroy({ children: true }));
+    // Keep the white disc (child 0); Pixi's removeChildren(1) throws when there is nothing after it.
+    while (this.art.wheel.children.length > 1) this.art.wheel.removeChildAt(1).destroy({ children: true });
     this.pieces = this.wheel.map((kind, index) => {
       const w = wedgePiece(kind, index, BIG);
       w.node.hitArea = new Polygon(w.points);
@@ -203,7 +204,6 @@ export class RaceGame implements Game {
     await this.ctx.say('sf.unfair', { kind: NAME_OF[this.racers[0]], other: NAME_OF[this.racers[1]], n, m });
     if (this.finished || set !== this.setIndex) return;
     this.phase = 'even';
-    this.setMisses = 0;
     this.busy = false;
     this.syncDrags();
     void this.instruct();
