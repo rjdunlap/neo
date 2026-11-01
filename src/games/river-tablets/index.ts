@@ -3,7 +3,8 @@
  * in the jar for each sheep and tips the jar; level 2 presses one mark per token on a clay envelope and cracks it open;
  * level 3 presses each mark in the row with its picture and reads the tablet back; level 4 writes a cart's crates and
  * baskets with big marks for tens and small marks for ones; level 5 checks a cart against the farm's tablet: short, right or
- * extra, and by how many. Rules: ./logic.ts; definition:
+ * extra, and by how many; level 6 sets the farm's and the storehouse's tablets against one cart: this one, neither, or can't
+ * tell when the baskets are gone. Rules: ./logic.ts; definition:
  * docs/definitions/river-tablets.md.
  */
 import { Container, Ellipse, Graphics, Rectangle } from 'pixi.js';
@@ -20,20 +21,20 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import {
-  ballArt, basketArt, cartArt, cellArt, crackArt, crateArt, goodArt, handInArt, iconArt, jarArt, numberArt, penArt, riverArt, rowArt, sheepArt, signArt, stampArt, stickerArt, storeArt, stripArt,
-  tabletArt, tenWedgeArt, tokenArt, verdictArt, wedgeArt, yardArt,
+  ballArt, basketArt, cantTellArt, cartArt, cellArt, crackArt, crateArt, goodArt, handInArt, iconArt, jarArt, neitherArt, numberArt, pairTabletArt, penArt, pickArt, riverArt, rowArt, sheepArt,
+  signArt, stampArt, stickerArt, storeArt, stripArt, tabletArt, tenWedgeArt, tokenArt, verdictArt, wedgeArt, yardArt,
 } from './art';
 import {
-  arrive, askCheck, askEnvelope, askTablet, askTens, briefFor, CART_VERDICTS, cartOf, CELL, centre, checkTally, chooseNumber, chooseVerdict, crackEnvelope, envelopeTally, handIn, hintFor, KINDS, lift, lineUp,
+  answerFor, arrive, askCheck, askDisagree, disagreeTally, pickAnswer, startDisagree, askEnvelope, askTablet, askTens, briefFor, CART_VERDICTS, cartOf, CELL, centre, checkTally, chooseNumber, chooseVerdict, crackEnvelope, envelopeTally, handIn, hintFor, KINDS, lift, lineUp,
   markCount, planFor, press, pressRow, readBack, readyToTip, ROW_CELLS, SCATTER_COLS, SCATTER_ROWS, scatterFor, shortest, SIGN, stamp, startCheck, startEnvelope, startPen, startTablet, startTens, tabletLayout,
   tabletTally, tapJar, tensHint, tensTally, value, verdictFor, waiting,
-  type Brief, type Cart, type CartVerdict, type CheckState, type EnvelopeState, type Kind, type Mark, type PenState, type Pt, type Reading, type Rect, type TabletLayout, type TabletState, type TensState,
+  type Answer, type Brief, type Cart, type DisagreeState, type CartVerdict, type CheckState, type EnvelopeState, type Kind, type Mark, type PenState, type Pt, type Reading, type Rect, type TabletLayout, type TabletState, type TensState,
 } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 5 },
+  school: { min: 3, max: 6 },
 };
 
 /** Spoken counts come from bounded slots, never free text. */
@@ -53,7 +54,11 @@ class RiverTablets implements Game {
   /** Level 4: one tablet per cart; level 5: one check per cart. `cartIndex` is the cart in the yard. */
   tens: TensState[] = [];
   checks: CheckState[] = [];
+  /** Level 6: one state per case (two tablets against one cart); `cartIndex` is the case in the yard. */
+  cases: DisagreeState[] = [];
   cartIndex = 0;
+  /** Level 6: which tablet the help lineup is playing against now (its tablet glows), or null. */
+  linedAgainst: 0 | 1 | null = null;
   /** Level 4: the pet has counted the yard for this cart (the ghost finger asks once). */
   yardCounted = false;
   /** An animation is running; inputs wait. */
@@ -97,6 +102,10 @@ class RiverTablets implements Game {
   stampNodes: Container[] = [];
   handInNode: Container | null = null;
   verdictNodes: Container[] = [];
+  pairNodes: Container[] = [];
+  pickNodes: Container[] = [];
+  neitherNode: Container | null = null;
+  cantTellNode: Container | null = null;
   numberNodes: Container[] = [];
   crateNodes: Container[] = [];
   private basketNodes: Container[] = [];
@@ -115,6 +124,7 @@ class RiverTablets implements Game {
     if (this.brief.id === 'rows') this.tablets = this.brief.deliveries.map((d) => startTablet(d));
     if (this.brief.id === 'tens') this.tens = this.brief.carts.map((c) => startTens(10 * c.crates + c.loose));
     if (this.brief.id === 'check') this.checks = this.brief.deliveries.map((d) => startCheck(d));
+    if (this.brief.id === 'disagree') this.cases = this.brief.cases.map((c) => startDisagree(c));
   }
 
   get level() {
@@ -135,11 +145,17 @@ class RiverTablets implements Game {
     if (this.brief.id === 'rows') return tabletTally(this.tablets);
     if (this.brief.id === 'tens') return tensTally(this.tens);
     if (this.brief.id === 'check') return checkTally(this.checks);
+    if (this.brief.id === 'disagree') return disagreeTally(this.cases);
     return { misses: 0, hints: 0 };
   }
 
   start() {
     this.build();
+    if (this.brief.id === 'disagree') {
+      // One line at a time (a new line cuts the last): the instruction, then the empty cart's story if it comes first.
+      void this.ctx.instruct('rt.instruct.6').then(() => { if (this.alive && !this.finished && this.pairCase.cart === null) void this.ctx.say('rt.disagree.gone'); });
+      return;
+    }
     void this.ctx.instruct(`rt.instruct.${this.level}` as LineId);
     if (this.level === 4) void this.ctx.say('rt.history.tens');
     else if (this.level >= 2) void this.ctx.say('rt.history');
@@ -174,6 +190,9 @@ class RiverTablets implements Game {
     this.stampNodes = [];
     this.verdictNodes = [];
     this.numberNodes = [];
+    this.pairNodes = [];
+    this.pickNodes = [];
+    this.neitherNode = this.cantTellNode = null;
     this.crateNodes = [];
     this.basketNodes = [];
     this.cellNodes = [];
@@ -195,6 +214,15 @@ class RiverTablets implements Game {
       this.buildTablet(l);
       this.board.addChild(this.lineupLayer, this.glow);
       if (this.brief.id === 'check' && this.check.lined) this.drawLineup(shortest(this.check.t), cartOf(this.check.c), true);
+      return;
+    }
+    if (this.brief.id === 'disagree') {
+      this.buildYard(l);
+      this.buildPair(l);
+      this.board.addChild(this.lineupLayer, this.glow);
+      // A rebuild keeps the help on screen: both lineups held (a cart), or the empty cart's glow (gone).
+      const c = this.pairCase;
+      if (c.lined && c.cart !== null && !c.done) this.drawPairLineups(true);
       return;
     }
     const river = riverArt(l.lane.w, l.lane.h * 0.5);
@@ -769,15 +797,24 @@ class RiverTablets implements Game {
     return this.checks[this.cartIndex];
   }
 
-  /** The cart in the yard: level 4's brief, or the cart that came at level 5. */
+  get pairCase(): DisagreeState {
+    return this.cases[this.cartIndex];
+  }
+
+  /** The cart in the yard: level 4's brief, the cart that came at level 5, or level 6's cart (empty when gone). */
   private get cart(): Cart {
     if (this.brief.id === 'tens') return this.brief.carts[this.cartIndex];
+    if (this.brief.id === 'disagree') return cartOf(this.pairCase.cart ?? 0);
     return cartOf(this.check.c);
   }
 
   /** Where each loose basket stands: level 4's seeded scatter, or one seeded by the delivery at level 5. */
   private get scatter(): number[] {
     if (this.brief.id === 'tens') return this.brief.scatter[this.cartIndex];
+    if (this.brief.id === 'disagree') {
+      const p = this.pairCase;
+      return scatterFor(this.cart.loose, new Rng(p.farm * 41 + p.store * 7 + (p.cart ?? 0)));
+    }
     const c = this.check;
     return scatterFor(this.cart.loose, new Rng(c.t * 41 + c.c));
   }
@@ -816,6 +853,157 @@ class RiverTablets implements Game {
       yard.addChild(g);
       return g;
     });
+    // Level 6, gone: an empty cart stands in the yard.
+    if (this.brief.id === 'disagree' && this.pairCase.cart === null) {
+      const cart = new Container();
+      cart.addChild(cartArt(Math.min(220, b.w * 0.6)));
+      cart.position.set(b.x - l.lane.x + b.w / 2, l.lane.h - 30);
+      cart.eventMode = 'none';
+      yard.addChild(cart);
+    }
+  }
+
+  // ——— Level 6: two tablets disagree ———
+
+  private buildPair(l: TabletLayout) {
+    this.pairNodes = l.pair!.map((r, i) => {
+      const node = new Container();
+      node.position.set(r.x, r.y);
+      node.hitArea = new Rectangle(0, 0, r.w, r.h);
+      onTap(node, () => this.readPair(i as 0 | 1), { cooldown: 400 });
+      this.board.addChild(node);
+      return node;
+    });
+    const answers: Answer[] = ['farm', 'storehouse'];
+    this.pickNodes = l.picks!.map((r, i) => this.answerNode(r, pickArt(r.w), answers[i]));
+    this.neitherNode = this.answerNode(l.neither!, neitherArt(l.neither!.w), 'neither');
+    this.cantTellNode = this.answerNode(l.cantTell!, cantTellArt(l.cantTell!.w), 'cantTell');
+    this.redrawPair();
+  }
+
+  private answerNode(r: Rect, art: Container, a: Answer): Container {
+    const node = new Container();
+    node.position.copyFrom(centre(r));
+    node.addChild(art);
+    node.hitArea = new Rectangle(-r.w / 2 - 6, -r.h / 2 - 6, r.w + 12, r.h + 12);
+    onTap(node, () => void this.pickPair(a, node), { cooldown: 300 });
+    this.board.addChild(node);
+    return node;
+  }
+
+  /** Each tablet in shortest form; the one the help lineup is playing against glows. */
+  private redrawPair() {
+    const l = this.layoutNow;
+    if (!l?.pair) return;
+    const c = this.pairCase;
+    [c.farm, c.store].forEach((n, i) => {
+      const node = this.pairNodes[i];
+      if (!node) return;
+      for (const ch of node.removeChildren()) ch.destroy({ children: true });
+      const r = shortest(n);
+      node.addChild(pairTabletArt(l.pair![i].w, l.pair![i].h, i === 0 ? 'farm' : 'store', r.tens, r.ones, this.linedAgainst === i));
+    });
+  }
+
+  /** Tapping a tablet reads it aloud; never counted. */
+  readPair(i: 0 | 1) {
+    if (this.finished || this.busy || this.brief.id !== 'disagree') return;
+    const c = this.pairCase;
+    const r = shortest(i === 0 ? c.farm : c.store);
+    sfx.pop(7);
+    void this.ctx.say('rt.read-tablet', { tens: r.tens, ones: r.ones, n: value(r) });
+  }
+
+  /** Picking is the commit: the accepted answer ends the case; anything else is one miss with the pet's reason. */
+  private async pickPair(a: Answer, node: Container) {
+    if (this.finished || this.busy || this.brief.id !== 'disagree') return;
+    node.scale.set(0.9);
+    void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    const before = this.pairCase;
+    const r = pickAnswer(before, a);
+    if (r.result === 'none') return;
+    this.cases[this.cartIndex] = r.state;
+    const epoch = this.epoch;
+    this.busy = true;
+    sfx.clunk();
+    const c = r.state;
+    if (r.result === 'right') {
+      if (c.cart === null) {
+        sfx.sparkle();
+        await this.ctx.say('rt.disagree.cant-tell');
+      } else if (a === 'neither') {
+        await this.playPairLineups(epoch, false);
+        if (!this.live(epoch)) return;
+        sfx.sparkle();
+        await this.ctx.say('rt.disagree.neither', { f: c.farm, s: c.store, c: c.cart });
+      } else {
+        const i = a === 'farm' ? 0 : 1;
+        this.linedAgainst = i;
+        this.redrawPair();
+        this.drawLineup(shortest(c.cart), cartOf(c.cart), false, this.layoutNow!.lineups![i]);
+        await this.ctx.tw.wait(0.7);
+        if (!this.live(epoch)) return;
+        sfx.sparkle();
+        await this.ctx.say(i === 0 ? 'rt.disagree.farm' : 'rt.disagree.store', { n: c.cart });
+      }
+      if (!this.live(epoch)) return;
+      this.linedAgainst = null;
+      void this.nextCart(this.cases.length);
+      return;
+    }
+    sfx.boing();
+    const says = a === 'farm' ? c.farm : c.store;
+    if (r.reason === 'wrong-tablet') await this.ctx.say('rt.disagree.wrong-tablet', { says, c: c.cart ?? 0 });
+    else if (r.reason === 'wrong-neither') await this.ctx.say('rt.disagree.wrong-neither', { c: c.cart ?? 0 });
+    else if (r.reason === 'wrong-cant') await this.ctx.say('rt.disagree.wrong-cant');
+    else await this.ctx.say('rt.disagree.wrong-gone');
+    if (!this.live(epoch)) return;
+    if (c.lined && !before.lined) {
+      await this.pairHelp(epoch);
+      if (!this.live(epoch)) return;
+    }
+    this.busy = false;
+    if (this.relayout) this.build();
+  }
+
+  /** The help: each tablet's lineup in turn, its leftovers glowing, both held; for gone, the empty cart glows. */
+  private async pairHelp(epoch: number) {
+    const c = this.pairCase;
+    if (c.cart === null) {
+      await this.ctx.say('rt.disagree.help');
+      return;
+    }
+    await this.playPairLineups(epoch, true);
+    if (!this.live(epoch)) return;
+    await this.ctx.say('rt.check.help');
+  }
+
+  /** Line the cart up against the farm's tablet, then the storehouse's, each under its own tablet; both stay. */
+  private async playPairLineups(epoch: number, glow: boolean) {
+    const c = this.pairCase;
+    const l = this.layoutNow;
+    if (c.cart === null || !l?.lineups) return;
+    this.clearLineup();
+    for (const i of [0, 1] as const) {
+      this.linedAgainst = i;
+      this.redrawPair();
+      this.drawLineup(shortest(i === 0 ? c.farm : c.store), cartOf(c.cart), glow, l.lineups[i], false);
+      sfx.whoosh();
+      await this.ctx.tw.wait(this.ctx.demo ? 0.5 : 1.1);
+      if (!this.live(epoch)) return;
+    }
+    this.linedAgainst = null;
+    this.redrawPair();
+  }
+
+  /** Both lineups at once, as a rebuild redraws the held help. */
+  private drawPairLineups(glow: boolean) {
+    const c = this.pairCase;
+    const l = this.layoutNow;
+    if (c.cart === null || !l?.lineups) return;
+    this.clearLineup();
+    this.drawLineup(shortest(c.farm), cartOf(c.cart), glow, l.lineups[0], false);
+    this.drawLineup(shortest(c.store), cartOf(c.cart), glow, l.lineups[1], false);
   }
 
   private buildTablet(l: TabletLayout) {
@@ -1127,10 +1315,16 @@ class RiverTablets implements Game {
     this.cartIndex++;
     this.yardCounted = false;
     this.openCrate = -1;
+    this.linedAgainst = null;
     this.clearLineup();
     this.busy = false;
     this.build();
     sfx.ratchet(3);
+    if (this.brief.id === 'disagree' && this.pairCase.cart === null) {
+      const alive = () => this.alive && !this.finished;
+      void this.ctx.say('rt.next-cart').then(() => { if (alive()) void this.ctx.say('rt.disagree.gone'); });
+      return;
+    }
     void this.ctx.say('rt.next-cart');
   }
 
@@ -1138,11 +1332,12 @@ class RiverTablets implements Game {
    * The goods under the marks: each ten-mark over a crate (or its loose baskets, with empty places), each small mark over a
    * basket or an empty place, then any extra baskets. `glow` lights what does not match. Returns the mismatched pieces.
    */
-  private drawLineup(r: Reading, cart: Cart, glow: boolean): Container[] {
-    this.clearLineup();
+  private drawLineup(r: Reading, cart: Cart, glow: boolean, into?: Rect, clear = true): Container[] {
+    if (clear) this.clearLineup();
     const l = this.layoutNow;
     if (!l) return [];
-    const area = l.lineup;
+    const area = into ?? l.lineup;
+    const before = this.lineupLayer.children.length;
     const lu = lineUp(r, cart);
     const TEN = 2.4;
     const units = lu.tens.length * TEN + lu.ones.length + (lu.extra > 0 ? lu.extra + 0.6 : 0);
@@ -1201,7 +1396,7 @@ class RiverTablets implements Game {
       this.lineupLayer.addChild(c);
       x += step;
     }
-    for (const c of this.lineupLayer.children) {
+    for (const c of this.lineupLayer.children.slice(before)) {
       c.scale.set(0.4);
       void this.ctx.tw.to(c.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
     }
@@ -1227,7 +1422,7 @@ class RiverTablets implements Game {
 
   hintLabel = 'Help';
 
-  /** The pet's Help: at level 1 the ask again (free); at levels 2–3 the glow, the part's one hint if not yet spent. */
+  /** The pet's Help: at level 1 the ask again (free); at levels 2–6 the help, the part's one hint if not yet spent. */
   askForHint() {
     if (this.finished) return;
     if (this.brief.id === 'tokens') { void this.ctx.instruct('rt.instruct.1'); return; }
@@ -1249,6 +1444,21 @@ class RiverTablets implements Game {
       this.checks[this.cartIndex] = askCheck(this.check);
       this.drawLineup(shortest(this.check.t), cartOf(this.check.c), true);
       void this.ctx.say('rt.check.help');
+      return;
+    }
+    if (this.brief.id === 'disagree') {
+      const c = this.pairCase;
+      if (c.done) return;
+      const first = !c.lined;
+      this.cases[this.cartIndex] = askDisagree(c);
+      if (!first) return;
+      const epoch = this.epoch;
+      this.busy = true;
+      void this.pairHelp(epoch).then(() => {
+        if (!this.live(epoch)) return;
+        this.busy = false;
+        if (this.relayout) this.build();
+      });
       return;
     }
     this.tablets[this.tabletIndex] = askTablet(this.tablet);
@@ -1282,6 +1492,13 @@ class RiverTablets implements Game {
         this.glow.roundRect(c.x - 10 * r, c.y - 10 * r, c.w + 20 * r, c.h + 20 * r, 30).stroke({ width: 8, color: swatch.yellow.fill });
       }
     }
+    if (this.brief.id === 'disagree' && this.pairCase.lined && this.pairCase.cart === null && !this.pairCase.done && this.layoutNow.lane) {
+      // Gone: the empty cart glows while the help holds.
+      const y = this.layoutNow.lane;
+      const b = this.layoutNow.baskets!;
+      const w = Math.min(220, b.w * 0.6) + 40;
+      this.glow.roundRect(b.x + b.w / 2 - w / 2 - 6 * r, y.y + y.h - 110 - 6 * r, w + 12 * r, 100 + 12 * r, 28).stroke({ width: 8, color: swatch.yellow.fill });
+    }
     if (this.brief.id === 'tens' && this.tensNow.glowing && !this.busy) {
       const c = this.tensGlowRect();
       if (c) this.glow.roundRect(c.x - 10 * r, c.y - 10 * r, c.w + 20 * r, c.h + 20 * r, 28).stroke({ width: 8, color: swatch.yellow.fill });
@@ -1296,7 +1513,8 @@ class RiverTablets implements Game {
 
   /**
    * The ghost finger: the jar for each sheep then the tip; peek, one mark per token, Crack; each good's row; the yard, the
-   * stamps toward the fewest marks, Hand in; the cart's verdict, then its number. Never a wrong answer.
+   * stamps toward the fewest marks, Hand in; the cart's verdict, then its number; the accepted tablet, neither or can't tell.
+   * Never a wrong answer.
    */
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;
@@ -1323,6 +1541,13 @@ class RiverTablets implements Game {
       const want = verdictFor(c.t, c.c);
       if (want.verdict !== 'right' && c.open === want.verdict) return { tap: { on: this.numberNodes[want.by - 1] }, pause: 0.6 };
       return { tap: { on: this.verdictNodes[CART_VERDICTS.indexOf(want.verdict)] }, pause: 0.9 };
+    }
+    if (this.brief.id === 'disagree') {
+      const c = this.pairCase;
+      if (c.done) return null;
+      const a = answerFor(c);
+      const node = a === 'farm' ? this.pickNodes[0] : a === 'storehouse' ? this.pickNodes[1] : a === 'neither' ? this.neitherNode : this.cantTellNode;
+      return node ? { tap: { on: node }, pause: 1.2 } : null;
     }
     const good = waiting(this.tablet);
     if (good === null) return null;

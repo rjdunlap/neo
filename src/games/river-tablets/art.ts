@@ -1,4 +1,4 @@
-/** River Tablets' code-drawn pieces: sheep, tokens, the jar, the clay ball and its cells, Crack, the tablet rows and signs, cart, storehouse, pen, icon and sticker; for levels 4–5 the yard, baskets, crates of ten, the ten-mark, the tablet and strips, the stamps, Hand in, the verdicts and numbers. */
+/** River Tablets' code-drawn pieces: sheep, tokens, the jar, the clay ball and its cells, Crack, the tablet rows and signs, cart, storehouse, pen, icon and sticker; for levels 4–5 the yard, baskets, crates of ten, the ten-mark, the tablet and strips, the stamps, Hand in, the verdicts and numbers; for level 6 the pair of tablets, "this one", neither and can't tell. */
 import { Container, Graphics, Text } from 'pixi.js';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { finish } from '../../ui/buttons';
@@ -419,6 +419,109 @@ export function numberArt(n: number, size: number, glow = false): Container {
   t.anchor.set(0.5);
   t.position.set(0, 14);
   c.addChild(t);
+  c.eventMode = 'none';
+  return c;
+}
+
+// ——— Level 6: two tablets disagree ———
+
+/** A small field of sprouts, `w` wide, standing on (0, 0): the farm's sign. */
+function fieldSign(w: number): Graphics {
+  const g = new Graphics();
+  g.roundRect(-w / 2, -w * 0.32, w, w * 0.32, 10).fill(0x9ccf6a).stroke(line(0x5f9a3a, 3));
+  for (let i = 0; i < 4; i++) {
+    const x = -w * 0.36 + i * w * 0.24;
+    g.moveTo(x, -w * 0.08).lineTo(x, -w * 0.3).stroke(line(REED, 3));
+    g.ellipse(x - 5, -w * 0.28, 6, 3).fill(REED);
+    g.ellipse(x + 5, -w * 0.24, 6, 3).fill(REED);
+  }
+  return g;
+}
+
+/**
+ * Level 6: one of the two tablets, `w` × `h` at (0, 0) top-left, in shortest form: its place's picture (the farm's field or
+ * the storehouse) and a speaker sign in the top band, then its big marks in a row and its small marks in rows of five.
+ */
+export function pairTabletArt(w: number, h: number, side: 'farm' | 'store', tens: number, ones: number, glow = false): Container {
+  const c = new Container();
+  const g = new Graphics();
+  if (glow) g.roundRect(-12, -12, w + 24, h + 24, 38).fill({ color: swatch.yellow.fill, alpha: 0.55 });
+  g.roundRect(0, 8, w, h, 30).fill(CLAY.dark);
+  g.roundRect(0, 0, w, h, 30).fill(CLAY.fill).stroke(line(CLAY.line, 6));
+  g.moveTo(16, 70).lineTo(w - 16, 70).stroke(line(CLAY.dark, 3));
+  // The speaker sign: tap to hear it.
+  for (const r of [10, 20]) g.moveTo(w - 46 + r * Math.cos(-0.7), 36 + r * Math.sin(-0.7)).arc(w - 46, 36, r, -0.7, 0.7).stroke(line(CLAY.line, 4));
+  g.circle(w - 52, 36, 6).fill(CLAY.line);
+  c.addChild(g);
+  if (side === 'farm') {
+    const f = fieldSign(110);
+    f.position.set(80, 60);
+    c.addChild(f);
+  } else {
+    const s = storeArt(80, 54);
+    s.position.set(40, 8);
+    c.addChild(s);
+  }
+  for (let i = 0; i < tens; i++) {
+    const m = tenWedgeArt(66);
+    m.position.set(w / 2 + (i - (tens - 1) / 2) * 90, 112);
+    c.addChild(m);
+  }
+  for (let i = 0; i < ones; i++) {
+    const m = wedgeArt(34);
+    const row = Math.floor(i / 5);
+    const inRow = Math.min(5, ones - row * 5);
+    m.position.set(w / 2 + ((i % 5) - (inRow - 1) / 2) * 46, 172 + row * 50);
+    c.addChild(m);
+  }
+  c.eventMode = 'none';
+  return c;
+}
+
+/** "This one": a hand pointing up at the tablet above, `size` square centred on (0, 0). */
+export function pickArt(size: number, glow = false): Container {
+  const c = new Container();
+  if (glow) c.addChild(new Graphics().roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  c.addChild(finish({ w: size, h: size, corner: 28 }, swatch.green));
+  const g = new Graphics();
+  g.roundRect(-20, -4, 40, 36, 14).fill(swatch.yellow.light).stroke(line(ink, 4));
+  g.roundRect(-8, -38, 16, 42, 8).fill(swatch.yellow.light).stroke(line(ink, 4));
+  g.moveTo(-6, 10).lineTo(6, 10).stroke(line(ink, 3));
+  c.addChild(g);
+  c.eventMode = 'none';
+  return c;
+}
+
+/** Neither: both little tablets with a wedge cross over them, `size` square centred on (0, 0). */
+export function neitherArt(size: number, glow = false): Container {
+  const c = new Container();
+  if (glow) c.addChild(new Graphics().roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  c.addChild(finish({ w: size, h: size, corner: 28 }, swatch.purple));
+  const g = new Graphics();
+  for (const x of [-22, 22]) g.roundRect(x - 18, -24, 36, 48, 6).fill(CLAY.fill).stroke(line(CLAY.line, 3));
+  g.moveTo(-34, -30).lineTo(34, 30).stroke(line(swatch.red.line, 9));
+  g.moveTo(34, -30).lineTo(-34, 30).stroke(line(swatch.red.line, 9));
+  c.addChild(g);
+  c.eventMode = 'none';
+  return c;
+}
+
+/** Can't tell: the pet's two hands up in a shrug over an empty cart, `size` square centred on (0, 0). */
+export function cantTellArt(size: number, glow = false): Container {
+  const c = new Container();
+  if (glow) c.addChild(new Graphics().roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  c.addChild(finish({ w: size, h: size, corner: 28 }, swatch.blue));
+  const cart = cartArt(70);
+  cart.position.set(0, 34);
+  c.addChild(cart);
+  const g = new Graphics();
+  for (const s of [-1, 1]) {
+    g.moveTo(s * 14, -2).lineTo(s * 30, -22).stroke(line(ink, 4));
+    g.ellipse(s * 33, -28, 11, 8).fill(swatch.yellow.light).stroke(line(ink, 4));
+  }
+  g.circle(0, -18, 12).fill(swatch.yellow.light).stroke(line(ink, 4));
+  g.moveTo(-5, -14).quadraticCurveTo(0, -18, 5, -14).stroke(line(ink, 3));
+  c.addChild(g);
   c.eventMode = 'none';
   return c;
 }

@@ -3,13 +3,14 @@
  * Level 1 drops a token in the jar for each sheep and tips the jar; level 2 presses one mark per token on a clay envelope and
  * cracks it open; level 3 presses each mark in the row with its picture and reads the tablet back; level 4 writes a cart's
  * crates and baskets with a big mark for ten and small marks for ones; level 5 checks a cart against a tablet written at the
- * farm: short, right or extra, and by how many. Definition: docs/definitions/river-tablets.md.
+ * farm: short, right or extra, and by how many; level 6 sets two tablets that disagree against one cart: which one
+ * matches, neither, or can't tell when the cart is gone. Definition: docs/definitions/river-tablets.md.
  */
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 
-export type PlanId = 'tokens' | 'envelope' | 'rows' | 'tens' | 'check';
+export type PlanId = 'tokens' | 'envelope' | 'rows' | 'tens' | 'check' | 'disagree';
 export type Kind = 'sheep' | 'jar';
 export const KINDS: readonly Kind[] = ['sheep', 'jar'];
 
@@ -25,6 +26,7 @@ export const PLANS: readonly Plan[] = [
   { level: 3, id: 'rows', name: 'Which row? each mark in the row with its picture (two tablets of 4–6 mixed goods)' },
   { level: 4, id: 'tens', name: 'A ten is a different mark: press big marks for tens and small marks for ones (two carts of 12–29)' },
   { level: 5, id: 'check', name: 'Check the delivery: short, right or extra, and by how many (two carts against tablets of 12–29)' },
+  { level: 6, id: 'disagree', name: "Two tablets disagree: which one matches the cart, or can we tell? (a farm and a storehouse tablet of 12–29)" },
 ];
 export const MAX_LEVEL = PLANS.length;
 
@@ -93,7 +95,26 @@ export interface Delivery {
   c: number;
 }
 
-export type Brief = TokensBrief | EnvelopeBrief | RowsBrief | TensBrief | CheckBrief;
+/** Level 6: what the cart shows against the two tablets. */
+export type CaseKind = 'one' | 'neither' | 'gone';
+
+export interface DisagreeCase {
+  kind: CaseKind;
+  /** The farm's tablet (left, by the field) and the storehouse's tablet (right, by its door): 12–29, 1–3 apart. */
+  farm: number;
+  store: number;
+  /** The cart in the yard, or null when the baskets were already shared out. */
+  cart: number | null;
+}
+
+export interface DisagreeBrief {
+  level: 6;
+  id: 'disagree';
+  /** One case is always `one`; the other is `neither` or `gone`; their order is seeded. */
+  cases: [DisagreeCase, DisagreeCase];
+}
+
+export type Brief = TokensBrief | EnvelopeBrief | RowsBrief | TensBrief | CheckBrief | DisagreeBrief;
 
 /** How many times the kind changes along a delivery; a mixed delivery changes at least twice. */
 export function kindChanges(goods: readonly Kind[]): number {
@@ -153,6 +174,26 @@ export function briefFor(level: number, rng: Rng): Brief {
     const d2 = d1 === 0 ? rng.pick([-3, -2, -1, 1, 2, 3]) : rng.int(-3, 3);
     const deliveries: [Delivery, Delivery] = rng.chance(0.5) ? [{ t: t1, c: t1 + d1 }, { t: t2, c: t2 + d2 }] : [{ t: t2, c: t2 + d2 }, { t: t1, c: t1 + d1 }];
     return { level: 5, id: 'check', deliveries };
+  }
+  if (plan.id === 'disagree') {
+    const pair = (): [number, number] => {
+      const a = rng.int(12, 29);
+      const near = [-3, -2, -1, 1, 2, 3].map((d) => a + d).filter((b) => b >= 12 && b <= 29);
+      const b = rng.pick(near);
+      return rng.chance(0.5) ? [a, b] : [b, a];
+    };
+    const [f1, s1] = pair();
+    const one: DisagreeCase = { kind: 'one', farm: f1, store: s1, cart: rng.chance(0.5) ? f1 : s1 };
+    const [f2, s2] = pair();
+    let other: DisagreeCase;
+    if (rng.chance(0.5)) {
+      other = { kind: 'gone', farm: f2, store: s2, cart: null };
+    } else {
+      // Every cart 12–29 within three of both tablets and equal to neither; never empty, since the tablets are 1–3 apart.
+      const fits = Array.from({ length: 18 }, (_, i) => 12 + i).filter((c) => c !== f2 && c !== s2 && Math.abs(c - f2) <= 3 && Math.abs(c - s2) <= 3);
+      other = { kind: 'neither', farm: f2, store: s2, cart: rng.pick(fits) };
+    }
+    return { level: 6, id: 'disagree', cases: rng.chance(0.5) ? [one, other] : [other, one] };
   }
   if (plan.id === 'tokens') {
     const sheep = rng.int(3, 5);
@@ -486,6 +527,70 @@ export function askCheck(s: CheckState): CheckState {
   return { ...s, lined: true, hinted: true };
 }
 
+// ——— Level 6: two tablets disagree ———
+
+export type Answer = 'farm' | 'storehouse' | 'neither' | 'cantTell';
+export const ANSWERS: readonly Answer[] = ['farm', 'storehouse', 'neither', 'cantTell'];
+
+/** Every reading consistent with what is on screen: one for a cart in the yard; an empty cart fits farm, storehouse and neither alike. */
+export function readings(c: DisagreeCase): Answer[] {
+  if (c.cart === null) return ['farm', 'storehouse', 'neither'];
+  if (c.cart === c.farm) return ['farm'];
+  if (c.cart === c.store) return ['storehouse'];
+  return ['neither'];
+}
+
+/** The one accepted answer: the only consistent reading, or can't tell when more than one is consistent. */
+export function answerFor(c: DisagreeCase): Answer {
+  const r = readings(c);
+  return r.length === 1 ? r[0] : 'cantTell';
+}
+
+export const accepts = (c: DisagreeCase, a: Answer) => answerFor(c) === a;
+
+/** Why a pick was wrong, for the pet's reason. */
+export type DisagreeMiss = 'wrong-tablet' | 'wrong-neither' | 'wrong-cant' | 'wrong-gone';
+
+export function missReason(c: DisagreeCase, a: Answer): DisagreeMiss | null {
+  if (accepts(c, a)) return null;
+  if (c.cart === null) return 'wrong-gone';
+  if (a === 'cantTell') return 'wrong-cant';
+  if (a === 'neither') return 'wrong-neither';
+  return 'wrong-tablet';
+}
+
+export interface DisagreeState extends DisagreeCase {
+  misses: number;
+  hinted: boolean;
+  /** The help plays and holds: each tablet's lineup (a cart) or the empty cart's glow (gone). */
+  lined: boolean;
+  done: boolean;
+}
+
+export function startDisagree(c: DisagreeCase): DisagreeState {
+  return { ...c, misses: 0, hinted: false, lined: false, done: false };
+}
+
+/** Picking is the commit: the accepted answer finishes the case; anything else is one miss, the help after the second. */
+export function pickAnswer(s: DisagreeState, a: Answer): { state: DisagreeState; result: 'none' | 'right' | 'wrong'; reason: DisagreeMiss | null } {
+  if (s.done) return { state: s, result: 'none', reason: null };
+  const reason = missReason(s, a);
+  if (reason === null) return { state: { ...s, done: true }, result: 'right', reason };
+  const misses = s.misses + 1;
+  const lined = s.lined || misses >= 2;
+  return { state: { ...s, misses, lined, hinted: s.hinted || lined }, result: 'wrong', reason };
+}
+
+/** Asked-for help: the same help, once per case. */
+export function askDisagree(s: DisagreeState): DisagreeState {
+  if (s.done) return s;
+  return { ...s, lined: true, hinted: true };
+}
+
+export function disagreeTally(cases: readonly DisagreeState[]): RoundTally {
+  return { misses: cases.reduce((n, t) => n + t.misses, 0), hints: cases.filter((t) => t.hinted).length };
+}
+
 // ——— The lineup: goods under marks ———
 
 export interface Lineup {
@@ -569,6 +674,10 @@ export const READ_H = 100;
 export const STAMP = { w: 140, h: 120 };
 export const VERDICT = 120;
 export const NUMBER = 110;
+/** Level 6: a tablet, its "this one" button, and neither / can't tell. */
+export const PAIR_TABLET = { w: 300, h: 260 };
+export const PICK = 110;
+export const ANSWER = 120;
 const M = 20;
 const GAP = 16;
 
@@ -596,6 +705,12 @@ export interface TabletLayout {
   /** Level 5: short, right and extra, and the numbers one to three. */
   verdicts?: Rect[];
   numbers?: Rect[];
+  /** Level 6: the farm's and the storehouse's tablets (tap to read), a "this one" button under each, neither and can't tell between them, and a lineup under each. */
+  pair?: Rect[];
+  picks?: Rect[];
+  neither?: Rect;
+  cantTell?: Rect;
+  lineups?: Rect[];
   /** Where the record lines up against the things (visual, never a target). */
   lineup: Rect;
   /** Every tap target. */
@@ -610,7 +725,7 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
   const wide = v.w >= v.h;
   const plan = planFor(level);
   const left = HOME_CORNER.w + M;
-  const yardLevel = plan.id === 'tens' || plan.id === 'check';
+  const yardLevel = plan.id === 'tens' || plan.id === 'check' || plan.id === 'disagree';
   const lane: Rect = { x: left, y: M, w: v.w - left - M, h: yardLevel ? YARD_H : 200 };
   const free: Rect = { x: PET_CORNER.w + M, y: lane.y + lane.h + M, w: v.w - PET_CORNER.w - 2 * M, h: v.h - lane.y - lane.h - 2 * M };
   const cx = free.x + free.w / 2;
@@ -635,6 +750,26 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
       : { x: cx - CRACK.w / 2, y: ball.y + ball.h + GAP, w: CRACK.w, h: CRACK.h };
     const lineup: Rect = { x: free.x, y: (wide ? ball.y + ball.h : crack.y + crack.h) + GAP, w: free.w, h: 110 };
     l = { lane, ball, cells, crack, lineup, inputs: [ball, crack] };
+  } else if (plan.id === 'disagree') {
+    const crates = [0, 1, 2].map((i) => ({ x: lane.x + 16 + i * (CRATE.w + 8), y: lane.y + lane.h - CRATE.h - 8, w: CRATE.w, h: CRATE.h }));
+    const bx = crates[2].x + CRATE.w + 12;
+    const baskets: Rect = { x: bx, y: lane.y + 16, w: lane.x + lane.w - 16 - bx, h: lane.h - 26 };
+    // Farm | neither, can't tell | storehouse; each tablet's button below it, then each tablet's lineup.
+    const groupW = 2 * PAIR_TABLET.w + 2 * GAP + ANSWER;
+    const groupH = PAIR_TABLET.h + 12 + PICK + 12 + 110;
+    const x0 = Math.round(free.x + (free.w - groupW) / 2);
+    const spare = wide ? 0 : Math.max(0, free.h - groupH - 6) / 3;
+    const y0 = free.y + 6 + Math.round(spare);
+    const pair = [0, 1].map((i) => ({ x: x0 + i * (PAIR_TABLET.w + 2 * GAP + ANSWER), y: y0, w: PAIR_TABLET.w, h: PAIR_TABLET.h }));
+    const picks = pair.map((t) => ({ x: t.x + (t.w - PICK) / 2, y: t.y + t.h + 12, w: PICK, h: PICK }));
+    const mid = x0 + PAIR_TABLET.w + GAP;
+    const neither: Rect = { x: mid, y: y0, w: ANSWER, h: ANSWER };
+    const cantTell: Rect = { x: mid, y: y0 + ANSWER + GAP, w: ANSWER, h: ANSWER };
+    const ly = picks[0].y + PICK + 12;
+    const half = (groupW - GAP) / 2;
+    const lineups = [0, 1].map((i) => ({ x: x0 + i * (half + GAP), y: ly, w: half, h: 110 }));
+    const lineup: Rect = { x: x0, y: ly, w: groupW, h: 110 };
+    l = { lane, crates, baskets, pair, picks, neither, cantTell, lineups, lineup, inputs: [...pair, ...picks, neither, cantTell] };
   } else if (yardLevel) {
     const crates = [0, 1, 2].map((i) => ({ x: lane.x + 16 + i * (CRATE.w + 8), y: lane.y + lane.h - CRATE.h - 8, w: CRATE.w, h: CRATE.h }));
     const bx = crates[2].x + CRATE.w + 12;
@@ -671,7 +806,7 @@ export function tabletLayout(level: number, v: View): TabletLayout | null {
   // Targets never cover one another (the cells sit on the ball and the strips on the tablet on purpose).
   const targets = [...l.inputs.filter((p) => p !== l.ball && p !== l.tablet), ...(l.cells ?? []), ...(l.crates ?? [])];
   if (l.crates?.some((c) => !inside(c, l.lane) || overlaps(c, l.baskets!))) return null;
-  if (l.inputs.some((p) => overlaps(p, l.lineup)) && l.verdicts) return null;
+  if (l.inputs.some((p) => overlaps(p, l.lineup)) && (l.verdicts || l.pair)) return null;
   if (targets.some((p, i) => targets.some((q, j) => i < j && overlaps(p, q)))) return null;
   if (l.store && l.inputs.some((p) => overlaps(p, l.store!))) return null;
   if (l.inputs.some((p) => overlaps(p, l.lane))) return null;

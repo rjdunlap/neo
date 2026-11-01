@@ -708,3 +708,264 @@ describe('levels 4-5 layout', () => {
     });
   }
 });
+
+// ——— Level 6: two tablets disagree ———
+import {
+  ANSWERS, MAX_LEVEL, accepts, answerFor, askDisagree, disagreeTally, missReason, pickAnswer, readings, startDisagree,
+  type Answer, type DisagreeBrief, type DisagreeCase, type DisagreeState,
+} from './logic';
+
+const disagreeCases = (): DisagreeCase[] => {
+  const out: DisagreeCase[] = [];
+  for (let farm = 12; farm <= 29; farm++) for (let d = -3; d <= 3; d++) {
+    const store = farm + d;
+    if (d === 0 || store < 12 || store > 29) continue;
+    for (let cart = farm - 4; cart <= farm + 4; cart++) {
+      out.push({ kind: cart === farm || cart === store ? 'one' : 'neither', farm, store, cart });
+    }
+    out.push({ kind: 'gone', farm, store, cart: null });
+  }
+  return out;
+};
+
+describe('level 6 briefs', () => {
+  const briefs = SEEDS.map((s) => briefFor(6, new Rng(s)) as DisagreeBrief);
+  it('is the top level', () => {
+    expect(MAX_LEVEL).toBe(6);
+  });
+  it('sets tablets of 12-29 that differ by 1-3', () => {
+    for (const b of briefs) {
+      expect(b.id).toBe('disagree');
+      expect(b.cases).toHaveLength(2);
+      for (const c of b.cases) {
+        for (const n of [c.farm, c.store]) {
+          expect(n).toBeGreaterThanOrEqual(12);
+          expect(n).toBeLessThanOrEqual(29);
+        }
+        const d = Math.abs(c.farm - c.store);
+        expect(d).toBeGreaterThanOrEqual(1);
+        expect(d).toBeLessThanOrEqual(3);
+      }
+    }
+  });
+  it('has exactly one "one" case, and the other is neither or gone; both occur', () => {
+    const others = new Set<string>();
+    for (const b of briefs) {
+      expect(b.cases.filter((c) => c.kind === 'one')).toHaveLength(1);
+      const o = b.cases.find((c) => c.kind !== 'one')!;
+      expect(['neither', 'gone']).toContain(o.kind);
+      others.add(o.kind);
+    }
+    expect(others.has('neither')).toBe(true);
+    expect(others.has('gone')).toBe(true);
+  });
+  it('matches either side, and the matching case comes first or second', () => {
+    const sides = new Set<string>();
+    const orders = new Set<number>();
+    for (const b of briefs) {
+      const i = b.cases.findIndex((c) => c.kind === 'one');
+      orders.add(i);
+      const c = b.cases[i];
+      if (c.cart === c.farm) sides.add('farm');
+      if (c.cart === c.store) sides.add('store');
+      expect(c.cart === c.farm || c.cart === c.store).toBe(true);
+    }
+    expect(sides).toEqual(new Set(['farm', 'store']));
+    expect(orders).toEqual(new Set([0, 1]));
+  });
+  it('a neither cart is 12-29, equals neither tablet and is within 3 of each', () => {
+    let seen = 0;
+    for (const b of briefs) for (const c of b.cases) {
+      if (c.kind !== 'neither') continue;
+      seen++;
+      expect(c.cart).not.toBeNull();
+      expect(c.cart!).toBeGreaterThanOrEqual(12);
+      expect(c.cart!).toBeLessThanOrEqual(29);
+      expect(c.cart).not.toBe(c.farm);
+      expect(c.cart).not.toBe(c.store);
+      expect(Math.abs(c.cart! - c.farm)).toBeLessThanOrEqual(3);
+      expect(Math.abs(c.cart! - c.store)).toBeLessThanOrEqual(3);
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+  it('a present cart holds at most 3 crates; gone has no cart', () => {
+    for (const b of briefs) for (const c of b.cases) {
+      if (c.kind === 'gone') expect(c.cart).toBeNull();
+      else {
+        expect(c.cart).not.toBeNull();
+        expect(c.cart!).toBeLessThanOrEqual(39);
+        expect(Math.floor(c.cart! / 10)).toBeLessThanOrEqual(3);
+      }
+    }
+  });
+  it('is deterministic per seed', () => {
+    for (const s of SEEDS) expect(briefFor(6, new Rng(s))).toEqual(briefFor(6, new Rng(s)));
+  });
+});
+
+describe('level 6 answers', () => {
+  const all = disagreeCases();
+  it('enumerates a healthy space', () => {
+    expect(all.length).toBeGreaterThan(900);
+  });
+  it('readings: one for a present cart, three for gone', () => {
+    for (const c of all) expect(readings(c)).toHaveLength(c.cart === null ? 3 : 1);
+  });
+  it('accepts exactly one of the four answers, and cantTell only for gone', () => {
+    for (const c of all) {
+      const ok = ANSWERS.filter((a) => accepts(c, a));
+      expect(ok).toHaveLength(1);
+      expect(ok[0]).toBe(answerFor(c));
+      expect(accepts(c, 'cantTell')).toBe(c.cart === null);
+      if (c.cart === c.farm) expect(ok[0]).toBe('farm');
+      else if (c.cart === c.store) expect(ok[0]).toBe('storehouse');
+      else if (c.cart !== null) expect(ok[0]).toBe('neither');
+    }
+  });
+  it('every wrong answer has the right reason; the right one has none', () => {
+    for (const c of all) for (const a of ANSWERS) {
+      const r = missReason(c, a);
+      if (accepts(c, a)) { expect(r).toBeNull(); continue; }
+      if (c.cart === null) expect(r).toBe('wrong-gone');
+      else if (a === 'cantTell') expect(r).toBe('wrong-cant');
+      else if (a === 'neither') expect(r).toBe('wrong-neither');
+      else expect(r).toBe('wrong-tablet');
+    }
+  });
+});
+
+describe('level 6 picking', () => {
+  const gen = (s: number) => (briefFor(6, new Rng(s)) as DisagreeBrief).cases;
+  const wrongOf = (c: DisagreeCase) => ANSWERS.filter((a) => !accepts(c, a));
+  it('a wrong pick is one miss; the right pick finishes with none; picks after done change nothing', () => {
+    for (const s of SEEDS) for (const c of gen(s)) {
+      for (const a of wrongOf(c)) {
+        const r = pickAnswer(startDisagree(c), a);
+        expect(r.result).toBe('wrong');
+        expect(r.state.misses).toBe(1);
+        expect(r.state.done).toBe(false);
+        expect(r.state.lined).toBe(false);
+        expect(r.state.hinted).toBe(false);
+        expect(r.reason).toBe(missReason(c, a));
+      }
+      const r = pickAnswer(startDisagree(c), answerFor(c));
+      expect(r.result).toBe('right');
+      expect(r.state.done).toBe(true);
+      expect(r.state.misses).toBe(0);
+      expect(r.state.hinted).toBe(false);
+      for (const a of ANSWERS) {
+        const after = pickAnswer(r.state, a);
+        expect(after.result).toBe('none');
+        expect(after.state).toEqual(r.state);
+      }
+    }
+  });
+  it('the help comes on the second miss and keeps counting misses afterwards', () => {
+    for (const s of SEEDS.slice(0, 60)) for (const c of gen(s)) {
+      let st = startDisagree(c);
+      const wrong = wrongOf(c);
+      st = pickAnswer(st, wrong[0]).state;
+      expect(st.lined).toBe(false);
+      st = pickAnswer(st, wrong[1]).state;
+      expect(st.misses).toBe(2);
+      expect(st.lined).toBe(true);
+      expect(st.hinted).toBe(true);
+      st = pickAnswer(st, wrong[0]).state;
+      expect(st.misses).toBe(3);
+      expect(st.lined).toBe(true);
+      const fin = pickAnswer(st, answerFor(c)).state;
+      expect(fin.done).toBe(true);
+      expect(fin.misses).toBe(3);
+      expect(disagreeTally([fin]).hints).toBe(1);
+    }
+  });
+  it('asking hints once per case and does nothing when done', () => {
+    for (const s of SEEDS.slice(0, 60)) {
+      const cases = gen(s).map(startDisagree);
+      const asked = askDisagree(cases[0]);
+      expect(asked.lined).toBe(true);
+      expect(asked.hinted).toBe(true);
+      expect(asked.misses).toBe(0);
+      expect(askDisagree(asked)).toEqual(asked);
+      const done = pickAnswer(cases[1], answerFor(cases[1])).state;
+      expect(askDisagree(done)).toEqual(done);
+      expect(askDisagree(done).hinted).toBe(false);
+      expect(disagreeTally([asked, done])).toEqual({ misses: 0, hints: 1 });
+    }
+  });
+  it('the tally sums misses and counts a case hinted by asking and by misses once', () => {
+    const [a, b] = gen(7);
+    let sa = askDisagree(startDisagree(a));
+    sa = pickAnswer(pickAnswer(sa, wrongOf(a)[0]).state, wrongOf(a)[0]).state;
+    let sb = pickAnswer(startDisagree(b), wrongOf(b)[0]).state;
+    expect(disagreeTally([sa, sb])).toEqual({ misses: 3, hints: 1 });
+  });
+  it('a bot that follows accepted answers finishes every round with no misses or hints', () => {
+    for (const s of SEEDS) {
+      const done = gen(s).map((c) => pickAnswer(startDisagree(c), answerFor(c)).state);
+      expect(done.every((d: DisagreeState) => d.done)).toBe(true);
+      expect(disagreeTally(done)).toEqual({ misses: 0, hints: 0 });
+    }
+  });
+  it('can\'t tell is never right for a cart in the yard, and neither never right for gone', () => {
+    for (const c of disagreeCases()) {
+      const wrong: Answer[] = c.cart === null ? ['farm', 'storehouse', 'neither'] : ['cantTell'];
+      for (const a of wrong) expect(pickAnswer(startDisagree(c), a).result).toBe('wrong');
+    }
+  });
+});
+
+describe('level 6 layout', () => {
+  const views = [
+    computeView(1024, 768),
+    computeView(768, 1024),
+    computeView(844, 390),
+    computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+  ];
+  const inRect = (p: { x: number; y: number; w: number; h: number }, q: { x: number; y: number; w: number; h: number }) =>
+    p.x >= q.x && p.y >= q.y && p.x + p.w <= q.x + q.w && p.y + p.h <= q.y + q.h;
+  it('fits every view with full-size, non-overlapping targets', () => {
+    for (const v of views) {
+      const l = tabletLayout(6, v);
+      expect(l).not.toBeNull();
+      if (!l) continue;
+      for (const p of l.inputs) {
+        expect(p.w).toBeGreaterThanOrEqual(110);
+        expect(p.h).toBeGreaterThanOrEqual(110);
+      }
+      expect(l.inputs).toHaveLength(6);
+      for (const c of l.crates!) {
+        expect(Math.min(c.w, c.h)).toBeGreaterThanOrEqual(100);
+        expect(inRect(c, l.lane)).toBe(true);
+        expect(overlaps(c, l.baskets!)).toBe(false);
+      }
+      for (const p of [...l.inputs, ...l.crates!]) for (const q of corners(v)) expect(overlaps(p, q)).toBe(false);
+      for (const p of l.inputs) {
+        expect(overlaps(p, l.lane)).toBe(false);
+        expect(overlaps(p, l.lineup)).toBe(false);
+      }
+      l.inputs.forEach((p, i) => l.inputs.forEach((q, j) => { if (i < j) expect(overlaps(p, q)).toBe(false); }));
+    }
+  });
+  it('lays out the tablets, picks and lineups in order', () => {
+    for (const v of views) {
+      const l = tabletLayout(6, v)!;
+      const [farm, store] = l.pair!;
+      expect(farm.x + farm.w).toBeLessThanOrEqual(store.x);
+      expect(l.neither!.x).toBeGreaterThanOrEqual(farm.x + farm.w);
+      expect(l.neither!.x + l.neither!.w).toBeLessThanOrEqual(store.x);
+      expect(l.cantTell!.y).toBeGreaterThan(l.neither!.y);
+      l.picks!.forEach((k, i) => {
+        const t = l.pair![i];
+        expect(k.y).toBeGreaterThanOrEqual(t.y + t.h);
+        expect(k.x).toBeGreaterThanOrEqual(t.x);
+        expect(k.x + k.w).toBeLessThanOrEqual(t.x + t.w);
+      });
+      const [la, lb] = l.lineups!;
+      for (const u of l.lineups!) expect(inRect(u, l.lineup)).toBe(true);
+      expect(overlaps(la, lb)).toBe(false);
+      expect(la.x).toBeLessThan(lb.x);
+      expect(la.x).toBeLessThanOrEqual(farm.x + farm.w);
+    }
+  });
+});
