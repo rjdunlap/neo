@@ -126,7 +126,7 @@
 - [PR #1026](https://github.com/rjdunlap/neo/pull/1026), branch `claude/paint-mixer-1-2` (tested commit `1baba15b`): new school-only game `paint-mixer` in Counting Cove (13 games, one page); `logic.ts`, art, game, registry, lands, voice, how-to, the `paintmixer` suite and the title clip.
 - `npm run typecheck`; 24 rule tests (palette, mean colours equal for k×counts, excluded pairs, distance thresholds, pools over 300 seeds, rows sweep, verdicts, glow reaching a match from every swept state, layouts); registry, lands, how-to and off-screen tests 64; full `npm test` 3,729 of 3,731 (block-garden hint timing, passed alone, and the voice-clip coverage, fixed by rendering the title clip); `npm run build`.
 - `BROWSER_SUITE=paintmixer` at `GAME_URL=http://localhost:5547` (twice, before and after the review): level 1 empty Check, glow and one hint, second bucket, saved 2/1; level 2 one row not a miss, loose extra drop, portrait, saved 1/0; screenshots. `fingerdemo FINGER_ONLY=paint-mixer FINGER_LEVELS=2` passed. `game-reviewer` fixes: late hint after a match, stale ghost pour, loose drops outside the bucket, celebration after resize.
-- Not run: the offline check, other suites. Open: the five [device checks](../DEVICE-CHECKS.md#paint-mixer-levels-12) (swatch match in daylight, side by side, "for every", portrait twelve drops, digit speech).
+- Not run: the offline check, other suites. Open: the five [device checks](../DEVICE-CHECKS.md#paint-mixer-levels-14) (swatch match in daylight, side by side, "for every", portrait twelve drops, digit speech).
 
 ## 2026-10-27 — Puppet Stage 1–3 definition (TP1, docs only)
 

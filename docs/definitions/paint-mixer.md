@@ -106,6 +106,10 @@ Every bucket size is a whole multiple of its sample's total, so every level is s
 - **Batch `paint-mixer 2` (levels 3–4), new-interaction tier:** typecheck, the rule tests; one scripted play (level 3 with one wrong Check, the table filling and a match; level 4 with a first way, the same way again, a second way) and one portrait screenshot of level 3 with the table; `fingerdemo` at level 4; `npm run build` because the card and voice change.
 - Not run in this docs slice: everything but `node scripts/check-links.mjs` and `git diff --check`. Device checks open at the build: whether a match reads as "the same swatch" and 1:1 against 1:2 as different on an iPad in daylight; whether the one-more-of-each step is seen at all side by side (if not, the thresholds stay as toy consistency and the card's sentence carries the honesty); whether the drop rows read as "for every" without the table; whether the pots at 120 units leave the bucket's twelve drops readable in portrait; device speech for the recipe line and the count slots.
 
+## Built: levels 3–4 (2026-11-01)
+
+Batch `paint-mixer 2`, [PR #1107](https://github.com/rjdunlap/neo/pull/1107); LEVELS is now school 1–4. Deviations from this definition: the ratio table sits below the recipe row under the jar in landscape (right of the jar would collide with the bucket) and right of the jar in portrait; the first way is shown as a star on its table column, not a separate list of rows; the glow-following solve cap is `SOLVE_STEPS = 25` (2 × CAP + 1), not 24, because a bucket of 12 stray drops needs 12 undos and 12 pours (found by the rule tests; a regression test proves 24 throws). Voice lines `pm.instruct.3/4`, `pm.for-every`, `pm.more-line`, `pm.same-way`, `pm.one-way`, `pm.different-amount`, `pm.two-ways`; how-to steps for 3 and 4. "For every" matches CCSS 6.RP.A.1's ratio language. Levels 5–8 and the Mixing Room remain unbuilt.
+
 ## Open decisions
 
 Each has a default the build uses; none blocks the first batch.

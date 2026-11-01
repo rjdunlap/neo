@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-11-01 — Paint Mixer levels 3–4 (ratio and proportion, batch paint-mixer 2)
+
+- Branch `claude/paint-mixer-3-4` ([PR #1107](https://github.com/rjdunlap/neo/pull/1107)): level 3 fill to the line with the ratio table and a stray pot; level 4 any amount, two ways.
+- Ran (commit 451b424e on base e426c78f, Vite on http://localhost:5902, `VITE_SPEECH=off`): typecheck; 46 paint-mixer rule tests; full unit suite 291 files / 4157 tests; `npm run build`; `BROWSER_SUITE=paintmixer` levels 1–4 (level 3 one-row "more, the same way" no miss, stray Check 1 miss, table filling, portrait second bucket, saved 1/0; level 4 one row, same amount again no miss, two rows, saved 0/0); `BROWSER_SUITE=fingerdemo FINGER_ONLY=paint-mixer FINGER_LEVELS=3,4` (33.8 s, 17.0 s); screenshots paint-mixer-3-portrait and paint-mixer-4-landscape reviewed.
+- `game-reviewer`: nothing material (one Text leak fixed).
+- Not run: offline check (no persistence or asset change), device checks.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#paint-mixer-levels-14)): the table and fill line on an iPad, "for every" device speech, whether the stray reads as a trick, whether the second level-3 bucket is a chore.
+
 ## 2026-11-01 — Caravan Days levels 6–7 (china-india-silk-road CS4)
 
 - Branch `claude/caravan-days-wells` ([PR #1106](https://github.com/rjdunlap/neo/pull/1106)): batch caravan-days 3, school range 3–7; level 6 `pass` (road band, day card, Go) and level 7 `wells` (switchback road, tap-to-dig); the `caravandays` browser case gained `CARAVAN_FROM=6`.
@@ -92,12 +100,6 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the two builds and two definitions.
 
-## 2026-11-01 — Quick Tricks deep dive (docs only)
-
-- [PR #1092](https://github.com/rjdunlap/neo/pull/1092), branch `claude/dive-quick-tricks`: [dive](deep-dives/quick-tricks.md). Three slices queued (truthful accounting, a seeded cast and a bow for the second show; level 7 *Two at once*; level 8 *A tiny show*, the toddler entry) with batch plans quick-tricks 1–3, plus a third-show definition; tracker, READY, backlog, ideas and waiting list updated. Two developer decisions: a lap toy shelf, and retiring the couch chunk 9 candidate.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -111,7 +113,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `forecastdetective`, `fingerdemo` (`forecast-detective`) | 2026-10-31: typecheck, 27 rule tests, registry/lands/how-to/capacity/clip tests, build; levels 1–2 (level 1 free not-yet and repeat Checks, ruled-out Checks, glow, 2/1; level 2 portrait, missing flap, overclaim, Can't tell yet, 1/0) and ghost finger levels 1 and 2 (15.5 s, 16.3 s) | [Forecast Detective](archive/VERIFICATION-2026-10-31.md#2026-10-31--forecast-detective-levels-12-weather-water-slice-9) | Real iPad speech for "Lighthouse Isle", whether school-age children open clues on purpose and tween/parent appeal unestablished; offline not run |
 | `dropsjourney`, `fingerdemo` (`drops-journey`) | 2026-10-31: typecheck, 32 rule tests, full 3,970 units, build; levels 1–3 (level 1 mid-move tap ignored 0/0, level 2 portrait sea to cloud to snow 0/0, level 3 two can't-go cards, glow, requested hint, 2/1) and ghost finger levels 1 and 3 (7.0 s, 9.2 s) | [Drop's Journey](archive/VERIFICATION-2026-10-31.md#2026-10-31--drops-journey-levels-13-weather-water-slice-8) | Real iPad speech for "vapour", a four-year-old reading the dotted drop and school-age explanations unestablished; offline not run |
 | `puppetstage`, `fingerdemo` (`puppet-stage`) | 2026-10-30: typecheck, full units 3,763, build; levels 1–3 play (three pops/drag/Bow 0/0, wrong puppet twice 2/1 with glow, free try then wrong bubble 1/0, portrait) and demos at levels 1/2/3 clean 10.5/10.0/12.2 s; `phone`, `howto` and device speech not run | [Puppet Stage](archive/VERIFICATION-2026-10-30.md#2026-10-30--puppet-stage-levels-13-theatre-and-puppetry-tp1) |
-| `paintmixer`, `fingerdemo` (`paint-mixer`) | 2026-10-27: Paint Mixer 1–2 typecheck, 24 rule tests, full units 3,729 of 3,731 (two not this change), build, level 1 and 2 play with portrait and demo 18.4 s passed | [Paint Mixer](archive/VERIFICATION-2026-10-27.md#2026-10-27--paint-mixer-levels-12-ratio-and-proportion-batch-paint-mixer-1) | Not on an iPad or with a child; offline not run |
+| `paintmixer`, `fingerdemo` (`paint-mixer`) | 2026-11-01: Paint Mixer 1–4 typecheck, 46 rule tests, full units 4,157, build; `paintmixer` levels 1–4 (level 3 more-same-way no miss, stray Check a miss, table, portrait; level 4 same amount again no miss, two rows) and demo levels 3–4 (33.8 s, 17.0 s) passed | [Paint Mixer 3–4](#2026-11-01--paint-mixer-levels-34-ratio-and-proportion-batch-paint-mixer-2) | Not on an iPad or with a child; offline not run |
 | `seesawentry`, `seesawmeasure`, `fingerdemo` (Seesaw Balance) | 2026-10-26: level17 300-seed rules/typecheck/build, wrong-prediction play0/0/single reward, reviewed portrait and clean demo21.4s passed; earlier12–16 proof retained | [Prediction](archive/VERIFICATION-2026-10-26.md#2026-10-26--seesaw-balance-predict-the-tip), [batch3](archive/VERIFICATION-2026-10-26.md#2026-10-26--seesaw-balance-order-estimate-and-difference), [batch2](archive/VERIFICATION-2026-10-26.md#2026-10-26--seesaw-balance-lap-bounce-and-heavierlighter) | Full units with how-to focused recovery; required CI; real voice/iPad/child checks open |
 | `relaywoods`, `fingerdemo` (`relay-woods`), exact mosaic Keep/offline | 2026-10-26: whole1–4 rules/play/demos, targets/portrait, current paged capacity, optional Keep/profile/backup, root+classic routes and exact production offline payloads passed; typecheck/full3351 units/final9 focused/build | [NC2](archive/VERIFICATION-2026-10-26.md#2026-10-26--relay-woods-14-nc2) | Root test setup repaired; gameplay evidence reused. Real iPad/child evidence open; CI required |
 | `villagevote`, `fingerdemo` (`village-vote`) | 2026-10-26: typecheck/full3342 units/final12 game tests/build; three levels, both pet choices/families, zero/partial/repeat counts, help/ghost finish, control edges/cancel, portrait, both routes and three clean demos passed | [CC4](archive/VERIFICATION-2026-10-26.md#2026-10-26--village-vote-13-cc4) | iPad speech/touch and child/coplayer evidence open; broad world/offline reused; final CI required |
