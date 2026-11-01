@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-11-01 — Rainbow Fingers fold pages (Mirror Brush fold button)
+
+- [PR #1114](https://github.com/rjdunlap/neo/pull/1114): level 2 draws a fold page about half the time (dashed crease, wet layer, a 104-unit fold button on the crease above the pots that prints the paint mirrored); `foldIcon` in the shared `src/ui/icons.ts`.
+- Ran (tested commit ae4955c9, Vite on http://localhost:5432, `VITE_SPEECH=off`): typecheck; full `npm test` 4251 passed (21 `rainbow-fingers` rule tests: mirror involution, fold marks, cap and halving index, 300-seed page share 40–60%, button clearances at six views, bot folds once before the frame); `npm run build`.
+- One-off portrait probe (1024×1365): fold page on first launch, two strokes and a flower, fold (marks 28→56), second fold added nothing, a fifth touch then the frame, 0 misses/0 hints, one sticker, no console errors; mid-fold resize and mid-fold hang-up both printed and ended cleanly; portrait screenshot after the print reviewed. `BROWSER_SUITE=fingerdemo FINGER_ONLY=rainbow-fingers FINGER_LEVELS=2 RAINBOW_FOLD=1`: fold at 27.9 s, finished 31.8 s; `FINGER_LEVELS=1,2` default seeds 25.6 s and 31.9 s, pass. `game-reviewer`'s three findings fixed.
+- Not run: offline check, other suites.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): whether a two-year-old links the press to the copy and whether the squish is pleasant, on an iPad.
+
 ## 2026-11-01 — Notice Board levels 1–3 (media-literacy ML1)
 
 - [PR #1113](https://github.com/rjdunlap/neo/pull/1113): new game `notice-board` (pre-K 1–2, school 1–3, Cozy Village): *Who made it?*, *Who saw it?*, *To tell or to sell?*.
@@ -101,12 +109,6 @@
 - Not run: offline check, level-1 finger demo. Source check of the "went in / came out" and "one more / two more" wording against CCSS 3.OA.D.9, 4.OA.C.5 and England Year 6 not done (open).
 - Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#rule-machine-levels-12-algebra-balance-ab1-2026-11-01)): the device and person checks there.
 
-## 2026-11-01 — Sing-Along Barn deep dive (docs only)
-
-- [PR #1098](https://github.com/rjdunlap/neo/pull/1098), branch `claude/dive-sing-along-barn`: [dive](deep-dives/sing-along-barn.md). Three builds queued (batches sing-along-barn 1–3: tunes with their own notes, level 7 *Finish the line*, level 8 *Which one finishes it?*); slices 4–5 stay in the dive. Tracker, READY, batches, backlog, ideas, roadmap, poetry study notes, device checks and the GAMES song count (eight) updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds and the four device checks ([DEVICE-CHECKS](DEVICE-CHECKS.md#sing-along-barn-dive-2026-11-01-proposed-new-tunes-and-levels-not-yet-built)).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -114,6 +116,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Grown-ups' page off-screen lines (`src/content/offscreen.test.ts`) | 2026-10-26: typecheck, full 3465 units, build; 7 rule tests (under-3 word list, wording, resolution, `{name}`) | [Off-screen lines](archive/VERIFICATION-2026-10-26.md#2026-10-26--off-screen-lines-per-band) | No browser look at the page; Bumper Garden school line held; no reader evidence |
+| `fingerdemo` (`rainbow-fingers`, `RAINBOW_FOLD=1`) | 2026-11-01: typecheck, 21 rule tests, full 4,251 units, build; one-off portrait fold play (fold 28→56 marks, second fold nothing new, frame, 0/0, mid-fold resize and hang-up print first); fold demo 27.9 s to 31.8 s, levels 1 and 2 clean in 25.6 and 31.9 s | [Rainbow Fingers fold pages](#2026-11-01--rainbow-fingers-fold-pages-mirror-brush-fold-button) | No device or child check; no scripted `early` re-run; production offline not run |
 | `noticeboard`, `fingerdemo` (`notice-board`) | 2026-11-01: typecheck, full unit suite 4243, 32 rule tests; `noticeboard` (pre-K level 1 two wrong badges, glow, maker 2/1; portrait level 2 heard-it friend then witness through a stretched and a true poster 1/0; level 3 free friend tap, wrong basket, right basket 1/0) and ghost finger levels 2–3; build | [Notice Board](#2026-11-01--notice-board-levels-13-media-literacy-ml1) | Offline check not run; no device or iPad check |
 | `notalways`, `fingerdemo` (`not-always`) | 2026-11-01: typecheck, full unit suite 4128, 29 rule tests; `notalways` (pre-K level 1 glow then breaker 2/1; portrait level 2 false stamp then true claim 1/0; level 3 free card tap, false mend, true mend 1/0) and ghost finger levels 2–3; build | [Not Always](#2026-11-01--not-always-levels-13-philosophy-reasoning-pr1) | Browser play not re-run after the review fixes; offline, iPad, four-year-old reading of the spoken claim and the pictogram signs not run |
 | `rulemachine`, `fingerdemo` (`rule-machine`) | 2026-11-01: typecheck, 25 rule tests, registry/lands/how-to units; `rulemachine` ×3 (level 1 free first guess, counted wrongs, glow, 2/1; portrait level 2 one wrong pad, 1/0) and ghost finger level 2 (43 s); build | [Rule Machine](#2026-11-01--rule-machine-levels-12-algebra-balance-ab1) | Level-1 finger demo, offline and the CCSS/England wording check not run; pre-K reading of three pictures and iPad speech unestablished |

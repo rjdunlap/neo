@@ -59,3 +59,9 @@
 - [PR #1097](https://github.com/rjdunlap/neo/pull/1097), branch `claude/dive-shape-buddies`: [dive](../deep-dives/shape-buddies.md). Five builds queued (batches shape-buddies 1–5: what grows, level 4 *Down and catch*, level 5 *A cup on the ledge*, level 6 *Which way round?*, the level 7 preschool opening) and the shared-roles definition after batch 5; tracker, READY, batches, backlog, ideas, roadmap and device checks updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the five builds and the four device checks ([DEVICE-CHECKS](../DEVICE-CHECKS.md#shape-buddies-dive-2026-11-01-proposed-levels-not-yet-built)).
+
+## 2026-11-01 — Sing-Along Barn deep dive (docs only)
+
+- [PR #1098](https://github.com/rjdunlap/neo/pull/1098), branch `claude/dive-sing-along-barn`: [dive](../deep-dives/sing-along-barn.md). Three builds queued (batches sing-along-barn 1–3: tunes with their own notes, level 7 *Finish the line*, level 8 *Which one finishes it?*); slices 4–5 stay in the dive. Tracker, READY, batches, backlog, ideas, roadmap, poetry study notes, device checks and the GAMES song count (eight) updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the three builds and the four device checks ([DEVICE-CHECKS](../DEVICE-CHECKS.md#sing-along-barn-dive-2026-11-01-proposed-new-tunes-and-levels-not-yet-built)).

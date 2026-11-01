@@ -720,7 +720,7 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **Fill and Dump**: A person watches level 7 played.
 - **Sense Detective**: A three-year-old tries Sense Detective level 1.
 - **Melt and Freeze**: Does a lap child enjoy Melt and Freeze 1–2.
-- **Mirror Brush fold button**: Does a two-year-old link the fold press to the copy, and is the squish pleasant.
+- **Mirror Brush fold button** (built 2026-11-01, [PR #1114](https://github.com/rjdunlap/neo/pull/1114)): on an iPad at Rainbow Fingers level 2, does a two-year-old connect the press to the copy, is the squish pleasant rather than startling, and is the 104-unit button above the pots easy to find and reach.
 - **Visual art**: Can a lap child manage Little Loom level 1 (still a gate before lap registration; VA1 defines toddler–pre-K only). After VA2, check actual iPad pedal/shuttle touch, speech, yarn marks/contrast, over-under readability, retry/glow comprehension and child enjoyment; [definition](definitions/little-loom.md). Browser success establishes none of these.
 - **Sound Garden**: iPad speaker loud/quiet contrast (for Little Conductor plan 5).
 - **Rhythm Neighbors**: Does a five-year-old play level 10 (before any pre-K window for 11).
