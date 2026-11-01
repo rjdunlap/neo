@@ -113,7 +113,7 @@
 
 - [PR #1055](https://github.com/rjdunlap/neo/pull/1055), branch `claude/research-strategy-games`: [study](../deep-dives/subjects/strategy-games.md) and [packet](../deep-dives/subjects/RECOMMENDATIONS.md#strategy-games-recommendations) (a new game, Shell Rows: one-move puzzles on a 3 by 3 sand grid with a show-me-why replay; a table-games card, forks and a whole match, then Last Pebble follow; Seed Bowls held for a cultural-source review), tracker, backlog, READY, ideas, roadmap and device checks updated.
 - Ran: `git fetch origin --prune`, `scripts/overlap.sh strategy-games` (no claim), `node scripts/check-links.mjs` and `git diff --check`. Sources: MP1, MP7, NRICH *Got It* notes and the Oware article opened; the rest from search summaries or recall, marked in the study.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the SG1 definition and three [person checks](../DEVICE-CHECKS.md#shell-rows-strategy-games-study-2026-10-31-proposed-nothing-built).
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the SG1 definition and three [person checks](../DEVICE-CHECKS.md#shell-rows-strategy-games-study-2026-10-31-levels-13-built-2026-11-01).
 
 ## 2026-10-31 — Spinner Fair levels 1–3 (chance-statistics CS1)
 
