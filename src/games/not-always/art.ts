@@ -12,11 +12,29 @@ const BASE: Omit<CritterSpec, 'color'> = { ears: 'round', snout: 'nose', noseCol
 
 /** A card's creature, feet on (0, 0), at `scale`. */
 export function cardCritter(c: Card, scale: number, alive = false): Critter {
-  const k = new Critter({ ...BASE, color: c.color, spots: c.spots, wings: c.wings });
+  const k = new Critter({ ...BASE, color: c.color, spots: c.spots });
+  if (c.wings) k.attach(wingsArt());
   if (c.hat) k.attach(hatArt());
   k.scale.set(scale);
   k.alive = alive;
   return k;
+}
+
+/** A pair of big white feathered wings at the creature's sides, in body coordinates: Critter's own wings are too small to judge at card size. */
+export function wingsArt(): Graphics {
+  const g = new Graphics();
+  for (const side of [-1, 1]) {
+    g.moveTo(side * 88, -160)
+      .quadraticCurveTo(side * 120, -232, side * 158, -214)
+      .quadraticCurveTo(side * 140, -192, side * 158, -172)
+      .quadraticCurveTo(side * 136, -156, side * 152, -132)
+      .quadraticCurveTo(side * 128, -120, side * 136, -98)
+      .quadraticCurveTo(side * 110, -100, side * 92, -108)
+      .closePath()
+      .fill(0xffffff).stroke(line(swatch.blue.line, 7));
+    g.moveTo(side * 102, -150).quadraticCurveTo(side * 124, -164, side * 140, -190).moveTo(side * 102, -128).quadraticCurveTo(side * 124, -134, side * 138, -150).stroke(line(swatch.blue.line, 4));
+  }
+  return g;
 }
 
 /** The wooden crate the friend stands on, its top centre at (0, 0). */
@@ -40,7 +58,7 @@ export function attrIcon(a: Attr): Container {
   } else if (a === 'wings') {
     c.addChild(new Graphics()
       .moveTo(-30, 14).quadraticCurveTo(-14, -34, 32, -26).lineTo(22, -12).lineTo(32, -2).lineTo(16, 6).lineTo(22, 16).quadraticCurveTo(-8, 28, -30, 14)
-      .fill(swatch.white.fill).stroke(line(swatch.white.line, 4)));
+      .fill(0xffffff).stroke(line(swatch.blue.line, 4)));
   } else {
     const g = new Graphics().ellipse(0, 0, 32, 26).fill(swatch.white.light).stroke(line(ink, 4));
     for (const [x, y, r] of [[-12, -8, 7], [10, -10, 6], [4, 10, 8], [-16, 10, 5]]) g.circle(x, y, r).fill(ink);

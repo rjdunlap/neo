@@ -63,7 +63,7 @@ class NotAlways implements Game {
     this.friendNode.hitArea = new Rectangle(-80, -150, 160, 196);
     onTap(this.friendNode, () => this.repeat(), { cooldown: 300 });
 
-    ctx.stage.addChild(this.bg, this.post, this.friendNode, this.signHolder, this.glow);
+    ctx.stage.addChild(this.bg, this.post, this.friendNode, this.signHolder);
 
     this.play.round.cards.forEach((c, i) => {
       const node = new Container();
@@ -87,7 +87,8 @@ class NotAlways implements Game {
       ctx.stage.addChild(s);
       this.stamp = s;
     }
-    ctx.stage.addChild(this.mendHolder);
+    // The glow sits over everything and never takes a touch itself.
+    ctx.stage.addChild(this.mendHolder, this.glow);
     this.showSign(this.play.current);
     this.resize(this.view);
   }
@@ -349,8 +350,6 @@ class NotAlways implements Game {
     const w = b.width * n.scale.x + 18, h = b.height * n.scale.y + 18;
     const cx = n.x + (b.x + b.width / 2) * n.scale.x, cy = n.y + (b.y + b.height / 2) * n.scale.y;
     g.roundRect(cx - w / 2, cy - h / 2, w, h, 22).stroke({ width: 8, color: swatch.yellow.fill, alpha: pulse });
-    // The glow sits over the cards but under nothing that takes a tap: it never takes touches itself.
-    this.ctx.stage.addChild(this.glow);
   }
 
   /** The ghost finger: tap what answers the claim (the first breaker or the stamp), then at level 3 the true mended sign. */
