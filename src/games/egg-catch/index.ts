@@ -1,17 +1,17 @@
 import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { swatch, wood } from '../../art/palette';
-import { Backdrop } from '../../art/scenery';
+import { Backdrop, drawFarBarn } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { idle, type CouchControls } from '../../engine/controller';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
-import { spread, type View } from '../../engine/view';
+import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { repairBoards, repairTarget, repairGate, flipflopBoards, type RepairBoard, laneChoice, HEN_NOTES, HEN_SHELLS, SHELL, pairBoards, pairNeeds, pairGateToFlip, type PairBoard, basketMove, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
+import { repairBoards, repairTarget, repairGate, flipflopBoards, type RepairBoard, laneChoice, HEN_NOTES, HEN_SHELLS, SHELL, pairBoards, pairNeeds, pairGateToFlip, type PairBoard, basketMove, exitOffsets, farBarnAt, HORIZON, laneXs, routeCx, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -112,6 +112,7 @@ class EggCatch implements Game {
   private routed = 0;
   readonly pairBoards: PairBoard[] = [];
   readonly goButton = new Graphics();
+  private readonly farBarn = new Graphics();
   pairReady = false;
   private pairNodes: Graphics[] = [];
   private pairSuccess = false;
@@ -125,9 +126,10 @@ class EggCatch implements Game {
     this.plan = planFor(ctx.level);
     this.eggs = makeEggs(this.plan, ctx.rng);
     this.targets = targetsFor(this.plan, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0xf6d1b8, 0xfff1e3], hills: [0xc8ecb0, 0x9edb86], horizon: 0.72, clouds: 2, seed: 9 }, ctx.view);
+    this.backdrop = new Backdrop({ sky: [0xf6d1b8, 0xfff1e3], hills: [0xc8ecb0, 0x9edb86], horizon: HORIZON, clouds: 2, seed: 9 }, ctx.view);
     this.laneGlow.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.shelf, this.chutes, this.exits, this.hay, this.laneGlow, this.traceArt, this.gateArt);
+    this.farBarn.eventMode = 'none';
+    ctx.stage.addChild(this.backdrop, this.farBarn, this.shelf, this.chutes, this.exits, this.hay, this.laneGlow, this.traceArt, this.gateArt);
     const routing = this.routing;
     const henCount = this.plan.mode === 'pair' ? 2 : routing ? 1 : LANES;
     for (let i = 0; i < henCount; i++) {
@@ -215,7 +217,7 @@ class EggCatch implements Game {
   }
 
   private laneX(i: number) {
-    return this.plan.mode === 'lane' ? spread(LANES, 150, this.view.w - 40, 220)[i] : spread(LANES, 230, this.view.w - 110, 190)[i];
+    return laneXs(this.plan.mode, this.view.w)[i];
   }
 
   private get floor() {
@@ -226,6 +228,10 @@ class EggCatch implements Game {
     this.view = v;
     this.ending.position.set(v.w / 2, v.h * 0.56);
     this.backdrop.resize(v);
+    // The Barnyard's far barn on the horizon, in the strip at the left that no lane, chute or bin reaches.
+    this.farBarn.clear();
+    const barn = farBarnAt(this.plan, v.w, v.h);
+    if (barn) drawFarBarn(this.farBarn, barn.x, barn.base, barn.height);
     this.touch.hitArea = this.plan.mode === 'lane' ? new Rectangle(150, 40, v.w - 190, v.h - 40) : new Rectangle(0, v.h * 0.4, v.w, v.h * 0.6);
     const s = this.shelf.clear();
     if (this.routing) {
@@ -490,13 +496,13 @@ class EggCatch implements Game {
   /** Junction and exit positions for the chutes. */
   private geo() {
     const v = this.view;
-    const cx = v.w / 2 + 40;
+    const cx = routeCx(v.w);
     const top = 210;
     if (this.plan.singleGate) return {
       entry: { x: cx, y: top },
       gate: [{ x: cx, y: top + 120 }],
-      exit: [-190, 190].map((dx) => ({ x: cx + dx, y: top + 280 })),
-      bin: [-190, 190].map((dx) => ({ x: cx + dx, y: v.h - 90 })),
+      exit: exitOffsets(true).map((dx) => ({ x: cx + dx, y: top + 280 })),
+      bin: exitOffsets(true).map((dx) => ({ x: cx + dx, y: v.h - 90 })),
     };
     return {
       entry: { x: cx, y: top },
@@ -505,8 +511,8 @@ class EggCatch implements Game {
         { x: cx - 190, y: top + 220 },
         { x: cx + 190, y: top + 220 },
       ],
-      exit: [-285, -95, 95, 285].map((dx) => ({ x: cx + dx, y: top + 350 })),
-      bin: [-285, -95, 95, 285].map((dx) => ({ x: cx + dx, y: v.h - 90 })),
+      exit: exitOffsets(false).map((dx) => ({ x: cx + dx, y: top + 350 })),
+      bin: exitOffsets(false).map((dx) => ({ x: cx + dx, y: v.h - 90 })),
     };
   }
 
