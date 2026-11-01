@@ -30,7 +30,9 @@ export function badgeArt(b: Badge, d: number): Graphics {
       g.moveTo(0, 16 * s).bezierCurveTo(-26 * s, 0, -16 * s, -22 * s, 0, -9 * s).bezierCurveTo(16 * s, -22 * s, 26 * s, 0, 0, 16 * s).fill(c.fill).stroke(line(c.line, 2.5 * s));
       break;
     case 'moon':
-      g.moveTo(4 * s, -18 * s).arc(0, 0, 18 * s, -1.35, 1.35 + Math.PI, false).quadraticCurveTo(-8 * s, 0, 4 * s, -18 * s).fill(c.fill).stroke(line(c.line, 2.5 * s));
+      // A crescent: the disc, with a white disc over its upper right.
+      g.circle(0, 0, 19 * s).fill(c.fill).stroke(line(c.line, 2.5 * s));
+      g.circle(10 * s, -7 * s, 16 * s).fill(0xffffff);
       break;
     case 'sun':
       for (let k = 0; k < 8; k++) {

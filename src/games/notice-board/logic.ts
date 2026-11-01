@@ -307,7 +307,7 @@ export function noticeBoardLayout(view: { w: number; h: number }, level: number)
   const boardH = ph + 2 * BOARD_PAD;
   const stack = boardH + friendH + (level === 3 ? BASKET_H : 0);
   const gaps = level === 3 ? 2 : 1;
-  const gap = Math.max(16, Math.min(60, (view.h - 40 - stack) / (gaps + 1)));
+  const gap = Math.max(16, Math.min(portrait ? (level === 3 ? 80 : 140) : 60, (view.h - 40 - stack) / (gaps + 1)));
   const top = 20;
 
   // In portrait the poster moves left so the photo fits beside it; in landscape the photo hangs off the board's right.
