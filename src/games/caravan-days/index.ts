@@ -3,7 +3,8 @@
  * and walks it to the oasis (nothing counted); level 2 shows a fork with suns on each branch and a two-day waterskin, so
  * one oasis of two is within reach; level 3 plans a road of stops to the city so that no leg is longer than the skin;
  * level 4 gives the camel, at each oasis, the good the next stop wants; level 5 sends the three-bale load that brings more
- * shells at the named stop.
+ * shells at the named stop; level 6 chooses the pass or the sand road and says how many days it takes before Go; level 7
+ * digs wells on a switchback road so there is water at the end of every day's walk.
  * Rules: ./logic.ts; definition: docs/definitions/caravan-days.md.
  */
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
@@ -20,9 +21,13 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import { baleArt, boardArt, bubbleArt, Camel, cityArt, flagArt, goArt, goodArt, homeArt, iconArt, loadArt, oasisArt, offerArt, SAND, shellRow, skinArt, stickerArt, sunArt } from './art';
 import {
-  afterTooLong, BALE_COLORS, better, camelAt, centre, choose, go, goLive, goSwap, hintFor, LANDMARKS, legSuns, legsOf, loadPlan, nextWant, loadStart, nextLoad, nextPlanMove, nextWorthMove, offersAt, pickOffer, planFor, planPlan, planStart, price, reachable, reachPlan, roadLayout, sell, SKIN, sunPoints, swapHint, swapPlan, swapStart, Tally, tapBale, tapCamel, tapStop, total, worthPlan, worthStart,
+  baleArt, boardArt, bubbleArt, Camel, cityArt, coatArt, counterArt, dayCardArt, dayStickArt, flagArt, goArt, goodArt, homeArt, hoofArt, hutArt, iconArt, loadArt,
+  oasisArt, offerArt, peaksArt, SAND, shellRow, siteArt, skinArt, snowArt, stickerArt, sunArt, treeArt, wellArt,
+} from './art';
+import {
+  afterTooLong, BALE_COLORS, checkWells, DAY, DAY_CARDS, days, ghostFor, goPass, minWells, nextPassMove, nextWellMove, passHint, passPlan, passStart, wellHint, wellsPlan,
+  type PassMap, type PassPlan, type PassRoad, type PassState, type WellRoad, type WellsPlan, better, camelAt, centre, choose, go, goLive, goSwap, hintFor, LANDMARKS, legSuns, legsOf, loadPlan, nextWant, loadStart, nextLoad, nextPlanMove, nextWorthMove, offersAt, pickOffer, planFor, planPlan, planStart, price, reachable, reachPlan, roadLayout, sell, SKIN, sunPoints, swapHint, swapPlan, swapStart, Tally, tapBale, tapCamel, tapStop, total, worthPlan, worthStart,
   type CaravanMap, type Good, type LoadPlan, type LoadState, type PlanPlan, type PlanState, type Pt, type ReachPlan, type RoadLayout, type RoadLine, type SwapPlan, type SwapRoad, type SwapState, type WorthPlan, type WorthState, type WorthStop,
 } from './logic';
 
@@ -30,7 +35,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 5 },
+  school: { min: 3, max: 7 },
 };
 
 /** The next useful thing glows when nothing has been tapped for this long at level 1 (uncounted). */
@@ -39,7 +44,7 @@ const IDLE_GLOW = 8;
 const countLine = (prefix: string, n: number, max: number) => `${prefix}.${Math.max(1, Math.min(n, max))}` as LineId;
 
 class CaravanDays implements Game {
-  readonly plan: LoadPlan | ReachPlan | PlanPlan | SwapPlan | WorthPlan;
+  readonly plan: LoadPlan | ReachPlan | PlanPlan | SwapPlan | WorthPlan | PassPlan | WellsPlan;
   readonly level: number;
   /** Level 1. */
   load: LoadState | null = null;
@@ -53,6 +58,15 @@ class CaravanDays implements Game {
   /** Level 5: the load last looked at, and every load looked at in this case (they keep their shells showing). */
   worth: WorthState | null = null;
   seen = new Set<number>();
+  /** Level 6: the chosen road and day card. */
+  pass: PassState | null = null;
+  /** Level 7: the marks with a well dug. */
+  wells: number[] = [];
+  bandNodes: Container[] = [];
+  cardNodes: Container[] = [];
+  siteNodes: Container[] = [];
+  stickNode: Container | null = null;
+  private counter: Container | null = null;
   readonly tallies = new Tally();
   /** An animation is running; inputs wait. */
   busy = false;
@@ -98,11 +112,12 @@ class CaravanDays implements Game {
     this.view = ctx.view;
     this.level = planFor(ctx.level).level;
     this.plan = this.level === 1 ? loadPlan(ctx.band, ctx.rng) : this.level === 2 ? reachPlan(ctx.rng) : this.level === 3 ? planPlan(ctx.rng)
-      : this.level === 4 ? swapPlan(ctx.rng) : worthPlan(ctx.rng);
+      : this.level === 4 ? swapPlan(ctx.rng) : this.level === 5 ? worthPlan(ctx.rng) : this.level === 6 ? passPlan(ctx.rng) : wellsPlan(ctx.rng);
     if (this.plan.level === 1) this.load = loadStart(this.plan);
     if (this.plan.level === 3) this.state = planStart();
     if (this.plan.level === 4) this.swap = swapStart();
     if (this.plan.level === 5) this.worth = worthStart();
+    if (this.plan.level === 6) this.pass = passStart();
     const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.stepSeconds = ctx.demo || reduce ? 0.22 : 0.7;
     this.backdrop = new Backdrop({ sky: [0xbfe3f7, 0xfff1d6], hills: [0xf2d9a4, 0xe6c48a, 0xd9b472], horizon: 0.44, clouds: 1, sun: true, seed: 233 }, ctx.view);
@@ -129,6 +144,16 @@ class CaravanDays implements Game {
   /** Level 5: the stop named in this case. */
   get named(): WorthStop {
     return (this.plan as WorthPlan).named[this.roadIndex];
+  }
+
+  /** Level 6's map in play. */
+  get passMap(): PassMap {
+    return (this.plan as PassPlan).maps[this.roadIndex];
+  }
+
+  /** Level 7's road in play. */
+  get wellRoad(): WellRoad {
+    return (this.plan as WellsPlan).roads[this.roadIndex];
   }
 
   /** Round totals so far, for a check or the finish. */
@@ -173,6 +198,10 @@ class CaravanDays implements Game {
     this.bubbleNodes = [];
     this.loadNodes = [];
     this.friendNodes = [];
+    this.bandNodes = [];
+    this.cardNodes = [];
+    this.siteNodes = [];
+    this.stickNode = this.counter = null;
     this.poured = null;
     this.nudge = null;
     this.glow.removeFromParent();
@@ -194,7 +223,9 @@ class CaravanDays implements Game {
     else if (this.plan.level === 2) this.buildReach(l);
     else if (this.plan.level === 3) this.buildPlan(l);
     else if (this.plan.level === 4) this.buildSwap(l);
-    else this.buildWorth(l);
+    else if (this.plan.level === 5) this.buildWorth(l);
+    else if (this.plan.level === 6) this.buildPass(l);
+    else this.buildWells(l);
     this.board.addChild(this.markLayer, this.glow);
   }
 
@@ -612,16 +643,19 @@ class CaravanDays implements Game {
     this.tallies.next();
     this.roadIndex++;
     const p = this.plan;
-    const count = p.level === 2 || p.level === 4 ? p.roads.length : p.level === 3 ? p.maps.length : p.level === 5 ? p.named.length : 1;
+    const count = p.level === 2 || p.level === 4 || p.level === 7 ? p.roads.length : p.level === 3 || p.level === 6 ? p.maps.length : p.level === 5 ? p.named.length : 1;
     if (this.roadIndex >= count) { this.celebrate(); return; }
     this.skinFull = SKIN;
     this.cityOpen = false;
     if (p.level === 3) this.state = planStart();
     if (p.level === 4) { this.swap = swapStart(); this.walkedIn = false; }
     if (p.level === 5) { this.worth = worthStart(); this.seen.clear(); }
+    if (p.level === 6) this.pass = passStart();
+    if (p.level === 7) this.wells = [];
     this.busy = false;
     this.build();
-    const line: LineId = p.level === 2 ? 'cd.next-road' : p.level === 3 ? 'cd.next-map' : p.level === 4 ? 'cd.next-swap' : 'cd.next-case';
+    const line: LineId = p.level === 2 ? 'cd.next-road' : p.level === 3 ? 'cd.next-map' : p.level === 4 ? 'cd.next-swap' : p.level === 5 ? 'cd.next-case'
+      : p.level === 6 ? 'cd.next-pass' : 'cd.next-wells';
     void this.ctx.say(line);
     if (p.level === 4) void this.walkIn();
   }
@@ -825,7 +859,7 @@ class CaravanDays implements Game {
     const g = l.go!;
     const node = new Container();
     node.position.copyFrom(centre(g));
-    node.addChild(goArt(g.w, g.h, live));
+    node.addChild(goArt(g.w, g.h, live, this.level === 7 ? 'Done' : 'Go'));
     node.hitArea = new Rectangle(-g.w / 2, -g.h / 2, g.w, g.h);
     onTap(node, () => this.tapGoRoad(), { cooldown: 300 });
     this.board.addChild(node);
@@ -836,7 +870,7 @@ class CaravanDays implements Game {
     const g = this.layoutNow?.go;
     if (!this.goNode || !g) return;
     for (const c of this.goNode.removeChildren()) c.destroy({ children: true });
-    this.goNode.addChild(goArt(g.w, g.h, live));
+    this.goNode.addChild(goArt(g.w, g.h, live, this.level === 7 ? 'Done' : 'Go'));
   }
 
   /** The offers where the camel stands (hidden on the walk in and at the city), the carried good, Go live once one is picked. */
@@ -874,12 +908,23 @@ class CaravanDays implements Game {
     this.redrawSwap();
   }
 
-  /** Go, at level 4 or 5. */
+  /** Go, at levels 4–6, and Done at level 7. */
   tapGoRoad() {
     const node = this.goNode;
-    if (!node || this.finished || (this.plan.level !== 4 && this.plan.level !== 5)) return;
+    if (!node || this.finished || this.plan.level < 4) return;
     this.bob(node);
     if (this.busy) return;
+    if (this.plan.level === 6) {
+      const s = this.pass!;
+      if (!s.road || s.guess === null) { void this.ctx.say('cd.choose-first'); return; }
+      void this.walkPass(s.road, s.guess);
+      return;
+    }
+    if (this.plan.level === 7) {
+      if (this.wells.length === 0) { void this.ctx.say('cd.dig-first'); return; }
+      void this.walkWells();
+      return;
+    }
     if (this.plan.level === 4) {
       if (!this.walkedIn || !this.swap) return;
       const r = goSwap(this.swapRoad, this.swap);
@@ -1124,6 +1169,363 @@ class CaravanDays implements Game {
     else this.redrawLoads();
   }
 
+  // Level 6: mountains or sand.
+
+  private buildPass(l: RoadLayout) {
+    const map = this.passMap;
+    const [passBand, sandBand] = l.bands!;
+    // Peaks behind the pass road, dunes under the sand road: scenery.
+    const peaks = peaksArt(passBand.w * 0.62, 90);
+    peaks.position.set(l.hut!.x, passBand.y + passBand.h - 6);
+    peaks.eventMode = 'none';
+    this.board.addChildAt(peaks, 0);
+    // The two roads' tap bands: a road chooses itself, free and unlimited.
+    this.bandNodes = [passBand, sandBand].map((r, i) => {
+      const node = new Container();
+      node.position.set(r.x + r.w / 2, r.y + r.h / 2);
+      node.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
+      onTap(node, () => this.tapRoad(i === 0 ? 'pass' : 'sand'), { cooldown: 250 });
+      this.board.addChildAt(node, 1);
+      return node;
+    });
+    this.stopNodes = [this.stopNode(l.stops[0], homeArt(), null), this.stopNode(l.stops[1], cityArt(120, this.cityOpen), null)];
+    this.cityNode = this.stopNodes[1];
+    // Inns: small huts close together on the pass (the hut at the top bigger), oases far apart round the sand.
+    l.pass!.slice(1).forEach((leg) => {
+      const top = leg.from === l.hut;
+      const hut = hutArt(top ? 76 : 48);
+      hut.position.set(leg.from.x, leg.from.y - (top ? 34 : 22));
+      hut.eventMode = 'none';
+      this.board.addChild(hut);
+    });
+    l.sand!.slice(1).forEach((leg, i) => {
+      const o = oasisArt(map.landmarks[i % 2], 74);
+      o.position.set(leg.from.x, leg.from.y - 18);
+      o.eventMode = 'none';
+      this.board.addChild(o);
+    });
+    if (map.snow) {
+      const snow = snowArt(92);
+      snow.position.set(l.hut!.x + 30, l.hut!.y - 104);
+      this.board.addChild(snow);
+    }
+    const coat = coatArt(46);
+    coat.position.set(l.hut!.x - 70, l.hut!.y - 30);
+    coat.eventMode = 'none';
+    this.board.addChild(coat);
+    this.placeCamel({ x: l.start.x + 10, y: l.start.y + 50 }, 0.45);
+    this.cardNodes = l.cards!.map((r, i) => {
+      const node = new Container();
+      node.position.copyFrom(centre(r));
+      node.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
+      onTap(node, () => this.tapCard(DAY_CARDS[i]), { cooldown: 200 });
+      this.board.addChild(node);
+      return node;
+    });
+    this.placeGo(l, false);
+    this.redrawPass();
+  }
+
+  private redrawPass() {
+    const s = this.pass;
+    const l = this.layoutNow;
+    if (!s || !l?.bands || this.plan.level !== 6) return;
+    this.bandNodes.forEach((node, i) => {
+      for (const c of node.removeChildren()) c.destroy({ children: true });
+      const chosen = s.road === (i === 0 ? 'pass' : 'sand');
+      const r = l.bands![i];
+      const g = new Graphics();
+      g.roundRect(-r.w / 2, -r.h / 2, r.w, r.h, 40).fill({ color: chosen ? swatch.yellow.fill : 0xffffff, alpha: chosen ? 0.4 : 0.12 });
+      if (chosen) g.roundRect(-r.w / 2, -r.h / 2, r.w, r.h, 40).stroke({ width: 5, color: swatch.orange.fill, alpha: 0.8 });
+      node.addChild(g);
+    });
+    this.cardNodes.forEach((node, i) => {
+      for (const c of node.removeChildren()) c.destroy({ children: true });
+      node.addChild(dayCardArt(DAY_CARDS[i], 110, s.guess === DAY_CARDS[i]));
+    });
+    this.redrawGo(!!s.road && s.guess !== null);
+  }
+
+  /** Choose a road: free, unlimited; the pet names it (and the snow day, which is drawn). */
+  tapRoad(road: PassRoad) {
+    const s = this.pass;
+    if (!s || this.finished || this.plan.level !== 6) return;
+    const node = this.bandNodes[road === 'pass' ? 0 : 1];
+    if (node) this.bob(node);
+    if (this.busy) return;
+    this.pass = { ...s, road };
+    sfx.pop(road === 'pass' ? 8 : 5);
+    void this.sayAll(road === 'pass' ? (this.passMap.snow ? ['cd.pass', 'cd.snow-day'] : ['cd.pass', 'cd.coat']) : ['cd.sand']);
+    this.redrawPass();
+  }
+
+  /** Set the day card: free, and tapping another moves it. */
+  tapCard(n: number) {
+    const s = this.pass;
+    if (!s || this.finished || this.plan.level !== 6) return;
+    const node = this.cardNodes[DAY_CARDS.indexOf(n)];
+    if (node) this.bob(node);
+    if (this.busy) return;
+    this.pass = { ...s, guess: n };
+    sfx.marimba(n, 0.3);
+    void this.ctx.say(countLine('cd.days', n, 7));
+    this.redrawPass();
+  }
+
+  /** The help at level 6: the chosen road's suns counted aloud (the snow day too), with the right card glowing. */
+  private async passCount() {
+    const h = passHint(this.passMap, this.pass?.road ?? null);
+    const map = this.passMap;
+    const suns = h.road === 'pass' ? map.passLegs : days(map, 'sand');
+    const ids: LineId[] = ['cd.help.pass', h.road === 'pass' ? 'cd.pass' : 'cd.sand', countLine('cd.suns', suns, 6)];
+    if (h.road === 'pass' && map.snow) ids.push('cd.snow-day');
+    ids.push(countLine('cd.days', h.days, 7));
+    await this.sayAll(ids);
+  }
+
+  private showCounter(n: number) {
+    this.counter?.destroy({ children: true });
+    const camel = this.camel;
+    if (!camel) return;
+    const c = counterArt(n, 'sun');
+    c.position.set(camel.x, camel.y - 120);
+    this.board.addChild(c);
+    this.counter = c;
+  }
+
+  /** Go at level 6: the camel walks the chosen road a day at a time, the counter ticking; the snow day waits at the hut. */
+  private async walkPass(road: PassRoad, guess: number) {
+    const epoch = this.epoch;
+    const l = this.layoutNow;
+    const camel = this.camel;
+    if (!l || !camel) return;
+    this.busy = true;
+    const map = this.passMap;
+    const total = days(map, road);
+    const result = goPass(map, road, guess);
+    const stopAt = !result.right && result.short ? guess : total;
+    const legs = road === 'pass' ? l.pass! : l.sand!;
+    const foot = (p: Pt) => ({ x: p.x, y: p.y + 30 });
+    if (road === 'pass') {
+      const coat = coatArt(70);
+      coat.position.set(-10, -40);
+      camel.load.addChild(coat);
+    }
+    let day = 0;
+    this.showCounter(0);
+    walk: for (const leg of legs) {
+      for (const p of sunPoints(leg)) {
+        if (day >= stopAt) break walk;
+        await this.walkTo(foot(p), this.stepSeconds);
+        if (!this.live(epoch)) return;
+        day++;
+        sfx.marimba(3 + day, 0.35);
+        this.showCounter(day);
+      }
+      if (day >= stopAt && leg !== legs[legs.length - 1]) break;
+      await this.walkTo(foot(leg.to), this.stepSeconds * 0.6);
+      if (!this.live(epoch)) return;
+      if (road === 'pass' && map.snow && leg.to === l.hut && day < stopAt) {
+        this.ctx.particles.burst(camel.x, camel.y - 80, { colors: [0xffffff, 0xd6dde4], count: 10, speed: [10, 50] });
+        void this.ctx.say('cd.snow-day');
+        await this.ctx.tw.wait(this.stepSeconds * 1.6);
+        if (!this.live(epoch)) return;
+        day++;
+        sfx.marimba(3 + day, 0.35);
+        this.showCounter(day);
+      }
+    }
+    camel.scale.x = Math.abs(camel.scale.x);
+    if (result.right) {
+      this.cityOpen = true;
+      this.redrawCity();
+      sfx.bell(5, 0.25);
+      sfx.bell(9, 0.25);
+      this.ctx.particles.burst(camel.x, camel.y - 60, { colors: [swatch.yellow.fill, 0x9fd3f2, 0xffffff], count: 12 });
+      const other: PassRoad = road === 'pass' ? 'sand' : 'pass';
+      await this.sayAll(['cd.took-days', countLine('cd.days', total, 7), other === 'sand' ? 'cd.round-the-sand-was' : 'cd.over-the-pass-was', countLine('cd.days', days(map, other), 7)]);
+      if (!this.live(epoch)) return;
+      await this.drink(epoch);
+      if (!this.live(epoch)) return;
+      this.nextRoad();
+      return;
+    }
+    // Short: the city still ahead on the guessed day; long: here before then. Either way the camel walks home.
+    if (result.short) await this.sayAll([countLine('cd.days', guess, 7), 'cd.still-ahead']);
+    else await this.sayAll(['cd.got-here-before', countLine('cd.days', total, 7)]);
+    if (!this.live(epoch)) return;
+    await this.emptySkin(epoch);
+    if (!this.live(epoch)) return;
+    this.counter?.destroy({ children: true });
+    this.counter = null;
+    await this.walkTo({ x: l.start.x + 10, y: l.start.y + 50 }, this.stepSeconds * 2.5);
+    if (!this.live(epoch)) return;
+    camel.scale.x = Math.abs(camel.scale.x);
+    for (const c of camel.load.removeChildren()) c.destroy({ children: true });
+    this.tallies.miss();
+    this.busy = false;
+    if (this.tallies.glowing) void this.passCount();
+    if (this.relayout) this.build();
+    else this.redrawPass();
+  }
+
+  // Level 7: a well every day's walk.
+
+  private buildWells(l: RoadLayout) {
+    const road = this.wellRoad;
+    const marks = l.marks!;
+    const g = new Graphics();
+    g.moveTo(marks[0].x, marks[0].y);
+    for (let t = 1; t < marks.length; t++) g.lineTo(marks[t].x, marks[t].y);
+    g.stroke({ width: 34, color: SAND.line, cap: 'round', join: 'round' });
+    g.moveTo(marks[0].x, marks[0].y);
+    for (let t = 1; t < marks.length; t++) g.lineTo(marks[t].x, marks[t].y);
+    g.stroke({ width: 24, color: SAND.fill, cap: 'round', join: 'round' });
+    this.roadLayer.addChild(g);
+    marks.slice(1, -1).forEach((p) => {
+      const h = hoofArt();
+      h.position.copyFrom(p);
+      this.roadLayer.addChild(h);
+    });
+    this.stopNodes = [this.stopNode(l.stops[0], homeArt(100), null), this.stopNode(l.stops[1], cityArt(110, this.cityOpen), null)];
+    this.cityNode = this.stopNodes[1];
+    this.stickNode = this.stopNode(l.stick!, dayStickArt(l.stick!.w, l.stick!.h, DAY), () => { void this.ctx.say('cd.day-stick'); });
+    this.siteNodes = road.sites.map((_, i) => {
+      const node = new Container();
+      node.position.copyFrom(centre(l.sites![i]));
+      node.hitArea = new Circle(0, 0, 55);
+      onTap(node, () => this.tapSite(i), { cooldown: 200 });
+      this.board.addChild(node);
+      return node;
+    });
+    this.placeCamel({ x: marks[0].x, y: marks[0].y + 20 }, 0.45);
+    this.placeGo(l, true);
+    this.redrawWells();
+  }
+
+  private redrawWells() {
+    if (this.plan.level !== 7) return;
+    const road = this.wellRoad;
+    this.siteNodes.forEach((node, i) => {
+      for (const c of node.removeChildren()) c.destroy({ children: true });
+      node.addChild(siteArt(110));
+      if (this.wells.includes(road.sites[i])) {
+        const w = wellArt(84);
+        w.y = -6;
+        node.addChild(w);
+      }
+    });
+    this.counter?.destroy({ children: true });
+    const go = this.layoutNow?.go;
+    if (!go) return;
+    const c = counterArt(this.wells.length, 'well');
+    c.position.set(go.x - 80, go.y + go.h / 2);
+    this.board.addChild(c);
+    this.counter = c;
+  }
+
+  /** Dig a well on a site, or take it off: free and unlimited. */
+  tapSite(i: number) {
+    const node = this.siteNodes[i];
+    if (!node || this.finished || this.plan.level !== 7) return;
+    const site = this.wellRoad.sites[i];
+    if (this.busy) { this.bob(node); return; }
+    if (this.wells.includes(site)) {
+      this.wobble(node);
+      this.wells = this.wells.filter((w) => w !== site);
+      sfx.pop(4);
+    } else {
+      this.bob(node);
+      this.wells = [...this.wells, site].sort((a, b) => a - b);
+      sfx.marimba(2 + i, 0.35);
+    }
+    this.redrawWells();
+  }
+
+  /** Done at level 7: the camel walks mark by mark, drinking at each well; a stretch longer than a day empties the skin. */
+  private async walkWells() {
+    const epoch = this.epoch;
+    const l = this.layoutNow;
+    const camel = this.camel;
+    if (!l?.marks || !camel) return;
+    this.busy = true;
+    const road = this.wellRoad;
+    const wells = this.wells.slice();
+    const check = checkWells(road, wells);
+    const end = check.ok ? road.length : check.from + DAY;
+    const foot = (m: number) => ({ x: l.marks![m].x, y: l.marks![m].y + 20 });
+    for (let m = 1; m <= end; m++) {
+      await this.walkTo(foot(m), this.stepSeconds * 0.5);
+      if (!this.live(epoch)) return;
+      if (wells.includes(m)) {
+        sfx.splash();
+        if (check.ok) {
+          const tree = treeArt(70);
+          const p = centre(l.sites![road.sites.indexOf(m)]);
+          tree.position.set(p.x + 46, p.y - 36);
+          tree.scale.set(0.1);
+          tree.eventMode = 'none';
+          this.board.addChildAt(tree, this.board.getChildIndex(this.roadLayer) + 1);
+          void this.ctx.tw.to(tree.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.outBack });
+        }
+      }
+    }
+    camel.scale.x = Math.abs(camel.scale.x);
+    if (check.ok) {
+      this.cityOpen = true;
+      this.redrawCity();
+      sfx.bell(5, 0.25);
+      sfx.bell(9, 0.25);
+      this.ctx.particles.burst(camel.x, camel.y - 60, { colors: [swatch.yellow.fill, 0x9fd3f2, 0xffffff], count: 12 });
+      await this.drink(epoch);
+      if (!this.live(epoch)) return;
+      if (check.extra > 0) {
+        // Valid with extra wells: not a miss; a fewest placement shows faintly for a moment.
+        const ghosts = ghostFor(road, wells).filter((s) => !wells.includes(s)).map((s) => {
+          const w = wellArt(84, true);
+          const p = centre(l.sites![road.sites.indexOf(s)]);
+          w.position.set(p.x, p.y - 6);
+          w.eventMode = 'none';
+          this.board.addChild(w);
+          return w;
+        });
+        await this.sayAll(['cd.it-works', 'cd.planners-could', countLine('cd.wells', minWells(road), 7)]);
+        if (!this.live(epoch)) return;
+        await this.ctx.tw.wait(this.stepSeconds * 2);
+        if (!this.live(epoch)) return;
+        for (const w of ghosts) w.destroy();
+      } else {
+        await this.ctx.say('cd.it-works');
+        if (!this.live(epoch)) return;
+      }
+      this.nextRoad();
+      return;
+    }
+    // The long stretch: the skin runs dry a day past the last water; the stretch glows red-gold and the camel walks home.
+    await this.emptySkin(epoch);
+    if (!this.live(epoch)) return;
+    const red = new Graphics();
+    red.eventMode = 'none';
+    red.moveTo(l.marks[check.from].x, l.marks[check.from].y);
+    for (let m = check.from + 1; m <= check.to; m++) red.lineTo(l.marks[m].x, l.marks[m].y);
+    red.stroke({ width: 18, color: 0xe0703a, alpha: 0.75, cap: 'round', join: 'round' });
+    this.board.addChildAt(red, this.board.getChildIndex(this.roadLayer) + 1);
+    await this.sayAll(['cd.too-long-stretch', countLine('cd.marks', check.to - check.from, 16)]);
+    if (!this.live(epoch)) return;
+    for (let m = end - 1; m >= 0; m--) {
+      await this.walkTo(foot(m), this.stepSeconds * 0.22);
+      if (!this.live(epoch)) return;
+    }
+    red.destroy();
+    camel.scale.x = Math.abs(camel.scale.x);
+    this.skinFull = SKIN;
+    this.tallies.miss();
+    if (this.tallies.glowing) void this.ctx.say('cd.help.wells');
+    this.busy = false;
+    if (this.relayout) this.build();
+    else this.redrawWells();
+  }
+
   // ——— Finishing and help ———
 
   private celebrate() {
@@ -1147,11 +1549,13 @@ class CaravanDays implements Game {
   askForHint() {
     if (this.finished) return;
     if (this.plan.level === 1) { void this.ctx.instruct('cd.instruct.1'); return; }
-    const line: LineId = this.plan.level === 2 ? 'cd.help.reach' : this.plan.level === 3 ? 'cd.help.plan' : this.plan.level === 4 ? 'cd.help.swap' : 'cd.help.worth';
+    const line: LineId = this.plan.level === 2 ? 'cd.help.reach' : this.plan.level === 3 ? 'cd.help.plan' : this.plan.level === 4 ? 'cd.help.swap'
+      : this.plan.level === 5 ? 'cd.help.worth' : this.plan.level === 6 ? 'cd.help.pass' : 'cd.help.wells';
     // During a walk the answer is spoken but the glow (and its one hint) waits for the road to be hers again.
     if (this.busy || (this.plan.level === 4 && !this.walkedIn)) { void this.ctx.say(line); return; }
     this.tallies.help();
     if (this.plan.level === 2) this.redrawOases();
+    if (this.plan.level === 6) { void this.passCount(); return; }
     void this.ctx.say(line);
   }
 
@@ -1189,6 +1593,16 @@ class CaravanDays implements Game {
     } else if (this.plan.level === 5 && this.tallies.glowing) {
       const node = this.loadNodes[better(this.plan, this.roadIndex)];
       if (node) ring(node, 230, 150);
+    } else if (this.plan.level === 6 && this.tallies.glowing && this.pass) {
+      const node = this.cardNodes[DAY_CARDS.indexOf(passHint(this.passMap, this.pass.road).days)];
+      if (node) ring(node, 110, 110);
+    } else if (this.plan.level === 7 && this.tallies.glowing) {
+      const h = wellHint(this.wellRoad, this.wells);
+      if ('done' in h) { if (this.goNode) ring(this.goNode, 140, 110); }
+      else {
+        const node = this.siteNodes[this.wellRoad.sites.indexOf(h.site)];
+        if (node) ring(node, 110, 110);
+      }
     }
   }
 
@@ -1211,6 +1625,17 @@ class CaravanDays implements Game {
       if (!h) return null;
       if ('go' in h) return this.goNode ? { tap: { on: this.goNode }, pause: 0.8 } : null;
       return { tap: { on: this.offerNodes[h.side] }, pause: 0.6 };
+    }
+    if (this.plan.level === 6) {
+      const move = nextPassMove(this.passMap, this.pass!);
+      if ('go' in move) return this.goNode ? { tap: { on: this.goNode }, pause: 0.8 } : null;
+      if ('road' in move) return { tap: { on: this.bandNodes[move.road === 'pass' ? 0 : 1] }, pause: 0.9 };
+      return { tap: { on: this.cardNodes[DAY_CARDS.indexOf(move.card)] }, pause: 0.7 };
+    }
+    if (this.plan.level === 7) {
+      const move = nextWellMove(this.wellRoad, this.wells);
+      if ('done' in move) return this.goNode ? { tap: { on: this.goNode }, pause: 0.8 } : null;
+      return { tap: { on: this.siteNodes[this.wellRoad.sites.indexOf(move.site)] }, pause: 0.5 };
     }
     if (this.plan.level === 5) {
       const move = nextWorthMove(this.plan, this.roadIndex, this.worth!, this.seen);

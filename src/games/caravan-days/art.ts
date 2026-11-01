@@ -236,11 +236,11 @@ export function flagArt(n: number): Container {
 }
 
 /** The Go button. */
-export function goArt(w: number, h: number, live = true): Container {
+export function goArt(w: number, h: number, live = true, text = 'Go'): Container {
   const c = new Container();
   const g = finish({ w, h, corner: 28 }, live ? swatch.green : swatch.white);
   c.addChild(g);
-  const t = label('Go', 40, live ? cream : SAND.line);
+  const t = label(text, 40, live ? cream : SAND.line);
   t.y = -2;
   c.addChild(t);
   c.alpha = live ? 1 : 0.8;
@@ -387,6 +387,156 @@ export function loadArt(goods: Good[], w = 230, h = 150, prices: number[] | null
 // ——— Icon and sticker ———
 
 /** A small camel with two bales and a sun. */
+// ——— Mountains or sand, and wells (levels 6–7) ———
+
+const SNOW = { fill: 0xffffff, line: 0x9aa7b4, peak: 0x9c8f87, peakLine: 0x6e625b };
+const GREEN = { fill: 0x9fd77f, line: 0x5fae4e };
+const STONE = { fill: 0xc9c3bb, line: 0x7d756c };
+
+/** Grey peaks with snowy tops, behind the pass road (scenery). */
+export function peaksArt(w: number, h: number): Graphics {
+  const g = new Graphics();
+  const peaks = [[-0.38, 0.7], [-0.1, 1], [0.2, 0.85], [0.42, 0.6]];
+  for (const [x, t] of peaks) {
+    const px = x * w;
+    const top = -h * t;
+    const half = w * 0.2;
+    g.moveTo(px - half, 0).lineTo(px, top).lineTo(px + half, 0).closePath().fill(SNOW.peak).stroke(line(SNOW.peakLine, 4));
+    g.moveTo(px - half * 0.3, top + h * t * 0.3).lineTo(px, top).lineTo(px + half * 0.3, top + h * t * 0.3).closePath().fill(SNOW.fill);
+  }
+  return g;
+}
+
+/** The hut at the top of the pass. */
+export function hutArt(size = 70): Graphics {
+  const g = new Graphics();
+  const s = size / 2;
+  g.rect(-s * 0.8, -s * 0.6, s * 1.6, s * 1.1).fill(0xa0683a).stroke(line(0x6b3f1e, 4));
+  g.moveTo(-s, -s * 0.5).lineTo(0, -s * 1.2).lineTo(s, -s * 0.5).closePath().fill(SNOW.fill).stroke(line(SNOW.line, 4));
+  g.rect(-s * 0.2, -s * 0.05, s * 0.4, s * 0.55).fill(0x4a2f1c);
+  return g;
+}
+
+/** A snow day: a grey cloud with a flake and a grey sun under it, drawn before she chooses. */
+export function snowArt(size = 90): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const g = new Graphics();
+  const s = size / 2;
+  g.circle(-s * 0.4, 0, s * 0.42).circle(s * 0.15, -s * 0.2, s * 0.5).circle(s * 0.55, s * 0.05, s * 0.36).fill(0xd6dde4).stroke(line(SNOW.line, 3));
+  for (let i = 0; i < 3; i++) {
+    const a = (i / 3) * Math.PI;
+    g.moveTo(Math.cos(a) * 10, s * 0.62 + Math.sin(a) * 10).lineTo(-Math.cos(a) * 10, s * 0.62 - Math.sin(a) * 10).stroke(line(0x5aa6d8, 3));
+  }
+  c.addChild(g);
+  const sun = sunArt(40, false);
+  sun.position.set(s * 0.95, s * 0.75);
+  c.addChild(sun);
+  return c;
+}
+
+/** The camel's red-brown blanket coat for the cold pass (scenery; the camel wears it on the walk). */
+export function coatArt(size = 60): Graphics {
+  const g = new Graphics();
+  const s = size / 2;
+  g.roundRect(-s, -s * 0.55, s * 2, s * 1.1, 10).fill(0xa8452e).stroke(line(0x6e2a1a, 4));
+  for (let i = -2; i <= 2; i++) g.moveTo(i * s * 0.35, -s * 0.5).lineTo(i * s * 0.35, s * 0.5).stroke(line(0xe0a050, 3));
+  return g;
+}
+
+/** A day card: the numeral and that many small suns; lifted when picked, a glow ring when it is the help. */
+export function dayCardArt(n: number, size = 110, picked = false): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const s = size / 2;
+  g.roundRect(-s, -s, size, size, 20).fill(picked ? 0xfff1c4 : cream).stroke(line(picked ? swatch.orange.fill : SAND.line, picked ? 7 : 5));
+  c.addChild(g);
+  const t = label(String(n), 46);
+  t.y = -14;
+  c.addChild(t);
+  const per = Math.min(n, 4);
+  for (let i = 0; i < n; i++) {
+    const row = Math.floor(i / 4);
+    const inRow = row === 0 ? per : n - 4;
+    const sun = sunArt(18);
+    sun.position.set((i % 4 - (inRow - 1) / 2) * 20, 24 + row * 18);
+    c.addChild(sun);
+  }
+  return c;
+}
+
+/** One hoofprint mark on the road. */
+export function hoofArt(): Graphics {
+  const g = new Graphics();
+  g.ellipse(-5, 0, 4, 7).ellipse(5, 0, 4, 7).fill({ color: SAND.line, alpha: 0.8 });
+  return g;
+}
+
+/** A green patch where a well can be dug. */
+export function siteArt(size = 110): Graphics {
+  const g = new Graphics();
+  g.ellipse(0, 0, size * 0.42, size * 0.3).fill({ color: GREEN.fill, alpha: 0.85 }).stroke(line(GREEN.line, 4));
+  for (const [x, y] of [[-18, -6], [10, -10], [20, 6], [-6, 10]]) g.moveTo(x, y + 6).lineTo(x - 3, y - 4).moveTo(x, y + 6).lineTo(x + 3, y - 4).stroke(line(GREEN.line, 3));
+  return g;
+}
+
+/** A well: a stone ring, a rope and a bucket; `ghost` is the faint fewest-wells hint. */
+export function wellArt(size = 80, ghost = false): Graphics {
+  const g = new Graphics();
+  const s = size / 2;
+  g.moveTo(-s * 0.7, -s * 0.9).lineTo(-s * 0.7, 0).moveTo(s * 0.7, -s * 0.9).lineTo(s * 0.7, 0).stroke(line(0x6b3f1e, 5));
+  g.moveTo(-s * 0.8, -s * 0.9).lineTo(s * 0.8, -s * 0.9).stroke(line(0x6b3f1e, 6));
+  g.moveTo(0, -s * 0.9).lineTo(0, -s * 0.35).stroke(line(ink, 2));
+  g.roundRect(-s * 0.15, -s * 0.4, s * 0.3, s * 0.25, 4).fill(0xa0683a);
+  g.ellipse(0, s * 0.1, s * 0.8, s * 0.4).fill(STONE.fill).stroke(line(STONE.line, 4));
+  g.ellipse(0, s * 0.02, s * 0.55, s * 0.2).fill(WATER.fill);
+  g.alpha = ghost ? 0.35 : 1;
+  return g;
+}
+
+/** A shade tree sprouting beside a well on a road that works (decoration). */
+export function treeArt(size = 70): Graphics {
+  const g = new Graphics();
+  const s = size / 2;
+  g.rect(-s * 0.1, -s * 0.2, s * 0.2, s * 0.7).fill(PALM.trunk);
+  g.circle(0, -s * 0.5, s * 0.5).circle(-s * 0.35, -s * 0.3, s * 0.35).circle(s * 0.35, -s * 0.3, s * 0.35).fill(PALM.leaf).stroke(line(0x3f7f33, 3));
+  return g;
+}
+
+/** The day stick: a sun over four hoofprints, a day's walk. */
+export function dayStickArt(w = 160, h = 110, marks = 4): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-w / 2, -h / 2, w, h, 20).fill(cream).stroke(line(SAND.line, 5));
+  g.moveTo(-w * 0.38, 26).lineTo(w * 0.38, 26).stroke(line(SAND.line, 4));
+  c.addChild(g);
+  const sun = sunArt(38);
+  sun.y = -22;
+  c.addChild(sun);
+  for (let i = 0; i < marks; i++) {
+    const hoof = hoofArt();
+    hoof.position.set((i - (marks - 1) / 2) * 30, 12);
+    c.addChild(hoof);
+  }
+  return c;
+}
+
+/** A counter pill: a sun (days walked) or a well (wells dug) and the number. */
+export function counterArt(n: number, kind: 'sun' | 'well'): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const g = new Graphics();
+  g.roundRect(-58, -34, 116, 68, 30).fill(cream).stroke(line(SAND.line, 4));
+  c.addChild(g);
+  const icon = kind === 'sun' ? sunArt(40) : wellArt(48);
+  icon.position.set(-26, kind === 'sun' ? 0 : 8);
+  c.addChild(icon);
+  const t = label(String(n), 36);
+  t.x = 24;
+  c.addChild(t);
+  return c;
+}
+
 export function iconArt(): Container {
   const c = new Container();
   const sun = sunArt(40);
