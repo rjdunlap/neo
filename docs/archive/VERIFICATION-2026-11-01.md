@@ -72,7 +72,7 @@
 - Ran (tested at 4a1c763e, Vite dev on http://localhost:5821, `VITE_SPEECH=off`): typecheck; 25 rule tests with the registry, lands, how-to and content tests (215 passed); `BROWSER_SUITE=rulemachine` three consecutive passes after a script race fix (level 1 at pre-K a free wrong first guess, two counted wrongs and the glow, saved 2 misses/1 hint; portrait level 2 one wrong pad after two rows, saved 1/0; screenshots of the glow and the portrait); `BROWSER_SUITE=fingerdemo FINGER_ONLY=rule-machine FINGER_LEVELS=2` (43 s); `npm run build`; `game-reviewer`, its two findings fixed (a resize during the car's hop could softlock; the truth now shows beside her pick).
 - Full `npm test` ran once: 6 failures: timing tests in other games (penguin-slide, block-garden, fluffy-salon, keep-house) that passed in isolation under machine load (flakes), and the voice-clip test, which needed the new title's Kokoro clip (rendered with `scripts/voice-clips/render.mjs`; clip tests 4 passed).
 - Not run: offline check, level-1 finger demo. Source check of the "went in / came out" and "one more / two more" wording against CCSS 3.OA.D.9, 4.OA.C.5 and England Year 6 not done (open).
-- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#rule-machine-levels-12-algebra-balance-ab1-2026-11-01)): the device and person checks there.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#rule-machine-levels-14-algebra-balance-ab1-2026-11-01-and-2026-11-02)): the device and person checks there.
 
 ## 2026-11-01 — Sprout Shuffle level 4, which pairs always make spotted (genetics G5)
 
@@ -93,3 +93,9 @@
 - [PR #1101](https://github.com/rjdunlap/neo/pull/1101), branch `claude/dive-sink-or-float`: [dive](../deep-dives/sink-float.md). Two builds queued (batches sink-float 1 *Fresh things* and 2 *Big and small*); level 10 *Salty or fresh* definition queued; level 11 waits for the Garden Raft definition. Tracker, READY, batches, backlog, ideas and the oceans, recommendations and engineering handoffs updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built under `src/`). Open: the builds and the device question whether a toddler predicts at level 3.
+
+## 2026-11-01 — Sudoku Garden deep dive (docs only)
+
+- [PR #1102](https://github.com/rjdunlap/neo/pull/1102), branch `claude/dive-sudoku-garden`: [dive](../deep-dives/sudoku-garden.md). Four slices queued ([batches](../GAME-BATCHES.md#sudoku-garden-1-a-4-by-4-bed-to-start): a 4 by 4 bed to start, fill marks on big beds, a crossing pair of rows, patchwork beds); cage beds are a queued definition.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built under `src/`). Open: the four builds.

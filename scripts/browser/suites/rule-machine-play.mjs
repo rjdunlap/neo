@@ -10,7 +10,10 @@ async function ruleMachinePlay() {
   const tapPad = async (i) => { await page.evaluate((i) => kit.tapOn(neo.scene.game.padNodes[i]), i); await page.waitForTimeout(250); };
   const wrongOf = (s) => [0, 1, 2].find((i) => i !== s.right);
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+  // RM_LEVELS=3,4 plays only those levels (default all four).
+  const only = (process.env.RM_LEVELS ?? '1,2,3,4').split(',').map(Number);
 
+  async function levelsOneTwo() {
   // Level 1 (pre-K): three walkers go through by themselves; the first prediction is free even when wrong, the second
   // counts: two wrong pictures (two misses, the glow, one hint), then the right one. The second machine goes straight.
   await launch('rule-machine', 1, 'Mia', 'prek');
@@ -66,6 +69,118 @@ async function ruleMachinePlay() {
   await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
   assert.deepEqual(await score(), [1, 0], 'level 2 saved 1 miss, 0 hints');
   log('Rule Machine 1 and 2: level 1 a free first guess, two counted wrongs and the glow (2/1); portrait level 2 one wrong pad after two rows (1/0); passed');
+  }
+
+  const apply = (r, n) => r.a * n + r.b;
+  const fitsRows = (r, rows) => rows.every((row) => apply(r, row.in) === row.out);
+  const tapCard = async (i) => { await page.evaluate((i) => kit.tapOn(neo.scene.game.shelfNodes[i]), i); await page.waitForTimeout(250); };
+  const feed = async (slot) => { await page.evaluate((slot) => kit.tapOn(neo.scene.game.cars[slot], 0, -40), slot); };
+  const unfed = (s) => [0, 1, 2, 3, 4].filter((i) => !s.fed.includes(i));
+
+  // Level 3: three cars with right pads (the window shows the change), then the shelf: one wrong card (a miss, the
+  // newest row breaks it), the right card hangs, one more car. The second machine goes straight. 1 miss, 0 hints.
+  async function levelThree() {
+    await launch('rule-machine', 3, 'Mia', 'school');
+    for (let m = 0; m < 2; m++) {
+      for (let k = 0; k < 3; k++) {
+        await until(() => neo.scene.game.state.phase === 'feed');
+        let s = await state();
+        await feed(unfed(s)[0]);
+        await askOpen();
+        s = await state();
+        assert.equal(s.options[s.right], apply(s.rule, s.tray[s.carSlot]), 'the right pad is what the rule gives');
+        await tapPad(s.right);
+        if (k === 2) break;
+        await until(([n, mm]) => neo.scene.finished || neo.scene.game.state.rows.length > n || neo.scene.game.state.machine > mm, [s.rows.length, m]);
+      }
+      await until(() => neo.scene.game.state.phase === 'card');
+      await page.waitForTimeout(250);
+      let s = await state();
+      assert.equal(s.rows.length, 3, 'the shelf comes down after three rows');
+      assert.equal(s.open, 1, 'three rows leave one card');
+      if (m === 0) {
+        const wrong = [0, 1, 2].find((i) => i !== s.rightCard);
+        await tapCard(wrong);
+        s = await state();
+        assert.deepEqual([s.misses, s.hints, s.phase, s.hung], [1, 0, 'card', false], 'a wrong card: one miss, the shelf stays');
+        await screenshot('rule-machine-3-shelf');
+      }
+      await tapCard(s.rightCard);
+      s = await state();
+      assert.equal(s.hung, true, 'the right card hangs on the machine');
+      await until(() => neo.scene.game.state.phase === 'feed');
+      s = await state();
+      await feed(unfed(s)[0]);
+      await askOpen();
+      s = await state();
+      assert.equal(s.counted, true);
+      await tapPad(s.right);
+      await until((mm) => neo.scene.finished || neo.scene.game.state.machine > mm, m);
+    }
+    await finished('rule-machine');
+    assert.deepEqual(await score(), [1, 0], 'level 3 saved 1 miss, 0 hints');
+    log('Rule Machine 3: a wrong card after three rows (1 miss), the card hangs, one more car; passed');
+  }
+
+  // Level 4, portrait: a card tap before any car (never judged), a trap car first (two cards still fit, a tap counts
+  // nothing), a card that row rules out (one miss), Peek (the machine's hint), the settling car, the card, the last pad.
+  async function levelFour() {
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+    await launch('rule-machine', 4, 'Mia', 'school');
+    for (let m = 0; m < 2; m++) {
+      await until(() => neo.scene.game.state.phase === 'feed');
+      await page.waitForTimeout(250);
+      let s = await state();
+      assert.equal(s.cardOpen, true, 'the shelf is out from the start');
+      if (m === 0) {
+        await tapCard(s.rightCard);
+        s = await state();
+        assert.deepEqual([s.misses, s.hung], [0, false], 'a card before any car is not judged');
+        const trap = unfed(s).find((i) => s.shelf.filter((c) => apply(c, s.tray[i]) === apply(s.rule, s.tray[i])).length === 2);
+        assert.notEqual(trap, undefined, 'the tray holds a trap car');
+        await feed(trap);
+        await until(() => neo.scene.game.state.phase === 'feed' && neo.scene.game.state.rows.length === 1);
+        await page.waitForTimeout(250);
+        s = await state();
+        assert.equal(s.open, 2, 'a trap car leaves two cards');
+        await screenshot('rule-machine-4-portrait');
+        const stillOpen = [0, 1, 2].find((i) => i !== s.rightCard && fitsRows(s.shelf[i], s.rows));
+        await tapCard(stillOpen);
+        s = await state();
+        assert.deepEqual([s.misses, s.hints, s.hung], [0, 0, false], 'a card that still fits counts nothing');
+        const ruledOut = [0, 1, 2].find((i) => !fitsRows(s.shelf[i], s.rows));
+        await tapCard(ruledOut);
+        s = await state();
+        assert.deepEqual([s.misses, s.hints], [1, 0], 'a card the table rules out: one miss');
+        await page.evaluate(() => kit.tapOn(neo.scene.game.peekNode));
+        await page.waitForTimeout(250);
+        s = await state();
+        assert.deepEqual([s.hints, s.peeking], [1, true], 'Peek lifts the lid: the machine\'s hint');
+      }
+      s = await state();
+      assert.notEqual(s.settling, null, 'a car can tell the cards apart');
+      await feed(s.settling);
+      await until((n) => neo.scene.game.state.phase === 'feed' && neo.scene.game.state.rows.length === n, s.rows.length + 1);
+      await page.waitForTimeout(250);
+      s = await state();
+      assert.deepEqual([s.open, s.peeking], [1, false], 'one card left; the lid is back down');
+      await tapCard(s.rightCard);
+      await askOpen();
+      s = await state();
+      assert.deepEqual([s.hung, s.counted], [true, true], 'the card hangs; the last prediction counts');
+      await tapPad(s.right);
+      await until((mm) => neo.scene.finished || neo.scene.game.state.machine > mm, m);
+    }
+    await finished('rule-machine');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+    assert.deepEqual(await score(), [1, 1], 'level 4 saved 1 miss, 1 hint');
+    log('Rule Machine 4 portrait: unjudged early and still-open taps, a ruled-out card (1 miss), Peek (1 hint), the settling car, the card, the last pad; passed');
+  }
+
+  if (only.includes(1) || only.includes(2)) await levelsOneTwo();
+  if (only.includes(3)) await levelThree();
+  if (only.includes(4)) await levelFour();
+  log(`Rule Machine ${only.join(', ')}: passed`);
 }
 return { ruleMachinePlay };
 }

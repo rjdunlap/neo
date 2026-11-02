@@ -7,6 +7,12 @@
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-01--egg-catch-far-barn-visual-identity-v1).
 
+### Rule Machine levels 3-4, algebra-balance AB1 (2026-11-02)
+
+[PR #1120](https://github.com/rjdunlap/neo/pull/1120), branch `claude/rule-machine-3-4`, batch rule-machine 2, [definition](../definitions/rule-machine.md): `rule-machine`'s school range is now 2-4. Level 3 "What does it do?" (rules +2, +3, -1): three cars go through with pads, a see-through window shows the counters change, then a shelf of three cards; a wrong card is one miss with the newest row ringed and read out, a second glows the right card. Level 4 "Covered machine" (x2, x3, +2, +4): the window is covered and the shelf is out from the start; feeding is never a miss, a card tap while more than one card fits is not judged, a card some row breaks is a miss, the last open card hangs, then one unfed car is sent and its prediction counts; Peek lifts the cover for one run and is the machine's one hint. Decisions: shelf cards are 120x120 (the definition said 140x120) so landscape fits the table and shelf beside the help button; `game-reviewer` fixes: the cover returns when the card hangs after an unused Peek, and the pet repeats level 2's ask after the card hangs. The browser suite `rulemachine` takes `RM_LEVELS`.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-02--rule-machine-levels-34-algebra-balance-ab1-batch-rule-machine-2).
+
 ### Rule Machine levels 1-2, algebra-balance AB1 (2026-11-01)
 
 [PR #1091](https://github.com/rjdunlap/neo/pull/1091), branch `claude/rule-machine-1-2`, batch rule-machine 1, [definition](../definitions/rule-machine.md): a new game, `rule-machine`, Puzzle Peaks' 14th (so the land now pages), pre-K level 1 "Hat machine" and school level 2 "One more goes in" (LEVELS prek 1-1, school 2-2; the school ceiling rises with batch rule-machine 2). Level 1 predicts the look of the next creature from three pictures, level 2 the count on three pads once two rows show; the first prediction on each machine is free, a counted wrong gives a spoken reason, a second glows, and the right answer rings green beside her pick. Decisions: Pip excluded under blue; one slotted run line `rm.ran` rather than separate went-in and came-out lines. Levels 3-4 stay in batch rule-machine 2.
