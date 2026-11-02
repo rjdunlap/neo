@@ -801,7 +801,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/drift-cards.m
 
 ### drift-cards 2: Find the hidden current
 
-- **`drift-cards`, level 3 (oceans study slice 6)** (a new interaction on the same game, school 1–3): a fogged patch of the sea and two or three returned cards; choose which of three patches fills the fog so every card lands where it was found, with a replay. [Definition](definitions/drift-cards.md). Depends on batch drift-cards 1 being built.
+- **`drift-cards`, level 3 (oceans study slice 6)** (a new interaction on the same game, school 1–3): a fogged patch of the sea and two or three returned cards; choose which of three patches fills the fog so every card lands where it was found, with a replay. [Definition](definitions/drift-cards.md). Depends on batch drift-cards 1 being built. Claimed 2026-11-02 by `claude/drift-cards-3` (files: `src/games/drift-cards/`, `src/content/voice-script.ts`, `src/content/howto.ts`, a browser case).
 
 Proof: new-interaction tier, as the [definition's check tier](definitions/drift-cards.md#check-tier) sets it (typecheck; rule tests 6–9; one filtered play of the authored case with option B, option C and the glow, then option A and the replay; one portrait screenshot with the fog and three patch cards; `fingerdemo` at level 3; a build for the card and voice). Device and person checks stay open there.
 
