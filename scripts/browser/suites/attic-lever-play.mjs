@@ -121,5 +121,75 @@ async function atticJobsPlay() {
   log('Attic Finds levels 5-6: free try, failing Check, one more, done; level 6 water hint counted once, upright with the magnifier');
 }
 
-return { atticLeverPlay, atticJobsPlay };
+/** Attic Finds levels 7-8: a free read, a wrong level-7 Check (one miss, both copies hop back), then right; level 8 with a wrong "shows it" on the Seaside claim twice (the glow, one hint), upright with stamps pressed, then right. */
+async function atticCasePlay() {
+  const state = () => page.evaluate(() => { const g = neo.scene.game; const s = g.state; return { claims: [...s.claims], slots: [...s.slots], stamps: [...s.stamps], read: s.read.size, glow: s.glow, misses: g.misses, hints: g.hints, index: g.index }; });
+  const idle = () => page.waitForFunction(() => { const g = neo.scene.game; return g && (!g.busy || g.finished); }, null, { timeout: 20000 });
+  const sticker = (n) => page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, n, { timeout: 30000 });
+  const read = async (id) => { await page.evaluate((id) => kit.tapOn(neo.scene.game.papers.find((p) => p.id === id).node), id); await page.waitForTimeout(400); };
+  const toSlot = async (id, slot) => {
+    await page.evaluate(async ([id, slot]) => {
+      const g = neo.scene.game, p = g.L.slots[slot];
+      await kit.dragTo(g.papers.find((t) => t.id === id).node, g.ctx.stage.toGlobal({ x: p.x, y: p.y + 40 }));
+    }, [id, slot]);
+    await page.waitForTimeout(500);
+  };
+  const stamp = async (row, kind) => { await page.evaluate(([row, k]) => kit.tapOn(neo.scene.game.rows[row].stamps[k]), [row, kind === 'shown' ? 0 : 1]); await page.waitForTimeout(250); };
+  const check = async () => { await page.evaluate(() => kit.tapOn(neo.scene.game.checkBtn)); await page.waitForTimeout(400); await idle(); };
+  const nextBoard = (i) => page.waitForFunction((i) => neo.scene.game.index === i || neo.scene.game.finished, i, { timeout: 20000 }).then(idle);
+  const by = { 'hilltop-had': 'list', 'fair-cranked': 'drawing', 'shop-sold': 'poster' };
+
+  // Level 7: the authored board (Hilltop had one, someone cranked at the fair).
+  await launch('attic-finds', 7, 'Mia', 'school'); await page.waitForTimeout(400); await idle();
+  let n = await page.evaluate(() => kit.store.data.stickers.length);
+  let st = await state();
+  assert.deepEqual(st.claims, ['hilltop-had', 'fair-cranked'], 'level 7 opens on the authored board');
+  await read('drawing');
+  st = await state();
+  assert.deepEqual([st.read, st.misses, st.slots], [1, 0, [null, null]], 'reading a paper is free and moves nothing');
+  await toSlot('drawing', 0); await toSlot('list', 1);
+  st = await state();
+  assert.deepEqual(st.slots, ['drawing', 'list'], 'copies drop into both slots');
+  assert.equal(await page.evaluate(() => neo.scene.game.papers.length), 3, 'the originals stay on the table');
+  await check();
+  st = await state();
+  assert.deepEqual([st.misses, st.slots], [1, [null, null]], 'a wrong Check is one miss and both wrong copies hop back');
+  await toSlot('list', 0); await toSlot('drawing', 1); await check();
+  await nextBoard(1);
+  st = await state();
+  for (const [i, c] of st.claims.entries()) await toSlot(by[c], i);
+  await check();
+  await sticker(n);
+  assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [1, 0], 'level 7: one miss, no hint');
+
+  // Level 8: "Seaside House had no bird box" stamped as shown, twice.
+  await launch('attic-finds', 8, 'Mia', 'school'); await page.waitForTimeout(400); await idle();
+  n = await page.evaluate(() => kit.store.data.stickers.length);
+  st = await state();
+  assert.deepEqual(st.claims, ['hilltop-had', 'seaside-none', 'all-loved'], 'level 8 opens on the authored board');
+  await check();
+  assert.equal((await state()).misses, 0, 'a Check with no stamps is never a miss');
+  await stamp(0, 'shown'); await stamp(1, 'shown'); await stamp(2, 'unknown');
+  await check();
+  st = await state();
+  assert.deepEqual([st.misses, st.stamps, st.glow], [1, ['shown', null, 'unknown'], false], 'one wrong stamp pops off; the right ones stay');
+  await stamp(1, 'shown'); await check();
+  st = await state();
+  assert.deepEqual([st.misses, st.hints, st.glow], [2, 1, true], 'the second miss lights the answer, one hint');
+  await stamp(1, 'unknown');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  await screenshot('attic-finds-8-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+  await check();
+  await nextBoard(1);
+  st = await state();
+  for (const [i, c] of st.claims.entries()) await stamp(i, by[c] ? 'shown' : 'unknown');
+  await check();
+  await sticker(n);
+  assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [2, 1], 'level 8: two misses, one hint');
+  assert.deepEqual(errors, [], 'page errors');
+  log('Attic Finds levels 7-8: free read, wrong Check then right; Seaside "shows it" twice, the glow, upright with stamps, then right');
+}
+
+return { atticLeverPlay, atticJobsPlay, atticCasePlay };
 }

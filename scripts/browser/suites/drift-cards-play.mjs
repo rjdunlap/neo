@@ -68,6 +68,53 @@ async function driftCardsPlay() {
   await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
   assert.deepEqual(await score(), [1, 0], 'level 2 saved 1 miss, 0 hints');
   log('Drift Cards 1–2: level 1 free first guess, two misses then the glow, saved 2/1; level 2 a wrong boat drifts to the penguin and back, right boats in portrait, saved 1/0; passed');
+
+  // Level 3, the authored case: B (card 1 rules it out) is a miss, B again counts nothing, C (card 2) is the second miss and
+  // the glow, then A and the replay. The options' order is seeded, so each is found by its arrows.
+  const ARROWS = { A: 'esse', B: 'esee', C: 'essw' };
+  const patch = () => page.evaluate(() => { const g = neo.scene.game; const t = g.turns[0]; return { misses: g.misses, hints: g.hints, busy: g.busy, glow: t.glow, option: g.option, fog: g.fog.length, options: g.pc.options.map((o) => o.join('')), answer: g.pc.answer, alpha: g.checkBtn.alpha }; });
+  const lay = (arrows) => page.evaluate((a) => { const g = neo.scene.game; kit.tapOn(g.patchCards[g.pc.options.findIndex((o) => o.join('') === a)]); }, arrows);
+  const check = () => page.evaluate(() => kit.tapOn(neo.scene.game.checkBtn));
+  const idle = async () => { await page.waitForTimeout(300); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 30000 }); await page.waitForTimeout(300); };
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+  await launch('drift-cards', 3, 'Mia', 'school');
+  await page.waitForTimeout(800);
+  let p = await patch();
+  assert.deepEqual([...p.options].sort(), Object.values(ARROWS).sort(), 'the first level-3 case is the authored one');
+  assert.equal(p.options[p.answer], ARROWS.A, 'A is the answer');
+  assert.deepEqual([p.fog, p.option, p.alpha < 1], [4, null, true], 'four fogged cells, no patch in, Check waiting');
+  await screenshot('drift-cards-3-portrait-fog');
+  await check();
+  await page.waitForTimeout(300);
+  p = await patch();
+  assert.deepEqual([p.misses, p.busy], [0, false], 'Check with nothing in the fog does nothing');
+  await lay(ARROWS.B);
+  await page.waitForTimeout(300);
+  p = await patch();
+  assert.deepEqual([p.fog, p.misses], [0, 0], 'laying a patch is free and lifts the fog');
+  await check();
+  await page.waitForTimeout(300);
+  p = await patch();
+  assert.deepEqual([p.misses, p.hints, p.glow], [1, 0, false], 'B: card 1 rules it out, one miss');
+  await idle();
+  await check();
+  await page.waitForTimeout(300);
+  p = await patch();
+  assert.deepEqual([p.misses, p.hints], [1, 0], 'checking B again counts nothing');
+  await lay(ARROWS.C);
+  await page.waitForTimeout(300);
+  await check();
+  await page.waitForTimeout(300);
+  p = await patch();
+  assert.deepEqual([p.misses, p.hints, p.glow], [2, 1, true], 'C: card 2 rules it out, the second miss glows A (one hint)');
+  await idle();
+  await lay(ARROWS.A);
+  await page.waitForTimeout(300);
+  await check();
+  await finished('drift-cards');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+  assert.deepEqual(await score(), [2, 1], 'level 3 saved 2 misses, 1 hint');
+  log('Drift Cards 3: authored case in portrait, B a miss, B again free, C the second miss and the glow, A and the replay, saved 2/1; passed');
 }
 return { driftCardsPlay };
 }

@@ -463,6 +463,8 @@ Proof: new-interaction tier, as the [definition's Build and check tier](definiti
 
 ### attic-finds 3: Two sources and What can we tell?
 
+**Built 2026-11-02 ([PR #1116](https://github.com/rjdunlap/neo/pull/1116)).** Both levels shipped; see the [archive note](archive/COMPLETED-2026-10-09.md#attic-finds-levels-78-two-sources-and-what-can-we-tell-h5-2026-11-02). Level 9 stays with batch attic-finds 4.
+
 - **`attic-finds`, levels 7 *Two sources* and 8 *What can we tell?*** (school only; a new paper-copy drag into claim slots plus a two-stamp interaction inside the existing game, one invented bird-box case; school `{2, 8, order [2,5,6,7,8]}`): drag a copy of the paper that shows each claim (level 7), then stamp each claim *The papers show it* or *Can't tell*, where no paper from a house is no proof it had no bird box (level 8); a free read is not a miss. [Definition](definitions/household-casebook.md), [everyday-life study slice H5](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the [definition's Build and check tier](definitions/household-casebook.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticcase` scripted play at levels 7–8, `fingerdemo` at both, one portrait screenshot of level 8, one build). Expected files: `src/games/attic-finds/` (`logic.ts`, a new `cases.ts` and its tests, `index.ts`), `src/content/howto.ts`, `src/content/voice-script.ts`, `scripts/browser-check.mjs`, README, `docs/GAMES.md`, `docs/VERIFICATION.md`.
@@ -803,7 +805,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/drift-cards.m
 
 ### drift-cards 2: Find the hidden current
 
-- **`drift-cards`, level 3 (oceans study slice 6)** (a new interaction on the same game, school 1–3): a fogged patch of the sea and two or three returned cards; choose which of three patches fills the fog so every card lands where it was found, with a replay. [Definition](definitions/drift-cards.md). Depends on batch drift-cards 1 being built.
+- **`drift-cards`, level 3 (oceans study slice 6)** (a new interaction on the same game, school 1–3): a fogged patch of the sea and two or three returned cards; choose which of three patches fills the fog so every card lands where it was found, with a replay. [Definition](definitions/drift-cards.md). **Built 2026-11-02**, [PR #1119](https://github.com/rjdunlap/neo/pull/1119), branch `claude/drift-cards-3`; school 1–3 (the cards and Check sit in a row under the sea in every orientation, a deviation from the definition's side column in landscape). Depends on batch drift-cards 1, built.
 
 Proof: new-interaction tier, as the [definition's check tier](definitions/drift-cards.md#check-tier) sets it (typecheck; rule tests 6–9; one filtered play of the authored case with option B, option C and the glow, then option A and the replay; one portrait screenshot with the fog and three patch cards; `fingerdemo` at level 3; a build for the card and voice). Device and person checks stay open there.
 

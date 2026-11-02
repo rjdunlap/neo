@@ -81,3 +81,15 @@
 - Full `npm test` 4095/4099: four time-bounded tests in other games (block-garden, fluffy-salon, keep-house, penguin-slide) failed under load and passed 110/110 on an isolated rerun.
 - Source check of the counterexample lines: they follow standard single-gene complete-dominance Punnett results (AA×aa, AA×Aa, AA×AA all dominant; Aa×aa half recessive; Aa×Aa a quarter; aa×aa all recessive), as in introductory Mendelian sources such as Khan Academy and Britannica; lines remain draft.
 - Not run: build (CI runs it), levels 1–3 suite (unchanged code), offline. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#from-the-delegated-decisions-2026-10-23)): pair-card wording by ear and on iPad, magnifier discoverability, whether two accepted pairs read as both right.
+
+## 2026-11-01 — Household Casebook definition (everyday-life-long-ago H5, docs only)
+
+- [PR #1100](https://github.com/rjdunlap/neo/pull/1100), branch `claude/define-household-casebook`: [definition](../definitions/household-casebook.md) of Attic Finds levels 7 *Two sources*, 8 *What can we tell?* and 9 *Mend the exhibit* (school only, one invented bird-box case). Study, packet, backlog, ideas, READY and [batches attic-finds 3 and 4](../GAME-BATCHES.md#attic-finds-3-two-sources-and-what-can-we-tell) updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built). Open: the two builds and the device checks the definition lists.
+
+## 2026-11-01 — Sink or Float deep dive (docs only)
+
+- [PR #1101](https://github.com/rjdunlap/neo/pull/1101), branch `claude/dive-sink-or-float`: [dive](../deep-dives/sink-float.md). Two builds queued (batches sink-float 1 *Fresh things* and 2 *Big and small*); level 10 *Salty or fresh* definition queued; level 11 waits for the Garden Raft definition. Tracker, READY, batches, backlog, ideas and the oceans, recommendations and engineering handoffs updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built under `src/`). Open: the builds and the device question whether a toddler predicts at level 3.
