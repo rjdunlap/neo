@@ -2,7 +2,7 @@ import { spread } from '../../engine/view';
 import { swatch, type Swatch } from '../../art/palette';
 
 export interface SizePlan {
-  count: number; order: 'big' | 'small'; mode: 'pick' | 'line' | 'cycle' | 'fit' | 'insert' | 'hidden'; name: string;
+  count: number; order: 'big' | 'small'; mode: 'pick' | 'line' | 'cycle' | 'fit' | 'insert' | 'hidden' | 'ribbon'; name: string;
   /** *Darkest first*: the ranks are shades of one colour (rank 0 the darkest), every friend one size, and a second line runs lightest first. */
   shade?: boolean;
   /** Some questions ask for the middle one. */
@@ -36,7 +36,9 @@ export const WHERE_DOES_IT_GO: SizePlan = { count: 5, order: 'small', mode: 'ins
 export const DARKEST_FIRST: SizePlan = { count: 5, order: 'small', mode: 'line', shade: true, name: 'Line up five friends by shade, darkest first, then lightest first' };
 /** 13 *Hidden heights* (school, after 12): friends behind a fence, only their boots showing, sorted littlest first by pair tests; four friends, then five. */
 export const HIDDEN_HEIGHTS: SizePlan = { count: 4, order: 'small', mode: 'hidden', name: 'Behind a fence, tap pairs to swap them into order, four friends then five, littlest first' };
-const HIGH_LEVELS: Record<number, SizePlan> = { 9: BIG_LITTLE, 10: MIDDLE_ONE, 11: WHO_FITS, 12: WHERE_DOES_IT_GO, 13: HIDDEN_HEIGHTS, 15: DARKEST_FIRST, 16: SIZE_CYCLE, 17: TWO_IN_A_LINE };
+/** 14 *The measuring ribbon* (school, after 13): two friends on different footing, compared with a ribbon carried from one to the other; four pairs. */
+export const MEASURING_RIBBON: SizePlan = { count: 2, order: 'big', mode: 'ribbon', name: 'Measure two friends on a bank and a stump with a ribbon, then tap the taller' };
+const HIGH_LEVELS: Record<number, SizePlan> = { 9: BIG_LITTLE, 10: MIDDLE_ONE, 11: WHO_FITS, 12: WHERE_DOES_IT_GO, 13: HIDDEN_HEIGHTS, 14: MEASURING_RIBBON, 15: DARKEST_FIRST, 16: SIZE_CYCLE, 17: TWO_IN_A_LINE };
 export const sizePlan = (level: number): SizePlan =>
   HIGH_LEVELS[level] ?? SIZE_PLANS[Math.max(0, Math.min(SIZE_PLANS.length - 1, level - 1))];
 /** How many questions a pick level asks: three at *Big one, little one*, otherwise four (one per prop at *Who fits?*). */
@@ -173,6 +175,64 @@ export function sweepAfter(s: Sweep, count: number, swapped: boolean): Sweep {
   if (next.pos <= count - 2 - s.pass) return next;
   if (!next.swapped || s.pass + 1 >= count - 1) return { ...next, done: true };
   return { pass: s.pass + 1, pos: 0, swapped: false, done: false };
+}
+
+/**
+ * *The measuring ribbon*: four pairs of two friends who cannot stand together, one on the bank (left) and one on a stump across
+ * the stream (right). Heights are what shows, feet to the top of the head (ears included), in logical units; footing is how far
+ * a friend's feet stand above the meadow. In two of the four pairs the friend standing higher is the shorter one and its head
+ * shows higher on screen too, so the eye lies; in the other two the taller one also stands higher. Which side is taller is seeded.
+ */
+export const RIBBON_PAIRS = 4;
+/** The friends named in the pairs: not Pip, who is a name rather than "the pip". */
+export const RIBBON_FRIENDS = ['duck', 'bunny', 'cat', 'cow', 'pig', 'bear', 'dog'] as const;
+export type RibbonFriend = (typeof RIBBON_FRIENDS)[number];
+/** A ribbon dropped within this many units of the head snaps to it: precision is not the test. */
+export const RIBBON_SNAP = 12;
+/** The ribbon pulls out between these lengths. */
+export const RIBBON_MIN = 36;
+export const RIBBON_MAX = 230;
+/** The lowest footing: the bank and the stump always stand a little above the meadow. */
+export const FOOT_BASE = 24;
+export interface RibbonPair {
+  /** Left (the bank) and right (the stump), each with its animal, visible height and footing. */
+  friends: [RibbonSide, RibbonSide];
+  /** Whether the friend standing higher is the shorter one (its head shows higher, too). */
+  tricky: boolean;
+}
+export interface RibbonSide { animal: RibbonFriend; height: number; foot: number }
+export function ribbonPairs(rng: { int(min: number, max: number): number; shuffle<T>(a: T[]): T[]; chance(p: number): boolean }): RibbonPair[] {
+  const tricks = rng.shuffle([true, true, false, false]);
+  const animals = rng.shuffle([...RIBBON_FRIENDS]);
+  return tricks.map((tricky, i) => {
+    const tall = rng.int(118, 150), gap = rng.int(14, 30), short = tall - gap;
+    // A tricky pair lifts the shorter friend so its head shows 22 to 40 units above the taller one's; an honest pair lifts the taller.
+    const lift = tricky ? gap + rng.int(22, 40) : rng.int(30, 60);
+    const tallSide: RibbonSide = { animal: animals[(2 * i) % animals.length], height: tall, foot: FOOT_BASE + (tricky ? 0 : lift) };
+    const shortSide: RibbonSide = { animal: animals[(2 * i + 1) % animals.length], height: short, foot: FOOT_BASE + (tricky ? lift : 0) };
+    return { friends: rng.chance(0.5) ? [tallSide, shortSide] : [shortSide, tallSide], tricky };
+  });
+}
+/** The taller friend of a pair (0 on the bank, 1 on the stump), by true height, never by where its head shows. */
+export const ribbonTaller = (pair: RibbonPair): 0 | 1 => pair.friends[0].height > pair.friends[1].height ? 0 : 1;
+/** How high a friend's head shows above the meadow: its footing and its height. */
+export const headTop = (side: RibbonSide): number => side.foot + side.height;
+/** The ribbon pulled out to `length` beside a friend `height` tall: snapped to the head within `RIBBON_SNAP`, otherwise as pulled (within its limits). */
+export function ribbonPull(length: number, height: number): { length: number; snapped: boolean } {
+  if (Math.abs(length - height) <= RIBBON_SNAP) return { length: height, snapped: true };
+  return { length: Math.max(RIBBON_MIN, Math.min(RIBBON_MAX, length)), snapped: false };
+}
+/** Where the two friends stand across a view `w` wide, and the ribbon's lane beside each, on its right (stream side for the bank friend). */
+export const RIBBON_LANE = 125;
+export function ribbonLayout(w: number) {
+  const left = Math.max(230, Math.round(w * 0.27)), right = Math.min(w - 260, Math.round(w * 0.66));
+  return { xs: [left, right] as [number, number], lanes: [left + RIBBON_LANE, right + RIBBON_LANE] as [number, number] };
+}
+/** Whether a carried ribbon dropped at x is beside a friend's lane: generous, and the nearest lane wins. */
+export function ribbonLaneAt(x: number, lanes: readonly number[]): number | null {
+  let best: number | null = null;
+  lanes.forEach((l, i) => { if (Math.abs(x - l) <= 130 && (best === null || Math.abs(x - l) < Math.abs(x - lanes[best]))) best = i; });
+  return best;
 }
 
 /**

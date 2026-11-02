@@ -378,7 +378,7 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### size-parade 5: The measuring ribbon
 
-- **`size-parade`, level 14 *The measuring ribbon*, slice 10** (new interaction, plus a portrait screenshot): two friends on different footing compared with a ribbon that snaps to a head, a tap before measuring is a prediction and never a miss; school `order [7, 8, 12, 13, 14, 15]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
+- **`size-parade`, level 14 *The measuring ribbon*, slice 10** (landed 2026-11-02, PR #1118) (new interaction, plus a portrait screenshot): two friends on different footing compared with a ribbon that snaps to a head, a tap before measuring is a prediction and never a miss; school `order [7, 8, 12, 13, 14, 15]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
