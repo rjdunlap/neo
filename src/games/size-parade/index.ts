@@ -805,12 +805,11 @@ class SizeParade implements Game {
         c.node.hitArea = new Rectangle(-RIBBON_TARGET_W / 2, -175, RIBBON_TARGET_W, 190);
         this.ctx.tw.kill(c.node); c.node.position.set(xs[side], this.feet(side));
       });
-      if (!this.ribbonDrag?.dragging && !this.ctx.tw.busy(this.ribbon)) {
-        const side = this.phase === 'measured' ? 1 : 0;
-        this.ribbon.position.set(lanes[side], this.feet(side) - this.ribbonLen);
-        this.ribbonDrag!.home = { x: lanes[0], y: this.feet(0) - this.ribbonLen };
-        if (side === 1) this.ribbonDrag!.home = { x: this.ribbon.x, y: this.ribbon.y };
-      }
+      // Home always follows the layout, so a ribbon floating back mid-resize lands on its lane; a ribbon floating home snaps there; a held or fading one is left alone.
+      const side = this.phase === 'measured' ? 1 : 0;
+      this.ribbonDrag!.home = { x: lanes[side], y: this.feet(side) - this.ribbonLen };
+      if (this.ctx.tw.busy(this.ribbon) && !this.ribbonDrag!.dragging && this.phase === 'carry') { this.ctx.tw.kill(this.ribbon); this.ribbon.position.set(this.ribbonDrag!.home.x, this.ribbonDrag!.home.y); }
+      else if (!this.ribbonDrag!.dragging && !this.ctx.tw.busy(this.ribbon)) this.ribbon.position.set(this.ribbonDrag!.home.x, this.ribbonDrag!.home.y);
       this.drawMark();
     }
     this.gate.position.set(v.w / 2, v.h - 400);
