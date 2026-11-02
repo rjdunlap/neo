@@ -11,13 +11,23 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { arrow, badge, car, card, counters, creature, drawLights, machine, numeral, type MachineArt } from './art';
 import {
-  CAR_W, HOPPER, LEVELS, PAD, PICTURE, Score, apply, counted, isLook, layout, makeRound, pads, planFor, samePicture, stickerPair,
-  type CountMachine, type Layout, type LookMachine, type Machine, type Picture, type Plan,
+  arrow, badge, car, card, counters, cover, creature, drawLights, hungBadge, machine, mysteryBadge, numeral, peekEye, ruleCard, windowView, type MachineArt,
+} from './art';
+import {
+  CAR_W, CARD_H, CARD_W, HOPPER, LEVELS, PAD, PEEK, PICTURE, Score, apply, counted, isLook, judgeCard, lastCar, layout, makeRound, openCards,
+  pads, planFor, samePicture, settlingCar, stickerPair,
+  type Box, type CountMachine, type Layout, type LookMachine, type Machine, type NumRule, type Picture, type Plan, type Row,
 } from './logic';
 
-type Phase = 'walk' | 'feed' | 'predict' | 'run' | 'between' | 'done';
+type Phase = 'walk' | 'feed' | 'predict' | 'card' | 'run' | 'between' | 'done';
+
+/** A card's spoken name, and the line that reads a row against it. */
+function cardLine(r: NumRule) {
+  if (r.a === 2) return { name: 'rm.card.twice', would: 'rm.would.twice' } as const;
+  if (r.a === 3) return { name: 'rm.card.three', would: 'rm.would.three' } as const;
+  return r.b < 0 ? { name: 'rm.card.take', would: 'rm.would.take' } as const : { name: 'rm.card.plus', would: 'rm.would.plus' } as const;
+}
 
 /** A table column: what went in above an arrow above what came out. */
 interface Column { node: Container }
@@ -45,6 +55,12 @@ class RuleMachine implements Game {
   chosen: number | null = null;
   /** After a prediction's run, the right pad shown beside her choice. */
   reveal: number | null = null;
+  /** Levels 3–4: the right card hangs on the machine. */
+  hung = false;
+  /** Level 4: the cover is lifted for the next run. */
+  peeking = false;
+  /** A table column ringed after a wrong card (the row that breaks it), and for how long. */
+  private circled: { col: number; t: number } | null = null;
   finished = false;
   private readonly reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   private layoutNow: Layout;
@@ -58,6 +74,10 @@ class RuleMachine implements Game {
   private readonly actors = new Container();
   private readonly glowRing = new Graphics();
   private readonly hopperHit = new Container();
+  private readonly shelfLayer = new Container();
+  private readonly coverArt = cover();
+  readonly peekNode = peekEye();
+  shelfNodes: Container[] = [];
   /** The creature or car waiting at the hopper, and the output standing at the chute. */
   private waiting: Container | null = null;
   private output: Container | null = null;
@@ -75,7 +95,10 @@ class RuleMachine implements Game {
     this.hopperHit.hitArea = new Rectangle(-HOPPER / 2, -HOPPER / 2, HOPPER, HOPPER);
     onTap(this.hopperHit, () => this.tapHopper());
     this.layoutNow = layout(ctx.view, this.plan.level);
-    ctx.stage.addChild(this.backdrop, this.tableLayer, this.art.node, this.hopperHit, this.trayLayer, this.padLayer, this.actors, this.glowRing);
+    this.art.node.addChild(this.coverArt);
+    this.peekNode.hitArea = new Rectangle(-PEEK / 2, -PEEK / 2, PEEK, PEEK);
+    onTap(this.peekNode, () => this.tapPeek());
+    ctx.stage.addChild(this.backdrop, this.tableLayer, this.shelfLayer, this.art.node, this.peekNode, this.hopperHit, this.trayLayer, this.padLayer, this.actors, this.glowRing);
     this.dressMachine();
   }
 
@@ -84,6 +107,22 @@ class RuleMachine implements Game {
   get count(): CountMachine { return this.machine as CountMachine; }
   get isCounted(): boolean { return counted(this.plan, this.asked); }
   get busy(): boolean { return this.phase === 'run' || this.phase === 'between' || this.phase === 'done'; }
+  /** The table's rows as numbers (levels 2–4). */
+  get numRows(): Row[] { return this.rows.filter((r): r is Row => typeof r.in === 'number'); }
+  /** Whether a card tap is heard now: level 3 once the shelf opens, level 4 while feeding until the card hangs. */
+  get cardOpen(): boolean {
+    if (this.hung || this.finished) return false;
+    return this.plan.shelf === 'after' ? this.phase === 'card' : this.plan.shelf === 'start' && this.phase === 'feed';
+  }
+  /** The shelf cards that still fit every row. */
+  get open(): NumRule[] { return isLook(this.machine) ? [] : openCards(this.count.shelf, this.numRows); }
+  /** Level 4: the tray slot that tells the open cards apart (the hint's glow and the bot's car), while more than one fits. */
+  get settling(): number | null {
+    if (this.plan.shelf !== 'start' || this.hung) return null;
+    const m = this.count;
+    return settlingCar(m.shelf, this.numRows, m.tray, this.fed, m.rule);
+  }
+  get rightCard(): number { return isLook(this.machine) ? -1 : this.count.shelf.findIndex((c) => c.a === this.count.rule.a && c.b === this.count.rule.b); }
 
   /** The open question's options, in pad order, and which is right. */
   get options(): { values: (Picture | number)[]; right: number } | null {
@@ -107,6 +146,8 @@ class RuleMachine implements Game {
       level: this.plan.level, machine: this.index, phase: this.phase, walked: this.walked, asked: this.asked, counted: this.isCounted,
       rule: this.machine.rule, rows: this.rows.slice(), fed: this.fed.slice(), carSlot: this.carSlot,
       tray: isLook(this.machine) ? [] : this.count.tray.slice(), options: o?.values ?? [], right: o?.right ?? -1,
+      shelf: isLook(this.machine) ? [] : this.count.shelf.slice(), rightCard: this.rightCard, open: this.open.length, cardOpen: this.cardOpen,
+      settling: this.settling, hung: this.hung, peeking: this.peeking,
       misses: this.score.misses, hints: this.score.hints, glowing: this.score.glowing, finished: this.finished,
     };
   }
@@ -118,12 +159,13 @@ class RuleMachine implements Game {
     for (const d of this.drags) d.destroy();
     this.drags = [];
     this.ctx.tw.kill(this.art.node); this.ctx.tw.kill(this.art.node.scale);
-    for (const c of [...this.cars, ...this.padNodes, this.waiting, this.output]) if (c) { this.ctx.tw.kill(c); this.ctx.tw.kill(c.scale); }
+    for (const c of [...this.cars, ...this.padNodes, ...this.shelfNodes, this.waiting, this.output]) if (c) { this.ctx.tw.kill(c); this.ctx.tw.kill(c.scale); }
   }
 
   private instruct() {
     if (this.phase === 'predict') return this.ctx.instruct(this.plan.ask === 'look' ? 'rm.what-look' : 'rm.how-many');
-    return this.ctx.instruct(this.plan.ask === 'look' ? 'rm.instruct.1' : 'rm.instruct.2');
+    if (this.phase === 'card') return this.ctx.instruct('rm.which-card');
+    return this.ctx.instruct(this.plan.ask === 'look' ? 'rm.instruct.1' : `rm.instruct.${Math.min(4, Math.max(2, this.plan.level)) as 2 | 3 | 4}`);
   }
 
   // ---- building a machine ----
@@ -131,7 +173,14 @@ class RuleMachine implements Game {
   private dressMachine() {
     this.art.badge.removeChildren().forEach((c) => c.destroy({ children: true }));
     const r = this.machine.rule;
-    this.art.badge.addChild(r.kind === 'look' ? badge(r) : badge({ kind: 'num', b: r.b }));
+    // Levels 3–4 keep the rule off the front until her card hangs there.
+    this.art.badge.addChild(r.kind === 'look' ? badge(r) : this.plan.shelf !== 'none' ? mysteryBadge() : badge({ kind: 'num', b: r.b }));
+    this.hung = false;
+    this.peeking = false;
+    this.circled = null;
+    this.coverArt.visible = this.plan.shelf === 'start';
+    this.art.window.removeChildren().forEach((c) => c.destroy());
+    this.buildShelf();
     this.rows = [];
     this.reveal = null;
     this.walked = 0;
@@ -163,7 +212,23 @@ class RuleMachine implements Game {
     this.resize(this.ctx.view);
   }
 
-  private drawLights() { drawLights(this.art.lights, this.rows.length, this.plan.walkers + this.plan.predictions); }
+  private drawLights() { drawLights(this.art.lights, this.rows.length, this.plan.lights); }
+
+  /** Levels 3–4: the three cards; shown at once beside the covered machine, after three rows at level 3. */
+  private buildShelf() {
+    for (const n of this.shelfNodes) { this.ctx.tw.kill(n); this.ctx.tw.kill(n.scale); n.destroy({ children: true }); }
+    this.shelfNodes = [];
+    if (isLook(this.machine) || this.plan.shelf === 'none') { this.shelfLayer.visible = false; this.peekNode.visible = false; return; }
+    this.count.shelf.forEach((rule, i) => {
+      const node = ruleCard(rule);
+      node.hitArea = new Rectangle(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H);
+      onTap(node, () => this.tapCard(i));
+      this.shelfNodes.push(node);
+      this.shelfLayer.addChild(node);
+    });
+    this.shelfLayer.visible = this.plan.shelf === 'start';
+    this.peekNode.visible = this.plan.shelf === 'start';
+  }
 
   /** A creature walks up to the hopper's mouth and waits there; tapping it (or the hopper) during the walk sends it sooner. */
   private bringCreature(c: Picture['creature']) {
@@ -239,8 +304,97 @@ class RuleMachine implements Game {
     if (this.finished || m !== this.index) return;
     this.waiting = node;
     node.position.set(this.layoutNow.waitAt.x, this.layoutNow.waitAt.y);
+    if (this.plan.shelf === 'start' && !this.hung) { void this.runFed(); return; }
     this.trayLayer.visible = false;
     this.openQuestion();
+  }
+
+  /** Level 4 before the card: a fed car just runs (feeding is never judged), and she feeds again or taps a card. */
+  private async runFed() {
+    this.phase = 'run';
+    const m = this.index;
+    const n = this.count.tray[this.carSlot!];
+    await this.run(n, apply(this.count.rule, n));
+    if (this.finished || m !== this.index) return;
+    this.carSlot = null;
+    this.phase = 'feed';
+    if (this.open.length === 1) void this.ctx.say('rm.tap-card');
+  }
+
+  // ---- the shelf ----
+
+  private tapCard(i: number) {
+    if (!this.cardOpen) return;
+    const node = this.shelfNodes[i];
+    this.ctx.tw.kill(node.scale);
+    node.scale.set(0.92);
+    void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
+    this.idle = 0;
+    const card = this.count.shelf[i];
+    const verdict = judgeCard(card, this.count.shelf, this.numRows);
+    if (verdict.kind === 'still-open') {
+      // Never judged while the table cannot tell: a wiggle and the reason, nothing counted.
+      sfx.tick();
+      this.ctx.tw.kill(node);
+      const x = this.layoutNow.shelf[i].x;
+      void this.ctx.tw.to(node, { x: x + 8 }, { duration: 0.08 }).then(() => node.destroyed ? undefined : this.ctx.tw.to(node, { x }, { duration: 0.12, ease: ease.outBack }));
+      void this.ctx.say('rm.still-fit');
+      return;
+    }
+    const outcome = this.score.answer(verdict.kind === 'right', true);
+    if (outcome === 'right') { sfx.sparkle(); void this.hangCard(); return; }
+    sfx.boing();
+    const row = this.numRows[verdict.kind === 'ruled-out' ? verdict.row : this.numRows.length - 1];
+    this.circled = { col: verdict.kind === 'ruled-out' ? verdict.row : this.numRows.length - 1, t: 3 };
+    void this.hearCardWrong(card, row, outcome === 'glow');
+  }
+
+  private async hearCardWrong(card: NumRule, row: Row, glow: boolean) {
+    const m = this.index;
+    await this.ctx.say(cardLine(card).would, { n: row.in, m: row.out, b: card.b, k: apply(card, row.in) });
+    if (this.finished || m !== this.index || !this.cardOpen) return;
+    if (glow) await this.ctx.say('rm.help');
+  }
+
+  /** The right card hangs on the machine's front; level 3 sends one more car, level 4 its last car by itself. */
+  private async hangCard() {
+    this.hung = true;
+    this.phase = 'between';
+    this.circled = null;
+    const m = this.index;
+    const rule = this.count.rule;
+    this.art.badge.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.art.badge.addChild(hungBadge(rule));
+    this.shelfLayer.visible = false;
+    this.peekNode.visible = false;
+    this.peeking = false;
+    sfx.bell(9, 0.3); sfx.bell(11, 0.25);
+    const line = cardLine(rule);
+    await this.ctx.say(line.name, { n: rule.b });
+    if (this.finished || m !== this.index) return;
+    await this.ctx.say('rm.hangs');
+    if (this.finished || m !== this.index) return;
+    if (this.plan.shelf === 'after') {
+      this.trayLayer.visible = true;
+      this.phase = 'feed';
+      void this.ctx.say('rm.send');
+      return;
+    }
+    const slot = lastCar(this.count.tray, this.fed);
+    if (slot === null) { await this.endMachine(); return; }
+    // The last car is chosen for her (the lowest still on the tray): she predicts it with the card on the machine.
+    this.asked = 0;
+    void this.feedCar(slot);
+  }
+
+  private tapPeek() {
+    if (this.finished || this.plan.shelf !== 'start' || this.hung || this.peeking || this.phase !== 'feed') return;
+    this.peeking = true;
+    this.peekNode.visible = false;
+    this.coverArt.visible = false;
+    this.score.peek();
+    sfx.whoosh();
+    void this.ctx.say('rm.peek');
   }
 
   private openQuestion() {
@@ -303,18 +457,35 @@ class RuleMachine implements Game {
   /** The spoken reason for a counted wrong: re-read what the machine has done. */
   private reason() {
     if (isLook(this.machine)) return this.ctx.say('rm.look-again');
+    // Levels 3–4 never name the rule before her card does.
+    if (this.plan.shelf !== 'none') return this.ctx.say(this.hung ? 'rm.look-card' : 'rm.look-table');
     const last = this.rows[this.rows.length - 1] as { in: number; out: number };
     return this.ctx.say(this.count.rule.b === 1 ? 'rm.one-more' : 'rm.two-more', { n: last.in, m: last.out });
   }
 
   readonly hintLabel = 'Show me';
 
-  /** Asked-for help: the glow on the right picture or pad (one hint per machine); asked again, the ghost taps it. Otherwise it repeats the ask. */
+  /**
+   * The helpful move now: the right picture or pad; the right card on level 3's shelf; at level 4 the car that tells
+   * the open cards apart, or the card once only one fits. Null while she is just sending cars.
+   */
+  get helpMove(): { kind: 'pad' | 'card' | 'car'; i: number } | null {
+    if (this.finished || this.busy) return null;
+    if (this.phase === 'predict') return { kind: 'pad', i: this.options!.right };
+    if (!this.cardOpen) return null;
+    const s = this.settling;
+    return s !== null ? { kind: 'car', i: s } : { kind: 'card', i: this.rightCard };
+  }
+
+  /** Asked-for help: the glow on the helpful move (one hint per machine); asked again, the ghost makes it. Otherwise it repeats the ask. */
   askForHint() {
     if (this.finished || this.busy) return;
-    if (this.phase !== 'predict') { void this.instruct(); return; }
+    const move = this.helpMove;
+    if (!move) { void this.instruct(); return; }
     if (this.score.showMe()) { void this.ctx.say('rm.help'); return; }
-    this.tapPad(this.options!.right);
+    if (move.kind === 'pad') this.tapPad(move.i);
+    else if (move.kind === 'card') this.tapCard(move.i);
+    else void this.feedCar(move.i);
   }
 
   // ---- the machine runs ----
@@ -350,9 +521,20 @@ class RuleMachine implements Game {
     if (this.asked >= this.plan.predictions) { await this.endMachine(); return; }
     if (isLook(this.machine)) { this.bringCreature(this.machine.waiting[this.asked]); this.openQuestion(); return; }
     this.carSlot = null;
+    if (this.plan.shelf === 'after' && !this.hung && this.asked >= this.plan.cardAfter) { this.openShelf(); return; }
     this.trayLayer.visible = true;
     this.phase = 'feed';
     void this.ctx.say('rm.send');
+  }
+
+  /** Level 3: three rows on the table, and the shelf of three cards comes down. */
+  private openShelf() {
+    this.phase = 'card';
+    this.score.newAsk();
+    this.trayLayer.visible = false;
+    this.shelfLayer.visible = true;
+    sfx.whoosh();
+    void this.instruct();
   }
 
   /** The input drops into the hopper, the machine chugs, and the output lands at the chute's end; the table gains a row. */
@@ -369,14 +551,18 @@ class RuleMachine implements Game {
       if (this.finished) return;
       this.dropActor(w);
     }
-    // The chug: one rising step per row of this machine.
+    // The chug: one rising step per row of this machine. Levels 3–4 show the change in the window when it is not covered.
     sfx.bell(2 + this.rows.length, 0.25);
     const body = this.art.node;
+    const see = typeof input === 'number' && this.plan.shelf !== 'none' && !this.coverArt.visible ? this.machine.rule as NumRule : null;
+    const win = this.art.window;
+    if (see) win.addChild(windowView(see, input as number, false));
     this.ctx.tw.kill(body.scale);
     for (let k = 0; k < 3; k++) {
       body.scale.set(1.04, 0.96);
-      await this.ctx.tw.to(body.scale, { x: 1, y: 1 }, { duration: t * 0.12, ease: ease.outQuad });
+      await this.ctx.tw.to(body.scale, { x: 1, y: 1 }, { duration: t * (see ? 0.2 : 0.12), ease: ease.outQuad });
       if (this.finished || m !== this.index) return;
+      if (see && k === 1) { win.removeChildren().forEach((c) => c.destroy()); win.addChild(windowView(see, input as number, true)); }
     }
     const node = typeof out === 'number' ? car(out, CAR_W - 10) : creature(out, STAND);
     if (typeof out !== 'number') this.ctx.track(node as Critter);
@@ -393,6 +579,11 @@ class RuleMachine implements Game {
     this.rows.push({ in: input, out });
     this.addColumn(input, out);
     this.drawLights();
+    if (see) {
+      // Peek lasts one run: the cover comes back down.
+      win.removeChildren().forEach((c) => c.destroy());
+      if (this.peeking) { this.peeking = false; this.coverArt.visible = true; if (!this.hung) this.peekNode.visible = true; }
+    }
     if (typeof out === 'number') await this.ctx.say('rm.ran', { n: input as number, m: out });
     else if (out.look) await this.ctx.say(LOOK_LINE[out.look]);
   }
@@ -445,6 +636,8 @@ class RuleMachine implements Game {
     this.hopperHit.position.set(l.hopper.x, l.hopper.y);
     this.placeColumns();
     this.placePads();
+    this.shelfNodes.forEach((n, i) => { this.ctx.tw.kill(n); const b = l.shelf[i]; n.position.set(b.x, b.y); });
+    this.peekNode.position.set(l.peek.x, l.peek.y);
     this.cars.forEach((c, slot) => {
       if (this.fed.includes(slot)) return;
       const b = l.tray[slot];
@@ -473,8 +666,17 @@ class RuleMachine implements Game {
       }
       return;
     }
-    if (!this.score.glowing || this.phase !== 'predict') return;
-    const b = this.layoutNow.pads[this.options!.right];
+    if (this.circled) {
+      this.circled.t -= dt;
+      const c = this.layoutNow.columns[this.circled.col];
+      if (this.circled.t <= 0 || !c) this.circled = null;
+      else this.glowRing.roundRect(c.x - c.w / 2 - 6, c.y - c.h / 2 - 6, c.w + 12, c.h + 12, 20).stroke({ width: 6, color: swatch.red.fill });
+    }
+    if (!this.score.glowing) return;
+    const move = this.helpMove;
+    if (!move) return;
+    const b: Box = move.kind === 'pad' ? this.layoutNow.pads[move.i] : move.kind === 'card' ? this.layoutNow.shelf[move.i]
+      : { ...this.layoutNow.tray[move.i], y: this.layoutNow.tray[move.i].y + 10 };
     const pulse = 7 + 3 * Math.sin(this.clock * 5);
     this.glowRing.roundRect(b.x - b.w / 2 - pulse, b.y - b.h / 2 - pulse, b.w + 2 * pulse, b.h + 2 * pulse, 22).stroke({ width: 7, color: swatch.yellow.fill });
   }
@@ -482,6 +684,12 @@ class RuleMachine implements Game {
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy) return null;
     if (this.phase === 'walk') return null;
+    if (this.phase === 'card') return { tap: { on: this.shelfNodes[this.rightCard] } };
+    if (this.phase === 'feed' && this.plan.shelf === 'start' && !this.hung) {
+      const s = this.settling;
+      if (s === null) return { tap: { on: this.shelfNodes[this.rightCard] } };
+      return { drag: { on: this.cars[s], y: -40 }, to: { on: this.hopperHit } };
+    }
     if (this.phase === 'feed') {
       const slot = this.count.tray.findIndex((_, i) => !this.fed.includes(i));
       const lowest = this.count.tray.map((n, i) => ({ n, i })).filter((c) => !this.fed.includes(c.i)).sort((a, b) => a.n - b.n)[0]?.i ?? slot;

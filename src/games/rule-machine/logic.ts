@@ -1,8 +1,9 @@
 /**
  * Rule Machine rules: a machine does the same thing to whatever goes in, and the table of in and out is the record.
- * Level 1 (pre-K) changes a creature's look; level 2 (school) adds one or two counters to a car. Feeding is never a
- * miss, and neither is a first guess about a new machine: only a prediction made once the machine has shown its rule
- * can count. Levels 3–4 (the rule shelf and the covered machine) append later without renumbering.
+ * Level 1 (pre-K) changes a creature's look; level 2 (school) adds one or two counters to a car; level 3 names the
+ * machine's rule from a shelf of three cards; level 4 covers the machine, and she chooses cars so the table tells its
+ * cards apart. Feeding is never a miss, and neither is a first guess about a new machine: only a prediction made once
+ * the machine has shown its rule can count, and at level 4 a card is judged only when the table can tell.
  * Definition: docs/definitions/rule-machine.md.
  */
 import type { Rng } from '../../engine/random';
@@ -41,7 +42,7 @@ export const MAX_COUNT = 12;
 export type Ask = 'look' | 'count';
 export interface Plan {
   level: number;
-  id: 'hats' | 'more';
+  id: 'hats' | 'more' | 'what' | 'covered';
   ask: Ask;
   name: string;
   /** Machines in a round. */
@@ -50,20 +51,79 @@ export interface Plan {
   walkers: number;
   /** Predictions on each machine (level 1: the waiting creatures; level 2: the cars she sends). */
   predictions: number;
-  /** Level 2: cars on the tray. */
+  /** Levels 2–4: cars on the tray. */
   tray: number;
+  /** The rule shelf: none (1–2), after `cardAfter` rows (3), or from the start beside a covered machine (4). */
+  shelf: 'none' | 'after' | 'start';
+  cardAfter: number;
+  /** Lights along the machine's top: the most rows a machine can make. */
+  lights: number;
 }
 
 const PLANS: readonly Plan[] = [
-  { level: 1, id: 'hats', ask: 'look', name: 'Hat machine', machines: 2, walkers: 3, predictions: 2, tray: 0 },
-  { level: 2, id: 'more', ask: 'count', name: 'One more goes in', machines: 2, walkers: 0, predictions: 4, tray: 5 },
+  { level: 1, id: 'hats', ask: 'look', name: 'Hat machine', machines: 2, walkers: 3, predictions: 2, tray: 0, shelf: 'none', cardAfter: 0, lights: 5 },
+  { level: 2, id: 'more', ask: 'count', name: 'One more goes in', machines: 2, walkers: 0, predictions: 4, tray: 5, shelf: 'none', cardAfter: 0, lights: 4 },
+  { level: 3, id: 'what', ask: 'count', name: 'What does it do?', machines: 2, walkers: 0, predictions: 4, tray: 5, shelf: 'after', cardAfter: 3, lights: 4 },
+  { level: 4, id: 'covered', ask: 'count', name: 'Covered machine', machines: 2, walkers: 0, predictions: 1, tray: 5, shelf: 'start', cardAfter: 0, lights: 5 },
 ];
 
-/** Pre-K plays level 1 only; school starts at 2. School's ceiling rises as levels 3–4 are built. */
+/** Pre-K plays level 1 only; school plays 2–4 (5–8 append later without renumbering). */
 export const LEVELS: BandLevels = {
   prek: { min: 1, max: 1 },
-  school: { min: 2, max: 2 },
+  school: { min: 2, max: 4 },
 };
+
+/** Level 3's shelf: two adds and a take-away never agree on any input, so every row breaks both wrong cards. */
+export const WHAT_POOL: readonly NumRule[] = [{ kind: 'num', a: 1, b: 2 }, { kind: 'num', a: 1, b: 3 }, { kind: 'num', a: 1, b: -1 }];
+/** Level 4's pool: each has at least two trap partners on the tray 0–4. */
+export const COVERED_POOL: readonly NumRule[] = [{ kind: 'num', a: 2, b: 0 }, { kind: 'num', a: 3, b: 0 }, { kind: 'num', a: 1, b: 2 }, { kind: 'num', a: 1, b: 4 }];
+export const COVERED_TRAY: readonly number[] = [0, 1, 2, 3, 4];
+
+export const sameRule = (p: NumRule, q: NumRule) => p.a === q.a && p.b === q.b;
+
+/** Pool rules other than `rule` that give the same output as it on at least one tray car (a car that tells them nothing). */
+export function trapPartners(rule: NumRule, pool: readonly NumRule[] = COVERED_POOL, tray: readonly number[] = COVERED_TRAY): NumRule[] {
+  return pool.filter((q) => !sameRule(q, rule) && tray.some((n) => apply(q, n) === apply(rule, n)));
+}
+
+/** The shelf cards that fit every row so far. */
+export function openCards(shelf: readonly NumRule[], rows: readonly Row[]): NumRule[] {
+  return shelf.filter((c) => fits(c, rows));
+}
+
+export type CardVerdict = { kind: 'right' } | { kind: 'still-open' } | { kind: 'ruled-out'; row: number };
+
+/**
+ * A card tapped against the table. A card some row breaks is ruled out (the newest breaking row is the one read out);
+ * while more than one card fits every row (or nothing has gone in), the tap is never judged; the one card left is right.
+ */
+export function judgeCard(card: NumRule, shelf: readonly NumRule[], rows: readonly Row[]): CardVerdict {
+  if (!fits(card, rows)) {
+    let row = rows.length - 1;
+    while (apply(card, rows[row].in) === rows[row].out) row--;
+    return { kind: 'ruled-out', row };
+  }
+  return openCards(shelf, rows).length > 1 ? { kind: 'still-open' } : { kind: 'right' };
+}
+
+/**
+ * The car that tells the open cards apart: the lowest-numbered unfed car after which only one card fits (the hint's
+ * glow and the bot's choice). Null when one card already fits or no unfed car settles it.
+ */
+export function settlingCar(shelf: readonly NumRule[], rows: readonly Row[], tray: readonly number[], fed: readonly number[], rule: NumRule): number | null {
+  const open = openCards(shelf, rows);
+  if (open.length <= 1) return null;
+  const slots = tray.map((n, i) => ({ n, i })).filter((c) => !fed.includes(c.i)).sort((a, b) => a.n - b.n);
+  for (const { n, i } of slots) if (open.filter((c) => apply(c, n) === apply(rule, n)).length === 1) return i;
+  return null;
+}
+
+/** Level 4's last prediction: the tray slot of the lowest-numbered car not yet fed, or null when all five went in. */
+export function lastCar(tray: readonly number[], fed: readonly number[]): number | null {
+  let best: number | null = null;
+  tray.forEach((n, i) => { if (!fed.includes(i) && (best === null || n < tray[best])) best = i; });
+  return best;
+}
 
 export function planFor(level: number): Plan {
   return PLANS.find((p) => p.level === level) ?? PLANS[0];
@@ -74,7 +134,10 @@ export function planFor(level: number): Plan {
  * Level 2: free while the table holds fewer than two rows of the machine (the first two cars).
  */
 export function counted(plan: Plan, ask: number): boolean {
-  return plan.ask === 'look' ? ask >= 1 : ask >= 2;
+  if (plan.ask === 'look') return ask >= 1;
+  // Level 4's one prediction comes after the card hangs on the machine: it counts whatever the rows.
+  if (plan.shelf === 'start') return true;
+  return ask >= 2;
 }
 
 export interface LookMachine {
@@ -86,10 +149,12 @@ export interface LookMachine {
 }
 export interface CountMachine {
   rule: NumRule;
-  /** The cars' counters, in tray order (1–5, seeded). */
+  /** The cars' counters, in tray order (seeded): 1–5 at level 2, five distinct of 1–9 at 3, 0–4 at 4. */
   tray: number[];
-  /** For each of the four predictions, the seeded order of the pads [right, one below, one above]. */
+  /** For each prediction, the seeded order of the pads [right, one below, one above]. */
   padOrders: number[][];
+  /** Levels 3–4: the rule shelf's three cards, in seeded order (the rule among them). Empty at 2. */
+  shelf: NumRule[];
 }
 export type Machine = LookMachine | CountMachine;
 
@@ -126,11 +191,29 @@ export function makeRound(level: number, rng: Rng): Machine[] {
       return { rule, walkers, waiting, pictures: waiting.map((c) => picturesFor(rule, c, rng)) };
     });
   }
+  const padOrders = () => Array.from({ length: plan.predictions }, () => shuffle(rng, [0, 1, 2]));
+  if (plan.shelf === 'after') {
+    return shuffle(rng, WHAT_POOL.slice()).slice(0, plan.machines).map((rule) => ({
+      rule,
+      tray: shuffle(rng, [1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, plan.tray),
+      padOrders: padOrders(),
+      shelf: shuffle(rng, WHAT_POOL.slice()),
+    }));
+  }
+  if (plan.shelf === 'start') {
+    return shuffle(rng, COVERED_POOL.slice()).slice(0, plan.machines).map((rule) => ({
+      rule,
+      tray: shuffle(rng, COVERED_TRAY.slice()),
+      padOrders: padOrders(),
+      shelf: shuffle(rng, [rule, ...shuffle(rng, trapPartners(rule)).slice(0, 2)]),
+    }));
+  }
   const bs = shuffle(rng, [1, 2]);
   return bs.map((b) => ({
     rule: { kind: 'num', a: 1, b } as NumRule,
     tray: shuffle(rng, [1, 2, 3, 4, 5]),
-    padOrders: Array.from({ length: plan.predictions }, () => shuffle(rng, [0, 1, 2])),
+    padOrders: padOrders(),
+    shelf: [],
   }));
 }
 
@@ -165,6 +248,14 @@ export class Score {
     return 'miss';
   }
 
+  /** Level 4's Peek: the machine's hint if none was counted yet (true when it counted). */
+  peek(): boolean {
+    if (this.hinted) return false;
+    this.hinted = true;
+    this.hints++;
+    return true;
+  }
+
   /** *Show me* on an open question: lights the glow (true), or, already lit, asks for the ghost's move (false). */
   showMe(): boolean {
     if (this.glowing) return false;
@@ -186,6 +277,9 @@ export const COL_W = 90, COL_H = 150, COL_GAP = 10;
 export const HOPPER = 160, BODY_W = 360, BODY_H = 180, CHUTE_W = 140;
 export const CAR_W = 120, CAR_H = 110, CAR_GAP = 16;
 export const PICTURE = 150, PAD = 120, PAD_GAP = 30;
+export const CARD_W = 120, CARD_H = 120, CARD_GAP = 10, PEEK = 110;
+/** Landscape with a shelf: the row starts right of the help button under Home. */
+const SHELF_ROW_LEFT = 120;
 
 export interface Layout {
   portrait: boolean;
@@ -202,6 +296,10 @@ export interface Layout {
   tray: Box[];
   /** The three prediction pads or pictures. */
   pads: Box[];
+  /** Levels 3–4: the rule shelf's three cards (right of the table in landscape, beneath it in portrait). */
+  shelf: Box[];
+  /** Level 4: the Peek eye on the covered machine's front. */
+  peek: Box;
 }
 
 const box = (x: number, y: number, w: number, h: number): Box => ({ x, y, w, h });
@@ -210,11 +308,22 @@ export function layout(view: { w: number; h: number }, level: number): Layout {
   const { w, h } = view;
   const portrait = h > w;
   const cx = w / 2;
-  const tableY = portrait ? 230 : 95 + COL_H / 2;
-  const machineY = portrait ? tableY + COL_H / 2 + 90 + BODY_H / 2 : tableY + COL_H / 2 + 20 + BODY_H / 2;
-  const rowY = portrait ? machineY + BODY_H / 2 + 120 + CAR_H / 2 : machineY + BODY_H / 2 + 30 + 75;
-  const span = 5 * COL_W + 4 * COL_GAP;
-  const columns = Array.from({ length: 5 }, (_, i) => box(cx - span / 2 + COL_W / 2 + i * (COL_W + COL_GAP), tableY, COL_W, COL_H));
+  const hasShelf = planFor(level).shelf !== 'none';
+  const colGap = !portrait && hasShelf ? 6 : COL_GAP;
+  const span = 5 * COL_W + 4 * colGap;
+  const shelfW = 3 * CARD_W + 2 * CARD_GAP;
+  // With a shelf, landscape puts it right of the table and drops the row clear of the corner buttons; portrait gives
+  // it its own row beneath the table and closes the gap above the bottom row so it stays above the pet.
+  const tableY = portrait ? 230 : hasShelf ? 200 : 95 + COL_H / 2;
+  const shelfY = portrait ? tableY + COL_H / 2 + 20 + CARD_H / 2 : tableY;
+  const machineY = portrait
+    ? (hasShelf ? shelfY + CARD_H / 2 + 40 : tableY + COL_H / 2 + 90) + BODY_H / 2
+    : tableY + COL_H / 2 + 20 + BODY_H / 2;
+  const rowY = portrait ? machineY + BODY_H / 2 + (hasShelf ? 60 : 120) + CAR_H / 2 : machineY + BODY_H / 2 + 30 + 75;
+  const tableLeft = !portrait && hasShelf ? Math.max(SHELF_ROW_LEFT, cx - (span + 20 + shelfW) / 2) : cx - span / 2;
+  const columns = Array.from({ length: 5 }, (_, i) => box(tableLeft + COL_W / 2 + i * (COL_W + colGap), tableY, COL_W, COL_H));
+  const shelfLeft = portrait ? cx - shelfW / 2 : tableLeft + span + 20;
+  const shelf = hasShelf ? Array.from({ length: 3 }, (_, i) => box(shelfLeft + CARD_W / 2 + i * (CARD_W + CARD_GAP), shelfY, CARD_W, CARD_H)) : [];
   const mw = HOPPER + BODY_W + CHUTE_W;
   const mx = cx - mw / 2;
   const hopper = box(mx + HOPPER / 2, machineY - 10, HOPPER, HOPPER);
@@ -229,7 +338,8 @@ export function layout(view: { w: number; h: number }, level: number): Layout {
   const padsCx = left + trayW / 2;
   const pads = Array.from({ length: 3 }, (_, i) => box(padsCx - padsW / 2 + p / 2 + i * (p + PAD_GAP), rowY, p, p));
   return {
-    portrait, columns, hopper, body, chute, pads, tray,
+    portrait, columns, hopper, body, chute, pads, tray, shelf,
+    peek: box(body.x, body.y - 6, PEEK, PEEK),
     // Waiting things stand in the hopper's mouth (below the table); outputs land at the chute's far end.
     waitAt: { x: hopper.x, y: hopper.y + 10 },
     out: { x: chute.x + CHUTE_W / 2, y: machineY + BODY_H / 2 - 4 },
