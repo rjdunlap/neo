@@ -8,6 +8,14 @@
 - Not run: offline check, other suites, iPad, a child's reaction.
 - Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): whether she reads the mark against the head and trusts the ribbon over the eye.
 
+## 2026-11-02 — Drift Cards level 3 (oceans slice 6, batch drift-cards 2)
+
+- [PR #1119](https://github.com/rjdunlap/neo/pull/1119): level 3 *Find the hidden current* (fogged 2×2 patch, three patch cards, Check, replay); school now 1–3.
+- Ran (Vite on http://localhost:5951, `VITE_SPEECH=off`, base origin/main bc267ed7 plus this branch): typecheck; 36 Drift Cards rule tests (12 new, re-run after the review fixes); full `npm test` 4291 passed (before the review fixes); `npm run build`; `BROWSER_SUITE=driftcards` (levels 1–2 unchanged; level 3 in portrait: B a miss, B again free, C second miss and glow, A and replay, saved 2/1); `fingerdemo` `FINGER_LEVELS=3` `drift-cards` (37.4 s); one portrait screenshot reviewed.
+- S1 voice check: NOAA "What is a current?" (opened 2026-11-02) supports wind, density and tides but not seasons, so `drift.limits` was reworded. `game-reviewer` fixes: duplicate hand cards and unresized cards on the replay, a stale fog-cell trace, restart forgetting tried patches.
+- Not run: offline check, other suites.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#drift-cards-levels-13-oceans-slice-6-2026-10-31-level-3-built-2026-11-02)): detective work versus trial and error, reading arrows cell by cell, "South-west" in iPad speech.
+
 ## 2026-11-02 — Attic Finds levels 7–8 two sources and what can we tell (H5)
 
 - [PR #1116](https://github.com/rjdunlap/neo/pull/1116): `attic-finds` levels 7 *Two sources* and 8 *What can we tell?* (school {2..8, order [2,5,6,7,8]}); new `case.ts` and `cases.ts`.
@@ -104,12 +112,6 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built under `src/`). Open: the four builds.
 
-## 2026-11-01 — Sink or Float deep dive (docs only)
-
-- [PR #1101](https://github.com/rjdunlap/neo/pull/1101), branch `claude/dive-sink-or-float`: [dive](deep-dives/sink-float.md). Two builds queued (batches sink-float 1 *Fresh things* and 2 *Big and small*); level 10 *Salty or fresh* definition queued; level 11 waits for the Garden Raft definition. Tracker, READY, batches, backlog, ideas and the oceans, recommendations and engineering handoffs updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built under `src/`). Open: the builds and the device question whether a toddler predicts at level 3.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -122,7 +124,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `noticeboard`, `fingerdemo` (`notice-board`) | 2026-11-01: typecheck, full unit suite 4243, 32 rule tests; `noticeboard` (pre-K level 1 two wrong badges, glow, maker 2/1; portrait level 2 heard-it friend then witness through a stretched and a true poster 1/0; level 3 free friend tap, wrong basket, right basket 1/0) and ghost finger levels 2–3; build | [Notice Board](#2026-11-01--notice-board-levels-13-media-literacy-ml1) | Offline check not run; no device or iPad check |
 | `notalways`, `fingerdemo` (`not-always`) | 2026-11-01: typecheck, full unit suite 4128, 29 rule tests; `notalways` (pre-K level 1 glow then breaker 2/1; portrait level 2 false stamp then true claim 1/0; level 3 free card tap, false mend, true mend 1/0) and ghost finger levels 2–3; build | [Not Always](#2026-11-01--not-always-levels-13-philosophy-reasoning-pr1) | Browser play not re-run after the review fixes; offline, iPad, four-year-old reading of the spoken claim and the pictogram signs not run |
 | `rulemachine`, `fingerdemo` (`rule-machine`) | 2026-11-01: typecheck, 25 rule tests, registry/lands/how-to units; `rulemachine` ×3 (level 1 free first guess, counted wrongs, glow, 2/1; portrait level 2 one wrong pad, 1/0) and ghost finger level 2 (43 s); build | [Rule Machine](archive/VERIFICATION-2026-11-01.md#2026-11-01--rule-machine-levels-12-algebra-balance-ab1) | Level-1 finger demo, offline and the CCSS/England wording check not run; pre-K reading of three pictures and iPad speech unestablished |
-| `driftcards`, `fingerdemo` (`drift-cards`) | 2026-10-31: typecheck, 24 rule tests, full 4,021 units, build; levels 1–2 (level 1 free first guess, counted wrongs, glow, 2/1; level 2 wrong boat and back, portrait mid-drift, 1/0) and ghost finger levels 1 and 2 (22.9 s, 24.7 s) | [Drift Cards](archive/VERIFICATION-2026-10-31.md#2026-10-31--drift-cards-levels-12-oceans-slice-6) | Whether school-age children read the arrows cell by cell, the two-cell trace and iPad speech for "South-west" unestablished; offline not run |
+| `driftcards`, `fingerdemo` (`drift-cards`) | 2026-11-02: typecheck, 36 rule tests, full 4,291 units, build; levels 1–2 unchanged, level 3 in portrait (a miss, free repeat, second miss and glow, right patch and replay, 2/1) and ghost finger level 3 (37.4 s) | [Drift Cards level 3](#2026-11-02--drift-cards-level-3-oceans-slice-6-batch-drift-cards-2) | Detective work versus trial and error, reading arrows cell by cell and iPad speech for "South-west" unestablished; offline not run |
 | `forecastdetective`, `fingerdemo` (`forecast-detective`) | 2026-10-31: typecheck, 27 rule tests, registry/lands/how-to/capacity/clip tests, build; levels 1–2 (level 1 free not-yet and repeat Checks, ruled-out Checks, glow, 2/1; level 2 portrait, missing flap, overclaim, Can't tell yet, 1/0) and ghost finger levels 1 and 2 (15.5 s, 16.3 s) | [Forecast Detective](archive/VERIFICATION-2026-10-31.md#2026-10-31--forecast-detective-levels-12-weather-water-slice-9) | Real iPad speech for "Lighthouse Isle", whether school-age children open clues on purpose and tween/parent appeal unestablished; offline not run |
 | `dropsjourney`, `fingerdemo` (`drops-journey`) | 2026-10-31: typecheck, 32 rule tests, full 3,970 units, build; levels 1–3 (level 1 mid-move tap ignored 0/0, level 2 portrait sea to cloud to snow 0/0, level 3 two can't-go cards, glow, requested hint, 2/1) and ghost finger levels 1 and 3 (7.0 s, 9.2 s) | [Drop's Journey](archive/VERIFICATION-2026-10-31.md#2026-10-31--drops-journey-levels-13-weather-water-slice-8) | Real iPad speech for "vapour", a four-year-old reading the dotted drop and school-age explanations unestablished; offline not run |
 | `puppetstage`, `fingerdemo` (`puppet-stage`) | 2026-10-30: typecheck, full units 3,763, build; levels 1–3 play (three pops/drag/Bow 0/0, wrong puppet twice 2/1 with glow, free try then wrong bubble 1/0, portrait) and demos at levels 1/2/3 clean 10.5/10.0/12.2 s; `phone`, `howto` and device speech not run | [Puppet Stage](archive/VERIFICATION-2026-10-30.md#2026-10-30--puppet-stage-levels-13-theatre-and-puppetry-tp1) |
