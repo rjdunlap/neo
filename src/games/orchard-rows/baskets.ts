@@ -99,7 +99,8 @@ export class BasketOrchard implements Game {
     const at = (node: Container, b: Box) => node.position.set(b.x + b.w / 2, b.y + b.h / 2);
     at(this.up, l.up); at(this.down, l.down); at(this.card, l.card); at(this.act, l.act);
     this.baskets.forEach((b, i) => at(b, l.baskets[i]));
-    if (l.portrait) { this.up.rotation = Math.PI / 2; this.down.rotation = Math.PI / 2; } else this.up.rotation = this.down.rotation = 0;
+    this.drawArrow(this.up, l.up, l.portrait ? 'right' : 'up');
+    this.drawArrow(this.down, l.down, l.portrait ? 'left' : 'down');
     this.drawBaskets();
     this.drawFrames();
     // Re-laying out mid-deal or mid-growth moves the pieces; nothing awaited is killed.
@@ -244,18 +245,11 @@ export class BasketOrchard implements Game {
   // ---- drawing ----
 
   private buildControls() {
-    const arrow = (dir: 1 | -1) => {
-      const c = new Container();
-      c.addChild(tile(130, 100, 'teal'), new Graphics().poly([0, -32 * dir, 32, 14 * dir, -32, 14 * dir]).fill(ink));
-      return c;
-    };
-    this.up.addChild(...arrow(-1).removeChildren());
-    this.down.addChild(...arrow(1).removeChildren());
     onTap(this.up, () => this.press({ kind: 'up' }, this.up));
     onTap(this.down, () => this.press({ kind: 'down' }, this.down));
     this.card.eventMode = 'none';
     onTap(this.act, () => this.press({ kind: this.level === 6 ? 'claim' : 'plant' }, this.act));
-    this.act.addChild(tile(130, 110, 'green'));
+    this.act.addChild(tile(130, 110, 'yellow'));
     if (this.level === 6) {
       // One long row: a single row of dots.
       const g = new Graphics();
@@ -272,6 +266,13 @@ export class BasketOrchard implements Game {
       onTap(b, () => this.press({ kind: 'load', basket: i }, b));
       this.baskets.push(b);
     }
+  }
+
+  /** An arrow tile sized to its box; upright, fewer rows is left and more is right. */
+  private drawArrow(node: Container, b: Box, dir: 'up' | 'down' | 'left' | 'right') {
+    for (const c of node.removeChildren()) c.destroy({ children: true });
+    const pts = { up: [0, -30, 32, 16, -32, 16], down: [0, 30, 32, -16, -32, -16], left: [-30, 0, 16, -32, 16, 32], right: [30, 0, -16, -32, -16, 32] }[dir];
+    node.addChild(tile(b.w, b.h, 'teal'), new Graphics().poly(pts).fill(ink));
   }
 
   private frameList() {
