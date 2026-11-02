@@ -708,7 +708,19 @@ Proof: new-game tier, as the [definition's check tier](definitions/paint-mixer.m
 
 - **`paint-mixer`, levels 3–4 (study slice 3)** (**built 2026-11-01**, [PR #1107](https://github.com/rjdunlap/neo/pull/1107); after batch `paint-mixer 1`; school 3–4): fill the bucket to a line two or three batches deep while the ratio table fills a column per complete batch and the pet says "for every 1 red, 2 yellow" (level 3, a stray pot on screen), then any whole multiple of the sample and the same colour again at a different amount (level 4; "the same way" is not a miss). [Definition](definitions/paint-mixer.md), [study slice 3](deep-dives/subjects/ratio-proportion.md#build-slices-in-order)
 
-Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a filtered play of levels 3–4 with the table filling, one wrong Check, a first way, the same way again and a second way, `fingerdemo` at level 4, one portrait screenshot of level 3, one build for the card and voice). Levels 5–6 (RP2) need their own definition. Built notes: [definition](definitions/paint-mixer.md#built-levels-34-2026-11-01).
+Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a filtered play of levels 3–4 with the table filling, one wrong Check, a first way, the same way again and a second way, `fingerdemo` at level 4, one portrait screenshot of level 3, one build for the card and voice). Levels 5–6 (RP2) are defined in [their own definition](definitions/paint-mixer-5-6.md) (batch `paint-mixer 3`). Built notes: [definition](definitions/paint-mixer.md#built-levels-34-2026-11-01).
+
+### paint-mixer 3: Three pots and which jars match
+
+- **`paint-mixer`, levels 5–6 and the journal paint shelf (study slice 4, RP2)** (defined 2026-11-02, [PR #1117](https://github.com/rjdunlap/neo/pull/1117); after batch `paint-mixer 2`; school top): three pots (1:2:1 peach, 8 or 12 drops) at level 5, then which lidded jars match the sample from their labels alone (2:3, 4:6, 3:5, 6:9) at level 6, where a lid is one hint and an opened lid shows its label against the sample's table; the paint shelf in the journal. [Definition](definitions/paint-mixer-5-6.md), [study slice 4](deep-dives/subjects/ratio-proportion.md#build-slices-in-order)
+
+Proof: new-interaction tier, as the [definition's batches section](definitions/paint-mixer-5-6.md#build-batches-and-check-tiers) sets it (typecheck, rule tests with the journal and how-to tests, a filtered play of level 5 with one wrong Check and a match and level 6 with a wrong set twice, the lid reveal, then the right set, `fingerdemo` at levels 5 and 6, one portrait screenshot of level 6 with a lid open, one build). If the allowance cannot cover both, stop after a complete level 5 with its shelf, checkpointed in the draft PR.
+
+### paint-mixer 4: Palette unlock
+
+- **`paint-mixer`, the palette unlock (decision 7)** (status: after batch `paint-mixer 3`, and after RW10's packet if that is defined first; not a routine pick yet): a mixed colour as a permanent palette unlock. [Definition](definitions/paint-mixer-5-6.md#the-palette-unlock-decision-7-a-separate-later-batch)
+
+Proof: shell/save tier, as the definition sets it; to be confirmed when the batch is picked.
 
 ### spinner-fair 1: Spin, see and pick
 
