@@ -10,6 +10,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { AtticCase } from './case';
+import { isCase } from './cases';
 import { AtticJobs } from './jobs';
 import {
   atticLayout, canFinish, CARD, check, CHECK_R, CHIP_R, CLAIM, CLAIM_H, CLAIM_W, clueOf, CRANK_HIT, DOOR_AT, DOOR_H, DOOR_W, encounterState,
@@ -23,7 +25,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 3, max: 4 },
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 5, order: [1, 2, 5] },
-  school: { min: 2, max: 6, order: [2, 5, 6] },
+  school: { min: 2, max: 8, order: [2, 5, 6, 7, 8] },
 };
 
 /** Each level's authored first round leads its first round of a session. */
@@ -1212,10 +1214,13 @@ export const atticFinds: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'Take turns: one tries a thing while the other watches what happens. Before Check, both say which ones you would pick.',
+  coplayHint: 'Take turns: one tries a thing while the other watches what happens. Before Check, both say which ones you would pick. In the casebook, one reads a paper aloud and the other says which card it could show, before anyone taps Check.',
   offScreen: "With a grown-up, look at one ordinary thing at home that has a handle or a lid, and say what it is for. \"I don't know\" is a fine answer.",
   touchDemo: true,
   hubIcon: () => new AtticIcon(),
   sticker,
-  create: (ctx) => (isJobs(planFor(ctx.level)) ? new AtticJobs(ctx) : new AtticFinds(ctx)),
+  create: (ctx) => {
+    const plan = planFor(ctx.level);
+    return isCase(plan) ? new AtticCase(ctx) : isJobs(plan) ? new AtticJobs(ctx) : new AtticFinds(ctx);
+  },
 };

@@ -2237,6 +2237,12 @@ Final same-batch accounting correction [#1010](https://github.com/rjdunlap/neo/p
 
 Checks are in [VERIFICATION](VERIFICATION-2026-10-31.md#2026-10-31--attic-finds-levels-56-same-job-and-right-for-the-job-h4).
 
+## Attic Finds levels 7–8 Two sources and What can we tell? (H5, 2026-11-02)
+
+[PR #1116](https://github.com/rjdunlap/neo/pull/1116), branch `claude/attic-finds-7-8`, batch attic-finds 3 from the [definition](../definitions/household-casebook.md): school range now {2..8, order [2,5,6,7,8]}. New `src/games/attic-finds/case.ts` (model, rounds, hints) and `cases.ts` (screen, layout): one invented bird-box case; level 7 drags a copy of the paper that shows each claim into a slot and Checks, level 8 stamps each claim *The papers show it* or *Can't tell*. A wrong Check is one miss; free reads, moving copies, changing stamps and an empty Check are not; two misses on a board glow the right answers (one hint). New `atticcase` browser suite. `game-reviewer` fixes: a slotted copy's hit area under 100 units, a level-8 hint line that said "shows it" for can't-tell rows, the unused shows-it/none-shows lines (now spoken on right level-8 rows), and copies rebuilt mid-drag on resize. Open: a resize during a Check leaves papers at old positions until the animation ends. Level 9 stays open.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-02--attic-finds-levels-78-two-sources-and-what-can-we-tell-h5).
+
 ## Second Chance Shed levels 5-6, slice N3 (2026-10-31)
 
 Branch `claude/second-chance-shed-5-6` ([PR #1057](https://github.com/rjdunlap/neo/pull/1057)), batch second-chance-shed 2, [definition](../definitions/second-chance-shed-5-6.md): levels 5 *Someone needs it* and 6 *Two friends* for school {4-6} (bands gain school, skills gain planning). The cart is laid out with a bell; things move among the cart, four places and friends with picture bubbles. Code: `plan.ts` (`PlanShed`) plus `logic.ts` additions (`planRoundFor`, `checkPlan`, `solutions`, `nearestSolution`, `nextMove`, `greedyWorks`, `planLayout`), new art (tin, bell, bubbles, friends, filled gifts), voice lines and an extended how-to card; browser case `shedplan`. Deviations: every thing in a place stays grabbable (fanned 22 units apart, newest on top), and the finale chimes instead of speaking "the plan works". No new registration, so the game count is unchanged.
@@ -2285,7 +2291,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-31.md#2026-10-31--drift-cards-
 
 [PR #1093](https://github.com/rjdunlap/neo/pull/1093), branch `claude/sprout-shuffle-4`, [definition](../definitions/hidden-sprouts.md) (level 4 only; levels 5 and 6 remain). School range 1–3 becomes 1–4. A seeded friend asks for a bed of spotted sprouts; three pair cards (seeded from the definition's pools A/B/C, sides and tile order seeded) each show two plants over their copies, and a free yellow magnifier opens that pair's four-bud fan. A wrong Check is one miss and replays the chosen pair's counterexample (plain route with a glow, or all four spotted for a missed always-spotted pair); a second glows the accepted cards (one hint); Show me chooses them. Pool C accepts two pairs. Code: new `src/games/sprout-shuffle/pairs.ts`, `PAIR_POOLS`, `pairsAlways`, `counterexample`, `checkPairs` in `logic.ts`, `PairCard`/`lensArt`/`bedArt` in `art.ts`, 16 `sprout.*` lines on device speech. The `sproutshuffle` browser suite gains a level-4 case and a `SPROUT_LEVELS` filter.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-01.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5).
 
 ## Not Always levels 1–3 (philosophy-reasoning PR1, not-always 1, 2026-11-01)
 
