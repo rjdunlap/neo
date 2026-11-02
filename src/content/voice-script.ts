@@ -226,6 +226,7 @@ export const SCRIPT = {
   'orchard.every': ['Here are {n} saplings. Plant every different orchard they can make, in equal rows with none left over. Each one fills a frame.'],
   'orchard.onerow': ['Three baskets of saplings. Tap a basket to try it in rows. Which basket only makes one long row? Tap the long row button for it.'],
   'orchard.basket': ['{n} saplings in this basket.'],
+  'orchard.yesone': ['One long row of {total} trees!'],
   'orchard.deal': ['{rows} rows of {each}, and {left} left in the basket.'],
   'orchard.dealeven': ['{rows} rows of {each}, none left in the basket.'],
   'orchard.dealone': ['One long row of {each}, none left in the basket.'],

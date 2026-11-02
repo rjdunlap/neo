@@ -61,6 +61,8 @@ export class BasketOrchard implements Game {
   private dealStart = -Infinity;
   private growStart = -Infinity;
   private wobbleStart = -Infinity;
+  /** The range-end press: the arrow wobbles, a soft tick, nothing counted. */
+  private arrowWobble: { node: Container; at: number } | null = null;
   private lineAt = Infinity;
   private pressed: { node: Container; at: number } | null = null;
 
@@ -132,13 +134,15 @@ export class BasketOrchard implements Game {
   }
 
   private press(a: Action, node: Container) {
-    if (this.busy || this.finished) return;
+    if (this.finished) return;
+    // Touch-down feedback even while a line is playing.
     this.pressed = { node, at: this.clock };
+    if (this.busy) return;
     if (a.kind === 'plant' || a.kind === 'claim') { void this.commit(a); return; }
     const before = this.state;
     const { state, outcome } = step(this.state, a);
     this.state = state;
-    if (outcome === 'end') { this.wobbleStart = this.clock; sfx.boing(); return; }
+    if (outcome === 'end') { this.arrowWobble = { node, at: this.clock }; sfx.pluck(1, 0.15); return; }
     if (outcome === 'loaded') {
       sfx.pop(5 + (a.kind === 'load' ? a.basket : 0));
       this.drawBaskets();
@@ -154,7 +158,8 @@ export class BasketOrchard implements Game {
     const n = this.n;
     if (n === null) { this.shown = null; this.drawBed(false); return; }
     this.shown = { ...deal(n, this.state.rows), grown: false };
-    this.drawBed(true);
+    // A tap during a deal finishes it at once and applies the new count.
+    this.drawBed(!this.dealing());
     // After a spoken basket line the deal line waits its turn (see `update`).
     this.lineAt = this.clock + REST;
   }
@@ -179,9 +184,11 @@ export class BasketOrchard implements Game {
       case 'leftover': {
         sfx.boing();
         this.wobbleStart = this.clock;
-        await this.talk(this.ctx.say('orchard.leftover', { left: before.rows ? n % before.rows : 0 }));
-        if (glowed) await this.talk(this.ctx.say('orchard.followglow'));
-        break;
+        // The reason plays while the arrows stay live, so following the glow at once works.
+        this.busy = false;
+        void this.talk(this.ctx.say('orchard.leftover', { left: before.rows ? n % before.rows : 0 })
+          .then(() => glowed && !this.finished ? this.ctx.say('orchard.followglow') : undefined));
+        return;
       }
       case 'planted': case 'newshape': case 'everydone': {
         await this.grow(before.rows, n);
@@ -233,7 +240,7 @@ export class BasketOrchard implements Game {
     this.shown = { ...deal(n, rows), grown: true };
     this.drawBed(false, true);
     this.heading.text = `${rows} × ${n / rows} = ${n}`;
-    await this.talk(this.ctx.say('orchard.yes', { rows, each: n / rows, total: n }));
+    await this.talk(this.ctx.say(rows === 1 ? 'orchard.yesone' : 'orchard.yes', { rows, each: n / rows, total: n }));
   }
 
   private async end() {
@@ -391,6 +398,9 @@ export class BasketOrchard implements Game {
     const w = this.clock - this.wobbleStart;
     const wob = w < 0.5 ? Math.sin(w * 40) * 0.15 * (1 - w / 0.5) : 0;
     for (const c of this.leftover.children.slice(1)) c.rotation = wob;
+    for (const c of [this.up, this.down]) c.rotation = 0;
+    const aw = this.arrowWobble ? this.clock - this.arrowWobble.at : 1;
+    if (this.arrowWobble && aw < 0.4) this.arrowWobble.node.rotation = Math.sin(aw * 40) * 0.1 * (1 - aw / 0.4);
   }
 
   private drawGlow() {
