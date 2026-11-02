@@ -95,3 +95,46 @@ export function iconArt(seed = 0): Container {
   c.addChild(g, card);
   return c;
 }
+
+/** Level 3's fog over a 2×2 patch, its top-left at (0, 0): soft clouds, or with her patch laid in, only a dashed edge. */
+export function fogArt(cell: number, open: boolean): Graphics {
+  const g = new Graphics();
+  const s = cell * 2;
+  if (!open) {
+    g.roundRect(2, 2, s - 4, s - 4, 18).fill(FOG);
+    for (const [u, v, r] of [[0.25, 0.3, 0.26], [0.7, 0.25, 0.24], [0.3, 0.72, 0.25], [0.72, 0.7, 0.27], [0.5, 0.5, 0.22]]) {
+      g.circle(u * s, v * s, r * s).fill({ color: 0xffffff, alpha: 0.7 });
+    }
+    g.roundRect(2, 2, s - 4, s - 4, 18).stroke({ color: 0xc9d3df, width: 3 });
+    return g;
+  }
+  // Her patch is in: a dashed orange edge marks the arrows she chose.
+  const dash = 14;
+  for (let t = 0; t < s; t += dash * 2) {
+    const e = Math.min(s, t + dash);
+    g.moveTo(t, 2).lineTo(e, 2).moveTo(t, s - 2).lineTo(e, s - 2).moveTo(2, t).lineTo(2, e).moveTo(s - 2, t).lineTo(s - 2, e);
+  }
+  g.stroke({ color: swatch.orange.line, width: 5, cap: 'round' });
+  return g;
+}
+
+/** A 160-unit patch card centred on (0, 0) showing its four arrows large; `children[0]` is the ring shown while it is in the fog. */
+export function patchCardArt(patch: readonly Dir[]): Container {
+  const c = new Container();
+  const ring = new Graphics().roundRect(-86, -86, 172, 172, 26).stroke({ color: swatch.orange.line, width: 8 });
+  ring.visible = false;
+  const g = new Graphics();
+  g.roundRect(-76, -76, 152, 152, 20).fill(SEA).stroke({ color: SEA_DARK, width: 4 });
+  g.moveTo(0, -70).lineTo(0, 70).moveTo(-70, 0).lineTo(70, 0).stroke({ color: SEA_DARK, width: 2, alpha: 0.5 });
+  patch.forEach((d, i) => arrow(g, (i % 2 ? 1 : -1) * 36, (i < 2 ? -1 : 1) * 36, 66, d));
+  c.addChild(ring, g);
+  return c;
+}
+
+/** Check: a 130-unit green button with a tick, centred on (0, 0). */
+export function checkArt(): Graphics {
+  const g = new Graphics();
+  g.roundRect(-62, -62, 124, 124, 28).fill(swatch.green.fill).stroke({ color: swatch.green.line, width: 5 });
+  g.moveTo(-30, 2).lineTo(-8, 26).lineTo(32, -24).stroke({ color: 0xffffff, width: 14, cap: 'round', join: 'round' });
+  return g;
+}
