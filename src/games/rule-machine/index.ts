@@ -165,6 +165,8 @@ class RuleMachine implements Game {
   private instruct() {
     if (this.phase === 'predict') return this.ctx.instruct(this.plan.ask === 'look' ? 'rm.what-look' : 'rm.how-many');
     if (this.phase === 'card') return this.ctx.instruct('rm.which-card');
+    // With the card on the machine, the last car is level 2's ask again.
+    if (this.hung) return this.ctx.instruct('rm.instruct.2');
     return this.ctx.instruct(this.plan.ask === 'look' ? 'rm.instruct.1' : `rm.instruct.${Math.min(4, Math.max(2, this.plan.level)) as 2 | 3 | 4}`);
   }
 
@@ -367,7 +369,9 @@ class RuleMachine implements Game {
     this.art.badge.addChild(hungBadge(rule));
     this.shelfLayer.visible = false;
     this.peekNode.visible = false;
+    // A Peek not yet used ends with the card: the last car runs covered.
     this.peeking = false;
+    this.coverArt.visible = this.plan.shelf === 'start';
     sfx.bell(9, 0.3); sfx.bell(11, 0.25);
     const line = cardLine(rule);
     await this.ctx.say(line.name, { n: rule.b });
