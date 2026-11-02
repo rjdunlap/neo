@@ -463,6 +463,8 @@ Proof: new-interaction tier, as the [definition's Build and check tier](definiti
 
 ### attic-finds 3: Two sources and What can we tell?
 
+**Built 2026-11-02 ([PR #1116](https://github.com/rjdunlap/neo/pull/1116)).** Both levels shipped; see the [archive note](archive/COMPLETED-2026-10-09.md#attic-finds-levels-78-two-sources-and-what-can-we-tell-h5-2026-11-02). Level 9 stays with batch attic-finds 4.
+
 - **`attic-finds`, levels 7 *Two sources* and 8 *What can we tell?*** (school only; a new paper-copy drag into claim slots plus a two-stamp interaction inside the existing game, one invented bird-box case; school `{2, 8, order [2,5,6,7,8]}`): drag a copy of the paper that shows each claim (level 7), then stamp each claim *The papers show it* or *Can't tell*, where no paper from a house is no proof it had no bird box (level 8); a free read is not a miss. [Definition](definitions/household-casebook.md), [everyday-life study slice H5](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the [definition's Build and check tier](definitions/household-casebook.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticcase` scripted play at levels 7–8, `fingerdemo` at both, one portrait screenshot of level 8, one build). Expected files: `src/games/attic-finds/` (`logic.ts`, a new `cases.ts` and its tests, `index.ts`), `src/content/howto.ts`, `src/content/voice-script.ts`, `scripts/browser-check.mjs`, README, `docs/GAMES.md`, `docs/VERIFICATION.md`.
@@ -779,7 +781,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/drops-journey
 
 - **`sprout-shuffle`, level 4 *which pairs always make spotted?*** (**built 2026-11-01**, [PR #1093](https://github.com/rjdunlap/neo/pull/1093), branch `claude/sprout-shuffle-4`; new level on the existing interaction; school; the first build of Hidden Sprouts, genetics G5, whose levels 5 and 6 follow as later complete parts): choose which parent pairs guarantee a spotted sprout and keep every explanation compatible with what was seen. Scope, rules and the school range are in the [definition](definitions/hidden-sprouts.md); depends on Sprout Shuffle levels 1–3, built 2026-10-30.
 
-Proof: new-levels tier, as the [definition's checks](definitions/hidden-sprouts.md#checks-for-the-builds) set it (typecheck, the rule tests, one browser play of level 4, `fingerdemo` at 4). Level 4 shipped; proof is in [VERIFICATION](VERIFICATION.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5). Device checks stay open.
+Proof: new-levels tier, as the [definition's checks](definitions/hidden-sprouts.md#checks-for-the-builds) set it (typecheck, the rule tests, one browser play of level 4, `fingerdemo` at 4). Level 4 shipped; proof is in [VERIFICATION](archive/VERIFICATION-2026-11-01.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5). Device checks stay open.
 
 ### sprout-shuffle 2: Patchwork Conservatory
 
