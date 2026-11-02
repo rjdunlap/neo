@@ -105,3 +105,9 @@
 - [PR #1103](https://github.com/rjdunlap/neo/pull/1103), branch `claude/dive-treasure-map`: [dive](../deep-dives/treasure-map.md). Five slices queued ([batches](../GAME-BATCHES.md#treasure-map-1-fresh-maps-and-true-hints): fresh maps and true hints, *Write the card*, *How far?*, *Slide it*, the preschool *One line*); *Across the river* (levels 10–11) is a queued definition. Tracker, READY, batches, backlog, ideas, roadmap and the area-volume-space handoffs updated.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built under `src/`). Open: the five builds and the definition.
+
+## 2026-11-01 — Word Search deep dive (docs only)
+
+- [PR #1104](https://github.com/rjdunlap/neo/pull/1104), branch `claude/dive-word-search`: [dive](../deep-dives/word-search.md). Four slices queued ([batches](../GAME-BATCHES.md#word-search-1-fresh-themes-and-root-families): fresh themes and root families, *A small grid to start*, *A message in the leftovers*, *Just the theme*); the school opening is a queued definition. Tracker, READY, batches, backlog, ideas and the vocabulary study handoffs updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built under `src/`). Open: the four builds and the definition.
