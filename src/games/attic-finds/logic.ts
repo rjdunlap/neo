@@ -92,7 +92,7 @@ export function glowTarget(obj: AtticObject, claim: ClaimId): Clue | null {
 
 /* Levels and rounds ----------------------------------------------------------------------------- */
 
-export interface Plan { id: 1 | 2 | 3 | 4 | 5 | 6; name: string; mode: 'try' | 'prove' | 'lever' | 'peek' | 'same' | 'context' }
+export interface Plan { id: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; name: string; mode: 'try' | 'prove' | 'lever' | 'peek' | 'same' | 'context' | 'sources' | 'tell' }
 export const PLANS: readonly Plan[] = [
   { id: 1, name: 'Try it: crank it, then pick the picture of what it did', mode: 'try' },
   { id: 2, name: 'Show the clue: the part that proves the crank makes it bob', mode: 'prove' },
@@ -100,6 +100,8 @@ export const PLANS: readonly Plan[] = [
   { id: 4, name: 'Peek inside: open the little door and watch the rod lift the bird', mode: 'peek' },
   { id: 5, name: 'Same job: find every thing that can carry the load (two can, one only looks right)', mode: 'same' },
   { id: 6, name: 'Right for the job: leaves, acorns, then water, and which things can carry each', mode: 'context' },
+  { id: 7, name: 'Two sources: drag the paper that shows each claim into its slot (a list, a drawing, a shop poster)', mode: 'sources' },
+  { id: 8, name: "What can we tell?: stamp each claim shown by the papers, or can't tell (no paper is no proof)", mode: 'tell' },
 ];
 /** The plan with this level's ID; an unknown level is level 1. */
 export const planFor = (level: number): Plan => PLANS.find((p) => p.id === level) ?? PLANS[0];

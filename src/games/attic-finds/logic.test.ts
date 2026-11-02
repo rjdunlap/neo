@@ -310,7 +310,7 @@ describe('levels 3-4: the giant handle', () => {
     expect(atticFinds.levels('toddler')).toEqual({ min: 3, max: 4 });
     expect(atticFinds.levels('preschool')).toEqual({ min: 1, max: 1 });
     expect(atticFinds.levels('prek')).toEqual({ min: 1, max: 5, order: [1, 2, 5] });
-    expect(atticFinds.levels('school')).toEqual({ min: 2, max: 6, order: [2, 5, 6] });
+    expect(atticFinds.levels('school')).toEqual({ min: 2, max: 8, order: [2, 5, 6, 7, 8] });
     expect(atticFinds.entryLevels).toEqual([3, 4]);
     expect(landing(4, atticFinds.levels('prek'), atticFinds.entryLevels)).toBe(1);
     expect(landing(3, atticFinds.levels('preschool'), atticFinds.entryLevels)).toBe(1);
