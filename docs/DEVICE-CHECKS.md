@@ -41,11 +41,12 @@
 - [ ] Once built: does the window story feel fair after the away story, or like a trick?
 - [ ] Once built: does *show me how you know* feel like finding treasure or like a test?
 
-## Orchard Rows 4–6 (number-structure study, 2026-10-31; proposed, nothing built)
+## Orchard Rows 4–6 (number-structure study, 2026-10-31; built 2026-11-02)
 
-- [ ] Once built: does a seven-year-old use the leftover saplings to choose the next row count, or press arrows at random?
-- [ ] Once built: does "every way" feel like a collection to complete or like a test?
-- [ ] Once built: does the word *prime* stick, or does "only one long row" carry the idea on its own?
+- [ ] Does a seven-year-old use the leftover saplings to choose the next row count, or press arrows at random?
+- [ ] Does "every way" feel like a collection to complete or like a test?
+- [ ] Does "only one long row" carry the idea without the word *prime*, and does *prime* stick?
+- [ ] Are the deal lines ("rows of") clear in device speech?
 
 ## Shell Rows (strategy-games study, 2026-10-31; levels 1–3 built 2026-11-01)
 

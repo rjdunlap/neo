@@ -99,3 +99,9 @@
 - [PR #1102](https://github.com/rjdunlap/neo/pull/1102), branch `claude/dive-sudoku-garden`: [dive](../deep-dives/sudoku-garden.md). Four slices queued ([batches](../GAME-BATCHES.md#sudoku-garden-1-a-4-by-4-bed-to-start): a 4 by 4 bed to start, fill marks on big beds, a crossing pair of rows, patchwork beds); cage beds are a queued definition.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built under `src/`). Open: the four builds.
+
+## 2026-11-01 — Treasure Map deep dive (docs only)
+
+- [PR #1103](https://github.com/rjdunlap/neo/pull/1103), branch `claude/dive-treasure-map`: [dive](../deep-dives/treasure-map.md). Five slices queued ([batches](../GAME-BATCHES.md#treasure-map-1-fresh-maps-and-true-hints): fresh maps and true hints, *Write the card*, *How far?*, *Slide it*, the preschool *One line*); *Across the river* (levels 10–11) is a queued definition. Tracker, READY, batches, backlog, ideas, roadmap and the area-volume-space handoffs updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests, build, browser suites (docs tier, nothing built under `src/`). Open: the five builds and the definition.

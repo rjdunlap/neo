@@ -132,7 +132,7 @@
 
 - [PR #1060](https://github.com/rjdunlap/neo/pull/1060), branch `claude/research-number-structure`: [study](../deep-dives/subjects/number-structure.md) and [packet](../deep-dives/subjects/RECOMMENDATIONS.md#number-structure-recommendations) (Orchard Rows 4–6: equal rows with the leftover in the basket, every way to plant a number, the basket that only makes one row; a grouping card, Lunch boxes and Two frogs follow; hundreds and decimals stay sketches), tracker, backlog, READY, ideas, roadmap and device checks updated.
 - Ran: `git fetch origin --prune`, a search of pull requests and remote branches for the subject (no claim), `node scripts/check-links.mjs` and `git diff --check`. Sources: CCSS 3.OA, 4.OA, 6.NS, 2.NBT, 5.NBT, NRICH *Factors and Multiples Game* notes and the Melbourne decimals table opened; the rest from search summaries or recall, marked in the study.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the NS1 definition and three [person checks](../DEVICE-CHECKS.md#orchard-rows-46-number-structure-study-2026-10-31-proposed-nothing-built).
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the NS1 definition and three [person checks](../DEVICE-CHECKS.md#orchard-rows-46-number-structure-study-2026-10-31-built-2026-11-02).
 
 ## 2026-10-31 — Notice Board 1–3 definition (media-literacy ML1, docs only)
 

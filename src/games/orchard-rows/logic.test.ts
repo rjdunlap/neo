@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { choicesFor, countGroup, makeOrchards, missingTrees, orchardLayout, PLANS, subtotals, total, turn } from './logic';
+import {
+  basketLayout, botStep, cellSize, deal, equalRows, frameKey, frameOf, framesFor, hintTarget, isPrime, makeRound, MIN_CELL, PET_CORNER,
+  PRIME_SETS, rowRange, shapeOf, startPlay, step, TOP_CLEAR,
+  type Action, type Box, type PlayState, type Round,
+} from './logic';
 
 describe('Orchard Rows', () => {
   it('draws two distinct valid arrays deterministically, with variety across seeds', () => {
@@ -64,5 +69,359 @@ describe('Orchard Rows', () => {
         expect(l.y + o.rows * l.rowHeight).toBeLessThanOrEqual(v.h - 40);
       }
     }
+  });
+});
+
+describe('Orchard Rows levels 4–6', () => {
+  const divisors = (n: number, min: number, max: number) => {
+    const out: number[] = [];
+    for (let r = min; r <= max; r++) if (n % r === 0) out.push(r);
+    return out;
+  };
+  const run = (s: PlayState, actions: Action[]) => {
+    const outcomes: string[] = [];
+    for (const a of actions) { const r = step(s, a); s = r.state; outcomes.push(r.outcome); }
+    return { s, outcomes };
+  };
+  const seeds = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
+
+  it('deals every row count in range without losing a sapling', () => {
+    for (let n = 12; n <= 24; n++) for (const level of [4, 5, 6]) {
+      const { min, max } = rowRange(level, n);
+      for (let r = min; r <= max; r++) {
+        const d = deal(n, r);
+        expect(d.each * d.rows + d.left).toBe(n);
+        expect(d.left).toBeLessThan(r);
+      }
+    }
+  });
+  it('lists right row counts like brute force; openings leave some over', () => {
+    for (let n = 12; n <= 24; n++) for (const level of [4, 5]) {
+      const range = rowRange(level, n);
+      expect(equalRows(n, range)).toEqual(divisors(n, range.min, range.max));
+    }
+    expect(rowRange(4, 12).min).toBe(2);
+    expect(rowRange(5, 12).min).toBe(1);
+    expect(rowRange(6, 12).max).toBe(6);
+    for (const seed of seeds(300)) for (const level of [4, 5]) {
+      const round = makeRound(level, new Rng(seed));
+      for (const t of round.tasks) {
+        const n = t.baskets[0];
+        expect(n % t.open).not.toBe(0);
+        const range = rowRange(level, n);
+        expect(t.open).toBeGreaterThanOrEqual(range.min);
+        expect(t.open).toBeLessThanOrEqual(range.max);
+        if (level === 4) expect(equalRows(n, range).length).toBeGreaterThanOrEqual(2);
+        expect(equalRows(n, range).length).toBeGreaterThanOrEqual(1);
+      }
+      if (level === 4) expect(round.tasks[0]).toEqual({ baskets: [12], open: 5 });
+      expect(round.tasks).toHaveLength(level === 4 ? 2 : 1);
+    }
+  });
+  it('frames match brute force, are reachable, and turn into each other', () => {
+    for (let n = 12; n <= 24; n++) {
+      const brute: [number, number][] = [];
+      for (let a = 1; a <= n; a++) for (let b = a; b <= n; b++) if (a * b === n) brute.push([a, b]);
+      expect(framesFor(n)).toEqual(brute);
+      const range = rowRange(5, n);
+      const reachable = new Set(equalRows(n, range).map(r => frameKey(frameOf(n, r))));
+      for (const f of framesFor(n)) expect(reachable.has(frameKey(f))).toBe(true);
+      expect(frameOf(n, 1)).toEqual(frameOf(n, n));
+      for (const r of divisors(n, 1, n)) expect(frameOf(n, r)).toEqual(frameOf(n, n / r));
+    }
+    const counts: Record<number, number> = { 12: 3, 16: 3, 18: 3, 20: 3, 24: 4 };
+    for (const [n, c] of Object.entries(counts)) expect(framesFor(+n)).toHaveLength(c);
+    for (const seed of seeds(300)) expect(framesFor(makeRound(5, new Rng(seed)).tasks[0].baskets[0]).length).toBeLessThanOrEqual(4);
+  });
+  it('builds exactly 60 prime sets with one prime and an odd composite', () => {
+    expect(PRIME_SETS).toHaveLength(60);
+    expect(new Set(PRIME_SETS.map(s => s.join(','))).size).toBe(60);
+    for (const set of PRIME_SETS) {
+      expect(set).toHaveLength(3);
+      expect(set.filter(isPrime)).toHaveLength(1);
+      expect([13, 17, 19, 23]).toContain(set.find(isPrime));
+      expect(set.some(n => n === 15 || n === 21)).toBe(true);
+      for (const n of set) { expect(n).toBeGreaterThanOrEqual(12); expect(n).toBeLessThanOrEqual(24); }
+    }
+    for (let n = 12; n <= 24; n++) {
+      const range = rowRange(6, n);
+      const eq = equalRows(n, range);
+      if (isPrime(n)) {
+        expect(eq).toEqual([]);
+        for (let r = range.min; r <= range.max; r++) expect(deal(n, r).left).toBeGreaterThan(0);
+        expect(shapeOf(n)).toBeNull();
+      } else {
+        expect(eq.length).toBeGreaterThan(0);
+        const sh = shapeOf(n)!;
+        expect(sh.left).toBe(0);
+        expect(sh.rows).toBe(eq[0]);
+        expect(sh.rows * sh.each).toBe(n);
+      }
+    }
+    expect(shapeOf(15)).toEqual({ rows: 3, each: 5, left: 0 });
+  });
+  it('is deterministic per seed; level 6 starts at {12,13,15} and changes prime', () => {
+    for (const level of [4, 5, 6]) for (const seed of seeds(300)) {
+      const a = makeRound(level, new Rng(seed));
+      expect(a).toEqual(makeRound(level, new Rng(seed)));
+      expect(['apple', 'pear', 'plum']).toContain(a.sapling);
+      if (level === 6) {
+        expect(a.tasks).toHaveLength(2);
+        expect([...a.tasks[0].baskets].sort((x, y) => x - y)).toEqual([12, 13, 15]);
+        const p0 = a.tasks[0].baskets.find(isPrime)!;
+        const p1 = a.tasks[1].baskets.find(isPrime)!;
+        expect(p1).not.toBe(p0);
+        expect(a.tasks[1].baskets.filter(isPrime)).toHaveLength(1);
+        expect(PRIME_SETS.some(s => [...s].sort().join() === [...a.tasks[1].baskets].sort().join())).toBe(true);
+      }
+    }
+    const fruit = new Set(seeds(300).map(s => makeRound(4, new Rng(s)).sapling));
+    expect(fruit.size).toBeGreaterThan(1);
+    expect(new Set(seeds(300).map(s => makeRound(6, new Rng(s)).tasks[1].baskets.join())).size).toBeGreaterThan(5);
+  });
+
+  describe('accounting', () => {
+    const l4 = (n: number, open: number): Round => ({ level: 4, sapling: 'apple', tasks: [{ baskets: [n], open }] });
+    const l5 = (n: number, open: number): Round => ({ level: 5, sapling: 'pear', tasks: [{ baskets: [n], open }] });
+    const l6 = (b: number[]): Round => ({ level: 6, sapling: 'plum', tasks: [{ baskets: b, open: 2 }, { baskets: [12, 17, 15], open: 2 }] });
+
+    it('arrows and range-end presses are free and stay in range', () => {
+      for (const level of [4, 5]) {
+        const round = level === 4 ? l4(16, 5) : l5(16, 3);
+        let s = startPlay(round);
+        const { min, max } = rowRange(level, 16);
+        for (let i = 0; i < 20; i++) { s = step(s, { kind: 'up' }).state; expect(s.rows).toBeLessThanOrEqual(max); }
+        expect(step(s, { kind: 'up' }).outcome).toBe('end');
+        for (let i = 0; i < 20; i++) { s = step(s, { kind: 'down' }).state; expect(s.rows).toBeGreaterThanOrEqual(min); }
+        expect(step(s, { kind: 'down' }).outcome).toBe('end');
+        expect(s.rows).toBe(min);
+        expect(s.misses).toBe(0); expect(s.hints).toBe(0); expect(s.wrongs).toBe(0);
+      }
+    });
+    it('a leftover Plant is a miss; the second lights the glow with one hint, never more', () => {
+      let s = startPlay(l4(16, 5));
+      let r = step(s, { kind: 'plant' });
+      expect(r.outcome).toBe('leftover');
+      expect(r.state).toMatchObject({ misses: 1, hints: 0, glowing: false });
+      r = step(r.state, { kind: 'plant' });
+      expect(r.state).toMatchObject({ misses: 2, hints: 1, glowing: true });
+      r = step(r.state, { kind: 'plant' });
+      expect(r.state).toMatchObject({ misses: 3, hints: 1, glowing: true });
+      s = r.state;
+      expect(s.done).toBe(false);
+    });
+    it('level 4 plants the right rows, then the next basket starts fresh', () => {
+      let s = startPlay(makeRound(4, new Rng(3)));
+      const first = s.tasks[0].baskets[0];
+      expect(first).toBe(12);
+      s = run(s, [{ kind: 'plant' }]).s; // 5 rows leaves 2
+      expect(s.misses).toBe(1);
+      s = run(s, [{ kind: 'plant' }]).s;
+      expect(s).toMatchObject({ misses: 2, hints: 1, glowing: true });
+      s = run(s, [{ kind: 'down' }, { kind: 'down' }, { kind: 'plant' }]).s; // 3 rows
+      expect(s.rows).toBe(s.tasks[1].open);
+      expect(s).toMatchObject({ index: 1, glowing: false, wrongs: 0, misses: 2, hints: 1, done: false });
+      const n = s.tasks[1].baskets[0];
+      const right = equalRows(n, rowRange(4, n))[0];
+      s = run(s, Array(Math.abs(right - s.rows)).fill({ kind: right > s.rows ? 'up' : 'down' })).s;
+      const r = step(s, { kind: 'plant' });
+      expect(r.outcome).toBe('planted');
+      expect(r.state.done).toBe(true);
+      expect(step(r.state, { kind: 'up' }).outcome).toBe('ignored');
+    });
+    it('level 5 counts found frames; repeats and turned shapes are free', () => {
+      let s = startPlay(l5(12, 5));
+      let r = run(s, [{ kind: 'down' }, { kind: 'down' }, { kind: 'down' }]); // 2 rows
+      s = r.s;
+      r = run(s, [{ kind: 'plant' }]);
+      expect(r.outcomes).toEqual(['newshape']);
+      r = run(r.s, [{ kind: 'plant' }]);
+      expect(r.outcomes).toEqual(['already']);
+      r = run(r.s, [{ kind: 'up' }, { kind: 'up' }, { kind: 'up' }, { kind: 'up' }]); // 6 rows: 6x2 is 2x6 turned
+      expect(r.s.rows).toBe(6);
+      r = run(r.s, [{ kind: 'plant' }]);
+      expect(r.outcomes).toEqual(['turnedsame']);
+      expect(r.s.found).toHaveLength(1);
+      expect(r.s).toMatchObject({ misses: 0, hints: 0 });
+      r = run(r.s, [{ kind: 'down' }, { kind: 'down' }, { kind: 'plant' }]); // 4 rows leaves 0? 12/4=3 yes
+      expect(r.outcomes.at(-1)).toBe('newshape');
+      r = run(r.s, [{ kind: 'down' }, { kind: 'down' }, { kind: 'down' }, { kind: 'plant' }]); // 1 row
+      expect(r.outcomes.at(-1)).toBe('everydone');
+      expect(r.s.done).toBe(true);
+      expect(r.s).toMatchObject({ misses: 0, hints: 0 });
+    });
+    it('level 6 loads are free; the first wrong claim per basket is a miss; repeats replay', () => {
+      let s = startPlay(l6([12, 13, 15]));
+      expect(s.loaded).toBeNull();
+      expect(step(s, { kind: 'claim' }).outcome).toBe('ignored');
+      expect(step(s, { kind: 'up' }).outcome).toBe('ignored');
+      expect(step(s, { kind: 'plant' }).outcome).toBe('ignored');
+      let r = run(s, [{ kind: 'load', basket: 0 }, { kind: 'load', basket: 1 }, { kind: 'load', basket: 0 }, { kind: 'up' }, { kind: 'down' }, { kind: 'down' }]);
+      expect(r.s).toMatchObject({ misses: 0, hints: 0, loaded: 0 });
+      expect(step(r.s, { kind: 'load', basket: 3 }).outcome).toBe('ignored');
+      r = run(r.s, [{ kind: 'claim' }]);
+      expect(r.outcomes).toEqual(['claimwrong']);
+      expect(r.s).toMatchObject({ misses: 1, hints: 0 });
+      r = run(r.s, [{ kind: 'claim' }, { kind: 'claim' }]);
+      expect(r.outcomes).toEqual(['claimagain', 'claimagain']);
+      expect(r.s).toMatchObject({ misses: 1, hints: 0, glowing: false });
+      r = run(r.s, [{ kind: 'load', basket: 2 }, { kind: 'claim' }]);
+      expect(r.outcomes[1]).toBe('claimwrong');
+      expect(r.s).toMatchObject({ misses: 2, hints: 1, glowing: true });
+      r = run(r.s, [{ kind: 'claim' }, { kind: 'load', basket: 1 }, { kind: 'claim' }]);
+      expect(r.outcomes[2]).toBe('claimright');
+      expect(r.s).toMatchObject({ misses: 2, hints: 1, index: 1, loaded: null, glowing: false, wrongs: 0, shown: [] });
+      r = run(r.s, [{ kind: 'load', basket: 1 }, { kind: 'claim' }]);
+      expect(r.outcomes[1]).toBe('claimright');
+      expect(r.s.done).toBe(true);
+      expect(r.s.hints).toBe(1);
+    });
+    it('hints never exceed one per basket or set, and per-task counters reset', () => {
+      for (const seed of seeds(100)) {
+        const rng = new Rng(seed);
+        for (const level of [4, 5, 6]) {
+          let s = startPlay(makeRound(level, rng));
+          for (let i = 0; i < 60 && !s.done; i++) {
+            const idx = s.index;
+            const before = s.hints;
+            const a: Action = level === 6
+              ? (i % 3 === 0 ? { kind: 'load', basket: rng.int(0, 2) } : { kind: 'claim' })
+              : { kind: rng.pick(['plant', 'up', 'down', 'plant'] as const) };
+            s = step(s, a).state;
+            if (s.index === idx) expect(s.hints - before).toBeLessThanOrEqual(1);
+          }
+          expect(s.hints).toBeLessThanOrEqual(s.tasks.length);
+          expect(s.hints).toBeLessThanOrEqual(s.misses);
+        }
+      }
+    });
+  });
+
+  describe('help leads somewhere', () => {
+    it('from every reachable rows value the hint path reaches a right plant within bound', () => {
+      for (const level of [4, 5]) for (let n = 12; n <= 24; n++) {
+        const range = rowRange(level, n);
+        if (equalRows(n, range).length === 0) continue;
+        const frames = framesFor(n).map(frameKey);
+        // Every subset of frames already found, but not all of them.
+        for (let mask = 0; mask < (level === 5 ? 1 << frames.length : 1); mask++) {
+          const found = level === 5 ? frames.filter((_, i) => mask & (1 << i)) : [];
+          const reachableFrames = new Set(equalRows(n, range).map(r => frameKey(frameOf(n, r))));
+          if (level === 5 && [...reachableFrames].every(k => found.includes(k))) continue;
+          for (let r0 = range.min; r0 <= range.max; r0++) {
+            let s: PlayState = { ...startPlay({ level, sapling: 'apple', tasks: [{ baskets: [n], open: r0 }] }), found, planted: [] };
+            let steps = 0;
+            for (;;) {
+              const a = botStep(s)!;
+              expect(a).not.toBeNull();
+              if (a.kind === 'plant') break;
+              expect(['up', 'down']).toContain(a.kind);
+              const res = step(s, a);
+              expect(res.outcome).toBe('moved');
+              s = res.state;
+              expect(s.rows).toBeGreaterThanOrEqual(range.min);
+              expect(s.rows).toBeLessThanOrEqual(range.max);
+              steps++;
+              expect(steps).toBeLessThanOrEqual(Math.floor(n / 2));
+            }
+            expect(n % s.rows).toBe(0);
+            if (level === 5) expect(found).not.toContain(frameKey(frameOf(n, s.rows)));
+            const res = step(s, { kind: 'plant' });
+            expect(['planted', 'newshape', 'everydone']).toContain(res.outcome);
+            expect(res.state.misses).toBe(0);
+          }
+        }
+      }
+    });
+    it('at level 6 help names the prime basket then its claim, from any loaded state', () => {
+      for (const set of PRIME_SETS) for (const order of [set, [...set].reverse(), [set[1], set[2], set[0]]]) {
+        const prime = order.findIndex(isPrime);
+        for (const loaded of [null, 0, 1, 2]) {
+          let s: PlayState = { ...startPlay({ level: 6, sapling: 'apple', tasks: [{ baskets: order, open: 2 }] }), loaded };
+          let steps = 0;
+          while (hintTarget(s) !== 'claim') {
+            expect(hintTarget(s)).toEqual({ basket: prime });
+            s = step(s, botStep(s)!).state;
+            expect(++steps).toBeLessThanOrEqual(1);
+          }
+          expect(s.loaded).toBe(prime);
+          expect(step(s, { kind: 'claim' }).outcome).toBe('claimright');
+        }
+      }
+    });
+    it('help is null once finished', () => {
+      const s = { ...startPlay(makeRound(4, new Rng(1))), done: true };
+      expect(hintTarget(s)).toBeNull();
+      expect(botStep(s)).toBeNull();
+    });
+  });
+
+  it('the bot finishes every level with no misses or hints over 100 seeds', () => {
+    for (const level of [4, 5, 6]) for (const seed of seeds(100)) {
+      let s = startPlay(makeRound(level, new Rng(seed)));
+      let guard = 0;
+      while (!s.done) {
+        const a = botStep(s);
+        expect(a).not.toBeNull();
+        const r = step(s, a!);
+        expect(r.outcome).not.toBe('ignored');
+        expect(r.outcome).not.toBe('end');
+        s = r.state;
+        expect(++guard).toBeLessThan(200);
+      }
+      expect(s.misses).toBe(0);
+      expect(s.hints).toBe(0);
+      if (level === 5) expect(s.found).toHaveLength(framesFor(s.tasks[0].baskets[0]).length);
+    }
+  });
+
+  describe('layout', () => {
+    const views = [
+      ['landscape', computeView(1024, 768)],
+      ['portrait', computeView(768, 1024)],
+      ['phone', computeView(844, 390)],
+      ['phone insets', computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 })],
+    ] as const;
+    const overlap = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    const cases: [number, number][] = [[4, 0], [5, 3], [5, 4], [6, 0]];
+    it('keeps controls big, apart, and out of the pet corner and top strip', () => {
+      for (const [name, v] of views) for (const [level, frames] of cases) {
+        const L = basketLayout(v, level, frames);
+        const tag = `${name} L${level}/${frames}`;
+        expect(L, tag).not.toBeNull();
+        if (!L) continue;
+        const big = [L.up, L.down, L.card, L.act, ...(level === 6 ? L.baskets : [])];
+        for (const b of big) { expect(b.w, tag).toBeGreaterThanOrEqual(100); expect(b.h, tag).toBeGreaterThanOrEqual(100); }
+        expect(L.baskets).toHaveLength(level === 6 ? 3 : 1);
+        expect(L.frames).toHaveLength(level === 5 ? frames : 0);
+        const items = [L.up, L.down, L.card, L.act, ...L.baskets, ...L.frames];
+        items.forEach((a, i) => items.slice(i + 1).forEach(b => expect(overlap(a, b), `${tag} ${i}`).toBe(false)));
+        for (const b of [...items, L.bed]) {
+          expect(b.y, tag).toBeGreaterThanOrEqual(level === 6 || b !== L.bed ? TOP_CLEAR : 0);
+          expect(b.x >= 0 && b.x + b.w <= v.w, tag).toBe(true);
+          expect(b.y + b.h, tag).toBeLessThanOrEqual(v.h);
+          expect(b.x < PET_CORNER.w && b.y + b.h > v.h - PET_CORNER.h, `${tag} pet corner`).toBe(false);
+        }
+        for (const b of [...L.baskets, ...L.frames, L.up, L.down, L.card, L.act]) expect(b.y, tag).toBeGreaterThanOrEqual(TOP_CLEAR);
+        for (const b of big) expect(overlap(L.bed, b), `${tag} bed`).toBe(false);
+        for (const b of L.frames) expect(overlap(L.bed, b), `${tag} bed/frame`).toBe(false);
+        for (const b of L.baskets) expect(overlap(L.bed, b), `${tag} bed/basket`).toBe(false);
+        expect(L.bed.w).toBeGreaterThan(0);
+        expect(L.bed.h).toBeGreaterThan(0);
+      }
+    });
+    it('gives every reachable deal a cell of at least the minimum', () => {
+      for (const [name, v] of views) for (const [level, frames] of cases) {
+        const L = basketLayout(v, level, frames)!;
+        const ns = level === 6 ? [...new Set(PRIME_SETS.flat())] : Array.from({ length: 13 }, (_, i) => i + 12);
+        for (const n of ns) {
+          const { min, max } = rowRange(level, n);
+          for (let r = min; r <= max; r++) {
+            if (level === 6 && r !== 1 && r < 2) continue;
+            expect(cellSize(L.bed, deal(n, r)), `${name} L${level} n${n} r${r}`).toBeGreaterThanOrEqual(MIN_CELL);
+          }
+        }
+      }
+    });
   });
 });

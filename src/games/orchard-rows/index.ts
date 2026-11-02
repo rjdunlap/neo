@@ -10,17 +10,10 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { choicesFor, countGroup, makeOrchards, missingTrees, orchardLayout, planFor, total, turn, type Orchard } from './logic';
+import { BasketOrchard, tree } from './baskets';
+import { choicesFor, countGroup, isBasketLevel, makeOrchards, missingTrees, orchardLayout, planFor, total, turn, type Orchard } from './logic';
 
-const LEVELS: BandLevels = { school: { min: 1, max: 3 } };
-
-/** Trees are pictures; the whole row is the large touch control. */
-function tree(color: number): Graphics {
-  return new Graphics().ellipse(0, 35, 25, 7).fill({ color: swatch.green.line, alpha: 0.2 })
-    .roundRect(-6, 0, 12, 34, 4).fill(wood.fill).stroke({ width: 2, color: wood.line })
-    .circle(0, -10, 29).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line })
-    .circle(-12, -12, 6).circle(12, -7, 6).circle(0, 5, 6).fill(color);
-}
+const LEVELS: BandLevels = { school: { min: 1, max: 6 } };
 
 class OrchardRows implements Game {
   readonly plan;
@@ -283,11 +276,11 @@ function orchardArt(seed: number): Container {
 
 export const orchardRows: GameModule = {
   id: 'orchard-rows', name: 'Orchard Rows', titleLine: 'game.orchard-rows', region: 'counting-cove',
-  skills: ['equal groups', 'arrays', 'skip counting', 'multiplication'], bands: ['school'],
+  skills: ['equal groups', 'arrays', 'skip counting', 'multiplication', 'division', 'factors'], bands: ['school'],
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
   music: STYLES.hub, touchDemo: true,
-  coplayHint: 'Count one row together, then add that same number for each new row. Ask what changes when the orchard turns.',
+  coplayHint: 'Count one row together, then add that same number for each new row. Ask what changes when the orchard turns. At the new levels, guess before pressing the arrow: will any be left over?',
   offScreen: 'Arrange blocks in three rows of four. Count by rows, then look from the side and count by columns. Did any blocks appear?',
   hubIcon: () => { const art = orchardArt(1); art.y = -70; return new WigglyIcon(art); },
-  sticker: orchardArt, create: ctx => new OrchardRows(ctx),
+  sticker: orchardArt, create: ctx => isBasketLevel(ctx.level) ? new BasketOrchard(ctx) : new OrchardRows(ctx),
 };
