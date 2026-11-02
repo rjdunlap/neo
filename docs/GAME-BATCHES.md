@@ -378,7 +378,7 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### size-parade 5: The measuring ribbon
 
-- **`size-parade`, level 14 *The measuring ribbon*, slice 10** (new interaction, plus a portrait screenshot): two friends on different footing compared with a ribbon that snaps to a head, a tap before measuring is a prediction and never a miss; school `order [7, 8, 12, 13, 14, 15]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
+- **`size-parade`, level 14 *The measuring ribbon*, slice 10** (landed 2026-11-02, PR #1118) (new interaction, plus a portrait screenshot): two friends on different footing compared with a ribbon that snaps to a head, a tap before measuring is a prediction and never a miss; school `order [7, 8, 12, 13, 14, 15]`. [Dive](deep-dives/size-parade.md#build-slices-in-order)
 
 Proof: use the union of the included check tiers under the batch contract; preserve each distinct interaction and special story/device gate.
 
@@ -779,7 +779,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/drops-journey
 
 - **`sprout-shuffle`, level 4 *which pairs always make spotted?*** (**built 2026-11-01**, [PR #1093](https://github.com/rjdunlap/neo/pull/1093), branch `claude/sprout-shuffle-4`; new level on the existing interaction; school; the first build of Hidden Sprouts, genetics G5, whose levels 5 and 6 follow as later complete parts): choose which parent pairs guarantee a spotted sprout and keep every explanation compatible with what was seen. Scope, rules and the school range are in the [definition](definitions/hidden-sprouts.md); depends on Sprout Shuffle levels 1–3, built 2026-10-30.
 
-Proof: new-levels tier, as the [definition's checks](definitions/hidden-sprouts.md#checks-for-the-builds) set it (typecheck, the rule tests, one browser play of level 4, `fingerdemo` at 4). Level 4 shipped; proof is in [VERIFICATION](VERIFICATION.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5). Device checks stay open.
+Proof: new-levels tier, as the [definition's checks](definitions/hidden-sprouts.md#checks-for-the-builds) set it (typecheck, the rule tests, one browser play of level 4, `fingerdemo` at 4). Level 4 shipped; proof is in [VERIFICATION](archive/VERIFICATION-2026-11-01.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5). Device checks stay open.
 
 ### sprout-shuffle 2: Patchwork Conservatory
 

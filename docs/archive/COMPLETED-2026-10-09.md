@@ -2285,7 +2285,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-31.md#2026-10-31--drift-cards-
 
 [PR #1093](https://github.com/rjdunlap/neo/pull/1093), branch `claude/sprout-shuffle-4`, [definition](../definitions/hidden-sprouts.md) (level 4 only; levels 5 and 6 remain). School range 1–3 becomes 1–4. A seeded friend asks for a bed of spotted sprouts; three pair cards (seeded from the definition's pools A/B/C, sides and tile order seeded) each show two plants over their copies, and a free yellow magnifier opens that pair's four-bud fan. A wrong Check is one miss and replays the chosen pair's counterexample (plain route with a glow, or all four spotted for a missed always-spotted pair); a second glows the accepted cards (one hint); Show me chooses them. Pool C accepts two pairs. Code: new `src/games/sprout-shuffle/pairs.ts`, `PAIR_POOLS`, `pairsAlways`, `counterexample`, `checkPairs` in `logic.ts`, `PairCard`/`lensArt`/`bedArt` in `art.ts`, 16 `sprout.*` lines on device speech. The `sproutshuffle` browser suite gains a level-4 case and a `SPROUT_LEVELS` filter.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-01.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5).
 
 ## Not Always levels 1–3 (philosophy-reasoning PR1, not-always 1, 2026-11-01)
 
