@@ -31,7 +31,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **RW14 slice 10, the other ten backdrops** (images only): after slices 4 and 6 pass their screenshot review. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 
 
-- **`size-parade`, The measuring ribbon** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-5-the-measuring-ribbon).
 
 
 - **`orchard-rows`, levels 4–6 (batch orchard-rows 1)** (new-interaction tier: extends the built game, school 4–6, Barnyard unchanged; play level 4 with Plant on a leftover, a second for the glow and its hint, then the glowing arrow to Plant, level 5 with one shape planted twice, level 6 with one wrong basket then the prime, a portrait screenshot of level 5 at one long row, `fingerdemo` at levels 4, 5 and 6, one build; stop after levels 4–5 if the allowance cannot cover level 6): [definition](definitions/orchard-rows.md), [batch](GAME-BATCHES.md#orchard-rows-1-equal-rows-every-way-only-one-long-row). A basket of 12 to 24 saplings and a row-count control; equal rows with the leftover left in the basket, every factor pair, the basket that only makes one row; the orchard is a picture at these levels and level 6 answers with a separate button; no developer gate and no dependency on another unbuilt game.

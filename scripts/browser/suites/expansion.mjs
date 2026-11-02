@@ -31,6 +31,14 @@ async function expansion() {
         if (Math.abs(n.x - home.x) > 2 || g.openGap !== null) throw new Error('A drop away from the line was kept');
         kit.tapOn(g.lineUp[1].node, 0, -60); await kit.sleep(300);
       }
+      if (g.plan.mode === 'ribbon') {
+        // A tap before measuring is a guess; a ribbon let go short of the head stays put unmarked; carried to nowhere it goes home. None is a miss.
+        kit.tapOn(g.choices[1].node, 0, -60); await kit.sleep(300);
+        if (g.guess !== 1) throw new Error('A guess before measuring went unanswered');
+        const r = g.ribbon, short = g.ground.toGlobal({ x: r.x, y: r.y - 40 });
+        await kit.dragTo(r, short); await kit.sleep(300);
+        if (g.phase !== 'pull' || Math.abs(g.ribbonLen - 76) > 1) throw new Error(`A short pull did not stay: ${g.phase} ${g.ribbonLen}`);
+      }
       if (g.plan.mode === 'hidden') {
         // A pair test behind the fence (neighbours, so one swap at most and the line stays mixed up) is never a miss.
         const before = g.hidden.join();
@@ -45,6 +53,18 @@ async function expansion() {
     });
     await page.evaluate(async () => {
       const g = neo.scene.game;
+      if (g.plan.mode === 'ribbon') {
+        // Measure with the ghost finger's own two drags (a drop 8 units off the head still snaps), then the shorter friend twice: a miss each, the second glows the taller.
+        for (const phase of ['pull', 'carry']) {
+          const t = g.autotouch(); if (g.phase !== phase) throw new Error(`Expected ${phase}, at ${g.phase}`);
+          await kit.dragTo(g.ribbon, t.to.on.toGlobal({ x: t.to.x, y: t.to.y + (phase === 'pull' ? 8 : 0) })); await kit.sleep(400);
+        }
+        if (g.phase !== 'measured') throw new Error(`The ribbon did not measure: ${g.phase}`);
+        if (g.misses !== 0 || g.hints !== 0) throw new Error('Measuring counted');
+        const tall = g.autotouch().tap.on, short = g.choices.find((c) => c.node !== tall);
+        for (let i = 0; i < 2; i++) { kit.tapOn(short.node, 0, -50); await kit.sleep(400); }
+        return;
+      }
       if (g.plan.mode === 'hidden') {
         // The gate on a mixed-up line, twice: each a miss, the second glows two mixed-up neighbours.
         for (let i = 0; i < 2; i++) { kit.tapOn(g.gate); await kit.sleep(500); }
@@ -68,15 +88,22 @@ async function expansion() {
     });
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, `size ${level} hint`);
     if (level === 4 || level === 8 || level === 10 || level === 11 || level === 17) await screenshot(`size-parade-${level}`);
-    if (level === 8 || level === 10 || level === 11 || level === 12 || level === 13 || level === 15 || (process.env.SIZE_PORTRAIT && level === 7)) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot(`size-parade-portrait-${level}`); }
+    if (level === 8 || level === 10 || level === 11 || level === 12 || level === 13 || level === 14 || level === 15 || (process.env.SIZE_PORTRAIT && level === 7)) { await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300); await screenshot(`size-parade-portrait-${level}`); }
     await page.evaluate(async () => {
       const g = neo.scene.game;
-      for (let step = 0; !g.done && step < (g.plan.mode === 'hidden' ? 60 : 14); step++) {
+      for (let step = 0; !g.done && step < (g.plan.mode === 'hidden' ? 60 : g.plan.mode === 'ribbon' ? 20 : 14); step++) {
         if (!await kit.until(() => !g.busy || g.done)) throw new Error('Size question stuck');
         if (g.done) break;
         if (g.plan.mode === 'hidden') {
           // The ghost finger's sweep: pair tests left to right, then the gate, four friends and then five.
           const t = g.autotouch().tap; kit.tapOn(t.on, 0, (t.y ?? 0) * neo.view.scale); await kit.sleep(t.on === g.gate ? 400 : 650);
+          continue;
+        }
+        if (g.plan.mode === 'ribbon') {
+          // The ghost finger's three steps: pull to the head, carry to the stump, tap the taller.
+          const t = g.autotouch();
+          if ('tap' in t) { kit.tapOn(t.tap.on, 0, t.tap.y * neo.view.scale); await kit.sleep(500); }
+          else { await kit.dragTo(g.ribbon, t.to.on.toGlobal({ x: t.to.x, y: t.to.y })); await kit.sleep(400); }
           continue;
         }
         if (g.plan.mode === 'insert') {
