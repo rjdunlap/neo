@@ -31,7 +31,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **RW14 slice 10, the other ten backdrops** (images only): after slices 4 and 6 pass their screenshot review. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 
 
-- **`size-parade`, The measuring ribbon** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-5-the-measuring-ribbon).
 
 
 - **`rule-machine`, levels 3–4 (batch rule-machine 2)** (new-interaction tier: the rule shelf, the covered machine and Peek; play level 3 with a wrong card and level 4 with a trap car first, a ruled-out card, Peek and the last prediction, and run `fingerdemo` at levels 3 and 4): after batch rule-machine 1; [definition](definitions/rule-machine.md), [batch](GAME-BATCHES.md#rule-machine-2-the-rule-shelf-and-the-covered-machine). Name the rule from three cards, then choose cars so the table tells the cards apart.

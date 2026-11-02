@@ -4,6 +4,7 @@ import { computeView } from '../../engine/view';
 import {
   askRank, BIG_LITTLE, DARKEST_FIRST, fromHsl, gapMids, insertAsks, insertGap, insertGapFor, insertLayout, insertLine, insertWhy, luminance, SHADE_COLORS, SHADE_LIGHTNESS, SHADE_STEP, shades, WHERE_DOES_IT_GO, BIG_LITTLE_ASKS, CRITTER_H, CYCLE, CYCLE_SCALE, CYCLE_TAPS, cycleAt, dealSteps, dropSpot, FIT_PROPS, fitAsks, fitTry, FLAG_COLORS, FRIEND_SCALE, FRIENDS, middleAsks, MIDDLE_ONE, MIN_RATIO, paradeLayout,
   BOOT_COLORS, HIDDEN_HEIGHTS, HIDDEN_LINES, hiddenStart, inversions, isSorted, mixedPair, pairTest, SWEEP_START, sweepAfter, sweepNext, type Sweep,
+  FOOT_BASE, headTop, MEASURING_RIBBON, RIBBON_FRIENDS, RIBBON_MAX, RIBBON_MIN, RIBBON_PAIRS, RIBBON_SNAP, ribbonLaneAt, ribbonLayout, ribbonPairs, ribbonPull, ribbonTaller,
   pickRounds, propSize, SIZE_CYCLE, SIZE_PLANS, sizeBell, sizeOrder, sizePlan, sizeScale, sizeTouch, sizeWord, stepBell, STEPS, stepScale, TARGET, TWO_IN_A_LINE, WHO_FITS,
 } from './logic';
 import { fitPose } from './props';
@@ -268,7 +269,7 @@ describe('Size Parade', () => {
   it('level 11 sits at the top of the preschool order and after 6 in pre-K, and is described', () => {
     expect(sizeParade.levels('preschool')).toEqual({ min: 3, max: 17, order: [3, 4, 17, 10, 5, 6, 11] });
     expect(sizeParade.levels('prek')).toEqual({ min: 5, max: 15, order: [5, 6, 11, 7, 8, 12, 15] });
-    expect(sizeParade.levels('school')).toEqual({ min: 7, max: 15, order: [7, 8, 12, 13, 15] });
+    expect(sizeParade.levels('school')).toEqual({ min: 7, max: 15, order: [7, 8, 12, 13, 14, 15] });
     expect(sizeParade.describeLevel(11)).toMatch(/bed, chair, bowl and door/);
   });
 
@@ -401,7 +402,7 @@ describe('Size Parade', () => {
       expect(HIDDEN_HEIGHTS.mode).toBe('hidden');
       expect(HIDDEN_HEIGHTS.order).toBe('small');
       expect(sizeParade.describeLevel(13).length).toBeGreaterThan(0);
-      expect(sizeParade.levels('school')).toEqual({ min: 7, max: 15, order: [7, 8, 12, 13, 15] });
+      expect(sizeParade.levels('school')).toEqual({ min: 7, max: 15, order: [7, 8, 12, 13, 14, 15] });
       expect(new Set(HIDDEN_LINES)).toEqual(new Set([4, 5]));
       expect(new Set(BOOT_COLORS).size).toBeGreaterThanOrEqual(Math.max(...HIDDEN_LINES));
     });
@@ -475,6 +476,86 @@ describe('Size Parade', () => {
         for (let i = mixedPair(line); i !== null; i = mixedPair(line)) { line = pairTest(line, i, i + 1).line; tests++; }
         expect(isSorted(line)).toBe(true);
         expect(tests).toBe(inversions(start));
+      }
+    });
+  });
+  describe('level 14, the measuring ribbon', () => {
+    const SEEDS = Array.from({ length: 300 }, (_, i) => i + 1);
+    it('is planned as a ribbon level in the school ladder, between 13 and 15', () => {
+      expect(sizePlan(14)).toBe(MEASURING_RIBBON);
+      expect(sizeParade.levels('school').order).toEqual([7, 8, 12, 13, 14, 15]);
+      expect(sizeParade.describeLevel(14)).toMatch(/ribbon/);
+    });
+    it('deals four pairs of two different friends whose true heights differ by at least 10 units, more than the snap', () => {
+      for (const seed of SEEDS) {
+        const pairs = ribbonPairs(new Rng(seed));
+        expect(pairs).toHaveLength(RIBBON_PAIRS);
+        for (const { friends: [a, b] } of pairs) {
+          expect(a.animal).not.toBe(b.animal);
+          expect(RIBBON_FRIENDS).toContain(a.animal);
+          expect(Math.abs(a.height - b.height)).toBeGreaterThanOrEqual(10);
+          expect(Math.abs(a.height - b.height)).toBeGreaterThan(RIBBON_SNAP);
+          expect(a.foot).not.toBe(b.foot);
+          expect(Math.min(a.foot, b.foot)).toBe(FOOT_BASE);
+          // The ribbon reaches every head with room to spare, and starts below it.
+          for (const f of [a, b]) { expect(f.height).toBeLessThan(RIBBON_MAX - RIBBON_SNAP); expect(f.height).toBeGreaterThan(RIBBON_MIN + RIBBON_SNAP); }
+        }
+      }
+    });
+    it('in exactly two pairs the friend standing higher is the shorter, and its head shows higher: the eye lies', () => {
+      for (const seed of SEEDS) {
+        const pairs = ribbonPairs(new Rng(seed));
+        expect(pairs.filter((p) => p.tricky)).toHaveLength(2);
+        for (const p of pairs) {
+          const t = ribbonTaller(p), s = (1 - t) as 0 | 1, tall = p.friends[t], short = p.friends[s];
+          expect(tall.height).toBeGreaterThan(short.height);
+          if (p.tricky) {
+            expect(short.foot).toBeGreaterThan(tall.foot);
+            // The answer is by true height, not by the head that shows higher: here they disagree, clearly.
+            expect(headTop(short) - headTop(tall)).toBeGreaterThanOrEqual(20);
+          } else {
+            expect(tall.foot).toBeGreaterThan(short.foot);
+            expect(headTop(tall)).toBeGreaterThan(headTop(short));
+          }
+        }
+      }
+    });
+    it('puts the taller friend on the bank and on the stump across seeds, so a side rule fails', () => {
+      const sides = new Set<number>(), tricksBySide = new Set<string>();
+      for (const seed of SEEDS) for (const p of ribbonPairs(new Rng(seed))) { sides.add(ribbonTaller(p)); tricksBySide.add(`${ribbonTaller(p)}${p.tricky}`); }
+      expect(sides.size).toBe(2);
+      expect(tricksBySide.size).toBe(4);
+      // Neither "always the higher head" nor "always the lower head" wins a round.
+      for (const seed of SEEDS) {
+        const pairs = ribbonPairs(new Rng(seed));
+        const byTop = pairs.filter((p) => (headTop(p.friends[0]) > headTop(p.friends[1]) ? 0 : 1) === ribbonTaller(p)).length;
+        expect(byTop).toBe(2);
+      }
+    });
+    it('is deterministic by seed', () => {
+      expect(ribbonPairs(new Rng(7))).toEqual(ribbonPairs(new Rng(7)));
+    });
+    it('snaps a ribbon within 12 units of the head and not beyond, and keeps a loose ribbon within its limits', () => {
+      expect(ribbonPull(130 + RIBBON_SNAP, 130)).toEqual({ length: 130, snapped: true });
+      expect(ribbonPull(130 - RIBBON_SNAP, 130)).toEqual({ length: 130, snapped: true });
+      expect(ribbonPull(130 + RIBBON_SNAP + 1, 130)).toEqual({ length: 143, snapped: false });
+      expect(ribbonPull(5, 130)).toEqual({ length: RIBBON_MIN, snapped: false });
+      expect(ribbonPull(900, 130)).toEqual({ length: RIBBON_MAX, snapped: false });
+    });
+    it('keeps the friends, the lanes and the ribbon handle on screen and clear of each other and the pet', () => {
+      for (const v of VIEWS) {
+        const { xs, lanes } = ribbonLayout(v.w);
+        expect(xs[0] - TARGET.w / 2).toBeGreaterThanOrEqual(150);
+        expect(lanes[1] + 55).toBeLessThanOrEqual(v.w - 20);
+        // A friend's tap target (130 wide here) never reaches its ribbon handle (110 wide), nor the other friend's.
+        for (let i = 0; i < 2; i++) expect(lanes[i] - 55).toBeGreaterThan(xs[i] + 65);
+        expect(xs[1] - 65).toBeGreaterThan(lanes[0] + 55);
+        // A carried ribbon dropped at either lane is read as that lane; far from both, as neither.
+        expect(ribbonLaneAt(lanes[0], lanes)).toBe(0);
+        expect(ribbonLaneAt(lanes[1] - 100, lanes)).toBe(1);
+        expect(ribbonLaneAt(xs[0] - 200, lanes)).toBeNull();
+        // The tallest ribbon stands below the progress circles.
+        expect(v.h - 90 - (FOOT_BASE + 76) - RIBBON_MAX - 60).toBeGreaterThan(160);
       }
     });
   });

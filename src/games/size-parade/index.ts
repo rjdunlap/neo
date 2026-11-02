@@ -14,6 +14,7 @@ import {
   askRank, BIG_LITTLE_ASKS, BOOT_COLORS, CRITTER_H, CYCLE_SCALE, CYCLE_TAPS, cycleAt, dealSteps, dropSpot, FIT_PROPS, fitAsks, fitTry, FLAG_COLORS, type Friend, FRIEND_SCALE, FRIENDS,
   gapMids, HIDDEN_LINES, hiddenStart, isSorted, mixedPair, pairTest, SWEEP_START, sweepAfter, sweepNext, type Sweep, type InsertAsk, insertAsks, insertGap, insertGapFor, insertLayout, insertLine, insertWhy, middleAsks, paradeLayout, pickRounds, propSize, SHADE_COLORS, SHADE_STEP,
   shades, type SizeAsk, sizePlan, sizeTouch, sizeWord, stepBell, stepScale, TARGET,
+  RIBBON_MIN, type RibbonFriend, ribbonLaneAt, ribbonLayout, type RibbonPair, ribbonPairs, ribbonPull, ribbonTaller,
 } from './logic';
 import { fitPose, fitProp } from './props';
 
@@ -44,6 +45,18 @@ function booted(node: Container, color: (typeof BOOT_COLORS)[number]) {
 /** Level 13: the fence comes down and the friends stand revealed, still in their boots. */
 const unbooted = (node: Container) => { for (const child of bodyOf(node).children) child.visible = true; };
 const friendHeight = (step: number, extra = 1): number => stepScale(step) * FRIEND_SCALE * extra * CRITTER_H;
+/** How tall a critter shows at scale 1, feet to the top of its head (ears and horns included): what the ribbon measures. */
+const tops = new Map<Friend, number>();
+function unitTop(animal: Friend): number {
+  let t = tops.get(animal);
+  if (t === undefined) { const c = new Critter(CRITTERS[animal]); c.alive = false; t = -c.getLocalBounds().minY; c.destroy({ children: true }); tops.set(animal, t); }
+  return t;
+}
+/** Level 14: a friend drawn exactly `height` tall to the top of its head. */
+const ribbonFriend = (animal: RibbonFriend, height: number): Container => friend(STEPS_TOP, animal, height / unitTop(animal) / (stepScale(STEPS_TOP) * FRIEND_SCALE));
+const STEPS_TOP = 4;
+/** Level 14's friends' tap rectangles: narrower than a row friend's, so a ribbon beside one is never under the same touch. */
+const RIBBON_TARGET_W = 130;
 function paradeArt(animal: Friend = 'duck'): Container {
   const c = new Container();
   for (let i = 0; i < 3; i++) { const f = friend(i * 2, animal); f.x = (i - 1) * 95; c.addChild(f); }
@@ -70,6 +83,19 @@ class SizeParade implements Game {
   sweep: Sweep = SWEEP_START;
   private readonly fence = new Graphics();
   private readonly gate = new Container();
+  /** Level 14: the round's four pairs, the ribbon and where it is: pulled out beside the bank friend, marked and carried, or standing by the stump friend. */
+  private readonly pairs: RibbonPair[] | null;
+  readonly ribbon = new Container();
+  private ribbonDrag: DragHandle | null = null;
+  private readonly strip = new Graphics();
+  private readonly mark = new Graphics();
+  private readonly banks = new Graphics();
+  phase: 'pull' | 'carry' | 'measured' = 'pull';
+  ribbonLen = RIBBON_MIN;
+  private snapped = false;
+  /** The friend she guessed before measuring (a prediction, never a miss). */
+  guess: 0 | 1 | null = null;
+  private lastGuess = -Infinity;
   /** Level 15: the round's five shades, darkest first, and how many lines are done (darkest first, then lightest first; at 13, four friends then five). */
   private readonly shadeSet: Swatch[] | null;
   lines = 0;
@@ -117,11 +143,12 @@ class SizeParade implements Game {
     this.asks = this.plan.middle ? middleAsks(ctx.rng) : this.plan.bigLittle ? BIG_LITTLE_ASKS : this.plan.mode === 'fit' ? fitAsks(ctx.rng) : null;
     this.inserts = this.plan.mode === 'insert' ? insertAsks(ctx.rng) : null;
     this.shadeSet = this.plan.shade ? shades(ctx.rng.pick(SHADE_COLORS)) : null;
+    this.pairs = this.plan.mode === 'ribbon' ? ribbonPairs(ctx.rng) : null;
     this.animal = ctx.rng.pick(FRIENDS);
     this.direction = ctx.rng.chance(0.5) ? 1 : -1;
     this.flag = ctx.rng.pick(FLAG_COLORS);
     this.bunting = ctx.rng.pick(FLAG_COLORS.filter((c) => c !== this.flag));
-    ctx.stage.addChild(this.background, this.ground, this.scenery, this.fence, this.shelf, this.fitLayer, this.glow, this.hintsGlow, this.progress);
+    ctx.stage.addChild(this.background, this.ground, this.banks, this.scenery, this.fence, this.shelf, this.fitLayer, this.glow, this.hintsGlow, this.progress);
     // A tap on the sky or the ground is answered: every friend hops and the ask repeats. Drawings above it let taps through.
     onTap(this.background, () => this.groundTap());
     if (this.plan.mode === 'hidden') {
@@ -135,7 +162,8 @@ class SizeParade implements Game {
       onTap(this.gate, () => this.openGate());
       ctx.stage.addChild(this.gate);
     }
-    for (const g of [this.ground, this.scenery, this.fence, this.shelf, this.fitLayer, this.glow, this.hintsGlow, this.progress]) g.eventMode = 'none';
+    if (this.plan.mode === 'ribbon') this.makeRibbon();
+    for (const g of [this.ground, this.banks, this.scenery, this.fence, this.shelf, this.fitLayer, this.glow, this.hintsGlow, this.progress]) g.eventMode = 'none';
     if (this.plan.mode === 'line') for (let i = 0; i < this.plan.count; i++) {
       const slot = new Container();
       slot.addChild(new Graphics().ellipse(0, 0, 66, 24).fill(swatch.white.fill).stroke({ width: 4, color: swatch.teal.line }));
@@ -148,6 +176,7 @@ class SizeParade implements Game {
     const ask = this.ask();
     if (this.plan.mode === 'cycle') void this.ctx.instruct('size.cycle');
     else if (this.plan.mode === 'insert') void this.ctx.instruct('size.insert');
+    else if (this.plan.mode === 'ribbon') this.ribbonInstruction();
     else if (this.plan.mode === 'hidden') void this.ctx.instruct(this.lines === 0 ? 'size.hidden' : 'size.hidden.five');
     else if (this.plan.shade) void this.ctx.instruct(this.lines === 0 ? 'size.shade.dark' : 'size.shade.light');
     else if (this.plan.mode === 'fit') void this.ctx.instruct('size.fit', { prop: this.propKind() });
@@ -206,6 +235,7 @@ class SizeParade implements Game {
     this.choices.length = 0;
     if (this.plan.mode === 'insert') { this.dealInsert(); return; }
     if (this.plan.mode === 'hidden') { this.dealHidden(); return; }
+    if (this.plan.mode === 'ribbon') { this.dealRibbon(); return; }
     const ask = this.ask();
     if (ask) this.order = [askRank(ask, this.plan.count)];
     const steps = dealSteps(this.ctx.rng, this.plan, this.rounds, this.order[0]);
@@ -348,6 +378,121 @@ class SizeParade implements Game {
       void this.ctx.say('size.hidden.yes');
       void tw.wait(3).then(() => { this.said.clear(); this.deal(); this.busy = false; this.instruction(); });
     }
+  }
+  /**
+   * Level 14: the ribbon, a tape on a spool whose top end is held by a knob riding just above the finger (`lift: 0`, so the end is
+   * under the fingertip). Beside the bank friend it only pulls up and down; once marked it carries anywhere at its marked length.
+   */
+  private makeRibbon() {
+    const knob = new Graphics().roundRect(-34, -78, 68, 52, 18).fill(swatch.white.fill).stroke({ width: 5, color: swatch.red.line });
+    knob.moveTo(0, -40).lineTo(0, -66).moveTo(-11, -55).lineTo(0, -66).lineTo(11, -55).stroke({ width: 5, color: swatch.red.line, cap: 'round', join: 'round' });
+    this.ribbon.addChild(this.strip, this.mark, knob);
+    this.ribbon.hitArea = new Rectangle(-55, -95, 110, 112);
+    this.ribbon.interactiveChildren = false;
+    this.ctx.stage.addChild(this.ribbon);
+    this.ribbonDrag = draggable(this.ribbon, this.ctx.tw, {
+      lift: 0,
+      onPick: () => sfx.tick(),
+      onMove: () => this.ribbonMove(),
+      onDrop: (x) => this.ribbonDrop(x),
+    });
+  }
+  private pair(): RibbonPair | undefined { return this.pairs?.[this.rounds]; }
+  /** Where a friend's feet stand: the meadow's line less its footing. */
+  private feet(side: 0 | 1) { return this.view.h - 90 - this.pair()!.friends[side].foot; }
+  private ribbonInstruction() {
+    const p = this.pair();
+    if (!p) return;
+    const [a, b] = p.friends;
+    if (this.phase === 'pull') void this.ctx.instruct('size.ribbon', { friend: a.animal });
+    else if (this.phase === 'carry') void this.ctx.instruct('size.ribbon.mark', { friend: b.animal });
+    else void this.ctx.instruct('size.ribbon.look', { friend: b.animal });
+  }
+  private dealRibbon() {
+    const p = this.pair()!;
+    this.phase = 'pull'; this.ribbonLen = RIBBON_MIN; this.snapped = false; this.guess = null; this.wrong = 0;
+    p.friends.forEach((f, side) => {
+      const node = ribbonFriend(f.animal, f.height), c: Choice = { rank: side, step: 0, node, placed: false };
+      onTap(node, () => this.tapRibbonFriend(c));
+      this.ctx.stage.addChild(node); this.choices.push(c);
+    });
+    this.ctx.stage.addChild(this.ribbon);
+    this.ctx.tw.kill(this.ribbon); this.ribbon.alpha = 1;
+    this.ribbonDrag!.enabled = true;
+    this.resize(this.view);
+  }
+  /** Beside the bank friend the ribbon only goes up and down, and snaps to the head within 12 units; carried, it goes anywhere. */
+  private ribbonMove() {
+    if (this.phase !== 'pull' || !this.pair()) return;
+    const feet = this.feet(0), pull = ribbonPull(feet - this.ribbon.y, this.pair()!.friends[0].height);
+    if (pull.snapped && !this.snapped) sfx.tick();
+    this.snapped = pull.snapped; this.ribbonLen = pull.length;
+    this.ribbon.position.set(ribbonLayout(this.view.w).lanes[0], feet - pull.length);
+  }
+  private ribbonDrop(x: number): boolean {
+    const p = this.pair();
+    if (!p || this.busy || this.done) return false;
+    const lanes = ribbonLayout(this.view.w).lanes;
+    if (this.phase === 'pull') {
+      this.ribbonMove();
+      this.ribbonDrag!.home = { x: this.ribbon.x, y: this.ribbon.y };
+      if (!this.snapped) {
+        // Not at the head yet: the ribbon stays where it was let go, and the reminder comes once every few seconds.
+        if (this.clock - this.lastOut >= 3) { this.lastOut = this.clock; void this.ctx.say('size.ribbon.pull', { friend: p.friends[0].animal }); }
+        return true;
+      }
+      // The mark: a red line across the ribbon's end, at the top of the bank friend's head.
+      this.phase = 'carry'; sfx.pop(7); this.drawMark();
+      this.ribbonInstruction();
+      return true;
+    }
+    if (this.phase !== 'carry') return false;
+    if (ribbonLaneAt(x, lanes) !== 1) {
+      if (ribbonLaneAt(x, lanes) === null && this.clock - this.lastOut >= 3) { this.lastOut = this.clock; void this.ctx.say('size.ribbon.carry', { friend: p.friends[1].animal }); }
+      sfx.tick();
+      return false;
+    }
+    // Stood up beside the stump friend, feet to feet: the mark shows where the bank friend's head would reach.
+    this.phase = 'measured'; this.ribbonDrag!.enabled = false;
+    this.ribbon.position.set(lanes[1], this.feet(1) - this.ribbonLen);
+    this.ribbonDrag!.home = { x: this.ribbon.x, y: this.ribbon.y };
+    sfx.bell(7, 0.25);
+    this.ribbonInstruction();
+    this.drawGlow();
+    return true;
+  }
+  private drawMark() {
+    this.mark.clear();
+    if (this.phase !== 'pull') this.mark.moveTo(-30, 0).lineTo(30, 0).stroke({ width: 7, color: swatch.red.line, cap: 'round' });
+  }
+  /** Level 14: before the ribbon stands by the stump a tap is a guess, never a miss; after, the taller friend is the answer. */
+  private tapRibbonFriend(c: Choice) {
+    const p = this.pair();
+    if (this.busy || this.done || !p) return;
+    const side = c.rank as 0 | 1, animal = p.friends[side].animal;
+    this.hop(c.node);
+    if (this.phase !== 'measured') {
+      sfx.tick(); this.guess = side;
+      if (this.clock - this.lastGuess >= 2) { this.lastGuess = this.clock; void this.ctx.say('size.ribbon.guess', { friend: animal }); }
+      return;
+    }
+    const taller = ribbonTaller(p);
+    if (side !== taller) {
+      this.wrong++; this.misses++; sfx.boing(); this.wiggle(c.node);
+      if (this.wrong === 2) { this.hints++; void this.ctx.say('size.ribbon.hint', { friend: p.friends[taller].animal }); }
+      else void this.ctx.say('size.ribbon.wrong', { friend: animal });
+      this.drawGlow(); return;
+    }
+    sfx.bell(stepBell(4), 0.3); this.ctx.pet.cheer();
+    void this.ctx.say(this.guess === taller ? 'size.ribbon.yes.guess' : 'size.ribbon.yes', { friend: animal });
+    this.rounds++; this.busy = true; this.wrong = 0;
+    const pairNodes = [...this.choices];
+    this.choices.length = 0;
+    this.drawGlow();
+    void this.ctx.tw.to(this.ribbon, { alpha: 0 }, { duration: 0.4 });
+    void this.ctx.tw.wait(1.2).then(() => pairNodes.forEach((n, i) => void this.ctx.tw.wait(0.2 * i).then(() => this.strut(n.node))));
+    if (this.rounds === this.pairs!.length) this.finish();
+    else void this.ctx.tw.wait(2.6).then(() => { this.deal(); this.busy = false; this.instruction(); });
   }
   private lineY() { return this.view.h - 90; }
   /** Level 12: the friends of the line slide apart to open `gap` under the carried newcomer, or close up again. */
@@ -538,13 +683,14 @@ class SizeParade implements Game {
     if (this.plan.mode === 'line') this.march();
     this.drawGlow();
     // The last marcher sets off at 0.72 s and hops for about 1.5 s; a strutting friend is off within 1.5 s.
-    void this.ctx.tw.wait(this.plan.mode === 'line' || this.plan.mode === 'insert' ? 2.4 : this.plan.mode === 'hidden' ? 3.2 : 1.5).then(() => this.ctx.finish({ misses: this.misses, hints: this.hints }));
+    void this.ctx.tw.wait(this.plan.mode === 'line' || this.plan.mode === 'insert' ? 2.4 : this.plan.mode === 'hidden' ? 3.2 : this.plan.mode === 'ribbon' ? 2.6 : 1.5).then(() => this.ctx.finish({ misses: this.misses, hints: this.hints }));
   }
   resize(v: View) {
     this.view = v;
     this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.blue.light).rect(0, v.h * 0.5, v.w, v.h * 0.5).fill(swatch.green.light);
     const top = v.h - 265;
-    this.ground.clear().roundRect(165, top, v.w - 210, 230, 45).fill(cream);
+    this.ground.clear();
+    if (this.plan.mode !== 'ribbon') this.ground.roundRect(165, top, v.w - 210, 230, 45).fill(cream);
     // A flag on a pole where the parade heads, and bunting along the back of the ground, in this round's colours.
     const flag = swatch[this.flag], bunting = swatch[this.bunting], pole = this.direction > 0 ? v.w - 100 : 225;
     const sc = this.scenery.clear();
@@ -552,11 +698,13 @@ class SizeParade implements Game {
     sc.moveTo(pole, top - 180).lineTo(pole + this.direction * 92, top - 152).lineTo(pole, top - 124).closePath().fill(flag.fill).stroke({ width: 4, color: flag.line, join: 'round' });
     sc.circle(pole, top - 186, 9).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
     const left = 205, right = v.w - 80, sag = 22;
-    sc.moveTo(left, top - 60).quadraticCurveTo((left + right) / 2, top - 60 + sag * 2, right, top - 60).stroke({ width: 4, color: swatch.brown.line });
-    for (let x = left + 35, i = 0; x < right - 20; x += 70, i++) {
+    // Level 14 has no bunting: it would cross the ribbon at head height.
+    if (this.plan.mode !== 'ribbon') sc.moveTo(left, top - 60).quadraticCurveTo((left + right) / 2, top - 60 + sag * 2, right, top - 60).stroke({ width: 4, color: swatch.brown.line });
+    for (let x = left + 35, i = 0; this.plan.mode !== 'ribbon' && x < right - 20; x += 70, i++) {
       const t = (x - left) / (right - left), y = top - 60 + 2 * sag * 2 * t * (1 - t) + 2, c = i % 2 ? bunting : flag;
       sc.moveTo(x - 20, y).lineTo(x + 20, y).lineTo(x, y + 34).closePath().fill(c.fill).stroke({ width: 3, color: c.line, join: 'round' });
     }
+    if (this.plan.mode === 'ribbon') { this.resizeRibbon(v); return; }
     const layout = paradeLayout(this.choices.length, this.slots.length, v.w, this.plan.bigLittle ? 420 : 175);
     const xs = layout.friends;
     this.targetW = layout.targetW;
@@ -637,9 +785,47 @@ class SizeParade implements Game {
     }
     this.drawGlow();
   }
+  /** Level 14: the bank, the stream and the stump, the two friends on them, the ribbon where its phase puts it, and four circles. */
+  private resizeRibbon(v: View) {
+    const p = this.pair(), { xs, lanes } = ribbonLayout(v.w), base = v.h - 90, b = this.banks.clear();
+    const bankR = lanes[0] + 62, stumpL = xs[1] - 95, stumpR = lanes[1] + 62;
+    b.rect(bankR - 10, base - 22, stumpL - bankR + 20, v.h - base + 22).fill(swatch.blue.fill);
+    for (let y = base; y < v.h - 10; y += 34) b.moveTo(bankR + 6, y).quadraticCurveTo((bankR + stumpL) / 2, y - 10, stumpL - 6, y).stroke({ width: 4, color: swatch.blue.light });
+    if (p) {
+      const [a, s] = p.friends;
+      // The bank: a grassy rise from the left under the first friend and its ribbon.
+      b.roundRect(xs[0] - 125, base - a.foot, bankR - xs[0] + 125, v.h - base + a.foot + 30, 26).fill(swatch.green.fill).stroke({ width: 5, color: swatch.green.line });
+      // The stump across the stream: cut rings on top.
+      const sy = base - s.foot, cx = (stumpL + stumpR) / 2, rx = (stumpR - stumpL) / 2;
+      b.rect(stumpL, sy, stumpR - stumpL, v.h - sy).fill(swatch.brown.fill).stroke({ width: 5, color: swatch.brown.line });
+      b.ellipse(cx, sy, rx, 16).fill(swatch.orange.light).stroke({ width: 4, color: swatch.brown.line });
+      for (const k of [0.65, 0.35]) b.ellipse(cx, sy, rx * k, 16 * k).stroke({ width: 3, color: swatch.brown.line });
+      this.choices.forEach((c) => {
+        const side = c.rank as 0 | 1;
+        c.node.hitArea = new Rectangle(-RIBBON_TARGET_W / 2, -175, RIBBON_TARGET_W, 190);
+        this.ctx.tw.kill(c.node); c.node.position.set(xs[side], this.feet(side));
+      });
+      // Home always follows the layout, so a ribbon floating back mid-resize lands on its lane; a ribbon floating home snaps there; a held or fading one is left alone.
+      const side = this.phase === 'measured' ? 1 : 0;
+      this.ribbonDrag!.home = { x: lanes[side], y: this.feet(side) - this.ribbonLen };
+      if (this.ctx.tw.busy(this.ribbon) && !this.ribbonDrag!.dragging && this.phase === 'carry') { this.ctx.tw.kill(this.ribbon); this.ribbon.position.set(this.ribbonDrag!.home.x, this.ribbonDrag!.home.y); }
+      else if (!this.ribbonDrag!.dragging && !this.ctx.tw.busy(this.ribbon)) this.ribbon.position.set(this.ribbonDrag!.home.x, this.ribbonDrag!.home.y);
+      this.drawMark();
+    }
+    this.gate.position.set(v.w / 2, v.h - 400);
+    const g = this.progress.clear();
+    for (let i = 0; i < 4; i++) g.circle(v.w / 2 + (i - 1.5) * 40, 125, 11).fill(i < this.rounds ? swatch.teal.fill : swatch.white.fill);
+    this.drawGlow();
+  }
   private drawGlow() {
     this.glow.clear(); this.hintsGlow.clear();
     if (this.done) return;
+    if (this.plan.mode === 'ribbon') {
+      // After two wrong taps the taller friend glows.
+      const p = this.pair(), c = p && this.wrong >= 2 && !this.busy ? this.choices.find((c) => c.rank === ribbonTaller(p)) : undefined;
+      if (c) this.hintsGlow.roundRect(c.node.x - RIBBON_TARGET_W / 2 - 3, c.node.y - 180, RIBBON_TARGET_W + 6, 200, 24).stroke({ width: 7, color: swatch.yellow.line });
+      return;
+    }
     if (this.plan.mode === 'line') { const p = this.slots[this.step]; if (p) this.glow.ellipse(p.x, p.y, 74, 34).stroke({ width: 7, color: swatch.yellow.line }); }
     if (this.plan.mode === 'hidden') {
       // The friend held for a pair test is ringed in teal; after two shut gates the first mixed-up neighbours glow.
@@ -661,6 +847,15 @@ class SizeParade implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.done) return null;
     if (this.plan.mode === 'cycle') { const c = this.choices[0]; return c ? { tap: { on: c.node, y: -friendHeight(c.step, CYCLE_SCALE) / 2 } } : null; }
+    if (this.plan.mode === 'ribbon') {
+      // Three steps: pull the ribbon to the bank friend's head, carry it to the stump friend, tap the taller.
+      const p = this.pair(), lanes = ribbonLayout(this.view.w).lanes;
+      if (!p) return null;
+      if (this.phase === 'pull') return { drag: { on: this.ribbon, y: -50 }, to: { on: this.background, x: lanes[0], y: this.feet(0) - p.friends[0].height }, lift: 0 };
+      if (this.phase === 'carry') return { drag: { on: this.ribbon, y: -50 }, to: { on: this.background, x: lanes[1], y: this.feet(1) - this.ribbonLen }, lift: 0 };
+      const c = this.choices.find((c) => c.rank === ribbonTaller(p));
+      return c ? { tap: { on: c.node, y: -p.friends[c.rank].height / 2 } } : null;
+    }
     if (this.plan.mode === 'hidden') {
       // Test neighbours left to right as the sweep says, never looking behind the fence; a held friend off the sweep is let go first.
       const next = sweepNext(this.sweep), body = (i: number) => ({ tap: { on: this.choices[i].node, y: -100 } });
@@ -680,6 +875,12 @@ class SizeParade implements Game {
     return this.plan.mode === 'line' ? { drag: body, to: { on: this.slots[this.step] } } : { tap: body };
   }
   update(dt: number) {
+    if (this.pairs) {
+      // The ribbon's tape runs from its end down to the feet beside it while it is pulled, and keeps its marked length once carried.
+      const len = this.phase === 'pull' && this.pair() && !this.ribbonDrag?.dragging ? Math.max(RIBBON_MIN, this.feet(0) - this.ribbon.y) : this.ribbonLen;
+      this.strip.clear().rect(-9, 0, 18, len).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+      for (let y = 20; y < len - 6; y += 20) this.strip.moveTo(-9, y).lineTo(y % 100 === 0 ? 5 : -1, y).stroke({ width: 2, color: swatch.yellow.line });
+    }
     this.clock += dt; this.glow.alpha = this.hintsGlow.alpha = 0.7 + 0.3 * Math.sin(this.clock * 3);
     // The glowing spot swells once when a friend is put on another spot.
     this.pulse = Math.max(0, this.pulse - dt * 1.5);
@@ -687,6 +888,7 @@ class SizeParade implements Game {
     if (p) { this.glow.pivot.set(p.x, p.y); this.glow.position.set(p.x, p.y); this.glow.scale.set(1 + 0.3 * Math.sin(Math.PI * this.pulse)); }
   }
   destroy() {
+    this.ribbonDrag?.destroy(); this.ctx.tw.kill(this.ribbon);
     this.clearTry();
     this.ctx.tw.kill(this.fence); this.ctx.tw.kill(this.gate);
     this.choices.forEach((c) => { c.drag?.destroy(); this.ctx.tw.kill(bodyOf(c.node)); this.ctx.tw.kill(bodyOf(c.node).scale); });
@@ -699,7 +901,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 17, order: [9, 1, 2, 3, 4, 17] },
   preschool: { min: 3, max: 17, order: [3, 4, 17, 10, 5, 6, 11] },
   prek: { min: 5, max: 15, order: [5, 6, 11, 7, 8, 12, 15] },
-  school: { min: 7, max: 15, order: [7, 8, 12, 13, 15] },
+  school: { min: 7, max: 15, order: [7, 8, 12, 13, 14, 15] },
 };
 export const sizeParade: GameModule = {
   id: 'size-parade', name: 'Size Parade', titleLine: 'game.size-parade', region: 'puzzle-peaks',

@@ -143,7 +143,7 @@ Each has a default the build uses:
 7. **(Built 2026-10-30, PR #1031.) Level 12 *Where does this one go?*** (new interaction tier: typecheck, units, one scripted play of 12 with one wrong gap, one portrait screenshot, `fingerdemo` at 12): the nearest-gap drop with friends sliding apart, pre-K `order [5, 6, 11, 7, 8, 12]`, school `order [7, 8, 12]`.
 8. **(Built 2026-10-30, PR #1031.) Level 15 *Darkest first*** (new levels tier plus a device contrast check written to DEVICE-CHECKS: typecheck, rule tests for the shade steps, one play of 15, `fingerdemo` at 15): shade variants, the shade-strip cue, pre-K `order [5, 6, 11, 7, 8, 12, 15]`, school `order [7, 8, 12, 15]`; the IDEAS Shade Lineup row leaves the notebook. Decision 2's default.
 9. **(Built 2026-11-01, PR #1083.) Level 13 *Hidden heights*** (new interaction tier: typecheck, units including the sort proof, one scripted play of 13 with one early gate press, one portrait screenshot, `fingerdemo` at 13): the pair test, fence and boots, the gate, the stateful bot, school `order [7, 8, 12, 13, 15]`. Decision 3's default. Built as a bubble sort with a shrinking bound for the bot (the dive said shaker sort; same n(n-1)/2 bound).
-10. **Level 14 *The measuring ribbon*** (new interaction tier: typecheck, units, one scripted play of 14 with one prediction and one wrong tap after measuring, one portrait screenshot, `fingerdemo` at 14): the ribbon drag, bank and stump, school `order [7, 8, 12, 13, 14, 15]`.
+10. **(Built 2026-11-02, PR #1118.) Level 14 *The measuring ribbon*** (new interaction tier: typecheck, units, one scripted play of 14 with one prediction and one wrong tap after measuring, one portrait screenshot, `fingerdemo` at 14): the ribbon drag, bank and stump, school `order [7, 8, 12, 13, 14, 15]`.
 
 Slices 1–8 need no decision (their defaults are recorded above); 9 and 10 are ready on their defaults too but come last because each is a new interaction with its own bot. Casting her creatures (decision 4) waits for RW05 and is not a slice here.
 
@@ -194,3 +194,11 @@ Checks are in [VERIFICATION](../archive/VERIFICATION-2026-10-26.md#2026-10-26--s
 - **Level 15.** Five shades of blue, purple or red (green and teal dropped: their pale steps were about 1.2 contrast apart); new optional `shade` swatch on `CritterSpec` (`src/art/critter.ts`).
 - **Windows now:** pre-K `{ min 5, max 15, order [5, 6, 11, 7, 8, 12, 15] }`, school `{ min 7, max 15, order [7, 8, 12, 15] }`.
 - Checks are in [VERIFICATION](../archive/VERIFICATION-2026-10-30.md#2026-10-30--size-parade-levels-12-and-15-insert-a-friend-and-order-shades). Still open: the shades on an iPad (DEVICE-CHECKS).
+
+**Slice 10, level 14 *The measuring ribbon*** (`claude/size-parade-ribbon`, [PR #1118](https://github.com/rjdunlap/neo/pull/1118), 2026-11-02; batch 5 complete):
+
+- **Ribbon.** A vertical-only drag (`draggable`, lift 0) beside the bank friend snaps within 12 units to the top of its visible head (ears included) and a red mark appears; carried to the stump friend's lane (a drop elsewhere floats home, and a resize mid-float lands it on its lane), then she taps the taller friend. A ribbon let go short of the head stays put with a throttled reminder, no miss.
+- **Pairs.** Four pairs of two different animals (never Pip), true heights 14-30 units apart; in exactly two pairs the shorter friend stands on higher footing and its head shows 22-40 units higher; the taller side is seeded.
+- **Misses.** A tap before measuring is a spoken guess, never a miss (a right guess is acknowledged); after measuring a wrong tap is a miss ("The ribbon says the {friend} is shorter") and the second in a pair counts one hint and glows the taller friend. Ten new `size.ribbon*` lines (slotted {friend}, device speech).
+- **Windows now:** school `{ min 7, max 15, order [7, 8, 12, 13, 14, 15] }`.
+- Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-02--size-parade-level-14-the-measuring-ribbon-size-parade-batch-5-slice-10). Still open: whether she reads the mark against the head on an iPad (DEVICE-CHECKS).
