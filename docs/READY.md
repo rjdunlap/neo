@@ -16,7 +16,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **`scoop-shop`, levels 8–9 (EF1b first batch)** (two new levels on existing input): [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25), [batch](GAME-BATCHES.md#scoop-shop-3-change-and-reverse). School only; exactly-one-change and reversed distinct triples, peek help; separate admission, building-session review, actual placement/layout and demos required. Level 7 follows as a separate interaction; person/device gates remain.
 
-- **Study `ratio-proportion`: define Paint Mixer 5–6 (RP2)** (docs only; status `define`): batches paint-mixer 1 and 2 are built (unblocked); three pots (1:2:1 peach, 8 or 12 drops) and which lidded jars match the sample from their labels alone (2:3, 4:6, 3:5, 6:9; a lid is one hint); the journal paint shelf and the palette unlock (decision 7); retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#ratio-and-proportion-recommendations).
+- **Study `ratio-proportion`: define Paint Mixer 5–6 (RP2)** (docs only; status `define`; **claimed** by `claude/define-paint-mixer-5-6`): batches paint-mixer 1 and 2 are built (unblocked); three pots (1:2:1 peach, 8 or 12 drops) and which lidded jars match the sample from their labels alone (2:3, 4:6, 3:5, 6:9; a lid is one hint); the journal paint shelf and the palette unlock (decision 7); retain its review, placement and implementation gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#ratio-and-proportion-recommendations).
 
 
 
