@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  AUTHORED_1, AUTHORED_2, COAST, MAX_PATH, MIN_CELL, PLANS, Turn, beachesFor, boatsFor, cellAt, cellCentre, cornerButtons, drift, driftFrom, driftLayout,
+  AUTHORED_1, AUTHORED_2, AUTHORED_3, CHECK, COAST, PATCH_CARD, PatchTurn, contradictedBy, filled, fits, fitsReturn, inPatch, patchCase, patchCells, patchRound, shownSea, traceShown, validCase, MAX_PATH, MIN_CELL, PLANS, Turn, beachesFor, boatsFor, cellAt, cellCentre, cornerButtons, drift, driftFrom, driftLayout,
   nextStep, overlaps, petCorner, predict, predictRound, predictSea, randomSea, sendRound, sideways, tally, targetsOf, traceAhead, validSea,
   type Beach, type Box, type Cell, type Sea,
 } from './logic';
@@ -25,6 +25,20 @@ function expectNoCrossing(sea: Sea, boats: readonly number[]) {
   const ranks = boats.map((b) => COAST[drift(sea, b).beach]);
   for (let i = 1; i < ranks.length; i++) expect(ranks[i]).toBeGreaterThanOrEqual(ranks[i - 1]);
 }
+
+const nonOverlap = (L: ReturnType<typeof driftLayout>, view: ReturnType<typeof computeView>) => {
+  const all = targetsOf(L!);
+  const keep: Box[] = [...cornerButtons(view), petCorner(view)];
+  for (let i = 0; i < all.length; i++) {
+    const b = all[i];
+    expect(b.x).toBeGreaterThanOrEqual(0);
+    expect(b.y).toBeGreaterThanOrEqual(0);
+    expect(b.x + b.w).toBeLessThanOrEqual(view.w);
+    expect(b.y + b.h).toBeLessThanOrEqual(view.h);
+    for (const k of keep) expect(overlaps(b, k)).toBe(false);
+    for (let j = i + 1; j < all.length; j++) expect(overlaps(b, all[j])).toBe(false);
+  }
+};
 
 describe('finite drifts', () => {
   it('authored seas are valid', () => {
@@ -240,19 +254,6 @@ describe('hints lead somewhere', () => {
 });
 
 describe('layout', () => {
-  const nonOverlap = (L: ReturnType<typeof driftLayout>, view: ReturnType<typeof computeView>) => {
-    const all = targetsOf(L!);
-    const keep: Box[] = [...cornerButtons(view), petCorner(view)];
-    for (let i = 0; i < all.length; i++) {
-      const b = all[i];
-      expect(b.x).toBeGreaterThanOrEqual(0);
-      expect(b.y).toBeGreaterThanOrEqual(0);
-      expect(b.x + b.w).toBeLessThanOrEqual(view.w);
-      expect(b.y + b.h).toBeLessThanOrEqual(view.h);
-      for (const k of keep) expect(overlaps(b, k)).toBe(false);
-      for (let j = i + 1; j < all.length; j++) expect(overlaps(b, all[j])).toBe(false);
-    }
-  };
   for (const level of [1, 2]) {
     it(`level ${level} fits all four views with big targets`, () => {
       for (const view of views) {
@@ -285,4 +286,164 @@ describe('layout', () => {
       }
     });
   }
+});
+
+describe('level 3: the fogged patch', () => {
+  const A = AUTHORED_3;
+  const caseSeeds = seeds;
+  const cases = caseSeeds.map((seed) => patchCase(new Rng(seed)));
+  const isAuthored = (pc: typeof A) => pc.sea === A.sea;
+
+  it('the authored case: A fits, B and C are ruled out by the right cards', () => {
+    expect(A.options).toEqual([['e', 's', 's', 'e'], ['e', 's', 'e', 'e'], ['e', 's', 's', 'w']]);
+    expect(A.answer).toBe(0);
+    expect(fits(A, 0)).toBe(true);
+    const b = contradictedBy(A, 1)!;
+    expect(b.card).toBe(1);
+    expect(b.beach).toBe('SE');
+    expect(pathStr(b.path)).toContain('(2,2) (2,3) (2,4) (3,4)');
+    const c = contradictedBy(A, 2)!;
+    expect(c.card).toBe(2);
+    expect(c.beach).toBe('SW');
+    expect(validCase(A)).toBe(true);
+  });
+  it('patchRound(authored) shuffles the options but keeps the answer on A', () => {
+    const orders = new Set<string>();
+    for (const seed of seeds) {
+      const pc = patchRound(new Rng(seed), true);
+      expect(pc.options).toHaveLength(3);
+      expect(pc.options[pc.answer]).toEqual(A.options[0]);
+      expect(validCase(pc)).toBe(true);
+      expect(fits(pc, pc.answer)).toBe(true);
+      orders.add(pc.options.map((o) => o.join('')).join('|'));
+    }
+    expect(orders.size).toBeGreaterThan(1);
+  });
+
+  it('generated cases keep every guarantee over 300 seeds', () => {
+    const plan = PLANS[2];
+    cases.forEach((pc, k) => {
+      expect(validCase(pc), `seed ${caseSeeds[k]}`).toBe(true);
+      expect(pc.options.filter((_, i) => fits(pc, i))).toHaveLength(1);
+      pc.options.forEach((_, i) => {
+        if (i !== pc.answer) expect(contradictedBy(pc, i)).not.toBeNull();
+        expect(validSea(filled(pc.sea, pc.at, pc.options[i]))).toBe(true);
+      });
+      expect(pc.at.r).toBe(1);
+      for (const ret of pc.returns) {
+        expect(drift(pc.sea, ret.col).path.some((p) => inPatch(pc.at, p))).toBe(true);
+        expect(pc.options.filter((_, i) => fitsReturn(pc, i, ret)).length).toBeGreaterThanOrEqual(2);
+      }
+      for (let i = 1; i < pc.returns.length; i++) expect(pc.returns[i].col - pc.returns[i - 1].col).toBeGreaterThanOrEqual(2);
+      expect(pc.sea.cols).toBe(plan.cols);
+    });
+  });
+  it('falls back to the authored case rarely, and both 2 and 3 returns occur', () => {
+    const fallbacks = cases.filter(isAuthored).length;
+    console.log(`level 3 fallbacks to AUTHORED_3 over ${cases.length} seeds: ${fallbacks}`);
+    expect(fallbacks).toBeLessThanOrEqual(3);
+    const counts = new Set(cases.map((pc) => pc.returns.length));
+    expect(counts.has(2)).toBe(true);
+    expect(counts.has(3)).toBe(true);
+  });
+  it('the same seed gives the same case', () => {
+    for (const seed of seeds.slice(0, 60)) expect(patchCase(new Rng(seed))).toEqual(patchCase(new Rng(seed)));
+  });
+
+  it('the fog leaks nothing', () => {
+    for (const pc of [A, ...cases]) {
+      const shown = shownSea(pc, null);
+      expect(shown.fog).toEqual(patchCells(pc.at));
+      expect(shown.fog).toHaveLength(4);
+      for (const f of shown.fog) expect(shown.sea.cells[f.r][f.c]).toBe('s');
+      for (const cell of cellsOf(pc.sea)) {
+        if (!inPatch(pc.at, cell)) expect(shown.sea.cells[cell.r][cell.c]).toBe(pc.sea.cells[cell.r][cell.c]);
+        const t = traceShown(shown, cell);
+        if (inPatch(pc.at, cell)) expect(t).toEqual([]);
+        for (const p of t) expect(inPatch(pc.at, p)).toBe(false);
+      }
+      pc.options.forEach((o, i) => {
+        const s = shownSea(pc, i);
+        expect(s.fog).toEqual([]);
+        expect(s.sea).toEqual(filled(pc.sea, pc.at, o));
+      });
+    }
+  });
+  it('the fogged shown sea does not vary with the true patch', () => {
+    for (const pc of cases.slice(0, 50)) {
+      const other = { ...pc, sea: filled(pc.sea, pc.at, pc.options.find((_, i) => i !== pc.answer)!) };
+      expect(shownSea(other, null)).toEqual(shownSea(pc, null));
+    }
+  });
+
+  it('PatchTurn: a contradicted patch is one miss, rechecking counts nothing', () => {
+    const t = new PatchTurn();
+    expect(t.check(1, false).counted).toBe(true);
+    expect(t.check(1, false).counted).toBe(false);
+    expect(t.check(1, false).counted).toBe(false);
+    expect(t.misses).toBe(1);
+    expect(t.glow).toBe(false);
+    expect(t.hinted).toBe(false);
+  });
+  it('PatchTurn: two different wrong patches glow with exactly one hint', () => {
+    const t = new PatchTurn();
+    t.check(1, false);
+    const r = t.check(2, false);
+    expect(r.glow).toBe(true);
+    expect(t.misses).toBe(2);
+    expect(tally([t])).toEqual({ misses: 2, hints: 1 });
+    t.ask();
+    t.check(1, false);
+    expect(tally([t])).toEqual({ misses: 2, hints: 1 });
+    t.check(0, true);
+    expect(t.done).toBe(true);
+  });
+  it('PatchTurn: B, B, B never glows; a right check after misses finishes', () => {
+    const t = new PatchTurn();
+    for (let i = 0; i < 3; i++) t.check(1, false);
+    expect(t.glow).toBe(false);
+    expect(t.hinted).toBe(false);
+    t.check(0, true);
+    expect(t.done).toBe(true);
+    expect(tally([t])).toEqual({ misses: 1, hints: 0 });
+  });
+
+  it('every wrong option names a card whose return really lands elsewhere', () => {
+    for (const pc of [A, ...cases]) {
+      pc.options.forEach((o, i) => {
+        if (i === pc.answer) return void expect(contradictedBy(pc, i)).toBeNull();
+        const c = contradictedBy(pc, i)!;
+        expect(c).not.toBeNull();
+        const ret = pc.returns[c.card - 1];
+        expect(ret).toBeDefined();
+        const d = drift(filled(pc.sea, pc.at, o), ret.col);
+        expect(d.beach).not.toBe(ret.beach);
+        expect(c.beach).toBe(d.beach);
+        expect(c.path).toEqual(d.path);
+        // Cards before it fit.
+        for (let k = 0; k < c.card - 1; k++) expect(drift(filled(pc.sea, pc.at, o), pc.returns[k].col).beach).toBe(pc.returns[k].beach);
+      });
+    }
+  });
+
+  it('layout: three big patch cards and Check fit every view for every boat set', () => {
+    const sets = [[1, 4], [0, 2, 4], [1, 3, 5], [0, 5], [0, 2, 5], [0, 3, 5], [0, 3]];
+    for (const view of views) {
+      for (const boats of sets) {
+        const L = driftLayout(view, 3, boats);
+        expect(L, `${view.w}x${view.h} ${boats}`).not.toBeNull();
+        expect(L!.cell).toBeGreaterThanOrEqual(MIN_CELL);
+        expect(L!.boats).toHaveLength(boats.length);
+        expect(L!.cards).toHaveLength(3);
+        for (const b of L!.cards) {
+          expect(b.w).toBeGreaterThanOrEqual(PATCH_CARD);
+          expect(b.h).toBeGreaterThanOrEqual(PATCH_CARD);
+        }
+        expect(L!.check!.w).toBeGreaterThanOrEqual(CHECK);
+        expect(L!.check!.h).toBeGreaterThanOrEqual(CHECK);
+        expect(Object.keys(L!.beaches).sort()).toEqual([...beachesFor(true)].sort());
+        nonOverlap(L, view);
+      }
+    }
+  });
 });
