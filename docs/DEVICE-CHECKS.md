@@ -231,11 +231,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] On an iPad, does device speech say the slotted count lines ("{n} went in. {m} came out.") clearly?
 - [ ] Source check (desk): the "went in / came out" and "one more / two more" wording against CCSS 3.OA.D.9, 4.OA.C.5 and England Year 6.
 
-## Drift Cards levels 1–2 (oceans slice 6, 2026-10-31)
+## Drift Cards levels 1–3 (oceans slice 6, 2026-10-31; level 3 built 2026-11-02)
 
 - [ ] With a school-age child: does she read the arrows cell by cell, or guess the beach?
 - [ ] Does the two-cell trace help or frustrate?
 - [ ] On an iPad, does device speech say "South-west" clearly?
+- [ ] Level 3: does it feel like detective work or trial and error, and does a child read the returned cards' arrows cell by cell?
 
 ## Forecast Detective levels 1–2 (weather-water slice 9, 2026-10-31)
 
