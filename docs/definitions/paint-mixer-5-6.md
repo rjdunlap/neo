@@ -38,7 +38,7 @@ The built `Sample` is a pair with two counts (`pair`, `counts: [a, b]`), and `to
 
 ### Level 6: which jars match?
 
-- **Case.** One sample (an authored pair and a base ratio in lowest terms from `1:2, 2:1, 1:3, 3:1, 2:3, 3:2`, its total at most 5) and **four jars**, each a two-pot label `[x, y]` over the same pair. **Matching jars** are `k × base` for `k` in `1..4` (each count at most 12, so every label stays within the count words the voice already has; `k = 1` at most once per case, since a copy of the sample is a giveaway). **Non-matching jars** are drawn from three seeded kinds, each a classic wrong strategy:
+- **Case.** One sample (an authored pair and a base ratio in lowest terms from `1:2, 2:1, 1:3, 3:1, 2:3, 3:2`, its total at most 5) and **four jars**, each a two-pot label `[x, y]` over the same pair. **Matching jars** are `k × base` for `k` in `1..4` (each count at most 12, so every label is a short numeral and a small spoken slot; `k = 1` at most once per case, since a copy of the sample is a giveaway). **Non-matching jars** are drawn from three seeded kinds, each a classic wrong strategy:
   - *half right*: `[k·a, k·b ± 1]` or `[k·a ± 1, k·b]` (one count sits in the table, the other does not; 4 : 5 against 2 : 3);
   - *added, not multiplied*: `[a + n, b + n]` for `n` in `1..3` (3 : 4, 4 : 5, 5 : 6 against 2 : 3; the additive answer Boyer and colleagues found 6–9-year-olds give);
   - *swapped*: `[b, a]` when `a ≠ b` (3 : 2).
@@ -59,7 +59,7 @@ The built `Sample` is a pair with two counts (`pair`, `counts: [a, b]`), and `to
 - **Level 5** is level 3's screen with a third pot in the stray's place and a three-row table; nothing moves or shrinks. Every input stays at least 100 units (pots 120 × 130, buttons 130 × 110).
 - **Level 6.** Landscape: the sample jar and its table upper left as at level 3; the four jars in a row across the centre where the bucket stood, each **150 × 190** (the sample jar's size; the whole jar is the choose target, its lid knob a 100 × 60 zone across the jar's top that opens the lid instead); Check to the jars' right. Portrait: jar and table, then the four jars as a 2 × 2 grid, then Check; nothing under the bottom-left pet or the corner buttons. `layoutJars(view)` is audited at the four views (landscape, portrait, two phone insets) by the layout test. Labels are at least 36-unit numerals with each pot's mark, so colour is never the only cue.
 - **Touch-down feedback.** A jar lifts as the finger lands; a lid knob tilts the lid. Check slides the chosen jars beside the sample.
-- **Speech** through `ctx.instruct`: level 5 "Fill the bucket to the line: three pots, the same way every time"; level 6 "Which jars are the sample's colour? Read their labels, tap every one that matches, then Check". New feedback lines name a jar and a pot count, never a colour judgement of her choice. Numbers up to 12 use the existing count slots (the build adds `count.5`–`count.12` if the bounded set stops at four).
+- **Speech** through `ctx.instruct`: level 5 "Fill the bucket to the line: three pots, the same way every time"; level 6 "Which jars are the sample's colour? Read their labels, tap every one that matches, then Check". New feedback lines name a jar and a pot count, never a colour judgement of her choice. Counts are slot values in slotted lines, as `pm.for-every` and `pm.recipe` already are (device speech; slotted lines stay out of the clip renderer until the voice plan's V3).
 
 ## The paint shelf (journal)
 
