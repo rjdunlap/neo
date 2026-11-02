@@ -4587,7 +4587,8 @@ export const SCRIPT = {
   'thought.region.dog-watering.sunny': ['The sun is shining'],
   'thought.region.dog-watering.doormat': ['The doormat'],
   'thought.region.dog-watering.bucket': ['A toy bucket'],
-  'thought.thinks': ["That's what he thinks!", "You knew what she wanted!", "Good looking!"],
+  'thought.away.done': ["Out of the door, you can't see what moves. Good thinking!"],
+  'thought.watching.done': ['From the window, you can see it move. Good looking!'],
   'thought.notquite': ['Hmm, look again.'],
 
   count: ['{n}!'],

@@ -156,7 +156,7 @@
 
 - [PR #1064](https://github.com/rjdunlap/neo/pull/1064), branch `claude/research-literature-meaning`: [study](../deep-dives/subjects/literature-meaning.md) and [packet](../deep-dives/subjects/RECOMMENDATIONS.md#literature-and-meaning-recommendations) (Thought Bubbles 1–3: what she wants, where he will look, how we know; a story-talk card, two-bubble stories and Who is telling? follow; folktale versions wait for a reviewer), tracker, backlog, READY, ideas, roadmap and device checks updated.
 - Ran: `git fetch origin --prune`, `scripts/overlap.sh` (no claim), `node scripts/check-links.mjs` and `git diff --check`. Sources: CCSS RL.K, RL.2, RL.3, RL.6 and the Kendeou et al. 2008 abstract opened; the rest from search summaries or recall, marked in the study.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the LM1 definition and three [person checks](../DEVICE-CHECKS.md#thought-bubbles-literature-meaning-study-2026-10-31-proposed-nothing-built).
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the LM1 definition and three [person checks](../DEVICE-CHECKS.md#thought-bubbles-literature-meaning-study-2026-10-31-levels-13-built-2026-11-02).
 
 ## 2026-10-31 — Thought Bubbles 1–3 definition (literature-meaning LM1, docs only)
 

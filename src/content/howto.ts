@@ -974,7 +974,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: [
       { from: 2, to: 2, text: "A friend who went out of the door did not see what moved; a friend at the window did. The friend acts on what is in the bubble, so the story shows whether it made sense. On the grown-up side, this is a character's point of view; it shows how she answers with the pet's spoken story, not that she reads stories this way on her own." },
       { from: 3, to: 3, text: "Tapping around the picture is free; only the bubble counts. On the grown-up side, this is an inference from the picture; it shows how she answers with the pet's spoken story, not that she reads stories this way on her own." },
-      { text: "The friend acts on what is in the bubble, so the story shows whether it made sense. On the grown-up side, this is reading a character's wants; it shows how she answers with the pet's spoken story, not that she reads stories this way on her own." },
+      { from: 1, to: 1, text: "The friend acts on what is in the bubble, so the story shows whether it made sense. On the grown-up side, this is reading a character's wants; it shows how she answers with the pet's spoken story, not that she reads stories this way on her own." },
     ],
   },
   'notice-board': {

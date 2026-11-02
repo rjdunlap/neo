@@ -78,6 +78,8 @@ class ThoughtBubbles implements Game {
   private clock = 0;
   private hopIn = 2;
   private overBubble = false;
+  /** The friend's resting lean (level 1 leans toward the reach), which a head shake returns to. */
+  private restRotation = 0;
 
   // The story's actors.
   private friend: Critter | null = null;
@@ -167,8 +169,19 @@ class ThoughtBubbles implements Game {
 
   /** Show me: glow what to do now, as one hint. */
   askForHint() {
-    if (this.busy || this.finished) return;
-    if (this.tally.showMe(this.stage)) this.glowing = glowFor(this.story, this.stage);
+    if (this.busy || this.finished || !this.tally.showMe(this.stage)) return;
+    const s = this.story;
+    if (s.level !== 2) {
+      this.glowing = glowFor(s, this.stage);
+      return;
+    }
+    // Level 2: the deciding beat plays again first, so the glow comes with its reason.
+    this.busy = true;
+    void Promise.all([this.ctx.say(line(`thought.look.${s.look.template.id}.saw`)), this.playMove()]).then(() => {
+      if (this.finished || this.stage !== 'card') return;
+      this.glowing = glowFor(this.story, 'card');
+      this.busy = false;
+    });
   }
 
   /** The ghost finger: drag the right card into the bubble, then at level 3 tap the clue. */
@@ -291,7 +304,8 @@ class ThoughtBubbles implements Game {
   private shakeHead() {
     const f = this.friend;
     if (!f) return;
-    const base = f.rotation;
+    const base = this.restRotation;
+    this.ctx.tw.kill(f);
     void this.ctx.tw.to(f, { rotation: base + 0.1 }, { duration: 0.1 })
       .then(() => this.ctx.tw.to(f, { rotation: base - 0.1 }, { duration: 0.15 }))
       .then(() => this.ctx.tw.to(f, { rotation: base }, { duration: 0.1 }));
@@ -309,7 +323,6 @@ class ThoughtBubbles implements Game {
       f.rotation = 0;
       f.cheer();
       await this.ctx.say(line(`thought.want.${s.want.id}.got`));
-      void this.ctx.say('thought.thinks');
       await this.ctx.tw.wait(0.6);
       return this.next();
     }
@@ -329,7 +342,7 @@ class ThoughtBubbles implements Game {
         await this.ctx.tw.to(this.thing!, { x: owner.x, y: owner.y - 70 }, { duration: 0.5, ease: ease.inOutSine });
       }
       owner.cheer();
-      await this.ctx.say('thought.thinks');
+      await this.ctx.say(s.look.kind === 'away' ? 'thought.away.done' : 'thought.watching.done');
       await this.ctx.tw.wait(0.4);
       return this.next();
     }
@@ -399,6 +412,7 @@ class ThoughtBubbles implements Game {
     this.scene.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.actors.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.friend = this.mover = this.windowFace = null;
+    this.restRotation = 0;
     this.thing = null;
     const s = this.story;
     if (s.level === 1) {
@@ -413,7 +427,7 @@ class ThoughtBubbles implements Game {
       const f = (this.friend = this.addFriend(w.friend, w.friendAt));
       // The reach: a paw from the shoulder toward the thing, and a lean that way.
       const lean = Math.cos((w.reach * Math.PI) / 180) >= 0 ? 10 : -10;
-      f.rotation = (lean * Math.PI) / 180;
+      f.rotation = this.restRotation = (lean * Math.PI) / 180;
       const arm = reachArm(f.sw, w.reach - lean);
       arm.position.set(40, -110);
       f.attach(arm);
