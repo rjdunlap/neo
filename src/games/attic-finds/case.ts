@@ -320,7 +320,9 @@ export class AtticCase implements Game {
       pn.node.position.set(L.papers[i].x, L.papers[i].y);
       if (pn.drag) pn.drag.home = { ...L.papers[i] };
     }
-    this.syncCopies();
+    // Rebuilding copies mid-drag would drop the held one; update() syncs them once it is let go.
+    if (this.copies.some((c) => c.drag?.dragging)) this.copiesDirty = true;
+    else this.syncCopies();
     this.drawCheck();
   }
 
@@ -392,7 +394,9 @@ export class AtticCase implements Game {
   private makePaper(id: PaperId, layer: Container, scale: number, slot = -1): PaperNode {
     const node = new Container();
     node.addChild(paperArt(id));
-    node.hitArea = new Rectangle(-PAPER_W / 2, -PAPER_H / 2, PAPER_W, PAPER_H);
+    // A slotted copy is drawn small; its hit area stays at least 100 units tall on screen.
+    const hitH = Math.max(PAPER_H, 100 / scale);
+    node.hitArea = new Rectangle(-PAPER_W / 2, -hitH / 2, PAPER_W, hitH);
     node.scale.set(scale);
     layer.addChild(node);
     const pn: PaperNode = slot >= 0 ? ({ id, node, drag: null, travel: 0, down: null, slot } as CopyNode) : { id, node, drag: null, travel: 0, down: null };
@@ -611,7 +615,8 @@ export class AtticCase implements Game {
       const p = this.mode === 'sources' ? (answer as PaperId) : supportingPaper(s.claims[i])!;
       this.lit.set(p, 0.9);
     }
-    await this.ctx.tw.wait(0.75);
+    if (this.mode === 'tell') await this.ctx.say(answer === 'unknown' ? 'attic-finds.none-shows' : 'attic-finds.shows-it');
+    else await this.ctx.tw.wait(0.75);
   }
 
   private wiggle(n: Container) {

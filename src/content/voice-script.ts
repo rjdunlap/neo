@@ -2661,7 +2661,7 @@ export const SCRIPT = {
   'attic-finds.none-shows': ["None of the papers shows it. Can't tell!"],
   'attic-finds.fill-slots': ['Fill every slot first.'],
   'attic-finds.stamp-all': ['Stamp every card first.'],
-  'attic-finds.hint-case': ['Look what glows. That one shows it.'],
+  'attic-finds.hint-case': ['Look what glows.'],
   'attic-finds.board-done': ['On the shelf it goes!'],
   'attic-finds.case-done': ['Both boards are on the shelf. The papers told us what they could!'],
   'fossil-dig.instruct-brush': ["Something's hiding under the dust. Brush it off!"],
