@@ -779,7 +779,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/drops-journey
 
 - **`sprout-shuffle`, level 4 *which pairs always make spotted?*** (**built 2026-11-01**, [PR #1093](https://github.com/rjdunlap/neo/pull/1093), branch `claude/sprout-shuffle-4`; new level on the existing interaction; school; the first build of Hidden Sprouts, genetics G5, whose levels 5 and 6 follow as later complete parts): choose which parent pairs guarantee a spotted sprout and keep every explanation compatible with what was seen. Scope, rules and the school range are in the [definition](definitions/hidden-sprouts.md); depends on Sprout Shuffle levels 1–3, built 2026-10-30.
 
-Proof: new-levels tier, as the [definition's checks](definitions/hidden-sprouts.md#checks-for-the-builds) set it (typecheck, the rule tests, one browser play of level 4, `fingerdemo` at 4). Level 4 shipped; proof is in [VERIFICATION](VERIFICATION.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5). Device checks stay open.
+Proof: new-levels tier, as the [definition's checks](definitions/hidden-sprouts.md#checks-for-the-builds) set it (typecheck, the rule tests, one browser play of level 4, `fingerdemo` at 4). Level 4 shipped; proof is in [VERIFICATION](archive/VERIFICATION-2026-11-01.md#2026-11-01--sprout-shuffle-level-4-which-pairs-always-make-spotted-genetics-g5). Device checks stay open.
 
 ### sprout-shuffle 2: Patchwork Conservatory
 
@@ -801,7 +801,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/drift-cards.m
 
 ### drift-cards 2: Find the hidden current
 
-- **`drift-cards`, level 3 (oceans study slice 6)** (a new interaction on the same game, school 1–3): a fogged patch of the sea and two or three returned cards; choose which of three patches fills the fog so every card lands where it was found, with a replay. [Definition](definitions/drift-cards.md). Depends on batch drift-cards 1 being built. Claimed 2026-11-02 by `claude/drift-cards-3` (files: `src/games/drift-cards/`, `src/content/voice-script.ts`, `src/content/howto.ts`, a browser case).
+- **`drift-cards`, level 3 (oceans study slice 6)** (a new interaction on the same game, school 1–3): a fogged patch of the sea and two or three returned cards; choose which of three patches fills the fog so every card lands where it was found, with a replay. [Definition](definitions/drift-cards.md). **Built 2026-11-02**, [PR #1119](https://github.com/rjdunlap/neo/pull/1119), branch `claude/drift-cards-3`; school 1–3 (the cards and Check sit in a row under the sea in every orientation, a deviation from the definition's side column in landscape). Depends on batch drift-cards 1, built.
 
 Proof: new-interaction tier, as the [definition's check tier](definitions/drift-cards.md#check-tier) sets it (typecheck; rule tests 6–9; one filtered play of the authored case with option B, option C and the glow, then option A and the replay; one portrait screenshot with the fog and three patch cards; `fingerdemo` at level 3; a build for the card and voice). Device and person checks stay open there.
 
