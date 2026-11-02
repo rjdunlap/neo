@@ -32,7 +32,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **RW14 slice 10, the other ten backdrops** (images only): after slices 4 and 6 pass their screenshot review. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 
 
-- **`size-parade`, The measuring ribbon** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-5-the-measuring-ribbon).
+- **`size-parade`, The measuring ribbon** (one implementation batch; 1 original subtask; use the combined check tier): [scope and levels](GAME-BATCHES.md#size-parade-5-the-measuring-ribbon). Claimed 2026-11-02 by `claude/size-parade-ribbon`.
 
 
 - **`drift-cards`, level 3 (batch drift-cards 2)** (new-interaction tier: the fogged patch and returned cards; play the authored case with option B (card 1 contradicted), option C (card 2 contradicted, the glow), then option A and the replay, a portrait screenshot with the fog and three patch cards, and run `fingerdemo` at level 3): batch drift-cards 1 is built (`drift-cards` exists, school 1–2, Bubble Beach); [definition](definitions/drift-cards.md), [batch](GAME-BATCHES.md#drift-cards-2-find-the-hidden-current). Choose which of three patches fills the fog so every returned card lands where it was found; no *Can't tell yet* answer, which stays Forecast Detective's.
