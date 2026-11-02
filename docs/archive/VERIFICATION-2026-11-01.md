@@ -73,3 +73,11 @@
 - Full `npm test` ran once: 6 failures: timing tests in other games (penguin-slide, block-garden, fluffy-salon, keep-house) that passed in isolation under machine load (flakes), and the voice-clip test, which needed the new title's Kokoro clip (rendered with `scripts/voice-clips/render.mjs`; clip tests 4 passed).
 - Not run: offline check, level-1 finger demo. Source check of the "went in / came out" and "one more / two more" wording against CCSS 3.OA.D.9, 4.OA.C.5 and England Year 6 not done (open).
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#rule-machine-levels-12-algebra-balance-ab1-2026-11-01)): the device and person checks there.
+
+## 2026-11-01 — Sprout Shuffle level 4, which pairs always make spotted (genetics G5)
+
+- [PR #1093](https://github.com/rjdunlap/neo/pull/1093), branch `claude/sprout-shuffle-4`: `sprout-shuffle` level 4 (school range 1–4), batch sprout-shuffle 1; new `pairs.ts`, pair pools and counterexamples in `logic.ts`, 16 `sprout.*` voice lines on device speech.
+- Ran (Vite dev on http://localhost:5643, `VITE_SPEECH=off`): typecheck; 29 Sprout Shuffle rule tests (10 new); howto and registry tests 41/41; `BROWSER_SUITE=sproutshuffle SPROUT_LEVELS=4` (free magnifier fan, two wrong Checks with counterexample and glow, accepted pairs, saved 2 misses/1 hint; landscape and portrait screenshots reviewed), re-passed after the review fix; `FINGER_ONLY=sprout-shuffle FINGER_LEVELS=4` clean 3.4 s; `game-reviewer` (no rule findings; two cosmetic races fixed).
+- Full `npm test` 4095/4099: four time-bounded tests in other games (block-garden, fluffy-salon, keep-house, penguin-slide) failed under load and passed 110/110 on an isolated rerun.
+- Source check of the counterexample lines: they follow standard single-gene complete-dominance Punnett results (AA×aa, AA×Aa, AA×AA all dominant; Aa×aa half recessive; Aa×Aa a quarter; aa×aa all recessive), as in introductory Mendelian sources such as Khan Academy and Britannica; lines remain draft.
+- Not run: build (CI runs it), levels 1–3 suite (unchanged code), offline. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#from-the-delegated-decisions-2026-10-23)): pair-card wording by ear and on iPad, magnifier discoverability, whether two accepted pairs read as both right.
