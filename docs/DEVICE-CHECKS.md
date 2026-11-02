@@ -223,13 +223,15 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] Is "a fair race can end level" heard as fair rather than as a loss?
 - [ ] On an iPad, hear device speech for the new `sf.*` lines.
 
-## Rule Machine levels 1–2 (algebra-balance AB1, 2026-11-01)
+## Rule Machine levels 1–4 (algebra-balance AB1, 2026-11-01 and 2026-11-02)
 
 - [ ] With a pre-K child: does she read the three pictures (look applied, unchanged, another look) and tap one?
 - [ ] Does the free first guess on each new machine feel like a game rather than a test?
 - [ ] On an iPad in portrait, do five cars and the in → out table fit and stay easy to tap?
 - [ ] On an iPad, does device speech say the slotted count lines ("{n} went in. {m} came out.") clearly?
-- [ ] Source check (desk): the "went in / came out" and "one more / two more" wording against CCSS 3.OA.D.9, 4.OA.C.5 and England Year 6.
+- [ ] Source check (desk): the "went in / came out", "one more / two more" and (levels 3–4) "plus two / take one away / twice as many / three times as many" wording against CCSS 3.OA.D.9, 4.OA.C.5 and England Year 6.
+- [ ] With a 6–8-year-old (levels 3–4): does the covered machine, and "two cards still fit", read as fair rather than a trick?
+- [ ] Do the card pictures (rows of counters for ×2 and ×3) read clearly on an iPad, and is Peek (the eye on the cover) understood?
 
 ## Drift Cards levels 1–3 (oceans slice 6, 2026-10-31; level 3 built 2026-11-02)
 

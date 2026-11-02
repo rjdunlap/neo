@@ -752,6 +752,8 @@ Proof: new-game tier, as the [definition's check tier](definitions/rule-machine.
 
 ### rule-machine 2: The rule shelf and the covered machine
 
+**Status: built 2026-11-02, PR #1120.**
+
 - **`rule-machine`, levels 3-4 (algebra-balance study slice AB1)** (after batch `rule-machine 1`; school range as the definition sets): name the machine's rule from a shelf of three cards after three rows (+2, +3, -1; level 3), then with the machine covered choose which cars to feed so the table tells the cards apart, with Peek as a requested hint, a trap car that tells nothing new and a ruled-out card counted gently (level 4). [Definition](definitions/rule-machine.md), [study build slices](deep-dives/subjects/algebra-balance.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a filtered play of level 3 with a wrong card and level 4 with a trap car first, a still-open card tap that counts nothing, a ruled-out card, Peek and the last prediction, one portrait screenshot of level 4, `fingerdemo` at levels 3 and 4, one build for the card and voice).

@@ -1,11 +1,21 @@
 # Puddle Island verification
 
+
 ## 2026-11-02 — Orchard Rows levels 4–6 (number-structure NS1, batch orchard-rows 1)
 
 - [PR #1121](https://github.com/rjdunlap/neo/pull/1121): `orchard-rows` school levels 4 *Equal rows*, 5 *Every way*, 6 *Only one long row*; new `baskets.ts`, model and bot in `logic.ts`.
 - Ran (merge commit 482f0780 = origin/main + branch, Vite dev on http://localhost:5259, `VITE_SPEECH=off`): typecheck; `npm test` 294 files / 4311 tests (Orchard Rows rules 22, 17 new: deal, factors, 60 prime sets, 300-seed determinism, accounting, help reaches a right answer, 100-seed bot with no misses, layout at four views with cells of 18 or more); `BROWSER_SUITE=orchard ORCHARD_LEVELS=4,5,6` (L4 arrows free, Plant on a leftover twice = 2 misses and 1 hint with glow, glow followed to the sticker; L5 portrait, a shape planted twice free, one-long-row screenshot; L6 wrong basket 1 miss, repeat claim free); `fingerdemo FINGER_ONLY=orchard-rows FINGER_LEVELS=4,5,6` clean (10.9, 16.0, 8.5 s); `npm run build`.
 - `game-reviewer` fixes: arrows live during a leftover reason, a tap mid-deal finishes it, range-end tick and wobble, one long-row line.
 - Not run: levels 1–3 regression play (unchanged class), phone and landscape screenshots beyond the case's, offline. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): leftover use, every-way feel, *prime*, device speech of "rows of"; reduced-motion deal not built.
+
+
+## 2026-11-02 — Rule Machine levels 3–4 (algebra-balance AB1, batch rule-machine 2)
+
+- [PR #1120](https://github.com/rjdunlap/neo/pull/1120): `rule-machine` school range 2–4: *What does it do?* (rule shelf) and *Covered machine* (trap cars, Peek).
+- Ran (commit ae2baa61, Vite on http://localhost:5563): typecheck; 41 rule tests (enumerated over shelves and feeding orders, 300 seeds); full `npm test` on the first commit, then rule-machine plus content tests (209) after a layout tweak; `npm run build`; `BROWSER_SUITE=rulemachine RM_LEVELS=3,4` (landscape level 3 wrong card then right, 1/0; portrait level 4 with early and still-open card taps uncounted, trap car first, a ruled-out card, Peek, the settling car and last pad, 1 miss/1 hint; level 4 re-run after the review fix); `BROWSER_SUITE=fingerdemo FINGER_ONLY=rule-machine FINGER_LEVELS=3,4` (49.9 s, 18.0 s); screenshots of level 3 shelf and portrait level 4.
+- `game-reviewer` fixes: the cover now returns when the card hangs after an unused Peek; the pet repeats level 2's ask after the card hangs.
+- Not run: levels 1–2 browser play (unchanged paths), offline check, the CCSS/England wording source check.
+- Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#rule-machine-levels-14-algebra-balance-ab1-2026-11-01-and-2026-11-02)): fairness of the covered machine and "two cards still fit", card pictures and Peek on an iPad, the wording check.
 
 ## 2026-11-02 — Size Parade level 14 The measuring ribbon (size-parade batch 5, slice 10)
 
@@ -107,12 +117,6 @@
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests, build, browser suites (docs tier, nothing built under `src/`). Open: the four builds and the definition.
 
-## 2026-11-01 — Treasure Map deep dive (docs only)
-
-- [PR #1103](https://github.com/rjdunlap/neo/pull/1103), branch `claude/dive-treasure-map`: [dive](deep-dives/treasure-map.md). Five slices queued ([batches](GAME-BATCHES.md#treasure-map-1-fresh-maps-and-true-hints): fresh maps and true hints, *Write the card*, *How far?*, *Slide it*, the preschool *One line*); *Across the river* (levels 10–11) is a queued definition. Tracker, READY, batches, backlog, ideas, roadmap and the area-volume-space handoffs updated.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests, build, browser suites (docs tier, nothing built under `src/`). Open: the five builds and the definition.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -124,7 +128,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `shellrows`, `fingerdemo` (`shell-rows`) | 2026-11-01: typecheck, full unit suite 4279, 28 rule tests; `shellrows` (pre-K level 1 free square, two wrong squares with reply and rewind, glow, 2/1; portrait school level 3 block answered by the pet taking her three, 1/0) re-run after the review fix, ghost finger levels 1 and 3; build | [Shell Rows](#2026-11-01--shell-rows-levels-13-strategy-games-sg1) | Offline check not run; resize mid-replay not probed in the browser; no device or iPad check |
 | `noticeboard`, `fingerdemo` (`notice-board`) | 2026-11-01: typecheck, full unit suite 4243, 32 rule tests; `noticeboard` (pre-K level 1 two wrong badges, glow, maker 2/1; portrait level 2 heard-it friend then witness through a stretched and a true poster 1/0; level 3 free friend tap, wrong basket, right basket 1/0) and ghost finger levels 2–3; build | [Notice Board](#2026-11-01--notice-board-levels-13-media-literacy-ml1) | Offline check not run; no device or iPad check |
 | `notalways`, `fingerdemo` (`not-always`) | 2026-11-01: typecheck, full unit suite 4128, 29 rule tests; `notalways` (pre-K level 1 glow then breaker 2/1; portrait level 2 false stamp then true claim 1/0; level 3 free card tap, false mend, true mend 1/0) and ghost finger levels 2–3; build | [Not Always](#2026-11-01--not-always-levels-13-philosophy-reasoning-pr1) | Browser play not re-run after the review fixes; offline, iPad, four-year-old reading of the spoken claim and the pictogram signs not run |
-| `rulemachine`, `fingerdemo` (`rule-machine`) | 2026-11-01: typecheck, 25 rule tests, registry/lands/how-to units; `rulemachine` ×3 (level 1 free first guess, counted wrongs, glow, 2/1; portrait level 2 one wrong pad, 1/0) and ghost finger level 2 (43 s); build | [Rule Machine](archive/VERIFICATION-2026-11-01.md#2026-11-01--rule-machine-levels-12-algebra-balance-ab1) | Level-1 finger demo, offline and the CCSS/England wording check not run; pre-K reading of three pictures and iPad speech unestablished |
+| `rulemachine`, `fingerdemo` (`rule-machine`) | 2026-11-02: levels 3–4 typecheck, 41 rule tests, full units (first commit), build; `rulemachine` `RM_LEVELS=3,4` (landscape level 3 wrong card, 1/0; portrait level 4 trap car, ruled-out card, Peek, 1/1) and ghost finger 3–4; levels 1–2 last played 2026-11-01 (1/0 and 2/1) | [Rule Machine 3–4](VERIFICATION.md#2026-11-02--rule-machine-levels-34-algebra-balance-ab1-batch-rule-machine-2) | Level-1 finger demo, offline and the CCSS/England wording check not run; pre-K reading of three pictures, covered-machine fairness and iPad speech unestablished |
 | `driftcards`, `fingerdemo` (`drift-cards`) | 2026-11-02: typecheck, 36 rule tests, full 4,291 units, build; levels 1–2 unchanged, level 3 in portrait (a miss, free repeat, second miss and glow, right patch and replay, 2/1) and ghost finger level 3 (37.4 s) | [Drift Cards level 3](#2026-11-02--drift-cards-level-3-oceans-slice-6-batch-drift-cards-2) | Detective work versus trial and error, reading arrows cell by cell and iPad speech for "South-west" unestablished; offline not run |
 | `forecastdetective`, `fingerdemo` (`forecast-detective`) | 2026-10-31: typecheck, 27 rule tests, registry/lands/how-to/capacity/clip tests, build; levels 1–2 (level 1 free not-yet and repeat Checks, ruled-out Checks, glow, 2/1; level 2 portrait, missing flap, overclaim, Can't tell yet, 1/0) and ghost finger levels 1 and 2 (15.5 s, 16.3 s) | [Forecast Detective](archive/VERIFICATION-2026-10-31.md#2026-10-31--forecast-detective-levels-12-weather-water-slice-9) | Real iPad speech for "Lighthouse Isle", whether school-age children open clues on purpose and tween/parent appeal unestablished; offline not run |
 | `dropsjourney`, `fingerdemo` (`drops-journey`) | 2026-10-31: typecheck, 32 rule tests, full 3,970 units, build; levels 1–3 (level 1 mid-move tap ignored 0/0, level 2 portrait sea to cloud to snow 0/0, level 3 two can't-go cards, glow, requested hint, 2/1) and ghost finger levels 1 and 3 (7.0 s, 9.2 s) | [Drop's Journey](archive/VERIFICATION-2026-10-31.md#2026-10-31--drops-journey-levels-13-weather-water-slice-8) | Real iPad speech for "vapour", a four-year-old reading the dotted drop and school-age explanations unestablished; offline not run |
