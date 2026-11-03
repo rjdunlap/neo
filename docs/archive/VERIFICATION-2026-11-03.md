@@ -33,3 +33,10 @@
 - Ran (commit 1cfc6ba2, base 87ae28a1, Vite on http://localhost:5558, `VITE_SPEECH=off`): typecheck; `src/games/quick-tricks` and `src/content` 20 files / 178 tests; `BROWSER_SUITE=next NEXT_ONLY=tricks` levels 1–6 (level 1 now 2/1, show two 4/2, waits for the bow; re-run `FROM_LEVEL=4` passed after the review fixes); `BROWSER_SUITE=fingerdemo FINGER_ONLY=quick-tricks FINGER_LEVELS=1,4` clean 18.9 s and 24.7 s; portrait probe screenshots of the mailbox with its flag up and the level-6 picnic critters, and suite screenshots of both bows; `npm run build`.
 - Not run: the full unit suite (CI), the offline check, device or child checks.
 - Open: the free low leaf, the hidden yellow arrow and show-two critter readability ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-11-03 — Read & Do fresh words and pictures (read-do batch 1)
+
+- [PR #1142](https://github.com/rjdunlap/neo/pull/1142): level 1 draws three of five colours (red, blue, yellow, green, pink) with seeded hats; level 2 is three rounds (big, small, a seeded third) on a seeded animal from duck, cat, pig and dog; level 3 plays all four sentences for a seeded pair of animals; 15 words, new voice lines green, pink, pig, dog (device speech). No new level.
+- Ran (commit 4c6ed7ac, Vite on http://localhost:5371, classic): `npm run typecheck`; read-do rule tests plus content and registry tests 196 passed; `npm run build`; `BROWSER_SUITE=readdo READ_LEVELS=1,2,3` passed (signs seen: level 1 red/pink/yellow, level 2 small pig/big cat/small dog, level 3 cat+pig; two misses, one hint, a sticker each level). A first run was killed by an HMR reload from a mid-run edit, not a code failure. `game-reviewer` found no code issues.
+- Not run: `fingerdemo` (bot unchanged), the offline check, device speech for the new words.
+- Open: iPad speech for green, pink, pig and dog and a child's reading ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
