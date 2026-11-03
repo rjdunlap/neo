@@ -15,6 +15,28 @@ async function lanternTouchPlay() {
     await page.waitForTimeout(150);
   };
   const solveAll = async () => { for (let guard = 0; guard < 400 && !(await page.evaluate(() => neo.scene.finished)); guard++) await tapNext(); };
+  // Level 8 (a 6 by 6 pond): a hint, then to the sticker; upright the counts share one line above the pond, clear of it.
+  await launch('lantern-lights', 8); await idle();
+  const before8 = await page.evaluate(() => kit.store.data.stickers.length);
+  assert.equal((await state()).n, 6);
+  await tap('neo.scene.game.hintButton');
+  assert.equal((await state()).hints, 1);
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+  const counts = await page.evaluate(() => {
+    const g = neo.scene.game, b = g.score.getBounds(), w = g.n * g.cell;
+    return { text: g.score.text, sub: g.sub.visible, cell: g.cell, gap: g.board.y - 18 - (b.y + b.height) / neo.view.scale, top: b.y / neo.view.scale, left: b.x / neo.view.scale, right: (b.x + b.width) / neo.view.scale, vw: neo.view.w, pondRight: g.board.x + w };
+  });
+  assert.match(counts.text, /press.* · \d+ of 36 lit/, `one line of counts upright: ${JSON.stringify(counts)}`);
+  assert.equal(counts.sub, false);
+  assert.ok(counts.gap > 0 && counts.left > 130 && counts.right < counts.vw - 130 && counts.cell >= 64, `the counts sit above the pond, between the corner buttons: ${JSON.stringify(counts)}`);
+  await screenshot('lantern-lights-8-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+  assert.equal(await page.evaluate(() => neo.scene.game.sub.visible), true, 'sideways the counts sit beside the pond');
+  await solveAll(); await finished('lantern-lights');
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before8 + 1, 'one sticker at level 8');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('lantern-lights').history.at(-1); return [r.misses, r.hints]; }), [0, 1]);
+  log('Lantern Lights level 8: a 6 by 6 pond, one hint, the counts above the pond upright, one sticker passed');
+  if (process.env.LANTERN_ONLY === '8') { assert.deepEqual(errors, []); return; }
   // Level 1 (first): a tap that is not in the answer is free and can be taken back; a hint counts once; start over; then light every pond.
   await launch('lantern-lights', 1); await idle();
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);

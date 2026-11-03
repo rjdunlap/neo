@@ -296,6 +296,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Tap a lantern to flip it and the four lanterns beside it.',
       'Tap Undo to take the last tap back; Start over puts the pond back as it began.',
       'Tap Hint to see which lantern to try next.',
+      { from: 7, text: 'A 6 by 6 pond has only one set of lanterns that lights it all: tap each of them once, in any order.' },
     ],
     finish: 'Every pond is done when all its lanterns glow; the round ends after the last pond.',
     note: 'There is no wrong tap, and taking one back is free. Each hint counts as help.',

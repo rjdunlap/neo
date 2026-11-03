@@ -112,7 +112,10 @@ export interface LanternPlan {
   boards: number;
 }
 
-/** The ladder: small boards with a few presses to find, then 4 by 4, then 5 by 5 boards that need real planning. */
+/**
+ * The ladder: small boards with a few presses to find, then 4 by 4, then 5 by 5 and 6 by 6 boards that need real
+ * planning. A 6 by 6 pond has exactly one winning set, so its fewest is exactly the scramble.
+ */
 export const PLANS: LanternPlan[] = [
   { name: 'A 3 by 3 pond: find the one or two lanterns to press', size: 3, scramble: 2, atLeast: 2, boards: 3 },
   { name: 'A 3 by 3 pond with a few more presses to find', size: 3, scramble: 4, atLeast: 3, boards: 3 },
@@ -120,6 +123,8 @@ export const PLANS: LanternPlan[] = [
   { name: 'A 4 by 4 pond that takes planning', size: 4, scramble: 7, atLeast: 5, boards: 2 },
   { name: 'A 5 by 5 pond with a short way to light every lantern', size: 5, scramble: 5, atLeast: 4, boards: 2 },
   { name: 'A 5 by 5 pond that takes planning', size: 5, scramble: 10, atLeast: 8, boards: 2 },
+  { name: 'A 6 by 6 pond with a short way to light every lantern', size: 6, scramble: 7, atLeast: 7, boards: 2 },
+  { name: 'A 6 by 6 pond that takes planning', size: 6, scramble: 12, atLeast: 12, boards: 2 },
 ];
 
 export const planFor = (level: number): LanternPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];

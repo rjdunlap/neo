@@ -1061,6 +1061,8 @@ Proof: couch catalog tier: typecheck, course tests, `BROWSER_SUITE=couchgames` f
 
 ### lantern-lights 1: A 6 by 6 pond
 
+Built 2026-11-02, [PR #1131](https://github.com/rjdunlap/neo/pull/1131), branch `claude/lantern-lights-1`; [closeout](archive/COMPLETED-2026-10-09.md#lantern-lights-a-6-by-6-pond-lantern-lights-batch-1-2026-11-02).
+
 - **`lantern-lights`, a 6 by 6 pond (dive slice 1)** (new levels on the existing interaction; grown-up): levels 7–8 (`PLANS` rows, grown-up max 8) and the portrait counts fix: when the room beside the pond is under about 260 units, the two counts sit in one line above it, clear of the top corner buttons. [Dive](deep-dives/lantern-lights.md#build-slices-in-order)
 
 Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
@@ -1069,7 +1071,7 @@ Proof: new levels on the existing interaction: typecheck, the game's rule tests,
 
 ### lantern-lights 2: Named hints and a short way
 
-- **`lantern-lights`, named hints and Show me a short way (dive slice 2, after batch 1)** (new interaction; grown-up): `hintFor` kinds and two voice lines; the after-pond buttons and replay on touch only. Shares the `index.ts` layout with batch 1. [Dive](deep-dives/lantern-lights.md#build-slices-in-order)
+- **`lantern-lights`, named hints and Show me a short way (dive slice 2)** (new interaction; grown-up): `hintFor` kinds and two voice lines; the after-pond buttons and replay on touch only. Shares the `index.ts` layout with batch 1. [Dive](deep-dives/lantern-lights.md#build-slices-in-order)
 
 Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
@@ -1077,7 +1079,7 @@ Proof: new interaction: typecheck, rule tests (hint kinds by `ways`/`best` count
 
 ### lantern-lights 3: Lily-pad ponds
 
-- **`lantern-lights`, lily-pad ponds, level 9 (dive slice 3, after batch 1)** (new rule on the existing tap; grown-up): masked `footprint`/`solve`/`parsePond`, authored shapes, pad art and `lantern.pads`. Shares `PLANS` and the max with batch 1. [Dive](deep-dives/lantern-lights.md#build-slices-in-order)
+- **`lantern-lights`, lily-pad ponds, level 9 (dive slice 3)** (new rule on the existing tap; grown-up): masked `footprint`/`solve`/`parsePond`, authored shapes, pad art and `lantern.pads`. Shares `PLANS` and the max with batch 1. [Dive](deep-dives/lantern-lights.md#build-slices-in-order)
 
 Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`, `src/games/lantern-lights/course.test.ts` (since `parsePond` changes), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`. The shared rules change, so the couch suite follows.
 

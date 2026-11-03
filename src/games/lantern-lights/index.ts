@@ -15,7 +15,9 @@ import { courseMinimum, coursePonds, isLanternCourse } from './course';
 import { allLit, footprint, hintFor, litCount, makePonds, planFor, press, type LanternPlan, type Pond } from './logic';
 
 /** Lantern Lake's grown-up band. The island plays it by touch; couch play drives the same board with a controller. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 8 } };
+/** The room beside the pond the two counts need; under it they move above the pond. */
+const SIDE_ROOM = 240;
 
 const WATER = 0x25315f;
 const WATER_LINE = 0x151d3d;
@@ -78,6 +80,8 @@ class LanternLights implements Game {
   private tokens: number[] = [];
   private history: number[] = [];
   private cell = 100;
+  /** The counts share one line above the pond, because the room beside it is too narrow. */
+  private stacked = false;
   private clock = 0;
   private view: View;
   private readonly held = new HeldDirection();
@@ -148,13 +152,22 @@ class LanternLights implements Game {
   resize(v: View) {
     this.view = v;
     if (!this.pond) return;
-    this.cell = Math.min(116, Math.floor((v.h - 262) / this.n));
+    // The counts sit beside the pond, clear of the edge; where the room beside it is too narrow (a big pond in
+    // portrait), they share one line above it, between the top corner buttons, and the pond moves down to make room.
+    const wide = (v.w - Math.min(116, Math.floor((v.h - 262) / this.n)) * this.n) / 2 >= SIDE_ROOM;
+    this.cell = Math.min(116, Math.floor((v.h - (wide ? 262 : 322)) / this.n));
     const bw = this.n * this.cell;
-    this.board.position.set((v.w - bw) / 2, 112);
-    // The counts sit beside the pond, clear of the edge.
-    const x = Math.min((v.w + bw) / 2 + 150, v.w - 120);
-    this.score.position.set(x, 190);
-    this.sub.position.set(x, 236);
+    this.board.position.set((v.w - bw) / 2, wide ? 112 : 172);
+    this.stacked = !wide;
+    if (wide) {
+      const x = Math.min((v.w + bw) / 2 + 150, v.w - 120);
+      this.score.position.set(x, 190);
+      this.sub.position.set(x, 236);
+    } else {
+      this.score.position.set(v.w / 2, 104);
+    }
+    this.sub.visible = wide && !this.finished;
+    this.tally();
     this.tapLayer.clear().rect(0, 0, bw, bw).fill({ color: 0xffffff, alpha: 0.001 });
     this.tapLayer.hitArea = new Rectangle(0, 0, bw, bw);
     this.tapLayer.position.copyFrom(this.board.position);
@@ -280,8 +293,10 @@ class LanternLights implements Game {
   }
 
   private tally() {
-    this.score.text = `${this.presses} ${this.presses === 1 ? 'press' : 'presses'}`;
-    this.sub.text = `${litCount(this.lit)} of ${this.lit.length} lit`;
+    if (!this.pond) return;
+    const presses = `${this.presses} ${this.presses === 1 ? 'press' : 'presses'}`, lit = `${litCount(this.lit)} of ${this.lit.length} lit`;
+    this.score.text = this.stacked ? `${presses} · ${lit}` : presses;
+    this.sub.text = lit;
   }
 
   /** Hand a course's numbers to the shell. `finished` means the pond just ended, so none of its presses are "in progress". */
