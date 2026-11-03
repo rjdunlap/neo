@@ -2471,7 +2471,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--secret-code-
 
 Branch `claude/shape-buddies-what-grows`, PR #1145: [dive slice 1](../deep-dives/shape-buddies.md#build-slices-in-order). Art only; rules, guidance, voice lines, the bot and the how-to card are unchanged. Each round draws a seeded kind through `looks(rng)` in `logic.ts`, after the two friend colours so a round's colours are unchanged: a bean (brown kidney; grows a curling vine with two round leaves), a sunflower seed (striped grey teardrop; a stalk with a yellow petal ring) or an acorn (nut under a wooden cap; a two-leaf oak twig). The sticker uses the bean seed art. The guidance test now iterates `Object.keys(PLANS)`, and a new test checks colours unchanged over 200 seeds and that all three kinds appear.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--shape-buddies-what-grows-three-seeds-and-sprouts-shape-buddies-batch-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--shape-buddies-what-grows-three-seeds-and-sprouts-shape-buddies-batch-1).
 
 ## Sing-Along Barn, Twinkle and Wheels on the Bus (batch sing-along-barn 1, 2026-11-03)
 

@@ -120,6 +120,9 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`word-search`, level 7 *Just the theme* (batch word-search 4)**, after batch word-search 3 (new-interaction tier: typecheck, rule tests, one play of level 7 with a free non-theme line and two hints on one word, then to the sticker, one portrait screenshot of the blanks, `fingerdemo` at 7): [dive](deep-dives/word-search.md#build-slices-in-order), [batch](GAME-BATCHES.md#word-search-4-just-the-theme).
 - **Define Word Search school opening** (docs only; status `define`): a 6 by 6 grid of 100-unit squares with four short across-only words, each with a picture and a speaker, for school; settle the land (Lantern Lake or a move), the literacy wording, a picture for every word, accounting and the check tier. [Dive](deep-dives/word-search.md#build-slices-in-order).
 
+- **`vine-snip`, slice 1: levels 1–3 as a new registered game** (new-game tier: typecheck, unit tests, one scripted play at levels 1 and 3 with one missed drop and one hint, one portrait screenshot at level 3, `fingerdemo` at 3, `npm run build`): [definition](definitions/vine-snip.md#check-tier).
+- **`vine-snip`, slice 2: levels 4–5**, after slice 1 (new-rules tier: typecheck, rule tests, one play of level 5 with one wrong-side keep and Grow back, one portrait screenshot at level 4, `fingerdemo` at 5): [definition](definitions/vine-snip.md#check-tier).
+
 ### Study follow-ups (docs-only definitions)
 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
