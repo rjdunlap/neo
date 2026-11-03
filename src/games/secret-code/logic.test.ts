@@ -158,7 +158,6 @@ describe('Detective doors', () => {
         const withDoors = new Rng(seed);
         doorKinds(withDoors, plan.codes);
         expect(makeCode(plan, withDoors)).toEqual(makeCode(plan, plain));
-        expect(makeCode(plan, withDoors)).toEqual(makeCode(plan, plain));
       }
     }
     expect(seen.size).toBe(DOORS.length);

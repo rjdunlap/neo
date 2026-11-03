@@ -2109,7 +2109,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 7, text: 'Two or three guesses are already shown. Find the one code that fits every mark; its colors are all different.' },
     ],
     finish: 'The round ends when the code is cracked.',
-    note: [{ to: 6, text: 'A wrong try is how you learn the code. A miss is only a stone put where a mark still on screen already ruled it out; the faint-stone idea updates after every try.' }, { from: 7, text: 'A try that contradicts the shown clues gets a reminder. After two, faint stones help; the original clues stay visible.' }],
+    note: [{ to: 6, text: 'A wrong try is how you learn the code. A miss is only a stone put where a mark still on screen already ruled it out; after two misses, or many tries, faint stones show a code that fits, and they update after every try.' }, { from: 7, text: 'A try that contradicts the shown clues gets a reminder. After two, faint stones help; the original clues stay visible.' }],
   },
   'frog-hop': {
     goal: 'Hop the frog along a number line.',
