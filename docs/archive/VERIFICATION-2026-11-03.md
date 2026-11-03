@@ -143,3 +143,10 @@
 - [PR #1156](https://github.com/rjdunlap/neo/pull/1156): [definition](../definitions/puppet-stage-4-6.md) of three story cards, a live shown-only premiere and the batch puppet-stage 2 check tier; nothing built.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`. Nothing else run.
 - Open: the build and its checks; four device and person checks in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-11-03 — Bouncy Launch level 8 Near or far (dive slice 4)
+
+- [PR #1157](https://github.com/rjdunlap/neo/pull/1157), code commit 98a3e175: toddler and preschool level 8 (two big clouds, ±0.2 windows, five near/far shots), `entryLevels: [8]`, voice, how-to; `game-reviewer` no findings.
+- Ran: `npm run typecheck`; full `npm test` 297 files, 4578 tests; bouncy-launch rule tests and registry tests (a test pins Cloud Hopper's `CLOUDS`); one-off Playwright probe (dev server localhost:5599, `VITE_SPEECH=off`) at toddler in portrait 768x1024 and landscape 1024x768: real drags, two deliberate misses (2 misses, 1 hint, preview on), five landings to the sticker, no page errors; portrait screenshot reviewed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=bouncy-launch FINGER_LEVELS=8` clean 18.5 s.
+- Not run: `npm run build` (CI builds), couch suites (unchanged), any device.
+- Open: whether a toddler or preschooler drags a little versus a lot, and the clouds read as targets ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).

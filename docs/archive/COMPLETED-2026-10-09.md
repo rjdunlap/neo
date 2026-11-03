@@ -2531,7 +2531,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--peg-garden-f
 
 Branch `claude/bouncy-launch-near-far`, PR #1157: [dive slice 4](../deep-dives/bouncy-launch.md#build-slices-in-order). Two big clouds centre at 0.2 and 0.8 of the strip (moved from the dive's sketch so the shortest pull counts as near and a clamped full pull as far), ±0.2 windows (about 28 pull units) with 0.2 of grass between; a star marks one, and five seeded shots alternate near and far from a seeded start. Voice `launch.near`, `launch.far`, `launch.short`, `launch.long`; a short or long landing is a miss, two misses turn on the preview arc and pull ring and count one hint; no numerals; the bigger-pull journal entry can file. Toddler order 1, 2, 8, 3 (1–8), preschool 2, 8, 3, 4 (2–8), `entryLevels: [8]`; lap, pre-K and school unchanged. Couch and Cloud Hopper are untouched (a test pins `CLOUDS`). The how-to card has level-8 step, finish and note lines.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--bouncy-launch-level-8-near-or-far-dive-slice-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--bouncy-launch-level-8-near-or-far-dive-slice-4).
 
 ## Orchard Rows fresh orchards and baskets (2026-11-03)
 
