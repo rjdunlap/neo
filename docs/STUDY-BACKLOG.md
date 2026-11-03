@@ -135,4 +135,4 @@ These are existing games awaiting research, not new game implementations. One do
 
 ## Dependencies outside research dispatch
 
-RW09–RW12 remain dependent on their upstream packets in [rework work items](rework/WORK-ITEMS.md#sequence). Welcome’s song/adoption and the two companion misfits are built (RW07 and RW05). The navigation cutover is approved but still starts only after the developer reports playing RW08 slices 1–2 on the iPad. The first expansion’s catalog audit should reuse this backlog and completed studies; it must not restart all subject research.
+RW09 is defined ([packet](rework/LEARNING-RECAP.md)); RW10–RW12 remain dependent on their upstream packets in [rework work items](rework/WORK-ITEMS.md#sequence). Welcome’s song/adoption and the two companion misfits are built (RW07 and RW05). The navigation cutover is approved but still starts only after the developer reports playing RW08 slices 1–2 on the iPad. The first expansion’s catalog audit should reuse this backlog and completed studies; it must not restart all subject research.

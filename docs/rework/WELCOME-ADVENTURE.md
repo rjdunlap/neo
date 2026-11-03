@@ -120,7 +120,7 @@ Round stickers stay the shell's (one per completed round). The project itself aw
 
 ## Learning intentions and evidence
 
-What a step can show, using only what the shell records today (`misses`, `hints`, level, completion). Richer signals are RW09's to add.
+What a step can show, using only what the shell records today (`misses`, `hints`, level, completion). Richer signals are RW09's to add. RW09's [packet](LEARNING-RECAP.md#one-vocabulary) renames these classes for the build.
 
 | Step | Intention | Observable action | Evidence class |
 | --- | --- | --- | --- |
