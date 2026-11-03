@@ -1,8 +1,8 @@
 import type { Rng } from '../../engine/random';
 
 /**
- * A flower bed is a square grid; each cell holds a flower (0 to size - 1) or nothing yet (null). The numbers are the bed's
- * own flowers: the puzzle's `kinds` says which of the five each one is drawn and named as.
+ * A flower bed is a grid, square except One row's single row; each cell holds a flower (0 to size - 1) or nothing yet
+ * (null). The numbers are the bed's own flowers: the puzzle's `kinds` says which of the five each one is drawn and named as.
  */
 export type Bed = (number | null)[][];
 
@@ -12,8 +12,10 @@ export type Rule = 'rows' | 'both' | 'boxes';
 export interface RowsPlan {
   /** For grown-ups. */
   name: string;
-  /** Rows, columns and kinds of flower. */
+  /** Columns and kinds of flower, and rows too unless `rows` says otherwise. */
   size: number;
+  /** One row: a bed of a single row (rows-only), with one empty spot that moves from bed to bed. */
+  rows?: number;
   rule: Rule;
   /** Empty spots in a fresh bed. A rows-only bed has one in each row, so this is `size`. */
   blanks: number;
@@ -34,7 +36,11 @@ export const PLANS: RowsPlan[] = [
   { name: 'Mend the bed: two flowers in one row swapped places; find them and swap them back (4 by 4)', size: 4, rule: 'both', blanks: 0, beds: 2, mend: true },
   { name: 'Hedge boxes: no flower repeats in a row, a column or a 2 by 2 hedge box (4 by 4)', size: 4, rule: 'boxes', blanks: 6, beds: 2 },
   { name: 'Hedge boxes with fewer flowers to start (4 by 4, ten spots empty)', size: 4, rule: 'boxes', blanks: 10, beds: 1 },
+  { name: 'One row of three flowers: plant the missing one (three rows in turn)', size: 3, rows: 1, rule: 'rows', blanks: 1, beds: 3 },
 ];
+
+/** How many rows the plan's beds have. */
+export const rowsOf = (plan: RowsPlan) => plan.rows ?? plan.size;
 
 export const planFor = (level: number): RowsPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -58,17 +64,15 @@ export function boxSpots(size: number, r: number, c: number): { r: number; c: nu
   return Array.from({ length: b * b }, (_, i) => ({ r: r0 + Math.floor(i / b), c: c0 + (i % b) }));
 }
 
-export const emptyBed = (size: number): Bed => Array.from({ length: size }, () => Array<number | null>(size).fill(null));
+export const emptyBed = (size: number, rows = size): Bed => Array.from({ length: rows }, () => Array<number | null>(size).fill(null));
 export const copyBed = (bed: Bed): Bed => bed.map((row) => [...row]);
 
 /** Which flowers can still go in a spot without repeating one already in its row (or column, or hedge box). */
 export function candidates(bed: Bed, rule: Rule, r: number, c: number): number[] {
-  const n = bed.length;
+  const n = bed[r].length;
   const used = new Set<number>();
-  for (let i = 0; i < n; i++) {
-    if (i !== c && bed[r][i] !== null) used.add(bed[r][i]!);
-    if (rule !== 'rows' && i !== r && bed[i][c] !== null) used.add(bed[i][c]!);
-  }
+  for (let i = 0; i < n; i++) if (i !== c && bed[r][i] !== null) used.add(bed[r][i]!);
+  if (rule !== 'rows') for (let i = 0; i < bed.length; i++) if (i !== r && bed[i][c] !== null) used.add(bed[i][c]!);
   if (rule === 'boxes') for (const s of boxSpots(n, r, c)) if ((s.r !== r || s.c !== c) && bed[s.r][s.c] !== null) used.add(bed[s.r][s.c]!);
   return Array.from({ length: n }, (_, f) => f).filter((f) => !used.has(f));
 }
@@ -78,10 +82,11 @@ export function candidates(bed: Bed, rule: Rule, r: number, c: number): number[]
  * box. A box clash is named only when the repeat shares neither the row nor the column, so the line she hears is the new rule.
  */
 export function clash(bed: Bed, rule: Rule, r: number, c: number, flower: number): { by: 'row' | 'column' | 'box'; r: number; c: number } | null {
-  const n = bed.length;
-  for (let i = 0; i < n; i++) {
-    if (i !== c && bed[r][i] === flower) return { by: 'row', r, c: i };
-    if (rule !== 'rows' && i !== r && bed[i][c] === flower) return { by: 'column', r: i, c };
+  const n = bed[r].length;
+  // Row and column together, nearest index first, as the square bed has always named them.
+  for (let i = 0; i < Math.max(n, bed.length); i++) {
+    if (i < n && i !== c && bed[r][i] === flower) return { by: 'row', r, c: i };
+    if (rule !== 'rows' && i < bed.length && i !== r && bed[i][c] === flower) return { by: 'column', r: i, c };
   }
   if (rule === 'boxes') for (const s of boxSpots(n, r, c)) if (s.r !== r && s.c !== c && bed[s.r][s.c] === flower) return { by: 'box', ...s };
   return null;
@@ -111,7 +116,7 @@ export function countSolutions(bed: Bed, rule: Rule, limit = 2): number {
     // Work on the emptiest-choice spot first, which keeps this quick on 5 by 5.
     let best: { r: number; c: number; options: number[] } | null = null;
     for (let r = 0; r < work.length; r++)
-      for (let c = 0; c < work.length; c++) {
+      for (let c = 0; c < work[r].length; c++) {
         if (work[r][c] !== null) continue;
         const options = candidates(work, rule, r, c);
         if (!best || options.length < best.options.length) best = { r, c, options };
@@ -134,7 +139,7 @@ export function solve(bed: Bed, rule: Rule): Bed | null {
   const go = (): boolean => {
     let best: { r: number; c: number; options: number[] } | null = null;
     for (let r = 0; r < work.length; r++)
-      for (let c = 0; c < work.length; c++) {
+      for (let c = 0; c < work[r].length; c++) {
         if (work[r][c] !== null) continue;
         const options = candidates(work, rule, r, c);
         if (!best || options.length < best.options.length) best = { r, c, options };
@@ -155,8 +160,8 @@ export function solve(bed: Bed, rule: Rule): Bed | null {
  * shifted by 0, b, 1, b + 1 … (0, 2, 1, 3 on a 4 by 4), which also fills every box, then shuffled only in ways that keep the
  * boxes: bands of rows, rows inside a band, stacks of columns, columns inside a stack, and the flowers themselves.
  */
-export function fullBed(size: number, rule: Rule, rng: Rng): Bed {
-  if (rule === 'rows') return Array.from({ length: size }, () => rng.shuffle(Array.from({ length: size }, (_, f) => f)));
+export function fullBed(size: number, rule: Rule, rng: Rng, height = size): Bed {
+  if (rule === 'rows') return Array.from({ length: height }, () => rng.shuffle(Array.from({ length: size }, (_, f) => f)));
   if (rule === 'boxes') {
     const b = boxSide(size);
     const order = () => rng.shuffle(Array.from({ length: b }, (_, i) => i)).flatMap((band) => rng.shuffle(Array.from({ length: b }, (_, i) => band * b + i)));
@@ -205,10 +210,10 @@ export function makePuzzle(plan: RowsPlan, rng: Rng): Puzzle {
   if (plan.mend) return makeMend(plan, rng);
   const kinds = chooseKinds(plan.size, rng);
   for (let attempt = 0; attempt < 60; attempt++) {
-    const solution = fullBed(plan.size, plan.rule, rng);
+    const solution = fullBed(plan.size, plan.rule, rng, rowsOf(plan));
     const start = copyBed(solution);
     if (plan.rule === 'rows') {
-      for (let r = 0; r < plan.size; r++) start[r][rng.int(0, plan.size - 1)] = null;
+      for (let r = 0; r < start.length; r++) start[r][rng.int(0, plan.size - 1)] = null;
       return { start, solution, kinds };
     }
     const spots = rng.shuffle(Array.from({ length: plan.size * plan.size }, (_, i) => ({ r: Math.floor(i / plan.size), c: i % plan.size })));
@@ -225,7 +230,17 @@ export function makePuzzle(plan: RowsPlan, rng: Rng): Puzzle {
   throw new Error(`could not make a bed with ${plan.blanks} empty spots for ${plan.name}`);
 }
 
-export const makeBeds = (plan: RowsPlan, rng: Rng): Puzzle[] => Array.from({ length: plan.beds }, () => makePuzzle(plan, rng));
+/** A round's beds. In One row the empty spot moves: each bed's gap is a different spot, in shuffled order, while there are spots to go round. */
+export function makeBeds(plan: RowsPlan, rng: Rng): Puzzle[] {
+  const beds = Array.from({ length: plan.beds }, () => makePuzzle(plan, rng));
+  if (rowsOf(plan) !== 1) return beds;
+  let gaps: number[] = [];
+  return beds.map(({ solution, kinds }) => {
+    if (!gaps.length) gaps = rng.shuffle(Array.from({ length: plan.size }, (_, c) => c));
+    const gap = gaps.pop()!;
+    return { start: [solution[0].map((v, c) => (c === gap ? null : v))], solution, kinds };
+  });
+}
 
 export type Hint =
   /** A flower the child planted that is not part of the way to finish: try another here. */
@@ -239,10 +254,10 @@ export type Hint =
  */
 export function hintFor(bed: Bed, given: boolean[][], solution: Bed, rule: Rule): Hint | null {
   for (let r = 0; r < bed.length; r++)
-    for (let c = 0; c < bed.length; c++) if (!given[r][c] && bed[r][c] !== null && bed[r][c] !== solution[r][c]) return { kind: 'fix', r, c };
+    for (let c = 0; c < bed[r].length; c++) if (!given[r][c] && bed[r][c] !== null && bed[r][c] !== solution[r][c]) return { kind: 'fix', r, c };
   let best: { r: number; c: number; options: number } | null = null;
   for (let r = 0; r < bed.length; r++)
-    for (let c = 0; c < bed.length; c++) {
+    for (let c = 0; c < bed[r].length; c++) {
       if (bed[r][c] !== null) continue;
       const options = candidates(bed, rule, r, c).length;
       if (!best || options < best.options) best = { r, c, options };
@@ -258,7 +273,7 @@ export function hintFor(bed: Bed, given: boolean[][], solution: Bed, rule: Rule)
 export function nextPlanting(bed: Bed, solution: Bed, rule: Rule, selected: number): { r: number; c: number; flower: number } | null {
   let best: { r: number; c: number; flower: number; key: number } | null = null;
   for (let r = 0; r < bed.length; r++)
-    for (let c = 0; c < bed.length; c++) {
+    for (let c = 0; c < bed[r].length; c++) {
       if (bed[r][c] !== null) continue;
       const flower = solution[r][c]!;
       const key = candidates(bed, rule, r, c).length * 2 + (flower === selected ? 0 : 1);
@@ -289,7 +304,7 @@ export function nextMove(
   bed: Bed, given: boolean[][], target: Bed, rule: Rule, selected: number,
 ): { lift: true; r: number; c: number } | { lift: false; r: number; c: number; flower: number } | null {
   for (let r = 0; r < bed.length; r++)
-    for (let c = 0; c < bed.length; c++) if (!given[r][c] && bed[r][c] !== null && bed[r][c] !== target[r][c]) return { lift: true, r, c };
+    for (let c = 0; c < bed[r].length; c++) if (!given[r][c] && bed[r][c] !== null && bed[r][c] !== target[r][c]) return { lift: true, r, c };
   const step = nextPlanting(bed, target, rule, selected);
   return step && { lift: false, ...step };
 }

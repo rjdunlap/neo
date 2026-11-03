@@ -2,19 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   candidates, clash, clashing, copyBed, countSolutions, deadEnds, emptyBed, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, makePuzzle,
-  boxSpots, fullBed, mendTarget, nextMove, nextPlanting, PLANS, planFor, sameBox, solve, type Bed,
+  boxSpots, fullBed, mendTarget, nextMove, nextPlanting, PLANS, planFor, rowsOf, sameBox, solve, type Bed,
 } from './logic';
 
 const givenOf = (start: Bed) => start.map((row) => row.map((v) => v !== null));
 /** The beds she fills from empty spots; Mend the bed (level 7) starts full and is tested on its own. */
 const FILL = PLANS.filter((p) => !p.mend);
 const MEND = PLANS[6];
+const ONE_ROW = PLANS[9];
 
 describe('Garden Rows', () => {
   it('climbs from small beds to bigger ones with fewer flowers to start', () => {
-    // The climb holds within each rule, in ID order; a new rule (hedge boxes) starts again on a smaller bed.
+    // The climb holds within each rule, in ID order; a new rule (hedge boxes) starts again on a smaller bed. One row (10) is
+    // the preschool entry, placed before level 1 by preschool's order, so it is left out of the climb.
     for (const rule of ['rows', 'both', 'boxes'] as const) {
-      const ofRule = FILL.filter((p) => p.rule === rule);
+      const ofRule = FILL.filter((p) => p.rule === rule && p !== ONE_ROW);
       expect(ofRule.length, rule).toBeGreaterThan(0);
       ofRule.slice(1).forEach((p, i) => {
         const before = ofRule[i];
@@ -118,7 +120,7 @@ describe('Garden Rows', () => {
         const bed = copyBed(start);
         // Plant one wrong flower that fits, if there is one.
         let wrong: { r: number; c: number } | null = null;
-        for (let r = 0; r < plan.size && !wrong; r++)
+        for (let r = 0; r < bed.length && !wrong; r++)
           for (let c = 0; c < plan.size && !wrong; c++)
             if (bed[r][c] === null) {
               const f = candidates(bed, plan.rule, r, c).find((x) => x !== solution[r][c]);
@@ -408,6 +410,51 @@ describe('Garden Rows', () => {
           expect(byBot).toEqual(solution);
         }
       }
+    });
+  });
+
+  describe('One row (level 10, the preschool entry)', () => {
+    it('is one row of three spots with one empty, three beds in a round', () => {
+      expect([ONE_ROW.size, rowsOf(ONE_ROW), ONE_ROW.rule, ONE_ROW.blanks, ONE_ROW.beds]).toEqual([3, 1, 'rows', 1, 3]);
+      for (let seed = 1; seed <= 60; seed++)
+        for (const { start, solution } of makeBeds(ONE_ROW, new Rng(seed))) {
+          expect(start).toHaveLength(1);
+          expect(start[0]).toHaveLength(3);
+          expect(start[0].filter((v) => v === null)).toHaveLength(1);
+          expect([...solution[0]].sort()).toEqual([0, 1, 2]);
+          const gap = start[0].indexOf(null);
+          // Exactly one flower fits the empty spot, and it is the missing one.
+          expect(candidates(start, 'rows', 0, gap)).toEqual([solution[0][gap]]);
+          expect(countSolutions(start, 'rows')).toBe(1);
+        }
+    });
+
+    it('moves the empty spot: each of the three beds has a different spot empty', () => {
+      for (let seed = 1; seed <= 60; seed++) {
+        const gaps = makeBeds(ONE_ROW, new Rng(seed)).map(({ start }) => start[0].indexOf(null));
+        expect([...gaps].sort()).toEqual([0, 1, 2]);
+      }
+      expect(makeBeds(ONE_ROW, new Rng(4))).toEqual(makeBeds(ONE_ROW, new Rng(4)));
+    });
+
+    it('names a repeat anywhere in the row, the last spot included, and never a column', () => {
+      const bed: Bed = [[0, null, 2]];
+      expect(clash(bed, 'rows', 0, 1, 2)).toEqual({ by: 'row', r: 0, c: 2 });
+      expect(clash(bed, 'rows', 0, 1, 0)).toEqual({ by: 'row', r: 0, c: 0 });
+      expect(clash(bed, 'rows', 0, 1, 1)).toBeNull();
+      expect(candidates([[null, 1, 2]], 'rows', 0, 0)).toEqual([0]);
+      expect(candidates([[0, 1, null]], 'rows', 0, 2)).toEqual([2]);
+      expect(isSolved([[2, 0, 1]], 'rows')).toBe(true);
+      expect(isSolved([[2, 2, 1]], 'rows')).toBe(false);
+    });
+
+    it('the hint and the ghost finger lead to the missing flower in the empty spot', () => {
+      for (let seed = 1; seed <= 30; seed++)
+        for (const { start, solution } of makeBeds(ONE_ROW, new Rng(seed))) {
+          const gap = start[0].indexOf(null);
+          expect(hintFor(start, givenOf(start), solution, 'rows')).toEqual({ kind: 'plant', r: 0, c: gap, flower: solution[0][gap] });
+          expect(nextMove(start, givenOf(start), solution, 'rows', 0)).toEqual({ lift: false, r: 0, c: gap, flower: solution[0][gap] });
+        }
     });
   });
 });
