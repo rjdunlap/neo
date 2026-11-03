@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  affordable, BANDS, BATCHES, batchCost, bestChoice, demand, EVENT_DELTA, EVENTS, forecastChoice, helps, insight, makeWeek, MIN_PURSE, PLANS, planFor, PRICE_DROP, priceChoice,
-  rating, sellDay, settle, START_PURSE, WEATHERS, type Day, type Row, type StandPlan,
+  affordable, BANDS, BATCHES, batchCost, bestChoice, boatTalk, cheaperBoat, dayPerTwo, demand, EVENT_DELTA, EVENTS, forecastChoice, helps, insight, makeWeek, MIN_PURSE, PER_TWO,
+  PLANS, planFor, perTwo, PRICE_DROP, priceChoice, rating, SAME_OFFERS, sellDay, settle, START_PURSE, WEATHERS, type Day, type Row, type StandPlan,
 } from './logic';
 
 const SEEDS = Array.from({ length: 200 }, (_, i) => i + 1);
@@ -14,7 +14,7 @@ function play(plan: StandPlan, week: Day[], choose: (day: Day, i: number, purse:
   let purse = START_PURSE;
   week.forEach((day, i) => {
     const { made, price } = choose(day, i, purse, rows);
-    expect(affordable(plan, purse, made), `day ${i} affordable`).toBe(true);
+    expect(affordable(plan, purse, made, day), `day ${i} affordable`).toBe(true);
     const row = sellDay(plan, day, i, made, price);
     rows.push(row);
     if (plan.purse) {
@@ -26,19 +26,20 @@ function play(plan: StandPlan, week: Day[], choose: (day: Day, i: number, purse:
   return { rows, purses };
 }
 
-const randomChooser = (plan: StandPlan, rng: Rng) => (_d: Day, _i: number, purse: number, _rows?: Row[]) => ({
-  made: rng.pick(BATCHES.filter((b) => affordable(plan, purse, b))),
+const randomChooser = (plan: StandPlan, rng: Rng) => (d: Day, _i: number, purse: number, _rows?: Row[]) => ({
+  made: rng.pick(BATCHES.filter((b) => affordable(plan, purse, b, d))),
   price: rng.pick(plan.prices),
 });
 
 describe('Lemonade Stand plans', () => {
   it('climbs from the weather alone to a week with a purse, and clamps the level', () => {
-    expect(PLANS.map((p) => p.days)).toEqual([3, 3, 4, 5]);
-    expect(PLANS.map((p) => p.events)).toEqual([false, true, true, true]);
-    expect(PLANS.map((p) => priceChoice(p))).toEqual([false, false, true, true]);
-    expect(PLANS.map((p) => p.purse)).toEqual([false, false, false, true]);
+    expect(PLANS.map((p) => p.days)).toEqual([3, 3, 4, 5, 4]);
+    expect(PLANS.map((p) => p.events)).toEqual([false, true, true, true, true]);
+    expect(PLANS.map((p) => priceChoice(p))).toEqual([false, false, true, true, true]);
+    expect(PLANS.map((p) => p.purse)).toEqual([false, false, false, true, true]);
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(99)).toBe(PLANS[3]);
+    expect(planFor(99)).toBe(PLANS[4]);
+    expect(PLANS.map((p) => p.boats)).toEqual([undefined, undefined, undefined, undefined, 'same']);
     for (const p of PLANS) expect(p.name.length).toBeGreaterThan(10);
   });
 });
@@ -148,7 +149,7 @@ describe('Lemonade Stand selling', () => {
         expect(r.sold + r.unserved, 'wanted').toBe(r.wanted);
         expect(r.sold).toBe(Math.min(r.made, r.wanted));
         expect(r.shells).toBe(r.sold * r.price);
-        expect(r.cost).toBe(plan.purse ? batchCost(r.made) : 0);
+        expect(r.cost).toBe(plan.purse ? batchCost(r.made, dayPerTwo(week[r.day])) : 0);
         expect(r.profit).toBe(r.shells - r.cost);
         expect(r.left).toBeGreaterThanOrEqual(0);
         expect(r.unserved).toBeGreaterThanOrEqual(0);
@@ -185,8 +186,8 @@ describe('Lemonade Stand purse', () => {
     const plan = PLANS[3];
     const policies: [string, (rng: Rng) => (d: Day, i: number, purse: number, rows: Row[]) => { made: number; price: number }][] = [
       ['random', (rng) => randomChooser(plan, rng)],
-      ['always the biggest batch', () => (_d, _i, purse) => ({ made: BATCHES.filter((b) => affordable(plan, purse, b)).at(-1)!, price: 1 })],
-      ['always the dearest', () => (_d, _i, purse) => ({ made: BATCHES.filter((b) => affordable(plan, purse, b)).at(-1)!, price: 3 })],
+      ['always the biggest batch', () => (d, _i, purse) => ({ made: BATCHES.filter((b) => affordable(plan, purse, b, d)).at(-1)!, price: 1 })],
+      ['always the dearest', () => (d, _i, purse) => ({ made: BATCHES.filter((b) => affordable(plan, purse, b, d)).at(-1)!, price: 3 })],
       ['always the smallest', () => () => ({ made: BATCHES[0], price: 1 })],
     ];
     for (const [name, policy] of policies) {
@@ -401,6 +402,119 @@ describe('Lemonade Stand demonstration', () => {
           if (plan.purse) purse = settle(purse, row).purse;
         });
       }
+    }
+  });
+});
+
+describe('Lemonade Stand level 5: two lemon boats', () => {
+  const plan = PLANS[4];
+  const weeks = SEEDS.map((seed) => makeWeek(plan, new Rng(seed)));
+  const days = weeks.flat();
+
+  it('gives every day of a four-day week two boats, and the earlier levels none', () => {
+    for (const w of weeks) {
+      expect(w).toHaveLength(4);
+      for (const d of w) {
+        expect(d.boats).toHaveLength(2);
+        expect(cheaperBoat(d.boats!)).toBeGreaterThanOrEqual(0);
+      }
+    }
+    for (const p of PLANS.slice(0, 4)) for (const seed of SEEDS) for (const d of makeWeek(p, new Rng(seed))) expect('boats' in d).toBe(false);
+    // Both sides turn up as the cheaper boat.
+    expect(new Set(days.map((d) => cheaperBoat(d.boats!)))).toEqual(new Set([0, 1]));
+    // The weather and events are drawn before the boats, so they match the level 4 week of a plan with the same shape.
+    const base = { ...PLANS[3], days: 4, purse: true };
+    for (const seed of SEEDS) {
+      const a = makeWeek(plan, new Rng(seed)).map(({ boats: _b, ...d }) => d);
+      expect(a).toEqual(makeWeek(base, new Rng(seed)));
+    }
+  });
+
+  it('keeps every offer pair fair: shared lemons or shells, one strictly cheaper, whole prices, never dearer than a shell a lemon', () => {
+    for (const [a, b] of SAME_OFFERS) {
+      expect(a.lemons === b.lemons || a.shells === b.shells).toBe(true);
+      expect(perTwo(a)).not.toBe(perTwo(b));
+      for (const o of [a, b]) {
+        expect(Number.isInteger(perTwo(o))).toBe(true);
+        for (const cups of BATCHES) expect(Number.isInteger(batchCost(cups, perTwo(o)))).toBe(true);
+      }
+      expect(Math.min(perTwo(a), perTwo(b))).toBeLessThanOrEqual(2);
+      expect(cheaperBoat([a, b])).toBe(perTwo(a) < perTwo(b) ? 0 : 1);
+      expect(cheaperBoat([b, a])).toBe(perTwo(b) < perTwo(a) ? 0 : 1);
+    }
+    expect(START_PURSE).toBeGreaterThanOrEqual(batchCost(12, Math.min(...SAME_OFFERS.map(([a, b]) => Math.min(perTwo(a), perTwo(b))))));
+    for (const d of days) expect(affordable(plan, START_PURSE, 12, d)).toBe(true);
+    expect(dayPerTwo({})).toBe(PER_TWO);
+  });
+
+  it('never loses shells with the best or the sign-only choice, from any purse the host leaves', () => {
+    for (const [i, day] of days.entries()) {
+      for (let purse = MIN_PURSE; purse <= START_PURSE + 6; purse++) {
+        const best = bestChoice(plan, day, 0, purse);
+        expect(best.row.profit, `day ${i} purse ${purse}`).toBeGreaterThanOrEqual(0);
+        const f = forecastChoice(plan, day, purse);
+        expect(affordable(plan, purse, f.made, day)).toBe(true);
+        expect(sellDay(plan, { ...day, noise: 1 }, 0, f.made, f.price).profit).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it('says boat numbers that match the offers and points at the cheaper side', () => {
+    for (const d of days) {
+      const talk = boatTalk(d.boats!);
+      const [l, r] = d.boats!;
+      expect(talk.cheap).toBe(Math.min(perTwo(l), perTwo(r)));
+      expect(talk.dear).toBe(Math.max(perTwo(l), perTwo(r)));
+      expect(talk.cheap).toBeLessThan(talk.dear);
+      expect(talk.side).toBe(cheaperBoat(d.boats!) === 0 ? 'left' : 'right');
+      expect(dayPerTwo(d)).toBe(talk.cheap);
+    }
+  });
+
+  it('offers only the boat comparison until the boat is chosen, then the usual help', () => {
+    for (const d of days) {
+      const before = helps(plan, d, [], false);
+      expect(before).toHaveLength(1);
+      expect(before[0]).toEqual({ kind: 'boat', rows: [], vars: boatTalk(d.boats!) });
+      expect(helps(plan, d, [], true).some((h) => h.kind === 'boat')).toBe(false);
+      expect(helps(plan, d, []).some((h) => h.kind === 'boat')).toBe(false);
+    }
+    // Days without boats never get the boat help, chosen or not.
+    expect(helps(PLANS[3], { weather: 'sunny', event: null, noise: 0 }, [], false).some((h) => h.kind === 'boat')).toBe(false);
+  });
+
+  it('records the shells the cheaper boat saved, and nothing off the boat level', () => {
+    for (const seed of SEEDS) {
+      const rng = new Rng(seed);
+      const week = makeWeek(plan, rng);
+      const { rows } = play(plan, week, randomChooser(plan, rng));
+      for (const r of rows) {
+        const talk = boatTalk(week[r.day].boats!);
+        expect(r.saved).toBe(batchCost(r.made, talk.dear) - batchCost(r.made, talk.cheap));
+        expect(r.saved).toBeGreaterThan(0);
+        expect(r.cost).toBe(batchCost(r.made, talk.cheap));
+      }
+    }
+    for (const p of PLANS.slice(0, 4)) for (const seed of SEEDS) {
+      const rng = new Rng(seed);
+      const { rows } = play(p, makeWeek(p, rng), randomChooser(p, rng));
+      for (const r of rows) expect(r.saved).toBe(0);
+    }
+  });
+
+  it('ends the round on the boats, with the total saved, and no other level does', () => {
+    for (const seed of SEEDS) {
+      const rng = new Rng(seed);
+      const { rows } = play(plan, makeWeek(plan, rng), randomChooser(plan, rng));
+      const found = insight(plan, rows);
+      expect(found.kind).toBe('boats');
+      expect(found.vars.n).toBe(rows.reduce((n, r) => n + r.saved, 0));
+      expect(found.rows).toEqual(rows.map((r) => r.day));
+    }
+    for (const p of PLANS.slice(0, 4)) for (const seed of SEEDS) {
+      const rng = new Rng(seed);
+      const { rows } = play(p, makeWeek(p, rng), randomChooser(p, rng));
+      expect(insight(p, rows).kind).not.toBe('boats');
     }
   });
 });

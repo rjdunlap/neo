@@ -19,7 +19,13 @@ export const BATCHES = [4, 8, 12] as const;
 /** On the purse level, a lemon makes two cups and costs one shell: a batch of 4 costs 2 shells, 8 costs 4, 12 costs 6. */
 export const CUPS_PER_LEMON = 2;
 export const LEMON_COST = 1;
-export const batchCost = (cups: number) => (cups / CUPS_PER_LEMON) * LEMON_COST;
+/** Shells for two lemons (one small batch of 4 cups) at the stand's usual lemon price. */
+export const PER_TWO = 2 * LEMON_COST;
+/**
+ * What a batch costs, from the shells two lemons cost. Two lemons make the smallest batch (4 cups), so the price is
+ * kept per two lemons and every batch costs whole shells, at the usual price and at either boat's.
+ */
+export const batchCost = (cups: number, perTwo = PER_TWO) => (cups / (2 * CUPS_PER_LEMON)) * perTwo;
 /** The purse a market week starts with: enough for any batch on the first day. */
 export const START_PURSE = batchCost(BATCHES.at(-1)!);
 /** The smallest batch's cost. A purse never starts a day below this: the host tops it up. */
@@ -40,6 +46,11 @@ export interface StandPlan {
   prices: readonly number[];
   /** Cups cost shells to make, and the purse carries from day to day. */
   purse: boolean;
+  /**
+   * Each morning two lemon boats offer lemons and she taps the cheaper one before choosing a batch. `same`: the two
+   * offers share the number of lemons or the number of shells.
+   */
+  boats?: 'same';
   name: string;
 }
 
@@ -48,15 +59,52 @@ export const PLANS: StandPlan[] = [
   { days: 3, events: true, prices: [1], purse: false, name: 'Three days with an event on the forecast: a ferry or a quiet day' },
   { days: 4, events: true, prices: [1, 2, 3], purse: false, name: 'Four days: choose a price in shells as well as the cups' },
   { days: 5, events: true, prices: [1, 2, 3], purse: true, name: 'A market week: cups cost shells to make, so read the profit' },
+  { days: 4, events: true, prices: [1, 2, 3], purse: true, boats: 'same', name: 'Two lemon boats: tap the boat that sells lemons cheaper, then run the stand' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+
+/** A boat's offer: this many lemons for this many shells. */
+export interface Offer {
+  lemons: number;
+  shells: number;
+}
+
+/** Shells for two lemons at an offer, the number the pet compares (always whole for the offers in the pools). */
+export const perTwo = (o: Offer) => (o.shells * 2) / o.lemons;
+
+/**
+ * The level-5 offer pairs: the same lemons or the same shells, one boat strictly cheaper, and the cheaper boat never
+ * dearer than a shell a lemon, so the opening purse still pays for any batch and a day that keeps shells is always open.
+ */
+export const SAME_OFFERS: readonly (readonly [Offer, Offer])[] = [
+  [{ lemons: 2, shells: 1 }, { lemons: 2, shells: 2 }],
+  [{ lemons: 2, shells: 1 }, { lemons: 2, shells: 3 }],
+  [{ lemons: 2, shells: 2 }, { lemons: 2, shells: 4 }],
+  [{ lemons: 4, shells: 2 }, { lemons: 4, shells: 4 }],
+  [{ lemons: 4, shells: 2 }, { lemons: 2, shells: 2 }],
+  [{ lemons: 4, shells: 4 }, { lemons: 2, shells: 4 }],
+];
 
 export interface Day {
   weather: Weather;
   event: StandEvent | null;
   /** Friends beyond the weather's lowest day (0 to 2): the same weather is never exactly the same crowd. */
   noise: number;
+  /** The morning's two boats, left then right (boat levels only). */
+  boats?: readonly [Offer, Offer];
+}
+
+/** Which of the day's boats (0 left, 1 right) sells lemons cheaper. */
+export const cheaperBoat = (boats: readonly [Offer, Offer]) => (perTwo(boats[0]) < perTwo(boats[1]) ? 0 : 1);
+
+/** Shells for two lemons today: the cheaper boat's offer (a wrong boat is never bought from), or the usual price. */
+export const dayPerTwo = (day: Pick<Day, 'boats'>) => (day.boats ? perTwo(day.boats[cheaperBoat(day.boats)]) : PER_TWO);
+
+/** What the pet says to compare the two boats: shells for two lemons at each, and which side is cheaper. */
+export function boatTalk(boats: readonly [Offer, Offer]): { cheap: number; dear: number; side: 'left' | 'right' } {
+  const i = cheaperBoat(boats);
+  return { cheap: perTwo(boats[i]), dear: perTwo(boats[1 - i]), side: i === 0 ? 'left' : 'right' };
 }
 
 export const priceChoice = (plan: StandPlan) => plan.prices.length > 1;
@@ -86,8 +134,16 @@ export function makeWeek(plan: StandPlan, rng: Rng): Day[] {
       const days = rng.shuffle(weathers.map((_, i) => i)).slice(0, count);
       for (const i of days) events[i] = rng.pick(EVENTS);
     }
-    const week = weathers.map((weather, i) => ({ weather, event: events[i], noise: rng.int(0, 2) }));
-    if (week.every(clean)) return week;
+    const week: Day[] = weathers.map((weather, i) => ({ weather, event: events[i], noise: rng.int(0, 2) }));
+    if (!week.every(clean)) continue;
+    // Drawn after everything else, so the weeks of the levels without boats stay exactly as they were.
+    if (plan.boats) {
+      for (const day of week) {
+        const pair = rng.pick(SAME_OFFERS);
+        day.boats = rng.chance(0.5) ? [pair[0], pair[1]] : [pair[1], pair[0]];
+      }
+    }
+    return week;
   }
 }
 
@@ -115,6 +171,8 @@ export interface Row {
   /** Shells spent on the lemons for the cups (purse level only). */
   cost: number;
   profit: number;
+  /** Shells the cheaper boat saved against the dearer one on this batch (boat levels only). */
+  saved: number;
 }
 
 /** Open the stand: what happens on a day for a chosen batch and price. */
@@ -122,12 +180,13 @@ export function sellDay(plan: StandPlan, day: Day, index: number, made: number, 
   const wanted = demand(day, price);
   const sold = Math.min(made, wanted);
   const shells = sold * price;
-  const cost = plan.purse ? batchCost(made) : 0;
-  return { day: index, weather: day.weather, event: day.event, price, made, wanted, sold, left: made - sold, unserved: wanted - sold, shells, cost, profit: shells - cost };
+  const cost = plan.purse ? batchCost(made, dayPerTwo(day)) : 0;
+  const saved = plan.purse && day.boats ? batchCost(made, boatTalk(day.boats).dear) - cost : 0;
+  return { day: index, weather: day.weather, event: day.event, price, made, wanted, sold, left: made - sold, unserved: wanted - sold, shells, cost, profit: shells - cost, saved };
 }
 
-/** Can the purse pay for this batch? Always true away from the purse level. */
-export const affordable = (plan: StandPlan, purse: number, cups: number) => !plan.purse || batchCost(cups) <= purse;
+/** Can the purse pay for this batch (at the day's lemon price)? Always true away from the purse level. */
+export const affordable = (plan: StandPlan, purse: number, cups: number, day: Pick<Day, 'boats'> = {}) => !plan.purse || batchCost(cups, dayPerTwo(day)) <= purse;
 
 /**
  * Carry the purse to the next morning. A purse that cannot pay for the smallest batch is topped up by the host
@@ -157,7 +216,7 @@ export function rating(row: Row): Rating {
 export function bestChoice(plan: StandPlan, day: Day, index: number, purse = START_PURSE): { made: number; price: number; row: Row } {
   let best: { made: number; price: number; row: Row } | null = null;
   for (const made of BATCHES) {
-    if (!affordable(plan, purse, made)) continue;
+    if (!affordable(plan, purse, made, day)) continue;
     for (const price of plan.prices) {
       const row = sellDay(plan, day, index, made, price);
       if (!best || row.profit > best.row.profit) best = { made, price, row };
@@ -172,7 +231,7 @@ const heat = (w: Weather) => WEATHERS.indexOf(w);
 /** Rows she can fairly set side by side: the same event (or none), and the same price. */
 const sameKind = (a: Row, b: Row) => a.event === b.event && a.price === b.price;
 
-export type HelpKind = 'out' | 'left' | 'good' | 'other' | 'event' | 'weather' | 'price';
+export type HelpKind = 'boat' | 'out' | 'left' | 'good' | 'other' | 'event' | 'weather' | 'price';
 
 export interface Help {
   kind: HelpKind;
@@ -184,9 +243,10 @@ export interface Help {
 /**
  * Everything true and useful the pet can say before the stand opens today, most useful first. Asking again steps
  * through the list. It only looks at rows already in the table, so the first day has no row to point at and says how
- * the forecast works instead.
+ * the forecast works instead. Before the morning's boat is chosen, the only help is how to compare the two boats.
  */
-export function helps(plan: StandPlan, today: Day, rows: Row[]): Help[] {
+export function helps(plan: StandPlan, today: Day, rows: Row[], boatChosen = true): Help[] {
+  if (today.boats && !boatChosen) return [{ kind: 'boat', rows: [], vars: boatTalk(today.boats) }];
   const out: Help[] = [];
   const same = rows.filter((r) => r.weather === today.weather && r.event === today.event);
   const last = same.at(-1);
@@ -211,7 +271,7 @@ export function helps(plan: StandPlan, today: Day, rows: Row[]): Help[] {
   return out;
 }
 
-export type InsightKind = 'price' | 'weather' | 'best' | 'right' | 'plain';
+export type InsightKind = 'boats' | 'price' | 'weather' | 'best' | 'right' | 'plain';
 
 export interface Insight {
   kind: InsightKind;
@@ -223,8 +283,11 @@ export interface Insight {
  * The one comparison the pet points out at the end of a round. Prefers a fair pair the table can show: the same
  * weather and event at two prices, then two weathers at the same event and price. Otherwise, when shells are on the
  * table, the day that kept the most; before that, a day whose batch was just right; otherwise just that the week is done.
+ * On the boat levels the comparison is the boats': the shells the cheaper boats saved over the week's batches.
  */
 export function insight(plan: StandPlan, rows: Row[]): Insight {
+  const saved = rows.reduce((n, r) => n + r.saved, 0);
+  if (plan.boats && saved > 0) return { kind: 'boats', rows: rows.map((r) => r.day), vars: { n: saved } };
   if (priceChoice(plan)) {
     for (const a of rows) {
       for (const b of rows) {
@@ -251,8 +314,8 @@ export function insight(plan: StandPlan, rows: Row[]): Insight {
   return { kind: 'plain', rows: [], vars: {} };
 }
 
-/** What the sign shows before the stand opens: the weather and the event, never the day's noise. */
-export type Forecast = Pick<Day, 'weather' | 'event'>;
+/** What the sign shows before the stand opens: the weather and the event (and the morning's boats), never the day's noise. */
+export type Forecast = Pick<Day, 'weather' | 'event' | 'boats'>;
 
 /**
  * The batch and price a sensible child picks from the sign alone (the demonstration's choice). It takes the middle of

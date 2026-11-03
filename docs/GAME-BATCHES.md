@@ -871,6 +871,8 @@ Proof: new-game tier, as the [definition's check tier](definitions/maker-lane.md
 
 ### lemonade-stand 1: Two lemon boats
 
+**Built 2026-11-02 ([PR #1124](https://github.com/rjdunlap/neo/pull/1124)):** level 5 and the co-play hint; checks in [VERIFICATION](VERIFICATION.md#2026-11-02--lemonade-stand-level-5-two-lemon-boats-lemonade-stand-batch-1).
+
 - **`lemonade-stand`, level 5 Two lemon boats, with the co-play hint (dive slice 1)** (extends the built game, new-interaction tier; school; Cozy Village unchanged): each morning two boats offer lemons with the same lemons or the same shells ("2 for 1" vs "2 for 2", "4 for 2" vs "2 for 2"); she taps the cheaper boat, then chooses a batch and a price as level 4 does, at the chosen boat's lemon price. A dearer boat is a gentle boing, a spoken "for 2 lemons" comparison and one counted miss; two misses that morning glow the cheaper boat and count one hint, and a day counts at most one hint whether from the glow or the lightbulb. Batch and price stay experiments. `batchCost`, `bestChoice` and `forecastChoice` take a lemon price; `helps()` gains a boat line and `insight()` the savings; voice lines `lemon.boat.*`; adds the game's `coplayHint` (weather reporter and first friend). [Dive](deep-dives/lemonade-stand.md#build-slices-in-order), [ladder](deep-dives/lemonade-stand.md#proposed-ladder)
 
 Files expected: `src/games/lemonade-stand/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, `src/content/voice-script.ts`, `src/content/howto.ts` (a step scoped `{ from: 5 }`), `scripts/browser/suites/woods-batch.mjs`, the README row and `docs/GAMES.md`.

@@ -2,8 +2,9 @@ import { Container, Graphics } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
 import { puffs } from '../../art/shapes';
 import { label } from '../../ui/text';
+import { coinArt } from '../market-stall';
 import { weatherIcon } from '../weather-wardrobe';
-import type { StandEvent, Weather } from './logic';
+import type { Offer, StandEvent, Weather } from './logic';
 
 const line = (color: number, width = 4) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 const GLASS = 0x8fb8c8;
@@ -116,5 +117,46 @@ export function bulbArt(): Container {
   g.poly([-11, 12, 11, 12, 8, 30, -8, 30]).fill(0xe9e9f0).stroke(line(ink, 4));
   g.moveTo(-7, -2).quadraticCurveTo(0, -14, 7, -2).stroke(line(swatch.yellow.line, 3));
   c.addChild(g);
+  return c;
+}
+
+/** A lemon lying on its side, about 30 wide. */
+export function lemonArt(): Graphics {
+  const g = new Graphics();
+  g.ellipse(0, 0, 15, 11).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
+  g.circle(15, 0, 3).fill(swatch.yellow.line);
+  g.ellipse(-5, -4, 5, 2.5).fill({ color: 0xffffff, alpha: 0.6 });
+  return g;
+}
+
+/**
+ * A lemon boat for the jetty: a hull on the water and, on its mast, a sign of the offer drawn as lemons over shells,
+ * so it is counted rather than read. About 210 wide and 200 tall; the waterline is at (0, 0).
+ */
+export function boatArt(offer: Offer, sail: number, sailLine: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.moveTo(-104, 44).quadraticCurveTo(-52, 34, 0, 44).quadraticCurveTo(52, 54, 104, 44).stroke(line(swatch.blue.fill, 5));
+  g.rect(-4, -168, 8, 172).fill(wood.fill).stroke(line(wood.line, 3));
+  g.poly([6, -168, 44, -156, 6, -144]).fill(sail).stroke(line(sailLine, 3));
+  g.poly([-100, 0, 100, 0, 80, 38, -80, 38]).fill(sail).stroke(line(sailLine, 5));
+  g.rect(-90, 8, 180, 8).fill({ color: 0xffffff, alpha: 0.7 });
+  c.addChild(g, boardArt(176, 128));
+  const sign = c.children[1];
+  sign.position.set(0, -78);
+  // The offer: a row of lemons over a row of shells.
+  for (let i = 0; i < offer.lemons; i++) {
+    const l = lemonArt();
+    l.position.set((i - (offer.lemons - 1) / 2) * 36, -110);
+    c.addChild(l);
+  }
+  for (let i = 0; i < offer.shells; i++) {
+    const coin = coinArt(1);
+    coin.scale.set(0.5);
+    coin.position.set((i - (offer.shells - 1) / 2) * 36, -56);
+    c.addChild(coin);
+  }
+  const divider = new Graphics().moveTo(-70, -83).lineTo(70, -83).stroke(line(wood.line, 3));
+  c.addChild(divider);
   return c;
 }
