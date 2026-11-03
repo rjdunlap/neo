@@ -1499,7 +1499,7 @@ Proof: new-band tier: typecheck, unit tests including the lands, registry band a
 
 ### word-search 1: Fresh themes and root families
 
-- **`word-search`, Fresh themes and root families (dive slice 1)** (existing-game content): six new everyday themes of at least twelve plain words, two root-family themes (*Words that carry*, *Words that look*) drawn only for plans they can fill, the pet's one-line root meaning (`wordsearch.root`), and RAIN removed from `weather`. [Dive](deep-dives/word-search.md#build-slices-in-order)
+- **`word-search`, Fresh themes and root families (dive slice 1)** (built 2026-11-03; existing-game content; the root line became `wordsearch.root-port` and `wordsearch.root-spect`, SPECTATE and ASPECT replaced EXPECT): six new everyday themes of at least twelve plain words, two root-family themes (*Words that carry*, *Words that look*) drawn only for plans they can fill, the pet's one-line root meaning (`wordsearch.root`), and RAIN removed from `weather`. [Dive](deep-dives/word-search.md#build-slices-in-order)
 
 Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `docs/GAMES.md`.
 

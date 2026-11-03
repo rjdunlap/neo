@@ -144,7 +144,7 @@ Product details are **recalled** unless marked; nothing was played.
 2. **VW1 build** (**built 2026-10-24**, PR #937; see [what was built](#what-was-built-vw1-word-glue-levels-13)).
 3. **VW2 define and build: levels 4–5** after a child has played level 3.
 4. **VW3 *Name the new thing*** and **VW4 Suffix Workshop** define, after VW2.
-5. **VW6 first step: a Word Search root-family theme list** (content only, after an ordinary review; queued 2026-11-01 as [Word Search batch 1](../word-search.md#build-slices-in-order)); Root Words and Root Garden stay sketches until decision 4.
+5. **VW6 first step: a Word Search root-family theme list** (content only, after an ordinary review; built 2026-11-03 as [Word Search batch 1](../word-search.md#build-slices-in-order)); Root Words and Root Garden stay sketches until decision 4.
 6. **VW7 cards** to the off-screen companions work after an ordinary content review.
 
 ## What was built

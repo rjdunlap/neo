@@ -15,17 +15,17 @@ A grid of letters hides the words of a themed list, shown beside it with the the
 
 `LEVELS` is `{ grownup: { min: 1, max: 4 } }`, with no `order` or `entryLevels`. Every plan has `grids: 1`.
 
-**Content pools.** Nine themes in `words.ts` (pond, garden, kitchen, weather, farm, bakery, sea, woods, cozy evening), 12–16 words each, three to eight letters. A seed picks the theme and the words; `makeGrid` places them longest first (half the time crossing a word already there), redraws only the filler until every listed word occurs exactly once in all eight directions and no word in `blocked.ts` can be read. Couch: a trip stop on levels 1–3 (face-off `twin`), and two frozen puzzle-shelf courses in `course.ts` (*Pond Words*, *The Big Hunt*) with versions.
+**Content pools.** Fifteen everyday themes in `words.ts` (pond, garden, kitchen, weather, farm, bakery, sea, woods, cozy evening, and since batch 1 orchard, birds, market, night sky, toolbox, music), 12–16 words each, three to eight letters, plus two seven-word root-family themes (*Words that carry*, *Words that look*) that `themesFor(plan)` draws only for plans they can fill (levels 1–2). A seed picks the theme and the words; `makeGrid` places them longest first (half the time crossing a word already there), redraws only the filler until every listed word occurs exactly once in all eight directions and no word in `blocked.ts` can be read. Couch: a trip stop on levels 1–3 (face-off `twin`), and two frozen puzzle-shelf courses in `course.ts` (*Pond Words*, *The Big Hunt*) with versions.
 
 **What a mistake does.** A checked line that is not a listed word is a miss (spoken once a grid: "That line is not one of the words"); a crooked mark and letting go are free. **Hint** rings the first letter of the unfound word nearest the cursor or last touch, names the word, and slides the grid to show it; it counts as help. **Start over** clears found words; guesses made still count. The couch scores guesses over the number of words.
 
 **Known gaps.**
-- `weather` lists both RAIN and RAINBOW. RAIN can be read inside RAINBOW, so a grid that picks both always fails the "exactly once" rule and the generator silently retries; the two never share a grid. No test says a theme word must not contain another (forwards or backwards).
+- (Fixed in batch 1) `weather` no longer lists RAIN, and a test says no theme word contains another, forwards or backwards.
 - The smallest grid is 8 by 8 at 64-unit squares. The grown-up research ([IDEAS](../IDEAS.md), the touch and grandparents review) puts older adults' comfortable targets nearer 11–16 mm and asks for a gentler way in; the sibling puzzles' dives each plan one ([Sudoku Garden](sudoku-garden.md)'s 4 by 4, [Picture Logic](picture-logic.md)'s 5 by 5) but Word Search has none.
 - Every grid shows its full word list, so the game never asks for recall, only search; a theme title is decoration.
 - Found words and hints speak the word through a `{word}` slot (`wordsearch.found`, `wordsearch.hint`), so those lines use device speech until slotted clips (V3).
-- Replay varies the theme and positions only; nine themes is a small shelf for a grown-up who plays daily.
-- The vocabulary study's first Root Words step, a **root-family theme list** ([VW6](subjects/vocabulary-word-parts.md#build-slices-in-order)), is still unbuilt.
+- Replay varies the theme and positions only; fifteen everyday themes is a wider shelf, still small for a grown-up who plays daily.
+- The root-family lists (VW6 first step) are built; the root meaning is spoken through device speech (`wordsearch.root-port`, `wordsearch.root-spect`), no clip, and "spect" is not yet heard on a device.
 
 ## Similar games
 
@@ -68,9 +68,9 @@ The arc on the grown-up band: *A small grid to start* (new entry, ID 5) then the
 
 ### Fresh content inside existing levels
 
-**Fresh themes and root families** (batch word-search 1, existing-interaction tier):
+**Fresh themes and root families** (batch word-search 1, built 2026-11-03, existing-interaction tier; the text below is the proposal, see the build note in the archive for what changed):
 - Six new everyday themes from plain words of three to eight letters (proposed: *In the orchard*, *Birds*, *At the market*, *The night sky*, *In the toolbox*, *Making music*); each with at least twelve words so every level can draw it. Words reviewed in the building session for plainness, regional spelling (British and American both read; prefer words spelled the same) and the block list.
-- Two **root-family themes** for the vocabulary study's VW6: *Words that carry* (Latin *port*: REPORT, SUPPORT, IMPORT, EXPORT, PORTER, DEPORT, PORTABLE) and *Words that look* (Latin *spect*: INSPECT, RESPECT, SUSPECT, EXPECT, PROSPECT, SPECTRUM). Etymologies checked against a dictionary in the building session's ordinary content review; homograph roots (the harbour *port* of AIRPORT) are left out. These lists are shorter than twelve, so a theme gains an eligibility rule: `makeGrids` draws only themes with enough words that fit the plan (root themes play at levels 1–2 and 5). On the first word found in a root theme the pet says the root's meaning once ("*Port* means carry"); a new line, `wordsearch.root`, slot-free per theme.
+- Two **root-family themes** for the vocabulary study's VW6: *Words that carry* (Latin *port*: REPORT, SUPPORT, IMPORT, EXPORT, PORTER, DEPORT, PORTABLE) and *Words that look* (Latin *spect*: INSPECT, RESPECT, SUSPECT, EXPECT, PROSPECT, SPECTRUM; built with SPECTATE and ASPECT in place of EXPECT, which does not visibly contain *spect*). Etymologies checked against a dictionary in the building session's ordinary content review; homograph roots (the harbour *port* of AIRPORT) are left out. These lists are shorter than twelve, so a theme gains an eligibility rule: `makeGrids` draws only themes with enough words that fit the plan (root themes play at levels 1–2 and 5). On the first word found in a root theme the pet says the root's meaning once ("*Port* means carry"); a new line, `wordsearch.root`, slot-free per theme.
 - Remove RAIN from `weather` (RAINBOW stays; the frozen *Pond Words* course uses RAINBOW and not RAIN, so its version is unchanged).
 
 Rule tests: no theme word contains another of its theme, forwards or backwards; every theme can make a grid for every plan it is eligible for, over a dozen seeds; root themes are drawn only for eligible plans; no theme word contains a blocked word (the existing test extended to the new lists); course grids still parse. Check tier: typecheck, the game's rule tests, one filtered regression play of level 1 with a root theme forced by seed; bot unchanged, no `fingerdemo`; one build for the voice line.
@@ -105,7 +105,7 @@ None. By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules)
 
 ## Build slices, in order
 
-1. **Fresh themes and root families** (batch word-search 1): above. Existing-interaction tier: typecheck, the game's rule tests, one filtered regression play of level 1 with a root theme forced by seed, one build for the voice line; bot unchanged, no `fingerdemo`.
+1. **Fresh themes and root families** (batch word-search 1, built 2026-11-03): above. Existing-interaction tier: typecheck, the game's rule tests, one filtered regression play of level 1 with a root theme forced by seed, one build for the voice line; bot unchanged, no `fingerdemo`.
 2. **Level 5, A small grid to start** (batch word-search 2): new level on the existing interaction: typecheck, rule tests including order and entry, one browser play of level 5 with one wrong line and one hint, one portrait and one landscape screenshot (the square size is the point), `fingerdemo` at 5.
 3. **Level 6, A message in the leftovers** (batch word-search 3), after batch 2 (its ID follows 5): new-rule tier with a new grid drawing (stones): typecheck, rule tests, one play of level 6 with one wrong line, one hint, then to the message reveal, one portrait screenshot of the revealed message, `fingerdemo` at 6, and `BROWSER_SUITE=couchgames` filtered to Word Search, since `makeGrid` changes.
 4. **Level 7, Just the theme** (batch word-search 4), after batch 3: new-interaction tier (the blanks and the two-step hint): typecheck, rule tests, one play of level 7 with a free non-theme line, two hints on one word, then to the sticker, one portrait screenshot of the blanks, `fingerdemo` at 7.
@@ -113,4 +113,4 @@ None. By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules)
 
 ## What was built in this session
 
-Nothing: research and ideation only. Checks: Markdown links (`node scripts/check-links.mjs`) and `git diff --check`.
+Batch word-search 1 (2026-11-03, PR #1150): six themes, two root families, RAIN out of weather; the rest is research and ideation. Build note: [archive](../archive/COMPLETED-2026-10-09.md#word-search-fresh-themes-and-root-families-word-search-batch-1-2026-11-03). Slices 2–5 are unbuilt.
