@@ -12,13 +12,13 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  clash, copyBed, deadEnds, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, mendTarget, nextMove, planFor, type Bed, type Hint, type Puzzle,
+  boxSide, clash, copyBed, deadEnds, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, mendTarget, nextMove, planFor, type Bed, type Hint, type Puzzle,
   type RowsPlan,
 } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
-  school: { min: 3, max: 7 },
+  school: { min: 3, max: 9 },
 };
 
 const CELL = 100;
@@ -308,7 +308,7 @@ class GardenRows implements Game {
     await this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
     if (this.index > 0) return;
-    return this.ctx.instruct(this.plan.mend ? 'rows.mend' : this.plan.rule === 'rows' ? 'rows.rows' : 'rows.both');
+    return this.ctx.instruct(this.plan.mend ? 'rows.mend' : this.plan.rule === 'rows' ? 'rows.rows' : this.plan.rule === 'boxes' ? 'rows.boxes' : 'rows.both');
   }
 
   private select(f: number) {
@@ -340,6 +340,15 @@ class GardenRows implements Game {
           .stroke({ width: 3, color: swatch.brown.line });
         if (!planted) g.ellipse(c * CELL + CELL / 2, r * CELL + CELL / 2 + 6, 16, 8).fill({ color: swatch.brown.line, alpha: 0.25 });
       }
+    if (this.plan.rule !== 'boxes') return;
+    // Hedge boxes: a low leafy hedge in the gaps between the boxes, bumpy so it reads as a hedge rather than a line.
+    const b = boxSide(this.n);
+    for (let k = b; k < this.n; k += b) {
+      const at = k * CELL;
+      g.roundRect(at - 9, -6, 18, w + 12, 9).roundRect(-6, at - 9, w + 12, 18, 9).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+      for (let t = 12; t < w; t += 24) g.circle(at, t, 7).circle(t, at, 7);
+      g.fill(swatch.green.light);
+    }
   }
 
   private tapBoard(e: FederatedPointerEvent) {
@@ -374,7 +383,7 @@ class GardenRows implements Game {
     if (hit) {
       this.miss();
       this.flash = { cells: [{ r, c }, { r: hit.r, c: hit.c }], color: swatch.red.fill, until: this.clock + 1.4 };
-      void this.ctx.say(hit.by === 'row' ? 'rows.clash-row' : 'rows.clash-col', { flower: FLOWER_NAMES[this.kind(flower)] });
+      void this.ctx.say(hit.by === 'row' ? 'rows.clash-row' : hit.by === 'column' ? 'rows.clash-col' : 'rows.clash-box', { flower: FLOWER_NAMES[this.kind(flower)] });
       return this.maybeHint();
     }
     // Mend the bed starts with repeats, so a lifted swapped flower can leave a spot nothing fits: only a spot this planting closes counts.
