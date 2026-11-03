@@ -90,6 +90,23 @@ async function welcomeFlow() {
   await scene('ProjectScene');
   assert.equal(await page.evaluate(() => neo.scene.from ?? null), null);
   assert.deepEqual(await page.evaluate(() => kit.store.data.projects.welcome.steps), ['yummy', 'song']);
+  // The recap (RW09): Home's held gear opens the grown-ups' page; yummy reads supported (one wrong cut), pretty encountered.
+  assert.deepEqual(await page.evaluate(() => [kit.store.data.projects.welcome.evidence.yummy?.misses, kit.store.data.projects.welcome.evidence.pretty?.finished]), [1, false]);
+  await tap('neo.scene.home'); await scene('HomeScene');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+  const gear = page.locator('.gear:not(.gear--inline)');
+  const gearBox = await gear.boundingBox();
+  await page.mouse.move(gearBox.x + gearBox.width / 2, gearBox.y + gearBox.height / 2);
+  await page.mouse.down(); await page.locator('.parent').waitFor({ timeout: 4000 }); await page.mouse.up();
+  const recapRow = (step) => page.locator(`.parent [data-recap="${step}"]`).innerText();
+  assert.match(await recapRow('yummy'), /made four equal plates with help the last time: 1 wrong try and /);
+  assert.match(await recapRow('pretty'), /Opened, not finished yet/);
+  assert.match(await recapRow('song'), /lit \d+ notes? on \d+ pitch/);
+  assert.match(await page.locator('.parent [data-recap-welcome]').innerText(), /Project: 2 of 3 steps done/);
+  await page.locator('.parent [data-recap-welcome]').scrollIntoViewIfNeeded(); await page.waitForTimeout(300);
+  await screenshot('welcome-recap-portrait');
+  await page.keyboard.press('Escape'); await page.locator('.parent').waitFor({ state: 'detached', timeout: 4000 });
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
   // Reload: the chooser, Home, Continue, and the unfinished step comes up.
   await page.waitForTimeout(400);
   await page.reload(); await ready(); await scene('ChooserScene');
@@ -185,7 +202,7 @@ async function welcomeFlow() {
   await page.evaluate(() => { kit.store.data.profile.band = 'toddler'; neo.go.hub(); }); await scene('HomeScene');
   assert.equal(await page.evaluate(() => neo.scene.cont), null, 'no Continue for a toddler');
   assert.equal(errors.length, 0, errors.join('\n'));
-  log('Welcome: Continue → invitation → yummy (one wrong cut) → done line → song: one note keeps nothing and hums → song again with tapped jellies, tune kept, level unmoved → pretty left mid-round stores nothing → reload → pretty finished, picture kept on the project, treehouse unchanged → ending: arrival, names; leave at naming adopts no one → Continue replays → Ripple → Home without Continue → bed with picture, Ripple wakes to her tune → reload → Friends → Come with me → guide is Ripple, bed empty; pre-K ask, no bed; toddler has no Continue');
+  log('Welcome: Continue → invitation → yummy (one wrong cut) → done line → song: one note keeps nothing and hums → song again with tapped jellies, tune kept, level unmoved → pretty left mid-round stores nothing → grown-ups recap reads yummy supported, pretty opened (portrait) → reload → pretty finished, picture kept on the project, treehouse unchanged → ending: arrival, names; leave at naming adopts no one → Continue replays → Ripple → Home without Continue → bed with picture, Ripple wakes to her tune → reload → Friends → Come with me → guide is Ripple, bed empty; pre-K ask, no bed; toddler has no Continue');
 }
 
 return { welcomeFlow };

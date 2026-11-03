@@ -99,7 +99,7 @@ export function projectRecap(save: Pick<SaveData, 'projects' | 'profile' | 'crea
       <tr><th>What it asks</th><th>What happened</th><th>Subject</th></tr>
       ${rows.join('')}
     </table>
-    <p class="muted" style="margin-top:8px">${REWARD_NOTE}</p>
-    ${off ? `<p><strong>Off-screen idea:</strong> ${esc(off)}</p>` : ''}
-    <p>${statusLine(save, who)}</p>`;
+    <p>${statusLine(save, who)}</p>
+    <p class="muted">${REWARD_NOTE}</p>
+    ${off ? `<p><strong>Off-screen idea for the project:</strong> ${esc(off)}</p>` : ''}`;
 }
