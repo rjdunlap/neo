@@ -42,6 +42,20 @@ async function fingerDemos() {
         await page.waitForFunction(() => neo.scene.helpCard.intro.demo.game?.folds > 0, null, { timeout: 60000, polling: 100 });
         log(`Finger demo: the bot pressed fold at ${(await page.evaluate(() => neo.scene.helpCard.intro.demo.age)).toFixed(1)}s`);
       }
+      if (g.id === 'lasso-loops' && level === 4 && process.env.LASSO_DECADE) {
+        // About a quarter of level 4's meadows are a decade (20 or 30, no leaf): step the demo's seed until it draws one.
+        const seed = await page.evaluate(async () => {
+          const d = neo.scene.helpCard.intro.demo;
+          for (let seed = 1; seed < 40; seed++) {
+            d.opts.seed = seed; d.restart();
+            await new Promise(r => setTimeout(r, 50));
+            if (d.game?.round?.ones === 0 && d.game.round.jars.length > 1) return seed;
+          }
+          return null;
+        });
+        assert.ok(seed, 'lasso-loops: a seed draws a decade');
+        log(`Finger demo: lasso-loops level 4 on a decade, no leaf (seed ${seed})`);
+      }
       assert.equal(await page.evaluate(() => neo.scene.helpCard.intro.demo.hasBot), true, `${g.id}: the game has a bot for its demonstration`);
       const limit = await page.evaluate(() => neo.scene.helpCard.intro.demo.limit);
       // The demonstration's own clock decides, not the wall: on a busy Mac it runs at a fraction of real time (a quarter, once), so the

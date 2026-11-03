@@ -194,6 +194,8 @@ async function shortlistBatch() {
     });
     for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 6); level++) {
       await launch('lasso-loops', level);
+      // Level 4 mixes teens, decades and 21–39: relaunch until a decade, the round with nothing on the leaf.
+      for (let k = 0; level === 4 && k < 30 && !(await page.evaluate(() => neo.scene.game.round.ones === 0)); k++) await launch('lasso-loops', level);
       if (level >= 4) await page.setViewportSize({ width: 768, height: 1024 });
       await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 30000 });
       if (level === 6) {
@@ -237,6 +239,7 @@ async function shortlistBatch() {
         await tap('neo.scene.game.pads.find((p) => p.value !== neo.scene.game.round.answer)');
         await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 40000 });
         await tap('neo.scene.game.pads.find((p) => p.value === neo.scene.game.round.answer)');
+        if (level === 4) assert.deepEqual(await page.evaluate(() => [neo.scene.game.round.ones, neo.scene.game.round.answer % 10, neo.scene.game.leaf.visible]), [0, 0, false]);
       }
       await finished('lasso-loops');
       assert.deepEqual(await score('lasso-loops'), level === 1 ? [0, 0] : level === 2 ? [2, 1] : [3, 1]);

@@ -18,7 +18,7 @@ export const PLANS: LassoPlan[] = [
   { mode: 'free', name: 'Draw loops around fireflies: each loop flies into a jar' },
   { mode: 'exact', name: 'Loop exactly 2 or 3 fireflies for each jar' },
   { mode: 'fives', name: 'Jars of 5: loop fives, then count by fives and the ones left over' },
-  { mode: 'tens', name: 'Jars of 10: loop tens, then say the number (34 is 3 tens and 4 ones)' },
+  { mode: 'tens', name: 'Jars of 10: loop tens, then say the number (14, 30 or 34: tens and ones)' },
   { mode: 'groups', name: 'Equal groups: make 3 groups of 4, then say how many in all' },
   { mode: 'tens', guess: true, name: 'About how many? Guess, loop one jar of 10, keep or change the guess, then loop the tens and say the number' },
 ];
@@ -31,7 +31,7 @@ export interface LassoRound {
   jars: number[];
   /** The total to say at the end, or null when there's no question. */
   answer: number | null;
-  /** Fireflies left over after the jars are full (fives and tens). */
+  /** Fireflies left over after the jars are full (fives and tens); 0 means none, and no leaf is drawn. */
   ones: number;
   group?: { count: number; size: number };
 }
@@ -39,19 +39,29 @@ export interface LassoRound {
 export function makeRound(plan: LassoPlan, rng: Rng): LassoRound {
   switch (plan.mode) {
     case 'free':
-      return { fireflies: 8, jars: [0, 0, 0, 0, 0, 0], answer: null, ones: 0 };
+      // Six jars is what fits beside the pet in portrait; any loop fills the next one.
+      return { fireflies: rng.int(6, 9), jars: [0, 0, 0, 0, 0, 0], answer: null, ones: 0 };
     case 'exact': {
       const jars = rng.shuffle([2, 3, rng.pick([2, 3])]);
       return { fireflies: jars.reduce((s, n) => s + n, 0) + 2, jars, answer: null, ones: 0 };
     }
     case 'fives': {
-      const tens = rng.int(2, 3);
-      const ones = rng.int(1, 4);
-      return { fireflies: 5 * tens + ones, jars: Array(tens).fill(5), answer: 5 * tens + ones, ones };
+      // 6–19, and about one round in five comes out even (10 or 15) with nothing for the leaf.
+      const fives = rng.int(1, 3);
+      const ones = fives > 1 && rng.chance(0.2) ? 0 : rng.int(1, 4);
+      return { fireflies: 5 * fives + ones, jars: Array(fives).fill(5), answer: 5 * fives + ones, ones };
     }
     case 'tens': {
-      const tens = rng.int(2, 3);
-      const ones = rng.int(1, 9);
+      // Estimation (level 6) keeps its own 21–39 round, drawn exactly as before.
+      if (plan.guess) {
+        const tens = rng.int(2, 3);
+        const ones = rng.int(1, 9);
+        return { fireflies: 10 * tens + ones, jars: Array(tens).fill(10), answer: 10 * tens + ones, ones };
+      }
+      // A teen (one jar), a decade (nothing on the leaf) or 21–39.
+      const kind = rng.pick(['teen', 'decade', 'mixed', 'mixed'] as const);
+      const tens = kind === 'teen' ? 1 : rng.int(2, 3);
+      const ones = kind === 'decade' ? 0 : rng.int(1, 9);
       return { fireflies: 10 * tens + ones, jars: Array(tens).fill(10), answer: 10 * tens + ones, ones };
     }
     case 'groups': {
@@ -72,8 +82,8 @@ export function choices(round: LassoRound, rng: Rng): number[] {
   const tens = Math.floor(n / 10);
   const ones = n % 10;
   const tries = [
-    // Tens and ones swapped (34 and 43), and one ten more or less.
-    ones !== tens && ones > 0 ? ones * 10 + tens : -1,
+    // Tens and ones swapped (34 and 43) when both are there, and one ten more or less.
+    tens > 0 && ones > 0 && ones !== tens ? ones * 10 + tens : -1,
     n + 10,
     n - 10,
     // Off by one, or by one group.

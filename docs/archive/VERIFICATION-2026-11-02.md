@@ -22,3 +22,11 @@
 - `game-reviewer` fix: a resize during the ribbon's float home left it off its lane (low severity); the browser run was repeated after it.
 - Not run: offline check, other suites, iPad, a child's reaction.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether she reads the mark against the head and trusts the ribbon over the eye.
+
+## 2026-11-02 — Rule Machine levels 3–4 (algebra-balance AB1, batch rule-machine 2)
+
+- [PR #1120](https://github.com/rjdunlap/neo/pull/1120): `rule-machine` school range 2–4: *What does it do?* (rule shelf) and *Covered machine* (trap cars, Peek).
+- Ran (commit ae2baa61, Vite on http://localhost:5563): typecheck; 41 rule tests (enumerated over shelves and feeding orders, 300 seeds); full `npm test` on the first commit, then rule-machine plus content tests (209) after a layout tweak; `npm run build`; `BROWSER_SUITE=rulemachine RM_LEVELS=3,4` (landscape level 3 wrong card then right, 1/0; portrait level 4 with early and still-open card taps uncounted, trap car first, a ruled-out card, Peek, the settling car and last pad, 1 miss/1 hint; level 4 re-run after the review fix); `BROWSER_SUITE=fingerdemo FINGER_ONLY=rule-machine FINGER_LEVELS=3,4` (49.9 s, 18.0 s); screenshots of level 3 shelf and portrait level 4.
+- `game-reviewer` fixes: the cover now returns when the card hangs after an unused Peek; the pet repeats level 2's ask after the card hangs.
+- Not run: levels 1–2 browser play (unchanged paths), offline check, the CCSS/England wording source check.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#rule-machine-levels-14-algebra-balance-ab1-2026-11-01-and-2026-11-02)): fairness of the covered machine and "two cards still fit", card pictures and Peek on an iPad, the wording check.

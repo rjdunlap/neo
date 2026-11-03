@@ -9,6 +9,10 @@ describe('Lasso Loops', () => {
       const wanted = r.jars.reduce((s, n) => s + n, 0);
       expect(r.fireflies).toBeGreaterThanOrEqual(wanted);
       switch (plan.mode) {
+        case 'free':
+          expect(r.fireflies >= 6 && r.fireflies <= 9).toBe(true);
+          expect(r.jars).toEqual([0, 0, 0, 0, 0, 0]);
+          break;
         case 'exact':
           expect(r.jars.every((n) => n === 2 || n === 3)).toBe(true);
           expect(r.fireflies).toBeGreaterThan(wanted);
@@ -17,12 +21,18 @@ describe('Lasso Loops', () => {
           expect(r.jars.every((n) => n === 5)).toBe(true);
           expect(r.answer).toBe(r.fireflies);
           expect(r.ones).toBe(r.fireflies - wanted);
-          expect(r.ones >= 1 && r.ones <= 4).toBe(true);
+          expect(r.jars.length >= 1 && r.jars.length <= 3).toBe(true);
+          expect(r.ones >= 0 && r.ones <= 4).toBe(true);
+          // An even round is 10 or 15, never a lone jar of 5.
+          if (r.ones === 0) expect([10, 15]).toContain(r.answer);
           break;
         case 'tens':
           expect(r.jars.every((n) => n === 10)).toBe(true);
           expect(r.answer).toBe(10 * r.jars.length + r.ones);
-          expect(r.ones >= 1 && r.ones <= 9).toBe(true);
+          expect(r.ones).toBe(r.fireflies - wanted);
+          expect(r.ones >= 0 && r.ones <= 9).toBe(true);
+          if (plan.guess) expect(r.ones >= 1 && r.jars.length >= 2).toBe(true);
+          if (r.ones === 0) expect([20, 30]).toContain(r.answer);
           break;
         case 'groups':
           expect(r.answer).toBe(r.group!.count * r.group!.size);
@@ -41,17 +51,56 @@ describe('Lasso Loops', () => {
     }
   });
 
-  it('appends estimation as the same seeded tens round without changing earlier plans', () => {
+  it('keeps estimation on its own 21–39 tens round, drawn exactly as before', () => {
     expect(PLANS.map((p) => p.mode)).toEqual(['free', 'exact', 'fives', 'tens', 'groups', 'tens']);
     expect(PLANS[5].guess).toBe(true);
     expect(PLANS.slice(0, 5).every((p) => !p.guess)).toBe(true);
     for (let seed = 1; seed <= 300; seed++) {
       const a = new Rng(seed), b = new Rng(seed);
       const round = makeRound(PLANS[5], a);
-      expect(round).toEqual(makeRound(PLANS[3], b));
+      // The level-6 draw before teens and decades came to level 4.
+      const tens = b.int(2, 3);
+      const ones = b.int(1, 9);
+      expect(round).toEqual({ fireflies: 10 * tens + ones, jars: Array(tens).fill(10), answer: 10 * tens + ones, ones });
       expect(choices(round, a)).toEqual(choices(round, b));
       expect(round.fireflies).toBeGreaterThanOrEqual(21);
       expect(round.fireflies).toBeLessThanOrEqual(39);
+    }
+  });
+
+  it('mixes teens, decades and 21–39 at level 4, and even rounds at level 3', () => {
+    const kinds = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const r = makeRound(PLANS[3], new Rng(seed));
+      kinds.add(r.jars.length === 1 ? 'teen' : r.ones === 0 ? 'decade' : 'mixed');
+      if (r.jars.length === 1) expect(r.answer! >= 11 && r.answer! <= 19).toBe(true);
+    }
+    expect([...kinds].sort()).toEqual(['decade', 'mixed', 'teen']);
+    const answers = new Set<number>();
+    let even = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      const r = makeRound(PLANS[2], new Rng(seed));
+      answers.add(r.answer!);
+      if (r.ones === 0) even++;
+    }
+    for (const n of [6, 9, 10, 15, 19]) expect(answers).toContain(n);
+    expect(even).toBeGreaterThan(15);
+    expect(even).toBeLessThan(90);
+    const flies = new Set<number>();
+    for (let seed = 1; seed <= 100; seed++) flies.add(makeRound(PLANS[0], new Rng(seed)).fireflies);
+    expect([...flies].sort()).toEqual([6, 7, 8, 9]);
+  });
+
+  it('never offers a swap that is not there: no 60 for 6, no 2 for 20', () => {
+    for (const plan of [PLANS[2], PLANS[3]]) for (let seed = 1; seed <= 300; seed++) {
+      const r = makeRound(plan, new Rng(seed));
+      const c = choices(r, new Rng(seed + 7));
+      const n = r.answer!;
+      for (const v of c) if (v !== n) {
+        const near = [n + 10, n - 10, n + 1, n - 1];
+        if (n >= 10 && n % 10 > 0) near.push((n % 10) * 10 + Math.floor(n / 10));
+        expect(near, `${plan.name}, ${n}`).toContain(v);
+      }
     }
   });
 
@@ -81,7 +130,7 @@ describe('Lasso Loops', () => {
   it('offers the swapped tens and ones as a choice when they differ', () => {
     let swapped = 0;
     for (let seed = 1; seed <= 200; seed++) {
-      const r = makeRound(PLANS[3], new Rng(seed));
+      const r = makeRound(PLANS[5], new Rng(seed));
       const c = choices(r, new Rng(seed + 1000));
       const tens = Math.floor(r.answer! / 10);
       if (c.includes(r.ones * 10 + tens)) swapped++;
@@ -90,7 +139,10 @@ describe('Lasso Loops', () => {
   });
 
   it('spreads fireflies one to a cell, inside the area', () => {
-    for (const n of [8, 9, 16, 24, 39]) for (let seed = 1; seed <= 50; seed++) {
+    const counts = new Set<number>();
+    for (const plan of PLANS) for (let seed = 1; seed <= 300; seed++) counts.add(makeRound(plan, new Rng(seed)).fireflies);
+    expect(Math.max(...counts)).toBeLessThanOrEqual(39);
+    for (const n of counts) for (let seed = 1; seed <= 50; seed++) {
       const { cols, rows } = gridFor(n);
       expect(cols * rows).toBeGreaterThanOrEqual(n);
       const pts = scatter(n, new Rng(seed), cols, rows);

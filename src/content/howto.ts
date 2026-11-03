@@ -2935,7 +2935,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       'Draw a loop around fireflies with one finger and close it where it started; they fly into a jar.',
       { from: 2, to: 2, text: 'Loop exactly the number of fireflies the jar wants (2 or 3).' },
-      { from: 3, to: 3, text: 'Loop fireflies five at a time, then count by fives and the ones left over.' },
+      { from: 3, to: 3, text: 'Loop fireflies five at a time, then count by fives and any ones left over.' },
       { from: 4, to: 4, text: 'Loop fireflies ten at a time, then say how many in all: tens and ones.' },
       { from: 5, to: 5, text: 'Make the groups asked for, like "3 groups of 4", then say how many in all.' },
       { from: 6, to: 6, text: 'Tap a number card to guess about how many fireflies there are. Any guess is fine.' },

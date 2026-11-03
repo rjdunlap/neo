@@ -553,6 +553,8 @@ Built; [completed scope and proof](archive/COMPLETED-2026-10-09.md#2026-10-22--l
 
 ### lasso-loops 2: Teens, decades and a fresh meadow
 
+Built 2026-11-02, [PR #1134](https://github.com/rjdunlap/neo/pull/1134); [completed scope and proof](archive/COMPLETED-2026-10-09.md#lasso-loops-teens-decades-and-a-fresh-meadow-lasso-loops-batch-2-2026-11-02). The original scope follows.
+
 - **`lasso-loops`, teens, decades and a fresh meadow (dive slice 1)** (fresh content on the existing interaction; preschool, pre-K, school): level 1's seeded 6–9 fireflies; level 3's 1–3 jars with an occasional no-ones round; level 4's teen, decade and 21–39 mix; the no-ones voice lines and pad choices. Level 6 unchanged. [Dive](deep-dives/lasso-loops.md#build-slices-in-order)
 
 Files expected: `src/games/lasso-loops/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts` only if a step's wording changes, the README row and `docs/GAMES.md`.
