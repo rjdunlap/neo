@@ -2270,6 +2270,8 @@ export const SCRIPT = {
   'rows.hint-fix': ['This flower does not belong here. Tap it to take it out, then try a different one.'],
   'rows.bloom': ['The flower bed is full! Beautiful!', 'Every flower is in the right place!'],
   'rows.done': ['What a lovely garden!'],
+  'rows.mend': ['Two flowers got mixed up! Find them and swap them back. Tap a flower to lift it out, then plant it where it belongs.'],
+  'rows.mend-hint': ['This glowing flower got mixed up. Tap it to lift it out, then find where it belongs.'],
   'cross.visible': ['Only critters {rule} can cross the bridge. Tap the critters that fit!'],
   'cross.hidden': ['The bridge gate has a secret rule! Tap a critter to try it. Watch who crosses, then guess the rule with the light bulb.'],
   'cross.yes': ['The {who} can cross!', 'Yes! The {who} goes across!'],

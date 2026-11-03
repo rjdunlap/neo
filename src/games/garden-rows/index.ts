@@ -12,12 +12,13 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  clash, copyBed, deadEnds, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, nextPlanting, planFor, type Bed, type Hint, type Puzzle, type RowsPlan,
+  clash, copyBed, deadEnds, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, mendTarget, nextMove, planFor, type Bed, type Hint, type Puzzle,
+  type RowsPlan,
 } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
-  school: { min: 3, max: 6 },
+  school: { min: 3, max: 7 },
 };
 
 const CELL = 100;
@@ -127,10 +128,8 @@ class GardenRows implements Game {
     onTap(this.board, (e) => this.tapBoard(e), { cooldown: 80 });
     for (let f = 0; f < this.plan.size; f++) {
       const packet = new Container();
-      packet.addChild(
-        new Graphics().circle(0, 5, PACKET).fill(wood.line).circle(0, 0, PACKET).fill(cream).stroke({ width: 5, color: wood.line }),
-        flowerArt(f, PACKET * 1.25),
-      );
+      // The flower on the packet is drawn per bed, from that bed's kinds (see `next`).
+      packet.addChild(new Graphics().circle(0, 5, PACKET).fill(wood.line).circle(0, 0, PACKET).fill(cream).stroke({ width: 5, color: wood.line }));
       packet.hitArea = new Circle(0, 0, PACKET + 12);
       onTap(packet, () => this.select(f), { cooldown: 150 });
       this.packets.addChild(packet);
@@ -141,6 +140,17 @@ class GardenRows implements Game {
 
   get n() {
     return this.plan.size;
+  }
+
+  /** Which of the five flowers this bed's flower `f` is. */
+  private kind(f: number): number {
+    return this.puzzles[this.index]?.kinds[f] ?? f;
+  }
+
+  /** Where the help and the ghost finger lead: the one way to finish, or for Mend the bed the repair she has begun. */
+  private target(): Bed {
+    const { solution } = this.puzzles[this.index];
+    return this.plan.mend ? mendTarget(this.bed, this.plan.rule, solution) : solution;
   }
 
   start() {
@@ -200,10 +210,10 @@ class GardenRows implements Game {
   autotouch(): TouchIntent | null {
     const puzzle = this.puzzles[this.index];
     if (this.busy || this.finished || !puzzle) return null;
-    const step = nextPlanting(this.bed, puzzle.solution, this.plan.rule, this.selected);
+    const step = nextMove(this.bed, this.given, this.target(), this.plan.rule, this.selected);
     if (!step) return null;
-    if (step.flower !== this.selected) return { tap: { on: this.packets.children[step.flower] }, pause: 0.3 };
-    return { tap: { on: this.board, x: step.c * CELL + CELL / 2, y: step.r * CELL + CELL / 2 } };
+    if (!step.lift && step.flower !== this.selected) return { tap: { on: this.packets.children[step.flower] }, pause: 0.3 };
+    return { tap: { on: this.board, x: step.c * CELL + CELL / 2, y: step.r * CELL + CELL / 2 }, pause: step.lift ? 0.3 : undefined };
   }
 
   /**
@@ -263,7 +273,7 @@ class GardenRows implements Game {
       else p.direction = (want - this.selected + this.n) % this.n <= this.n / 2 ? 0 : 2;
       return out;
     }
-    const step = nextPlanting(this.bed, puzzle.solution, this.plan.rule, this.selected);
+    const step = nextMove(this.bed, this.given, this.target(), this.plan.rule, this.selected);
     if (!step) return out;
     const { r, c } = this.cursor;
     if (step.c !== c) p.direction = step.c > c ? 0 : 2;
@@ -285,7 +295,12 @@ class GardenRows implements Game {
     if (this.index >= this.puzzles.length) return void this.finale();
     const puzzle = this.puzzles[this.index];
     this.bed = copyBed(puzzle.start);
-    this.given = puzzle.start.map((row) => row.map((v) => v !== null));
+    // In Mend the bed every flower is hers to lift.
+    this.given = puzzle.start.map((row) => row.map((v) => v !== null && !this.plan.mend));
+    this.packets.children.slice(0, this.n).forEach((p, f) => {
+      if (p.children.length > 1) p.removeChildren(1).forEach((old) => old.destroy({ children: true }));
+      p.addChild(flowerArt(puzzle.kinds[f], PACKET * 1.25));
+    });
     this.plants.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.nodes = this.bed.map((row, r) => row.map((v, c) => (v === null ? null : this.addPlant(r, c, v, false))));
     this.drawSoil();
@@ -293,7 +308,7 @@ class GardenRows implements Game {
     await this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
     if (this.index > 0) return;
-    return this.ctx.instruct(this.plan.rule === 'rows' ? 'rows.rows' : 'rows.both');
+    return this.ctx.instruct(this.plan.mend ? 'rows.mend' : this.plan.rule === 'rows' ? 'rows.rows' : 'rows.both');
   }
 
   private select(f: number) {
@@ -303,7 +318,7 @@ class GardenRows implements Game {
   }
 
   private addPlant(r: number, c: number, flower: number, pop: boolean): Container {
-    const node = flowerArt(flower, CELL * 0.82);
+    const node = flowerArt(this.kind(flower), CELL * 0.82);
     node.position.set(c * CELL + CELL / 2, r * CELL + CELL / 2);
     if (pop) {
       node.scale.set(0.2);
@@ -359,15 +374,17 @@ class GardenRows implements Game {
     if (hit) {
       this.miss();
       this.flash = { cells: [{ r, c }, { r: hit.r, c: hit.c }], color: swatch.red.fill, until: this.clock + 1.4 };
-      void this.ctx.say(hit.by === 'row' ? 'rows.clash-row' : 'rows.clash-col', { flower: FLOWER_NAMES[flower] });
+      void this.ctx.say(hit.by === 'row' ? 'rows.clash-row' : 'rows.clash-col', { flower: FLOWER_NAMES[this.kind(flower)] });
       return this.maybeHint();
     }
+    // Mend the bed starts with repeats, so a lifted swapped flower can leave a spot nothing fits: only a spot this planting closes counts.
+    const before = this.plan.mend ? deadEnds(this.bed, this.plan.rule) : [];
     this.bed[r][c] = flower;
     this.nodes[r][c] = this.addPlant(r, c, flower, true);
     if (this.hinted && this.hinted.r === r && this.hinted.c === c) this.hinted = null;
     sfx.pop(4 + ((r + c) % 6));
     if (isFull(this.bed)) return void this.bloom();
-    const stuck = deadEnds(this.bed, this.plan.rule);
+    const stuck = deadEnds(this.bed, this.plan.rule).filter((d) => !before.some((b) => b.r === d.r && b.c === d.c));
     if (stuck.length) {
       // Each flower fits where it is, but a spot has nothing left to take: something planted earlier has to come out.
       this.miss();
@@ -385,21 +402,22 @@ class GardenRows implements Game {
 
   private maybeHint() {
     if (this.wrongs < 2 || this.hinted) return;
-    const hint = hintFor(this.bed, this.given, this.puzzles[this.index].solution, this.plan.rule);
+    const hint = hintFor(this.bed, this.given, this.target(), this.plan.rule);
     if (!hint) return;
     this.hinted = hint;
     this.hints++;
     this.wrongs = 0;
-    void this.ctx.say(hint.kind === 'fix' ? 'rows.hint-fix' : 'rows.hint-plant');
+    void this.ctx.say(hint.kind === 'fix' ? (this.plan.mend ? 'rows.mend-hint' : 'rows.hint-fix') : 'rows.hint-plant');
   }
 
   /** The bed is full and right: every flower blooms in turn. */
   private async bloom() {
+    // The same check the rules use. Only Mend the bed can be full and still hold a repeat: the help on show stays, and the
+    // pet repeats what to look for (no miss).
+    if (!isSolved(this.bed, this.plan.rule)) return void this.ctx.say('rows.mend');
     this.busy = true;
     this.hinted = null;
     this.flash = null;
-    // The same check the rules use; a full bed that passes it is the one way to finish this bed.
-    if (!isSolved(this.bed, this.plan.rule)) return void (this.busy = false);
     for (let r = 0; r < this.n; r++) {
       for (let c = 0; c < this.n; c++) {
         const node = this.nodes[r][c];

@@ -142,3 +142,11 @@
 - Ran (commit 88818766, Vite on http://localhost:5492): typecheck; egg-catch rule tests 19 passed (two new: barn 60–80 tall on the horizon at all levels over six views; clear of play, on screen, above the pet corner); `BROWSER_SUITE=batch BATCH_ONLY=eggs` levels 1–11 passed; one landscape screenshot (level 3) and one portrait (level 7) reviewed.
 - Not run: build (no shared files changed), `fingerdemo` (bot unchanged), offline check.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a child recognises the barn without its label (joins the Barnyard check).
+
+## 2026-11-01 — Spinner Fair levels 4–5 (chance-statistics CS1, batch spinner-fair 2)
+
+- Branch `claude/spinner-fair-sure-fair` ([PR #1111](https://github.com/rjdunlap/neo/pull/1111)): level 4 *Sure, maybe, no way* (cards dragged onto three spinners) and level 5 *Fair or unfair?* (wedge pieces handed between two racers, then an honest six-spin race); school range is now {3, 5}.
+- Ran (branch commit cf248a3b plus fixes through 5256c396, Vite on http://localhost:5671, `VITE_SPEECH=off`): typecheck; 38 Spinner Fair rule tests (sets, cards, race starts, `isFair`, `give`, `nextGive`, layouts at six views); full unit suite 291 files / 4178 tests; `npm run build`; `BROWSER_SUITE=spinnerfair45` (level 4 with one card on a wrong spinner, 1 miss, then both sets, saved 1/0; portrait level 5 with a wrong *fair*, an unfair, an uneven Check, a wedge moved the wrong way then back to 3–3, six-spin race, second race, 2 misses, 1 hint, saved 2/1; portrait screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=spinner-fair FINGER_LEVELS=4,5` (31.2 s and 36.4 s, clean).
+- The first browser run found a real bug (Pixi `removeChildren(1)` threw on a one-child wheel, so level 5 never opened); fixed and re-passed. `game-reviewer`: one minor finding (old wedge drag listeners not released between races), fixed in 5256c396 with unit tests re-passed, not re-played in the browser.
+- Not run: offline check (no persistence or asset change), other suites.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#spinner-fair-levels-45-chance-statistics-cs1-batch-spinner-fair-2-2026-11-01)): the face cards without words, grabbing a wedge piece on an iPad in portrait, "a fair race can end level", device speech.

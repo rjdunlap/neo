@@ -1,22 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  candidates, clash, copyBed, countSolutions, deadEnds, emptyBed, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, makePuzzle,
-  nextPlanting, PLANS, planFor, solve, type Bed,
+  candidates, clash, clashing, copyBed, countSolutions, deadEnds, emptyBed, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, makePuzzle,
+  mendTarget, nextMove, nextPlanting, PLANS, planFor, solve, type Bed,
 } from './logic';
 
 const givenOf = (start: Bed) => start.map((row) => row.map((v) => v !== null));
+/** The beds she fills from empty spots; Mend the bed (level 7) starts full and is tested on its own. */
+const FILL = PLANS.filter((p) => !p.mend);
+const MEND = PLANS[6];
 
 describe('Garden Rows', () => {
   it('climbs from small beds to bigger ones with fewer flowers to start', () => {
-    PLANS.slice(1).forEach((p, i) => {
-      const before = PLANS[i];
+    FILL.slice(1).forEach((p, i) => {
+      const before = FILL[i];
       expect(p.size, p.name).toBeGreaterThanOrEqual(before.size);
       if (p.size === before.size) expect(p.blanks, p.name).toBeGreaterThanOrEqual(before.blanks);
     });
     for (const p of PLANS) {
       expect(p.size, p.name).toBeLessThanOrEqual(FLOWER_NAMES.length);
       expect(p.blanks, p.name).toBeLessThan(p.size * p.size);
+      if (p.mend) expect(p.blanks, p.name).toBe(0);
       expect(p.beds, p.name).toBeGreaterThanOrEqual(1);
     }
     expect(planFor(0)).toBe(PLANS[0]);
@@ -24,7 +28,7 @@ describe('Garden Rows', () => {
   });
 
   it('every bed has exactly the planned empty spots and exactly one way to finish it', () => {
-    for (const plan of PLANS) {
+    for (const plan of FILL) {
       for (let seed = 1; seed <= 60; seed++) {
         const { start, solution } = makePuzzle(plan, new Rng(seed));
         expect(start.flat().filter((v) => v === null), `${plan.name} #${seed}`).toHaveLength(plan.blanks);
@@ -80,7 +84,7 @@ describe('Garden Rows', () => {
   });
 
   it('a flower that fits but does not belong leads to a bed with no way to finish, which shows as a dead end', () => {
-    for (const plan of PLANS.filter((p) => p.rule === 'both')) {
+    for (const plan of FILL.filter((p) => p.rule === 'both')) {
       let sawDeadEnd = false;
       for (let seed = 1; seed <= 25; seed++) {
         const { start, solution } = makePuzzle(plan, new Rng(seed));
@@ -101,7 +105,7 @@ describe('Garden Rows', () => {
   });
 
   it('a hint points at something useful: a wrong flower first, then a spot to plant the right one', () => {
-    for (const plan of PLANS) {
+    for (const plan of FILL) {
       for (let seed = 1; seed <= 15; seed++) {
         const { start, solution } = makePuzzle(plan, new Rng(seed));
         const given = givenOf(start);
@@ -141,7 +145,7 @@ describe('Garden Rows', () => {
   });
 
   it("plants a bed with no clash and no dead end at any step, to the one finished bed, so the demonstration never bounces", () => {
-    for (const plan of PLANS) {
+    for (const plan of FILL) {
       for (let seed = 1; seed <= 25; seed++) {
         const { start, solution } = makePuzzle(plan, new Rng(seed));
         const bed = copyBed(start);
@@ -176,5 +180,123 @@ describe('Garden Rows', () => {
     expect(nextPlanting(tie, solution, 'rows', 1)).toEqual({ r: 0, c: 1, flower: 1 });
     expect(nextPlanting(tie, solution, 'rows', 0)).toEqual({ r: 0, c: 0, flower: 0 });
     expect(nextPlanting(tie, solution, 'rows', 2)).toEqual({ r: 0, c: 0, flower: 0 });
+  });
+
+  it('each bed draws its own seeded set of flowers, in palette order', () => {
+    for (const plan of PLANS) {
+      const seen = new Set<number>();
+      for (let seed = 1; seed <= 50; seed++) {
+        const { kinds, start, solution } = makePuzzle(plan, new Rng(seed));
+        expect(kinds, `${plan.name} #${seed}`).toHaveLength(plan.size);
+        expect(new Set(kinds).size).toBe(plan.size);
+        expect([...kinds].sort((a, b) => a - b)).toEqual(kinds);
+        for (const k of kinds) expect(k >= 0 && k < FLOWER_NAMES.length).toBe(true);
+        kinds.forEach((k) => seen.add(k));
+        // The bed itself holds flowers 0 to size - 1, which the kinds name.
+        for (const v of [...start.flat(), ...solution.flat()]) if (v !== null) expect(v >= 0 && v < plan.size).toBe(true);
+      }
+      // Across 50 seeds every one of the five flowers turns up, even on a 3 by 3 bed.
+      expect(seen.size, plan.name).toBe(FLOWER_NAMES.length);
+    }
+    expect(makePuzzle(PLANS[0], new Rng(9))).toEqual(makePuzzle(PLANS[0], new Rng(9)));
+    const sets = new Set(Array.from({ length: 20 }, (_, i) => makePuzzle(PLANS[2], new Rng(i + 1)).kinds.join()));
+    expect(sets.size).toBeGreaterThan(1);
+  });
+
+  describe('Mend the bed (level 7)', () => {
+    it('starts full, two flowers in one row swapped: two column repeats, and swapping them back mends it', () => {
+      expect(planFor(7)).toBe(MEND);
+      expect(MEND).toMatchObject({ size: 4, rule: 'both', blanks: 0, mend: true });
+      for (let seed = 1; seed <= 300; seed++) {
+        const { start, solution } = makePuzzle(MEND, new Rng(seed));
+        expect(isFull(start)).toBe(true);
+        expect(isSolved(solution, 'both')).toBe(true);
+        const diff: { r: number; c: number }[] = [];
+        start.forEach((row, r) => row.forEach((v, c) => { if (v !== solution[r][c]) diff.push({ r, c }); }));
+        expect(diff, `#${seed}`).toHaveLength(2);
+        expect(diff[0].r).toBe(diff[1].r);
+        // Rows still hold one of each; each of the two columns holds one repeat.
+        for (const row of start) expect(new Set(row).size).toBe(4);
+        const cols = [0, 1, 2, 3].filter((c) => new Set(start.map((row) => row[c])).size < 4);
+        expect(cols.sort()).toEqual([diff[0].c, diff[1].c].sort());
+        expect(clashing(start, 'both')).toHaveLength(4);
+        expect(isSolved(start, 'both')).toBe(false);
+        const mended = copyBed(start);
+        const [a, b] = diff;
+        [mended[a.r][a.c], mended[b.r][b.c]] = [mended[b.r][b.c], mended[a.r][a.c]];
+        expect(mended).toEqual(solution);
+        expect(deadEnds(start, 'both')).toEqual([]);
+      }
+    });
+
+    it('accepts any bed with no repeat, not only the one before the swap', () => {
+      const other: Bed = [[1, 0, 3, 2], [0, 1, 2, 3], [3, 2, 1, 0], [2, 3, 0, 1]];
+      expect(isSolved(other, 'both')).toBe(true);
+      // Its hint target keeps a valid bed as it is.
+      expect(mendTarget(other, 'both', makePuzzle(MEND, new Rng(1)).solution)).toEqual(other);
+    });
+
+    it('replanting a swapped flower where it was is a repeat, and lifting both leaves exactly one way back', () => {
+      for (let seed = 1; seed <= 100; seed++) {
+        const { start, solution } = makePuzzle(MEND, new Rng(seed));
+        const [a, b] = clashing(start, 'both').filter(({ r, c }) => start[r][c] !== solution[r][c]);
+        const bed = copyBed(start);
+        const flower = bed[a.r][a.c]!;
+        bed[a.r][a.c] = null;
+        expect(clash(bed, 'both', a.r, a.c, flower)?.by).toBe('column');
+        bed[b.r][b.c] = null;
+        expect(countSolutions(bed, 'both')).toBe(1);
+        expect(solve(bed, 'both')).toEqual(solution);
+      }
+    });
+
+    it('hints and the ghost finger lead from any mixed-up bed she can reach to a mended one', () => {
+      const given = [0, 1, 2, 3].map(() => [false, false, false, false]);
+      for (let seed = 1; seed <= 60; seed++) {
+        const puzzle = makePuzzle(MEND, new Rng(seed));
+        const rng = new Rng(seed * 7);
+        // A few of her own moves first: lift random flowers and replant any that fit.
+        const bed = copyBed(puzzle.start);
+        for (let i = 0; i < 6; i++) {
+          const r = rng.int(0, 3);
+          const c = rng.int(0, 3);
+          if (bed[r][c] !== null) bed[r][c] = null;
+          else {
+            const fits = candidates(bed, 'both', r, c);
+            if (fits.length) bed[r][c] = rng.pick(fits);
+          }
+        }
+        // Follow the hints: lift the flower it names, or plant the spot and packet it shows.
+        const byHint = copyBed(bed);
+        for (let step = 0; step < 40 && !isSolved(byHint, 'both'); step++) {
+          const h = hintFor(byHint, given, mendTarget(byHint, 'both', puzzle.solution), 'both');
+          expect(h, `hint #${seed}`).not.toBeNull();
+          if (h!.kind === 'fix') {
+            expect(byHint[h!.r][h!.c]).not.toBeNull();
+            byHint[h!.r][h!.c] = null;
+          } else {
+            expect(clash(byHint, 'both', h!.r, h!.c, h!.flower), `hint plants a repeat #${seed}`).toBeNull();
+            byHint[h!.r][h!.c] = h!.flower;
+          }
+        }
+        expect(isSolved(byHint, 'both'), `hint #${seed}`).toBe(true);
+        // The ghost finger from the starting bed: lift, then plant, never a repeat, and the bed blooms.
+        const byBot = copyBed(puzzle.start);
+        let selected = 0;
+        let moves = 0;
+        for (let m = nextMove(byBot, given, mendTarget(byBot, 'both', puzzle.solution), 'both', selected); m && moves < 40; moves++) {
+          if (m.lift) byBot[m.r][m.c] = null;
+          else {
+            expect(clash(byBot, 'both', m.r, m.c, m.flower)).toBeNull();
+            byBot[m.r][m.c] = m.flower;
+            selected = m.flower;
+          }
+          m = nextMove(byBot, given, mendTarget(byBot, 'both', puzzle.solution), 'both', selected);
+        }
+        // When both repeats share their other row too, swapping that row's pair mends it as well: either bed is right.
+        expect(isSolved(byBot, 'both'), `bot #${seed}`).toBe(true);
+        expect(moves).toBe(4);
+      }
+    });
   });
 });

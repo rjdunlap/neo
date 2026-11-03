@@ -2175,9 +2175,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Tap a flower you planted to take it out again.',
       { to: 1, text: 'Each row needs one of every flower.' },
       { from: 2, text: 'Each row and each column needs one of every flower.' },
+      { from: 7, text: 'The bed starts full, but two flowers in one row have swapped places, so two columns each have a repeat. Tap them to lift them out, then plant them back where they belong.' },
     ],
     finish: 'The round ends when every bed is full and right.',
-    note: 'A flower that repeats in a row or column will not stay. Every bed has exactly one way to finish it, and the glowing spot is a hint.',
+    note: [
+      { to: 6, text: 'A flower that repeats in a row or column will not stay. Every bed has exactly one way to finish it, and the glowing spot is a hint.' },
+      { from: 7, text: 'Lifting a flower is free; a replanted flower that repeats in a row or column will not stay. Any bed with no repeat counts, and the glowing flower is a hint.' },
+    ],
   },
   'ferry-jam': {
     goal: 'Slide the boats out of the way so the red ferry can reach the dock on the right.',

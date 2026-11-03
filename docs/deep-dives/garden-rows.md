@@ -14,8 +14,9 @@ She chooses a flower packet and taps an empty spot to plant it. The bed must hav
 | 4 | 4 by 4, 9 empty spots (2 beds) | school | Chains of forced spots |
 | 5 | 4 by 4, 11 empty spots (1 bed) | school | Longer chains, with fewer flowers to start from |
 | 6 | 5 by 5, five kinds, 14 empty spots (1 bed) | school | The same, on five kinds |
+| 7 | Mend the bed: a full 4 by 4 bed with two flowers swapped (2 beds) | school | Which two flowers are in the wrong place; lift and replant |
 
-Windows: pre-K 1–3 and school 3–6. **Content pools:** each bed is generated from the seed. A rows-and-columns bed is a shuffled cyclic Latin square with flowers removed one at a time, and a removal is kept only while exactly one way to finish remains. The flowers are always the first `size` of the five (daisy, tulip, rose, bluebell, sunflower), so every 3 by 3 bed is daisy, tulip and rose, and every 4 by 4 bed leaves out the sunflower.
+Windows (since 2026-11-02): pre-K 1–3 and school 3–7. **Content pools:** each bed is generated from the seed. A rows-and-columns bed is a shuffled cyclic Latin square with flowers removed one at a time, and a removal is kept only while exactly one way to finish remains. Since batch 1 each bed draws `size` of the five flowers (daisy, tulip, rose, bluebell, sunflower) from its seed, in palette order (`Puzzle.kinds`); before that the first `size` were always used.
 
 **Mistakes and help.** A planting that repeats a flower in its row or column will not stay. It counts as a miss, both clashing spots flash red, and the pet names the flower and whether the clash is in the row or the column. A planting that fits but leaves an empty spot with nothing that fits (`deadEnds`) also counts as a miss: the dead spot flashes orange and the pet says to take one out. After two misses `hintFor` glows either one of her flowers that does not belong (a fix) or the tightest empty spot together with its packet. Taking out one of her own flowers is always free; the flowers the bed started with stay.
 
@@ -98,9 +99,9 @@ None are new. Under the 2026-10-23 standing rule S8, the identity, band and land
 
 ## Build slices, in order
 
-1. **Batch garden-rows 1: F1 seeded flower sets + level 7 Mend the bed** (existing interaction, new level). Checks: typecheck; Garden Rows rule tests (the F1 and Mend the bed assertions above); one browser play of level 7 with one wrong replant and the glow, and level 3 with a non-default flower set; `fingerdemo` at 7. **Ready.**
-2. **Batch garden-rows 2: levels 8–9 Hedge boxes** (new rule on the existing interaction, new drawing). Checks: typecheck; rule tests; one play of level 8 with a box clash and one of level 9 to its sticker; one portrait screenshot of the hedges; `fingerdemo` at 9. **Ready after slice 1** (they share `PLANS` and the school range).
-3. **Batch garden-rows 3: level 10 One row (preschool opening)** (new band). Checks: typecheck; unit tests including the lands and registry band tests; one play of level 10 at preschool; `fingerdemo` at 10; the preschool Puzzle Peaks page screenshot. Ready after slice 1 (it adds `order`/`entryLevels` to the same `LEVELS`).
+1. **Batch garden-rows 1: F1 seeded flower sets + level 7 Mend the bed** (existing interaction, new level). Checks: typecheck; Garden Rows rule tests (the F1 and Mend the bed assertions above); one browser play of level 7 with one wrong replant and the glow, and level 3 with a non-default flower set; `fingerdemo` at 7. **Built 2026-11-02 ([PR #1126](https://github.com/rjdunlap/neo/pull/1126)); [build note](../archive/COMPLETED-2026-10-09.md#garden-rows-seeded-flower-sets-and-level-7-mend-the-bed-garden-rows-1-2026-11-02).**
+2. **Batch garden-rows 2: levels 8–9 Hedge boxes** (new rule on the existing interaction, new drawing). Checks: typecheck; rule tests; one play of level 8 with a box clash and one of level 9 to its sticker; one portrait screenshot of the hedges; `fingerdemo` at 9. **Ready** (slice 1 is built; they share `PLANS` and the school range).
+3. **Batch garden-rows 3: level 10 One row (preschool opening)** (new band). Checks: typecheck; unit tests including the lands and registry band tests; one play of level 10 at preschool; `fingerdemo` at 10; the preschool Puzzle Peaks page screenshot. Ready (slice 1 is built; it adds `order`/`entryLevels` to the same `LEVELS`).
 4. Later, after 2 is played: Two-flower beds (4×4) as level 11, needing its own definition.
 
 ## What was built in this session

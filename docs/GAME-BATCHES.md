@@ -947,6 +947,8 @@ Proof: new-interaction tier: typecheck, unit tests (order, entry and landing); o
 
 ### garden-rows 1: Seeded flower sets and Mend the bed
 
+**Built 2026-11-02 ([PR #1126](https://github.com/rjdunlap/neo/pull/1126)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-02--garden-rows-seeded-flower-sets-and-level-7-mend-the-bed-garden-rows-batch-1); [build note](archive/COMPLETED-2026-10-09.md#garden-rows-seeded-flower-sets-and-level-7-mend-the-bed-garden-rows-1-2026-11-02). No longer eligible for dispatch. Scope retained for reference.
+
 - **`garden-rows`, seeded flower sets and level 7 Mend the bed (dive slice 1)** (existing interaction, new level; school): F1 seeded flower sets and level 7 Mend the bed as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).
 
 Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
