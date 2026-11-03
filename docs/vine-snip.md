@@ -1,6 +1,6 @@
 # Vine Snip — first playable slice (sketch)
 
-Status: **sketch** (written 2026-10-13 from the developer's request for a Cut the Rope type game). Nothing is built. Proposed game ID: `vine-snip`. **Claimed 2026-11-03 on branch `claude/define-vine-snip`:** its docs-only ready definition (chunks 25 and 27), written to `docs/definitions/vine-snip.md`. Review it against the [planning rules](ROADMAP.md#planning-rules) and run `scripts/overlap.sh vine-snip src/engine/rope.ts` before building.
+Status: **defined 2026-11-03** in [definitions/vine-snip.md](definitions/vine-snip.md), which supersedes this sketch's engine, levels and open calls (closed-form rules in the game's `logic.ts` under the October 23 S4 decision; counting dropped as a Fruit Slice overlap; *Which vine stays?* and *Two friends* replace levels 4–5). Written 2026-10-13 from the developer's request for a Cut the Rope type game. Nothing is built. Proposed game ID: `vine-snip`. The text below is the original sketch, kept for its research.
 
 "Cut the Rope" and its monster are ZeptoLab's names and characters, so this game uses its own: fruit hangs from vines in the orchard, and a hungry island friend waits below. The idea of cutting a rope so something falls is not protected; the characters and art are not borrowed.
 
