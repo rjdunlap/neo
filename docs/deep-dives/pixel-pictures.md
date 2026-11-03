@@ -21,10 +21,10 @@ Ranges: preschool 1–2, pre-K 1–3, school 3–6. Squares are 100 units (`CELL
 
 **Accounting today:** a square that should stay empty, or the wrong colour, is a miss with a spoken line (`pixel.notthere`, `notcolor`, `notmirror`, `notclue`); on logic levels the wrong square gets a grey cross. Two misses glow a square and count one hint (`pixel.hint`). Levels 4–5 glow a square line logic decides (`deduce`); levels 1–3 and **6** glow the first open square of the picture in reading order, and level 6 also selects its colour.
 
-**Known gaps** (source reading, not play):
+**Known gaps** (source reading, not play; the first two were fixed by batch 1 on 2026-11-02: level 2 now draws 3 of 6 pictures, level 6 shows 2 of 5 each checked by `colorLineSolvable`, and its hint and the ghost finger follow `colorLogicCell`):
 
-- **Levels 2 and 6 repeat exactly.** Each shows as many pictures as its pool holds (3 of 3, 2 of 2), so every round at those levels is the same set, only reordered. The rule test asserts `pool ≥ shown`, which equality passes.
-- **Level 6 is not checked for colour logic.** `lineSolvable` is one-colour; no test asserts that a two-colour picture can be solved from its coloured clues alone, and its hint and the ghost finger walk the picture in reading order rather than by what the clues decide (the bot copies; it does not demonstrate the reasoning the level asks for).
+- ~~**Levels 2 and 6 repeat exactly.** Each shows as many pictures as its pool holds (3 of 3, 2 of 2), so every round at those levels is the same set, only reordered. The rule test asserts `pool ≥ shown`, which equality passes.~~ Fixed.
+- ~~**Level 6 is not checked for colour logic.** `lineSolvable` is one-colour; no test asserts that a two-colour picture can be solved from its coloured clues alone, and its hint and the ghost finger walk the picture in reading order rather than by what the clues decide (the bot copies; it does not demonstrate the reasoning the level asks for).~~ Fixed.
 - No `coplayHint` beyond "guess together"; a co-player has no role of their own. No couch entry ([Picture Logic](../GAMES.md#picture-logic) is the grown-up and couch nonogram game and reuses `placements`).
 - The [device check](../DEVICE-CHECKS.md) still asks whether an older child can play the logic levels.
 
@@ -106,7 +106,7 @@ Each band's `BandLevels` entry carries its own `order` (`src/progress/difficulty
 
 ## Build slices, in order
 
-1. **Fresh pictures and colour logic (batch pixel-pictures 1).** Level 2 pool 3 → 6, level 6 pool 2 → 5 with `colorLineSolvable`; level-6 hint and ghost finger use colour deduction; the strict pool test. If the little cat or the sailboat fails `colorLineSolvable`, it leaves the level-6 pool (it stays a level-5 logic picture) and a further new picture replaces it. *Check:* typecheck and the game's rule tests; the hint/bot change adds one filtered regression play of level 6 (the `woods` suite's Pixel Pictures 6 case) and `fingerdemo` at 6.
+1. **Built 2026-11-02 ([PR #1125](https://github.com/rjdunlap/neo/pull/1125)): Fresh pictures and colour logic (batch pixel-pictures 1).** Level 2 pool 3 → 6, level 6 pool 2 → 5 with `colorLineSolvable`; level-6 hint and ghost finger use colour deduction; the strict pool test. If the little cat or the sailboat fails `colorLineSolvable`, it leaves the level-6 pool (it stays a level-5 logic picture) and a further new picture replaces it. *Check:* typecheck and the game's rule tests; the hint/bot change adds one filtered regression play of level 6 (the `woods` suite's Pixel Pictures 6 case) and `fingerdemo` at 6.
 2. **Levels 7–8: both ways and twice as big (batch pixel-pictures 2),** after batch 1. *Check:* new levels on an existing interaction: typecheck, rule tests, one browser play of level 8 (the new top) with one wrong square and the glow, a level-7 case in the same filtered run, `fingerdemo` at 7 and 8, one portrait screenshot of level 8. Stop after level 7 if the allowance cannot cover 8.
 3. **Level 9: two colours, small (batch pixel-pictures 3).** *Check:* typecheck, rule tests (order/entry), one browser play of level 9 and `fingerdemo` at 9.
 4. **Level 10: my own picture (batch pixel-pictures 4).** A new interaction (empty a square, Done). *Check:* typecheck, unit tests, one scripted play to Done with a kept design, one portrait screenshot, `fingerdemo` at 10, the `creations` suite filtered to Pixel Pictures only if the kept shape changes (it should not).
