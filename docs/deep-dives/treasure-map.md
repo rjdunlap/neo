@@ -21,11 +21,8 @@ A parchment grid with row 1 at the bottom, as on maps and graphs. A sign at the 
 **What a mistake does.** A wrong dig is a miss: a boing, a scratch mark left on the square, and a spoken reason from `compare()` ("Right column! Now look up and down it for the row", "Right row!â€¦", or "Find the column first"); level 4 repeats the directions instead. Two wrong digs light the target's column and row (level 5: the two clue lines) and charge one hint.
 
 **Known gaps.**
-- The how-to card's level-3 step says "Drag the thing to the named square", but level 3 is a tap like level 2 (`src/content/howto.ts`). The card is wrong, not the game.
-- Level 5's hint draws the two clue lines, but its spoken hint is the shared `map.hint` ("Look where the glowing column and row cross"), which names a column and row that are not drawn.
-- Level 4's hint lights the answer's column and row, which skips the counting the level teaches. A hint that leads somewhere would light the first leg of the walk from the pet.
 - A wrong dig at level 4 says only "count the steps again"; nothing shows where her square was relative to the pet.
-- Every level has four finds and no fresh map, so replay varies only the target squares (and, at level 1, not even the headers).
+- Every level has four finds, so replay varies the target squares, the level 1 headers and the map dressing (fixed 2026-11-03: the how-to level-3 tap step, level 5's own clue-line hint and level 4's first-leg hint).
 - `map.pictures`, `map.place` and `map.clues` speak names through slots, so new pictures or places use device speech until slotted clips (V3).
 - No preschool window, though the [roadmap](../ROADMAP.md)'s chunk 18 lists Treasure Map among the preschool openings.
 
@@ -72,7 +69,7 @@ The arc: preschool asks for one line (new entry), pre-K pictures and letters (1â
 
 ### Fresh content inside existing levels
 
-**Fresh maps and true hints** (batch treasure-map 1, existing-game fix tier). One batch, all in the built game:
+**Fresh maps and true hints** (batch treasure-map 1, built 2026-11-03, existing-game fix tier). One batch, all in the built game:
 - Level 1's headers draw a seeded set: row pictures from a pool of seven (apple, fish, star, flower, shell, plus the heart from `shapes.ts` and `prop('balloon')` from `props.ts`; nothing new to draw) shuffled per round, and column colours shuffled from the five. `makeFinds` stays a pure function; a new `headersFor(plan, rng)` returns the order and the sign and voice read from it.
 - A seeded map dressing per round (three tints and corner doodles), cosmetic only.
 - Level 5 speaks a new `map.cluehint` ("Follow the two glowing lines to where they meet") instead of `map.hint`.
