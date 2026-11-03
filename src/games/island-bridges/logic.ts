@@ -297,8 +297,8 @@ export function makePuzzle(plan: BridgePlan, rng: Rng): Puzzle {
     // In reading order, so the islands and edges are numbered the same way as when the puzzle is read back from its picture.
     const numbered = islands.map((il, i) => ({ ...il, n: counts[i] })).sort((a, b) => a.r - b.r || a.c - b.c);
     const layout = layoutOf(size, numbered);
-    const { found } = solve(layout);
     if (plan.lonely && !layout.at.some((edges) => edges.length === 1)) continue;
+    const { found } = solve(layout);
     if (found.length === 1 && (!plan.counting || bycounting(layout))) return { size, layout, solution: found[0], par: found[0].reduce((n, p) => n + p, 0) };
   }
   throw new Error(`could not make a puzzle for ${plan.name}`);
