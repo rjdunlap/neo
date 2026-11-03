@@ -73,3 +73,12 @@
 - Open: fa on the iPad marimba and a grown-up singing along to both tunes ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
 
 ---
+
+## 2026-11-03 — Sink or Float fresh things (sink-float batch 1)
+
+- [PR #1147](https://github.com/rjdunlap/neo/pull/1147): five new things (feather, marble, log, ice cube, paper clip; obvious pool 7, full pool 14) with art, journal entries and voice lines; property tests replace the pinned-draws test.
+- Ran: `npm run typecheck`; full unit suite, 297 files, 4522 tests; `BROWSER_SUITE=fourth FOURTH_ONLY=sink-fresh`, server http://localhost:5262 (level 4 round rock, marble, boat, duck, ball with two wrong sorts and the glow, 2 misses/1 hint; level 6 round feather, ice, boat, marble, rock, ball, guesses, sticker); portrait screenshot reviewed. A game-reviewer pass found no defects.
+- Not run: `npm run build` (CI runs it on the PR), `fingerdemo` (bot unchanged), couch level 6 (same slot), the marble recolour was not re-shot.
+- Open: do "ice cube" and "paper clip" sound right in device speech, and a child's reaction ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+---

@@ -2489,7 +2489,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sing-along-b
 
 Branch `claude/sink-float-fresh-things`, PR #1147: [dive slice 1](../deep-dives/sink-float.md#build-slices-in-order). `THINGS` grew from nine to fourteen (feather and marble obvious; log, ice cube and paper clip surprises), each with code-drawn `thingArt`, a journal entry and voice line (the journal now holds thirty-six game observations), and `thingWord` for the two-word names. The pinned-draws test became property tests. No new level; bot, couch, bands and how-to card unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--sink-or-float-fresh-things-sink-float-batch-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sink-or-float-fresh-things-sink-float-batch-1).
 
 ## Sudoku Garden, a 4 by 4 bed to start (batch sudoku-garden 1, 2026-11-03)
 
