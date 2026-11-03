@@ -907,6 +907,8 @@ Proof: typecheck and the game's rule tests (pool sizes, solvability, hint leads 
 
 ### pixel-pictures 2: Both ways and Twice as big
 
+**Claimed 2026-11-03 on branch `claude/pixel-pictures-7-8`** (draft PR; levels 7 and 8 as one batch).
+
 - **`pixel-pictures`, level 7 Both ways and level 8 Twice as big (dive slice 2, after the built batch 1)** (new levels on an existing interaction; school): level 7 copies a drawn 6×6 quarter across two mirror lines into the other three (`PixelMode` gains `mirror2`; `pixel.notmirror2`, hint glows an open square whose mirror is drawn); level 8 copies a 3×3 model at double size into 2×2 blocks (`scaleUp(p, 2)`; `pixel.notbig`, hint glows one block). Authored four-fold pictures and five 3×3 models; how-to steps scoped from 7; bot through `pixelTouch`. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#proposed-ladder)
 
 Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the suite case, the README row and `docs/GAMES.md`.
