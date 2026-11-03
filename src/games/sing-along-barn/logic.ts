@@ -1,3 +1,4 @@
+import { MIDDLE_C, stepToMidi } from '../../audio/notes';
 import type { AnimalSound } from '../../audio/sfx';
 import type { Rng } from '../../engine/random';
 
@@ -17,7 +18,15 @@ export const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
 export interface Phrase {
   syllables: readonly string[];
   steps: readonly number[];
+  /**
+   * The exception decided 2026-10-23: `steps` count semitones from middle C (0 = C4, 5 = F4, -1 = the B below), so a
+   * known tune can sound fa and ti. Only a tune on `OWN_NOTES` may hold such a phrase (a test guards it).
+   */
+  semitones?: true;
 }
+
+/** The note a phrase sounds at `at`, as MIDI: a pentatonic step, or a semitone for the allow-listed tunes. */
+export const phraseMidi = (p: Phrase, at: number): number => (p.semitones ? MIDDLE_C + p.steps[at] : stepToMidi(p.steps[at]));
 
 /**
  * "Old MacDonald Had a Farm" is traditional. The tune is written by scale degree (do do do sol la la sol, mi mi re re do) in
@@ -113,7 +122,37 @@ export const POCKET: Phrase = { syllables: ['a', 'pock', 'et', 'full', 'of', 'po
 export const ASHES: Phrase = { syllables: ['Ash', 'es', 'ash', 'es'], steps: [3, 2, 3, 2] };
 export const FALL_DOWN: Phrase = { syllables: ['we', 'all', 'fall', 'down'], steps: [3, 3, 3, 0] };
 
-export type TuneId = 'macdonald' | 'buns' | 'mary' | 'clair' | 'rain' | 'itsy' | 'bounce' | 'ring';
+/**
+ * "Twinkle, Twinkle, Little Star" is traditional (the French "Ah! vous dirai-je, maman"). It needs fa, so it is one of
+ * the two tunes with their own notes. In C: C C G G A A G, F F E E D D C for the opening, then G G F F E E D twice for
+ * "Up above the world so high, like a diamond in the sky" (Hoffman Academy's lesson gives the same notes). Checked
+ * against the score in Wikipedia's article (C major). Semitones from middle C, one note per sung syllable; a grown-up
+ * singing it is the final check (DEVICE-CHECKS).
+ */
+export const TWINKLE_STAR: Phrase = { syllables: ['Twin', 'kle', 'twin', 'kle', 'lit', 'tle', 'star'], steps: [0, 0, 7, 7, 9, 9, 7], semitones: true };
+export const HOW_I_WONDER: Phrase = { syllables: ['how', 'I', 'won', 'der', 'what', 'you', 'are'], steps: [5, 5, 4, 4, 2, 2, 0], semitones: true };
+export const UP_ABOVE: Phrase = { syllables: ['Up', 'a', 'bove', 'the', 'world', 'so', 'high'], steps: [7, 7, 5, 5, 4, 4, 2], semitones: true };
+export const LIKE_A_DIAMOND: Phrase = { syllables: ['like', 'a', 'dia', 'mond', 'in', 'the', 'sky'], steps: [7, 7, 5, 5, 4, 4, 2], semitones: true };
+
+/**
+ * "The Wheels on the Bus" is traditional (American, after "Here We Go Round the Mulberry Bush"). Transposed to C from
+ * the score in Wikipedia's article (G major): sol, do do do do mi sol mi do for "The wheels on the bus go round and
+ * round", and re sol, sol, do for "all through the town": G C D E G, all inside the pentatonic set, so this short form
+ * needs no exception (the middle "round and round, round and round" line, re re re ti, la, sol,, would need ti, and
+ * is left out). Like Old MacDonald's short form: the opening line and "all through the town" once, then "The cow on
+ * the bus says moo, moo, moo, all through the town" for each friend, who sounds on each moo. `@` is the friend's
+ * name, mid-line. The line is split after "bus" so a row holds at most eight beads.
+ */
+export const WHEELS_ON_THE_BUS: Phrase = { syllables: ['The', 'wheels', 'on', 'the', 'bus'], steps: [-2, 0, 0, 0, 0] };
+export const ROUND_AND_ROUND: Phrase = { syllables: ['go', 'round', 'and', 'round'], steps: [2, 3, 2, 0] };
+export const ALL_THROUGH_THE_TOWN: Phrase = { syllables: ['all', 'through', 'the', 'town'], steps: [1, -2, -2, 0] };
+export const FRIEND_ON_THE_BUS: Phrase = { syllables: ['The', '@', 'on', 'the', 'bus'], steps: [-2, 0, 0, 0, 0] };
+export const SAYS_MOO: Phrase = { syllables: ['says', '~', '~', '~'], steps: [2, 3, 2, 0] };
+
+export type TuneId = 'macdonald' | 'buns' | 'mary' | 'clair' | 'rain' | 'itsy' | 'bounce' | 'ring' | 'twinkle' | 'wheels';
+
+/** The only tunes that may sound a note outside the pentatonic set (decided 2026-10-23; a test guards it). */
+export const OWN_NOTES: readonly TuneId[] = ['twinkle'];
 
 /**
  * A song the barn sings: an opening nobody answers, then a verse for each friend. A friend answers on the last note
@@ -199,10 +238,29 @@ export const RING: Tune = {
   answers: FALL_DOWN,
   namesAnimal: false,
 };
-export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE, RING];
+/** "Twinkle, twinkle, little star, how I wonder what you are" opens it; each friend's verse is "Up above the world so high, like a diamond in the sky", answering on "sky". */
+export const TWINKLE: Tune = {
+  id: 'twinkle',
+  opening: [TWINKLE_STAR, HOW_I_WONDER],
+  verse: [UP_ABOVE, LIKE_A_DIAMOND],
+  answers: LIKE_A_DIAMOND,
+  namesAnimal: false,
+};
+/** "The wheels on the bus go round and round, all through the town" opens it; each friend rides the bus and says its sound three times. */
+export const WHEELS: Tune = {
+  id: 'wheels',
+  opening: [WHEELS_ON_THE_BUS, ROUND_AND_ROUND, ALL_THROUGH_THE_TOWN],
+  verse: [FRIEND_ON_THE_BUS, SAYS_MOO, ALL_THROUGH_THE_TOWN],
+  answers: SAYS_MOO,
+  namesAnimal: false,
+  sounds: [SAYS_MOO],
+};
+export const TUNES: readonly Tune[] = [OLD_MACDONALD, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE, RING, TWINKLE, WHEELS];
 
 export interface Note {
   step: number;
+  /** The pitch it sounds: `step` on the pentatonic, or its semitone for a tune with its own notes. */
+  midi: number;
   /** What is sung on this note; the animal's name on a verse's last note of its line when the tune names it. */
   syllable: string;
   /** Which phrase of the song this note is in (0-based), and its place in that phrase. */
@@ -226,11 +284,13 @@ export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD)
     p.steps.forEach((step, at) => {
       const last = at === p.steps.length - 1;
       const sound = animal !== null && p.syllables[at] === '~' && tune.sounds?.includes(p) === true;
+      const name = animal !== null && p.syllables[at] === '@';
       const names = animal !== null && p === tune.answers && last;
       const answers = names || sound;
       notes.push({
         step,
-        syllable: sound ? VOICES[animal!].sound : names && tune.namesAnimal ? VOICES[animal!].word : p.syllables[at],
+        midi: phraseMidi(p, at),
+        syllable: sound ? VOICES[animal!].sound : name || (names && tune.namesAnimal) ? VOICES[animal!].word : p.syllables[at],
         phrase,
         at,
         of: p.steps.length,
@@ -272,7 +332,7 @@ export const PLANS: readonly SingPlan[] = [
 ];
 
 /** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */
-export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE, RING] : TUNES);
+export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, ...TUNES.slice(1)] : TUNES);
 
 export const planFor = (level: number): SingPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

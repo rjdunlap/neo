@@ -4,7 +4,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
 async function singBarnPlay() {
   const tapNotes = (n) => page.evaluate(async (n) => { for (let i = 0; i < n; i++) { kit.tap(512, 300); await kit.sleep(130); } }, n);
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { idx: g.idx, total: g.song.length, phase: g.phase, singer: g.singer, order: [...g.order], placed: [...g.placed] }; });
-  // Each round draws one of eight songs from its seed; relaunch until the round sings the one under test.
+  // Each round draws one of ten songs from its seed; relaunch until the round sings the one under test.
   const launchTune = async (level, id) => {
     const seen = [];
     for (let k = 0; k < 60; k++) {
@@ -14,6 +14,49 @@ async function singBarnPlay() {
     }
     assert.fail(`no ${id} round in 60 launches: ${seen.join(' ')}`);
   };
+  const roundResult = () => page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; });
+  // The tunes with their own notes (batch sing-along-barn 1): a Wheels on the Bus round at level 1, then the ten-card
+  // chooser upright at level 5, choosing Twinkle. `SING_ONLY=tunes` runs only this part.
+  async function tunesPlay() {
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    // Wheels, level 1: "The wheels on the bus go round and round, all through the town" (13), then "The <friend> on the bus says <sound> x3, all through the town" (13); the friend sounds on each.
+    await launchTune(1, 'wheels');
+    const song = await page.evaluate(() => neo.scene.game.song.map((n) => ({ s: n.syllable, a: n.answers, m: n.midi })));
+    assert.equal(song.length, 13 + 13);
+    const friend = (await state()).order[0];
+    assert.equal(song[14].s, friend, 'the friend is named mid-line');
+    assert.equal(song.filter((n) => n.a).length, 3, 'the friend sounds on each of its three sounds');
+    await tapNotes(25); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
+    assert.deepEqual(await roundResult(), [0, 0]);
+    // Level 5 upright: ten song cards in two rows of five, each at least 100 units, none touching, all on screen; the star card sings Twinkle.
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+    await launch('sing-along-barn', 5); await page.waitForTimeout(2000);
+    const cards = await page.evaluate(() => neo.scene.game.tuneCards.map((c) => ({ x: c.x - 110 * c.scale.x, y: c.y - 100 * c.scale.y, w: 220 * c.scale.x, h: 200 * c.scale.y })));
+    const view = await page.evaluate(() => ({ w: neo.view.w, h: neo.view.h }));
+    assert.equal(cards.length, 10);
+    assert.equal(new Set(cards.map((c) => c.y)).size, 2, 'two rows');
+    for (const [k, c] of cards.entries()) {
+      assert.ok(c.w >= 100 && c.h >= 100, `card ${k} is ${c.w} by ${c.h}`);
+      assert.ok(c.x >= 0 && c.x + c.w <= view.w && c.y >= 0 && c.y + c.h <= view.h, `card ${k} is on screen`);
+      for (const d of cards.slice(0, k)) assert.ok(c.x >= d.x + d.w || d.x >= c.x + c.w || c.y >= d.y + d.h || d.y >= c.y + c.h, `card ${k} touches another`);
+    }
+    await screenshot('sing-along-barn-5-ten-cards-portrait');
+    await page.evaluate(() => kit.tapOn(neo.scene.game.tuneCards[8])); await page.waitForTimeout(1800);
+    assert.equal(await page.evaluate(() => neo.scene.game.tune.id), 'twinkle');
+    await tapNotes(14);
+    await page.waitForFunction(() => neo.scene.game.phase === 'invite', null, { timeout: 5000 }); await page.waitForTimeout(600);
+    for (const a of ['cow', 'pig', 'duck']) {
+      await page.evaluate((a) => kit.tapOn(neo.scene.game.friends.get(a), 0, -66), a); await page.waitForTimeout(300);
+      await tapNotes(14);
+      if (a !== 'duck') { await page.waitForFunction(() => neo.scene.game.phase === 'invite', null, { timeout: 5000 }); await page.waitForTimeout(600); }
+    }
+    await finished('sing-along-barn');
+    assert.deepEqual(await roundResult(), [0, 0]);
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    assert.deepEqual(errors, []);
+    log('Sing-Along Barn tunes: a Wheels on the Bus round at level 1 (friend named mid-line, three sounds), ten cards in two rows upright at level 5, Twinkle chosen and sung through three verses, one sticker each, no misses or hints');
+  }
+  if (process.env.SING_ONLY === 'tunes') return tunesPlay();
   // Level 1: the farm picks one animal; every tap is the next note, mashing fast still sings it, and nothing can be wrong.
   await launchTune(1, 'macdonald');
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);
@@ -81,21 +124,7 @@ async function singBarnPlay() {
   assert.deepEqual([(await state()).phase, (await state()).total], ['sing', 13 + 8]);
   await tapNotes(20); await page.waitForTimeout(200); await tapNotes(1); await finished('sing-along-barn');
   assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sing-along-barn').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
-  // Level 5 upright: eight song cards in one row, each at least 100 units, none touching, all on screen; the rosie card sings Ring Around the Rosie.
-  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
-  await launch('sing-along-barn', 5); await page.waitForTimeout(1500);
-  const cards = await page.evaluate(() => neo.scene.game.tuneCards.map((c) => ({ x: c.x - 110 * c.scale.x, w: 220 * c.scale.x, h: 200 * c.scale.y })));
-  const vw = await page.evaluate(() => neo.view.w);
-  assert.equal(cards.length, 8);
-  for (const [k, c] of cards.entries()) {
-    assert.ok(c.w >= 100 && c.h >= 100, `card ${k} is ${c.w} by ${c.h}`);
-    assert.ok(c.x >= 0 && c.x + c.w <= vw, `card ${k} is on screen`);
-    if (k > 0) assert.ok(c.x > cards[k - 1].x + cards[k - 1].w, `cards ${k - 1} and ${k} do not touch`);
-  }
-  await screenshot('sing-along-barn-5-eight-cards-portrait');
-  await page.evaluate(() => kit.tapOn(neo.scene.game.tuneCards[7])); await page.waitForTimeout(1800);
-  assert.equal(await page.evaluate(() => neo.scene.game.tune.id), 'ring');
-  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+  await tunesPlay();
   // Level 3: she asks two friends in (a second tap on the same friend does nothing), then they sing in the order she chose.
   await launchTune(3, 'macdonald');
   assert.equal((await state()).phase, 'invite');
