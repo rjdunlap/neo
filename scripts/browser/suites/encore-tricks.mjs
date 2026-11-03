@@ -14,20 +14,28 @@ async function encoreTricks() {
       const {fitsParcel}=await import('/src/games/quick-tricks/second-logic.ts');
       for(let turns=0;!fitsParcel(g.plan.shape,g.turns,g.round.turn);turns++){if(turns>3)throw new Error('Parcel did not turn');kit.tapOn(g.turn);await kit.sleep(450);}
       await drop(g.parcel,g.target.x,g.target.y);await next();
-      // Setting places: checking early teaches the missing friend; placements are exploration.
+      // Setting places: no yellow arrow (the last bowl wins by itself), so a tap where it was is free; a bowl on a filled place is free too.
+      if(g.submit.visible)throw new Error('Yellow arrow shown at the picnic');
       for(let k=0;k<2;k++){kit.tapOn(g.submit);await kit.sleep(500);}
+      const filled=g.seats.find(s=>s.filled);if(filled)await drop(g.bowl,filled.node.x,filled.node.y);
+      if(g.misses!==2||g.hints!==1)throw new Error(`Encore picnic scores ${g.misses}/${g.hints}`);
       for(const s of g.seats.filter(s=>!s.filled))await drop(g.bowl,s.node.x,s.node.y);
+      if(g.friends.length!==g.plan.friends||new Set(g.kinds).size!==g.kinds.length)throw new Error('Picnic friends are not distinct critters');
       await next();
       // Part-whole berries: count the starting berries, add, undo an extra, then serve.
       for(let k=0;k<2;k++){kit.tapOn(g.submit);await kit.sleep(500);}
       const need=g.plan.total-g.berries;
       for(let k=0;k<need+1;k++){kit.tapOn(g.berry);await kit.sleep(450);}
       kit.tapOn(g.undo);await kit.sleep(500);kit.tapOn(g.submit);await kit.sleep(500);
-      if(g.misses!==6||g.hints!==3)throw new Error(`Encore scores ${g.misses}/${g.hints}`);
+      if(g.misses!==4||g.hints!==2)throw new Error(`Encore scores ${g.misses}/${g.hints}`);
     });
-    await screenshot(`quick-tricks-encore-${level}`);await tap('neo.scene.game.next');await finished('quick-tricks');
-    assert.deepEqual(await page.evaluate(()=>{const r=kit.store.stats('quick-tricks').history.at(-1);return [r.level,r.misses,r.hints];}),[level,6,3]);
-    await page.setViewportSize({width:1024,height:768});log(`Quick Tricks ${level}: parcel turns, picnic places, berry totals, undo, hints and one saved sticker passed`);
+    await screenshot(`quick-tricks-encore-${level}`);await tap('neo.scene.game.next');
+    // The cast takes a bow before the round ends.
+    await page.waitForFunction(()=>neo.scene.game.finished&&neo.scene.game.friends.length===neo.scene.game.plan.friends);
+    if(level===6)await screenshot('quick-tricks-encore-bow');
+    await finished('quick-tricks');
+    assert.deepEqual(await page.evaluate(()=>{const r=kit.store.stats('quick-tricks').history.at(-1);return [r.level,r.misses,r.hints];}),[level,4,2]);
+    await page.setViewportSize({width:1024,height:768});log(`Quick Tricks ${level}: parcel turns, picnic places with no yellow arrow, berry totals, undo, hints, the bow and one saved sticker passed`);
   }
 }
 
