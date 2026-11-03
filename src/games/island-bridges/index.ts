@@ -13,11 +13,11 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { courseMinimum, courseSeas, isBridgeCourse } from './course';
 import {
-  canAdd, directionOf, edgeToward, focusPath, hintFor, isSolved, islandToward, makePuzzles, otherEnd, planFor, planksAt, edgeAt, headStart, trouble, waterOf, type BridgePlan, type Hint, type Puzzle,
+  canAdd, directionOf, edgeToward, focusPath, hintFor, isSolved, islandToward, makePuzzles, otherEnd, planFor, planksAt, edgeAt, headStart, trouble, waterOf, LEVEL_ORDER, type BridgePlan, type Forced, type Hint, type Puzzle,
 } from './logic';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 5, order: [...LEVEL_ORDER] } };
 
 const SEA = 0xcfe8f7;
 const SEA_LINE = 0x7aa7c7;
@@ -30,6 +30,7 @@ type Mode = 'move' | 'add' | 'remove';
 
 /** The smallest touch target in a grown-up game, in logical units. */
 const MIN_TOUCH = 64;
+const FORCED_LINE: Record<Forced, LineId> = { full: 'bridges.hint-full', 'last-way': 'bridges.hint-last-way', 'every-way': 'bridges.hint-every-way' };
 /** Touch play: three buttons beside (or under) the sea: Take off (a switch), Hint and Start over. */
 type SlotKind = 'take' | 'hint' | 'again';
 interface Slot { kind: SlotKind; x: number; y: number; w: number; h: number }
@@ -516,7 +517,7 @@ class IslandBridges implements Game {
     const e = this.layout.edges[h.edge];
     this.focus = h.kind === 'forced' ? h.island : e.a;
     this.report();
-    const line: LineId = h.kind === 'fix' ? (this.touch ? 'bridges.hint-fix-touch' : 'bridges.hint-fix') : h.kind === 'forced' ? 'bridges.hint-forced' : 'bridges.hint-next';
+    const line: LineId = h.kind === 'fix' ? (this.touch ? 'bridges.hint-fix-touch' : 'bridges.hint-fix') : h.kind === 'forced' ? FORCED_LINE[h.why] : 'bridges.hint-next';
     void this.ctx.say(line);
   }
 
@@ -656,6 +657,7 @@ export const islandBridges: GameModule = {
   coplayHint: 'Tap the water between two islands to lay a plank, and again for a second. Ask which island has only one way to finish its number.',
   offScreen: 'Draw dots on paper and join them with lines so each dot has as many lines as its number, and none cross.',
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [5],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   hubIcon: () => new BridgeIcon(),

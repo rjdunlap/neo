@@ -233,6 +233,8 @@ export interface BridgePlan {
   counting: boolean;
   /** Puzzles in one round. */
   puzzles: number;
+  /** Keep only a sea with an island that faces a single neighbour, the easiest place to start. */
+  lonely?: boolean;
 }
 
 export const PLANS: BridgePlan[] = [
@@ -240,7 +242,12 @@ export const PLANS: BridgePlan[] = [
   { name: 'A 9 by 9 sea', size: 9, islands: { min: 11, max: 14 }, counting: true, puzzles: 1 },
   { name: 'A busier 9 by 9 sea, where counting is not always enough', size: 9, islands: { min: 15, max: 18 }, counting: false, puzzles: 1 },
   { name: 'A big 11 by 11 sea', size: 11, islands: { min: 19, max: 24 }, counting: false, puzzles: 1 },
+  // Level 5, the entry: played first by the grown-up order.
+  { name: 'A small 5 by 5 sea to start', size: 5, islands: { min: 4, max: 6 }, counting: true, puzzles: 1, lonely: true },
 ];
+
+/** The levels in play order, easiest first: the small sea, appended as level 5, comes before level 1. */
+export const LEVEL_ORDER = [5, 1, 2, 3, 4] as const;
 
 export const planFor = (level: number): BridgePlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -291,6 +298,7 @@ export function makePuzzle(plan: BridgePlan, rng: Rng): Puzzle {
     const numbered = islands.map((il, i) => ({ ...il, n: counts[i] })).sort((a, b) => a.r - b.r || a.c - b.c);
     const layout = layoutOf(size, numbered);
     const { found } = solve(layout);
+    if (plan.lonely && !layout.at.some((edges) => edges.length === 1)) continue;
     if (found.length === 1 && (!plan.counting || bycounting(layout))) return { size, layout, solution: found[0], par: found[0].reduce((n, p) => n + p, 0) };
   }
   throw new Error(`could not make a puzzle for ${plan.name}`);
@@ -336,35 +344,62 @@ export const otherEnd = (layout: Layout, edge: number, island: number) => (layou
 export type Hint =
   /** A plank she placed that is not in the solution: take it off. */
   | { kind: 'fix'; edge: number }
-  /** An island that can only be finished one way: this edge needs one more plank. */
-  | { kind: 'forced'; edge: number; island: number }
+  /** An island whose number and room force a plank onto this edge, and why (see `Forced`). */
+  | { kind: 'forced'; edge: number; island: number; why: Forced }
   /** Nothing is forced by one island alone: an edge that needs a plank in the solution. */
   | { kind: 'next'; edge: number };
 
 /**
+ * Why one island forces a plank, read from its number and the room it has, never from the answer:
+ * - `full`: it needs all the room it has left (*just enough room*), so every open bridge carries all it can;
+ * - `last-way`: only one bridge still has room (*one way left*), so the rest of the number goes there;
+ * - `every-way`: it needs all but one of its room (*one short of full*), so every bridge that could take two needs one.
+ */
+export type Forced = 'full' | 'last-way' | 'every-way';
+
+/** What an island still needs, and for each of its edges the planks that edge could still take (0 when crossed or full). */
+export function roomOf(layout: Layout, planks: Planks, island: number): { left: number; caps: { edge: number; cap: number }[]; room: number } {
+  const caps = layout.at[island].map((k) => {
+    if (layout.crossing[k].some((f) => planks[f] > 0)) return { edge: k, cap: 0 };
+    const other = otherEnd(layout, k, island);
+    return { edge: k, cap: Math.max(0, Math.min(MAX_PLANKS - planks[k], layout.islands[other].n - planksAt(layout, planks, other))) };
+  });
+  return { left: layout.islands[island].n - planksAt(layout, planks, island), caps, room: caps.reduce((n, c) => n + c.cap, 0) };
+}
+
+/**
+ * The plank one island forces, by the first reason in `full`, `last-way`, `every-way` that any island shows. Each forced edge
+ * must carry at least one more plank in every finished sea (what it could take is at least what the island needs beyond the
+ * room of its other edges), so the hint never contradicts the answer.
+ */
+export function forcedPlank(layout: Layout, planks: Planks): { edge: number; island: number; why: Forced } | null {
+  const rooms = layout.islands.map((_, i) => roomOf(layout, planks, i));
+  const reasons: [Forced, (r: (typeof rooms)[number]) => number | undefined][] = [
+    ['full', (r) => (r.left === r.room ? r.caps.find((c) => c.cap > 0)?.edge : undefined)],
+    ['last-way', (r) => { const open = r.caps.filter((c) => c.cap > 0); return open.length === 1 ? open[0].edge : undefined; }],
+    ['every-way', (r) => (r.left === r.room - 1 ? r.caps.find((c) => c.cap === 2)?.edge : undefined)],
+  ];
+  for (const [why, pick] of reasons) {
+    for (let i = 0; i < rooms.length; i++) {
+      if (rooms[i].left <= 0) continue;
+      const edge = pick(rooms[i]);
+      if (edge !== undefined) return { edge, island: i, why };
+    }
+  }
+  return null;
+}
+
+/**
  * Where a hint should point. First a plank that does not belong (more planks on an edge than the solution has); otherwise an
- * edge one island decides by itself (its number equals the room it has left, so each open edge must be filled), and failing
- * that any edge that still needs a plank.
+ * edge one island decides by itself (`forcedPlank`, with its reason), and failing that any edge that still needs a plank.
  */
 export function hintFor(layout: Layout, planks: Planks, solution: Planks): Hint | null {
   const wrong = planks.findIndex((p, k) => p > solution[k]);
   if (wrong >= 0) return { kind: 'fix', edge: wrong };
   const need = solution.findIndex((s, k) => planks[k] < s);
   if (need < 0) return null;
-  for (let i = 0; i < layout.islands.length; i++) {
-    const left = layout.islands[i].n - planksAt(layout, planks, i);
-    if (left <= 0) continue;
-    const open = layout.at[i].filter((k) => solution[k] > planks[k]);
-    // Everything the island still needs goes on the edges it has room for: one forced edge is enough to start.
-    let room = 0;
-    for (const k of layout.at[i]) {
-      if (layout.crossing[k].some((f) => planks[f] > 0)) continue;
-      const other = otherEnd(layout, k, i);
-      room += Math.min(MAX_PLANKS - planks[k], layout.islands[other].n - planksAt(layout, planks, other));
-    }
-    if (room === left && open.length) return { kind: 'forced', edge: open[0], island: i };
-  }
-  return { kind: 'next', edge: need };
+  const forced = forcedPlank(layout, planks);
+  return forced ? { kind: 'forced', ...forced } : { kind: 'next', edge: need };
 }
 
 /** The pushes of the stick that take the highlight from one island to another, or null if it cannot get there. */
