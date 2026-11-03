@@ -1540,11 +1540,12 @@ async function woodsBatch() {
     log(`Picture Graph ${level} (${mode}): bars built block by block, graph checked, questions answered on bars and number pads, misses, glow hint, saved score and sticker passed`);
   }
 
-  if (!only || only === 'worm') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 7); level++) {
-    // Level 7 (big worms, then little worms) plays in portrait.
-    if (level === 7) await page.setViewportSize({ width: 768, height: 1024 });
+  if (!only || only === 'worm') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 8); level++) {
+    // Level 7 (big worms, then little worms) and 8 (the broken ruler) play in portrait.
+    if (level >= 7) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('inchworm', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    const onRuler = mode.startsWith('ruler') || mode === 'broken';
     const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 }); await page.waitForTimeout(250); };
     // Drag a worm from the bucket onto a row (it rides above the finger, so aim just below the row).
     const lay = async (row) => {
@@ -1560,9 +1561,12 @@ async function woodsBatch() {
     const wrongPads = () => page.evaluate(async () => { const L = await import('/src/games/inchworm/logic.ts'); const g = neo.scene.game; const a = L.answerOf(g.m, g.plan.mode); return g.pads.map((p) => p.n).filter((n) => n !== a); });
     const answer = () => page.evaluate(async () => { const L = await import('/src/games/inchworm/logic.ts'); const g = neo.scene.game; return L.answerOf(g.m, g.plan.mode); });
     const rounds = await page.evaluate(() => neo.scene.game.measures.length);
+    // Level 3: exactly one round is two jumps in the sand pit.
+    if (mode === 'compare') assert.equal(await page.evaluate(() => neo.scene.game.measures.filter((m) => m.jump).length), 1);
     for (let n = 0; n < rounds; n++) {
       await idle(n);
-      if (!mode.startsWith('ruler')) {
+      if (await page.evaluate(() => !!neo.scene.game.m.jump)) await screenshot('inchworm-3-jump');
+      if (!onRuler) {
         const lens = await page.evaluate(() => neo.scene.game.rows.map((r) => r.length));
         const order = lens.map((l, i) => i).sort((a, b) => lens[a] - lens[b]);
         for (const [k, row] of order.entries()) {
@@ -1590,13 +1594,19 @@ async function woodsBatch() {
         assert.equal(await page.evaluate(() => neo.scene.game.bucket.length), 0);
         await page.waitForTimeout(300);
         await screenshot('inchworm-7-hint');
+      } else if (n === 0 && mode === 'broken') {
+        // The end mark first, then the marks counted (one more than the spaces): the second miss lights the spaces.
+        const m = await page.evaluate(() => { const m = neo.scene.game.m; return { end: m.start + m.length, marks: m.length + 1 }; });
+        await pad(m.end); await pad(m.marks); assert.deepEqual(await counts(), [2, 1]);
+        await page.waitForTimeout(300);
+        await screenshot('inchworm-8-broken');
       } else if (n === 0 && mode !== 'compare') { const [a, b] = await wrongPads(); await pad(a); await pad(b); assert.deepEqual(await counts(), [2, 1]); }
       await pad(await answer());
     }
-    if (level === 7) await page.setViewportSize({ width: 1024, height: 768 });
+    if (level >= 7) await page.setViewportSize({ width: 1024, height: 768 });
     await finished('inchworm');
     assert.deepEqual(await score('inchworm'), mode === 'lay' ? [0, 0] : [2, 1]);
-    log(`Inchworm Measure ${level} (${mode}): worms dragged end to end, ${mode.startsWith('ruler') ? 'ruler readings' : 'lengths counted'}, misses, hints, saved score and sticker passed`);
+    log(`Inchworm Measure ${level} (${mode}): worms dragged end to end, ${onRuler ? 'ruler readings' : 'lengths counted'}, misses, hints, saved score and sticker passed`);
   }
 
   if (!only || only === 'helpers') {
