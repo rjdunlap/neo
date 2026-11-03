@@ -18,7 +18,7 @@ Critters play in a meadow; she counts each kind and taps above its column to add
 
 **Content pools.** Six critter kinds (`KINDS`: duck, pig, bunny, cat, cow, dog; `bear` exists in `src/art/critter.ts` and is unused), one meadow backdrop (seed 81), counts from the plan, two graphs a round (one at level 7). The questions come from `questionsFor`; number choices are the answer and two neighbours, or with a key the answer, the number of blocks and whole blocks away (`choicesFor`).
 
-**Known gaps found while reading** (none fixed here):
+**Known gaps found while reading** (all five fixed by build slice 1, 2026-11-03):
 
 - **Critters overlap at level 7.** One-per-critter meadows (levels 1–3 and 7) scatter by 60 random tries for 70 units of clearance and place the critter anyway when the tries run out. An approximate throwaway probe (5,000 rounds a level, the 1024×768 view, the plan's distinct-count rule; deleted) found two critters with centres under 45 units apart (bodies overlapping) in **10.7%** of level-7 rounds, 0.1% at level 3, none at 1–2. Overlapping critters make counting wrong through no fault of hers. Pairs already use `groupSpots` on a grid; singles can too (`groupSpots(n, 1, …)` gives 9 × 3 = 27 slots, enough for level 7's 21).
 - **Singles can stand on the graph.** The singles' feet go down to y = 380, while the graph panel's top is h − 412 = 356 at 768 tall; `meadowArea` (used for pairs) already caps at h − 430.
@@ -102,7 +102,7 @@ Pie charts and line graphs (later school); a half-block key (later, with fractio
 
 ## Build slices, in order
 
-1. **Fair meadows, a visible first pick and hints that show why** (existing-game fix tier: typecheck, rule tests including the placement sweep for levels 1–3 and 7 and the "how many more" distractor, one filtered regression play at levels 4 and 7 with a double tap on one bar and two wrong "how many more" answers; `fingerdemo` only if the bot's taps change): the gaps above plus `bear` and two seeded backdrops.
+1. **Fair meadows, a visible first pick and hints that show why** (built 2026-11-03, [PR #1138](https://github.com/rjdunlap/neo/pull/1138); "in all" hints light every block) (existing-game fix tier: typecheck, rule tests including the placement sweep for levels 1–3 and 7 and the "how many more" distractor, one filtered regression play at levels 4 and 7 with a double tap on one bar and two wrong "how many more" answers; `fingerdemo` only if the bot's taps change): the gaps above plus `bear` and two seeded backdrops.
 2. **Level 8, *Line them up*** (new-interaction tier: typecheck, unit tests including order, entry and lands, one scripted play at pre-K and one at school with one wrong row and the matching-lines hint, one portrait screenshot of the tray, `fingerdemo` at 8, one build for the art and voice).
 3. **Level 9, *A key of five*** (new-level tier: typecheck, rule tests, one play of level 9 with a one-per-mark bar and the blocks answer, `fingerdemo` at 9, one portrait screenshot): independent of slice 2 except the level number; build after it.
 4. **Level 10, *Two pictures, one meadow*** (new-interaction tier: typecheck, rule tests, one play with the trap then the right pair, one portrait screenshot, `fingerdemo` at 10): after slice 1 (the first-pick lift).
