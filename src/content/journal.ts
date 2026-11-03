@@ -1,7 +1,7 @@
 import { ANIMALS, FAVORITE, FOOD_WORDS } from '../games/animal-snack/logic';
 import { WORDS } from '../games/letter-trails/pictures';
 import { ACTIONS, type Action } from '../games/photo-safari/logic';
-import { ALL_THINGS, floats, type Thing } from '../games/sink-float/logic';
+import { ALL_THINGS, floats, thingWord, type Thing } from '../games/sink-float/logic';
 import { HELPER, HELPERS } from '../games/mail-carrier/logic';
 import { CHANGERS } from '../games/melt-freeze/logic';
 import { KITCHEN_DISCOVERIES, type KitchenDiscovery } from '../games/pet-kitchen/logic';
@@ -50,12 +50,17 @@ const SINK_LINES: Record<Thing, LineId> = {
   duck: 'journal.sink.duck',
   boat: 'journal.sink.boat',
   ball: 'journal.sink.ball',
+  feather: 'journal.sink.feather',
   leaf: 'journal.sink.leaf',
   apple: 'journal.sink.apple',
+  log: 'journal.sink.log',
+  ice: 'journal.sink.ice',
   rock: 'journal.sink.rock',
   key: 'journal.sink.key',
+  marble: 'journal.sink.marble',
   coin: 'journal.sink.coin',
   spoon: 'journal.sink.spoon',
+  paperclip: 'journal.sink.paperclip',
 };
 
 const SNACK_LINES: Record<string, LineId> = {
@@ -114,9 +119,9 @@ export const JOURNAL: readonly JournalEntry[] = [
     id: entryId('sink-float', t),
     game: 'sink-float',
     key: t,
-    name: cap(t),
+    name: cap(thingWord(t)),
     line: SINK_LINES[t],
-    source: { find: `put the ${t} into the water`, found: `the ${t} went into the water` },
+    source: { find: `put the ${thingWord(t)} into the water`, found: `the ${thingWord(t)} went into the water` },
   })),
   ...ANIMALS.map((a): JournalEntry => ({
     id: entryId('animal-snack', a),

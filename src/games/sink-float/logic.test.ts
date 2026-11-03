@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { SCRIPT } from '../../content/voice-script';
-import { ALL_SHAPES, CLAY_SHAPES, floats, rightBasket, shapesFor, SINK_PLANS, sinkPlan, THINGS, thingsFor } from './logic';
+import { SCRIPT, type LineId } from '../../content/voice-script';
+import { ALL_SHAPES, ALL_THINGS, CLAY_SHAPES, floats, rightBasket, shapesFor, SINK_PLANS, sinkPlan, THINGS, thingsFor, thingWord, type Thing } from './logic';
 
 const THING_PLANS = SINK_PLANS.filter((p) => p.mode !== 'shape');
 
@@ -31,10 +31,44 @@ describe('Sink or Float', () => {
     }
   });
 
-  it('draws the same things for levels 1 to 6 as before Make it float (clay stays out of the pools)', () => {
-    const draw = (level: number) => [1, 2, 3].map((seed) => thingsFor(sinkPlan(level), new Rng(seed)).join(','));
-    for (const level of [1, 2, 3, 4]) expect(draw(level)).toEqual(['key,ball,boat,duck,rock', 'ball,key,duck,boat,rock', 'ball,key,boat,duck,rock']);
-    for (const level of [5, 6]) expect(draw(level)).toEqual(['coin,ball,key,boat,apple,spoon', 'rock,duck,spoon,coin,apple,leaf', 'ball,rock,apple,boat,spoon,coin']);
+  it('floats and sinks every thing as reviewed for plain tap water', () => {
+    const reviewed: Record<string, [floats: boolean, obvious: boolean]> = {
+      duck: [true, true], boat: [true, true], ball: [true, true], feather: [true, true],
+      leaf: [true, false], apple: [true, false], log: [true, false], ice: [true, false],
+      rock: [false, true], key: [false, true], marble: [false, true],
+      coin: [false, false], spoon: [false, false], paperclip: [false, false],
+    };
+    expect(Object.keys(THINGS).sort()).toEqual(Object.keys(reviewed).sort());
+    for (const t of ALL_THINGS) expect([THINGS[t].floats, THINGS[t].obvious], t).toEqual(reviewed[t]);
+  });
+
+  it('varies the five familiar things across rounds at levels 1 to 4, and brings every thing into play', () => {
+    for (const level of [1, 2, 3, 4]) {
+      const sets = new Set<string>();
+      const seen = new Set<Thing>();
+      for (let seed = 1; seed <= 60; seed++) {
+        const things = thingsFor(sinkPlan(level), new Rng(seed));
+        sets.add([...things].sort().join(','));
+        for (const t of things) seen.add(t);
+      }
+      expect(sets.size, `level ${level}`).toBeGreaterThan(5);
+      expect([...seen].sort()).toEqual(ALL_THINGS.filter((t) => THINGS[t].obvious).sort());
+    }
+    for (const level of [5, 6]) {
+      const seen = new Set<Thing>();
+      for (let seed = 1; seed <= 100; seed++) for (const t of thingsFor(sinkPlan(level), new Rng(seed))) seen.add(t);
+      expect([...seen].sort(), `level ${level}`).toEqual([...ALL_THINGS].sort());
+    }
+  });
+
+  it('names every thing in plain words for the voice and the journal, with an observation line for each', () => {
+    expect(thingWord('ice')).toBe('ice cube');
+    expect(thingWord('paperclip')).toBe('paper clip');
+    expect(thingWord('log')).toBe('log');
+    for (const t of ALL_THINGS) {
+      expect(thingWord(t), t).toMatch(/^[a-z]+( [a-z]+)?$/);
+      expect(SCRIPT[`journal.sink.${t}` as LineId], t).toBeDefined();
+    }
   });
 
   it('makes level 7 the shape experiment, and clamps above it', () => {

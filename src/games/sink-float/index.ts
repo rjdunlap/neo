@@ -12,7 +12,7 @@ import { spread, type View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawClay, floatIcon, sameWeightIcon, sinkIcon, thingArt } from './art';
-import { ALL_SHAPES, CLAY_SHAPES, floats, rightBasket, shapesFor, sinkPlan, thingsFor, type ClayExperiment, type ClayShape, type SinkPlan, type Thing } from './logic';
+import { ALL_SHAPES, CLAY_SHAPES, floats, rightBasket, shapesFor, sinkPlan, thingsFor, thingWord, type ClayExperiment, type ClayShape, type SinkPlan, type Thing } from './logic';
 
 interface Item {
   thing: Thing;
@@ -210,7 +210,7 @@ class SinkFloat implements Game {
     const node = item.node;
     node.scale.set(0);
     void this.ctx.tw.to(node.scale, { x: 1.2, y: 1.2 }, { duration: 0.35, ease: ease.outBack });
-    void this.ctx.instruct('sink.guess', { thing: item.thing });
+    void this.ctx.instruct('sink.guess', { thing: thingWord(item.thing) });
   }
 
   private guess(floatsGuess: boolean) {
