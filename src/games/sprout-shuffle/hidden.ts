@@ -239,6 +239,8 @@ export class SproutHidden implements Game {
   private async addSprout(look: Look) {
     const i = this.record.length;
     this.record.push(look);
+    // A plain sprout settles it: the banner no longer says can't tell.
+    if (candidates(this.setup.tester, this.record).length < 2) this.banner.visible = false;
     const sp = new Sprout(SPROUT_H);
     this.sprouts.push(sp);
     this.recordCard.parent?.addChild(sp);
@@ -263,8 +265,16 @@ export class SproutHidden implements Game {
   tryOne() {
     if (this.finished || this.busy || tryRoom(this.phase, this.record.length) === 0) return;
     this.tries++;
+    const before = candidates(this.setup.tester, this.record).length;
     void this.addSprout(drawSprout(this.setup.hidden, this.setup.tester, this.ctx.rng));
-    if (this.tries === 1) void this.ctx.say('sprout.try-hidden');
+    if (candidates(this.setup.tester, this.record).length < before) {
+      // A drawn plain sprout changes the answer: an earlier choice starts over, so a free draw never turns it into a miss.
+      this.chosen.clear();
+      for (const c of this.cards) c.setChosen(false);
+      this.wrong = 0;
+      this.glowCards = false;
+      void this.ctx.say('sprout.try-plain');
+    } else if (this.tries === 1) void this.ctx.say('sprout.try-hidden');
     this.updateButtons();
   }
 
@@ -462,7 +472,10 @@ export class SproutHidden implements Game {
     const fit = candidates(this.setup.tester, this.record);
     for (const c of this.cards) c.glow(live && this.glowCards && this.choosing && fit.includes(c.key) && !this.chosen.has(c.key) ? r : null);
     this.glowLayer.clear();
-    for (const i of this.glowSlots) this.glowLayer.circle(slotX(i), -4, 36 * r).stroke({ width: 7, color: swatch.yellow.fill });
+    // At the glow, the deciding plain sprout glows with the fitting cards.
+    const slots = new Set(this.glowSlots);
+    if (live && this.glowCards && this.choosing) this.record.forEach((l, i) => { if (l === 'plain') slots.add(i); });
+    for (const i of slots) this.glowLayer.circle(slotX(i), -4, 36 * r).stroke({ width: 7, color: swatch.yellow.fill });
   }
 
   /** The ghost finger: the can, the fitting cards, the leaf; again for the second watering. It never presses Try one. */
