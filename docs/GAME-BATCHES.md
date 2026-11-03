@@ -1347,7 +1347,7 @@ Proof: couch catalog tier: course tests, `BROWSER_SUITE=couchgames` filtered to 
 
 ### shape-buddies 1: What grows
 
-- **`shape-buddies`, What grows: three seeds and sprouts (dive slice 1)** (extends the built game; no new level): a seeded bean, sunflower or acorn with its own code-drawn sprout, and the guidance test over every `PLANS` level. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
+- **`shape-buddies`, What grows: three seeds and sprouts (dive slice 1; built 2026-11-03, PR #1145)** (extends the built game; no new level): a seeded bean, sunflower or acorn with its own code-drawn sprout, and the guidance test over every `PLANS` level. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
 
 Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 

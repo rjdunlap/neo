@@ -110,3 +110,11 @@
 - Not run: full unit suite locally (CI runs it), device or child checks. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a school child reads the spaces rather than the end mark; whether the sand pit reads as two jumps.
 
 ---
+
+## 2026-11-02 — Island Bridges a small sea to start and named hints (island-bridges batch 1)
+
+- [PR #1130](https://github.com/rjdunlap/neo/pull/1130) (code `2c9791b3`): level 5 (5 by 5, 4–6 islands, counting finishes it, an island with one neighbour; order `[5, 1, 2, 3, 4]`) and forced hints that name why (`full`, `last-way`, `every-way`); how-to card unchanged.
+- Ran (Vite dev on http://localhost:5728): typecheck; island-bridges rule tests 27 passed (level 5 over 300 seeds; named hints over 300 seeds with independent arithmetic, each reason occurring, a hand-built case per reason); registry/content/couch unit tests 288 passed; `BROWSER_SUITE=bridgestouch BRIDGES_ONLY=5` passed (entry at 5, hint line matched its reason, 64-unit targets both ways, portrait screenshot, one sticker, 0 misses, 1 hint); `BROWSER_SUITE=fingerdemo FINGER_ONLY=island-bridges FINGER_LEVELS=5` clean in 6.7 s. The play ran one commit before the last, which only reordered a filter ahead of the solve (same puzzles).
+- Not run: full `bridgestouch` (levels 1 and 4 unchanged), couch suites (couch unaffected), `npm run build`, full unit suite locally (CI runs it), device or child checks.
+
+---

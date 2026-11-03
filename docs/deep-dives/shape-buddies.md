@@ -94,7 +94,7 @@ None blocking. Under the [October 23 delegation](../archive/DECISIONS-2026-10-23
 
 ## Build slices, in order
 
-1. **What grows: three seeds and sprouts (batch shape-buddies 1).** Seeded bean, sunflower or acorn with its own sprout; guidance test over every `PLANS` level. *Check:* existing-interaction tier: typecheck, the game's rule tests, one filtered regression play of level 1 to its sticker, one portrait screenshot of a non-bean sprout; bot unchanged, no `fingerdemo`.
+1. **What grows: three seeds and sprouts (batch shape-buddies 1; built 2026-11-03, PR #1145).** Seeded bean, sunflower or acorn with its own sprout; guidance test over every `PLANS` level. *Check:* existing-interaction tier: typecheck, the game's rule tests, one filtered regression play of level 1 to its sticker, one portrait screenshot of a non-bean sprout; bot unchanged, no `fingerdemo`.
 2. **Level 4 Down and catch (batch shape-buddies 2).** *Check:* new-level tier: typecheck, rule tests (the exact accepted set, the step-aware joined lines), one play of level 4 with a flat path first then to its sticker, one portrait screenshot of the raised near half, `fingerdemo` at 4, one build for the voice lines.
 3. **Level 5 A cup on the ledge (batch shape-buddies 3),** after batch 2 (shares `PLANS`, `LEVELS` and the joined-line changes). *Check:* new-rule tier: typecheck, rule tests (both families, guidance keeps a working friend, the carry from either dock), one play of level 5 solved with the cup on the ledge and a replay solved with bridge and cup, one portrait screenshot of the ledge, `fingerdemo` at 5, one build.
 4. **Level 6 Which way round? (batch shape-buddies 4),** after batch 3. *Check:* new-interaction tier: typecheck, unit tests including the four-view layout with Turn, one scripted play with an unturned slope then Turn to the sticker, one portrait screenshot of the mirrored stream, `fingerdemo` at 6, one build.
@@ -103,4 +103,4 @@ None blocking. Under the [October 23 delegation](../archive/DECISIONS-2026-10-23
 
 ## What was built in this session
 
-Nothing: research and ideation only. Links and `git diff --check` ran.
+Slice 1 (batch shape-buddies 1, 2026-11-03): art only. Build note in [the archive](../archive/COMPLETED-2026-10-09.md#shape-buddies-what-grows-three-seeds-and-sprouts-shape-buddies-batch-1-2026-11-03). Slices 2–6 are not built.
