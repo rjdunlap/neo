@@ -97,3 +97,9 @@
 - [PR #1149](https://github.com/rjdunlap/neo/pull/1149): seeded level 1 headers (`headersFor`) and map dressing, level 4 first-leg hint (`map.stepshint`), level 5 `map.cluehint`, how-to level-3 tap step; finds, bot and couch boards unchanged.
 - Ran (tree at the branch tip on base 447bcdf4, server http://localhost:5269): `npm run typecheck`; `npx vitest run src/games/treasure-map` 8 passed (4 new); `npx vitest run src/content` 168 passed; `BROWSER_SUITE=woods WOODS_ONLY=map` levels 1-5 passed (two wrong digs, one hint each, sticker), level-1 portrait and level-4 hint screenshots reviewed; `npm run build` passed; game-reviewer found no defects.
 - Not run: `fingerdemo` (bot unchanged), couch suites (boards unchanged), device speech of the new lines (no rendered clips; device speech fallback; [DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-11-03 — Word Search fresh themes and root families (word-search batch 1)
+
+- [PR #1150](https://github.com/rjdunlap/neo/pull/1150): six everyday themes, root families *port* and *spect* drawn only for plans they fill (`themesFor`), the root line once per grid, RAIN out of weather.
+- Ran (base 123c2df6, Vite http://localhost:5650/classic/, VITE_SPEECH=off): `npm run typecheck`; `npx vitest run src/games/word-search` 19 passed; `npx vitest run src/content src/audio` 184 passed; `npm run build`; one level-1 play (probe `test-results/ws-root-probe.mjs`, root theme forced by seed): one wrong line, five words, root line said once, sticker, no page errors, landscape screenshot reviewed; game-reviewer found no defects.
+- Not run: full unit suite, `fingerdemo` (bot unchanged), `wordsearchtouch`, couch suites, device speech of "spect" (open in [DEVICE-CHECKS](../DEVICE-CHECKS.md)).

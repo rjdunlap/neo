@@ -2507,7 +2507,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--treasure-map
 
 Branch `claude/word-search-fresh-themes`, PR #1150: [dive slice 1](../deep-dives/word-search.md#build-slices-in-order). Six new everyday themes in `words.ts` (In the orchard, Birds on the wing, At the market, The night sky, In the toolbox, Making music; 13–15 words each), fifteen in all. Two root-family themes (`root: 'port' | 'spect'`) of seven words: *Words that carry* (REPORT, SUPPORT, IMPORT, EXPORT, PORTER, DEPORT, PORTABLE) and *Words that look* (INSPECT, RESPECT, SUSPECT, SPECTATE, PROSPECT, SPECTRUM, ASPECT); EXPECT was replaced because it does not visibly contain "spect". `themesFor(plan)` draws only themes with enough fitting words, so root families play at levels 1–2 (level 5 when built), never 3–4; level 2 root grids always use the whole list (a taste call). On the first word found in a root grid the pet says `wordsearch.root-port` or `wordsearch.root-spect` once a grid (device speech, no clip). RAIN is out of `weather` (RAINBOW stays; *Pond Words* unchanged). Rule tests: no theme word contains another of its theme or is a palindrome, `themesFor` eligibility over 80 seeds, every theme makes a grid for every plan it can fill, each root family has its line and every word contains the root. Bot, couch and bands unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--word-search-fresh-themes-and-root-families-word-search-batch-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--word-search-fresh-themes-and-root-families-word-search-batch-1).
 
 ## Sprout Shuffle level 5 Hidden Sprouts (genetics G6, 2026-11-03)
 
