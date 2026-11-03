@@ -2525,7 +2525,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--robot-path-l
 
 Branch `claude/peg-garden-flake-probe`, PR #1154. The flake reproduced (`BATCH_ONLY=pegs` failed 3/3 on 906fa732) and had four causes, all fixed: aimed shots stepped by raw frame time instead of the fixed samples the rules, guide and ghost finger use; a pearl let go during the last praise counted a miss; the couch bot fired outside its aim margin and could repeat a miss; the suite's colour-level "far" drops were chosen by distance, not simulation. The suite is no longer flaky.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--peg-garden-flaky-touch-suite-diagnosed-and-fixed).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--peg-garden-flaky-touch-suite-diagnosed-and-fixed).
 
 ## Bouncy Launch level 8 Near or far (2026-11-03)
 

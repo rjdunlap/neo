@@ -124,3 +124,9 @@
 - Ran (commit ddc1eeaf, Vite http://localhost:5601, VITE_SPEECH=off): typecheck; vitest `src/games/robot-path` (19 rules: single edit, at least half by loop count, glow leads to the star from broken, after Clear and after a wrong edit) and `src/content` + `src/games` (registry range 14); `BROWSER_SUITE=robot FROM_LEVEL=14 TO_LEVEL=14` (loop-count board: free watch, unchanged run, wrong mend, glow on Clear, mended loop; portrait screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=robot-path FINGER_LEVELS=14 FINGER_BAND=school` in 8.9 s. game-reviewer: no blocking defects; Clear-hint wording fixed.
 - Not run: build (no shared files or assets), other levels' robot play, couch (stays 4–6), device or child checks.
 - Open: whether a school child reads a loop well enough to mend it rather than rebuild it ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-11-03 — Peg Garden flaky touch suite diagnosed and fixed
+
+- Changed: reproduced `BATCH_ONLY=pegs` failing 3/3 on 906fa732. Game fixes: aimed shots (levels 4 and 5) now step in the fixed samples that `simulate()`, `aimAt`, the guide and the ghost finger use; a pearl let go during the last praise no longer counts a miss or hint (aimed firing waits for `allReached`). Couch bot settles on its chosen angle. Suite: far drops chosen by simulation, aimed loop stops once every ask is reached.
+- Ran (dev server localhost:5761, `VITE_SPEECH=off`, commits ab17b137/45678c3c; 2cfda1b5 only drops an else): typecheck; `npx vitest run src/games/peg-garden src/couch` 100 passed; `BROWSER_SUITE=batch BATCH_ONLY=pegs` levels 1–7 passed 3 times in a row, scores exactly 0,0 / 0,0 / 2,1; `fingerdemo` `FINGER_ONLY=peg-garden FINGER_LEVELS=4,5` 21.0 s / 23.7 s; `BROWSER_SUITE=couchgames COUCH_ONLY=peg-garden` 37 s (failed after the stepping change until the bot fix, passed on old code).
+- Not run: build (no shared files or assets), levels 8+ in the pegs suite, iPad or device, a child's play.
