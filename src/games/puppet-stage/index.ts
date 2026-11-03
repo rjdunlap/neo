@@ -624,10 +624,12 @@ class PuppetStage implements Game {
     await this.speakAs(scene.puppet, scene.line, scene.voice ? WAY_VOICE[scene.voice] : BASE_VOICE[scene.puppet]);
     if (this.finished) return;
     if (scene.line === 'ps.sc.c3') {
-      const duck = this.standing.includes('duck') ? 'duck' : null;
-      if (duck) { this.bob(duck); this.critterOf(duck).setMood('surprised', 0.8); }
-      await this.speakAs('duck', SURPRISED);
-      if (this.finished) return;
+      if (this.standing.includes('duck')) {
+        this.bob('duck');
+        this.critterOf('duck').setMood('surprised', 0.8);
+        await this.speakAs('duck', SURPRISED);
+        if (this.finished) return;
+      }
     }
     if (this.plan.level === 6 && !this.endShown && this.done < this.plan.scenes.length) this.showEnd();
     if (this.done >= this.plan.scenes.length) {
@@ -657,10 +659,10 @@ class PuppetStage implements Game {
     this.ended = true;
     this.endNode.scale.set(0.92);
     void this.ctx.tw.to(this.endNode.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
-    this.toggleCurtains();
+    if (!this.curtainsClosed) this.toggleCurtains();
     await this.ctx.tw.wait(this.reduce ? 0.3 : 0.7);
     if (this.finished) return;
-    this.toggleCurtains();
+    if (this.curtainsClosed) this.toggleCurtains();
     const r = reactions(this.plan.scenes, this.done);
     r.forEach((kind, i) => {
       const c = this.frontRow.critters[i];
