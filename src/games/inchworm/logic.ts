@@ -7,12 +7,16 @@ import type { Rng } from '../../engine/random';
  * use the ruler to find how much longer one thing is than another (starting at different
  * marks), and how long two things are end to end; and measure one thing with big worms, then little
  * worms, to see that a smaller unit makes a bigger count; and read a ruler snapped off below 0, where
- * the end mark is not the length.
+ * the end mark is not the length; and tap one worm along a thing hop by hop, a chalk tick at the end of
+ * each hop, then count the hops.
  */
-export type MeasureMode = 'lay' | 'say' | 'compare' | 'ruler' | 'rulerdiff' | 'rulersum' | 'units' | 'broken';
+export type MeasureMode = 'lay' | 'say' | 'compare' | 'ruler' | 'rulerdiff' | 'rulersum' | 'units' | 'broken' | 'hop';
 
 /** The levels that read a ruler instead of laying worms. */
 export const isRuler = (mode: MeasureMode) => mode === 'ruler' || mode === 'rulerdiff' || mode === 'rulersum' || mode === 'broken';
+
+/** The levels laid out with the smaller ruler unit and the pads along the bottom: the ruler levels, and one worm hopping up to 8 long. */
+export const isWide = (mode: MeasureMode) => isRuler(mode) || mode === 'hop';
 
 /** The ruler runs from 0 to this mark. */
 export const RULER = 10;
@@ -34,7 +38,11 @@ export const PLANS: MeasurePlan[] = [
   { mode: 'rulersum', max: 4, rounds: 4, name: 'Two things end to end on the ruler: how long are they together?' },
   { mode: 'units', max: 6, rounds: 4, name: 'Measure one thing with big worms, then little worms: which number did the little worms make?' },
   { mode: 'broken', max: 7, rounds: 4, name: 'The broken ruler: no 0 to start from, so count the spaces it covers' },
+  { mode: 'hop', max: 8, rounds: 3, name: 'One worm, hop by hop: tap it along, then count the chalk marks' },
 ];
+
+/** One worm, hop by hop: the shortest thing, in hops. */
+export const HOP_MIN = 3;
 
 /** Big and little worms: how many little worms long each row's worm is (row 0 big, row 1 little). */
 export const UNIT_SIZE = [2, 1] as const;
@@ -70,6 +78,7 @@ export function makeMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
   const out: Measure[] = [];
   if (plan.mode === 'units') return unitMeasures(plan, rng);
   if (plan.mode === 'broken') return brokenMeasures(plan, rng);
+  if (plan.mode === 'hop') return hopMeasures(plan, rng);
   while (out.length < plan.rounds) {
     const length = rng.int(2, plan.max);
     if (out.at(-1)?.length === length) continue;
@@ -121,6 +130,23 @@ function brokenMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
   }
   return out;
 }
+
+/** One worm, hop by hop: lengths from 3 to the plan's max, never the same length or thing twice running. */
+function hopMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
+  const out: Measure[] = [];
+  while (out.length < plan.rounds) {
+    const length = rng.int(HOP_MIN, plan.max);
+    if (out.at(-1)?.length === length) continue;
+    out.push({ thing: rng.pick(fresh(out)), length });
+  }
+  return out;
+}
+
+/**
+ * One worm, hop by hop: the worm waits with its nose at the thing's start (mark 0), so hop k lays it over
+ * space k and chalks a tick at mark k. No tick at 0: the ticks, the hops and the length are one number.
+ */
+export const hopTicks = (length: number) => Array.from({ length }, (_, k) => k + 1);
 
 /**
  * Big and little worms: one stick measured twice, `b` big worms (2 or 3) on the first row and `2b` little
@@ -191,11 +217,15 @@ export const answerOf = (m: Measure, mode: MeasureMode) =>
   mode === 'units' ? (m.ask === 'big' ? m.length : m.other!.length) :
   mode === 'compare' || mode === 'rulerdiff' ? Math.abs(m.length - m.other!.length) : mode === 'rulersum' ? m.length + m.other!.length : m.length;
 
-export type MeasureTouch = { kind: 'worm'; row: number } | { kind: 'answer'; value: number };
+export type MeasureTouch = { kind: 'worm'; row: number } | { kind: 'hop' } | { kind: 'answer'; value: number };
 
-/** The next real touch for a clean measuring round: fill each unfinished row, then choose its reading. */
+/**
+ * The next real touch for a clean measuring round: fill each unfinished row, then choose its reading.
+ * One worm, hop by hop: `worms[0]` counts the hops, so it taps the worm `length` times, then the pad.
+ */
 export function measureTouch(m: Measure, mode: MeasureMode, worms: readonly number[]): MeasureTouch | null {
   if (isRuler(mode)) return { kind: 'answer', value: answerOf(m, mode) };
+  if (mode === 'hop') return (worms[0] ?? 0) < m.length ? { kind: 'hop' } : { kind: 'answer', value: m.length };
   const lengths = [m.length, ...(m.other ? [m.other.length] : [])];
   const row = lengths.findIndex((length, i) => (worms[i] ?? 0) < length);
   if (row >= 0) return { kind: 'worm', row };

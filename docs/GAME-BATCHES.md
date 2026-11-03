@@ -1037,6 +1037,8 @@ Proof: new levels on the existing interaction: typecheck, the game's rule tests,
 
 ### inchworm 2: One worm, hop by hop
 
+Built 2026-11-03, [PR #1172](https://github.com/rjdunlap/neo/pull/1172), branch `claude/inchworm-hop-by-hop`; [closeout](archive/COMPLETED-2026-10-09.md#inchworm-level-9-one-worm-hop-by-hop-inchworm-batch-2-2026-11-03). Scope retained for dependency references; this batch is no longer eligible.
+
 - **`inchworm`, level 9 One worm, hop by hop (dive slice 2, after batch 1)** (new interaction; school): shares the order and the `THINGS` list with batch 1; school order `[1, 2, 7, 9, 3, 4, 8, 5, 6]`; batch 1 is built. [Dive](deep-dives/inchworm.md#build-slices-in-order)
 
 Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
