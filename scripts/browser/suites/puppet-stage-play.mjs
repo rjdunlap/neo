@@ -126,5 +126,97 @@ async function puppetStagePlay() {
   assert.deepEqual(await score(), [1, 0], 'level 3 saved 1 miss, 0 hints');
   log('Puppet Stage 1–3: three pops with hellos in each voice, the oldest down, a drag, curtains and tassel free, Bow 0/0; the other puppet twice (2/1, glow), voice asks after both hellos; free try, a wrong bubble (1/0), portrait bubbles; passed');
 }
-return { puppetStagePlay };
+
+// Levels 4–6, the story cards: drives the puppets with real drags (peek to mark, mark to mark) and taps.
+async function puppetStoryPlay() {
+  const score = () => page.evaluate(() => { const r = kit.store.stats('puppet-stage').history.at(-1); return [r.misses, r.hints]; });
+  const state = () => page.evaluate(() => neo.scene.game.state);
+  const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 40000 }); await page.waitForTimeout(150); };
+  // Bring a puppet up from its peek (or walk it) to a mark of the place (0 left, 1 right), with a real drag.
+  const walk = async (p, place) => {
+    await page.evaluate(async ([p, place]) => {
+      const g = neo.scene.game, l = g.layoutNow, cast = g.plan.story.cast;
+      const standing = g.standing.includes(p);
+      const from = standing ? g.puppetNodes.get(p).toGlobal({ x: 0, y: -60 }) : g.peekNodes[cast.indexOf(p)].toGlobal({ x: 0, y: 0 });
+      const { freeMark } = await import('/src/games/puppet-stage/logic.ts');
+      const others = g.standing.filter((q) => q !== p).map((q) => g.puppetNodes.get(q).x);
+      const x = l.marks[place][freeMark(place, l.places[place], others, l) ?? 0];
+      const to = g.ctx.stage.toGlobal({ x, y: l.stage.floor - 60 });
+      await kit.drag(kit.line([from.x, from.y], [to.x, to.y], 14));
+    }, [p, place]);
+    await page.waitForTimeout(450);
+  };
+  const tapPuppet = async (p) => { await page.evaluate((p) => kit.tapOn(neo.scene.game.puppetNodes.get(p), 0, -100), p); await page.waitForTimeout(250); };
+  const placeIndex = (name) => page.evaluate((name) => neo.scene.game.plan.story.places.indexOf(name), name);
+  const scenes = () => page.evaluate(() => neo.scene.game.plan.scenes);
+  const act = async (sc) => { await walk(sc.puppet, await placeIndex(sc.place)); await tapPuppet(sc.puppet); await settle(); };
+  await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+
+  // Level 4 (pre-K): three bobs off the card's place are free (the puppet just speaks) and the third glows the scene (one hint);
+  // then the scene ticks and the puppets bow: 0/1.
+  await launch('puppet-stage', 4, 'Mia', 'prek');
+  await settle();
+  let s = await state();
+  assert.deepEqual([s.level, s.scenes, s.done, s.standing], [4, 1, 0, []], 'one card, the cast waits at the peeks');
+  let sc = (await scenes())[0];
+  const wrongPlace = 1 - await placeIndex(sc.place);
+  await walk(sc.puppet, wrongPlace);
+  s = await state();
+  assert.equal(s.standing.includes(sc.puppet), true, 'the drag from the peek raised the puppet');
+  assert.notEqual(s.where[sc.puppet], sc.place, 'standing at the other place');
+  for (let i = 0; i < 3; i++) { await tapPuppet(sc.puppet); await settle(); }
+  s = await state();
+  assert.deepEqual([s.misses, s.hints, s.done], [0, 1, 0], 'three off-card bobs: no miss, one hint');
+  assert.deepEqual(s.storyGlow, { puppet: sc.puppet, place: sc.place }, 'the puppet and its place glow');
+  await act(sc);
+  await finished('puppet-stage');
+  assert.deepEqual(await score(), [0, 1], 'level 4 saved 0 misses, 1 hint');
+
+  // Level 5 (school): the second card's scene acted first is a miss twice (the second glows), then both cards in order: 2/1.
+  await launch('puppet-stage', 5, 'Mia', 'school');
+  await settle();
+  const two = await scenes();
+  // Card 2's puppet is the other cast puppet in every story; bring it to its place and bob it before card 1.
+  await walk(two[1].puppet, await placeIndex(two[1].place));
+  await tapPuppet(two[1].puppet); await settle();
+  s = await state();
+  assert.deepEqual([s.misses, s.hints, s.done], [1, 0, 0], 'acting card 2 first is one miss');
+  await tapPuppet(two[1].puppet); await settle();
+  s = await state();
+  assert.deepEqual([s.misses, s.hints], [2, 1], 'the second early bob glows card 1: one hint');
+  assert.deepEqual(s.storyGlow, { puppet: two[0].puppet, place: two[0].place });
+  await act(two[0]);
+  s = await state();
+  assert.deepEqual([s.done, s.storyGlow], [1, null], 'card 1 acted, the glow gone');
+  await tapPuppet(two[1].puppet); await settle(); // already at its place: now it is the scene
+  await finished('puppet-stage');
+  assert.deepEqual(await score(), [2, 1], 'level 5 saved 2 misses, 1 hint');
+
+  // Level 6 (school, portrait): act card 1, tap The end early (a miss; the puzzled friend says what it waited for; Bow shows),
+  // then the other two scenes to the cheer, and Bow: 1/0.
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  await launch('puppet-stage', 6, 'Mia', 'school');
+  await settle();
+  const three = await scenes();
+  s = await state();
+  assert.deepEqual([s.endShown, s.bowShown], [false, false], 'The end waits for a first scene');
+  await act(three[0]);
+  s = await state();
+  assert.deepEqual([s.done, s.endShown], [1, true], 'after the first scene The end shows');
+  await screenshot('puppet-stage-6-portrait');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.endNode));
+  await settle();
+  s = await state();
+  assert.deepEqual([s.misses, s.hints, s.ended, s.bowShown, s.done], [1, 0, true, true, 1], 'an early end is one miss and Bow shows');
+  await act(three[1]);
+  await act(three[2]);
+  s = await state();
+  assert.deepEqual([s.done, s.endShown, s.bowShown], [3, false, true], 'all three acted: the cheer, Bow');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.bowNode));
+  await finished('puppet-stage');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+  assert.deepEqual(await score(), [1, 0], 'level 6 saved 1 miss, 0 hints');
+  log('Puppet Stage 4–6: three off-card bobs glow (0/1); card 2 first twice (2/1, glow); card 1, an early The end (1/0, Bow), the rest to the cheer; real drags from the peeks; passed');
+}
+return { puppetStagePlay, puppetStoryPlay };
 }

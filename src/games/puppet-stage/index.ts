@@ -12,10 +12,14 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { backdropArt, bowArt, bubbleArt, curtainArt, frontRowArt, iconArt, prosceniumArt, puppetArt, stickerArt, tasselArt, type PuppetArt } from './art';
 import {
-  answer, askLine, askedPuppet, BASE_VOICE, CURTAIN_W, describeLevel, hintTarget, layout, LEVELS, nearestParked, NOTE, plan, PUPPET_H,
-  PUPPETS, standAt, stickerPuppet, WAY_LOOK, WAY_VOICE, WAYS, type Ask, type Layout, type Plan, type Puppet, type Way,
+  backdropArt, bowArt, bubbleArt, cardArt, curtainArt, endArt, frontRowArt, iconArt, peekArt, placeArt, prosceniumArt, puppetArt, stickerArt, tasselArt,
+  type CardArt, type PuppetArt,
+} from './art';
+import {
+  answer, askLine, askedPuppet, BASE_VOICE, CURTAIN_W, describeLevel, freeMark, hintTarget, judge, layout, LEVELS, nearestParked, NOTE, placeAt, plan,
+  PUPPET_H, PUPPETS, reactions, standAt, stickerPuppet, storyHint, storyMove, SURPRISED, WAY_LOOK, WAY_VOICE, WAYS, type Ask, type Layout, type Place,
+  type Plan, type Puppet, type Way, type Where,
 } from './logic';
 
 interface Spoken { id: LineId; pitch: number; rate: number }
@@ -23,8 +27,10 @@ interface Spoken { id: LineId; pitch: number; rate: number }
 /**
  * Puppet Stage: a stick puppet rises where she touches the floor, says hello in its own voice and follows her finger (level 1);
  * the pet names a puppet, or the tiny or big voice, and she makes that one talk (level 2); one puppet holds a line and she
- * chooses the sleepy, tiny or big way to say it (level 3). Puppet lines go through `ctx.sayIn` (device speech with a preset);
- * the pet's asks keep its own voice. Nothing is kept; the show is gone at the bow.
+ * chooses the sleepy, tiny or big way to say it (level 3). At levels 4–6 she acts story cards: brings a puppet up from its
+ * peek, walks it to the painted place on the card and bobs it there, in card order, for a front row that reacts only to
+ * what she showed (level 6's The end judges an early stop). Puppet lines go through `ctx.sayIn` (device speech with a
+ * preset); the pet's asks and card readings keep its own voice. Nothing is kept; the show is gone at the bow.
  */
 class PuppetStage implements Game {
   readonly plan: Plan;
@@ -66,10 +72,29 @@ class PuppetStage implements Game {
   private nightBackdrop: Graphics;
   private proscenium: Graphics;
   /** The finger that raised a puppet and still holds it. */
-  private following: { id: number; puppet: Puppet; pickX: number } | null = null;
+  private following: { id: number; puppet: Puppet; pickX: number; x: number } | null = null;
   private dragged = false;
   private readonly reduce: boolean;
   private readonly onWindowUp = (e: PointerEvent) => this.release(e.pointerId);
+  // ---- levels 4–6 ----
+  /** Scenes acted, in card order. */
+  done = 0;
+  /** Where each standing cast puppet stands: a place and which of its two marks, or nowhere in particular. */
+  private readonly at = new Map<Puppet, { place: 0 | 1; mark: 0 | 1 } | null>();
+  storyGlow: { puppet: Puppet; place: Place } | null = null;
+  private sceneFree = 0;
+  private sceneEarly = 0;
+  private sceneHinted = false;
+  private roundHinted = false;
+  earlyEnds = 0;
+  ended = false;
+  endShown = false;
+  readonly peekNodes: Container[] = [];
+  private readonly peekHeads: Critter[] = [];
+  readonly cardNodes: CardArt[] = [];
+  readonly endNode = endArt();
+  private readonly placeNodes: Graphics[] = [];
+  private readonly placeGlow = new Graphics();
 
   constructor(private readonly ctx: GameContext) {
     this.plan = plan(ctx.level, ctx.band, ctx.rng);
@@ -92,6 +117,7 @@ class PuppetStage implements Game {
       art.node.eventMode = 'none';
       ctx.track(art.critter);
       if (this.plan.level === 1) this.makeDraggable(kind, art.node);
+      else if (this.story) this.makeStoryDraggable(kind, art.node);
       else onTap(art.node, () => this.tapPuppet(kind), { cooldown: 150 });
       this.puppetLayer.addChild(art.node);
     }
@@ -106,6 +132,31 @@ class PuppetStage implements Game {
       window.addEventListener('pointerup', this.onWindowUp);
       window.addEventListener('pointercancel', this.onWindowUp);
     } else this.floorSurface.eventMode = 'none';
+    const story = this.plan.story;
+    if (story) {
+      story.cast.forEach((p, i) => {
+        const peek = peekArt(p);
+        onTap(peek.node, (e) => this.touchPeek(i as 0 | 1, e), { cooldown: 150 });
+        peek.node.on('globalpointermove', (e: FederatedPointerEvent) => this.follow(e));
+        const lift = (e: FederatedPointerEvent) => this.release(e.pointerId);
+        peek.node.on('pointerup', lift);
+        peek.node.on('pointerupoutside', lift);
+        this.peekNodes.push(peek.node);
+        this.peekHeads.push(peek.head);
+        ctx.track(peek.head);
+      });
+      window.addEventListener('pointerup', this.onWindowUp);
+      window.addEventListener('pointercancel', this.onWindowUp);
+      this.plan.scenes.forEach((sc, i) => {
+        const card = cardArt(sc, i);
+        onTap(card.node, () => this.tapCard(i), { cooldown: 400 });
+        this.cardNodes.push(card);
+      });
+      for (const place of story.places) this.placeNodes.push(placeArt(place));
+      onTap(this.endNode, () => void this.theEnd(), { cooldown: 600 });
+      this.placeGlow.eventMode = 'none';
+    }
+    this.endNode.visible = false;
     for (const c of this.curtainNodes) onTap(c, () => this.toggleCurtains(), { cooldown: 500 });
     onTap(this.tasselNode, () => this.pullTassel(), { cooldown: 500 });
     onTap(this.bowNode, () => this.bow(), { cooldown: 500 });
@@ -117,11 +168,16 @@ class PuppetStage implements Game {
         this.bubbleNodes.set(way, b);
       }
     }
-    ctx.stage.addChild(this.day, this.nightBackdrop, this.floorSurface, this.proscenium, this.puppetMask, this.puppetLayer, ...this.curtainNodes, this.tasselNode, this.frontRow.node, ...this.bubbleNodes.values(), this.bowNode, this.glowRing);
+    ctx.stage.addChild(
+      this.day, this.nightBackdrop, ...this.placeNodes, this.placeGlow, this.floorSurface, this.proscenium, ...this.peekNodes, this.puppetMask, this.puppetLayer,
+      ...this.curtainNodes, this.tasselNode, ...this.cardNodes.map((c) => c.node), this.frontRow.node, ...this.bubbleNodes.values(), this.endNode, this.bowNode, this.glowRing,
+    );
     this.resize(ctx.view);
   }
 
   get layoutNow(): Layout { return this.l; }
+
+  private get story() { return this.plan.story; }
 
   get ask(): Ask | null {
     return this.askIndex < this.plan.asks.length ? this.plan.asks[this.askIndex] : null;
@@ -133,11 +189,15 @@ class PuppetStage implements Game {
       level: this.plan.level, puppets: this.plan.puppets.slice(), standing: this.standing.slice(), parked: this.parked.slice(), pops: this.pops, bowShown: this.bowShown,
       askIndex: this.askIndex, ask: this.ask, asks: this.plan.asks.slice(), line: this.plan.line, misses: this.misses, hints: this.hints, glow: this.glow, busy: this.busy,
       finished: this.finished, freeTried: this.freeTried, curtainsClosed: this.curtainsClosed, night: this.night, spoken: this.spoken.slice(),
+      story: this.story?.id ?? null, mirror: this.plan.mirror, scenes: this.plan.scenes.length, done: this.done, ticked: this.plan.scenes.map((_, i) => i < this.done),
+      ended: this.ended, endShown: this.endShown, earlyEnds: this.earlyEnds, storyGlow: this.storyGlow,
+      where: Object.fromEntries((this.story?.cast ?? []).map((p) => [p, this.where(p)])) as Record<string, Where>,
     };
   }
 
   start() {
     if (this.plan.level === 1) { void this.ctx.instruct('ps.instruct.1'); return; }
+    if (this.story) { void this.storyOpening(); return; }
     void this.opening();
   }
 
@@ -175,6 +235,10 @@ class PuppetStage implements Game {
     for (const c of this.curtainNodes) this.ctx.tw.kill(c.scale);
     this.ctx.tw.kill(this.day); this.ctx.tw.kill(this.nightBackdrop);
     for (const b of this.bubbleNodes.values()) this.ctx.tw.kill(b.scale);
+    for (const c of this.cardNodes) { this.ctx.tw.kill(c.lift); this.ctx.tw.kill(c.node.scale); }
+    for (const f of this.frontRow.critters) this.ctx.tw.kill(f);
+    this.ctx.tw.kill(this.frontRow.node);
+    this.ctx.tw.kill(this.endNode.scale);
     this.ctx.tw.kill(this.bowNode.scale);
     this.ctx.tw.kill(this.tasselNode);
   }
@@ -213,6 +277,7 @@ class PuppetStage implements Game {
     const floor = this.l.stage.floor;
     this.parked = this.parked.filter((q) => q !== p);
     this.standing.push(p);
+    this.peekHead(p, false);
     node.x = x;
     node.y = floor + PUPPET_H + 60;
     node.rotation = 0;
@@ -237,8 +302,13 @@ class PuppetStage implements Game {
     this.ctx.tw.kill(node);
     void this.ctx.tw.to(node, { y: this.l.stage.floor + PUPPET_H + 60 }, { duration: 0.3, ease: ease.inQuad }).then(() => {
       if (this.finished) return;
-      if (!this.standing.includes(p) && !this.parked.includes(p)) this.parked.push(p);
+      if (!this.standing.includes(p) && !this.parked.includes(p)) { this.parked.push(p); this.peekHead(p, true); }
     });
+  }
+
+  private peekHead(p: Puppet, shown: boolean) {
+    const i = this.story?.cast.indexOf(p) ?? -1;
+    if (i >= 0) this.peekHeads[i].visible = shown;
   }
 
   /** A line in a puppet's voice; its mouth opens while it talks. */
@@ -280,7 +350,7 @@ class PuppetStage implements Game {
     const x = standAt(at.x, this.othersX(p), this.l.stand);
     this.rise(p, x, true);
     this.pops++;
-    this.following = { id: e.pointerId, puppet: p, pickX: x };
+    this.following = { id: e.pointerId, puppet: p, pickX: x, x };
     if (this.pops >= this.plan.popsToBow) this.showBow();
     if (this.plan.autoBowAfter !== null && this.pops >= this.plan.autoBowAfter) void this.bow();
   }
@@ -290,6 +360,7 @@ class PuppetStage implements Game {
     if (!f || e.pointerId !== f.id || this.finished) return;
     const node = this.puppetNodes.get(f.puppet)!;
     const at = this.ctx.stage.toLocal(e.global);
+    f.x = at.x;
     node.x = standAt(at.x, this.othersX(f.puppet), this.l.stand);
   }
 
@@ -298,6 +369,7 @@ class PuppetStage implements Game {
     if (!f || id !== f.id) return;
     this.following = null;
     if (this.finished || !this.standing.includes(f.puppet)) return;
+    if (this.story) { this.standOn(f.puppet, f.x); return; }
     if (Math.abs(this.puppetNodes.get(f.puppet)!.x - f.pickX) >= 14) this.dragged = true;
     this.bob(f.puppet);
   }
@@ -419,6 +491,233 @@ class PuppetStage implements Game {
     this.busy = false;
   }
 
+  // ---- levels 4–6: story cards ----
+
+  private where(p: Puppet): Where {
+    if (!this.standing.includes(p)) return 'parked';
+    const a = this.at.get(p);
+    return a ? this.story!.places[a.place] : null;
+  }
+
+  private async storyOpening() {
+    this.busy = true;
+    if (this.plan.level === 6) this.frontRow.critters.forEach((c, i) => this.hop(c, i * 0.15));
+    await this.ctx.instruct(`ps.instruct.${this.plan.level as 4 | 5 | 6}`);
+    if (this.finished) return;
+    this.liftCard(0);
+    await this.ctx.say(this.plan.scenes[0].card);
+    if (this.finished) return;
+    this.busy = false;
+  }
+
+  /** A standing puppet: a short touch bobs it (acts), a drag walks it, a drag down into the apron sends it back to its peek. */
+  private makeStoryDraggable(kind: Puppet, node: Container) {
+    let pickX = 0, lastX = 0, lastY = 0;
+    const handle = draggable(node, this.ctx.tw, {
+      lift: 0,
+      keepGrab: true,
+      onPick: () => { pickX = lastX = node.x; lastY = this.l.stage.floor; this.tilt(kind); },
+      onMove: (x, y) => {
+        lastX = x; lastY = y;
+        node.x = standAt(x, this.othersX(kind), this.l.stand);
+        node.y = this.l.stage.floor;
+        // Cat tiptoes in the sneaky card; art only.
+        if (this.story?.id === 'c' && kind === 'cat' && !this.reduce) node.rotation = 0.07 * Math.sin(x / 18);
+      },
+      onDrop: () => {
+        node.y = this.l.stage.floor;
+        node.rotation = 0;
+        if (lastY > this.l.stage.floor + 40) { this.at.set(kind, null); this.lower(kind); return true; }
+        if (Math.abs(lastX - pickX) < 14) { node.x = pickX; this.act(kind); return true; }
+        this.standOn(kind, lastX);
+        return true;
+      },
+    });
+    handle.enabled = false;
+    this.drags.set(kind, handle);
+  }
+
+  /** A touch-down on a peek raises that puppet through the slot; it follows the finger until the release stands it. */
+  private touchPeek(i: 0 | 1, e: FederatedPointerEvent) {
+    if (this.finished || this.following) return;
+    const p = this.story!.cast[i];
+    if (!this.parked.includes(p)) return;
+    const x = this.l.peeks[i].x;
+    this.rise(p, x);
+    this.at.set(p, null);
+    this.following = { id: e.pointerId, puppet: p, pickX: x, x };
+  }
+
+  /** A release at `x`: inside a place's snap zone the puppet takes that place's nearest free mark; anywhere else it just stands. */
+  private standOn(p: Puppet, x: number) {
+    const node = this.puppetNodes.get(p)!;
+    const others = this.othersX(p);
+    const place = placeAt(x, this.l);
+    const mark = place === null ? null : freeMark(place, x, others, this.l);
+    if (place !== null && mark !== null) {
+      this.at.set(p, { place, mark });
+      node.x = this.l.marks[place][mark];
+    } else {
+      this.at.set(p, null);
+      node.x = standAt(x, others, this.l.stand);
+    }
+    this.bob(p);
+  }
+
+  /** A bob: judged against the cards. */
+  private act(p: Puppet) {
+    if (this.finished) return;
+    this.bob(p);
+    if (this.busy) return;
+    const scenes = this.plan.scenes;
+    const j = judge(scenes, this.done, { puppet: p, place: this.where(p) as Place | null });
+    if (j.kind === 'scene') { void this.tick(j.index); return; }
+    if (j.kind === 'again') { void this.speakLine(p, scenes[j.index].line, scenes[j.index].voice); return; }
+    if (j.kind === 'early' && this.plan.level === 5) { void this.early(); return; }
+    // Free (and an early bob at level 6): the puppet just speaks.
+    if (this.plan.level <= 5) this.sceneFree++;
+    void this.speakLine(p, `ps.again.${p}`).then(() => { if (this.plan.level <= 5 && this.sceneFree >= 3) this.storyHint(); });
+  }
+
+  private async speakLine(p: Puppet, id: LineId, voice?: Way) {
+    this.busy = true;
+    await this.speakAs(p, id, voice ? WAY_VOICE[voice] : BASE_VOICE[p]);
+    if (!this.finished) this.busy = false;
+  }
+
+  /** Level 5: a later card acted first is one try; the current card lifts again. */
+  private async early() {
+    this.busy = true;
+    this.misses++;
+    this.sceneEarly++;
+    sfx.boing();
+    this.liftCard(this.done);
+    await this.ctx.say('ps.order');
+    if (this.finished) return;
+    if (this.sceneEarly >= 2) this.storyHint();
+    this.busy = false;
+  }
+
+  /** The glow on the next scene's puppet and place: at most one per scene (levels 4–5). */
+  private storyHint() {
+    if (this.sceneHinted || this.finished) return;
+    this.sceneHinted = true;
+    this.hints++;
+    this.storyGlow = storyHint(this.plan.scenes, this.done);
+    void this.ctx.say('ps.this-one');
+  }
+
+  private async tick(index: number) {
+    this.busy = true;
+    const scene = this.plan.scenes[index];
+    this.done = index + 1;
+    this.storyGlow = null;
+    this.sceneFree = this.sceneEarly = 0;
+    this.sceneHinted = false;
+    const card = this.cardNodes[index];
+    card.star.visible = true;
+    this.ctx.tw.kill(card.lift);
+    void this.ctx.tw.to(card.lift, { y: 0 }, { duration: 0.25, ease: ease.outQuad });
+    this.clap();
+    if (this.plan.level === 6) this.hop(this.frontRow.critters[index]);
+    if (scene.card === 'ps.card.a1') sfx.knock();
+    await this.speakAs(scene.puppet, scene.line, scene.voice ? WAY_VOICE[scene.voice] : BASE_VOICE[scene.puppet]);
+    if (this.finished) return;
+    if (scene.line === 'ps.sc.c3') {
+      const duck = this.standing.includes('duck') ? 'duck' : null;
+      if (duck) { this.bob(duck); this.critterOf(duck).setMood('surprised', 0.8); }
+      await this.speakAs('duck', SURPRISED);
+      if (this.finished) return;
+    }
+    if (this.plan.level === 6 && !this.endShown && this.done < this.plan.scenes.length) this.showEnd();
+    if (this.done >= this.plan.scenes.length) {
+      if (this.plan.level < 6) { void this.bow(); return; }
+      this.endNode.visible = false;
+      this.endShown = false;
+      sfx.tada();
+      this.frontRow.critters.forEach((c, i) => { c.setMood('happy'); this.hop(c, i * 0.1); });
+      await this.ctx.say('ps.cheer');
+      if (this.finished) return;
+      this.showBow();
+      this.busy = false;
+      return;
+    }
+    this.liftCard(this.done);
+    await this.ctx.say(this.plan.scenes[this.done].card);
+    if (this.finished) return;
+    this.busy = false;
+  }
+
+  /** Level 6: The end before every card is acted. The curtains close and open, the friends react to what was shown. */
+  private async theEnd() {
+    if (this.finished || this.busy || this.done >= this.plan.scenes.length) return;
+    this.busy = true;
+    this.misses++;
+    this.earlyEnds++;
+    this.ended = true;
+    this.endNode.scale.set(0.92);
+    void this.ctx.tw.to(this.endNode.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
+    this.toggleCurtains();
+    await this.ctx.tw.wait(this.reduce ? 0.3 : 0.7);
+    if (this.finished) return;
+    this.toggleCurtains();
+    const r = reactions(this.plan.scenes, this.done);
+    r.forEach((kind, i) => {
+      const c = this.frontRow.critters[i];
+      c.setMood(kind === 'clap' ? 'happy' : 'surprised');
+      if (kind === 'clap') this.hop(c);
+    });
+    if (r.includes('clap')) sfx.clap();
+    await this.ctx.say(this.plan.scenes[this.done].waited);
+    if (this.finished) return;
+    if (this.earlyEnds >= 2 && !this.roundHinted) {
+      this.roundHinted = true;
+      this.hints++;
+      this.storyGlow = storyHint(this.plan.scenes, this.done);
+      void this.ctx.say('ps.this-one');
+    }
+    this.showBow();
+    this.busy = false;
+  }
+
+  private tapCard(i: number) {
+    if (this.finished) return;
+    const c = this.cardNodes[i];
+    this.ctx.tw.kill(c.node.scale);
+    c.node.scale.set(0.94);
+    void this.ctx.tw.to(c.node.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
+    void this.ctx.say(this.plan.scenes[i].card);
+  }
+
+  /** The current card lifts a little above the others. */
+  private liftCard(i: number) {
+    this.cardNodes.forEach((c, k) => {
+      this.ctx.tw.kill(c.lift);
+      void this.ctx.tw.to(c.lift, { y: k === i ? 8 : 0 }, { duration: 0.3, ease: ease.outBack });
+    });
+  }
+
+  private showEnd() {
+    if (this.endShown || this.finished) return;
+    this.endShown = true;
+    this.endNode.visible = true;
+    this.endNode.scale.set(0.3);
+    void this.ctx.tw.to(this.endNode.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.outBack });
+  }
+
+  private hop(c: Critter, delay = 0) {
+    if (this.reduce) return;
+    this.ctx.tw.kill(c);
+    const y = 18;
+    void this.ctx.tw.wait(delay).then(() => {
+      if (this.finished) return;
+      c.y = y;
+      return this.ctx.tw.to(c, { y: y - 16 }, { duration: 0.15, ease: ease.outQuad }).then(() => {
+        if (!this.finished) return this.ctx.tw.to(c, { y }, { duration: 0.25, ease: ease.outBack });
+      });
+    });
+  }
+
   // ---- curtains, tassel, bow ----
 
   private toggleCurtains() {
@@ -469,6 +768,8 @@ class PuppetStage implements Game {
     this.glow = null;
     this.following = null;
     this.bowNode.visible = false;
+    this.endNode.visible = false;
+    this.storyGlow = null;
     for (const d of this.drags.values()) d.enabled = false;
     sfx.tada();
     this.clap();
@@ -523,11 +824,24 @@ class PuppetStage implements Game {
     this.frontRow.node.visible = l.seats.length > 0;
     if (l.seats.length) this.frontRow.node.position.set(l.seats[1].x, l.seats[1].y);
     WAYS.forEach((way, i) => { const b = this.bubbleNodes.get(way); const box = l.bubbles[i]; if (b && box) b.position.set(box.x, box.y); });
+    this.peekNodes.forEach((n, i) => n.position.set(l.peeks[i].x, l.peeks[i].y));
+    this.cardNodes.forEach((c, i) => c.node.position.set(l.cards[i].x, l.cards[i].y));
+    this.placeNodes.forEach((g, i) => g.position.set(l.places[i], stage.floor - 6));
+    if (l.end) this.endNode.position.set(l.end.x, l.end.y);
+    const cast = this.story?.cast;
     for (const p of PUPPETS) {
       const node = this.puppetNodes.get(p)!;
       const i = this.standing.indexOf(p);
-      if (i < 0) { node.x = l.homes[PUPPETS.indexOf(p)]; if (!this.ctx.tw.busy(node)) node.y = stage.floor + PUPPET_H + 60; continue; }
-      node.x = this.plan.level === 1 ? standAt(node.x, this.othersX(p), l.stand) : l.spots[Math.min(i, l.spots.length - 1)];
+      if (i < 0) {
+        const peek = cast ? cast.indexOf(p) : -1;
+        node.x = peek >= 0 ? l.peeks[peek].x : l.homes[PUPPETS.indexOf(p)];
+        if (!this.ctx.tw.busy(node)) node.y = stage.floor + PUPPET_H + 60;
+        continue;
+      }
+      if (this.story) {
+        const a = this.at.get(p);
+        node.x = a ? l.marks[a.place][a.mark] : standAt(node.x, this.othersX(p), l.stand);
+      } else node.x = this.plan.level === 1 ? standAt(node.x, this.othersX(p), l.stand) : l.spots[Math.min(i, l.spots.length - 1)];
       if (!this.ctx.tw.busy(node)) node.y = stage.floor;
     }
   }
@@ -536,11 +850,26 @@ class PuppetStage implements Game {
     this.clock += dt;
     if (this.plan.level === 1 && !this.bowShown && this.clock >= this.plan.secondsToBow) this.showBow();
     this.glowRing.clear();
+    this.placeGlow.clear();
+    if (this.storyGlow && !this.finished && !this.busy) {
+      const g = this.storyGlow;
+      const pulse = 6 + 4 * Math.sin(this.clock * 5);
+      const peek = this.story!.cast.indexOf(g.puppet);
+      const b = this.standing.includes(g.puppet) ? this.puppetBox(g.puppet) : this.l.peeks[peek];
+      this.glowRing.roundRect(b.x - b.w / 2 - pulse, b.y - b.h / 2 - pulse, b.w + 2 * pulse, b.h + 2 * pulse, 30).stroke({ width: 7, color: swatch.yellow.fill });
+      const x = this.l.places[this.story!.places.indexOf(g.place)];
+      this.placeGlow.ellipse(x, this.l.stage.floor - 4, 110 + pulse, 22 + pulse / 2).fill({ color: swatch.yellow.fill, alpha: 0.55 });
+    }
     if (!this.glow || this.finished || this.busy) return;
     const target = this.glowTarget(this.glow);
     const pulse = 6 + 4 * Math.sin(this.clock * 5);
     const b = target.hitArea as Rectangle;
     this.glowRing.roundRect(target.x + b.x * target.scale.x - pulse, target.y + b.y * target.scale.y - pulse, b.width * target.scale.x + 2 * pulse, b.height * target.scale.y + 2 * pulse, 30).stroke({ width: 7, color: swatch.yellow.fill });
+  }
+
+  private puppetBox(p: Puppet) {
+    const n = this.puppetNodes.get(p)!;
+    return { x: n.x, y: this.l.stage.floor - PUPPET_H / 2, w: 140, h: PUPPET_H };
   }
 
   private glowTarget(g: Puppet | Way): Container {
@@ -571,21 +900,40 @@ class PuppetStage implements Game {
       }
       return this.bowShown ? { tap: { on: this.bowNode }, pause: 0.6 } : null;
     }
+    if (this.story) return this.storyTouch();
     const ask = this.ask;
     if (this.plan.level === 3 && !this.freeTried) return { tap: { on: this.bubbleNodes.get('sleepy')! }, pause: 0.8 };
     if (!ask) return null;
     if (ask.kind === 'way') return { tap: { on: this.bubbleNodes.get(ask.way)! }, pause: 0.8 };
     return { tap: { on: this.puppetNodes.get(askedPuppet(ask, this.plan.puppets)!)! }, pause: 0.8 };
   }
+
+  /** Levels 4–6: bring up or walk the next scene's puppet to its place's nearest free mark, bob it, and Bow after the cheer; never The end. */
+  private storyTouch(): TouchIntent | null {
+    if (this.following) return null;
+    const l = this.l, story = this.story!;
+    const move = storyMove(this.plan.scenes, this.done, (p) => this.where(p));
+    if (move.kind === 'bow') return this.bowShown ? { tap: { on: this.bowNode }, pause: 0.6 } : null;
+    if (move.kind === 'bob') return { tap: { on: this.puppetNodes.get(move.puppet)!, x: 0, y: -PUPPET_H / 2 }, pause: 0.8 };
+    const place = story.places.indexOf(move.place) as 0 | 1;
+    const mark = freeMark(place, l.places[place], this.othersX(move.puppet), l) ?? 0;
+    const to = { on: this.ctx.stage, x: l.marks[place][mark], y: l.stage.floor - 60 };
+    if (move.kind === 'raise') return { drag: { on: this.peekNodes[story.cast.indexOf(move.puppet)] }, to, lift: 0, pause: 0.6 };
+    return { drag: { on: this.puppetNodes.get(move.puppet)!, x: 0, y: -60 }, to, lift: 0, pause: 0.6 };
+  }
 }
 
 export const puppetStage: GameModule = {
   id: 'puppet-stage', name: 'Puppet Stage', titleLine: 'game.puppet-stage', region: 'music-mountain',
-  skills: ['pretend-play', 'listening', 'character-voices'], bands: ['lap', 'toddler', 'preschool', 'prek'], levels: (b) => rangeFor(LEVELS, b),
+  skills: ['pretend-play', 'listening', 'character-voices', 'acting-a-story'], bands: ['lap', 'toddler', 'preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel,
   music: silenced(STYLES.hub),
   coplayHint: "Say hello back in a silly voice when a puppet pops up; {name}'s puppet will answer.",
-  offScreen: 'A spoon with a paper face is a puppet; give it a voice at dinner.',
+  offScreen: {
+    all: 'A spoon with a paper face is a puppet; give it a voice at dinner.',
+    prek: 'Act a picture book with two spoons: you read the page, {name} gives the spoons their voices.',
+    school: 'Act a picture book with two spoons: you read the page, {name} gives the spoons their voices.',
+  },
   hubIcon: () => new WigglyIcon(iconArt()), sticker: (seed) => stickerArt(stickerPuppet(seed)), create: (ctx) => new PuppetStage(ctx),
   touchDemo: true,
 };
