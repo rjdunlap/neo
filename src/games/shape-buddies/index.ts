@@ -34,7 +34,7 @@ function paper(shape: Shape, color: ColorName): Graphics {
 function seedArt(kind: SeedKind = 'bean') {
   const g = new Graphics();
   if (kind === 'sunflower') {
-    g.moveTo(0, -18).quadraticCurveTo(13, -4, 9, 10).quadraticCurveTo(0, 20, -9, 10).quadraticCurveTo(-13, -4, 0, -18).closePath().fill(0x5d5a66).stroke({ width: 3, color: ink });
+    g.moveTo(0, -18).quadraticCurveTo(13, -4, 9, 10).quadraticCurveTo(0, 20, -9, 10).quadraticCurveTo(-13, -4, 0, -18).closePath().fill(swatch.white.line).stroke({ width: 3, color: ink });
     g.moveTo(-4, -8).lineTo(-5, 12).moveTo(4, -8).lineTo(5, 12).stroke({ width: 2, color: swatch.white.light });
   } else if (kind === 'acorn') {
     g.ellipse(0, 4, 11, 14).fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line });
