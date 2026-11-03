@@ -211,12 +211,11 @@ class JellyDrums implements Game {
 
   /** Free play's extras, none of them a goal: a name now and then, the fans answering (level 2), a scale's sparkle (level 3). */
   private freeTwists(i: number) {
-    const line = this.namer.tap(i);
+    const f = this.plan.twist === 'fans' ? fanAnswering(this.notes, this.fans.length) : null;
+    if (f !== null) void this.fanAnswers(f, i);
+    // No name over a fan's answer or the finale.
+    const line = this.namer.tap(i, f !== null || this.notes >= this.plan.goal);
     if (line) void this.ctx.say(line);
-    if (this.plan.twist === 'fans') {
-      const f = fanAnswering(this.notes, this.fans.length);
-      if (f !== null) void this.fanAnswers(f, i);
-    }
     if (this.plan.twist === 'scale' && this.scale.tap(i)) this.sparkle();
   }
 

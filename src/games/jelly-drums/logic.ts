@@ -155,11 +155,11 @@ export class JellyNamer {
   private lastNamed = -1;
   private lowHighSaid = false;
   private readonly tapped = new Set<number>();
-  /** The line to say for this tap, or null. */
-  tap(i: number): LineId | null {
+  /** The line to say for this tap, or null. A `quiet` tap (something else is sounding) counts but never speaks. */
+  tap(i: number, quiet = false): LineId | null {
     this.since++;
     this.tapped.add(i);
-    if (this.since < NAME_EVERY) return null;
+    if (quiet || this.since < NAME_EVERY) return null;
     if (!this.lowHighSaid && this.tapped.has(0) && this.tapped.has(JELLIES - 1)) {
       this.lowHighSaid = true;
       this.since = 0;

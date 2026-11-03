@@ -213,6 +213,20 @@ describe('Jelly Drums', () => {
       }
     });
 
+    it('says low and high exactly once in a long round that plays both ends', () => {
+      const namer = new JellyNamer();
+      const lines = Array.from({ length: 40 }, (_, n) => namer.tap(n % JELLIES));
+      expect(lines.filter((l) => l === 'jelly.lowhigh')).toHaveLength(1);
+    });
+
+    it('never speaks on a quiet tap, though the tap still counts', () => {
+      const namer = new JellyNamer();
+      for (let n = 0; n < NAME_EVERY - 1; n++) expect(namer.tap(n % 2 ? 1 : 2)).toBeNull();
+      expect(namer.tap(3, true)).toBeNull();
+      expect(namer.tap(3)).toBe('jelly.name.green');
+    });
+
+
     it('says low and high only after both the biggest and the littlest jelly sang', () => {
       const namer = new JellyNamer();
       const lines = [1, 2, 3, 1, 2, 3, 1, 2, 0, 1, 2, 3, 4, 3, 2, 1, 2, 3, 2, 1].map((i) => namer.tap(i));
