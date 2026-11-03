@@ -3,9 +3,9 @@ import type { Rng } from '../../engine/random';
 export interface Orchard { rows: number; columns: number }
 export type Mode = 'plant' | 'turn' | 'missing' | 'equal' | 'every' | 'prime';
 export const PLANS: readonly { name: string; mode: Mode; shapes: readonly Orchard[] }[] = [
-  { name: 'Plant equal rows and count by rows', mode: 'plant', shapes: [{ rows: 2, columns: 3 }, { rows: 3, columns: 2 }, { rows: 3, columns: 3 }] },
-  { name: 'Count by rows, then turn and count by columns', mode: 'turn', shapes: [{ rows: 2, columns: 4 }, { rows: 3, columns: 4 }, { rows: 2, columns: 5 }] },
-  { name: 'Find the missing row, then count two ways', mode: 'missing', shapes: [{ rows: 3, columns: 5 }, { rows: 4, columns: 5 }, { rows: 5, columns: 4 }, { rows: 5, columns: 5 }] },
+  { name: 'Plant equal rows and count by rows', mode: 'plant', shapes: [{ rows: 2, columns: 3 }, { rows: 3, columns: 2 }, { rows: 3, columns: 3 }, { rows: 2, columns: 2 }, { rows: 4, columns: 2 }] },
+  { name: 'Count by rows, then turn and count by columns', mode: 'turn', shapes: [{ rows: 2, columns: 4 }, { rows: 3, columns: 4 }, { rows: 2, columns: 5 }, { rows: 4, columns: 3 }, { rows: 5, columns: 2 }] },
+  { name: 'Find the missing row, then count two ways', mode: 'missing', shapes: [{ rows: 3, columns: 5 }, { rows: 4, columns: 5 }, { rows: 5, columns: 4 }, { rows: 5, columns: 5 }, { rows: 4, columns: 4 }, { rows: 5, columns: 3 }] },
   // Levels 4–6 ask which arrays a basket allows; their baskets come from `makeRound`, not fixed shapes.
   { name: 'Equal rows: choose a row count with none left over', mode: 'equal', shapes: [] },
   { name: 'Every way: plant every equal orchard for one basket', mode: 'every', shapes: [] },
@@ -16,8 +16,12 @@ export const total = (o: Orchard) => o.rows * o.columns;
 export const turn = (o: Orchard): Orchard => ({ rows: o.columns, columns: o.rows });
 export const subtotals = (o: Orchard) => Array.from({ length: o.rows }, (_, i) => (i + 1) * o.columns);
 export const missingTrees = (o: Orchard) => total(o) - (o.rows - 1) * o.columns;
+/** Level 2 holds no square, and its two orchards are never one turned, since she turns each to count it again. */
 export function makeOrchards(level: number, rng: Rng): Orchard[] {
-  return rng.shuffle([...planFor(level).shapes]).slice(0, 2).map(o => ({ ...o }));
+  const plan = planFor(level);
+  const [first, ...rest] = rng.shuffle([...plan.shapes]);
+  const second = plan.mode === 'turn' ? rest.find(o => o.rows !== first.columns || o.columns !== first.rows)! : rest[0];
+  return [first, second].map(o => ({ ...o }));
 }
 /** Adjacent totals make a one-off answer possible; missing-row decoys include the number of rows when distinct. */
 export function choicesFor(answer: number, rng: Rng, rows?: number): number[] {
@@ -106,7 +110,7 @@ function leftoverOpen(level: number, n: number, rng: Rng): number {
 export function makeRound(level: number, rng: Rng): Round {
   const sapling = rng.pick(SAPLINGS);
   if (level === 4) {
-    const n = rng.pick([15, 16, 18, 20]);
+    const n = rng.pick([14, 15, 16, 18, 20, 21]);
     return { level, sapling, tasks: [{ baskets: [12], open: 5 }, { baskets: [n], open: leftoverOpen(4, n, rng) }] };
   }
   if (level === 5) {
