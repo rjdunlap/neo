@@ -1550,7 +1550,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'scoop-shop': {
     goal: 'Serve ice cream to customers.',
     steps: [
-      { to: 6, text: 'Tap a tub to put a scoop on the cone.' },
+      { to: 6, text: 'Tap a tub to put a scoop on the cone.' }, { from: 8, to: 9, text: 'Tap a tub to put a scoop on the cone, bottom scoop first.' },
       { from: 10, to: 10, text: 'Tap any tub: one scoop is enough. Each of three customers munches it straight away.' },
       { from: 11, to: 11, text: 'The cone already has one scoop. Tap the customer whose picture matches its color. The other customer stays for the next cone.' },
       { to: 5, text: 'Tap the customer to hear the order again.' },
