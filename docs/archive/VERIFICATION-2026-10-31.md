@@ -182,7 +182,7 @@
 
 - [PR #1067](https://github.com/rjdunlap/neo/pull/1067), branch `claude/research-food-fiber-systems`: [study](../deep-dives/subjects/food-fiber-systems.md) and [packet](../deep-dives/subjects/RECOMMENDATIONS.md#food-and-fiber-systems-recommendations) (Maker Lane 1–3: a bundle that changes form at each maker, who can use it now, where did it begin; a grown-ups' label card and co-play role follow; Maker Lane 4–5 after 1–3 are played; a plan puzzle and goods from far away stay sketches), tracker, backlog, READY, ideas, roadmap and device checks updated.
 - Ran: `git fetch origin --prune`, `scripts/overlap.sh` for the subject (no claim), `node scripts/check-links.mjs` and `git diff --check`. Sources: the NALO booklet, England's D&T programme, the Australian Curriculum food-and-fibre page, ACER's survey article, the Maine State Museum wool PDF and Wikipedia's Dyeing opened; the rest from search summaries, marked in the study.
-- Not run: typecheck, tests, build, browser suites (nothing built). Open: the FS1 definition and three [person checks](../DEVICE-CHECKS.md#maker-lane-food-fiber-systems-study-2026-10-31-proposed-nothing-built).
+- Not run: typecheck, tests, build, browser suites (nothing built). Open: the FS1 definition and three [person checks](../DEVICE-CHECKS.md#maker-lane-food-fiber-systems-study-2026-10-31-levels-13-built-2026-11-02).
 
 ## 2026-10-31 — Maker Lane 1–3 definition (food-fiber-systems FS1, docs only)
 
