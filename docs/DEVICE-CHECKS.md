@@ -103,6 +103,10 @@
 - [ ] On the iPad, with the selected voice, are three device-speech presets (sleepy: low and slow; tiny: high and fast; big: low and loud) distinct and pleasant, not creepy? Decides the study's decision 3 before TP1 is defined.
 - [ ] Watch a one-year-old with a puppet that pops up where she touched (Peekaboo Barn is the stand-in until it is built): does she touch again to make it rise, or wait for it?
 - [ ] Watch a six-year-old at Story Theater 12: does she want to move the characters herself, or is watching enough? Decides whether TP2's performed scenes are worth their cost.
+- [ ] When levels 4–6 are built: does a four-year-old follow a picture card without reading, once the pet has read it?
+- [ ] When levels 4–6 are built: does a six-year-old prefer performing a card to watching Story Theater?
+- [ ] When levels 4–6 are built: is Cat's tiny "Boo!" audibly sneaky on the iPad's voice?
+- [ ] When levels 4–6 are built: do grown-ups find and use the narrator-and-swap note?
 
 ## Paint Mixer levels 1–4
 
