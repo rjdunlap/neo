@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-03 — Today's six daily shuffle definition (docs only)
+
+- Developer request 2026-11-03: Today's six (the `?daily` trial, [PR #1088](https://github.com/rjdunlap/neo/pull/1088)) becomes the daily shuffle: a Home button, preset levels by band, an eligibility rule, seven kinds of challenge and Play all. [Definition](definitions/todays-six.md), D10 in the roadmap's [discovery actions](ROADMAP.md#discovery-actions), READY's first line, the waiting row narrowed to what is still the developer's call.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. No code changed, so no code checks.
+- Open: the three slices' checks run when each lands.
+
 ## 2026-11-03 — Habitat Helpers level 7 Something changed (habitat-helpers batch 2)
 
 - [PR #1170](https://github.com/rjdunlap/neo/pull/1170): level 7 for school (range 4-7), two rounds of a changed garden, need buttons with the game's first counted miss, a repair tray, five new rule tests, new voice ids and a how-to step scoped to 7.
@@ -87,19 +93,6 @@
 - Ran: `npm run typecheck`; full `npm test` 297 files, 4578 tests; bouncy-launch rule tests and registry tests (a test pins Cloud Hopper's `CLOUDS`); one-off Playwright probe (dev server localhost:5599, `VITE_SPEECH=off`) at toddler in portrait 768x1024 and landscape 1024x768: real drags, two deliberate misses (2 misses, 1 hint, preview on), five landings to the sticker, no page errors; portrait screenshot reviewed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=bouncy-launch FINGER_LEVELS=8` clean 18.5 s.
 - Not run: `npm run build` (CI builds), couch suites (unchanged), any device.
 - Open: whether a toddler or preschooler drags a little versus a lot, and the clouds read as targets ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
-
-## 2026-11-03 — Puppet Stage levels 4–6 definition (TP2, docs only)
-
-- [PR #1156](https://github.com/rjdunlap/neo/pull/1156): [definition](definitions/puppet-stage-4-6.md) of three story cards, a live shown-only premiere and the batch puppet-stage 2 check tier; nothing built.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`. Nothing else run.
-- Open: the build and its checks; four device and person checks in [DEVICE-CHECKS](DEVICE-CHECKS.md).
-
-## 2026-11-03 — Jelly Drums names, twists and co-play (dive slice 2)
-
-- [PR #1155](https://github.com/rjdunlap/neo/pull/1155): free-play color/size names (`JellyNamer`) and `jelly.lowhigh`, level 2 fan answers, level 3 scale sparkle (`ScaleWatch`, garland twinkle only, no bonus bulb), one added co-play line, how-to steps for levels 2 and 3.
-- Ran: typecheck; vitest `src/games/jelly-drums` (21 rules), `src/content` and registry; `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=1,2,3` passed at 89334790 (http://localhost:5441; 28.9, 37.9, 46.6 s); a one-off probe at toddler portrait 768×1024 (level 2: three fan answers in 12 notes; level 3: sparkle on 0-1-2; low-and-high said once; no page errors). game-reviewer's three findings fixed; the review follow-up (a097e025, speech gating) got rule tests only, no browser rerun.
-- Not run: build (no shared files or assets), device speech for the color words, a child's reaction.
-- Open: per-band co-play lines (shell type change); device checks in [DEVICE-CHECKS](DEVICE-CHECKS.md).
 
 ## Coverage summary
 
@@ -247,7 +240,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Read & Do (`readdo`, `fingerdemo`) | 2026-11-03: `readdo` levels 1–3 on the five-colour, seeded-animal and seeded-pair pools (two misses, one hint, sticker per level); `fingerdemo` last run 2026-10-10 (bot unchanged) | Read & Do fresh words and pictures entry | iPad, device speech for green, pink, pig and dog, and child reading unjudged |
 | Goodnight Room release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations, story resume/rewards, Together and Face-off controller trips, production offline reload and saves | Goodnight Room barn and animals entry | Chrome automation; hardware and child judgment remain open |
 | Duckling Parade (`arcade`, `fingerdemo`) | 2026-10-16: level 11 ABB typecheck, 46 focused tests, build, filtered `arcade` parade 11 (refusals, 2 misses/1 hint, pond, sticker), clean 19.0 s finger ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--duckling-parade-abb-level-11)). 2026-10-15: meadow treatments (two seeded looks) typecheck, 11 rules, filtered `arcade` parade 1 and 10, portrait of both looks ([proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--duckling-parade-meadow-treatments)); destination/cancel/lost-release/palm/portrait/destroy regression and level 10 [2,1]/sticker; clean 17.0s finger; typecheck/seven rules. Level-6 partial/extras support proof retained | [Steering proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--duckling-parade-destination-and-cancellation) | Real iPad speech/touch/meadow look, ABB at 11 with a child, intended pickup and child understanding open; no portrait shot of level 11; `fingerdemo` not rerun for meadows |
-| Jelly Drums 10 (`originals`, `fingerdemo`) | 2026-11-03: `fingerdemo` levels 1–3 passed (28.9, 37.9, 46.6 s) with names, fan answers and the scale sparkle, plus a toddler portrait probe; `originals` last run 2026-10-17 (levels 1–10, one portrait at level 9) | [Verification entry](#2026-11-03--jelly-drums-names-twists-and-co-play-dive-slice-2) | No build or offline run; iPad, speech and child play open |
+| Jelly Drums 10 (`originals`, `fingerdemo`) | 2026-11-03: `fingerdemo` levels 1–3 passed (28.9, 37.9, 46.6 s) with names, fan answers and the scale sparkle, plus a toddler portrait probe; `originals` last run 2026-10-17 (levels 1–10, one portrait at level 9) | [Verification entry](archive/VERIFICATION-2026-11-03.md#2026-11-03--jelly-drums-names-twists-and-co-play-dive-slice-2) | No build or offline run; iPad, speech and child play open |
 | Shape Sorter 9–14 (`originals`, `fingerdemo`) | 2026-10-22: 13/14 filtered plays, two wrong targets/one glow, sequential dots, saved reward/reload, clean 15.9/19.5 s demos; typecheck, 38 targeted tests and build ([entry](archive/VERIFICATION-2026-10-22.md#2026-10-22--shape-sorter-batch-3-corners-curves-and-corner-counts-1314)). Earlier 9–12 proof retained in dated entries | `1334fc9e` + source diff recorded in entry; [PR #842](https://github.com/rjdunlap/neo/pull/842) | Landscape13/portrait14 reviewed; iPad speech/feel and child understanding open |
 | Dot Link 11 (`batch`, `fingerdemo`) | 2026-10-17: levels 1–6 and 11 in the filtered `dots` play (level 11: one wrong pair, then four buddies; saved [1, 0]); level 11 ghost finger clean in 9.1 s; levels 1–6 last passed 2026-10-15 | [Dot Link level 11 entry](archive/VERIFICATION-2026-10-17.md#2026-10-17--dot-link-level-11-find-my-buddy) | Only `DOTS_LEVELS=11` re-run this pass; browser automation; iPad touch feel, device speech and child play remain open |
 | Garden Grow (`woods` grow, `fingerdemo`) | 2026-10-23: `fingerdemo` at 9, 10 and 11 clean (52, 55, 26 s), one scripted pre-K play of 9–11 with two wrong rains each, landscape screenshots at 9 and 11 ([entry](archive/VERIFICATION-2026-10-23.md#2026-10-23--garden-grow-batch-2-rows-columns-and-equal-rows-slices-57)); 2026-10-22: `woods` grow levels 1-8 passed, `fingerdemo` at 1, 7 and 8 clean, landscape screenshot at 8 ([entry](archive/VERIFICATION-2026-10-22.md#2026-10-22--garden-grow-batch-1-flower-kinds-and-level-8-grow-it-up-slices-34)); 2026-10-21: `fingerdemo` at 1 and 7 clean (11.0 s, 41.0 s), portrait probe at 2 ([entry](archive/VERIFICATION-2026-10-21.md#2026-10-21--garden-grow-growth-stages-and-wet-soil-slice-2)); 2026-10-20: level 1 concurrent growth and finale, `fingerdemo` at 1 clean in 10.5 s; 2026-10-10: level 7 two-by-three array, two wrong rains, hint, sticker, clean demo in 38.8 s | [2026-10-20 entry](archive/VERIFICATION-2026-10-20.md#2026-10-20--garden-grow-true-how-to-and-spoken-gaps-slice-1) | no portrait screenshot of levels 8–11, `woods` grow not re-run past 8; device speech of `grow.full`, `grow.big`, iPad target feel and child play remain open |
