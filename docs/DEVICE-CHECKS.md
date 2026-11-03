@@ -29,11 +29,12 @@
 
 - [ ] Open `?daily` at the site root on the iPad as a grown-up: do the six cards read at a glance, does a tap launch a game at a sensible level, and does Back to today's six land on the ticks?
 
-## Maker Lane (food-fiber-systems study, 2026-10-31; proposed, nothing built)
+## Maker Lane (food-fiber-systems study, 2026-10-31; levels 1–3 built 2026-11-02)
 
-- [ ] Once built: does a four-year-old pick the sheep for the sock because it is soft, and does the replay change her next pick?
-- [ ] Once built: does the thought bubble tell her which maker comes next, or does she try every stall?
-- [ ] Once built: does a grown-up use the "Where did it begin?" label card?
+- [ ] Does a four-year-old pick the sheep for the sock because it is soft, and does the replay change her next pick?
+- [ ] Does the thought bubble tell her which maker comes next, or does she try every stall?
+- [ ] Does a grown-up use the "Where did it begin?" label card? (The card, FS3, is not built yet.)
+- [ ] Review of the makers' pictures and the `makerlane.*` lines by a named agricultural-literacy or textile educator (marked REVIEW in the voice script; a release check, not a build gate).
 
 ## Thought Bubbles (literature-meaning study, 2026-10-31; levels 1–3 built 2026-11-02)
 

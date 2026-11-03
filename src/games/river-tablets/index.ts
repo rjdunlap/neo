@@ -8,6 +8,7 @@
  * docs/definitions/river-tablets.md.
  */
 import { Container, Ellipse, Graphics, Rectangle } from 'pixi.js';
+import { sheepArt } from '../../art/animals';
 import { ink, swatch } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
@@ -21,7 +22,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import {
-  ballArt, basketArt, cantTellArt, cartArt, cellArt, crackArt, crateArt, goodArt, handInArt, iconArt, jarArt, neitherArt, numberArt, pairTabletArt, penArt, pickArt, riverArt, rowArt, sheepArt,
+  ballArt, basketArt, cantTellArt, cartArt, cellArt, crackArt, crateArt, goodArt, handInArt, iconArt, jarArt, neitherArt, numberArt, pairTabletArt, penArt, pickArt, riverArt, rowArt,
   signArt, stampArt, stickerArt, storeArt, stripArt, tabletArt, tenWedgeArt, tokenArt, verdictArt, wedgeArt, yardArt,
 } from './art';
 import {

@@ -139,6 +139,7 @@ import { shellRows } from './shell-rows';
 import { notAlways } from './not-always';
 import { thoughtBubbles } from './thought-bubbles';
 import { noticeBoard } from './notice-board';
+import { makerLane } from './maker-lane';
 import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
 import { whoAmI } from './who-am-i';
@@ -287,6 +288,7 @@ export const GAMES: GameModule[] = [
   notAlways,
   thoughtBubbles,
   noticeBoard,
+  makerLane,
   puppetStage,
   shellRows,
   readDo,

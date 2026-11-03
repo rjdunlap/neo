@@ -126,7 +126,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 ## Build slices, in order
 
 1. **FS1 · Define Maker Lane 1–3** (docs only; **defined 2026-10-31**, [definition](../../definitions/maker-lane.md), PR #1068): the form graph for four chains and its rule tests, the beginnings table with each thing's tempting wrong card, the lane layout at 100 units with the pet clear, accounting, the replay, voice lines marked for review, how-to steps, the co-play hint (FS4) and the FS3 card text.
-2. **Build Maker Lane 1–3** (new-game tier).
+2. **Build Maker Lane 1–3** (new-game tier): **built 2026-11-02**, PR #1123; FS3 (the grown-ups' card) not built, FS4 shipped as the `coplayHint`.
 3. **FS3 · Where did it begin? card** (grown-ups' page, plain HTML), with the build or after it.
 4. **FS2 · Define Maker Lane 4–5** after the first build is played.
 5. **FS5 and FS6** stay sketches; FS5's definition reads the cooking study's Picnic Pantry first.

@@ -1,5 +1,6 @@
 /** River Tablets' code-drawn pieces: sheep, tokens, the jar, the clay ball and its cells, Crack, the tablet rows and signs, cart, storehouse, pen, icon and sticker; for levels 4–5 the yard, baskets, crates of ten, the ten-mark, the tablet and strips, the stamps, Hand in, the verdicts and numbers; for level 6 the pair of tablets, "this one", neither and can't tell. */
 import { Container, Graphics, Text } from 'pixi.js';
+import { sheepArt } from '../../art/animals';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { finish } from '../../ui/buttons';
 import { CELL, type Kind } from './logic';
@@ -29,33 +30,6 @@ export function wedgeArt(size = 54, color = CLAY.line): Graphics {
   g.moveTo(-h * 0.55, -h).lineTo(0, h).stroke(line(CLAY.dark, Math.max(2, size * 0.06)));
   g.eventMode = 'none';
   return g;
-}
-
-/** A sheep standing on (0, 0), about `size` tall: a fleece puff with a dark face and legs. */
-export function sheepArt(color: ColorName = 'white', size = 110): Container {
-  const c = new Container();
-  const g = new Graphics();
-  const sw = swatch[color];
-  const w = size * 0.95;
-  const h = size * 0.6;
-  // Legs.
-  for (const x of [-w * 0.3, -w * 0.12, w * 0.12, w * 0.3]) g.roundRect(x - size * 0.045, -h * 0.5, size * 0.09, h * 0.55, 6).fill(0x4a4454);
-  // Fleece: a cloud of circles.
-  const puffs: [number, number, number][] = [[-w * 0.3, -h * 0.75, h * 0.42], [0, -h * 0.9, h * 0.5], [w * 0.3, -h * 0.75, h * 0.42], [-w * 0.15, -h * 0.5, h * 0.4], [w * 0.15, -h * 0.5, h * 0.4]];
-  for (const [x, y, r] of puffs) g.circle(x, y, r + 3).fill(sw.line);
-  for (const [x, y, r] of puffs) g.circle(x, y, r).fill(sw.fill);
-  // Head.
-  const hx = w * 0.46;
-  const hy = -h * 0.95;
-  g.ellipse(hx, hy, size * 0.17, size * 0.2).fill(0x4a4454);
-  g.ellipse(hx - size * 0.14, hy - size * 0.1, size * 0.08, size * 0.045).fill(0x4a4454);
-  g.ellipse(hx + size * 0.12, hy - size * 0.12, size * 0.08, size * 0.045).fill(0x4a4454);
-  g.circle(hx + size * 0.06, hy - size * 0.03, size * 0.035).fill(0xffffff);
-  g.circle(hx + size * 0.07, hy - size * 0.03, size * 0.018).fill(ink);
-  g.circle(hx + size * 0.06, hy + size * 0.1, size * 0.02).fill(0xff8fa3);
-  c.addChild(g);
-  c.eventMode = 'none';
-  return c;
 }
 
 /** A wide clay jar, `w` × `h`, standing on (0, 0) with its mouth at the top; `glow` rings it. */

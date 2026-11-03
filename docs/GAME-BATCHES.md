@@ -863,6 +863,8 @@ Proof: new-game tier, as the [definition's check tier](definitions/thought-bubbl
 
 ### maker-lane 1: Along the lane, who can use it now, where did it begin
 
+**Built 2026-11-02 (PR #1123):** levels 1–3 shipped in one session; the claim stays here only as the plan. The grown-ups' "Where did it begin?" card (FS3) was not built and is the next follow-up.
+
 - **`maker-lane`, levels 1–3 (food-fiber-systems study slice 1, FS1)** (a new game, one declared batch; toddler 1, preschool 1–2, pre-K 2–3, school 2–3; Cozy Village, fallback Painted Canyon): a bundle changes form at each maker's stall until it is a scarf, a sock, a loaf or a box; she sends it along and the maker works (level 1), chooses which maker can use the bundle now, a maker who cannot showing the form they need (level 2), then starts from a finished thing and picks where it began, a wrong beginning run down the lane to the different thing it makes (level 3). [Definition](definitions/maker-lane.md), [study build slices](deep-dives/subjects/food-fiber-systems.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's check tier](definitions/maker-lane.md#check-tier) sets it (typecheck, rule tests 1–8 with registry, lands, how-to and off-screen tests, a `browser-check.mjs` case with its README row: level 1 with a tap on a maker who is not waving (free) then the waving makers to the pet; level 2 with two refused makers on the first bundle then the right makers; level 3 with one wrong card then the right one; one portrait screenshot of level 2 with a thought bubble up, `fingerdemo` at levels 2 and 3, one build). If the allowance cannot cover level 3, stop after complete levels 1–2 with a draft-PR checkpoint. Person, device and review checks stay open.

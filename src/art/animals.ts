@@ -4,7 +4,8 @@ import { ink, swatch, type ColorName, type Swatch } from './palette';
 
 /**
  * Animal drawings shared between games: Frog Hop's frog, Penguin Slide's penguin, Mossy Path's turtle and Bubble Pop's
- * fish (and Owl Walk's owl), moved here unchanged so Who Am I? can draw the same friends.
+ * fish (and Owl Walk's owl), moved here unchanged so Who Am I? can draw the same friends; River Tablets' sheep and Keep House's
+ * hens, moved so Maker Lane draws the same ones.
  */
 
 export function frogArt(): Container {
@@ -72,4 +73,43 @@ export function owlArt(color: ColorName): Critter {
     .poly([-12, -112, 12, -112, 0, -92]).fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line, join: 'round', cap: 'round' });
   c.attach(face);
   return c;
+}
+
+const henLine = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
+
+/** A sheep standing on (0, 0), about `size` tall: a fleece puff with a dark face and legs. */
+export function sheepArt(color: ColorName = 'white', size = 110): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const sw = swatch[color];
+  const w = size * 0.95;
+  const h = size * 0.6;
+  // Legs.
+  for (const x of [-w * 0.3, -w * 0.12, w * 0.12, w * 0.3]) g.roundRect(x - size * 0.045, -h * 0.5, size * 0.09, h * 0.55, 6).fill(0x4a4454);
+  // Fleece: a cloud of circles.
+  const puffs: [number, number, number][] = [[-w * 0.3, -h * 0.75, h * 0.42], [0, -h * 0.9, h * 0.5], [w * 0.3, -h * 0.75, h * 0.42], [-w * 0.15, -h * 0.5, h * 0.4], [w * 0.15, -h * 0.5, h * 0.4]];
+  for (const [x, y, r] of puffs) g.circle(x, y, r + 3).fill(sw.line);
+  for (const [x, y, r] of puffs) g.circle(x, y, r).fill(sw.fill);
+  // Head.
+  const hx = w * 0.46;
+  const hy = -h * 0.95;
+  g.ellipse(hx, hy, size * 0.17, size * 0.2).fill(0x4a4454);
+  g.ellipse(hx - size * 0.14, hy - size * 0.1, size * 0.08, size * 0.045).fill(0x4a4454);
+  g.ellipse(hx + size * 0.12, hy - size * 0.12, size * 0.08, size * 0.045).fill(0x4a4454);
+  g.circle(hx + size * 0.06, hy - size * 0.03, size * 0.035).fill(0xffffff);
+  g.circle(hx + size * 0.07, hy - size * 0.03, size * 0.018).fill(ink);
+  g.circle(hx + size * 0.06, hy + size * 0.1, size * 0.02).fill(0xff8fa3);
+  c.addChild(g);
+  c.eventMode = 'none';
+  return c;
+}
+
+/** A hen drawn into `g`, standing on (x, y), facing right (or left with `flip` -1). */
+export function henArt(g: Graphics, x: number, y: number, color: number, flip = 1) {
+  g.ellipse(x, y - 18, 22, 16).fill(color).stroke(henLine(ink, 3));
+  g.circle(x + flip * 16, y - 34, 11).fill(color).stroke(henLine(ink, 3));
+  g.moveTo(x + flip * 26, y - 34).lineTo(x + flip * 36, y - 30).lineTo(x + flip * 26, y - 28).fill(swatch.orange.fill);
+  g.circle(x + flip * 19, y - 37, 2).fill(ink);
+  for (const d of [-1, 1]) g.circle(x + flip * 16 + d * 3, y - 46, 4).fill(swatch.red.fill);
+  for (const d of [-6, 6]) g.moveTo(x + d, y - 4).lineTo(x + d, y).stroke(henLine(swatch.orange.fill, 3));
 }
