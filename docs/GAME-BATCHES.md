@@ -1189,7 +1189,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play of level 6 with one
 
 ### pond-conga 1: Duck-friendly food and a seeded bank
 
-- **`pond-conga`, Duck-friendly food and a seeded bank (dive slice 1)** (extends the built game; grown-up, no new level): `foodArt(kind)` with peas, sweetcorn and oats, one kind per pond by seed; reeds on one seeded bank edge; voice, how-to and couch catalog wording without bread. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
+- **`pond-conga`, Duck-friendly food and a seeded bank (dive slice 1)** (**claimed 2026-11-03**, branch `claude/pond-conga-food`; extends the built game; grown-up, no new level): `foodArt(kind)` with peas, sweetcorn and oats, one kind per pond by seed; reeds on one seeded bank edge; voice, how-to and couch catalog wording without bread. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
 
 Files expected: `src/games/pond-conga/index.ts`, `logic.ts`, `logic.test.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md` and `docs/COUCH-PLAY.md`.
 
