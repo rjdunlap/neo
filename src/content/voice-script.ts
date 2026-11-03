@@ -2988,6 +2988,7 @@ export const SCRIPT = {
   'around.named': ['Where is the {who}? Turn the island to find the {who}!'],
   'around.notthat': ['That is the {what}! Where is the {who} hiding?'],
   'around.turn': ['Tap an arrow to turn the island and look behind the tree.'],
+  'around.tapthem': ['There is the {who}! Tap the {who}.'],
   'around.who': ['Who is hiding behind the tree? Tap their picture!'],
   'around.here.front': ["Not me! I'm in front of the tree."],
   'around.here.next': ["Not me! I'm next to the tree."],
