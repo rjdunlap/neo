@@ -304,6 +304,8 @@ class FerryJam implements Game {
     if (!before) return;
     this.hinted = null;
     this.layout = before;
+    // Undo is not a slide: the slide it takes back leaves the trail too, so an undone step closer is no longer her best.
+    if (this.trail.length > 1) this.trail.pop();
     this.undoButton.alpha = this.undoStack.length ? 1 : 0.35;
     this.placeAll(true);
     sfx.pop(2);
@@ -315,7 +317,7 @@ class FerryJam implements Game {
     if (this.ctx.couch) return;
     const now = distance(this.harbor, this.layout);
     this.trail.push(now);
-    if (this.hinted || !stuck(this.trail, solveLength(this.harbor, start(this.harbor)))) return;
+    if (this.hinted || !stuck(this.trail, distance(this.harbor, start(this.harbor)))) return;
     const slide = hintSlide(this.harbor, this.layout);
     if (!slide) return;
     this.hinted = slide;
@@ -476,6 +478,7 @@ class FerryJam implements Game {
     sfx.marimba(4 + (this.moves % 5), 0.3);
     this.report();
     if (atDock(this.harbor, this.layout)) void this.sail();
+    else this.maybeHint();
   }
 
   /** Put the picked-up boat back where it was: nothing was slid, so nothing counts. */

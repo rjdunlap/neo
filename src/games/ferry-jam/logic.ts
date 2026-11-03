@@ -83,9 +83,8 @@ export function grid(h: Harbor, layout: Layout): number[][] {
 export const atDock = (h: Harbor, layout: Layout) => layout[FERRY] + h.boats[FERRY].len === h.size;
 
 /** The cells a boat can slide to along its lane from where it is now: every free position, not just the next. */
-export function reach(h: Harbor, layout: Layout, boat: number): { min: number; max: number } {
+export function reach(h: Harbor, layout: Layout, boat: number, g = grid(h, layout)): { min: number; max: number } {
   const b = h.boats[boat];
-  const g = grid(h, layout);
   const at = layout[boat];
   const cell = (p: number) => (b.dir === 'h' ? g[b.row][p] : g[p][b.col]);
   let min = at;
@@ -98,8 +97,9 @@ export function reach(h: Harbor, layout: Layout, boat: number): { min: number; m
 /** Every slide that can be made now. Sliding a boat any distance along its lane is one slide. */
 export function slides(h: Harbor, layout: Layout): Slide[] {
   const out: Slide[] = [];
+  const g = grid(h, layout);
   h.boats.forEach((_, boat) => {
-    const { min, max } = reach(h, layout, boat);
+    const { min, max } = reach(h, layout, boat, g);
     for (let to = min; to <= max; to++) if (to !== layout[boat]) out.push({ boat, to });
   });
   return out;
@@ -288,7 +288,7 @@ export const patience = (fewest: number) => Math.max(6, fewest);
  * Whether she is stuck: `trail` is how far the ferry was from the dock (in fewest slides) when the count began, then
  * after each slide since. A slide that brings it closer than ever before restarts the count; `patience(fewest)` slides
  * in a row that do not are stuck. A steady longer route keeps getting closer, so it never is; going round in a loop does.
- * Undo is not a slide, so it adds nothing to the trail. After a hint the game starts a fresh trail from where the boats are.
+ * Undo is not a slide, so it takes the slide it undoes back off the trail. After a hint the game starts a fresh trail from where the boats are.
  */
 export function stuck(trail: readonly number[], fewest: number): boolean {
   if (!trail.length) return false;

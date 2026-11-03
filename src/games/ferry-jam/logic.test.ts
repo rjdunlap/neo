@@ -112,11 +112,14 @@ describe('Ferry Jam', () => {
   });
 
   it('builds the distance table quickly even for the biggest harbors', () => {
-    for (const h of harborsFor(6)) {
+    let worst = 0;
+    for (const h of [...harborsFor(5), ...harborsFor(6)]) {
       const t0 = performance.now();
       distanceTable(h);
-      expect(performance.now() - t0, render(h).join('/')).toBeLessThan(1500);
+      worst = Math.max(worst, performance.now() - t0);
     }
+    // About 110 ms here for the largest (about 42,000 layouts); a slower iPad still finishes it while the board fades in.
+    expect(worst).toBeLessThan(500);
   });
 
   describe('the hint waits for her to be stuck, not for a number of slides', () => {
