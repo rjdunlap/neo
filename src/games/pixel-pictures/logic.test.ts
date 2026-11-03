@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { clues, colorClues, colorDeduce, colorLineSolvable, colorLogicCell, colorPlacements, colorRuns, colorsOf, deduce, givenInMirror, lineSolvable, makePictures, PICTURES, picturesFor, PLANS, pixelTouch, runs, symmetric, toGrid, type Filled, type Knowledge } from './logic';
+import { clues, colorClues, colorDeduce, colorLineSolvable, colorLogicCell, colorPlacements, colorRuns, colorsOf, deduce, FOURFOLD, given, helpCells, lineSolvable, MODELS, planFor, quarterOf, scaleDown, scaleUp, makePictures, PICTURES, picturesFor, PLANS, pixelTouch, runs, symmetric, toGrid, type Filled, type Knowledge } from './logic';
 
 describe('Pixel Pictures', () => {
   it('pictures are square, the right size, and drawn in known colors', () => {
@@ -108,8 +108,8 @@ describe('Pixel Pictures', () => {
       for (const picture of picturesFor(plan)) {
         const target = toGrid(picture);
         const n = plan.size;
-        // The board as the game starts it: mirror levels have the left half drawn.
-        const filled: Filled = target.map((row, y) => row.map((_, x) => (plan.mode === 'mirror' && givenInMirror(n, x) ? target[y][x] : null)));
+        // The board as the game starts it: mirror levels have the left half (level 7: the top-left quarter) drawn.
+        const filled: Filled = target.map((row, y) => row.map((_, x) => (given(plan, x, y) ? target[y][x] : null)));
         let color = colorsOf(picture)[0];
         let from: { x: number; y: number } | undefined;
         let paletteTaps = 0;
@@ -132,13 +132,106 @@ describe('Pixel Pictures', () => {
           expect(target[y][x], `${plan.mode} ${picture.name}: (${x}, ${y}) belongs to the picture`).not.toBeNull();
           expect(filled[y][x], `${picture.name}: (${x}, ${y}) is still empty`).toBeNull();
           if ((plan.mode === 'copy' && plan.colors === 2) || plan.mode === 'colorClues') expect(target[y][x], 'the color in hand').toBe(color);
-          if (plan.mode === 'mirror') expect(givenInMirror(n, x), 'only the half still to do').toBe(false);
+          expect(given(plan, x, y), 'only the part still to do').toBe(false);
+          if (plan.mode === 'big' && from) {
+            // Block by block: it leaves a block only once that block is finished.
+            const sameBlock = (a: { x: number; y: number }, b: { x: number; y: number }) => a.x >> 1 === b.x >> 1 && a.y >> 1 === b.y >> 1;
+            if (!sameBlock(from, { x, y })) for (let dy = 0; dy < 2; dy++) for (let dx = 0; dx < 2; dx++) {
+              const bx = (from.x & ~1) + dx;
+              const by = (from.y & ~1) + dy;
+              if (target[by][bx]) expect(filled[by][bx], `${picture.name}: the block at (${bx}, ${by}) is done first`).not.toBeNull();
+            }
+          }
           filled[y][x] = plan.mode === 'clues' ? 'b' : target[y][x];
           from = { x, y };
           taps++;
         }
-        const want = target.flat().filter((c, i) => !!c && !(plan.mode === 'mirror' && givenInMirror(n, i % n))).length;
+        const want = target.flat().filter((c, i) => !!c && !given(plan, i % n, Math.floor(i / n))).length;
         expect(taps, `${plan.mode} ${picture.name}: every square it needs, and no more`).toBe(want);
+      }
+    }
+  });
+
+  it('level 7 pictures are one color, mirror across both lines, and the drawn quarter decides every other square', () => {
+    const plan = planFor(7);
+    expect(plan.mode).toBe('mirror2');
+    for (const p of FOURFOLD) {
+      expect(p.rows, p.name).toHaveLength(6);
+      for (const r of p.rows) expect(r, p.name).toMatch(/^[.roygbpun]{6}$/);
+      expect(colorsOf(p), p.name).toHaveLength(1);
+      expect(symmetric(p), `${p.name}: left and right match`).toBe(true);
+      expect(p.rows, `${p.name}: top and bottom match`).toEqual([...p.rows].reverse());
+      const g = toGrid(p);
+      let open = 0;
+      for (let y = 0; y < 6; y++) for (let x = 0; x < 6; x++) {
+        const q = quarterOf(6, x, y);
+        expect(given(plan, q.x, q.y), 'its mirror square is in the drawn quarter').toBe(true);
+        expect(g[y][x], `${p.name} (${x}, ${y}) is its quarter square's mirror`).toBe(g[q.y][q.x]);
+        if (!given(plan, x, y) && g[y][x]) open++;
+      }
+      // Every other quarter has something to copy.
+      expect(open, p.name).toBeGreaterThanOrEqual(9);
+    }
+    expect(given(planFor(7), 2, 2)).toBe(true);
+    expect(given(planFor(7), 3, 2)).toBe(false);
+    expect(given(planFor(7), 2, 3)).toBe(false);
+    expect(given(planFor(3), 2, 5)).toBe(true);
+  });
+
+  it('level 8 turns each square of a little 3 by 3 model into a whole aligned block of four', () => {
+    const plan = planFor(8);
+    expect(plan.mode).toBe('big');
+    for (const m of MODELS) {
+      expect(m.rows, m.name).toHaveLength(3);
+      for (const r of m.rows) expect(r, m.name).toMatch(/^[.roygbpun]{3}$/);
+      expect(colorsOf(m), m.name).toHaveLength(1);
+      const big = scaleUp(m, 2);
+      expect(big.rows).toHaveLength(6);
+      const count = (p: { rows: string[] }) => p.rows.join('').replace(/\./g, '').length;
+      expect(count(big), `${m.name}: four times as many squares`).toBe(4 * count(m));
+      for (let y = 0; y < 6; y++) for (let x = 0; x < 6; x++) expect(big.rows[y][x], `${m.name} (${x}, ${y})`).toBe(m.rows[y >> 1][x >> 1]);
+      expect(scaleDown(big, 2)).toEqual(m);
+    }
+    expect(picturesFor(plan).map((p) => p.name)).toEqual(MODELS.map((m) => m.name));
+  });
+
+  it('the level 7 and 8 glow is open picture squares near her last tap: a square whose mirror is drawn, or one whole block', () => {
+    for (const level of [7, 8]) {
+      const plan = planFor(level);
+      for (const picture of picturesFor(plan)) {
+        const target = toGrid(picture);
+        const filled: Filled = target.map((row, y) => row.map((_, x) => (given(plan, x, y) ? target[y][x] : null)));
+        // From any corner, part-way through: the glow is only squares still to fill, and filling them makes progress.
+        for (const from of [{ x: 0, y: 0 }, { x: 5, y: 5 }, { x: 5, y: 0 }, { x: 0, y: 5 }]) {
+          const cells = helpCells(plan, picture, filled, from);
+          expect(cells.length, `${picture.name}: something glows`).toBeGreaterThan(0);
+          for (const c of cells) {
+            expect(target[c.y][c.x], `${picture.name}: the glow is a picture square`).not.toBeNull();
+            expect(filled[c.y][c.x], 'still open').toBeNull();
+            expect(given(plan, c.x, c.y)).toBe(false);
+            if (level === 7) {
+              const q = quarterOf(6, c.x, c.y);
+              expect(filled[q.y][q.x], 'its mirror is drawn').not.toBeNull();
+            }
+          }
+          if (level === 7) expect(cells).toHaveLength(1);
+          if (level === 8) {
+            // One block, and every open picture square of it.
+            const bx = cells[0].x >> 1;
+            const by = cells[0].y >> 1;
+            expect(cells.every((c) => c.x >> 1 === bx && c.y >> 1 === by)).toBe(true);
+            expect(cells).toHaveLength(4);
+          }
+        }
+        // Following the glow alone finishes the picture.
+        let from: { x: number; y: number } | undefined;
+        for (let step = 0; step < 40; step++) {
+          const cells = helpCells(plan, picture, filled, from);
+          if (!cells.length) break;
+          for (const c of cells) filled[c.y][c.x] = target[c.y][c.x];
+          from = cells[0];
+        }
+        expect(target.every((row, y) => row.every((c, x) => !c || filled[y][x] === c)), `${picture.name}: the glow leads to the finished picture`).toBe(true);
       }
     }
   });

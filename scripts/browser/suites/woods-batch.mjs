@@ -504,7 +504,9 @@ async function woodsBatch() {
     log('Word Monsters 8: keep the first two sounds, change the end, wrong sounds, glow hint, saved score and sticker passed');
   }
 
-  if (!only || only === 'pixels') for (let level = fromLevel; level <= 6; level++) {
+  if (!only || only === 'pixels') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 8); level++) {
+    // Level 8 plays in portrait, where the model sits beside the 6 by 6 board.
+    await page.setViewportSize(level === 8 ? { width: 768, height: 1024 } : { width: 1024, height: 768 });
     await launch('pixel-pictures', level);
     const plan = await page.evaluate(() => ({ mode: neo.scene.game.plan.mode, pictures: neo.scene.game.pictures.length }));
     const cellTap = async (x, y) => {
@@ -513,15 +515,22 @@ async function woodsBatch() {
     };
     for (let n = 0; n < plan.pictures; n++) {
       await idle(n);
-      const { target, mirror } = await page.evaluate(() => ({ target: neo.scene.game.target, mirror: neo.scene.game.plan.mode === 'mirror' }));
+      const { target, mode } = await page.evaluate(() => ({ target: neo.scene.game.target, mode: neo.scene.game.plan.mode }));
       const size = target.length;
-      const todo = target.flatMap((row, y) => row.map((c, x) => ({ x, y, c }))).filter(({ x, c }) => c && !(mirror && x < size / 2));
+      // Squares drawn before she starts: the left half on level 3, the top-left quarter on level 7.
+      const given = (x, y) => (mode === 'mirror' && x < size / 2) || (mode === 'mirror2' && x < size / 2 && y < size / 2);
+      const todo = target.flatMap((row, y) => row.map((c, x) => ({ x, y, c }))).filter(({ x, y, c }) => c && !given(x, y));
       if (n === 0) {
         // Two squares that stay empty: gentle misses, then a glowing square.
-        const empty = target.flatMap((row, y) => row.map((c, x) => ({ x, y, c }))).filter(({ x, c }) => !c && !(mirror && x < size / 2));
+        const empty = target.flatMap((row, y) => row.map((c, x) => ({ x, y, c }))).filter(({ x, y, c }) => !c && !given(x, y));
         for (const e of empty.slice(0, 2)) await cellTap(e.x, e.y);
         await page.waitForTimeout(300);
         assert.deepEqual(await counts(), [2, 1]);
+        const glow = await page.evaluate(() => neo.scene.game.hinted);
+        // Level 7 glows one square whose mirror is drawn; level 8 glows every square of one 2×2 block.
+        if (mode === 'mirror2') assert.ok(glow.length === 1 && !given(glow[0].x, glow[0].y) && target[glow[0].y][glow[0].x], 'level 7 glows one open picture square');
+        if (mode === 'big') assert.ok(glow.length === 4 && glow.every((g) => g.x >> 1 === glow[0].x >> 1 && g.y >> 1 === glow[0].y >> 1 && target[g.y][g.x]), 'level 8 glows one whole block');
+        if (level === 8) await screenshot('pixel-pictures-8-block-hint');
         if (level === 4) await screenshot('pixel-pictures-4-hint');
         if (level === 6) await screenshot('pixel-pictures-6-color-clues');
       }
@@ -534,6 +543,7 @@ async function woodsBatch() {
     }
     await finished('pixel-pictures');
     assert.deepEqual(await score('pixel-pictures'), [2, 1]);
+    await page.setViewportSize({ width: 1024, height: 768 });
     log(`Pixel Pictures ${level} (${plan.mode}): squares tapped like a finger${plan.mode === 'copy' || plan.mode === 'colorClues' ? ', palette colors' : ''}, empty squares as misses, glowing hint, revealed pictures, saved score and sticker passed`);
   }
 

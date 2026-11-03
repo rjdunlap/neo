@@ -4,12 +4,13 @@ import type { Rng } from '../../engine/random';
 /**
  * Pixel Pictures: tap squares on a grid to make a picture. First copy a small picture shown
  * beside the grid, then copy one with two colors, then finish a picture's mirror half, and finally
- * solve picture-logic puzzles (nonograms) from the numbers along each row and column.
+ * solve picture-logic puzzles (nonograms) from the numbers along each row and column. At the top, a quarter is copied across
+ * two mirror lines (`mirror2`), and a little 3×3 model is copied at double size, each square a 2×2 block (`big`).
  *
  * Pictures are authored as rows of characters: '.' is empty, letters are palette colors. Two-color logic pictures are
  * accepted only if their colored numbers alone solve them (`colorLineSolvable`).
  */
-export type PixelMode = 'copy' | 'mirror' | 'clues' | 'colorClues';
+export type PixelMode = 'copy' | 'mirror' | 'clues' | 'colorClues' | 'mirror2' | 'big';
 
 export interface PixelPlan {
   mode: PixelMode;
@@ -27,6 +28,8 @@ export const PLANS: PixelPlan[] = [
   { mode: 'clues', size: 5, colors: 1, pictures: 2, name: 'Picture logic: the numbers say how many squares in a row are filled' },
   { mode: 'clues', size: 6, colors: 1, pictures: 2, name: 'Bigger picture logic: 6 by 6, with numbers for runs like "2 1"' },
   { mode: 'colorClues', size: 6, colors: 2, pictures: 2, name: 'Two-color picture logic: each run has its own color' },
+  { mode: 'mirror2', size: 6, colors: 1, pictures: 2, name: 'Both ways: copy a quarter across two mirror lines' },
+  { mode: 'big', size: 6, colors: 1, pictures: 2, name: 'Twice as big: copy a little picture at double size' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -70,6 +73,43 @@ export const PICTURES: Record<4 | 5 | 6, Picture[]> = {
   ],
 };
 
+/** A 6×6 picture from its top-left 3×3 quarter, reflected across the middle column and the middle row. */
+export function unfold(name: string, quarter: string[]): Picture {
+  const top = quarter.map((r) => r + r.split('').reverse().join(''));
+  return { name, rows: [...top, ...[...top].reverse()] };
+}
+
+/** Level 7: one-color pictures with two mirror lines, authored as the quarter she is given. */
+export const FOURFOLD: Picture[] = [
+  unfold('a snowflake', ['b.b', '.bb', 'bbb']),
+  unfold('a window', ['nnn', 'n.n', 'nnn']),
+  unfold('a flower', ['.pp', 'p.p', 'pp.']),
+  unfold('a gem', ['..u', '.uu', 'uuu']),
+  unfold('a target', ['ggg', 'g..', 'g.g']),
+  unfold('a sparkle', ['y..', '.y.', '..y']),
+];
+
+/** Level 8: little 3×3 one-color models, copied at double size. */
+export const MODELS: Picture[] = [
+  { name: 'a plus', rows: ['.g.', 'ggg', '.g.'] },
+  { name: 'a cross', rows: ['r.r', '.r.', 'r.r'] },
+  { name: 'an arrow', rows: ['ooo', '.oo', 'o.o'] },
+  { name: 'a corner', rows: ['y..', 'y..', 'yyy'] },
+  { name: 'a smile', rows: ['p.p', '...', 'ppp'] },
+];
+
+/** Every square of the picture becomes a k×k block. */
+export const scaleUp = (p: Picture, k: number): Picture => ({
+  name: p.name,
+  rows: p.rows.flatMap((r) => Array<string>(k).fill(r.split('').map((c) => c.repeat(k)).join(''))),
+});
+
+/** The little model a double-size picture was made from: every other square. */
+export const scaleDown = (p: Picture, k: number): Picture => ({
+  name: p.name,
+  rows: p.rows.filter((_, y) => y % k === 0).map((r) => r.split('').filter((_, x) => x % k === 0).join('')),
+});
+
 /** Grid cells as color letters or null. */
 export type Grid = (string | null)[][];
 
@@ -80,6 +120,8 @@ export const colorsOf = (p: Picture) => [...new Set(p.rows.join('').replace(/\./
 
 /** Pictures that fit a level: one color or exactly two for copying, one-color and left–right symmetric for mirror levels, logic-solvable for clue levels. */
 export function picturesFor(plan: PixelPlan): Picture[] {
+  if (plan.mode === 'mirror2') return FOURFOLD;
+  if (plan.mode === 'big') return MODELS.map((m) => scaleUp(m, 2));
   return PICTURES[plan.size].filter((p) => {
     const n = colorsOf(p).length;
     if (plan.mode === 'copy') return plan.colors === 2 ? n === 2 : n === 1;
@@ -98,6 +140,39 @@ export const symmetric = (p: Picture) => p.rows.every((r) => r === r.split('').r
 
 /** Mirror levels: the left half is drawn already; the child fills the right half. */
 export const givenInMirror = (size: number, col: number) => col < size / 2;
+
+/** Squares drawn before she starts, which a tap leaves alone: the left half on level 3, the top-left quarter on level 7. */
+export function given(plan: PixelPlan, x: number, y: number): boolean {
+  if (plan.mode === 'mirror') return givenInMirror(plan.size, x);
+  if (plan.mode === 'mirror2') return x < plan.size / 2 && y < plan.size / 2;
+  return false;
+}
+
+/** The given square a level-7 square mirrors: across the middle column, the middle row, or both. */
+export const quarterOf = (size: number, x: number, y: number) => ({ x: x < size / 2 ? x : size - 1 - x, y: y < size / 2 ? y : size - 1 - y });
+
+/** Level 8: the 2×2 block a square belongs to, as its four squares. */
+export const blockOf = (x: number, y: number) => {
+  const bx = x - (x % 2);
+  const by = y - (y % 2);
+  return [{ x: bx, y: by }, { x: bx + 1, y: by }, { x: bx, y: by + 1 }, { x: bx + 1, y: by + 1 }];
+};
+
+/**
+ * The help glow after two misses. Level 7: the open picture square nearest her last tap (its mirror in the drawn quarter is
+ * filled). Level 8: every open square of the block nearest her last tap. Other copy and mirror levels: the first open
+ * square in reading order. Logic levels choose their glow from the clues instead.
+ */
+export function helpCells(plan: PixelPlan, picture: Picture, filled: Filled, from?: { x: number; y: number }): { x: number; y: number }[] {
+  const target = toGrid(picture);
+  const open = target.flatMap((row, y) => row.flatMap((c, x) => (c && !isFilled(filled[y][x]) && !given(plan, x, y) ? [{ x, y }] : [])));
+  if (!open.length) return [];
+  if (plan.mode !== 'mirror2' && plan.mode !== 'big') return [open[0]];
+  const far = (c: { x: number; y: number }) => (from ? Math.abs(c.x - from.x) + Math.abs(c.y - from.y) : 0);
+  const near = open.reduce((best, c) => (far(c) < far(best) ? c : best));
+  if (plan.mode === 'mirror2') return [near];
+  return blockOf(near.x, near.y).filter((c) => open.some((o) => o.x === c.x && o.y === c.y));
+}
 
 /** Run lengths of filled cells along a line, e.g. "XX.X" → [2, 1]; an empty line is [0]. */
 export function runs(line: boolean[]): number[] {
@@ -304,13 +379,14 @@ export function colorLogicCell(p: Picture, filled: Filled, color?: string, from?
 
 /**
  * What a capable child touches next. Copy levels: the squares of the picture one after another (finishing a color before
- * choosing the next on a two-color level); mirror levels: the squares of the right half, whose mirror image is already drawn;
+ * choosing the next on a two-color level); mirror levels: the squares outside the drawn half or quarter, whose mirror
+ * image is already drawn; double size: the picture one 2×2 block at a time;
  * logic levels: the squares the numbers settle, nearest first (on two-color logic, those of the color in hand first). Every touch is a square the picture really has and
  * that is still empty, so a demonstration makes no wrong move.
  */
 export function pixelTouch(plan: PixelPlan, picture: Picture, filled: Filled, color: string, from?: { x: number; y: number }): PixelTouch | null {
   const target = toGrid(picture);
-  const open = target.flatMap((row, y) => row.flatMap((c, x) => (c && !isFilled(filled[y][x]) && !(plan.mode === 'mirror' && givenInMirror(plan.size, x)) ? [{ x, y, c }] : [])));
+  const open = target.flatMap((row, y) => row.flatMap((c, x) => (c && !isFilled(filled[y][x]) && !given(plan, x, y) ? [{ x, y, c }] : [])));
   if (!open.length) return null;
   if (plan.mode === 'clues') {
     const cell = logicCell(picture, filled, from);
@@ -321,6 +397,8 @@ export function pixelTouch(plan: PixelPlan, picture: Picture, filled: Filled, co
     if (!cell) return null;
     return cell.c === color ? { cell: { x: cell.x, y: cell.y } } : { color: cell.c };
   }
+  // Double size fills one whole block before the next.
+  if (plan.mode === 'big') open.sort((a, b) => (a.y >> 1) - (b.y >> 1) || (a.x >> 1) - (b.x >> 1) || a.y - b.y || a.x - b.x);
   const mine = open.find((o) => plan.mode !== 'copy' || plan.colors === 1 || o.c === color);
   if (mine) return { cell: { x: mine.x, y: mine.y } };
   return { color: open[0].c };
