@@ -24,6 +24,19 @@ describe('game registry', () => {
     expect(levelsInOrder(g.levels('toddler'))).toEqual([1, 11, 10, 2, 3]);
   });
 
+  it('opens Garden Rows at preschool with One row (10) before the 3 by 3 rows bed, an entry the older bands never reach', () => {
+    const g = gameById('garden-rows')!;
+    expect(g.bands).toEqual(['preschool', 'prek', 'school']);
+    expect(g.levels('preschool')).toEqual({ min: 1, max: 10, order: [10, 1] });
+    expect(g.levels('prek')).toEqual({ min: 1, max: 3 });
+    expect(g.levels('school')).toEqual({ min: 3, max: 9 });
+    expect(g.entryLevels).toEqual([10]);
+    expect(stepLevel(10, 1, g.levels('preschool'))).toBe(1);
+    expect(stepLevel(1, -1, g.levels('preschool'))).toBe(10);
+    expect(landing(10, g.levels('prek'), g.entryLevels)).toBe(1);
+    expect(landing(10, g.levels('school'), g.entryLevels)).toBe(3);
+  });
+
   it('keeps Photo Safari 8–11 school only and the toddler entry 12 in the toddler order only', () => {
     const g = gameById('photo-safari')!;
     expect(g.levels('school')).toEqual({ min: 4, max: 11, order: [4, 5, 6, 7, 8, 9, 10, 11] });

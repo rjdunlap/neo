@@ -36,6 +36,10 @@
 - [ ] **Do the hedges read as boxes?** On the iPad, do the gaps between the 2 by 2 boxes read as hedges, in portrait and landscape?
 - [ ] **The box rule with a school-age child.** Does she understand "one in every hedge box" from the spoken line and the flash, without a prompt?
 
+## Garden Rows level 10 (batch garden-rows 3, built 2026-11-03)
+
+- [ ] **One row with a four-year-old.** Does she read "missing from this row" without the voice, and does the preschool Puzzle Peaks page show Garden Rows clearly on the iPad?
+
 ## Sing-Along Barn (dive, 2026-11-01; proposed, new tunes and levels not yet built)
 
 - [ ] Once level 7 is built: does a pause read as "your turn" to a two-year-old?
