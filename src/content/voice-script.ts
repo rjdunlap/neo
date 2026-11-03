@@ -2055,6 +2055,8 @@ export const SCRIPT = {
   'map.neither': ['Not there. Find the column first, then the row.'],
   'map.stepswrong': ['Count the steps again: {dirs}.'],
   'map.hint': ['Look where the glowing column and row cross.'],
+  'map.stepshint': ['First go {first}. Count along the glowing squares from the pet.'],
+  'map.cluehint': ['Follow the two glowing lines to where they meet.'],
   'map.found': ['Treasure!', 'You found it!', 'X marks the spot!'],
   'map.placed': ['There it is!', 'Right on the map!'],
   'map.done': ['What a treasure hunter!'],

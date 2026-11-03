@@ -2871,7 +2871,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 1, text: 'Find the picture row and the color column, then tap the square where they meet.' },
       { from: 2, to: 2, text: 'Find the column letter, then the row number (like "B3"), and tap that square.' },
-      { from: 3, to: 3, text: 'Drag the thing to the named square, like "a tree at D2".' },
+      { from: 3, to: 3, text: 'Find the square, like D2, and tap it to put the thing there.' },
       { from: 4, to: 4, text: 'Follow the directions from the start, like "3 right, then 1 up", and tap the square where you end up.' },
       { from: 5, text: 'Read both landmark clues. Follow each line to the square where they meet, then tap it.' },
     ],
