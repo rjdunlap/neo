@@ -3053,14 +3053,17 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 3, text: 'Tap a garden piece to put it in the habitat. Tap it again to take it out.' },
       { from: 4, to: 4, text: 'Tap the pieces in the prepared habitat to hear what each one gives, then tap Bunny or Duck to predict who will visit.' },
-      { from: 5, text: 'Tap garden pieces to fill the open spaces. Some pieces meet more than one need.' },
+      { from: 5, to: 6, text: 'Tap garden pieces to fill the open spaces. Some pieces meet more than one need.' },
+      { from: 7, text: 'Watch one piece of a working garden change, then tap the need the visitor lost: food, water or shelter. The before picture shows the garden as it was.' },
+      { from: 7, text: 'Tap a repair piece to put it in the empty space. Tap it again to take it out.' },
       'Tap the green gate to test the habitat and see who comes.',
     ],
     finish: 'The round ends after every habitat has been tested and its visitor arrives.',
     note: [
       { to: 3, text: 'Testing an incomplete habitat is a free experiment. After two tests, a useful piece glows.' },
       { from: 4, to: 4, text: 'A prediction that does not match is still a useful observation, not a mistake.' },
-      { from: 5, text: 'Testing an incomplete habitat is a free experiment. After two tests, a useful piece glows.' },
+      { from: 5, to: 6, text: 'Testing an incomplete habitat is a free experiment. After two tests, a useful piece glows.' },
+      { from: 7, text: 'Naming the wrong need counts as a miss, and the before picture pulses; after two, the right need glows (one hint). Testing a repair is a free experiment; after two tests, the piece that restores the need glows.' },
     ],
   },
 };

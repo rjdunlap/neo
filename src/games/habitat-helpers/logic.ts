@@ -48,7 +48,7 @@ export const PIECES: Record<PieceId, HabitatPiece> = {
   'reed-island': { id: 'reed-island', name: 'reed island', for: { duck: ['shelter'] } },
 };
 
-export type HabitatMode = 'build' | 'predict';
+export type HabitatMode = 'build' | 'predict' | 'change';
 
 export interface HabitatPlan {
   mode: HabitatMode;
@@ -63,6 +63,7 @@ export const PLANS: readonly HabitatPlan[] = [
   { mode: 'predict', rounds: 3, name: 'Inspect a prepared habitat and predict which visitor will come' },
   { mode: 'build', rounds: 2, name: 'Use a multipurpose piece to fit each habitat into two spaces' },
   { mode: 'build', rounds: 1, name: 'Build one three-piece habitat that welcomes Bunny and Duck together' },
+  { mode: 'change', rounds: 2, name: 'Something changed: name the need a working garden lost, then restore it' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -74,7 +75,37 @@ export interface HabitatRound {
   offered: PieceId[];
   capacity: number;
   prepared?: PieceId[];
+  /** Level 7: the working garden (in `prepared`) loses one piece to a season or the weather. */
+  change?: ChangeCase;
 }
+
+/**
+ * Level 7's authored changes: a garden that works, one piece in it stops giving what it gave (a season or the weather,
+ * never harm or blame), and a two-card repair tray where exactly one card restores the lost need.
+ */
+export interface ChangeCase {
+  id: 'pool-dried' | 'reeds-flattened' | 'clover-finished' | 'seeds-gone';
+  visitor: Visitor;
+  garden: readonly [PieceId, PieceId, PieceId];
+  changed: PieceId;
+  repairs: readonly [PieceId, PieceId];
+}
+
+export const CHANGES: readonly ChangeCase[] = [
+  { id: 'pool-dried', visitor: 'bunny', garden: ['clover', 'shallow-pool', 'brush-pile'], changed: 'shallow-pool', repairs: ['pond-reeds', 'seed-grass'] },
+  { id: 'reeds-flattened', visitor: 'duck', garden: ['seed-grass', 'shallow-pool', 'tall-reeds'], changed: 'tall-reeds', repairs: ['reed-island', 'clover'] },
+  { id: 'clover-finished', visitor: 'bunny', garden: ['clover', 'shallow-pool', 'brush-pile'], changed: 'clover', repairs: ['berry-hedge', 'pond-weed'] },
+  { id: 'seeds-gone', visitor: 'duck', garden: ['seed-grass', 'shallow-pool', 'tall-reeds'], changed: 'seed-grass', repairs: ['pond-weed', 'log-burrow'] },
+];
+
+/** The pieces still giving something after the change. */
+export const afterChange = (c: ChangeCase): PieceId[] => c.garden.filter((piece) => piece !== c.changed);
+
+/** The need the change took away: the answer to "which need is missing now?". */
+export const lostNeed = (c: ChangeCase): Need => missingNeeds(afterChange(c), [c.visitor])[0].need;
+
+/** Whether placing this repair card welcomes the visitor back. */
+export const restores = (c: ChangeCase, piece: PieceId): boolean => welcomes([...afterChange(c), piece], [c.visitor]);
 
 /** Two pictured pieces that do the same single job; levels 1–3 pick one of each pair per round. */
 export const EQUIVALENTS: Record<Visitor, Record<'food' | 'shelter', readonly [PieceId, PieceId]>> = {
@@ -136,8 +167,13 @@ export function makeRounds(level: number, rng: Rng): HabitatRound[] {
     }
     case 5:
       return rng.shuffle([...VISITORS]).map((v) => round([v], compact[v], 2));
-    default:
+    case 6:
       return [round(['bunny', 'duck'], ['berry-hedge', 'seed-grass', 'pond-reeds', 'shallow-pool', 'clover', 'tall-reeds'], 3)];
+    default: {
+      // The dried pool opens every play (the dive's first round); the second change is drawn from the other three.
+      const [first, ...rest] = CHANGES;
+      return [first, rng.pick(rest)].map((c) => ({ ...round([c.visitor], [...c.repairs], 1, [...c.garden]), change: c }));
+    }
   }
 }
 
@@ -189,14 +225,25 @@ export function solutions(round: HabitatRound): PieceId[][] {
 }
 
 /** What the ghost finger touches next. */
-export type HabitatTouch = { piece: PieceId } | { visitor: Visitor } | 'gate';
+export type HabitatTouch = { piece: PieceId } | { visitor: Visitor } | { need: Need } | 'gate';
 
 /**
  * The ghost finger's rule. A building round places the pieces of the smallest accepted arrangement (its first, in
  * the order offered), then opens the gate; a prediction round picks the visitor the prepared garden really welcomes
- * and then opens the gate. Null once the garden is tested or when there is nothing left to touch.
+ * and then opens the gate; a change round names the lost need, places the restoring card and opens the gate. Null once the garden is tested or when there is nothing left to touch.
  */
-export function habitatTouch(round: HabitatRound, mode: HabitatMode, selected: readonly PieceId[], prediction: Visitor | null): HabitatTouch | null {
+export function habitatTouch(round: HabitatRound, mode: HabitatMode, selected: readonly PieceId[], prediction: Visitor | null, needNamed = false): HabitatTouch | null {
+  if (mode === 'change') {
+    const c = round.change;
+    if (!c) return null;
+    if (!needNamed) return { need: lostNeed(c) };
+    // Level 7's `selected` is the repair space only: take out a card that does not restore, place the one that does.
+    const wrong = selected.find((piece) => !restores(c, piece));
+    if (wrong) return { piece: wrong };
+    if (selected.length) return 'gate';
+    const fix = round.offered.find((piece) => restores(c, piece));
+    return fix ? { piece: fix } : null;
+  }
   if (mode === 'predict') {
     if (!prediction) {
       const answer = visitorsFor(round.prepared ?? [])[0];
