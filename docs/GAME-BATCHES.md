@@ -1221,6 +1221,8 @@ Proof: new-level tier: typecheck, rule tests, one play of level 9 with a tail bo
 
 ### quick-tricks 1: Truthful accounting, a seeded cast and a bow
 
+**Claimed 2026-11-03**, branch `claude/quick-tricks-1` (all of dive slice 1; files as listed below).
+
 - **`quick-tricks`, Truthful accounting, a seeded cast and a bow for the second show (dive slice 1)** (extends the built game; no new level): a leaf dropped below Bunny is free in level 1, show two hides the yellow arrow during Picnic Places and repeats `tricks.next` after ten quiet seconds, ends with a cast bow and `tricks.done`, its friends are `Critter`s, payoffs for the mailbox flag, friend wiggle and berry gulp, and a seeded friend, crosser and monster colour in show one with per-critter instruction lines. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
 
 Files expected: `src/games/quick-tricks/index.ts`, `logic.ts`, `logic.test.ts`, `src/content/voice-script.ts`, `src/content/howto.ts` and `docs/GAMES.md`.
