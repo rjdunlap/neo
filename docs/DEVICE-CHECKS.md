@@ -1,5 +1,11 @@
 # Needs a person or a device
 
+## Sprout Shuffle level 5 Hidden Sprouts (genetics G6, built 2026-11-03)
+
+- [ ] **"Both could" as a right answer.** Does a ten-year-old read choosing both candidates, with the "can't tell yet" banner, as a right answer rather than a dodge?
+- [ ] **Rings against spots on the iPad label.** Do the enlarged record sprouts read as plain or spotted at arm's length on the iPad?
+- [ ] **Device speech of the new lines.** Do the Hidden Sprouts lines (no rendered clips; device speech fallback) say the genetics words clearly?
+
 ## Word Search (batch word-search 1, built 2026-11-03)
 
 - [ ] **The root line on the iPad.** Does device speech say "spect" and "port" in `wordsearch.root-spect` / `wordsearch.root-port` clearly enough for a grown-up to hear the root?

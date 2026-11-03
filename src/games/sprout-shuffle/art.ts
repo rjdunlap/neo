@@ -367,3 +367,77 @@ export function bedArt(color: ColorName): Container {
   }
   return c;
 }
+
+// ——— Level 5: Hidden Sprouts ———
+
+export const CAN_R = 56;
+export const SLOT_STEP = 76;
+export const RECORD_W = 8 * SLOT_STEP + 40;
+export const RECORD_H = 142;
+
+/** The watering can on its button: a green can with a spout and three drops. */
+export function canArt(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.moveTo(14, -6).lineTo(42, -26).stroke({ width: 10, color: swatch.green.line, cap: 'round' });
+  g.ellipse(46, -28, 9, 6).fill(swatch.green.line);
+  g.roundRect(-30, -20, 46, 44, 10).fill(swatch.green.fill).stroke({ width: 5, color: swatch.green.line });
+  g.arc(-8, -20, 16, Math.PI, 0).stroke({ width: 6, color: swatch.green.line });
+  for (const [x, y] of [[50, -12], [56, 2], [46, 6]] as const) g.ellipse(x, y, 4, 6).fill(swatch.blue.fill);
+  c.addChild(g);
+  c.position.set(-8, 4);
+  return c;
+}
+
+/** The seed packet that covers the hidden plant's tray: cream paper, a peel-back flap and a large question mark. */
+export function coverArt(): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const g = new Graphics();
+  g.roundRect(-92, -48, 184, 96, 12).fill(cream).stroke({ width: 5, color: swatch.brown.line });
+  g.moveTo(-92, -28).lineTo(92, -28).stroke({ width: 3, color: swatch.brown.line });
+  g.moveTo(60, 48).lineTo(92, 16).lineTo(92, 48).closePath().fill(swatch.yellow.light).stroke({ width: 3, color: swatch.brown.line });
+  c.addChild(g);
+  const q = new Text({ text: '?', style: { fontFamily: 'Nunito, sans-serif', fontSize: 64, fontWeight: '900', fill: ink } });
+  q.anchor.set(0.5);
+  q.position.set(0, 12);
+  c.addChild(q);
+  return c;
+}
+
+/** The record card: a long wooden garden label with eight sprout slots. Slots are not touch targets. */
+export function recordArt(): Graphics {
+  const g = new Graphics();
+  g.roundRect(-RECORD_W / 2, -RECORD_H / 2, RECORD_W, RECORD_H, 20).fill(swatch.brown.light).stroke({ width: 6, color: swatch.brown.line });
+  for (let i = 0; i < 8; i++) g.ellipse(slotX(i), RECORD_H / 2 - 18, 26, 8).fill({ color: swatch.brown.line, alpha: 0.35 });
+  return g;
+}
+
+/** The centre x of record slot `i`, relative to the card. */
+export function slotX(i: number): number {
+  return (i - 3.5) * SLOT_STEP;
+}
+
+/** A candidate card's picture: the two copies it names, face up. */
+export function copiesPic(copies: readonly [Copy, Copy]): Container {
+  const c = new Container();
+  for (const [i, copy] of copies.entries()) {
+    const t = tileArt(copy, 84);
+    t.position.set((i === 0 ? -1 : 1) * 48, 0);
+    c.addChild(t);
+  }
+  return c;
+}
+
+/** The "Can't tell yet" banner that rises over the covered tray: a ribbon with a question-mark sprout pair. */
+export function cantTellArt(): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const g = new Graphics();
+  g.roundRect(-110, -26, 220, 52, 26).fill(swatch.yellow.light).stroke({ width: 5, color: swatch.yellow.line });
+  c.addChild(g);
+  const t = new Text({ text: "Can't tell yet", style: { fontFamily: 'Nunito, sans-serif', fontSize: 28, fontWeight: '800', fill: ink } });
+  t.anchor.set(0.5);
+  c.addChild(t);
+  return c;
+}

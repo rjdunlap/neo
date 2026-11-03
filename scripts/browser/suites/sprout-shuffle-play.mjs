@@ -9,8 +9,8 @@ async function sproutShufflePlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; const r = g.round; return { phase: r.phase, slots: [...r.slots], opened: [...r.opened], built: [...r.built], chosen: [...r.chosen].sort(), missing: g.setup.build.length === 1 ? g.setup.build[0] : null, build: [...g.setup.build], claim: r.claim, tries: g.tries, check: !!g.checkButton?.visible, finished: neo.scene.finished === true }; });
   const tapTile = async (side, index) => tapOn(`neo.scene.game.tiles.find((t) => t.side === ${side} && t.index === ${index}).node`);
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
-  // SPROUT_LEVELS=4 plays level 4 alone; by default every level plays.
-  const only = (process.env.SPROUT_LEVELS ?? '1,2,3,4').split(',').map(Number);
+  // SPROUT_LEVELS=5 plays level 5 alone; by default every level plays.
+  const only = (process.env.SPROUT_LEVELS ?? '1,2,3,4,5').split(',').map(Number);
   let s;
   if (only.includes(1)) {
 
@@ -163,6 +163,47 @@ async function sproutShufflePlay() {
   await finished('sprout-shuffle');
   assert.deepEqual(await score(), [2, 1], 'level 4 saved 2 misses, 1 hint');
   log(`Sprout Shuffle 4: free magnifier fan, two wrong Checks (counterexample, glow), ${q.accepted.length} accepted pair(s), finish, passed`);
+  }
+  if (only.includes(5)) {
+  // Level 5: water, one card where both fit is a miss (its fan opens), a second is the glow hint, Show me picks both;
+  // both-could raises the banner, a free Try one, water again, then every fitting card finishes and the packet opens.
+  await launch('sprout-shuffle', 5);
+  await settle();
+  const p5 = () => page.evaluate(() => { const g = neo.scene.game; return { phase: g.phase, record: [...g.record], chosen: [...g.chosen].sort(), truth: g.setup.truth, fanOf: g.fanOf, check: g.checkButton.visible, tries: g.tries, finished: neo.scene.finished === true }; });
+  let h = await p5();
+  assert.deepEqual([h.phase, h.record, h.check], ['water1', [], false], 'level 5 opens waiting for the watering can, record empty');
+  await tapOn('neo.scene.game.canButton');
+  h = await p5();
+  assert.deepEqual([h.phase, h.record], ['choose1', ['spotted', 'spotted', 'spotted']], 'the can grows three spotted sprouts');
+  await tapOn("neo.scene.game.cards.find((c) => c.key === 'AA')");
+  await tapOn('neo.scene.game.checkButton');
+  h = await p5();
+  assert.deepEqual([await tally(), h.fanOf], [[1, 0], 'Aa'], 'two spot copies alone is a miss, and one spot copy\'s fan opens');
+  await tapOn('neo.scene.game.checkButton');
+  assert.deepEqual(await tally(), [2, 1], 'the second wrong Check counts the glow hint');
+  await page.evaluate(() => neo.scene.game.askForHint()); await settle();
+  h = await p5();
+  assert.deepEqual([h.chosen, await tally()], [['AA', 'Aa'], [2, 2]], 'Show me chooses both and counts one hint');
+  await tapOn('neo.scene.game.checkButton');
+  h = await p5();
+  assert.deepEqual([h.phase, h.chosen, h.fanOf], ['water2', [], null], 'both could: water again, choices cleared');
+  await tapOn('neo.scene.game.tryButton');
+  h = await p5();
+  assert.deepEqual([h.tries, h.record.length, await tally()], [1, 4, [2, 2]], 'Try one adds one free sprout');
+  await tapOn('neo.scene.game.canButton');
+  h = await p5();
+  assert.equal(h.record.length, 7, 'the second watering adds three');
+  assert.equal(h.record.includes('plain'), h.truth === 'Aa', 'a plain sprout grows only from one spot copy');
+  const fit = h.record.includes('plain') ? ['Aa'] : ['AA', 'Aa'];
+  for (const k of fit) await tapOn(`neo.scene.game.cards.find((c) => c.key === '${k}')`);
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  await screenshot('sprout-shuffle-5-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await screenshot('sprout-shuffle-5-landscape');
+  await tapOn('neo.scene.game.checkButton');
+  await finished('sprout-shuffle');
+  assert.deepEqual(await score(), [2, 2], 'level 5 saved 2 misses, 2 hints');
+  log(`Sprout Shuffle 5 (${h.truth}): water, two wrong Checks (fan, glow), Show me, both-could, free Try one, water again, ${fit.join('+')} finish, passed`);
   }
 }
 return { sproutShufflePlay };
