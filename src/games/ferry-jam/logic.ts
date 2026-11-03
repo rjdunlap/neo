@@ -83,9 +83,8 @@ export function grid(h: Harbor, layout: Layout): number[][] {
 export const atDock = (h: Harbor, layout: Layout) => layout[FERRY] + h.boats[FERRY].len === h.size;
 
 /** The cells a boat can slide to along its lane from where it is now: every free position, not just the next. */
-export function reach(h: Harbor, layout: Layout, boat: number): { min: number; max: number } {
+export function reach(h: Harbor, layout: Layout, boat: number, g = grid(h, layout)): { min: number; max: number } {
   const b = h.boats[boat];
-  const g = grid(h, layout);
   const at = layout[boat];
   const cell = (p: number) => (b.dir === 'h' ? g[b.row][p] : g[p][b.col]);
   let min = at;
@@ -98,8 +97,9 @@ export function reach(h: Harbor, layout: Layout, boat: number): { min: number; m
 /** Every slide that can be made now. Sliding a boat any distance along its lane is one slide. */
 export function slides(h: Harbor, layout: Layout): Slide[] {
   const out: Slide[] = [];
+  const g = grid(h, layout);
   h.boats.forEach((_, boat) => {
-    const { min, max } = reach(h, layout, boat);
+    const { min, max } = reach(h, layout, boat, g);
     for (let to = min; to <= max; to++) if (to !== layout[boat]) out.push({ boat, to });
   });
   return out;
@@ -230,6 +230,77 @@ export function wellFormed(h: Harbor): boolean {
   const layout = start(h);
   if (h.boats.some((b) => (b.dir === 'h' ? b.col + b.len > h.size || b.row >= h.size : b.row + b.len > h.size || b.col >= h.size))) return false;
   return !grid(h, layout).some((row) => row.some((v) => v === -2));
+}
+
+const tables = new WeakMap<Harbor, Map<number, number>>();
+
+/**
+ * The fewest slides to the dock from every layout the boats can reach from where they began. A slide can always be slid
+ * back, so this finds every reachable layout, then searches outward from the docked ones. Built once per harbor (a few
+ * tens of thousands of layouts at most), so asking how far she is after each slide costs nothing.
+ */
+export function distanceTable(h: Harbor): Map<number, number> {
+  const cached = tables.get(h);
+  if (cached) return cached;
+  const layouts = new Map<number, Layout>([[encode(start(h)), start(h)]]);
+  const docked: number[] = [];
+  const queue = [start(h)];
+  for (let i = 0; i < queue.length; i++) {
+    const layout = queue[i];
+    if (atDock(h, layout)) docked.push(encode(layout));
+    for (const s of slides(h, layout)) {
+      const moved = layout.slice();
+      moved[s.boat] = s.to;
+      const k = encode(moved);
+      if (layouts.has(k)) continue;
+      layouts.set(k, moved);
+      queue.push(moved);
+    }
+  }
+  const table = new Map<number, number>(docked.map((k) => [k, 0]));
+  let frontier = docked;
+  for (let d = 1; frontier.length; d++) {
+    const next: number[] = [];
+    for (const k of frontier) {
+      const layout = layouts.get(k)!;
+      for (const s of slides(h, layout)) {
+        const moved = layout.slice();
+        moved[s.boat] = s.to;
+        const m = encode(moved);
+        if (table.has(m)) continue;
+        table.set(m, d);
+        next.push(m);
+      }
+    }
+    frontier = next;
+  }
+  tables.set(h, table);
+  return table;
+}
+
+/** The fewest slides from these boats to the dock (every layout reachable from the start has a way out). */
+export const distance = (h: Harbor, layout: Layout): number => distanceTable(h).get(encode(layout)) ?? Infinity;
+
+/** Slides in a row without getting any closer to the dock before the glow helps: never fewer than six, and never fewer than the harbor's own fewest. */
+export const patience = (fewest: number) => Math.max(6, fewest);
+
+/**
+ * Whether she is stuck: `trail` is how far the ferry was from the dock (in fewest slides) when the count began, then
+ * after each slide since. A slide that brings it closer than ever before restarts the count; `patience(fewest)` slides
+ * in a row that do not are stuck. A steady longer route keeps getting closer, so it never is; going round in a loop does.
+ * Undo is not a slide, so it takes the slide it undoes back off the trail. After a hint the game starts a fresh trail from where the boats are.
+ */
+export function stuck(trail: readonly number[], fewest: number): boolean {
+  if (!trail.length) return false;
+  let best = trail[0];
+  let since = 0;
+  for (const d of trail.slice(1)) {
+    if (d < best) {
+      best = d;
+      since = 0;
+    } else since++;
+  }
+  return since >= patience(fewest);
 }
 
 /** What the next slide ought to be, from wherever the boats are now. */

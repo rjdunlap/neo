@@ -150,3 +150,11 @@
 - The first browser run found a real bug (Pixi `removeChildren(1)` threw on a one-child wheel, so level 5 never opened); fixed and re-passed. `game-reviewer`: one minor finding (old wedge drag listeners not released between races), fixed in 5256c396 with unit tests re-passed, not re-played in the browser.
 - Not run: offline check (no persistence or asset change), other suites.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#spinner-fair-levels-45-chance-statistics-cs1-batch-spinner-fair-2-2026-11-01)): the face cards without words, grabbing a wedge piece on an iPad in portrait, "a fair race can end level", device speech.
+
+## 2026-11-01 — Tide Line levels 3–4 (oceans slice 1, batch tide-line 2)
+
+- [PR #1112](https://github.com/rjdunlap/neo/pull/1112): level 3 *Read the line* (pail, flag and towel placed with the sea out, then the wave; round 2 a higher windy-day line) and level 4 *In, out, in, out* (strip of four, three cards); bands now preschool 2–3, pre-K 3–4.
+- Ran (working diff over origin/main e80fc0fe plus two newer merges, Vite on http://localhost:5637): typecheck; 68 Tide Line rule tests; full `npm test` 291 files / 4211 tests; `npm run build`; `BROWSER_SUITE=tideline34` (level 3: early wave not counted, round 1 dry, round 2 the pail between the lines floats and is fetched while flag and towel stay, saved 1/0; level 4 in portrait: two wrong cards then the glow, two strips, saved 2/1; screenshots reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=tide-line FINGER_LEVELS=3,4` (25.6 s and 4.7 s).
+- `game-reviewer` fixes: round-2 things fly back before they can be grabbed; layout re-applied after fetch and carry tweens; a placed card stays in the gap on resize. `rules-tester` fix: `clampFeet` keeps a thing's 120-wide touch box clear of corner buttons and the pet.
+- Not run: offline check, other suites.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#tide-line-levels-34-oceans-study-slice-1-batch-tide-line-2-2026-11-01)): the seaweed line in sunlight and the two lines, the halfway picture at pre-K, device speech.

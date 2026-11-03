@@ -17,7 +17,7 @@ Drag boats along their lanes in a small harbor so the red ferry reaches the dock
 
 Ranges (`LEVELS` in `index.ts`): pre-K 1–4, school 3–6. Cells are 100 units (`CELL`).
 
-**What a round draws from** (measured by running `solve` over the frozen `HARBORS` outside the test runner on this date): every level has 14 harbors, so repetition is not a gap. But each pool sits at the bottom of its plan's range, because `makeHarbor` accepts the first harbor inside the range:
+**What a round draws from** (before batch 1 added 26 harbors, so the pools are now 21/21/16/19/14/19 and fill each plan's range; measured by running `solve` over the frozen `HARBORS` outside the test runner on this date): every level has 14 harbors, so repetition is not a gap. But each pool sits at the bottom of its plan's range, because `makeHarbor` accepts the first harbor inside the range:
 
 | Level | Plan fewest | Fewest slides of the 14 frozen harbors |
 | --- | --- | --- |
@@ -31,7 +31,7 @@ Ranges (`LEVELS` in `index.ts`): pre-K 1–4, school 3–6. Cells are 100 units 
 **Accounting today** (source reading):
 
 - **Nothing is ever a miss.** `this.misses` starts at 0 and is never incremented, so `ctx.finish` always reports 0 misses. That is right for free sliding (experimenting is not wrong), but it means adaptation runs on hints alone: a round without a hint is smooth (`isSmooth`), two hints is a struggle.
-- **The hint fires on a raw slide count, not on lack of progress.** `maybeHint` glows the solver's next slide once `sinceHint ≥ max(8, 2 × fewest)` slides have been made since the last hint, whether or not those slides brought the ferry closer. The [GAMES entry](../GAMES.md#ferry-jam) and the how-to card say "after many slides without getting closer", which the code does not check. A child working steadily on an 18-slide harbor by a longer, sensible route is charged a hint at slide 36; a child who wanders in a loop on a 2-slide harbor waits 8 slides. Undo does not reduce the count.
+- **Built (batch 1): the hint now fires on lack of progress.** Before it, the hint fired on a raw slide count, not on lack of progress. `maybeHint` glows the solver's next slide once `sinceHint ≥ max(8, 2 × fewest)` slides have been made since the last hint, whether or not those slides brought the ferry closer. The [GAMES entry](../GAMES.md#ferry-jam) and the how-to card say "after many slides without getting closer", which the code does not check. A child working steadily on an 18-slide harbor by a longer, sensible route is charged a hint at slide 36; a child who wanders in a loop on a 2-slide harbor waits 8 slides. Undo does not reduce the count.
 - **The ghost finger plays the solver's way out** (`autotouch` → `solve(...)[0]`), so the demonstration is always perfect.
 
 **Size ceiling:** the design area is 1024×768 and always fits (`src/engine/view.ts`; portrait adds height, not width). The board sits at `x ≥ 150`, `y ≥ 100`, and the dock sticks out about 110 units to the right: a 6×6 harbor uses 150 + 600 + 110 = 860 across and 100 + 600 = 700 down. A 7×7 harbor (800 down) does not fit landscape at 100-unit cells, so **bigger boards are a dead end**; depth must come from new rules on the same drag.
@@ -113,7 +113,7 @@ With `order`, pre-K's window is `[9, 1, 10, 2, 3, 4]` and school's stays `min..m
 
 ## Build slices, in order
 
-1. **Fair hints and fuller harbors (batch ferry-jam 1).** The progress-based `stuck` hint, the range-filling harbors, the strict pool test, and the co-play `coplayHint`. *Check:* existing-game fix on an unchanged interaction: typecheck, the game's rule tests, one filtered regression play of level 6 that wanders (a loop of slides earns one hint) and one that progresses on a longer route (no hint). The bot is unchanged, so no `fingerdemo`.
+1. **Fair hints and fuller harbors (batch ferry-jam 1), built 2026-11-02.** The progress-based `stuck` hint, the range-filling harbors, the strict pool test, and the co-play `coplayHint`. *Check:* existing-game fix on an unchanged interaction: typecheck, the game's rule tests, one filtered regression play of level 6 that wanders (a loop of slides earns one hint) and one that progresses on a longer route (no hint). The bot is unchanged, so no `fingerdemo`.
 2. **Level 7, rocks in the harbor (batch ferry-jam 2).** *Check:* new level on the existing drag: typecheck, rule tests (including every rock matters and `focusPath` still reaching every boat), one browser play of level 7 with a drag on a rock, `fingerdemo` at 7, one portrait screenshot.
 3. **Level 8, two ferries (batch ferry-jam 3),** after batch 2 (shares the `Harbor` and `parse` changes). *Check:* new rule on the existing drag: typecheck, rule tests, one play of level 8 to its sticker with the yellow ferry sailing first, `fingerdemo` at 8, one portrait screenshot of the bottom dock.
 4. **Levels 9 and 10, pre-K entry and who's in the way (batch ferry-jam 4).** Level 10 is a new tap step. *Check:* new interaction: typecheck, unit tests (order, entry and landing), one scripted play of level 9 and of level 10 with one wrong tap, a second for the glow, then the blocker; `fingerdemo` at 9 and 10; one portrait screenshot of level 10's question.

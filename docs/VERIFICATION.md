@@ -1,5 +1,14 @@
 # Puddle Island verification
 
+## 2026-11-02 — Ferry Jam fair hints and fuller harbors (ferry-jam batch 1)
+
+- [PR #1127](https://github.com/rjdunlap/neo/pull/1127): progress-based hint (`stuck`, per-harbor distance table), 26 more frozen harbors, co-play hint; no new level, bot unchanged.
+- Ran: typecheck; Ferry Jam rule tests 22 passed (incl. course tests); a one-off real-drag Playwright probe at school level 6 (`test-results/ferry-probe.mjs`, Vite on port 5800, origin/main 7b86fe18 + branch): wandering back and forth earned exactly one hint at slide = patience (13 on one harbor, 17 on another) with the glow, then finished to a sticker with 1 hint; a longer route (22 slides on a 14-fewest harbor, 27 on a 17) earned no hint and finished to a sticker.
+- `game-reviewer`: its undo, keyboard and performance findings were fixed.
+- Not run: `fingerdemo` (bot unchanged), build (no shared files), full unit suite (CI), device or child checks.
+
+---
+
 ## 2026-11-02 — Garden Rows seeded flower sets and level 7 Mend the bed (garden-rows batch 1)
 
 - [PR #1126](https://github.com/rjdunlap/neo/pull/1126): seeded flower sets per bed; level 7 Mend the bed (school 3–7); new `gardenrows` suite.
@@ -109,14 +118,6 @@
 - `game-reviewer` fix: a late hint line after the poster has moved on is guarded; a level-1 how-to note scoped.
 - Not run: offline check, other suites.
 - Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#notice-board-media-literacy-study-2026-10-31-levels-13-built-2026-11-01)): witness versus nearest friend at four, basket by price or words at seven, badges and place pictures at bubble size on an iPad, a grown-up using the card.
-
-## 2026-11-01 — Tide Line levels 3–4 (oceans slice 1, batch tide-line 2)
-
-- [PR #1112](https://github.com/rjdunlap/neo/pull/1112): level 3 *Read the line* (pail, flag and towel placed with the sea out, then the wave; round 2 a higher windy-day line) and level 4 *In, out, in, out* (strip of four, three cards); bands now preschool 2–3, pre-K 3–4.
-- Ran (working diff over origin/main e80fc0fe plus two newer merges, Vite on http://localhost:5637): typecheck; 68 Tide Line rule tests; full `npm test` 291 files / 4211 tests; `npm run build`; `BROWSER_SUITE=tideline34` (level 3: early wave not counted, round 1 dry, round 2 the pail between the lines floats and is fetched while flag and towel stay, saved 1/0; level 4 in portrait: two wrong cards then the glow, two strips, saved 2/1; screenshots reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=tide-line FINGER_LEVELS=3,4` (25.6 s and 4.7 s).
-- `game-reviewer` fixes: round-2 things fly back before they can be grabbed; layout re-applied after fetch and carry tweens; a placed card stays in the gap on resize. `rules-tester` fix: `clampFeet` keeps a thing's 120-wide touch box clear of corner buttons and the pet.
-- Not run: offline check, other suites.
-- Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#tide-line-levels-34-oceans-study-slice-1-batch-tide-line-2-2026-11-01)): the seaweed line in sunlight and the two lines, the halfway picture at pre-K, device speech.
 
 ## Coverage summary
 

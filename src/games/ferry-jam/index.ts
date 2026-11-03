@@ -15,7 +15,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseHarbors, courseMinimum, isHarborCourse } from './course';
 import { HARBORS } from './harbors';
-import { atDock, boatToward, FERRY, focusPath, hintSlide, parse, planFor, reach, solve, start, type FerryPlan, type Harbor, type Layout, type Slide } from './logic';
+import { atDock, boatToward, distance, FERRY, focusPath, hintSlide, parse, planFor, reach, solve, start, stuck, type FerryPlan, type Harbor, type Layout, type Slide } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
@@ -72,7 +72,8 @@ class FerryJam implements Game {
   private handles: DragHandle[] = [];
   private undoStack: Layout[] = [];
   private moves = 0;
-  private sinceHint = 0;
+  /** How far from the dock (in fewest slides) the boats were since the count began, then after each slide: what `stuck` reads. */
+  private trail: number[] = [];
   private hinted: Slide | null = null;
   private clock = 0;
   private settled = false;
@@ -176,12 +177,14 @@ class FerryJam implements Game {
     this.grab = null;
     this.moves = this.carry;
     this.carry = 0;
-    this.sinceHint = 0;
+    this.trail = [];
     this.undoStack = [];
     this.undoButton.alpha = 0.35;
     if (this.index >= this.harbors.length) return void this.finale();
     this.harbor = this.harbors[this.index];
     this.layout = start(this.harbor);
+    // The distance table is built here, while the board is still hidden, so a slide never waits for it. The couch never hints on its own.
+    if (!this.ctx.couch) this.trail = [distance(this.harbor, this.layout)];
     for (const h of this.handles.splice(0)) h.destroy();
     this.boatLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.nodes = this.harbor.boats.map((b, i) => this.makeBoat(i, b.len, i === FERRY));
@@ -288,7 +291,6 @@ class FerryJam implements Game {
     this.undoButton.alpha = 1;
     this.layout[i] = p;
     this.moves++;
-    this.sinceHint++;
     sfx.marimba(4 + (this.moves % 5), 0.3);
     this.report();
     if (atDock(this.harbor, this.layout)) void this.sail();
@@ -302,22 +304,25 @@ class FerryJam implements Game {
     if (!before) return;
     this.hinted = null;
     this.layout = before;
+    // Undo is not a slide: the slide it takes back leaves the trail too, so an undone step closer is no longer her best.
+    if (this.trail.length > 1) this.trail.pop();
     this.undoButton.alpha = this.undoStack.length ? 1 : 0.35;
     this.placeAll(true);
     sfx.pop(2);
   }
 
-  /** Lots of slides without getting there: point at a boat worth moving next. The first harbors stay hint-free for a while. */
+  /** Slide after slide without getting any closer to the dock: point at a boat worth moving next. A longer route that keeps getting closer never earns one. */
   private maybeHint() {
     // On the couch a hint is asked for in the pause menu, never handed over.
     if (this.ctx.couch) return;
-    const fewest = solveLength(this.harbor, start(this.harbor));
-    if (this.sinceHint < Math.max(8, fewest * 2) || this.hinted) return;
+    const now = distance(this.harbor, this.layout);
+    this.trail.push(now);
+    if (this.hinted || !stuck(this.trail, distance(this.harbor, start(this.harbor)))) return;
     const slide = hintSlide(this.harbor, this.layout);
     if (!slide) return;
     this.hinted = slide;
     this.hints++;
-    this.sinceHint = 0;
+    this.trail = [now];
     void this.ctx.say('ferry.hint');
   }
 
@@ -473,6 +478,7 @@ class FerryJam implements Game {
     sfx.marimba(4 + (this.moves % 5), 0.3);
     this.report();
     if (atDock(this.harbor, this.layout)) void this.sail();
+    else this.maybeHint();
   }
 
   /** Put the picked-up boat back where it was: nothing was slid, so nothing counts. */
@@ -622,7 +628,7 @@ export const ferryJam: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'Ask: which boat is in the ferry\'s way? Where does it have to go?',
+  coplayHint: 'Share the boats: one of you slides the ones lying sideways, the other the ones standing up. Talk about which has to go first.',
   offScreen: 'Slide small boxes or toy cars on a tray with a few gaps so one of them can slide out of a notch in the edge.',
   hubIcon: () => new FerryIcon(),
   touchDemo: true,
