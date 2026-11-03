@@ -1,6 +1,13 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
 
+
+### Ramp Race level 7 What can we tell? (inquiry Q5, 2026-11-03)
+
+[PR #1152](https://github.com/rjdunlap/neo/pull/1152), from the [definition](../definitions/what-can-we-tell.md): two shelf cards, three claim tiles (Floors, Ramps, Both), a wrong claim pulses the part its why-line names, "we can't tell" on a confounded pair leads to a repair that replaces card B with a fair test. Claim layout is a pure `tellLayout(view)`; misses and hints are tallied per step; school range 1–7, pre-K 1–2 unchanged.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--ramp-race-level-7-what-can-we-tell-inquiry-q5).
+
 ### Egg Catch far barn (visual identity V1 slice, 2026-11-01)
 
 [PR #1109](https://github.com/rjdunlap/neo/pull/1109), from the [definition](../definitions/visual-identity.md): the Barnyard's far barn stands on Egg Catch's horizon (0.72) at the left, 60-80 units tall, in the strip no lane, hay pile, lane-game tap column, chute or bin reaches, at all 11 levels and every view. Placement is `farBarnAt()` in `src/games/egg-catch/logic.ts` (lane and exit positions moved there as `laneXs`, `routeCx`, `exitOffsets`), drawn with the shared `drawFarBarn()`, `eventMode = 'none'`. Egg Catch completes the V1 games with room; Critter Sort and Roundup have low horizons and Duckling Parade keeps its meadow.

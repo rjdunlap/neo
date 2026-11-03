@@ -16,6 +16,9 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   CARD_H,
   CARD_W,
+  changed,
+  claimWhy,
+  CLAIMS,
   classifyFair,
   CONTROL,
   makeChange,
@@ -29,6 +32,7 @@ import {
   makeQuestions,
   makeShelf,
   makeStars,
+  makeTell,
   MAX_DISTANCE,
   onStar,
   planFor,
@@ -39,17 +43,24 @@ import {
   shelfLayout,
   sideOf,
   tally,
+  tellConclusion,
+  tellLayout,
+  tellRepair,
+  TILE_H,
+  TILE_W,
   waysTo,
+  type Claim,
   type FairQuestion,
   type RampEvent,
   type RampPlan,
   type Setup,
+  type TellCase,
   type TrialRecord,
 } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 1, max: 6 },
+  school: { min: 1, max: 7 },
 };
 
 /** Trial Shelf card art: a mark on a card's ruler, and where the ruler and the mini ramp's foot sit. */
@@ -83,6 +94,26 @@ function flag(g: Graphics, x: number, y: number, tall: number, color: number) {
   g.moveTo(x, y).lineTo(x, y - tall).stroke({ width: 4, color: ink, alpha: 0.7 });
   g.poly([x, y - tall, x + tall * 0.5, y - tall * 0.8, x, y - tall * 0.6]).fill(color).stroke({ width: 3, color: ink, alpha: 0.5, join: 'round' });
 }
+
+const floorColor = (f: Setup['floor']) => (f === 'carpet' ? swatch.red.fill : f === 'wood' ? wood.fill : 0xbfe6fb);
+
+/** A small ramp at its height on its floor swatch, with the swatch's texture (the cards' visual language, for the claim tiles). */
+function miniSetup(g: Graphics, x: number, floorY: number, s: Setup) {
+  const h = s.height * 11;
+  g.poly([x, floorY, x + 48, floorY, x, floorY - h]).fill(wood.light).stroke({ width: 3, color: wood.line, join: 'round' });
+  const w = TILE_W - 32 - 48;
+  g.roundRect(x + 48, floorY, w, 12, 4).fill(floorColor(s.floor));
+  if (s.floor === 'carpet') for (let k = x + 56; k < x + 48 + w - 4; k += 14) g.circle(k, floorY + 6, 2).fill(swatch.red.light);
+  else if (s.floor === 'wood') for (let k = x + 78; k < x + 48 + w; k += 34) g.moveTo(k, floorY).lineTo(k, floorY + 12).stroke({ width: 2, color: wood.line });
+  else for (let k = x + 58; k < x + 48 + w - 10; k += 36) g.moveTo(k, floorY + 10).lineTo(k + 12, floorY + 2).stroke({ width: 3, color: 0xffffff });
+}
+
+/** The three claim tiles' pictures: same ramps on different floors, different ramps on the same floor, and both different. */
+const TILE_SETUPS: Record<Claim, [Setup, Setup]> = {
+  floor: [{ height: 3, floor: 'carpet' }, { height: 3, floor: 'ice' }],
+  height: [{ height: 2, floor: 'wood' }, { height: 4, floor: 'wood' }],
+  both: [{ height: 2, floor: 'carpet' }, { height: 4, floor: 'ice' }],
+};
 
 /** A guess's paw print: a pad and four toes, a different shape from any flag. */
 function paw(g: Graphics, x: number, y: number, r: number) {
@@ -178,6 +209,15 @@ class RampRace implements Game {
   ring = false;
   readonly cards: Container[] = [];
   readonly guessHit = new Container();
+  /** What can we tell?: the two cases, the step, the selected claim tile, and the tile help once per claim step. */
+  tellCases: TellCase[] = [];
+  step: 'claim' | 'repair' = 'claim';
+  claim: Claim | null = null;
+  claimGlow = false;
+  readonly tiles: Container[] = [];
+  /** The card part a wrong claim's line names pulses on both cards until this clock time. */
+  private pulse: { part: 'ramp' | 'floor'; until: number } | null = null;
+  private readonly over = new Graphics();
 
   private readonly backdrop: Backdrop;
   private readonly star = new Graphics();
@@ -200,7 +240,7 @@ class RampRace implements Game {
     this.star.eventMode = 'none';
     this.sign.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.sign);
-    const two = this.plan.mode === 'fair' || this.plan.mode === 'change';
+    const two = this.plan.mode === 'fair' || this.plan.mode === 'change' || this.plan.mode === 'tell';
     for (const color of two ? [swatch.blue.fill, swatch.orange.fill] : [swatch.blue.fill]) {
       const lane = new Lane(color);
       if (this.plan.mode === 'height') lane.setup = { height: 2, floor: 'wood' };
@@ -221,7 +261,19 @@ class RampRace implements Game {
       ctx.stage.addChild(this.guessHit);
       this.shelfStarts = makeShelf(ctx.rng);
     }
-    ctx.stage.addChild(this.star, this.glow, this.go);
+    if (this.plan.mode === 'tell') {
+      CLAIMS.forEach((claim, k) => {
+        const t = new Container();
+        t.hitArea = new Rectangle(0, 0, TILE_W, TILE_H);
+        onTap(t, () => this.selectClaim(claim), { cooldown: 200 });
+        this.tiles.push(t);
+        ctx.stage.addChild(t);
+        void k;
+      });
+      this.tellCases = makeTell(ctx.rng);
+    }
+    this.over.eventMode = 'none';
+    ctx.stage.addChild(this.star, this.glow, this.go, this.over);
     if (this.plan.mode === 'height' || this.plan.mode === 'both') this.stars = makeStars(this.plan, ctx.rng);
     if (this.plan.mode === 'fair') this.questions = makeQuestions(ctx.rng, this.plan.rounds);
     if (this.plan.mode === 'change') {
@@ -244,6 +296,7 @@ class RampRace implements Game {
     this.sign.position.set(v.w / 2 + 60, 80);
     this.drawStar();
     if (this.plan.mode === 'shelf' || this.plan.mode === 'change') this.layoutShelf();
+    if (this.plan.mode === 'tell') this.layoutTell();
   }
 
   update(dt: number) {
@@ -258,6 +311,7 @@ class RampRace implements Game {
       if (this.hint.floor !== l.setup.floor) g.roundRect(l.rampEnd, l.floorY - 6, MAX_DISTANCE * l.unit, 46, 10).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.4 + pulse });
     }
     if (this.fairGlow && !this.busy) this.drawFairGlow(g);
+    if (this.plan.mode === 'tell') this.drawTellGlow(g);
     if (this.ring && this.phase === 'ask' && !this.busy && this.records.length === 2) {
       const box = this.cardBoxes()[farther(this.records[0], this.records[1])];
       const pulse = 0.35 + 0.25 * Math.sin(this.clock * 5);
@@ -273,9 +327,9 @@ class RampRace implements Game {
   private drawFairGlow(g: Graphics) {
     const q = this.questions[this.index];
     const [a, b] = this.lanes;
-    if (!q || !b) return;
+    if (!b || (!q && this.plan.mode !== 'tell')) return;
     const pulse = 0.35 + 0.25 * Math.sin(this.clock * 5);
-    const fix = fairRepair(q, a.setup, b.setup);
+    const fix = this.plan.mode === 'tell' ? tellRepair(a.setup, b.setup) : fairRepair(q, a.setup, b.setup);
     if (fix === 'ramp') {
       const x0 = b.rampEnd - RAMP_W;
       const height = b.setup.height !== a.setup.height ? a.setup.height : HEIGHTS[(HEIGHTS.indexOf(b.setup.height as 2 | 3 | 4) + 1) % HEIGHTS.length];
@@ -296,9 +350,12 @@ class RampRace implements Game {
       rolls: this.rolls,
       records: this.records,
       guess: this.guess?.side,
+      step: this.step,
+      claim: this.claim,
     });
     if (!move) return null;
     if (move === 'go') return { tap: { on: this.go } };
+    if ('claim' in move) return { tap: { on: this.tiles[CLAIMS.indexOf(move.claim)], x: TILE_W / 2, y: TILE_H / 2 }, pause: 0.4 };
     if ('card' in move) return { tap: { on: this.cards[move.card], x: CARD_W / 2, y: CARD_H / 2 } };
     if ('guess' in move) {
       // The middle of the chosen side of the blue flag, a little above the floor.
@@ -345,7 +402,7 @@ class RampRace implements Game {
     this.fairGlow = false;
     for (const l of this.lanes) l.reset();
     const mode = this.plan.mode;
-    const total = mode === 'fair' || mode === 'change' ? this.questions.length : mode === 'shelf' ? this.shelfStarts.length : this.stars.length;
+    const total = mode === 'tell' ? this.tellCases.length : mode === 'fair' || mode === 'change' ? this.questions.length : mode === 'shelf' ? this.shelfStarts.length : this.stars.length;
     if (mode !== 'explore' && this.index >= total) return void this.finale();
     if (mode === 'shelf') {
       // A fresh pair: the ramp at its start height, no cards, a blue car.
@@ -366,6 +423,7 @@ class RampRace implements Game {
       this.events[this.index] = [];
       this.sign.visible = true;
     }
+    if (mode === 'tell') return void this.startCase();
     this.resize(this.view);
     this.drawSign();
     this.busy = false;
@@ -378,8 +436,9 @@ class RampRace implements Game {
 
   /** A locked control is a free nudge; while reading, all lane controls are inert. */
   private changeLocked(l: Lane): boolean {
-    if (this.plan.mode !== 'change') return false;
-    if (this.phase === 'ask') return true;
+    if (this.plan.mode === 'tell' && this.step === 'claim') return true;
+    if (this.plan.mode !== 'change' && this.plan.mode !== 'tell') return false;
+    if (this.plan.mode === 'change' && this.phase === 'ask') return true;
     if (l !== this.lanes[0]) return false;
     sfx.tick();
     void this.ctx.say('ramp.keepblue');
@@ -415,6 +474,7 @@ class RampRace implements Game {
     if (this.busy || this.finished || ((this.plan.mode === 'shelf' || this.plan.mode === 'change') && this.phase === 'ask')) return;
     this.busy = true;
     const mode = this.plan.mode;
+    if (mode === 'tell') return void this.tellGo();
     if (mode === 'fair' || mode === 'change') return void this.fairTest();
     if (mode === 'shelf') return void this.shelfRoll();
     const d = await this.lanes[0].roll(this.ctx.tw);
@@ -500,9 +560,9 @@ class RampRace implements Game {
     return void this.next();
   }
 
-  /** Trial Shelf: log an event for this pair; misses and hints are always the pairs' `tally`. */
+  /** Log an event for this pair (or tell step, the newest list); misses and hints are always the lists' `tally`. */
   private count(e: RampEvent) {
-    this.events[this.index].push(e);
+    this.events[this.events.length - 1].push(e);
     const counts = this.events.map(tally);
     this.misses = counts.reduce((n, c) => n + c.misses, 0);
     this.hints = counts.reduce((n, c) => n + c.hints, 0);
@@ -562,6 +622,7 @@ class RampRace implements Game {
   }
 
   private async tapCard(i: 0 | 1) {
+    if (this.plan.mode === 'tell') return void this.replayTellCard(i);
     if (this.busy || this.finished || this.phase !== 'ask' || this.records.length < 2) return;
     this.busy = true;
     const [a, b] = this.records;
@@ -664,7 +725,10 @@ class RampRace implements Game {
     card.position.set(this.view.w + 20, box.y);
     this.cards[k] = card;
     this.ctx.stage.addChild(card);
+    this.ctx.stage.addChild(this.over);
     await this.ctx.tw.to(card, { x: box.x }, { duration: 0.4, ease: ease.outQuad });
+    // A resize mid-slide moved the shelf: land where it is now.
+    if (!card.destroyed) card.position.set(this.cardBoxes()[k].x, this.cardBoxes()[k].y);
   }
 
   private async replayCard(c: Container, r: TrialRecord) {
@@ -675,13 +739,200 @@ class RampRace implements Game {
     await this.ctx.tw.to(mini, { x: CARD_RULER + r.stop * CARD_MARK }, { duration: 0.6, ease: ease.outQuad });
   }
 
+  /** What can we tell?: a case starts with both cards sliding onto the shelf and replaying once, the lanes hidden. */
+  private async startCase() {
+    const c = this.tellCases[this.index];
+    this.records = [recordOf(c.a), recordOf(c.b)];
+    this.resize(this.view);
+    this.openClaim();
+    sfx.bell(3, 0.2);
+    await Promise.all([this.slideCard(0), this.slideCard(1)]);
+    await Promise.all(this.cards.map((card, k) => this.replayCard(card, this.records[k])));
+    this.busy = false;
+    void this.ctx.instruct('ramp.tell.ask');
+  }
+
+  /** A claim step: its own events list and help, the tiles up and the lanes hidden and inert. */
+  private openClaim() {
+    this.step = 'claim';
+    this.claim = null;
+    this.claimGlow = false;
+    this.fairGlow = false;
+    this.pulse = null;
+    this.events.push([]);
+    for (const l of this.lanes) l.visible = false;
+    for (const t of this.tiles) t.visible = true;
+    this.drawTiles();
+  }
+
+  /** Touching a tile selects it and speaks its claim; free. */
+  private selectClaim(claim: Claim) {
+    if (this.busy || this.finished || this.step !== 'claim') return;
+    this.claim = claim;
+    this.count('free');
+    sfx.tick();
+    this.drawTiles();
+    void this.ctx.say(`ramp.claim.${claim}`);
+  }
+
+  /** A card replays its roll; free, and only while she reads the cards. */
+  private async replayTellCard(i: 0 | 1) {
+    if (this.busy || this.finished || this.step !== 'claim' || !this.cards[i]) return;
+    this.busy = true;
+    this.count('free');
+    await this.replayCard(this.cards[i], this.records[i]);
+    this.busy = false;
+  }
+
+  /** Go checks the selected claim, or in a repair, the orange lane. */
+  private async tellGo() {
+    const [ra, rb] = this.records;
+    if (this.step === 'repair') return void this.tellRepairGo();
+    if (!this.claim) {
+      await this.ctx.say('ramp.tell.pick');
+      this.busy = false;
+      return;
+    }
+    const actual = changed(ra.setup, rb.setup) as Claim;
+    const why = claimWhy(this.claim, actual);
+    if (why) {
+      this.count('wrong-claim');
+      sfx.boing();
+      this.pulse = { part: why === 'floorsame' || why === 'floorsdiffer' ? 'floor' : 'ramp', until: this.clock + 2.6 };
+      await this.ctx.say(`ramp.why.${why}`);
+      if (!this.claimGlow && this.events[this.events.length - 1].filter((e) => e === 'wrong-claim').length >= 2) {
+        this.claimGlow = true;
+        await this.ctx.say('ramp.tell.hint');
+      }
+      this.busy = false;
+      return;
+    }
+    sfx.sparkle();
+    this.ctx.pet.cheer();
+    const right = this.tiles[CLAIMS.indexOf(actual)];
+    this.ctx.particles.burst(right.x + TILE_W / 2, right.y + TILE_H / 2, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.claimGlow = false;
+    this.pulse = null;
+    if (actual === 'both') {
+      await this.ctx.say('ramp.tell.both');
+      return void this.openRepair();
+    }
+    const end = tellConclusion(ra.setup, rb.setup)!;
+    await (end.line === 'floor' ? this.ctx.say('ramp.tell.floor', { floor: end.floor }) : this.ctx.say('ramp.tell.height', { what: end.what }));
+    await Promise.all(this.cards.splice(0).map(async (c) => {
+      await this.ctx.tw.to(c, { x: this.view.w + 40 }, { duration: 0.35, ease: ease.inQuad });
+      c.destroy({ children: true });
+    }));
+    return void this.next();
+  }
+
+  /** A repair step: the tiles hide, lane A shows card A's setup (locked) and lane B starts at card B's. */
+  private openRepair() {
+    this.step = 'repair';
+    this.fairGlow = false;
+    this.events.push([]);
+    for (const t of this.tiles) t.visible = false;
+    const [a, b] = this.lanes;
+    a.setup = { ...this.records[0].setup };
+    b.setup = { ...this.records[1].setup };
+    for (const l of this.lanes) {
+      l.visible = true;
+      l.draw();
+      l.reset();
+    }
+    this.busy = false;
+    void this.ctx.instruct('ramp.tell.fix');
+  }
+
+  /** Identical lanes are a nudge; lanes that still differ in both are a miss; one difference rolls and replaces card B. */
+  private async tellRepairGo() {
+    const [a, b] = this.lanes;
+    const c = changed(a.setup, b.setup);
+    if (c === 'none') {
+      await this.ctx.say('ramp.same.tell');
+      this.busy = false;
+      return;
+    }
+    if (c === 'both') {
+      this.count('tell-unfair');
+      sfx.boing();
+      await this.ctx.say('ramp.unfair.tell');
+      if (!this.fairGlow && this.events[this.events.length - 1].filter((e) => e === 'tell-unfair').length >= 2) {
+        this.fairGlow = true;
+        await this.ctx.say('ramp.fairhint');
+      }
+      this.busy = false;
+      return;
+    }
+    this.fairGlow = false;
+    await Promise.all([a.roll(this.ctx.tw), b.roll(this.ctx.tw)]);
+    sfx.bell(4, 0.25);
+    // Card A is still a true record of lane A; the old card B leaves and the new roll becomes card B.
+    const old = this.cards[1];
+    this.records = [this.records[0], recordOf(b.setup)];
+    await this.ctx.tw.to(old, { x: this.view.w + 40 }, { duration: 0.3, ease: ease.inQuad });
+    old.destroy({ children: true });
+    await this.slideCard(1);
+    a.reset();
+    b.reset();
+    this.openClaim();
+    this.busy = false;
+    void this.ctx.instruct('ramp.tell.again');
+  }
+
+  /** Cards on the shelf, tiles in a row under it. */
+  private layoutTell() {
+    const L = tellLayout(this.view);
+    this.cards.forEach((c, k) => c.position.set(L.cards[k].x, L.cards[k].y));
+    this.drawTiles();
+  }
+
+  /** Each tile: its two-row picture, lifted and outlined when selected; the Both tile carries a question-mark bubble. */
+  private drawTiles() {
+    const L = tellLayout(this.view);
+    this.tiles.forEach((t, k) => {
+      const claim = CLAIMS[k];
+      const on = this.claim === claim;
+      t.position.set(L.tiles[k].x, L.tiles[k].y - (on ? 8 : 0));
+      t.removeChildren().forEach((ch) => ch.destroy());
+      const g = new Graphics();
+      g.roundRect(0, 0, TILE_W, TILE_H, 22).fill(on ? 0xfffbe6 : 0xffffff).stroke({ width: on ? 8 : 5, color: on ? swatch.green.line : wood.line });
+      const [top, bottom] = TILE_SETUPS[claim];
+      miniSetup(g, 16, 64, top);
+      miniSetup(g, 16, 128, bottom);
+      if (claim === 'both') {
+        const [x, y] = [TILE_W - 30, 28];
+        g.circle(x, y, 19).fill(0xffffff).stroke({ width: 4, color: ink, alpha: 0.6 });
+        g.moveTo(x + 6 * Math.cos(Math.PI * 1.05), y - 5 + 6 * Math.sin(Math.PI * 1.05)).arc(x, y - 5, 6, Math.PI * 1.05, Math.PI * 2.45).lineTo(x, y + 5).stroke({ width: 4, color: ink, cap: 'round' });
+        g.circle(x, y + 11, 2.6).fill(ink);
+      }
+      t.addChild(g);
+    });
+  }
+
+  /** The tile help ring, and a wrong claim's named part pulsing on both cards (drawn over the cards). */
+  private drawTellGlow(g: Graphics) {
+    const pulse = 0.35 + 0.25 * Math.sin(this.clock * 5);
+    if (this.claimGlow && this.step === 'claim' && !this.busy && this.records.length === 2) {
+      const t = this.tiles[CLAIMS.indexOf(changed(this.records[0].setup, this.records[1].setup) as Claim)];
+      g.roundRect(t.x - 10, t.y - 10, TILE_W + 20, TILE_H + 20, 28).stroke({ width: 8, color: swatch.yellow.fill, alpha: 0.5 + pulse });
+    }
+    const o = this.over.clear();
+    if (!this.pulse || this.clock > this.pulse.until || this.step !== 'claim') return;
+    for (const c of this.cards) {
+      if (!c || c.destroyed) continue;
+      if (this.pulse.part === 'ramp') o.roundRect(c.x + 48, c.y + CARD_FLOOR - 4 * CARD_STEP - 8, 88, 4 * CARD_STEP + 16, 10).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.5 + pulse });
+      else o.roundRect(c.x + 120, c.y + CARD_FLOOR - 5, CARD_W - 130, 22, 8).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.5 + pulse });
+    }
+  }
+
   private async finale() {
     if (this.finished) return;
     this.finished = true;
     this.busy = true;
     sfx.tada();
     const mode = this.plan.mode;
-    await this.ctx.say(mode === 'explore' ? 'ramp.done.explore' : mode === 'fair' || mode === 'change' ? 'ramp.done' : mode === 'shelf' ? 'ramp.done.shelf' : 'ramp.done.stars');
+    await this.ctx.say(mode === 'explore' ? 'ramp.done.explore' : mode === 'fair' || mode === 'change' ? 'ramp.done' : mode === 'shelf' ? 'ramp.done.shelf' : mode === 'tell' ? 'ramp.done.tell' : 'ramp.done.stars');
     await this.ctx.tw.wait(0.4);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
