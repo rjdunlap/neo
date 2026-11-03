@@ -47,3 +47,11 @@
 - Ran: `npm run typecheck`; `npx vitest run src/games/rhyme-time` 13 passed (the guard test fails with the old neutral rule restored); `BROWSER_SUITE=woods WOODS_ONLY=rhyme FROM_LEVEL=4` on http://localhost:5299 passed at commit 1ffda591 (first shelf mug rug bug dish; the later `ARGUABLE` change does not touch odd mode); a one-off probe screenshot of all nine pictures looked right.
 - Not run: `fingerdemo` (bot unchanged), `npm run build`, the full unit suite.
 - Open: a child's reaction to the new pictures ([DEVICE-CHECKS](../DEVICE-CHECKS.md) if wanted; none added).
+
+## 2026-11-03 — Secret Code fair rows, a hint that keeps up and three doors (secret-code batch 1)
+
+- [PR #1144](https://github.com/rjdunlap/neo/pull/1144): misses count only from past tries still drawn above the door (level 7 only the shown clues); the faint-stone hint is redrawn after every later try with no new hint; gray reads "no more of that stone"; seeded door, gate or chest per door. No new level, bot unchanged.
+- Ran: `npm run typecheck`; `npx vitest run src/games/secret-code src/content` 177 passed (hidden-row, refreshed-hint and door tests); one scripted level-5 landscape play on http://localhost:5798/classic/ at 32ba685c: tries 1-5 gave misses 0,0,0,0,1 (try 5 repeated on-screen try 2), try 6 repeated scrolled-away try 1 with no miss, try 7 opened; second door one on-screen repeat miss, then to the sticker, no page errors; portrait screenshots of the gate and chest.
+- Not run: `fingerdemo` (bot unchanged), `npm run build`, the full unit suite (CI runs it), device or child checks.
+
+---

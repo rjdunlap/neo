@@ -17,7 +17,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`scoop-shop`, levels 8–9 (EF1b first batch)** (two new levels on existing input): [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25), [batch](GAME-BATCHES.md#scoop-shop-3-change-and-reverse). School only; exactly-one-change and reversed distinct triples, peek help; separate admission, building-session review, actual placement/layout and demos required. Level 7 follows as a separate interaction; person/device gates remain.
 
 
-- **`puppet-stage`, levels 4–6 Story cards and the premiere (batch puppet-stage 2)** (new-interaction tier: typecheck, rule tests with the registry, lands, how-to and off-screen tests, one filtered `puppetstage` play of levels 4–6 as the definition sets, one portrait screenshot of level 6, `fingerdemo` at levels 4, 5 and 6, one build): three authored story cards (Knock knock, The lost hat, Surprise!) of bob-only scenes at two places, a live shown-only premiere with The end at level 6; prek {3,5}, school {4,6}. [Definition](definitions/puppet-stage-4-6.md), [batch](GAME-BATCHES.md#puppet-stage-2-story-cards-and-the-premiere).
 
 
 
