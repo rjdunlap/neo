@@ -438,7 +438,7 @@ class RampRace implements Game {
   private changeLocked(l: Lane): boolean {
     if (this.plan.mode === 'tell' && this.step === 'claim') return true;
     if (this.plan.mode !== 'change' && this.plan.mode !== 'tell') return false;
-    if (this.phase === 'ask') return true;
+    if (this.plan.mode === 'change' && this.phase === 'ask') return true;
     if (l !== this.lanes[0]) return false;
     sfx.tick();
     void this.ctx.say('ramp.keepblue');
@@ -727,6 +727,8 @@ class RampRace implements Game {
     this.ctx.stage.addChild(card);
     this.ctx.stage.addChild(this.over);
     await this.ctx.tw.to(card, { x: box.x }, { duration: 0.4, ease: ease.outQuad });
+    // A resize mid-slide moved the shelf: land where it is now.
+    if (!card.destroyed) card.position.set(this.cardBoxes()[k].x, this.cardBoxes()[k].y);
   }
 
   private async replayCard(c: Container, r: TrialRecord) {
