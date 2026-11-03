@@ -2,10 +2,10 @@ import type { Rng } from '../../engine/random';
 
 /**
  * Sudoku Garden's rules. A bed is a square of numbered flowers: every row, every column and every box
- * holds each number once. 6 by 6 beds have boxes two rows tall and three wide; 9 by 9 beds have 3 by 3.
+ * holds each number once. 4 by 4 beds have boxes 2 by 2; 6 by 6 beds have boxes two rows tall and three wide; 9 by 9 beds have 3 by 3.
  * A grid is a flat array, row by row, with 0 for an empty square.
  */
-export type Size = 6 | 9;
+export type Size = 4 | 6 | 9;
 export type Grid = readonly number[];
 export type HouseKind = 'row' | 'column' | 'box';
 
@@ -35,7 +35,7 @@ const geometries = new Map<Size, Geometry>();
 export function geometry(size: Size): Geometry {
   let g = geometries.get(size);
   if (g) return g;
-  const n = size, br = size === 6 ? 2 : 3, bc = 3, cells = n * n;
+  const n = size, br = size === 9 ? 3 : 2, bc = size === 4 ? 2 : 3, cells = n * n;
   const rowOf = Array.from({ length: cells }, (_, i) => Math.floor(i / n));
   const colOf = Array.from({ length: cells }, (_, i) => i % n);
   const boxOf = Array.from({ length: cells }, (_, i) => Math.floor(rowOf[i] / br) * (n / bc) + Math.floor(colOf[i] / bc));
@@ -306,7 +306,8 @@ export interface SudokuPlan {
 /**
  * The ladder: two 6 by 6 beds that lone numbers solve (the second with far fewer to start from), a 6 by 6 bed that
  * needs the only-place-left trick, then the same climb on a 9 by 9 bed, ending with one that needs a pair or a pointing
- * line. (A 6 by 6 bed almost never needs a pair, so it has no third rung.)
+ * line. (A 6 by 6 bed almost never needs a pair, so it has no third rung.) Level 7 is the easy entry appended above them: a 4 by 4
+ * bed of 2 by 2 boxes that lone numbers finish, played first by `order`.
  */
 export const PLANS: SudokuPlan[] = [
   { name: 'A 6 by 6 bed with a few numbers to find', size: 6, tier: 1, blanks: 14, beds: 1 },
@@ -315,6 +316,7 @@ export const PLANS: SudokuPlan[] = [
   { name: 'A 9 by 9 bed with plenty of numbers to start', size: 9, tier: 1, blanks: 42, beds: 1 },
   { name: 'A 9 by 9 bed that needs the only-place-left trick', size: 9, tier: 2, blanks: 52, beds: 1 },
   { name: 'A 9 by 9 bed with a pair or a pointing line to find', size: 9, tier: 3, blanks: 55, beds: 1 },
+  { name: 'A 4 by 4 bed to start', size: 4, tier: 1, blanks: 10, beds: 1 },
 ];
 
 export const planFor = (level: number): SudokuPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -377,7 +379,7 @@ export const makeBeds = (plan: SudokuPlan, rng: Rng): Puzzle[] => Array.from({ l
 /** A bed from its picture, with its solution worked out. */
 export function parsePuzzle(rows: readonly string[]): Puzzle {
   const size = rows.length as Size;
-  if (size !== 6 && size !== 9) throw new Error('a bed is 6 by 6 or 9 by 9');
+  if (size !== 4 && size !== 6 && size !== 9) throw new Error('a bed is 4 by 4, 6 by 6 or 9 by 9');
   const start = parseGrid(rows);
   const solution = solve(start, size);
   if (!solution) throw new Error('a bed needs a solution');

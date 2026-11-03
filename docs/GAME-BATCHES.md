@@ -1427,7 +1427,7 @@ Proof: new-level tier with `order`: typecheck, unit tests including order, lands
 
 ### sudoku-garden 1: A 4 by 4 bed to start
 
-- **`sudoku-garden`, level 7 A 4 by 4 bed to start (dive slice 1)** (new level on the existing interaction; grown-up): `Size` 4, per-size box width, the plan, `order` `[7, 1, 2, 3, 4, 5, 6]` and `entryLevels: [7]`. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
+- **`sudoku-garden`, level 7 A 4 by 4 bed to start (dive slice 1)** (built 2026-11-03; new level on the existing interaction; grown-up): `Size` 4, per-size box width, the plan, `order` `[7, 1, 2, 3, 4, 5, 6]` and `entryLevels: [7]`. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
 
 Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
@@ -1443,7 +1443,7 @@ Proof: new interaction: typecheck, unit tests (marks equal candidates; button on
 
 ### sudoku-garden 3: A crossing pair of rows
 
-- **`sudoku-garden`, level 8 A crossing pair of rows (dive slice 3, after batch 1)** (new rule on the existing tap; grown-up): shares the `order` with batch 1; tier 4, the `xwing` step, generator or authored list, the hint and its lines. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
+- **`sudoku-garden`, level 8 A crossing pair of rows (dive slice 3)** (new rule on the existing tap; grown-up): shares the `order` with the built level 7 (batch 1); tier 4, the `xwing` step, generator or authored list, the hint and its lines. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
 
 Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
@@ -1451,7 +1451,7 @@ Proof: new rule on the existing tap: typecheck, rule tests, one play of level 8 
 
 ### sudoku-garden 4: Patchwork beds
 
-- **`sudoku-garden`, level 9 Patchwork beds (dive slice 4, after batch 1)** (new bed drawing; grown-up): shares the `order` and the geometry change with batch 1; patch layouts in `geometry`, the borders and tints, the patch hint wording. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
+- **`sudoku-garden`, level 9 Patchwork beds (dive slice 4)** (new bed drawing; grown-up): shares the `order` and the per-size geometry with the built level 7 (batch 1); patch layouts in `geometry`, the borders and tints, the patch hint wording. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
 
 Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`. The shared geometry changes, so the couch suite follows.
 

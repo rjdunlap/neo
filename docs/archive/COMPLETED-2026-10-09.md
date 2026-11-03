@@ -2471,3 +2471,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--sing-along-barn-twin
 Branch `claude/sink-float-fresh-things`, PR #1147: [dive slice 1](../deep-dives/sink-float.md#build-slices-in-order). `THINGS` grew from nine to fourteen (feather and marble obvious; log, ice cube and paper clip surprises), each with code-drawn `thingArt`, a journal entry and voice line (the journal now holds thirty-six game observations), and `thingWord` for the two-word names. The pinned-draws test became property tests. No new level; bot, couch, bands and how-to card unchanged.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--sink-or-float-fresh-things-sink-float-batch-1).
+
+## Sudoku Garden, a 4 by 4 bed to start (batch sudoku-garden 1, 2026-11-03)
+
+Branch `claude/sudoku-garden-4x4`, PR #1148: [dive slice 1](../deep-dives/sudoku-garden.md#build-slices-in-order). Level 7: `Size` gains 4 with a per-size box width (2 by 2), plan tier 1 with 10 blanks, `order` `[7, 1, 2, 3, 4, 5, 6]` and `entryLevels: [7]` (grown-up only; couch trip and courses unchanged; how-to card and voice unchanged). `sudokutouch` gained a level-7 case first (`SUDOKU_ONLY=7`). Cosmetic gap: the four tray tiles sit in the three-column grid, so the 4 is alone on a second row.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--sudoku-garden-a-4-by-4-bed-to-start-sudoku-garden-batch-1).

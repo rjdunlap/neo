@@ -24,6 +24,17 @@ describe('sudoku geometry', () => {
     expect(six.boxOf.slice(6, 12)).toEqual([0, 0, 0, 1, 1, 1]);
     expect(six.boxOf.slice(12, 18)).toEqual([2, 2, 2, 3, 3, 3]);
   });
+
+  it('makes a 4 by 4 bed of 2 by 2 boxes: 12 houses of 4, 7 neighbours each', () => {
+    const four = geometry(4);
+    expect([four.br, four.bc]).toEqual([2, 2]);
+    expect(four.houses).toHaveLength(12);
+    for (const h of four.houses) expect(h.cells).toHaveLength(4);
+    for (const h of four.houses.filter((x) => x.kind === 'box')) expect(new Set(h.cells.map((c) => four.boxOf[c])).size).toBe(1);
+    // 3 in the row, 3 in the column, and 1 more in the box.
+    for (const p of four.peers) expect(p).toHaveLength(7);
+    expect(four.boxOf).toEqual([0, 0, 1, 1, 0, 0, 1, 1, 2, 2, 3, 3, 2, 2, 3, 3]);
+  });
 });
 
 describe('sudoku rules', () => {
@@ -112,7 +123,7 @@ describe('solving the way a person does', () => {
   });
 
   it('uses pairs or pointing lines on the hardest beds, and not on easy ones', () => {
-    const hardest = PLANS[PLANS.length - 1];
+    const hardest = planFor(6);
     for (let s = 1; s <= 5; s++) {
       const p = makePuzzle(hardest, new Rng(s * 31));
       expect(p.grade).toBe(3);
@@ -170,9 +181,9 @@ describe('sudoku beds', () => {
     expect(a.start).not.toEqual(c.start);
   });
 
-  it('climbs: more blanks as the levels rise within a size, and 9 by 9 after 6 by 6', () => {
-    expect(PLANS.map((p) => p.size)).toEqual([6, 6, 6, 9, 9, 9]);
-    for (const size of [6, 9] as Size[]) {
+  it('climbs: more blanks as the levels rise within a size, and 9 by 9 after 6 by 6, with the 4 by 4 entry appended', () => {
+    expect(PLANS.map((p) => p.size)).toEqual([6, 6, 6, 9, 9, 9, 4]);
+    for (const size of [4, 6, 9] as Size[]) {
       const blanks = PLANS.filter((p) => p.size === size).map((p) => p.blanks);
       expect([...blanks].sort((a, b) => a - b)).toEqual(blanks);
     }
@@ -262,5 +273,55 @@ describe('sudoku hints', () => {
   it('has nothing to say about a finished bed', () => {
     const p = makePuzzle(PLANS[0], new Rng(2));
     expect(hintFor(p.solution, given(p), p.solution, 6)).toBeNull();
+  });
+});
+
+describe('level 7, a 4 by 4 bed to start', () => {
+  const plan = planFor(7);
+
+  it('is a 4 by 4 bed that lone numbers finish', () => {
+    expect(plan).toMatchObject({ size: 4, tier: 1, blanks: 10 });
+  });
+
+  it('over 300 seeds, every bed has one solution, exactly 10 blanks and grade 1', () => {
+    for (let s = 1; s <= 300; s++) {
+      const p = makePuzzle(plan, new Rng(s * 7919));
+      expect(p.size).toBe(4);
+      expect(p.blanks).toBe(10);
+      expect(p.start.filter((d) => !d)).toHaveLength(10);
+      expect(p.grade).toBe(1);
+      expect(countSolutions(p.start, 4)).toBe(1);
+      expect(isSolved(p.solution, 4)).toBe(true);
+      p.start.forEach((d, i) => { if (d) expect(d).toBe(p.solution[i]); });
+    }
+  });
+
+  it('following the hints finishes a bed, each one a lone number that is right', () => {
+    for (let s = 1; s <= 20; s++) {
+      const p = makePuzzle(plan, new Rng(s * 131));
+      const grid = p.start.slice();
+      for (let k = 0; k < 10; k++) {
+        const h = hintFor(grid, p.start, p.solution, 4)!;
+        expect(h.kind).toBe('lone');
+        if (h.kind !== 'lone') break;
+        expect(h.digit).toBe(p.solution[h.cell]);
+        grid[h.cell] = h.digit;
+      }
+      expect(isSolved(grid, 4)).toBe(true);
+    }
+  });
+
+  it('a wrong number is found by the first hint', () => {
+    const p = makePuzzle(plan, new Rng(5));
+    const cell = p.start.findIndex((d) => !d);
+    const grid = p.start.slice();
+    grid[cell] = (p.solution[cell] % 4) + 1;
+    expect(hintFor(grid, p.start, p.solution, 4)).toEqual({ kind: 'fix', cell });
+  });
+
+  it('reads a 4 by 4 bed from its picture', () => {
+    const p = parsePuzzle(['1...', '..1.', '.2..', '...4']);
+    expect(p.size).toBe(4);
+    expect(isSolved(p.solution, 4)).toBe(true);
   });
 });
