@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-03 — Vine Snip definition (docs only)
+
+- Added [the definition](definitions/vine-snip.md) (levels 1–5, two build slices); the earlier sketch is superseded; roadmap rows 25 and 27, READY, IDEAS and PHYSICS-GAMES updated.
+- Ran: `node scripts/check-links.mjs`, `git diff --check`. No code checks, by tier (nothing built).
+- Open: the definition's three device checks (tap-to-drop for a toddler, swing "keep going" on an iPad, 0.4 s windows for a four-year-old).
+
 ## 2026-11-03 — Puppet Stage levels 4–6 story cards and the premiere (batch puppet-stage 2)
 
 - [PR #1159](https://github.com/rjdunlap/neo/pull/1159), code commits bae19b8c and cbbdd976: levels 4–6 (pre-K 3–5, school 4–6), 33 voice lines, how-to, off-screen, `puppetstory` suite; `game-reviewer` two findings, fixed.
@@ -96,15 +102,6 @@
 - Ran, base origin/main `d0b2d458` plus the branch, server http://localhost:5940: `npm run typecheck`; full unit suite, 297 files, 4520 tests; `BROWSER_SUITE=singalong SING_ONLY=tunes` (a Wheels round at level 1, then ten cards upright at level 5 with Twinkle chosen and sung through 3 verses, one sticker each, 0 misses, 0 hints; portrait screenshot `test-results/browser/singalong/sing-along-barn-5-ten-cards-portrait.png`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=sing-along-barn FINGER_LEVELS=5` (53.4 s); `npm run build`.
 - Not run: the full `singalong` suite (other tunes and levels unchanged), device and child checks.
 - Open: fa on the iPad marimba and a grown-up singing along to both tunes ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
-
----
-
-## 2026-11-03 — Shape Buddies what grows: three seeds and sprouts (shape-buddies batch 1)
-
-- [PR #1145](https://github.com/rjdunlap/neo/pull/1145): art only; each round draws a seeded bean, sunflower seed or acorn with its own sprout via `looks(rng)` (friend colours unchanged); bot, rules, voice and how-to card unchanged.
-- Ran: `npm run typecheck`; shape-buddies rule tests and `src/content` tests, 185 passed (colours unchanged over 200 seeds, all three kinds appear); one-off Playwright probe on a dev server at http://localhost:5206 (base `5176da36` plus branch): level 1 at prek, portrait 768 by 1024, one failing Try (no miss), then the bot's intents to the sticker on acorn and sunflower rounds, misses 0, hints 0, one sticker; portrait screenshots of the sunflower seed at start and its sprout. `game-reviewer`: no defects.
-- Not run: `npm run build` (no shared files or assets), `fingerdemo` (bot unchanged), device or child checks.
-- Open: whether the three seeds read as different on the iPad ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
 ---
 

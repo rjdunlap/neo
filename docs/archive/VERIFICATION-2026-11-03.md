@@ -55,3 +55,12 @@
 - Not run: `fingerdemo` (bot unchanged), `npm run build`, the full unit suite (CI runs it), device or child checks.
 
 ---
+
+## 2026-11-03 — Shape Buddies what grows: three seeds and sprouts (shape-buddies batch 1)
+
+- [PR #1145](https://github.com/rjdunlap/neo/pull/1145): art only; each round draws a seeded bean, sunflower seed or acorn with its own sprout via `looks(rng)` (friend colours unchanged); bot, rules, voice and how-to card unchanged.
+- Ran: `npm run typecheck`; shape-buddies rule tests and `src/content` tests, 185 passed (colours unchanged over 200 seeds, all three kinds appear); one-off Playwright probe on a dev server at http://localhost:5206 (base `5176da36` plus branch): level 1 at prek, portrait 768 by 1024, one failing Try (no miss), then the bot's intents to the sticker on acorn and sunflower rounds, misses 0, hints 0, one sticker; portrait screenshots of the sunflower seed at start and its sprout. `game-reviewer`: no defects.
+- Not run: `npm run build` (no shared files or assets), `fingerdemo` (bot unchanged), device or child checks.
+- Open: whether the three seeds read as different on the iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+---
