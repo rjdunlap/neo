@@ -4325,7 +4325,7 @@ export const SCRIPT = {
   'lemon.done': ['The stand is closed. What a good week of lemonade!'],
   'lemon.choose.boat': ['Two lemons make a batch of four cups. Tap a batch and a price, then tap the open sign!'],
   'lemon.boat.choose': ['Two boats are selling lemons. The left boat sells {left}, and the right boat sells {right}. Tap the boat that sells lemons cheaper!'],
-  'lemon.boat.wrong': ['This boat wants {dear} shells for 2 lemons. That one wants {cheap}.'],
+  'lemon.boat.wrong': ['This boat wants {dear} for 2 lemons. That one wants {cheap}.'],
   'lemon.boat.good': ['Toot toot! The cheaper boat brings your lemons.', 'Toot toot! Good buy!'],
   'lemon.help.boat': ['Count the shells for 2 lemons. The {side} boat wants {cheap}, and the other boat wants {dear}.'],
   'lemon.sum.boats': ['Picking the cheaper boat saved you {n} shells this week!'],

@@ -43,6 +43,7 @@ const SAILS = [swatch.red, swatch.blue, swatch.green, swatch.purple, swatch.oran
 const BOAT_X = [280, 540];
 const BOAT_UP = 170;
 /** "2 lemons for 1 shell", for the spoken offer. */
+const shellWords = (n: number) => `${n} ${n === 1 ? 'shell' : 'shells'}`;
 const offerWords = (o: Offer) => `${o.lemons} lemons for ${o.shells} ${o.shells === 1 ? 'shell' : 'shells'}`;
 
 type Cell = 'made' | 'sold' | 'left' | 'shells';
@@ -474,7 +475,8 @@ class LemonadeStand implements Game {
     this.busy = false;
     await this.ctx.say(this.forecastLine(day), { day: this.index + 1, weather: WEATHER_WORD[day.weather] });
     if (this.boatPhase && day.boats) void this.ctx.instruct('lemon.boat.choose', { left: offerWords(day.boats[0]), right: offerWords(day.boats[1]) });
-    else void this.ctx.instruct(this.chooseLine());
+    // A boat already chosen during the forecast has given the batch instruction itself.
+    else if (!day.boats) void this.ctx.instruct(this.chooseLine());
   }
 
   // ---------------------------------------------------------------- the lemon boats
@@ -520,7 +522,7 @@ class LemonadeStand implements Game {
         this.helpedToday = true;
         this.hints++;
       }
-      await this.ctx.say('lemon.boat.wrong', { dear: talk.dear, cheap: talk.cheap });
+      await this.ctx.say('lemon.boat.wrong', { dear: shellWords(talk.dear), cheap: shellWords(talk.cheap) });
       return;
     }
     this.boatPhase = false;
@@ -862,7 +864,8 @@ class LemonadeStand implements Game {
     }
     this.highlight(h.rows);
     this.ctx.pet.cheer();
-    await this.ctx.say(this.helpLine(h), h.vars);
+    const vars = h.kind === 'boat' ? { ...h.vars, cheap: shellWords(Number(h.vars.cheap)), dear: shellWords(Number(h.vars.dear)) } : h.vars;
+    await this.ctx.say(this.helpLine(h), vars);
   }
 
   private insightLine(i: Insight): LineId {
