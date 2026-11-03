@@ -298,13 +298,14 @@ async function next() {
       const next = async () => { await kit.until(() => g.waiting, 15000); kit.tapOn(g.next); await kit.sleep(500); };
       const check = (what, misses, hints) => { if (g.misses !== misses || g.hints !== hints) throw new Error(`Tricks ${what}: ${g.misses} ${g.hints}`); };
 
-      // Umbrella Up: held too low in front of the friends (or, with two friends, the small leaf), then up high.
+      // Umbrella Up: held too low in front of the friends (a free try at level 1; or, with two friends, the small leaf), then up high.
       await ready('umbrella');
       const { top } = g.rainSpan, offsets = friendsFor(g.plan), mid = g.cx + offsets.reduce((a, b) => a + b, 0) / offsets.length;
       const big = g.leaves.at(-1);
       await drag(big.node, mid, top + 160);
       if (g.plan.friends === 2) await drag(g.leaves[0].node, g.cx + offsets[0], top - 40); else await drag(big.node, mid, top + 160);
-      check('umbrella', 2, 1);
+      const [bm, bh] = g.plan.countBelow ? [2, 1] : [0, 0];
+      check('umbrella', bm, bh);
       await drag(big.node, mid, top - 40);
       await next();
 
@@ -312,7 +313,7 @@ async function next() {
       await ready('socks');
       const m = g.monster, wrongs = g.socks.filter((s) => !(s.sock.color === g.held.color && s.sock.pattern === g.held.pattern));
       await drag(wrongs[0].node, m.x, m.y - 110); await drag(wrongs[wrongs.length - 1].node, m.x, m.y - 110);
-      check('socks', 4, 2);
+      check('socks', bm + 2, bh + 1);
       await drag(g.socks.find((s) => !wrongs.includes(s)).node, m.x, m.y - 110);
       await next();
 
@@ -322,11 +323,11 @@ async function next() {
       const short = g.plan.bridge === 'stretch' ? 0 : 2;
       if (g.plan.bridge === 'stretch') {
         for (let k = 0; k < 2; k++) { await drag(g.handle.node, l + 150, y); await kit.until(() => !g.springing, 3000); }
-        check('bridge short', g.plan.countShort ? 6 : 4, g.plan.countShort ? 3 : 2);
+        check('bridge short', bm + (g.plan.countShort ? 4 : 2), bh + (g.plan.countShort ? 2 : 1));
         await drag(g.handle.node, r + 70, y);
       } else {
         for (const p of g.planks.filter((p) => !reaches(p.length))) await drag(p.node, g.cx, y);
-        check('bridge planks', 6, 3);
+        check('bridge planks', bm + 4, bh + 2);
         await drag(g.planks.find((p) => reaches(p.length)).node, g.cx, y);
       }
       await next();

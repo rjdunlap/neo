@@ -1,5 +1,11 @@
 # Needs a person or a device
 
+## Quick Tricks (batch quick-tricks 1, built 2026-11-03)
+
+- [ ] **The free low leaf.** Does a toddler understand a leaf dropped below Bunny as a try again (the boing and spoken line), with no sense of having been wrong?
+- [ ] **The hidden yellow arrow.** At Picnic Places, does a four-year-old notice that only the green arrow shows, or look for the yellow one?
+- [ ] **Show two's critters on an iPad.** Do the seeded picnic friends, the mailbox flag and the cast bow read at picnic size?
+
 ## Picture Graph (batch picture-graph 1, built 2026-11-03)
 
 - [ ] **The lift on "which two are the same?"** Does a pre-K or school child read the lifted, outlined bar as "picked", and put it back by tapping it again?

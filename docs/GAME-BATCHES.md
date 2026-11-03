@@ -953,7 +953,7 @@ Proof: new-interaction tier: typecheck, unit tests (order, entry and landing); o
 
 ### garden-rows 1: Seeded flower sets and Mend the bed
 
-**Built 2026-11-02 ([PR #1126](https://github.com/rjdunlap/neo/pull/1126)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-02--garden-rows-seeded-flower-sets-and-level-7-mend-the-bed-garden-rows-batch-1); [build note](archive/COMPLETED-2026-10-09.md#garden-rows-seeded-flower-sets-and-level-7-mend-the-bed-garden-rows-1-2026-11-02). No longer eligible for dispatch. Scope retained for reference.
+**Built 2026-11-02 ([PR #1126](https://github.com/rjdunlap/neo/pull/1126)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-02.md#2026-11-02--garden-rows-seeded-flower-sets-and-level-7-mend-the-bed-garden-rows-batch-1); [build note](archive/COMPLETED-2026-10-09.md#garden-rows-seeded-flower-sets-and-level-7-mend-the-bed-garden-rows-1-2026-11-02). No longer eligible for dispatch. Scope retained for reference.
 
 - **`garden-rows`, seeded flower sets and level 7 Mend the bed (dive slice 1)** (existing interaction, new level; school): F1 seeded flower sets and level 7 Mend the bed as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).
 
@@ -1221,7 +1221,7 @@ Proof: new-level tier: typecheck, rule tests, one play of level 9 with a tail bo
 
 ### quick-tricks 1: Truthful accounting, a seeded cast and a bow
 
-- **`quick-tricks`, Truthful accounting, a seeded cast and a bow for the second show (dive slice 1)** (extends the built game; no new level): a leaf dropped below Bunny is free in level 1, show two hides the yellow arrow during Picnic Places and repeats `tricks.next` after ten quiet seconds, ends with a cast bow and `tricks.done`, its friends are `Critter`s, payoffs for the mailbox flag, friend wiggle and berry gulp, and a seeded friend, crosser and monster colour in show one with per-critter instruction lines. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
+- **`quick-tricks`, Truthful accounting, a seeded cast and a bow for the second show (dive slice 1)** (**built 2026-11-03**, [PR #1141](https://github.com/rjdunlap/neo/pull/1141); extends the built game; no new level): a leaf dropped below Bunny is free in level 1, show two hides the yellow arrow during Picnic Places and repeats `tricks.next` after ten quiet seconds, ends with a cast bow and `tricks.done`, its friends are `Critter`s, payoffs for the mailbox flag, friend wiggle and berry gulp, and a seeded friend, crosser and monster colour in show one with per-critter instruction lines. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
 
 Files expected: `src/games/quick-tricks/index.ts`, `logic.ts`, `logic.test.ts`, `src/content/voice-script.ts`, `src/content/howto.ts` and `docs/GAMES.md`.
 

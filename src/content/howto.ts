@@ -1932,8 +1932,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
   },
   'quick-tricks': {
     goal: 'Do a short show of tiny tricks.',
-    steps: ['Do each trick as it appears: drag, tap or turn what is shown.', 'Tap the arrow to move on to the next trick.'],
-    finish: 'The round ends after the last trick in the show.',
+    steps: [
+      'Do each trick as it appears: drag, tap or turn what is shown.',
+      'Tap the green arrow to move on to the next trick.',
+      { from: 1, to: 1, text: 'A leaf dropped below the friend is a free try: the rain shows it is too low.' },
+      { from: 4, to: 6, text: 'At the picnic the last bowl finishes that trick by itself; only the berries are checked with the yellow arrow.' },
+    ],
+    finish: 'The round ends after the last trick, when everyone in the show takes a bow.',
     note: 'There is at most one hint per trick.',
   },
   'stamp-studio': {
