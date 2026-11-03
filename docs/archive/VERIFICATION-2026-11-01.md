@@ -119,3 +119,11 @@
 - `game-reviewer` found two minor issues, fixed (mend reading token, narrow-view rows); rule tests re-ran, the browser play was not re-run after them.
 - Not run: offline check, any device or child check.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#not-always-philosophy-reasoning-study-2026-10-31-levels-13-built-2026-11-01)): the person and device checks there.
+
+## 2026-11-01 — Caravan Days levels 6–7 (china-india-silk-road CS4)
+
+- Branch `claude/caravan-days-wells` ([PR #1106](https://github.com/rjdunlap/neo/pull/1106)): batch caravan-days 3, school range 3–7; level 6 `pass` (road band, day card, Go) and level 7 `wells` (switchback road, tap-to-dig); the `caravandays` browser case gained `CARAVAN_FROM=6`.
+- Ran (commit 8a2ccef5): typecheck; 44 caravan-days rule tests (7 new: level 6 plans, verdicts and bot over 300 seeds, level 7 plans, full subset enumeration over 100 seeds, layout at four views); full `npm test` 291 files / 4135 tests; `npm run build`; `BROWSER_SUITE=caravandays CARAVAN_FROM=6` on a private Vite port (level 6 Go before both free, slower road with a wrong count a miss, help a hint, its right count accepted, portrait screenshot, saved 1/1; level 7 Done empty free, one well a miss, help a hint, fewest placement plus an extra accepted, portrait screenshot, saved 1/1); `fingerdemo` `FINGER_ONLY=caravan-days FINGER_LEVELS=6,7 FINGER_BAND=school` 19.4 s and 19.7 s.
+- `game-reviewer`: no blocking findings. History lines source-checked against Wikipedia (Caravanserai, Edicts of Ashoka).
+- Not run: other suites, offline check, device checks.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#caravan-days-levels-67-cs4-2026-11-01)): snow day and road length, the switchback in portrait, fewer wells, device speech for day and hoofprint slots.

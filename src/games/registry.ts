@@ -137,6 +137,7 @@ import { spinnerFair } from './spinner-fair';
 import { ruleMachine } from './rule-machine';
 import { shellRows } from './shell-rows';
 import { notAlways } from './not-always';
+import { thoughtBubbles } from './thought-bubbles';
 import { noticeBoard } from './notice-board';
 import { makerLane } from './maker-lane';
 import { readDo } from './read-do';
@@ -285,6 +286,7 @@ export const GAMES: GameModule[] = [
   spinnerFair,
   ruleMachine,
   notAlways,
+  thoughtBubbles,
   noticeBoard,
   makerLane,
   puppetStage,

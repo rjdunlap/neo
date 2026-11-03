@@ -133,7 +133,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 ## Build slices, in order
 
 1. **LM1 · Define Thought Bubbles 1–3** (docs only; **defined 2026-10-31**, [definition](../../definitions/thought-bubbles.md), PR #1065): the stage, the bubble and cards at 110 units, the authored story pools (about eight per level) and their beats, the belief model and its rule tests, the away/watching mix, accounting, how-to steps, voice lines, the land decision and the bot.
-2. **Build Thought Bubbles 1–3** (new-game tier).
+2. **Build Thought Bubbles 1–3** (new-game tier): **built 2026-11-02**, PR #1122.
 3. **LM3 · Story-talk card** (grown-ups' page, plain HTML).
 4. **LM2 · Define Thought Bubbles 4** after 1–3 are played; then **LM4 Who is telling?**
 5. LM5, LM6 and LM7 stay sketches (LM5 and LM6 need a reviewer for any real story; LM7 waits on a Lantern Lake capacity test).
