@@ -81,7 +81,9 @@ export class SecondShow implements Game{
  private gulp(){this.gulping=true;sfx.giggle();for(const c of this.berryPicture.children)void this.ctx.tw.to(c.scale,{x:0,y:0},{duration:.35,ease:ease.inBack});}
  /** Everyone from the picnic takes a bow, then the round ends. */
  private async finale(){
-  this.finished=true;this.next.visible=false;this.berry.visible=this.undo.visible=false;this.clear();for(const c of this.berryPicture.removeChildren())c.destroy({children:true});
+  this.finished=true;this.next.visible=false;this.berry.visible=this.undo.visible=false;
+  // Let the gulp finish before its berries go.
+  await this.ctx.tw.wait(.4);this.clear();for(const c of this.berryPicture.removeChildren())c.destroy({children:true});
   const v=this.view;const n=this.kinds.length;
   this.kinds.forEach((kind,i)=>{const f=this.critter(kind,.5);f.setMood('happy');f.position.set(v.w*(.5+(i-(n-1)/2)*(.7/n)),v.h*.62);this.layer.addChild(f);
    void this.ctx.tw.wait(.3+i*.25).then(()=>this.ctx.tw.to(f,{y:f.y-30},{duration:.2,ease:ease.outQuad})).then(()=>this.ctx.tw.to(f,{y:f.y+30},{duration:.25,ease:ease.inQuad}));});
@@ -103,7 +105,7 @@ export class SecondShow implements Game{
  resize(v:View){
   this.view=v;
   this.bg.clear().rect(0,0,v.w,v.h).fill(cream).rect(0,0,110,v.h).fill(swatch.red.light).rect(v.w-110,0,110,v.h).fill(swatch.red.light);
-  this.next.position.set(v.w-80,v.h-80);this.next.visible=this.waiting;this.submit.position.set(v.w-80,80);this.submit.visible=this.step===2&&!this.waiting&&!this.finished;
+  this.next.position.set(v.w-80,v.h-80);this.next.visible=this.waiting&&!this.finished;this.submit.position.set(v.w-80,80);this.submit.visible=this.step===2&&!this.waiting&&!this.finished;
   this.turn.position.set(v.w*.3,v.h-100);this.turn.visible=this.step===0;this.undo.position.set(v.w*.65,v.h-100);this.undo.visible=this.step===2&&!this.finished;
   this.berry.position.set(v.w*.4,v.h-100);this.berry.visible=this.step===2&&!this.finished;
   this.target={x:v.w*.68,y:v.h*.45};const slot=this.layer.children.find(c=>c.label==='slot');slot?.position.set(this.target.x,this.target.y);this.mail?.position.set(this.target.x,this.target.y);
