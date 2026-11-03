@@ -24,6 +24,25 @@ describe('Orchard Rows', () => {
     }
     expect(makeOrchards(3, new Rng(1))).not.toEqual(makeOrchards(3, new Rng(2)));
   });
+  it('fresh orchards: every pool shape fits 5 by 5 and is drawn; level 2 pairs no turns and no squares', () => {
+    const key = (o: { rows: number; columns: number }) => `${o.rows}x${o.columns}`;
+    expect(PLANS.slice(0, 3).map(p => p.shapes.map(key).sort())).toEqual([
+      ['2x2', '2x3', '3x2', '3x3', '4x2'],
+      ['2x4', '2x5', '3x4', '4x3', '5x2'],
+      ['3x5', '4x4', '4x5', '5x3', '5x4', '5x5'],
+    ]);
+    for (const plan of PLANS) for (const o of plan.shapes) expect(Math.max(o.rows, o.columns), key(o)).toBeLessThanOrEqual(5);
+    for (const o of PLANS[1].shapes) expect(o.rows, `level 2 square ${key(o)}`).not.toBe(o.columns);
+    for (let level = 1; level <= 3; level++) {
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 300; seed++) {
+        const [a, b] = makeOrchards(level, new Rng(seed));
+        seen.add(key(a)); seen.add(key(b));
+        if (level === 2) expect(key(b), `seed ${seed}`).not.toBe(key(turn(a)));
+      }
+      expect([...seen].sort()).toEqual(PLANS[level - 1].shapes.map(key).sort());
+    }
+  });
   it('regroups exactly the same quantity, and every subtotal adds one full group', () => {
     for (const plan of PLANS) for (const o of plan.shapes) {
       expect(total(turn(o))).toBe(total(o));
@@ -175,6 +194,15 @@ describe('Orchard Rows levels 4–6', () => {
         expect(PRIME_SETS.some(s => [...s].sort().join() === [...a.tasks[1].baskets].sort().join())).toBe(true);
       }
     }
+    const second = new Set<number>();
+    for (const seed of seeds(300)) {
+      const t = makeRound(4, new Rng(seed)).tasks[1];
+      const n = t.baskets[0];
+      second.add(n);
+      expect(equalRows(n, rowRange(4, n)).length, `basket ${n}`).toBeGreaterThanOrEqual(2);
+      expect(n % t.open, `basket ${n} opens at ${t.open}`).not.toBe(0);
+    }
+    expect([...second].sort((x, y) => x - y)).toEqual([14, 15, 16, 18, 20, 21]);
     const fruit = new Set(seeds(300).map(s => makeRound(4, new Rng(s)).sapling));
     expect(fruit.size).toBeGreaterThan(1);
     expect(new Set(seeds(300).map(s => makeRound(6, new Rng(s)).tasks[1].baskets.join())).size).toBeGreaterThan(5);
