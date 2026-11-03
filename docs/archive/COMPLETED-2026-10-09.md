@@ -2477,7 +2477,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--shape-buddie
 
 Branch `claude/sing-along-barn-1`, PR #1146: [dive slice 1](../deep-dives/sing-along-barn.md#build-slices-in-order). Two new tunes in `src/games/sing-along-barn/logic.ts`, so the barn has ten. Twinkle is the first user of the 2026-10-23 own-notes exception (`Phrase.semitones`, the `OWN_NOTES = ['twinkle']` allow-list, `sfx.marimbaMidi`), with a test that `marimbaMidi` is called only from `sfx.ts` and the barn's `index.ts` and that every other tune stays pentatonic. The short Wheels on the Bus is all pentatonic, so it needs no exception (finding); its middle "round and round" line needs ti and is left out, and that line and Itsy Bitsy's second line are possible later content. A name placeholder (`@`) sits mid-line in Wheels' verse. The level 5–6 chooser is ten cards in two rows of five at scale 0.6. Voice lines `barn.sing.twinkle/wheels` and `barn.done.twinkle/wheels`; the how-to card says "nine nursery songs" and "ten cards"; the rule test's 3-verse bound rose from 51 to 56 notes. The `singalong` suite gained a `tunesPlay` part (`SING_ONLY=tunes`). Source for both: Wikipedia's scores, Twinkle also matching Hoffman Academy.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--sing-along-barn-twinkle-and-wheels-on-the-bus-sing-along-barn-batch-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sing-along-barn-twinkle-and-wheels-on-the-bus-sing-along-barn-batch-1).
 
 ## Sink or Float, fresh things (batch sink-float 1, 2026-11-03)
 
