@@ -474,6 +474,9 @@ class LassoLoops implements Game {
       });
       await this.ctx.tw.wait(0.6);
       await this.ctx.say('lasso.left', { r: r.ones });
+    } else if (!r.group) {
+      // Fives and tens that come out even: no leaf at all.
+      await this.ctx.say('lasso.none');
     } else {
       // Groups: the spare fireflies wander off home.
       for (const f of rest) {
@@ -533,7 +536,10 @@ class LassoLoops implements Game {
     const r = this.round;
     if (this.plan.mode === 'tens') {
       for (const j of this.jars) this.bounce(j);
-      await this.ctx.say('lasso.count-tens', { t: this.jars.length, tens: this.jars.length * 10, r: r.ones, n: r.answer! });
+      const t = this.jars.length;
+      if (!r.ones) await this.ctx.say('lasso.count-tens-none', { t, n: r.answer! });
+      else if (t === 1) await this.ctx.say('lasso.count-teen', { r: r.ones, n: r.answer! });
+      else await this.ctx.say('lasso.count-tens', { t, tens: t * 10, r: r.ones, n: r.answer! });
       return;
     }
     let total = 0;
