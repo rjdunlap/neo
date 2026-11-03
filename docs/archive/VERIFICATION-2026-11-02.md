@@ -149,3 +149,10 @@
 - Ran: typecheck; `npm test` 4,480 pass (a first run had four timing-sensitive tests in other games fail under load, a rerun passed); 88 Paint Mixer rule tests (levels 1-4 seed-identical); build; `BROWSER_SUITE=paintmixer PAINT_LEVELS=5,6` twice (second after review fixes: level 5 extra drop, Undo, rows, portrait, both recipes on the shelf; level 6 empty Check free, wrong jar twice, lid reveal, portrait with lid open, right set); `fingerdemo` `FINGER_ONLY=paint-mixer FINGER_LEVELS=5,6` (32.6 s, 12.5 s).
 - Not run: levels 1-4 browser play (covered by the seed-identical test), offline check.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#paint-mixer-levels-56)): shelf colours as six, one-more-of-each, labels as two counts, the circled count without speech, lid zone versus jar.
+
+## 2026-11-02 — Penguin Slide fair ponds and seeded looks (penguin-slide batch 1)
+
+- [PR #1137](https://github.com/rjdunlap/neo/pull/1137): no dead-end ponds at levels 1–4, at most one single-slide pond in a level-1 round, seeded rock looks and fish colours, a touch-down scuff ring, reworded how-to note.
+- Ran: typecheck; `src/games/penguin-slide` and `src/content` tests, 193 passed (dead-end detector, 300 seeds at levels 1–4, level-1 single-slide cap with singles still occurring, looks coverage); `BROWSER_SUITE=woods WOODS_ONLY=penguin` levels 1–9 passed at 9fcdf608 (Vite on http://localhost:5641); one portrait probe at level 4 eyeballed the igloo and snowman.
+- Not run: the scuff-colour-only commit was not re-played; `fingerdemo` (bot unchanged), build and full units (CI), offline.
+- Open: whether the igloo reads as a stopper and whether the scuff shows on an iPad (device).
