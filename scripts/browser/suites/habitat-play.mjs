@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
 async function habitatPlay() {
   const readyRound = (index) => page.waitForFunction((index) => neo.scene.finished || (neo.scene.game.roundIndex === index && !neo.scene.game.busy), index, { timeout: 30000 });
-  const solveBuildRound = async (tryFirst = false) => {
+  const solveBuildRound = async (tryFirst = false, shot = 'habitat-helpers-1') => {
     const index = await page.evaluate(() => neo.scene.game.roundIndex);
     if (tryFirst) {
       await tap('neo.scene.game.testButton');
@@ -13,7 +13,7 @@ async function habitatPlay() {
       await page.waitForFunction(() => neo.scene.game.attempts === 2 && !neo.scene.game.busy);
       assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 1], 'a second test brings help, not a miss');
       assert.ok(await page.evaluate(() => neo.scene.game.hinting.length > 0), 'a useful piece glows');
-      await screenshot('habitat-helpers-1');
+      await screenshot(shot);
     }
     const solution = await page.evaluate(async () => {
       const { solutions } = await import('/src/games/habitat-helpers/logic.ts');
@@ -36,8 +36,26 @@ async function habitatPlay() {
   assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('habitat-helpers').history.at(-1); return [r.misses, r.hints]; }), [0, 1]);
   assert.ok(await page.evaluate(() => kit.store.data.journal.found.includes('habitat-helpers:bunny')));
 
+  // Level 3: five cards drawn from equivalent pieces (relaunch until a new one shows), one incomplete test, then the one working set.
+  const NEW_PIECES = ['dandelions', 'log-burrow', 'pond-weed', 'reed-island'];
+  for (let tries = 0; ; tries++) {
+    await launch('habitat-helpers', 3);
+    await readyRound(0);
+    if (await page.evaluate((ids) => neo.scene.game.pieces.some((p) => ids.includes(p.id)), NEW_PIECES)) break;
+    assert.ok(tries < 8, 'a level-3 garden offers one of the new pieces');
+  }
+  assert.equal(await page.evaluate(() => neo.scene.game.pieces.length), 5, 'level 3 still shows five cards');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+  assert.ok(await page.evaluate(() => [...neo.scene.game.pieces.map((p) => p.node), neo.scene.game.testButton].every((node) => { const b = node.getBounds(); return b.width > 0 && b.x >= 0 && b.y >= 0 && b.x + b.width <= innerWidth && b.y + b.height <= innerHeight; })), 'level-3 portrait cards are drawn and fit');
+  await solveBuildRound(true, 'habitat-helpers-3-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await readyRound(1);
+  await solveBuildRound();
+  await finished('habitat-helpers');
+
   // Prediction level: deliberately predict the other visitor. It is an observation, not a wrong answer.
   await launch('habitat-helpers', 4);
+  assert.equal(await page.evaluate(() => new Set(neo.scene.game.rounds.map((r) => [...r.prepared].sort().join('+'))).size), 3, 'no prepared garden repeats in a play');
   for (let index = 0; index < 3; index++) {
     await readyRound(index);
     // The sign shows a mystery guest, never the answer; the two visitor cards do not overlap; touching a prepared piece only listens.
@@ -71,7 +89,7 @@ async function habitatPlay() {
   await screenshot('habitat-helpers-6-portrait');
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, []);
-  log('Habitat Helpers: first, prediction and top levels; a free incomplete test, automatic help, both visitors, discoveries and portrait passed');
+  log('Habitat Helpers: first, equivalent-piece level 3, prediction and top levels; a free incomplete test, automatic help, both visitors, discoveries and portrait passed');
 }
 
 return { habitatPlay };

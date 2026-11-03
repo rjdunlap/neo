@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { habitatTouch, helpingPieces, makeRounds, missingNeeds, PIECES, PIECE_IDS, PLANS, solutions, visitorsFor, welcomes, type HabitatTouch, type PieceId, type Visitor } from './logic';
+import { EQUIVALENTS, habitatTouch, helpingPieces, makeRounds, missingNeeds, PIECES, PIECE_IDS, PLANS, PREDICTION_GARDENS, solutions, visitorsFor, welcomes, type HabitatTouch, type PieceId, type Visitor } from './logic';
 
 describe('Habitat Helpers', () => {
   it('gives every pictured piece a spoken name and at least one explicit use', () => {
@@ -8,6 +8,52 @@ describe('Habitat Helpers', () => {
       expect(PIECES[id].name.length).toBeGreaterThan(3);
       expect(Object.values(PIECES[id].for).flat().length).toBeGreaterThan(0);
     }
+  });
+
+  it('gives each new equivalent piece exactly one use, the same as its older partner', () => {
+    for (const id of ['dandelions', 'log-burrow', 'pond-weed', 'reed-island'] as PieceId[]) expect(Object.values(PIECES[id].for).flat()).toHaveLength(1);
+    for (const visitor of ['bunny', 'duck'] as Visitor[]) {
+      for (const [need, pair] of Object.entries(EQUIVALENTS[visitor])) {
+        for (const id of pair) expect(PIECES[id].for, `${id}`).toEqual({ [visitor]: [need] });
+      }
+    }
+  });
+
+  it('offers exactly one working set at levels 1–3, one of each equivalent pair, and uses every new piece', () => {
+    const seen = new Set<PieceId>();
+    for (let level = 1; level <= 3; level++) {
+      for (let seed = 1; seed <= 200; seed++) {
+        for (const round of makeRounds(level, new Rng(seed))) {
+          expect(round.offered).toHaveLength(level === 3 ? 5 : 3);
+          expect(solutions(round), `level ${level}, seed ${seed}`).toHaveLength(1);
+          for (const visitor of ['bunny', 'duck'] as Visitor[]) {
+            for (const pair of Object.values(EQUIVALENTS[visitor])) expect(pair.filter((id) => round.offered.includes(id)).length).toBeLessThanOrEqual(1);
+          }
+          round.offered.forEach((id) => seen.add(id));
+        }
+      }
+    }
+    for (const id of ['dandelions', 'log-burrow', 'pond-weed', 'reed-island'] as PieceId[]) expect(seen.has(id), id).toBe(true);
+  });
+
+  it('pools every two-piece garden that welcomes exactly one visitor, and level 4 never repeats one in a play', () => {
+    const singles: string[] = [];
+    PIECE_IDS.forEach((a, i) =>
+      PIECE_IDS.slice(i + 1).forEach((b) => {
+        const who = visitorsFor([a, b]);
+        if (who.length === 1) singles.push(`${who[0]}:${[a, b].sort().join('+')}`);
+      }),
+    );
+    const pooled = (['bunny', 'duck'] as Visitor[]).flatMap((v) => PREDICTION_GARDENS[v].map((g) => `${v}:${[...g].sort().join('+')}`));
+    expect(pooled.sort()).toEqual(singles.sort());
+
+    const used = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const keys = makeRounds(4, new Rng(seed)).map((r) => [...r.prepared!].sort().join('+'));
+      expect(new Set(keys).size, `seed ${seed}`).toBe(3);
+      keys.forEach((k) => used.add(k));
+    }
+    expect(used.size).toBe(pooled.length);
   });
 
   it('builds the promised number of valid, solvable gardens at every level', () => {

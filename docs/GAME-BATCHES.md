@@ -975,7 +975,9 @@ Proof: typecheck and unit tests including the lands and registry band tests; one
 
 ### habitat-helpers 1: Equivalent pieces and pooled gardens
 
-- **`habitat-helpers`, equivalent pieces and pooled prediction gardens (dive slice 1)** (existing interaction; preschool to school, no new level): four new pieces so each role has two pictured options, seeded per-role picks at levels 1–3, and six pooled level-4 gardens. [Dive](deep-dives/habitat-helpers.md#build-slices-in-order)
+**Built 2026-11-02 ([PR #1128](https://github.com/rjdunlap/neo/pull/1128)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-02--habitat-helpers-equivalent-pieces-and-pooled-gardens-habitat-helpers-batch-1); [build note](archive/COMPLETED-2026-10-09.md#habitat-helpers-equivalent-pieces-and-pooled-gardens-habitat-helpers-1-2026-11-02). Level 4's pool is four gardens, not six (only four two-piece gardens welcome exactly one visitor). No longer eligible for dispatch. Scope retained for reference.
+
+- **`habitat-helpers`, equivalent pieces and pooled prediction gardens (dive slice 1)** (existing interaction; preschool to school, no new level): four new pieces so each role has two pictured options, seeded per-role picks at levels 1–3, and pooled level-4 gardens (four, not six). [Dive](deep-dives/habitat-helpers.md#build-slices-in-order)
 
 Files expected: `src/games/habitat-helpers/logic.ts`, `logic.test.ts`, `art.ts`, `index.ts`, `docs/GAMES.md`.
 

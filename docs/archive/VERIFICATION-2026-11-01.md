@@ -158,3 +158,11 @@
 - `game-reviewer` fixes: round-2 things fly back before they can be grabbed; layout re-applied after fetch and carry tweens; a placed card stays in the gap on resize. `rules-tester` fix: `clampFeet` keeps a thing's 120-wide touch box clear of corner buttons and the pet.
 - Not run: offline check, other suites.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#tide-line-levels-34-oceans-study-slice-1-batch-tide-line-2-2026-11-01)): the seaweed line in sunlight and the two lines, the halfway picture at pre-K, device speech.
+
+## 2026-11-01 — Notice Board levels 1–3 (media-literacy ML1)
+
+- [PR #1113](https://github.com/rjdunlap/neo/pull/1113): new game `notice-board` (pre-K 1–2, school 1–3, Cozy Village): *Who made it?*, *Who saw it?*, *To tell or to sell?*.
+- Ran (base origin/main 7ffc22b1; commit 177663fc plus review fix e68dc0a0, Vite on http://localhost:5589): typecheck; full `npm test` 292 files / 4243 tests (32 Notice Board rule tests); `BROWSER_SUITE=noticeboard` (pre-K level 1 two wrong badges, the glow, then the maker 2/1; portrait level 2 heard-it friend then the witness through a stretched and a true poster 1/0; level 3 a free friend tap, a wrong basket then the right one 1/0; screenshots reviewed incl. level 2 portrait); `BROWSER_SUITE=fingerdemo FINGER_ONLY=notice-board FINGER_LEVELS=2,3` (10.8 s, 11.3 s); `npm run build`.
+- `game-reviewer` fix: a late hint line after the poster has moved on is guarded; a level-1 how-to note scoped.
+- Not run: offline check, other suites.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#notice-board-media-literacy-study-2026-10-31-levels-13-built-2026-11-01)): witness versus nearest friend at four, basket by price or words at seven, badges and place pictures at bubble size on an iPad, a grown-up using the card.
