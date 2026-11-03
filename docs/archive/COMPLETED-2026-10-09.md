@@ -2514,3 +2514,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--sprout-shuffle-level
 Branch `claude/robot-path-mend-the-loop`, PR #1153: [dive slice 7](../deep-dives/robot-path.md#build-slices-in-order). `MEND_PLANS` holds three 5 × 5 looped programs (limit 2) shown already built; the first run is a free watch. Two boards are mended by one more turn of the loop (any count at or above it reaches the star), one by one more step in a body slot. `repairPress` drives the glow after two misses for levels 12 and 14, leading back from any edit (an over-counted slot glows Clear). School range 4–14; voice `robot.mend`, `robot.mend.hint`, `robot.fix.clear`; how-to `from: 14`. Level 15 A routine remains to define.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--robot-path-level-14-mend-the-loop-dive-slice-7).
+
+## Diagnose the flaky Peg Garden touch suite (2026-11-03)
+
+Branch `claude/peg-garden-flake-probe`, PR #1154. The flake reproduced (`BATCH_ONLY=pegs` failed 3/3 on 906fa732) and had four causes, all fixed: aimed shots stepped by raw frame time instead of the fixed samples the rules, guide and ghost finger use; a pearl let go during the last praise counted a miss; the couch bot fired outside its aim margin and could repeat a miss; the suite's colour-level "far" drops were chosen by distance, not simulation. The suite is no longer flaky.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--peg-garden-flaky-touch-suite-diagnosed-and-fixed).
