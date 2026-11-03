@@ -855,6 +855,7 @@ async function woodsBatch() {
   if (!only || only === 'rhyme') for (let level = fromLevel; level <= 4; level++) {
     await launch('rhyme-time', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
+    if (level === 4) log(`Rhyme Time 4 shelves: ${(await page.evaluate(() => neo.scene.game.questions.map((q) => q.words.join(' ')))).join(' | ')}`);
     const card = async (word) => {
       await tap(`neo.scene.game.cards.find((c) => c.word === '${word}').node`);
       await page.waitForTimeout(200);
@@ -873,6 +874,7 @@ async function woodsBatch() {
         } else { await card(others[0]); await card(others[1]); }
         assert.deepEqual(await counts(), [2, 1]);
         if (level === 3) await screenshot('rhyme-time-3-hint');
+        if (level === 4) await screenshot('rhyme-time-4-hint');
       }
       for (const w of q.answer) await card(w);
     }

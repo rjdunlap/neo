@@ -41,6 +41,9 @@ export const FAMILIES: Record<string, string[]> = {
   oat: ['boat', 'coat'],
   ell: ['bell', 'shell'],
   ing: ['ring', 'king'],
+  ug: ['bug', 'mug', 'rug'],
+  ock: ['sock', 'clock', 'rock'],
+  ail: ['snail', 'pail', 'whale'],
 };
 
 export const familyOf = (word: string) => Object.keys(FAMILIES).find((f) => FAMILIES[f].includes(word))!;
@@ -94,21 +97,22 @@ export function wordToTap(plan: RhymePlan, q: RhymeQuestion, picked: string | nu
  * Meaning tags: each is one spoken clue, and the fact said when a picture fails it. Tags are generous (a picture that
  * arguably fits gets the tag), which only keeps it out of the roles where it must not fit. Reviewed in the definition
  * (docs/definitions/rhyme-riddles.md), with the build's generous additions (a bat is furry and seen in the sky, people eat
- * fish, dogs swim, ducks and snakes are kept as pets, cars, trucks and boats carry things); nothing is generated.
+ * fish, dogs swim, ducks and snakes are kept as pets, cars, trucks and boats carry things), and the fresh families' tags reviewed in docs/deep-dives/rhyme-time.md (a clock
+ * and a snail hold none, so they only ever serve as a mate or a neutral); nothing is generated.
  */
 export const TAGS = {
-  wear: { clue: 'You wear it.', fact: 'you do not wear it', words: ['hat', 'coat', 'ring'] },
+  wear: { clue: 'You wear it.', fact: 'you do not wear it', words: ['hat', 'coat', 'ring', 'sock'] },
   eat: { clue: 'You can eat it.', fact: 'you do not eat it', words: ['pear', 'cake', 'fish'] },
   eatwith: { clue: 'You eat with it.', fact: 'you do not eat with it', words: ['spoon', 'dish'] },
-  sit: { clue: 'You can sit on it.', fact: 'you do not sit on it', words: ['chair', 'log'] },
+  sit: { clue: 'You can sit on it.', fact: 'you do not sit on it', words: ['chair', 'log', 'rug', 'rock'] },
   ride: { clue: 'You can ride in it.', fact: 'you do not ride in it', words: ['car', 'truck', 'boat'] },
-  fly: { clue: 'It can fly.', fact: 'it does not fly', words: ['bee', 'bat', 'duck'] },
-  swim: { clue: 'It can swim.', fact: 'it does not swim', words: ['fish', 'duck', 'frog', 'dog'] },
+  fly: { clue: 'It can fly.', fact: 'it does not fly', words: ['bee', 'bat', 'duck', 'bug'] },
+  swim: { clue: 'It can swim.', fact: 'it does not swim', words: ['fish', 'duck', 'frog', 'dog', 'whale'] },
   pet: { clue: 'It can be a pet.', fact: 'it is not a pet', words: ['cat', 'dog', 'fish', 'frog', 'duck', 'snake'] },
   fur: { clue: 'It is furry.', fact: 'it is not furry', words: ['cat', 'dog', 'bear', 'king', 'bat'] },
   sky: { clue: 'You can see it in the sky.', fact: 'you do not see it in the sky', words: ['star', 'moon', 'bat', 'bee', 'duck'] },
   grows: { clue: 'It grows outside.', fact: 'it does not grow outside', words: ['tree', 'pear'] },
-  holds: { clue: 'You can put things in it.', fact: 'you do not put things in it', words: ['jar', 'dish', 'car', 'truck', 'boat'] },
+  holds: { clue: 'You can put things in it.', fact: 'you do not put things in it', words: ['jar', 'dish', 'car', 'truck', 'boat', 'mug', 'pail'] },
   opens: { clue: 'It opens a door.', fact: 'it does not open a door', words: ['key'] },
 } as const satisfies Record<string, { clue: string; fact: string; words: readonly string[] }>;
 export type Tag = keyof typeof TAGS;
