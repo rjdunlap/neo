@@ -9,14 +9,15 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import type { PixelPictureCreation } from '../../content/creations';
+import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { clues, colorClues, colorLogicCell, colorsOf, deduce, givenInMirror, LETTERS, makePictures, PICTURES, pixelTouch, planFor, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
+import { clues, colorClues, colorLogicCell, colorsOf, deduce, given, helpCells, LETTERS, makePictures, PICTURES, pixelTouch, planFor, scaleDown, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 3 },
-  school: { min: 3, max: 6 },
+  school: { min: 3, max: 8 },
 };
 
 const CELL = 100;
@@ -24,6 +25,16 @@ const CELL = 100;
 const LOGIC_COLOR = 'b';
 
 const colorOf = (letter: string): ColorName => LETTERS[letter] ?? 'blue';
+
+/** What she hears after a square that stays empty (a wrong color has its own line). */
+const MISS_LINE: Record<PixelPlan['mode'], LineId> = {
+  copy: 'pixel.notthere',
+  mirror: 'pixel.notmirror',
+  clues: 'pixel.notclue',
+  colorClues: 'pixel.notclue',
+  mirror2: 'pixel.notmirror2',
+  big: 'pixel.notbig',
+};
 
 class PixelPictures implements Game {
   readonly plan: PixelPlan;
@@ -50,7 +61,10 @@ class PixelPictures implements Game {
   private readonly paletteLayer = new Container();
   private view: View;
   private wrongs = 0;
-  private hinted: { x: number; y: number } | null = null;
+  /** Squares glowing as help: one, or on level 8 the open squares of one block. */
+  hinted: { x: number; y: number }[] = [];
+  /** Her last tap on the board, so a level 7–8 glow lands near where she is working. */
+  private lastTap: { x: number; y: number } | undefined;
   private lastCreation: PixelPictureCreation | null = null;
   /** The square the ghost finger touched last, so its next one is near it. */
   private ghostAt: { x: number; y: number } | undefined;
@@ -80,7 +94,7 @@ class PixelPictures implements Game {
     this.view = v;
     const w = this.n * CELL;
     const clueSpace = this.plan.mode === 'clues' || this.plan.mode === 'colorClues' ? 90 : 0;
-    const modelSpace = this.plan.mode === 'copy' ? 230 : 0;
+    const modelSpace = this.plan.mode === 'copy' || this.plan.mode === 'big' ? 230 : 0;
     const paletteSpace = this.plan.mode === 'colorClues' ? 130 : 0;
     const x = Math.max(160, (v.w - w - clueSpace - modelSpace - paletteSpace) / 2 + clueSpace);
     const y = Math.max(clueSpace ? 90 + 60 : 110, (v.h - w) / 2 + (clueSpace ? 30 : 0));
@@ -98,7 +112,7 @@ class PixelPictures implements Game {
   update(dt: number) {
     this.clock += dt;
     const g = this.glow.clear();
-    if (this.hinted && !this.busy) g.roundRect(this.hinted.x * CELL + 4, this.hinted.y * CELL + 4, CELL - 8, CELL - 8, 14).stroke({ width: 7 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
+    if (!this.busy) for (const h of this.hinted) g.roundRect(h.x * CELL + 4, h.y * CELL + 4, CELL - 8, CELL - 8, 14).stroke({ width: 7 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
   }
 
   /** The ghost finger: choose a color where there is a palette, then tap the squares the picture (or, on logic levels, its numbers) settles. */
@@ -120,13 +134,14 @@ class PixelPictures implements Game {
     this.busy = true;
     this.index++;
     this.wrongs = 0;
-    this.hinted = null;
+    this.hinted = [];
+    this.lastTap = undefined;
     if (this.index >= this.pictures.length) return void this.finale();
     this.picture = this.pictures[this.index];
     this.target = toGrid(this.picture);
     this.filled = this.target.map((row) => row.map(() => null));
-    // Mirror levels start with the left half drawn.
-    if (this.plan.mode === 'mirror') this.target.forEach((row, y) => row.forEach((c, x) => (this.filled[y][x] = givenInMirror(this.n, x) ? c : null)));
+    // Mirror levels start with the left half (level 7: the top-left quarter) drawn.
+    this.target.forEach((row, y) => row.forEach((c, x) => (this.filled[y][x] = given(this.plan, x, y) ? c : null)));
     this.buildModel();
     this.buildClues();
     this.buildPalette();
@@ -136,18 +151,21 @@ class PixelPictures implements Game {
     this.busy = false;
     if (this.index > 0) return;
     if (this.plan.mode === 'mirror') return this.ctx.instruct('pixel.mirror');
+    if (this.plan.mode === 'mirror2') return this.ctx.instruct('pixel.mirror2');
+    if (this.plan.mode === 'big') return this.ctx.instruct('pixel.big');
     if (this.plan.mode === 'clues') return this.ctx.instruct('pixel.clues');
     if (this.plan.mode === 'colorClues') return this.ctx.instruct('pixel.colorClues');
     return this.ctx.instruct(this.plan.colors === 2 ? 'pixel.copy2' : 'pixel.copy');
   }
 
-  /** Copy levels: the little picture to copy, beside the grid. */
+  /** Copy levels: the little picture to copy, beside the grid (level 8: the 3×3 model to make twice as big). */
   private buildModel() {
     this.model.removeChildren().forEach((c) => c.destroy({ children: true }));
-    if (this.plan.mode !== 'copy') return;
-    const s = 30;
-    const g = new Graphics().roundRect(-12, -12, this.n * s + 24, this.n * s + 24, 14).fill(0xffffff).stroke({ width: 5, color: wood.line });
-    this.target.forEach((row, y) => row.forEach((c, x) => {
+    if (this.plan.mode !== 'copy' && this.plan.mode !== 'big') return;
+    const small = this.plan.mode === 'big' ? toGrid(scaleDown(this.picture, 2)) : this.target;
+    const s = this.plan.mode === 'big' ? 40 : 30;
+    const g = new Graphics().roundRect(-12, -12, small.length * s + 24, small.length * s + 24, 14).fill(0xffffff).stroke({ width: 5, color: wood.line });
+    small.forEach((row, y) => row.forEach((c, x) => {
       g.rect(x * s, y * s, s - 2, s - 2).fill(c ? swatch[colorOf(c)].fill : 0xf2f2f6);
     }));
     this.model.addChild(g);
@@ -224,7 +242,14 @@ class PixelPictures implements Game {
         if (f === 'x') m.moveTo(x * CELL + 32, y * CELL + 32).lineTo(x * CELL + 68, y * CELL + 68).moveTo(x * CELL + 68, y * CELL + 32).lineTo(x * CELL + 32, y * CELL + 68).stroke({ width: 6, color: 0xb9bcc8, cap: 'round' });
       }
     // Mirror levels: a dashed line down the middle.
-    if (this.plan.mode === 'mirror') for (let y = 0; y < n * CELL; y += 24) m.moveTo((n * CELL) / 2, y).lineTo((n * CELL) / 2, y + 12).stroke({ width: 5, color: swatch.purple.line });
+    if (this.plan.mode === 'mirror' || this.plan.mode === 'mirror2') for (let y = 0; y < n * CELL; y += 24) m.moveTo((n * CELL) / 2, y).lineTo((n * CELL) / 2, y + 12).stroke({ width: 5, color: swatch.purple.line });
+    // Level 7: a second dashed line across the middle.
+    if (this.plan.mode === 'mirror2') for (let x = 0; x < n * CELL; x += 24) m.moveTo(x, (n * CELL) / 2).lineTo(x + 12, (n * CELL) / 2).stroke({ width: 5, color: swatch.purple.line });
+    // Level 8: faint lines around each 2×2 block, one block for each square of the little picture.
+    if (this.plan.mode === 'big') for (let k = 2; k < n; k += 2) {
+      m.moveTo(k * CELL, 0).lineTo(k * CELL, n * CELL).stroke({ width: 4, color: 0xc9c2dc });
+      m.moveTo(0, k * CELL).lineTo(n * CELL, k * CELL).stroke({ width: 4, color: 0xc9c2dc });
+    }
     // The chosen color has a ring.
     for (const p of this.palette) {
       const ring = p.node.children[1] as Graphics | undefined;
@@ -241,13 +266,14 @@ class PixelPictures implements Game {
     if (x < 0 || y < 0 || x >= this.n || y >= this.n) return;
     const have = this.filled[y][x];
     if (have && have !== 'x') return;
-    if (this.plan.mode === 'mirror' && givenInMirror(this.n, x)) return;
+    if (given(this.plan, x, y)) return;
+    this.lastTap = { x, y };
     const want = this.target[y][x];
     const colorNeedsMatch = (this.plan.mode === 'copy' && this.plan.colors === 2) || this.plan.mode === 'colorClues';
     const fill = this.plan.mode === 'clues' ? (want ? LOGIC_COLOR : null) : want;
     if (want && (!colorNeedsMatch || want === this.color)) {
       this.filled[y][x] = fill;
-      if (this.hinted?.x === x && this.hinted?.y === y) this.hinted = null;
+      this.hinted = this.hinted.filter((h) => h.x !== x || h.y !== y);
       sfx.pop(4 + ((x + y) % 6));
       this.draw();
       if (this.complete()) void this.reveal();
@@ -262,25 +288,28 @@ class PixelPictures implements Game {
       this.draw();
     }
     if (want && colorNeedsMatch) void this.ctx.say('pixel.notcolor', { color: colorOf(want) });
-    else void this.ctx.say(this.plan.mode === 'mirror' ? 'pixel.notmirror' : this.plan.mode === 'clues' || this.plan.mode === 'colorClues' ? 'pixel.notclue' : 'pixel.notthere');
-    if (this.wrongs >= 2 && !this.hinted) this.hint();
+    else void this.ctx.say(MISS_LINE[this.plan.mode]);
+    if (this.wrongs >= 2 && !this.hinted.length) this.hint();
   }
 
-  /** A square worth filling next: on logic levels one the (colored) clues can decide; otherwise the next square of the picture. */
+  /** A square worth filling next: on logic levels one the (colored) clues can decide; otherwise from `helpCells` (level 8: a whole block). */
   private hint() {
     let cell: { x: number; y: number } | undefined;
+    let cells: { x: number; y: number }[] = [];
     if (this.plan.mode === 'clues') {
       const known: Knowledge = this.filled.map((row) => row.map((c) => (c === 'x' ? false : c ? true : null)));
       cell = deduce(this.picture, known).find((f) => f.fill);
     }
     if (this.plan.mode === 'colorClues') cell = colorLogicCell(this.picture, this.filled, this.color) ?? undefined;
-    cell ??= this.target.flatMap((row, y) => row.map((c, x) => ({ x, y, c }))).find(({ x, y, c }) => c && !(this.filled[y][x] && this.filled[y][x] !== 'x'));
-    if (!cell) return;
+    if (cell) cells = [cell];
+    else if (this.plan.mode !== 'clues' && this.plan.mode !== 'colorClues') cells = helpCells(this.plan, this.picture, this.filled, this.lastTap);
+    if (!cells.length) return;
+    cell = cells[0];
     if (this.plan.mode === 'colorClues' && this.target[cell.y][cell.x]) {
       this.color = this.target[cell.y][cell.x]!;
       this.draw();
     }
-    this.hinted = { x: cell.x, y: cell.y };
+    this.hinted = cells.map(({ x, y }) => ({ x, y }));
     this.hints++;
     this.wrongs = 0;
     void this.ctx.say('pixel.hint');
@@ -293,7 +322,7 @@ class PixelPictures implements Game {
   /** Done: the real picture shows in its colors, square by square, and gets its name. */
   private async reveal() {
     this.busy = true;
-    this.hinted = null;
+    this.hinted = [];
     for (let y = 0; y < this.n; y++) {
       for (let x = 0; x < this.n; x++) if (this.target[y][x]) this.filled[y][x] = this.target[y][x];
         else if (this.filled[y][x] === 'x') this.filled[y][x] = null;
@@ -307,6 +336,7 @@ class PixelPictures implements Game {
     await this.ctx.tw.to(this.board.scale, { x: 1.04, y: 1.04 }, { duration: 0.15, ease: ease.outQuad });
     await this.ctx.tw.to(this.board.scale, { x: 1, y: 1 }, { duration: 0.15 });
     await this.ctx.say('pixel.reveal', { name: this.picture.name });
+    if (this.plan.mode === 'big') await this.ctx.say('pixel.twice');
     this.lastCreation = {
       kind: 'picture',
       size: this.plan.size,
