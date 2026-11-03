@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { HARBORS } from './harbors';
-import { atDock, distance, distanceTable, FERRY, grid, hintSlide, makeHarbor, parse, patience, PLANS, planFor, reach, render, slides, solve, start, stuck, wellFormed, type Harbor, type Layout } from './logic';
+import { atDock, distance, distanceTable, FERRY, focusPath, grid, hintSlide, makeHarbor, parse, patience, PLANS, planFor, reach, render, ROCK, rocksMatter, slides, solve, start, stuck, wellFormed, type Harbor, type Layout } from './logic';
 
 const harborsFor = (level: number) => HARBORS[level].map((rows) => parse(rows));
 
@@ -95,7 +95,7 @@ describe('Ferry Jam', () => {
   });
 
   it('knows how far every layout is from the dock, the same as the solver', () => {
-    for (const level of [1, 3, 5]) for (const h of harborsFor(level).slice(0, 4)) {
+    for (const level of [1, 3, 5, 7]) for (const h of harborsFor(level).slice(0, 4)) {
       const table = distanceTable(h);
       expect(distance(h, start(h))).toBe(solve(h)!.length);
       // Each slide changes the distance by at most one, and the hint's slide brings it exactly one closer.
@@ -189,10 +189,12 @@ describe('Ferry Jam', () => {
     });
   });
 
-  it('climbs: later levels ask for more slides and bigger harbors', () => {
-    PLANS.slice(1).forEach((p, i) => {
-      expect(p.size, p.name).toBeGreaterThanOrEqual(PLANS[i].size);
-      expect(p.moves.min, p.name).toBeGreaterThanOrEqual(PLANS[i].moves.min);
+  it('climbs: later levels ask for more slides and bigger harbors (level 7 starts a new kind of harbor, with rocks)', () => {
+    const plain = PLANS.filter((p) => !p.rocks);
+    expect(plain).toHaveLength(6);
+    plain.slice(1).forEach((p, i) => {
+      expect(p.size, p.name).toBeGreaterThanOrEqual(plain[i].size);
+      expect(p.moves.min, p.name).toBeGreaterThanOrEqual(plain[i].moves.min);
     });
     expect(planFor(0)).toBe(PLANS[0]);
     expect(planFor(99)).toBe(PLANS.at(-1));
@@ -218,5 +220,63 @@ describe('Ferry Jam', () => {
       }
       expect(made, plan.name).toBe(4);
     }
+  });
+
+  describe('rocks in the harbor (level 7)', () => {
+    it('reads an x as a rock, not a boat, and draws it back', () => {
+      const rows = ['.....', '....x', '.ffac', '.d.ac', '.dbbb'];
+      const h = parse(rows);
+      expect(h.rocks).toEqual([{ row: 1, col: 4 }]);
+      expect(h.boats).toHaveLength(5);
+      expect(render(h)).toEqual(rows);
+      expect(grid(h, start(h))[1][4]).toBe(ROCK);
+      // A harbor without an x has no rocks at all, so the older levels are drawn exactly as before.
+      expect(parse(['b...', 'b..c', 'ff.c', 'aa..']).rocks).toBeUndefined();
+    });
+
+    it('a boat stops at a rock as it does at another boat', () => {
+      const h = parse(['.....', '...x.', 'ff...', '.....', '.....']);
+      expect(reach(h, start(h), FERRY)).toEqual({ min: 0, max: 3 });
+      const across = parse(['.....', 'aa.x.', 'ff...', '.....', '.....']);
+      expect(reach(across, start(across), 1)).toEqual({ min: 0, max: 1 });
+      const up = parse(['.....', '...x.', 'ff...', '...a.', '...a.']);
+      expect(reach(up, start(up), 1)).toEqual({ min: 2, max: 3 });
+    });
+
+    it('rocks never slide: every slide moves a boat, and no boat ever covers a rock', () => {
+      for (const h of harborsFor(7)) {
+        let layout = start(h);
+        while (!atDock(h, layout)) {
+          for (const s of slides(h, layout)) {
+            expect(s.boat).toBeLessThan(h.boats.length);
+            const g = grid(h, apply(layout, s));
+            expect(g.flat().includes(-2), render(h).join('/')).toBe(false);
+            for (const r of h.rocks!) expect(g[r.row][r.col]).toBe(ROCK);
+          }
+          layout = apply(layout, hintSlide(h, layout)!);
+        }
+      }
+    });
+
+    it('every level-7 harbor has its rock beside the ferry\'s row, and every rock matters', () => {
+      for (const h of harborsFor(7)) {
+        const name = render(h).join('/');
+        expect(h.rocks, name).toHaveLength(1);
+        for (const r of h.rocks!) expect(Math.abs(r.row - h.boats[FERRY].row), name).toBe(1);
+        expect(rocksMatter(h), name).toBe(true);
+        // Taking the rock away lets the ferry out in fewer slides.
+        expect(solve({ ...h, rocks: [] })!.length, name).toBeLessThan(solve(h)!.length);
+      }
+    });
+
+    it('knows a rock that changes nothing is only scenery', () => {
+      const h = parse(['....x', '.....', 'ffa..', '..a..', '.....']);
+      expect(rocksMatter(h)).toBe(false);
+    });
+
+    it('the couch highlight still reaches every boat (rocks are never boats to land on)', () => {
+      for (const h of harborsFor(7))
+        for (let to = 0; to < h.boats.length; to++) expect(focusPath(h, start(h), FERRY, to), render(h).join('/')).not.toBeNull();
+    });
   });
 });

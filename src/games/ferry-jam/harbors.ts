@@ -128,4 +128,22 @@ export const HARBORS: Record<number, string[][]> = {
     ['...hb.', '.ffhb.', '....b.', 'gcc.dd', 'ga.iie', '.a...e'],
     ['......', 'bg.ddi', 'bg.e.i', '.ffe.i', '...ac.', '.hhac.'],
   ],
+  // Rocks in the harbor: an `x` is a rock beside the ferry's row; taking it away would let the ferry out in fewer slides.
+  7: [
+    ['.....', '....x', '.ffac', '.d.ac', '.dbbb'],
+    ['.....', '...bx', 'ff.bd', '.c..d', '.caaa'],
+    ['.....', '..cx.', 'ffca.', '..da.', '..dbb'],
+    ['..caa', '..cd.', '.ffd.', '..xb.', '...b.'],
+    ['..dcc', '..db.', '.ffb.', '.xaa.', '.....'],
+    ['bbb..', '..c..', '.xcaa', 'ff..d', '....d'],
+    ['accbb', 'a...d', 'ff..d', '....x', '.....'],
+    ['....a', '.ff.a', '.xdbb', '..d..', 'ccc..'],
+    ['....d', 'ff..d', '.xaa.', '..cbb', '..c..'],
+    ['..bbb', '...cx', '.ffcd', '..a.d', '..aee'],
+    ['c.daa', 'c.d.b', '.ff.b', '..x.e', '....e'],
+    ['aac..', '..cbb', '.xee.', '.ff.d', '....d'],
+    ['...cc', 'ff..e', '.xaae', '..bdd', '..b..'],
+    ['a..bb', 'a.cd.', 'ffcd.', '..xee', '.....'],
+    ['a..dd', 'a.c.b', 'ffc.b', '..xee', '.....'],
+  ],
 };

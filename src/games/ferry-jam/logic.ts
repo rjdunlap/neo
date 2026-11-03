@@ -8,6 +8,8 @@ import type { Rng } from '../../engine/random';
  *   ..aab.
  *   ..c.b.
  *   ffc.b.
+ *
+ * An `x` is a rock (level 7): it fills its cell and never moves, so boats have to wait somewhere else.
  */
 export interface Boat {
   /** Row and column of the boat's top-left cell. */
@@ -22,6 +24,8 @@ export interface Harbor {
   size: number;
   /** The ferry is always `boats[0]`: a sideways boat of length 2. */
   boats: Boat[];
+  /** Rocks, one cell each. They are not boats: they never slide and never appear in a layout. */
+  rocks?: { row: number; col: number }[];
 }
 
 /** Where every boat is along its own lane: the column of a sideways boat, the row of an upright one. */
@@ -34,6 +38,8 @@ export interface Slide {
 }
 
 export const FERRY = 0;
+/** What `grid` holds in a rock's cell. */
+export const ROCK = -3;
 
 export function parse(rows: readonly string[]): Harbor {
   const size = rows.length;
@@ -42,6 +48,8 @@ export function parse(rows: readonly string[]): Harbor {
     if (line.length !== size) throw new Error(`harbor row ${r} is not ${size} wide`);
     [...line].forEach((ch, c) => { if (ch !== '.') cells.set(ch, [...(cells.get(ch) ?? []), { r, c }]); });
   });
+  const rocks = (cells.get('x') ?? []).map(({ r, c }) => ({ row: r, col: c }));
+  cells.delete('x');
   const ferry = cells.get('f');
   if (!ferry) throw new Error('a harbor needs a ferry (f)');
   const make = (cs: { r: number; c: number }[]): Boat => {
@@ -53,22 +61,23 @@ export function parse(rows: readonly string[]): Harbor {
   const others = [...cells.entries()].filter(([ch]) => ch !== 'f').sort(([a], [b]) => (a < b ? -1 : 1)).map(([, cs]) => make(cs));
   const first = make(ferry);
   if (first.dir !== 'h' || first.len !== 2) throw new Error('the ferry is a sideways boat of length 2');
-  return { size, boats: [first, ...others] };
+  return rocks.length ? { size, boats: [first, ...others], rocks } : { size, boats: [first, ...others] };
 }
 
-/** One letter per boat besides the ferry, which is `f`. */
-const LETTERS = 'abcdeghijklmnopqrstuvwxyz';
+/** One letter per boat besides the ferry, which is `f`; `x` is kept for rocks. */
+const LETTERS = 'abcdeghijklmnopqrstuvwyz';
 
 export function render(h: Harbor, layout: Layout = start(h)): string[] {
-  const g = grid(h, layout).map((row) => row.map((i) => (i < 0 ? '.' : i === FERRY ? 'f' : LETTERS[i - 1])));
+  const g = grid(h, layout).map((row) => row.map((i) => (i === ROCK ? 'x' : i < 0 ? '.' : i === FERRY ? 'f' : LETTERS[i - 1])));
   return g.map((row) => row.join(''));
 }
 
 export const start = (h: Harbor): Layout => h.boats.map((b) => (b.dir === 'h' ? b.col : b.row));
 
-/** Which boat fills each cell (-1 for open water). */
+/** Which boat fills each cell (-1 for open water, `ROCK` for a rock, -2 where two things overlap). */
 export function grid(h: Harbor, layout: Layout): number[][] {
   const g = Array.from({ length: h.size }, () => Array<number>(h.size).fill(-1));
+  for (const { row, col } of h.rocks ?? []) g[row][col] = ROCK;
   h.boats.forEach((b, i) => {
     for (let k = 0; k < b.len; k++) {
       const r = b.dir === 'h' ? b.row : layout[i] + k;
@@ -154,6 +163,8 @@ export interface FerryPlan {
   moves: { min: number; max: number };
   /** Harbors in one round. */
   harbors: number;
+  /** Rocks in each harbor, beside the ferry's row (level 7). */
+  rocks?: number;
 }
 
 export const PLANS: FerryPlan[] = [
@@ -163,6 +174,7 @@ export const PLANS: FerryPlan[] = [
   { name: 'A busier 5 by 5 harbor: plan the slides in order', size: 5, boats: { min: 5, max: 7 }, moves: { min: 8, max: 11 }, harbors: 1 },
   { name: 'A 6 by 6 harbor', size: 6, boats: { min: 6, max: 8 }, moves: { min: 8, max: 12 }, harbors: 1 },
   { name: 'A crowded 6 by 6 harbor: a long way to the dock', size: 6, boats: { min: 7, max: 10 }, moves: { min: 13, max: 18 }, harbors: 1 },
+  { name: 'Rocks in the harbor: a 5 by 5 with a rock that never moves, so a boat has to wait somewhere else', size: 5, boats: { min: 4, max: 5 }, moves: { min: 6, max: 9 }, harbors: 1, rocks: 1 },
 ];
 
 export const planFor = (level: number): FerryPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -198,9 +210,18 @@ export function makeHarbor(plan: FerryPlan, rng: Rng): Harbor | null {
   const off = (moves: number | null) => (moves === null ? Infinity : Math.max(0, plan.moves.min - moves, moves - plan.moves.max) + Math.abs(moves - target) / 100);
 
   let harbor: Harbor = { size, boats: [{ row: exit, col: rng.int(0, 1), len: 2, dir: 'h' }] };
+  if (plan.rocks) {
+    // Rocks sit in a row beside the ferry's, never in it (one there would be a wall the ferry could never pass).
+    const rocks: { row: number; col: number }[] = [];
+    for (let tries = 0; tries < 40 && rocks.length < plan.rocks; tries++) {
+      const rock = { row: exit + (rng.chance(0.5) ? 1 : -1), col: rng.int(1, size - 1) };
+      if (!rocks.some((r) => r.row === rock.row && r.col === rock.col)) rocks.push(rock);
+    }
+    harbor = { ...harbor, rocks };
+  }
   for (let tries = 0; tries < 200 && harbor.boats.length < count + 1; tries++) {
     const boat = randomBoat(size, rng);
-    if (place(harbor, boat)) harbor = { size, boats: [...harbor.boats, boat] };
+    if (place(harbor, boat)) harbor = { ...harbor, boats: [...harbor.boats, boat] };
   }
   if (harbor.boats.length < count + 1) return null;
   const length = (h: Harbor) => solve(h, start(h), cap)?.length ?? null;
@@ -208,12 +229,12 @@ export function makeHarbor(plan: FerryPlan, rng: Rng): Harbor | null {
   for (let step = 0; step < 150; step++) {
     if (current < 1) {
       const moves = length(harbor)!;
-      if (moves >= plan.moves.min && moves <= plan.moves.max) return harbor;
+      if (moves >= plan.moves.min && moves <= plan.moves.max && rocksMatter(harbor)) return harbor;
     }
     const which = rng.int(1, harbor.boats.length - 1);
     const boat = randomBoat(size, rng);
     if (!place(harbor, boat, which)) continue;
-    const next: Harbor = { size, boats: harbor.boats.map((b, i) => (i === which ? boat : b)) };
+    const next: Harbor = { ...harbor, boats: harbor.boats.map((b, i) => (i === which ? boat : b)) };
     // A boat that would need to start in the dock's row beyond the ferry is fine; one sitting on the ferry is not (place() ruled that out).
     const score = off(length(next));
     if (score <= current) {
@@ -222,13 +243,25 @@ export function makeHarbor(plan: FerryPlan, rng: Rng): Harbor | null {
     }
   }
   const moves = length(harbor);
-  return moves !== null && moves >= plan.moves.min && moves <= plan.moves.max ? harbor : null;
+  return moves !== null && moves >= plan.moves.min && moves <= plan.moves.max && rocksMatter(harbor) ? harbor : null;
+}
+
+/**
+ * Whether every rock changes the harbor: taking any one of them away lets the ferry out in fewer slides. A rock that
+ * changes nothing is only scenery, and level 7 is about where a boat can wait when a rock takes its space.
+ */
+export function rocksMatter(h: Harbor): boolean {
+  const rocks = h.rocks ?? [];
+  if (!rocks.length) return true;
+  const fewest = solve(h)?.length ?? Infinity;
+  return rocks.every((_, k) => (solve({ ...h, rocks: rocks.filter((__, j) => j !== k) })?.length ?? Infinity) !== fewest);
 }
 
 /** Whether a drawn harbor is well formed: boats inside the water, none overlapping, the ferry on its own row. */
 export function wellFormed(h: Harbor): boolean {
   const layout = start(h);
   if (h.boats.some((b) => (b.dir === 'h' ? b.col + b.len > h.size || b.row >= h.size : b.row + b.len > h.size || b.col >= h.size))) return false;
+  if ((h.rocks ?? []).some((r) => r.row < 0 || r.col < 0 || r.row >= h.size || r.col >= h.size)) return false;
   return !grid(h, layout).some((row) => row.some((v) => v === -2));
 }
 

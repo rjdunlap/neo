@@ -4,6 +4,7 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { HeldDirection, idle, type CouchControls } from '../../engine/controller';
 import { draggable, type DragHandle } from '../../engine/drag';
+import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
@@ -19,7 +20,7 @@ import { atDock, boatToward, distance, FERRY, focusPath, hintSlide, parse, planF
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
-  school: { min: 3, max: 6 },
+  school: { min: 3, max: 7 },
 };
 
 const CELL = 100;
@@ -49,6 +50,17 @@ function boatArt(len: number, ferry: boolean, color: ColorName): Container {
   return c;
 }
 
+/** A rounded grey boulder in a ring of foam, filling one cell and drawn about its middle. */
+function rockArt(): Graphics {
+  const r = CELL / 2;
+  const g = new Graphics().circle(0, 4, r - 6).fill({ color: 0xffffff, alpha: 0.75 });
+  g.poly([-34, 18, -38, -6, -22, -30, 6, -36, 30, -22, 38, 4, 28, 26, -6, 32]).fill(swatch.white.line).stroke({ width: 5, color: ink, alpha: 0.55, join: 'round' });
+  g.poly([-24, -8, -14, -24, 6, -28, 20, -18]).stroke({ width: 6, color: swatch.white.light, alpha: 0.8, cap: 'round', join: 'round' });
+  g.circle(14, 12, 5).fill({ color: ink, alpha: 0.18 });
+  g.circle(-12, 16, 3.5).fill({ color: ink, alpha: 0.18 });
+  return g;
+}
+
 class FerryJam implements Game {
   readonly plan: FerryPlan;
   readonly harbors: Harbor[];
@@ -69,6 +81,9 @@ class FerryJam implements Game {
   private readonly glow = new Graphics();
   private readonly undoButton: RoundButton;
   private nodes: Container[] = [];
+  /** The rocks drawn for this harbor, each with how long it has left to shake. */
+  private rocks: { node: Container; x: number; shake: number }[] = [];
+  private rockTold = false;
   private handles: DragHandle[] = [];
   private undoStack: Layout[] = [];
   private moves = 0;
@@ -140,6 +155,11 @@ class FerryJam implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    for (const r of this.rocks) {
+      if (r.shake <= 0) continue;
+      r.shake = Math.max(0, r.shake - dt);
+      r.node.x = r.x + Math.sin(r.shake * 70) * 7 * (r.shake / 0.35);
+    }
     const g = this.glow.clear();
     if (this.finished || this.busy) return;
     if (!this.touch) this.drawFocus(g);
@@ -187,6 +207,7 @@ class FerryJam implements Game {
     if (!this.ctx.couch) this.trail = [distance(this.harbor, this.layout)];
     for (const h of this.handles.splice(0)) h.destroy();
     this.boatLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.rocks = (this.harbor.rocks ?? []).map((r) => this.makeRock(r.row, r.col));
     this.nodes = this.harbor.boats.map((b, i) => this.makeBoat(i, b.len, i === FERRY));
     this.resize(this.ctx.view);
     this.placeAll(false);
@@ -197,7 +218,7 @@ class FerryJam implements Game {
     this.report();
     if (this.course ? this.told : this.index > 0) return;
     this.told = true;
-    return this.ctx.instruct('ferry.start');
+    return this.ctx.instruct(this.harbor.rocks?.length && !this.course ? 'ferry.start.rocks' : 'ferry.start');
   }
 
   private makeBoat(i: number, len: number, ferry: boolean): Container {
@@ -224,6 +245,26 @@ class FerryJam implements Game {
     });
     this.handles.push(handle);
     return node;
+  }
+
+  /** A rock: touching or dragging it shakes it with a low knock. It never moves, and touching it is never a miss. */
+  private makeRock(row: number, col: number) {
+    const node = new Container();
+    node.addChild(rockArt());
+    node.hitArea = new Rectangle(-CELL / 2, -CELL / 2, CELL, CELL);
+    const x = col * CELL + CELL / 2;
+    node.position.set(x, row * CELL + CELL / 2);
+    const rock = { node, x, shake: 0 };
+    onTap(node, () => {
+      if (this.busy || this.finished) return;
+      rock.shake = 0.35;
+      sfx.knock();
+      if (this.rockTold) return;
+      this.rockTold = true;
+      void this.ctx.say('ferry.rock');
+    });
+    this.boatLayer.addChild(node);
+    return rock;
   }
 
   private sizeOf(i: number): { w: number; h: number } {

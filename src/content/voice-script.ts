@@ -2453,6 +2453,8 @@ export const SCRIPT = {
   'sudoku.bloom': ['The bed is in bloom!', 'Every number is in its place!'],
   'sudoku.done': ['A whole garden of numbers.'],
   'ferry.start': ['The harbor is jammed! Slide the boats out of the way so the red ferry can reach the dock. Each boat only slides the way it points.'],
+  'ferry.start.rocks': ['The harbor is jammed, and the grey rock never moves! Slide the boats around it so the red ferry can reach the dock.'],
+  'ferry.rock': ['That rock never moves. Find another place for the boat to wait.'],
   'ferry.out': ['Off goes the ferry!', 'The ferry made it to the dock!'],
   'ferry.best': ['The fewest slides possible! What a captain!'],
   'ferry.hint': ['Try sliding the glowing boat. It goes where the thin outline is.'],
