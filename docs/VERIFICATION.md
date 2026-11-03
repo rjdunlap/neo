@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-03 — Brain Break Sums in order definition (docs only)
+
+- Defined Brain Break levels 4–6 *Sums in order* in [the definition](definitions/brain-break.md#sums-in-order-levels-46-definition-2026-11-03): the same in-order search with sum and take-away labels; colour words stay a proposal; ROADMAP step 9 and chunk 8, READY (queued build) and IDEAS updated.
+- Ran: `node scripts/check-links.mjs`, `git diff --check`. No code checks, by tier (nothing built).
+- Open: the queued build and its checks.
+
 ## 2026-11-03 — Block Topple definition (docs only)
 
 - Added [the definition](definitions/block-topple.md) (levels 1–5, two build slices); the earlier sketch is superseded; roadmap rows 25–27, READY, IDEAS and PHYSICS-GAMES updated.
@@ -90,12 +96,6 @@
 - Ran (tested commit 34e7f833, base 5177ea40, Vite http://localhost:5963): `npm run typecheck`; `npm test` 297 files / 4548 tests passed (before the review fixes; sprout and content tests, 209, passed after them); `npm run build`; 12 new rule tests (41 in the sprout-shuffle logic file).
 - Ran: `BROWSER_SUITE=sproutshuffle SPROUT_LEVELS=5` in both cases (Aa then AA, after the review fixes): water, two wrong Checks (fan, glow hint), Show me, both-could, a free Try one, water again, finish, saved 2 misses / 2 hints; portrait and landscape screenshots reviewed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=sprout-shuffle FINGER_LEVELS=5` clean 17.4 s. A game-reviewer pass was made and its findings fixed.
 - Not run: device or child checks (whether a ten-year-old reads "both could" as a right answer, rings against spots on the iPad label, device speech of the new lines; [DEVICE-CHECKS](DEVICE-CHECKS.md)).
-
-## 2026-11-03 — Word Search fresh themes and root families (word-search batch 1)
-
-- [PR #1150](https://github.com/rjdunlap/neo/pull/1150): six everyday themes, root families *port* and *spect* drawn only for plans they fill (`themesFor`), the root line once per grid, RAIN out of weather.
-- Ran (base 123c2df6, Vite http://localhost:5650/classic/, VITE_SPEECH=off): `npm run typecheck`; `npx vitest run src/games/word-search` 19 passed; `npx vitest run src/content src/audio` 184 passed; `npm run build`; one level-1 play (probe `test-results/ws-root-probe.mjs`, root theme forced by seed): one wrong line, five words, root line said once, sticker, no page errors, landscape screenshot reviewed; game-reviewer found no defects.
-- Not run: full unit suite, `fingerdemo` (bot unchanged), `wordsearchtouch`, couch suites, device speech of "spect" (open in [DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
 ## Coverage summary
 
