@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BIG_15, EASY_10, HARD_10, SAILBOAT } from './pictures';
+import { BIG_15, EASY_10, EASY_PASSES, HARD_10, SAILBOAT } from './pictures';
 import {
-  allLines, brushFor, cellsOf, clueOf, clueText, deductions, EMPTY, FILLED, fillCount, fromDrawn, hintFor, isSolved, knowledge, lineStatus, makePuzzles,
+  allLines, brushFor, cellsOf, whyFor, clueOf, clueText, deductions, EMPTY, FILLED, fillCount, fromDrawn, hintFor, isSolved, knowledge, lineStatus, makePuzzles,
   paint, parsePicture, passesNeeded, planFor, PLANS, poolFor, solvableByLines, statuses, CROSSED, type Mark, type PicturePuzzle,
   axisOf, clueDepths, headStart, HOME_H, HOME_W, MIN_TOUCH, strokeCells, toolForHint, touchFrame, type Rect,
 } from './logic';
@@ -18,8 +18,10 @@ describe('the picture bank', () => {
       expect(d.name).toMatch(/^an? /);
     }
     expect(new Set(ALL.map((d) => d.name)).size).toBe(ALL.length);
-    expect(EASY_10).toHaveLength(5);
-    expect(HARD_10).toHaveLength(5);
+    expect(EASY_10).toHaveLength(8);
+    expect(HARD_10).toHaveLength(8);
+    expect(BIG_15).toHaveLength(5);
+    expect(new Set(ALL.map((d) => d.rows.join('/'))).size).toBe(ALL.length);
   });
 
   it('can every one be solved by line logic alone, and is it more than a scatter of squares', () => {
@@ -49,6 +51,9 @@ describe('the picture bank', () => {
     const passes = (list: readonly { name: string; rows: readonly string[] }[]) => list.map((d) => passesNeeded(fromDrawn(d)));
     const avg = (n: number[]) => n.reduce((a, b) => a + b, 0) / n.length;
     expect(avg(passes(HARD_10))).toBeGreaterThan(avg(passes(EASY_10)));
+    // Not only on average: every easier picture needs fewer passes than every harder one.
+    for (const d of EASY_10) expect(passesNeeded(fromDrawn(d)), d.name).toBeLessThanOrEqual(EASY_PASSES);
+    for (const d of HARD_10) expect(passesNeeded(fromDrawn(d)), d.name).toBeGreaterThan(EASY_PASSES);
     for (const d of ALL) expect(passesNeeded(fromDrawn(d)), d.name).toBeGreaterThanOrEqual(1);
   });
 });
@@ -143,6 +148,65 @@ describe('line logic and hints', () => {
       expect(isSolved(marks, p), d.name).toBe(true);
       expect(fills, d.name).toBe(p.par);
     }
+  });
+
+  it('says why a line decides its square, and the reason it names really holds on that line', () => {
+    const rng = new Rng(23);
+    const seen = new Set<string>();
+    const check = (marks: Mark[], p: PicturePuzzle, near: number) => {
+      const h = hintFor(marks, p, near);
+      if (!h || h.kind === 'fix') return h;
+      seen.add(h.why.kind);
+      const cells = cellsOf(p.size, h.line), clue = clueOf(p, h.line), line = cells.map((c) => marks[c]);
+      const sum = clue.reduce((a, b) => a + b, 0) + clue.length - 1;
+      if (h.why.kind === 'done') {
+        expect(h.kind, p.name).toBe('cross');
+        expect(lineStatus(line, clue), p.name).toBe('done');
+      }
+      if (h.why.kind === 'full') expect(sum, p.name).toBe(p.size);
+      if (h.why.kind === 'overlap') {
+        expect(h.kind, p.name).toBe('fill');
+        expect(line.every((m) => m === EMPTY), p.name).toBe(true);
+        expect(clue, p.name).toContain(h.why.run);
+        // More than half of the room it slides in, and the room is the run plus the line's spare squares.
+        expect(h.why.run * 2, p.name).toBeGreaterThan(h.why.room);
+        expect(h.why.room - h.why.run, p.name).toBe(p.size - sum);
+      }
+      return h;
+    };
+    for (const d of ALL) {
+      const p = fromDrawn(d);
+      // Partly-solved grids with only right marks.
+      for (let t = 0; t < 8; t++) {
+        const marks: Mark[] = p.solution.map((on): Mark => (rng.chance(0.1 * t) ? (on ? FILLED : CROSSED) : EMPTY));
+        if (!isSolved(marks, p)) check(marks, p, rng.int(0, p.size * p.size - 1));
+      }
+      // On an empty grid every fill a line decides is a full line or a long run's overlap: nothing else is known yet.
+      const first = hintFor(empty(p), p, 0);
+      expect(first && first.kind === 'fill' && ['full', 'overlap'].includes(first.why.kind), d.name).toBe(true);
+      // And every hint on the way from an empty grid to the picture.
+      const marks = empty(p);
+      for (let guard = 0; guard < p.size * p.size * 2 && !isSolved(marks, p); guard++) {
+        const h = check(marks, p, (guard * 7) % (p.size * p.size));
+        if (!h || h.kind === 'fix') break;
+        marks[h.cell] = h.kind === 'fill' ? FILLED : CROSSED;
+      }
+      expect(isSolved(marks, p), d.name).toBe(true);
+    }
+    expect([...seen].sort()).toEqual(['done', 'fits', 'full', 'overlap']);
+  });
+
+  it('works out each reason from the line alone', () => {
+    const blank = (n: number) => Array<boolean | null>(n).fill(null);
+    expect(whyFor(blank(10), [7], 4, true)).toEqual({ kind: 'overlap', run: 7, room: 10 });
+    expect(whyFor(blank(10), [7], 2, true)).toEqual({ kind: 'fits' });
+    expect(whyFor(blank(10), [4, 5], 3, false)).toEqual({ kind: 'full' });
+    expect(whyFor(blank(10), [4, 4], 7, true)).toEqual({ kind: 'overlap', run: 4, room: 5 });
+    expect(whyFor(blank(10), [0], 3, false)).toEqual({ kind: 'done' });
+    const line = blank(10);
+    line[2] = line[3] = true;
+    expect(whyFor(line, [2], 6, false)).toEqual({ kind: 'done' });
+    expect(whyFor(line, [4], 4, true)).toEqual({ kind: 'fits' });
   });
 
   it('names the line and its clue, and prefers a fill to a cross, then the square nearest the cursor', () => {
@@ -297,8 +361,8 @@ describe('touch', () => {
   });
 
   it('switches to the tool a hint needs', () => {
-    expect(toolForHint({ kind: 'fill', cell: 0, line: { kind: 'row', index: 0 }, clue: [1] })).toBe('fill');
-    expect(toolForHint({ kind: 'cross', cell: 0, line: { kind: 'row', index: 0 }, clue: [1] })).toBe('cross');
+    expect(toolForHint({ kind: 'fill', cell: 0, line: { kind: 'row', index: 0 }, clue: [1], why: { kind: 'fits' } })).toBe('fill');
+    expect(toolForHint({ kind: 'cross', cell: 0, line: { kind: 'row', index: 0 }, clue: [1], why: { kind: 'fits' } })).toBe('cross');
     expect(toolForHint({ kind: 'fix', cell: 0, mark: FILLED })).toBe('fill');
     expect(toolForHint({ kind: 'fix', cell: 0, mark: CROSSED })).toBe('cross');
   });
