@@ -187,8 +187,41 @@ async function atticCasePlay() {
   await check();
   await sticker(n);
   assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [2, 1], 'level 8: two misses, one hint');
+
+  // Level 9: the starting captions Checked (a miss), then a copy in the question slot (a miss and the glow), then right.
+  const ex = () => page.evaluate(() => { const g = neo.scene.game; const s = g.state; return { captions: [...s.captions], chosen: s.chosen, glow: s.glow, open: g.open, misses: g.misses, hints: g.hints, rows: [...g.round.rows], question: g.round.question, offered: [...g.round.offered] }; });
+  const tapRow = async (i) => { await page.evaluate((i) => kit.tapOn(neo.scene.game.rows[i].card), i); await page.waitForTimeout(300); };
+  const tapStrip = async (caption) => { await page.evaluate((c) => { const g = neo.scene.game; const k = g.round.strips[g.round.rows[g.open]].indexOf(c); kit.tapOn(g.strip[k].node); }, caption); await page.waitForTimeout(300); };
+  const tapNew = async (id) => { await page.evaluate((id) => kit.tapOn(neo.scene.game.offered.find((o) => o.id === id).node), id); await page.waitForTimeout(300); };
+  const supported = { love: 'shop-said', cranking: 'fair-cranked', homes: 'hilltop-had' };
+  await launch('attic-finds', 9, 'Mia', 'school'); await page.waitForTimeout(400); await idle();
+  n = await page.evaluate(() => kit.store.data.stickers.length);
+  let e = await ex();
+  assert.deepEqual([e.question, e.rows, e.captions], ['seaside', ['love', 'cranking', 'homes'], ['all-loved', 'crank-every-home', 'every-house']], 'level 9 opens on the authored exhibit');
+  await check();
+  assert.equal((await ex()).misses, 0, 'a Check with no paper for the question is never a miss');
+  await tapNew('seaside-list'); await check();
+  e = await ex();
+  assert.deepEqual([e.misses, e.chosen, e.open, e.captions[0]], [1, 'seaside-list', 0, 'all-loved'], 'the starting captions are one miss; the useful paper stays and the first strip opens');
+  for (const [i, row] of e.rows.entries()) { if (e.open !== i) await tapRow(i); await tapStrip(supported[row]); e = await ex(); }
+  assert.deepEqual(e.captions, ['shop-said', 'fair-cranked', 'hilltop-had'], 'each row takes the caption the papers show');
+  const copy = e.offered.find((p) => p.endsWith('-copy'));
+  await tapNew(copy); await check();
+  e = await ex();
+  assert.deepEqual([e.misses, e.hints, e.glow, e.chosen], [2, 1, true, null], 'a copy cannot answer: the second miss, the glow, one hint; the copy hops back');
+  await screenshot('attic-finds-9-landscape-glow');
+  await tapRow(1);
+  assert.equal((await ex()).open, 1, 'a strip opens');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  assert.equal((await ex()).open, 1, 'the strip stays open across the turn');
+  await screenshot('attic-finds-9-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+  await tapRow(1);
+  await tapNew('seaside-list'); await check();
+  await sticker(n);
+  assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [2, 1], 'level 9: two misses, one hint');
   assert.deepEqual(errors, [], 'page errors');
-  log('Attic Finds levels 7-8: free read, wrong Check then right; Seaside "shows it" twice, the glow, upright with stamps, then right');
+  log('Attic Finds levels 7-9: free read, wrong Check then right; Seaside "shows it" twice, the glow, upright with stamps, then right; the exhibit with overclaims, then a copy, the glow, a strip upright, then right');
 }
 
 return { atticLeverPlay, atticJobsPlay, atticCasePlay };
