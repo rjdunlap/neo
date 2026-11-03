@@ -2513,7 +2513,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--word-search-
 
 Branch `claude/sprout-shuffle-5`, PR #1151: [definition](../definitions/hidden-sprouts.md), [genetics study G6](../deep-dives/subjects/genetics.md#build-slices-in-order). `school` range now 1–5. A covered spotted plant is watered beside a plain `aa` tester; she chooses every candidate that could fit, and "both" is a right answer ("can't tell yet"); a second watering either settles it with one plain sprout or still leaves both; the packet then peels open. Wrong Check = one miss with a counterexample fan; the second miss in a choice glows the fitting cards and the deciding sprout; Show me selects the fitting cards; watering, card names and Try one never count, and a Try one plain sprout clears the choice. New `hidden.ts`; `logic.ts` gained `compatible`, `candidates`, `couldTell`, `contradicts`, `hiddenSetupFor`, `checkCandidates`, `drawSprout`, `tryRoom` and `hiddenNextStep` (12 new rule tests, 41 in the file). Level 6 (which plant could tell us) remains, then Patchwork Conservatory 7–8.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--sprout-shuffle-level-5-hidden-sprouts-genetics-g6).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sprout-shuffle-level-5-hidden-sprouts-genetics-g6).
 
 ## Robot Path, level 14 Mend the loop (2026-11-03)
 
@@ -2548,3 +2548,9 @@ Branch `claude/puppet-stage-4-6`, PR #1159: batch `puppet-stage 2` from the [def
 Branch `claude/rw09-recap`, PR #1163, [packet](../rework/LEARNING-RECAP.md). `src/learning/intentions.ts` (`WELCOME_INTENTIONS` per step and band, pinned to `WELCOME_PLAN`) and `evidence.ts` (`classify`: independent, supported, creative, encountered, none); `projects.welcome.evidence` per step (`finished`, `misses`, `hints`, `level`, `rounds` 0-9, `at`) written by `store.beginWelcome(band, step)` and `completeWelcomeStep`, repaired in `cleanWelcome`; `src/parent/recap.ts` `projectRecap` placed under This week in the grown-ups' page with a table, status line, rewards-are-not-evidence note and one off-screen idea. The `welcome` suite reads it.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--rw09-slice-1-learning-evidence-and-the-welcome-recap-pr-1163).
+
+## Pixel Pictures both ways and twice as big (pixel-pictures 2, 2026-11-03)
+
+[PR #1166](https://github.com/rjdunlap/neo/pull/1166), batch pixel-pictures 2, [dive slice 2](../deep-dives/pixel-pictures.md#build-slices-in-order). School range now 3-8 (preschool 1-2 and pre-K 1-3 unchanged). Level 7 "Both ways" (mode `mirror2`): six authored four-fold 6x6 pictures built with `unfold` (snowflake, window, flower, gem, target, sparkle), two per round; the top-left quarter is drawn and she copies it across two dashed mirror lines; miss line `pixel.notmirror2`, and two misses glow the open picture square nearest her last tap. Level 8 "Twice as big" (mode `big`): five 3x3 models (plus, cross, arrow, corner, smile) scaled with `scaleUp`, the model drawn beside the board with faint 2x2 block lines; miss line `pixel.notbig`; two misses glow all open squares of the block nearest her last tap as one hint; the reveal adds "Twice as wide and twice as tall!"; the ghost finger fills block by block. How-to steps are scoped 7 and 8 and the logic steps capped at 6. Browser case: `woods` `WOODS_ONLY=pixels` now runs to level 8 (`TO_LEVEL`), with a portrait block-hint screenshot at level 8.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--pixel-pictures-levels-7-both-ways-and-8-twice-as-big-pixel-pictures-batch-2).

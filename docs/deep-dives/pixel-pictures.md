@@ -13,9 +13,11 @@ Tap squares on a grid to make a picture, in Paint Pier (`region: 'treehouse'`; t
 | 3 | Finish the other half: make both sides match like a mirror | pre-K, school | The right half from the drawn left half (6×6) | 4 / 2 |
 | 4 | Picture logic: the numbers say how many squares in a row are filled | school | Squares the run numbers settle (5×5) | 5 / 2 |
 | 5 | Bigger picture logic: 6 by 6, with numbers for runs like "2 1" | school | The same with two-run clues (6×6) | 7 / 2 |
-| 6 | Two-color picture logic: each run has its own color | school | A colour and its squares from coloured run numbers | **2 / 2** |
+| 6 | Two-color picture logic: each run has its own color | school | A colour and its squares from coloured run numbers | 2 / 2 of 5 |
+| 7 | Both ways: copy a quarter across two mirror lines | school | The other three quarters from a drawn 6×6 quarter | 6 / 2 |
+| 8 | Twice as big: copy a little picture at double size | school | Each model square as a 2×2 block | 5 / 2 |
 
-Ranges: preschool 1–2, pre-K 1–3, school 3–6. Squares are 100 units (`CELL`), so a 6×6 board is 600 units in the 1024×768 design area.
+Ranges: preschool 1–2, pre-K 1–3, school 3–8 (levels 7–8 built 2026-11-03, see below). Squares are 100 units (`CELL`), so a 6×6 board is 600 units in the 1024×768 design area.
 
 **What a round draws from** (counted from `picturesFor` on this date, by running `logic.ts` outside the test runner): 4×4 has five one-colour pictures; 5×5 has five, of which three are two-colour (fish, house, tree) and two are three-colour (flower, ice pop: they appear only as one-colour logic at level 4); 6×6 has seven, four of them symmetric one-colour (mirror pool) and two two-colour (little cat, little sailboat). Every 5×5 and 6×6 picture is solvable by line logic; the 4×4 smile is not, and is used only for copying.
 
@@ -107,7 +109,7 @@ Each band's `BandLevels` entry carries its own `order` (`src/progress/difficulty
 ## Build slices, in order
 
 1. **Built 2026-11-02 ([PR #1125](https://github.com/rjdunlap/neo/pull/1125)): Fresh pictures and colour logic (batch pixel-pictures 1).** Level 2 pool 3 → 6, level 6 pool 2 → 5 with `colorLineSolvable`; level-6 hint and ghost finger use colour deduction; the strict pool test. If the little cat or the sailboat fails `colorLineSolvable`, it leaves the level-6 pool (it stays a level-5 logic picture) and a further new picture replaces it. *Check:* typecheck and the game's rule tests; the hint/bot change adds one filtered regression play of level 6 (the `woods` suite's Pixel Pictures 6 case) and `fingerdemo` at 6.
-2. **Levels 7–8: both ways and twice as big (batch pixel-pictures 2),** after batch 1. *Check:* new levels on an existing interaction: typecheck, rule tests, one browser play of level 8 (the new top) with one wrong square and the glow, a level-7 case in the same filtered run, `fingerdemo` at 7 and 8, one portrait screenshot of level 8. Stop after level 7 if the allowance cannot cover 8.
+2. **Built 2026-11-03 ([PR #1166](https://github.com/rjdunlap/neo/pull/1166)): Levels 7–8, both ways and twice as big (batch pixel-pictures 2).** Level 7 `mirror2` (six authored four-fold 6×6 pictures via `unfold`, two per round), level 8 `big` (five 3×3 models via `scaleUp`, 2×2 blocks); school range now 3–8. Original check: *Check:* new levels on an existing interaction: typecheck, rule tests, one browser play of level 8 (the new top) with one wrong square and the glow, a level-7 case in the same filtered run, `fingerdemo` at 7 and 8, one portrait screenshot of level 8. Stop after level 7 if the allowance cannot cover 8.
 3. **Level 9: two colours, small (batch pixel-pictures 3).** *Check:* typecheck, rule tests (order/entry), one browser play of level 9 and `fingerdemo` at 9.
 4. **Level 10: my own picture (batch pixel-pictures 4).** A new interaction (empty a square, Done). *Check:* typecheck, unit tests, one scripted play to Done with a kept design, one portrait screenshot, `fingerdemo` at 10, the `creations` suite filtered to Pixel Pictures only if the kept shape changes (it should not).
 5. *Gated:* Light the picture (decision 1); Picture Bytes, Mosaic border, Flipbook through their packets.

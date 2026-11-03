@@ -907,7 +907,7 @@ Proof: typecheck and the game's rule tests (pool sizes, solvability, hint leads 
 
 ### pixel-pictures 2: Both ways and Twice as big
 
-**Claimed 2026-11-03 on branch `claude/pixel-pictures-7-8`** (draft PR; levels 7 and 8 as one batch).
+**Built 2026-11-03 ([PR #1166](https://github.com/rjdunlap/neo/pull/1166)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-03--pixel-pictures-levels-7-both-ways-and-8-twice-as-big-pixel-pictures-batch-2); [build note](archive/COMPLETED-2026-10-09.md#pixel-pictures-both-ways-and-twice-as-big-pixel-pictures-2-2026-11-03).
 
 - **`pixel-pictures`, level 7 Both ways and level 8 Twice as big (dive slice 2, after the built batch 1)** (new levels on an existing interaction; school): level 7 copies a drawn 6×6 quarter across two mirror lines into the other three (`PixelMode` gains `mirror2`; `pixel.notmirror2`, hint glows an open square whose mirror is drawn); level 8 copies a 3×3 model at double size into 2×2 blocks (`scaleUp(p, 2)`; `pixel.notbig`, hint glows one block). Authored four-fold pictures and five 3×3 models; how-to steps scoped from 7; bot through `pixelTouch`. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#proposed-ladder)
 
