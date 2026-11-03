@@ -17,14 +17,14 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { coinArt } from '../market-stall';
-import { boardArt, bulbArt, cupArt, eventIcon, forecastIcon, miniStand, pitcherArt } from './art';
+import { boardArt, boatArt, bulbArt, cupArt, eventIcon, forecastIcon, miniStand, pitcherArt } from './art';
 import {
-  affordable, BATCHES, batchCost, forecastChoice, helps, insight, makeWeek, planFor, priceChoice, rating, sellDay, settle, START_PURSE, WEATHER_WORD,
-  type Day, type Help, type Insight, type Row, type StandPlan,
+  affordable, BATCHES, batchCost, boatTalk, cheaperBoat, dayPerTwo, forecastChoice, helps, insight, makeWeek, planFor, priceChoice, rating, sellDay, settle,
+  START_PURSE, WEATHER_WORD, type Day, type Help, type Insight, type Offer, type Row, type StandPlan,
 } from './logic';
 
 const LEVELS: BandLevels = {
-  school: { min: 1, max: 4 },
+  school: { min: 1, max: 5 },
 };
 
 const ROW_H = 100;
@@ -37,6 +37,13 @@ const CARD_W = 120;
 const CUP_SCALE = 0.8;
 const FRIENDS = (Object.keys(CRITTERS) as CritterName[]).filter((n) => n !== 'pip');
 const line = (color: number, width = 4) => ({ width, color, join: 'round' as const, cap: 'round' as const });
+/** The two boats' sail colours, seeded per morning. */
+const SAILS = [swatch.red, swatch.blue, swatch.green, swatch.purple, swatch.orange, swatch.teal];
+/** Where the boats sit on the water: their centres, and how far the waterline is above the bottom of the view. */
+const BOAT_X = [280, 540];
+const BOAT_UP = 170;
+/** "2 lemons for 1 shell", for the spoken offer. */
+const offerWords = (o: Offer) => `${o.lemons} lemons for ${o.shells} ${o.shells === 1 ? 'shell' : 'shells'}`;
 
 type Cell = 'made' | 'sold' | 'left' | 'shells';
 
@@ -56,7 +63,9 @@ class LemonadeStand implements Game {
   readonly plan: StandPlan;
   readonly week: Day[];
   readonly rows: Row[] = [];
-  readonly cards: { n: number; node: Container; box: Graphics }[] = [];
+  readonly cards: { n: number; node: Container; box: Graphics; cost: Text | null }[] = [];
+  /** The morning's two lemon boats, left then right (boat levels). */
+  readonly boats: { node: Container; offer: Offer }[] = [];
   readonly coins: { value: number; node: Container; ring: Graphics }[] = [];
   readonly tableRows: { row: Row; node: Container }[] = [];
   readonly open: RoundButton;
@@ -73,6 +82,10 @@ class LemonadeStand implements Game {
   hints = 0;
   busy = true;
   finished = false;
+  /** The boats are at the jetty and she has not yet tapped the cheaper one. */
+  boatPhase = false;
+  /** Wrong boats tapped this morning; the second glows the cheaper boat. */
+  boatMisses = 0;
 
   private view: View;
   private clock = 0;
@@ -98,6 +111,8 @@ class LemonadeStand implements Game {
   private readonly tableBox = new Graphics();
   private readonly tableBody = new Container();
   private readonly glow = new Graphics();
+  private readonly water = new Graphics();
+  private readonly jetty = new Container();
   private readonly picnic: Critter[] = [];
   private readonly trayCups: Container[] = [];
   private readonly friends = new Set<Critter>();
@@ -123,6 +138,9 @@ class LemonadeStand implements Game {
     this.blanket.eventMode = 'none';
     this.standArt.eventMode = 'none';
     this.banner.eventMode = 'none';
+    this.water.eventMode = 'none';
+    this.jetty.addChild(this.water);
+    this.jetty.visible = false;
 
     this.signText = label('LEMONADE', 30, ink);
     this.signText.eventMode = 'none';
@@ -205,17 +223,18 @@ class LemonadeStand implements Game {
       const num = label(String(n), 36, ink);
       num.position.set(0, this.plan.purse ? 36 : 44);
       node.addChild(num);
+      let cost: Text | null = null;
       if (this.plan.purse) {
         const coin = coinArt(1);
         coin.scale.set(0.4);
         coin.position.set(-18, 66);
-        const cost = label(String(batchCost(n)), 26, ink);
+        cost = label(String(batchCost(n)), 26, ink);
         cost.position.set(10, 66);
         node.addChild(coin, cost);
       }
       node.hitArea = new Rectangle(-CARD_W / 2 - 6, -this.cardH() / 2 - 6, CARD_W + 12, this.cardH() + 12);
       onTap(node, () => this.pickBatch(n), { cooldown: 140 });
-      this.cards.push({ n, node, box });
+      this.cards.push({ n, node, box, cost });
     }
     this.drawCards();
 
@@ -239,7 +258,7 @@ class LemonadeStand implements Game {
     this.help = new RoundButton(bulbArt(), swatch.yellow, 56, () => void this.askHelp());
 
     ctx.stage.addChild(
-      this.backdrop, this.wash, this.blanket, this.standArt, this.signText, this.tray, this.soldOut, this.crowd, this.tally, this.banner, this.table, this.glow,
+      this.backdrop, this.wash, this.blanket, this.standArt, this.signText, this.tray, this.soldOut, this.crowd, this.tally, this.banner, this.table, this.jetty, this.glow,
       ...this.coins.map((c) => c.node), ...this.cards.map((c) => c.node), this.open, this.help,
     );
     this.m = this.metrics();
@@ -300,6 +319,10 @@ class LemonadeStand implements Game {
     this.open.position.set(x0 + (cards - 1) * (CARD_W + 14) + CARD_W / 2 + 14 + 56, m.cardsY);
     this.coins.forEach((c, i) => c.node.position.set(280 + i * 140, m.priceY));
     this.help.position.set(190, m.top + 84);
+    // The jetty: a strip of water under the two boats, in the controls' place while the boats wait.
+    const wy = v.h - BOAT_UP;
+    this.water.clear().roundRect(BOAT_X[0] - 130, wy + 8, BOAT_X[1] - BOAT_X[0] + 260, 56, 26).fill({ color: swatch.blue.light, alpha: 0.85 }).stroke(line(swatch.blue.fill, 4));
+    this.boats.forEach((b, i) => b.node.position.set(BOAT_X[i], wy));
   }
 
   private drawWash() {
@@ -382,6 +405,14 @@ class LemonadeStand implements Game {
         g.roundRect(this.m.panelX - 2, 40 + HEAD_H + i * ROW_H - 2, this.m.panelW + 4, ROW_H + 4, 20).stroke({ width: pulse, color: swatch.yellow.fill });
       }
     }
+    if (this.boatPhase) {
+      const wy = this.view.h - BOAT_UP;
+      this.boats.forEach((b, i) => (b.node.y = wy + 3 * Math.sin(this.clock * 2 + i * 1.7)));
+      if (this.boatMisses >= 2) {
+        const b = this.boats[cheaperBoat(this.week[this.index].boats!)].node;
+        g.roundRect(b.x - 116, b.y - 158, 232, 214, 28).stroke({ width: 6 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
+      }
+    }
   }
 
   /**
@@ -390,6 +421,7 @@ class LemonadeStand implements Game {
    */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.index < 0 || this.index >= this.week.length) return null;
+    if (this.boatPhase) return { tap: { on: this.boats[cheaperBoat(this.week[this.index].boats!)].node } };
     const want = forecastChoice(this.plan, this.week[this.index], this.purse);
     if (this.made !== want.made) return { tap: { on: this.cards.find((c) => c.n === want.made)!.node } };
     if (this.price !== want.price) return { tap: { on: this.coins.find((c) => c.value === want.price)!.node } };
@@ -412,7 +444,7 @@ class LemonadeStand implements Game {
   }
 
   private chooseLine(): LineId {
-    return this.plan.purse ? 'lemon.choose.purse' : priceChoice(this.plan) ? 'lemon.choose.price' : 'lemon.choose';
+    return this.plan.boats ? 'lemon.choose.boat' : this.plan.purse ? 'lemon.choose.purse' : priceChoice(this.plan) ? 'lemon.choose.price' : 'lemon.choose';
   }
 
   private async nextDay() {
@@ -420,6 +452,7 @@ class LemonadeStand implements Game {
     this.index++;
     this.helpAt = 0;
     this.helpedToday = false;
+    this.boatMisses = 0;
     this.made = null;
     this.price = priceChoice(this.plan) ? null : this.plan.prices[0];
     this.lit = [];
@@ -430,6 +463,7 @@ class LemonadeStand implements Game {
     this.soldOut.visible = false;
     this.tally.visible = false;
     this.refreshControls();
+    if (day.boats) this.showBoats(day.boats);
     if (this.restock > 0) {
       const n = this.restock;
       this.restock = 0;
@@ -439,6 +473,71 @@ class LemonadeStand implements Game {
     }
     this.busy = false;
     await this.ctx.say(this.forecastLine(day), { day: this.index + 1, weather: WEATHER_WORD[day.weather] });
+    if (this.boatPhase && day.boats) void this.ctx.instruct('lemon.boat.choose', { left: offerWords(day.boats[0]), right: offerWords(day.boats[1]) });
+    else void this.ctx.instruct(this.chooseLine());
+  }
+
+  // ---------------------------------------------------------------- the lemon boats
+
+  /** The batch cards, prices and open sign make way for the boats while she chooses one. */
+  private setControls(on: boolean) {
+    for (const node of [...this.cards.map((c) => c.node), ...this.coins.map((c) => c.node), this.open]) node.visible = on;
+  }
+
+  private showBoats(offers: readonly [Offer, Offer]) {
+    for (const b of this.boats.splice(0)) b.node.destroy({ children: true });
+    this.boatPhase = true;
+    this.setControls(false);
+    this.jetty.visible = true;
+    const sails = this.ctx.rng.shuffle([...SAILS]);
+    offers.forEach((offer, i) => {
+      const node = boatArt(offer, sails[i].fill, sails[i].line);
+      for (const child of node.children) child.eventMode = 'none';
+      node.hitArea = new Rectangle(-110, -150, 220, 200);
+      node.position.set(BOAT_X[i], this.view.h - BOAT_UP);
+      node.scale.set(0.01);
+      onTap(node, () => void this.pickBoat(i), { cooldown: 200 });
+      this.jetty.addChild(node);
+      this.boats.push({ node, offer });
+      void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.4, delay: 0.25 + i * 0.15, ease: ease.outBack });
+    });
+  }
+
+  /** Tap a boat: the cheaper one sails its lemons to the stand; a dearer one is a gentle miss with the comparison spoken. */
+  private async pickBoat(i: number) {
+    const boats = this.week[this.index]?.boats;
+    if (this.busy || this.finished || !this.boatPhase || !boats) return;
+    const node = this.boats[i].node;
+    const talk = boatTalk(boats);
+    if (i !== cheaperBoat(boats)) {
+      sfx.boing();
+      this.misses++;
+      this.boatMisses++;
+      node.rotation = 0.08;
+      void this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.4, ease: ease.outBack });
+      // Two misses on a morning glow the cheaper boat, which counts the day's one hint unless the lightbulb already did.
+      if (this.boatMisses === 2 && !this.helpedToday) {
+        this.helpedToday = true;
+        this.hints++;
+      }
+      await this.ctx.say('lemon.boat.wrong', { dear: talk.dear, cheap: talk.cheap });
+      return;
+    }
+    this.boatPhase = false;
+    this.busy = true;
+    [5, 9].forEach((s, k) => void this.ctx.tw.wait(k * 0.18).then(() => sfx.bell(s, 0.3)));
+    node.scale.set(0.94);
+    const other = this.boats[1 - i].node;
+    await Promise.all([
+      this.ctx.tw.to(node, { x: this.m.cx, alpha: 0 }, { duration: 0.8, ease: ease.inOutSine }),
+      this.ctx.tw.to(other, { alpha: 0 }, { duration: 0.5 }),
+    ]);
+    this.jetty.visible = false;
+    for (const b of this.boats.splice(0)) b.node.destroy({ children: true });
+    this.setControls(true);
+    this.refreshControls();
+    this.busy = false;
+    await this.ctx.say('lemon.boat.good');
     void this.ctx.instruct(this.chooseLine());
   }
 
@@ -462,8 +561,10 @@ class LemonadeStand implements Game {
 
   /** Cards the purse cannot pay for are dimmed, and the open sign shows whether the stand is ready. */
   private refreshControls() {
+    const day = this.week[this.index] ?? {};
     for (const c of this.cards) {
-      const ok = affordable(this.plan, this.purse, c.n);
+      const ok = affordable(this.plan, this.purse, c.n, day);
+      if (c.cost) c.cost.text = String(batchCost(c.n, dayPerTwo(day)));
       this.paintCard(c.box, this.made === c.n, ok);
       c.node.alpha = ok ? 1 : 0.6;
       c.node.scale.set(1);
@@ -474,9 +575,10 @@ class LemonadeStand implements Game {
 
   private pickBatch(n: number) {
     if (this.busy || this.finished) return;
-    if (!affordable(this.plan, this.purse, n)) {
+    const day = this.week[this.index];
+    if (!affordable(this.plan, this.purse, n, day)) {
       sfx.tick();
-      void this.ctx.say('lemon.toomuch', { n: batchCost(n), purse: this.purse });
+      void this.ctx.say('lemon.toomuch', { n: batchCost(n, dayPerTwo(day)), purse: this.purse });
       return;
     }
     this.made = n;
@@ -736,6 +838,7 @@ class LemonadeStand implements Game {
   private helpLine(h: Help): LineId {
     const price = priceChoice(this.plan) ? '.price' : '';
     switch (h.kind) {
+      case 'boat': return 'lemon.help.boat';
       case 'out': return `lemon.help.out${price}` as LineId;
       case 'left': return `lemon.help.left${price}` as LineId;
       case 'good': return `lemon.help.good${price}` as LineId;
@@ -749,7 +852,7 @@ class LemonadeStand implements Game {
   /** The Help button: the pet says one true thing about today, pointing at table rows it is about. Asking again says another. */
   private async askHelp() {
     if (this.busy || this.finished) return;
-    const list = helps(this.plan, this.week[this.index], this.rows);
+    const list = helps(this.plan, this.week[this.index], this.rows, !this.boatPhase);
     const h = list[this.helpAt % list.length];
     this.helpAt++;
     // Help is counted once for the day, however many times she asks.
@@ -764,6 +867,7 @@ class LemonadeStand implements Game {
 
   private insightLine(i: Insight): LineId {
     switch (i.kind) {
+      case 'boats': return 'lemon.sum.boats';
       case 'price': return 'lemon.sum.price';
       case 'weather': return 'lemon.sum.weather';
       case 'best': return 'lemon.sum.best';
@@ -833,6 +937,7 @@ export const lemonadeStand: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   touchDemo: true,
+  coplayHint: 'A grown-up reads the forecast aloud like a weather reporter and plays the first friend in line; she decides the cups.',
   offScreen: 'Run a real juice stand at a picnic: guess how many cups to pour from the weather, then count what is left and write it in a table.',
   hubIcon: () => new StandIcon(),
   sticker,

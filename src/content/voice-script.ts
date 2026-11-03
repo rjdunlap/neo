@@ -4323,6 +4323,12 @@ export const SCRIPT = {
   'lemon.sum.plain': ['You ran the stand for the whole week!'],
   'lemon.restock': ['The ferry captain gives you {n} shells so the stand can open tomorrow!'],
   'lemon.done': ['The stand is closed. What a good week of lemonade!'],
+  'lemon.choose.boat': ['Two lemons make a batch of four cups. Tap a batch and a price, then tap the open sign!'],
+  'lemon.boat.choose': ['Two boats are selling lemons. The left boat sells {left}, and the right boat sells {right}. Tap the boat that sells lemons cheaper!'],
+  'lemon.boat.wrong': ['This boat wants {dear} shells for 2 lemons. That one wants {cheap}.'],
+  'lemon.boat.good': ['Toot toot! The cheaper boat brings your lemons.', 'Toot toot! Good buy!'],
+  'lemon.help.boat': ['Count the shells for 2 lemons. The {side} boat wants {cheap}, and the other boat wants {dear}.'],
+  'lemon.sum.boats': ['Picking the cheaper boat saved you {n} shells this week!'],
 
   'window.rain': ['Here are two pretend weeks, A and B. Which has more rainy days? Tap the week tabs to look at both records. Tap a summary to hear it, then the arrow to check. Tap the rain picture to hear this question again.'],
   'window.sun': ['Now compare the sunny days in both pretend weeks. Are their totals equal or different? Tap both week tabs to look. Hear a summary, then tap the arrow to check.'],
