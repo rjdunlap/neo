@@ -125,7 +125,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
 
 
-- **Study `theatre-puppetry`: define Puppet Stage 4–6 (TP2)** (docs only; status `define`): after batch puppet-stage 1 is built and played; the three story cards and their spoken lines, the shown-only premiere restated from Movie Night, the director's-chair co-play role and coplayHint, school 4–6 and pre-K 4–5; retain its review, placement and device-check gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#theatre-and-puppetry-recommendations).
+- **Study `theatre-puppetry`: define Puppet Stage 4–6 (TP2)** (docs only; status `define`; claimed 2026-11-03 on branch `claude/define-puppet-stage-4-6`; files `docs/definitions/puppet-stage-4-6.md` and the closeout docs): after batch puppet-stage 1 is built and played; the three story cards and their spoken lines, the shown-only premiere restated from Movie Night, the director's-chair co-play role and coplayHint, school 4–6 and pre-K 4–5; retain its review, placement and device-check gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#theatre-and-puppetry-recommendations).
 
 
 ### Subject research (docs only)
