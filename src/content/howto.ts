@@ -861,12 +861,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       'Tap any printed word to hear it, or the speaker to hear the whole sign. This support is free.',
       { from: 1, to: 1, text: 'Choose the hat whose color matches the printed word.' },
-      { from: 2, to: 2, text: 'Choose the big or small duck named by the two-word sign.' },
+      { from: 2, to: 2, text: 'Both pictures show the same animal; choose the big or small one the two-word sign names.' },
       { from: 3, to: 3, text: 'Choose both the animal and its action: the arrow means jump, and Z means sleep.' },
     ],
     finish: [
       { from: 1, to: 1, text: 'Choose all three color words to finish.' },
-      { from: 2, to: 2, text: 'Choose both duck sizes to finish.' },
+      { from: 2, to: 2, text: 'Choose all three signs, each with a different animal, to finish.' },
       { from: 3, to: 3, text: 'Act out all four sentences to finish.' },
     ],
     note: 'A wrong picture plays out its meaning, then the sign is read word by word. After two misses on a sign, its answer glows. Listening support does not establish independent reading.',
