@@ -2214,7 +2214,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Tap a flower you planted to take it out again.',
       { to: 1, text: 'Each row needs one of every flower.' },
       { from: 2, to: 9, text: 'Each row and each column needs one of every flower.' },
-      { from: 10, to: 10, text: 'The bed is one row of three spots, with one spot empty. Plant the flower the row is missing; then the next row has a different spot empty.' },
+      { from: 10, to: 10, text: 'The bed is one row of three spots, with one spot empty. Plant the flower the row is missing; then the next bed has a different spot empty.' },
       { from: 8, to: 9, text: 'Hedges split the bed into four boxes of four spots, and each hedge box needs one of every flower too.' },
       { from: 7, to: 7, text: 'The bed starts full, but two flowers in one row have swapped places, so two columns each have a repeat. Tap them to lift them out, then plant them back where they belong.' },
     ],
