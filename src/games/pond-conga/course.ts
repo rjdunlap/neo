@@ -26,7 +26,7 @@ export const COURSES: Record<CongaCourseId, Course> = {
     id: 'conga',
     version: 1,
     name: 'Crumb Trail',
-    blurb: 'Four ponds in a row, from an open one to a crowded one. Follow the crumbs in order with as few steps as the way allows.',
+    blurb: 'Four ponds in a row, from an open one to a crowded one. Follow the food in order with as few steps as the way allows.',
     speed: 3,
     ponds: [
       ['....#1.....', '...#.......', '..#3......6', '.ssS.......', '........2..', '.......4...', '..........5'],
