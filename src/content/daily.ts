@@ -1,14 +1,15 @@
 import { Rng } from '../engine/random';
 import { playsByTouch } from '../games/registry';
 import type { GameModule } from '../games/types';
-import { bandRank, playBand, type Band } from '../progress/bands';
+import { playBand, type Band } from '../progress/bands';
 import { levelsInOrder } from '../progress/difficulty';
 import type { RoundRecord } from '../progress/save';
 
 /**
- * Today's six (a trial behind `?daily` at the root, the developer's call 2026-10-31): six games chosen for the day from her
- * band, the same six all day for everyone at that band, a new six tomorrow. Nothing is owed: there is no streak, no count
- * across days and nothing missed; every game stays in Explore as before.
+ * Today's six (D10, docs/definitions/todays-six.md): six games chosen for the day from her band, each at a preset level from
+ * that band's ladder, the same six all day for everyone at that band, a new six tomorrow. Reached from Home's button or
+ * `?daily` at the root. Nothing is owed: there is no streak, no count across days and nothing missed; every game stays in
+ * Explore as before.
  */
 export const DAILY_COUNT = 6;
 /** How many of a grown-up's six are games made for grown-ups (the rest are early-school games at their hardest). */
@@ -18,8 +19,8 @@ export interface DailyPick {
   mod: GameModule;
   /** The band the round plays at (`playBand`). */
   band: Band;
-  /** A grown-up's level from the harder end of the ladder; undefined plays her saved level. */
-  level?: number;
+  /** The day's level from the band's own ladder, or a grown-up's pin for the game. */
+  level: number;
 }
 
 /** The local calendar day, `YYYY-MM-DD`: the six change at her midnight, not UTC's. */
@@ -38,32 +39,43 @@ export function daySeed(day: string, band: Band): number {
   return h >>> 0;
 }
 
+/** Touch-playable and not opted out (`daily: false`): the games any band's six can come from. */
+export const dailyEligible = (m: GameModule) => playsByTouch(m) && m.daily !== false;
+
 /**
- * The games a band's six come from, touch-playable only. A grown-up gets the games made for grown-ups and for early school
- * (played at their hardest levels); anyone else the games for her own band, topped up with younger ones only if there are
- * too few.
+ * The games a band's six come from: eligible games that list the band itself (no younger top-up; every band has far more
+ * than six). A grown-up gets the games made for grown-ups and for early school (played at their hardest levels).
  */
 export function dailyPool(band: Band, games: readonly GameModule[]): GameModule[] {
-  const touch = games.filter((m) => playsByTouch(m));
-  if (band === 'grownup') return touch.filter((m) => m.bands.includes('grownup') || m.bands.includes('school'));
-  const own = touch.filter((m) => m.bands.includes(band));
-  if (own.length >= DAILY_COUNT) return own;
-  return [...own, ...touch.filter((m) => !m.bands.includes(band) && m.bands.some((b) => bandRank(b) < bandRank(band)))];
+  const ok = games.filter(dailyEligible);
+  if (band === 'grownup') return ok.filter((m) => m.bands.includes('grownup') || m.bands.includes('school'));
+  return ok.filter((m) => m.bands.includes(band));
 }
 
-/** The harder end of a game's ladder at `band`: its top third in play order, entry levels left out. */
-export function hardLevels(mod: GameModule, band: Band): number[] {
+/**
+ * A game's ladder at `band` in play order, entry levels left out (easy rounds with high IDs, placed first for a younger band);
+ * a band whose whole ladder is entry levels plays from those.
+ */
+export function presetLevels(mod: GameModule, band: Band): number[] {
   const entries = mod.entryLevels ?? [];
-  const order = levelsInOrder(mod.levels(band)).filter((l) => !entries.includes(l));
-  if (!order.length) return [mod.levels(band).max];
+  const all = levelsInOrder(mod.levels(band));
+  const order = all.filter((l) => !entries.includes(l));
+  return order.length ? order : all;
+}
+
+/** The harder end of a game's ladder at `band`: the top third of `presetLevels`, a grown-up's day. */
+export function hardLevels(mod: GameModule, band: Band): number[] {
+  const order = presetLevels(mod, band);
   return order.slice(Math.floor((order.length * 2) / 3));
 }
 
 /**
  * The day's six: a seeded shuffle of the pool, taken so each subject (`region`) appears once before any appears twice.
- * Grown-ups get a seeded level from `hardLevels`.
+ * Each pick gets a seeded level from its game's ladder at the band it plays (`presetLevels`; a grown-up's from `hardLevels`),
+ * unless `pinned` names a grown-up's pin for that game inside the ladder, which wins. A preset level is the day's choice,
+ * not her progress: the round records with `adapt` off (`dailyOrigin`).
  */
-export function dailySix(day: string, band: Band, games: readonly GameModule[]): DailyPick[] {
+export function dailySix(day: string, band: Band, games: readonly GameModule[], pinned: (id: string) => number | null = () => null): DailyPick[] {
   const rng = new Rng(daySeed(day, band));
   const pool = rng.shuffle([...dailyPool(band, games)]);
   const chosen: GameModule[] = [];
@@ -83,8 +95,17 @@ export function dailySix(day: string, band: Band, games: readonly GameModule[]):
   take(pool, DAILY_COUNT);
   return chosen.map((mod) => {
     const at = playBand(mod.bands, band);
-    return { mod, band: at, level: band === 'grownup' ? rng.pick(hardLevels(mod, at)) : undefined };
+    // The preset is drawn for every pick, pinned or not, so one pin never reshuffles the other cards' levels.
+    const preset = rng.pick(band === 'grownup' ? hardLevels(mod, at) : presetLevels(mod, at));
+    const pin = pinned(mod.id);
+    return { mod, band: at, level: pin !== null && levelsInOrder(mod.levels(at)).includes(pin) ? pin : preset };
   });
+}
+
+/** Where on its ladder a pick's level sits, for the card's dot row: `at` of `of` dots, easiest first. */
+export function levelDots(pick: DailyPick): { at: number; of: number } {
+  const order = levelsInOrder(pick.mod.levels(pick.band));
+  return { at: Math.max(0, order.indexOf(pick.level)) + 1, of: order.length };
 }
 
 /** She finished a round of this game on `day` (a round's record carries its time): the card shows a tick. */

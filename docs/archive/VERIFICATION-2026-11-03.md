@@ -150,3 +150,9 @@
 - Ran: `npm run typecheck`; full `npm test` 297 files, 4578 tests; bouncy-launch rule tests and registry tests (a test pins Cloud Hopper's `CLOUDS`); one-off Playwright probe (dev server localhost:5599, `VITE_SPEECH=off`) at toddler in portrait 768x1024 and landscape 1024x768: real drags, two deliberate misses (2 misses, 1 hint, preview on), five landings to the sticker, no page errors; portrait screenshot reviewed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=bouncy-launch FINGER_LEVELS=8` clean 18.5 s.
 - Not run: `npm run build` (CI builds), couch suites (unchanged), any device.
 - Open: whether a toddler or preschooler drags a little versus a lot, and the clouds read as targets ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-11-03 — Orchard Rows fresh orchards and baskets (batch orchard-rows 2)
+
+- [PR #1158](https://github.com/rjdunlap/neo/pull/1158), code commit 1d8fee7e: level 1–3 pools widened (2×2, 4×2, 4×3, 5×2, 4×4, 5×3, all within 5×5), level 2 never pairs a shape with its turn, level 4's second basket draws 14 or 21 too; `game-reviewer` no findings.
+- Ran: `npm run typecheck`; `npx vitest run src/games/orchard-rows` 23 passed (pools, level 2 pairing and every shape drawn over 300 seeds; level 4 second-basket set, two right row counts, leftover opening). The level 2 guard was removed once and the test failed at seed 1 (2×5 with 5×2), then restored.
+- Not run: any browser play or `fingerdemo` (rules tier; the bot reads the same rules), `npm run build`, any device.

@@ -525,6 +525,8 @@ export const goodnightRoom: GameModule = {
   offScreen: 'At bedtime, say goodnight to the things in her room together: "Goodnight, lamp. Goodnight, teddy."',
   hubIcon: () => new NightIcon(),
   touchDemo: true,
+  // A calm wind-down before bed, not a challenge for the day: kept out of Today's six.
+  daily: false,
   sticker,
   create: (ctx) => new GoodnightRoom(ctx),
 };

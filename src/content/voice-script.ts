@@ -539,6 +539,7 @@ export const SCRIPT = {
   'explore.page': ['{n} more!', 'Here are {n} more!'],
   'explore.others': ['Games for other ages!'],
   'explore.mine': ['Back to your games!'],
+  'daily.go': ['Today’s six!'],
   'daily.open': ["Today's six games! Tap one to play."],
   'daily.done': ['You played all six today! Play one again, or tap the tiles for every game.'],
   // The Arcade's lines stay on device speech until a clip render takes the `arcade` prefix (scripts/voice-clips/clips.mjs).

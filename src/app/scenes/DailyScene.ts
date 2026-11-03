@@ -4,7 +4,7 @@ import { homeBackdrop } from '../../art/home/backdrop';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import { dailySix, dayKey, playedOn, type DailyPick } from '../../content/daily';
+import { dailySix, dayKey, levelDots, playedOn, type DailyPick } from '../../content/daily';
 import { BACK } from '../../creatures/friends-layout';
 import { CORNER_RADIUS, GUIDE_CORNER, HOME_BUTTON } from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
@@ -23,8 +23,10 @@ const MUTED = 0x6b6b7b;
 const TOP = 150;
 const MAX_CARD = 230;
 const MIN_CARD = 120;
-/** Room under a card for its name and level line. */
-const UNDER = 96;
+/** Room under a card for its name, level dots and (a grown-up's) level line. */
+const UNDER = 116;
+/** The level dots: one per level on the band's ladder, the day's level and those below it filled. */
+const DOT_GAP = 16;
 
 /** One of the day's six on the page, so a script can find and press it. */
 export interface DailyCard {
@@ -33,14 +35,14 @@ export interface DailyCard {
 }
 
 /**
- * Today's six (a trial behind `?daily` at the root, the developer's call 2026-10-31): six picture cards chosen for the day
- * from her band (`dailySix`), a tick on the ones she has played today, and one tap to play. A grown-up's cards play at the
- * harder end of each game's ladder and name the level. Back goes to "Who's playing?"; the tiles button opens All games, so
- * nothing outside the six is out of reach. Nothing is owed: no streak, no count across days.
+ * Today's six (D10, docs/definitions/todays-six.md): six picture cards chosen for the day from her band (`dailySix`), each
+ * at a preset level from its ladder shown as a row of dots (a grown-up's card also names it), a tick on the ones she has
+ * played today, and one tap to play. Reached from Home's button or `?daily`; Back goes to the hub (Home at the root); the
+ * tiles button opens All games, so nothing outside the six is out of reach. Nothing is owed: no streak, no count across days.
  */
 export class DailyScene extends Scene {
   private readonly backdrop = homeBackdrop();
-  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.start(), voice.say('nav.back'))).means('back');
+  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.hub(), voice.say('nav.back'))).means('back');
   readonly all = new RoundButton(fitArt(tilesIcon(), 56), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.explore('all', 0, false), voice.say('explore.all')));
   private readonly title = new Text({ text: "Today's six", style: { fontFamily: FONT, fontSize: 40, fill: ink, fontWeight: '600' } });
   private readonly date = new Text({ text: '', style: { fontFamily: FONT, fontSize: 20, fill: MUTED, fontWeight: '500' } });
@@ -53,7 +55,7 @@ export class DailyScene extends Scene {
 
   constructor(app: App) {
     super(app);
-    this.picks = dailySix(this.day, store.data.profile.band, GAMES);
+    this.picks = dailySix(this.day, store.data.profile.band, GAMES, (id) => store.data.games[id]?.pinned ?? null);
     this.date.text = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   }
 
@@ -86,18 +88,20 @@ export class DailyScene extends Scene {
     const pill = new Graphics();
     pill.label = 'pill';
     const level = new Text({
-      text: this.grownUp && pick.level !== undefined ? pick.mod.describeLevel(pick.level) : '',
+      text: this.grownUp ? pick.mod.describeLevel(pick.level) : '',
       style: { fontFamily: FONT, fontSize: 15, fill: MUTED, fontWeight: '500', align: 'center', wordWrap: true, wordWrapWidth: 200, lineHeight: 18 },
     });
     level.anchor.set(0.5, 0);
     level.label = 'level';
+    const dots = new Graphics();
+    dots.label = 'dots';
     const tick = new Container();
     tick.addChild(new Graphics().circle(0, 0, 26).fill(swatch.green.fill).stroke({ color: 0xffffff, width: 5 }), checkIcon());
     tick.children[1].scale.set(0.8);
     tick.label = 'tick';
     tick.visible = played;
     art.label = 'art';
-    node.addChild(frame, art, pill, name, level, tick);
+    node.addChild(frame, art, pill, name, dots, level, tick);
     onTap(node, () => {
       if (this.leaving) return;
       sfx.tick();
@@ -163,14 +167,26 @@ export class DailyScene extends Scene {
       const name = node.getChildByLabel('name') as Text;
       name.style.wordWrapWidth = textW;
       name.y = half + 12;
+      // The level as dots, no reading: a long ladder's dots draw closer together inside the card's width.
+      const { at, of } = levelDots(c.pick);
+      const gap = Math.min(DOT_GAP, (size - 20) / Math.max(1, of - 1));
+      const r = Math.min(6, gap * 0.38);
+      const dotsY = name.y + name.height + 4 + r;
+      const dots = (node.getChildByLabel('dots') as Graphics).clear();
+      for (let d = 0; d < of; d++) {
+        const x = (d - (of - 1) / 2) * gap;
+        if (d < at) dots.circle(x, dotsY, r).fill(swatch.orange.fill);
+        else dots.circle(x, dotsY, r).stroke({ color: MUTED, width: 2 });
+      }
+      const dotsW = of > 1 ? (of - 1) * gap + 2 * r : 2 * r;
       const level = node.getChildByLabel('level') as Text;
       level.style.wordWrapWidth = textW;
-      level.y = name.y + name.height + 6;
+      level.y = dotsY + r + 6;
       // A long level line keeps to two lines: it shrinks rather than pushing into the next row.
       level.scale.set(level.text ? Math.min(1, 40 / Math.max(level.height / level.scale.y, 1)) : 1);
       // One cream pill under the name and the level line, so both read over the backdrop.
-      const pillW = Math.max(name.width, level.width, 60) + 24;
-      const pillH = name.height + (level.text ? level.height + 6 : 0) + 10;
+      const pillW = Math.max(name.width, level.width, dotsW, 60) + 24;
+      const pillH = level.y - name.y + (level.text ? level.height : -6) + 10;
       (node.getChildByLabel('pill') as Graphics).clear().roundRect(-pillW / 2, name.y - 5, pillW, pillH, 16).fill({ color: cream, alpha: 0.95 });
       (node.getChildByLabel('tick') as Container).position.set(half - 8, -half + 8);
       node.hitArea = new Rectangle(-half, -half, size, size + (name.y + name.height - half));

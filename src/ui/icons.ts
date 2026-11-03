@@ -230,6 +230,18 @@ export function tilesIcon(): Graphics {
   return g;
 }
 
+/** Six tiles, three by two, with a sun over them: Home's Today's six (D10), a ready-made set for the day. */
+export function sixIcon(): Graphics {
+  const g = new Graphics().circle(0, -30, 10).fill(swatch.yellow.fill).stroke(line(3, swatch.yellow.line));
+  const tiles = [swatch.red, swatch.orange, swatch.yellow, swatch.green, swatch.teal, swatch.purple];
+  tiles.forEach((c, i) => {
+    const x = -24 + (i % 3) * 24;
+    const y = -4 + Math.floor(i / 3) * 24;
+    g.roundRect(x - 10, y - 10, 20, 20, 6).fill(c.fill).stroke(line(3, c.line));
+  });
+  return g;
+}
+
 /** A game controller: Explore's Family play, which needs one (or a keyboard). */
 export function padIcon(): Graphics {
   return new Graphics()
