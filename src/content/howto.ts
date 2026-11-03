@@ -2040,14 +2040,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'peekaround-island': {
-    goal: 'Turn the island to see who is hiding.',
+    goal: 'Find friends around the tree on a round island, and put them where they are asked.',
     steps: [
-      'Tap an arrow to turn the island round.',
-      { to: 3, text: "Then tap the picture of the friend hiding behind the tree (or the friend you are asked to find)." },
-      { from: 4, to: 4, text: 'Then put a friend behind, in front of or next to the tree, as asked.' },
-      { from: 5, text: 'Put friends where you are asked, two directions at once; after the island turns, tap who is in front now.' },
+      { to: 2, text: 'Tap an arrow, or the tree, to turn the island round and look behind the tree.' },
+      { to: 1, text: 'Tap the friend who was hiding once you can see them.' },
+      { from: 2, to: 2, text: 'Tap the friend you are asked for. The friends already in plain sight are not the one.' },
+      { from: 3, to: 3, text: 'Three friends are showing. Tap the picture of the friend you cannot see; the island turns to show them.' },
+      { from: 4, to: 4, text: 'Drag each friend from the shore behind, in front of or next to the tree, as asked.' },
+      { from: 5, text: 'Drag two friends where you are asked, two directions at once. Then the island turns halfway, and the friend who was behind is in front now.' },
     ],
-    finish: 'The round ends when the question has been answered.',
+    finish: [
+      { to: 3, text: 'The round ends after three hidden friends are found.' },
+      { from: 4, to: 4, text: 'The round ends when all three friends are on the island.' },
+      { from: 5, text: 'The round ends after two pairs, each followed by a half turn.' },
+    ],
   },
   'light-lab': {
     goal: 'Aim the sunbeam at the sleeping flowers with mirrors.',

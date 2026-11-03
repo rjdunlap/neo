@@ -30,3 +30,10 @@
 - `game-reviewer` fixes: the cover now returns when the card hangs after an unused Peek; the pet repeats level 2's ask after the card hangs.
 - Not run: levels 1–2 browser play (unchanged paths), offline check, the CCSS/England wording source check.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#rule-machine-levels-14-algebra-balance-ab1-2026-11-01-and-2026-11-02)): fairness of the covered machine and "two cards still fit", card pictures and Peek on an iPad, the wording check.
+
+## 2026-11-02 — Orchard Rows levels 4–6 (number-structure NS1, batch orchard-rows 1)
+
+- [PR #1121](https://github.com/rjdunlap/neo/pull/1121): `orchard-rows` school levels 4 *Equal rows*, 5 *Every way*, 6 *Only one long row*; new `baskets.ts`, model and bot in `logic.ts`.
+- Ran (merge commit 482f0780 = origin/main + branch, Vite dev on http://localhost:5259, `VITE_SPEECH=off`): typecheck; `npm test` 294 files / 4311 tests (Orchard Rows rules 22, 17 new: deal, factors, 60 prime sets, 300-seed determinism, accounting, help reaches a right answer, 100-seed bot with no misses, layout at four views with cells of 18 or more); `BROWSER_SUITE=orchard ORCHARD_LEVELS=4,5,6` (L4 arrows free, Plant on a leftover twice = 2 misses and 1 hint with glow, glow followed to the sticker; L5 portrait, a shape planted twice free, one-long-row screenshot; L6 wrong basket 1 miss, repeat claim free); `fingerdemo FINGER_ONLY=orchard-rows FINGER_LEVELS=4,5,6` clean (10.9, 16.0, 8.5 s); `npm run build`.
+- `game-reviewer` fixes: arrows live during a leftover reason, a tap mid-deal finishes it, range-end tick and wobble, one long-row line.
+- Not run: levels 1–3 regression play (unchanged class), phone and landscape screenshots beyond the case's, offline. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): leftover use, every-way feel, *prime*, device speech of "rows of"; reduced-motion deal not built.

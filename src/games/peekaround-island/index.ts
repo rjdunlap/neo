@@ -14,11 +14,10 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { fits, makeScene, nextRequest, peekTouch, planFor, spotFacing, whereIs, WHERE_WORDS, type PeekPlan, type Where } from './logic';
+import { fits, makeScene, namedHintTarget, nextPair, nextRequest, peekTouch, planFor, spotFacing, whereIs, WHERE_WORDS, type PeekPlan, type Where } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
@@ -347,9 +346,10 @@ class PeekaroundIsland implements Game {
 
   // Placing -------------------------------------------------------------------------------
 
-  /** Four friends wait on the shore for directions. */
+  /** Friends wait on the shore for directions: three for one at a time (one spot stays free), four for two pairs. */
   private async fillShore() {
-    const names = this.ctx.rng.shuffle(['duck', 'pig', 'cat', 'bunny', 'cow', 'dog', 'bear'] as CritterName[]).slice(0, 4);
+    const count = this.plan.mode === 'two' ? this.plan.rounds * 2 : this.plan.rounds;
+    const names = this.ctx.rng.shuffle(['duck', 'pig', 'cat', 'bunny', 'cow', 'dog', 'bear'] as CritterName[]).slice(0, count);
     for (const name of names) {
       const f = this.addFriend(name, -1);
       f.drag = draggable(f.node, this.ctx.tw, { onPick: () => sfx.tick(), onDrop: (x, y) => this.drop(f, x, y) });
@@ -388,8 +388,7 @@ class PeekaroundIsland implements Game {
       return this.ctx.instruct('around.place', { who: f.name, where: WHERE_WORDS[req.where] });
     }
     const [a, b] = waiting;
-    const first = nextRequest(this.free(), this.turns, [], this.ctx.rng);
-    const second = nextRequest(this.free().filter((s) => s !== first.spot), this.turns, [first.where], this.ctx.rng);
+    const [first, second] = nextPair(this.free(), this.turns, this.ctx.rng);
     a.want = first.where;
     b.want = second.where;
     for (const f of [a, b]) {
@@ -470,16 +469,27 @@ class PeekaroundIsland implements Game {
     if (this.hinting) return;
     this.hinting = true;
     this.hints++;
-    if (this.plan.mode === 'named') void this.ctx.say('around.turn');
+    if (this.plan.mode !== 'named') return;
+    const hider = this.hiderFriend();
+    if (hider && namedHintTarget(hider.spot, this.turns) === 'hider') void this.ctx.say('around.tapthem', { who: hider.name });
+    else void this.ctx.say('around.turn');
   }
 
-  /** A pulsing ring: the arrows (named), the hider's picture (who), or the spots that fit (placing). */
+  private hiderFriend() {
+    return this.friends.find((f) => f.name === this.hider && f.spot >= 0);
+  }
+
+  /** A pulsing ring: the arrows or, once in view, the friend asked for (named), the hider's picture (who), or the spots that fit (placing). */
   private drawGlow() {
     const g = this.glow.clear();
     if (!this.hinting || this.busy) return;
     const width = 6 + 2 * Math.sin(this.clock * 6);
     const ring = (x: number, y: number, rx: number, ry = rx) => g.ellipse(x, y, rx, ry).stroke({ width, color: swatch.yellow.fill });
-    if (this.plan.mode === 'named') for (const b of [this.left, this.right]) ring(b.x, b.y, 70);
+    if (this.plan.mode === 'named') {
+      const hider = this.hiderFriend();
+      if (hider && namedHintTarget(hider.spot, this.turns) === 'hider') ring(hider.node.x, hider.node.y - 60, 90, 110);
+      else for (const b of [this.left, this.right]) ring(b.x, b.y, 70);
+    }
     else if (this.plan.mode === 'who') {
       const t = this.tiles.find((x) => x.name === this.hider);
       if (t) ring(t.node.x, t.node.y, 78, 82);

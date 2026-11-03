@@ -23,7 +23,7 @@ export const PLANS: PeekPlan[] = [
   { mode: 'find', rounds: 3, name: 'Turn the island to find who is hiding behind the tree' },
   { mode: 'named', rounds: 3, name: 'Find the friend named: "where is the duck?" (two others are showing)' },
   { mode: 'who', rounds: 3, name: 'Three friends are showing: who is hiding behind the tree?' },
-  { mode: 'place', rounds: 4, name: 'Put a friend behind, in front of, or next to the tree' },
+  { mode: 'place', rounds: 3, name: 'Put three friends behind, in front of, and next to the tree' },
   { mode: 'two', rounds: 2, name: 'Two directions at once, then the island turns around: who is in front now?' },
 ];
 
@@ -69,17 +69,82 @@ export function makeScene(plan: PeekPlan, rng: Rng, lastHider?: CritterName): Pe
   return { friends: [hider, ...rest], facing: [2, ...sides], hider: 0 };
 }
 
+/** Whether a drop on `spot` answers the request. */
+export const fits = (where: Where, spot: number, turns: number) => whereIs(spot, turns) === where;
+
+/** A request is a real choice when some free spot fits it and some free spot does not. */
+export const hasChoice = (free: readonly number[], turns: number, where: Where) =>
+  free.some((s) => fits(where, s, turns)) && free.some((s) => !fits(where, s, turns));
+
 /**
- * The next placement request: a where that some free spot fits, preferring one not asked yet so
- * all three words come up. Returns the spot it was chosen from (any spot with that where fits).
+ * Whether the words not asked yet can still be asked one at a time with a real choice each, whichever
+ * fitting spot she takes ("next to" fits either side).
+ */
+function canFinish(free: readonly number[], turns: number, asked: readonly Where[]): boolean {
+  const left = (['front', 'behind', 'next'] as Where[]).filter((w) => !asked.includes(w));
+  if (!left.length) return true;
+  return left.some((w) => fairWord(free, turns, asked, w));
+}
+
+function fairWord(free: readonly number[], turns: number, asked: readonly Where[], where: Where): boolean {
+  if (!hasChoice(free, turns, where)) return false;
+  return free.filter((s) => fits(where, s, turns)).every((s) => canFinish(free.filter((x) => x !== s), turns, [...asked, where]));
+}
+
+/**
+ * Level 4's next placement request: a word not asked yet that leaves a spot that does not fit, chosen so the
+ * remaining words still do whichever fitting spot she takes. With three friends and four spots this means
+ * "next to" is never asked last (the two side spots would be all that is left). Returns a spot it was chosen
+ * from (any spot with that where fits).
  */
 export function nextRequest(free: number[], turns: number, asked: Where[], rng: Rng): { where: Where; spot: number } {
   const options = rng.shuffle(free.map((spot) => ({ spot, where: whereIs(spot, turns) })));
-  return options.find((o) => !asked.includes(o.where)) ?? options[0];
+  return options.find((o) => !asked.includes(o.where) && fairWord(free, turns, asked, o.where)) ?? options.find((o) => !asked.includes(o.where)) ?? options[0];
 }
 
-/** Whether a drop on `spot` answers the request. */
-export const fits = (where: Where, spot: number, turns: number) => whereIs(spot, turns) === where;
+/**
+ * Level 5's pair of requests, made before a half turn: one friend goes behind (so the turn brings someone
+ * round to the front), each friend has a free spot that does not fit, both can be placed in either order at
+ * any fitting spot, and whatever is left over is not all one word (so the next pair is a choice too). From
+ * the starting four spots this is always behind and next to; from the two left after the turn, behind and
+ * next to again. The order the two are named is shuffled.
+ */
+export function nextPair(free: number[], turns: number, rng: Rng): [{ where: Where; spot: number }, { where: Where; spot: number }] {
+  const behind = free.find((s) => whereIs(s, turns) === 'behind');
+  const pairs: [{ where: Where; spot: number }, { where: Where; spot: number }][] = [];
+  if (behind !== undefined) {
+    for (const spot of rng.shuffle(free.filter((s) => s !== behind))) {
+      const a = { where: 'behind' as Where, spot: behind };
+      const b = { where: whereIs(spot, turns), spot };
+      if (pairFair(free, turns, a.where, b.where)) pairs.push(rng.int(0, 1) ? [a, b] : [b, a]);
+    }
+  }
+  if (pairs.length) return pairs[0];
+  const a = nextRequest(free, turns, [], rng);
+  return [a, nextRequest(free.filter((s) => s !== a.spot), turns, [a.where], rng)];
+}
+
+/** Every way she can place the pair, in either order and at any fitting spot, and what is left after. */
+export function pairPlacements(free: readonly number[], turns: number, a: Where, b: Where): { a: number; b: number; left: number[] }[] {
+  const out: { a: number; b: number; left: number[] }[] = [];
+  for (const sa of free.filter((s) => fits(a, s, turns))) {
+    for (const sb of free.filter((s) => s !== sa && fits(b, s, turns))) out.push({ a: sa, b: sb, left: free.filter((s) => s !== sa && s !== sb) });
+  }
+  return out;
+}
+
+function pairFair(free: readonly number[], turns: number, a: Where, b: Where): boolean {
+  if (!hasChoice(free, turns, a) || !hasChoice(free, turns, b)) return false;
+  // Placing either one first, at any fitting spot, leaves a spot for the other.
+  for (const [x, y] of [[a, b], [b, a]] as const) {
+    for (const s of free.filter((f) => fits(x, f, turns))) if (!free.some((f) => f !== s && fits(y, f, turns))) return false;
+  }
+  // After the half turn, what is left over still holds two different words.
+  return pairPlacements(free, turns, a, b).every(({ left }) => left.length < 2 || new Set(left.map((s) => whereIs(s, turns + 2))).size > 1);
+}
+
+/** Level 2's help: ring the arrows while the friend asked for is behind the tree, and the friend once it is in view. */
+export const namedHintTarget = (hiderSpot: number, turns: number): 'arrows' | 'hider' => (whereIs(hiderSpot, turns) === 'behind' ? 'arrows' : 'hider');
 
 export interface PeekTouchFriend {
   name: CritterName;

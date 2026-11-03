@@ -122,8 +122,12 @@ async function woodsBatch() {
         }
         if (n === 0 && mode !== 'find') assert.deepEqual(await counts(), [2, 1]);
         if (mode === 'who') { await tap('neo.scene.game.tiles.find((t) => t.name === neo.scene.game.hider).node'); continue; }
+        const ringAt = () => page.evaluate(() => { const g = neo.scene.game; const b = g.glow.getLocalBounds(); return b.width > 0 ? b.x + b.width / 2 : null; });
+        if (n === 0 && mode === 'named') assert.equal(Math.round(await ringAt()), Math.round(await page.evaluate(() => neo.scene.game.right.x - 400)), 'the hint rings the arrows while the friend is hidden');
         for (let k = 0; k < 4 && await behind(); k++) { await tap('neo.scene.game.right'); await page.waitForTimeout(250); await idle(n); }
         await page.waitForTimeout(100);
+        // In view now: the ring moves from the arrows to the friend asked for.
+        if (n === 0 && mode === 'named') assert.ok(Math.abs((await ringAt()) - (await page.evaluate(() => neo.scene.game.friends.find((f) => f.name === neo.scene.game.hider).node.x))) < 20, 'the hint rings the friend once in view');
         await tap('neo.scene.game.friends.find((f) => f.name === neo.scene.game.hider).node');
       }
     } else {
