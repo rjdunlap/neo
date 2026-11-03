@@ -35,11 +35,12 @@
 - [ ] Once built: does the thought bubble tell her which maker comes next, or does she try every stall?
 - [ ] Once built: does a grown-up use the "Where did it begin?" label card?
 
-## Thought Bubbles (literature-meaning study, 2026-10-31; proposed, nothing built)
+## Thought Bubbles (literature-meaning study, 2026-10-31; levels 1–3 built 2026-11-02)
 
-- [ ] Once built: does a four- or five-year-old read the empty bubble as "what he thinks", or as a place to put the right object?
-- [ ] Once built: does the window story feel fair after the away story, or like a trick?
-- [ ] Once built: does *show me how you know* feel like finding treasure or like a test?
+- [ ] Does a four- or five-year-old read the empty bubble as "what he thinks", or as a place to put the right object?
+- [ ] Does the window story feel fair after the away story, or like a trick?
+- [ ] Does *show me how you know* feel like finding treasure or like a test?
+- [ ] Does the friend's reach and lean read at iPad size without the spoken line?
 
 ## Orchard Rows 4–6 (number-structure study, 2026-10-31; built 2026-11-02)
 

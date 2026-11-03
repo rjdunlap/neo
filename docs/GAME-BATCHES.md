@@ -855,6 +855,8 @@ Proof: new-interaction tier, as the [definition's check tier](definitions/orchar
 
 ### thought-bubbles 1: What does she want, Where will he look, How do we know
 
+**Built 2026-11-02 (PR #1122):** levels 1–3 shipped in one session; the claim stays here only as the plan.
+
 - **`thought-bubbles`, levels 1–3 (literature-meaning study slice 1, LM1)** (a new game, one declared batch; pre-K 1–2, school 1–3; Story Grove, paging, fallback Cozy Village): a tiny picture story plays on a cottage stage, then she drags one of three picture cards into a friend's empty thought bubble and the friend acts on it; what the friend wants (level 1), where he will look from what he saw (level 2, away or watching stories), why he did it and where the picture shows it (level 3). [Definition](definitions/thought-bubbles.md), [study build slices](deep-dives/subjects/literature-meaning.md#build-slices-in-order)
 
 Proof: new-game tier, as the [definition's check tier](definitions/thought-bubbles.md#check-tier) sets it (typecheck, rule tests 1–8 with registry, lands and how-to, a `browser-check.mjs` case with its README row: level 1 with one wrong card, a second for the glow, then the right card; level 2 with the actual place in an away story then the right card, and a watching story answered right; level 3 with one wrong reason then the right one, one free region tap, then the clue; one portrait screenshot of level 2, `fingerdemo` at levels 2 and 3, one build). If the allowance cannot cover level 3, stop after complete levels 1–2 with a draft-PR checkpoint. Person and device checks stay open.
