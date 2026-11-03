@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-11-03 — Puppet Stage levels 4–6 story cards and the premiere (batch puppet-stage 2)
+
+- [PR #1159](https://github.com/rjdunlap/neo/pull/1159), code commits bae19b8c and cbbdd976: levels 4–6 (pre-K 3–5, school 4–6), 33 voice lines, how-to, off-screen, `puppetstory` suite; `game-reviewer` two findings, fixed.
+- Ran: `npm run typecheck`; 49 puppet-stage rule tests; full `npm test` 4599 passed (297 files) at bae19b8c; `npm run build`; `BROWSER_SUITE=puppetstory` at cbbdd976 (server localhost:5637, `VITE_SPEECH=off`): level 4 three off-card bobs then glow 0/1, level 5 card 2 first twice 2/1 with glow, level 6 portrait card 1, early The end 1/0 with Bow, rest to the cheer and Bow; one portrait screenshot of level 6 mid-show; `fingerdemo` `FINGER_ONLY=puppet-stage FINGER_LEVELS=4,5,6 FINGER_BAND=school` 7.0, 10.9, 16.3 s.
+- Not run: offline check, couch suites (no couch), the levels 1–3 suite (unchanged), device speech.
+- Open: four device checks ([DEVICE-CHECKS](DEVICE-CHECKS.md#puppet-stage-levels-46-tp2-2026-11-03)).
+
 ## 2026-11-03 — Orchard Rows fresh orchards and baskets (batch orchard-rows 2)
 
 - [PR #1158](https://github.com/rjdunlap/neo/pull/1158), code commit 1d8fee7e: level 1–3 pools widened (2×2, 4×2, 4×3, 5×2, 4×4, 5×3, all within 5×5), level 2 never pairs a shape with its turn, level 4's second basket draws 14 or 21 too; `game-reviewer` no findings.
@@ -101,14 +108,6 @@
 
 ---
 
-## 2026-11-03 — Secret Code fair rows, a hint that keeps up and three doors (secret-code batch 1)
-
-- [PR #1144](https://github.com/rjdunlap/neo/pull/1144): misses count only from past tries still drawn above the door (level 7 only the shown clues); the faint-stone hint is redrawn after every later try with no new hint; gray reads "no more of that stone"; seeded door, gate or chest per door. No new level, bot unchanged.
-- Ran: `npm run typecheck`; `npx vitest run src/games/secret-code src/content` 177 passed (hidden-row, refreshed-hint and door tests); one scripted level-5 landscape play on http://localhost:5798/classic/ at 32ba685c: tries 1-5 gave misses 0,0,0,0,1 (try 5 repeated on-screen try 2), try 6 repeated scrolled-away try 1 with no miss, try 7 opened; second door one on-screen repeat miss, then to the sticker, no page errors; portrait screenshots of the gate and chest.
-- Not run: `fingerdemo` (bot unchanged), `npm run build`, the full unit suite (CI runs it), device or child checks.
-
----
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -128,7 +127,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `driftcards`, `fingerdemo` (`drift-cards`) | 2026-11-02: typecheck, 36 rule tests, full 4,291 units, build; levels 1–2 unchanged, level 3 in portrait (a miss, free repeat, second miss and glow, right patch and replay, 2/1) and ghost finger level 3 (37.4 s) | [Drift Cards level 3](archive/VERIFICATION-2026-11-02.md#2026-11-02--drift-cards-level-3-oceans-slice-6-batch-drift-cards-2) | Detective work versus trial and error, reading arrows cell by cell and iPad speech for "South-west" unestablished; offline not run |
 | `forecastdetective`, `fingerdemo` (`forecast-detective`) | 2026-10-31: typecheck, 27 rule tests, registry/lands/how-to/capacity/clip tests, build; levels 1–2 (level 1 free not-yet and repeat Checks, ruled-out Checks, glow, 2/1; level 2 portrait, missing flap, overclaim, Can't tell yet, 1/0) and ghost finger levels 1 and 2 (15.5 s, 16.3 s) | [Forecast Detective](archive/VERIFICATION-2026-10-31.md#2026-10-31--forecast-detective-levels-12-weather-water-slice-9) | Real iPad speech for "Lighthouse Isle", whether school-age children open clues on purpose and tween/parent appeal unestablished; offline not run |
 | `dropsjourney`, `fingerdemo` (`drops-journey`) | 2026-10-31: typecheck, 32 rule tests, full 3,970 units, build; levels 1–3 (level 1 mid-move tap ignored 0/0, level 2 portrait sea to cloud to snow 0/0, level 3 two can't-go cards, glow, requested hint, 2/1) and ghost finger levels 1 and 3 (7.0 s, 9.2 s) | [Drop's Journey](archive/VERIFICATION-2026-10-31.md#2026-10-31--drops-journey-levels-13-weather-water-slice-8) | Real iPad speech for "vapour", a four-year-old reading the dotted drop and school-age explanations unestablished; offline not run |
-| `puppetstage`, `fingerdemo` (`puppet-stage`) | 2026-10-30: typecheck, full units 3,763, build; levels 1–3 play (three pops/drag/Bow 0/0, wrong puppet twice 2/1 with glow, free try then wrong bubble 1/0, portrait) and demos at levels 1/2/3 clean 10.5/10.0/12.2 s; `phone`, `howto` and device speech not run | [Puppet Stage](archive/VERIFICATION-2026-10-30.md#2026-10-30--puppet-stage-levels-13-theatre-and-puppetry-tp1) |
+| `puppetstage`, `puppetstory`, `fingerdemo` (`puppet-stage`) | 2026-11-03: levels 4–6 typecheck, 49 rule tests, full units 4,599, build; `puppetstory` (level 4 off-card bobs then glow 0/1, level 5 two misses 2/1, level 6 portrait early The end 1/0 to the cheer) and demos at levels 4/5/6 clean 7.0/10.9/16.3 s; levels 1–3 last played 2026-10-30 (`puppetstage`, demos 10.5/10.0/12.2 s); `phone`, `howto` and device speech not run | [Puppet Stage 4–6](#2026-11-03--puppet-stage-levels-46-story-cards-and-the-premiere-batch-puppet-stage-2) |
 | `paintmixer`, `fingerdemo` (`paint-mixer`) | 2026-11-02: Paint Mixer 1–6 typecheck, 88 rule tests, full units 4,480, build; `paintmixer` `PAINT_LEVELS=5,6` (level 5 extra drop, Undo, shelf; level 6 empty Check free, wrong set twice, lid reveal, portrait) passed twice and demo levels 5–6 (32.6 s, 12.5 s); levels 1–4 play from 2026-11-01 | [Paint Mixer 5–6](archive/VERIFICATION-2026-11-02.md#2026-11-02--paint-mixer-levels-56-and-the-paint-shelf-batch-paint-mixer-3) | Not on an iPad or with a child; offline not run |
 | `seesawentry`, `seesawmeasure`, `fingerdemo` (Seesaw Balance) | 2026-10-26: level17 300-seed rules/typecheck/build, wrong-prediction play0/0/single reward, reviewed portrait and clean demo21.4s passed; earlier12–16 proof retained | [Prediction](archive/VERIFICATION-2026-10-26.md#2026-10-26--seesaw-balance-predict-the-tip), [batch3](archive/VERIFICATION-2026-10-26.md#2026-10-26--seesaw-balance-order-estimate-and-difference), [batch2](archive/VERIFICATION-2026-10-26.md#2026-10-26--seesaw-balance-lap-bounce-and-heavierlighter) | Full units with how-to focused recovery; required CI; real voice/iPad/child checks open |
 | `relaywoods`, `fingerdemo` (`relay-woods`), exact mosaic Keep/offline | 2026-10-26: whole1–4 rules/play/demos, targets/portrait, current paged capacity, optional Keep/profile/backup, root+classic routes and exact production offline payloads passed; typecheck/full3351 units/final9 focused/build | [NC2](archive/VERIFICATION-2026-10-26.md#2026-10-26--relay-woods-14-nc2) | Root test setup repaired; gameplay evidence reused. Real iPad/child evidence open; CI required |

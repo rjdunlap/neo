@@ -776,7 +776,7 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 ### puppet-stage 1: Pop up, make Bunny talk and say it like
 
-**Built 2026-10-30** (PR #1028): levels 1–3 of `puppet-stage`; levels 4–6 (TP2) are defined in [puppet-stage 2](#puppet-stage-2-story-cards-and-the-premiere).
+**Built 2026-10-30** (PR #1028): levels 1–3 of `puppet-stage`; levels 4–6 (TP2) were built in [puppet-stage 2](#puppet-stage-2-story-cards-and-the-premiere).
 
 - **`puppet-stage`, levels 1–3 (study slice 2)** (a new game, one declared batch; lap 1, toddler 1–2, preschool 2–3, pre-K 3; Music Mountain by decision 2, six games becoming seven, one page): touch the stage floor and a stick puppet rises there, says hello in its own voice and follows her finger, a tap bobs it and talks again (level 1, nothing counted); the pet names a puppet or a voice and she makes that one talk (level 2, by name, then by voice); one puppet holds a line and she chooses the sleepy, tiny or big way to say it (level 3, a free try first). Puppet voices are device-speech `pitch`/`rate` presets through a new `voice.sayIn`/`ctx.sayIn`, the one small shared change; nothing is kept. [Definition](definitions/puppet-stage.md), [study build slices](deep-dives/subjects/theatre-puppetry.md#build-slices-in-order)
 
@@ -784,7 +784,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/puppet-stage.
 
 ### puppet-stage 2: Story cards and the premiere
 
-**Defined 2026-11-03** ([PR #1156](https://github.com/rjdunlap/neo/pull/1156)), after batch puppet-stage 1.
+**Built 2026-11-03** ([PR #1159](https://github.com/rjdunlap/neo/pull/1159)): levels 4–6 as defined (stand 80 from each curtain, not 30; [GAMES.md](GAMES.md#puppet-stage)). Defined 2026-11-03 ([PR #1156](https://github.com/rjdunlap/neo/pull/1156)), after batch puppet-stage 1.
 
 - **`puppet-stage`, levels 4–6 (study slice 3, TP2)** (new levels with a new interaction; prek {3,5}, school {4,6}): three authored story cards (a Knock knock, b The lost hat, c Surprise!), two places per card with two marks each, bob-only scenes, peeks in the apron, marquee cards, and at level 6 a live shown-only premiere that ends with The end; 33 voice lines, a bot, a how-to card with the director's-chair note. [Definition](definitions/puppet-stage-4-6.md), [study build slices](deep-dives/subjects/theatre-puppetry.md#build-slices-in-order)
 

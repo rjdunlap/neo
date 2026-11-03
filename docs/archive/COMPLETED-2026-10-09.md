@@ -2465,7 +2465,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--rhyme-time-f
 
 [PR #1144](https://github.com/rjdunlap/neo/pull/1144), `claude/secret-code-1`: [dive slice 1](../deep-dives/secret-code.md#build-slices-in-order). No new level; bot, couch, levels and bands unchanged. Misses on levels 1-6 count only from past tries still drawn above the door (`visibleRows`/`rowsThatFit` in `logic.ts`; 1024 by 768 landscape shows four rows), and level 7 uses only the friend's shown clues. The faint-stone hint is redrawn after every later try on a hinted door, with no new hint counted. `code.yellow`, `code.detective` and the level-3+ how-to step now say gray means "no more of that stone". Each door is a seeded wooden door, garden gate or treasure chest (`doorKinds`, read from an Rng clone so codes never change). The two-miss-rules and automatic-hint notes in the dive stay as design notes.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--secret-code-fair-rows-a-hint-that-keeps-up-and-three-doors-secret-code-batch-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--secret-code-fair-rows-a-hint-that-keeps-up-and-three-doors-secret-code-batch-1).
 
 ## Shape Buddies, what grows: three seeds and sprouts (shape-buddies batch 1, 2026-11-03)
 
@@ -2532,3 +2532,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--bouncy-launch-level-
 Branch `claude/orchard-rows-fresh`, PR #1158: [dive slice 1](../deep-dives/orchard-rows.md#build-slices-in-order), batch `orchard-rows 2`. Level 1 draws 2×2, 2×3, 3×2, 3×3 and 4×2; level 2 draws 2×4, 3×4, 2×5, 4×3 and 5×2, and `makeOrchards` never pairs a shape with its turn in one round (no square); level 3 draws 3×5, 4×5, 5×4, 5×5, 4×4 and 5×3 (4×4 keeps its missing-row choice without the row-count decoy, as 5×5 does); level 4's second basket draws 14, 15, 16, 18, 20 or 21. Every shape stays within 5×5, so the 100-unit row bands are unchanged. No voice, art, how-to or bot change.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--orchard-rows-fresh-orchards-and-baskets-batch-orchard-rows-2).
+
+## Puppet Stage levels 4–6 (theatre and puppetry TP2, 2026-11-03)
+
+Branch `claude/puppet-stage-4-6`, PR #1159: batch `puppet-stage 2` from the [definition](../definitions/puppet-stage-4-6.md). Pre-K 3–5 and school 4–6 (school is new for this game; land stays Music Mountain); skills gain `acting-a-story`; 33 voice lines (`ps.instruct.4–6`, `ps.card.*`, `ps.sc.*`, `ps.sc.c3-duck`, `ps.order`, `ps.waited.*`, `ps.cheer`); how-to card and off-screen line; new browser suite `puppetstory`. Deviations from the definition: the stand keeps 80 (`PUPPET_W/2+10`) from each curtain at levels 4–6, not 30, because a puppet on an outer mark was half hidden (logical portrait is 1024×1365, places about 284 apart); The end sits left of Bow so both show after an early end; free and early bobs speak `ps.again.*`; curtains close on The end only through setting state; each The end tap with scenes unticked counts a miss. `game-reviewer` found two issues, fixed. Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--puppet-stage-levels-46-story-cards-and-the-premiere-batch-puppet-stage-2); four device checks stay open in [DEVICE-CHECKS](../DEVICE-CHECKS.md#puppet-stage-levels-46-tp2-2026-11-03).

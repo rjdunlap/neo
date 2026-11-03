@@ -98,15 +98,11 @@
 - [ ] On an iPad, is the custom feathered wing clear at card size?
 - [ ] Once the question card is built: does a grown-up use it beyond one exchange?
 
-## Puppet Stage (theatre-puppetry study, 2026-10-27; levels 1–3 built 2026-10-30)
+## Puppet Stage (theatre-puppetry study, 2026-10-27; levels 1–3 built 2026-10-30, 4–6 checks below)
 
 - [ ] On the iPad, with the selected voice, are three device-speech presets (sleepy: low and slow; tiny: high and fast; big: low and loud) distinct and pleasant, not creepy? Decides the study's decision 3 before TP1 is defined.
 - [ ] Watch a one-year-old with a puppet that pops up where she touched (Peekaboo Barn is the stand-in until it is built): does she touch again to make it rise, or wait for it?
 - [ ] Watch a six-year-old at Story Theater 12: does she want to move the characters herself, or is watching enough? Decides whether TP2's performed scenes are worth their cost.
-- [ ] When levels 4–6 are built: does a four-year-old follow a picture card without reading, once the pet has read it?
-- [ ] When levels 4–6 are built: does a six-year-old prefer performing a card to watching Story Theater?
-- [ ] When levels 4–6 are built: is Cat's tiny "Boo!" audibly sneaky on the iPad's voice?
-- [ ] When levels 4–6 are built: do grown-ups find and use the narrator-and-swap note?
 
 ## Paint Mixer levels 1–4
 
@@ -861,6 +857,15 @@ Performed on the built game (levels 1–3, PR #1028; browser play passed, nothin
 - [ ] With a one-year-old, watch her reaction to a puppet rising where she touched and following her finger.
 - [ ] With a three-year-old, check whether she picks the slow low voice for "the sleepy way".
 - [ ] In portrait, check that the 140-unit puppets and the floor's touch surface are comfortable for a small hand.
+
+## Puppet Stage levels 4–6 (TP2, 2026-11-03)
+
+Performed on the built levels (PR #1159; browser play passed, nothing below has been done on a device; [definition](definitions/puppet-stage-4-6.md#check-tier-for-the-build)).
+
+- [ ] With a four-year-old, check she follows a picture card without reading once the pet has read it.
+- [ ] With a six-year-old, check whether she prefers performing a card to watching Story Theater.
+- [ ] On the iPad's selected voice, check Cat's tiny "Boo!" is audibly sneaky.
+- [ ] Check grown-ups find and use the how-to card's narrator-and-swap note.
 
 ## Caravan Days levels 4–5 (CS3, 2026-10-30)
 
