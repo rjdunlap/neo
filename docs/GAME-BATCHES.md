@@ -716,6 +716,8 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 ### paint-mixer 3: Three pots and which jars match
 
+**Claimed 2026-11-02** on branch `claude/paint-mixer-5-6` (draft PR): levels 5–6 and the paint shelf; files `src/games/paint-mixer/*`, `src/content/{voice-script,howto,journal}.ts`, `scripts/browser/suites/paint-mixer-play.mjs`.
+
 - **`paint-mixer`, levels 5–6 and the journal paint shelf (study slice 4, RP2)** (defined 2026-11-02, [PR #1117](https://github.com/rjdunlap/neo/pull/1117); after batch `paint-mixer 2`; school top): three pots (1:2:1 peach, 8 or 12 drops) at level 5, then which lidded jars match the sample from their labels alone (2:3, 4:6, 3:5, 6:9) at level 6, where a lid is one hint and an opened lid shows its label against the sample's table; the paint shelf in the journal. [Definition](definitions/paint-mixer-5-6.md), [study slice 4](deep-dives/subjects/ratio-proportion.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the [definition's batches section](definitions/paint-mixer-5-6.md#build-batches-and-check-tiers) sets it (typecheck, rule tests with the journal and how-to tests, a filtered play of level 5 with one wrong Check and a match and level 6 with a wrong set twice, the lid reveal, then the right set, `fingerdemo` at levels 5 and 6, one portrait screenshot of level 6 with a lid open, one build). If the allowance cannot cover both, stop after a complete level 5 with its shelf, checkpointed in the draft PR.
