@@ -1,6 +1,6 @@
 # Lantern Lights deep dive
 
-*ID `lantern-lights` · band grown-up · levels 1–6 on 2026-10-31 · session `claude/dive-lantern-lights`, [PR #1079](https://github.com/rjdunlap/neo/pull/1079)*
+*ID `lantern-lights` · band grown-up · levels 1–6 on 2026-10-31 (1–8 from 2026-11-02) · session `claude/dive-lantern-lights`, [PR #1079](https://github.com/rjdunlap/neo/pull/1079)*
 
 ## The game today
 
@@ -100,9 +100,9 @@ None new. The school opening's home land is for its definition to raise, under t
 
 ## Build slices, in order
 
-1. **A 6 by 6 pond (batch lantern-lights 1).** Levels 7–8 (`PLANS` rows, grown-up max 8) and the portrait counts fix: when the room beside the pond is under about 260 units, the two counts sit in one line above it (`3 presses · 20 of 36 lit`), clear of the top corner buttons. *Check:* new levels on the existing interaction: typecheck, the game's rule tests, one browser play of level 8 (a hint, then to the sticker), one portrait screenshot of level 8 with the counts, `fingerdemo` at 8. Trips stop at level 5 and the course is pinned at 6, so no couch suite.
-2. **Named hints and Show me a short way (batch lantern-lights 2),** after batch 1 (shares `index.ts` layout). `hintFor` kinds and two voice lines; the after-pond buttons and replay on touch only. *Check:* new interaction: typecheck, rule tests (hint kinds by `ways`/`best` count; replay reaches all-lit in `par`), one play at level 3 with one hint (its named line), lighting the pond and the replay, one portrait screenshot mid-replay, `fingerdemo` at 3 (the bot must press Next pond).
-3. **Lily-pad ponds, level 9 (batch lantern-lights 3),** after batch 1 (shares `PLANS` and the max). Masked `footprint`/`solve`/`parsePond`, authored shapes, pad art, `lantern.pads`. *Check:* new rule: typecheck, rule tests including the brute force on every shape and the free-dimension cap, one play of level 9 with a tap on a pad (nothing counted) and a hint, to the sticker; one portrait screenshot; `fingerdemo` at 9; `BROWSER_SUITE=couchgames` filtered to Lantern Lights (shared rules change).
+1. **A 6 by 6 pond (batch lantern-lights 1), built 2026-11-02 ([PR #1131](https://github.com/rjdunlap/neo/pull/1131); [note](../archive/COMPLETED-2026-10-09.md#lantern-lights-a-6-by-6-pond-lantern-lights-batch-1-2026-11-02)).** Levels 7–8 (`PLANS` rows, grown-up max 8) and the portrait counts fix: when the room beside the pond is under about 260 units, the two counts sit in one line above it (`3 presses · 20 of 36 lit`), clear of the top corner buttons. *Check:* new levels on the existing interaction: typecheck, the game's rule tests, one browser play of level 8 (a hint, then to the sticker), one portrait screenshot of level 8 with the counts, `fingerdemo` at 8. Trips stop at level 5 and the course is pinned at 6, so no couch suite.
+2. **Named hints and Show me a short way (batch lantern-lights 2),** (shares `index.ts` layout, now built in batch 1). `hintFor` kinds and two voice lines; the after-pond buttons and replay on touch only. *Check:* new interaction: typecheck, rule tests (hint kinds by `ways`/`best` count; replay reaches all-lit in `par`), one play at level 3 with one hint (its named line), lighting the pond and the replay, one portrait screenshot mid-replay, `fingerdemo` at 3 (the bot must press Next pond).
+3. **Lily-pad ponds, level 9 (batch lantern-lights 3),** (shares `PLANS` and the max, now 8). Masked `footprint`/`solve`/`parsePond`, authored shapes, pad art, `lantern.pads`. *Check:* new rule: typecheck, rule tests including the brute force on every shape and the free-dimension cap, one play of level 9 with a tap on a pad (nothing counted) and a hint, to the sticker; one portrait screenshot; `fingerdemo` at 9; `BROWSER_SUITE=couchgames` filtered to Lantern Lights (shared rules change).
 4. *Define:* **Lantern Lights school opening** (docs only; see *Younger-band openings*).
 5. *Define, later:* **Three-colour lanterns** (Lights Out 2000's rule): a mod-3 solver checked by brute force over all 3^9 3 by 3 boards, a half-lit lantern state, Undo as a step back, voice, and a level number above 9. Not queued until slices 1–3 are built.
 
