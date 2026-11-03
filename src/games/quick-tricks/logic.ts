@@ -21,13 +21,15 @@ export interface TricksPlan {
   bridge: 'stretch' | 'choose';
   /** Whether letting go of a stretched plank short of the far side counts as a miss. */
   countShort: boolean;
+  /** Whether a leaf dropped below the friends (in front of them) counts as a miss. */
+  countBelow: boolean;
   name: string;
 }
 
 export const PLANS: TricksPlan[] = [
-  { friends: 1, socks: 2, patterns: false, bridge: 'stretch', countShort: false, name: 'A little show: keep Bunny dry, find a sock partner, stretch a bridge' },
-  { friends: 1, socks: 3, patterns: false, bridge: 'stretch', countShort: true, name: 'Leaf up high, three socks to choose from, stretch all the way across' },
-  { friends: 2, socks: 4, patterns: true, bridge: 'choose', countShort: true, name: 'Which leaf covers two, socks with the same color and pattern, a plank long enough' },
+  { friends: 1, socks: 2, patterns: false, bridge: 'stretch', countShort: false, countBelow: false, name: 'A little show: keep Bunny dry, find a sock partner, stretch a bridge' },
+  { friends: 1, socks: 3, patterns: false, bridge: 'stretch', countShort: true, countBelow: true, name: 'Leaf up high, three socks to choose from, stretch all the way across' },
+  { friends: 2, socks: 4, patterns: true, bridge: 'choose', countShort: true, countBelow: true, name: 'Which leaf covers two, socks with the same color and pattern, a plank long enough' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -61,6 +63,9 @@ export function judgeLeaf(leaf: Leaf, x: number, y: number, friends: readonly nu
   if (covered === friends.length) return 'dry';
   return covered > 0 ? 'partly' : 'away';
 }
+
+/** Whether a leaf drop counts as a miss: a partly covering leaf always does, a leaf too low only once the plan says so. */
+export const leafMiss = (plan: TricksPlan, drop: LeafDrop) => drop === 'partly' || (drop === 'below' && plan.countBelow);
 
 // ----- Sock Gobbler -----
 
@@ -96,6 +101,26 @@ export const GAP = 300;
 export const plankLengths = (rng: Rng): number[] => rng.shuffle([GAP * 0.55, GAP * 0.8, GAP + 70]);
 /** A plank (or a stretched one's end) reaches when it lands on the far bank, with a little to rest on. */
 export const reaches = (length: number) => length >= GAP + 30;
+
+// ----- the cast -----
+
+/** Who stands in the rain, and who crosses the bridge. Seeded, so a replay of a level is the same show with a new cast. */
+export const RAIN_FRIENDS = ['bunny', 'duck', 'cat', 'pig'] as const;
+export type RainFriend = (typeof RAIN_FRIENDS)[number];
+export const CROSSERS = ['beetle', 'snail', 'ladybug'] as const;
+export type Crosser = (typeof CROSSERS)[number];
+/** The sock monster's fur: never a sock colour, so every sock stands out against it and colour stays the only thing judged. */
+export const MONSTER_COLORS: ColorName[] = ['pink', 'teal', 'brown'];
+
+export interface Cast {
+  friends: RainFriend[];
+  crosser: Crosser;
+  monster: ColorName;
+}
+
+export function castFor(plan: TricksPlan, rng: Rng): Cast {
+  return { friends: rng.shuffle([...RAIN_FRIENDS]).slice(0, plan.friends), crosser: rng.pick(CROSSERS), monster: rng.pick(MONSTER_COLORS) };
+}
 
 // ----- the demonstration -----
 

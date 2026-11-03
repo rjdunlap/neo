@@ -1,6 +1,6 @@
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import { ink, RAINBOW, swatch, wood } from '../../art/palette';
+import { ink, RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { puffs } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -15,10 +15,12 @@ import { SecondShow } from './second-show';
 import { encoreFor } from './second-logic';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  castFor,
   friendsFor,
   GAP,
   judgeLeaf,
   leafDrop,
+  leafMiss,
   leavesFor,
   makeSocks,
   partnerSock,
@@ -29,6 +31,8 @@ import {
   sameSock,
   STRETCH_TO,
   TRICKS,
+  type Cast,
+  type Crosser,
   type Leaf,
   type Sock,
   type Trick,
@@ -78,8 +82,8 @@ function sockArt(sock: Sock, s = 2.2): Graphics {
   return g;
 }
 
-/** The sock monster: a fuzzy purple ball with a big grin. */
-function monsterArt(): Container {
+/** The sock monster: a fuzzy ball with a big grin, in the round's colour. */
+function monsterArt(color: ColorName): Container {
   const c = new Container();
   const g = new Graphics();
   const ring: [number, number, number][] = [];
@@ -87,7 +91,7 @@ function monsterArt(): Container {
     const a = (i / 14) * Math.PI * 2;
     ring.push([Math.cos(a) * 100, -110 + Math.sin(a) * 100, 30]);
   }
-  puffs(g, [...ring, [0, -110, 96]], swatch.purple.fill, swatch.purple.line);
+  puffs(g, [...ring, [0, -110, 96]], swatch[color].fill, swatch[color].line);
   g.circle(-36, -140, 22).circle(36, -140, 22).fill(0xffffff).circle(-32, -136, 10).circle(40, -136, 10).fill(ink);
   g.moveTo(-44, -88).quadraticCurveTo(0, -40, 44, -88).closePath().fill(0x7a2e3e);
   g.rect(-30, -86, 16, 12).rect(14, -86, 16, 12).fill(0xffffff);
@@ -107,6 +111,34 @@ function beetleArt(): Container {
   c.addChild(g);
   return c;
 }
+
+function snailArt(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.moveTo(-40, -4).lineTo(34, -4).quadraticCurveTo(50, -4, 48, -22).lineTo(44, -40).stroke(line(swatch.yellow.line, 4));
+  g.roundRect(-44, -16, 92, 16, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4));
+  g.moveTo(40, -16).lineTo(46, -44).moveTo(48, -16).lineTo(58, -40).stroke(line(ink, 3));
+  g.circle(46, -46, 4).circle(58, -42, 4).fill(ink);
+  g.circle(-6, -36, 28).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 4));
+  g.moveTo(-6, -36).arc(-6, -36, 16, 0, Math.PI * 1.6).stroke(line(swatch.orange.line, 4));
+  c.addChild(g);
+  return c;
+}
+
+function ladybugArt(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  for (const x of [-16, 0, 16]) g.moveTo(x, -10).lineTo(x - 8, 2).stroke(line(ink, 4));
+  g.circle(30, -20, 13).fill(ink);
+  g.circle(0, -24, 30).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
+  g.moveTo(0, -54).lineTo(0, 6).stroke(line(ink, 3));
+  for (const [x, y] of [[-14, -34], [14, -34], [-16, -16], [16, -16], [-6, -44], [6, -44]]) g.circle(x, y, 5).fill(ink);
+  g.circle(34, -24, 3).fill(0xffffff);
+  c.addChild(g);
+  return c;
+}
+
+const CROSSER_ART: Record<Crosser, () => Container> = { beetle: beetleArt, snail: snailArt, ladybug: ladybugArt };
 
 function plankArt(length: number): Graphics {
   return new Graphics().roundRect(0, -12, length, 24, 10).fill(wood.fill).stroke(line(wood.line, 5));
@@ -143,6 +175,8 @@ interface DragItem {
 
 class QuickTricks implements Game {
   readonly plan: TricksPlan;
+  /** The round's friends in the rain, the bridge's crosser and the monster's colour, who all bow at the end. */
+  readonly cast: Cast;
   /** Which trick is showing (an index into TRICKS); 3 is the finale. */
   index = -1;
   misses = 0;
@@ -186,6 +220,7 @@ class QuickTricks implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    this.cast = castFor(this.plan, ctx.rng);
     this.next = new RoundButton(arrowIcon(1), swatch.green, 56, () => void this.advance());
     this.next.visible = false;
     // Drawings over the scene must not catch touches meant for what is under them (a hint glow sits on the answer).
@@ -320,9 +355,8 @@ class QuickTricks implements Game {
 
   private async setUmbrella() {
     const offsets = friendsFor(this.plan);
-    const kinds = ['bunny', 'duck'] as const;
     this.friends = offsets.map((dx, i) => {
-      const c = this.ctx.track(new Critter(CRITTERS[kinds[i]]));
+      const c = this.ctx.track(new Critter(CRITTERS[this.cast.friends[i]]));
       c.scale.set(0.5);
       c.position.set(this.cx + dx, this.groundY);
       c.setMood('sad');
@@ -344,7 +378,7 @@ class QuickTricks implements Game {
       Object.assign(item, { leaf });
       this.leaves.push(item as DragItem & { leaf: Leaf });
     });
-    await this.ctx.instruct(this.plan.friends === 1 ? 'tricks.umbrella' : 'tricks.umbrella-two');
+    await this.ctx.instruct(this.plan.friends === 1 ? `tricks.umbrella-${this.cast.friends[0]}` : 'tricks.umbrella-two');
   }
 
   /** Friends' head height and the cloud's bottom. */
@@ -358,8 +392,10 @@ class QuickTricks implements Game {
     const result = judgeLeaf(item.leaf, x - this.cx, y, friendsFor(this.plan), top, sky);
     if (result === 'away') return false;
     if (result === 'below') {
-      this.miss();
-      void this.ctx.say('tricks.above');
+      // In front of the friends, not over them. At the first level that is a free try: the rain shows it.
+      if (leafMiss(this.plan, result)) this.miss();
+      else sfx.boing();
+      void this.ctx.say(this.plan.friends === 1 ? `tricks.above-${this.cast.friends[0]}` : 'tricks.above-two');
       return false;
     }
     if (result === 'partly') {
@@ -409,7 +445,7 @@ class QuickTricks implements Game {
   private async setSocks() {
     const { held, choices } = makeSocks(this.plan, this.ctx.rng);
     this.held = held;
-    const m = monsterArt();
+    const m = monsterArt(this.cast.monster);
     m.position.set(this.cx - 40, this.groundY);
     const holding = sockArt(held, 1.6);
     holding.position.set(120, -120);
@@ -461,7 +497,7 @@ class QuickTricks implements Game {
   private async setBridge() {
     const [l, r] = this.banks;
     const y = this.bankY;
-    const beetle = beetleArt();
+    const beetle = CROSSER_ART[this.cast.crosser]();
     beetle.position.set(l - 90, y);
     this.layer.addChild(beetle);
     this.beetle = beetle;
@@ -476,7 +512,7 @@ class QuickTricks implements Game {
       node.on('globalpointermove', () => {
         if (item.drag.dragging) this.bridgeLength = Math.max(60, Math.min(GAP + 160, node.x - l));
       });
-      await this.ctx.instruct('tricks.bridge');
+      await this.ctx.instruct(`tricks.bridge-${this.cast.crosser}`);
     } else {
       plankLengths(this.ctx.rng).forEach((length, i) => {
         const node = new Container();
@@ -494,7 +530,7 @@ class QuickTricks implements Game {
         p.drag.home = p.home;
         p.node.position.set(p.home.x, p.home.y);
       });
-      await this.ctx.instruct('tricks.bridge-choose');
+      await this.ctx.instruct(`tricks.bridge-choose-${this.cast.crosser}`);
     }
   }
 
@@ -606,19 +642,23 @@ class QuickTricks implements Game {
     this.back.clear().rect(0, 0, v.w, v.h).fill(0xffe3f1).rect(0, this.groundY, v.w, v.h - this.groundY).fill(swatch.green.light);
     // Everyone from the show takes a bow together.
     const cast: Container[] = [];
-    const bunny = this.ctx.track(new Critter(CRITTERS.bunny));
-    bunny.scale.set(0.5);
-    const m = monsterArt();
+    const friends = this.cast.friends.map((kind) => {
+      const f = this.ctx.track(new Critter(CRITTERS[kind]));
+      f.scale.set(0.5);
+      f.setMood('happy');
+      return f;
+    });
+    const m = monsterArt(this.cast.monster);
     m.scale.set(0.7);
-    const beetle = beetleArt();
-    beetle.scale.set(1.4);
-    cast.push(bunny, m, beetle);
+    const crosser = CROSSER_ART[this.cast.crosser]();
+    crosser.scale.set(1.4);
+    cast.push(...friends, m, crosser);
     cast.forEach((c, i) => {
-      c.position.set(v.w * (0.3 + i * 0.22), this.groundY + 20);
+      c.position.set(v.w * (0.5 + (i - (cast.length - 1) / 2) * (0.66 / cast.length)), this.groundY + 20);
       this.layer.addChild(c);
       void this.ctx.tw.wait(0.3 + i * 0.25).then(() => this.ctx.tw.to(c, { y: c.y - 30 }, { duration: 0.2, ease: ease.outQuad })).then(() => this.ctx.tw.to(c, { y: c.y + 30 }, { duration: 0.25, ease: ease.inQuad }));
     });
-    this.friends = [bunny];
+    this.friends = friends;
     const colors = RAINBOW.map((c) => swatch[c].fill);
     this.ctx.particles.burst(v.w / 2, v.h * 0.3, { kind: 'confetti', colors, count: 70, speed: [200, 600], gravity: 600, life: [1.2, 2] });
     sfx.tada();
