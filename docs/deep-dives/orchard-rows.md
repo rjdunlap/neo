@@ -116,7 +116,7 @@ None blocking. Under the [October 23 standing rules](../archive/DECISIONS-2026-1
 
 ## Build slices, in order
 
-1. **Fresh orchards and baskets** (batch `orchard-rows 2`; ready): the level 1–4 pool additions above, in `logic.ts` and its tests. Check tier: game rules, so `npm run typecheck` and the Orchard Rows rule tests only.
+1. **Fresh orchards and baskets** (batch `orchard-rows 2`; ready; claimed by branch `claude/orchard-rows-fresh`): the level 1–4 pool additions above, in `logic.ts` and its tests. Check tier: game rules, so `npm run typecheck` and the Orchard Rows rule tests only.
 2. **Define levels 7–9, *a path through the orchard*** (docs only; status `define`): the path picture and its layout with pads in `basketLayout` at the four views, part signs, the pad decoys, accounting, voice lines, how-to steps (and bounding the level 4–6 note), the bot, the `makeRound` and `isBasketLevel` couplings, rule tests and the check tier.
 3. **Build levels 7–9** (after the definition; new-interaction tier: typecheck, unit tests, one scripted play of levels 7 and 9 with one wrong pad and one hint, one portrait screenshot, `fingerdemo` at 7, 8 and 9). Queued by the definition, not here.
 
