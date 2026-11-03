@@ -825,7 +825,7 @@ class PictureLogic implements Game {
     // The hint says why the clue decides the square, so the step can be used again: a finished line, a line the clue
     // fills, a long run's overlap on an empty line, or else the clue fitting only one way around what is marked.
     switch (h.why.kind) {
-      case 'done': return ['picture.hint-done', vars];
+      case 'done': return [h.clue.length === 1 && h.clue[0] === 0 ? 'picture.hint-zero' : 'picture.hint-done', vars];
       case 'full': return [h.kind === 'fill' ? 'picture.hint-full-fill' : 'picture.hint-full-cross', vars];
       case 'overlap': return ['picture.hint-overlap', { ...vars, run: h.why.run, room: h.why.room }];
       case 'fits': return [h.kind === 'fill' ? 'picture.hint-fill' : 'picture.hint-cross', vars];

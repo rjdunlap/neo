@@ -2358,6 +2358,7 @@ export const SCRIPT = {
   'picture.hint-fill': ['In {line}, the clue {clue} leaves only one way to fit. The ringed square must be filled.'],
   'picture.hint-cross': ['In {line}, the clue {clue} leaves no room here. Put a cross in the ringed square.'],
   'picture.hint-done': ['In {line}, the line already has everything its clue asks for, so the rest of it stays empty. Put a cross in the ringed square.'],
+  'picture.hint-zero': ['In {line}, the clue is nothing: no square in that line is filled. Put a cross in the ringed square.'],
   'picture.hint-full-fill': ['In {line}, the clue {clue} takes up the whole line, so every square in it is decided. The ringed square must be filled.'],
   'picture.hint-full-cross': ['In {line}, the clue {clue}, with one gap between runs, takes up the whole line, and the ringed square is a gap. Put a cross in it.'],
   'picture.hint-overlap': ['In {line}, a run of {run} has only {room} squares to slide in, so wherever it sits, it covers the middle. The ringed square must be filled.'],
