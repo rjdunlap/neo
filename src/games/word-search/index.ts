@@ -98,7 +98,7 @@ class WordSearch implements Game {
   private dirty = true;
   private readonly held = new HeldDirection();
   private botWait = 0.8;
-  private told = { miss: false };
+  private told = { miss: false, root: false };
   /** Couch challenge course: fixed grids in a row. Null in ordinary play, where grids are drawn from the seed. */
   private readonly course: { minimum: number } | null;
   private done: number[] = [];
@@ -426,7 +426,7 @@ class WordSearch implements Game {
     this.carry = 0;
     this.anchor = null;
     this.hinted = null;
-    this.told = { miss: false };
+    this.told = { miss: false, root: false };
     this.cursor = Math.floor(this.n / 2) * this.n + Math.floor(this.n / 2);
     this.scrollX = 0;
     this.scrollY = 0;
@@ -691,7 +691,13 @@ class WordSearch implements Game {
       this.dirty = true;
       if (this.hinted?.word === hit) this.hinted = null;
       line.forEach((_, k) => sfx.bell(3 + (k % 7), 0.12));
-      void this.ctx.say('wordsearch.found', { word: spoken(this.grid.words[hit].word) });
+      const said = this.ctx.say('wordsearch.found', { word: spoken(this.grid.words[hit].word) });
+      // A root family: on its first word found, the pet says what the root means, once a grid.
+      const root = themeById(this.grid.theme).root;
+      if (root && !this.told.root) {
+        this.told.root = true;
+        void said.then(() => this.ctx.say(`wordsearch.root-${root}`));
+      }
     }
     this.paintList();
     this.report();

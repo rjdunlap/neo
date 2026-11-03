@@ -2333,6 +2333,8 @@ export const SCRIPT = {
   'wordsearch.hint': ['Look at the ringed letter. The word {word} starts there.'],
   'wordsearch.cleared': ['Every word found!', 'The whole list, found!'],
   'wordsearch.done': ['A pocketful of words.'],
+  'wordsearch.root-port': ['Every word here has port in it. Port means carry.'],
+  'wordsearch.root-spect': ['Every word here has spect in it. Spect means look.'],
   'comeback.intro': ['Very few of the island\'s pond turtles were left. With the right pairs, they can come back.'],
   'comeback.instruct-pair': ['{n} nests this spring. Tap two turtles for each nest. No brothers and sisters together!'],
   'comeback.instruct-pair-cousins': ['{n} nests this spring. No brothers and sisters, and no cousins either!'],

@@ -1,24 +1,69 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  ALL_DIRS, cellOf, cellsOfWord, hasBlocked, hintFor, lineBetween, makeGrid, makeGrids, occurrences, parseGrid, planFor, PLANS, rowsOf, textOf, wordAt,
+  ALL_DIRS, cellOf, cellsOfWord, hasBlocked, hintFor, lineBetween, makeGrid, makeGrids, occurrences, parseGrid, planFor, PLANS, rowsOf, textOf, themesFor, wordAt,
 } from './logic';
 import { BLOCKED } from './blocked';
 import { THEMES, themeById } from './words';
+import { SCRIPT } from '../../content/voice-script';
 
 describe('the word lists', () => {
   it('are plain capital words of three to eight letters, none repeated, with enough in each theme for every level', () => {
     const most = Math.max(...PLANS.map((p) => p.words));
-    expect(THEMES.length).toBeGreaterThanOrEqual(8);
+    expect(THEMES.filter((t) => !t.root).length).toBeGreaterThanOrEqual(15);
     for (const t of THEMES) {
       expect(new Set(t.words).size, t.id).toBe(t.words.length);
-      expect(t.words.length, t.id).toBeGreaterThanOrEqual(most);
+      // An everyday theme fills every level; a root family is shorter and fills only the small grids.
+      expect(t.words.length, t.id).toBeGreaterThanOrEqual(t.root ? PLANS[1].words : most);
       for (const w of t.words) expect(w, `${t.id} ${w}`).toMatch(/^[A-Z]{3,8}$/);
       expect(t.name.length, t.id).toBeGreaterThan(5);
     }
     expect(new Set(THEMES.map((t) => t.id)).size).toBe(THEMES.length);
     expect(themeById('pond').id).toBe('pond');
     expect(themeById('nope').id).toBe(THEMES[0].id);
+  });
+});
+
+describe('fresh themes and root families', () => {
+  const back = (w: string) => [...w].reverse().join('');
+
+  it('never hide one word of a theme inside another, either way, and hold no word that reads the same backwards', () => {
+    // A word inside another (RAIN in RAINBOW) can never be in the grid exactly once, so the two could never share a grid.
+    for (const t of THEMES) for (const w of t.words) {
+      expect(back(w), `${t.id} ${w} is a palindrome`).not.toBe(w);
+      for (const o of t.words) if (o !== w) expect(w.includes(o) || back(w).includes(o), `${t.id}: ${o} in ${w}`).toBe(false);
+    }
+    expect(themeById('weather').words).not.toContain('RAIN');
+    expect(themeById('weather').words).toContain('RAINBOW');
+  });
+
+  it('draw only the themes a plan can fill: the root families at the small grids, every everyday theme everywhere', () => {
+    const roots = THEMES.filter((t) => t.root);
+    expect(roots.map((t) => t.id).sort()).toEqual(['port', 'spect']);
+    expect(themesFor(PLANS[0])).toEqual(THEMES);
+    expect(themesFor(PLANS[1])).toEqual(THEMES);
+    for (const plan of PLANS.slice(2)) expect(themesFor(plan)).toEqual(THEMES.filter((t) => !t.root));
+    // Over many seeds a level-1 round sometimes draws a root family, and a level 3 or 4 round never does.
+    const drawn = (plan: (typeof PLANS)[number]) => new Set(Array.from({ length: 80 }, (_, s) => makeGrids(plan, new Rng(s + 1))[0].theme));
+    expect([...drawn(PLANS[0])].some((id) => themeById(id).root)).toBe(true);
+    for (const plan of PLANS.slice(2)) expect([...drawn(plan)].some((id) => themeById(id).root), plan.name).toBe(false);
+  });
+
+  it('every theme makes a grid for every plan it can fill, over a dozen seeds', () => {
+    for (const plan of PLANS) for (const t of themesFor(plan)) for (let s = 1; s <= 12; s++) {
+      const g = makeGrid(plan, t, new Rng(s * 131 + plan.size));
+      expect(g.words, `${t.id} ${plan.name} ${s}`).toHaveLength(plan.words);
+      for (const p of g.words) expect(occurrences(g.size, g.letters, p.word), `${t.id} ${p.word}`).toHaveLength(1);
+    }
+  });
+
+  it('give each root family the pet\'s one line on what the root means, naming the root its words share', () => {
+    for (const t of THEMES.filter((x) => x.root)) {
+      const line = SCRIPT[`wordsearch.root-${t.root!}`];
+      expect(line, t.id).toBeDefined();
+      expect(line.join(' ').toLowerCase(), t.id).toContain(`${t.root} means`);
+      for (const w of t.words) expect(w, t.id).toContain(t.root!.toUpperCase());
+    }
   });
 });
 
@@ -50,7 +95,7 @@ describe('making grids', () => {
     PLANS.forEach((plan, i) => {
       expect(planFor(i + 1)).toBe(plan);
       for (let s = 1; s <= 12; s++) {
-        const theme = THEMES[s % THEMES.length];
+        const pool = themesFor(plan), theme = pool[s % pool.length];
         const grid = makeGrid(plan, theme, new Rng(s * 977 + i));
         const label = `${plan.name} seed ${s}`;
         expect(grid.size, label).toBe(plan.size);
@@ -74,7 +119,7 @@ describe('making grids', () => {
       const hard = makeGrid(planFor(3), THEMES[0], new Rng(s + 100));
       expect(hard.words.every((p) => ALL_DIRS.some(([dr, dc]) => dr === p.dr && dc === p.dc))).toBe(true);
     }
-    const backwards = Array.from({ length: 12 }, (_, s) => makeGrid(planFor(3), THEMES[s % THEMES.length], new Rng(s * 31))).flatMap((g) => g.words).filter((p) => p.dr < 0 || p.dc < 0 || (p.dr === 1 && p.dc === -1));
+    const backwards = Array.from({ length: 12 }, (_, s) => makeGrid(planFor(3), themesFor(planFor(3))[s % themesFor(planFor(3)).length], new Rng(s * 31))).flatMap((g) => g.words).filter((p) => p.dr < 0 || p.dc < 0 || (p.dr === 1 && p.dc === -1));
     expect(backwards.length).toBeGreaterThan(0);
   });
 
@@ -122,7 +167,7 @@ describe('hints', () => {
 describe('words that must not appear', () => {
   it('are never in a generated grid, and the check really reads every direction', () => {
     for (const plan of PLANS) for (let s = 1; s <= 10; s++) {
-      const g = makeGrid(plan, THEMES[s % THEMES.length], new Rng(s * 53));
+      const pool = themesFor(plan), g = makeGrid(plan, pool[s % pool.length], new Rng(s * 53));
       expect(hasBlocked(g.size, g.letters, g.words.map((w) => w.word)), `${plan.name} seed ${s}`).toBe(false);
     }
     // The check itself: a blocked word hidden in any of the eight directions is seen.
