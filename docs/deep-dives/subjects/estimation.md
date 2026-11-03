@@ -116,7 +116,7 @@ None of these blocks E1's definition: decision 1's lean is the default, and E1 a
 2. **E1 built:** level 6 *About how many?*, school 3–6 ([PR #808](https://github.com/rjdunlap/neo/pull/808)); [verification](../../archive/VERIFICATION-2026-10-22.md#2026-10-22--lasso-loops-level-6-about-how-many-estimation-e1). Remaining person checks and E2’s decision 2 stay open.
 3. **E6 co-play tip and E7 Jar guess card** (docs plus plain HTML after an ordinary content review; card wording checked against the choking-hazard boundary).
 4. **E2 define: Lasso Loops 7** after a child has played 6 (decision 2).
-5. **E3 in Market Stall's dive** (after its window decision), and **E4 *Count a patch*** defined with its home game chosen.
+5. **E3 in Market Stall's dive** (after its window decision), and **E4 *Count a patch*** defined with its home game chosen (the [Orchard Rows dive](../orchard-rows.md#left-out-on-purpose) leaves it to Lasso Loops, since Orchard Rows counts exact arrays).
 6. **E5 Jar Clues** after decision 3 and the Lantern Lake capacity test.
 
 Frog Hop 13 and its G4/G5 stay in the Frog Hop dive's own order (decisions 5 and 6); Seesaw 15, Fill and Dump 8–9 and Duck Pond's peekers stay in theirs.

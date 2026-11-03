@@ -123,7 +123,7 @@ A creature that loves rows (or a creature planting its own orchard) is a later p
 
 Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#standing-rules) the defining session adopts each lean; only the person checks wait.
 
-1. **Identity.** Orchard Rows levels 4–6 rather than a new game: the action is still arranging and counting trees in rows. **Lean: extend Orchard Rows**; the queued Orchard Rows game dive numbers its own levels from 7.
+1. **Identity.** Orchard Rows levels 4–6 rather than a new game: the action is still arranging and counting trees in rows. **Lean: extend Orchard Rows**; the [Orchard Rows game dive](../orchard-rows.md) (2026-11-03) proposes levels 7–9.
 2. **Basket sizes.** Up to 24, so every factor pair fits on the orchard at the game's current tree spacing (a single row of 24 trees is pictures, never a target). **Lean: 12 to 24.**
 3. **Words.** "Equal rows", "only one long row" and "the same shape turned" in speech; *factor*, *multiple* and *composite* on the grown-up card only; *prime* spoken once, at the level 6 answer. **Lean: as stated.**
 4. **The leftover's home.** Lunch boxes go to Monster Munch's dive rather than Pet Kitchen, which keeps its fractions and recipes. **Lean: Monster Munch.**
@@ -133,7 +133,7 @@ Under the [October 23 standing rules](../../archive/DECISIONS-2026-10-23.md#stan
 
 ## Build slices, in order
 
-1. **NS1 · Define Orchard Rows 4–6** (docs only; **defined** 2026-10-31, [definition](../../definitions/orchard-rows.md), [PR #1063](https://github.com/rjdunlap/neo/pull/1063); build batch `orchard-rows 1` next): the row-count control and its layout at 100 units, the equal deal with its leftover, the basket pools and their rule tests, the shape page, the prime basket sets, accounting, how-to steps, voice lines and the bot.
+1. **NS1 · Define Orchard Rows 4–6** (docs only; **defined** 2026-10-31, [definition](../../definitions/orchard-rows.md), [PR #1063](https://github.com/rjdunlap/neo/pull/1063); built 2026-11-02 (batch `orchard-rows 1`)): the row-count control and its layout at 100 units, the equal deal with its leftover, the basket pools and their rule tests, the shape page, the prime basket sets, accounting, how-to steps, voice lines and the bot.
 2. **Build Orchard Rows 4–6** (new-interaction tier; **built** 2026-11-02, [PR #1121](https://github.com/rjdunlap/neo/pull/1121), batch `orchard-rows 1`).
 3. **NS4 · Grouping card** (grown-ups' page, plain HTML).
 4. **NS2 Lunch boxes** and **NS3 Two frogs**, each handed to its game's dive as a candidate.
