@@ -471,6 +471,8 @@ Proof: new-interaction tier, as the [definition's Build and check tier](definiti
 
 ### attic-finds 4: Mend the exhibit
 
+**Claimed 2026-11-03 on `claude/attic-finds-9`** (draft PR). Expected files: `src/games/attic-finds/` (`cases.ts`, `case.ts`, `logic.ts` and tests), `src/content/howto.ts`, `src/content/voice-script.ts`, `scripts/browser/` (the `atticcase` suite), then the docs closeout.
+
 - **`attic-finds`, level 9 *Mend the exhibit*** (school only; caption strips and a question slot on the same case, after batch attic-finds 3; school `{2, 9, order [2,5,6,7,8,9]}`): swap each of three over-claiming captions for one the papers support, then pick the new paper that could answer a question the papers leave open. [Definition](definitions/household-casebook.md), [everyday-life study slice H5](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the [definition's Build and check tier](definitions/household-casebook.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticcase` scripted play of level 9, `fingerdemo` at level 9, one portrait screenshot with a strip open, one build). Expected files: as attic-finds 3.
