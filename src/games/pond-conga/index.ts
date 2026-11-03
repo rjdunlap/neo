@@ -114,9 +114,9 @@ function reedArt(side: Dir, w: number, h: number): Graphics {
     const root = at(t, 0), tip = at(t + lean, 11 + (k % 3));
     g.moveTo(root.x, root.y).lineTo(tip.x, tip.y).stroke({ width: 3, color: REED, cap: 'round' });
     if (k % 3 === 0) {
-      const head = at(t + lean * 0.8, 9);
+      const head = at(t + lean * 0.8, 8);
       const upright = side === 1 || side === 3;
-      g.ellipse(head.x, head.y, upright ? 3 : 6, upright ? 6 : 3).fill(CATTAIL);
+      g.ellipse(head.x, head.y, upright ? 3 : 5, upright ? 5 : 3).fill(CATTAIL);
     }
   }
   return g;
