@@ -145,8 +145,37 @@ export function deductions(known: readonly (boolean | null)[], p: PicturePuzzle)
 export type Hint =
   /** A square she filled that is not in the picture, or crossed that is: take it out. */
   | { kind: 'fix'; cell: number; mark: Mark }
-  /** One line's clue decides this square. */
-  | { kind: 'fill' | 'cross'; cell: number; line: Line; clue: readonly number[] };
+  /** One line's clue decides this square, for the reason `why` names. */
+  | { kind: 'fill' | 'cross'; cell: number; line: Line; clue: readonly number[]; why: HintWhy };
+
+/**
+ * Why a line decides a square, so a hint teaches a step she can use again:
+ * - `done`: the line already holds every run its clue asks for (or the clue is 0), so the rest of it is empty;
+ * - `full`: the clue's runs with one gap between each fill the whole line, so every square in it is decided;
+ * - `overlap`: nothing in the line is marked yet, and a run is so long for the `room` it can slide in that it covers the
+ *   middle of that room wherever it sits ("simple boxes");
+ * - `fits`: anything else: what is marked leaves only one way for the clue to fit here.
+ */
+export type HintWhy = { kind: 'done' } | { kind: 'full' } | { kind: 'overlap'; run: number; room: number } | { kind: 'fits' };
+
+/**
+ * The reason square `at` of a line is decided (filled when `fill`), worked out from the line's clue and what is known in it,
+ * never from the answer. The line must decide it.
+ */
+export function whyFor(lineKnown: readonly (boolean | null)[], clue: readonly number[], at: number, fill: boolean): HintWhy {
+  const have = runs(lineKnown.map((k) => k === true));
+  if (!fill && have.length === clue.length && have.every((n, i) => n === clue[i])) return { kind: 'done' };
+  const slack = lineKnown.length - (clue.reduce((a, b) => a + b, 0) + clue.length - 1);
+  if (slack === 0) return { kind: 'full' };
+  if (fill && lineKnown.every((k) => k === null)) {
+    let left = 0;
+    for (const run of clue) {
+      if (run > slack && at >= left + slack && at < left + run) return { kind: 'overlap', run, room: run + slack };
+      left += run + 1;
+    }
+  }
+  return { kind: 'fits' };
+}
 
 /**
  * Where a hint should point: first a mark that cannot be right (a filled square outside the picture, then a cross on a square
@@ -164,7 +193,9 @@ export function hintFor(marks: Marks, p: PicturePuzzle, near = 0): Hint | null {
   const found = deductions(knowledge(marks), p);
   if (!found.length) return null;
   const best = found.sort((a, b) => Number(b.fill) - Number(a.fill) || dist(a.cell) - dist(b.cell) || a.cell - b.cell)[0];
-  return { kind: best.fill ? 'fill' : 'cross', cell: best.cell, line: best.line, clue: clueOf(p, best.line) };
+  const cells = cellsOf(p.size, best.line), known = knowledge(marks), clue = clueOf(p, best.line);
+  const why = whyFor(cells.map((c) => known[c]), clue, cells.indexOf(best.cell), best.fill);
+  return { kind: best.fill ? 'fill' : 'cross', cell: best.cell, line: best.line, clue, why };
 }
 
 /** How many rounds of "every line, once" it takes to find the whole picture: the measure of how much care it needs. */

@@ -22,12 +22,24 @@ export const CAT: DrawnPicture = { name: 'a cat', rows: ['oo......oo', 'ooo....o
 export const FISH: DrawnPicture = { name: 'a fish', rows: ['..........', '....bbbb..', 'b..bbbbbb.', 'bb.bbbbbbb', 'bbbbbbbbob', 'bbbbbbbbbb', 'bb.bbbbbbb', 'b..bbbbbb.', '....bbbb..', '..........'] };
 export const ROCKET: DrawnPicture = { name: 'a rocket', rows: ['....uu....', '...uuuu...', '..uuuuuu..', '..uuuuuu..', '..uubbuu..', '..uubbuu..', '..uuuuuu..', '.rruuuurr.', '.rr....rr.', '....oo....'] };
 export const DUCK: DrawnPicture = { name: 'a duck', rows: ['....yyy...', '...yyyyy..', '...yy.yyoo', '...yyyyyo.', '....yyy...', '.y..yyyyy.', '.yyyyyyyy.', 'yyyyyyyyy.', '.yyyyyyyy.', '..yyyyyy..'] };
+export const CUP: DrawnPicture = { name: 'a cup', rows: ['..........', '.bbbbbbb..', '.bbbbbbbbb', '.bbbbbbb.b', '.bbbbbbb.b', '.bbbbbbbbb', '.bbbbbbb..', '..bbbbb...', 'nnnnnnnnnn', '..........'] };
+export const CROWN: DrawnPicture = { name: 'a crown', rows: ['..........', 'y...yy...y', 'yy..yy..yy', 'yyy.yy.yyy', 'yyyyyyyyyy', 'yyryyyyryy', 'yyyyyyyyyy', 'yyyyyyyyyy', '..........', '..........'] };
+export const BELL: DrawnPicture = { name: 'a bell', rows: ['....yy....', '...yyyy...', '..yyyyyy..', '..yyyyyy..', '..yyyyyy..', '.yyyyyyyy.', '.yyyyyyyy.', 'yyyyyyyyyy', '....nn....', '..........'] };
+export const SNAIL: DrawnPicture = { name: 'a snail', rows: ['.......y.y', '.......y.y', '..uuuu.yyy', '.uu..uuyyy', '.u.uu.uyy.', '.u.u..uyy.', '.uu.uuuyy.', '..uuuuyyy.', 'yyyyyyyyy.', '.yyyyyyyy.'] };
+export const FLOWER: DrawnPicture = { name: 'a flower', rows: ['..pp..pp..', '.pppppppp.', '..ppyypp..', '.pppyyppp.', '..pppppp..', '....gg....', '.gg.gg....', '..gggg.gg.', '....gggg..', '....gg....'] };
+export const WHALE: DrawnPicture = { name: 'a whale', rows: ['....b.b...', '.....b....', '..bbbbbb..', '.bbbbbbbb.', 'bb.bbbbbbb', 'bbbbbbbbbb', '.bbbbbbbb.', '..bbbbbb.b', '.......bb.', '..........'] };
 
 export const LIGHTHOUSE: DrawnPicture = { name: 'a lighthouse', rows: ['......rrr......', '.....rrrrr.....', 'yyyy.yy.yy.yyyy', '....nnnnnnn....', '.....rrrrr.....', '.....rr.rr.....', '.....yyyyy.....', '.....yyyyy.....', '.....rr.rr.....', '.....rrrrr.....', '.....yynyy.....', '.....yynyy.....', '...nnnnnnnnn...', '.nnnnnnnnnnnnn.', 'bbbbbbbbbbbbbbb'] };
 export const BUTTERFLY: DrawnPicture = { name: 'a butterfly', rows: ['.....n...n.....', '......n.n......', '......nnn......', '.uuuuu.n.uuuuu.', 'uuuuuuunuuuuuuu', 'uuppuuunuuuppuu', 'uuppuuunuuuppuu', 'uuuuuuunuuuuuuu', '.uuuuuunuuuuuu.', '..uuuuunuuuuu..', '..uupuunuupuu..', '...uuuunuuuu...', '....uu.n.uu....', '.......n.......', '...............'] };
 export const CASTLE: DrawnPicture = { name: 'a castle', rows: ['..r.........r..', '..r.........r..', 'n.n.n.....n.n.n', 'nnnnn.....nnnnn', 'nnnnnn.n.nnnnnn', 'nn.nnnnnnnnn.nn', 'nnnnnnnnnnnnnnn', 'nn.nnnnnnnnn.nn', 'nnnnnnnnnnnnnnn', 'nnnnnn...nnnnnn', 'nnnnnn...nnnnnn', 'nnnnnn...nnnnnn', 'nnnnnn...nnnnnn', 'ggggggggggggggg', 'ggggggggggggggg'] };
+export const SNOWMAN: DrawnPicture = { name: 'a snowman', rows: ['......nnn......', '......nnn......', '....nnnnnnn....', '.....bb.bb.....', '.....bbobb.....', '.....bbbbb.....', '....rrrrrrr....', '...bbbbbbbbb...', '..bbbbbnbbbbb..', '.bbbbbbbbbbbbb.', '.bbbbbbnbbbbbb.', '.bbbbbbbbbbbbb.', '..bbbbbbbbbbb..', '...bbbbbbbbb...', 'ggggggggggggggg'] };
+export const OWL: DrawnPicture = { name: 'an owl', rows: ['..nn.......nn..', '..nnn.....nnn..', '..nnnnnnnnnnn..', '.nnyyynnnyyynn.', '.nny.ynnny.ynn.', '.nnyyynonyyynn.', '..nnnnnonnnnn..', '..nnnnnnnnnnn..', '..nnyynnnyynn..', '..nnnnnnnnnnn..', '..nnyynnnyynn..', '...nnnnnnnnn...', '....nnnnnnn....', '.....oo.oo.....', 'nnnnnnnnnnnnnnn'] };
 
-/** 10 by 10 pictures that need only a few passes of line logic, and 10 by 10 pictures that need more care. */
-export const EASY_10: readonly DrawnPicture[] = [HEART, TREE, HOUSE, MUSHROOM, SAILBOAT];
-export const HARD_10: readonly DrawnPicture[] = [SMILEY, CAT, FISH, ROCKET, DUCK];
-export const BIG_15: readonly DrawnPicture[] = [LIGHTHOUSE, BUTTERFLY, CASTLE];
+/**
+ * 10 by 10 pictures that need only a few passes of line logic (at most `EASY_PASSES` rounds of "every line, once"), and 10 by
+ * 10 pictures that need more care (more than that); a test keeps every picture on its side of the line.
+ */
+export const EASY_PASSES = 3;
+export const EASY_10: readonly DrawnPicture[] = [HOUSE, MUSHROOM, SAILBOAT, CAT, FISH, CUP, CROWN, BELL];
+export const HARD_10: readonly DrawnPicture[] = [HEART, TREE, SMILEY, ROCKET, DUCK, SNAIL, FLOWER, WHALE];
+export const BIG_15: readonly DrawnPicture[] = [LIGHTHOUSE, BUTTERFLY, CASTLE, SNOWMAN, OWL];
