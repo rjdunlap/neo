@@ -174,3 +174,11 @@
 - One-off portrait probe (1024×1365): fold page on first launch, two strokes and a flower, fold (marks 28→56), second fold added nothing, a fifth touch then the frame, 0 misses/0 hints, one sticker, no console errors; mid-fold resize and mid-fold hang-up both printed and ended cleanly; portrait screenshot after the print reviewed. `BROWSER_SUITE=fingerdemo FINGER_ONLY=rainbow-fingers FINGER_LEVELS=2 RAINBOW_FOLD=1`: fold at 27.9 s, finished 31.8 s; `FINGER_LEVELS=1,2` default seeds 25.6 s and 31.9 s, pass. `game-reviewer`'s three findings fixed.
 - Not run: offline check, other suites.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a two-year-old links the press to the copy and whether the squish is pleasant, on an iPad.
+
+## 2026-11-01 — Shell Rows levels 1–3 (strategy-games SG1)
+
+- [PR #1115](https://github.com/rjdunlap/neo/pull/1115): new game `shell-rows` (pre-K 1–2, school 1–3, Puzzle Peaks, now 15 games and paging): *Finish the row*, *Stop the row*, *Win first*.
+- Ran (commit 6a35f937 plus review fix f6bd22e5, Vite on http://localhost:5812, `VITE_SPEECH=off`): typecheck; full `npm test` 293 files / 4279 tests (28 Shell Rows rule tests); `BROWSER_SUITE=shellrows` (pre-K level 1 with a free full square, two wrong squares answered by the reply and rewind, the glow, 2 misses/1 hint; portrait school level 3 with the block answered by the pet taking her three, 1/0, screenshot mid-replay; re-run after the review fix); `BROWSER_SUITE=fingerdemo FINGER_ONLY=shell-rows FINGER_LEVELS=1,3` (6.0 s each); `npm run build`.
+- `game-reviewer` fixes: a softlock when the view resized during the right-square settle (a killed awaited tween), and misplaced pieces on a resize mid-replay; the resize case was not separately probed in the browser.
+- Not run: offline check, other suites.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#shell-rows-strategy-games-study-2026-10-31-levels-13-built-2026-11-01)): pebbles looked at before the shell at level 2, the replay as a lesson, "three in a row" and the pet's lines in device speech, the new title clip.

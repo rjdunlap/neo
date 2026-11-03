@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  bycounting, canAdd, connected, edgeAt, edgeToward, headStart, hintFor, isSolved, islandToward, layoutOf, makePuzzle, makePuzzles, otherEnd, parsePuzzle, picture, planFor, PLANS, planksAt, solve,
+  bycounting, canAdd, connected, edgeAt, edgeToward, headStart, forcedPlank, hintFor, isSolved, islandToward, LEVEL_ORDER, layoutOf, makePuzzle, makePuzzles, otherEnd, parsePuzzle, picture, planFor, PLANS, planksAt, solve,
   trouble, waterOf, type Island, type Layout,
 } from './logic';
 
@@ -146,10 +146,86 @@ describe('making puzzles', () => {
   it('is fair: the same seed gives the same puzzle, and the levels climb', () => {
     expect(makePuzzles(PLANS[1], new Rng(5))).toEqual(makePuzzles(PLANS[1], new Rng(5)));
     expect(makePuzzle(PLANS[1], new Rng(5)).layout.islands).not.toEqual(makePuzzle(PLANS[1], new Rng(6)).layout.islands);
-    expect(PLANS.map((p) => p.size)).toEqual([7, 9, 9, 11]);
-    for (let i = 1; i < PLANS.length; i++) expect(PLANS[i].islands.min).toBeGreaterThanOrEqual(PLANS[i - 1].islands.min);
+    expect(PLANS.map((p) => p.size)).toEqual([7, 9, 9, 11, 5]);
+    for (let i = 1; i < LEVEL_ORDER.length; i++) expect(PLANS[LEVEL_ORDER[i] - 1].islands.min).toBeGreaterThanOrEqual(PLANS[LEVEL_ORDER[i - 1] - 1].islands.min);
+    expect([...LEVEL_ORDER].sort()).toEqual(PLANS.map((_, i) => i + 1));
     expect(planFor(0)).toBe(PLANS[0]);
     expect(planFor(99)).toBe(PLANS[PLANS.length - 1]);
+  });
+});
+
+describe('level 5, the small sea', () => {
+  it('has one solution found by counting, 4 to 6 islands on a 5 by 5 sea, and an island with a single neighbour', () => {
+    const plan = planFor(5);
+    expect(plan.size).toBe(5);
+    for (let s = 1; s <= 300; s++) {
+      const p = makePuzzle(plan, new Rng(s * 131 + 7)), label = `seed ${s}`;
+      expect(solve(p.layout, undefined, 2).found, label).toEqual([p.solution]);
+      expect(bycounting(p.layout), label).toBe(true);
+      expect(p.size, label).toBe(5);
+      expect(p.layout.islands.length, label).toBeGreaterThanOrEqual(4);
+      expect(p.layout.islands.length, label).toBeLessThanOrEqual(6);
+      expect(p.layout.at.some((e) => e.length === 1), label).toBe(true);
+    }
+  });
+});
+
+describe('named hints', () => {
+  /** Recomputed here, not through roomOf: what an edge could still take at one end, seen from the island `i`. */
+  const capOf = (l: Layout, planks: readonly number[], k: number, i: number) => {
+    if (l.crossing[k].some((f) => planks[f] > 0)) return 0;
+    const e = l.edges[k], other = e.a === i ? e.b : e.a;
+    let have = 0;
+    l.edges.forEach((f, j) => { if (f.a === other || f.b === other) have += planks[j]; });
+    return Math.max(0, Math.min(2 - planks[k], l.islands[other].n - have));
+  };
+
+  it('state the arithmetic they name on the board at that moment, and never contradict the answer', () => {
+    const seen = new Set<string>();
+    PLANS.forEach((plan, pi) => {
+      const seeds = pi >= 2 && pi <= 3 ? 40 : 300;
+      for (let s = 1; s <= seeds; s++) {
+        const p = makePuzzle(plan, new Rng(s * 211 + pi)), l = p.layout, planks = p.solution.map(() => 0);
+        for (let guard = 0; guard < 100 && !isSolved(l, planks); guard++) {
+          const h = hintFor(l, planks, p.solution)!, label = `${plan.name} seed ${s} step ${guard}`;
+          expect(h, label).not.toBeNull();
+          if (h.kind === 'forced') {
+            const i = h.island;
+            let have = 0;
+            l.edges.forEach((e, j) => { if (e.a === i || e.b === i) have += planks[j]; });
+            const left = l.islands[i].n - have;
+            const caps = l.at[i].map((k) => ({ k, cap: capOf(l, planks, k, i) }));
+            const room = caps.reduce((n, c) => n + c.cap, 0), mine = caps.find((c) => c.k === h.edge)!;
+            expect(mine, label).toBeDefined();
+            expect(left, label).toBeGreaterThan(0);
+            expect(mine.cap, label).toBeGreaterThan(0);
+            if (h.why === 'full') expect(left, label).toBe(room);
+            if (h.why === 'last-way') expect(caps.filter((c) => c.cap > 0).map((c) => c.k), label).toEqual([h.edge]);
+            if (h.why === 'every-way') { expect(left, label).toBe(room - 1); expect(mine.cap, label).toBe(2); }
+            seen.add(h.why);
+          }
+          if (h.kind !== 'fix') expect(planks[h.edge], label).toBeLessThan(p.solution[h.edge]);
+          planks[h.edge]++;
+        }
+        expect(isSolved(l, planks), `${plan.name} seed ${s}`).toBe(true);
+      }
+    });
+    expect([...seen].sort()).toEqual(['every-way', 'full', 'last-way']);
+  });
+
+  it('gives each reason on a small hand-built sea', () => {
+    // A 1 and a 1 on a chain: each has all the room it needs, so full.
+    const chain = parsePuzzle(['1.2.1', '.....', '.....', '.....', '.....']);
+    expect(forcedPlank(chain.layout, [0, 0])).toMatchObject({ why: 'full' });
+    // A 1 with a single way that could take two (the 5 beside it is not a real puzzle, only a board): one way left, but not full.
+    const one = layoutFrom(5, ['1.5.1']);
+    expect(forcedPlank(one, [0, 0])).toMatchObject({ why: 'last-way', island: 0, edge: 0 });
+    // A 3 between two neighbours that could each take two: room 4, needs 3, so one plank on a double-capable way is forced.
+    // (The 5s are not a real puzzle, only a board where no other island is full or has a single way.)
+    const star = layoutFrom(5, ['.....', '.....', '5.3.5', '.....', '5...5']);
+    const every = forcedPlank(star, star.edges.map(() => 0));
+    expect(every).toMatchObject({ why: 'every-way', island: star.islands.findIndex((il) => il.n === 3) });
+    expect([star.edges[every!.edge].a, star.edges[every!.edge].b]).toContain(every!.island);
   });
 });
 

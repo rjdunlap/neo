@@ -34,6 +34,26 @@ async function bridgesTouchPlay() {
     if (sea.x < 0 || sea.y < 0 || sea.x + sea.w > neo.view.w || sea.y + sea.h > neo.view.h) out.push('sea off screen');
     return out.map((m) => `${label}: ${m} (${neo.view.w}x${neo.view.h}, scale ${neo.view.scale})`);
   }, label);
+  // Level 5 (5 by 5, the entry): one hint names its reason in its spoken line, targets upright and sideways, one sticker.
+  await launch('island-bridges', 5); await idle();
+  const before5 = await page.evaluate(() => kit.store.data.stickers.length);
+  assert.equal((await state()).size, 5);
+  assert.deepEqual(await targets('level 5 landscape'), []);
+  await page.evaluate(() => { const g = neo.scene.game, say = g.ctx.say; g.spoken = []; g.ctx.say = (id, ...args) => { g.spoken.push(id); return say(id, ...args); }; });
+  await tapSlot('hint'); await page.waitForTimeout(300);
+  const named = await page.evaluate(() => { const g = neo.scene.game; return { kind: g.hinted?.kind, why: g.hinted?.why, spoken: g.spoken.slice(), hints: g.hints }; });
+  assert.equal(named.kind, 'forced', 'an empty small sea has an island that forces a plank');
+  assert.ok(named.spoken.includes(`bridges.hint-${named.why}`), `the named line for ${named.why}: ${named.spoken}`);
+  assert.equal(named.hints, 1);
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+  assert.deepEqual(await targets('level 5 portrait'), []);
+  await screenshot('bridges-touch-5-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await solveAll(); await finished('island-bridges');
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before5 + 1, 'one sticker at level 5');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('island-bridges').history.at(-1); return [r.misses, r.hints]; }), [0, 1]);
+  log(`Island Bridges level 5: 5 by 5, a ${named.why} hint with its line, 64-unit targets both ways, one sticker passed`);
+  if (process.env.BRIDGES_ONLY === '5') { assert.deepEqual(errors, []); return; }
   // Level 1 (7 by 7): a plank that is not in the answer is not a miss (decided 2026-10-23), Take off lifts it for free, a hint counts once, then the sea is joined.
   await launch('island-bridges', 1); await idle();
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);

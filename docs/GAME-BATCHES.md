@@ -839,7 +839,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/notice-board.
 
 ### shell-rows 1: Finish the row, stop the row, win first
 
-**Built 2026-11-01** ([PR #1115](https://github.com/rjdunlap/neo/pull/1115), branch `claude/shell-rows-1-3`): all of batch shell-rows 1, levels 1–3. Checks are in [VERIFICATION](VERIFICATION.md#2026-11-01--shell-rows-levels-13-strategy-games-sg1).
+**Built 2026-11-01** ([PR #1115](https://github.com/rjdunlap/neo/pull/1115), branch `claude/shell-rows-1-3`): all of batch shell-rows 1, levels 1–3. Checks are in [VERIFICATION](archive/VERIFICATION-2026-11-01.md#2026-11-01--shell-rows-levels-13-strategy-games-sg1).
 
 - **`shell-rows`, levels 1–3 (strategy-games study slice 1, SG1)** (a new game, one declared batch; pre-K 1–2, school 1–3; Puzzle Peaks, paging, fallback Bubble Beach): a 3 by 3 grid in wet sand with a match already under way; set one shell to finish her row (level 1), to stop the pet's row (level 2), or to win first when both rows are on the board (level 3); a wrong square is answered by the pet's honest reply, then the board rewinds. [Definition](definitions/shell-rows.md), [study build slices](deep-dives/subjects/strategy-games.md#build-slices-in-order)
 
@@ -1026,6 +1026,8 @@ Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, `src
 Proof: new interaction: typecheck, rule tests, one play of level 10 with one drop away from the slot (no miss), the second-part pad (a miss), a second for the glow, then the answer; one portrait screenshot with the chalk mark; `fingerdemo` at 10.
 
 ### island-bridges 1: A small sea to start and named hints
+
+Built 2026-11-02, [PR #1130](https://github.com/rjdunlap/neo/pull/1130), branch `claude/island-bridges-1`; [closeout](archive/COMPLETED-2026-10-09.md#island-bridges-a-small-sea-to-start-and-named-hints-island-bridges-batch-1-2026-11-02). Scope retained for dependency references.
 
 - **`island-bridges`, a small sea to start and named hints (dive slice 1)** (new level on the existing interaction; grown-up): level 5 (order `[5, 1, 2, 3, 4]`, `entryLevels: [5]`) and the `full`, `every-way` and `last-way` hints with their voice lines. [Dive](deep-dives/island-bridges.md#build-slices-in-order)
 
