@@ -137,3 +137,9 @@
 - Ran: typecheck; vitest `src/games/jelly-drums` (21 rules), `src/content` and registry; `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=1,2,3` passed at 89334790 (http://localhost:5441; 28.9, 37.9, 46.6 s); a one-off probe at toddler portrait 768×1024 (level 2: three fan answers in 12 notes; level 3: sparkle on 0-1-2; low-and-high said once; no page errors). game-reviewer's three findings fixed; the review follow-up (a097e025, speech gating) got rule tests only, no browser rerun.
 - Not run: build (no shared files or assets), device speech for the color words, a child's reaction.
 - Open: per-band co-play lines (shell type change); device checks in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-11-03 — Puppet Stage levels 4–6 definition (TP2, docs only)
+
+- [PR #1156](https://github.com/rjdunlap/neo/pull/1156): [definition](../definitions/puppet-stage-4-6.md) of three story cards, a live shown-only premiere and the batch puppet-stage 2 check tier; nothing built.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. Nothing else run.
+- Open: the build and its checks; four device and person checks in [DEVICE-CHECKS](../DEVICE-CHECKS.md).

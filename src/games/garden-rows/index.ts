@@ -12,11 +12,13 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  boxSide, clash, copyBed, deadEnds, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, mendTarget, nextMove, planFor, type Bed, type Hint, type Puzzle,
+  boxSide, clash, copyBed, deadEnds, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, mendTarget, nextMove, planFor, rowsOf, type Bed, type Hint, type Puzzle,
   type RowsPlan,
 } from './logic';
 
 const LEVELS: BandLevels = {
+  // One row (10) opens preschool, then the 3 by 3 rows-only bed.
+  preschool: { min: 1, max: 10, order: [10, 1] },
   prek: { min: 1, max: 3 },
   school: { min: 3, max: 9 },
 };
@@ -142,6 +144,11 @@ class GardenRows implements Game {
     return this.plan.size;
   }
 
+  /** Rows in the bed: as many as columns, except One row's one. */
+  get rows() {
+    return rowsOf(this.plan);
+  }
+
   /** Which of the five flowers this bed's flower `f` is. */
   private kind(f: number): number {
     return this.puzzles[this.index]?.kinds[f] ?? f;
@@ -159,24 +166,25 @@ class GardenRows implements Game {
 
   resize(v: View) {
     const w = this.n * CELL;
+    const h = this.rows * CELL;
     // The seed packets sit beside the bed when there is room, and under it on a tall screen.
     const side = v.w - (w + 40) >= 300;
     if (side) {
       const total = w + 70 + PACKET * 2 + 20;
       const x = Math.max(160, (v.w - total) / 2);
-      const y = Math.max(100, (v.h - w) / 2);
+      const y = Math.max(100, (v.h - h) / 2);
       this.board.position.set(x, y);
       // A fixed gap, so the round packets never overlap however few flowers there are.
       const gap = PACKET * 2 + 10;
-      this.packets.children.slice(0, this.n).forEach((p, i) => p.position.set(x + w + 70 + PACKET, y + w / 2 + (i - (this.n - 1) / 2) * gap));
+      this.packets.children.slice(0, this.n).forEach((p, i) => p.position.set(x + w + 70 + PACKET, y + h / 2 + (i - (this.n - 1) / 2) * gap));
     } else {
-      const total = w + PACKET * 2 + 150;
+      const total = h + PACKET * 2 + 150;
       const y = Math.max(100, (v.h - total) / 2);
       this.board.position.set((v.w - w) / 2, y);
       const xs = spread(this.n, 150, v.w - 40, PACKET * 2 + 14);
-      this.packets.children.slice(0, this.n).forEach((p, i) => p.position.set(xs[i], y + w + 60 + PACKET));
+      this.packets.children.slice(0, this.n).forEach((p, i) => p.position.set(xs[i], y + h + 60 + PACKET));
     }
-    this.board.hitArea = new Rectangle(0, 0, w, w);
+    this.board.hitArea = new Rectangle(0, 0, w, h);
     this.drawSoil();
   }
 
@@ -238,9 +246,8 @@ class GardenRows implements Game {
       const step = dir === 0 || dir === 1 ? 1 : -1;
       return this.select((this.selected + step + this.n) % this.n);
     }
-    const last = this.n - 1;
-    const r = Math.min(last, Math.max(0, this.cursor.r + [0, 1, 0, -1][dir]));
-    const c = Math.min(last, Math.max(0, this.cursor.c + [1, 0, -1, 0][dir]));
+    const r = Math.min(this.rows - 1, Math.max(0, this.cursor.r + [0, 1, 0, -1][dir]));
+    const c = Math.min(this.n - 1, Math.max(0, this.cursor.c + [1, 0, -1, 0][dir]));
     if (r === this.cursor.r && c === this.cursor.c) return;
     this.cursor = { r, c };
     sfx.tick();
@@ -308,7 +315,7 @@ class GardenRows implements Game {
     await this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
     if (this.index > 0) return;
-    return this.ctx.instruct(this.plan.mend ? 'rows.mend' : this.plan.rule === 'rows' ? 'rows.rows' : this.plan.rule === 'boxes' ? 'rows.boxes' : 'rows.both');
+    return this.ctx.instruct(this.plan.mend ? 'rows.mend' : this.rows === 1 ? 'rows.one' : this.plan.rule === 'rows' ? 'rows.rows' : this.plan.rule === 'boxes' ? 'rows.boxes' : 'rows.both');
   }
 
   private select(f: number) {
@@ -331,8 +338,8 @@ class GardenRows implements Game {
   private drawSoil() {
     const g = this.soil.clear();
     const w = this.n * CELL;
-    g.roundRect(-14, -14, w + 28, w + 28, 24).fill(wood.light).stroke({ width: 7, color: wood.line });
-    for (let r = 0; r < this.n; r++)
+    g.roundRect(-14, -14, w + 28, this.rows * CELL + 28, 24).fill(wood.light).stroke({ width: 7, color: wood.line });
+    for (let r = 0; r < this.rows; r++)
       for (let c = 0; c < this.n; c++) {
         const planted = this.given[r]?.[c];
         g.roundRect(c * CELL + 5, r * CELL + 5, CELL - 10, CELL - 10, 16)
@@ -356,7 +363,7 @@ class GardenRows implements Game {
     const p = this.board.toLocal(e.global);
     const c = Math.floor(p.x / CELL);
     const r = Math.floor(p.y / CELL);
-    if (r < 0 || c < 0 || r >= this.n || c >= this.n) return;
+    if (r < 0 || c < 0 || r >= this.rows || c >= this.n) return;
     this.act(r, c);
   }
 
@@ -427,7 +434,7 @@ class GardenRows implements Game {
     this.busy = true;
     this.hinted = null;
     this.flash = null;
-    for (let r = 0; r < this.n; r++) {
+    for (let r = 0; r < this.rows; r++) {
       for (let c = 0; c < this.n; c++) {
         const node = this.nodes[r][c];
         if (node) void this.ctx.tw.to(node.scale, { x: 1.18, y: 1.18 }, { duration: 0.12 }).then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.12 }));
@@ -435,7 +442,7 @@ class GardenRows implements Game {
       }
       await this.ctx.tw.wait(0.12);
     }
-    const mid = this.ctx.stage.toLocal(this.board.toGlobal({ x: (this.n * CELL) / 2, y: (this.n * CELL) / 2 }));
+    const mid = this.ctx.stage.toLocal(this.board.toGlobal({ x: (this.n * CELL) / 2, y: (this.rows * CELL) / 2 }));
     this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 24, speed: [160, 380], gravity: 0, life: [0.6, 1] });
     this.ctx.pet.cheer();
     await this.ctx.say('rows.bloom');
@@ -496,7 +503,7 @@ export const gardenRows: GameModule = {
   titleLine: 'game.garden-rows',
   region: 'puzzle-peaks',
   skills: ['logic', 'deduction', 'patterns', 'spatial-reasoning'],
-  bands: ['prek', 'school'],
+  bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
@@ -505,5 +512,6 @@ export const gardenRows: GameModule = {
   hubIcon: () => new RowsIcon(),
   touchDemo: true,
   sticker,
+  entryLevels: [10],
   create: (ctx) => new GardenRows(ctx),
 };
