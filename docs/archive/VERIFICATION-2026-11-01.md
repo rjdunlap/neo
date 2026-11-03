@@ -135,3 +135,10 @@
 - `game-reviewer`: nothing material (one Text leak fixed).
 - Not run: offline check (no persistence or asset change), device checks.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#paint-mixer-levels-14)): the table and fill line on an iPad, "for every" device speech, whether the stray reads as a trick, whether the second level-3 bucket is a chore.
+
+## 2026-11-01 — Egg Catch far barn (visual identity V1)
+
+- Branch `claude/egg-catch-far-barn` ([PR #1109](https://github.com/rjdunlap/neo/pull/1109)): the Barnyard's far barn on Egg Catch's horizon, placed by `farBarnAt()` clear of lanes, piles, tap columns, chutes and bins.
+- Ran (commit 88818766, Vite on http://localhost:5492): typecheck; egg-catch rule tests 19 passed (two new: barn 60–80 tall on the horizon at all levels over six views; clear of play, on screen, above the pet corner); `BROWSER_SUITE=batch BATCH_ONLY=eggs` levels 1–11 passed; one landscape screenshot (level 3) and one portrait (level 7) reviewed.
+- Not run: build (no shared files changed), `fingerdemo` (bot unchanged), offline check.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a child recognises the barn without its label (joins the Barnyard check).

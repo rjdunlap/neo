@@ -881,6 +881,8 @@ Proof: new-interaction tier, as the [dive's slice 1](deep-dives/lemonade-stand.m
 
 ### pixel-pictures 1: Fresh pictures and colour logic
 
+**Built 2026-11-02 ([PR #1125](https://github.com/rjdunlap/neo/pull/1125)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-02--pixel-pictures-fresh-pictures-and-colour-logic-pixel-pictures-batch-1); [build note](archive/COMPLETED-2026-10-09.md#pixel-pictures-fresh-pictures-and-colour-logic-pixel-pictures-1-2026-11-02).
+
 - **`pixel-pictures`, fresh pictures and colour logic (dive slice 1)** (extends the built game; preschool to school, no new level): level 2 pool 3 → 6 two-colour 5×5 pictures (strawberry, duckling, mushroom) and level 6 pool 2 → 5 two-colour 6×6 pictures (sun, frog, fish), each accepted only if `colorLineSolvable` solves it (same-colour runs need a gap, different colours may touch, matching `colorRuns`); the level-6 hint and ghost finger use the colour deduction as levels 4–5 use `deduce`; a strict pool-larger-than-shown test. A picture that fails the check leaves the level-6 pool and a new one replaces it. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#proposed-ladder)
 
 Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `scripts/browser/suites/woods-batch.mjs` only if the level-6 case needs an update, and `docs/GAMES.md`.
