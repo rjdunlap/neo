@@ -50,12 +50,28 @@ describe('game registry', () => {
     expect(g.levels('school')).toEqual({ min: 4, max: 12, order: [4, 5, 7, 6, 9, 12] });
     expect(g.levels('prek')).toEqual({ min: 3, max: 7, order: [3, 4, 7, 5] });
     expect(g.levels('lap')).toEqual({ min: 1, max: 1 });
-    expect(g.levels('toddler')).toEqual({ min: 1, max: 3 });
-    expect(g.levels('preschool')).toEqual({ min: 2, max: 4 });
-    for (const level of [4, 5, 7, 6, 9]) expect(landing(level, g.levels('school'))).toBe(level);
+    expect(g.levels('toddler')).toEqual({ min: 1, max: 8, order: [1, 2, 8, 3] });
+    expect(g.levels('preschool')).toEqual({ min: 2, max: 8, order: [2, 8, 3, 4] });
+    for (const level of [4, 5, 7, 6, 9]) expect(landing(level, g.levels('school'), g.entryLevels)).toBe(level);
     expect(stepLevel(6, 1, g.levels('school'))).toBe(9);
     expect(stepLevel(9, 1, g.levels('school'))).toBe(12);
     expect(stepLevel(12, 1, g.levels('school'))).toBe(12);
+  });
+
+  it('places Bouncy Launch Near or far (8) before the star level for toddler and preschool as an entry', () => {
+    const g = gameById('bouncy-launch')!;
+    expect(g.entryLevels).toEqual([8]);
+    expect(stepLevel(2, 1, g.levels('toddler'))).toBe(8);
+    expect(stepLevel(8, 1, g.levels('toddler'))).toBe(3);
+    expect(stepLevel(2, 1, g.levels('preschool'))).toBe(8);
+    expect(stepLevel(8, 1, g.levels('preschool'))).toBe(3);
+    expect(stepLevel(8, -1, g.levels('preschool'))).toBe(2);
+    // A toddler or preschooler saved at 8 who has a birthday starts the older band at its easiest level, not its hardest.
+    expect(landing(8, g.levels('prek'), g.entryLevels)).toBe(3);
+    expect(landing(8, g.levels('school'), g.entryLevels)).toBe(4);
+    expect(landing(8, g.levels('lap'), g.entryLevels)).toBe(1);
+    for (const level of [1, 2, 3]) expect(landing(level, g.levels('toddler'), g.entryLevels)).toBe(level);
+    for (const level of [2, 3, 4]) expect(landing(level, g.levels('preschool'), g.entryLevels)).toBe(level);
   });
 
   it('Chain Reaction adds tap-to-turn before prediction without changing existing IDs or school pins', () => {

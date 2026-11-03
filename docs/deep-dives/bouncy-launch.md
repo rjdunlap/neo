@@ -143,12 +143,12 @@ Append 8 (near or far; 7 is built as Feed the friend) and place it with the buil
 | Band | Order | min–max |
 | --- | --- | --- |
 | lap | `[1]` (or `[1, 2]` after decision 2) | 1–1 (or 1–2) |
-| toddler | `[1, 2, 7, 3]` | 1–7 |
-| preschool | `[2, 7, 3, 4]` | 2–7 |
+| toddler | `[1, 2, 8, 3]` (built) | 1–8 |
+| preschool | `[2, 8, 3, 4]` (built) | 2–8 |
 | pre-K | `[3, 4, 8, 5]` | 3–8 |
 | school | `[4, 5, 8, 6, 9, 10, 11]` | 4–11 |
 
-7 is the only entry level: it is easy but has a high ID. Levels 8, 9, 10 and 11 are above 6 in the ID sense and keep their natural places in the order. Remaining band, content, accounting and device decisions are in the next section; no saved level or pin moves.
+8 is the only entry level (`entryLevels: [8]`, built): it is easy but has a high ID. Levels 8, 9, 10 and 11 are above 6 in the ID sense and keep their natural places in the order. Remaining band, content, accounting and device decisions are in the next section; no saved level or pin moves.
 
 ### Left out on purpose
 
@@ -179,7 +179,7 @@ These go on the roadmap's "Waiting on the developer" list as one row.
 1. Built: truthful words, non-miss short/wrong-way support and numbered level-6 clouds; [build record](../archive/COMPLETED-2026-10-09.md#bouncy-launch-support-slice-1).
 2. **Notches, rising notes, puffs and sky variety.** The five notches with a pentatonic tick, the landing note per cloud, footprint puffs and four skies, plus the level 1 cloud bag. Needs decision 7's listen. *Tier: typecheck, unit tests (notch pulls land on their clouds, the bag visits five distinct pads), one scripted play of levels 1–3, one portrait screenshot, and the Cloud Hopper `course.test.ts`.*
 3. Built: fading last flight, numbered prediction flags and compare reference ring; [build record](../archive/COMPLETED-2026-10-09.md#bouncy-launch-last-flight-slice-3).
-4. **Level 8, Near or far** (was 7; Feed the friend took 7) with the per-plan strip parameters, the `entryLevels` entry and the new windows. Needs decision 1. *Tier: new level on an existing interaction: typecheck, unit tests including a regression that pins Cloud Hopper's constants, one browser play of level 7, `fingerdemo` at 7, the `registry` tests.*
+4. **Level 8, Near or far** (was 7; Feed the friend took 7) with the per-plan strip parameters, the `entryLevels` entry and the new windows. Needs decision 1. **Built 2026-11-03** ([PR #1157](https://github.com/rjdunlap/neo/pull/1157); [build note](../archive/COMPLETED-2026-10-09.md#bouncy-launch-level-8-near-or-far-2026-11-03)): two big clouds at 0.2 and 0.8 of the strip with ±0.2 windows, a star over one, five seeded shots alternating near and far; toddler plays 1, 2, 8, 3 and preschool 2, 8, 3, 4; `entryLevels: [8]`. *Tier: new level on an existing interaction: typecheck, unit tests including a regression that pins Cloud Hopper's constants, one browser play of level 8, `fingerdemo` at 8, the `registry` tests.*
 5. Built 2026-10-13 as level 7: **Feed the friend** (pre-K order 3,4,7,5; school 4,5,7,6; [build record](../archive/COMPLETED-2026-10-09.md#bouncy-launch-feed-the-friend-level-7-2026-10-13)). Original text: Needs nothing blocking; art for a friend and a snack. *Tier: new interaction: typecheck, unit tests, one scripted play (first and last shot, one miss, one hint), one portrait screenshot, `fingerdemo` at 8.*
 6. Built 2026-10-21: **Level 9, Between two flights** (school order 4,5,7,6,9,12; [build record](../archive/COMPLETED-2026-10-09.md#bouncy-launch-level-9-between-two-flights-2026-10-21)). Original text: reuses the numerals and flags from slices 1 and 3. *Tier: as slice 4.*
 7. **Level 10, Where on the line?** Needs the 10-tick strip and nearest-tick routing. *Tier: as slice 5.*
