@@ -10,12 +10,14 @@ export interface JellyPlan {
   goal: number;
   /** Tune length (echo). */
   length: number;
+  /** Free play's twist: at level 2 the fans answer, at level 3 a scale sparkles. Neither is a goal. */
+  twist?: 'fans' | 'scale';
 }
 
 export const PLANS: JellyPlan[] = [
   { mode: 'free', goal: 24, length: 0 },
-  { mode: 'free', goal: 32, length: 0 },
-  { mode: 'free', goal: 40, length: 0 },
+  { mode: 'free', goal: 32, length: 0, twist: 'fans' },
+  { mode: 'free', goal: 40, length: 0, twist: 'scale' },
   { mode: 'echo', goal: 4, length: 2 },
   { mode: 'echo', goal: 4, length: 3 },
   { mode: 'echo', goal: 5, length: 3 },
@@ -119,6 +121,59 @@ export class IdleNudge {
     return true;
   }
 }
+
+/** Level 2: a fan answers every this many notes. */
+export const FAN_EVERY = 4;
+
+/** Level 2: the fan (in turn, 0 to `fans` - 1) who answers after the `notes`th note, or null on the notes between. */
+export const fanAnswering = (notes: number, fans: number): number | null =>
+  notes > 0 && notes % FAN_EVERY === 0 ? (notes / FAN_EVERY - 1) % fans : null;
+
+/** Three notes on neighbouring jellies in order, up or down: 0 1 2, 3 2 1 and so on. */
+export const isScale = (a: number, b: number, c: number): boolean => (b - a === 1 && c - b === 1) || (a - b === 1 && b - c === 1);
+
+/** Level 3's scale watch: true on the note that finishes a run of three neighbours; a run is used once, so 0 1 2 3 sparkles once. */
+export class ScaleWatch {
+  private run: number[] = [];
+  tap(i: number): boolean {
+    this.run = [...this.run, i].slice(-3);
+    if (this.run.length < 3 || !isScale(this.run[0], this.run[1], this.run[2])) return false;
+    this.run = [];
+    return true;
+  }
+}
+
+/** Free play names a jelly at most once in this many taps. */
+export const NAME_EVERY = 8;
+
+/**
+ * Free play's names: now and then the voice says the jelly's color and size. At most one line in `NAME_EVERY` taps, never
+ * the same jelly twice in a row, and once a round, after she has played both the biggest and the littlest, the low-and-high line.
+ */
+export class JellyNamer {
+  private since = 0;
+  private lastNamed = -1;
+  private lowHighSaid = false;
+  private readonly tapped = new Set<number>();
+  /** The line to say for this tap, or null. */
+  tap(i: number): LineId | null {
+    this.since++;
+    this.tapped.add(i);
+    if (this.since < NAME_EVERY) return null;
+    if (!this.lowHighSaid && this.tapped.has(0) && this.tapped.has(JELLIES - 1)) {
+      this.lowHighSaid = true;
+      this.since = 0;
+      return 'jelly.lowhigh';
+    }
+    if (i === this.lastNamed) return null;
+    this.lastNamed = i;
+    this.since = 0;
+    return JELLY_NAMES[i];
+  }
+}
+
+/** Each jelly's color and size, biggest and lowest first. */
+export const JELLY_NAMES: readonly LineId[] = ['jelly.name.red', 'jelly.name.orange', 'jelly.name.yellow', 'jelly.name.green', 'jelly.name.blue'];
 
 /** The little song the ghost finger plays in free play: the scale climbing and coming back, so every note is the jelly next door. */
 export const FREE_SONG = [0, 1, 2, 3, 4, 3, 2, 1];
