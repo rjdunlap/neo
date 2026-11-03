@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
+import { FAN_EVERY, fanAnswering, isScale, JELLY_NAMES, JellyNamer, NAME_EVERY, ScaleWatch, planFor } from './logic';
 import { awakeJellies, nearestAwake, WAKE_AT, WAKE_ORDER, FREE_SONG, freeNote, IdleNudge, JELLIES, jellyToTap, drawTune, NUDGE_AFTER, PLANS, SONGS, tunesOf, type Tune } from './logic';
 
 const echoPlans = () => PLANS.filter((p) => p.mode === 'echo');
@@ -144,6 +145,93 @@ describe('Jelly Drums', () => {
         while (jellyToTap('free', notes < plan.goal ? 'play' : 'done', [], 0, notes) !== null) notes++;
         expect(notes).toBe(plan.goal);
       }
+    });
+  });
+
+  describe('free-play twists and names', () => {
+    it('puts the fans on level 2 and the scale on level 3 only; level 1 stays plain', () => {
+      expect(PLANS.map((p) => p.twist ?? null)).toEqual(PLANS.map((_, k) => (k === 1 ? 'fans' : k === 2 ? 'scale' : null)));
+      expect(planFor(1).twist).toBeUndefined();
+    });
+
+    it('has a fan answer every fourth note, each fan in turn', () => {
+      const answers = Array.from({ length: 32 }, (_, k) => fanAnswering(k + 1, 4));
+      answers.forEach((f, k) => expect(f !== null).toBe((k + 1) % FAN_EVERY === 0));
+      expect(answers.filter((f) => f !== null)).toEqual([0, 1, 2, 3, 0, 1, 2, 3]);
+      expect(fanAnswering(0, 4)).toBeNull();
+    });
+
+    it('counts any three neighbours in order, up or down, as a scale, and nothing else', () => {
+      for (let a = 0; a < JELLIES; a++)
+        for (let b = 0; b < JELLIES; b++)
+          for (let c = 0; c < JELLIES; c++) {
+            const up = b === a + 1 && c === b + 1;
+            const down = b === a - 1 && c === b - 1;
+            expect(isScale(a, b, c), `${a}${b}${c}`).toBe(up || down);
+          }
+    });
+
+    it('sparkles once per run: a used note starts no second run, a fresh run sparkles again', () => {
+      const watch = new ScaleWatch();
+      expect([0, 1, 2, 3, 4].map((i) => watch.tap(i))).toEqual([false, false, true, false, false]);
+      const back = new ScaleWatch();
+      expect([4, 3, 2, 2, 1, 0].map((i) => back.tap(i))).toEqual([false, false, true, false, false, true]);
+      const ghost = new ScaleWatch();
+      expect(FREE_SONG.filter((i) => ghost.tap(i)).length).toBeGreaterThan(0);
+    });
+
+    it('names every jelly with a spoken line, and says low and high', () => {
+      expect(JELLY_NAMES).toHaveLength(JELLIES);
+      for (const id of [...JELLY_NAMES, 'jelly.lowhigh' as const]) expect(SCRIPT[id]?.length, id).toBeGreaterThan(0);
+    });
+
+    it('names at most once in eight taps, never the same jelly twice in a row, and says low and high once', () => {
+      for (let seed = 1; seed <= 200; seed++) {
+        const rng = new Rng(seed);
+        const namer = new JellyNamer();
+        let sinceLast = Infinity;
+        let lastJelly = -1;
+        let lowHigh = 0;
+        const lines: string[] = [];
+        for (let n = 0; n < 40; n++) {
+          const i = rng.int(0, JELLIES - 1);
+          const line = namer.tap(i);
+          sinceLast++;
+          if (!line) continue;
+          expect(sinceLast).toBeGreaterThanOrEqual(NAME_EVERY);
+          sinceLast = 0;
+          lines.push(line);
+          if (line === 'jelly.lowhigh') lowHigh++;
+          else {
+            expect(line).toBe(JELLY_NAMES[i]);
+            expect(i).not.toBe(lastJelly);
+            lastJelly = i;
+          }
+        }
+        expect(lowHigh).toBeLessThanOrEqual(1);
+        expect(lines.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('says low and high exactly once in a long round that plays both ends', () => {
+      const namer = new JellyNamer();
+      const lines = Array.from({ length: 40 }, (_, n) => namer.tap(n % JELLIES));
+      expect(lines.filter((l) => l === 'jelly.lowhigh')).toHaveLength(1);
+    });
+
+    it('never speaks on a quiet tap, though the tap still counts', () => {
+      const namer = new JellyNamer();
+      for (let n = 0; n < NAME_EVERY - 1; n++) expect(namer.tap(n % 2 ? 1 : 2)).toBeNull();
+      expect(namer.tap(3, true)).toBeNull();
+      expect(namer.tap(3)).toBe('jelly.name.green');
+    });
+
+
+    it('says low and high only after both the biggest and the littlest jelly sang', () => {
+      const namer = new JellyNamer();
+      const lines = [1, 2, 3, 1, 2, 3, 1, 2, 0, 1, 2, 3, 4, 3, 2, 1, 2, 3, 2, 1].map((i) => namer.tap(i));
+      const at = lines.indexOf('jelly.lowhigh');
+      expect(at).toBeGreaterThanOrEqual(12);
     });
   });
 });

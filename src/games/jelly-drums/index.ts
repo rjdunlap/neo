@@ -4,7 +4,7 @@ import { RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { gradientTexture } from '../../art/scenery';
 import { musicNote } from '../../art/shapes';
 import { music, STYLES, silenced } from '../../audio/music';
-import { sfx } from '../../audio/sfx';
+import { sfx, type AnimalSound } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { RoundButton } from '../../ui/buttons';
@@ -12,7 +12,20 @@ import { replayArt } from '../shared';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Jelly } from './jelly';
-import { awakeJellies, drawTune, IdleNudge, jellyToTap, nearestAwake, planFor, type JellyPhase, type JellyPlan, type Tune } from './logic';
+import {
+  awakeJellies,
+  drawTune,
+  fanAnswering,
+  IdleNudge,
+  JellyNamer,
+  jellyToTap,
+  nearestAwake,
+  planFor,
+  ScaleWatch,
+  type JellyPhase,
+  type JellyPlan,
+  type Tune,
+} from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 /** Big jelly, low note: C D E G A from left to right. */
@@ -30,6 +43,8 @@ const LEVELS: BandLevels = {
 };
 
 const FANS: CritterName[] = ['duck', 'bunny', 'cat', 'pig'];
+/** Each fan's own voice when it answers on level 2. */
+const FAN_VOICES: AnimalSound[] = ['quack', 'hop', 'meow', 'oink'];
 
 class JellyDrums implements Game {
   private readonly plan: JellyPlan;
@@ -54,11 +69,17 @@ class JellyDrums implements Game {
   private readonly again: RoundButton;
   /** Free play: a quiet jelly wiggles after a while without a touch. */
   private readonly nudge = new IdleNudge();
+  /** Free play: the voice names a jelly now and then. */
+  private readonly namer = new JellyNamer();
+  /** Level 3: three neighbours in a row sparkle. */
+  private readonly scale = new ScaleWatch();
   private lastJelly = 2;
   private wrongThisTune = 0;
   private misses = 0;
   private hints = 0;
   private clock = 0;
+  /** Seconds left of the garland's twinkle after a scale. */
+  private twinkle = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -142,6 +163,10 @@ class JellyDrums implements Game {
     const beat = music.beat();
     for (const j of this.jellies) j.update(dt, beat);
     this.again.alpha = this.phase === 'turn' ? 1 : 0.5;
+    if (this.twinkle > 0) {
+      this.twinkle = Math.max(0, this.twinkle - dt);
+      this.garland.alpha = 0.75 + 0.25 * Math.cos(this.twinkle * 24);
+    }
     if (this.plan.mode === 'free' && this.phase === 'play' && this.nudge.tick(dt)) {
       const j = this.jellies[this.lastJelly];
       j.hit(0.5);
@@ -170,6 +195,7 @@ class JellyDrums implements Game {
       this.notes++;
       this.setLit(Math.floor((this.notes / this.plan.goal) * BULBS));
       if (woke) this.wakeUp();
+      if (this.plan.mode === 'free') this.freeTwists(i);
       if (this.notes >= this.plan.goal) void this.finale();
       return;
     }
@@ -181,6 +207,48 @@ class JellyDrums implements Game {
     } else {
       void this.oops();
     }
+  }
+
+  /** Free play's extras, none of them a goal: a name now and then, the fans answering (level 2), a scale's sparkle (level 3). */
+  private freeTwists(i: number) {
+    const f = this.plan.twist === 'fans' ? fanAnswering(this.notes, this.fans.length) : null;
+    if (f !== null) void this.fanAnswers(f, i);
+    // No name over a fan's answer or the finale.
+    const line = this.namer.tap(i, f !== null || this.notes >= this.plan.goal);
+    if (line) void this.ctx.say(line);
+    if (this.plan.twist === 'scale' && this.scale.tap(i)) this.sparkle();
+  }
+
+  /** A fan sings back in its own voice, with a note in the color of the jelly she just played. */
+  private async fanAnswers(f: number, jelly: number) {
+    await this.ctx.tw.wait(0.25);
+    const fan = this.fans[f];
+    fan.hop(1);
+    sfx.animal(FAN_VOICES[f]);
+    this.ctx.particles.burst(fan.x, fan.y - 70, {
+      kind: 'note',
+      colors: [swatch[COLORS[jelly]].line],
+      count: 2,
+      speed: [80, 130],
+      spread: 0.6,
+      gravity: -40,
+      size: [0.8, 1],
+      life: [1, 1.3],
+      spin: 1,
+    });
+  }
+
+  /** A rainbow runs across the stage from the first jelly to the last, and the garland twinkles. */
+  private sparkle() {
+    const colors = RAINBOW.map((c) => swatch[c].fill);
+    this.jellies.forEach((j, k) => {
+      void this.ctx.tw.wait(k * 0.06).then(() => {
+        j.glow(0.6);
+        this.ctx.particles.burst(j.x, j.y - j.height * 0.9, { kind: 'star', colors, count: 8, speed: [120, 260], life: [0.6, 1] });
+      });
+    });
+    this.twinkle = 0.8;
+    sfx.sparkle();
   }
 
   /** Wake level: only the awake jellies show; a lone jelly stands big in the middle, then takes its place as friends join. */
@@ -392,7 +460,7 @@ export const jellyDrums: GameModule = {
     return p.mode === 'free' ? `Free play, ${p.goal} notes` : `Copy a ${p.length}-note tune, ${p.goal} tunes`;
   },
   music: silenced(STYLES.jelly),
-  coplayHint: 'Sing along! Big jellies sing low, little jellies sing high.',
+  coplayHint: 'Sing along! Big jellies sing low, little jellies sing high. Hum the low one, then the high one, and see if {name} plays it.',
   offScreen: {
     all: 'Make a pots-and-pans band: big pot, low sound; small pot, high sound.',
     // School: a build or test with a result, predicting first.

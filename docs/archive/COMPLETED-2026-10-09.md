@@ -2,6 +2,12 @@
 
 
 
+### Jelly Drums slice 2, names, twists and co-play (2026-11-03)
+
+[PR #1155](https://github.com/rjdunlap/neo/pull/1155), [dive slice 2](../deep-dives/jelly-drums.md#build-slices-in-order) (fresh 4, 5, 9). Free play (levels 1-3) names a jelly now and then (`jelly.name.<color>`, `JellyNamer`: at most one in eight taps, never the same jelly twice in a row, never over a fan's answer or the finale) and says `jelly.lowhigh` once a round after she has played both the biggest and the littlest. Level 2: every fourth note a front-row fan (duck, bunny, cat, pig in turn) hops and answers in its own `sfx.animal` voice with a note in the jelly's color (`fanAnswering`). Level 3: three neighbouring jellies in order, up or down, send a rainbow star burst across the jellies and twinkle the garland (`isScale`, `ScaleWatch`: a run is used once). `twist` is a field on `PLANS`; nothing counts as a miss. How-to steps for levels 2 and 3 updated. Deviations: the sparkle only twinkles the garland (progress still counts notes, no bonus bulb, since nothing is a goal beyond the note count); the co-play line is one added sentence on the single lap/toddler `coplayHint` ("Hum the low one, then the high one, and see if {name} plays it."), because per-band co-play needs a shell type change (open).
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--jelly-drums-names-twists-and-co-play-dive-slice-2).
+
 ### Ramp Race level 7 What can we tell? (inquiry Q5, 2026-11-03)
 
 [PR #1152](https://github.com/rjdunlap/neo/pull/1152), from the [definition](../definitions/what-can-we-tell.md): two shelf cards, three claim tiles (Floors, Ramps, Both), a wrong claim pulses the part its why-line names, "we can't tell" on a confounded pair leads to a repair that replaces card B with a fair test. Claim layout is a pure `tellLayout(view)`; misses and hints are tallied per step; school range 1–7, pre-K 1–2 unchanged.
