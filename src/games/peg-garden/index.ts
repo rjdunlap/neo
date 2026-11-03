@@ -906,6 +906,7 @@ export const pegGarden: GameModule = {
   name: 'Peg Garden',
   titleLine: 'game.peg-garden',
   region: 'bubble-beach',
+  challenge: 'hands',
   skills: ['cause-and-effect', 'tracking', 'counting', 'aiming'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

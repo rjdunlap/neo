@@ -147,7 +147,7 @@ function iconArt(seed = 0) {
   c.addChild(new Graphics().circle(60, -50, 24).fill(ink).stroke({ width: 5, color: swatch.yellow.fill })); return c;
 }
 export const logRoll: GameModule = {
-  id: 'log-roll', name: 'Log Roll', titleLine: 'game.log-roll', region: 'puzzle-peaks',
+  id: 'log-roll', name: 'Log Roll', titleLine: 'game.log-roll', region: 'puzzle-peaks', challenge: 'space',
   skills: ['spatial-reasoning', 'planning', 'mental-rotation'], bands: ['grownup'], touchDemo: true,
   levels: band => rangeFor({ grownup: { min: 1, max: 3 } }, band),
   describeLevel: level => planFor(level).name, music: STYLES.lullaby,

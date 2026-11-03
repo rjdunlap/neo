@@ -422,6 +422,7 @@ export const ribbonWorkshop: GameModule = {
   name: 'Ribbon Workshop',
   titleLine: 'game.ribbon-workshop',
   region: 'counting-cove',
+  challenge: 'numbers',
   skills: ['fractions', 'equivalent-fractions', 'measurement'],
   bands: ['school'],
   levels: () => ({ min: 1, max: 3 }),

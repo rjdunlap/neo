@@ -463,6 +463,7 @@ export const lookItUp: GameModule = {
   name: 'Look It Up',
   titleLine: 'game.look-it-up',
   region: 'story-grove',
+  challenge: 'words',
   skills: ['text-features', 'informational-reading', 'animal-facts'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

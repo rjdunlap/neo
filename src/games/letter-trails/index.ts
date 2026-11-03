@@ -226,7 +226,7 @@ function trailArt(): Container {
   return c;
 }
 export const letterTrails: GameModule = {
-  id: 'letter-trails', name: 'Letter Trails', titleLine: 'game.letter-trails', region: 'story-grove',
+  id: 'letter-trails', name: 'Letter Trails', titleLine: 'game.letter-trails', region: 'story-grove', challenge: 'words',
   skills: ['letters', 'fine-motor', 'writing'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => PLANS[trailLevel(l) - 1].name,
   music: STYLES.paint, offScreen: 'Draw large letters with a finger in sand or on a foggy window, saying the letter together.',

@@ -1665,6 +1665,7 @@ export const caravanDays: GameModule = {
   name: 'Caravan Days',
   titleLine: 'game.caravan-days',
   region: 'cozy-village',
+  challenge: 'numbers',
   skills: ['counting', 'comparing', 'planning', 'cause-and-effect'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

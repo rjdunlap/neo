@@ -360,6 +360,7 @@ export const senseDetective: GameModule = {
   name: 'Sense Detective',
   titleLine: 'game.sense-detective',
   region: 'tinker-lab',
+  challenge: 'noticing',
   skills: ['observation', 'evidence', 'senses', 'comparing'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

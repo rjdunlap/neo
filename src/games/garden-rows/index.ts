@@ -502,6 +502,7 @@ export const gardenRows: GameModule = {
   name: 'Garden Rows',
   titleLine: 'game.garden-rows',
   region: 'puzzle-peaks',
+  challenge: 'logic',
   skills: ['logic', 'deduction', 'patterns', 'spatial-reasoning'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

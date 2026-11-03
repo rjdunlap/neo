@@ -221,7 +221,7 @@ export class WelcomeWays implements Game {
 }
 function emblem(){const c=new Container();c.addChild(new Graphics().poly([-75,0,-75,-60,75,-110,75,0]).fill(wood.fill).stroke({width:6,color:wood.line}));return c;}
 export const welcomeWays:GameModule={
-  id:'welcome-ways',name:'Welcome Ways',titleLine:'ww.title',region:'tinker-lab',skills:['engineering design','testing and revision','considering different needs'],bands:['toddler','preschool','prek','school'],levels:band=>rangeFor(LEVELS,band),
+  id:'welcome-ways',name:'Welcome Ways',titleLine:'ww.title',region:'tinker-lab',challenge:'space',skills:['engineering design','testing and revision','considering different needs'],bands:['toddler','preschool','prek','school'],levels:band=>rangeFor(LEVELS,band),
   describeLevel:level=>['Place a ramp for Roly','Try a step or a ramp','One entrance for Bunny and Roly','Two ramps and a wide door for Roly and Bear'][planFor(level).level-1],music:STYLES.quiet,touchDemo:true,
   coplayHint:'Voice a visitor’s pictured need while {name} builds, then swap.',
   offScreen:'For preschool and older: with large toy blocks, make an entrance for two toys that move differently. Let each toy try it.',

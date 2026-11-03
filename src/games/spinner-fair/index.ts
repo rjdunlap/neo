@@ -416,7 +416,7 @@ function sticker(seed: number): Container {
 }
 
 export const spinnerFair: GameModule = {
-  id: 'spinner-fair', name: 'Spinner Fair', titleLine: 'game.spinner-fair', region: 'counting-cove',
+  id: 'spinner-fair', name: 'Spinner Fair', titleLine: 'game.spinner-fair', region: 'counting-cove', challenge: 'numbers',
   skills: ['counting', 'data', 'graphs', 'comparing'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.hub,

@@ -614,6 +614,7 @@ export const bounceBack: GameModule = {
   name: 'Bounce Back',
   titleLine: 'game.bounce-back',
   region: 'bubble-beach',
+  challenge: 'hands',
   skills: ['tracking', 'hand-eye', 'turn-taking', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

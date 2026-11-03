@@ -363,6 +363,7 @@ export const secondChanceShed: GameModule = {
   name: 'Second Chance Shed',
   titleLine: 'game.second-chance-shed',
   region: 'cozy-village',
+  challenge: 'noticing',
   skills: ['sorting', 'materials', 'cause-and-effect', 'reuse', 'planning'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

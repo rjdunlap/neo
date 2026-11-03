@@ -489,6 +489,7 @@ export const meltFreeze: GameModule = {
   name: 'Melt and Freeze',
   titleLine: 'game.melt-freeze',
   region: 'tinker-lab',
+  challenge: 'noticing',
   skills: ['states-of-matter', 'cause-and-effect', 'observation'],
   bands: ['lap', 'toddler', 'preschool'],
   levels: (b) => (b === 'preschool' ? { min: 3, max: 4 } : b === 'toddler' ? { min: 1, max: 3 } : { min: 1, max: 2 }),

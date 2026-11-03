@@ -952,6 +952,7 @@ export const eggCatch: GameModule = {
   name: 'Egg Catch',
   titleLine: 'game.egg-catch',
   region: 'barnyard',
+  challenge: 'hands',
   skills: ['tracking', 'hand-eye', 'colors', 'prediction'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

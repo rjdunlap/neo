@@ -275,7 +275,7 @@ function orchardArt(seed: number): Container {
 }
 
 export const orchardRows: GameModule = {
-  id: 'orchard-rows', name: 'Orchard Rows', titleLine: 'game.orchard-rows', region: 'counting-cove',
+  id: 'orchard-rows', name: 'Orchard Rows', titleLine: 'game.orchard-rows', region: 'counting-cove', challenge: 'numbers',
   skills: ['equal groups', 'arrays', 'skip counting', 'multiplication', 'division', 'factors'], bands: ['school'],
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
   music: STYLES.hub, touchDemo: true,

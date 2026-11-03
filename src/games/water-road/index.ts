@@ -817,6 +817,7 @@ export const waterRoad: GameModule = {
   name: 'Water Road',
   titleLine: 'game.water-road',
   region: 'tinker-lab',
+  challenge: 'space',
   skills: ['cause-and-effect', 'prediction', 'spatial-reasoning', 'reasons'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

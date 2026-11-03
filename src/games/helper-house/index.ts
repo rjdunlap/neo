@@ -716,6 +716,7 @@ export const helperHouse: GameModule = {
   name: 'Helper House',
   titleLine: 'game.helper-house',
   region: 'cozy-village',
+  challenge: 'logic',
   skills: ['systems', 'logic', 'cause-effect', 'testing'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

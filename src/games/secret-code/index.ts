@@ -431,6 +431,7 @@ export const secretCode: GameModule = {
   name: 'Secret Code',
   titleLine: 'game.secret-code',
   region: 'puzzle-peaks',
+  challenge: 'logic',
   skills: ['deduction', 'using-evidence', 'colors', 'reasoning'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

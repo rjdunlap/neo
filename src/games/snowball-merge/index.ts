@@ -197,7 +197,7 @@ function sticker(seed: number) {
   c.addChild(sparkles); return c;
 }
 export const snowballMerge: GameModule = {
-  id: 'snowball-merge', name: 'Snowball Merge', titleLine: 'game.snowball-merge', region: 'puzzle-peaks',
+  id: 'snowball-merge', name: 'Snowball Merge', titleLine: 'game.snowball-merge', region: 'puzzle-peaks', challenge: 'space',
   skills: ['spatial-planning', 'doubling', 'revision'], bands: ['grownup'], inputs: ['touch'], touchDemo: true,
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name, music: STYLES.lullaby,
   coplayHint: 'Predict which pair will join before pressing an arrow. Compare two possible slide orders.',

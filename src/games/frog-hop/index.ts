@@ -412,6 +412,7 @@ export const frogHop: GameModule = {
   name: 'Frog Hop',
   titleLine: 'game.frog-hop',
   region: 'counting-cove',
+  challenge: 'numbers',
   skills: ['number-line', 'adding', 'taking-away', 'counting-on'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

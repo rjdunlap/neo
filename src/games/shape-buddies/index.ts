@@ -327,7 +327,7 @@ function sticker(seed: number) {
   const s = seedArt(); s.position.set(70, -15); c.addChild(bridge, cup, s); return c;
 }
 export const shapeBuddies: GameModule = {
-  id: 'shape-buddies', name: 'Shape Buddies', titleLine: 'game.shape-buddies', region: 'tinker-lab',
+  id: 'shape-buddies', name: 'Shape Buddies', titleLine: 'game.shape-buddies', region: 'tinker-lab', challenge: 'space',
   skills: ['shape and function', 'spatial planning', 'testing and revision'], bands: ['prek', 'school'],
   levels: band => rangeFor(LEVELS, band), describeLevel: level => DESCRIPTIONS[level] ?? DESCRIPTIONS[1],
   music: STYLES.hub, touchDemo: true,

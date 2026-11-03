@@ -516,6 +516,7 @@ export const goodnightRoom: GameModule = {
   name: 'Goodnight Room',
   titleLine: 'game.goodnight-room',
   region: 'story-grove',
+  challenge: 'words',
   skills: ['words', 'listening', 'routines', 'cause-and-effect'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

@@ -613,6 +613,7 @@ export const lassoLoops: GameModule = {
   name: 'Lasso Loops',
   titleLine: 'game.lasso-loops',
   region: 'counting-cove',
+  challenge: 'numbers',
   skills: ['grouping', 'counting by fives and tens', 'place value', 'equal groups', 'estimating'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

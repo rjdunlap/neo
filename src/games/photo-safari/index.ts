@@ -799,6 +799,7 @@ export const photoSafari: GameModule = {
   name: 'Photo Safari',
   titleLine: 'game.photo-safari',
   region: 'story-grove',
+  challenge: 'words',
   skills: ['vocabulary', 'verbs', 'positions', 'listening'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

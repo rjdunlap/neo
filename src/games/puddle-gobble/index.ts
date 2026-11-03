@@ -815,6 +815,7 @@ export const puddleGobble: GameModule = {
   name: 'Puddle Gobble',
   titleLine: 'game.puddle-gobble',
   region: 'puzzle-peaks',
+  challenge: 'numbers',
   skills: ['comparison', 'measurement', 'ordering', 'addition', 'planning'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

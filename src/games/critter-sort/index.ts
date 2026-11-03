@@ -553,6 +553,7 @@ export const critterSort: GameModule = {
   name: 'Critter Sort',
   titleLine: 'game.critter-sort',
   region: 'barnyard',
+  challenge: 'noticing',
   skills: ['sorting', 'logic', 'attributes', 'data'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

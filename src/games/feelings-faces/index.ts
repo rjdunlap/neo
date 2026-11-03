@@ -948,6 +948,7 @@ export const feelingsFaces: GameModule = {
   name: 'Feelings Faces',
   titleLine: 'game.feelings-faces',
   region: 'cozy-village',
+  challenge: 'noticing',
   skills: ['emotions', 'empathy', 'vocabulary'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

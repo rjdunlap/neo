@@ -574,6 +574,7 @@ export const habitatHelpers: GameModule = {
   name: 'Habitat Helpers',
   titleLine: 'game.habitat-helpers',
   region: 'tinker-lab',
+  challenge: 'noticing',
   skills: ['habitats', 'living-things', 'prediction', 'systems-thinking'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

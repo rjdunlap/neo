@@ -729,6 +729,7 @@ export const puddleLens: GameModule = {
   name: 'Puddle Lens',
   titleLine: 'game.puddle-lens',
   region: 'tinker-lab',
+  challenge: 'noticing',
   skills: ['observation', 'magnification', 'scale', 'science'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

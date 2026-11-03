@@ -451,6 +451,7 @@ export const sandTable: GameModule = {
   name: 'Sand Table',
   titleLine: 'game.sand-table',
   region: 'tinker-lab',
+  challenge: 'space',
   skills: ['cause-and-effect', 'spatial', 'materials', 'making'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

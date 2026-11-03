@@ -739,6 +739,7 @@ export const scoopShop: GameModule = {
   name: 'Scoop Shop',
   titleLine: 'game.scoop-shop',
   region: 'cozy-village',
+  challenge: 'noticing',
   skills: ['colors', 'counting', 'sequencing', 'memory'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   entryLevels: [10],

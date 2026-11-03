@@ -630,6 +630,7 @@ export const peekabooBarn: GameModule = {
   name: 'Peekaboo Barn',
   titleLine: 'game.peekaboo-barn',
   region: 'barnyard',
+  challenge: 'noticing',
   skills: ['object-permanence', 'animal-words', 'memory'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

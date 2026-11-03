@@ -556,6 +556,7 @@ export const peekaroundIsland: GameModule = {
   name: 'Peekaround Island',
   titleLine: 'game.peekaround-island',
   region: 'puzzle-peaks',
+  challenge: 'space',
   skills: ['object-permanence', 'perspective', 'spatial-words', 'reasoning'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

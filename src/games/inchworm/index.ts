@@ -627,6 +627,7 @@ export const inchworm: GameModule = {
   name: 'Inchworm Measure',
   titleLine: 'game.inchworm',
   region: 'tinker-lab',
+  challenge: 'numbers',
   skills: ['measuring', 'length', 'units', 'comparing'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

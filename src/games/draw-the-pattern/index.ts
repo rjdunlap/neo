@@ -783,7 +783,7 @@ function sticker(seed: number): Container {
 }
 
 export const drawThePattern: GameModule = {
-  id: 'draw-the-pattern', name: 'Draw the Pattern', titleLine: 'game.draw-the-pattern', region: 'treehouse',
+  id: 'draw-the-pattern', name: 'Draw the Pattern', titleLine: 'game.draw-the-pattern', region: 'treehouse', challenge: 'hands',
   skills: ['fine-motor', 'writing', 'patterns'], bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (b) => rangeFor(LEVELS, b), describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,

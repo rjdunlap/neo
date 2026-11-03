@@ -145,7 +145,7 @@ class MarbleJump implements Game {
   }
 }
 export const marbleJump: GameModule = {
-  id: 'marble-jump', name: 'Marble Jump', titleLine: 'game.marble-jump', region: 'puzzle-peaks',
+  id: 'marble-jump', name: 'Marble Jump', titleLine: 'game.marble-jump', region: 'puzzle-peaks', challenge: 'space',
   skills: ['spatial planning', 'revising a route'], bands: ['grownup'], touchDemo: true,
   levels: band => rangeFor(LEVELS, band), describeLevel: level => `${marblesFor(level)} marbles on a triangular board; leave one`,
   music: STYLES.lullaby,

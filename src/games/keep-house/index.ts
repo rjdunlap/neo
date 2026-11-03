@@ -1394,6 +1394,7 @@ export const keepHouse: GameModule = {
   name: 'Keep House',
   titleLine: 'game.keep-house',
   region: 'cozy-village',
+  challenge: 'space',
   skills: ['matching', 'spatial-reasoning', 'reasons', 'checking'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

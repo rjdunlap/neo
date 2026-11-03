@@ -432,7 +432,7 @@ class ForecastDetective implements Game {
 }
 
 export const forecastDetective: GameModule = {
-  id: 'forecast-detective', name: 'Forecast Detective', titleLine: 'game.forecast-detective', region: 'tinker-lab',
+  id: 'forecast-detective', name: 'Forecast Detective', titleLine: 'game.forecast-detective', region: 'tinker-lab', challenge: 'logic',
   skills: ['weather', 'evidence', 'deduction', 'uncertainty'], bands: ['school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.quiet,

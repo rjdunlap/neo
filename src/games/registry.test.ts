@@ -5,6 +5,7 @@ import { BANDS, playBand } from '../progress/bands';
 import { SCRIPT } from '../content/voice-script';
 import { courseInfo } from '../couch/courses';
 import { couchGameById, GAMES, gameById, playsByTouch } from './registry';
+import { CHALLENGE_KINDS } from './types';
 import { FIRST_COURSE } from '../couch/courses';
 import { isSilent, silenced, STYLES } from '../audio/music';
 import { PLACES } from '../content/places';
@@ -253,6 +254,11 @@ describe('game registry', () => {
       { level: 2, misses: 0, hints: 0, seconds: 10, at: 1 },
       { level: 2, misses: 0, hints: 0, seconds: 10, at: 2 },
     ], range)).toBe(2);
+  });
+
+  it("names every touch game's kind of challenge, for Today's six's mix", () => {
+    // docs/definitions/todays-six.md#r4-the-six-and-the-mix: the kind a round mostly asks for, one of seven.
+    for (const m of GAMES.filter(playsByTouch)) expect(CHALLENGE_KINDS, m.id).toContain(m.challenge);
   });
 
   it("keeps Today's six opt-outs (`daily: false`) to the listed touch games", () => {

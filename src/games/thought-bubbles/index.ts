@@ -618,6 +618,7 @@ export const thoughtBubbles: GameModule = {
   name: 'Thought Bubbles',
   titleLine: 'game.thought-bubbles',
   region: 'story-grove',
+  challenge: 'words',
   skills: ['characters', 'perspective', 'inference', 'listening'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

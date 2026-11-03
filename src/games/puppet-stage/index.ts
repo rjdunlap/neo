@@ -926,7 +926,7 @@ class PuppetStage implements Game {
 }
 
 export const puppetStage: GameModule = {
-  id: 'puppet-stage', name: 'Puppet Stage', titleLine: 'game.puppet-stage', region: 'music-mountain',
+  id: 'puppet-stage', name: 'Puppet Stage', titleLine: 'game.puppet-stage', region: 'music-mountain', challenge: 'words',
   skills: ['pretend-play', 'listening', 'character-voices', 'acting-a-story'], bands: ['lap', 'toddler', 'preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel,
   music: silenced(STYLES.hub),

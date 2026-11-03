@@ -650,6 +650,7 @@ export const gearGarden: GameModule = {
   name: 'Gear Garden',
   titleLine: 'game.gear-garden',
   region: 'tinker-lab',
+  challenge: 'space',
   skills: ['cause-and-effect', 'simple-machines', 'gears', 'direction'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

@@ -450,6 +450,7 @@ export const jellyDrums: GameModule = {
   name: 'Jelly Drums',
   titleLine: 'game.jelly-drums',
   region: 'music-mountain',
+  challenge: 'music',
   skills: ['cause-effect', 'rhythm', 'sequence-memory'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

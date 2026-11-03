@@ -382,6 +382,7 @@ export const noticeBoard: GameModule = {
   name: 'Notice Board',
   titleLine: 'game.notice-board',
   region: 'cozy-village',
+  challenge: 'words',
   skills: ['media', 'authorship', 'evidence', 'purpose'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

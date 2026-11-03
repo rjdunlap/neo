@@ -844,6 +844,7 @@ export const roundup: GameModule = {
   name: 'Roundup',
   titleLine: 'game.roundup',
   region: 'barnyard',
+  challenge: 'hands',
   skills: ['motor-planning', 'sorting', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

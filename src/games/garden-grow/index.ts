@@ -713,6 +713,7 @@ export const gardenGrow: GameModule = {
   name: 'Garden Grow',
   titleLine: 'game.garden-grow',
   region: 'rainbow-meadow',
+  challenge: 'noticing',
   skills: ['cause-and-effect', 'colors', 'counting', 'living-things'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

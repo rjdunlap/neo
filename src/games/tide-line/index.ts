@@ -883,6 +883,7 @@ export const tideLine: GameModule = {
   name: 'Tide Line',
   titleLine: 'game.tide-line',
   region: 'tinker-lab',
+  challenge: 'noticing',
   skills: ['science', 'patterns', 'prediction'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (b) => rangeFor(BAND_LEVELS, b),

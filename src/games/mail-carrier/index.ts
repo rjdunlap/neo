@@ -459,6 +459,7 @@ export const mailCarrier: GameModule = {
   name: 'Mail Carrier',
   titleLine: 'game.mail-carrier',
   region: 'cozy-village',
+  challenge: 'numbers',
   skills: ['numerals', 'counting', 'colors', 'community', 'map reading', 'planning'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

@@ -260,7 +260,7 @@ function memoryArt(): Container {
   c.addChild(back, front); return c;
 }
 export const memoryMatch: GameModule = {
-  id: 'memory-match', liveController: true, name: 'Memory Match', titleLine: 'game.memory-match', region: 'puzzle-peaks',
+  id: 'memory-match', liveController: true, name: 'Memory Match', titleLine: 'game.memory-match', region: 'puzzle-peaks', challenge: 'noticing',
   skills: ['memory', 'matching', 'number-sense', 'letters', 'telling-time'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint, offScreen: 'Hide two pairs of familiar objects under cups and take turns finding their partners.',

@@ -232,7 +232,7 @@ class RhythmNeighbors implements Game{
  destroy(){this.events=[];this.done=true;this.finale=false;}
 }
 export const rhythmNeighbors:GameModule={
- id:'rhythm-neighbors',liveController: true,name:'Rhythm Neighbors',titleLine:'game.rhythm-neighbors',region:'music-mountain',skills:['turn-taking','rhythm','musical-expression'],bands:['lap','toddler','preschool','prek','school'],
+ id:'rhythm-neighbors',liveController: true,name:'Rhythm Neighbors',titleLine:'game.rhythm-neighbors',region:'music-mountain',challenge:'music',skills:['turn-taking','rhythm','musical-expression'],bands:['lap','toddler','preschool','prek','school'],
  levels:b=>rangeFor(LEVELS,b),describeLevel:l=>planFor(l).name,
  music:silenced(STYLES.jelly),coplayHint:'Let {name} answer the woodpecker with a frog. Any timing is welcome in the first turns.',offScreen:'Take turns knocking on a table. Try a short question and a different answering rhythm.',
  entryLevels:[7,9],hubIcon:()=>{const c=new Container();const f=frog(0);f.y=-35;c.addChild(f);return new WigglyIcon(c);},touchDemo:true,sticker:seed=>frog(new Rng(seed).int(0,1),80),create:ctx=>new RhythmNeighbors(ctx),

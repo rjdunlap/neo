@@ -723,6 +723,7 @@ export const trackwayTales: GameModule = {
   name: 'Trackway Tales',
   titleLine: 'game.trackway-tales',
   region: 'tinker-lab',
+  challenge: 'logic',
   skills: ['evidence', 'inference', 'comparing', 'uncertainty'],
   bands: ['school'],
   levels: (band) => rangeFor(LEVELS, band),

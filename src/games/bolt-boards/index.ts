@@ -858,6 +858,7 @@ export const boltBoards: GameModule = {
   name: 'Bolt Boards',
   titleLine: 'game.bolt-boards',
   region: 'tinker-lab',
+  challenge: 'space',
   skills: ['cause-and-effect', 'planning', 'spatial-reasoning'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

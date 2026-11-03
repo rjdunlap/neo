@@ -663,6 +663,7 @@ export const sproutShuffle: GameModule = {
   name: 'Sprout Shuffle',
   titleLine: 'game.sprout-shuffle',
   region: 'rainbow-meadow',
+  challenge: 'logic',
   skills: ['inheritance', 'modeling', 'possible outcomes'],
   bands: ['school'],
   levels: (band) => rangeFor(LEVELS, band),

@@ -336,6 +336,7 @@ export const adventureWalk: GameModule = {
   name: 'Adventure Walk',
   titleLine: 'game.adventure-walk',
   region: 'story-grove',
+  challenge: 'words',
   skills: ['spatial-words', 'listening', 'following-directions', 'sequencing'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

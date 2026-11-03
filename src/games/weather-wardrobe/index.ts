@@ -895,6 +895,7 @@ export const weatherWardrobe: GameModule = {
   name: 'Weather Wardrobe',
   titleLine: 'game.weather-wardrobe',
   region: 'cozy-village',
+  challenge: 'logic',
   skills: ['reasoning', 'vocabulary', 'everyday-life'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (b) => rangeFor(LEVELS, b),

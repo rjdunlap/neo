@@ -522,6 +522,7 @@ export const readyForAdventure: GameModule = {
   name: 'Ready for Adventure',
   titleLine: 'game.ready-for-adventure',
   region: 'cozy-village',
+  challenge: 'logic',
   skills: ['planning', 'sequencing', 'prerequisites', 'everyday-life'],
   bands: ['toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

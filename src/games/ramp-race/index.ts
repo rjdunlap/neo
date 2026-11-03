@@ -965,6 +965,7 @@ export const rampRace: GameModule = {
   name: 'Ramp Race',
   titleLine: 'game.ramp-race',
   region: 'tinker-lab',
+  challenge: 'noticing',
   skills: ['science', 'fair-tests', 'predicting', 'measuring'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

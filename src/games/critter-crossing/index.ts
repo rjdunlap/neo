@@ -614,6 +614,7 @@ export const critterCrossing: GameModule = {
   name: 'Critter Crossing',
   titleLine: 'game.critter-crossing',
   region: 'puzzle-peaks',
+  challenge: 'logic',
   skills: ['deduction', 'using-evidence', 'attributes', 'reasoning'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

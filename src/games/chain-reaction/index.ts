@@ -605,6 +605,7 @@ export const chainReaction: GameModule = {
   name: 'Chain Reaction',
   titleLine: 'game.chain-reaction',
   region: 'tinker-lab',
+  challenge: 'space',
   skills: ['prediction', 'cause-and-effect', 'planning', 'revision'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

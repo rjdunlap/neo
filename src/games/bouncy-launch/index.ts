@@ -947,6 +947,7 @@ export const bouncyLaunch: GameModule = {
   name: 'Bouncy Launch',
   titleLine: 'game.bouncy-launch',
   region: 'tinker-lab',
+  challenge: 'hands',
   skills: ['cause-and-effect', 'measurement', 'numbers'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

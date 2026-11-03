@@ -650,6 +650,7 @@ export const islandBridges: GameModule = {
   name: 'Island Bridges',
   titleLine: 'game.island-bridges',
   region: 'puzzle-peaks',
+  challenge: 'space',
   skills: ['logic', 'planning', 'deduction'],
   bands: ['grownup'],
   inputs: ['touch', 'controller'],

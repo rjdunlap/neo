@@ -1014,6 +1014,7 @@ export const pictureLogic: GameModule = {
   name: 'Picture Logic',
   titleLine: 'game.picture-logic',
   region: 'puzzle-peaks',
+  challenge: 'logic',
   skills: ['logic', 'deduction', 'patterns'],
   bands: ['grownup'],
   inputs: ['touch', 'controller'],

@@ -501,6 +501,7 @@ export const bubblePop: GameModule = {
   name: 'Bubble Pop',
   titleLine: 'game.bubble-pop',
   region: 'bubble-beach',
+  challenge: 'hands',
   skills: ['cause-effect', 'tracking', 'colors', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

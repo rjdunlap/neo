@@ -473,6 +473,7 @@ export const wordGlue: GameModule = {
   name: 'Word Glue',
   titleLine: 'game.word-glue',
   region: 'story-grove',
+  challenge: 'words',
   skills: ['compound-words', 'vocabulary', 'word-meaning'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

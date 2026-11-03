@@ -597,6 +597,7 @@ export const dominoRun: GameModule = {
   name: 'Domino Run',
   titleLine: 'game.domino-run',
   region: 'tinker-lab',
+  challenge: 'space',
   skills: ['cause-and-effect', 'spacing', 'planning', 'revision'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

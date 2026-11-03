@@ -4,6 +4,9 @@ import { BANDS } from '../progress/bands';
 import { levelsInOrder } from '../progress/difficulty';
 import { DAILY_COUNT, GROWNUP_FIRST, dailyPool, dailySix, dayKey, hardLevels, levelDots, presetLevels, playedOn } from './daily';
 
+/** How many times each value appears. */
+const countBy = (xs: readonly string[]) => xs.reduce((m, x) => m.set(x, (m.get(x) ?? 0) + 1), new Map<string, number>());
+
 const days = Array.from({ length: 30 }, (_, i) => dayKey(new Date(2026, 9, 1 + i)));
 
 describe("today's six", () => {
@@ -37,13 +40,38 @@ describe("today's six", () => {
     }
   });
 
-  it('spreads the six across subjects', () => {
+  it('gives every band six or more games in at least five kinds of challenge', () => {
     for (const { id: band } of BANDS) {
-      const subjects = new Set(dailyPool(band, GAMES).map((m) => m.region)).size;
+      const pool = dailyPool(band, GAMES);
+      expect(pool.length, band).toBeGreaterThanOrEqual(DAILY_COUNT);
+      expect(new Set(pool.map((m) => m.challenge)).size, band).toBeGreaterThanOrEqual(5);
+    }
+  });
+
+  it('mixes kinds of challenge first: six different kinds where the band has six, then lands', () => {
+    for (const { id: band } of BANDS) {
+      const pool = dailyPool(band, GAMES);
+      const kinds = new Set(pool.map((m) => m.challenge)).size;
+      const lands = new Set(pool.map((m) => m.region)).size;
       for (const day of days) {
-        const regions = new Set(dailySix(day, band, GAMES).map((p) => p.mod.region)).size;
-        expect(regions).toBe(Math.min(DAILY_COUNT, subjects));
+        const six = dailySix(day, band, GAMES);
+        const perKind = countBy(six.map((p) => p.mod.challenge ?? ''));
+        if (kinds >= DAILY_COUNT) expect(perKind.size, `${band} ${day}`).toBe(DAILY_COUNT);
+        else expect(Math.max(...perKind.values())).toBeLessThanOrEqual(2);
+        // Lands come second: kept apart while the kinds allow, never one land three times.
+        expect(new Set(six.map((p) => p.mod.region)).size, `${band} ${day}`).toBeGreaterThanOrEqual(Math.min(5, lands));
+        expect(Math.max(...countBy(six.map((p) => p.mod.region)).values())).toBeLessThanOrEqual(2);
       }
+    }
+  });
+
+  it('starts the kinds again only once each kind has had a turn, so a band with fewer kinds has at most two of one', () => {
+    // A pool of three kinds: two rounds of kinds fill the six, two of each.
+    const three = dailyPool('prek', GAMES).filter((m) => m.challenge === 'numbers' || m.challenge === 'words' || m.challenge === 'music');
+    for (const day of days) {
+      const six = dailySix(day, 'prek', three);
+      expect([...countBy(six.map((p) => p.mod.challenge ?? '')).values()]).toEqual([2, 2, 2]);
+      expect(new Set(six.slice(0, 3).map((p) => p.mod.challenge)).size).toBe(3);
     }
   });
 
@@ -105,11 +133,9 @@ describe("today's six", () => {
     }
   });
 
-  it('takes only games that list the band (grown-ups: grown-up or early school), never an opted-out one, six or more per band', () => {
+  it('takes only games that list the band (grown-ups: grown-up or early school), never an opted-out one', () => {
     for (const { id: band } of BANDS) {
-      const pool = dailyPool(band, GAMES);
-      expect(pool.length, band).toBeGreaterThanOrEqual(DAILY_COUNT);
-      for (const m of pool) {
+      for (const m of dailyPool(band, GAMES)) {
         expect(m.daily, m.id).not.toBe(false);
         expect(playsByTouch(m)).toBe(true);
         expect(band === 'grownup' ? m.bands.includes('grownup') || m.bands.includes('school') : m.bands.includes(band), `${m.id} at ${band}`).toBe(true);

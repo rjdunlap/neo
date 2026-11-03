@@ -144,7 +144,7 @@ class BugBuilder implements Game {
   destroy() { this.choices.forEach((c) => c.drag.destroy()); }
 }
 export const bugBuilder: GameModule = {
-  id: 'bug-builder', name: 'Bug Builder', titleLine: 'game.bug-builder', region: 'tinker-lab',
+  id: 'bug-builder', name: 'Bug Builder', titleLine: 'game.bug-builder', region: 'tinker-lab', challenge: 'space',
   skills: ['spatial-reasoning', 'symmetry', 'visual-matching'], bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (b) => b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 4, max: 7 } : b === 'preschool' ? { min: 2, max: 5 } : { min: 1, max: 2 },
   describeLevel: (l) => BUG_PLANS[Math.max(0, Math.min(BUG_PLANS.length - 1, l - 1))].name,

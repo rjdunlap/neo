@@ -574,6 +574,7 @@ export const recipeWorkshop: GameModule = {
   name: 'Recipe Workshop',
   titleLine: 'game.recipe-workshop',
   region: 'cozy-village',
+  challenge: 'logic',
   skills: ['sequencing', 'following-directions', 'cause-and-effect', 'everyday-life'],
   bands: ['toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

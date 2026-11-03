@@ -517,6 +517,7 @@ export const pictureGraph: GameModule = {
   name: 'Picture Graph',
   titleLine: 'game.picture-graph',
   region: 'counting-cove',
+  challenge: 'numbers',
   skills: ['counting', 'data', 'graphs', 'comparing'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

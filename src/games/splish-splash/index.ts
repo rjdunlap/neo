@@ -536,6 +536,7 @@ export const splishSplash: GameModule = {
   name: 'Splish Splash',
   titleLine: 'game.splish-splash',
   region: 'cozy-village',
+  challenge: 'hands',
   skills: ['fine-motor', 'body-parts'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   entryLevels: [9],

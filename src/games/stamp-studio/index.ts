@@ -212,7 +212,7 @@ class StampStudio implements Game {
   destroy() { this.stamps.forEach(s => s.drag?.destroy()); }
 }
 export const stampStudio: GameModule = {
-  id: 'stamp-studio', name: 'Stamp Studio', titleLine: 'game.stamp-studio', region: 'treehouse',
+  id: 'stamp-studio', name: 'Stamp Studio', titleLine: 'game.stamp-studio', region: 'treehouse', challenge: 'space',
   skills: ['composition', 'creative-expression', 'spatial-reasoning'], bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: b => b === 'school' ? { min: 5, max: 6 } : b === 'lap' ? { min: 1, max: 8, order: [7, 8, 1, 2] } : b === 'toddler' ? { min: 2, max: 9, order: [9, 2, 3] } : b === 'preschool' ? { min: 3, max: 5 } : { min: 4, max: 6 },
   entryLevels: [7, 8, 9], describeLevel: l => planFor(l).name, music: STYLES.paint, touchDemo: true,
