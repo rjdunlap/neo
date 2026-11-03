@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, ready, scene, tap, screenshot, launch, finished, useCompanion }) {
 async function fourth() {
   const only = process.env.FOURTH_ONLY;
-  if (only !== undefined) selectValue(only, ['song', 'puzzle', 'weather', 'sink', 'sink7'], 'FOURTH_ONLY');
+  if (only !== undefined) selectValue(only, ['song', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh'], 'FOURTH_ONLY');
   // Song Maker: free play loops, copying by shadows, a card, a pattern, and by ear.
   if (!only || only === 'song') for (let level = 1; level <= 7; level++) {
     await launch('song-maker', level);
@@ -113,9 +113,17 @@ async function fourth() {
 
   // Sink or Float: guesses are never misses; wrong sorts are tested in the water. Level 7 (FOURTH_ONLY=sink7 alone):
   // flat and leaky clay sink as experiments, the boat glows after them (one hint), the second lump floats by controller keys.
-  if (!only || only === 'sink' || only === 'sink7') for (const level of only === 'sink7' ? [7] : [1, 2, 3, 4, 5, 6, 7]) {
-    await launch('sink-float', level);
-    await page.waitForTimeout(700);
+  // FOURTH_ONLY=sink-fresh plays levels 4 and 6 on rounds that hold one of the fresh things, with a portrait of the tank.
+  const fresh = { 4: ['feather', 'marble'], 6: ['log', 'ice', 'paperclip'] };
+  if (!only || only === 'sink' || only === 'sink7' || only === 'sink-fresh') for (const level of only === 'sink7' ? [7] : only === 'sink-fresh' ? [4, 6] : [1, 2, 3, 4, 5, 6, 7]) {
+    for (let tries = 0; ; tries++) {
+      await launch('sink-float', level);
+      await page.waitForTimeout(700);
+      if (only !== 'sink-fresh') break;
+      const things = await page.evaluate(() => neo.scene.game.items.map((i) => i.thing));
+      if (things.some((t) => fresh[level].includes(t))) { log(`Sink or Float ${level} round: ${things.join(', ')}`); break; }
+      if (tries > 12) throw new Error(`no fresh thing at level ${level}`);
+    }
     const boatAt = await page.evaluate(async () => {
       const g = neo.scene.game;
       if (g.plan.mode === 'shape') {
@@ -125,7 +133,7 @@ async function fourth() {
         if (g.sunk !== 2 || g.hints !== 1 || g.misses !== 0) throw new Error(`clay trials: sunk ${g.sunk}, hints ${g.hints}, misses ${g.misses}`);
         return -1;
       }
-      const floats = { duck: 1, boat: 1, ball: 1, leaf: 1, apple: 1 };
+      const floats = { duck: 1, boat: 1, ball: 1, feather: 1, leaf: 1, apple: 1, log: 1, ice: 1 };
       const basket = (f) => ({ x: neo.view.w * 0.87, y: (f ? neo.view.h * 0.3 : neo.view.h * 0.56) + 40 });
       if (g.plan.mode === 'drop' || g.plan.mode === 'say') { for (const i of [...g.items]) { kit.tapOn(i.node); await kit.sleep(450); } return; }
       if (g.plan.mode === 'guess') {
@@ -161,7 +169,11 @@ async function fourth() {
       await page.waitForFunction(() => neo.scene.game.clayShape === 'boat', null, { timeout: 5000 });
     }
     await page.waitForTimeout(1000);
-    if ([2, 3, 5].includes(level)) await screenshot(`sink-float-${level}`);
+    if (only === 'sink-fresh' && level === 6) {
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+      await screenshot('sink-float-fresh-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    } else if ([2, 3, 5].includes(level)) await screenshot(`sink-float-${level}`);
     await finished('sink-float');
     const r = await page.evaluate(() => { const r = kit.store.stats('sink-float').history.at(-1); return [r.misses, r.hints]; });
     assert.deepEqual(r, level === 4 || level === 5 ? [2, 1] : level === 7 ? [0, 1] : [0, 0], `sink ${level} score`);

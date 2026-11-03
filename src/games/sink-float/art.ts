@@ -72,10 +72,11 @@ export function thingArt(thing: Thing): Container {
       break;
     }
     case 'marble': {
-      const m = swatch.blue;
-      g.circle(0, 0, 28).fill(m.light).stroke(line(m.line));
+      // A clear glass marble with a purple swirl, so it stands out against the water.
+      const m = swatch.purple;
+      g.circle(0, 0, 28).fill(swatch.white.fill).stroke(line(m.line));
       g.moveTo(-18, 12).quadraticCurveTo(-4, -22, 20, -8).quadraticCurveTo(4, 2, 12, 20).stroke(line(m.fill, 7));
-      g.ellipse(-10, -14, 8, 5).fill(swatch.white.fill);
+      g.ellipse(-12, -14, 7, 4).fill(m.light);
       break;
     }
     case 'log':
