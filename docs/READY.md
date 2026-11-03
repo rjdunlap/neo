@@ -18,6 +18,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **`orchard-rows`, fresh orchards and baskets (batch orchard-rows 2)** (game rules tier: `npm run typecheck` and the Orchard Rows rule tests only): levels 1–3 gain 2×2, 4×2, 4×3, 5×2, 4×4 and 5×3 (all within 5×5; level 2 never pairs a shape with its turn and holds no square), and level 4's second basket also draws 14 and 21. [Dive](deep-dives/orchard-rows.md#build-slices-in-order), [batch](GAME-BATCHES.md#orchard-rows-2-fresh-orchards-and-baskets).
 
+- **`puppet-stage`, levels 4–6 Story cards and the premiere (batch puppet-stage 2)** (new-interaction tier: typecheck, rule tests with the registry, lands, how-to and off-screen tests, one filtered `puppetstage` play of levels 4–6 as the definition sets, one portrait screenshot of level 6, `fingerdemo` at levels 4, 5 and 6, one build): three authored story cards (Knock knock, The lost hat, Surprise!) of bob-only scenes at two places, a live shown-only premiere with The end at level 6; prek {3,5}, school {4,6}. [Definition](definitions/puppet-stage-4-6.md), [batch](GAME-BATCHES.md#puppet-stage-2-story-cards-and-the-premiere).
+
 
 
 
@@ -125,7 +127,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
 
 
-- **Study `theatre-puppetry`: define Puppet Stage 4–6 (TP2)** (docs only; status `define`; claimed 2026-11-03 on branch `claude/define-puppet-stage-4-6`; files `docs/definitions/puppet-stage-4-6.md` and the closeout docs): after batch puppet-stage 1 is built and played; the three story cards and their spoken lines, the shown-only premiere restated from Movie Night, the director's-chair co-play role and coplayHint, school 4–6 and pre-K 4–5; retain its review, placement and device-check gates. [Backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build); [source](deep-dives/subjects/RECOMMENDATIONS.md#theatre-and-puppetry-recommendations).
 
 
 ### Subject research (docs only)
