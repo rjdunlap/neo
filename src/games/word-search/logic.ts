@@ -131,7 +131,10 @@ export function makeGrid(plan: WordPlan, theme: Theme, rng: Rng): WordGrid {
   throw new Error(`could not make a grid for ${plan.name}`);
 }
 
-export const makeGrids = (plan: WordPlan, rng: Rng): WordGrid[] => Array.from({ length: plan.grids }, () => makeGrid(plan, rng.pick([...THEMES]), rng));
+/** The themes a plan can draw: those with enough words that fit its grid. Every everyday theme fits every plan; a root family fits only the small ones. */
+export const themesFor = (plan: Pick<WordPlan, 'size' | 'words'>): Theme[] => THEMES.filter((t) => t.words.filter((w) => w.length <= plan.size).length >= plan.words);
+
+export const makeGrids = (plan: WordPlan, rng: Rng): WordGrid[] => Array.from({ length: plan.grids }, () => makeGrid(plan, rng.pick(themesFor(plan)), rng));
 
 /** A grid from its picture (rows of letters) and a theme's word list: where each word is found by looking. */
 export function parseGrid(rows: readonly string[], themeId: string, words: readonly string[]): WordGrid {

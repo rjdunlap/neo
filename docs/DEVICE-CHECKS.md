@@ -1,5 +1,9 @@
 # Needs a person or a device
 
+## Word Search (batch word-search 1, built 2026-11-03)
+
+- [ ] **The root line on the iPad.** Does device speech say "spect" and "port" in `wordsearch.root-spect` / `wordsearch.root-port` clearly enough for a grown-up to hear the root?
+
 ## Quick Tricks (batch quick-tricks 1, built 2026-11-03)
 
 - [ ] **The free low leaf.** Does a toddler understand a leaf dropped below Bunny as a try again (the boing and spoken line), with no sense of having been wrong?
