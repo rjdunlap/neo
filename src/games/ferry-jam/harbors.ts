@@ -2,7 +2,8 @@
  * Harbors for each level, frozen: finding one takes a search (`makeHarbor`), which is too slow to run while a child
  * waits. `logic.test.ts` checks that every one is well formed, can be finished, and needs a number of slides within
  * its plan's range at the fewest. To add more, call `makeHarbor(PLANS[level - 1], new Rng(seed))` for new seeds and
- * paste what `render` returns.
+ * paste what `render` returns. For a harbor at one number of slides, narrow the plan's `moves` to it
+ * (`{ ...PLANS[level - 1], moves: { min: k, max: k } }`): each pool keeps one at its plan's most and a third above its fewest.
  */
 export const HARBORS: Record<number, string[][]> = {
   1: [
@@ -20,6 +21,13 @@ export const HARBORS: Record<number, string[][]> = {
     ['b...', 'b..a', 'ff.a', '....'],
     ['.cc.', '....', 'ff.a', 'bb.a'],
     ['...b', 'ccab', 'ffa.', '....'],
+    ['....', '..bb', '.ffa', '...a'],
+    ['.ccb', '.ffb', '....', '..aa'],
+    ['..bb', '.cca', '.ffa', '....'],
+    ['....', 'ffbc', '..bc', 'aa..'],
+    ['....', '.bbb', '.ffa', '...a'],
+    ['....', '.ffa', '...a', '..bb'],
+    ['..aa', '....', '.ffb', '...b'],
   ],
   2: [
     ['aacb', 'ffcb', '....', '.dd.'],
@@ -36,6 +44,13 @@ export const HARBORS: Record<number, string[][]> = {
     ['b...', 'baaa', 'ff.c', '...c'],
     ['..b.', 'ffba', '...a', '.cc.'],
     ['..bb', '..cc', '.ffa', '...a'],
+    ['..a.', 'ffad', '.bbd', '.cc.'],
+    ['..aa', 'bccc', 'bffd', '...d'],
+    ['..da', 'ffda', '..cc', '..bb'],
+    ['..ba', 'ffba', '..dd', '.cc.'],
+    ['...d', 'ff.d', 'c.bb', 'caaa'],
+    ['abbb', 'a...', 'affd', 'cccd'],
+    ['ddda', 'bffa', 'b...', 'bccc'],
   ],
   3: [
     ['.....', '.ffad', '...ad', 'bccc.', 'b..ee'],
@@ -52,6 +67,8 @@ export const HARBORS: Record<number, string[][]> = {
     ['.gg..', 'ff.d.', 'bb.d.', 'aeee.', 'a..cc'],
     ['d....', 'dbbb.', '...c.', 'ff.ca', '....a'],
     ['...dc', 'bffdc', 'baaac', '.....', '.....'],
+    ['a....', 'addd.', 'a..bc', 'ff.bc', 'ee..c'],
+    ['..acc', '..a.b', '.ffdb', '...dg', '..eeg'],
   ],
   4: [
     ['...hh', '.ff.a', 'eee.a', 'gcbbb', 'gcddd'],
@@ -68,6 +85,11 @@ export const HARBORS: Record<number, string[][]> = {
     ['.....', '.ffce', '..bce', '.dbc.', '.dbaa'],
     ['e.gbb', 'e.gh.', '.ffhc', '..adc', '..ad.'],
     ['.hggg', '.h.aa', 'ffd..', '.ed.b', '.eccb'],
+    ['.dccc', '.dbgg', 'ffbh.', 'e..h.', 'eaa..'],
+    ['....h', '..g.h', 'ffgca', 'e.bca', 'e.bdd'],
+    ['b.gcc', 'b.g.d', 'ffe.d', '..ehh', '.aa..'],
+    ['egg.d', 'eb..d', 'ebhcc', 'ffha.', '...a.'],
+    ['geecc', 'g..ba', 'hhhba', 'ff..a', 'dd...'],
   ],
   5: [
     ['....ig', '.ffaig', '...ai.', '..dhhb', 'c.d..b', 'c..eee'],
@@ -100,5 +122,10 @@ export const HARBORS: Record<number, string[][]> = {
     ['....hh', 'dbb.g.', 'd.e.gc', 'ffe.gc', '..e...', '..aaa.'],
     ['hgg.ii', 'hjj.b.', 'hff.b.', 'aaa.b.', '.c....', '.ceedd'],
     ['geii..', 'geddda', 'hhc..a', '..c.ba', '.ff.b.', '....b.'],
+    ['.gg...', 'a.eiii', 'a.e.b.', 'affkbd', 'jjjkbd', '.cchh.'],
+    ['cceda.', 'ffedag', '....ag', 'khhj.i', 'k..j.i', '...bbb'],
+    ['hdd...', 'hccb.j', '.iibej', 'ffabe.', '..a.eg', '..a..g'],
+    ['...hb.', '.ffhb.', '....b.', 'gcc.dd', 'ga.iie', '.a...e'],
+    ['......', 'bg.ddi', 'bg.e.i', '.ffe.i', '...ac.', '.hhac.'],
   ],
 };

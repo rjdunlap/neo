@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { HARBORS } from './harbors';
-import { atDock, FERRY, grid, hintSlide, makeHarbor, parse, PLANS, planFor, reach, render, slides, solve, start, wellFormed, type Harbor, type Layout } from './logic';
+import { atDock, distance, distanceTable, FERRY, grid, hintSlide, makeHarbor, parse, patience, PLANS, planFor, reach, render, slides, solve, start, stuck, wellFormed, type Harbor, type Layout } from './logic';
 
 const harborsFor = (level: number) => HARBORS[level].map((rows) => parse(rows));
 
@@ -83,6 +83,106 @@ describe('Ferry Jam', () => {
         expect(moves, rows.join('/')).toBeGreaterThanOrEqual(plan.moves.min);
         expect(moves, rows.join('/')).toBeLessThanOrEqual(plan.moves.max);
       }
+    });
+  });
+
+  it('fills each plan: every pool has a harbor at its plan\'s most slides, and at least a third above its fewest', () => {
+    PLANS.forEach((plan, i) => {
+      const moves = harborsFor(i + 1).map((h) => solve(h)!.length);
+      expect(moves, plan.name).toContain(plan.moves.max);
+      expect(moves.filter((m) => m > plan.moves.min).length * 3, plan.name).toBeGreaterThanOrEqual(moves.length);
+    });
+  });
+
+  it('knows how far every layout is from the dock, the same as the solver', () => {
+    for (const level of [1, 3, 5]) for (const h of harborsFor(level).slice(0, 4)) {
+      const table = distanceTable(h);
+      expect(distance(h, start(h))).toBe(solve(h)!.length);
+      // Each slide changes the distance by at most one, and the hint's slide brings it exactly one closer.
+      let layout = start(h);
+      while (!atDock(h, layout)) {
+        for (const s of slides(h, layout)) expect(Math.abs(distance(h, apply(layout, s)) - distance(h, layout))).toBeLessThanOrEqual(1);
+        const next = apply(layout, hintSlide(h, layout)!);
+        expect(distance(h, next)).toBe(distance(h, layout) - 1);
+        layout = next;
+      }
+      expect(distance(h, layout)).toBe(0);
+      expect(table.size).toBeGreaterThan(0);
+    }
+  });
+
+  it('builds the distance table quickly even for the biggest harbors', () => {
+    for (const h of harborsFor(6)) {
+      const t0 = performance.now();
+      distanceTable(h);
+      expect(performance.now() - t0, render(h).join('/')).toBeLessThan(1500);
+    }
+  });
+
+  describe('the hint waits for her to be stuck, not for a number of slides', () => {
+    const h = harborsFor(6)[0];
+    const fewest = solve(h)!.length;
+    /** A slide of a boat other than the ferry that does not bring the boats closer, and the slide back. */
+    function wander(layout: Layout) {
+      const s = slides(h, layout).find((s) => s.boat !== FERRY && distance(h, apply(layout, s)) >= distance(h, layout))!;
+      return [s, { boat: s.boat, to: layout[s.boat] }];
+    }
+
+    it('waits at least six slides, and at least the harbor\'s fewest', () => {
+      expect(patience(2)).toBe(6);
+      expect(patience(13)).toBe(13);
+      expect(stuck([], 13)).toBe(false);
+      expect(stuck([3, 3, 3, 3, 3, 3], 2)).toBe(false);
+      expect(stuck([3, 3, 3, 3, 3, 3, 3], 2)).toBe(true);
+    });
+
+    it('a loop of slides back and forth earns a hint exactly when patience runs out', () => {
+      let layout = start(h);
+      const trail = [distance(h, layout)];
+      const [there, back] = wander(layout);
+      let slid = 0;
+      while (!stuck(trail, fewest)) {
+        layout = apply(layout, slid % 2 ? back : there);
+        trail.push(distance(h, layout));
+        slid++;
+        expect(slid).toBeLessThanOrEqual(patience(fewest));
+      }
+      expect(slid).toBe(patience(fewest));
+    });
+
+    it('a longer route that keeps getting closer never earns one', () => {
+      let layout = start(h);
+      const trail = [distance(h, layout)];
+      let slid = 0;
+      while (!atDock(h, layout)) {
+        // Every third slide wanders off and back before the next good one.
+        if (slid % 3 === 2) for (const s of wander(layout)) {
+          layout = apply(layout, s);
+          trail.push(distance(h, layout));
+          expect(stuck(trail, fewest)).toBe(false);
+        }
+        layout = apply(layout, hintSlide(h, layout)!);
+        trail.push(distance(h, layout));
+        expect(stuck(trail, fewest)).toBe(false);
+        slid++;
+      }
+      expect(trail.length - 1).toBeGreaterThan(fewest);
+    });
+
+    it('after a hint, the count starts again from where the boats are', () => {
+      let layout = start(h);
+      let trail = [distance(h, layout)];
+      const [there, back] = wander(layout);
+      let hints = 0;
+      for (let slid = 0; slid < patience(fewest) * 2 + 1; slid++) {
+        layout = apply(layout, slid % 2 ? back : there);
+        trail.push(distance(h, layout));
+        if (stuck(trail, fewest)) {
+          hints++;
+          trail = [distance(h, layout)];
+        }
+      }
+      expect(hints).toBe(2);
     });
   });
 
