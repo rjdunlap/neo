@@ -2953,6 +2953,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 6, to: 6, text: 'Two things sit end to end on the ruler. Count the spaces of both, and choose how long they are together.' },
       { from: 7, to: 7, text: 'Measure the same thing twice: big inchworms first, then little ones. Then tap the number the little worms made (or the big worms, when the pet asks).' },
       { from: 8, to: 8, text: 'The ruler is broken and has no 0. Count the spaces the object covers, not the mark where it ends.' },
+      { from: 9, to: 9, text: 'Tap the one inchworm to move it along the object, one hop at a time; each hop leaves a chalk mark. When it reaches the end, choose how many hops long the object is.' },
     ],
     finish: 'The round ends when the measurement is chosen.',
   },

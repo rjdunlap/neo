@@ -14,11 +14,11 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { answerOf, choices, hintSpans, isRuler, longerShorter, makeMeasures, measureTouch, planFor, RULER, temptingReading, UNIT_SIZE, type Measure, type MeasurePlan, type Thing } from './logic';
+import { answerOf, choices, hintSpans, hopTicks, isRuler, isWide, longerShorter, makeMeasures, measureTouch, planFor, RULER, temptingReading, UNIT_SIZE, type Measure, type MeasurePlan, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 7, order: [1, 2, 7] },
-  school: { min: 1, max: 8, order: [1, 2, 7, 3, 4, 8, 5, 6] },
+  school: { min: 1, max: 9, order: [1, 2, 7, 9, 3, 4, 8, 5, 6] },
 };
 
 const U = 88;
@@ -146,18 +146,22 @@ class Inchworm implements Game {
   private bucketSize = 1;
   /** Big and little worms' hint: a see-through big worm over two little ones. */
   private overlay: Container | null = null;
+  /** One worm, hop by hop: the worm she taps along, and the chalk ticks (and, with help, their numbers) it leaves. */
+  private hopper: Container | null = null;
+  private readonly chalk = new Container();
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
-    // Big and little worms lay up to nine worms a stick: the how-to card's demonstration measures one stick, inside its time.
+    // Big and little worms lay up to nine worms a stick, and one worm hops up to eight times: the how-to card's demonstration measures one thing, inside its time.
     const measures = makeMeasures(this.plan, ctx.rng);
-    this.measures = ctx.demo && this.plan.mode === 'units' ? measures.slice(0, 1) : measures;
+    this.measures = ctx.demo && (this.plan.mode === 'units' || this.plan.mode === 'hop') ? measures.slice(0, 1) : measures;
     this.backdrop = new Backdrop({ sky: [0xd6f5c8, 0xf6fbf0], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.8, clouds: 1, sun: false, seed: 23 }, ctx.view);
     this.glow.eventMode = 'none';
     this.placed.eventMode = 'none';
     this.pit.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.pit, this.ruler, this.placed, this.glow);
+    this.chalk.eventMode = 'none';
+    ctx.stage.addChild(this.backdrop, this.pit, this.ruler, this.chalk, this.placed, this.glow);
   }
 
   get m() {
@@ -168,15 +172,17 @@ class Inchworm implements Game {
     void this.next();
   }
 
-  /** The ruler levels fit 0 to 10 on screen with a smaller unit; worms keep their size elsewhere. */
+  /** The ruler levels fit 0 to 10 on screen with a smaller unit, and so does one worm's eight hops; worms keep their size elsewhere. */
   private get u(): number {
-    return isRuler(this.plan.mode) ? 74 : U;
+    return isWide(this.plan.mode) ? 74 : U;
   }
 
   private x0() {
     // The broken ruler: its piece from the break to 10 is centred, so the missing part leaves no gap.
     const brk = this.plan.mode === 'broken' ? this.m?.brk : undefined;
     if (brk !== undefined) return Math.max(40, (this.view.w - (RULER - brk) * this.u) / 2) - brk * this.u;
+    // One worm, hop by hop: the thing and the worm waiting one length before it are centred together.
+    if (this.plan.mode === 'hop' && this.m) return Math.max(40, (this.view.w - (this.m.length + 1) * this.u) / 2) + this.u;
     return isRuler(this.plan.mode) ? 140 : 200;
   }
 
@@ -189,9 +195,10 @@ class Inchworm implements Game {
       if (!b.drag.dragging) b.node.position.set(b.drag.home.x, b.drag.home.y);
     });
     // Pads to the right of the measuring, or along the bottom under the long ruler.
-    this.pads.forEach((p, i) => (isRuler(this.plan.mode) ? p.node.position.set(v.w / 2 - 150 + i * 150, v.h - 110) : p.node.position.set(v.w - 110, v.h * 0.3 + i * 125)));
+    this.pads.forEach((p, i) => (isWide(this.plan.mode) ? p.node.position.set(v.w / 2 - 150 + i * 150, v.h - 110) : p.node.position.set(v.w - 110, v.h * 0.3 + i * 125)));
     this.drawRuler();
     this.drawPit();
+    this.placeHopper();
   }
 
   update(dt: number) {
@@ -221,6 +228,7 @@ class Inchworm implements Game {
     if (this.busy || this.finished || !this.m) return null;
     const move = measureTouch(this.m, this.plan.mode, this.rows.map((r) => r.worms));
     if (!move) return null;
+    if (move.kind === 'hop') return this.hopper ? { tap: { on: this.hopper } } : null;
     if (move.kind === 'answer') {
       const pad = this.pads.find((p) => p.n === move.value);
       return pad ? { tap: { on: pad.node } } : null;
@@ -255,7 +263,9 @@ class Inchworm implements Game {
     if (this.index >= this.measures.length) return void this.finale();
     for (const r of this.rows.splice(0)) r.node.destroy({ children: true });
     this.placed.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.chalk.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.overlay = null;
+    this.hopper = null;
     this.clearPads();
     const m = this.m;
     const v = this.view;
@@ -284,10 +294,12 @@ class Inchworm implements Game {
       add(m.other!.thing, m.other!.length, v.h * 0.4, m.other!.start ?? 0);
     } else add(m.thing, m.length, v.h * 0.4, m.start ?? 0);
     if (isRuler(this.plan.mode)) this.showPads();
+    else if (this.plan.mode === 'hop') this.makeHopper();
     else this.fillBucket();
     this.resize(v);
     this.busy = false;
     const what = THING_WORDS[m.thing];
+    if (this.plan.mode === 'hop') return this.ctx.instruct('worm.hop', { what });
     if (this.plan.mode === 'broken') return this.ctx.instruct('worm.broken', { what });
     if (m.jump) return this.ctx.instruct('worm.jump');
     if (this.plan.mode === 'rulerdiff') {
@@ -299,6 +311,63 @@ class Inchworm implements Game {
     if (this.plan.mode === 'compare') return this.ctx.instruct('worm.compare', { a: what, b: THING_WORDS[m.other!.thing] });
     if (this.plan.mode === 'units') return this.ctx.instruct('worm.big', { what });
     return this.ctx.instruct(this.index === 0 ? 'worm.lay' : 'worm.again', { what });
+  }
+
+  /** One worm, hop by hop: a worm in the ruler unit, nose at the thing's start, with a touch area over 100 units each way. */
+  private makeHopper() {
+    const node = wormArt();
+    node.scale.set(this.u / U);
+    node.hitArea = new Rectangle(-76, -64, 152, 128);
+    onTap(node, () => this.hop(), { cooldown: 200 });
+    this.placed.addChild(node);
+    this.hopper = node;
+  }
+
+  /** The worm lies over the space before its nose: none yet at the start, space k after hop k. */
+  private placeHopper() {
+    const r = this.rows[0];
+    if (!this.hopper || !r) return;
+    // Mid-hop a relayout leaves the worm to land; the hop places it again from the new layout.
+    if (!this.ctx.tw.busy(this.hopper)) this.hopper.position.set(this.x0() + (r.worms - 0.5) * this.u, r.y - 30);
+    this.drawChalk();
+  }
+
+  /** One hop: the worm inches one length and chalks a tick where its nose lands; at the end it stops by itself and the pads ask. */
+  private async hop() {
+    const r = this.rows[0];
+    const worm = this.hopper;
+    if (this.busy || this.finished || !r || !worm || r.worms >= r.length) return;
+    this.busy = true;
+    r.worms++;
+    sfx.pop(3 + r.worms);
+    // An inch: squash, stretch forward, settle.
+    void this.ctx.tw.to(worm.scale, { x: (0.8 * this.u) / U }, { duration: 0.1 }).then(() => this.ctx.tw.to(worm.scale, { x: this.u / U }, { duration: 0.2, ease: ease.outQuad }));
+    await this.ctx.tw.to(worm, { x: this.x0() + (r.worms - 0.5) * this.u }, { duration: 0.3, ease: ease.outQuad });
+    this.placeHopper();
+    if (r.worms < r.length) return void (this.busy = false);
+    sfx.sparkle();
+    await this.ctx.tw.wait(0.3);
+    this.showPads();
+    this.busy = false;
+    return this.ctx.instruct('worm.hops', { what: THING_WORDS[r.thing] });
+  }
+
+  /** A white chalk tick under the thing at each hop's end; with help, each tick's number too. */
+  private drawChalk() {
+    const r = this.rows[0];
+    this.chalk.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (this.plan.mode !== 'hop' || !r) return;
+    const g = new Graphics();
+    this.chalk.addChild(g);
+    for (const k of hopTicks(r.worms)) {
+      const x = this.x0() + k * this.u;
+      g.moveTo(x, r.y + 18).lineTo(x, r.y + 56).stroke({ width: 9, color: ink, alpha: 0.35, cap: 'round' });
+      g.moveTo(x, r.y + 18).lineTo(x, r.y + 56).stroke({ width: 5, color: 0xffffff, cap: 'round' });
+      if (!this.hinting) continue;
+      const n = label(String(k), 26, ink);
+      n.position.set(x, r.y + 82);
+      this.chalk.addChild(n);
+    }
   }
 
   /** The long jump's sand pit under both tracks, from the take-off board past the longest jump. */
@@ -477,6 +546,7 @@ class Inchworm implements Game {
       this.hinting = true;
       this.hints++;
       if (this.plan.mode === 'units') this.showOverlay();
+      if (this.plan.mode === 'hop') this.drawChalk();
     }
     this.busy = false;
   }
@@ -502,6 +572,7 @@ class Inchworm implements Game {
     if (mode === 'rulerdiff') return likely ? ['worm.fromends'] : ['worm.extra', { a: THING_WORDS[longerShorter(m)[0]] }];
     if (mode === 'rulersum') return [likely ? (m.start ? 'worm.fromzero' : 'worm.firstonly') : 'worm.spaces'];
     if (mode === 'units') return [m.ask === 'big' ? 'worm.bigger' : 'worm.smaller', { what: THING_WORDS[m.thing] }];
+    if (mode === 'hop') return ['worm.chalk'];
     return ['worm.countagain'];
   }
 
