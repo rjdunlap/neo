@@ -102,3 +102,11 @@
 - Not run: `fingerdemo` (bot unchanged), full unit suite locally (CI runs it), device or child checks.
 
 ---
+
+## 2026-11-02 — Inchworm fresh things, the long jump and level 8 The broken ruler (inchworm batch 1)
+
+- [PR #1129](https://github.com/rjdunlap/neo/pull/1129) (code `07dbf233`): five new things, a sand-pit long-jump round at level 3, and school level 8 *The broken ruler*; how-to card updated, bot unchanged.
+- Ran (Vite dev on http://localhost:5949, `VITE_SPEECH=off`): typecheck; `npx vitest run src/games/inchworm src/content src/games/registry` 20 files / 211 tests passed; `BROWSER_SUITE=woods WOODS_ONLY=worm FROM_LEVEL=8 TO_LEVEL=8` passed (end mark then marks-counted, 2 misses, 1 hint, glow; portrait screenshot of the broken ruler); `WOODS_ONLY=worm FROM_LEVEL=3 TO_LEVEL=3` passed (one jump round, screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=inchworm FINGER_LEVELS=8` clean in 5.1 s; `npm run build`; `game-reviewer` found no defects.
+- Not run: full unit suite locally (CI runs it), device or child checks. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a school child reads the spaces rather than the end mark; whether the sand pit reads as two jumps.
+
+---
