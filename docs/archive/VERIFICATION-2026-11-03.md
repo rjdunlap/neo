@@ -117,3 +117,10 @@
 - Ran (head e96cc95d, base 507e8906, Vite http://localhost:5773): `npm run typecheck`; `npx vitest run src/games/ramp-race src/content src/games/registry` 20 files, 217 tests (ramp-race 27); `BROWSER_SUITE=woods WOODS_ONLY=ramp FROM_LEVEL=6 TO_LEVEL=7` (level 7: nudge with no tile, free tile changes, two wrong claims then the tile glow, locked blue lane, a confounded repair miss, the fair repair, score [3,1], sticker; level 6 regression); `BROWSER_SUITE=fingerdemo FINGER_ONLY=ramp-race FINGER_LEVELS=7` 19.9 s; portrait screenshot reviewed. `game-reviewer` findings fixed.
 - Not run: `npm run build` (only voice-script and how-to shared files changed), full `npm test` (CI), device or child checks.
 - Open: whether a child reads the tiles as "only this changed", treats "we can't tell" as an answer, and device speech of "can't" ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-11-03 — Robot Path level 14 Mend the loop (dive slice 7)
+
+- [PR #1153](https://github.com/rjdunlap/neo/pull/1153): `MEND_PLANS` (three looped repair boards, two mended by the loop count, one by a body slot), `repairPress` glow for levels 12 and 14, school range 4–14, voice `robot.mend`/`robot.mend.hint`/`robot.fix.clear`, how-to `from: 14`, `robot` suite plays 1–14.
+- Ran (commit ddc1eeaf, Vite http://localhost:5601, VITE_SPEECH=off): typecheck; vitest `src/games/robot-path` (19 rules: single edit, at least half by loop count, glow leads to the star from broken, after Clear and after a wrong edit) and `src/content` + `src/games` (registry range 14); `BROWSER_SUITE=robot FROM_LEVEL=14 TO_LEVEL=14` (loop-count board: free watch, unchanged run, wrong mend, glow on Clear, mended loop; portrait screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=robot-path FINGER_LEVELS=14 FINGER_BAND=school` in 8.9 s. game-reviewer: no blocking defects; Clear-hint wording fixed.
+- Not run: build (no shared files or assets), other levels' robot play, couch (stays 4–6), device or child checks.
+- Open: whether a school child reads a loop well enough to mend it rather than rebuild it ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).

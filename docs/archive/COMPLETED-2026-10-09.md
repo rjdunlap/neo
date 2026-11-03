@@ -2519,7 +2519,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sprout-shuff
 
 Branch `claude/robot-path-mend-the-loop`, PR #1153: [dive slice 7](../deep-dives/robot-path.md#build-slices-in-order). `MEND_PLANS` holds three 5 × 5 looped programs (limit 2) shown already built; the first run is a free watch. Two boards are mended by one more turn of the loop (any count at or above it reaches the star), one by one more step in a body slot. `repairPress` drives the glow after two misses for levels 12 and 14, leading back from any edit (an over-counted slot glows Clear). School range 4–14; voice `robot.mend`, `robot.mend.hint`, `robot.fix.clear`; how-to `from: 14`. Level 15 A routine remains to define.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--robot-path-level-14-mend-the-loop-dive-slice-7).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--robot-path-level-14-mend-the-loop-dive-slice-7).
 
 ## Diagnose the flaky Peg Garden touch suite (2026-11-03)
 
@@ -2560,3 +2560,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--pixel-pictures-level
 [PR #1167](https://github.com/rjdunlap/neo/pull/1167), batch garden-rows 2, [dive slice 2](../deep-dives/garden-rows.md#build-slices-in-order). A `'boxes'` rule on the 4x4 bed: each flower once in every row, column and 2x2 hedge box. Full beds are box-valid (shifts 0, 2, 1, 3, then box-preserving shuffles); `clash` reports `by: 'box'` only when the repeat shares neither row nor column. `PLANS` level 8 (6 blanks, 2 beds) and level 9 (10 blanks, 1 bed); school range 3-9, pre-K still 1-3. Hedges are drawn in the gaps between boxes. Voice `rows.boxes` and `rows.clash-box`. How-to: a `from: 8` step and note, the level 7 mend step narrowed to `to: 7`. Couch catalog (levels 3-6) and the bot (rule-generic) unchanged. The `gardenrows` suite gained a hedge-box section (`GARDEN_ROWS_ONLY=boxes`).
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--garden-rows-levels-89-hedge-boxes-garden-rows-batch-2).
+
+## Ferry Jam level 7 Rocks in the harbor (ferry-jam 2, 2026-11-03)
+
+[PR #1169](https://github.com/rjdunlap/neo/pull/1169), batch ferry-jam 2, [dive slice 2](../deep-dives/ferry-jam.md#build-slices-in-order). Pictures take `x` for a rock (`Harbor.rocks`, parsed beside the boats); a rock fills one cell in a row beside the ferry's, never slides, and stops boats. Fifteen frozen 5x5 harbors with 4-5 boats need 6-9 slides (one at 9); the `rocksMatter` test removes each rock and requires a shorter fewest way, and `focusPath` still reaches every boat at level 7. School window now 3-7 (pre-K still 1-4). Touching or dragging a rock wobbles it (`sfx.knock`) and says `ferry.rock` once per round, never a miss or hint; level 7 opens with `ferry.start.rocks`; the how-to step is scoped to 7; the stuck hint and the bot are unchanged; the couch catalog and course stay at levels 3-6. A rounded grey `Graphics` boulder with a foam ring.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-batch-2).
