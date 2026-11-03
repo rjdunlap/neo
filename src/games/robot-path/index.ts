@@ -13,13 +13,13 @@ import { againIcon, arrowIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { robotArt, tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { boardFor, DELTAS, DIRECTIONS, expand, FIX_PLANS, routePress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, VIA_PLANS, runPath, sameProgram, shortestPath, slotOfStep, type Cell, type Direction, type FixPlan, type PredictPlan, type RobotPlan, type Slot } from './logic';
+import { boardFor, DELTAS, DIRECTIONS, expand, FIX_PLANS, MEND_PLANS, repairPress, routePress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, VIA_PLANS, runPath, shortestPath, slotOfStep, type Cell, type Direction, type PredictPlan, type RepairPlan, type RobotPlan, type Slot } from './logic';
 
-/** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict (11), repair (12) and pick up an apple (13). */
+/** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict (11), repair (12), pick up an apple (13) and mend a loop (14). */
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 6 },
-  school: { min: 4, max: ROBOT_PLANS.length + 3 },
+  school: { min: 4, max: 14 },
 };
 const planFor = (level: number) => ROBOT_PLANS[Math.max(0, Math.min(ROBOT_PLANS.length - 1, level - 1))];
 const sameCell = (a: Cell, b: Cell) => a[0] === b[0] && a[1] === b[1];
@@ -36,7 +36,7 @@ function arrow(dir: Direction) {
 class RobotPath implements Game {
   readonly plan: RobotPlan;
   readonly prediction: PredictPlan | null;
-  readonly fixPlan: FixPlan | null;
+  readonly fixPlan: RepairPlan | null;
   readonly mode: 'steps' | 'counts' | 'loop';
   readonly program: Slot[] = [];
   /** How many times the whole program runs (loop levels). */
@@ -76,12 +76,13 @@ class RobotPath implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.prediction = ctx.level === 11 ? ctx.rng.pick(PREDICT_PLANS) : null;
-    this.fixPlan = ctx.level === 12 ? ctx.rng.pick(FIX_PLANS) : null;
+    this.fixPlan = ctx.level === 12 ? ctx.rng.pick(FIX_PLANS) : ctx.level === 14 ? ctx.rng.pick(MEND_PLANS) : null;
     this.plan = this.prediction ?? this.fixPlan ?? (ctx.level === 13 ? ctx.rng.pick(VIA_PLANS) : boardFor(ctx.level, ctx.rng));
     this.mode = this.plan.mode ?? 'steps';
     this.solution = this.prediction?.program ?? this.plan.solution?.slots ?? shortestPath(this.plan).map((dir) => ({ dir, n: 1 }));
     if (this.prediction) this.program.push(...this.prediction.program.map((slot) => ({ ...slot })));
     if (this.fixPlan) this.program.push(...this.fixPlan.broken.map((slot) => ({ ...slot })));
+    if (this.fixPlan?.mode === 'loop') this.loop = this.fixPlan.brokenLoop;
     this.play = new RoundButton(playIcon(), swatch.green, 50, () => void this.run());
     this.clear = new RoundButton(againIcon(), swatch.white, 50, () => {
       if (this.running || this.done) return;
@@ -130,7 +131,7 @@ class RobotPath implements Game {
   }
 
   start() {
-    void this.ctx.instruct(this.prediction ? 'robot.predict' : this.fixPlan ? 'robot.fix' : this.plan.via ? 'robot.via' : this.mode === 'loop' ? 'robot.loop' : this.mode === 'counts' ? 'robot.counts' : 'robot.start');
+    void this.ctx.instruct(this.prediction ? 'robot.predict' : this.fixPlan ? (this.fixPlan.mode === 'loop' ? 'robot.mend' : 'robot.fix') : this.plan.via ? 'robot.via' : this.mode === 'loop' ? 'robot.loop' : this.mode === 'counts' ? 'robot.counts' : 'robot.start');
   }
 
   /** An arrow tap: a new step, or on counted levels one more of the same step. */
@@ -238,7 +239,8 @@ class RobotPath implements Game {
     this.running = false;
     if (this.misses === 2) {
       this.hints++;
-      void this.ctx.say(this.fixPlan ? 'robot.fix.hint' : 'robot.hint');
+      const help = this.fixPlan && this.nextHelp();
+      void this.ctx.say(!help ? 'robot.hint' : help === this.loopButton ? 'robot.mend.hint' : help === this.clear ? 'robot.fix.clear' : 'robot.fix.hint');
     }
     this.drawHint();
   }
@@ -300,9 +302,13 @@ class RobotPath implements Game {
 
   private nextHelp(): Container | RoundButton {
     if (this.fixPlan) {
-      if (!this.watched || sameProgram(this.program, this.solution)) return this.play;
-      if (this.selectedSlot !== this.fixPlan.fixSlot) return this.slotTargets[this.fixPlan.fixSlot] ?? this.play;
-      return this.arrows.find((a) => a.dir === this.fixPlan!.solution.slots[this.fixPlan!.fixSlot].dir)!.button;
+      if (!this.watched) return this.play;
+      const press = repairPress(this.fixPlan, this.program, this.loop, this.selectedSlot);
+      if ('slot' in press) return this.slotTargets[press.slot] ?? this.play;
+      if ('arrow' in press) return this.arrows.find((a) => a.dir === press.arrow)!.button;
+      if ('loop' in press) return this.loopButton;
+      if ('clear' in press) return this.clear;
+      return this.play;
     }
     const press = routePress(this.plan, this.program, this.loop);
     if ('clear' in press) return this.clear;
@@ -448,7 +454,7 @@ export const robotPath: GameModule = {
   skills: ['planning', 'sequencing', 'spatial-reasoning', 'loops'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  describeLevel: (l) => l === 11 ? 'Where will it stop?' : l === 12 ? 'Fix the program' : l === 13 ? 'Pick up the apple on the way' : l === 1 ? 'One or two steps straight to the star' : l === 2 ? 'A short program with a turn' : l === 3 ? 'Plan across a bigger grid' : planFor(l).name,
+  describeLevel: (l) => l === 11 ? 'Where will it stop?' : l === 12 ? 'Fix the program' : l === 13 ? 'Pick up the apple on the way' : l === 14 ? 'Mend the loop' : l === 1 ? 'One or two steps straight to the star' : l === 2 ? 'A short program with a turn' : l === 3 ? 'Plan across a bigger grid' : planFor(l).name,
   music: STYLES.jelly,
   offScreen: 'Lay out a few cushions and give a toy one-step directions to reach a favorite object. Then try "three steps forward" and "do it again".',
   hubIcon: () => new WigglyIcon(robotArt(160)),

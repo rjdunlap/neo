@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { allowed, boardFor, compress, expand, FIX_PLANS, routePress, PREDICT_PLANS, predictionEnd, VIA_PLANS, ROBOT_BOARDS, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Slot } from './logic';
+import { allowed, boardFor, compress, expand, FIX_PLANS, MEND_PLANS, repairPress, routePress, PREDICT_PLANS, predictionEnd, VIA_PLANS, ROBOT_BOARDS, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Direction, type RepairPlan, type Slot } from './logic';
 
 describe('robot routes', () => {
   it('keeps every preschool board small, rock-free and solvable in at most three single steps', () => {
@@ -245,5 +245,104 @@ describe('level 13: pick up the apple on the way', () => {
       }
       expect(done, plan.name).toBe(true);
     }
+  });
+});
+
+describe('level 14: mend the loop', () => {
+  /** Every program one edit away: a slot turned, a slot one step longer or shorter, or another loop count. */
+  function singleEdits(plan: (typeof MEND_PLANS)[number]) {
+    const edits: { fix: number | 'loop'; program: Slot[]; loop: number }[] = [];
+    for (let i = 0; i < plan.broken.length; i++) {
+      for (const dir of ['up', 'right', 'down', 'left'] as const) {
+        if (dir === plan.broken[i].dir) continue;
+        const program = plan.broken.map((s) => ({ ...s }));
+        program[i].dir = dir;
+        edits.push({ fix: i, program, loop: plan.brokenLoop });
+      }
+      for (const n of [plan.broken[i].n - 1, plan.broken[i].n + 1]) {
+        if (n < 1 || n > 5) continue;
+        const program = plan.broken.map((s) => ({ ...s }));
+        program[i].n = n;
+        edits.push({ fix: i, program, loop: plan.brokenLoop });
+      }
+    }
+    for (let loop = 1; loop <= 4; loop++) if (loop !== plan.brokenLoop) edits.push({ fix: 'loop', program: plan.broken, loop });
+    return edits;
+  }
+
+  it('stops each broken loop short, and the authored loop reaches the star', () => {
+    expect(MEND_PLANS).toHaveLength(3);
+    for (const plan of MEND_PLANS) {
+      expect(plan.size, plan.name).toBe(5);
+      expect(plan.broken).toHaveLength(plan.limit);
+      expect(plan.solution.slots).toHaveLength(plan.limit);
+      expect(plan.solution.loop).toBeGreaterThan(1);
+      const broken = runPath(plan, expand(plan.broken, plan.brokenLoop));
+      expect(broken.stop, plan.name).toBe('short');
+      expect(runPath(plan, expand(plan.solution.slots, plan.solution.loop)).success, plan.name).toBe(true);
+      // The repair is one tap: one more turn of the loop, or one more step in one slot.
+      if (plan.fixSlot === 'loop') {
+        expect(plan.broken).toEqual(plan.solution.slots);
+        expect(plan.brokenLoop).toBe(plan.solution.loop - 1);
+      } else {
+        expect(plan.brokenLoop).toBe(plan.solution.loop);
+        plan.broken.forEach((slot, i) => {
+          const want = plan.solution.slots[i];
+          expect(slot.dir).toBe(want.dir);
+          expect(slot.n).toBe(i === plan.fixSlot ? want.n - 1 : want.n);
+        });
+      }
+    }
+  });
+
+  it('lets only the authored kind of edit reach the star', () => {
+    for (const plan of MEND_PLANS) {
+      const fixes = singleEdits(plan).filter((e) => runPath(plan, expand(e.program, e.loop)).success);
+      expect(fixes.length, plan.name).toBeGreaterThan(0);
+      // A loop board accepts any count of turns that gets there (the robot stops on the star); a slot board only its slot.
+      for (const e of fixes) expect(e.fix, plan.name).toBe(plan.fixSlot);
+      if (plan.fixSlot === 'loop') expect(fixes.every((e) => e.loop >= plan.solution.loop)).toBe(true);
+      else expect(fixes).toEqual([{ fix: plan.fixSlot, program: plan.solution.slots, loop: plan.solution.loop }]);
+    }
+  });
+
+  it('fixes at least half the boards with the loop count alone, and the rest inside the loop', () => {
+    const byLoop = MEND_PLANS.filter((plan) => plan.fixSlot === 'loop').length;
+    expect(byLoop * 2).toBeGreaterThanOrEqual(MEND_PLANS.length);
+    expect(byLoop).toBeLessThan(MEND_PLANS.length);
+  });
+
+  /** Press the glowing button the way the ghost finger does, from any program. */
+  function followGlow(plan: RepairPlan, start: Slot[], startLoop: number) {
+    const program = start.map((s) => ({ ...s }));
+    let loop = startLoop, selected = -1;
+    for (let presses = 0; presses < 40; presses++) {
+      const press = repairPress(plan, program, loop, selected);
+      if ('play' in press) return runPath(plan, expand(program, loop)).success;
+      if ('loop' in press) loop = (loop % 4) + 1;
+      else if ('clear' in press) { program.length = 0; loop = 1; selected = -1; }
+      else if ('slot' in press) selected = press.slot;
+      else {
+        const dir: Direction = press.arrow, slot = program[selected];
+        if (slot) { if (slot.dir === dir && slot.n < 5) slot.n++; else slot.dir = dir; }
+        else if (selected === program.length && program.length < plan.limit) program.push({ dir, n: 1 });
+      }
+    }
+    return false;
+  }
+
+  it('lights a path to the star from the broken program, after a wrong edit and after Clear', () => {
+    for (const plan of [...MEND_PLANS, ...FIX_PLANS]) {
+      const brokenLoop = 'brokenLoop' in plan ? plan.brokenLoop : 1;
+      expect(followGlow(plan, plan.broken, brokenLoop), plan.name).toBe(true);
+      expect(followGlow(plan, [], 1), plan.name).toBe(true);
+      const turned = plan.broken.map((s, i) => (i === 0 ? { dir: s.dir === 'up' ? 'left' as const : 'up' as const, n: s.n + 1 } : { ...s }));
+      expect(followGlow(plan, turned, brokenLoop), plan.name).toBe(true);
+    }
+    const first = MEND_PLANS.find((plan) => plan.fixSlot === 'loop')!;
+    expect(repairPress(first, first.broken, first.brokenLoop, -1)).toEqual({ loop: true });
+    const slotted = MEND_PLANS.find((plan) => plan.fixSlot !== 'loop')!;
+    expect(repairPress(slotted, slotted.broken, slotted.brokenLoop, -1)).toEqual({ slot: slotted.fixSlot });
+    expect(repairPress(slotted, slotted.broken, slotted.brokenLoop, slotted.fixSlot as number)).toEqual({ arrow: slotted.solution.slots[slotted.fixSlot as number].dir });
   });
 });

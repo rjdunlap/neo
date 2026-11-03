@@ -787,6 +787,7 @@ Added when the open questions were decided on the developer's delegation ([recor
 - **Bouncy Launch’s near-or-far entry, lap pull, spring variable and supports**: A one-year-old drags the lap pull level.
 - **Bounce Back’s school window and couch face-off**: Two real people on two controllers play the face-off (is five goals the right length?).
 - **Robot Path's routine level and couch range**: A child plays Robot Path level 12 (informs level 15's difficulty).
+- **Robot Path level 14 Mend the loop**: Does a school child read a looped program well enough to mend it (one more turn of the loop or one body step) rather than rebuild it, and does the glow after Clear read as "too many"?
 - **Goodnight Room's remaining levels**: A two-year-old plays level 4 (two names in order).
 - **Owl Walk Home’s goal and the stone-tap rework**: iPad speech for shape names (Owl Walk 6).
 - **Opposites' school window and its new levels**: Device speech for the un- words.
