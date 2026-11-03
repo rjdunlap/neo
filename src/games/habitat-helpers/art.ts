@@ -61,6 +61,38 @@ export function pieceArt(id: PieceId): Container {
       pool(g);
       reeds(g, 12);
       break;
+    case 'dandelions':
+      // Yellow flower heads on stems over a rosette of toothed leaves.
+      for (const [x, lean] of [[-24, -6], [0, 0], [24, 6]] as const) {
+        g.moveTo(x, 32).quadraticCurveTo(x - 4, 0, x + lean, -18).stroke(line(swatch.green.line, 4));
+      }
+      for (const dx of [-30, -12, 12, 30]) g.poly([dx * 0.3, 34, dx, 20, dx * 0.9, 26, dx * 1.2, 14, dx * 0.6, 30]).fill(swatch.green.fill).stroke(line(swatch.green.line, 2.5));
+      for (const [x, y, r] of [[-30, -18, 13], [0, -26, 15], [30, -12, 13]] as const) {
+        g.circle(x, y, r).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
+        g.circle(x, y, r * 0.4).fill(swatch.orange.fill);
+      }
+      break;
+    case 'log-burrow':
+      // A hollow log lying on its side, its dark opening a place to hide.
+      g.roundRect(-44, -18, 80, 46, 22).fill(wood.fill).stroke(line(wood.line, 4));
+      for (const x of [-26, -8, 10]) g.moveTo(x, -14).quadraticCurveTo(x + 4, 4, x, 24).stroke(line(wood.line, 2.5));
+      g.ellipse(34, 5, 15, 23).fill(wood.light).stroke(line(wood.line, 4));
+      g.ellipse(34, 7, 9, 15).fill(ink);
+      g.moveTo(-34, -18).lineTo(-40, -32).stroke(line(swatch.green.line, 4));
+      g.ellipse(-44, -34, 7, 4).fill(swatch.green.fill).stroke(line(swatch.green.line, 2));
+      break;
+    case 'pond-weed':
+      // A floating mat of green weed on a patch of water.
+      g.ellipse(0, 16, 44, 18).fill(swatch.blue.light).stroke(line(swatch.blue.line));
+      for (const [x, y, rx] of [[-20, 12, 16], [6, 18, 20], [22, 8, 12], [-4, 4, 12]] as const) g.ellipse(x, y, rx, 7).fill(swatch.teal.fill).stroke(line(swatch.green.line, 2.5));
+      for (const x of [-26, -6, 14, 28]) g.moveTo(x, 12).quadraticCurveTo(x + 6, -6, x - 2, -18).stroke(line(swatch.green.line, 3.5));
+      break;
+    case 'reed-island':
+      // A small mound of earth in the water with a reed tuft growing on it.
+      g.ellipse(0, 22, 46, 14).fill(swatch.blue.light).stroke(line(swatch.blue.line));
+      g.ellipse(0, 16, 30, 12).fill(swatch.brown.fill).stroke(line(swatch.brown.line, 3));
+      reeds(g, 2);
+      break;
   }
   c.addChild(g);
   return c;

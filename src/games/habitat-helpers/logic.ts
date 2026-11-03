@@ -20,6 +20,10 @@ export const PIECE_IDS = [
   'tall-reeds',
   'berry-hedge',
   'pond-reeds',
+  'dandelions',
+  'log-burrow',
+  'pond-weed',
+  'reed-island',
 ] as const;
 export type PieceId = (typeof PIECE_IDS)[number];
 
@@ -38,6 +42,10 @@ export const PIECES: Record<PieceId, HabitatPiece> = {
   'tall-reeds': { id: 'tall-reeds', name: 'tall reeds', for: { duck: ['shelter'] } },
   'berry-hedge': { id: 'berry-hedge', name: 'berry hedge', for: { bunny: ['food', 'shelter'] } },
   'pond-reeds': { id: 'pond-reeds', name: 'pond with reeds', for: { bunny: ['water'], duck: ['water', 'shelter'] } },
+  dandelions: { id: 'dandelions', name: 'dandelions', for: { bunny: ['food'] } },
+  'log-burrow': { id: 'log-burrow', name: 'log burrow', for: { bunny: ['shelter'] } },
+  'pond-weed': { id: 'pond-weed', name: 'pond weed', for: { duck: ['food'] } },
+  'reed-island': { id: 'reed-island', name: 'reed island', for: { duck: ['shelter'] } },
 };
 
 export type HabitatMode = 'build' | 'predict';
@@ -68,15 +76,31 @@ export interface HabitatRound {
   prepared?: PieceId[];
 }
 
-const starters: Record<Visitor, PieceId[]> = {
-  bunny: ['clover', 'shallow-pool', 'brush-pile'],
-  duck: ['seed-grass', 'shallow-pool', 'tall-reeds'],
+/** Two pictured pieces that do the same single job; levels 1–3 pick one of each pair per round. */
+export const EQUIVALENTS: Record<Visitor, Record<'food' | 'shelter', readonly [PieceId, PieceId]>> = {
+  bunny: { food: ['clover', 'dandelions'], shelter: ['brush-pile', 'log-burrow'] },
+  duck: { food: ['seed-grass', 'pond-weed'], shelter: ['tall-reeds', 'reed-island'] },
 };
 
-const choices: Record<Visitor, PieceId[]> = {
-  bunny: ['clover', 'shallow-pool', 'brush-pile', 'seed-grass', 'tall-reeds'],
-  duck: ['seed-grass', 'shallow-pool', 'tall-reeds', 'clover', 'brush-pile'],
+/** Water is the shallow pool for both visitors. */
+const WATER: PieceId = 'shallow-pool';
+
+/**
+ * Every two-piece prepared garden that welcomes exactly one visitor: a multipurpose piece plus the need it leaves.
+ * The model allows exactly two per visitor (the berry hedge with either water; the pond with reeds with either duck food).
+ */
+export const PREDICTION_GARDENS: Record<Visitor, readonly (readonly [PieceId, PieceId])[]> = {
+  bunny: [
+    ['berry-hedge', 'shallow-pool'],
+    ['berry-hedge', 'pond-reeds'],
+  ],
+  duck: [
+    ['pond-reeds', 'seed-grass'],
+    ['pond-reeds', 'pond-weed'],
+  ],
 };
+
+const other = (v: Visitor): Visitor => (v === 'bunny' ? 'duck' : 'bunny');
 
 const compact: Record<Visitor, PieceId[]> = {
   bunny: ['berry-hedge', 'shallow-pool', 'clover', 'brush-pile', 'seed-grass'],
@@ -91,17 +115,24 @@ export function makeRounds(level: number, rng: Rng): HabitatRound[] {
     prepared: prepared ? rng.shuffle(prepared) : undefined,
   });
 
+  // One food and one shelter for this visitor, each picked from its two equivalent pieces.
+  const starter = (v: Visitor): PieceId[] => [rng.pick(EQUIVALENTS[v].food), WATER, rng.pick(EQUIVALENTS[v].shelter)];
+  // Level 3's distractors: the other visitor's food and shelter, so exactly one set still works.
+  const withDistractors = (v: Visitor): PieceId[] => [...starter(v), rng.pick(EQUIVALENTS[other(v)].food), rng.pick(EQUIVALENTS[other(v)].shelter)];
+
   switch (Math.min(PLANS.length, Math.max(1, level))) {
     case 1:
-      return [round(['bunny'], starters.bunny, 3)];
+      return [round(['bunny'], starter('bunny'), 3)];
     case 2:
-      return rng.shuffle([...VISITORS]).map((v) => round([v], starters[v], 3));
+      return rng.shuffle([...VISITORS]).map((v) => round([v], starter(v), 3));
     case 3:
-      return rng.shuffle([...VISITORS]).map((v) => round([v], choices[v], 3));
+      return rng.shuffle([...VISITORS]).map((v) => round([v], withDistractors(v), 3));
     case 4: {
+      // The first visitor comes twice, once to each of its gardens, so no prepared garden repeats in a play.
       const first = rng.pick(VISITORS);
-      const order: Visitor[] = [first, first === 'bunny' ? 'duck' : 'bunny', first];
-      return order.map((v) => round([v], [], 2, v === 'bunny' ? ['berry-hedge', 'shallow-pool'] : ['seed-grass', 'pond-reeds']));
+      const [a, b] = rng.shuffle([...PREDICTION_GARDENS[first]]);
+      const gardens: [Visitor, readonly PieceId[]][] = [[first, a], [other(first), rng.pick(PREDICTION_GARDENS[other(first)])], [first, b]];
+      return gardens.map(([v, prepared]) => round([v], [], 2, [...prepared]));
     }
     case 5:
       return rng.shuffle([...VISITORS]).map((v) => round([v], compact[v], 2));
