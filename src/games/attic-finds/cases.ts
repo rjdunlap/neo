@@ -61,10 +61,13 @@ export const PAPERS: Record<PaperId, Paper> = {
 export type Status = 'shown' | 'ruled-out' | 'unknown';
 
 /** Whether the papers make a claim true in every world they allow, false in every one, or leave it open. */
-export function status(f: Formula, papers: readonly PaperId[]): Status {
+export const status = (f: Formula, papers: readonly PaperId[]): Status => statusUnder(f, papers.map((p) => PAPERS[p].shows));
+
+/** The same, under any set of shown facts (level 9 adds what a new paper might read). */
+export function statusUnder(f: Formula, shown: readonly Formula[]): Status {
   let yes = false, no = false;
   for (const w of worlds()) {
-    if (!papers.every((p) => holds(PAPERS[p].shows, w))) continue;
+    if (!shown.every((c) => holds(c, w))) continue;
     if (holds(f, w)) yes = true;
     else no = true;
     if (yes && no) return 'unknown';
@@ -121,7 +124,9 @@ export function stampReason(claim: CaseClaimId): LineId {
 
 /* Levels and rounds ----------------------------------------------------------------------------- */
 
-export const isCase = (plan: Plan): boolean => plan.mode === 'sources' || plan.mode === 'tell';
+export const isCase = (plan: Plan): boolean => plan.mode === 'sources' || plan.mode === 'tell' || plan.mode === 'mend';
+/** Level 9 has its own scene (the exhibit card); levels 7-8 share the casebook board. */
+export const isExhibit = (plan: Plan): boolean => plan.mode === 'mend';
 
 export interface CaseBoard { claims: CaseClaimId[]; papers: PaperId[] }
 export interface CaseRound { boards: CaseBoard[] }
@@ -314,4 +319,264 @@ export function caseTargets(L: CaseLayout): { label: string; r: Rect }[] {
     ...L.stamps.flatMap(([a, b], i) => [{ label: `shows${i}`, r: boxAt(a, 2 * STAMP_R) }, { label: `cant${i}`, r: boxAt(b, 2 * STAMP_R) }]),
     { label: 'check', r: boxAt(L.check, 2 * CASE_CHECK_R) },
   ];
+}
+
+/* Level 9: mend the exhibit --------------------------------------------------------------------- */
+
+/*
+ * The museum's card for the bird box has three captions that say too much. She swaps each for one the papers show, then
+ * picks the new paper that could answer a question the papers leave open. A new paper is judged by every way it could
+ * read: a storeroom list that lists other things, or a drawing of something else, adds nothing (a list of one storeroom
+ * is not the whole house), so it is useful only if some reading would settle the question.
+ */
+
+const NOTHING: Formula = { and: [] };
+
+export type CaptionRow = 'love' | 'cranking' | 'homes';
+export const CAPTION_ROWS: readonly CaptionRow[] = ['love', 'cranking', 'homes'];
+export type CaptionId = 'all-loved' | 'shop-said' | 'hilltop-loved' | 'crank-every-home' | 'fair-cranked' | 'hilltop-cranked' | 'every-house' | 'hilltop-had' | 'seaside-had';
+
+export interface Caption { id: CaptionId; row: CaptionRow; formula: Formula; line: LineId }
+export const CAPTIONS: Record<CaptionId, Caption> = {
+  'all-loved': { id: 'all-loved', row: 'love', formula: atom('loved.all'), line: 'attic-finds.claim-all-loved' },
+  'shop-said': { id: 'shop-said', row: 'love', formula: atom('advert'), line: 'attic-finds.caption-shop-said' },
+  'hilltop-loved': { id: 'hilltop-loved', row: 'love', formula: atom('loved.hilltop'), line: 'attic-finds.caption-hilltop-loved' },
+  'crank-every-home': { id: 'crank-every-home', row: 'cranking', formula: and(atom('crank.hilltop'), atom('crank.seaside')), line: 'attic-finds.caption-crank-every-home' },
+  'fair-cranked': { id: 'fair-cranked', row: 'cranking', formula: atom('crank.fair'), line: 'attic-finds.claim-fair-cranked' },
+  'hilltop-cranked': { id: 'hilltop-cranked', row: 'cranking', formula: atom('crank.hilltop'), line: 'attic-finds.claim-hilltop-cranked' },
+  'every-house': { id: 'every-house', row: 'homes', formula: and(atom('has.hilltop'), atom('has.seaside')), line: 'attic-finds.caption-every-house' },
+  'hilltop-had': { id: 'hilltop-had', row: 'homes', formula: atom('has.hilltop'), line: 'attic-finds.claim-hilltop-had' },
+  'seaside-had': { id: 'seaside-had', row: 'homes', formula: atom('has.seaside'), line: 'attic-finds.claim-seaside-had' },
+};
+
+/** Each row starts on its overclaim; one other caption is what a paper shows, and one is narrower but still not shown. */
+export const ROW_CAPTIONS: Record<CaptionRow, { start: CaptionId; supported: CaptionId; unsupported: CaptionId }> = {
+  love: { start: 'all-loved', supported: 'shop-said', unsupported: 'hilltop-loved' },
+  cranking: { start: 'crank-every-home', supported: 'fair-cranked', unsupported: 'hilltop-cranked' },
+  homes: { start: 'every-house', supported: 'hilltop-had', unsupported: 'seaside-had' },
+};
+
+/** Why a caption the papers do not show is wrong, by row: the claims' own reasons. */
+const ROW_REASONS: Record<CaptionRow, LineId> = {
+  love: 'attic-finds.why-all-loved',
+  cranking: 'attic-finds.why-hilltop-crank',
+  homes: 'attic-finds.why-seaside',
+};
+
+export const captionStatus = (c: CaptionId): Status => status(CAPTIONS[c].formula, PAPER_IDS);
+/** The case paper that shows a supported caption (the one to light at a Check). */
+export const captionPaper = (c: CaptionId): PaperId | null => PAPER_IDS.find((p) => status(CAPTIONS[c].formula, [p]) === 'shown') ?? null;
+
+export type QuestionId = 'seaside' | 'hilltop-crank';
+export const QUESTION_IDS: readonly QuestionId[] = ['seaside', 'hilltop-crank'];
+export const QUESTIONS: Record<QuestionId, { formula: Formula; line: LineId }> = {
+  seaside: { formula: atom('has.seaside'), line: 'attic-finds.question-seaside' },
+  'hilltop-crank': { formula: atom('crank.hilltop'), line: 'attic-finds.question-hilltop-crank' },
+};
+
+export type NewPaperId = 'seaside-list' | 'hilltop-drawing' | 'poster-copy' | 'fair-copy';
+export const NEW_PAPER_IDS: readonly NewPaperId[] = ['seaside-list', 'hilltop-drawing', 'poster-copy', 'fair-copy'];
+/** Every way a new paper could read. "Lists other things" or "shows something else" adds no fact at all. */
+export const NEW_PAPERS: Record<NewPaperId, { readings: readonly Formula[]; line: LineId }> = {
+  'seaside-list': { readings: [atom('has.seaside'), NOTHING], line: 'attic-finds.new-seaside-list' },
+  'hilltop-drawing': { readings: [atom('crank.hilltop'), NOTHING], line: 'attic-finds.new-hilltop-drawing' },
+  'poster-copy': { readings: [PAPERS.poster.shows], line: 'attic-finds.new-poster-copy' },
+  'fair-copy': { readings: [PAPERS.drawing.shows], line: 'attic-finds.new-fair-copy' },
+};
+
+/** A new paper could answer a question when some way it might read, added to the case's papers, settles it. */
+export function useful(paper: NewPaperId, q: QuestionId): boolean {
+  const known = PAPER_IDS.map((p) => PAPERS[p].shows);
+  return NEW_PAPERS[paper].readings.some((r) => statusUnder(QUESTIONS[q].formula, [...known, r]) !== 'unknown');
+}
+
+const HOUSE_PAPER: Record<QuestionId, NewPaperId> = { seaside: 'seaside-list', 'hilltop-crank': 'hilltop-drawing' };
+const COPIES: readonly NewPaperId[] = ['poster-copy', 'fair-copy'];
+
+/** Why a new paper cannot answer: the other house's paper is from the wrong place; a copy only repeats what we know. */
+export const newPaperReason = (p: NewPaperId): LineId => (COPIES.includes(p) ? 'attic-finds.why-copy' : 'attic-finds.why-wrong-place');
+
+export interface ExhibitRound {
+  /** The caption rows, top to bottom. */
+  rows: CaptionRow[];
+  /** Each row's strip: its three captions in the order they are shown. */
+  strips: Record<CaptionRow, CaptionId[]>;
+  question: QuestionId;
+  /** The three new papers offered: the useful one, the other house's and one copy. */
+  offered: NewPaperId[];
+  /** The case's papers on the table, in order. */
+  papers: PaperId[];
+}
+
+const stripOf = (row: CaptionRow): CaptionId[] => [ROW_CAPTIONS[row].start, ROW_CAPTIONS[row].supported, ROW_CAPTIONS[row].unsupported];
+
+export function makeExhibitRound(rng: Rng, first = false): ExhibitRound {
+  const question: QuestionId = first ? 'seaside' : rng.pick(QUESTION_IDS);
+  const other = HOUSE_PAPER[question === 'seaside' ? 'hilltop-crank' : 'seaside'];
+  const offered = rng.shuffle([HOUSE_PAPER[question], other, rng.pick(COPIES)]);
+  if (first) {
+    return { rows: [...CAPTION_ROWS], strips: { love: stripOf('love'), cranking: stripOf('cranking'), homes: stripOf('homes') }, question, offered, papers: [...PAPER_IDS] };
+  }
+  const rows = rng.shuffle([...CAPTION_ROWS]);
+  const strips = { love: rng.shuffle(stripOf('love')), cranking: rng.shuffle(stripOf('cranking')), homes: rng.shuffle(stripOf('homes')) };
+  return { rows, strips, question, offered, papers: rng.shuffle([...PAPER_IDS]) };
+}
+
+export interface ExhibitState {
+  round: ExhibitRound;
+  /** The caption on each row, in row order (each starts on its overclaim). */
+  captions: CaptionId[];
+  /** The new paper in the question slot. */
+  chosen: NewPaperId | null;
+  read: Set<PaperId | NewPaperId>;
+  wrong: number;
+  misses: number;
+  hints: number;
+  glow: boolean;
+  done: boolean;
+}
+
+export const exhibitState = (round: ExhibitRound): ExhibitState => ({
+  round, captions: round.rows.map((r) => ROW_CAPTIONS[r].start), chosen: null, read: new Set(), wrong: 0, misses: 0, hints: 0, glow: false, done: false,
+});
+
+/** Set a row's caption from its strip. Free. */
+export function setCaption(s: ExhibitState, row: number, caption: CaptionId): boolean {
+  if (s.done || row < 0 || row >= s.captions.length || CAPTIONS[caption].row !== s.round.rows[row]) return false;
+  s.captions[row] = caption;
+  return true;
+}
+
+/** Put a new paper in the question slot (or clear it). Free. */
+export function chooseNewPaper(s: ExhibitState, paper: NewPaperId | null): boolean {
+  if (s.done || (paper && !s.round.offered.includes(paper))) return false;
+  s.chosen = paper;
+  return true;
+}
+
+/** The useful paper among those offered (exactly one). */
+export const usefulPaper = (r: ExhibitRound): NewPaperId => r.offered.find((p) => useful(p, r.question))!;
+
+export type ExhibitGlow = { kind: 'caption'; row: number; answer: CaptionId } | { kind: 'paper'; answer: NewPaperId };
+
+/** What glows once help is shown: the first caption the papers do not show and its right one, else the useful paper. */
+export function exhibitGlow(s: ExhibitState): ExhibitGlow | null {
+  if (!s.glow || s.done) return null;
+  const row = s.captions.findIndex((c) => captionStatus(c) !== 'shown');
+  if (row >= 0) return { kind: 'caption', row, answer: ROW_CAPTIONS[s.round.rows[row]].supported };
+  return s.chosen && useful(s.chosen, s.round.question) ? null : { kind: 'paper', answer: usefulPaper(s.round) };
+}
+
+/** Help counts once for the exhibit, whether from two misses or asked for. */
+export function helpExhibit(s: ExhibitState): boolean {
+  if (s.done) return false;
+  s.glow = true;
+  if (s.hints > 0) return false;
+  s.hints = 1;
+  return true;
+}
+
+export type ExhibitCheck =
+  | { result: 'empty' }
+  | { result: 'miss'; rows: { row: number; reason: LineId }[]; paper: LineId | null }
+  | { result: 'done' };
+
+/**
+ * Check: with no paper in the question slot nothing is counted. Otherwise anything wrong is one miss; a wrong caption stays
+ * where she put it (its strip opens again) and a paper that could not answer hops back.
+ */
+export function checkExhibit(s: ExhibitState): ExhibitCheck {
+  if (s.done) return { result: 'done' };
+  if (!s.chosen) return { result: 'empty' };
+  const rows = s.captions.flatMap((c, row) => (captionStatus(c) === 'shown' ? [] : [{ row, reason: ROW_REASONS[s.round.rows[row]] }]));
+  const paper = useful(s.chosen, s.round.question) ? null : newPaperReason(s.chosen);
+  if (!rows.length && !paper) {
+    s.done = true;
+    return { result: 'done' };
+  }
+  if (paper) s.chosen = null;
+  s.misses++;
+  s.wrong++;
+  if (s.wrong >= 2) helpExhibit(s);
+  return { result: 'miss', rows, paper };
+}
+
+/* Level 9 layout -------------------------------------------------------------------------------- */
+
+export const THUMB = 120;
+export const STRIP = 120;
+export const QUESTION_W = 260;
+export const QUESTION_H = 120;
+export const NEW_W = 110;
+export const NEW_H = 120;
+
+export interface ExhibitLayout {
+  /** The case's papers as thumbnails. */
+  papers: Pt[];
+  /** The caption rows on the museum card. */
+  rows: Pt[];
+  /** The open strip's three cards (one fixed column beside the rows, whichever row is open). */
+  strip: Pt[];
+  dome: Pt;
+  question: Pt;
+  slot: Pt;
+  offered: Pt[];
+  check: Pt;
+}
+
+/** The exhibit's positions, unchecked (`exhibitLayout` is what the tests hold to the rules). */
+export function placeExhibit(v: View): ExhibitLayout {
+  const gap = ROW_GAP + CASE_CARD_H;
+  const check = { x: v.w - 24 - CASE_CHECK_R, y: v.h - 24 - CASE_CHECK_R };
+  if (v.h > v.w) {
+    // The block is 810 units tall; on a tall screen it sits a little above the middle.
+    const top = Math.max(140, (v.h - 810) / 2 - 40);
+    const papers = [-1, 0, 1].map((k) => ({ x: v.w / 2 + k * (THUMB + 20), y: top + THUMB / 2 }));
+    const rowY = (i: number) => top + THUMB + 20 + CASE_CARD_H / 2 + i * gap;
+    const rows = [0, 1, 2].map((i) => ({ x: 30 + CASE_CARD_W / 2, y: rowY(i) }));
+    const strip = [0, 1, 2].map((i) => ({ x: 440 + STRIP / 2, y: rowY(i) }));
+    const qy = rowY(2) + CASE_CARD_H / 2 + 30 + QUESTION_H / 2;
+    const ny = qy + QUESTION_H / 2 + 20 + NEW_H / 2;
+    return {
+      papers, rows, strip, dome: { x: 660, y: rowY(1) },
+      question: { x: 30 + QUESTION_W / 2, y: qy }, slot: { x: 30 + QUESTION_W + 10 + CASE_SLOT / 2, y: qy },
+      offered: [0, 1, 2].map((k) => ({ x: 220 + NEW_W / 2 + k * (NEW_W + 10), y: ny })),
+      check,
+    };
+  }
+  // Landscape: the 1024-unit design area, centred on a wider screen.
+  const ox = Math.max(0, (v.w - 1024) / 2);
+  const rowY = (i: number) => 140 + CASE_CARD_H / 2 + i * gap;
+  const qy = v.h - 8 - QUESTION_H / 2;
+  const nx0 = ox + 220 + QUESTION_W + 10 + CASE_SLOT + 20;
+  return {
+    papers: [0, 1, 2].map((i) => ({ x: ox + 870 + THUMB / 2, y: rowY(i) })),
+    rows: [0, 1, 2].map((i) => ({ x: ox + 210 + CASE_CARD_W / 2, y: rowY(i) })),
+    strip: [0, 1, 2].map((i) => ({ x: ox + 610 + STRIP / 2, y: rowY(i) })),
+    dome: { x: ox + 800, y: rowY(1) },
+    question: { x: ox + 220 + QUESTION_W / 2, y: qy },
+    slot: { x: ox + 220 + QUESTION_W + 10 + CASE_SLOT / 2, y: qy },
+    offered: [0, 1, 2].map((k) => ({ x: nx0 + NEW_W / 2 + k * (NEW_W + 10), y: qy })),
+    check: { x: ox + 870 + THUMB / 2, y: rowY(2) + CASE_CARD_H / 2 + 10 + CASE_CHECK_R },
+  };
+}
+
+/** Every tappable rectangle of the exhibit, labelled, with the strip open. */
+export function exhibitTargets(L: ExhibitLayout): { label: string; r: Rect }[] {
+  return [
+    ...L.papers.map((p, i) => ({ label: `paper${i}`, r: boxAt(p, THUMB) })),
+    ...L.rows.map((p, i) => ({ label: `row${i}`, r: boxAt(p, CASE_CARD_W, CASE_CARD_H) })),
+    ...L.strip.map((p, i) => ({ label: `strip${i}`, r: boxAt(p, STRIP) })),
+    { label: 'question', r: boxAt(L.question, QUESTION_W, QUESTION_H) },
+    { label: 'slot', r: boxAt(L.slot, CASE_SLOT) },
+    ...L.offered.map((p, i) => ({ label: `new${i}`, r: boxAt(p, NEW_W, NEW_H) })),
+    { label: 'check', r: boxAt(L.check, 2 * CASE_CHECK_R) },
+  ];
+}
+
+/** The exhibit's layout, or null rather than shrink a target. */
+export function exhibitLayout(v: View): ExhibitLayout | null {
+  const L = placeExhibit(v);
+  return exhibitTargets(L).every(({ r }) => r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h && !overlaps(r, petCorner(v)) && !shellButtons(v).some((b) => overlaps(r, b)))
+    ? L : null;
 }

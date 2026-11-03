@@ -19,9 +19,9 @@ import { planFor, type Plan } from './logic';
  * show it" or "can't tell". Check lights what a paper shows; anything wrong hops back with the pet's reason.
  */
 
-const WALL = 0xecd9b8;
-const BEAM = 0x9c6b3c;
-const PAPER = 0xfffaf0;
+export const WALL = 0xecd9b8;
+export const BEAM = 0x9c6b3c;
+export const PAPER = 0xfffaf0;
 /** A copy in a slot is drawn small enough to sit inside it (200 × 0.55 = 110 units). */
 const IN_SLOT = 0.55;
 /** Below this many units of finger travel a touch on a paper is a tap (a read), not a drag. */
@@ -32,7 +32,7 @@ const authoredShown = new Set<number>();
 
 /* Art -------------------------------------------------------------------------------------------- */
 
-function birdBox(g: Graphics, x: number, y: number, k: number, up = true) {
+export function birdBox(g: Graphics, x: number, y: number, k: number, up = true) {
   const s = (n: number) => n * k;
   g.roundRect(x - s(30), y - s(22), s(60), s(48), s(6)).fill(swatch.orange.fill).stroke({ width: Math.max(2, s(4)), color: swatch.orange.line });
   g.poly([x - s(36), y - s(20), x, y - s(42), x + s(36), y - s(20)]).fill(swatch.red.fill).stroke({ width: Math.max(2, s(3)), color: swatch.red.line, join: 'round' });
@@ -46,11 +46,11 @@ function birdBox(g: Graphics, x: number, y: number, k: number, up = true) {
   g.circle(x + s(46), y + s(22), s(5)).fill(0xf2c14e);
 }
 
-function tick(g: Graphics, x: number, y: number) {
+export function tick(g: Graphics, x: number, y: number) {
   g.moveTo(x - 8, y).lineTo(x - 2, y + 7).lineTo(x + 10, y - 8).stroke({ width: 4, color: swatch.green.line, cap: 'round', join: 'round' });
 }
 
-function hilltopHouse(g: Graphics, x: number, y: number, k = 1) {
+export function hilltopHouse(g: Graphics, x: number, y: number, k = 1) {
   const s = (n: number) => n * k;
   g.ellipse(x, y + s(30), s(56), s(16)).fill(swatch.green.fill);
   g.circle(x, y + s(6), s(26)).fill(cream).stroke({ width: 3, color: wood.line });
@@ -58,7 +58,7 @@ function hilltopHouse(g: Graphics, x: number, y: number, k = 1) {
   g.roundRect(x - s(7), y + s(10), s(14), s(20), s(4)).fill(wood.fill);
 }
 
-function seasideHouse(g: Graphics, x: number, y: number, k = 1) {
+export function seasideHouse(g: Graphics, x: number, y: number, k = 1) {
   const s = (n: number) => n * k;
   for (const dx of [-20, 20]) g.moveTo(x + s(dx), y + s(14)).lineTo(x + s(dx), y + s(38)).stroke({ width: 4, color: wood.line });
   g.roundRect(x - s(30), y - s(16), s(60), s(32), s(4)).fill(swatch.blue.fill).stroke({ width: 3, color: swatch.blue.line });
@@ -67,25 +67,25 @@ function seasideHouse(g: Graphics, x: number, y: number, k = 1) {
   g.stroke({ width: 3, color: swatch.blue.line });
 }
 
-function shop(g: Graphics, x: number, y: number, k = 1) {
+export function shop(g: Graphics, x: number, y: number, k = 1) {
   const s = (n: number) => n * k;
   g.rect(x - s(40), y - s(10), s(80), s(44)).fill(cream).stroke({ width: 3, color: wood.line });
   for (let i = 0; i < 5; i++) g.rect(x - s(44) + i * s(17.6), y - s(30), s(17.6), s(20)).fill(i % 2 ? 0xffffff : swatch.red.fill);
   g.rect(x - s(44), y - s(30), s(88), s(20)).stroke({ width: 3, color: swatch.red.line });
 }
 
-function shells(g: Graphics, x: number, y: number) {
+export function shells(g: Graphics, x: number, y: number) {
   for (let i = 0; i < 3; i++) {
     const sx = x + i * 18;
     g.poly([sx - 8, y + 6, sx, y - 8, sx + 8, y + 6]).fill(swatch.pink.fill).stroke({ width: 2, color: wood.line, join: 'round' });
   }
 }
 
-function heart(g: Graphics, x: number, y: number, r = 6) {
+export function heart(g: Graphics, x: number, y: number, r = 6) {
   g.circle(x - r / 2, y, r / 2 + 1).circle(x + r / 2, y, r / 2 + 1).poly([x - r - 1, y + 1, x + r + 1, y + 1, x, y + r + 3]).fill(swatch.red.fill);
 }
 
-function crowd(g: Graphics, x: number, y: number, n: number) {
+export function crowd(g: Graphics, x: number, y: number, n: number) {
   const cols = [swatch.yellow, swatch.green, swatch.purple, swatch.orange, swatch.blue];
   for (let i = 0; i < n; i++) {
     const cx = x + (i - (n - 1) / 2) * 24;
@@ -94,12 +94,12 @@ function crowd(g: Graphics, x: number, y: number, n: number) {
   }
 }
 
-function paw(g: Graphics, x: number, y: number) {
+export function paw(g: Graphics, x: number, y: number) {
   g.ellipse(x, y, 13, 10).fill(0xd9a066).stroke({ width: 3, color: 0x8a5a2b });
   for (const dx of [-8, 0, 8]) g.circle(x + dx, y - 9, 4).fill(0xd9a066).stroke({ width: 2, color: 0x8a5a2b });
 }
 
-function bunting(g: Graphics, x0: number, x1: number, y: number) {
+export function bunting(g: Graphics, x0: number, x1: number, y: number) {
   const cols = [swatch.red.fill, swatch.yellow.fill, swatch.blue.fill, swatch.green.fill];
   g.moveTo(x0, y).lineTo(x1, y).stroke({ width: 2, color: wood.line });
   let i = 0;
@@ -107,7 +107,7 @@ function bunting(g: Graphics, x0: number, x1: number, y: number) {
 }
 
 /** One of the case's three papers, 200 × 150, centred. */
-function paperArt(id: PaperId): Container {
+export function paperArt(id: PaperId): Container {
   const c = new Container();
   const g = new Graphics();
   c.addChild(g);
@@ -146,7 +146,7 @@ function paperArt(id: PaperId): Container {
 }
 
 /** A claim card's picture, about 230 × 110 around its centre. */
-function claimPicture(id: CaseClaimId): Container {
+export function claimPicture(id: CaseClaimId): Container {
   const c = new Container();
   const g = new Graphics();
   c.addChild(g);

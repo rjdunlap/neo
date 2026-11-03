@@ -463,13 +463,15 @@ Proof: new-interaction tier, as the [definition's Build and check tier](definiti
 
 ### attic-finds 3: Two sources and What can we tell?
 
-**Built 2026-11-02 ([PR #1116](https://github.com/rjdunlap/neo/pull/1116)).** Both levels shipped; see the [archive note](archive/COMPLETED-2026-10-09.md#attic-finds-levels-78-two-sources-and-what-can-we-tell-h5-2026-11-02). Level 9 stays with batch attic-finds 4.
+**Built 2026-11-02 ([PR #1116](https://github.com/rjdunlap/neo/pull/1116)).** Both levels shipped; see the [archive note](archive/COMPLETED-2026-10-09.md#attic-finds-levels-78-two-sources-and-what-can-we-tell-h5-2026-11-02). Level 9 is batch attic-finds 4 below.
 
 - **`attic-finds`, levels 7 *Two sources* and 8 *What can we tell?*** (school only; a new paper-copy drag into claim slots plus a two-stamp interaction inside the existing game, one invented bird-box case; school `{2, 8, order [2,5,6,7,8]}`): drag a copy of the paper that shows each claim (level 7), then stamp each claim *The papers show it* or *Can't tell*, where no paper from a house is no proof it had no bird box (level 8); a free read is not a miss. [Definition](definitions/household-casebook.md), [everyday-life study slice H5](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the [definition's Build and check tier](definitions/household-casebook.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticcase` scripted play at levels 7–8, `fingerdemo` at both, one portrait screenshot of level 8, one build). Expected files: `src/games/attic-finds/` (`logic.ts`, a new `cases.ts` and its tests, `index.ts`), `src/content/howto.ts`, `src/content/voice-script.ts`, `scripts/browser-check.mjs`, README, `docs/GAMES.md`, `docs/VERIFICATION.md`.
 
 ### attic-finds 4: Mend the exhibit
+
+**Built 2026-11-03 ([PR #1161](https://github.com/rjdunlap/neo/pull/1161)).** Level 9 shipped; see the [archive note](archive/COMPLETED-2026-10-09.md#attic-finds-level-9-mend-the-exhibit-h5-2026-11-03).
 
 - **`attic-finds`, level 9 *Mend the exhibit*** (school only; caption strips and a question slot on the same case, after batch attic-finds 3; school `{2, 9, order [2,5,6,7,8,9]}`): swap each of three over-claiming captions for one the papers support, then pick the new paper that could answer a question the papers leave open. [Definition](definitions/household-casebook.md), [everyday-life study slice H5](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
 

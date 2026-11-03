@@ -2262,6 +2262,12 @@ Checks are in [VERIFICATION](VERIFICATION-2026-10-31.md#2026-10-31--attic-finds-
 
 Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--attic-finds-levels-78-two-sources-and-what-can-we-tell-h5).
 
+## Attic Finds level 9 Mend the exhibit (H5, 2026-11-03)
+
+[PR #1161](https://github.com/rjdunlap/neo/pull/1161), branch `claude/attic-finds-9`, batch attic-finds 4 from the [definition](../definitions/household-casebook.md): school range now {2..9, order [2,5,6,7,8,9]}. New `src/games/attic-finds/exhibit.ts` (scene) and `exhibit.test.ts`; the model and layout are in `cases.ts`. She taps a row of three over-claiming captions to open its strip and picks one the papers show, then taps one of three new papers (the useful house paper, the other house's paper, one copy) into the question slot and Checks. An empty question slot is never a miss; any wrong Check is one miss (wrong captions stay, the first one's strip reopens, a paper that could not answer hops back); two misses glow the answer (one hint). Authored first round: Seaside, rows love, cranking, homes. 16 voice lines; how-to steps, finish and note for 9. `vite.config.ts` precache per-file bound raised from 5 to 6 MiB because the routes bundle reached 5,253,129 bytes. `game-reviewer`: no high or medium findings; the card and slot scale now reset on Start again. The Household Casebook definition is fully built.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--attic-finds-level-9-mend-the-exhibit-batch-attic-finds-4).
+
 ## Second Chance Shed levels 5-6, slice N3 (2026-10-31)
 
 Branch `claude/second-chance-shed-5-6` ([PR #1057](https://github.com/rjdunlap/neo/pull/1057)), batch second-chance-shed 2, [definition](../definitions/second-chance-shed-5-6.md): levels 5 *Someone needs it* and 6 *Two friends* for school {4-6} (bands gain school, skills gain planning). The cart is laid out with a bell; things move among the cart, four places and friends with picture bubbles. Code: `plan.ts` (`PlanShed`) plus `logic.ts` additions (`planRoundFor`, `checkPlan`, `solutions`, `nearestSolution`, `nextMove`, `greedyWorks`, `planLayout`), new art (tin, bell, bubbles, friends, filled gifts), voice lines and an extended how-to card; browser case `shedplan`. Deviations: every thing in a place stays grabbable (fanned 22 units apart, newest on top), and the finale chimes instead of speaking "the plan works". No new registration, so the game count is unchanged.
@@ -2483,7 +2489,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sing-along-b
 
 Branch `claude/sink-float-fresh-things`, PR #1147: [dive slice 1](../deep-dives/sink-float.md#build-slices-in-order). `THINGS` grew from nine to fourteen (feather and marble obvious; log, ice cube and paper clip surprises), each with code-drawn `thingArt`, a journal entry and voice line (the journal now holds thirty-six game observations), and `thingWord` for the two-word names. The pinned-draws test became property tests. No new level; bot, couch, bands and how-to card unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--sink-or-float-fresh-things-sink-float-batch-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sink-or-float-fresh-things-sink-float-batch-1).
 
 ## Sudoku Garden, a 4 by 4 bed to start (batch sudoku-garden 1, 2026-11-03)
 

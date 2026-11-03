@@ -243,10 +243,10 @@ describe('Attic Finds casebook rounds, help and registration', () => {
     expect([answerFor(s, 0), answerFor(s, 1)]).toEqual(['poster', 'drawing']);
   });
 
-  it('adds levels 7 and 8 to school only, stepping up from 6', () => {
+  it('adds levels 7 and 8 to school, stepping up from 6', () => {
     expect(isCase(sources) && isCase(tell)).toBe(true);
     expect(isCase(planFor(6))).toBe(false);
-    expect(atticFinds.levels('school')).toEqual({ min: 2, max: 8, order: [2, 5, 6, 7, 8] });
+    expect(atticFinds.levels('school')).toEqual({ min: 2, max: 9, order: [2, 5, 6, 7, 8, 9] });
     expect(atticFinds.levels('prek')).toEqual({ min: 1, max: 5, order: [1, 2, 5] });
     expect(stepLevel(6, 1, atticFinds.levels('school'))).toBe(7);
     expect(stepLevel(7, 1, atticFinds.levels('school'))).toBe(8);

@@ -11,7 +11,8 @@ import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { AtticCase } from './case';
-import { isCase } from './cases';
+import { isCase, isExhibit } from './cases';
+import { AtticExhibit } from './exhibit';
 import { AtticJobs } from './jobs';
 import {
   atticLayout, canFinish, CARD, check, CHECK_R, CHIP_R, CLAIM, CLAIM_H, CLAIM_W, clueOf, CRANK_HIT, DOOR_AT, DOOR_H, DOOR_W, encounterState,
@@ -25,7 +26,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 3, max: 4 },
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 5, order: [1, 2, 5] },
-  school: { min: 2, max: 8, order: [2, 5, 6, 7, 8] },
+  school: { min: 2, max: 9, order: [2, 5, 6, 7, 8, 9] },
 };
 
 /** Each level's authored first round leads its first round of a session. */
@@ -1221,6 +1222,6 @@ export const atticFinds: GameModule = {
   sticker,
   create: (ctx) => {
     const plan = planFor(ctx.level);
-    return isCase(plan) ? new AtticCase(ctx) : isJobs(plan) ? new AtticJobs(ctx) : new AtticFinds(ctx);
+    return isExhibit(plan) ? new AtticExhibit(ctx) : isCase(plan) ? new AtticCase(ctx) : isJobs(plan) ? new AtticJobs(ctx) : new AtticFinds(ctx);
   },
 };
