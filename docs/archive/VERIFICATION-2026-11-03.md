@@ -64,3 +64,12 @@
 - Open: whether the three seeds read as different on the iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
 
 ---
+
+## 2026-11-03 — Sing-Along Barn Twinkle and Wheels on the Bus (sing-along-barn batch 1)
+
+- [PR #1146](https://github.com/rjdunlap/neo/pull/1146): two new tunes (ten in all); Twinkle uses the own-notes exception (`Phrase.semitones`, `OWN_NOTES`, `sfx.marimbaMidi`, guarded by a test); the short Wheels on the Bus is all pentatonic; level 5–6 chooser is ten cards in two rows; voice lines and how-to card updated.
+- Ran, base origin/main `d0b2d458` plus the branch, server http://localhost:5940: `npm run typecheck`; full unit suite, 297 files, 4520 tests; `BROWSER_SUITE=singalong SING_ONLY=tunes` (a Wheels round at level 1, then ten cards upright at level 5 with Twinkle chosen and sung through 3 verses, one sticker each, 0 misses, 0 hints; portrait screenshot `test-results/browser/singalong/sing-along-barn-5-ten-cards-portrait.png`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=sing-along-barn FINGER_LEVELS=5` (53.4 s); `npm run build`.
+- Not run: the full `singalong` suite (other tunes and levels unchanged), device and child checks.
+- Open: fa on the iPad marimba and a grown-up singing along to both tunes ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+---

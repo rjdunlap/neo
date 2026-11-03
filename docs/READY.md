@@ -25,7 +25,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Queued
 
-- **`attic-finds`, level 9 (batch attic-finds 4)** (new-interaction tier: caption strips and the question slot; play level 9 with the starting captions Checked (a miss), a copy paper in the question slot (a miss with the glow), then right, a portrait screenshot with a strip open, and run `fingerdemo` at level 9; one build): after batch attic-finds 3; [definition](definitions/household-casebook.md#build-and-check-tier), [batch](GAME-BATCHES.md#attic-finds-4-mend-the-exhibit). School only; swap three over-claiming captions for ones the papers support, then pick the new paper that could answer a question the papers leave open.
 
 - **`scoop-shop`, level 7 Two cones (EF1b second batch)** (standalone new interaction): after EF1b 8–9 and built 11; [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25), [batch](GAME-BATCHES.md#scoop-shop-4-two-cones). Free cone selection, friend peek, independent stacks/help, three scoops total; two-order bot and full-size layout proof required.
 
