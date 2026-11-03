@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { EQUIVALENTS, habitatTouch, helpingPieces, makeRounds, missingNeeds, PIECES, PIECE_IDS, PLANS, PREDICTION_GARDENS, solutions, visitorsFor, welcomes, type HabitatTouch, type PieceId, type Visitor } from './logic';
+import { afterChange, CHANGES, EQUIVALENTS, habitatTouch, helpingPieces, lostNeed, makeRounds, missingNeeds, NEEDS, PIECES, PIECE_IDS, PLANS, PREDICTION_GARDENS, restores, solutions, visitorsFor, welcomes, type HabitatTouch, type Need, type PieceId, type Visitor } from './logic';
 
 describe('Habitat Helpers', () => {
   it('gives every pictured piece a spoken name and at least one explicit use', () => {
@@ -64,6 +64,13 @@ describe('Habitat Helpers', () => {
         for (const round of rounds) {
           expect(new Set(round.offered).size).toBe(round.offered.length);
           round.offered.forEach((id) => expect(PIECE_IDS).toContain(id));
+          if (PLANS[level - 1].mode === 'change') {
+            // One empty space beside the three-piece garden, and a two-card repair tray.
+            expect(round.capacity).toBe(1);
+            expect(round.offered).toHaveLength(2);
+            expect([...round.prepared!].sort()).toEqual([...round.change!.garden].sort());
+            continue;
+          }
           expect(round.capacity).toBeGreaterThanOrEqual(2);
           if (PLANS[level - 1].mode === 'build') {
             expect(round.prepared).toBeUndefined();
@@ -117,7 +124,7 @@ describe('Habitat Helpers', () => {
   it('offers help that always supplies something still missing', () => {
     for (let level = 1; level <= PLANS.length; level++) {
       for (const round of makeRounds(level, new Rng(level * 17))) {
-        if (!round.offered.length) continue;
+        if (!round.offered.length || round.change) continue;
         const selected = round.offered.slice(0, Math.min(2, round.capacity));
         if (welcomes(selected, round.visitors)) continue;
         const helpers = helpingPieces(round, selected);
@@ -142,7 +149,7 @@ describe('Habitat Helpers', () => {
     for (let level = 1; level <= PLANS.length; level++) {
       for (let seed = 1; seed <= 60; seed++) {
         for (const round of makeRounds(level, new Rng(seed))) {
-          if (!round.offered.length) continue;
+          if (!round.offered.length || round.change) continue;
           let selected: PieceId[] = [];
           for (let n = 0; n < round.capacity + 1 && !welcomes(selected, round.visitors); n++) {
             const glow = helpingPieces(round, selected);
@@ -156,6 +163,54 @@ describe('Habitat Helpers', () => {
     }
   });
 
+  describe('level 7, something changed', () => {
+    it('every change case works before the change, loses exactly one need after it, and names that need', () => {
+      for (const c of CHANGES) {
+        expect(welcomes([...c.garden], [c.visitor]), c.id).toBe(true);
+        expect(c.garden).toContain(c.changed);
+        const missing = missingNeeds(afterChange(c), [c.visitor]);
+        expect(missing, c.id).toHaveLength(1);
+        expect(lostNeed(c)).toBe(missing[0].need);
+        expect(NEEDS).toContain(lostNeed(c));
+      }
+    });
+
+    it('offers exactly one repair card that restores the need, and one that meets no missing need', () => {
+      for (const c of CHANGES) {
+        expect(c.repairs.filter((piece) => restores(c, piece)), c.id).toHaveLength(1);
+        const other = c.repairs.find((piece) => !restores(c, piece))!;
+        expect(missingNeeds(afterChange(c), [c.visitor]).some((m) => PIECES[other].for[m.visitor]?.includes(m.need)), `${c.id}: ${other}`).toBe(false);
+        // Neither card is already in the garden, so the tray never shows a copy of a garden piece.
+        c.repairs.forEach((piece) => expect(c.garden).not.toContain(piece));
+      }
+    });
+
+    it('covers every need and both visitors across the four cases', () => {
+      expect(new Set(CHANGES.map(lostNeed))).toEqual(new Set(NEEDS));
+      expect(new Set(CHANGES.map((c) => c.visitor))).toEqual(new Set(['bunny', 'duck']));
+      expect(new Set(CHANGES.map((c) => c.id)).size).toBe(4);
+    });
+
+    it('opens every play with the dried pool and draws a different second change, using every case over the seeds', () => {
+      const seconds = new Set<string>();
+      for (let seed = 1; seed <= 200; seed++) {
+        const [a, b] = makeRounds(7, new Rng(seed));
+        expect(a.change!.id).toBe('pool-dried');
+        expect(b.change!.id).not.toBe('pool-dried');
+        expect(b.visitors).toEqual([b.change!.visitor]);
+        seconds.add(b.change!.id);
+      }
+      expect(seconds.size).toBe(3);
+    });
+
+    it('lets the bot take out a card that does not restore before placing the one that does', () => {
+      const round = makeRounds(7, new Rng(2))[0];
+      const wrong = round.offered.find((piece) => !restores(round.change!, piece))!;
+      expect(habitatTouch(round, 'change', [wrong], null, true)).toEqual({ piece: wrong });
+      expect(habitatTouch(round, 'change', [], null, false)).toEqual({ need: 'water' });
+    });
+  });
+
   describe('the ghost finger', () => {
     /** Play a whole round of touches against the rules, as the card's bot does. */
     function play(level: number, seed: number) {
@@ -164,16 +219,21 @@ describe('Habitat Helpers', () => {
         const mode = PLANS[level - 1].mode;
         const selected: PieceId[] = mode === 'predict' ? [...round.prepared!] : [];
         let prediction: Visitor | null = null;
+        let need: Need | null = null;
         const touches: HabitatTouch[] = [];
-        for (let touch = habitatTouch(round, mode, selected, prediction); touch && touches.length < 12; touch = habitatTouch(round, mode, selected, prediction)) {
+        for (let touch = habitatTouch(round, mode, selected, prediction, !!need); touch && touches.length < 12; touch = habitatTouch(round, mode, selected, prediction, !!need)) {
           touches.push(touch);
           if (touch === 'gate') break;
           if ('piece' in touch) selected.push(touch.piece);
+          else if ('need' in touch) need = touch.need;
           else prediction = touch.visitor;
         }
         out.push(touches);
         if (mode === 'predict') expect(prediction, `level ${level} seed ${seed}: the prediction is right`).toEqual(round.visitors[0]);
-        else expect(welcomes(selected, round.visitors), `level ${level} seed ${seed}`).toBe(true);
+        else if (mode === 'change') {
+          expect(need, `level ${level} seed ${seed}: the need named is the lost one`).toBe(lostNeed(round.change!));
+          expect(welcomes([...afterChange(round.change!), ...selected], round.visitors), `level ${level} seed ${seed}`).toBe(true);
+        } else expect(welcomes(selected, round.visitors), `level ${level} seed ${seed}`).toBe(true);
         expect(touches.at(-1)).toBe('gate');
       }
       return out;
