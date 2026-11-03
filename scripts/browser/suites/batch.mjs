@@ -53,7 +53,7 @@ async function batch() {
     await page.evaluate(async () => {
       const g = neo.scene.game;
       const { simulate } = await import('/src/engine/ball.ts');
-      const { aimAt, aimVelocity, AIM_LIMIT, BOARD } = await import('/src/games/peg-garden/logic.ts');
+      const { aimAt, aimVelocity, AIM_LIMIT, BOARD, dropAt } = await import('/src/games/peg-garden/logic.ts');
       const board = g.board;
       const screen = (x, y) => board.toGlobal({ x, y });
       const done = () => kit.until(() => !g.ball, 15000);
@@ -91,14 +91,19 @@ async function batch() {
         return;
       }
       if (g.plan.mode === 'color') {
-        // Drop far from the orange flowers until two shots in a row bloom none: then the arrow hint.
-        const specials = g.buds.filter((b) => b.spot.kind === 'special');
-        const far = [...g.buds].filter((b) => b.spot.kind === 'plain').sort((a, b) => Math.min(...specials.map((s) => Math.abs(s.x - b.x))) - Math.min(...specials.map((s) => Math.abs(s.x - a.x))));
-        for (let k = 0; k < 12 && !g.hinting && !g.finished; k++) await drop(far[k % 3].x);
+        // Drop where the simulated pearl (no drift on this level) blooms no orange flower, a little either side too, until
+        // two shots in a row bloom none: then the arrow hint. A spot merely far from them can still bounce into one.
+        const special = (i) => g.buds[i].spot.kind === 'special';
+        const misses = (x) => [-2, 0, 2].every((off) => !simulate({ x: x + off, y: 40, vx: 0, vy: 60, r: BOARD.ball }, g.world, BOARD.h, 12, 1 / 30).hits.some(special));
+        const clear = [];
+        for (let x = BOARD.ball + 4; x <= BOARD.w - BOARD.ball - 4; x += 4) if (misses(x)) clear.push(x);
+        if (!clear.length) throw new Error('Peg color: no drop misses every orange flower');
+        for (let k = 0; k < 12 && !g.hinting && !g.finished; k++) await drop(clear[k % clear.length]);
         if (!g.finished && (!g.hinting || g.hints !== 1)) throw new Error(`Peg color hint: ${g.misses} ${g.hints}`);
         // The hint shows where to act: a ring on the ledge, and a tap anywhere lets the pearl go there; a tap while it falls adds nothing.
         if (!g.finished && g.hintX === null) throw new Error('Peg color hint has no ledge ring');
-        for (let guard = 0; guard < 40 && !g.finished; guard++) { const b = g.buds.find((b) => b.spot.kind === 'special' && !b.bloomed); if (!b) break; await drop(b.x); }
+        // Then drop where the simulated pearl reaches a waiting orange flower, as the hint does: straight above one can bounce off.
+        for (let guard = 0; guard < 40 && !g.finished; guard++) { if (!g.buds.some((b) => b.spot.kind === 'special' && !b.bloomed)) break; await drop(dropAt(g.world, (i) => special(i) && !g.buds[i].bloomed, 0, true).x); }
         return;
       }
       if (g.plan.mode === 'plant') {
@@ -177,7 +182,8 @@ async function batch() {
       const isTarget = (i) => g.buds[i].spot.kind === g.target;
       for (let k = 0; k < 2; k++) await shoot((hits) => !hits.some(isTarget));
       if (g.misses < 2 || g.hints !== 1) throw new Error(`Peg hint: ${g.misses} ${g.hints}`);
-      for (let guard = 0; guard < 10 && !g.finished; guard++) {
+      // After the last ask the round only waits for the praise, and a pearl let go then counts nothing.
+      for (let guard = 0; guard < 10 && !g.finished && g.target !== undefined; guard++) {
         // Only the asked number opens; the others the pearl touches wait their turn.
         const others = g.buds.filter((b) => typeof b.spot.kind === 'number' && !g.targets.slice(0, g.goal + 1).includes(b.spot.kind));
         await shoot(null, g.buds.findIndex((b) => b.spot.kind === g.target));

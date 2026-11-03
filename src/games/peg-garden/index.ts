@@ -312,6 +312,11 @@ class PegGarden implements Game {
     return this.targets[this.goal];
   }
 
+  /** An aimed round whose last flower or cup is reached waits only for the praise: a pearl let go then counts nothing. */
+  private get allReached() {
+    return this.aimed && this.target === undefined;
+  }
+
   start() {
     switch (this.plan.mode) {
       case 'drop':
@@ -368,10 +373,20 @@ class PegGarden implements Game {
       return;
     }
     if (this.aimed) {
-      for (const i of stepBall(b, this.world, dt)) this.touchBud(i);
-      // Where the pearl actually went, for the faint trail it leaves.
-      const last = this.path.at(-1);
-      if (!last || Math.hypot(b.x - last.x, b.y - last.y) >= 18) this.path.push({ x: b.x, y: b.y });
+      // An aimed shot also takes the rules' samples, so it follows the dashed guide, the hint and the ghost finger's aim
+      // whatever the frame rate (stepping by the frame split its sub-steps differently and bent the path); drawn between them.
+      this.stepLeft = Math.min(this.stepLeft + dt, 0.25);
+      for (; this.stepLeft >= SAMPLE && b.y - b.r <= BOARD.h; this.stepLeft -= SAMPLE) {
+        this.prev = { x: b.x, y: b.y };
+        for (const i of stepBall(b, this.world, SAMPLE)) this.touchBud(i);
+        // Where the pearl actually went, for the faint trail it leaves.
+        const last = this.path.at(-1);
+        if (!last || Math.hypot(b.x - last.x, b.y - last.y) >= 18) this.path.push({ x: b.x, y: b.y });
+      }
+      const k = Math.min(1, this.stepLeft / SAMPLE);
+      this.pearl.position.set(this.prev.x + (b.x - this.prev.x) * k, this.prev.y + (b.y - this.prev.y) * k);
+      if (b.y - b.r > BOARD.h || this.ballAge > 10) void this.shotOver();
+      return;
     } else {
       // A dropped pearl takes fixed steps, as the rules' simulation does, so it goes exactly where the hint, the stall guard
       // and the ghost finger expect whatever the frame rate; a long frame slows it rather than changing its path.
@@ -393,7 +408,7 @@ class PegGarden implements Game {
   /** Couch play: hold left or right to swing the launcher, press the bottom button to let the pearl go. */
   control(input: CouchControls, dt: number) {
     this.couchOn = true;
-    if (!this.aimed || this.finished) return;
+    if (!this.aimed || this.finished || this.allReached) return;
     if (this.ball) return;
     const p = input.players.find((q) => q.x || q.action);
     if (p) {
@@ -532,7 +547,7 @@ class PegGarden implements Game {
     if (e.pointerId !== this.aiming) return;
     this.aiming = null;
     this.guide.clear();
-    if (!this.ball && !this.finished) this.fire(this.shotStart());
+    if (!this.ball && !this.finished && !this.allReached) this.fire(this.shotStart());
   }
 
   private shotStart(): Ball {
