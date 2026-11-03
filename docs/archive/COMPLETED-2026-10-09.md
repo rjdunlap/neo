@@ -2561,6 +2561,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--pixel-pictures-level
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--garden-rows-levels-89-hedge-boxes-garden-rows-batch-2).
 
+## Garden Rows level 10 One row (garden-rows 3, 2026-11-03)
+
+[PR #1171](https://github.com/rjdunlap/neo/pull/1171), batch garden-rows 3, [dive slice 3](../deep-dives/garden-rows.md#build-slices-in-order). Level 10: a single row of three spots, two planted and one empty, three packets, three beds a round with the empty spot in a different place each bed; a repeat is a miss with the row clash line, and after two misses the spot and the right packet glow. Logic generalised to non-square beds (`rows` plan field, `rowsOf`). Garden Rows bands are now preschool, prek, school; preschool range `{ min: 1, max: 10, order: [10, 1] }` with `entryLevels: [10]` (carried to pre-K it lands on 1, to school on 3), so Garden Rows shows on preschool's Puzzle Peaks page. Voice `rows.one`. How-to: a level-10 step and note, the rows-and-columns step bounded to 2-9 and the hedge lines to 8-9. Couch (fixed levels 3-6) unchanged.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--garden-rows-level-10-one-row-garden-rows-batch-3).
+
 ## Ferry Jam level 7 Rocks in the harbor (ferry-jam 2, 2026-11-03)
 
 [PR #1169](https://github.com/rjdunlap/neo/pull/1169), batch ferry-jam 2, [dive slice 2](../deep-dives/ferry-jam.md#build-slices-in-order). Pictures take `x` for a rock (`Harbor.rocks`, parsed beside the boats); a rock fills one cell in a row beside the ferry's, never slides, and stops boats. Fifteen frozen 5x5 harbors with 4-5 boats need 6-9 slides (one at 9); the `rocksMatter` test removes each rock and requires a shorter fewest way, and `focusPath` still reaches every boat at level 7. School window now 3-7 (pre-K still 1-4). Touching or dragging a rock wobbles it (`sfx.knock`) and says `ferry.rock` once per round, never a miss or hint; level 7 opens with `ferry.start.rocks`; the how-to step is scoped to 7; the stuck hint and the bot are unchanged; the couch catalog and course stay at levels 3-6. A rounded grey `Graphics` boulder with a foam ring.
