@@ -1001,6 +1001,8 @@ Proof: new-interaction tier: typecheck and rule tests; one scripted play of leve
 
 ### inchworm 1: Fresh things and the broken ruler
 
+Built 2026-11-02, [PR #1129](https://github.com/rjdunlap/neo/pull/1129), branch `claude/inchworm-1`; [closeout](archive/COMPLETED-2026-10-09.md#inchworm-fresh-things-the-long-jump-and-level-8-the-broken-ruler-inchworm-batch-1-2026-11-02). Scope retained for dependency references; this batch is no longer eligible.
+
 - **`inchworm`, fresh things and the broken ruler (dive slice 1)** (existing interaction; school): five new things with voice words, the long-jump round at level 3, and level 8 *The broken ruler* (school order `[1, 2, 7, 3, 4, 8, 5, 6]`, school max 8). [Dive](deep-dives/inchworm.md#build-slices-in-order)
 
 Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
@@ -1009,7 +1011,7 @@ Proof: new levels on the existing interaction: typecheck, the game's rule tests,
 
 ### inchworm 2: One worm, hop by hop
 
-- **`inchworm`, level 9 One worm, hop by hop (dive slice 2, after batch 1)** (new interaction; school): shares the order and the `THINGS` list with batch 1; school order `[1, 2, 7, 9, 3, 4, 8, 5, 6]`. [Dive](deep-dives/inchworm.md#build-slices-in-order)
+- **`inchworm`, level 9 One worm, hop by hop (dive slice 2, after batch 1)** (new interaction; school): shares the order and the `THINGS` list with batch 1; school order `[1, 2, 7, 9, 3, 4, 8, 5, 6]`; batch 1 is built. [Dive](deep-dives/inchworm.md#build-slices-in-order)
 
 Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
