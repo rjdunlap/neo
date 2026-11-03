@@ -893,3 +893,4 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 - [ ] On an iPad, check device speech for "abutment", if a line uses it, and for "the middle sea".
 - [ ] Check whether the push arrows read at the ends of a row (level 5), and whether a flat stretch at level 4 reads as "stood still" and not as a bug.
 - [ ] On an iPad, check device speech for "ice cube" and "paper clip" in the Sink or Float guess line, and that the marble reads against the water.
+- [ ] On an iPad, check that a new grown-up's first Sudoku Garden bed (level 7, 4 by 4) feels like an easy start with the three-column tray, where the 4 sits alone on a second row.
