@@ -110,7 +110,7 @@ None. Placement and new levels stay inside the built bands and land; the prescho
 
 ## Build slices, in order
 
-1. **Fair starts, nearest hints and a sun on either side** (existing-interaction tier: typecheck, rule tests, one filtered regression play at level 6 with a right-hand sun and one hint; `fingerdemo` at 6 only if the bot's play changes). Logic first; the index reads the sun's side.
+1. **Built (2026-11-02, [PR #1132](https://github.com/rjdunlap/neo/pull/1132)): Fair starts, nearest hints and a sun on either side** (existing-interaction tier: typecheck, rule tests, one filtered regression play at level 6 with a right-hand sun and one hint; `fingerdemo` at 6 only if the bot's play changes). Logic first; the index reads the sun's side.
 2. **Couch course *Sunbeam Run*** (couch catalog tier: a frozen board list, par from slice 1's minimum, course tests, `BROWSER_SUITE=couchgames` filtered to Light Lab): after slice 1. Roadmap chunk 8's remaining Light Lab par course.
 3. **Levels 8–9 *Place a mirror* and *Two to place*** (new-interaction tier: typecheck, rule tests, one play of level 8 with a drop off the board, a missed shine and the glowing cell, level 9 to its sticker, one portrait screenshot with the tray, `fingerdemo` at 8 and 9; stop after 8 if the allowance cannot cover 9). School range rises to 9.
 4. **Level 10 *Where's the mirror?*** (new-interaction tier: typecheck, rule tests, one play with one wrong cell and its ghost beam, a second for the glow, then the right cell, one portrait screenshot of the cloud, `fingerdemo` at 10): after slice 3, since the school range rises past 9.
@@ -119,4 +119,4 @@ None. Placement and new levels stay inside the built bands and land; the prescho
 
 ## What was built in this session
 
-Nothing: research and ideation only. Links and `git diff --check` ran; a throwaway probe of the current generator (400 seeds a level) informed the known gaps and was not committed.
+Research and ideation only; slice 1 was built later (see the build slices). Links and `git diff --check` ran; a throwaway probe of the current generator (400 seeds a level) informed the known gaps and was not committed.
