@@ -201,4 +201,4 @@ Checks are in [VERIFICATION](../archive/VERIFICATION-2026-10-26.md#2026-10-26--s
 - **Pairs.** Four pairs of two different animals (never Pip), true heights 14-30 units apart; in exactly two pairs the shorter friend stands on higher footing and its head shows 22-40 units higher; the taller side is seeded.
 - **Misses.** A tap before measuring is a spoken guess, never a miss (a right guess is acknowledged); after measuring a wrong tap is a miss ("The ribbon says the {friend} is shorter") and the second in a pair counts one hint and glows the taller friend. Ten new `size.ribbon*` lines (slotted {friend}, device speech).
 - **Windows now:** school `{ min 7, max 15, order [7, 8, 12, 13, 14, 15] }`.
-- Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-02--size-parade-level-14-the-measuring-ribbon-size-parade-batch-5-slice-10). Still open: whether she reads the mark against the head on an iPad (DEVICE-CHECKS).
+- Checks are in [VERIFICATION](../archive/VERIFICATION-2026-11-02.md#2026-11-02--size-parade-level-14-the-measuring-ribbon-size-parade-batch-5-slice-10). Still open: whether she reads the mark against the head on an iPad (DEVICE-CHECKS).

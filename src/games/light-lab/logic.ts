@@ -6,7 +6,8 @@ import type { Rng } from '../../engine/random';
  * tints the beam, and a colored flower only wakes in its own color.
  *
  * Puzzles are built backwards from a random beam path, so every one has a known solution; extra
- * mirrors and rocks are placed off that path, and the mirrors start tilted so it isn't solved yet.
+ * mirrors and rocks are placed off that path, and the mirrors start tilted so it isn't solved yet. From level 3 the
+ * whole board may be mirrored, with the sun on the right shining left.
  */
 export type LightMode = 'live' | 'plan' | 'predict';
 
@@ -23,17 +24,23 @@ export interface LightPlan {
   /** A tinted glass on the path before the last flower, which wants that color. */
   glass: boolean;
   puzzles: number;
+  /** The fewest mirror turns any answer needs from the start (a floor; spare mirrors count). */
+  startWrong: number;
+  /** The starting tilts wake no flower, so a two-flower plan is never a one-turn fix. */
+  startDark: boolean;
+  /** The sun may sit on the right and shine left (a seeded mirror image of the board). */
+  eitherSide: boolean;
   name: string;
 }
 
 export const PLANS: LightPlan[] = [
-  { mode: 'live', cols: 6, rows: 4, turns: 1, decoys: 0, rocks: 0, flowers: 1, glass: false, puzzles: 3, name: 'Tap a mirror to turn the sunbeam onto the flower (the light shows as you turn)' },
-  { mode: 'live', cols: 6, rows: 4, turns: 2, decoys: 1, rocks: 1, flowers: 1, glass: false, puzzles: 3, name: 'Two mirrors to turn, plus a spare mirror and a rock' },
-  { mode: 'plan', cols: 6, rows: 4, turns: 2, decoys: 1, rocks: 1, flowers: 1, glass: false, puzzles: 3, name: 'Plan first: turn the mirrors, then tap the sun to shine' },
-  { mode: 'plan', cols: 7, rows: 5, turns: 3, decoys: 2, rocks: 2, flowers: 2, glass: false, puzzles: 2, name: 'Wake two flowers with one beam (three mirrors to plan)' },
-  { mode: 'plan', cols: 7, rows: 5, turns: 3, decoys: 2, rocks: 1, flowers: 2, glass: true, puzzles: 2, name: 'Colored glass: wake the yellow flower, then shine through pink glass for the pink one' },
-  { mode: 'plan', cols: 7, rows: 5, turns: 4, decoys: 3, rocks: 2, flowers: 2, glass: false, puzzles: 2, name: 'A longer path: four mirrors, spare mirrors and rocks in the way' },
-  { mode: 'predict', cols: 7, rows: 5, turns: 4, decoys: 3, rocks: 2, flowers: 2, glass: false, puzzles: 4, name: 'Predict where the locked beam stops, then plan the mirrors and shine' },
+  { mode: 'live', cols: 6, rows: 4, turns: 1, decoys: 0, rocks: 0, flowers: 1, glass: false, puzzles: 3, startWrong: 1, startDark: false, eitherSide: false, name: 'Tap a mirror to turn the sunbeam onto the flower (the light shows as you turn)' },
+  { mode: 'live', cols: 6, rows: 4, turns: 2, decoys: 1, rocks: 1, flowers: 1, glass: false, puzzles: 3, startWrong: 1, startDark: false, eitherSide: false, name: 'Two mirrors to turn, plus a spare mirror and a rock' },
+  { mode: 'plan', cols: 6, rows: 4, turns: 2, decoys: 1, rocks: 1, flowers: 1, glass: false, puzzles: 3, startWrong: 1, startDark: false, eitherSide: true, name: 'Plan first: turn the mirrors, then tap the sun to shine' },
+  { mode: 'plan', cols: 7, rows: 5, turns: 3, decoys: 2, rocks: 2, flowers: 2, glass: false, puzzles: 2, startWrong: 2, startDark: true, eitherSide: true, name: 'Wake two flowers with one beam (three mirrors to plan)' },
+  { mode: 'plan', cols: 7, rows: 5, turns: 3, decoys: 2, rocks: 1, flowers: 2, glass: true, puzzles: 2, startWrong: 2, startDark: true, eitherSide: true, name: 'Colored glass: wake the yellow flower, then shine through pink glass for the pink one' },
+  { mode: 'plan', cols: 7, rows: 5, turns: 4, decoys: 3, rocks: 2, flowers: 2, glass: false, puzzles: 2, startWrong: 3, startDark: false, eitherSide: true, name: 'A longer path: four mirrors, spare mirrors and rocks in the way' },
+  { mode: 'predict', cols: 7, rows: 5, turns: 4, decoys: 3, rocks: 2, flowers: 2, glass: false, puzzles: 4, startWrong: 3, startDark: false, eitherSide: true, name: 'Predict where the locked beam stops, then plan the mirrors and shine' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -68,8 +75,10 @@ export type Thing =
 export interface LightPuzzle {
   cols: number;
   rows: number;
-  /** The sun sits in column 0 and shines right. */
+  /** The sun's cell: column 0 shining right (`sunDir` 0), or the last column shining left (2). */
   sunRow: number;
+  sunCol: number;
+  sunDir: 0 | 2;
   things: Thing[];
   /** One tilt per thing (only mirrors use theirs): a known answer. */
   solution: Tilt[];
@@ -104,9 +113,9 @@ export interface BeamEnd {
 
 export function trace(p: LightPuzzle, tilts: Tilt[]): Trace {
   const at = new Map(p.things.map((t, i) => [`${t.x},${t.y}`, i]));
-  let x = 0;
+  let x = p.sunCol;
   let y = p.sunRow;
-  let dir: Dir = 0;
+  let dir: Dir = p.sunDir;
   let tint: Tint = 'sun';
   const cells: Trace['cells'] = [];
   const woken = new Set<number>();
@@ -258,25 +267,77 @@ function tryPuzzle(plan: LightPlan, rng: Rng): LightPuzzle | null {
     things.push({ kind: 'glass', ...c, tint: 'blue' });
     solution.push(0);
   }
-  const puzzle: LightPuzzle = { cols, rows, sunRow, things, solution, start: [], pathMirrors };
+  const puzzle: LightPuzzle = { cols, rows, sunRow, sunCol: 0, sunDir: 0, things, solution, start: [], pathMirrors };
   if (!solved(puzzle, solution)) return null;
-  // Start tilted wrong: shuffle until unsolved, flipping at least one path mirror.
+  // Start tilted wrong: at least `startWrong` path mirrors flipped, the spares at random, and kept only when
+  // no answer (spares included) is fewer turns away and, where asked, no flower is awake yet.
   for (let tries = 0; tries < 20; tries++) {
-    const start = solution.map((t, i) => (things[i].kind === 'mirror' && rng.chance(0.5) ? ((1 - t) as Tilt) : t));
-    const first = pathMirrors[rng.int(0, pathMirrors.length - 1)];
-    if (start[first] === solution[first]) start[first] = (1 - solution[first]) as Tilt;
-    if (!solved(puzzle, start)) {
-      const result = { ...puzzle, start };
-      if (plan.mode === 'predict' && predictionChoices(result).length < 3) continue;
-      return result;
-    }
+    const flip = new Set(rng.shuffle([...pathMirrors]).slice(0, plan.startWrong));
+    const start = solution.map((t, i) => (things[i].kind === 'mirror' && (flip.has(i) || rng.chance(0.5)) ? ((1 - t) as Tilt) : t));
+    const result = { ...puzzle, start };
+    if (solved(result, start) || minTurns(result, start) < plan.startWrong) continue;
+    if (plan.startDark && trace(result, start).woken.length) continue;
+    if (plan.mode === 'predict' && predictionChoices(result).length < 3) continue;
+    return plan.eitherSide && rng.chance(0.5) ? mirrorPuzzle(result) : result;
   }
   return null;
 }
 
-/** The next mirror on the known path that is tilted the other way: where a hint points. */
+/** The board seen in a mirror: the sun moves to the last column and shines left, and every tilt swaps ("/" seen in a mirror is "\"). */
+export function mirrorPuzzle(p: LightPuzzle): LightPuzzle {
+  const flip = (t: Tilt) => (1 - t) as Tilt;
+  return {
+    ...p,
+    sunCol: p.cols - 1 - p.sunCol,
+    sunDir: p.sunDir === 0 ? 2 : 0,
+    things: p.things.map((t) => ({ ...t, x: p.cols - 1 - t.x })),
+    solution: p.solution.map(flip),
+    start: p.start.map(flip),
+  };
+}
+
+/** Every mirror arrangement that wakes all the flowers and is fewest turns from `tilts` (the known answer first when it is one). */
+export function nearestSolutions(p: LightPuzzle, tilts: Tilt[]): Tilt[][] {
+  const mirrors = p.things.flatMap((t, i) => (t.kind === 'mirror' ? [i] : []));
+  let best = Infinity;
+  let found: Tilt[][] = [];
+  for (let mask = 0; mask < 2 ** mirrors.length; mask++) {
+    const next = [...tilts];
+    let turns = 0;
+    mirrors.forEach((index, bit) => {
+      if ((mask >> bit) & 1) {
+        next[index] = (1 - next[index]) as Tilt;
+        turns++;
+      }
+    });
+    if (turns > best || !solved(p, next)) continue;
+    if (turns < best) (best = turns), (found = []);
+    found.push(next);
+  }
+  const known = found.findIndex((s) => mirrors.every((i) => s[i] === p.solution[i]));
+  if (known > 0) found.unshift(...found.splice(known, 1));
+  return found;
+}
+
+/** The fewest mirror turns from `tilts` to any answer: the couch par and the fair-start floor. */
+export function minTurns(p: LightPuzzle, tilts: Tilt[]): number {
+  const [nearest] = nearestSolutions(p, tilts);
+  return nearest ? p.things.reduce((n, t, i) => n + (t.kind === 'mirror' && nearest[i] !== tilts[i] ? 1 : 0), 0) : Infinity;
+}
+
+/**
+ * Where a hint points: the first mirror along the nearest answer's beam that is tilted the other way (the known
+ * answer when it is among the nearest), so following hints takes the fewest turns there are.
+ */
 export function hintMirror(p: LightPuzzle, tilts: Tilt[]): number {
-  return p.pathMirrors.find((i) => tilts[i] !== p.solution[i]) ?? -1;
+  const [nearest] = nearestSolutions(p, tilts);
+  if (!nearest) return -1;
+  const at = new Map(p.things.map((t, i) => [`${t.x},${t.y}`, i]));
+  for (const c of trace(p, nearest).cells) {
+    const i = at.get(`${c.x},${c.y}`);
+    if (i !== undefined && p.things[i].kind === 'mirror' && tilts[i] !== nearest[i]) return i;
+  }
+  return -1;
 }
 
 /** Why a shine didn't wake everything: for the spoken explanation. */

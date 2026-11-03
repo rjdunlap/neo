@@ -14,3 +14,11 @@
 - S1 voice check: NOAA "What is a current?" (opened 2026-11-02) supports wind, density and tides but not seasons, so `drift.limits` was reworded. `game-reviewer` fixes: duplicate hand cards and unresized cards on the replay, a stale fog-cell trace, restart forgetting tried patches.
 - Not run: offline check, other suites.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#drift-cards-levels-13-oceans-slice-6-2026-10-31-level-3-built-2026-11-02)): detective work versus trial and error, reading arrows cell by cell, "South-west" in iPad speech.
+
+## 2026-11-02 — Size Parade level 14 The measuring ribbon (size-parade batch 5, slice 10)
+
+- [PR #1118](https://github.com/rjdunlap/neo/pull/1118): school-only level 14 (bank and stump friends, a vertical-only ribbon that snaps within 12 units to the top of a head, then tap the taller); school `order [7, 8, 12, 13, 14, 15]`; ten `size.ribbon*` voice lines; how-to card scoped 14-14.
+- Ran (commit 95342fb7, base origin/main bc267ed7, Vite on http://localhost:5526): typecheck; full `npm test` 293 files / 4286 tests (38 Size Parade rule tests incl. 300-seed pair properties, snap, layout at 1024×768, 768×1024, 844×390); `npm run build`; `BROWSER_SUITE=expansion EXPANSION_ONLY=size SIZE_LEVELS=14` (guess, a short pull stays, an 8-unit-off drop snaps, two wrong taps = 2 misses/1 hint, one sticker, portrait screenshot; rerun after the review fix); `BROWSER_SUITE=fingerdemo FINGER_ONLY=size-parade FINGER_LEVELS=14 FINGER_BAND=school` clean in 32.7 s.
+- `game-reviewer` fix: a resize during the ribbon's float home left it off its lane (low severity); the browser run was repeated after it.
+- Not run: offline check, other suites, iPad, a child's reaction.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether she reads the mark against the head and trusts the ribbon over the eye.
