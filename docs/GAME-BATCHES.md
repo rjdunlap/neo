@@ -943,6 +943,8 @@ Proof: typecheck and the game's rule tests; one filtered regression play of leve
 
 ### ferry-jam 2: Rocks in the harbor
 
+**Built 2026-11-03 ([PR #1169](https://github.com/rjdunlap/neo/pull/1169)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-03--ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-batch-2); [build note](archive/COMPLETED-2026-10-09.md#ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-2-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
+
 - **`ferry-jam`, level 7 Rocks in the harbor (dive slice 2)** (new level on the existing drag; school): rocks that never move share the harbor; every rock must matter and `focusPath` must still reach every boat; a rounded grey `Graphics` boulder with a foam ring drawn from existing palette colours. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
 
 Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.

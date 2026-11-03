@@ -2230,6 +2230,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Drag a boat along the way it points; it stops at the next boat or the wall.',
       'Tap the round arrow to take back the last slide.',
       "Work out which boat is in the ferry's way and where it can go.",
+      { from: 7, to: 7, text: 'A grey rock never moves: a boat has to wait somewhere else. Touching the rock only makes it wobble.' },
     ],
     finish: 'The round ends when the ferry has sailed out of every harbor.',
     note: 'Nothing is a mistake here: slide as much as you like. After many slides without getting closer, the glowing boat shows a next slide.',

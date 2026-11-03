@@ -1,5 +1,10 @@
 # Needs a person or a device
 
+## Ferry Jam level 7 Rocks in the harbor (batch ferry-jam 2, built 2026-11-03)
+
+- [ ] **Do the rocks read as rocks?** On the iPad in portrait, does the grey boulder read as something that will not move, and does a drag on it wobble clearly without feeling like a mistake?
+- [ ] **The rock line.** Does device speech say `ferry.rock` clearly, and does a school-age player find the harbors fair with a rock in the way?
+
 ## Sprout Shuffle level 5 Hidden Sprouts (genetics G6, built 2026-11-03)
 
 - [ ] **"Both could" as a right answer.** Does a ten-year-old read choosing both candidates, with the "can't tell yet" banner, as a right answer rather than a dodge?
