@@ -166,3 +166,11 @@
 - `game-reviewer` fix: a late hint line after the poster has moved on is guarded; a level-1 how-to note scoped.
 - Not run: offline check, other suites.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#notice-board-media-literacy-study-2026-10-31-levels-13-built-2026-11-01)): witness versus nearest friend at four, basket by price or words at seven, badges and place pictures at bubble size on an iPad, a grown-up using the card.
+
+## 2026-11-01 — Rainbow Fingers fold pages (Mirror Brush fold button)
+
+- [PR #1114](https://github.com/rjdunlap/neo/pull/1114): level 2 draws a fold page about half the time (dashed crease, wet layer, a 104-unit fold button on the crease above the pots that prints the paint mirrored); `foldIcon` in the shared `src/ui/icons.ts`.
+- Ran (tested commit ae4955c9, Vite on http://localhost:5432, `VITE_SPEECH=off`): typecheck; full `npm test` 4251 passed (21 `rainbow-fingers` rule tests: mirror involution, fold marks, cap and halving index, 300-seed page share 40–60%, button clearances at six views, bot folds once before the frame); `npm run build`.
+- One-off portrait probe (1024×1365): fold page on first launch, two strokes and a flower, fold (marks 28→56), second fold added nothing, a fifth touch then the frame, 0 misses/0 hints, one sticker, no console errors; mid-fold resize and mid-fold hang-up both printed and ended cleanly; portrait screenshot after the print reviewed. `BROWSER_SUITE=fingerdemo FINGER_ONLY=rainbow-fingers FINGER_LEVELS=2 RAINBOW_FOLD=1`: fold at 27.9 s, finished 31.8 s; `FINGER_LEVELS=1,2` default seeds 25.6 s and 31.9 s, pass. `game-reviewer`'s three findings fixed.
+- Not run: offline check, other suites.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): whether a two-year-old links the press to the copy and whether the squish is pleasant, on an iPad.

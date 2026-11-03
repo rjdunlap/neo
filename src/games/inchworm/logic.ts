@@ -6,12 +6,13 @@ import type { Rng } from '../../engine/random';
  * things by measuring both; then read a ruler, including things that don't start at 0; then
  * use the ruler to find how much longer one thing is than another (starting at different
  * marks), and how long two things are end to end; and measure one thing with big worms, then little
- * worms, to see that a smaller unit makes a bigger count.
+ * worms, to see that a smaller unit makes a bigger count; and read a ruler snapped off below 0, where
+ * the end mark is not the length.
  */
-export type MeasureMode = 'lay' | 'say' | 'compare' | 'ruler' | 'rulerdiff' | 'rulersum' | 'units';
+export type MeasureMode = 'lay' | 'say' | 'compare' | 'ruler' | 'rulerdiff' | 'rulersum' | 'units' | 'broken';
 
 /** The levels that read a ruler instead of laying worms. */
-export const isRuler = (mode: MeasureMode) => mode === 'ruler' || mode === 'rulerdiff' || mode === 'rulersum';
+export const isRuler = (mode: MeasureMode) => mode === 'ruler' || mode === 'rulerdiff' || mode === 'rulersum' || mode === 'broken';
 
 /** The ruler runs from 0 to this mark. */
 export const RULER = 10;
@@ -32,6 +33,7 @@ export const PLANS: MeasurePlan[] = [
   { mode: 'rulerdiff', max: 8, rounds: 4, name: 'Two things on one ruler, starting at different marks: how much longer is one?' },
   { mode: 'rulersum', max: 4, rounds: 4, name: 'Two things end to end on the ruler: how long are they together?' },
   { mode: 'units', max: 6, rounds: 4, name: 'Measure one thing with big worms, then little worms: which number did the little worms make?' },
+  { mode: 'broken', max: 7, rounds: 4, name: 'The broken ruler: no 0 to start from, so count the spaces it covers' },
 ];
 
 /** Big and little worms: how many little worms long each row's worm is (row 0 big, row 1 little). */
@@ -39,7 +41,7 @@ export const UNIT_SIZE = [2, 1] as const;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
-export type Thing = 'leaf' | 'pencil' | 'snake' | 'stick';
+export type Thing = 'leaf' | 'pencil' | 'snake' | 'stick' | 'crayon' | 'carrot' | 'rope' | 'paintbrush' | 'feather';
 
 export interface Measure {
   thing: Thing;
@@ -50,21 +52,32 @@ export interface Measure {
   start?: number;
   /** Big and little worms: which row's count the pet asks for. */
   ask?: 'little' | 'big';
+  /** Comparing two things: this round is two jumps in a sand pit (Bunny's first, Duck's second), not two things. */
+  jump?: true;
+  /** The broken ruler: the mark it snapped at (no marks below it). */
+  brk?: number;
 }
 
-const THINGS: Thing[] = ['leaf', 'pencil', 'snake', 'stick'];
+export const THINGS: Thing[] = ['leaf', 'pencil', 'snake', 'stick', 'crayon', 'carrot', 'rope', 'paintbrush', 'feather'];
+
+/** Things not in the round before, so a thing never shows twice running. One draw either way, so lengths keep their seeds. */
+const fresh = (out: readonly Measure[], not?: Thing) => {
+  const last = out.at(-1);
+  return THINGS.filter((t) => t !== not && t !== last?.thing && t !== last?.other?.thing);
+};
 
 export function makeMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
   const out: Measure[] = [];
   if (plan.mode === 'units') return unitMeasures(plan, rng);
+  if (plan.mode === 'broken') return brokenMeasures(plan, rng);
   while (out.length < plan.rounds) {
     const length = rng.int(2, plan.max);
     if (out.at(-1)?.length === length) continue;
-    const thing = rng.pick(THINGS);
+    const thing = rng.pick(fresh(out));
     if (plan.mode === 'compare') {
       const l2 = rng.int(2, plan.max);
       if (l2 === length) continue;
-      out.push({ thing, length, other: { thing: rng.pick(THINGS.filter((t) => t !== thing)), length: l2 } });
+      out.push({ thing, length, other: { thing: rng.pick(fresh(out, thing)), length: l2 } });
     } else if (plan.mode === 'ruler') {
       // Half the time it starts at 0; otherwise a little way along (the classic mistake is reading the end).
       const start = out.length % 2 === 0 ? 0 : rng.int(1, 3);
@@ -75,7 +88,7 @@ export function makeMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
       if (length2 === length) continue;
       const [s1, s2] = diffStarts(out.length, rng);
       if (s1 + length > RULER || s2 + length2 > RULER) continue;
-      const m: Measure = { thing, length, start: s1, other: { thing: rng.pick(THINGS.filter((t) => t !== thing)), length: length2, start: s2 } };
+      const m: Measure = { thing, length, start: s1, other: { thing: rng.pick(fresh(out, thing)), length: length2, start: s2 } };
       // Different starts must make the ends tell a different story from the lengths (and not the same story twice).
       if (s1 !== s2 && temptingReading(m, 'rulerdiff') === null) continue;
       if (out.length > 0 && answerOf(out[out.length - 1], 'rulerdiff') === answerOf(m, 'rulerdiff')) continue;
@@ -85,8 +98,26 @@ export function makeMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
       const start = out.length % 2 === 0 ? 0 : rng.int(1, 2);
       if (start + length + length2 > RULER) continue;
       if (out.length > 0 && answerOf(out[out.length - 1], 'rulersum') === length + length2) continue;
-      out.push({ thing, length, start, other: { thing: rng.pick(THINGS.filter((t) => t !== thing)), length: length2, start: start + length } });
+      out.push({ thing, length, start, other: { thing: rng.pick(fresh(out, thing)), length: length2, start: start + length } });
     } else out.push({ thing, length });
+  }
+  // Comparing: one round of the three is two jumps in a sand pit, placed after the lengths are drawn so they keep their seeds.
+  if (plan.mode === 'compare') out[rng.int(0, out.length - 1)].jump = true;
+  return out;
+}
+
+/**
+ * The broken ruler: snapped at a mark from 2 to 5, the thing starting at the break or up to two marks
+ * past it and ending by 10. Four different lengths, so no two rounds share an answer.
+ */
+function brokenMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
+  const out: Measure[] = [];
+  while (out.length < plan.rounds) {
+    const brk = rng.int(2, 5);
+    const start = rng.int(brk, brk + 2);
+    const length = rng.int(2, Math.min(plan.max, RULER - start));
+    if (out.some((m) => m.length === length)) continue;
+    out.push({ thing: rng.pick(fresh(out)), length, start, brk });
   }
   return out;
 }
@@ -134,6 +165,7 @@ function diffStarts(round: number, rng: Rng): [number, number] {
  */
 export function temptingReading(m: Measure, mode: MeasureMode): number | null {
   if (mode === 'ruler') return m.start ? m.start + m.length : null;
+  if (mode === 'broken') return m.start! + m.length;
   if (mode === 'rulerdiff') {
     const gap = Math.abs(m.start! + m.length - (m.other!.start! + m.other!.length));
     return gap >= 1 && gap !== answerOf(m, mode) ? gap : null;
@@ -146,6 +178,8 @@ export function temptingReading(m: Measure, mode: MeasureMode): number | null {
 export function choices(m: Measure, mode: MeasureMode, rng: Rng): number[] {
   // Big and little worms: just the two counts, shuffled so a pad's place never says which row it is.
   if (mode === 'units') return rng.shuffle([m.length, m.other!.length]);
+  // The broken ruler: the spaces, the end mark, and the marks counted (one more than the spaces).
+  if (mode === 'broken') return rng.shuffle([m.length, m.start! + m.length, m.length + 1]);
   const answer = answerOf(m, mode);
   const t = temptingReading(m, mode);
   const tempting = t === null ? [] : [t];
@@ -180,7 +214,7 @@ export interface Span {
  * end), or, for "how much longer", the spaces the longer one covers beyond the shorter one's length.
  */
 export function hintSpans(m: Measure, mode: MeasureMode): Span[] {
-  if (mode === 'ruler') return [{ row: 0, from: m.start ?? 0, count: m.length }];
+  if (mode === 'ruler' || mode === 'broken') return [{ row: 0, from: m.start ?? 0, count: m.length }];
   if (mode === 'rulersum') return [{ row: 0, from: m.start ?? 0, count: m.length }, { row: 1, from: m.other!.start!, count: m.other!.length }];
   if (mode !== 'rulerdiff') return [];
   const firstLonger = m.length > m.other!.length;

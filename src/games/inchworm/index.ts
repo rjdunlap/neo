@@ -14,15 +14,19 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { answerOf, choices, hintSpans, isRuler, longerShorter, makeMeasures, measureTouch, planFor, temptingReading, UNIT_SIZE, type Measure, type MeasurePlan, type Thing } from './logic';
+import { answerOf, choices, hintSpans, isRuler, longerShorter, makeMeasures, measureTouch, planFor, RULER, temptingReading, UNIT_SIZE, type Measure, type MeasurePlan, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 7, order: [1, 2, 7] },
-  school: { min: 1, max: 7, order: [1, 2, 7, 3, 4, 5, 6] },
+  school: { min: 1, max: 8, order: [1, 2, 7, 3, 4, 8, 5, 6] },
 };
 
 const U = 88;
-const THING_WORDS: Record<Thing, string> = { leaf: 'leaf', pencil: 'pencil', snake: 'snake', stick: 'stick' };
+export const THING_WORDS: Record<Thing, string> = {
+  leaf: 'leaf', pencil: 'pencil', snake: 'snake', stick: 'stick', crayon: 'crayon', carrot: 'carrot', rope: 'rope', paintbrush: 'paintbrush', feather: 'feather',
+};
+/** The long jump's two jumpers, top track first. */
+const JUMPERS = ['Bunny', 'Duck'] as const;
 
 function wormArt(): Container {
   const c = new Container();
@@ -57,14 +61,56 @@ function thingArt(thing: Thing, length: number, unit = U): Graphics {
     g.roundRect(0, -14, w, 28, 14).fill(swatch.purple.fill).stroke({ width: 3, color: swatch.purple.line });
     for (let x = 20; x < w - 20; x += 30) g.circle(x, 0, 5).fill(swatch.purple.light);
     g.circle(w - 14, -4, 3).fill(ink);
+  } else if (thing === 'crayon') {
+    g.poly([w - 26, -14, w - 3, -4, w - 3, 4, w - 26, 14]).fill(swatch.blue.fill).stroke({ width: 3, color: swatch.blue.line });
+    g.roundRect(0, -14, w - 24, 28, 6).fill(swatch.blue.fill).stroke({ width: 3, color: swatch.blue.line });
+    g.rect(12, -14, Math.max(10, w - 54), 28).fill(swatch.blue.light).stroke({ width: 2, color: swatch.blue.line });
+  } else if (thing === 'carrot') {
+    // Leaves sprout from the wide end at the start; the root tapers to its tip at the end.
+    for (const a of [-0.5, 0, 0.5]) g.ellipse(-12, a * 26, 14, 6).fill(swatch.green.fill).stroke({ width: 2, color: swatch.green.line });
+    g.moveTo(0, -18).quadraticCurveTo(w * 0.6, -14, w, 0).quadraticCurveTo(w * 0.6, 14, 0, 18).closePath().fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line });
+    for (let x = 24; x < w * 0.8; x += 34) g.moveTo(x, -8).lineTo(x + 10, -6).stroke({ width: 2, color: swatch.orange.line });
+  } else if (thing === 'rope') {
+    g.roundRect(0, -11, w, 22, 11).fill(wood.light).stroke({ width: 3, color: wood.line });
+    for (let x = 10; x < w - 10; x += 14) g.moveTo(x, -10).lineTo(x + 9, 10).stroke({ width: 2, color: wood.line });
+  } else if (thing === 'paintbrush') {
+    g.roundRect(0, -8, w - 58, 16, 8).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+    g.rect(w - 60, -12, 22, 24).fill(swatch.white.light).stroke({ width: 3, color: swatch.white.line });
+    g.moveTo(w - 38, -12).quadraticCurveTo(w - 8, -12, w, 0).quadraticCurveTo(w - 8, 12, w - 38, 12).closePath().fill(wood.light).stroke({ width: 3, color: wood.line });
+    g.moveTo(w - 14, -7).quadraticCurveTo(w - 4, -5, w, 0).quadraticCurveTo(w - 4, 5, w - 14, 7).closePath().fill(swatch.purple.fill);
+  } else if (thing === 'feather') {
+    // The vane hugs the quill, which runs the whole length.
+    g.moveTo(w * 0.18, 0).quadraticCurveTo(w * 0.5, -30, w, 0).quadraticCurveTo(w * 0.5, 30, w * 0.18, 0).fill(swatch.teal.light).stroke({ width: 3, color: swatch.teal.line });
+    for (let x = w * 0.28; x < w * 0.92; x += 18) g.moveTo(x, 0).lineTo(x + 10, -14).moveTo(x, 0).lineTo(x + 10, 14).stroke({ width: 2, color: swatch.teal.line });
+    g.moveTo(0, 0).lineTo(w, 0).stroke({ width: 4, color: swatch.teal.line });
   } else {
     g.roundRect(0, -10, w, 20, 10).fill(wood.fill).stroke({ width: 3, color: wood.line });
   }
   return g;
 }
 
+/**
+ * One long jump in the sand: a dashed track from the take-off board (just left of 0) to the footprints at
+ * the end, so worms laid end to end from 0 stop exactly at the prints. Bunny's paws are pink, Duck's yellow.
+ */
+function jumpArt(who: number, length: number, unit = U): Graphics {
+  const w = length * unit;
+  const g = new Graphics();
+  g.rect(-22, -16, 18, 32).fill(wood.fill).stroke({ width: 3, color: wood.line });
+  for (let x = 0; x < w - 30; x += 22) g.moveTo(x, 0).lineTo(Math.min(x + 12, w - 30), 0).stroke({ width: 4, color: wood.line, alpha: 0.6 });
+  const c = who === 0 ? swatch.pink : swatch.yellow;
+  for (const dy of [-9, 9]) {
+    g.ellipse(w - 12, dy, 12, 7).fill(c.fill).stroke({ width: 2, color: c.line });
+    for (const t of [-5, 0, 5]) g.circle(w - 1, dy + t * 0.8, 2.6).fill(c.line);
+  }
+  g.moveTo(w, -30).lineTo(w, 30).stroke({ width: 3, color: ink, alpha: 0.5 });
+  return g;
+}
+
 interface Row {
   thing: Thing;
+  /** The long jump: whose jump this track is (0 Bunny, 1 Duck). */
+  jumper?: number;
   length: number;
   start: number;
   y: number;
@@ -88,6 +134,8 @@ class Inchworm implements Game {
 
   private readonly backdrop: Backdrop;
   private readonly ruler = new Graphics();
+  /** The long jump's sand pit, behind both tracks. */
+  private readonly pit = new Graphics();
   private readonly placed = new Container();
   private readonly glow = new Graphics();
   private view: View;
@@ -108,7 +156,8 @@ class Inchworm implements Game {
     this.backdrop = new Backdrop({ sky: [0xd6f5c8, 0xf6fbf0], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.8, clouds: 1, sun: false, seed: 23 }, ctx.view);
     this.glow.eventMode = 'none';
     this.placed.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.ruler, this.placed, this.glow);
+    this.pit.eventMode = 'none';
+    ctx.stage.addChild(this.backdrop, this.pit, this.ruler, this.placed, this.glow);
   }
 
   get m() {
@@ -125,6 +174,9 @@ class Inchworm implements Game {
   }
 
   private x0() {
+    // The broken ruler: its piece from the break to 10 is centred, so the missing part leaves no gap.
+    const brk = this.plan.mode === 'broken' ? this.m?.brk : undefined;
+    if (brk !== undefined) return Math.max(40, (this.view.w - (RULER - brk) * this.u) / 2) - brk * this.u;
     return isRuler(this.plan.mode) ? 140 : 200;
   }
 
@@ -139,6 +191,7 @@ class Inchworm implements Game {
     // Pads to the right of the measuring, or along the bottom under the long ruler.
     this.pads.forEach((p, i) => (isRuler(this.plan.mode) ? p.node.position.set(v.w / 2 - 150 + i * 150, v.h - 110) : p.node.position.set(v.w - 110, v.h * 0.3 + i * 125)));
     this.drawRuler();
+    this.drawPit();
   }
 
   update(dt: number) {
@@ -208,9 +261,10 @@ class Inchworm implements Game {
     const v = this.view;
     const add = (thing: Thing, length: number, y: number, start = 0, size = 1) => {
       const node = new Container();
-      node.addChild(thingArt(thing, length * size, this.u));
+      const jumper = m.jump ? this.rows.length : undefined;
+      node.addChild(jumper === undefined ? thingArt(thing, length * size, this.u) : jumpArt(jumper, length, this.u));
       this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.placed));
-      this.rows.push({ thing, length, start, y, worms: 0, size, node });
+      this.rows.push({ thing, length, start, y, worms: 0, size, node, jumper });
     };
     if (this.plan.mode === 'units') {
       // The same stick twice: big worms on the top copy, then little worms on the faded one below.
@@ -234,6 +288,8 @@ class Inchworm implements Game {
     this.resize(v);
     this.busy = false;
     const what = THING_WORDS[m.thing];
+    if (this.plan.mode === 'broken') return this.ctx.instruct('worm.broken', { what });
+    if (m.jump) return this.ctx.instruct('worm.jump');
     if (this.plan.mode === 'rulerdiff') {
       const [longer, shorter] = longerShorter(m);
       return this.ctx.instruct('worm.rulerdiff', { a: THING_WORDS[longer], b: THING_WORDS[shorter] });
@@ -245,19 +301,34 @@ class Inchworm implements Game {
     return this.ctx.instruct(this.index === 0 ? 'worm.lay' : 'worm.again', { what });
   }
 
+  /** The long jump's sand pit under both tracks, from the take-off board past the longest jump. */
+  private drawPit() {
+    const g = this.pit.clear();
+    if (!this.m?.jump || this.rows.length < 2) return;
+    const far = Math.max(...this.rows.map((r) => r.length)) * this.u;
+    const top = this.rows[0].y - 70;
+    g.roundRect(this.x0() - 40, top, far + 90, this.rows[1].y - top + 50, 26).fill(0xf3dfa8).stroke({ width: 4, color: 0xd9b96a });
+  }
+
   private drawRuler() {
     const g = this.ruler.clear();
     if (!isRuler(this.plan.mode) || !this.rows[0]) return;
     // The ruler sits under the lowest row (the two things of "end to end" share one row).
     const y = Math.max(...this.rows.map((r) => r.y)) + 30;
-    g.roundRect(this.x0() - 16, y, 10 * this.u + 32, 60, 10).fill(swatch.yellow.light).stroke({ width: 4, color: wood.line });
-    for (let k = 0; k <= 10; k++) g.moveTo(this.x0() + k * this.u, y).lineTo(this.x0() + k * this.u, y + 24).stroke({ width: 3, color: ink });
+    // The broken ruler starts at its break, with a jagged snapped edge and no marks below it.
+    const from = this.m?.brk ?? 0;
+    const left = this.x0() + from * this.u;
+    if (from > 0) {
+      const jag = [left - 16, y, left - 30, y + 12, left - 18, y + 24, left - 32, y + 36, left - 20, y + 48, left - 28, y + 60];
+      g.poly([...jag, this.x0() + 10 * this.u + 16, y + 60, this.x0() + 10 * this.u + 16, y]).fill(swatch.yellow.light).stroke({ width: 4, color: wood.line });
+    } else g.roundRect(this.x0() - 16, y, 10 * this.u + 32, 60, 10).fill(swatch.yellow.light).stroke({ width: 4, color: wood.line });
+    for (let k = from; k <= 10; k++) g.moveTo(this.x0() + k * this.u, y).lineTo(this.x0() + k * this.u, y + 24).stroke({ width: 3, color: ink });
     // With two rows stacked above one ruler, faint lines drop from each thing's two ends so the marks can be read.
     if (this.plan.mode === 'rulerdiff') {
       for (const r of this.rows) for (const mark of [r.start, r.start + r.length]) g.moveTo(this.x0() + mark * this.u, r.y + 18).lineTo(this.x0() + mark * this.u, y).stroke({ width: 2, color: ink, alpha: 0.28 });
     }
     this.ruler.removeChildren().forEach((c) => c.destroy());
-    for (let k = 0; k <= 10; k++) {
+    for (let k = from; k <= 10; k++) {
       const t = label(String(k), 22, ink);
       t.position.set(this.x0() + k * this.u, y + 42);
       this.ruler.addChild(t);
@@ -301,7 +372,7 @@ class Inchworm implements Game {
       this.misses++;
       this.wrongs++;
       sfx.boing();
-      void this.ctx.say('worm.toomany', { what: THING_WORDS[r.thing] });
+      void (r.jumper === undefined ? this.ctx.say('worm.toomany', { what: THING_WORDS[r.thing] }) : this.ctx.say('worm.pastprints'));
       if (this.wrongs >= 2 && !this.hinting) {
         this.hinting = true;
         this.hints++;
@@ -357,6 +428,10 @@ class Inchworm implements Game {
       this.busy = false;
       if (this.hinting) this.showOverlay();
       return this.ctx.instruct(this.m.ask === 'big' ? 'worm.whichbig' : 'worm.whichlittle');
+    }
+    if (this.m.jump) {
+      const [a, b] = this.m.length > this.m.other!.length ? JUMPERS : [JUMPERS[1], JUMPERS[0]];
+      return this.ctx.say('worm.jumpmuch', { a, b });
     }
     const [a, b] = this.m.length > this.m.other!.length ? [this.m.thing, this.m.other!.thing] : [this.m.other!.thing, this.m.thing];
     return this.ctx.say('worm.howmuch', { a: THING_WORDS[a], b: THING_WORDS[b] });
@@ -423,6 +498,7 @@ class Inchworm implements Game {
     const mode = this.plan.mode;
     const likely = temptingReading(m, mode) === n;
     if (mode === 'ruler') return [likely ? 'worm.fromzero' : 'worm.spaces'];
+    if (mode === 'broken') return likely ? ['worm.brokenend', { n: m.brk! }] : n === m.length + 1 ? ['worm.marks'] : ['worm.spaces'];
     if (mode === 'rulerdiff') return likely ? ['worm.fromends'] : ['worm.extra', { a: THING_WORDS[longerShorter(m)[0]] }];
     if (mode === 'rulersum') return [likely ? (m.start ? 'worm.fromzero' : 'worm.firstonly') : 'worm.spaces'];
     if (mode === 'units') return [m.ask === 'big' ? 'worm.bigger' : 'worm.smaller', { what: THING_WORDS[m.thing] }];
