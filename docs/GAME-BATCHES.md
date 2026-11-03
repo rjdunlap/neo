@@ -561,6 +561,8 @@ Proof: fresh content on the existing interaction: typecheck, the game's rule tes
 
 ### light-lab 1: Fair starts, nearest hints and a sun on either side
 
+*Built 2026-11-02 ([PR #1132](https://github.com/rjdunlap/neo/pull/1132)).*
+
 - **`light-lab`, fair starts, nearest hints and a sun on either side (dive slice 1)** (existing interaction; pre-K, school): the generator stops handing out nearly solved starts at levels 4–7, the hint follows the nearest solution rather than the built path, and the sun can sit on either side. [Dive](deep-dives/light-lab.md#build-slices-in-order)
 
 Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts` (reads the sun's side), `docs/GAMES.md`.
@@ -569,7 +571,7 @@ Proof: existing-interaction tier: typecheck, the game's rule tests (starts are n
 
 ### light-lab 2: Couch course Sunbeam Run
 
-- **`light-lab`, couch course Sunbeam Run (dive slice 2)**, after batch 1 (couch catalog): a par course of frozen boards with par from batch 1's minimum, the remaining Light Lab par course of roadmap chunk 8. [Dive](deep-dives/light-lab.md#build-slices-in-order)
+- **`light-lab`, couch course Sunbeam Run (dive slice 2)**, (couch catalog; batch 1 is built): a par course of frozen boards with par from batch 1's minimum, the remaining Light Lab par course of roadmap chunk 8. [Dive](deep-dives/light-lab.md#build-slices-in-order)
 
 Files expected: `src/couch/` catalog and course entries, the course tests, `docs/COUCH-PLAY.md`.
 

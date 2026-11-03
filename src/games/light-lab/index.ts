@@ -12,7 +12,7 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { beamEnd, hintMirror, makePuzzle, planFor, predictionChoices, solved, trace, whyNot, type BeamEnd, type LightPlan, type LightPuzzle, type Tilt, type Tint } from './logic';
+import { beamEnd, hintMirror, makePuzzle, minTurns, planFor, predictionChoices, solved, trace, whyNot, type BeamEnd, type LightPlan, type LightPuzzle, type Tilt, type Tint } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
@@ -245,7 +245,7 @@ class LightLab implements Game {
     this.pieces.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.taps = 0;
     this.shinesMissed = 0;
-    this.needed = p.pathMirrors.filter((i) => p.start[i] !== p.solution[i]).length;
+    this.needed = minTurns(p, p.start);
     this.predictionMarks.clear();
     if (this.predicting) {
       const choices = predictionChoices(p).slice(0, 3);
@@ -253,7 +253,7 @@ class LightLab implements Game {
       this.focus = 0;
     } else {
       this.spots = p.things.flatMap((t, i) => (t.kind === 'mirror' ? [{ x: t.x, y: t.y, thing: i }] : []));
-      if (this.planning) this.spots.push({ x: 0, y: p.sunRow, thing: -1 });
+      if (this.planning) this.spots.push({ x: p.sunCol, y: p.sunRow, thing: -1 });
       this.focus = Math.max(0, this.spots.findIndex((sp) => sp.thing === p.pathMirrors[0]));
     }
     this.mirrors.clear();
@@ -262,7 +262,7 @@ class LightLab implements Game {
     const f = this.floor.clear();
     f.roundRect(-14, -14, p.cols * CELL + 28, p.rows * CELL + 28, 26).fill(wood.light).stroke({ width: 6, color: wood.line });
     for (let x = 0; x < p.cols; x++) for (let y = 0; y < p.rows; y++) f.roundRect(x * CELL + 4, y * CELL + 4, CELL - 8, CELL - 8, 14).fill((x + y) % 2 ? 0xf3f7ff : 0xe8f0fb);
-    const s = this.at(0, p.sunRow);
+    const s = this.at(p.sunCol, p.sunRow);
     this.sun.position.set(s.x, s.y);
     p.things.forEach((t, i) => {
       const c = this.at(t.x, t.y);
@@ -327,7 +327,7 @@ class LightLab implements Game {
     const g = this.beam.clear();
     // One line per color, so the soft glow doesn't stack up where segments meet.
     const shown = t.cells.slice(0, upTo);
-    let from = this.at(0, this.puzzle.sunRow);
+    let from = this.at(this.puzzle.sunCol, this.puzzle.sunRow);
     for (let i = 0; i < shown.length; ) {
       const tint = shown[i].tint;
       const run = [from];
