@@ -941,7 +941,7 @@ Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, `do
 
 Proof: typecheck and the game's rule tests; one filtered regression play of level 6 that wanders (a loop of slides earns one hint) and one that progresses on a longer route (no hint). The bot is unchanged, so no `fingerdemo`. Person and device checks stay open.
 
-### ferry-jam 2: Rocks in the harbor
+### ferry-jam 2: Rocks in the harbor — claimed by `claude/ferry-jam-rocks` (2026-11-03)
 
 - **`ferry-jam`, level 7 Rocks in the harbor (dive slice 2)** (new level on the existing drag; school): rocks that never move share the harbor; every rock must matter and `focusPath` must still reach every boat; a rounded grey `Graphics` boulder with a foam ring drawn from existing palette colours. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
 
