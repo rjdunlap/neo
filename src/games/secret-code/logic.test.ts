@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { contradictsClues, detectiveDoor, candidates, ignoredClues, makeCode, nextMove, PLANS, ruledOut, score, suggestion, type Guess } from './logic';
+import { contradictsClues, detectiveDoor, candidates, DOORS, doorKinds, ignoredClues, makeCode, nextMove, PLANS, rowsThatFit, ruledOut, score, suggestion, visibleRows, type Guess } from './logic';
 
 describe('Secret Code', () => {
   it('marks right places green, misplaced stones yellow (never more than are missing), and the rest gray', () => {
@@ -108,5 +108,59 @@ describe('Detective doors', () => {
         expect(contradictsClues(plan, door.history, other)).toBe(true);
       }
     }
+  });
+
+  it('never charges a miss for a mark that has scrolled out of sight, but still does for one on screen', () => {
+    const plan = PLANS[4]; // level 5: four slots, five colors
+    // The 1024 by 768 landscape view puts the door at 460: four past tries fit; the detective door's three clues always fit.
+    expect(rowsThatFit(460)).toBe(4);
+    expect(rowsThatFit(430)).toBeGreaterThanOrEqual(3);
+    const code = [0, 1, 2, 3];
+    // Only the first try puts stone 1 in slot 0; the four after it never do.
+    const history: Guess[] = [[1, 0, 3, 2], [2, 3, 0, 1], [3, 2, 1, 0], [2, 0, 3, 1], [3, 0, 1, 2]].map((stones) => ({ stones, marks: score(code, stones, plan.yellow) }));
+    const shown = visibleRows(history, rowsThatFit(460));
+    expect(shown).toEqual(history.slice(1));
+    expect(ignoredClues(plan, history, [1, 4, 4, 4])).toEqual([0]);
+    expect(ignoredClues(plan, shown, [1, 4, 4, 4])).toEqual([]);
+    // Stone 3 in slot 0 was ruled out by the newest try, still on screen.
+    expect(ignoredClues(plan, shown, [3, 4, 4, 4])).toEqual([0]);
+    expect(visibleRows(history.slice(0, 2), 4)).toEqual(history.slice(0, 2));
+  });
+
+  it('keeps the faint-stone idea up to date: after every try it fits every mark, and following it ignores no clue on screen', () => {
+    for (const plan of PLANS.filter((p) => !p.detective)) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const rng = new Rng(seed);
+        const code = makeCode(plan, rng);
+        const history: Guess[] = [];
+        for (let turn = 0; turn < plan.slots + 4; turn++) {
+          const guess = Array.from({ length: plan.slots }, () => rng.int(0, plan.colors - 1));
+          history.push({ stones: guess, marks: score(code, guess, plan.yellow) });
+          const idea = suggestion(plan, history, code);
+          for (const h of history) expect(score(idea, h.stones, plan.yellow)).toEqual(h.marks);
+          for (const fit of [3, 4, 6]) expect(ignoredClues(plan, visibleRows(history, fit), idea)).toEqual([]);
+        }
+      }
+    }
+  });
+
+  it('picks a seeded door, garden gate or treasure chest, different for each door, without changing any code', () => {
+    const seen = new Set<string>();
+    for (const plan of PLANS) {
+      for (let seed = 1; seed <= 60; seed++) {
+        const kinds = doorKinds(new Rng(seed), plan.codes);
+        expect(kinds).toHaveLength(plan.codes);
+        expect(doorKinds(new Rng(seed), plan.codes)).toEqual(kinds);
+        expect(new Set(kinds).size).toBe(plan.codes);
+        for (const k of kinds) expect(DOORS).toContain(k);
+        seen.add(kinds[0]);
+        const plain = new Rng(seed);
+        const withDoors = new Rng(seed);
+        doorKinds(withDoors, plan.codes);
+        expect(makeCode(plan, withDoors)).toEqual(makeCode(plan, plain));
+        expect(makeCode(plan, withDoors)).toEqual(makeCode(plan, plain));
+      }
+    }
+    expect(seen.size).toBe(DOORS.length);
   });
 });
