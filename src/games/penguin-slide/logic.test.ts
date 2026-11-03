@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { PAIRED_BLOCK_PONDS,beside, eaten, makePuzzle, move, PLANS, slide, solve, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
+import { FISH_COLORS, hasDeadEnd, PAIRED_BLOCK_PONDS, pickLook, ROCK_LOOKS, beside, eaten, makePuzzle, move, PLANS, slide, solve, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
 
 const tiny: SlidePuzzle = { cols: 4, rows: 3, rocks: [{ x: 3, y: 1 }], soft: [{ x: 1, y: 2 }], start: { x: 0, y: 0 }, fish: [{ x: 2, y: 2 }], best: 0 };
 
@@ -183,4 +183,55 @@ it('paired-block ponds need each block, preserve their solver distance under see
   expect(have).toBe(1);expect(pushed.size).toBe(2);
  }
  expect(PAIRED_BLOCK_PONDS).toHaveLength(4);expect(seen.size).toBe(16);
+});
+
+describe('Penguin Slide fair ponds', () => {
+  it('spots a dead end: a slide that leaves the fish out of reach', () => {
+    // A level-1 pond the old generator made: one slide right eats the fish, but down then along the
+    // bottom row leaves the penguin circling the bottom corners and the top-left, never back.
+    const trap: SlidePuzzle = { cols: 5, rows: 4, rocks: [{ x: 2, y: 1 }, { x: 1, y: 0 }, { x: 4, y: 2 }], soft: [], start: { x: 3, y: 1 }, fish: [{ x: 4, y: 1 }], best: 1 };
+    expect(solve(trap, trap.start).moves).toBe(1);
+    expect(hasDeadEnd(trap)).toBe(true);
+    expect(hasDeadEnd(tiny)).toBe(false);
+  });
+
+  it('levels 1–4 never strand the penguin, over 300 seeds', () => {
+    for (const plan of PLANS.slice(0, 4)) {
+      expect(plan.fair).toBe(true);
+      for (let seed = 1; seed <= 300; seed++) {
+        const p = makePuzzle(plan, new Rng(seed));
+        expect(hasDeadEnd(p), `${plan.name} seed ${seed}`).toBe(false);
+        expect(p.best).toBeGreaterThanOrEqual(plan.moves[0]);
+        expect(p.best).toBeLessThanOrEqual(plan.moves[1]);
+      }
+    }
+    // Soft snow and blocks keep their dead ends: undo is taught there.
+    expect(PLANS.slice(4).some((plan) => plan.fair)).toBe(false);
+  }, 30000);
+
+  it('a level-1 round holds at most one single-slide pond, and still some', () => {
+    const plan = PLANS[0];
+    let singles = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const round: SlidePuzzle[] = [];
+      for (let i = 0; i < plan.puzzles; i++) round.push(makePuzzle(plan, rng, round));
+      const ones = round.filter((p) => p.best === 1).length;
+      expect(ones, `seed ${seed}`).toBeLessThanOrEqual(1);
+      singles += ones;
+    }
+    expect(singles).toBeGreaterThan(50);
+  }, 15000);
+
+  it('seeded looks use every rock look and fish colour, and repeat for a seed', () => {
+    const rocks = new Set<string>(), fish = new Set<string>();
+    for (let seed = 1; seed <= 60; seed++) {
+      const look = pickLook(new Rng(seed));
+      expect(pickLook(new Rng(seed))).toEqual(look);
+      rocks.add(look.rock);
+      fish.add(look.fish);
+    }
+    expect([...rocks].sort()).toEqual([...ROCK_LOOKS].sort());
+    expect([...fish].sort()).toEqual([...FISH_COLORS].sort());
+  });
 });
