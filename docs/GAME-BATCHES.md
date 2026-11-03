@@ -1165,7 +1165,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play with one wrong can'
 
 ### picture-logic 1: Fresh pictures and named hints
 
-- **`picture-logic`, Fresh pictures and named hints (dive slice 1)** (extends the built game; grown-up, no new level): eight easier and eight harder 10 by 10 pictures and five 15 by 15 pictures, and a `why` on fill and cross hints with four voice lines. [Dive](deep-dives/picture-logic.md#build-slices-in-order)
+- **`picture-logic`, Fresh pictures and named hints (dive slice 1)** (**claimed 2026-11-03**, branch `claude/picture-logic-1`; extends the built game; grown-up, no new level): eight easier and eight harder 10 by 10 pictures and five 15 by 15 pictures, and a `why` on fill and cross hints with four voice lines. [Dive](deep-dives/picture-logic.md#build-slices-in-order)
 
 Files expected: `src/games/picture-logic/logic.ts`, `pictures.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts` and `docs/GAMES.md`.
 
