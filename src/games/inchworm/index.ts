@@ -265,6 +265,7 @@ class Inchworm implements Game {
     this.placed.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.chalk.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.overlay = null;
+    this.hopper?.destroy({ children: true });
     this.hopper = null;
     this.clearPads();
     const m = this.m;
@@ -318,8 +319,9 @@ class Inchworm implements Game {
     const node = wormArt();
     node.scale.set(this.u / U);
     node.hitArea = new Rectangle(-76, -64, 152, 128);
-    onTap(node, () => this.hop(), { cooldown: 200 });
-    this.placed.addChild(node);
+    onTap(node, () => void this.hop(), { cooldown: 200 });
+    // On the stage, not the placed worms' layer, which takes no touches.
+    this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.glow));
     this.hopper = node;
   }
 

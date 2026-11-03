@@ -1639,8 +1639,8 @@ async function woodsBatch() {
     log(`Picture Graph ${level} (${mode}): bars built block by block, graph checked, questions answered on bars and number pads, misses, glow hint, saved score and sticker passed`);
   }
 
-  if (!only || only === 'worm') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 8); level++) {
-    // Level 7 (big worms, then little worms) and 8 (the broken ruler) play in portrait.
+  if (!only || only === 'worm') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
+    // Level 7 (big worms, then little worms), 8 (the broken ruler) and 9 (one worm, hop by hop) play in portrait.
     if (level >= 7) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('inchworm', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -1665,7 +1665,21 @@ async function woodsBatch() {
     for (let n = 0; n < rounds; n++) {
       await idle(n);
       if (await page.evaluate(() => !!neo.scene.game.m.jump)) await screenshot('inchworm-3-jump');
-      if (!onRuler) {
+      if (mode === 'hop') {
+        // One worm, hop by hop: tap it along; it stops by itself at the end, and the pads come only then.
+        const length = await page.evaluate(() => neo.scene.game.m.length);
+        for (let k = 0; k < length; k++) {
+          assert.equal(await page.evaluate(() => neo.scene.game.pads.length), 0);
+          await tap('neo.scene.game.hopper');
+          if (n === 0 && k === 1) await screenshot('inchworm-9-mid-hop');
+          await settle();
+        }
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.rows[0].worms]), [length]);
+        // A tap at the end does nothing: no hop, no miss.
+        const before = await counts();
+        await tap('neo.scene.game.hopper'); await settle();
+        assert.deepEqual([await page.evaluate(() => neo.scene.game.rows[0].worms), ...(await counts())], [length, ...before]);
+      } else if (!onRuler) {
         const lens = await page.evaluate(() => neo.scene.game.rows.map((r) => r.length));
         const order = lens.map((l, i) => i).sort((a, b) => lens[a] - lens[b]);
         for (const [k, row] of order.entries()) {
@@ -1699,6 +1713,13 @@ async function woodsBatch() {
         await pad(m.end); await pad(m.marks); assert.deepEqual(await counts(), [2, 1]);
         await page.waitForTimeout(300);
         await screenshot('inchworm-8-broken');
+      } else if (n === 0 && mode === 'hop') {
+        // One wrong count, a second for the glow: the ticks get their numbers.
+        const [a, b] = await wrongPads(); await pad(a); await pad(b); assert.deepEqual(await counts(), [2, 1]);
+        const length = await page.evaluate(() => neo.scene.game.m.length);
+        assert.equal(await page.evaluate(() => neo.scene.game.chalk.children.length), length + 1);
+        await page.waitForTimeout(300);
+        await screenshot('inchworm-9-hint');
       } else if (n === 0 && mode !== 'compare') { const [a, b] = await wrongPads(); await pad(a); await pad(b); assert.deepEqual(await counts(), [2, 1]); }
       await pad(await answer());
     }
