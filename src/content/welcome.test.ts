@@ -53,7 +53,7 @@ describe('the welcome record', () => {
   it('starts empty in a new save and survives a backup and restore', () => {
     expect(defaults().projects.welcome).toEqual(emptyWelcome());
     const save = defaults();
-    save.projects.welcome = { band: 'prek', steps: ['pretty', 'yummy'], results: { pretty: picture }, newcomer: 'glider', ended: false };
+    save.projects.welcome = { band: 'prek', steps: ['pretty', 'yummy'], results: { pretty: picture }, newcomer: 'glider', ended: false, evidence: { yummy: { finished: true, misses: 2, hints: 1, level: 5, rounds: 3, at: 7 } } };
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 
@@ -64,6 +64,7 @@ describe('the welcome record', () => {
       results: { pretty: picture },
       newcomer: null,
       ended: false,
+      evidence: {},
     });
     expect(cleanWelcome({ steps: ['yummy'], results: { pretty: picture, song: { kind: 'tune', cols: 6, rows: 4, notes: [{ col: 0, row: 0 }, { col: 1, row: 1 }] } } }).results).toEqual({});
     expect(cleanWelcome({ steps: ['pretty'], results: { pretty: { kind: 'picture', stamps: [] } } }).results).toEqual({});

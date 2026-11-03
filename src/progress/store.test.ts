@@ -43,6 +43,8 @@ const counter = () => {
 };
 const NOW = new Date(2026, 9, 15).getTime();
 const make = () => new Store(counter(), () => NOW);
+/** A finished round at no plan level: completes a step without an evidence record. */
+const ANY_ROUND = { misses: 0, hints: 0, level: 0 };
 const savedAs = (key: string) => disk.get(key) as SaveData;
 const indexOnDisk = () => disk.get(INDEX_KEY) as ProfileIndex;
 
@@ -662,16 +664,16 @@ describe('her friends (RW05)', () => {
     const store = make();
     await store.load();
     store.meet('sprout', 'Mochi', 'pink', 'start');
-    expect(store.beginWelcome('preschool')).toBe(true);
+    expect(store.beginWelcome('preschool', 'pretty')).toBe(true);
     expect(savedAs('neo.save').projects.welcome).toMatchObject({ band: 'preschool', newcomer: 'river' });
     const picture = { kind: 'picture' as const, stamps: [{ kind: 'star' as const, color: 'pink' as const, x: 0.5, y: 0.5, size: 1, turns: 0 }] };
-    expect(store.completeWelcomeStep('pretty', picture)).toBe(true);
+    expect(store.completeWelcomeStep('pretty', picture, ANY_ROUND)).toBe(true);
     store.flush();
     await Promise.resolve();
     expect(savedAs('neo.save').projects.welcome.results.pretty).toEqual(picture);
     expect(store.data.creations.picture.current).toBeNull();
     store.reset();
-    expect(store.welcome).toEqual({ band: null, steps: [], results: {}, newcomer: null, ended: false });
+    expect(store.welcome).toEqual({ band: null, steps: [], results: {}, newcomer: null, ended: false, evidence: {} });
     expect(store.companion?.name).toBe('Mochi');
     expect(store.undo()).toBe(true);
     expect(store.welcome.steps).toEqual(['pretty']);
@@ -682,11 +684,11 @@ describe('her friends (RW05)', () => {
     await store.load();
     const mochi = store.meet('sprout', 'Mochi', 'pink', 'start')!;
     const finishSteps = () => {
-      store.beginWelcome('preschool');
-      for (const step of ['pretty', 'yummy', 'song'] as const) store.completeWelcomeStep(step, null);
+      store.beginWelcome('preschool', 'pretty');
+      for (const step of ['pretty', 'yummy', 'song'] as const) store.completeWelcomeStep(step, null, ANY_ROUND);
     };
-    store.beginWelcome('preschool');
-    store.completeWelcomeStep('pretty', null);
+    store.beginWelcome('preschool', 'pretty');
+    store.completeWelcomeStep('pretty', null, ANY_ROUND);
     expect(store.adoptWelcome('Ripple')).toBeUndefined();
     expect(store.welcome.ended).toBe(false);
     finishSteps();
@@ -705,9 +707,9 @@ describe('her friends (RW05)', () => {
     // A reset clears the project; ending it again brings no one new, and the page would show the same species.
     again.reset();
     expect(again.welcome.ended).toBe(false);
-    again.beginWelcome('preschool');
+    again.beginWelcome('preschool', 'pretty');
     expect(again.welcome.newcomer).toBe('river');
-    for (const step of ['pretty', 'yummy', 'song'] as const) again.completeWelcomeStep(step, null);
+    for (const step of ['pretty', 'yummy', 'song'] as const) again.completeWelcomeStep(step, null, ANY_ROUND);
     expect(again.adoptWelcome('Pebble')).toEqual(ripple);
     expect(again.data.creatures.owned).toHaveLength(2);
     // A name outside the species' three becomes its first.
@@ -715,9 +717,40 @@ describe('her friends (RW05)', () => {
     await other.load();
     other.reset();
     other.data.creatures = { owned: [], companion: null };
-    other.beginWelcome('prek');
-    for (const step of ['pretty', 'yummy', 'song'] as const) other.completeWelcomeStep(step, null);
+    other.beginWelcome('prek', 'pretty');
+    for (const step of ['pretty', 'yummy', 'song'] as const) other.completeWelcomeStep(step, null, ANY_ROUND);
     expect(other.adoptWelcome('Rex')?.name).toBe('Pebble');
+  });
+
+  it('records each welcome step per profile, at launch and finish, and carries it through a backup (RW09)', async () => {
+    const store = make();
+    await store.load();
+    const a = store.activeId;
+    store.beginWelcome('preschool', 'yummy');
+    await Promise.resolve();
+    expect(savedAs('neo.save').projects.welcome.evidence.yummy).toEqual({ finished: false, misses: 0, hints: 0, level: 2, rounds: 0, at: NOW });
+    store.completeWelcomeStep('yummy', null, { misses: 1, hints: 1, level: 2 });
+    store.beginWelcome('preschool', 'yummy');
+    store.beginWelcome('preschool', 'pretty');
+    store.flush();
+    await Promise.resolve();
+    const saved = savedAs('neo.save').projects.welcome.evidence;
+    expect(saved.yummy).toEqual({ finished: true, misses: 1, hints: 1, level: 2, rounds: 1, at: NOW });
+    expect(saved.pretty).toMatchObject({ finished: false, level: 3 });
+    // A second profile starts with none and keeps its own.
+    const b = store.addProfile()!;
+    await store.switchTo(b);
+    expect(store.welcome.evidence).toEqual({});
+    store.beginWelcome('prek', 'yummy');
+    store.completeWelcomeStep('yummy', null, { misses: 0, hints: 0, level: 5 });
+    await store.switchTo(a);
+    expect(store.welcome.evidence.yummy).toMatchObject({ level: 2, misses: 1 });
+    // A backup round trip keeps both records.
+    const text = await store.exportAll();
+    const other = new Store(counter(), () => NOW);
+    await other.load();
+    await other.restoreAll(text);
+    expect(other.welcome.evidence.yummy).toMatchObject({ finished: true, misses: 1, hints: 1, level: 2 });
   });
 
   it('ends the welcome project with a full collection without adopting or dropping a friend (RW07)', async () => {
@@ -725,8 +758,8 @@ describe('her friends (RW05)', () => {
     await store.load();
     for (let i = 0; i < 24; i++) store.meet('glider', `G${i}`, 'teal', `t${i}`);
     const before = JSON.stringify(store.data.creatures);
-    store.beginWelcome('preschool');
-    for (const step of ['pretty', 'yummy', 'song'] as const) store.completeWelcomeStep(step, null);
+    store.beginWelcome('preschool', 'pretty');
+    for (const step of ['pretty', 'yummy', 'song'] as const) store.completeWelcomeStep(step, null, ANY_ROUND);
     expect(store.adoptWelcome('Pebble')).toBeNull();
     expect(store.welcome.ended).toBe(true);
     expect(JSON.stringify(store.data.creatures)).toBe(before);

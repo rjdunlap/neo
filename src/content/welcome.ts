@@ -24,9 +24,29 @@ export interface WelcomeProject {
   newcomer: SpeciesId | null;
   /** The ending's last write happened (slice 3). */
   ended: boolean;
+  /** What happened the last time each step was played (RW09, docs/rework/LEARNING-RECAP.md#the-saved-record). */
+  evidence: Partial<Record<WelcomeStep, StepEvidence>>;
 }
 
-export const emptyWelcome = (): WelcomeProject => ({ band: null, steps: [], results: {}, newcomer: null, ended: false });
+/** One step's record. Its class (independent, supported, …) is derived on read, never stored. */
+export interface StepEvidence {
+  /** True once a round of the step finished; false while it has only been opened. */
+  finished: boolean;
+  /** The last finished round's counts (0 while unfinished). */
+  misses: number;
+  hints: number;
+  /** The level that round played: always the plan's level for the project's band. */
+  level: number;
+  /** Finished rounds of this step, 0–9. */
+  rounds: number;
+  /** When it was last opened or finished. */
+  at: number;
+}
+
+export const MAX_STEP_ROUNDS = 9;
+const MAX_COUNT = 99;
+
+export const emptyWelcome = (): WelcomeProject => ({ band: null, steps: [], results: {}, newcomer: null, ended: false, evidence: {} });
 
 export interface WelcomeStepPlan {
   game: string;
@@ -91,13 +111,42 @@ export function cleanWelcome(raw: unknown): WelcomeProject {
   if (pretty) results.pretty = pretty;
   const song = steps.includes('song') ? cleanTune(r.song) : null;
   if (song) results.song = song;
+  const band = WELCOME_BANDS.find((b) => b === raw.band) ?? null;
   return {
-    band: WELCOME_BANDS.find((b) => b === raw.band) ?? null,
+    band,
     steps,
     results,
     newcomer: isSpecies(raw.newcomer) ? raw.newcomer : null,
     ended: raw.ended === true && steps.length === WELCOME_STEPS.length,
+    evidence: cleanEvidence(raw.evidence, band, steps),
   };
+}
+
+const whole = (v: unknown, max: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(0, Math.floor(v))) : 0);
+
+/**
+ * Unknown steps go; counts are clamped; a finished record needs its step done; a record at any level but the plan's for
+ * the project's band goes (so none survives without a band).
+ */
+function cleanEvidence(raw: unknown, band: WelcomeBand | null, steps: readonly WelcomeStep[]): WelcomeProject['evidence'] {
+  const out: WelcomeProject['evidence'] = {};
+  if (!isObj(raw) || !band) return out;
+  for (const step of WELCOME_STEPS) {
+    const r = raw[step];
+    const plan = WELCOME_PLAN[step];
+    if (!isObj(r) || !plan || r.level !== plan.level[band]) continue;
+    const finished = r.finished === true;
+    if (finished && !steps.includes(step)) continue;
+    out[step] = {
+      finished,
+      misses: finished ? whole(r.misses, MAX_COUNT) : 0,
+      hints: finished ? whole(r.hints, MAX_COUNT) : 0,
+      level: plan.level[band],
+      rounds: whole(r.rounds, MAX_STEP_ROUNDS),
+      at: typeof r.at === 'number' && Number.isFinite(r.at) && r.at >= 0 ? r.at : 0,
+    };
+  }
+  return out;
 }
 
 /** The adoption's `metAt` token: `meet` is idempotent on it, so the project adopts one friend however often it ends. */
@@ -149,6 +198,37 @@ export function completeWelcome(p: WelcomeProject, step: WelcomeStep, made: Crea
     const tune = made?.kind === 'tune' ? cleanTune(made) : null;
     if (tune) p.results.song = tune;
   }
+  return true;
+}
+
+/**
+ * A step was launched (after `beginWelcome` fixed the band): a step with no record gets an unfinished one. A finished
+ * record is left alone, so an unfinished replay never downgrades it, and a step finished before records existed gets
+ * none. Nothing after the ending. True when it wrote.
+ */
+export function openWelcomeStep(p: WelcomeProject, step: WelcomeStep, at: number): boolean {
+  const plan = WELCOME_PLAN[step];
+  if (!isStep(step) || !plan || p.ended || !p.band || p.evidence[step] || p.steps.includes(step)) return false;
+  p.evidence[step] = { finished: false, misses: 0, hints: 0, level: plan.level[p.band], rounds: 0, at };
+  return true;
+}
+
+/** A finished round's counts, as `GameScene.finish` has them. */
+export interface StepRound {
+  misses: number;
+  hints: number;
+  level: number;
+}
+
+/**
+ * A finished round of a step (with `completeWelcome`, in the same write): the last round's counts replace the earlier
+ * ones and `rounds` counts up to 9. Nothing after the ending, without a band, or at a level the plan does not play.
+ */
+export function finishWelcomeStep(p: WelcomeProject, step: WelcomeStep, round: StepRound, at: number): boolean {
+  const plan = WELCOME_PLAN[step];
+  if (!isStep(step) || !plan || p.ended || !p.band || round.level !== plan.level[p.band]) return false;
+  const rounds = Math.min((p.evidence[step]?.rounds ?? 0) + 1, MAX_STEP_ROUNDS);
+  p.evidence[step] = { finished: true, misses: whole(round.misses, MAX_COUNT), hints: whole(round.hints, MAX_COUNT), level: round.level, rounds, at };
   return true;
 }
 

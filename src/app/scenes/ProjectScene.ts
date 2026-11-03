@@ -187,7 +187,7 @@ export class ProjectScene extends Scene {
     if (this.leaving || this.raised !== step) return;
     this.leaving = true;
     const band = this.band;
-    store.beginWelcome(band);
+    store.beginWelcome(band, step);
     const plan = WELCOME_PLAN[step]!;
     this.app.go.game(plan.game, band, { project: 'welcome', step, level: plan.level[band] });
   }

@@ -26,7 +26,7 @@ import type { LandId } from '../content/lands';
 import { changeWorn, type WearableId } from '../art/creatures/wear-slots';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
-import { beginWelcome, completeWelcome, newcomerFor, WELCOME_MET_AT, welcomeReady, type WelcomeBand, type WelcomeProject, type WelcomeStep } from '../content/welcome';
+import { beginWelcome, completeWelcome, finishWelcomeStep, newcomerFor, openWelcomeStep, type StepRound, WELCOME_MET_AT, welcomeReady, type WelcomeBand, type WelcomeProject, type WelcomeStep } from '../content/welcome';
 import { isNew, toggleFavorite } from '../content/shelf';
 import { STORY_STEPS, type PetColor, type RoomItemId, type StoryId, type StoryStep } from '../content/world';
 import { companionOf, defaults, HISTORY_LENGTH, meetIn, migrate, remember, repairPrevious, swapWithPrevious, type GameStats, type Individual, type PreviousSave, type RoundRecord, type SaveData, type StoryProgress } from './save';
@@ -300,19 +300,27 @@ export class Store {
     return this.data.projects.welcome;
   }
 
-  /** A step was launched: the first launch fixes the project's band and who is coming. Written at once. */
-  beginWelcome(band: WelcomeBand): boolean {
-    const changed = beginWelcome(this.data.projects.welcome, band, this.data.creatures.owned);
-    if (changed) {
-      this.save();
-      this.flush();
-    }
+  /**
+   * A step was launched: the first launch fixes the project's band and who is coming, written at once, and a step not
+   * opened before gets its unfinished record (RW09) in the same write.
+   */
+  beginWelcome(band: WelcomeBand, step: WelcomeStep): boolean {
+    const p = this.data.projects.welcome;
+    const changed = beginWelcome(p, band, this.data.creatures.owned);
+    const opened = openWelcomeStep(p, step, this.clock());
+    if (changed || opened) this.save();
+    if (changed) this.flush();
     return changed;
   }
 
-  /** A finished round completes its step and keeps what she made for it (a stamped picture or her tune), in one write. */
-  completeWelcomeStep(step: WelcomeStep, made: Creation | null): boolean {
-    const done = completeWelcome(this.data.projects.welcome, step, made);
+  /**
+   * A finished round completes its step, keeps what she made for it (a stamped picture or her tune) and records how the
+   * round went (RW09), in one write.
+   */
+  completeWelcomeStep(step: WelcomeStep, made: Creation | null, round: StepRound): boolean {
+    const p = this.data.projects.welcome;
+    const done = completeWelcome(p, step, made);
+    if (done) finishWelcomeStep(p, step, round, this.clock());
     if (done) this.save();
     return done;
   }
