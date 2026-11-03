@@ -515,7 +515,7 @@ export class GameScene extends Scene {
       !this.story,
     );
     // Finishing completes the request, however much help it took.
-    if (this.story && 'project' in this.story) store.completeWelcomeStep(this.story.step, this.made);
+    if (this.story && 'project' in this.story) store.completeWelcomeStep(this.story.step, this.made, { misses: result.misses, hints: result.hints, level: this.level });
     else if (this.story) store.completeStep(this.story.step, this.story.story ?? 'picnic');
     const seed = randomSeed();
     store.addSticker(this.mod.id, seed);

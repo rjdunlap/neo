@@ -8,6 +8,7 @@ import { bandForYears, cardName, checkBirthInput, completedYears, isBlankProfile
 import { store } from '../progress/store';
 import { visibleGames } from '../content/lands';
 import { offScreenIdeas } from '../content/offscreen';
+import { projectRecap } from './recap';
 import { placeFor } from '../content/places';
 import { PET_COLORS, type PetColor } from '../content/world';
 import { SPECIES, SPECIES_IDS } from '../creatures/species';
@@ -425,6 +426,7 @@ function weekSummary(): string {
     </table>
     <p class="muted" style="margin-top:8px">${stickers} sticker${stickers === 1 ? '' : 's'} this week, ${store.data.stickers.length} in all. Rounds counts only the most recent ten per game.</p>
     <p><strong>The Windy Picnic</strong> (a story on the island map): ${picnicSummary()}</p>
+    <div data-recap-welcome>${projectRecap(store.data, store.data.profile.name)}</div>
     ${ideas.map((i) => `<p><strong>Off-screen idea:</strong> ${esc(i.line)}</p>`).join('')}`;
 }
 

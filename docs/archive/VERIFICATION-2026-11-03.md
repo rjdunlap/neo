@@ -82,3 +82,12 @@
 - Open: do "ice cube" and "paper clip" sound right in device speech, and a child's reaction ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
 
 ---
+
+## 2026-11-03 — Sudoku Garden a 4 by 4 bed to start (sudoku-garden batch 1)
+
+- [PR #1148](https://github.com/rjdunlap/neo/pull/1148): level 7 (`Size` 4 with 2 by 2 boxes, 10 blanks, grade 1, `order` `[7, 1, 2, 3, 4, 5, 6]`, `entryLevels: [7]`); couch, how-to card and voice unchanged.
+- Ran (tree at the branch commit, server http://localhost:5662): `npm run typecheck`; `npx vitest run src/games/sudoku-garden` 33 passed (`geometry(4)`; 300 seeds of level 7 unique, 10 blanks, grade 1; hints finish it; a wrong number found by the first hint); registry/content/progress tests 331 passed; `BROWSER_SUITE=sudokutouch SUDOKU_ONLY=7` (4 by 4, a wrong number = 1 miss, erase, one hint, 64-unit targets both ways, one sticker, history level 7 misses 1 hints 1; portrait screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=sudoku-garden FINGER_LEVELS=7` (30.3 s). A game-reviewer pass found no code defects.
+- Not run: full unit suite, `npm run build` (no shared files or assets), `sudokutouch` levels 1 and 6 (unchanged), `couchgames` (couch untouched).
+- Open: the four tray tiles sit in the three-column grid (4 alone on a second row); iPad feel of the 4 by 4 entry ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+---

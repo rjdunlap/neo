@@ -344,6 +344,28 @@ html.turning .pet-name-form {
   border-top: 1px solid var(--rule);
 }
 
+/* The welcome recap (RW09): words, not numbers, so What happened takes the room and reads left to right. */
+.parent [data-recap-table] th,
+.parent [data-recap-table] td {
+  text-align: left;
+  vertical-align: top;
+}
+
+.parent [data-recap-table] th:nth-child(1),
+.parent [data-recap-table] td:nth-child(1) {
+  width: 30%;
+}
+
+.parent [data-recap-table] th:nth-child(2),
+.parent [data-recap-table] td:nth-child(2) {
+  width: auto;
+}
+
+.parent [data-recap-table] th:nth-child(3),
+.parent [data-recap-table] td:nth-child(3) {
+  width: 76px;
+}
+
 .parent td select {
   margin-top: 6px;
   min-width: 0;

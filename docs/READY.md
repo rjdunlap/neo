@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Rework RW09 slice 1, learning evidence and a family recap of Welcome a New Friend** (shell and save tier: typecheck, unit tests, build, the `welcome` browser suite extended to read the recap, one portrait screenshot of the panel, the production offline check): a `src/learning/` intention table, a per-step evidence record in `projects.welcome` and `projectRecap` on the grown-ups' page; nothing changes for the child. [Packet](rework/LEARNING-RECAP.md#build-slice-and-checks)
 
 - **Better voice V1 (remaining): render the rest of the slot-free script** (assets tier, offline check): after the iPad listening check of the first 215 clips passes ([device check](DEVICE-CHECKS.md)), add more line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally; device speech stays the fallback. Slotted lines (V3) and Word Monsters' phonemes stay later. [A better voice](ROADMAP.md#a-better-voice)
 
