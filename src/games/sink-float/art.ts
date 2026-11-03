@@ -63,6 +63,47 @@ export function thingArt(thing: Thing): Container {
       g.roundRect(-4, -6, 52, 12, 6).fill(swatch.white.line).stroke(line(ink, 3));
       g.ellipse(-24, 0, 26, 18).fill(swatch.white.light).stroke(line(swatch.white.line, 5));
       break;
+    case 'feather': {
+      const f = swatch.teal;
+      // A curved vane on a quill, with a few notches in its edge.
+      g.moveTo(-40, 32).quadraticCurveTo(-34, -6, 38, -36).quadraticCurveTo(26, 8, -40, 32).closePath().fill(f.fill).stroke(line(f.line, 4));
+      g.moveTo(-48, 40).quadraticCurveTo(-8, 4, 38, -36).stroke(line(f.line, 4));
+      for (const [x, y] of [[-14, -2], [6, -18], [10, 10]]) g.moveTo(x, y).lineTo(x + (y < 0 ? -10 : 8), y + (y < 0 ? -4 : 8)).stroke(line(f.light, 3));
+      break;
+    }
+    case 'marble': {
+      const m = swatch.blue;
+      g.circle(0, 0, 28).fill(m.light).stroke(line(m.line));
+      g.moveTo(-18, 12).quadraticCurveTo(-4, -22, 20, -8).quadraticCurveTo(4, 2, 12, 20).stroke(line(m.fill, 7));
+      g.ellipse(-10, -14, 8, 5).fill(swatch.white.fill);
+      break;
+    }
+    case 'log':
+      // A short wooden log on its side: bark along the length, rings on the cut end.
+      g.roundRect(-48, -20, 80, 40, 10).fill(swatch.brown.fill).stroke(line(swatch.brown.line));
+      g.moveTo(-36, -6).lineTo(-4, -6).moveTo(-26, 8).lineTo(14, 8).stroke(line(swatch.brown.line, 3));
+      g.ellipse(32, 0, 14, 20).fill(wood.light).stroke(line(swatch.brown.line));
+      g.ellipse(32, 0, 7, 11).stroke(line(wood.line, 3)).circle(32, 0, 2).fill(wood.line);
+      break;
+    case 'ice': {
+      const i = swatch.teal;
+      // A cube seen from slightly above, with a shine on its front.
+      g.poly([-30, -22, -16, -36, 36, -36, 22, -22]).fill(swatch.white.fill).stroke(line(i.line, 4));
+      g.poly([22, -22, 36, -36, 36, 18, 22, 32]).fill(i.fill).stroke(line(i.line, 4));
+      g.roundRect(-30, -22, 52, 54, 6).fill(i.light).stroke(line(i.line, 4));
+      g.moveTo(-20, 18).lineTo(-20, -10).lineTo(-8, -14).stroke(line(swatch.white.fill, 4));
+      break;
+    }
+    case 'paperclip': {
+      // One bent wire: the small inner loop, then the long outer loop around it.
+      const wire = (color: number, width: number) =>
+        g.moveTo(16, 8).lineTo(-26, 8).arc(-26, 0, 8, Math.PI / 2, (3 * Math.PI) / 2).lineTo(28, -8).arc(28, 3, 11, -Math.PI / 2, Math.PI / 2)
+          .lineTo(-30, 14).arc(-30, 0, 14, Math.PI / 2, (3 * Math.PI) / 2).lineTo(20, -14).stroke(line(color, width));
+      g.scale.set(1.25);
+      wire(swatch.white.line, 6);
+      wire(swatch.white.light, 2);
+      break;
+    }
   }
   c.addChild(g);
   return c;

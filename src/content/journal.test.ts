@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { gameById } from '../games/registry';
 import { ANIMALS, FAVORITE } from '../games/animal-snack/logic';
 import { ACTIONS } from '../games/photo-safari/logic';
-import { ALL_THINGS, floats } from '../games/sink-float/logic';
+import { ALL_THINGS, floats, thingWord } from '../games/sink-float/logic';
 import { cleanJournal, discover, emptyJournal, entriesOf, entryById, entryId, hasNew, JOURNAL, JOURNAL_IDS, markSeen, sourceText } from './journal';
 import { WORDS } from '../games/letter-trails/pictures';
 import { HELPER, HELPERS } from '../games/mail-carrier/logic';
@@ -49,7 +49,7 @@ describe('the entries', () => {
           const thing = e.key as (typeof ALL_THINGS)[number];
           expect(said, e.id).toContain(floats(thing) ? 'float' : 'sink');
           expect(said, e.id).not.toContain(floats(thing) ? 'sinks' : 'floats');
-          expect(said, e.id).toContain(e.key);
+          expect(said, e.id).toContain(thingWord(thing));
           break;
         }
         case 'animal-snack':
@@ -115,8 +115,9 @@ describe('the entries', () => {
       expect(find).not.toMatch(/Not found yet/);
       expect(found).toMatch(/^Found in .+ when /);
       if (e.game === 'sink-float') {
-        expect(find.toLowerCase()).toContain(e.key);
-        expect(found.toLowerCase()).toContain(e.key);
+        const word = thingWord(e.key as (typeof ALL_THINGS)[number]);
+        expect(find.toLowerCase()).toContain(word);
+        expect(found.toLowerCase()).toContain(word);
         expect(find).toContain('water');
         expect(found).toContain('water');
       } else if (e.game === 'animal-snack') {

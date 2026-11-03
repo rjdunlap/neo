@@ -4,22 +4,33 @@ import type { Rng } from '../../engine/random';
 
 /**
  * Things to drop in the water. `obvious` ones behave the way a toddler expects; the others
- * (a floating apple, a sinking coin) are the surprises for older children.
+ * (a floating apple, a big floating log, a sinking coin) are the surprises for older children.
+ * Only things whose behaviour in plain tap water is never in doubt: no crayons, buttons, soaking sponges, open cups
+ * or fruit that varies.
  */
 export const THINGS = {
   duck: { floats: true, obvious: true },
   boat: { floats: true, obvious: true },
   ball: { floats: true, obvious: true },
+  feather: { floats: true, obvious: true },
   leaf: { floats: true, obvious: false },
   apple: { floats: true, obvious: false },
+  log: { floats: true, obvious: false },
+  ice: { floats: true, obvious: false },
   rock: { floats: false, obvious: true },
   key: { floats: false, obvious: true },
+  marble: { floats: false, obvious: true },
   coin: { floats: false, obvious: false },
   spoon: { floats: false, obvious: false },
+  paperclip: { floats: false, obvious: false },
 } as const;
 export type Thing = keyof typeof THINGS;
 export const ALL_THINGS = Object.keys(THINGS) as Thing[];
 export const floats = (t: Thing) => THINGS[t].floats;
+
+/** What the voice and the journal call a thing, where its key is not already the word. */
+const WORDS: Partial<Record<Thing, string>> = { ice: 'ice cube', paperclip: 'paper clip' };
+export const thingWord = (t: Thing) => WORDS[t] ?? t;
 
 /** The basket or button that is right for a thing (the how-to card's ghost finger sorts and guesses with it). */
 export const rightBasket = (t: Thing): 'float' | 'sink' => (floats(t) ? 'float' : 'sink');
