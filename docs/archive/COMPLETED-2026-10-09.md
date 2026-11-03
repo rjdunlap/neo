@@ -2343,7 +2343,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-01.md#2026-11-01--shell-rows-l
 
 [PR #1121](https://github.com/rjdunlap/neo/pull/1121), batch orchard-rows 1, [definition](../definitions/orchard-rows.md). School levels 4 *Equal rows*, 5 *Every way* and 6 *Only one long row* on the built game: new scene `baskets.ts`; `logic.ts` holds the deal, row range, equal-rows test, shape frames, 60 prime sets, the round maker, step reducer, hint target, bot step and basket layout. New `orchard.*` voice lines, level-scoped how-to steps, division and factors skills, a co-play hint. `game-reviewer` fixes: arrows stay live while a leftover reason plays, a tap mid-deal finishes it, range-end tick and wobble, one long-row line. Not built: reduced-motion instant deal (no such setting).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-02--orchard-rows-levels-46-number-structure-ns1-batch-orchard-rows-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--orchard-rows-levels-46-number-structure-ns1-batch-orchard-rows-1).
 
 ## Drift Cards level 3, oceans slice 6 (drift-cards 2, 2026-11-02)
 

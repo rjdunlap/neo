@@ -716,15 +716,13 @@ Proof: new-interaction tier, as the definition sets it (typecheck, rule tests, a
 
 ### paint-mixer 3: Three pots and which jars match
 
-**Claimed 2026-11-02** on branch `claude/paint-mixer-5-6` (draft PR): levels 5–6 and the paint shelf; files `src/games/paint-mixer/*`, `src/content/{voice-script,howto,journal}.ts`, `scripts/browser/suites/paint-mixer-play.mjs`.
-
-- **`paint-mixer`, levels 5–6 and the journal paint shelf (study slice 4, RP2)** (defined 2026-11-02, [PR #1117](https://github.com/rjdunlap/neo/pull/1117); after batch `paint-mixer 2`; school top): three pots (1:2:1 peach, 8 or 12 drops) at level 5, then which lidded jars match the sample from their labels alone (2:3, 4:6, 3:5, 6:9) at level 6, where a lid is one hint and an opened lid shows its label against the sample's table; the paint shelf in the journal. [Definition](definitions/paint-mixer-5-6.md), [study slice 4](deep-dives/subjects/ratio-proportion.md#build-slices-in-order)
+- **`paint-mixer`, levels 5–6 and the journal paint shelf (study slice 4, RP2)** (**built 2026-11-02**, [PR #1135](https://github.com/rjdunlap/neo/pull/1135); defined in [PR #1117](https://github.com/rjdunlap/neo/pull/1117); after batch `paint-mixer 2`; school top): three pots (1:2:1 peach, 8 or 12 drops) at level 5, then which lidded jars match the sample from their labels alone (2:3, 4:6, 3:5, 6:9) at level 6, where a lid is one hint and an opened lid shows its label against the sample's table; the paint shelf in the journal. [Definition](definitions/paint-mixer-5-6.md), [study slice 4](deep-dives/subjects/ratio-proportion.md#build-slices-in-order)
 
 Proof: new-interaction tier, as the [definition's batches section](definitions/paint-mixer-5-6.md#build-batches-and-check-tiers) sets it (typecheck, rule tests with the journal and how-to tests, a filtered play of level 5 with one wrong Check and a match and level 6 with a wrong set twice, the lid reveal, then the right set, `fingerdemo` at levels 5 and 6, one portrait screenshot of level 6 with a lid open, one build). If the allowance cannot cover both, stop after a complete level 5 with its shelf, checkpointed in the draft PR.
 
 ### paint-mixer 4: Palette unlock
 
-- **`paint-mixer`, the palette unlock (decision 7)** (status: after batch `paint-mixer 3`, and after RW10's packet if that is defined first; not a routine pick yet): a mixed colour as a permanent palette unlock. [Definition](definitions/paint-mixer-5-6.md#the-palette-unlock-decision-7-a-separate-later-batch)
+- **`paint-mixer`, the palette unlock (decision 7)** (status: batch `paint-mixer 3` is built; still waits on RW10's packet if that is defined first; not a routine pick yet): a mixed colour as a permanent palette unlock. [Definition](definitions/paint-mixer-5-6.md#the-palette-unlock-decision-7-a-separate-later-batch)
 
 Proof: shell/save tier, as the definition sets it; to be confirmed when the batch is picked.
 
@@ -853,7 +851,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/shell-rows.md
 
 ### orchard-rows 1: Equal rows, every way, only one long row
 
-**Built 2026-11-02 ([PR #1121](https://github.com/rjdunlap/neo/pull/1121)):** levels 4, 5 and 6 together; checks in [VERIFICATION](VERIFICATION.md#2026-11-02--orchard-rows-levels-46-number-structure-ns1-batch-orchard-rows-1).
+**Built 2026-11-02 ([PR #1121](https://github.com/rjdunlap/neo/pull/1121)):** levels 4, 5 and 6 together; checks in [VERIFICATION](archive/VERIFICATION-2026-11-02.md#2026-11-02--orchard-rows-levels-46-number-structure-ns1-batch-orchard-rows-1).
 
 - **`orchard-rows`, levels 4–6 (number-structure study slice 2, the build of NS1)** (extends the built game, new-interaction tier; school 4–6, Barnyard unchanged; Counting Cove / Puzzle Peaks as the game already sits): a basket of 12 to 24 saplings and a row-count control; the saplings deal into equal rows at once and the leftover stays in the basket; find a row count with none left over (level 4), plant every different orchard one basket can make (level 5), find the one of three baskets that only makes one long row (level 6, a separate *One long row* button as the answer). [Definition](definitions/orchard-rows.md), [study build slices](deep-dives/subjects/number-structure.md#build-slices-in-order)
 

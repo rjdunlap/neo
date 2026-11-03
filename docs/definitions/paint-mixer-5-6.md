@@ -114,3 +114,15 @@ Each has a default the build uses; none blocks batch `paint-mixer 3`.
 3. **A stray pot at level 5.** Default: none (three pots on screen, the audited layout).
 4. **Lids and hints.** Default: the first lid in a case is its one hint. Alternative: every lid a hint, which would turn exploring all four into a struggling round; not taken.
 5. **Shelf names.** Peach, coral, blush, lavender, rose, lilac; renamable before the build without changing ids' meaning only until the first build ships (ids are permanent after).
+
+## Built: levels 5-6 and the paint shelf (2026-11-02)
+
+Batch `paint-mixer 3`, [PR #1135](https://github.com/rjdunlap/neo/pull/1135); LEVELS is now school 1-6. The sample generalised from a pair to n pots (levels 1-4 proven seed-identical against a snapshot taken first). Level 6 is its own scene (`shelf.ts`, rules in `jars.ts`). Deviations from this definition:
+
+- Level 6 landscape puts Check under the right end of the jar row (no room beside four jars at 1024).
+- After help, a glow follows the next jar to change, then Check (as levels 1-5).
+- The reveal follows the rule "first count in the table, so the second is circled": a swapped label whose first count is a multiple (2:1 against 1:2) circles the second count, not the first as the prose above says. A "first" reveal fills all four columns so the first row shows.
+- The closed lid is drawn to fill the lid tap zone (a review fix).
+- Rule-test note: "third pot left out, distance 6 or more" is tested for the third pot (white), as measured above; leaving out red from peach (0:2:1) is 5.84.
+- Checks: typecheck, 88 Paint Mixer rule tests, full units, build, `paintmixer` levels 5-6 twice and `fingerdemo` at 5 and 6. Levels 1-4 browser play not rerun; offline not run. Open device checks are in [DEVICE-CHECKS](../DEVICE-CHECKS.md#paint-mixer-levels-56).
+- Not built: the palette unlock (batch `paint-mixer 4`), which stays waiting.
