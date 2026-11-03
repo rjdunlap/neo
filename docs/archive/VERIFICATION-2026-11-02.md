@@ -37,3 +37,10 @@
 - Ran (merge commit 482f0780 = origin/main + branch, Vite dev on http://localhost:5259, `VITE_SPEECH=off`): typecheck; `npm test` 294 files / 4311 tests (Orchard Rows rules 22, 17 new: deal, factors, 60 prime sets, 300-seed determinism, accounting, help reaches a right answer, 100-seed bot with no misses, layout at four views with cells of 18 or more); `BROWSER_SUITE=orchard ORCHARD_LEVELS=4,5,6` (L4 arrows free, Plant on a leftover twice = 2 misses and 1 hint with glow, glow followed to the sticker; L5 portrait, a shape planted twice free, one-long-row screenshot; L6 wrong basket 1 miss, repeat claim free); `fingerdemo FINGER_ONLY=orchard-rows FINGER_LEVELS=4,5,6` clean (10.9, 16.0, 8.5 s); `npm run build`.
 - `game-reviewer` fixes: arrows live during a leftover reason, a tap mid-deal finishes it, range-end tick and wobble, one long-row line.
 - Not run: levels 1–3 regression play (unchanged class), phone and landscape screenshots beyond the case's, offline. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): leftover use, every-way feel, *prime*, device speech of "rows of"; reduced-motion deal not built.
+
+## 2026-11-02 — Paint Mixer levels 5–6 definition (ratio-proportion RP2)
+
+- [PR #1117](https://github.com/rjdunlap/neo/pull/1117): docs only, [definition](../definitions/paint-mixer-5-6.md) for `paint-mixer` levels 5–6 and the paint shelf; routed through READY, batches, backlog, study and packet.
+- Ran: a throwaway script reimplementing the built mix and Oklab distance measured the three-pot mixes and the jar-label distances; `node scripts/check-links.mjs`; `git diff --check`.
+- No code checks (docs only); the numbers are the definition's, not a browser play.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): at the build, whether six shelf colours read as six on an iPad, whether one-more-of-each is seen, whether a child reads a label as two counts, whether the circled count in a reveal is understood without speech (listed in the definition, not yet added to DEVICE-CHECKS).

@@ -10,11 +10,18 @@ import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bucket as bucketArt, button, drop as dropArt, fillInside, fillLine, jar as jarArt, pot as potArt, ratioTable } from './art';
+import { entryId } from '../../content/journal';
 import {
   BUTTON_H, BUTTON_W, CAP, JAR_H, JAR_W, LEVELS, POT_H, POT_W, check, completeBatches, countsOf, glowFor, layout, makeRound, mix,
-  mixName, multipleOf, picture, SOLVE_STEPS, planFor, potsFor, ratioTable as tableFor, sizeFor, solveFrom, stickerSample, type Glow, type Layout,
-  type Plan, type Pot, type Sample,
+  mixName, multipleOf, picture, SOLVE_STEPS, planFor, potsFor, ratioTable as tableFor, recipeOf, rowOf, sizeFor, solveFrom, stickerSample,
+  type Glow, type Layout, type Plan, type Pot, type Sample,
 } from './logic';
+import { JarShelf } from './shelf';
+
+/** A sample's recipe as speech slots: two pots, or three at level 5. */
+export const recipeWords = (s: Sample): Record<string, string | number> => ({
+  a: s.counts[0], potA: s.pots[0], b: s.counts[1], potB: s.pots[1], ...(s.pots.length > 2 ? { c: s.counts[2], potC: s.pots[2] } : {}),
+});
 
 type Button = 'undo' | 'tip' | 'check';
 
@@ -27,6 +34,8 @@ class PaintMixer implements Game {
   drops: Pot[] = [];
   misses = 0;
   hints = 0;
+  /** Level 5: the recipes whose buckets matched this round, for the journal's paint shelf. */
+  readonly matched: string[] = [];
   /** Level 4: the first way's multiple once it is made (the second way must differ), else null. */
   done: number | null = null;
   /** Bumped on every new bucket or way, so a line or ghost pour from an earlier one never acts on this one. */
@@ -72,7 +81,7 @@ class PaintMixer implements Game {
       onTap(n, () => this.tapButton(kind));
       this.buttons.set(kind, n);
     }
-    this.layoutNow = layout(ctx.view, this.pots.length);
+    this.layoutNow = layout(ctx.view, this.pots.length, this.sample.pots.length);
     ctx.stage.addChild(this.backdrop, this.jarNode, this.recipeNode, this.tableNode, this.bucketNode, ...this.buttons.values(), this.flights, this.glowRing);
     this.buildPots();
     this.dressBucket();
@@ -106,7 +115,7 @@ class PaintMixer implements Game {
 
   private forEvery() {
     const s = this.sample;
-    return this.ctx.say('pm.for-every', { a: s.counts[0], potA: s.pair[0], b: s.counts[1], potB: s.pair[1] });
+    return this.ctx.say(s.pots.length > 2 ? 'pm.for-every-3' : 'pm.for-every', recipeWords(s));
   }
 
   destroy() {
@@ -133,19 +142,15 @@ class PaintMixer implements Game {
   /** The jar, its recipe row and the bucket's empty rows for the bucket in play. */
   private dressBucket() {
     this.jarNode.removeChildren().forEach((c) => c.destroy());
-    this.jarNode.addChild(jarArt(mix(countsOf(this.rowOf(this.sample)))!));
+    this.jarNode.addChild(jarArt(mix(countsOf(rowOf(this.sample)))!));
     this.recipeNode.removeChildren().forEach((c) => c.destroy());
-    const row = this.rowOf(this.sample);
+    const row = rowOf(this.sample);
     row.forEach((pot, i) => {
       const d = dropArt(pot);
       d.position.set((i - (row.length - 1) / 2) * 42, 0);
       this.recipeNode.addChild(d);
     });
     this.refresh();
-  }
-
-  private rowOf(s: Sample): Pot[] {
-    return [...Array(s.counts[0]).fill(s.pair[0]), ...Array(s.counts[1]).fill(s.pair[1])];
   }
 
   /** Redraw the bucket's colour and rows from the drops, and retarget the glow. */
@@ -163,7 +168,7 @@ class PaintMixer implements Game {
       this.rowsNode.addChild(d);
     }
     this.tableNode.removeChildren().forEach((c) => c.destroy({ children: true }));
-    if (this.plan.level >= 3) this.tableNode.addChild(ratioTable(tableFor(this.plan, this.sample, counts), this.sample.pair, this.done));
+    if (this.plan.level >= 3) this.tableNode.addChild(ratioTable(tableFor(this.plan, this.sample, counts), this.sample.pots, this.done));
     if (this.glow) this.glow = glowFor(this.plan, this.sample, this.drops, this.done);
   }
 
@@ -256,7 +261,7 @@ class PaintMixer implements Game {
       void this.ctx.say('pm.same-way');
       return;
     }
-    const words = { pot: verdict.pot, a: s.counts[0], potA: s.pair[0], b: s.counts[1], potB: s.pair[1] };
+    const words = { pot: verdict.pot, ...recipeWords(s) };
     this.misses++; this.bucketMisses++;
     sfx.boing();
     this.slosh();
@@ -298,7 +303,7 @@ class PaintMixer implements Game {
   private async ghostPour() {
     this.pouring = true;
     const turn = this.turn;
-    if (solveFrom(this.plan, this.sample, this.drops, this.done).some((g) => g.at === 'tip')) void this.ctx.say('pm.plan', { a: this.sample.counts[0], potA: this.sample.pair[0], b: this.sample.counts[1], potB: this.sample.pair[1] });
+    if (solveFrom(this.plan, this.sample, this.drops, this.done).some((g) => g.at === 'tip')) void this.ctx.say(this.sample.pots.length > 2 ? 'pm.plan-3' : 'pm.plan', recipeWords(this.sample));
     // One tap a second, each read from the bucket as it is now, until Check is the glowing one.
     for (let i = 0; i < SOLVE_STEPS; i++) {
       if (this.finished || this.busy || turn !== this.turn) break;
@@ -318,7 +323,7 @@ class PaintMixer implements Game {
     sfx.bell(7, 0.2);
     const s = this.sample;
     if (this.plan.level >= 3) void this.forEvery();
-    else void this.ctx.say('pm.recipe', { a: s.counts[0], potA: s.pair[0], b: s.counts[1], potB: s.pair[1] });
+    else void this.ctx.say('pm.recipe', recipeWords(s));
   }
 
   private async celebrate() {
@@ -332,7 +337,10 @@ class PaintMixer implements Game {
     void this.ctx.tw.to(this.bucketNode, { y: l.bucket.y - 30 }, { duration: 0.25, ease: ease.outQuad })
       .then(() => this.ctx.tw.to(this.bucketNode, { y: this.layoutNow.bucket.y }, { duration: 0.35, ease: ease.outBack }));
     const firstWay = this.plan.kind === 'any' && this.done === null;
-    await this.ctx.say(firstWay ? 'pm.one-way' : 'pm.match', { colour: mixName(this.sample.pair) });
+    // Level 5: a matched bucket (her pour or the ghost's) files its recipe on the journal's paint shelf at round end.
+    const recipe = recipeOf(this.sample);
+    if (recipe && !this.matched.includes(recipe.name)) this.matched.push(recipe.name);
+    await this.ctx.say(firstWay ? 'pm.one-way' : 'pm.match', { colour: mixName(this.sample) });
     if (this.finished) return;
     if (firstWay) {
       // Level 4's first way is kept as a star over its column; the bucket empties by itself and the same jar asks again.
@@ -350,7 +358,7 @@ class PaintMixer implements Game {
       this.finished = true;
       await this.ctx.say(this.plan.kind === 'any' ? 'pm.two-ways' : 'pm.done');
       await this.ctx.tw.wait(0.5);
-      this.ctx.finish({ misses: this.misses, hints: this.hints });
+      this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries: this.matched.map((n) => entryId('paint-mixer', n)) });
       return;
     }
     await this.ctx.tw.wait(0.4);
@@ -381,7 +389,7 @@ class PaintMixer implements Game {
   // ---- shell hooks ----
 
   resize(view: View) {
-    const l = this.layoutNow = layout(view, this.pots.length);
+    const l = this.layoutNow = layout(view, this.pots.length, this.sample.pots.length);
     this.backdrop.resize(view);
     this.jarNode.position.set(l.jar.x, l.jar.y);
     this.recipeNode.position.set(l.recipe.x, l.recipe.y);
@@ -431,7 +439,7 @@ function icon(): Container {
 function sticker(seed: number): Container {
   const c = new Container();
   const s = stickerSample(seed);
-  const counts = countsOf([...Array(s.counts[0]).fill(s.pair[0]), ...Array(s.counts[1]).fill(s.pair[1])] as Pot[]);
+  const counts = countsOf(rowOf(s));
   const color = mix(counts)!;
   c.addChild(tile(260, 260, 'white'));
   const b = bucketArt();
@@ -442,7 +450,7 @@ function sticker(seed: number): Container {
   j.scale.set(0.6);
   j.position.set(-80, -20);
   c.addChild(b.node, j);
-  const row = [...Array(s.counts[0]).fill(s.pair[0]), ...Array(s.counts[1]).fill(s.pair[1])] as Pot[];
+  const row = rowOf(s);
   row.forEach((pot, i) => {
     const d = dropArt(pot);
     d.scale.set(0.9);
@@ -459,6 +467,6 @@ export const paintMixer: GameModule = {
   music: STYLES.paint,
   coplayHint: 'Take turns: one of you reads the sample\'s row aloud ("one red, two yellow") while the other pours; swap after each bucket.',
   offScreen: 'Mix a drink or a paint colour together, then ask: if we made twice as much, what would we need of each?',
-  hubIcon: () => new WigglyIcon(icon()), sticker, create: (ctx) => new PaintMixer(ctx),
+  hubIcon: () => new WigglyIcon(icon()), sticker, create: (ctx) => (planFor(ctx.level).kind === 'jars' ? new JarShelf(ctx) : new PaintMixer(ctx)),
   touchDemo: true,
 };

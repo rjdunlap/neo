@@ -16,7 +16,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **`scoop-shop`, levels 8–9 (EF1b first batch)** (two new levels on existing input): [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25), [batch](GAME-BATCHES.md#scoop-shop-3-change-and-reverse). School only; exactly-one-change and reversed distinct triples, peek help; separate admission, building-session review, actual placement/layout and demos required. Level 7 follows as a separate interaction; person/device gates remain.
 
-- **Build batch `paint-mixer 3`: three pots and which jars match** (`paint-mixer`, levels 5–6 and the journal paint shelf; new-interaction tier: a filtered play of level 5 with one wrong Check and a match, level 6 with a wrong set twice, the lid reveal, then the right set; a portrait screenshot of level 6 with a lid open; `fingerdemo` at 5 and 6; one build): three pots (1:2:1 peach) and which lidded jars match the sample from their labels alone, an opened lid showing its label against the sample's table. [Definition](definitions/paint-mixer-5-6.md), [batch](GAME-BATCHES.md#paint-mixer-3-three-pots-and-which-jars-match). The palette unlock waits after this batch.
+- **`orchard-rows`, fresh orchards and baskets (batch orchard-rows 2)** (game rules tier: `npm run typecheck` and the Orchard Rows rule tests only): levels 1–3 gain 2×2, 4×2, 4×3, 5×2, 4×4 and 5×3 (all within 5×5; level 2 never pairs a shape with its turn and holds no square), and level 4's second basket also draws 14 and 21. [Dive](deep-dives/orchard-rows.md#build-slices-in-order), [batch](GAME-BATCHES.md#orchard-rows-2-fresh-orchards-and-baskets).
+
 
 
 
@@ -34,7 +35,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 
-- **`orchard-rows`, fresh orchards and baskets (batch orchard-rows 2)** (game rules tier: `npm run typecheck` and the Orchard Rows rule tests only): levels 1–3 gain 2×2, 4×2, 4×3, 5×2, 4×4 and 5×3 (all within 5×5; level 2 never pairs a shape with its turn and holds no square), and level 4's second basket also draws 14 and 21. [Dive](deep-dives/orchard-rows.md#build-slices-in-order), [batch](GAME-BATCHES.md#orchard-rows-2-fresh-orchards-and-baskets).
 - **Define Orchard Rows *a path through the orchard* (levels 7–9)** (docs only; status `define`): a path splits the orchard into two she counts, then the whole (7 *A path at five*, 8 *Choose the path*, 9 *A path at ten*; products under 100); the path picture and pads in `basketLayout` at the four views, part signs, pad decoys (the big part alone), accounting, voice, how-to (bounding the 4–6 note), the bot, the `makeRound`/`isBasketLevel` couplings, rule tests and the check tier. [Dive](deep-dives/orchard-rows.md#build-slices-in-order).
 
 - **`sprout-shuffle`, levels 7–8 Patchwork Conservatory (batch sprout-shuffle 2)** (new-interaction tier: the bench, pots and lenses are new; play level 7 with a wrong Check and the glow and level 8 with both plans found, one portrait screenshot, `fingerdemo` at 7 and 8): after Sprout Shuffle level 6 (Hidden Sprouts) is built; [definition](definitions/patchwork-conservatory.md), [batch](GAME-BATCHES.md#sprout-shuffle-2-patchwork-conservatory).

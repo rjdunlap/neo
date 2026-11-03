@@ -5,6 +5,7 @@ import { ALL_THINGS, floats, type Thing } from '../games/sink-float/logic';
 import { HELPER, HELPERS } from '../games/mail-carrier/logic';
 import { CHANGERS } from '../games/melt-freeze/logic';
 import { KITCHEN_DISCOVERIES, type KitchenDiscovery } from '../games/pet-kitchen/logic';
+import { RECIPES } from '../games/paint-mixer/logic';
 import type { LineId } from './voice-script';
 
 /**
@@ -13,7 +14,7 @@ import type { LineId } from './voice-script';
  * is found. A game reports what it actually showed during a round (`RoundResult.discoveries`); the shell files it.
  */
 
-export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails' | 'mail-carrier' | 'rhythm-neighbors' | 'melt-freeze' | 'pet-kitchen';
+export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails' | 'mail-carrier' | 'rhythm-neighbors' | 'melt-freeze' | 'pet-kitchen' | 'paint-mixer';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -226,6 +227,19 @@ export const JOURNAL: readonly JournalEntry[] = [
     line: `journal.kitchen.${k}` as LineId,
     source: KITCHEN_SOURCES[k],
   })),
+  // Paint Mixer, level 5: the paint shelf, one card per three-pot recipe whose bucket matched (definition paint-mixer-5-6).
+  ...RECIPES.map((r): JournalEntry => {
+    const recipe = r.pots.map((pot, i) => `${r.counts[i]} ${pot}`);
+    const said = `${recipe[0]}, ${recipe[1]} and ${recipe[2]}`;
+    return {
+      id: entryId('paint-mixer', r.name),
+      game: 'paint-mixer',
+      key: r.name,
+      name: cap(r.name),
+      line: `journal.paint.${r.name}` as LineId,
+      source: { find: `make the bucket the sample's colour with ${said}`, found: `the bucket was ${r.name}: ${said}` },
+    };
+  }),
 ];
 
 export const JOURNAL_IDS: readonly string[] = JOURNAL.map((e) => e.id);
