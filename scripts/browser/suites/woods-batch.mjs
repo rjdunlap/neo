@@ -873,6 +873,7 @@ async function woodsBatch() {
         } else { await card(others[0]); await card(others[1]); }
         assert.deepEqual(await counts(), [2, 1]);
         if (level === 3) await screenshot('rhyme-time-3-hint');
+        if (level === 4) await screenshot('rhyme-time-4-hint');
       }
       for (const w of q.answer) await card(w);
     }

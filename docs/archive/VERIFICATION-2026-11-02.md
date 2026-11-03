@@ -94,3 +94,11 @@
 - Not run: `fingerdemo` (bot unchanged), build (no shared files), full unit suite (CI), device or child checks.
 
 ---
+
+## 2026-11-02 — Habitat Helpers equivalent pieces and pooled gardens (habitat-helpers batch 1)
+
+- [PR #1128](https://github.com/rjdunlap/neo/pull/1128) (code `cefeceee`): four new single-role pieces, seeded per-role picks at levels 1–3, level 4 drawn from four pooled prediction gardens; no new level, no voice or how-to change, bot unchanged.
+- Ran: typecheck; `npx vitest run src/games/habitat-helpers` 15 passed (200-seed level-3 one-working-set test, every two-piece garden enumerated); `BROWSER_SUITE=habitat` against Vite on port 5874 passed at `cefeceee` (levels 1, 3, 4, 6 incl. portrait; level 3 relaunched until a new piece showed, one incomplete test and glow, screenshot `habitat-helpers-3-portrait`; level 4 no repeat); `npm run build` passed; art probe screenshot of the four new pieces.
+- Not run: `fingerdemo` (bot unchanged), full unit suite locally (CI runs it), device or child checks.
+
+---

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
 import {
-  allRiddles, chipsFor, familyOf, FAMILIES, fitsBoth, guessFor, holds, makeQuestions, makeRiddles, makeTap, mateTags,
+  allRiddles, ARGUABLE, chipsFor, fails, familyOf, FAMILIES, fitsBoth, guessFor, holds, makeQuestions, makeRiddles, makeTap, mateTags,
   PLANS, rhymes, spokenList, TAG_IDS, TAGS, wordToTap,
 } from './logic';
 
@@ -10,6 +10,18 @@ describe('Rhyme Time', () => {
   it('never lists a word in two families', () => {
     const all = Object.values(FAMILIES).flat();
     expect(new Set(all).size).toBe(all.length);
+  });
+
+  it('has 38 pictures in fifteen families, eight of them three-word groups', () => {
+    expect(Object.keys(FAMILIES)).toHaveLength(15);
+    expect(Object.values(FAMILIES).flat()).toHaveLength(38);
+    expect(Object.keys(FAMILIES).filter((f) => FAMILIES[f].length >= 3).sort()).toEqual(['ail', 'ar', 'at', 'ear', 'ee', 'ock', 'og', 'ug']);
+  });
+
+  it('shows the fresh families in odd-one-out rounds', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) for (const q of makeQuestions(PLANS[3], new Rng(seed))) seen.add(familyOf(q.words.find((w) => !q.answer.includes(w))!));
+    for (const f of ['ug', 'ock', 'ail']) expect(seen.has(f)).toBe(true);
   });
 
   it('has exactly the intended rhymes on screen: one match, one pair, or one odd one out', () => {
@@ -95,16 +107,28 @@ describe('Rhyme Riddles (levels 5-7)', () => {
     }
   });
 
+  it('never makes an arguable fit the neutral or mate that must fail a clue', () => {
+    for (const r of allRiddles()) expect(fails(r.mate, r.tag)).toBe(true);
+    for (let seed = 1; seed <= 300; seed++) {
+      for (const r of makeRiddles(PLANS[5], new Rng(seed))) {
+        expect(fails(r.neutral!, r.tag)).toBe(true);
+        expect(ARGUABLE[r.tag] ?? []).not.toContain(r.neutral);
+      }
+    }
+  });
+
   it('is deterministic per seed', () => {
     for (const li of levels) expect(makeRiddles(PLANS[li], new Rng(7))).toEqual(makeRiddles(PLANS[li], new Rng(7)));
   });
 
-  it('has a pinned pool where every big family supplies answers and keys never answer', () => {
+  it('has a pinned pool where every big family supplies answers and tagless pictures never answer', () => {
     const all = allRiddles();
-    expect(all.length).toBe(102);
+    expect(all.length).toBe(178);
     const answered = new Set(all.map((r) => familyOf(r.answer)));
     for (const f of Object.keys(FAMILIES).filter((k) => FAMILIES[k].length >= 3)) expect(answered.has(f)).toBe(true);
-    expect(all.some((r) => r.answer === 'key')).toBe(false);
+    for (const w of ['key', 'clock', 'snail']) expect(all.some((r) => r.answer === w)).toBe(false);
+    // the fresh families (bug, sock and snail) each answer riddles
+    for (const f of ['ug', 'ock', 'ail']) expect(answered.has(f)).toBe(true);
   });
 
   it('level 7 offers four chip pairs of which only the working one finds the answer', () => {

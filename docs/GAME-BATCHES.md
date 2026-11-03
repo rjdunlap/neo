@@ -979,7 +979,7 @@ Proof: typecheck and unit tests including the lands and registry band tests; one
 
 ### habitat-helpers 1: Equivalent pieces and pooled gardens
 
-**Built 2026-11-02 ([PR #1128](https://github.com/rjdunlap/neo/pull/1128)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-02--habitat-helpers-equivalent-pieces-and-pooled-gardens-habitat-helpers-batch-1); [build note](archive/COMPLETED-2026-10-09.md#habitat-helpers-equivalent-pieces-and-pooled-gardens-habitat-helpers-1-2026-11-02). Level 4's pool is four gardens, not six (only four two-piece gardens welcome exactly one visitor). No longer eligible for dispatch. Scope retained for reference.
+**Built 2026-11-02 ([PR #1128](https://github.com/rjdunlap/neo/pull/1128)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-02.md#2026-11-02--habitat-helpers-equivalent-pieces-and-pooled-gardens-habitat-helpers-batch-1); [build note](archive/COMPLETED-2026-10-09.md#habitat-helpers-equivalent-pieces-and-pooled-gardens-habitat-helpers-1-2026-11-02). Level 4's pool is four gardens, not six (only four two-piece gardens welcome exactly one visitor). No longer eligible for dispatch. Scope retained for reference.
 
 - **`habitat-helpers`, equivalent pieces and pooled prediction gardens (dive slice 1)** (existing interaction; preschool to school, no new level): four new pieces so each role has two pictured options, seeded per-role picks at levels 1–3, and pooled level-4 gardens (four, not six). [Dive](deep-dives/habitat-helpers.md#build-slices-in-order)
 
@@ -1262,6 +1262,8 @@ Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/
 Proof: new-interaction tier: typecheck, unit tests, one filtered `readdo` play of level 4 and level 6 with one failed Send and one hint, one portrait screenshot, `fingerdemo` at 4, 5 and 6.
 
 ### rhyme-time 1: Fresh families: bug, sock and snail
+
+Built 2026-11-03, [PR #1143](https://github.com/rjdunlap/neo/pull/1143); [build note](archive/COMPLETED-2026-10-09.md#rhyme-time-fresh-families-bug-sock-and-snail-rhyme-time-batch-1-2026-11-03). No longer eligible for dispatch.
 
 - **`rhyme-time`, Fresh families: bug, sock and snail (dive slice 1)** (extends the built game; no new level): nine pictures (seven new drawings in `pictures.ts`, `rock` and `pail` from `src/art/shore.ts`), the `ug`, `ock` and `ail` families, the reviewed meaning tags, the re-pinned riddle pool and the GAMES.md counts (38 pictures in fifteen families). [Dive](deep-dives/rhyme-time.md#build-slices-in-order)
 

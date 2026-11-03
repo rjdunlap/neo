@@ -2391,7 +2391,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--ferry-jam-fa
 
 [PR #1128](https://github.com/rjdunlap/neo/pull/1128): dive slice 1, no new level. Four single-role pieces (dandelions, log burrow, pond weed, reed island) sit beside their old counterparts, so each role has two pictured options; water stays the shallow pool. Levels 1-3 pick one piece per role per round from the seeded RNG; level 3's two distractors are the other visitor's food and shelter (five cards, exactly one working set, tested over 200 seeds). Level 4 draws from `PREDICTION_GARDENS`, four two-piece gardens (Bunny: berry hedge with shallow pool or with pond with reeds; Duck: pond with reeds with seed grass or with pond weed); the dive's estimate of six failed a test that enumerated every two-piece garden, since only four welcome exactly one visitor. The repeated visitor gets both its gardens so none repeats in a play. Levels 5-6, voice, how-to card and bot rule unchanged. The `habitat` browser suite gained a level-3 case and a level-4 no-repeat assertion.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-02--habitat-helpers-equivalent-pieces-and-pooled-gardens-habitat-helpers-batch-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--habitat-helpers-equivalent-pieces-and-pooled-gardens-habitat-helpers-batch-1).
 
 ## Inchworm fresh things, the long jump and level 8 The broken ruler (inchworm batch 1, 2026-11-02)
 
@@ -2439,3 +2439,10 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-02--habitat-helpers-equi
 ## Read & Do, fresh words and pictures (read-do batch 1, 2026-11-03)
 
 [PR #1142](https://github.com/rjdunlap/neo/pull/1142), `claude/read-do-fresh`: [dive slice 1](../deep-dives/read-do.md#build-slices-in-order). No new level. Level 1 draws three different answer colours from red, blue, yellow, green and pink, each round with two other seeded hats. Level 2 is three rounds (big, small and a seeded third size), each on a different seeded animal from duck, cat, pig and dog, both pictures that animal. Level 3 plays all four sentences for a seeded pair of the four animals. The vocabulary is 15 words; new voice lines `read.green`, `read.pink`, `read.pig`, `read.dog` use device speech (no clips rendered). Plan names: level 2 "Read big or small and choose that animal's picture", level 3 "Read a sentence and make one of two animals jump or sleep"; the how-to card's level-2 step and finish were updated and the `readdo` browser suite logs each level's signs. The GAMES.md entry moved under Story Grove. Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--read--do-fresh-words-and-pictures-read-do-batch-1).
+
+
+## Rhyme Time, fresh families: bug, sock and snail (rhyme-time batch 1, 2026-11-03)
+
+[PR #1143](https://github.com/rjdunlap/neo/pull/1143), `claude/rhyme-time-fresh-families`: [dive slice 1](../deep-dives/rhyme-time.md#build-slices-in-order). No new level. Three families, ug (bug, mug, rug), ock (sock, clock, rock) and ail (snail, pail, whale): seven new code-drawn pictures in `pictures.ts`, with `rock` (scaled 1.3) and `pail` reused from `src/art/shore.ts`. Now 38 pictures in fifteen families; the three-word families went from five to eight, so level 4 and the riddles draw on eight. Meaning tags: sock wear; rug and rock sit; bug fly; whale swim; mug and pail hold; clock and snail none. An `ARGUABLE` list (bug for sky, snail for pet, mug for eat-with) keeps arguable fits from ever being the neutral or mate that must fail a clue (`fails()` in `logic.ts`). The riddle pool is re-pinned from 102 to 178; rule tests now 13. The `woods` suite screenshots level 4's hint (`rhyme-time-4-hint`).
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--rhyme-time-fresh-families-bug-sock-and-snail-rhyme-time-batch-1).

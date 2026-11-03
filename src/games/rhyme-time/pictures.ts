@@ -2,6 +2,7 @@ import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
+import { pail, rock } from '../../art/shore';
 import { puffs, starPoints } from '../../art/shapes';
 import type { Tag } from './logic';
 
@@ -143,6 +144,62 @@ export function picture(word: string): Container {
     case 'ring':
       g.circle(0, 14, 36).stroke(line(swatch.yellow.line, 14)).circle(0, 14, 36).stroke(line(swatch.yellow.fill, 8));
       g.poly([-16, -24, 0, -48, 16, -24, 0, -14]).fill(swatch.blue.light).stroke(line(swatch.blue.line, 4));
+      break;
+    case 'bug':
+      // A ladybird with its wings open, ready to fly.
+      g.ellipse(-30, -8, 30, 16).ellipse(30, -8, 30, 16).fill({ color: 0xffffff, alpha: 0.85 }).stroke(line(swatch.blue.light, 3));
+      g.circle(0, 8, 38).fill(swatch.red.fill).stroke(line(swatch.red.line));
+      g.moveTo(0, -28).lineTo(0, 46).stroke(line(ink, 4));
+      for (const [x, y] of [[-18, -4], [18, -4], [-20, 22], [20, 22]]) g.circle(x, y, 7).fill(ink);
+      g.circle(0, -34, 16).fill(ink).circle(-6, -38, 4).circle(6, -38, 4).fill(0xffffff);
+      g.moveTo(-8, -48).lineTo(-16, -62).moveTo(8, -48).lineTo(16, -62).stroke(line(ink, 3));
+      break;
+    case 'mug':
+      g.circle(40, 4, 22).stroke(line(swatch.blue.line, 12)).circle(40, 4, 22).stroke(line(swatch.blue.fill, 6));
+      g.roundRect(-44, -36, 80, 84, 12).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
+      g.ellipse(-4, -36, 40, 9).fill(wood.line).stroke(line(swatch.blue.line, 4));
+      g.moveTo(-14, -52).quadraticCurveTo(-24, -62, -14, -72).moveTo(6, -52).quadraticCurveTo(-4, -62, 6, -72).stroke(line(swatch.white.line, 3));
+      break;
+    case 'rug':
+      g.roundRect(-58, -34, 116, 68, 8).fill(swatch.orange.fill).stroke(line(swatch.orange.line));
+      for (const [y, col] of [[-20, swatch.yellow.fill], [-4, swatch.green.fill], [12, swatch.yellow.fill]] as const) g.rect(-58, y, 116, 8).fill(col);
+      for (let x = -54; x <= 54; x += 12) g.moveTo(x, 34).lineTo(x, 46).moveTo(x, -34).lineTo(x, -46);
+      g.stroke(line(swatch.orange.line, 3));
+      break;
+    case 'sock':
+      g.moveTo(-18, -56).lineTo(18, -56).lineTo(18, 14).quadraticCurveTo(18, 22, 30, 24).lineTo(46, 26).quadraticCurveTo(62, 30, 58, 46).quadraticCurveTo(54, 58, 36, 56).lineTo(-6, 52).quadraticCurveTo(-18, 50, -18, 36).closePath().fill(swatch.green.fill).stroke(line(swatch.green.line));
+      g.rect(-18, -56, 36, 12).rect(-18, -32, 36, 8).fill(0xffffff);
+      g.circle(48, 42, 8).fill(swatch.green.light);
+      break;
+    case 'clock':
+      g.circle(0, 0, 54).fill(0xffffff).stroke(line(swatch.red.line, 8));
+      for (let i = 0; i < 12; i++) {
+        const a = (i * Math.PI) / 6;
+        g.moveTo(Math.sin(a) * 40, -Math.cos(a) * 40).lineTo(Math.sin(a) * (i % 3 ? 46 : 48), -Math.cos(a) * (i % 3 ? 46 : 48));
+      }
+      g.stroke(line(ink, 3));
+      g.moveTo(0, 0).lineTo(0, -32).moveTo(0, 0).lineTo(22, 10).stroke(line(ink, 6)).circle(0, 0, 5).fill(ink);
+      break;
+    case 'snail':
+      g.moveTo(-60, 40).lineTo(40, 40).quadraticCurveTo(58, 40, 58, 22).lineTo(58, -2).quadraticCurveTo(46, -6, 40, 14).lineTo(-50, 30).closePath().fill(swatch.yellow.light).stroke(line(swatch.yellow.line, 4));
+      g.moveTo(50, -2).lineTo(44, -26).moveTo(58, 0).lineTo(64, -24).stroke(line(swatch.yellow.line, 4)).circle(44, -28, 5).circle(64, -26, 5).fill(ink);
+      g.circle(-6, 0, 38).fill(swatch.orange.fill).stroke(line(swatch.orange.line));
+      g.moveTo(-6, 0).arc(-6, 0, 10, 0, Math.PI * 1.5).arc(-6, 4, 20, Math.PI * 1.5, Math.PI * 3.2).stroke(line(swatch.orange.line, 4));
+      break;
+    case 'whale':
+      g.moveTo(-40, 6).quadraticCurveTo(-58, -24, -66, -20).lineTo(-60, 4).lineTo(-66, 28).quadraticCurveTo(-58, 30, -40, 10).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
+      g.ellipse(10, 6, 52, 34).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
+      g.moveTo(-30, 18).quadraticCurveTo(10, 44, 58, 14).quadraticCurveTo(30, 40, -30, 18).fill(swatch.blue.light);
+      g.circle(34, -4, 5).fill(ink).moveTo(40, 14).quadraticCurveTo(50, 18, 58, 12).stroke(line(swatch.blue.line, 3));
+      g.moveTo(16, -28).lineTo(16, -46).moveTo(16, -42).quadraticCurveTo(6, -56, -2, -50).moveTo(16, -42).quadraticCurveTo(26, -56, 34, -50).stroke(line(swatch.blue.light, 5));
+      break;
+    case 'rock':
+      // The shore's rock is drawn small for a scene; scaled up to fill a card.
+      rock(g, 0, 28);
+      g.scale.set(1.3);
+      break;
+    case 'pail':
+      pail(g, 0, 62);
       break;
     default:
       g.circle(0, 0, 40).fill(0xeeeeee);
