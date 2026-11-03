@@ -60,3 +60,10 @@
 - Browser: `BROWSER_SUITE=makerlane` (toddler level 1 free tap on a maker who is not waving, then the waving makers 0/0; portrait preschool level 2 two refused makers, bubbles, glow, then the right makers 2/1; pre-K level 3 sheep for the sock with replay, dimmed card and the scarf beside the sock, then the cotton plant 1/0), re-run after the review fixes; `fingerdemo` `FINGER_ONLY=maker-lane FINGER_LEVELS=2,3` (21.6 s and 17.6 s, before the review fixes, which did not change the bot).
 - Not run: offline check (no persistence or navigation change); no iPad or device speech check; FS3 (the grown-ups' card) not built.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#maker-lane-food-fiber-systems-study-2026-10-31-levels-13-built-2026-11-02)): whether a four-year-old picks the sheep for the sock and the replay changes her next pick, whether the thought bubble tells her which maker comes next, and the agricultural-literacy or textile review of the makers' pictures and lines.
+
+## 2026-11-02 — Lemonade Stand level 5 Two lemon boats (lemonade-stand batch 1)
+
+- [PR #1124](https://github.com/rjdunlap/neo/pull/1124): `lemonade-stand` school level 5 (boat pick, boat help and insight, co-play hint).
+- Ran (origin/main 05a1736f + branch, final tested commit 14f87c8e, Vite dev on http://localhost:5818): typecheck; `npm test` 296 files / 4404 tests (Lemonade Stand rules 28); `BROWSER_SUITE=woods WOODS_ONLY=lemon FROM_LEVEL=5` (portrait, two wrong boats = 2 misses, lightbulb then stays at 2 misses and 1 hint, day-2 lightbulb = 2 hints, saved score 2/2, card costs, jetty screenshot; re-run after the review fixes); `fingerdemo FINGER_ONLY=lemonade-stand FINGER_LEVELS=5` clean 36.7 s (before the review fixes, which touched only speech wording and an instruction guard); `npm run build`.
+- `game-reviewer`: two small findings fixed.
+- Not run: other woods levels, offline. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): "for 2 lemons" as cheaper per cup, four boat mornings in a row.
