@@ -1091,7 +1091,7 @@ Proof: new rule: typecheck, rule tests including the brute force on every shape 
 
 ### peekaround-island 1: Truthful support and real choices
 
-- **`peekaround-island`, truthful support and real choices (dive slice 1)** (existing-game fix; all bands): a level-scoped how-to, the level-2 hint on the hider when visible, level 4's three shore friends, level 5's pair rule so the turn always names someone, and `lap` dropped from `LEVELS` and the repeated guard. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
+- **`peekaround-island`, truthful support and real choices (dive slice 1)** (**claimed 2026-11-03**, branch `claude/peekaround-island-1`; existing-game fix; all bands): a level-scoped how-to, the level-2 hint on the hider when visible, level 4's three shore friends, level 5's pair rule so the turn always names someone, and `lap` dropped from `LEVELS` and the repeated guard. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
 
 Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 
