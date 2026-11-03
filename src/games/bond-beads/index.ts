@@ -590,6 +590,7 @@ export const bondBeads: GameModule = {
   name: 'Bond Beads',
   titleLine: 'game.bond-beads',
   region: 'tinker-lab',
+  challenge: 'space',
   skills: ['composition', 'conservation', 'rearrangement', 'spatial'],
   bands: ['school'],
   levels: (band) => rangeFor(LEVELS, band),

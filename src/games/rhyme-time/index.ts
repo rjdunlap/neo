@@ -463,6 +463,7 @@ export const rhymeTime: GameModule = {
   name: 'Rhyme Time',
   titleLine: 'game.rhyme-time',
   region: 'story-grove',
+  challenge: 'words',
   skills: ['rhyming', 'listening', 'phonological-awareness', 'words'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

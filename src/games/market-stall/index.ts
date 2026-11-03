@@ -444,6 +444,7 @@ export const marketStall: GameModule = {
   name: 'Market Stall',
   titleLine: 'game.market-stall',
   region: 'cozy-village',
+  challenge: 'numbers',
   skills: ['counting', 'money', 'adding', 'counting-on'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

@@ -585,6 +585,7 @@ export const shapeSorter: GameModule = {
   name: 'Shape Sorter',
   titleLine: 'game.shape-sorter',
   region: 'rainbow-meadow',
+  challenge: 'space',
   skills: ['shapes', 'fine-motor', 'spatial'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   entryLevels: [9],

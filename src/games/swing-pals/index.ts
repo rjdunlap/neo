@@ -775,6 +775,7 @@ export const swingPals: GameModule = {
   name: 'Swing Pals',
   titleLine: 'game.swing-pals',
   region: 'tinker-lab',
+  challenge: 'noticing',
   skills: ['cause-and-effect', 'patterns-of-motion', 'prediction', 'variables'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

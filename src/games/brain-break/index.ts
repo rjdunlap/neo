@@ -104,7 +104,7 @@ class BrainBreak implements Game {
 }
 
 export const brainBreak: GameModule = {
-  id: 'brain-break', name: 'Brain Break', titleLine: 'game.brain-break', region: 'puzzle-peaks',
+  id: 'brain-break', name: 'Brain Break', titleLine: 'game.brain-break', region: 'puzzle-peaks', challenge: 'noticing',
   skills: ['Visual search', 'Number order'], bands: ['grownup'],
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
   music: STYLES.lullaby, touchDemo: true,

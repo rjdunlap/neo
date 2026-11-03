@@ -751,6 +751,7 @@ export const lostLayers: GameModule = {
   name: 'Lost Layers',
   titleLine: 'game.lost-layers',
   region: 'tinker-lab',
+  challenge: 'logic',
   skills: ['evidence', 'relative order', 'uncertainty', 'reasoning'],
   bands: ['school'],
   levels: (band) => rangeFor(LEVELS, band),

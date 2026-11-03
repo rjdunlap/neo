@@ -722,6 +722,7 @@ export const quickTricks: GameModule = {
   name: 'Quick Tricks',
   titleLine: 'game.quick-tricks',
   region: 'puzzle-peaks',
+  challenge: 'space',
   skills: ['spatial-words', 'matching', 'length', 'problem-solving'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

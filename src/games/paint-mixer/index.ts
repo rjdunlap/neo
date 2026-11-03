@@ -461,7 +461,7 @@ function sticker(seed: number): Container {
 }
 
 export const paintMixer: GameModule = {
-  id: 'paint-mixer', name: 'Paint Mixer', titleLine: 'game.paint-mixer', region: 'counting-cove',
+  id: 'paint-mixer', name: 'Paint Mixer', titleLine: 'game.paint-mixer', region: 'counting-cove', challenge: 'numbers',
   skills: ['counting', 'comparing', 'number-sense', 'operations'], bands: ['school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,

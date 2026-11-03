@@ -774,6 +774,7 @@ export const teddyDoctor: GameModule = {
   name: 'Teddy Doctor',
   titleLine: 'game.teddy-doctor',
   region: 'cozy-village',
+  challenge: 'words',
   skills: ['body-parts', 'empathy', 'listening', 'sequencing'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

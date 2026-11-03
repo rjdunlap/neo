@@ -367,6 +367,7 @@ export const colorGarden: GameModule = {
   name: 'Color Garden',
   titleLine: 'game.color-garden',
   region: 'rainbow-meadow',
+  challenge: 'noticing',
   skills: ['colors', 'sorting', 'fine-motor'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   entryLevels: [9],

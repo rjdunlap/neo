@@ -654,6 +654,7 @@ export const blockGarden: GameModule = {
   name: 'Block Garden',
   titleLine: 'game.block-garden',
   region: 'puzzle-peaks',
+  challenge: 'space',
   skills: ['spatial-planning', 'shape-composition', 'planning'],
   bands: ['prek', 'school', 'grownup'],
   levels: (band) => rangeFor(LEVELS, band),

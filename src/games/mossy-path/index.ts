@@ -155,7 +155,7 @@ function iconArt(seed = 0): Container {
   const t = turtleArt(140); t.position.set(0, -80); c.addChild(t); return c;
 }
 export const mossyPath: GameModule = {
-  id: 'mossy-path', name: 'Mossy Path', titleLine: 'game.mossy-path', region: 'puzzle-peaks',
+  id: 'mossy-path', name: 'Mossy Path', titleLine: 'game.mossy-path', region: 'puzzle-peaks', challenge: 'space',
   skills: ['spatial-reasoning', 'planning', 'path-coverage'], bands: ['school'], touchDemo: true,
   levels: band => rangeFor({ school: { min: 1, max: 3 } }, band),
   describeLevel: level => planFor(level).name, music: STYLES.lullaby,

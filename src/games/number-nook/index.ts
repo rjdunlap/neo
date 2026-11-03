@@ -152,7 +152,7 @@ function iconArt(seed = 0) {
   return c;
 }
 export const numberNook: GameModule = {
-  id: 'number-nook', name: 'Number Nook', titleLine: 'game.number-nook', region: 'puzzle-peaks',
+  id: 'number-nook', name: 'Number Nook', titleLine: 'game.number-nook', region: 'puzzle-peaks', challenge: 'numbers',
   skills: ['spatial-reasoning', 'planning', 'number-order'], bands: ['grownup'], touchDemo: true,
   levels: band => rangeFor({ grownup: { min: 1, max: 3 } }, band),
   describeLevel: level => planFor(level).name, music: STYLES.lullaby,

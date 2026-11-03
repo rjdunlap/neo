@@ -584,6 +584,7 @@ export const littleConductor: GameModule = {
   name: 'Little Conductor',
   titleLine: 'game.little-conductor',
   region: 'music-mountain',
+  challenge: 'music',
   skills: ['listening', 'tempo', 'cause and effect', 'following a picture'],
   bands: ['toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

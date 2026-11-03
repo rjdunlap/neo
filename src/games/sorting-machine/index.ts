@@ -674,6 +674,7 @@ export const sortingMachine: GameModule = {
   name: 'Sorting Machine',
   titleLine: 'game.sorting-machine',
   region: 'tinker-lab',
+  challenge: 'logic',
   skills: ['logic', 'rules', 'testing', 'systems'],
   bands: ['school'],
   levels: (band) => rangeFor(LEVELS, band),

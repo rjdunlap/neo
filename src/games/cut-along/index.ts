@@ -655,7 +655,7 @@ function sticker(seed: number): Container {
 }
 
 export const cutAlong: GameModule = {
-  id: 'cut-along', name: 'Cut Along', titleLine: 'game.cut-along', region: 'treehouse',
+  id: 'cut-along', name: 'Cut Along', titleLine: 'game.cut-along', region: 'treehouse', challenge: 'hands',
   skills: ['fine-motor', 'shapes', 'spatial-reasoning'], bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b), describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,

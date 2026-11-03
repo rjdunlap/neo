@@ -646,6 +646,7 @@ export const ducklingParade: GameModule = {
   name: 'Duckling Parade',
   titleLine: 'game.duckling-parade',
   region: 'barnyard',
+  challenge: 'hands',
   skills: ['motor-planning', 'counting', 'colors', 'patterns'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

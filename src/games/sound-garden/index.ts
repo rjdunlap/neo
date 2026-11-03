@@ -625,6 +625,7 @@ export const soundGarden: GameModule = {
   name: 'Sound Garden',
   titleLine: 'game.sound-garden',
   region: 'music-mountain',
+  challenge: 'music',
   skills: ['listening', 'pitch', 'tempo', 'rhythm'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

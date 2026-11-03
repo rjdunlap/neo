@@ -552,6 +552,7 @@ export const storyWeaver: GameModule = {
   name: 'Story Weaver',
   titleLine: 'game.story-weaver',
   region: 'story-grove',
+  challenge: 'words',
   skills: ['story-structure', 'composition', 'sequencing', 'feelings', 'listening'],
   bands: ['school'],
   levels: (band) => rangeFor(LEVELS, band),

@@ -324,7 +324,7 @@ function sticker(seed: number): Container {
 }
 
 export const shellRows: GameModule = {
-  id: 'shell-rows', name: 'Shell Rows', titleLine: 'game.shell-rows', region: 'puzzle-peaks',
+  id: 'shell-rows', name: 'Shell Rows', titleLine: 'game.shell-rows', region: 'puzzle-peaks', challenge: 'logic',
   skills: ['planning', 'prediction', 'logic'], bands: ['prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.hub,

@@ -800,6 +800,7 @@ export const fossilDig: GameModule = {
   name: 'Fossil Dig',
   titleLine: 'game.fossil-dig',
   region: 'tinker-lab',
+  challenge: 'noticing',
   skills: ['observation', 'comparing', 'evidence', 'recording'],
   bands: ['prek'],
   levels: (band) => rangeFor(LEVELS, band),

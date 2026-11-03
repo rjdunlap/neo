@@ -587,6 +587,7 @@ export const beatBuilder: GameModule = {
   name: 'Beat Builder',
   titleLine: 'game.beat-builder',
   region: 'music-mountain',
+  challenge: 'music',
   skills: ['rhythm', 'patterns', 'listening', 'music'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

@@ -1204,6 +1204,7 @@ export const seesawBalance: GameModule = {
   name: 'Seesaw Balance',
   titleLine: 'game.seesaw-balance',
   region: 'tinker-lab',
+  challenge: 'numbers',
   skills: ['comparison', 'measurement', 'equality', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   entryLevels: [12, 13],

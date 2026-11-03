@@ -763,6 +763,7 @@ export const clapSyllables: GameModule = {
   name: 'Clap the Syllables',
   titleLine: 'game.clap-syllables',
   region: 'story-grove',
+  challenge: 'words',
   skills: ['syllables', 'phonological-awareness', 'rhythm', 'counting'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

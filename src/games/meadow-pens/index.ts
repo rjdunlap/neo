@@ -646,6 +646,7 @@ export const meadowPens: GameModule = {
   name: 'Meadow Pens',
   titleLine: 'game.meadow-pens',
   region: 'rainbow-meadow',
+  challenge: 'numbers',
   skills: ['area', 'perimeter', 'arrays', 'spatial-reasoning'],
   bands: ['school'],
   levels: (band) => rangeFor(LEVELS, band),

@@ -440,6 +440,7 @@ export const oppositesGame: GameModule = {
   name: 'Opposites',
   titleLine: 'game.opposites',
   region: 'story-grove',
+  challenge: 'words',
   skills: ['words', 'concepts', 'opposites', 'listening'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

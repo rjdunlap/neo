@@ -566,6 +566,7 @@ export const cueStudio: GameModule = {
   name: 'Cue Studio',
   titleLine: 'game.cue-studio',
   region: 'tinker-lab',
+  challenge: 'logic',
   skills: ['following a sequence of instructions', 'choosing a command', 'order', 'changing a plan'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

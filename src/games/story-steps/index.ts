@@ -146,7 +146,7 @@ class StorySteps implements Game {
   destroy() { this.alive = false; this.choices.forEach((c) => c.drag.destroy()); }
 }
 export const storySteps: GameModule = {
-  id: 'story-steps', name: 'Story Steps', titleLine: 'game.story-steps', region: 'story-grove',
+  id: 'story-steps', name: 'Story Steps', titleLine: 'game.story-steps', region: 'story-grove', challenge: 'words',
   skills: ['sequencing', 'cause-and-effect', 'storytelling', 'prediction'], bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => l >= 12 ? THEATER_PLANS[l >= 13 ? 1 : 0].name : l >= 11 ? PREDICTION_PLAN.name : l === 10 ? UNTANGLE_PLAN.name : l === 9 ? REPAIR_PLAN.name : LEVEL_PLANS[Math.max(0, Math.min(LEVEL_PLANS.length - 1, l - 1))].name,

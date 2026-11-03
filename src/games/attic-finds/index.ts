@@ -1209,6 +1209,7 @@ export const atticFinds: GameModule = {
   name: 'Attic Finds',
   titleLine: 'game.attic-finds',
   region: 'story-grove',
+  challenge: 'noticing',
   skills: ['observation', 'cause-and-effect', 'evidence', 'prediction', 'comparing'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   entryLevels: [3, 4],

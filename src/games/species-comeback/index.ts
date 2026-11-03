@@ -757,6 +757,7 @@ export const speciesComeback: GameModule = {
   name: 'Species Comeback',
   titleLine: 'game.species-comeback',
   region: 'barnyard',
+  challenge: 'logic',
   skills: ['animals', 'logic', 'planning', 'reasoning'],
   bands: ['grownup'],
   inputs: ['touch'],

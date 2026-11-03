@@ -660,6 +660,7 @@ export const sinkFloat: GameModule = {
   name: 'Sink or Float',
   titleLine: 'game.sink-float',
   region: 'tinker-lab',
+  challenge: 'noticing',
   skills: ['science', 'prediction', 'sorting'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (b) => (b === 'school' ? { min: 5, max: 7 } : b === 'prek' ? { min: 4, max: 6 } : b === 'preschool' ? { min: 3, max: 5 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),

@@ -234,7 +234,7 @@ function sticker(seed: number) {
   return c;
 }
 export const gemSwap: GameModule = {
-  id: 'gem-swap', liveController: true, name: 'Gem Swap', titleLine: 'game.gem-swap', region: 'puzzle-peaks',
+  id: 'gem-swap', liveController: true, name: 'Gem Swap', titleLine: 'game.gem-swap', region: 'puzzle-peaks', challenge: 'space',
   skills: ['spatial-planning', 'cause-and-effect'], bands: ['grownup'], inputs: ['touch', 'controller'], touchDemo: true,
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name, music: STYLES.lullaby,
   coplayHint: 'Predict which gems will fall after a line disappears. Compare two possible swaps before choosing.',

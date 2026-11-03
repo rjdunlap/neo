@@ -664,6 +664,7 @@ export const ferryJam: GameModule = {
   name: 'Ferry Jam',
   titleLine: 'game.ferry-jam',
   region: 'puzzle-peaks',
+  challenge: 'space',
   skills: ['planning', 'spatial-reasoning', 'problem-solving', 'sequencing'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

@@ -531,6 +531,7 @@ export const clockTower: GameModule = {
   name: 'Clock Tower',
   titleLine: 'game.clock-tower',
   region: 'cozy-village',
+  challenge: 'numbers',
   skills: ['telling-time', 'daily-routines', 'number-sense'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

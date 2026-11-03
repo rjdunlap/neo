@@ -479,6 +479,7 @@ export const lightLab: GameModule = {
   name: 'Light Lab',
   titleLine: 'game.light-lab',
   region: 'tinker-lab',
+  challenge: 'space',
   skills: ['spatial-reasoning', 'planning', 'cause-and-effect', 'light'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

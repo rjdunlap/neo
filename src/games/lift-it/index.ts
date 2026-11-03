@@ -954,6 +954,7 @@ export const liftIt: GameModule = {
   name: 'Lift It',
   titleLine: 'game.lift-it',
   region: 'tinker-lab',
+  challenge: 'noticing',
   skills: ['cause-and-effect', 'simple-machines', 'force-and-distance', 'prediction', 'numbers'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

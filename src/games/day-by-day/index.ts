@@ -398,7 +398,7 @@ function weekArt(seed: number): Container {
 }
 
 export const dayByDay: GameModule = {
-  id: 'day-by-day', name: 'Day by Day', titleLine: 'game.day-by-day', region: 'cozy-village',
+  id: 'day-by-day', name: 'Day by Day', titleLine: 'game.day-by-day', region: 'cozy-village', challenge: 'noticing',
   skills: ['weekday order', 'yesterday and tomorrow', 'weather records', 'counting observations', 'comparing evidence'], bands: ['prek', 'school'],
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
   music: STYLES.hub, touchDemo: true, entryLevels: [COUNT_LEVEL],

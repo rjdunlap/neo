@@ -751,6 +751,7 @@ export const littleHelpers: GameModule = {
   name: 'Little Helpers',
   titleLine: 'game.little-helpers',
   region: 'counting-cove',
+  challenge: 'numbers',
   skills: ['counting', 'one-to-one', 'number-sense', 'adding'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

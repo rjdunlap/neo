@@ -928,6 +928,7 @@ export const blockTower: GameModule = {
   name: 'Block Tower',
   titleLine: 'game.block-tower',
   region: 'tinker-lab',
+  challenge: 'space',
   skills: ['stacking', 'measuring height', 'comparing', 'balance'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

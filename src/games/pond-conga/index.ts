@@ -863,6 +863,7 @@ export const pondConga: GameModule = {
   name: 'Pond Conga',
   titleLine: 'game.pond-conga',
   region: 'puzzle-peaks',
+  challenge: 'hands',
   skills: ['planning', 'steering', 'sequencing'],
   bands: ['grownup'],
   inputs: ['touch', 'controller'],

@@ -556,6 +556,7 @@ export const fillDump: GameModule = {
   name: 'Fill and Dump',
   titleLine: 'game.fill-dump',
   region: 'counting-cove',
+  challenge: 'numbers',
   skills: ['containment', 'counting', 'cause-effect', 'capacity'],
   bands: ['lap', 'toddler', 'preschool'],
   levels: (band) => rangeFor(LEVELS, band),

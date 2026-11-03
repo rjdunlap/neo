@@ -424,6 +424,7 @@ export const timelineTrail: GameModule = {
   name: 'Timeline Trail',
   titleLine: 'game.timeline-trail',
   region: 'story-grove',
+  challenge: 'logic',
   skills: ['sequencing', 'then-and-now', 'cause-and-effect'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

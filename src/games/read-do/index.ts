@@ -210,7 +210,7 @@ function sticker(seed: number) {
   return c;
 }
 export const readDo: GameModule = {
-  id: 'read-do', name: 'Read & Do', titleLine: 'game.read-do', region: 'story-grove',
+  id: 'read-do', name: 'Read & Do', titleLine: 'game.read-do', region: 'story-grove', challenge: 'words',
   skills: ['reading', 'word meaning', 'sentences'], bands: ['prek', 'school'],
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
   music: STYLES.quiet, touchDemo: true,

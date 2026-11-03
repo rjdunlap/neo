@@ -590,6 +590,7 @@ export const jarSort: GameModule = {
   name: 'Jar Sort',
   titleLine: 'game.jar-sort',
   region: 'puzzle-peaks',
+  challenge: 'space',
   skills: ['planning', 'sorting', 'spatial-reasoning'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

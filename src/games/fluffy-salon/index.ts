@@ -903,6 +903,7 @@ export const fluffySalon: GameModule = {
   name: 'Fluffy Salon',
   titleLine: 'game.fluffy-salon',
   region: 'treehouse',
+  challenge: 'hands',
   skills: ['creativity', 'pretend-play', 'vocabulary', 'fine-motor'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

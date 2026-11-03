@@ -458,7 +458,7 @@ function sticker(seed: number): Container {
 }
 
 export const dropsJourney: GameModule = {
-  id: 'drops-journey', name: "Drop's Journey", titleLine: 'game.drops-journey', region: 'tinker-lab',
+  id: 'drops-journey', name: "Drop's Journey", titleLine: 'game.drops-journey', region: 'tinker-lab', challenge: 'noticing',
   skills: ['water', 'states-of-matter', 'cause-and-effect', 'sequencing'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.bubbles,

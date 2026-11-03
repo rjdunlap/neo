@@ -549,6 +549,7 @@ export const penguinSlide: GameModule = {
   name: 'Penguin Slide',
   titleLine: 'game.penguin-slide',
   region: 'puzzle-peaks',
+  challenge: 'space',
   skills: ['planning', 'spatial-reasoning', 'problem-solving'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

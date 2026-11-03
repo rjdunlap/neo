@@ -721,6 +721,7 @@ export const monsterMunch: GameModule = {
   name: 'Monster Munch',
   titleLine: 'game.monster-munch',
   region: 'counting-cove',
+  challenge: 'numbers',
   skills: ['counting', 'one-to-one', 'sharing'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (b) => rangeFor(LEVELS, b),

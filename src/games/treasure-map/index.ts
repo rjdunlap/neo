@@ -443,6 +443,7 @@ export const treasureMap: GameModule = {
   name: 'Treasure Map',
   titleLine: 'game.treasure-map',
   region: 'rainbow-meadow',
+  challenge: 'space',
   skills: ['coordinates', 'spatial-reasoning', 'directions', 'maps'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

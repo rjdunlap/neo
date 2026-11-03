@@ -524,6 +524,7 @@ export const lanternLights: GameModule = {
   name: 'Lantern Lights',
   titleLine: 'game.lantern-lights',
   region: 'puzzle-peaks',
+  challenge: 'logic',
   skills: ['logic', 'planning', 'pattern-finding'],
   bands: ['grownup'],
   inputs: ['touch', 'controller'],

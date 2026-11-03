@@ -653,6 +653,7 @@ export const animalSnack: GameModule = {
   name: 'Animal Snack',
   titleLine: 'game.animal-snack',
   region: 'barnyard',
+  challenge: 'words',
   skills: ['animals', 'words', 'matching', 'counting'],
   bands: ['lap', 'toddler', 'preschool'],
   levels: (band) => rangeFor(LEVELS, band),

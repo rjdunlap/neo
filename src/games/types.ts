@@ -91,6 +91,15 @@ export interface LevelCard {
   picture: () => Container;
 }
 
+/**
+ * What a round mostly asks of her, for Today's six's mix (`src/content/daily.ts`; docs/definitions/todays-six.md#r4-the-six-and-the-mix):
+ * `numbers` count, compare, add, measure; `words` letters, sounds, reading; `logic` patterns, rules, deduction, evidence;
+ * `space` building, routes, shapes, fitting, planning a layout; `music` listening, rhythm, tunes; `noticing` memory, spotting,
+ * sorting what was seen, science observation; `hands` aiming, tracing, steering, timing a touch.
+ */
+export const CHALLENGE_KINDS = ['numbers', 'words', 'logic', 'space', 'music', 'noticing', 'hands'] as const;
+export type ChallengeKind = (typeof CHALLENGE_KINDS)[number];
+
 export interface GameModule {
   id: string;
   /** For grown-ups (parent zone). Kids hear `titleLine` instead. */
@@ -98,6 +107,8 @@ export interface GameModule {
   /** Spoken when the game is picked. */
   titleLine: LineId;
   region: RegionId;
+  /** The kind of challenge a round mostly is, so Today's six can mix kinds. Every touch game names one (a registry test checks). */
+  challenge?: ChallengeKind;
   skills: string[];
   bands: Band[];
   levels(band: Band): LevelRange;

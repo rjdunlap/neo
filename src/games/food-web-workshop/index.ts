@@ -362,6 +362,7 @@ export const foodWebWorkshop: GameModule = {
   name: 'Food Web Workshop',
   titleLine: 'game.food-web-workshop',
   region: 'tinker-lab',
+  challenge: 'logic',
   skills: ['science', 'models', 'reasoning'],
   bands: ['school'],
   levels: (band) => rangeFor(LEVELS, band),

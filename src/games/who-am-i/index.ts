@@ -389,6 +389,7 @@ export const whoAmI: GameModule = {
   name: 'Who Am I?',
   titleLine: 'game.who-am-i',
   region: 'barnyard',
+  challenge: 'logic',
   skills: ['animals', 'attributes', 'classification', 'logic'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

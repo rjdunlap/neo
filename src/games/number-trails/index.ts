@@ -309,7 +309,7 @@ function sticker(seed: number): Container {
 }
 
 export const numberTrails: GameModule = {
-  id: 'number-trails', name: 'Number Trails', titleLine: 'game.number-trails', region: 'counting-cove',
+  id: 'number-trails', name: 'Number Trails', titleLine: 'game.number-trails', region: 'counting-cove', challenge: 'numbers',
   skills: ['numerals', 'counting', 'fine-motor', 'writing'], bands: ['preschool', 'prek'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,

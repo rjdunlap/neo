@@ -671,6 +671,7 @@ export const seaLift: GameModule = {
   name: 'Sea Lift',
   titleLine: 'game.sea-lift',
   region: 'counting-cove',
+  challenge: 'numbers',
   skills: ['negative-numbers', 'number-line', 'counting-back', 'ordering', 'distance', 'opposites'],
   bands: ['school'],
   levels: (band) => rangeFor(LEVELS, band),

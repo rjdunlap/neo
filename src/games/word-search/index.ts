@@ -840,6 +840,7 @@ export const wordSearch: GameModule = {
   name: 'Word Search',
   titleLine: 'game.word-search',
   region: 'story-grove',
+  challenge: 'words',
   skills: ['vocabulary', 'visual-scanning', 'spelling'],
   bands: ['grownup'],
   inputs: ['touch', 'controller'],

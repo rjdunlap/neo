@@ -756,6 +756,7 @@ export const stopAndGo: GameModule = {
   name: 'Stop and Go',
   titleLine: 'game.stop-and-go',
   region: 'cozy-village',
+  challenge: 'hands',
   skills: ['self-control', 'colors', 'safety', 'turn-taking'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

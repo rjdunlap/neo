@@ -665,6 +665,7 @@ export const singAlongBarn: GameModule = {
   name: 'Sing-Along Barn',
   titleLine: 'game.sing-along-barn',
   region: 'music-mountain',
+  challenge: 'music',
   skills: ['song-order', 'animal-words', 'cause-effect', 'choice'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

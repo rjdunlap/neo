@@ -868,6 +868,7 @@ export const driftCards: GameModule = {
   name: 'Drift Cards',
   titleLine: 'game.drift-cards',
   region: 'tinker-lab',
+  challenge: 'noticing',
   skills: ['ocean', 'currents', 'maps', 'evidence'],
   bands: ['school'],
   levels: (b) => rangeFor(BAND_LEVELS, b),

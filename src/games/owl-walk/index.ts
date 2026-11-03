@@ -663,6 +663,7 @@ export const owlWalk: GameModule = {
   name: 'Owl Walk Home',
   titleLine: 'game.owl-walk',
   region: 'rainbow-meadow',
+  challenge: 'logic',
   skills: ['colors', 'taking turns', 'shared goals', 'comparing distances'],
   bands: ['toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

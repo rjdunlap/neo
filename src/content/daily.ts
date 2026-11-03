@@ -70,24 +70,28 @@ export function hardLevels(mod: GameModule, band: Band): number[] {
 }
 
 /**
- * The day's six: a seeded shuffle of the pool, taken so each subject (`region`) appears once before any appears twice.
- * Each pick gets a seeded level from its game's ladder at the band it plays (`presetLevels`; a grown-up's from `hardLevels`),
- * unless `pinned` names a grown-up's pin for that game inside the ladder, which wins. A preset level is the day's choice,
- * not her progress: the round records with `adapt` off (`dailyOrigin`).
+ * The day's six: a seeded shuffle of the pool, taken so each kind of challenge (`challenge`) appears once before any appears
+ * twice, preferring a subject (`region`) not yet taken, so a band with six kinds gets six different kinds and lands repeat only
+ * when they must. Each pick gets a seeded level from its game's ladder at the band it plays (`presetLevels`; a grown-up's from
+ * `hardLevels`), unless `pinned` names a grown-up's pin for that game inside the ladder, which wins. A preset level is the
+ * day's choice, not her progress: the round records with `adapt` off (`dailyOrigin`).
  */
 export function dailySix(day: string, band: Band, games: readonly GameModule[], pinned: (id: string) => number | null = () => null): DailyPick[] {
   const rng = new Rng(daySeed(day, band));
   const pool = rng.shuffle([...dailyPool(band, games)]);
   const chosen: GameModule[] = [];
-  const used = new Set<string>();
+  const kinds = new Set<GameModule['challenge']>();
+  const lands = new Set<string>();
   const take = (from: readonly GameModule[], upTo: number) => {
-    while (chosen.length < upTo && from.some((m) => !chosen.includes(m))) {
-      const fresh = from.find((m) => !chosen.includes(m) && !used.has(m.region));
-      const next = fresh ?? from.find((m) => !chosen.includes(m))!;
-      // Every subject has had a turn: start the round of subjects again.
-      if (!fresh) used.clear();
+    for (let left = from.filter((m) => !chosen.includes(m)); chosen.length < upTo && left.length; left = left.filter((m) => !chosen.includes(m))) {
+      // Every kind (or every land) left has had a turn: start its round again.
+      if (left.every((m) => kinds.has(m.challenge))) kinds.clear();
+      if (left.every((m) => lands.has(m.region))) lands.clear();
+      const fresh = left.filter((m) => !kinds.has(m.challenge));
+      const next = fresh.find((m) => !lands.has(m.region)) ?? fresh[0];
       chosen.push(next);
-      used.add(next.region);
+      kinds.add(next.challenge);
+      lands.add(next.region);
     }
   };
   // A grown-up's six lead with two of the games made for grown-ups, so the day is not all early-school play.

@@ -403,6 +403,7 @@ export const notAlways: GameModule = {
   name: 'Not Always',
   titleLine: 'game.not-always',
   region: 'story-grove',
+  challenge: 'logic',
   skills: ['reasoning', 'claims', 'counterexamples', 'listening'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

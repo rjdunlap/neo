@@ -677,6 +677,7 @@ export const duckPond: GameModule = {
   name: 'Duck Pond',
   titleLine: 'game.duck-pond',
   region: 'counting-cove',
+  challenge: 'numbers',
   skills: ['counting', 'number-sense', 'adding'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

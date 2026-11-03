@@ -389,6 +389,7 @@ export const pixelPictures: GameModule = {
   name: 'Pixel Pictures',
   titleLine: 'game.pixel-pictures',
   region: 'treehouse',
+  challenge: 'space',
   skills: ['spatial-reasoning', 'symmetry', 'logic', 'art'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

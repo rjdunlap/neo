@@ -453,6 +453,7 @@ export const petSays: GameModule = {
   name: 'Pet Says',
   titleLine: 'game.pet-says',
   region: 'cozy-village',
+  challenge: 'words',
   skills: ['copying actions', 'body words', 'following directions', 'self-control'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

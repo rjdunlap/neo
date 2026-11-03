@@ -384,6 +384,7 @@ export const moonWindow: GameModule = {
   name: 'Moon Window',
   titleLine: 'game.moon-window',
   region: 'tinker-lab',
+  challenge: 'noticing',
   skills: ['observing', 'moon-appearance', 'matching', 'comparing'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (b) => rangeFor(LEVELS, b),

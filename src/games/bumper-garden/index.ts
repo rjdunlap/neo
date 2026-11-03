@@ -641,6 +641,7 @@ export const bumperGarden: GameModule = {
   name: 'Bumper Garden',
   titleLine: 'game.bumper-garden',
   region: 'bubble-beach',
+  challenge: 'hands',
   skills: ['cause-effect', 'tracking', 'colors', 'counting'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

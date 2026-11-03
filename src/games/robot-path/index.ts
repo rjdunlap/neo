@@ -451,6 +451,7 @@ export const robotPath: GameModule = {
   name: 'Robot Path',
   titleLine: 'game.robot-path',
   region: 'tinker-lab',
+  challenge: 'space',
   skills: ['planning', 'sequencing', 'spatial-reasoning', 'loops'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

@@ -398,6 +398,7 @@ export const dotLink: GameModule = {
   name: 'Dot Link',
   titleLine: 'game.dot-link',
   region: 'rainbow-meadow',
+  challenge: 'hands',
   skills: ['colors', 'fine-motor', 'counting', 'planning'],
   bands: ['lap', 'toddler', 'preschool', 'prek'],
   levels: (band) => rangeFor(LEVELS, band),

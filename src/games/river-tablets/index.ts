@@ -1573,6 +1573,7 @@ export const riverTablets: GameModule = {
   name: 'River Tablets',
   titleLine: 'game.river-tablets',
   region: 'story-grove',
+  challenge: 'numbers',
   skills: ['counting', 'one-to-one', 'symbols', 'checking'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

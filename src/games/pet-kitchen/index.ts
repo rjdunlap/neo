@@ -681,7 +681,7 @@ class PetKitchen implements Game {
 /** Level 10 (tap dealing) is the lap band's only level and toddler's first; it steps to the cutting levels after two smooth rounds. */
 const LEVELS:BandLevels={lap:{min:10,max:10},toddler:{min:1,max:10,order:[10,1]},preschool:{min:1,max:11,order:[1,11,2,3,4]},prek:{min:3,max:14,order:[11,3,4,14,5,6]},school:{min:5,max:15,order:[14,5,6,7,8,9,12,13,15]}};
 export const petKitchen:GameModule={
-  id:'pet-kitchen',name:'Pet Kitchen',titleLine:'game.pet-kitchen',region:'counting-cove',
+  id:'pet-kitchen',name:'Pet Kitchen',titleLine:'game.pet-kitchen',region:'counting-cove',challenge:'numbers',
   skills:['equal-shares','fractions','doubling','measuring'],bands:['lap','toddler','preschool','prek','school'],
   levels:b=>rangeFor(LEVELS,b),entryLevels:[DEAL_LEVEL,SAME_LEVEL,SHAPES_LEVEL],
   describeLevel:l=>planFor(l).name,music:STYLES.paint,touchDemo:true,

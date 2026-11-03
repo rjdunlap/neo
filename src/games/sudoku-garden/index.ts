@@ -879,6 +879,7 @@ export const sudokuGarden: GameModule = {
   name: 'Sudoku Garden',
   titleLine: 'game.sudoku-garden',
   region: 'puzzle-peaks',
+  challenge: 'logic',
   skills: ['logic', 'deduction', 'planning'],
   bands: ['grownup'],
   inputs: ['touch', 'controller'],

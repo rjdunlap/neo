@@ -614,6 +614,7 @@ export const makerLane: GameModule = {
   name: 'Maker Lane',
   titleLine: 'game.maker-lane',
   region: 'cozy-village',
+  challenge: 'noticing',
   skills: ['where things come from', 'how things are made', 'plant or animal', 'cause and effect'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

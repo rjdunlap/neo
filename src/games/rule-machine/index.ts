@@ -731,7 +731,7 @@ function sticker(seed: number): Container {
 }
 
 export const ruleMachine: GameModule = {
-  id: 'rule-machine', name: 'Rule Machine', titleLine: 'game.rule-machine', region: 'puzzle-peaks',
+  id: 'rule-machine', name: 'Rule Machine', titleLine: 'game.rule-machine', region: 'puzzle-peaks', challenge: 'logic',
   skills: ['patterns', 'prediction', 'deduction', 'adding'], bands: ['prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.hub,

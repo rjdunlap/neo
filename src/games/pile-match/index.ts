@@ -618,6 +618,7 @@ export const pileMatch: GameModule = {
   name: 'Pile Match',
   titleLine: 'game.pile-match',
   region: 'counting-cove',
+  challenge: 'noticing',
   skills: ['matching', 'visual-search', 'counting', 'planning'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

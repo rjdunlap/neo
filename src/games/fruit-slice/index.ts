@@ -862,6 +862,7 @@ export const fruitSlice: GameModule = {
   name: 'Fruit Slice',
   titleLine: 'game.fruit-slice',
   region: 'bubble-beach',
+  challenge: 'hands',
   skills: ['fine-motor', 'sorting', 'counting', 'spatial-reasoning'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

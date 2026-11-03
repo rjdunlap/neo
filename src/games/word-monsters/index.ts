@@ -502,6 +502,7 @@ export const wordMonsters: GameModule = {
   name: 'Word Monsters',
   titleLine: 'game.word-monsters',
   region: 'story-grove',
+  challenge: 'words',
   skills: ['letter-sounds', 'phonics', 'vocabulary'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

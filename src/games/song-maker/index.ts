@@ -345,6 +345,7 @@ export const songMaker: GameModule = {
   name: 'Song Maker',
   titleLine: 'game.song-maker',
   region: 'music-mountain',
+  challenge: 'music',
   skills: ['music', 'patterns', 'listening'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (b) => (b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 5, max: 7 } : b === 'preschool' ? { min: 4, max: 6 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),

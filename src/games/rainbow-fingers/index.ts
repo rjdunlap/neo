@@ -1017,6 +1017,7 @@ export const rainbowFingers: GameModule = {
   name: 'Rainbow Fingers',
   titleLine: 'game.rainbow-fingers',
   region: 'treehouse',
+  challenge: 'hands',
   skills: ['fine-motor', 'creativity'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),

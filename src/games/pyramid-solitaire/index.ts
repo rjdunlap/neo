@@ -158,7 +158,7 @@ function icon(seed = 0): Container {
   }); return c;
 }
 export const pyramidSolitaire: GameModule = {
-  id: 'pyramid-solitaire', name: 'Pyramid Solitaire', titleLine: 'game.pyramid-solitaire', region: 'puzzle-peaks',
+  id: 'pyramid-solitaire', name: 'Pyramid Solitaire', titleLine: 'game.pyramid-solitaire', region: 'puzzle-peaks', challenge: 'numbers',
   skills: ['number-complements', 'planning', 'revision'], bands: ['grownup'], touchDemo: true,
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name, music: STYLES.lullaby,
   coplayHint: 'Before lifting a pair, predict which card it will uncover. Can you save a match for that card?',

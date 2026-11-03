@@ -273,7 +273,7 @@ function sticker(seed: number) {
   return c;
 }
 export const tilePairs: GameModule = {
-  id: 'tile-pairs', liveController: true, name: 'Tile Pairs', titleLine: 'game.tile-pairs', region: 'puzzle-peaks',
+  id: 'tile-pairs', liveController: true, name: 'Tile Pairs', titleLine: 'game.tile-pairs', region: 'puzzle-peaks', challenge: 'noticing',
   skills: ['spatial-planning', 'matching'], bands: ['grownup'], inputs: ['touch', 'controller'], touchDemo: true,
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
   music: STYLES.lullaby,

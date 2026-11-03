@@ -934,6 +934,7 @@ export const lemonadeStand: GameModule = {
   name: 'Lemonade Stand',
   titleLine: 'game.lemonade-stand',
   region: 'cozy-village',
+  challenge: 'numbers',
   skills: ['forecasting', 'comparing', 'money', 'data'],
   bands: ['school'],
   levels: (band) => rangeFor(LEVELS, band),

@@ -1,10 +1,11 @@
-import { Container, Graphics, Rectangle, Text } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { cream, ink, swatch } from '../../art/palette';
 import { homeBackdrop } from '../../art/home/backdrop';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { dailySix, dayKey, levelDots, playedOn, type DailyPick } from '../../content/daily';
+import { makeCompanion } from '../../creatures/companion';
 import { BACK } from '../../creatures/friends-layout';
 import { CORNER_RADIUS, GUIDE_CORNER, HOME_BUTTON } from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
@@ -47,6 +48,8 @@ export class DailyScene extends Scene {
   private readonly title = new Text({ text: "Today's six", style: { fontFamily: FONT, fontSize: 40, fill: ink, fontWeight: '600' } });
   private readonly date = new Text({ text: '', style: { fontFamily: FONT, fontSize: 20, fill: MUTED, fontWeight: '500' } });
   private readonly plate = new Graphics();
+  /** The pet in the bottom-left corner the cards keep clear of: a poke repeats the page's line, and it cheers when all six are done. */
+  readonly pip = makeCompanion();
   readonly day = dayKey(new Date());
   readonly picks: DailyPick[];
   cards: DailyCard[] = [];
@@ -68,7 +71,13 @@ export class DailyScene extends Scene {
     this.content.addChild(this.backdrop);
     this.title.anchor.set(0.5, 0.5);
     this.date.anchor.set(0.5, 0.5);
-    this.ui.addChild(this.plate, this.title, this.date, this.back, this.all);
+    this.pip.scale.set(0.55);
+    this.pip.hitArea = new Circle(0, -120, 155);
+    onTap(this.pip, () => {
+      this.pip.poke();
+      void voice.say(this.allPlayed ? 'daily.done' : 'daily.open');
+    });
+    this.ui.addChild(this.plate, this.title, this.date, this.back, this.all, this.track(this.pip));
     this.cards = this.picks.map((pick) => ({ pick, node: this.card(pick) }));
     for (const c of this.cards) this.ui.addChild(c.node);
     this.place();
@@ -140,6 +149,7 @@ export class DailyScene extends Scene {
     this.backdrop.scale.set(scale);
     this.back.position.set(BACK.x, BACK.y);
     this.all.position.set(HOME_BUTTON.x, HOME_BUTTON.y);
+    this.pip.position.set(92, v.h - 12);
     const wide = v.w >= v.h;
     // The title sits in the top bar when there is room beside the corner buttons, else under them.
     const titleY = v.w >= 760 ? BACK.y - 8 : BACK.y + CORNER_RADIUS + 40;
@@ -198,6 +208,22 @@ export class DailyScene extends Scene {
     if (link) link.hidden = true;
     music.play(STYLES.hub);
     voice.stop();
-    void voice.say(this.allPlayed ? 'daily.done' : 'daily.open');
+    if (this.allPlayed) void this.flourish();
+    else void voice.say('daily.open');
+  }
+
+  /**
+   * Every card has a tick: the pet cheers, a few stars, and the line. Nothing is recorded or awarded beyond the six ordinary
+   * stickers, and every card stays playable.
+   */
+  private async flourish() {
+    void voice.say('daily.done');
+    await this.tw.wait(0.4);
+    sfx.sparkle();
+    this.pip.cheer();
+    for (const c of this.cards) {
+      const tick = c.node.getChildByLabel('tick') as Container;
+      this.particles.burst(c.node.x + tick.x, c.node.y + tick.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 6, speed: [90, 200], gravity: 0, life: [0.4, 0.7] });
+    }
   }
 }

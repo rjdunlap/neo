@@ -331,7 +331,7 @@ function sticker(seed: number): Container {
 }
 
 export const fruitSums: GameModule = {
-  id: 'fruit-sums', name: 'Fruit Sums', titleLine: 'game.fruit-sums', region: 'counting-cove',
+  id: 'fruit-sums', name: 'Fruit Sums', titleLine: 'game.fruit-sums', region: 'counting-cove', challenge: 'numbers',
   skills: ['adding', 'taking-away', 'number-sense', 'operations'], bands: ['school'], levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.stickers,
