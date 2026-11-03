@@ -6,6 +6,7 @@ async function readDoPlay() {
   for (const level of levels) {
     await launch('read-do', level);
     await page.waitForFunction(() => neo.scene.game?.busy === false);
+    log(`Read & Do ${level} signs: ${await page.evaluate(() => neo.scene.game.tasks.map(t => t.words.join(' ')).join(' / '))}`);
     // Word and whole-sign support use real input and do not count as hints or misses.
     await tap('neo.scene.game.words[0]');
     await page.waitForTimeout(300);

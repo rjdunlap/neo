@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-11-03 — Read & Do fresh words and pictures (read-do batch 1)
+
+- [PR #1142](https://github.com/rjdunlap/neo/pull/1142): level 1 draws three of five colours (red, blue, yellow, green, pink) with seeded hats; level 2 is three rounds (big, small, a seeded third) on a seeded animal from duck, cat, pig and dog; level 3 plays all four sentences for a seeded pair of animals; 15 words, new voice lines green, pink, pig, dog (device speech). No new level.
+- Ran (commit 4c6ed7ac, Vite on http://localhost:5371, classic): `npm run typecheck`; read-do rule tests plus content and registry tests 196 passed; `npm run build`; `BROWSER_SUITE=readdo READ_LEVELS=1,2,3` passed (signs seen: level 1 red/pink/yellow, level 2 small pig/big cat/small dog, level 3 cat+pig; two misses, one hint, a sticker each level). A first run was killed by an HMR reload from a mid-run edit, not a code failure. `game-reviewer` found no code issues.
+- Not run: `fingerdemo` (bot unchanged), the offline check, device speech for the new words.
+- Open: iPad speech for green, pink, pig and dog and a child's reading ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
+
 ## 2026-11-03 — Quick Tricks truthful accounting, a seeded cast and a bow (quick-tricks batch 1)
 
 - [PR #1141](https://github.com/rjdunlap/neo/pull/1141): a leaf below the friend is free at level 1; show one has a seeded friend, crosser (new snail and ladybug) and monster colour with per-critter lines; show two has seeded `Critter` friends, a mailbox flag, cheers, a berry gulp, no yellow arrow at Picnic Places, a ten-second nudge and a cast bow. No new level.
@@ -93,15 +100,6 @@
 - [PR #1128](https://github.com/rjdunlap/neo/pull/1128) (code `cefeceee`): four new single-role pieces, seeded per-role picks at levels 1–3, level 4 drawn from four pooled prediction gardens; no new level, no voice or how-to change, bot unchanged.
 - Ran: typecheck; `npx vitest run src/games/habitat-helpers` 15 passed (200-seed level-3 one-working-set test, every two-piece garden enumerated); `BROWSER_SUITE=habitat` against Vite on port 5874 passed at `cefeceee` (levels 1, 3, 4, 6 incl. portrait; level 3 relaunched until a new piece showed, one incomplete test and glow, screenshot `habitat-helpers-3-portrait`; level 4 no repeat); `npm run build` passed; art probe screenshot of the four new pieces.
 - Not run: `fingerdemo` (bot unchanged), full unit suite locally (CI runs it), device or child checks.
-
----
-
-## 2026-11-02 — Ferry Jam fair hints and fuller harbors (ferry-jam batch 1)
-
-- [PR #1127](https://github.com/rjdunlap/neo/pull/1127): progress-based hint (`stuck`, per-harbor distance table), 26 more frozen harbors, co-play hint; no new level, bot unchanged.
-- Ran: typecheck; Ferry Jam rule tests 22 passed (incl. course tests); a one-off real-drag Playwright probe at school level 6 (`test-results/ferry-probe.mjs`, Vite on port 5800, origin/main 7b86fe18 + branch): wandering back and forth earned exactly one hint at slide = patience (13 on one harbor, 17 on another) with the glow, then finished to a sticker with 1 hint; a longer route (22 slides on a 14-fewest harbor, 27 on a 17) earned no hint and finished to a sticker.
-- `game-reviewer`: its undo, keyboard and performance findings were fixed.
-- Not run: `fingerdemo` (bot unchanged), build (no shared files), full unit suite (CI), device or child checks.
 
 ---
 
@@ -247,7 +245,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Fill and Dump content sets | 2026-10-20: typecheck, 44 focused rules/how-to tests; seeded level-2 tip-out and inspected landscape screenshot for balls, blocks and ducks, no page errors ([entry](archive/VERIFICATION-2026-10-20.md#2026-10-20--fill-and-dump-things-to-put-away-slice-5)) | [PR #691](https://github.com/rjdunlap/neo/pull/691) | Content tier; no full play, new demo, portrait, build/offline or device/child proof |
 | Fill and Dump level 6 (`originals` fill, `fingerdemo`) | 2026-10-20: level 6 (free grass tap, two wrong baskets, glow hint, four requests, score [2,1], sticker, portrait); ghost finger clean at 6 in 14.5 s; typecheck, 2037 tests and build ([entry](archive/VERIFICATION-2026-10-20.md#2026-10-20--fill-and-dump-level-6-full-and-empty-slice-3)) | Fill and Dump level 6 / [PR #683](https://github.com/rjdunlap/neo/pull/683) | Levels 1, 3 and 5 replayed after the `basket.ts` split (2 and 4 not); a person must see a toddler tell full from empty |
 | Fill and Dump release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations; story resume/rewards; Together and Face-off trips; integrated production build and offline reload/saves | Fill and Dump preschool pouring entry | Chrome automation; iPad and child judgment remain open |
-| Read & Do (`readdo`, `fingerdemo`) | 2026-10-10: levels 1–3, free listening support, wrong meanings, two misses/one hint, saved reward, portrait, interrupted action; all three demos clean | Read & Do first slice entry | Screenshots reviewed; iPad, device speech and child reading unjudged |
+| Read & Do (`readdo`, `fingerdemo`) | 2026-11-03: `readdo` levels 1–3 on the five-colour, seeded-animal and seeded-pair pools (two misses, one hint, sticker per level); `fingerdemo` last run 2026-10-10 (bot unchanged) | Read & Do fresh words and pictures entry | iPad, device speech for green, pink, pig and dog, and child reading unjudged |
 | Goodnight Room release (`world`, `picnic`, `couch`, offline) | 2026-10-10: all five age bands in both map/subject orientations, story resume/rewards, Together and Face-off controller trips, production offline reload and saves | Goodnight Room barn and animals entry | Chrome automation; hardware and child judgment remain open |
 | Duckling Parade (`arcade`, `fingerdemo`) | 2026-10-16: level 11 ABB typecheck, 46 focused tests, build, filtered `arcade` parade 11 (refusals, 2 misses/1 hint, pond, sticker), clean 19.0 s finger ([proof](archive/VERIFICATION-2026-10-16.md#2026-10-16--duckling-parade-abb-level-11)). 2026-10-15: meadow treatments (two seeded looks) typecheck, 11 rules, filtered `arcade` parade 1 and 10, portrait of both looks ([proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--duckling-parade-meadow-treatments)); destination/cancel/lost-release/palm/portrait/destroy regression and level 10 [2,1]/sticker; clean 17.0s finger; typecheck/seven rules. Level-6 partial/extras support proof retained | [Steering proof](archive/VERIFICATION-2026-10-15.md#2026-10-15--duckling-parade-destination-and-cancellation) | Real iPad speech/touch/meadow look, ABB at 11 with a child, intended pickup and child understanding open; no portrait shot of level 11; `fingerdemo` not rerun for meadows |
 | Jelly Drums 10 (`originals`, `fingerdemo`) | 2026-10-17: `originals` levels 1–10 passed with the listen-again button and tunes (dev server, before the final button move), one portrait at level 9; `fingerdemo` last run 2026-10-13 (clean 34.6 s level-10 demo) | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--jelly-drums-level-10-one-big-jelly) | No build or offline run; iPad, speech and child play open |

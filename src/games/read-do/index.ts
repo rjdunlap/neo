@@ -16,8 +16,8 @@ import { answerIndex, makeTasks, matches, meaning, planFor, type Choice, type Wo
 
 const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 1, max: 3 } };
 export const WORD_LINES: Record<Word, LineId> = {
-  red: 'read.red', blue: 'read.blue', yellow: 'read.yellow', big: 'read.big', small: 'read.small',
-  duck: 'read.duck', cat: 'read.cat', the: 'read.the', can: 'read.can', jump: 'read.jump', sleep: 'read.sleep',
+  red: 'read.red', blue: 'read.blue', yellow: 'read.yellow', green: 'read.green', pink: 'read.pink', big: 'read.big', small: 'read.small',
+  duck: 'read.duck', cat: 'read.cat', pig: 'read.pig', dog: 'read.dog', the: 'read.the', can: 'read.can', jump: 'read.jump', sleep: 'read.sleep',
 };
 
 /** Pictures are choices; the printed sign never gives away its answer with color or an animal picture. */
@@ -29,7 +29,7 @@ function picture(choice: Choice): Container {
       .roundRect(-66, 6, 132, 22, 10).fill(color.fill).stroke({ width: 5, color: color.line })
       .rect(-42, -4, 84, 12).fill(cream));
   } else {
-    const animal = new Critter(CRITTERS[choice.kind === 'size' ? 'duck' : choice.animal]);
+    const animal = new Critter(CRITTERS[choice.animal]);
     animal.alive = false;
     animal.scale.set(choice.kind === 'size' ? (choice.size === 'big' ? 0.42 : 0.23) : 0.32);
     animal.position.set(choice.kind === 'action' ? -20 : 0, 55);
@@ -215,7 +215,7 @@ export const readDo: GameModule = {
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
   music: STYLES.quiet, touchDemo: true,
   coplayHint: 'Read the sign together, then let your child choose. Hearing a word is free support.',
-  offScreen: 'Write big duck or red hat on a card and find a matching toy or drawing together.',
+  offScreen: 'Write big pig or green hat on a card and find a matching toy or drawing together.',
   hubIcon: () => { const art = sticker(1); art.y = -80; return new WigglyIcon(art); },
   sticker, create: ctx => new ReadDo(ctx),
 };

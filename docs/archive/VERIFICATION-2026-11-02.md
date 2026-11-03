@@ -85,3 +85,12 @@
 - Not run: full unit suite (CI), build (no shared assets), couch suites (couch unchanged). Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): school-age child on Mend the bed; flower sets on the iPad.
 
 ---
+
+## 2026-11-02 — Ferry Jam fair hints and fuller harbors (ferry-jam batch 1)
+
+- [PR #1127](https://github.com/rjdunlap/neo/pull/1127): progress-based hint (`stuck`, per-harbor distance table), 26 more frozen harbors, co-play hint; no new level, bot unchanged.
+- Ran: typecheck; Ferry Jam rule tests 22 passed (incl. course tests); a one-off real-drag Playwright probe at school level 6 (`test-results/ferry-probe.mjs`, Vite on port 5800, origin/main 7b86fe18 + branch): wandering back and forth earned exactly one hint at slide = patience (13 on one harbor, 17 on another) with the glow, then finished to a sticker with 1 hint; a longer route (22 slides on a 14-fewest harbor, 27 on a 17) earned no hint and finished to a sticker.
+- `game-reviewer`: its undo, keyboard and performance findings were fixed.
+- Not run: `fingerdemo` (bot unchanged), build (no shared files), full unit suite (CI), device or child checks.
+
+---
