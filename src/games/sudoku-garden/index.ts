@@ -18,7 +18,8 @@ import {
 } from './logic';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
+/** Level 7, a 4 by 4 bed, is the easy entry played first; the ladder then climbs 1 to 6. */
+const LEVELS: BandLevels = { grownup: { min: 1, max: 7, order: [7, 1, 2, 3, 4, 5, 6] } };
 
 /** One soft color for each number, so a bed can be read at a glance as well as by its digits. */
 const DIGIT_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white'];
@@ -884,6 +885,7 @@ export const sudokuGarden: GameModule = {
   touchDemo: true,
   coplayHint: 'Tap a square, then a number. Ask which number can only go in one place in a row, a column or a box.',
   offScreen: 'Draw a small grid on paper and fill it so no row or column repeats a shape or a number.',
+  entryLevels: [7],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,

@@ -35,6 +35,27 @@ async function sudokuTouchPlay() {
     if (bed.x < 0 || bed.y < 0 || bed.x + bed.w > neo.view.w || bed.y + bed.h > neo.view.h) out.push('bed off screen');
     return out.map((m) => `${label}: ${m} (${neo.view.w}x${neo.view.h}, scale ${scale})`);
   }, label);
+  // Level 7 (4 by 4, the entry): 2 by 2 boxes, a wrong number is a miss, one hint, filled to its sticker. `SUDOKU_ONLY=7` plays just this bed.
+  await launch('sudoku-garden', 7); await idle();
+  const before = await page.evaluate(() => kit.store.data.stickers.length);
+  let four = await state();
+  assert.equal(four.n, 4);
+  assert.deepEqual(await page.evaluate(() => [neo.scene.game.puzzle.blanks, neo.scene.game.puzzle.grade]), [10, 1]);
+  assert.deepEqual(await targets('level 7 landscape'), []);
+  const miss = await page.evaluate(() => { const g = neo.scene.game, i = g.grid.findIndex((d) => !d); return { i, d: (g.puzzle.solution[i] % g.n) + 1 }; });
+  await tapCell(miss.i); await page.waitForTimeout(100); await tapSlot({ kind: 'digit', d: miss.d }); await page.waitForTimeout(200);
+  four = await state(); assert.equal(four.misses, 1, 'a wrong number on the 4 by 4 bed is one miss');
+  await tapSlot({ kind: 'erase' }); await page.waitForTimeout(200);
+  await tapSlot({ kind: 'hint' }); await page.waitForTimeout(300);
+  four = await state(); assert.deepEqual([four.hints, four.hinted], [1, true]);
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+  assert.deepEqual(await targets('level 7 portrait'), []);
+  await screenshot('sudoku-touch-7-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await fillAll(); await finished('sudoku-garden');
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1, 'one sticker for the 4 by 4 bed');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sudoku-garden').history.at(-1); return [r.level, r.misses, r.hints]; }), [7, 1, 1]);
+  if (process.env.SUDOKU_ONLY === '7') { assert.deepEqual(errors, []); log('Sudoku Garden touch level 7: 4 by 4 bed, a wrong number, one hint, 64-unit targets upright and sideways, one sticker passed'); return; }
   // Level 1 (6 by 6): a wrong number counts, Erase takes it back for free, Marks pencil a number, a hint counts once, then the bed is filled.
   await launch('sudoku-garden', 1); await idle();
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);
