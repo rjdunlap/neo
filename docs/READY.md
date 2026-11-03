@@ -34,6 +34,9 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 
+- **`orchard-rows`, fresh orchards and baskets (batch orchard-rows 2)** (game rules tier: `npm run typecheck` and the Orchard Rows rule tests only): levels 1–3 gain 2×2, 4×2, 4×3, 5×2, 4×4 and 5×3 (all within 5×5; level 2 never pairs a shape with its turn and holds no square), and level 4's second basket also draws 14 and 21. [Dive](deep-dives/orchard-rows.md#build-slices-in-order), [batch](GAME-BATCHES.md#orchard-rows-2-fresh-orchards-and-baskets).
+- **Define Orchard Rows *a path through the orchard* (levels 7–9)** (docs only; status `define`): a path splits the orchard into two she counts, then the whole (7 *A path at five*, 8 *Choose the path*, 9 *A path at ten*; products under 100); the path picture and pads in `basketLayout` at the four views, part signs, pad decoys (the big part alone), accounting, voice, how-to (bounding the 4–6 note), the bot, the `makeRound`/`isBasketLevel` couplings, rule tests and the check tier. [Dive](deep-dives/orchard-rows.md#build-slices-in-order).
+
 - **`sprout-shuffle`, levels 7–8 Patchwork Conservatory (batch sprout-shuffle 2)** (new-interaction tier: the bench, pots and lenses are new; play level 7 with a wrong Check and the glow and level 8 with both plans found, one portrait screenshot, `fingerdemo` at 7 and 8): after Sprout Shuffle level 6 (Hidden Sprouts) is built; [definition](definitions/patchwork-conservatory.md), [batch](GAME-BATCHES.md#sprout-shuffle-2-patchwork-conservatory).
 - **`pixel-pictures`, levels 7–8 Both ways and Twice as big (batch pixel-pictures 2)**, after batch 1 (new levels tier: typecheck, rule tests, one play of level 8 with one wrong square and the glow plus a level-7 case, `fingerdemo` at 7 and 8, one portrait screenshot of level 8): [dive](deep-dives/pixel-pictures.md#build-slices-in-order), [batch](GAME-BATCHES.md#pixel-pictures-2-both-ways-and-twice-as-big).
 - **`pixel-pictures`, level 9 Two colours, small (batch pixel-pictures 3)**, after batch 2 (shares the `order` and level files; typecheck, rule tests for order and entry, one play of level 9, `fingerdemo` at 9): [dive](deep-dives/pixel-pictures.md#build-slices-in-order), [batch](GAME-BATCHES.md#pixel-pictures-3-two-colours-small).
@@ -146,7 +149,7 @@ Each line is selected for routine dispatch; claim one packet, then enqueue its u
 
 ### Game research (docs only)
 
-- **Research game `orchard-rows` — Orchard Rows** (docs only; one game): extend its existing interaction and reuse relevant subject studies; queue the first unblocked build slice. [Backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives); [procedure](deep-dives/README.md#one-session-one-game). Levels 4–6 are claimed by the [number-structure study](deep-dives/subjects/number-structure.md) (NS1, definition queued); the dive numbers its own levels from 7.
+None left: Orchard Rows (2026-11-03) was the last unstarted game dive, and no unstarted subject research remains ([backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives)). The research slot stays empty until a new game or subject is added.
 
 ## Blocked work (not routine picks)
 

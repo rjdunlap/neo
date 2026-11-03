@@ -1516,3 +1516,11 @@ Proof: new-rule tier: typecheck, rule tests (leftovers in reading order equal th
 Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`. The couch trip stays on levels 1–3.
 
 Proof: new-interaction tier: typecheck, rule tests (no other theme word readable in the grid, blanks match lengths, hint letter correct, the free-line rule never adds a miss); one play of level 7 with a free non-theme line and two hints on one word, then to the sticker; one portrait screenshot of the blanks; `fingerdemo` at 7.
+
+### orchard-rows 2: Fresh orchards and baskets
+
+- **`orchard-rows`, fresh orchards and baskets (dive slice 1)** (existing-game content): level 1 adds 2×2 and 4×2, level 2 adds 4×3 and 5×2 (never a shape with its turn in one round, no square), level 3 adds 4×4 and 5×3, all within 5×5 so the 100-unit row bands are unchanged; level 4's second basket also draws 14 and 21 (two right row counts each). [Dive](deep-dives/orchard-rows.md#fresh-content-inside-existing-levels)
+
+Files expected: `src/games/orchard-rows/logic.ts`, `logic.test.ts`, `docs/GAMES.md`.
+
+Proof: game rules tier: `npm run typecheck` and the Orchard Rows rule tests (every pool shape at most 5×5, level 2 pairs never turns or squares, every level 4 basket has two right row counts and a leftover opening, cells at least `MIN_CELL` for every reachable deal at the four views). No browser play; the bot reads the same rules.
