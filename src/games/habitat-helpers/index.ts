@@ -14,13 +14,13 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { gardenPatch, gateIcon, needIcon, pieceArt } from './art';
-import { habitatTouch, helpingPieces, makeRounds, missingNeeds, NEEDS, PIECES, planFor, visitorsFor, welcomes, type HabitatPlan, type HabitatRound, type PieceId, type Visitor } from './logic';
+import { changedArt, gardenPatch, gateIcon, needIcon, pieceArt } from './art';
+import { afterChange, habitatTouch, helpingPieces, lostNeed, makeRounds, missingNeeds, NEEDS, PIECES, planFor, restores, visitorsFor, welcomes, type HabitatPlan, type HabitatRound, type Need, type PieceId, type Visitor } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 3 },
   prek: { min: 2, max: 5 },
-  school: { min: 4, max: 6 },
+  school: { min: 4, max: 7 },
 };
 
 const VISITOR_WORDS: Record<Visitor, string> = { bunny: 'Bunny', duck: 'Duck' };
@@ -34,6 +34,11 @@ interface PieceButton {
 
 interface VisitorChoice {
   visitor: Visitor;
+  node: Container;
+}
+
+interface NeedChoice {
+  need: Need;
   node: Container;
 }
 
@@ -55,6 +60,15 @@ function pieceButton(id: PieceId): Container {
   return node;
 }
 
+function needButton(need: Need): Container {
+  const node = new Container();
+  node.addChild(tile(124, 124));
+  const icon = needIcon(need, 64);
+  node.addChild(icon);
+  node.hitArea = new Rectangle(-66, -66, 132, 132);
+  return node;
+}
+
 function choiceButton(visitor: Visitor): Container {
   const node = new Container();
   node.addChild(tile(142, 132, visitor === 'bunny' ? 'pink' : 'yellow'));
@@ -71,8 +85,12 @@ class HabitatHelpers implements Game {
   readonly testButton: RoundButton;
   readonly pieces: PieceButton[] = [];
   readonly choices: VisitorChoice[] = [];
+  readonly needChoices: NeedChoice[] = [];
   readonly selected: PieceId[] = [];
   prediction: Visitor | null = null;
+  /** Level 7: whether she has named the need the change took away, and how many wrong names this round. */
+  needNamed = false;
+  needMisses = 0;
   roundIndex = -1;
   attempts = 0;
   misses = 0;
@@ -91,6 +109,8 @@ class HabitatHelpers implements Game {
   private readonly arrivals: { visitor: Visitor; node: Critter }[] = [];
   private readonly observed = new Set<Visitor>();
   private hinting: PieceId[] = [];
+  private needGlow = false;
+  private beforePulse = 0;
   private view: View;
   private clock = 0;
 
@@ -125,7 +145,9 @@ class HabitatHelpers implements Game {
     this.testButton.position.set(v.w - 86, v.h - 92);
 
     const selectedButtons = this.pieces.filter((p) => p.selected);
-    const gardenXs = spread(Math.max(1, this.round?.capacity ?? 3), gardenX - 210, gardenX + 210, 120);
+    // Level 7's four spaces spread wider, 130 apart, so its 124-unit touch areas never overlap.
+    const half = this.plotCount > 3 ? 260 : 210;
+    const gardenXs = spread(this.plotCount, gardenX - half, gardenX + half, this.plotCount > 3 ? 130 : 120);
     selectedButtons.forEach((p, i) => p.node.position.set(gardenXs[i], gardenY + (i % 2 ? 12 : -14)));
 
     const loose = this.pieces.filter((p) => !p.selected);
@@ -135,6 +157,9 @@ class HabitatHelpers implements Game {
 
     const choiceXs = spread(this.choices.length, gardenX - 90 * this.choices.length, gardenX + 90 * this.choices.length, 180);
     this.choices.forEach((c, i) => c.node.position.set(choiceXs[i], v.h - 95));
+    // The need question sits in the tray row, between the pet and the hidden gate.
+    const needXs = spread(this.needChoices.length, 170, v.w - 170, 170);
+    this.needChoices.forEach((c, i) => c.node.position.set(needXs[i], v.h - 95));
     this.drawPlots(gardenX, gardenY, gardenXs);
   }
 
@@ -147,6 +172,14 @@ class HabitatHelpers implements Game {
       const p = this.pieces.find((piece) => piece.id === id && !piece.selected);
       if (p) g.roundRect(p.node.x - 64, p.node.y - 64, 128, 128, 24).stroke({ width: pulse, color: swatch.yellow.fill });
     }
+    if (this.needGlow) {
+      const c = this.needChoices.find((choice) => this.round.change && choice.need === lostNeed(this.round.change));
+      if (c) g.roundRect(c.node.x - 70, c.node.y - 70, 140, 140, 26).stroke({ width: pulse, color: swatch.yellow.fill });
+    }
+    if (this.beforePulse > 0) {
+      this.beforePulse = Math.max(0, this.beforePulse - dt);
+      g.roundRect(this.goal.x - 212, this.goal.y - 72, 424, 144, 32).stroke({ width: pulse, color: swatch.orange.fill });
+    }
     if (this.prediction) {
       const c = this.choices.find((choice) => choice.visitor === this.prediction);
       if (c) g.roundRect(c.node.x - 79, c.node.y - 74, 158, 148, 28).stroke({ width: pulse, color: swatch.green.fill });
@@ -156,15 +189,31 @@ class HabitatHelpers implements Game {
   /** The ghost finger: place the pieces that work and open the gate, or pick the visitor the garden welcomes and open the gate. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.roundIndex < 0 || this.roundIndex >= this.rounds.length) return null;
-    const touch = habitatTouch(this.round, this.plan.mode, this.selected, this.prediction);
+    const touch = habitatTouch(this.round, this.plan.mode, this.selected, this.prediction, this.needNamed);
     if (!touch) return null;
     if (touch === 'gate') return { tap: { on: this.testButton }, pause: 1 };
+    if ('need' in touch) {
+      const choice = this.needChoices.find((c) => c.need === touch.need);
+      return choice ? { tap: { on: choice.node } } : null;
+    }
     if ('visitor' in touch) {
       const choice = this.choices.find((c) => c.visitor === touch.visitor);
       return choice ? { tap: { on: choice.node } } : null;
     }
-    const piece = this.pieces.find((p) => p.id === touch.piece && !p.selected);
+    // A change round's bot may take a placed card out again, so match any piece she can move.
+    const piece = this.pieces.find((p) => p.id === touch.piece && !p.locked);
     return piece ? { tap: { on: piece.node } } : null;
+  }
+
+  /** The garden's spaces: level 7 shows its three pieces and one empty space. */
+  private get plotCount() {
+    if (!this.round) return 3;
+    return this.round.change ? this.round.change.garden.length + this.round.capacity : Math.max(1, this.round.capacity);
+  }
+
+  /** What the garden gives right now: level 7 counts the unchanged pieces and the repair. */
+  private gardenNow(): PieceId[] {
+    return this.round.change ? [...afterChange(this.round.change), ...this.selected] : this.selected;
   }
 
   destroy() {
@@ -173,7 +222,7 @@ class HabitatHelpers implements Game {
 
   private drawPlots(gardenX: number, gardenY: number, xs: number[]) {
     const g = this.plots.clear();
-    for (let i = 0; i < (this.round?.capacity ?? 3); i++) {
+    for (let i = 0; i < this.plotCount; i++) {
       g.ellipse(xs[i], gardenY + (i % 2 ? 20 : -6), 64, 32).fill({ color: wood.fill, alpha: 0.25 }).stroke({ width: 4, color: wood.line, alpha: 0.55 });
     }
     // A little open path from the gate button into the habitat.
@@ -187,9 +236,14 @@ class HabitatHelpers implements Game {
     }
     for (const p of this.pieces.splice(0)) p.node.destroy({ children: true });
     for (const c of this.choices.splice(0)) c.node.destroy({ children: true });
+    for (const c of this.needChoices.splice(0)) c.node.destroy({ children: true });
     this.selected.length = 0;
     this.prediction = null;
     this.hinting = [];
+    this.needNamed = false;
+    this.needMisses = 0;
+    this.needGlow = false;
+    this.beforePulse = 0;
     this.goal.removeChildren().forEach((c) => c.destroy({ children: true }));
   }
 
@@ -201,6 +255,12 @@ class HabitatHelpers implements Game {
     if (this.roundIndex >= this.rounds.length) return void this.finale();
 
     this.buildGoal();
+    if (this.plan.mode === 'change') {
+      this.buildChangeGarden();
+      this.resize(this.view);
+      this.testButton.visible = false;
+      return void this.playChange();
+    }
     if (this.plan.mode === 'predict') this.buildPredictionRound();
     else this.buildGardenRound();
     this.resize(this.view);
@@ -249,6 +309,96 @@ class HabitatHelpers implements Game {
       onTap(node, () => this.toggle(piece), { cooldown: 220 });
       this.pieces.push(piece);
       this.pieceLayer.addChild(node);
+    }
+  }
+
+  /** Level 7: the working garden, locked in its three spaces (tapping a piece says what it gives). */
+  private buildChangeGarden() {
+    for (const id of this.round.prepared ?? []) {
+      const node = pieceButton(id);
+      const piece: PieceButton = { id, node, selected: true, locked: true };
+      onTap(node, () => this.inspect(piece), { cooldown: 400 });
+      this.pieces.push(piece);
+      this.pieceLayer.addChild(node);
+    }
+  }
+
+  /** The working garden welcomes its visitor, then one piece changes and the visitor goes off to look elsewhere. */
+  private async playChange() {
+    const c = this.round.change!;
+    const visitor = VISITOR_WORDS[c.visitor];
+    await this.ctx.say('habitat.change-intro', { visitor });
+    await this.showArrivals([c.visitor]);
+    await this.ctx.tw.wait(0.6);
+
+    this.showBefore();
+    const changed = this.pieces.find((p) => p.id === c.changed)!;
+    const art = changedArt(c.changed);
+    art.scale.set(0.9);
+    art.y = -2;
+    changed.node.removeChildAt(1).destroy({ children: true });
+    changed.node.addChild(art);
+    sfx.whoosh();
+    for (const a of this.arrivals) void this.ctx.tw.to(a.node, { x: this.view.w + 160 }, { duration: 1.1, ease: ease.inOutSine });
+    await this.ctx.say(`habitat.change.${c.id}`);
+    for (const a of this.arrivals.splice(0)) {
+      this.ctx.untrack(a.node);
+      a.node.destroy({ children: true });
+    }
+
+    for (const need of NEEDS) {
+      const node = needButton(need);
+      onTap(node, () => this.nameNeed(need), { cooldown: 250 });
+      this.needChoices.push({ need, node });
+      this.choiceLayer.addChild(node);
+    }
+    this.resize(this.view);
+    this.busy = false;
+    return this.ctx.instruct('habitat.which-need', { visitor });
+  }
+
+  /** The goal sign becomes the before card: the visitor beside the garden as it was. */
+  private showBefore() {
+    const c = this.round.change!;
+    this.goal.removeChildren().forEach((child) => child.destroy({ children: true }));
+    this.goal.addChild(new Graphics().roundRect(-200, -66, 400, 132, 28).fill({ color: 0xffffff, alpha: 0.95 }).stroke({ width: 7, color: wood.fill }));
+    const friend = smallVisitor(c.visitor, 0.22);
+    friend.position.set(-145, 48);
+    this.goal.addChild(friend);
+    c.garden.forEach((id, i) => {
+      const art = pieceArt(id);
+      art.scale.set(0.62);
+      art.position.set(-45 + i * 90, 0);
+      this.goal.addChild(art);
+    });
+    this.goal.scale.set(0.6);
+    void this.ctx.tw.to(this.goal.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.outBack });
+  }
+
+  private nameNeed(need: Need) {
+    const c = this.round.change;
+    if (this.busy || this.finished || this.needNamed || !c) return;
+    const visitor = VISITOR_WORDS[c.visitor];
+    if (need === lostNeed(c)) {
+      this.needNamed = true;
+      this.needGlow = false;
+      sfx.sparkle();
+      for (const choice of this.needChoices.splice(0)) choice.node.destroy({ children: true });
+      this.buildGardenRound();
+      this.resize(this.view);
+      this.testButton.visible = true;
+      return void this.ctx.instruct('habitat.repair', { visitor, need });
+    }
+    // Naming the need is a claim she can check against the before card, so a wrong one is the game's counted miss.
+    this.misses++;
+    this.needMisses++;
+    this.beforePulse = 1.6;
+    sfx.boing();
+    void this.ctx.say('habitat.need-wrong');
+    if (this.needMisses >= 2 && !this.needGlow) {
+      this.needGlow = true;
+      this.hints++;
+      void this.ctx.say('habitat.need-glow');
     }
   }
 
@@ -328,14 +478,15 @@ class HabitatHelpers implements Game {
       return void this.next();
     }
 
-    if (welcomes(this.selected, this.round.visitors)) {
+    if (welcomes(this.gardenNow(), this.round.visitors)) {
       this.busy = true;
       this.testButton.visible = false;
       this.hinting = [];
       await this.ctx.say('habitat.testing');
       await this.showArrivals(this.round.visitors);
       this.round.visitors.forEach((v) => this.observed.add(v));
-      await this.ctx.say(this.round.visitors.length > 1 ? 'habitat.both' : 'habitat.arrived', { visitor: this.round.visitors.map((v) => VISITOR_WORDS[v]).join(' and ') });
+      const line = this.round.change ? 'habitat.restored' : this.round.visitors.length > 1 ? 'habitat.both' : 'habitat.arrived';
+      await this.ctx.say(line, { visitor: this.round.visitors.map((v) => VISITOR_WORDS[v]).join(' and ') });
       await this.ctx.tw.wait(0.45);
       return void this.next();
     }
@@ -343,12 +494,13 @@ class HabitatHelpers implements Game {
     // Trying a habitat is an experiment, not a wrong answer. Repeated tests add an explicit glow and count as help.
     this.busy = true;
     this.attempts++;
-    const missing = missingNeeds(this.selected, this.round.visitors)[0];
+    const missing = missingNeeds(this.gardenNow(), this.round.visitors)[0];
     sfx.splash();
     await this.ctx.say('habitat.missing', { visitor: VISITOR_WORDS[missing.visitor], need: missing.need });
     if (this.attempts >= 2 && !this.hinting.length) {
       this.hints++;
-      this.hinting = helpingPieces(this.round, this.selected);
+      const change = this.round.change;
+      this.hinting = change ? this.round.offered.filter((piece) => restores(change, piece)) : helpingPieces(this.round, this.selected);
       await this.ctx.say('habitat.glow', { need: missing.need });
     }
     this.busy = false;
