@@ -14,7 +14,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { beginningArt, bubbleArt, cardArt, formArt, giftArt, iconArt, saplingArt, stallArt, stickerArt, toolArt } from './art';
 import {
   BUBBLE_H, BUBBLE_W, cardChain, cardResult, clampLevel, FORMS, LEVEL_NAMES, LEVELS, makerLaneLayout, makerOf, Play, PATH_H,
-  roundFor, stageOf, stallAt, THINGS, type Card, type Chain, type Form, type Maker, type MakerLaneLayout, type Outcome, type Rect, type Step,
+  roundFor, stallAt, THINGS, type Card, type Chain, type Form, type Maker, type MakerLaneLayout, type Outcome, type Rect, type Step,
 } from './logic';
 
 /** Each level's authored round leads its first round of a session, and every demonstration. */
@@ -117,7 +117,7 @@ class MakerLane implements Game {
     if (this.level === 2) await this.ctx.say(this.harvestLine());
     else if (this.level === 3) await this.ctx.say(`makerlane.this.${this.play.question!.thing}` as LineId);
     if (!this.alive) return;
-    this.busy = false;
+    this.release();
   }
 
   private layout(): MakerLaneLayout { return makerLaneLayout(this.view, this.level); }
@@ -138,7 +138,10 @@ class MakerLane implements Game {
   /** The level-2 bundle starts harvested: the pet says what the first maker did. */
   private harvestLine(): LineId { return `makerlane.make.${this.play.bundle!.chain}.1` as LineId; }
 
+  private beginArgs: [Chain | null, boolean, Card?] | null = null;
+
   private showBeginning(chain: Chain | null, harvested: boolean, card?: Card) {
+    this.beginArgs = [chain, harvested, card];
     this.beginHolder.removeChildren().forEach((c) => c.destroy({ children: true }));
     const L = this.layout();
     const r = L.begin;
@@ -256,6 +259,7 @@ class MakerLane implements Game {
     const p = this.spotAt(i + 1);
     this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 8, speed: [60, 160], gravity: 0, life: [0.3, 0.6] });
     this.setBundle(out.to);
+    if (out.maker.step === 1) this.showBeginning(out.maker.chain, true);
     this.bundle.scale.set(0.6);
     void this.ctx.tw.to(this.bundle.scale, { x: 1, y: 1 }, { duration: 0.3 });
     // The bubbles on the other stalls went with the old form.
@@ -272,7 +276,7 @@ class MakerLane implements Game {
       sfx.pop(7);
       if (this.level === 2) { await this.ctx.say(this.harvestLine()); if (!this.alive) return; }
     }
-    this.busy = false;
+    this.release();
     if (this.drag) this.drag.enabled = true;
   }
 
@@ -404,7 +408,7 @@ class MakerLane implements Game {
       this.emptyLane();
       this.showResult(card);
     }
-    this.busy = false;
+    this.release();
   }
 
   /** What a wrong beginning made, set beside the asked thing until the next card (nothing for the factory). */
@@ -538,22 +542,36 @@ class MakerLane implements Game {
       const x = Math.max(...L.spots.map((p) => p.x));
       g.roundRect(x - L.bundle * 0.45, ys[0], L.bundle * 0.9, ys[1] - ys[0], 20).fill(swatch.brown.light);
     }
-    if (this.level === 3) {
-      if (this.play.question && !this.busy) this.setUpQuestion();
-    } else if (this.play.bundle) {
-      this.stalls.forEach((s, i) => s.node.position.set(L.stalls[i].x, L.stalls[i].y));
-      if (!this.busy && !this.play.done) {
-        this.showBeginning(this.play.bundle.chain, stageOf(this.play.form) > 0);
-        const p = this.spotAt(this.spot);
-        this.bundle.position.set(p.x, p.y);
-        if (this.drag) this.drag.home = { x: p.x, y: p.y };
-      }
+    this.place();
+  }
+
+  /** Put everything where the present view wants it, without rebuilding anything she can see change (dimmed cards stay dim). */
+  private place() {
+    const L = this.layout();
+    this.stalls.forEach((s, i) => s.node.position.set(L.stalls[i].x, L.stalls[i].y));
+    if (this.beginArgs) this.showBeginning(...this.beginArgs);
+    if (L.frame) {
+      this.frame.position.set(L.frame.x, L.frame.y);
+      this.cards.forEach((c, i) => c.position.set(L.cards[i].x + L.cards[i].w / 2, L.cards[i].y + L.cards[i].h / 2));
+      for (const c of this.resultHolder.children) c.position.set(L.frame.x - c.width / 2 - 24, L.frame.y + L.frame.h / 2);
     }
+    if (!this.busy && !this.play.done) {
+      const p = this.spotAt(this.spot);
+      this.bundle.position.set(p.x, p.y);
+      if (this.drag) this.drag.home = { x: p.x, y: p.y };
+    }
+  }
+
+  /** Touches are taken again; a rotation during the animation is caught up here. */
+  private release() {
+    this.busy = false;
+    this.place();
   }
 
   update(dt: number) {
     this.clock += dt;
     const g = this.glow.clear();
+    if (this.level === 1) for (const s of this.stalls) if (s.critter) s.critter.rotation = 0;
     const r = this.glowRect();
     if (!r) return;
     const pulse = 0.6 + 0.4 * Math.sin(this.clock * 4);
