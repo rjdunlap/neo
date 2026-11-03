@@ -200,7 +200,7 @@ None. These leans follow the [standing rules](../archive/DECISIONS-2026-10-23.md
 
 ## Build slices, in order
 
-1. **Fresh words and pictures** (existing-interaction tier: typecheck, rule tests, one filtered regression play at level 3 on a seed with a pig or dog, one build for the voice lines; bot unchanged, no `fingerdemo`):
+1. **Fresh words and pictures** (built 2026-11-03, [build note](../archive/COMPLETED-2026-10-09.md#read--do-fresh-words-and-pictures-read-do-batch-1-2026-11-03); existing-interaction tier: typecheck, rule tests, one filtered regression play at level 3 on a seed with a pig or dog, one build for the voice lines; bot unchanged, no `fingerdemo`):
    - Level 1's five-colour pool.
    - Level 2's seeded animal and third round.
    - Level 3's seeded pair.

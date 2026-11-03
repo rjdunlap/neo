@@ -919,7 +919,7 @@ Proof: new-interaction tier: typecheck, unit tests (fewer than four squares cann
 
 ### ferry-jam 1: Fair hints and fuller harbors
 
-**Built 2026-11-02 ([PR #1127](https://github.com/rjdunlap/neo/pull/1127)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-02--ferry-jam-fair-hints-and-fuller-harbors-ferry-jam-batch-1); [build note](archive/COMPLETED-2026-10-09.md#ferry-jam-fair-hints-and-fuller-harbors-ferry-jam-1-2026-11-02). No longer eligible for dispatch. Scope retained for reference.
+**Built 2026-11-02 ([PR #1127](https://github.com/rjdunlap/neo/pull/1127)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-02.md#2026-11-02--ferry-jam-fair-hints-and-fuller-harbors-ferry-jam-batch-1); [build note](archive/COMPLETED-2026-10-09.md#ferry-jam-fair-hints-and-fuller-harbors-ferry-jam-1-2026-11-02). No longer eligible for dispatch. Scope retained for reference.
 
 - **`ferry-jam`, fair hints and fuller harbors (dive slice 1)** (existing interaction; pre-K and school, no new level): the progress-based `stuck` hint replaces the raw slide count, harbors fill each plan's range (the pools now sit at the bottom of it) with a strict pool test, and a `coplayHint` adopts the Penguin Slide/Ferry Jam co-play split. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
 
@@ -1244,6 +1244,8 @@ Files expected: `src/games/quick-tricks/logic.ts`, `logic.test.ts`, `index.ts`, 
 Proof: new-level tier with `order`: typecheck, unit tests including the registry, lands and order/entry tests, one play of level 8 at toddler with a leaf in front of Bunny (succeeds) and a short pull past halfway, `fingerdemo` at 8.
 
 ### read-do 1: Fresh words and pictures
+
+Built 2026-11-03, [PR #1142](https://github.com/rjdunlap/neo/pull/1142); [build note](archive/COMPLETED-2026-10-09.md#read--do-fresh-words-and-pictures-read-do-batch-1-2026-11-03). No longer eligible for dispatch.
 
 - **`read-do`, Fresh words and pictures (dive slice 1)** (extends the built game; no new level): level 1's five-colour pool, level 2's seeded animal and third round, level 3's seeded pair, *green, pink, pig, dog* voice lines, and the GAMES.md entry moved under Story Grove. [Dive](deep-dives/read-do.md#build-slices-in-order)
 
