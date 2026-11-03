@@ -239,7 +239,8 @@ class RobotPath implements Game {
     this.running = false;
     if (this.misses === 2) {
       this.hints++;
-      void this.ctx.say(!this.fixPlan ? 'robot.hint' : this.nextHelp() === this.loopButton ? 'robot.mend.hint' : 'robot.fix.hint');
+      const help = this.fixPlan && this.nextHelp();
+      void this.ctx.say(!help ? 'robot.hint' : help === this.loopButton ? 'robot.mend.hint' : help === this.clear ? 'robot.fix.clear' : 'robot.fix.hint');
     }
     this.drawHint();
   }
