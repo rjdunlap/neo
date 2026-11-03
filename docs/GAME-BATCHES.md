@@ -1411,7 +1411,7 @@ Proof: new-interaction tier: typecheck, rule tests for the rhyme table and seede
 
 ### sink-float 1: Fresh things
 
-- **`sink-float`, Fresh things (dive slice 1)** (**claimed 2026-11-03**, branch `claude/sink-float-fresh-things`) (extends the built game; fresh content in levels 1–4 and 6): feather, marble, wooden log, ice cube and paperclip with `thingArt`, journal lines and ordering, and property tests replacing the pinned-draws test. [Dive](deep-dives/sink-float.md#build-slices-in-order)
+- **`sink-float`, Fresh things (dive slice 1)** (**built 2026-11-03**, branch `claude/sink-float-fresh-things`, PR #1147) (extends the built game; fresh content in levels 1–4 and 6): feather, marble, wooden log, ice cube and paperclip with `thingArt`, journal lines and ordering, and property tests replacing the pinned-draws test. [Dive](deep-dives/sink-float.md#build-slices-in-order)
 
 Files expected: `src/games/sink-float/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, the journal source and tests, `docs/GAMES.md`.
 

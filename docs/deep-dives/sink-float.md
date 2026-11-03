@@ -4,7 +4,7 @@
 
 ## The game today
 
-Things arc into a water tank: floaters bob at the surface, sinkers drift down trailing bubbles and clunk on the bottom. Learning: predict, test and sort by a property she can only find out by trying; guesses are never misses. Home land Bubble Beach. Couch play uses level 6 only (`src/couch/catalog.ts`: guess with left/right, team face-off). Each thing that really goes into the water files a discovery-journal entry (nine of the journal's thirty-one).
+Things arc into a water tank: floaters bob at the surface, sinkers drift down trailing bubbles and clunk on the bottom. Learning: predict, test and sort by a property she can only find out by trying; guesses are never misses. Home land Bubble Beach. Couch play uses level 6 only (`src/couch/catalog.ts`: guess with left/right, team face-off). Each thing that really goes into the water files a discovery-journal entry (fourteen of the journal's thirty-six).
 
 | Level | Plan (`SINK_PLANS` in `logic.ts`) | Band windows | What she decides |
 | --- | --- | --- | --- |
@@ -18,12 +18,11 @@ Things arc into a water tank: floaters bob at the surface, sinkers drift down tr
 
 `levels()` is a plain min/max function (lap 1–2, toddler 2–4, preschool 3–5, pre-K 4–6, school 5–7); there is no `order` or `entryLevels`.
 
-**Content pools.** `THINGS` holds nine: obvious floaters duck, boat, ball; obvious sinkers rock, key; surprises leaf and apple (float), coin and spoon (sink). `thingsFor` takes `min(count, pool)` from the filtered pool, so **levels 1–4 show the same five things (duck, boat, ball, rock, key) every round**; only the order changes. With surprises the pool is nine and a round shows six. Level 7 draws three shape tiles in a seeded order and two of five clay colours.
+**Content pools.** `THINGS` holds fourteen: obvious floaters duck, boat, ball and feather; obvious sinkers rock, key and marble; surprises leaf, apple, log and ice cube (float), coin, spoon and paper clip (sink). `thingsFor` takes `min(count, pool)` from the filtered pool: levels 1–4 draw five of the seven obvious things (so rounds vary, with both kinds present), levels 5–6 draw six of all fourteen. `thingWord` gives "ice cube" and "paper clip" for the `sink.guess` slot and the journal. Level 7 draws three shape tiles in a seeded order and two of five clay colours.
 
 **Known gaps.**
-- The five-thing repeat above is the main content gap at the lap-to-preschool levels, where most rounds are played.
-- `logic.test.ts` pins the seeded draws of levels 1–6 ("draws the same things … as before Make it float"); adding to `THINGS` changes every draw, so a content slice must re-pin that test on purpose (no save stores a draw, so nothing breaks).
-- The journal is derived from `ALL_THINGS` (`src/content/journal.ts`), so every new thing adds a journal entry, a `journal.sink.*` line and art for the card; the "thirty-one observations" count in the [roadmap](../ROADMAP.md) moves with it.
+- The pinned-draws test was replaced by property tests in batch 1 (reviewed float table, varied rounds); later content slices need no re-pin.
+- The journal is derived from `ALL_THINGS` (`src/content/journal.ts`), so every new thing adds a journal entry, a `journal.sink.*` line and art for the card; the roadmap's observation count moves with it (thirty-six after batch 1).
 - `sink.guess` speaks `{thing}` through a slot, so new names use device speech until slotted clips (V3).
 - Level 7's couch ring branch is not reached by island keys (recorded in [GAMES.md](../GAMES.md#sink-or-float)).
 - The off-screen bath-time card does not yet say the grown-up stays within reach ([off-screen study](subjects/off-screen-companions.md)); that belongs to the band-keyed `offScreenFor` work, not here.
@@ -107,7 +106,7 @@ None new. Garden Raft keeps level ID 8 as decided 2026-10-23; this dive builds l
 
 ## Build slices, in order
 
-1. **Fresh things** (batch sink-float 1; existing-interaction tier plus art): typecheck, the game's rule tests and the journal tests, one filtered regression play of level 4 on a seed with a new thing and of level 6 with a new surprise, one portrait screenshot of the new art in the tank, `npm run build` (journal and voice lines are shared). Bot unchanged.
+1. **Fresh things** (**built 2026-11-03**, batch sink-float 1; existing-interaction tier plus art): typecheck, the game's rule tests and the journal tests, one filtered regression play of level 4 on a seed with a new thing and of level 6 with a new surprise, one portrait screenshot of the new art in the tank, `npm run build` (journal and voice lines are shared). Bot unchanged.
 2. **Level 9 *Big and small*** (batch sink-float 2), after batch 1 (the log and pebble art; new-level tier with `order`: typecheck, unit tests including order, lands and the keyed-plan clamp, one play of level 9 at school with a surprise guess, `fingerdemo` at 9, one portrait screenshot).
 3. **Define Sink or Float 10 *Salty or fresh*** (docs only; status `define`): the stated model and its how-to note, the two-tank portrait layout, the egg, part 2's accounting and hint, the check tier.
 4. **Define Sink or Float 11 *How much can it carry?*** (docs only), after engineering's Garden Raft definition: one load and waterline model shared with level 8.
@@ -115,4 +114,4 @@ None new. Garden Raft keeps level ID 8 as decided 2026-10-23; this dive builds l
 
 ## What was built in this session
 
-Nothing: research only. Checks: `node scripts/check-links.mjs` and `git diff --check`.
+Batch 1 (Fresh things) was built 2026-11-03; see the [archive](../archive/COMPLETED-2026-10-09.md). Before that, nothing: research only. Checks: `node scripts/check-links.mjs` and `git diff --check`.
