@@ -94,12 +94,6 @@
 - Not run: `npm run build` (CI builds), couch suites (unchanged), any device.
 - Open: whether a toddler or preschooler drags a little versus a lot, and the clouds read as targets ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
-## 2026-11-03 — Puppet Stage levels 4–6 definition (TP2, docs only)
-
-- [PR #1156](https://github.com/rjdunlap/neo/pull/1156): [definition](definitions/puppet-stage-4-6.md) of three story cards, a live shown-only premiere and the batch puppet-stage 2 check tier; nothing built.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`. Nothing else run.
-- Open: the build and its checks; four device and person checks in [DEVICE-CHECKS](DEVICE-CHECKS.md).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
