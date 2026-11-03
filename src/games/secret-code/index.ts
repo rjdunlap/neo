@@ -12,7 +12,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { contradictsClues, detectiveDoor, ignoredClues, makeCode, nextMove, planFor, score, STONES, suggestion, type CodePlan, type Guess, type Mark } from './logic';
+import { contradictsClues, detectiveDoor, doorKinds, ignoredClues, makeCode, nextMove, planFor, rowsThatFit, score, STONES, suggestion, visibleRows, type CodePlan, type DoorKind, type Guess, type Mark } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
@@ -36,6 +36,29 @@ function markArt(mark: Mark, r: number): Graphics {
   else if (mark === 'gray') g.moveTo(-r * 0.35, -r * 0.35).lineTo(r * 0.35, r * 0.35).moveTo(r * 0.35, -r * 0.35).lineTo(-r * 0.35, r * 0.35).stroke({ width: r * 0.22, color: 0xffffff, cap: 'round' });
   else g.circle(0, 0, r * 0.3).fill(0xffffff);
   return g;
+}
+
+/** The picture around the slots: a wooden door, a garden gate or a treasure chest. The slot panel's rectangle is the same for each. */
+function drawDoor(g: Graphics, kind: DoorKind, x0: number, y: number, w: number) {
+  g.clear();
+  if (kind === 'gate') {
+    // Hedge on both sides, two posts, and a gate of slats behind the slots.
+    g.roundRect(x0 - 40, y - 100, w + 80, 200, 50).fill(swatch.green.line);
+    g.roundRect(x0, y - 82, w, 164, 18).fill(swatch.green.light).stroke({ width: 5, color: swatch.green.line });
+    for (let x = x0 + 28; x < x0 + w - 10; x += 44) g.roundRect(x - 9, y - 90, 18, 180, 9).fill(0xffffff).stroke({ width: 3, color: swatch.white.line });
+    g.rect(x0, y - 52, w, 14).fill(0xffffff).rect(x0, y + 40, w, 14).fill(0xffffff);
+    for (const px of [x0 - 6, x0 + w + 6]) g.roundRect(px - 16, y - 112, 32, 224, 12).fill(wood.fill).stroke({ width: 5, color: wood.line }).circle(px, y - 116, 18).fill(wood.light).stroke({ width: 5, color: wood.line });
+    return;
+  }
+  if (kind === 'chest') {
+    // A lid above the body, gold bands at the corners and a gold clasp where they meet.
+    g.roundRect(x0 - 10, y - 118, w + 20, 60, 28).fill(swatch.brown.line).roundRect(x0, y - 110, w, 44, 20).fill(swatch.brown.light);
+    g.roundRect(x0 - 10, y - 72, w + 20, 164, 18).fill(swatch.brown.line).roundRect(x0, y - 62, w, 144, 14).fill(swatch.brown.fill);
+    for (const bx of [x0 + 8, x0 + w - 30]) g.rect(bx, y - 116, 22, 206).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+    g.roundRect(x0 + w / 2 - 18, y - 82, 36, 30, 8).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+    return;
+  }
+  g.roundRect(x0 - 10, y - 92, w + 20, 184, 34).fill(wood.line).roundRect(x0, y - 82, w, 164, 28).fill(wood.fill).stroke({ width: 5, color: wood.light });
 }
 
 function keyArt(): Graphics {
@@ -67,6 +90,9 @@ class SecretCode implements Game {
   private view: View;
   private wrongs = 0;
   private hinted = false;
+  /** The past tries drawn above the door (on the detective door, the friend's clues only). */
+  private shown: Guess[] = [];
+  private readonly doors: DoorKind[];
   /** Couch face-off score: every key turned across the round's doors (lower is better). */
   guesses = 0;
   // Couch play: a ring over the stone tray.
@@ -78,6 +104,8 @@ class SecretCode implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    // Before any code is drawn; it reads a clone, so the codes are the same with or without it.
+    this.doors = doorKinds(ctx.rng, this.plan.codes);
     this.key = new RoundButton(keyArt(), swatch.white, 56, () => void this.tryKey());
     this.ghost.eventMode = 'none';
     this.ring.eventMode = 'none';
@@ -108,7 +136,7 @@ class SecretCode implements Game {
     const y = this.doorY();
     const w = this.plan.slots * 124 + 60;
     const x0 = this.slotX(0) - 92;
-    this.door.clear().roundRect(x0 - 10, y - 92, w + 20, 184, 34).fill(wood.line).roundRect(x0, y - 82, w, 164, 28).fill(wood.fill).stroke({ width: 5, color: wood.light });
+    drawDoor(this.door, this.doors[Math.min(this.doors.length - 1, Math.max(0, this.index))], x0, y, w);
     this.slots.forEach((s, i) => s.position.set(this.slotX(i), y));
     this.ghost.children.forEach((s, i) => s.position.set(this.slotX(i), y));
     this.key.position.set(x0 + w + 80, y);
@@ -185,6 +213,7 @@ class SecretCode implements Game {
     this.code = door.code;
     this.history = door.history;
     this.past.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.shown = [];
     this.ghost.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.history.forEach((g) => this.addPast(g));
     this.leaf.clear();
@@ -241,8 +270,10 @@ class SecretCode implements Game {
     this.busy = true;
     this.guesses++;
     const stones = this.guess as number[];
-    const ignored = ignoredClues(this.plan, this.history, stones);
-    const contradiction = this.plan.detective && contradictsClues(this.plan, this.history, stones);
+    // Only the tries still on screen count: a mark that has scrolled away is never a miss.
+    const onScreen = visibleRows(this.shown, rowsThatFit(this.doorY()));
+    const ignored = ignoredClues(this.plan, onScreen, stones);
+    const contradiction = this.plan.detective && contradictsClues(this.plan, onScreen, stones);
     const marks = score(this.code, stones, this.plan.yellow);
     this.history.push({ stones: [...stones], marks });
     sfx.knock();
@@ -282,6 +313,7 @@ class SecretCode implements Game {
       if (m !== 'green') this.clear0(i);
     });
     if (!this.hinted && (this.wrongs >= 2 || this.history.length >= this.plan.slots + 4)) this.hint();
+    else if (this.hinted) this.showIdea();
     this.busy = false;
   }
 
@@ -295,14 +327,19 @@ class SecretCode implements Game {
   private hint() {
     this.hinted = true;
     this.hints++;
-    const idea = suggestion(this.plan, this.history, this.code);
-    idea.forEach((c) => {
+    this.showIdea();
+    void this.ctx.say('code.hint');
+  }
+
+  /** Draw the faint stones from every clue so far; after each later try on a hinted door they are redrawn, with no new hint counted. */
+  private showIdea() {
+    this.ghost.removeChildren().forEach((c) => c.destroy({ children: true }));
+    suggestion(this.plan, this.history, this.code).forEach((c) => {
       const s = stoneArt(c, 40);
       s.alpha = 0.4;
       this.ghost.addChild(s);
     });
     this.resize(this.view);
-    void this.ctx.say('code.hint');
   }
 
   private addPast(g: Guess) {
@@ -315,15 +352,15 @@ class SecretCode implements Game {
       row.addChild(s, m);
     });
     this.past.addChild(row);
+    this.shown.push(g);
     this.layoutPast();
   }
 
   /** The latest guesses stack above the door, newest nearest it; older ones fade. */
   private layoutPast() {
     const rows = this.past.children;
-    const top = 120;
     const bottom = this.doorY() - 150;
-    const fit = Math.max(1, Math.floor((bottom - top) / 62) + 1);
+    const fit = rowsThatFit(this.doorY());
     rows.forEach((r, i) => {
       const fromEnd = rows.length - 1 - i;
       r.visible = fromEnd < fit;

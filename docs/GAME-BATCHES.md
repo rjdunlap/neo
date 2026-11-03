@@ -1297,6 +1297,8 @@ Proof: new-interaction tier: typecheck, unit tests, one scripted play with a wro
 
 ### secret-code 1: Fair rows, a hint that keeps up and three doors
 
+Built 2026-11-03, [PR #1144](https://github.com/rjdunlap/neo/pull/1144); [build note](archive/COMPLETED-2026-10-09.md#secret-code-fair-rows-a-hint-that-keeps-up-and-three-doors-secret-code-batch-1-2026-11-03). No longer eligible for dispatch.
+
 - **`secret-code`, Fair rows, a hint that keeps up and three doors (dive slice 1)** (extends the built game; no new level): misses counted only from tries on screen, the refreshed hint, the "no more of that stone" line and three seeded doors. [Dive](deep-dives/secret-code.md#build-slices-in-order)
 
 Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.

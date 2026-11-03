@@ -1,5 +1,5 @@
 import type { ColorName } from '../../art/palette';
-import type { Rng } from '../../engine/random';
+import { Rng } from '../../engine/random';
 
 /**
  * Secret Code, after Mastermind and Neopets' Time Tunnel, made gentle: a door opens with a hidden
@@ -97,7 +97,16 @@ export function ruledOut(plan: CodePlan, history: Guess[], slot: number): Set<nu
   return out;
 }
 
-/** Slots where the new guess ignores an earlier clue: each counts as one miss. */
+/** How many past tries fit in the list above the door (newest nearest it; older ones are hidden). */
+export const rowsThatFit = (doorY: number) => Math.max(1, Math.floor((doorY - 150 - 120) / 62) + 1);
+
+/** The tries she can still see: only these count when a stone ignores a clue, so a scrolled-away mark is never a miss. */
+export const visibleRows = (history: Guess[], fit: number) => history.slice(Math.max(0, history.length - fit));
+
+/**
+ * Slots where the new guess ignores an earlier clue: each counts as one miss. Pass only the rows
+ * on screen (`visibleRows`).
+ */
 export function ignoredClues(plan: CodePlan, history: Guess[], guess: number[]): number[] {
   return guess.map((s, i) => (ruledOut(plan, history, i).has(s) ? i : -1)).filter((i) => i >= 0);
 }
@@ -117,7 +126,10 @@ export function candidates(plan: CodePlan, history: Guess[]): number[][] {
   return out;
 }
 
-/** A helpful next guess: one that agrees with every clue so far. */
+/**
+ * A helpful next guess: one that agrees with every clue so far. The game recomputes it after every
+ * try on a hinted door, so the faint stones never show a stone a newer mark ruled out.
+ */
 export function suggestion(plan: CodePlan, history: Guess[], code: number[]): number[] {
   const all = candidates(plan, history);
   return all.find((c) => c.join() !== code.join()) && all.length > 1 ? all[0] : code;
@@ -158,4 +170,17 @@ export function detectiveDoor(plan: CodePlan, rng: Rng): { code: number[]; histo
 /** Detective guesses must agree with the whole evidence, including color quantities. */
 export function contradictsClues(plan: CodePlan, history: Guess[], guess: number[]): boolean {
   return !candidates(plan, history).some((c) => c.join() === guess.join());
+}
+
+/** What the code hides behind: same slots, key and marks, only the picture around them changes. */
+export const DOORS = ['door', 'gate', 'chest'] as const;
+export type DoorKind = (typeof DOORS)[number];
+
+/**
+ * The picture for each door of a round: a seeded first kind, then the next kind for each door, so a round's doors
+ * differ. It reads a clone of the round's generator, so choosing it never changes a code or a mark.
+ */
+export function doorKinds(rng: Rng, count: number): DoorKind[] {
+  const start = new Rng(rng.clone().int(1, 2 ** 31 - 1) ^ 0x5eed).int(0, DOORS.length - 1);
+  return Array.from({ length: count }, (_, i) => DOORS[(start + i) % DOORS.length]);
 }

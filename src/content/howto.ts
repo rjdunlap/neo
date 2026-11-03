@@ -2104,12 +2104,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       'Tap stones to fill the slots, then turn the key.',
       { to: 2, text: 'A green check means the right stone is in the right place; gray means try another stone there.' },
-      { from: 3, text: 'Green means the right stone in the right place; yellow means that color is in the code but in another slot; gray means try another stone.' },
+      { from: 3, text: 'Green means the right stone in the right place; yellow means that color is in the code but in another slot; gray means no more of that stone: it is not in the code, or the code has no other one.' },
       { from: 6, to: 6, text: 'A color can be used twice in the code.' },
       { from: 7, text: 'Two or three guesses are already shown. Find the one code that fits every mark; its colors are all different.' },
     ],
     finish: 'The round ends when the code is cracked.',
-    note: [{ to: 6, text: 'A wrong try is how you learn the code.' }, { from: 7, text: 'A try that contradicts the shown clues gets a reminder. After two, faint stones help; the original clues stay visible.' }],
+    note: [{ to: 6, text: 'A wrong try is how you learn the code. A miss is only a stone put where a mark still on screen already ruled it out; after two misses, or many tries, faint stones show a code that fits, and they update after every try.' }, { from: 7, text: 'A try that contradicts the shown clues gets a reminder. After two, faint stones help; the original clues stay visible.' }],
   },
   'frog-hop': {
     goal: 'Hop the frog along a number line.',

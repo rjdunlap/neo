@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-11-03 — Secret Code fair rows, a hint that keeps up and three doors (secret-code batch 1)
+
+- [PR #1144](https://github.com/rjdunlap/neo/pull/1144): misses count only from past tries still drawn above the door (level 7 only the shown clues); the faint-stone hint is redrawn after every later try with no new hint; gray reads "no more of that stone"; seeded door, gate or chest per door. No new level, bot unchanged.
+- Ran: `npm run typecheck`; `npx vitest run src/games/secret-code src/content` 177 passed (hidden-row, refreshed-hint and door tests); one scripted level-5 landscape play on http://localhost:5798/classic/ at 32ba685c: tries 1-5 gave misses 0,0,0,0,1 (try 5 repeated on-screen try 2), try 6 repeated scrolled-away try 1 with no miss, try 7 opened; second door one on-screen repeat miss, then to the sticker, no page errors; portrait screenshots of the gate and chest.
+- Not run: `fingerdemo` (bot unchanged), `npm run build`, the full unit suite (CI runs it), device or child checks.
+
+---
+
 ## 2026-11-03 — Rhyme Time fresh families: bug, sock and snail (rhyme-time batch 1)
 
 - [PR #1143](https://github.com/rjdunlap/neo/pull/1143): seven new code-drawn pictures plus `rock` and `pail` from the shore art; families ug, ock and ail (38 pictures, fifteen families, eight three-word families); riddle pool re-pinned 102 to 178; an `ARGUABLE` guard keeps arguable fits from being the neutral or mate. No new level.
@@ -94,14 +102,6 @@
 
 ---
 
-## 2026-11-02 — Inchworm fresh things, the long jump and level 8 The broken ruler (inchworm batch 1)
-
-- [PR #1129](https://github.com/rjdunlap/neo/pull/1129) (code `07dbf233`): five new things, a sand-pit long-jump round at level 3, and school level 8 *The broken ruler*; how-to card updated, bot unchanged.
-- Ran (Vite dev on http://localhost:5949, `VITE_SPEECH=off`): typecheck; `npx vitest run src/games/inchworm src/content src/games/registry` 20 files / 211 tests passed; `BROWSER_SUITE=woods WOODS_ONLY=worm FROM_LEVEL=8 TO_LEVEL=8` passed (end mark then marks-counted, 2 misses, 1 hint, glow; portrait screenshot of the broken ruler); `WOODS_ONLY=worm FROM_LEVEL=3 TO_LEVEL=3` passed (one jump round, screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=inchworm FINGER_LEVELS=8` clean in 5.1 s; `npm run build`; `game-reviewer` found no defects.
-- Not run: full unit suite locally (CI runs it), device or child checks. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): whether a school child reads the spaces rather than the end mark; whether the sand pit reads as two jumps.
-
----
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -109,7 +109,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Grown-ups' page off-screen lines (`src/content/offscreen.test.ts`) | 2026-10-26: typecheck, full 3465 units, build; 7 rule tests (under-3 word list, wording, resolution, `{name}`) | [Off-screen lines](archive/VERIFICATION-2026-10-26.md#2026-10-26--off-screen-lines-per-band) | No browser look at the page; Bumper Garden school line held; no reader evidence |
-| `woods` (`worm`), `fingerdemo` (`inchworm`) | 2026-11-02: typecheck, 211 focused tests, build; `worm` level 8 (end mark then marks-counted, glow, portrait) and level 3 (one jump round); `fingerdemo` at 8 clean 5.1 s | [Inchworm batch 1](#2026-11-02--inchworm-fresh-things-the-long-jump-and-level-8-the-broken-ruler-inchworm-batch-1) | Not run: iPad or child; full units left to CI |
+| `woods` (`worm`), `fingerdemo` (`inchworm`) | 2026-11-02: typecheck, 211 focused tests, build; `worm` level 8 (end mark then marks-counted, glow, portrait) and level 3 (one jump round); `fingerdemo` at 8 clean 5.1 s | [Inchworm batch 1](archive/VERIFICATION-2026-11-02.md#2026-11-02--inchworm-fresh-things-the-long-jump-and-level-8-the-broken-ruler-inchworm-batch-1) | Not run: iPad or child; full units left to CI |
 | `woods` (`lemon`), `fingerdemo` (`lemonade-stand`) | 2026-11-02: typecheck, 28 rule tests, full 4,404 units, build; `WOODS_ONLY=lemon FROM_LEVEL=5` (portrait, two wrong boats 2 misses, lightbulb then 2/1, day-2 lightbulb 2/2, card costs, jetty screenshot); `fingerdemo` level 5 clean 36.7 s (before review fixes) | [Lemonade Stand](archive/VERIFICATION-2026-11-02.md#2026-11-02--lemonade-stand-level-5-two-lemon-boats-lemonade-stand-batch-1) | Level 5 only; other woods levels and offline not run; boat feel on a device open |
 | `makerlane`, `fingerdemo` (`maker-lane`) | 2026-11-02: typecheck, 26 rule tests, maker-lane and `src/content` 194 tests, River Tablets and Keep House 109 after the art move, build; `makerlane` (toddler level 1 free tap then waving makers 0/0; portrait preschool level 2 two refused makers, bubbles, glow, right makers 2/1; pre-K level 3 sheep for the sock with replay, dimmed card, then the cotton plant 1/0, re-run after review fixes) and ghost finger levels 2–3 (21.6 s / 17.6 s, before the review fixes) | [Maker Lane](archive/VERIFICATION-2026-11-02.md#2026-11-02--maker-lane-levels-13-food-fiber-systems-fs1) | No iPad or device speech check; offline not run; FS3 grown-ups' card not built; agricultural-literacy or textile review of the makers' lines open |
 | `fingerdemo` (`rainbow-fingers`, `RAINBOW_FOLD=1`) | 2026-11-01: typecheck, 21 rule tests, full 4,251 units, build; one-off portrait fold play (fold 28→56 marks, second fold nothing new, frame, 0/0, mid-fold resize and hang-up print first); fold demo 27.9 s to 31.8 s, levels 1 and 2 clean in 25.6 and 31.9 s | [Rainbow Fingers fold pages](archive/VERIFICATION-2026-11-01.md#2026-11-01--rainbow-fingers-fold-pages-mirror-brush-fold-button) | No device or child check; no scripted `early` re-run; production offline not run |
