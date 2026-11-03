@@ -1,4 +1,6 @@
+import type { ColorName } from '../../art/palette';
 import type { LineId } from '../../content/voice-script';
+import type { Rng } from '../../engine/random';
 export const SHAPES = ['plain', 'flatten', 'scoop', 'slope'] as const;
 export type Shape = typeof SHAPES[number];
 export type Dock = 'bridge' | 'receiver';
@@ -15,6 +17,14 @@ export const PLANS: Record<number, { bridges: readonly Shape[]; drop: number; jo
   3: { bridges: ['flatten'], drop: 0, joined: true },
 };
 export const planFor = (level: number) => PLANS[level] ?? PLANS[1];
+/** What grows: a round's seed is a bean, a sunflower seed or an acorn. Only the art changes; the rules never read it. */
+export const SEEDS = ['bean', 'sunflower', 'acorn'] as const;
+export type SeedKind = typeof SEEDS[number];
+/** The round's two friend colours, then its seed kind, drawn in that order so a seed's colours match the rounds before seeds varied. */
+export function looks(rng: Rng): { colors: ColorName[]; seed: SeedKind } {
+  const colors = rng.shuffle(['teal', 'purple', 'pink', 'blue'] as ColorName[]).slice(0, 2);
+  return { colors, seed: rng.pick(SEEDS) };
+}
 export function trace(s: Construction, level = 1): Failure | 'caught' {
   const bridge = s.friends.find(f => f.place === 'bridge');
   if (!bridge || !planFor(level).bridges.includes(bridge.shape)) return 'bridge';

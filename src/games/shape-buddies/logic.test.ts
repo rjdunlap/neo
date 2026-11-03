@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import type { ColorName } from '../../art/palette';
+import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { copy, failureLine, guidance, initial, layout, SeedRound, SHAPES, trace, type Construction, type Place } from './logic';
+import { copy, failureLine, guidance, initial, layout, looks, PLANS, SeedRound, SEEDS, SHAPES, trace, type Construction, type Place } from './logic';
 
 describe('Shape Buddies', () => {
   it('accepts both identities and both bridge shapes, with exactly the functional roles required', () => {
@@ -132,7 +134,7 @@ describe('Shape Buddies', () => {
       }
     });
     it('guidance never returns -1 and reaches caught within four edits from every arrangement, at every level', () => {
-      for (const level of [1, 2, 3]) for (const s of all()) {
+      for (const level of Object.keys(PLANS).map(Number)) for (const s of all()) {
         let n = 0;
         for (; n < 4; n++) {
           const g = guidance(s, level); if (!g) break;
@@ -165,4 +167,17 @@ describe('Shape Buddies', () => {
       }
     });
   });
+  it('draws the seed kind after the friend colours, so every seed keeps its colours, and over seeds grows all three kinds', () => {
+    const kinds = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const before = new Rng(seed).shuffle(['teal', 'purple', 'pink', 'blue'] as ColorName[]).slice(0, 2);
+      const look = looks(new Rng(seed));
+      expect(look.colors).toEqual(before);
+      expect(SEEDS).toContain(look.seed);
+      expect(looks(new Rng(seed))).toEqual(look);
+      kinds.add(look.seed);
+    }
+    expect([...kinds].sort()).toEqual([...SEEDS].sort());
+  });
+
 });

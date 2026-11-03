@@ -10,7 +10,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { failureLine, guidance, layout, planFor, SeedRound, type Dock, type Shape } from './logic';
+import { failureLine, guidance, layout, looks, planFor, SeedRound, type Dock, type SeedKind, type Shape } from './logic';
 
 const LEVELS: BandLevels = { prek: { min: 1, max: 3 }, school: { min: 1, max: 3 } };
 const DESCRIPTIONS: Record<number, string> = {
@@ -30,7 +30,39 @@ function paper(shape: Shape, color: ColorName): Graphics {
   g.circle(-12, y, 4).circle(12, y, 4).fill(ink).moveTo(-6, y + 9).quadraticCurveTo(0, y + 15, 6, y + 9).stroke({ width: 2, color: ink });
   g.eventMode = 'none'; return g;
 }
-function seedArt() { return new Graphics().ellipse(0, 0, 12, 16).fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line }); }
+/** A bean is a brown kidney, a sunflower seed a striped grey teardrop, an acorn a nut under its wooden cap. */
+function seedArt(kind: SeedKind = 'bean') {
+  const g = new Graphics();
+  if (kind === 'sunflower') {
+    g.moveTo(0, -18).quadraticCurveTo(13, -4, 9, 10).quadraticCurveTo(0, 20, -9, 10).quadraticCurveTo(-13, -4, 0, -18).closePath().fill(0x5d5a66).stroke({ width: 3, color: ink });
+    g.moveTo(-4, -8).lineTo(-5, 12).moveTo(4, -8).lineTo(5, 12).stroke({ width: 2, color: swatch.white.light });
+  } else if (kind === 'acorn') {
+    g.ellipse(0, 4, 11, 14).fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line });
+    g.roundRect(-14, -14, 28, 13, 6).fill(wood.fill).stroke({ width: 3, color: wood.line }).moveTo(0, -14).lineTo(2, -20).stroke({ width: 3, color: wood.line });
+  } else g.moveTo(-6, -16).quadraticCurveTo(12, -20, 12, 0).quadraticCurveTo(12, 20, -6, 16).quadraticCurveTo(-14, 12, -10, 4)
+    .quadraticCurveTo(-4, 0, -10, -4).quadraticCurveTo(-14, -12, -6, -16).closePath().fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line });
+  return g;
+}
+/** What grows in the pot from each seed: a curling bean vine, a sunflower on its stalk, or a two-leaf oak twig. */
+function drawSprout(g: Graphics, kind: SeedKind) {
+  if (kind === 'sunflower') {
+    g.moveTo(0, 0).lineTo(0, -82).stroke({ width: 7, color: swatch.green.line }).ellipse(-16, -40, 18, 8).fill(swatch.green.fill);
+    for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2; g.ellipse(Math.cos(a) * 20, -100 + Math.sin(a) * 20, 9, 9); }
+    g.fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line }).circle(0, -100, 13).fill(swatch.brown.line);
+  } else if (kind === 'acorn') {
+    g.moveTo(0, 0).lineTo(0, -40).lineTo(-12, -62).moveTo(0, -40).lineTo(14, -58).stroke({ width: 6, color: wood.line, cap: 'round' });
+    // Each oak leaf is an oval whose edge swells into rounded lobes.
+    for (const [cx, cy] of [[-14, -78], [16, -74]]) {
+      const points: number[] = [];
+      for (let k = 0; k < 40; k++) { const t = (k / 40) * Math.PI * 2, r = 1 + 0.2 * Math.abs(Math.cos(3 * t)); points.push(cx + 11 * r * Math.cos(t), cy + 20 * Math.sin(t)); }
+      g.poly(points);
+    }
+    g.fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line, join: 'round' });
+  } else {
+    g.moveTo(0, 0).bezierCurveTo(-20, -25, 20, -45, 0, -70).quadraticCurveTo(-14, -82, -4, -92).stroke({ width: 6, color: swatch.green.line, cap: 'round' });
+    g.circle(-16, -38, 12).circle(15, -58, 12).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+  }
+}
 function potArt() { return new Graphics().poly([-40, -12, 40, -12, 30, 45, -30, 45]).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line }).roundRect(-46, -23, 92, 20, 6).fill(wood.fill).stroke({ width: 4, color: wood.line }); }
 
 class ShapeBuddies implements Game {
@@ -50,12 +82,14 @@ class ShapeBuddies implements Game {
   readonly pot = new Container();
   readonly handles: DragHandle[] = [];
   readonly colors: ColorName[];
+  /** The seeded bean, sunflower seed or acorn: art only. */
+  readonly kind: SeedKind;
   finished = false;
   busy = false;
   private dead = false;
   private view: View;
   private readonly scenery = new Graphics();
-  private readonly seed = seedArt();
+  private readonly seed: Graphics;
   private readonly sprout = new Graphics();
   private readonly rings = new Graphics();
   private readonly join = new Graphics();
@@ -70,7 +104,7 @@ class ShapeBuddies implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.level = ctx.level; this.step = planFor(ctx.level).drop; this.joined = !!planFor(ctx.level).joined; this.round = new SeedRound(ctx.level);
-    this.colors = ctx.rng.shuffle(['teal', 'purple', 'pink', 'blue'] as ColorName[]).slice(0, 2);
+    ({ colors: this.colors, seed: this.kind } = looks(ctx.rng)); this.seed = seedArt(this.kind);
     const far = layout(this.view.w, this.view.h, this.level).receiverWidth;
     for (const dock of ['bridge', 'receiver'] as const) {
       const node = this.docks[dock], w = dock === 'bridge' ? 180 : far;
@@ -224,7 +258,7 @@ class ShapeBuddies implements Game {
     this.finished = true; this.seed.visible = false;
     this.friends[receiver].position.set(l.pot.x - 95, l.pot.y);
     if (this.joined) this.friends[1 - receiver].position.set(l.pot.x - 265, l.pot.y);
-    this.sprout.moveTo(0, 0).lineTo(0, -68).stroke({ width: 7, color: swatch.green.line }).ellipse(-17, -45, 21, 10).ellipse(17, -62, 21, 10).fill(swatch.green.fill);
+    drawSprout(this.sprout, this.kind);
     this.caption.text = 'Your shapes brought a seed home!'; sfx.sparkle();
     for (const friend of this.friends) {
       void this.ctx.tw.to(friend, { rotation: -0.12 }, { duration: 0.25 }).then(async () => {
