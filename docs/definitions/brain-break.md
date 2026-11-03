@@ -40,11 +40,11 @@ Status: **ready** (docs-only definition; the build is queued in [READY](../READY
 
 | Level | Board | Stones show | `describeLevel` |
 | --- | --- | --- | --- |
-| 4 | 3×3, totals 1–9 | sums `a+b`, addends 1–8 | Find the sums that make 1 to 9, in order |
-| 5 | 4×4, totals 1–16 | sums `a+b`, smaller addend 1–9 | Find the sums that make 1 to 16, in order |
-| 6 | 5×5, totals 1–25 | sums, or take-aways `a−b` with `b` 1–9 and `a` at most 30; at least ten of each | Find sums and take-aways that make 1 to 25, in order |
+| 4 | 3×3, totals 1–9 | sums `a+b`, addends 1–8 (total 1 is `1+0`) | Find the sums that make 1 to 9, in order |
+| 5 | 4×4, totals 1–16 | sums `a+b`, drawn addend 1–9 (total 1 is `1+0`) | Find the sums that make 1 to 16, in order |
+| 6 | 5×5, totals 1–25 | sums as at 5, or take-aways `a−b` with `b` 1..min(9, 30 − total), so `a` is at most 30; at least ten of each | Find sums and take-aways that make 1 to 25, in order |
 
-**Generation (`logic.ts`, seeded `ctx.rng`).** `makeBoard` keeps returning the shuffled totals 1..N, so `judge` and `hintIndex` are untouched. A new `makeLabels(board, level, rng)` builds each stone's label: at levels 1–3 the plain number; at levels 4–5 total 1 is `1+0` (the only zero addend), otherwise the smaller addend `b` is drawn from 1..min(9, total − 1) and the pair is written larger-first or smaller-first at random; at level 6 each stone is a sum as above or the take-away `(total + b)−b`, with the kinds dealt so each has at least ten stones. Labels are at most four characters (largest `24+1`, `29−4`) and use a true minus sign at 38 px, inside the 100-unit stone. Stones stay 100 units on the same 3×3/4×4/5×5 layout as levels 1–3, which already fits portrait and landscape.
+**Generation (`logic.ts`, seeded `ctx.rng`).** `makeBoard` keeps returning the shuffled totals 1..N, so `judge` and `hintIndex` are untouched. A new `makeLabels(board, level, rng)` builds each stone's label: at levels 1–3 the plain number; at levels 4–6 a sum's total 1 is `1+0` (the only zero addend), otherwise the drawn addend `b` comes from 1..min(9, total − 1) (it may be the larger of the two, as in `1+9`) and the pair is written in either order at random; at level 6 each stone is such a sum or the take-away `(total + b)−b` with `b` from 1..min(9, 30 − total), the kinds dealt so each has at least ten stones (total 1 may be either kind). Labels are at most four characters (largest `24+1`, `29−4`) and use a true minus sign; the label's width stays within 88 units (shrink the font from the current 42 px if needed), which the level-6 portrait screenshot confirms. Stones stay 100 units on the same 3×3/4×4/5×5 layout as levels 1–3, which already fits portrait and landscape.
 
 **Play.**
 - The sign reads `Make 7 · 6 / 16`. `ctx.instruct('brain.sums.start', { n })`: "Find the sums in order, from the one that makes one up to {n}. Take your time."
@@ -59,7 +59,7 @@ Status: **ready** (docs-only definition; the build is queued in [READY](../READY
 
 **Colour words stay a proposal.** An untimed colour-word (Stroop) board reduces to reading the word, so it has no honest finite version under the no-timer rule; it is not defined.
 
-**Rule tests (`logic.test.ts`).** Over many seeds at levels 4–6: the totals are exactly 1..N; every label evaluates to its stone's total; operand bounds hold (level 4 addends 1–8; level 5 smaller addend 1–9; level 6 take-away `b` 1–9 and `a` at most 30); every label is at most four characters; levels 4–5 have no take-aways and level 6 has at least ten of each kind; a 4×4 board uses at least three distinct smaller addends (not all `+1`); `planFor` clamps 0 to 1 and 7 to 6; the hint index is the stone whose total is `next`; the same seed gives the same labels.
+**Rule tests (`logic.test.ts`).** Over many seeds at levels 4–6: the totals are exactly 1..N; every label evaluates to its stone's total; operand bounds hold (level 4 addends 1–8 and level 5 drawn addend 1–9, except total 1 as `1+0`; level 6 take-away `b` 1–9 and `a` at most 30); every label is at most four characters; levels 4–5 have no take-aways and level 6 has at least ten of each kind; a 4×4 board uses at least three distinct drawn addends (not all `+1`); `planFor` clamps 0 to 1 and 7 to 6; the hint index is the stone whose total is `next`; the same seed gives the same labels.
 
 **Check tier: new levels on an existing interaction.** Typecheck; the rule tests; one filtered `brainbreak` play of level 6 with one wrong stone (its spoken total), a second for the outline, then to the sticker; one portrait screenshot of level 6 to confirm the labels fit; `fingerdemo` at 6. No build (no shared assets) unless voice clips are rendered.
 
