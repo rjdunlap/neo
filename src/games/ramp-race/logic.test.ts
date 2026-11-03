@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { classifyFair, CONTROL, makeChange, distance, EXPLORE_HEIGHTS, fairLine, fairRepair, farther, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeShelf, makeStars, onStar, planFor, PLANS, rampTouch, recordOf, shelfLayout, sideOf, tally, waysTo, type FairKind, type FairQuestion, type RampEvent, type Setup, type TrialRecord } from './logic';
+import { changed, CLAIMS, claimRight, claimWhy, CONFOUNDED, CONTROLLED, makeTell, tellConclusion, tellLayout, tellRepair, TILE_H, TILE_W, type Claim, type TellCase, classifyFair, CONTROL, makeChange, distance, EXPLORE_HEIGHTS, fairLine, fairRepair, farther, FLOORS, HEIGHTS, judgeFair, makeQuestions, makeShelf, makeStars, onStar, planFor, PLANS, rampTouch, recordOf, shelfLayout, sideOf, tally, waysTo, type FairKind, type FairQuestion, type RampEvent, type Setup, type TrialRecord } from './logic';
 
 describe('Ramp Race', () => {
   it('higher ramps and slipperier floors always go farther', () => {
@@ -157,10 +157,11 @@ const wood = (height: number): Setup => ({ height, floor: 'wood' });
 
 describe('Ramp Race Trial Shelf', () => {
   it('keeps levels 1–4 and appends the shelf as level 5', () => {
-    expect(PLANS.map((p) => [p.mode, p.rounds])).toEqual([['explore', 4], ['height', 3], ['both', 3], ['fair', 3], ['shelf', 2], ['change', 2]]);
+    expect(PLANS.map((p) => [p.mode, p.rounds])).toEqual([['explore', 4], ['height', 3], ['both', 3], ['fair', 3], ['shelf', 2], ['change', 2], ['tell', 2]]);
+    expect(planFor(7).mode).toBe('tell');
     expect(planFor(5).mode).toBe('shelf');
     expect(planFor(6).mode).toBe('change');
-    expect(planFor(9).mode).toBe('change');
+    expect(planFor(9).mode).toBe('tell');
   });
 
   it('starts the pairs at 2 and 4, and every legal second roll makes the right card the top one in one pair and the bottom in the other', () => {
@@ -233,8 +234,9 @@ describe('Ramp Race Trial Shelf', () => {
             guess = move.guess;
             continue;
           }
-          expect(move!.lane).toBe(0);
-          expect(move!.change).toBe('ramp');
+          if (!('lane' in move!)) throw new Error('unexpected claim');
+          expect(move.lane).toBe(0);
+          expect(move.change).toBe('ramp');
           expect(records, 'the ramp is locked until the first card').toHaveLength(1);
           ramp++;
           lane = { ...lane, height: HEIGHTS[(HEIGHTS.indexOf(lane.height as 2 | 3 | 4) + 1) % HEIGHTS.length] };
@@ -351,6 +353,177 @@ describe('One Change', () => {
         expect(c.x).toBeGreaterThan(330);
         expect(c.y + c.h).toBeLessThan(view.h * 0.42 - 50);
       }
+    }
+  });
+});
+
+describe('What can we tell?', () => {
+  const stop = (s: Setup) => distance(s.height, s.floor);
+  const ordered = SETUPS.flatMap((a) => SETUPS.filter((b) => b !== a).map((b) => [a, b] as const));
+  const rec = (c: TellCase): [TrialRecord, TrialRecord] => [recordOf(c.a), recordOf(c.b)];
+  const overlap = (p: { x: number; y: number; w: number; h: number }, q: { x: number; y: number; w: number; h: number }) => p.x < q.x + q.w && q.x < p.x + p.w && p.y < q.y + q.h && q.y < p.y + p.h;
+
+  it('has the confounded and controlled pools, all with distinct stops', () => {
+    expect(CONFOUNDED).toHaveLength(17);
+    expect(CONTROLLED).toHaveLength(18);
+    for (const { a, b } of CONFOUNDED) {
+      expect(changed(a, b)).toBe('both');
+      expect(stop(a)).not.toBe(stop(b));
+    }
+    const shorterFarther = CONFOUNDED.filter(({ a, b }) => (a.height < b.height) === (stop(a) > stop(b)));
+    expect(shorterFarther).toHaveLength(6);
+    expect(CONTROLLED.filter(({ a, b }) => changed(a, b) === 'floor')).toHaveLength(9);
+    expect(CONTROLLED.filter(({ a, b }) => changed(a, b) === 'height')).toHaveLength(9);
+    for (const { a, b } of CONTROLLED) expect(stop(a)).not.toBe(stop(b));
+  });
+
+  it('makes one confounded and one controlled case per round, in both orders and both card orders, deterministically', () => {
+    const firstKinds = new Set<string>();
+    const cardOrders = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const round = makeTell(new Rng(seed));
+      expect(round).toEqual(makeTell(new Rng(seed)));
+      expect(round.map((c) => changed(c.a, c.b)).sort()).toHaveLength(2);
+      const kinds = round.map((c) => (changed(c.a, c.b) === 'both' ? 'both' : 'one'));
+      expect([...kinds].sort()).toEqual(['both', 'one']);
+      firstKinds.add(kinds[0]);
+      for (const c of round) {
+        expect(stop(c.a)).not.toBe(stop(c.b));
+        cardOrders.add(`${kinds[round.indexOf(c)]}:${stop(c.a) < stop(c.b)}`);
+      }
+    }
+    expect(firstKinds.size).toBe(2);
+    expect(cardOrders.size).toBe(4);
+  });
+
+  it('has exactly one right claim for each of the 72 ordered pairs, and it equals changed', () => {
+    expect(ordered).toHaveLength(72);
+    for (const [a, b] of ordered) {
+      const right = CLAIMS.filter((c) => claimRight(c, a, b));
+      expect(right).toEqual([changed(a, b)]);
+    }
+  });
+
+  it('gives every wrong claim a why-line naming a part that really is the same or different', () => {
+    for (const [a, b] of ordered) {
+      const actual = changed(a, b) as Claim;
+      for (const claim of CLAIMS) {
+        const why = claimWhy(claim, actual);
+        if (claim === actual) { expect(why).toBeNull(); continue; }
+        expect(why).not.toBeNull();
+        if (why === 'floorsame') expect(a.floor).toBe(b.floor);
+        else if (why === 'rampsame') expect(a.height).toBe(b.height);
+        else if (why === 'rampsdiffer') expect(a.height).not.toBe(b.height);
+        else expect(a.floor).not.toBe(b.floor);
+      }
+    }
+  });
+
+  it('repairs a confounded pair to one difference in at most 2 taps, from either card order, and an identical pair in 1', () => {
+    for (const { a: x, b: y } of CONFOUNDED) {
+      for (const [a, b0] of [[x, y], [y, x]]) {
+        let b = { ...b0 };
+        let taps = 0;
+        while (tellRepair(a, b)) { b = tap(b, tellRepair(a, b)!); expect(++taps).toBeLessThanOrEqual(2); }
+        expect(['floor', 'height']).toContain(changed(a, b));
+      }
+    }
+    for (const a of SETUPS) {
+      const fix = tellRepair(a, { ...a });
+      expect(fix).not.toBeNull();
+      expect(['floor', 'height']).toContain(changed(a, tap({ ...a }, fix!)));
+    }
+    for (const a of SETUPS) {
+      const fair = SETUPS.filter((b) => ['floor', 'height'].includes(changed(a, b)));
+      expect(fair).toHaveLength(4);
+      for (const b of fair) { expect(tellRepair(a, b)).toBeNull(); expect(stop(b)).not.toBe(stop(a)); }
+    }
+  });
+
+  it('draws the right conclusion for every controlled pair in both orders', () => {
+    for (const { a: x, b: y } of CONTROLLED) {
+      for (const [a, b] of [[x, y], [y, x]]) {
+        const far = stop(a) > stop(b) ? a : b;
+        const near = far === a ? b : a;
+        const c = tellConclusion(a, b)!;
+        if (changed(a, b) === 'floor') expect(c).toEqual({ line: 'floor', floor: far.floor });
+        else expect(c).toEqual({ line: 'height', what: far.height > near.height ? 'taller' : 'shorter' });
+      }
+    }
+    for (const { a, b } of CONFOUNDED) expect(tellConclusion(a, b)).toBeNull();
+  });
+
+  it('is finished by the bot with no counted events, never touching lane 0, for 50 seeds', () => {
+    for (let seed = 1; seed <= 50; seed++) {
+      for (const c of makeTell(new Rng(seed))) {
+        const records = rec(c);
+        const events: RampEvent[] = [];
+        let claim: Claim | null = null;
+        let step: 'claim' | 'repair' = 'claim';
+        let lanes: Setup[] = [];
+        let touches = 0;
+        let done = false;
+        let cur = records;
+        while (!done) {
+          expect(++touches).toBeLessThan(12);
+          const move = rampTouch(planFor(7), lanes, { rolls: 0, records: cur, step, claim });
+          expect(move, `seed ${seed}`).not.toBeNull();
+          if (move === 'go') {
+            if (step === 'claim') {
+              expect(claim).not.toBeNull();
+              const ok = claimRight(claim!, cur[0].setup, cur[1].setup);
+              expect(ok).toBe(true);
+              if (claim === 'both') { step = 'repair'; lanes = [{ ...cur[0].setup }, { ...cur[1].setup }]; claim = null; }
+              else done = true;
+            } else {
+              expect(changed(lanes[0], lanes[1])).not.toBe('both');
+              expect(changed(lanes[0], lanes[1])).not.toBe('none');
+              cur = [recordOf(lanes[0]), recordOf(lanes[1])];
+              step = 'claim';
+              claim = null;
+            }
+          } else if (move && 'claim' in move) {
+            expect(step).toBe('claim');
+            claim = move.claim;
+          } else if (move && 'lane' in move) {
+            expect(step).toBe('repair');
+            expect(move.lane).toBe(1);
+            lanes[1] = tap(lanes[1], move.change);
+          } else throw new Error('unexpected touch');
+        }
+        expect(tally(events)).toEqual({ misses: 0, hints: 0 });
+      }
+    }
+  });
+
+  it('counts each step on its own: n wrong claims or repairs are n misses and at most one hint', () => {
+    for (const kind of ['wrong-claim', 'tell-unfair'] as const) {
+      for (let n = 0; n <= 6; n++) {
+        expect(tally(Array(n).fill(kind))).toEqual({ misses: n, hints: Math.min(1, Math.max(0, n - 1)) });
+      }
+    }
+    expect(tally(['wrong-claim', 'free', 'free'])).toEqual({ misses: 1, hints: 0 });
+    // A round is at most three steps in the confounded case (claim, repair, claim) plus one for the controlled case.
+    const worst = [3, 3, 3, 3].map((n, i) => tally(Array(n).fill(i % 2 ? 'tell-unfair' : 'wrong-claim')));
+    expect(worst.reduce((h, t) => h + t.hints, 0)).toBeLessThanOrEqual(4);
+    expect(tally(Array(9).fill('wrong-claim')).hints).toBe(1);
+  });
+
+  it('lays the tiles out large and clear of the cards, home, ?, the pet and go in each view', () => {
+    for (const view of [{ w: 1024, h: 768 }, { w: 1024, h: 1365 }, { w: 1664, h: 768 }]) {
+      const L = tellLayout(view);
+      const go = { x: view.w - 140, y: view.h - 140, w: 120, h: 120 };
+      const pet = { x: 0, y: view.h - 160, w: 200, h: 160 };
+      const corner = { x: 0, y: 0, w: 112, h: 210 };
+      expect(L.tiles[0].w).toBe(TILE_W);
+      expect(L.tiles[0].h).toBe(TILE_H);
+      L.tiles.forEach((t, i) => {
+        expect(Math.min(t.w, t.h)).toBeGreaterThanOrEqual(100);
+        expect(t.x).toBeGreaterThanOrEqual(0);
+        expect(t.x + t.w).toBeLessThanOrEqual(view.w);
+        for (const o of [...L.cards, go, pet, corner, ...L.tiles.slice(i + 1)]) expect(overlap(t, o), JSON.stringify([view, t, o])).toBe(false);
+      });
+      expect(overlap(L.cards[0], L.cards[1])).toBe(false);
     }
   });
 });
