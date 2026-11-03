@@ -31,7 +31,7 @@ She taps the ice on one side of the penguin and it slides that way until a snowy
 
 At level 1, 145 of 300 ponds are solved in one slide. A dead end is fair at school with blocks (a parked block is a real commitment, and undo is the answer), but at preschool and pre-K about one pond in seven can leave a three-year-old stranded behind a rock, waiting for a grown-up to read the glowing undo; the couch's Pond Practice already promises "no dead ends".
 
-**Known gaps.** (1) The dead ends above, at levels 1–4. (2) The how-to note says the yellow arrow appears "when help is asked for"; it appears by itself after three extra slides and counts as a hint. (3) Every pond looks the same: one fish, one rock shape. (4) Nothing shows a shorter way after a long route, so a finished round does not teach the better plan. Person checks: the Wonder Woods device row ([DEVICE-CHECKS](../DEVICE-CHECKS.md)) covers the tap-the-ice direction and block planning. **Couch:** three frozen courses (Pond Practice, The Five Ponds, The Frozen Ponds), scored by slides over par; face-offs use `excess`.
+**Known gaps.** (1) The dead ends above, at levels 1–4 (closed by slice 1: `hasDeadEnd` rejects them). (2) The how-to note said the yellow arrow appears "when help is asked for" (reworded in slice 1); it appears by itself after three extra slides and counts as a hint. (3) Every pond looked the same: one fish, one rock shape (closed by slice 1: seeded looks). (4) Nothing shows a shorter way after a long route, so a finished round does not teach the better plan. Person checks: the Wonder Woods device row ([DEVICE-CHECKS](../DEVICE-CHECKS.md)) covers the tap-the-ice direction and block planning. **Couch:** three frozen courses (Pond Practice, The Five Ponds, The Frozen Ponds), scored by slides over par; face-offs use `excess`.
 
 ## Similar games
 
@@ -110,7 +110,7 @@ Par stars on touch, move limits, cracking ice or holes, monsters (Chip's Challen
 
 ## Build slices, in order
 
-1. **Fair ponds and seeded looks** (existing-interaction tier: typecheck, rule tests for no dead ends at 1–4 over 300 seeds and at most one single-slide pond at level 1, one filtered regression play at levels 1 and 4; bot unchanged, no `fingerdemo`): the no-dead-end walk in `makePuzzle` for levels 1–4, the single-slide cap, seeded rock looks and fish colours, the touch-down scuff ring and the how-to note wording.
+1. **Fair ponds and seeded looks (built 2026-11-02, [PR #1137](https://github.com/rjdunlap/neo/pull/1137))** (existing-interaction tier: typecheck, rule tests for no dead ends at 1–4 over 300 seeds and at most one single-slide pond at level 1, one filtered regression play at levels 1 and 4; bot unchanged, no `fingerdemo`): the no-dead-end walk in `makePuzzle` for levels 1–4, the single-slide cap, seeded rock looks and fish colours, the touch-down scuff ring and the how-to note wording.
 2. **Level 10, Three fish** (new-level tier: typecheck, rule tests, one play of level 10 with one hint, `fingerdemo` at 10): after slice 1 (shares `makePuzzle`).
 3. **Level 11, Where will it stop?** (new-interaction tier: typecheck, unit tests including the `order` and lands tests, one scripted play at preschool with one wrong prediction then two right, one portrait screenshot, `fingerdemo` at 11, one build): after slice 2 for the level number.
 4. **Level 12, A block onto the star** (new-rule tier: typecheck, rule tests, one play of level 12 with a stuck block and undo, `fingerdemo` at 12, one portrait screenshot): after slice 3.
@@ -118,4 +118,4 @@ Par stars on touch, move limits, cracking ice or holes, monsters (Chip's Challen
 
 ## What was built in this session
 
-Nothing: research and ideation only. Checks: `node scripts/check-links.mjs` and `git diff --check`; the dead-end probe ran once as a throwaway test file and was deleted.
+Research and ideation in the session that wrote this dive. Slice 1 (fair ponds and seeded looks) was built later and slice 2 is now unblocked; the stop-bump pentatonic tick from the presentation notes was not part of the slice and is not built. Checks: `node scripts/check-links.mjs` and `git diff --check`; the dead-end probe ran once as a throwaway test file and was deleted.
