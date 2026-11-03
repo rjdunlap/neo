@@ -412,8 +412,9 @@ class GardenRows implements Game {
 
   /** The bed is full and right: every flower blooms in turn. */
   private async bloom() {
-    // The same check the rules use. Only Mend the bed can be full and still hold a repeat: then the help on show stays.
-    if (!isSolved(this.bed, this.plan.rule)) return;
+    // The same check the rules use. Only Mend the bed can be full and still hold a repeat: the help on show stays, and the
+    // pet repeats what to look for (no miss).
+    if (!isSolved(this.bed, this.plan.rule)) return void this.ctx.say('rows.mend');
     this.busy = true;
     this.hinted = null;
     this.flash = null;
