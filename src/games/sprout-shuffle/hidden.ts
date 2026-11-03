@@ -257,13 +257,14 @@ export class SproutHidden implements Game {
     const top = off + TOP + 4;
     const bottom = trayY + 48;
     this.fanPanel.clear().roundRect(20, top, v.w - 40, bottom - top, 28).fill({ color: 0xfffaf0, alpha: 0.94 }).stroke({ width: 5, color: swatch.green.line });
-    // Two fans side by side share one row in landscape, with a wider gap between them, and stack in portrait.
+    // Two fans side by side share one row in landscape, with a wider gap between them and clear of the corner buttons, and stack in portrait.
     const pair = this.buds.length > 4;
     const rows = pair && v.h > v.w ? 2 : 1;
     const perRow = this.buds.length / rows;
     const split = pair && rows === 1 ? 40 : 0;
-    const scale = Math.min(1, (bottom - top - 24 - (rows - 1) * FAN_GAP) / (rows * BUD_H), (v.w - 80 - split) / (perRow * BUD_W + (perRow - 1) * FAN_GAP));
-    const bx = spread(perRow, 40, v.w - 40, BUD_W * scale + FAN_GAP);
+    const left = pair && rows === 1 ? 130 : 40;
+    const scale = Math.min(1, (bottom - top - 24 - (rows - 1) * FAN_GAP) / (rows * BUD_H), (v.w - 40 - left - split) / (perRow * BUD_W + (perRow - 1) * FAN_GAP));
+    const bx = spread(perRow, left, v.w - 40, BUD_W * scale + FAN_GAP);
     const rowH = BUD_H * scale + FAN_GAP;
     for (const [i, b] of this.buds.entries()) {
       const row = Math.floor(i / perRow);
@@ -550,7 +551,9 @@ export class SproutHidden implements Game {
       for (const route of routes(GENOTYPES[c], this.tester)) {
         const k = this.buds.length;
         const bud = new BudCard(route.sprout, colors, route.from);
-        onTap(bud, () => { if (!this.busy) void this.growBud(k); });
+        // Both fans together are a picture the pet explains, too small to tap; one fan's buds regrow on a tap.
+        if (cs.length > 1) bud.eventMode = 'none';
+        else onTap(bud, () => { if (!this.busy) void this.growBud(k); });
         this.buds.push(bud);
         this.budLooks.push(looks(route.sprout));
         this.fan.addChild(bud);
