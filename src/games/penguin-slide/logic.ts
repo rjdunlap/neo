@@ -26,15 +26,19 @@ export interface SlidePlan {
   pairedBlocks?: boolean;
   /** Shortest solution, in slides (a push is one). */
   moves: [number, number];
+  /** No dead ends: every place the penguin can reach can still reach every fish (the younger levels). */
+  fair?: boolean;
+  /** At most this many ponds of a round are solved in a single slide. */
+  maxSingles?: number;
   puzzles: number;
   name: string;
 }
 
 export const PLANS: SlidePlan[] = [
-  { cols: 5, rows: 4, fish: 1, soft: 0, rocks: 3, moves: [1, 2], puzzles: 3, name: 'Slide to the fish in one or two slides' },
-  { cols: 6, rows: 4, fish: 1, soft: 0, rocks: 4, moves: [2, 3], puzzles: 3, name: 'Plan two or three slides; rocks are the only way to stop' },
-  { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 5, moves: [3, 4], puzzles: 3, name: 'Three or four slides around the rocks' },
-  { cols: 6, rows: 5, fish: 2, soft: 0, rocks: 5, moves: [3, 5], puzzles: 2, name: 'Two fish to collect, in any order' },
+  { cols: 5, rows: 4, fish: 1, soft: 0, rocks: 3, moves: [1, 2], fair: true, maxSingles: 1, puzzles: 3, name: 'Slide to the fish in one or two slides' },
+  { cols: 6, rows: 4, fish: 1, soft: 0, rocks: 4, moves: [2, 3], fair: true, puzzles: 3, name: 'Plan two or three slides; rocks are the only way to stop' },
+  { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 5, moves: [3, 4], fair: true, puzzles: 3, name: 'Three or four slides around the rocks' },
+  { cols: 6, rows: 5, fish: 2, soft: 0, rocks: 5, moves: [3, 5], fair: true, puzzles: 2, name: 'Two fish to collect, in any order' },
   { cols: 7, rows: 5, fish: 2, soft: 2, rocks: 5, moves: [4, 6], puzzles: 2, name: 'Soft snow stops the penguin: use it to plan a longer route' },
   { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 4, blocks: 1, moves: [3, 5], puzzles: 2, name: 'Push an ice block: it skates until it bumps into something, so park it to make a stop' },
   { cols: 6, rows: 5, fish: 2, soft: 0, rocks: 4, blocks: 1, moves: [4, 6], puzzles: 2, name: 'Park an ice block to collect two fish: plan how each new stopping place helps the route' },
@@ -176,7 +180,35 @@ export function solve(p: SlidePuzzle, from: Cell, have = 0, blocks: Cell[] = p.b
   return { moves: -1, first: -1 };
 }
 
-export function makePuzzle(plan: SlidePlan, rng: Rng): SlidePuzzle {
+/**
+ * Whether some run of slides from the start leaves the penguin where it can no longer reach every
+ * fish (only undo would help). Walks every state reachable from the start.
+ */
+export function hasDeadEnd(p: SlidePuzzle): boolean {
+  const all = (1 << p.fish.length) - 1;
+  const start = { at: p.start, have: 0, blocks: p.blocks ?? [] };
+  const seen = new Set<string>([`${key(start.at)},0,${blockKey(start.blocks)}`]);
+  const queue = [start];
+  while (queue.length) {
+    const s = queue.shift()!;
+    if (s.have === all) continue;
+    if (solve(p, s.at, s.have, s.blocks).moves === -1) return true;
+    for (const dir of [0, 1, 2, 3] as Dir[]) {
+      const m = move(p, s.at, dir, s.blocks);
+      if (!m) continue;
+      const next = { at: m.to, have: s.have | eaten(p, m.passed), blocks: m.blocks };
+      const k = `${key(next.at)},${next.have},${blockKey(next.blocks)}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      queue.push(next);
+    }
+  }
+  return false;
+}
+
+/** A pond, unlike the ones already made this round when the plan caps single-slide ponds. */
+export function makePuzzle(plan: SlidePlan, rng: Rng, earlier: readonly SlidePuzzle[] = []): SlidePuzzle {
+  const singlesLeft = plan.maxSingles === undefined || earlier.filter((e) => e.best === 1).length < plan.maxSingles;
   if (plan.pairedBlocks) {
     const p = rng.pick(PAIRED_BLOCK_PONDS), flipX = rng.chance(0.5), flipY = rng.chance(0.5);
     const cell = (c: Cell): Cell => ({x: flipX ? p.cols - 1 - c.x : c.x, y: flipY ? p.rows - 1 - c.y : c.y});
@@ -194,6 +226,7 @@ export function makePuzzle(plan: SlidePlan, rng: Rng): SlidePuzzle {
     const p: SlidePuzzle = { cols: plan.cols, rows: plan.rows, rocks, soft, ...(blocks.length ? { blocks } : {}), start, fish, best: 0 };
     const { moves } = solve(p, start);
     if (moves < plan.moves[0] || moves > plan.moves[1]) continue;
+    if (moves === 1 && !singlesLeft) continue;
     // Soft snow should matter: without it, the puzzle would play differently.
     if (plan.soft && solve({ ...p, soft: [] }, start).moves === moves) continue;
     // Blocks should matter: with them frozen like rocks, the fish must be out of reach or take longer.
@@ -201,10 +234,21 @@ export function makePuzzle(plan: SlidePlan, rng: Rng): SlidePuzzle {
       const frozen = solve({ ...p, rocks: [...rocks, ...blocks], blocks: [] }, start).moves;
       if (frozen !== -1 && frozen <= moves) continue;
     }
+    if (plan.fair && hasDeadEnd(p)) continue;
     return { ...p, best: moves };
   }
   throw new Error('no slide puzzle');
 }
+
+/** What a pond's rocks look like; every look is a rock to the stop rule. */
+export const ROCK_LOOKS = ['rock', 'igloo', 'snowman'] as const;
+export type RockLook = (typeof ROCK_LOOKS)[number];
+/** The fish colours a pond can have. */
+export const FISH_COLORS = ['orange', 'pink', 'teal'] as const;
+export type FishColor = (typeof FISH_COLORS)[number];
+
+/** A pond's seeded look: how its rocks are drawn and its fish's colour. */
+export const pickLook = (rng: Rng): { rock: RockLook; fish: FishColor } => ({ rock: rng.pick(ROCK_LOOKS), fish: rng.pick(FISH_COLORS) });
 
 /** Extra slides allowed before the hint arrow appears. */
 export const HINT_AFTER = 3;

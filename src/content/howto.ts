@@ -2092,7 +2092,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'If it gets stuck, tap the round arrow to go back.',
     ],
     finish: 'The round ends when the penguin has eaten every fish.',
-    note: 'The yellow arrow shows the next slide when help is asked for.',
+    note: 'After a few extra slides, a yellow arrow shows a next slide; it counts as help.',
   },
   'secret-code': {
     goal: 'Work out the secret code from clues.',

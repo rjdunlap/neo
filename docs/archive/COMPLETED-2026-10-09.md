@@ -2355,7 +2355,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--drift-cards-
 
 [PR #1122](https://github.com/rjdunlap/neo/pull/1122), batch thought-bubbles 1, [definition](../definitions/thought-bubbles.md). New game `thought-bubbles` (pre-K 1–2, school 1–3; Story Grove, its 18th game, second page). A picture story plays on a code-drawn cottage stage, then she drags one of three picture cards (150 × 170) into a friend's empty thought bubble. Level 1: what the friend reaches for (paw reach and lean, decoy rule). Level 2: where he will look, away or watching stories; first pick counts, a wrong place replays the move with "Was he in the room when it moved?", the friend never walks to a wrong place, and in an away story the mover kindly shows where it went. Level 3: a picture reason card, then tap the clue region (non-clue taps free and named; the third asks again and glows the clue, one hint). Two misses on a story glow the answer (one hint); Show me glows the target (one hint). Music `STYLES.paint`; no save fields, journal entries or couch. Code in `src/games/thought-bubbles/` (25 rule tests: belief model, level-2 compile and rounds over 300 seeds, cue angles, decoy rule, regions, accounting, glow targets, layout at four views, voice ids); voice lines `thought.*` (device speech) with a rendered `game.thought-bubbles` title clip. One fix found in the play: the second-miss glow now lights at once, not after the spoken hint.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-02--thought-bubbles-levels-13-literature-meaning-lm1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--thought-bubbles-levels-13-literature-meaning-lm1).
 
 ## Maker Lane levels 1–3 (food-fiber-systems FS1, maker-lane 1, 2026-11-02)
 
@@ -2413,6 +2413,10 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-02--habitat-helpers-equi
 ## Lasso Loops, teens, decades and a fresh meadow (lasso-loops batch 2, 2026-11-02)
 
 [PR #1134](https://github.com/rjdunlap/neo/pull/1134), `claude/lasso-loops-2`: [dive slice 1](../deep-dives/lasso-loops.md#build-slices-in-order). No new levels or interaction. Level 1 seeds 6–9 fireflies; the dive's "as many jars as fireflies" was not taken, since nine 108-wide jars would half-overlap in portrait, so six jars stay and a child looping one at a time can still leave fireflies, as before. Level 3 (fives) draws 1–3 jars (6–19) and about one round in five with 2–3 jars comes out even (10 or 15): no leaf, "None left over!". Level 4 (tens) mixes a teen (one jar, 11–19), a decade (20 or 30, no leaf) and 21–39; level 6 keeps its exact 21–39 draw. The swapped tens-and-ones pad appears only when both digits are there (this also stops a 60 pad for 6 at level 3 and in groups). Voice lines `lasso.none`, `lasso.count-tens-none`, `lasso.count-teen`; the level 4 description is "Jars of 10: loop tens, then say the number (14, 30 or 34: tens and ones)" and the how-to level 3 step says "any ones left over". Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-02--lasso-loops-teens-decades-and-a-fresh-meadow-lasso-loops-batch-2).
+
+## Penguin Slide, fair ponds and seeded looks (2026-11-02)
+
+[PR #1137](https://github.com/rjdunlap/neo/pull/1137), `claude/penguin-slide-fair-ponds`: [dive slice 1](../deep-dives/penguin-slide.md#build-slices-in-order). No new levels. `hasDeadEnd` rejects dead-end ponds at levels 1–4; level 1 allows at most one single-slide pond per round; touch ponds get seeded rock looks (snowy rock, igloo, snowman) and fish colours (orange, pink, teal); a touch-down scuff ring; how-to note reworded. The stop-bump tick was not built.
 
 ## Peekaround Island, truthful support and real choices (peekaround-island batch 1, 2026-11-02)
 

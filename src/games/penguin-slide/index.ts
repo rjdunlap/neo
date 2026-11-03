@@ -16,7 +16,7 @@ import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBoards, courseMinimum, isPondCourse } from './course';
-import { beside, eaten, HINT_AFTER, makePuzzle, move, planFor, solve, tapDirection, type Cell, type Dir, type SlidePlan, type SlidePuzzle } from './logic';
+import { beside, eaten, HINT_AFTER, makePuzzle, move, pickLook, planFor, solve, tapDirection, type Cell, type Dir, type FishColor, type RockLook, type SlidePlan, type SlidePuzzle } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -28,15 +28,28 @@ const CELL = 100;
 const ICE = 0xe3f4ff;
 
 
-function fishArt(): Graphics {
+function fishArt(color: FishColor = 'orange'): Graphics {
   const g = new Graphics();
-  g.poly([22, 0, 40, -16, 40, 16]).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line, join: 'round' });
-  g.ellipse(0, 0, 28, 17).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line });
+  const { fill, line } = swatch[color];
+  g.poly([22, 0, 40, -16, 40, 16]).fill(fill).stroke({ width: 4, color: line, join: 'round' });
+  g.ellipse(0, 0, 28, 17).fill(fill).stroke({ width: 4, color: line });
   g.circle(-12, -4, 4).fill(ink);
   return g;
 }
 
-function rockArt(): Graphics {
+/** A pond's stoppers: a snowy rock, a small igloo or a snowman, all the same to the stop rule. */
+function rockArt(look: RockLook = 'rock'): Graphics {
+  if (look === 'igloo') {
+    const g = new Graphics().moveTo(-40, 30).arc(0, 30, 40, Math.PI, 0).closePath().fill(0xffffff).stroke({ width: 5, color: 0x8fb3d6, join: 'round' });
+    for (const r of [14, 27]) g.moveTo(-Math.sqrt(40 * 40 - r * r), 30 - r).lineTo(Math.sqrt(40 * 40 - r * r), 30 - r).stroke({ width: 3, color: 0xc9d6e6, cap: 'round' });
+    return g.moveTo(-14, 30).arc(0, 30, 14, Math.PI, 0).closePath().fill(0x5a7a99);
+  }
+  if (look === 'snowman') {
+    const g = puffs(new Graphics(), [[0, 12, 32], [0, -26, 22]], 0xffffff, 0x8fb3d6, 5);
+    g.roundRect(-20, -10, 40, 10, 5).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+    g.circle(-8, -30, 3.5).circle(8, -30, 3.5).fill(ink);
+    return g.poly([0, -24, 20, -20, 0, -17]).fill(swatch.orange.fill);
+  }
   const g = new Graphics().poly([-40, 30, -34, -14, -12, -34, 18, -32, 38, -6, 40, 30]).fill(0x9aa6b8).stroke({ width: 5, color: 0x6b778a, join: 'round' });
   return puffs(g, [[-14, -28, 16], [10, -30, 18], [28, -14, 12]], 0xffffff, 0xc9d6e6, 4);
 }
@@ -84,6 +97,12 @@ class PenguinSlide implements Game {
   private readonly things = new Container();
   private readonly arrow = new Graphics();
   private readonly glow = new Graphics();
+  /** The soft ring on the tapped side of the penguin at touch-down. */
+  private readonly scuff = new Graphics();
+  /** This round's ponds so far, so level 1 can cap its single-slide ponds. */
+  private made: SlidePuzzle[] = [];
+  /** The pond's seeded look; couch courses keep the plain one. */
+  private look: { rock: RockLook; fish: FishColor } = { rock: 'rock', fish: 'orange' };
   private fishNodes: Graphics[] = [];
   private blockNodes: Container[] = [];
   /** The solver's answer for the state it was asked about, so the hint arrow does not search every frame. */
@@ -121,7 +140,8 @@ class PenguinSlide implements Game {
     this.arrow.eventMode = 'none';
     this.glow.eventMode = 'none';
     this.penguin.eventMode = 'none';
-    this.board.addChild(this.floor, this.things, this.penguin, this.arrow);
+    this.scuff.eventMode = 'none';
+    this.board.addChild(this.floor, this.things, this.scuff, this.penguin, this.arrow);
     this.board.eventMode = 'static';
     onTap(this.board, (e) => void this.tapIce(e), { cooldown: 150 });
     this.undo = new RoundButton(againIcon(), swatch.white, 54, () => this.back());
@@ -203,7 +223,12 @@ class PenguinSlide implements Game {
     this.again = false;
     this.index++;
     if (this.index >= (this.course?.boards.length ?? this.plan.puzzles)) return void this.finale();
-    this.puzzle = this.course ? this.course.boards[this.index] : makePuzzle(this.plan, this.ctx.rng);
+    if (this.course) this.puzzle = this.course.boards[this.index];
+    else {
+      this.puzzle = makePuzzle(this.plan, this.ctx.rng, this.made);
+      this.made.push(this.puzzle);
+      this.look = pickLook(this.ctx.rng);
+    }
     this.at = { ...this.puzzle.start };
     this.have = 0;
     this.blocks = (this.puzzle.blocks ?? []).map((c) => ({ ...c }));
@@ -241,8 +266,8 @@ class PenguinSlide implements Game {
     this.board.hitArea = new Rectangle(-16, -16, w + 32, h + 32);
     this.things.removeChildren().forEach((c) => c.destroy({ children: true }));
     for (const c of p.soft) this.place(softArt(), c);
-    for (const c of p.rocks) this.place(rockArt(), c);
-    this.fishNodes = p.fish.map((c) => this.place(fishArt(), c));
+    for (const c of p.rocks) this.place(rockArt(this.look.rock), c);
+    this.fishNodes = p.fish.map((c) => this.place(fishArt(this.look.fish), c));
     this.blockNodes = this.blocks.map((c) => this.place(blockArt(), c));
     const s = this.at2(this.at);
     this.penguin.position.set(s.x, s.y);
@@ -267,7 +292,18 @@ class PenguinSlide implements Game {
       sfx.squeak();
       return;
     }
-    await this.go(tapDirection(dx, dy));
+    const dir = tapDirection(dx, dy);
+    this.scuffAt(p, dir);
+    await this.go(dir);
+  }
+
+  /** Two soft arcs on the side of the penguin she tapped, gone in 0.15 s. */
+  private scuffAt(p: { x: number; y: number }, dir: Dir) {
+    const a = (dir * Math.PI) / 2;
+    const g = this.scuff.clear();
+    for (const r of [52, 66]) g.moveTo(p.x + r * Math.cos(a - 0.6), p.y + r * Math.sin(a - 0.6)).arc(p.x, p.y, r, a - 0.6, a + 0.6).stroke({ width: 6, color: 0x8fb3d6, cap: 'round' });
+    g.alpha = 1;
+    void this.ctx.tw.to(g, { alpha: 0 }, { duration: 0.15 });
   }
 
   private async go(dir: Dir) {

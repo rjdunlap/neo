@@ -44,3 +44,11 @@
 - Ran: a throwaway script reimplementing the built mix and Oklab distance measured the three-pot mixes and the jar-label distances; `node scripts/check-links.mjs`; `git diff --check`.
 - No code checks (docs only); the numbers are the definition's, not a browser play.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): at the build, whether six shelf colours read as six on an iPad, whether one-more-of-each is seen, whether a child reads a label as two counts, whether the circled count in a reveal is understood without speech (listed in the definition, not yet added to DEVICE-CHECKS).
+
+## 2026-11-02 — Thought Bubbles levels 1–3 (literature-meaning LM1)
+
+- [PR #1122](https://github.com/rjdunlap/neo/pull/1122), branch `claude/thought-bubbles-1-3`: new game `thought-bubbles` in Story Grove (18 games), pre-K 1–2 and school 1–3; batch thought-bubbles 1. Title clip `game.thought-bubbles` rendered; other `thought.*` lines are device speech.
+- Ran (HEAD of the branch, Vite dev on http://localhost:5741, `VITE_SPEECH=off`): typecheck; full units 4366 passed with 5 failures (four load timeouts in unchanged block-garden, fluffy-salon, keep-house, penguin-slide that passed alone, 110/110, and the voice-clip coverage test, fixed by rendering the title clip); voice clips, registry, lands, how-to and thought-bubbles tests 219/219 (25 rule tests); `npm run build` (precache 423 entries).
+- `BROWSER_SUITE=thoughtbubbles` (`thought-bubbles-play.mjs`): pre-K level 1 two wrong cards, glow, apple (2/1); portrait school level 2 away story miss and replay, then start place, then a watching story (1/0); level 3 wrong reason, rain, free vase tap, clouds (1/0). `fingerdemo` `FINGER_ONLY=thought-bubbles FINGER_LEVELS=2,3` clean (34.7 s, 17.3 s). The play found the second-miss glow lighting only after the speech; fixed.
+- Not run: offline check (no persistence or navigation change), other suites, any device or child check.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#thought-bubbles-literature-meaning-study-2026-10-31-levels-13-built-2026-11-02)): the four person and device checks there.
