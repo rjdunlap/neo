@@ -301,7 +301,7 @@ class PenguinSlide implements Game {
   private scuffAt(p: { x: number; y: number }, dir: Dir) {
     const a = (dir * Math.PI) / 2;
     const g = this.scuff.clear();
-    for (const r of [52, 66]) g.moveTo(p.x + r * Math.cos(a - 0.6), p.y + r * Math.sin(a - 0.6)).arc(p.x, p.y, r, a - 0.6, a + 0.6).stroke({ width: 6, color: 0xffffff, cap: 'round' });
+    for (const r of [52, 66]) g.moveTo(p.x + r * Math.cos(a - 0.6), p.y + r * Math.sin(a - 0.6)).arc(p.x, p.y, r, a - 0.6, a + 0.6).stroke({ width: 6, color: 0x8fb3d6, cap: 'round' });
     g.alpha = 1;
     void this.ctx.tw.to(g, { alpha: 0 }, { duration: 0.15 });
   }
