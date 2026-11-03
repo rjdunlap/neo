@@ -2537,7 +2537,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--bouncy-launc
 
 Branch `claude/orchard-rows-fresh`, PR #1158: [dive slice 1](../deep-dives/orchard-rows.md#build-slices-in-order), batch `orchard-rows 2`. Level 1 draws 2×2, 2×3, 3×2, 3×3 and 4×2; level 2 draws 2×4, 3×4, 2×5, 4×3 and 5×2, and `makeOrchards` never pairs a shape with its turn in one round (no square); level 3 draws 3×5, 4×5, 5×4, 5×5, 4×4 and 5×3 (4×4 keeps its missing-row choice without the row-count decoy, as 5×5 does); level 4's second basket draws 14, 15, 16, 18, 20 or 21. Every shape stays within 5×5, so the 100-unit row bands are unchanged. No voice, art, how-to or bot change.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--orchard-rows-fresh-orchards-and-baskets-batch-orchard-rows-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--orchard-rows-fresh-orchards-and-baskets-batch-orchard-rows-2).
 
 ## Puppet Stage levels 4–6 (theatre and puppetry TP2, 2026-11-03)
 
@@ -2584,3 +2584,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--habitat-helpers-leve
 [PR #1172](https://github.com/rjdunlap/neo/pull/1172), `claude/inchworm-hop-by-hop` (code `9820c8ce`, `32d7400b`, review fix `557892c5`): [dive slice 2](../deep-dives/inchworm.md#build-slices-in-order). Level 9 (mode `hop`, school only; school order `[1, 2, 7, 9, 3, 4, 8, 5, 6]`, max 9; pre-K unchanged `[1, 2, 7]`): three rounds, lengths 3-8, never the same length or thing twice running (`hopTicks`). One worm waits nose at the thing's start; each tap inches it one length and chalks a white tick (none at 0); it stops by itself at the end and extra taps do nothing (no miss). Then three pads (the count and two near it; `isWide` gives the ruler levels and hop the 74-unit size and bottom pads). A wrong pad says "Count the chalk marks again: one for every hop."; two misses glow the right pad and number the ticks; right says "The {what} is {n} hops long!". New voice lines `worm.hop`, `worm.hops`, `worm.hoplong`, `worm.chalk`; the how-to step is scoped to 9 and its demonstration plays one thing. The `woods` suite's `worm` case now runs to level 9 by default and checks it (taps, no pads until the end, end tap no miss, two wrong pads giving 2 misses and 1 hint, numbered ticks, screenshots `inchworm-9-mid-hop` and `inchworm-9-hint`). One cosmetic note left: a resize mid-hop draws the new tick about 0.3 s early.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--inchworm-level-9-one-worm-hop-by-hop-inchworm-batch-2).
+
+## Today's six slice 1: Home entry and preset levels (D10, 2026-11-03)
+
+[PR #1174](https://github.com/rjdunlap/neo/pull/1174), [definition](../definitions/todays-six.md#slices). Home has a round six-tile button (`daily` spot, every band) opening the six; `?daily` opens it once after the chooser; the six's Back goes to Home. `src/content/daily.ts` draws the pool from touch games that list the band itself (not `GameModule.daily: false`; only `goodnight-room`), gives every band a seeded preset level (`presetLevels`, grown-ups from the top third, a pin wins) and a level dot row on each card. A round opened from the card with a start level records with `adapt` off, so the saved level does not move; a discovery opened from the six adapts as usual. The grown-ups' page has one plain line about it. Slice 2 (kinds of challenge) and slice 3 (Play all) are not built.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--todays-six-slice-1-home-entry-and-preset-levels-d10).

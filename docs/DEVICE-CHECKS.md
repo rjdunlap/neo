@@ -69,6 +69,7 @@
 ## Today's six (`?daily`, 2026-10-31)
 
 - [ ] Open `?daily` at the site root on the iPad as a grown-up: do the six cards read at a glance, does a tap launch a game at a sensible level, and does Back to today's six land on the ticks?
+- [ ] On the iPad, play Today's six from Home (D10 slice 1): is the six-tile button easy to reach, are the level dots on each card legible, and does a tick appear on that card after a round?
 
 ## Maker Lane (food-fiber-systems study, 2026-10-31; levels 1–3 built 2026-11-02)
 
