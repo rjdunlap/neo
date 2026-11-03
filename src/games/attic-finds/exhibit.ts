@@ -551,6 +551,8 @@ export class AtticExhibit implements Game {
     this.lit.clear();
     for (const n of [this.slotPaper, ...this.rows.map((r) => r.card)]) {
       this.ctx.tw.kill(n);
+      this.ctx.tw.kill(n.scale);
+      n.scale.set(1);
       n.rotation = 0;
       n.alpha = 1;
     }
