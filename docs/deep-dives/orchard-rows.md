@@ -17,7 +17,7 @@ She plants and counts trees in equal rows. The learning purpose is multiplicatio
 
 **Content pools** (`src/games/orchard-rows/logic.ts`):
 
-- Levels 1–3 draw two different shapes from small fixed lists: level 1 from 2×3, 3×2 and 3×3; level 2 from 2×4, 3×4 and 2×5; level 3 from 3×5, 4×5, 5×4 and 5×5. Level 1 therefore has three possible rounds and level 2 three, one of which (3×4 with 2×4) repeats half of another. Number pads use `choicesFor` (the answer, one more, one fewer, and the row count at level 3).
+- Levels 1–3 draw two different shapes from small fixed lists: level 1 from 2×3, 3×2 and 3×3; level 2 from 2×4, 3×4 and 2×5; level 3 from 3×5, 4×5, 5×4 and 5×5. Three shapes make only three possible pairs at levels 1 and 2, and every pair shares a shape with every other. Number pads use `choicesFor` (the answer, one more, one fewer, and the row count at level 3).
 - Level 4: the first basket is always 12 at five rows, the second from 15, 16, 18 and 20. Level 5: one basket from 12, 16, 18, 20 and 24. Level 6: the first set is 12, 13 and 15, the second from 60 generated sets.
 - Fruit: levels 1–3 use the seeded red or orange tree; levels 4–6 seed apple, pear or plum.
 
@@ -77,7 +77,7 @@ Every shape stays within 5 rows and 5 columns (CCSS 2.OA.C.4, cited in [IDEAS](.
 
 - **Level 1:** add 2×2 and 4×2 (pool 2×2, 2×3, 3×2, 3×3, 4×2; totals 4 to 9).
 - **Level 2:** add 4×3 and 5×2 (pool 2×4, 3×4, 2×5, 4×3, 5×2). A round's two orchards are never turns of each other (3×4 and 4×3 never together), and level 2 holds no square, since a turned square shows no change.
-- **Level 3:** add 4×4 and 5×3 (pool 3×5, 4×5, 5×4, 5×5, 4×4, 5×3).
+- **Level 3:** add 4×4 and 5×3 (pool 3×5, 4×5, 5×4, 5×5, 4×4, 5×3). On a square (4×4, like the existing 5×5) `choicesFor` drops the row-count decoy because the row count equals the answer; the builder keeps 4×4 and accepts that, as 5×5 already does, or swaps it for 4×3.
 - **Level 4:** the second basket also draws 14 and 21. Each has two right row counts in its range (14: 2 and 7; 21: 3 and 7), as every level 4 basket must, and their seven-row deals pass the 18-unit cell test.
 
 Rule tests: every pool shape is at most 5×5; level 2's round pairs are never turns and never squares; every level 4 basket has at least two right row counts and a leftover opening; the cell size stays at least `MIN_CELL` for every reachable deal at the four test views. Cost: `logic.ts` and its tests only; no voice, art, how-to or bot change (the bot reads the same rules).
