@@ -11,7 +11,7 @@ import { label } from '../../ui/text';
 import type { PixelPictureCreation } from '../../content/creations';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { clues, colorClues, colorsOf, deduce, givenInMirror, LETTERS, makePictures, PICTURES, pixelTouch, planFor, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
+import { clues, colorClues, colorLogicCell, colorsOf, deduce, givenInMirror, LETTERS, makePictures, PICTURES, pixelTouch, planFor, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
@@ -266,13 +266,14 @@ class PixelPictures implements Game {
     if (this.wrongs >= 2 && !this.hinted) this.hint();
   }
 
-  /** A square worth filling next: on logic levels one the clues can decide; otherwise the next square of the picture. */
+  /** A square worth filling next: on logic levels one the (colored) clues can decide; otherwise the next square of the picture. */
   private hint() {
     let cell: { x: number; y: number } | undefined;
     if (this.plan.mode === 'clues') {
       const known: Knowledge = this.filled.map((row) => row.map((c) => (c === 'x' ? false : c ? true : null)));
       cell = deduce(this.picture, known).find((f) => f.fill);
     }
+    if (this.plan.mode === 'colorClues') cell = colorLogicCell(this.picture, this.filled, this.color) ?? undefined;
     cell ??= this.target.flatMap((row, y) => row.map((c, x) => ({ x, y, c }))).find(({ x, y, c }) => c && !(this.filled[y][x] && this.filled[y][x] !== 'x'));
     if (!cell) return;
     if (this.plan.mode === 'colorClues' && this.target[cell.y][cell.x]) {

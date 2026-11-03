@@ -6,7 +6,8 @@ import type { Rng } from '../../engine/random';
  * beside the grid, then copy one with two colors, then finish a picture's mirror half, and finally
  * solve picture-logic puzzles (nonograms) from the numbers along each row and column.
  *
- * Pictures are authored as rows of characters: '.' is empty, letters are palette colors.
+ * Pictures are authored as rows of characters: '.' is empty, letters are palette colors. Two-color logic pictures are
+ * accepted only if their colored numbers alone solve them (`colorLineSolvable`).
  */
 export type PixelMode = 'copy' | 'mirror' | 'clues' | 'colorClues';
 
@@ -51,6 +52,9 @@ export const PICTURES: Record<4 | 5 | 6, Picture[]> = {
     { name: 'a house', rows: ['..r..', '.rrr.', 'rrrrr', '.n.n.', '.nnn.'] },
     { name: 'a tree', rows: ['.ggg.', 'ggggg', '.ggg.', '..n..', '..n..'] },
     { name: 'an ice pop', rows: ['.ppp.', '.ppp.', '.yyy.', '..n..', '..n..'] },
+    { name: 'a strawberry', rows: ['.ggg.', 'rrrrr', 'rrrrr', '.rrr.', '..r..'] },
+    { name: 'a duckling', rows: ['.yy..', '.yyoo', '.yy..', 'yyyy.', '.yyy.'] },
+    { name: 'a mushroom', rows: ['.rrr.', 'rrrrr', '..n..', '..n..', '.nnn.'] },
   ],
   6: [
     { name: 'a butterfly', rows: ['u....u', 'uu..uu', 'uuuuuu', 'uuuuuu', 'uu..uu', 'u....u'] },
@@ -60,6 +64,9 @@ export const PICTURES: Record<4 | 5 | 6, Picture[]> = {
     { name: 'a crown', rows: ['y.yy.y', 'yyyyyy', 'yyyyyy', 'yyyyyy', '......', '......'] },
     { name: 'a little cat', rows: ['.oo..o', 'oonnno', 'oonnno', 'oooooo', 'o.oo.o', '.o..o.'] },
     { name: 'a little sailboat', rows: ['....b.', '...bb.', '..bbb.', '.rrrr.', 'rrrrrr', '..rr..'] },
+    { name: 'a sun', rows: ['y.yy.y', '.oooo.', 'yooooy', 'yooooy', '.oooo.', 'y.yy.y'] },
+    { name: 'a frog', rows: ['gg..gg', 'gnggng', 'gggggg', 'g.nn.g', '.gggg.', 'gg..gg'] },
+    { name: 'a big fish', rows: ['......', '.bbb.o', 'bbbbbo', 'bbbbbo', '.bbb.o', '......'] },
   ],
 };
 
@@ -76,7 +83,7 @@ export function picturesFor(plan: PixelPlan): Picture[] {
   return PICTURES[plan.size].filter((p) => {
     const n = colorsOf(p).length;
     if (plan.mode === 'copy') return plan.colors === 2 ? n === 2 : n === 1;
-    if (plan.mode === 'colorClues') return n === 2;
+    if (plan.mode === 'colorClues') return n === 2 && colorLineSolvable(p);
     if (plan.mode === 'mirror') return n === 1 && symmetric(p);
     // Logic puzzles only ask filled or empty, so any picture works if logic alone can solve it.
     return lineSolvable(p);
@@ -131,6 +138,24 @@ export function colorClues(p: Picture): { rows: { count: number; color: string }
     rows: p.rows.map((row) => colorRuns(row.split(''))),
     cols: Array.from({ length: p.rows.length }, (_, x) => colorRuns(p.rows.map((row) => row[x]))),
   };
+}
+
+/** Every way to place these colored runs on a line of `n` cells ('.' empty): same-color runs need a gap, different colors may touch. */
+export function colorPlacements(n: number, clue: { count: number; color: string }[]): string[][] {
+  if (clue.length === 1 && clue[0].count === 0) return [Array(n).fill('.')];
+  const out: string[][] = [];
+  const place = (i: number, start: number, line: string[]) => {
+    if (i === clue.length) return void out.push(line);
+    const gap = (k: number) => (k + 1 < clue.length && clue[k + 1].color === clue[k].color ? 1 : 0);
+    const rest = clue.slice(i + 1).reduce((a, r, k) => a + r.count + gap(i + 1 + k), 0);
+    for (let s = start; s + clue[i].count + gap(i) + rest <= n; s++) {
+      const next = [...line];
+      for (let k = 0; k < clue[i].count; k++) next[s + k] = clue[i].color;
+      place(i + 1, s + clue[i].count + gap(i), next);
+    }
+  };
+  place(0, 0, Array(n).fill('.'));
+  return out;
 }
 
 /** Every way to place these runs on a line of `n` cells. */
@@ -190,6 +215,42 @@ export function lineSolvable(p: Picture): boolean {
   return known.every((r, y) => r.every((c, x) => c === (g[y][x] !== null)));
 }
 
+/** Known cells on a two-color logic board: a color letter, '.' empty, or null unknown. */
+export type ColorKnowledge = (string | null)[][];
+
+/** One pass of color line logic: as `deduce`, but a settled cell is settled to its color (or '.'). */
+export function colorDeduce(p: Picture, known: ColorKnowledge): { x: number; y: number; cell: string }[] {
+  const { rows, cols } = colorClues(p);
+  const n = known.length;
+  const found: { x: number; y: number; cell: string }[] = [];
+  const settle = (cells: (string | null)[], clue: { count: number; color: string }[], at: (i: number) => { x: number; y: number }) => {
+    const fits = colorPlacements(n, clue).filter((pl) => pl.every((c, i) => cells[i] === null || cells[i] === c));
+    if (!fits.length) return;
+    for (let i = 0; i < n; i++) {
+      if (cells[i] !== null) continue;
+      if (fits.every((pl) => pl[i] === fits[0][i])) {
+        const { x, y } = at(i);
+        if (!found.some((f) => f.x === x && f.y === y)) found.push({ x, y, cell: fits[0][i] });
+      }
+    }
+  };
+  for (let y = 0; y < n; y++) settle(known[y], rows[y], (i) => ({ x: i, y }));
+  for (let x = 0; x < n; x++) settle(known.map((r) => r[x]), cols[x], (i) => ({ x, y: i }));
+  return found;
+}
+
+/** Whether the colored row and column numbers alone (no guessing) find the whole picture, colors included. */
+export function colorLineSolvable(p: Picture): boolean {
+  const n = p.rows.length;
+  const known: ColorKnowledge = Array.from({ length: n }, () => Array(n).fill(null));
+  for (let pass = 0; pass < 50; pass++) {
+    const found = colorDeduce(p, known);
+    if (!found.length) break;
+    for (const f of found) known[f.y][f.x] = f.cell;
+  }
+  return known.every((r, y) => r.every((c, x) => c === p.rows[y][x]));
+}
+
 /** What a child has put on the board: a color letter, 'x' for a crossed-out square, or nothing. */
 export type Filled = (string | null)[][];
 
@@ -219,9 +280,32 @@ export function logicCell(p: Picture, filled: Filled, from?: { x: number; y: num
 }
 
 /**
+ * Two-color logic levels: a square the colored numbers settle that is not yet painted, with its color. Squares the same
+ * logic shows empty are kept between passes (the board crosses one out only after a wrong tap). It prefers a square of
+ * the color in hand, so the hand changes color only when that color has nothing settled, then the square nearest `from`.
+ */
+export function colorLogicCell(p: Picture, filled: Filled, color?: string, from?: { x: number; y: number }): { x: number; y: number; c: string } | null {
+  const known: ColorKnowledge = filled.map((row) => row.map((c) => (c === 'x' ? '.' : c)));
+  for (let pass = 0; pass < 50; pass++) {
+    const found = colorDeduce(p, known);
+    const fills = found.filter((f) => f.cell !== '.');
+    if (fills.length) {
+      const mine = fills.filter((f) => f.cell === color);
+      const pool = mine.length ? mine : fills;
+      const far = (c: { x: number; y: number }) => (from ? Math.abs(c.x - from.x) + Math.abs(c.y - from.y) : 0);
+      const best = pool.reduce((b, c) => (far(c) < far(b) ? c : b));
+      return { x: best.x, y: best.y, c: best.cell };
+    }
+    if (!found.length) return null;
+    for (const f of found) known[f.y][f.x] = f.cell;
+  }
+  return null;
+}
+
+/**
  * What a capable child touches next. Copy levels: the squares of the picture one after another (finishing a color before
  * choosing the next on a two-color level); mirror levels: the squares of the right half, whose mirror image is already drawn;
- * logic levels: the squares the numbers settle, nearest first. Every touch is a square the picture really has and
+ * logic levels: the squares the numbers settle, nearest first (on two-color logic, those of the color in hand first). Every touch is a square the picture really has and
  * that is still empty, so a demonstration makes no wrong move.
  */
 export function pixelTouch(plan: PixelPlan, picture: Picture, filled: Filled, color: string, from?: { x: number; y: number }): PixelTouch | null {
@@ -232,8 +316,12 @@ export function pixelTouch(plan: PixelPlan, picture: Picture, filled: Filled, co
     const cell = logicCell(picture, filled, from);
     return cell ? { cell } : null;
   }
-  if (plan.mode === 'colorClues' && !open.some((o) => o.c === color)) return { color: open[0].c };
-  const mine = open.find((o) => plan.mode === 'colorClues' ? o.c === color : plan.mode !== 'copy' || plan.colors === 1 || o.c === color);
+  if (plan.mode === 'colorClues') {
+    const cell = colorLogicCell(picture, filled, color, from);
+    if (!cell) return null;
+    return cell.c === color ? { cell: { x: cell.x, y: cell.y } } : { color: cell.c };
+  }
+  const mine = open.find((o) => plan.mode !== 'copy' || plan.colors === 1 || o.c === color);
   if (mine) return { cell: { x: mine.x, y: mine.y } };
   return { color: open[0].c };
 }

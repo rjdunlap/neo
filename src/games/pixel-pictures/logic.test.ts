@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { clues, colorClues, colorRuns, colorsOf, deduce, givenInMirror, lineSolvable, makePictures, PICTURES, picturesFor, PLANS, pixelTouch, runs, symmetric, toGrid, type Filled, type Knowledge } from './logic';
+import { clues, colorClues, colorDeduce, colorLineSolvable, colorLogicCell, colorPlacements, colorRuns, colorsOf, deduce, givenInMirror, lineSolvable, makePictures, PICTURES, picturesFor, PLANS, pixelTouch, runs, symmetric, toGrid, type Filled, type Knowledge } from './logic';
 
 describe('Pixel Pictures', () => {
   it('pictures are square, the right size, and drawn in known colors', () => {
@@ -15,11 +15,13 @@ describe('Pixel Pictures', () => {
   it('every level has enough pictures that fit it', () => {
     for (const plan of PLANS) {
       const fit = picturesFor(plan);
-      expect(fit.length, plan.name).toBeGreaterThanOrEqual(plan.pictures);
+      // Strictly more than a round shows, so one round can differ from the next.
+      expect(fit.length, plan.name).toBeGreaterThan(plan.pictures);
+      expect(new Set(fit.map((p) => p.name)).size, `${plan.name}: names are distinct`).toBe(fit.length);
       for (const p of fit) {
         if (plan.mode === 'mirror') expect(symmetric(p)).toBe(true);
         if (plan.mode === 'copy' && plan.colors === 2) expect(colorsOf(p)).toHaveLength(2);
-        if (plan.mode === 'colorClues') expect(colorsOf(p)).toHaveLength(2);
+        if (plan.mode === 'colorClues') expect(colorsOf(p)).toHaveLength(2), expect(colorLineSolvable(p), p.name).toBe(true);
       }
       for (let seed = 1; seed <= 50; seed++) expect(new Set(makePictures(plan, new Rng(seed)).map((p) => p.name)).size).toBe(plan.pictures);
     }
@@ -39,6 +41,48 @@ describe('Pixel Pictures', () => {
       const actual = colorClues(picture);
       picture.rows.forEach((row, y) => expect(actual.rows[y]).toEqual(colorRuns(row.split(''))));
       picture.rows[0].split('').forEach((_, x) => expect(actual.cols[x]).toEqual(colorRuns(picture.rows.map((row) => row[x]))));
+    }
+  });
+
+  it('places colored runs with a gap only between runs of the same color, and rejects a picture its colored numbers leave open', () => {
+    expect(colorPlacements(3, [{ count: 1, color: 'r' }, { count: 1, color: 'b' }]).map((l) => l.join(''))).toEqual(['rb.', 'r.b', '.rb']);
+    expect(colorPlacements(3, [{ count: 1, color: 'r' }, { count: 1, color: 'r' }]).map((l) => l.join(''))).toEqual(['r.r']);
+    expect(colorPlacements(3, colorRuns(['.', '.', '.'])).map((l) => l.join(''))).toEqual(['...']);
+    // Every placement reproduces its own clue.
+    for (const row of ['rrb.bb', 'r.rbbr', '......', 'yooooy']) for (const pl of colorPlacements(6, colorRuns(row.split('')))) expect(colorRuns(pl)).toEqual(colorRuns(row.split('')));
+    // Two diagonal squares read the same as the other diagonal: the numbers cannot tell them apart.
+    expect(colorLineSolvable({ name: 'a diagonal', rows: ['r...', '.r..', '....', '....'] })).toBe(false);
+    expect(colorLineSolvable({ name: 'a two-color diagonal', rows: ['rb..', 'br..', '....', '....'] })).toBe(true);
+  });
+
+  it('a two-color hint is a square the colored numbers settle, in the picture\'s own color, from any point of a solve', () => {
+    const plan = PLANS.find((p) => p.mode === 'colorClues')!;
+    for (const picture of picturesFor(plan)) {
+      const target = toGrid(picture);
+      const filled: Filled = target.map((row) => row.map(() => null));
+      let color = colorsOf(picture)[0];
+      for (let step = 0; step < 100; step++) {
+        const hint = colorLogicCell(picture, filled, color);
+        if (!hint) break;
+        expect(target[hint.y][hint.x], `${picture.name} (${hint.x}, ${hint.y})`).toBe(hint.c);
+        expect(filled[hint.y][hint.x]).toBeNull();
+        // Settled: no placement consistent with the board's paint and crossed squares gives it a different value.
+        const known = filled.map((row) => row.map((c) => (c === 'x' ? '.' : c)));
+        for (let pass = 0; pass < 50; pass++) {
+          const found = colorDeduce(picture, known);
+          if (!found.length) break;
+          for (const f of found) known[f.y][f.x] = f.cell;
+        }
+        expect(known[hint.y][hint.x], `${picture.name}: logic settles it`).toBe(hint.c);
+        // Play on as a child might: paint it, and on alternate steps cross out a square that is really empty.
+        filled[hint.y][hint.x] = hint.c;
+        color = hint.c;
+        if (step % 2) {
+          const empty = target.flatMap((row, y) => row.flatMap((c, x) => (!c && filled[y][x] === null ? [{ x, y }] : [])))[0];
+          if (empty) filled[empty.y][empty.x] = 'x';
+        }
+      }
+      expect(target.every((row, y) => row.every((c, x) => !c || filled[y][x] === c)), `${picture.name}: following hints finishes it`).toBe(true);
     }
   });
 
@@ -76,8 +120,11 @@ describe('Pixel Pictures', () => {
           if ('color' in move) {
             expect((plan.mode === 'copy' && plan.colors === 2) || plan.mode === 'colorClues', `${picture.name}: only two-color levels have a palette`).toBe(true);
             expect(move.color, 'a different color than the one chosen').not.toBe(color);
+            if (plan.mode === 'colorClues') {
+              // It changes color only when the numbers settle nothing more in the color in hand.
+              expect(colorLogicCell(picture, filled, color)?.c, `${picture.name}: nothing settled in ${color}`).toBe(move.color);
+            } else expect(++paletteTaps, `${picture.name}: changes color once for each color`).toBeLessThanOrEqual(colorsOf(picture).length);
             color = move.color;
-            expect(++paletteTaps, `${picture.name}: changes color once for each color`).toBeLessThanOrEqual(colorsOf(picture).length);
             continue;
           }
           const { x, y } = move.cell;
