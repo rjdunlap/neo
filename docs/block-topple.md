@@ -1,6 +1,6 @@
 # Block Topple — first playable slice (sketch)
 
-Status: **sketch** (written 2026-10-14 from the developer's request for an Angry Birds type game). Nothing is built. Proposed game ID: `block-topple`. It was a backlog row ("Block Topple … could be a Bouncy Launch mode") and is promoted here because the new part is the physics, not a level. Run `scripts/overlap.sh block-topple src/engine/blocks.ts` before building.
+Status: **defined 2026-11-03** in [definitions/block-topple.md](definitions/block-topple.md), which supersedes this sketch's engine, levels and open calls (a closed-form flight and one tipping rule in the game's `logic.ts` under the October 23 S4 decision; no `src/engine/blocks.ts`; level 4 re-shaped as *Hit it high*; no lap level). Written 2026-10-14 from the developer's request for an Angry Birds type game). Nothing is built. Proposed game ID: `block-topple`. The text below is the original sketch, kept for its research. It was a backlog row ("Block Topple … could be a Bouncy Launch mode") and is promoted here because the new part is the physics, not a level. Run `scripts/overlap.sh block-topple src/engine/blocks.ts` before building.
 
 "Angry Birds", its birds and its pigs are Rovio's. The idea of slinging a ball at a stack is not protected; the characters and art are not borrowed, and nothing here is an enemy.
 

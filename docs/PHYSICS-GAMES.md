@@ -37,9 +37,9 @@ Built: Sink or Float (buoyancy by trial), Seesaw Balance (balance), Ramp Race (r
 
 1. **Rule models and analytic curves (no engine).** The rule is a small formula a test can check exactly: Block Tower's balance rule, a pendulum's period, a ballistic arc under a chosen gravity (`ball.ts` already takes `gravity`), buoyancy by a stated density rule, a lever's torque, a row of dominoes where the next tips if the gap is short enough. Results are the same on every device and every test.
 2. **Existing circle simulation** (`engine/ball.ts`): pegs, walls, bumpers, replay.
-3. **A new deterministic solver:** ropes (Vine Snip, defined 2026-11-03 with closed-form vines), rigid blocks (Block Topple), a circle pile (Pond Merge, Roll Table), drawn lines (Draw a Ramp). These need the engine decision recorded in [Waiting on the developer](WAITING-ON-DEVELOPER.md#waiting-on-the-developer).
+3. **A new deterministic solver:** ropes (Vine Snip, defined 2026-11-03 with closed-form vines), rigid blocks (Block Topple, defined 2026-11-03 with a closed-form flight and one tipping rule), a circle pile (Pond Merge, Roll Table), drawn lines (Draw a Ramp). These need the engine decision recorded in [Waiting on the developer](WAITING-ON-DEVELOPER.md#waiting-on-the-developer).
 
-**Recommendation:** build tier-1 ideas first. They are cheap, exactly testable, and teach real ideas; they can also prove the first physics game in a lane before a new solver is decided. A simplified tipping rule for blocks (explicit thresholds, not a rigid-body solver) is also worth a look for Block Topple, since it keeps every result identical on every device at some cost in realism.
+**Recommendation:** build tier-1 ideas first. They are cheap, exactly testable, and teach real ideas; they can also prove the first physics game in a lane before a new solver is decided. A simplified tipping rule for blocks (explicit thresholds, not a rigid-body solver) is what Block Topple's definition uses, since it keeps every result identical on every device at some cost in realism.
 
 ## New candidates
 
@@ -55,7 +55,7 @@ All names are generic. "Tier" is the list above. Effort is relative (S / M / L).
 | **Mobile Maker** (a Seesaw Balance extension) | Calder mobiles, PhET Balancing Act | Hang objects on a mobile's arms so it balances; heavier near the middle, lighter far out. Unequal arms and the idea of torque | school | 1 (a torque rule, in eighths as Block Tower does) | M |
 | **Draw a Ramp** | Physics Playground, Crayon Physics; notebook's Rainbow Road | Draw a line that becomes a ramp, a bridge or a slide so a ball reaches the balloon; many solutions, replay and undo | preschool–school | 3 (circle-vs-segment collisions; a small extension of `ball.ts`) | M–L |
 | **More parts for Chain Reaction** (a ladder, not a new game) | Thinkrolls' chapters, GraviTrax | Add one part per level range: a see-saw, a fan, a spring, a magnet, a bell; each introduces one force. The same sockets and replay | pre-K–school | 2 | M |
-| **Vine Snip** and **Block Topple** | [vine-snip.md](definitions/vine-snip.md) (defined 2026-11-03), [block-topple.md](block-topple.md) | Vine Snip defined; Block Topple sketched | | 3 | M–L |
+| **Vine Snip** and **Block Topple** | [vine-snip.md](definitions/vine-snip.md) (defined 2026-11-03), [block-topple.md](definitions/block-topple.md) (defined 2026-11-03) | Both defined | | 3 | M–L |
 
 Existing notebook candidates (Wobble Works, Water Paths, Magnet Fishing, Gear Garden, Circuit Garden, Mini Putt) are not re-argued here. The new evidence changes none of their rankings except Water Paths, whose distinct-fluid idea (water, steam, mud) is the cleanest bridge from physics to the states-of-matter session in [subject sessions](deep-dives/subjects.md).
 
@@ -80,7 +80,7 @@ Parents: the family table (play together, chunk 16) is the natural home for the 
 
 1. **Domino Run** is built (2026-10-20, a tier-1 game for toddlers to school; [definition](definitions/domino-run.md)).
 2. **Swing Pals** is built (2026-10-20, levels 1–6; [definition](definitions/swing-pals.md)), and **Lift It** is built (2026-10-20, levels 1–6; [definition](definitions/lift-it.md)).
-3. Make the physics-engine decision (settled for **Vine Snip**, now defined) before **Block Topple**, **Draw a Ramp** and **Pond Merge**.
+3. Make the physics-engine decision (settled for **Vine Snip** and **Block Topple**, both now defined) before **Draw a Ramp** and **Pond Merge**.
 
 ## Open decisions (for the developer)
 

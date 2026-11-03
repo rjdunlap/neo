@@ -121,6 +121,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **`vine-snip`, slice 1: levels 1–3 as a new registered game** (new-game tier: typecheck, unit tests, one scripted play at levels 1 and 3 with one missed drop and one hint, one portrait screenshot at level 3, `fingerdemo` at 3, `npm run build`): [definition](definitions/vine-snip.md#check-tier).
 - **`vine-snip`, slice 2: levels 4–5**, after slice 1 (new-rules tier: typecheck, rule tests, one play of level 5 with one wrong-side keep and Grow back, one portrait screenshot at level 4, `fingerdemo` at 5): [definition](definitions/vine-snip.md#check-tier).
+- **`block-topple`, slice 1: levels 1–3 as a new registered game** (new-game tier: typecheck, unit tests, one scripted play at levels 1 and 3 with one short shot and one hill shot then the dotted arc, one portrait screenshot at level 3, `fingerdemo` at 3, `npm run build`): [definition](definitions/block-topple.md#check-tier).
+- **`block-topple`, slice 2: levels 4–5**, after slice 1 (new-rules tier: typecheck, rule tests, one play of level 4 with a thump then a high hit and level 5 with one wrong count, one portrait screenshot at level 4, `fingerdemo` at 5): [definition](definitions/block-topple.md#check-tier).
 
 ### Study follow-ups (docs-only definitions)
 
