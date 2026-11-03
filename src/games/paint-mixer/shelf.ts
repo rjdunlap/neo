@@ -213,14 +213,16 @@ export class JarShelf implements Game {
     this.misses++; this.caseMisses++;
     sfx.boing();
     this.wiggle(v.jar);
-    void this.hearWrong(v.way, v.jar);
+    void this.hearWrong(v.way);
   }
 
-  private async hearWrong(way: 'not-same' | 'one-more', jar: number) {
+  private async hearWrong(way: 'not-same' | 'one-more') {
     const turn = this.turn;
     await this.ctx.say(way === 'not-same' ? 'pm.jars.not-same' : 'pm.jars.one-more');
     if (this.finished || this.busy || turn !== this.turn) return;
-    if (this.caseMisses >= 2 && !this.glow) this.help(jar);
+    // She may have fixed the set while the line played: no hint for a shelf she solved unaided, and help names the jar as it is now.
+    if (checkJars(this.case, this.chosen).kind === 'match') return;
+    if (this.caseMisses >= 2 && !this.glow) this.help();
   }
 
   private wiggle(i: number) {
@@ -274,7 +276,7 @@ export class JarShelf implements Game {
       if (!this.chosen[i]) return;
       const n = this.jarNodes[i];
       this.ctx.particles.burst(n.x, n.y - 40, { kind: 'star', colors: [labelColor(this.case, this.case.jars[i].label), swatch.yellow.fill, 0xffffff], count: 10, speed: [100, 240], gravity: 320, life: [0.4, 0.8] });
-      void this.ctx.tw.to(n, { y: l.jars[i].y - 24 }, { duration: 0.25, ease: ease.outQuad }).then(() => this.ctx.tw.to(n, { y: this.layoutNow.jars[i].y }, { duration: 0.35, ease: ease.outBack }));
+      void this.ctx.tw.to(n, { y: l.jars[i].y - 34 }, { duration: 0.25, ease: ease.outQuad }).then(() => this.ctx.tw.to(n, { y: this.layoutNow.jars[i].y - 14 }, { duration: 0.35, ease: ease.outBack }));
     });
     await this.ctx.say('pm.jars.match');
     if (this.finished) return;

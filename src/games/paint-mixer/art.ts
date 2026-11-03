@@ -208,10 +208,11 @@ export function labelJar(look: LabelJarLook): Container {
   if (!look.open) g.roundRect(-w * 0.36, -h * 0.24, w * 0.72, h * 0.64, 20).fill({ color: 0xffffff, alpha: 0.35 });
   c.addChild(g);
   if (look.chosen) c.addChild(new Graphics().roundRect(-w / 2 - 4, -h / 2 - 4, w + 8, h + 8, 30).stroke({ width: 7, color: swatch.green.fill }));
+  // The closed lid fills the lid knob's tap zone (the top 100 × 60, jars.ts LID), so a tap on the glass chooses, never opens.
   const lid = new Graphics()
-    .roundRect(-w * 0.3, -h * 0.1, w * 0.6, h * 0.2, 10).fill(swatch.brown.fill).stroke({ width: 5, color: swatch.brown.line })
-    .roundRect(-16, -h * 0.1 - 12, 32, 14, 6).fill(swatch.brown.line);
-  if (look.open) { lid.position.set(w * 0.34, -h * 0.5); lid.rotation = 0.55; } else lid.position.set(0, -h * 0.36);
+    .roundRect(-w * 0.33, -h * 0.13, w * 0.66, h * 0.26, 12).fill(swatch.brown.fill).stroke({ width: 5, color: swatch.brown.line })
+    .roundRect(-18, -h * 0.13 - 10, 36, 14, 6).fill(swatch.brown.line);
+  if (look.open) { lid.position.set(w * 0.34, -h * 0.5); lid.rotation = 0.55; } else lid.position.set(0, -h / 2 + 30);
   c.addChild(lid);
   const tag = new Graphics().roundRect(-50, -12, 100, 96, 14).fill(0xffffff).stroke({ width: 3, color: look.fits ? swatch.yellow.line : TIN_LINE, alpha: look.fits ? 1 : 0.6 });
   if (look.fits) tag.roundRect(-55, -17, 110, 106, 18).stroke({ width: 6, color: swatch.yellow.fill });

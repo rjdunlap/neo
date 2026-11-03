@@ -918,7 +918,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'paint-mixer': {
-    goal: "Match the sample's colour by its recipe: pour drops until the bucket matches, or pick the jars whose labels match.",
+    goal: "Match the sample jar's colour by its recipe of drops.",
     steps: [
       { from: 1, to: 1, text: "Tap a pot to pour a drop; copy the sample's row of drops into the bucket, then tap Check." },
       { from: 2, to: 2, text: "Make twice as much: fill two rows of the sample's drops, then tap Check." },
