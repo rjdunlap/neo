@@ -91,3 +91,9 @@
 - Open: the four tray tiles sit in the three-column grid (4 alone on a second row); iPad feel of the 4 by 4 entry ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
 
 ---
+
+## 2026-11-03 — Treasure Map fresh maps and true hints (treasure-map batch 1)
+
+- [PR #1149](https://github.com/rjdunlap/neo/pull/1149): seeded level 1 headers (`headersFor`) and map dressing, level 4 first-leg hint (`map.stepshint`), level 5 `map.cluehint`, how-to level-3 tap step; finds, bot and couch boards unchanged.
+- Ran (tree at the branch tip on base 447bcdf4, server http://localhost:5269): `npm run typecheck`; `npx vitest run src/games/treasure-map` 8 passed (4 new); `npx vitest run src/content` 168 passed; `BROWSER_SUITE=woods WOODS_ONLY=map` levels 1-5 passed (two wrong digs, one hint each, sticker), level-1 portrait and level-4 hint screenshots reviewed; `npm run build` passed; game-reviewer found no defects.
+- Not run: `fingerdemo` (bot unchanged), couch suites (boards unchanged), device speech of the new lines (no rendered clips; device speech fallback; [DEVICE-CHECKS](../DEVICE-CHECKS.md)).

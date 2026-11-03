@@ -2501,7 +2501,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sudoku-garde
 
 Branch `claude/treasure-map-1`, PR #1149: [dive slice 1](../deep-dives/treasure-map.md#build-slices-in-order). Level 1 headers are drawn per round by `headersFor(plan, rng)` (row pictures from seven, column colours shuffled; called after `makeFinds`, so finds and couch boards are unchanged); `dressingFor(rng)` seeds a parchment tint and corner doodle; level 4's hint lights the first leg (`firstLeg`) with `map.stepshint`; level 5 speaks `map.cluehint`; the how-to level-3 step is a tap. The woods `map` case now asserts distinct drawn headers and takes a level-1 portrait and a level-4 hint screenshot. Bot, couch and bands unchanged. Still open: a wrong dig at level 4 shows nothing of where it was relative to the pet.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--treasure-map-fresh-maps-and-true-hints-treasure-map-batch-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--treasure-map-fresh-maps-and-true-hints-treasure-map-batch-1).
 
 ## Word Search, fresh themes and root families (word-search batch 1, 2026-11-03)
 
