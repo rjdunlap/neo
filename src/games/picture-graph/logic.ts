@@ -41,7 +41,10 @@ export const barsFor = (plan: GraphPlan, g: Graph): number[] => g.counts.map((n)
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
-export const KINDS: CritterName[] = ['duck', 'pig', 'bunny', 'cat', 'cow', 'dog'];
+export const KINDS: CritterName[] = ['duck', 'pig', 'bunny', 'cat', 'cow', 'dog', 'bear'];
+
+/** The meadow backdrop's seeds: one is picked for each round, so the hills and clouds change while the rule does not. */
+export const MEADOWS = [81, 23, 142];
 
 export interface Graph {
   kinds: CritterName[];
@@ -90,16 +93,51 @@ export function questionsFor(plan: GraphPlan, g: Graph, rng: Rng): Question[] {
 /**
  * Number choices for a numeric answer: the answer and two neighbors. When a block stands for `per` critters the
  * answer counts critters, so the neighbors are whole numbers of blocks away, and the number of blocks (the
- * answer read straight off the bars, forgetting the key) is always among them.
+ * answer read straight off the bars, forgetting the key) is always among them. Without a key, "how many more"
+ * passes the taller bar's count (`taller`): reading the taller bar instead of the difference is the classic slip,
+ * so it is always offered, beside the answer and one neighbor.
  */
-export function choicesFor(answer: number, rng: Rng, per = 1): number[] {
+export function choicesFor(answer: number, rng: Rng, per = 1, taller?: number): number[] {
   if (per > 1) {
     const blocks = answer / per;
     const near = [answer - per, answer + per, answer + 2 * per].filter((n) => n >= per && n !== blocks);
     return rng.shuffle([answer, blocks, ...rng.shuffle(near)].slice(0, 3));
   }
-  const near = [answer - 2, answer - 1, answer + 1, answer + 2].filter((n) => n >= 0);
+  const near = [answer - 2, answer - 1, answer + 1, answer + 2].filter((n) => n >= 0 && n !== taller);
+  if (taller !== undefined && taller !== answer) return rng.shuffle([answer, taller, rng.pick(near)]);
   return rng.shuffle([answer, ...rng.shuffle(near).slice(0, 2)]);
+}
+
+/** The taller bar's count in a "how many more" question without a key, offered as the tempting wrong answer. */
+export const tallerCount = (plan: GraphPlan, g: Graph, q: Question) => (q.ask === 'more' && plan.per === 1 ? g.counts[q.a] : undefined);
+
+/**
+ * A tap on a bar while answering "which two are the same?". The first tap lifts that bar; a tap on the lifted bar
+ * lowers it again, free; a tap on another bar makes the pair, right or wrong, and lowers the lifted one.
+ */
+export function sameTap(first: number | null, tapped: number, answer: [number, number]): { first: number | null; result: 'lift' | 'lower' | 'right' | 'wrong' } {
+  if (first === null) return { first: tapped, result: 'lift' };
+  if (first === tapped) return { first: null, result: 'lower' };
+  const pair = [first, tapped].sort((a, b) => a - b);
+  const want = [...answer].sort((a, b) => a - b);
+  return { first: null, result: pair[0] === want[0] && pair[1] === want[1] ? 'right' : 'wrong' };
+}
+
+/** The bars a "same" hint glows: the answer bar not yet lifted, or both when the lifted one is wrong or none is. */
+export const sameHint = (first: number | null, answer: [number, number]) => (first !== null && answer.includes(first) ? answer.filter((i) => i !== first) : [...answer]);
+
+/**
+ * What a hint shows after two misses on a number question, so she sees why: for "how many more", a line from the
+ * shorter bar's top across the taller bar (`line`, in blocks) and the taller bar's blocks above it (`blocks`, as
+ * column and block index); for "how many in all", every block.
+ */
+export function whyBlocks(q: Question, bars: number[]): { line?: { from: number; to: number; at: number }; blocks: { kind: number; k: number }[] } {
+  if (q.ask === 'more') {
+    const blocks = Array.from({ length: bars[q.a] - bars[q.b] }, (_, j) => ({ kind: q.a, k: bars[q.b] + j }));
+    return { line: { from: q.b, to: q.a, at: bars[q.b] }, blocks };
+  }
+  if (q.ask === 'total') return { blocks: bars.flatMap((n, kind) => Array.from({ length: n }, (_, k) => ({ kind, k }))) };
+  return { blocks: [] };
 }
 
 /** A critter in the meadow is about this big (at the scale the game draws it), standing on its feet. */
@@ -110,6 +148,16 @@ export const GROUP_GAP = 56;
 
 /** The meadow's room for critters' feet: clear of the key on the left, the number pads on the right and the graph's top (which is 422 above the bottom). */
 export const meadowArea = (w: number, h: number) => ({ left: 216, right: w - 236, top: 165, bottom: Math.min(h * 0.5, 370, h - 430) });
+
+/**
+ * Where each critter stands when a block is one critter: one critter to a slot of the same grid pairs use, so no two
+ * touch, none stands on the graph and the count is always what she sees. In the order of the graph's kinds.
+ */
+export function meadowSpots(g: Graph, w: number, h: number, rng: Rng): { kind: number; x: number; y: number }[] {
+  const kinds = g.counts.flatMap((n, kind) => Array.from({ length: n }, () => kind));
+  const spots = groupSpots(kinds.length, 1, meadowArea(w, h), rng);
+  return kinds.map((kind, i) => ({ kind, ...spots[i] }));
+}
 
 export interface Spot {
   x: number;

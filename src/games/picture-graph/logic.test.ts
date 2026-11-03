@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { barsFor, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, PLANS, prebuilt, questionsFor, tallyMove, type Question } from './logic';
+import { barsFor, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, KINDS, makeGraph, meadowArea, meadowSpots, MEADOWS, PLANS, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, type Question } from './logic';
 
 describe('Picture Graph', () => {
   it('makes graphs whose questions have one clear answer', () => {
@@ -246,6 +246,144 @@ describe('Picture Graph meadow: pairs of critters never hide each other', () => 
         const groups = g.counts.reduce((a, b) => a + b, 0) / plan.per;
         expect(groupSpots(groups, plan.per, area, new Rng(seed))).toHaveLength(groups);
       }
+    }
+  });
+});
+
+describe('Picture Graph fair meadows, visible first pick, hints that show why', () => {
+  const VIEWS: [number, number][] = [[1024, 768], [1366, 1024], [1600, 768], [1024, 1365]];
+  const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
+
+  it('places every critter in the meadow for levels 1-3 and 7 at four views, never touching, clear of key and pads', () => {
+    const problems: string[] = [];
+    for (const pi of [0, 1, 2, 6]) {
+      const plan = PLANS[pi];
+      for (const [w, h] of VIEWS) {
+        const area = meadowArea(w, h);
+        for (let seed = 1; seed <= 300; seed++) {
+          const rng = new Rng(seed);
+          const g = makeGraph(plan, rng);
+          const spots = meadowSpots(g, w, h, rng);
+          const tag = `L${pi + 1} ${w}x${h} seed ${seed}`;
+          if (spots.length !== sum(g.counts)) problems.push(`${tag}: count ${spots.length}`);
+          g.counts.forEach((n, k) => spots.filter((s) => s.kind === k).length !== n && problems.push(`${tag}: kind ${k} count`));
+          for (const [i, s] of spots.entries()) {
+            if (s.x < area.left - 0.01 || s.x > area.right + 0.01 || s.y < area.top - 0.01 || s.y > area.bottom + 0.01) problems.push(`${tag}: ${i} outside area`);
+            if (s.y > h - 430) problems.push(`${tag}: ${i} on graph panel`);
+            if (s.x - CRITTER_W / 2 <= 88 + 62 + 4) problems.push(`${tag}: ${i} on key`);
+            if (s.x + CRITTER_W / 2 >= w - 110 - 62 - 4) problems.push(`${tag}: ${i} on pads`);
+            for (const t of spots.slice(i + 1)) {
+              if (Math.abs(s.x - t.x) < CRITTER_W && Math.abs(s.y - t.y) < CRITTER_H) problems.push(`${tag}: ${i} touches another`);
+            }
+          }
+          if (problems.length > 20) break;
+        }
+      }
+    }
+    expect(problems.slice(0, 20)).toEqual([]);
+    for (const [w, h] of VIEWS) expect(groupSpots(18, 1, meadowArea(w, h), new Rng(5))).toHaveLength(18);
+  });
+
+  it('choicesFor with the taller bar offers three distinct choices holding the answer and the taller count', () => {
+    const problems: string[] = [];
+    let asked = 0;
+    for (const pi of [2, 6]) {
+      const plan = PLANS[pi];
+      for (let seed = 1; seed <= 300; seed++) {
+        const rng = new Rng(seed);
+        const g = makeGraph(plan, rng);
+        for (const q of questionsFor(plan, g, rng)) {
+          if (q.ask !== 'more') continue;
+          asked++;
+          const taller = tallerCount(plan, g, q);
+          const ch = choicesFor(q.answer, rng, 1, taller);
+          if (taller === undefined || taller === q.answer) problems.push(`L${pi + 1} ${seed}: taller ${taller}`);
+          if (new Set(ch).size !== 3 || !ch.includes(q.answer) || !ch.includes(taller as number) || ch.some((n) => n < 0)) problems.push(`L${pi + 1} ${seed}: ${ch} ans ${q.answer} taller ${taller}`);
+        }
+      }
+    }
+    expect(asked).toBe(600);
+    expect(problems.slice(0, 10)).toEqual([]);
+    // Undefined for keyed plans and for other questions.
+    for (const pi of [4, 5]) {
+      const rng = new Rng(3);
+      const g = makeGraph(PLANS[pi], rng);
+      for (const q of questionsFor(PLANS[pi], g, rng)) expect(tallerCount(PLANS[pi], g, q)).toBeUndefined();
+    }
+    const g4 = makeGraph(PLANS[3], new Rng(3));
+    for (const q of questionsFor(PLANS[3], g4, new Rng(3))) expect(tallerCount(PLANS[3], g4, q)).toBeUndefined();
+    // Without a taller bar: the answer plus neighbours within 2.
+    for (let seed = 1; seed <= 100; seed++) {
+      const ch = choicesFor(4, new Rng(seed), 1);
+      expect(ch).toContain(4);
+      expect(new Set(ch).size).toBe(3);
+      for (const n of ch) expect(Math.abs(n - 4)).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it('sameTap lifts, lowers for free, and judges the pair in either order; sameHint points at progress', () => {
+    const ans: [number, number] = [1, 3];
+    expect(sameTap(null, 2, ans)).toEqual({ first: 2, result: 'lift' });
+    expect(sameTap(2, 2, ans)).toEqual({ first: null, result: 'lower' });
+    expect(sameTap(1, 3, ans)).toEqual({ first: null, result: 'right' });
+    expect(sameTap(3, 1, ans)).toEqual({ first: null, result: 'right' });
+    expect(sameTap(1, 2, ans)).toEqual({ first: null, result: 'wrong' });
+    expect(sameTap(0, 2, ans)).toEqual({ first: null, result: 'wrong' });
+    expect(sameHint(null, ans)).toEqual([1, 3]);
+    expect(sameHint(1, ans)).toEqual([3]);
+    expect(sameHint(3, ans)).toEqual([1]);
+    expect(sameHint(2, ans)).toEqual([1, 3]);
+  });
+
+  it('whyBlocks shows the taller bar above the shorter one, every block for a total, nothing otherwise', () => {
+    const problems: string[] = [];
+    for (const pi of [2, 4, 5, 6, 3]) {
+      const plan = PLANS[pi];
+      for (let seed = 1; seed <= 100; seed++) {
+        const rng = new Rng(seed);
+        const g = makeGraph(plan, rng);
+        const bars = barsFor(plan, g);
+        for (const q of questionsFor(plan, g, rng)) {
+          const w = whyBlocks(q, bars);
+          const tag = `L${pi + 1} ${seed} ${q.ask}`;
+          if (q.ask === 'more') {
+            if (w.blocks.length !== bars[q.a] - bars[q.b]) problems.push(`${tag}: length`);
+            if (plan.per === 2 && w.blocks.length * 2 !== q.answer) problems.push(`${tag}: key`);
+            if (plan.per === 1 && w.blocks.length !== q.answer) problems.push(`${tag}: answer`);
+            w.blocks.forEach((b, j) => (b.kind !== q.a || b.k !== bars[q.b] + j || b.k > bars[q.a] - 1) && problems.push(`${tag}: block ${j}`));
+            if (!w.line || w.line.from !== q.b || w.line.to !== q.a || w.line.at !== bars[q.b]) problems.push(`${tag}: line`);
+          } else if (q.ask === 'total') {
+            if (w.blocks.length !== sum(bars)) problems.push(`${tag}: total`);
+          } else if (w.blocks.length !== 0) problems.push(`${tag}: blocks`);
+        }
+      }
+    }
+    expect(problems.slice(0, 10)).toEqual([]);
+    expect(whyBlocks({ ask: 'same', answer: [0, 1] }, [2, 2, 3]).blocks).toEqual([]);
+    expect(whyBlocks({ ask: 'most', answer: 0 }, [2, 1]).blocks).toEqual([]);
+  });
+
+  it('has a bear among the critters, picked sometimes, and at least three distinct meadows', () => {
+    expect(KINDS).toContain('bear');
+    expect(new Set(MEADOWS).size).toBeGreaterThanOrEqual(3);
+    let bears = 0;
+    for (let seed = 1; seed <= 100; seed++) if (makeGraph(PLANS[2], new Rng(seed)).kinds.includes('bear')) bears++;
+    expect(bears).toBeGreaterThan(0);
+  });
+
+  it('the bot taps the first same bar then the second, and the pair is right', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      const plan = PLANS[3];
+      const g = makeGraph(plan, rng);
+      const q = questionsFor(plan, g, rng).find((x) => x.ask === 'same')!;
+      if (q.ask !== 'same') throw new Error('no same');
+      const bars = barsFor(plan, g);
+      const m1 = graphMove(plan, g, bars, q, null);
+      expect(m1).toEqual({ do: 'column', kind: q.answer[0] });
+      const m2 = graphMove(plan, g, bars, q, q.answer[0]);
+      expect(m2).toEqual({ do: 'column', kind: q.answer[1] });
+      expect(sameTap(q.answer[0], q.answer[1], q.answer).result).toBe('right');
     }
   });
 });
