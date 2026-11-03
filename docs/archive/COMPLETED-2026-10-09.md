@@ -2525,7 +2525,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--robot-path-l
 
 Branch `claude/peg-garden-flake-probe`, PR #1154. The flake reproduced (`BATCH_ONLY=pegs` failed 3/3 on 906fa732) and had four causes, all fixed: aimed shots stepped by raw frame time instead of the fixed samples the rules, guide and ghost finger use; a pearl let go during the last praise counted a miss; the couch bot fired outside its aim margin and could repeat a miss; the suite's colour-level "far" drops were chosen by distance, not simulation. The suite is no longer flaky.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--peg-garden-flaky-touch-suite-diagnosed-and-fixed).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--peg-garden-flaky-touch-suite-diagnosed-and-fixed).
 
 ## Bouncy Launch level 8 Near or far (2026-11-03)
 
@@ -2560,6 +2560,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--pixel-pictures-level
 [PR #1167](https://github.com/rjdunlap/neo/pull/1167), batch garden-rows 2, [dive slice 2](../deep-dives/garden-rows.md#build-slices-in-order). A `'boxes'` rule on the 4x4 bed: each flower once in every row, column and 2x2 hedge box. Full beds are box-valid (shifts 0, 2, 1, 3, then box-preserving shuffles); `clash` reports `by: 'box'` only when the repeat shares neither row nor column. `PLANS` level 8 (6 blanks, 2 beds) and level 9 (10 blanks, 1 bed); school range 3-9, pre-K still 1-3. Hedges are drawn in the gaps between boxes. Voice `rows.boxes` and `rows.clash-box`. How-to: a `from: 8` step and note, the level 7 mend step narrowed to `to: 7`. Couch catalog (levels 3-6) and the bot (rule-generic) unchanged. The `gardenrows` suite gained a hedge-box section (`GARDEN_ROWS_ONLY=boxes`).
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--garden-rows-levels-89-hedge-boxes-garden-rows-batch-2).
+
+## Garden Rows level 10 One row (garden-rows 3, 2026-11-03)
+
+[PR #1171](https://github.com/rjdunlap/neo/pull/1171), batch garden-rows 3, [dive slice 3](../deep-dives/garden-rows.md#build-slices-in-order). Level 10: a single row of three spots, two planted and one empty, three packets, three beds a round with the empty spot in a different place each bed; a repeat is a miss with the row clash line, and after two misses the spot and the right packet glow. Logic generalised to non-square beds (`rows` plan field, `rowsOf`). Garden Rows bands are now preschool, prek, school; preschool range `{ min: 1, max: 10, order: [10, 1] }` with `entryLevels: [10]` (carried to pre-K it lands on 1, to school on 3), so Garden Rows shows on preschool's Puzzle Peaks page. Voice `rows.one`. How-to: a level-10 step and note, the rows-and-columns step bounded to 2-9 and the hedge lines to 8-9. Couch (fixed levels 3-6) unchanged.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--garden-rows-level-10-one-row-garden-rows-batch-3).
 
 ## Ferry Jam level 7 Rocks in the harbor (ferry-jam 2, 2026-11-03)
 

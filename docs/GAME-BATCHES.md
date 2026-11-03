@@ -989,7 +989,7 @@ Proof: typecheck, rule tests; one play of level 8 with a box clash and one of le
 
 ### garden-rows 3: One row
 
-**Claimed 2026-11-03** by branch `claude/garden-rows-one-row`.
+**Built 2026-11-03 ([PR #1171](https://github.com/rjdunlap/neo/pull/1171)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-03--garden-rows-level-10-one-row-garden-rows-batch-3); [build note](archive/COMPLETED-2026-10-09.md#garden-rows-level-10-one-row-garden-rows-3-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
 
 - **`garden-rows`, level 10 One row, preschool opening (dive slice 3, after batch 1)** (new band; adds `order`/`entryLevels` to the same `LEVELS`), as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).
 
