@@ -57,13 +57,15 @@ export interface HomeLayout {
   /** Preschool and older: Play with {pet}. Absent for the youngest. */
   play: Spot | null;
   explore: Spot;
+  /** Today's six (D10), every band: beside Explore, toward the middle. */
+  daily: Spot;
   /** Lap and toddler: the ball, right here. */
   ball: Spot | null;
   /** Where the ball may land (its centre), clear of every button. */
   floor: Floor;
 }
 
-/** `young` is lap or toddler: the companion, one toy and Explore. `project` adds Continue above Play (never for the youngest). */
+/** `young` is lap or toddler: the companion, one toy, Explore and Today's six. `project` adds Continue above Play (never for the youngest). */
 export function homeLayout(v: { w: number; h: number }, young: boolean, project = false): HomeLayout {
   const backdrop = backdropFit(v);
   const right = v.w - 50 - ACTION_RADIUS;
@@ -74,9 +76,11 @@ export function homeLayout(v: { w: number; h: number }, young: boolean, project 
   const top = cont ? mid + row : mid;
   const explore = { x: right, y: young ? mid + 80 : top + row };
   const play = young ? null : { x: right, y: top };
+  const daily = { x: right - row, y: explore.y };
   const ball = young ? { x: Math.min(stage.x + 280, right - 2 * ACTION_RADIUS - 60), y: v.h - 90 } : null;
-  const floor = { x0: GUIDE_CORNER.w + BALL_RADIUS, x1: right - ACTION_RADIUS - BALL_RADIUS - 30, y0: Math.max(backdrop.floorTop + 40, v.h - 220), y1: v.h - BALL_RADIUS - 20 };
-  return { backdrop, who: { x: BACK.x, y: BACK.y }, stage, continue: cont, play, explore, ball, floor };
+  // The youngest's Today's six stands well above the grass; an older Explore can sit low, so the floor (unused without the ball) keeps left of it.
+  const floor = { x0: GUIDE_CORNER.w + BALL_RADIUS, x1: (young ? right : daily.x) - ACTION_RADIUS - BALL_RADIUS - 30, y0: Math.max(backdrop.floorTop + 40, v.h - 220), y1: v.h - BALL_RADIUS - 20 };
+  return { backdrop, who: { x: BACK.x, y: BACK.y }, stage, continue: cont, play, explore, daily, ball, floor };
 }
 
 export interface PlayLayout {

@@ -53,7 +53,7 @@ describe('the root Home layout', () => {
         expect(l.play === null, where).toBe(young);
         expect(l.continue !== null, where).toBe(!young && project);
         expect(l.ball === null, where).toBe(!young);
-        const buttons = [disc(l.who, CORNER_RADIUS, 'who'), disc(l.explore, ACTION_RADIUS, 'explore'), ...(l.play ? [disc(l.play, ACTION_RADIUS, 'play')] : []), ...(l.continue ? [disc(l.continue, ACTION_RADIUS, 'continue')] : [])];
+        const buttons = [disc(l.who, CORNER_RADIUS, 'who'), disc(l.explore, ACTION_RADIUS, 'explore'), disc(l.daily, ACTION_RADIUS, 'daily'), ...(l.play ? [disc(l.play, ACTION_RADIUS, 'play')] : []), ...(l.continue ? [disc(l.continue, ACTION_RADIUS, 'continue')] : [])];
         const targets = [...buttons, body(l.stage), ...(l.ball ? [disc(l.ball, BALL_RADIUS, 'ball')] : [])];
         check(v, targets, [floorBox(l.floor)], where);
         // The grown-ups' gear, with the island-games link below it.

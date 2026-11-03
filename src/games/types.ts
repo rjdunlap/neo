@@ -139,6 +139,11 @@ export interface GameModule {
   liveController?: true;
   /** A keyboard typing game (Pond Typing): couch play hands it the letter keys pressed (`CouchControls.typed`) while its round is on screen. */
   typing?: true;
+  /**
+   * `false` keeps the game out of Today's six (`src/content/daily.ts`): a round that does not suit a ready-made challenge for the
+   * day. It stays everywhere else. Unset means eligible.
+   */
+  daily?: false;
   /** The game's `create()` returns a game with `autotouch()`, so its how-to card shows the ghost finger at her level. */
   touchDemo?: true;
   /** The sticker for finishing a round, rebuilt from its seed. */

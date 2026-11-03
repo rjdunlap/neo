@@ -511,8 +511,8 @@ export class GameScene extends Scene {
       this.mod.id,
       { level: this.level, misses: result.misses, hints: result.hints, seconds: Math.round(this.seconds), at: Date.now() },
       this.mod.levels(band),
-      // A story round plays the story's level; it shouldn't move the game's own level.
-      !this.story,
+      // A story round plays the story's level, and Today's six the day's preset level: neither moves the game's own level.
+      !this.story && !(this.origin && 'daily' in this.origin),
     );
     // Finishing completes the request, however much help it took.
     if (this.story && 'project' in this.story) store.completeWelcomeStep(this.story.step, this.made, { misses: result.misses, hints: result.hints, level: this.level });

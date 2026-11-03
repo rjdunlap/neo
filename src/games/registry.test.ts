@@ -255,6 +255,11 @@ describe('game registry', () => {
     ], range)).toBe(2);
   });
 
+  it("keeps Today's six opt-outs (`daily: false`) to the listed touch games", () => {
+    // A calm wind-down is not a challenge for the day; every other touch game may be one of the six (docs/definitions/todays-six.md#r3-the-pool-games-that-make-sense-for-the-band).
+    expect(GAMES.filter((m) => m.daily === false).map((m) => m.id)).toEqual(['goodnight-room']);
+  });
+
   it('has something for every age band', () => {
     for (const b of BANDS) expect(GAMES.filter((g) => g.bands.includes(b.id)).length, b.id).toBeGreaterThanOrEqual(3);
   });

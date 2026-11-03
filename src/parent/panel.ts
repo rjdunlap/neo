@@ -87,6 +87,7 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
       ${import.meta.env.DEV ? '<div class="parent__actions" style="margin-top:10px"><button class="btn" data-meet-all>Meet everyone (development)</button></div>' : ''}
       <h2>Playing</h2>
       <p class="muted">Puddle Island has no timer of its own. To limit how long she plays, use the device's tools: Screen Time app limits, or Guided Access, on an iPad.</p>
+      <p class="muted">Today's six, the six-tile button on Home, is a different mix of games each day, chosen by their age, each at a level picked for the day. Those rounds earn their usual sticker but do not move a game's level, a pinned level is used instead, and nothing is missed on a day they do not play.</p>
       <div class="parent__row">
         <label for="p-tips">Show grown-up tips during games</label>
         <input id="p-tips" type="checkbox" />
