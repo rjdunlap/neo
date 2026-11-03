@@ -989,6 +989,7 @@ export const SCRIPT = {
   'sprout.reveal-two': ['Two spot copies. Spotted sprouts alone could never tell us for sure.'],
   'sprout.try-hidden': ["One more sprout, by chance, from the hidden plant's own copies. It's free."],
   'sprout.try-plain': ['A plain sprout grew! Look at the label again, then choose every card that could.'],
+  'sprout.try-plain-water': ['A plain sprout grew! Tap the watering can to grow the rest.'],
   'sprout.help.water': ['Tap the watering can to grow its sprouts.'],
   'sprout.help.hidden': ['I chose every card that fits the sprouts. Tap the leaf to check.'],
   'game.helper-house': ['Helper House!'],

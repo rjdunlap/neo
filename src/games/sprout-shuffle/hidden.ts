@@ -273,7 +273,7 @@ export class SproutHidden implements Game {
       for (const c of this.cards) c.setChosen(false);
       this.wrong = 0;
       this.glowCards = false;
-      void this.ctx.say('sprout.try-plain');
+      void this.ctx.say(this.choosing ? 'sprout.try-plain' : 'sprout.try-plain-water');
     } else if (this.tries === 1) void this.ctx.say('sprout.try-hidden');
     this.updateButtons();
   }
