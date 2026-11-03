@@ -76,3 +76,12 @@
 - Not run: build (no shared files), full unit suite, level 2 browser play (interaction unchanged). Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): older child on the logic levels.
 
 ---
+
+## 2026-11-02 — Garden Rows seeded flower sets and level 7 Mend the bed (garden-rows batch 1)
+
+- [PR #1126](https://github.com/rjdunlap/neo/pull/1126): seeded flower sets per bed; level 7 Mend the bed (school 3–7); new `gardenrows` suite.
+- Ran (origin/main 023bf491 + branch, Vite dev on http://localhost:5997, `VITE_SPEECH=off`): typecheck; Garden Rows rules 16 passed (300-seed mend assertions, 50-seed every-kind coverage, hint and bot convergence); src/couch + registry + garden-rows 109; src/content 184; scripts tests 51; `BROWSER_SUITE=gardenrows` (level 7 portrait: free lift, two repeat replants = 2 misses, glow, both beds mended, 2 misses/1 hint; level 3 non-default flower sets); `BROWSER_SUITE=fingerdemo FINGER_ONLY=garden-rows FINGER_LEVELS=7` 18.8 s; portrait screenshot reviewed.
+- `game-reviewer`: no bugs; its note (silent full-but-unsolved bed) was fixed with the `rows.mend` line afterwards (rule tests rerun, browser not rerun).
+- Not run: full unit suite (CI), build (no shared assets), couch suites (couch unchanged). Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): school-age child on Mend the bed; flower sets on the iPad.
+
+---
