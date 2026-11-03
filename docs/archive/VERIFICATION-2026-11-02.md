@@ -67,3 +67,12 @@
 - Ran (origin/main 05a1736f + branch, final tested commit 14f87c8e, Vite dev on http://localhost:5818): typecheck; `npm test` 296 files / 4404 tests (Lemonade Stand rules 28); `BROWSER_SUITE=woods WOODS_ONLY=lemon FROM_LEVEL=5` (portrait, two wrong boats = 2 misses, lightbulb then stays at 2 misses and 1 hint, day-2 lightbulb = 2 hints, saved score 2/2, card costs, jetty screenshot; re-run after the review fixes); `fingerdemo FINGER_ONLY=lemonade-stand FINGER_LEVELS=5` clean 36.7 s (before the review fixes, which touched only speech wording and an instruction guard); `npm run build`.
 - `game-reviewer`: two small findings fixed.
 - Not run: other woods levels, offline. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): "for 2 lemons" as cheaper per cup, four boat mornings in a row.
+
+## 2026-11-02 — Pixel Pictures fresh pictures and colour logic (pixel-pictures batch 1)
+
+- [PR #1125](https://github.com/rjdunlap/neo/pull/1125): level 2 pool 3 to 6, level 6 pool 2 to 5 behind `colorLineSolvable`, level-6 hint and ghost finger by colour logic.
+- Ran (code commit 09dd70db, Vite dev on http://localhost:5957, stopped): typecheck; `npx vitest run src/games/pixel-pictures` 8 tests; picture-logic 27 tests; `BROWSER_SUITE=woods WOODS_ONLY=pixels FROM_LEVEL=6`; `BROWSER_SUITE=fingerdemo FINGER_ONLY=pixel-pictures` level 1 clean 31.5 s, level 6 clean 61.6 s (was 59.1 s).
+- `game-reviewer`: no blocking findings.
+- Not run: build (no shared files), full unit suite, level 2 browser play (interaction unchanged). Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): older child on the logic levels.
+
+---
