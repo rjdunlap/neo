@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BETWEEN_LEVEL, BETWEEN_PLAN, BETWEEN_TRIPLES, betweenTriples, PLANET_PLAN, planetPairs, gravityFor, planetBotLanding, planetSide, airtimeFor, FRIEND_GAP, FRIEND_LEVEL, FRIEND_PLAN, FRIEND_RANGE, FRIEND_WINDOW, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets } from './logic';
+import { cloudAt, cloudCount, NEAR_FAR, NEAR_FAR_LEVEL, NEAR_FAR_PLAN, NEAR_FAR_WINDOW, BETWEEN_LEVEL, BETWEEN_PLAN, BETWEEN_TRIPLES, betweenTriples, PLANET_PLAN, planetPairs, gravityFor, planetBotLanding, planetSide, airtimeFor, FRIEND_GAP, FRIEND_LEVEL, FRIEND_PLAN, FRIEND_RANGE, FRIEND_WINDOW, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets } from './logic';
+import { CLOUDS } from './course';
 
 describe('Bouncy Launch', () => {
   it('turns a bigger pull into a farther flight, and every pad has a pull that lands on it', () => {
@@ -232,5 +233,78 @@ describe('Planet Hop, level 12', () => {
 
   it('preserves the default island mapping for every pull, including clamped pulls', () => {
     for (let p = -10; p <= 200; p++) expect(reach(p)).toBe(reach(p, 1));
+  });
+
+  describe('level 8, Near or far', () => {
+    const plan = planFor(NEAR_FAR_LEVEL);
+
+    it('is its own plan with two big clouds and five shots', () => {
+      expect(plan).toBe(NEAR_FAR_PLAN);
+      expect(plan.mode).toBe('nearfar');
+      expect(plan.shots).toBe(5);
+      expect(cloudCount(plan)).toBe(2);
+      expect(cloudAt(plan, 0)).toBeLessThan(cloudAt(plan, 1));
+    });
+
+    it('reaches both clouds inside the leash: the shortest pull lands near and a full pull lands far', () => {
+      expect(judge(plan, reach(MIN_PULL), 0)).toBe('yes');
+      expect(judge(plan, reach(MAX_PULL), 1)).toBe('yes');
+      for (const i of [0, 1]) {
+        const pull = pullFor(NEAR_FAR[i]);
+        expect(pull).toBeGreaterThanOrEqual(MIN_PULL);
+        expect(pull).toBeLessThanOrEqual(MAX_PULL);
+        expect(judge(plan, reach(pull), i)).toBe('yes');
+      }
+    });
+
+    it('keeps the windows apart with a clear stretch of grass, and wide (about 28 pull units each way)', () => {
+      const nearTop = NEAR_FAR[0] + NEAR_FAR_WINDOW, farBottom = NEAR_FAR[1] - NEAR_FAR_WINDOW;
+      expect(farBottom - nearTop).toBeGreaterThan(0);
+      // The grass between is at least as wide as a whole finger's worth of pull, never a sliver.
+      expect((farBottom - nearTop) * (MAX_PULL - MIN_PULL)).toBeGreaterThanOrEqual(28 - 1e-9);
+      expect(NEAR_FAR_WINDOW * (MAX_PULL - MIN_PULL)).toBeCloseTo(28);
+      // The same landing is never right for both clouds.
+      for (let f = 0; f <= 1.0001; f += 0.01) expect(judge(plan, f, 0) === 'yes' && judge(plan, f, 1) === 'yes').toBe(false);
+    });
+
+    it('says which way to go on a miss', () => {
+      expect(judge(plan, 0.9, 0)).toBe('long');
+      expect(judge(plan, 0.45, 0)).toBe('long');
+      expect(judge(plan, 0.2, 1)).toBe('short');
+      expect(judge(plan, 0.55, 1)).toBe('short');
+    });
+
+    it('takes turns between the clouds from a seeded start, never the same twice running', () => {
+      const firsts = new Set<number>();
+      for (let seed = 1; seed <= 60; seed++) {
+        const t = targets(plan, new Rng(seed));
+        expect(t).toHaveLength(5);
+        t.forEach((c, i) => {
+          expect([0, 1]).toContain(c);
+          if (i > 0) expect(c).not.toBe(t[i - 1]);
+        });
+        firsts.add(t[0]);
+        expect(targets(plan, new Rng(seed))).toEqual(t);
+      }
+      expect(firsts).toEqual(new Set([0, 1]));
+    });
+
+    it("gives the ghost finger a pull that lands on every asked cloud", () => {
+      for (let seed = 1; seed <= 20; seed++) {
+        const t = targets(plan, new Rng(seed));
+        for (let shot = 0; shot < t.length; shot++) expect(judge(plan, reach(pullToTake(plan, shot, t)), t[shot])).toBe('yes');
+      }
+    });
+
+    it("leaves Cloud Hopper and the five numbered clouds as they were", () => {
+      expect(PADS).toBe(5);
+      expect([0, 1, 2, 3, 4].map(padAt)).toEqual([0.1, 0.3, 0.5, 0.7, 0.9]);
+      for (let i = 0; i < PADS; i++) expect(cloudAt(planFor(3), i)).toBe(padAt(i));
+      expect(planFor(3).mode).toBe('star');
+      expect(CLOUDS.version).toBe(1);
+      expect(CLOUDS.padWidth).toBe(0.5);
+      expect(CLOUDS.targets).toEqual([2, 4, 0, 3, 1, 4, 2, 0, 3, 1, 4, 2]);
+      for (let i = 0; i < PADS; i++) expect(judge(planFor(3), padAt(i), i, undefined, undefined, CLOUDS.padWidth)).toBe('yes');
+    });
   });
 });

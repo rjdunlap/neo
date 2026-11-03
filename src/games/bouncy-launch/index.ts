@@ -19,13 +19,14 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { CLOUDS } from './course';
-import { betweenTriples, type BetweenTriple, airtimeFor, gravityFor, planetPairs, planetSide, planetBotLanding, type PlanetPair, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets, type LaunchPlan } from './logic';
+import { betweenTriples, type BetweenTriple, cloudAt, cloudCount, NEAR_FAR_LEVEL, NEAR_FAR_WINDOW, airtimeFor, gravityFor, planetPairs, planetSide, planetBotLanding, type PlanetPair, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets, type LaunchPlan } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 3 },
-  preschool: { min: 2, max: 4 },
+  // Level 8, Near or far, is an easy entry: two big clouds before the star level's single small one.
+  toddler: { min: 1, max: 8, order: [1, 2, 8, 3] },
+  preschool: { min: 2, max: 8, order: [2, 8, 3, 4] },
   // Level 7, Feed the friend, comes after the numbered clouds and before comparing.
   prek: { min: 3, max: 7, order: [3, 4, 7, 5] },
   // Level 9, Between two flights, follows the single shown pull of level 6.
@@ -156,7 +157,7 @@ class BouncyLaunch implements Game {
     this.botWait -= dt;
     const target = this.targets[this.shot];
     if (this.flying || this.finished || this.grab || this.botWait > 0 || target === undefined) return out;
-    const gap = padAt(target) - this.controllerPower;
+    const gap = cloudAt(this.plan, target) - this.controllerPower;
     out.players[0].active = true;
     if (Math.abs(gap) > 0.015) out.players[0].x = Math.max(-1, Math.min(1, gap / (Math.max(dt, 1e-3) * 0.5)));
     else {
@@ -282,9 +283,10 @@ class BouncyLaunch implements Game {
     ctx.stage.addChild(this.backdrop, ...this.planetBackdrops, this.planetArt, this.lastArc, this.flag, this.flagNumbers, this.compareRing, this.predictionRing, this.pullArrow);
     this.pullArrow.eventMode = 'none';
     const padW = this.course?.padWidth ?? 0.85;
-    for (let i = 0; i < PADS; i++) {
+    for (let i = 0; i < cloudCount(this.plan); i++) {
       const pad = new Container();
-      pad.addChild(padArt(120 * padW));
+      // Near or far's two big clouds are drawn to the strip's width in resize(), so each shows its whole window.
+      if (this.plan.mode !== 'nearfar') pad.addChild(padArt(120 * padW));
       if (this.plan.mode === 'number' || this.plan.mode === 'predict' || this.plan.mode === 'between') {
         const n = label(String(i + 1), 46, ink);
         n.anchor.set(0.5);
@@ -296,7 +298,7 @@ class BouncyLaunch implements Game {
       ctx.stage.addChild(pad);
       if (this.plan.mode === 'predict' || this.plan.mode === 'between') onTap(pad, () => void this.predict(i), { cooldown: 500 });
     }
-    this.star.visible = this.plan.mode === 'star';
+    this.star.visible = this.plan.mode === 'star' || this.plan.mode === 'nearfar';
     this.stick = !!ctx.couch;
     // The pet is the one flying, so the corner guide steps out (as in Splish Splash).
     ctx.pet.visible = false;
@@ -456,7 +458,13 @@ class BouncyLaunch implements Game {
     this.seat = { x: 210, y: ground - 150 };
     this.strip = { x0: 380, x1: v.w - 80, y: ground + 10 };
     this.replay.position.set(this.seat.x, this.strip.y - 8);
-    this.pads.forEach((pad, i) => pad.position.set(this.landX(padAt(i)), this.strip.y));
+    this.pads.forEach((pad, i) => pad.position.set(this.landX(cloudAt(this.plan, i)), this.strip.y));
+    if (this.plan.mode === 'nearfar') {
+      // As wide as the landing that counts (the cloud's window), and never narrower than a big target.
+      const w = Math.max(140, 2 * NEAR_FAR_WINDOW * (this.strip.x1 - this.strip.x0));
+      for (const pad of this.pads) pad.removeChildren().forEach(c => c.destroy());
+      for (const pad of this.pads) pad.addChild(padArt(w));
+    }
     if (!this.flying && !this.grab) {
       if (this.plan.mode === 'predict' || this.plan.mode === 'planet' || this.plan.mode === 'between') this.showPredictionPull();
       else this.pet.position.set(this.seat.x, this.restingY());
@@ -549,7 +557,7 @@ class BouncyLaunch implements Game {
   private placeStar() {
     const t = this.targets[this.shot];
     if (t === undefined) return;
-    this.star.position.set(this.landX(padAt(t)), this.strip.y - 110);
+    this.star.position.set(this.landX(cloudAt(this.plan, t)), this.strip.y - 110);
   }
 
   private instruct(id: LineId, vars?: LineVars) {
@@ -589,6 +597,8 @@ class BouncyLaunch implements Game {
         return;
       case 'star':
         return this.instruct('launch.star');
+      case 'nearfar':
+        return this.instruct(this.targets[this.shot] === 0 ? 'launch.near' : 'launch.far');
       case 'number':
         return this.instruct('launch.number', { n: this.targets[this.shot] + 1 });
       case 'compare':
@@ -700,9 +710,10 @@ class BouncyLaunch implements Game {
     const t = this.targets[this.shot];
     const spot = this.spots[this.shot];
     if (spot !== undefined && !this.stick) g.circle(this.seat.x, this.seat.y, pullFor(spot)).stroke({ width: 4, color: swatch.yellow.fill, alpha: 0.7 });
-    if (t !== undefined && (this.plan.mode === 'star' || this.plan.mode === 'number')) {
-      if (this.stick) g.roundRect(this.seat.x - 68, this.seat.y + padAt(t) * SQUASH - 8, 136, 36, 14).stroke({ width: 5, color: swatch.yellow.fill, alpha: 0.85 });
-      else g.circle(this.seat.x, this.seat.y, pullFor(padAt(t))).stroke({ width: 4, color: swatch.yellow.fill, alpha: 0.7 });
+    if (t !== undefined && (this.plan.mode === 'star' || this.plan.mode === 'number' || this.plan.mode === 'nearfar')) {
+      const at = cloudAt(this.plan, t);
+      if (this.stick) g.roundRect(this.seat.x - 68, this.seat.y + at * SQUASH - 8, 136, 36, 14).stroke({ width: 5, color: swatch.yellow.fill, alpha: 0.85 });
+      else g.circle(this.seat.x, this.seat.y, pullFor(at)).stroke({ width: 4, color: swatch.yellow.fill, alpha: 0.7 });
     }
   }
 
@@ -772,7 +783,7 @@ class BouncyLaunch implements Game {
     if (this.plan.mode === 'between' && this.betweenStep < 2) return this.betweenWatched();
     const tw = this.ctx.tw;
     const verdict = this.plan.mode === 'friend' ? judgeFriend(f, this.spots[this.shot]) : judge(this.plan, f, this.targets[this.shot] ?? 0, this.ask, this.last, this.course?.padWidth);
-    if (this.plan.mode === 'star' || this.plan.mode === 'number') this.off += Math.abs(f - padAt(this.targets[this.shot]));
+    if (this.plan.mode === 'star' || this.plan.mode === 'number' || this.plan.mode === 'nearfar') this.off += Math.abs(f - cloudAt(this.plan, this.targets[this.shot]));
     const firstCompare = this.plan.mode === 'compare' && this.last === undefined;
     const predicted = this.plan.mode === 'predict' || this.plan.mode === 'between' ? this.prediction === this.targets[this.shot] : undefined;
     if (verdict === 'yes') {
@@ -939,6 +950,7 @@ export const bouncyLaunch: GameModule = {
   skills: ['cause-and-effect', 'measurement', 'numbers'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [NEAR_FAR_LEVEL],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'Say "pull... and let go!" together, then guess where {name}\'s pet will land.',

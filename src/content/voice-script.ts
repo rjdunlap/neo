@@ -3299,6 +3299,8 @@ export const SCRIPT = {
   'launch.too-short': ['A bit more!'],
   'launch.wrong-way': ['Pull {pet} back, this way!'],
   'launch.star': ['Land on the star cloud!'],
+  'launch.near': ['Land on the near cloud, with the star! A little pull.'],
+  'launch.far': ['Land on the far cloud, with the star! A big pull.'],
   'launch.number': ['Land on {n}!'],
   'launch.farther': ['Now go farther!', 'Farther this time!'],
   'launch.nearer': ['Now not so far!', 'This time, not as far!'],
