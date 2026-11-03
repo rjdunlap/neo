@@ -1,6 +1,6 @@
 # Hidden Sprouts: Sprout Shuffle levels 4–6 (definition G5)
 
-**Build status:** level 4 built 2026-11-01 ([PR #1093](https://github.com/rjdunlap/neo/pull/1093); `school` range now 1–4); levels 5 (G6, claimed 2026-11-03 on branch `claude/sprout-shuffle-5`) and 6 remain.
+**Build status:** level 4 built 2026-11-01 ([PR #1093](https://github.com/rjdunlap/neo/pull/1093); `school` range now 1–4); level 5 built 2026-11-03 ([PR #1151](https://github.com/rjdunlap/neo/pull/1151); `school` range now 1–5); level 6 remains.
 
 Defined 2026-10-18 as slice **G5** of the [genetics study](../deep-dives/subjects/genetics.md#build-slices-in-order), from its [proposed ladder](../deep-dives/subjects/genetics.md#first-games-proposed-ladder-sprout-shuffle) and the [Hidden Sprouts case](../deep-dives/subjects/genetics.md#hidden-sprouts-one-older-family-case). It appends three levels to the [Sprout Shuffle definition](sprout-shuffle.md) (G1) and changes nothing in levels 1–3. Docs only: no game, ID, voice line, save field or band exists yet. **Not ready to build.** The builds (level 4 after G3, level 5 as G6, level 6 after it) wait on levels 1–3 being built and on the G1 calls (a reviewer, the school entry window, the level 1 accounting and the home land), plus the placement call below. Each open call has a default the build uses, listed in [Open decisions](#open-decisions) and tracked in [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
 

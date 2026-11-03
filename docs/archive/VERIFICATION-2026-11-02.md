@@ -142,3 +142,10 @@
 - [PR #1136](https://github.com/rjdunlap/neo/pull/1136): level 4 has three shore friends and three requests, each leaving a wrong spot, with all three words; level 5 pairs are always behind + next to (the turn always names someone; "in front of" is only said); the level-2 hint rings the arrows while the friend is hidden and the friend once in view; level-scoped how-to; `lap` dropped from `LEVELS`.
 - Ran (commit d5a0be8f, base d53e56df, Vite on http://localhost:5690): typecheck; Peekaround rule tests, 6 passed (the two new placement tests fail with the old request rule restored); `src/content` and registry tests, 190 passed; `BROWSER_SUITE=woods WOODS_ONLY=peek FROM_LEVEL=2` levels 2-5 passed (ring on arrows while hidden, on the friend once in view); `BROWSER_SUITE=fingerdemo FINGER_ONLY=peekaround-island FINGER_LEVELS=4,5` clean (8.7 s, 15.7 s); one landscape screenshot of level 5.
 - Not run: build (CI), portrait screenshot, offline, device or child checks.
+
+## 2026-11-02 — Paint Mixer levels 5–6 and the paint shelf (batch paint-mixer 3)
+
+- [PR #1135](https://github.com/rjdunlap/neo/pull/1135): `paint-mixer` levels 5 (three pots) and 6 (which jars match) and six journal paint-shelf entries; sample generalised to n pots, new `shelf.ts` and `jars.ts`; base `origin/main` d53e56df, server http://localhost:5197 (`VITE_SPEECH=off`).
+- Ran: typecheck; `npm test` 4,480 pass (a first run had four timing-sensitive tests in other games fail under load, a rerun passed); 88 Paint Mixer rule tests (levels 1-4 seed-identical); build; `BROWSER_SUITE=paintmixer PAINT_LEVELS=5,6` twice (second after review fixes: level 5 extra drop, Undo, rows, portrait, both recipes on the shelf; level 6 empty Check free, wrong jar twice, lid reveal, portrait with lid open, right set); `fingerdemo` `FINGER_ONLY=paint-mixer FINGER_LEVELS=5,6` (32.6 s, 12.5 s).
+- Not run: levels 1-4 browser play (covered by the seed-identical test), offline check.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#paint-mixer-levels-56)): shelf colours as six, one-more-of-each, labels as two counts, the circled count without speech, lid zone versus jar.
