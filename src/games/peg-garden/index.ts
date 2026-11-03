@@ -387,12 +387,11 @@ class PegGarden implements Game {
       this.pearl.position.set(this.prev.x + (b.x - this.prev.x) * k, this.prev.y + (b.y - this.prev.y) * k);
       if (b.y - b.r > BOARD.h || this.ballAge > 10) void this.shotOver();
       return;
-    } else {
-      // A dropped pearl takes fixed steps, as the rules' simulation does, so it goes exactly where the hint, the stall guard
-      // and the ghost finger expect whatever the frame rate; a long frame slows it rather than changing its path.
-      this.stepLeft = Math.min(this.stepLeft + dt, 0.25);
-      for (; this.stepLeft >= STEP; this.stepLeft -= STEP) for (const i of stepBall(b, this.world, STEP)) this.touchBud(i);
     }
+    // A dropped pearl takes fixed steps, as the rules' simulation does, so it goes exactly where the hint, the stall guard
+    // and the ghost finger expect whatever the frame rate; a long frame slows it rather than changing its path.
+    this.stepLeft = Math.min(this.stepLeft + dt, 0.25);
+    for (; this.stepLeft >= STEP; this.stepLeft -= STEP) for (const i of stepBall(b, this.world, STEP)) this.touchBud(i);
     this.pearl.position.set(b.x, b.y);
     if (b.y - b.r > BOARD.h || this.ballAge > 10) void this.shotOver();
   }
