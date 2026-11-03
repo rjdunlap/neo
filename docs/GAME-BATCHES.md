@@ -895,7 +895,7 @@ Proof: typecheck and the game's rule tests (pool sizes, solvability, hint leads 
 
 ### pixel-pictures 2: Both ways and Twice as big
 
-- **`pixel-pictures`, level 7 Both ways and level 8 Twice as big (dive slice 2, after batch 1)** (new levels on an existing interaction; school): level 7 copies a drawn 6×6 quarter across two mirror lines into the other three (`PixelMode` gains `mirror2`; `pixel.notmirror2`, hint glows an open square whose mirror is drawn); level 8 copies a 3×3 model at double size into 2×2 blocks (`scaleUp(p, 2)`; `pixel.notbig`, hint glows one block). Authored four-fold pictures and five 3×3 models; how-to steps scoped from 7; bot through `pixelTouch`. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#proposed-ladder)
+- **`pixel-pictures`, level 7 Both ways and level 8 Twice as big (dive slice 2, after the built batch 1)** (new levels on an existing interaction; school): level 7 copies a drawn 6×6 quarter across two mirror lines into the other three (`PixelMode` gains `mirror2`; `pixel.notmirror2`, hint glows an open square whose mirror is drawn); level 8 copies a 3×3 model at double size into 2×2 blocks (`scaleUp(p, 2)`; `pixel.notbig`, hint glows one block). Authored four-fold pictures and five 3×3 models; how-to steps scoped from 7; bot through `pixelTouch`. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#proposed-ladder)
 
 Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the suite case, the README row and `docs/GAMES.md`.
 
@@ -1459,7 +1459,7 @@ Proof: new-interaction tier: typecheck, unit tests including order, one play of 
 
 ### treasure-map 1: Fresh maps and true hints
 
-- **`treasure-map`, Fresh maps and true hints (dive slice 1)** (existing-game fix): seeded level 1 headers from a pool of seven pictures and shuffled colours via `headersFor(plan, rng)`, seeded map dressing, level 5's own `map.cluehint`, level 4's hint lighting the first leg, and the how-to level-3 step as a tap.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
+- **`treasure-map`, Fresh maps and true hints (dive slice 1)** (built 2026-11-03; existing-game fix): seeded level 1 headers from a pool of seven pictures and shuffled colours via `headersFor(plan, rng)`, seeded map dressing, level 5's own `map.cluehint`, level 4's hint lighting the first leg, and the how-to level-3 step as a tap.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
 
 Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 

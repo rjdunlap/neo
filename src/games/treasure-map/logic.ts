@@ -31,7 +31,34 @@ export interface Square {
 }
 
 export const COLUMN_COLORS = ['red', 'yellow', 'blue', 'green', 'purple'] as const;
-export const ROW_PICTURES = ['apple', 'fish', 'star', 'flower', 'shell'] as const;
+export const ROW_PICTURES = ['apple', 'fish', 'star', 'flower', 'shell', 'heart', 'balloon'] as const;
+export type ColumnColor = (typeof COLUMN_COLORS)[number];
+export type RowPicture = (typeof ROW_PICTURES)[number];
+
+/** What heads the map's columns and rows: index i names column i and row i (row 0 at the bottom). */
+export interface Headers {
+  cols: ColumnColor[];
+  rows: RowPicture[];
+}
+
+/**
+ * A round's headers. Picture maps draw their rows from the seven pictures and shuffle the five colours,
+ * so a replay is a fresh map; the finds' squares index into these, and the sign and voice read them.
+ * Other maps keep letters and numbers, so their headers stay in the plain order.
+ */
+export function headersFor(plan: MapPlan, rng: Rng): Headers {
+  if (plan.mode !== 'pictures') return { cols: COLUMN_COLORS.slice(0, plan.size), rows: ROW_PICTURES.slice(0, plan.size) };
+  return { cols: rng.shuffle([...COLUMN_COLORS]).slice(0, plan.size), rows: rng.shuffle([...ROW_PICTURES]).slice(0, plan.size) };
+}
+
+export const TINTS = 3;
+export const DOODLES = ['compass', 'sun', 'ship'] as const;
+export type Doodle = (typeof DOODLES)[number];
+
+/** A round's look: one of three parchment tints and a doodle in the free corner. Cosmetic only. */
+export function dressingFor(rng: Rng): { tint: number; doodle: Doodle } {
+  return { tint: rng.int(0, TINTS - 1), doodle: rng.pick(DOODLES) };
+}
 
 export const name = (s: Square) => `${String.fromCharCode(65 + s.col)}${s.row + 1}`;
 
@@ -120,9 +147,23 @@ export function clueEnd(clue: Clue): Square {
 
 /** "3 right, then 1 up" (or left / down) for the voice and the sign. */
 export function directions(f: Find): string {
-  const h = `${Math.abs(f.right!)} ${f.right! > 0 ? 'right' : 'left'}`;
+  const h = firstDirection(f);
   const v = `${Math.abs(f.up!)} ${f.up! > 0 ? 'up' : 'down'}`;
   return `${h}, then ${v}`;
+}
+
+/** "3 right" (or left): the first leg of a steps find, for the hint. */
+export function firstDirection(f: Find): string {
+  return `${Math.abs(f.right!)} ${f.right! > 0 ? 'right' : 'left'}`;
+}
+
+/**
+ * The squares of a steps find's first leg, from the square after the pet's to the turning square
+ * (the target's column, the pet's row). The hint lights these, so it shows the counting, not the answer.
+ */
+export function firstLeg(f: Find): Square[] {
+  const step = Math.sign(f.right!);
+  return Array.from({ length: Math.abs(f.right!) }, (_, i) => ({ col: f.from!.col + step * (i + 1), row: f.from!.row }));
 }
 
 /** A square's width on the map, in the grid's own units. */

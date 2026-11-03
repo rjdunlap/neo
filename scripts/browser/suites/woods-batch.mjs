@@ -1425,12 +1425,24 @@ async function woodsBatch() {
         await dig(col, (row + 1) % size); await dig((col + 1) % size, row);
         assert.deepEqual(await counts(), [2, 1]);
         if (level === 5) await screenshot('treasure-map-5-two-clue-hint');
+        // Level 4's hint lights the first leg from the pet, not the answer's column and row.
+        if (level === 4) await screenshot('treasure-map-4-first-leg-hint');
+        if (level === 1) {
+          // The picture headers are drawn per round, and the sign and voice read them.
+          const headers = await page.evaluate(() => neo.scene.game.headers);
+          assert.equal(new Set(headers.rows).size, 4);
+          await page.setViewportSize({ width: 768, height: 1024 });
+          await page.waitForTimeout(400);
+          await screenshot('treasure-map-1-portrait');
+          await page.setViewportSize({ width: 1024, height: 768 });
+          await page.waitForTimeout(400);
+        }
       }
       await dig(col, row);
     }
     await finished('treasure-map');
     assert.deepEqual(await score('treasure-map'), [2, 1]);
-    log(`Treasure Map ${level} (${mode}): squares tapped on the grid, row and column hints spoken, ${mode === 'clues' ? 'two landmark lines glowing, ' : 'glowing column and row, '}${mode === 'steps' ? 'the pet walking the directions, ' : ''}saved score and sticker passed`);
+    log(`Treasure Map ${level} (${mode}): squares tapped on the grid, row and column hints spoken, ${mode === 'clues' ? 'two landmark lines glowing, ' : mode === 'steps' ? 'the first leg glowing, ' : 'glowing column and row, '}${mode === 'steps' ? 'the pet walking the directions, ' : ''}saved score and sticker passed`);
   }
 
   if (!only || only === 'opp') for (let level = fromLevel; level <= 5; level++) {
