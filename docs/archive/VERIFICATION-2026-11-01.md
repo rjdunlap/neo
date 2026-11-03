@@ -127,3 +127,11 @@
 - `game-reviewer`: no blocking findings. History lines source-checked against Wikipedia (Caravanserai, Edicts of Ashoka).
 - Not run: other suites, offline check, device checks.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#caravan-days-levels-67-cs4-2026-11-01)): snow day and road length, the switchback in portrait, fewer wells, device speech for day and hoofprint slots.
+
+## 2026-11-01 — Paint Mixer levels 3–4 (ratio and proportion, batch paint-mixer 2)
+
+- Branch `claude/paint-mixer-3-4` ([PR #1107](https://github.com/rjdunlap/neo/pull/1107)): level 3 fill to the line with the ratio table and a stray pot; level 4 any amount, two ways.
+- Ran (commit 451b424e on base e426c78f, Vite on http://localhost:5902, `VITE_SPEECH=off`): typecheck; 46 paint-mixer rule tests; full unit suite 291 files / 4157 tests; `npm run build`; `BROWSER_SUITE=paintmixer` levels 1–4 (level 3 one-row "more, the same way" no miss, stray Check 1 miss, table filling, portrait second bucket, saved 1/0; level 4 one row, same amount again no miss, two rows, saved 0/0); `BROWSER_SUITE=fingerdemo FINGER_ONLY=paint-mixer FINGER_LEVELS=3,4` (33.8 s, 17.0 s); screenshots paint-mixer-3-portrait and paint-mixer-4-landscape reviewed.
+- `game-reviewer`: nothing material (one Text leak fixed).
+- Not run: offline check (no persistence or asset change), device checks.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#paint-mixer-levels-14)): the table and fill line on an iPad, "for every" device speech, whether the stray reads as a trick, whether the second level-3 bucket is a chore.
