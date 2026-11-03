@@ -48,7 +48,7 @@ Brain Age's daily training offers a handful of short exercises (calculation, mem
 
   | Kind | What the round asks | Examples (by ID) |
   | --- | --- | --- |
-  | `numbers` | count, compare, add, measure | `lemonade-stand`, `garden-rows`, `orchard-rows` |
+  | `numbers` | count, compare, add, measure | `lemonade-stand`, `seesaw-balance`, `orchard-rows` |
   | `words` | letters, sounds, words, reading, writing | `letter-trails`, `word-search` |
   | `logic` | patterns, rules, deduction, evidence | `rule-machine`, `not-always`, `picture-logic` |
   | `space` | building, routes, shapes, fitting, planning a layout | `ferry-jam`, `island-bridges`, `pixel-pictures` |
@@ -92,7 +92,7 @@ In `src/content/daily.test.ts`, pure, over the real registry:
 ## Slices
 
 1. **Home entry and preset levels for every band** (status built, [PR #1174](https://github.com/rjdunlap/neo/pull/1174); `goodnight-room` is the one `daily: false` game, and only a round opened from the card with a start level records with `adapt` off, so a discovery opened from the six still adapts): the Home button, Back to Home, the origin's return, preset levels from the band's ladder with pins, the dot row on the card, recording with `adapt` off, the eligibility rule and `daily: false`, the grown-ups' page line, tests above except the kinds. Files: `src/content/daily.ts`, `src/content/daily.test.ts`, `src/app/scenes/DailyScene.ts`, `src/app/scenes/HomeScene.ts`, `src/creatures/home-layout.ts`, `src/app/scenes/GameScene.ts` (the `adapt` flag from the origin), `src/games/types.ts`, `src/games/registry.test.ts`, `src/content/voice-script.ts`, `src/parent/panel.ts`.
-2. **Kinds of challenge** (status in progress, branch `claude/todays-six-kinds`): the `challenge` field on every touch game (one classification pass, a table in the PR description), the registry test, the kind-first pick and its tests, and the all-six flourish. Files: every `src/games/*/index.ts`, `src/games/types.ts`, `src/content/daily.ts`, `daily.test.ts`, `DailyScene.ts`.
+2. **Kinds of challenge** (status built, [PR #1175](https://github.com/rjdunlap/neo/pull/1175); `challenge` on all 163 touch games, kind-first pick with a land preference, the pet in the card page's guide corner and a small all-six flourish; `garden-rows` is a Latin-square bed, so it is `logic`, not `numbers`): the `challenge` field on every touch game (one classification pass, a table in the PR description), the registry test, the kind-first pick and its tests, and the all-six flourish. Files: every `src/games/*/index.ts`, `src/games/types.ts`, `src/content/daily.ts`, `daily.test.ts`, `DailyScene.ts`.
 3. **Play all six** (status define until D2b's planner takes a preset level cleanly): the Play all button through the mix planner, its ending back to the six, and the planner's preset-level input with its event tests.
 
 ## Check tier
