@@ -98,6 +98,48 @@ export function pieceArt(id: PieceId): Container {
   return c;
 }
 
+/**
+ * Level 7: how a garden piece looks after its change (a season or the weather). It gives nothing now, so it is drawn
+ * dry, flat, bare or seedless in browns rather than removed, and the before card keeps the old picture.
+ */
+export function changedArt(id: PieceId): Container {
+  const c = new Container();
+  const g = new Graphics();
+  switch (id) {
+    case 'shallow-pool':
+      // Dry cracked mud where the pool was.
+      g.ellipse(0, 18, 42, 17).fill(swatch.brown.light).stroke(line(swatch.brown.line));
+      for (const [x1, y1, x2, y2] of [[-26, 14, -8, 20], [-8, 20, 4, 10], [4, 10, 22, 18], [-8, 20, -2, 30], [22, 18, 30, 26]] as const) g.moveTo(x1, y1).lineTo(x2, y2).stroke(line(swatch.brown.line, 2.5));
+      for (const x of [-34, 36]) g.ellipse(x, 28, 10, 6).fill(wood.light).stroke(line(wood.line, 2));
+      break;
+    case 'tall-reeds':
+      // The reeds blown flat, lying along the ground.
+      for (const [dx, dy] of [[-30, 22], [-18, 14], [-6, 24], [6, 16]] as const) {
+        g.moveTo(dx, dy + 6).lineTo(dx + 40, dy - 2).stroke(line(wood.line, 5));
+        g.ellipse(dx + 44, dy - 3, 11, 5).fill(wood.fill).stroke(line(wood.line, 2));
+      }
+      break;
+    case 'clover':
+      // Short bare stems with a few curled brown leaves.
+      for (const [x, lean] of [[-18, -5], [0, 0], [16, 5]] as const) g.moveTo(x, 35).lineTo(x + lean, 8).stroke(line(wood.line, 4));
+      for (const [x, y] of [[-24, 8], [6, 4], [20, 10]] as const) g.ellipse(x, y, 9, 5).fill(swatch.brown.light).stroke(line(swatch.brown.line, 2));
+      break;
+    case 'seed-grass':
+      // The same stems, dry and with no seeds left.
+      for (const x of [-28, -14, 0, 14, 28]) {
+        const h = 46 - Math.abs(x) * 0.35;
+        g.moveTo(x, 30).quadraticCurveTo(x - 5, 4, x + 2, 30 - h).stroke(line(wood.line, 4));
+      }
+      break;
+    default:
+      c.addChild(pieceArt(id));
+      c.alpha = 0.45;
+      return c;
+  }
+  c.addChild(g);
+  return c;
+}
+
 /** Food, water and shelter pictures used on the visitor's request sign. */
 export function needIcon(need: Need, size = 42): Container {
   const c = new Container();

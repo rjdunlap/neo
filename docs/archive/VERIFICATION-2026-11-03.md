@@ -130,3 +130,10 @@
 - Changed: reproduced `BATCH_ONLY=pegs` failing 3/3 on 906fa732. Game fixes: aimed shots (levels 4 and 5) now step in the fixed samples that `simulate()`, `aimAt`, the guide and the ghost finger use; a pearl let go during the last praise no longer counts a miss or hint (aimed firing waits for `allReached`). Couch bot settles on its chosen angle. Suite: far drops chosen by simulation, aimed loop stops once every ask is reached.
 - Ran (dev server localhost:5761, `VITE_SPEECH=off`, commits ab17b137/45678c3c; 2cfda1b5 only drops an else): typecheck; `npx vitest run src/games/peg-garden src/couch` 100 passed; `BROWSER_SUITE=batch BATCH_ONLY=pegs` levels 1–7 passed 3 times in a row, scores exactly 0,0 / 0,0 / 2,1; `fingerdemo` `FINGER_ONLY=peg-garden FINGER_LEVELS=4,5` 21.0 s / 23.7 s; `BROWSER_SUITE=couchgames COUCH_ONLY=peg-garden` 37 s (failed after the stepping change until the bot fix, passed on old code).
 - Not run: build (no shared files or assets), levels 8+ in the pegs suite, iPad or device, a child's play.
+
+## 2026-11-03 — Jelly Drums names, twists and co-play (dive slice 2)
+
+- [PR #1155](https://github.com/rjdunlap/neo/pull/1155): free-play color/size names (`JellyNamer`) and `jelly.lowhigh`, level 2 fan answers, level 3 scale sparkle (`ScaleWatch`, garland twinkle only, no bonus bulb), one added co-play line, how-to steps for levels 2 and 3.
+- Ran: typecheck; vitest `src/games/jelly-drums` (21 rules), `src/content` and registry; `BROWSER_SUITE=fingerdemo FINGER_ONLY=jelly-drums FINGER_LEVELS=1,2,3` passed at 89334790 (http://localhost:5441; 28.9, 37.9, 46.6 s); a one-off probe at toddler portrait 768×1024 (level 2: three fan answers in 12 notes; level 3: sparkle on 0-1-2; low-and-high said once; no page errors). game-reviewer's three findings fixed; the review follow-up (a097e025, speech gating) got rule tests only, no browser rerun.
+- Not run: build (no shared files or assets), device speech for the color words, a child's reaction.
+- Open: per-band co-play lines (shell type change); device checks in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
