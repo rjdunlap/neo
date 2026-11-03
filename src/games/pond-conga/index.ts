@@ -11,7 +11,7 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { COURSES, courseMinimum, coursePonds, isCongaCourse } from './course';
-import { DX, DY, firstCrumbs, headAfter, hintDir, hintPath, makePond, nextCrumb, opposite, planFor, startState, step, swipeDir, SWIPE, type Cell, type Conga, type Dir, type Pond } from './logic';
+import { DX, DY, firstCrumbs, foodAt, pondLook, headAfter, hintDir, hintPath, makePond, nextCrumb, opposite, planFor, startState, step, swipeDir, SWIPE, type Cell, type Conga, type Dir, type Food, type Pond, type PondLook } from './logic';
 
 /** Grown-up play only: this game lives in Lantern Lake, played by touch or on the couch. */
 const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
@@ -21,8 +21,14 @@ const WATER_LINE = 0x4f9fbf;
 const RIPPLE = 0xd2f1fb;
 const PAD = 0x6cbd54;
 const PAD_LINE = 0x3f8a36;
-const BREAD = 0xf2d199;
-const BREAD_LINE = 0xbf8a45;
+const OATS = 0xf2e2bf;
+const OATS_LINE = 0xb89a62;
+const REED = 0x5c9a3c;
+const CATTAIL = 0x7a4f2e;
+/** What the tally counts: one bite of each food. */
+const FOOD_WORD: Record<Food, string> = { peas: 'peas', sweetcorn: 'bits of corn', oats: 'bites of oats' };
+/** Each food's colours for the pop when it is eaten. */
+const FOOD_SPARK: Record<Food, number[]> = { peas: [swatch.green.fill, 0xd6f5c8], sweetcorn: [swatch.yellow.fill, 0xfff3a0], oats: [OATS, 0xfff8e8] };
 /** How much of a cell a duckling fills: a little less than all of it, so a line that turns does not pile up. */
 const DUCK = 0.86;
 /** A breather after a bonk, so there is time to choose where to go next. */
@@ -59,15 +65,61 @@ function ducklingArt(size: number, leader: boolean): Container {
   return c;
 }
 
-/** A piece of bread, about `size` across. */
-function crumbArt(size: number): Container {
+/** A little heap of duck-friendly food, about `size` across: three peas, four kernels of sweetcorn or a pile of oats. */
+function foodArt(kind: Food, size: number): Container {
   const c = new Container();
   const g = new Graphics(), s = size;
-  g.roundRect(-0.32 * s, -0.28 * s, 0.64 * s, 0.56 * s, 0.14 * s).fill(BREAD).stroke({ width: 4, color: BREAD_LINE });
-  for (const [x, y] of [[-0.12, -0.06], [0.1, 0.08], [0.0, 0.14], [0.14, -0.12]]) g.circle(x * s, y * s, 0.032 * s).fill(BREAD_LINE);
-  g.ellipse(-0.14 * s, -0.17 * s, 0.1 * s, 0.045 * s).fill({ color: 0xffffff, alpha: 0.5 });
-  c.addChild(g);
+  if (kind === 'peas') {
+    for (const [x, y] of [[-0.15, 0.1], [0.15, 0.1], [0, -0.14]]) {
+      g.circle(x * s, y * s, 0.16 * s).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+      g.circle((x - 0.05) * s, (y - 0.05) * s, 0.045 * s).fill({ color: 0xffffff, alpha: 0.8 });
+    }
+  } else if (kind === 'sweetcorn') {
+    for (const [x, y] of [[-0.14, -0.13], [0.14, -0.13], [-0.14, 0.13], [0.14, 0.13]]) {
+      g.roundRect((x - 0.12) * s, (y - 0.11) * s, 0.24 * s, 0.22 * s, 0.08 * s).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+      g.ellipse((x - 0.04) * s, (y - 0.04) * s, 0.05 * s, 0.03 * s).fill({ color: 0xffffff, alpha: 0.6 });
+    }
+  } else {
+    // A small pile of flakes, each turned its own way, the bottom row first.
+    for (const [x, y, t] of [[-0.18, 0.14, 0.4], [0.02, 0.17, -0.3], [0.2, 0.12, 0.6], [-0.1, -0.02, -0.5], [0.12, -0.03, 0.2], [0.0, -0.18, 0.9]]) {
+      const flake = new Graphics().ellipse(0, 0, 0.13 * s, 0.075 * s).fill(OATS).stroke({ width: 2.5, color: OATS_LINE });
+      flake.position.set(x * s, y * s);
+      flake.rotation = t;
+      c.addChild(flake);
+    }
+  }
+  c.addChildAt(g, 0);
   return c;
+}
+
+/**
+ * A fringe of reeds and cattails in the shallows along one bank (`side`, a `Dir` from the middle) of a pond `w` by `h`. It keeps to
+ * the margin between the bank's line and the cells, so it never covers food, a lily pad or a duckling, and it is never a target.
+ */
+function reedArt(side: Dir, w: number, h: number): Graphics {
+  const g = new Graphics();
+  g.eventMode = 'none';
+  const along = side === 0 || side === 2 ? h : w;
+  // Measured inward from the bank's line, 14 units outside the cells: roots on the line, heads short of the first row of cells.
+  const at = (t: number, d: number) => {
+    const u = t - 14;
+    if (side === 0) return { x: w + 14 - d, y: u };
+    if (side === 2) return { x: -14 + d, y: u };
+    if (side === 1) return { x: u, y: h + 14 - d };
+    return { x: u, y: -14 + d };
+  };
+  for (let t = 18; t < along + 10; t += 15) {
+    const k = Math.round(t / 15);
+    const lean = ((k * 7) % 5 - 2) * 2;
+    const root = at(t, 0), tip = at(t + lean, 11 + (k % 3));
+    g.moveTo(root.x, root.y).lineTo(tip.x, tip.y).stroke({ width: 3, color: REED, cap: 'round' });
+    if (k % 3 === 0) {
+      const head = at(t + lean * 0.8, 8);
+      const upright = side === 1 || side === 3;
+      g.ellipse(head.x, head.y, upright ? 3 : 5, upright ? 5 : 3).fill(CATTAIL);
+    }
+  }
+  return g;
 }
 
 /** A lily pad about `size` across, with its notch turned to `turn` and, now and then, a pink flower. */
@@ -124,8 +176,13 @@ class PondConga implements Game {
   private readonly buttonText = new Container();
   private readonly top = label('', 30, ink);
   private readonly note = label('', 26, ink, '500');
-  private crumbNext = crumbArt(70);
-  private crumbAfter = crumbArt(70);
+  /** The next bit of food and the faint one after it: holders whose picture is this pond's food. */
+  private readonly crumbNext = new Container();
+  private readonly crumbAfter = new Container();
+  /** The round's food and reed bank, from its seed; a course's ponds take the next food in turn. */
+  private readonly look: PondLook;
+  private food: Food = 'peas';
+  private readonly reeds = new Container();
   private ducks: Container[] = [];
   private cell = 56;
   private clock = 0;
@@ -155,6 +212,7 @@ class PondConga implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     const run = ctx.couch?.course;
+    this.look = pondLook(ctx.rng);
     if (run && isCongaCourse(run.id)) {
       this.ponds = coursePonds(run.id);
       this.speed = COURSES[run.id].speed;
@@ -170,9 +228,9 @@ class PondConga implements Game {
       this.speed = plan.speed;
       this.course = null;
     }
-    for (const part of [this.board, this.water, this.pads, this.trail, this.crumbs, this.line, this.top, this.note]) part.eventMode = 'none';
+    for (const part of [this.board, this.water, this.reeds, this.pads, this.trail, this.crumbs, this.line, this.top, this.note]) part.eventMode = 'none';
     this.crumbs.addChild(this.crumbAfter, this.crumbNext);
-    this.board.addChild(this.water, this.pads, this.trail, this.crumbs, this.line);
+    this.board.addChild(this.water, this.reeds, this.pads, this.trail, this.crumbs, this.line);
     ctx.stage.addChild(this.board, this.top, this.note);
     this.touch = !ctx.couch;
     if (this.touch) {
@@ -267,6 +325,8 @@ class PondConga implements Game {
       const x = (k * 97) % (w - 40), y = (k * 53 + 17) % (h - 8);
       this.water.moveTo(x + 10, y + 6).lineTo(x + 38, y + 6).stroke({ width: 3, color: RIPPLE, cap: 'round' });
     }
+    this.reeds.removeChildren().forEach((c) => c.destroy());
+    this.reeds.addChild(reedArt(this.look.reeds, w, h));
     this.pads.removeChildren().forEach((c) => c.destroy({ children: true }));
     p.pads.forEach((pad, i) => {
       const art = padArt(cell, (i * 1.7) % (Math.PI * 2), i % 3 === 0);
@@ -381,6 +441,11 @@ class PondConga implements Game {
     this.index++;
     if (this.index >= this.ponds.length) return void this.finale();
     this.pond = this.ponds[this.index];
+    this.food = foodAt(this.look, this.index);
+    for (const holder of [this.crumbNext, this.crumbAfter]) {
+      holder.removeChildren().forEach((c) => c.destroy({ children: true }));
+      holder.addChild(foodArt(this.food, 70));
+    }
     this.state = startState(this.pond);
     this.before = this.state.body.map((c) => ({ ...c }));
     this.tries = this.carry;
@@ -408,7 +473,7 @@ class PondConga implements Game {
 
   private tally() {
     const n = this.pond.crumbs.length;
-    this.top.text = `${this.tries} ${this.tries === 1 ? 'step' : 'steps'}  ·  ${Math.min(this.state.eaten, n)} of ${n} crumbs`;
+    this.top.text = `${this.tries} ${this.tries === 1 ? 'step' : 'steps'}  ·  ${Math.min(this.state.eaten, n)} of ${n} ${FOOD_WORD[this.food]}`;
     this.note.text = this.waiting ? (this.touch ? 'Touch the pond to set off, then swipe to turn' : 'Press a direction to set off') : '';
   }
 
@@ -474,13 +539,13 @@ class PondConga implements Game {
 
   private crumbEaten() {
     const at = this.ctx.stage.toLocal(this.board.toGlobal(this.center(this.state.body[0])));
-    this.ctx.particles.burst(at.x, at.y, { kind: 'star', colors: [BREAD, 0xfff3a0, 0xffffff], count: 10, speed: [90, 220], gravity: 0, life: [0.35, 0.7] });
+    this.ctx.particles.burst(at.x, at.y, { kind: 'star', colors: [...FOOD_SPARK[this.food], 0xffffff], count: 10, speed: [90, 220], gravity: 0, life: [0.35, 0.7] });
     sfx.pop(2 + (this.state.eaten % 7));
     this.hinted = false;
     this.hintCells = [];
     if (!this.ate) {
       this.ate = true;
-      void this.ctx.say('conga.crumb');
+      void this.ctx.say(`conga.yum.${this.food}`);
     }
   }
 
@@ -529,7 +594,7 @@ class PondConga implements Game {
       void this.ctx.tw.wait(i * 0.05).then(() => this.ctx.tw.to(d, { y: d.y - this.cell * 0.28 }, { duration: 0.14 })).then(() => this.ctx.tw.to(d, { y: d.y + this.cell * 0.28 }, { duration: 0.16 }));
     }
     const mid = this.ctx.stage.toLocal(this.board.toGlobal({ x: (this.pond.cols * this.cell) / 2, y: (this.pond.rows * this.cell) / 2 }));
-    this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, BREAD], count: 28, speed: [160, 420], gravity: 0, life: [0.6, 1.1] });
+    this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, ...FOOD_SPARK[this.food]], count: 28, speed: [160, 420], gravity: 0, life: [0.6, 1.1] });
     // A course moves straight on after a short score; ordinary play praises.
     if (this.course) await this.pondScore();
     else await this.ctx.say('conga.pond');
@@ -769,9 +834,9 @@ class PondIcon extends WigglyIcon {
     const pad = padArt(70, 0.6, true);
     pad.position.set(78, -128);
     c.addChild(pad);
-    const bread = crumbArt(54);
-    bread.position.set(-96, -138);
-    c.addChild(bread);
+    const peas = foodArt('peas', 54);
+    peas.position.set(-96, -138);
+    c.addChild(peas);
     [-64, 0, 64].forEach((x) => {
       const d = ducklingArt(70, x === 64);
       d.position.set(x, -92);

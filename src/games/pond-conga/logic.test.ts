@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  DX, DY, PLANS, SWIPE, distances, firstCrumbs, headAfter, hintDir, hintPath, lowerBound, makePond, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, swipeDir, turnsIn,
+  DX, DY, FOODS, PLANS, SWIPE, distances, foodAt, firstCrumbs, headAfter, hintDir, hintPath, lowerBound, makePond, pondLook, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, swipeDir, turnsIn,
   type Board, type Cell, type Conga, type Dir,
 } from './logic';
 
@@ -204,6 +204,32 @@ function wander(p: Board, s: Conga, rng: Rng, steps: number): { state: Conga; bo
   }
   return { state: s, bonks };
 }
+
+describe('the look of a pond', () => {
+  it('is a pure function of the seed', () => {
+    for (let seed = 1; seed <= 40; seed++) expect(pondLook(new Rng(seed))).toEqual(pondLook(new Rng(seed)));
+  });
+
+  it('leaves the pond made from the same seed unchanged', () => {
+    for (const plan of PLANS) for (const seed of [3, 17, 404]) {
+      const rng = new Rng(seed);
+      pondLook(rng);
+      expect(makePond(plan, rng)).toEqual(makePond(plan, new Rng(seed)));
+    }
+  });
+
+  it('gives every food and every reed edge across seeds, never bread', () => {
+    const looks = Array.from({ length: 60 }, (_, k) => pondLook(new Rng(k + 1)));
+    expect(new Set(looks.map((l) => l.food))).toEqual(new Set(FOODS));
+    expect(new Set(looks.map((l) => l.reeds))).toEqual(new Set([0, 1, 2, 3]));
+    expect(FOODS as readonly string[]).not.toContain('bread');
+  });
+
+  it('takes the next food on each pond of a course', () => {
+    const look = { food: 'oats' as const, reeds: 0 as const };
+    expect([0, 1, 2, 3].map((i) => foodAt(look, i))).toEqual(['oats', 'peas', 'sweetcorn', 'oats']);
+  });
+});
 
 describe('help and getting stuck', () => {
   it('a hint always leads on: from wherever the line has wandered, following it eats every crumb', () => {

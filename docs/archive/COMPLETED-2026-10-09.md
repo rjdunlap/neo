@@ -2373,7 +2373,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--lemonade-sta
 
 [PR #1125](https://github.com/rjdunlap/neo/pull/1125), batch pixel-pictures 1, [dive slice 1](../deep-dives/pixel-pictures.md#build-slices-in-order). Level 2 pool 3 to 6 two-colour 5x5 pictures (added strawberry r+g, duckling y+o, mushroom r+n); the duckling is not `lineSolvable`, so it stays out of level 4 (strawberry and mushroom join it, pool 7). Level 6 pool 2 to 5 two-colour 6x6 (added sun y+o, frog g+n, "a big fish" b+o; the little cat and sailboat both pass), each admitted only by new `colorLineSolvable` (`colorPlacements`, `colorDeduce`; same-colour runs need a gap, different colours may touch); level 5 pool now 10 as new `lineSolvable` 6x6 pictures join it. The level-6 hint and ghost finger use `colorLogicCell`: a square the coloured numbers settle, preferring the colour in hand (switching only when nothing more is settled in it), nearest the last touch; the hint also selects its colour (formerly reading order). A strict rule test asserts every level's pool is larger than its shown count, with distinct names. `game-reviewer`: no blocking findings.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-02--pixel-pictures-fresh-pictures-and-colour-logic-pixel-pictures-batch-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--pixel-pictures-fresh-pictures-and-colour-logic-pixel-pictures-batch-1).
 
 ## Garden Rows seeded flower sets and level 7 Mend the bed (garden-rows 1, 2026-11-02)
 

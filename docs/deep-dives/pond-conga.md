@@ -4,7 +4,7 @@
 
 ## The game today
 
-A gentle grown-up Snake in Lantern Lake, after Snake and Neopets' Meerca Chase. A line of ducklings paddles on at a steady pace and the leader is steered to each crumb of bread in turn; only the next crumb shows, with a faint look at the one after. Eating a crumb adds a duckling. A bump into a lily pad, the bank or the line is a **bonk**: nothing is lost, the whole line turns about (the old tail leads), a 0.9-second breather follows, and the bonk counts as a step. By touch the whole pond is one target: a touch sets off, a swipe turns (two turns can wait in line, straight back is ignored); **Hint** and **Start over** are 64-unit buttons. On the couch the stick or D-pad turns. It is the only arcade game among the grown-up games (the rest are logic puzzles).
+A gentle grown-up Snake in Lantern Lake, after Snake and Neopets' Meerca Chase. A line of ducklings paddles on at a steady pace and the leader is steered to each helping of duck food in turn; only the next helping shows, with a faint look at the one after. Eating a helping adds a duckling. A bump into a lily pad, the bank or the line is a **bonk**: nothing is lost, the whole line turns about (the old tail leads), a 0.9-second breather follows, and the bonk counts as a step. By touch the whole pond is one target: a touch sets off, a swipe turns (two turns can wait in line, straight back is ignored); **Hint** and **Start over** are 64-unit buttons. On the couch the stick or D-pad turns. It is the only arcade game among the grown-up games (the rest are logic puzzles).
 
 | Level | Plan name (`PLANS` in `logic.ts`) | Band window | Pond | What the player decides |
 | --- | --- | --- | --- | --- |
@@ -26,8 +26,7 @@ A gentle grown-up Snake in Lantern Lake, after Snake and Neopets' Meerca Chase. 
 **Known gaps.**
 - **Pace rises with level** (2.4 to 3.4 steps a second). It is constant inside a pond, but it is the one place the ladder grows by speed.
 - **Bonks against adaptation.** `isStruggle` steps a level down at four misses. On a 10–12 crumb pond four bonks are easy for a careful grown-up to make, so two such rounds drop the level even when every crumb was found. Whether that is right for an arcade game is a developer call (below).
-- **Bread.** Waterway charities ask people not to feed ducks bread; the game teaches the opposite picture.
-- **One look.** Every pond is the same blue with the same bread.
+- **One look (partly fixed).** Built in batch 1: each pond now has a seeded duck food (peas, sweetcorn or oats) and a reed bank edge; the water stays one blue.
 - **Person checks open** ([DEVICE-CHECKS](../DEVICE-CHECKS.md): Pond Conga on an iPad and on the TV): the pace, the bonk's feel, the swipe, the hint dots. The roadmap's step 8b waits for the game to be played before choosing the next relaxing arcade game.
 
 ## Similar games
@@ -104,7 +103,7 @@ Level 8 is the appended easy entry (stable ID, first by `order`, in `entryLevels
 
 ## Build slices, in order
 
-1. **Duck-friendly food and a seeded bank (batch pond-conga 1).** `foodArt(kind)` with peas, sweetcorn and oats, one kind per pond by seed; reeds on one seeded bank edge; voice, how-to and couch catalog wording without bread; GAMES.md and COUCH-PLAY.md. *Check:* existing-interaction tier: typecheck, the game's rule tests (kind is seeded; pond unchanged; Crumb Trail par unchanged), one filtered regression play at level 1; bot unchanged, no `fingerdemo`; one build for the art.
+1. **Duck-friendly food and a seeded bank (batch pond-conga 1), built 2026-11-03 ([PR #1140](https://github.com/rjdunlap/neo/pull/1140)).** `foodArt(kind)` with peas, sweetcorn and oats, one kind per pond by seed; reeds on one seeded bank edge; voice, how-to and couch catalog wording without bread; GAMES.md and COUCH-PLAY.md. *Check:* existing-interaction tier: typecheck, the game's rule tests (kind is seeded; pond unchanged; Crumb Trail par unchanged), one filtered regression play at level 1; bot unchanged, no `fingerdemo`; one build for the art.
 2. **Level 7 Choose the order (batch pond-conga 2),** after batch 1 (shares the food art and `index.ts` drawing). *Check:* new rule on the existing interaction: typecheck, rule tests (par over orders, group-aware demo pond, hint to a best-order item), one play of level 7 eating a group in a longer order then with one hint, `fingerdemo` at 7, one portrait screenshot of a group of three.
 3. **Level 8 Step by step (batch pond-conga 3),** after batch 1 (shares `index.ts`). *Check:* new-interaction tier: typecheck, unit tests (order, entry, no movement without input), one scripted play of level 8 to its sticker with one bonk, one portrait screenshot, `fingerdemo` at 8, `BROWSER_SUITE=couchgames` filtered to Pond Conga (the controller path changes).
 4. **Level 9 A long conga (batch pond-conga 4),** after batch 2 (shares the level table and `order`). *Check:* new-level tier: typecheck, rule tests, one play of level 9 with a tail bonk, `fingerdemo` at 9, one portrait screenshot.

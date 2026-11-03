@@ -1,7 +1,7 @@
 import type { Rng } from '../../engine/random';
 
 /**
- * Pond Conga: a line of ducklings paddles on at a steady pace, and the leader is steered to each crumb of bread in
+ * Pond Conga: a line of ducklings paddles on at a steady pace, and the leader is steered to each bit of duck food in
  * turn. Bumping a lily pad, the bank or the line itself is a bonk: nothing is lost, the whole conga turns about and
  * waddles off the other way, and the bonk counts as one more step. Because it turns about, the line can never box
  * itself in: there is always another way to go.
@@ -318,6 +318,22 @@ function tryPond(plan: CongaPlan, rng: Rng): Pond | null {
   if (!route || route.length !== lowerBound(board)) return null;
   return { ...board, route, par: route.length };
 }
+
+/** Duck-friendly food: one kind per pond. Code and pond pictures still call each bit a crumb. */
+export const FOODS = ['peas', 'sweetcorn', 'oats'] as const;
+export type Food = (typeof FOODS)[number];
+
+/** How a pond looks, which never changes the pond itself: the food, and the bank edge where the reeds grow (a `Dir` from the middle). */
+export interface PondLook { food: Food; reeds: Dir }
+
+/** The look of a round, a pure function of its seed: it reads a copy of the round's numbers, so the pond made after it is the same. */
+export function pondLook(rng: Rng): PondLook {
+  const r = rng.clone();
+  return { food: FOODS[r.int(0, FOODS.length - 1)], reeds: r.int(0, 3) as Dir };
+}
+
+/** The food for the `index`th pond of a round: a course of several ponds takes the next kind each time. */
+export const foodAt = (look: PondLook, index: number): Food => FOODS[(FOODS.indexOf(look.food) + index) % FOODS.length];
 
 /** How far a finger has to travel, in logical units, before a swipe turns the line. */
 export const SWIPE = 36;

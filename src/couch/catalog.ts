@@ -403,7 +403,7 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
   },
   'pond-conga': {
     goal: 'couch.how.pond-conga',
-    tagline: 'Steer a line of ducklings to each crumb of bread, in order.',
+    tagline: 'Steer a line of ducklings to each bit of duck food, in order.',
     controls: [
       { parts: STICK, text: 'Turn the conga. It paddles on by itself, and a bump turns the whole line about.', keys: 'Arrow keys' },
       { parts: ['bottom'], text: 'Set off straight ahead (any turn does too).', keys: 'Enter' },
@@ -416,7 +416,7 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     score: { better: 'lower', unit: 'steps over the fewest' },
     band: 'grownup',
     demoLevel: 1,
-    // Trips climb from a small open pond to a crowded one with twelve crumbs; the pace barely changes.
+    // Trips climb from a small open pond to a crowded one with twelve bites of food; the pace barely changes.
     level: (stop) => [1, 2, 3, 3, 4, 5][stop] ?? 5,
   },
   'ferry-jam': {

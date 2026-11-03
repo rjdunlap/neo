@@ -113,14 +113,14 @@ const build: Record<CourseId, () => CourseInfo> = {
   frozen: () => ponds('frozen', 'Penguin Slide, five ponds with ice blocks. Push a block to park it where you need a stop; a push counts as a slide.'),
   conga: () => ({
     id: 'conga', game: 'pond-conga', level: 5, version: CONGA.conga.version, name: CONGA.conga.name, blurb: CONGA.conga.blurb,
-    card: 'Pond Conga, four ponds in a row. Steer the ducklings to each crumb in order with as few steps as the way allows, then beat your own best.',
+    card: 'Pond Conga, four ponds in a row. Steer the ducklings to each bite of food in order with as few steps as the way allows, then beat your own best.',
     part: 'pond', unit: 'step', par: 'fewest', routes: true, best: congaBest('conga'), minimum: congaMinimum('conga'),
-    rule: 'Eat every crumb in order with the fewest steps you can. Every step counts, and so does every bonk.',
+    rule: 'Eat every bite in order with the fewest steps you can. Every step counts, and so does every bonk.',
     note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a pond puts the line back at the start, and the steps you took on it still count.',
     leaving: 'Leaving or refreshing puts the line of the pond you are on back at the start, and the steps you took on it still count. Finished ponds stay saved.',
     done: 'couch.course.conga',
     badges: {
-      finish: { title: 'Finished', how: 'Eat every crumb in every pond, with or without help.' },
+      finish: { title: 'Finished', how: 'Eat every bite in every pond, with or without help.' },
       minimum: { title: 'Fewest steps', how: 'Finish every pond in the fewest steps possible, with no bonk and no hint.' },
     },
   }),

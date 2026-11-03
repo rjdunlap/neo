@@ -426,13 +426,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'pond-conga': {
-    goal: 'Steer a line of ducklings to each crumb of bread, in order.',
+    goal: 'Steer a line of ducklings to each bit of duck food (peas, sweetcorn or oats), in order.',
     steps: [
       'Touch the pond and lift to set the line off. It paddles on by itself.',
       'Swipe the way you want the line to turn; one stroke can turn it twice. A swipe straight back does nothing.',
-      'A bump turns the whole line about. Hint shows the way to the next crumb; Start over puts the line back at the start.',
+      'A bump turns the whole line about. Hint shows the way to the next bite; Start over puts the line back at the start.',
     ],
-    finish: 'The pond is done when the ducklings have gobbled every crumb.',
+    finish: 'The pond is done when the ducklings have gobbled every bite.',
     note: 'A bump counts as a miss, and a hint counts as help. Steps are not timed against you: the pace stays the same.',
   },
   'sing-along-barn': {
