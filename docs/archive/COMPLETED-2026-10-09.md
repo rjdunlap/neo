@@ -2495,7 +2495,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sink-or-floa
 
 Branch `claude/sudoku-garden-4x4`, PR #1148: [dive slice 1](../deep-dives/sudoku-garden.md#build-slices-in-order). Level 7: `Size` gains 4 with a per-size box width (2 by 2), plan tier 1 with 10 blanks, `order` `[7, 1, 2, 3, 4, 5, 6]` and `entryLevels: [7]` (grown-up only; couch trip and courses unchanged; how-to card and voice unchanged). `sudokutouch` gained a level-7 case first (`SUDOKU_ONLY=7`). Cosmetic gap: the four tray tiles sit in the three-column grid, so the 4 is alone on a second row.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--sudoku-garden-a-4-by-4-bed-to-start-sudoku-garden-batch-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sudoku-garden-a-4-by-4-bed-to-start-sudoku-garden-batch-1).
 
 ## Treasure Map, fresh maps and true hints (batch treasure-map 1, 2026-11-03)
 
@@ -2542,3 +2542,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--orchard-rows-fresh-o
 ## Puppet Stage levels 4–6 (theatre and puppetry TP2, 2026-11-03)
 
 Branch `claude/puppet-stage-4-6`, PR #1159: batch `puppet-stage 2` from the [definition](../definitions/puppet-stage-4-6.md). Pre-K 3–5 and school 4–6 (school is new for this game; land stays Music Mountain); skills gain `acting-a-story`; 33 voice lines (`ps.instruct.4–6`, `ps.card.*`, `ps.sc.*`, `ps.sc.c3-duck`, `ps.order`, `ps.waited.*`, `ps.cheer`); how-to card and off-screen line; new browser suite `puppetstory`. Deviations from the definition: the stand keeps 80 (`PUPPET_W/2+10`) from each curtain at levels 4–6, not 30, because a puppet on an outer mark was half hidden (logical portrait is 1024×1365, places about 284 apart); The end sits left of Bow so both show after an early end; free and early bobs speak `ps.again.*`; curtains close on The end only through setting state; each The end tap with scenes unticked counts a miss. `game-reviewer` found two issues, fixed. Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--puppet-stage-levels-46-story-cards-and-the-premiere-batch-puppet-stage-2); four device checks stay open in [DEVICE-CHECKS](../DEVICE-CHECKS.md#puppet-stage-levels-46-tp2-2026-11-03).
+
+## RW09 slice 1, learning evidence and the Welcome recap (2026-11-03)
+
+Branch `claude/rw09-recap`, PR #1163, [packet](../rework/LEARNING-RECAP.md). `src/learning/intentions.ts` (`WELCOME_INTENTIONS` per step and band, pinned to `WELCOME_PLAN`) and `evidence.ts` (`classify`: independent, supported, creative, encountered, none); `projects.welcome.evidence` per step (`finished`, `misses`, `hints`, `level`, `rounds` 0-9, `at`) written by `store.beginWelcome(band, step)` and `completeWelcomeStep`, repaired in `cleanWelcome`; `src/parent/recap.ts` `projectRecap` placed under This week in the grown-ups' page with a table, status line, rewards-are-not-evidence note and one off-screen idea. The `welcome` suite reads it.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--rw09-slice-1-learning-evidence-and-the-welcome-recap-pr-1163).

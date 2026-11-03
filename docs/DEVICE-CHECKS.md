@@ -917,4 +917,5 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 - [ ] On an iPad, check device speech for "ice cube" and "paper clip" in the Sink or Float guess line, and that the marble reads against the water.
 - [ ] On an iPad, check that a new grown-up's first Sudoku Garden bed (level 7, 4 by 4) feels like an easy start with the three-column tray, where the 4 sits alone on a second row.
 - [ ] On an iPad, check that Treasure Map level 1's new red heart and balloon row pictures read and are named aloud clearly (device speech), and that the two new hint lines ("First go ...", "Follow the two glowing lines...") speak well.
+- [ ] Ask a grown-up who has played Welcome a New Friend with their child to open the held gear and read the recap under This week: do they find it useful, and do they read it as what happened in each step rather than as a score?
 - [ ] On an iPad, check whether a toddler or preschooler drags a little versus a lot for Bouncy Launch level 8 (Near or far), and whether the two big clouds read as targets.

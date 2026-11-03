@@ -19,7 +19,7 @@ Scope source: [rework brief](README.md). The [ready list](../READY.md) is the di
 | [RW06](https://github.com/rjdunlap/neo/issues/490) | Playable home and customization | defined 2026-10-20 ([HOME.md](HOME.md)): `look.worn` with slots, dressing from Friends, then a root Home and creature play with one ball toy; slice 1 (the saved look and dressing) built 2026-10-20 ([PR #637](https://github.com/rjdunlap/neo/pull/637)); slice 2 (Home and creature play at the root) built 2026-10-20 ([PR #638](https://github.com/rjdunlap/neo/pull/638)) | RW03, RW05 |
 | [RW07](https://github.com/rjdunlap/neo/issues/491) | Welcome adventure and visible reward | defined 2026-10-21 ([WELCOME-BUILD.md](WELCOME-BUILD.md)); slice 1 built 2026-10-21 ([PR #712](https://github.com/rjdunlap/neo/pull/712)); slice 2 (song) built 2026-10-23 ([PR #907](https://github.com/rjdunlap/neo/pull/907); Song Maker 2 as a stated, test-guarded exception); slice 3 (ending, adoption, basket bed) built 2026-10-24 ([PR #908](https://github.com/rjdunlap/neo/pull/908)); the packet is delivered, device checks open | RW04, RW06 |
 | [RW08](https://github.com/rjdunlap/neo/issues/492) | Explore and default-home cutover | defined 2026-10-21 ([RW08-CUTOVER.md](RW08-CUTOVER.md)): Explore's four entries, slice 1 built 2026-10-21 (PR #744), slice 2 (the library, stories, mix, birthday and gear at the root) built 2026-10-21 (PR #745), then the cutover (slice 3 approved October 23; starts after the developer reports playing slices 1–2 on the iPad) | RW03, RW07; reconcile D1b |
-| [RW09](https://github.com/rjdunlap/neo/issues/493) | Learning evidence and family recap | defined 2026-11-03 ([LEARNING-RECAP.md](LEARNING-RECAP.md), [PR #1162](https://github.com/rjdunlap/neo/pull/1162)): a `src/learning/` intention table for the welcome project's steps, a per-step evidence record in `projects.welcome` and a plain-HTML recap on the grown-ups' page; slice 1 in progress on `claude/rw09-recap` | RW04, RW07 |
+| [RW09](https://github.com/rjdunlap/neo/issues/493) | Learning evidence and family recap | defined 2026-11-03 ([LEARNING-RECAP.md](LEARNING-RECAP.md), [PR #1162](https://github.com/rjdunlap/neo/pull/1162)): a `src/learning/` intention table for the welcome project's steps, a per-step evidence record in `projects.welcome` and a plain-HTML recap on the grown-ups' page; slice 1 built 2026-11-03 ([PR #1163](https://github.com/rjdunlap/neo/pull/1163)) | RW04, RW07 |
 | [RW10](https://github.com/rjdunlap/neo/issues/494) | Collection book and chosen unlock goals | define after upstream packets | RW05, RW07, RW08 |
 | [RW11](https://github.com/rjdunlap/neo/issues/495) | Optional forms and useful talents | sketch, definition first | RW02, RW10 |
 | [RW12](https://github.com/rjdunlap/neo/issues/496) | First expansion and later-school coverage | sketch, definition first | RW08, RW09, RW10; RW11 only if used |
@@ -191,7 +191,7 @@ RW09 is now defined ([packet](LEARNING-RECAP.md)); RW10–RW12 remain on the [st
 
 ## RW09: Learning evidence and family recap
 
-[Issue #493](https://github.com/rjdunlap/neo/issues/493). Defined in [LEARNING-RECAP.md](LEARNING-RECAP.md).
+[Issue #493](https://github.com/rjdunlap/neo/issues/493). Defined in [LEARNING-RECAP.md](LEARNING-RECAP.md); slice 1 (the welcome table, evidence record and recap) built 2026-11-03, [PR #1163](https://github.com/rjdunlap/neo/pull/1163).
 
 **Outcome:** parents can see what the pilot involved and what its recorded actions support saying about learning.
 

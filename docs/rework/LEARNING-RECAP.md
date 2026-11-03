@@ -1,6 +1,6 @@
 # RW09: Learning evidence and family recap, the build packet (definition)
 
-[Work item / issue #493](WORK-ITEMS.md#rw09-learning-evidence-and-family-recap) · [PR #1162](https://github.com/rjdunlap/neo/pull/1162) · 2026-11-03 · docs only, nothing built
+[Work item / issue #493](WORK-ITEMS.md#rw09-learning-evidence-and-family-recap) · [PR #1162](https://github.com/rjdunlap/neo/pull/1162) · 2026-11-03 · definition docs-only; slice 1 built 2026-11-03 ([PR #1163](https://github.com/rjdunlap/neo/pull/1163))
 
 ## Summary
 
