@@ -243,6 +243,8 @@ class Inchworm implements Game {
 
   destroy() {
     for (const b of this.bucket) b.drag.destroy();
+    this.hopper?.destroy({ children: true });
+    this.hopper = null;
   }
 
   /** The row being measured: the first one not yet full. */
@@ -536,6 +538,7 @@ class Inchworm implements Game {
       if (this.plan.mode === 'compare' || this.plan.mode === 'rulerdiff') await this.ctx.say('worm.yay');
       else if (this.plan.mode === 'units') await this.ctx.say('worm.samestick', { what: THING_WORDS[m.thing] });
       else if (this.plan.mode === 'rulersum') await this.ctx.say('worm.together', { n });
+      else if (this.plan.mode === 'hop') await this.ctx.say('worm.hoplong', { what: THING_WORDS[m.thing], n });
       else await this.ctx.say('worm.long', { what: THING_WORDS[m.thing], n: m.length });
       return void this.next();
     }

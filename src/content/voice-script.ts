@@ -2033,6 +2033,7 @@ export const SCRIPT = {
   'worm.marks': ['Count the spaces, not the marks.'],
   'worm.hop': ['Tap the inchworm to help it inch along the {what}, one hop at a time!'],
   'worm.hops': ['The inchworm reached the end! How many hops long is the {what}? Count the chalk marks.'],
+  'worm.hoplong': ['The {what} is {n} hops long!'],
   'worm.chalk': ['Count the chalk marks again: one for every hop.'],
   'graph.build': ['Count the critters in the meadow. Tap above a bar to add a block for each one. Then tap the green check!'],
   'graph.tally': ['First, count each kind and make tally marks. Four lines, then one across makes a group of five. Tap the green check when each kind is counted.'],

@@ -398,6 +398,6 @@ describe('Inchworm Measure: one worm, hop by hop (level 9)', () => {
   });
 
   it('has its lines', () => {
-    for (const id of ['worm.hop', 'worm.hops', 'worm.chalk'] as const) expect(SCRIPT[id]).toBeTruthy();
+    for (const id of ['worm.hop', 'worm.hops', 'worm.hoplong', 'worm.chalk'] as const) expect(SCRIPT[id]).toBeTruthy();
   });
 });
