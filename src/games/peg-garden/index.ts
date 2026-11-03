@@ -430,7 +430,8 @@ class PegGarden implements Game {
     if (!this.aimed || this.ball || this.finished || this.botWait > 0) return out;
     if (this.botAim === null) this.botAim = this.bestAim();
     const gap = this.botAim - this.aim;
-    if (Math.abs(gap) > 0.015) out.players[0].x = Math.max(-1, Math.min(1, gap / (Math.max(dt, 1e-3) * 1.2)));
+    // Settle on the chosen angle itself before letting go: a shot is exact, and one a hair off it can miss.
+    if (Math.abs(gap) > 1e-4) out.players[0].x = Math.max(-1, Math.min(1, gap / (Math.max(dt, 1e-3) * 1.2)));
     else {
       out.players[0].action = true;
       this.botAim = null;
