@@ -226,9 +226,10 @@ export function lookCounts(rs: readonly Route[]): Record<Look, number> {
 export const PAIRS_LEVEL = 4;
 export const PAIRS_NAME = 'Which pairs always make spotted?';
 
-/** The grown-up name of any level, 1 to 4. */
+/** The grown-up name of any level, 1 to 5. */
 export function levelName(level: number): string {
-  return Math.round(level) >= PAIRS_LEVEL ? PAIRS_NAME : planFor(level).name;
+  const l = Math.round(level);
+  return l >= HIDDEN_LEVEL ? HIDDEN_NAME : l >= PAIRS_LEVEL ? PAIRS_NAME : planFor(level).name;
 }
 
 /** Two plants on one pair card: the left plant's copies and the right plant's, as their trays show them. */
@@ -308,4 +309,111 @@ export function pairsNextStep(chosen: ReadonlySet<number>, s: PairsSetup): Pairs
 export function copiesKey(g: Genotype): 'AA' | 'Aa' | 'aa' {
   const spots = g.filter((c) => c === 'A').length;
   return spots === 2 ? 'AA' : spots === 1 ? 'Aa' : 'aa';
+}
+
+// ——— Level 5: Hidden Sprouts (G6; definition: docs/definitions/hidden-sprouts.md) ———
+
+export const HIDDEN_LEVEL = 5;
+export const HIDDEN_NAME = 'Hidden Sprouts';
+
+/** What a spotted plant could hold: two spot copies, or one spot copy and one plain. Nothing else makes spots. */
+export type Candidate = 'AA' | 'Aa';
+export const CANDIDATES: readonly Candidate[] = ['AA', 'Aa'];
+export const GENOTYPES: Readonly<Record<'AA' | 'Aa' | 'aa', Genotype>> = { AA, Aa, aa };
+/** The record card's sprout slots. */
+export const RECORD_SLOTS = 8;
+/** How many sprouts each watering grows. */
+export const WATERING = 3;
+
+/** A candidate fits the record when every look on it is one its fan with the tester can make. Order and counts never matter. */
+export function compatible(candidate: Genotype, tester: Genotype, record: readonly Look[]): boolean {
+  const can = support(routes(candidate, tester));
+  return record.every((look) => can.has(look));
+}
+
+/** The candidates that fit the record, in `CANDIDATES` order. */
+export function candidates(tester: Genotype, record: readonly Look[]): Candidate[] {
+  return CANDIDATES.filter((c) => compatible(GENOTYPES[c], tester, record));
+}
+
+/** Whether this tester could ever tell the candidates apart: some look one candidate can make with it and the other cannot. */
+export function couldTell(tester: Genotype): boolean {
+  const [a, b] = CANDIDATES.map((c) => support(routes(GENOTYPES[c], tester)));
+  return [...a].some((l) => !b.has(l)) || [...b].some((l) => !a.has(l));
+}
+
+/** A record no candidate fits (for instance a plain sprout against an `AA` tester). No authored case is one. */
+export function contradicts(tester: Genotype, record: readonly Look[]): boolean {
+  return candidates(tester, record).length === 0;
+}
+
+export interface HiddenSetup {
+  /** The hidden plant's true copies, as its covered tray holds them. */
+  truth: Candidate;
+  hidden: Genotype;
+  /** Level 5's tester is always plain. */
+  tester: Genotype;
+  /** The authored sprouts of the first and second watering. The second holds one plain sprout only when the truth is `Aa`. */
+  first: readonly Look[];
+  second: readonly Look[];
+  /** Petal colours of the hidden plant (its sprouts too) and the tester. */
+  colors: readonly [ColorName, ColorName];
+  /** The two candidate cards, left to right. */
+  order: readonly Candidate[];
+}
+
+/** One of the two authored cases, seeded, with the plain sprout's place, tray order, colours and card order seeded too. */
+export function hiddenSetupFor(rng: Rng): HiddenSetup {
+  const truth: Candidate = rng.chance(0.5) ? 'Aa' : 'AA';
+  const g = GENOTYPES[truth];
+  const hidden: Genotype = rng.chance(0.5) ? [g[1], g[0]] : [g[0], g[1]];
+  const first: Look[] = ['spotted', 'spotted', 'spotted'];
+  const second: Look[] = ['spotted', 'spotted', 'spotted'];
+  if (truth === 'Aa') second[rng.int(0, WATERING - 1)] = 'plain';
+  const [c0, c1] = rng.shuffle([...PETAL_COLORS]);
+  const order = rng.chance(0.5) ? [...CANDIDATES] : [...CANDIDATES].reverse();
+  return { truth, hidden, tester: aa, first, second, colors: [c0, c1], order };
+}
+
+/** Where a level 5 round is: water, choose, water again, choose again, then the reveal. */
+export type HiddenPhase = 'water1' | 'choose1' | 'water2' | 'choose2' | 'done';
+
+export type HiddenVerdict =
+  | { ok: true }
+  /** A chosen candidate the record rules out. */
+  | { ok: false; extra: Candidate }
+  /** A candidate that still fits the record but was left out. */
+  | { ok: false; missing: Candidate };
+
+/** The accepted choice is every candidate that fits the record as shown; a ruled-out choice is reported before a missing one. */
+export function checkCandidates(chosen: Iterable<Candidate>, tester: Genotype, record: readonly Look[]): HiddenVerdict {
+  const picked = new Set(chosen);
+  const fit = candidates(tester, record);
+  for (const c of CANDIDATES) if (picked.has(c) && !fit.includes(c)) return { ok: false, extra: c };
+  for (const c of fit) if (!picked.has(c)) return { ok: false, missing: c };
+  return { ok: true };
+}
+
+/** Try one: a sprout from one route of the hidden plant's true copies with the tester, by chance. */
+export function drawSprout(hidden: Genotype, tester: Genotype, rng: Rng): Look {
+  return looks(rng.pick(routes(hidden, tester)).sprout);
+}
+
+/** How many Try one sprouts still fit: none before the first watering or after the end, and room is kept for the second watering. */
+export function tryRoom(phase: HiddenPhase, recordLength: number): number {
+  if (phase === 'water1' || phase === 'done') return 0;
+  const reserved = phase === 'choose1' || phase === 'water2' ? WATERING : 0;
+  return Math.max(0, RECORD_SLOTS - reserved - recordLength);
+}
+
+/** The next thing a capable child would do: water, let go of a ruled-out card, choose a fitting one, then Check. */
+export type HiddenStep = { water: true } | { choose: Candidate } | { unchoose: Candidate } | { check: true };
+
+export function hiddenNextStep(phase: HiddenPhase, chosen: ReadonlySet<Candidate>, tester: Genotype, record: readonly Look[]): HiddenStep | null {
+  if (phase === 'water1' || phase === 'water2') return { water: true };
+  if (phase === 'done') return null;
+  const fit = candidates(tester, record);
+  for (const c of CANDIDATES) if (chosen.has(c) && !fit.includes(c)) return { unchoose: c };
+  for (const c of fit) if (!chosen.has(c)) return { choose: c };
+  return { check: true };
 }

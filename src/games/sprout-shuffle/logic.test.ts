@@ -5,6 +5,8 @@ import {
   type Copy, type Genotype, type Look, type Round,
   PAIRS_NAME, PAIR_POOLS, checkPairs, copiesKey, counterexample, levelName, pairsAlways, pairsNextStep, pairsSetupFor,
   type Pair, type PairsSetup,
+  RECORD_SLOTS, WATERING, HIDDEN_NAME, GENOTYPES, candidates, checkCandidates, compatible, contradicts, couldTell, drawSprout, hiddenNextStep, hiddenSetupFor, tryRoom,
+  type Candidate, type HiddenPhase,
 } from './logic';
 
 const SEEDS = Array.from({ length: 200 }, (_, i) => i);
@@ -463,6 +465,180 @@ describe('level 4: which pairs always make spotted?', () => {
 
   it('levelName keeps levels 1-3 and names 4 and above as the pairs level', () => {
     for (const l of [1, 2, 3]) expect(levelName(l)).toBe(planFor(l).name);
-    for (const l of [4, 5, 9]) expect(levelName(l)).toBe(PAIRS_NAME);
+    for (const l of [4]) expect(levelName(l)).toBe(PAIRS_NAME);
+  });
+});
+
+describe('level 5: Hidden Sprouts', () => {
+  const AA = GENOTYPES.AA, Aa = GENOTYPES.Aa, aa = GENOTYPES.aa;
+  const spots3: Look[] = ['spotted', 'spotted', 'spotted'];
+  const seeds300 = Array.from({ length: 300 }, (_, i) => i);
+
+  it('candidates follow the record', () => {
+    expect(candidates(aa, spots3)).toEqual(['AA', 'Aa']);
+    expect(candidates(aa, [])).toEqual(['AA', 'Aa']);
+    expect(candidates(aa, ['plain'])).toEqual(['Aa']);
+    expect(candidates(aa, ['spotted', 'plain', 'spotted'])).toEqual(['Aa']);
+  });
+
+  it('authored cases are compatible with their truth; plain only in Aa, exactly once, in the second watering', () => {
+    for (const seed of seeds300) {
+      const s = hiddenSetupFor(new Rng(seed));
+      const truth = GENOTYPES[s.truth];
+      const plainFirst = s.first.filter((l) => l === 'plain').length;
+      const plainSecond = s.second.filter((l) => l === 'plain').length;
+      expect(s.first).toHaveLength(WATERING);
+      expect(s.second).toHaveLength(WATERING);
+      expect(compatible(truth, s.tester, s.first)).toBe(true);
+      expect(compatible(truth, s.tester, [...s.first, ...s.second])).toBe(true);
+      expect(plainFirst).toBe(0);
+      expect(plainSecond).toBe(s.truth === 'Aa' ? 1 : 0);
+      expect(copiesKey(s.hidden)).toBe(s.truth);
+      expect(copiesKey(s.tester)).toBe('aa');
+      expect(s.first.length + s.second.length).toBeLessThanOrEqual(RECORD_SLOTS);
+      expect(contradicts(s.tester, s.first)).toBe(false);
+      expect(contradicts(s.tester, [...s.first, ...s.second])).toBe(false);
+      expect(candidates(s.tester, s.first)).toEqual(['AA', 'Aa']);
+      expect(candidates(s.tester, [...s.first, ...s.second])).toEqual(s.truth === 'Aa' ? ['Aa'] : ['AA', 'Aa']);
+      expect([...s.order].sort()).toEqual(['AA', 'Aa']);
+      expect(s.colors[0]).not.toBe(s.colors[1]);
+    }
+  });
+
+  it('both cases and both card orders occur, and the same seed gives the same case', () => {
+    const all = seeds300.map((seed) => hiddenSetupFor(new Rng(seed)));
+    expect(new Set(all.map((s) => s.truth))).toEqual(new Set(['AA', 'Aa']));
+    expect(new Set(all.map((s) => s.order[0]))).toEqual(new Set(['AA', 'Aa']));
+    for (const seed of SEEDS) expect(hiddenSetupFor(new Rng(seed))).toEqual(hiddenSetupFor(new Rng(seed)));
+  });
+
+  it('a plain sprout against an AA tester contradicts', () => {
+    expect(contradicts(AA, ['plain'])).toBe(true);
+    expect(candidates(AA, ['plain'])).toEqual([]);
+    expect(contradicts(AA, ['spotted'])).toBe(false);
+  });
+
+  it('compatible ignores order and count', () => {
+    const a: Look[] = ['spotted', 'plain', 'spotted'];
+    const b: Look[] = ['plain', 'plain', 'spotted', 'spotted', 'spotted', 'plain'];
+    for (const c of [AA, Aa]) expect(compatible(c, aa, a)).toBe(compatible(c, aa, b));
+    expect(compatible(Aa, aa, a)).toBe(true);
+    expect(compatible(AA, aa, a)).toBe(false);
+  });
+
+  it('tryRoom keeps the record within eight at every phase', () => {
+    const phases: HiddenPhase[] = ['water1', 'choose1', 'water2', 'choose2', 'done'];
+    expect(tryRoom('water1', 0)).toBe(0);
+    expect(tryRoom('done', 0)).toBe(0);
+    for (const ph of phases)
+      for (let len = 0; len <= RECORD_SLOTS; len++) {
+        const room = tryRoom(ph, len);
+        expect(room).toBeGreaterThanOrEqual(0);
+        if (room > 0) expect(len + room).toBeLessThanOrEqual(RECORD_SLOTS);
+      }
+    // Fill the card with Try one at every chance: the second watering still fits.
+    expect(tryRoom('choose1', WATERING)).toBe(RECORD_SLOTS - 2 * WATERING);
+    const rec = WATERING + tryRoom('choose1', WATERING);
+    expect(rec + WATERING).toBeLessThanOrEqual(RECORD_SLOTS);
+    expect(tryRoom('choose2', RECORD_SLOTS)).toBe(0);
+    expect(tryRoom('choose2', 2 * WATERING)).toBe(RECORD_SLOTS - 2 * WATERING);
+  });
+
+  it('Try one draws from the true copies never contradict the case, and plain never shows for AA', () => {
+    for (const seed of seeds300) {
+      const rng = new Rng(seed);
+      const s = hiddenSetupFor(rng);
+      const record: Look[] = [...s.first];
+      let phase: HiddenPhase = 'choose1';
+      for (let k = tryRoom(phase, record.length); k > 0; k = tryRoom(phase, record.length)) {
+        const look = drawSprout(s.hidden, s.tester, rng);
+        if (s.truth === 'AA') expect(look).toBe('spotted');
+        record.push(look);
+        expect(contradicts(s.tester, record)).toBe(false);
+        expect(compatible(GENOTYPES[s.truth], s.tester, record)).toBe(true);
+      }
+      record.push(...s.second);
+      phase = 'choose2';
+      expect(record.length).toBeLessThanOrEqual(RECORD_SLOTS);
+      for (let k = tryRoom(phase, record.length); k > 0; k = tryRoom(phase, record.length)) {
+        record.push(drawSprout(s.hidden, s.tester, rng));
+        expect(record.length).toBeLessThanOrEqual(RECORD_SLOTS);
+        expect(contradicts(s.tester, record)).toBe(false);
+      }
+      expect(record.length).toBeLessThanOrEqual(RECORD_SLOTS);
+    }
+  });
+
+  it('only a plain tester can tell the candidates apart', () => {
+    expect(couldTell(aa)).toBe(true);
+    expect(couldTell(AA)).toBe(false);
+  });
+
+  it('checkCandidates accepts exactly the fitting set and reports extra before missing', () => {
+    const records: Look[][] = [[], spots3, ['spotted', 'plain'], ['plain']];
+    const subsets: Candidate[][] = [[], ['AA'], ['Aa'], ['AA', 'Aa']];
+    for (const rec of records) {
+      const fit = candidates(aa, rec);
+      for (const sub of subsets) {
+        const v = checkCandidates(sub, aa, rec);
+        const exact = sub.length === fit.length && sub.every((c) => fit.includes(c));
+        expect('ok' in v && v.ok).toBe(exact);
+      }
+    }
+    expect(checkCandidates(['AA'], aa, ['plain'])).toEqual({ ok: false, extra: 'AA' });
+    // Extra wins even when something is also missing.
+    expect(checkCandidates(['AA'], aa, ['plain'])).not.toHaveProperty('missing');
+    expect(checkCandidates([], aa, ['plain'])).toEqual({ ok: false, missing: 'Aa' });
+    expect(checkCandidates(['Aa'], aa, spots3)).toEqual({ ok: false, missing: 'AA' });
+    expect(checkCandidates(['AA'], aa, spots3)).toEqual({ ok: false, missing: 'Aa' });
+  });
+
+  it('counterexamples: a missing candidate makes every look on the record; an extra AA has no plain route', () => {
+    const records: Look[][] = [[], spots3, ['spotted', 'plain', 'spotted'], ['plain'], ['plain', 'spotted']];
+    for (const rec of records)
+      for (const sub of [[], ['AA'], ['Aa'], ['AA', 'Aa']] as Candidate[][]) {
+        const v = checkCandidates(sub, aa, rec);
+        if ('ok' in v && !v.ok && 'missing' in v) {
+          const made = new Set(routes(GENOTYPES[v.missing], aa).map((r) => looks(r.sprout)));
+          for (const look of rec) expect(made.has(look)).toBe(true);
+        }
+        if ('ok' in v && !v.ok && 'extra' in v) {
+          const rs = routes(GENOTYPES[v.extra], aa);
+          expect(rs.some((r) => looks(r.sprout) === 'plain')).toBe(false);
+          expect(rec).toContain('plain');
+          if (v.extra === 'AA') expect(counterexample([GENOTYPES.AA, aa])).toBeNull();
+        }
+      }
+  });
+
+  it('hiddenNextStep reaches a passing Check from any chosen set at every phase and case', () => {
+    const subsets: Candidate[][] = [[], ['AA'], ['Aa'], ['AA', 'Aa']];
+    for (const seed of SEEDS) {
+      const s = hiddenSetupFor(new Rng(seed));
+      for (const [phase, rec] of [['choose1', s.first], ['choose2', [...s.first, ...s.second]]] as [HiddenPhase, Look[]][])
+        for (const sub of subsets) {
+          const chosen = new Set<Candidate>(sub);
+          let guard = 0;
+          for (;;) {
+            const st = hiddenNextStep(phase, chosen, s.tester, rec);
+            expect(st).not.toBeNull();
+            if (!st || 'check' in st) break;
+            expect('water' in st).toBe(false);
+            if ('choose' in st) chosen.add(st.choose);
+            else if ('unchoose' in st) chosen.delete(st.unchoose);
+            expect(++guard).toBeLessThan(6);
+          }
+          expect(checkCandidates(chosen, s.tester, rec)).toEqual({ ok: true });
+        }
+    }
+    expect(hiddenNextStep('water1', new Set(), aa, [])).toEqual({ water: true });
+    expect(hiddenNextStep('water2', new Set(), aa, spots3)).toEqual({ water: true });
+    expect(hiddenNextStep('done', new Set(), aa, spots3)).toBeNull();
+  });
+
+  it('levelName names level 5 and leaves level 4 unchanged', () => {
+    expect(levelName(5)).toBe('Hidden Sprouts');
+    expect(levelName(5)).toBe(HIDDEN_NAME);
+    expect(levelName(4)).toBe(PAIRS_NAME);
   });
 });
