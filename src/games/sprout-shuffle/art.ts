@@ -2,7 +2,7 @@
  * Sprout Shuffle's drawings: copy tiles, parent plants, the sprout, bud cards, choice cards, the leaf Check, the hub
  * icon and the sticker. Pixi Graphics in palette colours; new art, not reused from the pet or Bug Builder.
  */
-import { Container, Graphics, Text } from 'pixi.js';
+import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { cream, ink, swatch, type ColorName } from '../../art/palette';
 import { finish } from '../../ui/buttons';
 import type { Claim, Copy, Look } from './logic';
@@ -440,4 +440,37 @@ export function cantTellArt(): Container {
   t.anchor.set(0.5);
   c.addChild(t);
   return c;
+}
+
+// ——— Level 6: which plant could tell us? ———
+
+/** Where a tester's tray sits under its feet, and its tiles' size. */
+export const TESTER_TRAY_Y = 60;
+export const TESTER_TILE = 72;
+
+/** A known plant for level 6's bench: the plant with its open tray of two copies, its origin at the plant's feet. The whole plant is one tap target. */
+export function testerArt(look: Look, copies: readonly [Copy, Copy], color: ColorName, h: number): Container {
+  const c = new Container();
+  const plant = plantArt(look, color, h);
+  plant.eventMode = 'none';
+  c.addChild(plant);
+  for (const [i, copy] of copies.entries()) {
+    const t = tileArt(copy, TESTER_TILE);
+    t.eventMode = 'none';
+    t.position.set((i === 0 ? -1 : 1) * (TESTER_TILE / 2 + 8), TESTER_TRAY_Y);
+    c.addChild(t);
+  }
+  c.eventMode = 'static';
+  c.cursor = 'pointer';
+  c.hitArea = new Rectangle(-110, -h - 20, 220, h + TESTER_TRAY_Y + TESTER_TILE / 2 + 30);
+  return c;
+}
+
+/** The bench under the waiting testers: a wooden plank on two legs. */
+export function benchArt(w: number): Graphics {
+  const g = new Graphics();
+  for (const x of [-w / 2 + 30, w / 2 - 30]) g.roundRect(x - 8, 0, 16, 34, 4).fill(swatch.brown.line);
+  g.roundRect(-w / 2, -14, w, 24, 10).fill(swatch.brown.light).stroke({ width: 5, color: swatch.brown.line });
+  g.eventMode = 'none';
+  return g;
 }
