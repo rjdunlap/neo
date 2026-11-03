@@ -118,3 +118,9 @@
 - Not run: full `bridgestouch` (levels 1 and 4 unchanged), couch suites (couch unaffected), `npm run build`, full unit suite locally (CI runs it), device or child checks.
 
 ---
+
+## 2026-11-02 — Lantern Lights a 6 by 6 pond (lantern-lights batch 1)
+
+- [PR #1131](https://github.com/rjdunlap/neo/pull/1131) (code `5e20da96`): levels 7-8 (6 by 6 ponds, par exactly 7 and 12, one winning set) and the portrait counts line above the pond when the side room is under 240 units; how-to step for level 7 and up.
+- Ran (Vite dev on http://localhost:5393): typecheck; `src/games/lantern-lights` 19 tests (including 200 seeds at levels 7-8 for exactly one winning set and the par); `src/content` and `src/games/registry` 190 tests; `BROWSER_SUITE=lanterntouch LANTERN_ONLY=8` (level 8, one hint, counts above the pond upright and beside it sideways, one sticker, 0 misses/1 hint); `FINGER_ONLY=lantern-lights FINGER_LEVELS=8` ghost finger clean in 38.3 s; the portrait screenshot `test-results/browser/lanterntouch/lantern-lights-8-portrait.png` reviewed.
+- Not run: `npm run build` (no shared files or assets), couch suites (course and trips unchanged), full `npm test` (CI runs it), iPad or device check of whether the 6 by 6 pond is fun.

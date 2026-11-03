@@ -11,7 +11,7 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ANIMALS, VOICES, farmAnimals, makeSong, nextInvite, pickTune, planFor, tunesFor, type Animal, type Note, type SingPlan, type Tune } from './logic';
+import { ANIMALS, VOICES, farmAnimals, makeSong, nextInvite, phraseMidi, pickTune, planFor, tunesFor, type Animal, type Note, type SingPlan, type Tune } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -207,16 +207,24 @@ class SingAlongBarn implements Game {
 
   // ----- Choosing the song -----
 
-  private cardScale = () => (this.tuneCards.length > 5 ? 0.5 : this.tuneCards.length > 4 ? 0.6 : this.tuneCards.length > 3 ? 0.72 : 1);
+  /** More than five songs sit in two rows, so a card never shrinks below the five-card size. */
+  private cardCols = () => (this.tuneCards.length > 5 ? Math.ceil(this.tuneCards.length / 2) : this.tuneCards.length);
+
+  private cardScale = () => (this.cardCols() > 4 ? 0.6 : this.cardCols() > 3 ? 0.72 : 1);
 
   private layoutCards() {
     // 250 apart: 30 clear between two 220-wide cards, and both fit a 768-wide upright view.
     const y = this.view.h * 0.42;
-    // Four cards shrink to 0.72 (158 across, 180 apart) so the row still fits an upright 768-wide view with room for the pet.
+    // Four cards shrink to 0.72 (158 across, 180 apart) and five to 0.6 (132 by 120, 150 apart) so a row still fits an
+    // upright 768-wide view with room for the pet; ten cards are two rows of five, 150 apart (30 clear between rows).
     const spacing = 250 * this.cardScale();
+    const cols = this.cardCols();
+    const rows = Math.ceil(this.tuneCards.length / cols);
     this.tuneCards.forEach((card, k) => {
+      const row = Math.floor(k / cols);
+      const inRow = Math.min(cols, this.tuneCards.length - row * cols);
       card.scale.set(this.cardScale());
-      card.position.set(this.view.w / 2 + (k - (this.tuneCards.length - 1) / 2) * spacing, y);
+      card.position.set(this.view.w / 2 + ((k % cols) - (inRow - 1) / 2) * spacing, y + (row - (rows - 1) / 2) * spacing);
     });
   }
 
@@ -234,7 +242,7 @@ class SingAlongBarn implements Game {
       }
     });
     sfx.sparkle();
-    t.opening[0].steps.forEach((s, i) => void this.ctx.tw.wait(i * 0.28).then(() => sfx.marimba(s, 0.4)));
+    t.opening[0].steps.forEach((_, i) => void this.ctx.tw.wait(i * 0.28).then(() => sfx.marimbaMidi(phraseMidi(t.opening[0], i), 0.4)));
     void this.ctx.tw.wait(1.2).then(() => {
       for (const card of this.tuneCards) {
         card.eventMode = 'none';
@@ -350,7 +358,7 @@ class SingAlongBarn implements Game {
     if (this.phase !== 'sing' || this.idx >= this.song.length) return;
     const note = this.song[this.idx];
     this.idx++;
-    sfx.marimba(note.step, 0.5);
+    sfx.marimbaMidi(note.midi, 0.5);
     this.bounce = 1;
     const p = this.ctx.stage.toLocal({ x: gx, y: gy });
     const at = Number.isFinite(p.x) && Number.isFinite(p.y) ? p : { x: this.view.w / 2, y: this.view.h * 0.4 };
@@ -500,7 +508,7 @@ class SingAlongBarn implements Game {
   }
 }
 
-/** A song's card: a barn-red tab with its picture (a cow, a bun, a lamb, a moon, a rain cloud, a spider, a ball or a ring of roses) and the first beads of its tune. */
+/** A song's card: a barn-red tab with its picture (a cow, a bun, a lamb, a moon, a rain cloud, a spider, a ball, a ring of roses, a star or a bus) and the first beads of its tune. */
 function drawTuneCard(t: Tune): Container {
   const c = new Container();
   const g = new Graphics().roundRect(-110, -100, 220, 200, 28).fill(0xfff4d6).stroke(line(BARN_DARK, 8));
@@ -546,6 +554,27 @@ function drawTuneCard(t: Tune): Container {
     }
     centres.fill(0xffe9a0);
     c.addChild(ring, centres);
+  } else if (t.id === 'twinkle') {
+    // A five-point star with a smile of sparkles under it.
+    const pts: number[] = [];
+    for (let k = 0; k < 10; k++) {
+      const a = -Math.PI / 2 + (k / 10) * Math.PI * 2;
+      const r = k % 2 === 0 ? 62 : 26;
+      pts.push(Math.cos(a) * r, 26 + Math.sin(a) * r);
+    }
+    const star = new Graphics().poly(pts).fill(0xffd54a).stroke(line(0xd9a020, 5));
+    star.circle(-12, 22, 5).circle(12, 22, 5).fill(0x4a3a30);
+    const sparkles = new Graphics();
+    for (const [x, y] of [[-80, -20], [80, -10], [-70, 76], [74, 72]]) sparkles.circle(x, y, 6).fill(0xffe9a0);
+    c.addChild(sparkles, star);
+  } else if (t.id === 'wheels') {
+    // A yellow school bus from the side: windows, a door, two black wheels.
+    const bus = new Graphics().roundRect(-90, -16, 180, 82, 16).fill(0xffc83a).stroke(line(0xc08a1a, 5));
+    for (const x of [-70, -30, 10]) bus.roundRect(x, -4, 32, 28, 6).fill(0xbfe4ff);
+    bus.roundRect(52, -4, 26, 54, 5).fill(0xbfe4ff).stroke(line(0xc08a1a, 4));
+    const wheels = new Graphics();
+    for (const x of [-50, 50]) wheels.circle(x, 68, 20).fill(0x3a3a3a).circle(x, 68, 8).fill(0xc9c9c9);
+    c.addChild(bus, wheels);
   } else if (t.id === 'mary') {
     const lamb = new Graphics()
       .circle(-40, 30, 26)

@@ -1387,7 +1387,7 @@ Proof: new-band tier: typecheck, unit tests including the lands, registry band a
 
 ### sing-along-barn 1: Tunes with their own notes
 
-- **`sing-along-barn`, Twinkle and Wheels on the Bus (dive slice 1)** (extends the built game; two new tunes): the test-guarded exception for tunes with their own notes, the two tunes, the name placeholder, the two-row chooser and the voice lines; the notes source-checked from a score and cited in GAMES. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
+- **`sing-along-barn`, Twinkle and Wheels on the Bus (dive slice 1)** (**built 2026-11-03**, branch `claude/sing-along-barn-1`, PR #1146; extends the built game; two new tunes): the test-guarded exception for tunes with their own notes, the two tunes, the name placeholder, the two-row chooser and the voice lines; the notes source-checked from a score and cited in GAMES. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
 
 Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, `src/audio/sfx.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 

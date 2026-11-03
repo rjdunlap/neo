@@ -18,6 +18,10 @@ import {
   RAIN,
   ITSY,
   BOUNCE,
+  TWINKLE,
+  WHEELS,
+  OWN_NOTES,
+  phraseMidi,
   RING,
   VOICES,
   farmAnimals,
@@ -26,6 +30,7 @@ import {
   pickTune,
   planFor,
   tunesFor,
+  type Tune,
 } from './logic';
 
 describe('the tune', () => {
@@ -93,8 +98,9 @@ describe('the plans', () => {
   });
 
   it('keeps the longest song short enough for a small child and for the how-to demonstration', () => {
-    // Three Old MacDonald verses are 51 notes; the demonstration's 75 seconds are checked by `fingerdemo` at level 4.
-    for (const plan of PLANS) for (const tune of TUNES) expect(makeSong(ANIMALS.slice(0, plan.verses), tune).length).toBeLessThanOrEqual(51);
+    // Three Old MacDonald verses are 51 notes, three Twinkle verses 56; the demonstration sings two verses, and its 75
+    // seconds are checked by `fingerdemo` at level 4.
+    for (const plan of PLANS) for (const tune of TUNES) expect(makeSong(ANIMALS.slice(0, plan.verses), tune).length).toBeLessThanOrEqual(56);
     expect(makeSong(ANIMALS.slice(0, 2), OLD_MACDONALD).length).toBeLessThanOrEqual(40);
   });
 
@@ -297,7 +303,7 @@ describe('which tune a round sings', () => {
     expect(pickTune(new Rng(7)).id).toBe(pickTune(new Rng(7)).id);
     const seen = new Set<string>();
     for (let seed = 1; seed <= 40; seed++) seen.add(pickTune(new Rng(seed)).id);
-    expect([...seen].sort()).toEqual(['bounce', 'buns', 'clair', 'itsy', 'macdonald', 'mary', 'rain', 'ring']);
+    expect([...seen].sort()).toEqual(['bounce', 'buns', 'clair', 'itsy', 'macdonald', 'mary', 'rain', 'ring', 'twinkle', 'wheels']);
   });
 });
 
@@ -330,6 +336,85 @@ describe('the whole Old MacDonald verse', () => {
 
   it('is offered only at the level that has it, beside Hot Cross Buns', () => {
     expect(tunesFor(PLANS[4])).toBe(TUNES);
-    expect(tunesFor(PLANS[5])).toEqual([OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE, RING]);
+    expect(tunesFor(PLANS[5])).toEqual([OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE, RING, TWINKLE, WHEELS]);
+  });
+});
+
+describe('tunes with their own notes', () => {
+  const phrases = (t: Tune) => [...t.opening, ...t.verse];
+  const allTunes = [...TUNES, OLD_MACDONALD_FULL];
+
+  it('lets only the allow-listed tunes off the pentatonic, and every other tune stays on it', () => {
+    expect([...OWN_NOTES]).toEqual(['twinkle']);
+    for (const t of allTunes) {
+      for (const p of phrases(t)) {
+        if (p.semitones) expect(OWN_NOTES, `${t.id}: ${p.syllables.join(' ')}`).toContain(t.id);
+        else p.steps.forEach((_, at) => expect(PENTATONIC).toContain(phraseMidi(p, at) % 12));
+      }
+      if (!OWN_NOTES.includes(t.id)) for (const n of makeSong(ANIMALS.slice(0, 3), t)) expect(PENTATONIC).toContain(n.midi % 12);
+    }
+  });
+
+  it('keeps the exception to the major scale, so fa and ti sound and nothing else', () => {
+    const major = [0, 2, 4, 5, 7, 9, 11];
+    for (const n of makeSong(ANIMALS.slice(0, 3), TWINKLE)) expect(major).toContain(n.midi % 12);
+    // Twinkle really needs its own note: fa
+    expect(makeSong(['cow'], TWINKLE).some((n) => n.midi % 12 === 5)).toBe(true);
+  });
+
+  it('sounds the marimba by MIDI only in Sing-Along Barn', () => {
+    const files = import.meta.glob(['/src/**/*.ts', '!/src/**/*.test.ts'], { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+    const callers = Object.entries(files)
+      .filter(([, src]) => src.includes('marimbaMidi('))
+      .map(([path]) => path)
+      .sort();
+    expect(callers).toEqual(['/src/audio/sfx.ts', '/src/games/sing-along-barn/index.ts']);
+  });
+
+  it('sings one note per syllable, at most eight beads in a row', () => {
+    for (const t of [TWINKLE, WHEELS]) {
+      for (const p of phrases(t)) expect(p.syllables.length, p.syllables.join(' ')).toBe(p.steps.length);
+      for (const n of makeSong(ANIMALS.slice(0, 3), t)) expect(n.of).toBeLessThanOrEqual(8);
+    }
+  });
+});
+
+describe('Twinkle, Twinkle, Little Star', () => {
+  it('is C C G G A A G, F F E E D D C, then G G F F E E D twice for each friend', () => {
+    const song = makeSong(['cow'], TWINKLE);
+    expect(song.map((n) => n.midi - 60)).toEqual([0, 0, 7, 7, 9, 9, 7, 5, 5, 4, 4, 2, 2, 0, 7, 7, 5, 5, 4, 4, 2, 7, 7, 5, 5, 4, 4, 2]);
+    expect(song.map((n) => n.syllable).slice(-7)).toEqual(['like', 'a', 'dia', 'mond', 'in', 'the', 'sky']);
+  });
+
+  it('answers on "sky", once a friend, and ends each verse there', () => {
+    const song = makeSong(['cow', 'pig'], TWINKLE);
+    const answers = song.filter((n) => n.answers);
+    expect(answers.map((n) => [n.syllable, n.animal])).toEqual([
+      ['sky', 'cow'],
+      ['sky', 'pig'],
+    ]);
+    expect(song.filter((n) => n.verseEnd).map((n) => n.syllable)).toEqual(['are', 'sky', 'sky']);
+  });
+});
+
+describe('The Wheels on the Bus', () => {
+  it('opens sol, do do do do mi sol mi do, re sol, sol, do, in C from the score, all on the pentatonic', () => {
+    const song = makeSong([], WHEELS);
+    expect(song.map((n) => n.midi - 60)).toEqual([-5, 0, 0, 0, 0, 4, 7, 4, 0, 2, -5, -5, 0]);
+    expect(song.map((n) => n.syllable).join(' ')).toBe('The wheels on the bus go round and round all through the town');
+  });
+
+  it('names the friend mid-line and has it sound on each of its three sounds', () => {
+    const song = makeSong(['duck'], WHEELS).slice(13);
+    expect(song.map((n) => n.syllable).join(' ')).toBe('The duck on the bus says quack quack quack all through the town');
+    expect(song.filter((n) => n.answers).map((n) => n.syllable)).toEqual(['quack', 'quack', 'quack']);
+    expect(song.every((n) => n.animal === 'duck')).toBe(true);
+    expect(song.at(-1)!.verseEnd).toBe(true);
+  });
+
+  it('keeps the name placeholder out of every other tune and out of the opening', () => {
+    for (const t of TUNES) for (const n of makeSong(ANIMALS.slice(0, 3), t)) expect(n.syllable).not.toBe('@');
+    for (const t of TUNES.filter((x) => x !== WHEELS)) for (const p of [...t.opening, ...t.verse]) expect(p.syllables).not.toContain('@');
+    for (const p of WHEELS.opening) expect(p.syllables).not.toContain('@');
   });
 });

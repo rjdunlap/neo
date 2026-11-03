@@ -1,6 +1,6 @@
 import { audio } from './engine';
 import { bell, marimba, noise, pluck, tone, voiced } from './instruments';
-import { stepHz } from './notes';
+import { midiToHz, stepHz } from './notes';
 
 export type AnimalSound = 'cluck' | 'moo' | 'quack' | 'oink' | 'meow' | 'woof' | 'growl' | 'hop';
 
@@ -33,6 +33,15 @@ export const sfx = {
   marimba(step: number, gain = 0.45) {
     const o = out();
     if (o) marimba(o.ctx, o.dest, o.t, stepHz(step), gain);
+  },
+
+  /**
+   * A marimba note by MIDI number, off the pentatonic. Only Sing-Along Barn's tunes with their own notes (its `OWN_NOTES`,
+   * decided 2026-10-23) call this; a test keeps every other caller out.
+   */
+  marimbaMidi(midi: number, gain = 0.45) {
+    const o = out();
+    if (o) marimba(o.ctx, o.dest, o.t, midiToHz(midi), gain);
   },
 
   /** A plucked string on the scale, like the island music's pluck lead. */

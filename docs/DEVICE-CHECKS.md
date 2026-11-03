@@ -19,9 +19,9 @@
 ## Sing-Along Barn (dive, 2026-11-01; proposed, new tunes and levels not yet built)
 
 - [ ] Once level 7 is built: does a pause read as "your turn" to a two-year-old?
-- [ ] Once batch 1 is built: do the fa/ti exception tunes sound right on the iPad marimba?
+- [ ] Does fa (Twinkle's F) sound right on the iPad marimba, and does a grown-up singing along match both Twinkle and Wheels on the Bus? (batch 1 built; ti is not used)
 - [ ] Once level 8 is built: does a pre-K child hear the rhyme between two spoken pictures?
-- [ ] Once Wheels on the Bus is built: does a ~30-note verse hold a toddler?
+- [ ] Does Wheels on the Bus's 13-note verse (and Twinkle's 14-note verse) hold a toddler?
 
 ## Shape Buddies (dive, 2026-11-01; proposed, levels not yet built)
 

@@ -90,7 +90,7 @@ None blocking. Under the October 23 standing rules, verse and rhyme content take
 
 ## Build slices, in order
 
-1. **Tunes with their own notes: Twinkle and Wheels on the Bus (batch sing-along-barn 1).** The test-guarded exception, the two tunes, the name placeholder, the two-row chooser and the voice lines; the notes source-checked from a score and cited in GAMES. *Check:* existing-interaction tier plus layout: typecheck, the game's rule tests (exception allow-list, one note per syllable, answers, the placeholder), one filtered play at level 5 choosing Twinkle and at level 1 on a Wheels seed, one portrait screenshot of the ten-card chooser, `fingerdemo` at 5, one build for the voice lines and `sfx` change.
+1. **Tunes with their own notes: Twinkle and Wheels on the Bus (batch sing-along-barn 1) — built 2026-11-03 (PR #1146).** The test-guarded exception, the two tunes, the name placeholder, the two-row chooser and the voice lines; the notes source-checked from a score and cited in GAMES. *Check:* existing-interaction tier plus layout: typecheck, the game's rule tests (exception allow-list, one note per syllable, answers, the placeholder), one filtered play at level 5 choosing Twinkle and at level 1 on a Wheels seed, one portrait screenshot of the ten-card chooser, `fingerdemo` at 5, one build for the voice lines and `sfx` change.
 2. **Level 7 *Finish the line* (batch sing-along-barn 2),** after batch 1 (Twinkle's gap word). *Check:* new-level tier with `order`: typecheck, unit tests including order, lands and the gap table, one play of level 7 at toddler mashing through the pause, one portrait screenshot of the picture at the door, `fingerdemo` at 7, one build.
 3. **Level 8 *Which one finishes it?* (batch sing-along-barn 3),** after batch 2. *Check:* new-interaction tier: typecheck, rule tests for the rhyme table and seeded side, one play of level 8 with one wrong picture, a second for the glow, then the rhyme, one portrait screenshot, `fingerdemo` at 8.
 4. **Itsy Bitsy's second line**, after batch 1 (fresh content; score source check, rule tests, one filtered play). Not queued until batch 1 lands.
@@ -98,4 +98,4 @@ None blocking. Under the October 23 standing rules, verse and rhyme content take
 
 ## What was built in this session
 
-Nothing: research and ideation only. Links and `git diff --check` ran.
+Slice 1 (batch sing-along-barn 1, 2026-11-03, PR #1146): Twinkle (the exception: `Phrase.semitones`, `OWN_NOTES`, `sfx.marimbaMidi`) and the short Wheels on the Bus (all pentatonic, so it needs no exception; its middle "round and round" line needs ti and is left out, as is Itsy Bitsy's second line, both possible later content with the full verse). The level 5–6 chooser is ten cards in two rows. Slices 2–5 are not built. Build note: [archive](../archive/COMPLETED-2026-10-09.md#sing-along-barn-twinkle-and-wheels-on-the-bus-batch-sing-along-barn-1-2026-11-03).
