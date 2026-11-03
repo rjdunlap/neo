@@ -122,10 +122,24 @@ describe('lantern ponds', () => {
   });
 
   it('climbs: bigger or harder ponds as the levels rise', () => {
-    expect(PLANS.map((p) => p.size)).toEqual([3, 3, 4, 4, 5, 5]);
-    for (const size of [3, 4, 5] as const) {
+    expect(PLANS.map((p) => p.size)).toEqual([3, 3, 4, 4, 5, 5, 6, 6]);
+    for (const size of [3, 4, 5, 6] as const) {
       const rungs = PLANS.filter((p) => p.size === size);
       expect(rungs[1].scramble).toBeGreaterThan(rungs[0].scramble);
+    }
+  });
+
+  it('has one winning set on a 6 by 6 pond, so levels 7 and 8 need exactly their scramble, and generation never runs out', () => {
+    for (const [level, presses] of [[7, 7], [8, 12]] as const) {
+      const plan = planFor(level);
+      expect(plan.size, plan.name).toBe(6);
+      for (let s = 1; s <= 200; s++) {
+        const pond = makePond(plan, new Rng(s * 31 + level));
+        const sol = solve(pond.board, 6)!;
+        expect(sol.ways, `${plan.name} seed ${s}`).toBe(1);
+        expect(pond.par, `${plan.name} seed ${s}`).toBe(presses);
+        expect(allLit(pressAll(pond.board, 6, sol.best[0])), `${plan.name} seed ${s}`).toBe(true);
+      }
     }
   });
 
