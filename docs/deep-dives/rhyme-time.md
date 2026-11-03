@@ -13,18 +13,18 @@ Ranges (`LEVELS` in `index.ts`): pre-K 1–5 with `order: [1, 2, 3, 5]`, school 
 | 1 | `match`, 3 choices | pre-K | Which picture rhymes with the spoken word (its picture in a bubble) | 4 questions, each from a different family; distractors one per other family |
 | 2 | `match`, 4 choices | pre-K, school | The same, with four pictures | 4 questions |
 | 3 | `pair`, 4 choices | pre-K, school | Which two pictures rhyme with each other (tap one, then the other; tapping the first again lets go) | 4 questions |
-| 4 | `odd`, 4 choices | school | Which picture does not rhyme with the other three | 4 questions, **only from the five three-word families** (at, og, ee, ar, ear) |
-| 5 | `riddle`, 3 pictures | pre-K, school | The one picture that fits a sound clue then a meaning clue | 4 riddles from the pinned pool of 102 |
+| 4 | `odd`, 4 choices | school | Which picture does not rhyme with the other three | 4 questions, **only from the eight three-word families** (at, og, ee, ar, ear, ug, ock, ail) |
+| 5 | `riddle`, 3 pictures | pre-K, school | The one picture that fits a sound clue then a meaning clue | 4 riddles from the pinned pool of 178 |
 | 6 | `riddle2`, 4 pictures | school | The same, meaning clue first, plus a neutral fourth | 4 riddles |
 | 7 | `make`, 3 pictures | school | Build the pet's riddle for a starred picture from two sound chips and two meaning chips, then Guess | 3 riddles; never a miss; two non-working guesses glow the working chips (one hint) |
 
-**Content pools.** Twelve families, 29 code-drawn pictures (`pictures.ts`; critters stand in for cat, dog, bear and duck; a crowned bear is the king): at (cat, hat, bat), og (dog, log, frog), ee (bee, tree, key), ar (star, car, jar), ear (bear, pear, chair), and two-word oon, ish, ake, uck, oat, ell, ing. Thirteen meaning tags (`TAGS`) feed the riddles. Riddles and the odd one out draw only on the five three-word families, so after a few rounds the same five groups return.
+**Content pools.** Fifteen families, 38 code-drawn pictures (`pictures.ts`; critters stand in for cat, dog, bear and duck; a crowned bear is the king): at (cat, hat, bat), og (dog, log, frog), ee (bee, tree, key), ar (star, car, jar), ear (bear, pear, chair), ug (bug, mug, rug), ock (sock, clock, rock), ail (snail, pail, whale), and two-word oon, ish, ake, uck, oat, ell, ing. Thirteen meaning tags (`TAGS`) feed the riddles. Riddles and the odd one out draw only on the eight three-word families. An `ARGUABLE` list (bug for sky, snail for pet, mug for eat-with) keeps arguable fits from being the neutral or mate that must fail a clue.
 
 **Accounting.** Levels 1–6: a wrong tap is a miss with a spoken reason ("{word} does not rhyme with {prompt}", "not a pair", "{word} rhymes with {other}"); the second miss on a question glows the answer and counts one hint. Riddles: the first miss repeats both clues, the second glows. Replaying the question (music-note button) is free. Level 7 records no misses.
 
 **Voice.** 26 `rhyme.*` lines; every list of pictures is spoken with the question, so nothing needs reading. Picture names are slotted, so they fall back to device speech.
 
-**Tests.** `logic.test.ts` checks families are disjoint, exactly the intended rhyme is on screen, the bot's taps are right, each riddle keeps one picture for both clues and two for the rhyme alone, the pinned pool of 102, level 7's chips, tag sentences and the voice lines.
+**Tests.** `logic.test.ts` checks families are disjoint, exactly the intended rhyme is on screen, the bot's taps are right, each riddle keeps one picture for both clues and two for the rhyme alone, the pinned pool of 178, level 7's chips, tag sentences and the voice lines.
 
 **How-to card.** Level-scoped steps for 1–2, 3, 4, 5, 6 and 7 (`src/content/howto.ts`). Co-play: stretch the ends ("caaat, haaat") and ask the pet's riddle back. Off-screen: "I spy something that rhymes with…".
 
@@ -117,7 +117,7 @@ None new. The study's open decisions (verse review, alliteration owner) do not g
 
 ## Build slices, in order
 
-1. **Fresh families: bug, sock and snail** (existing-interaction tier: typecheck, the game's rule tests with the re-pinned riddle pool, one filtered regression play at level 4 on a seed showing a new family; bot unchanged, no `fingerdemo`): the nine pictures (seven new drawings, `rock` and `pail` from `src/art/shore.ts`), three families, the reviewed tags above, GAMES.md counts. Ready.
+1. **Fresh families: bug, sock and snail** (built 2026-11-03, [PR #1143](https://github.com/rjdunlap/neo/pull/1143), [build note](../archive/COMPLETED-2026-10-09.md#rhyme-time-fresh-families-bug-sock-and-snail-rhyme-time-batch-1-2026-11-03); existing-interaction tier: typecheck, the game's rule tests with the re-pinned riddle pool, one filtered regression play at level 4 on a seed showing a new family; bot unchanged, no `fingerdemo`): the nine pictures (seven new drawings, `rock` and `pail` from `src/art/shore.ts`), three families, the reviewed tags above, GAMES.md counts.
 2. **Level 8 *Silly pairs*** (new-interaction tier: typecheck, unit tests including order and entry, one scripted play of level 8 with one wrong rider and a second for the glow then the rider, one portrait screenshot of a scene, `fingerdemo` at 8, one build for the voice lines), after slice 1 (its three new pairs). Ready.
 3. **Level 9, the preschool opening** (new-band tier: typecheck, unit tests including the lands and registry band tests, one play of level 9 at preschool, `fingerdemo` at 9, the preschool Story Grove page screenshot), after slice 2. Ready.
 4. **Level 10 *Rhyme baskets*** (new-interaction tier: typecheck, unit tests, one scripted play with a wrong basket, a second for the glow and an empty-space drop, one portrait screenshot, `fingerdemo` at 10), after slice 1. Ready.
