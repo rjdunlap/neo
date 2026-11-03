@@ -26,6 +26,11 @@
 - [ ] **Mend the bed with a school-age child.** Does she find the swapped pair from the column repeats, and is lifting a planted flower understood without a prompt?
 - [ ] **Varied flower sets on the iPad.** Do beds with different flower sets (no longer always leaving out the sunflower) read clearly, and are the spoken flower names right?
 
+## Garden Rows levels 8-9 (batch garden-rows 2, built 2026-11-03)
+
+- [ ] **Do the hedges read as boxes?** On the iPad, do the gaps between the 2 by 2 boxes read as hedges, in portrait and landscape?
+- [ ] **The box rule with a school-age child.** Does she understand "one in every hedge box" from the spoken line and the flash, without a prompt?
+
 ## Sing-Along Barn (dive, 2026-11-01; proposed, new tunes and levels not yet built)
 
 - [ ] Once level 7 is built: does a pause read as "your turn" to a two-year-old?

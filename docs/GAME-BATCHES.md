@@ -977,6 +977,8 @@ Proof: typecheck and Garden Rows rule tests (the F1 and Mend the bed assertions 
 
 ### garden-rows 2: Hedge boxes
 
+**Built 2026-11-03 ([PR #1167](https://github.com/rjdunlap/neo/pull/1167)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-03--garden-rows-levels-89-hedge-boxes-garden-rows-batch-2); [build note](archive/COMPLETED-2026-10-09.md#garden-rows-levels-8-9-hedge-boxes-garden-rows-2-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
+
 - **`garden-rows`, levels 8–9 Hedge boxes (dive slice 2, after batch 1)** (new rule on the existing interaction, new drawing; school): shares `PLANS` and the school range with batch 1, as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).
 
 Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
