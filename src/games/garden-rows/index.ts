@@ -412,11 +412,11 @@ class GardenRows implements Game {
 
   /** The bed is full and right: every flower blooms in turn. */
   private async bloom() {
+    // The same check the rules use. Only Mend the bed can be full and still hold a repeat: then the help on show stays.
+    if (!isSolved(this.bed, this.plan.rule)) return;
     this.busy = true;
     this.hinted = null;
     this.flash = null;
-    // The same check the rules use; a full bed that passes it is the one way to finish this bed.
-    if (!isSolved(this.bed, this.plan.rule)) return void (this.busy = false);
     for (let r = 0; r < this.n; r++) {
       for (let c = 0; c < this.n; c++) {
         const node = this.nodes[r][c];

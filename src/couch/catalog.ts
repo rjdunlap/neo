@@ -271,7 +271,7 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     play: 'turns',
     faceoff: 'twin',
     score: { better: 'lower', unit: 'wrong plantings' },
-    // School's range (3–6): trips start on 4 by 4 beds with a few spots empty and end on the 5 by 5.
+    // Levels 3–6 of school's range: trips start on 4 by 4 beds with a few spots empty and end on the 5 by 5.
     band: 'school',
     demoLevel: 3,
     level: (stop) => [3, 3, 4, 4, 5, 6][stop] ?? 6,
