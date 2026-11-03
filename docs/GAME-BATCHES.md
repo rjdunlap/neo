@@ -851,7 +851,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/shell-rows.md
 
 ### orchard-rows 1: Equal rows, every way, only one long row
 
-**Built 2026-11-02 ([PR #1121](https://github.com/rjdunlap/neo/pull/1121)):** levels 4, 5 and 6 together; checks in [VERIFICATION](VERIFICATION.md#2026-11-02--orchard-rows-levels-46-number-structure-ns1-batch-orchard-rows-1).
+**Built 2026-11-02 ([PR #1121](https://github.com/rjdunlap/neo/pull/1121)):** levels 4, 5 and 6 together; checks in [VERIFICATION](archive/VERIFICATION-2026-11-02.md#2026-11-02--orchard-rows-levels-46-number-structure-ns1-batch-orchard-rows-1).
 
 - **`orchard-rows`, levels 4–6 (number-structure study slice 2, the build of NS1)** (extends the built game, new-interaction tier; school 4–6, Barnyard unchanged; Counting Cove / Puzzle Peaks as the game already sits): a basket of 12 to 24 saplings and a row-count control; the saplings deal into equal rows at once and the leftover stays in the basket; find a row count with none left over (level 4), plant every different orchard one basket can make (level 5), find the one of three baskets that only makes one long row (level 6, a separate *One long row* button as the answer). [Definition](definitions/orchard-rows.md), [study build slices](deep-dives/subjects/number-structure.md#build-slices-in-order)
 
@@ -1091,9 +1091,9 @@ Proof: new rule: typecheck, rule tests including the brute force on every shape 
 
 ### peekaround-island 1: Truthful support and real choices
 
-- **`peekaround-island`, truthful support and real choices (dive slice 1)** (**claimed 2026-11-03**, branch `claude/peekaround-island-1`; existing-game fix; all bands): a level-scoped how-to, the level-2 hint on the hider when visible, level 4's three shore friends, level 5's pair rule so the turn always names someone, and `lap` dropped from `LEVELS` and the repeated guard. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
+- **`peekaround-island`, truthful support and real choices (dive slice 1)** (**built 2026-11-02**, [PR #1136](https://github.com/rjdunlap/neo/pull/1136); existing-game fix; all bands): a level-scoped how-to, the level-2 hint on the hider when visible, level 4's three shore friends, level 5's pair rule so the turn always names someone, and `lap` dropped from `LEVELS` and the repeated guard. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
 
-Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, `src/content/voice-script.ts`, `docs/GAMES.md`.
 
 Proof: existing-game fix tier: typecheck, rule tests (every request leaving a wrong spot, all three words at level 4, behind in level 5's first pair, the level-2 hint target), one filtered regression play at levels 2 and 5, `fingerdemo` at 5.
 

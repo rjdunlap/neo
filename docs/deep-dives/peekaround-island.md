@@ -18,7 +18,7 @@ A round island seen from the side, a big round tree in the middle, four friend s
 
 **Mistakes and help.** Level 1 cannot be missed. Level 2: tapping a visible friend is a miss ("That is the pig! Where is the duck hiding?"); two misses ring the arrows and say "Tap an arrow to turn". Level 3: a visible friend's tile is a miss and that friend says where it stands; two misses ring the hider's tile. Levels 4–5: a drop on a spot that does not fit is a miss with the word explained; a drop off the island floats home free; two misses ring the fitting free spots. The bot (`peekTouch`) turns, taps or drags to a fitting spot and is rule-tested.
 
-**Known gaps found reading the code** (not fixed here; slice 1):
+**Known gaps found reading the code** (all resolved by slice 1, built 2026-11-02, [PR #1136](https://github.com/rjdunlap/neo/pull/1136): the how-to is level-scoped; level 5 pairs always include *behind* and so are always behind + next to, so the half turn always names someone and level 5 never asks "in front of", only says it; level 4 has three friends and every request leaves a wrong spot; the level-2 hint rings the hider once visible; `lap` dropped; the repeated `hinting` guard was already gone):
 
 - **The how-to is untrue at several levels.** Step 1, "Tap an arrow to turn the island round", is a plain string, so it shows at every level, but levels 3–5 have no arrows (the tree only rustles). The `to: 3` step says "tap the picture", but levels 1–2 tap the friend on the island; only level 3 has pictures. The level-5 step says "tap who is in front now", but the code only says it (`around.now`); nothing is tapped.
 - **Level 5's half turn often names nobody.** After the first pair only two spots are filled; `placed()` names the friend now in front, and skips the line silently when that spot is empty. Working through `nextRequest`, someone stands behind (and so comes to the front) after about 58% of first pairs; in the other ~42% the turn ends with no word.
@@ -105,7 +105,7 @@ Level 6 suits preschool by the research (Level 1 at about 2½), but preschool's 
 
 ## Build slices, in order
 
-1. **Truthful support and real choices** (existing-game fix tier: typecheck, rule tests for every request leaving a wrong spot, all three words at 4, behind in level 5's first pair and the level-2 hint target, one filtered regression play at levels 2 and 5, `fingerdemo` at 5): level-scoped how-to, the level-2 hint on the hider when visible, level 4's three shore friends, level 5's pair rule so the turn always names someone, drop `lap` from `LEVELS` and the repeated guard.
+1. **Built 2026-11-02 ([PR #1136](https://github.com/rjdunlap/neo/pull/1136)). Truthful support and real choices** (existing-game fix tier: typecheck, rule tests for every request leaving a wrong spot, all three words at 4, behind in level 5's first pair and the level-2 hint target, one filtered regression play at levels 2 and 5, `fingerdemo` at 5): level-scoped how-to, the level-2 hint on the hider when visible, level 4's three shore friends, level 5's pair rule so the turn always names someone, drop `lap` from `LEVELS` and the repeated guard.
 2. **Level 5 *Who will be in front?*** (existing level, new tap: typecheck, rule tests, one play of level 5 with one wrong prediction (no miss) and one right, `fingerdemo` at 5): after slice 1.
 3. **Level 6 *Who can't see it?*** (new-interaction tier: typecheck, rule tests, one play of level 6 with one wrong friend (the turn shows it can see), a second for the glow, then the right friend, one portrait screenshot with the picture card, `fingerdemo` at 6): pre-K max 6, school max 6; after slice 1.
 4. **Level 7 *What does the duck see?*** (new-interaction tier: typecheck, rule tests, one play of level 7 with one wrong card and its turn, a second for the glow, then the right card, one portrait screenshot of the three cards, `fingerdemo` at 7, one build for the render textures): after slice 3 (shares the turn-to-viewer helper); pre-K and school max 7.
@@ -115,4 +115,4 @@ Gated: level 6 for preschool (decision 1), Doghouse Directions (decision 2), a l
 
 ## What was built in this session
 
-Nothing: research and ideation only. Links and `git diff --check` ran.
+Research and ideation, then slice 1 (2026-11-02, see the archive note in [COMPLETED-2026-10-09](../archive/COMPLETED-2026-10-09.md#peekaround-island-truthful-support-and-real-choices-peekaround-island-batch-1-2026-11-02)). The research session itself ran only links and `git diff --check`.
