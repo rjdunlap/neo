@@ -138,6 +138,7 @@ import { ruleMachine } from './rule-machine';
 import { shellRows } from './shell-rows';
 import { notAlways } from './not-always';
 import { noticeBoard } from './notice-board';
+import { makerLane } from './maker-lane';
 import { readDo } from './read-do';
 import { lookItUp } from './look-it-up';
 import { whoAmI } from './who-am-i';
@@ -285,6 +286,7 @@ export const GAMES: GameModule[] = [
   ruleMachine,
   notAlways,
   noticeBoard,
+  makerLane,
   puppetStage,
   shellRows,
   readDo,

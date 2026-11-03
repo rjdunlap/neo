@@ -5,6 +5,7 @@
  * the palette; no sepia, no "olde" lettering.
  */
 import { Container, Graphics } from 'pixi.js';
+import { henArt } from '../../art/animals';
 import { cream, ink, shadow, swatch, wood } from '../../art/palette';
 import { finish } from '../../ui/buttons';
 import type { Build, Clue, Figure, Hall, PlanRoom, Room } from './logic';
@@ -136,15 +137,6 @@ function horse(g: Graphics) {
   g.moveTo(44, -124).lineTo(50, -134).lineTo(54, -122).fill(swatch.brown.fill).stroke(line(swatch.brown.line, 3));
 }
 
-function hen(g: Graphics, x: number, y: number, color: number, flip = 1) {
-  g.ellipse(x, y - 18, 22, 16).fill(color).stroke(line(ink, 3));
-  g.circle(x + flip * 16, y - 34, 11).fill(color).stroke(line(ink, 3));
-  g.moveTo(x + flip * 26, y - 34).lineTo(x + flip * 36, y - 30).lineTo(x + flip * 26, y - 28).fill(swatch.orange.fill);
-  g.circle(x + flip * 19, y - 37, 2).fill(ink);
-  for (const d of [-1, 1]) g.circle(x + flip * 16 + d * 3, y - 46, 4).fill(swatch.red.fill);
-  for (const d of [-6, 6]) g.moveTo(x + d, y - 4).lineTo(x + d, y).stroke(line(swatch.orange.fill, 3));
-}
-
 /** A figure standing on (0, 0) with its tool; `working` shows the job (steam, eating, the bell swung, a barrel open, scratching). */
 export function figureArt(figure: Figure, working = false): Container {
   const c = new Container();
@@ -173,9 +165,9 @@ export function figureArt(figure: Figure, working = false): Container {
       if (working) g.ellipse(70, -6, 20, 8).fill(HAY).stroke(line(THATCH.line, 2));
       break;
     case 'hens':
-      hen(g, -30, 0, 0xffffff);
-      hen(g, 20, -6, swatch.brown.light, -1);
-      hen(g, 40, 2, swatch.orange.light);
+      henArt(g, -30, 0, 0xffffff);
+      henArt(g, 20, -6, swatch.brown.light, -1);
+      henArt(g, 40, 2, swatch.orange.light);
       if (working) for (const x of [-46, 52]) g.moveTo(x, -6).lineTo(x - 6, -16).moveTo(x, -6).lineTo(x + 6, -16).stroke(line(STRAW, 3));
       break;
   }
