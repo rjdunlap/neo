@@ -118,6 +118,13 @@ export const TAGS = {
 export type Tag = keyof typeof TAGS;
 export const TAG_IDS = Object.keys(TAGS) as Tag[];
 export const holds = (word: string, tag: Tag) => (TAGS[tag].words as readonly string[]).includes(word);
+/**
+ * Pictures that arguably fit a clue without being worth a riddle of their own (a ladybird is seen in the sky, a snail can
+ * be a pet, you might eat soup with a mug): never the answer, and never the mate or neutral that must fail that clue.
+ */
+export const ARGUABLE: Partial<Record<Tag, readonly string[]>> = { sky: ['bug'], pet: ['snail'], eatwith: ['mug'] };
+/** The word plainly fails the clue: it neither holds the tag nor arguably fits it. */
+export const fails = (word: string, tag: Tag) => !holds(word, tag) && !(ARGUABLE[tag] ?? []).includes(word);
 
 /**
  * One riddle: "it rhymes with {clueWord}" keeps `answer` and `mate`; the meaning clue (`tag`) keeps `answer` and `trap`;
@@ -144,7 +151,7 @@ export function allRiddles(): Omit<Riddle, 'words'>[] {
     for (const clueWord of FAMILIES[fam]) {
       for (const answer of FAMILIES[fam].filter((w) => w !== clueWord)) {
         const mate = FAMILIES[fam].find((w) => w !== clueWord && w !== answer)!;
-        for (const tag of TAG_IDS.filter((t) => holds(answer, t) && !holds(mate, t))) {
+        for (const tag of TAG_IDS.filter((t) => holds(answer, t) && fails(mate, t))) {
           for (const trap of TAGS[tag].words.filter((w) => familyOf(w) !== fam)) out.push({ clueWord, answer, mate, trap, tag });
         }
       }
@@ -161,7 +168,7 @@ const neutrals = (r: Pick<Riddle, 'answer' | 'trap' | 'tag'>) =>
   Object.keys(FAMILIES)
     .filter((f) => f !== familyOf(r.answer) && f !== familyOf(r.trap))
     .flatMap((f) => FAMILIES[f])
-    .filter((w) => !holds(w, r.tag));
+    .filter((w) => fails(w, r.tag));
 
 /** A round of riddles, each with a different answer. Which riddle, its extras and the shelf order come from the seed. */
 export function makeRiddles(plan: RhymePlan, rng: Rng): Riddle[] {

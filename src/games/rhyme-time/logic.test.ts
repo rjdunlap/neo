@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
 import {
-  allRiddles, chipsFor, familyOf, FAMILIES, fitsBoth, guessFor, holds, makeQuestions, makeRiddles, makeTap, mateTags,
+  allRiddles, ARGUABLE, chipsFor, fails, familyOf, FAMILIES, fitsBoth, guessFor, holds, makeQuestions, makeRiddles, makeTap, mateTags,
   PLANS, rhymes, spokenList, TAG_IDS, TAGS, wordToTap,
 } from './logic';
 
@@ -103,6 +103,16 @@ describe('Rhyme Riddles (levels 5-7)', () => {
             expect(familyOf(r.neutral!)).not.toBe(familyOf(r.trap));
           } else expect(r.neutral).toBeUndefined();
         }
+      }
+    }
+  });
+
+  it('never makes an arguable fit the neutral or mate that must fail a clue', () => {
+    for (const r of allRiddles()) expect(fails(r.mate, r.tag)).toBe(true);
+    for (let seed = 1; seed <= 300; seed++) {
+      for (const r of makeRiddles(PLANS[5], new Rng(seed))) {
+        expect(fails(r.neutral!, r.tag)).toBe(true);
+        expect(ARGUABLE[r.tag] ?? []).not.toContain(r.neutral);
       }
     }
   });
