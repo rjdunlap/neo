@@ -111,13 +111,6 @@
 - Not run: levels 1-4 browser play (covered by the seed-identical test), offline check.
 - Open ([DEVICE-CHECKS](DEVICE-CHECKS.md#paint-mixer-levels-56)): shelf colours as six, one-more-of-each, labels as two counts, the circled count without speech, lid zone versus jar.
 
-## 2026-11-02 — Paint Mixer levels 5–6 definition (ratio-proportion RP2)
-
-- [PR #1117](https://github.com/rjdunlap/neo/pull/1117): docs only, [definition](definitions/paint-mixer-5-6.md) for `paint-mixer` levels 5–6 and the paint shelf; routed through READY, batches, backlog, study and packet.
-- Ran: a throwaway script reimplementing the built mix and Oklab distance measured the three-pot mixes and the jar-label distances; `node scripts/check-links.mjs`; `git diff --check`.
-- No code checks (docs only); the numbers are the definition's, not a browser play.
-- Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): at the build, whether six shelf colours read as six on an iPad, whether one-more-of-each is seen, whether a child reads a label as two counts, whether the circled count in a reveal is understood without speech (listed in the definition, not yet added to DEVICE-CHECKS).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
