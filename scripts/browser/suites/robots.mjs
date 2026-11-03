@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
 async function robots() {
-  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 13); level++) {
-    if (level === 11 || level === 12 || level === 13) await page.setViewportSize({ width: 768, height: 1024 });
+  for (let level = Number(process.env.FROM_LEVEL || 1); level <= Number(process.env.TO_LEVEL || 14); level++) {
+    if (level >= 11) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('robot-path', level);
     if (level === 11) {
       await page.evaluate(async () => {
@@ -49,6 +49,40 @@ async function robots() {
       });
       await finished('robot-path');
       log('Robot Path level 12: free watch, two repair misses, slot hint, and fixed program passed');
+      continue;
+    }
+    if (level === 14) {
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        const f = g.fixPlan;
+        if (!f || f.mode !== 'loop' || g.loop !== f.brokenLoop || !g.loopButton.visible) throw new Error('Looped repair program was not built');
+        kit.tapOn(g.play);
+        if (!await kit.until(() => g.watched && !g.running, 15000)) throw new Error('Free first watch did not finish');
+        if (g.misses !== 0 || g.hints !== 0) throw new Error('The first watch was counted');
+        // An unchanged run, then a wrong edit (one more of the first step): two misses and the glow.
+        kit.tapOn(g.play);
+        if (!await kit.until(() => !g.running, 15000)) throw new Error('Unchanged run did not finish');
+        kit.tapOn(g.slotTargets[0]); await kit.sleep(250);
+        kit.tapOn(g.arrows.find((a) => a.dir === g.program[0].dir).button); await kit.sleep(450);
+        kit.tapOn(g.play);
+        if (!await kit.until(() => !g.running, 15000)) throw new Error('Wrong mend did not finish');
+        if (g.misses !== 2 || g.hints !== 1) throw new Error(`Two failed mends gave ${g.misses} misses and ${g.hints} hints`);
+      });
+      await screenshot('robot-path-14');
+      await page.evaluate(async () => {
+        const g = neo.scene.game;
+        // Follow the glow from the wrong edit back to a mended loop.
+        for (let i = 0; i < 30 && !g.done; i++) {
+          if (g.running) { await kit.until(() => !g.running || g.done, 15000); continue; }
+          const target = g.nextHelp();
+          kit.tapOn(target); await kit.sleep(450);
+          if (target === g.play) await kit.until(() => !g.running || g.done, 15000);
+        }
+        if (!g.done) throw new Error('Following the glow did not mend the loop');
+        if (g.misses !== 2 || g.hints !== 1) throw new Error(`Mend accounting was ${g.misses} misses and ${g.hints} hints`);
+      });
+      await finished('robot-path');
+      log('Robot Path level 14: free watch, an unchanged run and a wrong mend, the glow, and the mended loop passed');
       continue;
     }
     if (level === 13) await screenshot('robot-path-13');

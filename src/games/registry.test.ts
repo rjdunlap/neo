@@ -217,7 +217,7 @@ describe('game registry', () => {
     const range = game.levels('preschool');
     expect(range).toEqual({ min: 1, max: 2 });
     expect(game.levels('prek')).toEqual({ min: 1, max: 6 });
-    expect(game.levels('school')).toEqual({ min: 4, max: 13 });
+    expect(game.levels('school')).toEqual({ min: 4, max: 14 });
     expect(playBand(game.bands, 'preschool')).toBe('preschool');
     expect(stepLevel(2, 1, range)).toBe(2);
     expect(nextLevel(2, [

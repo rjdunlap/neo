@@ -17,6 +17,10 @@ export interface RobotPlan { size: number; goal: Cell; rocks: Cell[]; limit: num
 export interface PredictPlan extends RobotPlan { mode: 'steps' | 'counts'; program: Slot[] }
 /** A counted program with one short final run that can be fixed by extending that slot. */
 export interface FixPlan extends RobotPlan { mode: 'counts'; solution: { slots: Slot[]; loop: 1 }; broken: Slot[]; fixSlot: number }
+/** A looped program (level 14) that stops short: one body slot needs one more step, or the loop needs one more turn. */
+export interface MendPlan extends RobotPlan { mode: 'loop'; solution: { slots: Slot[]; loop: number }; broken: Slot[]; brokenLoop: number; fixSlot: number | 'loop' }
+/** A program shown already built, mended after a free first watch (levels 12 and 14). */
+export type RepairPlan = FixPlan | MendPlan;
 export const ROBOT_PLANS: RobotPlan[] = [
   { size: 3, goal: [2, 0], rocks: [], limit: 3, name: 'Two steps straight to the star' },
   { size: 3, goal: [2, 1], rocks: [], limit: 4, name: 'Three steps with a turn' },
@@ -91,6 +95,25 @@ export const FIX_PLANS: FixPlan[] = [
   { size: 5, goal: [4, 4], rocks: [[2, 0]], limit: 2, mode: 'counts', name: 'Add one step to reach the star', solution: { slots: [{ dir: 'down', n: 4 }, { dir: 'right', n: 4 }], loop: 1 }, broken: [{ dir: 'down', n: 4 }, { dir: 'right', n: 3 }], fixSlot: 1 },
   { size: 5, goal: [4, 3], rocks: [[0, 2]], limit: 2, mode: 'counts', name: 'Read the program and add its missing step', solution: { slots: [{ dir: 'right', n: 4 }, { dir: 'down', n: 3 }], loop: 1 }, broken: [{ dir: 'right', n: 4 }, { dir: 'down', n: 2 }], fixSlot: 1 },
   { size: 5, goal: [3, 4], rocks: [[4, 2]], limit: 2, mode: 'counts', name: 'Fix the short program', solution: { slots: [{ dir: 'down', n: 4 }, { dir: 'right', n: 3 }], loop: 1 }, broken: [{ dir: 'down', n: 4 }, { dir: 'right', n: 2 }], fixSlot: 1 },
+];
+
+/**
+ * Level 14: the first watch is free, then one edit reaches the star. Two boards need only one more turn of the loop
+ * (the body is right), one needs one more step in a body slot (the loop is right; another turn walks past the star).
+ */
+export const MEND_PLANS: MendPlan[] = [
+  {
+    size: 5, goal: [4, 4], rocks: [[0, 2], [1, 3], [2, 4], [1, 0], [2, 1], [3, 2], [4, 3]], limit: 2, mode: 'loop', name: 'Mend the loop: it needs one more turn',
+    solution: { slots: [{ dir: 'down', n: 1 }, { dir: 'right', n: 1 }], loop: 4 }, broken: [{ dir: 'down', n: 1 }, { dir: 'right', n: 1 }], brokenLoop: 3, fixSlot: 'loop',
+  },
+  {
+    size: 5, goal: [4, 2], rocks: [[3, 0], [0, 2], [1, 2], [2, 3]], limit: 2, mode: 'loop', name: 'Mend the loop: count how many times it repeats',
+    solution: { slots: [{ dir: 'right', n: 2 }, { dir: 'down', n: 1 }], loop: 2 }, broken: [{ dir: 'right', n: 2 }, { dir: 'down', n: 1 }], brokenLoop: 1, fixSlot: 'loop',
+  },
+  {
+    size: 5, goal: [2, 4], rocks: [[0, 1], [3, 2], [1, 4]], limit: 2, mode: 'loop', name: 'Mend the loop: one step inside it is short',
+    solution: { slots: [{ dir: 'right', n: 1 }, { dir: 'down', n: 2 }], loop: 2 }, broken: [{ dir: 'right', n: 1 }, { dir: 'down', n: 1 }], brokenLoop: 2, fixSlot: 1,
+  },
 ];
 
 export function sameProgram(a: readonly Slot[], b: readonly Slot[]): boolean {
@@ -200,4 +223,22 @@ export function routePress(plan: RobotPlan, program: readonly Slot[], loop: numb
     }
   }
   return nextPress(solution, program, mode, loop, plan.solution?.loop ?? 1);
+}
+
+/** What the repair levels' glow points at next: play, the loop button, a slot to select, an arrow for the selected slot, or clear. */
+export type RepairPress = { play: true } | { loop: true } | { slot: number } | { arrow: Direction } | { clear: true };
+
+/**
+ * The next button toward the authored repair from wherever she has got to, so the glow still leads somewhere after
+ * Clear or a changed slot: an arrow on a selected slot only adds one of the same step or turns it, so a slot past its
+ * count needs Clear.
+ */
+export function repairPress(plan: RepairPlan, program: readonly Slot[], loop: number, selected: number): RepairPress {
+  if (runPath(plan, expand(program, loop)).success) return { play: true };
+  const want = plan.solution.slots;
+  const i = want.findIndex((slot, k) => !program[k] || program[k].dir !== slot.dir || program[k].n !== slot.n);
+  if (i < 0) return plan.mode === 'loop' && loop !== plan.solution.loop ? { loop: true } : { play: true };
+  const have = program[i];
+  if (have && have.dir === want[i].dir && have.n > want[i].n) return { clear: true };
+  return selected === i ? { arrow: want[i].dir } : { slot: i };
 }
