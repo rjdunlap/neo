@@ -2900,7 +2900,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { to: 3, text: 'Tap the green check when the bars are built.' },
       { from: 2, to: 2, text: 'Then tap the bar with the most (or the fewest).' },
       { from: 3, to: 3, text: 'Then answer how many more of one kind there are than another.' },
-      { from: 4, to: 4, text: 'Read the graph, then answer: how many in all, or which two bars are the same.' },
+      { from: 4, to: 4, text: 'Read the graph, then answer: how many in all, or which two bars are the same (tap one bar and it lifts; tap it again to put it back, then tap its match).' },
       { from: 5, to: 5, text: 'The key says each block is two critters. Count the pairs in the meadow, and tap above a bar to add a block for each pair.' },
       { from: 5, to: 5, text: 'Tap the green check when the bars are built.' },
       { from: 5, to: 5, text: 'Then answer how many more critters of one kind there are than another: each block counts for two.' },

@@ -1528,8 +1528,25 @@ async function woodsBatch() {
         if (q.ask === 'most' || q.ask === 'fewest') {
           if (!missed) { const wrong = (q.answer + 1) % counts0.length; await column(wrong); await column(wrong); missed = true; assert.deepEqual(await counts(), [2, 1]); }
           await column(q.answer);
-        } else if (q.ask === 'same') { await column(q.answer[0]); await column(q.answer[1]); }
-        else {
+        } else if (q.ask === 'same') {
+          // A double tap on one bar lifts it, then lowers it: free, with the pick visible meanwhile.
+          const before = await counts();
+          await column(q.answer[0]);
+          assert.equal(await page.evaluate(() => neo.scene.game.firstSame), q.answer[0]);
+          await column(q.answer[0]);
+          assert.equal(await page.evaluate(() => neo.scene.game.firstSame), null);
+          assert.deepEqual(await counts(), before);
+          await column(q.answer[0]); await column(q.answer[1]);
+        } else if (level === 7) {
+          // The taller bar's count is offered; picking it gets its own line, a second wrong answer the why-hint.
+          const g = await page.evaluate(() => { const g = neo.scene.game; return { pads: g.pads.map((p) => p.n), taller: g.graph.counts[g.questions[g.q].a] }; });
+          assert.ok(g.pads.includes(g.taller), 'the taller count is a choice');
+          const other = g.pads.find((x) => x !== g.taller && x !== q.answer);
+          await pad(g.taller); await pad(other);
+          assert.deepEqual(await counts(), [4, 2]);
+          await screenshot('picture-graph-7-why-hint');
+          await pad(q.answer);
+        } else {
           if (!missed) {
             const wrongs = await page.evaluate((a) => neo.scene.game.pads.map((p) => p.n).filter((x) => x !== a), q.answer);
             await pad(wrongs[0]); await pad(wrongs[1]); missed = true; assert.deepEqual(await counts(), [2, 1]);
@@ -1540,7 +1557,7 @@ async function woodsBatch() {
       }
     }
     await finished('picture-graph');
-    assert.deepEqual(await score('picture-graph'), [2, 1]);
+    assert.deepEqual(await score('picture-graph'), level === 7 ? [4, 2] : [2, 1]);
     log(`Picture Graph ${level} (${mode}): bars built block by block, graph checked, questions answered on bars and number pads, misses, glow hint, saved score and sticker passed`);
   }
 

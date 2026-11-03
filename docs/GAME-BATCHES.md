@@ -1123,6 +1123,8 @@ Proof: new-interaction tier: typecheck, rule tests, one play of level 7 with one
 
 ### picture-graph 1: Fair meadows and a visible first pick
 
+Built 2026-11-03, [PR #1138](https://github.com/rjdunlap/neo/pull/1138); [closeout](archive/COMPLETED-2026-10-09.md#picture-graph-fair-meadows-a-visible-first-pick-and-hints-that-show-why-picture-graph-batch-1-2026-11-03). Scope retained for dependency references (batch picture-graph 4 follows it); no longer eligible for dispatch.
+
 - **`picture-graph`, Fair meadows, a visible first pick and hints that show why (dive slice 1)** (existing-game fix; pre-K and school): the placement fixes for levels 1–3 and 7, a visible first pick on every level, hints that show why, the `bear` critter and two seeded backdrops. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
 
 Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/`, `src/content/voice-script.ts`, `docs/GAMES.md`.

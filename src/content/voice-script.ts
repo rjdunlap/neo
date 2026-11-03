@@ -2006,6 +2006,7 @@ export const SCRIPT = {
   'graph.total': ['How many critters in all?'],
   'graph.same': ['Which two bars are the same? Tap them both.'],
   'graph.look': ['Look at the bars again.'],
+  'graph.taller': ['That is how many {a}. How many more {a} than {b}? Look above the {b} bar.'],
   'graph.buildpairs': ['Look at the key: each block is two critters. Count the pairs, and tap above a bar to add a block for each pair. Then tap the green check!'],
   'graph.recountpairs': ['Each block is two {kind}. Count the pairs of {kind} again.'],
   'graph.totalpairs': ['Remember, each block is two critters. How many critters in all?'],

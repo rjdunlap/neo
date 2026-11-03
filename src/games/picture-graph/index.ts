@@ -12,7 +12,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { barsFor, choicesFor, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, planFor, prebuilt, questionsFor, tallyMove, type Graph, type GraphPlan, type Question } from './logic';
+import { barsFor, choicesFor, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, meadowSpots, MEADOWS, planFor, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, type Graph, type GraphPlan, type Question } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
@@ -22,7 +22,9 @@ const LEVELS: BandLevels = {
 const COL_W = 110;
 const BLOCK_H = 34;
 const COLORS: ColorName[] = ['orange', 'teal', 'pink', 'purple'];
-const NAMES: Partial<Record<CritterName, string>> = { duck: 'ducks', pig: 'pigs', bunny: 'bunnies', cat: 'cats', cow: 'cows', dog: 'dogs' };
+const NAMES: Partial<Record<CritterName, string>> = { duck: 'ducks', pig: 'pigs', bunny: 'bunnies', cat: 'cats', cow: 'cows', dog: 'dogs', bear: 'bears' };
+/** How far a bar lifts when it is the first pick of "which two are the same?". */
+const LIFT = 14;
 
 function checkArt(): Graphics {
   return new Graphics().moveTo(-20, 0).lineTo(-6, 16).lineTo(22, -16).stroke({ width: 10, color: 0xffffff, cap: 'round', join: 'round' });
@@ -75,11 +77,13 @@ class PictureGraph implements Game {
   /** Hint: the column whose critters glow, or the column/pad to tap. */
   private hint: number | null = null;
   private clock = 0;
+  /** While the blocks above the shorter bar are counted aloud, the hint stays drawn. */
+  private counting = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.3, clouds: 2, sun: true, seed: 81 }, ctx.view);
+    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.3, clouds: 2, sun: true, seed: ctx.rng.pick(MEADOWS) }, ctx.view);
     this.glow.eventMode = 'none';
     this.meadow.eventMode = 'none';
     this.chart.addChild(this.blocks);
@@ -115,13 +119,19 @@ class PictureGraph implements Game {
   update(dt: number) {
     this.clock += dt;
     const g = this.glow.clear();
-    if (this.hint === null || this.busy) return;
+    if (this.hint === null || (this.busy && !this.counting)) return;
     const pulse = 6 + 2 * Math.sin(this.clock * 5);
     if (this.questions.length && this.q < this.questions.length) {
-      // On questions, the answer glows: a column or a number pad.
+      // On questions, the answer glows: a column (for "same", the answer bar not yet lifted) or a number pad.
+      const q = this.questions[this.q];
       const p = this.pads.find((x) => x.n === this.hint);
-      if (p) g.roundRect(p.node.x - 66, p.node.y - 60, 132, 120, 22).stroke({ width: pulse, color: swatch.yellow.fill });
-      else g.roundRect(this.colX(this.hint) - COL_W / 2 - 8, this.baseY() - 8 * BLOCK_H - 20, COL_W + 16, 8 * BLOCK_H + 90, 20).stroke({ width: pulse, color: swatch.yellow.fill });
+      if (p) {
+        g.roundRect(p.node.x - 66, p.node.y - 60, 132, 120, 22).stroke({ width: pulse, color: swatch.yellow.fill });
+        this.drawWhy(g, q, pulse);
+        return;
+      }
+      const cols = q.ask === 'same' ? sameHint(this.firstSame, q.answer) : [this.hint];
+      for (const i of cols) g.roundRect(this.colX(i) - COL_W / 2 - 8, this.baseY() - 8 * BLOCK_H - 20, COL_W + 16, 8 * BLOCK_H + 90, 20).stroke({ width: pulse, color: swatch.yellow.fill });
       return;
     }
     if (this.phase === 'tally') {
@@ -154,6 +164,20 @@ class PictureGraph implements Game {
   }
 
   destroy() {}
+
+  /** Why the number is what it is: the line from the shorter bar across the taller one and the blocks above it, or every block for "in all". */
+  private drawWhy(g: Graphics, q: Question, pulse: number) {
+    const base = this.baseY();
+    const why = whyBlocks(q, this.bars);
+    for (const b of why.blocks) g.roundRect(this.colX(b.kind) - 44, base - (b.k + 1) * BLOCK_H - 2, 88, BLOCK_H + 4, 8).stroke({ width: pulse * 0.6, color: swatch.yellow.fill });
+    if (!why.line) return;
+    const y = base - why.line.at * BLOCK_H;
+    const x0 = this.colX(why.line.from) - COL_W / 2;
+    const x1 = this.colX(why.line.to) + COL_W / 2;
+    const dir = Math.sign(x1 - x0) || 1;
+    for (let x = x0; dir * (x1 - x) > 0; x += dir * 22) g.moveTo(x, y).lineTo(dir > 0 ? Math.min(x + 12, x1) : Math.max(x - 12, x1), y);
+    g.stroke({ width: 5, color: ink, cap: 'round' });
+  }
 
   private async next() {
     this.busy = true;
@@ -206,19 +230,8 @@ class PictureGraph implements Game {
       });
       return;
     }
-    const spots: { x: number; y: number }[] = [];
-    this.graph.counts.forEach((n, kind) => {
-      for (let k = 0; k < n; k++) {
-        let p = { x: 0, y: 0 };
-        for (let tries = 0; tries < 60; tries++) {
-          // Clear of the number pads and the check on the right.
-          p = { x: this.ctx.rng.range(190, v.w - 230), y: this.ctx.rng.range(170, Math.min(v.h * 0.5, 380)) };
-          if (spots.every((s) => Math.hypot(s.x - p.x, s.y - p.y) > 70)) break;
-        }
-        spots.push(p);
-        add(kind, p.x, p.y);
-      }
-    });
+    // One critter to a slot, so none hides another or stands on the graph.
+    for (const p of meadowSpots(this.graph, v.w, v.h, this.ctx.rng)) add(p.kind, p.x, p.y);
   }
 
   /** One column per kind, with a face underneath; tap above the bar to add, on it to take away. */
@@ -271,7 +284,10 @@ class PictureGraph implements Game {
     this.bars.forEach((n, i) => {
       const x = this.colX(i);
       const sw = swatch[COLORS[i % COLORS.length]];
-      for (let k = 0; k < n; k++) g.roundRect(x - 40, base - (k + 1) * BLOCK_H + 2, 80, BLOCK_H - 4, 6).fill(sw.fill).stroke({ width: 3, color: sw.line });
+      // The first pick of "which two are the same?" lifts and gets an outline, so she sees which one she chose.
+      const lift = this.firstSame === i ? LIFT : 0;
+      for (let k = 0; k < n; k++) g.roundRect(x - 40, base - (k + 1) * BLOCK_H + 2 - lift, 80, BLOCK_H - 4, 6).fill(sw.fill).stroke({ width: 3, color: sw.line });
+      if (lift) g.roundRect(x - 48, base - n * BLOCK_H - 6 - lift, 96, n * BLOCK_H + 12, 10).stroke({ width: 5, color: ink });
     });
     // Number labels down the side.
     // With a key, every row says how many critters the bar stands for up to there (2, 4, 6...).
@@ -371,6 +387,7 @@ class PictureGraph implements Game {
   private askNext(): Promise<void> | void {
     this.hint = null;
     this.wrongs = 0;
+    this.firstSame = null;
     this.clearPads();
     const q = this.questions.length ? this.questions[this.q] : undefined;
     if (!q && prebuilt(this.plan)) {
@@ -380,7 +397,7 @@ class PictureGraph implements Game {
     if (!q) return void this.next();
     const name = (i: number) => NAMES[this.graph.kinds[i]]!;
     if (q.ask === 'more' || q.ask === 'total') {
-      for (const n of choicesFor(q.answer, this.ctx.rng, this.plan.per)) {
+      for (const n of choicesFor(q.answer, this.ctx.rng, this.plan.per, tallerCount(this.plan, this.graph, q))) {
         const node = new Container();
         node.addChild(tile(116, 104, 'white'), label(String(n), 46, ink));
         node.hitArea = new Rectangle(-62, -56, 124, 112);
@@ -407,14 +424,12 @@ class PictureGraph implements Game {
   private async answerColumn(i: number) {
     const q = this.questions[this.q];
     if (q.ask === 'same') {
-      if (this.firstSame === null) {
-        this.firstSame = i;
-        sfx.pop(5);
-        return;
-      }
-      const pair = [this.firstSame, i].sort();
-      this.firstSame = null;
-      if (pair[0] === q.answer[0] && pair[1] === q.answer[1]) return void this.right();
+      const tap = sameTap(this.firstSame, i, q.answer);
+      this.firstSame = tap.first;
+      this.draw();
+      if (tap.result === 'lift') return void sfx.pop(5);
+      if (tap.result === 'lower') return void sfx.pop(2);
+      if (tap.result === 'right') return void this.right();
       return void this.wrong(q.answer[0]);
     }
     if (i === q.answer) return void this.right();
@@ -425,19 +440,31 @@ class PictureGraph implements Game {
     if (this.busy || this.finished) return;
     const q = this.questions[this.q] as Extract<Question, { answer: number }>;
     if (n === q.answer) return void this.right();
-    // Reading the number of blocks and forgetting the key gets its own gentle explanation.
-    return void this.wrong(q.answer, this.plan.per > 1 && n === q.answer / this.plan.per);
+    // Reading the number of blocks and forgetting the key, or the taller bar instead of the difference, each gets its own gentle explanation.
+    if (this.plan.per > 1 && n === q.answer / this.plan.per) return void this.wrong(q.answer, 'blocks');
+    if (q.ask === 'more' && n === tallerCount(this.plan, this.graph, q)) return void this.wrong(q.answer, 'taller');
+    return void this.wrong(q.answer);
   }
 
-  private async wrong(answer: number, blocksOnly = false) {
+  private async wrong(answer: number, why: 'blocks' | 'taller' | null = null) {
     this.busy = true;
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    await this.ctx.say(blocksOnly ? 'graph.blocks' : 'graph.look');
+    const q = this.questions[this.q];
+    const name = (i: number) => NAMES[this.graph.kinds[i]]!;
+    if (why === 'taller' && q.ask === 'more') await this.ctx.say('graph.taller', { a: name(q.a), b: name(q.b) });
+    else await this.ctx.say(why === 'blocks' ? 'graph.blocks' : 'graph.look');
     if (this.wrongs >= 2 && this.hint === null) {
       this.hints++;
       this.hint = answer;
+      // With a key, the blocks above the shorter bar are counted aloud by twos while they glow.
+      if (q.ask === 'more' && this.plan.per > 1) {
+        const extra = whyBlocks(q, this.bars).blocks.length;
+        this.counting = true;
+        for (let k = 1; k <= extra; k++) await this.ctx.say('count', { n: k * this.plan.per });
+        this.counting = false;
+      }
     }
     this.busy = false;
   }

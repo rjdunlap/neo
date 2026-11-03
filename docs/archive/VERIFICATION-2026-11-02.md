@@ -52,3 +52,11 @@
 - `BROWSER_SUITE=thoughtbubbles` (`thought-bubbles-play.mjs`): pre-K level 1 two wrong cards, glow, apple (2/1); portrait school level 2 away story miss and replay, then start place, then a watching story (1/0); level 3 wrong reason, rain, free vase tap, clouds (1/0). `fingerdemo` `FINGER_ONLY=thought-bubbles FINGER_LEVELS=2,3` clean (34.7 s, 17.3 s). The play found the second-miss glow lighting only after the speech; fixed.
 - Not run: offline check (no persistence or navigation change), other suites, any device or child check.
 - Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#thought-bubbles-literature-meaning-study-2026-10-31-levels-13-built-2026-11-02)): the four person and device checks there.
+
+## 2026-11-02 — Maker Lane levels 1–3 (food-fiber-systems FS1)
+
+- [PR #1123](https://github.com/rjdunlap/neo/pull/1123): new game `maker-lane` (Cozy Village; toddler 1, preschool 1–2, pre-K 2–3, school 2–3); sheep and hen art moved to `src/art/animals.ts`. Tested commit `52a6bbd5` on base `3b1d19b2`, `GAME_URL` http://localhost:5952.
+- Ran: `npm run typecheck`; full `npx vitest run` before the review fixes (all passed except the voice-clip and how-to wording tests, both then fixed), then maker-lane and `src/content` (194 tests, 26 new rule tests) after the fixes; River Tablets and Keep House unit tests (109) after the art move; `npm run build`.
+- Browser: `BROWSER_SUITE=makerlane` (toddler level 1 free tap on a maker who is not waving, then the waving makers 0/0; portrait preschool level 2 two refused makers, bubbles, glow, then the right makers 2/1; pre-K level 3 sheep for the sock with replay, dimmed card and the scarf beside the sock, then the cotton plant 1/0), re-run after the review fixes; `fingerdemo` `FINGER_ONLY=maker-lane FINGER_LEVELS=2,3` (21.6 s and 17.6 s, before the review fixes, which did not change the bot).
+- Not run: offline check (no persistence or navigation change); no iPad or device speech check; FS3 (the grown-ups' card) not built.
+- Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md#maker-lane-food-fiber-systems-study-2026-10-31-levels-13-built-2026-11-02)): whether a four-year-old picks the sheep for the sock and the replay changes her next pick, whether the thought bubble tells her which maker comes next, and the agricultural-literacy or textile review of the makers' pictures and lines.
