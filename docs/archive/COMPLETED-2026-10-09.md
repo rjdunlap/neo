@@ -2458,7 +2458,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--habitat-help
 
 [PR #1143](https://github.com/rjdunlap/neo/pull/1143), `claude/rhyme-time-fresh-families`: [dive slice 1](../deep-dives/rhyme-time.md#build-slices-in-order). No new level. Three families, ug (bug, mug, rug), ock (sock, clock, rock) and ail (snail, pail, whale): seven new code-drawn pictures in `pictures.ts`, with `rock` (scaled 1.3) and `pail` reused from `src/art/shore.ts`. Now 38 pictures in fifteen families; the three-word families went from five to eight, so level 4 and the riddles draw on eight. Meaning tags: sock wear; rug and rock sit; bug fly; whale swim; mug and pail hold; clock and snail none. An `ARGUABLE` list (bug for sky, snail for pet, mug for eat-with) keeps arguable fits from ever being the neutral or mate that must fail a clue (`fails()` in `logic.ts`). The riddle pool is re-pinned from 102 to 178; rule tests now 13. The `woods` suite screenshots level 4's hint (`rhyme-time-4-hint`).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--rhyme-time-fresh-families-bug-sock-and-snail-rhyme-time-batch-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--rhyme-time-fresh-families-bug-sock-and-snail-rhyme-time-batch-1).
 
 
 ## Secret Code, fair rows, a hint that keeps up and three doors (secret-code batch 1, 2026-11-03)
@@ -2526,3 +2526,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--peg-garden-flaky-tou
 Branch `claude/bouncy-launch-near-far`, PR #1157: [dive slice 4](../deep-dives/bouncy-launch.md#build-slices-in-order). Two big clouds centre at 0.2 and 0.8 of the strip (moved from the dive's sketch so the shortest pull counts as near and a clamped full pull as far), ±0.2 windows (about 28 pull units) with 0.2 of grass between; a star marks one, and five seeded shots alternate near and far from a seeded start. Voice `launch.near`, `launch.far`, `launch.short`, `launch.long`; a short or long landing is a miss, two misses turn on the preview arc and pull ring and count one hint; no numerals; the bigger-pull journal entry can file. Toddler order 1, 2, 8, 3 (1–8), preschool 2, 8, 3, 4 (2–8), `entryLevels: [8]`; lap, pre-K and school unchanged. Couch and Cloud Hopper are untouched (a test pins `CLOUDS`). The how-to card has level-8 step, finish and note lines.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--bouncy-launch-level-8-near-or-far-dive-slice-4).
+
+## Orchard Rows fresh orchards and baskets (2026-11-03)
+
+Branch `claude/orchard-rows-fresh`, PR #1158: [dive slice 1](../deep-dives/orchard-rows.md#build-slices-in-order), batch `orchard-rows 2`. Level 1 draws 2×2, 2×3, 3×2, 3×3 and 4×2; level 2 draws 2×4, 3×4, 2×5, 4×3 and 5×2, and `makeOrchards` never pairs a shape with its turn in one round (no square); level 3 draws 3×5, 4×5, 5×4, 5×5, 4×4 and 5×3 (4×4 keeps its missing-row choice without the row-count decoy, as 5×5 does); level 4's second basket draws 14, 15, 16, 18, 20 or 21. Every shape stays within 5×5, so the 100-unit row bands are unchanged. No voice, art, how-to or bot change.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--orchard-rows-fresh-orchards-and-baskets-batch-orchard-rows-2).

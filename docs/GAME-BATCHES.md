@@ -1541,6 +1541,8 @@ Proof: new-interaction tier: typecheck, rule tests (no other theme word readable
 
 ### orchard-rows 2: Fresh orchards and baskets
 
+**Built 2026-11-03 ([PR #1158](https://github.com/rjdunlap/neo/pull/1158)):** dive slice 1; checks in [VERIFICATION](VERIFICATION.md#2026-11-03--orchard-rows-fresh-orchards-and-baskets-batch-orchard-rows-2).
+
 - **`orchard-rows`, fresh orchards and baskets (dive slice 1)** (existing-game content): level 1 adds 2×2 and 4×2, level 2 adds 4×3 and 5×2 (never a shape with its turn in one round, no square), level 3 adds 4×4 and 5×3, all within 5×5 so the 100-unit row bands are unchanged; level 4's second basket also draws 14 and 21 (two right row counts each). [Dive](deep-dives/orchard-rows.md#fresh-content-inside-existing-levels)
 
 Files expected: `src/games/orchard-rows/logic.ts`, `logic.test.ts`, `docs/GAMES.md`.
