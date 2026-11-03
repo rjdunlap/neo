@@ -2355,7 +2355,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--drift-cards-
 
 [PR #1122](https://github.com/rjdunlap/neo/pull/1122), batch thought-bubbles 1, [definition](../definitions/thought-bubbles.md). New game `thought-bubbles` (pre-K 1–2, school 1–3; Story Grove, its 18th game, second page). A picture story plays on a code-drawn cottage stage, then she drags one of three picture cards (150 × 170) into a friend's empty thought bubble. Level 1: what the friend reaches for (paw reach and lean, decoy rule). Level 2: where he will look, away or watching stories; first pick counts, a wrong place replays the move with "Was he in the room when it moved?", the friend never walks to a wrong place, and in an away story the mover kindly shows where it went. Level 3: a picture reason card, then tap the clue region (non-clue taps free and named; the third asks again and glows the clue, one hint). Two misses on a story glow the answer (one hint); Show me glows the target (one hint). Music `STYLES.paint`; no save fields, journal entries or couch. Code in `src/games/thought-bubbles/` (25 rule tests: belief model, level-2 compile and rounds over 300 seeds, cue angles, decoy rule, regions, accounting, glow targets, layout at four views, voice ids); voice lines `thought.*` (device speech) with a rendered `game.thought-bubbles` title clip. One fix found in the play: the second-miss glow now lights at once, not after the spoken hint.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-02--thought-bubbles-levels-13-literature-meaning-lm1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--thought-bubbles-levels-13-literature-meaning-lm1).
 
 ## Maker Lane levels 1–3 (food-fiber-systems FS1, maker-lane 1, 2026-11-02)
 

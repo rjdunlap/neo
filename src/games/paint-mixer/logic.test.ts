@@ -1,17 +1,19 @@
 import { describe, it, expect } from 'vitest';
+import snapshotRaw from './levels-1-4.snapshot.json?raw';
 import { Rng } from '../../engine/random';
 import { swatch } from '../../art/palette';
 import {
   POTS, POT_COLOR, PAIRS, LEVELS, CAP, SOLVE_STEPS, planFor, makeRound, total, sizeFor, countsOf, sampleCounts, mix, distance,
   rows, completeBatches, lastIsLoose, check, glowFor, follow, solveFrom, layout, dropAt, emptyCounts,
   batchesFor, maxMultiple, potsFor, nearestMultiple, picture, ratioTable, aimFor, limitFor,
+  TRIPLES, RECIPES, recipeOf, mixName, multipleOf, tableH,
   type Pot, type Sample, type Counts, type Box,
 } from './logic';
 
 const SEEDS = Array.from({ length: 300 }, (_, i) => i * 7919 + 1);
 const same = (a: readonly Pot[], b: readonly Pot[]) => a[0] === b[0] && a[1] === b[1];
 const allSamples = (level: number): Sample[] =>
-  PAIRS.flatMap(({ pair }) => planFor(level).pool.map((c): Sample => ({ pair, counts: [c[0], c[1]] })));
+  PAIRS.flatMap(({ pair }) => planFor(level).pool.map((c): Sample => ({ pots: pair, counts: [c[0], c[1]] })));
 /** Every count vector over the four pots with at most `max` drops. */
 function vectors(max: number): Counts[] {
   const out: Counts[] = [];
@@ -20,7 +22,7 @@ function vectors(max: number): Counts[] {
 }
 /** Drops grouped by pot, the sample's pair first or last. */
 function dropsFor(c: Counts, s: Sample, pairFirst: boolean): Pot[] {
-  const inPair = POTS.filter((p) => p === s.pair[0] || p === s.pair[1]);
+  const inPair = POTS.filter((p) => p === s.pots[0] || p === s.pots[1]);
   const others = POTS.filter((p) => !inPair.includes(p));
   return (pairFirst ? [...inPair, ...others] : [...others, ...inPair]).flatMap((p) => Array<Pot>(c[p]).fill(p));
 }
@@ -57,7 +59,7 @@ describe('colour', () => {
 });
 
 describe('pools, sizes and rounds', () => {
-  it('levels 1-4 are planned', () => expect(LEVELS).toEqual({ school: { min: 1, max: 4 } }));
+  it('levels 1-6 are planned', () => expect(LEVELS).toEqual({ school: { min: 1, max: 6 } }));
   for (const level of [1, 2]) {
     it(`level ${level}: samples come from the pool, sizes are whole multiples within the cap`, () => {
       const plan = planFor(level);
@@ -65,9 +67,9 @@ describe('pools, sizes and rounds', () => {
       for (const seed of SEEDS) {
         const round = makeRound(level, new Rng(seed));
         expect(round).toHaveLength(2);
-        expect(same(round[0].pair, round[1].pair)).toBe(false);
+        expect(same(round[0].pots, round[1].pots)).toBe(false);
         for (const s of round) {
-          expect(PAIRS.some((p) => same(p.pair, s.pair))).toBe(true);
+          expect(PAIRS.some((p) => same(p.pair, s.pots))).toBe(true);
           expect(plan.pool.some((c) => c[0] === s.counts[0] && c[1] === s.counts[1])).toBe(true);
           const size = sizeFor(plan, s);
           expect(size % total(s)).toBe(0);
@@ -82,15 +84,15 @@ describe('pools, sizes and rounds', () => {
 
 describe('rows', () => {
   const samples: Sample[] = [
-    { pair: ['red', 'yellow'], counts: [1, 2] }, { pair: ['blue', 'white'], counts: [2, 1] },
-    { pair: ['red', 'blue'], counts: [1, 1] }, { pair: ['red', 'white'], counts: [1, 3] },
+    { pots: ['red', 'yellow'], counts: [1, 2] }, { pots: ['blue', 'white'], counts: [2, 1] },
+    { pots: ['red', 'blue'], counts: [1, 1] }, { pots: ['red', 'white'], counts: [1, 3] },
   ];
   const all = vectors(12);
   for (const limit of [1, 2, 6, Infinity]) {
     it(`limit ${limit}: in ratio iff a positive whole multiple within the limit; loose and complete follow the shares`, () => {
       for (const s of samples) for (const c of all) {
         const r = rows(s, c, limit);
-        const [pa, pb] = s.pair;
+        const [pa, pb] = s.pots;
         const k = Math.min(completeBatches(s, c), limit);
         expect(r.complete).toBe(k);
         expect(completeBatches(s, c)).toBe(Math.min(Math.floor(c[pa] / s.counts[0]), Math.floor(c[pb] / s.counts[1])));
@@ -111,7 +113,7 @@ describe('rows', () => {
 });
 
 describe('check', () => {
-  const s: Sample = { pair: ['red', 'yellow'], counts: [1, 2] };
+  const s: Sample = { pots: ['red', 'yellow'], counts: [1, 2] };
   const c = (red: number, yellow: number, blue = 0, white = 0): Counts => ({ red, yellow, blue, white });
   it('matches exactly batches x sample; moreSameWay only at level 2 for one copy', () => {
     expect(check(planFor(1), s, c(1, 2)).kind).toBe('match');
@@ -139,7 +141,7 @@ describe('check', () => {
 });
 
 describe('help', () => {
-  const s: Sample = { pair: ['red', 'yellow'], counts: [1, 2] };
+  const s: Sample = { pots: ['red', 'yellow'], counts: [1, 2] };
   it('glow targets', () => {
     expect(glowFor(planFor(1), s, ['red', 'yellow', 'yellow'])).toEqual({ at: 'check' });
     expect(glowFor(planFor(1), s, ['red', 'blue'])).toEqual({ at: 'undo' });
@@ -171,7 +173,7 @@ describe('help', () => {
         expect(steps[steps.length - 1]).toEqual({ at: 'check' });
         for (const g of steps) state = follow(g, state);
         expect(check(plan, s, countsOf(state)).kind).toBe('match');
-        expect(countsOf(state)).toEqual({ ...sampleCounts(s), ...Object.fromEntries(s.pair.map((p, i) => [p, s.counts[i] * plan.batches])) });
+        expect(countsOf(state)).toEqual({ ...sampleCounts(s), ...Object.fromEntries(s.pots.map((p, i) => [p, s.counts[i] * plan.batches])) });
       }
     });
   }
@@ -225,19 +227,19 @@ describe('levels 3-4: pools, rounds and pots', () => {
       for (const seed of SEEDS) {
         const round = makeRound(level, new Rng(seed));
         expect(round).toHaveLength(level === 3 ? 2 : 1);
-        if (level === 3) expect(same(round[0].pair, round[1].pair)).toBe(false);
+        if (level === 3) expect(same(round[0].pots, round[1].pots)).toBe(false);
         for (const s of round) {
-          expect(PAIRS.some((p) => same(p.pair, s.pair))).toBe(true);
+          expect(PAIRS.some((p) => same(p.pair, s.pots))).toBe(true);
           expect(WIDE.some((c) => c[0] === s.counts[0] && c[1] === s.counts[1])).toBe(true);
           expect(s.stray).toBeDefined();
-          expect(s.pair).not.toContain(s.stray);
+          expect(s.pots).not.toContain(s.stray);
           expect(POTS).toContain(s.stray);
           expect([0, 1, 2]).toContain(s.strayAt);
           const pots = potsFor(s);
           expect(pots).toHaveLength(3);
           expect(new Set(pots).size).toBe(3);
           expect(pots).toContain(s.stray);
-          expect(pots.filter((p) => p !== s.stray)).toEqual([s.pair[0], s.pair[1]]);
+          expect(pots.filter((p) => p !== s.stray)).toEqual([s.pots[0], s.pots[1]]);
           expect(pots[s.strayAt!]).toBe(s.stray);
           expect(maxMultiple(s)).toBeGreaterThanOrEqual(2);
           if (level === 3) {
@@ -258,7 +260,7 @@ describe('levels 3-4: pools, rounds and pots', () => {
     for (const level of [1, 2]) for (const seed of SEEDS) for (const s of makeRound(level, new Rng(seed))) {
       expect(s.stray).toBeUndefined();
       expect(s.strayAt).toBeUndefined();
-      expect(potsFor(s)).toEqual([s.pair[0], s.pair[1]]);
+      expect(potsFor(s)).toEqual([s.pots[0], s.pots[1]]);
     }
   });
 });
@@ -268,7 +270,7 @@ describe('levels 3-4: check', () => {
     let best = 0, gap = Infinity;
     for (let k = 1; k <= maxMultiple(s); k++) {
       if (k === done) continue;
-      const d = Math.abs(v[s.pair[0]] - k * s.counts[0]) + Math.abs(v[s.pair[1]] - k * s.counts[1]);
+      const d = Math.abs(v[s.pots[0]] - k * s.counts[0]) + Math.abs(v[s.pots[1]] - k * s.counts[1]);
       if (d < gap) { best = k; gap = d; }
     }
     return best;
@@ -276,7 +278,7 @@ describe('levels 3-4: check', () => {
   /** An independent statement of the rule. */
   function expected(level: number, s: Sample, v: Counts, done: number | null) {
     const plan = planFor(level);
-    const [pa, pb] = s.pair;
+    const [pa, pb] = s.pots;
     const stray = POTS.find((p) => p !== pa && p !== pb && v[p] > 0);
     const a = v[pa], b = v[pb];
     const mult = !stray && a > 0 && a % s.counts[0] === 0 && b % s.counts[1] === 0 && a / s.counts[0] === b / s.counts[1] ? a / s.counts[0] : null;
@@ -292,7 +294,7 @@ describe('levels 3-4: check', () => {
     const times = level === 3 ? batchesFor(plan, s) : nearest(s, v, done);
     const want = [a - times * s.counts[0], b - times * s.counts[1]];
     const i = Math.abs(want[1]) > Math.abs(want[0]) ? 1 : 0;
-    return { kind: 'wrong', pot: s.pair[i], direction: want[i] > 0 ? 'too-many' : 'short' };
+    return { kind: 'wrong', pot: s.pots[i], direction: want[i] > 0 ? 'too-many' : 'short' };
   }
   it('level 3: every count vector gets the rule-stated verdict', () => {
     for (const s of allSamples(3)) for (const v of vectors(12)) {
@@ -300,7 +302,7 @@ describe('levels 3-4: check', () => {
     }
   });
   it('level 3: match exactly at the line, moreSameWay below it, never a miss for them', () => {
-    const s: Sample = { pair: ['red', 'blue'], counts: [1, 2] };
+    const s: Sample = { pots: ['red', 'blue'], counts: [1, 2] };
     const c = (red: number, blue: number, white = 0): Counts => ({ red, yellow: 0, blue, white });
     expect(check(planFor(3), s, c(3, 6)).kind).toBe('match');
     expect(check(planFor(3), s, c(1, 2)).kind).toBe('moreSameWay');
@@ -317,7 +319,7 @@ describe('levels 3-4: check', () => {
     }
   });
   it('level 4: sameWay is not a miss kind, and nearestMultiple follows the summed-difference reading', () => {
-    const s: Sample = { pair: ['red', 'white'], counts: [1, 2] };
+    const s: Sample = { pots: ['red', 'white'], counts: [1, 2] };
     const c = (red: number, white: number): Counts => ({ red, yellow: 0, blue: 0, white });
     expect(check(planFor(4), s, c(2, 4), 2)).toEqual({ kind: 'sameWay' });
     expect(check(planFor(4), s, c(2, 4), 1)).toEqual({ kind: 'match' });
@@ -332,7 +334,7 @@ describe('levels 3-4: check', () => {
     // a tie goes to the smaller multiple: (1,2) vs 1 copy (3,6)? 1x gap 2+4... use midway (2,3): |2-1|+|3-2| = 2, |2-2|+|3-4| = 1
     expect(nearestMultiple(s, c(2, 3))).toBe(2);
     expect(nearestMultiple(s, c(1, 3), null)).toBe(1); // |1-1|+|3-2| = 1 vs |1-2|+|3-4| = 2
-    expect(nearestMultiple({ pair: ['red', 'white'], counts: [1, 1] }, c(3, 0))).toBe(1); // equal gaps 2 and 2? 1x:2+1=3, 2x:1+2=3 -> smaller
+    expect(nearestMultiple({ pots: ['red', 'white'], counts: [1, 1] }, c(3, 0))).toBe(1); // equal gaps 2 and 2? 1x:2+1=3, 2x:1+2=3 -> smaller
   });
 });
 
@@ -373,7 +375,7 @@ describe('levels 3-4: help', () => {
   });
   it('solveFrom (the ghost pour) never throws, even from a bucket of twelve stray drops', () => {
     for (const level of [3, 4]) for (const s of allSamples(level)) {
-      const stray = POTS.find((p) => p !== s.pair[0] && p !== s.pair[1])!;
+      const stray = POTS.find((p) => p !== s.pots[0] && p !== s.pots[1])!;
       const steps = solveFrom(planFor(level), s, Array<Pot>(CAP).fill(stray));
       expect(steps[steps.length - 1]).toEqual({ at: 'check' });
       expect(steps.length).toBeLessThanOrEqual(SOLVE_STEPS);
@@ -389,7 +391,7 @@ describe('levels 3-4: help', () => {
         for (const g of steps) state = follow(g, state);
         expect(check(plan, s, countsOf(state), done).kind).toBe('match');
         const copies = level === 3 ? batchesFor(plan, s) : done === null ? 1 : 2;
-        expect(countsOf(state)).toEqual({ ...emptyCounts(), [s.pair[0]]: copies * s.counts[0], [s.pair[1]]: copies * s.counts[1] });
+        expect(countsOf(state)).toEqual({ ...emptyCounts(), [s.pots[0]]: copies * s.counts[0], [s.pots[1]]: copies * s.counts[1] });
         expect(limitFor(plan, s, emptyCounts(), done)).toBe(level === 3 ? batchesFor(plan, s) : copies);
       }
     }
@@ -437,7 +439,7 @@ describe('levels 3-4: picture and ratio table', () => {
         }
         const top = level === 3 ? batchesFor(plan, s) : maxMultiple(s);
         for (let k = 0; k <= top; k++) {
-          const v = { ...emptyCounts(), [s.pair[0]]: k * s.counts[0], [s.pair[1]]: k * s.counts[1] };
+          const v = { ...emptyCounts(), [s.pots[0]]: k * s.counts[0], [s.pots[1]]: k * s.counts[1] };
           const pic = picture(plan, s, v);
           expect(pic.drops.filter((d) => !d.filled)).toHaveLength(0);
           expect(pic.drops).toHaveLength(k * total(s));
@@ -457,19 +459,19 @@ describe('levels 3-4: picture and ratio table', () => {
           t.values.forEach((val, k) => expect(val).toEqual([(k + 1) * s.counts[0], (k + 1) * s.counts[1]]));
           expect(t.filled).toBe(Math.min(cols, completeBatches(s, v)));
           // a stray drop never fills a column
-          const stray = POTS.find((p) => p !== s.pair[0] && p !== s.pair[1])!;
+          const stray = POTS.find((p) => p !== s.pots[0] && p !== s.pots[1])!;
           expect(ratioTable(plan, s, { ...v, [stray]: v[stray] + 1 }).filled).toBe(t.filled);
         }
         for (let c = 1; c <= cols; c++) {
-          const full = { ...emptyCounts(), [s.pair[0]]: c * s.counts[0], [s.pair[1]]: c * s.counts[1] };
+          const full = { ...emptyCounts(), [s.pots[0]]: c * s.counts[0], [s.pots[1]]: c * s.counts[1] };
           expect(ratioTable(plan, s, full).filled).toBe(c);
-          expect(ratioTable(plan, s, { ...full, [s.pair[0]]: full[s.pair[0]] - 1 }).filled).toBe(c - 1);
-          expect(ratioTable(plan, s, { ...full, [s.pair[1]]: full[s.pair[1]] - 1 }).filled).toBe(c - 1);
+          expect(ratioTable(plan, s, { ...full, [s.pots[0]]: full[s.pots[0]] - 1 }).filled).toBe(c - 1);
+          expect(ratioTable(plan, s, { ...full, [s.pots[1]]: full[s.pots[1]] - 1 }).filled).toBe(c - 1);
         }
         if (level === 3) {
           // drops past the line are loose and never raise it
           const n = batchesFor(plan, s);
-          const over = { ...emptyCounts(), [s.pair[0]]: (n + 1) * s.counts[0], [s.pair[1]]: (n + 1) * s.counts[1] };
+          const over = { ...emptyCounts(), [s.pots[0]]: (n + 1) * s.counts[0], [s.pots[1]]: (n + 1) * s.counts[1] };
           expect(ratioTable(plan, s, over).filled).toBe(n);
         }
       }
@@ -507,6 +509,218 @@ describe('levels 3-4: layout with three pots and the table', () => {
       expect(hit(t, 0, 0, 120, 120)).toBe(false);
       expect(hit(t, v.w - 120, 0, v.w, 120)).toBe(false);
       for (const o of [l.bucket, l.jar, l.undo, l.tip, l.check, ...l.pots]) expect(overlap(t, o), JSON.stringify(o)).toBe(false);
+    });
+  }
+});
+
+// ---- levels 1-4 stay seed-identical after the n-pot refactor ----
+
+describe('levels 1-4: draws unchanged by the n-pot refactor', () => {
+  const snapshot = JSON.parse(snapshotRaw) as Record<string, string[]>;
+  const letter: Record<Pot, string> = { red: 'r', yellow: 'y', blue: 'b', white: 'w' };
+  const encode = (s: Sample) => s.pots.map((p) => letter[p]).join('') + s.counts.join('') + (s.stray ? letter[s.stray] + s.strayAt : '');
+  for (const level of [1, 2, 3, 4]) {
+    it(`level ${level}: makeRound matches the pre-refactor draws for every seed`, () => {
+      expect(snapshot[level]).toHaveLength(SEEDS.length);
+      SEEDS.forEach((seed, i) => {
+        expect(makeRound(level, new Rng(seed)).map(encode).join(' '), `seed ${seed}`).toBe(snapshot[level][i]);
+      });
+    });
+  }
+});
+
+// ---- level 5: three pots ----
+
+describe('level 5: triples and colour', () => {
+  const hex = { peach: 0xfccc97, coral: 0xf9b599, blush: 0xfcd8c3, lavender: 0xbdb4df, rose: 0xdca7c1, lilac: 0xdfcde2 };
+  const mixOf = (pots: readonly Pot[], counts: readonly number[], k = 1) => {
+    const c = emptyCounts();
+    pots.forEach((p, i) => { c[p] = k * counts[i]; });
+    return mix(c)!;
+  };
+  it('six recipes over exactly two triples, none with blue and yellow together', () => {
+    expect(RECIPES.map((r) => r.name)).toEqual(['peach', 'coral', 'blush', 'lavender', 'rose', 'lilac']);
+    expect(TRIPLES).toHaveLength(2);
+    for (const t of TRIPLES) expect(t.includes('blue') && t.includes('yellow')).toBe(false);
+    for (const r of RECIPES) expect(TRIPLES.some((t) => t === r.pots)).toBe(true);
+    const pool = planFor(5).pool.map((c) => c.join(':')).sort();
+    expect(pool).toEqual(['1:1:2', '1:2:1', '2:1:1']);
+  });
+  it('every three-pot set avoiding blue + yellow is one of the two triples', () => {
+    const sets: Pot[][] = [];
+    for (let a = 0; a < 4; a++) for (let b = a + 1; b < 4; b++) for (let c = b + 1; c < 4; c++) sets.push([POTS[a], POTS[b], POTS[c]]);
+    const ok = sets.filter((s) => !(s.includes('blue') && s.includes('yellow')));
+    expect(ok).toHaveLength(TRIPLES.length);
+  });
+  it('mix(k x recipe) equals mix(recipe) for every k that fits under the cap', () => {
+    for (const r of RECIPES) {
+      const n = r.counts.reduce((a, b) => a + b, 0);
+      for (let k = 1; k * n <= CAP; k++) expect(mixOf(r.pots, r.counts, k), `${r.name} x${k}`).toBe(mixOf(r.pots, r.counts));
+    }
+  });
+  it('each recipe mixes to the definition colour', () => {
+    for (const r of RECIPES) expect('#' + mixOf(r.pots, r.counts).toString(16).padStart(6, '0'), r.name).toBe('#' + hex[r.name].toString(16));
+  });
+  it('recipes within a triple are at least 5 apart', () => {
+    for (const t of TRIPLES) {
+      const rs = RECIPES.filter((r) => r.pots === t);
+      for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++)
+        expect(distance(mixOf(t, rs[i].counts), mixOf(t, rs[j].counts)), `${rs[i].name}/${rs[j].name}`).toBeGreaterThanOrEqual(5);
+    }
+  });
+  it('one-more-of-each is at least 1.0 away; leaving the third pot out at least 6', () => {
+    for (const r of RECIPES) {
+      const base = mixOf(r.pots, r.counts);
+      expect(distance(base, mixOf(r.pots, r.counts.map((c) => c + 1))), r.name).toBeGreaterThanOrEqual(1.0);
+      // The definition's measured case is the third pot (white) left out (1:2:0).
+      const left = r.counts.map((c, i) => (i === 2 ? 0 : c));
+      expect(distance(base, mixOf(r.pots, left)), `${r.name} without white`).toBeGreaterThanOrEqual(6);
+    }
+  });
+  it('recipeOf and mixName name the six recipes', () => {
+    for (const r of RECIPES) {
+      const s: Sample = { pots: r.pots, counts: [...r.counts], batches: 2 };
+      expect(recipeOf(s)?.name).toBe(r.name);
+      expect(mixName(s)).toBe(r.name);
+    }
+    expect(recipeOf({ pots: ['red', 'yellow'], counts: [1, 2] })).toBeNull();
+  });
+});
+
+describe('level 5: rounds', () => {
+  const plan = planFor(5);
+  const rounds = SEEDS.map((seed) => makeRound(5, new Rng(seed)));
+  it('is a line plan on the school window 1-6', () => {
+    expect(plan.kind).toBe('line');
+    expect(LEVELS.school).toEqual({ min: 1, max: 6 });
+  });
+  it('same seed, same round', () => {
+    for (const seed of SEEDS.slice(0, 40)) expect(makeRound(5, new Rng(seed))).toEqual(makeRound(5, new Rng(seed)));
+  });
+  it('two buckets from different triples, no stray, line of 8 or 12 (both occur)', () => {
+    const lines = new Set<number>();
+    const triples = new Set<string>();
+    for (const r of rounds) {
+      expect(r).toHaveLength(2);
+      expect(r[0].pots).not.toEqual(r[1].pots);
+      for (const s of r) {
+        expect(TRIPLES.some((t) => t === s.pots)).toBe(true);
+        expect(s.stray).toBeUndefined();
+        expect(potsFor(s)).toEqual([...s.pots]);
+        expect(total(s)).toBe(4);
+        expect(recipeOf(s)).not.toBeNull();
+        expect([2, 3]).toContain(s.batches);
+        const line = sizeFor(plan, s);
+        expect([8, 12]).toContain(line);
+        expect(line).toBeLessThanOrEqual(CAP);
+        lines.add(line);
+        triples.add(s.pots.join());
+      }
+    }
+    expect([...lines].sort((a, b) => a - b)).toEqual([8, 12]);
+    expect(triples.size).toBe(2);
+  });
+  it('every recipe turns up across the seeds', () => {
+    const seen = new Set(rounds.flat().map((s) => recipeOf(s)!.name));
+    expect(seen.size).toBe(6);
+  });
+  it('rows has no gaps or loose drops iff the counts are a positive multiple', () => {
+    for (const r of RECIPES) for (const batches of [2, 3]) {
+      const s: Sample = { pots: r.pots, counts: [...r.counts], batches };
+      for (let a = 0; a <= 12; a++) for (let b = 0; a + b <= 12; b++) for (let c = 0; a + b + c <= 12; c++) {
+        const counts = emptyCounts();
+        counts[r.pots[0]] = a; counts[r.pots[1]] = b; counts[r.pots[2]] = c;
+        const rw = rows(s, counts, batches);
+        const clean = rw.loose.length === 0 && rw.rows.every((row) => row.every((p) => p.filled));
+        const k = multipleOf(s, counts);
+        // Within the line, clean and non-empty iff a positive multiple (a multiple past the line is loose).
+        const expected = k !== null && k >= 1 && k <= batches;
+        expect(clean && rw.rows.length > 0, `${r.name} ${a}/${b}/${c} line ${batches}`).toBe(expected);
+      }
+    }
+  });
+  it('check names the farthest pot, ties to the earliest, and matches only at the line', () => {
+    for (const r of RECIPES) for (const batches of [2, 3]) {
+      const s: Sample = { pots: r.pots, counts: [...r.counts], batches };
+      for (let a = 0; a <= 12; a++) for (let b = 0; a + b <= 12; b++) for (let c = 0; a + b + c <= 12; c++) {
+        const counts = emptyCounts();
+        counts[r.pots[0]] = a; counts[r.pots[1]] = b; counts[r.pots[2]] = c;
+        const v = check(plan, s, counts);
+        const k = multipleOf(s, counts);
+        if (k === batches) { expect(v.kind).toBe('match'); continue; }
+        if (k !== null && k < batches) { expect(v.kind).toBe('moreSameWay'); continue; }
+        expect(v.kind).toBe('wrong');
+        if (v.kind !== 'wrong') continue;
+        if (a + b + c === 0) { expect(v.pot).toBe(r.pots[0]); expect(v.direction).toBe('short'); continue; }
+        const gaps = [a, b, c].map((n, i) => Math.abs(n - batches * r.counts[i]));
+        const worst = gaps.indexOf(Math.max(...gaps));
+        expect(v.pot, `${r.name} ${a}/${b}/${c}`).toBe(r.pots[worst]);
+        expect(v.direction).toBe([a, b, c][worst] > batches * r.counts[worst] ? 'too-many' : 'short');
+      }
+    }
+  });
+  it('a used pot left out is named; the unused fourth pot is a stray', () => {
+    const s: Sample = { pots: TRIPLES[0], counts: [1, 2, 1], batches: 2 };
+    const c = emptyCounts(); c.blue = 1;
+    expect(check(plan, s, c)).toEqual({ kind: 'wrong', pot: 'blue', direction: 'stray' });
+  });
+  it('following the glow from every reachable bucket (all four pots, up to 12 drops) reaches a match', () => {
+    for (const r of RECIPES) for (const batches of [2, 3]) {
+      const s: Sample = { pots: r.pots, counts: [...r.counts], batches };
+      for (const c of vectors(CAP)) {
+        const grouped = POTS.flatMap((p) => Array<Pot>(c[p]).fill(p));
+        for (const drops of [grouped, [...grouped].reverse()]) {
+          const steps = solveFrom(plan, s, drops);
+          expect(steps.length).toBeLessThanOrEqual(SOLVE_STEPS);
+          expect(steps[steps.length - 1]).toEqual({ at: 'check' });
+          let state = drops;
+          for (const g of steps) state = follow(g, state);
+          expect(check(plan, s, countsOf(state)).kind).toBe('match');
+        }
+      }
+    }
+  });
+  it('the ratio table has a column per batch with three-pot values', () => {
+    for (const s of rounds.flat()) {
+      const t = ratioTable(plan, s, emptyCounts());
+      expect(t.columns).toBe(s.batches);
+      expect(t.values[t.columns - 1]).toEqual(s.counts.map((c) => c * s.batches!));
+    }
+  });
+});
+
+describe('level 5: layout with a three-pot table', () => {
+  const views = [{ w: 1024, h: 768 }, { w: 768, h: 1024 }, { w: 1024, h: 700 }, { w: 700, h: 1024 }];
+  const hit = (a: Box, x0: number, y0: number, x1: number, y1: number) => a.x - a.w / 2 < x1 && a.x + a.w / 2 > x0 && a.y - a.h / 2 < y1 && a.y + a.h / 2 > y0;
+  const overlap = (a: Box, b: Box) => hit(a, b.x - b.w / 2, b.y - b.h / 2, b.x + b.w / 2, b.y + b.h / 2);
+  for (const v of views) {
+    it(`${v.w}x${v.h}: three pots and the four-row table fit and stay clear`, () => {
+      const l = layout(v, 3, 3);
+      expect(l.pots).toHaveLength(3);
+      expect(l.table.h).toBe(tableH(3));
+      for (const b of [l.undo, l.tip, l.check, ...l.pots, l.jar]) {
+        expect(b.w).toBeGreaterThanOrEqual(100);
+        expect(b.h).toBeGreaterThanOrEqual(100);
+        expect(b.x - b.w / 2).toBeGreaterThanOrEqual(0);
+        expect(b.y - b.h / 2).toBeGreaterThanOrEqual(0);
+        expect(b.x + b.w / 2).toBeLessThanOrEqual(v.w);
+        expect(b.y + b.h / 2).toBeLessThanOrEqual(v.h);
+        expect(hit(b, 0, v.h - 170, 170, v.h)).toBe(false);
+        expect(hit(b, 0, 0, 120, 120)).toBe(false);
+        expect(hit(b, v.w - 120, 0, v.w, 120)).toBe(false);
+      }
+      for (const o of [l.undo, l.tip, l.check, ...l.pots]) expect(overlap(l.bucket, o)).toBe(false);
+      for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++) expect(overlap(l.pots[i], l.pots[j])).toBe(false);
+      const t = l.table;
+      expect(t.x - t.w / 2).toBeGreaterThanOrEqual(0);
+      expect(t.y - t.h / 2).toBeGreaterThanOrEqual(0);
+      expect(t.x + t.w / 2).toBeLessThanOrEqual(v.w);
+      expect(t.y + t.h / 2).toBeLessThanOrEqual(v.h);
+      expect(hit(t, 0, v.h - 170, 170, v.h)).toBe(false);
+      expect(hit(t, 0, 0, 120, 120)).toBe(false);
+      expect(hit(t, v.w - 120, 0, v.w, 120)).toBe(false);
+      for (const o of [l.bucket, l.jar, l.undo, l.tip, l.check, ...l.pots]) expect(overlap(t, o), JSON.stringify(o)).toBe(false);
+      expect(l.portrait).toBe(v.h > v.w);
     });
   }
 });

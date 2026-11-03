@@ -3,18 +3,26 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, launch, finished, screenshot, log }) {
 async function paintMixerPlay() {
   const score = () => page.evaluate(() => { const r = kit.store.stats('paint-mixer').history.at(-1); return [r.misses, r.hints]; });
-  const state = () => page.evaluate(() => { const s = neo.scene.game.state; return { bucket: s.bucket, drops: s.drops, misses: s.misses, hints: s.hints, glow: s.glow, size: s.size, pair: s.sample.pair, counts: s.sample.counts, busy: s.busy }; });
+  const state = () => page.evaluate(() => { const s = neo.scene.game.state; return { bucket: s.bucket, drops: s.drops, misses: s.misses, hints: s.hints, glow: s.glow, size: s.size, pair: s.sample.pots, counts: s.sample.counts, busy: s.busy }; });
   const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 40000 }); await page.waitForTimeout(150); };
   const pour = async (pot) => { await page.evaluate((pot) => kit.tapOn(neo.scene.game.potNodes.get(pot)), pot); await page.waitForTimeout(220); };
   const button = async (kind) => { await page.evaluate((kind) => kit.tapOn(neo.scene.game.buttons.get(kind)), kind); await page.waitForTimeout(220); };
-  const pourRow = async (s, times) => { for (let k = 0; k < times; k++) { for (let i = 0; i < s.counts[0]; i++) await pour(s.pair[0]); for (let i = 0; i < s.counts[1]; i++) await pour(s.pair[1]); } };
+  const pourRow = async (s, times) => { for (let k = 0; k < times; k++) for (let p = 0; p < s.pair.length; p++) for (let i = 0; i < s.counts[p]; i++) await pour(s.pair[p]); };
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+  // PAINT_LEVELS=5,6 runs only those levels (default 1–6).
+  const levels = process.env.PAINT_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6];
+  if (levels.some((n) => n >= 1 && n <= 4)) await levelsOneToFour();
+  if (levels.includes(5)) await levelFive();
+  if (levels.includes(6)) await levelSix();
+
+  async function levelsOneToFour() {
+    let s, f;
 
   // Level 1, bucket 1: an empty Check is a miss (pot A short); one drop short of the row is a second miss and lights the glow (one hint);
   // following the glow (the missing pot, then Check) matches. Bucket 2: the row straight through; two buckets end the round.
   await launch('paint-mixer', 1, 'Mia', 'school');
   await settle();
-  let s = await state();
+  s = await state();
   assert.equal(s.bucket, 0);
   assert.equal(s.size, s.counts[0] + s.counts[1], 'level 1 holds one row of the sample');
   await button('check');
@@ -84,7 +92,7 @@ async function paintMixerPlay() {
   await launch('paint-mixer', 3, 'Mia', 'school');
   await settle();
   s = await state();
-  let f = await full();
+  f = await full();
   const lineBatches = s.counts[0] + s.counts[1] >= 5 ? 2 : 3;
   assert.equal(f.pots.length, 3, 'three pots at level 3');
   assert.ok(f.stray && !s.pair.includes(f.stray) && f.pots.includes(f.stray), 'the stray pot is on screen and not in the pair');
@@ -145,6 +153,100 @@ async function paintMixerPlay() {
   await finished('paint-mixer');
   assert.deepEqual(await score(), [0, 0], 'level 4 saved 0 misses, 0 hints');
   log('Paint Mixer 3–4: stray pot, one row more the same way (no miss), a stray Check (1/0), the table filling to the line, portrait second bucket; level 4 one row then the same amount (no miss) then two rows (0/0); passed');
+  }
+
+  // Level 5, bucket 1: three pots and a three-row table; one row plus an extra drop is one miss; Undo, rows to the line, match.
+  // Bucket 2 (the other triple) in portrait, straight. Both recipes are filed on the journal's paint shelf.
+  async function levelFive() {
+    const more = () => page.evaluate(() => { const s = neo.scene.game.state; return { pots: s.pots, batches: s.sample.batches, table: s.table, size: s.size }; });
+    await page.evaluate(() => { kit.store.data.journal.found = kit.store.data.journal.found.filter((id) => !id.startsWith('paint-mixer:')); });
+    await launch('paint-mixer', 5, 'Mia', 'school');
+    await settle();
+    let s = await state();
+    let m = await more();
+    assert.equal(s.pair.length, 3, 'a three-pot sample');
+    assert.deepEqual(m.pots, s.pair, 'the three pots on screen, no stray');
+    assert.ok([2, 3].includes(m.batches), 'the line is two or three batches');
+    assert.equal(m.size, m.batches * 4, 'the line is 8 or 12 drops');
+    assert.deepEqual(m.table, { columns: m.batches, filled: 0 }, 'an empty three-row table');
+    const first = s.pair.join();
+    await pourRow(s, 1);
+    await pour(s.pair[1]);
+    await button('check');
+    s = await state();
+    assert.deepEqual([s.misses, s.hints], [1, 0], 'one row and an extra drop is one miss');
+    await button('undo');
+    m = await more();
+    assert.equal(m.table.filled, 1, 'Undo leaves one complete batch');
+    await pourRow(s, m.batches - 1);
+    await screenshot('paint-mixer-5-landscape');
+    await button('check');
+    await settle();
+    s = await state();
+    assert.equal(s.bucket, 1, 'the line matched; the second bucket is up');
+    assert.notEqual(s.pair.join(), first, 'the second bucket uses the other triple');
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+    m = await more();
+    await pourRow(s, m.batches);
+    await screenshot('paint-mixer-5-portrait');
+    await button('check');
+    await finished('paint-mixer');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+    assert.deepEqual(await score(), [1, 0], 'level 5 saved 1 miss, 0 hints');
+    const shelf = await page.evaluate(() => kit.store.data.journal.found.filter((id) => id.startsWith('paint-mixer:')));
+    assert.equal(shelf.length, 2, `both matched recipes are on the paint shelf (${shelf})`);
+    log(`Paint Mixer 5: three pots, a 4-row table, one extra drop (1/0), Undo and rows to the line, the other triple in portrait; shelf ${shelf.join(', ')}; passed`);
+  }
+
+  // Level 6, case 1: one non-matching jar chosen and Checked twice (two misses); the second opens the named jar's lid and its
+  // reveal (one hint), portrait screenshot; then the right set. Case 2: the right set straight.
+  async function levelSix() {
+    const jars = () => page.evaluate(() => { const s = neo.scene.game.state; return s; });
+    const tapJar = async (i) => { await page.evaluate((i) => kit.tapOn(neo.scene.game.jarNodes[i]), i); await page.waitForTimeout(250); };
+    const check = async () => { await page.evaluate(() => kit.tapOn(neo.scene.game.check)); await page.waitForTimeout(300); };
+    const fixSet = async () => { const j = await jars(); for (let i = 0; i < 4; i++) if (j.chosen[i] !== j.matching[i]) await tapJar(i); };
+    await launch('paint-mixer', 6, 'Mia', 'school');
+    await settle();
+    let j = await jars();
+    assert.equal(j.labels.length, 4, 'four jars');
+    assert.ok(j.matching.some(Boolean) && !j.matching.every(Boolean), 'some jars match and some do not');
+    assert.ok(j.opened.every((o) => !o), 'every lid is closed');
+    await check();
+    j = await jars();
+    assert.deepEqual([j.misses, j.hints], [0, 0], 'Check with nothing chosen is not a miss');
+    const wrong = j.matching.indexOf(false);
+    await tapJar(wrong);
+    j = await jars();
+    assert.equal(j.chosen[wrong], true, 'tapping the jar body chose it (not its lid)');
+    assert.equal(j.opened[wrong], false, 'and left its lid closed');
+    await check();
+    j = await jars();
+    assert.deepEqual([j.misses, j.hints], [1, 0], 'a wrong set is one miss');
+    await page.waitForTimeout(2500);
+    await check();
+    await page.waitForFunction(() => neo.scene.game.state.hints === 1, null, { timeout: 15000 });
+    j = await jars();
+    assert.deepEqual([j.misses, j.hints], [2, 1], 'the second miss opens a lid: one hint');
+    assert.ok(j.shown !== null && j.opened[j.shown], 'the named jar is open and its reveal shows');
+    assert.equal(j.shown, j.matching.findIndex((m, i) => m !== j.chosen[i]), 'the leftmost wrong jar is the named one');
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(900);
+    await screenshot('paint-mixer-6-portrait-lid');
+    await fixSet();
+    j = await jars();
+    assert.equal(j.glow?.at, 'check', 'the glow ends on Check once the set is right');
+    await check();
+    await settle();
+    j = await jars();
+    assert.equal(j.case, 1, 'the second case is up');
+    assert.deepEqual([j.opened.some(Boolean), j.shown, j.glow], [false, null, null], 'lids, reveal and glow start again');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(600);
+    await fixSet();
+    await screenshot('paint-mixer-6-landscape');
+    await check();
+    await finished('paint-mixer');
+    assert.deepEqual(await score(), [2, 1], 'level 6 saved 2 misses, 1 hint');
+    log('Paint Mixer 6: empty Check (free), a wrong jar twice (2 misses), the named lid opened with its reveal (1 hint), the right set; second case straight; passed');
+  }
 }
 return { paintMixerPlay };
 }

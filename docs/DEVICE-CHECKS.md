@@ -92,6 +92,14 @@
 - [ ] Levels 3–4 (2026-11-01): on an iPad, do the ratio table and the dashed fill line read, and how is "for every 1 red, 2 yellow" spoken by device speech?
 - [ ] Does the stray pot read as a trick or as a choice, and is the second level-3 bucket a chore?
 
+## Paint Mixer levels 5–6
+
+- [ ] On an iPad: do the six paint-shelf colours (peach, coral, blush, lavender, rose, lilac) read as six?
+- [ ] Is a three-pot one-more-of-each step seen at all at level 5?
+- [ ] Does a child read a jar label as two counts (level 6)?
+- [ ] Is the circled count in a lid reveal understood without speech?
+- [ ] Is the lid tap zone versus choosing the jar clear to a child's finger?
+
 ## Water Road levels 1–3
 
 - [ ] Watch a two-year-old at level 1: does she keep tapping until the ring closes, and does she find the frame to pull?
