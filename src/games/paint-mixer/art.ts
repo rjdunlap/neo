@@ -2,7 +2,7 @@
 import { Container, Graphics } from 'pixi.js';
 import { ink, swatch } from '../../art/palette';
 import { label } from '../../ui/text';
-import { BUCKET, DROP, JAR_H, JAR_W, POT_COLOR, POT_H, POT_W, TABLE_CELL, TABLE_H, TABLE_LABEL, TABLE_ROW, type Pot, type Table } from './logic';
+import { BUCKET, DROP, JAR_H, JAR_W, POT_COLOR, POT_H, POT_W, RECIPES, TABLE_CELL, TABLE_LABEL, TABLE_ROW, mix, tableH, type Pot, type ShelfColour, type Table } from './logic';
 
 const line = (pot: Pot) => swatch[pot].line;
 const TIN = 0xbfc6d2, TIN_LINE = 0x6f7a8c, TIN_LIGHT = 0xe3e8f0;
@@ -120,11 +120,12 @@ export function button(kind: 'undo' | 'tip' | 'check', w: number, h: number): Co
 
 /**
  * The ratio table, centred on (0, 0): a header row of batch numbers, then a row per pot with its mark, each column holding
- * `k × sample` once batch `k` is complete and an empty cell before it. `star` marks level 4's first way.
+ * `k × sample` once batch `k` is complete and an empty cell before it. `star` marks level 4's first way; `glow` rings a column
+ * (level 6's reveal).
  */
-export function ratioTable(t: Table, pair: readonly [Pot, Pot], star: number | null): Container {
+export function ratioTable(t: Table, pots: readonly Pot[], star: number | null, glow: number | null = null): Container {
   const c = new Container();
-  const w = TABLE_LABEL + t.columns * TABLE_CELL, h = TABLE_H;
+  const w = TABLE_LABEL + t.columns * TABLE_CELL, h = tableH(pots.length);
   const left = -w / 2, top = -h / 2;
   c.addChild(new Graphics().roundRect(left - 8, top - 8, w + 16, h + 16, 16).fill({ color: 0xffffff, alpha: 0.88 }).stroke({ width: 3, color: TIN_LINE, alpha: 0.6 }));
   const g = new Graphics();
@@ -132,15 +133,16 @@ export function ratioTable(t: Table, pair: readonly [Pot, Pot], star: number | n
   for (let k = 0; k < t.columns; k++) {
     const x = left + TABLE_LABEL + k * TABLE_CELL + TABLE_CELL / 2;
     if (star === k + 1) c.addChild(starAt(x, top + TABLE_ROW / 2));
+    if (glow === k + 1) c.addChild(new Graphics().roundRect(x - TABLE_CELL / 2 - 2, top + 2, TABLE_CELL + 4, h - 4, 10).stroke({ width: 5, color: swatch.yellow.fill }));
     const head = label(String(k + 1), 20, ink);
     head.alpha = 0.55;
     head.position.set(x, top + TABLE_ROW / 2);
     c.addChild(head);
     const full = k < t.filled;
-    for (const i of [0, 1] as const) {
+    for (let i = 0; i < pots.length; i++) {
       const y = top + TABLE_ROW * (i + 1) + TABLE_ROW / 2;
       g.roundRect(x - TABLE_CELL / 2 + 3, y - TABLE_ROW / 2 + 3, TABLE_CELL - 6, TABLE_ROW - 6, 8);
-      if (full) g.fill({ color: swatch[pair[i]].light }).stroke({ width: 2, color: line(pair[i]) });
+      if (full) g.fill({ color: swatch[pots[i]].light }).stroke({ width: 2, color: line(pots[i]) });
       else g.stroke({ width: 2, color: ink, alpha: 0.2 });
       if (full) {
         const n = label(String(t.values[k][i]), 22, ink);
@@ -149,7 +151,7 @@ export function ratioTable(t: Table, pair: readonly [Pot, Pot], star: number | n
       }
     }
   }
-  pair.forEach((pot, i) => {
+  pots.forEach((pot, i) => {
     const d = drop(pot);
     d.scale.set(0.9);
     d.position.set(left + TABLE_LABEL / 2, top + TABLE_ROW * (i + 1) + TABLE_ROW / 2);
@@ -176,4 +178,71 @@ export function fillLine(y: number): Graphics {
   const g = new Graphics();
   for (let x = -118; x < 118; x += 22) g.moveTo(x, y).lineTo(Math.min(x + 13, 118), y);
   return g.stroke({ width: 5, color: ink, alpha: 0.55, cap: 'round' });
+}
+
+/** What a level-6 jar shows: its label's counts, whether its lid is open, which count a reveal circles, and its glows. */
+export interface LabelJarLook {
+  pots: readonly Pot[];
+  label: readonly [number, number];
+  /** The label's mixed colour, seen only once the lid is open. */
+  color: number;
+  open: boolean;
+  chosen: boolean;
+  /** A reveal's circled count (0 the first, 1 the second), or null. */
+  circle: 0 | 1 | null;
+  /** A matching reveal rings the label. */
+  fits: boolean;
+}
+
+/**
+ * A level-6 jar, 150 × 190, centred on (0, 0): frosted glass with a lid until opened, a paper label of two rows (each pot's
+ * mark and its count, 36-unit numerals, as the table's columns read), a green outline when chosen.
+ */
+export function labelJar(look: LabelJarLook): Container {
+  const c = new Container();
+  const w = JAR_W, h = JAR_H;
+  const g = new Graphics()
+    .ellipse(0, h * 0.48, w * 0.4, 8).fill({ color: ink, alpha: 0.12 })
+    .roundRect(-w * 0.42, -h * 0.3, w * 0.84, h * 0.76, 26).fill({ color: 0xffffff, alpha: 0.5 }).stroke({ width: 5, color: look.chosen ? swatch.green.line : TIN_LINE })
+    .roundRect(-w * 0.36, -h * 0.24, w * 0.72, h * 0.64, 20).fill(look.open ? look.color : 0xe6e1d8);
+  if (!look.open) g.roundRect(-w * 0.36, -h * 0.24, w * 0.72, h * 0.64, 20).fill({ color: 0xffffff, alpha: 0.35 });
+  c.addChild(g);
+  if (look.chosen) c.addChild(new Graphics().roundRect(-w / 2 - 4, -h / 2 - 4, w + 8, h + 8, 30).stroke({ width: 7, color: swatch.green.fill }));
+  const lid = new Graphics()
+    .roundRect(-w * 0.3, -h * 0.1, w * 0.6, h * 0.2, 10).fill(swatch.brown.fill).stroke({ width: 5, color: swatch.brown.line })
+    .roundRect(-16, -h * 0.1 - 12, 32, 14, 6).fill(swatch.brown.line);
+  if (look.open) { lid.position.set(w * 0.34, -h * 0.5); lid.rotation = 0.55; } else lid.position.set(0, -h * 0.36);
+  c.addChild(lid);
+  const tag = new Graphics().roundRect(-50, -12, 100, 96, 14).fill(0xffffff).stroke({ width: 3, color: look.fits ? swatch.yellow.line : TIN_LINE, alpha: look.fits ? 1 : 0.6 });
+  if (look.fits) tag.roundRect(-55, -17, 110, 106, 18).stroke({ width: 6, color: swatch.yellow.fill });
+  c.addChild(tag);
+  look.pots.slice(0, 2).forEach((pot, i) => {
+    const y = 12 + i * 46;
+    const m = drop(pot);
+    m.position.set(-24, y);
+    c.addChild(m);
+    const n = label(String(look.label[i]), 36, ink);
+    n.position.set(20, y);
+    c.addChild(n);
+    if (look.circle === i) c.addChild(new Graphics().circle(20, y, 24).stroke({ width: 5, color: swatch.orange.line }));
+  });
+  return c;
+}
+
+/** The paint shelf's card: a small jar in the recipe's colour over its row of three pots' drops. */
+export function paintJournalPicture(name: ShelfColour): Container {
+  const c = new Container();
+  const r = RECIPES.find((x) => x.name === name)!;
+  const counts = { red: 0, yellow: 0, blue: 0, white: 0 };
+  r.pots.forEach((pot, i) => { counts[pot] = r.counts[i]; });
+  const j = jar(mix(counts)!);
+  j.position.set(0, -40);
+  c.addChild(j);
+  const row = r.pots.flatMap((pot, i) => Array<Pot>(r.counts[i]).fill(pot));
+  row.forEach((pot, i) => {
+    const d = drop(pot);
+    d.position.set((i - (row.length - 1) / 2) * 38, 90);
+    c.addChild(d);
+  });
+  return c;
 }

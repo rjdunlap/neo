@@ -3,8 +3,9 @@
  * The bucket's colour is the drop-weighted mean of the pot colours (equal ratios are exactly the same colour); the
  * drop rows inside the bucket are the proof (every row a copy of the sample's row, with its gaps and loose drops).
  * Levels 1–2 copy and double the row; level 3 fills to a line with a stray pot and the ratio table; level 4 takes any amount,
- * then the same colour at a different amount.
- * Definition: docs/definitions/paint-mixer.md.
+ * then the same colour at a different amount; level 5 keeps three pots in step to the line; level 6 picks the lidded jars whose
+ * labels match the sample (`jars.ts`).
+ * Definitions: docs/definitions/paint-mixer.md (levels 1–4), docs/definitions/paint-mixer-5-6.md (levels 5–6).
  */
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
@@ -25,22 +26,39 @@ export const PAIRS: readonly { pair: Pair; name: MixName }[] = [
   { pair: ['red', 'blue'], name: 'purple' },
 ];
 
+/** Level 5's recipes: the only two triples that avoid blue + yellow, each in three orders. Names and ids are permanent. */
+export type ShelfColour = 'peach' | 'coral' | 'blush' | 'lavender' | 'rose' | 'lilac';
+export const TRIPLES: readonly (readonly Pot[])[] = [['red', 'yellow', 'white'], ['red', 'blue', 'white']];
+const TRIPLE_POOL: readonly (readonly number[])[] = [[1, 2, 1], [2, 1, 1], [1, 1, 2]];
+export const RECIPES: readonly { name: ShelfColour; pots: readonly Pot[]; counts: readonly number[] }[] = [
+  { name: 'peach', pots: TRIPLES[0], counts: [1, 2, 1] },
+  { name: 'coral', pots: TRIPLES[0], counts: [2, 1, 1] },
+  { name: 'blush', pots: TRIPLES[0], counts: [1, 1, 2] },
+  { name: 'lavender', pots: TRIPLES[1], counts: [1, 2, 1] },
+  { name: 'rose', pots: TRIPLES[1], counts: [2, 1, 1] },
+  { name: 'lilac', pots: TRIPLES[1], counts: [1, 1, 2] },
+];
+
 export interface Sample {
-  pair: Pair;
-  counts: readonly [number, number];
+  /** The sample's pots in recipe order: an authored pair (levels 1–4) or a triple (level 5). */
+  pots: readonly Pot[];
+  /** Drops of each pot in the sample's row, in `pots` order. */
+  counts: readonly number[];
   /** Levels 3–4: a pot this sample doesn't use, on screen beside the pair, and where it stands (0 leftmost of three). */
   stray?: Pot;
   strayAt?: number;
+  /** Level 5: the line's depth in batches, drawn 2 or 3. */
+  batches?: number;
 }
 export type Counts = Record<Pot, number>;
-export type Kind = 'copy' | 'double' | 'line' | 'any';
+export type Kind = 'copy' | 'double' | 'line' | 'any' | 'jars';
 
 export interface Plan {
   level: number;
   kind: Kind;
   name: string;
-  /** Ratios written pot A : pot B in the pair's order. */
-  pool: readonly (readonly [number, number])[];
+  /** Ratios in the sample's pot order (two counts, or three at level 5). */
+  pool: readonly (readonly number[])[];
   /** The bucket holds this many copies of the sample's row (levels 1–2; level 3 sets it by the sample, level 4 has no line). */
   batches: number;
   /** Buckets in a round, each with a sample from a different pair. */
@@ -59,15 +77,22 @@ const PLANS: readonly Plan[] = [
   { level: 3, kind: 'line', name: 'Fill to the line', pool: WIDE_POOL, batches: 0, buckets: BUCKETS_PER_ROUND, moreSameWay: true },
   // One sample, two ways: any amount, then the same colour at a different amount.
   { level: 4, kind: 'any', name: 'Any amount, two ways', pool: WIDE_POOL, batches: 0, buckets: 1, moreSameWay: false },
+  // Three pots to a line two or three batches deep (8 or 12 drops), level 3's rules with no stray.
+  { level: 5, kind: 'line', name: 'Three pots: keep three counts in step to the line', pool: TRIPLE_POOL, batches: 0, buckets: BUCKETS_PER_ROUND, moreSameWay: true },
+  // Two cases of four lidded jars (jars.ts); no bucket.
+  { level: 6, kind: 'jars', name: 'Which jars match: compare ratios from their labels', pool: WIDE_POOL, batches: 0, buckets: 2, moreSameWay: false },
 ];
 
-export const LEVELS: BandLevels = { school: { min: 1, max: 4 } };
+export const LEVELS: BandLevels = { school: { min: 1, max: 6 } };
 
 export function planFor(level: number): Plan {
   return PLANS.find((p) => p.level === level) ?? PLANS[0];
 }
 
-export const total = (s: Sample) => s.counts[0] + s.counts[1];
+export const total = (s: Sample) => s.counts.reduce((a, b) => a + b, 0);
+/** The sample's row of drops: each pot's share, in recipe order. */
+export const rowOf = (s: Sample): Pot[] => s.pots.flatMap((pot, i) => Array<Pot>(s.counts[i]).fill(pot));
+const uses = (s: Sample, pot: Pot) => s.pots.includes(pot);
 /** The most whole copies of the sample the bucket's cap holds. */
 export const maxMultiple = (s: Sample) => Math.floor(CAP / total(s));
 /**
@@ -75,18 +100,22 @@ export const maxMultiple = (s: Sample) => Math.floor(CAP / total(s));
  * for total 5 (9, 12 or 10 drops); level 4 has no line (Infinity: any whole multiple matches).
  */
 export function batchesFor(plan: Plan, s: Sample): number {
-  if (plan.kind === 'line') return total(s) >= 5 ? 2 : 3;
+  if (plan.kind === 'line') return s.batches ?? (total(s) >= 5 ? 2 : 3);
   if (plan.kind === 'any') return Infinity;
   return plan.batches;
 }
 export const sizeFor = (plan: Plan, s: Sample) => batchesFor(plan, s) * total(s);
 /** The pots on screen for a sample: the pair, and from level 3 the stray at its seeded place. */
 export function potsFor(s: Sample): Pot[] {
-  const out: Pot[] = [s.pair[0], s.pair[1]];
+  const out: Pot[] = [...s.pots];
   if (s.stray) out.splice(Math.min(2, Math.max(0, s.strayAt ?? 2)), 0, s.stray);
   return out;
 }
-export const mixName = (pair: Pair): MixName => PAIRS.find((p) => p.pair[0] === pair[0] && p.pair[1] === pair[1])!.name;
+const samePots = (a: readonly Pot[], b: readonly Pot[]) => a.length === b.length && a.every((p, i) => p === b[i]);
+/** Level 5's recipe for a sample, by its pots and counts (null for a pair). */
+export const recipeOf = (s: Sample) => RECIPES.find((r) => samePots(r.pots, s.pots) && r.counts.every((c, i) => c === s.counts[i])) ?? null;
+/** The colour's name: the authored pair's, or level 5's recipe's. */
+export const mixName = (s: Sample): MixName | ShelfColour => recipeOf(s)?.name ?? PAIRS.find((p) => samePots(p.pair, s.pots))!.name;
 
 export function emptyCounts(): Counts { return { red: 0, yellow: 0, blue: 0, white: 0 }; }
 
@@ -99,8 +128,7 @@ export function countsOf(drops: readonly Pot[]): Counts {
 /** The sample's counts as a full count vector. */
 export function sampleCounts(s: Sample): Counts {
   const c = emptyCounts();
-  c[s.pair[0]] = s.counts[0];
-  c[s.pair[1]] = s.counts[1];
+  s.pots.forEach((pot, i) => { c[pot] = s.counts[i]; });
   return c;
 }
 
@@ -109,13 +137,20 @@ export function sampleCounts(s: Sample): Counts {
 /** One sample from the level's pool and an authored pair, avoiding `avoid`'s pair so a round's buckets differ. */
 export function makeSample(level: number, rng: Rng, avoid?: Sample): Sample {
   const plan = planFor(level);
-  const pairs = PAIRS.filter((p) => !avoid || p.pair[0] !== avoid.pair[0] || p.pair[1] !== avoid.pair[1]);
+  if (plan.level === 5) {
+    // Level 5: a triple (the second bucket the other one), a recipe order, then the line's depth.
+    const triples = TRIPLES.filter((t) => !avoid || !samePots(t, avoid.pots));
+    const pots = triples[rng.int(0, triples.length - 1)];
+    const counts = plan.pool[rng.int(0, plan.pool.length - 1)];
+    return { pots, counts: [...counts], batches: rng.int(2, 3) };
+  }
+  const pairs = PAIRS.filter((p) => !avoid || !samePots(p.pair, avoid.pots));
   const { pair } = pairs[rng.int(0, pairs.length - 1)];
   const counts = plan.pool[rng.int(0, plan.pool.length - 1)];
-  if (plan.level < 3) return { pair, counts: [counts[0], counts[1]] };
+  if (plan.level < 3) return { pots: pair, counts: [counts[0], counts[1]] };
   // Levels 3–4: one of the two pots the pair doesn't use stands beside it (cosmetic draws after the counts, so 1–2 are unchanged).
   const unused = POTS.filter((p) => p !== pair[0] && p !== pair[1]);
-  return { pair, counts: [counts[0], counts[1]], stray: unused[rng.int(0, unused.length - 1)], strayAt: rng.int(0, 2) };
+  return { pots: pair, counts: [counts[0], counts[1]], stray: unused[rng.int(0, unused.length - 1)], strayAt: rng.int(0, 2) };
 }
 
 export function makeRound(level: number, rng: Rng): Sample[] {
@@ -178,7 +213,7 @@ export interface Rows {
 
 /** Complete batches: the smallest whole number of the sample's row that every pot covers. */
 export function completeBatches(s: Sample, counts: Counts): number {
-  return Math.min(Math.floor(counts[s.pair[0]] / s.counts[0]), Math.floor(counts[s.pair[1]] / s.counts[1]));
+  return Math.min(...s.pots.map((pot, i) => Math.floor(counts[pot] / s.counts[i])));
 }
 
 /**
@@ -188,24 +223,24 @@ export function completeBatches(s: Sample, counts: Counts): number {
 export function rows(s: Sample, counts: Counts, limit = Infinity): Rows {
   const k = Math.min(completeBatches(s, counts), limit);
   const out: Place[][] = [];
-  const row = (): Place[] => [...Array(s.counts[0]).fill(s.pair[0]), ...Array(s.counts[1]).fill(s.pair[1])].map((pot: Pot) => ({ pot, filled: true }));
+  const row = (): Place[] => rowOf(s).map((pot) => ({ pot, filled: true }));
   for (let i = 0; i < k; i++) out.push(row());
   const loose: Pot[] = [];
   const partial: Place[] = [];
   let any = false;
   if (k < limit) {
-    for (const i of [0, 1] as const) {
-      const pot = s.pair[i], share = s.counts[i];
+    for (let i = 0; i < s.pots.length; i++) {
+      const pot = s.pots[i], share = s.counts[i];
       const have = Math.min(share, counts[pot] - k * share);
       for (let j = 0; j < share; j++) partial.push({ pot, filled: j < have });
       if (have > 0) any = true;
       for (let j = (k + 1) * share; j < counts[pot]; j++) loose.push(pot);
     }
   } else {
-    for (const i of [0, 1] as const) for (let j = k * s.counts[i]; j < counts[s.pair[i]]; j++) loose.push(s.pair[i]);
+    s.pots.forEach((pot, i) => { for (let j = k * s.counts[i]; j < counts[pot]; j++) loose.push(pot); });
   }
   if (any) out.push(partial);
-  for (const pot of POTS) if (pot !== s.pair[0] && pot !== s.pair[1]) for (let j = 0; j < counts[pot]; j++) loose.push(pot);
+  for (const pot of POTS) if (!uses(s, pot)) for (let j = 0; j < counts[pot]; j++) loose.push(pot);
   return { rows: out, complete: k, loose };
 }
 
@@ -214,8 +249,8 @@ export function lastIsLoose(s: Sample, drops: readonly Pot[], limit = Infinity):
   const last = drops[drops.length - 1];
   if (!last) return false;
   const counts = countsOf(drops);
-  if (last !== s.pair[0] && last !== s.pair[1]) return true;
-  const i = last === s.pair[0] ? 0 : 1;
+  if (!uses(s, last)) return true;
+  const i = s.pots.indexOf(last);
   const k = Math.min(completeBatches(s, counts), limit);
   const allowed = Math.min(k + 1, limit) * s.counts[i];
   return counts[last] > allowed;
@@ -241,7 +276,7 @@ const LOOSE_ROW = 6;
  */
 export function picture(plan: Plan, s: Sample, counts: Counts): Picture {
   const n = total(s);
-  const template: Pot[] = [...Array(s.counts[0]).fill(s.pair[0]), ...Array(s.counts[1]).fill(s.pair[1])];
+  const template = rowOf(s);
   const limit = batchesFor(plan, s);
   const r = rows(s, counts, limit);
   const looseRows = Math.ceil(r.loose.length / LOOSE_ROW);
@@ -278,14 +313,14 @@ export interface Table {
   columns: number;
   /** Columns filled: one per complete batch (a loose drop never fills one). */
   filled: number;
-  /** Each column's counts, pot A over pot B (`k × sample`). */
-  values: (readonly [number, number])[];
+  /** Each column's counts, one per pot in the sample's order (`k × sample`). */
+  values: (readonly number[])[];
 }
 
 /** The ratio table (levels 3–4): the ratio made into numbers, a column per complete batch; Undo that breaks a batch empties it. */
 export function ratioTable(plan: Plan, s: Sample, counts: Counts): Table {
   const columns = plan.kind === 'any' ? maxMultiple(s) : batchesFor(plan, s);
-  const values = Array.from({ length: columns }, (_, i) => [(i + 1) * s.counts[0], (i + 1) * s.counts[1]] as const);
+  const values = Array.from({ length: columns }, (_, i) => s.counts.map((c) => (i + 1) * c));
   return { columns, filled: Math.min(columns, completeBatches(s, counts)), values };
 }
 
@@ -299,23 +334,22 @@ export type Verdict =
 
 /** The whole multiple `k` with `counts === k × sample`, or null. */
 export function multipleOf(s: Sample, counts: Counts): number | null {
-  for (const pot of POTS) if (pot !== s.pair[0] && pot !== s.pair[1] && counts[pot] > 0) return null;
-  const a = counts[s.pair[0]], b = counts[s.pair[1]];
-  if (a === 0 && b === 0) return null;
-  if (a % s.counts[0] !== 0 || b % s.counts[1] !== 0) return null;
-  const k = a / s.counts[0];
-  return b / s.counts[1] === k ? k : null;
+  for (const pot of POTS) if (!uses(s, pot) && counts[pot] > 0) return null;
+  if (s.pots.every((pot) => counts[pot] === 0)) return null;
+  if (s.pots.some((pot, i) => counts[pot] % s.counts[i] !== 0)) return null;
+  const k = counts[s.pots[0]] / s.counts[0];
+  return s.pots.every((pot, i) => counts[pot] / s.counts[i] === k) ? k : null;
 }
 
 /**
- * Level 4's nearest target for a wrong bucket: the whole multiple in 1..maxMultiple, other than `done`, whose pair counts are
- * nearest the bucket's by the summed difference over the two pots (ties to the smaller multiple).
+ * Level 4's nearest target for a wrong bucket: the whole multiple in 1..maxMultiple, other than `done`, whose counts are
+ * nearest the bucket's by the summed difference over the sample's pots (ties to the smaller multiple).
  */
 export function nearestMultiple(s: Sample, counts: Counts, done: number | null = null): number {
   let best = 0, gap = Infinity;
   for (let k = 1; k <= maxMultiple(s); k++) {
     if (k === done) continue;
-    const d = Math.abs(counts[s.pair[0]] - k * s.counts[0]) + Math.abs(counts[s.pair[1]] - k * s.counts[1]);
+    const d = s.pots.reduce((sum, pot, i) => sum + Math.abs(counts[pot] - k * s.counts[i]), 0);
     if (d < gap) { best = k; gap = d; }
   }
   return best;
@@ -331,12 +365,13 @@ export function check(plan: Plan, s: Sample, counts: Counts, done: number | null
     if (k !== null && k === n) return { kind: 'match' };
     if (k !== null && k < n && plan.moreSameWay) return { kind: 'moreSameWay' };
   }
-  for (const pot of POTS) if (pot !== s.pair[0] && pot !== s.pair[1] && counts[pot] > 0) return { kind: 'wrong', pot, direction: 'stray' };
-  if (counts[s.pair[0]] === 0 && counts[s.pair[1]] === 0) return { kind: 'wrong', pot: s.pair[0], direction: 'short' };
+  for (const pot of POTS) if (!uses(s, pot) && counts[pot] > 0) return { kind: 'wrong', pot, direction: 'stray' };
+  if (s.pots.every((pot) => counts[pot] === 0)) return { kind: 'wrong', pot: s.pots[0], direction: 'short' };
   const target = sampleCounts(s);
   const times = plan.kind === 'any' ? nearestMultiple(s, counts, done) : batchesFor(plan, s);
-  let worst: Pot = s.pair[0], gap = 0;
-  for (const pot of s.pair) {
+  // The farthest pot, ties to the earliest in the recipe.
+  let worst: Pot = s.pots[0], gap = 0;
+  for (const pot of s.pots) {
     const d = Math.abs(counts[pot] - times * target[pot]);
     if (d > gap) { worst = pot; gap = d; }
   }
@@ -353,7 +388,7 @@ export type Glow = { at: 'pot'; pot: Pot } | { at: 'undo' } | { at: 'tip' } | { 
  */
 export function aimFor(s: Sample, counts: Counts, done: number | null = null): number {
   const c = completeBatches(s, counts);
-  const started = s.pair.some((p, i) => counts[p] > c * s.counts[i]);
+  const started = s.pots.some((p, i) => counts[p] > c * s.counts[i]);
   for (let k = Math.max(1, c + (started ? 1 : 0)); k <= maxMultiple(s); k++) if (k !== done) return k;
   for (let k = 1; k <= maxMultiple(s); k++) if (k !== done) return k;
   return 1;
@@ -375,8 +410,8 @@ export function glowFor(plan: Plan, s: Sample, drops: readonly Pot[], done: numb
   const r = rows(s, counts, limit);
   if (r.loose.length > 0) return lastIsLoose(s, drops, limit) ? { at: 'undo' } : { at: 'tip' };
   for (const row of r.rows) for (const place of row) if (!place.filled) return { at: 'pot', pot: place.pot };
-  // Every drawn row is full but the bucket is short of its size: the next row starts with pot A.
-  return { at: 'pot', pot: s.pair[0] };
+  // Every drawn row is full but the bucket is short of its size: the next row starts with the first pot.
+  return { at: 'pot', pot: s.pots[0] };
 }
 
 /** Apply one glow step to the drops (what a finger following the glow does). */
@@ -409,7 +444,9 @@ export interface Pt { x: number; y: number }
 export interface Box extends Pt { w: number; h: number }
 export const POT_W = 120, POT_H = 130, BUCKET = 320, BUTTON_W = 130, BUTTON_H = 110, JAR_W = 150, JAR_H = 190, DROP = 30, DROP_GAP = 12;
 /** The ratio table: a label column of pot marks, then up to four 40-unit columns; a header row and a row per pot. */
-export const TABLE_LABEL = 36, TABLE_CELL = 40, TABLE_ROW = 36, TABLE_W = TABLE_LABEL + 4 * TABLE_CELL, TABLE_H = 3 * TABLE_ROW;
+export const TABLE_LABEL = 36, TABLE_CELL = 40, TABLE_ROW = 36, TABLE_W = TABLE_LABEL + 4 * TABLE_CELL;
+/** The table's height for a sample of `pots` pots (two, or three at level 5). */
+export const tableH = (pots = 2) => (1 + pots) * TABLE_ROW;
 
 export interface Layout {
   portrait: boolean;
@@ -427,9 +464,15 @@ export interface Layout {
 
 const box = (x: number, y: number, w: number, h: number): Box => ({ x, y, w, h });
 
-export function layout(view: { w: number; h: number }, potCount: number): Layout {
+/**
+ * `potCount` is the pots on screen; `tablePots` the sample's (its table rows). A three-pot table is a row taller: in landscape
+ * the jar column rises by that row (clear of the pet), in portrait the bucket and buttons drop by it; nothing shrinks.
+ */
+export function layout(view: { w: number; h: number }, potCount: number, tablePots = 2): Layout {
   const { w, h } = view;
   const portrait = h > w;
+  const TABLE_H = tableH(tablePots);
+  const extra = (tablePots - 2) * TABLE_ROW;
   const cx = w / 2;
   const potY = h - 20 - POT_H / 2;
   const pots: Box[] = [];
@@ -440,9 +483,9 @@ export function layout(view: { w: number; h: number }, potCount: number): Layout
     const col = bx + BUCKET / 2 + 30 + BUTTON_W / 2;
     return {
       portrait,
-      jar: box(215, 230, JAR_W, JAR_H),
-      recipe: { x: 205, y: 230 + JAR_H / 2 + 40 },
-      table: box(205, 230 + JAR_H / 2 + 40 + 30 + TABLE_H / 2, TABLE_W, TABLE_H),
+      jar: box(215, 230 - extra, JAR_W, JAR_H),
+      recipe: { x: 205, y: 230 - extra + JAR_H / 2 + 40 },
+      table: box(205, 230 - extra + JAR_H / 2 + 40 + 30 + TABLE_H / 2, TABLE_W, TABLE_H),
       bucket: box(bx, by, BUCKET, BUCKET),
       undo: box(col, by - BUTTON_H - 12, BUTTON_W, BUTTON_H),
       tip: box(col, by, BUTTON_W, BUTTON_H),
@@ -451,7 +494,7 @@ export function layout(view: { w: number; h: number }, potCount: number): Layout
     };
   }
   const jarY = 180;
-  const by = jarY + JAR_H / 2 + 60 + BUCKET / 2;
+  const by = jarY + JAR_H / 2 + 60 + BUCKET / 2 + extra;
   const row = by + BUCKET / 2 + 24 + BUTTON_H / 2;
   const step = BUTTON_W + 16;
   return {
@@ -479,5 +522,5 @@ export function dropAt(r: number, i: number, n: number, rowCount: number): Pt {
 export function stickerSample(seed: number): Sample {
   const n = Math.abs(Math.floor(seed));
   const { pair } = PAIRS[n % PAIRS.length];
-  return { pair, counts: n % 2 === 0 ? [1, 2] : [2, 1] };
+  return { pots: pair, counts: n % 2 === 0 ? [1, 2] : [2, 1] };
 }
