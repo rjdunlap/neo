@@ -989,6 +989,8 @@ Proof: typecheck, rule tests; one play of level 8 with a box clash and one of le
 
 ### garden-rows 3: One row
 
+**Claimed 2026-11-03** by branch `claude/garden-rows-one-row`.
+
 - **`garden-rows`, level 10 One row, preschool opening (dive slice 3, after batch 1)** (new band; adds `order`/`entryLevels` to the same `LEVELS`), as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).
 
 Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/lands.ts` or registry tests as needed, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
