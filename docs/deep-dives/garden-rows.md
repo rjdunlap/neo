@@ -100,9 +100,9 @@ None are new. Under the 2026-10-23 standing rule S8, the identity, band and land
 ## Build slices, in order
 
 1. **Batch garden-rows 1: F1 seeded flower sets + level 7 Mend the bed** (existing interaction, new level). Checks: typecheck; Garden Rows rule tests (the F1 and Mend the bed assertions above); one browser play of level 7 with one wrong replant and the glow, and level 3 with a non-default flower set; `fingerdemo` at 7. **Built 2026-11-02 ([PR #1126](https://github.com/rjdunlap/neo/pull/1126)); [build note](../archive/COMPLETED-2026-10-09.md#garden-rows-seeded-flower-sets-and-level-7-mend-the-bed-garden-rows-1-2026-11-02).**
-2. **Batch garden-rows 2: levels 8–9 Hedge boxes** (new rule on the existing interaction, new drawing). Checks: typecheck; rule tests; one play of level 8 with a box clash and one of level 9 to its sticker; one portrait screenshot of the hedges; `fingerdemo` at 9. **Ready** (slice 1 is built; they share `PLANS` and the school range).
+2. **Batch garden-rows 2: levels 8–9 Hedge boxes** (new rule on the existing interaction, new drawing). Checks: typecheck; rule tests; one play of level 8 with a box clash and one of level 9 to its sticker; one portrait screenshot of the hedges; `fingerdemo` at 9. **Built 2026-11-03 ([PR #1167](https://github.com/rjdunlap/neo/pull/1167)); [build note](../archive/COMPLETED-2026-10-09.md#garden-rows-levels-8-9-hedge-boxes-garden-rows-2-2026-11-03).**
 3. **Batch garden-rows 3: level 10 One row (preschool opening)** (new band). Checks: typecheck; unit tests including the lands and registry band tests; one play of level 10 at preschool; `fingerdemo` at 10; the preschool Puzzle Peaks page screenshot. Ready (slice 1 is built; it adds `order`/`entryLevels` to the same `LEVELS`).
-4. Later, after 2 is played: Two-flower beds (4×4) as level 11, needing its own definition.
+4. Later, after 2 is played (built, not yet played by a child): Two-flower beds (4×4) as level 11, needing its own definition.
 
 ## What was built in this session
 

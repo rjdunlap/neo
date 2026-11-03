@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, launch, finished, screenshot, log }) {
 async function gardenRowsPlay() {
+  let s0;
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { index: g.index, misses: g.misses, hints: g.hints, busy: g.busy, hinted: g.hinted, bed: g.bed, kinds: g.puzzles[g.index]?.kinds }; });
   const settle = () => page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 30000 }).then(() => page.waitForTimeout(250));
   // Past the board's and the packets' tap cooldowns.
@@ -15,6 +16,59 @@ async function gardenRowsPlay() {
     return out;
   });
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+  /** Let the ghost finger's moves finish every bed of the round. */
+  const botFinish = async (beds) => {
+    for (let bed = 0; bed < beds; bed++) {
+      await settle();
+      for (let i = 0; i < 60 && !(await page.evaluate(() => neo.scene.finished || neo.scene.game.busy)); i++) {
+        const intent = await page.evaluate(() => { const t = neo.scene.game.autotouch(); if (!t) return null; const p = t.tap.x === undefined ? t.tap.on.getGlobalPosition() : t.tap.on.toGlobal({ x: t.tap.x, y: t.tap.y }); kit.tap(p.x, p.y); return true; });
+        if (!intent) break;
+        await page.waitForTimeout(120);
+      }
+    }
+  };
+
+  // Hedge boxes (levels 8 and 9), run alone with GARDEN_ROWS_ONLY=boxes.
+  const boxes = process.env.GARDEN_ROWS_ONLY;
+  if (!boxes || boxes === 'boxes') {
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await launch('garden-rows', 8, 'Mia', 'school');
+    await settle();
+    s0 = await state();
+    assert.equal(s0.bed.flat().filter((v) => v === null).length, 6, 'level 8 starts with six empty spots');
+    // An empty spot and a flower that repeats only in its hedge box (the spot diagonal to it in the box), not its row or column.
+    const trap = await page.evaluate(() => {
+      const bed = neo.scene.game.bed;
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) {
+        if (bed[r][c] !== null) continue;
+        const d = { r: r ^ 1, c: c ^ 1 };
+        const f = bed[d.r][d.c];
+        if (f !== null && !bed[r].includes(f) && !bed.some((row) => row[c] === f)) return { r, c, f };
+      }
+      return null;
+    });
+    assert.ok(trap, 'level 8 bed has a spot whose box alone rules out a flower');
+    await pick(trap.f);
+    await tapCell(trap.r, trap.c);
+    s0 = await state();
+    assert.deepEqual([s0.misses, s0.bed[trap.r][trap.c]], [1, null], 'a hedge-box repeat is a miss and does not stay');
+    assert.equal(await page.evaluate(() => neo.scene.game.flash?.cells.length), 2, 'both spots flash');
+    await screenshot('garden-rows-8-hedges-portrait');
+    await botFinish(2);
+    await finished('garden-rows');
+    assert.deepEqual(await page.evaluate(() => { const h = kit.store.stats('garden-rows').history.at(-1); return [h.level, h.misses, h.hints]; }), [8, 1, 0], 'level 8 saved one miss, no hint');
+    await launch('garden-rows', 9, 'Mia', 'school');
+    await settle();
+    s0 = await state();
+    assert.equal(s0.bed.flat().filter((v) => v === null).length, 10, 'level 9 starts with ten empty spots');
+    await botFinish(1);
+    await finished('garden-rows');
+    assert.deepEqual(await page.evaluate(() => { const h = kit.store.stats('garden-rows').history.at(-1); return [h.level, h.misses, h.hints]; }), [9, 0, 0], 'level 9 to its sticker');
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(400);
+    log('Garden Rows: level 8 hedge-box clash (one miss, both spots flash, portrait), bot to the end; level 9 to its sticker; passed');
+    if (boxes) return;
+  }
 
   // Level 7, Mend the bed in portrait: replant a swapped flower where it was twice (two misses, the glow on the other), then mend.
   await page.setViewportSize({ width: 768, height: 1024 });

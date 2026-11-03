@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   candidates, clash, clashing, copyBed, countSolutions, deadEnds, emptyBed, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, makePuzzle,
-  mendTarget, nextMove, nextPlanting, PLANS, planFor, solve, type Bed,
+  boxSpots, fullBed, mendTarget, nextMove, nextPlanting, PLANS, planFor, sameBox, solve, type Bed,
 } from './logic';
 
 const givenOf = (start: Bed) => start.map((row) => row.map((v) => v !== null));
@@ -12,11 +12,17 @@ const MEND = PLANS[6];
 
 describe('Garden Rows', () => {
   it('climbs from small beds to bigger ones with fewer flowers to start', () => {
-    FILL.slice(1).forEach((p, i) => {
-      const before = FILL[i];
-      expect(p.size, p.name).toBeGreaterThanOrEqual(before.size);
-      if (p.size === before.size) expect(p.blanks, p.name).toBeGreaterThanOrEqual(before.blanks);
-    });
+    // The climb holds within each rule, in ID order; a new rule (hedge boxes) starts again on a smaller bed.
+    for (const rule of ['rows', 'both', 'boxes'] as const) {
+      const ofRule = FILL.filter((p) => p.rule === rule);
+      expect(ofRule.length, rule).toBeGreaterThan(0);
+      ofRule.slice(1).forEach((p, i) => {
+        const before = ofRule[i];
+        expect(p.size, p.name).toBeGreaterThanOrEqual(before.size);
+        if (p.size === before.size) expect(p.blanks, p.name).toBeGreaterThanOrEqual(before.blanks);
+      });
+    }
+    expect(PLANS.slice(7, 9).map((p) => [p.rule, p.size, p.blanks, p.beds])).toEqual([['boxes', 4, 6, 2], ['boxes', 4, 10, 1]]);
     for (const p of PLANS) {
       expect(p.size, p.name).toBeLessThanOrEqual(FLOWER_NAMES.length);
       expect(p.blanks, p.name).toBeLessThan(p.size * p.size);
@@ -296,6 +302,111 @@ describe('Garden Rows', () => {
         // When both repeats share their other row too, swapping that row's pair mends it as well: either bed is right.
         expect(isSolved(byBot, 'both'), `bot #${seed}`).toBe(true);
         expect(moves).toBe(4);
+      }
+    });
+  });
+
+  describe('Hedge boxes (levels 8 and 9)', () => {
+    const BOXES = [planFor(8), planFor(9)];
+    const validBoxes = (bed: Bed) => {
+      const all = [0, 1, 2, 3];
+      for (let i = 0; i < 4; i++) {
+        expect([...bed[i]].sort()).toEqual(all);
+        expect(bed.map((row) => row[i]).sort()).toEqual(all);
+      }
+      for (const [r, c] of [[0, 0], [0, 2], [2, 0], [2, 2]]) expect(boxSpots(4, r, c).map((s) => bed[s.r][s.c]).sort()).toEqual(all);
+    };
+
+    it('levels 8 and 9 are the boxes rule on a 4 by 4 bed', () => {
+      expect(BOXES.map((p) => p.rule)).toEqual(['boxes', 'boxes']);
+      expect(BOXES.map((p) => p.size)).toEqual([4, 4]);
+    });
+
+    it('every bed is a valid 4 by 4 sudoku with exactly the planned blanks and exactly one way to finish', () => {
+      for (const plan of BOXES) {
+        for (let seed = 1; seed <= 80; seed++) {
+          const { start, solution } = makePuzzle(plan, new Rng(seed));
+          validBoxes(solution);
+          expect(isSolved(solution, 'boxes'), `${plan.name} #${seed}`).toBe(true);
+          expect(start.flat().filter((v) => v === null), `${plan.name} #${seed}`).toHaveLength(plan.blanks);
+          expect(countSolutions(start, 'boxes'), `${plan.name} #${seed}`).toBe(1);
+          expect(solve(start, 'boxes')).toEqual(solution);
+          expect(deadEnds(start, 'boxes')).toEqual([]);
+        }
+      }
+    });
+
+    it('generation never throws over 300 seeds', () => {
+      for (const plan of BOXES) for (let seed = 1; seed <= 300; seed++) expect(() => makePuzzle(plan, new Rng(seed)), `${plan.name} #${seed}`).not.toThrow();
+    });
+
+    it('fullBed makes box-valid squares and varies with the seed', () => {
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 200; seed++) {
+        const bed = fullBed(4, 'boxes', new Rng(seed));
+        validBoxes(bed);
+        seen.add(JSON.stringify(bed));
+      }
+      expect(seen.size).toBeGreaterThan(20);
+      expect(fullBed(4, 'boxes', new Rng(4))).toEqual(fullBed(4, 'boxes', new Rng(4)));
+    });
+
+    it('knows the hedge boxes', () => {
+      expect(sameBox(4, 0, 0, 1, 1)).toBe(true);
+      expect(sameBox(4, 1, 1, 2, 2)).toBe(false);
+      expect(sameBox(4, 2, 3, 3, 2)).toBe(true);
+      expect(sameBox(4, 1, 1, 1, 2)).toBe(false);
+      expect(boxSpots(4, 3, 1)).toEqual([{ r: 2, c: 0 }, { r: 2, c: 1 }, { r: 3, c: 0 }, { r: 3, c: 1 }]);
+      expect(boxSpots(4, 0, 3)).toContainEqual({ r: 0, c: 3 });
+    });
+
+    it('candidates and clash respect boxes, and the rows-and-columns rule ignores them', () => {
+      const bed: Bed = [
+        [1, null, null, null],
+        [null, null, null, null],
+        [null, null, null, null],
+        [null, null, null, null],
+      ];
+      // (1, 1) shares only the box with (0, 0).
+      expect(candidates(bed, 'boxes', 1, 1)).toEqual([0, 2, 3]);
+      expect(candidates(bed, 'both', 1, 1)).toEqual([0, 1, 2, 3]);
+      expect(clash(bed, 'boxes', 1, 1, 1)).toEqual({ by: 'box', r: 0, c: 0 });
+      expect(clash(bed, 'both', 1, 1, 1)).toBeNull();
+      // A row repeat still reports the row, and a column repeat the column.
+      expect(clash(bed, 'boxes', 0, 1, 1)).toEqual({ by: 'row', r: 0, c: 0 });
+      expect(clash(bed, 'boxes', 1, 0, 1)).toEqual({ by: 'column', r: 0, c: 0 });
+      // Outside the box nothing clashes.
+      expect(clash(bed, 'boxes', 1, 2, 1)).toBeNull();
+      expect(clash(bed, 'boxes', 1, 1, 0)).toBeNull();
+    });
+
+    it('a hint and the ghost finger reach the solved bed with no clash or dead end at any step', () => {
+      for (const plan of BOXES) {
+        for (let seed = 1; seed <= 40; seed++) {
+          const { start, solution } = makePuzzle(plan, new Rng(seed));
+          const given = givenOf(start);
+          const byHint = copyBed(start);
+          for (let h = hintFor(byHint, given, solution, 'boxes'); h; h = hintFor(byHint, given, solution, 'boxes')) {
+            expect(h.kind, `${plan.name} #${seed}`).toBe('plant');
+            if (h.kind !== 'plant') break;
+            expect(clash(byHint, 'boxes', h.r, h.c, h.flower)).toBeNull();
+            byHint[h.r][h.c] = h.flower;
+            expect(deadEnds(byHint, 'boxes')).toEqual([]);
+          }
+          expect(byHint).toEqual(solution);
+          const byBot = copyBed(start);
+          let selected = 0;
+          let steps = 0;
+          for (let m = nextPlanting(byBot, solution, 'boxes', selected); m; m = nextPlanting(byBot, solution, 'boxes', selected)) {
+            expect(clash(byBot, 'boxes', m.r, m.c, m.flower), `${plan.name} #${seed}`).toBeNull();
+            byBot[m.r][m.c] = m.flower;
+            selected = m.flower;
+            steps++;
+            expect(deadEnds(byBot, 'boxes')).toEqual([]);
+          }
+          expect(steps).toBe(plan.blanks);
+          expect(byBot).toEqual(solution);
+        }
       }
     });
   });

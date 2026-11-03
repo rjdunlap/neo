@@ -110,3 +110,10 @@
 - Ran (tested commit 34e7f833, base 5177ea40, Vite http://localhost:5963): `npm run typecheck`; `npm test` 297 files / 4548 tests passed (before the review fixes; sprout and content tests, 209, passed after them); `npm run build`; 12 new rule tests (41 in the sprout-shuffle logic file).
 - Ran: `BROWSER_SUITE=sproutshuffle SPROUT_LEVELS=5` in both cases (Aa then AA, after the review fixes): water, two wrong Checks (fan, glow hint), Show me, both-could, a free Try one, water again, finish, saved 2 misses / 2 hints; portrait and landscape screenshots reviewed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=sprout-shuffle FINGER_LEVELS=5` clean 17.4 s. A game-reviewer pass was made and its findings fixed.
 - Not run: device or child checks (whether a ten-year-old reads "both could" as a right answer, rings against spots on the iPad label, device speech of the new lines; [DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-11-03 — Ramp Race level 7 What can we tell? (inquiry Q5)
+
+- [PR #1152](https://github.com/rjdunlap/neo/pull/1152): claim tiles over two shelf cards, wrong-claim part pulse, confounded repair replacing card B; `tellLayout(view)`; school range 1–7; voice `ramp.tell.*`/`claim.*`/`why.*`, how-to level 7.
+- Ran (head e96cc95d, base 507e8906, Vite http://localhost:5773): `npm run typecheck`; `npx vitest run src/games/ramp-race src/content src/games/registry` 20 files, 217 tests (ramp-race 27); `BROWSER_SUITE=woods WOODS_ONLY=ramp FROM_LEVEL=6 TO_LEVEL=7` (level 7: nudge with no tile, free tile changes, two wrong claims then the tile glow, locked blue lane, a confounded repair miss, the fair repair, score [3,1], sticker; level 6 regression); `BROWSER_SUITE=fingerdemo FINGER_ONLY=ramp-race FINGER_LEVELS=7` 19.9 s; portrait screenshot reviewed. `game-reviewer` findings fixed.
+- Not run: `npm run build` (only voice-script and how-to shared files changed), full `npm test` (CI), device or child checks.
+- Open: whether a child reads the tiles as "only this changed", treats "we can't tell" as an answer, and device speech of "can't" ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).

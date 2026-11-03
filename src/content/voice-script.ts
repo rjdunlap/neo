@@ -2343,6 +2343,8 @@ export const SCRIPT = {
   'rows.both': ['One of each flower in every row, and in every column too! Pick a flower packet, then tap an empty spot.'],
   'rows.clash-row': ['There is already a {flower} in this row. Try another flower!'],
   'rows.clash-col': ['There is already a {flower} in this column. Try another flower!'],
+  'rows.boxes': ['One of each flower in every row, every column and every hedge box! Pick a flower packet, then tap an empty spot.'],
+  'rows.clash-box': ['There is already a {flower} in this hedge box. Try another flower!'],
   'rows.stuck': ['Hmm, no flower fits in the glowing spot. Tap a flower you planted to take it out, then try another.'],
   'rows.hint-plant': ['Look at the glowing spot and the glowing packet. Plant that flower there!'],
   'rows.hint-fix': ['This flower does not belong here. Tap it to take it out, then try a different one.'],
