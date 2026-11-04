@@ -109,7 +109,7 @@ None. By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules)
 2. **Level 5, A small grid to start** (batch word-search 2): new level on the existing interaction: typecheck, rule tests including order and entry, one browser play of level 5 with one wrong line and one hint, one portrait and one landscape screenshot (the square size is the point), `fingerdemo` at 5.
 3. **Level 6, A message in the leftovers** (batch word-search 3), after batch 2 (its ID follows 5): new-rule tier with a new grid drawing (stones): typecheck, rule tests, one play of level 6 with one wrong line, one hint, then to the message reveal, one portrait screenshot of the revealed message, `fingerdemo` at 6, and `BROWSER_SUITE=couchgames` filtered to Word Search, since `makeGrid` changes.
 4. **Level 7, Just the theme** (batch word-search 4), after batch 3: new-interaction tier (the blanks and the two-step hint): typecheck, rule tests, one play of level 7 with a free non-theme line, two hints on one word, then to the sticker, one portrait screenshot of the blanks, `fingerdemo` at 7.
-5. *Define:* **Word Search school opening** (docs only; status `define`): above.
+5. *Define:* **Word Search school opening** (docs only; status `define`; claimed 2026-11-04 by branch `claude/define-word-search-school`): above.
 
 ## What was built in this session
 
