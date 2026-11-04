@@ -13,11 +13,14 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { courseMinimum, courseSeas, isBridgeCourse } from './course';
 import {
-  canAdd, directionOf, edgeToward, focusPath, hintFor, isSolved, islandToward, makePuzzles, otherEnd, planFor, planksAt, edgeAt, headStart, trouble, waterOf, LEVEL_ORDER, type BridgePlan, type Forced, type Hint, type Puzzle,
+  canAdd, directionOf, edgeToward, focusPath, hintFor, isSolved, islandToward, makePuzzles, otherEnd, planFor, planksAt, edgeAt, headStart, trouble, touchLayout, waterOf, LEVEL_ORDER, type Slot, type BridgePlan, type Forced, type Hint, type Puzzle,
 } from './logic';
 
-/** Grown-up play only: this game lives on the couch, not on the child's island. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 7, order: [...LEVEL_ORDER] } };
+/** Grown-ups get every sea; school plays the two small ones, 5 by 5 then 7 by 7, at 100-unit cells. */
+const LEVELS: BandLevels = {
+  school: { min: 1, max: 5, order: [5, 1] },
+  grownup: { min: 1, max: 7, order: [...LEVEL_ORDER] },
+};
 
 const SEA = 0xcfe8f7;
 const SEA_LINE = 0x7aa7c7;
@@ -28,12 +31,7 @@ const DONE_LINE = 0x4a9a35;
 
 type Mode = 'move' | 'add' | 'remove';
 
-/** The smallest touch target in a grown-up game, in logical units. */
-const MIN_TOUCH = 64;
 const FORCED_LINE: Record<Forced, LineId> = { full: 'bridges.hint-full', 'last-way': 'bridges.hint-last-way', 'every-way': 'bridges.hint-every-way' };
-/** Touch play: three buttons beside (or under) the sea: Take off (a switch), Hint and Start over. */
-type SlotKind = 'take' | 'hint' | 'again';
-interface Slot { kind: SlotKind; x: number; y: number; w: number; h: number }
 
 class IslandBridges implements Game {
   readonly plan: BridgePlan;
@@ -83,6 +81,8 @@ class IslandBridges implements Game {
   private readonly held = new HeldDirection();
   private botWait = 0.8;
   private told = { cross: false };
+  /** School: the red-island line, said the first time an island turns red in a round. */
+  private troubleSaid = false;
   /** Couch challenge course: fixed seas in a row. Null in ordinary play, where seas are drawn from the seed. */
   private readonly course: { minimum: number } | null;
   private done: number[] = [];
@@ -144,34 +144,14 @@ class IslandBridges implements Game {
     this.dirty = true;
   }
 
-  /**
-   * Touch layout. Beside the sea when it fits (two buttons in a column), else under it, so every cell of water and every button
-   * is at least 64 across at 7 by 7, 9 by 9 and 11 by 11, upright or sideways.
-   */
+  /** Touch layout (`touchLayout`): three buttons beside or under the sea; every cell and button at least 64 for grown-ups, 100 at school. */
   private resizeTouch(v: View) {
-    const size = this.puzzle.size;
-    const left = 152, panel = 108, gap = 14, top = 28;
-    const side = Math.min(80, Math.floor((v.h - 2 * top) / size), Math.floor((v.w - left - gap - panel - 8) / size));
-    // A tall view: the sea centred under the home button, the buttons in a row beneath it.
-    const stack = Math.min(80, Math.floor((v.w - 2 * 48) / size), Math.floor((v.h - 140 - 24 - 20 - 72 - 24) / size));
-    this.slots = [];
-    if (side >= MIN_TOUCH && side + 8 > stack) {
-      this.cell = side;
-      const w = size * side, x = Math.max(left, (v.w - (w + gap + panel)) / 2), y = Math.max(top, Math.floor((v.h - w) / 2));
-      this.board.position.set(x, y);
-      const bx = x + w + gap + 8;
-      (['take', 'hint', 'again'] as const).forEach((kind, k) => this.slots.push({ kind, x: bx, y: y + 8 + k * (76 + 12), w: panel, h: 76 }));
-      this.tally.anchor.set(0.5, 0);
-      this.tally.position.set(bx + panel / 2, y + 8 + 3 * (76 + 12) + 8);
-    } else {
-      this.cell = Math.max(MIN_TOUCH, stack);
-      const w = size * this.cell, x = (v.w - w) / 2, y = 140;
-      this.board.position.set(x, y);
-      const by = y + w + 16 + 20, bw = Math.min(200, Math.floor((w - 24) / 3));
-      (['take', 'hint', 'again'] as const).forEach((kind, k) => this.slots.push({ kind, x: x + w / 2 - (3 * bw + 24) / 2 + k * (bw + 12), y: by, w: bw, h: 72 }));
-      this.tally.anchor.set(0.5, 0.5);
-      this.tally.position.set(v.w / 2, by + 72 + 36);
-    }
+    const size = this.puzzle.size, fit = touchLayout(size, v.w, v.h, this.ctx.band === 'school');
+    this.cell = fit.cell;
+    this.slots = fit.slots;
+    this.board.position.set(fit.x, fit.y);
+    this.tally.anchor.set(fit.tally.ax, fit.tally.ay);
+    this.tally.position.set(fit.tally.x, fit.tally.y);
     const w = size * this.cell;
     this.tapLayer.clear().rect(0, 0, w, w).fill({ color: 0xffffff, alpha: 0.001 });
     this.tapLayer.hitArea = new Rectangle(0, 0, w, w);
@@ -395,7 +375,7 @@ class IslandBridges implements Game {
     this.buttons.visible = false;
     this.buttonText.visible = false;
     sfx.tada();
-    await this.ctx.say('bridges.done');
+    await this.ctx.say(this.ctx.band === 'school' ? 'bridges.done-school' : 'bridges.done');
     await this.ctx.tw.wait(0.5);
     this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.excess });
   }
@@ -495,7 +475,12 @@ class IslandBridges implements Game {
     sfx.pop(4 + (edge % 6));
     this.dirty = true;
     this.report();
-    if (isSolved(this.layout, this.planks)) void this.joined();
+    if (isSolved(this.layout, this.planks)) return void this.joined();
+    // At school, the first island in a round that can no longer reach its number says what to do (the red outline shows which).
+    if (this.ctx.band === 'school' && this.touch && !this.troubleSaid && trouble(this.layout, this.planks).length) {
+      this.troubleSaid = true;
+      void this.ctx.say('bridges.trouble');
+    }
   }
 
   /** Take a plank off: free. */
@@ -667,7 +652,7 @@ export const islandBridges: GameModule = {
   region: 'puzzle-peaks',
   challenge: 'space',
   skills: ['logic', 'planning', 'deduction'],
-  bands: ['grownup'],
+  bands: ['school', 'grownup'],
   inputs: ['touch', 'controller'],
   touchDemo: true,
   coplayHint: 'Tap the water between two islands to lay a plank, and again for a second. Ask which island has only one way to finish its number.',

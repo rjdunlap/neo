@@ -3,7 +3,7 @@ import { Rng } from '../../engine/random';
 import { COURSES } from './course';
 import {
   bycounting, byreasoning, canAdd, closesOff, connected, edgeAt, edgeToward, headStart, forcedPlank, hintFor, isSolved, islandToward, LEVEL_ORDER, layoutOf, makePuzzle, makePuzzles, otherEnd, parsePuzzle, picture, planFor, PLANS, planksAt, roomOf, solve, hintWalk,
-  trouble, waterOf, type Island, type Layout,
+  touchLayout, trouble, waterOf, type Island, type Layout,
 } from './logic';
 
 const layoutFrom = (size: number, rows: readonly string[]): Layout => {
@@ -507,5 +507,53 @@ describe('level 7, up to three planks', () => {
   it('keeps two planks on every other level and on the couch courses', () => {
     for (let level = 1; level <= 6; level++) expect(makePuzzle(planFor(level), new Rng(level * 31)).layout.max).toBe(2);
     for (const course of Object.values(COURSES)) for (const sea of course.seas) expect(parsePuzzle(sea).layout.max).toBe(2);
+  });
+});
+
+describe('the school opening', () => {
+  const views = [[1024, 768], [1024, 1365]] as const;
+
+  it('lays out the 5 by 5 and 7 by 7 seas at school with every cell and button at least 100, inside the view and clear of the home button', () => {
+    for (const size of [5, 7]) for (const [w, h] of views) {
+      const fit = touchLayout(size, w, h, true), where = `${size} at ${w}x${h}`;
+      expect(fit.cell, where).toBeGreaterThanOrEqual(100);
+      expect(fit.x, where).toBeGreaterThanOrEqual(152);
+      expect(fit.y, where).toBeGreaterThanOrEqual(0);
+      expect(fit.x + size * fit.cell, where).toBeLessThanOrEqual(w);
+      expect(fit.y + size * fit.cell, where).toBeLessThanOrEqual(h);
+      expect(fit.slots.map((s) => s.kind), where).toEqual(['take', 'hint', 'again']);
+      for (const s of fit.slots) {
+        expect(Math.min(s.w, s.h), where).toBeGreaterThanOrEqual(100);
+        expect(s.x + s.w, where).toBeLessThanOrEqual(w);
+        expect(s.y + s.h, where).toBeLessThanOrEqual(h);
+      }
+      for (let k = 1; k < 3; k++) expect(fit.slots[k].y, where).toBeGreaterThanOrEqual(fit.slots[k - 1].y + fit.slots[k - 1].h);
+    }
+    // Sideways at 7 by 7 is the tight case: the sea fills 34 to 734 with the buttons beside it.
+    expect(touchLayout(7, 1024, 768, true)).toMatchObject({ cell: 100, x: 152, y: 34, beside: true });
+    expect(touchLayout(5, 1024, 768, true)).toMatchObject({ cell: 100, x: 201, y: 134, beside: true });
+  });
+
+  it('keeps the grown-up layout as it was: cells of 64 to 80 and buttons 76 high beside the sea', () => {
+    expect(touchLayout(7, 1024, 768, false)).toMatchObject({ cell: 80, x: 171, y: 104, beside: true });
+    expect(touchLayout(9, 1024, 768, false)).toMatchObject({ cell: 79, beside: true });
+    expect(touchLayout(11, 1024, 768, false)).toMatchObject({ cell: 64, beside: true });
+    for (const size of [5, 7, 9, 11]) for (const [w, h] of views) {
+      const fit = touchLayout(size, w, h, false);
+      expect(fit.cell).toBeGreaterThanOrEqual(64);
+      expect(fit.cell).toBeLessThanOrEqual(80);
+      for (const s of fit.slots) expect(s.h).toBe(fit.beside ? 76 : 72);
+    }
+  });
+
+  it('leaves at least one whole water cell on every stretch of the school seas, so every plank target is a full cell', () => {
+    for (const level of [5, 1]) for (let seed = 1; seed <= 300; seed++) {
+      for (const p of makePuzzles(planFor(level), new Rng(seed))) {
+        for (const e of p.layout.edges) {
+          const a = p.layout.islands[e.a], b = p.layout.islands[e.b];
+          expect(Math.abs(a.r - b.r) + Math.abs(a.c - b.c), `level ${level} seed ${seed}`).toBeGreaterThanOrEqual(2);
+        }
+      }
+    }
   });
 });

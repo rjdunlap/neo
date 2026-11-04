@@ -124,7 +124,8 @@ export const LANDS: readonly Land[] = [
     games: ['log-roll', 'robot-path', 'bug-builder', 'bouncy-launch', 'seesaw-balance', 'light-lab', 'ramp-race', 'inchworm', 'block-tower', 'chain-reaction', 'shape-buddies', 'fossil-dig', 'sense-detective', 'cue-studio', 'bond-beads', 'welcome-ways', 'example-express', 'moon-window', 'sorting-machine', 'water-road', 'drops-journey', 'forecast-detective'],
   },
   {
-    // The grown-up puzzles. Every game here is for the `grownup` band, so everyone younger sees them behind the signpost.
+    // The grown-up puzzles, so everyone younger sees them behind the signpost. A grown-up puzzle that opens its smallest
+    // levels to the top of school (Island Bridges) keeps this home; Wonder Woods lists it by subject.
     id: 'lantern-lake',
     name: 'Lantern Lake',
     line: 'land.lantern-lake',

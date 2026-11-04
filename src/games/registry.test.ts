@@ -308,7 +308,7 @@ describe('game registry', () => {
   });
 
   it('lists the grown-up games as island games for the grown-up band only, and opens any controller-only one through the couch', () => {
-    const ids = ['marble-jump', 'log-roll', 'snowball-merge', 'brain-break', 'pyramid-solitaire', 'number-nook', 'gem-swap', 'tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga'];
+    const ids = ['marble-jump', 'log-roll', 'snowball-merge', 'brain-break', 'pyramid-solitaire', 'number-nook', 'gem-swap', 'tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'pond-conga'];
     for (const id of ids) {
       const g = gameById(id)!;
       expect(g, id).toBeDefined();
@@ -328,6 +328,13 @@ describe('game registry', () => {
     // Every island game takes touch except Pond Typing, played on a keyboard: the island opens its couch course.
     expect(GAMES.filter((g) => !playsByTouch(g)).map((g) => g.id)).toEqual(['pond-typing']);
     for (const g of GAMES) if (!playsByTouch(g)) expect(courseInfo(FIRST_COURSE[g.id]).game, g.id).toBe(g.id);
+  });
+
+  it('opens Island Bridges\' two small seas to the top of school, 5 by 5 then 7 by 7, and every sea to grown-ups', () => {
+    const g = gameById('island-bridges')!;
+    expect(g.bands).toEqual(['school', 'grownup']);
+    expect(g.levels('school')).toEqual({ min: 1, max: 5, order: [5, 1] });
+    expect(couchGameById('island-bridges')).toBe(g);
   });
 
   it('plays no background music in a game where she makes the music', () => {

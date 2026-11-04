@@ -2478,6 +2478,8 @@ export const SCRIPT = {
   'bridges.hint-joined-same': ['Keep them joined: two planks on the lit bridge would cut the islands in dashed rings off from the rest, so it carries one plank, not two.'],
   'bridges.joined': ['Every island is joined!', 'A bridge to every island!'],
   'bridges.done': ['A whole archipelago, joined.'],
+  'bridges.done-school': ["Every island has its planks, and they're all joined!"],
+  'bridges.trouble': ["The red island can't reach its number now. Take a plank off a bridge next to it."],
   'conga.go': ['Steer the ducklings to their food. If they bump something, the whole line turns about, and a bump counts as a step.'],
   'conga.go-touch': ['Steer the ducklings to their food. Touch the pond to set off, then swipe to turn. If they bump something, the whole line turns about.'],
   'conga.yum.peas': ['Yum, peas!', 'Peas, please!'],
