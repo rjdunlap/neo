@@ -496,8 +496,9 @@ describe('level 7, up to three planks', () => {
       expect(p.layout.islands.length, label).toBeGreaterThanOrEqual(12);
       expect(p.layout.islands.length, label).toBeLessThanOrEqual(14);
       expect(p.layout.islands.every((il) => il.n >= 1 && il.n <= 12), label).toBe(true);
-      // Following the hints lays exactly the answer, each a counting reason, never a bare pointer.
-      const kinds = hintWalk(p.layout, p.solution);
+      // Following the hints as level 7 gives them (no keep-them-joined) lays exactly the answer, each a counting reason.
+      const kinds = hintWalk(p.layout, p.solution, false);
+      expect(kinds.every((k) => k === 'forced'), label).toBe(true);
       expect(kinds, label).not.toContain('next');
       expect(kinds.length, label).toBe(p.par);
     }

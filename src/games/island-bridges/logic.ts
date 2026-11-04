@@ -353,7 +353,7 @@ export function makePuzzle(plan: BridgePlan, rng: Rng): Puzzle {
     const { found } = solve(layout);
     if (found.length !== 1 || (plan.counting && !bycounting(layout))) continue;
     // A three-plank sea uses a triple, and every step of it is one an island's count names (no bare pointer to the answer).
-    if (plan.maxPlanks && (!found[0].includes(3) || !hintWalk(layout, found[0]).every((k) => k === 'forced'))) continue;
+    if (plan.maxPlanks && (!found[0].includes(3) || !hintWalk(layout, found[0], false).every((k) => k === 'forced'))) continue;
     if (plan.joined && (bycounting(layout) || !byreasoning(layout) || !joinedByHints(layout, found[0]))) continue;
     return { size, layout, solution: found[0], par: found[0].reduce((n, p) => n + p, 0) };
   }
@@ -485,11 +485,14 @@ export function joinedPlank(layout: Layout, planks: Planks): { edge: number; isl
   return closing?.group ? { ...forced, closing: closing.edge, group: closing.group } : null;
 }
 
-/** Following the hints from an empty sea: the kinds given, in order, until the sea is finished (or a hint is missing). */
-export function hintWalk(layout: Layout, solution: Planks): Hint['kind'][] {
+/**
+ * Following the hints from an empty sea: the kinds given, in order, until the sea is finished (or a hint is missing). `joined`
+ * as the level gives it: on for level 6's keep-them-joined hints, off for a sea hinted by counting alone.
+ */
+export function hintWalk(layout: Layout, solution: Planks, joined = true): Hint['kind'][] {
   const planks = solution.map(() => 0), kinds: Hint['kind'][] = [];
   for (let step = 0; step < 200; step++) {
-    const h = hintFor(layout, planks, solution, true);
+    const h = hintFor(layout, planks, solution, joined);
     if (!h) break;
     kinds.push(h.kind);
     if (h.kind === 'fix') planks[h.edge]--;
