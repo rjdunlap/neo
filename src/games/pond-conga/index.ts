@@ -11,10 +11,10 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { COURSES, courseMinimum, coursePonds, isCongaCourse } from './course';
-import { DX, DY, firstCrumbs, foodAt, pondLook, headAfter, hintDir, hintPath, makePond, nextCrumb, opposite, planFor, startState, step, swipeDir, SWIPE, type Cell, type Conga, type Dir, type Food, type Pond, type PondLook } from './logic';
+import { DX, DY, firstCrumbs, foodAt, groupOf, openCrumbs, pondLook, headAfter, hintDir, hintPath, makePond, nextCrumb, opposite, planFor, startState, step, swipeDir, SWIPE, type Cell, type Conga, type Dir, type Food, type Pond, type PondLook } from './logic';
 
 /** Grown-up play only: this game lives in Lantern Lake, played by touch or on the couch. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 7 } };
 
 const WATER = 0xa9e0f2;
 const WATER_LINE = 0x4f9fbf;
@@ -179,6 +179,8 @@ class PondConga implements Game {
   /** The next bit of food and the faint one after it: holders whose picture is this pond's food. */
   private readonly crumbNext = new Container();
   private readonly crumbAfter = new Container();
+  /** Level 7's third bite of a group: a group of three shows at once, all at full strength. */
+  private readonly crumbThird = new Container();
   /** The round's food and reed bank, from its seed; a course's ponds take the next food in turn. */
   private readonly look: PondLook;
   private food: Food = 'peas';
@@ -229,7 +231,7 @@ class PondConga implements Game {
       this.course = null;
     }
     for (const part of [this.board, this.water, this.reeds, this.pads, this.trail, this.crumbs, this.line, this.top, this.note]) part.eventMode = 'none';
-    this.crumbs.addChild(this.crumbAfter, this.crumbNext);
+    this.crumbs.addChild(this.crumbAfter, this.crumbThird, this.crumbNext);
     this.board.addChild(this.water, this.reeds, this.pads, this.trail, this.crumbs, this.line);
     ctx.stage.addChild(this.board, this.top, this.note);
     this.touch = !ctx.couch;
@@ -334,7 +336,7 @@ class PondConga implements Game {
       art.position.set(at.x, at.y);
       this.pads.addChild(art);
     });
-    for (const art of [this.crumbNext, this.crumbAfter]) art.scale.set(cell / 70);
+    for (const art of [this.crumbNext, this.crumbAfter, this.crumbThird]) art.scale.set(cell / 70);
     this.ducks.forEach((d, i) => d.scale.set(DUCK * cell / 100 * (i === 0 ? 1.06 : 1)));
   }
 
@@ -364,10 +366,34 @@ class PondConga implements Game {
       const dir = ahead ? this.toward(body[i], ahead) : this.state.heading;
       d.rotation = dir * Math.PI / 2;
     });
+    const pulse = 1 + 0.07 * Math.sin(this.clock * 5);
+    if (groupOf(this.pond) > 1) {
+      // A group shows together, every bite at full strength, and nothing of the next group: she picks the order.
+      const open = openCrumbs(this.pond, this.state);
+      [this.crumbNext, this.crumbAfter, this.crumbThird].forEach((holder, i) => {
+        holder.visible = !!open[i];
+        if (!open[i]) return;
+        const at = this.center(open[i]);
+        holder.position.set(at.x, at.y);
+        holder.scale.set(this.cell / 70 * pulse);
+        holder.alpha = 1;
+      });
+    } else this.drawNextAndAfter(pulse);
+    const t = this.trail.clear();
+    if (this.hinted && !this.busy) {
+      for (const c of this.hintCells) {
+        const m = this.center(c);
+        t.circle(m.x, m.y, this.cell * 0.13).fill({ color: swatch.yellow.fill, alpha: 0.95 }).stroke({ width: 2, color: swatch.yellow.line });
+      }
+    }
+  }
+
+  /** One bite at a time: the next at full strength and a faint look at the one after. */
+  private drawNextAndAfter(pulse: number) {
     const next = nextCrumb(this.pond, this.state), after = this.pond.crumbs[this.state.eaten + 1];
     this.crumbNext.visible = !!next;
     this.crumbAfter.visible = !!after;
-    const pulse = 1 + 0.07 * Math.sin(this.clock * 5);
+    this.crumbThird.visible = false;
     if (next) {
       const at = this.center(next);
       this.crumbNext.position.set(at.x, at.y);
@@ -378,13 +404,6 @@ class PondConga implements Game {
       this.crumbAfter.position.set(at.x, at.y);
       this.crumbAfter.scale.set(this.cell / 70 * 0.62);
       this.crumbAfter.alpha = 0.5;
-    }
-    const t = this.trail.clear();
-    if (this.hinted && !this.busy) {
-      for (const c of this.hintCells) {
-        const m = this.center(c);
-        t.circle(m.x, m.y, this.cell * 0.13).fill({ color: swatch.yellow.fill, alpha: 0.95 }).stroke({ width: 2, color: swatch.yellow.line });
-      }
     }
   }
 
@@ -442,7 +461,7 @@ class PondConga implements Game {
     if (this.index >= this.ponds.length) return void this.finale();
     this.pond = this.ponds[this.index];
     this.food = foodAt(this.look, this.index);
-    for (const holder of [this.crumbNext, this.crumbAfter]) {
+    for (const holder of [this.crumbNext, this.crumbAfter, this.crumbThird]) {
       holder.removeChildren().forEach((c) => c.destroy({ children: true }));
       holder.addChild(foodArt(this.food, 70));
     }
@@ -468,6 +487,7 @@ class PondConga implements Game {
     this.report();
     if (this.told) return;
     this.told = true;
+    if (groupOf(this.pond) > 1) return this.ctx.instruct(this.touch ? 'conga.order-touch' : 'conga.order');
     return this.ctx.instruct(this.touch ? 'conga.go-touch' : 'conga.go');
   }
 

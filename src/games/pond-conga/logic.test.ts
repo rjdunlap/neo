@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  DX, DY, FOODS, PLANS, SWIPE, distances, foodAt, firstCrumbs, headAfter, hintDir, hintPath, lowerBound, makePond, pondLook, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, swipeDir, turnsIn,
+  DX, DY, FOODS, PLANS, bestStarts, groupCosts, groupOf, openCrumbs, orderMatters, restBound, SWIPE, distances, foodAt, firstCrumbs, headAfter, hintDir, hintPath, lowerBound, makePond, pondLook, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, swipeDir, turnsIn,
   type Board, type Cell, type Conga, type Dir,
 } from './logic';
 
@@ -56,7 +56,7 @@ describe('steps', () => {
     // Turning back into its own line: a long line curled up.
     const body: Cell[] = [{ x: 2, y: 1 }, { x: 3, y: 1 }, { x: 3, y: 0 }, { x: 2, y: 0 }, { x: 1, y: 0 }];
     const board: Board = { cols: 5, rows: 3, pads: [], start: body, heading: 2, crumbs: [] };
-    const curled: Conga = { body, heading: 2, eaten: 0 };
+    const curled: Conga = { body, heading: 2, eaten: 0, got: 0 };
     const own = step(board, curled, 3);
     expect(own.event).toBe('bonk');
     expect(own.state.body).toHaveLength(5);
@@ -67,12 +67,12 @@ describe('steps', () => {
     // A ring of four ducklings: the leader may follow the tail round the square.
     const body: Cell[] = [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }, { x: 0, y: 0 }];
     const ring: Board = { cols: 3, rows: 3, pads: [], start: body, heading: 2, crumbs: [] };
-    const follow = step(ring, { body, heading: 2, eaten: 0 }, null);
+    const follow = step(ring, { body, heading: 2, eaten: 0, got: 0 }, null);
     expect(follow.event).toBe('move');
     expect(cells(follow.state)).toEqual(['0,0', '1,0', '1,1', '0,1']);
     // The same move onto a crumb: the tail stays, so the cell is taken.
     const fed: Board = { ...ring, crumbs: [{ x: 0, y: 0 }] };
-    expect(step(fed, { body, heading: 2, eaten: 0 }, null).event).toBe('bonk');
+    expect(step(fed, { body, heading: 2, eaten: 0, got: 0 }, null).event).toBe('bonk');
   });
 });
 
@@ -123,12 +123,15 @@ describe('ponds from a picture', () => {
 
 describe('the plans', () => {
   it('grow in crumbs and lily pads, and never in speed by much', () => {
-    for (let i = 1; i < PLANS.length; i++) {
-      expect(PLANS[i].crumbs).toBeGreaterThanOrEqual(PLANS[i - 1].crumbs);
-      expect(PLANS[i].pads).toBeGreaterThanOrEqual(PLANS[i - 1].pads);
-      expect(PLANS[i].speed - PLANS[i - 1].speed).toBeLessThanOrEqual(0.3);
-      expect(PLANS[i].speed).toBeGreaterThanOrEqual(PLANS[i - 1].speed);
+    // Levels 1–6 are the arcade ladder; level 7 changes the rule instead, at level 3's pace.
+    const ladder = PLANS.filter((p) => !p.group);
+    for (let i = 1; i < ladder.length; i++) {
+      expect(ladder[i].crumbs).toBeGreaterThanOrEqual(ladder[i - 1].crumbs);
+      expect(ladder[i].pads).toBeGreaterThanOrEqual(ladder[i - 1].pads);
+      expect(ladder[i].speed - ladder[i - 1].speed).toBeLessThanOrEqual(0.3);
+      expect(ladder[i].speed).toBeGreaterThanOrEqual(ladder[i - 1].speed);
     }
+    expect(planFor(7)).toMatchObject({ group: 3, crumbs: 9, speed: 2.8 });
     expect(Math.max(...PLANS.map((p) => p.speed))).toBeLessThanOrEqual(3.6);
     expect(planFor(0)).toBe(PLANS[0]);
     expect(planFor(99)).toBe(PLANS.at(-1));
@@ -342,8 +345,10 @@ describe('swiping to steer by touch', () => {
   it('shows a short pond for the how-to demonstration: its first crumbs, still a fewest-steps bonk-free route', () => {
     for (let level = 1; level <= PLANS.length; level++) {
       const pond = makePond(planFor(level), new Rng(300 + level));
+      // Whole groups only: level 7's demo eats one group of three.
+      const n = groupOf(pond) > 1 ? 3 : 4;
       const short = firstCrumbs(pond, 4);
-      expect(short.crumbs).toEqual(pond.crumbs.slice(0, 4));
+      expect(short.crumbs).toEqual(pond.crumbs.slice(0, n));
       expect(short.par).toBe(lowerBound(short));
       expect(short.route).toHaveLength(short.par);
       let walk = startState(short);
@@ -352,9 +357,136 @@ describe('swiping to steer by touch', () => {
         expect(r.event, `level ${level}`).not.toBe('bonk');
         walk = r.state;
       }
-      expect(walk.eaten).toBe(4);
+      expect(walk.eaten).toBe(n);
     }
     const pond = makePond(planFor(1), new Rng(1));
     expect(firstCrumbs(pond, 9)).toBe(pond);
+  });
+});
+
+/** The fewest steps by trying every order of every group, from the distances alone: an independent check of `lowerBound`. */
+function bruteBound(p: Board): number {
+  const size = groupOf(p);
+  const perms = (xs: number[]): number[][] => xs.length <= 1 ? [xs] : xs.flatMap((x, k) => perms([...xs.slice(0, k), ...xs.slice(k + 1)]).map((r) => [x, ...r]));
+  const groups: number[][][] = [];
+  for (let g = 0; g < p.crumbs.length; g += size) groups.push(perms(Array.from({ length: Math.min(size, p.crumbs.length - g) }, (_, k) => g + k)));
+  let best = Infinity;
+  const go = (gi: number, at: Cell, total: number) => {
+    if (gi === groups.length) { best = Math.min(best, total); return; }
+    for (const order of groups[gi]) {
+      let from = at, t = total;
+      for (const k of order) { t += distances(p, from)[p.crumbs[k].y * p.cols + p.crumbs[k].x]; from = p.crumbs[k]; }
+      go(gi + 1, from, t);
+    }
+  };
+  go(0, p.start[0], 0);
+  return best;
+}
+
+describe('choose the order (level 7)', () => {
+  const plan = planFor(7);
+  const ponds = Array.from({ length: 12 }, (_, i) => makePond(plan, new Rng(700 + i * 13)));
+
+  it('shows a whole group of three at once, and only that group; any of them can be eaten first', () => {
+    const p = ponds[0];
+    let s = startState(p);
+    expect(openCrumbs(p, s)).toEqual(p.crumbs.slice(0, 3));
+    // Walk straight to the third of the group first: it is eaten, and the other two stay.
+    const firstPick = 2;
+    const route = (() => {
+      for (const order of [[2, 0, 1], [2, 1, 0]]) {
+        const short = { ...p, crumbs: order.map((k) => p.crumbs[k]), group: 1 };
+        const found = solveRoute(short);
+        if (found) return found;
+      }
+      return null;
+    })();
+    expect(route).not.toBeNull();
+    if (route) {
+      let at = 0;
+      while (s.eaten === 0) s = step(p, s, route[at++]).state;
+      expect(s.got).toBe(1 << firstPick);
+      expect(openCrumbs(p, s)).toEqual([p.crumbs[0], p.crumbs[1]]);
+    }
+    // The next group shows only once the first is all eaten.
+    let t = startState(p);
+    for (const d of p.route) { t = step(p, t, d).state; if (t.eaten === 3) break; }
+    expect(openCrumbs(p, t)).toEqual(p.crumbs.slice(3, 6));
+  });
+
+  it('a later group\'s food is plain water until its turn: the line paddles over it', () => {
+    const g: Board = { cols: 9, rows: 3, pads: [], start: [{ x: 2, y: 1 }, { x: 1, y: 1 }, { x: 0, y: 1 }], heading: 0, group: 3,
+      crumbs: [{ x: 6, y: 1 }, { x: 7, y: 1 }, { x: 8, y: 1 }, { x: 4, y: 1 }] };
+    // In groups of three, the fourth bite is in the second group: passing over it first does not eat it.
+    let s = startState(g);
+    s = step(g, s, 0).state; s = step(g, s, 0).state;
+    expect(s.body[0]).toEqual({ x: 4, y: 1 });
+    expect(s.eaten).toBe(0);
+  });
+
+  it('par is the fewest steps over every order of every group, and a bonk-free route meets it', () => {
+    for (const [i, p] of ponds.entries()) {
+      expect(p.group, `pond ${i}`).toBe(3);
+      expect(p.par, `pond ${i}`).toBe(bruteBound(p));
+      expect(p.par, `pond ${i}`).toBe(lowerBound(p));
+      let s = startState(p);
+      for (const d of p.route) {
+        const r = step(p, s, d);
+        expect(r.event, `pond ${i}`).not.toBe('bonk');
+        s = r.state;
+      }
+      expect(s.eaten, `pond ${i}`).toBe(9);
+    }
+  });
+
+  it('makes the order a real choice: in every group, some orders take more steps than others', () => {
+    for (const p of ponds) {
+      expect(orderMatters(p, p.route)).toBe(true);
+      const costs = groupCosts(p, p.start[0], 0);
+      expect(Math.max(...costs)).toBeGreaterThan(Math.min(...costs));
+    }
+  });
+
+  it('eating in a longer order is only steps: the line still eats everything, and the bound from there is honest', () => {
+    for (const p of ponds.slice(0, 4)) {
+      // From the start, the worst first pick costs more over the whole pond than a best one.
+      const s = startState(p);
+      const best = bestStarts(p, s);
+      expect(best.length).toBeGreaterThan(0);
+      expect(restBound(p, s)).toBe(p.par);
+    }
+  });
+
+  it('a hint leads to a crumb that starts a best order, from the start and from each group', () => {
+    for (const [i, p] of ponds.entries()) {
+      let s = startState(p), at = 0;
+      for (let g = 0; g < 3; g++) {
+        const path = hintPath(p, s);
+        expect(path.length, `pond ${i} group ${g}`).toBeGreaterThan(0);
+        let t = s;
+        for (const d of path) t = step(p, t, d).state;
+        const ate = p.crumbs.findIndex((_, k) => (t.got & (1 << k)) && !(s.got & (1 << k)));
+        expect(bestStarts(p, s), `pond ${i} group ${g}`).toContain(ate);
+        while (at < p.route.length && s.eaten < (g + 1) * 3) s = step(p, s, p.route[at++]).state;
+      }
+    }
+  });
+
+  it('a hint from a wandering line reaches a crumb it can eat now, with no bonk', () => {
+    for (let seed = 1; seed <= 16; seed++) {
+      const rng = new Rng(seed * 17);
+      const p = ponds[seed % ponds.length];
+      const lost = wander(p, startState(p), rng, rng.int(0, 50));
+      if (lost.state.eaten >= p.crumbs.length) continue;
+      const open = openCrumbs(p, lost.state).map(at);
+      const path = hintPath(p, lost.state);
+      let s = lost.state;
+      for (let i = 0; i < path.length; i++) {
+        const r = step(p, s, path[i]);
+        expect(r.event).toBe(i === path.length - 1 ? 'crumb' : 'move');
+        s = r.state;
+      }
+      if (path.length) expect(open).toContain(at(s.body[0]));
+    }
   });
 });

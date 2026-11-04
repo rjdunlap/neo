@@ -2502,6 +2502,8 @@ export const SCRIPT = {
   'bridges.trouble': ["The red island can't reach its number now. Take a plank off a bridge next to it."],
   'conga.go': ['Steer the ducklings to their food. If they bump something, the whole line turns about, and a bump counts as a step.'],
   'conga.go-touch': ['Steer the ducklings to their food. Touch the pond to set off, then swipe to turn. If they bump something, the whole line turns about.'],
+  'conga.order': ['Three bites at once! Eat them in any order you like. The best order takes the fewest steps.'],
+  'conga.order-touch': ['Three bites at once! Eat them in any order you like: touch the pond to set off, then swipe to turn. The best order takes the fewest steps.'],
   'conga.yum.peas': ['Yum, peas!', 'Peas, please!'],
   'conga.yum.sweetcorn': ['Yum, sweetcorn!', 'Crunchy corn!'],
   'conga.yum.oats': ['Yum, oats!', 'Oats for the ducklings!'],

@@ -1295,7 +1295,7 @@ Proof: existing-interaction tier: typecheck, the game's rule tests (kind is seed
 
 ### pond-conga 2: Choose the order
 
-- **`pond-conga`, Level 7, *Choose the order* (dive slice 2)** (builds on the built food art) (new rule on the existing interaction; grown-up): groups of food eaten in an order she chooses, par over orders, a group-aware demo pond and a hint to a best-order item. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
+- **`pond-conga`, Level 7, *Choose the order* (dive slice 2)** (**built 2026-11-04**, [PR #1223](https://github.com/rjdunlap/neo/pull/1223); builds on the built food art) (new rule on the existing interaction; grown-up): groups of food eaten in an order she chooses, par over orders, a group-aware demo pond and a hint to a best-order item. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
 
 Files expected: `src/games/pond-conga/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 

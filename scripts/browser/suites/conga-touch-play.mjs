@@ -9,7 +9,8 @@ async function congaTouchPlay() {
   /** A real finger: touch the middle of the pond and lift. */
   const touchPond = () => page.evaluate(() => { const g = neo.scene.game, p = g.tapLayer.toGlobal({ x: g.pond.cols * g.cell / 2, y: g.pond.rows * g.cell / 2 }); kit.tap(p.x, p.y); });
   /** Swipe steering for a whole round, in the page so the timing follows the game's own steps: after each step, swipe the way the next one has to turn. */
-  const drive = () => page.evaluate(async () => {
+  /** `first`: a route to follow from the start until the first group is eaten (level 7's longer order), then the hint's way. */
+  const drive = (first = null) => page.evaluate(async (first) => {
     const { hintPath } = await import('/src/games/pond-conga/logic.ts');
     const DX = [1, 0, -1, 0], DY = [0, 1, 0, -1];
     const swipe = async (g, dir) => {
@@ -20,7 +21,7 @@ async function congaTouchPlay() {
     for (let guard = 0; guard < 4000 && !neo.scene.finished; guard++) {
       const g = neo.scene.game;
       if (!g?.pond || g.busy || g.finished) { await kit.sleep(40); continue; }
-      const plan = g.onRoute ? g.pond.route.slice(g.routeAt) : hintPath(g.pond, g.state);
+      const plan = first && g.state.eaten < 3 ? first.slice(g.tries) : g.onRoute ? g.pond.route.slice(g.routeAt) : hintPath(g.pond, g.state);
       if (g.waiting) {
         if (plan[0] !== undefined && plan[0] !== g.state.heading) await swipe(g, plan[0]);
         else { const p = g.tapLayer.toGlobal({ x: 10, y: 10 }); kit.tap(p.x, p.y); }
@@ -32,8 +33,9 @@ async function congaTouchPlay() {
         if (plan[0] !== undefined && plan[0] !== g.state.heading) await swipe(g, plan[0]);
       }
       await kit.sleep(15);
+      if (first && g.state.eaten >= 3) return;
     }
-  });
+  }, first);
   /** The pond is one target; Hint and Start over at least 64 logical units, on screen, apart from each other and the water. */
   const targets = (label) => page.evaluate((label) => {
     const g = neo.scene.game, out = [], pond = { x: g.board.x, y: g.board.y, w: g.pond.cols * g.cell, h: g.pond.rows * g.cell };
@@ -51,6 +53,49 @@ async function congaTouchPlay() {
     if (pond.x < 108 && pond.y < 196) out.push('pond under the help button');
     return out.map((m) => `${label}: ${m} (${neo.view.w}x${neo.view.h}, scale ${neo.view.scale})`);
   }, label);
+  /** Level 7: three bites show at once; eat the first group in a longer order (only steps, no miss), then one hint to a best-order bite, then the rest. */
+  async function chooseTheOrder() {
+    await launch('pond-conga', 7); await ready();
+    const stickers = await page.evaluate(() => kit.store.data.stickers.length);
+    const shown = await page.evaluate(() => { const g = neo.scene.game; return [g.pond.group, g.crumbNext.visible, g.crumbAfter.visible, g.crumbThird.visible, g.crumbAfter.alpha]; });
+    assert.deepEqual(shown, [3, true, true, true, 1], 'a group of three shows at once, all at full strength');
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+    assert.deepEqual(await targets('level 7 portrait'), []);
+    await screenshot('conga-touch-7-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+    // The longest order of the first group that the line can paddle without a bump.
+    const longer = await page.evaluate(async () => {
+      const { solveRoute, bestStarts, startState } = await import('/src/games/pond-conga/logic.ts');
+      const g = neo.scene.game, p = g.pond, best = bestStarts(p, startState(p));
+      const orders = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]].filter((o) => !best.includes(o[0]));
+      const routes = orders.map((o) => solveRoute({ ...p, group: 1, crumbs: o.map((k) => p.crumbs[k]) })).filter(Boolean).sort((a, b) => b.length - a.length);
+      const bestFirstGroup = solveRoute({ ...p, crumbs: p.crumbs.slice(0, 3) });
+      return { route: routes[0], best: bestFirstGroup.length };
+    });
+    assert.ok(longer.route && longer.route.length > longer.best, `a longer order exists (${longer.route?.length} vs ${longer.best})`);
+    await drive(longer.route);
+    let st = await state();
+    assert.deepEqual([st.eaten, st.misses, st.hints], [3, 0, 0], 'a longer order eats the group with no miss');
+    assert.equal(await page.evaluate(() => [neo.scene.game.crumbNext, neo.scene.game.crumbAfter, neo.scene.game.crumbThird].filter((c) => c.visible).length), 3, 'the next three appear');
+    await tapSlot('hint'); await page.waitForTimeout(300);
+    const aim = await page.evaluate(async () => {
+      const { hintPath, bestStarts, step } = await import('/src/games/pond-conga/logic.ts');
+      const g = neo.scene.game; let t = g.state;
+      for (const d of hintPath(g.pond, t)) t = step(g.pond, t, d).state;
+      const ate = g.pond.crumbs.findIndex((_, k) => (t.got & (1 << k)) && !(g.state.got & (1 << k)));
+      return { ate, best: bestStarts(g.pond, g.state), dots: g.hintCells.length, hinted: g.hinted };
+    });
+    assert.ok(aim.hinted && aim.dots > 0, 'the hint shows its dots');
+    assert.ok(aim.best.includes(aim.ate), `the hint leads to a bite that starts a best order (${aim.ate} of ${aim.best})`);
+    await drive(); await finished('pond-conga');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers + 1, 'one sticker');
+    const r = await page.evaluate(() => { const r = kit.store.stats('pond-conga').history.at(-1); return [r.misses, r.hints, neo.scene.game?.excess ?? r.score]; });
+    assert.deepEqual(r.slice(0, 2), [0, 1], 'no miss for the longer order, one hint');
+    assert.ok(r[2] > 0, `the longer order costs steps over the fewest (${r[2]})`);
+    assert.deepEqual(errors, []);
+    log(`Pond Conga level 7: three bites at once, a longer first order with no miss, one hint to a best-order bite, ${r[2]} steps over the fewest, one sticker, portrait passed`);
+  }
+  if (process.env.CONGA_LEVELS === '7') return chooseTheOrder();
   // Level 1: the line waits for a touch, a bump into the bank is one miss, a hint counts once, Start over keeps the steps, then the pond is cleared.
   await launch('pond-conga', 1); await ready();
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);

@@ -29,6 +29,8 @@ export interface CongaPlan {
   maxLeg: number;
   /** Steps a second: constant, never faster as a pond goes on. */
   speed: number;
+  /** Items that show together and are eaten in any order (1, or missing: one at a time, in turn). */
+  group?: number;
   name: string;
 }
 
@@ -40,6 +42,7 @@ export const PLANS: CongaPlan[] = [
   { cols: 15, rows: 9, pads: 12, crumbs: 10, minLeg: 4, maxLeg: 11, speed: 3, name: 'A bigger pond, ten crumbs and a longer line' },
   { cols: 15, rows: 9, pads: 16, crumbs: 12, minLeg: 4, maxLeg: 12, speed: 3.2, name: 'Twelve crumbs among sixteen lily pads' },
   { cols: 15, rows: 9, pads: 20, crumbs: 12, minLeg: 5, maxLeg: 13, speed: 3.4, name: 'A crowded pond: twenty lily pads, twelve crumbs' },
+  { cols: 13, rows: 9, pads: 6, crumbs: 9, minLeg: 3, maxLeg: 8, speed: 2.8, group: 3, name: 'Choose the order: three bites show at once, nine in all' },
 ];
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -51,8 +54,10 @@ export interface Board {
   /** The line at the start, leader first, in a straight line behind the leader. */
   start: Cell[];
   heading: Dir;
-  /** Crumbs in the order they are eaten: only the next one (and a faint look at the one after) shows. */
+  /** Crumbs in the order they are eaten: only the next one (and a faint look at the one after) shows. With a `group`, crumbs come in groups of that size, shown together and eaten in any order. */
   crumbs: Cell[];
+  /** Crumbs shown together (1, or missing: one at a time). */
+  group?: number;
 }
 
 export interface Pond extends Board {
@@ -68,13 +73,24 @@ export interface Conga {
   heading: Dir;
   /** Crumbs eaten so far. */
   eaten: number;
+  /** Which crumbs are eaten, one bit for each (by its place in `crumbs`): with groups, the count alone cannot say which. */
+  got: number;
 }
 export type Event = 'move' | 'crumb' | 'bonk';
 
-export const startState = (b: Board): Conga => ({ body: b.start.map((c) => ({ ...c })), heading: b.heading, eaten: 0 });
+export const startState = (b: Board): Conga => ({ body: b.start.map((c) => ({ ...c })), heading: b.heading, eaten: 0, got: 0 });
 export const inPond = (b: Board, c: Cell) => c.x >= 0 && c.y >= 0 && c.x < b.cols && c.y < b.rows;
 export const isPad = (b: Board, c: Cell) => b.pads.some((p) => same(p, c));
-export const nextCrumb = (b: Board, s: Conga): Cell | undefined => b.crumbs[s.eaten];
+export const groupOf = (b: Board) => Math.max(1, b.group ?? 1);
+/** The places in `crumbs` of the crumbs she can eat now: the uneaten ones of the group being eaten (just the next one without groups). */
+export function openIndices(b: Board, s: Conga): number[] {
+  const size = groupOf(b), first = Math.floor(s.eaten / size) * size, out: number[] = [];
+  for (let i = first; i < Math.min(first + size, b.crumbs.length); i++) if (!(s.got & (1 << i))) out.push(i);
+  return out;
+}
+export const openCrumbs = (b: Board, s: Conga): Cell[] => openIndices(b, s).map((i) => b.crumbs[i]);
+/** The first crumb she can eat now. */
+export const nextCrumb = (b: Board, s: Conga): Cell | undefined => openCrumbs(b, s)[0];
 
 /** The direction that goes from one cell to a neighbouring one. */
 export function dirBetween(from: Cell, to: Cell): Dir {
@@ -93,16 +109,16 @@ export function step(b: Board, s: Conga, want: Dir | null): { state: Conga; even
   const heading = want !== null && want !== opposite(s.heading) ? want : s.heading;
   const head = s.body[0];
   const target = { x: head.x + DX[heading], y: head.y + DY[heading] };
-  const crumb = nextCrumb(b, s);
-  const eats = !!crumb && same(crumb, target);
+  const eatsAt = openIndices(b, s).find((i) => same(b.crumbs[i], target));
+  const eats = eatsAt !== undefined;
   // The tail moves away at the same moment, so the leader may take its cell, unless the line is growing.
   const body = eats ? s.body : s.body.slice(0, -1);
   if (!inPond(b, target) || isPad(b, target) || body.some((c) => same(c, target))) {
     const turned = s.body.slice().reverse();
-    return { state: { body: turned, heading: dirBetween(turned[1], turned[0]), eaten: s.eaten }, event: 'bonk' };
+    return { state: { body: turned, heading: dirBetween(turned[1], turned[0]), eaten: s.eaten, got: s.got }, event: 'bonk' };
   }
   const grown = [target, ...body];
-  return { state: { body: grown, heading, eaten: s.eaten + (eats ? 1 : 0) }, event: eats ? 'crumb' : 'move' };
+  return { state: { body: grown, heading, eaten: s.eaten + (eats ? 1 : 0), got: eats ? s.got | (1 << eatsAt) : s.got }, event: eats ? 'crumb' : 'move' };
 }
 
 /** Steps to every open cell from `from`, going round lily pads, or -1 where it cannot be reached. */
@@ -130,12 +146,13 @@ export function distances(b: Board, from: Cell): number[] {
 const order = (heading: Dir): Dir[] => [heading, ((heading + 1) % 4) as Dir, ((heading + 3) % 4) as Dir, opposite(heading)];
 
 /**
- * Every way of taking the leader to the next crumb in the fewest steps the board allows, without a bonk and without the line
- * meeting itself, straight routes first. Each comes with the line as it stands after eating the crumb.
+ * Every way of taking the leader to one crumb she can eat now (the next one unless given) in the fewest steps the board allows,
+ * without a bonk, without the line meeting itself and without eating another crumb on the way, straight routes first. Each
+ * comes with the line as it stands after eating the crumb.
  */
-function* legRoutes(b: Board, s: Conga): Generator<{ dirs: Dir[]; state: Conga }> {
-  const target = nextCrumb(b, s);
-  if (!target) return;
+function* legRoutes(b: Board, s: Conga, aim: Cell | undefined = nextCrumb(b, s)): Generator<{ dirs: Dir[]; state: Conga }> {
+  if (!aim) return;
+  const target = aim;
   const dist = distances(b, target);
   const need = dist[s.body[0].y * b.cols + s.body[0].x];
   if (need < 1) return;
@@ -153,7 +170,7 @@ function* legRoutes(b: Board, s: Conga): Generator<{ dirs: Dir[]; state: Conga }
       const next = step(b, state, d);
       if (next.event === 'bonk') continue;
       if (left === 1) {
-        if (next.event === 'crumb') { found = true; yield { dirs: [...dirs, d], state: next.state }; }
+        if (next.event === 'crumb' && same(next.state.body[0], target)) { found = true; yield { dirs: [...dirs, d], state: next.state }; }
         continue;
       }
       if (next.event !== 'move') continue;
@@ -164,26 +181,96 @@ function* legRoutes(b: Board, s: Conga): Generator<{ dirs: Dir[]; state: Conga }
   yield* walk(s, need, []);
 }
 
-/** A route that eats every remaining crumb with no bonk in the fewest steps, or null if there is none (within a search limit). */
+/**
+ * A route that eats every remaining crumb with no bonk in the fewest steps the open water allows from here (`restBound`), or
+ * null if there is none (within a search limit). With groups, it tries the crumbs that start a best order first.
+ */
 export function solveFrom(b: Board, s: Conga, budget = { left: 20000 }): Dir[] | null {
   if (s.eaten >= b.crumbs.length) return [];
-  for (const leg of legRoutes(b, s)) {
-    if (--budget.left < 0) return null;
-    const rest = solveFrom(b, leg.state, budget);
-    if (rest) return [...leg.dirs, ...rest];
+  const want = restBound(b, s);
+  for (const first of bestFirst(b, s)) {
+    if (first.bound > want) break;
+    for (const leg of legRoutes(b, s, b.crumbs[first.index])) {
+      if (--budget.left < 0) return null;
+      const rest = solveFrom(b, leg.state, budget);
+      if (rest) return [...leg.dirs, ...rest];
+    }
   }
   return null;
 }
 export const solveRoute = (b: Board): Dir[] | null => solveFrom(b, startState(b));
 
-/** The fewest steps possible whatever happens next: the open-water distances between the crumbs, added up. */
-export function lowerBound(b: Board): number {
-  let at = b.start[0], total = 0;
-  for (const c of b.crumbs) {
-    total += distances(b, at)[c.y * b.cols + c.x];
-    at = c;
+/** Distances depend only on the pond's size and lily pads, so they are kept for each pads list (trial ponds share one). */
+const known = new WeakMap<Cell[], Map<string, number[]>>();
+/** Open-water steps between two cells, going round lily pads (-1 if there is no way). */
+function gap(b: Board, from: Cell, to: Cell): number {
+  let byCell = known.get(b.pads);
+  if (!byCell) known.set(b.pads, (byCell = new Map()));
+  const key = `${b.cols},${b.rows},${from.x},${from.y}`;
+  let dist = byCell.get(key);
+  if (!dist) byCell.set(key, (dist = distances(b, from)));
+  return dist[to.y * b.cols + to.x];
+}
+
+/** All the orders of a few items. */
+function orders(items: readonly number[]): number[][] {
+  if (items.length <= 1) return [items.slice()];
+  return items.flatMap((x, k) => orders([...items.slice(0, k), ...items.slice(k + 1)]).map((rest) => [x, ...rest]));
+}
+
+/**
+ * The fewest steps to eat the rest from `at` with the crumbs in `got` already eaten, over every order the groups allow. A group ends wherever its order ends, which changes the next group's first leg, so this
+ * keeps the best total for each crumb a group could end on.
+ */
+function restFrom(b: Board, at: Cell, got: number, eaten: number): number {
+  const size = groupOf(b);
+  // ends: the crumb last eaten (or -1 for `at`) and the fewest steps so far.
+  let ends = new Map<number, number>([[-1, 0]]);
+  const cellOf = (k: number) => (k < 0 ? at : b.crumbs[k]);
+  for (let g = Math.floor(eaten / size) * size; g < b.crumbs.length; g += size) {
+    const items: number[] = [];
+    for (let i = g; i < Math.min(g + size, b.crumbs.length); i++) if (!(got & (1 << i))) items.push(i);
+    const next = new Map<number, number>();
+    for (const [end, cost] of ends) {
+      for (const order of orders(items)) {
+        let total = cost, from = cellOf(end), ok = true;
+        for (const k of order) {
+          const d = gap(b, from, b.crumbs[k]);
+          if (d < 0) { ok = false; break; }
+          total += d;
+          from = b.crumbs[k];
+        }
+        if (!ok) continue;
+        const last = order[order.length - 1];
+        if (!(next.get(last)! <= total)) next.set(last, total);
+      }
+    }
+    ends = next;
+    if (!ends.size) break;
   }
-  return total;
+  return ends.size ? Math.min(...ends.values()) : Infinity;
+}
+
+/** The fewest steps possible from here whatever happens next: the open-water distances between the crumbs added up, in the best order the groups allow. */
+export const restBound = (b: Board, s: Conga): number => restFrom(b, s.body[0], s.got, s.eaten);
+
+/** The fewest steps possible for the whole pond. */
+export const lowerBound = (b: Board): number => restBound(b, startState(b));
+
+/** The crumbs she can eat now, each with the fewest steps for the whole rest if she eats it first, best first. */
+export function bestFirst(b: Board, s: Conga): { index: number; bound: number }[] {
+  return openIndices(b, s)
+    .map((index) => {
+      const lead = gap(b, s.body[0], b.crumbs[index]);
+      return { index, bound: lead < 0 ? Infinity : lead + restFrom(b, b.crumbs[index], s.got | (1 << index), s.eaten + 1) };
+    })
+    .sort((x, y) => x.bound - y.bound || x.index - y.index);
+}
+
+/** The crumbs that start a best order from here (ties all count). */
+export function bestStarts(b: Board, s: Conga): number[] {
+  const all = bestFirst(b, s);
+  return all.filter((o) => o.bound === all[0].bound).map((o) => o.index);
 }
 
 /** Turns the line in a route has to make. */
@@ -191,12 +278,19 @@ export const turnsIn = (start: Dir, route: readonly Dir[]): number => route.filt
 
 /**
  * Where to steer from here to reach the next crumb soonest, however the line got here: the fewest steps that avoid the line,
- * the pads and the bank, a few steps longer if the line is in the way for a while. Empty if there is nothing to suggest
+ * the pads and the bank, a few steps longer if the line is in the way for a while. With groups, the way goes to a crumb that
+ * starts a best order from here (the next best if the line is in the way of that one). Empty if there is nothing to suggest
  * (the line is boxed in for now: the next bonk turns it about and there will be).
  */
 export function hintPath(b: Board, s: Conga, slack = 10): Dir[] {
-  const target = nextCrumb(b, s);
-  if (!target) return [];
+  for (const { index } of bestFirst(b, s)) {
+    const found = hintTo(b, s, b.crumbs[index], slack);
+    if (found.length) return found;
+  }
+  return [];
+}
+
+function hintTo(b: Board, s: Conga, target: Cell, slack: number): Dir[] {
   const dist = distances(b, target);
   const need = dist[s.body[0].y * b.cols + s.body[0].x];
   if (need < 1) return [];
@@ -212,7 +306,10 @@ export function hintPath(b: Board, s: Conga, slack = 10): Dir[] {
       if (to_target < 0 || to_target > left - 1) continue;
       const next = step(b, state, d);
       if (next.event === 'bonk') continue;
-      if (next.event === 'crumb') return [...dirs, d];
+      if (next.event === 'crumb') {
+        if (same(to, target)) return [...dirs, d];
+        continue;
+      }
       const found = search(next.state, left - 1, [...dirs, d]);
       if (found) return found;
     }
@@ -289,7 +386,7 @@ function tryPond(plan: CongaPlan, rng: Rng): Pond | null {
   const free: Cell[] = [];
   for (let cy = 0; cy < rows; cy++) for (let cx = 0; cx < cols; cx++) if (!keep.has(`${cx},${cy}`)) free.push({ x: cx, y: cy });
   const pads = rng.shuffle(free.slice()).slice(0, plan.pads);
-  const base: Board = { cols, rows, pads, start, heading: 0, crumbs: [] };
+  const base: Board = { cols, rows, pads, start, heading: 0, crumbs: [], ...(plan.group ? { group: plan.group } : {}) };
   if (!connected(base)) return null;
   let state = startState(base);
   const crumbs: Cell[] = [];
@@ -316,7 +413,31 @@ function tryPond(plan: CongaPlan, rng: Rng): Pond | null {
   const board: Board = { ...base, crumbs };
   const route = solveRoute(board);
   if (!route || route.length !== lowerBound(board)) return null;
+  if (groupOf(board) > 1 && !orderMatters(board, route)) return null;
   return { ...board, route, par: route.length };
+}
+
+/** The steps each order of a group takes from `at`, by the open-water distances (`orders` order). */
+export function groupCosts(b: Board, at: Cell, group: number): number[] {
+  const size = groupOf(b), items: number[] = [];
+  for (let i = group * size; i < Math.min((group + 1) * size, b.crumbs.length); i++) items.push(i);
+  return orders(items).map((order) => {
+    let from = at, total = 0;
+    for (const k of order) { total += gap(b, from, b.crumbs[k]); from = b.crumbs[k]; }
+    return total;
+  });
+}
+
+/** Whether, where the best route reaches each group, some orders of that group are longer than others: so which first is a real choice. */
+export function orderMatters(b: Board, route: readonly Dir[]): boolean {
+  const size = groupOf(b);
+  let s = startState(b), at = 0;
+  for (let g = 0; g * size < b.crumbs.length; g++) {
+    const costs = groupCosts(b, s.body[0], g);
+    if (Math.min(...costs) === Math.max(...costs)) return false;
+    while (at < route.length && s.eaten < (g + 1) * size) s = step(b, s, route[at++]).state;
+  }
+  return true;
 }
 
 /** Duck-friendly food: one kind per pond. Code and pond pictures still call each bit a crumb. */
@@ -355,11 +476,22 @@ export function headAfter(b: Board, s: Conga, route: readonly Dir[], steps: numb
   return state.body[0];
 }
 
-/** The same pond with only its first `n` crumbs, and the fewest-steps route for those (a prefix of a bonk-free fewest-steps route is one). */
+/**
+ * The same pond with only its first `n` crumbs (whole groups: at least one, never a group cut short), and the fewest-steps
+ * route for those (a prefix of a bonk-free fewest-steps route is one).
+ */
 export function firstCrumbs(pond: Pond, n: number): Pond {
+  const size = groupOf(pond);
+  n = Math.max(size, Math.floor(n / size) * size);
   if (n >= pond.crumbs.length) return pond;
-  const board: Board = { cols: pond.cols, rows: pond.rows, pads: pond.pads, start: pond.start, heading: pond.heading, crumbs: pond.crumbs.slice(0, n) };
-  const route = solveRoute(board);
+  const board: Board = { cols: pond.cols, rows: pond.rows, pads: pond.pads, start: pond.start, heading: pond.heading, crumbs: pond.crumbs.slice(0, n), group: pond.group };
+  // With groups, the short pond's best order can differ from the whole pond's; if no route meets its bound, the whole route's start does.
+  let route = solveRoute(board);
+  if (!route && size > 1) {
+    let s = startState(board), at = 0;
+    while (at < pond.route.length && s.eaten < n) s = step(board, s, pond.route[at++]).state;
+    route = pond.route.slice(0, at);
+  }
   if (!route) throw new Error('no bonk-free route');
   return { ...board, route, par: route.length };
 }

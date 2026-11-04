@@ -67,3 +67,9 @@
 - [PR #1207](https://github.com/rjdunlap/neo/pull/1207), commit `f6c33e21` on base `e25c1921`: `namedHint` (`lantern.hint-one` / `lantern.hint-many`), the after-pond Show me a short way and Next pond buttons on touch, `lantern.after`, how-to hint step and finish line.
 - Ran: typecheck; full `npm test` (passed after a how-to card length fix); `GAME_URL=http://localhost:5288 BROWSER_SUITE=lanterntouch LANTERN_ONLY=3` PASS (hint was `lantern.hint-one`, pond lit, replay 4 presses = par counting nothing, portrait screenshot mid-replay, Next pond, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=lantern-lights FINGER_LEVELS=3` PASS in 17.1 s; `game-reviewer` fixes applied afterwards (spoken cue, All done label, flip only changed lanterns).
 - Not run: full `lanterntouch` (levels 8, 1, 6, school), live key/pad switch while waiting, couch suites (couch path unchanged), build (no shared assets), offline, iPad or child. Open: the replay-button and named-hint person check in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-11-04 — Light Lab Split the sunbeam definition (docs only)
+
+- [Definition](../definitions/light-lab-split.md) for level 12 (school only, after batch light-lab 5), [PR #1208](https://github.com/rjdunlap/neo/pull/1208).
+- Ran: a throwaway generator probe (400 seeds at 7×5: all accepted within the 500-attempt budget, mean 3.5 attempts, at most 7 tiltables, start floor held; not committed); links and `git diff --check`.
+- Not run: code checks (no code changed).
