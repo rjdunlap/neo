@@ -2647,7 +2647,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--penguin-slid
 
 [PR #1209](https://github.com/rjdunlap/neo/pull/1209), [dive slice 5](../deep-dives/penguin-slide.md#build-slices-in-order). School top level 13 (school `order` [2..10, 12, 13], max 13): 6×5 ponds with one fish, four rocks and a second penguin in a red scarf (`puzzle.pal`); she taps a penguin (100-unit cell) to choose it (it lifts over a blue ring), then taps the ice; the controller's action button switches penguin. Each penguin stops the other like a rock and penguins never push (`movePair`, `solvePair` and `alone` in `logic.ts`). Ponds are kept only when the best route is 4-7 slides and freezing either penguin as a rock makes the fish unreachable or the route longer (300 seeds generate in about 0.2 s; best-route spread 4:143, 5:97, 6:48, 7:12). No misses; choosing is not a slide; the yellow arrow (after three extra slides, one hint) stands by the penguin to move next; undo steps back either penguin's slide and re-chooses it, and glows when stuck. Voice `slide.pals` (mentions only tapping, not the action button); how-to steps, finish and note from level 13. The couch course for 13 is a later line, not built.
 
-Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--penguin-slide-level-13-two-penguins-dive-slice-5).
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--penguin-slide-level-13-two-penguins-dive-slice-5).
 
 ## Orchard Rows levels 7–9 A path through the orchard (2026-11-03)
 
