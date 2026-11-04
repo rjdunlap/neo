@@ -1287,6 +1287,14 @@ Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/
 
 Proof: new-interaction tier: typecheck, unit tests, one filtered `readdo` play of level 4 and level 6 with one failed Send and one hint, one portrait screenshot, `fingerdemo` at 4, 5 and 6.
 
+### read-do 3: Make the sign
+
+- **`read-do`, level 7 *Make the sign* (dive slice 3; WC3)**, after batch read-do 2 (new interaction): a friend's wish card, a tray of word tiles dragged into the sign row, Show it and Send. [Dive](deep-dives/read-do.md#build-slices-in-order), [definition](definitions/read-do-make-the-sign.md#build-order-and-check-tier)
+
+Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, a `readdo` case in the browser check script, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests including registry, lands, how-to and layout, one filtered `readdo` play of level 7 with one failed Send and a second to raise the glow, one portrait screenshot of the tray, `fingerdemo` at 7, one build for the voice lines.
+
 ### rhyme-time 1: Fresh families: bug, sock and snail
 
 Built 2026-11-03, [PR #1143](https://github.com/rjdunlap/neo/pull/1143); [build note](archive/COMPLETED-2026-10-09.md#rhyme-time-fresh-families-bug-sock-and-snail-rhyme-time-batch-1-2026-11-03). No longer eligible for dispatch.
