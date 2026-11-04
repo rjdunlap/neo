@@ -278,6 +278,9 @@ class BlockTopple implements Game {
     if (this.busy || this.finished || this.grab || this.flying || palmOnGlass()) return;
     this.grab = { id: e.pointerId, from: this.board.toLocal(e.global) };
     this.aim = null;
+    // A spring-back still running would pull the ball out from under the finger.
+    this.ctx.tw.kill(this.ball);
+    this.ball.position.set(SLING.x, SLING.y);
     this.ball.scale.set(1.12, 0.88);
     void this.ctx.tw.to(this.ball.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
     sfx.squeak(6);
