@@ -1337,7 +1337,7 @@ Proof: existing-game fix tier: typecheck, the game's rule tests, one filtered re
 
 ### quick-tricks 2: Two at once
 
-- **`quick-tricks`, Level 7, *Two at once* (dive slice 2)**, after batch quick-tricks 1 (shares `index.ts` and the cast) (new rule on the existing interaction): two tricks asked at once across three friends. **Claimed 2026-11-04 by `claude/quick-tricks-two-at-once`.** [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
+- **`quick-tricks`, Level 7, *Two at once* (dive slice 2)** (**built 2026-11-04**, [PR #1228](https://github.com/rjdunlap/neo/pull/1228); shares `index.ts` and the cast; new rule on the existing interaction): two tricks asked at once across three friends. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
 
 Files expected: `src/games/quick-tricks/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 

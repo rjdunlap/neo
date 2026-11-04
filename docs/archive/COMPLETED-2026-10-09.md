@@ -2750,7 +2750,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--pixel-pictur
 
 [PR #1213](https://github.com/rjdunlap/neo/pull/1213), [definition](../definitions/vine-snip.md) slice 1. New game `vine-snip` in Tinker Lab (region `tinker-lab`, challenge `hands`; Tinker Lab now 23 games, school pages 8, 7, 7). Closed-form model in `logic.ts` (G = 1600, small-swing pendulum, falling arc, 200-wide catch band) with 18 rule tests. Level 3's tuning found that a band covering the friend-side turnaround also caught the bottom crossing toward the friend at the definition's hand-placed position, so the generator places the friend to maximise the window while a top-of-swing snip feeds and the start turnaround and both bottom crossings miss (window about 0.44 s, minimum 0.433 over 500 seeds). Deviations: early or late by timing within the beat, not landing side; friend eyes follow the finger. Bands: lap 1, toddler 1–2, preschool 1–3, pre-K 2–3, school 3. Levels 4–5 (keeps, wrong-side line, two fruits) stay queued as slice 2 in [READY](../READY.md).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--vine-snip-levels-13-vine-snip-slice-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--vine-snip-levels-13-vine-snip-slice-1).
 
 ## Light Lab, couch course Sunbeam Run (light-lab batch 2, 2026-11-04)
 
@@ -2761,3 +2761,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--light-lab-couch-cour
 [PR #1225](https://github.com/rjdunlap/neo/pull/1225), `claude/light-lab-materials`: [dive slice 5](../deep-dives/light-lab.md#build-slices-in-order), [definition](../definitions/light-lab-materials.md). Light Lab level 11 *Through, bounce or stop?* for pre-K and school: three free guesses (through, bounce or stop picture cards, never a miss) of a clear, cloudy, blocking or shiny thing on a stand in a straight beam, then two judged choices from a three-thing tray (wake the far flower, shade a sleepy owl, bounce to the flower); a wrong pick is one miss with a teaching line, two raise the glow on the right thing (one hint). Orders pre-K [1,2,3,4,11] and school [2,3,4,11,5..10] (`LEVELS` moved to `logic.ts`); voice lines `light.materials` and `light.mat.*`; the how-to goal is neutral and level 11 has its own steps; couch unchanged.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--light-lab-level-11-through-bounce-or-stop-light-lab-batch-5).
+
+## Quick Tricks level 7 Two at once (quick-tricks batch 2, 2026-11-04)
+
+[PR #1228](https://github.com/rjdunlap/neo/pull/1228), [dive slice 2](../deep-dives/quick-tricks.md#build-slices-in-order). New level 7 in show one, doubled: three rain friends and two leaves (200 and 300 wide), where a partial cover stays up (no miss) and the pet names who is still wet; a leaf adding nothing floats home; with both up and someone wet, `tricks.leaf-move` and the glow (the trick's one hint). The monster holds two different socks from five (3-over-2 grid, one partner each, `tricks.one-pair`); one river with a narrow (160) and wide (260) gap and planks 130, 220, 330, where only middle-on-narrow plus long-on-wide works (`tricks.plank-move` if long lies on the narrow gap). Placed pieces lift off freely. Rain unchanged below 7. Pre-K range 2–7, school 5–7, no `order`; two level-7 how-to steps; the ghost finger plays it. Reviewer fixes: a hidden small leaf, rain below level 7, plank spacing.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--quick-tricks-level-7-two-at-once-quick-tricks-batch-2).
