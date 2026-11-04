@@ -32,6 +32,8 @@ export interface SlidePlan {
   maxSingles?: number;
   /** No first slide from the start eats two fish at once, so the order is hers to plan. */
   apartFromStart?: boolean;
+  /** Prediction ponds: three shown slides, and she taps where each will stop before it goes (`makePrediction`). */
+  predict?: boolean;
   puzzles: number;
   name: string;
 }
@@ -47,6 +49,7 @@ export const PLANS: SlidePlan[] = [
   { cols: 6, rows: 5, fish: 2, soft: 1, rocks: 4, blocks: 1, moves: [4, 6], puzzles: 2, name: 'Park a block and use soft snow to stop on a route to both fish' },
   { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 3, blocks: 2, pairedBlocks: true, moves: [6, 9], puzzles: 2, name: 'Use two blocks to plan stopping places on the way to a fish' },
   { cols: 7, rows: 5, fish: 3, soft: 0, rocks: 5, moves: [5, 8], apartFromStart: true, puzzles: 2, name: 'Three fish: plan which to eat first, second and third' },
+  { cols: 5, rows: 4, fish: 1, soft: 0, rocks: 3, moves: [3, 3], predict: true, puzzles: 2, name: 'Where will it stop? An arrow shows the slide; tap where the penguin will stop (two ponds, three slides each)' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -252,6 +255,72 @@ export function makePuzzle(plan: SlidePlan, rng: Rng, earlier: readonly SlidePuz
   }
   throw new Error('no slide puzzle');
 }
+
+/** One shown slide of a prediction pond: which way it goes from where, and where it stops. */
+export interface ShownSlide {
+  dir: Dir;
+  from: Cell;
+  to: Cell;
+}
+
+/** A prediction pond and the slides it shows, in order; only the last one eats the fish. */
+export interface PredictionPond {
+  puzzle: SlidePuzzle;
+  slides: ShownSlide[];
+}
+
+/** How many slides a prediction pond shows. */
+export const PREDICTIONS = 3;
+
+/**
+ * A prediction pond: three shown slides that each really move the penguin (never a bump or a push), never straight back
+ * the way it came, with the fish passed only on the last; at least two of the three stop further away than the cell
+ * beside the penguin, so "right next to it" is not always the answer.
+ */
+export function makePrediction(plan: SlidePlan, rng: Rng): PredictionPond {
+  for (let attempt = 0; attempt < 2000; attempt++) {
+    const cells: Cell[] = [];
+    for (let x = 0; x < plan.cols; x++) for (let y = 0; y < plan.rows; y++) cells.push({ x, y });
+    const pool = rng.shuffle(cells);
+    const start = pool.pop()!;
+    const rocks = pool.splice(0, plan.rocks);
+    const p: SlidePuzzle = { cols: plan.cols, rows: plan.rows, rocks, soft: [], start, fish: [], best: PREDICTIONS };
+    const slides: ShownSlide[] = [];
+    const passed: Cell[][] = [];
+    let at = start;
+    for (let n = 0; n < PREDICTIONS; n++) {
+      const last = slides[slides.length - 1];
+      const ways = ([0, 1, 2, 3] as Dir[]).filter((d) => slide(p, at, d).passed.length && (!last || d !== (last.dir + 2) % 4));
+      if (!ways.length) break;
+      const dir = rng.pick(ways);
+      const s = slide(p, at, dir);
+      slides.push({ dir, from: at, to: s.to });
+      passed.push(s.passed);
+      at = s.to;
+    }
+    if (slides.length < PREDICTIONS) continue;
+    if (slides.filter((s) => far(s) > 1).length < 2) continue;
+    const seen = new Set([start, ...passed[0], ...passed[1]].map(key));
+    const spots = passed[2].filter((c) => !seen.has(key(c)));
+    if (!spots.length) continue;
+    return { puzzle: { ...p, fish: [rng.pick(spots)] }, slides };
+  }
+  throw new Error('no prediction pond');
+}
+
+const far = (s: ShownSlide) => Math.abs(s.to.x - s.from.x) + Math.abs(s.to.y - s.from.y);
+
+/** What stopped a slide that ended at `to` going `dir`: a rock (and which cell it is on), or the pond's edge. */
+export function stopper(p: SlidePuzzle, to: Cell, dir: Dir): { kind: 'rock'; cell: Cell } | { kind: 'edge' } {
+  const next = beside(to, dir);
+  return p.rocks.some((r) => r.x === next.x && r.y === next.y) ? { kind: 'rock', cell: next } : { kind: 'edge' };
+}
+
+/** The pond cell under a point in board units, clamped to the pond. */
+export const cellAt = (p: { cols: number; rows: number }, x: number, y: number, size: number): Cell => ({
+  x: Math.min(p.cols - 1, Math.max(0, Math.floor(x / size))),
+  y: Math.min(p.rows - 1, Math.max(0, Math.floor(y / size))),
+});
 
 /** What a pond's rocks look like; every look is a rock to the stop rule. */
 export const ROCK_LOOKS = ['rock', 'igloo', 'snowman'] as const;

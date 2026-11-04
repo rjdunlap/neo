@@ -1009,7 +1009,7 @@ Proof: existing-interaction tier: typecheck and the game's rule tests; one filte
 
 ### habitat-helpers 2: Something changed
 
-**Built 2026-11-03 ([PR #1170](https://github.com/rjdunlap/neo/pull/1170)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-03--habitat-helpers-level-7-something-changed-habitat-helpers-batch-2); [build note](archive/COMPLETED-2026-10-09.md#habitat-helpers-level-7-something-changed-habitat-helpers-2-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
+**Built 2026-11-03 ([PR #1170](https://github.com/rjdunlap/neo/pull/1170)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-03.md#2026-11-03--habitat-helpers-level-7-something-changed-habitat-helpers-batch-2); [build note](archive/COMPLETED-2026-10-09.md#habitat-helpers-level-7-something-changed-habitat-helpers-2-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
 
 - **`habitat-helpers`, level 7 Something changed (dive slice 2)** (new interaction; school 4–7): a working garden loses one need and she names which need is missing and restores it; the need question is the game's first counted miss; satisfies the ecosystems study's F3 definition. [Dive](deep-dives/habitat-helpers.md#build-slices-in-order)
 

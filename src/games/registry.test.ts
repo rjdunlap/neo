@@ -12,6 +12,18 @@ import { PLACES } from '../content/places';
 import { REGION_IDS } from '../content/world';
 
 describe('game registry', () => {
+  it('places Penguin Slide 11 after 2 for preschool and pre-K only, and lands school at its easiest', () => {
+    const g = gameById('penguin-slide')!;
+    expect(g.levels('preschool')).toEqual({ min: 1, max: 11, order: [1, 2, 11] });
+    expect(g.levels('prek')).toEqual({ min: 1, max: 11, order: [1, 2, 11, 3, 4] });
+    expect(g.levels('school')).toEqual({ min: 2, max: 10 });
+    expect(g.entryLevels).toEqual([11]);
+    expect(stepLevel(2, 1, g.levels('prek'))).toBe(11);
+    expect(stepLevel(11, 1, g.levels('prek'))).toBe(3);
+    expect(landing(11, g.levels('school'), g.entryLevels)).toBe(2);
+    expect(landing(11, g.levels('prek'), g.entryLevels)).toBe(11);
+  });
+
   it('extends Roundup only to pre-K 12 and preserves existing levels and pins', () => {
     const g = gameById('roundup')!;
     expect(g.levels('prek')).toEqual({ min: 3, max: 12, order: [3, 4, 5, 6, 7, 8, 9, 12] });

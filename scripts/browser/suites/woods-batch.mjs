@@ -56,6 +56,37 @@ async function woodsBatch() {
   }
 
   if (!only || only === 'penguin') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
+    if (level === 11) {
+      // Where will it stop? (preschool, after level 2): tap the cell where the shown slide will stop.
+      await launch('penguin-slide', 11);
+      await page.setViewportSize({ width: 768, height: 1024 });
+      const guess = async (right) => {
+        const before = await page.evaluate(() => [neo.scene.game.index, neo.scene.game.step]);
+        await page.evaluate((right) => {
+          const g = neo.scene.game; const s = g.shown[g.step];
+          // A wrong guess: the cell beside the penguin on the other side, or any other free cell.
+          const cells = []; for (let x = 0; x < g.puzzle.cols; x++) for (let y = 0; y < g.puzzle.rows; y++) cells.push({ x, y });
+          const c = right ? s.to : cells.find((c) => !(c.x === s.to.x && c.y === s.to.y) && !(c.x === g.at.x && c.y === g.at.y));
+          const at = g.board.toGlobal({ x: (c.x + 0.5) * 100, y: (c.y + 0.5) * 100 });
+          kit.tap(at.x, at.y);
+        }, right);
+        await page.waitForFunction((b) => { const g = neo.scene.game; return neo.scene.finished || (!g.busy && (g.index !== b[0] || g.step !== b[1])); }, before, { timeout: 20000 });
+      };
+      await idle(0);
+      assert.equal(await page.evaluate(() => neo.scene.game.undo.visible), false, 'no undo on prediction ponds');
+      await screenshot('penguin-slide-11-portrait');
+      await guess(false);
+      assert.deepEqual(await counts(), [0, 0], 'a wrong prediction is never a miss');
+      assert.equal(await page.evaluate(() => neo.scene.game.step), 1, 'the slide still went');
+      await guess(true); await guess(true);
+      await idle(1);
+      for (let k = 0; k < 3; k++) await guess(true);
+      await finished('penguin-slide');
+      assert.deepEqual(await score('penguin-slide'), [0, 0]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log('Penguin Slide 11: a wrong prediction (no miss) then right ones, both ponds, saved score and sticker passed');
+      continue;
+    }
     await launch('penguin-slide', level);
     if (level === 3 || level >= 6) await page.setViewportSize({ width: 768, height: 1024 });
     const puzzles = await page.evaluate(() => neo.scene.game.plan.puzzles);
