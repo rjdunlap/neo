@@ -14,7 +14,7 @@ Definition, 2026-11-03, branch `claude/define-peekaround-from-the-sky`. This is 
 
 ## The rule
 
-Spot facings are the game's own (`whereIs`, `spotFacing` in `logic.ts`): facing 0 is in front (her side), 1 is to her right, 2 is behind the tree, 3 is to her left. Level 8 never turns the island for the answer (`turns` stays 0 between scenes, as in levels 3–5).
+Spot facings are the game's own (`whereIs`, `spotFacing` in `logic.ts`): facing 0 is in front (her side), 1 is to her right, 2 is behind the tree, 3 is to her left. Level 8 never turns the island for the answer: its only turn is the turned-map demonstration, which turns back, so `turns` is unchanged by a level-8 scene. The true map is the arrangement `whereIs` gives at the scene's current `turns` (0 from the start of the round).
 
 A **map** is an arrangement: which friend (or flower) sits at each facing, drawn on a circle seen from above with **her side at the bottom**. The island's own projection already does this: `at(s)` puts a spot at `x = sin(f·π/2)·r`, `y = cos(f·π/2)·r` (down is toward her), so the map uses the same formula with a circle (`r` on both axes) instead of the side view's ellipse. The right map is the island as it stands.
 
@@ -26,7 +26,7 @@ Each scene shows three maps, shuffled:
 | **Mirror** | Left and right swapped (`x` negated: facings 1 and 3 trade) | The friends to her left and right changed sides; the classic error of copying a view face to face |
 | **Turned** | Everything a quarter turn round (facing `f` becomes `f + k`, `k` = 1 or 3, seeded) | The island from above, but as if someone at the side were looking; the right shape from the wrong side |
 
-The four coloured flowers (`spot: i + 0.5`) are drawn on every map at their half-spot places and move with the same transform, so each wrong map is a true picture of a wrong viewpoint, never a scramble.
+The four coloured flowers (`spot: i + 0.5`) are drawn on every map at their half-spot places and move with the same transform as the friends. The turned map is then a true picture from a wrong viewpoint; the mirror is a reflection (no view from the sky shows it), kept as the named copying error, and never a scramble.
 
 ## The round
 
@@ -68,14 +68,14 @@ Plain `min..max`; no `order` needed. `describeLevel(8)` is the plan name.
 
 - **Map card:** a 170-unit cream square (`cream`, `wood.line` border, 22 rounded), like level 3's picture tiles at a larger size; a parchment tint is optional (match Treasure Map's if it is exported, otherwise `cream`).
 - **On the card:** a green circle of radius 64 (`swatch.green.light`, `swatch.green.line`) for the island; a crown circle of radius 22 (`swatch.green.fill`) for the tree from above, with one red apple dot; each friend a small `Critter` head (`alive = false`, scale about 0.13) at radius 46; each flower a 7-unit dot in its colour at radius 46 between spots.
-- **Her side:** a small rowboat at the bottom edge of every card, and the same boat moored at the front of the island in the scene at level 8 (it stays at the front, since level 8 does not turn for the answer; during a turned-map demonstration it turns with the island and comes back). The boat is the "you are here" mark that ties the maps to her side; no words.
+- **Her side:** a small rowboat at the bottom edge of every card, and the same boat floating in the water in front of the island in the scene at level 8. It is not on the ring and never turns, including during a turned-map demonstration, so after that turn the island and the boat match the turned map exactly. The boat is the "you are here" mark that ties the maps to her side; no words.
 - **Right map moment:** a cloud puff and two birds drift across the top for the "bird's view", reusing `puffs` from `src/art/shapes.ts`.
 
 No textures are created, so nothing new to free in `destroy()`.
 
 ## Layout and presentation
 
-The view's design area is 1024 wide in every orientation. The three cards stand in a row at the top, centres from `spread(3, 200, view.w - 200, 190)`, tops at y = 30 (cards 30–200). The tree's crown reaches 335 units above the island's centre, so **at level 8 the island's centre is `max(0.6·h, 545)`**: in landscape (h 768) the crown's top is at 210, clear of the cards, and the island's shadow ends near 731, above the bottom edge; in portrait 0.6·h already clears. The bottom-left pet and corner buttons keep their usual clearance (the island spans x 152–872 at its shadow, as at other levels). Cards are 170 units, above the 100-unit minimum; hit areas are the whole card plus 4 units. Arrows stay hidden (level 8 is not a turning level).
+The view always contains the 1024×768 design area (`src/engine/view.ts` scales by the smaller ratio), so `h` is at least 768 and `w` at least 1024 in every orientation and with safe-area insets; 768 is the tightest landscape case. The three cards stand in a row at the top, centres from `spread(3, 200, view.w - 200, 190)`, tops at y = 30 (cards 30–200). The tree's crown reaches 335 units above the island's centre, so **at level 8 the island's centre is `max(0.6·h, 545)`**: in landscape (h 768) the crown's top is at 210, clear of the cards, and the island's shadow ends near 731, above the bottom edge; in portrait 0.6·h already clears. The bottom-left pet and corner buttons keep their usual clearance (the island spans x 152–872 at its shadow, as at other levels). Cards are 170 units, above the 100-unit minimum; hit areas are the whole card plus 4 units. Arrows stay hidden (level 8 is not a turning level).
 
 ## Voice (planned IDs, not yet in `voice-script.ts`)
 
@@ -89,7 +89,7 @@ The view's design area is 1024 wide in every orientation. The three cards stand 
 | `around.sky.turned` | "That map is from the side. The island has to turn to look like that!" | none |
 | `around.sky.hint` | "Find the friend in front of the tree. On the map, it is next to the boat." | none |
 
-`around.sky` is the instruction (`ctx.instruct`), repeated by the corner guide. Every slotted line stays on device speech under V1. All lines name "the tree", as the game's lines must.
+`around.sky` is the instruction (`ctx.instruct`), repeated by the corner guide. Every slotted line stays on device speech under V1. The only hiding thing named is "the tree", as elsewhere in the game.
 
 ## Co-play, off-screen, how-to and bot
 
@@ -107,7 +107,7 @@ Across many seeds:
 3. The mirror trades facings 1 and 3 only; the turned map adds `k ∈ {1, 3}` to every facing, including the flowers'.
 4. Scene 1 has no friend behind; scenes 2 and 3 have exactly one, and it is named; scene 3 has four friends.
 5. No scene holds cow with bunny or dog with bear; the hidden friend never repeats back to back.
-6. Turning the island `k` quarter turns makes the island's arrangement equal the turned map (so the demonstration is honest).
+6. Turning the island `k` quarter turns makes the island's arrangement equal the turned map, with the boat still at the bottom (it never turns), so the demonstration is honest.
 7. `peekTouch('sky', …)` returns the true map's index; the school range is 4–8 and pre-K's still ends at 7.
 
 ## Settled and open
@@ -126,6 +126,6 @@ Across many seeds:
 
 ## Build order and check tier
 
-After batch peekaround-island 4. **New-interaction tier:** typecheck, rule tests, one scripted play of level 8 with a mirror map (a miss), a turned map (a miss, the island turns and back), the ring, then the right map, one portrait screenshot of the three maps, a logged landscape check that the crown's top clears the cards, and `fingerdemo` at 8. No build needed (no assets or shared files).
+After batch peekaround-island 4. **New-interaction tier:** typecheck, rule tests, one scripted play of level 8 with a mirror map (a miss), a turned map (a miss, the island turns and back), the ring, then the right map, one portrait screenshot of the three maps, a logged check at a 1024×768 view that the crown's top clears the cards and the shadow ends above the bottom edge, and `fingerdemo` at 8. No build needed (no assets or shared files).
 
 Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
