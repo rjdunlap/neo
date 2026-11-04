@@ -815,7 +815,7 @@ Proof: new-levels tier, as the [definition's checks](definitions/hidden-sprouts.
 
 ### sprout-shuffle 2: Patchwork Conservatory
 
-- **`sprout-shuffle`, levels 7–8 Patchwork Conservatory** (genetics G7; a new interaction on the same game, school and up; level 7 one accepted pair with a trap plant, level 8 two accepted plans plus a free "Another way?"): plan a cross guaranteed to satisfy a two-trait planting brief over two explicitly independent toy loci. [Definition](definitions/patchwork-conservatory.md). Depends on Sprout Shuffle level 6 (Hidden Sprouts, [definition](definitions/hidden-sprouts.md)) being built.
+- **`sprout-shuffle`, levels 7–8 Patchwork Conservatory** (genetics G7; a new interaction on the same game, school and up; level 7 one accepted pair with a trap plant, level 8 two accepted plans plus a free "Another way?"): plan a cross guaranteed to satisfy a two-trait planting brief over two explicitly independent toy loci. [Definition](definitions/patchwork-conservatory.md). **Built 2026-11-03**, [PR #1184](https://github.com/rjdunlap/neo/pull/1184), branch `claude/sprout-shuffle-conservatory` (levels 7 and 8 together); [closeout](archive/COMPLETED-2026-10-09.md#sprout-shuffle-levels-78-patchwork-conservatory-genetics-g7-2026-11-03).
 
 Proof: new-interaction tier, as the [definition's checks](definitions/patchwork-conservatory.md#checks-for-the-builds) set it (typecheck; unit tests for the rule properties, how-to and registry; one filtered scripted play of level 7 with a Check on `AA bb` × `Aa Bb`, a second miss and the glow, then the accepted pair, and of level 8 with both plans found; one portrait screenshot with a lens open; `fingerdemo` at 7 and 8; build). Device and person checks stay open there.
 
@@ -943,7 +943,7 @@ Proof: typecheck and the game's rule tests; one filtered regression play of leve
 
 ### ferry-jam 2: Rocks in the harbor
 
-**Built 2026-11-03 ([PR #1169](https://github.com/rjdunlap/neo/pull/1169)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-03--ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-batch-2); [build note](archive/COMPLETED-2026-10-09.md#ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-2-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
+**Built 2026-11-03 ([PR #1169](https://github.com/rjdunlap/neo/pull/1169)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-03.md#2026-11-03--ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-batch-2); [build note](archive/COMPLETED-2026-10-09.md#ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-2-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
 
 - **`ferry-jam`, level 7 Rocks in the harbor (dive slice 2)** (new level on the existing drag; school): rocks that never move share the harbor; every rock must matter and `focusPath` must still reach every boat; a rounded grey `Graphics` boulder with a foam ring drawn from existing palette colours. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
 

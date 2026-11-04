@@ -2575,7 +2575,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--garden-rows-
 
 [PR #1169](https://github.com/rjdunlap/neo/pull/1169), batch ferry-jam 2, [dive slice 2](../deep-dives/ferry-jam.md#build-slices-in-order). Pictures take `x` for a rock (`Harbor.rocks`, parsed beside the boats); a rock fills one cell in a row beside the ferry's, never slides, and stops boats. Fifteen frozen 5x5 harbors with 4-5 boats need 6-9 slides (one at 9); the `rocksMatter` test removes each rock and requires a shorter fewest way, and `focusPath` still reaches every boat at level 7. School window now 3-7 (pre-K still 1-4). Touching or dragging a rock wobbles it (`sfx.knock`) and says `ferry.rock` once per round, never a miss or hint; level 7 opens with `ferry.start.rocks`; the how-to step is scoped to 7; the stuck hint and the bot are unchanged; the couch catalog and course stay at levels 3-6. A rounded grey `Graphics` boulder with a foam ring.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-batch-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-batch-2).
 
 ## Habitat Helpers level 7 Something changed (habitat-helpers 2, 2026-11-03)
 
@@ -2620,6 +2620,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--penguin-slide-level-
 [PR #1183](https://github.com/rjdunlap/neo/pull/1183), [dive slice 3](../deep-dives/orchard-rows.md#build-slices-in-order), batch `orchard-rows 3`, built exactly per the [definition](../definitions/orchard-rows-path.md) with the defaults for its three open decisions (a sign recounts only after its part is answered, no level-8 split hint, part-part-whole twice). School range 1–9; new `PathOrchard` scene in `path.ts` (levels 4–6 code unchanged), path model and layout in `logic.ts`, skill `distributive property`, voice `orchard.path*`, `choosepath`, `pathlaid`, `partcount`, `partone`, `wholehint`, `pathjoin` and `done.path`, how-to steps 7–9 with the level-4 note bounded to 4–6, and a browser case in `scripts/browser/suites/orchard-play.mjs`. A review fix keeps the finished orchard drawn through the join line.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--orchard-rows-levels-79-a-path-through-the-orchard-batch-orchard-rows-3).
+
+## Sprout Shuffle levels 7–8 Patchwork Conservatory (genetics G7, 2026-11-03)
+
+Branch `claude/sprout-shuffle-conservatory`, [PR #1184](https://github.com/rjdunlap/neo/pull/1184), batch `sprout-shuffle 2`: [definition](../definitions/patchwork-conservatory.md), [genetics study G7](../deep-dives/subjects/genetics.md#build-slices-in-order). `school` range now 1–8. Two independent markings (round spot tiles, petal-shaped rim tiles; seeded red/teal rim colour); a brief card, a bench of three (level 7) or four (level 8) plant cards, two pots, a spots lens and a rim lens opening four-bud fans, a leaf Check. Level 7: one working pair, a failing Check is one miss with the failing lens opening and the hiding plant named, the second miss glows the working pair. Level 8: two working pairs, a free "Another way?" after the first (failing Checks and the found pair are free), Finish ends the round after the second bed. Show me plants a working pair (one hint). New `conservatory.ts`; `logic.ts` section "Levels 7–8" (13 new rule tests); `art.ts` marking tiles and lens art; voice `sprout.pc-*`, `sprout.help.conservatory`; how-to steps 7–8 and ghost finger. Review fixes: a sub-100-unit portrait fan at level 7 and Finish pressable mid-animation. Open low-impact: a drag held through a rotation is not cancelled. Definition decisions took their defaults (bench 3/4, free Another way?, Show me rule).
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--sprout-shuffle-levels-78-patchwork-conservatory-genetics-g7).
 
 ## Island Bridges, level 7 Up to three planks (island-bridges batch 3, 2026-11-03)
 
