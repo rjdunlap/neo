@@ -339,3 +339,9 @@
 - [PR #1189](https://github.com/rjdunlap/neo/pull/1189): [definition](../definitions/light-lab-materials.md) for level 11 (materials toy rule, three free guesses then two judged choices, pre-K order [1,2,3,4,11], school order [2,3,4,11,5..10]), the batch `light-lab 5`, the dive's slice 5 marked defined.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests and every play check (no code changed). Open: the build (new-interaction tier), and the person and device checks the definition lists.
+
+## 2026-11-03 — Peekaround Island level 8 From the sky definition (docs only)
+
+- [PR #1191](https://github.com/rjdunlap/neo/pull/1191): [definition](../definitions/peekaround-from-the-sky.md) for level 8 (school only, school range 4–8, pre-K unchanged at 7), the batch `peekaround-island 5`, the dive's slice 5 marked defined.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests and every play check (no code changed). Open: the build (new-interaction tier, after batch 4) and the person and device checks the definition lists.
