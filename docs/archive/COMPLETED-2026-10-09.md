@@ -2603,7 +2603,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--inchworm-lev
 
 [PR #1198](https://github.com/rjdunlap/neo/pull/1198), `claude/inchworm-longer-than-ruler` (code `6de1c56e`): [dive slice 3](../deep-dives/inchworm.md#build-slices-in-order). Level 10 (mode `slide`, school only; school order `[1, 2, 7, 9, 3, 4, 8, 5, 6, 10]`, max 10; pre-K unchanged `[1, 2, 7]`): a short draggable ruler (4-6 long, labelled 0..n) is laid under a thing from ruler + 1 to 2 x ruler long, first with 0 at the thing's start, then with 0 at a chalk mark (with its number) where the first lay ended; then three pads: the whole, the second part alone, and one next to the whole. A drop away from the next place slides back (no miss). The second part alone is one miss ('worm.secondpart', "That is the second part. Add the first {n}."); the other wrong pad is one miss ('worm.firstthenrest'); two misses light both parts and ring the chalk mark. New lines `worm.slide`, `worm.slidemark`, `worm.slidehow`, `worm.secondpart`, `worm.firstthenrest`; how-to step runs 10 to 10; the bot drags the ruler twice then taps; the `worm` case of the woods suite now runs to level 10 by default. A guard in `placeSlider` for a missing measure was added after the first browser run caught a page error after the last round.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--inchworm-level-10-longer-than-the-ruler-inchworm-batch-3).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--inchworm-level-10-longer-than-the-ruler-inchworm-batch-3).
 
 ## Today's six slice 1: Home entry and preset levels (D10, 2026-11-03)
 
