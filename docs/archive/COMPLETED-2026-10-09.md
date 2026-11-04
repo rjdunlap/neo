@@ -2641,7 +2641,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--penguin-slid
 
 [PR #1190](https://github.com/rjdunlap/neo/pull/1190), [dive slice 4](../deep-dives/penguin-slide.md#build-slices-in-order). School level 12 after 10 (school `order` [2..10, 12]; 11 stays the younger bands' prediction step): two 6×5 ponds with one ice block, one star mark, three rocks, one soft-snow patch that must change the best route, and no fish; best route 3-6 slides. The goal is the block stopping on the star: the shared `solved()` in `logic.ts` (every fish eaten and every star covered) drives `solve` and `hasDeadEnd`, and a push landing on the star wins with a sparkle. No misses; the hint arrow after three extra slides shows the next slide or push (one hint), and undo glows when the block can no longer reach the star, with the star-specific stuck line `slide.star.stuck`. Voice `slide.star` (instruction) and `slide.star.done` (finale); the how-to card has level-12 steps and its goal reads "Slide the penguin to the fish, or push an ice block onto a star." A woods case plays a dead end, checks the stuck line and glowing undo, then solves both ponds.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--penguin-slide-level-12-a-block-onto-the-star-dive-slice-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--penguin-slide-level-12-a-block-onto-the-star-dive-slice-4).
 
 ## Orchard Rows levels 7–9 A path through the orchard (2026-11-03)
 
@@ -2680,6 +2680,12 @@ Branch `claude/picture-graph-what-graph-can-say`, [PR #1201](https://github.com/
 ## Lantern Lights, school opening: levels 1 and 2 (lantern-lights batch 4, 2026-11-04)
 
 [PR #1200](https://github.com/rjdunlap/neo/pull/1200), `claude/lantern-lights-school`: [dive slice 4](../deep-dives/lantern-lights.md#build-slices-in-order), [definition](../definitions/lantern-lights-school-opening.md). `bands` is now `['school','grownup']`; school plays levels 1–2 (3 by 3 ponds, no gate), home stays Lantern Lake. New voice lines `lantern.go-school` and `lantern.stuck-school` (once a pond at the fewest plus six presses, counts nothing, via `stuckAt(band, par)` in `logic.ts`); the how-to step 1 and co-play string drop "four" and the note mentions school. `lanterntouch` gained `LANTERN_ONLY=school`. Not built: three-colour lanterns (dive slice 5 stays a later definition). Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--lantern-lights-school-opening-lantern-lights-batch-4).
+
+## Lantern Lights, named hints and Show me a short way (lantern-lights batch 2, 2026-11-04)
+
+[PR #1207](https://github.com/rjdunlap/neo/pull/1207), `claude/lantern-lights-named-hints`: [dive slice 2](../deep-dives/lantern-lights.md#build-slices-in-order). `namedHint` in `logic.ts` returns `{ cell, kind }`, `'one'` when `solve().best.length === 1` and `'many'` otherwise (`hintFor` still returns the cell); `lantern.hint-one` and `lantern.hint-many` replace `lantern.hint`, also on the couch pause-menu hint. On touch, outside couch courses, every pond and band: after the glow-up Undo, Hint and Start over give way to **Show me a short way ▷** (purple) and **Next pond ▶** (green, **All done ▶** on the last pond); `lantern.after` is said once a round. The replay resets to the start and presses `shortWay` (`solve(start).best[0]`) one lantern every 0.6 s with a white ring, flipping only changed lanterns, then bells; it counts nothing and repeats. Keys or a pad while waiting go straight on; couch play is unchanged. The how-to hint step and finish line were updated, `lanterntouch` gained `LANTERN_ONLY=3`, and the ghost finger presses Next pond. Reviewed by `game-reviewer` (spoken cue, All done label, flip only changed lanterns fixed). Not built: three-colour lanterns, lily pads (batch 3).
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--lantern-lights-named-hints-and-show-me-a-short-way-lantern-lights-batch-2).
 
 ## Island Bridges, couch course Joined Seas (island-bridges batch 4, 2026-11-04)
 

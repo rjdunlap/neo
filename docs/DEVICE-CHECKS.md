@@ -1,5 +1,6 @@
 # Needs a person or a device
 
+- [ ] **Lantern Lights Show me a short way and the named hints (2026-11-04):** does a grown-up notice the purple replay button after a pond is lit, and are `lantern.hint-one` / `lantern.hint-many` ("only one short way" against "a few short ways") understood without reading?
 - [ ] **Lantern Lights school opening: can a seven-year-old finish a level-1 pond?** From the spoken instruction and the card alone, does she finish and notice a press also flips its neighbours (built 2026-11-04)?
 - [ ] **Is the Lantern Lights stuck nudge well timed?** `lantern.stuck-school` comes six presses past the fewest: too early or late, and does she find the Hint button from it?
 - [ ] **Is level 2 (four presses) a fair top for school?** Or should level 3 open at that band?
