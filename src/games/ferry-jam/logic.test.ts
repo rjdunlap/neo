@@ -113,13 +113,18 @@ describe('Ferry Jam', () => {
 
   it('builds the distance table quickly even for the biggest harbors', () => {
     let worst = 0;
+    let most = 0;
     for (const h of [...harborsFor(5), ...harborsFor(6)]) {
       const t0 = performance.now();
-      distanceTable(h);
+      most = Math.max(most, distanceTable(h).size);
       worst = Math.max(worst, performance.now() - t0);
     }
-    // About 110 ms here for the largest (about 42,000 layouts); a slower iPad still finishes it while the board fades in.
-    expect(worst).toBeLessThan(500);
+    // The cost is the number of layouts the table visits: the largest harbor has 42,009. Guard that count exactly;
+    // a harbor that would blow it up fails here on any machine.
+    expect(most).toBeLessThanOrEqual(50_000);
+    // Wall-clock is only a backstop for a much slower build per layout: about 300 ms alone on a 4-core box, and
+    // CI runs ~300 test files at once (it hit 570–595 ms there and failed the old 500 ms limit, 2026-11-03/04).
+    expect(worst).toBeLessThan(3000);
   });
 
   describe('the hint waits for her to be stuck, not for a number of slides', () => {
