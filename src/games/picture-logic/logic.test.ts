@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BIG_15, EASY_10, EASY_PASSES, HARD_10, SAILBOAT } from './pictures';
+import { BIG_15, EASY_10, EASY_PASSES, HARD_10, HARD_15, SAILBOAT } from './pictures';
 import {
   allLines, brushFor, cellsOf, whyFor, clueOf, clueText, deductions, EMPTY, FILLED, fillCount, fromDrawn, hintFor, isSolved, knowledge, lineStatus, makePuzzles,
-  paint, parsePicture, passesNeeded, planFor, PLANS, poolFor, solvableByLines, statuses, CROSSED, type Mark, type PicturePuzzle,
+  ENTRY_LEVELS, ORDER, paint, parsePicture, passesNeeded, planFor, PLANS, poolFor, solvableByLines, statuses, CROSSED, type Mark, type PicturePuzzle,
   axisOf, clueDepths, headStart, HOME_H, HOME_W, MIN_TOUCH, strokeCells, toolForHint, touchFrame, type Rect,
 } from './logic';
 
-const ALL = [...EASY_10, ...HARD_10, ...BIG_15];
+const ALL = [...EASY_10, ...HARD_10, ...BIG_15, ...HARD_15];
 const empty = (p: PicturePuzzle): Mark[] => p.solution.map(() => EMPTY);
 
 describe('the picture bank', () => {
@@ -21,6 +21,7 @@ describe('the picture bank', () => {
     expect(EASY_10).toHaveLength(8);
     expect(HARD_10).toHaveLength(8);
     expect(BIG_15).toHaveLength(5);
+    expect(HARD_15).toHaveLength(5);
     expect(new Set(ALL.map((d) => d.rows.join('/'))).size).toBe(ALL.length);
   });
 
@@ -55,6 +56,12 @@ describe('the picture bank', () => {
     for (const d of EASY_10) expect(passesNeeded(fromDrawn(d)), d.name).toBeLessThanOrEqual(EASY_PASSES);
     for (const d of HARD_10) expect(passesNeeded(fromDrawn(d)), d.name).toBeGreaterThan(EASY_PASSES);
     for (const d of ALL) expect(passesNeeded(fromDrawn(d)), d.name).toBeGreaterThanOrEqual(1);
+    // Level 7's 15 by 15 pictures need more care than every one of level 4's.
+    const bigMost = Math.max(...passes(BIG_15));
+    for (const d of HARD_15) {
+      expect(d.rows.length, d.name).toBe(15);
+      expect(passesNeeded(fromDrawn(d)), d.name).toBeGreaterThan(bigMost);
+    }
   });
 });
 
@@ -247,23 +254,41 @@ describe('line logic and hints', () => {
 });
 
 describe('levels', () => {
-  it('climbs from a 6 by 6 warm-up to a 15 by 15 picture, every level with pictures to choose from', () => {
-    expect(PLANS.map((p) => p.size)).toEqual([6, 10, 10, 15]);
-    PLANS.forEach((plan, i) => {
-      expect(planFor(i + 1)).toBe(plan);
-      const pool = poolFor(i + 1);
+  it('climbs from a 5 by 5 way in through a 6 by 6 warm-up to two 15 by 15 steps, every level with pictures to choose from', () => {
+    expect(ORDER).toEqual([5, 1, 2, 3, 4, 7]);
+    expect(ENTRY_LEVELS).toEqual([5]);
+    expect(ORDER.map((l) => planFor(l).size)).toEqual([5, 6, 10, 10, 15, 15]);
+    for (const level of ORDER) {
+      const plan = planFor(level), pool = poolFor(level);
+      expect(plan).toBe(PLANS[level]);
       expect(pool.length, plan.name).toBeGreaterThanOrEqual(3);
       for (const p of pool) {
         expect(p.size, plan.name).toBe(plan.size);
         expect(solvableByLines(p), `${plan.name}: ${p.name}`).toBe(true);
       }
-    });
-    expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(99)).toBe(PLANS[PLANS.length - 1]);
+    }
+    // The two 15 by 15 levels draw from different banks, and so do the two 10 by 10 ones.
+    expect(poolFor(7).map((p) => p.name)).toEqual(HARD_15.map((d) => d.name));
+    expect(poolFor(4).map((p) => p.name)).toEqual(BIG_15.map((d) => d.name));
+    expect(planFor(0)).toBe(PLANS[1]);
+    expect(planFor(99)).toBe(PLANS[7]);
+  });
+
+  it('opens on a 5 by 5 picture a first pass can start: every one needs at most 3 passes and has a line decided from empty', () => {
+    const pool = poolFor(5);
+    expect(pool.length).toBeGreaterThanOrEqual(4);
+    for (const p of pool) {
+      expect(p.size, p.name).toBe(5);
+      expect(passesNeeded(p), p.name).toBeLessThanOrEqual(3);
+      expect(deductions(p.solution.map(() => null), p).length, p.name).toBeGreaterThan(0);
+      // The first hint on an empty grid names its reason.
+      const h = hintFor(empty(p), p);
+      expect(h && h.kind !== 'fix' ? h.why : null, p.name).toBeTruthy();
+    }
   });
 
   it('is fair: the same seed hides the same picture, and different seeds find different ones', () => {
-    for (const level of [1, 2, 3, 4]) {
+    for (const level of ORDER) {
       expect(makePuzzles(level, new Rng(5))).toEqual(makePuzzles(level, new Rng(5)));
       const seen = new Set<string>();
       for (let s = 1; s <= 40; s++) for (const p of makePuzzles(level, new Rng(s))) seen.add(p.name);
@@ -311,7 +336,7 @@ describe('touch', () => {
         expect(f.slots.map((s) => s.kind)).toEqual(['fill', 'cross', 'hint', 'again']);
       }
     }
-    for (const d of [...EASY_10, ...BIG_15]) {
+    for (const d of [...EASY_10, ...BIG_15, ...HARD_15]) {
       const p = fromDrawn(d), { rowDepth, colDepth } = clueDepths(p);
       const f = touchFrame(1024, 768, p.size, rowDepth, colDepth);
       expect(f.maxX > 0 || f.maxY > 0, d.name).toBe(true);
@@ -319,6 +344,22 @@ describe('touch', () => {
       // What slides can be brought wholly into view: the extents cover the picture.
       expect(f.maxX + f.grid.w, d.name).toBeGreaterThanOrEqual(p.size * f.cell);
       expect(f.maxY + f.grid.h, d.name).toBeGreaterThanOrEqual(p.size * f.cell);
+    }
+  });
+
+  it('shows a 5 by 5 picture whole at the biggest squares in every view, never smaller than the 6 by 6 warm-up, with no Slide', () => {
+    const six = poolFor(1).map(clueDepths);
+    for (const p of poolFor(5)) {
+      const { rowDepth, colDepth } = clueDepths(p);
+      for (const [w, h] of VIEWS) {
+        const f = touchFrame(w, h, 5, rowDepth, colDepth), tag = `${p.name} ${w}x${h}`;
+        expect([f.maxX, f.maxY], tag).toEqual([0, 0]);
+        expect(f.cell, tag).toBe(96);
+        expect(f.slots.map((s) => s.kind), tag).toEqual(['fill', 'cross', 'hint', 'again']);
+        for (const d of six) expect(f.cell, tag).toBeGreaterThanOrEqual(touchFrame(w, h, 6, d.rowDepth, d.colDepth).cell);
+      }
+      // Wide, where the 6 by 6 squares shrink to fit, the 5 by 5 ones are bigger.
+      expect(touchFrame(1024, 768, 5, rowDepth, colDepth).cell, p.name).toBeGreaterThan(touchFrame(1024, 768, 6, 3, 3).cell);
     }
   });
 
@@ -374,6 +415,6 @@ describe('touch', () => {
       expect(start.every((m, i) => m === EMPTY || p.solution[i]), d.name).toBe(true);
       expect(p.par - fillCount(start), d.name).toBeGreaterThan(0);
     }
-    for (const p of poolFor(1)) expect(isSolved(headStart(p), p), p.name).toBe(false);
+    for (const p of [...poolFor(1), ...poolFor(5)]) expect(isSolved(headStart(p), p), p.name).toBe(false);
   });
 });

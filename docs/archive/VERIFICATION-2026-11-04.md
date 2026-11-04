@@ -48,3 +48,10 @@
 - [PR #1203](https://github.com/rjdunlap/neo/pull/1203): level 9, a 4×4 two-colour copy (four pictures, three a round), `order` preschool [1, 9, 2] and pre-K [1, 9, 2, 3], `entryLevels: [9]`; the two-colour glow now also selects the square's colour on levels 2 and 9.
 - Ran (dev `http://localhost:5607`): typecheck; `npm test` 300 files, 4,785 tests; `BROWSER_SUITE=woods WOODS_ONLY=pixels FROM_LEVEL=9 TO_LEVEL=9` (portrait 768×1024, two misses, glow with colour, three pictures, score [2, 1], sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pixel-pictures FINGER_LEVELS=9` clean at preschool, 40.2 s.
 - Not run: `npm run build` (no shared or asset changes), a person or device check that a 3–4-year-old finds the colour pick natural.
+
+## 2026-11-04 — Ferry Jam levels 9 and 10 Pre-K entry and who's in the way (ferry-jam batch 4)
+
+- [PR #1204](https://github.com/rjdunlap/neo/pull/1204) (branch `claude/ferry-jam-prek-in-the-way`): pre-K level 9 (one boat in the way) and level 10 (the pet asks which boat blocks; wrong tap is a miss, two glow the blocker); pre-K order `[9, 1, 10, 2, 3, 4]`, `entryLevels: [9, 10]`.
+- Ran (base 40e48664 plus this branch; Vite `http://localhost:5298`, `VITE_SPEECH=off`): typecheck; `npm test` 300 files, 4,789 tests; one scripted 768x1024 play: level 9 bot to sticker (saved [9,0,0]); level 10 a drag of a wrong boat = miss 1 with no slide, a wrong tap = miss 2 + hint 1 + glow, blocker tap answers, bot finishes both harbors (saved [10,2,1]), question screenshot reviewed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=ferry-jam FINGER_LEVELS=9,10` pass (11.6 s, 18.8 s).
+- Review: `game-reviewer` one low finding (praise set as the repeated instruction), fixed afterwards with typecheck and ferry/content tests re-run; the browser play was not re-run for that one-line voice change.
+- Not run: `npm run build` (no shared or asset change), couch suites (couch levels unchanged), any iPad or child check. Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md).

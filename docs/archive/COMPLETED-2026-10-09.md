@@ -2732,7 +2732,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md) (entry "Block Topple levels 1â€
 
 [PR #1204](https://github.com/rjdunlap/neo/pull/1204), batch ferry-jam 4, [dive slice 4](../deep-dives/ferry-jam.md#build-slices-in-order). Level 9: 4x4, one upright boat across the ferry's row plus one other, fourteen frozen harbors, two a round, first line `ferry.start.one`. Level 10: 4x4, 2-3 boats, exactly one blocker that cannot leave the ferry's row in one slide (`blockers`, `clearsInOne`; plan flags `entry` and `ask`), fourteen harbors (seven at 3 slides, seven at 4), two a round. Each harbor asks `ferry.who` before any slide: the blocker tap answers (`ferry.yes`, then `ferry.start` is the repeated instruction); another boat, drag touch-down included, is a miss with boing and `ferry.notway`; two misses glow the blocker (one hint); the ferry tap re-asks free. Keys answer with the highlighted boat; couch autoplay and the ghost finger answer first. Pre-K range `{ min 1, max 10, order [9, 1, 10, 2, 3, 4] }`; school unchanged 3-8; `entryLevels: [9, 10]`. Unit translation: `solve` counts the ferry's own final slide, so the dive's "fewest exactly 1" is 2 in solver units and "2-3" is 3-4. How-to steps scoped 9-9 and 10-10; the note splits (to 9: nothing is a mistake; from 10: a wrong tap counts).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--ferry-jam-levels-9-and-10-pre-k-entry-and-whos-in-the-way-ferry-jam-batch-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--ferry-jam-levels-9-and-10-pre-k-entry-and-whos-in-the-way-ferry-jam-batch-4).
 
 ## Pixel Pictures level 10 My own picture (pixel-pictures 4, 2026-11-04)
 
