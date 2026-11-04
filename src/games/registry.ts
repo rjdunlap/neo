@@ -101,6 +101,7 @@ import { dominoRun } from './domino-run';
 import { fruitSlice } from './fruit-slice';
 import { cutAlong } from './cut-along';
 import { drawThePattern } from './draw-the-pattern';
+import { blockTopple } from './block-topple';
 import { puddleGobble } from './puddle-gobble';
 import { swingPals } from './swing-pals';
 import { liftIt } from './lift-it';
@@ -263,6 +264,7 @@ export const GAMES: GameModule[] = [
   fruitSlice,
   cutAlong,
   drawThePattern,
+  blockTopple,
   puddleGobble,
   swingPals,
   liftIt,
