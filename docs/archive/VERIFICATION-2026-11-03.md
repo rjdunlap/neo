@@ -169,3 +169,9 @@
 - Added [the definition](../definitions/vine-snip.md) (levels 1–5, two build slices); the earlier sketch is superseded; roadmap rows 25 and 27, READY, IDEAS and PHYSICS-GAMES updated.
 - Ran: `node scripts/check-links.mjs`, `git diff --check`. No code checks, by tier (nothing built).
 - Open: the definition's three device checks (tap-to-drop for a toddler, swing "keep going" on an iPad, 0.4 s windows for a four-year-old).
+
+## 2026-11-03 — RW09 definition (docs only, PR #1162)
+
+- Added [the packet](../rework/LEARNING-RECAP.md) defining RW09 slice 1 (intention table, step evidence record, plain-HTML recap); work items, roadmap row 30, READY, the study backlog and the Welcome packet updated.
+- Ran: `node scripts/check-links.mjs`, `git diff --check`. No code checks, by tier (nothing built).
+- Open: the slice itself.
