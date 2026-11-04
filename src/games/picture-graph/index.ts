@@ -13,11 +13,11 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { LineUp } from './line';
-import { barsFor, choicesFor, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, meadowSpots, MEADOWS, planFor, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, type Graph, type GraphPlan, type Question } from './logic';
+import { barsFor, cardLayout, CARD_GROUP_W, choicesFor, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, meadowSpots, MEADOWS, planFor, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, type Graph, type GraphPlan, type Question } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 8, order: [8, 1, 2] },
-  school: { min: 1, max: 8, order: [1, 2, 8, 3, 4, 5, 6, 7] },
+  school: { min: 1, max: 9, order: [1, 2, 8, 3, 4, 5, 6, 7, 9] },
 };
 
 const COL_W = 110;
@@ -31,7 +31,18 @@ function checkArt(): Graphics {
   return new Graphics().moveTo(-20, 0).lineTo(-6, 16).lineTo(22, -16).stroke({ width: 10, color: 0xffffff, cap: 'round', join: 'round' });
 }
 
-/** The key of a graph where a block stands for more than one critter: a block, "=", and that many dots. */
+/** A group of five tally marks centred on (x, y): four lines and one across. */
+function tallyGroup(g: Graphics, x: number, y: number, color: number, size = 1) {
+  const half = 18 * size;
+  for (let k = 0; k < 4; k++) g.moveTo(x + (k - 1.5) * 9 * size, y - half).lineTo(x + (k - 1.5) * 9 * size, y + half);
+  g.stroke({ width: 5 * size, color, cap: 'round' });
+  g.moveTo(x - 20 * size, y + half - 4 * size).lineTo(x + 20 * size, y - half + 4 * size).stroke({ width: 6 * size, color, cap: 'round' });
+}
+
+/** Which spoken lines a key uses: pairs when a block is two, fives when it is a group of five tally marks. */
+const keyed = (per: number) => (per === 5 ? 'fives' : 'pairs');
+
+/** The key of a graph where a block stands for more than one critter: a block, "=", and that many dots (or, for five, a tally group like the cards'). */
 function keyArt(per: number): Container {
   const c = new Container();
   c.addChild(tile(124, 100, 'white'));
@@ -41,7 +52,8 @@ function keyArt(per: number): Container {
   eq.position.set(-44, 24);
   c.addChild(eq);
   const dots = new Graphics();
-  for (let k = 0; k < per; k++) dots.circle(-4 + k * 30, 24, 11).fill(ink);
+  if (per === 5) tallyGroup(dots, 14, 24, ink, 0.85);
+  else for (let k = 0; k < per; k++) dots.circle(-4 + k * 30, 24, 11).fill(ink);
   c.addChild(dots);
   c.eventMode = 'none';
   return c;
@@ -73,6 +85,8 @@ class PictureGraph implements Game {
   /** Shown when a block stands for more than one critter. */
   private readonly key: Container;
   private critters: { kind: number; node: Critter }[] = [];
+  /** Level 9: the tally cards that stand where the meadow was. */
+  private readonly cards = new Container();
   private view: View;
   private wrongs = 0;
   /** Hint: the column whose critters glow, or the column/pad to tap. */
@@ -87,11 +101,12 @@ class PictureGraph implements Game {
     this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.3, clouds: 2, sun: true, seed: ctx.rng.pick(MEADOWS) }, ctx.view);
     this.glow.eventMode = 'none';
     this.meadow.eventMode = 'none';
+    this.cards.eventMode = 'none';
     this.chart.addChild(this.blocks);
     this.key = keyArt(this.plan.per);
     this.key.visible = this.plan.per > 1;
     this.check = new RoundButton(checkArt(), swatch.green, 56, () => void this.checkGraph());
-    ctx.stage.addChild(this.backdrop, this.meadow, this.chart, this.key, this.glow, this.check);
+    ctx.stage.addChild(this.backdrop, this.meadow, this.cards, this.chart, this.key, this.glow, this.check);
   }
 
   start() {
@@ -114,6 +129,7 @@ class PictureGraph implements Game {
     this.check.position.set(v.w - 90, this.baseY() - 40);
     this.key.position.set(88, v.h * 0.34);
     this.pads.forEach((p, i) => p.node.position.set(v.w - 110, v.h * 0.32 + i * 125));
+    this.drawCards();
     this.draw();
   }
 
@@ -137,6 +153,12 @@ class PictureGraph implements Game {
     }
     if (this.phase === 'tally') {
       g.roundRect(this.colX(this.hint) - COL_W / 2 - 8, this.baseY() - 104, COL_W + 16, 116, 20).stroke({ width: pulse, color: swatch.yellow.fill });
+      return;
+    }
+    if (this.plan.mode === 'fives') {
+      // The card's groups of five glow, one ring to a block.
+      const cards = this.cardLayout();
+      for (let k = 0; k < this.graph.counts[this.hint] / 5; k++) g.roundRect(cards.groupX(k) - CARD_GROUP_W / 2 + 2, cards.rowY(this.hint) - cards.rowH / 2 + 4, CARD_GROUP_W - 4, cards.rowH - 8, 12).stroke({ width: pulse * 0.7, color: swatch.yellow.fill });
       return;
     }
     for (const c of this.critters.filter((x) => x.kind === this.hint)) g.circle(c.node.x, c.node.y - 30, 40).stroke({ width: pulse, color: swatch.yellow.fill });
@@ -201,7 +223,30 @@ class PictureGraph implements Game {
     this.busy = false;
     if (this.phase === 'tally') return this.ctx.instruct('graph.tally');
     if (read) return this.askNext();
-    return this.ctx.instruct(this.plan.per > 1 ? 'graph.buildpairs' : 'graph.build');
+    return this.ctx.instruct(this.plan.per > 1 ? `graph.build${keyed(this.plan.per)}` : 'graph.build');
+  }
+
+  private cardLayout() {
+    return cardLayout(this.view.w, this.view.h, this.graph.kinds.length, this.plan.max);
+  }
+
+  /** Level 9's tally cards: a face, then the kind's marks in groups of five, one group for each block its bar needs. */
+  private drawCards() {
+    for (const c of this.cards.removeChildren()) c.destroy({ children: true });
+    if (this.plan.mode !== 'fives' || !this.graph) return;
+    const cards = this.cardLayout();
+    const g = new Graphics();
+    this.cards.addChild(g);
+    this.graph.kinds.forEach((kind, i) => {
+      const y = cards.rowY(i);
+      g.roundRect(cards.left, y - cards.rowH / 2 + 3, cards.right - cards.left, cards.rowH - 6, 14).fill({ color: 0xffffff, alpha: 0.9 }).stroke({ width: 3, color: wood.line });
+      for (let k = 0; k < this.graph.counts[i] / 5; k++) tallyGroup(g, cards.groupX(k), y, swatch[COLORS[i % COLORS.length]].line, Math.min(1, (cards.rowH - 18) / 40));
+      const face = new Critter(CRITTERS[kind]);
+      face.alive = false;
+      face.scale.set(0.16);
+      face.position.set(cards.faceX, y + 20);
+      this.cards.addChild(face);
+    });
   }
 
   /** The critters, scattered in the meadow above the graph. */
@@ -211,7 +256,7 @@ class PictureGraph implements Game {
       c.node.destroy({ children: true });
     }
     this.critters = [];
-    if (!show) return;
+    if (!show || this.plan.mode === 'fives') return;
     const v = this.view;
     const per = this.plan.per;
     const add = (kind: number, x: number, y: number) => {
@@ -377,7 +422,7 @@ class PictureGraph implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    await this.ctx.say(this.plan.per > 1 ? 'graph.recountpairs' : 'graph.recount', { kind: NAMES[this.graph.kinds[wrong]]! });
+    await this.ctx.say(this.plan.per > 1 ? `graph.recount${keyed(this.plan.per)}` : 'graph.recount', { kind: NAMES[this.graph.kinds[wrong]]! });
     if (this.wrongs >= 2 && this.hint === null) {
       this.hints++;
       this.hint = wrong;
@@ -412,7 +457,7 @@ class PictureGraph implements Game {
     if (q.ask === 'fewest') return this.ctx.instruct('graph.fewest');
     if (q.ask === 'same') return this.ctx.instruct('graph.same');
     if (q.ask === 'total') return this.ctx.instruct(this.plan.per > 1 ? 'graph.totalpairs' : 'graph.total');
-    if (q.ask === 'more') return this.ctx.instruct(this.plan.per > 1 ? 'graph.morepairs' : 'graph.more', { a: name(q.a), b: name(q.b) });
+    if (q.ask === 'more') return this.ctx.instruct(this.plan.per > 1 ? `graph.more${keyed(this.plan.per)}` : 'graph.more', { a: name(q.a), b: name(q.b) });
   }
 
   private clearPads() {
@@ -455,7 +500,7 @@ class PictureGraph implements Game {
     const q = this.questions[this.q];
     const name = (i: number) => NAMES[this.graph.kinds[i]]!;
     if (why === 'taller' && q.ask === 'more') await this.ctx.say('graph.taller', { a: name(q.a), b: name(q.b) });
-    else await this.ctx.say(why === 'blocks' ? 'graph.blocks' : 'graph.look');
+    else await this.ctx.say(why === 'blocks' ? (this.plan.per === 5 ? 'graph.fives' : 'graph.blocks') : 'graph.look');
     if (this.wrongs >= 2 && this.hint === null) {
       this.hints++;
       this.hint = answer;
