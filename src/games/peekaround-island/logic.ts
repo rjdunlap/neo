@@ -10,7 +10,7 @@ import type { Rng } from '../../engine/random';
  * 0 is in front of the tree, 2 behind it, and 1 and 3 next to it. "In front" and "behind" are
  * always from the child's side, so turning the island changes who is where.
  */
-export type PeekMode = 'find' | 'named' | 'who' | 'place' | 'two' | 'see';
+export type PeekMode = 'find' | 'named' | 'who' | 'place' | 'two' | 'see' | 'view';
 
 export interface PeekPlan {
   mode: PeekMode;
@@ -26,6 +26,7 @@ export const PLANS: PeekPlan[] = [
   { mode: 'place', rounds: 3, name: 'Put three friends behind, in front of, and next to the tree' },
   { mode: 'two', rounds: 2, name: 'Two directions at once, then before the island turns around: who will be in front?' },
   { mode: 'see', rounds: 3, name: "A picture stands on the island: who can't see it, with the tree in the way?" },
+  { mode: 'view', rounds: 3, name: 'Three pictures of the island from three sides: which one shows what the duck sees from where it stands?' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -97,6 +98,47 @@ export function makeSeeScene(picture: number, rng: Rng, lastBlocked?: CritterNam
   const blocked = rng.pick(FRIENDS.filter((f) => f !== lastBlocked));
   const rest = rng.shuffle(FRIENDS.filter((f) => f !== blocked)).slice(0, others.length);
   return { picture, friends: [blocked, ...rest], facing: [across, ...others], blocked: 0 };
+}
+
+/**
+ * Level 7's scene: three friends stand right of, behind and left of the tree (her own side stays empty), and
+ * one of them, at the right or the left so she can see where it stands, is named. Three picture cards show the
+ * island from each friend's side; the one from the named friend's side is right.
+ */
+export interface ViewScene {
+  friends: CritterName[];
+  /** The direction each friend faces from the child (1 right, 2 behind, 3 left). */
+  facing: number[];
+  /** Index of the friend named: the one whose view she picks. */
+  viewer: number;
+}
+
+/** The named friend's side for a round of three scenes: right and left both, the third either. */
+export const viewFacings = (rng: Rng) => rng.shuffle([1, 3, rng.pick([1, 3])]);
+
+export function makeViewScene(viewerFacing: number, rng: Rng, lastViewer?: CritterName): ViewScene {
+  const viewer = rng.pick(FRIENDS.filter((f) => f !== lastViewer));
+  const rest = rng.shuffle(FRIENDS.filter((f) => f !== viewer)).slice(0, 2);
+  return { friends: [viewer, ...rest], facing: [viewerFacing, 2, mod4(viewerFacing + 2)], viewer: 0 };
+}
+
+/**
+ * What a friend standing on island spot `from` sees, looking at the tree: the flowers nearest them on their
+ * left and right (flower i sits between spots i and i + 1), and where each other friend stands from there
+ * (1 right, 2 behind the tree and hidden, 3 left). A friend is not in their own picture.
+ */
+export interface SideView {
+  left: number;
+  right: number;
+  friends: { name: CritterName; facing: number }[];
+}
+
+export function viewFrom(from: number, friends: readonly { name: CritterName; spot: number }[]): SideView {
+  return {
+    left: mod4(from - 1),
+    right: mod4(from),
+    friends: friends.filter((f) => f.spot >= 0 && f.spot !== from).map((f) => ({ name: f.name, facing: mod4(f.spot - from) })).sort((a, b) => a.facing - b.facing),
+  };
 }
 
 /** The quarter turns that bring island spot `spot` round to the front, the short way (2 from behind). */
@@ -204,7 +246,7 @@ export type PeekTouch =
 
 /**
  * The next visible control a capable child uses for each perspective mode (in `see`, `hider` is the friend
- * who cannot see the picture). While level 5 asks
+ * who cannot see the picture; in `view`, the friend whose picture to choose). While level 5 asks
  * for a prediction (`predicting`), that is the picture of the friend behind the tree.
  */
 export function peekTouch(mode: PeekMode, turns: number, hider: CritterName | null, friends: readonly PeekTouchFriend[], predicting = false): PeekTouch | null {
@@ -217,7 +259,7 @@ export function peekTouch(mode: PeekMode, turns: number, hider: CritterName | nu
     if (!hidden) return null;
     return whereIs(hidden.spot, turns) === 'behind' ? { kind: 'turn', dir: 1 } : { kind: 'friend', name: hidden.name };
   }
-  if (mode === 'who') return hider ? { kind: 'tile', name: hider } : null;
+  if (mode === 'who' || mode === 'view') return hider ? { kind: 'tile', name: hider } : null;
   if (mode === 'see') {
     const blocked = hider && friends.find((f) => f.name === hider && f.spot >= 0);
     return blocked && whereIs(blocked.spot, turns) !== 'behind' ? { kind: 'friend', name: blocked.name } : null;
