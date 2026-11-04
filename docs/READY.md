@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`penguin-slide`, level 12 A block onto the star**, unblocked (level 11 built) (new-rule tier: typecheck, rule tests, one play of level 12 with a stuck block and undo, `fingerdemo` at 12, one portrait screenshot): [dive](deep-dives/penguin-slide.md#build-slices-in-order).
+- **`penguin-slide`, level 12 A block onto the star**, unblocked (level 11 built; claimed 2026-11-03, branch `claude/penguin-slide-star`) (new-rule tier: typecheck, rule tests, one play of level 12 with a stuck block and undo, `fingerdemo` at 12, one portrait screenshot): [dive](deep-dives/penguin-slide.md#build-slices-in-order).
 - **Define Peekaround Island From the sky** (docs only; status `define`): the island's view from above, ahead of the block-tower Skyline View, which stays a sketch. [Dive](deep-dives/peekaround-island.md#build-slices-in-order).
 - **Define Sudoku Garden cage beds** (docs only; status `define`): cage generation and uniqueness, the outline and sum label at 64 units, combination hints, accounting and the check tier. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order).
 - **`picture-graph`, Level 10, *Two pictures, one meadow*** (batch picture-graph 4), unblocked (batches 1 and 3 built) (new-interaction tier: typecheck, rule tests, one play with the trap then the right pair, one portrait screenshot, `fingerdemo` at 10): [dive](deep-dives/picture-graph.md#build-slices-in-order), [batch](GAME-BATCHES.md#picture-graph-4-level-10-two-pictures-one-meadow).
