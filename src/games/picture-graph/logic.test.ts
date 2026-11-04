@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { critters, makePairRound, ownScene, pairLayout, pairMove, pairWhy, PAIR_ROWS, barsFor, cardLayout, CARD_GROUP_W, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, KINDS, makeGraph, meadowArea, meadowSpots, MEADOWS, PLANS, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, lineHint, lineKinds, lineMove, lineQuestions, makeShore, planFor, shoreSpots, THING_SIZE, THINGS, trayLayout, type Question } from './logic';
+import { claimBars, claimLayout, claimsFor, claimTruth, CANT_SAY, STAMP_R, STAMPS, stampWhy, critters, makePairRound, ownScene, pairLayout, pairMove, pairWhy, PAIR_ROWS, barsFor, cardLayout, CARD_GROUP_W, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, KINDS, makeGraph, meadowArea, meadowSpots, MEADOWS, PLANS, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, lineHint, lineKinds, lineMove, lineQuestions, makeShore, planFor, shoreSpots, THING_SIZE, THINGS, trayLayout, type Question } from './logic';
 
 describe('Picture Graph', () => {
   it('makes graphs whose questions have one clear answer', () => {
@@ -58,6 +58,10 @@ describe('Picture Graph', () => {
               expect((q as Extract<Question, { ask: 'more' | 'total' }>).answer, label).toBe(move!.n);
               break;
             }
+            if (move!.do === 'stamp') {
+              expect(q.ask === 'claim' && claimTruth(graph.counts, q.claim), label).toBe(move!.stamp);
+              break;
+            }
             expect(move!.do, label).toBe('column');
             const kind = (move as { kind: number }).kind;
             if (q.ask === 'same') {
@@ -65,7 +69,7 @@ describe('Picture Graph', () => {
               if (first === null) first = kind;
               else break;
             } else {
-              expect(kind, label).toBe(q.answer);
+              expect(kind, label).toBe((q as Extract<Question, { ask: 'most' | 'fewest' }>).answer);
               break;
             }
           }
@@ -666,6 +670,108 @@ describe('Picture Graph level 10, Two pictures, one meadow', () => {
       expect(t.blockH, label).toBeGreaterThanOrEqual(24);
       // The tallest plain bar stays under the key strip.
       expect(t.base - PAIR_ROWS * t.blockH, label).toBeGreaterThanOrEqual(t.top + 50);
+    }
+  });
+});
+
+describe('Picture Graph level 11, What the graph can say', () => {
+  const plan = planFor(11);
+
+  it('is the claim level: a finished graph of three kinds, all different, after Two pictures', () => {
+    expect(plan.mode).toBe('claim');
+    expect(prebuilt(plan)).toBe(true);
+    expect(ownScene(plan)).toBe(false);
+    expect(PLANS[9].mode).toBe('pair');
+    expect(PLANS).toHaveLength(11);
+  });
+
+  it('gives each graph one yes, one no and one can\'t-say claim, each decided by the bars alone', () => {
+    for (let seed = 1; seed <= 500; seed++) {
+      const rng = new Rng(seed);
+      const g = makeGraph(plan, rng);
+      const label = `seed ${seed} counts ${g.counts}`;
+      expect(new Set(g.counts).size, label).toBe(3);
+      const qs = questionsFor(plan, g, rng);
+      expect(qs, label).toHaveLength(3);
+      const claims = qs.map((q) => (q.ask === 'claim' ? q.claim : null));
+      expect(claims.every(Boolean), label).toBe(true);
+      expect(claims.map((c) => c!.answer).sort(), label).toEqual(['cant', 'no', 'yes']);
+      // One "more ... than" and one "the most": never one claim read backwards.
+      expect(claims.filter((c) => c!.say !== 'cant').map((c) => c!.say).sort(), label).toEqual(['more', 'most']);
+      for (const c of claims) {
+        expect(claimTruth(g.counts, c!), label).toBe(c!.answer);
+        if (c!.say === 'more') expect(c!.a, label).not.toBe(c!.b);
+        if (c!.say === 'cant') {
+          expect(CANT_SAY, label).toContain(c!.about);
+          // About the tallest bar: the tempting yes, when "most" is not what the claim is about.
+          expect(g.counts[c!.a], label).toBe(Math.max(...g.counts));
+        }
+      }
+    }
+  });
+
+  it('puts each kind of claim first, second and third over the seeds, so the order never gives the answer away', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      claimsFor(makeGraph(plan, rng), rng).forEach((c, i) => seen.add(`${c.answer}${i}`));
+    }
+    expect(seen.size).toBe(9);
+    const abouts = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed);
+      for (const c of claimsFor(makeGraph(plan, rng), rng)) if (c.say === 'cant') abouts.add(c.about);
+    }
+    expect([...abouts].sort()).toEqual([...CANT_SAY].sort());
+  });
+
+  it('answers a wrong stamp with the line that helps, and lights the bars the claim names', () => {
+    const more = { say: 'more', a: 0, b: 2, answer: 'yes' } as const;
+    const most = { say: 'most', a: 1, answer: 'no' } as const;
+    const cant = { say: 'cant', a: 2, about: 'first', answer: 'cant' } as const;
+    expect(stampWhy(more, 'yes')).toBe('right');
+    expect(stampWhy(more, 'no')).toBe('look');
+    expect(stampWhy(more, 'cant')).toBe('can');
+    expect(stampWhy(most, 'yes')).toBe('look');
+    expect(stampWhy(cant, 'yes')).toBe('cant');
+    expect(stampWhy(cant, 'no')).toBe('cant');
+    expect(stampWhy(cant, 'cant')).toBe('right');
+    expect(claimBars(more, 3)).toEqual([0, 2]);
+    expect(claimBars(most, 3)).toEqual([0, 1, 2]);
+    expect(claimBars(cant, 3)).toEqual([2]);
+  });
+
+  it('the ghost finger stamps the right answer', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      const g = makeGraph(plan, rng);
+      for (const q of questionsFor(plan, g, rng)) {
+        if (q.ask !== 'claim') throw new Error('claim level asks only claims');
+        expect(graphMove(plan, g, barsFor(plan, g), q, null)).toEqual({ do: 'stamp', stamp: claimTruth(g.counts, q.claim) });
+      }
+    }
+  });
+
+  it('lays out three whole stamps and the claim card clear of the graph, the pet and the corner buttons', () => {
+    // The graph (as the game draws it): three columns 130 apart around w / 2 - 60, its panel from h - 412 to h - 30.
+    for (const [w, h] of [[1024, 768], [1366, 1024], [1600, 768], [768, 1024], [1024, 1365]] as [number, number][]) {
+      const t = claimLayout(w, h);
+      const label = `${w}x${h}`;
+      const graphRight = w / 2 - 60 + 130 + 55 + 30;
+      const graphTop = h - 412;
+      expect(2 * STAMP_R, label).toBeGreaterThanOrEqual(100);
+      STAMPS.forEach((_, i) => {
+        const s = t.stamp(i);
+        expect(s.y - STAMP_R, label).toBeGreaterThanOrEqual(140);
+        expect(s.y + STAMP_R, label).toBeLessThanOrEqual(h - 20);
+        expect(s.x + STAMP_R, label).toBeLessThanOrEqual(w - 20);
+        expect(s.x - STAMP_R, label).toBeGreaterThan(graphRight);
+        if (i) expect(s.y - t.stamp(i - 1).y, label).toBeGreaterThanOrEqual(2 * STAMP_R + 14);
+      });
+      expect(t.card.y - t.card.h / 2, label).toBeGreaterThanOrEqual(140);
+      expect(t.card.y + t.card.h / 2, label).toBeLessThanOrEqual(graphTop);
+      expect(t.card.x - t.card.w / 2, label).toBeGreaterThanOrEqual(100);
+      expect(t.card.x + t.card.w / 2, label).toBeLessThan(t.stamp(0).x - STAMP_R);
     }
   });
 });

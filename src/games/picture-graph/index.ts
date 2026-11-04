@@ -9,16 +9,18 @@ import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
+import { crossIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { TwoPictures } from './compare';
 import { LineUp } from './line';
+import { claimBars, claimLayout, STAMP_R, STAMPS, stampWhy, type Claim, type Stamp } from './logic';
 import { barsFor, cardLayout, CARD_GROUP_W, choicesFor, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, meadowSpots, MEADOWS, planFor, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, type Graph, type GraphPlan, type Question } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 8, order: [8, 1, 2] },
-  school: { min: 1, max: 10, order: [1, 2, 8, 3, 4, 5, 6, 7, 9, 10] },
+  school: { min: 1, max: 11, order: [1, 2, 8, 3, 4, 5, 6, 7, 9, 10, 11] },
 };
 
 const COL_W = 110;
@@ -38,6 +40,44 @@ function tallyGroup(g: Graphics, x: number, y: number, color: number, size = 1) 
   for (let k = 0; k < 4; k++) g.moveTo(x + (k - 1.5) * 9 * size, y - half).lineTo(x + (k - 1.5) * 9 * size, y + half);
   g.stroke({ width: 5 * size, color, cap: 'round' });
   g.moveTo(x - 20 * size, y + half - 4 * size).lineTo(x + 20 * size, y - half + 4 * size).stroke({ width: 6 * size, color, cap: 'round' });
+}
+
+/** Level 11's stamps: yes is a check on green, no a cross on red, and "the graph can't say" a little graph with a question. */
+const STAMP_LOOK: Record<Stamp, ColorName> = { yes: 'green', no: 'red', cant: 'purple' };
+
+function stampArt(stamp: Stamp): Container {
+  if (stamp === 'yes') return checkArt();
+  if (stamp === 'no') {
+    const x = crossIcon(0xffffff);
+    x.scale.set(1.25);
+    return x;
+  }
+  const c = new Container();
+  const g = new Graphics();
+  [14, 26, 20].forEach((n, i) => g.roundRect(-30 + i * 14, 18 - n, 10, n, 3).fill(0xffffff));
+  g.moveTo(-34, 20).lineTo(14, 20).stroke({ width: 3, color: 0xffffff, cap: 'round' });
+  c.addChild(g);
+  const q = label('?', 40, 0xffffff);
+  q.position.set(24, -2);
+  c.addChild(q);
+  return c;
+}
+
+/** What a can't-say claim is about, drawn beside the face: a flag for first, an apple for hungriest, a moon for sleepiest. */
+function aboutArt(about: string): Graphics {
+  const g = new Graphics();
+  if (about === 'first') {
+    g.moveTo(-14, 34).lineTo(-14, -34).stroke({ width: 6, color: wood.line, cap: 'round' });
+    g.moveTo(-12, -32).lineTo(30, -18).lineTo(-12, -4).closePath().fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+  } else if (about === 'hungriest') {
+    g.circle(-10, 6, 22).circle(10, 6, 22).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+    g.moveTo(0, -14).lineTo(4, -30).stroke({ width: 5, color: wood.line, cap: 'round' });
+    g.ellipse(16, -26, 10, 5).fill(swatch.green.fill);
+  } else {
+    g.circle(0, 0, 30).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+    g.circle(14, -10, 26).fill(0x2c3e66);
+  }
+  return g;
 }
 
 /** Which spoken lines a key uses: pairs when a block is two, fives when it is a group of five tally marks. */
@@ -95,6 +135,11 @@ class PictureGraph implements Game {
   private clock = 0;
   /** While the blocks above the shorter bar are counted aloud, the hint stays drawn. */
   private counting = false;
+  /** Level 11: the three stamps, the claim's picture card, the bars a wrong stamp lit and the stamp that glows after two. */
+  readonly stamps: { stamp: Stamp; node: RoundButton }[] = [];
+  private readonly claimCard = new Container();
+  lit: number[] = [];
+  stampHint: Stamp | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -107,7 +152,8 @@ class PictureGraph implements Game {
     this.key = keyArt(this.plan.per);
     this.key.visible = this.plan.per > 1;
     this.check = new RoundButton(checkArt(), swatch.green, 56, () => void this.checkGraph());
-    ctx.stage.addChild(this.backdrop, this.meadow, this.cards, this.chart, this.key, this.glow, this.check);
+    this.claimCard.eventMode = 'none';
+    ctx.stage.addChild(this.backdrop, this.meadow, this.cards, this.claimCard, this.chart, this.key, this.glow, this.check);
   }
 
   start() {
@@ -130,6 +176,9 @@ class PictureGraph implements Game {
     this.check.position.set(v.w - 90, this.baseY() - 40);
     this.key.position.set(88, v.h * 0.34);
     this.pads.forEach((p, i) => p.node.position.set(v.w - 110, v.h * 0.32 + i * 125));
+    const claims = claimLayout(v.w, v.h);
+    this.stamps.forEach((s, i) => s.node.position.set(claims.stamp(i).x, claims.stamp(i).y));
+    this.claimCard.position.set(claims.card.x, claims.card.y);
     this.drawCards();
     this.draw();
   }
@@ -137,8 +186,10 @@ class PictureGraph implements Game {
   update(dt: number) {
     this.clock += dt;
     const g = this.glow.clear();
-    if (this.hint === null || (this.busy && !this.counting)) return;
     const pulse = 6 + 2 * Math.sin(this.clock * 5);
+    const cq = this.questions[this.q];
+    if (cq?.ask === 'claim') return this.drawClaimGlow(g, pulse);
+    if (this.hint === null || (this.busy && !this.counting)) return;
     if (this.questions.length && this.q < this.questions.length) {
       // On questions, the answer glows: a column (for "same", the answer bar not yet lifted) or a number pad.
       const q = this.questions[this.q];
@@ -176,6 +227,10 @@ class PictureGraph implements Game {
       : graphMove(this.plan, this.graph, this.bars, this.questions[this.q], this.firstSame);
     if (!move) return null;
     if (move.do === 'check') return { tap: { on: this.check } };
+    if (move.do === 'stamp') {
+      const s = this.stamps.find((x) => x.stamp === move.stamp);
+      return s ? { tap: { on: s.node }, pause: 0.4 } : null;
+    }
     if (move.do === 'number') {
       const pad = this.pads.find((p) => p.n === move.n);
       return pad ? { tap: { on: pad.node } } : null;
@@ -188,6 +243,13 @@ class PictureGraph implements Game {
   }
 
   destroy() {}
+
+  /** Level 11: the bars a wrong stamp named, lit, and after two misses the right stamp. */
+  private drawClaimGlow(g: Graphics, pulse: number) {
+    for (const i of this.lit) g.roundRect(this.colX(i) - COL_W / 2 - 8, this.baseY() - 8 * BLOCK_H - 20, COL_W + 16, 8 * BLOCK_H + 90, 20).stroke({ width: pulse * 0.7, color: swatch.yellow.fill });
+    const s = this.stamps.find((x) => x.stamp === this.stampHint);
+    if (s) g.circle(s.node.x, s.node.y, STAMP_R + 12).stroke({ width: pulse, color: swatch.yellow.fill });
+  }
 
   /** Why the number is what it is: the line from the shorter bar across the taller one and the blocks above it, or every block for "in all". */
   private drawWhy(g: Graphics, q: Question, pulse: number) {
@@ -223,6 +285,12 @@ class PictureGraph implements Game {
     this.resize(this.view);
     this.busy = false;
     if (this.phase === 'tally') return this.ctx.instruct('graph.tally');
+    if (read && this.plan.mode === 'claim' && this.index === 0) {
+      // Once a visit: what the stamps are for, before the first claim.
+      this.busy = true;
+      await this.ctx.say('graph.claim');
+      this.busy = false;
+    }
     if (read) return this.askNext();
     return this.ctx.instruct(this.plan.per > 1 ? `graph.build${keyed(this.plan.per)}` : 'graph.build');
   }
@@ -443,6 +511,15 @@ class PictureGraph implements Game {
     }
     if (!q) return void this.next();
     const name = (i: number) => NAMES[this.graph.kinds[i]]!;
+    if (q.ask === 'claim') {
+      this.lit = [];
+      this.stampHint = null;
+      this.showClaim(q.claim);
+      const c = q.claim;
+      if (c.say === 'more') return this.ctx.instruct('graph.claim.more', { a: name(c.a), b: name(c.b) });
+      if (c.say === 'most') return this.ctx.instruct('graph.claim.most', { a: name(c.a) });
+      return this.ctx.instruct(`graph.claim.${c.about}`, { a: name(c.a) });
+    }
     if (q.ask === 'more' || q.ask === 'total') {
       for (const n of choicesFor(q.answer, this.ctx.rng, this.plan.per, tallerCount(this.plan, this.graph, q))) {
         const node = new Container();
@@ -463,6 +540,72 @@ class PictureGraph implements Game {
 
   private clearPads() {
     for (const p of this.pads.splice(0)) p.node.destroy({ children: true });
+    for (const c of this.claimCard.removeChildren()) c.destroy({ children: true });
+  }
+
+  /** Level 11: the stamps (made once) and the claim's picture: who it is about and what it says. */
+  private showClaim(c: Claim) {
+    if (!this.stamps.length) {
+      for (const stamp of STAMPS) {
+        const node = new RoundButton(stampArt(stamp), swatch[STAMP_LOOK[stamp]], STAMP_R, () => void this.answerStamp(stamp));
+        this.stamps.push({ stamp, node });
+        this.ctx.stage.addChild(node);
+      }
+    }
+    for (const x of this.claimCard.removeChildren()) x.destroy({ children: true });
+    const t = claimLayout(this.view.w, this.view.h).card;
+    this.claimCard.addChild(tile(t.w, t.h, 'white'));
+    const face = (i: number, x: number) => {
+      const f = new Critter(CRITTERS[this.graph.kinds[i]]);
+      f.alive = false;
+      f.scale.set(0.2);
+      f.position.set(x, 34);
+      this.claimCard.addChild(f);
+    };
+    const g = new Graphics();
+    const stack = (x: number, n: number, color: number, line: number) => {
+      for (let k = 0; k < n; k++) g.roundRect(x - 18, 46 - (k + 1) * 22, 36, 19, 5).fill(color).stroke({ width: 3, color: line });
+    };
+    const sw = (i: number) => swatch[COLORS[i % COLORS.length]];
+    if (c.say === 'more') {
+      // More of one than the other: a tall stack beside a short one, each by its face.
+      face(c.a, -140);
+      stack(-70, 4, sw(c.a).fill, sw(c.a).line);
+      stack(70, 1, sw(c.b).fill, sw(c.b).line);
+      face(c.b, 140);
+    } else if (c.say === 'most') {
+      // The most: its stack the tallest of three.
+      face(c.a, -110);
+      stack(-20, 2, 0xdde3ea, 0x8a97a6);
+      stack(30, 4, sw(c.a).fill, sw(c.a).line);
+      stack(80, 1, 0xdde3ea, 0x8a97a6);
+    } else {
+      face(c.a, -70);
+      const about = aboutArt(c.about);
+      about.position.set(70, 0);
+      this.claimCard.addChild(about);
+    }
+    this.claimCard.addChild(g);
+  }
+
+  /** Level 11: a stamp on the claim. A wrong one is a miss that lights the bars it names; after two, the right stamp glows. */
+  private async answerStamp(stamp: Stamp) {
+    const q = this.questions[this.q];
+    if (this.busy || this.finished || q?.ask !== 'claim') return;
+    const why = stampWhy(q.claim, stamp);
+    if (why === 'right') return void this.right();
+    this.busy = true;
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    this.lit = claimBars(q.claim, this.graph.kinds.length);
+    const c = q.claim;
+    await this.ctx.say(c.say === 'cant' ? `graph.claim.cant.${c.about}` : why === 'can' ? 'graph.claim.can' : 'graph.claim.look');
+    if (this.wrongs >= 2 && this.stampHint === null) {
+      this.hints++;
+      this.stampHint = q.claim.answer;
+    }
+    this.busy = false;
   }
 
   /** "Same" questions need two columns: the first tap is remembered. */
@@ -479,13 +622,14 @@ class PictureGraph implements Game {
       if (tap.result === 'right') return void this.right();
       return void this.wrong(q.answer[0]);
     }
+    if (q.ask !== 'most' && q.ask !== 'fewest') return;
     if (i === q.answer) return void this.right();
     return void this.wrong(q.answer);
   }
 
   private async answerNumber(n: number) {
     if (this.busy || this.finished) return;
-    const q = this.questions[this.q] as Extract<Question, { answer: number }>;
+    const q = this.questions[this.q] as Extract<Question, { ask: 'more' | 'total' }>;
     if (n === q.answer) return void this.right();
     // Reading the number of blocks and forgetting the key, or the taller bar instead of the difference, each gets its own gentle explanation.
     if (this.plan.per > 1 && n === q.answer / this.plan.per) return void this.wrong(q.answer, 'blocks');
@@ -520,7 +664,8 @@ class PictureGraph implements Game {
     this.busy = true;
     sfx.sparkle();
     this.ctx.pet.cheer();
-    await this.ctx.say('graph.yay');
+    const q = this.questions[this.q];
+    await this.ctx.say(q?.ask === 'claim' ? `graph.claim.${q.claim.answer}yay` : 'graph.yay');
     this.q++;
     this.busy = false;
     if (this.q >= this.questions.length) return void this.next();
@@ -571,7 +716,7 @@ export const pictureGraph: GameModule = {
   entryLevels: [8],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'Point and count together, crossing off each critter in your head: "one duck, two ducks..." On the shore level, be the one who finds things: point, and let her line them up.',
+  coplayHint: 'Point and count together, crossing off each critter in your head: "one duck, two ducks..." On the shore level, be the one who finds things: point, and let her line them up. On the last level, make up your own claims about the graph ("there are more cats than dogs", "the cats are the fastest") and let her stamp them.',
   offScreen: 'Make a graph of the family\'s favorite fruits with sticky notes or blocks. Which is the most popular?',
   hubIcon: () => new GraphIcon(),
   touchDemo: true,
