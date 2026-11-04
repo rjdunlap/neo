@@ -8,15 +8,16 @@ import type { Rng } from '../../engine/random';
  * marks), and how long two things are end to end; and measure one thing with big worms, then little
  * worms, to see that a smaller unit makes a bigger count; and read a ruler snapped off below 0, where
  * the end mark is not the length; and tap one worm along a thing hop by hop, a chalk tick at the end of
- * each hop, then count the hops.
+ * each hop, then count the hops; and measure a thing longer than a short ruler by laying the ruler twice,
+ * a chalk mark where the first lay ends, then adding the two parts.
  */
-export type MeasureMode = 'lay' | 'say' | 'compare' | 'ruler' | 'rulerdiff' | 'rulersum' | 'units' | 'broken' | 'hop';
+export type MeasureMode = 'lay' | 'say' | 'compare' | 'ruler' | 'rulerdiff' | 'rulersum' | 'units' | 'broken' | 'hop' | 'slide';
 
 /** The levels that read a ruler instead of laying worms. */
 export const isRuler = (mode: MeasureMode) => mode === 'ruler' || mode === 'rulerdiff' || mode === 'rulersum' || mode === 'broken';
 
-/** The levels laid out with the smaller ruler unit and the pads along the bottom: the ruler levels, and one worm hopping up to 8 long. */
-export const isWide = (mode: MeasureMode) => isRuler(mode) || mode === 'hop';
+/** The levels laid out with the smaller ruler unit and the pads along the bottom: the ruler levels, one worm hopping up to 8 long, and a thing up to 12 long under a short ruler. */
+export const isWide = (mode: MeasureMode) => isRuler(mode) || mode === 'hop' || mode === 'slide';
 
 /** The ruler runs from 0 to this mark. */
 export const RULER = 10;
@@ -39,7 +40,11 @@ export const PLANS: MeasurePlan[] = [
   { mode: 'units', max: 6, rounds: 4, name: 'Measure one thing with big worms, then little worms: which number did the little worms make?' },
   { mode: 'broken', max: 7, rounds: 4, name: 'The broken ruler: no 0 to start from, so count the spaces it covers' },
   { mode: 'hop', max: 8, rounds: 3, name: 'One worm, hop by hop: tap it along, then count the chalk marks' },
+  { mode: 'slide', max: 12, rounds: 3, name: 'Longer than the ruler: lay a short ruler twice, then add the two parts' },
 ];
+
+/** Longer than the ruler: the short ruler's length (it reads 0 to this). */
+export const SLIDE_RULER = { min: 4, max: 6 } as const;
 
 /** One worm, hop by hop: the shortest thing, in hops. */
 export const HOP_MIN = 3;
@@ -64,6 +69,8 @@ export interface Measure {
   jump?: true;
   /** The broken ruler: the mark it snapped at (no marks below it). */
   brk?: number;
+  /** Longer than the ruler: the short ruler's length, laid from 0 and then from this mark. */
+  ruler?: number;
 }
 
 export const THINGS: Thing[] = ['leaf', 'pencil', 'snake', 'stick', 'crayon', 'carrot', 'rope', 'paintbrush', 'feather'];
@@ -79,6 +86,7 @@ export function makeMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
   if (plan.mode === 'units') return unitMeasures(plan, rng);
   if (plan.mode === 'broken') return brokenMeasures(plan, rng);
   if (plan.mode === 'hop') return hopMeasures(plan, rng);
+  if (plan.mode === 'slide') return slideMeasures(plan, rng);
   while (out.length < plan.rounds) {
     const length = rng.int(2, plan.max);
     if (out.at(-1)?.length === length) continue;
@@ -142,6 +150,21 @@ function hopMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
   return out;
 }
 
+/** Longer than the ruler: a ruler 4 to 6 long and a thing from one more than it to twice it, never the same length twice running. */
+function slideMeasures(plan: MeasurePlan, rng: Rng): Measure[] {
+  const out: Measure[] = [];
+  while (out.length < plan.rounds) {
+    const ruler = rng.int(SLIDE_RULER.min, SLIDE_RULER.max);
+    const length = rng.int(ruler + 1, Math.min(plan.max, 2 * ruler));
+    if (out.at(-1)?.length === length) continue;
+    out.push({ thing: rng.pick(fresh(out)), length, ruler });
+  }
+  return out;
+}
+
+/** Longer than the ruler: where the ruler's 0 goes on each lay (the thing's start, then the chalk mark). */
+export const slideSlots = (m: Measure): [number, number] => [0, m.ruler!];
+
 /**
  * One worm, hop by hop: the worm waits with its nose at the thing's start (mark 0), so hop k lays it over
  * space k and chalks a tick at mark k. No tick at 0: the ticks, the hops and the length are one number.
@@ -192,6 +215,8 @@ function diffStarts(round: number, rng: Rng): [number, number] {
 export function temptingReading(m: Measure, mode: MeasureMode): number | null {
   if (mode === 'ruler') return m.start ? m.start + m.length : null;
   if (mode === 'broken') return m.start! + m.length;
+  // Reading only the second lay, and forgetting the first ruler's worth.
+  if (mode === 'slide') return m.length - m.ruler!;
   if (mode === 'rulerdiff') {
     const gap = Math.abs(m.start! + m.length - (m.other!.start! + m.other!.length));
     return gap >= 1 && gap !== answerOf(m, mode) ? gap : null;
@@ -206,6 +231,8 @@ export function choices(m: Measure, mode: MeasureMode, rng: Rng): number[] {
   if (mode === 'units') return rng.shuffle([m.length, m.other!.length]);
   // The broken ruler: the spaces, the end mark, and the marks counted (one more than the spaces).
   if (mode === 'broken') return rng.shuffle([m.length, m.start! + m.length, m.length + 1]);
+  // Longer than the ruler: the whole, the second part alone, and one next to the whole.
+  if (mode === 'slide') return rng.shuffle([m.length, m.length - m.ruler!, m.length + rng.pick([-1, 1])]);
   const answer = answerOf(m, mode);
   const t = temptingReading(m, mode);
   const tempting = t === null ? [] : [t];
@@ -217,14 +244,16 @@ export const answerOf = (m: Measure, mode: MeasureMode) =>
   mode === 'units' ? (m.ask === 'big' ? m.length : m.other!.length) :
   mode === 'compare' || mode === 'rulerdiff' ? Math.abs(m.length - m.other!.length) : mode === 'rulersum' ? m.length + m.other!.length : m.length;
 
-export type MeasureTouch = { kind: 'worm'; row: number } | { kind: 'hop' } | { kind: 'answer'; value: number };
+export type MeasureTouch = { kind: 'worm'; row: number } | { kind: 'hop' } | { kind: 'slide'; at: number } | { kind: 'answer'; value: number };
 
 /**
  * The next real touch for a clean measuring round: fill each unfinished row, then choose its reading.
  * One worm, hop by hop: `worms[0]` counts the hops, so it taps the worm `length` times, then the pad.
+ * Longer than the ruler: `worms[0]` counts the lays, so it lays the ruler at 0, then at the chalk mark, then taps the pad.
  */
 export function measureTouch(m: Measure, mode: MeasureMode, worms: readonly number[]): MeasureTouch | null {
   if (isRuler(mode)) return { kind: 'answer', value: answerOf(m, mode) };
+  if (mode === 'slide') return (worms[0] ?? 0) < 2 ? { kind: 'slide', at: slideSlots(m)[worms[0] ?? 0] } : { kind: 'answer', value: m.length };
   if (mode === 'hop') return (worms[0] ?? 0) < m.length ? { kind: 'hop' } : { kind: 'answer', value: m.length };
   const lengths = [m.length, ...(m.other ? [m.other.length] : [])];
   const row = lengths.findIndex((length, i) => (worms[i] ?? 0) < length);
@@ -245,6 +274,8 @@ export interface Span {
  */
 export function hintSpans(m: Measure, mode: MeasureMode): Span[] {
   if (mode === 'ruler' || mode === 'broken') return [{ row: 0, from: m.start ?? 0, count: m.length }];
+  // Longer than the ruler: the first ruler's worth and the rest, as two parts.
+  if (mode === 'slide') return [{ row: 0, from: 0, count: m.ruler! }, { row: 0, from: m.ruler!, count: m.length - m.ruler! }];
   if (mode === 'rulersum') return [{ row: 0, from: m.start ?? 0, count: m.length }, { row: 1, from: m.other!.start!, count: m.other!.length }];
   if (mode !== 'rulerdiff') return [];
   const firstLonger = m.length > m.other!.length;

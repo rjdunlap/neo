@@ -1731,8 +1731,8 @@ async function woodsBatch() {
     log(`Picture Graph ${level} (${mode}): bars built block by block, graph checked, questions answered on bars and number pads, misses, glow hint, saved score and sticker passed`);
   }
 
-  if (!only || only === 'worm') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
-    // Level 7 (big worms, then little worms), 8 (the broken ruler) and 9 (one worm, hop by hop) play in portrait.
+  if (!only || only === 'worm') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 10); level++) {
+    // Level 7 (big worms, then little worms), 8 (the broken ruler), 9 (one worm, hop by hop) and 10 (longer than the ruler) play in portrait.
     if (level >= 7) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('inchworm', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
@@ -1757,7 +1757,28 @@ async function woodsBatch() {
     for (let n = 0; n < rounds; n++) {
       await idle(n);
       if (await page.evaluate(() => !!neo.scene.game.m.jump)) await screenshot('inchworm-3-jump');
-      if (mode === 'hop') {
+      if (mode === 'slide') {
+        // Longer than the ruler: lay the ruler with its 0 at `mark` (the finger is 40 below what it carries), `dx` units off.
+        const layAt = async (mark, dx = 0) => {
+          await page.evaluate(async ({ mark, dx }) => {
+            const g = neo.scene.game; const at = g.slotSpot(mark);
+            await kit.dragTo(g.slider.node, g.rows[0].node.parent.toGlobal({ x: at.x + dx, y: at.y + 40 }), 12);
+          }, { mark, dx });
+          await page.waitForTimeout(700);
+        };
+        const ruler = await page.evaluate(() => neo.scene.game.m.ruler);
+        if (n === 0) {
+          // A drop well away from the start slides back: no lay, no miss.
+          await layAt(0, 3 * 74);
+          assert.deepEqual([await page.evaluate(() => neo.scene.game.rows[0].worms), ...(await counts())], [0, 0, 0]);
+        }
+        await layAt(0);
+        assert.deepEqual(await page.evaluate(() => [neo.scene.game.rows[0].worms, neo.scene.game.chalk.children.length, neo.scene.game.pads.length]), [1, 2, 0]);
+        if (n === 0) await screenshot('inchworm-10-chalk');
+        await layAt(ruler);
+        assert.equal(await page.evaluate(() => neo.scene.game.rows[0].worms), 2);
+        await settle();
+      } else if (mode === 'hop') {
         // One worm, hop by hop: tap it along; it stops by itself at the end, and the pads come only then.
         const length = await page.evaluate(() => neo.scene.game.m.length);
         for (let k = 0; k < length; k++) {
@@ -1812,6 +1833,14 @@ async function woodsBatch() {
         assert.equal(await page.evaluate(() => neo.scene.game.chalk.children.length), length + 1);
         await page.waitForTimeout(300);
         await screenshot('inchworm-9-hint');
+      } else if (n === 0 && mode === 'slide') {
+        // The second part alone first (a miss), then the other wrong pad: the second miss lights both parts and the chalk mark.
+        const m = await page.evaluate(() => { const m = neo.scene.game.m; return { second: m.length - m.ruler, whole: m.length }; });
+        await pad(m.second); assert.deepEqual(await counts(), [1, 0]);
+        const [other] = (await wrongPads()).filter((x) => x !== m.second);
+        await pad(other); assert.deepEqual(await counts(), [2, 1]);
+        await page.waitForTimeout(300);
+        await screenshot('inchworm-10-hint');
       } else if (n === 0 && mode !== 'compare') { const [a, b] = await wrongPads(); await pad(a); await pad(b); assert.deepEqual(await counts(), [2, 1]); }
       await pad(await answer());
     }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { answerOf, choices, hintSpans, HOP_MIN, hopTicks, isRuler, isWide, longerShorter, makeMeasures, measureTouch, planFor, PLANS, RULER, temptingReading, THINGS, UNIT_SIZE, type Measure } from './logic';
+import { answerOf, choices, hintSpans, HOP_MIN, hopTicks, isRuler, isWide, longerShorter, makeMeasures, measureTouch, planFor, PLANS, RULER, SLIDE_RULER, slideSlots, temptingReading, THINGS, UNIT_SIZE, type Measure } from './logic';
 import { inchworm, THING_WORDS } from '.';
 import { SCRIPT } from '../../content/voice-script';
 import { levelsInOrder } from '../../progress/difficulty';
@@ -17,7 +17,7 @@ describe('Inchworm Measure', () => {
             expect(move.value).toBe(answerOf(m, plan.mode));
             break;
           }
-          if (move.kind === 'hop') {
+          if (move.kind === 'hop' || move.kind === 'slide') {
             worms[0]++;
             continue;
           }
@@ -25,7 +25,8 @@ describe('Inchworm Measure', () => {
           expect(move.row).toBeLessThan(worms.length);
           worms[move.row]++;
         }
-        if (!isRuler(plan.mode)) {
+        if (plan.mode === 'slide') expect(worms[0]).toBe(2);
+        else if (!isRuler(plan.mode)) {
           expect(worms[0]).toBe(m.length);
           if (m.other) expect(worms[1]).toBe(m.other.length);
         }
@@ -63,7 +64,7 @@ describe('Inchworm Measure on a ruler: how much longer, and end to end', () => {
   const plan = (mode: string) => PLANS.find((p) => p.mode === mode)!;
 
   it('keeps the ladder in order, with the two new ruler levels appended after reading a ruler', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['lay', 'say', 'compare', 'ruler', 'rulerdiff', 'rulersum', 'units', 'broken', 'hop']);
+    expect(PLANS.map((p) => p.mode)).toEqual(['lay', 'say', 'compare', 'ruler', 'rulerdiff', 'rulersum', 'units', 'broken', 'hop', 'slide']);
     expect(PLANS.filter((p) => isRuler(p.mode)).map((p) => p.mode)).toEqual(['ruler', 'rulerdiff', 'rulersum', 'broken']);
   });
 
@@ -251,9 +252,9 @@ describe('Inchworm Measure with big worms, then little worms (level 7)', () => {
 
   it('is the pre-K top and comes after "how many worms long" at school', () => {
     expect(inchworm.levels('prek')).toEqual({ min: 1, max: 7, order: [1, 2, 7] });
-    expect(inchworm.levels('school')).toEqual({ min: 1, max: 9, order: [1, 2, 7, 9, 3, 4, 8, 5, 6] });
+    expect(inchworm.levels('school')).toEqual({ min: 1, max: 10, order: [1, 2, 7, 9, 3, 4, 8, 5, 6, 10] });
     expect(levelsInOrder(inchworm.levels('prek'))).toEqual([1, 2, 7]);
-    expect(levelsInOrder(inchworm.levels('school'))).toEqual([1, 2, 7, 9, 3, 4, 8, 5, 6]);
+    expect(levelsInOrder(inchworm.levels('school'))).toEqual([1, 2, 7, 9, 3, 4, 8, 5, 6, 10]);
   });
 });
 
@@ -393,11 +394,79 @@ describe('Inchworm Measure: one worm, hop by hop (level 9)', () => {
   });
 
   it('comes after big and little worms at school, and is not at pre-K', () => {
-    expect(levelsInOrder(inchworm.levels('school'))).toEqual([1, 2, 7, 9, 3, 4, 8, 5, 6]);
+    expect(levelsInOrder(inchworm.levels('school'))).toEqual([1, 2, 7, 9, 3, 4, 8, 5, 6, 10]);
     expect(levelsInOrder(inchworm.levels('prek'))).toEqual([1, 2, 7]);
   });
 
   it('has its lines', () => {
     for (const id of ['worm.hop', 'worm.hops', 'worm.hoplong', 'worm.chalk'] as const) expect(SCRIPT[id]).toBeTruthy();
+  });
+});
+
+describe('Inchworm Measure: longer than the ruler (level 10)', () => {
+  const plan = planFor(10);
+
+  it('is a wide layout that is not a ruler level: three rounds, a ruler of 4-6 and a thing from one more than it to twice it', () => {
+    expect(plan.mode).toBe('slide');
+    expect(isWide('slide') && !isRuler('slide')).toBe(true);
+    for (let seed = 1; seed <= 300; seed++) {
+      const ms = makeMeasures(plan, new Rng(seed));
+      expect(ms).toHaveLength(3);
+      ms.forEach((m, i) => {
+        expect(m.ruler).toBeGreaterThanOrEqual(SLIDE_RULER.min);
+        expect(m.ruler).toBeLessThanOrEqual(SLIDE_RULER.max);
+        expect(m.length).toBeGreaterThan(m.ruler!);
+        expect(m.length).toBeLessThanOrEqual(2 * m.ruler!);
+        // Two lays always reach the end: the second starts at the mark and covers the rest.
+        expect(slideSlots(m)[1] + m.ruler!).toBeGreaterThanOrEqual(m.length);
+        if (i > 0) {
+          expect(m.length).not.toBe(ms[i - 1].length);
+          expect(m.thing).not.toBe(ms[i - 1].thing);
+        }
+      });
+    }
+  });
+
+  it('offers the whole, the second part alone and one next to the whole; the second part is never the answer', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      for (const m of makeMeasures(plan, rng)) {
+        const cs = choices(m, 'slide', rng);
+        expect(new Set(cs).size).toBe(3);
+        expect(cs).toContain(answerOf(m, 'slide'));
+        expect(answerOf(m, 'slide')).toBe(m.length);
+        const second = temptingReading(m, 'slide')!;
+        expect(second).toBe(m.length - m.ruler!);
+        expect(second).not.toBe(m.length);
+        expect(cs).toContain(second);
+        expect(cs.every((n) => n >= 1)).toBe(true);
+      }
+    }
+  });
+
+  it('the finger lays the ruler at 0, then at the chalk mark, then taps the whole', () => {
+    for (const m of makeMeasures(plan, new Rng(7))) {
+      expect(measureTouch(m, 'slide', [0])).toEqual({ kind: 'slide', at: 0 });
+      expect(measureTouch(m, 'slide', [1])).toEqual({ kind: 'slide', at: m.ruler });
+      expect(measureTouch(m, 'slide', [2])).toEqual({ kind: 'answer', value: m.length });
+    }
+  });
+
+  it('the hint lights the first ruler and the rest, which add up to the whole', () => {
+    for (const m of makeMeasures(plan, new Rng(11))) {
+      const [a, b] = hintSpans(m, 'slide');
+      expect(a).toEqual({ row: 0, from: 0, count: m.ruler });
+      expect(b.from).toBe(m.ruler);
+      expect(a.count + b.count).toBe(m.length);
+    }
+  });
+
+  it('comes last at school and is not at pre-K', () => {
+    expect(levelsInOrder(inchworm.levels('school')).at(-1)).toBe(10);
+    expect(levelsInOrder(inchworm.levels('prek'))).not.toContain(10);
+  });
+
+  it('has its lines', () => {
+    for (const id of ['worm.slide', 'worm.slidemark', 'worm.slidehow', 'worm.secondpart', 'worm.firstthenrest'] as const) expect(SCRIPT[id]).toBeTruthy();
   });
 });
