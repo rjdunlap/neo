@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Define Light Lab Split the sunbeam** (docs only; status `define`): the splitter seed extending batch 1's nearest-solution search. [Dive](deep-dives/light-lab.md#build-slices-in-order).
+- **Define Light Lab Split the sunbeam** (docs only; status `define`; claimed 2026-11-04 by `claude/define-light-lab-split-sunbeam`): the splitter seed extending batch 1's nearest-solution search. [Dive](deep-dives/light-lab.md#build-slices-in-order).
 - **`penguin-slide`, level 13 Two penguins**, unblocked (level 12 built) (new-interaction tier: typecheck, rule tests, one play with a selection change and one hint, one portrait screenshot, `fingerdemo` at 13, `BROWSER_SUITE=couchgames` filtered to Penguin Slide): [dive](deep-dives/penguin-slide.md#build-slices-in-order).
 - **Define Quick Tricks third show** (docs only; status `define`): Wind the Music Box, Fill the Cups and Loop the Fireflies as level 9, the crank's pointer handling, which built pour and loop handling it reuses, named amounts per band, accounting (overfill spills and is never a miss), voice lines and check tier. [Dive](deep-dives/quick-tricks.md#build-slices-in-order), [ideas](IDEAS.md#a-third-show-new-gestures).
 - **Define Word Search school opening** (docs only; status `define`): a 6 by 6 grid of 100-unit squares with four short across-only words, each with a picture and a speaker, for school; settle the land (Lantern Lake or a move), the literacy wording, a picture for every word, accounting and the check tier. [Dive](deep-dives/word-search.md#build-slices-in-order).
