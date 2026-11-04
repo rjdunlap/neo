@@ -2128,11 +2128,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 6, text: 'Turn the mirrors first, then tap the sun to shine.' },
       { from: 5, to: 5, text: 'Colored glass changes the beam: shine through the pink glass to wake the pink flower.' },
       { from: 7, to: 7, text: 'For three puzzles, tap the rock or edge where you think the locked beam will stop. Then turn the mirrors and shine the sun on one final puzzle.' },
+      { from: 8, to: 8, text: 'Drag the mirror from the tray onto a square of the board. Tap a placed mirror to turn it, then tap the sun to shine.' },
+      { from: 9, to: 9, text: 'Drag both tray mirrors onto the board so the beam goes around the rock. Tap a placed mirror to turn it, then tap the sun to shine.' },
     ],
-    finish: [{ to: 6, text: 'The round ends when every flower has woken up.' }, { from: 7, text: 'The round ends when the final planning puzzle wakes every flower.' }],
+    finish: [{ to: 6, text: 'The round ends when every flower has woken up.' }, { from: 7, to: 7, text: 'The round ends when the final planning puzzle wakes every flower.' }, { from: 8, text: 'The round ends when every flower has woken up.' }],
     note: [
       { to: 6, text: 'A mirror turned the wrong way is just another try; the glowing mirror is a hint.' },
-      { from: 7, text: 'Predictions are experiments and never count as misses. On the final puzzle, the glowing mirror is a hint.' },
+      { from: 7, to: 7, text: 'Predictions are experiments and never count as misses. On the final puzzle, the glowing mirror is a hint.' },
+      { from: 8, text: 'Putting a mirror down is never wrong; a drop off the board goes back to the tray. Only a shine that misses counts, and a glowing square or mirror is a hint.' },
     ],
   },
   'penguin-slide': {
