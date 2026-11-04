@@ -43,7 +43,7 @@ The game is fair and already teaches through its hints; what it lacks is a gentl
 
 Owned elsewhere: picture sudoku for children is Garden Rows (standing rule S8: Garden Rows' boxes are a Garden Rows level, not a Sudoku Garden band; [Garden Rows dive](garden-rows.md)). The shared-cursor co-op is the couch roadmap's step 12 ([ROADMAP](../ROADMAP.md)) and an [IDEAS](../IDEAS.md) row, not this dive's.
 
-**Long-term arc:** a grown-up opens on a 4 by 4 bed, climbs the 6 by 6 and patchwork beds, meets the 9 by 9 beds with Fill marks, then the X-Wing; killer cages follow if their definition measures a fit at 64 units.
+**Long-term arc:** a grown-up opens on a 4 by 4 bed, climbs the 6 by 6 and patchwork beds, meets the 9 by 9 beds with Fill marks, then the X-Wing; a 6 by 6 cage bed (level 10, [defined 2026-11-03](#cage-beds-level-10-definition-2026-11-03)) brings sums in, and 9 by 9 cages stay out because their label and marks do not fit a 64-unit square.
 
 ## Experience and presentation
 
@@ -69,6 +69,76 @@ Owned elsewhere: picture sudoku for children is Garden Rows (standing rule S8: G
 | 7 | A 4 by 4 bed to start | grown-up entry (order `[7, 1, 2, 3, 4, 5, 6]`, `entryLevels: [7]`) | 4 by 4, 2 by 2 boxes, 10 blanks, lone numbers finish it | The only number that fits each square | As built: a wrong number is a miss with the boing and line; hints as built | Every level-7 bed over 300 seeds has one solution, exactly 10 blanks and grade 1 (the build lowers blanks to 9 only if 400 attempts miss on any seed); `geometry(4)` has 12 houses of 4; the bed draws with squares ≥ 64 (up to 96) in portrait and landscape | `Size` gains 4 with per-size box width (`bc` is 3 today for both sizes); the tray's four tiles; `describeLevel`; how-to steps unchanged (no level wording). Couch trip (1–3) and courses unchanged |
 | 8 | A 9 by 9 bed with a crossing pair of rows | grown-up top (order ends `…, 6, 8]`) | 9 by 9, about 55 blanks, needs an X-Wing (and may use pairs and pointing lines) | Which number's two rows (or columns) share the same two columns, ruling it out of the rest of those columns | As built; the hint is `rules-out` via the X-Wing: the four squares are ringed, the two rows lit, and the pet says the number has to sit in those corners, so it cannot go elsewhere in those columns | The `xwing` step is sound against the solution (nothing ruled out is the answer) on 300 seeds; every level-8 bed is grade 4 (tier 3 alone fails) with one solution; tiers 1–3 grades of levels 1–6 unchanged; follow-the-hints finishes | A tier 4 and an `xwing` technique in `techniqueSolve`, `TIER`, `gradeOf`; generator filter (if grade-4 beds are rare in 400 attempts, an authored list checked by the solver, as `course.ts` does); one voice line; the row lines. Couch untouched |
 | 9 | Patchwork beds | grown-up, after 3 (order `[7, 1, 2, 3, 9, 4, 5, 6, 8]`) | 6 by 6, irregular patches of six squares from an authored list of at least six layouts, about 20 blanks, lone numbers and only places | Where a number's only square in a patch is | As built; hints name a "patch" for the box house | Every authored layout has six connected patches of six and admits a full bed (`randomBed` succeeds); every level-9 bed over 300 seeds has one solution, its blanks and grade ≤ 2; `houseName` says patch; peers come from the patch, not a 2 by 3 box | `geometry` takes a patch layout (a `boxOf` array) instead of computing boxes; borders drawn between patches; the tinted soil; one voice line variant. Courses unchanged |
+| 10 | A 6 by 6 bed with sums in the cages | grown-up, after 3 (order `[7, 1, 2, 3, 10, 4, 5, 6]` today; `[7, 1, 2, 3, 9, 10, 4, 5, 6, 8]` once 8 and 9 are built) | 6 by 6, 2 by 3 boxes, every square in a dashed cage of 2–4 squares with its sum, 6 givens (30 blanks), at least one cage with only one set of numbers | Which numbers can make a cage's sum, and what its last square must be | As built (wrong against the solution is a miss); a repeat in a cage is a clash; a full cage with the wrong sum rings red but is not a second miss; hints name the cage | See [the definition](#cage-beds-level-10-definition-2026-11-03) | Cages on `Puzzle`, cage-aware `search`, two cage techniques, two hint lines, the cage drawing. Couch trip and courses unchanged |
+
+### Cage beds (level 10, definition 2026-11-03)
+
+*Defined in `claude/define-sudoku-cage-beds`; the measurements below use the built layout code (`resizeTouch`, `resize`, `syncTexts` in `index.ts`).*
+
+**Fit at 64 units, measured.** The smallest view is 1024 by 768. A 6 by 6 bed draws at 92 units a square beside the tray (`min(96, (768 − 150) / 6, (1024 − 172 − 20 − 44 − 236) / 6)`), at least 81 on a tall view and 84 in controller play (`(768 − 262) / 6`). A 9 by 9 bed draws at 64 beside the tray (68 by height, 64 by width) and 56 in controller play, below the floor. A sum label of at least 13 units (the marks' floor) needs the top third of a square, which leaves nine marks two-thirds of a 64-unit square: three rows 14 units apart for a 13-unit figure, so they touch. **So cages come to the 6 by 6 bed only**, where six marks need two rows; 9 by 9 cage beds are left out on that measurement.
+
+**The rule.** Every square belongs to exactly one cage of 2–4 squares joined edge to edge (a cage may cross a box border). The numbers in a cage add up to its sum and never repeat in it, on top of the row, column and box rule. Six squares come with a number (a classic cage bed has none; see Left out). Nothing else changes: tap a square, then a number; Marks, Erase, Hint and Start over as built.
+
+**Data.** `interface Cage { cells: number[]; sum: number }`; `Puzzle` gains `cages?: Cage[]` and `SudokuPlan` gains `cages?: true`. `cageOf(cages, cells)` gives each square's cage index. `shortBed` keeps the cages untouched (the squares it fills come from the solution, so every sum still holds), so the how-to card's demonstration draws them.
+
+**Solving and uniqueness.** `search` takes optional cages: a used-digit mask per cage (a number already in the cage does not fit), and a sum check when a number is tried. With *k* squares still empty and *r* of the sum left, the tried number leaves *r − d* for *k − 1* squares, which must lie between the smallest and largest sum of *k − 1* distinct numbers not yet in the cage; the last square must make the sum exactly. `countSolutions`, `solve` and `candidates` (row, column, box and cage repeats; not sums) pass the cages through. `conflicts` adds a cage as a house for repeats, and `houseName` says "cage".
+
+**Two cage techniques.** `cageSets(sum, k, size)` lists every set of *k* distinct numbers from 1 to `size` that adds up to `sum`; a rule test enumerates it for every *k* of 2–4 and every reachable sum at size 6, and pins examples (two squares making 3 are only 1 and 2; making 11, only 5 and 6; three making 6, only 1, 2, 3; three making 15, only 4, 5, 6). This test, not the low-quality pages noted under Similar games, is the evidence.
+- `cage-last` (tier 1, places a number): every square of a cage but one is filled, so the last holds the sum less the rest.
+- `cage-sets` (tier 2, rules numbers out): of the sets `cageSets` gives for a cage, keep those that every one of its empty squares can still take a different number from (a matching of squares to numbers), and rule out of each empty square every number in none of the kept sets. Like `pair` and `locked`, it has `cell: -1`, `pattern` (the cage's squares), `digits` (the numbers the kept sets allow) and `removed`.
+
+`techniqueSolve` takes the cages and tries, easiest first: `lone`, `place`, `cage-last`, `cage-sets`, then `pair` and `locked` only up to the plan's tier. The plan is `{ name: 'A 6 by 6 bed with sums in the cages', size: 6, tier: 2, blanks: 30, beds: 1, cages: true }`. A level-10 bed must be (1) unique with the cages, (2) finished by the techniques at tier 2 with the cages, and (3) **not** finished by tiers 1–3 without the cage techniques, so the sums are needed.
+
+**Generation (`makeCageBed`).** Grow a full bed with `randomBed(6, rng)`. Partition it: walk the squares in seeded order; each square not yet in a cage starts one of a drawn size (2 for 45 in 100, 3 for 40, 4 for 15) and grows by a random empty edge neighbour whose number is not already in the cage. A square left alone joins a neighbouring cage of fewer than four squares that lacks its number, else the partition is thrown away (up to 50 tries a bed). Keep a partition only if at least one cage has a single set from `cageSets` (the first foothold). Then take numbers out as `makePuzzle` does, each kept out only if (1) and (2) still hold, stopping at 30 blanks, and keep the bed only if (3) holds. 400 attempts as `makePuzzle`. **Fallback:** if any of 300 test seeds misses, lower the blanks to 28; if that still misses, ship an authored list of at least eight beds checked by the same solver (as `course.ts` does), each a grid picture plus a cage picture (one letter a cage) for `parsePuzzle`.
+
+**First round.** A bed with 6 numbers given; the foothold cage (two squares making 3 or 11, or three making 6 or 15) sits where a given or its row leaves one of its two numbers per square, so the first number needs only the sum and one look.
+
+**Drawing.**
+- **Cage outline:** a dashed line 6 units inside the cage's outer edges, 2 units wide, ink at alpha 0.55, dashes 7 long with gaps of 5. Pixi has no dashed stroke, so `dashedEdge(g, x0, y0, x1, y1)` draws the segments with `moveTo`/`lineTo`. It runs only along a square's edges that border another cage or the bed's edge, with corners joined. It sits on the blossom layer under the numbers. The box borders (`wood.line`) and the selection and hint rings (inset 4, width 6, so 1 to 7 units in) are unchanged and draw over it.
+- **Sum label:** in the cage's first square in reading order, at 9 units in from its top-left corner (inside the ring), font `max(13, round(cell × 0.2))` (18 at 92, 17 at 84), ink, weight 600, on a small paper patch (alpha 0.85) so a blossom does not hide it.
+- **Numbers and marks on a cage bed:** the placed number moves 0.06 of a square down and is `cell × 0.46`, so it clears the label. Marks use two rows at 0.52 and 0.80 of the square (columns 0.2, 0.5 and 0.8 as built), leaving the top third to the label. A screenshot at 92 and a portrait one at the tall layout prove it.
+- **Wrong sum:** a cage whose squares are all filled but do not add up to its sum, or whose filled squares already pass it, draws its outline in `CLASH` until fixed. `sudoku.cage-sum` speaks once a bed (at most every four seconds, as `sudoku.wrong`).
+- **Not on patchwork beds:** cage outlines and patch borders and tints never share a bed (level 9 has no cages; level 10 keeps the regular 2 by 3 boxes).
+- Controller play draws the same bed (84 a square); Fill marks is 9 by 9 only, so it is not offered here.
+
+**Accounting** (the 2026-10-23 rule unchanged): a number wrong against the solution is a miss with the boing, the red ring and `sudoku.wrong`. A repeat in a cage is a clash shown like a row clash, and `sudoku.clash` says "cage". A wrong cage sum is never a miss of its own: some number in it is already wrong against the solution and was counted when placed. Erasing and marks are free; a hint counts as help.
+
+**Hints.** `hintFor` takes the cages. `fix` comes first as built. Then the next step from `techniqueSolve(…, stopAtPlacement)`:
+- `cage-last` gives `{ kind: 'cage-last', cell, digit, cage }`: the cage's squares ring blue (the `rules-out` pattern ring), the square takes the built hint ring, and the pet says `sudoku.hint-cage-last`.
+- A placement reached after a `cage-sets` step gives the built `rules-out` hint with `via` that step: its `pattern` (the cage) rings blue as built, and the pet says `sudoku.hint-cage-sets`.
+- `lone`, `place`, `pair`, `locked` and `few` are as built.
+
+Voice lines (new):
+- `sudoku.hint-cage-last`: "The numbers in this cage add up to {sum}. The ones already in make {have}, so the ringed square needs the {n}."
+- `sudoku.hint-cage-sets`: "{k} different numbers that add up to {sum} can only be {set}. That leaves just the {m} for the ringed square." ({set} is spoken as "1 and 2" or "1, 2 and 3")
+- `sudoku.cage-sum`: "These numbers add up to {have}, and the cage needs {sum}."
+- `sudoku.go-cages` (the level-10 instruction): "Every row, column and box needs each number once, and the numbers in each dashed cage add up to its small number. Tap a square, then tap a number."
+
+**Rule tests (the build's main proof):**
+- the `cageSets` table and examples above;
+- over 300 seeds, every level-10 bed has cages that cover each square once, are 2–4 squares joined edge to edge, have no repeated number in the solution and sums that match, and include one single-set cage;
+- each bed has one solution with the cages and exactly 30 blanks (or the fallback's count), finishes at tier 2 with the cage techniques, and does not finish without them;
+- `cage-sets` is sound against the solution (nothing it rules out is the answer) and `cage-last` places the solution's number;
+- following `hintFor` from the start finishes the bed;
+- `shortBed` keeps the cages and their sums true;
+- the `order` puts 10 directly before 4, and grades and blanks of levels 1–7 are unchanged (beds for a given seed are the same as before);
+- `placements` includes `cage-last` squares, so the bots can play.
+
+**Couplings.**
+- `describeLevel` gains level 10. `autotouch` and the couch `autoplay` both read `placements`, so the ghost finger plays a cage bed with no new code beyond that, and the how-to card's demonstration plays a `shortBed` of it.
+- The how-to card gains one level-scoped step: "On level 10, the small number in each dashed cage is what its squares add up to."
+- The couch trip (levels 1–3), face-off and the two frozen courses never reach level 10 and are unchanged.
+- The level ID is 10 because 8 and 9 are reserved by batches 3 and 4. It has no ordering dependency on them, but all four batches edit `logic.ts` and `index.ts`, so it is taken when no other Sudoku Garden batch is in flight. Whichever lands second merges the `order` array.
+
+**Check tier for the build (new interaction):**
+- typecheck and the rule tests above;
+- one scripted play of level 10 with one wrong number, one cage hint (`cage-last` or `cage-sets`), then to the sticker;
+- one landscape and one portrait screenshot of the cage bed, to see the labels, dashes and marks;
+- `fingerdemo` at 10, and one `npm run build` for the voice lines.
+
+The couch suite is not needed: `geometry` is unchanged, and the shared drawing changes only when cages are present.
+
+**Needs a person or device:** whether the sum labels and dashes read on an iPad at 92 units, and whether a grown-up new to cage puzzles finds the first cage without the card ([DEVICE-CHECKS](../DEVICE-CHECKS.md) when built).
 
 ### Younger-band openings
 
@@ -80,7 +150,9 @@ Level 7 is the appended easy entry (stable ID, first in `order`, declared in `en
 
 ### Left out on purpose
 
-- **Killer cages** (Solo's Killer mode): a sum per cage, a dashed cage outline and a sum label inside a 64-unit square, cage-combination hints, and arithmetic as a new demand; queued only as a definition (**Define Sudoku Garden cage beds**).
+- **9 by 9 cage beds:** measured in [the cage definition](#cage-beds-level-10-definition-2026-11-03). A 64-unit square (56 in controller play) cannot hold a 13-unit sum label and nine 13-unit marks. Not queued unless the marks' floor or the layout changes.
+- **Classic zero-given cage beds and the house-total rule** (innies and outies: a 6 by 6 row adds up to 21): generation without givens needs that technique and a slower search. A later definition may add both after a person check of level 10.
+- **Cages on patchwork beds:** two kinds of border on one bed would make each harder to read.
 - **X (diagonal) beds**: two extra houses that change little in the reasoning a player does; not queued.
 - **12 by 12 or letter beds**: 12 squares at 64 units is 768, the whole short side before the tray; needs pan or zoom.
 - **The Unreasonable grade** (guessing) and chains past the X-Wing: the game promises a bed the named techniques finish.
@@ -97,7 +169,7 @@ None. Fill marks' accounting (free, not help) follows the 2026-10-23 rule that o
 2. **Fill marks on big beds (batch sudoku-garden 2).** The button, its layout on 9 by 9 beds and its sweep. *Check:* new interaction: typecheck, unit tests (marks equal candidates; button only on 9 by 9 plans), one scripted play of level 4 with Fill marks then a placement that clears its peers' marks, one portrait and one landscape screenshot of the tray; bot unchanged, no `fingerdemo`.
 3. **Level 8, A crossing pair of rows (batch sudoku-garden 3),** (shares the `order` with built level 7). Tier 4, the `xwing` step, generator or authored list, the hint and its lines. *Check:* new rule on the existing tap: typecheck, rule tests, one play of level 8 asking for hints until the X-Wing one (rings and line), then to the sticker, one portrait screenshot of the hint, `fingerdemo` at 8.
 4. **Level 9, Patchwork beds (batch sudoku-garden 4),** (shares the `order` and the per-size geometry with built level 7). Patch layouts in `geometry`, the borders and tints, the patch hint wording. *Check:* new-interaction tier (a new bed drawing): typecheck, unit tests including order, one play of level 9 with one wrong number and one hint naming a patch, one portrait screenshot, `fingerdemo` at 9; `BROWSER_SUITE=couchgames` filtered to Sudoku Garden, since the shared geometry changes.
-5. *Define:* **Sudoku Garden cage beds** (docs only; status `define`; claimed 2026-11-03 by `claude/define-sudoku-cage-beds`): cage generation and uniqueness, the outline and sum label at 64 units, combination hints, accounting and the check tier.
+5. **Level 10, A 6 by 6 bed with sums in the cages (batch sudoku-garden 5)** (defined 2026-11-03, [definition](#cage-beds-level-10-definition-2026-11-03); new interaction; taken when no other Sudoku Garden batch is in flight). Cages on `Puzzle`, cage-aware `search`, `cage-last` and `cage-sets`, `makeCageBed` (or its authored fallback), the dashed outlines, sum labels and moved marks, two hint lines, the instruction and the wrong-sum line. *Check:* new interaction: typecheck, rule tests, one play of level 10 with one wrong number and one cage hint, to the sticker; one landscape and one portrait screenshot; `fingerdemo` at 10; one build for the voice lines.
 
 ## What was built in this session
 
