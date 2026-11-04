@@ -16,12 +16,12 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseMinimum, coursePictures, isPictureCourse } from './course';
 import {
   allLines, axisOf, brushFor, cellsOf, clueDepths, clueText, CLUE_STEP_X, CLUE_STEP_Y, CROSSED, EMPTY, FILLED, headStart, hintFor, isSolved, lineName, makePuzzles, PAD, paint,
-  planFor, statusOf, strokeCells, toolForHint, touchFrame, type Axis, type Brush, type Hint, type Line, type LineStatus, type Mark, type PicturePlan, type PicturePuzzle,
+  ENTRY_LEVELS, ORDER, planFor, statusOf, strokeCells, toolForHint, touchFrame, type Axis, type Brush, type Hint, type Line, type LineStatus, type Mark, type PicturePlan, type PicturePuzzle,
   type Tool, type TouchFrame,
 } from './logic';
 
 /** Grown-up play only. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 7, order: ORDER } };
 
 const PAPER = 0xfffdf6;
 const GRID_LINE = 0xb9b0a0;
@@ -1022,6 +1022,7 @@ export const pictureLogic: GameModule = {
   coplayHint: 'Fill the squares a number allows, and cross out the ones it rules out. Ask which row or column has a clue that leaves only one way to fit.',
   offScreen: 'Draw a grid on squared paper, write numbers beside the rows and columns, and shade the runs they ask for.',
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: ENTRY_LEVELS,
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   hubIcon: () => new PictureIcon(),

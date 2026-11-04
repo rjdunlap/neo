@@ -35,6 +35,12 @@ export const CASTLE: DrawnPicture = { name: 'a castle', rows: ['..r.........r..'
 export const SNOWMAN: DrawnPicture = { name: 'a snowman', rows: ['......nnn......', '......nnn......', '....nnnnnnn....', '.....bb.bb.....', '.....bbobb.....', '.....bbbbb.....', '....rrrrrrr....', '...bbbbbbbbb...', '..bbbbbnbbbbb..', '.bbbbbbbbbbbbb.', '.bbbbbbnbbbbbb.', '.bbbbbbbbbbbbb.', '..bbbbbbbbbbb..', '...bbbbbbbbb...', 'ggggggggggggggg'] };
 export const OWL: DrawnPicture = { name: 'an owl', rows: ['..nn.......nn..', '..nnn.....nnn..', '..nnnnnnnnnnn..', '.nnyyynnnyyynn.', '.nny.ynnny.ynn.', '.nnyyynonyyynn.', '..nnnnnonnnnn..', '..nnnnnnnnnnn..', '..nnyynnnyynn..', '..nnnnnnnnnnn..', '..nnyynnnyynn..', '...nnnnnnnnn...', '....nnnnnnn....', '.....oo.oo.....', 'nnnnnnnnnnnnnnn'] };
 
+export const KITE: DrawnPicture = { name: 'a kite', rows: ['.......u.......', '......uuu......', '.....uuuuu.....', '....uupuuuu....', '...uupppuuuu...', '..uuuuuuuuuuu..', '...uuupppuuu...', '....uuuuuuu....', '.....uuuuu.....', '......uuu......', '.......u.......', '........n......', '.........n.....', '........rrr....', '.........r.....'] };
+export const CRAB: DrawnPicture = { name: 'a crab', rows: ['.rr.......rr...', 'r..r.....r..r..', 'rr.r.....r.rr..', '.rrr.....rrr...', '..r.......r....', '..r.y...y.r....', '...rrrrrrr.....', '..rrrrrrrrr....', 'rrrrrrrrrrrrr..', '..rrrrrrrrr....', 'rr.rrrrrrr.rr..', 'r..r.....r..r..', '..r.......r....', '...............', '...............'] };
+export const UMBRELLA: DrawnPicture = { name: 'an umbrella', rows: ['.......n.......', '.....bbbbb.....', '...bbbbbbbbb...', '..bbbbbbbbbbb..', '.bbbbbbbbbbbbb.', '.bbbbbbbbbbbbb.', 'bbbbbbbbbbbbbbb', 'b..b..bnb..b..b', '.......n.......', '.......n.......', '.......n.......', '.......n.......', '.......n..n....', '........nn.....', '...............'] };
+export const RABBIT: DrawnPicture = { name: 'a rabbit', rows: ['..pp...pp......', '.p..p.p..p.....', '.p..p.p..p.....', '.p..p.p..p.....', '..pp...pp......', '..ppppppp......', '.pp.ppp.pp.....', '.ppppypppp.....', '..ppppppp......', '...ppppppp.....', '..ppppppppp....', '..ppppppppp.pp.', '..ppppppppppp..', '...ppp...ppp...', '...............'] };
+export const PENGUIN: DrawnPicture = { name: 'a penguin', rows: ['.....bbbbb.....', '....bbbbbbb....', '...bb.bbb.bb...', '...bbbbbbbbb...', '...bbboooobb...', '..bbbbooobbbb..', '..bb.......bb..', '.bbb.......bbb.', 'bbb.........bbb', 'bb...........bb', '..bb.......bb..', '..bb.......bb..', '..bbbbbbbbbbb..', '....oo...oo....', '...ooo...ooo...'] };
+
 /**
  * 10 by 10 pictures that need only a few passes of line logic (at most `EASY_PASSES` rounds of "every line, once"), and 10 by
  * 10 pictures that need more care (more than that); a test keeps every picture on its side of the line.
@@ -43,3 +49,5 @@ export const EASY_PASSES = 3;
 export const EASY_10: readonly DrawnPicture[] = [HOUSE, MUSHROOM, SAILBOAT, CAT, FISH, CUP, CROWN, BELL];
 export const HARD_10: readonly DrawnPicture[] = [HEART, TREE, SMILEY, ROCKET, DUCK, SNAIL, FLOWER, WHALE];
 export const BIG_15: readonly DrawnPicture[] = [LIGHTHOUSE, BUTTERFLY, CASTLE, SNOWMAN, OWL];
+/** 15 by 15 pictures that need more care: a test keeps every one needing more passes than every `BIG_15` picture. */
+export const HARD_15: readonly DrawnPicture[] = [KITE, CRAB, UMBRELLA, RABBIT, PENGUIN];

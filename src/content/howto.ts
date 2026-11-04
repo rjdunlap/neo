@@ -324,6 +324,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'The numbers beside each row and column say how many squares in a row to fill. Touch a square to fill it, or drag along a row or column.',
       'Cross marks an empty square. Fill on a filled square empties it.',
       { from: 2, to: 4, text: 'A big picture slides: choose Slide, or drag the numbers.' },
+      { from: 7, to: 7, text: 'A big picture slides: choose Slide, or drag the numbers.' },
       'Hint rings a square; Start over empties the picture.',
     ],
     finish: 'The picture is done when every filled square matches its numbers.',

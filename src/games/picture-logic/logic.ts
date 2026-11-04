@@ -1,6 +1,6 @@
 import type { Rng } from '../../engine/random';
 import { clues, lineSolvable, PICTURES as KID_PICTURES, placements, runs } from '../pixel-pictures/logic';
-import { BIG_15, EASY_10, HARD_10, type DrawnPicture } from './pictures';
+import { BIG_15, EASY_10, HARD_10, HARD_15, type DrawnPicture } from './pictures';
 
 /**
  * Picture Logic's rules (nonograms, Picross). A grid hides a picture; the numbers along each row and column say how long the
@@ -220,25 +220,38 @@ export const solvableByLines = (p: PicturePuzzle) => lineSolvable({ name: p.name
 export interface PicturePlan {
   /** For grown-ups. */
   name: string;
-  size: 6 | 10 | 15;
+  size: 5 | 6 | 10 | 15;
   pictures: number;
 }
 
-/** The ladder: a 6 by 6 warm-up, two 10 by 10 steps, and a 15 by 15 picture. */
-export const PLANS: PicturePlan[] = [
-  { name: 'A small 6 by 6 picture', size: 6, pictures: 1 },
-  { name: 'A 10 by 10 picture with a few passes of logic', size: 10, pictures: 1 },
-  { name: 'A 10 by 10 picture that needs more care', size: 10, pictures: 1 },
-  { name: 'A big 15 by 15 picture', size: 15, pictures: 1 },
-];
+/**
+ * The ladder, by level ID: a 5 by 5 way in (level 5, appended and played first), a 6 by 6 warm-up, two 10 by 10 steps, a big
+ * 15 by 15 picture, and a 15 by 15 that needs more care (level 7). Level 6 is kept for two-colour pictures, not built yet.
+ */
+export const PLANS: Readonly<Record<number, PicturePlan>> = {
+  1: { name: 'A small 6 by 6 picture', size: 6, pictures: 1 },
+  2: { name: 'A 10 by 10 picture with a few passes of logic', size: 10, pictures: 1 },
+  3: { name: 'A 10 by 10 picture that needs more care', size: 10, pictures: 1 },
+  4: { name: 'A big 15 by 15 picture', size: 15, pictures: 1 },
+  5: { name: 'A small 5 by 5 picture to start', size: 5, pictures: 1 },
+  7: { name: 'A 15 by 15 picture that needs more care', size: 15, pictures: 1 },
+};
 
-export const planFor = (level: number): PicturePlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+/** The order the levels are played in, easiest first, and the appended easy entry. */
+export const ORDER = [5, 1, 2, 3, 4, 7];
+export const ENTRY_LEVELS = [5];
 
-/** The pictures a level draws from. The 6 by 6 ones are the pictures Pixel Pictures can set as logic puzzles. */
+/** A level's plan; an ID with no plan (below 1, the unbuilt 6, or above the top) plays the nearest end of the ladder. */
+export const planFor = (level: number): PicturePlan => PLANS[level] ?? (level > 7 ? PLANS[7] : PLANS[1]);
+
+/**
+ * The pictures a level draws from. The 5 by 5 and 6 by 6 ones are the pictures Pixel Pictures can set as logic puzzles; the
+ * bigger ones are this game's own banks.
+ */
 export function poolFor(level: number): PicturePuzzle[] {
   const plan = planFor(level);
-  if (plan.size === 6) return KID_PICTURES[6].filter((p) => lineSolvable(p)).map((p) => parsePicture(p.name, p.rows));
-  const bank = plan.size === 15 ? BIG_15 : level === 2 ? EASY_10 : HARD_10;
+  if (plan.size === 5 || plan.size === 6) return KID_PICTURES[plan.size].filter((p) => lineSolvable(p)).map((p) => parsePicture(p.name, p.rows));
+  const bank = plan === PLANS[7] ? HARD_15 : plan.size === 15 ? BIG_15 : plan === PLANS[2] ? EASY_10 : HARD_10;
   return bank.map(fromDrawn);
 }
 
