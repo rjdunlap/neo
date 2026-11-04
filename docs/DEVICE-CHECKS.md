@@ -2,6 +2,7 @@
 
 ## Ferry Jam level 7 Rocks in the harbor (batch ferry-jam 2, built 2026-11-03)
 
+- [ ] **Does the joined hint read on the iPad?** In Island Bridges level 6, does the dashed amber ring round the group a bridge would close off, with the closing bridge dashed red, read clearly beside the orange island rings, and does `bridges.hint-joined` sound right in device speech? (Island Bridges batch 2, 2026-11-03.)
 - [ ] **Do the rocks read as rocks?** On the iPad in portrait, does the grey boulder read as something that will not move, and does a drag on it wobble clearly without feeling like a mistake?
 - [ ] **The rock line.** Does device speech say `ferry.rock` clearly, and does a school-age player find the harbors fair with a rock in the way?
 

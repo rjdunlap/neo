@@ -2424,6 +2424,8 @@ export const SCRIPT = {
   'bridges.hint-last-way': ['One way left: the ringed island has room on only the lit bridge, so the rest of its number goes there.'],
   'bridges.hint-every-way': ['One short of full: the ringed island needs all but one of the planks it has room for, so the lit bridge needs at least one.'],
   'bridges.hint-next': ['A plank belongs on the lit bridge between the two ringed islands.'],
+  'bridges.hint-joined': ['Keep them joined: filling the dashed bridge would cut the islands in dashed rings off from the rest, so the lit bridge needs a plank.'],
+  'bridges.hint-joined-same': ['Keep them joined: two planks on the lit bridge would cut the islands in dashed rings off from the rest, so it carries one plank, not two.'],
   'bridges.joined': ['Every island is joined!', 'A bridge to every island!'],
   'bridges.done': ['A whole archipelago, joined.'],
   'conga.go': ['Steer the ducklings to their food. If they bump something, the whole line turns about, and a bump counts as a step.'],

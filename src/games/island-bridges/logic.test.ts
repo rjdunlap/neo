@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { COURSES } from './course';
 import {
-  bycounting, canAdd, connected, edgeAt, edgeToward, headStart, forcedPlank, hintFor, isSolved, islandToward, LEVEL_ORDER, layoutOf, makePuzzle, makePuzzles, otherEnd, parsePuzzle, picture, planFor, PLANS, planksAt, solve,
+  bycounting, byreasoning, canAdd, closesOff, connected, edgeAt, edgeToward, headStart, forcedPlank, hintFor, isSolved, islandToward, LEVEL_ORDER, layoutOf, makePuzzle, makePuzzles, otherEnd, parsePuzzle, picture, planFor, PLANS, planksAt, roomOf, solve, hintWalk,
   trouble, waterOf, type Island, type Layout,
 } from './logic';
 
@@ -146,7 +147,7 @@ describe('making puzzles', () => {
   it('is fair: the same seed gives the same puzzle, and the levels climb', () => {
     expect(makePuzzles(PLANS[1], new Rng(5))).toEqual(makePuzzles(PLANS[1], new Rng(5)));
     expect(makePuzzle(PLANS[1], new Rng(5)).layout.islands).not.toEqual(makePuzzle(PLANS[1], new Rng(6)).layout.islands);
-    expect(PLANS.map((p) => p.size)).toEqual([7, 9, 9, 11, 5]);
+    expect(PLANS.map((p) => p.size)).toEqual([7, 9, 9, 11, 5, 9]);
     for (let i = 1; i < LEVEL_ORDER.length; i++) expect(PLANS[LEVEL_ORDER[i] - 1].islands.min).toBeGreaterThanOrEqual(PLANS[LEVEL_ORDER[i - 1] - 1].islands.min);
     expect([...LEVEL_ORDER].sort()).toEqual(PLANS.map((_, i) => i + 1));
     expect(planFor(0)).toBe(PLANS[0]);
@@ -167,6 +168,90 @@ describe('level 5, the small sea', () => {
       expect(p.layout.islands.length, label).toBeLessThanOrEqual(6);
       expect(p.layout.at.some((e) => e.length === 1), label).toBe(true);
     }
+  });
+});
+
+describe('level 6, keep them joined', () => {
+  it('closes a group off only when filling a bridge leaves every island in it full, with islands outside', () => {
+    // Two 1s face each other: one plank fills both, and the 2 below is left outside.
+    const ones = layoutFrom(5, ['1.1..', '.....', '2...1']);
+    const top = ones.edges.findIndex((e) => e.a === 0 && e.b === 1);
+    expect(closesOff(ones, ones.edges.map(() => 0), top, 1)).toEqual([0, 1]);
+    // Two 2s: one plank leaves both short, two close them off.
+    const twos = layoutFrom(3, ['2.2', '...', '1.1']);
+    const across = twos.edges.findIndex((e) => e.a === 0 && e.b === 1);
+    expect(closesOff(twos, twos.edges.map(() => 0), across, 1)).toBeNull();
+    expect(closesOff(twos, twos.edges.map(() => 0), across, 2)).toEqual([0, 1]);
+    // Joining the last two islands of the whole sea closes nothing off.
+    const pair = layoutFrom(3, ['1.1', '...', '...']);
+    expect(closesOff(pair, [0], 0, 1)).toBeNull();
+  });
+
+  it('never changes an answer: with the rule, the solver finds the same one way on every level and course sea', () => {
+    for (let level = 1; level <= 5; level++) for (let s = 1; s <= (level === 3 || level === 4 ? 20 : 60); s++) {
+      const p = makePuzzle(planFor(level), new Rng(s * 389 + level));
+      expect(solve(p.layout, undefined, 2, false, true).found, `level ${level} seed ${s}`).toEqual([p.solution]);
+    }
+    for (const course of Object.values(COURSES)) for (const sea of course.seas) {
+      const p = parsePuzzle(sea);
+      expect(solve(p.layout, undefined, 2, false, true).found).toEqual([p.solution]);
+    }
+  });
+
+  it('makes seas that counting alone cannot finish, that keeping them joined can, and whose hints teach it', () => {
+    const plan = planFor(6);
+    expect(plan.size).toBe(9);
+    expect(LEVEL_ORDER).toEqual([5, 1, 2, 6, 3, 4]);
+    for (let s = 1; s <= 200; s++) {
+      const p = makePuzzle(plan, new Rng(s * 173 + 11)), label = `seed ${s}`;
+      expect(solve(p.layout, undefined, 2).found, label).toEqual([p.solution]);
+      expect(bycounting(p.layout), label).toBe(false);
+      expect(byreasoning(p.layout), label).toBe(true);
+      expect(p.layout.islands.length, label).toBeGreaterThanOrEqual(12);
+      expect(p.layout.islands.length, label).toBeLessThanOrEqual(15);
+      const kinds = hintWalk(p.layout, p.solution);
+      expect(kinds, label).toContain('joined');
+      expect(kinds, label).not.toContain('next');
+      expect(kinds.length, label).toBe(p.par);
+    }
+  });
+
+  it('gives a keep-them-joined hint only when counting is stuck, naming a group the answer never closes off', () => {
+    let joined = 0;
+    for (let s = 1; s <= 120; s++) {
+      const p = makePuzzle(planFor(6), new Rng(s * 61 + 3)), l = p.layout, planks = p.solution.map(() => 0);
+      for (let guard = 0; guard < 100 && !isSolved(l, planks); guard++) {
+        const h = hintFor(l, planks, p.solution, true)!, label = `seed ${s} step ${guard}`;
+        if (h.kind === 'joined') {
+          joined++;
+          expect(forcedPlank(l, planks), label).toBeNull();
+          expect([l.edges[h.edge].a, l.edges[h.edge].b], label).toContain(h.island);
+          expect([l.edges[h.closing].a, l.edges[h.closing].b], label).toContain(h.island);
+          const cap = roomOf(l, planks, h.island).caps.find((c) => c.edge === h.closing)!.cap;
+          expect(closesOff(l, planks, h.closing, cap), label).toEqual(h.group);
+          expect(h.group.length, label).toBeLessThan(l.islands.length);
+          // The answer never fills the closing bridge, and does need the lit one.
+          expect(p.solution[h.closing], label).toBeLessThan(planks[h.closing] + cap);
+          expect(planks[h.edge], label).toBeLessThan(p.solution[h.edge]);
+        }
+        planks[h.edge]++;
+      }
+      expect(isSolved(l, planks), `seed ${s}`).toBe(true);
+    }
+    expect(joined).toBeGreaterThan(100);
+  });
+
+  it('says it on a small hand-built sea: two 2s may share one plank, not two', () => {
+    const p = parsePuzzle(['2.2', '...', '1.1']), l = p.layout;
+    expect(bycounting(l)).toBe(false);
+    expect(byreasoning(l)).toBe(true);
+    const top = l.edges.findIndex((e) => e.a === 0 && e.b === 1), left = l.edges.findIndex((e) => e.a === 0 && e.b === 2);
+    const planks = l.edges.map(() => 0);
+    expect(hintFor(l, planks, p.solution)).toMatchObject({ kind: 'forced', edge: top, why: 'every-way' });
+    planks[top] = 1;
+    // Only level 6 hints it: elsewhere the same board gets the plain next plank.
+    expect(hintFor(l, planks, p.solution)?.kind).toBe('next');
+    expect(hintFor(l, planks, p.solution, true)).toEqual({ kind: 'joined', edge: left, island: 0, why: 'full', closing: top, group: [0, 1] });
   });
 });
 
