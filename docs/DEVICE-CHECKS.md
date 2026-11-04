@@ -33,6 +33,10 @@
 - [ ] **The lift on "which two are the same?"** Does a pre-K or school child read the lifted, outlined bar as "picked", and put it back by tapping it again?
 - [ ] **The dashed line on "how many more".** Does it explain "more" (the blocks above the shorter bar) to a school child?
 
+## Picture Graph level 8 (batch picture-graph 2, built 2026-11-03)
+
+- [ ] **Line them up.** Does a four-year-old tap shore things into rows and say which row has the most without being told what "most" means? Do the slot-to-slot lines explain "more" at school? Are the 100-unit shore squares and tray comfortable on an iPad?
+
 ## Garden Rows (batch garden-rows 1, built 2026-11-02)
 
 - [ ] **Mend the bed with a school-age child.** Does she find the swapped pair from the column repeats, and is lifting a planted flower understood without a prompt?

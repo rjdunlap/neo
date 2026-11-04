@@ -1159,6 +1159,8 @@ Proof: existing-game fix tier: typecheck, rule tests including the placement swe
 
 ### picture-graph 2: Level 8 Line them up
 
+Built 2026-11-03, [PR #1181](https://github.com/rjdunlap/neo/pull/1181); [closeout](archive/COMPLETED-2026-10-09.md#picture-graph-level-8-line-them-up-picture-graph-batch-2-2026-11-03). Scope retained for dependency references (batch picture-graph 3 follows it); no longer eligible for dispatch.
+
 - **`picture-graph`, Level 8, *Line them up* (dive slice 2)** (new interaction; pre-K and school): she lines real things (shells, stones, driftwood, feathers; never litter) in rows by kind and reads which row has more; first in pre-K's `order`, declared in `entryLevels`, second-tier in school's order after level 2. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
 
 Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.

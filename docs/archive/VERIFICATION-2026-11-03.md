@@ -194,3 +194,9 @@
 - Ran: `node scripts/check-links.mjs`, `git diff --check`. No code checks, by tier (nothing built).
 - The window numbers in the definition come from a sampled estimate script, not tests.
 - Open: the build slices and the definition's device checks.
+
+## 2026-11-03 — Brain Break Sums in order definition (docs only)
+
+- Defined Brain Break levels 4–6 *Sums in order* in [the definition](../definitions/brain-break.md#sums-in-order-levels-46-definition-2026-11-03): the same in-order search with sum and take-away labels; colour words stay a proposal; ROADMAP step 9 and chunk 8, READY (queued build) and IDEAS updated.
+- Ran: `node scripts/check-links.mjs`, `git diff --check`. No code checks, by tier (nothing built).
+- Open: the queued build and its checks.

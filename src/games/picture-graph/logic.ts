@@ -1,5 +1,6 @@
 import type { CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
+import type { Band } from '../../progress/bands';
 
 /**
  * Picture Graph: count the critters playing in a meadow and build a bar graph, one block per
@@ -8,7 +9,7 @@ import type { Rng } from '../../engine/random';
  * levels use a key: one block stands for two critters, so the bars no longer match a count of one,
  * and the number of blocks is the tempting wrong answer.
  */
-export type GraphMode = 'build' | 'most' | 'more' | 'read' | 'scale' | 'scaleread' | 'tally';
+export type GraphMode = 'build' | 'most' | 'more' | 'read' | 'scale' | 'scaleread' | 'tally' | 'line';
 
 export interface GraphPlan {
   mode: GraphMode;
@@ -31,6 +32,9 @@ export const PLANS: GraphPlan[] = [
   { mode: 'scale', kinds: 3, max: 4, graphs: 2, per: 2, name: 'Each block is two critters: build the bars from the pairs, then how many more?' },
   { mode: 'scaleread', kinds: 3, max: 5, graphs: 2, per: 2, name: 'A graph where each block is two critters: how many in all? how many more?' },
   { mode: 'tally', kinds: 3, min: 4, max: 7, graphs: 1, per: 1, name: 'Record each kind in tally marks, grouping every five, then build and compare one graph' },
+  // An easy entry with a high ID: real things from the shore lined up in rows, the step before blocks. Pre-K plays two kinds
+  // and asks which row has the most; school plays three and then asks how many more (`lineKinds`, `lineQuestions`).
+  { mode: 'line', kinds: 3, min: 2, max: 6, graphs: 2, per: 1, name: 'Line up shells, stones, sticks and feathers in rows by kind: which row has the most?' },
 ];
 
 /** The levels whose graph is already built when the round opens, so there is nothing to build. */
@@ -172,8 +176,7 @@ export const groupSize = (per: number) => ({ w: (per - 1) * GROUP_GAP + CRITTER_
  * jitter, so it looks scattered but no two groups can touch and none leaves the area. Random placement ran out of
  * room for nine pairs in a meadow this small.
  */
-export function groupSpots(n: number, per: number, area: ReturnType<typeof meadowArea>, rng: Rng): Spot[] {
-  const size = groupSize(per);
+export function groupSpots(n: number, per: number, area: ReturnType<typeof meadowArea>, rng: Rng, size = groupSize(per)): Spot[] {
   const cols = Math.max(1, Math.floor((area.right - area.left) / size.w) + 1);
   const rows = Math.max(1, Math.floor((area.bottom - area.top) / size.h) + 1);
   const stepX = cols > 1 ? (area.right - area.left) / (cols - 1) : 0;
@@ -211,4 +214,105 @@ export function graphMove(plan: GraphPlan, graph: Graph, bars: number[], questio
 export function tallyMove(graph: Graph, tallies: number[]): GraphMove {
   const short = tallies.findIndex((n, i) => n < graph.counts[i]);
   return short >= 0 ? { do: 'add', kind: short } : { do: 'check' };
+}
+
+/* Level 8, Line them up: things from the shore, each tapped into its kind's row of a tray, then the rows compared. */
+
+export type ShoreThing = 'shell' | 'stone' | 'stick' | 'feather';
+/** Real things from the shore; never litter. */
+export const THINGS: ShoreThing[] = ['shell', 'stone', 'stick', 'feather'];
+export const THING_NAMES: Record<ShoreThing, string> = { shell: 'shells', stone: 'stones', stick: 'sticks', feather: 'feathers' };
+
+export interface Shore {
+  kinds: ShoreThing[];
+  counts: number[];
+}
+
+/** Pre-K lines up two kinds, school three. */
+export const lineKinds = (band: Band) => (band === 'school' ? 3 : 2);
+
+/** Each kind's count, from the plan's min to max, all different, so "which row has the most?" and "how many more?" have one answer above nothing. */
+export function makeShore(plan: GraphPlan, kinds: number, rng: Rng): Shore {
+  for (;;) {
+    const things = rng.shuffle([...THINGS]).slice(0, kinds);
+    const counts = things.map(() => rng.int(plan.min ?? 1, plan.max));
+    if (new Set(counts).size === counts.length) return { kinds: things, counts };
+  }
+}
+
+/** Which row has the most; with three rows, then how many more of one kind than another. */
+export function lineQuestions(shore: Shore, rng: Rng): Question[] {
+  const c = shore.counts;
+  const qs: Question[] = [{ ask: 'most', answer: c.indexOf(Math.max(...c)) }];
+  if (c.length > 2) {
+    const [a, b] = rng.shuffle(c.map((_, i) => i)).slice(0, 2).sort((x, y) => c[y] - c[x]);
+    qs.push({ ask: 'more', a, b, answer: c[a] - c[b] });
+  }
+  return qs;
+}
+
+/**
+ * What the hint after two misses shows: lines joining the rows one to one, slot by slot (`links`: a slot and the rows that
+ * have a thing there), and the things nothing matches (`glow`). For "most", every row is joined and the longest row's things
+ * past the next longest glow; for "how many more", the two rows asked about, and the glowing things are the answer.
+ */
+export function lineHint(q: Question, counts: number[]): { links: { k: number; rows: number[] }[]; glow: { row: number; k: number }[] } {
+  const rows = q.ask === 'more' ? [q.a, q.b] : counts.map((_, i) => i);
+  const top = q.ask === 'more' ? q.a : q.ask === 'most' ? q.answer : -1;
+  if (top < 0) return { links: [], glow: [] };
+  const next = Math.max(...rows.filter((r) => r !== top).map((r) => counts[r]));
+  const links: { k: number; rows: number[] }[] = [];
+  for (let k = 0; k < next; k++) links.push({ k, rows: rows.filter((r) => counts[r] > k) });
+  const glow = Array.from({ length: counts[top] - next }, (_, j) => ({ row: top, k: next + j }));
+  return { links, glow };
+}
+
+/** One touch a capable child makes at level 8: a thing on the sand, a row, or a number pad. */
+export type LineMove = { do: 'thing'; index: number } | { do: 'row'; row: number } | { do: 'number'; n: number };
+
+/** The ghost finger: each thing on the sand in turn, then the row with the most and the number for "how many more". */
+export function lineMove(placed: readonly boolean[], question: Question | undefined): LineMove | null {
+  const index = placed.indexOf(false);
+  if (index >= 0) return { do: 'thing', index };
+  if (!question) return null;
+  if (question.ask === 'most') return { do: 'row', row: question.answer };
+  if (question.ask === 'more') return { do: 'number', n: question.answer };
+  return null;
+}
+
+/** A shore thing's tap square, and a tray slot's width. */
+export const THING_SIZE = 100;
+/** A tray row's height. */
+export const ROW_H = 104;
+/** Room in the tray for the row's picture before its slots. */
+export const ROW_LABEL = 110;
+
+/**
+ * The tray at the bottom: one row per kind, its picture first, then a slot per thing, so the rows line up one to one.
+ * Clear of the pet on the left; `slotX(k)` and `rowY(r)` are centres.
+ */
+export function trayLayout(w: number, h: number, rows: number, max: number) {
+  const width = ROW_LABEL + max * THING_SIZE + 20;
+  const left = Math.max(160, w / 2 - width / 2);
+  const bottom = h - 24;
+  const top = bottom - rows * ROW_H - 16;
+  return {
+    left,
+    right: left + width,
+    top,
+    bottom,
+    labelX: left + ROW_LABEL / 2 + 4,
+    slotX: (k: number) => left + ROW_LABEL + 10 + THING_SIZE / 2 + k * THING_SIZE,
+    rowY: (r: number) => top + 8 + ROW_H / 2 + r * ROW_H,
+  };
+}
+
+/** The sand's room for things' centres: below the corner buttons, above the tray, each thing's tap square clear of the tray. */
+export const shoreArea = (w: number, h: number, rows: number, max: number) => ({ left: 150, right: w - 150, top: 168, bottom: trayLayout(w, h, rows, max).top - THING_SIZE / 2 - 10 });
+
+/** Where each thing lies on the sand: one to a grid slot a tap square wide, so no two squares overlap. In the order of the shore's kinds. */
+export function shoreSpots(shore: Shore, plan: GraphPlan, w: number, h: number, rng: Rng): { kind: number; x: number; y: number }[] {
+  const kinds = shore.counts.flatMap((n, kind) => Array.from({ length: n }, () => kind));
+  const spots = groupSpots(kinds.length, 1, shoreArea(w, h, shore.kinds.length, plan.max), rng, { w: THING_SIZE, h: THING_SIZE });
+  return rng.shuffle(kinds.map((kind, i) => ({ kind, ...spots[i] })));
 }

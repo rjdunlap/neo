@@ -1,5 +1,5 @@
 import type { Graphics } from 'pixi.js';
-import { ink, swatch } from './palette';
+import { ink, swatch, wood } from './palette';
 
 /**
  * The rocky shore's creatures and props ("Tide Pool Friends"), shared by Bubble Beach's location scene and Tide Line. Each
@@ -119,4 +119,33 @@ export function wrack(g: Graphics, x0: number, x1: number, y: number, band: numb
     g.moveTo(x, y + dy).quadraticCurveTo(x + len / 2, y + dy - 8 - rand() * 6, x + len, y + dy + (rand() - 0.5) * 6).stroke({ color: rand() < 0.5 ? 0x5c7a32 : 0x7a6a2a, width: 4 + rand() * 2, cap: 'round' });
   }
   for (let x = x0 + 30 + rand() * 40; x < x1 - 10; x += 70 + rand() * 90) shell(g, x, y + (rand() - 0.3) * band * 0.5, 0.55 + rand() * 0.2, rand() < 0.5 ? swatch.pink : swatch.yellow);
+}
+
+/** A smooth beach pebble lying on the sand, about 64 across at `s` 1, centred on (x, y). */
+export function pebble(g: Graphics, x: number, y: number, s = 1) {
+  g.ellipse(x, y, 32 * s, 22 * s).fill(0xa7a3b4).stroke({ color: ROCK_LINE, width: 3 * s });
+  g.ellipse(x - 10 * s, y - 8 * s, 11 * s, 5 * s).fill({ color: 0xffffff, alpha: 0.45 });
+}
+
+/** A piece of driftwood, about 84 long at `s` 1, centred on (x, y): a rounded bent stick with grain and a knot. */
+export function driftwood(g: Graphics, x: number, y: number, s = 1) {
+  g.moveTo(x - 42 * s, y + 4 * s).bezierCurveTo(x - 20 * s, y - 14 * s, x + 18 * s, y + 6 * s, x + 42 * s, y - 8 * s).stroke({ color: wood.line, width: 20 * s, cap: 'round' });
+  g.moveTo(x - 42 * s, y + 4 * s).bezierCurveTo(x - 20 * s, y - 14 * s, x + 18 * s, y + 6 * s, x + 42 * s, y - 8 * s).stroke({ color: wood.fill, width: 14 * s, cap: 'round' });
+  g.moveTo(x - 30 * s, y - 1 * s).quadraticCurveTo(x - 12 * s, y - 8 * s, x + 2 * s, y - 2 * s).stroke({ color: wood.line, width: 2 * s, alpha: 0.8 });
+  g.moveTo(x + 8 * s, y + 1 * s).quadraticCurveTo(x + 22 * s, y + 2 * s, x + 34 * s, y - 6 * s).stroke({ color: wood.line, width: 2 * s, alpha: 0.8 });
+  g.circle(x - 4 * s, y - 3 * s, 3.5 * s).fill(wood.line);
+}
+
+/** A gull's feather, about 76 long at `s` 1, centred on (x, y): a quill with five curved barbs a side. */
+export function feather(g: Graphics, x: number, y: number, s = 1) {
+  const c = swatch.teal;
+  g.moveTo(x - 30 * s, y + 18 * s).quadraticCurveTo(x - 10 * s, y - 20 * s, x + 30 * s, y - 34 * s).quadraticCurveTo(x + 22 * s, y + 2 * s, x - 20 * s, y + 12 * s).closePath().fill(c.light).stroke({ color: c.line, width: 2.5 * s });
+  for (let k = 1; k <= 5; k++) {
+    const t = k / 6;
+    const qx = x - 30 * s + 56 * s * t;
+    const qy = y + 18 * s - 46 * s * t;
+    g.moveTo(qx, qy).quadraticCurveTo(qx - 2 * s, qy - 10 * s, qx + 6 * s, qy - 14 * s).stroke({ color: c.line, width: 1.6 * s });
+    g.moveTo(qx, qy).quadraticCurveTo(qx + 8 * s, qy + 2 * s, qx + 12 * s, qy - 4 * s).stroke({ color: c.line, width: 1.6 * s });
+  }
+  g.moveTo(x - 38 * s, y + 26 * s).quadraticCurveTo(x - 6 * s, y - 14 * s, x + 30 * s, y - 34 * s).stroke({ color: ink, width: 3 * s, cap: 'round' });
 }
