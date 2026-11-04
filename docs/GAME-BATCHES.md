@@ -961,6 +961,8 @@ Proof: new level tier: typecheck, rule tests (every rock matters, `focusPath` re
 
 ### ferry-jam 3: Two ferries
 
+**Built 2026-11-03 ([PR #1195](https://github.com/rjdunlap/neo/pull/1195)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-03--ferry-jam-level-8-two-ferries-ferry-jam-batch-3); [build note](archive/COMPLETED-2026-10-09.md#ferry-jam-level-8-two-ferries-ferry-jam-3-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
+
 - **`ferry-jam`, level 8 Two ferries (dive slice 3, after batch 2)** (new rule on the existing drag; school): two ferries leave by two docks, so the plan serves both; shares the `Harbor` and `parse` changes with batch 2. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
 
 Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.

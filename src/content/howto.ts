@@ -2263,8 +2263,9 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Tap the round arrow to take back the last slide.',
       "Work out which boat is in the ferry's way and where it can go.",
       { from: 7, to: 7, text: 'A grey rock never moves: a boat has to wait somewhere else. Touching the rock only makes it wobble.' },
+      { from: 8, to: 8, text: 'Two ferries: the red one leaves on the right, the yellow one at the bottom. A ferry sails away as soon as it reaches its dock, so one of them can go first to make room for the other; once one has sailed, the slides before it cannot be taken back.' },
     ],
-    finish: 'The round ends when the ferry has sailed out of every harbor.',
+    finish: 'The round ends when every ferry has sailed out of every harbor.',
     note: 'Nothing is a mistake here: slide as much as you like. After many slides without getting closer, the glowing boat shows a next slide.',
   },
   'jar-sort': {
