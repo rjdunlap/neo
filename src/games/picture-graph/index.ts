@@ -12,12 +12,13 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { TwoPictures } from './compare';
 import { LineUp } from './line';
 import { barsFor, cardLayout, CARD_GROUP_W, choicesFor, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, meadowSpots, MEADOWS, planFor, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, type Graph, type GraphPlan, type Question } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 8, order: [8, 1, 2] },
-  school: { min: 1, max: 9, order: [1, 2, 8, 3, 4, 5, 6, 7, 9] },
+  school: { min: 1, max: 10, order: [1, 2, 8, 3, 4, 5, 6, 7, 9, 10] },
 };
 
 const COL_W = 110;
@@ -575,5 +576,8 @@ export const pictureGraph: GameModule = {
   hubIcon: () => new GraphIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => (planFor(ctx.level).mode === 'line' ? new LineUp(ctx) : new PictureGraph(ctx)),
+  create: (ctx) => {
+    const mode = planFor(ctx.level).mode;
+    return mode === 'line' ? new LineUp(ctx) : mode === 'pair' ? new TwoPictures(ctx) : new PictureGraph(ctx);
+  },
 };

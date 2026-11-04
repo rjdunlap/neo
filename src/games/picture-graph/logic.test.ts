@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { barsFor, cardLayout, CARD_GROUP_W, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, KINDS, makeGraph, meadowArea, meadowSpots, MEADOWS, PLANS, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, lineHint, lineKinds, lineMove, lineQuestions, makeShore, planFor, shoreSpots, THING_SIZE, THINGS, trayLayout, type Question } from './logic';
+import { critters, makePairRound, ownScene, pairLayout, pairMove, pairWhy, PAIR_ROWS, barsFor, cardLayout, CARD_GROUP_W, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, KINDS, makeGraph, meadowArea, meadowSpots, MEADOWS, PLANS, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, lineHint, lineKinds, lineMove, lineQuestions, makeShore, planFor, shoreSpots, THING_SIZE, THINGS, trayLayout, type Question } from './logic';
 
 describe('Picture Graph', () => {
   it('makes graphs whose questions have one clear answer', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'line')) {
+    for (const plan of PLANS.filter((p) => !ownScene(p))) {
       for (let seed = 1; seed <= 300; seed++) {
         const rng = new Rng(seed);
         const g = makeGraph(plan, rng);
@@ -26,7 +26,7 @@ describe('Picture Graph', () => {
   });
 
   it("builds each bar exactly to its critters, checks, and answers every question rightly: the demonstration's finger", () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'line')) {
+    for (const plan of PLANS.filter((p) => !ownScene(p))) {
       for (let seed = 1; seed <= 300; seed++) {
         const rng = new Rng(seed);
         const graph = makeGraph(plan, rng);
@@ -77,7 +77,7 @@ describe('Picture Graph', () => {
 });
 
 describe('Picture Graph with a key: one block is two critters', () => {
-  const scale = PLANS.filter((p) => p.per === 2);
+  const scale = PLANS.filter((p) => p.per === 2 && !ownScene(p));
 
   it('appends the two keyed levels after reading a graph, leaving the first four as they were', () => {
     expect(PLANS.slice(0, 6).map((p) => p.mode)).toEqual(['build', 'most', 'more', 'read', 'scale', 'scaleread']);
@@ -240,7 +240,7 @@ describe('Picture Graph meadow: pairs of critters never hide each other', () => 
     const area = meadowArea(1024, 768);
     // The graph's panel starts 422 above the bottom of a 768-high view (see `draw` in index.ts); the feet stay above it.
     expect(area.bottom).toBeLessThanOrEqual(768 - 422);
-    for (const plan of PLANS.filter((p) => p.per === 2 && !prebuilt(p))) {
+    for (const plan of PLANS.filter((p) => p.per === 2 && !prebuilt(p) && !ownScene(p))) {
       for (let seed = 1; seed <= 300; seed++) {
         const g = makeGraph(plan, new Rng(seed));
         const groups = g.counts.reduce((a, b) => a + b, 0) / plan.per;
@@ -509,7 +509,7 @@ describe('Picture Graph level 9: A key of five', () => {
   const VIEWS: [number, number][] = [[1024, 768], [1024, 1365], [1366, 1024], [1180, 820]];
 
   it('appends level 9 after the first eight plans, which stay as they were', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['build', 'most', 'more', 'read', 'scale', 'scaleread', 'tally', 'line', 'fives']);
+    expect(PLANS.slice(0, 9).map((p) => p.mode)).toEqual(['build', 'most', 'more', 'read', 'scale', 'scaleread', 'tally', 'line', 'fives']);
     expect(planFor(9)).toBe(plan);
     expect(plan.per).toBe(5);
     expect(prebuilt(plan)).toBe(false);
@@ -586,6 +586,86 @@ describe('Picture Graph level 9: A key of five', () => {
       expect(c.rowH).toBeGreaterThanOrEqual(56);
       expect(c.groupX(plan.max - 1) + CARD_GROUP_W / 2).toBeLessThanOrEqual(c.right);
       expect(c.rowY(plan.kinds - 1) + c.rowH / 2).toBeLessThanOrEqual(c.bottom);
+    }
+  });
+});
+
+describe('Picture Graph level 10, Two pictures, one meadow', () => {
+  const plan = planFor(10);
+  const same = (a: number[], b: number[]) => a.length === b.length && a.every((x, i) => x === b[i]);
+
+  it('is the pair level, keyed by two, after the key of five', () => {
+    expect(plan.mode).toBe('pair');
+    expect(plan.per).toBe(2);
+    expect(PLANS.slice(0, 9).map((p) => p.mode)).toEqual(['build', 'most', 'more', 'read', 'scale', 'scaleread', 'tally', 'line', 'fives']);
+  });
+
+  it('shows the card on exactly two graphs, the plain one and the keyed one; the trap is as tall as the keyed one', () => {
+    for (let seed = 1; seed <= 400; seed++) {
+      const r = makePairRound(plan, new Rng(seed));
+      const label = `seed ${seed}`;
+      expect(r.card.counts.every((n) => n % 2 === 0 && n >= 2 && n <= 8), label).toBe(true);
+      expect(new Set(r.card.counts).size, label).toBe(r.card.counts.length);
+      expect(r.graphs).toHaveLength(3);
+      const keyed = r.graphs[r.keyed];
+      const trap = r.graphs[r.trap];
+      expect(keyed.per, label).toBe(2);
+      expect(trap.per, label).toBe(1);
+      expect(trap.bars, label).toEqual(keyed.bars);
+      expect(critters(keyed), label).toEqual(r.card.counts);
+      // Exactly one pair of graphs shows the card's critters, and it is the answer.
+      const matching = [0, 1, 2].filter((i) => same(critters(r.graphs[i]), r.card.counts));
+      expect(matching, label).toEqual(r.answer);
+      expect(r.answer, label).toContain(r.keyed);
+      expect(r.answer, label).not.toContain(r.trap);
+      // Every bar fits the grid.
+      for (const g of r.graphs) expect(Math.max(...g.bars), label).toBeLessThanOrEqual(PAIR_ROWS);
+    }
+  });
+
+  it('puts the right pair in every position over the seeds, so where a graph stands never gives it away', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) seen.add(String(makePairRound(plan, new Rng(seed)).trap));
+    expect(seen).toEqual(new Set(['0', '1', '2']));
+  });
+
+  it('gives the keyed graph with the trap its own line, and any other wrong pair the look line', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const r = makePairRound(plan, new Rng(seed));
+      const plain = r.answer.find((i) => i !== r.keyed)!;
+      expect(pairWhy(r, r.keyed, r.trap)).toBe('key');
+      expect(pairWhy(r, r.trap, r.keyed)).toBe('key');
+      expect(pairWhy(r, plain, r.trap)).toBe('look');
+      expect(sameTap(r.trap, r.keyed, r.answer).result).toBe('wrong');
+      expect(sameTap(r.trap, plain, r.answer).result).toBe('wrong');
+    }
+  });
+
+  it('the ghost finger taps the right pair, and lowers a wrong first pick', () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const r = makePairRound(plan, new Rng(seed));
+      const a = pairMove(r, null);
+      const lift = sameTap(null, a, r.answer);
+      expect(lift.result).toBe('lift');
+      expect(sameTap(lift.first, pairMove(r, lift.first), r.answer).result).toBe('right');
+      expect(sameTap(r.trap, pairMove(r, r.trap), r.answer).result).toBe('lower');
+    }
+  });
+
+  it('lays out the card and three graphs at least 100 wide, clear of the pet and corner buttons, inside every view', () => {
+    for (const [w, h] of [[1024, 768], [1366, 1024], [1600, 768], [1024, 1365]] as [number, number][]) {
+      const t = pairLayout(w, h, plan.kinds);
+      const label = `${w}x${h}`;
+      expect(t.card.top, label).toBeGreaterThanOrEqual(150);
+      expect(t.top, label).toBeGreaterThan(t.card.bottom);
+      expect(t.bottom, label).toBeLessThanOrEqual(h - 20);
+      expect(t.gw, label).toBeGreaterThanOrEqual(100);
+      expect(t.graphX(0) - t.gw / 2, label).toBeGreaterThanOrEqual(160);
+      expect(t.graphX(2) + t.gw / 2, label).toBeLessThanOrEqual(w - 20);
+      expect(t.graphX(1) - t.gw / 2, label).toBeGreaterThan(t.graphX(0) + t.gw / 2);
+      expect(t.blockH, label).toBeGreaterThanOrEqual(24);
+      // The tallest plain bar stays under the key strip.
+      expect(t.base - PAIR_ROWS * t.blockH, label).toBeGreaterThanOrEqual(t.top + 50);
     }
   });
 });
