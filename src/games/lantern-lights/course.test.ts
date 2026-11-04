@@ -15,6 +15,8 @@ describe('the Lantern Lights course', () => {
     ponds.forEach((p, i) => {
       const label = `pond ${i + 1}`;
       expect(allLit(p.board), label).toBe(false);
+      // The course has no lily pads: it parses exactly as it did before pads existed.
+      expect(p.mask, label).toBeUndefined();
       const s = solve(p.board, p.size)!;
       expect(s, label).not.toBeNull();
       expect(s.weight, label).toBe(p.par);

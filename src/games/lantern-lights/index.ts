@@ -12,13 +12,13 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseMinimum, coursePonds, isLanternCourse } from './course';
-import { allLit, footprint, hintFor, litCount, makePonds, namedHint, planFor, press, shortWay, stuckAt, type LanternPlan, type Pond } from './logic';
+import { allLit, footprint, hintFor, isLantern, lanternCount, litCount, makePonds, namedHint, planFor, press, shortWay, stuckAt, type LanternPlan, type Pond } from './logic';
 
 /**
  * Lantern Lake's grown-up puzzle. The island plays it by touch; couch play drives the same board with a controller. School
  * plays the two 3 by 3 ponds.
  */
-const LEVELS: BandLevels = { school: { min: 1, max: 2 }, grownup: { min: 1, max: 8 } };
+const LEVELS: BandLevels = { school: { min: 1, max: 2 }, grownup: { min: 1, max: 9 } };
 /** The room beside the pond the two counts need; under it they move above the pond. */
 const SIDE_ROOM = 240;
 
@@ -42,6 +42,19 @@ function lanternArt(lit: boolean, size: number): Container {
     g.ellipse(0, 0, w * 0.3, h * 0.34).fill({ color: 0xfff6c8, alpha: 0.95 });
     g.ellipse(-w * 0.13, -h * 0.12, w * 0.08, h * 0.12).fill({ color: 0xffffff, alpha: 0.7 });
   }
+  c.addChild(g);
+  return c;
+}
+
+/** A lily pad floating where no lantern hangs: a green leaf with a notch, about `size` units across. */
+function padArt(size: number): Container {
+  const c = new Container();
+  const g = new Graphics(), r = size * 0.38;
+  g.ellipse(0, 4, r + 2, r * 0.82 + 2).fill(0x1d5a3a);
+  g.ellipse(0, 2, r, r * 0.82).fill(swatch.green.fill);
+  // The notch: a wedge of water cut into the leaf.
+  g.moveTo(0, 2).lineTo(r * 0.95, -r * 0.35).lineTo(r * 0.95, r * 0.2).closePath().fill(WATER);
+  for (const a of [-2.4, -1.6, -0.8, 1.2, 2.2]) g.moveTo(0, 2).lineTo(Math.cos(a) * r * 0.7, 2 + Math.sin(a) * r * 0.58).stroke({ width: 2, color: swatch.green.line, alpha: 0.5 });
   c.addChild(g);
   return c;
 }
@@ -111,6 +124,8 @@ class LanternLights implements Game {
   private told = false;
   /** School: this pond's "here is where Hint is" nudge has been said. */
   private nudged = false;
+  /** The lily pads have been named aloud this round. */
+  private toldPads = false;
   private settled = false;
 
   constructor(private readonly ctx: GameContext) {
@@ -153,6 +168,8 @@ class LanternLights implements Game {
   }
 
   get n() { return this.pond.size; }
+  /** The pond's lily pads (`false` on a pad), or undefined when every cell holds a lantern. */
+  get mask() { return this.pond.mask; }
 
   start() { void this.next(); }
 
@@ -226,7 +243,7 @@ class LanternLights implements Game {
   private drawHalos() {
     const g = this.halos.clear(), cell = this.cell;
     this.lit.forEach((on, i) => {
-      if (!on) return;
+      if (!on || !isLantern(i, this.mask)) return;
       const at = this.center(i);
       g.circle(at.x, at.y, cell * 0.54).fill({ color: 0xff9d3c, alpha: 0.2 });
       g.circle(at.x, at.y, cell * 0.42).fill({ color: 0xffc247, alpha: 0.3 });
@@ -262,7 +279,7 @@ class LanternLights implements Game {
     if (this.touch) return void this.drawHint(g);
     const at = this.center(this.cursor);
     // The cursor shows what a press would flip: the lantern and the four beside it.
-    for (const c of footprint(this.n, this.cursor)) {
+    for (const c of footprint(this.n, this.cursor, this.mask)) {
       const m = this.center(c);
       g.roundRect(m.x - cell / 2 + 5, m.y - cell / 2 + 5, cell - 10, cell - 10, 14).fill({ color: 0xffffff, alpha: c === this.cursor ? 0.2 : 0.1 });
     }
@@ -293,7 +310,9 @@ class LanternLights implements Game {
     this.history = [];
     this.hinted = null;
     this.nudged = false;
-    this.cursor = Math.floor((this.n * this.n) / 2);
+    // The middle, or the lantern nearest it when a pad floats there.
+    const mid = Math.floor((this.n * this.n) / 2);
+    this.cursor = this.lit.map((_, i) => i).filter((i) => isLantern(i, this.mask)).sort((a, b) => Math.abs(a - mid) - Math.abs(b - mid))[0];
     this.nodes.forEach((n) => n.destroy({ children: true }));
     this.lanterns.removeChildren();
     this.nodes = [];
@@ -301,7 +320,9 @@ class LanternLights implements Game {
     this.offArt = [];
     this.tokens = this.lit.map(() => 0);
     for (let i = 0; i < this.lit.length; i++) {
-      const node = new Container(), on = lanternArt(true, 100), off = lanternArt(false, 100);
+      // A pad is stored lit, so its leaf is the "on" picture and it never turns.
+      const pad = !isLantern(i, this.mask);
+      const node = new Container(), on = pad ? padArt(100) : lanternArt(true, 100), off = pad ? new Container() : lanternArt(false, 100);
       node.addChild(off, on);
       node.eventMode = 'none';
       this.lanterns.addChild(node);
@@ -318,12 +339,16 @@ class LanternLights implements Game {
     this.report();
     if (this.told) return;
     this.told = true;
-    return this.ctx.instruct(!this.touch ? 'lantern.go' : this.ctx.band === 'school' ? 'lantern.go-school' : 'lantern.go-touch');
+    await this.ctx.instruct(!this.touch ? 'lantern.go' : this.ctx.band === 'school' ? 'lantern.go-school' : 'lantern.go-touch');
+    if (this.mask && !this.toldPads) {
+      this.toldPads = true;
+      await this.ctx.say('lantern.pads');
+    }
   }
 
   private tally() {
     if (!this.pond) return;
-    const presses = `${this.presses} ${this.presses === 1 ? 'press' : 'presses'}`, lit = `${litCount(this.lit)} of ${this.lit.length} lit`;
+    const presses = `${this.presses} ${this.presses === 1 ? 'press' : 'presses'}`, lit = `${litCount(this.lit, this.mask)} of ${lanternCount(this.n, this.mask)} lit`;
     this.score.text = this.stacked ? `${presses} · ${lit}` : presses;
     this.sub.text = lit;
   }
@@ -425,7 +450,7 @@ class LanternLights implements Game {
    */
   private async showShortWay() {
     if (!this.waiting || this.replaying) return;
-    const way = shortWay(this.pond.board, this.n);
+    const way = shortWay(this.pond.board, this.n, this.mask);
     if (!way) return;
     this.replaying = true;
     this.showTouchParts(this.touch);
@@ -438,8 +463,8 @@ class LanternLights implements Game {
       this.ring = cell;
       sfx.tick();
       await this.ctx.tw.wait(0.3);
-      this.lit = press(this.lit, this.n, cell);
-      for (const c of footprint(this.n, cell)) this.flip(c);
+      this.lit = press(this.lit, this.n, cell, this.mask);
+      for (const c of footprint(this.n, cell, this.mask)) this.flip(c);
       sfx.pop(3 + (cell % 7));
       this.tally();
       await this.ctx.tw.wait(0.3);
@@ -509,11 +534,13 @@ class LanternLights implements Game {
   /** Press the lantern under the cursor: it and its neighbours flip, and the press counts. */
   private press() {
     const i = this.cursor;
-    this.lit = press(this.lit, this.n, i);
+    // A lily pad has no lantern: a soft tick, and nothing counts.
+    if (!isLantern(i, this.mask)) return void sfx.tick();
+    this.lit = press(this.lit, this.n, i, this.mask);
     this.history.push(i);
     this.presses++;
     if (this.hinted === i) this.hinted = null;
-    for (const c of footprint(this.n, i)) this.flip(c);
+    for (const c of footprint(this.n, i, this.mask)) this.flip(c);
     sfx.pop(3 + (i % 7));
     this.tally();
     this.report();
@@ -530,10 +557,10 @@ class LanternLights implements Game {
   private back() {
     const i = this.history.pop();
     if (i === undefined) return void sfx.squeak();
-    this.lit = press(this.lit, this.n, i);
+    this.lit = press(this.lit, this.n, i, this.mask);
     this.cursor = i;
     this.hinted = null;
-    for (const c of footprint(this.n, i)) this.flip(c);
+    for (const c of footprint(this.n, i, this.mask)) this.flip(c);
     sfx.pop(2);
     this.tally();
   }
@@ -545,7 +572,7 @@ class LanternLights implements Game {
   /** Couch pause menu's "Show a hint": a lantern in a fewest-press way to light the pond from here. Marks the run helped. */
   askForHint() {
     if (this.busy || this.finished || !this.pond) return;
-    const hint = namedHint(this.lit, this.n, this.cursor);
+    const hint = namedHint(this.lit, this.n, this.cursor, this.mask);
     if (hint === null) return;
     this.hinted = hint.cell;
     this.hints++;
@@ -562,7 +589,7 @@ class LanternLights implements Game {
     this.lit = this.pond.board.slice();
     this.history = [];
     this.hinted = null;
-    this.lit.forEach((_, i) => this.flip(i));
+    this.lit.forEach((_, i) => { if (isLantern(i, this.mask)) this.flip(i); });
     this.tally();
   }
 
@@ -575,7 +602,7 @@ class LanternLights implements Game {
     // A lit pond waits for Next pond.
     if (this.waiting) return this.replaying ? null : { tap: { on: this.nextButton, x: 0, y: 0 }, pause: 0.6 };
     if (this.busy || this.finished || !this.pond) return null;
-    const next = hintFor(this.lit, this.n, this.cursor);
+    const next = hintFor(this.lit, this.n, this.cursor, this.mask);
     if (next === null) return null;
     const at = this.center(next);
     return { tap: { on: this.board, x: at.x, y: at.y }, receiver: this.tapLayer, pause: 0.5 };
@@ -586,7 +613,7 @@ class LanternLights implements Game {
     const out = idle();
     this.botWait -= dt;
     if (this.busy || this.finished || !this.pond || this.botWait > 0) return out;
-    const next = hintFor(this.lit, this.n, this.cursor);
+    const next = hintFor(this.lit, this.n, this.cursor, this.mask);
     if (next === null) return out;
     const p = out.players[0];
     p.active = true;

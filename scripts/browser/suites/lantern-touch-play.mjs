@@ -11,7 +11,7 @@ async function lanternTouchPlay() {
     if (await page.evaluate(() => neo.scene.game.waiting)) { await tap('neo.scene.game.nextButton'); await page.waitForTimeout(150); return; }
     await page.evaluate(async () => {
       const g = neo.scene.game, { hintFor } = await import('/src/games/lantern-lights/logic.ts');
-      const at = g.center(hintFor(g.lit, g.n, g.cursor)), p = g.board.toGlobal(at);
+      const at = g.center(hintFor(g.lit, g.n, g.cursor, g.mask)), p = g.board.toGlobal(at);
       kit.tap(p.x, p.y);
     });
     await page.waitForTimeout(150);
@@ -53,6 +53,35 @@ async function lanternTouchPlay() {
     assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('lantern-lights').history.at(-1); return [r.misses, r.hints]; }), [0, 1]);
     assert.deepEqual(errors, []);
     log(`Lantern Lights level 3: a named hint (${kind}), the pond lit, Show me a short way in ${par} presses counting nothing, Next pond, one sticker passed`);
+    return;
+  }
+  // Level 9 alone under LANTERN_ONLY=9: lily-pad ponds. The pads are named once; a tap on a pad counts nothing and flips
+  // nothing; a hint never rings a pad; a portrait screenshot; to the sticker.
+  if (process.env.LANTERN_ONLY === '9') {
+    await launch('lantern-lights', 9); await idle();
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    const shape = await page.evaluate(() => { const g = neo.scene.game; return { n: g.n, pads: g.mask.filter((on) => !on).length, sizes: g.ponds.map((p) => p.mask.filter(Boolean).length), same: g.ponds[0].mask.join() === g.ponds[1].mask.join() }; });
+    assert.equal(shape.n, 5); assert.ok(shape.pads > 0, `pads on the pond: ${JSON.stringify(shape)}`);
+    assert.equal(shape.same, false, 'two different shapes in a round');
+    const lit0 = await page.evaluate(() => neo.scene.game.lit.slice());
+    await page.evaluate(() => { const g = neo.scene.game, pad = g.mask.indexOf(false), p = g.board.toGlobal(g.center(pad)); kit.tap(p.x, p.y); });
+    await page.waitForTimeout(400);
+    let st = await state();
+    assert.equal(st.presses, 0, 'a tap on a pad is not a press');
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.lit.slice()), lit0, 'a tap on a pad flips nothing');
+    await tap('neo.scene.game.hintButton'); await page.waitForTimeout(300);
+    st = await state(); assert.deepEqual([st.hints, st.hinted !== null], [1, true]);
+    assert.equal(await page.evaluate(() => neo.scene.game.mask[neo.scene.game.hinted]), true, 'the hint rings a lantern');
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+    const counts = await page.evaluate(() => neo.scene.game.score.text + ' / ' + neo.scene.game.sub.text);
+    assert.match(counts, new RegExp(`of ${25 - shape.pads} lit`), `the count is of lanterns, not pads: ${counts}`);
+    await screenshot('lantern-lights-9-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+    await solveAll(); await finished('lantern-lights');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1, 'one sticker at level 9');
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('lantern-lights').history.at(-1); return [r.misses, r.hints]; }), [0, 1]);
+    assert.deepEqual(errors, []);
+    log(`Lantern Lights level 9: lily pads (${shape.pads} on the first pond, ${shape.sizes.join(' and ')} lanterns), a pad tap counting nothing, a hint on a lantern, one sticker passed`);
     return;
   }
   // The school opening, alone under LANTERN_ONLY=school: level 1 with presses past the fewest plus six (the nudge toward
