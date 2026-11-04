@@ -8,7 +8,7 @@ import { parsePuzzle, type Puzzle } from './logic';
  *
  * Legend: a digit is an island with that many planks to take, `.` is open water.
  */
-export type BridgeCourseId = 'bridges';
+export type BridgeCourseId = 'bridges' | 'joined';
 
 export interface Course {
   id: BridgeCourseId;
@@ -33,9 +33,22 @@ export const COURSES: Record<BridgeCourseId, Course> = {
       ['.2.3.......', '3.2..1.5.2.', '..........2', '...........', '...........', '4..7...7..4', '........1..', '.2.8..4....', '.......2...', '...........', '2..4..4.4.3'],
     ],
   },
+  joined: {
+    id: 'joined',
+    version: 1,
+    name: 'Joined Seas',
+    blurb: 'Five 9 by 9 seas where counting alone runs out: somewhere a bridge would close a group of islands off from the rest. Find it, and join them all with as few planks as the answer needs.',
+    seas: [
+      ['.........', '.2....1..', '.........', '.3....2..', '.....1..1', '.........', '.2...2...', '.........', '1.3...4.2'],
+      ['.........', '2...2..1.', '.........', '3...4..3.', '.........', '..2.4....', '.........', '2....1...', '.1..2..3.'],
+      ['2.1..2...', '.........', '3....4...', '.........', '...2.5.2.', '2........', '.1.3.2...', '2...1....', '.........'],
+      ['.3....3.2', '.........', '....2.3.3', '.2.......', '..1.2...3', '.........', '.........', '.2....2..', '..1.2...3'],
+      ['...2....3', '..2.4.2..', '.........', '2........', '.........', '4.6.6...4', '.........', '..2......', '.1..5.3.2'],
+    ],
+  },
 };
 
-export const isBridgeCourse = (v: unknown): v is BridgeCourseId => v === 'bridges';
+export const isBridgeCourse = (v: unknown): v is BridgeCourseId => v === 'bridges' || v === 'joined';
 
 const parsed = new Map<BridgeCourseId, Puzzle[]>();
 /** The seas of a course, read once, each with its one solution. */

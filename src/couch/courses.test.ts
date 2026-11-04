@@ -44,6 +44,8 @@ describe('the couch courses', () => {
     expect(courseSpec('words')).toMatchObject({ game: 'word-search', boards: 3, minimum: 25 });
     expect(courseSpec('bigwords')).toMatchObject({ game: 'word-search', boards: 2, minimum: 24 });
     expect(courseSpec('bridges')).toMatchObject({ game: 'island-bridges', boards: 5, minimum: 120 });
+    expect(courseSpec('joined')).toMatchObject({ game: 'island-bridges', boards: 5, minimum: 84 });
+    expect(courseInfo('joined').level).toBe(6);
     expect(courseSpec('conga')).toMatchObject({ game: 'pond-conga', boards: 4, minimum: 259 });
   });
 

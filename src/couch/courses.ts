@@ -19,7 +19,7 @@ import type { CouchId } from './party';
  */
 export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId | WordCourseId | BridgeCourseId | CongaCourseId | TypingCourseId;
 /** In the order the Challenges menu shows them: a gentle one first. */
-export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'conga', 'typing'];
+export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing'];
 export const isCourseId = (v: unknown): v is CourseId => COURSE_IDS.includes(v as CourseId);
 
 export interface CourseInfo {
@@ -107,6 +107,20 @@ const beds = (id: BedCourseId, card: string, done: LineId): CourseInfo => ({
   },
 });
 
+/** The Island Bridges courses speak alike; Joined Seas is played at level 6, so its hints can ring a group a bridge would close off. */
+const bridges = (id: BridgeCourseId, level: number, card: string, done: LineId): CourseInfo => ({
+  id, game: 'island-bridges', level, version: BRIDGES[id].version, name: BRIDGES[id].name, blurb: BRIDGES[id].blurb, card,
+  part: 'sea', unit: 'plank', par: 'fewest', routes: false, best: bridgeBest(id), minimum: bridgeMinimum(id),
+  rule: 'Join every sea with the fewest planks you can: one for each plank of the answer, with nothing laid that has to come off again. Taking a plank off is free.',
+  note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a sea clears it, and the planks you laid on it still count.',
+  leaving: 'Leaving or refreshing clears the sea you are on, and the planks you laid on it still count. Finished seas stay saved.',
+  done,
+  badges: {
+    finish: { title: 'Finished', how: 'Join every sea, with or without help.' },
+    minimum: { title: 'Every plank right', how: 'Join every sea with exactly the answer\'s planks and no hint.' },
+  },
+});
+
 const build: Record<CourseId, () => CourseInfo> = {
   practice: () => ponds('practice', 'Penguin Slide, five gentle ice puzzles with no dead ends. A warm-up, or an easy game for the evening.'),
   ponds: () => ponds('ponds', 'Penguin Slide, five ice puzzles that take real planning. Use the fewest slides you can, then beat your own best.'),
@@ -124,19 +138,8 @@ const build: Record<CourseId, () => CourseInfo> = {
       minimum: { title: 'Fewest steps', how: 'Finish every pond in the fewest steps possible, with no bonk and no hint.' },
     },
   }),
-  bridges: () => ({
-    id: 'bridges', game: 'island-bridges', level: 4, version: BRIDGES.bridges.version, name: BRIDGES.bridges.name, blurb: BRIDGES.bridges.blurb,
-    card: 'Island Bridges, five seas in a row. Join every island with as few planks as the answer needs, then beat your own best.',
-    part: 'sea', unit: 'plank', par: 'fewest', routes: false, best: bridgeBest('bridges'), minimum: bridgeMinimum('bridges'),
-    rule: 'Join every sea with the fewest planks you can: one for each plank of the answer, with nothing laid that has to come off again. Taking a plank off is free.',
-    note: 'A hint, once shown, marks the whole run as helped; helped and unhelped bests are kept apart. Leaving in the middle of a sea clears it, and the planks you laid on it still count.',
-    leaving: 'Leaving or refreshing clears the sea you are on, and the planks you laid on it still count. Finished seas stay saved.',
-    done: 'couch.course.bridges',
-    badges: {
-      finish: { title: 'Finished', how: 'Join every sea, with or without help.' },
-      minimum: { title: 'Every plank right', how: 'Join every sea with exactly the answer\'s planks and no hint.' },
-    },
-  }),
+  bridges: () => bridges('bridges', 4, 'Island Bridges, five seas in a row. Join every island with as few planks as the answer needs, then beat your own best.', 'couch.course.bridges'),
+  joined: () => bridges('joined', 6, 'Island Bridges, five seas where a bridge must not close a group of islands off. Counting gets you started; keeping them joined finishes each one.', 'couch.course.joined'),
   typing: () => ({
     id: 'typing', game: 'pond-typing', level: 6, version: TYPING.typing.version, name: TYPING.typing.name, blurb: TYPING.typing.blurb,
     card: 'Pond Typing, six ponds on the keyboard: letters, words, spaces, capitals, copying a line and mending it. Every bubble waits.',

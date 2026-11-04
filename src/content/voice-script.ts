@@ -268,6 +268,7 @@ export const SCRIPT = {
   'couch.course.words': ['Three grids, every word found!'],
   'couch.course.bigwords': ['Both big grids, every word found!'],
   'couch.course.bridges': ['Five seas, every island joined!'],
+  'couch.course.joined': ['Five joined seas, and not one group cut off!'],
   'couch.course.conga': ['Four ponds, every bite gobbled!'],
   'couch.course.typing': ['Three ponds, every bubble popped!'],
   'couch.course.best': ['A new best! Look at that sliding!'],

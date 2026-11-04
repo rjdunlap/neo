@@ -466,7 +466,7 @@ export function hintFor(layout: Layout, planks: Planks, solution: Planks, joined
   if (need < 0) return null;
   const forced = forcedPlank(layout, planks);
   if (forced) return { kind: 'forced', ...forced };
-  // Keep them joined is level 6's own lesson: the other levels and the couch courses hint as they always did.
+  // Keep them joined is level 6's own lesson (and the Joined Seas couch course's, played at 6): the other levels and Island Hopping hint as they always did.
   const iso = joined ? joinedPlank(layout, planks) : null;
   return iso ? { kind: 'joined', ...iso } : { kind: 'next', edge: need };
 }
