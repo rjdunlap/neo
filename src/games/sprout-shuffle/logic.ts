@@ -226,10 +226,10 @@ export function lookCounts(rs: readonly Route[]): Record<Look, number> {
 export const PAIRS_LEVEL = 4;
 export const PAIRS_NAME = 'Which pairs always make spotted?';
 
-/** The grown-up name of any level, 1 to 6. */
+/** The grown-up name of any level, 1 to 8. */
 export function levelName(level: number): string {
   const l = Math.round(level);
-  return l >= TESTER_LEVEL ? TESTER_NAME : l >= HIDDEN_LEVEL ? HIDDEN_NAME : l >= PAIRS_LEVEL ? PAIRS_NAME : planFor(level).name;
+  return l >= CONSERVATORY_LEVEL ? CONSERVATORY_NAMES[Math.min(l, CONSERVATORY_TOP) - CONSERVATORY_LEVEL] : l >= TESTER_LEVEL ? TESTER_NAME : l >= HIDDEN_LEVEL ? HIDDEN_NAME : l >= PAIRS_LEVEL ? PAIRS_NAME : planFor(level).name;
 }
 
 /** Two plants on one pair card: the left plant's copies and the right plant's, as their trays show them. */
@@ -457,4 +457,175 @@ export type PickStep = { plant: Tester } | { water: true };
 export function pickStep(potted: Tester | null): PickStep {
   const telling = TESTERS.find((t) => couldTell(GENOTYPES[t]))!;
   return potted === telling ? { water: true } : { plant: telling };
+}
+
+// ——— Levels 7–8: Patchwork Conservatory (G7; definition: docs/definitions/patchwork-conservatory.md) ———
+
+export const CONSERVATORY_LEVEL = 7;
+export const CONSERVATORY_TOP = 8;
+export const CONSERVATORY_NAMES = ['Patchwork Conservatory: one pair never misses', 'Patchwork Conservatory: two good plans'] as const;
+
+/**
+ * The two markings. Each is G1's rule on its own: a plant holds two copies, gives one, and one showing copy is enough.
+ * Both are stored as G1's `Copy`, where `A` is the copy that shows (a spot copy, or a rim copy) and `a` the one that
+ * does not (plain, or no-rim); only the art prints the rim's copies as `B` and `b`. In this toy the two are given
+ * independently: a declared game rule, true of some real gene pairs and not of others.
+ */
+export type Marking = 'spots' | 'rim';
+export const MARKINGS: readonly Marking[] = ['spots', 'rim'];
+
+/** A conservatory plant: two copies of each marking. */
+export interface Plant2 {
+  spots: Genotype;
+  rim: Genotype;
+}
+
+/** A plant's look: whether it shows spots, and whether it shows a rim. */
+export type Look2 = Record<Marking, boolean>;
+
+export function looks2(p: Plant2): Look2 {
+  return { spots: looks(p.spots) === 'spotted', rim: looks(p.rim) === 'spotted' };
+}
+
+/** G1's four routes on one marking. */
+export function locusRoutes(left: Plant2, right: Plant2, m: Marking): Route[] {
+  return routes(left[m], right[m]);
+}
+
+/** A planting brief: the markings every sprout must show. Levels 7–8 ask for both. */
+export type Brief = readonly Marking[];
+export const BRIEF: Brief = MARKINGS;
+
+/** True when every route of every marking the brief names shows that marking. Needs no independence. */
+export function guaranteed(left: Plant2, right: Plant2, brief: Brief = BRIEF): boolean {
+  return brief.every((m) => always('spotted', locusRoutes(left, right, m)));
+}
+
+/** The first marking (in brief order) with a route that misses the brief, and that route; null when the pair is guaranteed. */
+export function failingRoute(left: Plant2, right: Plant2, brief: Brief = BRIEF): { marking: Marking; route: Route } | null {
+  for (const m of brief) {
+    const route = locusRoutes(left, right, m).find((r) => looks(r.sprout) !== 'spotted');
+    if (route) return { marking: m, route };
+  }
+  return null;
+}
+
+/** Every unordered pair of distinct bench plants (by index, smaller first, in index order) that is guaranteed. */
+export function acceptedPairs(bench: readonly Plant2[], brief: Brief = BRIEF): [number, number][] {
+  const out: [number, number][] = [];
+  for (let i = 0; i < bench.length; i++) for (let j = i + 1; j < bench.length; j++) if (guaranteed(bench[i], bench[j], brief)) out.push([i, j]);
+  return out;
+}
+
+/** The markings whose look this plant shows while carrying a copy that does not show it: one of each kind of copy. */
+export function hiddenCopies(p: Plant2): Marking[] {
+  return MARKINGS.filter((m) => p[m][0] !== p[m][1]);
+}
+
+/** One of the sixteen combined routes: a spots route and a rim route together. For tests only; never drawn. */
+export interface CombinedRoute {
+  spots: Route;
+  rim: Route;
+  look: Look2;
+}
+
+export function combinedRoutes(left: Plant2, right: Plant2): CombinedRoute[] {
+  const out: CombinedRoute[] = [];
+  for (const spots of locusRoutes(left, right, 'spots')) {
+    for (const rim of locusRoutes(left, right, 'rim')) {
+      out.push({ spots, rim, look: { spots: looks(spots.sprout) === 'spotted', rim: looks(rim.sprout) === 'spotted' } });
+    }
+  }
+  return out;
+}
+
+const P = (spots: Genotype, rim: Genotype): Plant2 => ({ spots, rim });
+
+/** The authored benches, in the definition's order. Level 7: one accepted pair, excluding the plant that matches the brief. Level 8: two. */
+export const BENCHES: Readonly<Record<7 | 8, readonly Plant2[]>> = {
+  7: [P(AA, aa), P(aa, AA), P(Aa, Aa)],
+  8: [P(AA, aa), P(aa, AA), P(Aa, AA), P(aa, aa)],
+};
+
+/** The ghost finger's plan: level 7's only pair, and at level 8 the pair with the plant that shows both traits. */
+export const BOT_PAIRS: Readonly<Record<7 | 8, readonly [number, number]>> = { 7: [0, 1], 8: [0, 2] };
+
+/** The plant's copies as a spoken key: the spot reading, then the rim reading. */
+export function plantKey(p: Plant2): `${'AA' | 'Aa' | 'aa'}-${'BB' | 'Bb' | 'bb'}` {
+  const rim = copiesKey(p.rim);
+  return `${copiesKey(p.spots)}-${rim === 'AA' ? 'BB' : rim === 'Aa' ? 'Bb' : 'bb'}`;
+}
+
+export interface ConservatorySetup {
+  level: 7 | 8;
+  /** The bench in authored order, each tray's copy order seeded. Plant indices are authored and never change. */
+  bench: readonly Plant2[];
+  /** Each plant's petal colour, seeded; carries no meaning. */
+  colors: readonly ColorName[];
+  /** The bench places, left to right: `places[k]` is the plant standing in place k. */
+  places: readonly number[];
+  /** The rim colour of the round, seeded and never a petal colour; carries no meaning. */
+  rimColor: ColorName;
+  /** The accepted pairs, by plant index. */
+  accepted: readonly (readonly [number, number])[];
+}
+
+export function conservatorySetupFor(level: number, rng: Rng): ConservatorySetup {
+  const l: 7 | 8 = Math.round(level) >= CONSERVATORY_TOP ? 8 : 7;
+  const flip = (g: Genotype): Genotype => (rng.chance(0.5) ? [g[1], g[0]] : [g[0], g[1]]);
+  const bench = BENCHES[l].map((p) => P(flip(p.spots), flip(p.rim)));
+  const shuffled = rng.shuffle([...PETAL_COLORS]);
+  const colors = bench.map((_, i) => shuffled[i % shuffled.length]);
+  const places = rng.shuffle(bench.map((_, i) => i));
+  // The rim is never a petal colour, nor teal beside a blue petal, so a rim always stands out from its petal.
+  const rims: ColorName[] = colors.includes('blue') ? ['red'] : ['red', 'teal'];
+  const rimColor = rng.pick(rims);
+  return { level: l, bench, colors, places, rimColor, accepted: acceptedPairs(bench) };
+}
+
+const samePair = (a: readonly number[], b: readonly number[]) => (a[0] === b[0] && a[1] === b[1]) || (a[0] === b[1] && a[1] === b[0]);
+
+/** Whether this unordered pair is one of these. */
+export function hasPair(pairs: readonly (readonly number[])[], pair: readonly number[]): boolean {
+  return pairs.some((p) => samePair(p, pair));
+}
+
+/**
+ * The pair Show me plants and the level-8 glow lights: the accepted pair that keeps a potted plant, or the first
+ * accepted pair (`AA bb` × `aa BB`) when both or neither do. With `except`, a pair already found is never offered.
+ */
+export function helpPair(s: ConservatorySetup, potted: readonly (number | null)[], except: readonly number[] | null = null): readonly [number, number] {
+  const open = s.accepted.filter((p) => !except || !samePair(p, except));
+  const keeps = open.filter((p) => potted.some((k) => k !== null && p.includes(k)));
+  return keeps.length === 1 ? keeps[0] : open[0];
+}
+
+/** What a failing Check says: the marking whose route fails, and the potted plant (if any) that shows it yet carries the failing copy. */
+export interface Counter {
+  marking: Marking;
+  route: Route;
+  /** The potted plant's index to pulse, or null when no potted plant hides the failing copy. */
+  hider: number | null;
+  /** That plant's hidden markings, for the line it speaks. */
+  hidden: Marking[];
+}
+
+export function counterFor(s: ConservatorySetup, pair: readonly [number, number]): Counter | null {
+  const [l, r] = [s.bench[pair[0]], s.bench[pair[1]]];
+  const fail = failingRoute(l, r);
+  if (!fail) return null;
+  const hider = pair.find((k) => hiddenCopies(s.bench[k]).includes(fail.marking)) ?? null;
+  return { ...fail, hider, hidden: hider === null ? [] : hiddenCopies(s.bench[hider]) };
+}
+
+/** The ghost finger's next move. `pots` holds plant indices; `seen` the lenses opened since the pots last changed. */
+export type ConservatoryStep = { unpot: number } | { pot: number } | { lens: Marking } | { check: true } | { finish: true };
+
+export function conservatoryStep(level: 7 | 8, pots: readonly (number | null)[], seen: ReadonlySet<Marking>, found: boolean): ConservatoryStep {
+  if (found) return { finish: true };
+  const target = BOT_PAIRS[level];
+  for (const k of pots) if (k !== null && !target.includes(k)) return { unpot: k };
+  for (const k of target) if (!pots.includes(k)) return { pot: k };
+  for (const m of MARKINGS) if (!seen.has(m)) return { lens: m };
+  return { check: true };
 }
