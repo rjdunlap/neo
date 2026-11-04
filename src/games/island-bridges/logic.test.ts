@@ -124,7 +124,7 @@ describe('solving', () => {
 });
 
 describe('making puzzles', () => {
-  it('makes every level with exactly one solution, numbers one to eight, the islands the plan asks for and a solved solution', () => {
+  it('makes every level with exactly one solution, numbers one to four times the planks a bridge carries, the islands the plan asks for and a solved solution', () => {
     PLANS.forEach((plan, i) => {
       expect(planFor(i + 1)).toBe(plan);
       for (let s = 1; s <= 8; s++) {
@@ -133,13 +133,14 @@ describe('making puzzles', () => {
         expect(p.size, label).toBe(plan.size);
         expect(p.layout.islands.length, label).toBeGreaterThanOrEqual(plan.islands.min);
         expect(p.layout.islands.length, label).toBeLessThanOrEqual(plan.islands.max);
-        expect(p.layout.islands.every((il) => il.n >= 1 && il.n <= 8), label).toBe(true);
+        expect(p.layout.max, label).toBe(plan.maxPlanks ?? 2);
+        expect(p.layout.islands.every((il) => il.n >= 1 && il.n <= 4 * p.layout.max), label).toBe(true);
         expect(isSolved(p.layout, p.solution), label).toBe(true);
         expect(solve(p.layout, undefined, 3).found, label).toEqual([p.solution]);
         expect(p.par, label).toBe(p.solution.reduce((n, x) => n + x, 0));
         if (plan.counting) expect(bycounting(p.layout), label).toBe(true);
         // The picture reads back to the same puzzle.
-        expect(parsePuzzle(picture(p.size, p.layout.islands)).solution, label).toEqual(p.solution);
+        expect(parsePuzzle(picture(p.size, p.layout.islands), p.layout.max).solution, label).toEqual(p.solution);
       }
     });
   });
@@ -147,7 +148,7 @@ describe('making puzzles', () => {
   it('is fair: the same seed gives the same puzzle, and the levels climb', () => {
     expect(makePuzzles(PLANS[1], new Rng(5))).toEqual(makePuzzles(PLANS[1], new Rng(5)));
     expect(makePuzzle(PLANS[1], new Rng(5)).layout.islands).not.toEqual(makePuzzle(PLANS[1], new Rng(6)).layout.islands);
-    expect(PLANS.map((p) => p.size)).toEqual([7, 9, 9, 11, 5, 9]);
+    expect(PLANS.map((p) => p.size)).toEqual([7, 9, 9, 11, 5, 9, 9]);
     for (let i = 1; i < LEVEL_ORDER.length; i++) expect(PLANS[LEVEL_ORDER[i] - 1].islands.min).toBeGreaterThanOrEqual(PLANS[LEVEL_ORDER[i - 1] - 1].islands.min);
     expect([...LEVEL_ORDER].sort()).toEqual(PLANS.map((_, i) => i + 1));
     expect(planFor(0)).toBe(PLANS[0]);
@@ -201,7 +202,7 @@ describe('level 6, keep them joined', () => {
   it('makes seas that counting alone cannot finish, that keeping them joined can, and whose hints teach it', () => {
     const plan = planFor(6);
     expect(plan.size).toBe(9);
-    expect(LEVEL_ORDER).toEqual([5, 1, 2, 6, 3, 4]);
+    expect(LEVEL_ORDER).toEqual([5, 1, 2, 6, 7, 3, 4]);
     for (let s = 1; s <= 200; s++) {
       const p = makePuzzle(plan, new Rng(s * 173 + 11)), label = `seed ${s}`;
       expect(solve(p.layout, undefined, 2).found, label).toEqual([p.solution]);
@@ -262,13 +263,13 @@ describe('named hints', () => {
     const e = l.edges[k], other = e.a === i ? e.b : e.a;
     let have = 0;
     l.edges.forEach((f, j) => { if (f.a === other || f.b === other) have += planks[j]; });
-    return Math.max(0, Math.min(2 - planks[k], l.islands[other].n - have));
+    return Math.max(0, Math.min(l.max - planks[k], l.islands[other].n - have));
   };
 
   it('state the arithmetic they name on the board at that moment, and never contradict the answer', () => {
     const seen = new Set<string>();
     PLANS.forEach((plan, pi) => {
-      const seeds = pi >= 2 && pi <= 3 ? 40 : 300;
+      const seeds = pi >= 2 && pi <= 3 ? 40 : pi === 6 ? 100 : 300;
       for (let s = 1; s <= seeds; s++) {
         const p = makePuzzle(plan, new Rng(s * 211 + pi)), l = p.layout, planks = p.solution.map(() => 0);
         for (let guard = 0; guard < 100 && !isSolved(l, planks); guard++) {
@@ -286,7 +287,7 @@ describe('named hints', () => {
             expect(mine.cap, label).toBeGreaterThan(0);
             if (h.why === 'full') expect(left, label).toBe(room);
             if (h.why === 'last-way') expect(caps.filter((c) => c.cap > 0).map((c) => c.k), label).toEqual([h.edge]);
-            if (h.why === 'every-way') { expect(left, label).toBe(room - 1); expect(mine.cap, label).toBe(2); }
+            if (h.why === 'every-way') { expect(left, label).toBe(room - 1); expect(mine.cap, label).toBeGreaterThanOrEqual(2); }
             seen.add(h.why);
           }
           if (h.kind !== 'fix') expect(planks[h.edge], label).toBeLessThan(p.solution[h.edge]);
@@ -415,5 +416,95 @@ describe('touch', () => {
       expect(start.every((n, k) => n <= p.solution[k])).toBe(true);
       expect(p.solution.reduce((a, n) => a + n, 0) - start.reduce((a, n) => a + n, 0), plan.name).toBe(Math.min(6, p.par));
     }
+  });
+});
+
+describe('level 7, up to three planks', () => {
+  /** Every assignment of 0 to `max` planks on every edge that finishes the sea. */
+  const brute = (layout: ReturnType<typeof layoutOf>) => {
+    const E = layout.edges.length, out: number[][] = [], val = Array<number>(E).fill(0);
+    const go = (k: number) => {
+      if (k === E) { if (isSolved(layout, val)) out.push(val.slice()); return; }
+      for (let v = 0; v <= layout.max; v++) { val[k] = v; go(k + 1); }
+    };
+    go(0);
+    return out;
+  };
+  const key = (ways: number[][]) => ways.map((w) => w.join(',')).sort();
+
+  it('agrees with a brute force over every assignment, at three planks and at two', () => {
+    const rng = new Rng(4242);
+    let checked = 0, triples = 0, solved = 0;
+    for (let t = 0; t < 400 && checked < 60; t++) {
+      const spots: Island[] = [];
+      const want = rng.int(3, 6);
+      for (let tries = 0; tries < 40 && spots.length < want; tries++) {
+        const r = rng.int(0, 4), c = rng.int(0, 4);
+        if (!spots.some((il) => Math.abs(il.r - r) + Math.abs(il.c - c) <= 1)) spots.push({ r, c, n: 0 });
+      }
+      spots.sort((a, b) => a.r - b.r || a.c - b.c);
+      // Numbers from random planks (up to three, none crossing), so most seas have at least one way to finish.
+      const loose = layoutOf(5, spots, 3), laid = loose.edges.map(() => 0);
+      rng.shuffle(loose.edges.map((_, k) => k)).forEach((k) => { if (!loose.crossing[k].some((f) => laid[f] > 0)) laid[k] = rng.int(1, 3); });
+      const islands = spots.map((il, i) => ({ ...il, n: Math.max(1, planksAt(loose, laid, i)) }));
+      for (const max of [2, 3]) {
+        const layout = layoutOf(5, islands, max);
+        if (layout.edges.length === 0 || layout.edges.length > 8) continue;
+        const all = brute(layout);
+        expect(key(solve(layout, undefined, 1e6).found), picture(5, islands).join('/')).toEqual(key(all));
+        if (all.length) solved++;
+        if (all.some((w) => w.includes(3))) triples++;
+        checked++;
+      }
+    }
+    // And small grown seas, which always have a way to finish, many of them with a triple.
+    for (let t = 0; t < 120; t++) {
+      const max = t % 2 ? 3 : 2;
+      const p = makePuzzle({ name: 'small', size: 5, islands: { min: 3, max: 6 }, counting: false, puzzles: 1, maxPlanks: max === 3 ? 3 : undefined }, new Rng(t * 7 + 1));
+      if (p.layout.edges.length > 8) continue;
+      const all = brute(p.layout);
+      expect(key(solve(p.layout, undefined, 1e6).found), picture(5, p.layout.islands).join('/')).toEqual(key(all));
+      if (all.length) solved++;
+      if (all.some((w) => w.includes(3))) triples++;
+      checked++;
+    }
+    expect(checked).toBeGreaterThanOrEqual(120);
+    expect(solved).toBeGreaterThanOrEqual(40);
+    expect(triples).toBeGreaterThanOrEqual(20);
+  });
+
+  it('lets a third plank on, and bumps a fourth', () => {
+    const layout = layoutOf(5, [{ r: 0, c: 0, n: 4 }, { r: 0, c: 4, n: 4 }], 3);
+    expect(canAdd(layout, [2], 0)).toBe(true);
+    expect(canAdd(layout, [3], 0)).toBe(false);
+    // Two planks stay the limit everywhere else.
+    expect(canAdd(layoutOf(5, layout.islands), [2], 0)).toBe(false);
+    expect(trouble(layoutOf(5, [{ r: 0, c: 0, n: 3 }, { r: 0, c: 4, n: 3 }]), [0])).toEqual([0, 1]);
+    expect(trouble(layoutOf(5, [{ r: 0, c: 0, n: 3 }, { r: 0, c: 4, n: 3 }], 3), [0])).toEqual([]);
+  });
+
+  it('makes 9 by 9 seas of 12 to 14 islands that counting finishes, each with one answer and at least one triple', () => {
+    const plan = planFor(7);
+    expect(plan.size).toBe(9);
+    expect(plan.maxPlanks).toBe(3);
+    for (let s = 1; s <= 200; s++) {
+      const p = makePuzzle(plan, new Rng(s * 211 + 3)), label = `seed ${s}`;
+      expect(p.layout.max, label).toBe(3);
+      expect(solve(p.layout, undefined, 2).found, label).toEqual([p.solution]);
+      expect(bycounting(p.layout), label).toBe(true);
+      expect(p.solution, label).toContain(3);
+      expect(p.layout.islands.length, label).toBeGreaterThanOrEqual(12);
+      expect(p.layout.islands.length, label).toBeLessThanOrEqual(14);
+      expect(p.layout.islands.every((il) => il.n >= 1 && il.n <= 12), label).toBe(true);
+      // Following the hints lays exactly the answer, each a counting reason, never a bare pointer.
+      const kinds = hintWalk(p.layout, p.solution);
+      expect(kinds, label).not.toContain('next');
+      expect(kinds.length, label).toBe(p.par);
+    }
+  });
+
+  it('keeps two planks on every other level and on the couch courses', () => {
+    for (let level = 1; level <= 6; level++) expect(makePuzzle(planFor(level), new Rng(level * 31)).layout.max).toBe(2);
+    for (const course of Object.values(COURSES)) for (const sea of course.seas) expect(parsePuzzle(sea).layout.max).toBe(2);
   });
 });

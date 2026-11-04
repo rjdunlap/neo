@@ -2,7 +2,7 @@ import type { Rng } from '../../engine/random';
 
 /**
  * Island Bridges' rules (Hashi). Numbered islands sit on a grid. Join them with straight plank bridges, one or two between
- * the same pair, so that every island has as many planks as its number, no bridge crosses another, and all the islands are
+ * the same pair (up to three on level 7's sea), so that every island has as many planks as its number, no bridge crosses another, and all the islands are
  * joined into one group. A bridge runs from an island to the next island along a row or column, with nothing between.
  */
 export interface Island {
@@ -28,12 +28,14 @@ export interface Layout {
   crossing: readonly (readonly number[])[];
   /** For each island, its edges. */
   at: readonly (readonly number[])[];
+  /** The most planks one bridge can carry: two, or three on level 7's sea. */
+  max: number;
 }
 
 export const MAX_PLANKS = 2;
 
 /** Build everything the rules need from a list of islands: the pairs that face each other, and which of those cross. */
-export function layoutOf(size: number, islands: readonly Island[]): Layout {
+export function layoutOf(size: number, islands: readonly Island[], max = MAX_PLANKS): Layout {
   const at = new Map<number, number>(islands.map((il, i) => [il.r * size + il.c, i]));
   const edges: Edge[] = [];
   islands.forEach((il, i) => {
@@ -55,18 +57,18 @@ export function layoutOf(size: number, islands: readonly Island[]): Layout {
   };
   const crossing = edges.map((e, i) => edges.map((f, j) => (i !== j && cross(e, f) ? j : -1)).filter((j) => j >= 0));
   const incident = islands.map((_, i) => edges.map((e, k) => (e.a === i || e.b === i ? k : -1)).filter((k) => k >= 0));
-  return { size, islands, edges, crossing, at: incident };
+  return { size, islands, edges, crossing, at: incident, max };
 }
 
-/** Planks on every edge: 0, 1 or 2. */
+/** Planks on every edge: 0 up to the layout's `max`. */
 export type Planks = readonly number[];
 
 export const planksAt = (layout: Layout, planks: Planks, island: number) => layout.at[island].reduce((n, e) => n + planks[e], 0);
 
-/** Whether a plank can be added to an edge right now: fewer than two, nothing crossing it, and room at both ends. */
+/** Whether a plank can be added to an edge right now: fewer than the most it carries, nothing crossing it, and room at both ends. */
 export function canAdd(layout: Layout, planks: Planks, edge: number): boolean {
   const e = layout.edges[edge];
-  if (planks[edge] >= MAX_PLANKS) return false;
+  if (planks[edge] >= layout.max) return false;
   if (layout.crossing[edge].some((f) => planks[f] > 0)) return false;
   return planksAt(layout, planks, e.a) < layout.islands[e.a].n && planksAt(layout, planks, e.b) < layout.islands[e.b].n;
 }
@@ -99,12 +101,12 @@ export function trouble(layout: Layout, planks: Planks): number[] {
   return layout.islands.map((il, i) => {
     const have = planksAt(layout, planks, i);
     if (have > il.n) return i;
-    // The most it could still get: two on every edge whose other end has room and that nothing crosses.
+    // The most it could still get: the most a bridge carries on every edge whose other end has room and that nothing crosses.
     let room = 0;
     for (const k of layout.at[i]) {
       if (layout.crossing[k].some((f) => planks[f] > 0)) continue;
       const e = layout.edges[k], other = e.a === i ? e.b : e.a;
-      room += Math.min(MAX_PLANKS - planks[k], layout.islands[other].n - planksAt(layout, planks, other));
+      room += Math.min(layout.max - planks[k], layout.islands[other].n - planksAt(layout, planks, other));
     }
     return have + room < il.n ? i : -1;
   }).filter((i) => i >= 0);
@@ -163,11 +165,11 @@ export function solve(layout: Layout, fixed?: readonly number[], limit = 2, noGu
       for (let k = 0; k < E; k++) if (val[k] > 0) { have[layout.edges[k].a] += val[k]; have[layout.edges[k].b] += val[k]; }
       for (let i = 0; i < N; i++) if (have[i] > layout.islands[i].n) return false;
       for (let k = 0; k < E; k++) if (val[k] > 0 && layout.crossing[k].some((f) => val[f] > 0)) return false;
-      /** What an open edge could still carry: two, less what either end can still take, and nothing if a bridge crosses it. */
+      /** What an open edge could still carry: the most a bridge carries, less what either end can still take, and nothing if a bridge crosses it. */
       const cap = (k: number) => {
         if (layout.crossing[k].some((f) => val[f] > 0)) return 0;
         const e = layout.edges[k];
-        const most = Math.max(0, Math.min(MAX_PLANKS, layout.islands[e.a].n - have[e.a], layout.islands[e.b].n - have[e.b]));
+        const most = Math.max(0, Math.min(layout.max, layout.islands[e.a].n - have[e.a], layout.islands[e.b].n - have[e.b]));
         return isolation && most > 0 && closesOff(layout, val, k, most) ? most - 1 : most;
       };
       // One change at a time, then the counts are read again: a count read before a change would be wrong after it.
@@ -204,7 +206,7 @@ export function solve(layout: Layout, fixed?: readonly number[], limit = 2, noGu
       return;
     }
     if (noGuessing) return;
-    for (const v of [0, 1, 2]) {
+    for (let v = 0; v <= layout.max; v++) {
       const next = val.slice();
       next[pick] = v;
       go(next);
@@ -239,20 +241,23 @@ export interface Puzzle {
   par: number;
 }
 
-/** A puzzle from its picture: digits are islands, `.` is water. Its solution is worked out, and must be the only one. */
-export function parsePuzzle(rows: readonly string[]): Puzzle {
+/**
+ * A puzzle from its picture: digits are islands (`a` to `c` for 10 to 12, on a three-plank sea), `.` is water. Its solution is
+ * worked out, and must be the only one.
+ */
+export function parsePuzzle(rows: readonly string[], max = MAX_PLANKS): Puzzle {
   const size = rows.length;
   if (rows.some((r) => r.length !== size)) throw new Error('a puzzle is a square');
   const islands: Island[] = [];
-  rows.forEach((row, r) => [...row].forEach((ch, c) => { if (ch !== '.') islands.push({ r, c, n: Number(ch) }); }));
-  const layout = layoutOf(size, islands);
+  rows.forEach((row, r) => [...row].forEach((ch, c) => { if (ch !== '.') islands.push({ r, c, n: parseInt(ch, 36) }); }));
+  const layout = layoutOf(size, islands, max);
   const { found } = solve(layout);
   if (found.length !== 1) throw new Error(`a puzzle needs exactly one solution, this has ${found.length}`);
   return { size, layout, solution: found[0], par: found[0].reduce((n, p) => n + p, 0) };
 }
 
 export const picture = (size: number, islands: readonly Island[]): string[] =>
-  Array.from({ length: size }, (_, r) => Array.from({ length: size }, (_, c) => { const il = islands.find((i) => i.r === r && i.c === c); return il ? String(il.n) : '.'; }).join(''));
+  Array.from({ length: size }, (_, r) => Array.from({ length: size }, (_, c) => { const il = islands.find((i) => i.r === r && i.c === c); return il ? il.n.toString(36) : '.'; }).join(''));
 
 /* ------------------------------------------------------------------------------------------------ */
 /* Plans and puzzles                                                                                  */
@@ -271,6 +276,8 @@ export interface BridgePlan {
   lonely?: boolean;
   /** Keep only a sea where counting stalls and keeping them joined (`closesOff`) gets it going again, with no guessing. */
   joined?: boolean;
+  /** Up to three planks a bridge (level 7), and the sea must use a triple somewhere; two otherwise. */
+  maxPlanks?: 3;
 }
 
 export const PLANS: BridgePlan[] = [
@@ -282,10 +289,15 @@ export const PLANS: BridgePlan[] = [
   { name: 'A small 5 by 5 sea to start', size: 5, islands: { min: 4, max: 6 }, counting: true, puzzles: 1, lonely: true },
   // Level 6, between 2 and 3 by the order.
   { name: 'Keep them joined: a 9 by 9 sea where a bridge must not close a group off', size: 9, islands: { min: 12, max: 15 }, counting: false, puzzles: 1, joined: true },
+  // Level 7, after 6 by the order.
+  { name: 'Up to three planks: a 9 by 9 sea where a bridge can carry three', size: 9, islands: { min: 12, max: 14 }, counting: true, puzzles: 1, maxPlanks: 3 },
 ];
 
-/** The levels in play order, easiest first: the small sea (level 5) comes before level 1, and Keep them joined (6) after 2. */
-export const LEVEL_ORDER = [5, 1, 2, 6, 3, 4] as const;
+/**
+ * The levels in play order, easiest first: the small sea (level 5) comes before level 1, Keep them joined (6) after 2, and Up
+ * to three planks (7) after 6.
+ */
+export const LEVEL_ORDER = [5, 1, 2, 6, 7, 3, 4] as const;
 
 export const planFor = (level: number): BridgePlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -295,7 +307,9 @@ export const planFor = (level: number): BridgePlan => PLANS[Math.min(PLANS.lengt
  * the planks each island ended up with. A puzzle is kept only if it has exactly one solution.
  */
 export function makePuzzle(plan: BridgePlan, rng: Rng): Puzzle {
-  const { size } = plan;
+  const { size } = plan, max = plan.maxPlanks ?? MAX_PLANKS;
+  // How many planks a bridge being grown gets: one or two, or on a three-plank sea one to three.
+  const planks = () => (max === 3 ? rng.pick([1, 2, 3]) : rng.chance(0.4) ? 2 : 1);
   for (let attempt = 0; attempt < 600; attempt++) {
     const want = rng.int(plan.islands.min, plan.islands.max);
     const grid = new Map<number, 'i' | 'h' | 'v'>();
@@ -316,7 +330,7 @@ export function makePuzzle(plan: BridgePlan, rng: Rng): Puzzle {
       for (let k = 1; k < len; k++) grid.set(key(islands[from].r + dr * k, islands[from].c + dc * k), orient);
       grid.set(key(r, c), 'i');
       islands.push({ r, c });
-      bridges.push({ a: from, b: islands.length - 1, planks: rng.chance(0.4) ? 2 : 1 });
+      bridges.push({ a: from, b: islands.length - 1, planks: planks() });
     }
     if (islands.length < plan.islands.min) continue;
     // Extra bridges where two islands face each other across water nothing else crosses.
@@ -327,17 +341,19 @@ export function makePuzzle(plan: BridgePlan, rng: Rng): Puzzle {
       for (let r = A.r + (e.dir === 'v' ? 1 : 0), c = A.c + (e.dir === 'h' ? 1 : 0); r < B.r || c < B.c; r += e.dir === 'v' ? 1 : 0, c += e.dir === 'h' ? 1 : 0) cells.push([r, c]);
       if (cells.some(([r, c]) => grid.has(key(r, c)))) continue;
       cells.forEach(([r, c]) => grid.set(key(r, c), e.dir));
-      bridges.push({ a: e.a, b: e.b, planks: rng.chance(0.4) ? 2 : 1 });
+      bridges.push({ a: e.a, b: e.b, planks: planks() });
     }
     const counts = islands.map(() => 0);
     for (const b of bridges) { counts[b.a] += b.planks; counts[b.b] += b.planks; }
-    if (counts.some((n) => n > 8)) continue;
+    if (counts.some((n) => n > 4 * max)) continue;
     // In reading order, so the islands and edges are numbered the same way as when the puzzle is read back from its picture.
     const numbered = islands.map((il, i) => ({ ...il, n: counts[i] })).sort((a, b) => a.r - b.r || a.c - b.c);
-    const layout = layoutOf(size, numbered);
+    const layout = layoutOf(size, numbered, max);
     if (plan.lonely && !layout.at.some((edges) => edges.length === 1)) continue;
     const { found } = solve(layout);
     if (found.length !== 1 || (plan.counting && !bycounting(layout))) continue;
+    // A three-plank sea uses a triple, and every step of it is one an island's count names (no bare pointer to the answer).
+    if (plan.maxPlanks && (!found[0].includes(3) || !hintWalk(layout, found[0]).every((k) => k === 'forced'))) continue;
     if (plan.joined && (bycounting(layout) || !byreasoning(layout) || !joinedByHints(layout, found[0]))) continue;
     return { size, layout, solution: found[0], par: found[0].reduce((n, p) => n + p, 0) };
   }
@@ -398,7 +414,7 @@ export type Hint =
  * Why one island forces a plank, read from its number and the room it has, never from the answer:
  * - `full`: it needs all the room it has left (*just enough room*), so every open bridge carries all it can;
  * - `last-way`: only one bridge still has room (*one way left*), so the rest of the number goes there;
- * - `every-way`: it needs all but one of its room (*one short of full*), so every bridge that could take two needs one.
+ * - `every-way`: it needs all but one of its room (*one short of full*), so every bridge that could take two or more needs one.
  */
 export type Forced = 'full' | 'last-way' | 'every-way';
 
@@ -410,7 +426,7 @@ export function roomOf(layout: Layout, planks: Planks, island: number, isolation
   const caps = layout.at[island].map((k) => {
     if (layout.crossing[k].some((f) => planks[f] > 0)) return { edge: k, cap: 0 };
     const other = otherEnd(layout, k, island);
-    const cap = Math.max(0, Math.min(MAX_PLANKS - planks[k], layout.islands[other].n - planksAt(layout, planks, other)));
+    const cap = Math.max(0, Math.min(layout.max - planks[k], layout.islands[other].n - planksAt(layout, planks, other)));
     const group = isolation && cap > 0 ? closesOff(layout, planks, k, cap) : null;
     return group ? { edge: k, cap: cap - 1, group } : { edge: k, cap };
   });
@@ -427,7 +443,7 @@ export function forcedPlank(layout: Layout, planks: Planks, isolation = false): 
   const reasons: [Forced, (r: (typeof rooms)[number]) => number | undefined][] = [
     ['full', (r) => (r.left === r.room ? r.caps.find((c) => c.cap > 0)?.edge : undefined)],
     ['last-way', (r) => { const open = r.caps.filter((c) => c.cap > 0); return open.length === 1 ? open[0].edge : undefined; }],
-    ['every-way', (r) => (r.left === r.room - 1 ? r.caps.find((c) => c.cap === 2)?.edge : undefined)],
+    ['every-way', (r) => (r.left === r.room - 1 ? r.caps.find((c) => c.cap >= 2)?.edge : undefined)],
   ];
   for (const [why, pick] of reasons) {
     for (let i = 0; i < rooms.length; i++) {

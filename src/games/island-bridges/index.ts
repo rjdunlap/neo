@@ -17,7 +17,7 @@ import {
 } from './logic';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 6, order: [...LEVEL_ORDER] } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 7, order: [...LEVEL_ORDER] } };
 
 const SEA = 0xcfe8f7;
 const SEA_LINE = 0x7aa7c7;
@@ -218,7 +218,8 @@ class IslandBridges implements Game {
   }
 
   private layoutNumbers() {
-    this.numbers.forEach((t, i) => { const p = this.at(i); t.style.fontSize = Math.round(this.cell * 0.46); t.position.set(p.x, p.y + 1); });
+    // Two digits (up to 12 on a three-plank sea) a little smaller, so they sit inside the island.
+    this.numbers.forEach((t, i) => { const p = this.at(i); t.style.fontSize = Math.round(this.cell * (this.layout.islands[i].n >= 10 ? 0.38 : 0.46)); t.position.set(p.x, p.y + 1); });
   }
 
   /** The sea, the bridges and the islands, redrawn when anything changes. */
@@ -236,11 +237,13 @@ class IslandBridges implements Game {
         if (this.touch) this.guide(g, e, cell);
         return;
       }
-      const a = this.at(e.a), b = this.at(e.b), horizontal = e.dir === 'h', off = n === 2 ? cell * 0.11 : 0;
-      for (const side of n === 2 ? [-1, 1] : [0]) {
+      // One plank on the line, two either side of it, three (level 7) a little apart and thinner so each reads as its own.
+      const a = this.at(e.a), b = this.at(e.b), horizontal = e.dir === 'h', off = n === 3 ? cell * 0.15 : n === 2 ? cell * 0.11 : 0;
+      const thin = n === 3 ? 0.75 : 1;
+      for (const side of n === 3 ? [-1, 0, 1] : n === 2 ? [-1, 1] : [0]) {
         const dx = horizontal ? 0 : side * off, dy = horizontal ? side * off : 0;
-        g.moveTo(a.x + dx, a.y + dy).lineTo(b.x + dx, b.y + dy).stroke({ width: cell * 0.12, color: wood.line, cap: 'butt' });
-        g.moveTo(a.x + dx, a.y + dy).lineTo(b.x + dx, b.y + dy).stroke({ width: cell * 0.07, color: wood.light, cap: 'butt' });
+        g.moveTo(a.x + dx, a.y + dy).lineTo(b.x + dx, b.y + dy).stroke({ width: cell * 0.12 * thin, color: wood.line, cap: 'butt' });
+        g.moveTo(a.x + dx, a.y + dy).lineTo(b.x + dx, b.y + dy).stroke({ width: cell * 0.07 * thin, color: wood.light, cap: 'butt' });
       }
     });
     const bad = new Set(trouble(this.layout, this.planks));
@@ -322,6 +325,7 @@ class IslandBridges implements Game {
     this.report();
     if (this.spoken) return;
     this.spoken = true;
+    if (this.plan.maxPlanks) return this.ctx.instruct(this.touch ? 'bridges.go-three-touch' : 'bridges.go-three');
     return this.ctx.instruct(this.touch ? 'bridges.go-touch' : 'bridges.go');
   }
 
@@ -474,7 +478,7 @@ class IslandBridges implements Game {
     else this.lift(edge);
   }
 
-  /** Lay a plank: allowed where there are fewer than two, nothing crosses, and both islands have room. Anything else bumps and counts nothing. */
+  /** Lay a plank: allowed where there are fewer than the most a bridge carries (two, or three on level 7), nothing crosses, and both islands have room. Anything else bumps and counts nothing. */
   private lay(edge: number) {
     if (!canAdd(this.layout, this.planks, edge)) {
       sfx.boing();

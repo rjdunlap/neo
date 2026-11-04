@@ -41,7 +41,7 @@ const parsed = new Map<BridgeCourseId, Puzzle[]>();
 /** The seas of a course, read once, each with its one solution. */
 export function courseSeas(id: BridgeCourseId): Puzzle[] {
   let seas = parsed.get(id);
-  if (!seas) parsed.set(id, seas = COURSES[id].seas.map(parsePuzzle));
+  if (!seas) parsed.set(id, seas = COURSES[id].seas.map((sea) => parsePuzzle(sea)));
   return seas;
 }
 
