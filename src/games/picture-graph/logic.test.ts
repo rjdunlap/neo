@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { barsFor, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, KINDS, makeGraph, meadowArea, meadowSpots, MEADOWS, PLANS, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, type Question } from './logic';
+import { barsFor, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, KINDS, makeGraph, meadowArea, meadowSpots, MEADOWS, PLANS, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, lineHint, lineKinds, lineMove, lineQuestions, makeShore, planFor, shoreSpots, THING_SIZE, THINGS, trayLayout, type Question } from './logic';
 
 describe('Picture Graph', () => {
   it('makes graphs whose questions have one clear answer', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'line')) {
       for (let seed = 1; seed <= 300; seed++) {
         const rng = new Rng(seed);
         const g = makeGraph(plan, rng);
@@ -26,7 +26,7 @@ describe('Picture Graph', () => {
   });
 
   it("builds each bar exactly to its critters, checks, and answers every question rightly: the demonstration's finger", () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => p.mode !== 'line')) {
       for (let seed = 1; seed <= 300; seed++) {
         const rng = new Rng(seed);
         const graph = makeGraph(plan, rng);
@@ -384,6 +384,122 @@ describe('Picture Graph fair meadows, visible first pick, hints that show why', 
       const m2 = graphMove(plan, g, bars, q, q.answer[0]);
       expect(m2).toEqual({ do: 'column', kind: q.answer[1] });
       expect(sameTap(q.answer[0], q.answer[1], q.answer).result).toBe('right');
+    }
+  });
+});
+
+describe('Picture Graph level 8: Line them up', () => {
+  const plan = PLANS[7];
+  const VIEWS: [number, number][] = [[1024, 768], [1024, 1365], [1366, 1024], [1180, 820]];
+
+  it('appends level 8 after the first seven plans, which stay as they were', () => {
+    expect(PLANS.map((p) => p.mode)).toEqual(['build', 'most', 'more', 'read', 'scale', 'scaleread', 'tally', 'line']);
+    expect(planFor(8)).toBe(plan);
+    expect(lineKinds('prek')).toBe(2);
+    expect(lineKinds('school')).toBe(3);
+  });
+
+  it('makes shores of real things with different counts, 2 to 6, that fit the tray', () => {
+    for (const kinds of [2, 3]) {
+      for (let seed = 1; seed <= 400; seed++) {
+        const s = makeShore(plan, kinds, new Rng(seed));
+        expect(s.kinds).toHaveLength(kinds);
+        expect(new Set(s.kinds).size).toBe(kinds);
+        for (const k of s.kinds) expect(THINGS).toContain(k);
+        for (const n of s.counts) expect(n).toBeGreaterThanOrEqual(2), expect(n).toBeLessThanOrEqual(plan.max);
+        expect(new Set(s.counts).size).toBe(kinds);
+      }
+    }
+    // Never litter: only things the sea leaves.
+    expect([...THINGS].sort()).toEqual(['feather', 'shell', 'stick', 'stone']);
+  });
+
+  it('asks which row has the most at pre-K, then how many more at school, each with one answer', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const two = makeShore(plan, 2, new Rng(seed));
+      const q2 = lineQuestions(two, new Rng(seed));
+      expect(q2.map((q) => q.ask)).toEqual(['most']);
+      const three = makeShore(plan, 3, new Rng(seed));
+      const q3 = lineQuestions(three, new Rng(seed));
+      expect(q3.map((q) => q.ask)).toEqual(['most', 'more']);
+      for (const q of [...q2, ...q3]) {
+        const c = q2.includes(q) ? two.counts : three.counts;
+        if (q.ask === 'most') expect(c[q.answer]).toBe(Math.max(...c)), expect(c.filter((n) => n === c[q.answer])).toHaveLength(1);
+        if (q.ask === 'more') {
+          expect(q.answer).toBe(c[q.a] - c[q.b]);
+          expect(q.answer).toBeGreaterThan(0);
+          // The longer row's count is always offered: reading it instead of the difference is the slip.
+          const ch = choicesFor(q.answer, new Rng(seed), 1, c[q.a]);
+          expect(ch).toContain(q.answer), expect(ch).toContain(c[q.a]), expect(new Set(ch).size).toBe(3);
+          for (const n of ch) expect(n).toBeGreaterThanOrEqual(0);
+        }
+      }
+    }
+  });
+
+  it('the hint joins the rows one to one and glows exactly the things nothing matches', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const s = makeShore(plan, 3, new Rng(seed));
+      for (const q of lineQuestions(s, new Rng(seed))) {
+        const h = lineHint(q, s.counts);
+        const top = q.ask === 'more' ? q.a : (q as { answer: number }).answer;
+        for (const b of h.glow) expect(b.row).toBe(top), expect(b.k).toBeLessThan(s.counts[top]);
+        // Every link joins at least two rows that have a thing in that slot, and no glowing thing is linked.
+        for (const l of h.links) {
+          expect(l.rows.length).toBeGreaterThanOrEqual(2);
+          for (const r of l.rows) expect(s.counts[r]).toBeGreaterThan(l.k);
+          expect(h.glow.some((b) => b.k === l.k)).toBe(false);
+        }
+        if (q.ask === 'more') expect(h.glow).toHaveLength(q.answer), expect(h.links.every((l) => l.rows.every((r) => r === q.a || r === q.b))).toBe(true);
+        if (q.ask === 'most') expect(h.glow.length).toBe(s.counts[top] - Math.max(...s.counts.filter((_, i) => i !== top)));
+      }
+    }
+  });
+
+  it('lays every thing in a tap square of 100, none overlapping, clear of the corners and the tray, at four views', () => {
+    for (const [w, h] of VIEWS) {
+      for (const kinds of [2, 3]) {
+        const t = trayLayout(w, h, kinds, plan.max);
+        expect(t.left).toBeGreaterThanOrEqual(150);
+        expect(t.right).toBeLessThanOrEqual(w - 20);
+        expect(t.bottom).toBeLessThanOrEqual(h);
+        expect(t.rowY(1) - t.rowY(0)).toBeGreaterThanOrEqual(100);
+        expect(t.slotX(1) - t.slotX(0)).toBeGreaterThanOrEqual(100);
+        expect(t.slotX(plan.max - 1) + THING_SIZE / 2).toBeLessThanOrEqual(t.right);
+        for (let seed = 1; seed <= 200; seed++) {
+          const s = makeShore(plan, kinds, new Rng(seed));
+          const spots = shoreSpots(s, plan, w, h, new Rng(seed));
+          expect(spots).toHaveLength(s.counts.reduce((a, n) => a + n, 0));
+          for (let k = 0; k < s.kinds.length; k++) expect(spots.filter((p) => p.kind === k)).toHaveLength(s.counts[k]);
+          for (const p of spots) {
+            expect(p.y - THING_SIZE / 2).toBeGreaterThanOrEqual(110);
+            expect(p.y + THING_SIZE / 2).toBeLessThanOrEqual(t.top);
+            expect(p.x - THING_SIZE / 2).toBeGreaterThanOrEqual(90);
+            expect(p.x + THING_SIZE / 2).toBeLessThanOrEqual(w - 90);
+          }
+          for (let i = 0; i < spots.length; i++) for (let j = i + 1; j < spots.length; j++) {
+            const apart = Math.abs(spots[i].x - spots[j].x) >= THING_SIZE - 0.01 || Math.abs(spots[i].y - spots[j].y) >= THING_SIZE - 0.01;
+            expect(apart, `${w}x${h} seed ${seed}`).toBe(true);
+          }
+        }
+      }
+    }
+  });
+
+  it("the finger lines up every thing, then taps the most row and the right number", () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const s = makeShore(plan, 3, new Rng(seed));
+      const placed = s.counts.flatMap((n) => Array.from({ length: n }, () => false));
+      let taps = 0;
+      for (let m = lineMove(placed, undefined); m; m = lineMove(placed, undefined)) {
+        expect(m.do).toBe('thing');
+        if (m.do === 'thing') placed[m.index] = true;
+        taps++;
+      }
+      expect(taps).toBe(placed.length);
+      const [most, more] = lineQuestions(s, new Rng(seed));
+      expect(lineMove(placed, most)).toEqual({ do: 'row', row: (most as { answer: number }).answer });
+      expect(lineMove(placed, more)).toEqual({ do: 'number', n: (more as { answer: number }).answer });
     }
   });
 });

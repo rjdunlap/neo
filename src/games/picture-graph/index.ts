@@ -12,11 +12,12 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { LineUp } from './line';
 import { barsFor, choicesFor, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, meadowSpots, MEADOWS, planFor, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, type Graph, type GraphPlan, type Question } from './logic';
 
 const LEVELS: BandLevels = {
-  prek: { min: 1, max: 2 },
-  school: { min: 1, max: 7 },
+  prek: { min: 1, max: 8, order: [8, 1, 2] },
+  school: { min: 1, max: 8, order: [1, 2, 8, 3, 4, 5, 6, 7] },
 };
 
 const COL_W = 110;
@@ -521,12 +522,13 @@ export const pictureGraph: GameModule = {
   skills: ['counting', 'data', 'graphs', 'comparing'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [8],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'Point and count together, crossing off each critter in your head: "one duck, two ducks..."',
+  coplayHint: 'Point and count together, crossing off each critter in your head: "one duck, two ducks..." On the shore level, be the one who finds things: point, and let her line them up.',
   offScreen: 'Make a graph of the family\'s favorite fruits with sticky notes or blocks. Which is the most popular?',
   hubIcon: () => new GraphIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => new PictureGraph(ctx),
+  create: (ctx) => (planFor(ctx.level).mode === 'line' ? new LineUp(ctx) : new PictureGraph(ctx)),
 };

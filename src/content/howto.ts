@@ -2935,7 +2935,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'picture-graph': {
-    goal: 'Count critters and build a graph.',
+    goal: 'Count each kind, show the counts in a graph, and read it.',
     steps: [
       { to: 3, text: 'Count each kind of critter, and tap above its bar to add a block for each one.' },
       { to: 3, text: 'Tap the green check when the bars are built.' },
@@ -2945,8 +2945,10 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'The key says each block is two critters. Count the pairs in the meadow, and tap above a bar to add a block for each pair.' },
       { from: 5, to: 5, text: 'Tap the green check when the bars are built.' },
       { from: 5, to: 5, text: 'Then answer how many more critters of one kind there are than another: each block counts for two.' },
-      { from: 6, text: 'Read the graph, remembering that each block is two critters, then answer: how many critters in all, and how many more of one kind than another.' },
-      { from: 7, text: 'Count each kind in the meadow and add tally marks above its face. Four lines and one across make five. Tap the green check, then build the bar graph from the critters and answer how many more.' },
+      { from: 6, to: 6, text: 'Read the graph, remembering that each block is two critters, then answer: how many critters in all, and how many more of one kind than another.' },
+      { from: 7, to: 7, text: 'Count each kind in the meadow and add tally marks above its face. Four lines and one across make five. Tap the green check, then build the bar graph from the critters and answer how many more.' },
+      { from: 8, text: 'Tap each shell, stone, stick or feather on the sand; it hops into its own row of the tray.' },
+      { from: 8, text: 'Then tap the row with the most. With three rows, then answer how many more of one kind there are than another.' },
     ],
     finish: 'The round ends when the graph questions are answered.',
   },
