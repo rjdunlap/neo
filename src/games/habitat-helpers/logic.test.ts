@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { allArrangements, makeShoreRounds, shoreAccepted, shoreHint, shoreSolutions, shoreTouch, type Arrangement, type Place, type ShoreRound } from './logic';
 import { afterChange, CHANGES, EQUIVALENTS, habitatTouch, helpingPieces, lostNeed, makeRounds, missingNeeds, NEEDS, PIECES, PIECE_IDS, PLANS, PREDICTION_GARDENS, restores, solutions, visitorsFor, welcomes, type HabitatTouch, type Need, type PieceId, type Visitor } from './logic';
+
+/** Levels 1–7 build gardens; the shore levels above them have their own rounds and tests. */
+const GARDEN_LEVELS = PLANS.findIndex((p) => p.mode === 'shore');
 
 describe('Habitat Helpers', () => {
   it('gives every pictured piece a spoken name and at least one explicit use', () => {
@@ -57,7 +61,7 @@ describe('Habitat Helpers', () => {
   });
 
   it('builds the promised number of valid, solvable gardens at every level', () => {
-    for (let level = 1; level <= PLANS.length; level++) {
+    for (let level = 1; level <= GARDEN_LEVELS; level++) {
       for (let seed = 1; seed <= 200; seed++) {
         const rounds = makeRounds(level, new Rng(seed));
         expect(rounds, `level ${level}, seed ${seed}`).toHaveLength(PLANS[level - 1].rounds);
@@ -122,7 +126,7 @@ describe('Habitat Helpers', () => {
   });
 
   it('offers help that always supplies something still missing', () => {
-    for (let level = 1; level <= PLANS.length; level++) {
+    for (let level = 1; level <= GARDEN_LEVELS; level++) {
       for (const round of makeRounds(level, new Rng(level * 17))) {
         if (!round.offered.length || round.change) continue;
         const selected = round.offered.slice(0, Math.min(2, round.capacity));
@@ -146,7 +150,7 @@ describe('Habitat Helpers', () => {
   });
 
   it('lets the glow finish every garden: placing what glows, within the spaces, always works', () => {
-    for (let level = 1; level <= PLANS.length; level++) {
+    for (let level = 1; level <= GARDEN_LEVELS; level++) {
       for (let seed = 1; seed <= 60; seed++) {
         for (const round of makeRounds(level, new Rng(seed))) {
           if (!round.offered.length || round.change) continue;
@@ -240,11 +244,11 @@ describe('Habitat Helpers', () => {
     }
 
     it('finishes every round at every level with a working garden or a right prediction, and opens the gate last', () => {
-      for (let level = 1; level <= PLANS.length; level++) for (let seed = 1; seed <= 100; seed++) play(level, seed);
+      for (let level = 1; level <= GARDEN_LEVELS; level++) for (let seed = 1; seed <= 100; seed++) play(level, seed);
     });
 
     it('takes only what the garden needs, never more pieces than it has spaces, and never a distractor', () => {
-      for (let level = 1; level <= PLANS.length; level++) {
+      for (let level = 1; level <= GARDEN_LEVELS; level++) {
         if (PLANS[level - 1].mode !== 'build') continue;
         for (let seed = 1; seed <= 50; seed++) {
           const rounds = makeRounds(level, new Rng(seed));
@@ -268,5 +272,116 @@ describe('Habitat Helpers', () => {
     it('does nothing once the round is tested or the prediction round has no answer', () => {
       expect(habitatTouch({ visitors: ['bunny'], offered: [], capacity: 2, prepared: [] }, 'predict', [], null)).toBeNull();
     });
+  });
+});
+
+describe('Habitat Helpers, the rocky shore (levels 8–9)', () => {
+  const key = (a: readonly (Place | null)[]) => a.join(',');
+  const shore = (friends: ShoreRound['friends'], places: Place[], room: ShoreRound['room']): ShoreRound => ({ friends, places, room });
+
+  it('makes two shore rounds at levels 8 and 9, with the pool holding one at level 9', () => {
+    expect(PLANS.slice(GARDEN_LEVELS).map((p) => p.mode)).toEqual(['shore', 'shore']);
+    for (let seed = 1; seed <= 100; seed++) {
+      const eight = makeShoreRounds(8, new Rng(seed));
+      expect(eight).toHaveLength(PLANS[7].rounds);
+      for (const r of eight) expect([...r.places].sort()).toEqual(['high-rock', 'rock-pool']);
+      const nine = makeShoreRounds(9, new Rng(seed));
+      expect(nine).toHaveLength(PLANS[8].rounds);
+      for (const r of nine) {
+        expect(r.places).toHaveLength(3);
+        expect(r.room['rock-pool']).toBe(1);
+      }
+      // No place ever holds more than two friends, so placed friends never overlap.
+      for (const r of [...eight, ...nine]) for (const place of r.places) expect(r.room[place]).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it('level 8 accepts exactly the hand-listed arrangements: the anemone in the pool, the barnacle anywhere', () => {
+    const r = shore(['anemone', 'barnacle'], ['high-rock', 'rock-pool'], { 'high-rock': 2, 'rock-pool': 2 });
+    expect(shoreSolutions(r).map(key).sort()).toEqual(['rock-pool,high-rock', 'rock-pool,rock-pool'].sort());
+    // The anemone on the high rock is never accepted, wherever the barnacle goes.
+    expect(shoreAccepted(r, ['high-rock', 'rock-pool'])).toBe(false);
+    expect(shoreAccepted(r, ['high-rock', 'high-rock'])).toBe(false);
+    // A friend still on the sand is not a finished shore.
+    expect(shoreAccepted(r, ['rock-pool', null])).toBe(false);
+    const r2 = shore(['anemone', 'barnacle', 'barnacle'], ['high-rock', 'rock-pool'], { 'high-rock': 2, 'rock-pool': 2 });
+    expect(shoreSolutions(r2).map(key).sort()).toEqual(['rock-pool,high-rock,high-rock', 'rock-pool,high-rock,rock-pool', 'rock-pool,rock-pool,high-rock'].sort());
+  });
+
+  it('level 9 accepts exactly the hand-listed arrangements: the pool forces the anemone, the crab hides under seaweed', () => {
+    const room = { 'rock-pool': 1, 'seaweed-rocks': 2, 'high-rock': 2 };
+    const places: Place[] = ['rock-pool', 'seaweed-rocks', 'high-rock'];
+    const r = shore(['barnacle', 'crab', 'anemone'], places, room);
+    expect(shoreSolutions(r).map(key).sort()).toEqual(['high-rock,seaweed-rocks,rock-pool', 'seaweed-rocks,seaweed-rocks,rock-pool'].sort());
+    // The barnacle in the pool takes the anemone's only wet place.
+    expect(shoreAccepted(r, ['rock-pool', 'seaweed-rocks', 'rock-pool'])).toBe(false);
+    // The seaweed rocks give a hiding place but are not wet.
+    expect(shoreAccepted(r, ['high-rock', 'seaweed-rocks', 'seaweed-rocks'])).toBe(false);
+    // The crab on bare rock has nowhere to hide.
+    expect(shoreAccepted(r, ['seaweed-rocks', 'high-rock', 'rock-pool'])).toBe(false);
+    const r2 = shore(['barnacle', 'crab', 'anemone', 'barnacle'], places, room);
+    expect(shoreSolutions(r2).map(key).sort()).toEqual(['high-rock,seaweed-rocks,rock-pool,high-rock', 'high-rock,seaweed-rocks,rock-pool,seaweed-rocks', 'seaweed-rocks,seaweed-rocks,rock-pool,high-rock'].sort());
+  });
+
+  it('every generated round has an accepted arrangement, and every accepted one meets every need', () => {
+    for (const level of [8, 9]) {
+      for (let seed = 1; seed <= 100; seed++) {
+        for (const r of makeShoreRounds(level, new Rng(seed))) {
+          expect(shoreSolutions(r).length).toBeGreaterThan(0);
+          for (const a of shoreSolutions(r)) {
+            a.forEach((place, i) => {
+              if (r.friends[i] === 'anemone') expect(place).toBe('rock-pool');
+              if (r.friends[i] === 'crab') expect(place).toBe('seaweed-rocks');
+            });
+          }
+        }
+      }
+    }
+  });
+
+  it('following the hint from any arrangement, sand included, always reaches an accepted shore', () => {
+    for (const level of [8, 9]) {
+      for (const r of makeShoreRounds(level, new Rng(level))) {
+        const starts: Arrangement[] = [r.friends.map(() => null), ...allArrangements(r)];
+        for (const start of starts) {
+          // Only starts a child could reach: no place over its room.
+          if (r.places.some((p) => start.filter((s) => s === p).length > (r.room[p] ?? 0))) continue;
+          const a = [...start];
+          let steps = 0;
+          while (!shoreAccepted(r, a)) {
+            const move = shoreHint(r, a);
+            expect(move, `level ${level} from ${key(start)}`).not.toBeNull();
+            a[move!.friend] = move!.place === 'sand' ? null : move!.place;
+            expect(r.places.every((p) => a.filter((s) => s === p).length <= (r.room[p] ?? 0))).toBe(true);
+            expect(++steps).toBeLessThan(10);
+          }
+        }
+      }
+    }
+  });
+
+  it('the ghost finger finishes every shore round from the sand: friend, place, then the wave', () => {
+    for (const level of [8, 9]) {
+      for (let seed = 1; seed <= 50; seed++) {
+        for (const r of makeShoreRounds(level, new Rng(seed))) {
+          const a: Arrangement = r.friends.map(() => null);
+          let held: number | null = null;
+          let taps = 0;
+          for (;;) {
+            const t = shoreTouch(r, a, held);
+            expect(t).not.toBeNull();
+            if (t === 'tide') break;
+            if ('friend' in t!) held = t.friend;
+            else {
+              expect(held).not.toBeNull();
+              a[held!] = t!.place === 'sand' ? null : t!.place;
+              held = null;
+            }
+            expect(++taps).toBeLessThan(20);
+          }
+          expect(shoreAccepted(r, a)).toBe(true);
+        }
+      }
+    }
   });
 });

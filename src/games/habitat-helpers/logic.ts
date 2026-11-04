@@ -48,7 +48,7 @@ export const PIECES: Record<PieceId, HabitatPiece> = {
   'reed-island': { id: 'reed-island', name: 'reed island', for: { duck: ['shelter'] } },
 };
 
-export type HabitatMode = 'build' | 'predict' | 'change';
+export type HabitatMode = 'build' | 'predict' | 'change' | 'shore';
 
 export interface HabitatPlan {
   mode: HabitatMode;
@@ -64,6 +64,8 @@ export const PLANS: readonly HabitatPlan[] = [
   { mode: 'build', rounds: 2, name: 'Use a multipurpose piece to fit each habitat into two spaces' },
   { mode: 'build', rounds: 1, name: 'Build one three-piece habitat that welcomes Bunny and Duck together' },
   { mode: 'change', rounds: 2, name: 'Something changed: name the need a working garden lost, then restore it' },
+  { mode: 'shore', rounds: 2, name: 'High rock or rock pool? Place shore friends so each has what it needs when the sea goes out' },
+  { mode: 'shore', rounds: 2, name: 'Who lives where? Three shore places, and the rock pool has room for one' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -169,6 +171,9 @@ export function makeRounds(level: number, rng: Rng): HabitatRound[] {
       return rng.shuffle([...VISITORS]).map((v) => round([v], compact[v], 2));
     case 6:
       return [round(['bunny', 'duck'], ['berry-hedge', 'seed-grass', 'pond-reeds', 'shallow-pool', 'clover', 'tall-reeds'], 3)];
+    case 8:
+    case 9:
+      return [];
     default: {
       // The dried pool opens every play (the dive's first round); the second change is drawn from the other three.
       const [first, ...rest] = CHANGES;
@@ -256,4 +261,133 @@ export function habitatTouch(round: HabitatRound, mode: HabitatMode, selected: r
   if (!plan) return null;
   const next = round.offered.find((piece) => plan.includes(piece) && !selected.includes(piece));
   return next ? { piece: next } : null;
+}
+
+/*
+ * Levels 8–9, the rocky shore. The model is small and stated in the game: the high rock dries out when the sea goes out,
+ * the rock pool stays wet, and the seaweed rocks give a hiding place. An anemone needs to stay wet, a crab needs somewhere
+ * to hide from the gulls, and a barnacle closes its shell, so it is fine anywhere. Nothing here says where a barnacle
+ * cannot live: on real shores that comes from predators and crowding, not needs.
+ */
+export const PLACES = ['high-rock', 'seaweed-rocks', 'rock-pool'] as const;
+export type Place = (typeof PLACES)[number];
+
+export const SHORE_FRIENDS = ['anemone', 'crab', 'barnacle'] as const;
+export type ShoreFriend = (typeof SHORE_FRIENDS)[number];
+
+export type ShoreNeed = 'wet' | 'hiding';
+
+/** What each place gives at low tide. */
+export const PLACE_GIVES: Record<Place, readonly ShoreNeed[]> = {
+  'high-rock': [],
+  'seaweed-rocks': ['hiding'],
+  'rock-pool': ['wet'],
+};
+
+/** What each friend needs when the sea goes out. */
+export const FRIEND_NEEDS: Record<ShoreFriend, readonly ShoreNeed[]> = {
+  anemone: ['wet'],
+  crab: ['hiding'],
+  barnacle: [],
+};
+
+export interface ShoreRound {
+  /** The friends on the sand, by kind; a kind can come twice. */
+  friends: ShoreFriend[];
+  /** The places on the shore, left to right, with how many friends each holds. */
+  places: Place[];
+  room: Partial<Record<Place, number>>;
+}
+
+/** Where each friend is (by its index in `friends`), or null while it waits on the sand. */
+export type Arrangement = (Place | null)[];
+
+export const fits = (friend: ShoreFriend, place: Place) => FRIEND_NEEDS[friend].every((need) => PLACE_GIVES[place].includes(need));
+
+export const roomAt = (round: ShoreRound, place: Place) => round.room[place] ?? 0;
+
+export const countAt = (arrangement: Arrangement, place: Place) => arrangement.filter((p) => p === place).length;
+
+/** Whether this place can take one more friend. */
+export const hasRoom = (round: ShoreRound, arrangement: Arrangement, place: Place) => countAt(arrangement, place) < roomAt(round, place);
+
+/** The friends whose needs are not met where they are, in the order the pet talks about them (anemone first, then crab). */
+export function unmet(round: ShoreRound, arrangement: Arrangement): number[] {
+  const out = round.friends.map((_, i) => i).filter((i) => arrangement[i] !== null && !fits(round.friends[i], arrangement[i]!));
+  return out.sort((a, b) => SHORE_FRIENDS.indexOf(round.friends[a]) - SHORE_FRIENDS.indexOf(round.friends[b]) || a - b);
+}
+
+/** Everyone is placed, every place holds no more than its room, and every friend's needs are met at low tide. */
+export function shoreAccepted(round: ShoreRound, arrangement: Arrangement): boolean {
+  if (arrangement.length !== round.friends.length || arrangement.some((p) => p === null || !round.places.includes(p))) return false;
+  if (round.places.some((place) => countAt(arrangement, place) > roomAt(round, place))) return false;
+  return unmet(round, arrangement).length === 0;
+}
+
+/** Every complete arrangement on the round's places (accepted or not). */
+export function allArrangements(round: ShoreRound): Place[][] {
+  let out: Place[][] = [[]];
+  for (let i = 0; i < round.friends.length; i++) out = out.flatMap((a) => round.places.map((p) => [...a, p]));
+  return out;
+}
+
+/** Every accepted arrangement. */
+export const shoreSolutions = (round: ShoreRound) => allArrangements(round).filter((a) => shoreAccepted(round, a));
+
+/** The accepted arrangement that keeps the most friends where they are now. */
+function nearestSolution(round: ShoreRound, arrangement: Arrangement): Place[] | null {
+  const same = (s: Place[]) => s.filter((p, i) => arrangement[i] === p).length;
+  const all = shoreSolutions(round);
+  if (!all.length) return null;
+  return all.reduce((best, s) => (same(s) > same(best) ? s : best));
+}
+
+/** One step toward an accepted arrangement: move this friend to this place (or back to the sand, when no place has room). */
+export interface ShoreMove {
+  friend: number;
+  place: Place | 'sand';
+}
+
+/**
+ * The next useful move: a friend not yet where the nearest accepted arrangement puts it, whose place has room. When every
+ * such place is full of friends that also need to move, one of those goes back to the sand first.
+ */
+export function shoreHint(round: ShoreRound, arrangement: Arrangement): ShoreMove | null {
+  const goal = nearestSolution(round, arrangement);
+  if (!goal) return null;
+  const wrong = round.friends.map((_, i) => i).filter((i) => arrangement[i] !== goal[i]);
+  if (!wrong.length) return null;
+  const ready = wrong.find((i) => hasRoom(round, arrangement, goal[i]));
+  if (ready !== undefined) return { friend: ready, place: goal[ready] };
+  const blocker = wrong.find((i) => arrangement[i] !== null);
+  return blocker === undefined ? null : { friend: blocker, place: 'sand' };
+}
+
+export type ShoreTouch = { friend: number } | { place: Place | 'sand' } | 'tide';
+
+/** The ghost finger on the shore: take the hinted friend, put it in its place, and let the sea go out once all is well. */
+export function shoreTouch(round: ShoreRound, arrangement: Arrangement, held: number | null): ShoreTouch | null {
+  if (shoreAccepted(round, arrangement)) return 'tide';
+  const move = shoreHint(round, arrangement);
+  if (!move) return null;
+  return held === move.friend ? { place: move.place } : { friend: move.friend };
+}
+
+/** Level 8: two places with room for two each, so only the anemone's choice matters and a barnacle fits either. Level 9: three places; the pool holds one. */
+export function makeShoreRounds(level: number, rng: Rng): ShoreRound[] {
+  if (level <= 8) {
+    const places = rng.shuffle<Place>(['high-rock', 'rock-pool']);
+    const room = { 'high-rock': 2, 'rock-pool': 2 };
+    return [
+      { friends: rng.shuffle<ShoreFriend>(['anemone', 'barnacle']), places, room },
+      { friends: rng.shuffle<ShoreFriend>(['anemone', 'barnacle', 'barnacle']), places: rng.shuffle([...places]), room },
+    ];
+  }
+  // Left to right the shore goes up from the sea: pool, seaweed rocks, high rock.
+  const places: Place[] = ['rock-pool', 'seaweed-rocks', 'high-rock'];
+  const room = { 'rock-pool': 1, 'seaweed-rocks': 2, 'high-rock': 2 };
+  return [
+    { friends: rng.shuffle<ShoreFriend>(['barnacle', 'crab', 'anemone']), places, room },
+    { friends: rng.shuffle<ShoreFriend>(['barnacle', 'crab', 'anemone', 'barnacle']), places, room },
+  ];
 }

@@ -1043,6 +1043,8 @@ Proof: new-interaction tier: typecheck and rule tests; one scripted play of leve
 
 ### habitat-helpers 3: The rocky shore
 
+**Built 2026-11-04 ([PR #1216](https://github.com/rjdunlap/neo/pull/1216)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-04--habitat-helpers-levels-89-the-rocky-shore-habitat-helpers-batch-3); [build note](archive/COMPLETED-2026-10-09.md#habitat-helpers-levels-89-the-rocky-shore-habitat-helpers-3-2026-11-04). No longer eligible for dispatch. Scope retained for reference.
+
 - **`habitat-helpers`, levels 8–9 The rocky shore (dive slice 3, after batch 2)** (new interaction; school 4–9): who lives high and who lives low on a rocky shore, decided by needs rather than trivia; shares the level table and the bot rule with batch 2. [Dive](deep-dives/habitat-helpers.md#build-slices-in-order)
 
 Files expected: `src/games/habitat-helpers/logic.ts`, `logic.test.ts`, `art.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.

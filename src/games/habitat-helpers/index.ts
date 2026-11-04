@@ -14,13 +14,14 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { RockyShore } from './shore';
 import { changedArt, gardenPatch, gateIcon, needIcon, pieceArt } from './art';
 import { afterChange, habitatTouch, helpingPieces, lostNeed, makeRounds, missingNeeds, NEEDS, PIECES, planFor, restores, visitorsFor, welcomes, type HabitatPlan, type HabitatRound, type Need, type PieceId, type Visitor } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 3 },
   prek: { min: 2, max: 5 },
-  school: { min: 4, max: 7 },
+  school: { min: 4, max: 9 },
 };
 
 const VISITOR_WORDS: Record<Visitor, string> = { bunny: 'Bunny', duck: 'Duck' };
@@ -585,7 +586,7 @@ export const habitatHelpers: GameModule = {
   hubIcon: () => new WigglyIcon(habitatIcon()),
   touchDemo: true,
   sticker,
-  create: (ctx) => new HabitatHelpers(ctx),
+  create: (ctx) => (planFor(ctx.level).mode === 'shore' ? new RockyShore(ctx) : new HabitatHelpers(ctx)),
 };
 
 export { PIECES };
