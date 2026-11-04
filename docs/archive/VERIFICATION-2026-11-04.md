@@ -36,3 +36,9 @@
 - Ran (dev server `http://localhost:5332/classic/`, `VITE_SPEECH=off`): typecheck; `npm test` 300 files, 4,780 tests (picture-graph rule tests 43); one scripted 768x1024 school play of level 11 (two wrong stamps on a can't-say claim: misses 1 then 2, the named bar lit, hint 1 with the can't-say stamp glowing; then every claim to the sticker, no page errors) with a portrait screenshot; `BROWSER_SUITE=fingerdemo FINGER_ONLY=picture-graph FINGER_LEVELS=11` pass (9.5 s); `npm run build` pass.
 - Review: `game-reviewer` found no problems.
 - Not run: landscape screenshot (layout unit-tested at 1024x768, 1366x1024, 1600x768, 768x1024, 1024x1365), device or child check. Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md) (whether a six-year-old understands "the graph can't say").
+
+## 2026-11-04 — Island Bridges couch course Joined Seas (island-bridges batch 4)
+
+- [PR #1202](https://github.com/rjdunlap/neo/pull/1202), commit `96fc4dd6`: a second Island Bridges course (`joined`, five frozen level-6 seas, par 84, created at level 6) beside Island Hopping, voice `couch.course.joined`; the eight `couch-*.mjs` suites' course lists gained `joined`, and `couch-bridges.mjs` asserts the Joined Seas card.
+- Ran (dev `http://localhost:5840`): typecheck; `npx vitest run src/games/island-bridges src/couch` 10 files, 114 tests; `BROWSER_SUITE=couchgames COUCH_ONLY=island-bridges` PASS (intro, controller lighting, bot round, save); one probe (Puzzle shelf, Joined Seas, Play): card "par 84", HUD "Sea 1 of 5 · 0 planks so far · this sea's fewest 12 · course minimum 84", the hint walk on sea 1 gave six forced hints then a `joined` one, no page errors.
+- Not run: the full `couchbridges` suite (its new card assertion and updated list), the other `couch-*` suites whose course-list assertions changed, a full bot run of Joined Seas to its badges, `npm run build`, a real controller or TV.

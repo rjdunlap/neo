@@ -575,7 +575,7 @@ Proof: existing-interaction tier: typecheck, the game's rule tests (starts are n
 
 ### light-lab 2: Couch course Sunbeam Run
 
-- **`light-lab`, couch course Sunbeam Run (dive slice 2)**, (couch catalog; batch 1 is built): a par course of frozen boards with par from batch 1's minimum, the remaining Light Lab par course of roadmap chunk 8. [Dive](deep-dives/light-lab.md#build-slices-in-order)
+- **`light-lab`, couch course Sunbeam Run (dive slice 2)**, (built 2026-11-04, [PR #1218](https://github.com/rjdunlap/neo/pull/1218); couch catalog; batch 1 is built): a par course of frozen boards with par from batch 1's minimum, the remaining Light Lab par course of roadmap chunk 8. [Dive](deep-dives/light-lab.md#build-slices-in-order)
 
 Files expected: `src/couch/` catalog and course entries, the course tests, `docs/COUCH-PLAY.md`.
 
