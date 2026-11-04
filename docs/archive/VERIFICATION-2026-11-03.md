@@ -364,3 +364,10 @@
 - Ran (dev server `http://localhost:5365/classic/`): typecheck; picture-graph rule tests 37 passed and content plus registry tests 238 passed; one scripted level 10 play (lift and lower free, keyed+trap pair = miss, plain+trap = second miss and the hint, both rounds, sticker, no page errors) with 768x1024 screenshots; `BROWSER_SUITE=fingerdemo FINGER_ONLY=picture-graph FINGER_LEVELS=10` pass (6.3 s).
 - Review: `game-reviewer` found nothing.
 - Not run: `npm run build` (CI runs it), device or child check. Open: iPad feel and whether a child learns to read the key rather than trust "the keyed graph is always right".
+
+## 2026-11-03 — Scoop Shop level 7 Two cones (EF1b second batch, PR #1194)
+
+- [PR #1194](https://github.com/rjdunlap/neo/pull/1194) (branch `claude/scoop-shop-two-cones`, third commit): school level 7 *Two cones*: two friends with hidden picture orders, free cone selection separate from the friend peek, per-cone misses/glow/peek, either service order; voice `scoop.two-cones`/`scoop.order-single`/`scoop.order-pair`; how-to steps from 7.
+- Ran (dev server `http://localhost:5219`, `VITE_SPEECH=off`): typecheck; `npm test` 300 files, 4753 tests pass (rule tests: 360-pair enumeration, determinism, wrong scoops never mutate either stack, every route finishes, per-cone help caps, layout targets at least 100 and disjoint at three sizes); `npm run build`; `BROWSER_SUITE=arcade ARCADE_ONLY=scoop ARCADE_LEVELS=7` pass (two wrong scoops and glow, peek keeps the choice and counts once, repeat free, scoop during peek refused, switch keeps the partial stack, both serves, score `[2,2]`, one sticker, portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=scoop-shop FINGER_LEVELS=7 FINGER_BAND=school` pass (13.8 s).
+- Review: `game-reviewer` found nothing medium or above.
+- Not run: other Scoop Shop levels' browser plays (unchanged apart from the shared support refactor, covered by unit tests), offline check, any iPad or child check. Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md) (outline, peek and two hidden requests on iPad portrait; speech of the two request lines).
