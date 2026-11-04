@@ -476,8 +476,11 @@ class LightLab implements Game {
     if (!c) return;
     this.clouds.delete(key);
     c.eventMode = 'none';
+    // The couch ring stays on the cloud it was on, or moves to the next one if that cloud puffed.
+    const was = this.spots[this.focus];
     this.spots = this.spots.filter((sp) => `${sp.x},${sp.y}` !== key);
-    this.focus = Math.min(this.focus, Math.max(0, this.spots.length - 1));
+    const stay = this.spots.indexOf(was);
+    this.focus = stay >= 0 ? stay : Math.min(this.focus, Math.max(0, this.spots.length - 1));
     const at = this.ctx.stage.toLocal(c.getGlobalPosition());
     this.ctx.particles.burst(at.x, at.y, { kind: 'dot', colors: [0xffffff, 0xe8f4ff], count: 10, speed: [60, 160], gravity: 0, life: [0.3, 0.6] });
     void this.ctx.tw.to(c.scale, { x: 1.35, y: 1.35 }, { duration: 0.3 });
@@ -507,13 +510,13 @@ class LightLab implements Game {
     sfx.boing();
     this.drawPeek();
     await this.showGhost(cell);
-    await this.ctx.say('light.find.miss');
+    // The second miss goes straight to the glowing lines, which say more than another miss line would.
     if (this.wrongs >= 2 && !this.findLine) {
       this.findLine = findLines(this.puzzle);
       this.hints++;
       this.assisted = true;
       void this.ctx.say('light.find.hint');
-    }
+    } else await this.ctx.say('light.find.miss');
     this.busy = false;
   }
 

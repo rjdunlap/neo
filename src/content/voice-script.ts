@@ -3238,7 +3238,7 @@ export const SCRIPT = {
   'light.place.two': ['Two mirrors to place! Where will the sunbeam meet each one? Drag them on, then tap the sun.'],
   'light.place.first': ['First drag the mirror from the tray onto the board.'],
   'light.find': ['The sunbeam found the flower! A cloud is hiding the mirror that turned it. Look where the light goes in, and where it comes out. Then tap the cloud where the mirror is hiding.'],
-  'light.find.miss': ['Not there. See the pale beam? A mirror there would send the light that way.', 'Hmm, a mirror there would turn the light somewhere else. Watch the pale beam.'],
+  'light.find.miss': ['Not there. The pale beam shows where the light would go with a mirror there.', 'Hmm, not there. Watch the pale beam: it misses the flower.'],
   'light.find.hint': ['Follow the sun\'s glowing line, and the flower\'s glowing line. The mirror hides where they cross.'],
   'light.yay': ['The flower woke up!', 'Sunshine!', 'Good morning, flower!'],
   'light.done': ['The whole garden is awake! What a bright idea!'],
