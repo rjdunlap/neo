@@ -11,6 +11,12 @@
 - [ ] **Rings against spots on the iPad label.** Do the enlarged record sprouts read as plain or spotted at arm's length on the iPad?
 - [ ] **Device speech of the new lines.** Do the Hidden Sprouts lines (no rendered clips; device speech fallback) say the genetics words clearly?
 
+## Sprout Shuffle level 6 Which plant could tell us? (genetics G5, built 2026-11-03)
+
+- [ ] **Does the spotted tester's explanation land?** After watering with the spotted `AA` tester, do the two side-by-side fans and "can't tell" read as why that plant could not tell us, rather than as a failure?
+- [ ] **"Can't tell" as a finished choice.** Does a ten-year-old read the ambiguous ending ("Even the plain plant couldn't tell us this time.") as a complete answer, not a dodge?
+- [ ] **Device speech of the new lines.** Do `sprout.tester-intro`, `tester-ask`, `card-aa`, `tester-all-spotted`, `tester-couldnt` and `help.tester` read clearly (device speech fallback)?
+
 ## Word Search (batch word-search 1, built 2026-11-03)
 
 - [ ] **The root line on the iPad.** Does device speech say "spect" and "port" in `wordsearch.root-spect` / `wordsearch.root-port` clearly enough for a grown-up to hear the root?

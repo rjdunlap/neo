@@ -163,3 +163,9 @@
 - Ran: `npm run typecheck`; 49 puppet-stage rule tests; full `npm test` 4599 passed (297 files) at bae19b8c; `npm run build`; `BROWSER_SUITE=puppetstory` at cbbdd976 (server localhost:5637, `VITE_SPEECH=off`): level 4 three off-card bobs then glow 0/1, level 5 card 2 first twice 2/1 with glow, level 6 portrait card 1, early The end 1/0 with Bow, rest to the cheer and Bow; one portrait screenshot of level 6 mid-show; `fingerdemo` `FINGER_ONLY=puppet-stage FINGER_LEVELS=4,5,6 FINGER_BAND=school` 7.0, 10.9, 16.3 s.
 - Not run: offline check, couch suites (no couch), the levels 1–3 suite (unchanged), device speech.
 - Open: four device checks ([DEVICE-CHECKS](../DEVICE-CHECKS.md#puppet-stage-levels-46-tp2-2026-11-03)).
+
+## 2026-11-03 — Vine Snip definition (docs only)
+
+- Added [the definition](../definitions/vine-snip.md) (levels 1–5, two build slices); the earlier sketch is superseded; roadmap rows 25 and 27, READY, IDEAS and PHYSICS-GAMES updated.
+- Ran: `node scripts/check-links.mjs`, `git diff --check`. No code checks, by tier (nothing built).
+- Open: the definition's three device checks (tap-to-drop for a toddler, swing "keep going" on an iPad, 0.4 s windows for a four-year-old).
