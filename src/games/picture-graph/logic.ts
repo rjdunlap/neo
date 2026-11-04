@@ -514,6 +514,7 @@ export function claimLayout(w: number, h: number) {
   const mid = Math.max(210 + 130, h * 0.45);
   return {
     stamp: (i: number) => ({ x, y: mid + (i - 1) * 140 }),
-    card: { x: w / 2 - 60, y: Math.max(200, (h - 412) / 2 + 60), w: 380, h: 130 },
+    // Just over the graph it talks about (whose panel starts at h - 412).
+    card: { x: w / 2 - 60, y: Math.max(210, h - 412 - 110), w: 380, h: 130 },
   };
 }

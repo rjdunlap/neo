@@ -75,7 +75,7 @@ function aboutArt(about: string): Graphics {
     g.ellipse(16, -26, 10, 5).fill(swatch.green.fill);
   } else {
     g.circle(0, 0, 30).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
-    g.circle(14, -10, 26).fill(0x2c3e66);
+    g.circle(14, -10, 26).fill(0xffffff);
   }
   return g;
 }
@@ -551,6 +551,7 @@ class PictureGraph implements Game {
         this.stamps.push({ stamp, node });
         this.ctx.stage.addChild(node);
       }
+      this.resize(this.view);
     }
     for (const x of this.claimCard.removeChildren()) x.destroy({ children: true });
     const t = claimLayout(this.view.w, this.view.h).card;
