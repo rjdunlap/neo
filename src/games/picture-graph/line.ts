@@ -90,7 +90,11 @@ export class LineUp implements Game {
     const t = this.layout();
     const spots = shoreSpots(this.shore, this.plan, v.w, v.h, new Rng(this.spotSeed));
     this.things.forEach((th, i) => {
-      if (th.placed) th.node.position.set(t.slotX(th.slot), t.rowY(th.kind));
+      if (th.placed) {
+        // A hop still under way would pull it back toward the old layout's slot.
+        this.ctx.tw.kill(th.node);
+        th.node.position.set(t.slotX(th.slot), t.rowY(th.kind));
+      }
       else th.node.position.set(spots[i].x, spots[i].y);
     });
     this.rows.forEach((r, i) => r.position.set((t.left + t.right) / 2, t.rowY(i)));
