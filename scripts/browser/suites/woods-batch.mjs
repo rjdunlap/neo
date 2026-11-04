@@ -87,6 +87,67 @@ async function woodsBatch() {
       log('Penguin Slide 11: a wrong prediction (no miss) then right ones, both ponds, saved score and sticker passed');
       continue;
     }
+    if (level === 12) {
+      // A block onto the star (school): get the block stuck where it can never reach the star, undo, then solve both ponds.
+      await launch('penguin-slide', 12);
+      await page.setViewportSize({ width: 768, height: 1024 });
+      const step = async (dir) => {
+        await page.evaluate((dir) => {
+          const g = neo.scene.game; const p = g.penguin;
+          const at = g.board.toGlobal({ x: p.x + [1, 0, -1, 0][dir] * 90, y: p.y + [0, 1, 0, -1][dir] * 90 });
+          kit.tap(at.x, at.y);
+        }, dir);
+        await page.waitForTimeout(120);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 15000 });
+      };
+      let stuckSeen = false;
+      for (let n = 0; n < 2; n++) {
+        await idle(n);
+        if (!stuckSeen) {
+          // The shortest run of moves from here to a state the star can no longer be reached from.
+          const path = await page.evaluate(async () => {
+            const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game;
+            const k = (s) => `${s.at.x},${s.at.y};${s.blocks.map((b) => `${b.x},${b.y}`).join(';')}`;
+            const queue = [{ at: g.at, blocks: g.blocks, path: [] }]; const seen = new Set([k(queue[0])]);
+            while (queue.length) {
+              const s = queue.shift();
+              if (S.solve(g.puzzle, s.at, 0, s.blocks).moves === -1) return s.path;
+              for (const d of [0, 1, 2, 3]) {
+                const m = S.move(g.puzzle, s.at, d, s.blocks);
+                if (!m || S.solved(g.puzzle, 0, m.blocks)) continue;
+                const t = { at: m.to, blocks: m.blocks, path: [...s.path, d] };
+                if (!seen.has(k(t))) { seen.add(k(t)); queue.push(t); }
+              }
+            }
+            return null;
+          });
+          if (path) {
+            for (const d of path) await step(d);
+            await page.waitForTimeout(200);
+            assert.equal(await page.evaluate(() => neo.scene.game.stuck), true, 'a stuck block makes undo glow');
+            await screenshot('penguin-slide-12-portrait');
+            await tap('neo.scene.game.undo'); await page.waitForTimeout(400);
+            assert.equal(await page.evaluate(() => neo.scene.game.stuck), false, 'undo frees the block');
+            stuckSeen = true;
+          }
+        }
+        for (let k = 0; k < 30; k++) {
+          const dir = await page.evaluate(async (n) => {
+            const g = neo.scene.game; if (neo.scene.finished || g.index !== n) return -2;
+            const S = await import('/src/games/penguin-slide/logic.ts'); return S.solve(g.puzzle, g.at, g.have, g.blocks).first;
+          }, n);
+          if (dir === -2) break;
+          if (dir === -1) { await tap('neo.scene.game.undo'); await page.waitForTimeout(300); continue; }
+          await step(dir);
+        }
+      }
+      assert.ok(stuckSeen, 'one of the two ponds had a way to get the block stuck');
+      await finished('penguin-slide');
+      assert.equal((await score('penguin-slide'))[0], 0, 'no misses on the star ponds');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log('Penguin Slide 12: a stuck block, undo, the block onto the star in both ponds, saved score and sticker passed');
+      continue;
+    }
     await launch('penguin-slide', level);
     if (level === 3 || level >= 6) await page.setViewportSize({ width: 768, height: 1024 });
     const puzzles = await page.evaluate(() => neo.scene.game.plan.puzzles);

@@ -16,7 +16,7 @@ import type { Rng } from '../../engine/random';
 export interface SlidePlan {
   cols: number;
   rows: number;
-  fish: 1 | 2 | 3;
+  fish: 0 | 1 | 2 | 3;
   /** Soft snow patches: the penguin stops on them. */
   soft: number;
   rocks: number;
@@ -32,6 +32,8 @@ export interface SlidePlan {
   maxSingles?: number;
   /** No first slide from the start eats two fish at once, so the order is hers to plan. */
   apartFromStart?: boolean;
+  /** Stars on the ice: the pond is done when every star has a block on it (and every fish is eaten). */
+  stars?: number;
   /** Prediction ponds: three shown slides, and she taps where each will stop before it goes (`makePrediction`). */
   predict?: boolean;
   puzzles: number;
@@ -50,6 +52,7 @@ export const PLANS: SlidePlan[] = [
   { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 3, blocks: 2, pairedBlocks: true, moves: [6, 9], puzzles: 2, name: 'Use two blocks to plan stopping places on the way to a fish' },
   { cols: 7, rows: 5, fish: 3, soft: 0, rocks: 5, moves: [5, 8], apartFromStart: true, puzzles: 2, name: 'Three fish: plan which to eat first, second and third' },
   { cols: 5, rows: 4, fish: 1, soft: 0, rocks: 3, moves: [3, 3], predict: true, puzzles: 2, name: 'Where will it stop? An arrow shows the slide; tap where the penguin will stop (two ponds, three slides each)' },
+  { cols: 6, rows: 5, fish: 0, soft: 1, rocks: 3, blocks: 1, stars: 1, moves: [3, 6], puzzles: 2, name: 'A block onto the star: plan where to push the ice block from so it stops on the star' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -66,6 +69,8 @@ export interface SlidePuzzle {
   soft: Cell[];
   /** Ice blocks where they start; absent on the boards without any. */
   blocks?: Cell[];
+  /** Star marks on the ice, each needing a block parked on it; absent on the boards without any. */
+  stars?: Cell[];
   start: Cell;
   fish: Cell[];
   /** The fewest slides that eat every fish. */
@@ -157,13 +162,18 @@ export function move(p: SlidePuzzle, from: Cell, dir: Dir, blocks: Cell[] = p.bl
 
 const blockKey = (blocks: Cell[]) => blocks.map(key).sort().join(';');
 
+/** Whether a pond is finished: every fish eaten (`have`) and every star covered by a block. */
+export function solved(p: SlidePuzzle, have: number, blocks: Cell[]): boolean {
+  if (have !== (1 << p.fish.length) - 1) return false;
+  return (p.stars ?? []).every((s) => blocks.some((b) => b.x === s.x && b.y === s.y));
+}
+
 /**
  * The fewest slides from here (with `have` fish already eaten) to eat them all, and the first
  * slide of one such route; `moves` is -1 when the fish can't be reached any more.
  */
 export function solve(p: SlidePuzzle, from: Cell, have = 0, blocks: Cell[] = p.blocks ?? []): { moves: number; first: Dir | -1 } {
-  const all = (1 << p.fish.length) - 1;
-  if (have === all) return { moves: 0, first: -1 };
+  if (solved(p, have, blocks)) return { moves: 0, first: -1 };
   const seen = new Set<string>([`${key(from)},${have},${blockKey(blocks)}`]);
   let frontier: { at: Cell; have: number; blocks: Cell[]; first: Dir | -1 }[] = [{ at: from, have, blocks, first: -1 }];
   for (let depth = 1; frontier.length && depth <= 30; depth++) {
@@ -174,7 +184,7 @@ export function solve(p: SlidePuzzle, from: Cell, have = 0, blocks: Cell[] = p.b
         if (!m) continue;
         const h = s.have | eaten(p, m.passed);
         const first = s.first === -1 ? dir : s.first;
-        if (h === all) return { moves: depth, first };
+        if (solved(p, h, m.blocks)) return { moves: depth, first };
         const k = `${key(m.to)},${h},${blockKey(m.blocks)}`;
         if (seen.has(k)) continue;
         seen.add(k);
@@ -191,13 +201,12 @@ export function solve(p: SlidePuzzle, from: Cell, have = 0, blocks: Cell[] = p.b
  * fish (only undo would help). Walks every state reachable from the start.
  */
 export function hasDeadEnd(p: SlidePuzzle): boolean {
-  const all = (1 << p.fish.length) - 1;
   const start = { at: p.start, have: 0, blocks: p.blocks ?? [] };
   const seen = new Set<string>([`${key(start.at)},0,${blockKey(start.blocks)}`]);
   const queue = [start];
   while (queue.length) {
     const s = queue.shift()!;
-    if (s.have === all) continue;
+    if (solved(p, s.have, s.blocks)) continue;
     if (solve(p, s.at, s.have, s.blocks).moves === -1) return true;
     for (const dir of [0, 1, 2, 3] as Dir[]) {
       const m = move(p, s.at, dir, s.blocks);
@@ -238,7 +247,9 @@ export function makePuzzle(plan: SlidePlan, rng: Rng, earlier: readonly SlidePuz
     const soft = pool.splice(0, plan.soft);
     const fish = pool.splice(0, plan.fish);
     const blocks = pool.splice(0, plan.blocks ?? 0);
-    const p: SlidePuzzle = { cols: plan.cols, rows: plan.rows, rocks, soft, ...(blocks.length ? { blocks } : {}), start, fish, best: 0 };
+    // Stars come from what is left, so never under a rock, a snow patch, a block or the penguin.
+    const stars = pool.splice(0, plan.stars ?? 0);
+    const p: SlidePuzzle = { cols: plan.cols, rows: plan.rows, rocks, soft, ...(blocks.length ? { blocks } : {}), ...(stars.length ? { stars } : {}), start, fish, best: 0 };
     const { moves } = solve(p, start);
     if (moves < plan.moves[0] || moves > plan.moves[1]) continue;
     if (moves === 1 && !singlesLeft) continue;

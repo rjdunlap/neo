@@ -16,13 +16,14 @@ import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBoards, courseMinimum, isPondCourse } from './course';
-import { beside, cellAt, eaten, HINT_AFTER, makePrediction, makePuzzle, move, pickLook, planFor, solve, stopper, tapDirection, type Cell, type Dir, type FishColor, type RockLook, type ShownSlide, type SlidePlan, type SlidePuzzle } from './logic';
+import { beside, cellAt, eaten, HINT_AFTER, makePrediction, makePuzzle, move, pickLook, planFor, solve, solved, stopper, tapDirection, type Cell, type Dir, type FishColor, type RockLook, type ShownSlide, type SlidePlan, type SlidePuzzle } from './logic';
 
 const LEVELS: BandLevels = {
   // Level 11 (Where will it stop?) is the easier step between 2 and 3.
   preschool: { min: 1, max: 11, order: [1, 2, 11] },
   prek: { min: 1, max: 11, order: [1, 2, 11, 3, 4] },
-  school: { min: 2, max: 10 },
+  // Level 12 (A block onto the star) follows 10; 11 is the younger bands' prediction step.
+  school: { min: 2, max: 12, order: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12] },
 };
 
 const CELL = 100;
@@ -57,6 +58,16 @@ function rockArt(look: RockLook = 'rock'): Graphics {
 
 function softArt(): Graphics {
   return puffs(new Graphics(), [[-24, 10, 22], [0, 2, 26], [24, 10, 22], [-10, 20, 20], [12, 20, 20]], 0xffffff, 0xc9d6e6, 4);
+}
+
+/** A star mark on the ice, where an ice block has to stop. */
+function starArt(): Graphics {
+  const pts: number[] = [];
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 ? 17 : 38, a = -Math.PI / 2 + (i * Math.PI) / 5;
+    pts.push(r * Math.cos(a), r * Math.sin(a));
+  }
+  return new Graphics().poly(pts).fill({ color: swatch.yellow.fill, alpha: 0.85 }).stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
 }
 
 function blockArt(): Container {
@@ -304,6 +315,7 @@ class PenguinSlide implements Game {
       return this.ctx.instruct(this.course.boards.some(b => b.blocks?.length) ? 'slide.ice' : 'slide.go');
     }
     if (this.index > 0) return;
+    if (this.plan.stars) return this.ctx.instruct('slide.star');
     if (this.plan.blocks) return this.ctx.instruct(this.plan.pairedBlocks ? 'slide.paired' : this.plan.soft ? 'slide.ice-snow' : this.plan.fish === 2 ? 'slide.ice-two' : 'slide.ice');
     if (this.plan.soft) return this.ctx.instruct('slide.soft');
     if (this.plan.fish === 3) return this.ctx.instruct('slide.three');
@@ -320,6 +332,7 @@ class PenguinSlide implements Game {
     this.board.hitArea = new Rectangle(-16, -16, w + 32, h + 32);
     this.things.removeChildren().forEach((c) => c.destroy({ children: true }));
     for (const c of p.soft) this.place(softArt(), c);
+    for (const c of p.stars ?? []) this.place(starArt(), c);
     this.rockNodes = p.rocks.map((c) => this.place(rockArt(this.look.rock), c));
     this.fishNodes = p.fish.map((c) => this.place(fishArt(this.look.fish), c));
     this.blockNodes = this.blocks.map((c) => this.place(blockArt(), c));
@@ -394,6 +407,10 @@ class PenguinSlide implements Game {
       };
       await Promise.all([lean(), this.ctx.tw.to(node, { x: end.x, y: end.y }, { duration: 0.1 * far + 0.08, ease: ease.outQuad })]);
       sfx.clunk();
+      if (this.puzzle.stars?.some((s) => s.x === pushed.to.x && s.y === pushed.to.y)) {
+        this.ctx.particles.burst(this.board.x + end.x, this.board.y + end.y, { kind: 'star', colors: [0xffffff, swatch.yellow.light], count: 14, speed: [100, 240], gravity: 0, life: [0.4, 0.8] });
+      }
+      if (solved(this.puzzle, this.have, this.blocks)) return void this.win();
       this.checkHelp();
       this.busy = false;
       if (this.again) this.restart();
@@ -419,7 +436,7 @@ class PenguinSlide implements Game {
       if (!this.guess) void this.ctx.say('slide.yum');
     }
     if (this.guess) await this.judge(this.guess, to, dir);
-    if (this.have === (1 << this.puzzle.fish.length) - 1) return void this.win();
+    if (solved(this.puzzle, this.have, this.blocks)) return void this.win();
     this.checkHelp();
     this.busy = false;
     if (this.again) this.restart();
@@ -545,7 +562,7 @@ class PenguinSlide implements Game {
     if (this.predicting) return;
     const wasStuck = this.stuck;
     this.stuck = this.ahead().moves < 0;
-    if (this.stuck && !wasStuck) void this.ctx.say('slide.stuck');
+    if (this.stuck && !wasStuck) void this.ctx.say(this.puzzle.stars?.length ? 'slide.star.stuck' : 'slide.stuck');
     if (!this.hinting && this.moves > this.puzzle.best + HINT_AFTER) {
       this.hinting = true;
       this.hints++;
@@ -633,7 +650,7 @@ class PenguinSlide implements Game {
     if (this.finished) return;
     this.finished = true;
     sfx.tada();
-    await this.ctx.say('slide.done');
+    await this.ctx.say(this.plan.stars && !this.course ? 'slide.star.done' : 'slide.done');
     await this.ctx.tw.wait(0.5);
     this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.excess });
   }

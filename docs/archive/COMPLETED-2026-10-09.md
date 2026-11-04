@@ -2593,7 +2593,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--inchworm-lev
 
 [PR #1174](https://github.com/rjdunlap/neo/pull/1174), [definition](../definitions/todays-six.md#slices). Home has a round six-tile button (`daily` spot, every band) opening the six; `?daily` opens it once after the chooser; the six's Back goes to Home. `src/content/daily.ts` draws the pool from touch games that list the band itself (not `GameModule.daily: false`; only `goodnight-room`), gives every band a seeded preset level (`presetLevels`, grown-ups from the top third, a pin wins) and a level dot row on each card. A round opened from the card with a start level records with `adapt` off, so the saved level does not move; a discovery opened from the six adapts as usual. The grown-ups' page has one plain line about it. Slice 2 (kinds of challenge) and slice 3 (Play all) are not built.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--todays-six-slice-1-home-entry-and-preset-levels-d10).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--todays-six-slice-1-home-entry-and-preset-levels-d10).
 
 ## Sprout Shuffle level 6 Which plant could tell us? (genetics G5 last level, 2026-11-03)
 
@@ -2620,6 +2620,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--penguin-slide-level-
 [PR #1187](https://github.com/rjdunlap/neo/pull/1187), [dive slice 3](../deep-dives/penguin-slide.md#build-slices-in-order). Preschool and pre-K level 11 (`predict: true`): a 5×4 pond with one fish and three rocks, two ponds a round. `makePrediction` gives three shown slides that each move the penguin, never straight back, passing the fish only on the third, with at least two stops further than the cell beside the penguin. A yellow arrow shows the direction, she taps any cell to predict the stop, then the penguin slides; a right guess sparkles (`slide.predict.right`), a wrong one keeps her blue ring and bounces the stopping rock (`slide.predict.rock` / `slide.predict.edge`). Predictions never count as misses or hints; no undo, hint arrow or stuck glow on these ponds. Ladder: preschool 1–11 with order `[1, 2, 11]`, pre-K order `[1, 2, 11, 3, 4]`, school unchanged 2–10, plus `entryLevels: [11]` (a departure from the dive) so an 11 carried into school lands on level 2. Keys and pad move a ring and predict; the ghost finger and autoplay tap the stop cell; a restart returns to the first shown slide. The how-to card's old steps are scoped `to: 10` and level 11 has its own steps and note.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--penguin-slide-level-11-where-will-it-stop-dive-slice-3).
+
+### Penguin Slide level 12 A block onto the star (2026-11-03)
+
+[PR #1190](https://github.com/rjdunlap/neo/pull/1190), [dive slice 4](../deep-dives/penguin-slide.md#build-slices-in-order). School level 12 after 10 (school `order` [2..10, 12]; 11 stays the younger bands' prediction step): two 6×5 ponds with one ice block, one star mark, three rocks, one soft-snow patch that must change the best route, and no fish; best route 3-6 slides. The goal is the block stopping on the star: the shared `solved()` in `logic.ts` (every fish eaten and every star covered) drives `solve` and `hasDeadEnd`, and a push landing on the star wins with a sparkle. No misses; the hint arrow after three extra slides shows the next slide or push (one hint), and undo glows when the block can no longer reach the star, with the star-specific stuck line `slide.star.stuck`. Voice `slide.star` (instruction) and `slide.star.done` (finale); the how-to card has level-12 steps and its goal reads "Slide the penguin to the fish, or push an ice block onto a star." A woods case plays a dead end, checks the stuck line and glowing undo, then solves both ponds.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--penguin-slide-level-12-a-block-onto-the-star-dive-slice-4).
 
 ## Orchard Rows levels 7–9 A path through the orchard (2026-11-03)
 
