@@ -16,7 +16,7 @@ import type { Rng } from '../../engine/random';
 export interface SlidePlan {
   cols: number;
   rows: number;
-  fish: 1 | 2;
+  fish: 1 | 2 | 3;
   /** Soft snow patches: the penguin stops on them. */
   soft: number;
   rocks: number;
@@ -30,6 +30,8 @@ export interface SlidePlan {
   fair?: boolean;
   /** At most this many ponds of a round are solved in a single slide. */
   maxSingles?: number;
+  /** No first slide from the start eats two fish at once, so the order is hers to plan. */
+  apartFromStart?: boolean;
   puzzles: number;
   name: string;
 }
@@ -44,6 +46,7 @@ export const PLANS: SlidePlan[] = [
   { cols: 6, rows: 5, fish: 2, soft: 0, rocks: 4, blocks: 1, moves: [4, 6], puzzles: 2, name: 'Park an ice block to collect two fish: plan how each new stopping place helps the route' },
   { cols: 6, rows: 5, fish: 2, soft: 1, rocks: 4, blocks: 1, moves: [4, 6], puzzles: 2, name: 'Park a block and use soft snow to stop on a route to both fish' },
   { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 3, blocks: 2, pairedBlocks: true, moves: [6, 9], puzzles: 2, name: 'Use two blocks to plan stopping places on the way to a fish' },
+  { cols: 7, rows: 5, fish: 3, soft: 0, rocks: 5, moves: [5, 8], apartFromStart: true, puzzles: 2, name: 'Three fish: plan which to eat first, second and third' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -206,6 +209,15 @@ export function hasDeadEnd(p: SlidePuzzle): boolean {
   return false;
 }
 
+/** Whether one slide from the start eats two or more fish at once. */
+export function eatsTwoFromStart(p: SlidePuzzle): boolean {
+  return ([0, 1, 2, 3] as Dir[]).some((dir) => {
+    const m = move(p, p.start, dir);
+    const mask = m ? eaten(p, m.passed) : 0;
+    return (mask & (mask - 1)) !== 0;
+  });
+}
+
 /** A pond, unlike the ones already made this round when the plan caps single-slide ponds. */
 export function makePuzzle(plan: SlidePlan, rng: Rng, earlier: readonly SlidePuzzle[] = []): SlidePuzzle {
   const singlesLeft = plan.maxSingles === undefined || earlier.filter((e) => e.best === 1).length < plan.maxSingles;
@@ -234,6 +246,7 @@ export function makePuzzle(plan: SlidePlan, rng: Rng, earlier: readonly SlidePuz
       const frozen = solve({ ...p, rocks: [...rocks, ...blocks], blocks: [] }, start).moves;
       if (frozen !== -1 && frozen <= moves) continue;
     }
+    if (plan.apartFromStart && eatsTwoFromStart(p)) continue;
     if (plan.fair && hasDeadEnd(p)) continue;
     return { ...p, best: moves };
   }

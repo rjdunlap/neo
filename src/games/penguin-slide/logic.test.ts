@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { FISH_COLORS, hasDeadEnd, PAIRED_BLOCK_PONDS, pickLook, ROCK_LOOKS, beside, eaten, makePuzzle, move, PLANS, slide, solve, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
+import { eatsTwoFromStart, FISH_COLORS, hasDeadEnd, PAIRED_BLOCK_PONDS, pickLook, ROCK_LOOKS, beside, eaten, makePuzzle, move, PLANS, slide, solve, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
 
 const tiny: SlidePuzzle = { cols: 4, rows: 3, rocks: [{ x: 3, y: 1 }], soft: [{ x: 1, y: 2 }], start: { x: 0, y: 0 }, fish: [{ x: 2, y: 2 }], best: 0 };
 
@@ -233,5 +233,26 @@ describe('Penguin Slide fair ponds', () => {
     }
     expect([...rocks].sort()).toEqual([...ROCK_LOOKS].sort());
     expect([...fish].sort()).toEqual([...FISH_COLORS].sort());
+  });
+  it('level 10 has three fish, 5–8 slides, and no first slide that eats two, over 300 seeds', () => {
+    const plan = PLANS[9];
+    const bests = new Set<number>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const p = makePuzzle(plan, new Rng(seed));
+      expect(p.fish).toHaveLength(3);
+      expect(p.best).toBeGreaterThanOrEqual(5);
+      expect(p.best).toBeLessThanOrEqual(8);
+      expect(solve(p, p.start).moves).toBe(p.best);
+      expect(eatsTwoFromStart(p)).toBe(false);
+      bests.add(p.best);
+    }
+    // The ponds vary in length, not one fixed route size.
+    expect(bests.size).toBeGreaterThan(1);
+  }, 15000);
+
+  it('a first slide past two fish counts as eating two from the start', () => {
+    const p: SlidePuzzle = { cols: 5, rows: 3, rocks: [], soft: [], start: { x: 0, y: 0 }, fish: [{ x: 1, y: 0 }, { x: 3, y: 0 }, { x: 0, y: 2 }], best: 0 };
+    expect(eatsTwoFromStart(p)).toBe(true);
+    expect(eatsTwoFromStart({ ...p, fish: [{ x: 1, y: 0 }, { x: 3, y: 1 }, { x: 0, y: 2 }] })).toBe(false);
   });
 });

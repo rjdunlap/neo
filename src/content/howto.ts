@@ -2113,6 +2113,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       'Tap the ice where the penguin should slide.',
       { to: 4, text: 'It only stops when it bumps into something.' },
+      { from: 10, to: 10, text: 'It only stops when it bumps into something. Three fish: choose which to eat first.' },
       { from: 5, to: 5, text: 'It stops when it bumps into something, or in soft snow.' },
       { from: 6, to: 7, text: 'Slide into an ice block to push it; it skates until it bumps into something.' },
       { from: 9, to: 9, text: 'Push both blocks to make stopping places on the route to the fish.' },

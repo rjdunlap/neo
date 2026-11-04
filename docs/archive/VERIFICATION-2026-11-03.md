@@ -200,3 +200,9 @@
 - Defined Brain Break levels 4–6 *Sums in order* in [the definition](../definitions/brain-break.md#sums-in-order-levels-46-definition-2026-11-03): the same in-order search with sum and take-away labels; colour words stay a proposal; ROADMAP step 9 and chunk 8, READY (queued build) and IDEAS updated.
 - Ran: `node scripts/check-links.mjs`, `git diff --check`. No code checks, by tier (nothing built).
 - Open: the queued build and its checks.
+
+## 2026-11-03 — Pixel Pictures levels 7 Both ways and 8 Twice as big (pixel-pictures batch 2)
+
+- [PR #1166](https://github.com/rjdunlap/neo/pull/1166): level 7 `mirror2` (six four-fold 6×6 pictures) and level 8 `big` (five 3×3 models at double size); school range 3–8.
+- Ran (commit 2861b292, Vite dev on http://localhost:5849, stopped): typecheck; vitest pixel-pictures rules (11) with howto, lands and registry (69 passed); `BROWSER_SUITE=woods WOODS_ONLY=pixels FROM_LEVEL=7 TO_LEVEL=8` (two misses give [2,1], glow asserted: one square at 7, one whole block at 8, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pixel-pictures FINGER_LEVELS=7,8` clean 51.3 s and 47.5 s; one portrait screenshot of level 8 reviewed. `game-reviewer`: no bugs.
+- Not run: build and full unit suite (CI runs both). Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): device and child checks on the mirror and double-size levels.
