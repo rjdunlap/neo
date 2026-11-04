@@ -8,9 +8,10 @@ import type { Rng } from '../../engine/random';
  * Puzzles are built backwards from a random beam path, so every one has a known solution; extra
  * mirrors and rocks are placed off that path, and the mirrors start tilted so it isn't solved yet. From level 3 the
  * whole board may be mirrored, with the sun on the right shining left. From level 8 some path mirrors wait in a tray:
- * she drags them onto the board, and no answer works without every one of them.
+ * she drags them onto the board, and no answer works without every one of them. At level 10 a cloud hides the one
+ * mirror, and she finds it from where the beam goes in and where it comes out.
  */
-export type LightMode = 'live' | 'plan' | 'predict';
+export type LightMode = 'live' | 'plan' | 'predict' | 'find';
 
 export interface LightPlan {
   mode: LightMode;
@@ -47,6 +48,7 @@ export const PLANS: LightPlan[] = [
   // Tray levels keep 4 rows so the tray fits under the board in landscape. Level 9's rock sits on the sun's row.
   { mode: 'plan', cols: 6, rows: 4, turns: 2, decoys: 0, rocks: 0, flowers: 1, glass: false, puzzles: 3, startWrong: 1, startDark: false, eitherSide: true, tray: 1, name: 'Place a mirror: drag one from the tray onto the board, turn the mirrors, then shine' },
   { mode: 'plan', cols: 7, rows: 4, turns: 2, decoys: 0, rocks: 1, flowers: 1, glass: false, puzzles: 2, startWrong: 0, startDark: false, eitherSide: true, tray: 2, name: 'Two to place: two tray mirrors, and a rock in the way of the straight beam' },
+  { mode: 'find', cols: 6, rows: 4, turns: 1, decoys: 0, rocks: 0, flowers: 1, glass: false, puzzles: 3, startWrong: 0, startDark: false, eitherSide: true, tray: 0, name: "Where's the mirror? A cloud hides one mirror: tap where it must be, from where the beam goes in and comes out" },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -199,6 +201,7 @@ export function predictionChoices(p: LightPuzzle, actual: Tilt[] = p.start): Bea
 
 /** Builds a puzzle backwards from a random path; retries until every rule holds. */
 export function makePuzzle(plan: LightPlan, rng: Rng): LightPuzzle {
+  if (plan.mode === 'find') return findPuzzle(plan, rng);
   for (let attempt = 0; attempt < 500; attempt++) {
     const p = tryPuzzle(plan, rng);
     if (p) return p;
@@ -301,6 +304,57 @@ function tryPuzzle(plan: LightPlan, rng: Rng): LightPuzzle | null {
     return plan.eitherSide && rng.chance(0.5) ? mirrorPuzzle(result) : result;
   }
   return null;
+}
+
+/**
+ * Level 10: one mirror on the sun's row turns the beam up or down into a flower on the top or bottom edge, where it leaves
+ * the board. A cloud will hide everything but the sun and the flower. `start` is the answer: nothing on this board turns.
+ */
+function findPuzzle(plan: LightPlan, rng: Rng): LightPuzzle {
+  const { cols, rows } = plan;
+  const up = rng.chance(0.5);
+  const sunRow = up ? rng.int(1, rows - 1) : rng.int(0, rows - 2);
+  const x = rng.int(1, cols - 1);
+  const solution: Tilt[] = [tiltFor(0, up ? 3 : 1), 0];
+  const p: LightPuzzle = {
+    cols, rows, sunRow, sunCol: 0, sunDir: 0,
+    things: [{ kind: 'mirror', x, y: sunRow }, { kind: 'flower', x, y: up ? 0 : rows - 1, wants: 'sun' }],
+    solution, start: [...solution], pathMirrors: [0], tray: [],
+  };
+  return plan.eitherSide && rng.chance(0.5) ? mirrorPuzzle(p) : p;
+}
+
+/** Level 10's cloud: every cell but the sun's and the flower's. */
+export function cloudCells(p: LightPuzzle): { x: number; y: number }[] {
+  const flower = p.things.find((t) => t.kind === 'flower')!;
+  const cells: { x: number; y: number }[] = [];
+  for (let y = 0; y < p.rows; y++) for (let x = 0; x < p.cols; x++) {
+    if (!(x === p.sunCol && y === p.sunRow) && !(x === flower.x && y === flower.y)) cells.push({ x, y });
+  }
+  return cells;
+}
+
+/**
+ * The board with level 10's one mirror moved to `cell`, tilted as the real one is: the ghost beam a wrong guess shows
+ * (off the sun's row the beam never meets it; on the row it turns, but at the wrong column).
+ */
+export function mirrorAt(p: LightPuzzle, cell: { x: number; y: number }): [LightPuzzle, Tilt[]] {
+  const i = p.things.findIndex((t) => t.kind === 'mirror');
+  return [{ ...p, things: p.things.map((t, k) => (k === i ? { ...t, x: cell.x, y: cell.y } : t)) }, p.solution];
+}
+
+/** Whether a mirror in `cell`, either way round, would carry the beam to the flower. */
+export function fits(p: LightPuzzle, cell: { x: number; y: number }): boolean {
+  const i = p.things.findIndex((t) => t.kind === 'mirror');
+  return ([0, 1] as Tilt[]).some((tilt) => {
+    const [q, tilts] = mirrorAt(p, cell);
+    return solved(q, tilts.map((t, k) => (k === i ? tilt : t)));
+  });
+}
+
+/** Level 10's hint: the sun's row and the flower's column, which cross at the hidden mirror. */
+export function findLines(p: LightPuzzle): { row: number; col: number } {
+  return { row: p.sunRow, col: p.things.find((t) => t.kind === 'flower')!.x };
 }
 
 /** The board seen in a mirror: the sun moves to the last column and shines left, and every tilt swaps ("/" seen in a mirror is "\"). */
