@@ -933,7 +933,7 @@ Proof: new levels tier: typecheck and rule tests (symmetry, quarter determines t
 
 ### pixel-pictures 3: Two colours, small
 
-**Built 2026-11-04 ([PR #1203](https://github.com/rjdunlap/neo/pull/1203)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-04--pixel-pictures-level-9-two-colours-small-pixel-pictures-batch-3); [build note](archive/COMPLETED-2026-10-09.md#pixel-pictures-level-9-two-colours-small-pixel-pictures-3-2026-11-04).
+**Built 2026-11-04 ([PR #1203](https://github.com/rjdunlap/neo/pull/1203)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-04.md#2026-11-04--pixel-pictures-level-9-two-colours-small-pixel-pictures-batch-3); [build note](archive/COMPLETED-2026-10-09.md#pixel-pictures-level-9-two-colours-small-pixel-pictures-3-2026-11-04).
 
 - **`pixel-pictures`, level 9 Two colours, small (dive slice 3, after batch 2)** (new level; preschool and pre-K, placed between 1 and 2 by `order`: 1, 9, 2, …): four new 4×4 two-colour pictures (ladybird first), picked as level 2 picks (`pixel.notcolor`); per-band `order` lists every ID once, `entryLevels` unchanged (built with `entryLevels: [9]`, see the dive). [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#easier-entries-and-levels-between-existing-ones)
 
@@ -1181,7 +1181,7 @@ Proof: existing-game fix tier: typecheck, rule tests (every request leaving a wr
 
 ### peekaround-island 2: Level 5 Who will be in front?
 
-- **`peekaround-island`, level 5 *Who will be in front?* (dive slice 2)**, after batch 1 (existing level, new tap): she predicts who will be in front after the turn before it happens; a wrong prediction is exploration, not a miss. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
+- **`peekaround-island`, level 5 *Who will be in front?* (dive slice 2)** (**built 2026-11-04**, [PR #1219](https://github.com/rjdunlap/neo/pull/1219); existing level, new tap): she guesses who will be in front, from a picture card, before the half turn; any guess is free, not a miss. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
 
 Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 

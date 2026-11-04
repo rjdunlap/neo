@@ -3255,6 +3255,8 @@ export const SCRIPT = {
   'around.hint.next': ['Next to the tree is at its side.'],
   'around.placed': ['The {who} is {where} the tree!'],
   'around.placed.behind': ['Now the {who} is hiding behind the tree!'],
+  'around.predict': ['When we look from the other side, who will be in front? Tap their picture!'],
+  'around.cameround': ['The one behind came round to the front!'],
   'around.otherside': ["Let's look from the other side!"],
   'around.now': ['Now the {who} is {where} the tree!'],
   'around.done': ['Everyone came out to play!'],

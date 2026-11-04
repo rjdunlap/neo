@@ -251,6 +251,8 @@ async function woodsBatch() {
   }
 
   if (!only || only === 'peek') for (let level = fromLevel; level <= 5; level++) {
+    // Level 5 plays in portrait, where the four-picture card is tightest.
+    if (level === 5) await page.setViewportSize({ width: 768, height: 1024 });
     await launch('peekaround-island', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const behind = () => page.evaluate(async () => {
@@ -298,11 +300,28 @@ async function woodsBatch() {
           await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
           await dropAt(name, true);
         }
-        if (level === 5 && k === 0) await screenshot('peekaround-5');
+        if (level === 5) {
+          // Before the half turn she guesses who will be in front: first a wrong picture (counted as nothing), then the right one.
+          await page.waitForFunction(() => neo.scene.game.tiles.length > 0 && !neo.scene.game.busy, null, { timeout: 20000 });
+          await screenshot(`peekaround-5-guess-${k + 1}-portrait`);
+          // The card's pictures never overlap and stay clear of the corner buttons.
+          const xs = await page.evaluate(() => neo.scene.game.tiles.map((t) => t.node.x).sort((a, b) => a - b));
+          for (let i = 1; i < xs.length; i++) assert.ok(xs[i] - xs[i - 1] >= 128, `picture card tiles overlap: ${xs}`);
+          assert.ok(xs[0] - 64 > 110, `picture card reaches the corner buttons: ${xs}`);
+          const before = await counts();
+          const right = await page.evaluate(async () => {
+            const L = await import('/src/games/peekaround-island/logic.ts'); return L.frontAfterHalfTurn(neo.scene.game.friends, neo.scene.game.turns).name;
+          });
+          await tap(`neo.scene.game.tiles.find((t) => t.name ${k === 0 ? '!==' : '==='} ${JSON.stringify(right)}).node`);
+          await page.waitForTimeout(450);
+          assert.deepEqual(await counts(), before, 'a prediction is never a miss');
+          await page.waitForFunction((r) => neo.scene.finished || neo.scene.game.friends.find((f) => f.name === r && f.spot >= 0 && ((f.spot + neo.scene.game.turns) % 4 + 4) % 4 === 0), right, { timeout: 20000 });
+        }
       }
     }
     await finished('peekaround-island');
     assert.deepEqual(await score('peekaround-island'), mode === 'find' ? [0, 0] : [2, 1]);
+    if (level === 5) await page.setViewportSize({ width: 1024, height: 768 });
     log(`Peekaround Island ${level} (${mode}): turning, hiding, picture card, placing by direction, misses, hints, saved score and sticker passed`);
   }
 

@@ -42,3 +42,9 @@
 - [PR #1202](https://github.com/rjdunlap/neo/pull/1202), commit `96fc4dd6`: a second Island Bridges course (`joined`, five frozen level-6 seas, par 84, created at level 6) beside Island Hopping, voice `couch.course.joined`; the eight `couch-*.mjs` suites' course lists gained `joined`, and `couch-bridges.mjs` asserts the Joined Seas card.
 - Ran (dev `http://localhost:5840`): typecheck; `npx vitest run src/games/island-bridges src/couch` 10 files, 114 tests; `BROWSER_SUITE=couchgames COUCH_ONLY=island-bridges` PASS (intro, controller lighting, bot round, save); one probe (Puzzle shelf, Joined Seas, Play): card "par 84", HUD "Sea 1 of 5 · 0 planks so far · this sea's fewest 12 · course minimum 84", the hint walk on sea 1 gave six forced hints then a `joined` one, no page errors.
 - Not run: the full `couchbridges` suite (its new card assertion and updated list), the other `couch-*` suites whose course-list assertions changed, a full bot run of Joined Seas to its badges, `npm run build`, a real controller or TV.
+
+## 2026-11-04 — Pixel Pictures level 9 Two colours, small (pixel-pictures batch 3)
+
+- [PR #1203](https://github.com/rjdunlap/neo/pull/1203): level 9, a 4×4 two-colour copy (four pictures, three a round), `order` preschool [1, 9, 2] and pre-K [1, 9, 2, 3], `entryLevels: [9]`; the two-colour glow now also selects the square's colour on levels 2 and 9.
+- Ran (dev `http://localhost:5607`): typecheck; `npm test` 300 files, 4,785 tests; `BROWSER_SUITE=woods WOODS_ONLY=pixels FROM_LEVEL=9 TO_LEVEL=9` (portrait 768×1024, two misses, glow with colour, three pictures, score [2, 1], sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pixel-pictures FINGER_LEVELS=9` clean at preschool, 40.2 s.
+- Not run: `npm run build` (no shared or asset changes), a person or device check that a 3–4-year-old finds the colour pick natural.

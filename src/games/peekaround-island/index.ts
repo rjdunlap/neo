@@ -14,7 +14,7 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { fits, makeScene, namedHintTarget, nextPair, nextRequest, peekTouch, planFor, spotFacing, whereIs, WHERE_WORDS, type PeekPlan, type Where } from './logic';
+import { fits, frontAfterHalfTurn, makeScene, namedHintTarget, nextPair, nextRequest, peekTouch, planFor, spotFacing, whereIs, WHERE_WORDS, type PeekPlan, type Where } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
@@ -84,6 +84,8 @@ class PeekaroundIsland implements Game {
   private hinting = false;
   private clock = 0;
   private asked: Where[] = [];
+  /** Level 5: waiting for her guess of who will be in front after the half turn. */
+  private predicting: ((name: CritterName) => void) | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -138,7 +140,9 @@ class PeekaroundIsland implements Game {
     this.tree.position.set(c.x, c.y);
     this.left.position.set(c.x - 400, c.y + 20);
     this.right.position.set(c.x + 400, c.y + 20);
-    const xs = spread(4, 200, v.w - 200, 136);
+    // The picture card: centred when it fits, else in the room right of the corner buttons, tiles never overlapping.
+    const n = this.tiles.length;
+    const xs = n * 136 <= v.w - 400 ? spread(n, 200, v.w - 200, 136) : spread(n, 140, v.w - 40, 136);
     this.tiles.forEach((t, i) => t.node.position.set(xs[i], 78));
     this.placeShore();
   }
@@ -166,7 +170,7 @@ class PeekaroundIsland implements Game {
   /** Turn to reveal the hider, choose the hidden friend, or carry the named friend to a fitting island spot. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
-    const move = peekTouch(this.plan.mode, this.turns, this.hider, this.friends);
+    const move = peekTouch(this.plan.mode, this.turns, this.hider, this.friends, this.predicting !== null);
     if (!move) return null;
     if (move.kind === 'turn') return { tap: { on: this.right } };
     if (move.kind === 'tile') {
@@ -180,6 +184,7 @@ class PeekaroundIsland implements Game {
   }
 
   destroy() {
+    this.predicting = null;
     for (const f of this.friends) f.drag?.destroy();
   }
 
@@ -233,6 +238,10 @@ class PeekaroundIsland implements Game {
       this.ctx.untrack(f.node);
       f.node.destroy({ children: true });
     }
+    this.clearCard();
+  }
+
+  private clearCard() {
     this.card.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.tiles.length = 0;
   }
@@ -321,10 +330,19 @@ class PeekaroundIsland implements Game {
   }
 
   private async pick(name: CritterName) {
-    if (this.busy || this.finished || this.plan.mode !== 'who') return;
+    if (this.busy || this.finished) return;
     const tile = this.tiles.find((t) => t.name === name)!;
     tile.node.scale.set(0.9);
     void this.ctx.tw.to(tile.node.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
+    if (this.predicting) {
+      // A prediction is a guess to test, never a wrong answer.
+      sfx.tick();
+      const settle = this.predicting;
+      this.predicting = null;
+      this.busy = true;
+      return settle(name);
+    }
+    if (this.plan.mode !== 'who') return;
     if (name === this.hider) {
       this.busy = true;
       this.hinting = false;
@@ -448,19 +466,33 @@ class PeekaroundIsland implements Game {
     this.busy = true;
     await this.ctx.say(line, { who: f.name, where: WHERE_WORDS[where] });
     if (this.plan.mode === 'two') {
-      // Look from the other side: front and behind swap.
+      // Before looking from the other side, she guesses who will be in front: the one behind comes round.
+      const coming = frontAfterHalfTurn(this.friends, this.turns);
+      const guess = coming ? await this.predict() : null;
       await this.ctx.say('around.otherside');
       await this.turn(2);
       this.busy = true;
       const front = this.friends.find((x) => x.spot >= 0 && whereIs(x.spot, this.turns) === 'front');
       if (front) {
         front.node.cheer();
+        if (guess && guess !== front.name) await this.ctx.say('around.cameround');
         await this.ctx.say('around.now', { who: front.name, where: WHERE_WORDS.front });
       }
     }
     this.placeShore();
     await this.ctx.tw.wait(0.3);
     await this.next();
+  }
+
+  /** A picture card of the friends on the island: tap who will be in front once the island turns around. */
+  private async predict(): Promise<CritterName> {
+    this.buildCard(this.friends.filter((f) => f.spot >= 0).map((f) => f.name));
+    const guess = new Promise<CritterName>((resolve) => (this.predicting = resolve));
+    this.busy = false;
+    void this.ctx.instruct('around.predict');
+    const name = await guess;
+    this.clearCard();
+    return name;
   }
 
   // Help ----------------------------------------------------------------------------------
