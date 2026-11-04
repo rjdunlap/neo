@@ -2581,7 +2581,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--ferry-jam-le
 
 [PR #1170](https://github.com/rjdunlap/neo/pull/1170), batch habitat-helpers 2, [dive slice 2](../deep-dives/habitat-helpers.md#build-slices-in-order); satisfies the ecosystems study's F3 (Patch Change). Level 7 for school only (school range 4-7, preschool 1-3 and pre-K 2-5 unchanged, no order), two rounds: the dried pool (Bunny) first, then one of three authored cases (reeds flattened, clover finished, seeds gone). The working garden welcomes its visitor, one piece changes, the goal sign becomes a before card and the visitor leaves; she taps food, water or shelter. A wrong need is the game's first counted miss; two glow the right need (one hint). The right need opens a two-card repair tray; a non-restoring test is free and two glow the restoring card (one hint). New voice ids `habitat.change-intro`, `habitat.change.{pool-dried,reeds-flattened,clover-finished,seeds-gone}`, `habitat.which-need`, `need-wrong`, `need-glow`, `repair`, `restored` (device speech, no clips); how-to steps `from: 7`, the 5-6 lines capped `to: 6`; the bot names the need, removes a non-restoring card, places the restoring one and opens the gate.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--habitat-helpers-level-7-something-changed-habitat-helpers-batch-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--habitat-helpers-level-7-something-changed-habitat-helpers-batch-2).
 
 ## Inchworm level 9 One worm, hop by hop (inchworm batch 2, 2026-11-03)
 
@@ -2614,6 +2614,12 @@ Branch `claude/picture-graph-line-them-up`, [PR #1181](https://github.com/rjdunl
 [PR #1182](https://github.com/rjdunlap/neo/pull/1182), [dive slice 2](../deep-dives/penguin-slide.md#build-slices-in-order). School level 10: 7×5 ponds with three fish and five rocks, best route 5–8 slides, two ponds a round; `apartFromStart` / `eatsTwoFromStart` in `logic.ts` reject any pond where one first slide from the start eats two fish. School range 2–10, voice `slide.three`, a how-to step; the bot is the solver, unchanged.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--penguin-slide-level-10-three-fish-dive-slice-2).
+
+### Penguin Slide level 11 Where will it stop? (2026-11-03)
+
+[PR #1187](https://github.com/rjdunlap/neo/pull/1187), [dive slice 3](../deep-dives/penguin-slide.md#build-slices-in-order). Preschool and pre-K level 11 (`predict: true`): a 5×4 pond with one fish and three rocks, two ponds a round. `makePrediction` gives three shown slides that each move the penguin, never straight back, passing the fish only on the third, with at least two stops further than the cell beside the penguin. A yellow arrow shows the direction, she taps any cell to predict the stop, then the penguin slides; a right guess sparkles (`slide.predict.right`), a wrong one keeps her blue ring and bounces the stopping rock (`slide.predict.rock` / `slide.predict.edge`). Predictions never count as misses or hints; no undo, hint arrow or stuck glow on these ponds. Ladder: preschool 1–11 with order `[1, 2, 11]`, pre-K order `[1, 2, 11, 3, 4]`, school unchanged 2–10, plus `entryLevels: [11]` (a departure from the dive) so an 11 carried into school lands on level 2. Keys and pad move a ring and predict; the ghost finger and autoplay tap the stop cell; a restart returns to the first shown slide. The how-to card's old steps are scoped `to: 10` and level 11 has its own steps and note.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--penguin-slide-level-11-where-will-it-stop-dive-slice-3).
 
 ## Orchard Rows levels 7–9 A path through the orchard (2026-11-03)
 
