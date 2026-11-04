@@ -2744,7 +2744,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--ferry-jam-le
 
 [PR #1212](https://github.com/rjdunlap/neo/pull/1212), batch pixel-pictures 4, [dive slice 4](../deep-dives/pixel-pictures.md#build-slices-in-order). Level 10 plan `{ mode: 'free', size: 5 }`: a blank 5x5 with four paints (red, yellow, blue, green) in a column beside the board; a tap paints an empty square or empties a coloured one; nothing is a miss (misses 0, hints 0). A green check Done RoundButton (radius 60) pops in at four coloured squares and hides again below four; Done sparkles, says `pixel.mine` and finishes with the design as the creation (existing `size`/`pixels` shape, size 5). `order`: preschool [1, 9, 2] unchanged, pre-K [1, 9, 2, 3, 10], school [3, 4, 5, 6, 7, 8, 10]; the free level is last so stepping up never passes it. New voice lines `pixel.free` and `pixel.mine`; how-to step now spans 10 to 10; `coplayHint` extended. New logic: `FREE_COLORS`, `FREE_MIN`, `blank`, `FREE_HEART`, `filledCount`, `canFinish`, `freeTap`, `pixelsOf`, `freeTouch` (the ghost finger draws a red heart, clearing strays, then presses Done). A review finding (narrow-row pet clearance) was fixed.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--pixel-pictures-level-10-my-own-picture-pixel-pictures-batch-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--pixel-pictures-level-10-my-own-picture-pixel-pictures-batch-4).
 
 ## Vine Snip levels 1–3 (vine-snip slice 1, 2026-11-04)
 

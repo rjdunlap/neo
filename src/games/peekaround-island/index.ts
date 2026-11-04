@@ -14,14 +14,14 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { fits, frontAfterHalfTurn, makeScene, makeSeeScene, namedHintTarget, nextPair, nextRequest, peekTouch, planFor, seeFacings, spotFacing, turnToFront, whereIs, WHERE_WORDS, type PeekPlan, type Where } from './logic';
+import { fits, frontAfterHalfTurn, makeScene, makeSeeScene, makeViewScene, namedHintTarget, nextPair, nextRequest, peekTouch, planFor, seeFacings, spotFacing, turnToFront, viewFacings, whereIs, WHERE_WORDS, type PeekPlan, type Where } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 6 },
-  school: { min: 4, max: 6 },
+  prek: { min: 3, max: 7 },
+  school: { min: 4, max: 7 },
 };
 
 const VOICE: Record<CritterName, AnimalSound> = { pip: 'hop', duck: 'quack', pig: 'oink', cat: 'meow', bunny: 'hop', cow: 'moo', dog: 'woof', bear: 'growl' };
@@ -30,6 +30,10 @@ const VOICE: Record<CritterName, AnimalSound> = { pip: 'hop', duck: 'quack', pig
 const RING = { x: 230, y: 86 };
 const ISLAND = { x: 300, y: 110 };
 const FRIEND_SCALE = 0.42;
+/** Flower i stands between spots i and i + 1; four colours so every side of the island looks different. */
+const FLOWERS = ['pink', 'yellow', 'purple', 'orange'] as const;
+/** Level 7's picture cards: big enough to read a friend beside the tree, in a row clear of the corner buttons. */
+const VIEW_CARD = { w: 270, h: 220, gap: 290, y: 126, art: 0.4 };
 
 /** A friend on the island or waiting on the shore. */
 interface Friend {
@@ -69,6 +73,37 @@ function pictureArt(kind: ShapeKind, color: keyof typeof swatch): Container {
   return c;
 }
 
+/**
+ * Level 7: the island as the friend on island spot `from` sees it, drawn small for a picture card. The friend
+ * is not in their own picture; whoever stands across the tree from them is hidden by the crown, as on the island.
+ */
+function viewArt(from: number, friends: readonly { name: CritterName; spot: number }[]): Container {
+  const c = new Container();
+  c.sortableChildren = true;
+  c.addChild(new Graphics().ellipse(0, 26, ISLAND.x, ISLAND.y).fill(wood.fill).stroke({ width: 8, color: wood.line }).ellipse(0, 0, ISLAND.x, ISLAND.y).fill(swatch.green.light).stroke({ width: 8, color: swatch.green.line }));
+  c.children[0].zIndex = -2;
+  const place = (node: Container, spot: number, scale: number) => {
+    const a = (spot - from) * (Math.PI / 2);
+    node.position.set(Math.sin(a) * RING.x, Math.cos(a) * RING.y);
+    node.zIndex = Math.cos(a);
+    node.scale.set(scale * (0.85 + 0.15 * Math.cos(a)));
+    c.addChild(node);
+  };
+  // Bigger than on the island, so the colours still read on a small card.
+  FLOWERS.forEach((color, i) => place(flower(new Graphics(), 40, swatch[color].fill, swatch[color].line), i + 0.5, 1));
+  const tree = treeArt();
+  tree.zIndex = -0.3;
+  c.addChild(tree);
+  for (const f of friends) {
+    if (f.spot < 0 || f.spot === from) continue;
+    const critter = new Critter(CRITTERS[f.name]);
+    critter.alive = false;
+    place(critter, f.spot, 0.7);
+  }
+  c.eventMode = 'none';
+  return c;
+}
+
 const PICTURES: [ShapeKind, keyof typeof swatch][] = [['star', 'yellow'], ['heart', 'red'], ['circle', 'blue'], ['triangle', 'purple']];
 
 class PeekaroundIsland implements Game {
@@ -94,9 +129,10 @@ class PeekaroundIsland implements Game {
   private readonly tree = treeArt();
   private readonly flowers: { node: Graphics; spot: number }[] = [];
   private readonly card = new Container();
-  /** Level 6: the picture standing on an island spot, and the order its scenes face her. */
+  /** Level 6: the picture standing on an island spot. */
   private picture: { node: Container; spot: number } | null = null;
-  private seeOrder: number[] = [];
+  /** Levels 6 and 7: the side each scene's picture (6) or named friend (7) faces her from. */
+  private sceneOrder: number[] = [];
   private readonly glow = new Graphics();
   private view: View;
   private wrongs = 0;
@@ -118,7 +154,7 @@ class PeekaroundIsland implements Game {
     this.world.addChild(this.tree);
     // Flowers between the spots make the turning easy to see.
     for (let i = 0; i < 4; i++) {
-      const color = (['pink', 'yellow', 'purple', 'orange'] as const)[i];
+      const color = FLOWERS[i];
       const node = flower(new Graphics(), 22, swatch[color].fill, swatch[color].line);
       node.eventMode = 'none';
       this.flowers.push({ node, spot: i + 0.5 });
@@ -138,7 +174,9 @@ class PeekaroundIsland implements Game {
   }
 
   private center() {
-    return { x: this.view.w / 2, y: this.view.h * 0.6 };
+    // Level 7's cards take the top: the island sits low enough that the crown clears them.
+    const y = this.plan.mode === 'view' ? Math.max(this.view.h * 0.6, VIEW_CARD.y + VIEW_CARD.h / 2 + 350) : this.view.h * 0.6;
+    return { x: this.view.w / 2, y };
   }
 
   /** Where island spot `s` stands right now, and how near the child it is (1 front, -1 behind). */
@@ -161,8 +199,13 @@ class PeekaroundIsland implements Game {
     this.right.position.set(c.x + 400, c.y + 20);
     // The picture card: centred when it fits, else in the room right of the corner buttons, tiles never overlapping.
     const n = this.tiles.length;
-    const xs = n * 136 <= v.w - 400 ? spread(n, 200, v.w - 200, 136) : spread(n, 140, v.w - 40, 136);
-    this.tiles.forEach((t, i) => t.node.position.set(xs[i], 78));
+    if (this.plan.mode === 'view') {
+      const xs = spread(n, 130, v.w - 20, VIEW_CARD.gap);
+      this.tiles.forEach((t, i) => t.node.position.set(xs[i], VIEW_CARD.y));
+    } else {
+      const xs = n * 136 <= v.w - 400 ? spread(n, 200, v.w - 200, 136) : spread(n, 140, v.w - 40, 136);
+      this.tiles.forEach((t, i) => t.node.position.set(xs[i], 78));
+    }
     this.placeShore();
   }
 
@@ -228,6 +271,7 @@ class PeekaroundIsland implements Game {
     if (this.index >= this.plan.rounds) return void this.finale();
     await this.clearIsland();
     if (mode === 'see') return this.seeScene();
+    if (mode === 'view') return this.viewScene();
     const scene = makeScene(this.plan, this.ctx.rng, this.hider ?? undefined);
     this.hider = scene.friends[scene.hider];
     scene.friends.forEach((name, i) => {
@@ -373,6 +417,7 @@ class PeekaroundIsland implements Game {
       this.busy = true;
       return settle(name);
     }
+    if (this.plan.mode === 'view') return this.viewPick(name);
     if (this.plan.mode !== 'who') return;
     if (name === this.hider) {
       this.busy = true;
@@ -397,8 +442,8 @@ class PeekaroundIsland implements Game {
 
   /** A picture on one spot and friends round it: the one across the tree cannot see it. */
   private async seeScene() {
-    if (!this.seeOrder.length) this.seeOrder = seeFacings(this.ctx.rng);
-    const scene = makeSeeScene(this.seeOrder[this.index], this.ctx.rng, this.hider ?? undefined);
+    if (!this.sceneOrder.length) this.sceneOrder = seeFacings(this.ctx.rng);
+    const scene = makeSeeScene(this.sceneOrder[this.index], this.ctx.rng, this.hider ?? undefined);
     this.hider = scene.friends[scene.blocked];
     const [kind, color] = this.ctx.rng.pick(PICTURES);
     const node = pictureArt(kind, color);
@@ -442,6 +487,73 @@ class PeekaroundIsland implements Game {
     this.ctx.particles.burst(f.node.x, f.node.y - 60, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
     this.ctx.pet.cheer();
     await this.ctx.say('around.see.cant');
+    await this.ctx.tw.wait(0.4);
+    await this.next();
+  }
+
+  // What does the duck see ---------------------------------------------------------------
+
+  /** Three friends round the tree, one named, and a picture card from each friend's side. */
+  private async viewScene() {
+    if (!this.sceneOrder.length) this.sceneOrder = viewFacings(this.ctx.rng);
+    const scene = makeViewScene(this.sceneOrder[this.index], this.ctx.rng, this.hider ?? undefined);
+    this.hider = scene.friends[scene.viewer];
+    scene.friends.forEach((name, i) => {
+      const f = this.addFriend(name, spotFacing(scene.facing[i], this.turns));
+      f.node.alpha = 0;
+      void this.ctx.tw.to(f.node, { alpha: 1 }, { duration: 0.4 });
+    });
+    this.buildViews();
+    await this.ctx.tw.wait(0.5);
+    this.busy = false;
+    return this.ctx.instruct('around.view', { who: this.hider });
+  }
+
+  private buildViews() {
+    const spots = this.friends.map((f) => ({ name: f.name, spot: f.spot }));
+    for (const { name, spot } of this.ctx.rng.shuffle([...spots])) {
+      const node = new Container();
+      const { w, h } = VIEW_CARD;
+      node.addChild(new Graphics().roundRect(-w / 2, -h / 2, w, h, 24).fill(cream).stroke({ width: 5, color: wood.line }));
+      const art = viewArt(spot, spots);
+      art.scale.set(VIEW_CARD.art);
+      art.y = 40;
+      node.addChild(art);
+      node.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
+      onTap(node, () => void this.pick(name), { cooldown: 400 });
+      this.card.addChild(node);
+      this.tiles.push({ name, node });
+    }
+    this.resize(this.view);
+  }
+
+  /** The island turns to the side of the picture she chose, so the island and the picture match. */
+  private async viewPick(name: CritterName) {
+    this.busy = true;
+    const right = name === this.hider;
+    if (!right) {
+      this.misses++;
+      this.wrongs++;
+      sfx.boing();
+    } else this.hinting = false;
+    const f = this.friends.find((x) => x.name === name)!;
+    const d = turnToFront(f.spot, this.turns);
+    if (d) await this.turn(d);
+    this.busy = true;
+    if (!right) {
+      f.node.hop();
+      sfx.animal(VOICE[f.name]);
+      await this.ctx.say('around.view.that', { who: name });
+      if (this.wrongs >= 2) this.hint();
+      this.busy = false;
+      return;
+    }
+    f.node.cheer();
+    sfx.sparkle();
+    const tile = this.tiles.find((t) => t.name === name)!;
+    this.ctx.particles.burst(tile.node.x, tile.node.y, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.pet.cheer();
+    await this.ctx.say('around.view.right', { who: name });
     await this.ctx.tw.wait(0.4);
     await this.next();
   }
@@ -586,6 +698,7 @@ class PeekaroundIsland implements Game {
     this.hinting = true;
     this.hints++;
     if (this.plan.mode === 'see') return void this.ctx.say('around.see.hint');
+    if (this.plan.mode === 'view') return void this.ctx.say('around.view.hint', { who: this.hider! });
     if (this.plan.mode !== 'named') return;
     const hider = this.hiderFriend();
     if (hider && namedHintTarget(hider.spot, this.turns) === 'hider') void this.ctx.say('around.tapthem', { who: hider.name });
@@ -610,9 +723,10 @@ class PeekaroundIsland implements Game {
     else if (this.plan.mode === 'see') {
       const f = this.hiderFriend();
       if (f) ring(f.node.x, f.node.y - 60, 90, 110);
-    } else if (this.plan.mode === 'who') {
+    } else if (this.plan.mode === 'who' || this.plan.mode === 'view') {
       const t = this.tiles.find((x) => x.name === this.hider);
-      if (t) ring(t.node.x, t.node.y, 78, 82);
+      const [rx, ry] = this.plan.mode === 'view' ? [VIEW_CARD.w / 2 + 14, VIEW_CARD.h / 2 + 14] : [78, 82];
+      if (t) ring(t.node.x, t.node.y, rx, ry);
     } else {
       const wants = new Set(this.friends.filter((f) => f.want).map((f) => f.want!));
       for (const s of this.free()) {

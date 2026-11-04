@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { canSee, fits, frontAfterHalfTurn, hasChoice, makeScene, makeSeeScene, namedHintTarget, nextPair, nextRequest, pairPlacements, peekTouch, planFor, PLANS, seeFacings, spotFacing, turnToFront, whereIs, type PeekTouchFriend, type Where } from './logic';
+import { canSee, fits, frontAfterHalfTurn, hasChoice, makeScene, makeSeeScene, makeViewScene, namedHintTarget, nextPair, nextRequest, pairPlacements, peekTouch, planFor, PLANS, seeFacings, spotFacing, turnToFront, viewFacings, viewFrom, whereIs, type PeekTouchFriend, type Where } from './logic';
 
 describe('Peekaround Island', () => {
   it('demonstrates turning, choosing, and every requested placement without a wrong touch', () => {
@@ -195,5 +195,65 @@ describe('Peekaround Island', () => {
     }
     // The picture's island spot takes all four places over many rounds.
     expect([...pictureSpots].sort()).toEqual([0, 1, 2, 3]);
+  });
+
+  describe('level 7, what does the duck see', () => {
+    it('names a friend at the side, with three friends round the tree and her own side empty', () => {
+      for (let seed = 1; seed <= 200; seed++) {
+        const rng = new Rng(seed);
+        const order = viewFacings(rng);
+        expect(order).toHaveLength(planFor(7).rounds);
+        expect(order).toContain(1);
+        expect(order).toContain(3);
+        let last: string | undefined;
+        for (const facing of order) {
+          const scene = makeViewScene(facing, rng, last as never);
+          expect(new Set(scene.friends).size).toBe(3);
+          expect([...scene.facing].sort()).toEqual([1, 2, 3]);
+          expect([1, 3]).toContain(scene.facing[scene.viewer]);
+          expect(scene.friends[scene.viewer]).not.toBe(last);
+          last = scene.friends[scene.viewer];
+        }
+      }
+    });
+
+    it('shows three different pictures, one from each friend, with the named friend never in their own', () => {
+      for (let seed = 1; seed <= 200; seed++) {
+        const rng = new Rng(seed);
+        const turns = rng.int(0, 3);
+        const scene = makeViewScene(rng.pick([1, 3]), rng);
+        const friends = scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], turns) }));
+        const views = friends.map((f) => viewFrom(f.spot, friends));
+        expect(new Set(views.map((v) => JSON.stringify(v))).size).toBe(3);
+        // The flowers nearest each side differ, whoever stands where.
+        expect(new Set(views.map((v) => v.right)).size).toBe(3);
+        friends.forEach((f, i) => {
+          expect(views[i].friends.map((x) => x.name)).not.toContain(f.name);
+          expect(views[i].friends).toHaveLength(2);
+        });
+        // From her own side the named friend stands next to the tree, so where it is can be seen.
+        expect(whereIs(friends[scene.viewer].spot, turns)).toBe('next');
+      }
+    });
+
+    it('matches the island: a picture from a side is what she sees once that side turns to the front', () => {
+      const friends = [{ name: 'duck' as const, spot: 1 }, { name: 'cow' as const, spot: 2 }, { name: 'pig' as const, spot: 3 }];
+      for (const f of friends) {
+        const turns = turnToFront(f.spot, 0);
+        expect(whereIs(f.spot, turns)).toBe('front');
+        for (const other of viewFrom(f.spot, friends).friends) {
+          const spot = friends.find((x) => x.name === other.name)!.spot;
+          expect(other.facing === 2).toBe(whereIs(spot, turns) === 'behind');
+        }
+      }
+      // The duck on spot 1 sees the cow on its right, and the pig across the tree is hidden.
+      expect(viewFrom(1, friends)).toEqual({ left: 0, right: 1, friends: [{ name: 'cow', facing: 1 }, { name: 'pig', facing: 2 }] });
+    });
+
+    it('demonstrates by tapping the named friend\'s picture', () => {
+      const scene = makeViewScene(1, new Rng(7));
+      const friends: PeekTouchFriend[] = scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], 0) }));
+      expect(peekTouch('view', 0, scene.friends[scene.viewer], friends)).toEqual({ kind: 'tile', name: scene.friends[scene.viewer] });
+    });
   });
 });

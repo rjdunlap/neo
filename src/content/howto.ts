@@ -2113,7 +2113,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'peekaround-island': {
-    goal: 'Find friends around the tree on a round island, put them where they are asked, and find who cannot see a picture.',
+    goal: 'Find friends around the tree on a round island, put them where they are asked, find who cannot see a picture, and choose what a friend sees.',
     steps: [
       { to: 2, text: 'Tap an arrow, or the tree, to turn the island round and look behind the tree.' },
       { to: 1, text: 'Tap the friend who was hiding once you can see them.' },
@@ -2121,7 +2121,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Three friends are showing. Tap the picture of the friend you cannot see; the island turns to show them.' },
       { from: 4, to: 4, text: 'Drag each friend from the shore behind, in front of or next to the tree, as asked.' },
       { from: 5, to: 5, text: 'Drag two friends where you are asked, two directions at once. Then tap the picture of the friend you think will be in front once the island turns halfway; any guess is fine, and the friend who was behind comes round to the front.' },
-      { from: 6, text: "A picture stands on the island. Tap the friend who can't see it: the one on the other side of the tree. The island turns so you see what that friend sees." },
+      { from: 6, to: 6, text: "A picture stands on the island. Tap the friend who can't see it: the one on the other side of the tree. The island turns so you see what that friend sees." },
+      { from: 7, text: 'Three friends stand round the tree, and three pictures show the island from each friend\'s side. Tap the picture of what the friend named sees; the island turns to the side of the picture you chose.' },
     ],
     finish: [
       { to: 3, text: 'The round ends after three hidden friends are found.' },
