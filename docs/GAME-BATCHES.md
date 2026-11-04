@@ -1065,6 +1065,8 @@ Proof: new level on the existing interaction: typecheck, the game's rule tests, 
 
 ### island-bridges 2: Keep them joined
 
+Claimed 2026-11-03 by branch `claude/island-bridges-2` (draft PR, in progress).
+
 - **`island-bridges`, level 6 Keep them joined (dive slice 2, after batch 1)** (new rule on the existing interaction; grown-up): shares `hintFor`'s kinds and the order with batch 1; the isolation step, generator filter, `isolation` hint and its ring. [Dive](deep-dives/island-bridges.md#build-slices-in-order)
 
 Files expected: `src/games/island-bridges/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
