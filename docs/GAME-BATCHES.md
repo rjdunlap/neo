@@ -1279,7 +1279,7 @@ Proof: new-level tier: typecheck, rule tests (order, entry, the 5 by 5 frame), o
 
 ### picture-logic 3: Two colours
 
-- **`picture-logic`, Level 6, *Two colours* (dive slice 3)**, after batch picture-logic 2 (shares the order) and [Pixel Pictures batch 1](#pixel-pictures-1-fresh-pictures-and-colour-logic) (its `colorLineSolvable`) (new interaction; grown-up): colour pots and colour clues, a wrong-colour fill and a hint naming it. [Dive](deep-dives/picture-logic.md#build-slices-in-order)
+- **`picture-logic`, Level 6, *Two colours* (dive slice 3)** (**built 2026-11-04**, [PR #1224](https://github.com/rjdunlap/neo/pull/1224)), after batch picture-logic 2 (shares the order) and [Pixel Pictures batch 1](#pixel-pictures-1-fresh-pictures-and-colour-logic) (its `colorLineSolvable`) (new interaction; grown-up): colour pots and colour clues, a wrong-colour fill and a hint naming it. [Dive](deep-dives/picture-logic.md#build-slices-in-order)
 
 Files expected: `src/games/picture-logic/logic.ts`, `pictures.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 

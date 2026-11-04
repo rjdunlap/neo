@@ -73,3 +73,9 @@
 - [Definition](../definitions/light-lab-split.md) for level 12 (school only, after batch light-lab 5), [PR #1208](https://github.com/rjdunlap/neo/pull/1208).
 - Ran: a throwaway generator probe (400 seeds at 7×5: all accepted within the 500-attempt budget, mean 3.5 attempts, at most 7 tiltables, start floor held; not committed); links and `git diff --check`.
 - Not run: code checks (no code changed).
+
+## 2026-11-04 — Penguin Slide level 13 Two penguins (dive slice 5)
+
+- Built [PR #1209](https://github.com/rjdunlap/neo/pull/1209) at 68cac695 on base 01d6ff45: school top level 13, a second penguin the player chooses by tap (controller action button), each stopping the other.
+- Ran (`GAME_URL` http://localhost:5680): typecheck; `npm test` 300 files, 4794 tests (new level-13 rule test: generation, best 4-7, pal placement, both needed, solver's first step solves in best, every route switches penguin, `movePair` never passes the other); `BROWSER_SUITE=woods WOODS_ONLY=penguin FROM_LEVEL=13 TO_LEVEL=13` pass (wasted slides, arrow as one hint, tap-to-choose with no move counted, both ponds, score [0,1], portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=penguin-slide FINGER_LEVELS=13` clean 20.9 s; `BROWSER_SUITE=couchgames COUCH_ONLY=penguin-slide` pass (course boards only, no pal); a one-off probe of the controller path at 13 (action chooses, direction slides, undo restores) passed; `game-reviewer` no findings.
+- Not run: build (no shared assets), offline, device play; the `slide.pals` line mentions only tapping, not the action button. Couch course for 13 not built.

@@ -51,3 +51,15 @@ export const HARD_10: readonly DrawnPicture[] = [HEART, TREE, SMILEY, ROCKET, DU
 export const BIG_15: readonly DrawnPicture[] = [LIGHTHOUSE, BUTTERFLY, CASTLE, SNOWMAN, OWL];
 /** 15 by 15 pictures that need more care: a test keeps every one needing more passes than every `BIG_15` picture. */
 export const HARD_15: readonly DrawnPicture[] = [KITE, CRAB, UMBRELLA, RABBIT, PENGUIN];
+
+/*
+ * Two-colour pictures (level 6): blue and one warm colour, so the two kinds of clue number stay easy to tell apart (red beside
+ * orange is the pair to avoid). Each is solved by its coloured numbers alone (`colorLineSolvable`), which a test checks.
+ */
+export const SUN_SEA: DrawnPicture = { name: 'the sun over the sea', rows: ['...yyyy...', '..yyyyyy..', '.yyyyyyyy.', '.yyyyyyyy.', '..yyyyyy..', '...yyyy...', 'bb..bb..bb', 'bbbbbbbbbb', 'bbbbbbbbbb', 'bbbbbbbbbb'] };
+export const POND_DUCK: DrawnPicture = { name: 'a duck on the pond', rows: ['.....yy...', '....yyyy..', '....yyyyy.', '....yyyy..', '.y..yyy...', '.yyyyyyyy.', '.yyyyyyyy.', '..yyyyyy..', 'bbbbbbbbbb', '.bbbbbbbb.'] };
+export const BALLOON: DrawnPicture = { name: 'a hot-air balloon', rows: ['...oooo...', '..bboobb..', '.bbboobbb.', '.bbboobbb.', '.bbboobbb.', '..bboobb..', '...boob...', '....oo....', '...o..o...', '...oooo...'] };
+export const WAVE_BOAT: DrawnPicture = { name: 'a boat on the waves', rows: ['....o.....', '....oo....', '....ooo...', '....oooo..', '....o.....', '.oooooooo.', '..oooooo..', 'b.b.b.b.b.', 'bbbbbbbbbb', 'bbbbbbbbbb'] };
+export const BLUEBIRD: DrawnPicture = { name: 'a bluebird', rows: ['..........', '...bbbb...', '..bbbbbb..', '..bb.bbboo', '..bbbbbb..', '.bbbooooo.', 'bbbbooooo.', '.bbbbooo..', '...o..o...', '..oo.oo...'] };
+
+export const TWO_COLOUR_10: readonly DrawnPicture[] = [SUN_SEA, POND_DUCK, BALLOON, WAVE_BOAT, BLUEBIRD];

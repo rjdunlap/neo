@@ -3,21 +3,21 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
 /** Picture Logic by touch: the 6 by 6 and the 15 by 15, a wrong fill, Cross, a swipe that jumps squares, Slide with the clues pinned, a hint, start over, 64-unit targets upright and sideways. */
 async function pictureTouchPlay() {
-  const state = () => page.evaluate(() => { const g = neo.scene.game; return { busy: g.busy, n: g.puzzle.size, misses: g.misses, hints: g.hints, fills: g.fills, marks: g.marks.slice(), sol: g.puzzle.solution.slice(), hinted: g.hinted ? g.hinted.cell : null, tool: g.tool, sx: g.scrollX, sy: g.scrollY, maxX: g.frame.maxX, maxY: g.frame.maxY, rowX: g.rowLayer.x, rowY: g.rowLayer.y, colX: g.colLayer.x, colY: g.colLayer.y }; });
+  const state = () => page.evaluate(() => { const g = neo.scene.game; return { busy: g.busy, n: g.puzzle.size, misses: g.misses, hints: g.hints, fills: g.fills, marks: g.marks.slice(), sol: g.puzzle.solution.slice(), target: g.puzzle.target.slice(), hinted: g.hinted ? g.hinted.cell : null, tool: g.tool, sx: g.scrollX, sy: g.scrollY, maxX: g.frame.maxX, maxY: g.frame.maxY, rowX: g.rowLayer.x, rowY: g.rowLayer.y, colX: g.colLayer.x, colY: g.colLayer.y }; });
   const idle = () => page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 15000 });
   const where = (i) => page.evaluate((i) => { const g = neo.scene.game, n = g.puzzle.size, p = g.board.toGlobal({ x: (i % n) * g.cell + g.cell / 2, y: Math.floor(i / n) * g.cell + g.cell / 2 }); return [p.x, p.y]; }, i);
   const tapCell = async (i) => { const [x, y] = await where(i); await page.evaluate(([x, y]) => kit.tap(x, y), [x, y]); await page.waitForTimeout(90); };
   const swipe = async (a, b, n = 6) => { const [ax, ay] = await where(a), [bx, by] = await where(b); await page.evaluate(([ax, ay, bx, by, n]) => kit.drag(kit.line([ax, ay], [bx, by], n)), [ax, ay, bx, by, n]); await page.waitForTimeout(120); };
   const tapSlot = (kind) => page.evaluate((kind) => { const g = neo.scene.game, s = g.frame.slots.find((s) => s.kind === kind), p = g.touchLayer.toGlobal({ x: s.x + s.w / 2, y: s.y + s.h / 2 }); kit.tap(p.x, p.y); }, kind);
   const scroll = (x, y) => page.evaluate(([x, y]) => neo.scene.game.setScroll(x, y), [x, y]);
-  /** The next stretch of squares in a row that the answer fills and the picture has not (at most six, so a window that slides can reach it). */
+  /** The next stretch of squares in a row, all one colour, that the answer fills and the picture has not (at most six, so a window that slides can reach it). */
   const nextRun = (st) => {
-    const { n, sol, marks } = st;
+    const { n, sol, marks, target } = st;
     for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
       const i = r * n + c;
-      if (!sol[i] || marks[i] === 1) continue;
+      if (!sol[i] || marks[i] === target[i]) continue;
       let e = c;
-      while (e + 1 < n && e - c < 5 && sol[r * n + e + 1] && marks[r * n + e + 1] !== 1) e++;
+      while (e + 1 < n && e - c < 5 && target[r * n + e + 1] === target[i] && marks[r * n + e + 1] !== target[i]) e++;
       return [i, r * n + e];
     }
     return null;
@@ -26,9 +26,11 @@ async function pictureTouchPlay() {
     for (let guard = 0; guard < 400 && !(await page.evaluate(() => neo.scene.finished)); guard++) {
       await idle();
       const st = await state();
-      if (st.tool !== 'fill') { await tapSlot('fill'); continue; }
       const run = nextRun(st);
       if (!run) { await page.waitForTimeout(300); continue; }
+      // The pot of the run's colour (`fill2` is a two-colour picture's second colour).
+      const pot = st.target[run[0]] === 3 ? 'fill2' : 'fill';
+      if (st.tool !== pot) { await tapSlot(pot); continue; }
       // Bring the run's middle into the window, then drag along it.
       await page.evaluate(([a, b]) => { const g = neo.scene.game, c = g.centerOf((a + b) >> 1); g.setScroll(c.x - g.frame.grid.w / 2 + 8, c.y - g.frame.grid.h / 2 + 8); }, run);
       await page.waitForTimeout(60);
@@ -56,15 +58,39 @@ async function pictureTouchPlay() {
       await launch('picture-logic', level); await idle();
       const before = await page.evaluate(() => kit.store.data.stickers.length);
       const at = await state();
-      assert.equal(at.n, level === 5 ? 5 : 15, `level ${level} size`);
-      if (level === 5) {
+      assert.equal(at.n, level === 5 ? 5 : level === 6 ? 10 : 15, `level ${level} size`);
+      if (level === 6) {
+        // Two colours: two pots; a fill in the wrong colour is no miss, and the hint names it first and picks the right pot.
+        assert.deepEqual(await page.evaluate(() => neo.scene.game.frame.slots.map((s) => s.kind).slice(0, 3)), ['fill', 'fill2', 'cross']);
+        const cell = at.target.indexOf(1);
+        await tapSlot('fill2'); await page.waitForTimeout(150);
+        await tapCell(cell);
+        let st = await state();
+        assert.equal(st.marks[cell], 3, 'painted in the second colour');
+        assert.equal(st.misses, 0, 'a wrong colour is not a miss');
+        await tapSlot('hint'); await page.waitForTimeout(300);
+        st = await state();
+        assert.equal(st.hinted, cell, 'the hint rings the wrong-colour square');
+        assert.equal(st.tool, 'fill', 'and switches to its pot');
+        const said = await page.evaluate(() => neo.scene.game.banner.text);
+        assert.match(said, /other colour/, `hint names the colour: ${said}`);
+        log(`level 6 hint: ${said}`);
+        await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+        assert.deepEqual(await targets('level 6 portrait'), []);
+        await screenshot('picture-touch-6-portrait');
+        await tapCell(cell);
+        assert.equal((await state()).marks[cell], 1, 'the right pot paints it over');
+        await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+      } else if (level === 5) {
         assert.deepEqual([at.maxX, at.maxY], [0, 0], 'a 5 by 5 picture is all in view');
         assert.equal(await page.evaluate(() => neo.scene.game.cell), 96, 'at the biggest squares');
         assert.equal(await page.evaluate(() => neo.scene.game.frame.slots.some((s) => s.kind === 'slide')), false, 'no Slide on a 5 by 5');
       } else assert.ok(at.maxX > 0 || at.maxY > 0, 'a 15 by 15 picture slides');
       assert.deepEqual(await targets(`level ${level} landscape`), []);
-      await tapSlot('hint'); await page.waitForTimeout(300);
-      assert.ok(await page.evaluate(() => neo.scene.game.hinted !== null), `level ${level} hint rings a square`);
+      if (level !== 6) {
+        await tapSlot('hint'); await page.waitForTimeout(300);
+        assert.ok(await page.evaluate(() => neo.scene.game.hinted !== null), `level ${level} hint rings a square`);
+      }
       if (level === 5) {
         await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
         assert.deepEqual(await targets('level 5 portrait'), []);
