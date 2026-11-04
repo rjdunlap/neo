@@ -5,7 +5,7 @@
 - [PR #1188](https://github.com/rjdunlap/neo/pull/1188) (tested commit `360b577c`): new school level 9 (`fives`: three tally cards in whole fives, key block = a group of five, build one block per group, then how many more), voice `graph.buildfives`/`recountfives`/`morefives`/`fives`, how-to steps.
 - Ran (dev server `http://localhost:5381`, `VITE_SPEECH=off`): typecheck; `npx vitest run src/games/picture-graph src/content src/games/registry` 232 passed, including six new level-9 rule tests (counts in whole fives, choices, finger, hint blocks, card layout at four views); `BROWSER_SUITE=fingerdemo FINGER_ONLY=picture-graph FINGER_LEVELS=9` pass (36.8 s); one 768x1024 scripted play of level 9: eight blocks on one bar (miss 1), again (miss 2, hint 1, card glow), rebuilt, blocks pad (miss 3), right answer, second graph, no page errors; portrait screenshots reviewed.
 - Review: `game-reviewer` found nothing.
-- Not run: `npm run build` (no shared files or assets changed), full `npm test` (CI runs it), device or child check. Open: whether a seven-year-old reads a tally group as one block ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
+- Not run: `npm run build` (no shared files or assets changed), full `npm test` (CI runs it), device or child check. Open: iPad feel and a child reading a tally group as one block are unchecked.
 
 ## 2026-11-03 — Penguin Slide level 11 Where will it stop? (dive slice 3)
 
