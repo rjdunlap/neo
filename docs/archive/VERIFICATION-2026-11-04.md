@@ -91,3 +91,9 @@
 - [Definition](../definitions/word-search-school-opening.md) for school level 8 (four picture words across on a 6 by 6 grid; batch word-search 5), [PR #1211](https://github.com/rjdunlap/neo/pull/1211).
 - Ran: links and `git diff --check`.
 - Not run: code checks (no code changed).
+
+## 2026-11-04 — Pixel Pictures level 10 My own picture (pixel-pictures batch 4)
+
+- [PR #1212](https://github.com/rjdunlap/neo/pull/1212): level 10, a free blank 5×5 with four paints, tap paints or empties, Done after four squares, no misses or hints; kept creation is the existing pixel shape; `order` pre-K [1, 9, 2, 3, 10], school [3, 4, 5, 6, 7, 8, 10].
+- Ran (tested commit a2ecd4f2 on origin/main b1e3fb8f; local Vite, random port): typecheck; `npm test` 300 files, 4,796 tests (pixel-pictures 14, incl. fewer than four squares cannot finish, tap empties, kept creation equals the board, order/step, bot draws the heart from empty and from strays); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pixel-pictures FINGER_LEVELS=10` PASS at pre-K, 19.7 s; one Playwright probe at 768×1024 and 390×844 portrait (Done hidden at three squares, tap empties, Done at four, no misses, keep, kept size 5 equals the board, one sticker; screenshots reviewed, paints and Done clear of the pet and corner buttons).
+- Not run: `creations` (shape unchanged), `npm run build` (no shared or asset changes), a person or device check that a pre-K child finds Done and empty-on-tap natural ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).

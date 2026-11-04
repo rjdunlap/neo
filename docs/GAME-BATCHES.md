@@ -943,7 +943,7 @@ Proof: typecheck, rule tests (4×4 with exactly two colours, `order` complete, e
 
 ### pixel-pictures 4: My own picture
 
-**Built 2026-11-04 ([PR #1212](https://github.com/rjdunlap/neo/pull/1212)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-04--pixel-pictures-level-10-my-own-picture-pixel-pictures-batch-4); [build note](archive/COMPLETED-2026-10-09.md#pixel-pictures-level-10-my-own-picture-pixel-pictures-4-2026-11-04).
+**Built 2026-11-04 ([PR #1212](https://github.com/rjdunlap/neo/pull/1212)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-04.md#2026-11-04--pixel-pictures-level-10-my-own-picture-pixel-pictures-batch-4); [build note](archive/COMPLETED-2026-10-09.md#pixel-pictures-level-10-my-own-picture-pixel-pictures-4-2026-11-04).
 
 - **`pixel-pictures`, level 10 My own picture (dive slice 4, after batch 3)** (new interaction; pre-K and school, last in each band's order as a free level): a blank 5×5 with four swatches, a tap on a filled square empties it, a Done button (at least 100 units) appears after four squares; no misses or hints; the kept creation uses the existing pixel shape; adds a `coplayHint`; the demo shows the bot drawing a heart. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#easier-entries-and-levels-between-existing-ones)
 
@@ -1197,7 +1197,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play of level 6 with one
 
 ### peekaround-island 4: Level 7 What does the duck see?
 
-- **`peekaround-island`, level 7 *What does the duck see?* (dive slice 4)**, after batch 3 (shares the turn-to-viewer helper; new interaction): she chooses which of three picture cards shows what the duck sees from where it stands; pre-K and school max 7. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
+- **`peekaround-island`, level 7 *What does the duck see?* (dive slice 4)** (**built 2026-11-04**, [PR #1227](https://github.com/rjdunlap/neo/pull/1227); new interaction, after batch 3): she chooses which of three picture cards shows what the duck sees from where it stands; pre-K and school max 7; the cards are live mini scenes (Containers), not render textures. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
 
 Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
