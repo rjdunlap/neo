@@ -2613,4 +2613,4 @@ Branch `claude/picture-graph-line-them-up`, [PR #1181](https://github.com/rjdunl
 
 [PR #1182](https://github.com/rjdunlap/neo/pull/1182), [dive slice 2](../deep-dives/penguin-slide.md#build-slices-in-order). School level 10: 7×5 ponds with three fish and five rocks, best route 5–8 slides, two ponds a round; `apartFromStart` / `eatsTwoFromStart` in `logic.ts` reject any pond where one first slide from the start eats two fish. School range 2–10, voice `slide.three`, a how-to step; the bot is the solver, unchanged.
 
-Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--penguin-slide-level-10-three-fish-dive-slice-2).
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--penguin-slide-level-10-three-fish-dive-slice-2).
