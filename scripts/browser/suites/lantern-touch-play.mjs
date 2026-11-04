@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
 async function lanternTouchPlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { busy: g.busy, index: g.index, ponds: g.ponds.length, lit: g.lit.filter(Boolean).length, presses: g.presses, hinted: g.hinted, misses: g.misses, hints: g.hints, n: g.n }; });
-  const idle = () => page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 15000 });
+  const idle = () => page.waitForFunction(() => { const g = neo.scene.game; return !g.busy || (g.waiting && !g.replaying) || neo.scene.finished; }, null, { timeout: 15000 });
   /** Tap the lantern a fewest-press way wants next, with a real touch on the pond. */
   const tapNext = async () => {
     await idle();
+    // A lit pond waits for Next pond.
+    if (await page.evaluate(() => neo.scene.game.waiting)) { await tap('neo.scene.game.nextButton'); await page.waitForTimeout(150); return; }
     await page.evaluate(async () => {
       const g = neo.scene.game, { hintFor } = await import('/src/games/lantern-lights/logic.ts');
       const at = g.center(hintFor(g.lit, g.n, g.cursor)), p = g.board.toGlobal(at);
@@ -15,6 +17,44 @@ async function lanternTouchPlay() {
     await page.waitForTimeout(150);
   };
   const solveAll = async () => { for (let guard = 0; guard < 400 && !(await page.evaluate(() => neo.scene.finished)); guard++) await tapNext(); };
+  // Level 3 alone under LANTERN_ONLY=3: a named hint, the pond lit, Show me a short way (fewest presses, nothing counted,
+  // a portrait screenshot mid-replay), Next pond, to the sticker.
+  if (process.env.LANTERN_ONLY === '3') {
+    await launch('lantern-lights', 3); await idle();
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    assert.equal((await state()).n, 4);
+    await page.evaluate(() => { const g = neo.scene.game, say = g.ctx.say; g.spoken = []; g.ctx.say = (id, ...args) => { g.spoken.push(id); return say(id, ...args); }; });
+    const kind = await page.evaluate(async () => {
+      const g = neo.scene.game, { solve } = await import('/src/games/lantern-lights/logic.ts');
+      return solve(g.lit, g.n).best.length === 1 ? 'lantern.hint-one' : 'lantern.hint-many';
+    });
+    await tap('neo.scene.game.hintButton'); await page.waitForTimeout(300);
+    let st = await state(); assert.deepEqual([st.hints, st.hinted !== null], [1, true]);
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.spoken.filter((id) => id.startsWith('lantern.hint'))), [kind], 'the hint names its kind');
+    for (let guard = 0; guard < 40; guard++) { await idle(); if (await page.evaluate(() => neo.scene.game.waiting)) break; await tapNext(); }
+    const vis = await page.evaluate(() => { const g = neo.scene.game; return [g.shortButton.visible, g.nextButton.visible, g.hintButton.visible, g.index]; });
+    assert.deepEqual(vis, [true, true, false, 0], 'the lit pond shows the two buttons in place of the three');
+    const par = await page.evaluate(() => neo.scene.game.pond.par);
+    const presses = (await state()).presses;
+    await page.evaluate(() => { const g = neo.scene.game; g.replayPresses = 0; g.watch = setInterval(() => { if (g.ring !== null && g.ring !== g.lastRing) g.replayPresses++; g.lastRing = g.ring; }, 50); });
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+    await tap('neo.scene.game.shortButton');
+    await page.waitForFunction(() => neo.scene.game.replaying && neo.scene.game.lit.some((on) => !on) && neo.scene.game.ring !== null, null, { timeout: 5000 });
+    await page.waitForTimeout(700);
+    await screenshot('lantern-lights-3-replay-portrait');
+    await page.waitForFunction(() => !neo.scene.game.replaying, null, { timeout: 20000 });
+    const after = await page.evaluate(() => { const g = neo.scene.game; clearInterval(g.watch); return { rings: g.replayPresses, lit: g.lit.every(Boolean), presses: g.presses, hints: g.hints, waiting: g.waiting, buttons: [g.shortButton.visible, g.nextButton.visible] }; });
+    assert.deepEqual(after, { rings: par, lit: true, presses, hints: 1, waiting: true, buttons: [true, true] }, `the replay presses par ${par} lanterns and counts nothing`);
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+    await tap('neo.scene.game.nextButton'); await page.waitForTimeout(200);
+    await page.waitForFunction(() => neo.scene.game.index === 1 && !neo.scene.game.busy, null, { timeout: 15000 });
+    await solveAll(); await finished('lantern-lights');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1, 'one sticker at level 3');
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('lantern-lights').history.at(-1); return [r.misses, r.hints]; }), [0, 1]);
+    assert.deepEqual(errors, []);
+    log(`Lantern Lights level 3: a named hint (${kind}), the pond lit, Show me a short way in ${par} presses counting nothing, Next pond, one sticker passed`);
+    return;
+  }
   // The school opening, alone under LANTERN_ONLY=school: level 1 with presses past the fewest plus six (the nudge toward
   // Hint once, no miss), a hint, then to the sticker; then level 2 to the sticker. Lanterns and buttons at least 100.
   if (process.env.LANTERN_ONLY === 'school') {
