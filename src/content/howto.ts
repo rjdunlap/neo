@@ -434,11 +434,12 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'pond-conga': {
-    goal: 'Steer a line of ducklings to each bit of duck food (peas, sweetcorn or oats), in order.',
+    goal: 'Steer a line of ducklings to every bit of duck food (peas, sweetcorn or oats) in the fewest steps.',
     steps: [
       'Touch the pond and lift to set the line off. It paddles on by itself.',
       'Swipe the way you want the line to turn; one stroke can turn it twice. A swipe straight back does nothing.',
-      'A bump turns the whole line about. Hint shows the way to the next bite; Start over puts the line back at the start.',
+      { to: 6, text: 'A bump turns the whole line about. Hint shows the way to the next bite; Start over puts the line back at the start.' },
+      { from: 7, text: 'Three bites show at once: eat them in any order, and the next three appear. The fewest steps need the best order. A bump turns the whole line about; Hint shows the way to a bite that starts a best order; Start over puts the line back at the start.' },
     ],
     finish: 'The pond is done when the ducklings have gobbled every bite.',
     note: 'A bump counts as a miss, and a hint counts as help. Steps are not timed against you: the pace stays the same.',
