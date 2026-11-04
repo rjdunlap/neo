@@ -1181,7 +1181,7 @@ Proof: existing-game fix tier: typecheck, rule tests (every request leaving a wr
 
 ### peekaround-island 2: Level 5 Who will be in front?
 
-- **`peekaround-island`, level 5 *Who will be in front?* (dive slice 2)**, after batch 1 (existing level, new tap): she predicts who will be in front after the turn before it happens; a wrong prediction is exploration, not a miss. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
+- **`peekaround-island`, level 5 *Who will be in front?* (dive slice 2)** (**built 2026-11-04**, [PR #1219](https://github.com/rjdunlap/neo/pull/1219); existing level, new tap): she guesses who will be in front, from a picture card, before the half turn; any guess is free, not a miss. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
 
 Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 
