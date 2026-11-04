@@ -61,3 +61,9 @@
 - [PR #1206](https://github.com/rjdunlap/neo/pull/1206): [definition](../definitions/read-do-mend-the-sign.md) for levels 8–9 *Mend the sign* (KE1), the batch `read-do 4`, the dive's slice 4 marked defined.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests and every play check (no code changed). Open: the build, and the person and device checks the definition lists.
+
+## 2026-11-04 — Lantern Lights named hints and Show me a short way (lantern-lights batch 2)
+
+- [PR #1207](https://github.com/rjdunlap/neo/pull/1207), commit `f6c33e21` on base `e25c1921`: `namedHint` (`lantern.hint-one` / `lantern.hint-many`), the after-pond Show me a short way and Next pond buttons on touch, `lantern.after`, how-to hint step and finish line.
+- Ran: typecheck; full `npm test` (passed after a how-to card length fix); `GAME_URL=http://localhost:5288 BROWSER_SUITE=lanterntouch LANTERN_ONLY=3` PASS (hint was `lantern.hint-one`, pond lit, replay 4 presses = par counting nothing, portrait screenshot mid-replay, Next pond, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=lantern-lights FINGER_LEVELS=3` PASS in 17.1 s; `game-reviewer` fixes applied afterwards (spoken cue, All done label, flip only changed lanterns).
+- Not run: full `lanterntouch` (levels 8, 1, 6, school), live key/pad switch while waiting, couch suites (couch path unchanged), build (no shared assets), offline, iPad or child. Open: the replay-button and named-hint person check in [DEVICE-CHECKS](../DEVICE-CHECKS.md).

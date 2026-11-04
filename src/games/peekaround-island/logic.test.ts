@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { fits, frontAfterHalfTurn, hasChoice, makeScene, namedHintTarget, nextPair, nextRequest, pairPlacements, peekTouch, planFor, PLANS, spotFacing, whereIs, type PeekTouchFriend, type Where } from './logic';
+import { canSee, fits, frontAfterHalfTurn, hasChoice, makeScene, makeSeeScene, namedHintTarget, nextPair, nextRequest, pairPlacements, peekTouch, planFor, PLANS, seeFacings, spotFacing, turnToFront, whereIs, type PeekTouchFriend, type Where } from './logic';
 
 describe('Peekaround Island', () => {
   it('demonstrates turning, choosing, and every requested placement without a wrong touch', () => {
@@ -145,5 +145,55 @@ describe('Peekaround Island', () => {
     const spot = spotFacing(scene.facing[scene.hider], 0);
     expect(namedHintTarget(spot, 0)).toBe('arrows');
     expect(namedHintTarget(spot, 1)).toBe('hider');
+  });
+
+  it('turns any spot to the front the short way', () => {
+    for (let turns = -6; turns <= 6; turns++) for (let spot = 0; spot < 4; spot++) {
+      const d = turnToFront(spot, turns);
+      expect(whereIs(spot, turns + d)).toBe('front');
+      expect(Math.abs(d)).toBeLessThanOrEqual(2);
+      if (whereIs(spot, turns) === 'next') expect(Math.abs(d)).toBe(1);
+    }
+  });
+
+  it("level 6: exactly one friend can't see the picture, she can always tap them, and turning shows why", () => {
+    expect(planFor(6).mode).toBe('see');
+    const pictureSpots = new Set<number>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      let turns = rng.int(0, 3);
+      const facings = seeFacings(rng);
+      expect([...facings].sort()).toEqual([1, 2, 3]);
+      let last: PeekTouchFriend['name'] | undefined;
+      for (const facing of facings) {
+        const scene = makeSeeScene(facing, rng, last);
+        const picture = spotFacing(scene.picture, turns);
+        pictureSpots.add(picture);
+        const friends: PeekTouchFriend[] = scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], turns) }));
+        const blocked = friends[scene.blocked];
+        expect(blocked.name).not.toBe(last);
+        expect(new Set(friends.map((f) => f.spot)).size).toBe(friends.length);
+        expect(friends.some((f) => f.spot === picture)).toBe(false);
+        // Only the friend across the tree is blocked; every wrong friend can be tapped and can see it.
+        expect(friends.filter((f) => !canSee(picture, f.spot))).toEqual([blocked]);
+        const wrong = friends.filter((f) => f !== blocked);
+        expect(wrong.length).toBeGreaterThan(0);
+        for (const f of friends) expect(whereIs(f.spot, turns)).not.toBe('behind');
+        expect(peekTouch('see', turns, blocked.name, friends)).toEqual({ kind: 'friend', name: blocked.name });
+        // A wrong friend turned to the front sees the picture plainly, and the blocked friend stays tappable.
+        for (const f of wrong) {
+          const after = turns + turnToFront(f.spot, turns);
+          expect(whereIs(picture, after)).not.toBe('behind');
+          expect(whereIs(blocked.spot, after)).not.toBe('behind');
+          expect(peekTouch('see', after, blocked.name, friends)).toEqual({ kind: 'friend', name: blocked.name });
+        }
+        // From the blocked friend's side, the picture is behind the tree.
+        turns += turnToFront(blocked.spot, turns);
+        expect(whereIs(picture, turns)).toBe('behind');
+        last = blocked.name;
+      }
+    }
+    // The picture's island spot takes all four places over many rounds.
+    expect([...pictureSpots].sort()).toEqual([0, 1, 2, 3]);
   });
 });
