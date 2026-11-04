@@ -1157,6 +1157,14 @@ Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.
 
 Proof: new-interaction tier: typecheck, rule tests, one play of level 7 with one wrong card and its turn, a second for the glow, then the right card, one portrait screenshot of the three cards, `fingerdemo` at 7, one build for the render textures.
 
+### peekaround-island 5: Level 8 From the sky
+
+- **`peekaround-island`, level 8 *From the sky* (dive slice 5)**, after batch 4 (school only, school range 4–8, pre-K unchanged at 7; new interaction): she chooses which of three top-down maps shows the island from above (friends as coloured dots around the tree). [Definition](definitions/peekaround-from-the-sky.md), [dive](deep-dives/peekaround-island.md#build-slices-in-order)
+
+Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, rule tests, one scripted play of level 8 with a mirror map (a miss), a turned map (a miss, the island turns and back), the ring, then the right map, one portrait screenshot of the three maps, a logged check at a 1024×768 view that the crown's top clears the cards and the shadow ends above the bottom edge, `fingerdemo` at 8. No build needed.
+
 ### picture-graph 1: Fair meadows and a visible first pick
 
 Built 2026-11-03, [PR #1138](https://github.com/rjdunlap/neo/pull/1138); [closeout](archive/COMPLETED-2026-10-09.md#picture-graph-fair-meadows-a-visible-first-pick-and-hints-that-show-why-picture-graph-batch-1-2026-11-03). Scope retained for dependency references (batch picture-graph 4 follows it); no longer eligible for dispatch.
