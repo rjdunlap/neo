@@ -23,7 +23,13 @@ function sapling(): Graphics {
   return new Graphics().ellipse(0, 20, 22, 9).fill(wood.line).moveTo(0, 12).lineTo(0, -10).stroke({ width: 5, color: swatch.green.line })
     .ellipse(-10, -10, 11, 6).ellipse(10, -16, 11, 6).fill(swatch.green.fill);
 }
-const FRUIT: Record<Sapling, number> = { apple: swatch.red.fill, pear: swatch.yellow.fill, plum: swatch.purple.fill };
+/** An arrow tile sized to its box; upright, fewer rows is left and more is right. */
+export function drawArrow(node: Container, b: Box, dir: 'up' | 'down' | 'left' | 'right') {
+  for (const c of node.removeChildren()) c.destroy({ children: true });
+  const pts = { up: [0, -30, 32, 16, -32, 16], down: [0, 30, 32, -16, -32, -16], left: [-30, 0, 16, -32, 16, 32], right: [30, 0, -16, -32, -16, 32] }[dir];
+  node.addChild(tile(b.w, b.h, 'teal'), new Graphics().poly(pts).fill(ink));
+}
+export const FRUIT: Record<Sapling, number> = { apple: swatch.red.fill, pear: swatch.yellow.fill, plum: swatch.purple.fill };
 
 /** Seconds the count rests before its deal line is spoken, so rapid taps speak only the last count. */
 const REST = 0.5;
@@ -101,8 +107,8 @@ export class BasketOrchard implements Game {
     const at = (node: Container, b: Box) => node.position.set(b.x + b.w / 2, b.y + b.h / 2);
     at(this.up, l.up); at(this.down, l.down); at(this.card, l.card); at(this.act, l.act);
     this.baskets.forEach((b, i) => at(b, l.baskets[i]));
-    this.drawArrow(this.up, l.up, l.portrait ? 'right' : 'up');
-    this.drawArrow(this.down, l.down, l.portrait ? 'left' : 'down');
+    drawArrow(this.up, l.up, l.portrait ? 'right' : 'up');
+    drawArrow(this.down, l.down, l.portrait ? 'left' : 'down');
     this.drawBaskets();
     this.drawFrames();
     // Re-laying out mid-deal or mid-growth moves the pieces; nothing awaited is killed.
@@ -273,13 +279,6 @@ export class BasketOrchard implements Game {
       onTap(b, () => this.press({ kind: 'load', basket: i }, b));
       this.baskets.push(b);
     }
-  }
-
-  /** An arrow tile sized to its box; upright, fewer rows is left and more is right. */
-  private drawArrow(node: Container, b: Box, dir: 'up' | 'down' | 'left' | 'right') {
-    for (const c of node.removeChildren()) c.destroy({ children: true });
-    const pts = { up: [0, -30, 32, 16, -32, 16], down: [0, 30, 32, -16, -32, -16], left: [-30, 0, 16, -32, 16, 32], right: [30, 0, -16, -32, -16, 32] }[dir];
-    node.addChild(tile(b.w, b.h, 'teal'), new Graphics().poly(pts).fill(ink));
   }
 
   private frameList() {

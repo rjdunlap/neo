@@ -11,9 +11,10 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { BasketOrchard, tree } from './baskets';
-import { choicesFor, countGroup, isBasketLevel, makeOrchards, missingTrees, orchardLayout, planFor, total, turn, type Orchard } from './logic';
+import { PathOrchard } from './path';
+import { choicesFor, countGroup, isBasketLevel, isPathLevel, makeOrchards, missingTrees, orchardLayout, planFor, total, turn, type Orchard } from './logic';
 
-const LEVELS: BandLevels = { school: { min: 1, max: 6 } };
+const LEVELS: BandLevels = { school: { min: 1, max: 9 } };
 
 class OrchardRows implements Game {
   readonly plan;
@@ -276,11 +277,11 @@ function orchardArt(seed: number): Container {
 
 export const orchardRows: GameModule = {
   id: 'orchard-rows', name: 'Orchard Rows', titleLine: 'game.orchard-rows', region: 'counting-cove', challenge: 'numbers',
-  skills: ['equal groups', 'arrays', 'skip counting', 'multiplication', 'division', 'factors'], bands: ['school'],
+  skills: ['equal groups', 'arrays', 'skip counting', 'multiplication', 'division', 'factors', 'distributive property'], bands: ['school'],
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
   music: STYLES.hub, touchDemo: true,
-  coplayHint: 'Count one row together, then add that same number for each new row. Ask what changes when the orchard turns. At the new levels, guess before pressing the arrow: will any be left over?',
+  coplayHint: 'Count one row together, then add that same number for each new row. Ask what changes when the orchard turns. At the new levels, guess before pressing the arrow: will any be left over? At the path levels, count the part you know first, then add the other.',
   offScreen: 'Arrange blocks in three rows of four. Count by rows, then look from the side and count by columns. Did any blocks appear?',
   hubIcon: () => { const art = orchardArt(1); art.y = -70; return new WigglyIcon(art); },
-  sticker: orchardArt, create: ctx => isBasketLevel(ctx.level) ? new BasketOrchard(ctx) : new OrchardRows(ctx),
+  sticker: orchardArt, create: ctx => isPathLevel(ctx.level) ? new PathOrchard(ctx) : isBasketLevel(ctx.level) ? new BasketOrchard(ctx) : new OrchardRows(ctx),
 };

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import {
+  across, isBasketLevel, isPathLevel, makePathRound, partsOf, PATH_POOLS, pathBot, pathCell, pathChoices, pathHint, pathLayout, pathStep, planFor,
+  QUESTIONS, rowsOf, skipCount, startPath, taskOf, unitOf, answerOf,
+  type PathAction, type PathState, type PathTask,
+} from './logic';
 import { choicesFor, countGroup, makeOrchards, missingTrees, orchardLayout, PLANS, subtotals, total, turn } from './logic';
 import {
   basketLayout, botStep, cellSize, deal, equalRows, frameKey, frameOf, framesFor, hintTarget, isPrime, makeRound, MIN_CELL, PET_CORNER,
@@ -451,5 +456,260 @@ describe('Orchard Rows levels 4–6', () => {
         }
       }
     });
+  });
+});
+
+describe('Orchard Rows levels 7-9: a path through the orchard', () => {
+  const levels = [7, 8, 9] as const;
+  const splitsOf = (level: 7 | 8 | 9, o: { rows: number }) => level === 8 ? Array.from({ length: o.rows - 1 }, (_, i) => i + 1) : [PATH_POOLS[level].split];
+  const eachCase = (fn: (level: 7 | 8 | 9, t: PathTask, tag: string) => void) => {
+    for (const level of levels) for (const o of PATH_POOLS[level].shapes) for (const split of splitsOf(level, o)) fn(level, { ...o, split }, `L${level} ${o.rows}x${o.columns} s${split}`);
+  };
+
+  it('pools hold the defined shapes and every whole is below 100', () => {
+    expect(PATH_POOLS[7].shapes).toHaveLength(21);
+    expect(PATH_POOLS[8].shapes).toHaveLength(16);
+    expect(PATH_POOLS[9].shapes).toHaveLength(36);
+    for (const o of PATH_POOLS[7].shapes) { expect(o.rows >= 7 && o.rows <= 9 && o.columns >= 3 && o.columns <= 9).toBe(true); }
+    for (const o of PATH_POOLS[8].shapes) { expect(o.rows >= 6 && o.rows <= 9 && o.columns >= 6 && o.columns <= 9).toBe(true); }
+    for (const o of PATH_POOLS[9].shapes) { expect(o.rows >= 2 && o.rows <= 5 && o.columns >= 11 && o.columns <= 19).toBe(true); }
+    expect(PATH_POOLS[7].split).toBe(5);
+    expect(PATH_POOLS[9].split).toBe(10);
+    for (const level of levels) for (const o of PATH_POOLS[level].shapes) expect(o.rows * o.columns).toBeLessThan(100);
+  });
+
+  it('rounds are deterministic, hold two different orchards and open on the fixed example', () => {
+    const first = { 7: [7, 4], 8: [7, 6], 9: [3, 14] } as const;
+    for (const level of levels) for (let seed = 1; seed <= 300; seed++) {
+      const r = makePathRound(level, new Rng(seed));
+      expect(r).toEqual(makePathRound(level, new Rng(seed)));
+      expect(r.tasks).toHaveLength(2);
+      expect([r.tasks[0].rows, r.tasks[0].columns]).toEqual(first[level]);
+      expect(r.tasks[0].split).toBe(PATH_POOLS[level].split);
+      expect(`${r.tasks[0].rows}x${r.tasks[0].columns}`).not.toBe(`${r.tasks[1].rows}x${r.tasks[1].columns}`);
+      expect(PATH_POOLS[level].shapes).toContainEqual({ rows: r.tasks[1].rows, columns: r.tasks[1].columns });
+      expect(r.fruit).toBeTruthy();
+    }
+    expect(new Set(Array.from({ length: 60 }, (_, i) => makePathRound(7, new Rng(i + 1)).tasks[1].columns)).size).toBeGreaterThan(2);
+  });
+
+  it('parts add to the whole, are above zero, and the first is larger at levels 7 and 9', () => {
+    eachCase((level, t, tag) => {
+      const [a, b] = partsOf(level, t);
+      expect(a + b, tag).toBe(t.rows * t.columns);
+      expect(a, tag).toBeGreaterThan(0);
+      expect(b, tag).toBeGreaterThan(0);
+      if (level !== 8) expect(a, tag).toBeGreaterThan(b);
+      expect(rowsOf(level, t, 0) * unitOf(level, t, 0), tag).toBe(a);
+      expect(rowsOf(level, t, 1) * unitOf(level, t, 1), tag).toBe(b);
+    });
+    expect(across(7) && across(8) && !across(9)).toBe(true);
+  });
+
+  it('pads: three distinct values in 1-99 with the answer among them, for every shape, split and question', () => {
+    eachCase((level, t, tag) => {
+      const [a, b] = partsOf(level, t);
+      const answers = [a, b, a + b];
+      for (let seed = 1; seed <= 50; seed++) QUESTIONS.forEach((kind, q) => {
+        const pads = pathChoices(answers[q], kind, t, level, new Rng(seed));
+        const at = `${tag} ${kind} seed ${seed}`;
+        expect(pads, at).toHaveLength(3);
+        expect(new Set(pads).size, at).toBe(3);
+        expect(pads, at).toContain(answers[q]);
+        for (const n of pads) { expect(n, at).toBeGreaterThanOrEqual(1); expect(n, at).toBeLessThanOrEqual(99); }
+        if (kind === 'whole') expect(pads, at).toContain(Math.max(a, b));
+        expect(pads, at).toEqual(pathChoices(answers[q], kind, t, level, new Rng(seed)));
+      });
+    });
+  });
+
+  it('pads: the named collisions still give three', () => {
+    const cases: [number, PathTask][] = [[9, { rows: 3, columns: 15, split: 10 }], [9, { rows: 5, columns: 19, split: 10 }], [8, { rows: 6, columns: 6, split: 1 }], [8, { rows: 6, columns: 6, split: 5 }]];
+    for (const [level, t] of cases) {
+      const [a, b] = partsOf(level, t);
+      for (let seed = 1; seed <= 20; seed++) [a, b, a + b].forEach((ans, q) => {
+        const pads = pathChoices(ans, QUESTIONS[q], t, level, new Rng(seed));
+        expect(new Set(pads).size).toBe(3);
+        expect(pads).toContain(ans);
+        expect(pads.every(n => n >= 1 && n <= 99)).toBe(true);
+      });
+    }
+  });
+
+  const play = (level: number, seed = 1) => startPath(makePathRound(level, new Rng(seed)));
+  const apply = (s: PathState, ...as: PathAction[]) => as.reduce((st, a) => pathStep(st, a).state, s);
+
+  it('arrows never leave 1..rows-1 and the ends are free', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      let s = play(8, seed);
+      const rows = s.tasks[0].rows;
+      for (let i = 0; i < rows + 3; i++) s = pathStep(s, { kind: 'up' }).state;
+      expect(s.split).toBe(1);
+      expect(pathStep(s, { kind: 'up' }).outcome).toBe('end');
+      for (let i = 0; i < rows + 3; i++) {
+        const r = pathStep(s, { kind: 'down' });
+        s = r.state;
+        expect(s.split).toBeGreaterThanOrEqual(1);
+        expect(s.split).toBeLessThanOrEqual(rows - 1);
+      }
+      expect(s.split).toBe(rows - 1);
+      const end = pathStep(s, { kind: 'down' });
+      expect(end.outcome).toBe('end');
+      expect(end.state).toEqual(s);
+      expect(s.misses + s.hints).toBe(0);
+    }
+    const s = play(8);
+    expect(pathStep(s, { kind: 'down' })).toMatchObject({ outcome: 'moved', state: { split: 2 } });
+    expect(taskOf(pathStep(s, { kind: 'down' }).state).split).toBe(2);
+  });
+
+  it('accounting: every wrong pad is a miss; the second on a question is one hint; free actions count nothing', () => {
+    for (const level of levels) {
+      let s = play(level);
+      s = apply(s, ...(level === 8 ? [{ kind: 'lay' } as PathAction] : []));
+      for (let q = 0; q < 6; q++) {
+        const ans = answerOf(s);
+        const wrong = ans === 1 ? 2 : ans - 1;
+        const m0 = s.misses, h0 = s.hints;
+        let r = pathStep(s, { kind: 'pad', n: wrong });
+        expect(r.outcome).toBe('wrong'); expect(r.state.misses).toBe(m0 + 1); expect(r.state.hints).toBe(h0); expect(r.state.glowing).toBe(false);
+        expect(pathHint(r.state)).toBeNull();
+        r = pathStep(r.state, { kind: 'pad', n: wrong });
+        expect(r.state.misses).toBe(m0 + 2); expect(r.state.hints).toBe(h0 + 1); expect(r.state.glowing).toBe(true);
+        r = pathStep(r.state, { kind: 'pad', n: wrong });
+        expect(r.state.misses).toBe(m0 + 3); expect(r.state.hints).toBe(h0 + 1);
+        s = pathStep(r.state, { kind: 'pad', n: ans }).state;
+        expect(s.wrongs).toBe(0); expect(s.glowing).toBe(false);
+        if (s.done) break;
+        if (level === 8 && s.question === 0 && !s.laid) s = apply(s, { kind: 'lay' });
+      }
+      expect(s.done).toBe(true);
+      expect(s.hints).toBeLessThanOrEqual(6);
+      expect(s.hints).toBe(6);
+      const after = pathStep(s, { kind: 'pad', n: 1 });
+      expect(after.outcome).toBe('ignored'); expect(after.state).toEqual(s);
+      expect(pathStep(s, { kind: 'sign', part: 0 }).outcome).toBe('ignored');
+    }
+  });
+
+  it('free actions: lay, signs and arrows count nothing; signs ask before answered and recount after', () => {
+    let s = play(7);
+    let r = pathStep(s, { kind: 'sign', part: 1 });
+    expect(r.outcome).toBe('ask'); expect(r.state).toEqual(s);
+    expect(pathStep(s, { kind: 'sign', part: 0 }).outcome).toBe('ask');
+    s = pathStep(s, { kind: 'pad', n: answerOf(s) }).state;
+    expect(pathStep(s, { kind: 'sign', part: 0 }).outcome).toBe('recount');
+    expect(pathStep(s, { kind: 'sign', part: 1 }).outcome).toBe('ask');
+    expect(pathStep(s, { kind: 'up' }).outcome).toBe('ignored');
+    expect(pathStep(s, { kind: 'lay' }).outcome).toBe('ignored');
+    const e = play(8);
+    expect(pathStep(e, { kind: 'pad', n: 5 }).outcome).toBe('ignored');
+    expect(pathStep(e, { kind: 'sign', part: 0 }).outcome).toBe('ignored');
+    const laid = pathStep(e, { kind: 'lay' });
+    expect(laid.outcome).toBe('laid');
+    expect(laid.state.misses + laid.state.hints).toBe(0);
+    expect(pathStep(laid.state, { kind: 'down' }).outcome).toBe('ignored');
+  });
+
+  it('level 8 accepts every split', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const rows = play(8, seed).tasks[0].rows;
+      for (let split = 1; split < rows; split++) {
+        let s = play(8, seed);
+        for (let i = 1; i < split; i++) s = apply(s, { kind: 'down' });
+        s = apply(s, { kind: 'lay' });
+        const w = s.tasks[0].rows * s.tasks[0].columns;
+        const a = split * s.tasks[0].columns;
+        for (const want of [a, w - a, w]) {
+          expect(answerOf(s)).toBe(want);
+          const r = pathStep(s, { kind: 'pad', n: want });
+          expect(r.outcome).toBe('right'); expect(r.state.misses).toBe(0);
+          s = r.state;
+        }
+        expect(s.index).toBe(1);
+        expect(s.laid).toBe(false);
+        expect(s.split).toBe(s.tasks[1].split);
+      }
+    }
+  });
+
+  it('hint names the answer pad only while glowing, never before the path is laid, and following it answers', () => {
+    for (const level of levels) for (let seed = 1; seed <= 20; seed++) {
+      let s = play(level, seed);
+      if (level === 8) {
+        expect(pathHint(s)).toBeNull();
+        s = apply(s, { kind: 'lay' });
+      }
+      expect(pathHint(s)).toBeNull();
+      const wrong = answerOf(s) + 1;
+      s = apply(s, { kind: 'pad', n: wrong }, { kind: 'pad', n: wrong });
+      const hint = pathHint(s);
+      expect(hint).toBe(answerOf(s));
+      const r = pathStep(s, { kind: 'pad', n: hint! });
+      expect(r.outcome).toBe('right');
+      expect(r.state.question).toBe(1);
+      expect(pathHint(r.state)).toBeNull();
+    }
+  });
+
+  it('the bot finishes every level with no miss and lays level 8 at five', () => {
+    for (const level of levels) for (let seed = 1; seed <= 100; seed++) {
+      let s = play(level, seed);
+      let laidAt = -1, guard = 0;
+      for (let a = pathBot(s); a; a = pathBot(s)) {
+        if (++guard > 200) throw new Error('bot loops');
+        if (a.kind === 'lay') laidAt = s.split;
+        const r = pathStep(s, a);
+        expect(r.outcome, `L${level} seed ${seed}`).not.toBe('ignored');
+        expect(r.outcome).not.toBe('wrong');
+        s = r.state;
+      }
+      expect(s.done).toBe(true);
+      expect(s.misses + s.hints).toBe(0);
+      if (level === 8) expect(laidAt).toBe(5);
+    }
+  });
+
+  it('routing and plans', () => {
+    for (const l of levels) { expect(isBasketLevel(l)).toBe(false); expect(isPathLevel(l)).toBe(true); }
+    for (const l of [4, 5, 6]) expect(isBasketLevel(l)).toBe(true);
+    expect(planFor(7).name).toBe('A path at five: count each part, then the whole');
+    expect(planFor(8).name).toBe('Choose the path: split the orchard, count each part and the whole');
+    expect(planFor(9).name).toBe('A path at ten: rows of ten and the rest, then the whole');
+    expect(() => makeRound(7, new Rng(1))).toThrow();
+    expect(() => makeRound(9, new Rng(1))).toThrow();
+    expect(skipCount(5, 4)).toBe('4, 8, 12, 16, 20');
+  });
+
+  it('layout: targets are big, clear of the pet, top strip and edges, and do not overlap', () => {
+    const views = [
+      ['landscape', computeView(1024, 768)],
+      ['portrait', computeView(1024, 1365)],
+      ['phone', computeView(1662, 768)],
+      ['phone insets', computeView(1561, 768, { top: 0, right: 47, bottom: 21, left: 47 })],
+    ] as const;
+    const hit = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    for (const [name, v] of views) for (const level of levels) {
+      const L = pathLayout(v, level);
+      const tag = `${name} L${level}`;
+      expect(L, tag).not.toBeNull();
+      if (!L) continue;
+      const targets = [...L.signs, ...L.pads, ...[L.up, L.down, L.card, L.lay].filter((b): b is Box => !!b)];
+      expect(L.portrait).toBe(v.h > v.w);
+      for (const b of [...L.signs, ...L.pads, ...[L.up, L.down, L.lay].filter((x): x is Box => !!x)]) { expect(b.w, tag).toBeGreaterThanOrEqual(100); expect(b.h, tag).toBeGreaterThanOrEqual(100); }
+      for (const b of targets) {
+        expect(b.x, tag).toBeGreaterThanOrEqual(0); expect(b.y, tag).toBeGreaterThanOrEqual(TOP_CLEAR);
+        expect(b.x + b.w, tag).toBeLessThanOrEqual(v.w); expect(b.y + b.h, tag).toBeLessThanOrEqual(v.h);
+        expect(b.x < PET_CORNER.w && b.y + b.h > v.h - PET_CORNER.h, `${tag} pet corner`).toBe(false);
+        expect(hit(b, L.bed), `${tag} bed`).toBe(false);
+      }
+      expect(L.bed.x).toBeGreaterThanOrEqual(0); expect(L.bed.y + L.bed.h).toBeLessThanOrEqual(v.h); expect(L.bed.x + L.bed.w).toBeLessThanOrEqual(v.w);
+      expect(L.bed.x < PET_CORNER.w && L.bed.y + L.bed.h > v.h - PET_CORNER.h, `${tag} bed pet`).toBe(false);
+      const groups: Box[][] = [[...L.pads, ...L.signs]];
+      if (level === 8) groups.push([L.up!, L.card!, L.down!, L.lay!, ...L.signs]);
+      else expect(L.up).toBeNull();
+      for (const g of groups) for (let i = 0; i < g.length; i++) for (let j = i + 1; j < g.length; j++) expect(hit(g[i], g[j]), `${tag} overlap ${i}/${j}`).toBe(false);
+      for (const o of PATH_POOLS[level].shapes) expect(pathCell(L.bed, level, o), `${tag} ${o.rows}x${o.columns}`).toBeGreaterThanOrEqual(MIN_CELL);
+    }
   });
 });

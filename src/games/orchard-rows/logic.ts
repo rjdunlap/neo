@@ -1,7 +1,7 @@
 import type { Rng } from '../../engine/random';
 
 export interface Orchard { rows: number; columns: number }
-export type Mode = 'plant' | 'turn' | 'missing' | 'equal' | 'every' | 'prime';
+export type Mode = 'plant' | 'turn' | 'missing' | 'equal' | 'every' | 'prime' | 'path' | 'choosepath' | 'pathten';
 export const PLANS: readonly { name: string; mode: Mode; shapes: readonly Orchard[] }[] = [
   { name: 'Plant equal rows and count by rows', mode: 'plant', shapes: [{ rows: 2, columns: 3 }, { rows: 3, columns: 2 }, { rows: 3, columns: 3 }, { rows: 2, columns: 2 }, { rows: 4, columns: 2 }] },
   { name: 'Count by rows, then turn and count by columns', mode: 'turn', shapes: [{ rows: 2, columns: 4 }, { rows: 3, columns: 4 }, { rows: 2, columns: 5 }, { rows: 4, columns: 3 }, { rows: 5, columns: 2 }] },
@@ -10,6 +10,10 @@ export const PLANS: readonly { name: string; mode: Mode; shapes: readonly Orchar
   { name: 'Equal rows: choose a row count with none left over', mode: 'equal', shapes: [] },
   { name: 'Every way: plant every equal orchard for one basket', mode: 'every', shapes: [] },
   { name: 'Only one long row: find the basket with no equal rows', mode: 'prime', shapes: [] },
+  // Levels 7–9 split an orchard with a path; their orchards come from `makePathRound`.
+  { name: 'A path at five: count each part, then the whole', mode: 'path', shapes: [] },
+  { name: 'Choose the path: split the orchard, count each part and the whole', mode: 'choosepath', shapes: [] },
+  { name: 'A path at ten: rows of ten and the rest, then the whole', mode: 'pathten', shapes: [] },
 ];
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const total = (o: Orchard) => o.rows * o.columns;
@@ -41,7 +45,7 @@ export function orchardLayout(w: number, h: number, o: Orchard) {
 // ---- Levels 4–6: a basket of saplings dealt into equal rows (number-structure NS1) ----
 
 /** The levels that deal a basket into rows rather than plant a given array. */
-export const isBasketLevel = (level: number) => level >= 4;
+export const isBasketLevel = (level: number) => level >= 4 && level <= 6;
 
 export interface Deal { rows: number; each: number; left: number }
 /** One round of dealing: every row gets the same, and what cannot make another full round stays in the basket. */
@@ -117,6 +121,7 @@ export function makeRound(level: number, rng: Rng): Round {
     const n = rng.pick([12, 16, 18, 20, 24]);
     return { level, sapling, tasks: [{ baskets: [n], open: leftoverOpen(5, n, rng) }] };
   }
+  if (level !== 6) throw new Error(`makeRound has no baskets for level ${level}`);
   const second = rng.pick(PRIME_SETS.filter(s => s[0] !== 13));
   return { level, sapling, tasks: [{ baskets: rng.shuffle([12, 13, 15]), open: 2 }, { baskets: rng.shuffle([...second]), open: 2 }] };
 }
@@ -291,3 +296,212 @@ export function basketLayout(view: { w: number; h: number }, level: number, fram
 
 /** The cell a sapling or tree gets: trees are pictures here, sized to the shape. */
 export const cellSize = (bed: Box, d: { rows: number; each: number }) => Math.min(bed.w / Math.max(1, d.each), bed.h / d.rows, 90);
+
+// ---- Levels 7–9: a path splits the orchard into two parts she knows (distributive property) ----
+
+/** The levels that split a grown orchard with a path. */
+export const isPathLevel = (level: number) => level >= 7;
+/** At 7 and 8 the path runs across, between rows; at 9 it runs down after ten trees in every row. */
+export const across = (level: number) => level !== 9;
+/** The path's width in logical units, in the gap it takes across or down the bed. */
+export const PATH_GAP = 40;
+
+/** `split` is the rows above the path (7–8) or the trees left of it in every row (9). */
+export interface PathTask { rows: number; columns: number; split: number }
+export interface PathRound { level: number; fruit: Sapling; tasks: PathTask[] }
+
+const shapes = (rows: [number, number], columns: [number, number]) => {
+  const out: Orchard[] = [];
+  for (let r = rows[0]; r <= rows[1]; r++) for (let c = columns[0]; c <= columns[1]; c++) out.push({ rows: r, columns: c });
+  return out;
+};
+/** Every orchard a level draws from, and its fixed first example. */
+export const PATH_POOLS: Record<7 | 8 | 9, { shapes: Orchard[]; first: Orchard; split: number }> = {
+  7: { shapes: shapes([7, 9], [3, 9]), first: { rows: 7, columns: 4 }, split: 5 },
+  8: { shapes: shapes([6, 9], [6, 9]), first: { rows: 7, columns: 6 }, split: 1 },
+  9: { shapes: shapes([2, 5], [11, 19]), first: { rows: 3, columns: 14 }, split: 10 },
+};
+const poolFor = (level: number) => {
+  if (level < 7 || level > 9) throw new Error(`no path orchards for level ${level}`);
+  return PATH_POOLS[level as 7 | 8 | 9];
+};
+
+/** Two different orchards: the worked example first, then one from the pool. */
+export function makePathRound(level: number, rng: Rng): PathRound {
+  const pool = poolFor(level);
+  const fruit = rng.pick(SAPLINGS);
+  const second = rng.pick(pool.shapes.filter(o => o.rows !== pool.first.rows || o.columns !== pool.first.columns));
+  return { level, fruit, tasks: [pool.first, second].map(o => ({ ...o, split: pool.split })) };
+}
+
+/** The trees in each part: above and below the path (7–8), or the ten side and the rest (9). Together they are the whole. */
+export function partsOf(level: number, t: PathTask): [number, number] {
+  if (!across(level)) return [t.rows * 10, t.rows * (t.columns - 10)];
+  return [t.split * t.columns, (t.rows - t.split) * t.columns];
+}
+/** The trees in one row of a part. */
+export const unitOf = (level: number, t: PathTask, part: 0 | 1) => across(level) ? t.columns : part === 0 ? 10 : t.columns - 10;
+/** The rows a part spans. */
+export const rowsOf = (level: number, t: PathTask, part: 0 | 1) => across(level) ? (part === 0 ? t.split : t.rows - t.split) : t.rows;
+
+export type PathQuestion = 0 | 1 | 2;
+export const QUESTIONS = ['first', 'second', 'whole'] as const;
+
+/** Three distinct pads in 1–99 with the answer among them: a row fewer or more for a part; the larger part alone first for the whole. */
+export function pathChoices(answer: number, kind: typeof QUESTIONS[number], task: PathTask, level: number, rng: Rng): number[] {
+  const [a, b] = partsOf(level, task);
+  let candidates: number[];
+  if (kind === 'whole') {
+    const pair = rng.shuffle([answer - task.columns, answer + task.columns]);
+    candidates = [Math.max(a, b), ...pair, answer + 1, answer - 1];
+  } else {
+    const u = unitOf(level, task, kind === 'first' ? 0 : 1);
+    candidates = [answer - u, answer + u, answer + 2 * u, answer + 1, answer - 1];
+  }
+  const pads = [answer];
+  for (const n of candidates) {
+    if (pads.length === 3) break;
+    if (n > 0 && n < 100 && !pads.includes(n)) pads.push(n);
+  }
+  return rng.shuffle(pads);
+}
+
+export interface PathState {
+  level: number;
+  tasks: PathTask[];
+  index: number;
+  /** Where the path is in the current orchard (moved by the arrows at level 8). */
+  split: number;
+  laid: boolean;
+  question: PathQuestion;
+  /** Misses on this question. */
+  wrongs: number;
+  glowing: boolean;
+  misses: number;
+  hints: number;
+  done: boolean;
+}
+
+export function startPath(round: PathRound): PathState {
+  return { level: round.level, tasks: round.tasks, index: 0, split: round.tasks[0].split, laid: round.level !== 8, question: 0, wrongs: 0, glowing: false, misses: 0, hints: 0, done: false };
+}
+/** The current orchard with the path where it is now. */
+export const taskOf = (s: PathState): PathTask => ({ ...s.tasks[s.index], split: s.split });
+export function answerOf(s: PathState): number {
+  const [a, b] = partsOf(s.level, taskOf(s));
+  return s.question === 0 ? a : s.question === 1 ? b : a + b;
+}
+
+export type PathAction = { kind: 'up' | 'down' | 'lay' } | { kind: 'sign'; part: 0 | 1 } | { kind: 'pad'; n: number };
+export type PathOutcome = 'moved' | 'end' | 'laid' | 'ask' | 'recount' | 'right' | 'wrong' | 'ignored';
+
+/** Pure accounting: arrows, laying the path anywhere and sign taps are free; every wrong pad is a miss, and the second on a question glows the answer (one hint). */
+export function pathStep(s: PathState, a: PathAction): { state: PathState; outcome: PathOutcome } {
+  const none = { state: s, outcome: 'ignored' as const };
+  if (s.done) return none;
+  if (a.kind === 'up' || a.kind === 'down') {
+    if (s.level !== 8 || s.laid) return none;
+    // ▲ lifts the path (one row fewer above it); ▼ lowers it.
+    const split = s.split + (a.kind === 'up' ? -1 : 1);
+    if (split < 1 || split > s.tasks[s.index].rows - 1) return { state: s, outcome: 'end' };
+    return { state: { ...s, split }, outcome: 'moved' };
+  }
+  if (a.kind === 'lay') {
+    if (s.level !== 8 || s.laid) return none;
+    return { state: { ...s, laid: true }, outcome: 'laid' };
+  }
+  if (!s.laid) return none;
+  if (a.kind === 'sign') {
+    if (a.part !== 0 && a.part !== 1) return none;
+    return { state: s, outcome: s.question > a.part ? 'recount' : 'ask' };
+  }
+  if (a.kind !== 'pad') return none;
+  if (a.n !== answerOf(s)) {
+    const wrongs = s.wrongs + 1;
+    const glow = wrongs >= 2 && !s.glowing;
+    return { state: { ...s, wrongs, misses: s.misses + 1, glowing: s.glowing || glow, hints: s.hints + (glow ? 1 : 0) }, outcome: 'wrong' };
+  }
+  const fresh = { wrongs: 0, glowing: false };
+  if (s.question < 2) return { state: { ...s, ...fresh, question: (s.question + 1) as PathQuestion }, outcome: 'right' };
+  const index = s.index + 1;
+  if (index >= s.tasks.length) return { state: { ...s, ...fresh, done: true }, outcome: 'right' };
+  return { state: { ...s, ...fresh, index, question: 0, split: s.tasks[index].split, laid: s.level !== 8 }, outcome: 'right' };
+}
+
+/** The answer pad while the glow is on; never a split, since any split is right. */
+export const pathHint = (s: PathState): number | null => s.glowing && s.laid && !s.done ? answerOf(s) : null;
+
+/** The ghost finger moves the path to five rows (always reachable, with six or more), lays it, then taps each answer. */
+export function pathBot(s: PathState): PathAction | null {
+  if (s.done) return null;
+  if (!s.laid) return s.split < 5 ? { kind: 'down' } : s.split > 5 ? { kind: 'up' } : { kind: 'lay' };
+  return { kind: 'pad', n: answerOf(s) };
+}
+
+/** The spoken count by rows: "4, 8, 12, 16, 20". */
+export const skipCount = (rows: number, each: number) => Array.from({ length: rows }, (_, i) => (i + 1) * each).join(', ');
+
+export interface PathLayout {
+  portrait: boolean;
+  bed: Box;
+  /** The two parts' signs: above then below (7–8), or the ten side then the rest (9). */
+  signs: [Box, Box];
+  pads: [Box, Box, Box];
+  /** Level 8's path controls, replaced by the pads once the path is laid. */
+  up: Box | null; down: Box | null; card: Box | null; lay: Box | null;
+}
+
+/** Pure: every target at least 100 units, nothing in the pet's corner or the top strip; null rather than shrink a target. */
+export function pathLayout(view: { w: number; h: number }, level: number): PathLayout | null {
+  const { w, h } = view;
+  const portrait = h > w;
+  const top = 125;
+  const wide = across(level);
+  let bed: Box, signs: [Box, Box], pads: [Box, Box, Box];
+  let up: Box | null = null, down: Box | null = null, card: Box | null = null, lay: Box | null = null;
+  if (portrait) {
+    const rowY = h - 160;
+    pads = [230, 370, 510].map(x => ({ x, y: rowY, w: 120, h: 110 })) as [Box, Box, Box];
+    if (wide) {
+      bed = { x: 40, y: top, w: w - 220, h: h - 225 - top };
+      signs = [{ x: w - 160, y: top, w: 120, h: 110 }, { x: w - 160, y: h - 335, w: 120, h: 110 }];
+    } else {
+      bed = { x: 40, y: top, w: w - 80, h: h - 345 - top };
+      signs = [{ x: 40, y: h - 335, w: 120, h: 110 }, { x: w - 160, y: h - 335, w: 120, h: 110 }];
+    }
+    if (level === 8) {
+      up = { x: 230, y: rowY, w: 120, h: 110 };
+      card = { x: 370, y: rowY - 5, w: 120, h: 120 };
+      down = { x: 510, y: rowY, w: 120, h: 110 };
+      lay = { x: 670, y: rowY, w: 130, h: 110 };
+    }
+  } else {
+    const cx = w - 140, y0 = top;
+    const padGap = Math.max(10, Math.min(30, (h - 30 - y0 - 330) / 2));
+    pads = [0, 1, 2].map(i => ({ x: cx - 65, y: y0 + i * (110 + padGap), w: 130, h: 110 })) as [Box, Box, Box];
+    if (wide) {
+      bed = { x: 210, y: top, w: w - 640, h: h - 30 - top };
+      signs = [{ x: w - 420, y: top, w: 120, h: 110 }, { x: w - 420, y: h - 140, w: 120, h: 110 }];
+    } else {
+      bed = { x: 210, y: top, w: w - 510, h: h - 150 - top };
+      signs = [{ x: 210, y: h - 140, w: 120, h: 110 }, { x: w - 420, y: h - 140, w: 120, h: 110 }];
+    }
+    if (level === 8) {
+      const gap = Math.max(10, Math.min(30, (h - 30 - y0 - 430) / 3));
+      up = { x: cx - 65, y: y0, w: 130, h: 100 };
+      card = { x: cx - 65, y: up.y + 100 + gap, w: 130, h: 120 };
+      down = { x: cx - 65, y: card.y + 120 + gap, w: 130, h: 100 };
+      lay = { x: cx - 65, y: down.y + 100 + gap, w: 130, h: 110 };
+    }
+  }
+  const targets = [...signs, ...pads, ...[up, down, lay].filter((b): b is Box => b !== null)];
+  if (targets.some(b => b.w < 100 || b.h < 100)) return null;
+  if ([...targets, ...(card ? [card] : [])].some(b => b.y + b.h > h - 10 || b.x + b.w > w - 10)) return null;
+  return { portrait, bed, signs, pads, up, down, card, lay };
+}
+
+/** A tree's cell: the bed less the path's gap, never above 90. */
+export function pathCell(bed: Box, level: number, t: { rows: number; columns: number }) {
+  const gapW = across(level) ? 0 : PATH_GAP, gapH = across(level) ? PATH_GAP : 0;
+  return Math.min((bed.w - gapW) / t.columns, (bed.h - gapH) / t.rows, 90);
+}
