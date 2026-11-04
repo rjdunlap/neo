@@ -1097,6 +1097,8 @@ Proof: new rule on the existing tap: typecheck, rule tests including the brute f
 
 ### island-bridges 4: Joined Seas course
 
+Built 2026-11-04, [PR #1202](https://github.com/rjdunlap/neo/pull/1202), branch `claude/island-bridges-joined-seas`; [closeout](archive/COMPLETED-2026-10-09.md#island-bridges-couch-course-joined-seas-island-bridges-batch-4-2026-11-04). Scope retained for dependency references.
+
 - **`island-bridges`, couch course *Joined Seas* (dive slice 4, after batch 2)** (couch catalog; grown-up): five frozen level-6 seas (each with one answer, none `bycounting`) as a second `course.ts` entry, version 1, beside Island Hopping. [Dive](deep-dives/island-bridges.md#build-slices-in-order)
 
 Files expected: `src/couch/` course and catalog files (`course.ts` and its tests), `src/games/island-bridges/logic.ts`, `docs/COUCH-PLAY.md`, the README row and `docs/GAMES.md`.
