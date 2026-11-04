@@ -87,6 +87,9 @@ class LanternLights implements Game {
   /** The lantern the replay is about to press, ringed. */
   private ring: number | null = null;
   private goOn: (() => void) | null = null;
+  private readonly nextLabel = label('Next pond ▶', 24, ink);
+  /** The two after-pond buttons have been named aloud once this round. */
+  private toldAfter = false;
   private nodes: Container[] = [];
   private onArt: Container[] = [];
   private offArt: Container[] = [];
@@ -143,7 +146,7 @@ class LanternLights implements Game {
     }
     this.shortButton.addChild(tile(320, 100, 'purple'), label('Show me a short way ▷', 24, ink));
     onTap(this.shortButton, () => void this.showShortWay(), { cooldown: 300 });
-    this.nextButton.addChild(tile(220, 100, 'green'), label('Next pond ▶', 24, ink));
+    this.nextButton.addChild(tile(220, 100, 'green'), this.nextLabel);
     onTap(this.nextButton, () => this.carryOn(), { cooldown: 300 });
     ctx.stage.addChild(this.tapLayer, this.undoButton, this.hintButton, this.againButton, this.shortButton, this.nextButton);
     this.showTouchParts(this.touch);
@@ -395,7 +398,14 @@ class LanternLights implements Game {
     return new Promise<void>((resolve) => {
       this.waiting = true;
       this.goOn = resolve;
+      // On the last pond the arrow ends the round.
+      this.nextLabel.text = this.index === this.ponds.length - 1 ? 'All done ▶' : 'Next pond ▶';
       this.showTouchParts(this.touch);
+      // Said once a round, so the buttons never depend on reading.
+      if (!this.toldAfter) {
+        this.toldAfter = true;
+        void this.ctx.say('lantern.after');
+      }
     });
   }
 
@@ -419,8 +429,9 @@ class LanternLights implements Game {
     if (!way) return;
     this.replaying = true;
     this.showTouchParts(this.touch);
+    const was = this.lit;
     this.lit = this.pond.board.slice();
-    this.lit.forEach((_, i) => this.flip(i));
+    this.lit.forEach((on, i) => { if (on !== was[i]) this.flip(i); });
     this.tally();
     await this.ctx.tw.wait(0.6);
     for (const cell of way) {

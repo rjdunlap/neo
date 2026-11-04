@@ -2526,6 +2526,7 @@ export const SCRIPT = {
   'lantern.stuck-school': ['Tricky one! Tap the button with the diamond, and a lantern will glow to show you where.'],
   'lantern.hint-one': ['There is only one short way. Try the glowing lantern.'],
   'lantern.hint-many': ['There are a few short ways. The glowing lantern is in one of them.'],
+  'lantern.after': ['Tap the green arrow to go on, or the purple button to watch a short way.'],
   'lantern.lit': ['Every lantern is glowing!', 'The whole pond is aglow!'],
   'lantern.done': ['A pond full of light.'],
   'sudoku.go': ['Every row, column and box needs each number once. Press the bottom button on a square to choose one.'],
