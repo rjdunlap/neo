@@ -36,6 +36,8 @@ export interface SlidePlan {
   stars?: number;
   /** Prediction ponds: three shown slides, and she taps where each will stop before it goes (`makePrediction`). */
   predict?: boolean;
+  /** A second penguin (with a scarf): she chooses which to slide, and each is a stop for the other (`solvePair`). */
+  pal?: boolean;
   puzzles: number;
   name: string;
 }
@@ -53,6 +55,7 @@ export const PLANS: SlidePlan[] = [
   { cols: 7, rows: 5, fish: 3, soft: 0, rocks: 5, moves: [5, 8], apartFromStart: true, puzzles: 2, name: 'Three fish: plan which to eat first, second and third' },
   { cols: 5, rows: 4, fish: 1, soft: 0, rocks: 3, moves: [3, 3], predict: true, puzzles: 2, name: 'Where will it stop? An arrow shows the slide; tap where the penguin will stop (two ponds, three slides each)' },
   { cols: 6, rows: 5, fish: 0, soft: 1, rocks: 3, blocks: 1, stars: 1, moves: [3, 6], puzzles: 2, name: 'A block onto the star: plan where to push the ice block from so it stops on the star' },
+  { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 4, pal: true, moves: [4, 7], puzzles: 2, name: 'Two penguins: choose which to slide, and park one as a stop for the other' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -72,6 +75,8 @@ export interface SlidePuzzle {
   /** Star marks on the ice, each needing a block parked on it; absent on the boards without any. */
   stars?: Cell[];
   start: Cell;
+  /** The second penguin's start, on the two-penguin ponds; either penguin may eat the fish. */
+  pal?: Cell;
   fish: Cell[];
   /** The fewest slides that eat every fish. */
   best: number;
@@ -230,6 +235,56 @@ export function eatsTwoFromStart(p: SlidePuzzle): boolean {
   });
 }
 
+/** Which penguin slides (0 the first, 1 the scarf penguin), and which way. */
+export interface PairStep {
+  who: 0 | 1;
+  dir: Dir;
+}
+
+/**
+ * One slide on a two-penguin pond: penguin `who` slides from `spots[who]`, the other one stopping it
+ * like a rock. Null when it cannot move (a bump); penguins never push each other.
+ */
+export function movePair(p: SlidePuzzle, spots: readonly Cell[], who: 0 | 1, dir: Dir): { spots: Cell[]; passed: Cell[] } | null {
+  const { to, passed } = slide(p, spots[who], dir, [spots[1 - who]]);
+  if (!passed.length) return null;
+  return { spots: spots.map((c, i) => (i === who ? to : c)), passed };
+}
+
+/** The fewest slides of either penguin to eat every fish from here, and the first of one such route (null when none is left). */
+export function solvePair(p: SlidePuzzle, spots: readonly Cell[], have = 0): { moves: number; first: PairStep | null } {
+  if (solved(p, have, [])) return { moves: 0, first: null };
+  const state = (s: readonly Cell[], h: number) => `${key(s[0])},${key(s[1])},${h}`;
+  const seen = new Set<string>([state(spots, have)]);
+  let frontier: { spots: readonly Cell[]; have: number; first: PairStep | null }[] = [{ spots, have, first: null }];
+  for (let depth = 1; frontier.length && depth <= 30; depth++) {
+    const next: typeof frontier = [];
+    for (const s of frontier) {
+      for (const who of [0, 1] as const) {
+        for (const dir of [0, 1, 2, 3] as Dir[]) {
+          const m = movePair(p, s.spots, who, dir);
+          if (!m) continue;
+          const h = s.have | eaten(p, m.passed);
+          const first = s.first ?? { who, dir };
+          if (solved(p, h, [])) return { moves: depth, first };
+          const k = state(m.spots, h);
+          if (seen.has(k)) continue;
+          seen.add(k);
+          next.push({ spots: m.spots, have: h, first });
+        }
+      }
+    }
+    frontier = next;
+  }
+  return { moves: -1, first: null };
+}
+
+/** How many slides each penguin alone needs with the other frozen like a rock (-1: it cannot reach every fish). */
+export function alone(p: SlidePuzzle): [number, number] {
+  const pal = p.pal!;
+  return [solve({ ...p, rocks: [...p.rocks, pal], pal: undefined }, p.start).moves, solve({ ...p, rocks: [...p.rocks, p.start], pal: undefined }, pal).moves];
+}
+
 /** A pond, unlike the ones already made this round when the plan caps single-slide ponds. */
 export function makePuzzle(plan: SlidePlan, rng: Rng, earlier: readonly SlidePuzzle[] = []): SlidePuzzle {
   const singlesLeft = plan.maxSingles === undefined || earlier.filter((e) => e.best === 1).length < plan.maxSingles;
@@ -243,14 +298,15 @@ export function makePuzzle(plan: SlidePlan, rng: Rng, earlier: readonly SlidePuz
     for (let x = 0; x < plan.cols; x++) for (let y = 0; y < plan.rows; y++) cells.push({ x, y });
     const pool = rng.shuffle(cells);
     const start = pool.pop()!;
+    const pal = plan.pal ? pool.pop()! : undefined;
     const rocks = pool.splice(0, plan.rocks);
     const soft = pool.splice(0, plan.soft);
     const fish = pool.splice(0, plan.fish);
     const blocks = pool.splice(0, plan.blocks ?? 0);
     // Stars come from what is left, so never under a rock, a snow patch, a block or the penguin.
     const stars = pool.splice(0, plan.stars ?? 0);
-    const p: SlidePuzzle = { cols: plan.cols, rows: plan.rows, rocks, soft, ...(blocks.length ? { blocks } : {}), ...(stars.length ? { stars } : {}), start, fish, best: 0 };
-    const { moves } = solve(p, start);
+    const p: SlidePuzzle = { cols: plan.cols, rows: plan.rows, rocks, soft, ...(blocks.length ? { blocks } : {}), ...(stars.length ? { stars } : {}), start, ...(pal ? { pal } : {}), fish, best: 0 };
+    const { moves } = pal ? solvePair(p, [start, pal]) : solve(p, start);
     if (moves < plan.moves[0] || moves > plan.moves[1]) continue;
     if (moves === 1 && !singlesLeft) continue;
     // Soft snow should matter: without it, the puzzle would play differently.
@@ -260,6 +316,8 @@ export function makePuzzle(plan: SlidePlan, rng: Rng, earlier: readonly SlidePuz
       const frozen = solve({ ...p, rocks: [...rocks, ...blocks], blocks: [] }, start).moves;
       if (frozen !== -1 && frozen <= moves) continue;
     }
+    // Both penguins should matter: with either one frozen like a rock, the other alone takes longer or cannot reach the fish.
+    if (pal && alone(p).some((m) => m !== -1 && m <= moves)) continue;
     if (plan.apartFromStart && eatsTwoFromStart(p)) continue;
     if (plan.fair && hasDeadEnd(p)) continue;
     return { ...p, best: moves };

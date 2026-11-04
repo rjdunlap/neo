@@ -148,6 +148,60 @@ async function woodsBatch() {
       log('Penguin Slide 12: a stuck block, undo, the block onto the star in both ponds, saved score and sticker passed');
       continue;
     }
+    if (level === 13) {
+      // Two penguins (school): wasted slides bring the arrow (one hint), then follow it, choosing a penguin by tapping it.
+      await launch('penguin-slide', 13);
+      await page.setViewportSize({ width: 768, height: 1024 });
+      const step = async (dir) => {
+        await page.evaluate((dir) => {
+          const g = neo.scene.game; const p = g.penguin;
+          const at = g.board.toGlobal({ x: p.x + [1, 0, -1, 0][dir] * 90, y: p.y + [0, 1, 0, -1][dir] * 90 });
+          kit.tap(at.x, at.y);
+        }, dir);
+        await page.waitForTimeout(120);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 15000 });
+      };
+      let switches = 0;
+      for (let n = 0; n < 2; n++) {
+        await idle(n);
+        if (n === 0) {
+          // Slides that neither eat the fish nor strand the penguins, until the yellow arrow comes.
+          for (let k = 0; k < 20 && !(await page.evaluate(() => neo.scene.game.hinting)); k++) {
+            const dir = await page.evaluate(async () => {
+              const S = await import('/src/games/penguin-slide/logic.ts'); const g = neo.scene.game;
+              return [0, 1, 2, 3].find((d) => { const m = S.movePair(g.puzzle, g.spots, g.who, d); return m && !S.eaten(g.puzzle, m.passed) && S.solvePair(g.puzzle, m.spots, 0).moves > 0; }) ?? -1;
+            });
+            assert.ok(dir >= 0, 'the chosen penguin has a harmless slide');
+            await step(dir);
+          }
+          assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints]), [0, 1], 'wasted slides are no miss; the arrow counts as one hint');
+        }
+        for (let k = 0; k < 30; k++) {
+          const next = await page.evaluate(async (n) => {
+            const g = neo.scene.game; if (neo.scene.finished || g.index !== n) return null;
+            const S = await import('/src/games/penguin-slide/logic.ts'); return S.solvePair(g.puzzle, g.spots, g.have).first;
+          }, n);
+          if (!next) break;
+          const who = await page.evaluate(() => neo.scene.game.who);
+          if (next.who !== who) {
+            const moves = await page.evaluate(() => neo.scene.game.moves);
+            await tap(`neo.scene.game.penguins[${next.who}]`);
+            await page.waitForTimeout(250);
+            assert.equal(await page.evaluate(() => neo.scene.game.who), next.who, 'tapping the other penguin chooses it');
+            assert.equal(await page.evaluate(() => neo.scene.game.moves), moves, 'choosing is not a slide');
+            if (!switches++) await screenshot('penguin-slide-13-portrait');
+            continue;
+          }
+          await step(next.dir);
+        }
+      }
+      assert.ok(switches > 0, 'a route needed a change of penguin');
+      await finished('penguin-slide');
+      assert.deepEqual(await score('penguin-slide'), [0, 1], 'no misses; the arrow was the one hint');
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log('Penguin Slide 13: wasted slides, the arrow (one hint), tapping a penguin to choose it, both ponds, saved score and sticker passed');
+      continue;
+    }
     await launch('penguin-slide', level);
     if (level === 3 || level >= 6) await page.setViewportSize({ width: 768, height: 1024 });
     const puzzles = await page.evaluate(() => neo.scene.game.plan.puzzles);
