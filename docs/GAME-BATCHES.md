@@ -1513,6 +1513,14 @@ Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`,
 
 Proof: new-interaction tier: typecheck, unit tests including order, one play of level 9 with one wrong number and one hint naming a patch; one portrait screenshot; `fingerdemo` at 9; `BROWSER_SUITE=couchgames` filtered to Sudoku Garden.
 
+### sudoku-garden 5: Cage beds
+
+- **`sudoku-garden`, level 10 A 6 by 6 bed with sums in the cages (dive slice 5)** (defined 2026-11-03; new interaction; grown-up): cages on `Puzzle`, cage-aware `search`, `cage-last` and `cage-sets`, `makeCageBed` (or its authored fallback), the dashed outlines, sum labels and moved marks, two hint lines, the instruction and the wrong-sum line; 9 by 9 cages are left out. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order), [definition](deep-dives/sudoku-garden.md#cage-beds-level-10-definition-2026-11-03)
+
+Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new interaction: typecheck, rule tests, one play of level 10 with one wrong number and one cage hint, to the sticker; one landscape and one portrait screenshot; `fingerdemo` at 10; one build for the voice lines.
+
 ### treasure-map 1: Fresh maps and true hints
 
 - **`treasure-map`, Fresh maps and true hints (dive slice 1)** (built 2026-11-03; existing-game fix): seeded level 1 headers from a pool of seven pictures and shuffled colours via `headersFor(plan, rng)`, seeded map dressing, level 5's own `map.cluehint`, level 4's hint lighting the first leg, and the how-to level-3 step as a tap.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
