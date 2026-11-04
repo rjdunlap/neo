@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { beamEnd, boardWith, DROP_TILT, fewestPlaced, flowerCount, freeCells, nearestPlacement, placeHint, hintMirror, makePuzzle, minTurns, mirrorPuzzle, nearestSolutions, planFor, PLANS, predictionChoices, reflect, solved, tiltFor, trace, type Dir, type LightPuzzle, type Placed, type Tilt } from './logic';
+import { beamEnd, boardWith, cloudCells, DROP_TILT, fewestPlaced, findLines, fits, mirrorAt, flowerCount, freeCells, nearestPlacement, placeHint, hintMirror, makePuzzle, minTurns, mirrorPuzzle, nearestSolutions, planFor, PLANS, predictionChoices, reflect, solved, tiltFor, trace, type Dir, type LightPuzzle, type Placed, type Tilt } from './logic';
 
-/** Levels 1–7: every mirror is already on the board. */
-const TILT_PLANS = PLANS.filter((p) => !p.tray);
+/** Levels 1–7: every mirror is already on the board, for her to turn. */
+const TILT_PLANS = PLANS.filter((p) => !p.tray && p.mode !== 'find');
 
 const mirrorIndices = (p: LightPuzzle) => p.things.flatMap((t, i) => (t.kind === 'mirror' ? [i] : []));
 
@@ -21,7 +21,8 @@ describe('Light Lab', () => {
       for (let seed = 1; seed <= 300; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
         expect(solved(...boardWith(p, p.solution, p.tray)), `${plan.name} ${seed}`).toBe(true);
-        expect(solved(p, p.start)).toBe(false);
+        // Level 10 turns nothing: its start is the answer, hidden under the cloud.
+        expect(solved(p, p.start)).toBe(plan.mode === 'find');
         expect(flowerCount(p)).toBe(plan.flowers);
         expect(p.pathMirrors).toHaveLength(plan.turns - plan.tray);
         expect(p.tray).toHaveLength(plan.tray);
@@ -259,6 +260,68 @@ describe('Light Lab', () => {
           expect(solved(...boardWith(m, m.solution, m.tray))).toBe(true);
         }
       }
+    });
+  });
+
+  describe("level 10, Where's the mirror?", () => {
+    const plan = planFor(10);
+
+    it('is a 6 by 4 find board of three, with one mirror on the sun\'s row and the flower on the top or bottom edge', () => {
+      expect(plan.mode).toBe('find');
+      expect([plan.cols, plan.rows, plan.puzzles]).toEqual([6, 4, 3]);
+      for (let seed = 1; seed <= 400; seed++) {
+        const p = makePuzzle(plan, new Rng(seed));
+        const mirrors = p.things.filter((t) => t.kind === 'mirror');
+        const flower = p.things.find((t) => t.kind === 'flower')!;
+        expect(mirrors).toHaveLength(1);
+        expect(mirrors[0].y).toBe(p.sunRow);
+        expect([0, p.rows - 1]).toContain(flower.y);
+        expect(flower.y).not.toBe(p.sunRow);
+        // The beam reaches the flower and then leaves the board past it.
+        const t = trace(p, p.solution);
+        expect(t.woken).toHaveLength(1);
+        expect(t.end).toBe('edge');
+        const last = t.cells[t.cells.length - 1];
+        expect(last.x).toBe(flower.x);
+        expect(cloudCells(p)).toHaveLength(p.cols * p.rows - 2);
+      }
+    });
+
+    it('exactly one cloud cell is consistent with where the beam goes in and comes out, and the hint lines cross at it', () => {
+      for (let seed = 1; seed <= 400; seed++) {
+        const p = makePuzzle(plan, new Rng(seed));
+        const mirror = p.things.find((t) => t.kind === 'mirror')!;
+        const fitting = cloudCells(p).filter((c) => fits(p, c));
+        expect(fitting, `seed ${seed}`).toEqual([{ x: mirror.x, y: mirror.y }]);
+        const { row, col } = findLines(p);
+        expect([col, row]).toEqual([mirror.x, mirror.y]);
+      }
+    });
+
+    it('a wrong cell\'s ghost beam never wakes the flower, and the sun sits on either side', () => {
+      const sides = new Set<number>();
+      for (let seed = 1; seed <= 200; seed++) {
+        const p = makePuzzle(plan, new Rng(seed));
+        sides.add(p.sunCol);
+        const mirror = p.things.find((t) => t.kind === 'mirror')!;
+        for (const c of cloudCells(p)) {
+          if (c.x === mirror.x && c.y === mirror.y) continue;
+          const ghost = trace(...mirrorAt(p, c));
+          expect(ghost.woken).toEqual([]);
+          expect(ghost.end).toBe('edge');
+        }
+      }
+      expect([...sides].sort()).toEqual([0, 5]);
+    });
+
+    it('boards vary in where the mirror hides', () => {
+      const spots = new Set<string>();
+      for (let seed = 1; seed <= 100; seed++) {
+        const p = makePuzzle(plan, new Rng(seed));
+        const m = p.things.find((t) => t.kind === 'mirror')!;
+        spots.add(`${m.x},${m.y},${p.sunCol}`);
+      }
+      expect(spots.size).toBeGreaterThan(20);
     });
   });
 });
