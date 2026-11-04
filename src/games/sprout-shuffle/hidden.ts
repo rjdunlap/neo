@@ -605,7 +605,7 @@ export class SproutHidden implements Game {
       if ('plant' in step) void this.plant(step.plant);
       this.canButton.scale.set(1.15);
       void this.ctx.tw.to(this.canButton.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outElastic });
-      void this.ctx.say('sprout.help.tester');
+      void this.ctx.say('plant' in step ? 'sprout.help.tester' : 'sprout.help.water');
       return;
     }
     if (!this.choosing) {
