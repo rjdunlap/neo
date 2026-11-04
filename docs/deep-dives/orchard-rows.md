@@ -1,6 +1,6 @@
 # Orchard Rows deep dive
 
-*ID `orchard-rows` · bands school · levels 1–6 on 2026-11-03 · session `ccr-73906eb2-r3nm6v`, [PR #1133](https://github.com/rjdunlap/neo/pull/1133)*
+*ID `orchard-rows` · bands school · levels 1–9 on 2026-11-03 · session `ccr-73906eb2-r3nm6v`, [PR #1133](https://github.com/rjdunlap/neo/pull/1133)*
 
 ## The game today
 
@@ -120,7 +120,7 @@ None blocking. Under the [October 23 standing rules](../archive/DECISIONS-2026-1
 
 1. **Fresh orchards and baskets** (batch `orchard-rows 2`; built 2026-11-03): the level 1–4 pool additions above, in `logic.ts` and its tests. Check tier: game rules, so `npm run typecheck` and the Orchard Rows rule tests only.
 2. **Define levels 7–9, *a path through the orchard*** (defined 2026-11-03, [definition](../definitions/orchard-rows-path.md), [PR #1178](https://github.com/rjdunlap/neo/pull/1178)): the path picture and its layout with pads in `basketLayout` at the four views, part signs, the pad decoys, accounting, voice lines, how-to steps (and bounding the level 4–6 note), the bot, the `makeRound` and `isBasketLevel` couplings, rule tests and the check tier.
-3. **Build levels 7–9** (batch `orchard-rows 3`, [definition](../definitions/orchard-rows-path.md) and [batch](../GAME-BATCHES.md#orchard-rows-3-a-path-through-the-orchard); new-interaction tier: typecheck, unit tests, one scripted play of levels 7 and 9 with one wrong pad and one hint, one portrait screenshot, `fingerdemo` at 7, 8 and 9). Queued in READY.
+3. **Build levels 7–9** (batch `orchard-rows 3`, [definition](../definitions/orchard-rows-path.md) and [batch](../GAME-BATCHES.md#orchard-rows-3-a-path-through-the-orchard); new-interaction tier: typecheck, unit tests, one scripted play of levels 7 and 9 with one wrong pad and one hint, one portrait screenshot, `fingerdemo` at 7, 8 and 9). **Built 2026-11-03** ([PR #1183](https://github.com/rjdunlap/neo/pull/1183)); build note in the [archive](../archive/COMPLETED-2026-10-09.md#orchard-rows-levels-79-a-path-through-the-orchard-2026-11-03).
 
 ## What was built in this session
 
