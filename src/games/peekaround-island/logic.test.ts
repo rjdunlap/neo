@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { fits, hasChoice, makeScene, namedHintTarget, nextPair, nextRequest, pairPlacements, peekTouch, planFor, PLANS, spotFacing, whereIs, type PeekTouchFriend, type Where } from './logic';
+import { fits, frontAfterHalfTurn, hasChoice, makeScene, namedHintTarget, nextPair, nextRequest, pairPlacements, peekTouch, planFor, PLANS, spotFacing, whereIs, type PeekTouchFriend, type Where } from './logic';
 
 describe('Peekaround Island', () => {
   it('demonstrates turning, choosing, and every requested placement without a wrong touch', () => {
@@ -34,7 +34,12 @@ describe('Peekaround Island', () => {
           friend.spot = move.spot;
           friend.want = undefined;
         }
+        // Before the half turn she predicts who will be in front: the bot taps the picture of the friend behind.
+        const predict = peekTouch('two', turns, null, friends, true);
+        const behind = friends.find((f) => f.spot >= 0 && whereIs(f.spot, turns) === 'behind')!;
+        expect(predict).toEqual({ kind: 'tile', name: behind.name });
         turns += 2;
+        expect(whereIs(behind.spot, turns)).toBe('front');
       }
       expect(friends.every((f) => f.spot >= 0)).toBe(true);
     }
@@ -116,6 +121,19 @@ describe('Peekaround Island', () => {
       };
       walk([0, 1, 2, 3], 0, 0);
     }
+  });
+
+  it('level 5 prediction: the friend in front after the half turn is the one behind before it', () => {
+    for (let turns = -4; turns <= 4; turns++) {
+      const friends = [0, 1, 2, 3].map((spot) => ({ spot }));
+      const before = frontAfterHalfTurn(friends, turns)!;
+      expect(whereIs(before.spot, turns)).toBe('behind');
+      const after = friends.find((f) => whereIs(f.spot, turns + 2) === 'front')!;
+      expect(after).toBe(before);
+      // Only friends on the island count; a shore friend (spot -1) never answers.
+      expect(frontAfterHalfTurn([{ spot: -1 }], turns)).toBeNull();
+    }
+    expect(planFor(5).name).toMatch(/who will be in front/);
   });
 
   it('level 2 hint: the arrows while the friend asked for is hidden, the friend once it is in view', () => {

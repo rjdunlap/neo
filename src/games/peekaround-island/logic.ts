@@ -24,7 +24,7 @@ export const PLANS: PeekPlan[] = [
   { mode: 'named', rounds: 3, name: 'Find the friend named: "where is the duck?" (two others are showing)' },
   { mode: 'who', rounds: 3, name: 'Three friends are showing: who is hiding behind the tree?' },
   { mode: 'place', rounds: 3, name: 'Put three friends behind, in front of, and next to the tree' },
-  { mode: 'two', rounds: 2, name: 'Two directions at once, then the island turns around: who is in front now?' },
+  { mode: 'two', rounds: 2, name: 'Two directions at once, then before the island turns around: who will be in front?' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -146,6 +146,14 @@ function pairFair(free: readonly number[], turns: number, a: Where, b: Where): b
 /** Level 2's help: ring the arrows while the friend asked for is behind the tree, and the friend once it is in view. */
 export const namedHintTarget = (hiderSpot: number, turns: number): 'arrows' | 'hider' => (whereIs(hiderSpot, turns) === 'behind' ? 'arrows' : 'hider');
 
+/**
+ * Level 5's prediction: before a half turn, the friend who will be in front afterwards is the one behind the
+ * tree now. Null when nobody stands behind.
+ */
+export function frontAfterHalfTurn<F extends { spot: number }>(friends: readonly F[], turns: number): F | null {
+  return friends.find((f) => f.spot >= 0 && whereIs(f.spot, turns) === 'behind') ?? null;
+}
+
 export interface PeekTouchFriend {
   name: CritterName;
   spot: number;
@@ -158,8 +166,15 @@ export type PeekTouch =
   | { kind: 'tile'; name: CritterName }
   | { kind: 'place'; name: CritterName; spot: number };
 
-/** The next visible control a capable child uses for each of the five perspective modes. */
-export function peekTouch(mode: PeekMode, turns: number, hider: CritterName | null, friends: readonly PeekTouchFriend[]): PeekTouch | null {
+/**
+ * The next visible control a capable child uses for each of the five perspective modes. While level 5 asks
+ * for a prediction (`predicting`), that is the picture of the friend behind the tree.
+ */
+export function peekTouch(mode: PeekMode, turns: number, hider: CritterName | null, friends: readonly PeekTouchFriend[], predicting = false): PeekTouch | null {
+  if (predicting) {
+    const front = frontAfterHalfTurn(friends, turns);
+    return front ? { kind: 'tile', name: front.name } : null;
+  }
   if (mode === 'find' || mode === 'named') {
     const hidden = hider && friends.find((f) => f.name === hider && f.spot >= 0);
     if (!hidden) return null;

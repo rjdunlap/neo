@@ -2114,7 +2114,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: 'Tap the friend you are asked for. The friends already in plain sight are not the one.' },
       { from: 3, to: 3, text: 'Three friends are showing. Tap the picture of the friend you cannot see; the island turns to show them.' },
       { from: 4, to: 4, text: 'Drag each friend from the shore behind, in front of or next to the tree, as asked.' },
-      { from: 5, text: 'Drag two friends where you are asked, two directions at once. Then the island turns halfway, and the friend who was behind is in front now.' },
+      { from: 5, text: 'Drag two friends where you are asked, two directions at once. Then tap the picture of the friend you think will be in front once the island turns halfway; any guess is fine, and the friend who was behind comes round to the front.' },
     ],
     finish: [
       { to: 3, text: 'The round ends after three hidden friends are found.' },

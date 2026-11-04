@@ -298,7 +298,19 @@ async function woodsBatch() {
           await page.waitForFunction(() => !neo.scene.game.busy, null, { timeout: 20000 });
           await dropAt(name, true);
         }
-        if (level === 5 && k === 0) await screenshot('peekaround-5');
+        if (level === 5) {
+          // Before the half turn she guesses who will be in front: first a wrong picture (counted as nothing), then the right one.
+          await page.waitForFunction(() => neo.scene.game.tiles.length > 0 && !neo.scene.game.busy, null, { timeout: 20000 });
+          if (k === 0) await screenshot('peekaround-5');
+          const before = await counts();
+          const right = await page.evaluate(async () => {
+            const L = await import('/src/games/peekaround-island/logic.ts'); return L.frontAfterHalfTurn(neo.scene.game.friends, neo.scene.game.turns).name;
+          });
+          await tap(`neo.scene.game.tiles.find((t) => t.name ${k === 0 ? '!==' : '==='} ${JSON.stringify(right)}).node`);
+          await page.waitForTimeout(450);
+          assert.deepEqual(await counts(), before, 'a prediction is never a miss');
+          await page.waitForFunction((r) => neo.scene.finished || neo.scene.game.friends.find((f) => f.name === r && f.spot >= 0 && ((f.spot + neo.scene.game.turns) % 4 + 4) % 4 === 0), right, { timeout: 20000 });
+        }
       }
     }
     await finished('peekaround-island');
