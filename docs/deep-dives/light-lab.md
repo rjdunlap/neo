@@ -97,12 +97,12 @@ None needed: pre-K starts at 1 and school at 2, and the jump from 7 to the new l
 
 ### Definitions (docs only)
 
-- **Through, bounce or stop?** (pre-K top, school): a picture object sits on the beam (a clear jar, waxed paper, a cardboard square, a spoon); she makes a free prediction (through, bounce, stop) and shines. Needs the materials table source-checked against NGSS 1-PS4-3 and a toy rule for translucent (dimmer but through), the art list and the level's number.
+- **Through, bounce or stop?** (pre-K top, school) **Defined 2026-11-03:** [definition](../definitions/light-lab-materials.md), level 11. A picture object sits on the beam (a clear jar, waxed paper, a cardboard square, a spoon); she makes a free prediction (through, bounce, stop) and shines. Needs the materials table source-checked against NGSS 1-PS4-3 and a toy rule for translucent (dimmer but through), the art list and the level's number.
 - **Split the sunbeam** (school top): a half-mirror sends light both straight on and turned. Needs a branching `trace` with a shared seen-set so loops end, a generator that guarantees the split is required, a hint over the nearest solution, and the couch question (left out of courses until defined).
 
 ### Left out on purpose
 
-Comparing two replays; additive colour mixing; a timer or moving beam; more than seven columns or five rows (targets would shrink); a pre-K window above 4 until the new school modes are seen played.
+The pre-K order lists level 11, a non-planning level, with the reasoning in the [definition](../definitions/light-lab-materials.md). Comparing two replays; additive colour mixing; a timer or moving beam; more than seven columns or five rows (targets would shrink); a pre-K window above 4 until the new school modes are seen played.
 
 ## Decisions for the developer
 
@@ -114,7 +114,7 @@ None. Placement and new levels stay inside the built bands and land; the prescho
 2. **Couch course *Sunbeam Run*** (couch catalog tier: a frozen board list, par from slice 1's minimum, course tests, `BROWSER_SUITE=couchgames` filtered to Light Lab): after slice 1. Roadmap chunk 8's remaining Light Lab par course.
 3. **Levels 8–9 *Place a mirror* and *Two to place*** (new-interaction tier: typecheck, rule tests, one play of level 8 with a drop off the board, a missed shine and the glowing cell, level 9 to its sticker, one portrait screenshot with the tray, `fingerdemo` at 8 and 9; stop after 8 if the allowance cannot cover 9). School range rises to 9.
 4. **Level 10 *Where's the mirror?*** (new-interaction tier: typecheck, rule tests, one play with one wrong cell and its ghost beam, a second for the glow, then the right cell, one portrait screenshot of the cloud, `fingerdemo` at 10): after slice 3, since the school range rises past 9.
-5. **Define *Through, bounce or stop?*** (docs only).
+5. **Defined (2026-11-03, [PR #1189](https://github.com/rjdunlap/neo/pull/1189)): *Through, bounce or stop?*** (docs only): [definition](../definitions/light-lab-materials.md). Build: level 11, batch light-lab 5 ([plan](../GAME-BATCHES.md#light-lab-5-level-11-through-bounce-or-stop)), after slice 4.
 6. **Define *Split the sunbeam*** (docs only): after slice 1 (the nearest-solution search it extends).
 
 ## What was built in this session

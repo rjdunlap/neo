@@ -2587,7 +2587,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--habitat-help
 
 [PR #1172](https://github.com/rjdunlap/neo/pull/1172), `claude/inchworm-hop-by-hop` (code `9820c8ce`, `32d7400b`, review fix `557892c5`): [dive slice 2](../deep-dives/inchworm.md#build-slices-in-order). Level 9 (mode `hop`, school only; school order `[1, 2, 7, 9, 3, 4, 8, 5, 6]`, max 9; pre-K unchanged `[1, 2, 7]`): three rounds, lengths 3-8, never the same length or thing twice running (`hopTicks`). One worm waits nose at the thing's start; each tap inches it one length and chalks a white tick (none at 0); it stops by itself at the end and extra taps do nothing (no miss). Then three pads (the count and two near it; `isWide` gives the ruler levels and hop the 74-unit size and bottom pads). A wrong pad says "Count the chalk marks again: one for every hop."; two misses glow the right pad and number the ticks; right says "The {what} is {n} hops long!". New voice lines `worm.hop`, `worm.hops`, `worm.hoplong`, `worm.chalk`; the how-to step is scoped to 9 and its demonstration plays one thing. The `woods` suite's `worm` case now runs to level 9 by default and checks it (taps, no pads until the end, end tap no miss, two wrong pads giving 2 misses and 1 hint, numbered ticks, screenshots `inchworm-9-mid-hop` and `inchworm-9-hint`). One cosmetic note left: a resize mid-hop draws the new tick about 0.3 s early.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--inchworm-level-9-one-worm-hop-by-hop-inchworm-batch-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--inchworm-level-9-one-worm-hop-by-hop-inchworm-batch-2).
 
 ## Today's six slice 1: Home entry and preset levels (D10, 2026-11-03)
 
