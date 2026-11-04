@@ -275,8 +275,9 @@ export class SproutConservatory implements Game {
       bed.scale.set(0.8);
     }
     // An open fan covers the bench: one row of four in landscape, two by two in portrait.
+    // Portrait's fan is two rows of buds even over a one-row bench, so a bud never shrinks below its full size.
     const top = g.benchTop;
-    const bottom = g.benchBottom;
+    const bottom = this.portrait ? Math.max(g.benchBottom, top + 2 * BUD_H + FAN_GAP + 24) : g.benchBottom;
     this.fanPanel.clear().roundRect(20, top, v.w - 40, bottom - top, 28).fill({ color: 0xfffaf0, alpha: 0.95 }).stroke({ width: 5, color: swatch.green.line });
     this.closeButton.position.set(v.w - 20 - CLOSE_R - 8, top + CLOSE_R + 8);
     const rows = this.portrait ? 2 : 1;
@@ -298,7 +299,7 @@ export class SproutConservatory implements Game {
     const show = this.full && !this.finished;
     for (const m of MARKINGS) this.lenses[m].visible = show;
     this.checkButton.visible = show && live;
-    this.finishButton.visible = this.found !== null && !this.finished;
+    this.finishButton.visible = this.found !== null && live;
   }
 
   // ——— Planting ———
@@ -489,6 +490,7 @@ export class SproutConservatory implements Game {
     if (this.found) {
       await this.ctx.say('sprout.pc-two-plans');
       if (!this.alive) return;
+      this.busy = false;
       this.end();
       return;
     }
@@ -500,6 +502,7 @@ export class SproutConservatory implements Game {
       if (!this.alive) return;
     }
     if (this.setup.accepted.length < 2) {
+      this.busy = false;
       this.end();
       return;
     }
@@ -512,7 +515,7 @@ export class SproutConservatory implements Game {
 
   /** One brief per round: one sticker, with or without help. */
   end() {
-    if (this.finished) return;
+    if (this.finished || this.busy) return;
     this.finished = true;
     this.closeFan();
     this.updateButtons();
