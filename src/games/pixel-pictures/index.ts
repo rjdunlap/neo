@@ -7,18 +7,20 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { RoundButton } from '../../ui/buttons';
+import { checkIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import type { PixelPictureCreation } from '../../content/creations';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { clues, colorClues, colorLogicCell, colorsOf, deduce, given, helpCells, LETTERS, makePictures, PICTURES, pixelTouch, planFor, scaleDown, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
+import { canFinish, clues, colorClues, colorLogicCell, colorsOf, deduce, FREE_COLORS, freeTap, freeTouch, given, helpCells, LETTERS, makePictures, PICTURES, pixelsOf, pixelTouch, planFor, scaleDown, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
 
 const LEVELS: BandLevels = {
-  // Level 9 (two colors on the small grid) sits between 1 and 2.
+  // Level 9 (two colors on the small grid) sits between 1 and 2; level 10 (my own picture, a free level) comes last.
   preschool: { min: 1, max: 9, order: [1, 9, 2] },
-  prek: { min: 1, max: 9, order: [1, 9, 2, 3] },
-  school: { min: 3, max: 8 },
+  prek: { min: 1, max: 10, order: [1, 9, 2, 3, 10] },
+  school: { min: 3, max: 10, order: [3, 4, 5, 6, 7, 8, 10] },
 };
 
 const CELL = 100;
@@ -35,6 +37,7 @@ const MISS_LINE: Record<PixelPlan['mode'], LineId> = {
   colorClues: 'pixel.notclue',
   mirror2: 'pixel.notmirror2',
   big: 'pixel.notbig',
+  free: 'pixel.notthere',
 };
 
 class PixelPictures implements Game {
@@ -70,6 +73,8 @@ class PixelPictures implements Game {
   /** The square the ghost finger touched last, so its next one is near it. */
   private ghostAt: { x: number; y: number } | undefined;
   private clock = 0;
+  /** Level 10: Done, shown once her design has enough squares. */
+  done: RoundButton | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -96,17 +101,29 @@ class PixelPictures implements Game {
     const w = this.n * CELL;
     const clueSpace = this.plan.mode === 'clues' || this.plan.mode === 'colorClues' ? 90 : 0;
     const modelSpace = this.plan.mode === 'copy' || this.plan.mode === 'big' ? 230 : 0;
-    const paletteSpace = this.plan.mode === 'colorClues' ? 130 : 0;
+    const paletteSpace = this.plan.mode === 'colorClues' ? 130 : this.plan.mode === 'free' ? 280 : 0;
     const x = Math.max(160, (v.w - w - clueSpace - modelSpace - paletteSpace) / 2 + clueSpace);
     const y = Math.max(clueSpace ? 90 + 60 : 110, (v.h - w) / 2 + (clueSpace ? 30 : 0));
     this.board.position.set(x, y);
     this.board.hitArea = new Rectangle(0, 0, w, w);
     this.model.position.set(x + w + 60, y);
     this.clueLayer.position.set(x, y);
+    const free = this.plan.mode === 'free';
+    const narrow = v.w < 920;
+    // Level 10 on a narrow view: the row's first paint keeps its left edge at 150, clear of the pet.
+    const rowX = Math.max(206, v.w / 2 - 232);
+    const rowY = Math.min(v.h - 70, y + w + 70);
     this.palette.forEach((p, i) => {
-      if (v.w < 920) p.node.position.set(v.w / 2 + (i ? 72 : -72), Math.min(v.h - 60, y + w + 64));
+      // Level 10: four paints in a row below the board (portrait) or a column beside it, with Done past them.
+      if (free && narrow) p.node.position.set(rowX + i * 116, rowY);
+      else if (free) p.node.position.set(x + w + 100, y + 60 + i * 126);
+      else if (narrow) p.node.position.set(v.w / 2 + (i ? 72 : -72), Math.min(v.h - 60, y + w + 64));
       else p.node.position.set(x + w + 150, y + w - 60 - i * 120);
     });
+    if (this.done) {
+      if (narrow) this.done.position.set(rowX + 4 * 116 + 10, rowY);
+      else this.done.position.set(x + w + 240, y + w - 60);
+    }
     this.draw();
   }
 
@@ -119,6 +136,17 @@ class PixelPictures implements Game {
   /** The ghost finger: choose a color where there is a palette, then tap the squares the picture (or, on logic levels, its numbers) settles. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
+    if (this.plan.mode === 'free') {
+      // Level 10: the hand draws a heart, then presses Done.
+      const move = freeTouch(this.filled, this.color);
+      if (!move) return null;
+      if (move === 'done') return this.done?.visible ? { tap: { on: this.done } } : null;
+      if ('color' in move) {
+        const swatchNode = this.palette.find((p) => p.letter === move.color)?.node;
+        return swatchNode ? { tap: { on: swatchNode } } : null;
+      }
+      return { tap: { on: this.board, x: move.cell.x * CELL + CELL / 2, y: move.cell.y * CELL + CELL / 2 }, pause: 0.1 };
+    }
     const move = pixelTouch(this.plan, this.picture, this.filled, this.color, this.ghostAt);
     if (!move) return null;
     if ('color' in move) {
@@ -151,6 +179,7 @@ class PixelPictures implements Game {
     await this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
     if (this.index > 0) return;
+    if (this.plan.mode === 'free') return this.ctx.instruct('pixel.free');
     if (this.plan.mode === 'mirror') return this.ctx.instruct('pixel.mirror');
     if (this.plan.mode === 'mirror2') return this.ctx.instruct('pixel.mirror2');
     if (this.plan.mode === 'big') return this.ctx.instruct('pixel.big');
@@ -209,6 +238,7 @@ class PixelPictures implements Game {
 
   private buildPalette() {
     for (const p of this.palette.splice(0)) p.node.destroy({ children: true });
+    if (this.plan.mode === 'free') return this.buildFreePalette();
     if (this.plan.mode !== 'colorClues' && (this.plan.mode !== 'copy' || this.plan.colors !== 2)) {
       this.color = this.plan.mode === 'clues' ? LOGIC_COLOR : colorsOf(this.picture)[0];
       return;
@@ -228,6 +258,29 @@ class PixelPictures implements Game {
       this.palette.push({ letter, node });
       this.paletteLayer.addChild(node);
     }
+  }
+
+  /** Level 10: four paints to choose freely, and a Done button that waits until there is a picture. */
+  private buildFreePalette() {
+    this.color = FREE_COLORS[0];
+    for (const letter of FREE_COLORS) {
+      const node = new Container();
+      const sw = swatch[colorOf(letter)];
+      node.addChild(new Graphics().circle(0, 0, 50).fill(sw.fill).stroke({ width: 6, color: sw.line }));
+      node.hitArea = new Circle(0, 0, 56);
+      onTap(node, () => {
+        this.color = letter;
+        sfx.tick();
+        this.draw();
+      });
+      this.palette.push({ letter, node });
+      this.paletteLayer.addChild(node);
+    }
+    if (!this.done) {
+      this.done = new RoundButton(checkIcon(), swatch.green, 60, () => void this.finishFree());
+      this.paletteLayer.addChild(this.done);
+    }
+    this.done.visible = false;
   }
 
   private draw() {
@@ -265,6 +318,7 @@ class PixelPictures implements Game {
     const x = Math.floor(p.x / CELL);
     const y = Math.floor(p.y / CELL);
     if (x < 0 || y < 0 || x >= this.n || y >= this.n) return;
+    if (this.plan.mode === 'free') return this.tapFree(x, y);
     const have = this.filled[y][x];
     if (have && have !== 'x') return;
     if (given(this.plan, x, y)) return;
@@ -291,6 +345,41 @@ class PixelPictures implements Game {
     if (want && colorNeedsMatch) void this.ctx.say('pixel.notcolor', { color: colorOf(want) });
     else void this.ctx.say(MISS_LINE[this.plan.mode]);
     if (this.wrongs >= 2 && !this.hinted.length) this.hint();
+  }
+
+  /** Level 10: paint an empty square, empty a colored one; nothing is a miss. Done appears at four squares. */
+  private tapFree(x: number, y: number) {
+    const emptying = !!this.filled[y][x];
+    this.filled = freeTap(this.filled, x, y, this.color);
+    if (emptying) sfx.tick();
+    else sfx.pop(4 + ((x + y) % 6));
+    this.draw();
+    const ready = canFinish(this.filled);
+    if (this.done && ready !== this.done.visible) {
+      this.done.visible = ready;
+      if (ready) {
+        this.done.scale.set(0.4);
+        void this.ctx.tw.to(this.done.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
+      }
+    }
+  }
+
+  /** Done on level 10: her design is the round's picture, kept on request like any other. */
+  private async finishFree() {
+    if (this.busy || this.finished || !canFinish(this.filled)) return;
+    this.busy = true;
+    if (this.done) this.done.visible = false;
+    this.lastCreation = { kind: 'picture', size: this.plan.size, pixels: pixelsOf(this.filled) };
+    const c = this.ctx.stage.toLocal(this.board.toGlobal({ x: (this.n * CELL) / 2, y: (this.n * CELL) / 2 }));
+    this.ctx.particles.burst(c.x, c.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 22, speed: [150, 360], gravity: 0, life: [0.6, 1] });
+    this.ctx.pet.cheer();
+    sfx.tada();
+    await this.ctx.tw.to(this.board.scale, { x: 1.04, y: 1.04 }, { duration: 0.15, ease: ease.outQuad });
+    await this.ctx.tw.to(this.board.scale, { x: 1, y: 1 }, { duration: 0.15 });
+    await this.ctx.say('pixel.mine');
+    await this.ctx.tw.wait(0.5);
+    this.finished = true;
+    this.ctx.finish({ misses: 0, hints: 0, creation: this.lastCreation });
   }
 
   /** A square worth filling next: on logic levels one the (colored) clues can decide; otherwise from `helpCells` (level 8: a whole block). */
@@ -342,7 +431,7 @@ class PixelPictures implements Game {
     this.lastCreation = {
       kind: 'picture',
       size: this.plan.size,
-      pixels: this.target.flatMap((row, y) => row.flatMap((letter, x) => letter ? [{ x, y, color: colorOf(letter) }] : [])),
+      pixels: pixelsOf(this.target),
     };
     await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });
     await this.next();
@@ -398,7 +487,7 @@ export const pixelPictures: GameModule = {
   entryLevels: [9],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'Guess together what the picture will be before it is finished.',
+  coplayHint: 'Guess together what the picture will be before it is finished. On My own picture, take turns: one of you names something to draw and the other colors it.',
   offScreen: 'Color squares on graph paper to copy a simple picture, or make one for her to copy.',
   hubIcon: () => new PixelIcon(),
   touchDemo: true,

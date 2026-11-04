@@ -371,3 +371,10 @@
 - Ran (dev server `http://localhost:5219`, `VITE_SPEECH=off`): typecheck; `npm test` 300 files, 4753 tests pass (rule tests: 360-pair enumeration, determinism, wrong scoops never mutate either stack, every route finishes, per-cone help caps, layout targets at least 100 and disjoint at three sizes); `npm run build`; `BROWSER_SUITE=arcade ARCADE_ONLY=scoop ARCADE_LEVELS=7` pass (two wrong scoops and glow, peek keeps the choice and counts once, repeat free, scoop during peek refused, switch keeps the partial stack, both serves, score `[2,2]`, one sticker, portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=scoop-shop FINGER_LEVELS=7 FINGER_BAND=school` pass (13.8 s).
 - Review: `game-reviewer` found nothing medium or above.
 - Not run: other Scoop Shop levels' browser plays (unchanged apart from the shared support refactor, covered by unit tests), offline check, any iPad or child check. Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md) (outline, peek and two hidden requests on iPad portrait; speech of the two request lines).
+
+## 2026-11-03 — Ferry Jam level 8 Two ferries (ferry-jam batch 3)
+
+- [PR #1195](https://github.com/rjdunlap/neo/pull/1195) (branch `claude/ferry-jam-two-ferries`): school level 8 with a second, upright yellow ferry; each ferry sails away at its dock; 16 frozen 5x5 harbors, fewest 5-8; school range 3-8.
+- Ran (tested commit 737e7d06, play rerun after the c8cc00d9 review fixes; Vite `http://localhost:5767/`, `VITE_SPEECH=off`): typecheck; Ferry Jam rule tests 35 (7 new two-ferry tests); `npm test` 300 files, 4760 tests; `npm run build`; one scripted 768x1024 play of level 8 to its sticker with the yellow ferry sailing first, 0 misses and 0 hints, bottom-dock screenshots reviewed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=ferry-jam FINGER_LEVELS=8` pass (17.7 s).
+- Review: `game-reviewer` found cosmetic issues only; two fixed (sail tween from the dock cell, how-to undo wording), one left (a couch restart after a sail tweens the ferry in from past the dock; couch never plays level 8).
+- Not run: couch suites (catalog unchanged), offline check, any iPad or child check. Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md).

@@ -11,7 +11,7 @@ import type { Rng } from '../../engine/random';
  * Pictures are authored as rows of characters: '.' is empty, letters are palette colors. Two-color logic pictures are
  * accepted only if their colored numbers alone solve them (`colorLineSolvable`).
  */
-export type PixelMode = 'copy' | 'mirror' | 'clues' | 'colorClues' | 'mirror2' | 'big';
+export type PixelMode = 'copy' | 'mirror' | 'clues' | 'colorClues' | 'mirror2' | 'big' | 'free';
 
 export interface PixelPlan {
   mode: PixelMode;
@@ -32,6 +32,7 @@ export const PLANS: PixelPlan[] = [
   { mode: 'mirror2', size: 6, colors: 1, pictures: 2, name: 'Both ways: copy a quarter across two mirror lines' },
   { mode: 'big', size: 6, colors: 1, pictures: 2, name: 'Twice as big: copy a little picture at double size' },
   { mode: 'copy', size: 4, colors: 2, pictures: 3, name: 'Two colors, small: pick a color, then copy a 4 by 4 picture' },
+  { mode: 'free', size: 5, colors: 1, pictures: 1, name: 'My own picture: color any squares, then tap Done' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -129,6 +130,7 @@ export const colorsOf = (p: Picture) => [...new Set(p.rows.join('').replace(/\./
 export function picturesFor(plan: PixelPlan): Picture[] {
   if (plan.mode === 'mirror2') return FOURFOLD;
   if (plan.mode === 'big') return MODELS.map((m) => scaleUp(m, 2));
+  if (plan.mode === 'free') return [];
   return PICTURES[plan.size].filter((p) => {
     const n = colorsOf(p).length;
     if (plan.mode === 'copy') return plan.colors === 2 ? n === 2 : n === 1;
@@ -140,6 +142,7 @@ export function picturesFor(plan: PixelPlan): Picture[] {
 }
 
 export function makePictures(plan: PixelPlan, rng: Rng): Picture[] {
+  if (plan.mode === 'free') return [blank(plan.size)];
   return rng.shuffle(picturesFor(plan)).slice(0, plan.pictures);
 }
 
@@ -409,4 +412,40 @@ export function pixelTouch(plan: PixelPlan, picture: Picture, filled: Filled, co
   const mine = open.find((o) => plan.mode !== 'copy' || plan.colors === 1 || o.c === color);
   if (mine) return { cell: { x: mine.x, y: mine.y } };
   return { color: open[0].c };
+}
+
+/** Level 10, my own picture: an empty board, four paints, and Done once she has colored this many squares. */
+export const FREE_COLORS = ['r', 'y', 'b', 'g'] as const;
+export const FREE_MIN = 4;
+export const blank = (size: number): Picture => ({ name: 'my own picture', rows: Array.from({ length: size }, () => '.'.repeat(size)) });
+/** What the ghost finger draws on level 10. */
+export const FREE_HEART = ['.r.r.', 'rrrrr', 'rrrrr', '.rrr.', '..r..'];
+
+export const filledCount = (filled: Filled) => filled.flat().filter(isFilled).length;
+/** Done shows, and works, only once a design has at least `FREE_MIN` squares. */
+export const canFinish = (filled: Filled) => filledCount(filled) >= FREE_MIN;
+
+/** A tap on level 10: an empty square takes the paint in hand, a colored one empties. Nothing is ever wrong. */
+export function freeTap(filled: Filled, x: number, y: number, color: string): Filled {
+  return filled.map((row, j) => row.map((c, i) => (i === x && j === y ? (isFilled(c) ? null : color) : c)));
+}
+
+/** The squares of a board (or of a finished picture), as the treehouse keeps them. */
+export function pixelsOf(grid: Filled): { x: number; y: number; color: ColorName }[] {
+  return grid.flatMap((row, y) => row.flatMap((c, x) => (isFilled(c) ? [{ x, y, color: LETTERS[c!] ?? 'blue' }] : [])));
+}
+
+/**
+ * The ghost finger on level 10: it chooses the design's paint, draws the heart square by square, emptying any square
+ * the heart does not use, then presses Done.
+ */
+export function freeTouch(filled: Filled, color: string, design: string[] = FREE_HEART): { color: string } | { cell: { x: number; y: number } } | 'done' | null {
+  for (let y = 0; y < filled.length; y++)
+    for (let x = 0; x < filled[y].length; x++) {
+      const want = design[y]?.[x] ?? '.';
+      const have = filled[y][x];
+      if (isFilled(have) && (want === '.' || have !== want)) return { cell: { x, y } };
+      if (!isFilled(have) && want !== '.') return want === color ? { cell: { x, y } } : { color: want };
+    }
+  return canFinish(filled) ? 'done' : null;
 }

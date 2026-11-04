@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`pixel-pictures`, level 10 My own picture (batch pixel-pictures 4)**, after batch 3 (built; new-interaction tier: typecheck, unit tests, one scripted play to Done with a kept design, one portrait screenshot, `fingerdemo` at 10): [dive](deep-dives/pixel-pictures.md#build-slices-in-order), [batch](GAME-BATCHES.md#pixel-pictures-4-my-own-picture).
 - **`vine-snip`, slice 1: levels 1–3 as a new registered game** (new-game tier: typecheck, unit tests, one scripted play at levels 1 and 3 with one missed drop and one hint, one portrait screenshot at level 3, `fingerdemo` at 3, `npm run build`): [definition](definitions/vine-snip.md#check-tier).
 - **`block-topple`, slice 1: levels 1–3 as a new registered game** (new-game tier: typecheck, unit tests, one scripted play at levels 1 and 3 with one short shot and one hill shot then the dotted arc, one portrait screenshot at level 3, `fingerdemo` at 3, `npm run build`): [definition](definitions/block-topple.md#check-tier).
 - **`light-lab`, levels 8–9 Place a mirror and Two to place (batch light-lab 3)** (new-interaction tier: typecheck, rule tests, one play of level 8 with a drop off the board, a missed shine and the glowing cell, level 9 to its sticker, one portrait screenshot with the tray, `fingerdemo` at 8 and 9; stop after 8 if the allowance cannot cover 9): [dive](deep-dives/light-lab.md#build-slices-in-order), [batch](GAME-BATCHES.md#light-lab-3-levels-89-place-a-mirror-and-two-to-place).

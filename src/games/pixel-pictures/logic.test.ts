@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { clues, colorClues, colorDeduce, colorLineSolvable, colorLogicCell, colorPlacements, colorRuns, colorsOf, deduce, FOURFOLD, given, helpCells, lineSolvable, MODELS, planFor, quarterOf, scaleDown, scaleUp, makePictures, PICTURES, picturesFor, PLANS, pixelTouch, runs, symmetric, toGrid, type Filled, type Knowledge } from './logic';
+import { blank, canFinish, clues, colorClues, colorDeduce, colorLineSolvable, colorLogicCell, colorPlacements, colorRuns, colorsOf, deduce, FOURFOLD, FREE_COLORS, FREE_HEART, FREE_MIN, freeTap, freeTouch, given, helpCells, lineSolvable, MODELS, planFor, quarterOf, scaleDown, scaleUp, makePictures, PICTURES, picturesFor, PLANS, pixelsOf, pixelTouch, runs, symmetric, toGrid, type Filled, type Knowledge } from './logic';
 
 describe('Pixel Pictures', () => {
   it('pictures are square, the right size, and drawn in known colors', () => {
@@ -13,7 +13,8 @@ describe('Pixel Pictures', () => {
   });
 
   it('every level has enough pictures that fit it', () => {
-    for (const plan of PLANS) {
+    // Level 10 is a free design on an empty board; it has no pictures to copy.
+    for (const plan of PLANS.filter((p) => p.mode !== 'free')) {
       const fit = picturesFor(plan);
       // Strictly more than a round shows, so one round can differ from the next.
       expect(fit.length, plan.name).toBeGreaterThan(plan.pictures);
@@ -248,7 +249,7 @@ describe('Pixel Pictures', () => {
     expect(picturesFor(plan).map((p) => p.name)).toContain('a ladybird');
     // Level 1 stays one color on the same grid.
     for (const p of picturesFor(planFor(1))) expect(colorsOf(p), p.name).toHaveLength(1);
-    const orders = { preschool: [1, 9, 2], prek: [1, 9, 2, 3], school: [3, 4, 5, 6, 7, 8] };
+    const orders = { preschool: [1, 9, 2], prek: [1, 9, 2, 3, 10], school: [3, 4, 5, 6, 7, 8, 10] };
     for (const [band, order] of Object.entries(orders) as [keyof typeof orders, number[]][]) {
       const range = pixelPictures.levels(band);
       expect(levelsInOrder(range), band).toEqual(order);
@@ -261,5 +262,60 @@ describe('Pixel Pictures', () => {
     expect(stepLevel(2, -1, pixelPictures.levels('preschool'))).toBe(9);
     // Carried into school (a birthday or a pin), the easy level 9 starts school at its easiest level, not its hardest.
     expect(landing(9, pixelPictures.levels('school'), pixelPictures.entryLevels)).toBe(3);
+  });
+
+  it('level 10 is a free picture: nothing is wrong, a tap empties a colored square, and Done needs four squares', async () => {
+    const { pixelPictures } = await import('./index');
+    const { stepLevel } = await import('../../progress/difficulty');
+    const plan = planFor(10);
+    expect(plan).toMatchObject({ mode: 'free', size: 5 });
+    expect(makePictures(plan, new Rng(3))).toEqual([blank(5)]);
+    expect(FREE_COLORS).toHaveLength(4);
+    let board: Filled = toGrid(blank(5));
+    expect(canFinish(board)).toBe(false);
+    // Three squares in three colors cannot finish; a fourth can.
+    board = freeTap(freeTap(freeTap(board, 0, 0, 'r'), 1, 0, 'y'), 2, 0, 'b');
+    expect(canFinish(board)).toBe(false);
+    board = freeTap(board, 3, 3, 'g');
+    expect(canFinish(board)).toBe(true);
+    expect(FREE_MIN).toBe(4);
+    // A tap on a colored square empties it, whatever the paint in hand, and Done hides again.
+    board = freeTap(board, 1, 0, 'r');
+    expect(board[0][1]).toBeNull();
+    expect(canFinish(board)).toBe(false);
+    // The kept creation is exactly the board.
+    board = freeTap(board, 4, 4, 'r');
+    expect(pixelsOf(board)).toEqual([
+      { x: 0, y: 0, color: 'red' },
+      { x: 2, y: 0, color: 'blue' },
+      { x: 3, y: 3, color: 'green' },
+      { x: 4, y: 4, color: 'red' },
+    ]);
+    // A free round is last in each order, so stepping up never passes it.
+    expect(stepLevel(10, 1, pixelPictures.levels('school'))).toBe(10);
+    expect(stepLevel(8, 1, pixelPictures.levels('school'))).toBe(10);
+  });
+
+  it('the ghost finger draws the heart on level 10, clearing stray squares, then presses Done', () => {
+    // From an empty board and from one with stray squares in other colors.
+    const starts: Filled[] = [toGrid(blank(5)), freeTap(freeTap(toGrid(blank(5)), 0, 0, 'b'), 1, 1, 'g')];
+    for (const start of starts) {
+      let board = start;
+      let color: string = FREE_COLORS[2];
+      let pressed = false;
+      for (let step = 0; step < 100 && !pressed; step++) {
+        const move = freeTouch(board, color);
+        expect(move).not.toBeNull();
+        if (move === 'done') pressed = true;
+        else if (move && 'color' in move) {
+          expect(FREE_COLORS).toContain(move.color);
+          expect(move.color).not.toBe(color);
+          color = move.color;
+        } else if (move) board = freeTap(board, move.cell.x, move.cell.y, color);
+      }
+      expect(pressed).toBe(true);
+      expect(board.map((r) => r.map((c) => c ?? '.').join(''))).toEqual(FREE_HEART);
+      expect(canFinish(board)).toBe(true);
+    }
   });
 });

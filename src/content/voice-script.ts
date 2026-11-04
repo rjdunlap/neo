@@ -2418,6 +2418,8 @@ export const SCRIPT = {
   'pixel.hint': ['Try the glowing square.'],
   'pixel.reveal': ['It is {name}!', 'Look, {name}!'],
   'pixel.done': ['What a gallery of pictures!'],
+  'pixel.free': ['Make your own picture! Pick a color and tap squares. Tap a square again to clear it. When you like it, tap the green check.'],
+  'pixel.mine': ['What a picture! You made that.', 'Look what you made!'],
   'rows.one': ['One flower is missing from this row. Tap the flower packet that is missing, then tap the empty spot!'],
   'rows.rows': ['Every row of the flower bed needs one of each flower. Tap a flower packet, then tap an empty spot to plant it!'],
   'rows.both': ['One of each flower in every row, and in every column too! Pick a flower packet, then tap an empty spot.'],
