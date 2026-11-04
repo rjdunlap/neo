@@ -1663,6 +1663,14 @@ Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `
 
 Proof: new-interaction tier: typecheck, rule tests (no other theme word readable in the grid, blanks match lengths, hint letter correct, the free-line rule never adds a miss); one play of level 7 with a free non-theme line and two hints on one word, then to the sticker; one portrait screenshot of the blanks; `fingerdemo` at 7.
 
+### word-search 5: School opening
+
+- **`word-search`, School opening, level 8 (dive slice 6, after batch 2)**: a 6 by 6 grid with four picture words across, one a row, picture themes outside `THEMES`, pictures from Pond Typing's `typingPicture`; home stays Lantern Lake. Appends ID 8 for school. [Dive](deep-dives/word-search.md#build-slices-in-order), [definition](definitions/word-search-school-opening.md)
+
+Files expected: `src/games/word-search/index.ts`, `logic.ts`, `words.ts`, `logic.test.ts`, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new band entry with a layout change and a new list drawing: typecheck, rule tests and the registry, lands and how-to tests, one scripted school play of level 8 with two wrong lines (the second shows the ring without counting a hint), a tile tap, one Hint, to the sticker; one portrait screenshot; logged 1024×768 and 1024×1365 sizes; `fingerdemo` at school 8; one build; no `couchgames`.
+
 ### orchard-rows 2: Fresh orchards and baskets
 
 **Built 2026-11-03 ([PR #1158](https://github.com/rjdunlap/neo/pull/1158)):** dive slice 1; checks in [VERIFICATION](archive/VERIFICATION-2026-11-03.md#2026-11-03--orchard-rows-fresh-orchards-and-baskets-batch-orchard-rows-2).

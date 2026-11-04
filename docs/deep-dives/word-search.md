@@ -86,7 +86,7 @@ Both append IDs 6–7 after 5; `order` becomes `[5, 1, 2, 3, 4, 6, 7]`. The couc
 
 ### Younger-band openings
 
-**Define Word Search school opening** (docs only; status `define`): a 6 by 6 grid at 100-unit squares with four words of three or four letters, across only, each list entry with a code-drawn picture and a speaker to hear it, for school (about 6–8). The definition must settle the land (the game lives in one land, Lantern Lake, and a land shows her age and younger: either the school band reaches it through Lantern Lake's signpost rules or the game moves, which the lands tests must allow), the literacy wording (practises reading with replayable spoken support; no phonics claim before a device-speech check), a picture for every word in the chosen pool, accounting and the check tier.
+**Define Word Search school opening** (docs only; status `define`): a 6 by 6 grid at 100-unit squares with four words of three or four letters, across only, each list entry with a code-drawn picture and a speaker to hear it, for school (about 6–8). The definition must settle the land (the game lives in one land, Lantern Lake, and a land shows her age and younger: either the school band reaches it through Lantern Lake's signpost rules or the game moves, which the lands tests must allow), the literacy wording (practises reading with replayable spoken support; no phonics claim before a device-speech check), a picture for every word in the chosen pool, accounting and the check tier. Defined 2026-11-04: one school level 8, see the [definition](../definitions/word-search-school-opening.md).
 
 ### Easier entries and levels between existing ones
 
@@ -109,8 +109,9 @@ None. By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules)
 2. **Level 5, A small grid to start** (batch word-search 2): new level on the existing interaction: typecheck, rule tests including order and entry, one browser play of level 5 with one wrong line and one hint, one portrait and one landscape screenshot (the square size is the point), `fingerdemo` at 5.
 3. **Level 6, A message in the leftovers** (batch word-search 3), after batch 2 (its ID follows 5): new-rule tier with a new grid drawing (stones): typecheck, rule tests, one play of level 6 with one wrong line, one hint, then to the message reveal, one portrait screenshot of the revealed message, `fingerdemo` at 6, and `BROWSER_SUITE=couchgames` filtered to Word Search, since `makeGrid` changes.
 4. **Level 7, Just the theme** (batch word-search 4), after batch 3: new-interaction tier (the blanks and the two-step hint): typecheck, rule tests, one play of level 7 with a free non-theme line, two hints on one word, then to the sticker, one portrait screenshot of the blanks, `fingerdemo` at 7.
-5. *Define:* **Word Search school opening** (docs only; status `define`): above.
+5. *Define:* **Word Search school opening** (**defined 2026-11-04**, [definition](../definitions/word-search-school-opening.md), [PR #1211](https://github.com/rjdunlap/neo/pull/1211); docs only): above.
+6. **School opening, level 8** (batch word-search 5), after batch 2: new band entry with a layout change and a new list drawing: typecheck, rule tests and the registry, lands and how-to tests, one scripted school play of level 8 with two wrong lines (the second shows the ring without counting a hint), a tile tap, one Hint, to the sticker; one portrait screenshot; logged 1024×768 and 1024×1365 sizes; `fingerdemo` at school 8; one build; no `couchgames`.
 
 ## What was built in this session
 
-Batch word-search 1 (2026-11-03, PR #1150): six themes, two root families, RAIN out of weather; the rest is research and ideation. Build note: [archive](../archive/COMPLETED-2026-10-09.md#word-search-fresh-themes-and-root-families-word-search-batch-1-2026-11-03). Slices 2–5 are unbuilt.
+Batch word-search 1 (2026-11-03, PR #1150): six themes, two root families, RAIN out of weather; the rest is research and ideation. Build note: [archive](../archive/COMPLETED-2026-10-09.md#word-search-fresh-themes-and-root-families-word-search-batch-1-2026-11-03). Slices 2–4 and 6 are unbuilt.
