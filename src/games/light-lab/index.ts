@@ -1059,10 +1059,10 @@ class LightLab implements Game {
     sfx.boing();
     const why = whyNotMaterial(choice.goal, stuff.material)!;
     await this.ctx.say(`light.mat.miss.${why}`, { thing: THING_WORDS[stuff.name] });
-    if (this.wrongs >= 2 && this.hintCard < 0) {
+    const hint = this.wrongs >= 2 && this.hintCard < 0;
+    if (hint) {
       this.hintCard = hintThing(choice);
       this.hints++;
-      void this.ctx.say('light.mat.hint');
     }
     await this.ctx.tw.to(thing, { x: card.x, y: card.y }, { duration: 0.3 });
     thing.destroy({ children: true });
@@ -1077,6 +1077,8 @@ class LightLab implements Game {
     this.beam.clear();
     this.shadow.clear();
     this.busy = false;
+    // Spoken once the glow can show (it waits for `busy` to clear).
+    if (hint) void this.ctx.say('light.mat.hint');
   }
 
   private async win() {
