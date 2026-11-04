@@ -357,3 +357,10 @@
 - [PR #1192](https://github.com/rjdunlap/neo/pull/1192): [definition](../deep-dives/sudoku-garden.md#cage-beds-level-10-definition-2026-11-03) for level 10 (a 6 by 6 bed with sums in the cages; 9 by 9 cages left out on a measured fit), the batch `sudoku-garden 5`, the dive's slice 5 marked defined.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests and every play check (no code changed). Open: the build (new-interaction tier) and the iPad check of the sum labels and dashes at 92 units ([DEVICE-CHECKS](../DEVICE-CHECKS.md) when built).
+
+## 2026-11-03 — Picture Graph level 10 Two pictures, one meadow (picture-graph batch 4)
+
+- [PR #1193](https://github.com/rjdunlap/neo/pull/1193) (tested commit `d4554d2d`): new school level 10 (`pair` mode, scene `compare.ts`: a tally card and three finished graphs, pick the two that show the same counts, a keyed graph and an equal-height trap), voice `graph.pair.key`/`graph.pair.look`, how-to steps from 10.
+- Ran (dev server `http://localhost:5365/classic/`): typecheck; picture-graph rule tests 37 passed and content plus registry tests 238 passed; one scripted level 10 play (lift and lower free, keyed+trap pair = miss, plain+trap = second miss and the hint, both rounds, sticker, no page errors) with 768x1024 screenshots; `BROWSER_SUITE=fingerdemo FINGER_ONLY=picture-graph FINGER_LEVELS=10` pass (6.3 s).
+- Review: `game-reviewer` found nothing.
+- Not run: `npm run build` (CI runs it), device or child check. Open: iPad feel and whether a child learns to read the key rather than trust "the keyed graph is always right".
