@@ -5,7 +5,8 @@ import type { Rng } from '../../engine/random';
  * Pixel Pictures: tap squares on a grid to make a picture. First copy a small picture shown
  * beside the grid, then copy one with two colors, then finish a picture's mirror half, and finally
  * solve picture-logic puzzles (nonograms) from the numbers along each row and column. At the top, a quarter is copied across
- * two mirror lines (`mirror2`), and a little 3×3 model is copied at double size, each square a 2×2 block (`big`).
+ * two mirror lines (`mirror2`), and a little 3×3 model is copied at double size, each square a 2×2 block (`big`). Level 9 is an
+ * easier step between 1 and 2: two colors on the 4×4 grid.
  *
  * Pictures are authored as rows of characters: '.' is empty, letters are palette colors. Two-color logic pictures are
  * accepted only if their colored numbers alone solve them (`colorLineSolvable`).
@@ -30,6 +31,7 @@ export const PLANS: PixelPlan[] = [
   { mode: 'colorClues', size: 6, colors: 2, pictures: 2, name: 'Two-color picture logic: each run has its own color' },
   { mode: 'mirror2', size: 6, colors: 1, pictures: 2, name: 'Both ways: copy a quarter across two mirror lines' },
   { mode: 'big', size: 6, colors: 1, pictures: 2, name: 'Twice as big: copy a little picture at double size' },
+  { mode: 'copy', size: 4, colors: 2, pictures: 3, name: 'Two colors, small: pick a color, then copy a 4 by 4 picture' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -48,6 +50,11 @@ export const PICTURES: Record<4 | 5 | 6, Picture[]> = {
     { name: 'a smile', rows: ['y..y', '....', 'y..y', '.yy.'] },
     { name: 'a boat', rows: ['.b..', '.bb.', 'bbbb', '.bb.'] },
     { name: 'a plus', rows: ['.u..', 'uuu.', '.u..', '....'] },
+    // Level 9: two colors on the small grid.
+    { name: 'a ladybird', rows: ['.nn.', 'rnrr', 'rrnr', '.rr.'] },
+    { name: 'a carrot', rows: ['.gg.', '.oo.', '.oo.', '..o.'] },
+    { name: 'an apple', rows: ['.g..', 'rrrr', 'rrrr', '.rr.'] },
+    { name: 'a little chick', rows: ['.yy.', '.yyo', 'yyy.', '.yy.'] },
   ],
   5: [
     { name: 'a flower', rows: ['.p.p.', 'ppypp', '.ppp.', '..g..', '.ggg.'] },

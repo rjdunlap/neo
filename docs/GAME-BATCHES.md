@@ -925,7 +925,9 @@ Proof: new levels tier: typecheck and rule tests (symmetry, quarter determines t
 
 ### pixel-pictures 3: Two colours, small
 
-- **`pixel-pictures`, level 9 Two colours, small (dive slice 3, after batch 2)** (new level; preschool and pre-K, placed between 1 and 2 by `order`: 1, 9, 2, …): four new 4×4 two-colour pictures (ladybird first), picked as level 2 picks (`pixel.notcolor`); per-band `order` lists every ID once, `entryLevels` unchanged. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#easier-entries-and-levels-between-existing-ones)
+**Built 2026-11-04 ([PR #1203](https://github.com/rjdunlap/neo/pull/1203)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-04--pixel-pictures-level-9-two-colours-small-pixel-pictures-batch-3); [build note](archive/COMPLETED-2026-10-09.md#pixel-pictures-level-9-two-colours-small-pixel-pictures-3-2026-11-04).
+
+- **`pixel-pictures`, level 9 Two colours, small (dive slice 3, after batch 2)** (new level; preschool and pre-K, placed between 1 and 2 by `order`: 1, 9, 2, …): four new 4×4 two-colour pictures (ladybird first), picked as level 2 picks (`pixel.notcolor`); per-band `order` lists every ID once, `entryLevels` unchanged (built with `entryLevels: [9]`, see the dive). [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#easier-entries-and-levels-between-existing-ones)
 
 Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 

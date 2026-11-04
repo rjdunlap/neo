@@ -596,9 +596,9 @@ async function woodsBatch() {
     log('Word Monsters 8: keep the first two sounds, change the end, wrong sounds, glow hint, saved score and sticker passed');
   }
 
-  if (!only || only === 'pixels') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 8); level++) {
-    // Level 8 plays in portrait, where the model sits beside the 6 by 6 board.
-    await page.setViewportSize(level === 8 ? { width: 768, height: 1024 } : { width: 1024, height: 768 });
+  if (!only || only === 'pixels') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {
+    // Levels 8 and 9 play in portrait: the model beside the 6 by 6 board, the swatches under the 4 by 4 one.
+    await page.setViewportSize(level === 8 || level === 9 ? { width: 768, height: 1024 } : { width: 1024, height: 768 });
     await launch('pixel-pictures', level);
     const plan = await page.evaluate(() => ({ mode: neo.scene.game.plan.mode, pictures: neo.scene.game.pictures.length }));
     const cellTap = async (x, y) => {
@@ -622,9 +622,12 @@ async function woodsBatch() {
         // Level 7 glows one square whose mirror is drawn; level 8 glows every square of one 2×2 block.
         if (mode === 'mirror2') assert.ok(glow.length === 1 && !given(glow[0].x, glow[0].y) && target[glow[0].y][glow[0].x], 'level 7 glows one open picture square');
         if (mode === 'big') assert.ok(glow.length === 4 && glow.every((g) => g.x >> 1 === glow[0].x >> 1 && g.y >> 1 === glow[0].y >> 1 && target[g.y][g.x]), 'level 8 glows one whole block');
+        // Two-color copying: the glow comes with its square's color in hand.
+        if (level === 2 || level === 9) assert.equal(await page.evaluate(() => neo.scene.game.color), target[glow[0].y][glow[0].x], 'the glow picks its color');
         if (level === 8) await screenshot('pixel-pictures-8-block-hint');
         if (level === 4) await screenshot('pixel-pictures-4-hint');
         if (level === 6) await screenshot('pixel-pictures-6-color-clues');
+        if (level === 9) await screenshot('pixel-pictures-9-two-colors-small');
       }
       for (const t of todo) {
         // Two-color copying: pick the square's color from the palette first.

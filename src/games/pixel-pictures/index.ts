@@ -15,8 +15,9 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { clues, colorClues, colorLogicCell, colorsOf, deduce, given, helpCells, LETTERS, makePictures, PICTURES, pixelTouch, planFor, scaleDown, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
 
 const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 3 },
+  // Level 9 (two colors on the small grid) sits between 1 and 2.
+  preschool: { min: 1, max: 9, order: [1, 9, 2] },
+  prek: { min: 1, max: 9, order: [1, 9, 2, 3] },
   school: { min: 3, max: 8 },
 };
 
@@ -305,7 +306,8 @@ class PixelPictures implements Game {
     else if (this.plan.mode !== 'clues' && this.plan.mode !== 'colorClues') cells = helpCells(this.plan, this.picture, this.filled, this.lastTap);
     if (!cells.length) return;
     cell = cells[0];
-    if (this.plan.mode === 'colorClues' && this.target[cell.y][cell.x]) {
+    // Two-color levels: the glow comes with its color in hand.
+    if (this.plan.colors === 2 && this.target[cell.y][cell.x]) {
       this.color = this.target[cell.y][cell.x]!;
       this.draw();
     }
@@ -393,6 +395,7 @@ export const pixelPictures: GameModule = {
   skills: ['spatial-reasoning', 'symmetry', 'logic', 'art'],
   bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [9],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'Guess together what the picture will be before it is finished.',

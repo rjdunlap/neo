@@ -235,4 +235,31 @@ describe('Pixel Pictures', () => {
       }
     }
   });
+
+  it('level 9 copies two-color 4 by 4 pictures and sits between levels 1 and 2 for the younger bands', async () => {
+    const { pixelPictures } = await import('./index');
+    const { landing, levelsInOrder, stepLevel } = await import('../../progress/difficulty');
+    const plan = planFor(9);
+    expect(plan).toMatchObject({ mode: 'copy', size: 4, colors: 2 });
+    for (const p of picturesFor(plan)) {
+      expect(p.rows, p.name).toHaveLength(4);
+      expect(colorsOf(p), p.name).toHaveLength(2);
+    }
+    expect(picturesFor(plan).map((p) => p.name)).toContain('a ladybird');
+    // Level 1 stays one color on the same grid.
+    for (const p of picturesFor(planFor(1))) expect(colorsOf(p), p.name).toHaveLength(1);
+    const orders = { preschool: [1, 9, 2], prek: [1, 9, 2, 3], school: [3, 4, 5, 6, 7, 8] };
+    for (const [band, order] of Object.entries(orders) as [keyof typeof orders, number[]][]) {
+      const range = pixelPictures.levels(band);
+      expect(levelsInOrder(range), band).toEqual(order);
+      // Every ID once, min and max its ends, and level 1 still the first.
+      expect(new Set(order).size).toBe(order.length);
+      expect([range.min, range.max]).toEqual([Math.min(...order), Math.max(...order)]);
+    }
+    expect(stepLevel(1, 1, pixelPictures.levels('prek'))).toBe(9);
+    expect(stepLevel(9, 1, pixelPictures.levels('prek'))).toBe(2);
+    expect(stepLevel(2, -1, pixelPictures.levels('preschool'))).toBe(9);
+    // Carried into school (a birthday or a pin), the easy level 9 starts school at its easiest level, not its hardest.
+    expect(landing(9, pixelPictures.levels('school'), pixelPictures.entryLevels)).toBe(3);
+  });
 });

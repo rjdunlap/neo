@@ -2628,6 +2628,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 1, text: 'Tap squares to fill them and copy the little picture.' },
       { from: 2, to: 2, text: 'Pick a color first, then tap squares to fill them.' },
+      { from: 9, to: 9, text: 'Pick a color first, then tap squares to fill them and copy the little picture.' },
       { from: 3, to: 3, text: 'Tap squares to fill the other half, so both sides match like a mirror.' },
       { from: 4, to: 6, text: 'The numbers say how many squares in a row or column are filled; tap squares to fill them.' },
       { from: 6, to: 6, text: 'Each number is colored to show the color of that run. Choose that color, then fill its squares.' },
