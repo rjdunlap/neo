@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`lantern-lights`, named hints and Show me a short way (batch lantern-lights 2)** (shares `index.ts` layout; new-interaction tier: typecheck, rule tests, one play at level 3 with one hint, lighting the pond and the replay, one portrait screenshot mid-replay, `fingerdemo` at 3): [dive](deep-dives/lantern-lights.md#build-slices-in-order), [batch](GAME-BATCHES.md#lantern-lights-2-named-hints-and-a-short-way).
 - **Define Light Lab Split the sunbeam** (docs only; status `define`): the splitter seed extending batch 1's nearest-solution search. [Dive](deep-dives/light-lab.md#build-slices-in-order).
 - **`penguin-slide`, level 13 Two penguins**, unblocked (level 12 built) (new-interaction tier: typecheck, rule tests, one play with a selection change and one hint, one portrait screenshot, `fingerdemo` at 13, `BROWSER_SUITE=couchgames` filtered to Penguin Slide): [dive](deep-dives/penguin-slide.md#build-slices-in-order).
 - **Define Quick Tricks third show** (docs only; status `define`): Wind the Music Box, Fill the Cups and Loop the Fireflies as level 9, the crank's pointer handling, which built pour and loop handling it reuses, named amounts per band, accounting (overfill spills and is never a miss), voice lines and check tier. [Dive](deep-dives/quick-tricks.md#build-slices-in-order), [ideas](IDEAS.md#a-third-show-new-gestures).

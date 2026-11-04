@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  allLit, footprint, formatPond, fewestPresses, fullBoard, hintFor, litCount, makePond, makePonds, parsePond, planFor, PLANS, press, pressAll, solve, stuckAt, type Size,
+  allLit, footprint, formatPond, fewestPresses, fullBoard, hintFor, litCount, makePond, makePonds, namedHint, shortWay, parsePond, planFor, PLANS, press, pressAll, solve, stuckAt, type Size,
 } from './logic';
 
 /** Exhaustive truth for a small board: for every set of presses, the board it makes from all-lit and its size. */
@@ -183,6 +183,51 @@ describe('lantern hints', () => {
     const pond = makePond(PLANS[5], rng), s = solve(pond.board, 5)!;
     const options = new Set(s.best.flat());
     for (const near of [0, 12, 24]) expect(options.has(hintFor(pond.board, 5, near)!)).toBe(true);
+  });
+});
+
+describe('named hints', () => {
+  it('names one way when the pond has exactly one fewest set, and several when it has more, pointing at the same lantern as before', () => {
+    const rng = new Rng(41);
+    const seen = new Set<string>();
+    for (const plan of PLANS) for (let t = 0; t < 12; t++) {
+      const { board } = makePond(plan, rng);
+      const s = solve(board, plan.size)!, near = rng.int(0, plan.size ** 2 - 1), h = namedHint(board, plan.size, near)!;
+      expect(h.kind, plan.name).toBe(s.best.length === 1 ? 'one' : 'many');
+      expect(h.cell).toBe(hintFor(board, plan.size, near));
+      expect(s.best.some((way) => way.includes(h.cell)), plan.name).toBe(true);
+      // 3 by 3 and 6 by 6 have one winning set at all, so only ever one short way.
+      if (plan.size === 3 || plan.size === 6) expect(h.kind, plan.name).toBe('one');
+      seen.add(h.kind);
+    }
+    expect([...seen].sort()).toEqual(['many', 'one']);
+  });
+
+  it('has no hint for a lit pond', () => {
+    expect(namedHint(fullBoard(4), 4)).toBeNull();
+  });
+});
+
+describe('show me a short way', () => {
+  it('replays a fewest way from the start: all lit in exactly par presses, the same way every time', () => {
+    for (let level = 1; level <= PLANS.length; level++) {
+      const rng = new Rng(500 + level), plan = planFor(level);
+      for (const pond of makePonds(plan, rng)) {
+        const way = shortWay(pond.board, pond.size)!;
+        expect(way.length, plan.name).toBe(pond.par);
+        expect(new Set(way).size).toBe(way.length);
+        let board: boolean[] = pond.board.slice();
+        way.forEach((c, k) => {
+          board = press(board, pond.size, c);
+          expect(allLit(board), `${plan.name} after ${k + 1}`).toBe(k === way.length - 1);
+        });
+        expect(shortWay(pond.board, pond.size)).toEqual(way);
+      }
+    }
+  });
+
+  it('has nothing to replay on a lit pond', () => {
+    expect(shortWay(fullBoard(3), 3)).toBeNull();
   });
 });
 

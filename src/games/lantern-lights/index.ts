@@ -12,7 +12,7 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseMinimum, coursePonds, isLanternCourse } from './course';
-import { allLit, footprint, hintFor, litCount, makePonds, planFor, press, stuckAt, type LanternPlan, type Pond } from './logic';
+import { allLit, footprint, hintFor, litCount, makePonds, namedHint, planFor, press, shortWay, stuckAt, type LanternPlan, type Pond } from './logic';
 
 /**
  * Lantern Lake's grown-up puzzle. The island plays it by touch; couch play drives the same board with a controller. School
@@ -77,6 +77,19 @@ class LanternLights implements Game {
   readonly undoButton = new Container();
   readonly hintButton = new Container();
   readonly againButton = new Container();
+  /** After a pond lights by touch: replay a fewest way from the start, or go on. */
+  readonly shortButton = new Container();
+  readonly nextButton = new Container();
+  /** A lit pond is waiting for Next pond (touch play outside a course). */
+  waiting = false;
+  /** The short way is being shown. */
+  replaying = false;
+  /** The lantern the replay is about to press, ringed. */
+  private ring: number | null = null;
+  private goOn: (() => void) | null = null;
+  private readonly nextLabel = label('Next pond ▶', 24, ink);
+  /** The two after-pond buttons have been named aloud once this round. */
+  private toldAfter = false;
   private nodes: Container[] = [];
   private onArt: Container[] = [];
   private offArt: Container[] = [];
@@ -131,7 +144,11 @@ class LanternLights implements Game {
       node.addChild(tile(160, 100, 'purple'), label(text, 24, ink));
       onTap(node, act, { cooldown: 200 });
     }
-    ctx.stage.addChild(this.tapLayer, this.undoButton, this.hintButton, this.againButton);
+    this.shortButton.addChild(tile(320, 100, 'purple'), label('Show me a short way ▷', 24, ink));
+    onTap(this.shortButton, () => void this.showShortWay(), { cooldown: 300 });
+    this.nextButton.addChild(tile(220, 100, 'green'), this.nextLabel);
+    onTap(this.nextButton, () => this.carryOn(), { cooldown: 300 });
+    ctx.stage.addChild(this.tapLayer, this.undoButton, this.hintButton, this.againButton, this.shortButton, this.nextButton);
     this.showTouchParts(this.touch);
   }
 
@@ -179,6 +196,8 @@ class LanternLights implements Game {
     // The buttons sit in a row under the pond, clear of the pet's corner.
     const y = this.board.y + bw + 78;
     [this.undoButton, this.hintButton, this.againButton].forEach((b, i) => b.position.set(v.w / 2 + (i - 1) * 180, y));
+    this.shortButton.position.set(v.w / 2 - 120, y);
+    this.nextButton.position.set(v.w / 2 + 170, y);
     this.layout();
   }
 
@@ -234,6 +253,10 @@ class LanternLights implements Game {
     this.clock += dt;
     if (!this.pond) return;
     const g = this.glow.clear(), cell = this.cell;
+    if (this.ring !== null) {
+      const m = this.center(this.ring);
+      g.roundRect(m.x - cell / 2 + 2, m.y - cell / 2 + 2, cell - 4, cell - 4, 18).stroke({ width: 7, color: 0xffffff });
+    }
     if (this.finished || this.busy) return;
     // A finger needs no cursor: the lantern pressed turns at once, and a hint rings the lantern to try.
     if (this.touch) return void this.drawHint(g);
@@ -342,6 +365,23 @@ class LanternLights implements Game {
       this.done.push(this.presses);
       this.report(true);
     }
+    await this.rowBells();
+    const n = this.n;
+    const mid = this.ctx.stage.toLocal(this.board.toGlobal({ x: (n * this.cell) / 2, y: (n * this.cell) / 2 }));
+    this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.orange.light], count: 30, speed: [160, 420], gravity: 0, life: [0.6, 1.1] });
+    this.ctx.pet.cheer();
+    sfx.sparkle();
+    // A course moves straight on after a short score; ordinary play praises.
+    if (this.course) await this.pondScore();
+    else await this.ctx.say('lantern.lit');
+    // By touch, the pond waits: a short way can be shown as often as she likes, and Next pond goes on. Nothing is compared.
+    if (this.touch && !this.course) await this.afterPond();
+    await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });
+    await this.next();
+  }
+
+  /** Every row of lanterns bobs in turn, with a bell each. */
+  private async rowBells() {
     const n = this.n;
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
@@ -351,15 +391,66 @@ class LanternLights implements Game {
       sfx.bell(3 + (r % 7), 0.25);
       await this.ctx.tw.wait(0.11);
     }
-    const mid = this.ctx.stage.toLocal(this.board.toGlobal({ x: (n * this.cell) / 2, y: (n * this.cell) / 2 }));
-    this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.orange.light], count: 30, speed: [160, 420], gravity: 0, life: [0.6, 1.1] });
-    this.ctx.pet.cheer();
+  }
+
+  /** The lit pond stays until Next pond; Show me a short way replays a fewest way meanwhile. */
+  private afterPond() {
+    return new Promise<void>((resolve) => {
+      this.waiting = true;
+      this.goOn = resolve;
+      // On the last pond the arrow ends the round.
+      this.nextLabel.text = this.index === this.ponds.length - 1 ? 'All done ▶' : 'Next pond ▶';
+      this.showTouchParts(this.touch);
+      // Said once a round, so the buttons never depend on reading.
+      if (!this.toldAfter) {
+        this.toldAfter = true;
+        void this.ctx.say('lantern.after');
+      }
+    });
+  }
+
+  /** Next pond (or a switch to keys or a pad, which has no buttons here): the lit pond goes. */
+  private carryOn() {
+    if (!this.waiting || this.replaying) return;
+    this.waiting = false;
+    this.showTouchParts(this.touch);
+    const go = this.goOn;
+    this.goOn = null;
+    go?.();
+  }
+
+  /**
+   * Put the pond back as it began and press a fewest way, one lantern every 0.6 s with a ring on each, then light it
+   * again. It counts nothing: the pond is already done. A destroyed scene's waits never resolve, so this simply stops.
+   */
+  private async showShortWay() {
+    if (!this.waiting || this.replaying) return;
+    const way = shortWay(this.pond.board, this.n);
+    if (!way) return;
+    this.replaying = true;
+    this.showTouchParts(this.touch);
+    const was = this.lit;
+    this.lit = this.pond.board.slice();
+    this.lit.forEach((on, i) => { if (on !== was[i]) this.flip(i); });
+    this.tally();
+    await this.ctx.tw.wait(0.6);
+    for (const cell of way) {
+      this.ring = cell;
+      sfx.tick();
+      await this.ctx.tw.wait(0.3);
+      this.lit = press(this.lit, this.n, cell);
+      for (const c of footprint(this.n, cell)) this.flip(c);
+      sfx.pop(3 + (cell % 7));
+      this.tally();
+      await this.ctx.tw.wait(0.3);
+      this.ring = null;
+    }
+    await this.rowBells();
     sfx.sparkle();
-    // A course moves straight on after a short score; ordinary play praises.
-    if (this.course) await this.pondScore();
-    else await this.ctx.say('lantern.lit');
-    await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });
-    await this.next();
+    this.replaying = false;
+    // Keys or a pad took over during the show: there is no button to press, so go on.
+    if (!this.touch) return void this.carryOn();
+    this.showTouchParts(true);
   }
 
   private async finale() {
@@ -379,7 +470,8 @@ class LanternLights implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   private showTouchParts(on: boolean) {
-    for (const part of [this.tapLayer, this.undoButton, this.hintButton, this.againButton]) part.visible = on;
+    for (const part of [this.tapLayer, this.undoButton, this.hintButton, this.againButton]) part.visible = on && !this.waiting;
+    for (const part of [this.shortButton, this.nextButton]) part.visible = on && this.waiting && !this.replaying;
   }
 
   /** The first key or pad press on the island: the pond's tap layer and buttons go and the cursor shows. Couch play is already here. */
@@ -387,6 +479,7 @@ class LanternLights implements Game {
     if (!this.touch) return;
     this.touch = false;
     this.showTouchParts(false);
+    this.carryOn();
   }
 
   /** A finger came back after keys: the tap layer and buttons return and the cursor goes. */
@@ -452,14 +545,15 @@ class LanternLights implements Game {
   /** Couch pause menu's "Show a hint": a lantern in a fewest-press way to light the pond from here. Marks the run helped. */
   askForHint() {
     if (this.busy || this.finished || !this.pond) return;
-    const at = hintFor(this.lit, this.n, this.cursor);
-    if (at === null) return;
-    this.hinted = at;
+    const hint = namedHint(this.lit, this.n, this.cursor);
+    if (hint === null) return;
+    this.hinted = hint.cell;
     this.hints++;
     this.assisted = true;
-    this.cursor = at;
+    this.cursor = hint.cell;
     this.report();
-    void this.ctx.say('lantern.hint');
+    // The line says whether this is the only short way or one of a few.
+    void this.ctx.say(hint.kind === 'one' ? 'lantern.hint-one' : 'lantern.hint-many');
   }
 
   /** Couch pause menu: put the pond back as it began. Presses already made keep counting, so a restart never improves a score. */
@@ -478,6 +572,8 @@ class LanternLights implements Game {
 
   /** The ghost finger on the how-to card: tap the lantern of a fewest-press way to light the pond from here. */
   autotouch(): TouchIntent | null {
+    // A lit pond waits for Next pond.
+    if (this.waiting) return this.replaying ? null : { tap: { on: this.nextButton, x: 0, y: 0 }, pause: 0.6 };
     if (this.busy || this.finished || !this.pond) return null;
     const next = hintFor(this.lit, this.n, this.cursor);
     if (next === null) return null;

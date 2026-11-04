@@ -170,15 +170,37 @@ export function parsePond(rows: readonly string[]): Pond {
 
 export const formatPond = (board: Board, size: number): string[] => Array.from({ length: size }, (_, r) => board.slice(r * size, r * size + size).map((on) => (on ? '*' : '.')).join(''));
 
+/** Whether the pond has exactly one fewest-press way to light it from here, or several: the hint line names which. */
+export type HintKind = 'one' | 'many';
+
+export interface Hint {
+  /** The lantern to try: in one of the fewest-press ways. */
+  cell: number;
+  kind: HintKind;
+}
+
 /**
- * Where a hint should point: a lantern in one of the fewest-press ways to light the board from here. Pressing it always
- * brings the fewest down by exactly one, so a hint never leads away from the finish.
+ * Where a hint should point: a lantern in one of the fewest-press ways to light the board from here, and whether that
+ * way is the only one. Pressing it always brings the fewest down by exactly one, so a hint never leads away from the
+ * finish.
  */
-export function hintFor(board: Board, size: number, near = 0): number | null {
+export function namedHint(board: Board, size: number, near = 0): Hint | null {
   const s = solve(board, size);
   if (!s || !s.weight) return null;
   const options = s.best.flat();
   // With several ways to win, the lantern closest to where she is looking.
   const dist = (c: number) => Math.abs(Math.floor(c / size) - Math.floor(near / size)) + Math.abs((c % size) - (near % size));
-  return options.sort((a, b) => dist(a) - dist(b) || a - b)[0];
+  return { cell: options.sort((a, b) => dist(a) - dist(b) || a - b)[0], kind: s.best.length === 1 ? 'one' : 'many' };
+}
+
+/** The lantern a hint points at (the bot and the demo read only this). */
+export const hintFor = (board: Board, size: number, near = 0): number | null => namedHint(board, size, near)?.cell ?? null;
+
+/**
+ * "Show me a short way": the lanterns the replay presses, in order, from the pond as it began. Always the first of the
+ * fewest-press ways, so the same pond always replays the same way; null for a pond that is already lit or cannot be.
+ */
+export function shortWay(board: Board, size: number): number[] | null {
+  const s = solve(board, size);
+  return s && s.weight ? s.best[0].slice() : null;
 }

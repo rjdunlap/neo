@@ -1131,6 +1131,8 @@ Proof: new levels on the existing interaction: typecheck, the game's rule tests,
 
 ### lantern-lights 2: Named hints and a short way
 
+Built 2026-11-04, [PR #1207](https://github.com/rjdunlap/neo/pull/1207), branch `claude/lantern-lights-named-hints`; [closeout](archive/COMPLETED-2026-10-09.md#lantern-lights-named-hints-and-show-me-a-short-way-lantern-lights-batch-2-2026-11-04).
+
 - **`lantern-lights`, named hints and Show me a short way (dive slice 2)** (new interaction; grown-up): `hintFor` kinds and two voice lines; the after-pond buttons and replay on touch only. Shares the `index.ts` layout with batch 1. [Dive](deep-dives/lantern-lights.md#build-slices-in-order)
 
 Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.

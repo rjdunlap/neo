@@ -345,3 +345,9 @@
 - [PR #1191](https://github.com/rjdunlap/neo/pull/1191): [definition](../definitions/peekaround-from-the-sky.md) for level 8 (school only, school range 4–8, pre-K unchanged at 7), the batch `peekaround-island 5`, the dive's slice 5 marked defined.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests and every play check (no code changed). Open: the build (new-interaction tier, after batch 4) and the person and device checks the definition lists.
+
+## 2026-11-03 — Penguin Slide level 12 A block onto the star (dive slice 4)
+
+- [PR #1190](https://github.com/rjdunlap/neo/pull/1190) (code `8220cd6f`, wording-only voice change `2370c3f9`): school level 12 (one block onto a star on 6×5 ponds with snow that changes the best route, no fish, no misses), school `order` [2..10, 12], shared `solved()` in `logic.ts`, voice `slide.star*`, how-to level-12 steps, a woods case.
+- Ran (Vite dev, `VITE_SPEECH=off`, port 5278): typecheck; `npm test` 300 files, 4740 tests (registry ladder test updated); `BROWSER_SUITE=woods WOODS_ONLY=penguin FROM_LEVEL=12 TO_LEVEL=12` pass (dead end played, stuck line and undo glow, undo, both ponds, misses 0, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=penguin-slide FINGER_LEVELS=12` pass (17.8 s); one portrait screenshot (stuck block in the corner, glowing undo) reviewed. `game-reviewer`: no defects.
+- Not run: `npm run build` (no shared assets), couch suites (courses unchanged), device check. Open: whether a school-age child reads a star as the block's goal ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
