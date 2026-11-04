@@ -116,7 +116,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Lantern Lights (`lantern-lights`) | designed | [Dive](deep-dives/lantern-lights.md) |
 | Lasso Loops (`lasso-loops`) | designed | [Dive](deep-dives/lasso-loops.md) |
 | Light Lab (`light-lab`) | designed | [Dive](deep-dives/light-lab.md) |
-| Orchard Rows (`orchard-rows`) | designed | Researched 2026-11-03 ([PR #1133](https://github.com/rjdunlap/neo/pull/1133)); fresh orchards and baskets (levels 1–4) queued; levels 7–9 *a path through the orchard* (the distributive property and the split at ten) definition queued | [Dive](deep-dives/orchard-rows.md) |
+| Orchard Rows (`orchard-rows`) | designed | Researched 2026-11-03 ([PR #1133](https://github.com/rjdunlap/neo/pull/1133)); fresh orchards and baskets (levels 1–4) built 2026-11-03; levels 7–9 *a path through the orchard* (the distributive property and the split at ten) [defined](definitions/orchard-rows-path.md) 2026-11-03 (PR #1178), build queued (batch `orchard-rows 3`) | [Dive](deep-dives/orchard-rows.md) |
 | Peekaround Island (`peekaround-island`) | designed | [Dive](deep-dives/peekaround-island.md) |
 | Penguin Slide (`penguin-slide`) | designed | [Dive](deep-dives/penguin-slide.md) |
 | Picture Graph (`picture-graph`) | designed | [Dive](deep-dives/picture-graph.md) |

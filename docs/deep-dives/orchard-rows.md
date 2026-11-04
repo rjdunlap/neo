@@ -84,6 +84,8 @@ Rule tests: every pool shape is at most 5×5; level 2's round pairs are never tu
 
 ### New levels on top
 
+The [definition](../definitions/orchard-rows-path.md#where-the-dives-text-changes) supersedes details below: the levels get their own scene `PathOrchard` instead of the basket scene, level 7 uses rows 7–9, the whole's forgotten-part decoy is the larger part alone, and cell sizes are corrected.
+
 All three run in the basket scene's picture bed (rows are pictures, not targets) with two part signs, and finish after two orchards through `ctx.finish`.
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
@@ -117,8 +119,8 @@ None blocking. Under the [October 23 standing rules](../archive/DECISIONS-2026-1
 ## Build slices, in order
 
 1. **Fresh orchards and baskets** (batch `orchard-rows 2`; built 2026-11-03): the level 1–4 pool additions above, in `logic.ts` and its tests. Check tier: game rules, so `npm run typecheck` and the Orchard Rows rule tests only.
-2. **Define levels 7–9, *a path through the orchard*** (docs only; status `define`): the path picture and its layout with pads in `basketLayout` at the four views, part signs, the pad decoys, accounting, voice lines, how-to steps (and bounding the level 4–6 note), the bot, the `makeRound` and `isBasketLevel` couplings, rule tests and the check tier.
-3. **Build levels 7–9** (after the definition; new-interaction tier: typecheck, unit tests, one scripted play of levels 7 and 9 with one wrong pad and one hint, one portrait screenshot, `fingerdemo` at 7, 8 and 9). Queued by the definition, not here.
+2. **Define levels 7–9, *a path through the orchard*** (defined 2026-11-03, [definition](../definitions/orchard-rows-path.md), [PR #1178](https://github.com/rjdunlap/neo/pull/1178)): the path picture and its layout with pads in `basketLayout` at the four views, part signs, the pad decoys, accounting, voice lines, how-to steps (and bounding the level 4–6 note), the bot, the `makeRound` and `isBasketLevel` couplings, rule tests and the check tier.
+3. **Build levels 7–9** (batch `orchard-rows 3`, [definition](../definitions/orchard-rows-path.md) and [batch](../GAME-BATCHES.md#orchard-rows-3-a-path-through-the-orchard); new-interaction tier: typecheck, unit tests, one scripted play of levels 7 and 9 with one wrong pad and one hint, one portrait screenshot, `fingerdemo` at 7, 8 and 9). Queued in READY.
 
 ## What was built in this session
 

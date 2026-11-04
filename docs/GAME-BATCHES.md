@@ -1562,3 +1562,11 @@ Proof: new-interaction tier: typecheck, rule tests (no other theme word readable
 Files expected: `src/games/orchard-rows/logic.ts`, `logic.test.ts`, `docs/GAMES.md`.
 
 Proof: game rules tier: `npm run typecheck` and the Orchard Rows rule tests (every pool shape at most 5×5, level 2 pairs never turns or squares, every level 4 basket has two right row counts and a leftover opening, cells at least `MIN_CELL` for every reachable deal at the four views). No browser play; the bot reads the same rules.
+
+### orchard-rows 3: A path through the orchard
+
+- **`orchard-rows`, levels 7–9 (dive slice 3, the build of the path definition)** (extends the built game, new-interaction tier; school 7–9, Barnyard unchanged, Counting Cove as the game already sits): a path splits a grown orchard into two parts she counts, then the whole; 7 *A path at five* (the path after row 5), 8 *Choose the path* (she slides the path with arrows and lays it, any split is right), 9 *A path at ten* (the path down the orchard after ten trees in a row). A new scene `PathOrchard`; the built 4–6 code stays unchanged. [Definition](definitions/orchard-rows-path.md), [dive](deep-dives/orchard-rows.md#build-slices-in-order)
+
+Files expected: `src/games/orchard-rows/logic.ts`, `logic.test.ts`, `path.ts` (new), `baskets.ts` (exported arrow and card helpers), `index.ts`, `src/content/howto.ts`, `src/content/voice-script.ts`, a `scripts/browser-check.mjs` case, `README.md` row, `docs/GAMES.md`.
+
+Proof: new-interaction tier, as the [definition's check tier](definitions/orchard-rows-path.md#check-tier-for-the-build) sets it (typecheck, the rule tests with registry, lands, how-to and off-screen tests, a filtered scripted play: level 7 with one wrong part pad, a second for the glow and its hint, then the glowing pad and a sign tap; level 8 with an arrow at the range end and the path laid at 2; level 9 to its sticker; one portrait screenshot of level 9 with both signs; `fingerdemo` at 7, 8 and 9; one build). Stop point: levels 7 and 9 share the fixed path and pads and level 8's moving path is the separable part; if the allowance cannot cover all three, finish 7 and 9 (level 8 skipped through `order`) with a draft-PR checkpoint, and level 8 is then its own run. Person and device checks stay open.

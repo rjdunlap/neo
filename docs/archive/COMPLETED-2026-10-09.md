@@ -2270,7 +2270,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--attic-finds-
 
 [PR #1161](https://github.com/rjdunlap/neo/pull/1161), branch `claude/attic-finds-9`, batch attic-finds 4 from the [definition](../definitions/household-casebook.md): school range now {2..9, order [2,5,6,7,8,9]}. New `src/games/attic-finds/exhibit.ts` (scene) and `exhibit.test.ts`; the model and layout are in `cases.ts`. She taps a row of three over-claiming captions to open its strip and picks one the papers show, then taps one of three new papers (the useful house paper, the other house's paper, one copy) into the question slot and Checks. An empty question slot is never a miss; any wrong Check is one miss (wrong captions stay, the first one's strip reopens, a paper that could not answer hops back); two misses glow the answer (one hint). Authored first round: Seaside, rows love, cranking, homes. 16 voice lines; how-to steps, finish and note for 9. `vite.config.ts` precache per-file bound raised from 5 to 6 MiB because the routes bundle reached 5,253,129 bytes. `game-reviewer`: no high or medium findings; the card and slot scale now reset on Start again. The Household Casebook definition is fully built.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--attic-finds-level-9-mend-the-exhibit-batch-attic-finds-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--attic-finds-level-9-mend-the-exhibit-batch-attic-finds-4).
 
 ## Second Chance Shed levels 5-6, slice N3 (2026-10-31)
 

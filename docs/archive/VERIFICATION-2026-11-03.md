@@ -175,3 +175,9 @@
 - Added [the packet](../rework/LEARNING-RECAP.md) defining RW09 slice 1 (intention table, step evidence record, plain-HTML recap); work items, roadmap row 30, READY, the study backlog and the Welcome packet updated.
 - Ran: `node scripts/check-links.mjs`, `git diff --check`. No code checks, by tier (nothing built).
 - Open: the slice itself.
+
+## 2026-11-03 — Attic Finds level 9 Mend the exhibit (batch attic-finds 4)
+
+- Added school level 9 (caption strips and the question slot on the bird-box case; `exhibit.ts`, `cases.ts`, 16 voice lines, how-to step) and raised the PWA per-file precache bound from 5 to 6 MiB (the routes bundle reached 5,253,129 bytes).
+- Ran at `2c54175f` on base `origin/main` `04dcd79f` (dev http://localhost:5191, preview http://localhost:4191): typecheck; `npm test` all 298 files passed; `BROWSER_SUITE=atticcase` PASS (level 9 empty Check free; starting captions with the useful paper one miss and the love strip reopens; captions fixed with the copy paper second miss, glow, one hint, the copy hops back; a strip open across the portrait turn; then right, 2 misses, 1 hint, one sticker; landscape glow and portrait screenshots); `fingerdemo` `FINGER_ONLY=attic-finds FINGER_LEVELS=9` PASS (18.5 s); `npm run build`; `npm run test:offline` (root and classic) PASS. `game-reviewer`: no high or medium findings; scale reset on Start again fixed.
+- Not run: device speech of the new lines, a child's play. Open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).

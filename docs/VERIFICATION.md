@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-03 — Orchard Rows levels 7–9 definition (docs only)
+
+- [PR #1178](https://github.com/rjdunlap/neo/pull/1178): [definition](definitions/orchard-rows-path.md) for levels 7–9 *a path through the orchard* (own scene, model, layout, pads, accounting, voice, how-to, bot, rule tests, check tier), the batch `orchard-rows 3`, the dive's slice 2 marked defined.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests and every play check (no code changed). Open: the build, and the person and device checks the definition lists.
+
 ## 2026-11-03 — Sprout Shuffle level 6 Which plant could tell us? (genetics G5)
 
 - [PR #1177](https://github.com/rjdunlap/neo/pull/1177): the bench of an `AA` and an `aa` tester; the spotted one cannot tell (no miss), the plain one gives the record and one choice; `school` range 1–6.
@@ -86,12 +92,6 @@
 - Added `src/learning/` (intention table, `classify`), a bounded `projects.welcome.evidence` record per step, and the grown-ups' recap table in `src/parent/panel.ts`; `welcome` suite extended.
 - Ran at `16b71efb` on base `cf1b177f`: typecheck; `npm test` 300 files, 4,625 tests (before a last recap wording-order tweak; recap tests 6/6 after); `npm run build`; `BROWSER_SUITE=welcome` PASS twice (dev server localhost:5498; opens the gear after yummy with one wrong cut and pretty left mid-round, reads supported, opened, lit notes and "2 of 3 steps done", portrait screenshot `welcome-recap-portrait`); production `npm run test:offline` PASS, root and classic (preview localhost:5408).
 - Not run: `world` (no route change), iPad, device speech. Open in [DEVICE-CHECKS](DEVICE-CHECKS.md): whether grown-ups find the recap useful and read it as intended.
-
-## 2026-11-03 — Attic Finds level 9 Mend the exhibit (batch attic-finds 4)
-
-- Added school level 9 (caption strips and the question slot on the bird-box case; `exhibit.ts`, `cases.ts`, 16 voice lines, how-to step) and raised the PWA per-file precache bound from 5 to 6 MiB (the routes bundle reached 5,253,129 bytes).
-- Ran at `2c54175f` on base `origin/main` `04dcd79f` (dev http://localhost:5191, preview http://localhost:4191): typecheck; `npm test` all 298 files passed; `BROWSER_SUITE=atticcase` PASS (level 9 empty Check free; starting captions with the useful paper one miss and the love strip reopens; captions fixed with the copy paper second miss, glow, one hint, the copy hops back; a strip open across the portrait turn; then right, 2 misses, 1 hint, one sticker; landscape glow and portrait screenshots); `fingerdemo` `FINGER_ONLY=attic-finds FINGER_LEVELS=9` PASS (18.5 s); `npm run build`; `npm run test:offline` (root and classic) PASS. `game-reviewer`: no high or medium findings; scale reset on Start again fixed.
-- Not run: device speech of the new lines, a child's play. Open in [DEVICE-CHECKS](DEVICE-CHECKS.md).
 
 ## Coverage summary
 
