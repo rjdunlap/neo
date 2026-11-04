@@ -52,7 +52,7 @@ async function couchWords() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing', 'sunbeams']);
   assert.equal(await page.locator('[data-course="words"] small').innerText(), 'Not finished yet · par 25');
   assert.equal(await page.locator('[data-course="bigwords"] small').innerText(), 'Not finished yet · par 24');
   await page.locator('[data-course="words"]').click(); await screenIs('course');

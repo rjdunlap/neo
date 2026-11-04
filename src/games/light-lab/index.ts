@@ -11,9 +11,11 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { beamEnd, boardWith, DROP_TILT, freeCells, hintMirror, makePuzzle, minTurns, nearestPlacement, placeHint, planFor, predictionChoices, solved, trace, whyNot, type BeamEnd, type LightPlan, type LightPuzzle, type Placed, type Tilt, type Tint } from './logic';
+import { courseBoards, courseMinimum, isLightCourse } from './course';
+import { beamEnd, boardWith, DROP_TILT, flowerCount, freeCells, hintMirror, makePuzzle, minTurns, nearestPlacement, placeHint, planFor, predictionChoices, solved, trace, whyNot, type BeamEnd, type LightPlan, type LightPuzzle, type Placed, type Tilt, type Tint } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
@@ -142,6 +144,15 @@ class LightLab implements Game {
   private readonly ring = new Graphics();
   private botWait = 1;
   private readonly predictionMarks = new Map<string, Container>();
+  /** Couch challenge course: fixed boards in a row, scored by turns plus missed shines. Null in ordinary play, where boards are generated. */
+  private readonly course: { boards: LightPuzzle[]; minimum: number } | null = null;
+  private done: number[] = [];
+  /** Tries already spent on the board we are resuming, so leaving and coming back cannot erase them. */
+  private carry = 0;
+  private carried = 0;
+  private assisted = false;
+  private told = false;
+  private courseLine = '';
 
   private get predicting() { return this.plan.mode === 'predict' && this.index < 3; }
   private get planning() { return this.plan.mode === 'plan' || (this.plan.mode === 'predict' && this.index >= 3); }
@@ -149,6 +160,14 @@ class LightLab implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    const run = ctx.couch?.course;
+    if (run && isLightCourse(run.id)) {
+      this.course = { boards: courseBoards(run.id), minimum: courseMinimum(run.id) };
+      this.index = run.resume.board - 1;
+      this.done = run.resume.done.slice();
+      this.carry = run.resume.attempts;
+      this.assisted = run.resume.assisted;
+    }
     this.sun.addChild(sunArt());
     this.sun.hitArea = new Circle(0, 0, 55);
     onTap(this.sun, () => void this.shine(), { cooldown: 500 });
@@ -292,16 +311,21 @@ class LightLab implements Game {
     this.hinted = -1;
     this.hintCell = null;
     this.hintTray = null;
-    if (this.index >= this.plan.puzzles) return void this.finale();
-    this.puzzle = makePuzzle(this.plan, this.ctx.rng);
+    if (this.index >= (this.course?.boards.length ?? this.plan.puzzles)) return void this.finale();
+    this.puzzle = this.course ? this.course.boards[this.index] : makePuzzle(this.plan, this.ctx.rng);
     this.tilts = [...this.puzzle.start];
     this.build();
+    this.carried = this.carry;
+    this.carry = 0;
     this.resize(this.view);
     this.board.alpha = 0;
     await this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
     if (this.plan.mode === 'live') this.drawBeam();
-    if (this.index > 0) return;
+    this.report();
+    if (this.course) return this.courseInstruction();
+    if (this.told) return;
+    this.told = true;
     if (this.plan.tray) return this.ctx.instruct(this.plan.tray > 1 ? 'light.place.two' : 'light.place');
     if (this.plan.mode === 'predict') return this.ctx.instruct('light.predict');
     if (this.plan.glass) return this.ctx.instruct('light.color');
@@ -495,6 +519,7 @@ class LightLab implements Game {
   private turn(i: number) {
     if (this.busy || this.finished || this.predicting) return;
     this.taps++;
+    this.report();
     this.tilts[i] = (1 - this.tilts[i]) as Tilt;
     const glass = this.mirrors.get(i)!.children[1];
     void this.ctx.tw.to(glass, { rotation: this.tilts[i] === 0 ? Math.PI / 4 : -Math.PI / 4 }, { duration: 0.18, ease: ease.outBack });
@@ -556,6 +581,7 @@ class LightLab implements Game {
     this.misses++;
     this.shinesMissed++;
     this.wrongs++;
+    this.report();
     sfx.boing();
     const why = whyNot(board, tilts);
     await this.ctx.say(why === 'color' ? 'light.miss.color' : why === 'sleeping' ? 'light.miss.sleeping' : why === 'rock' ? 'light.miss.rock' : 'light.miss.edge');
@@ -564,6 +590,8 @@ class LightLab implements Game {
       this.hinted = hintMirror(this.puzzle, this.tilts);
       if (this.hinted >= 0) {
         this.hints++;
+        this.assisted = true;
+        this.report();
         void this.ctx.say('light.hint');
       }
     }
@@ -614,6 +642,10 @@ class LightLab implements Game {
   private async win() {
     this.busy = true;
     this.excess += Math.max(0, this.taps - this.needed) + this.shinesMissed;
+    if (this.course) {
+      this.done.push(this.tries);
+      this.report(true);
+    }
     this.hinted = -1;
     this.hintCell = null;
     this.hintTray = null;
@@ -625,10 +657,57 @@ class LightLab implements Game {
     }
     sfx.sparkle();
     this.ctx.pet.cheer();
-    await this.ctx.say('light.yay');
-    await this.ctx.tw.wait(0.5);
+    // A course moves straight on after a short score; ordinary play praises.
+    if (this.course) await this.boardScore();
+    else {
+      await this.ctx.say('light.yay');
+      await this.ctx.tw.wait(0.5);
+    }
     await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });
     await this.next();
+  }
+
+  /** A course's boards differ: say what this one asks whenever it asks something new (one flower, two, or coloured glass). */
+  private courseInstruction() {
+    const p = this.puzzle;
+    const line = p.things.some((t) => t.kind === 'glass') ? 'light.color' : flowerCount(p) === 2 ? 'light.two' : 'light.plan';
+    if (line === this.courseLine) return;
+    this.courseLine = line;
+    return this.ctx.instruct(line);
+  }
+
+  /** Turns on this board, missed shines and turns from before a reload included: what a course counts. */
+  private get tries() {
+    return this.carried + this.taps + this.shinesMissed;
+  }
+
+  /** Hand a course's numbers to the shell. `finished` means the board just ended, so none of its tries are "in progress". */
+  private report(finished = false) {
+    const run = this.ctx.couch?.course;
+    if (!run || !this.course) return;
+    run.progress({
+      board: this.index,
+      boards: this.course.boards.length,
+      done: this.done.slice(),
+      attempts: finished ? 0 : this.tries,
+      par: this.needed,
+      minimum: this.course.minimum,
+      assisted: this.assisted,
+    });
+  }
+
+  /** The score for the board just solved, over it for a moment. */
+  private async boardScore() {
+    const best = this.needed, total = this.course!.boards.length, n = this.tries;
+    const text = n === best ? `Board ${this.index + 1} of ${total}: ${n} turns, the fewest possible!` : `Board ${this.index + 1} of ${total}: ${n} ${n === 1 ? 'turn' : 'turns'} (fewest ${best})`;
+    const note = label(text, 34, ink);
+    note.position.set(this.puzzle.cols * CELL / 2, -56);
+    note.alpha = 0;
+    this.board.addChild(note);
+    await this.ctx.tw.to(note, { alpha: 1 }, { duration: 0.2 });
+    await this.ctx.tw.wait(1.2);
+    await this.ctx.tw.to(note, { alpha: 0 }, { duration: 0.25 });
+    note.destroy();
   }
 
   private async finale() {
