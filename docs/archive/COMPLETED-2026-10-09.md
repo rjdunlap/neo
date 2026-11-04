@@ -2270,7 +2270,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-02.md#2026-11-02--attic-finds-
 
 [PR #1161](https://github.com/rjdunlap/neo/pull/1161), branch `claude/attic-finds-9`, batch attic-finds 4 from the [definition](../definitions/household-casebook.md): school range now {2..9, order [2,5,6,7,8,9]}. New `src/games/attic-finds/exhibit.ts` (scene) and `exhibit.test.ts`; the model and layout are in `cases.ts`. She taps a row of three over-claiming captions to open its strip and picks one the papers show, then taps one of three new papers (the useful house paper, the other house's paper, one copy) into the question slot and Checks. An empty question slot is never a miss; any wrong Check is one miss (wrong captions stay, the first one's strip reopens, a paper that could not answer hops back); two misses glow the answer (one hint). Authored first round: Seaside, rows love, cranking, homes. 16 voice lines; how-to steps, finish and note for 9. `vite.config.ts` precache per-file bound raised from 5 to 6 MiB because the routes bundle reached 5,253,129 bytes. `game-reviewer`: no high or medium findings; the card and slot scale now reset on Start again. The Household Casebook definition is fully built.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--attic-finds-level-9-mend-the-exhibit-batch-attic-finds-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--attic-finds-level-9-mend-the-exhibit-batch-attic-finds-4).
 
 ## Second Chance Shed levels 5-6, slice N3 (2026-10-31)
 
@@ -2594,3 +2594,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--inchworm-level-9-one
 [PR #1174](https://github.com/rjdunlap/neo/pull/1174), [definition](../definitions/todays-six.md#slices). Home has a round six-tile button (`daily` spot, every band) opening the six; `?daily` opens it once after the chooser; the six's Back goes to Home. `src/content/daily.ts` draws the pool from touch games that list the band itself (not `GameModule.daily: false`; only `goodnight-room`), gives every band a seeded preset level (`presetLevels`, grown-ups from the top third, a pin wins) and a level dot row on each card. A round opened from the card with a start level records with `adapt` off, so the saved level does not move; a discovery opened from the six adapts as usual. The grown-ups' page has one plain line about it. Slice 2 (kinds of challenge) and slice 3 (Play all) are not built.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--todays-six-slice-1-home-entry-and-preset-levels-d10).
+
+## Sprout Shuffle level 6 Which plant could tell us? (genetics G5 last level, 2026-11-03)
+
+Branch `claude/sprout-shuffle-6`, PR #1177: [definition](../definitions/hidden-sprouts.md#level-6-which-plant-could-tell-us), [genetics study G5](../deep-dives/subjects/genetics.md#build-slices-in-order). `school` range now 1–6. A bench of two known plants (spotted `AA`, plain `aa`, order seeded); she plants one beside the hidden plant (swap free). The spotted tester grows three spotted sprouts, both candidates' fans open side by side, the pet says it can't tell and the plant returns to the bench, never a miss; the plain tester grows the authored six-sprout record and she chooses once, graded as level 5's second choice. Show me plants the plain plant, then chooses the cards (one hint each). New logic `TESTER_LEVEL`, `TESTERS`, `cantTellSprouts`, `testerRecord`, `pickStep`, `hiddenSetupFor(rng, level)`; voice `sprout.tester-intro`, `tester-ask`, `card-aa`, `tester-all-spotted`, `tester-couldnt`, `help.tester`. Unblocks Patchwork Conservatory 7–8.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--sprout-shuffle-level-6-which-plant-could-tell-us-genetics-g5).

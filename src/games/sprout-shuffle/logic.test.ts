@@ -7,6 +7,7 @@ import {
   type Pair, type PairsSetup,
   RECORD_SLOTS, WATERING, HIDDEN_NAME, GENOTYPES, candidates, checkCandidates, compatible, contradicts, couldTell, drawSprout, hiddenNextStep, hiddenSetupFor, tryRoom,
   type Candidate, type HiddenPhase,
+  TESTERS, TESTER_NAME, cantTellSprouts, pickStep, testerRecord,
 } from './logic';
 
 const SEEDS = Array.from({ length: 200 }, (_, i) => i);
@@ -640,5 +641,96 @@ describe('level 5: Hidden Sprouts', () => {
     expect(levelName(5)).toBe('Hidden Sprouts');
     expect(levelName(5)).toBe(HIDDEN_NAME);
     expect(levelName(4)).toBe(PAIRS_NAME);
+  });
+});
+
+describe('level 6: which plant could tell us?', () => {
+  const AA = GENOTYPES.AA, aa = GENOTYPES.aa;
+  const seeds300 = Array.from({ length: 300 }, (_, i) => i);
+
+  it('only the plain tester could tell', () => {
+    expect(couldTell(AA)).toBe(false);
+    expect(couldTell(aa)).toBe(true);
+  });
+
+  it('under the spotted tester every way of both candidates is spotted', () => {
+    for (const c of ['AA', 'Aa'] as const) for (const r of routes(GENOTYPES[c], AA)) expect(looks(r.sprout)).toBe('spotted');
+  });
+
+  it('under the plain tester the candidates differ exactly by plain', () => {
+    const a = support(routes(GENOTYPES.AA, aa));
+    const b = support(routes(GENOTYPES.Aa, aa));
+    expect([...b].filter((l) => !a.has(l))).toEqual(['plain']);
+    expect([...a].filter((l) => !b.has(l))).toEqual([]);
+  });
+
+  it('the spotted tester grows three spotted sprouts that both candidates fit', () => {
+    const rec = cantTellSprouts(AA);
+    expect(rec).toEqual(['spotted', 'spotted', 'spotted']);
+    expect(candidates(AA, rec)).toEqual(['AA', 'Aa']);
+    expect(contradicts(AA, rec)).toBe(false);
+  });
+
+  it('the bench holds both testers, seeded, with their own colours; level 5 has none and plays the same case', () => {
+    const orders = new Set<string>();
+    for (const seed of seeds300) {
+      const s6 = hiddenSetupFor(new Rng(seed), 6);
+      const s5 = hiddenSetupFor(new Rng(seed), 5);
+      expect(s5.bench).toEqual([]);
+      expect(hiddenSetupFor(new Rng(seed))).toEqual(s5);
+      expect({ ...s6, bench: [] }).toEqual(s5);
+      expect(s6.bench.map((b) => b.key).sort()).toEqual([...TESTERS].sort());
+      // The plain tester keeps the record's tester colour; the spotted one differs from the hidden plant's and the plain one's.
+      expect(s6.bench.find((b) => b.key === 'aa')!.color).toBe(s6.colors[1]);
+      const spotted = s6.bench.find((b) => b.key === 'AA')!.color;
+      expect(s6.colors).not.toContain(spotted);
+      orders.add(s6.bench.map((b) => b.key).join());
+    }
+    expect(orders.size).toBe(2);
+  });
+
+  it('the plain tester grows six sprouts; the accepted set is candidates of that record, both or one spot copy', () => {
+    let both = 0, one = 0;
+    for (const seed of seeds300) {
+      const s = hiddenSetupFor(new Rng(seed), 6);
+      const rec = testerRecord(s);
+      expect(rec.length).toBe(2 * WATERING);
+      expect(rec.length).toBeLessThanOrEqual(RECORD_SLOTS);
+      expect(compatible(s.hidden, aa, rec)).toBe(true);
+      const fit = candidates(aa, rec);
+      expect(fit).toContain(s.truth);
+      expect(checkCandidates(fit, aa, rec)).toEqual({ ok: true });
+      if (fit.length === 2) both++;
+      else one++;
+      // From the choice the ghost finger reaches a passing Check.
+      const chosen = new Set<Candidate>();
+      for (let i = 0; i < 4; i++) {
+        const st = hiddenNextStep('choose2', chosen, aa, rec)!;
+        if ('check' in st) break;
+        if ('choose' in st) chosen.add(st.choose);
+      }
+      expect(checkCandidates(chosen, aa, rec)).toEqual({ ok: true });
+    }
+    expect(both).toBeGreaterThan(0);
+    expect(one).toBeGreaterThan(0);
+  });
+
+  it('pickStep plants the plain tester, swapping the spotted one, then waters', () => {
+    expect(pickStep(null)).toEqual({ plant: 'aa' });
+    expect(pickStep('AA')).toEqual({ plant: 'aa' });
+    expect(pickStep('aa')).toEqual({ water: true });
+  });
+
+  it('picking has no Try one and no ghost-finger step of its own in hiddenNextStep', () => {
+    expect(tryRoom('pick', 0)).toBe(0);
+    expect(tryRoom('pick', 3)).toBe(0);
+    expect(hiddenNextStep('pick', new Set(), aa, [])).toBeNull();
+    expect(tryRoom('choose2', 6)).toBe(2);
+  });
+
+  it('levelName names level 6 and leaves 5 unchanged', () => {
+    expect(levelName(6)).toBe(TESTER_NAME);
+    expect(levelName(6)).toBe('Which plant could tell us?');
+    expect(levelName(5)).toBe(HIDDEN_NAME);
   });
 });

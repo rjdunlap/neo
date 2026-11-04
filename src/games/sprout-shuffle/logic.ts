@@ -226,10 +226,10 @@ export function lookCounts(rs: readonly Route[]): Record<Look, number> {
 export const PAIRS_LEVEL = 4;
 export const PAIRS_NAME = 'Which pairs always make spotted?';
 
-/** The grown-up name of any level, 1 to 5. */
+/** The grown-up name of any level, 1 to 6. */
 export function levelName(level: number): string {
   const l = Math.round(level);
-  return l >= HIDDEN_LEVEL ? HIDDEN_NAME : l >= PAIRS_LEVEL ? PAIRS_NAME : planFor(level).name;
+  return l >= TESTER_LEVEL ? TESTER_NAME : l >= HIDDEN_LEVEL ? HIDDEN_NAME : l >= PAIRS_LEVEL ? PAIRS_NAME : planFor(level).name;
 }
 
 /** Two plants on one pair card: the left plant's copies and the right plant's, as their trays show them. */
@@ -351,7 +351,7 @@ export interface HiddenSetup {
   /** The hidden plant's true copies, as its covered tray holds them. */
   truth: Candidate;
   hidden: Genotype;
-  /** Level 5's tester is always plain. */
+  /** The tester whose watering grows the authored record: always plain. At level 6 she plants it herself. */
   tester: Genotype;
   /** The authored sprouts of the first and second watering. The second holds one plain sprout only when the truth is `Aa`. */
   first: readonly Look[];
@@ -360,23 +360,35 @@ export interface HiddenSetup {
   colors: readonly [ColorName, ColorName];
   /** The two candidate cards, left to right. */
   order: readonly Candidate[];
+  /** Level 6's bench: the known plants she can grow it with, left to right, each with its petal colour. Empty at level 5. */
+  bench: readonly BenchPlant[];
 }
 
-/** One of the two authored cases, seeded, with the plain sprout's place, tray order, colours and card order seeded too. */
-export function hiddenSetupFor(rng: Rng): HiddenSetup {
+export interface BenchPlant {
+  key: Tester;
+  color: ColorName;
+}
+
+/** One of the two authored cases, seeded, with the plain sprout's place, tray order, colours and card order seeded too. Level 6 adds the bench, drawn after level 5's draws so a level 5 seed plays the same case. */
+export function hiddenSetupFor(rng: Rng, level = HIDDEN_LEVEL): HiddenSetup {
   const truth: Candidate = rng.chance(0.5) ? 'Aa' : 'AA';
   const g = GENOTYPES[truth];
   const hidden: Genotype = rng.chance(0.5) ? [g[1], g[0]] : [g[0], g[1]];
   const first: Look[] = ['spotted', 'spotted', 'spotted'];
   const second: Look[] = ['spotted', 'spotted', 'spotted'];
   if (truth === 'Aa') second[rng.int(0, WATERING - 1)] = 'plain';
-  const [c0, c1] = rng.shuffle([...PETAL_COLORS]);
+  const [c0, c1, c2] = rng.shuffle([...PETAL_COLORS]);
   const order = rng.chance(0.5) ? [...CANDIDATES] : [...CANDIDATES].reverse();
-  return { truth, hidden, tester: aa, first, second, colors: [c0, c1], order };
+  const bench: BenchPlant[] = [];
+  if (Math.round(level) >= TESTER_LEVEL) {
+    const keys: Tester[] = rng.chance(0.5) ? ['AA', 'aa'] : ['aa', 'AA'];
+    bench.push({ key: keys[0], color: keys[0] === 'aa' ? c1 : c2 }, { key: keys[1], color: keys[1] === 'aa' ? c1 : c2 });
+  }
+  return { truth, hidden, tester: aa, first, second, colors: [c0, c1], order, bench };
 }
 
-/** Where a level 5 round is: water, choose, water again, choose again, then the reveal. */
-export type HiddenPhase = 'water1' | 'choose1' | 'water2' | 'choose2' | 'done';
+/** Where a level 5 or 6 round is: (level 6) pick a tester, water, choose, water again, choose again, then the reveal. */
+export type HiddenPhase = 'pick' | 'water1' | 'choose1' | 'water2' | 'choose2' | 'done';
 
 export type HiddenVerdict =
   | { ok: true }
@@ -401,7 +413,7 @@ export function drawSprout(hidden: Genotype, tester: Genotype, rng: Rng): Look {
 
 /** How many Try one sprouts still fit: none before the first watering or after the end, and room is kept for the second watering. */
 export function tryRoom(phase: HiddenPhase, recordLength: number): number {
-  if (phase === 'water1' || phase === 'done') return 0;
+  if (phase === 'pick' || phase === 'water1' || phase === 'done') return 0;
   const reserved = phase === 'choose1' || phase === 'water2' ? WATERING : 0;
   return Math.max(0, RECORD_SLOTS - reserved - recordLength);
 }
@@ -411,9 +423,38 @@ export type HiddenStep = { water: true } | { choose: Candidate } | { unchoose: C
 
 export function hiddenNextStep(phase: HiddenPhase, chosen: ReadonlySet<Candidate>, tester: Genotype, record: readonly Look[]): HiddenStep | null {
   if (phase === 'water1' || phase === 'water2') return { water: true };
-  if (phase === 'done') return null;
+  if (phase === 'pick' || phase === 'done') return null;
   const fit = candidates(tester, record);
   for (const c of CANDIDATES) if (chosen.has(c) && !fit.includes(c)) return { unchoose: c };
   for (const c of fit) if (!chosen.has(c)) return { choose: c };
   return { check: true };
+}
+
+// ——— Level 6: which plant could tell us? (G5's last level; definition: docs/definitions/hidden-sprouts.md) ———
+
+export const TESTER_LEVEL = 6;
+export const TESTER_NAME = 'Which plant could tell us?';
+
+/** The two known plants on level 6's bench: two spot copies, or two plain. */
+export type Tester = 'AA' | 'aa';
+export const TESTERS: readonly Tester[] = ['AA', 'aa'];
+
+/** What a watering grows with a tester that cannot tell: every look both candidates can make with it, three times (with `AA`, three spotted). */
+export function cantTellSprouts(tester: Genotype): Look[] {
+  const [a, b] = CANDIDATES.map((c) => support(routes(GENOTYPES[c], tester)));
+  const shared = [...a].filter((l) => b.has(l));
+  return Array.from({ length: WATERING }, (_, i) => shared[i % shared.length]);
+}
+
+/** Level 6 with a tester that can tell grows the whole authored record in one watering: the first three, then the next three. */
+export function testerRecord(s: HiddenSetup): Look[] {
+  return [...s.first, ...s.second];
+}
+
+/** The ghost finger's pick: plant the tester that could tell, then water. Choosing the other first is exploration, never needed. */
+export type PickStep = { plant: Tester } | { water: true };
+
+export function pickStep(potted: Tester | null): PickStep {
+  const telling = TESTERS.find((t) => couldTell(GENOTYPES[t]))!;
+  return potted === telling ? { water: true } : { plant: telling };
 }
