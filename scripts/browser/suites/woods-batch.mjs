@@ -5,7 +5,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
 // Wonder Woods and the newest games: every level driven like a finger, with misses, hints, the saved score and the sticker.
 async function woodsBatch() {
   const only = process.env.WOODS_ONLY;
-  if (only !== undefined) selectValue(only, ['light', 'penguin', 'peek', 'code', 'hop', 'shop', 'grow', 'clock', 'families', 'word-end', 'pixels', 'night', 'snack', 'beat', 'rhyme', 'bonds', 'go', 'ramp', 'sort', 'pair', 'predict', 'map', 'opp', 'graph', 'worm', 'helpers', 'boxes', 'twoboxes', 'mailmap', 'lemon'], 'WOODS_ONLY');
+  if (only !== undefined) selectValue(only, ['light', 'materials', 'penguin', 'peek', 'code', 'hop', 'shop', 'grow', 'clock', 'families', 'word-end', 'pixels', 'night', 'snack', 'beat', 'rhyme', 'bonds', 'go', 'ramp', 'sort', 'pair', 'predict', 'map', 'opp', 'graph', 'worm', 'helpers', 'boxes', 'twoboxes', 'mailmap', 'lemon'], 'WOODS_ONLY');
   const fromLevel = Number(process.env.FROM_LEVEL || 1);
   const score = (id) => page.evaluate((id) => { const r = kit.store.stats(id).history.at(-1); return [r.misses, r.hints]; }, id);
   // Ready for round n; then a beat, since things built this frame aren't hit-testable until they're drawn.
@@ -53,6 +53,44 @@ async function woodsBatch() {
     assert.deepEqual(await score('light-lab'), plan.mode === 'plan' ? [2, 1] : [0, 0]);
     const play = plan.mode === 'predict' ? 'three unscored predictions and a final plan, ' : plan.mode === 'plan' ? 'missed shines explained, hint glow, ' : 'live beam, ';
     log(`Light Lab ${level}: mirrors turned like a finger, ${play}saved score and sticker passed`);
+  }
+
+  if (!only || only === 'materials') {
+    // Light Lab 11, Through, bounce or stop? (school portrait): a guess that differs from what happens (no miss), a shine
+    // caught with its shadow or dim beam, then on the first choice two wrong things (the second raises the glow) and the right one.
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await launch('light-lab', 11, 'Mia', 'school');
+    const cardFor = (n) => page.evaluate((n) => {
+      const g = neo.scene.game; const r = g.round;
+      if (n >= 3) return r.choices[n - 3].answer;
+      const m = r.guesses[n].material;
+      return ['through', 'bounce', 'stop'].indexOf(m === 'shiny' ? 'bounce' : m === 'solid' ? 'stop' : 'through');
+    }, n);
+    const shot = await page.evaluate(() => neo.scene.game.round.guesses.findIndex((g) => g.material === 'solid' || g.material === 'cloudy'));
+    for (let n = 0; n < 5; n++) {
+      await idle(n);
+      const right = await cardFor(n);
+      if (n === 0) await tap(`neo.scene.game.cards[${(right + 1) % 3}]`);
+      else if (n === 3) {
+        for (const k of [0, 1, 2].filter((k) => k !== right)) {
+          await tap(`neo.scene.game.cards[${k}]`);
+          await page.waitForTimeout(300);
+          await idle(3);
+        }
+        assert.deepEqual(await counts(), [2, 1], 'two wrong things are two misses, and the glow is one hint');
+        assert.equal(await page.evaluate(() => neo.scene.game.hintCard), right, 'the thing that works glows');
+        await tap(`neo.scene.game.cards[${right}]`);
+      } else await tap(`neo.scene.game.cards[${right}]`);
+      if (n === shot) { await page.waitForTimeout(1500); await screenshot('light-lab-11-portrait'); }
+      if (n < 3) {
+        await page.waitForFunction((n) => neo.scene.finished || neo.scene.game.index > n, n, { timeout: 20000 });
+        assert.deepEqual(await counts(), [0, 0], 'guesses are experiments, never misses');
+      }
+    }
+    await finished('light-lab');
+    assert.deepEqual(await score('light-lab'), [2, 1]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log('Light Lab 11: a mismatched guess with no miss, the shine with its shadow or dim beam, two wrong things then the glow, saved score and sticker passed');
   }
 
   if (!only || only === 'penguin') for (let level = fromLevel; level <= Number(process.env.TO_LEVEL || 9); level++) {

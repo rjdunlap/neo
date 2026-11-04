@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { beamEnd, boardWith, cloudCells, DROP_TILT, fewestPlaced, findLines, fits, mirrorAt, flowerCount, freeCells, nearestPlacement, placeHint, hintMirror, makePuzzle, minTurns, mirrorPuzzle, nearestSolutions, planFor, PLANS, predictionChoices, reflect, solved, tiltFor, trace, type Dir, type LightPuzzle, type Placed, type Tilt } from './logic';
+import { rangeFor, stepLevel } from '../../progress/difficulty';
+import { beamEnd, hintThing, LEVELS, materialPuzzle, materialsRound, MATERIALS, meetsGoal, outcome, owlCell, POOLS, shadowCells, whyNotMaterial, type MaterialBoard, type Stuff, boardWith, cloudCells, DROP_TILT, fewestPlaced, findLines, fits, mirrorAt, flowerCount, freeCells, nearestPlacement, placeHint, hintMirror, makePuzzle, minTurns, mirrorPuzzle, nearestSolutions, planFor, PLANS, predictionChoices, reflect, solved, tiltFor, trace, type Dir, type LightPuzzle, type Placed, type Tilt } from './logic';
 
+/** Levels 1–10: the mirror boards `makePuzzle` builds (level 11's come from `materialsRound`). */
+const BOARD_PLANS = PLANS.filter((p) => p.mode !== 'materials');
 /** Levels 1–7: every mirror is already on the board, for her to turn. */
-const TILT_PLANS = PLANS.filter((p) => !p.tray && p.mode !== 'find');
+const TILT_PLANS = BOARD_PLANS.filter((p) => !p.tray && p.mode !== 'find');
 
 const mirrorIndices = (p: LightPuzzle) => p.things.flatMap((t, i) => (t.kind === 'mirror' ? [i] : []));
 
@@ -17,7 +20,7 @@ describe('Light Lab', () => {
   });
 
   it('every puzzle has a known answer and starts unsolved, with the planned pieces', () => {
-    for (const plan of PLANS) {
+    for (const plan of BOARD_PLANS) {
       for (let seed = 1; seed <= 300; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
         expect(solved(...boardWith(p, p.solution, p.tray)), `${plan.name} ${seed}`).toBe(true);
@@ -168,7 +171,7 @@ describe('Light Lab', () => {
   });
 
   it('the sun sits on either side from level 3, and on the left at levels 1–2', () => {
-    for (let level = 1; level <= PLANS.length; level++) {
+    for (let level = 1; level <= BOARD_PLANS.length; level++) {
       const sides = new Set<number>();
       for (let seed = 1; seed <= 100; seed++) sides.add(makePuzzle(planFor(level), new Rng(seed)).sunDir);
       expect([...sides].sort(), `level ${level}`).toEqual(level <= 2 ? [0] : [0, 2]);
@@ -322,6 +325,109 @@ describe('Light Lab', () => {
         spots.add(`${m.x},${m.y},${p.sunCol}`);
       }
       expect(spots.size).toBeGreaterThan(20);
+    });
+  });
+  describe('level 11, Through, bounce or stop?', () => {
+    const SEEDS = 400;
+    const allStuff: Stuff[] = MATERIALS.flatMap((material) => POOLS[material].map((name) => ({ material, name })));
+
+    it('each material does its main thing to the straight beam', () => {
+      for (let seed = 1; seed <= SEEDS; seed++) {
+        const { board } = materialsRound(new Rng(seed));
+        const far = { x: board.cols - 1, y: board.sunRow };
+        for (const stuff of allStuff) {
+          const p = materialPuzzle(board, stuff);
+          const t = trace(p, []);
+          const at = (c: { x: number; y: number }) => p.things.findIndex((th) => th.kind === 'flower' && th.x === c.x && th.y === c.y);
+          if (stuff.material === 'clear' || stuff.material === 'cloudy') {
+            expect(t.woken).toEqual([at(far)]);
+            const past = t.cells.filter((c) => c.x > board.stand);
+            expect(past.every((c) => !!c.dim)).toBe(stuff.material === 'cloudy');
+            expect(t.cells.filter((c) => c.x <= board.stand).some((c) => c.dim)).toBe(false);
+          } else if (stuff.material === 'solid') {
+            expect(t.end).toBe('rock');
+            expect(t.woken).toEqual([]);
+            const last = t.cells[t.cells.length - 1];
+            expect([last.x, last.y]).toEqual([board.stand, board.sunRow]);
+          } else {
+            expect(t.woken).toEqual([at({ x: board.stand, y: board.bounceRow })]);
+          }
+          // The outcome table agrees with what the beam really does.
+          const o = t.end === 'rock' ? 'stop' : t.cells.some((c) => c.y !== board.sunRow) ? 'bounce' : 'through';
+          expect(o).toBe(outcome(stuff.material));
+        }
+        expect(materialPuzzle(board, null).things).toHaveLength(2);
+      }
+      expect(MATERIALS.map(outcome)).toEqual(['through', 'through', 'stop', 'bounce']);
+    });
+
+    it('three guesses of three different materials, on a board whose bounce stays on it', () => {
+      for (let seed = 1; seed <= SEEDS; seed++) {
+        const { board, guesses } = materialsRound(new Rng(seed));
+        expect(guesses).toHaveLength(3);
+        expect(new Set(guesses.map((g) => g.material)).size).toBe(3);
+        for (const g of guesses) expect(POOLS[g.material]).toContain(g.name);
+        expect([1, 2]).toContain(board.sunRow);
+        expect([2, 3]).toContain(board.stand);
+        expect([board.cols, board.rows]).toEqual([6, 4]);
+        expect(board.bounceRow).toBe(board.sunRow === 1 ? 3 : 0);
+        expect(shadowCells(board).map((c) => c.x)).toEqual(Array.from({ length: board.cols - 1 - board.stand }, (_, k) => board.stand + 1 + k));
+      }
+    });
+
+    it('every choice has exactly one tray thing that works, and every other has a line for what it did', () => {
+      for (let seed = 1; seed <= SEEDS; seed++) {
+        const { board, choices } = materialsRound(new Rng(seed));
+        expect(choices).toHaveLength(2);
+        for (const c of choices) {
+          expect(c.tray).toHaveLength(3);
+          expect(new Set(c.tray.map((s) => s.material)).size).toBe(3);
+          const works = c.tray.map((s) => meetsGoal(board, c.goal, s));
+          expect(works.filter(Boolean)).toHaveLength(1);
+          expect(works[c.answer]).toBe(true);
+          c.tray.forEach((s, i) => expect(whyNotMaterial(c.goal, s.material) === null).toBe(i === c.answer));
+          // The owl's goal never offers the shiny thing, which would also leave it dark.
+          if (c.goal === 'shade') expect(c.tray.some((s) => s.material === 'shiny')).toBe(false);
+        }
+      }
+    });
+
+    it('is fair: each choice asks for what a guess showed, and the two goals differ', () => {
+      const goals = new Set<string>();
+      for (let seed = 1; seed <= SEEDS; seed++) {
+        const { guesses, choices } = materialsRound(new Rng(seed));
+        const shown = guesses.map((g) => g.material);
+        expect(choices[0].goal).not.toBe(choices[1].goal);
+        for (const c of choices) {
+          goals.add(c.goal);
+          expect(shown).toContain(c.tray[c.answer].material);
+        }
+      }
+      expect([...goals].sort()).toEqual(['bounce', 'shade', 'wake']);
+    });
+
+    it('the hint names the answer, and the owl sits where the far flower would', () => {
+      for (let seed = 1; seed <= 50; seed++) {
+        const { board, choices } = materialsRound(new Rng(seed));
+        for (const c of choices) expect(hintThing(c)).toBe(c.answer);
+        expect(owlCell(board)).toEqual({ x: board.cols - 1, y: board.sunRow });
+      }
+      const b: MaterialBoard = { cols: 6, rows: 4, sunRow: 1, stand: 2, tilt: 1, bounceRow: 3 };
+      expect(meetsGoal(b, 'shade', { material: 'cloudy', name: 'wax' })).toBe(false);
+      expect(meetsGoal(b, 'shade', { material: 'solid', name: 'book' })).toBe(true);
+    });
+
+    it('sits after level 4 in both bands: pre-K [1, 2, 3, 4, 11], school [2, 3, 4, 11, 5 … 10]', () => {
+      expect(planFor(11).mode).toBe('materials');
+      expect(planFor(11).eitherSide).toBe(false);
+      expect(() => makePuzzle(planFor(11), new Rng(1))).toThrow();
+      expect(rangeFor(LEVELS, 'prek').order).toEqual([1, 2, 3, 4, 11]);
+      expect(rangeFor(LEVELS, 'school').order).toEqual([2, 3, 4, 11, 5, 6, 7, 8, 9, 10]);
+      expect(stepLevel(4, 1, rangeFor(LEVELS, 'prek'))).toBe(11);
+      expect(stepLevel(4, 1, rangeFor(LEVELS, 'school'))).toBe(11);
+      expect(stepLevel(11, 1, rangeFor(LEVELS, 'school'))).toBe(5);
+      expect(stepLevel(5, -1, rangeFor(LEVELS, 'school'))).toBe(11);
+      expect(PLANS).toHaveLength(11);
     });
   });
 });
