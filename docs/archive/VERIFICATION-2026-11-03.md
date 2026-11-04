@@ -280,3 +280,11 @@
 - [PR #1179](https://github.com/rjdunlap/neo/pull/1179): [definition](../definitions/read-do-make-the-sign.md) for level 7 *Make the sign* (WC3), the batch `read-do 3`, the dive's slice 3 marked defined.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`.
 - Not run: typecheck, tests and every play check (no code changed). Open: the build, and the person and device checks the definition lists.
+
+## 2026-11-03 — Island Bridges level 6 Keep them joined (island-bridges batch 2)
+
+- [PR #1180](https://github.com/rjdunlap/neo/pull/1180), `claude/island-bridges-2` (code `762b4f31`): level 6 with the `closesOff` isolation rule behind an `isolation` flag (levels 1-5, couch and Island Hopping unchanged), and the level-6-only `joined` hint ([dive slice 2](../deep-dives/island-bridges.md#build-slices-in-order)).
+- Ran (Vite dev, `VITE_SPEECH=off`, port 5741): typecheck; full `npm test` 300 files / 4683 tests on `07c30b0b`; after the review fix, island-bridges, registry and content tests 231 passed; `BROWSER_SUITE=bridgestouch BRIDGES_ONLY=6` on `07c30b0b` (13 hints to a joined step, group of 3) and `762b4f31` (10 hints, group of 2): its line and group, portrait screenshot, one sticker with 0 misses; `BROWSER_SUITE=fingerdemo FINGER_ONLY=island-bridges FINGER_LEVELS=6` clean in 10.5 s.
+- Review (`game-reviewer`): no soundness bug; the scope leak (joined hint on every level) was fixed.
+- Not run: `npm run build` (no shared assets), couch suites (couch unchanged), levels 1-5 touch plays.
+- Open: whether the dashed-ring hint reads clearly on an iPad ([device checks](../DEVICE-CHECKS.md)); with two closing bridges the hint draws one.
