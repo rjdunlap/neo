@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-03 — Read & Do level 7 Make the sign definition (docs only)
+
+- [PR #1179](https://github.com/rjdunlap/neo/pull/1179): [definition](definitions/read-do-make-the-sign.md) for level 7 *Make the sign* (WC3), the batch `read-do 3`, the dive's slice 3 marked defined.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests and every play check (no code changed). Open: the build, and the person and device checks the definition lists.
+
 ## 2026-11-03 — Orchard Rows levels 7–9 definition (docs only)
 
 - [PR #1178](https://github.com/rjdunlap/neo/pull/1178): [definition](definitions/orchard-rows-path.md) for levels 7–9 *a path through the orchard* (own scene, model, layout, pads, accounting, voice, how-to, bot, rule tests, check tier), the batch `orchard-rows 3`, the dive's slice 2 marked defined.
