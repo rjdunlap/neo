@@ -512,6 +512,12 @@ class PenguinSlide implements Game {
     this.at = { ...this.puzzle.start };
     this.have = 0;
     this.history = [];
+    if (this.predicting) {
+      // Back to the first shown slide, from the start.
+      this.step = 0;
+      this.guess = null;
+      this.focus = beside(this.at, this.shown[0].dir);
+    }
     this.settleBlocks((this.puzzle.blocks ?? []).map((c) => ({ ...c })), 0.3);
     this.fishNodes.forEach((f) => (f.visible = true));
     const p = this.at2(this.at);
