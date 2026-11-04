@@ -342,7 +342,7 @@ describe('game registry', () => {
     const g = gameById('lantern-lights')!;
     expect(g.bands).toEqual(['school', 'grownup']);
     expect(g.levels('school')).toEqual({ min: 1, max: 2 });
-    expect(g.levels('grownup')).toEqual({ min: 1, max: 8 });
+    expect(g.levels('grownup')).toEqual({ min: 1, max: 9 });
     expect(couchGameById('lantern-lights')).toBe(g);
   });
 

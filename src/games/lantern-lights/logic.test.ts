@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  allLit, footprint, formatPond, fewestPresses, fullBoard, hintFor, litCount, makePond, makePonds, namedHint, shortWay, parsePond, planFor, PLANS, press, pressAll, solve, stuckAt, type Size,
+  allLit, footprint, formatPond, fewestPresses, fullBoard, hintFor, isLantern, lanternCount, litCount, makePond, makePonds, namedHint, shapeMask, SHAPES, shortWay, parsePond, planFor, PLANS, press, pressAll, solve, stuckAt, type Size,
 } from './logic';
 
 /** Exhaustive truth for a small board: for every set of presses, the board it makes from all-lit and its size. */
@@ -107,7 +107,8 @@ describe('lantern ponds', () => {
         expect(allLit(pond.board), label).toBe(false);
         expect(pond.par, label).toBeGreaterThanOrEqual(plan.atLeast);
         expect(pond.par, label).toBeLessThanOrEqual(plan.scramble);
-        expect(fewestPresses(pond.board, plan.size), label).toBe(pond.par);
+        expect(fewestPresses(pond.board, plan.size, pond.mask), label).toBe(pond.par);
+        expect(pond.mask !== undefined, label).toBe(plan.shapes !== undefined);
       }
     });
     expect(planFor(0)).toBe(PLANS[0]);
@@ -122,9 +123,9 @@ describe('lantern ponds', () => {
   });
 
   it('climbs: bigger or harder ponds as the levels rise', () => {
-    expect(PLANS.map((p) => p.size)).toEqual([3, 3, 4, 4, 5, 5, 6, 6]);
+    expect(PLANS.map((p) => p.size)).toEqual([3, 3, 4, 4, 5, 5, 6, 6, 5]);
     for (const size of [3, 4, 5, 6] as const) {
-      const rungs = PLANS.filter((p) => p.size === size);
+      const rungs = PLANS.filter((p) => p.size === size && !p.shapes);
       expect(rungs[1].scramble).toBeGreaterThan(rungs[0].scramble);
     }
   });
@@ -160,13 +161,15 @@ describe('lantern hints', () => {
   it('always lead somewhere: pressing the hinted lantern brings the fewest down by exactly one', () => {
     const rng = new Rng(99);
     for (const plan of PLANS) for (let t = 0; t < 8; t++) {
-      let board = makePond(plan, rng).board;
-      let left = fewestPresses(board, plan.size)!;
+      const pond = makePond(plan, rng, plan.shapes?.[t % plan.shapes.length]), m = pond.mask;
+      let board = pond.board;
+      let left = fewestPresses(board, plan.size, m)!;
       for (let guard = 0; guard < 40 && left > 0; guard++) {
-        const at = hintFor(board, plan.size, rng.int(0, plan.size ** 2 - 1));
+        const at = hintFor(board, plan.size, rng.int(0, plan.size ** 2 - 1), m);
         expect(at, plan.name).not.toBeNull();
-        board = press(board, plan.size, at!);
-        const now = fewestPresses(board, plan.size)!;
+        expect(isLantern(at!, m), plan.name).toBe(true);
+        board = press(board, plan.size, at!, m);
+        const now = fewestPresses(board, plan.size, m)!;
         expect(now, plan.name).toBe(left - 1);
         left = now;
       }
@@ -191,13 +194,13 @@ describe('named hints', () => {
     const rng = new Rng(41);
     const seen = new Set<string>();
     for (const plan of PLANS) for (let t = 0; t < 12; t++) {
-      const { board } = makePond(plan, rng);
-      const s = solve(board, plan.size)!, near = rng.int(0, plan.size ** 2 - 1), h = namedHint(board, plan.size, near)!;
+      const { board, mask } = makePond(plan, rng, plan.shapes?.[t % plan.shapes.length]);
+      const s = solve(board, plan.size, mask)!, near = rng.int(0, plan.size ** 2 - 1), h = namedHint(board, plan.size, near, mask)!;
       expect(h.kind, plan.name).toBe(s.best.length === 1 ? 'one' : 'many');
-      expect(h.cell).toBe(hintFor(board, plan.size, near));
+      expect(h.cell).toBe(hintFor(board, plan.size, near, mask));
       expect(s.best.some((way) => way.includes(h.cell)), plan.name).toBe(true);
       // 3 by 3 and 6 by 6 have one winning set at all, so only ever one short way.
-      if (plan.size === 3 || plan.size === 6) expect(h.kind, plan.name).toBe('one');
+      if ((plan.size === 3 || plan.size === 6) && !plan.shapes) expect(h.kind, plan.name).toBe('one');
       seen.add(h.kind);
     }
     expect([...seen].sort()).toEqual(['many', 'one']);
@@ -213,15 +216,15 @@ describe('show me a short way', () => {
     for (let level = 1; level <= PLANS.length; level++) {
       const rng = new Rng(500 + level), plan = planFor(level);
       for (const pond of makePonds(plan, rng)) {
-        const way = shortWay(pond.board, pond.size)!;
+        const way = shortWay(pond.board, pond.size, pond.mask)!;
         expect(way.length, plan.name).toBe(pond.par);
         expect(new Set(way).size).toBe(way.length);
         let board: boolean[] = pond.board.slice();
         way.forEach((c, k) => {
-          board = press(board, pond.size, c);
+          board = press(board, pond.size, c, pond.mask);
           expect(allLit(board), `${plan.name} after ${k + 1}`).toBe(k === way.length - 1);
         });
-        expect(shortWay(pond.board, pond.size)).toEqual(way);
+        expect(shortWay(pond.board, pond.size, pond.mask)).toEqual(way);
       }
     }
   });
@@ -263,5 +266,99 @@ describe('the school opening', () => {
     expect(stuckAt('school', 2)).toBe(8);
     expect(stuckAt('school', 4)).toBe(10);
     for (const band of ['lap', 'toddler', 'preschool', 'prek', 'grownup'] as const) expect(stuckAt(band, 2)).toBeNull();
+  });
+});
+
+/** Exhaustive truth on a lily-pad shape: the fewest presses from all-lit to every reachable board, over lanterns only. */
+function fewestOnShape(mask: boolean[]): Map<number, number> {
+  const cells = mask.map((on, i) => (on ? i : -1)).filter((i) => i >= 0), k = cells.length;
+  // Boards are written over the lanterns alone (bit j for the j-th lantern), so 24 lanterns fit in a number.
+  const local = new Map(cells.map((c, j) => [c, j]));
+  const fp = cells.map((c) => footprint(5, c, mask).reduce((m, x) => m | (1 << local.get(x)!), 0));
+  const table = new Map<number, number>();
+  let board = 0, weight = 0, set = 0;
+  table.set(0, 0);
+  for (let i = 1; i < 2 ** k; i++) {
+    const b = 31 - Math.clz32(i & -i);
+    board ^= fp[b];
+    set ^= 1 << b;
+    weight += set & (1 << b) ? 1 : -1;
+    if (weight < (table.get(board) ?? 99)) table.set(board, weight);
+  }
+  return table;
+}
+
+describe('lily-pad ponds', () => {
+  it('clips a footprint at the pads, and a pad flips nothing and is never flipped', () => {
+    const mask = shapeMask(SHAPES.ring);
+    expect(isLantern(12, mask)).toBe(false);
+    expect(footprint(5, 7, mask)).toEqual([2, 6, 7, 8]);
+    expect(footprint(5, 12, mask)).toEqual([]);
+    const lit = fullBoard(5);
+    expect(press(lit, 5, 12, mask)).toEqual(lit);
+    for (let c = 0; c < 25; c++) expect(press(lit, 5, c, mask)[12]).toBe(true);
+    expect(litCount(press(lit, 5, 7, mask), mask)).toBe(20);
+    expect(lanternCount(5, mask)).toBe(24);
+    expect(lanternCount(5)).toBe(25);
+  });
+
+  it('weighs the fewest exactly on every shape, against every set of presses, and keeps each shape to at most four free choices', () => {
+    for (const [name, shape] of Object.entries(SHAPES)) {
+      const mask = shapeMask(shape), cells = mask.map((on, i) => (on ? i : -1)).filter((i) => i >= 0);
+      expect(cells.length, name).toBeLessThanOrEqual(24);
+      const free = Math.log2(solve(fullBoard(5), 5, mask)!.ways);
+      expect(free, name).toBeLessThanOrEqual(4);
+      const truth = fewestOnShape(mask), rng = new Rng(name.length * 13);
+      // Every reachable board's fewest from the solver, sampled widely, matches the brute force; and an unreachable
+      // board says so.
+      const reachable = [...truth.keys()];
+      expect(reachable.length, name).toBe(2 ** (cells.length - free));
+      for (let t = 0; t < 400; t++) {
+        const key = reachable[rng.int(0, reachable.length - 1)];
+        const board = fullBoard(5);
+        cells.forEach((c, j) => { if (key & (1 << j)) board[c] = false; });
+        expect(fewestPresses(board, 5, mask), `${name} ${key}`).toBe(truth.get(key));
+      }
+      if (free > 0) {
+        let key = 0;
+        while (truth.has(key)) key++;
+        const board = fullBoard(5);
+        cells.forEach((c, j) => { if (key & (1 << j)) board[c] = false; });
+        expect(solve(board, 5, mask), name).toBeNull();
+      }
+    }
+  });
+
+  it('makes a round of two different shapes, each pond at least five presses from lit, within its attempt budget over 200 seeds', () => {
+    const plan = planFor(9);
+    expect(plan.shapes).toHaveLength(4);
+    for (let s = 1; s <= 200; s++) {
+      const ponds = makePonds(plan, new Rng(s * 17));
+      expect(ponds).toHaveLength(2);
+      expect(ponds[0].mask).not.toEqual(ponds[1].mask);
+      for (const pond of ponds) {
+        expect(pond.par).toBeGreaterThanOrEqual(5);
+        expect(pond.par).toBeLessThanOrEqual(6);
+        pond.mask!.forEach((on, i) => { if (!on) expect(pond.board[i]).toBe(true); });
+        let board: boolean[] = pond.board.slice(), presses = 0;
+        while (!allLit(board)) {
+          const at = hintFor(board, 5, 0, pond.mask)!;
+          expect(pond.mask![at]).toBe(true);
+          board = press(board, 5, at, pond.mask);
+          presses++;
+        }
+        expect(presses).toBe(pond.par);
+      }
+    }
+  });
+
+  it('reads a pad from a space in the picture and writes it back; a picture without one has no mask', () => {
+    const rows = ['*.***', '*..**', '.* .*', '**..*', '..**.'];
+    const pond = parsePond(rows);
+    expect(pond.mask?.filter((on) => !on)).toHaveLength(1);
+    expect(pond.board[12]).toBe(true);
+    expect(formatPond(pond.board, 5, pond.mask)).toEqual(rows);
+    expect(pond.par).toBe(fewestPresses(pond.board, 5, pond.mask));
+    expect(parsePond(['*.***', '*..**', '.**.*', '**..*', '..**.']).mask).toBeUndefined();
   });
 });

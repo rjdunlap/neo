@@ -29,3 +29,10 @@
 - [PR #1200](https://github.com/rjdunlap/neo/pull/1200), commit `c4a2f913` on base `86464430`: `school` joins Lantern Lights (levels 1–2), `lantern.go-school`, `lantern.stuck-school` via `stuckAt`, how-to and co-play text without "four".
 - Ran: typecheck; `npm test` 300 files, 4,774 tests; `BROWSER_SUITE=lanterntouch LANTERN_ONLY=school` (dev `http://localhost:5961`) PASS: school level 1 at 1024x768 (cell 116, pond 348, buttons 164x107, portrait also at least 100), the nudge once at 8 presses and not at 7, 0 misses, one hint, portrait screenshot `lantern-lights-school-1-portrait`, a sticker; level 2 par 4 to the sticker. `BROWSER_SUITE=fingerdemo FINGER_ONLY=lantern-lights FINGER_LEVELS=2 FINGER_BAND=school` PASS (20.3 s); `npm run build` passed.
 - Not run: the unchanged grown-up `lanterntouch` cases, couchgames (couch unchanged), offline check, iPad or child. Open: three person checks in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-11-04 — Picture Graph level 11 What the graph can say (picture-graph batch 5)
+
+- [PR #1201](https://github.com/rjdunlap/neo/pull/1201) (tested commit `b885cc52`): new school level 11 (`claim` mode: a finished graph, a claim and yes, no and can't-say stamps), voice `graph.claim.*`, how-to steps from 11; can't-say claims are first, hungriest and sleepiest, not the dive's biggest and fastest.
+- Ran (dev server `http://localhost:5332/classic/`, `VITE_SPEECH=off`): typecheck; `npm test` 300 files, 4,780 tests (picture-graph rule tests 43); one scripted 768x1024 school play of level 11 (two wrong stamps on a can't-say claim: misses 1 then 2, the named bar lit, hint 1 with the can't-say stamp glowing; then every claim to the sticker, no page errors) with a portrait screenshot; `BROWSER_SUITE=fingerdemo FINGER_ONLY=picture-graph FINGER_LEVELS=11` pass (9.5 s); `npm run build` pass.
+- Review: `game-reviewer` found no problems.
+- Not run: landscape screenshot (layout unit-tested at 1024x768, 1366x1024, 1600x768, 768x1024, 1024x1365), device or child check. Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md) (whether a six-year-old understands "the graph can't say").

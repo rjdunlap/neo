@@ -1153,6 +1153,8 @@ Proof: new interaction: typecheck, rule tests (hint kinds by `ways`/`best` count
 
 ### lantern-lights 3: Lily-pad ponds
 
+Built 2026-11-04, [PR #1217](https://github.com/rjdunlap/neo/pull/1217), branch `claude/lantern-lights-lily-pads`; [closeout](archive/COMPLETED-2026-10-09.md#lantern-lights-lily-pad-ponds-level-9-lantern-lights-batch-3-2026-11-04).
+
 - **`lantern-lights`, lily-pad ponds, level 9 (dive slice 3)** (new rule on the existing tap; grown-up): masked `footprint`/`solve`/`parsePond`, authored shapes, pad art and `lantern.pads`. Shares `PLANS` and the max with batch 1. [Dive](deep-dives/lantern-lights.md#build-slices-in-order)
 
 Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`, `src/games/lantern-lights/course.test.ts` (since `parsePond` changes), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`. The shared rules change, so the couch suite follows.
