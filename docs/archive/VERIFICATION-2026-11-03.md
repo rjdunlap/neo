@@ -237,3 +237,9 @@
 - Developer request 2026-11-03: Today's six (the `?daily` trial, [PR #1088](https://github.com/rjdunlap/neo/pull/1088)) becomes the daily shuffle: a Home button, preset levels by band, an eligibility rule, seven kinds of challenge and Play all. [Definition](../definitions/todays-six.md), D10 in the roadmap's [discovery actions](../ROADMAP.md#discovery-actions), READY's first line, the waiting row narrowed to what is still the developer's call.
 - Ran: `node scripts/check-links.mjs` and `git diff --check`. No code changed, so no code checks.
 - Open: the three slices' checks run when each lands.
+
+## 2026-11-03 — Inchworm level 9 One worm, hop by hop (inchworm batch 2)
+
+- [PR #1172](https://github.com/rjdunlap/neo/pull/1172): level 9 for school (order `[1, 2, 7, 9, 3, 4, 8, 5, 6]`, max 9; pre-K unchanged), mode `hop` with tap-a-worm hops, chalk ticks and three count pads, new voice lines, a how-to step scoped to 9, and the `worm` case extended to level 9.
+- Ran (head 557892c5, Vite dev http://localhost:5575, stopped): typecheck; full `npm test` 300 files, 4,652 tests (before the review fix; inchworm and content tests 195 passed after it); `BROWSER_SUITE=woods WOODS_ONLY=worm FROM_LEVEL=9 TO_LEVEL=9` in portrait 768x1024 (taps, no pads until the end, end tap no miss, two wrong pads = 2 misses and the glow, numbered ticks; screenshots `inchworm-9-mid-hop`, `inchworm-9-hint`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=inchworm FINGER_LEVELS=9` clean 6.9 s. `game-reviewer`: no blocking findings; two minor fixes applied.
+- Not run: `npm run build` (no shared files or assets changed), landscape play, offline. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): level 9 on an iPad and at pre-K; a child's counting of hops; a resize mid-hop draws the new tick about 0.3 s early.

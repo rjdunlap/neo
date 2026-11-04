@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-03 — Light Lab level 11 Through, bounce or stop? definition (docs only)
+
+- [PR #1189](https://github.com/rjdunlap/neo/pull/1189): [definition](definitions/light-lab-materials.md) for level 11 (materials toy rule, three free guesses then two judged choices, pre-K order [1,2,3,4,11], school order [2,3,4,11,5..10]), the batch `light-lab 5`, the dive's slice 5 marked defined.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests and every play check (no code changed). Open: the build (new-interaction tier), and the person and device checks the definition lists.
+
 ## 2026-11-03 — Picture Graph level 9 A key of five (picture-graph batch 3)
 
 - [PR #1188](https://github.com/rjdunlap/neo/pull/1188) (tested commit `360b577c`): new school level 9 (`fives`: three tally cards in whole fives, key block = a group of five, build one block per group, then how many more), voice `graph.buildfives`/`recountfives`/`morefives`/`fives`, how-to steps.
@@ -90,12 +96,6 @@
 - Ran: typecheck; full `npm test` 4,661 tests (daily, registry and home-layout tests updated); `npm run build`; `BROWSER_SUITE=home` PASS (dev server, working tree at 17423a92); one-off portrait 768x1024 probe on a preschool/prek profile (Home, six, card 0 word-glue level 3, saved level stayed 1, tick on that card only, Back to Home; `?daily` then six then Back; no page errors; Home and six screenshots reviewed); production `OFFLINE_SUITE=root` PASS on a fresh build preview.
 - Not run: the classic offline suite (island route unchanged), a lap/toddler Home screenshot, a grown-up card screenshot. The probe finished its round by calling `finish()`, not by playing it. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): iPad play from Home.
 
-## 2026-11-03 — Inchworm level 9 One worm, hop by hop (inchworm batch 2)
-
-- [PR #1172](https://github.com/rjdunlap/neo/pull/1172): level 9 for school (order `[1, 2, 7, 9, 3, 4, 8, 5, 6]`, max 9; pre-K unchanged), mode `hop` with tap-a-worm hops, chalk ticks and three count pads, new voice lines, a how-to step scoped to 9, and the `worm` case extended to level 9.
-- Ran (head 557892c5, Vite dev http://localhost:5575, stopped): typecheck; full `npm test` 300 files, 4,652 tests (before the review fix; inchworm and content tests 195 passed after it); `BROWSER_SUITE=woods WOODS_ONLY=worm FROM_LEVEL=9 TO_LEVEL=9` in portrait 768x1024 (taps, no pads until the end, end tap no miss, two wrong pads = 2 misses and the glow, numbered ticks; screenshots `inchworm-9-mid-hop`, `inchworm-9-hint`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=inchworm FINGER_LEVELS=9` clean 6.9 s. `game-reviewer`: no blocking findings; two minor fixes applied.
-- Not run: `npm run build` (no shared files or assets changed), landscape play, offline. Open ([DEVICE-CHECKS](DEVICE-CHECKS.md)): level 9 on an iPad and at pre-K; a child's counting of hops; a resize mid-hop draws the new tick about 0.3 s early.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -103,7 +103,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Grown-ups' page off-screen lines (`src/content/offscreen.test.ts`) | 2026-10-26: typecheck, full 3465 units, build; 7 rule tests (under-3 word list, wording, resolution, `{name}`) | [Off-screen lines](archive/VERIFICATION-2026-10-26.md#2026-10-26--off-screen-lines-per-band) | No browser look at the page; Bumper Garden school line held; no reader evidence |
-| `woods` (`worm`), `fingerdemo` (`inchworm`) | 2026-11-03: typecheck, full 4,652 units (195 focused after review fix); `worm` level 9 (hop taps, end tap no miss, two wrong pads, numbered ticks, portrait); `fingerdemo` at 9 clean 6.9 s; level 8 and level 3 jump round last run 2026-11-02 | [Inchworm batch 2](#2026-11-03--inchworm-level-9-one-worm-hop-by-hop-inchworm-batch-2) | Not run: build, landscape, iPad or child; level 9 at pre-K |
+| `woods` (`worm`), `fingerdemo` (`inchworm`) | 2026-11-03: typecheck, full 4,652 units (195 focused after review fix); `worm` level 9 (hop taps, end tap no miss, two wrong pads, numbered ticks, portrait); `fingerdemo` at 9 clean 6.9 s; level 8 and level 3 jump round last run 2026-11-02 | [Inchworm batch 2](archive/VERIFICATION-2026-11-03.md#2026-11-03--inchworm-level-9-one-worm-hop-by-hop-inchworm-batch-2) | Not run: build, landscape, iPad or child; level 9 at pre-K |
 | `woods` (`lemon`), `fingerdemo` (`lemonade-stand`) | 2026-11-02: typecheck, 28 rule tests, full 4,404 units, build; `WOODS_ONLY=lemon FROM_LEVEL=5` (portrait, two wrong boats 2 misses, lightbulb then 2/1, day-2 lightbulb 2/2, card costs, jetty screenshot); `fingerdemo` level 5 clean 36.7 s (before review fixes) | [Lemonade Stand](archive/VERIFICATION-2026-11-02.md#2026-11-02--lemonade-stand-level-5-two-lemon-boats-lemonade-stand-batch-1) | Level 5 only; other woods levels and offline not run; boat feel on a device open |
 | `makerlane`, `fingerdemo` (`maker-lane`) | 2026-11-02: typecheck, 26 rule tests, maker-lane and `src/content` 194 tests, River Tablets and Keep House 109 after the art move, build; `makerlane` (toddler level 1 free tap then waving makers 0/0; portrait preschool level 2 two refused makers, bubbles, glow, right makers 2/1; pre-K level 3 sheep for the sock with replay, dimmed card, then the cotton plant 1/0, re-run after review fixes) and ghost finger levels 2–3 (21.6 s / 17.6 s, before the review fixes) | [Maker Lane](archive/VERIFICATION-2026-11-02.md#2026-11-02--maker-lane-levels-13-food-fiber-systems-fs1) | No iPad or device speech check; offline not run; FS3 grown-ups' card not built; agricultural-literacy or textile review of the makers' lines open |
 | `fingerdemo` (`rainbow-fingers`, `RAINBOW_FOLD=1`) | 2026-11-01: typecheck, 21 rule tests, full 4,251 units, build; one-off portrait fold play (fold 28→56 marks, second fold nothing new, frame, 0/0, mid-fold resize and hang-up print first); fold demo 27.9 s to 31.8 s, levels 1 and 2 clean in 25.6 and 31.9 s | [Rainbow Fingers fold pages](archive/VERIFICATION-2026-11-01.md#2026-11-01--rainbow-fingers-fold-pages-mirror-brush-fold-button) | No device or child check; no scripted `early` re-run; production offline not run |

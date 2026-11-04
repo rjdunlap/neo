@@ -597,6 +597,14 @@ Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `sr
 
 Proof: new-interaction tier: typecheck, rule tests, one play with one wrong cell and its ghost beam, a second for the glow, then the right cell, one portrait screenshot of the cloud, `fingerdemo` at 10.
 
+### light-lab 5: Level 11 Through, bounce or stop?
+
+- **`light-lab`, level 11 *Through, bounce or stop?* (dive slice 5)**, after batch 4 (pre-K order [1,2,3,4,11], school order [2,3,4,11,5..10]): a picture object sits on the beam; three free guesses, then two judged choices. [Definition](definitions/light-lab-materials.md), [dive](deep-dives/light-lab.md#build-slices-in-order)
+
+Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests, one scripted play of level 11 with a mismatched free guess, one wrong choice, a second for the glow, then the right choice, one portrait screenshot, `fingerdemo` at 11.
+
 ### look-it-up 1: Levels 1–3
 
 - **`look-it-up`, levels 1–3 (IR1)** (a new game, one subtask; toddler 1, preschool 1–2, pre-K 2–3, school 3, Barnyard by default): a picture guide of seven real animals (cow, pig, duck, rabbit, brown bear, common frog, African penguin), each page with a fact box of *Eats*, *Where* and *Baby*; touch labels to hear them (level 1), find a hungry visitor's page by its tab and feed it (level 2), find the asked row and help it there (level 3). Turning pages is free; only a wrong food or place given to the animal is a miss. [Definition](definitions/look-it-up.md), [informational-reading study slice IR1](deep-dives/subjects/informational-reading.md#build-slices-in-order)
