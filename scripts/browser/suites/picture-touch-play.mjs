@@ -48,6 +48,38 @@ async function pictureTouchPlay() {
     if (p.x < 0 || p.y < 0 || p.x + p.w > neo.view.w || p.y + p.h > neo.view.h) out.push('paper off screen');
     return out.map((m) => `${label}: ${m} (${neo.view.w}x${neo.view.h})`);
   }, label);
+  // `PICTURE_LEVELS=5,7` plays only those levels: each with one hint, then to the sticker (level 5, the 5 by 5 way in, whole at
+  // 96-unit squares with no Slide, upright and sideways; level 7, a 15 by 15 that needs more care, sliding).
+  const only = (process.env.PICTURE_LEVELS ?? '').split(',').filter(Boolean).map(Number);
+  if (only.length) {
+    for (const level of only) {
+      await launch('picture-logic', level); await idle();
+      const before = await page.evaluate(() => kit.store.data.stickers.length);
+      const at = await state();
+      assert.equal(at.n, level === 5 ? 5 : 15, `level ${level} size`);
+      if (level === 5) {
+        assert.deepEqual([at.maxX, at.maxY], [0, 0], 'a 5 by 5 picture is all in view');
+        assert.equal(await page.evaluate(() => neo.scene.game.cell), 96, 'at the biggest squares');
+        assert.equal(await page.evaluate(() => neo.scene.game.frame.slots.some((s) => s.kind === 'slide')), false, 'no Slide on a 5 by 5');
+      } else assert.ok(at.maxX > 0 || at.maxY > 0, 'a 15 by 15 picture slides');
+      assert.deepEqual(await targets(`level ${level} landscape`), []);
+      await tapSlot('hint'); await page.waitForTimeout(300);
+      assert.ok(await page.evaluate(() => neo.scene.game.hinted !== null), `level ${level} hint rings a square`);
+      if (level === 5) {
+        await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+        assert.deepEqual(await targets('level 5 portrait'), []);
+        assert.equal(await page.evaluate(() => neo.scene.game.cell), 96, 'portrait squares at 96');
+        await screenshot('picture-touch-5-portrait');
+        await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+      }
+      await solveAll(); await finished('picture-logic');
+      assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('picture-logic').history.at(-1); return [r.level, r.misses, r.hints]; }), [level, 0, 1]);
+      assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1, `level ${level} one sticker`);
+    }
+    assert.deepEqual(errors, []);
+    log(`Picture Logic touch levels ${only.join(', ')}: size, whole or sliding, 64-unit targets, one hint, to the sticker with one hint counted passed`);
+    return;
+  }
   // Level 1 (6 by 6): a fill outside the picture is one miss, filling it again empties it for free, Cross marks without a miss, a swipe that
   // jumps squares still fills every square between, a hint counts once and picks its tool.
   await launch('picture-logic', 1); await idle();
