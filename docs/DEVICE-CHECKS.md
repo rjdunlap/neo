@@ -103,6 +103,13 @@
 - [ ] Does "only one long row" carry the idea without the word *prime*, and does *prime* stick?
 - [ ] Are the deal lines ("rows of") clear in device speech?
 
+## Orchard Rows 7–9 (a path through the orchard, defined and built 2026-11-03)
+
+- [ ] Does an eight-year-old count the five rows by rows, or tree by tree?
+- [ ] At level 8, does she choose a split she knows (5, or a square), or leave the path where it starts?
+- [ ] Does "on the side with ten in each row" carry level 9 without the words *tens* and *ones*?
+- [ ] Are the skip counts and "rows of" clear in device speech?
+
 ## Shell Rows (strategy-games study, 2026-10-31; levels 1–3 built 2026-11-01)
 
 - [ ] Does a five-year-old look at the pet's pebbles before setting a shell at level 2, or tap the last empty-looking square?

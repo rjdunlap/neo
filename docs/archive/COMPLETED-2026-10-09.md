@@ -2563,7 +2563,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--pixel-pictur
 
 [PR #1167](https://github.com/rjdunlap/neo/pull/1167), batch garden-rows 2, [dive slice 2](../deep-dives/garden-rows.md#build-slices-in-order). A `'boxes'` rule on the 4x4 bed: each flower once in every row, column and 2x2 hedge box. Full beds are box-valid (shifts 0, 2, 1, 3, then box-preserving shuffles); `clash` reports `by: 'box'` only when the repeat shares neither row nor column. `PLANS` level 8 (6 blanks, 2 beds) and level 9 (10 blanks, 1 bed); school range 3-9, pre-K still 1-3. Hedges are drawn in the gaps between boxes. Voice `rows.boxes` and `rows.clash-box`. How-to: a `from: 8` step and note, the level 7 mend step narrowed to `to: 7`. Couch catalog (levels 3-6) and the bot (rule-generic) unchanged. The `gardenrows` suite gained a hedge-box section (`GARDEN_ROWS_ONLY=boxes`).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--garden-rows-levels-89-hedge-boxes-garden-rows-batch-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--garden-rows-levels-89-hedge-boxes-garden-rows-batch-2).
 
 ## Garden Rows level 10 One row (garden-rows 3, 2026-11-03)
 
@@ -2614,3 +2614,9 @@ Branch `claude/picture-graph-line-them-up`, [PR #1181](https://github.com/rjdunl
 [PR #1182](https://github.com/rjdunlap/neo/pull/1182), [dive slice 2](../deep-dives/penguin-slide.md#build-slices-in-order). School level 10: 7×5 ponds with three fish and five rocks, best route 5–8 slides, two ponds a round; `apartFromStart` / `eatsTwoFromStart` in `logic.ts` reject any pond where one first slide from the start eats two fish. School range 2–10, voice `slide.three`, a how-to step; the bot is the solver, unchanged.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--penguin-slide-level-10-three-fish-dive-slice-2).
+
+## Orchard Rows levels 7–9 A path through the orchard (2026-11-03)
+
+[PR #1183](https://github.com/rjdunlap/neo/pull/1183), [dive slice 3](../deep-dives/orchard-rows.md#build-slices-in-order), batch `orchard-rows 3`, built exactly per the [definition](../definitions/orchard-rows-path.md) with the defaults for its three open decisions (a sign recounts only after its part is answered, no level-8 split hint, part-part-whole twice). School range 1–9; new `PathOrchard` scene in `path.ts` (levels 4–6 code unchanged), path model and layout in `logic.ts`, skill `distributive property`, voice `orchard.path*`, `choosepath`, `pathlaid`, `partcount`, `partone`, `wholehint`, `pathjoin` and `done.path`, how-to steps 7–9 with the level-4 note bounded to 4–6, and a browser case in `scripts/browser/suites/orchard-play.mjs`. A review fix keeps the finished orchard drawn through the join line.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--orchard-rows-levels-79-a-path-through-the-orchard-batch-orchard-rows-3).

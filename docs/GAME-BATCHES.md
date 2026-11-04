@@ -979,7 +979,7 @@ Proof: typecheck and Garden Rows rule tests (the F1 and Mend the bed assertions 
 
 ### garden-rows 2: Hedge boxes
 
-**Built 2026-11-03 ([PR #1167](https://github.com/rjdunlap/neo/pull/1167)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-03--garden-rows-levels-89-hedge-boxes-garden-rows-batch-2); [build note](archive/COMPLETED-2026-10-09.md#garden-rows-levels-8-9-hedge-boxes-garden-rows-2-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
+**Built 2026-11-03 ([PR #1167](https://github.com/rjdunlap/neo/pull/1167)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-03.md#2026-11-03--garden-rows-levels-89-hedge-boxes-garden-rows-batch-2); [build note](archive/COMPLETED-2026-10-09.md#garden-rows-levels-8-9-hedge-boxes-garden-rows-2-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
 
 - **`garden-rows`, levels 8–9 Hedge boxes (dive slice 2, after batch 1)** (new rule on the existing interaction, new drawing; school): shares `PLANS` and the school range with batch 1, as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).
 
@@ -1576,6 +1576,8 @@ Files expected: `src/games/orchard-rows/logic.ts`, `logic.test.ts`, `docs/GAMES.
 Proof: game rules tier: `npm run typecheck` and the Orchard Rows rule tests (every pool shape at most 5×5, level 2 pairs never turns or squares, every level 4 basket has two right row counts and a leftover opening, cells at least `MIN_CELL` for every reachable deal at the four views). No browser play; the bot reads the same rules.
 
 ### orchard-rows 3: A path through the orchard
+
+**Built 2026-11-03 ([PR #1183](https://github.com/rjdunlap/neo/pull/1183)):** levels 7, 8 and 9 together; checks in [VERIFICATION](VERIFICATION.md#2026-11-03--orchard-rows-levels-79-a-path-through-the-orchard-batch-orchard-rows-3).
 
 - **`orchard-rows`, levels 7–9 (dive slice 3, the build of the path definition)** (extends the built game, new-interaction tier; school 7–9, Barnyard unchanged, Counting Cove as the game already sits): a path splits a grown orchard into two parts she counts, then the whole; 7 *A path at five* (the path after row 5), 8 *Choose the path* (she slides the path with arrows and lays it, any split is right), 9 *A path at ten* (the path down the orchard after ten trees in a row). A new scene `PathOrchard`; the built 4–6 code stays unchanged. [Definition](definitions/orchard-rows-path.md), [dive](deep-dives/orchard-rows.md#build-slices-in-order)
 

@@ -206,3 +206,9 @@
 - [PR #1166](https://github.com/rjdunlap/neo/pull/1166): level 7 `mirror2` (six four-fold 6×6 pictures) and level 8 `big` (five 3×3 models at double size); school range 3–8.
 - Ran (commit 2861b292, Vite dev on http://localhost:5849, stopped): typecheck; vitest pixel-pictures rules (11) with howto, lands and registry (69 passed); `BROWSER_SUITE=woods WOODS_ONLY=pixels FROM_LEVEL=7 TO_LEVEL=8` (two misses give [2,1], glow asserted: one square at 7, one whole block at 8, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pixel-pictures FINGER_LEVELS=7,8` clean 51.3 s and 47.5 s; one portrait screenshot of level 8 reviewed. `game-reviewer`: no bugs.
 - Not run: build and full unit suite (CI runs both). Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): device and child checks on the mirror and double-size levels.
+
+## 2026-11-03 — Garden Rows levels 8–9 Hedge boxes (garden-rows batch 2)
+
+- [PR #1167](https://github.com/rjdunlap/neo/pull/1167): `'boxes'` rule (each flower once per row, column and 2x2 hedge box), levels 8 and 9, school range 3-9, voice `rows.boxes`/`rows.clash-box`, how-to step `from: 8`.
+- Ran (commit e4a70954, Vite dev on http://localhost:5936, `VITE_SPEECH=off`, stopped): typecheck; vitest garden-rows and content (19 files, 191 tests; 23 Garden Rows rule tests: box beds valid with one solution over 80 seeds, no throw over 300 seeds, box clash, hint and bot reach the solution); `BROWSER_SUITE=gardenrows GARDEN_ROWS_ONLY=boxes` (level 8 portrait: box-only repeat = 1 miss, both spots flash, bot finishes both beds, saved [8,1,0]; level 9 sticker saved [9,0,0]; portrait screenshot reviewed); `fingerdemo` `FINGER_ONLY=garden-rows FINGER_LEVELS=9 FINGER_BAND=school` clean 25.6 s. `game-reviewer`: no blocking findings.
+- Not run: build, full unit suite, level 7 and level 3 suite sections (unchanged), couch suites. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): hedges read as boxes on an iPad, a child understanding the box rule.
