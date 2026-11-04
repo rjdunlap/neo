@@ -1101,6 +1101,14 @@ Files expected: `src/couch/` course and catalog files (`course.ts` and its tests
 
 Proof: couch catalog tier: typecheck, course tests, `BROWSER_SUITE=couchgames` filtered to Island Bridges.
 
+### island-bridges 5: School opening
+
+- **`island-bridges`, school opening: levels 5 and 1 at child size (dive slice 5, defined 2026-11-04)** (new entry with a layout change; school): `school` joins `bands` playing existing levels 5 then 1 (order `[5, 1]`), home stays Lantern Lake (Wonder Woods lists it by subject), 100-unit cells and buttons at school only, accounting as built plus the `bridges.trouble` and `bridges.done-school` voice lines, how-to note. [Definition](definitions/island-bridges-school-opening.md)
+
+Files expected: `src/games/island-bridges/index.ts`, `logic.ts` (or `layout.ts`) and their tests, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new entry with a layout change: typecheck, the game's rule tests and the registry and lands tests, one scripted school play of level 5 with a stray plank and one hint, then level 1 to the sticker, one portrait screenshot of the 7 by 7 sea, a logged 1024 × 768 layout check (cells and buttons at least 100), `fingerdemo` at school level 1.
+
 ### lantern-lights 1: A 6 by 6 pond
 
 Built 2026-11-02, [PR #1131](https://github.com/rjdunlap/neo/pull/1131), branch `claude/lantern-lights-1`; [closeout](archive/COMPLETED-2026-10-09.md#lantern-lights-a-6-by-6-pond-lantern-lights-batch-1-2026-11-02).

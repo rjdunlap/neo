@@ -76,7 +76,7 @@ Each has its own voice line naming the ringed island and the lit bridge. A rule 
 
 ### Younger-band openings
 
-A **school opening** (about 9–12, by standing rule S2's "older content at the top of school") would need 100-unit cells (a 5 by 5 sea is 500 units, a 7 by 7 is 700 of the 768-unit short side before the buttons), a home land in Wonder Woods without moving the grown-up game out of Lantern Lake (a game is in exactly one land), a sticker and level-scoped how-to steps, and an accounting check against the island's "mistakes teach" rule (a stray plank stays exploration). That is a definition, not a build: queued as **define Island Bridges school opening** (docs only). Nothing younger.
+A **school opening** (about 9–12, by standing rule S2's "older content at the top of school") would need 100-unit cells (a 5 by 5 sea is 500 units, a 7 by 7 is 700 of the 768-unit short side before the buttons), a home land in Wonder Woods without moving the grown-up game out of Lantern Lake (a game is in exactly one land), a sticker and level-scoped how-to steps, and an accounting check against the island's "mistakes teach" rule (a stray plank stays exploration). That was a definition, now done 2026-11-04: [school opening](../definitions/island-bridges-school-opening.md) (build queued as batch island-bridges 5). Nothing younger.
 
 ### Easier entries and levels between existing ones
 
@@ -101,7 +101,7 @@ None. The school opening is a definition under S2/S8, not a developer call; the 
 2. **Level 6, Keep them joined (batch island-bridges 2). Built 2026-11-03** ([PR #1180](https://github.com/rjdunlap/neo/pull/1180); the hint is named `joined`, given on level 6 only). After batch 1 (shares `hintFor`'s kinds and the order). The isolation step, generator filter, `isolation` hint and its ring. *Check:* typecheck, rule tests, one play of level 6 asking for hints until the isolation one (ring and line), then to the sticker; one portrait screenshot of the ring; `fingerdemo` at 6.
 3. **Level 7, Up to three planks (batch island-bridges 3). Built 2026-11-03** ([PR #1185](https://github.com/rjdunlap/neo/pull/1185); 12–14 islands rather than 11–14 so the levels-climb test holds; the generator's hint walk is counting-only, not keep-them-joined). Shares the order. *Check:* new rule on the existing tap: typecheck, rule tests including the brute force at three, one play of level 7 with a third plank tap and a fourth that bumps, to the sticker; one portrait screenshot of a triple bridge; `fingerdemo` at 7; `BROWSER_SUITE=couchgames` filtered to Island Bridges, since the shared rules change.
 4. **Couch course *Joined Seas* (batch island-bridges 4),** unblocked (batch 2 built): five frozen level-6 seas (each with one answer, none `bycounting`) as a second `course.ts` entry, version 1, beside Island Hopping. *Check:* couch catalog tier: typecheck, course tests, `BROWSER_SUITE=couchgames` filtered to Island Bridges.
-5. *Define:* **Island Bridges school opening** (docs only; see *Younger-band openings*). *Not queued:* a 13 by 13 sea (needs its own definition).
+5. **School opening (batch island-bridges 5).** *Definition done 2026-11-04:* [definition](../definitions/island-bridges-school-opening.md) (levels 5 then 1, order `[5, 1]`, home stays Lantern Lake, 100-unit cells and buttons at school). Build ready, queued as batch island-bridges 5. *Not queued:* a 13 by 13 sea (needs its own definition).
 
 ## What was built in this session
 
