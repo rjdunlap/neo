@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Light Lab: a sunbeam crosses a grid; mirrors turn it a quarter. Tap a mirror to tilt it the
@@ -9,9 +10,10 @@ import type { Rng } from '../../engine/random';
  * mirrors and rocks are placed off that path, and the mirrors start tilted so it isn't solved yet. From level 3 the
  * whole board may be mirrored, with the sun on the right shining left. From level 8 some path mirrors wait in a tray:
  * she drags them onto the board, and no answer works without every one of them. At level 10 a cloud hides the one
- * mirror, and she finds it from where the beam goes in and where it comes out.
+ * mirror, and she finds it from where the beam goes in and where it comes out. Level 11 puts one everyday thing in a
+ * straight beam: she guesses what the light will do, then picks a thing to wake a flower, shade an owl or bounce the light.
  */
-export type LightMode = 'live' | 'plan' | 'predict' | 'find';
+export type LightMode = 'live' | 'plan' | 'predict' | 'find' | 'materials';
 
 export interface LightPlan {
   mode: LightMode;
@@ -49,7 +51,15 @@ export const PLANS: LightPlan[] = [
   { mode: 'plan', cols: 6, rows: 4, turns: 2, decoys: 0, rocks: 0, flowers: 1, glass: false, puzzles: 3, startWrong: 1, startDark: false, eitherSide: true, tray: 1, name: 'Place a mirror: drag one from the tray onto the board, turn the mirrors, then shine' },
   { mode: 'plan', cols: 7, rows: 4, turns: 2, decoys: 0, rocks: 1, flowers: 1, glass: false, puzzles: 2, startWrong: 0, startDark: false, eitherSide: true, tray: 2, name: 'Two to place: two tray mirrors, and a rock in the way of the straight beam' },
   { mode: 'find', cols: 6, rows: 4, turns: 1, decoys: 0, rocks: 0, flowers: 1, glass: false, puzzles: 3, startWrong: 0, startDark: false, eitherSide: true, tray: 0, name: "Where's the mirror? A cloud hides one mirror: tap where it must be, from where the beam goes in and comes out" },
+  // Three free guesses, then two judged choices: five boards, built together by `materialsRound`.
+  { mode: 'materials', cols: 6, rows: 4, turns: 0, decoys: 0, rocks: 0, flowers: 1, glass: false, puzzles: 5, startWrong: 0, startDark: false, eitherSide: false, tray: 0, name: 'Through, bounce or stop: guess what a clear, cloudy, blocking or shiny thing does to the beam, then pick one to wake a flower or shade an owl (a toy rule: each thing shows its main effect)' },
 ];
+
+/** Pre-K reaches level 11 straight after 4, skipping the planning levels; school meets it before pink glass. */
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 11, order: [1, 2, 3, 4, 11] },
+  school: { min: 2, max: 11, order: [2, 3, 4, 11, 5, 6, 7, 8, 9, 10] },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -78,7 +88,9 @@ export type Thing =
   | { kind: 'mirror'; x: number; y: number }
   | { kind: 'rock'; x: number; y: number }
   | { kind: 'flower'; x: number; y: number; wants: Tint }
-  | { kind: 'glass'; x: number; y: number; tint: Tint };
+  | { kind: 'glass'; x: number; y: number; tint: Tint }
+  /** Level 11: an everyday thing on the stand. `tilt` only turns a shiny one. */
+  | { kind: 'object'; x: number; y: number; material: Material; tilt: Tilt; name: ThingName };
 
 export interface LightPuzzle {
   cols: number;
@@ -107,7 +119,7 @@ export interface Placed {
 
 export interface Trace {
   /** Cells the beam passes through, starting beside the sun; the last one is where it stops or leaves. */
-  cells: { x: number; y: number; tint: Tint }[];
+  cells: { x: number; y: number; tint: Tint; dim?: boolean }[];
   /** Flower indices woken by light of the color they want. */
   woken: number[];
   /** Flowers the beam reached in the wrong color. */
@@ -134,6 +146,7 @@ export function trace(p: LightPuzzle, tilts: Tilt[]): Trace {
   let y = p.sunRow;
   let dir: Dir = p.sunDir;
   let tint: Tint = 'sun';
+  let dim = false;
   const cells: Trace['cells'] = [];
   const woken = new Set<number>();
   const wrongColor = new Set<number>();
@@ -142,18 +155,23 @@ export function trace(p: LightPuzzle, tilts: Tilt[]): Trace {
     x += DX[dir];
     y += DY[dir];
     if (x < 0 || y < 0 || x >= p.cols || y >= p.rows) {
-      cells.push({ x, y, tint });
+      cells.push(dim ? { x, y, tint, dim } : { x, y, tint });
       return { cells, woken: [...woken], wrongColor: [...wrongColor], end: 'edge' };
     }
     const key = `${x},${y},${dir}`;
     if (seen.has(key)) return { cells, woken: [...woken], wrongColor: [...wrongColor], end: 'loop' };
     seen.add(key);
-    cells.push({ x, y, tint });
+    cells.push(dim ? { x, y, tint, dim } : { x, y, tint });
     const i = at.get(`${x},${y}`);
     if (i === undefined) continue;
     const t = p.things[i];
     if (t.kind === 'rock') return { cells, woken: [...woken], wrongColor: [...wrongColor], end: 'rock' };
-    if (t.kind === 'mirror') dir = reflect(dir, tilts[i]);
+    if (t.kind === 'object') {
+      // The toy rule: clear passes, cloudy passes dimmer, solid stops like a rock, shiny turns like a mirror.
+      if (t.material === 'solid') return { cells, woken: [...woken], wrongColor: [...wrongColor], end: 'rock' };
+      if (t.material === 'cloudy') dim = true;
+      if (t.material === 'shiny') dir = reflect(dir, t.tilt);
+    } else if (t.kind === 'mirror') dir = reflect(dir, tilts[i]);
     else if (t.kind === 'glass') tint = t.tint;
     else if (t.wants === tint) woken.add(i);
     else wrongColor.add(i);
@@ -201,6 +219,7 @@ export function predictionChoices(p: LightPuzzle, actual: Tilt[] = p.start): Bea
 
 /** Builds a puzzle backwards from a random path; retries until every rule holds. */
 export function makePuzzle(plan: LightPlan, rng: Rng): LightPuzzle {
+  if (plan.mode === 'materials') throw new Error('level 11 boards come from materialsRound');
   if (plan.mode === 'find') return findPuzzle(plan, rng);
   for (let attempt = 0; attempt < 500; attempt++) {
     const p = tryPuzzle(plan, rng);
@@ -547,3 +566,123 @@ export function whyNot(p: LightPuzzle, tilts: Tilt[]): 'color' | 'sleeping' | 'r
   if (t.woken.length) return 'sleeping';
   return t.end;
 }
+
+// Level 11, Through, bounce or stop? (NGSS 1-PS4-3: transparent, translucent, opaque and reflective, in the child's words).
+
+export type Material = 'clear' | 'cloudy' | 'solid' | 'shiny';
+export type Outcome = 'through' | 'bounce' | 'stop';
+export type ThingName = 'jar' | 'cup' | 'pane' | 'wax' | 'tissue' | 'bottle' | 'card' | 'block' | 'book' | 'lid' | 'foil';
+export type ChoiceGoal = 'wake' | 'shade' | 'bounce';
+
+export const MATERIALS: Material[] = ['clear', 'cloudy', 'solid', 'shiny'];
+
+export const POOLS: Record<Material, ThingName[]> = {
+  clear: ['jar', 'cup', 'pane'],
+  cloudy: ['wax', 'tissue', 'bottle'],
+  solid: ['card', 'block', 'book'],
+  shiny: ['lid', 'foil'],
+};
+
+/** Each thing's spoken name, for the `{thing}` slot. */
+export const THING_WORDS: Record<ThingName, string> = {
+  jar: 'glass jar', cup: 'clear plastic cup', pane: 'window', wax: 'wax paper', tissue: 'tissue paper', bottle: 'frosted bottle',
+  card: 'cardboard', block: 'wooden block', book: 'book', lid: 'tin lid', foil: 'foil',
+};
+
+export const outcome = (m: Material): Outcome => (m === 'shiny' ? 'bounce' : m === 'solid' ? 'stop' : 'through');
+
+/** One thing: what it is made of and which thing it is. */
+export interface Stuff {
+  material: Material;
+  name: ThingName;
+}
+
+/** Every level 11 board: the sun on the left, a stand in its row, the far flower at the end of the row, the bounce flower in the stand's column. */
+export interface MaterialBoard {
+  cols: number;
+  rows: number;
+  sunRow: number;
+  stand: number;
+  /** A shiny thing's tilt: down from row 1, up from row 2. */
+  tilt: Tilt;
+  bounceRow: number;
+}
+
+export interface MaterialChoice {
+  goal: ChoiceGoal;
+  tray: Stuff[];
+  answer: number;
+}
+
+export interface MaterialRound {
+  board: MaterialBoard;
+  guesses: Stuff[];
+  choices: MaterialChoice[];
+}
+
+const pickName = (m: Material, rng: Rng): Stuff => ({ material: m, name: rng.pick(POOLS[m]) });
+
+/** One round: one board shape, three guesses with three different materials, then two different goals she has seen the answer to. */
+export function materialsRound(rng: Rng): MaterialRound {
+  const plan = PLANS.find((p) => p.mode === 'materials')!;
+  const sunRow = rng.int(1, 2);
+  const tilt: Tilt = sunRow === 1 ? 1 : 0;
+  const board: MaterialBoard = { cols: plan.cols, rows: plan.rows, sunRow, stand: rng.int(2, 3), tilt, bounceRow: sunRow === 1 ? plan.rows - 1 : 0 };
+  const shown = rng.shuffle([...MATERIALS]).slice(0, 3);
+  const guesses = shown.map((m) => pickName(m, rng));
+  const can: ChoiceGoal[] = (['wake', 'shade', 'bounce'] as ChoiceGoal[]).filter((g) =>
+    g === 'wake' ? shown.some((m) => outcome(m) === 'through') : shown.includes(g === 'shade' ? 'solid' : 'shiny'),
+  );
+  const goals = rng.shuffle(can).slice(0, 2);
+  const choices = goals.map((goal) => {
+    // Three of the four were shown, so at least one through-material always was.
+    const right: Material = goal === 'wake' ? rng.pick(shown.filter((m) => outcome(m) === 'through')) : goal === 'shade' ? 'solid' : 'shiny';
+    const others: Material[] = goal === 'wake' ? ['solid', 'shiny'] : goal === 'shade' ? ['clear', 'cloudy'] : ['clear', 'solid'];
+    const tray = rng.shuffle([right, ...others]).map((m) => pickName(m, rng));
+    return { goal, tray, answer: tray.findIndex((s) => s.material === right) };
+  });
+  return { board, guesses, choices };
+}
+
+/**
+ * The board as a light puzzle, with `stuff` on the stand (or an empty stand). Part 1 shows both flowers; in Part 2 `goal`
+ * keeps only its target: the far flower, the bounce flower, or neither (the owl is not a thing: it only needs the dark).
+ */
+export function materialPuzzle(b: MaterialBoard, stuff: Stuff | null, goal?: ChoiceGoal): LightPuzzle {
+  const things: Thing[] = [];
+  if (stuff) things.push({ kind: 'object', x: b.stand, y: b.sunRow, material: stuff.material, tilt: b.tilt, name: stuff.name });
+  if (!goal || goal === 'wake') things.push({ kind: 'flower', x: b.cols - 1, y: b.sunRow, wants: 'sun' });
+  if (!goal || goal === 'bounce') things.push({ kind: 'flower', x: b.stand, y: b.bounceRow, wants: 'sun' });
+  const zero = things.map(() => 0 as Tilt);
+  return { cols: b.cols, rows: b.rows, sunRow: b.sunRow, sunCol: 0, sunDir: 0, things, solution: zero, start: [...zero], pathMirrors: [], tray: [] };
+}
+
+/** The owl sits at the far end of the sun's row. */
+export const owlCell = (b: MaterialBoard) => ({ x: b.cols - 1, y: b.sunRow });
+
+/** Whether this thing on the stand does what the goal asks, by tracing the beam. */
+export function meetsGoal(b: MaterialBoard, goal: ChoiceGoal, stuff: Stuff): boolean {
+  const t = trace(materialPuzzle(b, stuff, goal), []);
+  if (goal !== 'shade') return t.woken.length === 1;
+  const owl = owlCell(b);
+  return !t.cells.some((c) => c.x === owl.x && c.y === owl.y);
+}
+
+/** The cells behind a blocking thing, to the board's edge: where its shadow falls. */
+export function shadowCells(b: MaterialBoard): { x: number; y: number }[] {
+  const cells: { x: number; y: number }[] = [];
+  for (let x = b.stand + 1; x < b.cols; x++) cells.push({ x, y: b.sunRow });
+  return cells;
+}
+
+export type MaterialMiss = 'through' | 'block' | 'block-shiny' | 'bounce' | 'straight';
+
+/** What a wrong pick did, for its teaching line; null for a right one. */
+export function whyNotMaterial(goal: ChoiceGoal, picked: Material): MaterialMiss | null {
+  if (goal === 'wake') return picked === 'solid' ? 'block' : picked === 'shiny' ? 'bounce' : null;
+  if (goal === 'shade') return picked === 'solid' ? null : 'through';
+  return picked === 'shiny' ? null : picked === 'solid' ? 'block-shiny' : 'straight';
+}
+
+/** The hint: the tray thing that meets the goal. */
+export const hintThing = (c: MaterialChoice) => c.answer;

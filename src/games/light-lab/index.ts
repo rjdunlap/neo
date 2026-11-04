@@ -1,4 +1,6 @@
 import { Circle, Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
+import { owlArt } from '../../art/animals';
+import type { Critter } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
 import { flower } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
@@ -10,17 +12,12 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBoards, courseMinimum, isLightCourse } from './course';
-import { beamEnd, boardWith, cloudCells, DROP_TILT, findLines, flowerCount, freeCells, hintMirror, makePuzzle, minTurns, mirrorAt, nearestPlacement, placeHint, planFor, predictionChoices, solved, trace, whyNot, type BeamEnd, type LightPlan, type LightPuzzle, type Placed, type Tilt, type Tint } from './logic';
-
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 4 },
-  school: { min: 2, max: 10 },
-};
+import { beamEnd, boardWith, cloudCells, DROP_TILT, findLines, flowerCount, freeCells, hintMirror, hintThing, LEVELS, makePuzzle, materialPuzzle, materialsRound, meetsGoal, minTurns, mirrorAt, nearestPlacement, outcome, owlCell, placeHint, planFor, predictionChoices, shadowCells, solved, THING_WORDS, trace, whyNot, whyNotMaterial, type BeamEnd, type LightPlan, type LightPuzzle, type MaterialRound, type Outcome, type Placed, type Stuff, type ThingName, type Tilt, type Tint } from './logic';
 
 const CELL = 100;
 /** The tray under the board on levels 8–9: its gap below the board, height and slot spacing. */
@@ -32,6 +29,11 @@ const TAP_SLOP = 24;
 /** Level 10: a couch spot on a cloud cell rather than a mirror or the sun. */
 const CLOUD = -100;
 const TINT_COLOR: Record<Tint, number> = { sun: 0xffe066, pink: swatch.pink.fill, blue: swatch.blue.fill };
+/** Level 11: the picture row (or tray) under the board: its gap, card size and spacing. */
+const ROW_GAP = 30;
+const CARD_W = 150;
+const CARD_H = 130;
+const CARD_STEP = 210;
 
 /** A smiling sun: the beam's start, and the button that shines it on planning levels. */
 function sunArt(): Graphics {
@@ -72,6 +74,97 @@ function cloudArt(): Container {
   return c;
 }
 
+/** Level 11's things, about a cell across: drawn straight, except a shiny one, slanted at its tilt so its turn shows. */
+function objectArt(name: ThingName, tilt: Tilt): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const clear = { color: 0xbfe3ff, alpha: 0.25 };
+  const edge = { width: 4, color: swatch.blue.line, alpha: 0.7 };
+  const frosted = { color: 0xffffff, alpha: 0.6 };
+  switch (name) {
+    case 'jar':
+      g.roundRect(-26, -30, 52, 64, 12).fill(clear).stroke(edge);
+      g.roundRect(-22, -40, 44, 12, 4).fill({ color: swatch.blue.fill, alpha: 0.5 }).stroke(edge);
+      g.moveTo(-14, -20).lineTo(-14, 20).stroke({ width: 4, color: 0xffffff, alpha: 0.9, cap: 'round' });
+      break;
+    case 'cup':
+      g.poly([-28, -34, 28, -34, 20, 34, -20, 34]).fill(clear).stroke({ ...edge, join: 'round' });
+      g.moveTo(-16, -24).lineTo(-12, 22).stroke({ width: 4, color: 0xffffff, alpha: 0.9, cap: 'round' });
+      break;
+    case 'pane':
+      g.rect(-32, -38, 64, 76).fill(clear).stroke({ width: 7, color: wood.line });
+      g.moveTo(0, -38).lineTo(0, 38).moveTo(-32, 0).lineTo(32, 0).stroke({ width: 5, color: wood.line });
+      break;
+    case 'wax':
+    case 'tissue': {
+      const top = [-30, -34, -15, -40, 0, -34, 15, -40, 30, -34];
+      g.poly([...top, 30, 38, -30, 38]).fill(name === 'wax' ? frosted : { color: 0xffe4ef, alpha: 0.65 }).stroke({ width: 3, color: swatch.white.line, join: 'round' });
+      g.moveTo(-18, -20).lineTo(-6, 26).moveTo(10, -24).lineTo(18, 20).stroke({ width: 2, color: swatch.white.line, alpha: 0.6 });
+      break;
+    }
+    case 'bottle':
+      g.roundRect(-22, -14, 44, 52, 12).roundRect(-9, -38, 18, 26, 4).fill(frosted).stroke({ width: 3, color: swatch.white.line });
+      break;
+    case 'card':
+      g.rect(-32, -36, 64, 72).fill(0xc99a62).stroke({ width: 4, color: wood.line });
+      g.moveTo(-32, -6).lineTo(32, -6).stroke({ width: 3, color: wood.line, alpha: 0.5 });
+      g.poly([18, -36, 32, -36, 32, -22]).fill(0xe0b98a);
+      break;
+    case 'block':
+      g.roundRect(-32, -32, 64, 64, 8).fill(wood.fill).stroke({ width: 5, color: wood.line });
+      break;
+    case 'book':
+      g.roundRect(-30, -38, 60, 76, 6).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line });
+      g.rect(18, -32, 8, 64).fill(0xfffaf0);
+      break;
+    case 'lid':
+    case 'foil': {
+      const metal = new Graphics();
+      if (name === 'lid') metal.ellipse(0, 0, 14, 42).fill(0xd6dde6).stroke({ width: 5, color: 0x8a97a8 });
+      else metal.poly([-10, -42, 8, -36, 12, -10, 6, 14, 12, 40, -8, 42, -12, 16, -6, -8]).fill(0xdfe5ec).stroke({ width: 4, color: 0x8a97a8, join: 'round' });
+      metal.circle(-2, -20, 4).circle(3, 14, 3).fill(0xffffff);
+      // Drawn upright, then slanted like a mirror's glass: "/" for tilt 0, "\" for tilt 1.
+      metal.rotation = tilt === 0 ? Math.PI / 4 : -Math.PI / 4;
+      c.addChild(metal);
+      break;
+    }
+  }
+  c.addChildAt(g, 0);
+  return c;
+}
+
+/** The little wooden stand a thing sits on. */
+function standArt(): Graphics {
+  return new Graphics().roundRect(-34, 34, 68, 12, 4).fill(wood.fill).stroke({ width: 4, color: wood.line }).rect(-6, 26, 12, 10).fill(wood.line);
+}
+
+/** The three guess pictures: an arrow passing a pane, turning off a slanted bar, or meeting a wall with a shadow behind. */
+function outcomeArt(o: Outcome): Graphics {
+  const g = new Graphics();
+  const arrow = { width: 8, color: 0xf2b705, cap: 'round' as const, join: 'round' as const };
+  const head = (x: number, y: number, dx: number, dy: number) => g.poly([x + dx * 14, y + dy * 14, x - dy * 11, y + dx * 11, x + dy * 11, y - dx * 11]).fill(0xf2b705);
+  if (o === 'through') {
+    g.roundRect(-8, -36, 16, 72, 4).fill({ color: 0xbfe3ff, alpha: 0.5 }).stroke({ width: 3, color: swatch.blue.line });
+    g.moveTo(-54, 0).lineTo(40, 0).stroke(arrow);
+    head(40, 0, 1, 0);
+  } else if (o === 'bounce') {
+    g.moveTo(-6, 20).lineTo(26, -12).stroke({ width: 10, color: 0x8a97a8, cap: 'round' });
+    g.moveTo(-54, 4).lineTo(10, 4).lineTo(10, -34).stroke(arrow);
+    head(10, -34, 0, -1);
+  } else {
+    g.rect(14, -24, 40, 48).fill({ color: ink, alpha: 0.15 });
+    g.roundRect(2, -38, 14, 76, 4).fill(0xc99a62).stroke({ width: 3, color: wood.line });
+    g.moveTo(-54, 0).lineTo(-14, 0).stroke(arrow);
+    head(-14, 0, 1, 0);
+  }
+  return g;
+}
+
+/** A picture card under the board: a guess button or a tray thing. */
+function cardArt(): Graphics {
+  return new Graphics().roundRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 22).fill(0xffffff).stroke({ width: 5, color: swatch.teal.line });
+}
+
 function rockArt(): Graphics {
   return new Graphics().poly([-38, 26, -30, -16, -8, -34, 22, -28, 38, 4, 30, 30]).fill(swatch.white.line).stroke({ width: 5, color: ink, alpha: 0.4, join: 'round' });
 }
@@ -94,16 +187,20 @@ class Bloom extends Container {
     const stem = new Graphics().moveTo(0, 40).lineTo(0, 12).stroke({ width: 6, color: swatch.green.line, cap: 'round' }).ellipse(10, 28, 10, 5).fill(swatch.green.fill);
     this.addChild(stem, this.bud, this.open);
   }
-  wake(tw: GameContext['tw']) {
+  /** A `soft` wake (dim light, level 11) opens it partway and paler. */
+  wake(tw: GameContext['tw'], soft = false) {
     if (this.awake) return;
     this.awake = true;
     this.bud.visible = false;
-    void tw.to(this.open.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
+    this.open.alpha = soft ? 0.6 : 1;
+    const to = soft ? 0.7 : 1;
+    void tw.to(this.open.scale, { x: to, y: to }, { duration: 0.45, ease: ease.outBack });
   }
   sleep() {
     this.awake = false;
     this.bud.visible = true;
     this.open.scale.set(0);
+    this.open.alpha = 1;
   }
 }
 
@@ -169,6 +266,13 @@ class LightLab implements Game {
   private readonly predictionMarks = new Map<string, Container>();
   /** Couch challenge course: fixed boards in a row, scored by turns plus missed shines. Null in ordinary play, where boards are generated. */
   private readonly course: { boards: LightPuzzle[]; minimum: number } | null = null;
+  /** Level 11: the round's boards, the picture row or tray under the board, the shadow wash, the owl and the glowing tray card. */
+  readonly round: MaterialRound | null = null;
+  readonly cards: Container[] = [];
+  private readonly row = new Container();
+  private readonly shadow = new Graphics();
+  private owl: Critter | null = null;
+  private hintCard = -1;
   private done: number[] = [];
   /** Tries already spent on the board we are resuming, so leaving and coming back cannot erase them. */
   private carry = 0;
@@ -178,6 +282,9 @@ class LightLab implements Game {
   private courseLine = '';
 
   private get predicting() { return this.plan.mode === 'predict' && this.index < 3; }
+  /** Level 11: the first three boards are free guesses; the last two are judged choices. */
+  private get guessing() { return this.plan.mode === 'materials' && this.index < 3; }
+  private get choosing() { return this.plan.mode === 'materials' && this.index >= 3; }
   private get planning() { return this.plan.mode === 'plan' || (this.plan.mode === 'predict' && this.index >= 3); }
 
   constructor(private readonly ctx: GameContext) {
@@ -200,7 +307,9 @@ class LightLab implements Game {
     this.hover.eventMode = 'none';
     this.peek.eventMode = 'none';
     this.ghost.eventMode = 'none';
-    this.board.addChild(this.floor, this.hover, this.beam, this.pieces, this.cloudLayer, this.peek, this.ghost, this.sun, this.trayLayer, this.glow, this.ring);
+    this.shadow.eventMode = 'none';
+    if (this.plan.mode === 'materials') this.round = materialsRound(ctx.rng);
+    this.board.addChild(this.floor, this.hover, this.shadow, this.beam, this.pieces, this.cloudLayer, this.peek, this.ghost, this.sun, this.trayLayer, this.row, this.glow, this.ring);
     ctx.stage.addChild(this.board);
   }
 
@@ -212,7 +321,7 @@ class LightLab implements Game {
     this.view = v;
     if (!this.puzzle) return;
     const { cols, rows } = this.puzzle;
-    const tall = rows * CELL + (this.puzzle.tray.length ? TRAY_GAP + TRAY_H : 0);
+    const tall = rows * CELL + (this.puzzle.tray.length ? TRAY_GAP + TRAY_H : this.round ? ROW_GAP + CARD_H : 0);
     this.board.position.set((v.w - cols * CELL) / 2, Math.max(110, (v.h - tall) / 2 + 20));
   }
 
@@ -234,6 +343,12 @@ class LightLab implements Game {
       g.roundRect(this.findLine.col * CELL - grow, -grow, CELL + 2 * grow, rows * CELL + 2 * grow, 22);
       g.fill({ color: 0xfff3a0, alpha: 0.2 }).stroke({ width: 7, color: swatch.yellow.fill });
     }
+    if (this.hintCard >= 0 && !this.busy) {
+      const c = this.cards[this.hintCard];
+      const grow = 4 * Math.sin(this.clock * 6);
+      g.roundRect(c.x - CARD_W / 2 - 8 - grow, c.y - CARD_H / 2 - 8 - grow, CARD_W + 16 + 2 * grow, CARD_H + 16 + 2 * grow, 28).stroke({ width: 7, color: swatch.yellow.fill });
+    }
+    this.owl?.update(dt);
     if (this.hintTray?.cell && !this.busy && !this.hintTray.handle.dragging) {
       const c = this.at(this.hintTray.cell.x, this.hintTray.cell.y);
       g.circle(c.x, c.y, 46 + 4 * Math.sin(this.clock * 6)).stroke({ width: 7, color: swatch.yellow.fill });
@@ -294,6 +409,11 @@ class LightLab implements Game {
    */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.puzzle) return null;
+    // Level 11: a guess may be any picture, so the demo taps the true one; a choice taps the thing that works.
+    if (this.round) {
+      const at = this.guessing ? (['through', 'bounce', 'stop'] as Outcome[]).indexOf(outcome(this.round.guesses[this.index].material)) : hintThing(this.round.choices[this.index - 3]);
+      return this.cards[at] ? { tap: { on: this.cards[at] } } : null;
+    }
     if (this.predicting) {
       const answer = predictionChoices(this.puzzle)[0];
       const target = answer && this.predictionMarks.get(answer.key);
@@ -351,8 +471,9 @@ class LightLab implements Game {
     this.hintCell = null;
     this.hintTray = null;
     this.findLine = null;
+    this.hintCard = -1;
     if (this.index >= (this.course?.boards.length ?? this.plan.puzzles)) return void this.finale();
-    this.puzzle = this.course ? this.course.boards[this.index] : makePuzzle(this.plan, this.ctx.rng);
+    this.puzzle = this.course ? this.course.boards[this.index] : this.round ? this.materialBoard() : makePuzzle(this.plan, this.ctx.rng);
     this.tilts = [...this.puzzle.start];
     this.build();
     this.carried = this.carry;
@@ -364,8 +485,10 @@ class LightLab implements Game {
     if (this.plan.mode === 'live') this.drawBeam();
     this.report();
     if (this.course) return this.courseInstruction();
+    if (this.choosing) return this.ctx.instruct(`light.mat.ask.${this.round!.choices[this.index - 3].goal}`);
     if (this.told) return;
     this.told = true;
+    if (this.round) return this.ctx.instruct('light.materials');
     if (this.plan.mode === 'find') return this.ctx.instruct('light.find');
     if (this.plan.tray) return this.ctx.instruct(this.plan.tray > 1 ? 'light.place.two' : 'light.place');
     if (this.plan.mode === 'predict') return this.ctx.instruct('light.predict');
@@ -406,6 +529,7 @@ class LightLab implements Game {
     if (p.tray.length) this.buildTray(f);
     const s = this.at(p.sunCol, p.sunRow);
     this.sun.position.set(s.x, s.y);
+    if (this.round) this.buildMaterials();
     p.things.forEach((t, i) => {
       const c = this.at(t.x, t.y);
       let node: Container;
@@ -417,6 +541,7 @@ class LightLab implements Game {
         this.mirrors.set(i, node);
       } else if (t.kind === 'rock') node = rockArt();
       else if (t.kind === 'glass') node = glassArt(t.tint);
+      else if (t.kind === 'object') node = objectArt(t.name, t.tilt);
       else {
         const b = new Bloom(t.wants);
         this.blooms.set(i, b);
@@ -706,10 +831,11 @@ class LightLab implements Game {
     const shown = t.cells.slice(0, upTo);
     let from = this.at(this.puzzle.sunCol, this.puzzle.sunRow);
     for (let i = 0; i < shown.length; ) {
-      const tint = shown[i].tint;
+      const { tint, dim } = shown[i];
       const run = [from];
-      while (i < shown.length && shown[i].tint === tint) run.push(this.at(shown[i].x, shown[i].y)), i++;
-      for (const [width, alpha] of [[22, 0.35], [8, 1]]) {
+      while (i < shown.length && shown[i].tint === tint && !!shown[i].dim === !!dim) run.push(this.at(shown[i].x, shown[i].y)), i++;
+      // Level 11's cloudy things let a paler, thinner beam through.
+      for (const [width, alpha] of dim ? [[14, 0.2], [5, 0.5]] : [[22, 0.35], [8, 1]]) {
         g.moveTo(run[0].x, run[0].y);
         for (const p of run.slice(1)) g.lineTo(p.x, p.y);
         g.stroke({ width, color: TINT_COLOR[tint], alpha, cap: 'round', join: 'round' });
@@ -806,6 +932,153 @@ class LightLab implements Game {
     await this.next();
   }
 
+  /** Level 11's board for this step: a guess's thing on the stand with both flowers, or an empty stand and the goal's target. */
+  private materialBoard(): LightPuzzle {
+    const r = this.round!;
+    return this.index < 3 ? materialPuzzle(r.board, r.guesses[this.index]) : materialPuzzle(r.board, null, r.choices[this.index - 3].goal);
+  }
+
+  /** Level 11: the stand, the owl on a shade board, and the three guess pictures or the tray of things. */
+  private buildMaterials() {
+    const r = this.round!;
+    this.shadow.clear();
+    this.owl = null;
+    this.row.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.cards.length = 0;
+    const stand = standArt();
+    const s = this.at(r.board.stand, r.board.sunRow);
+    stand.position.set(s.x, s.y);
+    this.pieces.addChild(stand);
+    const choice = this.choosing ? r.choices[this.index - 3] : null;
+    if (choice?.goal === 'shade') {
+      const owl = owlArt('brown');
+      owl.setMood('sleepy');
+      owl.scale.set(0.34);
+      const o = this.at(owlCell(r.board).x, owlCell(r.board).y);
+      owl.position.set(o.x, o.y + 44);
+      owl.eventMode = 'none';
+      this.pieces.addChild(owl);
+      this.owl = owl;
+    }
+    const y = this.puzzle.rows * CELL + ROW_GAP + CARD_H / 2;
+    const items: (Outcome | Stuff)[] = choice ? choice.tray : ['through', 'bounce', 'stop'];
+    items.forEach((item, k) => {
+      const card = new Container();
+      card.addChild(cardArt());
+      if (typeof item === 'string') card.addChild(outcomeArt(item));
+      else card.addChild(objectArt(item.name, r.board.tilt));
+      card.position.set(this.puzzle.cols * CELL / 2 + (k - 1) * CARD_STEP, y);
+      card.hitArea = new Rectangle(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H);
+      onTap(card, () => void (typeof item === 'string' ? this.guess(item, card) : this.choose(k)), { cooldown: 300 });
+      this.row.addChild(card);
+      this.cards.push(card);
+    });
+  }
+
+  /** Touch-down feedback: the card lifts and glows. */
+  private lift(card: Container) {
+    card.scale.set(1.08);
+    (card.children[0] as Graphics).tint = 0xfff6c8;
+  }
+
+  /** Level 11's shine: the beam travels, a dim beam wakes a flower softly, and a blocking thing's shadow fades in behind it. */
+  private async shineThrough() {
+    sfx.whoosh();
+    const t = trace(this.puzzle, []);
+    for (let n = 1; n <= t.cells.length; n++) {
+      this.drawBeam(n);
+      const c = t.cells[n - 1];
+      const i = this.puzzle.things.findIndex((x) => x.x === c.x && x.y === c.y);
+      if (i >= 0 && t.woken.includes(i)) {
+        this.blooms.get(i)?.wake(this.ctx.tw, !!c.dim);
+        sfx.bell(7 + n % 5, 0.25);
+      }
+      const owl = owlCell(this.round!.board);
+      if (this.owl && c.x === owl.x && c.y === owl.y) this.owl.setMood('surprised');
+      await this.ctx.tw.wait(0.09);
+    }
+    if (t.end === 'rock') {
+      const g = this.shadow.clear();
+      for (const c of shadowCells(this.round!.board)) g.roundRect(c.x * CELL + 4, c.y * CELL + 4, CELL - 8, CELL - 8, 14).fill({ color: ink, alpha: 0.25 });
+      this.shadow.alpha = 0;
+      await this.ctx.tw.to(this.shadow, { alpha: 1 }, { duration: 0.35 });
+    }
+  }
+
+  /** A guess is an experiment: shine, say what happened (and "just as you guessed" when it did), never a miss. */
+  private async guess(o: Outcome, card: Container) {
+    if (this.busy || this.finished || !this.guessing) return;
+    this.busy = true;
+    this.lift(card);
+    sfx.tick();
+    void this.ctx.say(`light.mat.${o}`);
+    const stuff = this.round!.guesses[this.index];
+    await this.ctx.tw.wait(0.5);
+    await this.shineThrough();
+    await this.ctx.say(`light.mat.${stuff.material}`, { thing: THING_WORDS[stuff.name] });
+    if (o === outcome(stuff.material)) await this.ctx.say('light.mat.guessed');
+    await this.ctx.tw.wait(0.8);
+    await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });
+    await this.next();
+  }
+
+  /** A choice: the thing slides onto the stand and the sun shines. Right finishes the board; wrong teaches, slides back and counts a miss. */
+  private async choose(k: number) {
+    if (this.busy || this.finished || !this.choosing) return;
+    this.busy = true;
+    const r = this.round!;
+    const choice = r.choices[this.index - 3];
+    const stuff = choice.tray[k];
+    const card = this.cards[k];
+    this.lift(card);
+    sfx.tick();
+    if (this.hintCard === k) this.hintCard = -1;
+    this.puzzle = materialPuzzle(r.board, stuff, choice.goal);
+    const thing = objectArt(stuff.name, r.board.tilt);
+    const s = this.at(r.board.stand, r.board.sunRow);
+    thing.position.set(card.x, card.y);
+    this.pieces.addChild(thing);
+    card.children[1].visible = false;
+    await this.ctx.tw.to(thing, { x: s.x, y: s.y }, { duration: 0.35, ease: ease.outBack });
+    await this.shineThrough();
+    if (meetsGoal(r.board, choice.goal, stuff)) {
+      for (const b of this.blooms.values()) {
+        if (!b.awake) continue;
+        const p = this.ctx.stage.toLocal(b.getGlobalPosition());
+        this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 16, speed: [100, 280], gravity: 0, life: [0.5, 0.9] });
+      }
+      sfx.sparkle();
+      this.ctx.pet.cheer();
+      await this.ctx.say(choice.goal === 'shade' ? 'light.mat.owl.yay' : 'light.yay');
+      await this.ctx.tw.wait(0.5);
+      await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });
+      return void this.next();
+    }
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    const why = whyNotMaterial(choice.goal, stuff.material)!;
+    await this.ctx.say(`light.mat.miss.${why}`, { thing: THING_WORDS[stuff.name] });
+    if (this.wrongs >= 2 && this.hintCard < 0) {
+      this.hintCard = hintThing(choice);
+      this.hints++;
+      void this.ctx.say('light.mat.hint');
+    }
+    await this.ctx.tw.to(thing, { x: card.x, y: card.y }, { duration: 0.3 });
+    thing.destroy({ children: true });
+    if (!card.destroyed) {
+      card.children[1].visible = true;
+      card.scale.set(1);
+      (card.children[0] as Graphics).tint = 0xffffff;
+    }
+    this.puzzle = materialPuzzle(r.board, null, choice.goal);
+    for (const b of this.blooms.values()) b.sleep();
+    this.owl?.setMood('sleepy');
+    this.beam.clear();
+    this.shadow.clear();
+    this.busy = false;
+  }
+
   private async win() {
     this.busy = true;
     this.excess += Math.max(0, this.taps - this.needed) + this.shinesMissed;
@@ -882,7 +1155,7 @@ class LightLab implements Game {
     if (this.finished) return;
     this.finished = true;
     sfx.tada();
-    await this.ctx.say('light.done');
+    await this.ctx.say(this.round ? 'light.mat.done' : 'light.done');
     await this.ctx.tw.wait(0.5);
     this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.excess });
   }
@@ -939,7 +1212,7 @@ export const lightLab: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Before shining, trace the path with your finger together: "The light goes here, bumps the mirror, and turns..."',
-  offScreen: 'Use a hand mirror to bounce a sunbeam onto the wall, then onto a toy.',
+  offScreen: 'Use a hand mirror to bounce a sunbeam onto the wall, then onto a toy. Or shine a torch through a glass, baking paper, cardboard and a foil lid.',
   hubIcon: () => new LightIcon(),
   touchDemo: true,
   sticker,
