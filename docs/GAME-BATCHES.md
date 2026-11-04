@@ -1359,7 +1359,15 @@ Proof: new-interaction tier: typecheck, unit tests, one filtered `readdo` play o
 
 Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, a `readdo` case in the browser check script, the README row and `docs/GAMES.md`.
 
-Proof: new-interaction tier: typecheck, unit tests including registry, lands, how-to and layout, one filtered `readdo` play of level 7 with one failed Send and a second to raise the glow, one portrait screenshot of the tray, `fingerdemo` at 7, one build for the voice lines.
+Proof: new-interaction tier: typecheck, unit tests including registry, lands, how-to and layout, one filtered `readdo` play of level 7 with one failed Send and a second to raise the glow, one portrait screenshot of the tray, `fingerdemo` at 7, one build for the voice lines. The definition asks this build not to hard-code what levels 8–9 change: words that start in the sign with home tray slots, `signLayout(view, level)` taking the level, and drop resolution through one function a swap zone can extend ([couplings](definitions/read-do-mend-the-sign.md#build-order-and-check-tier)).
+
+### read-do 4: Mend the sign
+
+- **`read-do`, levels 8–9 *Mend the sign* (dive slice 4; KE1)**, after batch read-do 3 (level 8 new levels on level 7's interaction; level 9 a new interaction): the printed sign acted out, one insert or delete at level 8, one swap at level 9. [Dive](deep-dives/read-do.md#build-slices-in-order), [definition](definitions/read-do-mend-the-sign.md#build-order-and-check-tier)
+
+Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, a `readdo` case in the browser check script, the README row and `docs/GAMES.md`.
+
+Proof: typecheck, unit tests including registry, lands, how-to and layout, one filtered `readdo` play of level 8 with a Send of the unchanged sign then a second failed Send to raise the glow, then level 9 to its sticker via one swap, one portrait screenshot of the swap preview, `fingerdemo` at 8 and 9, one build for the voice lines; stop after 8 with a checkpoint if the allowance cannot cover 9.
 
 ### rhyme-time 1: Fresh families: bug, sock and snail
 
