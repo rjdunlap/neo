@@ -14,11 +14,11 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { answerOf, choices, hintSpans, hopTicks, isRuler, isWide, longerShorter, makeMeasures, measureTouch, planFor, RULER, temptingReading, UNIT_SIZE, type Measure, type MeasurePlan, type Thing } from './logic';
+import { answerOf, choices, hintSpans, hopTicks, isRuler, isWide, longerShorter, makeMeasures, measureTouch, planFor, RULER, slideSlots, temptingReading, UNIT_SIZE, type Measure, type MeasurePlan, type Thing } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 7, order: [1, 2, 7] },
-  school: { min: 1, max: 9, order: [1, 2, 7, 9, 3, 4, 8, 5, 6] },
+  school: { min: 1, max: 10, order: [1, 2, 7, 9, 3, 4, 8, 5, 6, 10] },
 };
 
 const U = 88;
@@ -149,13 +149,15 @@ class Inchworm implements Game {
   /** One worm, hop by hop: the worm she taps along, and the chalk ticks (and, with help, their numbers) it leaves. */
   private hopper: Container | null = null;
   private readonly chalk = new Container();
+  /** Longer than the ruler: the short ruler she lays twice (its origin is its middle, so a grab does not lurch it). */
+  private slider: { node: Container; drag: DragHandle } | null = null;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     // Big and little worms lay up to nine worms a stick, and one worm hops up to eight times: the how-to card's demonstration measures one thing, inside its time.
     const measures = makeMeasures(this.plan, ctx.rng);
-    this.measures = ctx.demo && (this.plan.mode === 'units' || this.plan.mode === 'hop') ? measures.slice(0, 1) : measures;
+    this.measures = ctx.demo && (this.plan.mode === 'units' || this.plan.mode === 'hop' || this.plan.mode === 'slide') ? measures.slice(0, 1) : measures;
     this.backdrop = new Backdrop({ sky: [0xd6f5c8, 0xf6fbf0], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.8, clouds: 1, sun: false, seed: 23 }, ctx.view);
     this.glow.eventMode = 'none';
     this.placed.eventMode = 'none';
@@ -183,6 +185,8 @@ class Inchworm implements Game {
     if (brk !== undefined) return Math.max(40, (this.view.w - (RULER - brk) * this.u) / 2) - brk * this.u;
     // One worm, hop by hop: the thing and the worm waiting one length before it are centred together.
     if (this.plan.mode === 'hop' && this.m) return Math.max(40, (this.view.w - (this.m.length + 1) * this.u) / 2) + this.u;
+    // Longer than the ruler: the thing and the ruler's second lay (which reaches past its end) are centred together.
+    if (this.plan.mode === 'slide' && this.m) return Math.max(40, (this.view.w - 2 * this.m.ruler! * this.u) / 2);
     return isRuler(this.plan.mode) ? 140 : 200;
   }
 
@@ -199,6 +203,7 @@ class Inchworm implements Game {
     this.drawRuler();
     this.drawPit();
     this.placeHopper();
+    this.placeSlider();
   }
 
   update(dt: number) {
@@ -206,6 +211,13 @@ class Inchworm implements Game {
     const g = this.glow.clear();
     if (!this.hinting || this.busy) return;
     const pulse = 6 + 2 * Math.sin(this.clock * 5);
+    if (this.plan.mode === 'slide') {
+      // Both parts of the thing, and the chalk mark between them.
+      const r = this.rows[0];
+      for (const s of hintSpans(this.m, 'slide')) g.roundRect(this.x0() + s.from * this.u + 3, r.y - 34, s.count * this.u - 6, 68, 12).stroke({ width: pulse, color: swatch.yellow.fill });
+      g.circle(this.x0() + this.m.ruler! * this.u, r.y - 72, 26).stroke({ width: pulse, color: swatch.yellow.fill });
+      return;
+    }
     if (isRuler(this.plan.mode)) {
       for (const s of hintSpans(this.m, this.plan.mode)) {
         const r = this.rows[s.row];
@@ -229,6 +241,10 @@ class Inchworm implements Game {
     const move = measureTouch(this.m, this.plan.mode, this.rows.map((r) => r.worms));
     if (!move) return null;
     if (move.kind === 'hop') return this.hopper ? { tap: { on: this.hopper } } : null;
+    if (move.kind === 'slide') {
+      const at = this.slotSpot(move.at);
+      return this.slider && at ? { drag: { on: this.slider.node }, to: { on: this.ctx.stage, ...at } } : null;
+    }
     if (move.kind === 'answer') {
       const pad = this.pads.find((p) => p.n === move.value);
       return pad ? { tap: { on: pad.node } } : null;
@@ -243,6 +259,8 @@ class Inchworm implements Game {
 
   destroy() {
     for (const b of this.bucket) b.drag.destroy();
+    this.slider?.drag.destroy();
+    this.slider = null;
     this.hopper?.destroy({ children: true });
     this.hopper = null;
   }
@@ -269,6 +287,7 @@ class Inchworm implements Game {
     this.overlay = null;
     this.hopper?.destroy({ children: true });
     this.hopper = null;
+    this.clearSlider();
     this.clearPads();
     const m = this.m;
     const v = this.view;
@@ -298,11 +317,13 @@ class Inchworm implements Game {
     } else add(m.thing, m.length, v.h * 0.4, m.start ?? 0);
     if (isRuler(this.plan.mode)) this.showPads();
     else if (this.plan.mode === 'hop') this.makeHopper();
+    else if (this.plan.mode === 'slide') this.makeSlider();
     else this.fillBucket();
     this.resize(v);
     this.busy = false;
     const what = THING_WORDS[m.thing];
     if (this.plan.mode === 'hop') return this.ctx.instruct('worm.hop', { what });
+    if (this.plan.mode === 'slide') return this.ctx.instruct('worm.slide', { what });
     if (this.plan.mode === 'broken') return this.ctx.instruct('worm.broken', { what });
     if (m.jump) return this.ctx.instruct('worm.jump');
     if (this.plan.mode === 'rulerdiff') {
@@ -314,6 +335,83 @@ class Inchworm implements Game {
     if (this.plan.mode === 'compare') return this.ctx.instruct('worm.compare', { a: what, b: THING_WORDS[m.other!.thing] });
     if (this.plan.mode === 'units') return this.ctx.instruct('worm.big', { what });
     return this.ctx.instruct(this.index === 0 ? 'worm.lay' : 'worm.again', { what });
+  }
+
+  /** Longer than the ruler: a short ruler (0 to its length) waiting below the thing, with a touch area at least 320 wide and 120 tall. */
+  private makeSlider() {
+    const n = this.m.ruler!;
+    const half = (n * this.u) / 2;
+    const node = new Container();
+    const g = new Graphics();
+    g.roundRect(-half - 16, -30, n * this.u + 32, 60, 10).fill(swatch.yellow.light).stroke({ width: 4, color: wood.line });
+    for (let k = 0; k <= n; k++) g.moveTo(-half + k * this.u, -30).lineTo(-half + k * this.u, -6).stroke({ width: 3, color: ink });
+    node.addChild(g);
+    for (let k = 0; k <= n; k++) {
+      const t = label(String(k), 22, ink);
+      t.position.set(-half + k * this.u, 12);
+      node.addChild(t);
+    }
+    const reach = Math.max(half + 16, 160);
+    node.hitArea = new Rectangle(-reach, -60, 2 * reach, 120);
+    // Above the chalk, so the mark it starts from stays in view above the ruler.
+    this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.glow));
+    const item = { node, drag: null as unknown as DragHandle };
+    item.drag = draggable(node, this.ctx.tw, { onPick: () => sfx.tick(), onDrop: (x, y) => this.layRuler(x, y) });
+    this.slider = item;
+  }
+
+  private clearSlider() {
+    if (!this.slider) return;
+    this.slider.drag.destroy();
+    this.slider.node.destroy({ children: true });
+    this.slider = null;
+  }
+
+  /** Where the ruler's middle lies with its 0 at mark `at` under the thing. */
+  private slotSpot(at: number): { x: number; y: number } | null {
+    const r = this.rows[0];
+    return r && this.m?.ruler ? { x: this.x0() + (at + this.m.ruler / 2) * this.u, y: r.y + 60 } : null;
+  }
+
+  /** The ruler waits below the thing until laid; then its home is where it was last laid. */
+  private placeSlider() {
+    const r = this.rows[0];
+    // After the last round there is no measure left to lay it along.
+    if (!this.slider || !r || !this.m) return;
+    const laid = r.worms > 0 ? this.slotSpot(slideSlots(this.m)[r.worms - 1]) : null;
+    const home = laid ?? { x: this.view.w / 2, y: r.y + 200 };
+    this.slider.drag.home = home;
+    if (!this.slider.drag.dragging && !this.ctx.tw.busy(this.slider.node)) this.slider.node.position.set(home.x, home.y);
+    this.drawChalk();
+  }
+
+  /** A drop near the next place snaps the ruler there; anywhere else it slides back, and nothing counts as a miss. */
+  private layRuler(x: number, y: number): boolean {
+    const r = this.rows[0];
+    const s = this.slider;
+    if (this.busy || this.finished || !r || !s || r.worms >= 2) return false;
+    const at = this.slotSpot(slideSlots(this.m)[r.worms])!;
+    if (Math.abs(x - at.x) > this.u || Math.abs(y - at.y) > 70) return false;
+    r.worms++;
+    s.drag.home = at;
+    sfx.pop(4 + r.worms);
+    void this.ctx.tw.to(s.node, at, { duration: 0.2, ease: ease.outQuad });
+    this.drawChalk();
+    void this.laid(r.worms);
+    return true;
+  }
+
+  private async laid(lays: number) {
+    const what = THING_WORDS[this.m.thing];
+    if (lays === 1) return this.ctx.instruct('worm.slidemark', { n: this.m.ruler!, what });
+    this.busy = true;
+    // Laid twice: the ruler stays put while she adds the two parts.
+    if (this.slider) this.slider.node.eventMode = 'none';
+    sfx.sparkle();
+    await this.ctx.tw.wait(0.3);
+    this.showPads();
+    this.busy = false;
+    return this.ctx.instruct('worm.slidehow', { what });
   }
 
   /** One worm, hop by hop: a worm in the ruler unit, nose at the thing's start, with a touch area over 100 units each way. */
@@ -360,6 +458,17 @@ class Inchworm implements Game {
   private drawChalk() {
     const r = this.rows[0];
     this.chalk.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (this.plan.mode === 'slide' && r && this.m && r.worms > 0) {
+      // Where the first ruler ended: a chalk tick across the thing, and how far it reached.
+      const x = this.x0() + this.m.ruler! * this.u;
+      const tick = new Graphics();
+      tick.moveTo(x, r.y - 46).lineTo(x, r.y + 26).stroke({ width: 9, color: ink, alpha: 0.35, cap: 'round' });
+      tick.moveTo(x, r.y - 46).lineTo(x, r.y + 26).stroke({ width: 5, color: 0xffffff, cap: 'round' });
+      const n = label(String(this.m.ruler), 30, ink);
+      n.position.set(x, r.y - 72);
+      this.chalk.addChild(tick, n);
+      return;
+    }
     if (this.plan.mode !== 'hop' || !r) return;
     const g = new Graphics();
     this.chalk.addChild(g);
@@ -578,6 +687,7 @@ class Inchworm implements Game {
     if (mode === 'rulersum') return [likely ? (m.start ? 'worm.fromzero' : 'worm.firstonly') : 'worm.spaces'];
     if (mode === 'units') return [m.ask === 'big' ? 'worm.bigger' : 'worm.smaller', { what: THING_WORDS[m.thing] }];
     if (mode === 'hop') return ['worm.chalk'];
+    if (mode === 'slide') return [likely ? 'worm.secondpart' : 'worm.firstthenrest', { n: m.ruler! }];
     return ['worm.countagain'];
   }
 

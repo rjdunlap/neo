@@ -1057,6 +1057,8 @@ Proof: new interaction: typecheck, rule tests, one play of level 9 with one wron
 
 ### inchworm 3: Longer than the ruler
 
+Built 2026-11-04, [PR #1198](https://github.com/rjdunlap/neo/pull/1198), branch `claude/inchworm-longer-than-ruler`; [closeout](archive/COMPLETED-2026-10-09.md#inchworm-level-10-longer-than-the-ruler-inchworm-batch-3-2026-11-04). Scope retained for dependency references; this batch is no longer eligible.
+
 - **`inchworm`, level 10 Longer than the ruler (dive slice 3, after batch 1)** (new interaction; school top). [Dive](deep-dives/inchworm.md#build-slices-in-order)
 
 Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
