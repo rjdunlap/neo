@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { HARBORS } from './harbors';
-import { atDock, distance, distanceTable, FERRY, focusPath, grid, hintSlide, makeHarbor, parse, patience, PLANS, planFor, reach, render, ROCK, rocksMatter, slides, solve, start, stuck, wellFormed, type Harbor, type Layout } from './logic';
+import { after, atDock, boatToward, distance, distanceTable, docked, FERRY, ferries, firstToSail, focusPath, grid, hintSlide, makeHarbor, parse, patience, PLANS, planFor, reach, render, ROCK, rocksMatter, sailed, settle, slides, solve, solved, start, stuck, wellFormed, YELLOW, type Harbor, type Layout } from './logic';
 
 const harborsFor = (level: number) => HARBORS[level].map((rows) => parse(rows));
 
@@ -74,10 +74,11 @@ describe('Ferry Jam', () => {
         const h = parse(rows);
         expect(h.size, plan.name).toBe(plan.size);
         expect(wellFormed(h), rows.join('/')).toBe(true);
-        expect(h.boats.length - 1, plan.name).toBeGreaterThanOrEqual(plan.boats.min);
-        expect(h.boats.length - 1, plan.name).toBeLessThanOrEqual(plan.boats.max);
+        expect(h.boats.length - ferries(h).length, plan.name).toBeGreaterThanOrEqual(plan.boats.min);
+        expect(h.boats.length - ferries(h).length, plan.name).toBeLessThanOrEqual(plan.boats.max);
+        expect(ferries(h), plan.name).toHaveLength(plan.ferries ?? 1);
         const ferry = h.boats[FERRY];
-        expect(atDock(h, start(h)), `${rows.join('/')} starts at the dock`).toBe(false);
+        expect(docked(h, start(h)), `${rows.join('/')} starts at the dock`).toBeNull();
         expect(ferry.len).toBe(2);
         const moves = solve(h)?.length;
         expect(moves, rows.join('/')).toBeGreaterThanOrEqual(plan.moves.min);
@@ -194,8 +195,8 @@ describe('Ferry Jam', () => {
     });
   });
 
-  it('climbs: later levels ask for more slides and bigger harbors (level 7 starts a new kind of harbor, with rocks)', () => {
-    const plain = PLANS.filter((p) => !p.rocks);
+  it('climbs: later levels ask for more slides and bigger harbors (levels 7 and 8 start new kinds of harbor, with rocks and two ferries)', () => {
+    const plain = PLANS.filter((p) => !p.rocks && !p.ferries);
     expect(plain).toHaveLength(6);
     plain.slice(1).forEach((p, i) => {
       expect(p.size, p.name).toBeGreaterThanOrEqual(plain[i].size);
@@ -282,6 +283,128 @@ describe('Ferry Jam', () => {
     it('the couch highlight still reaches every boat (rocks are never boats to land on)', () => {
       for (const h of harborsFor(7))
         for (let to = 0; to < h.boats.length; to++) expect(focusPath(h, start(h), FERRY, to), render(h).join('/')).not.toBeNull();
+    });
+  });
+
+  describe('two ferries (level 8)', () => {
+    const at = (h: Harbor, layout: Layout) => render(h, layout).join('/');
+
+    it('reads a y as the upright yellow ferry, always the second boat, and draws it back', () => {
+      const rows = ['aaa..', 'ffdyb', '..dyb', '..d..', '...cc'];
+      const h = parse(rows);
+      expect(h.yellow).toBe(true);
+      expect(h.boats[YELLOW]).toEqual({ row: 1, col: 3, len: 2, dir: 'v' });
+      expect(ferries(h)).toEqual([FERRY, YELLOW]);
+      expect(render(h)).toEqual(rows);
+      expect(() => parse(['.....', 'ffyy.', '.....', '.....', '.....'])).toThrow(/yellow/);
+      // No older harbor has a y in it: every one still has exactly one ferry, drawn as before.
+      for (const level of [1, 2, 3, 4, 5, 6, 7])
+        for (const rows of HARBORS[level]) {
+          const old = parse(rows);
+          expect(old.yellow, rows.join('/')).toBeUndefined();
+          expect(render(old)).toEqual(rows);
+        }
+    });
+
+    it('a ferry that reaches its dock sails out at once, freeing its cells; one harbor-ferry is never moved on', () => {
+      const h = parse(['.....', '...y.', 'ff.y.', '.....', '.....']);
+      // The red ferry stops at the yellow one.
+      expect(reach(h, start(h), FERRY)).toEqual({ min: 0, max: 1 });
+      // The yellow ferry slides down to its dock and sails: it sits at `size` and fills no cell.
+      const gone = after(h, start(h), { boat: YELLOW, to: 3 });
+      expect(gone[YELLOW]).toBe(h.size);
+      expect(sailed(h, gone, YELLOW)).toBe(true);
+      expect(grid(h, gone).flat().includes(YELLOW)).toBe(false);
+      expect(reach(h, gone, YELLOW)).toEqual({ min: 5, max: 5 });
+      expect(slides(h, gone).some((s) => s.boat === YELLOW)).toBe(false);
+      // Now the red ferry has a clear way, and the harbor is finished only when it has gone too.
+      expect(solved(h, gone)).toBe(false);
+      expect(reach(h, gone, FERRY)).toEqual({ min: 0, max: 3 });
+      expect(solved(h, after(h, gone, { boat: FERRY, to: 3 }))).toBe(true);
+      expect(solve(h)).toHaveLength(2);
+      // A harbor with one ferry is never settled: its ferry at the dock is still there, as in levels 1–7.
+      const one = parse(['b...', 'b..c', 'ff.c', 'aa..']);
+      const docked1 = apply(start(one), { boat: FERRY, to: 2 });
+      expect(settle(one, docked1)).toBe(docked1);
+    });
+
+    it('every level-8 harbor starts with the ferries in each other\'s way, and in at least half the first to sail frees the other', () => {
+      const all = harborsFor(8);
+      const firsts = all.map((h) => firstToSail(h)!);
+      for (const [k, h] of all.entries()) {
+        const red = h.boats[FERRY], yellow = h.boats[YELLOW];
+        const crossing = (yellow.col >= red.col + 2 && yellow.row <= red.row && yellow.row + 1 >= red.row) || ((yellow.col === red.col || yellow.col === red.col + 1) && yellow.row + 1 < red.row);
+        expect(crossing, at(h, start(h))).toBe(true);
+        expect(firsts[k], at(h, start(h))).not.toBeNull();
+      }
+      expect(firsts.filter((f) => f.frees).length * 2).toBeGreaterThanOrEqual(all.length);
+      // Both orders turn up: sometimes the yellow ferry has to go first, sometimes the red one.
+      expect(firsts.some((f) => f.ferry === YELLOW)).toBe(true);
+      expect(firsts.some((f) => f.ferry === FERRY)).toBe(true);
+    });
+
+    it('the distance table follows the sailing: every hint brings both ferries one slide closer, and nothing is ever stranded', () => {
+      for (const h of harborsFor(8)) {
+        const table = distanceTable(h);
+        expect(distance(h, start(h))).toBe(solve(h)!.length);
+        // A ferry that sails cannot come back, but every layout she can reach still has a way to finish.
+        for (const d of table.values()) expect(Number.isFinite(d)).toBe(true);
+        let layout = start(h);
+        while (!solved(h, layout)) {
+          for (const s of slides(h, layout)) expect(distance(h, after(h, layout, s)), at(h, layout)).toBeGreaterThanOrEqual(distance(h, layout) - 1);
+          const next = after(h, layout, hintSlide(h, layout)!);
+          expect(distance(h, next)).toBe(distance(h, layout) - 1);
+          layout = next;
+        }
+        expect(distance(h, layout)).toBe(0);
+      }
+    });
+
+    it('every layout she can reach can still be finished (a sailed ferry never strands the other)', () => {
+      for (const h of harborsFor(8)) {
+        const seen = new Set<string>([start(h).join()]);
+        const queue = [start(h)];
+        for (let i = 0; i < queue.length; i++) {
+          expect(distance(h, queue[i]), at(h, queue[i])).toBeLessThan(Infinity);
+          for (const s of slides(h, queue[i])) {
+            const next = after(h, queue[i], s);
+            if (seen.has(next.join())) continue;
+            seen.add(next.join());
+            queue.push(next);
+          }
+        }
+      }
+    });
+
+    it('makes new two-ferry harbors from a seed, within the plan and with the first ferry freeing the other', () => {
+      let made = 0;
+      for (let seed = 1; seed < 40 && made < 3; seed++) {
+        const h = makeHarbor(PLANS[7], new Rng(seed));
+        if (!h) continue;
+        made++;
+        expect(h.yellow).toBe(true);
+        expect(wellFormed(h)).toBe(true);
+        expect(firstToSail(h)!.frees).toBe(true);
+        const n = solve(h)!.length;
+        expect(n).toBeGreaterThanOrEqual(PLANS[7].moves.min);
+        expect(n).toBeLessThanOrEqual(PLANS[7].moves.max);
+      }
+      expect(made).toBe(3);
+    });
+
+    it('the keyboard highlight skips a ferry that has sailed, and still reaches every boat left', () => {
+      for (const h of harborsFor(8)) {
+        const first = firstToSail(h)!.ferry;
+        let layout = start(h);
+        while (!sailed(h, layout, first)) layout = after(h, layout, hintSlide(h, layout)!);
+        const other = first === FERRY ? YELLOW : FERRY;
+        for (let to = 0; to < h.boats.length; to++) {
+          if (to === first) continue;
+          expect(focusPath(h, layout, other, to), at(h, layout)).not.toBeNull();
+        }
+        for (let from = 0; from < h.boats.length; from++)
+          if (from !== first) for (const dir of [0, 1, 2, 3]) expect(boatToward(h, layout, from, dir)).not.toBe(first);
+      }
     });
   });
 });

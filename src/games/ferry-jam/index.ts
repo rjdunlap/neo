@@ -16,21 +16,21 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseHarbors, courseMinimum, isHarborCourse } from './course';
 import { HARBORS } from './harbors';
-import { atDock, boatToward, distance, FERRY, focusPath, hintSlide, parse, planFor, reach, solve, start, stuck, type FerryPlan, type Harbor, type Layout, type Slide } from './logic';
+import { boatToward, distance, docked, FERRY, ferries, focusPath, hintSlide, parse, planFor, reach, sailed, settle, solve, solved, start, stuck, YELLOW, type FerryPlan, type Harbor, type Layout, type Slide } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
-  school: { min: 3, max: 7 },
+  school: { min: 3, max: 8 },
 };
 
 const CELL = 100;
 /** Colors for the boats besides the ferry. */
 const HULLS: ColorName[] = ['blue', 'green', 'purple', 'orange', 'teal', 'pink', 'yellow', 'brown', 'blue', 'green'];
 
-/** A boat lying sideways in `len` cells, its stern at the left, drawn at the origin. */
+/** A boat lying sideways in `len` cells, its stern at the left, drawn at the origin. A ferry is red, or yellow for the second one. */
 function boatArt(len: number, ferry: boolean, color: ColorName): Container {
   const w = len * CELL;
-  const sw = swatch[ferry ? 'red' : color];
+  const sw = swatch[color];
   const g = new Graphics()
     .roundRect(6, 16, w - 12, CELL - 32, 30).fill(sw.line)
     .roundRect(6, 10, w - 12, CELL - 32, 30).fill(sw.fill).stroke({ width: 5, color: sw.line })
@@ -147,8 +147,9 @@ class FerryJam implements Game {
 
   resize(v: View) {
     const w = this.n * CELL;
-    // The dock sticks out on the right, so the harbor sits a little left of center.
-    this.board.position.set(Math.max(150, (v.w - w - 110) / 2), Math.max(100, (v.h - w) / 2));
+    // The dock sticks out on the right, so the harbor sits a little left of center; a yellow ferry's dock sticks out below too.
+    const below = this.harbor?.yellow ? 110 : 0;
+    this.board.position.set(Math.max(150, (v.w - w - 110) / 2), Math.max(100, (v.h - w - below) / 2));
     this.undoButton.position.set(v.w - 80, v.h - 80);
     this.drawWater();
   }
@@ -208,7 +209,7 @@ class FerryJam implements Game {
     for (const h of this.handles.splice(0)) h.destroy();
     this.boatLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.rocks = (this.harbor.rocks ?? []).map((r) => this.makeRock(r.row, r.col));
-    this.nodes = this.harbor.boats.map((b, i) => this.makeBoat(i, b.len, i === FERRY));
+    this.nodes = this.harbor.boats.map((b, i) => this.makeBoat(i, b.len, ferries(this.harbor).includes(i)));
     this.resize(this.ctx.view);
     this.placeAll(false);
     this.board.alpha = 0;
@@ -218,13 +219,17 @@ class FerryJam implements Game {
     this.report();
     if (this.course ? this.told : this.index > 0) return;
     this.told = true;
-    return this.ctx.instruct(this.harbor.rocks?.length && !this.course ? 'ferry.start.rocks' : 'ferry.start');
+    if (this.course) return this.ctx.instruct('ferry.start');
+    return this.ctx.instruct(this.harbor.yellow ? 'ferry.both' : this.harbor.rocks?.length ? 'ferry.start.rocks' : 'ferry.start');
   }
 
   private makeBoat(i: number, len: number, ferry: boolean): Container {
     const b = this.harbor.boats[i];
     const node = new Container();
-    const art = boatArt(len, ferry, HULLS[(i - 1 + HULLS.length) % HULLS.length]);
+    // With two ferries the yellow one is boats[1], so the other boats count from 2 and never wear yellow.
+    const hulls = this.harbor.yellow ? HULLS.filter((c) => c !== 'yellow') : HULLS;
+    const first = this.harbor.yellow ? 2 : 1;
+    const art = boatArt(len, ferry, i === FERRY ? 'red' : ferry ? 'yellow' : hulls[(i - first + hulls.length) % hulls.length]);
     if (b.dir === 'v') {
       // Stand it up: turned a quarter, with its corner kept at the node's origin.
       art.rotation = Math.PI / 2;
@@ -281,8 +286,14 @@ class FerryJam implements Game {
 
   private placeAll(animate: boolean) {
     this.harbor.boats.forEach((_, i) => {
-      const at = this.cellXY(i, this.layout[i]);
       const node = this.nodes[i];
+      // A ferry that has sailed out of a two-ferry harbor is gone until the harbor starts again.
+      const gone = sailed(this.harbor, this.layout, i);
+      node.visible = !gone;
+      node.eventMode = gone ? 'none' : 'static';
+      if (gone) return;
+      node.alpha = 1;
+      const at = this.cellXY(i, this.layout[i]);
       node.scale.set(1);
       if (animate) void this.ctx.tw.to(node, at, { duration: 0.2, ease: ease.outQuad });
       else node.position.set(at.x, at.y);
@@ -334,9 +345,49 @@ class FerryJam implements Game {
     this.moves++;
     sfx.marimba(4 + (this.moves % 5), 0.3);
     this.report();
-    if (atDock(this.harbor, this.layout)) void this.sail();
-    else this.maybeHint();
+    this.landed();
     return true;
+  }
+
+  /**
+   * After a slide. With one ferry, reaching the dock ends the harbor. With two, a ferry at its dock sails away at once
+   * (the layout is settled the way the solver settles it), and the harbor ends when the second one has gone too.
+   */
+  private landed() {
+    const i = docked(this.harbor, this.layout);
+    if (i === null) return this.maybeHint();
+    if (!this.harbor.yellow) return void this.sail(i);
+    this.layout = settle(this.harbor, this.layout);
+    if (solved(this.harbor, this.layout)) return void this.sail(i);
+    void this.sailOne(i);
+  }
+
+  /** The ferry slides out through its dock: the red one to the right, the yellow one down, fading when another is still to go. */
+  private fly(i: number, fade: boolean) {
+    const node = this.nodes[i];
+    const to = this.harbor.boats[i].dir === 'h' ? { x: node.x + CELL * 3.2 } : { y: node.y + CELL * 2.4 };
+    return this.ctx.tw.to(node, fade ? { ...to, alpha: 0 } : to, { duration: 0.9, ease: ease.inOutSine });
+  }
+
+  /** The first of two ferries has reached its dock: off it sails, and the other ferry can pass where it was. */
+  private async sailOne(i: number) {
+    this.busy = true;
+    this.hinted = null;
+    // A ferry that has sailed does not come back, so there is no slide before it to take back.
+    this.undoStack = [];
+    this.undoButton.alpha = 0.35;
+    const node = this.nodes[i];
+    node.eventMode = 'none';
+    sfx.whoosh();
+    await this.fly(i, true);
+    node.visible = false;
+    this.ctx.pet.cheer();
+    sfx.sparkle();
+    if (this.focus === i) this.focus = i === FERRY ? YELLOW : FERRY;
+    this.busy = false;
+    // The slide that sailed it still goes on the trail, once the glow could show on the boats that are left.
+    this.maybeHint();
+    if (!this.hinted) await this.ctx.say('ferry.one');
   }
 
   private undo() {
@@ -367,8 +418,8 @@ class FerryJam implements Game {
     void this.ctx.say('ferry.hint');
   }
 
-  /** The ferry has reached the dock: off it sails. */
-  private async sail() {
+  /** The ferry has reached the dock (the last one, when there are two): off it sails. */
+  private async sail(last = FERRY) {
     this.busy = true;
     this.hinted = null;
     const fewest = solveLength(this.harbor, start(this.harbor));
@@ -377,9 +428,9 @@ class FerryJam implements Game {
       this.done.push(this.moves);
       this.report(true);
     }
-    const ferry = this.nodes[FERRY];
+    const ferry = this.nodes[last];
     sfx.whoosh();
-    await this.ctx.tw.to(ferry, { x: ferry.x + CELL * 3.2 }, { duration: 0.9, ease: ease.inOutSine });
+    await this.fly(last, false);
     const at = this.ctx.stage.toLocal(ferry.getGlobalPosition());
     this.ctx.particles.burst(at.x, at.y + 40, { kind: 'dot', colors: [0xffffff, swatch.blue.light], count: 14, speed: [60, 200], gravity: 0, life: [0.5, 0.9] });
     this.ctx.pet.cheer();
@@ -518,8 +569,7 @@ class FerryJam implements Game {
     this.moves++;
     sfx.marimba(4 + (this.moves % 5), 0.3);
     this.report();
-    if (atDock(this.harbor, this.layout)) void this.sail();
-    else this.maybeHint();
+    this.landed();
   }
 
   /** Put the picked-up boat back where it was: nothing was slid, so nothing counts. */
@@ -598,6 +648,12 @@ class FerryJam implements Game {
     g.rect(w + 4, exit * CELL + 10, 24, CELL - 20).fill(swatch.blue.light);
     g.roundRect(w + 8, exit * CELL + 8, 100, CELL - 16, 12).fill(wood.fill).stroke({ width: 5, color: wood.line });
     for (let x = w + 30; x < w + 104; x += 24) g.moveTo(x, exit * CELL + 12).lineTo(x, exit * CELL + CELL - 12).stroke({ width: 3, color: wood.line, alpha: 0.6 });
+    if (!this.harbor?.yellow) return;
+    // The yellow ferry's dock: the same, turned to run out of the bottom wall below its column.
+    const col = this.harbor.boats[YELLOW].col;
+    g.rect(col * CELL + 10, w + 4, CELL - 20, 24).fill(swatch.blue.light);
+    g.roundRect(col * CELL + 8, w + 8, CELL - 16, 100, 12).fill(wood.fill).stroke({ width: 5, color: wood.line });
+    for (let y = w + 30; y < w + 104; y += 24) g.moveTo(col * CELL + 12, y).lineTo(col * CELL + CELL - 12, y).stroke({ width: 3, color: wood.line, alpha: 0.6 });
   }
 
   private async finale() {
@@ -650,7 +706,9 @@ function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
   c.addChild(new Graphics().circle(0, 0, 80).fill(swatch.blue.light).stroke({ width: 6, color: swatch.blue.line }));
-  const boat = boatArt(2, rng.chance(0.5), rng.pick(HULLS));
+  const ferry = rng.chance(0.5);
+  const hull = rng.pick(HULLS);
+  const boat = boatArt(2, ferry, ferry ? 'red' : hull);
   boat.scale.set(0.8);
   boat.position.set(-80, -42);
   c.addChild(boat);
