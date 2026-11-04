@@ -110,15 +110,18 @@ class PixelPictures implements Game {
     this.clueLayer.position.set(x, y);
     const free = this.plan.mode === 'free';
     const narrow = v.w < 920;
+    // Level 10 on a narrow view: the row's first paint keeps its left edge at 150, clear of the pet.
+    const rowX = Math.max(206, v.w / 2 - 232);
+    const rowY = Math.min(v.h - 70, y + w + 70);
     this.palette.forEach((p, i) => {
       // Level 10: four paints in a row below the board (portrait) or a column beside it, with Done past them.
-      if (free && narrow) p.node.position.set(v.w / 2 - 60 + (i - 1.5) * 116, Math.min(v.h - 70, y + w + 70));
+      if (free && narrow) p.node.position.set(rowX + i * 116, rowY);
       else if (free) p.node.position.set(x + w + 100, y + 60 + i * 126);
       else if (narrow) p.node.position.set(v.w / 2 + (i ? 72 : -72), Math.min(v.h - 60, y + w + 64));
       else p.node.position.set(x + w + 150, y + w - 60 - i * 120);
     });
     if (this.done) {
-      if (narrow) this.done.position.set(v.w / 2 - 60 + 2.5 * 116 + 16, Math.min(v.h - 70, y + w + 70));
+      if (narrow) this.done.position.set(rowX + 4 * 116 + 10, rowY);
       else this.done.position.set(x + w + 240, y + w - 60);
     }
     this.draw();
