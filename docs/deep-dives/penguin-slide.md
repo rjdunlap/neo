@@ -117,7 +117,7 @@ Par stars on touch, move limits, cracking ice or holes, monsters (Chip's Challen
 2. **Level 10, Three fish (built 2026-11-03, [PR #1182](https://github.com/rjdunlap/neo/pull/1182))** (new-level tier: typecheck, rule tests, one play of level 10 with one hint, `fingerdemo` at 10): after slice 1 (shares `makePuzzle`).
 3. **Level 11, Where will it stop? (built 2026-11-03, [PR #1187](https://github.com/rjdunlap/neo/pull/1187))** (new-interaction tier: typecheck, unit tests including the `order` and lands tests, one scripted play at preschool with one wrong prediction then two right, one portrait screenshot, `fingerdemo` at 11, one build): after slice 2 for the level number.
 4. **Level 12, A block onto the star (built 2026-11-03, [PR #1190](https://github.com/rjdunlap/neo/pull/1190))** (new-rule tier: typecheck, rule tests, one play of level 12 with a stuck block and undo, `fingerdemo` at 12, one portrait screenshot): after slice 3.
-5. **Level 13, Two penguins** (new-interaction tier: typecheck, rule tests, one play with a selection change and one hint, one portrait screenshot, `fingerdemo` at 13, `BROWSER_SUITE=couchgames` filtered to Penguin Slide since the controller needs a select button): after slice 4. Its couch course is a later line.
+5. **Level 13, Two penguins** (claimed 2026-11-04, branch `claude/penguin-slide-two-penguins`; new-interaction tier: typecheck, rule tests, one play with a selection change and one hint, one portrait screenshot, `fingerdemo` at 13, `BROWSER_SUITE=couchgames` filtered to Penguin Slide since the controller needs a select button): after slice 4. Its couch course is a later line.
 
 ## What was built in this session
 
