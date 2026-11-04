@@ -77,7 +77,7 @@ async function couchCourse() {
   await screenshot('couch-course-modes');
   await page.locator('[data-mode="course"]').click();
   await page.waitForFunction(() => neo.scene.screen === 'courses'); await page.waitForTimeout(450);
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing', 'sunbeams']);
   await screenshot('couch-course-menu');
   await page.locator('[data-course="ponds"]').click();
   await onCourse();

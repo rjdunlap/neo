@@ -9,6 +9,7 @@ import { COURSES as PICTURES, courseBest as pictureBest, courseMinimum as pictur
 import { COURSES as LANTERNS, courseBest as lanternBest, courseMinimum as lanternMinimum, type LanternCourseId } from '../games/lantern-lights/course';
 import { COURSES as BEDS, courseBest as bedBest, courseMinimum as bedMinimum, type BedCourseId } from '../games/sudoku-garden/course';
 import { COURSES as TYPING, courseBest as typingBest, courseMinimum as typingMinimum, type TypingCourseId } from '../games/pond-typing/course';
+import { COURSES as SUNBEAMS, courseBest as lightBest, courseMinimum as lightMinimum, type LightCourseId } from '../games/light-lab/course';
 import type { CouchId } from './party';
 
 /**
@@ -17,9 +18,9 @@ import type { CouchId } from './party';
  * speaks about them and how many there are. Adding a course means a game that can play one, an entry
  * here, and a save for it (`couch/course.ts` is generic over all of them).
  */
-export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId | WordCourseId | BridgeCourseId | CongaCourseId | TypingCourseId;
+export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId | WordCourseId | BridgeCourseId | CongaCourseId | TypingCourseId | LightCourseId;
 /** In the order the Challenges menu shows them: a gentle one first. */
-export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing'];
+export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing', 'sunbeams'];
 export const isCourseId = (v: unknown): v is CourseId => COURSE_IDS.includes(v as CourseId);
 
 export interface CourseInfo {
@@ -151,6 +152,19 @@ const build: Record<CourseId, () => CourseInfo> = {
     badges: {
       finish: { title: 'Finished', how: 'Type every bubble in every pond, with or without help.' },
       minimum: { title: 'Every key right', how: 'Type every bubble with the right key first every time and no hint.' },
+    },
+  }),
+  sunbeams: () => ({
+    id: 'sunbeams', game: 'light-lab', level: 6, version: SUNBEAMS.sunbeams.version, name: SUNBEAMS.sunbeams.name, blurb: SUNBEAMS.sunbeams.blurb,
+    card: 'Light Lab, five mirror boards in a row. Turn the mirrors to carry the sunbeam to every flower with the fewest turns, then beat your own best.',
+    part: 'board', unit: 'turn', par: 'fewest', routes: false, best: lightBest('sunbeams'), minimum: lightMinimum('sunbeams'),
+    rule: 'Wake every flower with the fewest mirror turns you can. Every turn counts, even one you turn back, and a shine that misses counts as one more.',
+    note: 'Two missed shines on a board glow the next mirror to turn: once shown, a hint marks the whole run as helped, and helped and unhelped bests are kept apart. Leaving in the middle of a board puts its mirrors back as they began, and the turns you made on it still count.',
+    leaving: 'Leaving or refreshing puts the mirrors of the board you are on back as they began, and the turns you made on it still count. Finished boards stay saved.',
+    done: 'couch.course.sunbeams',
+    badges: {
+      finish: { title: 'Finished', how: 'Wake every flower on every board, with or without help.' },
+      minimum: { title: 'Fewest turns', how: 'Wake every flower with the fewest turns possible, no missed shine and no hint.' },
     },
   }),
   words: () => words('words', 'Word Search, three themed grids in a row. Find every word with as few guesses as you can, then beat your own best.', 'couch.course.words'),
