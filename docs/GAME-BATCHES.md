@@ -943,7 +943,7 @@ Proof: typecheck and the game's rule tests; one filtered regression play of leve
 
 ### ferry-jam 2: Rocks in the harbor
 
-**Built 2026-11-03 ([PR #1169](https://github.com/rjdunlap/neo/pull/1169)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-03--ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-batch-2); [build note](archive/COMPLETED-2026-10-09.md#ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-2-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
+**Built 2026-11-03 ([PR #1169](https://github.com/rjdunlap/neo/pull/1169)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-03.md#2026-11-03--ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-batch-2); [build note](archive/COMPLETED-2026-10-09.md#ferry-jam-level-7-rocks-in-the-harbor-ferry-jam-2-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
 
 - **`ferry-jam`, level 7 Rocks in the harbor (dive slice 2)** (new level on the existing drag; school): rocks that never move share the harbor; every rock must matter and `focusPath` must still reach every boat; a rounded grey `Graphics` boulder with a foam ring drawn from existing palette colours. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
 
@@ -1074,6 +1074,8 @@ Files expected: `src/games/island-bridges/logic.ts`, `logic.test.ts`, `index.ts`
 Proof: typecheck, rule tests, one play of level 6 asking for hints until the isolation one (ring and line), then to the sticker; one portrait screenshot of the ring; `fingerdemo` at 6.
 
 ### island-bridges 3: Up to three planks
+
+Built 2026-11-03, [PR #1185](https://github.com/rjdunlap/neo/pull/1185), branch `claude/island-bridges-three-planks`; [closeout](archive/COMPLETED-2026-10-09.md#island-bridges-level-7-up-to-three-planks-island-bridges-batch-3-2026-11-03). Scope retained for dependency references.
 
 - **`island-bridges`, level 7 Up to three planks (dive slice 3, after batch 2)** (new rule on the existing tap; grown-up): shares the order with batch 2. [Dive](deep-dives/island-bridges.md#build-slices-in-order)
 

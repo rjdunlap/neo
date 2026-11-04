@@ -63,6 +63,32 @@ async function bridgesTouchPlay() {
     log(`Island Bridges level 6: ${asked} hints to a keep-them-joined step (${joined.spoken}, group of ${joined.group.length}), portrait ring, one sticker passed`);
     assert.deepEqual(errors, []); return;
   }
+  // Level 7 (Up to three planks), alone under BRIDGES_ONLY=7: in portrait, three taps lay a triple bridge and a fourth bumps
+  // (nothing laid, no miss), the triple is screenshot, then the sea is finished for one sticker with no misses or hints.
+  if (process.env.BRIDGES_ONLY === '7') {
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+    await launch('island-bridges', 7); await idle();
+    const before7 = await page.evaluate(() => kit.store.data.stickers.length);
+    assert.equal((await state()).size, 9);
+    assert.equal(await page.evaluate(() => neo.scene.game.layout.max), 3, 'level 7 bridges carry three');
+    assert.deepEqual(await targets('level 7 portrait'), []);
+    const k = (await state()).sol.indexOf(3);
+    assert.ok(k >= 0, 'the answer has a triple');
+    for (let n = 1; n <= 3; n++) { await tapEdge(k); await page.waitForTimeout(150); assert.equal((await state()).planks[k], n, `plank ${n} laid`); }
+    const third = await state();
+    await tapEdge(k); await page.waitForTimeout(150);
+    const fourth = await state();
+    assert.equal(fourth.planks[k], 3, 'a fourth plank bumps');
+    assert.equal(fourth.entries, third.entries, 'a bump lays nothing');
+    assert.equal(fourth.misses, 0, 'a bump is not a miss');
+    await page.waitForTimeout(300);
+    await screenshot('bridges-touch-7-triple-portrait');
+    await solveAll(); await finished('island-bridges');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before7 + 1, 'one sticker at level 7');
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('island-bridges').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
+    log(`Island Bridges level 7: a triple bridge laid, a fourth plank bumped (no miss), portrait triple, one sticker passed`);
+    assert.deepEqual(errors, []); return;
+  }
   // Level 5 (5 by 5, the entry): one hint names its reason in its spoken line, targets upright and sideways, one sticker.
   await launch('island-bridges', 5); await idle();
   const before5 = await page.evaluate(() => kit.store.data.stickers.length);
