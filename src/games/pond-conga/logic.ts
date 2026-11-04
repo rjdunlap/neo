@@ -31,6 +31,8 @@ export interface CongaPlan {
   speed: number;
   /** Items that show together and are eaten in any order (1, or missing: one at a time, in turn). */
   group?: number;
+  /** False: no pace at all. The line waits, and each swipe, touch or press takes one step (level 8, Step by step). */
+  paced?: false;
   name: string;
 }
 
@@ -43,8 +45,19 @@ export const PLANS: CongaPlan[] = [
   { cols: 15, rows: 9, pads: 16, crumbs: 12, minLeg: 4, maxLeg: 12, speed: 3.2, name: 'Twelve crumbs among sixteen lily pads' },
   { cols: 15, rows: 9, pads: 20, crumbs: 12, minLeg: 5, maxLeg: 13, speed: 3.4, name: 'A crowded pond: twenty lily pads, twelve crumbs' },
   { cols: 13, rows: 9, pads: 6, crumbs: 9, minLeg: 3, maxLeg: 8, speed: 2.8, group: 3, name: 'Choose the order: three bites show at once, nine in all' },
+  { cols: 11, rows: 7, pads: 2, crumbs: 5, minLeg: 3, maxLeg: 7, speed: 2.4, paced: false, name: 'Step by step: the line waits, one step a swipe' },
 ];
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+
+/** How long a step-by-step line takes to glide one cell, in seconds; one asked-for step waits until the last has landed. */
+export const STEP_GLIDE = 0.18;
+
+/**
+ * Whether the line takes a step now: a paced line once a period has gone by, a step-by-step line only for a step that was asked
+ * for (`asked`), once the step before it has landed. Without input a step-by-step line never moves, however long it waits.
+ */
+export const stepDue = (plan: Pick<CongaPlan, 'paced' | 'speed'>, acc: number, asked: number): boolean =>
+  plan.paced === false ? asked > 0 && acc >= STEP_GLIDE : acc >= 1 / plan.speed;
 
 /** The pond without its answer: where everything is. */
 export interface Board {

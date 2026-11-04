@@ -11,10 +11,11 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { COURSES, courseMinimum, coursePonds, isCongaCourse } from './course';
-import { DX, DY, firstCrumbs, foodAt, groupOf, openCrumbs, pondLook, headAfter, hintDir, hintPath, makePond, nextCrumb, opposite, planFor, startState, step, swipeDir, SWIPE, type Cell, type Conga, type Dir, type Food, type Pond, type PondLook } from './logic';
+import { DX, DY, firstCrumbs, foodAt, groupOf, openCrumbs, pondLook, headAfter, hintDir, hintPath, makePond, nextCrumb, opposite, planFor, startState, step, stepDue, STEP_GLIDE, swipeDir, SWIPE, type Cell, type Conga, type Dir, type Food, type Pond, type PondLook } from './logic';
 
 /** Grown-up play only: this game lives in Lantern Lake, played by touch or on the couch. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 7 } };
+/** Level 8, Step by step, is the easy way in: first by `order` and a new player's entry. */
+const LEVELS: BandLevels = { grownup: { min: 1, max: 8, order: [8, 1, 2, 3, 4, 5, 6, 7] } };
 
 const WATER = 0xa9e0f2;
 const WATER_LINE = 0x4f9fbf;
@@ -44,7 +45,7 @@ const DEMO_SWIPE = 0.5;
 type SlotKind = 'hint' | 'again';
 interface Slot { kind: SlotKind; x: number; y: number; w: number; h: number }
 /** Touch play: one finger steers, so one finger is followed. `x`, `y` is where it last came down or turned the line. */
-interface Finger { id: number; x: number; y: number }
+interface Finger { id: number; x: number; y: number; moved?: boolean }
 
 /** One duckling facing right, filling about `size` units around (0, 0). The leader has a bigger head and a red bow. */
 function ducklingArt(size: number, leader: boolean): Container {
@@ -157,6 +158,8 @@ class PondConga implements Game {
 
   private readonly ponds: Pond[];
   private readonly speed: number;
+  /** False on level 8, Step by step: nothing moves until she asks, and each swipe, touch or press is one step. */
+  readonly paced: boolean;
   private readonly board = new Container();
   private readonly water = new Graphics();
   private readonly pads = new Container();
@@ -218,6 +221,7 @@ class PondConga implements Game {
     if (run && isCongaCourse(run.id)) {
       this.ponds = coursePonds(run.id);
       this.speed = COURSES[run.id].speed;
+      this.paced = true;
       this.course = { minimum: courseMinimum(run.id) };
       this.index = run.resume.board - 1;
       this.done = run.resume.done.slice();
@@ -228,6 +232,7 @@ class PondConga implements Game {
       const pond = makePond(plan, ctx.rng);
       this.ponds = [ctx.demo && !ctx.couch ? firstCrumbs(pond, DEMO_CRUMBS) : pond];
       this.speed = plan.speed;
+      this.paced = plan.paced !== false;
       this.course = null;
     }
     for (const part of [this.board, this.water, this.reeds, this.pads, this.trail, this.crumbs, this.line, this.top, this.note]) part.eventMode = 'none';
@@ -427,7 +432,15 @@ class PondConga implements Game {
     if (!this.pond) return;
     if (this.pressed && this.clock >= this.pressed.until) { this.pressed = null; this.paintButtons(); }
     let glide = 1;
-    if (!this.busy && !this.finished && !this.waiting) {
+    if (!this.busy && !this.finished && !this.waiting && !this.paced) {
+      // Step by step: a step only when one was asked for, once the one before it has landed.
+      this.acc += dt;
+      while (stepDue({ paced: false, speed: this.speed }, this.acc, this.queue.length) && !this.busy && !this.finished) {
+        this.acc = 0;
+        this.tick();
+      }
+      glide = this.busy ? 1 : Math.min(1, this.acc / STEP_GLIDE);
+    } else if (!this.busy && !this.finished && !this.waiting) {
       if (this.breather > 0) {
         this.breather = Math.max(0, this.breather - dt);
         if (this.breather === 0) this.acc = 0;
@@ -487,6 +500,7 @@ class PondConga implements Game {
     this.report();
     if (this.told) return;
     this.told = true;
+    if (!this.paced) return this.ctx.instruct(this.touch ? 'conga.steps-touch' : 'conga.steps');
     if (groupOf(this.pond) > 1) return this.ctx.instruct(this.touch ? 'conga.order-touch' : 'conga.order');
     return this.ctx.instruct(this.touch ? 'conga.go-touch' : 'conga.go');
   }
@@ -494,7 +508,9 @@ class PondConga implements Game {
   private tally() {
     const n = this.pond.crumbs.length;
     this.top.text = `${this.tries} ${this.tries === 1 ? 'step' : 'steps'}  ·  ${Math.min(this.state.eaten, n)} of ${n} ${FOOD_WORD[this.food]}`;
-    this.note.text = this.waiting ? (this.touch ? 'Touch the pond to set off, then swipe to turn' : 'Press a direction to set off') : '';
+    this.note.text = !this.paced
+      ? (this.touch ? 'Swipe for one step that way, or touch the pond for a step straight on' : 'Press a direction for each step')
+      : this.waiting ? (this.touch ? 'Touch the pond to set off, then swipe to turn' : 'Press a direction to set off') : '';
   }
 
   /** Hand a course's numbers to the shell. `finished` means the pond just ended, so none of its steps are "in progress". */
@@ -525,7 +541,8 @@ class PondConga implements Game {
       this.before = r.state.body.map((c) => ({ ...c }));
       this.state = r.state;
       this.onRoute = false;
-      this.breather = BREATHER;
+      // Step by step needs no breather: nothing moves until the next swipe anyway.
+      this.breather = this.paced ? BREATHER : 0;
       this.queue = [];
       this.acc = 0;
       sfx.boing();
@@ -658,8 +675,11 @@ class PondConga implements Game {
     if (!f || f.id !== e.pointerId || this.busy || this.finished || !this.pond) return;
     const at = this.tapLayer.toLocal(e.global);
     if (!Number.isFinite(at.x) || !Number.isFinite(at.y)) return;
+    if (!this.paced && f.moved) return;
     const dir = swipeDir(at.x - f.x, at.y - f.y);
     if (dir === null) return;
+    // Step by step: one stroke is one step, however far it goes.
+    f.moved = true;
     f.x = at.x;
     f.y = at.y;
     this.press(dir);
@@ -668,8 +688,11 @@ class PondConga implements Game {
   /** Lifting a finger that did not turn anything is a tap: it sets the line off straight ahead (a swipe sets it off already turned). */
   private fingerUp(e: FederatedPointerEvent) {
     if (this.finger?.id !== e.pointerId) return;
+    const moved = this.finger.moved;
     this.finger = null;
-    if (this.waiting && !this.busy && !this.finished && this.pond) this.press(this.state.heading);
+    if (this.busy || this.finished || !this.pond) return;
+    if (!this.paced) { if (!moved) this.press(this.queue.at(-1) ?? this.state.heading); return; }
+    if (this.waiting) this.press(this.state.heading);
   }
 
   /** A ring where the finger came down, so the touch is seen the moment it lands. */
@@ -723,12 +746,23 @@ class PondConga implements Game {
     if (this.busy || this.finished || !this.pond) return;
     for (const p of input.players) {
       if (p.direction >= 0) this.press(p.direction as Dir);
-      else if (p.action && this.waiting) this.press(this.state.heading);
+      else if (p.action && (this.waiting || !this.paced)) this.press(this.queue.at(-1) ?? this.state.heading);
     }
   }
 
   /** A turn of the stick: the first one sets the line off; after that a turn waits for the next step, two at most, and straight back is ignored. */
   private press(dir: Dir) {
+    if (!this.paced) {
+      // Step by step: every press is one step that way (straight on included), two can wait in line, and straight back does nothing.
+      const last = this.queue.at(-1) ?? this.state.heading;
+      if (dir === opposite(last) || this.queue.length >= 2) return;
+      if (this.waiting) {
+        this.waiting = false;
+        this.acc = STEP_GLIDE;
+      }
+      this.queue.push(dir);
+      return;
+    }
     if (this.waiting) {
       this.waiting = false;
       this.acc = 0;
@@ -800,6 +834,13 @@ class PondConga implements Game {
       return { on: this.board, x: c.x + DX[dir] * along, y: c.y + DY[dir] * along };
     };
     const reach = SWIPE * 1.7;
+    if (!this.paced) {
+      // Step by step: one touch or one short stroke a step, once the last step has landed.
+      if (!this.waiting && this.acc < STEP_GLIDE) return null;
+      const head = s0.body[0], d = plan[0];
+      if (d === s0.heading) return { tap: spot(head, d, 0), receiver: this.tapLayer, pause: 0.2 };
+      return { trace: spot(head, d, -reach / 2), via: [spot(head, d, reach / 2)], receiver: this.tapLayer, pause: 0.2 };
+    }
     // One stroke: back from the turn's cell, along the first direction, then along the direction of each turn on the steps right after it (three at most:
     // the turns wait in line and are made one a step, and a leg of the stroke takes half a second, so the line never holds more than two).
     const stroke = (when?: () => boolean | 'cancel'): TouchIntent => {
@@ -836,6 +877,13 @@ class PondConga implements Game {
     const want = this.onRoute ? this.pond.route[this.routeAt] ?? this.state.heading : hintDir(this.pond, this.state);
     const p = out.players[0];
     p.active = true;
+    if (!this.paced) {
+      // One press a step, each after the last has landed.
+      if (this.queue.length || (!this.waiting && this.acc < STEP_GLIDE)) return out;
+      p.direction = want;
+      this.botWait = 0.25;
+      return out;
+    }
     if (this.waiting) { p.direction = want; return out; }
     const last = this.queue.at(-1) ?? this.state.heading;
     if (want !== last && this.queue.length === 0) p.direction = want;
@@ -886,6 +934,7 @@ export const pondConga: GameModule = {
   challenge: 'hands',
   skills: ['planning', 'steering', 'sequencing'],
   bands: ['grownup'],
+  entryLevels: [8],
   inputs: ['touch', 'controller'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
