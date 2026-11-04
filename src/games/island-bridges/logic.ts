@@ -581,3 +581,46 @@ export function waterOf(layout: Layout, cell: number, edge: number): { x: number
   }
   return at(mid);
 }
+
+/** Touch play's buttons beside or under the sea. */
+export type SlotKind = 'take' | 'hint' | 'again';
+export interface Slot { kind: SlotKind; x: number; y: number; w: number; h: number }
+export interface TouchLayout {
+  cell: number;
+  /** The sea's top-left corner, in stage units. */
+  x: number;
+  y: number;
+  beside: boolean;
+  slots: Slot[];
+  /** Where the plank count sits, and how it is anchored. */
+  tally: { x: number; y: number; ax: number; ay: number };
+}
+
+/**
+ * Touch layout for a sea of `size` by `size` in a `w` by `h` view. Beside the sea when it fits (the buttons in a column), else
+ * under it. Grown-ups get cells of 64 to 80 and buttons 76 high; at school every cell and button is at least 100 across.
+ */
+export function touchLayout(size: number, w: number, h: number, school: boolean): TouchLayout {
+  const min = school ? 100 : 64, cap = school ? 100 : 80, bh = school ? 100 : 76, under = school ? 100 : 72;
+  const left = 152, panel = 108, gap = 14, top = 28;
+  const side = Math.min(cap, Math.floor((h - 2 * top) / size), Math.floor((w - left - gap - panel - 8) / size));
+  // A tall view: the sea centred under the home button, the buttons in a row beneath it.
+  const stack = Math.min(cap, Math.floor((w - 2 * 48) / size), Math.floor((h - 140 - 24 - 20 - under - 24) / size));
+  const kinds = ['take', 'hint', 'again'] as const;
+  if (side >= min && side + 8 > stack) {
+    const sea = size * side, x = Math.max(left, (w - (sea + gap + panel)) / 2), y = Math.max(top, Math.floor((h - sea) / 2));
+    const bx = x + sea + gap + 8;
+    return {
+      cell: side, x, y, beside: true,
+      slots: kinds.map((kind, k) => ({ kind, x: bx, y: y + 8 + k * (bh + 12), w: panel, h: bh })),
+      tally: { x: bx + panel / 2, y: y + 8 + 3 * (bh + 12) + 8, ax: 0.5, ay: 0 },
+    };
+  }
+  const cell = Math.max(min, stack), sea = size * cell, x = (w - sea) / 2, y = 140;
+  const by = y + sea + 16 + 20, bw = Math.min(200, Math.floor((sea - 24) / 3));
+  return {
+    cell, x, y, beside: false,
+    slots: kinds.map((kind, k) => ({ kind, x: x + sea / 2 - (3 * bw + 24) / 2 + k * (bw + 12), y: by, w: bw, h: under })),
+    tally: { x: w / 2, y: by + under + 36, ax: 0.5, ay: 0.5 },
+  };
+}
