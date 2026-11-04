@@ -5,7 +5,7 @@
 import { Container, Graphics, Rectangle, Text } from 'pixi.js';
 import { cream, ink, swatch, type ColorName } from '../../art/palette';
 import { finish } from '../../ui/buttons';
-import type { Claim, Copy, Look } from './logic';
+import type { Claim, Copy, Look, Marking } from './logic';
 
 export const TILE = 120;
 export const SLOT = 130;
@@ -52,18 +52,32 @@ export function tileArt(copy: Copy, size = TILE, letter = true): Container {
   return c;
 }
 
-/** A flower head: five petals in the plant's colour, each carrying the look's marks. `r` is the head radius. */
-export function bloomArt(look: Look, color: ColorName, r: number): Container {
+/**
+ * Levels 7–8's two-marking look: spots shown, plain, or not drawn (null, in the rim lens's fan), and a rim shown, none,
+ * or not drawn (null). The rim is a thick band in the round's rim colour around each petal; its colour carries no meaning.
+ */
+export interface Face {
+  spots: boolean | null;
+  rim: boolean | null;
+  rimColor: ColorName;
+}
+
+/** A flower head: five petals in the plant's colour, each carrying the look's marks (and at levels 7–8 a rim). `r` is the head radius. */
+export function bloomArt(look: Look | Face, color: ColorName, r: number): Container {
   const c = new Container();
   c.eventMode = 'none';
   const sw = swatch[color];
+  const face: Face = typeof look === 'string' ? { spots: look === 'spotted', rim: null, rimColor: color } : look;
   for (let i = 0; i < 5; i++) {
     const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
-    const p = new Graphics().ellipse(0, 0, r * 0.3, r * 0.46).fill(sw.fill).stroke({ width: 4, color: sw.line });
+    const p = new Graphics();
+    if (face.rim) p.ellipse(0, 0, r * 0.3 + 5, r * 0.46 + 5).fill(swatch[face.rimColor].line);
+    p.ellipse(0, 0, r * 0.3, r * 0.46).fill(sw.fill).stroke({ width: 4, color: face.rim ? swatch[face.rimColor].fill : sw.line });
     p.position.set(Math.cos(a) * r * 0.55, Math.sin(a) * r * 0.55);
     p.rotation = a + Math.PI / 2;
     c.addChild(p);
-    const m = marks(look === 'spotted' ? 'A' : 'a', r * 0.26);
+    if (face.spots === null) continue;
+    const m = marks(face.spots ? 'A' : 'a', r * 0.26);
     m.position.copyFrom(p.position);
     m.rotation = p.rotation;
     c.addChild(m);
@@ -73,7 +87,7 @@ export function bloomArt(look: Look, color: ColorName, r: number): Container {
 }
 
 /** A parent plant standing in a soil mound: stem, two leaves and its bloom. Its feet are at (0, 0); it stands about `h` tall. */
-export function plantArt(look: Look, color: ColorName, h = 190): Container {
+export function plantArt(look: Look | Face, color: ColorName, h = 190): Container {
   const c = new Container();
   const g = new Graphics();
   g.ellipse(0, 0, h * 0.34, h * 0.09).fill(swatch.brown.fill).stroke({ width: 4, color: swatch.brown.line });
@@ -128,7 +142,7 @@ export class Sprout extends Container {
   }
 
   /** The bloom at `t` of its uncurling (0 to 1): the bud shrinks away as the petals grow. */
-  open(look: Look, color: ColorName, t: number) {
+  open(look: Look | Face, color: ColorName, t: number) {
     this.drawBud(1 - t);
     if (!this.bloom) {
       this.bloom = bloomArt(look, color, this.h * 0.28);
@@ -152,7 +166,8 @@ export class BudCard extends Container {
   private readonly sproutArt: Sprout;
   private readonly glowRing = new Graphics();
 
-  constructor(copies: readonly [Copy, Copy], colors: readonly [ColorName, ColorName], positions: readonly [0 | 1, 0 | 1]) {
+  /** At levels 7–8 a rim fan's source tiles are petal-shaped, in the round's rim colour. */
+  constructor(copies: readonly [Copy, Copy], colors: readonly [ColorName, ColorName], positions: readonly [0 | 1, 0 | 1], marking: Marking = 'spots', rimColor: ColorName = 'blue') {
     super();
     this.face = finish({ w: BUD_W, h: BUD_H, corner: 26 }, swatch.green, cream);
     this.addChild(this.glowRing, this.face);
@@ -162,7 +177,7 @@ export class BudCard extends Container {
       const sx = (side === 0 ? -1 : 1) * BUD_W * 0.25;
       const ring = new Graphics().circle(0, 0, 26).stroke({ width: 4, color: swatch[colors[side]].line });
       ring.position.set(sx, -BUD_H / 2 + 42);
-      const t = tileArt(copies[side], 44, false);
+      const t = copyTileArt(marking, copies[side], 44, false, rimColor);
       t.position.copyFrom(ring.position);
       const dot = new Graphics().circle(0, 0, 5).fill(swatch[colors[side]].line);
       dot.position.set(sx + (positions[side] === 0 ? -1 : 1) * 14, -BUD_H / 2 + 76);
@@ -178,7 +193,7 @@ export class BudCard extends Container {
   }
 
   /** Open to `t` (0 closed, 1 fully open) with the sprout's look, in the parent colour that gave the first copy. */
-  open(look: Look, color: ColorName, t: number) {
+  open(look: Look | Face, color: ColorName, t: number) {
     this.sproutArt.open(look, color, t);
   }
 
@@ -473,4 +488,156 @@ export function benchArt(w: number): Graphics {
   g.roundRect(-w / 2, -14, w, 24, 10).fill(swatch.brown.light).stroke({ width: 5, color: swatch.brown.line });
   g.eventMode = 'none';
   return g;
+}
+
+// ——— Levels 7–8: Patchwork Conservatory ———
+
+export const PLANT_W = 200;
+export const PLANT_H = 240;
+export const LENS_BIG_R = 65;
+export const BRIEF_W = 260;
+export const BRIEF_H = 180;
+
+/** A teardrop petal outline `r` tall from its centre, pointing up. */
+function petalPath(g: Graphics, r: number, dy = 0) {
+  g.moveTo(0, -r + dy)
+    .bezierCurveTo(r * 0.95, -r * 0.35 + dy, r * 0.8, r * 0.9 + dy, 0, r + dy)
+    .bezierCurveTo(-r * 0.8, r * 0.9 + dy, -r * 0.95, -r * 0.35 + dy, 0, -r + dy);
+  return g;
+}
+
+/**
+ * A petal-shaped cream copy tile for the rim marking: a thick edge in the rim colour (a rim copy), or a thin dotted
+ * outline (a no-rim copy). The shape tells the marking, the edge tells the copy; the small `B`/`b` is for grown-ups.
+ */
+export function petalTileArt(copy: Copy, size = TILE, letter = true, rimColor: ColorName = 'blue'): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const r = size / 2;
+  const g = new Graphics();
+  g.ellipse(0, r * 0.95, r * 0.6, r * 0.14).fill({ color: 0x2b2440, alpha: 0.18 });
+  petalPath(g, r).fill(swatch.brown.line);
+  petalPath(g, r - 6, -2).fill(cream);
+  if (copy === 'A') petalPath(g, r * 0.62, -2).stroke({ width: Math.max(5, r * 0.22), color: swatch[rimColor].line });
+  else {
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      g.circle(Math.cos(a) * r * 0.42, Math.sin(a) * r * 0.58 + r * 0.04, Math.max(2, r * 0.06)).fill(ink);
+    }
+  }
+  c.addChild(g);
+  if (letter) {
+    const t = new Text({ text: copy === 'A' ? 'B' : 'b', style: { fontFamily: 'Nunito, sans-serif', fontSize: Math.max(14, size * 0.17), fontWeight: '800', fill: swatch.brown.line } });
+    t.anchor.set(0.5);
+    t.position.set(r * 0.62, r * 0.62);
+    t.eventMode = 'none';
+    c.addChild(t);
+  }
+  return c;
+}
+
+/** A copy tile for either marking: G1's round tile for spots, the petal tile for the rim. */
+export function copyTileArt(marking: Marking, copy: Copy, size = TILE, letter = true, rimColor: ColorName = 'blue'): Container {
+  return marking === 'spots' ? tileArt(copy, size, letter) : petalTileArt(copy, size, letter, rimColor);
+}
+
+/** A terracotta pot, its rim at (0, 0), about 170 wide. */
+export function potArt(): Graphics {
+  const g = new Graphics();
+  g.eventMode = 'none';
+  g.ellipse(0, 78, 74, 12).fill({ color: 0x2b2440, alpha: 0.16 });
+  g.moveTo(-70, 10).lineTo(70, 10).lineTo(54, 76).lineTo(-54, 76).closePath().fill(swatch.orange.fill).stroke({ width: 5, color: swatch.orange.line, join: 'round' });
+  g.roundRect(-84, -8, 168, 24, 10).fill(swatch.orange.light).stroke({ width: 5, color: swatch.orange.line });
+  return g;
+}
+
+/**
+ * A bench plant's card: the plant with its look, over a tray of four tiles (two round for spots, two petal-shaped for
+ * the rim). The whole card is one target; the tiles are not. A lens dims the other marking's tiles.
+ */
+export class PlantCard extends Container {
+  private readonly glowRing = new Graphics();
+  private readonly tiles: { marking: Marking; node: Container }[] = [];
+
+  constructor(readonly index: number, spots: readonly [Copy, Copy], rim: readonly [Copy, Copy], color: ColorName, rimColor: ColorName) {
+    super();
+    const face = finish({ w: PLANT_W, h: PLANT_H, corner: 28 }, swatch.green, cream);
+    this.glowRing.eventMode = 'none';
+    this.addChild(this.glowRing, face);
+    const show = (g: readonly [Copy, Copy]) => g[0] === 'A' || g[1] === 'A';
+    const plant = plantArt({ spots: show(spots), rim: show(rim), rimColor }, color, 140);
+    plant.position.set(0, 36);
+    plant.eventMode = 'none';
+    this.addChild(plant);
+    const tray = new Graphics().roundRect(-94, PLANT_H / 2 - 60, 188, 52, 16).fill({ color: swatch.brown.light, alpha: 0.6 });
+    tray.eventMode = 'none';
+    this.addChild(tray);
+    const copies: [Marking, Copy][] = [['spots', spots[0]], ['spots', spots[1]], ['rim', rim[0]], ['rim', rim[1]]];
+    for (const [i, [marking, copy]] of copies.entries()) {
+      const node = copyTileArt(marking, copy, 42, false, rimColor);
+      node.position.set(-69 + i * 46, PLANT_H / 2 - 34);
+      node.eventMode = 'none';
+      this.tiles.push({ marking, node });
+      this.addChild(node);
+    }
+    this.hitArea = new Rectangle(-PLANT_W / 2, -PLANT_H / 2, PLANT_W, PLANT_H);
+  }
+
+  /** While a lens is open, the other marking's tiles fade. */
+  dim(open: Marking | null) {
+    for (const t of this.tiles) t.node.alpha = open === null || open === t.marking ? 1 : 0.25;
+  }
+
+  glow(r: number | null) {
+    this.glowRing.clear();
+    if (r === null) return;
+    this.glowRing.roundRect(-PLANT_W / 2 - 10 * r, -PLANT_H / 2 - 10 * r, PLANT_W + 20 * r, PLANT_H + 20 * r, 34).stroke({ width: 8, color: swatch.yellow.fill });
+  }
+}
+
+/** A lens button's icon: a brass-ringed magnifier over a round tile (spots) or a petal tile (rim). */
+export function markingLensArt(marking: Marking, rimColor: ColorName): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const g = new Graphics();
+  g.moveTo(16, 16).lineTo(40, 40).stroke({ width: 14, color: swatch.brown.line, cap: 'round' });
+  g.circle(-6, -6, 36).fill({ color: 0xffffff, alpha: 0.85 }).stroke({ width: 8, color: swatch.yellow.line });
+  c.addChild(g);
+  const t = copyTileArt(marking, 'A', 46, false, rimColor);
+  t.position.set(-6, -6);
+  c.addChild(t);
+  return c;
+}
+
+/** The brief card's picture: a spotted, rimmed sprout in front of a short row of the same. */
+export function briefPic(color: ColorName, rimColor: ColorName): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const face: Face = { spots: true, rim: true, rimColor };
+  for (const i of [-1, 0, 1]) {
+    const p = plantArt(face, color, 70);
+    p.position.set(36 + i * 34, 40);
+    p.alpha = 0.7;
+    c.addChild(p);
+  }
+  const front = plantArt(face, color, 120);
+  front.position.set(-20, 72);
+  c.addChild(front);
+  return c;
+}
+
+/** A wooden bed of four spotted, rimmed sprouts, the planted brief. */
+export function conservatoryBedArt(color: ColorName, rimColor: ColorName): Container {
+  const c = new Container();
+  c.eventMode = 'none';
+  const g = new Graphics();
+  g.roundRect(-130, 0, 260, 44, 12).fill(swatch.brown.fill).stroke({ width: 5, color: swatch.brown.line });
+  g.ellipse(0, 4, 118, 12).fill(swatch.brown.line);
+  c.addChild(g);
+  for (const i of [-1.5, -0.5, 0.5, 1.5]) {
+    const p = plantArt({ spots: true, rim: true, rimColor }, color, 96);
+    p.position.set(i * 58, 8);
+    c.addChild(p);
+  }
+  return c;
 }

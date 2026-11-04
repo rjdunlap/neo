@@ -6,6 +6,14 @@
 - [ ] **Do the rocks read as rocks?** On the iPad in portrait, does the grey boulder read as something that will not move, and does a drag on it wobble clearly without feeling like a mistake?
 - [ ] **The rock line.** Does device speech say `ferry.rock` clearly, and does a school-age player find the harbors fair with a rock in the way?
 
+## Sprout Shuffle levels 7–8 Patchwork Conservatory (genetics G7, built 2026-11-03)
+
+- [ ] **Two markings by eye.** Do round spot tiles and petal-shaped rim tiles read as two different markings, without the letters or colour?
+- [ ] **"Rim copy" / "no-rim copy" by ear.** Are the spoken names clear on device speech (`sprout.pc-*`, `help.conservatory`)?
+- [ ] **"Always" across two lenses.** Does a ten-to-twelve-year-old see that "always" needs both lenses to agree, not one?
+- [ ] **The trap as discovery.** Does the plant that shows both traits (and fails) read as something found out, not a trick?
+- [ ] **Choosing parents.** Does picking the parents read as planning a bed, not as controlling reproduction?
+
 ## Sprout Shuffle level 5 Hidden Sprouts (genetics G6, built 2026-11-03)
 
 - [ ] **"Both could" as a right answer.** Does a ten-year-old read choosing both candidates, with the "can't tell yet" banner, as a right answer rather than a dodge?

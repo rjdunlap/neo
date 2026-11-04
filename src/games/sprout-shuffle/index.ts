@@ -2,7 +2,7 @@
  * Sprout Shuffle: two plants each hand a sprout one copy of a petal tile, and the sprout opens spotted or plain. Then
  * she opens every bud the same two plants could make (level 1), finishes the one missing bud and chooses every
  * sprout that could grow (level 2), or builds all four buds of two spotted plants and says whether their sprouts are
- * always spotted (level 3, with a free Try one draw). Level 4's pair cards are ./pairs.ts. The model and plans: ./logic.ts;
+ * always spotted (level 3, with a free Try one draw). Level 4's pair cards are ./pairs.ts, levels 5–6 ./hidden.ts and levels 7–8's conservatory ./conservatory.ts. The model and plans: ./logic.ts;
  * definitions: docs/definitions/sprout-shuffle.md and docs/definitions/hidden-sprouts.md.
  */
 import { Container, Graphics } from 'pixi.js';
@@ -21,12 +21,13 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { BUD_H, BUD_W, BudCard, CARD, CHECK_R, ChoiceCard, claimPic, iconArt, leafArt, lookPic, PACKET_R, packetArt, plantArt, slotArt, Sprout, stickerArt, TILE, tileArt } from './art';
-import { acceptedClaim, buildingBud, builtBud, checkClaim, checkLooks, freshRound, levelName, looks, nextStep, HIDDEN_LEVEL, PAIRS_LEVEL, PETAL_COLORS, setupFor, support, type Claim, type Look, type Round, type Setup } from './logic';
+import { acceptedClaim, buildingBud, builtBud, checkClaim, checkLooks, freshRound, levelName, looks, nextStep, CONSERVATORY_LEVEL, HIDDEN_LEVEL, PAIRS_LEVEL, PETAL_COLORS, setupFor, support, type Claim, type Look, type Round, type Setup } from './logic';
 import { SproutPairs } from './pairs';
 import { SproutHidden } from './hidden';
+import { SproutConservatory } from './conservatory';
 
 const LEVELS: BandLevels = {
-  school: { min: 1, max: 6 },
+  school: { min: 1, max: 8 },
 };
 
 type Side = 0 | 1;
@@ -676,6 +677,6 @@ export const sproutShuffle: GameModule = {
   sticker,
   create: (ctx) => {
     const level = Math.round(ctx.level);
-    return level >= HIDDEN_LEVEL ? new SproutHidden(ctx) : level >= PAIRS_LEVEL ? new SproutPairs(ctx) : new SproutShuffle(ctx);
+    return level >= CONSERVATORY_LEVEL ? new SproutConservatory(ctx) : level >= HIDDEN_LEVEL ? new SproutHidden(ctx) : level >= PAIRS_LEVEL ? new SproutPairs(ctx) : new SproutShuffle(ctx);
   },
 };
