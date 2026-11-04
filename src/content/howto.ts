@@ -2400,6 +2400,19 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 7, to: 8, text: 'Nothing is timed. A tap on the picture draws the pet\'s part again. Wandering off the path, or drawing the stroke that breaks the pattern, counts as a miss; after two misses the right path glows, which counts as a hint.' },
     ],
   },
+  'vine-snip': {
+    goal: "Snip the vines so the fruit drops or swings into a hungry friend's mouth.",
+    steps: [
+      { from: 1, to: 1, text: 'Tap anywhere to snip the vine.' },
+      { from: 2, to: 3, text: 'Tap or swipe across a vine to snip it. One vine left makes the fruit swing.' },
+      { from: 3, to: 3, text: 'Snip as the fruit swings toward the friend. It keeps going as it falls.' },
+    ],
+    finish: 'Every friend has eaten.',
+    note: [
+      { from: 1, to: 2, text: 'The friend scoots to catch every fruit, so nothing counts against her. The swing and the fall follow simple toy rules (slow gravity, no air), close to real motion but not exact.' },
+      { from: 3, to: 3, text: 'A fruit that misses floats back up and counts as a miss. After two, a glowing path shows where to snip, which counts as a hint. Grow back is always free. The swing and the fall follow simple toy rules (slow gravity, no air), close to real motion but not exact.' },
+    ],
+  },
   'fruit-slice': {
     goal: 'Slice the fruit as it floats up.',
     steps: [

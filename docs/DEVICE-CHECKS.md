@@ -5,6 +5,12 @@
 - [ ] **Lantern Lights school opening: can a seven-year-old finish a level-1 pond?** From the spoken instruction and the card alone, does she finish and notice a press also flips its neighbours (built 2026-11-04)?
 - [ ] **Is the Lantern Lights stuck nudge well timed?** `lantern.stuck-school` comes six presses past the fewest: too early or late, and does she find the Hint button from it?
 - [ ] **Is level 2 (four presses) a fair top for school?** Or should level 3 open at that band?
+## Vine Snip levels 1–3 (vine-snip slice 1, built 2026-11-04)
+
+- [ ] **Does a toddler connect the tap on the vine with the drop?** At level 1, does a tap anywhere read as "I let the fruit go", or does she look for the vine?
+- [ ] **Do the 0.4 s level 3 windows suit a four-year-old?** Is the swing's "wait, now" readable, and is the glow on the dotted arc after two misses enough to try again?
+- [ ] **iPad feel:** do the snip, the sproing and the munch land together, and are the vines and fruit clear of the pet and corner buttons in portrait?
+
 ## Ferry Jam levels 9 and 10 Pre-K entry and who's in the way (batch ferry-jam 4, built 2026-11-04)
 
 - [ ] **Does a four-year-old see the blocker?** At level 10, from `ferry.who` and the harbor alone, does she tap the boat in the ferry's row, and does `ferry.notway` plus the glow after two misses help without feeling like a scolding?

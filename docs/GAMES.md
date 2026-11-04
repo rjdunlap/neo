@@ -765,6 +765,16 @@ Level 8 (school): keep the first two sounds in place and change the last sound t
 
 ## Tinker Lab (science)
 
+### Vine Snip
+
+*lap–school · levels 1–3 built (4–5 defined) · after Cut the Rope's cut-so-it-falls idea; [definition](definitions/vine-snip.md).* Fruit hangs from vines on a leafy branch and a hungry friend waits below. A tap snips a vine (a touch-down within 70 units of a live vine snips at once) and the fruit drops or swings into the friend's mouth with a munch and a pentatonic note. Motion is a closed-form model in `logic.ts` (toy gravity 1600 units/s², a small-swing pendulum, a falling arc, a 200-unit-wide catch band), with no physics engine.
+
+Levels (lap 1, toddler 1–2, preschool 1–3, pre-K 2–3, school 3; slice 2 widens pre-K and school to 4–5): 1 *Snip!*: a tap anywhere snips the one vine and the fruit drops to the friend. 2 *Two vines*: the first snip swings the fruit, the second lets it drop, and the friend scoots so every drop is caught. 3 *Wait for the swing*: one vine is already swinging; snip as the fruit swings toward the friend. The generator places the friend to maximise the catch window (about 0.44 s, at least 0.433 over 500 seeds) so that a top-of-swing snip feeds, while the start turnaround and both bottom crossings miss.
+
+Misses and hints: levels 1–2 have none. At level 3 a missed drop is one miss; the fruit floats back and the vine grows back. Two misses on a line glow the dotted arc with golden stretches (one hint); Show a hint in the pause sheet is one hint per request. Grow back is free and never counts.
+
+Deviations from the definition: early and late are judged by timing within the beat, not by landing side; the friend's eyes follow the finger (the Critter gaze), not the fruit. One voice clip is rendered (`game.vine-snip`). In Tinker Lab; the new `vinesnip` browser suite covers it.
+
 ### Moon Window
 
 *lap–pre-K · space slice 2 of the [space study](deep-dives/subjects/space.md), [definition](definitions/moon-window.md).* A round window on a night sky shows the Moon at one of eight stops of a single lit-fraction cycle (lit = (1 − cos θ)/2, an ellipse terminator, lit on the right as it fills and on the left as it empties). The views are honest snapshots some days apart, not consecutive nights; no phase, night or cause words are spoken, and the amounts are named only as no light, a little light, half, most and all. Music is the lullaby style.

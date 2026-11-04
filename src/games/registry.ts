@@ -99,6 +99,7 @@ import { jarSort } from './jar-sort';
 import { blockGarden } from './block-garden';
 import { dominoRun } from './domino-run';
 import { fruitSlice } from './fruit-slice';
+import { vineSnip } from './vine-snip';
 import { cutAlong } from './cut-along';
 import { drawThePattern } from './draw-the-pattern';
 import { blockTopple } from './block-topple';
@@ -262,6 +263,7 @@ export const GAMES: GameModule[] = [
   blockGarden,
   dominoRun,
   fruitSlice,
+  vineSnip,
   cutAlong,
   drawThePattern,
   blockTopple,
