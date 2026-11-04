@@ -973,6 +973,8 @@ Proof: new rule tier: typecheck and rule tests; one play of level 8 to its stick
 
 ### ferry-jam 4: Pre-K entry and who's in the way
 
+**Built 2026-11-04 ([PR #1204](https://github.com/rjdunlap/neo/pull/1204)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-04--ferry-jam-levels-9-and-10-pre-k-entry-and-whos-in-the-way-ferry-jam-batch-4); [build note](archive/COMPLETED-2026-10-09.md#ferry-jam-levels-9-and-10-pre-k-entry-and-whos-in-the-way-ferry-jam-4-2026-11-04). No longer eligible for dispatch. Scope retained for reference.
+
 - **`ferry-jam`, levels 9 and 10 Pre-K entry and Who's in the way (dive slice 4)** (level 9 an easier entry with one slide; level 10 a new tap step naming the boat in the way; pre-K and school): per-band `order` and `entryLevels` as the dive sets them, and level 10's blocker question with its glow after two wrong taps. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
 
 Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.

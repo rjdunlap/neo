@@ -3,6 +3,11 @@
 - [ ] **Lantern Lights school opening: can a seven-year-old finish a level-1 pond?** From the spoken instruction and the card alone, does she finish and notice a press also flips its neighbours (built 2026-11-04)?
 - [ ] **Is the Lantern Lights stuck nudge well timed?** `lantern.stuck-school` comes six presses past the fewest: too early or late, and does she find the Hint button from it?
 - [ ] **Is level 2 (four presses) a fair top for school?** Or should level 3 open at that band?
+## Ferry Jam levels 9 and 10 Pre-K entry and who's in the way (batch ferry-jam 4, built 2026-11-04)
+
+- [ ] **Does a four-year-old see the blocker?** At level 10, from `ferry.who` and the harbor alone, does she tap the boat in the ferry's row, and does `ferry.notway` plus the glow after two misses help without feeling like a scolding?
+- [ ] **Does "Tap it!" read for a pad player?** With keys or a controller, does answering with the highlighted boat make sense before any slide?
+
 ## Ferry Jam level 7 Rocks in the harbor (batch ferry-jam 2, built 2026-11-03)
 
 - [ ] **Island Bridges school opening: can a nine-to-twelve-year-old finish the 5 by 5 sea?** From the voice and the how-to card alone, does a child at the school band finish level 5 and understand `bridges.trouble` when an island turns red (built 2026-11-04)?

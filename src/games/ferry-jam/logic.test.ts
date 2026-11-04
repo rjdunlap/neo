@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { HARBORS } from './harbors';
-import { after, atDock, boatToward, distance, distanceTable, docked, FERRY, ferries, firstToSail, focusPath, grid, hintSlide, makeHarbor, parse, patience, PLANS, planFor, reach, render, ROCK, rocksMatter, sailed, settle, slides, solve, solved, start, stuck, wellFormed, YELLOW, type Harbor, type Layout } from './logic';
+import { landing } from '../../progress/difficulty';
+import { ferryJam } from './index';
+import { after, atDock, blockers, boatToward, clearsInOne, distance, distanceTable, docked, FERRY, ferries, firstToSail, focusPath, grid, hintSlide, makeHarbor, parse, patience, PLANS, planFor, reach, render, ROCK, rocksMatter, sailed, settle, slides, solve, solved, start, stuck, wellFormed, YELLOW, type Harbor, type Layout } from './logic';
 
 const harborsFor = (level: number) => HARBORS[level].map((rows) => parse(rows));
 
@@ -91,7 +93,8 @@ describe('Ferry Jam', () => {
     PLANS.forEach((plan, i) => {
       const moves = harborsFor(i + 1).map((h) => solve(h)!.length);
       expect(moves, plan.name).toContain(plan.moves.max);
-      expect(moves.filter((m) => m > plan.moves.min).length * 3, plan.name).toBeGreaterThanOrEqual(moves.length);
+      // A plan with one number of slides (level 9) has nothing above its fewest to fill.
+      if (plan.moves.max > plan.moves.min) expect(moves.filter((m) => m > plan.moves.min).length * 3, plan.name).toBeGreaterThanOrEqual(moves.length);
     });
   });
 
@@ -195,8 +198,8 @@ describe('Ferry Jam', () => {
     });
   });
 
-  it('climbs: later levels ask for more slides and bigger harbors (levels 7 and 8 start new kinds of harbor, with rocks and two ferries)', () => {
-    const plain = PLANS.filter((p) => !p.rocks && !p.ferries);
+  it('climbs: later levels ask for more slides and bigger harbors (levels 7 and 8 start new kinds of harbor, with rocks and two ferries; 9 and 10 are easy entries)', () => {
+    const plain = PLANS.filter((p) => !p.rocks && !p.ferries && !p.entry);
     expect(plain).toHaveLength(6);
     plain.slice(1).forEach((p, i) => {
       expect(p.size, p.name).toBeGreaterThanOrEqual(plain[i].size);
@@ -405,6 +408,55 @@ describe('Ferry Jam', () => {
         for (let from = 0; from < h.boats.length; from++)
           if (from !== first) for (const dir of [0, 1, 2, 3]) expect(boatToward(h, layout, from, dir)).not.toBe(first);
       }
+    });
+  });
+
+  describe('pre-K entries: one boat in the way (9) and who\'s in the way (10)', () => {
+    it('finds the boats in the ferry\'s way: only those with a cell in its row ahead of it', () => {
+      const h = parse(['..a.', 'ffa.', '..bb', '....']);
+      expect(blockers(h)).toEqual([1]);
+      expect(blockers(h, [2, 0, 2])).toEqual([]);
+      // A boat behind the ferry, or the ferry itself, is not in its way.
+      expect(blockers(parse(['a...', 'aff.', '....', '....']))).toEqual([]);
+    });
+
+    it('level 9: every harbor has exactly one boat in the ferry\'s way, and one slide of it lets the ferry out', () => {
+      // `solve` counts the ferry's own slide to the dock too, so "one boat slide" is 2 here.
+      for (const h of harborsFor(9)) {
+        const at = render(h).join('/');
+        expect(blockers(h), at).toHaveLength(1);
+        expect(h.boats.length - 1, at).toBe(2);
+        expect(clearsInOne(h, blockers(h)[0]), at).toBe(true);
+        const path = solve(h)!;
+        expect(path, at).toHaveLength(2);
+        expect(path[0].boat, at).toBe(blockers(h)[0]);
+      }
+    });
+
+    it('level 10: every harbor has exactly one boat in the way, which cannot leave the ferry\'s row in one slide', () => {
+      for (const h of harborsFor(10)) {
+        const at = render(h).join('/');
+        expect(blockers(h), at).toHaveLength(1);
+        expect(clearsInOne(h, blockers(h)[0]), at).toBe(false);
+        // Two or three boat slides, then the ferry's own.
+        expect(solve(h)!.length, at).toBeGreaterThanOrEqual(3);
+        expect(solve(h)!.length, at).toBeLessThanOrEqual(4);
+      }
+    });
+
+    it('pre-K plays 9, 1, 10, 2, 3, 4 and lists each level once; 9 and 10 are entries that land a school child on 3', () => {
+      const prek = ferryJam.levels('prek');
+      expect(prek.order).toEqual([9, 1, 10, 2, 3, 4]);
+      expect(new Set(prek.order).size).toBe(prek.order!.length);
+      expect(ferryJam.entryLevels).toEqual([9, 10]);
+      expect(ferryJam.levels('school').order).toBeUndefined();
+      for (const level of [9, 10]) {
+        expect(landing(level, ferryJam.levels('school'), ferryJam.entryLevels)).toBe(3);
+        expect(landing(level, prek, ferryJam.entryLevels)).toBe(level);
+      }
+      expect(planFor(9).entry).toBe(true);
+      expect(planFor(10).ask).toBe(true);
+      expect(ferryJam.describeLevel(10)).toMatch(/in the way/);
     });
   });
 });

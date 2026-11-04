@@ -333,3 +333,9 @@
 - Ran (dev server `http://localhost:5381`, `VITE_SPEECH=off`): typecheck; `npx vitest run src/games/picture-graph src/content src/games/registry` 232 passed, including six new level-9 rule tests (counts in whole fives, choices, finger, hint blocks, card layout at four views); `BROWSER_SUITE=fingerdemo FINGER_ONLY=picture-graph FINGER_LEVELS=9` pass (36.8 s); one 768x1024 scripted play of level 9: eight blocks on one bar (miss 1), again (miss 2, hint 1, card glow), rebuilt, blocks pad (miss 3), right answer, second graph, no page errors; portrait screenshots reviewed.
 - Review: `game-reviewer` found nothing.
 - Not run: `npm run build` (no shared files or assets changed), full `npm test` (CI runs it), device or child check. Open: iPad feel and a child reading a tally group as one block are unchecked.
+
+## 2026-11-03 — Light Lab level 11 Through, bounce or stop? definition (docs only)
+
+- [PR #1189](https://github.com/rjdunlap/neo/pull/1189): [definition](../definitions/light-lab-materials.md) for level 11 (materials toy rule, three free guesses then two judged choices, pre-K order [1,2,3,4,11], school order [2,3,4,11,5..10]), the batch `light-lab 5`, the dive's slice 5 marked defined.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests and every play check (no code changed). Open: the build (new-interaction tier), and the person and device checks the definition lists.

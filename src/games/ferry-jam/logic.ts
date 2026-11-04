@@ -217,6 +217,10 @@ export interface FerryPlan {
   rocks?: number;
   /** Two ferries (level 8): a yellow one stands upright too, with its own dock at the bottom. */
   ferries?: 2;
+  /** An easy entry above the ladder (levels 9 and 10): exactly one boat sits in the ferry's way. */
+  entry?: true;
+  /** Who's in the way (level 10): before any slide she taps the boat in the ferry's way. */
+  ask?: true;
 }
 
 export const PLANS: FerryPlan[] = [
@@ -228,6 +232,9 @@ export const PLANS: FerryPlan[] = [
   { name: 'A crowded 6 by 6 harbor: a long way to the dock', size: 6, boats: { min: 7, max: 10 }, moves: { min: 13, max: 18 }, harbors: 1 },
   { name: 'Rocks in the harbor: a 5 by 5 with a rock that never moves, so a boat has to wait somewhere else', size: 5, boats: { min: 4, max: 5 }, moves: { min: 6, max: 9 }, harbors: 1, rocks: 1 },
   { name: 'Two ferries: a 5 by 5 where a yellow ferry leaves by a bottom dock, so one ferry has to go first to free the other', size: 5, boats: { min: 3, max: 5 }, moves: { min: 5, max: 8 }, harbors: 1, ferries: 2 },
+  // Slides here count the ferry's own last slide to the dock, as `solve` does: "one boat slide" is 2, "two or three" is 3–4.
+  { name: 'One boat in the way: a 4 by 4 harbor where one slide of one boat lets the ferry out', size: 4, boats: { min: 2, max: 2 }, moves: { min: 2, max: 2 }, harbors: 2, entry: true },
+  { name: 'Who\'s in the way? Tap the boat in front of the ferry, then slide it and the boat that stops it', size: 4, boats: { min: 2, max: 3 }, moves: { min: 3, max: 4 }, harbors: 2, entry: true, ask: true },
 ];
 
 export const planFor = (level: number): FerryPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -326,6 +333,25 @@ export function aheadOf(h: Harbor, layout: Layout, i: number): { row: number; co
   const out: { row: number; col: number }[] = [];
   for (let p = layout[i] + b.len; p < h.size; p++) out.push(b.dir === 'h' ? { row: b.row, col: p } : { row: p, col: b.col });
   return out;
+}
+
+/** The boats in the red ferry's way: every boat with a cell in its row between it and the dock. */
+export function blockers(h: Harbor, layout: Layout = start(h)): number[] {
+  const g = grid(h, layout);
+  const out = new Set<number>();
+  for (const { row, col } of aheadOf(h, layout, FERRY)) if (g[row][col] > FERRY) out.add(g[row][col]);
+  return [...out].sort((a, b) => a - b);
+}
+
+/** Whether boat `i` can leave the ferry's way in one slide from where the boats are now. */
+export function clearsInOne(h: Harbor, i: number, layout: Layout = start(h)): boolean {
+  const { min, max } = reach(h, layout, i);
+  for (let p = min; p <= max; p++) {
+    const moved = layout.slice();
+    moved[i] = p;
+    if (!blockers(h, moved).includes(i)) return true;
+  }
+  return false;
 }
 
 /** Whether ferry `i` fills a cell in the lane ahead of ferry `j`. */

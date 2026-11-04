@@ -16,10 +16,11 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseHarbors, courseMinimum, isHarborCourse } from './course';
 import { HARBORS } from './harbors';
-import { boatToward, distance, docked, FERRY, ferries, focusPath, hintSlide, parse, planFor, reach, sailed, settle, solve, solved, start, stuck, YELLOW, type FerryPlan, type Harbor, type Layout, type Slide } from './logic';
+import { blockers, boatToward, distance, docked, FERRY, ferries, focusPath, hintSlide, parse, planFor, reach, sailed, settle, solve, solved, start, stuck, YELLOW, type FerryPlan, type Harbor, type Layout, type Slide } from './logic';
 
 const LEVELS: BandLevels = {
-  prek: { min: 1, max: 4 },
+  // 9 (one boat in the way) and 10 (who's in the way?) are easy entries above the ladder, played first.
+  prek: { min: 1, max: 10, order: [9, 1, 10, 2, 3, 4] },
   school: { min: 3, max: 8 },
 };
 
@@ -104,6 +105,11 @@ class FerryJam implements Game {
   private carry = 0;
   private assisted = false;
   private told = false;
+  /** Level 10: she is still to tap the boat in the ferry's way, and how many other boats she has tapped this harbor. */
+  private asking = false;
+  private askMisses = 0;
+  /** After two wrong taps the boat in the way glows (one hint). */
+  private askGlow = false;
   /** What the held boat can reach in its lane while it is held. */
   private held: { boat: number; min: number; max: number } | null = null;
   /** Touch layout (the undo button, no focus ring) until a key or pad is used; couch play never has it. */
@@ -164,6 +170,11 @@ class FerryJam implements Game {
     const g = this.glow.clear();
     if (this.finished || this.busy) return;
     if (!this.touch) this.drawFocus(g);
+    if (this.asking && this.askGlow) {
+      const i = blockers(this.harbor, this.layout)[0];
+      const box = this.boxOf(i, this.layout[i]);
+      g.roundRect(box.x, box.y, box.width, box.height, 22).stroke({ width: 6 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
+    }
     if (!this.hinted) return;
     const b = this.harbor.boats[this.hinted.boat];
     const at = this.layout[this.hinted.boat];
@@ -182,6 +193,13 @@ class FerryJam implements Game {
   /** The ghost finger on the how-to card: take hold of the boat the solver's next slide moves and slide it along its lane. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.harbor || this.held) return null;
+    if (this.asking) {
+      const i = blockers(this.harbor, this.layout)[0];
+      const node = this.nodes[i];
+      if (!node || node.destroyed) return null;
+      const { w, h } = this.sizeOf(i);
+      return { tap: { on: node, x: w / 2, y: h / 2 } };
+    }
     const slide = hintSlide(this.harbor, this.layout);
     const node = slide && this.nodes[slide.boat];
     if (!slide || !node || node.destroyed) return null;
@@ -214,12 +232,19 @@ class FerryJam implements Game {
     this.placeAll(false);
     this.board.alpha = 0;
     this.focus = FERRY;
+    // Level 10 asks before any slide, on every harbor: the boats wait until she taps the one in the ferry's way.
+    this.asking = !this.course && !!this.plan.ask;
+    this.askMisses = 0;
+    this.askGlow = false;
+    for (const h of this.handles) h.enabled = !this.asking;
     await this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
     this.report();
+    if (this.asking) return this.ctx.instruct('ferry.who');
     if (this.course ? this.told : this.index > 0) return;
     this.told = true;
     if (this.course) return this.ctx.instruct('ferry.start');
+    if (this.plan.entry) return this.ctx.instruct('ferry.start.one');
     return this.ctx.instruct(this.harbor.yellow ? 'ferry.both' : this.harbor.rocks?.length ? 'ferry.start.rocks' : 'ferry.start');
   }
 
@@ -249,7 +274,41 @@ class FerryJam implements Game {
       onDrop: () => this.drop(i),
     });
     this.handles.push(handle);
+    // Level 10's question. Added after the drag, so the touch that answers finds the drag still held and does not pick the boat up.
+    onTap(node, () => this.answer(i));
     return node;
+  }
+
+  /**
+   * Level 10: she taps the boat she thinks is in the ferry's way. The right one lets the boats slide; another boat is a miss
+   * with a spoken hint, and after two the right one glows (one hint). Tapping the ferry itself only asks again.
+   */
+  private answer(i: number) {
+    if (!this.asking || this.busy || this.finished) return;
+    const blocker = blockers(this.harbor, this.layout)[0];
+    if (i === blocker) {
+      this.asking = false;
+      this.askGlow = false;
+      for (const h of this.handles) h.enabled = true;
+      sfx.bell(7);
+      this.ctx.pet.cheer();
+      // Praise, then the slide instruction becomes the line the pet repeats.
+      void this.ctx.say('ferry.yes').then(() => this.ctx.instruct('ferry.start'));
+      return;
+    }
+    if (i === FERRY) {
+      sfx.pop(3);
+      void this.ctx.say('ferry.who');
+      return;
+    }
+    this.misses++;
+    this.askMisses++;
+    sfx.boing();
+    if (this.askMisses === 2) {
+      this.askGlow = true;
+      this.hints++;
+    }
+    void this.ctx.say('ferry.notway');
   }
 
   /** A rock: touching or dragging it shakes it with a low knock. It never moves, and touching it is never a miss. */
@@ -518,6 +577,11 @@ class FerryJam implements Game {
       if (this.grab) this.shift(dir);
       else this.moveFocus(dir);
     }
+    // Level 10 by keys: the button answers the question with the highlighted boat.
+    if (this.asking) {
+      if (input.players.some((p) => p.action)) this.answer(this.focus);
+      return;
+    }
     if (input.players.some((p) => p.action)) {
       if (this.grab) this.setDown();
       else this.pickUp(this.focus);
@@ -614,6 +678,16 @@ class FerryJam implements Game {
     const out = idle();
     this.botWait -= dt;
     if (this.busy || this.finished || !this.harbor || this.botWait > 0) return out;
+    if (this.asking) {
+      // Answer the question first: move the highlight to the boat in the way and press.
+      const p = out.players[0];
+      p.active = true;
+      const path = focusPath(this.harbor, this.layout, this.focus, blockers(this.harbor, this.layout)[0]);
+      if (path?.length) p.direction = path[0];
+      else p.action = true;
+      this.botWait = 0.35;
+      return out;
+    }
     const key = this.layout.join(',');
     if (this.botPlan?.key !== key) this.botPlan = { key, slide: solve(this.harbor, this.layout)?.[0] ?? null };
     const next = this.botPlan.slide;
@@ -728,6 +802,7 @@ export const ferryJam: GameModule = {
   skills: ['planning', 'spatial-reasoning', 'problem-solving', 'sequencing'],
   bands: ['prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [9, 10],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'Share the boats: one of you slides the ones lying sideways, the other the ones standing up. Talk about which has to go first.',
