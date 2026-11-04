@@ -2,7 +2,7 @@ import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { cream, ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
-import { flower, puffs } from '../../art/shapes';
+import { flower, puffs, shapePath, type ShapeKind } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx, type AnimalSound } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -14,14 +14,14 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { fits, frontAfterHalfTurn, makeScene, namedHintTarget, nextPair, nextRequest, peekTouch, planFor, spotFacing, whereIs, WHERE_WORDS, type PeekPlan, type Where } from './logic';
+import { fits, frontAfterHalfTurn, makeScene, makeSeeScene, namedHintTarget, nextPair, nextRequest, peekTouch, planFor, seeFacings, spotFacing, turnToFront, whereIs, WHERE_WORDS, type PeekPlan, type Where } from './logic';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
-  school: { min: 4, max: 5 },
+  prek: { min: 3, max: 6 },
+  school: { min: 4, max: 6 },
 };
 
 const VOICE: Record<CritterName, AnimalSound> = { pip: 'hop', duck: 'quack', pig: 'oink', cat: 'meow', bunny: 'hop', cow: 'moo', dog: 'woof', bear: 'growl' };
@@ -55,6 +55,22 @@ function treeArt(): Container {
   return c;
 }
 
+/** Level 6's picture: a card on a little easel, small enough that the crown hides all of it from behind. */
+function pictureArt(kind: ShapeKind, color: keyof typeof swatch): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.moveTo(-22, 0).lineTo(-12, -40).moveTo(22, 0).lineTo(12, -40).moveTo(0, -4).lineTo(0, -40).stroke({ width: 7, color: wood.line, cap: 'round' });
+  g.roundRect(-36, -112, 72, 80, 12).fill(cream).stroke({ width: 5, color: wood.line });
+  c.addChild(g);
+  const s = shapePath(new Graphics(), kind, 24).fill(swatch[color].fill).stroke({ width: 4, color: swatch[color].line });
+  s.position.set(0, -72);
+  c.addChild(s);
+  c.eventMode = 'none';
+  return c;
+}
+
+const PICTURES: [ShapeKind, keyof typeof swatch][] = [['star', 'yellow'], ['heart', 'red'], ['circle', 'blue'], ['triangle', 'purple']];
+
 class PeekaroundIsland implements Game {
   readonly plan: PeekPlan;
   readonly friends: Friend[] = [];
@@ -78,6 +94,9 @@ class PeekaroundIsland implements Game {
   private readonly tree = treeArt();
   private readonly flowers: { node: Graphics; spot: number }[] = [];
   private readonly card = new Container();
+  /** Level 6: the picture standing on an island spot, and the order its scenes face her. */
+  private picture: { node: Container; spot: number } | null = null;
+  private seeOrder: number[] = [];
   private readonly glow = new Graphics();
   private view: View;
   private wrongs = 0;
@@ -155,6 +174,12 @@ class PeekaroundIsland implements Game {
       f.node.zIndex = p.depth;
       f.node.scale.set(0.8 + 0.2 * p.depth);
     }
+    if (this.picture) {
+      const p = this.at(this.picture.spot);
+      this.picture.node.position.set(p.x, p.y);
+      this.picture.node.zIndex = p.depth;
+      this.picture.node.scale.set(0.85 + 0.15 * p.depth);
+    }
     for (const f of this.friends) {
       if (f.spot < 0) continue;
       const p = this.at(f.spot);
@@ -202,6 +227,7 @@ class PeekaroundIsland implements Game {
     }
     if (this.index >= this.plan.rounds) return void this.finale();
     await this.clearIsland();
+    if (mode === 'see') return this.seeScene();
     const scene = makeScene(this.plan, this.ctx.rng, this.hider ?? undefined);
     this.hider = scene.friends[scene.hider];
     scene.friends.forEach((name, i) => {
@@ -237,6 +263,10 @@ class PeekaroundIsland implements Game {
       f.drag?.destroy();
       this.ctx.untrack(f.node);
       f.node.destroy({ children: true });
+    }
+    if (this.picture) {
+      this.picture.node.destroy({ children: true });
+      this.picture = null;
     }
     this.clearCard();
   }
@@ -286,6 +316,7 @@ class PeekaroundIsland implements Game {
     f.node.poke();
     sfx.animal(VOICE[f.name]);
     const mode = this.plan.mode;
+    if (mode === 'see') return void this.seeTap(f);
     if (mode !== 'find' && mode !== 'named') return;
     if (f.name === this.hider) return void this.found(f);
     // Named: a friend in plain sight is not the one asked for.
@@ -360,6 +391,59 @@ class PeekaroundIsland implements Game {
     sfx.animal(VOICE[f.name]);
     void this.ctx.say(whereIs(f.spot, this.turns) === 'front' ? 'around.here.front' : 'around.here.next');
     if (this.wrongs >= 2) this.hint();
+  }
+
+  // Who can't see it --------------------------------------------------------------------
+
+  /** A picture on one spot and friends round it: the one across the tree cannot see it. */
+  private async seeScene() {
+    if (!this.seeOrder.length) this.seeOrder = seeFacings(this.ctx.rng);
+    const scene = makeSeeScene(this.seeOrder[this.index], this.ctx.rng, this.hider ?? undefined);
+    this.hider = scene.friends[scene.blocked];
+    const [kind, color] = this.ctx.rng.pick(PICTURES);
+    const node = pictureArt(kind, color);
+    node.alpha = 0;
+    this.world.addChild(node);
+    this.picture = { node, spot: spotFacing(scene.picture, this.turns) };
+    void this.ctx.tw.to(node, { alpha: 1 }, { duration: 0.4 });
+    scene.friends.forEach((name, i) => {
+      const f = this.addFriend(name, spotFacing(scene.facing[i], this.turns));
+      f.node.alpha = 0;
+      void this.ctx.tw.to(f.node, { alpha: 1 }, { duration: 0.4 });
+    });
+    await this.ctx.tw.wait(0.5);
+    // Behind the tree from her side: she cannot see it either.
+    if (scene.picture === 2) await this.ctx.say('around.see.hidden');
+    this.busy = false;
+    return this.ctx.instruct('around.see');
+  }
+
+  /** Turn the island so the tapped friend is in front: her view becomes theirs. */
+  private async seeTap(f: Friend) {
+    this.busy = true;
+    const right = f.name === this.hider;
+    if (!right) {
+      this.misses++;
+      this.wrongs++;
+      sfx.boing();
+    } else this.hinting = false;
+    const d = turnToFront(f.spot, this.turns);
+    if (d) await this.turn(d);
+    this.busy = true;
+    if (!right) {
+      f.node.hop();
+      await this.ctx.say('around.see.can');
+      if (this.wrongs >= 2) this.hint();
+      this.busy = false;
+      return;
+    }
+    f.node.cheer();
+    sfx.sparkle();
+    this.ctx.particles.burst(f.node.x, f.node.y - 60, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.pet.cheer();
+    await this.ctx.say('around.see.cant');
+    await this.ctx.tw.wait(0.4);
+    await this.next();
   }
 
   // Placing -------------------------------------------------------------------------------
@@ -501,6 +585,7 @@ class PeekaroundIsland implements Game {
     if (this.hinting) return;
     this.hinting = true;
     this.hints++;
+    if (this.plan.mode === 'see') return void this.ctx.say('around.see.hint');
     if (this.plan.mode !== 'named') return;
     const hider = this.hiderFriend();
     if (hider && namedHintTarget(hider.spot, this.turns) === 'hider') void this.ctx.say('around.tapthem', { who: hider.name });
@@ -522,7 +607,10 @@ class PeekaroundIsland implements Game {
       if (hider && namedHintTarget(hider.spot, this.turns) === 'hider') ring(hider.node.x, hider.node.y - 60, 90, 110);
       else for (const b of [this.left, this.right]) ring(b.x, b.y, 70);
     }
-    else if (this.plan.mode === 'who') {
+    else if (this.plan.mode === 'see') {
+      const f = this.hiderFriend();
+      if (f) ring(f.node.x, f.node.y - 60, 90, 110);
+    } else if (this.plan.mode === 'who') {
       const t = this.tiles.find((x) => x.name === this.hider);
       if (t) ring(t.node.x, t.node.y, 78, 82);
     } else {
