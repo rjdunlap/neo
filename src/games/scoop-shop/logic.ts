@@ -6,7 +6,7 @@ import type { Rng } from '../../engine/random';
  * you tap flavor tubs to stack scoops, and a matching cone is served. A scoop that doesn't
  * belong bounces gently back into its tub, so a cone can never be wrong for long.
  */
-export type ScoopMode = 'free' | 'one' | 'pair' | 'count' | 'stack' | 'memory' | 'customer' | 'mixed' | 'change' | 'topfirst';
+export type ScoopMode = 'free' | 'one' | 'pair' | 'count' | 'stack' | 'memory' | 'customer' | 'mixed' | 'change' | 'topfirst' | 'two';
 
 export interface ScoopPlan {
   mode: ScoopMode;
@@ -32,11 +32,12 @@ export const PLANS: ScoopPlan[] = [
 
 const CHANGE: ScoopPlan = { mode: 'change', customers: 3, flavors: 6, min: 3, max: 3, name: 'Remember three scoops, change one named position, then build the new order' };
 const TOP_FIRST: ScoopPlan = { mode: 'topfirst', customers: 3, flavors: 6, min: 3, max: 3, name: 'Hear three distinct scoops top first, then build bottom first; tap the friend for an upright peek' };
+const TWO_CONES: ScoopPlan = { mode: 'two', customers: 2, flavors: 6, min: 1, max: 2, name: 'Two cones: remember two friends\' orders (three scoops altogether); tap a cone to choose it, tap a friend to peek' };
 const ANY_SCOOP: ScoopPlan = { mode: 'free', customers: 3, flavors: 4, min: 1, max: 1, name: 'Any scoop: one tap, one scoop, one munch' };
 const MATCH_CUSTOMER: ScoopPlan = { mode: 'customer', customers: 3, flavors: 4, min: 1, max: 1, name: 'Who wanted pink? Match the prepared scoop to one of two customer pictures' };
 const FILL_UP: ScoopPlan = { mode: 'count', start: true, customers: 3, flavors: 5, min: 3, max: 5, name: 'Fill it up: count on from the scoops already there to make three to five' };
 const MIXED: ScoopPlan = { mode: 'mixed', customers: 3, flavors: 5, min: 4, max: 5, name: 'Three pink and two blue: match two color counts, in any order' };
-export const planFor = (level: number) => level === 8 ? CHANGE : level === 9 ? TOP_FIRST : level === 12 ? FILL_UP : level === 13 ? MIXED : level === 10 ? ANY_SCOOP : level === 11 ? MATCH_CUSTOMER : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const planFor = (level: number) => level === 7 ? TWO_CONES : level === 8 ? CHANGE : level === 9 ? TOP_FIRST : level === 12 ? FILL_UP : level === 13 ? MIXED : level === 10 ? ANY_SCOOP : level === 11 ? MATCH_CUSTOMER : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export interface CustomerChoice {
   pictures: [ColorName, ColorName];
@@ -82,9 +83,72 @@ export const CHANGED_ORDERS: Order[] = DISTINCT_TRIPLES.flatMap(original => [0, 
     scoops[changeIndex] = replacement;
     return { original: [...original], changeIndex, scoops, ordered: true };
   })));
+/**
+ * Level 7's finite pair family: one friend wants a single scoop, the other an ordered pair of two different flavours,
+ * three scoops altogether. 6 singles × 30 ordered pairs × which side has the single = 360 rounds, left first.
+ */
+export const TWO_CONE_ORDERS: [Order, Order][] = FLAVORS.flatMap(single => FLAVORS.flatMap(a => FLAVORS.filter(b => b !== a)
+  .flatMap(b => [0, 1].map(side => {
+    const one: Order = { scoops: [single], ordered: true };
+    const two: Order = { scoops: [a, b], ordered: true };
+    return (side === 0 ? [one, two] : [two, one]) as [Order, Order];
+  }))));
+
+/** Level 7's tap areas, in their own local units: a friend (drawn at 0.72) and a cone, both wider than 100 on screen. */
+export const FRIEND_HIT = { x: -110, y: -330, w: 220, h: 330 };
+export const FRIEND_SCALE = 0.72;
+export const CONE_HIT = { x: -65, y: -160, w: 130, h: 260 };
+
+/** Level 7: each friend stands on the outside, their own cone on the counter in front of them, toward the middle. */
+export function twoConeLayout(w: number, counterTop: number) {
+  return [0, 1].map(side => ({
+    friend: { x: w * (side ? 0.82 : 0.18), y: counterTop + 18 },
+    cone: { x: w * (side ? 0.62 : 0.38), y: counterTop - 66 },
+  }));
+}
+
+/** Which cone is chosen after one is served: the other one, if it is still waiting. */
+export const coneAfterServe = (served: boolean[], just: number): number => served.findIndex((done, i) => !done && i !== just);
+
+/**
+ * Level 7's per-order help: misses, the next-tub glow (one hint, from the second miss) and the first peek (one hint).
+ * Each order keeps its own, so switching cones never clears or shares them; at most two hints per order.
+ */
+export interface Support { wrongs: number; glow: boolean; peeked: boolean }
+export const freshSupport = (): Support => ({ wrongs: 0, glow: false, peeked: false });
+/** A bounced scoop: returns the hints it adds (1 only when it first lights the glow). */
+export function supportMiss(s: Support): number {
+  s.wrongs++;
+  if (s.wrongs < 2 || s.glow) return 0;
+  s.glow = true;
+  return 1;
+}
+/** A peek at a hidden order: the first counts one hint, the rest are free. */
+export function supportPeek(s: Support): number {
+  if (s.peeked) return 0;
+  s.peeked = true;
+  return 1;
+}
+
+/**
+ * The demonstration's route through a level-7 round: which cone each of the three scoops goes on. `variant` 0 serves the
+ * single first; 1 starts the pair, switches to serve the single, then comes back; 2 serves the pair first.
+ */
+export function twoConeRoute(orders: Order[], variant: number): number[] {
+  const single = orders[0].scoops.length === 1 ? 0 : 1;
+  const pair = 1 - single;
+  return [[single, pair, pair], [pair, single, pair], [pair, pair, single]][variant % 3];
+}
+
 export const spokenTopFirst = (order: Order): ColorName[] => [...order.scoops].reverse();
 
 export function makeOrders(plan: ScoopPlan, rng: Rng): { flavors: ColorName[]; orders: Order[] } {
+  if (plan.mode === 'two') {
+    // The pair is drawn before the decorative tub shuffle or shop dressing.
+    const [left, right] = rng.pick(TWO_CONE_ORDERS);
+    const orders = [left, right].map(o => ({ ...o, scoops: [...o.scoops] }));
+    return { flavors: rng.shuffle([...FLAVORS]), orders };
+  }
   if (plan.mode === 'change' || plan.mode === 'topfirst') {
     // Answers are drawn before the decorative tub shuffle or shop dressing.
     const orders: Order[] = Array.from({ length: plan.customers }, () => {
