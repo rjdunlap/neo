@@ -2569,7 +2569,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--garden-rows-
 
 [PR #1171](https://github.com/rjdunlap/neo/pull/1171), batch garden-rows 3, [dive slice 3](../deep-dives/garden-rows.md#build-slices-in-order). Level 10: a single row of three spots, two planted and one empty, three packets, three beds a round with the empty spot in a different place each bed; a repeat is a miss with the row clash line, and after two misses the spot and the right packet glow. Logic generalised to non-square beds (`rows` plan field, `rowsOf`). Garden Rows bands are now preschool, prek, school; preschool range `{ min: 1, max: 10, order: [10, 1] }` with `entryLevels: [10]` (carried to pre-K it lands on 1, to school on 3), so Garden Rows shows on preschool's Puzzle Peaks page. Voice `rows.one`. How-to: a level-10 step and note, the rows-and-columns step bounded to 2-9 and the hedge lines to 8-9. Couch (fixed levels 3-6) unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--garden-rows-level-10-one-row-garden-rows-batch-3).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--garden-rows-level-10-one-row-garden-rows-batch-3).
 
 ## Ferry Jam level 7 Rocks in the harbor (ferry-jam 2, 2026-11-03)
 
@@ -2620,3 +2620,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--penguin-slide-level-
 [PR #1183](https://github.com/rjdunlap/neo/pull/1183), [dive slice 3](../deep-dives/orchard-rows.md#build-slices-in-order), batch `orchard-rows 3`, built exactly per the [definition](../definitions/orchard-rows-path.md) with the defaults for its three open decisions (a sign recounts only after its part is answered, no level-8 split hint, part-part-whole twice). School range 1–9; new `PathOrchard` scene in `path.ts` (levels 4–6 code unchanged), path model and layout in `logic.ts`, skill `distributive property`, voice `orchard.path*`, `choosepath`, `pathlaid`, `partcount`, `partone`, `wholehint`, `pathjoin` and `done.path`, how-to steps 7–9 with the level-4 note bounded to 4–6, and a browser case in `scripts/browser/suites/orchard-play.mjs`. A review fix keeps the finished orchard drawn through the join line.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--orchard-rows-levels-79-a-path-through-the-orchard-batch-orchard-rows-3).
+
+## Island Bridges, level 7 Up to three planks (island-bridges batch 3, 2026-11-03)
+
+[PR #1185](https://github.com/rjdunlap/neo/pull/1185), `claude/island-bridges-three-planks`: [dive slice 3](../deep-dives/island-bridges.md#build-slices-in-order). Level 7 is a 9 by 9 sea of 12-14 islands (the dive said 11-14; 12 keeps the levels-climb test true) where a bridge carries up to three planks, numbers go to 12, and counting finishes it; every sea uses at least one triple and its counting-only hint walk is all named `forced` steps. Grown-up order `[5, 1, 2, 6, 7, 3, 4]`, range 1-7. `Layout.max` (default 2) is read by `canAdd`, `trouble`, `solve` and `roomOf`; `every-way` hints any edge with room for two or more; the picture and `parsePuzzle` encode 10-12 as base-36 letters; levels 1-6 and the couch courses stay at two. A fourth plank bumps with no miss. Triple planks draw at three thinner offsets, two-digit numbers smaller; voice `bridges.go-three` and `bridges.go-three-touch`; how-to step `{from: 7, to: 7}`. Review fix: the generator had used the keep-them-joined hint walk; `hintWalk` now takes `joined` and level 7 passes false. New browser case `BROWSER_SUITE=bridgestouch BRIDGES_ONLY=7`.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--island-bridges-level-7-up-to-three-planks-batch-island-bridges-3).
