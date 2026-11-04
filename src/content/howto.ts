@@ -1554,7 +1554,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'scoop-shop': {
     goal: 'Serve ice cream to customers.',
     steps: [
-      { to: 6, text: 'Tap a tub to put a scoop on the cone.' },
+      { to: 6, text: 'Tap a tub to put a scoop on the cone.' }, { from: 8, to: 9, text: 'Tap a tub to put a scoop on the cone, bottom scoop first.' },
       { from: 10, to: 10, text: 'Tap any tub: one scoop is enough. Each of three customers munches it straight away.' },
       { from: 11, to: 11, text: 'The cone already has one scoop. Tap the customer whose picture matches its color. The other customer stays for the next cone.' },
       { to: 5, text: 'Tap the customer to hear the order again.' },
@@ -1563,11 +1563,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'Stack the number and color of scoops the customer asks for. The picture shows that many scoops, and each one is counted aloud as it lands.' },
       { from: 5, to: 5, text: 'Stack the three flavors in the order of the picture, bottom to top.' },
       { from: 6, to: 6, text: 'Look at the picture, then stack the flavors in the same order after it hides.' },
+      { from: 8, to: 8, text: 'Listen for one changed scoop, then build the new three-scoop order. Tap your friend to peek at the changed order.' },
+      { from: 9, to: 9, text: 'Listen top first, then build bottom first. Tap your friend to see the upright cone.' },
       { from: 12, to: 12, text: 'Count the scoops already there. Tap the matching tub to add just enough to reach the number. Outlined slots show how many are missing; each added scoop is counted aloud.' },
       { from: 13, to: 13, text: 'Tap the tubs to match both color counts in the two picture rows. Either color can go first. Tap the customer to hear both counts again.' },
     ],
-    finish: [{ to: 6, text: 'The round ends when all customers have their matching cones.' }, { from: 10, to: 13, text: 'Serve three cones to finish the round.' }],
-    note: [{ from: 12, to: 13, text: 'Wrong colors and extra scoops bounce back (one miss). After two misses, a tub that still needs scoops glows (one hint). Tapping the customer repeats the order for free.' }, { from: 10, to: 10, text: 'Every flavor works; there are no wrong scoops.' }, { from: 11, to: 11, text: 'A wrong customer counts one miss and repeats their color. After two misses, the matching picture glows (one hint). Tapping the cone is free.' }],
+    finish: [{ from: 8, to: 9, text: 'Serve three matching three-scoop cones to finish the round.' }, { to: 6, text: 'The round ends when all customers have their matching cones.' }, { from: 10, to: 13, text: 'Serve three cones to finish the round.' }],
+    note: [{ from: 8, to: 9, text: 'A wrong scoop bounces back (one miss). The second miss glows the next tub (one hint per customer). The first hidden-picture peek counts one more hint per customer; repeat peeks and pet replay are free. Scooping waits until the request or peek finishes.' }, { from: 12, to: 13, text: 'Wrong colors and extra scoops bounce back (one miss). After two misses, a tub that still needs scoops glows (one hint). Tapping the customer repeats the order for free.' }, { from: 10, to: 10, text: 'Every flavor works; there are no wrong scoops.' }, { from: 11, to: 11, text: 'A wrong customer counts one miss and repeats their color. After two misses, the matching picture glows (one hint). Tapping the cone is free.' }],
   },
   roundup: {
     goal: 'Herd the farm animals where they belong.',

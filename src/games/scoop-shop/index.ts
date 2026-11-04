@@ -26,6 +26,7 @@ import {
   nextNeeded,
   planFor,
   scoopToTake,
+  spokenTopFirst,
   tryScoop,
   type ConeKind,
   type Order,
@@ -39,7 +40,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 11, order: [1, 2, 11, 3] },
   preschool: { min: 2, max: 11, order: [2, 11, 3, 4, 5] },
   prek: { min: 3, max: 13, order: [3, 4, 12, 13, 5, 6] },
-  school: { min: 5, max: 13, order: [5, 12, 13, 6] },
+  school: { min: 5, max: 13, order: [5, 12, 13, 6, 8, 9] },
 };
 
 const SCOOP_R = 34;
@@ -183,6 +184,9 @@ class ScoopShop implements Game {
   private hidden = false;
   private lastTalk = -10;
   private clock = 0;
+  private destroyed = false;
+
+  private get revisedMemory() { return this.plan.mode === 'change' || this.plan.mode === 'topfirst'; }
   private readonly kinds: CritterName[];
   private readonly scene: WindowScene;
   private readonly cones: ConeKind[];
@@ -326,7 +330,7 @@ class ScoopShop implements Game {
     return tub ? { tap: { on: tub, x: 0, y: -20 } } : null;
   }
 
-  destroy() {}
+  destroy() { this.destroyed = true; }
 
   // Customers -------------------------------------------------------------------------
 
@@ -409,7 +413,7 @@ class ScoopShop implements Game {
     this.people.addChild(critter);
     this.customer = critter;
     // Tapping the customer: a peek on the last level (the picture hid), elsewhere the order said again, free.
-    onTap(critter, () => (this.plan.mode === 'memory' ? void this.peek() : this.tapCustomer(critter)), { cooldown: 600 });
+    onTap(critter, () => ((this.plan.mode === 'memory' || this.revisedMemory) ? void this.peek() : this.tapCustomer(critter)), { cooldown: 600 });
     critter.hitArea = new Circle(0, -150, 150);
 
     const cone = new Cone(this.cones[this.customerIndex] ?? 'cone');
@@ -425,6 +429,30 @@ class ScoopShop implements Game {
     await tw.to(critter, { x: spot.x }, { duration: 0.7, ease: ease.outBack });
     void tw.to(cone.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
     sfx.pop(6);
+    if (this.destroyed) return;
+    if (this.revisedMemory) {
+      if (this.plan.mode === 'change') {
+        await this.ctx.instruct('scoop.change-rule');
+        if (this.destroyed) return;
+        const original = { ...order, scoops: order.original! };
+        this.showBubble(original);
+        await this.askOrder(original);
+        await tw.wait(1.2);
+        if (this.destroyed || this.order !== order) return;
+        this.hideBubble();
+        const lines: LineId[] = ['scoop.change-bottom', 'scoop.change-middle', 'scoop.change-top'];
+        await this.ctx.say(lines[order.changeIndex!], { a: order.scoops[order.changeIndex!] });
+      } else {
+        this.bubble.visible = false;
+        this.hidden = true;
+        await this.ctx.say('scoop.top-first-rule');
+        if (this.destroyed) return;
+        const [a, b, c] = spokenTopFirst(order);
+        await this.ctx.instruct('scoop.top-first', { a, b, c });
+      }
+      if (!this.destroyed && this.order === order) this.busy = false;
+      return;
+    }
     this.showBubble(order);
     this.busy = false;
     await this.askOrder(order);
@@ -438,6 +466,9 @@ class ScoopShop implements Game {
     const s = order.scoops;
     const [a, b, c] = s;
     switch (this.plan.mode) {
+      case 'change':
+      case 'topfirst':
+        return this.ctx.say('scoop.stack', { a, b, c });
       case 'free':
         return this.ctx.instruct(this.ctx.level === 10 ? 'scoop.any' : 'scoop.free');
       case 'one':
@@ -542,12 +573,15 @@ class ScoopShop implements Game {
     }
     if (!this.peeked) this.hints++;
     this.peeked = true;
+    if (this.revisedMemory) this.busy = true;
     this.hidden = false;
     this.customer?.poke();
     this.showBubble(order);
     await this.askOrder(order);
     await this.ctx.tw.wait(1.2);
-    if (this.order === order) this.hideBubble();
+    if (this.destroyed || this.order !== order) return;
+    this.hideBubble();
+    if (this.revisedMemory) this.busy = false;
   }
 
   // Scooping ---------------------------------------------------------------------------
@@ -692,6 +726,7 @@ class ScoopShop implements Game {
   }
 
   private async end() {
+    if (this.finished || this.destroyed) return;
     this.finished = true;
     this.ctx.pet.cheer();
     await this.ctx.say('scoop.done');

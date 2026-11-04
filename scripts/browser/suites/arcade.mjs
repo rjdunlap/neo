@@ -204,11 +204,11 @@ async function arcade() {
   }
 
   // Scoop Shop: wrong flavors and extra scoops bounce back; two lead to a glowing tub; memory peeks.
-  const scoopLevels = process.env.ARCADE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 10, 11, 12, 13];
+  const scoopLevels = process.env.ARCADE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13];
   for (const level of (!only || only === 'scoop') ? scoopLevels : []) {
     await launch('scoop-shop', level);
     const before = await page.evaluate(() => kit.store.data.stickers.length);
-    if ([10, 11, 12, 13].includes(level)) {
+    if ([8, 9, 10, 11, 12, 13].includes(level)) {
       await page.waitForFunction(() => !neo.scene.game.busy && !!neo.scene.game.cone);
       await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
       await screenshot(`scoop-shop-${level}-portrait`);
@@ -240,11 +240,13 @@ async function arcade() {
         }
         return;
       }
-      const tap = async (color) => { await kit.until(() => !g.busy, 8000); kit.tapOn(g.tubs.get(color), 0, -20); await kit.sleep(150); await kit.until(() => !g.busy || g.customerIndex >= g.orders.length, 8000); };
+      // Levels 8–9 spend about 11 s on the rule, the request and the change before input unlocks.
+      const wait = ['change', 'topfirst'].includes(g.plan.mode) ? 20000 : 8000;
+      const tap = async (color) => { await kit.until(() => !g.busy, wait); kit.tapOn(g.tubs.get(color), 0, -20); await kit.sleep(150); await kit.until(() => !g.busy || g.customerIndex >= g.orders.length, wait); };
       for (let c = 0; c < g.orders.length; c++) {
-        await kit.until(() => g.customerIndex === c && !g.busy && g.cone, 8000);
+        await kit.until(() => g.customerIndex === c && !g.busy && g.cone, wait);
         const order = g.order;
-        if (c === 0 && g.plan.mode !== 'memory') {
+        if (c === 0 && !['memory', 'change', 'topfirst'].includes(g.plan.mode)) {
           // Tapping the customer says the order again: free, never a miss or a hint.
           kit.tapOn(g.customer, 0, -80);
           await kit.sleep(300);
@@ -261,14 +263,26 @@ async function arcade() {
         if (c === 0 && g.plan.mode !== 'free') {
           const wrong = g.flavors.find((f) => !order.scoops.includes(f)) ?? g.flavors.find((f) => f !== order.scoops[0]);
           await tap(wrong); await tap(wrong);
-          if (g.misses !== 2 || g.hints !== 1 || g.cone.colors.length !== (order.start ?? 0) || !g.tubGlow.context.instructions.length) throw new Error(`Scoop hint: ${g.misses} ${g.hints}`);
+          // The glow is redrawn on the next frame after input unlocks.
+          await kit.until(() => g.tubGlow.context.instructions.length, 1000);
+          if (g.misses !== 2 || g.hints !== 1 || g.cone.colors.length !== (order.start ?? 0) || !g.tubGlow.context.instructions.length) throw new Error(`Scoop hint: ${g.misses} ${g.hints} cone=${g.cone.colors.join()} glow=${g.tubGlow.context.instructions.length} busy=${g.busy} hidden=${g.hidden}`);
         }
-        if (c === 1 && g.plan.mode === 'memory') {
-          await kit.until(() => g.hidden, 8000);
+        if (c === 1 && ['memory', 'change', 'topfirst'].includes(g.plan.mode)) {
+          // Levels 8–9 hide the picture before the change or top-first speech ends; input unlocks after it.
+          await kit.until(() => g.hidden && !g.busy, wait);
           kit.tapOn(g.customer, 0, -80);
           await kit.until(() => !g.hidden, 3000);
           await kit.until(() => g.hidden, 10000);
           if (g.hints !== 2) throw new Error('Peek not counted');
+          if (['change', 'topfirst'].includes(g.plan.mode)) {
+            kit.tapOn(g.customer, 0, -80);
+            await kit.until(() => !g.hidden, 3000);
+            const before = g.cone.colors.length;
+            kit.tapOn(g.tubs.get(order.scoops[before]), 0, -20);
+            await kit.sleep(250);
+            if (!g.busy || g.cone.colors.length !== before || g.hints !== 2 || g.misses !== 2) throw new Error('Peek failed input lock or cap');
+            await kit.until(() => g.hidden && !g.busy, 10000);
+          }
         }
         if (g.plan.start && g.cone.colors.length !== order.start) throw new Error('Missing prefilled scoops');
         if (g.plan.mode === 'mixed') {
@@ -295,7 +309,7 @@ async function arcade() {
     await finished('scoop-shop');
     const r = await page.evaluate(() => { const r = kit.store.stats('scoop-shop').history.at(-1); return [r.misses, r.hints]; });
     assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1, 'one sticker per Scoop Shop round');
-    assert.deepEqual(r, mode === 'free' ? [0, 0] : mode === 'memory' ? [2, 2] : mode === 'mixed' ? [3, 1] : [2, 1], `scoop ${level} score`);
+    assert.deepEqual(r, mode === 'free' ? [0, 0] : ['memory', 'change', 'topfirst'].includes(mode) ? [2, 2] : mode === 'mixed' ? [3, 1] : [2, 1], `scoop ${level} score`);
     log(`Scoop Shop ${level} (${mode}): orders, bounced scoops, hint glow${mode === 'memory' ? ', peeking' : ''}, saved score and sticker passed`);
   }
 

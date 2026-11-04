@@ -17,9 +17,8 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **Better voice V1 (remaining): render the rest of the slot-free script** (assets tier, offline check; status `person`): waits on the iPad listening check of the first 215 clips passes ([device check](DEVICE-CHECKS.md)), add more line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally; device speech stays the fallback. Slotted lines (V3) and Word Monsters' phonemes stay later. [A better voice](ROADMAP.md#a-better-voice)
 
-- **`scoop-shop`, levels 8–9 (EF1b first batch)** (two new levels on existing input; held by Codex draft [#977](https://github.com/rjdunlap/neo/pull/977), idle since 2026-10-26 while the Codex coordinator is paused): [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25), [batch](GAME-BATCHES.md#scoop-shop-3-change-and-reverse). School only; exactly-one-change and reversed distinct triples, peek help; separate admission, building-session review, actual placement/layout and demos required. Level 7 follows as a separate interaction; person/device gates remain.
 
-- **`scoop-shop`, level 7 Two cones (EF1b second batch)** (standalone new interaction): after EF1b 8–9 and built 11; [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25), [batch](GAME-BATCHES.md#scoop-shop-4-two-cones). Free cone selection, friend peek, independent stacks/help, three scoops total; two-order bot and full-size layout proof required.
+- **`scoop-shop`, level 7 Two cones (EF1b second batch)** (standalone new interaction): built 11 and EF1b 8–9 (PR #1176) are in; [EF1 definition](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25), [batch](GAME-BATCHES.md#scoop-shop-4-two-cones). Free cone selection, friend peek, independent stacks/help, three scoops total; two-order bot and full-size layout proof required.
 
 - **RW14 slice 10, the other ten backdrops** (images only): after slices 4 and 6 pass their screenshot review. [POLISH.md](rework/POLISH.md#slice-10-the-other-ten-backdrops)
 

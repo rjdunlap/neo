@@ -6,7 +6,7 @@ import type { Rng } from '../../engine/random';
  * you tap flavor tubs to stack scoops, and a matching cone is served. A scoop that doesn't
  * belong bounces gently back into its tub, so a cone can never be wrong for long.
  */
-export type ScoopMode = 'free' | 'one' | 'pair' | 'count' | 'stack' | 'memory' | 'customer' | 'mixed';
+export type ScoopMode = 'free' | 'one' | 'pair' | 'count' | 'stack' | 'memory' | 'customer' | 'mixed' | 'change' | 'topfirst';
 
 export interface ScoopPlan {
   mode: ScoopMode;
@@ -30,11 +30,13 @@ export const PLANS: ScoopPlan[] = [
   { mode: 'memory', customers: 3, flavors: 6, min: 3, max: 3, name: 'Remember the order after the picture hides' },
 ];
 
+const CHANGE: ScoopPlan = { mode: 'change', customers: 3, flavors: 6, min: 3, max: 3, name: 'Remember three scoops, change one named position, then build the new order' };
+const TOP_FIRST: ScoopPlan = { mode: 'topfirst', customers: 3, flavors: 6, min: 3, max: 3, name: 'Hear three distinct scoops top first, then build bottom first; tap the friend for an upright peek' };
 const ANY_SCOOP: ScoopPlan = { mode: 'free', customers: 3, flavors: 4, min: 1, max: 1, name: 'Any scoop: one tap, one scoop, one munch' };
 const MATCH_CUSTOMER: ScoopPlan = { mode: 'customer', customers: 3, flavors: 4, min: 1, max: 1, name: 'Who wanted pink? Match the prepared scoop to one of two customer pictures' };
 const FILL_UP: ScoopPlan = { mode: 'count', start: true, customers: 3, flavors: 5, min: 3, max: 5, name: 'Fill it up: count on from the scoops already there to make three to five' };
 const MIXED: ScoopPlan = { mode: 'mixed', customers: 3, flavors: 5, min: 4, max: 5, name: 'Three pink and two blue: match two color counts, in any order' };
-export const planFor = (level: number) => level === 12 ? FILL_UP : level === 13 ? MIXED : level === 10 ? ANY_SCOOP : level === 11 ? MATCH_CUSTOMER : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const planFor = (level: number) => level === 8 ? CHANGE : level === 9 ? TOP_FIRST : level === 12 ? FILL_UP : level === 13 ? MIXED : level === 10 ? ANY_SCOOP : level === 11 ? MATCH_CUSTOMER : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export interface CustomerChoice {
   pictures: [ColorName, ColorName];
@@ -62,13 +64,38 @@ export const FLAVORS: ColorName[] = ['pink', 'green', 'blue', 'yellow', 'brown',
 export interface Order {
   /** Scoops bottom to top. Empty for free play. */
   scoops: ColorName[];
+  /** Level 8's first request, before its one announced change. */
+  original?: ColorName[];
+  changeIndex?: number;
   /** Whether the stacking order matters. */
   ordered: boolean;
   /** Scoops already on the cone, all in its requested colour. */
   start?: number;
 }
 
+/** Finite request families: 120 distinct triples, 1080 single-position changes. */
+export const DISTINCT_TRIPLES: ColorName[][] = FLAVORS.flatMap(a => FLAVORS.filter(b => b !== a)
+  .flatMap(b => FLAVORS.filter(c => c !== a && c !== b).map(c => [a, b, c])));
+export const CHANGED_ORDERS: Order[] = DISTINCT_TRIPLES.flatMap(original => [0, 1, 2].flatMap(changeIndex =>
+  FLAVORS.filter(c => !original.includes(c)).map(replacement => {
+    const scoops = [...original];
+    scoops[changeIndex] = replacement;
+    return { original: [...original], changeIndex, scoops, ordered: true };
+  })));
+export const spokenTopFirst = (order: Order): ColorName[] => [...order.scoops].reverse();
+
 export function makeOrders(plan: ScoopPlan, rng: Rng): { flavors: ColorName[]; orders: Order[] } {
+  if (plan.mode === 'change' || plan.mode === 'topfirst') {
+    // Answers are drawn before the decorative tub shuffle or shop dressing.
+    const orders: Order[] = Array.from({ length: plan.customers }, () => {
+      if (plan.mode === 'change') {
+        const o = rng.pick(CHANGED_ORDERS);
+        return { ...o, original: [...o.original!], scoops: [...o.scoops] };
+      }
+      return { scoops: [...rng.pick(DISTINCT_TRIPLES)], ordered: true };
+    });
+    return { flavors: rng.shuffle([...FLAVORS]), orders };
+  }
   const flavors = rng.shuffle([...FLAVORS]).slice(0, plan.flavors);
   const orders: Order[] = [];
   let lastCount = 0;
