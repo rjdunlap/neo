@@ -292,7 +292,8 @@ class FerryJam implements Game {
       for (const h of this.handles) h.enabled = true;
       sfx.bell(7);
       this.ctx.pet.cheer();
-      void this.ctx.instruct('ferry.yes');
+      // Praise, then the slide instruction becomes the line the pet repeats.
+      void this.ctx.say('ferry.yes').then(() => this.ctx.instruct('ferry.start'));
       return;
     }
     if (i === FERRY) {

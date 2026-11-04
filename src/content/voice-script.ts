@@ -2547,7 +2547,7 @@ export const SCRIPT = {
   'ferry.start.one': ['One boat is in the red ferry\'s way. Slide it out of the way so the ferry can reach the dock!'],
   'ferry.who': ['The red ferry wants to reach the dock. Which boat is in the ferry\'s way? Tap it!'],
   'ferry.notway': ['Look along the water in front of the ferry. Which boat is there?'],
-  'ferry.yes': ['Yes, that boat is in the ferry\'s way! Now slide the boats so the ferry can get out.'],
+  'ferry.yes': ['Yes, that boat is in the ferry\'s way!'],
   'ferry.rock': ['That rock never moves. Find another place for the boat to wait.'],
   'ferry.out': ['Off goes the ferry!', 'The ferry made it to the dock!'],
   'ferry.best': ['The fewest slides possible! What a captain!'],
