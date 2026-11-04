@@ -2557,7 +2557,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--rw09-slice-1
 
 [PR #1166](https://github.com/rjdunlap/neo/pull/1166), batch pixel-pictures 2, [dive slice 2](../deep-dives/pixel-pictures.md#build-slices-in-order). School range now 3-8 (preschool 1-2 and pre-K 1-3 unchanged). Level 7 "Both ways" (mode `mirror2`): six authored four-fold 6x6 pictures built with `unfold` (snowflake, window, flower, gem, target, sparkle), two per round; the top-left quarter is drawn and she copies it across two dashed mirror lines; miss line `pixel.notmirror2`, and two misses glow the open picture square nearest her last tap. Level 8 "Twice as big" (mode `big`): five 3x3 models (plus, cross, arrow, corner, smile) scaled with `scaleUp`, the model drawn beside the board with faint 2x2 block lines; miss line `pixel.notbig`; two misses glow all open squares of the block nearest her last tap as one hint; the reveal adds "Twice as wide and twice as tall!"; the ghost finger fills block by block. How-to steps are scoped 7 and 8 and the logic steps capped at 6. Browser case: `woods` `WOODS_ONLY=pixels` now runs to level 8 (`TO_LEVEL`), with a portrait block-hint screenshot at level 8.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--pixel-pictures-levels-7-both-ways-and-8-twice-as-big-pixel-pictures-batch-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--pixel-pictures-levels-7-both-ways-and-8-twice-as-big-pixel-pictures-batch-2).
 
 ## Garden Rows levels 8-9 Hedge boxes (garden-rows 2, 2026-11-03)
 
@@ -2608,3 +2608,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--sprout-shuffle-level
 ## Picture Graph, level 8 Line them up (picture-graph batch 2, 2026-11-03)
 
 Branch `claude/picture-graph-line-them-up`, [PR #1181](https://github.com/rjdunlap/neo/pull/1181): [dive slice 2](../deep-dives/picture-graph.md#build-slices-in-order). Pre-K plays two kinds, school three; counts 2–6, all distinct; two shores a round. Shore things (shells, stones, driftwood, feathers; never litter) lie on sand in 100-unit squares and each tap hops one into its kind's row of a bottom tray whose slots line up one to one (never a miss). Then "which row has the most?" and, at school, "how many more X than Y?" with number pads that always offer the longer row's count (own spoken line). A wrong row or number is a miss ("look at the rows again"); after two, dashed lines join the rows slot to slot, unmatched things glow and the right pad glows. Levels: pre-K `{1–8, order [8, 1, 2]}`, school `{1–8, order [1, 2, 8, 3, 4, 5, 6, 7]}`, `entryLevels [8]`. Class `LineUp` in `line.ts`; `makeShore`, `lineQuestions`, `lineHint`, `lineMove`, `trayLayout`, `shoreSpots` in `logic.ts`; pebble, driftwood and feather art in `src/art/shore.ts`; voice `graph.line.*`; how-to steps from level 8 (steps 6 and 7 now bounded); the goal and co-play hint mention the shore level. A resize mid-hop kills the hop tween and lands the thing in its new slot. Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--picture-graph-level-8-line-them-up-picture-graph-batch-2).
+
+### Penguin Slide level 10 Three fish (2026-11-03)
+
+[PR #1182](https://github.com/rjdunlap/neo/pull/1182), [dive slice 2](../deep-dives/penguin-slide.md#build-slices-in-order). School level 10: 7×5 ponds with three fish and five rocks, best route 5–8 slides, two ponds a round; `apartFromStart` / `eatsTwoFromStart` in `logic.ts` reject any pond where one first slide from the start eats two fish. School range 2–10, voice `slide.three`, a how-to step; the bot is the solver, unchanged.
+
+Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--penguin-slide-level-10-three-fish-dive-slice-2).

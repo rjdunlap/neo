@@ -1,6 +1,6 @@
 # Penguin Slide deep dive
 
-*ID `penguin-slide` · bands preschool 1–2, pre-K 1–4, school 2–9 · levels 1–9 on 2026-11-01 · session `claude/dive-penguin-slide` ([PR #1086](https://github.com/rjdunlap/neo/pull/1086))*
+*ID `penguin-slide` · bands preschool 1–2, pre-K 1–4, school 2–10 · levels 1–10 on 2026-11-03 · session `claude/dive-penguin-slide` ([PR #1086](https://github.com/rjdunlap/neo/pull/1086))*
 
 ## The game today
 
@@ -18,7 +18,7 @@ She taps the ice on one side of the penguin and it slides that way until a snowy
 | 8 | 6×5, two fish, one block, one snow, 4–6 slides | school | Both kinds of stop together |
 | 9 | Four authored paired-block ponds, reflected by the seed, 6–9 slides | school (top) | Two blocks, each needed |
 
-**Content pools.** Levels 1–8 are generated: a shuffled grid gives the start, rocks, snow, fish and blocks, kept only when a breadth-first search over (penguin, fish eaten, block places) finds the planned shortest route, and (5, 8) when the snow changes it or (6–8) when freezing the blocks makes it longer or impossible. Level 9 draws from four authored ponds with four reflections each (16 boards). Art is fixed: one penguin, one orange fish, one grey snowy rock, one snow puff, one ice block, on a pale ice floor with 100-unit cells.
+**Content pools.** Levels 1–8 and 10 are generated: a shuffled grid gives the start, rocks, snow, fish and blocks, kept only when a breadth-first search over (penguin, fish eaten, block places) finds the planned shortest route, and (5, 8) when the snow changes it or (6–8) when freezing the blocks makes it longer or impossible. Level 10 (three fish, five rocks, 5–8 slides) is rejected whenever one first slide from the start eats two fish. Level 9 draws from four authored ponds with four reflections each (16 boards). Art is fixed: one penguin, one orange fish, one grey snowy rock, one snow puff, one ice block, on a pale ice floor with 100-unit cells.
 
 **Mistakes and help.** Sliding is exploration: there are no misses, and a tap that moves nothing is a bump. Undo (the round arrow) steps back one slide and puts eaten fish back. Three slides beyond the shortest bring a bobbing yellow arrow for a best next slide (one hint a round, spoken "Follow the yellow arrow"); when no route is left the undo button glows and the pet says so.
 
@@ -111,11 +111,11 @@ Par stars on touch, move limits, cracking ice or holes, monsters (Chip's Challen
 ## Build slices, in order
 
 1. **Fair ponds and seeded looks (built 2026-11-02, [PR #1137](https://github.com/rjdunlap/neo/pull/1137))** (existing-interaction tier: typecheck, rule tests for no dead ends at 1–4 over 300 seeds and at most one single-slide pond at level 1, one filtered regression play at levels 1 and 4; bot unchanged, no `fingerdemo`): the no-dead-end walk in `makePuzzle` for levels 1–4, the single-slide cap, seeded rock looks and fish colours, the touch-down scuff ring and the how-to note wording.
-2. **Level 10, Three fish** (in progress on `claude/penguin-slide-three-fish`) (new-level tier: typecheck, rule tests, one play of level 10 with one hint, `fingerdemo` at 10): after slice 1 (shares `makePuzzle`).
+2. **Level 10, Three fish (built 2026-11-03, [PR #1182](https://github.com/rjdunlap/neo/pull/1182))** (new-level tier: typecheck, rule tests, one play of level 10 with one hint, `fingerdemo` at 10): after slice 1 (shares `makePuzzle`).
 3. **Level 11, Where will it stop?** (new-interaction tier: typecheck, unit tests including the `order` and lands tests, one scripted play at preschool with one wrong prediction then two right, one portrait screenshot, `fingerdemo` at 11, one build): after slice 2 for the level number.
 4. **Level 12, A block onto the star** (new-rule tier: typecheck, rule tests, one play of level 12 with a stuck block and undo, `fingerdemo` at 12, one portrait screenshot): after slice 3.
 5. **Level 13, Two penguins** (new-interaction tier: typecheck, rule tests, one play with a selection change and one hint, one portrait screenshot, `fingerdemo` at 13, `BROWSER_SUITE=couchgames` filtered to Penguin Slide since the controller needs a select button): after slice 4. Its couch course is a later line.
 
 ## What was built in this session
 
-Research and ideation in the session that wrote this dive. Slice 1 (fair ponds and seeded looks) was built later and slice 2 is now unblocked; the stop-bump pentatonic tick from the presentation notes was not part of the slice and is not built. Checks: `node scripts/check-links.mjs` and `git diff --check`; the dead-end probe ran once as a throwaway test file and was deleted.
+Research and ideation in the session that wrote this dive. Slice 1 (fair ponds and seeded looks) was built later and slice 2 (level 10) is built and slice 3 (level 11) is now unblocked; the stop-bump pentatonic tick from the presentation notes was not part of the slice and is not built. Checks: `node scripts/check-links.mjs` and `git diff --check`; the dead-end probe ran once as a throwaway test file and was deleted.
