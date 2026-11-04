@@ -180,8 +180,17 @@ class LanternLights implements Game {
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
     const c = Math.floor(p.x / this.cell), r = Math.floor(p.y / this.cell);
     if (c < 0 || r < 0 || c >= this.n || r >= this.n) return;
-    this.cursor = r * this.n + c;
+    const at = r * this.n + c;
+    // A lily pad has no lantern: it bobs with a soft tick, nothing counts, and the cursor stays on the last lantern.
+    if (!isLantern(at, this.mask)) return this.bobPad(at);
+    this.cursor = at;
     this.press();
+  }
+
+  private bobPad(i: number) {
+    sfx.tick();
+    const node = this.nodes[i];
+    void this.ctx.tw.to(node.scale, { x: 1.12, y: 0.9 }, { duration: 0.08 }).then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.18, ease: ease.outBack }));
   }
 
   /* -------------------------------------------------------------------------------------------- */
@@ -410,6 +419,7 @@ class LanternLights implements Game {
     const n = this.n;
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
+        if (!isLantern(r * n + c, this.mask)) continue;
         const node = this.nodes[r * n + c];
         void this.ctx.tw.to(node.scale, { y: 1.28 }, { duration: 0.12 }).then(() => this.ctx.tw.to(node.scale, { y: 1 }, { duration: 0.16 }));
       }
@@ -535,7 +545,7 @@ class LanternLights implements Game {
   private press() {
     const i = this.cursor;
     // A lily pad has no lantern: a soft tick, and nothing counts.
-    if (!isLantern(i, this.mask)) return void sfx.tick();
+    if (!isLantern(i, this.mask)) return this.bobPad(i);
     this.lit = press(this.lit, this.n, i, this.mask);
     this.history.push(i);
     this.presses++;
