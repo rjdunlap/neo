@@ -204,12 +204,12 @@ async function arcade() {
   }
 
   // Scoop Shop: wrong flavors and extra scoops bounce back; two lead to a glowing tub; memory peeks.
-  const scoopLevels = process.env.ARCADE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13];
+  const scoopLevels = process.env.ARCADE_LEVELS?.split(',').map(Number) ?? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
   for (const level of (!only || only === 'scoop') ? scoopLevels : []) {
     await launch('scoop-shop', level);
     const before = await page.evaluate(() => kit.store.data.stickers.length);
-    if ([8, 9, 10, 11, 12, 13].includes(level)) {
-      await page.waitForFunction(() => !neo.scene.game.busy && !!neo.scene.game.cone);
+    if ([7, 8, 9, 10, 11, 12, 13].includes(level)) {
+      await page.waitForFunction(() => !neo.scene.game.busy && !!neo.scene.game.cone, null, { timeout: 30000 });
       await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
       await screenshot(`scoop-shop-${level}-portrait`);
       await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
@@ -238,6 +238,44 @@ async function arcade() {
           if (!await kit.until(() => g.customerIndex > c || g.finished, 15000)) throw new Error('Matching customer did not eat');
           if (c < 2 && !g.guests.includes(waiting)) throw new Error('Unserved customer left');
         }
+        return;
+      }
+      if (g.plan.mode === 'two') {
+        // Two cones: two wrong scoops on the chosen cone glow its next tub; a peek at the other friend keeps the choice
+        // and counts once; switching keeps both stacks; both cones served in either order end the round.
+        const idle = () => kit.until(() => !g.busy && g.hidden, 20000);
+        const tap = async (color) => { await idle(); kit.tapOn(g.tubs.get(color), 0, -20); await kit.sleep(150); await kit.until(() => !g.busy || g.finished, 8000); };
+        const choose = async (i) => { await idle(); kit.tapOn(g.pair[i].cone, 0, -40); await kit.sleep(250); if (g.customerIndex !== i) throw new Error(`Cone ${i} not chosen`); };
+        await idle();
+        if (g.pair.some(s => s.picture.visible && s.picture.scale.x > 0.05)) throw new Error('Pictures still showing after unlock');
+        if (g.customerIndex !== 0) throw new Error('Left cone not chosen first');
+        const pairSide = g.orders[0].scoops.length === 2 ? 0 : 1;
+        const single = 1 - pairSide;
+        await choose(pairSide);
+        const order = g.orders[pairSide];
+        const wrong = g.flavors.find(f => !order.scoops.includes(f));
+        await tap(wrong); await tap(wrong);
+        await kit.until(() => g.tubGlow.context.instructions.length, 1000);
+        if (g.misses !== 2 || g.hints !== 1 || g.pair[pairSide].cone.colors.length || !g.tubGlow.context.instructions.length) throw new Error(`Two cones glow: ${g.misses} ${g.hints}`);
+        await tap(order.scoops[0]);
+        // Peek at the other friend: choice stays, one hint; a second peek is free.
+        await idle();
+        kit.tapOn(g.pair[single].friend, 0, -150);
+        await kit.until(() => g.busy, 2000);
+        if (g.customerIndex !== pairSide || g.hints !== 2 || !g.pair[single].picture.visible) throw new Error(`Peek changed choice or count: ${g.customerIndex} ${g.hints}`);
+        kit.tapOn(g.tubs.get(order.scoops[1]), 0, -20); await kit.sleep(250);
+        if (g.pair[pairSide].cone.colors.length !== 1) throw new Error('Scoop landed during a peek');
+        await idle();
+        kit.tapOn(g.pair[single].friend, 0, -150); await kit.until(() => g.busy, 2000); await idle();
+        if (g.hints !== 2) throw new Error('Repeat peek charged');
+        // Switch away from the half-built pair, serve the single, then the pair is chosen again with its scoop kept.
+        await choose(single);
+        if (g.pair[pairSide].cone.colors.length !== 1) throw new Error('Switch lost the partial stack');
+        await tap(g.orders[single].scoops[0]);
+        if (!await kit.until(() => g.pair[single].served && !g.busy && g.customerIndex === pairSide, 15000)) throw new Error('Other cone not chosen after serve');
+        if (g.cone.colors.join() !== order.scoops[0]) throw new Error('Pair cone changed while away');
+        await tap(order.scoops[1]);
+        if (!await kit.until(() => g.finished, 15000)) throw new Error('Two cones did not finish');
         return;
       }
       // Levels 8–9 spend about 11 s on the rule, the request and the change before input unlocks.
@@ -309,7 +347,7 @@ async function arcade() {
     await finished('scoop-shop');
     const r = await page.evaluate(() => { const r = kit.store.stats('scoop-shop').history.at(-1); return [r.misses, r.hints]; });
     assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1, 'one sticker per Scoop Shop round');
-    assert.deepEqual(r, mode === 'free' ? [0, 0] : ['memory', 'change', 'topfirst'].includes(mode) ? [2, 2] : mode === 'mixed' ? [3, 1] : [2, 1], `scoop ${level} score`);
+    assert.deepEqual(r, mode === 'free' ? [0, 0] : mode === 'two' ? [2, 2] : ['memory', 'change', 'topfirst'].includes(mode) ? [2, 2] : mode === 'mixed' ? [3, 1] : [2, 1], `scoop ${level} score`);
     log(`Scoop Shop ${level} (${mode}): orders, bounced scoops, hint glow${mode === 'memory' ? ', peeking' : ''}, saved score and sticker passed`);
   }
 

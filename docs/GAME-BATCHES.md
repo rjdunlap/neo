@@ -89,7 +89,7 @@ Proof: use the union of the included check tiers under the batch contract; prese
 
 ### scoop-shop 4: Two cones
 
-- **`scoop-shop`, level 7 Two cones**: after batch3 and built11; one pair, three scoops total, free cone selection distinct from friend peek, independent state/accounting and both service orders.
+- **`scoop-shop`, level 7 Two cones** (**built 2026-11-03, [PR #1194](https://github.com/rjdunlap/neo/pull/1194)**): after batch3 and built11; one pair, three scoops total, free cone selection distinct from friend peek, independent state/accounting and both service orders.
 
 Standalone EF1b new interaction, [canonical EF1 requirements](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25). Separate admission, current source/contract review, actual full-size layout/placement, rules, filtered wrong-scoop/peek/completion play, portrait and two-order demo; shared-file/asset build tier as applicable. Person/device gates stay open.
 

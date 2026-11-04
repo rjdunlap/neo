@@ -19,6 +19,16 @@ import {
   customerToServe,
   makeCustomerChoices,
   type CustomerChoice,
+  CONE_HIT,
+  coneAfterServe,
+  FRIEND_HIT,
+  FRIEND_SCALE,
+  freshSupport,
+  supportMiss,
+  supportPeek,
+  twoConeLayout,
+  twoConeRoute,
+  type Support,
   CONE_KINDS,
   dressShop,
   FLAVORS,
@@ -40,7 +50,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 11, order: [1, 2, 11, 3] },
   preschool: { min: 2, max: 11, order: [2, 11, 3, 4, 5] },
   prek: { min: 3, max: 13, order: [3, 4, 12, 13, 5, 6] },
-  school: { min: 5, max: 13, order: [5, 12, 13, 6, 8, 9] },
+  school: { min: 5, max: 13, order: [5, 12, 13, 6, 7, 8, 9] },
 };
 
 const SCOOP_R = 34;
@@ -154,6 +164,15 @@ class Cone extends Container {
   }
 }
 
+/** Level 7: one friend, their cone and their own help, kept whatever cone is chosen. */
+interface Side {
+  friend: Critter;
+  cone: Cone;
+  picture: Container;
+  support: Support;
+  served: boolean;
+}
+
 class ScoopShop implements Game {
   readonly plan: ScoopPlan;
   readonly flavors: ColorName[];
@@ -161,6 +180,8 @@ class ScoopShop implements Game {
   readonly tubs = new Map<ColorName, Container>();
   readonly choices: CustomerChoice[];
   readonly guests: (Critter | null)[] = [null, null];
+  /** Level 7's two friends and cones; the chosen one is `customerIndex`. */
+  readonly pair: Side[] = [];
   customerIndex = -1;
   cone: Cone | null = null;
   customer: Critter | null = null;
@@ -176,16 +197,20 @@ class ScoopShop implements Game {
   private readonly bubble = new Container();
   private readonly tubGlow = new Graphics();
   private readonly flying = new Container();
+  /** Level 7: the outline round the chosen cone, and the mats that tie each cone to its friend. */
+  private readonly ring = new Graphics();
+  private readonly mats = new Graphics();
+  private route: number[] = [];
   private view: View;
-  private wrongs = 0;
   private guestSerial = 0;
-  private hinted = false;
-  private peeked = false;
+  /** This order's misses, glow and peek; level 7 keeps one per friend. */
+  private support: Support = freshSupport();
   private hidden = false;
   private lastTalk = -10;
   private clock = 0;
   private destroyed = false;
 
+  get hinted() { return this.support.glow; }
   private get revisedMemory() { return this.plan.mode === 'change' || this.plan.mode === 'topfirst'; }
   private readonly kinds: CritterName[];
   private readonly scene: WindowScene;
@@ -198,9 +223,12 @@ class ScoopShop implements Game {
     this.choices = this.plan.mode === 'customer' ? makeCustomerChoices(this.flavors, ctx.rng) : [];
     this.kinds = ctx.rng.shuffle([...CUSTOMERS]);
     ({ scene: this.scene, cones: this.cones } = dressShop(this.plan.customers, ctx.rng));
+    if (this.plan.mode === 'two') this.route = twoConeRoute(this.orders, ctx.rng.int(0, 2));
     this.tubGlow.eventMode = 'none';
     this.bubble.eventMode = 'none';
-    ctx.stage.addChild(this.wall, this.room, this.people, this.counter, this.bubble, this.tubGlow);
+    this.ring.eventMode = 'none';
+    this.mats.eventMode = 'none';
+    ctx.stage.addChild(this.wall, this.room, this.people, this.counter, this.mats, this.bubble, this.tubGlow, this.ring);
     for (const color of this.flavors) {
       const tub = tubArt(color);
       tub.visible = this.plan.mode !== 'customer';
@@ -247,14 +275,31 @@ class ScoopShop implements Game {
     c.rect(0, top, v.w, v.h - top).fill(wood.fill);
     c.rect(0, top, v.w, 26).fill(wood.light).stroke({ width: 4, color: wood.line });
     for (let x = 40; x < v.w; x += 120) c.moveTo(x, top + 40).lineTo(x, v.h).stroke({ width: 3, color: wood.line, alpha: 0.4 });
-    const cs0 = this.coneSpot();
-    c.roundRect(cs0.x - 46, top - 30, 92, 44, 12).fill(0xc9d3dc).stroke({ width: 4, color: 0x8c9aa8 });
-    c.ellipse(cs0.x, top - 30, 40, 9).fill(0x8c9aa8);
+    const two = this.plan.mode === 'two' ? twoConeLayout(v.w, top) : null;
+    for (const { x } of two ? two.map(s => s.cone) : [this.coneSpot()]) {
+      c.roundRect(x - 46, top - 30, 92, 44, 12).fill(0xc9d3dc).stroke({ width: 4, color: 0x8c9aa8 });
+      c.ellipse(x, top - 30, 40, 9).fill(0x8c9aa8);
+    }
+    const m = this.mats.clear();
+    // Each friend's mat runs under them and their own cone, so whose cone is whose stays clear when the pictures hide.
+    two?.forEach(({ friend, cone }, side) => {
+      const left = Math.min(friend.x, cone.x) - 90;
+      m.roundRect(left, top + 30, Math.abs(friend.x - cone.x) + 180, 34, 14).fill(side ? 0xffe3c2 : 0xd4ecff).stroke({ width: 4, color: side ? 0xd99a5a : 0x6aa3d6 });
+      for (const x of [friend.x, cone.x]) m.circle(x, top + 47, 9).fill(side ? 0xd99a5a : 0x6aa3d6);
+    });
     const xs = spread(this.flavors.length, 150, v.w - 40, 140);
     this.flavors.forEach((color, i) => this.tubs.get(color)!.position.set(xs[i], v.h - 70));
     this.guests.forEach((guest, side) => guest?.position.set(this.view.w * (side ? 0.76 : 0.25), this.counterTop + 18));
-    if (this.customer && this.plan.mode !== 'customer') this.customer.position.copyFrom(this.customerSpot());
-    if (this.cone) this.cone.position.copyFrom(this.coneSpot());
+    if (two) {
+      this.pair.forEach((s, i) => {
+        if (s.served) return;
+        s.friend.position.copyFrom(two[i].friend);
+        s.cone.position.copyFrom(two[i].cone);
+      });
+    } else {
+      if (this.customer && this.plan.mode !== 'customer') this.customer.position.copyFrom(this.customerSpot());
+      if (this.cone) this.cone.position.copyFrom(this.coneSpot());
+    }
     const cs = this.customerSpot();
     this.bubble.position.set(cs.x + 220, Math.max(top - 190, 280));
   }
@@ -305,10 +350,15 @@ class ScoopShop implements Game {
     const g = this.tubGlow.clear();
     if (this.plan.mode === 'customer') {
       const guest = this.guests[this.choices[this.customerIndex]?.match];
-      if (this.hinted && guest && !this.busy) g.roundRect(guest.x - 78, guest.y - 365, 156, 130, 24).stroke({ width: 10, color: 0xffe478, alpha: 0.8 + 0.2 * Math.sin(this.clock * 7) });
+      if (this.support.glow && guest && !this.busy) g.roundRect(guest.x - 78, guest.y - 365, 156, 130, 24).stroke({ width: 10, color: 0xffe478, alpha: 0.8 + 0.2 * Math.sin(this.clock * 7) });
       return;
     }
-    if (this.hinted && this.order && this.cone && !this.busy) {
+    const ring = this.ring.clear();
+    const chosen = this.pair[this.customerIndex];
+    if (chosen && !chosen.served && !this.finished) {
+      ring.roundRect(chosen.cone.x - 74, chosen.cone.y - 172, 148, 296, 28).stroke({ width: 9, color: 0x3d8fd6 });
+    }
+    if (this.support.glow && this.order && this.cone && !this.busy) {
       const want = nextNeeded(this.order, this.cone.colors);
       const tub = want && this.tubs.get(want);
       if (tub) g.circle(tub.x, tub.y - 20, 80 + 5 * Math.sin(this.clock * 7)).fill({ color: 0xfff3a0, alpha: 0.75 });
@@ -325,6 +375,13 @@ class ScoopShop implements Game {
     }
     // The last level: wait for the picture to hide, so the order is scooped from memory and never copied.
     if (this.plan.mode === 'memory' && !this.hidden && cone.colors.length === 0) return null;
+    if (this.plan.mode === 'two') {
+      // Two cones: choose the cone the route says, through the same tap as hers, then take only what it needs next.
+      if (!this.hidden) return null;
+      const placed = this.pair.reduce((n, s, i) => n + (s.served ? this.orders[i].scoops.length : s.cone.colors.length), 0);
+      const want = this.route[placed];
+      if (want !== undefined && want !== this.customerIndex && !this.pair[want].served) return { tap: { on: this.pair[want].cone, x: 0, y: -40 } };
+    }
     const color = scoopToTake(this.plan, order, cone.colors, this.flavors);
     const tub = color && this.tubs.get(color);
     return tub ? { tap: { on: tub, x: 0, y: -20 } } : null;
@@ -339,8 +396,7 @@ class ScoopShop implements Game {
     this.customerIndex++;
     const choice = this.choices[this.customerIndex];
     if (!choice) return void this.end();
-    this.wrongs = 0;
-    this.hinted = false;
+    this.support = freshSupport();
     const arrivals: Promise<unknown>[] = [];
     for (let side = 0; side < 2; side++) {
       if (this.guests[side]) continue;
@@ -385,23 +441,21 @@ class ScoopShop implements Game {
       void this.serve();
     } else {
       this.misses++;
-      this.wrongs++;
+      this.hints += supportMiss(this.support);
       sfx.boing();
       this.wobble(guest, 0.08);
       void this.ctx.say('scoop.notme', { a: choice.pictures[side] });
-      if (this.wrongs >= 2 && !this.hinted) { this.hinted = true; this.hints++; }
     }
   }
 
   private async nextCustomer() {
     if (this.plan.mode === 'customer') return this.nextChoice();
+    if (this.plan.mode === 'two') return this.nextPair();
     this.busy = true;
     this.customerIndex++;
     const order = this.order;
     if (!order) return void this.end();
-    this.wrongs = 0;
-    this.hinted = false;
-    this.peeked = false;
+    this.support = freshSupport();
     this.hidden = false;
     const tw = this.ctx.tw;
 
@@ -571,8 +625,7 @@ class ScoopShop implements Game {
       sfx.giggle();
       return;
     }
-    if (!this.peeked) this.hints++;
-    this.peeked = true;
+    this.hints += supportPeek(this.support);
     if (this.revisedMemory) this.busy = true;
     this.hidden = false;
     this.customer?.poke();
@@ -582,6 +635,122 @@ class ScoopShop implements Game {
     if (this.destroyed || this.order !== order) return;
     this.hideBubble();
     if (this.revisedMemory) this.busy = false;
+  }
+
+  // Two cones (level 7) -----------------------------------------------------------------
+
+  /** Both friends arrive and order together; the pictures hide after both requests, then she scoops from memory. */
+  private async nextPair() {
+    this.busy = true;
+    this.customerIndex = 0;
+    const tw = this.ctx.tw;
+    const spots = twoConeLayout(this.view.w, this.counterTop);
+    const arrivals = this.orders.map((order, i) => {
+      const friend = new Critter(CRITTERS[this.kinds[i]]);
+      friend.scale.set(FRIEND_SCALE);
+      friend.position.set(i ? this.view.w + 160 : -160, spots[i].friend.y);
+      const picture = this.orderPicture(order, this.cones[i]);
+      friend.addChild(picture);
+      onTap(friend, () => this.tapFriend(i), { cooldown: 600 });
+      friend.hitArea = new Rectangle(FRIEND_HIT.x, FRIEND_HIT.y, FRIEND_HIT.w, FRIEND_HIT.h);
+      this.ctx.track(friend);
+      this.people.addChild(friend);
+      const cone = new Cone(this.cones[i]);
+      cone.position.copyFrom(spots[i].cone);
+      cone.scale.set(0);
+      onTap(cone, () => this.tapCone(i), { cooldown: 300 });
+      cone.hitArea = new Rectangle(CONE_HIT.x, CONE_HIT.y, CONE_HIT.w, CONE_HIT.h);
+      this.ctx.stage.addChildAt(cone, this.ctx.stage.getChildIndex(this.bubble));
+      this.pair.push({ friend, cone, picture, support: freshSupport(), served: false });
+      return tw.to(friend, { x: spots[i].friend.x }, { duration: 0.7, ease: ease.outBack });
+    });
+    this.choose(0);
+    await Promise.all(arrivals);
+    if (this.destroyed) return;
+    for (const s of this.pair) void tw.to(s.cone.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
+    sfx.pop(6);
+    await this.ctx.instruct('scoop.two-cones');
+    for (const [i, s] of this.pair.entries()) {
+      if (this.destroyed) return;
+      s.friend.poke();
+      await this.askFriend(i);
+    }
+    await tw.wait(1.2);
+    if (this.destroyed) return;
+    for (const s of this.pair) this.hidePicture(s);
+    this.hidden = true;
+    this.busy = false;
+  }
+
+  /** A friend's order on a card over their head: a little cone of their kind with their scoops. */
+  private orderPicture(order: Order, kind: ConeKind): Container {
+    const picture = new Container();
+    picture.eventMode = 'none';
+    picture.addChild(new Graphics().roundRect(-100, -560, 200, 230, 28).fill(0xffffff).stroke({ width: 5, color: 0xb9c6d1 }));
+    const mini = new Container();
+    mini.addChild(holderArt(kind, 0.75));
+    order.scoops.forEach((c, i) => {
+      const s = scoopArt(c, 30);
+      s.position.set(0, -10 - i * 40);
+      mini.addChild(s);
+    });
+    mini.y = -410;
+    picture.addChild(mini);
+    picture.pivot.set(0, -445);
+    picture.y = -445;
+    return picture;
+  }
+
+  private hidePicture(s: Side) {
+    void this.ctx.tw.to(s.picture.scale, { x: 0, y: 0 }, { duration: 0.3 }).then(() => { if (!s.served && this.hidden) s.picture.visible = false; });
+  }
+
+  private askFriend(i: number) {
+    const [a, b] = this.orders[i].scoops;
+    return b ? this.ctx.say('scoop.order-pair', { a, b }) : this.ctx.say('scoop.order-single', { a });
+  }
+
+  /** Choosing a cone: free, silent and kept with everything already on both cones. */
+  private choose(i: number) {
+    const s = this.pair[i];
+    this.customerIndex = i;
+    this.cone = s.cone;
+    this.customer = s.friend;
+    this.support = s.support;
+  }
+
+  private tapCone(i: number) {
+    const s = this.pair[i];
+    if (!s || s.served) return;
+    this.wobble(s.cone, 0.12);
+    if (this.busy || this.finished || !this.hidden || i === this.customerIndex) return;
+    sfx.pop(4);
+    this.choose(i);
+  }
+
+  /** A friend tap peeks at that friend's order only; it never changes the chosen cone. */
+  private tapFriend(i: number) {
+    const s = this.pair[i];
+    if (!s || s.served) return;
+    s.friend.poke();
+    if (this.busy || this.finished || !this.hidden) { sfx.giggle(); return; }
+    void this.peekFriend(i);
+  }
+
+  private async peekFriend(i: number) {
+    const s = this.pair[i];
+    const tw = this.ctx.tw;
+    this.hints += supportPeek(s.support);
+    this.busy = true;
+    tw.kill(s.picture.scale);
+    s.picture.visible = true;
+    s.picture.scale.set(0);
+    void tw.to(s.picture.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
+    await this.askFriend(i);
+    await tw.wait(1.2);
+    if (this.destroyed) return;
+    this.hidePicture(s);
+    this.busy = false;
   }
 
   // Scooping ---------------------------------------------------------------------------
@@ -654,7 +823,8 @@ class ScoopShop implements Game {
 
     // It doesn't belong: a boing off the top, and back into its tub.
     this.misses++;
-    this.wrongs++;
+    const glow = supportMiss(this.support);
+    this.hints += glow;
     sfx.boing();
     this.customer?.poke();
     if (this.clock - this.lastTalk > 2) {
@@ -663,11 +833,7 @@ class ScoopShop implements Game {
       const line = result === 'too-many' ? 'scoop.enough' : order.ordered ? 'scoop.notyet' : 'scoop.notthat';
       void this.ctx.say(line, { color, want });
     }
-    if (this.wrongs >= 2 && !this.hinted) {
-      this.hinted = true;
-      this.hints++;
-      if (this.plan.start) void this.countOnHint(order, cone);
-    }
+    if (glow && this.plan.start) void this.countOnHint(order, cone);
     await tw.to(s, { x: tub.x, y: tub.y - 60 }, { duration: 0.5, ease: ease.outBack });
     s.destroy();
     this.busy = false;
@@ -686,7 +852,9 @@ class ScoopShop implements Game {
     const tw = this.ctx.tw;
     const cone = this.cone!;
     const critter = this.customer!;
-    this.hidden = false;
+    const two = this.pair[this.customerIndex];
+    if (two) two.served = true;
+    else this.hidden = false;
     void tw.to(this.bubble.scale, { x: 0, y: 0 }, { duration: 0.25 });
     sfx.sparkle();
     const top = cone.colors[cone.colors.length - 1];
@@ -722,7 +890,12 @@ class ScoopShop implements Game {
     this.ctx.untrack(critter);
     critter.destroy({ children: true });
     this.customer = null;
-    void this.nextCustomer();
+    if (!two) return void this.nextCustomer();
+    // Level 7: the other cone is chosen for her, free; both friends fed ends the round.
+    const next = coneAfterServe(this.pair.map(s => s.served), this.customerIndex);
+    if (next < 0) return void this.end();
+    this.choose(next);
+    this.busy = false;
   }
 
   private async end() {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { CHANGED_ORDERS, DISTINCT_TRIPLES, FLAVORS, spokenTopFirst, type Order, countSlots, scoopCounts, complete, customerToServe, makeCustomerChoices, CONE_KINDS, dressShop, makeOrders, nextNeeded, PLANS, planFor, scoopToTake, tryScoop, WINDOW_SCENES } from './logic';
+import { CONE_HIT, coneAfterServe, FRIEND_HIT, FRIEND_SCALE, freshSupport, supportMiss, supportPeek, TWO_CONE_ORDERS, twoConeLayout, twoConeRoute, CHANGED_ORDERS, DISTINCT_TRIPLES, FLAVORS, spokenTopFirst, type Order, countSlots, scoopCounts, complete, customerToServe, makeCustomerChoices, CONE_KINDS, dressShop, makeOrders, nextNeeded, PLANS, planFor, scoopToTake, tryScoop, WINDOW_SCENES } from './logic';
 
 describe('Scoop Shop', () => {
   it('only orders flavors that are on the counter, in the sizes each level asks for', () => {
@@ -296,8 +296,8 @@ describe('Scoop Shop change and reverse', () => {
   it('generates deterministic independent orders with all six tubs, leaving prior level IDs unchanged', () => {
     expect(planFor(8)).toMatchObject({ mode: 'change', customers: 3, min: 3, max: 3, flavors: 6 });
     expect(planFor(9)).toMatchObject({ mode: 'topfirst', customers: 3, min: 3, max: 3, flavors: 6 });
-    expect([1, 2, 3, 4, 5, 6, 10, 11, 12, 13].map(level => planFor(level).mode))
-      .toEqual(['free', 'one', 'pair', 'count', 'stack', 'memory', 'free', 'customer', 'count', 'mixed']);
+    expect([1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13].map(level => planFor(level).mode))
+      .toEqual(['free', 'one', 'pair', 'count', 'stack', 'memory', 'two', 'free', 'customer', 'count', 'mixed']);
     for (const level of [8, 9]) for (let seed = 1; seed <= 300; seed++) {
       const a = makeOrders(planFor(level), new Rng(seed));
       expect(a).toEqual(makeOrders(planFor(level), new Rng(seed)));
@@ -328,5 +328,116 @@ describe('Scoop Shop change and reverse', () => {
     }
     expect(spokenTopFirst(makeOrders(planFor(9), new Rng(1)).orders[0])).toEqual(['purple', 'brown', 'yellow']);
     expect(spokenTopFirst(makeOrders(planFor(9), new Rng(2)).orders[0])).toEqual(['pink', 'blue', 'brown']);
+  });
+});
+
+describe('Scoop Shop two cones (level 7)', () => {
+  const plan = planFor(7);
+  const key = (p: Order[]) => p.map(o => o.scoops.join('+')).join('|');
+
+  it('holds exactly the 360 pairs: a single and an ordered distinct pair, on either side, three scoops altogether', () => {
+    const expected = new Set<string>();
+    for (const single of FLAVORS) for (const a of FLAVORS) for (const b of FLAVORS) {
+      if (a === b) continue;
+      expected.add(`${single}|${a}+${b}`);
+      expected.add(`${a}+${b}|${single}`);
+    }
+    expect(TWO_CONE_ORDERS).toHaveLength(360);
+    expect(new Set(TWO_CONE_ORDERS.map(key))).toEqual(expected);
+    for (const p of TWO_CONE_ORDERS) {
+      expect(p[0].scoops.length + p[1].scoops.length).toBe(3);
+      expect(p[0].scoops.join()).not.toBe(p[1].scoops.join());
+      expect(p.every(o => o.ordered)).toBe(true);
+    }
+  });
+
+  it('draws deterministic pairs with all six tubs, reaching both single sides and shared and disjoint flavours', () => {
+    expect(plan).toMatchObject({ mode: 'two', customers: 2, flavors: 6 });
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 300; seed++) {
+      const a = makeOrders(plan, new Rng(seed));
+      expect(a).toEqual(makeOrders(plan, new Rng(seed)));
+      expect(a.orders).toHaveLength(2);
+      expect(new Set(a.flavors)).toEqual(new Set(FLAVORS));
+      const single = a.orders[0].scoops.length === 1 ? 'left' : 'right';
+      const [one, two] = single === 'left' ? a.orders : [a.orders[1], a.orders[0]];
+      seen.add(`${single}:${two.scoops.includes(one.scoops[0]) ? 'shared' : 'disjoint'}`);
+      // The draw copies its arrays, so changing a round never changes the family.
+      a.orders[0].scoops[0] = 'red';
+      expect(TWO_CONE_ORDERS.some(p => p[0].scoops[0] === 'red')).toBe(false);
+    }
+    expect(seen).toEqual(new Set(['left:shared', 'left:disjoint', 'right:shared', 'right:disjoint']));
+  });
+
+  it('keeps named seeds for an overlapping single on the left and a disjoint single on the right', () => {
+    // two-overlap-left: the single's flavour is also in the pair; two-disjoint-right: no flavour shared.
+    const overlap = makeOrders(plan, new Rng(7)).orders;
+    const disjoint = makeOrders(plan, new Rng(1)).orders;
+    expect(overlap.map(o => o.scoops)).toEqual([['pink'], ['pink', 'yellow']]);
+    expect(disjoint.map(o => o.scoops)).toEqual([['brown', 'blue'], ['yellow']]);
+  });
+
+  it('lets each cone reject wrong scoops untouched and finish in any service order, the switch included', () => {
+    for (const orders of TWO_CONE_ORDERS) {
+      for (let variant = 0; variant < 3; variant++) {
+        const route = twoConeRoute(orders, variant);
+        expect(route.filter(i => i === 0)).toHaveLength(orders[0].scoops.length);
+        const cones: ColorName[][] = [[], []];
+        for (const i of route) {
+          const wrong = FLAVORS.find(c => c !== nextNeeded(orders[i], cones[i]))!;
+          const before = cones.map(c => c.join());
+          expect(tryScoop(plan, orders[i], cones[i], wrong)).not.toBe('add');
+          expect(cones.map(c => c.join())).toEqual(before);
+          const next = scoopToTake(plan, orders[i], cones[i], FLAVORS)!;
+          expect(tryScoop(plan, orders[i], cones[i], next)).toBe('add');
+          cones[i].push(next);
+        }
+        orders.forEach((o, i) => expect(complete(plan, o, cones[i])).toBe(true));
+      }
+      // Variant 1 starts the pair and switches away after its first scoop; variant 2 serves the pair first.
+      const pair = orders[0].scoops.length === 2 ? 0 : 1;
+      expect(twoConeRoute(orders, 1)).toEqual([pair, 1 - pair, pair]);
+      expect(twoConeRoute(orders, 2)[0]).toBe(pair);
+      expect(twoConeRoute(orders, 0)[0]).toBe(1 - pair);
+    }
+  });
+
+  it('keeps help per cone: the glow once from the second miss, the first peek once, never shared', () => {
+    const left = freshSupport();
+    const right = freshSupport();
+    expect(supportMiss(left)).toBe(0);
+    expect(supportPeek(right)).toBe(1);
+    expect(supportMiss(left)).toBe(1);
+    expect(supportMiss(left)).toBe(0);
+    expect(supportPeek(right)).toBe(0);
+    expect(supportPeek(left)).toBe(1);
+    expect(left).toEqual({ wrongs: 3, glow: true, peeked: true });
+    expect(right).toEqual({ wrongs: 0, glow: false, peeked: true });
+    expect(supportMiss(right) + supportMiss(right)).toBe(1);
+    // At most two hints per order, four in a round.
+  });
+
+  it('chooses the other cone after a serve, and nothing once both are fed', () => {
+    expect(coneAfterServe([true, false], 0)).toBe(1);
+    expect(coneAfterServe([false, true], 1)).toBe(0);
+    expect(coneAfterServe([true, true], 1)).toBe(-1);
+  });
+
+  it('lays out two friends and two cones as separate targets at least 100 wide, clear of the tubs', () => {
+    const rect = (x: number, y: number, h: { x: number; y: number; w: number; h: number }, k = 1) =>
+      ({ l: x + h.x * k, r: x + (h.x + h.w) * k, t: y + h.y * k, b: y + (h.y + h.h) * k });
+    for (const [w, h] of [[1024, 768], [1024, 1365], [1366, 768]]) {
+      const top = h * 0.6;
+      const rects = twoConeLayout(w, top).flatMap(s => [rect(s.friend.x, s.friend.y, FRIEND_HIT, FRIEND_SCALE), rect(s.cone.x, s.cone.y, CONE_HIT)]);
+      for (const a of rects) {
+        expect(a.r - a.l).toBeGreaterThanOrEqual(100);
+        expect(a.b - a.t).toBeGreaterThanOrEqual(100);
+        // Tubs sit at h - 70 and take taps within 72 of it.
+        expect(a.b).toBeLessThan(h - 70 - 72);
+        expect(a.l).toBeGreaterThan(0);
+        expect(a.r).toBeLessThan(w);
+      }
+      rects.forEach((a, i) => rects.slice(i + 1).forEach(b => expect(a.r <= b.l || b.r <= a.l || a.b <= b.t || b.b <= a.t, `${w}x${h}`).toBe(true)));
+    }
   });
 });

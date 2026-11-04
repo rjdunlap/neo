@@ -268,3 +268,9 @@
 - Ran (tested commit 7435e00e, base 67975420): `npm run typecheck`; full `npm test`; `npm run build`; a scripted probe (Vite http://localhost:5711, landscape 1024x768 and portrait 768x1024): spotted tester first (no miss, 8 buds), then plain, one wrong Check (1 miss), Show me (1 hint), sticker, in the two-spot-copies case and (landscape) the plain-sprout case.
 - Ran: `BROWSER_SUITE=fingerdemo FINGER_ONLY=sprout-shuffle FINGER_LEVELS=6` clean 11.2 s and `FINGER_LEVELS=5` clean 17.2 s (regression). `game-reviewer`: no blocking findings; one wording fix applied.
 - Not run: the `sproutshuffle` suite (level 6 is not in it), other suites, offline. Headless frames ran about half speed under machine load; no failure attributable to the game. Open: whether the spotted tester's explanation lands and whether "can't tell" reads as finished ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-11-03 — Orchard Rows levels 7–9 definition (docs only)
+
+- [PR #1178](https://github.com/rjdunlap/neo/pull/1178): [definition](../definitions/orchard-rows-path.md) for levels 7–9 *a path through the orchard* (own scene, model, layout, pads, accounting, voice, how-to, bot, rule tests, check tier), the batch `orchard-rows 3`, the dive's slice 2 marked defined.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests and every play check (no code changed). Open: the build, and the person and device checks the definition lists.
