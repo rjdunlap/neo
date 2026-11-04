@@ -102,7 +102,7 @@ export const CONE_HIT = { x: -65, y: -160, w: 130, h: 260 };
 /** Level 7: each friend stands on the outside, their own cone on the counter in front of them, toward the middle. */
 export function twoConeLayout(w: number, counterTop: number) {
   return [0, 1].map(side => ({
-    friend: { x: w * (side ? 0.82 : 0.18), y: counterTop + 18 },
+    friend: { x: w * (side ? 0.8 : 0.2), y: counterTop + 18 },
     cone: { x: w * (side ? 0.62 : 0.38), y: counterTop - 66 },
   }));
 }
