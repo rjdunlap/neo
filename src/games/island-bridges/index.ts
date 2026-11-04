@@ -514,7 +514,7 @@ class IslandBridges implements Game {
   /** Couch pause menu's "Show a hint". Marks the run helped for good. */
   askForHint() {
     if (this.busy || this.finished || !this.puzzle) return;
-    const h = hintFor(this.layout, this.planks, this.puzzle.solution);
+    const h = hintFor(this.layout, this.planks, this.puzzle.solution, !!this.plan.joined);
     if (!h) return;
     this.hinted = h;
     this.hints++;

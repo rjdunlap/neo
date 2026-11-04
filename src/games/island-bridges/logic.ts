@@ -443,15 +443,16 @@ export function forcedPlank(layout: Layout, planks: Planks, isolation = false): 
  * Where a hint should point. First a plank that does not belong (more planks on an edge than the solution has); otherwise an
  * edge one island decides by itself (`forcedPlank`, with its reason), and failing that any edge that still needs a plank.
  */
-export function hintFor(layout: Layout, planks: Planks, solution: Planks): Hint | null {
+export function hintFor(layout: Layout, planks: Planks, solution: Planks, joined = false): Hint | null {
   const wrong = planks.findIndex((p, k) => p > solution[k]);
   if (wrong >= 0) return { kind: 'fix', edge: wrong };
   const need = solution.findIndex((s, k) => planks[k] < s);
   if (need < 0) return null;
   const forced = forcedPlank(layout, planks);
   if (forced) return { kind: 'forced', ...forced };
-  const joined = joinedPlank(layout, planks);
-  return joined ? { kind: 'joined', ...joined } : { kind: 'next', edge: need };
+  // Keep them joined is level 6's own lesson: the other levels and the couch courses hint as they always did.
+  const iso = joined ? joinedPlank(layout, planks) : null;
+  return iso ? { kind: 'joined', ...iso } : { kind: 'next', edge: need };
 }
 
 /**
@@ -472,7 +473,7 @@ export function joinedPlank(layout: Layout, planks: Planks): { edge: number; isl
 export function hintWalk(layout: Layout, solution: Planks): Hint['kind'][] {
   const planks = solution.map(() => 0), kinds: Hint['kind'][] = [];
   for (let step = 0; step < 200; step++) {
-    const h = hintFor(layout, planks, solution);
+    const h = hintFor(layout, planks, solution, true);
     if (!h) break;
     kinds.push(h.kind);
     if (h.kind === 'fix') planks[h.edge]--;

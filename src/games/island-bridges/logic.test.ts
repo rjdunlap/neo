@@ -221,7 +221,7 @@ describe('level 6, keep them joined', () => {
     for (let s = 1; s <= 120; s++) {
       const p = makePuzzle(planFor(6), new Rng(s * 61 + 3)), l = p.layout, planks = p.solution.map(() => 0);
       for (let guard = 0; guard < 100 && !isSolved(l, planks); guard++) {
-        const h = hintFor(l, planks, p.solution)!, label = `seed ${s} step ${guard}`;
+        const h = hintFor(l, planks, p.solution, true)!, label = `seed ${s} step ${guard}`;
         if (h.kind === 'joined') {
           joined++;
           expect(forcedPlank(l, planks), label).toBeNull();
@@ -249,7 +249,9 @@ describe('level 6, keep them joined', () => {
     const planks = l.edges.map(() => 0);
     expect(hintFor(l, planks, p.solution)).toMatchObject({ kind: 'forced', edge: top, why: 'every-way' });
     planks[top] = 1;
-    expect(hintFor(l, planks, p.solution)).toEqual({ kind: 'joined', edge: left, island: 0, why: 'full', closing: top, group: [0, 1] });
+    // Only level 6 hints it: elsewhere the same board gets the plain next plank.
+    expect(hintFor(l, planks, p.solution)?.kind).toBe('next');
+    expect(hintFor(l, planks, p.solution, true)).toEqual({ kind: 'joined', edge: left, island: 0, why: 'full', closing: top, group: [0, 1] });
   });
 });
 
