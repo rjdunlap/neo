@@ -1231,6 +1231,8 @@ Proof: new-interaction tier: typecheck, rule tests, one play with the trap then 
 
 ### picture-graph 5: Level 11 What the graph can say
 
+Built 2026-11-04, [PR #1201](https://github.com/rjdunlap/neo/pull/1201); [closeout](archive/COMPLETED-2026-10-09.md#picture-graph-level-11-what-the-graph-can-say-picture-graph-batch-5-2026-11-04). Scope retained for dependency references; no longer eligible for dispatch.
+
 - **`picture-graph`, Level 11, *What the graph can say* (dive slice 5)**, after batch picture-graph 4 (built) (new interaction): every claim is decided by what is on the screen; she stamps a claim as what the graph says or what it can't say (it does not measure that), never a guess about another meadow. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
 
 Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.

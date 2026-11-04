@@ -51,6 +51,10 @@
 
 - [ ] **Line them up.** Does a four-year-old tap shore things into rows and say which row has the most without being told what "most" means? Do the slot-to-slot lines explain "more" at school? Are the 100-unit shore squares and tray comfortable on an iPad?
 
+## Picture Graph level 11 (batch picture-graph 5, built 2026-11-04)
+
+- [ ] **"The graph can't say."** Does a six-year-old understand that the graph shows how many, not who came first, hungriest or sleepiest, and stamp it without guessing from what she knows? Are the 112-unit stamps and the picture card clear on an iPad?
+
 ## Garden Rows (batch garden-rows 1, built 2026-11-02)
 
 - [ ] **Mend the bed with a school-age child.** Does she find the swapped pair from the column repeats, and is lifting a planted flower understood without a prompt?

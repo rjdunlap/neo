@@ -9,7 +9,7 @@ import type { Band } from '../../progress/bands';
  * levels use a key: one block stands for two critters (or, at level 9, five tally marks), so the bars no longer match
  * a count of one, and the number of blocks is the tempting wrong answer.
  */
-export type GraphMode = 'build' | 'most' | 'more' | 'read' | 'scale' | 'scaleread' | 'tally' | 'line' | 'fives' | 'pair';
+export type GraphMode = 'build' | 'most' | 'more' | 'read' | 'scale' | 'scaleread' | 'tally' | 'line' | 'fives' | 'pair' | 'claim';
 
 export interface GraphPlan {
   mode: GraphMode;
@@ -39,13 +39,15 @@ export const PLANS: GraphPlan[] = [
   { mode: 'fives', kinds: 3, min: 2, max: 7, graphs: 2, per: 5, name: 'A key of five: build the bars from tally cards, one block for each group of five, then how many more?' },
   // A tally card and three finished graphs: a plain one, one keyed by twos, and a plain trap as tall as the keyed one.
   { mode: 'pair', kinds: 3, max: 4, graphs: 2, per: 2, name: 'Two pictures, one meadow: which two graphs show the tally card? One has a key of two; one only looks the same' },
+  // A finished graph and three things a friend says about the meadow, one at a time: stamp each yes, no, or the graph can't say.
+  { mode: 'claim', kinds: 3, max: 6, graphs: 2, per: 1, name: 'What the graph can say: stamp what a friend says yes, no, or "the graph can\'t say" (it shows how many, not who came first)' },
 ];
 
 /** The levels with a scene of their own (`LineUp`, `TwoPictures`) rather than a graph she builds or reads. */
 export const ownScene = (plan: GraphPlan) => plan.mode === 'line' || plan.mode === 'pair';
 
 /** The levels whose graph is already built when the round opens, so there is nothing to build. */
-export const prebuilt = (plan: GraphPlan) => plan.mode === 'read' || plan.mode === 'scaleread';
+export const prebuilt = (plan: GraphPlan) => plan.mode === 'read' || plan.mode === 'scaleread' || plan.mode === 'claim';
 
 /** The blocks each bar holds when it matches the critters. */
 export const barsFor = (plan: GraphPlan, g: Graph): number[] => g.counts.map((n) => n / plan.per);
@@ -66,7 +68,8 @@ export type Question =
   | { ask: 'most' | 'fewest'; answer: number }
   | { ask: 'more'; a: number; b: number; answer: number }
   | { ask: 'total'; answer: number }
-  | { ask: 'same'; answer: [number, number] };
+  | { ask: 'same'; answer: [number, number] }
+  | { ask: 'claim'; claim: Claim };
 
 /** Critters of each kind: from 1 block to max blocks, a whole number of blocks each. Levels that ask "most" or "fewest" never have ties at the top or bottom. */
 export function makeGraph(plan: GraphPlan, rng: Rng): Graph {
@@ -76,7 +79,7 @@ export function makeGraph(plan: GraphPlan, rng: Rng): Graph {
     const top = Math.max(...counts);
     const low = Math.min(...counts);
     if (plan.mode === 'most' && (counts.filter((c) => c === top).length > 1 || counts.filter((c) => c === low).length > 1)) continue;
-    if ((plan.mode === 'more' || plan.mode === 'scale' || plan.mode === 'scaleread' || plan.mode === 'tally' || plan.mode === 'fives' || plan.mode === 'pair') && new Set(counts).size < counts.length) continue;
+    if ((plan.mode === 'more' || plan.mode === 'scale' || plan.mode === 'scaleread' || plan.mode === 'tally' || plan.mode === 'fives' || plan.mode === 'pair' || plan.mode === 'claim') && new Set(counts).size < counts.length) continue;
     // Reading levels: exactly one pair of equal bars, for "which two are the same?".
     if (plan.mode === 'read') {
       const pairs = counts.flatMap((c, i) => counts.slice(i + 1).map((d, j) => (c === d ? [i, i + 1 + j] : null))).filter(Boolean);
@@ -93,6 +96,7 @@ export function questionsFor(plan: GraphPlan, g: Graph, rng: Rng): Question[] {
     return { ask: 'more', a, b, answer: c[a] - c[b] };
   };
   if (plan.mode === 'build') return [];
+  if (plan.mode === 'claim') return claimsFor(g, rng).map((claim) => ({ ask: 'claim', claim }));
   if (plan.mode === 'most') return [{ ask: 'most', answer: c.indexOf(Math.max(...c)) }, { ask: 'fewest', answer: c.indexOf(Math.min(...c)) }];
   if (plan.mode === 'more' || plan.mode === 'tally') return [more()];
   if (plan.mode === 'scale' || plan.mode === 'fives') return [more()];
@@ -228,18 +232,19 @@ export function cardLayout(w: number, h: number, rows: number, groups: number) {
 }
 
 /** One touch a capable child makes: a block added to a bar, the check, a column answering "which?", or a number pad. */
-export type GraphMove = { do: 'add'; kind: number } | { do: 'check' } | { do: 'column'; kind: number } | { do: 'number'; n: number };
+export type GraphMove = { do: 'add'; kind: number } | { do: 'check' } | { do: 'column'; kind: number } | { do: 'number'; n: number } | { do: 'stamp'; stamp: Stamp };
 
 /**
  * What a capable child touches next, from what is on the screen. While she is building, she adds a block to a bar
  * that is short of its critters (never past it) and checks when every bar matches; once there is a question, she
  * answers it: the column for "most", "fewest" and (one tap, then the other) "same", the number pad for "how many
- * more" and "how many in all". Null when there is nothing to do yet, such as a reading level before its question arrives.
+ * more" and "how many in all", the claim's stamp. Null when there is nothing to do yet, such as a reading level before its question arrives.
  */
 export function graphMove(plan: GraphPlan, graph: Graph, bars: number[], question: Question | undefined, firstSame: number | null): GraphMove | null {
   if (question) {
     if (question.ask === 'same') return { do: 'column', kind: firstSame === null ? question.answer[0] : question.answer[1] };
     if (question.ask === 'most' || question.ask === 'fewest') return { do: 'column', kind: question.answer };
+    if (question.ask === 'claim') return { do: 'stamp', stamp: question.claim.answer };
     return { do: 'number', n: question.answer };
   }
   if (prebuilt(plan)) return null;
@@ -436,5 +441,80 @@ export function pairLayout(w: number, h: number, rows: number) {
     /** The grid's baseline inside a graph: the faces sit below it. */
     base: top + gh - 60,
     graphX: (i: number) => mid + (i - 1) * (gw + gap),
+  };
+}
+
+/* Level 11, What the graph can say: a finished graph and three claims, each stamped yes, no, or "the graph can't say". */
+
+export type Stamp = 'yes' | 'no' | 'cant';
+export const STAMPS: Stamp[] = ['yes', 'no', 'cant'];
+
+/**
+ * What the graph does not measure. Only things no child can settle from what she knows about animals: "the cows are the
+ * biggest" or "the dogs are fastest" would be true in the world, so a child answering from that would take a miss for
+ * knowing something; nobody knows which critters came first, are hungriest or sleepiest.
+ */
+export type CantSay = 'first' | 'hungriest' | 'sleepiest';
+export const CANT_SAY: CantSay[] = ['first', 'hungriest', 'sleepiest'];
+
+export type Claim =
+  /** "There are more {a} than {b}." */
+  | { say: 'more'; a: number; b: number; answer: 'yes' | 'no' }
+  /** "The {a} are the most." */
+  | { say: 'most'; a: number; answer: 'yes' | 'no' }
+  /** "The {a} came first" (or are hungriest, sleepiest): about the kind with the tallest bar, the tempting yes. */
+  | { say: 'cant'; a: number; about: CantSay; answer: 'cant' };
+
+/** What the counts say about a claim: decided by the bars alone, or nothing for a thing the graph does not measure. */
+export function claimTruth(counts: readonly number[], c: Claim): Stamp {
+  if (c.say === 'more') return counts[c.a] > counts[c.b] ? 'yes' : 'no';
+  if (c.say === 'most') return counts.every((n, i) => i === c.a || n < counts[c.a]) ? 'yes' : 'no';
+  return 'cant';
+}
+
+/**
+ * A graph's three claims, one of each answer: a yes, a no and a can't-say, in a seeded order. One decided claim is a
+ * "more ... than ..." and the other a "the most", so the two are never one claim read backwards. The counts are all
+ * different (the plan's distinct rule), so no claim is undecided by a tie.
+ */
+export function claimsFor(g: Graph, rng: Rng): Claim[] {
+  const c = g.counts;
+  const top = c.indexOf(Math.max(...c));
+  const others = c.map((_, i) => i).filter((i) => i !== top);
+  const moreClaim = (answer: 'yes' | 'no'): Claim => {
+    const [x, y] = rng.shuffle(c.map((_, i) => i)).slice(0, 2);
+    const [big, small] = c[x] > c[y] ? [x, y] : [y, x];
+    return answer === 'yes' ? { say: 'more', a: big, b: small, answer } : { say: 'more', a: small, b: big, answer };
+  };
+  const moreYes = rng.chance(0.5);
+  const claims: Claim[] = [
+    moreClaim(moreYes ? 'yes' : 'no'),
+    moreYes ? { say: 'most', a: rng.pick(others), answer: 'no' } : { say: 'most', a: top, answer: 'yes' },
+    { say: 'cant', a: top, about: rng.pick(CANT_SAY), answer: 'cant' },
+  ];
+  return rng.shuffle(claims);
+}
+
+/** Which gentle line a wrong stamp gets: the graph can't say this one, the graph can say it, or look at the bars again. */
+export function stampWhy(c: Claim, stamp: Stamp): 'right' | 'cant' | 'can' | 'look' {
+  if (stamp === c.answer) return 'right';
+  if (c.answer === 'cant') return 'cant';
+  return stamp === 'cant' ? 'can' : 'look';
+}
+
+/** The bars a claim names, lit after a wrong stamp: the two compared, every bar for "the most", the one named for a can't-say. */
+export const claimBars = (c: Claim, kinds: number): number[] => (c.say === 'more' ? [c.a, c.b] : c.say === 'most' ? Array.from({ length: kinds }, (_, i) => i) : [c.a]);
+
+/** A stamp's radius: 112 across, a whole tap target. */
+export const STAMP_R = 56;
+
+/** The three stamps down the right edge, under the corner buttons, clear of the graph; and the claim card over the graph. */
+export function claimLayout(w: number, h: number) {
+  const x = w - 100;
+  const mid = Math.max(210 + 130, h * 0.45);
+  return {
+    stamp: (i: number) => ({ x, y: mid + (i - 1) * 140 }),
+    // Just over the graph it talks about (whose panel starts at h - 412).
+    card: { x: w / 2 - 60, y: Math.max(210, h - 412 - 110), w: 380, h: 130 },
   };
 }
