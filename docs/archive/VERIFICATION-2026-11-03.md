@@ -249,3 +249,9 @@
 - [PR #1174](https://github.com/rjdunlap/neo/pull/1174) (commits 1d151e74, 17423a92): Home's Today's six button, `?daily` once after the chooser, Back to Home, preset levels for every band with pins and a dot row, `GameModule.daily?: false` (only `goodnight-room`), card rounds recording with `adapt` off, the grown-ups' line.
 - Ran: typecheck; full `npm test` 4,661 tests (daily, registry and home-layout tests updated); `npm run build`; `BROWSER_SUITE=home` PASS (dev server, working tree at 17423a92); one-off portrait 768x1024 probe on a preschool/prek profile (Home, six, card 0 word-glue level 3, saved level stayed 1, tick on that card only, Back to Home; `?daily` then six then Back; no page errors; Home and six screenshots reviewed); production `OFFLINE_SUITE=root` PASS on a fresh build preview.
 - Not run: the classic offline suite (island route unchanged), a lap/toddler Home screenshot, a grown-up card screenshot. The probe finished its round by calling `finish()`, not by playing it. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): iPad play from Home.
+
+## 2026-11-03 — Today's six slice 2: kinds of challenge (D10)
+
+- [PR #1175](https://github.com/rjdunlap/neo/pull/1175): `GameModule.challenge` (seven `CHALLENGE_KINDS`) on all 163 touch games, kind-first `dailySix` pick preferring a new land, the pet in the card page's guide corner and an all-six flourish (nothing recorded or awarded).
+- Ran: typecheck; `daily` and registry tests (44); full `npm test` 4,664 tests (300 files); a 365-day probe (six distinct kinds every day, at least 5 lands at lap/toddler, 6 at older bands); one portrait 768x1024 screenshot at pre-K with all six ticked (six lands, pet in the corner, no page errors).
+- Not run: build and offline check (no assets or navigation changed), browser suites; the star burst was not captured (screenshot about 2 s after entry). Open: iPad and a child's reaction ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).

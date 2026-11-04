@@ -6,6 +6,12 @@
 - Ran (Vite dev, `VITE_SPEECH=off`, port 5278): typecheck; `npm test` 300 files, 4740 tests (registry ladder test updated); `BROWSER_SUITE=woods WOODS_ONLY=penguin FROM_LEVEL=12 TO_LEVEL=12` pass (dead end played, stuck line and undo glow, undo, both ponds, misses 0, sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=penguin-slide FINGER_LEVELS=12` pass (17.8 s); one portrait screenshot (stuck block in the corner, glowing undo) reviewed. `game-reviewer`: no defects.
 - Not run: `npm run build` (no shared assets), couch suites (courses unchanged), device check. Open: whether a school-age child reads a star as the block's goal ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
+## 2026-11-03 — Peekaround Island level 8 From the sky definition (docs only)
+
+- [PR #1191](https://github.com/rjdunlap/neo/pull/1191): [definition](definitions/peekaround-from-the-sky.md) for level 8 (school only, school range 4–8, pre-K unchanged at 7), the batch `peekaround-island 5`, the dive's slice 5 marked defined.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests and every play check (no code changed). Open: the build (new-interaction tier, after batch 4) and the person and device checks the definition lists.
+
 ## 2026-11-03 — Light Lab level 11 Through, bounce or stop? definition (docs only)
 
 - [PR #1189](https://github.com/rjdunlap/neo/pull/1189): [definition](definitions/light-lab-materials.md) for level 11 (materials toy rule, three free guesses then two judged choices, pre-K order [1,2,3,4,11], school order [2,3,4,11,5..10]), the batch `light-lab 5`, the dive's slice 5 marked defined.
@@ -89,12 +95,6 @@
 - Changed: school levels 8 and 9 (order `[5, 12, 13, 6, 8, 9]`), six voice lines, friend peek and glow hint, level-scoped how-to steps; finishes the Codex draft from #977.
 - Ran: typecheck; scoop-shop rule, content, registry and lands tests (214) and the updated difficulty test; full `npm test` 4,664 passed, 5 failed (difficulty, fixed; speed limits in block-garden, ferry-jam, fluffy-salon, keep-house under load average 10-16; ferry-jam's distance table still 537 ms against 500 ms when re-run alone, untouched code, known load flake); `npm run build`; `BROWSER_SUITE=arcade ARCADE_ONLY=scoop ARCADE_LEVELS=8,9` (orders, bounced scoops, hint glow, peeks, saved score, one sticker each, after two suite fixes: waiting for the ~11 s setup, one frame for the glow); `BROWSER_SUITE=fingerdemo FINGER_ONLY=scoop-shop FINGER_LEVELS=8,9` clean (34.7 s, 29.7 s); portrait screenshot of level 9 reviewed.
 - Not run: device speech on an iPad (bottom/middle/top and colour clarity), a child playing it ([DEVICE-CHECKS](DEVICE-CHECKS.md)). CI to confirm the load-flaky speed tests.
-
-## 2026-11-03 — Today's six slice 2: kinds of challenge (D10)
-
-- [PR #1175](https://github.com/rjdunlap/neo/pull/1175): `GameModule.challenge` (seven `CHALLENGE_KINDS`) on all 163 touch games, kind-first `dailySix` pick preferring a new land, the pet in the card page's guide corner and an all-six flourish (nothing recorded or awarded).
-- Ran: typecheck; `daily` and registry tests (44); full `npm test` 4,664 tests (300 files); a 365-day probe (six distinct kinds every day, at least 5 lands at lap/toddler, 6 at older bands); one portrait 768x1024 screenshot at pre-K with all six ticked (six lands, pet in the corner, no page errors).
-- Not run: build and offline check (no assets or navigation changed), browser suites; the star burst was not captured (screenshot about 2 s after entry). Open: iPad and a child's reaction ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
 ## Coverage summary
 
