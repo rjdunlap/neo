@@ -82,7 +82,7 @@ The long arc: an open pond, then pads, order, then the body as the puzzle; later
 
 ### Younger-band openings
 
-None built from this dive. The IDEAS touch-forms note and the Island Bridges and Lantern Lights precedents suggest a docs-only **school opening definition**: step-by-step ponds at 100-unit cells (7 by 5 is 700 by 500 units), three or four items, a home land in Wonder Woods while the grown-up game stays in Lantern Lake (the one-land rule needs that decided), a sticker, level-scoped how-to steps and the accounting (does a bonk count for a 6-year-old). Real-time steering for 6–8 is the open question; step-by-step avoids it. Queued as a `define` line.
+None built from this dive. The IDEAS touch-forms note and the Island Bridges and Lantern Lights precedents suggest a docs-only **school opening definition**: step-by-step ponds at 100-unit cells (7 by 5 is 700 by 500 units), three or four items, a home land in Wonder Woods while the grown-up game stays in Lantern Lake (the one-land rule needs that decided), a sticker, level-scoped how-to steps and the accounting (does a bonk count for a 6-year-old). Real-time steering for 6–8 is the open question; step-by-step avoids it. Queued as a `define` line. **Defined 2026-11-04:** [the definition](../definitions/pond-conga-school-opening.md) settled 4-row ponds at levels 10–11 and keeps the home in Lantern Lake; the build is batch pond-conga 5.
 
 ### Easier entries and levels between existing ones
 
@@ -107,7 +107,7 @@ Level 8 is the appended easy entry (stable ID, first by `order`, in `entryLevels
 2. **Level 7 Choose the order (batch pond-conga 2),** after batch 1 (shares the food art and `index.ts` drawing). *Check:* new rule on the existing interaction: typecheck, rule tests (par over orders, group-aware demo pond, hint to a best-order item), one play of level 7 eating a group in a longer order then with one hint, `fingerdemo` at 7, one portrait screenshot of a group of three.
 3. **Level 8 Step by step (batch pond-conga 3),** after batch 1 (shares `index.ts`). *Check:* new-interaction tier: typecheck, unit tests (order, entry, no movement without input), one scripted play of level 8 to its sticker with one bonk, one portrait screenshot, `fingerdemo` at 8, `BROWSER_SUITE=couchgames` filtered to Pond Conga (the controller path changes).
 4. **Level 9 A long conga (batch pond-conga 4),** after batch 2 (shares the level table and `order`). *Check:* new-level tier: typecheck, rule tests, one play of level 9 with a tail bonk, `fingerdemo` at 9, one portrait screenshot.
-5. *Docs only, `define`:* **Define Pond Conga school opening** (above).
+5. **School opening: levels 10 and 11 step by step (batch pond-conga 5), defined 2026-11-04** ([definition](../definitions/pond-conga-school-opening.md)), after batch 3 (shares `index.ts`, the level table and `entryLevels`). *Check:* new band entry with a layout change and a school-only input rule: typecheck, rule tests, registry and lands tests, one scripted school play of levels 10 and 11 with two bumps, one portrait screenshot, `fingerdemo` at school level 11.
 6. *Not queued:* key and gate, culvert and crate ponds; a shared-pond duet; any pace change (each waits on the open person checks or its own definition).
 
 ## What was built in this session
