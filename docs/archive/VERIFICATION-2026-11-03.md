@@ -288,3 +288,10 @@
 - Review (`game-reviewer`): no soundness bug; the scope leak (joined hint on every level) was fixed.
 - Not run: `npm run build` (no shared assets), couch suites (couch unchanged), levels 1-5 touch plays.
 - Open: whether the dashed-ring hint reads clearly on an iPad ([device checks](../DEVICE-CHECKS.md)); with two closing bridges the hint draws one.
+
+## 2026-11-03 — Picture Graph level 8 Line them up (picture-graph batch 2)
+
+- [PR #1181](https://github.com/rjdunlap/neo/pull/1181): new pre-K/school level 8 (shore things lined into a tray, which row has the most, school "how many more"), registry order and `entryLevels [8]`, voice `graph.line.*`, how-to steps, shore art.
+- Ran: typecheck; `npm test` 300 files, 4,685 tests passed (before the last resize fix; rule tests rerun after it); new rule tests (plans, shores, questions incl. taller choice, hint links and glow, tray layout at 1024×768, 1024×1365, 1366×1024, 1180×820, bot) and the registry order/entry test; one Playwright probe on a dev server playing level 8 at pre-K (landscape) and school (768×1024 portrait): early row tap free, double tap places once, two wrong rows gave misses 2 hints 1 with lines and glow, wrong taller pad at school, both shores to the sticker, no page errors; portrait tray screenshot reviewed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=picture-graph FINGER_LEVELS=8` clean at pre-K (27.0 s) and school (38.2 s); `npm run build`.
+- Review: `game-reviewer` found no blocking defects; a row tap during "how many more" is silent (left as is).
+- Not run: device or person checks. Open: whether a four-year-old lines up and compares without being told what "most" means, and iPad tray tap feel ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).

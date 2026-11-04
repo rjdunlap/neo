@@ -1135,6 +1135,14 @@ Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`
 
 Proof: new rule: typecheck, rule tests including the brute force on every shape and the free-dimension cap, one play of level 9 with a tap on a pad (nothing counted) and a hint, to the sticker; one portrait screenshot; `fingerdemo` at 9; `BROWSER_SUITE=couchgames` filtered to Lantern Lights.
 
+### lantern-lights 4: School opening
+
+- **`lantern-lights`, school opening: levels 1 and 2 (dive slice 4, defined 2026-11-04)** (new band entry on the existing interaction, no layout change; school): `school` joins `bands` playing the two 3 by 3 levels (range 1-2, no `order`), home stays Lantern Lake (Wonder Woods lists it by subject), misses stay 0 with a once-a-pond `lantern.stuck-school` nudge toward Hint, a child's `lantern.go-school` instruction, no footprint preview, co-play and how-to step fixes. [Definition](definitions/lantern-lights-school-opening.md)
+
+Files expected: `src/games/lantern-lights/index.ts`, `logic.ts`, `logic.test.ts`, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new band entry, no layout change: typecheck, the game's rule tests and the registry and lands tests, one scripted school play of level 1 with one hint and the stuck nudge, then level 2 to the sticker, one portrait screenshot, a logged 1024 × 768 check (cells and buttons at least 100), `fingerdemo` at school level 2.
+
 ### peekaround-island 1: Truthful support and real choices
 
 - **`peekaround-island`, truthful support and real choices (dive slice 1)** (**built 2026-11-02**, [PR #1136](https://github.com/rjdunlap/neo/pull/1136); existing-game fix; all bands): a level-scoped how-to, the level-2 hint on the hider when visible, level 4's three shore friends, level 5's pair rule so the turn always names someone, and `lap` dropped from `LEVELS` and the repeated guard. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
