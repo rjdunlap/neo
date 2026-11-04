@@ -2123,7 +2123,9 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'penguin-slide': {
     goal: 'Slide the penguin to the fish.',
     steps: [
-      'Tap the ice where the penguin should slide.',
+      { to: 10, text: 'Tap the ice where the penguin should slide.' },
+      { from: 11, to: 11, text: 'A yellow arrow shows which way the penguin will slide. Tap the ice where you think it will stop, then watch it go.' },
+      { from: 11, to: 11, text: 'It keeps sliding until a rock or the edge stops it. The third slide reaches the fish.' },
       { to: 4, text: 'It only stops when it bumps into something.' },
       { from: 10, to: 10, text: 'It only stops when it bumps into something. Three fish: choose which to eat first.' },
       { from: 5, to: 5, text: 'It stops when it bumps into something, or in soft snow.' },
@@ -2131,10 +2133,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 9, to: 9, text: 'Push both blocks to make stopping places on the route to the fish.' },
       { from: 8, to: 8, text: 'Push the block to make a stop. Soft snow stops both the penguin and the block.' },
       { from: 7, to: 8, text: 'Collect both fish; plan where to park the block so the penguin can reach them.' },
-      'If it gets stuck, tap the round arrow to go back.',
+      { to: 10, text: 'If it gets stuck, tap the round arrow to go back.' },
     ],
-    finish: 'The round ends when the penguin has eaten every fish.',
-    note: 'After a few extra slides, a yellow arrow shows a next slide; it counts as help.',
+    finish: [{ to: 10, text: 'The round ends when the penguin has eaten every fish.' }, { from: 11, to: 11, text: 'The round ends after two ponds of three predictions each.' }],
+    note: [
+      { to: 10, text: 'After a few extra slides, a yellow arrow shows a next slide; it counts as help.' },
+      { from: 11, to: 11, text: 'Predictions are experiments and never count as misses; a wrong one hears what stopped the penguin.' },
+    ],
   },
   'secret-code': {
     goal: 'Work out the secret code from clues.',

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { eatsTwoFromStart, FISH_COLORS, hasDeadEnd, PAIRED_BLOCK_PONDS, pickLook, ROCK_LOOKS, beside, eaten, makePuzzle, move, PLANS, slide, solve, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
+import { cellAt, makePrediction, PREDICTIONS, stopper, eatsTwoFromStart, FISH_COLORS, hasDeadEnd, PAIRED_BLOCK_PONDS, pickLook, ROCK_LOOKS, beside, eaten, makePuzzle, move, PLANS, slide, solve, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
 
 const tiny: SlidePuzzle = { cols: 4, rows: 3, rocks: [{ x: 3, y: 1 }], soft: [{ x: 1, y: 2 }], start: { x: 0, y: 0 }, fish: [{ x: 2, y: 2 }], best: 0 };
 
@@ -18,7 +18,7 @@ describe('Penguin Slide', () => {
   });
 
   it('every puzzle needs the planned number of slides, with nothing stacked on anything else', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => !p.predict)) {
       for (let seed = 1; seed <= 150; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
         expect(p.best).toBeGreaterThanOrEqual(plan.moves[0]);
@@ -33,7 +33,7 @@ describe('Penguin Slide', () => {
   }, 15000);
 
   it('following the hint arrow always eats every fish in the fewest slides', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => !p.predict)) {
       for (let seed = 1; seed <= 60; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
         let at = p.start;
@@ -56,7 +56,7 @@ describe('Penguin Slide', () => {
   });
 
   it('has a tap the ghost finger can make for every move of a fewest route, which does that move and finishes in the fewest', () => {
-    for (const plan of PLANS) {
+    for (const plan of PLANS.filter((p) => !p.predict)) {
       for (let seed = 1; seed <= 60; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
         let at = p.start;
@@ -254,5 +254,72 @@ describe('Penguin Slide fair ponds', () => {
     const p: SlidePuzzle = { cols: 5, rows: 3, rocks: [], soft: [], start: { x: 0, y: 0 }, fish: [{ x: 1, y: 0 }, { x: 3, y: 0 }, { x: 0, y: 2 }], best: 0 };
     expect(eatsTwoFromStart(p)).toBe(true);
     expect(eatsTwoFromStart({ ...p, fish: [{ x: 1, y: 0 }, { x: 3, y: 1 }, { x: 0, y: 2 }] })).toBe(false);
+  });
+});
+
+describe('Penguin Slide level 11, Where will it stop?', () => {
+  const plan = PLANS[10];
+  const same = (a: Cell, b: Cell) => a.x === b.x && a.y === b.y;
+
+  it('is a small one-fish prediction pond, two ponds a round', () => {
+    expect(plan.predict).toBe(true);
+    expect([plan.cols, plan.rows, plan.fish, plan.rocks, plan.soft, plan.blocks ?? 0, plan.puzzles]).toEqual([5, 4, 1, 3, 0, 0, 2]);
+  });
+
+  it('shows three slides that each really move the penguin, the fish eaten only on the last', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const { puzzle: p, slides } = makePrediction(plan, new Rng(seed));
+      expect(slides).toHaveLength(PREDICTIONS);
+      expect(p.fish).toHaveLength(1);
+      expect(p.rocks).toHaveLength(3);
+      // Nothing stacked: the start, rocks and fish are all different cells.
+      const cells = [p.start, ...p.rocks, ...p.fish].map((c) => `${c.x},${c.y}`);
+      expect(new Set(cells).size).toBe(cells.length);
+      let at = p.start;
+      slides.forEach((s, i) => {
+        expect(s.from).toEqual(at);
+        const m = move(p, at, s.dir);
+        expect(m, `seed ${seed} slide ${i}`).not.toBeNull();
+        expect(m!.passed.length).toBeGreaterThan(0); // a slide, never a bump
+        expect(m!.to).toEqual(s.to);
+        expect(eaten(p, m!.passed)).toBe(i === PREDICTIONS - 1 ? 1 : 0);
+        if (i > 0) expect(s.dir).not.toBe((slides[i - 1].dir + 2) % 4); // never straight back
+        at = s.to;
+      });
+    }
+  });
+
+  it('stops beyond the cell beside the penguin in at least two of three slides', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const { slides } = makePrediction(plan, new Rng(seed));
+      expect(slides.filter((s) => !same(s.to, beside(s.from, s.dir))).length).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('names what stopped each slide: a rock beside the stop, or the edge', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const { puzzle: p, slides } = makePrediction(plan, new Rng(seed));
+      for (const s of slides) {
+        const stop = stopper(p, s.to, s.dir);
+        const next = beside(s.to, s.dir);
+        const off = next.x < 0 || next.y < 0 || next.x >= p.cols || next.y >= p.rows;
+        if (stop.kind === 'rock') expect(p.rocks.some((r) => same(r, stop.cell)) && same(stop.cell, next)).toBe(true);
+        else expect(off).toBe(true);
+      }
+    }
+  });
+
+  it('takes a tap anywhere on a whole 100-unit cell as that cell, clamped to the pond', () => {
+    const p = { cols: 5, rows: 4 };
+    expect(cellAt(p, 0, 0, 100)).toEqual({ x: 0, y: 0 });
+    expect(cellAt(p, 99, 199, 100)).toEqual({ x: 0, y: 1 });
+    expect(cellAt(p, 250, 350, 100)).toEqual({ x: 2, y: 3 });
+    expect(cellAt(p, -12, 510, 100)).toEqual({ x: 0, y: 3 }); // the white rim
+    expect(cellAt(p, 512, -10, 100)).toEqual({ x: 4, y: 0 });
+  });
+
+  it('varies the ponds by seed', () => {
+    const boards = new Set(Array.from({ length: 30 }, (_, i) => JSON.stringify(makePrediction(plan, new Rng(i + 1)))));
+    expect(boards.size).toBeGreaterThan(25);
   });
 });

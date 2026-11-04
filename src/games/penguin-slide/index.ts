@@ -16,11 +16,12 @@ import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBoards, courseMinimum, isPondCourse } from './course';
-import { beside, eaten, HINT_AFTER, makePuzzle, move, pickLook, planFor, solve, tapDirection, type Cell, type Dir, type FishColor, type RockLook, type SlidePlan, type SlidePuzzle } from './logic';
+import { beside, cellAt, eaten, HINT_AFTER, makePrediction, makePuzzle, move, pickLook, planFor, solve, stopper, tapDirection, type Cell, type Dir, type FishColor, type RockLook, type ShownSlide, type SlidePlan, type SlidePuzzle } from './logic';
 
 const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 4 },
+  // Level 11 (Where will it stop?) is the easier step between 2 and 3.
+  preschool: { min: 1, max: 11, order: [1, 2, 11] },
+  prek: { min: 1, max: 11, order: [1, 2, 11, 3, 4] },
   school: { min: 2, max: 10 },
 };
 
@@ -105,6 +106,14 @@ class PenguinSlide implements Game {
   private look: { rock: RockLook; fish: FishColor } = { rock: 'rock', fish: 'orange' };
   private fishNodes: Graphics[] = [];
   private blockNodes: Container[] = [];
+  private rockNodes: Graphics[] = [];
+  /** Level 11: the slides this pond shows, the one being predicted, and the cell the keys' ring is on. */
+  private shown: ShownSlide[] = [];
+  private step = 0;
+  private focus: Cell = { x: 0, y: 0 };
+  /** Her prediction for the slide under way: drawn as a ring and judged when the penguin stops. */
+  private guess: Cell | null = null;
+  private readonly ring = new Graphics();
   /** The solver's answer for the state it was asked about, so the hint arrow does not search every frame. */
   private route: { key: string; first: Dir | -1; moves: number } | null = null;
   private history: Step[] = [];
@@ -141,13 +150,15 @@ class PenguinSlide implements Game {
     this.glow.eventMode = 'none';
     this.penguin.eventMode = 'none';
     this.scuff.eventMode = 'none';
-    this.board.addChild(this.floor, this.things, this.scuff, this.penguin, this.arrow);
+    this.ring.eventMode = 'none';
+    this.board.addChild(this.floor, this.things, this.ring, this.scuff, this.penguin, this.arrow);
     this.board.eventMode = 'static';
     onTap(this.board, (e) => void this.tapIce(e), { cooldown: 150 });
     this.undo = new RoundButton(againIcon(), swatch.white, 54, () => this.back());
     // The couch screen takes no pointer input, so a round arrow there would look like a restart and do nothing.
     // Controllers undo with the left button and restart from the pause menu.
-    this.undo.visible = !ctx.couch;
+    // Prediction ponds have no undo: every shown slide goes ahead.
+    this.undo.visible = !ctx.couch && !this.plan.predict;
     this.touch = !ctx.couch;
     ctx.stage.addChild(this.board, this.undo, this.glow);
   }
@@ -175,13 +186,22 @@ class PenguinSlide implements Game {
     const g = this.glow.clear();
     if (this.stuck && !this.busy && this.undo.visible) g.circle(this.undo.x, this.undo.y, 68 + 4 * Math.sin(this.clock * 6)).stroke({ width: 7, color: swatch.yellow.fill });
     this.drawArrow();
+    this.drawRing();
   }
 
   destroy() {}
 
+  private get predicting() {
+    return !!this.plan.predict && !this.course;
+  }
+
   /** The ghost finger on the how-to card: tap the ice beside the penguin, on the side of the solver's next slide. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.puzzle) return null;
+    if (this.predicting) {
+      const stop = this.shown[this.step];
+      return stop ? { tap: { on: this.board, ...this.at2(stop.to) } } : null;
+    }
     const { first } = this.ahead();
     if (first === -1) return null;
     const cell = this.at2(beside(this.at, first));
@@ -193,6 +213,20 @@ class PenguinSlide implements Game {
     const out = idle();
     this.botWait -= dt;
     if (this.busy || this.finished || !this.puzzle || this.botWait > 0) return out;
+    if (this.predicting) {
+      const stop = this.shown[this.step];
+      if (!stop) return out;
+      const dx = stop.to.x - this.focus.x, dy = stop.to.y - this.focus.y;
+      out.players[0].active = true;
+      if (!dx && !dy) {
+        out.players[0].action = true;
+        this.botWait = 1;
+      } else {
+        out.players[0].direction = dx > 0 ? 0 : dx < 0 ? 2 : dy > 0 ? 1 : 3;
+        this.botWait = 0.45;
+      }
+      return out;
+    }
     const { first } = this.ahead();
     if (first < 0) return out;
     this.botWait = 0.9;
@@ -204,7 +238,8 @@ class PenguinSlide implements Game {
   /** A finger came back after keys on the island: the undo button returns. */
   touchReturned() {
     if (this.touch || this.ctx.couch || this.finished) return;
-    this.touch = this.undo.visible = true;
+    this.touch = true;
+    this.undo.visible = !this.predicting;
   }
 
   control(input: CouchControls) {
@@ -213,6 +248,17 @@ class PenguinSlide implements Game {
       this.touch = this.undo.visible = false;
     }
     if (this.busy || this.finished) return;
+    if (this.predicting) {
+      // The arrow keys move a ring over the pond; the action button predicts that cell.
+      for (const p of input.players) {
+        if (p.direction >= 0) {
+          const c = beside(this.focus, p.direction as Dir);
+          this.focus = { x: Math.min(this.puzzle.cols - 1, Math.max(0, c.x)), y: Math.min(this.puzzle.rows - 1, Math.max(0, c.y)) };
+        }
+        if (p.action) return void this.predict(this.focus);
+      }
+      return;
+    }
     const p = input.players.find(p => p.undo || p.direction >= 0);
     if (p?.undo) this.back();
     else if (p && p.direction >= 0) void this.go(p.direction as Dir);
@@ -224,7 +270,12 @@ class PenguinSlide implements Game {
     this.index++;
     if (this.index >= (this.course?.boards.length ?? this.plan.puzzles)) return void this.finale();
     if (this.course) this.puzzle = this.course.boards[this.index];
-    else {
+    else if (this.predicting) {
+      ({ puzzle: this.puzzle, slides: this.shown } = makePrediction(this.plan, this.ctx.rng));
+      this.step = 0;
+      this.guess = null;
+      this.look = pickLook(this.ctx.rng);
+    } else {
       this.puzzle = makePuzzle(this.plan, this.ctx.rng, this.made);
       this.made.push(this.puzzle);
       this.look = pickLook(this.ctx.rng);
@@ -242,9 +293,11 @@ class PenguinSlide implements Game {
     this.resize(this.view);
     this.board.alpha = 0;
     await this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 });
+    if (this.predicting) this.focus = beside(this.at, this.shown[0].dir);
     this.busy = false;
     this.checkHelp();
     this.report();
+    if (this.predicting) return this.index > 0 ? undefined : this.ctx.instruct('slide.predict');
     if (this.course) {
       if (this.told) return;
       this.told = true;
@@ -267,7 +320,7 @@ class PenguinSlide implements Game {
     this.board.hitArea = new Rectangle(-16, -16, w + 32, h + 32);
     this.things.removeChildren().forEach((c) => c.destroy({ children: true }));
     for (const c of p.soft) this.place(softArt(), c);
-    for (const c of p.rocks) this.place(rockArt(this.look.rock), c);
+    this.rockNodes = p.rocks.map((c) => this.place(rockArt(this.look.rock), c));
     this.fishNodes = p.fish.map((c) => this.place(fishArt(this.look.fish), c));
     this.blockNodes = this.blocks.map((c) => this.place(blockArt(), c));
     const s = this.at2(this.at);
@@ -286,6 +339,7 @@ class PenguinSlide implements Game {
   private async tapIce(e: FederatedPointerEvent) {
     if (this.busy || this.finished) return;
     const local = this.board.toLocal(e.global);
+    if (this.predicting) return void this.predict(cellAt(this.puzzle, local.x, local.y, CELL));
     const p = this.at2(this.at);
     const dx = local.x - p.x;
     const dy = local.y - p.y;
@@ -362,12 +416,61 @@ class PenguinSlide implements Game {
     });
     if (got) {
       sfx.munch();
-      void this.ctx.say('slide.yum');
+      if (!this.guess) void this.ctx.say('slide.yum');
     }
+    if (this.guess) await this.judge(this.guess, to, dir);
     if (this.have === (1 << this.puzzle.fish.length) - 1) return void this.win();
     this.checkHelp();
     this.busy = false;
     if (this.again) this.restart();
+  }
+
+  /** Level 11: she taps where she thinks the shown slide will stop; then it goes. A prediction is never a miss. */
+  private async predict(cell: Cell) {
+    const shown = this.shown[this.step];
+    if (this.busy || this.finished || !shown) return;
+    if (cell.x === this.at.x && cell.y === this.at.y) {
+      // The penguin's own cell: the arrow says it will move, so this is not a guess yet.
+      sfx.squeak();
+      return;
+    }
+    sfx.pop();
+    this.guess = cell;
+    this.focus = cell;
+    this.busy = true;
+    await this.ctx.tw.wait(0.35);
+    await this.go(shown.dir);
+  }
+
+  /** The penguin has stopped: a right guess sparkles; a wrong one keeps her ring and the pet names what stopped it. */
+  private async judge(guess: Cell, to: Cell, dir: Dir) {
+    const p = this.at2(to);
+    if (guess.x === to.x && guess.y === to.y) {
+      sfx.sparkle();
+      this.ctx.particles.burst(this.board.x + p.x, this.board.y + p.y, { kind: 'star', colors: [0xffffff, swatch.yellow.light], count: 14, speed: [100, 240], gravity: 0, life: [0.4, 0.8] });
+      await this.ctx.say('slide.predict.right');
+    } else {
+      const stop = stopper(this.puzzle, to, dir);
+      if (stop.kind === 'rock') {
+        const node = this.rockNodes[this.puzzle.rocks.findIndex((r) => r.x === stop.cell.x && r.y === stop.cell.y)];
+        if (node) void this.ctx.tw.to(node.scale, { x: 1.15, y: 1.15 }, { duration: 0.12, ease: ease.outQuad }).then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.18 }));
+      }
+      await this.ctx.say(stop.kind === 'rock' ? 'slide.predict.rock' : 'slide.predict.edge');
+    }
+    this.guess = null;
+    this.step++;
+    const next = this.shown[this.step];
+    if (next) this.focus = beside(to, next.dir);
+  }
+
+  /** Level 11's rings: her prediction while the slide goes, or the keys' ring before she chooses. */
+  private drawRing() {
+    const g = this.ring.clear();
+    if (!this.predicting || !this.puzzle || this.finished) return;
+    const at = this.guess ?? (!this.touch && !this.busy ? this.focus : null);
+    if (!at) return;
+    const p = this.at2(at);
+    g.circle(p.x, p.y, 40).stroke({ width: 8, color: this.guess ? swatch.blue.fill : swatch.yellow.fill, alpha: this.guess ? 1 : 0.6 + 0.3 * Math.sin(this.clock * 6) });
   }
 
   /** The solver's next slide from where things stand now, remembered until something moves. */
@@ -432,6 +535,8 @@ class PenguinSlide implements Game {
 
   /** After a few more slides than needed, a yellow arrow shows a best next slide; when there is no way on, undo glows. */
   private checkHelp() {
+    // Prediction ponds follow their shown slides: nothing to get stuck on, no help arrow.
+    if (this.predicting) return;
     const wasStuck = this.stuck;
     this.stuck = this.ahead().moves < 0;
     if (this.stuck && !wasStuck) void this.ctx.say('slide.stuck');
@@ -475,6 +580,16 @@ class PenguinSlide implements Game {
 
   private drawArrow() {
     const g = this.arrow.clear();
+    if (this.predicting) {
+      // The big arrow beside the penguin: the way the next slide goes.
+      const shown = this.shown[this.step];
+      if (!shown || !this.puzzle || this.finished || (this.busy && !this.guess)) return;
+      const p = this.at2(this.at), ux = [1, 0, -1, 0][shown.dir], uy = [0, 1, 0, -1][shown.dir];
+      const bob = this.guess ? 0 : 4 * Math.sin(this.clock * 5);
+      const tip = { x: p.x + ux * (88 + bob), y: p.y + uy * (88 + bob) }, base = { x: p.x + ux * (42 + bob), y: p.y + uy * (42 + bob) };
+      g.poly([tip.x, tip.y, base.x - uy * 34, base.y + ux * 34, base.x + uy * 34, base.y - ux * 34]).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
+      return;
+    }
     if (!this.hinting || this.stuck || this.busy || !this.puzzle) return;
     const { first } = this.ahead();
     if (first < 0) return;
@@ -559,6 +674,7 @@ export const penguinSlide: GameModule = {
   coplayHint: 'Before each slide, guess together where the penguin will stop.',
   offScreen: 'Slide a toy car across the floor: where does it stop, and what stops it?',
   hubIcon: () => new SlideIcon(),
+  entryLevels: [11],
   touchDemo: true,
   sticker,
   create: (ctx) => new PenguinSlide(ctx),
