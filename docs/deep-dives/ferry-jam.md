@@ -15,7 +15,7 @@ Drag boats along their lanes in a small harbor so the red ferry reaches the dock
 | 5 | A 6 by 6 harbor | school | The same on the Rush Hour-sized board | 6×6, 6–8, 8–12 | 1 |
 | 6 | A crowded 6 by 6 harbor: a long way to the dock | school | Long plans with boats parked out of the way and moved again | 6×6, 7–10, 13–18 | 1 |
 
-Ranges (`LEVELS` in `index.ts`): pre-K 1–4, school 3–6. Cells are 100 units (`CELL`).
+Ranges (`LEVELS` in `index.ts`): pre-K 1–4, school 3–8 (levels 7 and 8 are in the ladder table below). Cells are 100 units (`CELL`).
 
 **What a round draws from** (before batch 1 added 26 harbors, so the pools are now 21/21/16/19/14/19 and fill each plan's range; measured by running `solve` over the frozen `HARBORS` outside the test runner on this date): every level has 14 harbors, so repetition is not a gap. But each pool sits at the bottom of its plan's range, because `makeHarbor` accepts the first harbor inside the range:
 
@@ -115,7 +115,7 @@ With `order`, pre-K's window is `[9, 1, 10, 2, 3, 4]` and school's stays `min..m
 
 1. **Fair hints and fuller harbors (batch ferry-jam 1), built 2026-11-02.** The progress-based `stuck` hint, the range-filling harbors, the strict pool test, and the co-play `coplayHint`. *Check:* existing-game fix on an unchanged interaction: typecheck, the game's rule tests, one filtered regression play of level 6 that wanders (a loop of slides earns one hint) and one that progresses on a longer route (no hint). The bot is unchanged, so no `fingerdemo`.
 2. **Level 7, rocks in the harbor (batch ferry-jam 2), built 2026-11-03.** *Check:* new level on the existing drag: typecheck, rule tests (including every rock matters and `focusPath` still reaching every boat), one browser play of level 7 with a drag on a rock, `fingerdemo` at 7, one portrait screenshot.
-3. **Level 8, two ferries (batch ferry-jam 3),** after batch 2 (shares the `Harbor` and `parse` changes). *Check:* new rule on the existing drag: typecheck, rule tests, one play of level 8 to its sticker with the yellow ferry sailing first, `fingerdemo` at 8, one portrait screenshot of the bottom dock.
+3. **Level 8, two ferries (batch ferry-jam 3), built 2026-11-03.** After batch 2 (shares the `Harbor` and `parse` changes). *Check:* new rule on the existing drag: typecheck, rule tests, one play of level 8 to its sticker with the yellow ferry sailing first, `fingerdemo` at 8, one portrait screenshot of the bottom dock.
 4. **Levels 9 and 10, pre-K entry and who's in the way (batch ferry-jam 4).** Level 10 is a new tap step. *Check:* new interaction: typecheck, unit tests (order, entry and landing), one scripted play of level 9 and of level 10 with one wrong tap, a second for the glow, then the blocker; `fingerdemo` at 9 and 10; one portrait screenshot of level 10's question.
 5. *Gated:* Push the boat out (decision 1).
 
