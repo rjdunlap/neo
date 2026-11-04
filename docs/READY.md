@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Define Read & Do *Mend the sign* (levels 8–9, KE1)** (docs only; status `define`): the authored broken signs, delete and swap gestures, the drop-on-word versus gap rule and the check tier. [Dive](deep-dives/read-do.md#build-slices-in-order).
+- **Define Read & Do *Mend the sign* (levels 8–9, KE1)** (docs only; status `define`; claimed 2026-11-04, branch `claude/define-read-do-mend-the-sign`): the authored broken signs, delete and swap gestures, the drop-on-word versus gap rule and the check tier. [Dive](deep-dives/read-do.md#build-slices-in-order).
 - **`lantern-lights`, named hints and Show me a short way (batch lantern-lights 2)** (shares `index.ts` layout; new-interaction tier: typecheck, rule tests, one play at level 3 with one hint, lighting the pond and the replay, one portrait screenshot mid-replay, `fingerdemo` at 3): [dive](deep-dives/lantern-lights.md#build-slices-in-order), [batch](GAME-BATCHES.md#lantern-lights-2-named-hints-and-a-short-way).
 - **Define Light Lab Split the sunbeam** (docs only; status `define`): the splitter seed extending batch 1's nearest-solution search. [Dive](deep-dives/light-lab.md#build-slices-in-order).
 - **`penguin-slide`, level 13 Two penguins**, unblocked (level 12 built) (new-interaction tier: typecheck, rule tests, one play with a selection change and one hint, one portrait screenshot, `fingerdemo` at 13, `BROWSER_SUITE=couchgames` filtered to Penguin Slide): [dive](deep-dives/penguin-slide.md#build-slices-in-order).
