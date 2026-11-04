@@ -2681,7 +2681,7 @@ Branch `claude/picture-graph-what-graph-can-say`, [PR #1201](https://github.com/
 
 ## Island Bridges, school opening: levels 5 and 1 at child size (island-bridges batch 5, 2026-11-04)
 
-[PR #1199](https://github.com/rjdunlap/neo/pull/1199), `claude/island-bridges-school`: [dive slice 5](../deep-dives/island-bridges.md#build-slices-in-order), [definition](../definitions/island-bridges-school-opening.md). `school` joins Island Bridges' bands and plays level 5 (5 by 5) then level 1 (7 by 7), order `[5, 1]`, no gate; home stays Lantern Lake. `touchLayout` in `logic.ts` gives school 100-unit cells and buttons, the grown-up layout unchanged. `bridges.trouble` plays once a round at school when an island turns red, and `bridges.done-school` is the finale; accounting is as built. The `bridgestouch` level 5 and 1 cases pin the grown-up band and `BRIDGES_ONLY=school` covers the new band. Not built: a 13 by 13 sea (needs its own definition). Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--island-bridges-school-opening-island-bridges-batch-5).
+[PR #1199](https://github.com/rjdunlap/neo/pull/1199), `claude/island-bridges-school`: [dive slice 5](../deep-dives/island-bridges.md#build-slices-in-order), [definition](../definitions/island-bridges-school-opening.md). `school` joins Island Bridges' bands and plays level 5 (5 by 5) then level 1 (7 by 7), order `[5, 1]`, no gate; home stays Lantern Lake. `touchLayout` in `logic.ts` gives school 100-unit cells and buttons, the grown-up layout unchanged. `bridges.trouble` plays once a round at school when an island turns red, and `bridges.done-school` is the finale; accounting is as built. The `bridgestouch` level 5 and 1 cases pin the grown-up band and `BRIDGES_ONLY=school` covers the new band. Not built: a 13 by 13 sea (needs its own definition). Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--island-bridges-school-opening-island-bridges-batch-5).
 
 ## Lantern Lights, school opening: levels 1 and 2 (lantern-lights batch 4, 2026-11-04)
 
@@ -2702,6 +2702,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--lantern-lights-named
 [PR #1203](https://github.com/rjdunlap/neo/pull/1203), batch pixel-pictures 3, [dive slice 3](../deep-dives/pixel-pictures.md#build-slices-in-order). Level 9 is a 4x4 two-colour copy (ladybird, carrot, apple, little chick; three per round), picked as level 2 picks (`pixel.notcolor`). `order`: preschool [1, 9, 2], pre-K [1, 9, 2, 3], school unchanged 3-8. `entryLevels: [9]` added (deviation from the dive's "unchanged"): 9 is an easy high-ID level, so carried into school by a birthday or pin it lands on 3, not 8; level 1 is still every younger band's first level. The two-colour glow now also selects the glowing square's colour on copy levels 2 and 9. How-to step now spans 9 to 9. The `woods` Pixel Pictures case runs to level 9 (portrait, asserts the glow picks its colour, screenshot `pixel-pictures-9-two-colors-small`).
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--pixel-pictures-level-9-two-colours-small-pixel-pictures-batch-3).
+
+## Block Topple levels 1–3 (slice 1, new game, built 2026-11-04)
+
+[PR #1214](https://github.com/rjdunlap/neo/pull/1214), [definition](../definitions/block-topple.md#slice-1-as-built-2026-11-04-deviations-from-the-model-above). New Tinker Lab game `block-topple` (preschool 1–2, pre-K 1–3, school 2–3): pull a sling, a toy flight, one tipping rule, thumps never misses, dotted-arc hint after two misses. Board 860 × 600; working shares 38%, 32% and 23% at levels 1–3. Levels 4–5 remain queued as slice 2.
+
+Checks are in [VERIFICATION](../VERIFICATION.md) (entry "Block Topple levels 1–3").
 
 ## Ferry Jam levels 9 and 10 Pre-K entry and who's in the way (ferry-jam 4, 2026-11-04)
 
