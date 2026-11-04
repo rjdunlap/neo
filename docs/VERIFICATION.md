@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-03 — Orchard Rows levels 7–9 definition (docs only)
+
+- [PR #1178](https://github.com/rjdunlap/neo/pull/1178): [definition](definitions/orchard-rows-path.md) for levels 7–9 *a path through the orchard* (own scene, model, layout, pads, accounting, voice, how-to, bot, rule tests, check tier), the batch `orchard-rows 3`, the dive's slice 2 marked defined.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests and every play check (no code changed). Open: the build, and the person and device checks the definition lists.
+
 ## 2026-11-03 — Today's six slice 2: kinds of challenge (D10)
 
 - [PR #1175](https://github.com/rjdunlap/neo/pull/1175): `GameModule.challenge` (seven `CHALLENGE_KINDS`) on all 163 touch games, kind-first `dailySix` pick preferring a new land, the pet in the card page's guide corner and an all-six flourish (nothing recorded or awarded).
@@ -85,12 +91,6 @@
 - Added [the packet](rework/LEARNING-RECAP.md) defining RW09 slice 1 (intention table, step evidence record, plain-HTML recap); work items, roadmap row 30, READY, the study backlog and the Welcome packet updated.
 - Ran: `node scripts/check-links.mjs`, `git diff --check`. No code checks, by tier (nothing built).
 - Open: the slice itself.
-
-## 2026-11-03 — Vine Snip definition (docs only)
-
-- Added [the definition](definitions/vine-snip.md) (levels 1–5, two build slices); the earlier sketch is superseded; roadmap rows 25 and 27, READY, IDEAS and PHYSICS-GAMES updated.
-- Ran: `node scripts/check-links.mjs`, `git diff --check`. No code checks, by tier (nothing built).
-- Open: the definition's three device checks (tap-to-drop for a toddler, swing "keep going" on an iPad, 0.4 s windows for a four-year-old).
 
 ## Coverage summary
 
