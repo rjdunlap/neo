@@ -1147,7 +1147,7 @@ Do not stretch every ladder. Some favorites (bubble popping, dressing the pet, f
 
 ## Quick Tricks and microgames
 
-The Quick Tricks [deep dive](deep-dives/quick-tricks.md) holds the researched ladder and build slices (levels 7 and 8, the third show to be defined).
+The Quick Tricks [deep dive](deep-dives/quick-tricks.md) holds the researched ladder and build slices (levels 7 and 8, the third show defined as level 9).
 
 WarioWare combines short, varied interactions with visual comedy; **WarioWare: Touched!** is a useful touch-interface reference, and **Get It Together!** explores how different characters approach microgames ([Touched! manual](https://www.nintendo.com/eu/media/downloads/games_8/emanuals/nintendo_ds_21/Manual_NintendoDS_WarioWareTouched_EN.pdf), [Get It Together!](https://www.nintendo.com/sg/switch/aw7n/index.html), [practice and replay tips](https://play.nintendo.com/news-tips/tips-tricks/warioware-microgames-quick-tips/)). They are references for interaction and presentation, not for pacing or rewards. Quick Tricks is the island's version: **hear a short prompt → try one satisfying action → enjoy its funny consequence → choose to continue or replay.**
 
@@ -1178,7 +1178,7 @@ Six of the original twelve seeds became the two Quick Tricks shows. These remain
 
 ### A third show: new gestures
 
-A third show could try three new gestures before any becomes a full game: **Wind the Music Box** (turn the crank until a friend pops up), **Fill the Cups** (pour to each cup's line) and **Loop the Fireflies** (draw one loop around three fireflies). In the finale the fireflies light their jar while the music box plays. At toddler level any turn, pour or loop succeeds; preschool and pre-K add a named amount ("fill it to the line", "loop three"), and a 6–8 remix asks for "two whole turns" or "half full". Cranking and pouring cannot go wrong, since an overflowing cup spills into a tray and can be poured back; only a closed loop around the wrong number of fireflies counts as a miss. Accounting follows the earlier shows: one sticker for the show, misses summed across it, and at most one hint per trick. Watch whether small hands can crank before building Gear Garden or Pour and Fill. Lasso Loops already uses the loop gesture, so it can be watched on the iPad; Loop the Fireflies would bring it to toddlers.
+A third show could try three new gestures before any becomes a full game: **Wind the Music Box** (turn the crank until a friend pops up), **Fill the Cups** (pour to each cup's line) and **Loop the Fireflies** (draw one loop around three fireflies). In the finale the fireflies light their jar while the music box plays. At toddler level any turn, pour or loop succeeds; preschool and pre-K add a named amount ("fill it to the line", "loop three"), and a 6–8 remix asks for "two whole turns" or "half full". Cranking and pouring cannot go wrong, since an overflowing cup spills into a tray and can be poured back; only a closed loop around the wrong number of fireflies counts as a miss. Accounting follows the earlier shows: one sticker for the show, misses summed across it, and at most one hint per trick. Watch whether small hands can crank before building Gear Garden or Pour and Fill. Lasso Loops already uses the loop gesture, so it can be watched on the iPad; Loop the Fireflies would bring it to toddlers. It is now defined as level 9 in the [definition](definitions/quick-tricks-third-show.md) (proposal, not built).
 
 ### Gestures the island does not use yet
 

@@ -1345,6 +1345,14 @@ Files expected: `src/games/quick-tricks/logic.ts`, `logic.test.ts`, `index.ts`, 
 
 Proof: new-level tier with `order`: typecheck, unit tests including the registry, lands and order/entry tests, one play of level 8 at toddler with a leaf in front of Bunny (succeeds) and a short pull past halfway, `fingerdemo` at 8.
 
+### quick-tricks 4: The third show
+
+- **`quick-tricks`, Level 9, *The third show* (dive slice 5)**, after batch quick-tricks 1 (independent of batches 2 and 3): music box crank, fill the cups, loop the fireflies. [Dive](deep-dives/quick-tricks.md#build-slices-in-order), [definition](definitions/quick-tricks-third-show.md)
+
+Files expected: `src/games/quick-tricks/third-logic.ts`, `third-logic.test.ts`, `third-show.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests, one scripted play of level 9 at pre-K with a crank released mid-turn, one overfilled cup tipped out (no miss), two wrong loops then the glow, to the sticker, one portrait screenshot of the music box mid-turn, `fingerdemo` at 9, one build for the voice lines.
+
 ### read-do 1: Fresh words and pictures
 
 Built 2026-11-03, [PR #1142](https://github.com/rjdunlap/neo/pull/1142); [build note](archive/COMPLETED-2026-10-09.md#read--do-fresh-words-and-pictures-read-do-batch-1-2026-11-03). No longer eligible for dispatch.
