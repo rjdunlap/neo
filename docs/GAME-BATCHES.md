@@ -1141,6 +1141,8 @@ Proof: new rule: typecheck, rule tests including the brute force on every shape 
 
 ### lantern-lights 4: School opening
 
+Built 2026-11-04, [PR #1200](https://github.com/rjdunlap/neo/pull/1200), branch `claude/lantern-lights-school`; [closeout](archive/COMPLETED-2026-10-09.md#lantern-lights-school-opening-levels-1-and-2-lantern-lights-batch-4-2026-11-04).
+
 - **`lantern-lights`, school opening: levels 1 and 2 (dive slice 4, defined 2026-11-04)** (new band entry on the existing interaction, no layout change; school): `school` joins `bands` playing the two 3 by 3 levels (range 1-2, no `order`), home stays Lantern Lake (Wonder Woods lists it by subject), misses stay 0 with a once-a-pond `lantern.stuck-school` nudge toward Hint, a child's `lantern.go-school` instruction, no footprint preview, co-play and how-to step fixes. [Definition](definitions/lantern-lights-school-opening.md)
 
 Files expected: `src/games/lantern-lights/index.ts`, `logic.ts`, `logic.test.ts`, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.

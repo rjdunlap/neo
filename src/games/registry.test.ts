@@ -308,7 +308,7 @@ describe('game registry', () => {
   });
 
   it('lists the grown-up games as island games for the grown-up band only, and opens any controller-only one through the couch', () => {
-    const ids = ['marble-jump', 'log-roll', 'snowball-merge', 'brain-break', 'pyramid-solitaire', 'number-nook', 'gem-swap', 'tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'pond-conga'];
+    const ids = ['marble-jump', 'log-roll', 'snowball-merge', 'brain-break', 'pyramid-solitaire', 'number-nook', 'gem-swap', 'tile-pairs', 'sudoku-garden', 'picture-logic', 'word-search', 'pond-conga'];
     for (const id of ids) {
       const g = gameById(id)!;
       expect(g, id).toBeDefined();
@@ -335,6 +335,14 @@ describe('game registry', () => {
     expect(g.bands).toEqual(['school', 'grownup']);
     expect(g.levels('school')).toEqual({ min: 1, max: 5, order: [5, 1] });
     expect(couchGameById('island-bridges')).toBe(g);
+  });
+
+  it('opens Lantern Lights\' two 3 by 3 ponds to school and every pond to grown-ups', () => {
+    const g = gameById('lantern-lights')!;
+    expect(g.bands).toEqual(['school', 'grownup']);
+    expect(g.levels('school')).toEqual({ min: 1, max: 2 });
+    expect(g.levels('grownup')).toEqual({ min: 1, max: 8 });
+    expect(couchGameById('lantern-lights')).toBe(g);
   });
 
   it('plays no background music in a game where she makes the music', () => {

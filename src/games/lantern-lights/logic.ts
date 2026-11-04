@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { Band } from '../../progress/bands';
 
 /**
  * Lantern Lights' rules (Lights Out, on a pond at dusk). A board is a square of paper lanterns, each lit or dark.
@@ -126,6 +127,12 @@ export const PLANS: LanternPlan[] = [
   { name: 'A 6 by 6 pond with a short way to light every lantern', size: 6, scramble: 7, atLeast: 7, boards: 2 },
   { name: 'A 6 by 6 pond that takes planning', size: 6, scramble: 12, atLeast: 12, boards: 2 },
 ];
+
+/**
+ * School only: the press count on one pond at which, still unlit, she is told once where Hint is (the fewest plus six).
+ * Null at every other band, where a long wander is left alone.
+ */
+export const stuckAt = (band: Band, par: number): number | null => (band === 'school' ? par + 6 : null);
 
 export const planFor = (level: number): LanternPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
