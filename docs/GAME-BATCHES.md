@@ -1301,6 +1301,16 @@ Files expected: `src/games/pond-conga/logic.ts`, `logic.test.ts`, `index.ts`, `s
 
 Proof: new-level tier: typecheck, rule tests, one play of level 9 with a tail bonk, `fingerdemo` at 9, one portrait screenshot.
 
+### pond-conga 5: School opening
+
+Defined 2026-11-04; after batch pond-conga 3 (shares `index.ts`, `PLANS`, `LEVELS` and `entryLevels` with batches 2–4, so whichever lands later rebases).
+
+- **`pond-conga`, school opening: levels 10 and 11 step by step (dive slice 5, defined 2026-11-04)** (new band entry with a layout change and a school-only input rule; school): `school` joins `bands` playing two 4-row step-by-step ponds (7 by 4 at 100-unit cells), a swipe or tap-toward step moves the line one cell and it waits otherwise, a bump leaves the line in place with `conga.bonk-school`, the dots appear on the second bump without counting a hint, home stays Lantern Lake, a child's instruction, level-scoped how-to steps and co-play. [Definition](definitions/pond-conga-school-opening.md)
+
+Files expected: `src/games/pond-conga/index.ts`, `logic.ts`, `logic.test.ts`, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: new band entry with a layout change and a school-only input rule: typecheck, the game's rule tests and the registry and lands tests, one scripted school play of level 10 with one bump (the line stays put), a second bump (the dots appear, no hint counted), then a tap-toward step and the sticker, then level 11 to its sticker, one portrait screenshot of the 7 by 4 pond, the logged 1024 × 768 sizes, `fingerdemo` at school level 11, one build for the voice lines. `couchgames` is not needed.
+
 ### quick-tricks 1: Truthful accounting, a seeded cast and a bow
 
 - **`quick-tricks`, Truthful accounting, a seeded cast and a bow for the second show (dive slice 1)** (**built 2026-11-03**, [PR #1141](https://github.com/rjdunlap/neo/pull/1141); extends the built game; no new level): a leaf dropped below Bunny is free in level 1, show two hides the yellow arrow during Picnic Places and repeats `tricks.next` after ten quiet seconds, ends with a cast bow and `tricks.done`, its friends are `Critter`s, payoffs for the mailbox flag, friend wiggle and berry gulp, and a seeded friend, crosser and monster colour in show one with per-critter instruction lines. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
