@@ -1,7 +1,8 @@
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { ink, swatch, wood } from '../../art/palette';
-import type { Need, PieceId } from './logic';
+import { anemone, barnacle, crab, kelp, ROCK, ROCK_LINE } from '../../art/shore';
+import type { Need, PieceId, Place, ShoreFriend } from './logic';
 
 const line = (color: number, width = 4) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -196,5 +197,63 @@ export function habitatJournalPicture(visitor: 'bunny' | 'duck'): Container {
   friend.scale.set(0.3);
   friend.position.set(0, 80);
   c.addChild(food, water, friend);
+  return c;
+}
+
+/**
+ * Levels 8–9: a shore friend about 100 units across, feet at (0, 30). `open` 0 is an anemone pulled in tight (left out of
+ * the water); `hiding` tucks the crab behind a little rock so only its eyes peek out.
+ */
+export function shoreFriendArt(friend: ShoreFriend, open = 1): Graphics {
+  const g = new Graphics();
+  if (friend === 'anemone') {
+    anemone(g, 0, 30, 4.2, open);
+  } else if (friend === 'barnacle') {
+    // A little cluster of barnacles on a pebble, drawn at a size she can tap.
+    g.ellipse(0, 22, 42, 14).fill(ROCK).stroke(line(ROCK_LINE, 3));
+    const big = new Graphics();
+    for (const [dx, dy] of [[-18, 6], [0, 2], [18, 6], [-8, -6], [10, -6]]) barnacle(big, dx / 3.4, dy / 3.4);
+    big.scale.set(3.4);
+    big.y = 6;
+    g.addChild(big);
+  } else {
+    const c = new Graphics();
+    crab(c, 0, 0, 1);
+    c.scale.set(2.2);
+    c.position.set(-12, 30);
+    g.addChild(c);
+  }
+  return g;
+}
+
+/** One place on the shore, about 240 wide and 150 tall round (0, 0), with its surface at y 40. */
+export function shorePlaceArt(place: Place): Graphics {
+  const g = new Graphics();
+  if (place === 'rock-pool') {
+    g.ellipse(0, 30, 120, 52).fill(ROCK).stroke(line(ROCK_LINE, 4));
+    g.ellipse(0, 34, 100, 38).fill(0x8fd3ec).stroke(line(swatch.blue.line, 3));
+    g.moveTo(-60, 22).lineTo(-26, 22).stroke(line(0xffffff, 4));
+  } else if (place === 'high-rock') {
+    g.moveTo(-118, 60).quadraticCurveTo(-110, -20, -50, -60).quadraticCurveTo(10, -86, 70, -50).quadraticCurveTo(118, -10, 118, 60).closePath().fill(ROCK).stroke(line(ROCK_LINE, 4));
+    // Sun-dried streaks on the top.
+    g.moveTo(-50, -40).quadraticCurveTo(0, -60, 50, -36).stroke(line(0xc9c3d8, 5));
+  } else {
+    for (const [x, w, h] of [[-62, 66, 56], [10, 80, 70], [80, 50, 44]]) {
+      g.moveTo(x - w, 60).quadraticCurveTo(x - w, 60 - h, x, 60 - h).quadraticCurveTo(x + w, 60 - h, x + w, 60).closePath().fill(ROCK).stroke(line(ROCK_LINE, 4));
+    }
+    // Seaweed draped over the rocks: somewhere to hide.
+    for (let x = -100; x <= 100; x += 34) kelp(g, x, 58, 2.4);
+    g.moveTo(-118, 52).quadraticCurveTo(0, 34, 118, 52).stroke(line(0x5c8a4a, 10));
+  }
+  return g;
+}
+
+/** The tide button's icon: a wave rolling back out. */
+export function tideIcon(): Container {
+  const g = new Graphics();
+  g.moveTo(-30, 8).quadraticCurveTo(-18, -16, 0, -6).quadraticCurveTo(-8, 4, 4, 8).quadraticCurveTo(18, -14, 30, 8).stroke(line(0xffffff, 7));
+  g.moveTo(-30, 22).quadraticCurveTo(-15, 14, 0, 22).quadraticCurveTo(15, 30, 30, 22).stroke(line(0xffffff, 5));
+  const c = new Container();
+  c.addChild(g);
   return c;
 }
