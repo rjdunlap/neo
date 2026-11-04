@@ -121,6 +121,8 @@ export class RockyShore implements Game {
         g.roundRect(f.x - 64, f.y - 64, 128, 128, 26).stroke({ width: pulse, color: swatch.yellow.fill });
         const p = this.places.find((pl) => pl.place === move.place);
         if (p) g.roundRect(p.node.x - 136, p.node.y - 96, 272, 192, 34).stroke({ width: pulse, color: swatch.yellow.fill });
+        // A friend blocking a full place goes back to the sand first, so the sand glows.
+        else if (move.place === 'sand') g.roundRect(160, this.view.h - 165, this.view.w - 350, 150, 34).stroke({ width: pulse, color: swatch.yellow.fill });
       }
     }
   }
