@@ -498,11 +498,17 @@ class QuickTricks implements Game {
       return false;
     }
     const i = this.leaves.indexOf(item);
-    const at = { x, y: top - 40 };
-    void this.ctx.tw.to(item.node, at, { duration: 0.2, ease: ease.outQuad });
     this.up[i] = x - this.cx;
+    const idle = idleLeaves(this.plan, this.up, i);
+    if (idle.includes(i)) {
+      // Over friends another leaf already keeps dry: it floats home (free) rather than hide under that leaf.
+      this.up[i] = null;
+      void this.ctx.say(`tricks.wet-${this.cast.friends[this.showDry()[0]]}`);
+      return false;
+    }
+    void this.ctx.tw.to(item.node, { x, y: top - 40 }, { duration: 0.2, ease: ease.outQuad });
     sfx.pop(5);
-    for (const l of idleLeaves(this.plan, this.up, i)) {
+    for (const l of idle) {
       this.up[l] = null;
       void this.leaves[l].drag.floatHome();
     }
@@ -540,8 +546,9 @@ class QuickTricks implements Game {
     const { sky } = this.rainSpan;
     const offsets = friendsFor(this.plan);
     const mid = this.cx + (Math.min(...offsets) + Math.max(...offsets)) / 2;
-    const spread = Math.max(...offsets) - Math.min(...offsets) + 420;
-    if (this.drops.length < 40 + 10 * offsets.length && Math.random() < dt * 30 * offsets.length ** 0.5) this.drops.push({ x: mid + (Math.random() - 0.5) * spread, y: sky, v: 420 + Math.random() * 120 });
+    const spread = this.plan.two ? Math.max(...offsets) - Math.min(...offsets) + 420 : 420;
+    const more = this.plan.two ? 1.5 : 1;
+    if (this.drops.length < 40 * more && Math.random() < dt * 30 * more) this.drops.push({ x: mid + (Math.random() - 0.5) * spread, y: sky, v: 420 + Math.random() * 120 });
     for (const d of this.drops) {
       d.y += d.v * dt;
       const leaf = this.leafAt.find((l) => Math.abs(d.x - l.x) < l.width / 2);
@@ -663,7 +670,7 @@ class QuickTricks implements Game {
         const art = plankArt(length);
         art.x = -length / 2;
         node.addChild(art);
-        const home = { x: Math.min(v.w - length / 2 - 30, r + 30 + length / 2), y: y + 80 + i * 95 };
+        const home = { x: Math.min(v.w - length / 2 - 30, r + 30 + length / 2), y: y + 70 + i * 112 };
         // A plank lying across a gap can be lifted off again for free; picking it up frees its gap.
         const item = this.addDrag(node, home.x, home.y, (x, py) => this.placePlankTwo(item as DragItem & { length: number }, x, py), new Rectangle(-Math.max(60, length / 2), -55, Math.max(120, length), 110), () => {
           const was = this.onGaps.indexOf(i);

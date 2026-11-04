@@ -89,12 +89,14 @@ export function stillWet(plan: TricksPlan, up: readonly LeafUp[]): number[] {
 }
 
 /**
- * Leaves (other than the one just placed) that now keep nobody dry the others don't: they float home, so a small leaf never hides
- * under the wide one where a finger cannot reach it.
+ * Leaves that keep nobody dry the others don't: they float home, so a small leaf never hides under the wide one where a finger
+ * cannot reach it. The leaf just placed goes home itself if it adds nothing; otherwise any other leaf it made idle does.
  */
 export function idleLeaves(plan: TricksPlan, up: readonly LeafUp[], placed: number): number[] {
   const wet = stillWet(plan, up).length;
-  return up.flatMap((x, l) => (l !== placed && x !== null && stillWet(plan, up.map((u, k) => (k === l ? null : u))).length === wet ? [l] : []));
+  const idle = (l: number) => up[l] !== null && stillWet(plan, up.map((u, k) => (k === l ? null : u))).length === wet;
+  if (idle(placed)) return [placed];
+  return up.flatMap((_, l) => (l !== placed && idle(l) ? [l] : []));
 }
 
 /** The one way to keep everyone dry at Two at once: the wider leaf over the pair's middle, the small leaf over the friend on their own. */

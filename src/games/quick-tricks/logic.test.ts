@@ -172,7 +172,10 @@ describe('Quick Tricks', () => {
       expect(idleLeaves(TWO, [b, pair], 1)).toEqual([0]);
       // Small over the friend on their own still keeps them dry; the leaf just placed never floats away.
       expect(idleLeaves(TWO, [c, pair], 1)).toEqual([]);
-      expect(idleLeaves(TWO, [a, pair], 0)).toEqual([]);
+      // Small dropped over a friend the wide leaf already covers: it adds nothing, so it goes home itself.
+      expect(idleLeaves(TWO, [a, pair], 0)).toEqual([0]);
+      expect(idleLeaves(TWO, [b, pair], 0)).toEqual([0]);
+      expect(idleLeaves(TWO, [c, pair], 0)).toEqual([]);
       expect(idleLeaves(TWO, [a, null], 0)).toEqual([]);
     });
 
