@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-04 — Word Search school opening definition (docs only)
+
+- [Definition](definitions/word-search-school-opening.md) for school level 8 (four picture words across on a 6 by 6 grid; batch word-search 5), [PR #1211](https://github.com/rjdunlap/neo/pull/1211).
+- Ran: links and `git diff --check`.
+- Not run: code checks (no code changed).
+
 ## 2026-11-04 — Quick Tricks third show definition (docs only)
 
 - [Definition](definitions/quick-tricks-third-show.md) for level 9 (music box crank, fill the cups, loop the fireflies; batch quick-tricks 4), [PR #1210](https://github.com/rjdunlap/neo/pull/1210).
