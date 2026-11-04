@@ -1105,6 +1105,8 @@ Proof: couch catalog tier: typecheck, course tests, `BROWSER_SUITE=couchgames` f
 
 ### island-bridges 5: School opening
 
+Built 2026-11-04, [PR #1199](https://github.com/rjdunlap/neo/pull/1199), branch `claude/island-bridges-school`; [closeout](archive/COMPLETED-2026-10-09.md#island-bridges-school-opening-levels-5-and-1-at-child-size-island-bridges-batch-5-2026-11-04). Scope retained for dependency references.
+
 - **`island-bridges`, school opening: levels 5 and 1 at child size (dive slice 5, defined 2026-11-04)** (new entry with a layout change; school): `school` joins `bands` playing existing levels 5 then 1 (order `[5, 1]`), home stays Lantern Lake (Wonder Woods lists it by subject), 100-unit cells and buttons at school only, accounting as built plus the `bridges.trouble` and `bridges.done-school` voice lines, how-to note. [Definition](definitions/island-bridges-school-opening.md)
 
 Files expected: `src/games/island-bridges/index.ts`, `logic.ts` (or `layout.ts`) and their tests, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
@@ -1627,7 +1629,7 @@ Proof: game rules tier: `npm run typecheck` and the Orchard Rows rule tests (eve
 
 ### orchard-rows 3: A path through the orchard
 
-**Built 2026-11-03 ([PR #1183](https://github.com/rjdunlap/neo/pull/1183)):** levels 7, 8 and 9 together; checks in [VERIFICATION](VERIFICATION.md#2026-11-03--orchard-rows-levels-79-a-path-through-the-orchard-batch-orchard-rows-3).
+**Built 2026-11-03 ([PR #1183](https://github.com/rjdunlap/neo/pull/1183)):** levels 7, 8 and 9 together; checks in [VERIFICATION](archive/VERIFICATION-2026-11-03.md#2026-11-03--orchard-rows-levels-79-a-path-through-the-orchard-batch-orchard-rows-3).
 
 - **`orchard-rows`, levels 7–9 (dive slice 3, the build of the path definition)** (extends the built game, new-interaction tier; school 7–9, Barnyard unchanged, Counting Cove as the game already sits): a path splits a grown orchard into two parts she counts, then the whole; 7 *A path at five* (the path after row 5), 8 *Choose the path* (she slides the path with arrows and lays it, any split is right), 9 *A path at ten* (the path down the orchard after ten trees in a row). A new scene `PathOrchard`; the built 4–6 code stays unchanged. [Definition](definitions/orchard-rows-path.md), [dive](deep-dives/orchard-rows.md#build-slices-in-order)
 
