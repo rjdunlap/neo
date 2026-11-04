@@ -2585,7 +2585,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--ferry-jam-le
 
 [PR #1195](https://github.com/rjdunlap/neo/pull/1195), batch ferry-jam 3, [dive slice 3](../deep-dives/ferry-jam.md#build-slices-in-order). Pictures take `y` for an upright yellow ferry (`boats[1]`, dock below its column). A ferry that reaches its dock sails away at once (tween from the dock cell) and frees its cells; the harbor ends when both have sailed, and undo is cleared at the first sail. Plan: 3-5 other boats, fewest 5-8, one harbor per round; sixteen frozen 5x5 harbors (fewest 5, 6, 7, 8 four each; yellow first in 9, red first in 7). Every one starts with the ferries in each other's way, and on the fewest way the first to sail is the one that blocked the other (`firstToSail`). The two-ferry distance table searches backward over kept edges. School range 3-8 (pre-K still 1-4). New lines `ferry.both` (level-8 instruction) and `ferry.one` (after the first sail); how-to step scoped to 8, finish line says "every ferry"; keyboard focus skips a sailed ferry. Nothing is a miss; the stuck hint is unchanged. Couch catalog and Busy Harbors unchanged on purpose. Open: a couch restart after a sail tweens the ferry back in from past the dock (couch never plays level 8).
 
-Checks are in [VERIFICATION](VERIFICATION.md#2026-11-03--ferry-jam-level-8-two-ferries-ferry-jam-batch-3).
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-03--ferry-jam-level-8-two-ferries-ferry-jam-batch-3).
 
 ## Habitat Helpers level 7 Something changed (habitat-helpers 2, 2026-11-03)
 
