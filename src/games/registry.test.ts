@@ -52,10 +52,10 @@ describe('game registry', () => {
     expect(landing(10, g.levels('school'), g.entryLevels)).toBe(3);
   });
 
-  it('opens Picture Graph at pre-K with Line them up (8), an entry school plays after level 2, then A key of five (9) at the top of school, without moving levels 1–7', () => {
+  it('opens Picture Graph at pre-K with Line them up (8), an entry school plays after level 2, then A key of five (9) and Two pictures, one meadow (10) at the top of school, without moving levels 1–7', () => {
     const g = gameById('picture-graph')!;
     expect(g.levels('prek')).toEqual({ min: 1, max: 8, order: [8, 1, 2] });
-    expect(g.levels('school')).toEqual({ min: 1, max: 9, order: [1, 2, 8, 3, 4, 5, 6, 7, 9] });
+    expect(g.levels('school')).toEqual({ min: 1, max: 10, order: [1, 2, 8, 3, 4, 5, 6, 7, 9, 10] });
     expect(g.entryLevels).toEqual([8]);
     expect(stepLevel(8, 1, g.levels('prek'))).toBe(1);
     expect(stepLevel(1, -1, g.levels('prek'))).toBe(8);

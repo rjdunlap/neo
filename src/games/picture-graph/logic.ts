@@ -9,7 +9,7 @@ import type { Band } from '../../progress/bands';
  * levels use a key: one block stands for two critters (or, at level 9, five tally marks), so the bars no longer match
  * a count of one, and the number of blocks is the tempting wrong answer.
  */
-export type GraphMode = 'build' | 'most' | 'more' | 'read' | 'scale' | 'scaleread' | 'tally' | 'line' | 'fives';
+export type GraphMode = 'build' | 'most' | 'more' | 'read' | 'scale' | 'scaleread' | 'tally' | 'line' | 'fives' | 'pair';
 
 export interface GraphPlan {
   mode: GraphMode;
@@ -37,7 +37,12 @@ export const PLANS: GraphPlan[] = [
   { mode: 'line', kinds: 3, min: 2, max: 6, graphs: 2, per: 1, name: 'Line up shells, stones, sticks and feathers in rows by kind: which row has the most?' },
   // Tally cards stand where the meadow was: 10 to 35 of each kind in groups of five, and each block is five.
   { mode: 'fives', kinds: 3, min: 2, max: 7, graphs: 2, per: 5, name: 'A key of five: build the bars from tally cards, one block for each group of five, then how many more?' },
+  // A tally card and three finished graphs: a plain one, one keyed by twos, and a plain trap as tall as the keyed one.
+  { mode: 'pair', kinds: 3, max: 4, graphs: 2, per: 2, name: 'Two pictures, one meadow: which two graphs show the tally card? One has a key of two; one only looks the same' },
 ];
+
+/** The levels with a scene of their own (`LineUp`, `TwoPictures`) rather than a graph she builds or reads. */
+export const ownScene = (plan: GraphPlan) => plan.mode === 'line' || plan.mode === 'pair';
 
 /** The levels whose graph is already built when the round opens, so there is nothing to build. */
 export const prebuilt = (plan: GraphPlan) => plan.mode === 'read' || plan.mode === 'scaleread';
@@ -71,7 +76,7 @@ export function makeGraph(plan: GraphPlan, rng: Rng): Graph {
     const top = Math.max(...counts);
     const low = Math.min(...counts);
     if (plan.mode === 'most' && (counts.filter((c) => c === top).length > 1 || counts.filter((c) => c === low).length > 1)) continue;
-    if ((plan.mode === 'more' || plan.mode === 'scale' || plan.mode === 'scaleread' || plan.mode === 'tally' || plan.mode === 'fives') && new Set(counts).size < counts.length) continue;
+    if ((plan.mode === 'more' || plan.mode === 'scale' || plan.mode === 'scaleread' || plan.mode === 'tally' || plan.mode === 'fives' || plan.mode === 'pair') && new Set(counts).size < counts.length) continue;
     // Reading levels: exactly one pair of equal bars, for "which two are the same?".
     if (plan.mode === 'read') {
       const pairs = counts.flatMap((c, i) => counts.slice(i + 1).map((d, j) => (c === d ? [i, i + 1 + j] : null))).filter(Boolean);
@@ -347,4 +352,89 @@ export function shoreSpots(shore: Shore, plan: GraphPlan, w: number, h: number, 
   const kinds = shore.counts.flatMap((n, kind) => Array.from({ length: n }, () => kind));
   const spots = groupSpots(kinds.length, 1, shoreArea(w, h, shore.kinds.length, plan.max), rng, { w: THING_SIZE, h: THING_SIZE });
   return rng.shuffle(kinds.map((kind, i) => ({ kind, ...spots[i] })));
+}
+
+/* Level 10, Two pictures, one meadow: a tally card and three small finished graphs; she taps the two that show the card. */
+
+export interface SmallGraph {
+  /** Blocks in each bar, in the card's order of kinds. */
+  bars: number[];
+  /** How many critters a block stands for: 2 on the keyed graph, 1 on the others. */
+  per: number;
+}
+
+export interface PairRound {
+  /** The tally card: kinds and counts, every count a whole number of pairs. */
+  card: Graph;
+  /** The three graphs, left to right. */
+  graphs: SmallGraph[];
+  /** The two graphs that show the card (the plain one and the keyed one), left first. */
+  answer: [number, number];
+  keyed: number;
+  /** The plain graph whose bars are as tall as the keyed one's: it shows half the critters. */
+  trap: number;
+}
+
+/** The critters a small graph shows: each bar's blocks times its key. */
+export const critters = (s: SmallGraph) => s.bars.map((b) => b * s.per);
+
+/**
+ * One round: a card of 2 to 8 critters of each kind (all different, in whole pairs), its plain graph, its graph keyed by
+ * twos, and the trap, a plain graph with the keyed graph's heights, from another meadow. All three use the card's kinds in
+ * the card's order, so only the key tells them apart. Shuffled left to right.
+ */
+export function makePairRound(plan: GraphPlan, rng: Rng): PairRound {
+  const card = makeGraph(plan, rng);
+  const plain: SmallGraph = { bars: [...card.counts], per: 1 };
+  const keyed: SmallGraph = { bars: card.counts.map((n) => n / 2), per: 2 };
+  const trap: SmallGraph = { bars: card.counts.map((n) => n / 2), per: 1 };
+  const graphs = rng.shuffle([plain, keyed, trap]);
+  const answer = [graphs.indexOf(plain), graphs.indexOf(keyed)].sort((a, b) => a - b) as [number, number];
+  return { card, graphs, answer, keyed: graphs.indexOf(keyed), trap: graphs.indexOf(trap) };
+}
+
+/** Which gentle line a wrong pair gets: the keyed graph with the trap (the same heights, a different key) has its own. */
+export const pairWhy = (round: PairRound, a: number, b: number): 'key' | 'look' => ([a, b].includes(round.keyed) && [a, b].includes(round.trap) ? 'key' : 'look');
+
+/** The ghost finger: one right graph, then the other; a wrong first pick is tapped again to lower it. */
+export function pairMove(round: PairRound, first: number | null): number {
+  if (first === null) return round.answer[0];
+  if (round.answer.includes(first)) return round.answer.find((i) => i !== first)!;
+  return first;
+}
+
+/** Room for the tally card's marks: a group of five and three more. */
+export const PAIR_CARD = { faceW: 80, marksW: 150, rowH: 56 };
+/** The tallest bar a small graph draws, in blocks; the plain graph of eight critters fills it. */
+export const PAIR_ROWS = 8;
+
+/**
+ * The tally card at the top, under the corner buttons, and three small graphs side by side below it, each a whole tap
+ * target, clear of the pet on the left. `graphX(i)` is a graph's centre; `blockH` the height of a block on its grid.
+ */
+export function pairLayout(w: number, h: number, rows: number) {
+  const cardW = PAIR_CARD.faceW + PAIR_CARD.marksW + 24;
+  const card = { left: w / 2 - cardW / 2, right: w / 2 + cardW / 2, top: 150, bottom: 150 + rows * PAIR_CARD.rowH + 12 };
+  const left = 160;
+  const right = w - 24;
+  const gap = 18;
+  const gw = Math.min(300, (right - left - 2 * gap) / 3);
+  const room = h - 24 - (card.bottom + 18);
+  // A key strip above the grid and the faces below it.
+  const blockH = Math.min(34, (room - 136) / PAIR_ROWS);
+  const gh = PAIR_ROWS * blockH + 136;
+  // Close under the card in a tall view, so the space left over is at the bottom, around the pet.
+  const top = card.bottom + 18 + Math.min(30, (room - gh) / 2);
+  const mid = (left + right) / 2;
+  return {
+    card: { ...card, rowY: (r: number) => card.top + 6 + PAIR_CARD.rowH / 2 + r * PAIR_CARD.rowH, faceX: card.left + PAIR_CARD.faceW / 2, marksX: card.left + PAIR_CARD.faceW + 8 },
+    gw,
+    gh,
+    top,
+    bottom: top + gh,
+    blockH,
+    /** The grid's baseline inside a graph: the faces sit below it. */
+    base: top + gh - 60,
+    graphX: (i: number) => mid + (i - 1) * (gw + gap),
+  };
 }
