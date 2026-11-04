@@ -205,7 +205,9 @@ export class PathOrchard implements Game {
       } else await this.countPart(before.question as 0 | 1);
       if (glowed && !this.finished) await this.talk(this.ctx.say('orchard.followglow'));
     } else if (outcome === 'right') {
-      await this.right(before);
+      // The whole answered: the finished orchard stays on screen (and in the drawing) until the next one grows.
+      if (before.question === 2) this.state = before;
+      await this.right(before, state);
       return;
     }
     if (!this.finished) this.busy = false;
@@ -219,7 +221,7 @@ export class PathOrchard implements Game {
     else await this.talk(this.ctx.say('orchard.partcount', { rows, each, count: skipCount(rows, each) }));
   }
 
-  private async right(before: PathState) {
+  private async right(before: PathState, next: PathState) {
     sfx.sparkle();
     const t = taskOf(before);
     const [pa, pb] = partsOf(this.level, t);
@@ -238,6 +240,7 @@ export class PathOrchard implements Game {
     this.drawHeading(true);
     await this.talk(this.ctx.say('orchard.pathjoin', { a: pa, b: pb, total: pa + pb, rows: t.rows, each: t.columns }));
     if (this.finished) return;
+    this.state = next;
     if (this.state.done) {
       this.finished = true;
       await this.talk(this.ctx.say('orchard.done.path'));
