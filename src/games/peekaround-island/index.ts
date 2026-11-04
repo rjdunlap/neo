@@ -140,7 +140,9 @@ class PeekaroundIsland implements Game {
     this.tree.position.set(c.x, c.y);
     this.left.position.set(c.x - 400, c.y + 20);
     this.right.position.set(c.x + 400, c.y + 20);
-    const xs = spread(4, 200, v.w - 200, 136);
+    // The picture card: centred when it fits, else in the room right of the corner buttons, tiles never overlapping.
+    const n = this.tiles.length;
+    const xs = n * 136 <= v.w - 400 ? spread(n, 200, v.w - 200, 136) : spread(n, 140, v.w - 40, 136);
     this.tiles.forEach((t, i) => t.node.position.set(xs[i], 78));
     this.placeShore();
   }
