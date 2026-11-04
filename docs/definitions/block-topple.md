@@ -1,6 +1,6 @@
 # Block Topple, levels 1–5 (definition)
 
-Defined 2026-11-03 for [chunks 25, 26 and 27](../ROADMAP.md#chunks) (dexterity; gaps against popular games; physics games), from the [sketch](../block-topple.md) and its [IDEAS row](../IDEAS.md#candidates). Docs only; nothing is built. **Ready to build:** every call below has a default the build uses under the [October 23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) (S4 physics: "Block Topple starts with the simplified tipping rule"; S8 identity, land, band and accounting). None needs a content reviewer or the developer. Proposed game ID `block-topple`.
+Defined 2026-11-03 for [chunks 25, 26 and 27](../ROADMAP.md#chunks) (dexterity; gaps against popular games; physics games), from the [sketch](../block-topple.md) and its [IDEAS row](../IDEAS.md#candidates). Slice 1 (levels 1–3) built 2026-11-04; slice 2 (levels 4–5) is not built. **Ready to build:** every call below has a default the build uses under the [October 23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) (S4 physics: "Block Topple starts with the simplified tipping rule"; S8 identity, land, band and accounting). None needs a content reviewer or the developer. Proposed game ID `block-topple`.
 
 **Fun action and purpose:** a sleepy friend dozes on top of a block tower with a bell. She pulls a big springy sling back and lets go; a soft ball arcs out, thumps the tower, and the top tips over onto a cushion, the bell rings and the friend giggles. The learning goal is **estimating angle and power from the last try, then predicting where a stack is weak:** a push high on a tall, thin stack tips it over, while a push low down only bumps it. Nothing is harmed or lost, nothing is an enemy, and there are no stars, scores, shot limits or clock.
 
@@ -113,7 +113,7 @@ All lengths are in **board units**. The board is a fixed 720 × 560 box, transla
 
 ## Build slices
 
-1. **Levels 1–3 as a registered game** (new-game tier): `logic.ts` with the flight, contact, tipping rule, windows, solver and layout, their rule tests, the scene, art, sound, voice lines, how-to card with ghost finger, registry and land, plus a `browser-check.mjs` case and its README row. Its `BandLevels` caps the table at 3 (`prek: { min: 1, max: 3 }`, `school: { min: 2, max: 3 }`).
+1. **Levels 1–3 as a registered game** (**built 2026-11-04**; deviations below) (new-game tier): `logic.ts` with the flight, contact, tipping rule, windows, solver and layout, their rule tests, the scene, art, sound, voice lines, how-to card with ghost finger, registry and land, plus a `browser-check.mjs` case and its README row. Its `BandLevels` caps the table at 3 (`prek: { min: 1, max: 3 }`, `school: { min: 2, max: 3 }`).
 2. **Levels 4–5** (new rules on the existing interaction): the wide stack, partial tips, the thump hint, the basket and number pads, and the full ranges above.
 
 Later, as proposals only: a bounce leaf, a seesaw, a heavy ball, a target needing two hits, chains where one fall tips another (needs a fall model), two friends taking turns, and Bubble Cannon on the same pull.
@@ -135,3 +135,13 @@ Device checks stay open: whether a four-year-old can aim by angle as well as len
 3. **Accounting:** level 1 records no misses; from level 2 a short or over shot is one miss; a thump is never a miss; level 5's wrong count is one miss per line.
 4. **Home land:** Tinker Lab. The alternative is Bubble Beach, beside Domino Run and Peg Garden.
 5. **Journal:** nothing filed. The alternative is "a push high up tips a tall stack", filed once level 4 has shown a high-hit tip after a thump.
+
+## Slice 1 as built (2026-11-04): deviations from the model above
+
+- **Board 860 × 600, not 720 × 560.** The sling is at (230, 400), the net at x 860 and falls end by x 840, because a toppled part lies its full height past the stack and needs the room.
+- **Contact** is the ball's centre entering the block grown by the ball radius (square corners), not a rounded-corner solve.
+- **Towers.** Level 2's tower stands at x 520–540 (two blocks); level 3's at 520–550 behind a hill at x 360–460, 110 high, so the falls fit.
+- **Pull reach.** A long flat pull can bring the ball toward the pet corner on an iPad held sideways (it sits under the finger); the grab circle and every target clear it.
+- **Level 1 hints.** The hint counts short, over and hill shots on level 1 too: level 1 records no misses but can still earn the dotted path, counted as a hint.
+- **Thumps** in slice 1 wiggle and say "Bump! Try higher up." without the golden band (slice 2).
+- **Measured working shares** (of the sampled grid): level 1 38%, level 2 32%, level 3 23%; largest working windows 41° × 60, 42° × 42 and 37° × 36 (degrees × units).

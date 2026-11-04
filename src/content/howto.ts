@@ -1603,6 +1603,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
     finish: [{ from: 12, to: 12, text: 'All six pigs sorted by size finish the round. No bell is needed.' }, { from: 9, to: 9, text: 'The bell finishes the round when the pen holds exactly its requested total, including the animals already inside.' }, { from: 7, to: 7, text: 'Both pigs and both bunnies in their own pens finish the round, with the cows still outside. No bell is needed.' }, { to: 6, text: 'The round ends when every animal is where it was asked to go.' }, { from: 10, to: 10, text: 'Help one animal home, then a second one. Both successes make one round and one sticker.' }, { from: 11, to: 11, text: 'The round ends when all three animals are in the pen, in any order.' }, { from: 8, to: 8, text: 'A bell with the same number in each pen finishes the round, even with some left on the grass (two and two out of six is fair; an empty pen is not).' }],
     note: [{ from: 12, to: 12, text: 'A wrong gate counts a miss: the pig hops out and the pet names the pen’s size. Two misses or fifteen idle seconds glow the animals and matching gates (one hint), with a spoken size reminder. A thirty-second trot-home counts another hint.' }, { from: 9, to: 9, text: 'A wrong bell counts one miss. The pet counts the pen aloud and says how many more are needed; extras hop back out. Two wrong bells or fifteen idle seconds glow the needed animals and gate (one hint), with a spoken recount. A thirty-second trot-home counts another hint.' }, { from: 7, to: 7, text: 'An animal entering a wrong pen counts a miss and hops back out. After two misses only animals that need a pen and their gates glow (one hint); cows never glow. After thirty seconds without progress, a needed animal trots home (another hint).' }, { to: 6, text: 'A wrong pen or a wrong bell counts a miss. If no animal gets home for thirty seconds, the nearest one trots home by itself, and that counts as a hint.' }, { from: 10, to: 10, text: 'Nothing counts as a miss. After ten seconds without a success the animal and gate glow (one hint); at twenty seconds it trots home (another hint). Support starts afresh for the second animal.' }, { from: 8, to: 8, text: 'An unequal bell counts a miss: the pet says each pen\'s number and the extras hop out of the fuller pen (none while the other is empty). Two wrong bells glow the emptier pen (one hint). Thirty idle seconds with uneven pens trot one in (another hint).' }, { from: 11, to: 11, text: 'Nothing counts as a miss. After fifteen seconds without an animal getting home, the herd glows and drifts toward the gate by itself for the rest of the round (one hint). If one still is not home thirty seconds after the last, it trots in (another hint).' }],
   },
+  'block-topple': {
+    goal: 'Pull the ball back and let go to tip the towers onto their cushions.',
+    steps: [
+      { from: 1, to: 3, text: 'Pull the ball back and let go.' },
+      { from: 2, to: 3, text: 'A longer pull goes farther. The faint path shows the last try.' },
+      { from: 3, to: 3, text: 'Pull more downward to send the ball up and over the hill.' },
+    ],
+    finish: 'Every friend is on a cushion.',
+    note: [
+      { from: 1, to: 1, text: 'Nothing here counts as a miss. After two shots that land short or fly over, a dotted path shows a pull that works, which counts as a hint.' },
+      { from: 2, to: 3, text: 'A shot that lands short or flies over counts as a miss. A bump that tips nothing is never a miss. After two misses, a dotted path shows a pull that works, which counts as a hint.' },
+      { text: 'The flight and the tip follow simple toy rules (slow gravity; a push as high as the stack is wide tips it), close to real but not exact.' },
+    ],
+  },
   'bouncy-launch': {
     goal: 'Launch the pet and see where it lands.',
     steps: [
