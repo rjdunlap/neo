@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BIG_15, EASY_10, EASY_PASSES, HARD_10, HARD_15, SAILBOAT } from './pictures';
+import { BIG_15, EASY_10, EASY_PASSES, HARD_10, HARD_15, SAILBOAT, TWO_COLOUR_10 } from './pictures';
 import {
   allLines, brushFor, cellsOf, whyFor, clueOf, clueText, deductions, EMPTY, FILLED, fillCount, fromDrawn, hintFor, isSolved, knowledge, lineStatus, makePuzzles,
   ENTRY_LEVELS, ORDER, paint, parsePicture, passesNeeded, planFor, PLANS, poolFor, solvableByLines, statuses, CROSSED, type Mark, type PicturePuzzle,
   axisOf, clueDepths, headStart, HOME_H, HOME_W, MIN_TOUCH, strokeCells, toolForHint, touchFrame, type Rect,
+  FILLED_2, isFill, colorDeductions, colorKnowledge, fillFor, inksOf, potFor, statusOf, type Hint, type Line,
 } from './logic';
 
 const ALL = [...EASY_10, ...HARD_10, ...BIG_15, ...HARD_15];
@@ -235,9 +236,9 @@ describe('line logic and hints', () => {
     const marks = empty(p);
     const outside = p.solution.indexOf(false), inside = p.solution.indexOf(true);
     marks[inside] = CROSSED;
-    expect(hintFor(marks, p)).toEqual({ kind: 'fix', cell: inside, mark: CROSSED });
+    expect(hintFor(marks, p)).toEqual({ kind: 'fix', cell: inside, mark: CROSSED, want: FILLED });
     marks[outside] = FILLED;
-    expect(hintFor(marks, p)).toEqual({ kind: 'fix', cell: outside, mark: FILLED });
+    expect(hintFor(marks, p)).toEqual({ kind: 'fix', cell: outside, mark: FILLED, want: EMPTY });
     // A hint from a state with only right marks never doubts them.
     const right = empty(p);
     right[inside] = FILLED;
@@ -255,9 +256,9 @@ describe('line logic and hints', () => {
 
 describe('levels', () => {
   it('climbs from a 5 by 5 way in through a 6 by 6 warm-up to two 15 by 15 steps, every level with pictures to choose from', () => {
-    expect(ORDER).toEqual([5, 1, 2, 3, 4, 7]);
+    expect(ORDER).toEqual([5, 1, 2, 3, 6, 4, 7]);
     expect(ENTRY_LEVELS).toEqual([5]);
-    expect(ORDER.map((l) => planFor(l).size)).toEqual([5, 6, 10, 10, 15, 15]);
+    expect(ORDER.map((l) => planFor(l).size)).toEqual([5, 6, 10, 10, 10, 15, 15]);
     for (const level of ORDER) {
       const plan = planFor(level), pool = poolFor(level);
       expect(plan).toBe(PLANS[level]);
@@ -404,8 +405,8 @@ describe('touch', () => {
   it('switches to the tool a hint needs', () => {
     expect(toolForHint({ kind: 'fill', cell: 0, line: { kind: 'row', index: 0 }, clue: [1], why: { kind: 'fits' } })).toBe('fill');
     expect(toolForHint({ kind: 'cross', cell: 0, line: { kind: 'row', index: 0 }, clue: [1], why: { kind: 'fits' } })).toBe('cross');
-    expect(toolForHint({ kind: 'fix', cell: 0, mark: FILLED })).toBe('fill');
-    expect(toolForHint({ kind: 'fix', cell: 0, mark: CROSSED })).toBe('cross');
+    expect(toolForHint({ kind: 'fix', cell: 0, mark: FILLED, want: EMPTY })).toBe('fill');
+    expect(toolForHint({ kind: 'fix', cell: 0, mark: CROSSED, want: FILLED })).toBe('cross');
   });
 
   it('leaves the last rows of the picture to fill for the demonstration, never solving it or filling a wrong square', () => {
@@ -416,5 +417,216 @@ describe('touch', () => {
       expect(p.par - fillCount(start), d.name).toBeGreaterThan(0);
     }
     for (const p of [...poolFor(1), ...poolFor(5)]) expect(isSolved(headStart(p), p), p.name).toBe(false);
+  });
+});
+
+describe('two colours (level 6)', () => {
+  const pool = poolFor(6);
+  const VIEWS = [[1024, 768], [1366, 768], [1024, 1365], [1024, 1100]] as const;
+  const inside = (r: Rect, w: number, h: number) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w + 0.5 && r.y + r.h <= h + 0.5;
+  const apart = (a: Rect, b: Rect) => a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y;
+  const NAMES = { [FILLED]: 'blue', [FILLED_2]: 'orange' } as const;
+
+  it('has 10 by 10 pictures in exactly two palette letters, blue first, solvable by colour logic, named apart from every other picture', () => {
+    expect(pool).toHaveLength(TWO_COLOUR_10.length);
+    expect(planFor(6).colors).toBe(true);
+    const others = new Set(ALL.map((d) => d.name));
+    const names = new Set<string>();
+    for (const p of pool) {
+      expect(p.size, p.name).toBe(10);
+      expect(p.colors, p.name).toHaveLength(2);
+      expect(p.colors![0], p.name).toBe('b');
+      expect(new Set(p.rows.join('').replace(/\./g, '')), p.name).toEqual(new Set(p.colors));
+      expect(solvableByLines(p), p.name).toBe(true);
+      expect(others.has(p.name), p.name).toBe(false);
+      names.add(p.name);
+      p.target.forEach((t, i) => {
+        const ch = p.rows[Math.floor(i / 10)][i % 10];
+        expect(t, `${p.name} ${i}`).toBe(ch === '.' ? EMPTY : ch === p.colors![0] ? FILLED : FILLED_2);
+      });
+      expect(p.par, p.name).toBe(p.target.filter(isFill).length);
+    }
+    expect(names.size).toBe(pool.length);
+    for (const seed of [1, 2, 3, 4, 5]) expect(makePuzzles(6, new Rng(seed))).toHaveLength(1);
+    expect(makePuzzles(6, new Rng(9))[0].name).toBe(makePuzzles(6, new Rng(9))[0].name);
+  });
+
+  it('decides only squares rightly, from many partly-solved states', () => {
+    for (const p of pool) {
+      const rng = new Rng(77);
+      for (let trial = 0; trial < 40; trial++) {
+        const keep = rng.next() * 0.9;
+        const marks: Mark[] = p.target.map((t) => (rng.next() < keep ? (t === EMPTY ? CROSSED : t) : EMPTY));
+        const found = colorDeductions(colorKnowledge(marks, p), p);
+        for (const d of found) {
+          expect(marks[d.cell], p.name).toBe(EMPTY);
+          if (d.fill) expect(d.color, `${p.name} ${d.cell}`).toBe(p.target[d.cell]);
+          else expect(p.target[d.cell], `${p.name} ${d.cell}`).toBe(EMPTY);
+        }
+      }
+    }
+  });
+
+  it('follows its hints from an empty grid to the finished picture in exactly par fills, never without a hint', () => {
+    for (const p of pool) {
+      const marks = empty(p);
+      let counted = 0, near = 0, steps = 0;
+      while (!isSolved(marks, p)) {
+        const h = hintFor(marks, p, near);
+        expect(h, `${p.name} step ${steps}`).not.toBeNull();
+        if (!h || h.kind === 'fix') throw new Error(`${p.name}: unexpected ${h?.kind ?? 'null'}`);
+        expect(marks[h.cell], p.name).toBe(EMPTY);
+        if (h.kind === 'fill') {
+          expect(h.color, p.name).toBe(p.target[h.cell]);
+          expect(h.inks, p.name).toEqual(inksOf(p, h.line));
+          const out = paint(marks[h.cell], 'fill', h.color);
+          marks[h.cell] = out.mark;
+          if (out.counted) counted++;
+        } else {
+          expect(p.target[h.cell], p.name).toBe(EMPTY);
+          marks[h.cell] = paint(marks[h.cell], 'cross').mark;
+        }
+        near = h.cell;
+        expect(++steps, p.name).toBeLessThan(400);
+      }
+      expect(counted, p.name).toBe(p.par);
+      expect(fillCount(marks), p.name).toBe(p.par);
+      expect(hintFor(marks, p)).toBeNull();
+    }
+  });
+
+  it('names the reason a hint gives: full lines add up, done only on a cross', () => {
+    const whys = new Set<string>();
+    for (const p of pool) {
+      const marks = empty(p);
+      for (let i = 0; i < 400 && !isSolved(marks, p); i++) {
+        const h = hintFor(marks, p, i * 7);
+        if (!h || h.kind === 'fix') break;
+        whys.add(h.why.kind);
+        if (h.why.kind === 'full') {
+          const gaps = h.inks!.slice(1).filter((ink, k) => ink === h.inks![k]).length;
+          expect(h.clue.reduce((a, b) => a + b, 0) + gaps, p.name).toBe(p.size);
+        }
+        if (h.why.kind === 'done') expect(h.kind, p.name).toBe('cross');
+        marks[h.cell] = h.kind === 'fill' ? h.color! : CROSSED;
+      }
+    }
+    expect(whys.has('full') || whys.has('fits')).toBe(true);
+  });
+
+  it('hints a wrong colour first, with the right pot, and painting it recolours the square and counts', () => {
+    for (const p of pool) {
+      for (const want of [FILLED, FILLED_2] as const) {
+        const cell = p.target.indexOf(want);
+        const marks = empty(p);
+        marks[cell] = want === FILLED ? FILLED_2 : FILLED;
+        const h = hintFor(marks, p) as Extract<Hint, { kind: 'fix' }>;
+        expect(h, p.name).toEqual({ kind: 'fix', cell, mark: marks[cell], want });
+        expect(toolForHint(h), p.name).toBe(want === FILLED ? 'fill' : 'fill2');
+        expect(toolForHint(h)).toBe(potFor(want));
+        expect(fillFor(toolForHint(h))).toBe(want);
+        const out = paint(marks[cell], 'fill', want);
+        expect(out).toEqual({ mark: want, changed: true, counted: true });
+      }
+      // A fill outside the picture is wanted empty, and taken out with its own pot.
+      const outside = p.target.indexOf(EMPTY);
+      for (const ink of [FILLED, FILLED_2] as const) {
+        const marks = empty(p);
+        marks[outside] = ink;
+        const h = hintFor(marks, p)!;
+        expect(h, p.name).toEqual({ kind: 'fix', cell: outside, mark: ink, want: EMPTY });
+        expect(toolForHint(h)).toBe(ink === FILLED ? 'fill' : 'fill2');
+      }
+    }
+  });
+
+  it('paints over the other colour, empties its own, and is solved only when every colour matches', () => {
+    expect(brushFor('fill', FILLED, FILLED_2)).toBe('fill');
+    expect(brushFor('fill', FILLED_2, FILLED_2)).toBe('empty');
+    expect(brushFor('fill', EMPTY, FILLED_2)).toBe('fill');
+    expect(brushFor('fill', FILLED, FILLED)).toBe('empty');
+    expect(paint(FILLED, 'fill', FILLED_2)).toEqual({ mark: FILLED_2, changed: true, counted: true });
+    expect(paint(FILLED_2, 'empty', FILLED_2)).toEqual({ mark: EMPTY, changed: true, counted: false });
+    for (const p of pool) {
+      const full = p.target.map((t): Mark => (t === EMPTY ? CROSSED : t));
+      expect(isSolved(full, p), p.name).toBe(true);
+      expect(isSolved([...p.target], p), p.name).toBe(true);
+      const swapped = [...p.target], at = p.target.findIndex(isFill);
+      swapped[at] = swapped[at] === FILLED ? FILLED_2 : FILLED;
+      expect(isSolved(swapped, p), p.name).toBe(false);
+      const allFilled = p.target.map((t): Mark => (t === FILLED_2 ? FILLED : FILLED));
+      expect(isSolved(allFilled, p), p.name).toBe(false);
+      const allOne = p.target.map((): Mark => FILLED);
+      expect(isSolved(allOne, p), p.name).toBe(false);
+    }
+  });
+
+  it('reads a line done when its coloured runs match, over on a wrong colour, and lets different colours touch', () => {
+    let touching = 0, over = 0;
+    for (const p of pool) {
+      const lines: Line[] = allLines(p.size);
+      for (const line of lines) {
+        const cells = cellsOf(p.size, line);
+        const own = cells.map((c) => p.target[c]);
+        const marks = empty(p);
+        cells.forEach((c) => (marks[c] = p.target[c]));
+        expect(statusOf(marks, p, line), `${p.name} ${line.kind}${line.index}`).toBe('done');
+        const adjacentMixed = own.some((m, i) => i > 0 && isFill(m) && isFill(own[i - 1]) && m !== own[i - 1]);
+        if (adjacentMixed) touching++;
+        for (const c of cells) {
+          if (!isFill(p.target[c])) continue;
+          const bad = [...marks];
+          bad[c] = p.target[c] === FILLED ? FILLED_2 : FILLED;
+          const st = statusOf(bad, p, line);
+          expect(st, `${p.name} ${line.kind}${line.index}/${c}`).not.toBe('done');
+          if (st === 'over') over++;
+        }
+      }
+    }
+    expect(touching).toBeGreaterThan(0);
+    expect(over).toBeGreaterThan(0);
+  });
+
+  it('says each clue number with its colour', () => {
+    expect(clueText([3, 2], [FILLED, FILLED_2], NAMES)).toBe('3 blue, 2 orange');
+    expect(clueText([0], [FILLED], NAMES)).toBe('nothing');
+    expect(clueText([3, 2])).toBe('3, 2');
+    for (const p of pool) for (const line of allLines(p.size)) {
+      const t = clueText(clueOf(p, line), inksOf(p, line), NAMES);
+      expect(t === 'nothing' || /^\d+ (blue|orange)(, \d+ (blue|orange))*$/.test(t), `${p.name} ${t}`).toBe(true);
+    }
+  });
+
+  it('adds an orange pot beside the blue one, with every button and square big enough, apart and on screen', () => {
+    for (const p of pool) {
+      const { rowDepth, colDepth } = clueDepths(p);
+      for (const [w, h] of VIEWS) {
+        const f = touchFrame(w, h, p.size, rowDepth, colDepth, true), tag = `${p.name} ${w}x${h}`;
+        expect(f.cell, tag).toBeGreaterThanOrEqual(MIN_TOUCH);
+        expect(inside(f.paper, w, h), tag).toBe(true);
+        expect(f.slots.filter((s) => s.kind === 'fill2'), tag).toHaveLength(1);
+        expect(f.slots.filter((s) => s.kind === 'fill'), tag).toHaveLength(1);
+        for (const r of [...f.slots, f.info]) expect(r.x >= HOME_W || r.y + r.h <= h - 150, `${tag} clear of the pet`).toBe(true);
+        for (const s of f.slots) {
+          expect(s.w, `${tag} ${s.kind}`).toBeGreaterThanOrEqual(MIN_TOUCH);
+          expect(s.h, `${tag} ${s.kind}`).toBeGreaterThanOrEqual(MIN_TOUCH);
+          expect(inside(s, w, h), `${tag} ${s.kind}`).toBe(true);
+          expect(apart(s, f.paper), `${tag} ${s.kind} clear of the paper`).toBe(true);
+          expect(apart(s, f.info), `${tag} ${s.kind} clear of the tally`).toBe(true);
+        }
+        f.slots.forEach((a, i) => f.slots.slice(i + 1).forEach((b) => expect(apart(a, b), `${tag} ${a.kind}/${b.kind}`).toBe(true)));
+        expect(touchFrame(w, h, p.size, rowDepth, colDepth).slots.some((s) => s.kind === 'fill2'), tag).toBe(false);
+      }
+    }
+  });
+
+  it('starts the demonstration with only right colour marks, never solved', () => {
+    for (const p of pool) {
+      const start = headStart(p);
+      expect(isSolved(start, p), p.name).toBe(false);
+      expect(start.every((m, i) => m === EMPTY || m === p.target[i]), p.name).toBe(true);
+      expect(start.some((m) => m === FILLED_2) && start.some((m) => m === FILLED) || fillCount(start) > 0, p.name).toBe(true);
+      expect(p.par - fillCount(start), p.name).toBeGreaterThan(0);
+    }
   });
 });

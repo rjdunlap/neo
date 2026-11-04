@@ -322,13 +322,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
     goal: 'Fill the squares the numbers allow, and a picture appears.',
     steps: [
       'The numbers beside each row and column say how many squares in a row to fill. Touch a square to fill it, or drag along a row or column.',
-      'Cross marks an empty square. Fill on a filled square empties it.',
+      { from: 1, to: 5, text: 'Cross marks an empty square. Fill on a filled square empties it.' },
+      { from: 7, to: 7, text: 'Cross marks an empty square. Fill on a filled square empties it.' },
+      { from: 6, to: 6, text: 'Each number is in its run\'s colour; different colours may touch. Choose a colour pot, then fill: a pot paints over the other colour and empties its own. Cross marks an empty square.' },
       { from: 2, to: 4, text: 'A big picture slides: choose Slide, or drag the numbers.' },
-      { from: 7, to: 7, text: 'A big picture slides: choose Slide, or drag the numbers.' },
+      { from: 6, to: 7, text: 'A big picture slides: choose Slide, or drag the numbers.' },
       'Hint rings a square; Start over empties the picture.',
     ],
     finish: 'The picture is done when every filled square matches its numbers.',
-    note: 'Only a hint counts, as help: a fill outside the picture is not a miss, and crossing and emptying are free.',
+    note: 'Only a hint counts, as help: a fill outside the picture, or in the wrong colour, is not a miss, and crossing and emptying are free.',
   },
   'pond-typing': {
     goal: 'Press the key a bubble shows, on a real keyboard. Played on the couch, on a laptop with its keyboard.',
