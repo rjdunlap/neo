@@ -2121,7 +2121,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'penguin-slide': {
-    goal: 'Slide the penguin to the fish.',
+    goal: 'Slide the penguin to the fish, or push an ice block onto a star.',
     steps: [
       { to: 10, text: 'Tap the ice where the penguin should slide.' },
       { from: 11, to: 11, text: 'A yellow arrow shows which way the penguin will slide. Tap the ice where you think it will stop, then watch it go.' },
@@ -2131,13 +2131,17 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'It stops when it bumps into something, or in soft snow.' },
       { from: 6, to: 7, text: 'Slide into an ice block to push it; it skates until it bumps into something.' },
       { from: 9, to: 9, text: 'Push both blocks to make stopping places on the route to the fish.' },
+      { from: 12, to: 12, text: 'Tap the ice where the penguin should slide; slide into the ice block to push it.' },
+      { from: 12, to: 12, text: 'The block skates until it bumps into something, or sinks into soft snow. Stop it right on the star.' },
+      { from: 12, to: 12, text: 'If the block gets stuck, tap the round arrow to go back.' },
       { from: 8, to: 8, text: 'Push the block to make a stop. Soft snow stops both the penguin and the block.' },
       { from: 7, to: 8, text: 'Collect both fish; plan where to park the block so the penguin can reach them.' },
       { to: 10, text: 'If it gets stuck, tap the round arrow to go back.' },
     ],
-    finish: [{ to: 10, text: 'The round ends when the penguin has eaten every fish.' }, { from: 11, to: 11, text: 'The round ends after two ponds of three predictions each.' }],
+    finish: [{ to: 10, text: 'The round ends when the penguin has eaten every fish.' }, { from: 11, to: 11, text: 'The round ends after two ponds of three predictions each.' }, { from: 12, to: 12, text: 'The round ends when the block has stopped on the star in two ponds.' }],
     note: [
       { to: 10, text: 'After a few extra slides, a yellow arrow shows a next slide; it counts as help.' },
+      { from: 12, to: 12, text: 'After a few extra slides, a yellow arrow shows the next slide or push; it counts as help.' },
       { from: 11, to: 11, text: 'Predictions are experiments and never count as misses; a wrong one hears what stopped the penguin.' },
     ],
   },

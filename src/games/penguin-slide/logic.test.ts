@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { cellAt, makePrediction, PREDICTIONS, stopper, eatsTwoFromStart, FISH_COLORS, hasDeadEnd, PAIRED_BLOCK_PONDS, pickLook, ROCK_LOOKS, beside, eaten, makePuzzle, move, PLANS, slide, solve, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
+import { levelsInOrder } from '../../progress/difficulty';
+import { penguinSlide } from './index';
+import { cellAt, makePrediction, PREDICTIONS, stopper, eatsTwoFromStart, FISH_COLORS, hasDeadEnd, PAIRED_BLOCK_PONDS, pickLook, ROCK_LOOKS, beside, eaten, makePuzzle, move, PLANS, slide, solve, solved, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
 
 const tiny: SlidePuzzle = { cols: 4, rows: 3, rocks: [{ x: 3, y: 1 }], soft: [{ x: 1, y: 2 }], start: { x: 0, y: 0 }, fish: [{ x: 2, y: 2 }], best: 0 };
 
@@ -40,7 +42,7 @@ describe('Penguin Slide', () => {
         let have = 0;
         let blocks = p.blocks ?? [];
         let used = 0;
-        while (have !== (1 << p.fish.length) - 1) {
+        while (!solved(p, have, blocks)) {
           const { first } = solve(p, at, have, blocks);
           expect(first).not.toBe(-1);
           const m = move(p, at, first as Dir, blocks)!;
@@ -63,7 +65,7 @@ describe('Penguin Slide', () => {
         let have = 0;
         let blocks = p.blocks ?? [];
         let moves = 0;
-        while (have !== (1 << p.fish.length) - 1 && moves < 40) {
+        while (!solved(p, have, blocks) && moves < 40) {
           const { first } = solve(p, at, have, blocks);
           expect(first).toBeGreaterThanOrEqual(0);
           const tap = beside(at, first as Dir);
@@ -321,5 +323,74 @@ describe('Penguin Slide level 11, Where will it stop?', () => {
   it('varies the ponds by seed', () => {
     const boards = new Set(Array.from({ length: 30 }, (_, i) => JSON.stringify(makePrediction(plan, new Rng(i + 1)))));
     expect(boards.size).toBeGreaterThan(25);
+  });
+});
+
+describe('Penguin Slide level 12, A block onto the star', () => {
+  const plan = PLANS[11];
+  const same = (a: Cell, b: Cell) => a.x === b.x && a.y === b.y;
+
+  it('solved needs every fish eaten and every star covered by a block', () => {
+    const base: SlidePuzzle = { cols: 4, rows: 1, rocks: [], soft: [], start: { x: 0, y: 0 }, fish: [{ x: 3, y: 0 }], best: 0 };
+    expect(solved(base, 0, [])).toBe(false);
+    expect(solved(base, 1, [])).toBe(true); // no stars: fish only
+    const starry: SlidePuzzle = { ...base, fish: [], stars: [{ x: 2, y: 0 }] };
+    expect(solved(starry, 0, [{ x: 1, y: 0 }])).toBe(false); // block off the star
+    expect(solved(starry, 0, [])).toBe(false);
+    expect(solved(starry, 0, [{ x: 2, y: 0 }])).toBe(true);
+    expect(solved({ ...starry, fish: base.fish }, 0, [{ x: 2, y: 0 }])).toBe(false); // star covered but fish not eaten
+    expect(solved({ ...starry, fish: base.fish }, 1, [{ x: 2, y: 0 }])).toBe(true);
+  });
+
+  it('a one-fish pond with no stars still solves as before', () => {
+    expect(solve(tiny, tiny.start)).toEqual({ moves: 3, first: 1 });
+  });
+
+  it('is a star-and-block plan with no fish', () => {
+    expect([plan.fish, plan.soft, plan.rocks, plan.blocks, plan.stars, plan.puzzles]).toEqual([0, 1, 3, 1, 1, 2]);
+    expect(plan.moves).toEqual([3, 6]);
+  });
+
+  it('every pond over 300 seeds is valid, needs the block pushed and the snow, and the hint arrow leads to the star', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const p = makePuzzle(plan, new Rng(seed));
+      const at = `seed ${seed}`;
+      expect(p.best, at).toBeGreaterThanOrEqual(3);
+      expect(p.best, at).toBeLessThanOrEqual(6);
+      expect(solve(p, p.start).moves, at).toBe(p.best);
+      expect(p.fish, at).toHaveLength(0);
+      expect(p.stars, at).toHaveLength(1);
+      expect(p.blocks, at).toHaveLength(1);
+      const star = p.stars![0];
+      expect([...p.rocks, ...p.soft, ...p.blocks!, p.start].some((c) => same(c, star)), at).toBe(false);
+      const all = [p.start, ...p.rocks, ...p.soft, ...p.blocks!, star].map((c) => `${c.x},${c.y}`);
+      expect(new Set(all).size, at).toBe(all.length);
+      // A frozen block can never reach the star (it starts elsewhere), so the block must be pushed.
+      expect(solve({ ...p, rocks: [...p.rocks, ...p.blocks!], blocks: [] }, p.start).moves, at).toBe(-1);
+      // The soft snow matters.
+      expect(solve({ ...p, soft: [] }, p.start).moves, at).not.toBe(p.best);
+      // Follow the hint arrow: ends solved in exactly `best` moves, each step one closer.
+      let pos = p.start, have = 0, blocks = p.blocks!, used = 0;
+      while (!solved(p, have, blocks) && used < 40) {
+        const { first, moves } = solve(p, pos, have, blocks);
+        expect(moves, at).toBe(p.best - used);
+        expect(first, at).toBeGreaterThanOrEqual(0);
+        const m = move(p, pos, first as Dir, blocks)!;
+        expect(m, at).not.toBeNull();
+        have |= eaten(p, m.passed); pos = m.to; blocks = m.blocks; used++;
+      }
+      expect(used, at).toBe(p.best);
+      expect(solved(p, have, blocks), at).toBe(true);
+      expect(same(blocks[0], star), at).toBe(true);
+    }
+  }, 30000);
+
+  it('is the school ladder after level 10, and level 11 stays out of it', () => {
+    const range = penguinSlide.levels('school');
+    expect(range.max).toBe(12);
+    const order = levelsInOrder(range);
+    expect(order.indexOf(12)).toBe(order.indexOf(10) + 1);
+    expect(order).not.toContain(11);
+    expect(order[order.length - 1]).toBe(12);
   });
 });
