@@ -599,7 +599,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play with one wrong cell
 
 ### light-lab 5: Level 11 Through, bounce or stop?
 
-- **`light-lab`, level 11 *Through, bounce or stop?* (dive slice 5)**, after batch 4 (pre-K order [1,2,3,4,11], school order [2,3,4,11,5..10]): a picture object sits on the beam; three free guesses, then two judged choices. [Definition](definitions/light-lab-materials.md), [dive](deep-dives/light-lab.md#build-slices-in-order)
+- **`light-lab`, level 11 *Through, bounce or stop?* (dive slice 5)** (built 2026-11-04, [PR #1225](https://github.com/rjdunlap/neo/pull/1225)), after batch 4 (pre-K order [1,2,3,4,11], school order [2,3,4,11,5..10]): a picture object sits on the beam; three free guesses, then two judged choices. [Definition](definitions/light-lab-materials.md), [dive](deep-dives/light-lab.md#build-slices-in-order)
 
 Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
