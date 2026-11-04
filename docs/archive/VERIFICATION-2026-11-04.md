@@ -55,3 +55,9 @@
 - Ran (base 40e48664 plus this branch; Vite `http://localhost:5298`, `VITE_SPEECH=off`): typecheck; `npm test` 300 files, 4,789 tests; one scripted 768x1024 play: level 9 bot to sticker (saved [9,0,0]); level 10 a drag of a wrong boat = miss 1 with no slide, a wrong tap = miss 2 + hint 1 + glow, blocker tap answers, bot finishes both harbors (saved [10,2,1]), question screenshot reviewed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=ferry-jam FINGER_LEVELS=9,10` pass (11.6 s, 18.8 s).
 - Review: `game-reviewer` one low finding (praise set as the repeated instruction), fixed afterwards with typecheck and ferry/content tests re-run; the browser play was not re-run for that one-line voice change.
 - Not run: `npm run build` (no shared or asset change), couch suites (couch levels unchanged), any iPad or child check. Open: [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-11-04 — Read & Do levels 8–9 Mend the sign definition (docs only)
+
+- [PR #1206](https://github.com/rjdunlap/neo/pull/1206): [definition](../definitions/read-do-mend-the-sign.md) for levels 8–9 *Mend the sign* (KE1), the batch `read-do 4`, the dive's slice 4 marked defined.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`.
+- Not run: typecheck, tests and every play check (no code changed). Open: the build, and the person and device checks the definition lists.

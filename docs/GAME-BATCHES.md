@@ -591,7 +591,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play of level 8 with a d
 
 ### light-lab 4: Level 10 Where's the mirror?
 
-- **`light-lab`, level 10 *Where's the mirror?* (dive slice 4)**, after batch 3 (the school range rises past 9): a cloud hides one mirror and she chooses its cell from where the beam goes. [Dive](deep-dives/light-lab.md#build-slices-in-order)
+- **`light-lab`, level 10 *Where's the mirror?* (dive slice 4)** (built 2026-11-04, [PR #1221](https://github.com/rjdunlap/neo/pull/1221)), after batch 3 (the school range rises past 9): a cloud hides one mirror and she chooses its cell from where the beam goes. [Dive](deep-dives/light-lab.md#build-slices-in-order)
 
 Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
