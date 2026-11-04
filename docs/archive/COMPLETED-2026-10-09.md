@@ -2703,6 +2703,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--lantern-lights-named
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--pixel-pictures-level-9-two-colours-small-pixel-pictures-batch-3).
 
+## Block Topple levels 1–3 (slice 1, new game, built 2026-11-04)
+
+[PR #1214](https://github.com/rjdunlap/neo/pull/1214), [definition](../definitions/block-topple.md#slice-1-as-built-2026-11-04-deviations-from-the-model-above). New Tinker Lab game `block-topple` (preschool 1–2, pre-K 1–3, school 2–3): pull a sling, a toy flight, one tipping rule, thumps never misses, dotted-arc hint after two misses. Board 860 × 600; working shares 38%, 32% and 23% at levels 1–3. Levels 4–5 remain queued as slice 2.
+
+Checks are in [VERIFICATION](../VERIFICATION.md) (entry "Block Topple levels 1–3").
+
 ## Ferry Jam levels 9 and 10 Pre-K entry and who's in the way (ferry-jam 4, 2026-11-04)
 
 [PR #1204](https://github.com/rjdunlap/neo/pull/1204), batch ferry-jam 4, [dive slice 4](../deep-dives/ferry-jam.md#build-slices-in-order). Level 9: 4x4, one upright boat across the ferry's row plus one other, fourteen frozen harbors, two a round, first line `ferry.start.one`. Level 10: 4x4, 2-3 boats, exactly one blocker that cannot leave the ferry's row in one slide (`blockers`, `clearsInOne`; plan flags `entry` and `ask`), fourteen harbors (seven at 3 slides, seven at 4), two a round. Each harbor asks `ferry.who` before any slide: the blocker tap answers (`ferry.yes`, then `ferry.start` is the repeated instruction); another boat, drag touch-down included, is a miss with boing and `ferry.notway`; two misses glow the blocker (one hint); the ferry tap re-asks free. Keys answer with the highlighted boat; couch autoplay and the ghost finger answer first. Pre-K range `{ min 1, max 10, order [9, 1, 10, 2, 3, 4] }`; school unchanged 3-8; `entryLevels: [9, 10]`. Unit translation: `solve` counts the ferry's own final slide, so the dive's "fewest exactly 1" is 2 in solver units and "2-3" is 3-4. How-to steps scoped 9-9 and 10-10; the note splits (to 9: nothing is a mistake; from 10: a wrong tap counts).
