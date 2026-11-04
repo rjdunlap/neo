@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-04 — Light Lab Split the sunbeam definition (docs only)
+
+- [Definition](definitions/light-lab-split.md) for level 12 (school only, after batch light-lab 5), [PR #1208](https://github.com/rjdunlap/neo/pull/1208).
+- Ran: a throwaway generator probe (400 seeds at 7×5: all accepted within the 500-attempt budget, mean 3.5 attempts, at most 7 tiltables, start floor held; not committed); links and `git diff --check`.
+- Not run: code checks (no code changed).
+
 ## 2026-11-04 — Lantern Lights named hints and Show me a short way (lantern-lights batch 2)
 
 - [PR #1207](https://github.com/rjdunlap/neo/pull/1207), commit `f6c33e21` on base `e25c1921`: `namedHint` (`lantern.hint-one` / `lantern.hint-many`), the after-pond Show me a short way and Next pond buttons on touch, `lantern.after`, how-to hint step and finish line.
@@ -88,12 +94,6 @@
 - Ran (dev server `http://localhost:5365/classic/`): typecheck; picture-graph rule tests 37 passed and content plus registry tests 238 passed; one scripted level 10 play (lift and lower free, keyed+trap pair = miss, plain+trap = second miss and the hint, both rounds, sticker, no page errors) with 768x1024 screenshots; `BROWSER_SUITE=fingerdemo FINGER_ONLY=picture-graph FINGER_LEVELS=10` pass (6.3 s).
 - Review: `game-reviewer` found nothing.
 - Not run: `npm run build` (CI runs it), device or child check. Open: iPad feel and whether a child learns to read the key rather than trust "the keyed graph is always right".
-
-## 2026-11-03 — Sudoku Garden level 10 cage beds definition (docs only)
-
-- [PR #1192](https://github.com/rjdunlap/neo/pull/1192): [definition](deep-dives/sudoku-garden.md#cage-beds-level-10-definition-2026-11-03) for level 10 (a 6 by 6 bed with sums in the cages; 9 by 9 cages left out on a measured fit), the batch `sudoku-garden 5`, the dive's slice 5 marked defined.
-- Ran: `node scripts/check-links.mjs` and `git diff --check`.
-- Not run: typecheck, tests and every play check (no code changed). Open: the build (new-interaction tier) and the iPad check of the sum labels and dashes at 92 units ([DEVICE-CHECKS](DEVICE-CHECKS.md) when built).
 
 ## Coverage summary
 

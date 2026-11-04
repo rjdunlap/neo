@@ -605,6 +605,14 @@ Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `sr
 
 Proof: new-interaction tier: typecheck, unit tests, one scripted play of level 11 with a mismatched free guess, one wrong choice, a second for the glow, then the right choice, one portrait screenshot, `fingerdemo` at 11.
 
+### light-lab 6: Level 12 Split the sunbeam
+
+- **`light-lab`, level 12 *Split the sunbeam* (dive slice 6)**, after batch 5 (school order [2,3,4,11,5..10,12]; school top only): a half-mirror sends the beam both straight on and turned, so she tilts mirrors to light both arms. [Definition](definitions/light-lab-split.md), [dive](deep-dives/light-lab.md#build-slices-in-order)
+
+Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+
+Proof: existing-interaction tier with a beam-drawing change: typecheck, rule tests, one scripted play of level 12 with a missed shine, a second miss for the glow, then the solve to the sticker, one portrait screenshot mid-shine with both arms, `fingerdemo` at 12.
+
 ### look-it-up 1: Levels 1–3
 
 - **`look-it-up`, levels 1–3 (IR1)** (a new game, one subtask; toddler 1, preschool 1–2, pre-K 2–3, school 3, Barnyard by default): a picture guide of seven real animals (cow, pig, duck, rabbit, brown bear, common frog, African penguin), each page with a fact box of *Eats*, *Where* and *Baby*; touch labels to hear them (level 1), find a hungry visitor's page by its tab and feed it (level 2), find the asked row and help it there (level 3). Turning pages is free; only a wrong food or place given to the animal is a miss. [Definition](definitions/look-it-up.md), [informational-reading study slice IR1](deep-dives/subjects/informational-reading.md#build-slices-in-order)
