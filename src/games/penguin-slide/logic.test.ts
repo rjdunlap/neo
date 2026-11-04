@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { levelsInOrder } from '../../progress/difficulty';
 import { penguinSlide } from './index';
-import { cellAt, makePrediction, PREDICTIONS, stopper, eatsTwoFromStart, FISH_COLORS, hasDeadEnd, PAIRED_BLOCK_PONDS, pickLook, ROCK_LOOKS, beside, eaten, makePuzzle, move, PLANS, slide, solve, solved, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
+import { alone, movePair, solvePair, cellAt, makePrediction, PREDICTIONS, stopper, eatsTwoFromStart, FISH_COLORS, hasDeadEnd, PAIRED_BLOCK_PONDS, pickLook, ROCK_LOOKS, beside, eaten, makePuzzle, move, PLANS, slide, solve, solved, tapDirection, type Cell, type Dir, type SlidePuzzle } from './logic';
 
 const tiny: SlidePuzzle = { cols: 4, rows: 3, rocks: [{ x: 3, y: 1 }], soft: [{ x: 1, y: 2 }], start: { x: 0, y: 0 }, fish: [{ x: 2, y: 2 }], best: 0 };
 
@@ -20,7 +20,7 @@ describe('Penguin Slide', () => {
   });
 
   it('every puzzle needs the planned number of slides, with nothing stacked on anything else', () => {
-    for (const plan of PLANS.filter((p) => !p.predict)) {
+    for (const plan of PLANS.filter((p) => !p.predict && !p.pal)) {
       for (let seed = 1; seed <= 150; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
         expect(p.best).toBeGreaterThanOrEqual(plan.moves[0]);
@@ -35,7 +35,7 @@ describe('Penguin Slide', () => {
   }, 15000);
 
   it('following the hint arrow always eats every fish in the fewest slides', () => {
-    for (const plan of PLANS.filter((p) => !p.predict)) {
+    for (const plan of PLANS.filter((p) => !p.predict && !p.pal)) {
       for (let seed = 1; seed <= 60; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
         let at = p.start;
@@ -58,7 +58,7 @@ describe('Penguin Slide', () => {
   });
 
   it('has a tap the ghost finger can make for every move of a fewest route, which does that move and finishes in the fewest', () => {
-    for (const plan of PLANS.filter((p) => !p.predict)) {
+    for (const plan of PLANS.filter((p) => !p.predict && !p.pal)) {
       for (let seed = 1; seed <= 60; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
         let at = p.start;
@@ -385,12 +385,63 @@ describe('Penguin Slide level 12, A block onto the star', () => {
     }
   }, 30000);
 
-  it('is the school ladder after level 10, and level 11 stays out of it', () => {
+  it('is the school ladder after level 10, with 12 then 13 last, and level 11 stays out of it', () => {
     const range = penguinSlide.levels('school');
-    expect(range.max).toBe(12);
+    expect(range.max).toBe(13);
     const order = levelsInOrder(range);
     expect(order.indexOf(12)).toBe(order.indexOf(10) + 1);
+    expect(order.indexOf(13)).toBe(order.indexOf(12) + 1);
     expect(order).not.toContain(11);
-    expect(order[order.length - 1]).toBe(12);
+    expect(order[order.length - 1]).toBe(13);
   });
+
+  it('level 13 puts a second penguin on the pond and needs both of them', () => {
+    const plan = PLANS[12];
+    expect(plan.pal).toBe(true);
+    const same = (a: Cell, b: Cell) => a.x === b.x && a.y === b.y;
+    for (let seed = 1; seed <= 300; seed++) {
+      const at = `seed ${seed}`;
+      const p = makePuzzle(plan, new Rng(seed));
+      const pal = p.pal!;
+      expect(pal, at).toBeDefined();
+      expect(p.best, at).toBeGreaterThanOrEqual(4);
+      expect(p.best, at).toBeLessThanOrEqual(7);
+      expect(solvePair(p, [p.start, pal]).moves, at).toBe(p.best);
+      expect([...p.rocks, ...p.fish, p.start].some((c) => same(c, pal)), at).toBe(false);
+      // Each penguin alone, with the other frozen like a rock, is stuck or slower.
+      for (const m of alone(p)) expect(m === -1 || m > p.best, at).toBe(true);
+      // Following the hint step by step eats every fish in exactly `best` slides, and switches penguin.
+      let spots: Cell[] = [p.start, pal];
+      let have = 0;
+      let used = 0;
+      const whos: number[] = [];
+      while (!solved(p, have, [])) {
+        const { first } = solvePair(p, spots, have);
+        expect(first, at).not.toBeNull();
+        const m = movePair(p, spots, first!.who, first!.dir)!;
+        expect(m, at).not.toBeNull();
+        have |= eaten(p, m.passed);
+        spots = m.spots;
+        whos.push(first!.who);
+        used++;
+        expect(used, at).toBeLessThanOrEqual(p.best);
+      }
+      expect(used, at).toBe(p.best);
+      expect(whos.some((w) => w !== whos[0]), at).toBe(true);
+      // A penguin never lands on or slides through the other one.
+      for (const who of [0, 1] as const) {
+        for (const dir of [0, 1, 2, 3] as Dir[]) {
+          const from = [p.start, pal];
+          const other = from[1 - who];
+          const m = movePair(p, from, who, dir);
+          if (same(beside(from[who], dir), other)) expect(m, at).toBeNull();
+          if (m) {
+            expect(same(m.spots[who], other), at).toBe(false);
+            expect(m.passed.some((c) => same(c, other)), at).toBe(false);
+            expect(same(m.spots[1 - who], other), at).toBe(true);
+          }
+        }
+      }
+    }
+  }, 60000);
 });

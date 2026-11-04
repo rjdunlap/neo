@@ -16,14 +16,15 @@ import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBoards, courseMinimum, isPondCourse } from './course';
-import { beside, cellAt, eaten, HINT_AFTER, makePrediction, makePuzzle, move, pickLook, planFor, solve, solved, stopper, tapDirection, type Cell, type Dir, type FishColor, type RockLook, type ShownSlide, type SlidePlan, type SlidePuzzle } from './logic';
+import { beside, cellAt, eaten, HINT_AFTER, makePrediction, makePuzzle, move, movePair, pickLook, planFor, solve, solvePair, solved, stopper, tapDirection, type Cell, type Dir, type FishColor, type RockLook, type ShownSlide, type SlidePlan, type SlidePuzzle } from './logic';
 
 const LEVELS: BandLevels = {
   // Level 11 (Where will it stop?) is the easier step between 2 and 3.
   preschool: { min: 1, max: 11, order: [1, 2, 11] },
   prek: { min: 1, max: 11, order: [1, 2, 11, 3, 4] },
   // Level 12 (A block onto the star) follows 10; 11 is the younger bands' prediction step.
-  school: { min: 2, max: 12, order: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12] },
+  // Level 13 (Two penguins) is the top.
+  school: { min: 2, max: 13, order: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13] },
 };
 
 const CELL = 100;
@@ -70,6 +71,15 @@ function starArt(): Graphics {
   return new Graphics().poly(pts).fill({ color: swatch.yellow.fill, alpha: 0.85 }).stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
 }
 
+/** The second penguin on the two-penguin ponds: the same penguin in a red scarf. */
+function scarfedPenguin(): Container {
+  const c = penguinArt();
+  const g = new Graphics().roundRect(-25, 12, 50, 13, 6).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+  g.roundRect(8, 18, 13, 26, 5).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+  c.addChild(g);
+  return c;
+}
+
 function blockArt(): Container {
   const c = new Container();
   const g = new Graphics().roundRect(-42, -42, 84, 84, 16).fill(0xa8dcff).stroke({ width: 5, color: 0x5aa7e0, join: 'round' });
@@ -81,7 +91,8 @@ function blockArt(): Container {
 }
 
 interface Step {
-  at: Cell;
+  spots: Cell[];
+  who: 0 | 1;
   have: number;
   blocks: Cell[];
 }
@@ -89,7 +100,10 @@ interface Step {
 class PenguinSlide implements Game {
   readonly plan: SlidePlan;
   puzzle!: SlidePuzzle;
-  at: Cell = { x: 0, y: 0 };
+  /** Where each penguin is: the first, and on two-penguin ponds the scarf penguin. */
+  spots: Cell[] = [{ x: 0, y: 0 }];
+  /** The chosen penguin, the one the next slide moves. */
+  who: 0 | 1 = 0;
   have = 0;
   /** Where each ice block is now (the puzzle's own list is where they started). */
   blocks: Cell[] = [];
@@ -101,7 +115,7 @@ class PenguinSlide implements Game {
   excess = 0;
   busy = true;
   finished = false;
-  readonly penguin = penguinArt();
+  readonly penguins: Container[] = [penguinArt(), scarfedPenguin()];
   readonly board = new Container();
   readonly undo: RoundButton;
 
@@ -126,7 +140,7 @@ class PenguinSlide implements Game {
   private guess: Cell | null = null;
   private readonly ring = new Graphics();
   /** The solver's answer for the state it was asked about, so the hint arrow does not search every frame. */
-  private route: { key: string; first: Dir | -1; moves: number } | null = null;
+  private route: { key: string; first: Dir | -1; who: 0 | 1; moves: number } | null = null;
   private history: Step[] = [];
   private hinting = false;
   private stuck = false;
@@ -159,10 +173,10 @@ class PenguinSlide implements Game {
     } else this.course = null;
     this.arrow.eventMode = 'none';
     this.glow.eventMode = 'none';
-    this.penguin.eventMode = 'none';
+    for (const n of this.penguins) n.eventMode = 'none';
     this.scuff.eventMode = 'none';
     this.ring.eventMode = 'none';
-    this.board.addChild(this.floor, this.things, this.ring, this.scuff, this.penguin, this.arrow);
+    this.board.addChild(this.floor, this.things, this.ring, this.scuff, ...this.penguins, this.arrow);
     this.board.eventMode = 'static';
     onTap(this.board, (e) => void this.tapIce(e), { cooldown: 150 });
     this.undo = new RoundButton(againIcon(), swatch.white, 54, () => this.back());
@@ -176,6 +190,24 @@ class PenguinSlide implements Game {
 
   start() {
     void this.next();
+  }
+
+  /** The chosen penguin's cell (the only penguin's, on ponds with one). */
+  get at(): Cell {
+    return this.spots[this.who];
+  }
+
+  set at(c: Cell) {
+    this.spots[this.who] = c;
+  }
+
+  get penguin(): Container {
+    return this.penguins[this.who];
+  }
+
+  /** A two-penguin pond (level 13). */
+  get pair(): boolean {
+    return !!this.puzzle?.pal;
   }
 
   private at2(c: Cell) {
@@ -194,6 +226,8 @@ class PenguinSlide implements Game {
   update(dt: number) {
     this.clock += dt;
     if (!this.busy) this.penguin.rotation = 0.05 * Math.sin(this.clock * 3);
+    // The chosen penguin of two stands lifted a little, over a blue ring.
+    this.penguins.forEach((n, i) => (n.pivot.y = this.pair && i === this.who && !this.finished ? 10 : 0));
     const g = this.glow.clear();
     if (this.stuck && !this.busy && this.undo.visible) g.circle(this.undo.x, this.undo.y, 68 + 4 * Math.sin(this.clock * 6)).stroke({ width: 7, color: swatch.yellow.fill });
     this.drawArrow();
@@ -213,8 +247,10 @@ class PenguinSlide implements Game {
       const stop = this.shown[this.step];
       return stop ? { tap: { on: this.board, ...this.at2(stop.to) } } : null;
     }
-    const { first } = this.ahead();
+    const { first, who } = this.ahead();
     if (first === -1) return null;
+    // Two penguins: tap the one the solver moves next to choose it first.
+    if (who !== this.who) return { tap: { on: this.board, ...this.at2(this.spots[who]) } };
     const cell = this.at2(beside(this.at, first));
     return { tap: { on: this.board, x: cell.x, y: cell.y } };
   }
@@ -238,10 +274,15 @@ class PenguinSlide implements Game {
       }
       return out;
     }
-    const { first } = this.ahead();
+    const { first, who } = this.ahead();
     if (first < 0) return out;
     this.botWait = 0.9;
     out.players[0].active = true;
+    if (who !== this.who) {
+      // The action button chooses the other penguin.
+      out.players[0].action = true;
+      return out;
+    }
     out.players[0].direction = first;
     return out;
   }
@@ -270,8 +311,9 @@ class PenguinSlide implements Game {
       }
       return;
     }
-    const p = input.players.find(p => p.undo || p.direction >= 0);
+    const p = input.players.find(p => p.undo || p.direction >= 0 || (this.pair && p.action));
     if (p?.undo) this.back();
+    else if (p?.action && this.pair) this.choose((1 - this.who) as 0 | 1);
     else if (p && p.direction >= 0) void this.go(p.direction as Dir);
   }
 
@@ -291,7 +333,8 @@ class PenguinSlide implements Game {
       this.made.push(this.puzzle);
       this.look = pickLook(this.ctx.rng);
     }
-    this.at = { ...this.puzzle.start };
+    this.spots = this.startSpots();
+    this.who = 0;
     this.have = 0;
     this.blocks = (this.puzzle.blocks ?? []).map((c) => ({ ...c }));
     this.route = null;
@@ -315,6 +358,7 @@ class PenguinSlide implements Game {
       return this.ctx.instruct(this.course.boards.some(b => b.blocks?.length) ? 'slide.ice' : 'slide.go');
     }
     if (this.index > 0) return;
+    if (this.plan.pal) return this.ctx.instruct('slide.pals');
     if (this.plan.stars) return this.ctx.instruct('slide.star');
     if (this.plan.blocks) return this.ctx.instruct(this.plan.pairedBlocks ? 'slide.paired' : this.plan.soft ? 'slide.ice-snow' : this.plan.fish === 2 ? 'slide.ice-two' : 'slide.ice');
     if (this.plan.soft) return this.ctx.instruct('slide.soft');
@@ -336,8 +380,32 @@ class PenguinSlide implements Game {
     this.rockNodes = p.rocks.map((c) => this.place(rockArt(this.look.rock), c));
     this.fishNodes = p.fish.map((c) => this.place(fishArt(this.look.fish), c));
     this.blockNodes = this.blocks.map((c) => this.place(blockArt(), c));
-    const s = this.at2(this.at);
-    this.penguin.position.set(s.x, s.y);
+    this.penguins[1].visible = this.pair;
+    this.spots.forEach((c, i) => {
+      const s = this.at2(c);
+      this.penguins[i].position.set(s.x, s.y);
+      this.penguins[i].rotation = 0;
+    });
+  }
+
+  private startSpots(): Cell[] {
+    return [{ ...this.puzzle.start }, ...(this.puzzle.pal ? [{ ...this.puzzle.pal }] : [])];
+  }
+
+  /** Two penguins: choose which one the next slide moves. Choosing is never a slide. */
+  private choose(who: 0 | 1) {
+    if (this.busy || this.finished || !this.pair || who === this.who) return;
+    sfx.pop();
+    this.penguin.rotation = 0;
+    this.who = who;
+  }
+
+  /** Every penguin back where `spots` says, gliding. */
+  private settlePenguins(duration: number) {
+    this.spots.forEach((c, i) => {
+      const p = this.at2(c);
+      void this.ctx.tw.to(this.penguins[i], { x: p.x, y: p.y }, { duration, ease: ease.inOutSine });
+    });
   }
 
   private place<T extends Container>(node: T, c: Cell): T {
@@ -353,6 +421,11 @@ class PenguinSlide implements Game {
     if (this.busy || this.finished) return;
     const local = this.board.toLocal(e.global);
     if (this.predicting) return void this.predict(cellAt(this.puzzle, local.x, local.y, CELL));
+    if (this.pair) {
+      // A tap on the other penguin chooses it.
+      const cell = cellAt(this.puzzle, local.x, local.y, CELL), other = (1 - this.who) as 0 | 1;
+      if (cell.x === this.spots[other].x && cell.y === this.spots[other].y) return void this.choose(other);
+    }
     const p = this.at2(this.at);
     const dx = local.x - p.x;
     const dy = local.y - p.y;
@@ -375,7 +448,7 @@ class PenguinSlide implements Game {
   }
 
   private async go(dir: Dir) {
-    const m = move(this.puzzle, this.at, dir, this.blocks);
+    const m = this.pair ? this.pairMove(dir) : move(this.puzzle, this.at, dir, this.blocks);
     if (!m) {
       // Already against something: a little bump, never a mistake.
       sfx.boing();
@@ -389,7 +462,7 @@ class PenguinSlide implements Game {
     }
     const { to, passed, pushed } = m;
     this.busy = true;
-    this.history.push({ at: this.at, have: this.have, blocks: this.blocks });
+    this.history.push({ spots: this.spots.slice(), who: this.who, have: this.have, blocks: this.blocks });
     this.moves++;
     this.report();
     if (pushed) {
@@ -442,6 +515,12 @@ class PenguinSlide implements Game {
     if (this.again) this.restart();
   }
 
+  /** A slide of the chosen penguin on a two-penguin pond, the other stopping it like a rock. */
+  private pairMove(dir: Dir) {
+    const m = movePair(this.puzzle, this.spots, this.who, dir);
+    return m && { to: m.spots[this.who], passed: m.passed, blocks: this.blocks, pushed: null };
+  }
+
   /** Level 11: she taps where she thinks the shown slide will stop; then it goes. A prediction is never a miss. */
   private async predict(cell: Cell) {
     const shown = this.shown[this.step];
@@ -483,6 +562,10 @@ class PenguinSlide implements Game {
   /** Level 11's rings: her prediction while the slide goes, or the keys' ring before she chooses. */
   private drawRing() {
     const g = this.ring.clear();
+    if (this.pair && !this.finished) {
+      g.ellipse(this.penguin.x, this.penguin.y + 34, 40, 14).stroke({ width: 6, color: swatch.blue.fill, alpha: 0.85 });
+      return;
+    }
     if (!this.predicting || !this.puzzle || this.finished) return;
     const at = this.guess ?? (!this.touch && !this.busy ? this.focus : null);
     if (!at) return;
@@ -492,10 +575,15 @@ class PenguinSlide implements Game {
 
   /** The solver's next slide from where things stand now, remembered until something moves. */
   private ahead() {
-    const key = `${this.at.x},${this.at.y},${this.have},${this.blocks.map((b) => `${b.x}.${b.y}`).join(' ')}`;
+    const key = `${this.spots.map((c) => `${c.x}.${c.y}`).join(' ')},${this.who},${this.have},${this.blocks.map((b) => `${b.x}.${b.y}`).join(' ')}`;
     if (this.route?.key !== key) {
-      const { first, moves } = solve(this.puzzle, this.at, this.have, this.blocks);
-      this.route = { key, first, moves };
+      if (this.pair) {
+        const { first, moves } = solvePair(this.puzzle, this.spots, this.have);
+        this.route = { key, first: first?.dir ?? -1, who: first?.who ?? this.who, moves };
+      } else {
+        const { first, moves } = solve(this.puzzle, this.at, this.have, this.blocks);
+        this.route = { key, first, who: this.who, moves };
+      }
     }
     return this.route;
   }
@@ -526,7 +614,8 @@ class PenguinSlide implements Game {
   private async rewind() {
     this.busy = true;
     this.again = false;
-    this.at = { ...this.puzzle.start };
+    this.spots = this.startSpots();
+    this.who = 0;
     this.have = 0;
     this.history = [];
     if (this.predicting) {
@@ -537,8 +626,8 @@ class PenguinSlide implements Game {
     }
     this.settleBlocks((this.puzzle.blocks ?? []).map((c) => ({ ...c })), 0.3);
     this.fishNodes.forEach((f) => (f.visible = true));
-    const p = this.at2(this.at);
-    await this.ctx.tw.to(this.penguin, { x: p.x, y: p.y }, { duration: 0.3, ease: ease.inOutSine });
+    this.settlePenguins(0.3);
+    await this.ctx.tw.wait(0.3);
     this.busy = false;
     this.checkHelp();
   }
@@ -547,12 +636,14 @@ class PenguinSlide implements Game {
   private back() {
     if (this.busy || this.finished || !this.history.length) return;
     const step = this.history.pop()!;
-    this.at = step.at;
+    this.penguin.rotation = 0;
+    // The penguin that made the slide steps back and is the chosen one again.
+    this.spots = step.spots;
+    this.who = step.who;
     this.have = step.have;
     this.settleBlocks(step.blocks, 0.25);
     this.fishNodes.forEach((f, i) => (f.visible = !(this.have & (1 << i))));
-    const p = this.at2(this.at);
-    void this.ctx.tw.to(this.penguin, { x: p.x, y: p.y }, { duration: 0.25, ease: ease.inOutSine });
+    this.settlePenguins(0.25);
     this.checkHelp();
   }
 
@@ -614,9 +705,10 @@ class PenguinSlide implements Game {
       return;
     }
     if (!this.hinting || this.stuck || this.busy || !this.puzzle) return;
-    const { first } = this.ahead();
+    // On two-penguin ponds the arrow stands by the penguin to move next, chosen or not.
+    const { first, who } = this.ahead();
     if (first < 0) return;
-    const p = this.at2(this.at);
+    const p = this.at2(this.spots[who] ?? this.at);
     const bob = 6 * Math.sin(this.clock * 6);
     const ux = [1, 0, -1, 0][first];
     const uy = [0, 1, 0, -1][first];

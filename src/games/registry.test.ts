@@ -16,7 +16,7 @@ describe('game registry', () => {
     const g = gameById('penguin-slide')!;
     expect(g.levels('preschool')).toEqual({ min: 1, max: 11, order: [1, 2, 11] });
     expect(g.levels('prek')).toEqual({ min: 1, max: 11, order: [1, 2, 11, 3, 4] });
-    expect(g.levels('school')).toEqual({ min: 2, max: 12, order: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12] });
+    expect(g.levels('school')).toEqual({ min: 2, max: 13, order: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13] });
     expect(stepLevel(10, 1, g.levels('school'))).toBe(12);
     expect(landing(12, g.levels('school'), g.entryLevels)).toBe(12);
     expect(g.entryLevels).toEqual([11]);

@@ -3166,6 +3166,7 @@ export const SCRIPT = {
   'slide.stuck': ['Oh no, the penguin cannot reach the fish from here. Tap the round arrow to go back.'],
   'slide.star': ['Push the ice block so it stops right on the star! It skates until it bumps into something, so plan where to push it from.'],
   'slide.star.stuck': ['Oh no, the block cannot reach the star from here. Tap the round arrow to go back.'],
+  'slide.pals': ['Two penguins! Tap a penguin to choose it, then tap the ice to slide it. A penguin can stop when it bumps into its friend!'],
   'slide.star.done': ['The block is on the star! What clever pushing!'],
   'slide.hint': ['Follow the yellow arrow.'],
   'slide.yum': ['Yum!', 'A fish!', 'Gulp!'],
