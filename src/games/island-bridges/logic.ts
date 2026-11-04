@@ -110,6 +110,31 @@ export function trouble(layout: Layout, planks: Planks): number[] {
   }).filter((i) => i >= 0);
 }
 
+/**
+ * Keep them joined (isolation): the group of islands that `add` more planks on an edge would close off, or null. A group is
+ * closed off when the plank fills both ends exactly and every island joined to them (by planks already laid, read from `laid`,
+ * where a negative value counts as none) is full too, so nothing can ever join it to the rest, while islands are left outside.
+ * Only filling an edge all the way can do that, so the rule only ever takes one plank off what an edge could carry.
+ */
+export function closesOff(layout: Layout, laid: readonly number[], edge: number, add: number): number[] | null {
+  const N = layout.islands.length, e = layout.edges[edge];
+  const on = (k: number) => Math.max(0, laid[k]) + (k === edge ? add : 0);
+  const full = (i: number) => layout.at[i].reduce((n, k) => n + on(k), 0) === layout.islands[i].n;
+  if (add <= 0 || !full(e.a) || !full(e.b)) return null;
+  const seen = new Set<number>([e.a]);
+  const stack = [e.a];
+  while (stack.length) {
+    const i = stack.pop()!;
+    if (!full(i)) return null;
+    for (const k of layout.at[i]) {
+      if (!on(k)) continue;
+      const j = otherEnd(layout, k, i);
+      if (!seen.has(j)) { seen.add(j); stack.push(j); }
+    }
+  }
+  return seen.size < N ? [...seen].sort((a, b) => a - b) : null;
+}
+
 /* ------------------------------------------------------------------------------------------------ */
 /* Solving                                                                                            */
 /* ------------------------------------------------------------------------------------------------ */
@@ -122,9 +147,11 @@ export interface Solved {
 /**
  * Every way to finish the puzzle from some planks already placed (`-1` for an edge still open; any other number is fixed),
  * counting no further than `limit`. Each island has to reach its number and nothing may cross, which settles most edges by
- * itself (`propagate`); what is left is searched, and a finished try must also join all the islands.
+ * itself (`propagate`); what is left is searched, and a finished try must also join all the islands. With `isolation`, the
+ * settling also knows that no bridge may close a group off (`closesOff`); it is off by default, so the easy levels' seas and
+ * the frozen courses are judged as they always were.
  */
-export function solve(layout: Layout, fixed?: readonly number[], limit = 2, noGuessing = false): Solved {
+export function solve(layout: Layout, fixed?: readonly number[], limit = 2, noGuessing = false, isolation = false): Solved {
   const E = layout.edges.length, N = layout.islands.length;
   const found: number[][] = [];
 
@@ -140,7 +167,8 @@ export function solve(layout: Layout, fixed?: readonly number[], limit = 2, noGu
       const cap = (k: number) => {
         if (layout.crossing[k].some((f) => val[f] > 0)) return 0;
         const e = layout.edges[k];
-        return Math.max(0, Math.min(MAX_PLANKS, layout.islands[e.a].n - have[e.a], layout.islands[e.b].n - have[e.b]));
+        const most = Math.max(0, Math.min(MAX_PLANKS, layout.islands[e.a].n - have[e.a], layout.islands[e.b].n - have[e.b]));
+        return isolation && most > 0 && closesOff(layout, val, k, most) ? most - 1 : most;
       };
       // One change at a time, then the counts are read again: a count read before a change would be wrong after it.
       scan: for (let i = 0; i < N; i++) {
@@ -196,6 +224,12 @@ export function bycounting(layout: Layout): boolean {
   return found.length === 1;
 }
 
+/** Whether counting and keeping them joined (`closesOff`) finish the puzzle together, with no guessing: level 6's measure. */
+export function byreasoning(layout: Layout): boolean {
+  const { found } = solve(layout, undefined, 1, true, true);
+  return found.length === 1;
+}
+
 export interface Puzzle {
   size: number;
   layout: Layout;
@@ -235,6 +269,8 @@ export interface BridgePlan {
   puzzles: number;
   /** Keep only a sea with an island that faces a single neighbour, the easiest place to start. */
   lonely?: boolean;
+  /** Keep only a sea where counting stalls and keeping them joined (`closesOff`) gets it going again, with no guessing. */
+  joined?: boolean;
 }
 
 export const PLANS: BridgePlan[] = [
@@ -244,10 +280,12 @@ export const PLANS: BridgePlan[] = [
   { name: 'A big 11 by 11 sea', size: 11, islands: { min: 19, max: 24 }, counting: false, puzzles: 1 },
   // Level 5, the entry: played first by the grown-up order.
   { name: 'A small 5 by 5 sea to start', size: 5, islands: { min: 4, max: 6 }, counting: true, puzzles: 1, lonely: true },
+  // Level 6, between 2 and 3 by the order.
+  { name: 'Keep them joined: a 9 by 9 sea where a bridge must not close a group off', size: 9, islands: { min: 12, max: 15 }, counting: false, puzzles: 1, joined: true },
 ];
 
-/** The levels in play order, easiest first: the small sea, appended as level 5, comes before level 1. */
-export const LEVEL_ORDER = [5, 1, 2, 3, 4] as const;
+/** The levels in play order, easiest first: the small sea (level 5) comes before level 1, and Keep them joined (6) after 2. */
+export const LEVEL_ORDER = [5, 1, 2, 6, 3, 4] as const;
 
 export const planFor = (level: number): BridgePlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -299,7 +337,9 @@ export function makePuzzle(plan: BridgePlan, rng: Rng): Puzzle {
     const layout = layoutOf(size, numbered);
     if (plan.lonely && !layout.at.some((edges) => edges.length === 1)) continue;
     const { found } = solve(layout);
-    if (found.length === 1 && (!plan.counting || bycounting(layout))) return { size, layout, solution: found[0], par: found[0].reduce((n, p) => n + p, 0) };
+    if (found.length !== 1 || (plan.counting && !bycounting(layout))) continue;
+    if (plan.joined && (bycounting(layout) || !byreasoning(layout) || !joinedByHints(layout, found[0]))) continue;
+    return { size, layout, solution: found[0], par: found[0].reduce((n, p) => n + p, 0) };
   }
   throw new Error(`could not make a puzzle for ${plan.name}`);
 }
@@ -346,6 +386,11 @@ export type Hint =
   | { kind: 'fix'; edge: number }
   /** An island whose number and room force a plank onto this edge, and why (see `Forced`). */
   | { kind: 'forced'; edge: number; island: number; why: Forced }
+  /**
+   * Keep them joined: counting alone forces nothing, but filling `closing` would close `group` off from the rest, so the
+   * island's number forces a plank onto `edge` (which may be `closing` itself, carrying one plank but not two).
+   */
+  | { kind: 'joined'; edge: number; island: number; why: Forced; closing: number; group: number[] }
   /** Nothing is forced by one island alone: an edge that needs a plank in the solution. */
   | { kind: 'next'; edge: number };
 
@@ -357,12 +402,17 @@ export type Hint =
  */
 export type Forced = 'full' | 'last-way' | 'every-way';
 
-/** What an island still needs, and for each of its edges the planks that edge could still take (0 when crossed or full). */
-export function roomOf(layout: Layout, planks: Planks, island: number): { left: number; caps: { edge: number; cap: number }[]; room: number } {
+/**
+ * What an island still needs, and for each of its edges the planks that edge could still take (0 when crossed or full). With
+ * `isolation`, an edge whose filling would close a group off (`closesOff`) can take one fewer, and says which group.
+ */
+export function roomOf(layout: Layout, planks: Planks, island: number, isolation = false): { left: number; caps: { edge: number; cap: number; group?: number[] }[]; room: number } {
   const caps = layout.at[island].map((k) => {
     if (layout.crossing[k].some((f) => planks[f] > 0)) return { edge: k, cap: 0 };
     const other = otherEnd(layout, k, island);
-    return { edge: k, cap: Math.max(0, Math.min(MAX_PLANKS - planks[k], layout.islands[other].n - planksAt(layout, planks, other))) };
+    const cap = Math.max(0, Math.min(MAX_PLANKS - planks[k], layout.islands[other].n - planksAt(layout, planks, other)));
+    const group = isolation && cap > 0 ? closesOff(layout, planks, k, cap) : null;
+    return group ? { edge: k, cap: cap - 1, group } : { edge: k, cap };
   });
   return { left: layout.islands[island].n - planksAt(layout, planks, island), caps, room: caps.reduce((n, c) => n + c.cap, 0) };
 }
@@ -372,8 +422,8 @@ export function roomOf(layout: Layout, planks: Planks, island: number): { left: 
  * must carry at least one more plank in every finished sea (what it could take is at least what the island needs beyond the
  * room of its other edges), so the hint never contradicts the answer.
  */
-export function forcedPlank(layout: Layout, planks: Planks): { edge: number; island: number; why: Forced } | null {
-  const rooms = layout.islands.map((_, i) => roomOf(layout, planks, i));
+export function forcedPlank(layout: Layout, planks: Planks, isolation = false): { edge: number; island: number; why: Forced } | null {
+  const rooms = layout.islands.map((_, i) => roomOf(layout, planks, i, isolation));
   const reasons: [Forced, (r: (typeof rooms)[number]) => number | undefined][] = [
     ['full', (r) => (r.left === r.room ? r.caps.find((c) => c.cap > 0)?.edge : undefined)],
     ['last-way', (r) => { const open = r.caps.filter((c) => c.cap > 0); return open.length === 1 ? open[0].edge : undefined; }],
@@ -399,7 +449,42 @@ export function hintFor(layout: Layout, planks: Planks, solution: Planks): Hint 
   const need = solution.findIndex((s, k) => planks[k] < s);
   if (need < 0) return null;
   const forced = forcedPlank(layout, planks);
-  return forced ? { kind: 'forced', ...forced } : { kind: 'next', edge: need };
+  if (forced) return { kind: 'forced', ...forced };
+  const joined = joinedPlank(layout, planks);
+  return joined ? { kind: 'joined', ...joined } : { kind: 'next', edge: need };
+}
+
+/**
+ * Keep them joined: when counting alone forces nothing, the plank one island forces once no bridge may close a group off, with
+ * the closing edge at that island and its group. Every closing edge must carry less than it could in the answer (filling it
+ * would leave islands outside the group unreachable), so the reduced room is still true and the plank is still in the answer.
+ */
+export function joinedPlank(layout: Layout, planks: Planks): { edge: number; island: number; why: Forced; closing: number; group: number[] } | null {
+  const forced = forcedPlank(layout, planks, true);
+  if (!forced) return null;
+  const caps = roomOf(layout, planks, forced.island, true).caps;
+  // Prefer the forced edge itself when it is the one that would close the group off (one plank, not two).
+  const closing = caps.find((c) => c.group && c.edge === forced.edge) ?? caps.find((c) => c.group);
+  return closing?.group ? { ...forced, closing: closing.edge, group: closing.group } : null;
+}
+
+/** Following the hints from an empty sea: the kinds given, in order, until the sea is finished (or a hint is missing). */
+export function hintWalk(layout: Layout, solution: Planks): Hint['kind'][] {
+  const planks = solution.map(() => 0), kinds: Hint['kind'][] = [];
+  for (let step = 0; step < 200; step++) {
+    const h = hintFor(layout, planks, solution);
+    if (!h) break;
+    kinds.push(h.kind);
+    if (h.kind === 'fix') planks[h.edge]--;
+    else planks[h.edge]++;
+  }
+  return kinds;
+}
+
+/** Level 6's sea is taught by its hints: at least one keep-them-joined hint, and never one that only points at the answer. */
+export function joinedByHints(layout: Layout, solution: Planks): boolean {
+  const kinds = hintWalk(layout, solution);
+  return kinds.includes('joined') && !kinds.includes('next');
 }
 
 /** The pushes of the stick that take the highlight from one island to another, or null if it cannot get there. */

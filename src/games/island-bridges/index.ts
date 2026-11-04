@@ -17,7 +17,7 @@ import {
 } from './logic';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 5, order: [...LEVEL_ORDER] } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 6, order: [...LEVEL_ORDER] } };
 
 const SEA = 0xcfe8f7;
 const SEA_LINE = 0x7aa7c7;
@@ -283,6 +283,14 @@ class IslandBridges implements Game {
       const ring = (i: number) => { const q = this.at(i); g.circle(q.x, q.y, rad + 7 + 2 * Math.sin(this.clock * 6)).stroke({ width: 5, color: h.kind === 'fix' ? swatch.red.fill : swatch.orange.fill }); };
       ring(e.a);
       ring(e.b);
+      // Keep them joined: the group that would be cut off in dashed amber rings, and the bridge that would do it dashed red.
+      if (h.kind === 'joined') {
+        for (const i of h.group) dashedCircle(g, this.at(i), rad + 18, swatch.orange.line, this.clock);
+        if (h.closing !== h.edge) {
+          const c = this.layout.edges[h.closing];
+          dashedLine(g, this.at(c.a), this.at(c.b), rad, swatch.red.line);
+        }
+      }
     }
     if (this.touch) return;
     g.circle(p.x, p.y, rad + 6).stroke({ width: this.mode === 'move' ? 5 : 8, color: this.mode === 'add' ? swatch.yellow.line : this.mode === 'remove' ? swatch.red.line : ink });
@@ -515,9 +523,12 @@ class IslandBridges implements Game {
     // By touch, a hint to take a plank off switches Take off on for her, and any other hint switches it off.
     if (this.touch) { this.taking = h.kind === 'fix'; this.dirty = true; this.paintButtons(); }
     const e = this.layout.edges[h.edge];
-    this.focus = h.kind === 'forced' ? h.island : e.a;
+    this.focus = h.kind === 'forced' || h.kind === 'joined' ? h.island : e.a;
     this.report();
-    const line: LineId = h.kind === 'fix' ? (this.touch ? 'bridges.hint-fix-touch' : 'bridges.hint-fix') : h.kind === 'forced' ? FORCED_LINE[h.why] : 'bridges.hint-next';
+    const line: LineId = h.kind === 'fix' ? (this.touch ? 'bridges.hint-fix-touch' : 'bridges.hint-fix')
+      : h.kind === 'forced' ? FORCED_LINE[h.why]
+      : h.kind === 'joined' ? (h.closing === h.edge ? 'bridges.hint-joined-same' : 'bridges.hint-joined')
+      : 'bridges.hint-next';
     void this.ctx.say(line);
   }
 
@@ -665,3 +676,21 @@ export const islandBridges: GameModule = {
   sticker,
   create: (ctx) => new IslandBridges(ctx),
 };
+
+/** A dashed ring, turning slowly: Pixi has no dashed stroke, so each dash is its own arc. */
+function dashedCircle(g: Graphics, at: { x: number; y: number }, r: number, color: number, clock: number) {
+  const dashes = 14, step = (Math.PI * 2) / dashes, spin = clock * 0.6;
+  for (let i = 0; i < dashes; i++) {
+    const a = spin + i * step;
+    g.moveTo(at.x + r * Math.cos(a), at.y + r * Math.sin(a)).arc(at.x, at.y, r, a, a + step * 0.55).stroke({ width: 5, color });
+  }
+}
+
+/** A dashed line between two island centres, starting and ending `inset` units in from each. */
+function dashedLine(g: Graphics, a: { x: number; y: number }, b: { x: number; y: number }, inset: number, color: number) {
+  const len = Math.hypot(b.x - a.x, b.y - a.y), ux = (b.x - a.x) / len, uy = (b.y - a.y) / len, dash = 14, gap = 10;
+  for (let d = inset; d < len - inset; d += dash + gap) {
+    const e = Math.min(d + dash, len - inset);
+    g.moveTo(a.x + ux * d, a.y + uy * d).lineTo(a.x + ux * e, a.y + uy * e).stroke({ width: 6, color });
+  }
+}

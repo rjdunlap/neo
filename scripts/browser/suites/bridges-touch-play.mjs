@@ -34,6 +34,35 @@ async function bridgesTouchPlay() {
     if (sea.x < 0 || sea.y < 0 || sea.x + sea.w > neo.view.w || sea.y + sea.h > neo.view.h) out.push('sea off screen');
     return out.map((m) => `${label}: ${m} (${neo.view.w}x${neo.view.h}, scale ${neo.view.scale})`);
   }, label);
+  // Level 6 (Keep them joined), alone under BRIDGES_ONLY=6: in portrait, ask for hints and lay each until one is keep-them-joined
+  // (its line, the dashed group), screenshot the ring, then finish the sea for one sticker with only hints counted.
+  if (process.env.BRIDGES_ONLY === '6') {
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+    await launch('island-bridges', 6); await idle();
+    const before6 = await page.evaluate(() => kit.store.data.stickers.length);
+    assert.equal((await state()).size, 9);
+    assert.deepEqual(await targets('level 6 portrait'), []);
+    await page.evaluate(() => { const g = neo.scene.game, say = g.ctx.say; g.spoken = []; g.ctx.say = (id, ...args) => { g.spoken.push(id); return say(id, ...args); }; });
+    let joined = null, asked = 0;
+    for (let guard = 0; guard < 60 && !joined; guard++) {
+      await idle();
+      await tapSlot('hint'); await page.waitForTimeout(250); asked++;
+      const h = await page.evaluate(() => { const g = neo.scene.game; return g.hinted && { ...g.hinted, spoken: g.spoken.at(-1) }; });
+      assert.ok(h && h.kind !== 'next' && h.kind !== 'fix', `a counted or joined hint each time: ${JSON.stringify(h)}`);
+      if (h.kind === 'joined') { joined = h; break; }
+      await tapEdge(h.edge); await page.waitForTimeout(150);
+    }
+    assert.ok(joined, 'the hints reach a keep-them-joined step');
+    assert.equal(joined.spoken, joined.closing === joined.edge ? 'bridges.hint-joined-same' : 'bridges.hint-joined');
+    assert.ok(joined.group.length >= 2, 'a group of at least two islands is ringed');
+    await page.waitForTimeout(400);
+    await screenshot('bridges-touch-6-joined-portrait');
+    await solveAll(); await finished('island-bridges');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before6 + 1, 'one sticker at level 6');
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('island-bridges').history.at(-1); return [r.misses, r.hints]; }), [0, asked]);
+    log(`Island Bridges level 6: ${asked} hints to a keep-them-joined step (${joined.spoken}, group of ${joined.group.length}), portrait ring, one sticker passed`);
+    assert.deepEqual(errors, []); return;
+  }
   // Level 5 (5 by 5, the entry): one hint names its reason in its spoken line, targets upright and sideways, one sticker.
   await launch('island-bridges', 5); await idle();
   const before5 = await page.evaluate(() => kit.store.data.stickers.length);
