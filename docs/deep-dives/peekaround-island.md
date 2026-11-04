@@ -109,7 +109,7 @@ Level 6 suits preschool by the research (Level 1 at about 2½), but preschool's 
 2. **Level 5 *Who will be in front?*** (existing level, new tap: typecheck, rule tests, one play of level 5 with one wrong prediction (no miss) and one right, `fingerdemo` at 5): after slice 1.
 3. **Level 6 *Who can't see it?*** (new-interaction tier: typecheck, rule tests, one play of level 6 with one wrong friend (the turn shows it can see), a second for the glow, then the right friend, one portrait screenshot with the picture card, `fingerdemo` at 6): pre-K max 6, school max 6; after slice 1.
 4. **Level 7 *What does the duck see?*** (new-interaction tier: typecheck, rule tests, one play of level 7 with one wrong card and its turn, a second for the glow, then the right card, one portrait screenshot of the three cards, `fingerdemo` at 7, one build for the render textures): after slice 3 (shares the turn-to-viewer helper); pre-K and school max 7.
-5. **Define *From the sky*** (docs only).
+5. **Define *From the sky*** (docs only). Claimed 2026-11-03 by `claude/define-peekaround-from-the-sky`; expected file `docs/definitions/peekaround-from-the-sky.md`.
 
 Gated: level 6 for preschool (decision 1), Doghouse Directions (decision 2), a lap opening (decision 3), the two-obstacle *Who can't see it?*, left/right from a friend's facing, and the block-tower Skyline View (sketches).
 
