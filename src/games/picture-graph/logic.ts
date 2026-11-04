@@ -6,10 +6,10 @@ import type { Band } from '../../progress/bands';
  * Picture Graph: count the critters playing in a meadow and build a bar graph, one block per
  * critter, then answer questions by reading it: which has the most, how many more, how many in all.
  * The graph is made by the child, so the questions are about something she built. The last two
- * levels use a key: one block stands for two critters, so the bars no longer match a count of one,
- * and the number of blocks is the tempting wrong answer.
+ * levels use a key: one block stands for two critters (or, at level 9, five tally marks), so the bars no longer match
+ * a count of one, and the number of blocks is the tempting wrong answer.
  */
-export type GraphMode = 'build' | 'most' | 'more' | 'read' | 'scale' | 'scaleread' | 'tally' | 'line';
+export type GraphMode = 'build' | 'most' | 'more' | 'read' | 'scale' | 'scaleread' | 'tally' | 'line' | 'fives';
 
 export interface GraphPlan {
   mode: GraphMode;
@@ -17,7 +17,7 @@ export interface GraphPlan {
   /** Most blocks in one bar (which is the most critters of one kind when a block is one critter). */
   max: number;
   graphs: number;
-  /** How many critters one block stands for. Only 1 and 2 are built (the spoken lines say "two"). */
+  /** How many critters one block stands for: 1, 2 (the pairs levels' lines say "two") or 5 (the tally-card level's say "five"). */
   per: number;
   name: string;
   /** Lowest count; the tally level uses this to make the group of five visible. */
@@ -35,6 +35,8 @@ export const PLANS: GraphPlan[] = [
   // An easy entry with a high ID: real things from the shore lined up in rows, the step before blocks. Pre-K plays two kinds
   // and asks which row has the most; school plays three and then asks how many more (`lineKinds`, `lineQuestions`).
   { mode: 'line', kinds: 3, min: 2, max: 6, graphs: 2, per: 1, name: 'Line up shells, stones, sticks and feathers in rows by kind: which row has the most?' },
+  // Tally cards stand where the meadow was: 10 to 35 of each kind in groups of five, and each block is five.
+  { mode: 'fives', kinds: 3, min: 2, max: 7, graphs: 2, per: 5, name: 'A key of five: build the bars from tally cards, one block for each group of five, then how many more?' },
 ];
 
 /** The levels whose graph is already built when the round opens, so there is nothing to build. */
@@ -69,7 +71,7 @@ export function makeGraph(plan: GraphPlan, rng: Rng): Graph {
     const top = Math.max(...counts);
     const low = Math.min(...counts);
     if (plan.mode === 'most' && (counts.filter((c) => c === top).length > 1 || counts.filter((c) => c === low).length > 1)) continue;
-    if ((plan.mode === 'more' || plan.mode === 'scale' || plan.mode === 'scaleread' || plan.mode === 'tally') && new Set(counts).size < counts.length) continue;
+    if ((plan.mode === 'more' || plan.mode === 'scale' || plan.mode === 'scaleread' || plan.mode === 'tally' || plan.mode === 'fives') && new Set(counts).size < counts.length) continue;
     // Reading levels: exactly one pair of equal bars, for "which two are the same?".
     if (plan.mode === 'read') {
       const pairs = counts.flatMap((c, i) => counts.slice(i + 1).map((d, j) => (c === d ? [i, i + 1 + j] : null))).filter(Boolean);
@@ -88,7 +90,7 @@ export function questionsFor(plan: GraphPlan, g: Graph, rng: Rng): Question[] {
   if (plan.mode === 'build') return [];
   if (plan.mode === 'most') return [{ ask: 'most', answer: c.indexOf(Math.max(...c)) }, { ask: 'fewest', answer: c.indexOf(Math.min(...c)) }];
   if (plan.mode === 'more' || plan.mode === 'tally') return [more()];
-  if (plan.mode === 'scale') return [more()];
+  if (plan.mode === 'scale' || plan.mode === 'fives') return [more()];
   if (plan.mode === 'scaleread') return [{ ask: 'total', answer: c.reduce((s, x) => s + x, 0) }, more()];
   const pair = c.flatMap((x, i) => c.slice(i + 1).map((y, j) => (x === y ? [i, i + 1 + j] : null))).find(Boolean) as [number, number];
   return [{ ask: 'total', answer: c.reduce((s, x) => s + x, 0) }, { ask: 'same', answer: pair }];
@@ -188,6 +190,36 @@ export function groupSpots(n: number, per: number, area: ReturnType<typeof meado
     x: clamp(area.left + (i % cols) * stepX + (stepX > size.w ? rng.range(-(stepX - size.w) / 2, (stepX - size.w) / 2) : 0), area.left, area.right),
     y: clamp(area.top + Math.floor(i / cols) * stepY + (stepY > size.h ? rng.range(-(stepY - size.h) / 2, (stepY - size.h) / 2) : 0), area.top, area.bottom),
   }));
+}
+
+/* Level 9, A key of five: a tally card per kind where the meadow was, its marks in groups of five, one group to a block. */
+
+/** A group of five tally marks on a card takes this much room across. */
+export const CARD_GROUP_W = 52;
+/** Room at a card's start for the critter's face. */
+export const CARD_FACE_W = 80;
+
+/**
+ * The tally cards: one row per kind, stacked where the meadow was, clear of the key on the left, the number pads on the
+ * right and the graph panel below (its top is 412 above the bottom). `groupX(k)` and `rowY(r)` are centres.
+ */
+export function cardLayout(w: number, h: number, rows: number, groups: number) {
+  const width = CARD_FACE_W + groups * CARD_GROUP_W + 16;
+  const left = Math.max(170, w / 2 - 60 - width / 2);
+  // Centred in the room between the corner buttons (150) and the graph panel, so a tall view has no gap above the graph.
+  const room = h - 430 - 150;
+  const rowH = Math.min(70, room / rows);
+  const top = 150 + (room - rows * rowH) / 2;
+  return {
+    left,
+    right: left + width,
+    top,
+    bottom: top + rows * rowH,
+    rowH,
+    faceX: left + CARD_FACE_W / 2,
+    groupX: (k: number) => left + CARD_FACE_W + CARD_GROUP_W / 2 + k * CARD_GROUP_W,
+    rowY: (r: number) => top + rowH / 2 + r * rowH,
+  };
 }
 
 /** One touch a capable child makes: a block added to a bar, the check, a column answering "which?", or a number pad. */

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { barsFor, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, KINDS, makeGraph, meadowArea, meadowSpots, MEADOWS, PLANS, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, lineHint, lineKinds, lineMove, lineQuestions, makeShore, planFor, shoreSpots, THING_SIZE, THINGS, trayLayout, type Question } from './logic';
+import { barsFor, cardLayout, CARD_GROUP_W, choicesFor, CRITTER_H, CRITTER_W, graphMove, GROUP_GAP, groupSpots, KINDS, makeGraph, meadowArea, meadowSpots, MEADOWS, PLANS, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, lineHint, lineKinds, lineMove, lineQuestions, makeShore, planFor, shoreSpots, THING_SIZE, THINGS, trayLayout, type Question } from './logic';
 
 describe('Picture Graph', () => {
   it('makes graphs whose questions have one clear answer', () => {
@@ -77,7 +77,7 @@ describe('Picture Graph', () => {
 });
 
 describe('Picture Graph with a key: one block is two critters', () => {
-  const scale = PLANS.filter((p) => p.per > 1);
+  const scale = PLANS.filter((p) => p.per === 2);
 
   it('appends the two keyed levels after reading a graph, leaving the first four as they were', () => {
     expect(PLANS.slice(0, 6).map((p) => p.mode)).toEqual(['build', 'most', 'more', 'read', 'scale', 'scaleread']);
@@ -240,7 +240,7 @@ describe('Picture Graph meadow: pairs of critters never hide each other', () => 
     const area = meadowArea(1024, 768);
     // The graph's panel starts 422 above the bottom of a 768-high view (see `draw` in index.ts); the feet stay above it.
     expect(area.bottom).toBeLessThanOrEqual(768 - 422);
-    for (const plan of PLANS.filter((p) => p.per > 1 && !prebuilt(p))) {
+    for (const plan of PLANS.filter((p) => p.per === 2 && !prebuilt(p))) {
       for (let seed = 1; seed <= 300; seed++) {
         const g = makeGraph(plan, new Rng(seed));
         const groups = g.counts.reduce((a, b) => a + b, 0) / plan.per;
@@ -393,7 +393,7 @@ describe('Picture Graph level 8: Line them up', () => {
   const VIEWS: [number, number][] = [[1024, 768], [1024, 1365], [1366, 1024], [1180, 820]];
 
   it('appends level 8 after the first seven plans, which stay as they were', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['build', 'most', 'more', 'read', 'scale', 'scaleread', 'tally', 'line']);
+    expect(PLANS.slice(0, 8).map((p) => p.mode)).toEqual(['build', 'most', 'more', 'read', 'scale', 'scaleread', 'tally', 'line']);
     expect(planFor(8)).toBe(plan);
     expect(lineKinds('prek')).toBe(2);
     expect(lineKinds('school')).toBe(3);
@@ -500,6 +500,92 @@ describe('Picture Graph level 8: Line them up', () => {
       const [most, more] = lineQuestions(s, new Rng(seed));
       expect(lineMove(placed, most)).toEqual({ do: 'row', row: (most as { answer: number }).answer });
       expect(lineMove(placed, more)).toEqual({ do: 'number', n: (more as { answer: number }).answer });
+    }
+  });
+});
+
+describe('Picture Graph level 9: A key of five', () => {
+  const plan = PLANS[8];
+  const VIEWS: [number, number][] = [[1024, 768], [1024, 1365], [1366, 1024], [1180, 820]];
+
+  it('appends level 9 after the first eight plans, which stay as they were', () => {
+    expect(PLANS.map((p) => p.mode)).toEqual(['build', 'most', 'more', 'read', 'scale', 'scaleread', 'tally', 'line', 'fives']);
+    expect(planFor(9)).toBe(plan);
+    expect(plan.per).toBe(5);
+    expect(prebuilt(plan)).toBe(false);
+  });
+
+  it('makes cards of 10 to 35 in whole fives, at most seven blocks, every kind different', () => {
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 500; seed++) {
+      const g = makeGraph(plan, new Rng(seed));
+      expect(g.kinds).toHaveLength(3);
+      expect(new Set(g.counts).size).toBe(3);
+      for (const n of g.counts) {
+        expect(n % 5).toBe(0);
+        expect(n).toBeGreaterThanOrEqual(10);
+        expect(n).toBeLessThanOrEqual(35);
+        seen.add(n);
+      }
+      expect(Math.max(...barsFor(plan, g))).toBeLessThanOrEqual(7);
+    }
+    expect(seen.size).toBe(6);
+  });
+
+  it('asks how many more in critters, offering the number of blocks and whole fives away', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const rng = new Rng(seed);
+      const g = makeGraph(plan, rng);
+      const qs = questionsFor(plan, g, rng);
+      expect(qs).toHaveLength(1);
+      const q = qs[0] as Extract<Question, { ask: 'more' }>;
+      expect(q.ask).toBe('more');
+      expect(q.answer).toBe(g.counts[q.a] - g.counts[q.b]);
+      expect(q.answer).toBeGreaterThan(0);
+      const choices = choicesFor(q.answer, rng, plan.per, tallerCount(plan, g, q));
+      expect(choices).toHaveLength(3);
+      expect(new Set(choices).size).toBe(3);
+      expect(choices).toContain(q.answer);
+      expect(choices).toContain(q.answer / 5);
+      for (const c of choices.filter((c) => c !== q.answer / 5)) expect(c % 5).toBe(0);
+    }
+  });
+
+  it('the finger adds one block for each group of five, never one per mark, and answers in critters', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      const g = makeGraph(plan, rng);
+      const bars = g.kinds.map(() => 0);
+      let taps = 0;
+      for (let m = graphMove(plan, g, bars, undefined, null); m && m.do === 'add'; m = graphMove(plan, g, bars, undefined, null)) {
+        bars[m.kind]++;
+        expect(bars[m.kind]).toBeLessThanOrEqual(g.counts[m.kind] / 5);
+        taps++;
+      }
+      expect(graphMove(plan, g, bars, undefined, null)).toEqual({ do: 'check' });
+      expect(bars).toEqual(barsFor(plan, g));
+      expect(taps).toBe(g.counts.reduce((s, n) => s + n / 5, 0));
+      const q = questionsFor(plan, g, rng)[0];
+      expect(graphMove(plan, g, bars, q, null)).toEqual({ do: 'number', n: (q as Extract<Question, { ask: 'more' }>).answer });
+    }
+  });
+
+  it('the hint for "how many more" glows the fives above the shorter bar', () => {
+    const g = { kinds: KINDS.slice(0, 3), counts: [35, 10, 20] };
+    const q: Question = { ask: 'more', a: 0, b: 1, answer: 25 };
+    expect(whyBlocks(q, barsFor(plan, g)).blocks).toHaveLength(5);
+  });
+
+  it('lays the cards out with room for seven groups, clear of the key, the pads and the graph panel, at four views', () => {
+    for (const [w, h] of VIEWS) {
+      const c = cardLayout(w, h, plan.kinds, plan.max);
+      expect(c.left).toBeGreaterThanOrEqual(88 + 62);
+      expect(c.right).toBeLessThanOrEqual(w - 110 - 62);
+      expect(c.top).toBeGreaterThanOrEqual(150);
+      expect(c.bottom).toBeLessThanOrEqual(h - 412);
+      expect(c.rowH).toBeGreaterThanOrEqual(56);
+      expect(c.groupX(plan.max - 1) + CARD_GROUP_W / 2).toBeLessThanOrEqual(c.right);
+      expect(c.rowY(plan.kinds - 1) + c.rowH / 2).toBeLessThanOrEqual(c.bottom);
     }
   });
 });

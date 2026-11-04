@@ -1171,6 +1171,8 @@ Proof: new-interaction tier: typecheck, unit tests including order, entry and la
 
 ### picture-graph 3: Level 9 A key of five
 
+Built 2026-11-03, [PR #1188](https://github.com/rjdunlap/neo/pull/1188); [closeout](archive/COMPLETED-2026-10-09.md#picture-graph-level-9-a-key-of-five-picture-graph-batch-3-2026-11-03). Scope retained for dependency references (batch picture-graph 4 follows batch 1); no longer eligible for dispatch.
+
 - **`picture-graph`, Level 9, *A key of five* (dive slice 3)**, after batch picture-graph 2 (independent except for the level number) (new level on an existing interaction): a keyed graph where one mark stands for five, with a one-per-mark bar and the blocks answer; school. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
 
 Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.

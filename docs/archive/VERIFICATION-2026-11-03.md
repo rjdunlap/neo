@@ -231,3 +231,9 @@
 - [PR #1170](https://github.com/rjdunlap/neo/pull/1170): level 7 for school (range 4-7), two rounds of a changed garden, need buttons with the game's first counted miss, a repair tray, five new rule tests, new voice ids and a how-to step scoped to 7.
 - Ran (base `origin/main` 61dfc1fd plus the branch, Vite dev http://localhost:5391, stopped): typecheck; `npm test` 300 files, 4,646 tests (habitat rules 20); `BROWSER_SUITE=habitat HABITAT_LEVELS=7` (portrait 768x1024: two wrong needs = 2 misses and the glow with 1 hint, right need, seed grass tested twice free then the pond-reeds glow with 1 hint, restore, the bot plays the second change, one sticker, history 2 misses/2 hints, no overlaps, pet clear; one screenshot `habitat-helpers-7-before-card-portrait`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=habitat-helpers FINGER_LEVELS=7` clean 16.4 s; `npm run build`. `game-reviewer`: no blocking findings.
 - Not run: the full `habitat` suite (levels 1-6 unchanged), offline. Open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): level 7 at pre-K and the before card on an iPad.
+
+## 2026-11-03 — Today's six daily shuffle definition (docs only)
+
+- Developer request 2026-11-03: Today's six (the `?daily` trial, [PR #1088](https://github.com/rjdunlap/neo/pull/1088)) becomes the daily shuffle: a Home button, preset levels by band, an eligibility rule, seven kinds of challenge and Play all. [Definition](../definitions/todays-six.md), D10 in the roadmap's [discovery actions](../ROADMAP.md#discovery-actions), READY's first line, the waiting row narrowed to what is still the developer's call.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. No code changed, so no code checks.
+- Open: the three slices' checks run when each lands.
