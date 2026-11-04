@@ -382,17 +382,17 @@ describe('Scoop Shop two cones (level 7)', () => {
       for (let variant = 0; variant < 3; variant++) {
         const route = twoConeRoute(orders, variant);
         expect(route.filter(i => i === 0)).toHaveLength(orders[0].scoops.length);
-        const cones: string[][] = [[], []];
+        const cones: ColorName[][] = [[], []];
         for (const i of route) {
           const wrong = FLAVORS.find(c => c !== nextNeeded(orders[i], cones[i]))!;
           const before = cones.map(c => c.join());
           expect(tryScoop(plan, orders[i], cones[i], wrong)).not.toBe('add');
           expect(cones.map(c => c.join())).toEqual(before);
-          const next = scoopToTake(plan, orders[i], cones[i] as never, FLAVORS)!;
-          expect(tryScoop(plan, orders[i], cones[i] as never, next)).toBe('add');
+          const next = scoopToTake(plan, orders[i], cones[i], FLAVORS)!;
+          expect(tryScoop(plan, orders[i], cones[i], next)).toBe('add');
           cones[i].push(next);
         }
-        orders.forEach((o, i) => expect(complete(plan, o, cones[i] as never)).toBe(true));
+        orders.forEach((o, i) => expect(complete(plan, o, cones[i])).toBe(true));
       }
       // Variant 1 starts the pair and switches away after its first scoop; variant 2 serves the pair first.
       const pair = orders[0].scoops.length === 2 ? 0 : 1;
