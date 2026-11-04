@@ -95,6 +95,72 @@ async function congaTouchPlay() {
     assert.deepEqual(errors, []);
     log(`Pond Conga level 7: three bites at once, a longer first order with no miss, one hint to a best-order bite, ${r[2]} steps over the fewest, one sticker, portrait passed`);
   }
+  /** Level 8: nothing moves without input; a touch is a step straight on, a swipe a step that way; one bump, then step by step to the sticker. */
+  async function stepByStep() {
+    await launch('pond-conga', 8); await ready();
+    const stickers = await page.evaluate(() => kit.store.data.stickers.length);
+    const look = () => page.evaluate(() => { const g = neo.scene.game; return JSON.stringify([g.state, g.tries, g.waiting]); });
+    const before = await look();
+    await page.waitForTimeout(2000);
+    assert.equal(await look(), before, 'nothing moves before the first touch');
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+    assert.deepEqual(await targets('level 8 portrait'), []);
+    await screenshot('conga-touch-8-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+    /** One input, then wait for its step to land: a touch for straight on, a swipe for a turn. Bump: the first way that bonks. */
+    const one = (bump) => page.evaluate(async (bump) => {
+      const { hintPath, step, opposite } = await import('/src/games/pond-conga/logic.ts');
+      const DX = [1, 0, -1, 0], DY = [0, 1, 0, -1], g = neo.scene.game;
+      let dir = g.onRoute ? g.pond.route[g.routeAt] : hintPath(g.pond, g.state)[0];
+      if (bump) dir = [0, 1, 2, 3].find((d) => d !== opposite(g.state.heading) && step(g.pond, g.state, d).event === 'bonk') ?? -1;
+      if (dir === undefined || dir < 0) return false;
+      const w = g.pond.cols * g.cell / 2, h = g.pond.rows * g.cell / 2, a = g.tapLayer.toGlobal({ x: w, y: h });
+      const t0 = g.tries;
+      if (dir === g.state.heading) kit.tap(a.x, a.y);
+      else { const b = g.tapLayer.toGlobal({ x: w + DX[dir] * 64, y: h + DY[dir] * 64 }); await kit.drag(kit.line([a.x, a.y], [b.x, b.y], 4)); }
+      await kit.until(() => neo.scene.finished || neo.scene.game.busy || neo.scene.game.tries === t0 + 1, 3000);
+      await kit.sleep(220);
+      return neo.scene.game?.tries === t0 + 1 || neo.scene.finished;
+    }, bump);
+    let bumped = false;
+    for (let guard = 0; guard < 400 && !(await page.evaluate(() => neo.scene.finished)); guard++) {
+      if (await page.evaluate(() => { const g = neo.scene.game; return !g?.pond || g.busy || g.finished; })) { await page.waitForTimeout(100); continue; }
+      if (!bumped) {
+        const t = await page.evaluate(() => neo.scene.game.tries);
+        if (await one(true)) {
+          bumped = true;
+          const st = await state();
+          assert.deepEqual([st.misses, st.tries], [1, t + 1], 'a bump is one miss and one step');
+          const after = await look(); await page.waitForTimeout(1200);
+          assert.equal(await look(), after, 'no step after a bump without input');
+          continue;
+        }
+      }
+      assert.ok(await one(false), 'each input takes one step');
+    }
+    assert.ok(bumped, 'one bump was made');
+    await finished('pond-conga');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers + 1, 'one sticker');
+    const r = await page.evaluate(() => { const r = kit.store.stats('pond-conga').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(r, [1, 0], 'one bump, no hint');
+    // A pad taken up live: a press of the way it faces, the action button, then a turn are one step each, and nothing after.
+    await launch('pond-conga', 8); await ready();
+    const pad = await page.evaluate(async () => {
+      const g = neo.scene.game, { idle } = await import('/src/engine/controller.ts'), out = [];
+      const press = (d, action = false) => { const c = idle(); Object.assign(c.players[0], { direction: d, action, active: true }); g.control(c); };
+      for (const k of ['ahead', 'action', 'turn']) {
+        const t = g.tries;
+        if (k === 'action') press(-1, true); else press(k === 'ahead' ? g.state.heading : (g.state.heading + 1) % 4);
+        await kit.sleep(400); out.push(g.tries - t);
+      }
+      const t = g.tries; await kit.sleep(1500); out.push(g.tries - t, g.touch);
+      return out;
+    });
+    assert.deepEqual(pad, [1, 1, 1, 0, false], 'a pad press is one step, and nothing moves between presses');
+    assert.deepEqual(errors, []);
+    log('Pond Conga level 8: still without input (2 s, and after a bump), a touch a step straight on, a swipe a step that way, one bump, one sticker, a pad press a step, portrait passed');
+  }
+  if (process.env.CONGA_LEVELS === '8') return stepByStep();
   if (process.env.CONGA_LEVELS === '7') return chooseTheOrder();
   // Level 1: the line waits for a touch, a bump into the bank is one miss, a hint counts once, Start over keeps the steps, then the pond is cleared.
   await launch('pond-conga', 1); await ready();

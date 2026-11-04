@@ -1303,7 +1303,7 @@ Proof: new-rule tier: typecheck, rule tests (par over orders, group-aware demo p
 
 ### pond-conga 3: Step by step
 
-- **`pond-conga`, Level 8, *Step by step* (dive slice 3)** (new interaction; grown-up, easy entry): the conga moves one step per input, with no movement without input. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
+- **`pond-conga`, Level 8, *Step by step* (dive slice 3)** (**built 2026-11-04**, [PR #1226](https://github.com/rjdunlap/neo/pull/1226); new interaction; grown-up, easy entry): the conga moves one step per input, with no movement without input. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
 
 Files expected: `src/games/pond-conga/index.ts`, `logic.ts`, `logic.test.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `scripts/browser-check.mjs` if a case is needed, the README row and `docs/GAMES.md`.
 

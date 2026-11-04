@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  DX, DY, FOODS, PLANS, bestStarts, groupCosts, groupOf, openCrumbs, orderMatters, restBound, SWIPE, distances, foodAt, firstCrumbs, headAfter, hintDir, hintPath, lowerBound, makePond, pondLook, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, swipeDir, turnsIn,
+  DX, DY, FOODS, PLANS, STEP_GLIDE, stepDue, bestStarts, groupCosts, groupOf, openCrumbs, orderMatters, restBound, SWIPE, distances, foodAt, firstCrumbs, headAfter, hintDir, hintPath, lowerBound, makePond, pondLook, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, swipeDir, turnsIn,
   type Board, type Cell, type Conga, type Dir,
 } from './logic';
 
@@ -124,7 +124,7 @@ describe('ponds from a picture', () => {
 describe('the plans', () => {
   it('grow in crumbs and lily pads, and never in speed by much', () => {
     // Levels 1–6 are the arcade ladder; level 7 changes the rule instead, at level 3's pace.
-    const ladder = PLANS.filter((p) => !p.group);
+    const ladder = PLANS.filter((p) => !p.group && p.paced !== false);
     for (let i = 1; i < ladder.length; i++) {
       expect(ladder[i].crumbs).toBeGreaterThanOrEqual(ladder[i - 1].crumbs);
       expect(ladder[i].pads).toBeGreaterThanOrEqual(ladder[i - 1].pads);
@@ -132,6 +132,7 @@ describe('the plans', () => {
       expect(ladder[i].speed).toBeGreaterThanOrEqual(ladder[i - 1].speed);
     }
     expect(planFor(7)).toMatchObject({ group: 3, crumbs: 9, speed: 2.8 });
+    expect(planFor(8)).toMatchObject({ paced: false, cols: 11, rows: 7, pads: 2, crumbs: 5 });
     expect(Math.max(...PLANS.map((p) => p.speed))).toBeLessThanOrEqual(3.6);
     expect(planFor(0)).toBe(PLANS[0]);
     expect(planFor(99)).toBe(PLANS.at(-1));
@@ -488,5 +489,48 @@ describe('choose the order (level 7)', () => {
       }
       if (path.length) expect(open).toContain(at(s.body[0]));
     }
+  });
+});
+
+describe('level 8, step by step', () => {
+  const plan = planFor(8);
+  it('never moves without input, however long it waits', () => {
+    let acc = 0, steps = 0;
+    for (let t = 0; t < 10000; t++) {
+      acc += 1 / 60;
+      if (stepDue(plan, acc, 0)) { steps++; acc = 0; }
+    }
+    expect(steps).toBe(0);
+  });
+  it('takes one step for each step asked for, each after the last has landed', () => {
+    const asked: number[] = [3];
+    let acc = STEP_GLIDE, steps = 0;
+    for (let t = 0; t < 600; t++) {
+      if (stepDue(plan, acc, asked[0])) { steps++; asked[0]--; acc = 0; }
+      acc += 1 / 60;
+    }
+    expect(steps).toBe(3);
+    expect(stepDue(plan, STEP_GLIDE / 2, 1)).toBe(false);
+    // A paced pond keeps its own beat, input or none.
+    expect(stepDue(planFor(1), 1 / planFor(1).speed, 0)).toBe(true);
+  });
+  it('reaches par with one input a step: the route, a step at a time, eats every bite with no bonk', () => {
+    for (let seed = 1; seed <= 12; seed++) {
+      const p = makePond(plan, new Rng(seed));
+      expect(p.par).toBe(lowerBound(p));
+      let s = startState(p), bonks = 0;
+      for (const d of p.route) {
+        const r = step(p, s, d);
+        if (r.event === 'bonk') bonks++;
+        s = r.state;
+      }
+      expect([s.eaten, bonks, p.route.length], `seed ${seed}`).toEqual([p.crumbs.length, 0, p.par]);
+    }
+  });
+  it('is the first rung and a new player\'s entry', async () => {
+    const { pondConga } = await import('./index');
+    expect(pondConga.levels('grownup')).toMatchObject({ min: 1, max: 8, order: [8, 1, 2, 3, 4, 5, 6, 7] });
+    expect(pondConga.entryLevels).toEqual([8]);
+    expect(pondConga.describeLevel(8)).toMatch(/Step by step/);
   });
 });

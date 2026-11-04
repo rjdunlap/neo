@@ -438,13 +438,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'pond-conga': {
     goal: 'Steer a line of ducklings to the duck food (peas, sweetcorn or oats), bite by bite.',
     steps: [
-      'Touch the pond and lift to set the line off. It paddles on by itself.',
-      'Swipe the way you want the line to turn; one stroke can turn it twice. A swipe straight back does nothing.',
+      { to: 7, text: 'Touch the pond and lift to set the line off. It paddles on by itself.' },
+      { to: 7, text: 'Swipe the way you want the line to turn; one stroke can turn it twice. A swipe straight back does nothing.' },
       { to: 6, text: 'Only the next bite shows, with a faint look at the one after: eat them in turn. A bump turns the whole line about. Hint shows the way to the next bite; Start over puts the line back at the start.' },
-      { from: 7, text: 'Three bites show at once: eat them in any order, and the next three appear. The fewest steps need the best order. A bump turns the whole line about; Hint shows the way to a bite that starts a best order; Start over puts the line back at the start.' },
+      { from: 7, to: 7, text: 'Three bites show at once: eat them in any order, and the next three appear. The fewest steps need the best order. A bump turns the whole line about; Hint shows the way to a bite that starts a best order; Start over puts the line back at the start.' },
+      { from: 8, text: 'Nothing moves until you do: each swipe takes one step that way, and touching the pond takes one step straight on. A swipe straight back does nothing.' },
+      { from: 8, text: 'Only the next bite shows, with a faint look at the one after: eat them in turn. A bump turns the whole line about. Hint shows the way to the next bite; Start over puts the line back at the start.' },
     ],
     finish: 'The pond is done when the ducklings have gobbled every bite.',
-    note: 'A bump counts as a miss, and a hint counts as help. Steps are not timed against you: the pace stays the same.',
+    note: 'A bump counts as a miss, and a hint counts as help. Steps are never timed against you: the pace stays the same, and on Step by step there is no pace at all.',
   },
   'sing-along-barn': {
     goal: 'Sing a short song by tapping, Old MacDonald or one of nine nursery songs: every tap is the next note, and a friend joins each verse.',
