@@ -365,7 +365,9 @@ class FerryJam implements Game {
   /** The ferry slides out through its dock: the red one to the right, the yellow one down, fading when another is still to go. */
   private fly(i: number, fade: boolean) {
     const node = this.nodes[i];
-    const to = this.harbor.boats[i].dir === 'h' ? { x: node.x + CELL * 3.2 } : { y: node.y + CELL * 2.4 };
+    // From the dock cell rather than the node, which may still be settling from the drop.
+    const at = this.cellXY(i, this.harbor.size - this.harbor.boats[i].len);
+    const to = this.harbor.boats[i].dir === 'h' ? { x: at.x + CELL * 3.2 } : { y: at.y + CELL * 2.4 };
     return this.ctx.tw.to(node, fade ? { ...to, alpha: 0 } : to, { duration: 0.9, ease: ease.inOutSine });
   }
 
