@@ -943,6 +943,8 @@ Proof: typecheck, rule tests (4×4 with exactly two colours, `order` complete, e
 
 ### pixel-pictures 4: My own picture
 
+**Built 2026-11-04 ([PR #1212](https://github.com/rjdunlap/neo/pull/1212)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-04--pixel-pictures-level-10-my-own-picture-pixel-pictures-batch-4); [build note](archive/COMPLETED-2026-10-09.md#pixel-pictures-level-10-my-own-picture-pixel-pictures-4-2026-11-04).
+
 - **`pixel-pictures`, level 10 My own picture (dive slice 4, after batch 3)** (new interaction; pre-K and school, last in each band's order as a free level): a blank 5×5 with four swatches, a tap on a filled square empties it, a Done button (at least 100 units) appears after four squares; no misses or hints; the kept creation uses the existing pixel shape; adds a `coplayHint`; the demo shows the bot drawing a heart. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#easier-entries-and-levels-between-existing-ones)
 
 Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
@@ -971,7 +973,7 @@ Proof: new level tier: typecheck, rule tests (every rock matters, `focusPath` re
 
 ### ferry-jam 3: Two ferries
 
-**Built 2026-11-03 ([PR #1195](https://github.com/rjdunlap/neo/pull/1195)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-03--ferry-jam-level-8-two-ferries-ferry-jam-batch-3); [build note](archive/COMPLETED-2026-10-09.md#ferry-jam-level-8-two-ferries-ferry-jam-3-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
+**Built 2026-11-03 ([PR #1195](https://github.com/rjdunlap/neo/pull/1195)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-03.md#2026-11-03--ferry-jam-level-8-two-ferries-ferry-jam-batch-3); [build note](archive/COMPLETED-2026-10-09.md#ferry-jam-level-8-two-ferries-ferry-jam-3-2026-11-03). No longer eligible for dispatch. Scope retained for reference.
 
 - **`ferry-jam`, level 8 Two ferries (dive slice 3, after batch 2)** (new rule on the existing drag; school): two ferries leave by two docks, so the plan serves both; shares the `Harbor` and `parse` changes with batch 2. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
 
