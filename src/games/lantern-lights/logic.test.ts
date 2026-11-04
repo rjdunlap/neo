@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  allLit, footprint, formatPond, fewestPresses, fullBoard, hintFor, litCount, makePond, makePonds, parsePond, planFor, PLANS, press, pressAll, solve, type Size,
+  allLit, footprint, formatPond, fewestPresses, fullBoard, hintFor, litCount, makePond, makePonds, parsePond, planFor, PLANS, press, pressAll, solve, stuckAt, type Size,
 } from './logic';
 
 /** Exhaustive truth for a small board: for every set of presses, the board it makes from all-lit and its size. */
@@ -183,5 +183,40 @@ describe('lantern hints', () => {
     const pond = makePond(PLANS[5], rng), s = solve(pond.board, 5)!;
     const options = new Set(s.best.flat());
     for (const near of [0, 12, 24]) expect(options.has(hintFor(pond.board, 5, near)!)).toBe(true);
+  });
+});
+
+describe('the school opening', () => {
+  it('makes every level 1 and 2 pond a 3 by 3 with one winning set, the fewest exactly the scramble', () => {
+    for (const [level, fewest] of [[1, 2], [2, 4]] as const) {
+      for (let seed = 1; seed <= 300; seed++) {
+        for (const pond of makePonds(planFor(level), new Rng(seed))) {
+          expect(pond.size).toBe(3);
+          expect(pond.par, `level ${level} seed ${seed}`).toBe(fewest);
+          expect(solve(pond.board, 3)!.ways).toBe(1);
+        }
+      }
+    }
+  });
+
+  it('lights every school pond by following the hint from the start in exactly the fewest presses', () => {
+    for (const level of [1, 2]) {
+      for (let seed = 1; seed <= 300; seed++) {
+        for (const pond of makePonds(planFor(level), new Rng(seed))) {
+          let board: boolean[] = pond.board.slice(), presses = 0;
+          while (!allLit(board)) {
+            board = press(board, 3, hintFor(board, 3)!);
+            presses++;
+          }
+          expect(presses).toBe(pond.par);
+        }
+      }
+    }
+  });
+
+  it('nudges toward Hint at the fewest plus six at school only', () => {
+    expect(stuckAt('school', 2)).toBe(8);
+    expect(stuckAt('school', 4)).toBe(10);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek', 'grownup'] as const) expect(stuckAt(band, 2)).toBeNull();
   });
 });

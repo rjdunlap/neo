@@ -15,6 +15,57 @@ async function lanternTouchPlay() {
     await page.waitForTimeout(150);
   };
   const solveAll = async () => { for (let guard = 0; guard < 400 && !(await page.evaluate(() => neo.scene.finished)); guard++) await tapNext(); };
+  // The school opening, alone under LANTERN_ONLY=school: level 1 with presses past the fewest plus six (the nudge toward
+  // Hint once, no miss), a hint, then to the sticker; then level 2 to the sticker. Lanterns and buttons at least 100.
+  if (process.env.LANTERN_ONLY === 'school') {
+    const fit = () => page.evaluate(() => {
+      const g = neo.scene.game, s = neo.view.scale, out = [];
+      if (g.cell < 100) out.push(`cell ${g.cell}`);
+      const buttons = [['undo', g.undoButton], ['hint', g.hintButton], ['again', g.againButton]].map(([k, b]) => { const r = b.getBounds(); return [k, Math.round(r.x / s), Math.round(r.y / s), Math.round(r.width / s), Math.round(r.height / s)]; });
+      for (const [k, , , w, h] of buttons) if (w < 100 || h < 100) out.push(`${k} ${w}x${h}`);
+      return { out, view: `${neo.view.w}x${neo.view.h}`, cell: g.cell, pond: [g.board.x, g.board.y, g.n * g.cell], buttons };
+    });
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+    await launch('lantern-lights', 1, 'Mia', 'school'); await idle();
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    assert.equal((await state()).n, 3);
+    const f = await fit();
+    assert.deepEqual(f.out, [], `school level 1 ${f.view}`);
+    log(`school level 1 at ${f.view}: cell ${f.cell}, pond ${f.pond}, buttons ${JSON.stringify(f.buttons)}`);
+    await page.evaluate(() => { const g = neo.scene.game, say = g.ctx.say; g.spoken = []; g.ctx.say = (id, ...args) => { g.spoken.push(id); return say(id, ...args); }; });
+    // One lantern pressed again and again: never the pond's two-lantern answer, so it never lights.
+    const pressCorner = (times) => page.evaluate(async (times) => {
+      const g = neo.scene.game, p = g.board.toGlobal(g.center(0));
+      for (let i = 0; i < times; i++) { kit.tap(p.x, p.y); await new Promise((r) => setTimeout(r, 150)); }
+    }, times);
+    await pressCorner(7);
+    let st = await state(), said = await page.evaluate(() => neo.scene.game.spoken.slice());
+    assert.equal(st.presses, 7); assert.ok(!said.includes('lantern.stuck-school'), `no nudge before the fewest plus six: ${said}`);
+    await pressCorner(3);
+    st = await state(); said = await page.evaluate(() => neo.scene.game.spoken.slice());
+    assert.equal(st.presses, 10);
+    assert.deepEqual(said.filter((id) => id === 'lantern.stuck-school'), ['lantern.stuck-school'], `the nudge once at 8: ${said}`);
+    assert.deepEqual([st.misses, st.hints], [0, 0], 'the nudge counts nothing');
+    await tap('neo.scene.game.hintButton'); await page.waitForTimeout(300);
+    st = await state(); assert.deepEqual([st.hints, st.hinted !== null], [1, true]);
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+    const fp = await fit();
+    assert.deepEqual(fp.out, [], `school level 1 ${fp.view}`);
+    await screenshot('lantern-lights-school-1-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+    await solveAll(); await finished('lantern-lights');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1, 'one sticker at school level 1');
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('lantern-lights').history.at(-1); return [r.misses, r.hints]; }), [0, 1]);
+    await launch('lantern-lights', 2, 'Mia', 'school'); await idle();
+    const before2 = await page.evaluate(() => kit.store.data.stickers.length);
+    st = await state(); assert.equal(st.n, 3);
+    assert.equal(await page.evaluate(() => neo.scene.game.pond.par), 4);
+    await solveAll(); await finished('lantern-lights');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before2 + 1, 'one sticker at school level 2');
+    assert.deepEqual(errors, []);
+    log('Lantern Lights school opening: level 1 (the nudge once at 8 presses, no miss, a hint) and level 2 to the sticker, 100-unit targets passed');
+    return;
+  }
   // Level 8 (a 6 by 6 pond): a hint, then to the sticker; upright the counts share one line above the pond, clear of it.
   await launch('lantern-lights', 8); await idle();
   const before8 = await page.evaluate(() => kit.store.data.stickers.length);

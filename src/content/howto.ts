@@ -297,13 +297,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'lantern-lights': {
     goal: 'Light every lantern on the pond.',
     steps: [
-      'Tap a lantern to flip it and the four lanterns beside it.',
+      'Tap a lantern to flip it and the lanterns above, below and beside it.',
       'Tap Undo to take the last tap back; Start over puts the pond back as it began.',
       'Tap Hint to see which lantern to try next.',
       { from: 7, text: 'A 6 by 6 pond has only one set of lanterns that lights it all: tap each of them once, in any order.' },
     ],
     finish: 'Every pond is done when all its lanterns glow; the round ends after the last pond.',
-    note: 'There is no wrong tap, and taking one back is free. Each hint counts as help.',
+    note: 'There is no wrong tap, and taking one back is free. Each hint counts as help. At school she plays the two 3 by 3 ponds (about 7 and up). If she presses a lot without lighting the pond, she is told where Hint is; that counts nothing.',
   },
   'sudoku-garden': {
     goal: 'Fill the bed so every row, column and box holds each number once.',

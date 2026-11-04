@@ -2507,6 +2507,8 @@ export const SCRIPT = {
   'picture.hint-fix-cross-touch': ['A square you crossed out is part of the picture. Cross is on, so tap the ringed cross to lift it.'],
   'lantern.go': ['Pressing a lantern flips it and the four lanterns beside it. Light every lantern on the pond.'],
   'lantern.go-touch': ['Tap a lantern to flip it and the four lanterns beside it. Light every lantern on the pond.'],
+  'lantern.go-school': ['Tap a lantern. It flips, and so do the lanterns right next to it. Make every lantern glow!'],
+  'lantern.stuck-school': ['Tricky one! Tap the button with the diamond, and a lantern will glow to show you where.'],
   'lantern.hint': ['Try the glowing lantern.'],
   'lantern.lit': ['Every lantern is glowing!', 'The whole pond is aglow!'],
   'lantern.done': ['A pond full of light.'],

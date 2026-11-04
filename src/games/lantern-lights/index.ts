@@ -12,10 +12,13 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseMinimum, coursePonds, isLanternCourse } from './course';
-import { allLit, footprint, hintFor, litCount, makePonds, planFor, press, type LanternPlan, type Pond } from './logic';
+import { allLit, footprint, hintFor, litCount, makePonds, planFor, press, stuckAt, type LanternPlan, type Pond } from './logic';
 
-/** Lantern Lake's grown-up band. The island plays it by touch; couch play drives the same board with a controller. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 8 } };
+/**
+ * Lantern Lake's grown-up puzzle. The island plays it by touch; couch play drives the same board with a controller. School
+ * plays the two 3 by 3 ponds.
+ */
+const LEVELS: BandLevels = { school: { min: 1, max: 2 }, grownup: { min: 1, max: 8 } };
 /** The room beside the pond the two counts need; under it they move above the pond. */
 const SIDE_ROOM = 240;
 
@@ -93,6 +96,8 @@ class LanternLights implements Game {
   private carry = 0;
   private assisted = false;
   private told = false;
+  /** School: this pond's "here is where Hint is" nudge has been said. */
+  private nudged = false;
   private settled = false;
 
   constructor(private readonly ctx: GameContext) {
@@ -264,6 +269,7 @@ class LanternLights implements Game {
     this.carry = 0;
     this.history = [];
     this.hinted = null;
+    this.nudged = false;
     this.cursor = Math.floor((this.n * this.n) / 2);
     this.nodes.forEach((n) => n.destroy({ children: true }));
     this.lanterns.removeChildren();
@@ -289,7 +295,7 @@ class LanternLights implements Game {
     this.report();
     if (this.told) return;
     this.told = true;
-    return this.ctx.instruct(this.touch ? 'lantern.go-touch' : 'lantern.go');
+    return this.ctx.instruct(!this.touch ? 'lantern.go' : this.ctx.band === 'school' ? 'lantern.go-school' : 'lantern.go-touch');
   }
 
   private tally() {
@@ -418,7 +424,13 @@ class LanternLights implements Game {
     sfx.pop(3 + (i % 7));
     this.tally();
     this.report();
-    if (allLit(this.lit)) void this.glowUp();
+    if (allLit(this.lit)) return void this.glowUp();
+    // A child pressing on and on without lighting the pond hears once where help is. It counts nothing.
+    const stuck = stuckAt(this.ctx.band, this.pond.par);
+    if (this.touch && !this.nudged && stuck !== null && this.presses >= stuck) {
+      this.nudged = true;
+      void this.ctx.say('lantern.stuck-school');
+    }
   }
 
   /** The left button: take the last press back. The press stays counted; taking it back is free. */
@@ -526,10 +538,10 @@ export const lanternLights: GameModule = {
   region: 'puzzle-peaks',
   challenge: 'logic',
   skills: ['logic', 'planning', 'pattern-finding'],
-  bands: ['grownup'],
+  bands: ['school', 'grownup'],
   inputs: ['touch', 'controller'],
   touchDemo: true,
-  coplayHint: 'Tap a lantern to flip it and the four beside it. Talk about which press would light the most.',
+  coplayHint: 'Tap a lantern to flip it and the ones beside it. Talk about which press would light the most.',
   offScreen: 'Lay out coins or buttons in a grid, all heads up, and flip a coin with its four neighbors to turn them all over.',
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
