@@ -26,7 +26,7 @@ import { SproutPairs } from './pairs';
 import { SproutHidden } from './hidden';
 
 const LEVELS: BandLevels = {
-  school: { min: 1, max: 5 },
+  school: { min: 1, max: 6 },
 };
 
 type Side = 0 | 1;
