@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { beamEnd, flowerCount, hintMirror, makePuzzle, minTurns, mirrorPuzzle, nearestSolutions, planFor, PLANS, predictionChoices, reflect, solved, tiltFor, trace, type Dir, type LightPuzzle, type Tilt } from './logic';
+import { beamEnd, boardWith, DROP_TILT, fewestPlaced, flowerCount, freeCells, nearestPlacement, placeHint, hintMirror, makePuzzle, minTurns, mirrorPuzzle, nearestSolutions, planFor, PLANS, predictionChoices, reflect, solved, tiltFor, trace, type Dir, type LightPuzzle, type Placed, type Tilt } from './logic';
+
+/** Levels 1–7: every mirror is already on the board. */
+const TILT_PLANS = PLANS.filter((p) => !p.tray);
 
 const mirrorIndices = (p: LightPuzzle) => p.things.flatMap((t, i) => (t.kind === 'mirror' ? [i] : []));
 
@@ -17,11 +20,12 @@ describe('Light Lab', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 300; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
-        expect(solved(p, p.solution), `${plan.name} ${seed}`).toBe(true);
+        expect(solved(...boardWith(p, p.solution, p.tray)), `${plan.name} ${seed}`).toBe(true);
         expect(solved(p, p.start)).toBe(false);
         expect(flowerCount(p)).toBe(plan.flowers);
-        expect(p.pathMirrors).toHaveLength(plan.turns);
-        expect(p.things.filter((t) => t.kind === 'mirror')).toHaveLength(plan.turns + plan.decoys);
+        expect(p.pathMirrors).toHaveLength(plan.turns - plan.tray);
+        expect(p.tray).toHaveLength(plan.tray);
+        expect(p.things.filter((t) => t.kind === 'mirror')).toHaveLength(plan.turns - plan.tray + plan.decoys);
         expect(p.things.filter((t) => t.kind === 'rock')).toHaveLength(plan.rocks);
         // Nothing overlaps, nothing sits on the sun's column, everything is on the board.
         expect(new Set(p.things.map((t) => `${t.x},${t.y}`)).size).toBe(p.things.length);
@@ -53,7 +57,7 @@ describe('Light Lab', () => {
   });
 
   it('following the hints always reaches the answer', () => {
-    for (const plan of PLANS) {
+    for (const plan of TILT_PLANS) {
       for (let seed = 1; seed <= 100; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
         const tilts = [...p.start] as Tilt[];
@@ -84,7 +88,7 @@ describe('Light Lab', () => {
   });
 
   it('starts are fair: at 4–7 no answer is fewer than two or three turns away, and at 4–5 no flower is awake yet', () => {
-    for (let level = 1; level <= PLANS.length; level++) {
+    for (let level = 1; level <= TILT_PLANS.length; level++) {
       const plan = planFor(level);
       for (let seed = 1; seed <= 400; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
@@ -92,11 +96,11 @@ describe('Light Lab', () => {
         if (plan.startDark) expect(trace(p, p.start).woken, `level ${level} seed ${seed}`).toHaveLength(0);
       }
     }
-    expect(PLANS.map((p) => p.startWrong)).toEqual([1, 1, 1, 2, 2, 3, 3]);
+    expect(TILT_PLANS.map((p) => p.startWrong)).toEqual([1, 1, 1, 2, 2, 3, 3]);
   });
 
   it('hints follow the nearest answer: from the start or mid-play, following them takes exactly the fewest turns', () => {
-    for (const plan of PLANS) {
+    for (const plan of TILT_PLANS) {
       for (let seed = 1; seed <= 150; seed++) {
         const rng = new Rng(seed * 7 + 3);
         const p = makePuzzle(plan, new Rng(seed));
@@ -145,7 +149,7 @@ describe('Light Lab', () => {
   });
 
   it('a mirrored board solves exactly when the original does, with every tilt swapped', () => {
-    for (const plan of PLANS) {
+    for (const plan of TILT_PLANS) {
       for (let seed = 1; seed <= 60; seed++) {
         const p = makePuzzle(plan, new Rng(seed));
         const m = mirrorPuzzle(p);
@@ -168,5 +172,93 @@ describe('Light Lab', () => {
       for (let seed = 1; seed <= 100; seed++) sides.add(makePuzzle(planFor(level), new Rng(seed)).sunDir);
       expect([...sides].sort(), `level ${level}`).toEqual(level <= 2 ? [0] : [0, 2]);
     }
+  });
+  describe('tray levels 8–9', () => {
+    /** Plays a tray board by its hints alone: a cell hint carries a tray mirror there (or moves a stray one), a mirror hint turns it. */
+    const followHints = (p: LightPuzzle, tilts: Tilt[], placed: Placed[], limit = 12) => {
+      for (let step = 0; step < limit; step++) {
+        if (placed.length === p.tray.length && solved(...boardWith(p, tilts, placed))) return step;
+        const h = placeHint(p, tilts, placed);
+        if (!h) return -1;
+        if ('cell' in h) {
+          if (placed.length < p.tray.length) placed.push({ ...h.cell, tilt: DROP_TILT });
+          else {
+            // Every tray mirror is out: move one the nearest answer does not use.
+            const near = nearestPlacement(p, tilts, placed)!;
+            const stray = placed.findIndex((m) => !near.placed.some((w) => w.x === m.x && w.y === m.y));
+            placed[stray] = { ...placed[stray], ...h.cell };
+          }
+        } else if ('mirror' in h) tilts[h.mirror] = (1 - tilts[h.mirror]) as Tilt;
+        else placed[h.placed] = { ...placed[h.placed], tilt: (1 - placed[h.placed].tilt) as Tilt };
+      }
+      return -1;
+    };
+
+    it('every board needs every tray mirror: one answer with all placed, none with fewer, and the flower off the sun\'s row', () => {
+      for (const level of [8, 9]) {
+        const plan = planFor(level);
+        for (let seed = 1; seed <= 120; seed++) {
+          const p = makePuzzle(plan, new Rng(seed));
+          expect(fewestPlaced(p), `level ${level} seed ${seed}`).toBe(plan.tray);
+          for (const t of p.things) if (t.kind === 'flower') expect(t.y).not.toBe(p.sunRow);
+          // The tray's answer cells are free, so she can drop a mirror on each.
+          const free = freeCells(p).map((c) => `${c.x},${c.y}`);
+          for (const m of p.tray) expect(free).toContain(`${m.x},${m.y}`);
+          // Level 8 keeps one board mirror, tilted wrong; level 9's rock sits on the sun's row.
+          if (level === 8) expect(p.pathMirrors.map((i) => p.start[i] !== p.solution[i])).toEqual([true]);
+          if (level === 9) expect(p.things.filter((t) => t.kind === 'rock').map((t) => t.y)).toEqual([p.sunRow]);
+        }
+      }
+    });
+
+    it('the first hint is a cell for a tray mirror on the nearest answer, and a mirror there with some tilt is on the way to an answer', () => {
+      for (const level of [8, 9]) {
+        for (let seed = 1; seed <= 80; seed++) {
+          const p = makePuzzle(planFor(level), new Rng(seed));
+          const near = nearestPlacement(p, p.start, [])!;
+          expect(solved(...boardWith(p, near.tilts, near.placed))).toBe(true);
+          const h = placeHint(p, p.start, []);
+          if (!h || !('cell' in h)) expect.unreachable(`level ${level} seed ${seed}: ${JSON.stringify(h)}`);
+          else expect(near.placed.some((m) => m.x === h.cell.x && m.y === h.cell.y), `level ${level} seed ${seed}`).toBe(true);
+        }
+      }
+    });
+
+    it('following the hints from the start, or from mirrors dropped at random, always wakes the flower', () => {
+      for (const level of [8, 9]) {
+        for (let seed = 1; seed <= 80; seed++) {
+          const p = makePuzzle(planFor(level), new Rng(seed));
+          expect(followHints(p, [...p.start], []), `level ${level} seed ${seed} from the start`).toBeGreaterThan(0);
+          const rng = new Rng(seed + 500);
+          const placed: Placed[] = [];
+          for (let k = 0; k < p.tray.length; k++) {
+            const cells = freeCells(p, placed);
+            placed.push({ ...cells[rng.int(0, cells.length - 1)], tilt: rng.chance(0.5) ? 1 : 0 });
+          }
+          const tilts = p.start.map((t, i) => (p.things[i].kind === 'mirror' && rng.chance(0.5) ? ((1 - t) as Tilt) : t));
+          expect(followHints(p, tilts, placed), `level ${level} seed ${seed} from random drops`).toBeGreaterThanOrEqual(0);
+        }
+      }
+    });
+
+    it('from the start, following the hints takes exactly the nearest answer\'s steps', () => {
+      for (const level of [8, 9]) {
+        for (let seed = 1; seed <= 60; seed++) {
+          const p = makePuzzle(planFor(level), new Rng(seed));
+          expect(followHints(p, [...p.start], [])).toBe(nearestPlacement(p, p.start, [])!.cost);
+        }
+      }
+    });
+
+    it('a mirrored tray board mirrors its tray answer too', () => {
+      for (const level of [8, 9]) {
+        for (let seed = 1; seed <= 30; seed++) {
+          const p = makePuzzle(planFor(level), new Rng(seed));
+          const m = mirrorPuzzle(p);
+          expect(mirrorPuzzle(m)).toEqual(p);
+          expect(solved(...boardWith(m, m.solution, m.tray))).toBe(true);
+        }
+      }
+    });
   });
 });

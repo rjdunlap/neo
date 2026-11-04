@@ -1,10 +1,11 @@
-import { Circle, Container, Graphics } from 'pixi.js';
+import { Circle, Container, Graphics, type FederatedPointerEvent } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
 import { flower } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { nextSpot, routeStep, type Spot } from '../../couch/focus';
 import { idle, type CouchControls } from '../../engine/controller';
+import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -12,14 +13,20 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { beamEnd, hintMirror, makePuzzle, minTurns, planFor, predictionChoices, solved, trace, whyNot, type BeamEnd, type LightPlan, type LightPuzzle, type Tilt, type Tint } from './logic';
+import { beamEnd, boardWith, DROP_TILT, freeCells, hintMirror, makePuzzle, minTurns, nearestPlacement, placeHint, planFor, predictionChoices, solved, trace, whyNot, type BeamEnd, type LightPlan, type LightPuzzle, type Placed, type Tilt, type Tint } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 4 },
-  school: { min: 2, max: 7 },
+  school: { min: 2, max: 9 },
 };
 
 const CELL = 100;
+/** The tray under the board on levels 8–9: its gap below the board, height and slot spacing. */
+const TRAY_GAP = 34;
+const TRAY_H = 124;
+const TRAY_STEP = 140;
+/** A drag that travels less than this from where it was picked up is a tap: on a placed mirror, it turns it. */
+const TAP_SLOP = 24;
 const TINT_COLOR: Record<Tint, number> = { sun: 0xffe066, pink: swatch.pink.fill, blue: swatch.blue.fill };
 
 /** A smiling sun: the beam's start, and the button that shines it on planning levels. */
@@ -82,6 +89,16 @@ class Bloom extends Container {
   }
 }
 
+/** A tray mirror: in the tray (`cell` null) or placed on the board. */
+interface TrayMirror {
+  node: Container;
+  handle: DragHandle;
+  slot: { x: number; y: number };
+  cell: { x: number; y: number } | null;
+  tilt: Tilt;
+  moved: boolean;
+}
+
 class LightLab implements Game {
   readonly plan: LightPlan;
   puzzle!: LightPuzzle;
@@ -94,16 +111,24 @@ class LightLab implements Game {
   /** Mirror nodes by thing index. */
   readonly mirrors = new Map<number, Container>();
   readonly sun = new Container();
+  /** Levels 8–9: the mirrors in the tray or placed from it. */
+  readonly trayMirrors: TrayMirror[] = [];
 
   private readonly board = new Container();
   private readonly floor = new Graphics();
   private readonly pieces = new Container();
+  private readonly trayLayer = new Container();
+  /** The pale cell under a carried mirror, where it will land. */
+  private readonly hover = new Graphics();
   private readonly beam = new Graphics();
   private readonly glow = new Graphics();
   private readonly blooms = new Map<number, Bloom>();
   private view: View;
   private wrongs = 0;
   private hinted = -1;
+  /** Tray levels: the glowing cell for a mirror to go, or the glowing placed mirror to turn. */
+  private hintCell: { x: number; y: number } | null = null;
+  private hintTray: TrayMirror | null = null;
   private clock = 0;
   /** Couch face-off score: turns beyond the ones this board needs, plus shines that missed, added up (lower is better). */
   excess = 0;
@@ -130,7 +155,8 @@ class LightLab implements Game {
     this.beam.eventMode = 'none';
     this.glow.eventMode = 'none';
     this.ring.eventMode = 'none';
-    this.board.addChild(this.floor, this.beam, this.pieces, this.sun, this.glow, this.ring);
+    this.hover.eventMode = 'none';
+    this.board.addChild(this.floor, this.hover, this.beam, this.pieces, this.sun, this.trayLayer, this.glow, this.ring);
     ctx.stage.addChild(this.board);
   }
 
@@ -142,7 +168,8 @@ class LightLab implements Game {
     this.view = v;
     if (!this.puzzle) return;
     const { cols, rows } = this.puzzle;
-    this.board.position.set((v.w - cols * CELL) / 2, Math.max(110, (v.h - rows * CELL) / 2 + 20));
+    const tall = rows * CELL + (this.puzzle.tray.length ? TRAY_GAP + TRAY_H : 0);
+    this.board.position.set((v.w - cols * CELL) / 2, Math.max(110, (v.h - tall) / 2 + 20));
   }
 
   update(dt: number) {
@@ -151,6 +178,14 @@ class LightLab implements Game {
     if (this.hinted >= 0 && !this.busy) {
       const t = this.puzzle.things[this.hinted];
       g.circle((t.x + 0.5) * CELL, (t.y + 0.5) * CELL, 46 + 4 * Math.sin(this.clock * 6)).stroke({ width: 7, color: swatch.yellow.fill });
+    }
+    if (this.hintCell && !this.busy) {
+      const grow = 3 * Math.sin(this.clock * 6);
+      g.roundRect(this.hintCell.x * CELL + 2 - grow, this.hintCell.y * CELL + 2 - grow, CELL - 4 + 2 * grow, CELL - 4 + 2 * grow, 16).fill({ color: 0xfff3a0, alpha: 0.35 }).stroke({ width: 7, color: swatch.yellow.fill });
+    }
+    if (this.hintTray?.cell && !this.busy && !this.hintTray.handle.dragging) {
+      const c = this.at(this.hintTray.cell.x, this.hintTray.cell.y);
+      g.circle(c.x, c.y, 46 + 4 * Math.sin(this.clock * 6)).stroke({ width: 7, color: swatch.yellow.fill });
     }
     const ring = this.ring.clear();
     const spot = this.couchOn && !this.busy && !this.finished ? this.spots[this.focus] : undefined;
@@ -162,7 +197,9 @@ class LightLab implements Game {
     if (this.planning && !this.busy) this.sun.scale.set(1 + 0.05 * Math.sin(this.clock * 4));
   }
 
-  destroy() {}
+  destroy() {
+    this.clearTray();
+  }
 
   /** Couch play: the stick moves the ring, the bottom button turns a mirror (or shines on the sun), the left button shines. */
   control(input: CouchControls) {
@@ -209,10 +246,39 @@ class LightLab implements Game {
       const target = answer && this.predictionMarks.get(answer.key);
       return target ? { tap: { on: target } } : null;
     }
+    if (this.puzzle.tray.length) return this.trayTouch();
     const want = hintMirror(this.puzzle, this.tilts);
     const mirror = want >= 0 ? this.mirrors.get(want) : undefined;
     if (mirror) return { tap: { on: mirror } };
     return this.planning ? { tap: { on: this.sun } } : null;
+  }
+
+  /** Tray levels: carry a mirror to the cell the hint names (from the tray, or a placed one the answer leaves out), turn what needs turning, then shine. */
+  private trayTouch(): TouchIntent | null {
+    const placed = this.placed();
+    const h = placeHint(this.puzzle, this.tilts, placed);
+    if (!h) return { tap: { on: this.sun } };
+    if ('mirror' in h) return { tap: { on: this.mirrors.get(h.mirror)! } };
+    if ('placed' in h) return { tap: { on: this.onBoard()[h.placed].node } };
+    const near = nearestPlacement(this.puzzle, this.tilts, placed);
+    const m = this.trayMirrors.find((t) => !t.cell) ?? this.onBoard().find((t) => !near?.placed.some((w) => w.x === t.cell!.x && w.y === t.cell!.y));
+    if (!m) return null;
+    const to = this.at(h.cell.x, h.cell.y);
+    return { drag: { on: m.node }, to: { on: this.board, x: to.x, y: to.y }, pause: 0.7 };
+  }
+
+  /** The placed tray mirrors, in tray order, with their cells. */
+  private onBoard() {
+    return this.trayMirrors.filter((m) => m.cell) as (TrayMirror & { cell: { x: number; y: number } })[];
+  }
+
+  private placed(): Placed[] {
+    return this.onBoard().map((m) => ({ x: m.cell.x, y: m.cell.y, tilt: m.tilt }));
+  }
+
+  /** The board as it is now, placed mirrors included, and the tilts to match. */
+  private current(): [LightPuzzle, Tilt[]] {
+    return boardWith(this.puzzle, this.tilts, this.placed());
   }
 
   private at(x: number, y: number) {
@@ -224,6 +290,8 @@ class LightLab implements Game {
     this.index++;
     this.wrongs = 0;
     this.hinted = -1;
+    this.hintCell = null;
+    this.hintTray = null;
     if (this.index >= this.plan.puzzles) return void this.finale();
     this.puzzle = makePuzzle(this.plan, this.ctx.rng);
     this.tilts = [...this.puzzle.start];
@@ -234,6 +302,7 @@ class LightLab implements Game {
     this.busy = false;
     if (this.plan.mode === 'live') this.drawBeam();
     if (this.index > 0) return;
+    if (this.plan.tray) return this.ctx.instruct(this.plan.tray > 1 ? 'light.place.two' : 'light.place');
     if (this.plan.mode === 'predict') return this.ctx.instruct('light.predict');
     if (this.plan.glass) return this.ctx.instruct('light.color');
     if (this.plan.flowers === 2) return this.ctx.instruct('light.two');
@@ -242,6 +311,7 @@ class LightLab implements Game {
 
   private build() {
     const p = this.puzzle;
+    this.clearTray();
     this.pieces.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.taps = 0;
     this.shinesMissed = 0;
@@ -262,6 +332,7 @@ class LightLab implements Game {
     const f = this.floor.clear();
     f.roundRect(-14, -14, p.cols * CELL + 28, p.rows * CELL + 28, 26).fill(wood.light).stroke({ width: 6, color: wood.line });
     for (let x = 0; x < p.cols; x++) for (let y = 0; y < p.rows; y++) f.roundRect(x * CELL + 4, y * CELL + 4, CELL - 8, CELL - 8, 14).fill((x + y) % 2 ? 0xf3f7ff : 0xe8f0fb);
+    if (p.tray.length) this.buildTray(f);
     const s = this.at(p.sunCol, p.sunRow);
     this.sun.position.set(s.x, s.y);
     p.things.forEach((t, i) => {
@@ -284,6 +355,120 @@ class LightLab implements Game {
       this.pieces.addChild(node);
     });
     if (this.predicting) for (const end of predictionChoices(p).slice(0, 3)) this.addPredictionMark(end);
+  }
+
+  /** Levels 8–9: a wooden tray under the board holding the mirrors she places. */
+  private buildTray(f: Graphics) {
+    const p = this.puzzle;
+    const n = p.tray.length;
+    const w = n * TRAY_STEP + 20;
+    const top = p.rows * CELL + TRAY_GAP;
+    f.roundRect((p.cols * CELL - w) / 2, top, w, TRAY_H, 28).fill(wood.fill).stroke({ width: 6, color: wood.line });
+    for (let k = 0; k < n; k++) {
+      const slot = { x: p.cols * CELL / 2 + (k - (n - 1) / 2) * TRAY_STEP, y: top + TRAY_H / 2 };
+      f.circle(slot.x, slot.y, 48).fill({ color: wood.light, alpha: 0.8 });
+      const node = mirrorArt();
+      node.position.set(slot.x, slot.y);
+      node.hitArea = new Circle(0, 0, CELL / 2);
+      const m: TrayMirror = { node, slot, cell: null, tilt: DROP_TILT, moved: false, handle: undefined! };
+      let from = { x: 0, y: 0 };
+      node.on('pointerdown', (e: FederatedPointerEvent) => {
+        from = this.board.toLocal(e.global);
+        m.moved = false;
+      });
+      node.on('globalpointermove', (e: FederatedPointerEvent) => {
+        if (!m.handle.dragging) return;
+        const at = this.board.toLocal(e.global);
+        if (Math.hypot(at.x - from.x, at.y - from.y) > TAP_SLOP) m.moved = true;
+      });
+      m.handle = draggable(node, this.ctx.tw, {
+        onPick: () => sfx.tick(),
+        onMove: (x, y) => this.drawHover(m, x, y),
+        onDrop: (x, y) => this.drop(m, x, y),
+      });
+      this.trayLayer.addChild(node);
+      this.trayMirrors.push(m);
+    }
+  }
+
+  private clearTray() {
+    for (const m of this.trayMirrors) m.handle.destroy();
+    this.trayMirrors.length = 0;
+    this.trayLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.hover.clear();
+  }
+
+  /** The free cell nearest a carried mirror, or null when it is off the board (where it goes back to the tray). */
+  private landing(m: TrayMirror, x: number, y: number) {
+    const p = this.puzzle;
+    if (x < -CELL / 4 || y < -CELL / 4 || x > p.cols * CELL + CELL / 4 || y > p.rows * CELL + CELL / 4) return null;
+    const others = this.onBoard().filter((o) => o !== m).map((o) => ({ ...o.cell, tilt: o.tilt }));
+    const cells = freeCells(p, others);
+    let best = cells[0];
+    for (const c of cells) if (Math.hypot((c.x + 0.5) * CELL - x, (c.y + 0.5) * CELL - y) < Math.hypot((best.x + 0.5) * CELL - x, (best.y + 0.5) * CELL - y)) best = c;
+    return best ?? null;
+  }
+
+  private drawHover(m: TrayMirror, x: number, y: number) {
+    const g = this.hover.clear();
+    const c = m.moved ? this.landing(m, x, y) : null;
+    if (c) g.roundRect(c.x * CELL + 4, c.y * CELL + 4, CELL - 8, CELL - 8, 14).fill({ color: 0xfff3a0, alpha: 0.8 }).stroke({ width: 4, color: swatch.yellow.line, alpha: 0.6 });
+  }
+
+  /** Dropping is never wrong: a free cell takes the mirror, off the board it goes home to the tray, and a tap on a placed mirror turns it. */
+  private drop(m: TrayMirror, x: number, y: number): boolean {
+    this.hover.clear();
+    if (this.busy || this.finished) return false;
+    const settle = (cx: number, cy: number) => {
+      const at = this.at(cx, cy);
+      m.handle.home = at;
+      void this.ctx.tw.to(m.node, { x: at.x, y: at.y }, { duration: 0.15, ease: ease.outBack });
+    };
+    if (m.cell && !m.moved) {
+      settle(m.cell.x, m.cell.y);
+      this.turnPlaced(m);
+      return true;
+    }
+    const cell = this.landing(m, x, y);
+    if (!cell) {
+      m.cell = null;
+      m.handle.home = { ...m.slot };
+      this.setTrayTilt(m, DROP_TILT);
+      if (this.hintTray === m) this.hintTray = null;
+      this.beam.clear();
+      return false;
+    }
+    const fresh = !m.cell;
+    m.cell = cell;
+    settle(cell.x, cell.y);
+    if (fresh) this.setTrayTilt(m, DROP_TILT);
+    this.taps++;
+    sfx.tick();
+    this.beam.clear();
+    if (this.hintTray === m) this.hintTray = null;
+    // A mirror on the glowing cell: if it lands the wrong way, the glow moves to it (still the same hint).
+    if (this.hintCell && this.hintCell.x === cell.x && this.hintCell.y === cell.y) {
+      this.hintCell = null;
+      const want = nearestPlacement(this.puzzle, this.tilts, this.placed())?.placed.find((w) => w.x === cell.x && w.y === cell.y);
+      if (want && want.tilt !== m.tilt) this.hintTray = m;
+    }
+    return true;
+  }
+
+  private setTrayTilt(m: TrayMirror, tilt: Tilt, animate = false) {
+    m.tilt = tilt;
+    const glass = m.node.children[1];
+    const rotation = tilt === 0 ? Math.PI / 4 : -Math.PI / 4;
+    if (animate) void this.ctx.tw.to(glass, { rotation }, { duration: 0.18, ease: ease.outBack });
+    else glass.rotation = rotation;
+  }
+
+  private turnPlaced(m: TrayMirror) {
+    this.taps++;
+    this.setTrayTilt(m, (1 - m.tilt) as Tilt, true);
+    sfx.tick();
+    if (this.hintTray === m) this.hintTray = null;
+    this.beam.clear();
   }
 
   private addPredictionMark(end: BeamEnd) {
@@ -323,7 +508,7 @@ class LightLab implements Game {
 
   /** The beam as far as it gets: full on live levels, or `upTo` cells while it is shining. */
   private drawBeam(upTo = Infinity) {
-    const t = trace(this.puzzle, this.tilts);
+    const t = trace(...this.current());
     const g = this.beam.clear();
     // One line per color, so the soft glow doesn't stack up where segments meet.
     const shown = t.cells.slice(0, upTo);
@@ -350,28 +535,32 @@ class LightLab implements Game {
   /** Planning levels: the sun shines, the beam travels, and either everything wakes or we see why not. */
   private async shine() {
     if (this.busy || this.finished || !this.planning || this.predicting) return;
+    // A mirror still in the tray: a reminder, not a miss.
+    if (this.trayMirrors.some((m) => !m.cell)) return void this.ctx.say('light.place.first');
     this.busy = true;
     this.sun.scale.set(1);
     sfx.whoosh();
-    const t = trace(this.puzzle, this.tilts);
+    const [board, tilts] = this.current();
+    const t = trace(board, tilts);
     for (let n = 1; n <= t.cells.length; n++) {
       this.drawBeam(n);
       const c = t.cells[n - 1];
-      const i = this.puzzle.things.findIndex((x) => x.x === c.x && x.y === c.y);
+      const i = board.things.findIndex((x) => x.x === c.x && x.y === c.y);
       if (i >= 0 && t.woken.includes(i)) {
         this.blooms.get(i)?.wake(this.ctx.tw);
         sfx.bell(7 + n % 5, 0.25);
       }
       await this.ctx.tw.wait(0.09);
     }
-    if (solved(this.puzzle, this.tilts)) return void this.win();
+    if (solved(board, tilts)) return void this.win();
     this.misses++;
     this.shinesMissed++;
     this.wrongs++;
     sfx.boing();
-    const why = whyNot(this.puzzle, this.tilts);
+    const why = whyNot(board, tilts);
     await this.ctx.say(why === 'color' ? 'light.miss.color' : why === 'sleeping' ? 'light.miss.sleeping' : why === 'rock' ? 'light.miss.rock' : 'light.miss.edge');
-    if (this.wrongs >= 2 && this.hinted < 0) {
+    if (this.wrongs >= 2 && this.puzzle.tray.length && !this.hintCell && !this.hintTray && this.hinted < 0) this.hintPlace();
+    else if (this.wrongs >= 2 && !this.puzzle.tray.length && this.hinted < 0) {
       this.hinted = hintMirror(this.puzzle, this.tilts);
       if (this.hinted >= 0) {
         this.hints++;
@@ -382,6 +571,21 @@ class LightLab implements Game {
     for (const b of this.blooms.values()) b.sleep();
     this.beam.clear();
     this.busy = false;
+  }
+
+  /** Tray levels' hint: the cell for a mirror along the nearest answer's beam, or the mirror to turn. */
+  private hintPlace() {
+    const h = placeHint(this.puzzle, this.tilts, this.placed());
+    if (!h) return;
+    this.hints++;
+    if ('cell' in h) {
+      this.hintCell = h.cell;
+      void this.ctx.say('light.hint.cell');
+      return;
+    }
+    if ('mirror' in h) this.hinted = h.mirror;
+    else this.hintTray = this.onBoard()[h.placed];
+    void this.ctx.say('light.hint');
   }
 
   /** A prediction is an experiment: show the route and explain the endpoint without a miss. */
@@ -411,6 +615,8 @@ class LightLab implements Game {
     this.busy = true;
     this.excess += Math.max(0, this.taps - this.needed) + this.shinesMissed;
     this.hinted = -1;
+    this.hintCell = null;
+    this.hintTray = null;
     this.drawBeam();
     for (const b of this.blooms.values()) {
       b.wake(this.ctx.tw);
