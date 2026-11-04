@@ -3080,6 +3080,7 @@ export const SCRIPT = {
   'code.done': ['Every door is open! What a code cracker!'],
   'slide.go': ['Tap the ice where the penguin should slide. It only stops when it bumps into something!'],
   'slide.two': ['Two fish this time! Slide past both of them.'],
+  'slide.three': ['Three fish! Which one will you eat first? Plan your slides to reach all three.'],
   'slide.soft': ['Soft snow stops the penguin. Use it to stop in just the right place!'],
   'slide.ice-snow': ['Collect both fish! Soft snow stops you and the ice block. Plan where to park the block and where the snow will stop your slide.'],
   'slide.paired': ['Two ice blocks! Park them to make stopping places on your way to the fish. You can undo a slide if the way gets blocked.'],
