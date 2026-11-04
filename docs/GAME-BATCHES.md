@@ -85,7 +85,7 @@ Proof: use the union of the included check tiers under the batch contract; prese
 - **`scoop-shop`, level 8 Change of mind**: exactly one bottom/middle/top replacement before input; final-order peek and accounting.
 - **`scoop-shop`, level 9 Top first**: reverse a spoken distinct triple; upright peek.
 
-EF1b first batch, school only, [canonical EF1 requirements](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25). Retain built IDs/order; separate admission and building-session review/placement/layout/person gates. Proof: typecheck, rule tests, filtered top-level9 play, demos8/9; other checks only at the applicable tier. No level7 implementation in this batch.
+**Built 2026-11-03 ([PR #1176](https://github.com/rjdunlap/neo/pull/1176)).** EF1b first batch, school only, [canonical EF1 requirements](deep-dives/scoop-shop.md#ef1-build-ready-definition-2026-10-25). Retain built IDs/order; separate admission and building-session review/placement/layout/person gates. Proof: typecheck, rule tests, filtered top-level9 play, demos8/9; other checks only at the applicable tier. No level7 implementation in this batch.
 
 ### scoop-shop 4: Two cones
 

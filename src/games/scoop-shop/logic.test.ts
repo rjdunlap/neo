@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
-import { countSlots, scoopCounts, complete, customerToServe, makeCustomerChoices, CONE_KINDS, dressShop, makeOrders, nextNeeded, PLANS, planFor, scoopToTake, tryScoop, WINDOW_SCENES } from './logic';
+import { CHANGED_ORDERS, DISTINCT_TRIPLES, FLAVORS, spokenTopFirst, type Order, countSlots, scoopCounts, complete, customerToServe, makeCustomerChoices, CONE_KINDS, dressShop, makeOrders, nextNeeded, PLANS, planFor, scoopToTake, tryScoop, WINDOW_SCENES } from './logic';
 
 describe('Scoop Shop', () => {
   it('only orders flavors that are on the counter, in the sizes each level asks for', () => {
@@ -218,5 +218,115 @@ describe('Scoop Shop', () => {
     }
     expect(scenes.size).toBe(WINDOW_SCENES.length);
     expect(kinds.size).toBe(CONE_KINDS.length);
+  });
+});
+
+describe('Scoop Shop change and reverse', () => {
+  // A separate product enumeration proves completeness, including every position/replacement.
+  const triples: ColorName[][] = [];
+  for (const a of FLAVORS) for (const b of FLAVORS) for (const c of FLAVORS) {
+    if (new Set([a, b, c]).size === 3) triples.push([a, b, c]);
+  }
+  const key = (o: Order) => `${o.original?.join(',')}:${o.changeIndex}:${o.scoops.join(',')}`;
+
+  it('contains exactly the 120 distinct triples and all 1080 one-position changes', () => {
+    expect(DISTINCT_TRIPLES).toHaveLength(120);
+    expect(new Set(DISTINCT_TRIPLES.map(s => s.join(',')))).toEqual(new Set(triples.map(s => s.join(','))));
+    const expected = new Set<string>();
+    for (const original of triples) for (let at = 0; at < 3; at++) for (const color of FLAVORS) {
+      if (original.includes(color)) continue;
+      const scoops = original.map((c, i) => i === at ? color : c);
+      expected.add(key({ original, changeIndex: at, scoops, ordered: true }));
+    }
+    expect(CHANGED_ORDERS).toHaveLength(1080);
+    expect(new Set(CHANGED_ORDERS.map(key))).toEqual(expected);
+    for (const order of CHANGED_ORDERS) {
+      expect(order.ordered).toBe(true);
+      expect(order.original).not.toBe(order.scoops);
+      expect(new Set(order.scoops).size).toBe(3);
+      const differences = order.scoops.flatMap((c, i) => c !== order.original![i] ? [i] : []);
+      expect(differences).toEqual([order.changeIndex]);
+      expect(order.original).not.toContain(order.scoops[order.changeIndex!]);
+    }
+  });
+
+  it('speaks a copied top-first request for every distinct triple; following speech directly is wrong', () => {
+    for (const scoops of triples) {
+      const order: Order = { scoops: [...scoops], ordered: true };
+      const spoken = spokenTopFirst(order);
+      expect(spoken).toEqual([scoops[2], scoops[1], scoops[0]]);
+      expect(spoken).not.toEqual(scoops);
+      expect(tryScoop(planFor(9), order, [], spoken[0])).toBe('wrong');
+      spoken[0] = 'pink';
+      expect(order.scoops).toEqual(scoops);
+    }
+  });
+
+  it('rejects each wrong scoop without mutation and finishes every finite request through useful next-needed hints', () => {
+    for (const level of [8, 9]) {
+      const plan = planFor(level);
+      const family: Order[] = level === 8 ? CHANGED_ORDERS : triples.map(scoops => ({ scoops, ordered: true }));
+      for (const order of family) {
+        const beforeOrder = JSON.stringify(order);
+        const cone: ColorName[] = [];
+        for (let i = 0; i < 3; i++) {
+          expect(complete(plan, order, cone)).toBe(false);
+          const beforeCone = [...cone];
+          for (const wrong of FLAVORS.filter(c => c !== order.scoops[i])) {
+            expect(tryScoop(plan, order, cone, wrong)).toBe('wrong');
+            expect(cone).toEqual(beforeCone);
+          }
+          if (level === 8 && i === order.changeIndex) expect(tryScoop(plan, order, cone, order.original![i])).toBe('wrong');
+          const hint = nextNeeded(order, cone)!;
+          expect(hint).toBe(order.scoops[i]);
+          expect(scoopToTake(plan, order, cone, FLAVORS)).toBe(hint);
+          expect(tryScoop(plan, order, cone, hint)).toBe('add');
+          cone.push(hint);
+        }
+        expect(complete(plan, order, cone)).toBe(true);
+        expect(complete(plan, order, [...cone].reverse())).toBe(false);
+        expect(nextNeeded(order, cone)).toBeUndefined();
+        expect(scoopToTake(plan, order, cone, FLAVORS)).toBeNull();
+        expect(tryScoop(plan, order, cone, FLAVORS[0])).toBe('too-many');
+        expect(JSON.stringify(order)).toBe(beforeOrder);
+      }
+    }
+  });
+
+  it('generates deterministic independent orders with all six tubs, leaving prior level IDs unchanged', () => {
+    expect(planFor(8)).toMatchObject({ mode: 'change', customers: 3, min: 3, max: 3, flavors: 6 });
+    expect(planFor(9)).toMatchObject({ mode: 'topfirst', customers: 3, min: 3, max: 3, flavors: 6 });
+    expect([1, 2, 3, 4, 5, 6, 10, 11, 12, 13].map(level => planFor(level).mode))
+      .toEqual(['free', 'one', 'pair', 'count', 'stack', 'memory', 'free', 'customer', 'count', 'mixed']);
+    for (const level of [8, 9]) for (let seed = 1; seed <= 300; seed++) {
+      const a = makeOrders(planFor(level), new Rng(seed));
+      expect(a).toEqual(makeOrders(planFor(level), new Rng(seed)));
+      expect(a.orders).toHaveLength(3);
+      expect(new Set(a.flavors)).toEqual(new Set(FLAVORS));
+      a.orders.forEach(order => {
+        expect(order.ordered).toBe(true);
+        expect(order.scoops).toHaveLength(3);
+        order.scoops.forEach(c => expect(a.flavors).toContain(c));
+      });
+      const saved = JSON.stringify(a.orders.slice(1));
+      const registry = JSON.stringify(level === 8 ? CHANGED_ORDERS : DISTINCT_TRIPLES);
+      a.orders[0].scoops[0] = 'red';
+      if (a.orders[0].original) a.orders[0].original![0] = 'red';
+      expect(JSON.stringify(a.orders.slice(1))).toBe(saved);
+      expect(JSON.stringify(level === 8 ? CHANGED_ORDERS : DISTINCT_TRIPLES)).toBe(registry);
+    }
+  });
+
+  it('keeps named numeric seeds for bottom/middle/top changes and two reverse requests reproducible', () => {
+    const cases = [
+      { seed: 1, original: ['yellow', 'brown', 'purple'], changeIndex: 0, scoops: ['blue', 'brown', 'purple'] },
+      { seed: 3, original: ['brown', 'green', 'yellow'], changeIndex: 1, scoops: ['brown', 'pink', 'yellow'] },
+      { seed: 4, original: ['purple', 'blue', 'yellow'], changeIndex: 2, scoops: ['purple', 'blue', 'green'] },
+    ];
+    for (const { seed, ...expected } of cases) {
+      expect(makeOrders(planFor(8), new Rng(seed)).orders[0]).toEqual({ ...expected, ordered: true });
+    }
+    expect(spokenTopFirst(makeOrders(planFor(9), new Rng(1)).orders[0])).toEqual(['purple', 'brown', 'yellow']);
+    expect(spokenTopFirst(makeOrders(planFor(9), new Rng(2)).orders[0])).toEqual(['pink', 'blue', 'brown']);
   });
 });
