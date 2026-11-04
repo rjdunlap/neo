@@ -1197,6 +1197,8 @@ Proof: new-level tier: typecheck, rule tests, one play of level 9 with a one-per
 
 ### picture-graph 4: Level 10 Two pictures, one meadow
 
+Built 2026-11-03, [PR #1193](https://github.com/rjdunlap/neo/pull/1193); [closeout](archive/COMPLETED-2026-10-09.md#picture-graph-level-10-two-pictures-one-meadow-picture-graph-batch-4-2026-11-03). Scope retained for dependency references (batch picture-graph 5 follows); no longer eligible for dispatch.
+
 - **`picture-graph`, Level 10, *Two pictures, one meadow* (dive slice 4)**, after batch picture-graph 1 (the first-pick lift) (new interaction): she compares two different-looking pictures of one meadow and picks the pair that show the same counts, with a trap picture that does not. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
 
 Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
@@ -1205,7 +1207,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play with the trap then 
 
 ### picture-graph 5: Level 11 What the graph can say
 
-- **`picture-graph`, Level 11, *What the graph can say* (dive slice 5)**, after batch picture-graph 4 (new interaction): every claim is decided by what is on the screen; she stamps a claim as what the graph says or what it can't say (it does not measure that), never a guess about another meadow. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
+- **`picture-graph`, Level 11, *What the graph can say* (dive slice 5)**, after batch picture-graph 4 (built) (new interaction): every claim is decided by what is on the screen; she stamps a claim as what the graph says or what it can't say (it does not measure that), never a guess about another meadow. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
 
 Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 
