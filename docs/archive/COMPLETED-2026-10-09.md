@@ -2783,6 +2783,12 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--pixel-pictur
 
 Checks are in [VERIFICATION](../VERIFICATION.md) (entry "Block Topple levels 1–3").
 
+### Block Topple level 4 (slice 2, built 2026-11-05)
+
+[PR #1271](https://github.com/rjdunlap/neo/pull/1271), [as built](../definitions/block-topple.md#slice-2-as-built-2026-11-05-level-4-built-level-5-not-built). Level 4 *Hit it high*: three lines, one stack each (a short wide stack, a tall thin tower, a seeded wide stack) where a wide stack tips only from a push at least 150 high; after two thumps a golden band (a hint) shows the tipping height at every level. Bands pre-K 1–4, school 2–4. Level 5 *Count what fell* is not built and is a define item in READY.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--block-topple-level-4-hit-it-high-block-topple-slice-2).
+
 ## Ferry Jam levels 9 and 10 Pre-K entry and who's in the way (ferry-jam 4, 2026-11-04)
 
 [PR #1204](https://github.com/rjdunlap/neo/pull/1204), batch ferry-jam 4, [dive slice 4](../deep-dives/ferry-jam.md#build-slices-in-order). Level 9: 4x4, one upright boat across the ferry's row plus one other, fourteen frozen harbors, two a round, first line `ferry.start.one`. Level 10: 4x4, 2-3 boats, exactly one blocker that cannot leave the ferry's row in one slide (`blockers`, `clearsInOne`; plan flags `entry` and `ask`), fourteen harbors (seven at 3 slides, seven at 4), two a round. Each harbor asks `ferry.who` before any slide: the blocker tap answers (`ferry.yes`, then `ferry.start` is the repeated instruction); another boat, drag touch-down included, is a miss with boing and `ferry.notway`; two misses glow the blocker (one hint); the ferry tap re-asks free. Keys answer with the highlighted boat; couch autoplay and the ghost finger answer first. Pre-K range `{ min 1, max 10, order [9, 1, 10, 2, 3, 4] }`; school unchanged 3-8; `entryLevels: [9, 10]`. Unit translation: `solve` counts the ferry's own final slide, so the dive's "fewest exactly 1" is 2 in solver units and "2-3" is 3-4. How-to steps scoped 9-9 and 10-10; the note splits (to 9: nothing is a mistake; from 10: a wrong tap counts).
@@ -2867,7 +2873,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--treasure-map
 
 [PR #1254](https://github.com/rjdunlap/neo/pull/1254), [dive slice 5](../deep-dives/treasure-map.md#build-slices-in-order). Appended as ID 9: `LEVELS` preschool 1-9 (`order` 9, 1), pre-K 1-9 (`order` 9, 1, 2), school unchanged 1-8; `entryLevels: [9]`, so the game's bands are now preschool, pre-K and school and Treasure Map sits on the preschool Rainbow Meadow page. A 3 by 3 map with picture rows and shuffled colour columns, squares 120 units on screen (grid scaled 1.2); the pet asks for a column or a row by name and any square in that line is right (the whole line shines, then a chest). Four finds a round, rows and columns alternating from a seeded first axis, no line twice. A wrong dig is a miss that names the line dug (`map.linecolwrong`, `map.linerowwrong`); two misses on a find glow the line and count one hint (`map.linehint`). The sign shows the one header with an arrow along its line. Voice lines `map.linecol`, `map.linerow` and the three above; a how-to step and finish line scoped to level 9 (level 8's step now `scoped to:8`). Couch unchanged. Voice clips for the new lines are not rendered (device speech is the fallback).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--treasure-map-level-9-one-line-treasure-map-batch-5).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--treasure-map-level-9-one-line-treasure-map-batch-5).
 
 ## Treasure Map levels 10-11 Across the river and Mirror twin (treasure-map batch 6, 2026-11-05)
 

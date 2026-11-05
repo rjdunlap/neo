@@ -114,7 +114,7 @@ All lengths are in **board units**. The board is a fixed 720 × 560 box, transla
 ## Build slices
 
 1. **Levels 1–3 as a registered game** (**built 2026-11-04**; deviations below) (new-game tier): `logic.ts` with the flight, contact, tipping rule, windows, solver and layout, their rule tests, the scene, art, sound, voice lines, how-to card with ghost finger, registry and land, plus a `browser-check.mjs` case and its README row. Its `BandLevels` caps the table at 3 (`prek: { min: 1, max: 3 }`, `school: { min: 2, max: 3 }`).
-2. **Levels 4–5** (new rules on the existing interaction): the wide stack, partial tips, the thump hint, the basket and number pads, and the full ranges above.
+2. **Levels 4–5** (new rules on the existing interaction): the wide stack, partial tips, the thump hint, the basket and number pads, and the full ranges above. **Level 4 built 2026-11-05; level 5 not built** (needs redefinition, see [slice 2 as built](#slice-2-as-built-2026-11-05-level-4-built-level-5-not-built)); the school range is 2–4 until then.
 
 Later, as proposals only: a bounce leaf, a seesaw, a heavy ball, a target needing two hits, chains where one fall tips another (needs a fall model), two friends taking turns, and Bubble Cannon on the same pull.
 
@@ -145,3 +145,11 @@ Device checks stay open: whether a four-year-old can aim by angle as well as len
 - **Level 1 hints.** The hint counts short, over and hill shots on level 1 too: level 1 records no misses but can still earn the dotted path, counted as a hint.
 - **Thumps** in slice 1 wiggle and say "Bump! Try higher up." without the golden band (slice 2).
 - **Measured working shares** (of the sampled grid): level 1 38%, level 2 32%, level 3 23%; largest working windows 41° × 60, 42° × 42 and 37° × 36 (degrees × units).
+
+## Slice 2 as built (2026-11-05): level 4 built, level 5 not built
+
+- **Level 4 is one stack per line, three lines, not two stacks in two lines.** On the 860 board, a 150-wide two-block stack, its 200-long fall, any 100-wide tower and its fall need at least 650 units past board x ~330, far beyond `FALL_MAX` 840; compact falls save only about 50 per stack. A round is the authored short wide stack (150-wide base, 100-wide block centred on top, a pig), then a seeded tall thin tower (3 blocks of 100, x 380–410), then a seeded wide stack (base x 400–460).
+- **Rule.** The wide stack tips only from a push at least 150 high (the top block's upper half or the friend); lower hits thump. The authored wide stack works for about 28% of the pull grid and about 56% of the pulls that reach it thump (filter at least 20%). Every line keeps an 8° by 20 working window, and every level 4 fall ends inside a 768-wide portrait view.
+- **Golden band (new at every level).** After two thumps on a line (never misses) a golden band shows from the stack's `tipLine` (the lowest push that tips anything) to its top; one hint per line, voice line `block-topple.hint-high`; new instruction `block-topple.instruct-high`. At level 1 that hint is the only one recorded besides arc hints.
+- **Bands:** preschool 1–2, pre-K 1–4, school 2–4 (the table above still says 2–5 until level 5 is redefined).
+- **Level 5 (Count what fell) is not built and needs redefinition.** Under the tipping rule a uniform 100-wide tower never tips in part (any push on an upper block qualifies j=0; a rule test asserts it). A partial tip needs a lower block wider than its own height plus the upper block's width (at least 200 for a two-step, about 250+ for three), whose fall overruns the board; two towers per line do not fit either. Options: one stepped stack per line on a wide pedestal, counting per line; counting fruit across lines; or a different fall cosmetic. This is a `define` item in [READY](../READY.md).
