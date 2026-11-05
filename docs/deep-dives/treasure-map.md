@@ -90,6 +90,57 @@ Rule tests: headers are distinct, every pool member appears across seeds, the ta
 
 All three append IDs 6–8 to `PLANS`; the school range becomes 1–8. Pre-K stays 1–2. The couch's trip stops are pinned to levels 2–5 in `src/couch/catalog.ts`, so no new level reaches the couch unless a later slice adds it.
 
+### Levels 10–11 *Across the river* (defined 2026-11-05)
+
+Four quadrants in words, at the top of `school` ([area-volume study](subjects/area-volume-space.md) decision 7; adopted under the standing rules, see [Decisions](#decisions-for-the-developer)). Words only: no signed numbers, "negative" or "minus" (the [integers study](subjects/integers.md)'s decision 6 stays open and nothing here depends on it).
+
+- **The map.** A 6 by 6 map of 100-unit squares (600 units). A blue river runs across it on the grid line between rows 3 and 4, and a sandy road runs up it on the line between columns 3 and 4, with a little bridge where they cross. Both sit *on* grid lines, so no square is on an axis and every square is "1 to 3 squares right or left of the road, and 1 to 3 above or below the river"; the square touching the road is 1. Nothing else names a square: no letters, numbers or header pictures, so the paper keeps a 20-unit margin (640 by 640) instead of the 90-unit header margin. The river and road are decorations with `eventMode: 'none'` (24 units wide, drawn over the line): a tap on either digs the square under the finger through the existing `squareAt`, so there is no dead strip and touch-down feedback is unchanged.
+- **Layout** (measured against `GameScene`: home at (62, 62), help at (62, 160), the pet at (74, h − 18); `computeView` keeps the 1024 by 768 design area, so an iPad in landscape is 1024 by 768 and in portrait about 1024 by 1365).
+  - *Landscape, the binding case:* the grid moves right, not centred: its left edge at `v.w − 660` (364 at 1024; paper 344 to 984), vertically centred (84 to 684; paper 64 to 704). The sign stands to its left as a two-row panel 180 wide by 220 tall, centred at about (240, v.h / 2), clear of the help button above (bottom about 210) and the pet below.
+  - *Portrait:* the grid is centred (212 to 812) with its top at 330; the same two-row sign sits above it, centred, its middle at about 220.
+  - The rule is: sign beside when `v.w − 660 ≥ 340`, else above. The build moves the grid and the sign; it never shrinks a square below 100 units. A wider or taller view only adds space.
+- **Plans.** `MapPlan.size` widens to `3 | 4 | 5 | 6`, and `MapMode` gains `'river'` and `'mirror'`. IDs 10 and 11 are appended to `PLANS` after 9 (`planFor` reads by position): `{ mode: 'river', size: 6, finds: 4 }` and `{ mode: 'mirror', size: 6, finds: 4 }`. New pure helpers in `logic.ts`:
+  - `riverWords(s)` returns `{ across: { n, side: 'right' | 'left' }, upDown: { n, side: 'above' | 'below' } }`: `col` 3 to 5 is right with `n = col − 2`, `col` 0 to 2 is left with `n = 3 − col`, and the same for rows.
+  - `mirrorOf(s, line)` returns the square across `'river'` (`row → 5 − row`) or `'road'` (`col → 5 − col`).
+- **Level 10, *Across the river*.** "Dig 2 squares right of the road and 1 square below the river!" The sign shows two rows, each a little picture of the line (a strip of road, a strip of waves), a number tile and an arrow (→ or ← for the road, ↑ or ↓ for the river), drawn with level 6's tile art. She counts out from the road, then from the river, and digs; a right dig opens the chest, as at levels 1–3. Four finds a round, **one in each quadrant** in a seeded order, each count 1 to 3, no square twice. The first find of a round is introduced by `map.riverintro` ("A river and a road cross our map! Count the squares out from the road, and out from the river.").
+- **Level 11, *Mirror twin*.** A thing from `THINGS` (tree, house, boat, flag; one of each per round) stands on a square, and the line it mirrors across (the river or the road) shimmers. "The boat is 2 squares right of the road and 1 square above the river. Its twin is across the river, just as far on the other side. Tap where the twin goes!" The sign shows the thing, the shimmering line's picture and a mirror mark (two arrows meeting at a line). A right tap draws the twin there turned over: upside down across the river (a reflection in water) and flipped left to right across the road. `map.mirrored` follows ("Just as far on the other side!"), which contrasts with level 8, where a slide never turns the raft. Four finds a round: two across the river and two across the road, in a seeded order; the thing's square has counts 1 to 3 as at level 10. Mirroring across both lines (a half-turn) is left out.
+- **What a mistake does.** Each wrong dig is a miss with a boing, a scratch mark and one spoken reason. The reason comes from a pure `riverReason(guess, want)` or `mirrorReason(guess, thing, line)` that names the **first** wrong part in a stated order.
+  - *Level 10* (road before river, as level 6's card reads across first):
+    1. The wrong side of the road: `map.riverside`, "That square is {got}. The treasure is {want}." ("left of the road" / "right of the road").
+    2. The right side, but the wrong count from the road: `map.rivercount`, "Right side of the {line}! Count again: {want}." ("2 squares right of the road").
+    3. Then the same two checks for the river.
+  - *Level 11*:
+    1. Still on the thing's side of the mirror line, the thing's own square included: `map.mirrorside`, "That is still on the {thing}'s side of the {line}. The twin is across it!"
+    2. Across, but the other count changed (it moved along the line): `map.mirrorslid`, "Only across the {line}: the twin stays {keep}." ("2 squares right of the road").
+    3. Across and in line, but the wrong distance: `map.mirrorcount`, "The {thing} is {n} from the {line}, so its twin is {n} from the {line} too."
+- **Hints and accounting.** Two wrong digs on one find charge **one hint**, as at levels 1–5:
+  - *Level 10* lights the target's column and row (the existing glow) and says `map.riverhint`, "Count {across} from the road, then {updown} from the river. Dig where the glowing lines cross."
+  - *Level 11* lights the squares from the thing to the line and the same number on the other side, and says `map.mirrorhint`, "Count the glowing squares from the {thing} to the {line}, then the same number on the other side."
+
+  There is no free exploration on these levels: every tap is an answer. A round ends after four finds through `ctx.finish({ misses, hints })`, and adaptation reads it as usual.
+- **Placement.** School becomes `{ min: 1, max: 11, order: [1, 2, 3, 4, 5, 6, 7, 8, 10, 11] }`. The `order` keeps the 3 by 3 preschool level 9 out of school's window. Preschool and pre-K are unchanged. `entryLevels: [9]` stays: the build checks that a school birthday still lands at school's first level. No ID is renumbered. Not on the couch (its stops are pinned to levels 2–5), and `control()`'s guard gains `'river'` and `'mirror'` next to `'write'` and `'slide'`.
+- **Bot.** `find.square` is the answer on both levels (level 11's is the twin), so `autotouch()` taps `digSpot(find)` unchanged. The demonstration shows a right dig per find.
+- **How-to card.** Two level-scoped steps: "Levels 10–11: count squares out from the road and the river" and "Level 11: the twin is just as far on the other side of the line". No "later levels" wording.
+- **Voice.** 12 new `map.*` lines:
+  - Slot-free, so the build can give them clips: `map.riverintro`, `map.mirrored`.
+  - Slotted, so they use device speech until V3's slotted clips: `map.river` ("Dig {across} of the road and {updown} the river!"), `map.mirror`, `map.riverside`, `map.rivercount`, `map.riverhint`, `map.mirrorside`, `map.mirrorslid`, `map.mirrorcount`, `map.mirrorhint`.
+  - Slot words are plain: "right of the road", "below the river", "1 square", "2 squares". `stepsWord` already handles "square/squares" plurals the same way.
+- **Rule tests** (`logic.test.ts`):
+  - `riverWords` maps each of the 36 squares to distinct words, and reading the words back gives the square.
+  - Level 10's four finds land one per quadrant, with counts 1 to 3 and distinct squares, over many seeds.
+  - `mirrorOf` keeps the twin on the map, mirroring twice gives the original square, the twin is never the thing's own square, and the twin's count from the line equals the thing's.
+  - Level 11 has two finds per line and four different things.
+  - Each reason names the first wrong part in the order above, and a right guess returns null.
+  - The school window excludes 9 and ends 10, 11. The registry, lands and how-to tests pass unchanged in shape.
+- **Left out on purpose.** Squares on an axis and the origin (they come with signed numbers); ordered pairs written as numbers; mirroring across both lines; a translation across the river (level 8 already slides); any reading of words on the map.
+- **Check tier** (batch treasure-map 6, new-interaction tier):
+  - typecheck, and the game's rule tests plus the registry, lands and how-to tests.
+  - One scripted school play of level 10 with one wrong-side dig and one wrong-count dig (the glow and hint), then right, to the sticker.
+  - One play of level 11 with one same-side tap, then right.
+  - Screenshots of level 10 at 1024 by 768 (sign beside) and 1024 by 1365 (sign above).
+  - `fingerdemo` at 10 and at 11.
+  - One build, for the voice lines. No `couchgames`.
+
 ### Younger-band openings
 
 **Level 9, *One line*** (preschool, entry). A 3 by 3 map with picture rows and colour columns, 120-unit squares; "Dig in the red column!" or "Dig in the fish row!": any square in that line is right, and the whole line shines. Four finds a round, rows and columns alternating. A wrong dig gets "that's the blue column; find red" and the line glows after two. It is appended as ID 9 (after 6–8 are built; `planFor` reads `PLANS` by position, so IDs must stay contiguous). The game gains an `order` of 9, 1, 2, …, 8: preschool plays 9 then 1, pre-K gains 9 at its start (9, 1, 2) and `entryLevels: [9]` lets a birthday land safely. Rule tests: every square in the named line is accepted, no other; the ordered window. Couplings: the land page gains Treasure Map at preschool (the lands test must pass); its how-to step; `fingerdemo` at 9.
@@ -116,7 +167,8 @@ None. By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules)
 3. **Level 7 *How far?*** (built 2026-11-05; batch treasure-map 3), after batch 1 (shares the footprints): new-rule tier: typecheck, rule tests including the five-dig bound for fitting digs over every hiding square, one play of level 7 with two fitting digs, a ruled-out dig (a miss), then to the sticker; `fingerdemo` at 7; one portrait screenshot of the footprints.
 4. **Level 8 *Slide it*** (built 2026-11-05; batch treasure-map 4), after batch 1: new-interaction tier: typecheck, rule tests, one play with one wrong square and one wrong outline (named reason), then right; one portrait screenshot of the outline cards; `fingerdemo` at 8.
 5. **Level 9 *One line*, the preschool opening** (built 2026-11-05; batch treasure-map 5), after batches 1–4 (shares the headers; its ID follows 8): new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests, one play of level 9 at preschool with one wrong line then two right, `fingerdemo` at 9, the preschool Rainbow Meadow page screenshot.
-6. **Define *Across the river*, levels 10–11** (docs only; status `define`; claimed 2026-11-05 by `claude/define-treasure-map-across-river`): a map split by a river (the horizontal axis) and a road (the vertical axis) with the squares named in words ("2 right of the road, 1 below the river"; level 10), then the mirror across the river or the road (level 11); the 6 by 6 geometry at 100-unit squares within the 768-unit short side with the sign, the spoken lines, accounting, hints, the bot and the check tier. Words only; signed numbers stay with the integers study.
+6. **Define *Across the river*, levels 10–11** (defined 2026-11-05, [above](#levels-1011-across-the-river-defined-2026-11-05)).
+7. **Levels 10–11 *Across the river* and *Mirror twin*** (batch treasure-map 6), after batches 1–5 (IDs follow 9): new-interaction tier as in the definition's check tier.
 
 ## What was built in this session
 
