@@ -1013,6 +1013,12 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 - [ ] **Sudoku Garden level 8 X-Wing hint on an iPad (2026-11-05).** On a level 8 bed, ask for hints until the X-Wing one: are the lit lines, the four ringed corners and the spoken line clear to a grown-up who does not know the technique?
 - [ ] **Sudoku Garden level 9 patch borders on an iPad (2026-11-05).** On a level 9 bed at 64-unit squares, do the wood-line borders and the tinted soil read clearly as six-square patches, on the brown soil in daylight and at an angle, and does "In this patch, the 5 has only one square left" make sense without a box to count?
 
+## Seed Travelers levels 1–3 (life-science slice 2, 2026-11-05)
+
+- [ ] On an iPad, check that a toddler and a preschooler tap the bellows, the burr and the critter with large targets in both layouts (the help glow must not take taps), pet clearance, and that the Finish basket and the 2 by 2 trial board read.
+- [ ] Listen on a device to the `seeds.*` lines and the rendered title clip, including the toddler off-screen line.
+- [ ] Watch whether a child connects the plume or the hooks (the structure) with the journey (the seed arrived or stayed), and tells Replay from growing; no life-science reviewer is named yet.
+
 ## Far Lights levels 1–4 (astronomy slice 2, 2026-11-05)
 
 - [ ] On an iPad, check that a lap child links her tap to the swelling halo, that a toddler keeps a light moving along its path with one finger, that a four-year-old reads the halo as brighter rather than bigger, that the stop-4 halo is visible in a lit room, the hint glide and pet clearance in both orientations, and how the iPad says "brighter, not bigger". Browser play establishes none of these.
