@@ -41,22 +41,26 @@ export interface Pt { x: number; y: number }
 export interface Vine { ax: number; len: number }
 export interface Fruit { kind: Kind; vines: Vine[]; rest: Pt }
 export interface Friend { x: number; kind: FriendKind }
-export interface Line {
-  fruit: Fruit;
-  friend: Friend;
+/** A fruit and the friend it is for. */
+export interface Pair { fruit: Fruit; friend: Friend }
+export interface Line extends Pair {
+  /** Level 5: a second fruit for a second friend, on the other side. */
+  second?: Pair;
   /** Level 3: the fruit starts swinging (from a breeze) at its rest point, which is a turnaround. */
   breeze: boolean;
   /** Levels 1–2: the friend scoots under the falling fruit, so every drop is caught. */
   scoot: boolean;
 }
 
-export type Mode = 'snip' | 'two' | 'wait';
+export type Mode = 'snip' | 'two' | 'wait' | 'keep' | 'pair';
 export interface Plan { level: number; name: string; mode: Mode; lines: number; /** Whether a missed drop counts. */ counts: boolean }
 
 const PLANS: Plan[] = [
   { level: 1, name: 'Snip!', mode: 'snip', lines: 3, counts: false },
   { level: 2, name: 'Two vines', mode: 'two', lines: 3, counts: false },
   { level: 3, name: 'Wait for the swing', mode: 'wait', lines: 3, counts: true },
+  { level: 4, name: 'Which vine stays?', mode: 'keep', lines: 3, counts: true },
+  { level: 5, name: 'Two friends', mode: 'pair', lines: 2, counts: true },
 ];
 export const MAX_LEVEL = PLANS.length;
 
@@ -243,17 +247,27 @@ function scootCovers(s: Swing, rest: Pt): boolean {
   return true;
 }
 
-/** Level 3: the friend's band centre that gives the longest window, with the opposite turnaround and both bottom crossings missing. */
-export function placeFriend(s: Swing): number | null {
+/**
+ * The friend's band centre that gives the longest window and keeps `fair` (level 3: the opposite turnaround and both bottom
+ * crossings miss). `also`, a costlier check, is tried on the candidates longest window first.
+ */
+export function placeFriend(s: Swing, fair = (fx: number) => level3Fair(s, fx), also = (_fx: number) => true): number | null {
   const toward = -Math.sign(s.amp) || 1;
-  let best: number | null = null, bw = 0;
+  const ok: { fx: number; w: number }[] = [];
   for (let fx = FRIEND_MIN; fx <= FRIEND_MAX; fx += 5) {
     if (Math.sign(fx - s.ax) !== toward || Math.abs(fx - s.ax) < 20) continue;
-    if (!level3Fair(s, fx)) continue;
+    if (!fair(fx)) continue;
     const w = longest(windows(s, fx));
-    if (w > bw) { bw = w; best = fx; }
+    if (w >= MIN_WINDOW) ok.push({ fx, w });
   }
-  return bw >= MIN_WINDOW ? best : null;
+  ok.sort((a, b) => b.w - a.w || a.fx - b.fx);
+  return ok.find((c) => also(c.fx))?.fx ?? null;
+}
+
+/** Levels 4–5's timing promise on the kept vine: a snip at the top of the swing on the friend's side feeds it, one where it starts misses. */
+export function keepTurn(s: Swing, fx: number): boolean {
+  const top = s.ax - s.len * Math.sin(s.amp);
+  return Math.abs(top - fx) <= BAND / 2 - 10 && !landing(s, s.t0, posAt(s, s.t0), fx).caught;
 }
 
 /** Level 3's promises: a snip at the top of the swing on the friend's side feeds it; one at the opposite turnaround (where it starts) or straight below, either way, misses. */
@@ -272,11 +286,35 @@ export interface Snips {
   at: number | null;
 }
 
-/** The line's working plan: which vines to snip and, on a swing, when. The hint and the ghost finger follow it. */
+/** Every fruit of a line with its friend (two at level 5). */
+export const pairsOf = (line: Line): Pair[] => (line.second ? [line, line.second] : [line]);
+
+/** Levels 4–5: she chooses which vine stays (no breeze, no scooting friend, several vines). */
+export const choosesKeep = (line: Line) => !line.breeze && !line.scoot && line.fruit.vines.length >= 2;
+
+/** For each vine of a fruit: the longest snip window per beat if she keeps that one (0 for none). */
+export function plans(p: Pair): { keep: number; window: number }[] {
+  return p.fruit.vines.map((v, keep) => ({ keep, window: longest(windows(swingFrom(p.fruit.rest, v), p.friend.x)) }));
+}
+
+/** The vine to keep for a fruit at levels 4–5 (the first working keep), or −1. */
+export function keepFor(p: Pair): number {
+  const w = plans(p).find((k) => k.window >= MIN_WINDOW);
+  return w ? w.keep : -1;
+}
+
+/** A fruit's working plan: which vines to snip and, on a swing, when. The hint and the ghost finger follow it. */
+export function solvePair(p: Pair, line: Line): Snips & { keep: number } {
+  const { fruit, friend } = p;
+  if (line.breeze) return { order: [0], at: bestSnip(swingFrom(fruit.rest, fruit.vines[0]), friend.x), keep: 0 };
+  if (!choosesKeep(line)) return { order: fruit.vines.map((_, i) => i), at: null, keep: -1 };
+  const keep = keepFor(p);
+  return { order: [...fruit.vines.map((_, i) => i).filter((i) => i !== keep), keep], at: bestSnip(swingFrom(fruit.rest, fruit.vines[keep]), friend.x), keep };
+}
+
+/** The line's working plan for its first fruit. */
 export function solve(line: Line): Snips {
-  const { fruit, friend } = line;
-  if (line.breeze) return { order: [0], at: bestSnip(swingFrom(fruit.rest, fruit.vines[0]), friend.x) };
-  return { order: fruit.vines.map((_, i) => i), at: null };
+  return solvePair(line, line);
 }
 
 /** The swing a line starts with (level 3), else null. */
@@ -286,9 +324,148 @@ export function startSwing(line: Line): Swing | null {
 
 const BREEZE = (30 * Math.PI) / 180;
 
-function tryLine(plan: Plan, rng: Rng, first: boolean): Line | null {
+/** Levels 4–5: neighbouring vines (of every fruit in the line) are at least this far apart where a finger reaches them. */
+export const KEEP_GAP = 100;
+/** Where a finger reaches a vine, as fractions of the way down from the anchor. */
+export const REACH = [0.15, 0.3];
+
+/** Every vine of a line with the fruit it holds, for spacing checks. */
+const vinesOf = (line: Line) => pairsOf(line).flatMap((p) => p.fruit.vines.map((v) => ({ v, rest: p.fruit.rest })));
+
+/** The smallest distance between two vines of a line where a finger reaches them. */
+export function vineGap(line: Line): number {
+  const all = vinesOf(line);
+  let m = Infinity;
+  for (let i = 0; i < all.length; i++) {
+    for (let j = i + 1; j < all.length; j++) {
+      for (const f of REACH) {
+        const p = alongVine(all[i].v, all[i].rest, f), q = alongVine(all[j].v, all[j].rest, f);
+        m = Math.min(m, Math.hypot(p.x - q.x, p.y - q.y));
+      }
+    }
+  }
+  return m;
+}
+
+/** Positions over one beat of every swing a fruit could make (each keep), plus its rest. */
+function reach(f: Fruit): Pt[] {
+  const out: Pt[] = [f.rest];
+  for (const v of f.vines) {
+    const s = swingFrom(f.rest, v);
+    const T = beat(s.len);
+    for (let k = 0; k < 48; k++) out.push(posAt(s, (T * k) / 48));
+  }
+  return out;
+}
+
+/** Every landing a fruit could make (any keep, any moment, or all its vines at once), sampled over a beat. */
+function landings(f: Fruit): number[] {
+  const out = [landing(null, 0, f.rest, 0).x];
+  for (const v of f.vines) {
+    const s = swingFrom(f.rest, v);
+    const T = beat(s.len);
+    for (let t = 0; t < T; t += STEP) out.push(landing(s, t, f.rest, 0).x);
+  }
+  return out;
+}
+
+/**
+ * Levels 4–5's promises for one fruit and its friend: exactly one keep has a window of at least 0.4 s (the one on the
+ * friend's side), with level 3's fairness on that swing; every other keep, and dropping it from rest, never feeds the friend;
+ * every swing stays on the board; and no landing reaches a friend in `others`.
+ */
+export function keepFair(p: Pair, others: Friend[] = []): boolean {
+  const { fruit, friend } = p;
+  const ks = plans(p);
+  const good = ks.filter((k) => k.window >= MIN_WINDOW);
+  if (good.length !== 1 || ks.some((k) => k.window > 0 && k.window < MIN_WINDOW)) return false;
+  const kept = fruit.vines[good[0].keep];
+  if (Math.sign(kept.ax - fruit.rest.x) !== Math.sign(friend.x - fruit.rest.x)) return false;
+  if (!keepTurn(swingFrom(fruit.rest, kept), friend.x)) return false;
+  if (landing(null, 0, fruit.rest, friend.x).caught) return false;
+  if (reach(fruit).some((q) => q.x < FRUIT_R || q.x > BOARD_W - FRUIT_R)) return false;
+  return others.every((o) => landings(fruit).every((x) => Math.abs(x - o.x) > BAND / 2 + 10));
+}
+
+/** Level 5: the two fruits' swings never meet each other, nor the other fruit's hanging vines. */
+export function apart(a: Fruit, b: Fruit): boolean {
+  const ra = reach(a), rb = reach(b);
+  for (const p of ra) for (const q of rb) if (Math.hypot(p.x - q.x, p.y - q.y) < 2 * FRUIT_R + 8) return false;
+  for (const [mine, other] of [[ra, b], [rb, a]] as const) {
+    for (const v of other.vines) {
+      const [s, e] = vineSeg(v, other.rest);
+      if (mine.some((p) => distToSegment(p, s, e) < FRUIT_R + 8)) return false;
+    }
+  }
+  return true;
+}
+
+/** A fruit at `rest` hanging from anchors at these x (each vine taut). */
+const hang = (kind: Kind, rest: Pt, xs: number[]): Fruit => ({
+  kind, rest, vines: xs.map((ax) => ({ ax, len: Math.round(Math.hypot(rest.x - ax, rest.y - ANCHOR_Y) * 1000) / 1000 })),
+});
+
+/** Level 4: one fruit on two or three vines, the friend on `side`; the vine on that side is the one to keep. */
+function keepLine(rng: Rng, first: boolean, side: number, kind: Kind, fk: FriendKind): Line | null {
+  const three = first || rng.chance(0.4);
+  const h = first ? 230 : Math.round(rng.range(200, 250));
+  let fruit: Fruit;
+  if (three) {
+    // Left, straight above (it hangs still) and right, as far apart as the board allows.
+    const a = first ? 150 : Math.round(rng.range(146, 156));
+    const b = first ? 150 : Math.round(rng.range(146, 156));
+    const m = first ? 360 : Math.round(rng.range(48 + 2 * a, BOARD_W - 48 - 2 * b));
+    fruit = hang(first ? 'lemon' : kind, { x: m, y: ANCHOR_Y + h }, [m - a, m, m + b]);
+  } else {
+    const k = Math.round(rng.range(100, 150));
+    const o = Math.round(rng.range(100, 150));
+    const lo = Math.max(48 + 2 * (side > 0 ? o : k), 0), hi = BOARD_W - 48 - 2 * (side > 0 ? k : o);
+    if (lo > hi) return null;
+    const x = Math.round(rng.range(lo, hi));
+    fruit = hang(kind, { x, y: ANCHOR_Y + h }, side > 0 ? [x - o, x + k] : [x - k, x + o]);
+  }
+  if (vineGap({ fruit, friend: { x: 0, kind: fk }, breeze: false, scoot: false }) < KEEP_GAP) return null;
+  const kept = side > 0 ? fruit.vines[fruit.vines.length - 1] : fruit.vines[0];
+  const s = swingFrom(fruit.rest, kept);
+  const friend = (x: number): Friend => ({ x, kind: first ? 'pig' : fk });
+  const fx = placeFriend(s, (x) => keepTurn(s, x), (x) => keepFair({ fruit, friend: friend(x) }));
+  return fx === null ? null : { fruit, friend: friend(fx), breeze: false, scoot: false };
+}
+
+/** Level 5: two fruits, each on two vines; the left one keeps its left vine for the left friend, the right one its right. */
+function pairLine(rng: Rng, first: boolean, kinds: [Kind, Kind], fks: [FriendKind, FriendKind]): Line | null {
+  const highLeft = first || rng.chance(0.5);
+  const hi = first ? 190 : Math.round(rng.range(180, 205)), lo = first ? 300 : Math.round(rng.range(290, 320));
+  const [hl, hr] = highLeft ? [hi, lo] : [lo, hi];
+  // The kept vine leans out toward its friend; the inner one is nearly upright, so keeping it barely swings the fruit.
+  const a = first ? 100 : Math.round(rng.range(96, 104)), b = first ? 100 : Math.round(rng.range(96, 104));
+  const ia = first ? 50 : Math.round(rng.range(44, 54)), ib = first ? 50 : Math.round(rng.range(44, 54));
+  const xl = (first ? 55 : Math.round(rng.range(54, 64))) + 2 * a;
+  const xr = BOARD_W - (first ? 55 : Math.round(rng.range(54, 64))) - 2 * b;
+  const left = hang(kinds[0], { x: xl, y: ANCHOR_Y + hl }, [xl - a, xl + ia]);
+  const right = hang(kinds[1], { x: xr, y: ANCHOR_Y + hr }, [xr - ib, xr + b]);
+  const shell: Line = { fruit: left, friend: { x: 0, kind: fks[0] }, second: { fruit: right, friend: { x: 0, kind: fks[1] } }, breeze: false, scoot: false };
+  if (vineGap(shell) < KEEP_GAP || !apart(left, right)) return null;
+  // Each friend is placed for its own fruit; neither fruit, kept either way, can reach the other friend.
+  const sl = swingFrom(left.rest, left.vines[0]), sr = swingFrom(right.rest, right.vines[1]);
+  const fr = placeFriend(sr, (x) => keepTurn(sr, x), (x) => keepFair({ fruit: right, friend: { x, kind: fks[1] } }));
+  if (fr === null) return null;
+  const fl = placeFriend(sl, (x) => keepTurn(sl, x), (x) => keepFair({ fruit: left, friend: { x, kind: fks[0] } }, [{ x: fr, kind: fks[1] }]));
+  if (fl === null) return null;
+  const line: Line = { fruit: left, friend: { x: fl, kind: fks[0] }, second: { fruit: right, friend: { x: fr, kind: fks[1] } }, breeze: false, scoot: false };
+  return keepFair(line.second!, [line.friend]) ? line : null;
+}
+
+function tryLine(plan: Plan, rng: Rng, first: boolean, index = 0): Line | null {
   const kind = rng.pick(KINDS);
   const fk = rng.pick(FRIENDS);
+  // Level 4: the authored line's friend is on the right, the second line's on the left, the third's seeded.
+  if (plan.mode === 'keep') return keepLine(rng, first, index === 0 ? 1 : index === 1 ? -1 : rng.chance(0.5) ? 1 : -1, kind, fk);
+  if (plan.mode === 'pair') {
+    if (first) return pairLine(rng, true, ['apple', 'apple'], ['dog', 'cat']);
+    const other = rng.pick(FRIENDS.filter((f) => f !== fk));
+    return pairLine(rng, false, [kind, rng.pick(KINDS)], [fk, other]);
+  }
   if (plan.mode === 'snip') {
     const x = first ? 360 : Math.round(rng.range(180, 540));
     const len = Math.round(rng.range(170, 220));
@@ -326,7 +503,7 @@ export let fallbacksUsed = 0;
 export function makeLine(plan: Plan, rng: Rng, index: number): Line {
   if (index === 0) return tryLine(plan, rng, true)!;
   for (let i = 0; i < 50; i++) {
-    const l = tryLine(plan, rng, false);
+    const l = tryLine(plan, rng, false, index);
     if (l) return l;
   }
   fallbacksUsed++;

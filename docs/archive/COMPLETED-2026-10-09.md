@@ -2801,6 +2801,10 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--pixel-pictur
 
 Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--vine-snip-levels-13-vine-snip-slice-1).
 
+### Vine Snip levels 4–5 (vine-snip slice 2, 2026-11-05)
+
+[PR #1270](https://github.com/rjdunlap/neo/pull/1270). Level 4 *Which vine stays?* and level 5 *Two friends*; bands now pre-K 2–4, school 3–5. Vines sit 100 units apart (the definition's 140 cannot fit on the board); see the [definition's build decisions](../definitions/vine-snip.md#decisions-defaults-the-build-uses). New voice lines `vine-snip.instruct-keep`, `instruct-both`, `wrong-side`, `straight`, `hint-keep`.
+
 ## Light Lab, couch course Sunbeam Run (light-lab batch 2, 2026-11-04)
 
 [PR #1218](https://github.com/rjdunlap/neo/pull/1218), `claude/light-lab-sunbeam-run`: [dive slice 2](../deep-dives/light-lab.md#build-slices-in-order), roadmap chunk 8's Light Lab par course. Course id `sunbeams`, "Sunbeam Run", version 1, played at level 6 (plan mode), appended last on the shelf (after typing). Five frozen boards in `src/games/light-lab/course.ts` (text legend), from two mirrors to turn to four, a sun on either side, two flowers, coloured glass; par per board from the solver's `minTurns` from the start, [2, 2, 3, 4, 4], course minimum 15. Unit: turn; every mirror turn counts (even one turned back) and a shine that misses counts one more. Two missed shines glow the next mirror (the game's own hint) and mark the run helped; leaving or reloading restores that board's mirrors and keeps its tries. Badges Finished and Fewest turns; the instruction is chosen from the board (one flower, two, glass). New suite `couchsunbeams` (`scripts/browser/suites/couch-sunbeams.mjs`); the other couch suites' course lists gained `sunbeams`. Not built: "Start this board again" in the pause menu and "Watch the best routes" (`routes: false`), possible follow-ups.
@@ -2941,7 +2945,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--secret-code-level-12
 
 [PR #1251](https://github.com/rjdunlap/neo/pull/1251), `claude/sudoku-garden-fill-marks`: [dive slice 2](../deep-dives/sudoku-garden.md#build-slices-in-order). A **Fill marks** touch button on 9 by 9 beds only (`offersFillMarks(size)`, levels 4–6, also the future level 8) pencils every candidate (`candidateMask`, `fillMarksRow`, `fillMarks`) into each empty square with no marks of her own, a row at a time with one pop a row; her marks are kept and a bloom stops a sweep. Free: no miss, hint or entry. Third button row (full width beside the bed, or under Hint and Start over at the right on a tall view); voice line `sudoku.fill-marks` once a game; how-to step scoped to levels 4–6. Couch tray and bot unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sudoku-garden-fill-marks-on-big-beds-sudoku-garden-batch-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--sudoku-garden-fill-marks-on-big-beds-sudoku-garden-batch-2).
 
 ## Shape Buddies level 6 Which way round? (shape-buddies batch 4, 2026-11-05)
 
