@@ -60,6 +60,9 @@ class SeedTravelers implements Game {
     this.round = roundFor(ctx.rng, ctx.level);
     this.state = new SeedState(ctx.level, this.round.order);
     this.critterKind = this.round.critter;
+    // Decorations over a target must never take its tap.
+    this.glow.eventMode = 'none';
+    this.ring.eventMode = 'none';
     ctx.stage.addChild(this.world);
   }
 
@@ -302,6 +305,7 @@ class SeedTravelers implements Game {
     const c = this.critter;
     if (!c) return;
     const bubble = new Container();
+    bubble.eventMode = 'none';
     const g = new Graphics();
     g.circle(0, 0, 70).fill(0xffffff).stroke({ width: 5, color: 0x2b2b3a, alpha: 0.5 });
     for (let i = 0; i < 12; i++) {
