@@ -64,6 +64,8 @@ export interface Stack {
   /** Bottom block first; each rests on the one below. */
   blocks: Block[];
   friend: Friend;
+  /** Level 5: the blocks (indices) with a fruit on the front face. Decoration only: no flight ever reads it. */
+  fruit?: number[];
 }
 
 /** A green mound between the sling and the stacks, treated as a box from `top` down to the grass. */
@@ -353,7 +355,7 @@ export function fallFootprint(stack: Stack, from: number) {
 
 // ---- Levels ----
 
-export type PlanKind = 'close' | 'far' | 'hill' | 'high';
+export type PlanKind = 'close' | 'far' | 'hill' | 'high' | 'count';
 export interface Plan {
   kind: PlanKind;
   name: string;
@@ -369,7 +371,10 @@ export const PLANS: Plan[] = [
   { kind: 'far', name: 'Farther: how hard to pull, from the last arc', lines: 3, counts: true, trail: true },
   { kind: 'hill', name: 'Over the hill: aim high enough to clear it', lines: 3, counts: true, trail: true },
   { kind: 'high', name: 'Hit it high: a short wide stack only tips from a bump high up', lines: 3, counts: true, trail: true },
+  { kind: 'count', name: 'Count the basket: tip each stack, then count the fruit in the tray', lines: 3, counts: true, trail: true },
 ];
+/** Level 5's stacks are level 4's: the same authored line, seeded shapes and filter. */
+const shapeOf = (plan: Plan): Exclude<PlanKind, 'count'> => (plan.kind === 'count' ? 'high' : plan.kind);
 export const planFor = (level: number): Plan => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
 
 const BLOCK_H = 100;
@@ -409,6 +414,10 @@ export const HILL_TOP = GRASS - 110;
 
 /** The first line of each round, as the definition describes it. */
 export function authoredLine(plan: Plan): Line {
+  if (plan.kind === 'count') {
+    const line = authoredLine(PLANS[3]);
+    return { ...line, stacks: [{ ...line.stacks[0], fruit: [0, 1] }] };
+  }
   switch (plan.kind) {
     case 'close':
       return { stacks: [tower(390, 140, 3, 'bunny', ['blue', 'yellow', 'red'])], hill: null };
@@ -424,7 +433,7 @@ export function authoredLine(plan: Plan): Line {
 function seededLine(plan: Plan, rng: Rng, shape: number): Line {
   const colors = () => rng.shuffle(BLOCK_COLORS.slice()).slice(0, 3);
   const friend = rng.pick(FRIENDS);
-  switch (plan.kind) {
+  switch (shapeOf(plan)) {
     case 'close':
       return { stacks: [tower(rng.int(CLOSE_X.min, CLOSE_X.max), 140, 3, friend, colors())], hill: null };
     case 'far':
@@ -459,7 +468,7 @@ export function meetsPlan(plan: Plan, line: Line): boolean {
   if (line.stacks.some((s, i) => fallFootprint(s, 0).x1 > FALL_MAX || line.stacks.some((o, j) => j !== i && overlapsX(fallFootprint(s, 0), o.blocks[0])))) return false;
   const grid = windows(line);
   const w = largestWindow(grid);
-  switch (plan.kind) {
+  switch (shapeOf(plan)) {
     case 'close':
       return fits(w, 20, 30) && share(grid) >= 0.25;
     case 'far':
@@ -493,10 +502,62 @@ export function makeLine(plan: Plan, rng: Rng, shape = 0): { line: Line; fallbac
   return { line: authoredLine(plan), fallback: true };
 }
 
-/** A round's lines: the authored first line, then seeded ones. */
+/** A round's lines: the authored first line, then seeded ones (with their fruit at level 5). */
 export function roundLines(level: number, rng: Rng): Line[] {
   const plan = planFor(level);
-  return [authoredLine(plan), ...Array.from({ length: plan.lines - 1 }, (_, i) => makeLine(plan, rng, i + 1).line)];
+  const lines = [authoredLine(plan), ...Array.from({ length: plan.lines - 1 }, (_, i) => makeLine(plan, rng, i + 1).line)];
+  if (plan.kind !== 'count') return lines;
+  return [lines[0], ...lines.slice(1).map((line) => withFruit(line, rng))];
+}
+
+// ---- Level 5: the fruit tray ----
+
+/** At most this many fruit in the tray, one per slot. */
+export const TRAY_SLOTS = 8;
+/** A round's running totals end in this range. */
+export const BASKET_TOTAL = { min: 4, max: 8 };
+
+/** 1 to 3 fruit on a seeded stack, at most one per block: the short wide stack holds 1–2, the tall tower 1–3. */
+export function withFruit(line: Line, rng: Rng): Line {
+  return {
+    ...line,
+    stacks: line.stacks.map((s) => {
+      const n = rng.int(1, s.blocks.length);
+      const fruit = rng.shuffle(s.blocks.map((_, k) => k)).slice(0, n).sort((a, b) => a - b);
+      return { ...s, fruit };
+    }),
+  };
+}
+
+/** The fruit on a line, as stack and block indices. */
+export const fruitOn = (line: Line): { stack: number; block: number }[] =>
+  line.stacks.flatMap((s, stack) => (s.fruit ?? []).map((block) => ({ stack, block })));
+
+/** The tray's running total once line `i` has tipped. */
+export const basketAfter = (lines: Line[], i: number) => lines.slice(0, i + 1).reduce((n, l) => n + fruitOn(l).length, 0);
+
+/** Three pads: the total and its neighbours, never below 1 (a total of 1 shows 1, 2, 3), in a seeded order. */
+export function countPads(total: number, rng: Rng): number[] {
+  const lo = Math.max(1, total - 1);
+  return rng.shuffle([lo, lo + 1, lo + 2]);
+}
+
+/** The woven tray in the soil below the grass, board units, and where fruit `k` of line-group `group` sits (its centre). */
+export const TRAY = { x0: 300, x1: 800, y0: 515, y1: 585 } as const;
+const SLOT = 60;
+const GROUP_GAP = 10;
+export function trayLayout() {
+  return {
+    ...TRAY,
+    slot: (k: number, group: number): Pt => ({ x: TRAY.x0 + SLOT / 2 + k * SLOT + group * GROUP_GAP, y: (TRAY.y0 + TRAY.y1) / 2 }),
+    slotR: SLOT / 2 - 4,
+  };
+}
+
+/** The three number pads, top left of the sky: 110 square with 10 between. */
+export const PAD = 110;
+export function padLayout(): { x0: number; y0: number; x1: number; y1: number }[] {
+  return [0, 1, 2].map((k) => ({ x0: 50 + k * (PAD + 10), y0: 20, x1: 50 + k * (PAD + 10) + PAD, y1: 20 + PAD }));
 }
 
 // ---- Layout ----
