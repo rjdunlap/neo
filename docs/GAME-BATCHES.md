@@ -1471,6 +1471,8 @@ Proof: new-interaction tier: typecheck, unit tests including `order`, one script
 
 ### secret-code 4: Level 10 One slot, the preschool opening
 
+Built 2026-11-05, [PR #1249](https://github.com/rjdunlap/neo/pull/1249); [build note](archive/COMPLETED-2026-10-09.md#secret-code-level-10-one-slot-secret-code-batch-4-2026-11-05). No longer eligible for dispatch.
+
 - **`secret-code`, Level 10 *One slot*, the preschool opening (dive slice 4; chunk 18 preschool entry)**, after batch secret-code 1 (new band): one slot, a tap and the key give a green or a crossed-out gray at once; Secret Code joins Puzzle Peaks' preschool page. [Dive](deep-dives/secret-code.md#build-slices-in-order)
 
 Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
