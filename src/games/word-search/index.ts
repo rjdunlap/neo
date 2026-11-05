@@ -11,17 +11,20 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseGrids, courseMinimum, isWordCourse } from './course';
-import { cellsOfWord, hintFor, lineBetween, makeGrids, planFor, wordAt, type WordGrid, type WordPlan } from './logic';
+import { cellsOfWord, hintFor, lineBetween, makeGrids, ORDER, planFor, SMALL_GRID, wordAt, type WordGrid, type WordPlan } from './logic';
 import { themeById } from './words';
 
-/** Grown-up play only: the island's Lantern Lake holds it, with touch or a controller. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
+/** Grown-up play only: the island's Lantern Lake holds it, with touch or a controller. The small grid (5) comes first. */
+const LEVELS: BandLevels = { grownup: { min: 1, max: 5, order: ORDER } };
 
 const PAPER = 0xfffdf6;
 const BAND_COLORS: ColorName[] = ['pink', 'blue', 'green', 'orange', 'purple', 'teal', 'yellow', 'red'];
 
 /** The smallest touch target in a grown-up game, in logical units: a letter's square is never smaller. */
 const MIN_TOUCH = 64;
+/** A small grid's squares are at least this big on every view, and grow up to the cap where the view has room. */
+const SMALL_MIN = 96;
+const SMALL_CAP = 132;
 /** The paper around a grid, and half of it: the margin kept at each edge of the window when the grid slides. */
 const PAD = 24;
 const EDGE = PAD / 2;
@@ -178,12 +181,13 @@ class WordSearch implements Game {
    * slides: the window shows part of it and a drag moves it. The list sits to the right, or under the grid on a tall view.
    */
   private resizeTouch(v: View) {
-    const n = this.n, words = this.grid.words.length, side = v.w >= v.h;
+    const n = this.n, words = this.grid.words.length, side = v.w >= v.h, small = n <= planFor(SMALL_GRID).size;
     // The home and help buttons are at the top left: on a tall view the grid starts below them.
     const top = side ? 100 : 150, left = 150, gap = 24;
     let listX: number, listY: number, vp: Viewport, btn: Slot[];
     if (side) {
-      const listW = 262;
+      // A small grid's short list takes a narrower column, so its squares stay big on a landscape view.
+      const listW = small ? 222 : 262;
       listX = v.w - listW - 16;
       listY = top + 4;
       vp = { x: left, y: top, w: listX - gap - left, h: v.h - top - 24 };
@@ -212,10 +216,11 @@ class WordSearch implements Game {
     this.slideNote.anchor.set(0, 0.5);
     this.title.style.fontSize = 26;
     this.tally.style.fontSize = 20;
-    // The biggest square that shows the whole grid, no bigger than 96 and no smaller than 64 (then the grid slides).
+    // The biggest square that shows the whole grid, no bigger than 96 and no smaller than 64 (then the grid slides); a small
+    // grid's squares are bigger, 96 at the least.
     const pad = PAD;
     const fit = Math.floor(Math.min(vp.w - pad, vp.h - pad) / n);
-    this.cell = Math.max(MIN_TOUCH, Math.min(96, fit));
+    this.cell = small ? Math.max(SMALL_MIN, Math.min(SMALL_CAP, fit)) : Math.max(MIN_TOUCH, Math.min(96, fit));
     const size = n * this.cell;
     this.maxX = Math.max(0, size + pad - vp.w);
     this.maxY = Math.max(0, size + pad - vp.h);
@@ -848,6 +853,7 @@ export const wordSearch: GameModule = {
   coplayHint: 'Tap the first letter of a word, then its last letter. Ask which word to hunt for next, and where the tricky ones might hide: slanted, or backwards.',
   offScreen: 'Hide a few words in a grid of letters on paper for someone else to find.',
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [SMALL_GRID],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,
   hubIcon: () => new WordIcon(),

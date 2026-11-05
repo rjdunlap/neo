@@ -1655,7 +1655,7 @@ Proof: existing-interaction tier: typecheck, rule tests (no theme word contains 
 
 ### word-search 2: A small grid to start
 
-- **`word-search`, Level 5 *A small grid to start* (dive slice 2)** (grown-up entry): a 6 by 6 grid, four words of three to six letters, across and down only, at the largest square the view allows (at least 96 units); `order` `[5, 1, 2, 3, 4]` and `entryLevels: [5]`. [Dive](deep-dives/word-search.md#build-slices-in-order)
+- **`word-search`, Level 5 *A small grid to start* (dive slice 2)** (built 2026-11-04; grown-up entry): a 6 by 6 grid, four words of three to six letters, across and down only, at the largest square the view allows (at least 96 units); `order` `[5, 1, 2, 3, 4]` and `entryLevels: [5]`. [Dive](deep-dives/word-search.md#build-slices-in-order)
 
 Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, `docs/GAMES.md`, the README row.
 

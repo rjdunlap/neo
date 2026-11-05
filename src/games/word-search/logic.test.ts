@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  ALL_DIRS, cellOf, cellsOfWord, hasBlocked, hintFor, lineBetween, makeGrid, makeGrids, occurrences, parseGrid, planFor, PLANS, rowsOf, textOf, themesFor, wordAt,
+  ALL_DIRS, cellOf, cellsOfWord, hasBlocked, hintFor, lineBetween, makeGrid, makeGrids, occurrences, ORDER, parseGrid, planFor, PLANS, rowsOf, SMALL_GRID, textOf, themesFor, wordAt,
 } from './logic';
 import { BLOCKED } from './blocked';
 import { THEMES, themeById } from './words';
@@ -42,11 +42,13 @@ describe('fresh themes and root families', () => {
     expect(roots.map((t) => t.id).sort()).toEqual(['port', 'spect']);
     expect(themesFor(PLANS[0])).toEqual(THEMES);
     expect(themesFor(PLANS[1])).toEqual(THEMES);
-    for (const plan of PLANS.slice(2)) expect(themesFor(plan)).toEqual(THEMES.filter((t) => !t.root));
+    for (const plan of PLANS.slice(2, 4)) expect(themesFor(plan)).toEqual(THEMES.filter((t) => !t.root));
+    // The small grid takes only words of up to six letters: Words that carry has five, Words that look only one.
+    expect(themesFor(planFor(SMALL_GRID)).map((t) => t.id)).toEqual(THEMES.filter((t) => t.id !== 'spect').map((t) => t.id));
     // Over many seeds a level-1 round sometimes draws a root family, and a level 3 or 4 round never does.
     const drawn = (plan: (typeof PLANS)[number]) => new Set(Array.from({ length: 80 }, (_, s) => makeGrids(plan, new Rng(s + 1))[0].theme));
     expect([...drawn(PLANS[0])].some((id) => themeById(id).root)).toBe(true);
-    for (const plan of PLANS.slice(2)) expect([...drawn(plan)].some((id) => themeById(id).root), plan.name).toBe(false);
+    for (const plan of PLANS.slice(2, 4)) expect([...drawn(plan)].some((id) => themeById(id).root), plan.name).toBe(false);
   });
 
   it('every theme makes a grid for every plan it can fill, over a dozen seeds', () => {
@@ -130,11 +132,32 @@ describe('making grids', () => {
     expect(a).toHaveLength(PLANS[1].grids);
   });
 
-  it('climbs: bigger grids with more words', () => {
-    expect(PLANS.map((p) => p.size)).toEqual([8, 10, 12, 14]);
-    expect(PLANS.map((p) => p.words)).toEqual([5, 7, 9, 12]);
+  it('climbs in play order: the small grid first, then bigger grids with more words', () => {
+    expect(ORDER).toEqual([5, 1, 2, 3, 4]);
+    expect([...ORDER].sort()).toEqual(PLANS.map((_, i) => i + 1));
+    expect(ORDER.map((l) => planFor(l).size)).toEqual([6, 8, 10, 12, 14]);
+    expect(ORDER.map((l) => planFor(l).words)).toEqual([4, 5, 7, 9, 12]);
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(99)).toBe(PLANS[PLANS.length - 1]);
+    // A level past the top plays the hardest grid, never the small entry.
+    expect(planFor(99)).toBe(planFor(ORDER[ORDER.length - 1]));
+  });
+
+  it('starts with a small grid: four words of three to six letters, across or down only, each in it exactly once', () => {
+    const plan = planFor(SMALL_GRID);
+    expect(plan).toMatchObject({ size: 6, words: 4, grids: 1 });
+    expect(plan.dirs).toEqual([[0, 1], [1, 0]]);
+    for (const t of themesFor(plan)) for (let s = 1; s <= 20; s++) {
+      const g = makeGrid(plan, t, new Rng(s * 53 + 7));
+      const label = `${t.id} seed ${s}`;
+      expect(g.words, label).toHaveLength(4);
+      for (const p of g.words) {
+        expect(p.word.length, label).toBeGreaterThanOrEqual(3);
+        expect(p.word.length, label).toBeLessThanOrEqual(6);
+        expect((p.dr === 0 && p.dc === 1) || (p.dr === 1 && p.dc === 0), `${label} ${p.word} across or down`).toBe(true);
+        expect(occurrences(6, g.letters, p.word), `${label} ${p.word}`).toHaveLength(1);
+      }
+      expect(hasBlocked(6, g.letters, g.words.map((p) => p.word)), label).toBe(false);
+    }
   });
 
   it('reads a grid from its picture and finds each word where it is, complaining about one that is missing or repeated', () => {
