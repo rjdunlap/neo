@@ -995,6 +995,7 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 - [ ] Check whether the push arrows read at the ends of a row (level 5), and whether a flat stretch at level 4 reads as "stood still" and not as a bug.
 - [ ] On an iPad, check device speech for "ice cube" and "paper clip" in the Sink or Float guess line, and that the marble reads against the water.
 - [ ] On an iPad, check that a new grown-up's first Sudoku Garden bed (level 7, 4 by 4) feels like an easy start with the three-column tray, where the 4 sits alone on a second row.
+- [ ] On an iPad, check that Treasure Map level 8 *Slide it* outline cards read to a child as the same raft slid (the 150-unit mini maps, the faint start raft, the turned-over card) and that "That one turned over" and the slide reasons speak clearly in real portrait.
 - [ ] On an iPad, check that Treasure Map level 7 *How far?* footprint stacks read to a child as a distance ("{n} steps away"), that a ruled-out dig and its reason are understood, and that the 4 by 4 squares and the spoken lines sit comfortably in real portrait.
 - [ ] On an iPad, check that Treasure Map level 6 *Write the card* reads as "my directions" (the footprints tracing the card, the pet walking it counting) and that the 110-unit card tiles and Go sit comfortably in real portrait.
 - [ ] On an iPad, check that Treasure Map level 1's new red heart and balloon row pictures read and are named aloud clearly (device speech), and that the two new hint lines ("First go ...", "Follow the two glowing lines...") speak well.

@@ -15,11 +15,11 @@ import { finish, spring, squash } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { bestDig, distance, dugAt, ruledOutBy, stepsWord, stillFits, type FarDig, cardDone, cardFor, cardReason, CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, EMPTY_CARD, firstDirection, firstLeg, headersFor, makeFinds, name, nextCount, nextWay, planFor, squareAt, walkCard, type Card, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
+import { flagWalk, slideWords, bestDig, distance, dugAt, ruledOutBy, stepsWord, stillFits, type FarDig, cardDone, cardFor, cardReason, CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, EMPTY_CARD, firstDirection, firstLeg, headersFor, makeFinds, name, nextCount, nextWay, planFor, squareAt, walkCard, type Card, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 1, max: 7 },
+  school: { min: 1, max: 8 },
 };
 
 const PARCHMENT = 0xf3e2b8;
@@ -116,6 +116,17 @@ function footprint(g: Graphics, x: number, y: number, angle: number, side: numbe
   g.circle(px + Math.cos(angle) * 11, py + Math.sin(angle) * 11, 3.5).fill({ color: wood.line, alpha: 0.5 });
 }
 
+/** An outline card on level 8: a mini map, its squares this many units wide. */
+const OUTLINE = 150;
+const MINI = 24;
+
+/** A raft square: a wooden deck the size of a map square, centered on (0, 0). */
+function plankArt(): Graphics {
+  const g = new Graphics().roundRect(-CELL / 2 + 6, -CELL / 2 + 6, CELL - 12, CELL - 12, 14).fill(wood.light).stroke({ width: 5, color: wood.line });
+  for (const y of [-16, 16]) g.moveTo(-CELL / 2 + 14, y).lineTo(CELL / 2 - 14, y).stroke({ width: 3, color: wood.line, alpha: 0.5 });
+  return g;
+}
+
 function chestArt(): Graphics {
   return new Graphics().roundRect(-30, -10, 60, 34, 6).fill(wood.fill).stroke({ width: 4, color: wood.line }).roundRect(-30, -28, 60, 22, 10).fill(wood.light).stroke({ width: 4, color: wood.line }).rect(-6, -12, 12, 14).fill(swatch.yellow.fill).circle(0, -30, 6).fill(swatch.yellow.light);
 }
@@ -160,6 +171,15 @@ class TreasureMap implements Game {
   digs: FarDig[] = [];
   /** Level 7: squares already crossed out, so a second tap there repeats the reason and is not a second miss. */
   private ruledOut: Square[] = [];
+  /** Level 8: first the flag's landing square, then which outline card is the whole raft slid. */
+  part: 'flag' | 'cards' = 'flag';
+  private readonly outlineBox = new Container();
+  readonly outlineCards: Container[] = [];
+  /** Level 8: outline cards already tried, so a second tap repeats the reason and is not a second miss. */
+  private readonly tried = new Set<number>();
+  private raftArt: Container | null = null;
+  /** Level 8: a pulsing ring around the right outline card once the hint is on in the cards part. */
+  private readonly cardGlow = new Graphics();
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -186,6 +206,17 @@ class TreasureMap implements Game {
         this.cardBox.addChild(tile);
       }
     }
+    if (this.plan.mode === 'slide') {
+      for (let i = 0; i < 3; i++) {
+        const card = new Container();
+        card.hitArea = new Rectangle(-OUTLINE / 2, -OUTLINE / 2, OUTLINE, OUTLINE);
+        onTap(card, () => void this.pickOutline(i), { cooldown: 250 });
+        this.outlineCards.push(card);
+        this.outlineBox.addChild(card);
+      }
+      this.cardGlow.eventMode = 'none';
+      this.outlineBox.addChildAt(this.cardGlow, 0);
+    }
     if (this.plan.mode === 'steps' || this.plan.mode === 'write') {
       this.pirate = ctx.companion();
       this.pirate.scale.set(0.3);
@@ -195,7 +226,7 @@ class TreasureMap implements Game {
     }
     // Last, so the ring sits over the pet and the dig marks.
     this.grid.addChild(this.ring);
-    ctx.stage.addChild(new Graphics().rect(0, 0, 4000, 4000).fill(0x9fd3e8), this.grid, this.sign, this.cardBox);
+    ctx.stage.addChild(new Graphics().rect(0, 0, 4000, 4000).fill(0x9fd3e8), this.grid, this.sign, this.cardBox, this.outlineBox);
   }
 
   get find() {
@@ -217,6 +248,7 @@ class TreasureMap implements Game {
     const w = n * CELL;
     this.grid.position.set(Math.max(240, (v.w - w) / 2 + 40), Math.max(this.plan.mode === 'clues' ? 220 : 150, (v.h - w) / 2 + 40));
     if (this.plan.mode === 'write') this.layoutCard(v, w);
+    if (this.plan.mode === 'slide') this.layoutOutlines(w);
     this.grid.hitArea = new Rectangle(0, 0, w, w);
     const g = this.paper.clear();
     g.roundRect(-90, -80, w + 110, w + 100, 26).fill(TINT_COLORS[this.dressing.tint]).stroke({ width: 6, color: wood.line });
@@ -251,6 +283,7 @@ class TreasureMap implements Game {
       ring.roundRect(at.x - CELL / 2 + 6, at.y - CELL / 2 + 6, CELL - 12, CELL - 12, 16).stroke({ width: 8, color: swatch.teal.line });
     }
     const g = this.glow.clear();
+    const cg = this.cardGlow.clear();
     if (!this.hinting || this.busy || !this.find) return;
     const pulse = 0.35 + 0.25 * Math.sin(this.clock * 5);
     const n = this.plan.size;
@@ -266,6 +299,19 @@ class TreasureMap implements Game {
     if (this.plan.mode === 'far') {
       // The squares that still fit every dig, so she picks among them and the search stays hers.
       for (const sq of stillFits(this.digs, n)) {
+        const c = this.cellAt(sq);
+        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: pulse });
+      }
+      return;
+    }
+    if (this.plan.mode === 'slide') {
+      if (this.part === 'cards') {
+        // The right card glows too, so the hint leads somewhere on the cards as well.
+        const card = this.outlineCards[this.find.outlines!.findIndex((o) => o.kind === 'right')];
+        cg.roundRect(card.x - OUTLINE / 2 - 10, card.y - OUTLINE / 2 - 10, OUTLINE + 20, OUTLINE + 20, 28).fill({ color: swatch.yellow.fill, alpha: pulse + 0.2 });
+      }
+      // The flag's walk, across then up or down: every square of the raft moves the same.
+      for (const sq of flagWalk(this.find, n)) {
         const c = this.cellAt(sq);
         g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: pulse });
       }
@@ -293,6 +339,10 @@ class TreasureMap implements Game {
       const kind: TileKind = c.across !== want.across ? 'across' : c.acrossWay !== want.acrossWay ? 'acrossWay' : c.upDown !== want.upDown ? 'upDown' : c.upDownWay !== want.upDownWay ? 'upDownWay' : 'go';
       return { tap: { on: this.tiles.get(kind)!, x: 0, y: 0 } };
     }
+    if (this.plan.mode === 'slide' && this.part === 'cards') {
+      const i = this.find.outlines!.findIndex((o) => o.kind === 'right');
+      return { tap: { on: this.outlineCards[i], x: 0, y: 0 } };
+    }
     // Level 7's finger hunts honestly: a corner, then the square that best splits what still fits.
     const at = this.plan.mode === 'far' ? cellCenter(bestDig(this.digs, this.plan.size), this.plan.size) : digSpot(this.find, this.plan.size);
     return { tap: { on: this.grid, x: at.x, y: at.y } };
@@ -301,8 +351,8 @@ class TreasureMap implements Game {
   /** Couch play: the stick or the arrows move the ring a square at a time; the bottom button digs where it is. */
   control(input: CouchControls) {
     this.couchOn = true;
-    // The couch's trips stop at level 5; the card has no ring to set it.
-    if (this.busy || this.finished || !this.find || this.plan.mode === 'write') return;
+    // The couch's trips stop at level 5; the card and the outlines have no ring to pick them.
+    if (this.busy || this.finished || !this.find || this.plan.mode === 'write' || this.plan.mode === 'slide') return;
     const last = this.plan.size - 1;
     for (const p of input.players) {
       const c = this.cursor;
@@ -349,12 +399,15 @@ class TreasureMap implements Game {
     this.atEdge = false;
     this.digs = [];
     this.ruledOut = [];
-    // The card names one chest, and each hunt hides a new one, so the last find's chest and tries are cleared.
-    if (this.plan.mode === 'write' || this.plan.mode === 'far') this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.part = 'flag';
+    this.tried.clear();
+    // The card names one chest, each hunt hides a new one and each raft is a new raft, so the last find's marks are cleared.
+    if (this.plan.mode === 'write' || this.plan.mode === 'far' || this.plan.mode === 'slide') this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.resize(this.view);
     this.drawCard();
     this.drawLandmarks(f);
     this.drawSign(f);
+    this.drawOutlines();
     this.busy = false;
     const mode = this.plan.mode;
     if (mode === 'pictures') return this.ctx.instruct('map.pictures', { pic: this.headers.rows[f.square.row], color: this.headers.cols[f.square.col] });
@@ -362,12 +415,29 @@ class TreasureMap implements Game {
     if (mode === 'place') return this.ctx.instruct('map.place', { thing: f.thing!, sq: name(f.square) });
     if (mode === 'write') return this.ctx.instruct('map.write');
     if (mode === 'far') return this.ctx.instruct('map.far');
+    if (mode === 'slide') return this.ctx.instruct('map.slide', { dirs: slideWords(f.right!, f.up!) });
     if (mode === 'clues') return this.ctx.instruct('map.clues', { first: clueDirection(f.clues![0]), firstThing: f.clues![0].thing, second: clueDirection(f.clues![1]), secondThing: f.clues![1].thing });
     return this.ctx.instruct('map.steps', { dirs: directions(f) });
   }
 
   private drawLandmarks(f: Find) {
     this.landmarks.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.raftArt = null;
+    if (this.plan.mode === 'slide') {
+      // The raft, its squares drawn where they sit and the flag on its own square; it slides as one piece.
+      const raft = new Container();
+      for (const sq of f.raft!) {
+        const plank = plankArt();
+        plank.position.copyFrom(this.cellAt(sq));
+        raft.addChild(plank);
+      }
+      const flag = thingArt('flag');
+      flag.position.copyFrom(this.cellAt(f.from!));
+      flag.scale.set(0.8);
+      raft.addChild(flag);
+      this.landmarks.addChild(raft);
+      this.raftArt = raft;
+    }
     if (this.plan.mode === 'write') {
       // The chest waits on its square; she writes the way there.
       const at = this.cellAt(f.square);
@@ -405,6 +475,14 @@ class TreasureMap implements Game {
       this.sign.addChild(chest, Object.assign(label('?', 56, ink), { x: 45 }));
     } else if (mode === 'steps') {
       this.sign.addChild(label(directions(f).replace(', then ', '  ·  '), 28, ink));
+    } else if (mode === 'slide') {
+      bg.clear().roundRect(-160, -42, 320, 84, 22).fill(0xffffff).stroke({ width: 5, color: wood.line });
+      const flag = thingArt('flag');
+      flag.position.set(-125, 4);
+      flag.scale.set(0.8);
+      const words = label(slideWords(f.right!, f.up!).replace(' and ', '  ·  '), 28, ink);
+      words.x = 20;
+      this.sign.addChild(flag, words);
     } else if (mode === 'clues') {
       bg.clear().roundRect(-165, -60, 330, 120, 22).fill(0xffffff).stroke({ width: 5, color: wood.line });
       f.clues!.forEach((clue, i) => {
@@ -429,7 +507,9 @@ class TreasureMap implements Game {
   }
 
   private tapGrid(e: FederatedPointerEvent) {
-    if (this.busy || this.finished || this.plan.mode === 'write') return;
+    // Level 8's second part is on the cards: a tap on the map then is nothing.
+    if (this.plan.mode === 'slide' && this.part !== 'flag' && !this.busy) sfx.tick();
+    if (this.busy || this.finished || this.plan.mode === 'write' || (this.plan.mode === 'slide' && this.part !== 'flag')) return;
     const p = this.grid.toLocal(e.global);
     const guess = squareAt(p.x, p.y, this.plan.size);
     if (guess) return this.dig(guess);
@@ -442,7 +522,7 @@ class TreasureMap implements Game {
     const { col, row } = guess;
     const want = this.find.square;
     const result = compare(guess, want);
-    if (result === 'right') return void this.found();
+    if (result === 'right') return void (this.plan.mode === 'slide' ? this.flagLanded() : this.found());
     this.busy = true;
     this.misses++;
     this.wrongs++;
@@ -457,6 +537,7 @@ class TreasureMap implements Game {
       this.hints++;
       const mode = this.plan.mode;
       if (mode === 'steps') void this.ctx.say('map.stepshint', { first: firstDirection(this.find) });
+      else if (mode === 'slide') void this.ctx.say('map.slidehint', { dirs: slideWords(this.find.right!, this.find.up!) });
       else void this.ctx.say(mode === 'clues' ? 'map.cluehint' : 'map.hint');
     }
     this.busy = false;
@@ -550,6 +631,115 @@ class TreasureMap implements Game {
     this.ctx.pet.cheer();
     await this.ctx.say(this.plan.mode === 'place' ? 'map.placed' : 'map.found');
     await this.next();
+  }
+
+  /** Level 8: the flag's square is right. A flag waits there, and the question moves to the outline cards. */
+  private async flagLanded() {
+    this.busy = true;
+    const f = this.find;
+    sfx.pop();
+    const ghost = thingArt('flag');
+    ghost.position.copyFrom(this.cellAt(f.square));
+    ghost.scale.set(0.8);
+    ghost.alpha = 0.75;
+    this.marks.addChild(ghost);
+    this.part = 'cards';
+    this.drawOutlines();
+    this.busy = false;
+    await this.ctx.instruct('map.slidecards');
+  }
+
+  /** Level 8's cards: the slid raft is right; a turned-over or wrongly slid one is a miss that says why, once. */
+  private async pickOutline(i: number) {
+    if (this.busy || this.finished || this.plan.mode !== 'slide' || this.part !== 'cards') return;
+    const f = this.find;
+    const o = f.outlines![i];
+    const card = this.outlineCards[i];
+    squash(card);
+    spring(card, 90);
+    if (o.kind === 'right') return void this.slideRaft();
+    this.busy = true;
+    const say = () => (o.kind === 'flipped' ? this.ctx.say('map.flipped') : this.ctx.say('map.slidefar', { got: slideWords(o.right, o.up), want: slideWords(f.right!, f.up!) }));
+    if (this.tried.has(i)) {
+      sfx.tick();
+      await say();
+      this.busy = false;
+      return;
+    }
+    this.tried.add(i);
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    this.drawOutlines();
+    await say();
+    if (this.wrongs >= 2 && !this.hinting) {
+      this.hinting = true;
+      this.hints++;
+      void this.ctx.say('map.slidehint', { dirs: slideWords(f.right!, f.up!) });
+    }
+    this.busy = false;
+  }
+
+  /** The right card: the whole raft slides, every square the same, onto the outline. */
+  private async slideRaft() {
+    this.busy = true;
+    this.hinting = false;
+    const f = this.find;
+    const raft = this.raftArt!;
+    this.walking = true;
+    sfx.whoosh();
+    await this.ctx.tw.to(raft, { x: f.right! * CELL, y: -f.up! * CELL }, { duration: 0.9, ease: ease.inOutSine });
+    this.walking = false;
+    sfx.sparkle();
+    const at = this.cellAt(f.square);
+    const g = this.ctx.stage.toLocal(this.grid.toGlobal(at));
+    this.ctx.particles.burst(g.x, g.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.pet.cheer();
+    await this.ctx.say('map.slid');
+    await this.next();
+  }
+
+  /** Level 8's three outline cards beside the map, in a column as tall as the map. */
+  private layoutOutlines(w: number) {
+    const cardW = OUTLINE;
+    this.grid.x = Math.max(240, (this.view.w - (w + 34 + cardW)) / 2);
+    this.outlineBox.position.set(this.grid.x + w + 34 + cardW / 2, this.grid.y + w / 2);
+    this.outlineCards.forEach((card, i) => card.position.set(0, (i - 1) * (OUTLINE + 12)));
+  }
+
+  /** Each card is a mini map: the raft where it starts, faint, and one outline drawn solid; a tried card is crossed out. */
+  private drawOutlines() {
+    if (this.plan.mode !== 'slide') return;
+    this.outlineBox.visible = this.part === 'cards';
+    const f = this.find;
+    if (!f?.outlines) return;
+    const n = this.plan.size;
+    const half = (n * MINI) / 2;
+    const at = (s: Square) => ({ x: -half + s.col * MINI + MINI / 2, y: -half + (n - 1 - s.row) * MINI + MINI / 2 });
+    f.outlines.forEach((o, i) => {
+      const card = this.outlineCards[i];
+      card.removeChildren().forEach((c) => c.destroy({ children: true }));
+      card.addChild(finish({ w: OUTLINE, h: OUTLINE, corner: 22 }, swatch.white, 0xfffaf0));
+      const g = new Graphics();
+      for (let k = 0; k <= n; k++) g.moveTo(-half + k * MINI, -half).lineTo(-half + k * MINI, half).moveTo(-half, -half + k * MINI).lineTo(half, -half + k * MINI);
+      g.stroke({ width: 2, color: wood.line, alpha: 0.35 });
+      for (const sq of f.raft!) {
+        const c = at(sq);
+        g.rect(c.x - MINI / 2 + 2, c.y - MINI / 2 + 2, MINI - 4, MINI - 4).fill({ color: wood.line, alpha: 0.18 });
+      }
+      for (const sq of o.cells) {
+        const c = at(sq);
+        g.roundRect(c.x - MINI / 2 + 1, c.y - MINI / 2 + 1, MINI - 2, MINI - 2, 4).fill(wood.light).stroke({ width: 3, color: wood.line });
+      }
+      // Where she put the flag, so every card is read from the same square.
+      const flag = at(f.square);
+      g.circle(flag.x, flag.y, 5).fill(swatch.red.fill);
+      card.addChild(g);
+      if (this.tried.has(i)) {
+        card.alpha = 0.5;
+        card.addChild(new Graphics().moveTo(-40, -40).lineTo(40, 40).moveTo(40, -40).lineTo(-40, 40).stroke({ width: 8, color: wood.line, alpha: 0.7, cap: 'round' }));
+      } else card.alpha = 1;
+    });
   }
 
   /** Level 6's card beside the map. */
