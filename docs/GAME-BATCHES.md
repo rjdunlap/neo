@@ -1591,7 +1591,7 @@ Proof: new level on the existing interaction: typecheck, the game's rule tests, 
 
 ### sudoku-garden 2: Fill marks on big beds
 
-- **`sudoku-garden`, Fill marks on big beds (dive slice 2)** (new interaction; grown-up): the button, its layout on 9 by 9 beds and its sweep. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
+- **`sudoku-garden`, Fill marks on big beds (dive slice 2)** (built 2026-11-05; new interaction; grown-up): the button, its layout on 9 by 9 beds and its sweep. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
 
 Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
