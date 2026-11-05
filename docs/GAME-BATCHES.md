@@ -1459,6 +1459,8 @@ Proof: new-level tier: typecheck, rule tests, one play of level 8 to its sticker
 
 ### secret-code 3: Level 9 Be the door
 
+Built 2026-11-05, [PR #1246](https://github.com/rjdunlap/neo/pull/1246); [build note](archive/COMPLETED-2026-10-09.md#secret-code-level-9-be-the-door-secret-code-batch-3-2026-11-05). School only (pre-K stays 1–3, following the dive). No longer eligible for dispatch.
+
 - **`secret-code`, Level 9 *Be the door* (dive slice 3)**, after batch secret-code 1 (new interaction): she chooses the code and marks the pet's tries with gray, yellow and green discs; pre-K and school `order` gain 9. [Dive](deep-dives/secret-code.md#build-slices-in-order)
 
 Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
