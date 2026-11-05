@@ -16,7 +16,7 @@ describe('Secret Code', () => {
   });
 
   it('makes codes that fit the level: distinct colors, or a real repeat when repeats are the point', () => {
-    for (const plan of PLANS) {
+    for (const plan of Object.values(PLANS)) {
       for (let seed = 1; seed <= 200; seed++) {
         const code = makeCode(plan, new Rng(seed));
         expect(code).toHaveLength(plan.slots);
@@ -28,7 +28,7 @@ describe('Secret Code', () => {
   });
 
   it('only counts a miss for ignoring a clue, and the real code never ignores one', () => {
-    for (const plan of PLANS) {
+    for (const plan of Object.values(PLANS)) {
       for (let seed = 1; seed <= 100; seed++) {
         const rng = new Rng(seed);
         const code = makeCode(plan, rng);
@@ -44,7 +44,7 @@ describe('Secret Code', () => {
   });
 
   it('suggested guesses agree with every clue, and following them opens the door', () => {
-    for (const plan of PLANS) {
+    for (const plan of Object.values(PLANS)) {
       for (let seed = 1; seed <= 60; seed++) {
         const code = makeCode(plan, new Rng(seed));
         const history: Guess[] = [];
@@ -62,7 +62,7 @@ describe('Secret Code', () => {
   });
 
   it('has a player who reasons from the clues crack every code without once ignoring a clue', () => {
-    for (const plan of PLANS) {
+    for (const plan of Object.values(PLANS)) {
       for (let seed = 1; seed <= 60; seed++) {
         const code = makeCode(plan, new Rng(seed));
         const history: Guess[] = [];
@@ -114,7 +114,7 @@ describe('Secret Code', () => {
 
 describe('Detective doors', () => {
   it('shows two or three distinct non-answer guesses identifying exactly one code, reproducibly', () => {
-    const plan = PLANS[6];
+    const plan = planFor(7);
     for (let seed = 1; seed <= 500; seed++) {
       const door = detectiveDoor(plan, new Rng(seed));
       expect(door).toEqual(detectiveDoor(plan, new Rng(seed)));
@@ -134,8 +134,41 @@ describe('Detective doors', () => {
     }
   });
 
+  it('level 11: four slots, five colors, three distinct shown guesses (never more than four) that leave exactly one code, generated quickly', () => {
+    const plan = planFor(11);
+    expect(plan).toMatchObject({ slots: 4, colors: 5, repeats: false, detective: true, clues: { min: 3, max: 4 } });
+    let slowest = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      const t0 = performance.now();
+      const door = detectiveDoor(plan, new Rng(seed));
+      slowest = Math.max(slowest, performance.now() - t0);
+      expect(door).toEqual(detectiveDoor(plan, new Rng(seed)));
+      expect(new Set(door.code).size).toBe(4);
+      expect(door.history.length).toBeGreaterThanOrEqual(3);
+      expect(door.history.length).toBeLessThanOrEqual(4);
+      expect(new Set(door.history.map((h) => h.stones.join())).size).toBe(door.history.length);
+      for (const h of door.history) {
+        expect(h.marks).toEqual(score(door.code, h.stones, plan.yellow));
+        expect(h.stones).not.toEqual(door.code);
+      }
+      expect(candidates(plan, door.history)).toEqual([door.code]);
+      expect(contradictsClues(plan, door.history, door.code)).toBe(false);
+      // A try that differs from the answer always contradicts some shown mark.
+      expect(contradictsClues(plan, door.history, [...door.code].reverse())).toBe(true);
+      // The reasoning bot (and the ghost finger) opens it on the first try.
+      expect(nextMove(plan, door.history, door.code, [null, null, null, null])).toEqual({ stone: door.code[0] });
+    }
+    // Generation happens between doors; it must never stall the round.
+    expect(slowest).toBeLessThan(250);
+  });
+
+  it('shows every detective clue at full view on the smallest screen', () => {
+    // The 1024 by 768 design area always fits, so the door is never above 0.6 × 768.
+    for (const plan of Object.values(PLANS).filter((p) => p.detective)) expect(rowsThatFit(768 * 0.6)).toBeGreaterThanOrEqual(plan.clues!.max);
+  });
+
   it('never charges a miss for a mark that has scrolled out of sight, but still does for one on screen', () => {
-    const plan = PLANS[4]; // level 5: four slots, five colors
+    const plan = planFor(5); // level 5: four slots, five colors
     // The 1024 by 768 landscape view puts the door at 460: four past tries fit; the detective door's three clues always fit.
     expect(rowsThatFit(460)).toBe(4);
     expect(rowsThatFit(430)).toBeGreaterThanOrEqual(3);
@@ -152,7 +185,7 @@ describe('Detective doors', () => {
   });
 
   it('keeps the faint-stone idea up to date: after every try it fits every mark, and following it ignores no clue on screen', () => {
-    for (const plan of PLANS.filter((p) => !p.detective)) {
+    for (const plan of Object.values(PLANS).filter((p) => !p.detective)) {
       for (let seed = 1; seed <= 60; seed++) {
         const rng = new Rng(seed);
         const code = makeCode(plan, rng);
@@ -170,7 +203,7 @@ describe('Detective doors', () => {
 
   it('picks a seeded door, garden gate or treasure chest, different for each door, without changing any code', () => {
     const seen = new Set<string>();
-    for (const plan of PLANS) {
+    for (const plan of Object.values(PLANS)) {
       for (let seed = 1; seed <= 60; seed++) {
         const kinds = doorKinds(new Rng(seed), plan.codes);
         expect(kinds).toHaveLength(plan.codes);

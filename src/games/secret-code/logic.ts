@@ -12,6 +12,8 @@ import { Rng } from '../../engine/random';
  */
 export interface CodePlan {
   detective?: boolean;
+  /** On a detective door, how many shown tries it starts with: at least `min`, and never more than `max`. */
+  clues?: { min: number; max: number };
   slots: number;
   colors: number;
   /** Yellow marks for right-color-wrong-place; without them, a slot is only green or gray. */
@@ -22,18 +24,21 @@ export interface CodePlan {
   name: string;
 }
 
-export const PLANS: CodePlan[] = [
-  { slots: 2, colors: 3, yellow: false, repeats: false, codes: 3, name: 'Two slots, three colors; each slot says yes or no' },
-  { slots: 3, colors: 4, yellow: false, repeats: false, codes: 3, name: 'Three slots, four colors; each slot says yes or no' },
-  { slots: 3, colors: 4, yellow: true, repeats: false, codes: 2, name: 'Yellow marks: the color is in the code, but in another slot' },
-  { slots: 3, colors: 5, yellow: true, repeats: false, codes: 2, name: 'Three slots and five colors, with yellow marks' },
-  { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, name: 'Four slots and five colors' },
-  { slots: 3, colors: 4, yellow: true, repeats: true, codes: 2, name: 'A color can be used twice in the code' },
-  { slots: 3, colors: 4, yellow: true, repeats: false, codes: 2, detective: true, name: 'Detective door: work out the one code that fits the shown guesses' },
-  { slots: 4, colors: 5, yellow: true, repeats: true, codes: 2, name: 'Four slots, five colors, and one color used twice' },
-];
+/** Plans by level ID. IDs 9 and 10 are reserved for *Be the door* and the preschool *One slot* (not built yet). */
+export const PLANS: Readonly<Record<number, CodePlan>> = {
+  1: { slots: 2, colors: 3, yellow: false, repeats: false, codes: 3, name: 'Two slots, three colors; each slot says yes or no' },
+  2: { slots: 3, colors: 4, yellow: false, repeats: false, codes: 3, name: 'Three slots, four colors; each slot says yes or no' },
+  3: { slots: 3, colors: 4, yellow: true, repeats: false, codes: 2, name: 'Yellow marks: the color is in the code, but in another slot' },
+  4: { slots: 3, colors: 5, yellow: true, repeats: false, codes: 2, name: 'Three slots and five colors, with yellow marks' },
+  5: { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, name: 'Four slots and five colors' },
+  6: { slots: 3, colors: 4, yellow: true, repeats: true, codes: 2, name: 'A color can be used twice in the code' },
+  7: { slots: 3, colors: 4, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 2, max: 3 }, name: 'Detective door: work out the one code that fits the shown guesses' },
+  8: { slots: 4, colors: 5, yellow: true, repeats: true, codes: 2, name: 'Four slots, five colors, and one color used twice' },
+  11: { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 3, max: 4 }, name: 'A bigger detective door: four slots, five colors, and three shown guesses' },
+};
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+/** The plan for a level; an unbuilt or out-of-range ID falls back to the nearest built one below it (above 11, to 11). */
+export const planFor = (level: number): CodePlan => PLANS[level] ?? (level > 11 ? PLANS[11] : level < 1 ? PLANS[1] : PLANS[8]);
 
 export const STONES: ColorName[] = ['red', 'blue', 'yellow', 'green', 'purple'];
 
@@ -146,26 +151,31 @@ export function nextMove(plan: CodePlan, history: Guess[], code: number[], guess
   return { stone: (candidates(plan, history)[0] ?? code)[empty] };
 }
 
-/** Build a seeded detective door with two or three non-answer clues, all visible together.
- * Pick the clue that leaves the fewest candidates for this code; ties use the seeded order.
+/** Build a seeded detective door whose shown clues (the plan's `clues`, all visible together) leave exactly one code.
+ * Pick the clue that leaves the fewest candidates for this code; ties use the seeded order. A code the greedy
+ * clues cannot pin down within the cap is redrawn from the same generator, so the door stays seeded.
  */
 export function detectiveDoor(plan: CodePlan, rng: Rng): { code: number[]; history: Guess[] } {
-  const code = makeCode(plan, rng);
-  const guesses = rng.shuffle(candidates(plan, []).filter((g) => g.join() !== code.join()));
-  const history: Guess[] = [];
-  while (history.length < 2 || candidates(plan, history).length > 1) {
-    let best: Guess | undefined;
-    let remaining = Infinity;
-    for (const stones of guesses) {
-      if (history.some((h) => h.stones.join() === stones.join())) continue;
-      const clue = { stones, marks: score(code, stones, plan.yellow) };
-      const count = candidates(plan, [...history, clue]).length;
-      if (count < remaining) { best = clue; remaining = count; }
+  const { min, max } = plan.clues ?? { min: 2, max: 3 };
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const code = makeCode(plan, rng);
+    const guesses = rng.shuffle(candidates(plan, []).filter((g) => g.join() !== code.join()));
+    const history: Guess[] = [];
+    while (history.length < max && (history.length < min || candidates(plan, history).length > 1)) {
+      let best: Guess | undefined;
+      let remaining = Infinity;
+      for (const stones of guesses) {
+        if (history.some((h) => h.stones.join() === stones.join())) continue;
+        const clue = { stones, marks: score(code, stones, plan.yellow) };
+        const count = candidates(plan, [...history, clue]).length;
+        if (count < remaining) { best = clue; remaining = count; }
+      }
+      if (!best) break;
+      history.push(best);
     }
-    if (!best || history.length >= 3) throw new Error('Detective door needs more than three clues');
-    history.push(best);
+    if (history.length >= min && candidates(plan, history).length === 1) return { code, history };
   }
-  return { code, history };
+  throw new Error(`Detective door needs more than ${max} clues`);
 }
 
 /** Detective guesses must agree with the whole evidence, including color quantities. */

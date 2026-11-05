@@ -363,9 +363,9 @@ async function woodsBatch() {
     log(`Peekaround Island ${level} (${mode}): turning, hiding, picture card, placing by direction, misses, hints, saved score and sticker passed`);
   }
 
-  if (!only || only === 'code') for (let level = fromLevel; level <= 8; level++) {
+  if (!only || only === 'code') for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 11].filter((l) => l >= fromLevel)) {
     await launch('secret-code', level);
-    if (level === 4 || level === 7) await page.setViewportSize({ width: 768, height: 1024 });
+    if (level === 4 || level === 7 || level === 11) await page.setViewportSize({ width: 768, height: 1024 });
     const codes = await page.evaluate(() => neo.scene.game.plan.codes);
     // Empty the slots like a finger, tap the stones in order, then the key.
     const enter = async (stones) => {
@@ -381,9 +381,15 @@ async function woodsBatch() {
       if (n === 0) {
         // Detective doors already have evidence: both wrong tries contradict it. Other doors teach on the first try.
         const wrong = await page.evaluate(() => { const g = neo.scene.game; return Array(g.plan.slots).fill((g.code[0] + 1) % g.plan.colors); });
-        for (let k = 0; k < (level === 7 ? 2 : 3); k++) await enter(wrong);
+        if (level === 11) {
+          // The bigger detective door: three clues (never more than four), every one drawn at full strength.
+          const rows = await page.evaluate(() => neo.scene.game.past.children.map((r) => [r.visible, r.alpha]));
+          assert.ok(rows.length >= 3 && rows.length <= 4, `clue rows: ${rows.length}`);
+          assert.ok(rows.every(([v, a]) => v && a === 1), JSON.stringify(rows));
+        }
+        for (let k = 0; k < (level === 7 || level === 11 ? 2 : 3); k++) await enter(wrong);
         assert.deepEqual(await counts(), [2, 1]);
-        if (level === 4 || level === 7) await screenshot(`secret-code-${level}-portrait`);
+        if (level === 4 || level === 7 || level === 11) await screenshot(`secret-code-${level}-portrait`);
       }
       for (let k = 0; k < 12; k++) {
         const idea = await page.evaluate(async (n) => {
