@@ -283,7 +283,7 @@ class ShapeBuddies implements Game {
     if (this.joined) void this.ctx.say('buddies.together');
     this.flight = { x: far, y: 5 + d };
     await this.ctx.tw.to(this.flight, { x: pot, y: -25 + d }, { duration: 1 }); if (this.dead) return;
-    void this.ctx.tw.to(this.friends[receiver], { rotation: 0.6 }, { duration: 0.4 });
+    void this.ctx.tw.to(this.friends[receiver], { rotation: 0.6 * this.dir }, { duration: 0.4 });
     await this.ctx.tw.to(this.flight, { y: 25 + d }, { duration: 0.4 }); if (this.dead) return;
     if (!this.round.finish()) return;
     this.finished = true; this.seed.visible = false;
