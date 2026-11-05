@@ -1559,6 +1559,8 @@ Proof: new-band tier: typecheck, unit tests including the lands, registry band a
 
 ### shape-buddies 6: Level 8 Your friend, my friend
 
+Built 2026-11-05, [PR #1265](https://github.com/rjdunlap/neo/pull/1265); [build note](archive/COMPLETED-2026-10-09.md#shape-buddies-level-8-your-friend-my-friend-shape-buddies-batch-6-2026-11-05). No longer eligible for dispatch.
+
 - **`shape-buddies`, Level 8 *Your friend, my friend* (dive slice 7)** (batch shape-buddies 5 built; shares `LEVELS` and the pre-K `order`; new interaction): a seat question, then level 3's spoon built by two people taking turns with one friend each (a drop passes the turn, a failed Try hands it to the friend whose role broke); **Just me** is level 3's solo switch. Pre-K `order: [7, 1, 2, 3, 8, 4, 5]`, school `order: [1, 2, 3, 8, 4, 5, 6]`. [Definition](deep-dives/shape-buddies.md#level-8-your-friend-my-friend-shared-roles-defined-2026-11-05)
 
 Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/seats.ts` (new, Secret Code's `twoArt()` moved), `src/games/secret-code/index.ts` (the import only), `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
