@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { canSee, fits, frontAfterHalfTurn, hasChoice, makeScene, makeSeeScene, makeViewScene, namedHintTarget, nextPair, nextRequest, pairPlacements, peekTouch, planFor, PLANS, seeFacings, spotFacing, turnToFront, viewFacings, viewFrom, whereIs, type PeekTouchFriend, type Where } from './logic';
+import { canSee, fits, islandArrangement, lookalike, makeSkyScene, mapPoint, skyArrangement, skyFacing, type SkyKind, frontAfterHalfTurn, hasChoice, makeScene, makeSeeScene, makeViewScene, namedHintTarget, nextPair, nextRequest, pairPlacements, peekTouch, planFor, PLANS, seeFacings, spotFacing, turnToFront, viewFacings, viewFrom, whereIs, type PeekTouchFriend, type Where } from './logic';
 
 describe('Peekaround Island', () => {
   it('demonstrates turning, choosing, and every requested placement without a wrong touch', () => {
@@ -254,6 +254,102 @@ describe('Peekaround Island', () => {
       const scene = makeViewScene(1, new Rng(7));
       const friends: PeekTouchFriend[] = scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], 0) }));
       expect(peekTouch('view', 0, scene.friends[scene.viewer], friends)).toEqual({ kind: 'tile', name: scene.friends[scene.viewer] });
+    });
+  });
+
+  describe('level 8, from the sky', () => {
+    const KINDS: SkyKind[] = ['true', 'mirror', 'turned'];
+    const rounds = function* () {
+      for (let seed = 1; seed <= 200; seed++) {
+        const rng = new Rng(seed);
+        let last: ReturnType<typeof makeSkyScene>['friends'][number] | undefined;
+        for (let index = 0; index < 3; index++) {
+          const scene = makeSkyScene(index, rng, last);
+          const prev = last;
+          if (scene.hidden !== null) last = scene.friends[scene.hidden];
+          yield { index, scene, prev };
+        }
+      }
+    };
+    const placed = (s: ReturnType<typeof makeSkyScene>) => s.friends.map((name, i) => ({ name, facing: s.facing[i] }));
+
+    it('shows three different maps and exactly one is the island itself, at any turns', () => {
+      for (const { scene } of rounds()) {
+        expect([...scene.maps].sort()).toEqual([...KINDS].sort());
+        for (const turns of [0, 1, 3]) {
+          const arr = Object.fromEntries(KINDS.map((k) => [k, skyArrangement(k, scene.k, placed(scene), turns)]));
+          expect(arr.true).not.toEqual(arr.mirror);
+          expect(arr.true).not.toEqual(arr.turned);
+          expect(arr.mirror).not.toEqual(arr.turned);
+          const island = islandArrangement(scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], turns) })), turns);
+          expect(KINDS.filter((k) => JSON.stringify(arr[k]) === JSON.stringify(island))).toEqual(['true']);
+        }
+      }
+    });
+
+    it('puts front at the bottom, behind at the top, right and left on their sides', () => {
+      for (const { scene } of rounds()) for (const f of placed(scene)) {
+        const p = mapPoint(skyFacing('true', f.facing, scene.k), 100);
+        if (f.facing === 0) expect(p.y).toBeGreaterThan(0);
+        if (f.facing === 2) expect(p.y).toBeLessThan(0);
+        if (f.facing === 1) expect(p.x).toBeGreaterThan(0);
+        if (f.facing === 3) expect(p.x).toBeLessThan(0);
+      }
+      const p = mapPoint(1.5, 10);
+      expect(p.x).toBeCloseTo(Math.sin(1.5 * Math.PI / 2) * 10);
+      expect(p.y).toBeCloseTo(Math.cos(1.5 * Math.PI / 2) * 10);
+    });
+
+    it('mirrors only left and right, and turns every facing by k', () => {
+      for (const k of [1, 3]) for (const f of [0, 1, 2, 3]) {
+        expect(skyFacing('mirror', f, k)).toBe(f === 1 ? 3 : f === 3 ? 1 : f);
+        expect(skyFacing('turned', f, k)).toBe((f + k) % 4);
+        expect(skyFacing('turned', f + 0.5, k)).toBeCloseTo((f + 0.5 + k) % 4);
+      }
+      for (const { scene } of rounds()) {
+        expect([1, 3]).toContain(scene.k);
+        const t = skyArrangement('turned', scene.k, placed(scene));
+        expect(t.flowers).toEqual([0, 1, 2, 3].map((i) => (i + 0.5 + scene.k) % 4));
+      }
+    });
+
+    it('builds the three scenes the plan describes', () => {
+      for (const { index, scene, prev } of rounds()) {
+        expect(new Set(scene.friends).size).toBe(scene.friends.length);
+        expect(scene.friends.length).toBe(scene.facing.length);
+        if (index === 0) {
+          expect(scene.hidden).toBeNull();
+          expect([...scene.facing].sort()).toEqual([0, 1, 3]);
+        } else {
+          expect(scene.hidden).not.toBeNull();
+          expect(scene.facing.filter((f) => f === 2)).toHaveLength(1);
+          expect(scene.facing[scene.hidden!]).toBe(2);
+          expect(scene.facing).toContain(0);
+          if (index === 1) expect(scene.facing.filter((f) => f === 1 || f === 3)).toHaveLength(1);
+          else expect([...scene.facing].sort()).toEqual([0, 1, 2, 3]);
+          if (prev) expect(scene.friends[scene.hidden!]).not.toBe(prev);
+        }
+        if (index === 2) expect(scene.friends).toHaveLength(4);
+        for (const a of scene.friends) for (const b of scene.friends) expect(a !== b && lookalike(a, b)).toBe(false);
+        expect(scene.friends).not.toEqual(expect.arrayContaining(['cow', 'bunny']));
+        expect(scene.friends).not.toEqual(expect.arrayContaining(['dog', 'bear']));
+      }
+    });
+
+    it('is repeatable for a seed', () => {
+      expect(makeSkyScene(2, new Rng(9), 'cat')).toEqual(makeSkyScene(2, new Rng(9), 'cat'));
+    });
+
+    it('turning the island k quarter turns gives the turned map', () => {
+      for (const { scene } of rounds()) for (const turns of [0, 2]) {
+        const spots = scene.friends.map((name, i) => ({ name, spot: spotFacing(scene.facing[i], turns) }));
+        expect(islandArrangement(spots, turns + scene.k)).toEqual(skyArrangement('turned', scene.k, placed(scene), turns));
+      }
+    });
+
+    it('leads to the true map and is level 8', () => {
+      for (const { scene } of rounds()) expect(peekTouch('sky', 0, null, [], false, scene.maps)).toEqual({ kind: 'map', index: scene.maps.indexOf('true') });
+      expect(planFor(8).mode).toBe('sky');
     });
   });
 });

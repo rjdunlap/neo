@@ -1,6 +1,6 @@
 # Peekaround Island — From the sky (level 8): which map shows the island from above?
 
-Definition, 2026-11-03, branch `claude/define-peekaround-from-the-sky`. This is dive slice 5 of the [Peekaround Island dive](../deep-dives/peekaround-island.md#build-slices-in-order). **Docs only:** no game change, code or device evidence. It settles what the dive left open: the level's number and band, the round, the maps and their two wrong kinds, the accounting, the layout, the art, the voice IDs, the rule tests, the bot and the check tier. The block-tower **Skyline View** stays a sketch (see [Settled and open](#settled-and-open)).
+**Built 2026-11-04 ([PR #1231](https://github.com/rjdunlap/neo/pull/1231)).** Definition, 2026-11-03, branch `claude/define-peekaround-from-the-sky`. This is dive slice 5 of the [Peekaround Island dive](../deep-dives/peekaround-island.md#build-slices-in-order). **Docs only:** no game change, code or device evidence. It settles what the dive left open: the level's number and band, the round, the maps and their two wrong kinds, the accounting, the layout, the art, the voice IDs, the rule tests, the bot and the check tier. The block-tower **Skyline View** stays a sketch (see [Settled and open](#settled-and-open)).
 
 ## Scope and identity
 

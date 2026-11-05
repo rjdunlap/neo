@@ -2462,6 +2462,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--peekaround-island-le
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--peekaround-island-level-6-who-cant-see-it-peekaround-island-batch-3).
 
+## Peekaround Island level 8 From the sky (peekaround-island batch 5, 2026-11-04)
+
+[PR #1231](https://github.com/rjdunlap/neo/pull/1231), [dive slice 5](../deep-dives/peekaround-island.md#build-slices-in-order), [definition](../definitions/peekaround-from-the-sky.md). New mode `sky`, school range 4–8 (pre-K stays 3–7). Three map cards (true, mirror, quarter-turned) show the island from above with a boat on her side; a mirror miss names the swapped friends, a turned miss turns the island to match and back, a wrong map counts once, two misses ring the right map. Three scenes a round (all in sight, one hidden of three, one hidden of four); bird's-view cloud and birds on the right map. Voice ids `around.sky`, `.hidden`, `.right`, `.mirror`, `.mirror.one`, `.turned`, `.hint`; how-to step from level 8.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--peekaround-island-level-8-from-the-sky-peekaround-island-batch-5).
+
 ## Picture Graph, fair meadows, a visible first pick and hints that show why (picture-graph batch 1, 2026-11-03)
 
 [PR #1138](https://github.com/rjdunlap/neo/pull/1138), `claude/picture-graph-1`: [dive slice 1](../deep-dives/picture-graph.md#build-slices-in-order). No new levels. `meadowSpots` places singles (levels 1–3, 7) through `groupSpots(n, 1, meadowArea)`, fixing the 10.7% level-7 overlap and feet on the graph panel (300 seeds at four views). Level 4: the first tap lifts and outlines a bar, tapping it again lowers it free (`sameTap`, `sameHint`). Keyless "how many more" (levels 3, 7) always offers the taller bar's count (`tallerCount`) with the line `graph.taller`. After two misses a dashed line and glowing blocks show why (`whyBlocks`); the dive left "in all" open, and every block glows there. `bear` joins `KINDS`; the backdrop seed is picked from `MEADOWS` [81, 23, 142]; the level-4 how-to step mentions the lift. Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--picture-graph-fair-meadows-a-visible-first-pick-and-hints-that-show-why-picture-graph-batch-1).
@@ -2610,7 +2616,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--habitat-help
 
 [PR #1216](https://github.com/rjdunlap/neo/pull/1216), batch habitat-helpers 3, [dive slice 3](../deep-dives/habitat-helpers.md#build-slices-in-order). School range now 4–9 (plain min..max), pre-K stays 2–5. `src/games/habitat-helpers/shore.ts` is a separate `RockyShore` scene that `create()` picks for levels 8–9. Level 8 has two rounds on a high rock and a rock pool; level 9 adds seaweed rocks (pool room 1, seaweed 2, high rock 2) and a crab. The wave button is the test: a dried anemone pulls in and a crab on bare rock or in the pool hides, both free, and two failed tests glow a friend and a place (or the sand) for one hint; misses are always 0 and a full place is a boing, not a miss. New `habitat.shore*` voice ids (device speech), how-to steps scoped from 8, and the goal reworded for both scenes. Bot rule `shoreTouch`/`shoreHint` on the nearest accepted arrangement; no journal entry.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--habitat-helpers-levels-89-the-rocky-shore-habitat-helpers-batch-3).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--habitat-helpers-levels-89-the-rocky-shore-habitat-helpers-batch-3).
 
 ## Inchworm level 9 One worm, hop by hop (inchworm batch 2, 2026-11-03)
 
