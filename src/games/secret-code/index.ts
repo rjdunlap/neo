@@ -656,6 +656,7 @@ class SecretCode implements Game {
   private async finale() {
     if (this.finished) return;
     this.finished = true;
+    this.drawGlow();
     sfx.tada();
     await this.ctx.say('code.done');
     await this.ctx.tw.wait(0.5);
