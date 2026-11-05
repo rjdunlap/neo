@@ -22,6 +22,14 @@ Lemonade Stand dive (2026-10-31), two calls that wait on you; the build slices t
 | **A pre-K opening, "Enough cups for the line"?** | Adds the `prek` band to a school game; otherwise counting a line stays with Scoop Shop and Monster Munch. Recommended: wait until the school levels are played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
 | **A market-week chart in the journal?** | Whether a finished week files its table as a discovery, and which weeks (the first sold-out day, the first boat saving). Recommended: wait for the boats to be played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
 
+Draw the Pattern dive (2026-11-05), three calls; slices 1 and 2 and slice 3 on decision 1's default go ahead ([the dive](deep-dives/draw-the-pattern.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **Lap opening at level 10 (dot to dot)?** | Lap plays levels 1 and 10 (default) or toddler only, keeping lap at level 1 | [Draw the Pattern dive](deep-dives/draw-the-pattern.md#decisions-for-the-developer) |
+| **A school window for spirals and eights (level 11)?** | Reopens the definition's decision 6 (no school band); by default level 11 stays unbuilt | [Draw the Pattern dive](deep-dives/draw-the-pattern.md#decisions-for-the-developer) |
+| **Level 12 *Your pattern*: here or in Pattern Train?** | Whether a creative inversion belongs in Draw the Pattern; slice 5 waits on it | [Draw the Pattern dive](deep-dives/draw-the-pattern.md#decisions-for-the-developer) |
+
 Quick Tricks dive (2026-11-01), two calls that wait on you; the build slices that do not need them go ahead ([the dive](deep-dives/quick-tricks.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
