@@ -490,6 +490,7 @@ class SudokuGarden implements Game {
 
   private async bloom() {
     this.busy = true;
+    this.sweep = null;
     this.hinted = null;
     this.flash = null;
     this.mode = 'board';
