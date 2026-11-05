@@ -400,7 +400,14 @@ export const PATCH_LAYOUTS: readonly (readonly string[])[] = [
  * A soil tint (0, 1 or 2) for each patch of a patchwork bed, so that no two patches sharing an edge look alike:
  * the first such colouring in counting order.
  */
+const tintsOf = new WeakMap<Geometry, number[]>();
 export function patchTints(g: Geometry): number[] {
+  let found = tintsOf.get(g);
+  if (!found) tintsOf.set(g, (found = colourPatches(g)));
+  return found;
+}
+
+function colourPatches(g: Geometry): number[] {
   const n = g.size, near = Array.from({ length: n }, () => new Set<number>());
   for (let i = 0; i < g.cells; i++)
     for (const j of [i + n, g.colOf[i] < n - 1 ? i + 1 : -1])

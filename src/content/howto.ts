@@ -312,7 +312,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     note: 'There is no wrong tap, and taking one back is free. Each hint counts as help. At school she plays the two 3 by 3 ponds (about 7 and up). If she presses a lot without lighting the pond, she is told where Hint is; that counts nothing.',
   },
   'sudoku-garden': {
-    goal: 'Fill the bed so every row, column and box holds each number once.',
+    goal: 'Fill the bed so every row, column and box (or patch) holds each number once.',
     steps: [
       'Tap a square, then tap a number to put it there. A clash lights up red.',
       'Tap Marks to pencil small notes; Erase takes a number or its notes out.',
