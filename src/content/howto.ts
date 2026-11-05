@@ -1995,6 +1995,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       'Tap the green arrow to move on to the next trick.',
       { from: 1, to: 1, text: 'A leaf dropped below the friend is a free try: the rain shows it is too low.' },
       { from: 4, to: 6, text: 'At the picnic the last bowl finishes that trick by itself; only the berries are checked with the yellow arrow.' },
+      { from: 7, to: 7, text: 'Two of each: two leaves for three friends, two lost socks, two gaps to bridge. A leaf over only some friends stays up, and a leaf or plank already placed can be dragged off again for free.' },
+      { from: 7, to: 7, text: 'If both leaves are up and someone is still wet, the pet says a leaf can move and the glow shows which; that counts as the hint.' },
     ],
     finish: 'The round ends after the last trick, when everyone in the show takes a bow.',
     note: 'There is at most one hint per trick.',

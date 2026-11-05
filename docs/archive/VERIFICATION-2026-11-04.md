@@ -103,3 +103,11 @@
 - [PR #1213](https://github.com/rjdunlap/neo/pull/1213): new game `vine-snip` (Tinker Lab; lap 1, toddler 1–2, preschool 1–3, pre-K 2–3, school 3); closed-form vines in `logic.ts`, scene, one voice clip, how-to card, new `vinesnip` suite; Tinker Lab tests updated (23 games, school pages 8, 7, 7).
 - Ran (tested commit c8b64f67; Vite on port 5810): typecheck; `npm test` 301 files, 4,814 tests (18 new rule tests, level 3 window at least 0.433 s over 500 seeds); `BROWSER_SUITE=vinesnip` (level 1 three taps 0/0; level 3 portrait: far-turnaround miss, requested hint, three timed snips, saved 1/1; screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=vine-snip` at level 3 (2.9 s) and levels 1,2 (2.1 s, 4.4 s); `npm run build`. `game-reviewer`: no blocking findings.
 - Not run: person or device checks (a toddler connecting the tap to the drop, whether 0.4 s windows suit a four-year-old, iPad feel), in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
+
+## 2026-11-04 — Block Topple levels 1–3 (new game, slice 1)
+
+- [PR #1214](https://github.com/rjdunlap/neo/pull/1214): new game `block-topple` in Tinker Lab (preschool 1–2, pre-K 1–3, school 2–3): a sling pull, a toy flight, one tipping rule, thumps that are never misses, a dotted-arc hint after two misses; rules in `logic.ts` with rule tests; how-to card with ghost finger.
+- Ran: typecheck; `npm test` (all pass after fixing a how-to wording and rendering the title clip with `scripts/voice-clips/render.mjs`); `npm run build`.
+- Ran (`GAME_URL` http://localhost:5617, passed on c8278fb1): `BROWSER_SUITE=blocktopple`: level 1 three solver pulls (0/0); level 3 in portrait a short shot and a hill shot (2 misses), the dotted path, three tips, saved 2/1; one portrait screenshot reviewed.
+- Ran: `BROWSER_SUITE=fingerdemo FINGER_ONLY=block-topple FINGER_LEVELS=3` passed (5.8 s) on 35f2db9a; the later commit only changed `down()` to kill the spring-back tween.
+- Open: levels 4–5 are not built; whether a four-year-old can aim by angle from the trail and full-stretch pull comfort on an iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).

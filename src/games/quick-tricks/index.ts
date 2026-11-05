@@ -15,25 +15,38 @@ import { SecondShow } from './second-show';
 import { encoreFor } from './second-logic';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  bumpLine,
   castFor,
   friendsFor,
   GAP,
+  GAPS,
+  idleLeaves,
+  ISLAND,
   judgeLeaf,
   leafDrop,
   leafMiss,
   leavesFor,
   makeSocks,
+  makeTwoSocks,
+  nextLeaf,
+  nextPlank,
+  partnerOf,
   partnerSock,
   plankLengths,
   plankToPlace,
   planFor,
   reaches,
+  reachesGap,
   sameSock,
+  stillWet,
   STRETCH_TO,
   TRICKS,
+  twoPlankLengths,
   type Cast,
   type Crosser,
   type Leaf,
+  type LeafUp,
+  type OnGaps,
   type Sock,
   type Trick,
   type TricksPlan,
@@ -43,8 +56,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 const LEVELS: BandLevels = {
   toddler: { min: 1, max: 1 },
   preschool: { min: 1, max: 4 },
-  prek: { min: 2, max: 6 },
-  school: { min: 5, max: 6 },
+  prek: { min: 2, max: 7 },
+  school: { min: 5, max: 7 },
 };
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
@@ -183,6 +196,8 @@ class QuickTricks implements Game {
   hints = 0;
   /** Mistakes in this trick; the second brings a hint. */
   wrongs = 0;
+  /** This trick's one hint has been given (the glow shows). */
+  hinted = false;
   busy = true;
   /** The trick is done and the arrow waits for the child. */
   waiting = false;
@@ -192,14 +207,21 @@ class QuickTricks implements Game {
   // Umbrella Up
   friends: Critter[] = [];
   leaves: (DragItem & { leaf: Leaf })[] = [];
+  /** Two at once: where each leaf is held up (an offset from the middle), or null. */
+  up: LeafUp[] = [];
   // Sock Gobbler
   held: Sock | null = null;
+  /** Two at once: the two lost socks, and which have their partner. */
+  heldTwo: Sock[] = [];
+  paired: boolean[] = [];
   socks: (DragItem & { sock: Sock })[] = [];
   monster: Container | null = null;
   // Bridge Stretch
   handle: DragItem | null = null;
   planks: (DragItem & { length: number })[] = [];
   bridgeLength = 0;
+  /** Two at once: the plank (index into `planks`) lying across each gap, or null. */
+  onGaps: OnGaps = [];
   /** Springing back after letting go short of the far bank. */
   springing = false;
   beetle: Container | null = null;
@@ -211,7 +233,8 @@ class QuickTricks implements Game {
   private readonly glow = new Graphics();
   private readonly bridge = new Graphics();
   private drops: { x: number; y: number; v: number }[] = [];
-  private leafAt: { x: number; y: number; width: number } | null = null;
+  /** Leaves held up over the friends, which the rain rolls off. */
+  private leafAt: { x: number; y: number; width: number }[] = [];
   private wiggle = 0;
   private view: View;
   private clock = 0;
@@ -258,7 +281,10 @@ class QuickTricks implements Game {
     const t = this.trick;
     if (t === 'umbrella') {
       g.rect(0, 0, v.w, v.h).fill(0xc9d9e8).rect(0, this.groundY, v.w, v.h - this.groundY).fill(swatch.green.light);
-      puffs(g, [[this.cx - 120, 130, 60], [this.cx, 110, 80], [this.cx + 120, 130, 60], [this.cx - 50, 160, 56], [this.cx + 60, 160, 56]], 0xeef2f6, 0x9fb1c2);
+      const c = this.cx;
+      // Three friends stand wider: the cloud stretches over all of them.
+      const more: [number, number, number][] = this.plan.friends === 3 ? [[c + 230, 130, 62], [c + 170, 160, 56], [c - 200, 150, 50]] : [];
+      puffs(g, [[c - 120, 130, 60], [c, 110, 80], [c + 120, 130, 60], [c - 50, 160, 56], [c + 60, 160, 56], ...more], 0xeef2f6, 0x9fb1c2);
     } else if (t === 'socks') {
       g.rect(0, 0, v.w, v.h).fill(0xfff1d6).rect(0, this.groundY, v.w, v.h - this.groundY).fill(wood.light);
       g.moveTo(v.w * 0.52, 150).quadraticCurveTo(v.w * 0.76, 190, v.w - 40, 150).stroke(line(0x9c8a7a, 4));
@@ -268,6 +294,8 @@ class QuickTricks implements Game {
       g.rect(0, 0, v.w, v.h).fill(0xbfe6ff).rect(0, bankY + 40, v.w, v.h).fill(swatch.blue.fill);
       g.roundRect(-20, bankY, l + 20, v.h - bankY + 20, 20).fill(swatch.green.fill).stroke(line(swatch.green.line));
       g.roundRect(r, bankY, v.w - r + 20, v.h - bankY + 20, 20).fill(swatch.green.fill).stroke(line(swatch.green.line));
+      // Two at once: a little island splits the river into a narrow and a wide gap.
+      if (this.plan.bridge === 'two') g.roundRect(this.gap(0)[1], bankY, ISLAND, v.h * 0.2, 20).fill(swatch.green.fill).stroke(line(swatch.green.line));
     }
   }
 
@@ -275,9 +303,16 @@ class QuickTricks implements Game {
     return this.view.h * 0.56;
   }
 
-  /** The near and far edges of the river. */
+  /** The near and far edges of the river (with two gaps, the island between them). */
   private get banks(): [number, number] {
+    if (this.plan.bridge === 'two') return [this.cx - 220, this.cx - 220 + GAPS[0] + ISLAND + GAPS[1]];
     return [this.cx - GAP / 2, this.cx + GAP / 2];
+  }
+
+  /** Two at once: the near and far edges of gap g (0 the narrow one, 1 the wide one). */
+  private gap(g: number): [number, number] {
+    const lo = this.banks[0] + (g === 0 ? 0 : GAPS[0] + ISLAND);
+    return [lo, lo + GAPS[g]];
   }
 
   // ----- moving between tricks -----
@@ -290,6 +325,7 @@ class QuickTricks implements Game {
     await this.clearTrick();
     this.index++;
     this.wrongs = 0;
+    this.hinted = false;
     this.busy = true;
     this.drawBack();
     const t = this.trick;
@@ -307,12 +343,16 @@ class QuickTricks implements Game {
     this.socks = [];
     this.planks = [];
     this.handle = null;
+    this.up = [];
+    this.heldTwo = [];
+    this.paired = [];
+    this.onGaps = [];
     for (const f of this.friends) this.ctx.untrack(f);
     this.friends = [];
     this.monster = null;
     this.beetle = null;
     this.drops = [];
-    this.leafAt = null;
+    this.leafAt = [];
     this.rain.clear();
     this.bridge.clear();
     if (this.layer.children.length) await this.ctx.tw.to(this.layer, { alpha: 0 }, { duration: 0.25 });
@@ -337,15 +377,28 @@ class QuickTricks implements Game {
   private miss() {
     this.misses++;
     this.wrongs++;
-    if (this.wrongs === 2) this.hints++;
+    if (this.wrongs === 2) this.hint();
     sfx.boing();
   }
 
-  private addDrag(node: Container, x: number, y: number, onDrop: (x: number, y: number) => boolean, hit: Rectangle): DragItem {
+  /** At most one hint per trick: the glow lights the answer. */
+  private hint() {
+    if (this.hinted) return;
+    this.hinted = true;
+    this.hints++;
+  }
+
+  private addDrag(node: Container, x: number, y: number, onDrop: (x: number, y: number) => boolean, hit: Rectangle, onPick?: () => void): DragItem {
     node.position.set(x, y);
     node.hitArea = hit;
     const item = { node, home: { x, y } } as DragItem;
-    item.drag = draggable(node, this.ctx.tw, { onPick: () => sfx.tick(), onDrop });
+    item.drag = draggable(node, this.ctx.tw, {
+      onPick: () => {
+        sfx.tick();
+        onPick?.();
+      },
+      onDrop,
+    });
     this.layer.addChild(node);
     this.items.push(item);
     return item;
@@ -365,20 +418,23 @@ class QuickTricks implements Game {
     });
     const flower = umbrellaFlower();
     flower.label = 'flower';
-    flower.position.set(this.cx + (this.plan.friends === 2 ? 290 : 190), this.groundY);
+    flower.position.set(this.cx + ({ 1: 190, 2: 290, 3: 370 } as const)[this.plan.friends], this.groundY);
     this.layer.addChild(flower);
     const leaves = leavesFor(this.plan);
+    this.up = leaves.map(() => null);
     leaves.forEach((leaf, i) => {
       // Leaves wait on the right, out of the rain.
       const x = this.view.w - 40 - leaf.width / 2;
       const y = 300 + i * 140;
       const node = new Container();
       node.addChild(leafArt(leaf.width));
-      const item = this.addDrag(node, x, y, (lx, ly) => this.dropLeaf(item as DragItem & { leaf: Leaf }, lx, ly), new Rectangle(-Math.max(60, leaf.width / 2), -60, Math.max(120, leaf.width), 110));
+      // Two at once: a leaf already up can be lifted down again (revision is free).
+      const lift = this.plan.two ? () => this.liftLeaf(i) : undefined;
+      const item = this.addDrag(node, x, y, (lx, ly) => this.dropLeaf(item as DragItem & { leaf: Leaf }, lx, ly), new Rectangle(-Math.max(60, leaf.width / 2), -60, Math.max(120, leaf.width), 110), lift);
       Object.assign(item, { leaf });
       this.leaves.push(item as DragItem & { leaf: Leaf });
     });
-    await this.ctx.instruct(this.plan.friends === 1 ? `tricks.umbrella-${this.cast.friends[0]}` : 'tricks.umbrella-two');
+    await this.ctx.instruct(this.plan.friends === 1 ? `tricks.umbrella-${this.cast.friends[0]}` : this.plan.two ? 'tricks.umbrella-three' : 'tricks.umbrella-two');
   }
 
   /** Friends' head height and the cloud's bottom. */
@@ -388,6 +444,7 @@ class QuickTricks implements Game {
 
   private dropLeaf(item: DragItem & { leaf: Leaf }, x: number, y: number): boolean {
     if (this.busy || this.waiting) return false;
+    if (this.plan.two) return this.dropLeafTwo(item, x, y);
     const { top, sky } = this.rainSpan;
     const result = judgeLeaf(item.leaf, x - this.cx, y, friendsFor(this.plan), top, sky);
     if (result === 'away') return false;
@@ -407,7 +464,13 @@ class QuickTricks implements Game {
     const at = { x, y: top - 40 };
     void this.ctx.tw.to(item.node, at, { duration: 0.2, ease: ease.outQuad });
     item.drag.enabled = false;
-    this.leafAt = { x, y: at.y, width: item.leaf.width };
+    this.leafAt = [{ x, y: at.y, width: item.leaf.width }];
+    this.allDry();
+    return true;
+  }
+
+  /** Everyone is under a leaf: the rain rolls off onto the flower, which opens an umbrella of its own. */
+  private allDry() {
     for (const f of this.friends) {
       f.setMood('happy', 3);
       f.cheer();
@@ -419,19 +482,78 @@ class QuickTricks implements Game {
       return this.ctx.tw.to(umbrella.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
     });
     void this.done('tricks.dry');
+  }
+
+  /**
+   * Two at once: a leaf over some friends stays up (no miss) and the pet says who is still wet. With both leaves up and someone
+   * still wet, a leaf has to move: the pet says so and the glow shows which one and where (counted as the trick's hint).
+   */
+  private dropLeafTwo(item: DragItem & { leaf: Leaf }, x: number, y: number): boolean {
+    const { top, sky } = this.rainSpan;
+    const result = judgeLeaf(item.leaf, x - this.cx, y, friendsFor(this.plan), top, sky);
+    if (result === 'away') return false;
+    if (result === 'below') {
+      this.miss();
+      void this.ctx.say('tricks.above-two');
+      return false;
+    }
+    const i = this.leaves.indexOf(item);
+    this.up[i] = x - this.cx;
+    const idle = idleLeaves(this.plan, this.up, i);
+    if (idle.includes(i)) {
+      // Over friends another leaf already keeps dry: it floats home (free) rather than hide under that leaf.
+      this.up[i] = null;
+      void this.ctx.say(`tricks.wet-${this.cast.friends[this.showDry()[0]]}`);
+      return false;
+    }
+    void this.ctx.tw.to(item.node, { x, y: top - 40 }, { duration: 0.2, ease: ease.outQuad });
+    sfx.pop(5);
+    for (const l of idle) {
+      this.up[l] = null;
+      void this.leaves[l].drag.floatHome();
+    }
+    const wet = this.showDry();
+    if (!wet.length) {
+      for (const l of this.leaves) l.drag.enabled = false;
+      this.allDry();
+    } else if (this.up.every((u) => u !== null)) {
+      this.hint();
+      void this.ctx.say('tricks.leaf-move');
+    } else void this.ctx.say(`tricks.wet-${this.cast.friends[wet[0]]}`);
     return true;
+  }
+
+  /** A leaf that was up is picked up again: whoever it covered gets wet. */
+  private liftLeaf(i: number) {
+    if (this.up[i] === null || this.busy || this.waiting) return;
+    this.up[i] = null;
+    this.showDry();
+  }
+
+  /** Moods and the rain follow the leaves that are up; returns who is still wet. */
+  private showDry(): number[] {
+    const wet = stillWet(this.plan, this.up);
+    const { top } = this.rainSpan;
+    const leaves = leavesFor(this.plan);
+    this.leafAt = this.up.flatMap((u, l) => (u === null ? [] : [{ x: this.cx + u, y: top - 40, width: leaves[l].width }]));
+    this.friends.forEach((f, i) => f.setMood(wet.includes(i) ? 'sad' : 'happy'));
+    return wet;
   }
 
   private updateRain(dt: number) {
     const g = this.rain.clear();
     if (this.trick !== 'umbrella' || this.finished) return;
     const { sky } = this.rainSpan;
-    if (this.drops.length < 40 && Math.random() < dt * 30) this.drops.push({ x: this.cx + (Math.random() - 0.5) * 420, y: sky, v: 420 + Math.random() * 120 });
+    const offsets = friendsFor(this.plan);
+    const mid = this.cx + (Math.min(...offsets) + Math.max(...offsets)) / 2;
+    const spread = this.plan.two ? Math.max(...offsets) - Math.min(...offsets) + 420 : 420;
+    const more = this.plan.two ? 1.5 : 1;
+    if (this.drops.length < 40 * more && Math.random() < dt * 30 * more) this.drops.push({ x: mid + (Math.random() - 0.5) * spread, y: sky, v: 420 + Math.random() * 120 });
     for (const d of this.drops) {
       d.y += d.v * dt;
-      const leaf = this.leafAt;
+      const leaf = this.leafAt.find((l) => Math.abs(d.x - l.x) < l.width / 2);
       // Under the leaf: drops roll off its edge to the side.
-      if (leaf && Math.abs(d.x - leaf.x) < leaf.width / 2 && d.y > leaf.y - 20 && d.y < leaf.y + 10) {
+      if (leaf && d.y > leaf.y - 20 && d.y < leaf.y + 10) {
         d.x += (d.x > leaf.x ? 1 : -1) * 600 * dt;
         d.y = leaf.y - 14;
       }
@@ -443,32 +565,43 @@ class QuickTricks implements Game {
   // ----- Sock Gobbler -----
 
   private async setSocks() {
-    const { held, choices } = makeSocks(this.plan, this.ctx.rng);
-    this.held = held;
+    const two = this.plan.two ? makeTwoSocks(this.ctx.rng) : null;
+    const { held, choices } = two ?? makeSocks(this.plan, this.ctx.rng);
+    this.held = held instanceof Array ? held[0] : held;
+    this.heldTwo = two ? [...two.held] : [];
+    this.paired = this.heldTwo.map(() => false);
     const m = monsterArt(this.cast.monster);
     m.position.set(this.cx - 40, this.groundY);
-    const holding = sockArt(held, 1.6);
-    holding.position.set(120, -120);
-    holding.rotation = 0.3;
-    m.addChild(holding);
+    // The lost sock in one hand (two at once: one in each hand).
+    (two ? two.held : [this.held]).forEach((sock, k) => {
+      const holding = sockArt(sock, 1.6);
+      holding.label = `held${k}`;
+      holding.position.set(k === 0 ? 120 : -150, -120);
+      holding.rotation = k === 0 ? 0.3 : -0.3;
+      m.addChild(holding);
+    });
     this.layer.addChild(m);
     this.monster = m;
     const v = this.view;
-    const xs = choices.map((_, i) => v.w * 0.56 + ((i + 0.5) * (v.w * 0.42)) / choices.length);
+    // Up to four socks in a row; five go in two rows (three over two) so each stays easy to grab.
+    const rows = choices.length > 4 ? [choices.slice(0, 3), choices.slice(3)] : [choices];
+    const across = rows[0].length;
+    const spots = rows.flatMap((row, r) => row.map((_, i) => ({ x: v.w * 0.56 + ((i + 0.5 + (r === 1 ? 0.5 : 0)) * (v.w * 0.42)) / across, y: 260 + r * 190 })));
     choices.forEach((sock, i) => {
       const node = new Container();
       node.addChild(sockArt(sock));
-      const item = this.addDrag(node, xs[i], 260, (x, y) => this.dropSock(item as DragItem & { sock: Sock }, x, y), new Rectangle(-60, -80, 140, 160));
+      const item = this.addDrag(node, spots[i].x, spots[i].y, (x, y) => this.dropSock(item as DragItem & { sock: Sock }, x, y), new Rectangle(-60, -80, 140, 160));
       Object.assign(item, { sock });
       this.socks.push(item as DragItem & { sock: Sock });
     });
-    await this.ctx.instruct(this.plan.patterns ? 'tricks.socks-both' : 'tricks.socks');
+    await this.ctx.instruct(two ? 'tricks.socks-two' : this.plan.patterns ? 'tricks.socks-both' : 'tricks.socks');
   }
 
   private dropSock(item: DragItem & { sock: Sock }, x: number, y: number): boolean {
     if (this.busy || this.waiting || !this.monster) return false;
     const m = this.monster;
     if (Math.hypot(x - m.x, y - (m.y - 110)) > 190) return false;
+    if (this.plan.two) return this.dropSockTwo(item);
     if (!sameSock(item.sock, this.held!)) {
       this.miss();
       m.rotation = 0;
@@ -479,16 +612,43 @@ class QuickTricks implements Game {
     // A pair! It wears them on its head like ears and wiggles.
     item.drag.enabled = false;
     item.node.visible = false;
-    m.removeChildAt(1).destroy();
+    this.wearPair(this.held!, 0);
+    void this.done('tricks.partner');
+    return true;
+  }
+
+  /** The monster takes the lost sock out of its hand and wears the pair on its head like ears (the second pair lower down). */
+  private wearPair(sock: Sock, k: number) {
+    const m = this.monster!;
+    m.getChildByLabel(`held${k}`)?.destroy();
     for (const side of [-1, 1]) {
-      const ear = sockArt(this.held!, 1.5);
-      ear.position.set(side * 56, -214);
-      ear.rotation = side * 0.5 + Math.PI;
+      const ear = sockArt(sock, 1.5);
+      ear.position.set(side * (k === 0 ? 56 : 116), k === 0 ? -214 : -170);
+      ear.rotation = side * (k === 0 ? 0.5 : 1.1) + Math.PI;
       m.addChild(ear);
     }
     this.wiggle = 2.5;
     sfx.giggle();
-    void this.done('tricks.partner');
+  }
+
+  /** Two at once: a partner for either lost sock makes its pair; the other still waits. */
+  private dropSockTwo(item: DragItem & { sock: Sock }): boolean {
+    const m = this.monster!;
+    const k = partnerOf(this.heldTwo, this.paired, item.sock);
+    if (k < 0) {
+      this.miss();
+      m.rotation = 0;
+      void this.ctx.tw.to(m, { rotation: 0.12 }, { duration: 0.08 }).then(() => this.ctx.tw.to(m, { rotation: -0.12 }, { duration: 0.12 })).then(() => this.ctx.tw.to(m, { rotation: 0 }, { duration: 0.08 }));
+      const lost = this.heldTwo.filter((_, i) => !this.paired[i]);
+      void this.ctx.say(lost.some((h) => h.color === item.sock.color) ? 'tricks.not-pattern' : 'tricks.not-color');
+      return false;
+    }
+    this.paired[k] = true;
+    item.drag.enabled = false;
+    item.node.visible = false;
+    this.wearPair(this.heldTwo[k], k);
+    if (this.paired.every(Boolean)) void this.done('tricks.partner');
+    else void this.ctx.say('tricks.one-pair');
     return true;
   }
 
@@ -501,7 +661,26 @@ class QuickTricks implements Game {
     beetle.position.set(l - 90, y);
     this.layer.addChild(beetle);
     this.beetle = beetle;
-    if (this.plan.bridge === 'stretch') {
+    if (this.plan.bridge === 'two') {
+      const lengths = twoPlankLengths(this.ctx.rng);
+      this.onGaps = GAPS.map(() => null);
+      const v = this.view;
+      lengths.forEach((length, i) => {
+        const node = new Container();
+        const art = plankArt(length);
+        art.x = -length / 2;
+        node.addChild(art);
+        const home = { x: Math.min(v.w - length / 2 - 30, r + 30 + length / 2), y: y + 70 + i * 112 };
+        // A plank lying across a gap can be lifted off again for free; picking it up frees its gap.
+        const item = this.addDrag(node, home.x, home.y, (x, py) => this.placePlankTwo(item as DragItem & { length: number }, x, py), new Rectangle(-Math.max(60, length / 2), -55, Math.max(120, length), 110), () => {
+          const was = this.onGaps.indexOf(i);
+          if (was >= 0 && !this.busy) this.onGaps[was] = null;
+        });
+        Object.assign(item, { length });
+        this.planks.push(item as DragItem & { length: number });
+      });
+      await this.ctx.instruct(`tricks.bridge-two-${this.cast.crosser}`);
+    } else if (this.plan.bridge === 'stretch') {
       this.bridgeLength = 80;
       const node = new Container();
       node.addChild(new Graphics().circle(0, 0, 30).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line)));
@@ -568,6 +747,36 @@ class QuickTricks implements Game {
     return true;
   }
 
+  /**
+   * Two at once: a plank dropped over a gap that reaches it lies across; one too short is a miss, and if the plank it needs is lying
+   * across the other gap the pet says that one could move. A gap that already holds a plank sends a new one home for free.
+   */
+  private placePlankTwo(item: DragItem & { length: number }, x: number, y: number): boolean {
+    if (this.busy || this.waiting || Math.abs(y - this.bankY) > 160) return false;
+    const near = GAPS.map((_, g) => this.gap(g)).map(([lo, hi], g) => ({ g, d: Math.abs(x - (lo + hi) / 2), ok: x > lo - 60 && x < hi + 60 })).filter((c) => c.ok);
+    if (!near.length) return false;
+    const g = near.sort((a, b) => a.d - b.d)[0].g;
+    if (this.onGaps[g] !== null) return false;
+    const i = this.planks.indexOf(item);
+    const lengths = this.planks.map((p) => p.length);
+    if (!reachesGap(item.length, GAPS[g])) {
+      this.miss();
+      void this.ctx.say(bumpLine(lengths, i, g, this.onGaps) === 'move' ? 'tricks.plank-move' : 'tricks.too-short-choose');
+      return false;
+    }
+    this.onGaps[g] = i;
+    const [lo, hi] = this.gap(g);
+    void this.ctx.tw.to(item.node, { x: (lo + hi) / 2, y: this.bankY }, { duration: 0.2 });
+    if (this.onGaps.every((p) => p !== null)) {
+      for (const p of this.planks) p.drag.enabled = false;
+      void this.cross();
+    } else {
+      sfx.clunk();
+      void this.ctx.say('tricks.one-gap');
+    }
+    return true;
+  }
+
   /** The beetle trundles across, and the bridge takes a bow. */
   private async cross() {
     this.busy = true;
@@ -613,9 +822,11 @@ class QuickTricks implements Game {
 
   private drawGlow() {
     const g = this.glow.clear();
-    if (this.wrongs < 2 || this.waiting || this.finished) return;
+    // Nothing to light between tricks (the pieces are cleared before the next trick's are set).
+    if (!this.hinted || this.waiting || this.finished || !this.items.length) return;
     const a = 0.5 + 0.35 * Math.sin(this.clock * 6);
     const t = this.trick;
+    if (this.plan.two) return this.drawGlowTwo(g, a);
     if (t === 'umbrella') {
       const { top } = this.rainSpan;
       const offsets = friendsFor(this.plan);
@@ -631,6 +842,29 @@ class QuickTricks implements Game {
       if (this.plan.bridge === 'stretch') g.circle(r + 50, this.bankY, 60).fill({ color: 0xfff3a0, alpha: a });
       const right = this.planks.find((p) => reaches(p.length));
       if (right) g.roundRect(right.home.x - right.length / 2 - 14, right.home.y - 34, right.length + 28, 68, 20).fill({ color: 0xfff3a0, alpha: a });
+    }
+  }
+
+  /** Two at once: the glow lights the next unfinished target and the piece that goes there, wherever it is now. */
+  private drawGlowTwo(g: Graphics, a: number) {
+    const fill = { color: 0xfff3a0, alpha: a };
+    const t = this.trick;
+    if (t === 'umbrella') {
+      const move = nextLeaf(this.plan, this.up);
+      if (!move) return;
+      const leaf = this.leaves[move.leaf];
+      g.ellipse(this.cx + move.x, this.rainSpan.top - 40, leaf.leaf.width / 2 + 30, 40).fill(fill);
+      g.ellipse(leaf.node.x, leaf.node.y, leaf.leaf.width / 2 + 20, 60).fill(fill);
+    } else if (t === 'socks') {
+      const partner = this.socks.find((s) => s.node.visible && partnerOf(this.heldTwo, this.paired, s.sock) >= 0);
+      if (partner) g.roundRect(partner.home.x - 70, partner.home.y - 85, 150, 170, 24).fill(fill);
+    } else if (t === 'bridge') {
+      const move = nextPlank(this.planks.map((p) => p.length), this.onGaps);
+      if (!move) return;
+      const [lo, hi] = this.gap(move.gap);
+      g.roundRect(lo - 10, this.bankY - 30, hi - lo + 20, 60, 20).fill(fill);
+      const p = this.planks[move.plank];
+      g.roundRect(p.node.x - p.length / 2 - 14, p.node.y - 34, p.length + 28, 68, 20).fill(fill);
     }
   }
 
@@ -675,6 +909,7 @@ class QuickTricks implements Game {
     if (this.finished) return null;
     if (this.waiting) return { tap: { on: this.next } };
     if (this.busy || this.springing) return null;
+    if (this.plan.two) return this.autotouchTwo();
     switch (this.trick) {
       case 'umbrella': {
         const drop = leafDrop(this.plan, this.rainSpan.top);
@@ -688,6 +923,28 @@ class QuickTricks implements Game {
         if (this.handle) return { drag: { on: this.handle.node }, to: { on: this.layer, x: this.banks[0] + STRETCH_TO, y: this.bankY - 40 } };
         const plank = this.planks[plankToPlace(this.planks.map((p) => p.length))];
         return plank ? { drag: { on: plank.node }, to: { on: this.layer, x: this.cx, y: this.bankY } } : null;
+      }
+      default:
+        return null;
+    }
+  }
+
+  /** The ghost finger at Two at once: the wider leaf over the pair, then the small one over the friend on their own; each partner sock; the middle and long planks to their gaps. */
+  private autotouchTwo(): TouchIntent | null {
+    switch (this.trick) {
+      case 'umbrella': {
+        const move = nextLeaf(this.plan, this.up);
+        return move ? { drag: { on: this.leaves[move.leaf].node }, to: { on: this.layer, x: this.cx + move.x, y: this.rainSpan.top - 40 } } : null;
+      }
+      case 'socks': {
+        const sock = this.socks.find((s) => s.node.visible && partnerOf(this.heldTwo, this.paired, s.sock) >= 0);
+        return sock && this.monster ? { drag: { on: sock.node }, to: { on: this.monster, x: 0, y: -110 } } : null;
+      }
+      case 'bridge': {
+        const move = nextPlank(this.planks.map((p) => p.length), this.onGaps);
+        if (!move) return null;
+        const [lo, hi] = this.gap(move.gap);
+        return { drag: { on: this.planks[move.plank].node }, to: { on: this.layer, x: (lo + hi) / 2, y: this.bankY } };
       }
       default:
         return null;
@@ -726,12 +983,12 @@ export const quickTricks: GameModule = {
   skills: ['spatial-words', 'matching', 'length', 'problem-solving'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
-  describeLevel: (level) => level >= 4 ? encoreFor(level).name : planFor(level).name,
+  describeLevel: (level) => (level >= 4 && level <= 6 ? encoreFor(level).name : planFor(level).name),
   music: STYLES.stickers,
   touchDemo: true,
   coplayHint: 'Be the audience! Clap after each trick and ask {name} what happened.',
   offScreen: 'Put on a tiny show: keep a toy dry under a leaf, match a pair of socks, make a bridge from a book.',
   hubIcon: () => new WigglyIcon(showArt(1)),
   sticker: (seed) => showArt(seed),
-  create: (ctx) => ctx.level >= 4 ? new SecondShow(ctx) : new QuickTricks(ctx),
+  create: (ctx) => (ctx.level >= 4 && ctx.level <= 6 ? new SecondShow(ctx) : new QuickTricks(ctx)),
 };
