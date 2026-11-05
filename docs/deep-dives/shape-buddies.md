@@ -47,7 +47,7 @@ Two paper friends start plain in their parking spots. She taps one, taps **Flat*
 
 **Boundaries.** If a level reduces to "place ramps so a ball reaches a target", it is a [Chain Reaction](../GAMES.md#chain-reaction) level, not this game ([solo definition](../definitions/shape-buddies.md#purpose-and-overlap)). Welcome Ways ([engineering study](subjects/engineering-design.md#a-first-games-ladder-welcome-ways)) owns entrances shared by several users; Gadget Bench owns repairing an existing build (so *Fix one thing* is left out here); Habitat Helpers owns "include one piece per need". Shape Buddies keeps two friends, three shapes and one seed.
 
-**Long-term arc.** Pre-K: one rule changes per level, then two combine (levels 1–5). School: a construction that has several answers, then orientation (levels 5–6). Preschool: one friend, one job (an appended entry). Co-play: two players, one friend each, defined separately. Nothing past school; the game's ceiling is two friends and three shapes, by design.
+**Long-term arc.** Pre-K: one rule changes per level, then two combine (levels 1–5). School: a construction that has several answers, then orientation (levels 5–6). Preschool: one friend, one job (an appended entry). Co-play: two players, one friend each, taking turns ([level 8](#level-8-your-friend-my-friend-shared-roles-defined-2026-11-05)). Nothing past school; the game's ceiling is two friends and three shapes, by design.
 
 ## Experience and presentation
 
@@ -57,7 +57,7 @@ Two paper friends start plain in their parking spots. She taps one, taps **Flat*
 - **Art/feel example (slice 1):** three seeds and sprouts drawn with `Graphics` in `index.ts` beside `seedArt()`: a **bean** (a brown kidney ellipse) grows a curling vine with two round leaves; a **sunflower seed** (a striped grey teardrop) grows a stalk with a yellow `swatch.yellow` petal ring; an **acorn** (`wood` cap over a brown ellipse) grows a two-leaf oak twig. The pot tips, `sfx.sparkle()` plays as now, and the seeded kind is fixed per round.
 - **Reasoning versus precision:** drops resolve to the nearest dock within a generous radius; the trace ignores drop position. Reading is never needed: tools have pictures and spoken words.
 - **Supported completion:** Help and the second-failure glow lead to a caught seed in at most four edits at every level (a rule test). Planting is always her tap.
-- **Co-play:** today a co-play hint only. A shared-role mode (each player owns one friend by colour, with the one-player switch kept) is a separate definition, slice 6.
+- **Co-play:** today a co-play hint only. A shared-role mode (each player owns one friend by colour, with the one-player switch kept) is defined as [level 8 *Your friend, my friend*](#level-8-your-friend-my-friend-shared-roles-defined-2026-11-05) (slice 7).
 - **Needs a person:** whether a pre-K child chooses Turn without prompting (level 6); whether the ledge reads as "something under the cup" (level 5); whether a preschooler links "Cup" to "catch" without the bridge role (level 7); device speech for the new lines.
 
 ## Proposed ladder
@@ -84,6 +84,62 @@ Two paper friends start plain in their parking spots. She taps one, taps **Flat*
 
 Level 7 is the only appended easy entry (above). Pre-K's window becomes `order: [7, 1, 2, 3, 4, 5]` with `entryLevels: [7]`, so nothing is renumbered and a birthday from preschool lands on a level she can play. No level belongs between 1 and 2: level 2 already changes exactly one fact.
 
+### Level 8 *Your friend, my friend*: shared roles (defined 2026-11-05)
+
+Chunk 23's [one shared job](../FAMILY-EXPERIENCE.md#w3-one-shared-job), built on level 3. It follows the October 23 [second-seat contract](../archive/DECISIONS-2026-10-23.md#standing-rules) (S5: the second seat is anonymous and uncredited, only seat 1's play is read by `difficulty.ts`, and a role-swapped round counts as supported completion) and the [seat contract](../IDEAS.md#the-seat-contract). Like Secret Code's [*Swap seats*](secret-code.md#level-12-swap-seats-maker-and-breaker-defined-2026-11-05), the turns are sequential, so it needs no simultaneous input and no second profile.
+
+- **Fun action and learning.** Two people each own one paper friend and build level 3's spoon together: one makes the flat handle, the other the cup at the end. When a Try fails, the line names the role that broke, so the pair learns whose job needs changing ("your job, my job", the pre-K row of [playing together](../IDEAS.md#the-seat-contract)). The learning is level 3's: a shape's job depends on where it is used, and two shapes can make one tool.
+- **Why level 3.** Its wide gap needs both friends, so neither person is left without a job. Level 1 lets one person do both roles in their head, level 5 can be solved by one cup alone, level 6's Turn is school-only and a second new control, and level 7 has one friend. Level 3 also already has `buddies.together` for the payoff.
+- **Plan.** `PLANS[8] = { ...PLANS[3], shared: true }`: the same geometry, accepted set (Flat at the near half, Cup at the far half, either identity) and lines as level 3. `trace`, `guidance` and `failureLine` read it exactly as level 3. Pre-K and school. Preschool keeps level 7 only.
+- **Who is playing.** The round opens on two round buttons, at least 112 units each, side by side over the stream, clear of the parks, tools and the pet's corner. **Two of us** shows two figures (Secret Code's `twoArt()`, moved to `src/art/seats.ts` and imported by both games with no visual change). **Just me** shows one figure (a new `oneArt()` in the same file). `buddies.seats` asks the question aloud. The choice lasts for the round. The tools, friends and buttons stay hidden until she chooses.
+- **Who owns which friend.** The device cannot tell whose finger it is, so ownership is spoken and the turn is enforced. Friend 0 (the left park) is hers and moves first; friend 1 is the other seat's. `buddies.start8` says so without a seat-2 name: "{name}, your friend goes first. Your partner has the other one. Take turns: only the glowing friend can move." The friends keep their seeded colours, and the colour is the role word the [seat contract](../IDEAS.md#the-seat-contract) asks for.
+- **Turns (Two of us only).**
+  - Only the turn holder's friend can be selected, tapped or dragged (`DragHandle.enabled` off for the other, and a guard in `SeedRound.select`). It carries the colour ring that already marks the selected friend; the other friend is dimmed to alpha 0.55.
+  - Tools act on the selected friend, as now, so a shape change always goes to the turn holder. She can try shapes freely; **a shape change never passes the turn**.
+  - **Dropping the friend passes the turn**, on a dock or back in its park, changed or not. Dropping it back where it was is how a player says "mine is fine".
+  - **Try** can be pressed on either turn. After a failed Try the turn goes to `guidance(state).friend`: the friend whose role the line just named, or the parked friend. Help does the same: it glows the useful friend, tool and dock, and hands the turn to that friend.
+  - Undo restores the construction and the turn holder from before the edit.
+  - Tapping or picking up the dimmed friend wobbles it and repeats the turn line. It is not a miss, a boing or a hint.
+  - Each new turn says the holder's colour: `buddies.turnTeal`, `buddies.turnPurple`, `buddies.turnPink` or `buddies.turnBlue` ("The teal friend's turn."). These are slot-free, so they can get clips.
+  - After a catch, either person may tap the pot. Replay returns the turn to her friend.
+- **Just me** (the solo switch kept; nothing new is built for it). She switches between both friends exactly as on level 3: no turns, no dimming, no turn lines. A child who steps up into 8 alone plays level 3 again, so adaptation never strands her in a mode that needs a second person.
+- **Accounting.** Misses stay 0 (every Try is an experiment). Hints stay per role, at most one per role.
+  - `SeedRound` records which friend each hint was charged to: the friend `guidance` names when the hint is given.
+  - A **Two of us** round finishes through a pure `sharedResult(twoSeats, hintsOnHers)` in `logic.ts`. It returns `{ misses: 0, hints: Math.max(hintsOnHers, 1) }`. A hint on the partner's friend never counts against her, and the round is never smooth, so a grown-up's play cannot step her up. Two hints on her own friend still step her down. This is the same rule as Secret Code's `swapResult`. Lift it to a shared helper only when a third game needs it.
+  - **Just me** passes the round's hints unchanged.
+  - There is no shell change and no new `RoundResult` field.
+- **Placement.** Pre-K `order` becomes `[7, 1, 2, 3, 8, 4, 5]` with max 8. School gains `order: [1, 2, 3, 8, 4, 5, 6]` with max 8; level 7 stays out of school.
+  - Level 8 comes right after level 3 because it plays level 3's spoon. A two-seat mode is not harder than level 4, and a solo round at the top would be easier than the level below it.
+  - It is not an entry level (`entryLevels` stays `[7]`). A pin or the how-to card's arrows take a family straight to it.
+  - No ID is renumbered. Not on the couch. The "two seats" icon mark (S8) is shell work for its own slice.
+- **Voice** (7 new `buddies.*` lines):
+  - `buddies.seats`: "Who is building with you? Tap the two friends to build with someone, or tap one friend to build alone."
+  - `buddies.start8` (above)
+  - `buddies.turnTeal`, `buddies.turnPurple`, `buddies.turnPink` and `buddies.turnBlue`
+  - `buddies.shared`, spoken once after planting in Two of us: "You each did a job, and together it worked!"
+
+  Level 3's `buddies.start3`, `joinPath`, `joinSlope`, `joinShort`, `joinCup`, `together`, `plant` and `done` are reused; Just me speaks `buddies.start3`. The lines say "your partner" and never name the second seat.
+- **Grown-up text.** `DESCRIPTIONS[8]`: "Your friend, my friend: two people take one friend each and take turns to build level 3's spoon (or one player switches between both)". A `{ from: 8, to: 8 }` how-to step: "Two of us: one friend each; only the glowing friend moves, and dropping it passes the turn. Just me: switch between both friends." The co-play line gains: "On Your friend, my friend, take one friend each."
+- **Bot (`autotouch`).** It taps **Two of us**, then follows `guidance` under the turn lock: select, tool, drag to the dock (which passes the turn), and Try. If `guidance` names the friend that does not hold the turn, it taps Try, which hands the turn over. From the start that never happens: Flat then the near half (turn passes), Cup then the far half (turn passes), Try. The turns are sequential, so one ghost finger demonstrates both seats; the seat contract's two-finger demo gap does not arise here.
+- **Rule tests.**
+  - In Two of us, `select`, `edit` and a drag of the friend without the turn are refused, and in Just me they never are.
+  - A shape change never passes the turn; every drop does, changed or not.
+  - After a failed Try, and after Help, the turn holder is `guidance(state).friend`. Undo restores the previous turn holder.
+  - Following `guidance` under the turn rule from `initial()` reaches caught in four edits and one Try with no hand-off Try. From every construction, the bot reaches caught within two Tries.
+  - `sharedResult` is never smooth with two seats, ignores hints charged to friend 1, and is unchanged for Just me. A round charges at most two hints.
+  - `PLANS[8]` accepts exactly level 3's set.
+  - The pre-K and school `order` tests list 8 right after 3, preschool excludes it, and it is not an entry level.
+  - The seat buttons are at least 112 units and overlap nothing in `layout()`, in portrait and landscape.
+- **Check tier: new interaction.**
+  - Typecheck and the unit tests above.
+  - One scripted play of level 8 at pre-K choosing **Two of us**: one tap on the dimmed friend (a wobble, no miss), a failed Try with a plain far half that hands the turn to friend 1, then to the sticker. Confirm the finished result has `hints >= 1`.
+  - One portrait screenshot of the seat question.
+  - `fingerdemo` at 8.
+  - One build for the voice lines and the moved art.
+  - Secret Code's level 12 seat buttons share the moved art, so run one filtered Secret Code regression play of level 12 to its seat question. Do not run its full suite.
+  - **Not established by the check:** whether two people at one iPad take turns this way without a grown-up policing it, and whether a pre-K child hears "your partner" as the other person. Both go to [DEVICE-CHECKS](../DEVICE-CHECKS.md) with the build.
+- **Expected files:** `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/seats.ts` (new), `src/games/secret-code/index.ts` (the import only), `src/content/voice-script.ts`, `src/content/howto.ts`, and docs.
+
 ### Left out on purpose
 
 - **Fix one thing** (a built construction that fails once, then she changes one part): repair belongs to Gadget Bench's *Fix-It Day* in the engineering study.
@@ -102,7 +158,8 @@ None blocking. Under the [October 23 delegation](../archive/DECISIONS-2026-10-23
 3. **Level 5 A cup on the ledge (batch shape-buddies 3).** Built 2026-11-05 ([PR #1248](https://github.com/rjdunlap/neo/pull/1248); [checks](../VERIFICATION.md#2026-11-05--shape-buddies-level-5-a-cup-on-the-ledge-shape-buddies-batch-3)); after batch 2 (shares `PLANS`, `LEVELS` and the joined-line changes). *Check:* new-rule tier: typecheck, rule tests (both families, guidance keeps a working friend, the carry from either dock), one play of level 5 solved with the cup on the ledge and a replay solved with bridge and cup, one portrait screenshot of the ledge, `fingerdemo` at 5, one build.
 4. **Level 6 Which way round? (batch shape-buddies 4).** Built 2026-11-05 ([PR #1253](https://github.com/rjdunlap/neo/pull/1253); [checks](../VERIFICATION.md#2026-11-05--shape-buddies-level-6-which-way-round-shape-buddies-batch-4)); after batch 3. *Check:* new-interaction tier: typecheck, unit tests including the four-view layout with Turn, one scripted play with an unturned slope then Turn to the sticker, one portrait screenshot of the mirrored stream, `fingerdemo` at 6, one build.
 5. **Level 7 One friend, one job, the preschool opening (batch shape-buddies 5).** Built 2026-11-05 ([PR #1256](https://github.com/rjdunlap/neo/pull/1256); [checks](../VERIFICATION.md#2026-11-05--shape-buddies-level-7-one-friend-one-job-shape-buddies-batch-5)); after batch 2 (shares `LEVELS`). *Check:* new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests, one play of level 7 at preschool with a Flat friend at the catch first, `fingerdemo` at 7, the preschool Tinker Lab page screenshot.
-6. **Define Shape Buddies shared roles** (docs only; status `define`): two players each own one friend by colour on one iPad, who may tap or drag which friend, the spoken turn prompts, the solo switch kept, accounting and check tier ([IDEAS](../IDEAS.md) Two Friends and the family-experience row).
+6. **Define Shape Buddies shared roles** (docs only; chunk 23). Defined 2026-11-05: [level 8 *Your friend, my friend*](#level-8-your-friend-my-friend-shared-roles-defined-2026-11-05).
+7. **Level 8 Your friend, my friend (batch shape-buddies 6),** after batch shape-buddies 5 (built; shares `LEVELS` and the pre-K `order`). *Check:* new-interaction tier as stated in [its definition](#level-8-your-friend-my-friend-shared-roles-defined-2026-11-05).
 
 ## What was built in this session
 
