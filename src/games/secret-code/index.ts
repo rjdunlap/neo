@@ -10,8 +10,10 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
+import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { courseBest, courseDoors, courseMinimum, isCodeCourse } from './course';
 import { contradictsClues, crossedOut, detectiveDoor, demoCode, doorKinds, ignoredClues, makeCode, nextMark, nextMove, petTry, planFor, rowsThatFit, score, STONES, suggestion, visibleRows, wrongMarks, type CodePlan, type DoorKind, type Guess, type Mark } from './logic';
 
 const LEVELS: BandLevels = {
@@ -87,7 +89,8 @@ function keyArt(): Graphics {
 }
 
 class SecretCode implements Game {
-  readonly plan: CodePlan;
+  /** The level's plan; on a couch course, the plan of the door in play (doors there differ). */
+  plan: CodePlan;
   code: number[] = [];
   guess: (number | null)[] = [];
   history: Guess[] = [];
@@ -113,6 +116,15 @@ class SecretCode implements Game {
   private readonly doors: DoorKind[];
   /** Couch face-off score: every key turned across the round's doors (lower is better). */
   guesses = 0;
+  /** Couch challenge course: frozen doors in a row, scored by turns of the key. Null in ordinary play, where codes are drawn. */
+  private readonly course: { doors: { plan: CodePlan; code: number[] }[]; minimum: number; par: number[] } | null = null;
+  private done: number[] = [];
+  /** Turns already spent on the door we are resuming, so leaving and coming back cannot erase them. */
+  private carry = 0;
+  private carried = 0;
+  private doorTries = 0;
+  private assisted = false;
+  private courseLine = '';
   // Couch play: a ring over the stone tray.
   private trayFocus = 0;
   private couchOn = false;
@@ -135,8 +147,18 @@ class SecretCode implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
+    const run = ctx.couch?.course;
+    if (run && isCodeCourse(run.id)) {
+      const doors = courseDoors(run.id);
+      this.course = { doors, minimum: courseMinimum(run.id), par: courseBest(run.id) };
+      this.index = run.resume.board - 1;
+      this.done = run.resume.done.slice();
+      this.carry = run.resume.attempts;
+      this.assisted = run.resume.assisted;
+      this.plan = doors[Math.max(0, this.index + 1)]?.plan ?? doors[0].plan;
+    }
     // Before any code is drawn; it reads a clone, so the codes are the same with or without it.
-    this.doors = doorKinds(ctx.rng, this.plan.codes);
+    this.doors = doorKinds(ctx.rng, this.course?.doors.length ?? this.plan.codes);
     this.key = new RoundButton(keyArt(), swatch.white, 56, () => void this.tryKey());
     this.ready = new RoundButton(checkArt(), swatch.white, 56, () => void this.madeIt());
     this.show = new RoundButton(arrowArt(), swatch.white, 56, () => void this.showPet());
@@ -160,7 +182,9 @@ class SecretCode implements Game {
         ctx.stage.addChild(d);
       }
     }
-    for (let c = 0; c < this.plan.colors; c++) {
+    // A course's doors may use fewer colors than its widest; the stones a door does not use are hidden (`resize`).
+    const colors = Math.max(this.plan.colors, ...(this.course?.doors.map((d) => d.plan.colors) ?? []));
+    for (let c = 0; c < colors; c++) {
       const b = stoneArt(c, 46);
       b.hitArea = new Circle(0, 0, 56);
       onTap(b, () => this.add(c), { cooldown: 150 });
@@ -197,8 +221,11 @@ class SecretCode implements Game {
     this.mine.children.forEach((s, i) => s.position.set(i === 0 ? this.view.w / 2 - 40 : this.slotX(i - 1), v.h - 90));
     this.bubble.position.set(x0 + w + 60, y - 150);
     this.drawGlow();
-    const xs = spread(this.tray.length, 190, v.w - 110, 124);
-    this.tray.forEach((b, i) => b.position.set(xs[i], v.h - 90));
+    const xs = spread(this.plan.colors, 190, v.w - 110, 124);
+    this.tray.forEach((b, i) => {
+      b.visible = i < this.plan.colors;
+      if (b.visible) b.position.set(xs[i], v.h - 90);
+    });
     this.drawCrosses();
     this.layoutPast();
   }
@@ -233,7 +260,7 @@ class SecretCode implements Game {
     // Be the door is touch only (couch play never plays level 9).
     if (this.busy || this.finished || this.plan.maker) return;
     for (const p of input.players) {
-      if (p.direction === 0) this.trayFocus = Math.min(this.tray.length - 1, this.trayFocus + 1);
+      if (p.direction === 0) this.trayFocus = Math.min(this.plan.colors - 1, this.trayFocus + 1);
       else if (p.direction === 2) this.trayFocus = Math.max(0, this.trayFocus - 1);
       if (p.undo) {
         const last = this.guess.map((g) => g !== null).lastIndexOf(true);
@@ -282,9 +309,17 @@ class SecretCode implements Game {
     this.index++;
     this.wrongs = 0;
     this.hinted = false;
-    if (this.index >= this.plan.codes) return void this.finale();
+    if (this.index >= (this.course?.doors.length ?? this.plan.codes)) return void this.finale();
     if (this.plan.maker) return this.startMaking();
-    const door = this.plan.detective ? detectiveDoor(this.plan, this.ctx.rng) : { code: makeCode(this.plan, this.ctx.rng), history: [] };
+    const frozen = this.course?.doors[this.index];
+    if (frozen) {
+      this.plan = frozen.plan;
+      this.trayFocus = Math.min(this.trayFocus, this.plan.colors - 1);
+      this.carried = this.carry;
+      this.carry = 0;
+      this.doorTries = 0;
+    }
+    const door = frozen ? { code: [...frozen.code], history: [] } : this.plan.detective ? detectiveDoor(this.plan, this.ctx.rng) : { code: makeCode(this.plan, this.ctx.rng), history: [] };
     this.code = door.code;
     this.history = door.history;
     this.past.removeChildren().forEach((c) => c.destroy({ children: true }));
@@ -305,6 +340,10 @@ class SecretCode implements Game {
     }
     this.resize(this.view);
     this.busy = false;
+    if (this.course) {
+      this.report();
+      return this.courseInstruction();
+    }
     if (this.index > 0) return;
     if (this.plan.oneSlot) return this.ctx.instruct('code.oneslot');
     if (this.plan.detective) return this.ctx.instruct('code.detective');
@@ -314,7 +353,7 @@ class SecretCode implements Game {
 
   /** Tap a stone in the tray: it goes into the first empty slot. */
   private add(color: number) {
-    if (this.busy || this.finished || this.phase === 'mark') return;
+    if (this.busy || this.finished || this.phase === 'mark' || color >= this.plan.colors) return;
     if (crossedOut(this.plan, this.history).has(color)) return void this.crossed(color);
     const i = this.guess.indexOf(null);
     if (i < 0) {
@@ -346,6 +385,8 @@ class SecretCode implements Game {
     }
     this.busy = true;
     this.guesses++;
+    this.doorTries++;
+    this.report();
     const stones = this.guess as number[];
     // Only the tries still on screen count: a mark that has scrolled away is never a miss.
     const onScreen = visibleRows(this.shown, rowsThatFit(this.doorY()));
@@ -369,6 +410,10 @@ class SecretCode implements Game {
     }
     const green = marks.filter((m) => m === 'green').length;
     if (green === this.plan.slots) {
+      if (this.course) {
+        this.done.push(this.tries);
+        this.report(true);
+      }
       await this.ctx.tw.wait(0.3);
       badges.forEach((b) => b.destroy());
       return void this.open();
@@ -418,6 +463,8 @@ class SecretCode implements Game {
   private hint() {
     this.hinted = true;
     this.hints++;
+    this.assisted = true;
+    this.report();
     this.showIdea();
     void this.ctx.say(this.plan.oneSlot ? 'code.onehint' : 'code.hint');
   }
@@ -648,9 +695,56 @@ class SecretCode implements Game {
     await this.ctx.tw.to(this.leaf, { alpha: 1 }, { duration: 0.35 });
     this.ctx.particles.burst(this.view.w / 2, y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 24, speed: [150, 380], gravity: 0, life: [0.6, 1] });
     this.ctx.pet.cheer();
-    await this.ctx.say(this.plan.maker ? 'code.cracked' : 'code.open');
-    await this.ctx.tw.wait(0.5);
+    // A course moves straight on after a short score; ordinary play praises.
+    if (this.course) await this.doorScore();
+    else {
+      await this.ctx.say(this.plan.maker ? 'code.cracked' : 'code.open');
+      await this.ctx.tw.wait(0.5);
+    }
     await this.next();
+  }
+
+  /** A course's doors differ: say the rule whenever it changes (yellow marks, then a color used twice). */
+  private courseInstruction() {
+    const line = this.plan.repeats ? 'code.repeat' : 'code.yellow';
+    if (line === this.courseLine) return;
+    this.courseLine = line;
+    return this.ctx.instruct(line);
+  }
+
+  /** Turns of the key on this door, those from before a reload included: what a course counts. */
+  private get tries() {
+    return this.carried + this.doorTries;
+  }
+
+  /** Hand a course's numbers to the shell. `finished` means the door just opened, so none of its tries are "in progress". */
+  private report(finished = false) {
+    const run = this.ctx.couch?.course;
+    if (!run || !this.course) return;
+    run.progress({
+      board: this.index,
+      boards: this.course.doors.length,
+      done: this.done.slice(),
+      attempts: finished ? 0 : this.tries,
+      par: this.course.par[Math.min(this.index, this.course.par.length - 1)],
+      minimum: this.course.minimum,
+      assisted: this.assisted,
+    });
+  }
+
+  /** The score for the door just opened, over it for a moment. */
+  private async doorScore() {
+    const par = this.course!.par[this.index], total = this.course!.doors.length, n = this.done[this.index];
+    const tries = `${n} ${n === 1 ? 'try' : 'tries'}`;
+    const text = n < par ? `Door ${this.index + 1} of ${total}: ${tries}, under par (${par})!` : n === par ? `Door ${this.index + 1} of ${total}: ${tries}, right on par!` : `Door ${this.index + 1} of ${total}: ${tries} (par ${par})`;
+    const note = label(text, 34, ink);
+    note.position.set(this.view.w / 2 - 40, this.doorY() - 130);
+    note.alpha = 0;
+    this.ctx.stage.addChild(note);
+    await this.ctx.tw.to(note, { alpha: 1 }, { duration: 0.2 });
+    await this.ctx.tw.wait(1.2);
+    await this.ctx.tw.to(note, { alpha: 0 }, { duration: 0.25 });
+    note.destroy();
   }
 
   private async finale() {

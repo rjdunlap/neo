@@ -5,7 +5,7 @@ import { couchDefaults, repairCouch } from './party';
 import { canWatchRoute, shelf, shelfEntry, standing } from './shelf';
 
 /** Finish a run of a real course: every part takes the given number of tries. */
-function finish(save: ReturnType<typeof couchDefaults>, id: 'practice' | 'ponds' | 'clouds', player: 0 | 1, tries: number[], assisted = false) {
+function finish(save: ReturnType<typeof couchDefaults>, id: 'practice' | 'ponds' | 'clouds' | 'codedoors', player: 0 | 1, tries: number[], assisted = false) {
   const spec = courseSpec(id), course = courseOf(save, spec);
   startRun(course, player, 11);
   noteProgress(course, spec, 11, { slides: tries, attempts: 0, assisted });
@@ -16,7 +16,7 @@ describe('the puzzle shelf', () => {
   it('lists every puzzle at once, gentlest first, with nothing locked and nothing played', () => {
     const rows = shelf(couchDefaults());
     expect(rows.map(r => r.id)).toEqual([...COURSE_IDS]);
-    expect(rows.map(r => r.id)).toEqual(['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing', 'sunbeams']);
+    expect(rows.map(r => r.id)).toEqual(['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing', 'sunbeams', 'codedoors']);
     for (const row of rows) {
       expect(row).toMatchObject({ best: null, helped: false, over: null, runs: 0, inProgress: false });
       expect(row.minimum).toBe(courseInfo(row.id).minimum);
@@ -36,6 +36,17 @@ describe('the puzzle shelf', () => {
     // A slower run later never worsens the best.
     finish(save, 'practice', 0, [9, 9, 9, 9, 9]);
     expect(shelfEntry(save, 'practice')).toMatchObject({ best: 18, over: 0, runs: 3 });
+  });
+
+  it("says under, on or above a reference par, never 'the fewest possible', on a course whose par can be beaten", () => {
+    const save = couchDefaults();
+    expect(finish(save, 'codedoors', 0, [2, 3, 3, 4, 4])?.earned).toEqual(['finish', 'minimum']);
+    expect(standing(shelfEntry(save, 'codedoors'))).toBe('16 tries · right on par (16)');
+    finish(save, 'codedoors', 0, [1, 2, 3, 3, 4]);
+    expect(standing(shelfEntry(save, 'codedoors'))).toBe('13 tries · 3 under par (16)');
+    const other = couchDefaults();
+    finish(other, 'codedoors', 0, [3, 3, 4, 4, 5]);
+    expect(standing(shelfEntry(other, 'codedoors'))).toBe('19 tries · 3 above par (16)');
   });
 
   it('counts the launches of the cloud course in launches, and says when the best needed help', () => {

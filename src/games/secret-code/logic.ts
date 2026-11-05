@@ -160,6 +160,18 @@ export function nextMove(plan: CodePlan, history: Guess[], code: number[], guess
   return { stone: (candidates(plan, history)[0] ?? code)[empty] };
 }
 
+/** How many turns of the key the reasoning player (`nextMove`) takes to open this code: a couch course's par for the door. */
+export function solverTries(plan: CodePlan, code: number[]): number {
+  const history: Guess[] = [];
+  for (;;) {
+    const guess: (number | null)[] = Array(plan.slots).fill(null);
+    for (let move = nextMove(plan, history, code, guess); 'stone' in move; move = nextMove(plan, history, code, guess)) guess[guess.indexOf(null)] = move.stone;
+    const marks = score(code, guess as number[], plan.yellow);
+    history.push({ stones: guess as number[], marks });
+    if (marks.every((m) => m === 'green')) return history.length;
+  }
+}
+
 /** Build a seeded detective door whose shown clues (the plan's `clues`, all visible together) leave exactly one code.
  * Pick the clue that leaves the fewest candidates for this code; ties use the seeded order. A code the greedy
  * clues cannot pin down within the cap is redrawn from the same generator, so the door stays seeded.

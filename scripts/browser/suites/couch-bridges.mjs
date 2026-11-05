@@ -51,7 +51,7 @@ async function couchBridges() {
   await enter();
   await page.locator('[data-key="players-one"]').click(); await page.waitForTimeout(450);
   await click('Puzzle shelf'); await screenIs('courses');
-  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing', 'sunbeams']);
+  assert.deepEqual(await page.locator('[data-course]').evaluateAll(n => n.map(x => x.dataset.course)), ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing', 'sunbeams', 'codedoors']);
   assert.equal(await page.locator('[data-course="bridges"] small').innerText(), 'Not finished yet · par 120');
   assert.equal(await page.locator('[data-course="joined"] small').innerText(), 'Not finished yet · par 84');
   await page.locator('[data-course="bridges"]').click(); await screenIs('course');

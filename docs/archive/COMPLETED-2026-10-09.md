@@ -2863,7 +2863,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--secret-code-
 
 [PR #1243](https://github.com/rjdunlap/neo/pull/1243), `claude/secret-code-bigger-detective`: [dive slice 5](../deep-dives/secret-code.md#build-slices-in-order). Four slots, five colors, no repeats, three seeded shown clues (greedy; exactly three on all 300 tested seeds; the cap is three so every row fits at `doorY` 430) that leave one code. The miss rule is level 7's (`contradictsClues`, one miss per inconsistent try), faint stones after two misses or once history including the clues reaches `slots + 4` (five own tries), and the clue rows never fade. `PLANS` is now keyed by level ID (9 and 10 reserved); school spans 2–11 with `order` 2–8 then 11. No new voice lines (`code.detective`, `code.contradiction` reused). The how-to card scopes level 8's step and note `to: 8` and adds a level 11 step and note. Rule tests: 12 in secret-code (new: level-11 uniqueness and a time bound under 250 ms over 300 seeds, the bot opens it first try, clue rows fit at 430). The woods case for Secret Code now covers level 11. Couch unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--secret-code-level-11-a-bigger-detective-door-secret-code-batch-5).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--secret-code-level-11-a-bigger-detective-door-secret-code-batch-5).
 
 ## Secret Code level 9 Be the door (secret-code batch 3, 2026-11-05)
 
@@ -2900,6 +2900,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--read--do-levels-89-m
 [PR #1249](https://github.com/rjdunlap/neo/pull/1249), `claude/secret-code-one-slot`: [dive slice 4](../deep-dives/secret-code.md#build-slices-in-order). Plan 10: one slot, three stones, yes/no marks, three doors (`oneSlot`). A gray crosses that stone out: it dims in the tray under a small gray cross. Tapping a crossed-out stone is the level's only miss (the stone wobbles, a boing and `code.crossed`, and it stays in the tray); after two such misses on a door comes one hint: the hidden stone glows in the tray, a faint stone shows in the slot and `code.onehint` plays (the glow is cleared when the round ends). A gray try says `code.notthis`; the first instruction is `code.oneslot`. Secret Code now has a preschool band: `order` [10, 1] (min 1, max 10), `entryLevels` [10]; a carried 10 lands on 1 at pre-K and on 2 at school; `planFor` falls back below 1 to 1 and above 11 to 11. The how-to card has level-10 step, finish and note entries and the yellow step now reads 3–9 and 11. Couch unchanged (`level(stop)` still 4–6). Secret Code shows on the preschool Puzzle Peaks page. Open: whether a three-to-four-year-old reads the gray cross without the card (DEVICE-CHECKS).
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--secret-code-level-10-one-slot-secret-code-batch-4).
+
+## Secret Code couch course The Code Doors (secret-code batch 6, 2026-11-05)
+
+[PR #1255](https://github.com/rjdunlap/neo/pull/1255), `claude/secret-code-code-doors`: [dive slice 6](../deep-dives/secret-code.md#build-slices-in-order). `src/games/secret-code/course.ts` freezes five codes (levels 4, 4, 5, 5, 6; the four-colour door hides its fifth stone), each door played under its own level's plan. Par is computed by the fixed reference solver `solverTries` (`nextMove` until the door opens): 2, 3, 3, 4, 4, so 16. A turn of the key is a try, taking a stone back is free; the game's hint marks the run helped; a reload restarts the door and keeps the tries. Badges Finished and On par. New `CourseInfo.reference` flag so the shelf, course page, HUD and result say par (under, on or above) for a par that can be beaten. Voice line `couch.course.codedoors`; suite `couchcodedoors`.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--secret-code-couch-course-the-code-doors-secret-code-batch-6).
 
 ## Sudoku Garden, Fill marks on big beds (batch sudoku-garden 2, 2026-11-05)
 
