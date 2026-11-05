@@ -99,7 +99,7 @@
 
 ## Shape Buddies (dive, 2026-11-01; proposed, levels not yet built)
 
-- [ ] Once level 6 is built: does a pre-K child choose Turn without prompting?
+- [ ] Level 6 is built (2026-11-05, school only): does a school child choose Turn without prompting, and does the unturned-slope line `buddies.turnSlope` make sense to her?
 - [ ] Level 5 is built (2026-11-05): does the ledge read as "something under the cup"?
 - [ ] Once level 7 is built: does a preschooler link "Cup" to "catch" without the bridge role?
 - [ ] On the iPad: does device speech read the new Shape Buddies lines clearly?

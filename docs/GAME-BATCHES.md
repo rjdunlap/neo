@@ -1535,6 +1535,8 @@ Proof: new-rule tier: typecheck, rule tests (both families, guidance keeps a wor
 
 ### shape-buddies 4: Level 6 Which way round
 
+Built 2026-11-05, [PR #1253](https://github.com/rjdunlap/neo/pull/1253); [build note](archive/COMPLETED-2026-10-09.md#shape-buddies-level-6-which-way-round-shape-buddies-batch-4-2026-11-05). No longer eligible for dispatch.
+
 - **`shape-buddies`, Level 6 *Which way round?* (dive slice 4)**, after batch shape-buddies 3 (new interaction): the stream runs the other way and she presses a new Turn button so a slope faces down toward the low bank; school only. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
 
 Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.

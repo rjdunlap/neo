@@ -139,7 +139,7 @@ describe('Shape Buddies', () => {
         for (; n < 4; n++) {
           const g = guidance(s, level); if (!g) break;
           expect(g.friend).toBeGreaterThanOrEqual(0);
-          s.friends[g.friend] = { shape: g.shape, place: g.dock };
+          s.friends[g.friend] = { shape: g.shape, place: g.dock, facing: g.facing ?? s.friends[g.friend].facing };
         }
         expect(trace(s, level)).toBe('caught');
       }
@@ -276,6 +276,71 @@ describe('Shape Buddies', () => {
     it('keeps level 1 geometry, so every box stays separate and at least 100 units', () => {
       for (const [w, h] of [[1024, 768], [768, 1024], [844, 390], [750, 369]]) {
         const v = computeView(w, h); expect(layout(v.w, v.h, 5)).toEqual(layout(v.w, v.h, 1));
+      }
+    });
+  });
+  describe('level 6, which way round', () => {
+    const PLACES: Place[] = ['park', 'bridge', 'receiver'];
+    const FACINGS = [1, -1] as const;
+    const all = function* () {
+      for (const a of SHAPES) for (const b of SHAPES) for (const p of PLACES) for (const q of PLACES) for (const fa of FACINGS) for (const fb of FACINGS) {
+        if (p !== 'park' && p === q) continue;
+        const s = initial(); s.friends = [{ shape: a, place: p, facing: fa }, { shape: b, place: q, facing: fb }]; yield s;
+      }
+    };
+    it('mirrors level 2: exactly a slope turned toward the low bank plus a cup catches, in either identity; an unturned slope says Turn', () => {
+      let caught = 0;
+      for (const s of all()) {
+        const gap = s.friends.find(f => f.place === 'bridge'), end = s.friends.find(f => f.place === 'receiver');
+        const good = gap?.shape === 'slope' && gap.facing === -1;
+        expect(trace(s, 6)).toBe(!good ? 'bridge' : end?.shape === 'scoop' ? 'caught' : 'receiver');
+        expect(failureLine(s, 6)).toBe(good ? end?.shape === 'scoop' ? null : 'buddies.cup'
+          : gap?.shape === 'slope' ? 'buddies.turnSlope' : gap?.shape === 'flatten' ? 'buddies.stepFlat' : 'buddies.stepBridge');
+        if (trace(s, 6) === 'caught') { caught++; expect(catcher(s, 6)).toBe('receiver'); }
+        // Facing never matters before level 6, where Turn is not offered: a level-2 answer still needs a slope as drawn.
+        if (s.friends.every(f => f.facing === 1)) expect(trace(s, 6) === 'caught').toBe(false);
+      }
+      // A turned slope and a cup in either identity, with the cup facing either way.
+      expect(caught).toBe(2 * 2);
+    });
+    it('turning twice restores the friend, a turn is undoable, free, and offered only at level 6', () => {
+      const r = new SeedRound(6); r.edit('slope', 'bridge'); const before = copy(r.state);
+      expect(r.turn()).toBe(true); expect(r.state.friends[0].facing).toBe(-1);
+      expect(r.turn()).toBe(true); expect(r.state).toEqual(before);
+      r.turn(); expect(r.undo()).toBe(true); expect(r.state).toEqual(before);
+      expect([r.misses, r.hints]).toEqual([0, 0]);
+      for (const level of [1, 2, 3, 4, 5]) { const o = new SeedRound(level); expect(o.turn()).toBe(false); expect(o.state).toEqual(initial()); }
+    });
+    it("guidance from an unturned slope at the gap is that friend's Turn, and from any state reaches caught within four edits", () => {
+      const s = initial(); s.friends = [{ shape: 'slope', place: 'bridge', facing: 1 }, { shape: 'scoop', place: 'receiver', facing: 1 }];
+      expect(guidance(s, 6)).toEqual({ friend: 0, shape: 'slope', dock: 'bridge', facing: -1 });
+      expect(guidance(initial(), 6)).toEqual({ friend: 0, shape: 'slope', dock: 'bridge', facing: -1 });
+      for (const t of all()) {
+        for (let n = 0; n < 4; n++) { const g = guidance(t, 6); if (!g) break; t.friends[g.friend] = { shape: g.shape, place: g.dock, facing: g.facing ?? t.friends[g.friend].facing }; }
+        expect(trace(t, 6)).toBe('caught');
+      }
+    });
+    it('an unturned slope charges one hint for the bridge after two Tries, never a miss, and a Turn finishes it', () => {
+      const r = new SeedRound(6); r.edit('slope', 'bridge'); r.select(1); r.edit('scoop', 'receiver');
+      for (let n = 0; n < 2; n++) { expect(r.trySeed()).toBe('bridge'); r.settle('bridge'); }
+      expect(r.hints).toBe(1); r.select(0); r.turn();
+      expect(r.trySeed()).toBe('caught'); r.settle('caught');
+      expect(r.carry()).toBe(true); expect(r.finish()).toBe(true); expect([r.misses, r.hints]).toEqual([0, 1]);
+    });
+    it('mirrors the stream with Turn as a fourth button: every box separate, at least 100 units and clear of the shell corners in four views', () => {
+      for (const [w, h] of [[1024, 768], [768, 1024], [844, 390], [750, 369]]) {
+        const v = computeView(w, h), two = layout(v.w, v.h, 2), l = layout(v.w, v.h, 6), left = (v.w - 1024) / 2;
+        expect([l.bridge.x - left, l.receiver.x - left, l.pot.x - left, l.bridge.y]).toEqual([690, 460, 220, two.bridge.y]);
+        expect([l.receiver.x - l.bridge.x, l.pot.x - l.bridge.x]).toEqual([two.bridge.x - two.receiver.x, two.bridge.x - two.pot.x]);
+        expect(l.buttons).toHaveLength(4); expect(two.buttons).toHaveLength(3);
+        const boxes = [{ ...l.bridge, w: 180, h: 110 }, { ...l.receiver, w: 110, h: 110 }, { ...l.pot, w: 120, h: 120 }, ...l.parks.map(p => ({ ...p, w: 140, h: 110 })), ...l.tools.map(p => ({ ...p, w: 130, h: 110 })), ...l.buttons.map(p => ({ ...p, w: 150, h: 110 }))];
+        for (const [i, a] of boxes.entries()) {
+          expect(a.x - a.w / 2).toBeGreaterThan(150); expect(a.x + a.w / 2).toBeLessThan(v.w);
+          expect(a.y - a.h / 2).toBeGreaterThan(100); expect(a.y + a.h / 2).toBeLessThan(v.h);
+          for (const b of boxes.slice(i + 1)) expect(Math.abs(a.x - b.x) >= (a.w + b.w) / 2 || Math.abs(a.y - b.y) >= (a.h + b.h) / 2).toBe(true);
+        }
+        // Drop radii (90 at the bridge, 70 at the catch) never overlap.
+        expect(l.bridge.x - l.receiver.x).toBeGreaterThan(160);
       }
     });
   });
