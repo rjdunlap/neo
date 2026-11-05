@@ -178,6 +178,8 @@ class TreasureMap implements Game {
   /** Level 8: outline cards already tried, so a second tap repeats the reason and is not a second miss. */
   private readonly tried = new Set<number>();
   private raftArt: Container | null = null;
+  /** Level 8: a pulsing ring around the right outline card once the hint is on in the cards part. */
+  private readonly cardGlow = new Graphics();
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -212,6 +214,8 @@ class TreasureMap implements Game {
         this.outlineCards.push(card);
         this.outlineBox.addChild(card);
       }
+      this.cardGlow.eventMode = 'none';
+      this.outlineBox.addChildAt(this.cardGlow, 0);
     }
     if (this.plan.mode === 'steps' || this.plan.mode === 'write') {
       this.pirate = ctx.companion();
@@ -279,6 +283,7 @@ class TreasureMap implements Game {
       ring.roundRect(at.x - CELL / 2 + 6, at.y - CELL / 2 + 6, CELL - 12, CELL - 12, 16).stroke({ width: 8, color: swatch.teal.line });
     }
     const g = this.glow.clear();
+    const cg = this.cardGlow.clear();
     if (!this.hinting || this.busy || !this.find) return;
     const pulse = 0.35 + 0.25 * Math.sin(this.clock * 5);
     const n = this.plan.size;
@@ -300,6 +305,11 @@ class TreasureMap implements Game {
       return;
     }
     if (this.plan.mode === 'slide') {
+      if (this.part === 'cards') {
+        // The right card glows too, so the hint leads somewhere on the cards as well.
+        const card = this.outlineCards[this.find.outlines!.findIndex((o) => o.kind === 'right')];
+        cg.roundRect(card.x - OUTLINE / 2 - 10, card.y - OUTLINE / 2 - 10, OUTLINE + 20, OUTLINE + 20, 28).fill({ color: swatch.yellow.fill, alpha: pulse + 0.2 });
+      }
       // The flag's walk, across then up or down: every square of the raft moves the same.
       for (const sq of flagWalk(this.find, n)) {
         const c = this.cellAt(sq);
@@ -498,6 +508,7 @@ class TreasureMap implements Game {
 
   private tapGrid(e: FederatedPointerEvent) {
     // Level 8's second part is on the cards: a tap on the map then is nothing.
+    if (this.plan.mode === 'slide' && this.part !== 'flag' && !this.busy) sfx.tick();
     if (this.busy || this.finished || this.plan.mode === 'write' || (this.plan.mode === 'slide' && this.part !== 'flag')) return;
     const p = this.grid.toLocal(e.global);
     const guess = squareAt(p.x, p.y, this.plan.size);
