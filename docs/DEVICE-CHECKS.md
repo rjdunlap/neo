@@ -94,7 +94,7 @@
 
 - [ ] Level 7 *Finish the line* (built 2026-11-05): does a pause read as "your turn" to a two-year-old, and does a toddler fill the word or just mash through (the first 0.8 s only hums)?
 - [ ] Does fa (Twinkle's F) sound right on the iPad marimba, and does a grown-up singing along match both Twinkle and Wheels on the Bus? (batch 1 built; ti is not used)
-- [ ] Once level 8 is built: does a pre-K child hear the rhyme between two spoken pictures?
+- [ ] Level 8 *Which one finishes it?* (built 2026-11-05): does a pre-K child hear the rhyme between two spoken pictures on device speech (the pet says the line up to the gap and, on a miss, the two words)? Not heard on a device yet.
 - [ ] Does Wheels on the Bus's 13-note verse (and Twinkle's 14-note verse) hold a toddler?
 
 ## Shape Buddies (dive, 2026-11-01; proposed, levels not yet built)
