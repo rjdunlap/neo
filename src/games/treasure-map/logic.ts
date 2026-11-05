@@ -5,13 +5,14 @@ import type { Rng } from '../../engine/random';
  * are pictures (the red column, the apple row); then letters and numbers ("B3"); then the child
  * places something at a named square; then directions from a square ("3 right, 1 up"); then she writes
  * the directions card herself; then she hunts a hidden chest by how far away each dig says it is; then she
- * slides a raft by "2 right and 1 up", first its flag, then picking the whole raft's outline.
+ * slides a raft by "2 right and 1 up", first its flag, then picking the whole raft's outline. Level 9, the
+ * preschool opening, asks for one whole row or column on a 3 by 3 map: any square in it is right.
  */
-export type MapMode = 'pictures' | 'letters' | 'place' | 'steps' | 'clues' | 'write' | 'far' | 'slide';
+export type MapMode = 'pictures' | 'letters' | 'place' | 'steps' | 'clues' | 'write' | 'far' | 'slide' | 'line';
 
 export interface MapPlan {
   mode: MapMode;
-  size: 4 | 5;
+  size: 3 | 4 | 5;
   finds: number;
   name: string;
 }
@@ -25,7 +26,11 @@ export const PLANS: MapPlan[] = [
   { mode: 'write', size: 5, finds: 4, name: 'Write the card: set how far across and which way, then up or down, to walk the pet to the chest' },
   { mode: 'far', size: 4, finds: 3, name: 'How far? A hidden chest: each dig says how many steps away it is, across plus up, and she digs where every distance still fits' },
   { mode: 'slide', size: 5, finds: 3, name: 'Slide it: a three-square raft slides "2 right and 1 up"; tap where its flag lands, then pick the outline of the whole slid raft' },
+  { mode: 'line', size: 3, finds: 4, name: 'One line: a 3 by 3 map; dig anywhere in "the red column" or "the fish row", rows and columns taking turns' },
 ];
+
+/** Level 9, the preschool opening: appended after 8 (`planFor` reads by position) and played first through each band's `order`. */
+export const ONE_LINE = 9;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -52,7 +57,7 @@ export interface Headers {
  * Other maps keep letters and numbers, so their headers stay in the plain order.
  */
 export function headersFor(plan: MapPlan, rng: Rng): Headers {
-  if (plan.mode !== 'pictures') return { cols: COLUMN_COLORS.slice(0, plan.size), rows: ROW_PICTURES.slice(0, plan.size) };
+  if (plan.mode !== 'pictures' && plan.mode !== 'line') return { cols: COLUMN_COLORS.slice(0, plan.size), rows: ROW_PICTURES.slice(0, plan.size) };
   return { cols: rng.shuffle([...COLUMN_COLORS]).slice(0, plan.size), rows: rng.shuffle([...ROW_PICTURES]).slice(0, plan.size) };
 }
 
@@ -80,6 +85,39 @@ export interface Find {
   /** Slide levels: the raft's three squares before the slide (`from`, its flag's square, is one of them), and the outline cards. */
   raft?: Square[];
   outlines?: Outline[];
+  /** Line levels: the whole column or row asked for; any square in it is right, and `square` is just one of them (where the finger digs). */
+  line?: Line;
+}
+
+/** One whole column (`at` = its column) or row (`at` = its row, 0 at the bottom). */
+export interface Line {
+  axis: 'col' | 'row';
+  at: number;
+}
+
+/** A square lies in the line asked for. */
+export const inLine = (s: Square, line: Line) => (line.axis === 'col' ? s.col : s.row) === line.at;
+
+/** The squares of a line, for its glow and its shine. */
+export const lineSquares = (line: Line, size: number): Square[] =>
+  Array.from({ length: size }, (_, i) => (line.axis === 'col' ? { col: line.at, row: i } : { col: i, row: line.at }));
+
+/**
+ * Level 9's finds: rows and columns take turns from a seeded first axis, no line asked twice in a round, and the
+ * finger's square drawn somewhere in each line.
+ */
+function makeLines(plan: MapPlan, rng: Rng): Find[] {
+  const first = rng.pick<Line['axis']>(['col', 'row']);
+  const pools = { col: rng.shuffle([...Array(plan.size).keys()]), row: rng.shuffle([...Array(plan.size).keys()]) };
+  const out: Find[] = [];
+  for (let i = 0; i < plan.finds; i++) {
+    const axis: Line['axis'] = i % 2 === 0 ? first : first === 'col' ? 'row' : 'col';
+    const line = { axis, at: pools[axis][Math.floor(i / 2) % plan.size] };
+    // The finger's square: any in the line that no earlier find used, so each find has a square of its own.
+    const free = lineSquares(line, plan.size).filter((s) => !out.some((f) => f.square.col === s.col && f.square.row === s.row));
+    out.push({ line, square: rng.pick(free) });
+  }
+  return out;
 }
 
 /** One outline card on the slide level: the raft slid right, turned over, or slid the wrong amount. */
@@ -104,6 +142,7 @@ export interface Clue {
 
 /** Finds on a level: all different squares; on step levels, moves of 1–3 that stay on the map, with a turn. */
 export function makeFinds(plan: MapPlan, rng: Rng): Find[] {
+  if (plan.mode === 'line') return makeLines(plan, rng);
   const out: Find[] = [];
   const things = rng.shuffle([...THINGS]);
   const landmarks: Square[] = [];

@@ -15,12 +15,16 @@ import { finish, spring, squash } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { flagWalk, slideWords, bestDig, distance, dugAt, ruledOutBy, stepsWord, stillFits, type FarDig, cardDone, cardFor, cardReason, CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, EMPTY_CARD, firstDirection, firstLeg, headersFor, makeFinds, name, nextCount, nextWay, planFor, squareAt, walkCard, type Card, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
+import { flagWalk, slideWords, bestDig, distance, dugAt, ruledOutBy, stepsWord, stillFits, type FarDig, cardDone, cardFor, cardReason, CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, EMPTY_CARD, firstDirection, firstLeg, headersFor, inLine, lineSquares, makeFinds, name, ONE_LINE, nextCount, nextWay, planFor, squareAt, walkCard, type Card, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
 
 const LEVELS: BandLevels = {
-  prek: { min: 1, max: 2 },
+  // Level 9 (One line) is the preschool opening, appended after 8 and played first.
+  preschool: { min: 1, max: ONE_LINE, order: [ONE_LINE, 1] },
+  prek: { min: 1, max: ONE_LINE, order: [ONE_LINE, 1, 2] },
   school: { min: 1, max: 8 },
 };
+/** Level 9's squares are bigger: 120 units on screen. */
+const LINE_SCALE = 1.2;
 
 const PARCHMENT = 0xf3e2b8;
 /** The three parchment tints a round's map is drawn on. */
@@ -246,7 +250,9 @@ class TreasureMap implements Game {
     this.view = v;
     const n = this.plan.size;
     const w = n * CELL;
-    this.grid.position.set(Math.max(240, (v.w - w) / 2 + 40), Math.max(this.plan.mode === 'clues' ? 220 : 150, (v.h - w) / 2 + 40));
+    const k = this.plan.mode === 'line' ? LINE_SCALE : 1;
+    this.grid.scale.set(k);
+    this.grid.position.set(Math.max(240, (v.w - w * k) / 2 + 40 * k), Math.max(this.plan.mode === 'clues' ? 220 : 150, (v.h - w * k) / 2 + 40 * k));
     if (this.plan.mode === 'write') this.layoutCard(v, w);
     if (this.plan.mode === 'slide') this.layoutOutlines(w);
     this.grid.hitArea = new Rectangle(0, 0, w, w);
@@ -257,7 +263,7 @@ class TreasureMap implements Game {
     const doodle = doodleArt(this.dressing.doodle);
     doodle.position.set(-45, -40);
     this.headerArt.addChild(doodle);
-    const pictures = this.plan.mode === 'pictures';
+    const pictures = this.plan.mode === 'pictures' || this.plan.mode === 'line';
     const { cols, rows } = this.headers;
     for (let i = 0; i < n; i++) {
       // Column headers above, row headers to the left (row 1 at the bottom).
@@ -320,6 +326,14 @@ class TreasureMap implements Game {
     if ((this.plan.mode === 'steps' || this.plan.mode === 'write') && this.find.from) {
       // The first leg lights up from the pet to the turning square, so she still counts the walk.
       for (const sq of firstLeg(this.find)) {
+        const c = this.cellAt(sq);
+        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: pulse });
+      }
+      return;
+    }
+    if (this.plan.mode === 'line' && this.find.line) {
+      // Only the line asked for lights up: any square on it is right.
+      for (const sq of lineSquares(this.find.line, n)) {
         const c = this.cellAt(sq);
         g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: pulse });
       }
@@ -402,7 +416,7 @@ class TreasureMap implements Game {
     this.part = 'flag';
     this.tried.clear();
     // The card names one chest, each hunt hides a new one and each raft is a new raft, so the last find's marks are cleared.
-    if (this.plan.mode === 'write' || this.plan.mode === 'far' || this.plan.mode === 'slide') this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (this.plan.mode === 'write' || this.plan.mode === 'far' || this.plan.mode === 'slide' || this.plan.mode === 'line') this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.resize(this.view);
     this.drawCard();
     this.drawLandmarks(f);
@@ -410,6 +424,7 @@ class TreasureMap implements Game {
     this.drawOutlines();
     this.busy = false;
     const mode = this.plan.mode;
+    if (mode === 'line') return f.line!.axis === 'col' ? this.ctx.instruct('map.linecol', { color: this.headers.cols[f.line!.at] }) : this.ctx.instruct('map.linerow', { pic: this.headers.rows[f.line!.at] });
     if (mode === 'pictures') return this.ctx.instruct('map.pictures', { pic: this.headers.rows[f.square.row], color: this.headers.cols[f.square.col] });
     if (mode === 'letters') return this.ctx.instruct('map.letters', { sq: name(f.square), col: String.fromCharCode(65 + f.square.col), row: f.square.row + 1 });
     if (mode === 'place') return this.ctx.instruct('map.place', { thing: f.thing!, sq: name(f.square) });
@@ -467,6 +482,15 @@ class TreasureMap implements Game {
       const color = swatch[this.headers.cols[f.square.col]];
       const dot = new Graphics().circle(40, 0, 24).fill(color.fill).stroke({ width: 3, color: color.line });
       this.sign.addChild(pic, dot);
+    } else if (mode === 'line') {
+      // Just the one header, with an arrow along its line: down the column, or across the row.
+      const line = f.line!;
+      const color = swatch[this.headers.cols[line.at]];
+      const head = line.axis === 'col' ? new Graphics().circle(0, 0, 26).fill(color.fill).stroke({ width: 3, color: color.line }) : rowPicture(this.headers.rows[line.at]);
+      head.x = -40;
+      const arrow = line.axis === 'col' ? arrowArt(0, 1) : arrowArt(1, 0);
+      arrow.x = 45;
+      this.sign.addChild(head, arrow);
     } else if (mode === 'far') {
       // A hidden chest and a question mark: nothing on the sign points to a square.
       const chest = chestArt();
@@ -519,6 +543,7 @@ class TreasureMap implements Game {
   private async dig(guess: Square) {
     if (this.busy || this.finished) return;
     if (this.plan.mode === 'far') return this.digFar(guess);
+    if (this.plan.mode === 'line') return this.digLine(guess);
     const { col, row } = guess;
     const want = this.find.square;
     const result = compare(guess, want);
@@ -539,6 +564,27 @@ class TreasureMap implements Game {
       if (mode === 'steps') void this.ctx.say('map.stepshint', { first: firstDirection(this.find) });
       else if (mode === 'slide') void this.ctx.say('map.slidehint', { dirs: slideWords(this.find.right!, this.find.up!) });
       else void this.ctx.say(mode === 'clues' ? 'map.cluehint' : 'map.hint');
+    }
+    this.busy = false;
+  }
+
+  /** Level 9's dig: any square in the line asked for is right; a dig elsewhere names the line it was in. */
+  private async digLine(guess: Square) {
+    const line = this.find.line!;
+    if (inLine(guess, line)) return void this.found(guess);
+    this.busy = true;
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    const at = this.cellAt(guess);
+    this.marks.addChild(new Graphics().moveTo(at.x - 14, at.y - 14).lineTo(at.x + 14, at.y + 14).moveTo(at.x + 14, at.y - 14).lineTo(at.x - 14, at.y + 14).stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }));
+    const { cols, rows } = this.headers;
+    if (line.axis === 'col') await this.ctx.say('map.linecolwrong', { got: cols[guess.col], want: cols[line.at] });
+    else await this.ctx.say('map.linerowwrong', { got: rows[guess.row], want: rows[line.at] });
+    if (this.wrongs >= 2 && !this.hinting) {
+      this.hinting = true;
+      this.hints++;
+      void this.ctx.say('map.linehint');
     }
     this.busy = false;
   }
@@ -599,11 +645,21 @@ class TreasureMap implements Game {
     this.marks.addChild(stack);
   }
 
-  private async found() {
+  /** A right dig; `dug` is the square she chose when more than one is right (level 9's line). */
+  private async found(dug?: Square) {
     this.busy = true;
     this.hinting = false;
     const f = this.find;
-    const at = this.cellAt(f.square);
+    const at = this.cellAt(dug ?? f.square);
+    if (f.line) {
+      // The whole line shines, so every square of it reads as right.
+      const shine = new Graphics();
+      for (const sq of lineSquares(f.line, this.plan.size)) {
+        const c = this.cellAt(sq);
+        shine.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: 0.7 });
+      }
+      this.marks.addChild(shine);
+    }
     if (this.pirate && f.from && this.plan.mode === 'steps') {
       // The pet walks the directions, step by step: across, then up or down.
       const tw = this.ctx.tw;
@@ -898,8 +954,9 @@ export const treasureMap: GameModule = {
   region: 'rainbow-meadow',
   challenge: 'space',
   skills: ['coordinates', 'spatial-reasoning', 'directions', 'maps'],
-  bands: ['prek', 'school'],
+  bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [ONE_LINE],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Trace the row and column with two fingers until they meet: "Across here, up there... dig!"',

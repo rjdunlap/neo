@@ -3042,13 +3042,15 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'Read both landmark clues. Follow each line to the square where they meet, then tap it.' },
       { from: 6, to: 6, text: 'Write the card that walks the pet to the chest: tap the number and the arrow on each line until the footprints reach it, then press Go.' },
       { from: 7, to: 7, text: 'The chest is hidden. Dig anywhere: the footprints and the number say how many steps away it is, across plus up. Dig where every number still fits.' },
-      { from: 8, text: 'Slide the raft as the sign says, like "2 right and 1 up": tap the square where its flag lands, then tap the card showing the whole raft after the slide. A slide never turns the raft over.' },
+      { from: 8, to: 8, text: 'Slide the raft as the sign says, like "2 right and 1 up": tap the square where its flag lands, then tap the card showing the whole raft after the slide. A slide never turns the raft over.' },
+      { from: 9, text: 'Find the one color column or picture row the pet names, like "the red column", and tap any square in it.' },
     ],
     finish: [
       { to: 2, text: 'The round ends when the treasure is found.' },
       { from: 3, to: 3, text: 'The round ends when the thing is placed.' },
       { from: 4, to: 7, text: 'The round ends when the treasure is found.' },
-      { from: 8, text: 'The round ends when three rafts have slid into place.' },
+      { from: 8, to: 8, text: 'The round ends when three rafts have slid into place.' },
+      { from: 9, text: 'The round ends after four finds.' },
     ],
   },
   opposites: {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { flagWalk, sameCells, slideWords, bestDig, distance, dugAt, type FarDig, ruledOutBy, stillFits, stepsWord, type Square, type Card, cardDone, cardFor, cardReason, EMPTY_CARD, nextCount, nextWay, planFor, walkCard, CELL, cellCenter, clueDirection, clueEnd, COLUMN_COLORS, compare, digSpot, directions, DOODLES, dressingFor, firstDirection, firstLeg, headersFor, makeFinds, name, PLANS, ROW_PICTURES, squareAt, TINTS } from './logic';
+import { flagWalk, sameCells, slideWords, bestDig, distance, dugAt, type FarDig, ruledOutBy, stillFits, stepsWord, type Square, type Card, cardDone, cardFor, cardReason, EMPTY_CARD, nextCount, nextWay, planFor, walkCard, CELL, cellCenter, clueDirection, clueEnd, COLUMN_COLORS, compare, digSpot, directions, DOODLES, dressingFor, firstDirection, firstLeg, headersFor, inLine, lineSquares, makeFinds, name, ONE_LINE, PLANS, ROW_PICTURES, squareAt, TINTS } from './logic';
 
 describe('Treasure Map', () => {
   it('names squares by column letter and row number, counting rows from the bottom', () => {
@@ -126,7 +126,7 @@ describe('Treasure Map', () => {
         dressingFor(rng);
         expect(dressed).toEqual(plain);
       }
-      if (plan.mode !== 'pictures') expect(headersFor(plan, new Rng(1)).rows).toEqual(ROW_PICTURES.slice(0, plan.size));
+      if (plan.mode !== 'pictures' && plan.mode !== 'line') expect(headersFor(plan, new Rng(1)).rows).toEqual(ROW_PICTURES.slice(0, plan.size));
     }
   });
 
@@ -343,7 +343,7 @@ describe('Treasure Map level 8, Slide it', () => {
   const moved = (cells: Square[], r: number, u: number) => cells.map((s) => ({ col: s.col + r, row: s.row + u }));
 
   it('is plan 8, a 5 by 5 map of three rafts', () => {
-    expect(PLANS).toHaveLength(8);
+    expect(PLANS[7]).toBe(plan);
     expect(plan.mode).toBe('slide');
     expect(plan.size).toBe(5);
     expect(plan.finds).toBe(3);
@@ -406,5 +406,75 @@ describe('Treasure Map level 8, Slide it', () => {
       expect(walk).toHaveLength(Math.abs(f.right!) + Math.abs(f.up!));
       expect(walk[walk.length - 1]).toEqual(f.square);
     }
+  });
+});
+
+describe('Treasure Map level 9, One line', () => {
+  const plan = planFor(ONE_LINE);
+  const rounds = (seeds = 300) => Array.from({ length: seeds }, (_, i) => makeFinds(plan, new Rng(i + 1)));
+
+  it('is appended as plan 9, a 3 by 3 map of four finds, right after plan 8', () => {
+    expect(ONE_LINE).toBe(9);
+    expect(PLANS).toHaveLength(9);
+    expect(PLANS[8]).toBe(plan);
+    expect(plan.mode).toBe('line');
+    expect(plan.size).toBe(3);
+    expect(plan.finds).toBe(4);
+  });
+
+  it('accepts every square in the named line and no other', () => {
+    for (const finds of rounds(50)) {
+      for (const f of finds) {
+        const right = lineSquares(f.line!, plan.size);
+        expect(right).toHaveLength(plan.size);
+        for (let col = 0; col < plan.size; col++) for (let row = 0; row < plan.size; row++) {
+          const s = { col, row };
+          const want = f.line!.axis === 'col' ? col === f.line!.at : row === f.line!.at;
+          expect(inLine(s, f.line!)).toBe(want);
+          expect(right.some((r) => r.col === col && r.row === row)).toBe(want);
+        }
+      }
+    }
+  });
+
+  it('takes turns between rows and columns, never asks a line twice, and both start in turn', () => {
+    const firsts = new Set<string>();
+    for (const finds of rounds()) {
+      finds.forEach((f, i) => {
+        if (i) expect(f.line!.axis).not.toBe(finds[i - 1].line!.axis);
+        expect(inLine(f.square, f.line!)).toBe(true);
+      });
+      expect(new Set(finds.map((f) => `${f.line!.axis}${f.line!.at}`)).size).toBe(plan.finds);
+      firsts.add(finds[0].line!.axis);
+    }
+    expect(firsts).toEqual(new Set(['col', 'row']));
+  });
+
+  it('opens preschool and pre-K, keeps school as it was, and lands a carried 9 at the start of school', async () => {
+    const { treasureMap: mod } = await import('./index');
+    const { levelsInOrder, nextLevelOffer, stepLevel, landing } = await import('../../progress/difficulty');
+    expect(mod.bands).toEqual(['preschool', 'prek', 'school']);
+    expect(mod.entryLevels).toEqual([ONE_LINE]);
+    expect(levelsInOrder(mod.levels('preschool'))).toEqual([9, 1]);
+    expect(levelsInOrder(mod.levels('prek'))).toEqual([9, 1, 2]);
+    expect(levelsInOrder(mod.levels('school'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(nextLevelOffer(9, mod.levels('prek'))).toBe(1);
+    expect(stepLevel(1, -1, mod.levels('prek'))).toBe(9);
+    expect(landing(9, mod.levels('school'), mod.entryLevels)).toBe(1);
+    expect(landing(2, mod.levels('prek'), mod.entryLevels)).toBe(2);
+    PLANS.forEach((p, i) => expect(planFor(i + 1)).toBe(p));
+  });
+
+  it('heads its rows with pictures and its columns with colours, fresh each round', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 50; seed++) {
+      const rng = new Rng(seed);
+      makeFinds(plan, rng);
+      const { cols, rows } = headersFor(plan, rng);
+      expect(new Set(cols).size).toBe(3);
+      expect(new Set(rows).size).toBe(3);
+      seen.add(cols.join() + rows.join());
+    }
+    expect(seen.size).toBeGreaterThan(20);
   });
 });
