@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
 import {
-  allRiddles, ARGUABLE, chipsFor, fails, familyOf, FAMILIES, fitsBoth, guessFor, holds, makeQuestions, makeRiddles, makeTap, mateTags,
+  allRiddles, andList, ARGUABLE, basketFor, BASKETS, chipsFor, familySong, fails, familyOf, FAMILIES, fitsBoth, guessFor, holds, makeQuestions, makeRiddles, makeTap, makeTrays, mateTags,
+  planFor,
   PLANS, rhymes, SCENES, sceneFor, spokenList, TAG_IDS, TAGS, wordToTap,
 } from './logic';
 import { rhymeTime } from './index';
@@ -240,7 +241,7 @@ describe('Silly pairs (level 8)', () => {
 
   it('sits second on both ladders, which still start where they did', () => {
     expect(levelsInOrder(rhymeTime.levels('prek'))).toEqual([1, 8, 2, 3, 5]);
-    expect(levelsInOrder(rhymeTime.levels('school'))).toEqual([2, 8, 3, 4, 5, 6, 7]);
+    expect(levelsInOrder(rhymeTime.levels('school'))).toEqual([2, 8, 3, 4, 5, 6, 7, 10]);
     expect(stepLevel(1, 1, rhymeTime.levels('prek'))).toBe(8);
     expect(stepLevel(8, 1, rhymeTime.levels('prek'))).toBe(2);
     expect(stepLevel(2, 1, rhymeTime.levels('school'))).toBe(8);
@@ -250,5 +251,65 @@ describe('Silly pairs (level 8)', () => {
 
   it('has its voice lines', () => {
     for (const id of ['rhyme.scene', 'rhyme.sceneYes', 'rhyme.sceneNo']) expect(Object.keys(SCRIPT)).toContain(id);
+  });
+});
+
+describe('Rhyme baskets (level 10)', () => {
+  it('is level 10 on its own ID, two trays of six; level 9 is not baskets', () => {
+    expect(planFor(10)).toBe(BASKETS);
+    expect(BASKETS.mode).toBe('baskets');
+    expect(BASKETS.questions).toBe(2);
+    expect(planFor(9).mode).not.toBe('baskets');
+    expect(planFor(8).mode).toBe('scene');
+    expect(rhymeTime.describeLevel(10)).toMatch(/Rhyme baskets/);
+  });
+
+  it('tops the school ladder after the make-it riddle; pre-K never reaches it', () => {
+    const school = rhymeTime.levels('school');
+    expect(school.max).toBe(10);
+    expect(levelsInOrder(school)).toEqual([2, 8, 3, 4, 5, 6, 7, 10]);
+    expect(stepLevel(7, 1, school)).toBe(10);
+    expect(stepLevel(10, -1, school)).toBe(7);
+    expect(levelsInOrder(rhymeTime.levels('prek'))).not.toContain(10);
+  });
+
+  it('gives three distinct families per tray, each key with exactly two rhyming pictures, keys never in the tray', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const trays = makeTrays(BASKETS, new Rng(seed));
+      expect(trays).toHaveLength(2);
+      const fams = trays.flatMap((t) => t.keys.map(familyOf));
+      expect(new Set(fams).size).toBe(6);
+      for (const t of trays) {
+        expect(t.keys).toHaveLength(3);
+        expect(t.words).toHaveLength(6);
+        expect(new Set(t.words).size).toBe(6);
+        for (const k of t.keys) expect(t.words).not.toContain(k);
+        for (const w of t.words) {
+          expect(t.keys.filter((k) => rhymes(k, w))).toHaveLength(1);
+          const b = basketFor(w, t.keys);
+          expect(b).toBeGreaterThanOrEqual(0);
+          expect(rhymes(t.keys[b], w)).toBe(true);
+        }
+        for (const k of t.keys) expect(t.words.filter((w) => rhymes(k, w))).toHaveLength(2);
+        for (const k of t.keys) expect(familySong(k).slice(1).sort()).toEqual(t.words.filter((w) => rhymes(k, w)).sort());
+      }
+    }
+  });
+
+  it('uses every three-word family across seeds, and the same seed gives the same round', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) for (const t of makeTrays(BASKETS, new Rng(seed))) for (const k of t.keys) seen.add(familyOf(k));
+    expect(seen.size).toBe(8);
+    expect(makeTrays(BASKETS, new Rng(4))).toEqual(makeTrays(BASKETS, new Rng(4)));
+  });
+
+  it('reads a basket list and a family aloud', () => {
+    expect(andList(['cat', 'star', 'bug'])).toBe('cat, star and bug');
+    expect(familySong('cat')[0]).toBe('cat');
+    expect(familySong('cat')).toHaveLength(3);
+  });
+
+  it('has its voice lines', () => {
+    for (const id of ['rhyme.baskets', 'rhyme.basketNo', 'rhyme.basketHint', 'rhyme.basketSong']) expect(Object.keys(SCRIPT)).toContain(id);
   });
 });

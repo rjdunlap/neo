@@ -4,6 +4,7 @@ import { musicNote, starPoints } from '../../art/shapes';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
@@ -12,16 +13,17 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { chipsFor, FAMILIES, guessFor, makeQuestions, makeRiddles, makeTap, planFor, rhymes, sceneFor, spokenList, TAGS, wordToTap, type Riddle, type RhymePlan, type RhymeQuestion, type Tag } from './logic';
+import { andList, basketFor, chipsFor, FAMILIES, familySong, guessFor, makeQuestions, makeRiddles, makeTap, makeTrays, planFor, rhymes, sceneFor, spokenList, TAGS, wordToTap, type Riddle, type RhymePlan, type RhymeQuestion, type Tag, type Tray } from './logic';
 import { picture, tagGlyph } from './pictures';
 
 /**
  * Pre-K plays the first riddle (5) after pairs; odd one out (4) and the meaning-first and make-it riddles (6–7) stay school.
- * Silly pairs (8) is a single rhyme judgment with a place to say it in, so it sits second on both ladders.
+ * Silly pairs (8) is a single rhyme judgment with a place to say it in, so it sits second on both ladders. Rhyme baskets (10)
+ * holds three families at once, so it tops the school ladder only; level 9 (the preschool opening) is not built yet.
  */
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 8, order: [1, 8, 2, 3, 5] },
-  school: { min: 2, max: 8, order: [2, 8, 3, 4, 5, 6, 7] },
+  school: { min: 2, max: 10, order: [2, 8, 3, 4, 5, 6, 7, 10] },
 };
 
 /** Level 8's place is drawn this much larger than a card picture, its rider this much smaller inside it. */
@@ -55,6 +57,41 @@ interface Card {
   word: string;
   node: Container;
   bg: Graphics;
+  /** Level 10: the picture's drag, and once it is in, its basket and place there. */
+  drag?: DragHandle;
+  placed?: number;
+  slot?: number;
+}
+
+/** Level 10: a basket with its key picture on the front. */
+interface Basket {
+  key: string;
+  node: Container;
+  filled: number;
+}
+
+/** Level 10: a picture dropped this close to a basket's middle goes to the nearest basket. */
+const DROP_RADIUS = 180;
+/** A basket's middle sits this far below its node (the handle rises above, the body hangs below). */
+const BASKET_MID = 20;
+
+/** A woven basket, its handle up, with the key picture on a round badge on the front. */
+function basketArt(key: string): Container {
+  const g = new Graphics();
+  g.arc(0, -10, 80, Math.PI, 2 * Math.PI).stroke({ width: 12, color: wood.line, cap: 'round' });
+  g.poly([-100, -10, 100, -10, 82, 112, -82, 112]).fill(wood.fill).stroke({ width: 6, color: wood.line, join: 'round' });
+  for (let y = 26; y < 112; y += 28) {
+    const inset = ((y + 10) * 18) / 122;
+    g.moveTo(-100 + inset, y).lineTo(100 - inset, y).stroke({ width: 3, color: wood.line, alpha: 0.45 });
+  }
+  g.roundRect(-110, -24, 220, 26, 13).fill(wood.light).stroke({ width: 6, color: wood.line });
+  g.circle(0, 56, 50).fill(0xffffff).stroke({ width: 5, color: swatch.pink.line });
+  const art = picture(key);
+  art.scale.set(0.55);
+  art.position.set(0, 56);
+  const c = new Container();
+  c.addChild(g, art);
+  return c;
 }
 
 class RhymeTime implements Game {
@@ -62,6 +99,12 @@ class RhymeTime implements Game {
   readonly questions: RhymeQuestion[];
   /** Levels 5–7: the round's riddles (the questions stay empty). */
   readonly riddles: Riddle[] | null;
+  /** Level 10: the round's trays (the questions stay empty). */
+  readonly trays: Tray[] | null;
+  readonly baskets: Basket[] = [];
+  /** Level 10: wrong drops per picture this tray; the second glows its basket (one hint per picture). */
+  private readonly basketMisses = new Map<string, number>();
+  private basketGlow: { card: Card; basket: Basket } | null = null;
   readonly cards: Card[] = [];
   /** Level 7: the four clue chips and the pet's Guess button. */
   readonly chips: Chip[] = [];
@@ -94,8 +137,10 @@ class RhymeTime implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     const riddle = RIDDLE_MODES.includes(this.plan.mode);
-    this.questions = riddle ? [] : makeQuestions(this.plan, ctx.rng);
+    const baskets = this.plan.mode === 'baskets';
+    this.questions = riddle || baskets ? [] : makeQuestions(this.plan, ctx.rng);
     this.riddles = riddle ? makeRiddles(this.plan, ctx.rng) : null;
+    this.trays = baskets ? makeTrays(this.plan, ctx.rng) : null;
     this.backdrop = new Backdrop({ sky: [0xffd6e6, 0xfff4e3], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.72, clouds: 2, sun: true, seed: 14 }, ctx.view);
     this.glow.eventMode = 'none';
     this.prompt.eventMode = 'none';
@@ -111,6 +156,10 @@ class RhymeTime implements Game {
     return this.riddles?.[this.index];
   }
 
+  get tray(): Tray | undefined {
+    return this.trays?.[this.index];
+  }
+
   start() {
     void this.next();
   }
@@ -120,7 +169,8 @@ class RhymeTime implements Game {
     this.backdrop.resize(v);
     const xs = spread(this.cards.length, 180, v.w - 60, 200);
     const make = this.plan.mode === 'make';
-    this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h * (make ? 0.42 : 0.64)));
+    if (this.trays) this.layoutBaskets(v);
+    else this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h * (make ? 0.42 : 0.64)));
     // Level 7: the sound pair, the meaning pair, then the pet's mouth, in one row under the shelf.
     const row = [...this.chips.map((c) => c.node), ...(this.guessButton ? [this.guessButton] : [])];
     // Starts right of the corner pet, which the bottom row would otherwise reach.
@@ -139,11 +189,24 @@ class RhymeTime implements Game {
     if (this.chipGlow && r && !this.busy) {
       for (const c of this.chips.filter((c) => c.sound === r.clueWord || c.tag === r.tag)) g.roundRect(c.node.x - 74, c.node.y - 74, 148, 148, 30).stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
     }
+    const bg = this.basketGlow;
+    if (bg && !this.busy) {
+      const { node: b } = bg.basket;
+      const w = 7 + 2 * Math.sin(this.clock * 5);
+      g.roundRect(b.x - 122, b.y - 104, 244, 230, 36).stroke({ width: w, color: swatch.yellow.fill });
+      if (!bg.card.drag?.dragging) g.roundRect(bg.card.node.x - 92, bg.card.node.y - 92, 184, 184, 34).stroke({ width: w, color: swatch.yellow.fill });
+    }
   }
 
   /** The ghost finger on the how-to card: the rhyming picture, the odd one out, or the pair, one card and then the other. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
+    const t = this.tray;
+    if (t) {
+      const card = this.cards.find((c) => c.placed === undefined);
+      const basket = card && this.baskets[basketFor(card.word, t.keys)];
+      return card && basket ? { drag: { on: card.node }, to: { on: basket.node, y: BASKET_MID } } : null;
+    }
     const r = this.riddle;
     if (r && this.plan.mode === 'make') {
       const next = makeTap(r, this.sound, this.tag);
@@ -161,7 +224,9 @@ class RhymeTime implements Game {
     return card ? { tap: { on: card.node } } : null;
   }
 
-  destroy() {}
+  destroy() {
+    for (const c of this.cards) c.drag?.destroy();
+  }
 
   private async next() {
     this.busy = true;
@@ -173,8 +238,15 @@ class RhymeTime implements Game {
     this.tag = null;
     this.tries = 0;
     this.chipGlow = false;
-    if (this.index >= (this.riddles ?? this.questions).length) return void this.finale();
+    this.basketGlow = null;
+    this.basketMisses.clear();
+    if (this.index >= (this.trays?.length ?? (this.riddles ?? this.questions).length)) return void this.finale();
+    for (const b of this.baskets.splice(0)) {
+      this.ctx.tw.kill(b.node.scale);
+      b.node.destroy({ children: true });
+    }
     for (const c of this.cards.splice(0)) {
+      c.drag?.destroy();
       this.ctx.tw.kill(c.node);
       this.ctx.tw.kill(c.node.scale);
       this.ctx.tw.kill(c.bg);
@@ -190,7 +262,9 @@ class RhymeTime implements Game {
     this.place = null;
     this.prompt.removeChildren().forEach((c) => c.destroy({ children: true }));
     const q = this.q;
-    const words = this.riddle?.words ?? q.words;
+    const tray = this.tray;
+    if (tray) this.makeBaskets(tray);
+    const words = tray?.words ?? this.riddle?.words ?? q.words;
     if (q?.prompt && this.plan.mode === 'scene') this.drawPlace(q.prompt);
     else if (q?.prompt) {
       const bubble = new Graphics().roundRect(-95, -95, 190, 190, 40).fill(0xffffff).stroke({ width: 6, color: swatch.pink.line });
@@ -204,7 +278,10 @@ class RhymeTime implements Game {
       node.hitArea = new Rectangle(-85, -85, 170, 170);
       const card: Card = { word, node, bg };
       this.drawCard(card, false);
-      onTap(node, () => void this.tap(card), { cooldown: 350 });
+      if (tray) {
+        card.drag = draggable(node, this.ctx.tw, { onPick: () => this.pickUp(card), onDrop: (x, y) => this.dropOn(card, x, y) });
+        card.drag.enabled = false;
+      } else onTap(node, () => void this.tap(card), { cooldown: 350 });
       node.scale.set(0);
       void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.3, delay: this.cards.length * 0.07, ease: ease.outBack });
       this.cards.push(card);
@@ -213,12 +290,20 @@ class RhymeTime implements Game {
     if (this.plan.mode === 'make') this.makeChips(this.riddle!);
     this.resize(this.view);
     await this.ctx.tw.wait(0.4);
-    this.busy = false;
+    this.setBusy(false);
     await this.ask();
+  }
+
+  /** Busy holds the pictures still too, so nothing is picked up while the pet is speaking feedback. */
+  private setBusy(busy: boolean) {
+    this.busy = busy;
+    for (const c of this.cards) if (c.drag) c.drag.enabled = !busy && c.placed === undefined;
   }
 
   /** Say the question with every word, so nothing needs reading. */
   private ask() {
+    const t = this.tray;
+    if (t && !this.finished) return this.ctx.instruct('rhyme.baskets', { keys: andList(t.keys) });
     const r = this.riddle;
     if (r && !this.finished) {
       if (this.plan.mode === 'make') return this.ctx.instruct('rhyme.make', { answer: r.answer });
@@ -385,6 +470,124 @@ class RhymeTime implements Game {
     }
     await tw.to(p.scale, { y: PLACE_SCALE * 0.85 }, { duration: 0.15 });
     return tw.to(p.scale, { y: PLACE_SCALE }, { duration: 0.4, ease: ease.outElastic });
+  }
+
+  // Rhyme baskets (level 10) ------------------------------------------------------
+
+  /** Three baskets; tapping one says its key, for free. */
+  private makeBaskets(t: Tray) {
+    for (const key of t.keys) {
+      const node = basketArt(key);
+      node.hitArea = new Rectangle(-112, -100, 224, 220);
+      const b: Basket = { key, node, filled: 0 };
+      onTap(node, () => {
+        if (this.finished) return;
+        sfx.pop(4);
+        void this.ctx.say('rhyme.word', { word: key });
+      }, { cooldown: 350 });
+      this.baskets.push(b);
+      this.ctx.stage.addChild(node);
+    }
+  }
+
+  /** Baskets in a row along the top; the six pictures in two rows of three below, clear of the corner pet. */
+  private layoutBaskets(v: View) {
+    const bx = spread(this.baskets.length, 200, v.w - 60, 290);
+    const by = Math.max(230, v.h * 0.3);
+    this.baskets.forEach((b, i) => b.node.position.set(bx[i], by));
+    const tx = spread(3, 180, v.w - 60, 200);
+    const row1 = Math.max(by + 250, v.h * 0.6);
+    const row2 = Math.min(v.h - 90, row1 + 185);
+    this.cards.forEach((c, i) => {
+      if (c.placed !== undefined) return void c.node.position.copyFrom(this.slotPoint(this.baskets[c.placed], c.slot!));
+      const home = { x: tx[i % 3], y: i < 3 ? row1 : row2 };
+      if (c.drag) c.drag.home = home;
+      if (!c.drag?.dragging) c.node.position.set(home.x, home.y);
+    });
+  }
+
+  /** Where a picture sits once it is in: peeking over the rim, the first on the left, the second on the right. */
+  private slotPoint(b: Basket, slot: number) {
+    return { x: b.node.x + (slot ? 46 : -46), y: b.node.y - 36 };
+  }
+
+  private pickUp(c: Card) {
+    sfx.pop(5);
+    void this.ctx.say('rhyme.word', { word: c.word });
+  }
+
+  /** A drop near a basket is judged against the nearest one; anywhere else it floats home, free. */
+  private dropOn(c: Card, x: number, y: number): boolean {
+    const t = this.tray;
+    if (this.busy || this.finished || !t) return false;
+    let best = -1;
+    let bestD = DROP_RADIUS;
+    this.baskets.forEach((b, i) => {
+      const d = Math.hypot(b.node.x - x, b.node.y + BASKET_MID - y);
+      if (d < bestD) [best, bestD] = [i, d];
+    });
+    if (best < 0) return false;
+    if (basketFor(c.word, t.keys) === best) {
+      void this.rightBasket(c, this.baskets[best]);
+      return true;
+    }
+    void this.wrongBasket(c, this.baskets[best], this.baskets[basketFor(c.word, t.keys)]);
+    return false;
+  }
+
+  private async rightBasket(c: Card, b: Basket) {
+    this.setBusy(true);
+    c.placed = this.baskets.indexOf(b);
+    c.slot = b.filled++;
+    c.node.eventMode = 'none';
+    if (this.basketGlow?.card === c) this.basketGlow = null;
+    const { tw } = this.ctx;
+    tw.kill(c.node);
+    tw.kill(c.node.scale);
+    sfx.sparkle();
+    this.ctx.pet.cheer();
+    void tw.to(c.bg, { alpha: 0 }, { duration: 0.2 });
+    void tw.to(c.node.scale, { x: 0.5, y: 0.5 }, { duration: 0.3 });
+    await tw.to(c.node, this.slotPoint(b, c.slot), { duration: 0.3, ease: ease.outBack });
+    void this.bounce(b.node);
+    await this.ctx.say('rhyme.yes', { a: b.key, b: c.word });
+    if (this.cards.every((x) => x.placed !== undefined)) return void this.sing();
+    this.setBusy(false);
+  }
+
+  /** The wrong basket shakes its head and the picture floats home; the second miss on one picture glows its basket. */
+  private async wrongBasket(c: Card, b: Basket, right: Basket) {
+    this.setBusy(true);
+    this.misses++;
+    const n = (this.basketMisses.get(c.word) ?? 0) + 1;
+    this.basketMisses.set(c.word, n);
+    sfx.boing();
+    const { tw } = this.ctx;
+    const x = b.node.x;
+    void tw.to(b.node, { x: x - 12 }, { duration: 0.07 }).then(() => tw.to(b.node, { x: x + 12 }, { duration: 0.1 })).then(() => tw.to(b.node, { x }, { duration: 0.2, ease: ease.outElastic }));
+    await this.ctx.say('rhyme.basketNo', { word: c.word, key: b.key });
+    if (n === 2) {
+      this.hints++;
+      this.basketGlow = { card: c, basket: right };
+      await this.ctx.say('rhyme.basketHint', { word: c.word, key: right.key });
+    }
+    this.setBusy(false);
+  }
+
+  private bounce(node: Container) {
+    const { tw } = this.ctx;
+    return tw.to(node.scale, { y: 0.88 }, { duration: 0.12 }).then(() => tw.to(node.scale, { y: 1 }, { duration: 0.4, ease: ease.outElastic }));
+  }
+
+  /** The tray is empty: each basket sings its family in turn, then the next tray, or the end. */
+  private async sing() {
+    for (const b of this.baskets) {
+      void this.bounce(b.node);
+      const [a, bb, c] = familySong(b.key);
+      await this.ctx.say('rhyme.basketSong', { a, b: bb, c });
+    }
+    await this.ctx.tw.wait(0.3);
+    await this.next();
   }
 
   // Rhyme Riddles (levels 5–7) ----------------------------------------------------

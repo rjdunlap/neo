@@ -1099,6 +1099,56 @@ async function woodsBatch() {
     log(`Rhyme Time ${level} (${mode}): picture cards tapped, non-rhymes as misses, glowing hint, saved score and sticker passed`);
   }
 
+  // Level 10, Rhyme baskets (school only): drag pictures into baskets by rhyme; a wrong basket, a free drop on empty grass, a second wrong basket for the glow.
+  if ((!only || only === 'rhyme') && fromLevel <= 10) {
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await launch('rhyme-time', 10, 'Mia', 'school');
+    assert.equal(await page.evaluate(() => neo.scene.game.plan.mode), 'baskets');
+    const settle = async () => {
+      await page.waitForTimeout(200);
+      await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+      await page.waitForTimeout(380);
+    };
+    // The next picture, the basket it rhymes with, and the basket after that (a wrong one).
+    const nextMove = () => page.evaluate(() => {
+      const g = neo.scene.game;
+      const t = g.autotouch();
+      const right = g.baskets.findIndex((b) => b.node === t.to.on);
+      return { word: g.cards.find((c) => c.node === t.drag.on).word, right, wrong: (right + 1) % 3 };
+    });
+    const drop = async (word, basket) => {
+      await page.evaluate(({ word, basket }) => {
+        const g = neo.scene.game;
+        return kit.dragTo(g.cards.find((c) => c.word === word).node, g.baskets[basket].node.getGlobalPosition(), 14);
+      }, { word, basket });
+      await settle();
+    };
+    for (let n = 0; n < 2; n++) {
+      await idle(n);
+      if (n === 0) {
+        const m = await nextMove();
+        await drop(m.word, m.wrong);
+        assert.deepEqual(await counts(), [1, 0]);
+        // A drop on the grass beside its slot floats home for free.
+        await page.evaluate((word) => { const c = neo.scene.game.cards.find((x) => x.word === word).node; const p = c.getGlobalPosition(); return kit.drag(kit.line([p.x, p.y], [p.x + 60, p.y + 20], 8)); }, m.word);
+        await settle();
+        assert.deepEqual(await counts(), [1, 0]);
+        await drop(m.word, m.wrong);
+        assert.deepEqual(await counts(), [2, 1]);
+        assert.equal(await page.evaluate(() => neo.scene.game.baskets.indexOf(neo.scene.game.basketGlow?.basket)), m.right);
+        await screenshot('rhyme-time-10-hint');
+      }
+      for (let k = 0; k < 6 && (await page.evaluate((n) => neo.scene.game.index === n && !neo.scene.finished, n)); k++) {
+        const m = await nextMove();
+        await drop(m.word, m.right);
+      }
+    }
+    await finished('rhyme-time');
+    assert.deepEqual(await score('rhyme-time'), [2, 1]);
+    await page.setViewportSize({ width: 1024, height: 768 });
+    log('Rhyme Time 10 (baskets): pictures dragged into rhyme baskets, a wrong basket as a miss, a free drop, the glowing basket, two trays, saved score and sticker passed');
+  }
+
   if (!only || only === 'bonds') for (const level of [10, 11]) {
     await launch('bubble-pop', level);
     await page.waitForTimeout(600);
