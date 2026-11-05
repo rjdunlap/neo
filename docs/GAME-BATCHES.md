@@ -1647,7 +1647,7 @@ Proof: new-rule tier: typecheck, rule tests including the five-dig bound for fit
 
 ### treasure-map 4: Slide it
 
-- **`treasure-map`, Level 8 *Slide it* (dive slice 4, after batch 1)** (new interaction; school): a three-square raft slides by a vector, she taps where the flag lands, then picks the slid outline among three cards. Not on the couch.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
+- **`treasure-map`, Level 8 *Slide it* (dive slice 4, after batch 1)** (built 2026-11-05; new interaction; school): a three-square raft slides by a vector, she taps where the flag lands, then picks the slid outline among three cards. Not on the couch.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
 
 Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 
