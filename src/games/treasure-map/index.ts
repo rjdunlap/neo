@@ -154,6 +154,8 @@ class TreasureMap implements Game {
   private readonly tiles = new Map<TileKind, Container>();
   private readonly prints = new Graphics();
   private atEdge = false;
+  /** The pet is walking a route, so a resize leaves it where it is. */
+  private walking = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -231,7 +233,7 @@ class TreasureMap implements Game {
     }
     this.sign.position.set(v.w / 2 + 40, this.plan.mode === 'clues' ? 75 : 50);
     this.sign.visible = this.plan.mode !== 'write';
-    if (this.pirate && this.find?.from) {
+    if (this.pirate && this.find?.from && !this.walking) {
       const p = this.cellAt(this.find.from);
       this.pirate.position.set(p.x, p.y + 36);
     }
@@ -332,6 +334,8 @@ class TreasureMap implements Game {
     if (f.from) this.cursor = { ...f.from };
     this.card = { ...EMPTY_CARD };
     this.atEdge = false;
+    // The card names one chest, so the last find's chest and tries are cleared.
+    if (this.plan.mode === 'write') this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.resize(this.view);
     this.drawCard();
     this.drawLandmarks(f);
@@ -443,6 +447,7 @@ class TreasureMap implements Game {
     if (this.pirate && f.from && this.plan.mode === 'steps') {
       // The pet walks the directions, step by step: across, then up or down.
       const tw = this.ctx.tw;
+      this.walking = true;
       const mid = this.cellAt({ col: f.square.col, row: f.from.row });
       for (const [to, n] of [[mid, Math.abs(f.right!)], [at, Math.abs(f.up!)]] as const) {
         const from = { x: this.pirate.x, y: this.pirate.y };
@@ -452,6 +457,7 @@ class TreasureMap implements Game {
           void this.ctx.say('count', { n: k });
         }
       }
+      this.walking = false;
     }
     if (this.plan.mode === 'write') this.landmarks.removeChildren().forEach((c) => c.destroy({ children: true }));
     const art = this.plan.mode === 'place' ? thingArt(f.thing) : chestArt();
@@ -467,34 +473,20 @@ class TreasureMap implements Game {
     await this.next();
   }
 
-  /** Level 6's card beside the map in landscape, under it when the screen is upright. */
+  /** Level 6's card beside the map. */
   private layoutCard(v: View, w: number) {
     const cardW = TILE * 2 + GAP;
-    // The map keeps its 240 from the left (the corner buttons and the pet); the card sits just past the parchment.
-    const side = v.w >= 240 + w + 34 + cardW + 10;
-    if (side) {
-      this.grid.x = Math.max(240, (v.w - (w + 34 + cardW)) / 2);
-      this.cardBox.position.set(this.grid.x + w + 34 + cardW / 2, this.grid.y + w / 2);
-      const y = [-TILE - GAP, 0, TILE + GAP];
-      this.placeTile('across', -(TILE + GAP) / 2, y[0]);
-      this.placeTile('acrossWay', (TILE + GAP) / 2, y[0]);
-      this.placeTile('upDown', -(TILE + GAP) / 2, y[1]);
-      this.placeTile('upDownWay', (TILE + GAP) / 2, y[1]);
-      this.placeTile('go', 0, y[2]);
-    } else {
-      this.grid.y = 150;
-      this.cardBox.position.set(v.w / 2, this.grid.y + w + 50 + TILE / 2);
-      // One row: the across line, then the up-or-down line, with a wider gap between the lines; Go under them.
-      const step = TILE + GAP;
-      const lineGap = 40;
-      const total = TILE * 4 + GAP * 2 + lineGap;
-      const x0 = -total / 2 + TILE / 2;
-      this.placeTile('across', x0, 0);
-      this.placeTile('acrossWay', x0 + step, 0);
-      this.placeTile('upDown', x0 + step * 2 + lineGap - GAP, 0);
-      this.placeTile('upDownWay', x0 + step * 3 + lineGap - GAP, 0);
-      this.placeTile('go', 0, TILE + GAP + 10);
-    }
+    // The view is always at least 1024 wide, so the card fits beside the map in either orientation. The map keeps
+    // its 240 from the left (the corner buttons and the pet); the card sits just past the parchment.
+    this.grid.x = Math.max(240, (v.w - (w + 34 + cardW)) / 2);
+    this.cardBox.position.set(this.grid.x + w + 34 + cardW / 2, this.grid.y + w / 2);
+    const x = (TILE + GAP) / 2;
+    const y = [-TILE - GAP, 0, TILE + GAP];
+    this.placeTile('across', -x, y[0]);
+    this.placeTile('acrossWay', x, y[0]);
+    this.placeTile('upDown', -x, y[1]);
+    this.placeTile('upDownWay', x, y[1]);
+    this.placeTile('go', 0, y[2]);
   }
 
   private placeTile(kind: TileKind, x: number, y: number) {
@@ -568,6 +560,7 @@ class TreasureMap implements Game {
     const card = { ...this.card };
     const walk = walkCard(f.from!, card, this.plan.size);
     const pet = this.pirate!;
+    this.walking = true;
     for (const leg of walk.legs) {
       for (let k = 0; k < leg.length; k++) {
         const to = this.cellAt(leg[k]);
@@ -576,6 +569,7 @@ class TreasureMap implements Game {
         void this.ctx.say('count', { n: k + 1 });
       }
     }
+    this.walking = false;
     const reason = cardReason(card, f);
     if (!reason) return void this.found();
     this.misses++;
