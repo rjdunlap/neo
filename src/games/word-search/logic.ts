@@ -78,15 +78,26 @@ export interface WordPlan {
   grids: number;
 }
 
-/** The ladder: across and down in a small grid, then slants, then every direction (words read backwards), then a big grid. */
+/**
+ * The ladder: across and down in a small grid, then slants, then every direction (words read backwards), then a big grid.
+ * Level 5 is a gentler way in, appended with a high ID and played first: a 6 by 6 grid of four words, across and down, every
+ * square big and the whole grid always in view.
+ */
 export const PLANS: WordPlan[] = [
   { name: 'An 8 by 8 grid with five words, across and down', size: 8, words: 5, dirs: ALL_DIRS.slice(0, 2), grids: 1 },
   { name: 'A 10 by 10 grid with seven words, including slants', size: 10, words: 7, dirs: ALL_DIRS.slice(0, 3), grids: 1 },
   { name: 'A 12 by 12 grid with nine words, in every direction, even backwards', size: 12, words: 9, dirs: ALL_DIRS, grids: 1 },
   { name: 'A 14 by 14 grid with twelve words, in every direction', size: 14, words: 12, dirs: ALL_DIRS, grids: 1 },
+  { name: 'A small 6 by 6 grid with four words, across and down, big letters', size: 6, words: 4, dirs: ALL_DIRS.slice(0, 2), grids: 1 },
 ];
 
-export const planFor = (level: number): WordPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+/** The small grid that starts the ladder, by its ID. */
+export const SMALL_GRID = 5;
+/** The levels easiest first: the small grid, then 1 to 4. */
+export const ORDER = [SMALL_GRID, 1, 2, 3, 4];
+
+/** A level's plan; a level past the top plays the hardest grid, not the small one. */
+export const planFor = (level: number): WordPlan => PLANS[(level > PLANS.length ? ORDER[ORDER.length - 1] : Math.max(1, level)) - 1];
 
 /** Filler letters, weighted a little toward the common ones, so the grid does not look like a list of the listed words' letters. */
 const FILL = 'EEEEAAAIIOOUTTNNSSRRLLDDGGBCMPHFWYKV';

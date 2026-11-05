@@ -351,6 +351,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       'Tap a word\'s first letter, then tap its last letter to check the line. Tapping the same letter again lets go.',
       { from: 1, to: 1, text: 'You can also drag a finger along the word, from its first letter to its last.' },
+      { from: 5, to: 5, text: 'The words run across or down. You can also drag a finger along the word, from its first letter to its last.' },
       { from: 2, to: 4, text: 'If part of the grid is out of sight, drag it to slide it. A quick tap marks a letter; a drag only slides.' },
       'Tap Hint to see where a word starts and hear which word it is; Start over clears the words found.',
     ],
