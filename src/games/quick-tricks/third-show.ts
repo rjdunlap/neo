@@ -238,7 +238,7 @@ export class ThirdShow implements Game {
       this.lid.clear().roundRect(0, -26, 320, 30, 12).fill(wood.line).stroke(stroke(ink, 4));
       this.lid.position.set(-160, -100);
       this.lid.rotation = 0;
-      this.handle.addChild(new Graphics().circle(0, 0, 22).fill(swatch.yellow.line), this.arm);
+      this.handle.addChild(new Graphics().rect(-70, -12, 70, 24).fill(swatch.yellow.line).stroke(stroke(ink, 4)).circle(0, 0, 22).fill(swatch.yellow.line), this.arm);
       this.layer.addChild(this.box, this.handle);
       this.drawCrank();
     } else if (this.step === 1) {
@@ -604,8 +604,8 @@ export class ThirdShow implements Game {
     this.bg.clear().rect(0, 0, v.w, v.h).fill(night ? shadow : cream);
     if (!night) this.bg.rect(0, 0, 110, v.h).fill(swatch.purple.light).rect(v.w - 110, 0, 110, v.h).fill(swatch.purple.light);
     if (this.step === 0) {
-      this.box.position.set(v.w * 0.42, v.h * 0.48);
-      this.handle.position.set(this.box.x + 170, this.box.y);
+      this.box.position.set(v.w * 0.38, v.h * 0.48);
+      this.handle.position.set(this.box.x + 215, this.box.y);
       this.drawCrank();
     } else if (this.step === 1) {
       const middle = v.h * 0.56;
