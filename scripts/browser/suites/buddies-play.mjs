@@ -35,6 +35,28 @@ async function buddiesPlay() {
     assert.deepEqual(errors, []);
     log('Shape Buddies level 3: flat-then-flat explained with joinCup, Help glows the far half, a cup catches, carried together, one sticker, misses 0 and hints 1, portrait passed');
   };
+  // Level 4, down and catch: a flat path stays up high twice (the second failure glows the near half), a slope down reaches the cup.
+  const down = async () => {
+    await launch('shape-buddies', 4); await wait();
+    const before = await page.evaluate(() => { const g = neo.scene.game, say = g.ctx.say; g.spoken = []; g.ctx.say = (id, ...args) => { g.spoken.push(id); return say(id, ...args); }; return kit.store.data.stickers.length; });
+    await tap('neo.scene.game.tools[0]'); await drag(0, 'bridge');
+    await tap('neo.scene.game.friends[1]'); await tap('neo.scene.game.tools[1]'); await drag(1, 'receiver');
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.round.state.friends.map(f => f.place)), ['bridge', 'receiver'], 'both halves take a friend');
+    for (let n = 0; n < 2; n++) { await tap('neo.scene.game.tryButton'); await wait(); }
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.round.phase, neo.scene.game.spoken.filter(id => id === 'buddies.downFlat').length, neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.round.shown.has('bridge')]), ['edit', 2, 0, 1, true], 'a flat path stops short, twice, and the near half glows');
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+    await screenshot('shape-buddies-4-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    await tap('neo.scene.game.friends[0]'); await tap('neo.scene.game.tools[2]');
+    await tap('neo.scene.game.tryButton'); await wait();
+    assert.equal(await page.evaluate(() => neo.scene.game.round.phase), 'caught', 'a slope down to the cup catches');
+    await tap('neo.scene.game.pot'); await finished('shape-buddies');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('shape-buddies').history.at(-1); return [r.level, r.misses, r.hints]; }), [4, 0, 1]);
+    assert.deepEqual(errors, []);
+    log('Shape Buddies level 4: a flat path explained with downFlat twice, the near half glows, a slope catches, one sticker, misses 0 and hints 1, portrait passed');
+  };
+  if (process.env.BUDDIES_ONLY === '4') return down();
   if (process.env.BUDDIES_ONLY === '3') return joined();
   await launch('shape-buddies', 1); await wait();
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);

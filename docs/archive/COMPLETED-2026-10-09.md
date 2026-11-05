@@ -2815,7 +2815,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--quick-tricks
 
 [PR #1232](https://github.com/rjdunlap/neo/pull/1232), [dive slice 3](../deep-dives/quick-tricks.md#build-slices-in-order). New level 8, the toddler entry: two tricks only (umbrella leaf, bridge stretch). A leaf anywhere over the friend's column, above or in front, floats up over them and keeps them dry; a stretch let go past halfway (GAP/2) snaps across and a shorter one springs back free. Nothing counts (no misses, no hints); the pet re-says the trick's instruction after ten quiet seconds; the opening line is the new `tricks.start-two` ("Two quick tricks"); the bow omits the sock monster. Toddler order 8, 1; preschool order 8, 1, 2, 3, 4 with `entryLevels: [8]`; pre-K 2-7 and school 5-7 unchanged; how-to step `{ from: 8, to: 8 }`. The browser case `tinyShow()` is in `scripts/browser/suites/encore-tricks.mjs` (`NEXT_ONLY=tricks FROM_LEVEL=8`).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--quick-tricks-level-8-a-tiny-show-quick-tricks-batch-3).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--quick-tricks-level-8-a-tiny-show-quick-tricks-batch-3).
 
 ## Quick Tricks level 9 The third show (quick-tricks batch 4, 2026-11-04)
 
@@ -2846,6 +2846,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--secret-code-level-8-
 [PR #1243](https://github.com/rjdunlap/neo/pull/1243), `claude/secret-code-bigger-detective`: [dive slice 5](../deep-dives/secret-code.md#build-slices-in-order). Four slots, five colors, no repeats, three seeded shown clues (greedy; exactly three on all 300 tested seeds; the cap is three so every row fits at `doorY` 430) that leave one code. The miss rule is level 7's (`contradictsClues`, one miss per inconsistent try), faint stones after two misses or once history including the clues reaches `slots + 4` (five own tries), and the clue rows never fade. `PLANS` is now keyed by level ID (9 and 10 reserved); school spans 2–11 with `order` 2–8 then 11. No new voice lines (`code.detective`, `code.contradiction` reused). The how-to card scopes level 8's step and note `to: 8` and adds a level 11 step and note. Rule tests: 12 in secret-code (new: level-11 uniqueness and a time bound under 250 ms over 300 seeds, the bot opens it first try, clue rows fit at 430). The woods case for Secret Code now covers level 11. Couch unchanged.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--secret-code-level-11-a-bigger-detective-door-secret-code-batch-5).
+
+## Shape Buddies level 4 Down and catch (shape-buddies batch 2, 2026-11-04)
+
+[PR #1244](https://github.com/rjdunlap/neo/pull/1244), `claude/shape-buddies-down-and-catch`: [dive slice 2](../deep-dives/shape-buddies.md#build-slices-in-order). `PLANS[4] = { bridges: ['slope'], drop: 50, joined: true }`: level 3's wide gap with the near half raised 50 like level 2. Accepted: exactly Slope at the near half and Cup at the far half, either friend. `failureLine` takes the step into account: a flat near half gives `buddies.downFlat`, no near half or a plain or cup one gives `buddies.downPath`, and the far half reuses `joinShort` and `joinCup`; new lines `buddies.start4`, `downPath`, `downFlat`. The scene draws the raised near bank, a stepped dashed outline, a sloped clasp and step-aware seed paths, with the carried handle staying up the step; heading "A spoon that slopes down". `LEVELS` pre-K and school are now 1-4, `DESCRIPTIONS[4]`, a how-to step `{ from: 4, to: 4 }`. Misses stay 0, two failed Tries for a role charge one hint, and the bot is unchanged (it follows guidance). The browser suite `buddies` gained `BUDDIES_ONLY=4`.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--shape-buddies-level-4-down-and-catch-shape-buddies-batch-2).
 
 ## Word Search level 5 A small grid to start (word-search batch 2, 2026-11-04)
 

@@ -1501,6 +1501,8 @@ Proof: existing-interaction tier: typecheck, the game's rule tests, one filtered
 
 ### shape-buddies 2: Level 4 Down and catch
 
+Built 2026-11-04, [PR #1244](https://github.com/rjdunlap/neo/pull/1244); [build note](archive/COMPLETED-2026-10-09.md#shape-buddies-level-4-down-and-catch-shape-buddies-batch-2-2026-11-04). No longer eligible for dispatch.
+
 - **`shape-buddies`, Level 4 *Down and catch* (dive slice 2)** (new level): the near half is raised like level 2's bridge dock and the far half sits at the low bank, so the handle must slope down to a cup. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
 
 Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
@@ -1509,7 +1511,7 @@ Proof: new-level tier: typecheck, rule tests (the exact accepted set, the step-a
 
 ### shape-buddies 3: Level 5 A cup on the ledge
 
-- **`shape-buddies`, Level 5 *A cup on the ledge* (dive slice 3)**, after batch shape-buddies 2 (shares `PLANS`, `LEVELS` and the joined-line changes; new rule): a rocky crack with a ledge, solved by a bridge plus a cup or by one cup on the ledge. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
+- **`shape-buddies`, Level 5 *A cup on the ledge* (dive slice 3)** (batch shape-buddies 2 built; shares `PLANS`, `LEVELS` and the joined-line changes; new rule): a rocky crack with a ledge, solved by a bridge plus a cup or by one cup on the ledge. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
 
 Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 
@@ -1525,7 +1527,7 @@ Proof: new-interaction tier: typecheck, unit tests including the four-view layou
 
 ### shape-buddies 5: Level 7 One friend, one job, the preschool opening
 
-- **`shape-buddies`, Level 7 *One friend, one job*, the preschool opening (dive slice 5)**, after batch shape-buddies 2 (shares `LEVELS`; new band): one friend, a fixed plank over the gap and a cup at the catch; Shape Buddies joins Tinker Lab's preschool page and pre-K gains `order: [7, 1, 2, 3, 4, 5]` with `entryLevels: [7]`. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
+- **`shape-buddies`, Level 7 *One friend, one job*, the preschool opening (dive slice 5)** (batch shape-buddies 2 built; shares `LEVELS`; new band): one friend, a fixed plank over the gap and a cup at the catch; Shape Buddies joins Tinker Lab's preschool page and pre-K gains `order: [7, 1, 2, 3, 4, 5]` with `entryLevels: [7]`. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
 
 Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the lands and registry band tests only if their expectations change.
 

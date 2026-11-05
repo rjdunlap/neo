@@ -167,6 +167,58 @@ describe('Shape Buddies', () => {
       }
     });
   });
+  describe('level 4, down and catch', () => {
+    const build = (a: Construction['friends'][number], b: Construction['friends'][number]) => { const s = initial(); s.friends = [a, b]; return s; };
+    const PLACES: Place[] = ['park', 'bridge', 'receiver'];
+    const all = function* () {
+      for (const a of SHAPES) for (const b of SHAPES) for (const p of PLACES) for (const q of PLACES) {
+        if (p !== 'park' && p === q) continue;
+        yield build({ shape: a, place: p }, { shape: b, place: q });
+      }
+    };
+    it('exactly a slope near half and a cup far half catch, in either identity; every other row names its first failing role', () => {
+      let caught = 0;
+      for (const s of all()) {
+        const near = s.friends.find(f => f.place === 'bridge')?.shape, end = s.friends.find(f => f.place === 'receiver')?.shape;
+        const expected = near === 'flatten' ? 'buddies.downFlat' : near !== 'slope' ? 'buddies.downPath'
+          : end === undefined ? 'buddies.joinShort' : end !== 'scoop' ? 'buddies.joinCup' : null;
+        expect(failureLine(s, 4)).toBe(expected);
+        expect(trace(s, 4)).toBe(expected === null ? 'caught' : ['buddies.downFlat', 'buddies.downPath'].includes(expected) ? 'bridge' : 'receiver');
+        if (expected === null) caught++;
+      }
+      expect(caught).toBe(2);
+      expect(trace(build({ shape: 'scoop', place: 'receiver' }, { shape: 'slope', place: 'bridge' }), 4)).toBe('caught');
+    });
+    it("keeps level 3's joined lines, and level 3's spoon fails at level 4 with the flat line", () => {
+      const spoon = build({ shape: 'flatten', place: 'bridge' }, { shape: 'scoop', place: 'receiver' });
+      expect(trace(spoon, 3)).toBe('caught'); expect(failureLine(spoon, 4)).toBe('buddies.downFlat');
+      const sloped = build({ shape: 'slope', place: 'bridge' }, { shape: 'scoop', place: 'receiver' });
+      expect(failureLine(sloped, 3)).toBe('buddies.joinSlope'); expect(trace(sloped, 4)).toBe('caught');
+      for (const s of all()) expect(['buddies.downFlat', 'buddies.downPath']).not.toContain(failureLine(s, 3));
+    });
+    it('guidance suggests a slope to the near half first, then a cup to the far half', () => {
+      expect(guidance(initial(), 4)).toEqual({ friend: 0, shape: 'slope', dock: 'bridge' });
+      expect(guidance(build({ shape: 'slope', place: 'bridge' }, { shape: 'plain', place: 'park' }), 4)).toEqual({ friend: 1, shape: 'scoop', dock: 'receiver' });
+    });
+    it('a flat path first charges one hint for the near half, never a miss', () => {
+      const r = new SeedRound(4); r.edit('flatten', 'bridge'); r.select(1); r.edit('scoop', 'receiver');
+      for (let n = 0; n < 2; n++) { expect(r.trySeed()).toBe('bridge'); r.settle('bridge'); }
+      expect(r.hints).toBe(1); r.select(0); r.edit('slope');
+      expect(r.trySeed()).toBe('caught'); r.settle('caught');
+      expect(r.carry()).toBe(true); expect(r.finish()).toBe(true); expect([r.misses, r.hints]).toEqual([0, 1]);
+    });
+    it("raises the near half by level 2's step and keeps level 3's halves otherwise, separate and at least 100 units", () => {
+      for (const [w, h] of [[1024, 768], [768, 1024], [844, 390], [750, 369]]) {
+        const v = computeView(w, h), three = layout(v.w, v.h, 3), l = layout(v.w, v.h, 4);
+        expect(l).toEqual({ ...three, bridge: { ...three.bridge, y: layout(v.w, v.h, 2).bridge.y } });
+        const boxes = [{ ...l.bridge, w: 180, h: 110 }, { ...l.receiver, w: l.receiverWidth, h: 110 }, { ...l.pot, w: 120, h: 120 }, ...l.parks.map(p => ({ ...p, w: 140, h: 110 })), ...l.tools.map(p => ({ ...p, w: 130, h: 110 })), ...l.buttons.map(p => ({ ...p, w: 150, h: 110 }))];
+        for (const [i, a] of boxes.entries()) {
+          expect(a.x - a.w / 2).toBeGreaterThan(150); expect(a.y - a.h / 2).toBeGreaterThan(100); expect(a.y + a.h / 2).toBeLessThan(v.h);
+          for (const b of boxes.slice(i + 1)) expect(Math.abs(a.x - b.x) >= (a.w + b.w) / 2 || Math.abs(a.y - b.y) >= (a.h + b.h) / 2).toBe(true);
+        }
+      }
+    });
+  });
   it('draws the seed kind after the friend colours, so every seed keeps its colours, and over seeds grows all three kinds', () => {
     const kinds = new Set<string>();
     for (let seed = 1; seed <= 200; seed++) {
