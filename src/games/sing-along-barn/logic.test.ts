@@ -30,8 +30,12 @@ import {
   pickTune,
   planFor,
   tunesFor,
+  GAPS,
+  GAP_TUNES,
+  pickGapTune,
   type Tune,
 } from './logic';
+import { singAlongBarn } from './index';
 
 describe('the tune', () => {
   it('has one note for every sung syllable, so taps line up with a grown-up singing', () => {
@@ -88,13 +92,14 @@ describe('the song', () => {
 
 describe('the plans', () => {
   it('grow from one animal to three, with her choosing all at once and then one verse at a time', () => {
-    expect(PLANS.map((p) => p.verses)).toEqual([1, 2, 2, 3, 3, 2]);
-    expect(PLANS.map((p) => p.invite)).toEqual([false, false, true, true, true, true]);
-    expect(PLANS.map((p) => p.each)).toEqual([false, false, false, true, true, true]);
-    expect(PLANS.map((p) => p.chooseTune)).toEqual([false, false, false, false, true, true]);
-    expect(PLANS.map((p) => p.full)).toEqual([false, false, false, false, false, true]);
+    expect(PLANS.map((p) => p.verses)).toEqual([1, 2, 2, 3, 3, 2, 2]);
+    expect(PLANS.map((p) => p.invite)).toEqual([false, false, true, true, true, true, false]);
+    expect(PLANS.map((p) => p.each)).toEqual([false, false, false, true, true, true, false]);
+    expect(PLANS.map((p) => p.chooseTune)).toEqual([false, false, false, false, true, true, false]);
+    expect(PLANS.map((p) => p.full)).toEqual([false, false, false, false, false, true, false]);
+    expect(PLANS.map((p) => p.gap)).toEqual([false, false, false, false, false, false, true]);
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(99)).toBe(PLANS[5]);
+    expect(planFor(99)).toBe(PLANS[6]);
   });
 
   it('keeps the longest song short enough for a small child and for the how-to demonstration', () => {
@@ -416,5 +421,56 @@ describe('The Wheels on the Bus', () => {
     for (const t of TUNES) for (const n of makeSong(ANIMALS.slice(0, 3), t)) expect(n.syllable).not.toBe('@');
     for (const t of TUNES.filter((x) => x !== WHEELS)) for (const p of [...t.opening, ...t.verse]) expect(p.syllables).not.toContain('@');
     for (const p of WHEELS.opening) expect(p.syllables).not.toContain('@');
+  });
+});
+
+describe('Finish the line (level 7)', () => {
+  it('is placed after choosing friends for toddler and preschool by order, and pre-K does not play it', () => {
+    expect(singAlongBarn.levels('toddler')).toEqual({ min: 1, max: 7, order: [1, 2, 3, 7] });
+    expect(singAlongBarn.levels('preschool')).toEqual({ min: 2, max: 7, order: [2, 3, 7] });
+    expect(singAlongBarn.levels('prek')).toEqual({ min: 3, max: 6 });
+    expect(singAlongBarn.levels('lap')).toEqual({ min: 1, max: 2 });
+    expect(planFor(7).gap).toBe(true);
+    expect(planFor(7).invite).toBe(false);
+  });
+
+  it('sings only tunes whose verse ends on a word with a picture, and never the French one', () => {
+    expect(GAP_TUNES.map((t) => t.id)).toEqual(['buns', 'rain', 'itsy', 'twinkle']);
+    expect(GAPS.clair).toBeUndefined();
+    expect(new Set(GAP_TUNES.map((t) => GAPS[t.id]!.picture)).size).toBe(GAP_TUNES.length);
+  });
+
+  it('gaps on every friend\'s last sung syllable, which is the word in the table, and never in the opening', () => {
+    for (const tune of GAP_TUNES) {
+      const song = makeSong(ANIMALS.slice(0, 2), tune, true);
+      const gaps = song.filter((n) => n.gap);
+      expect(gaps.length).toBe(2);
+      for (const n of gaps) {
+        expect(n.animal).not.toBeNull();
+        expect(n.verseEnd).toBe(true);
+        expect(n.at).toBe(n.of - 1);
+        expect(n.syllable).toBe(GAPS[tune.id]!.word);
+      }
+      // A gap always has notes before it to lead up to it, and the song ends on the last one.
+      expect(song[0].gap).toBe(false);
+      expect(song.at(-1)!.gap).toBe(true);
+      // The gaps change nothing else: the same notes, words and answers as the song without them.
+      expect(song.map(({ gap: _, ...n }) => n)).toEqual(makeSong(ANIMALS.slice(0, 2), tune).map(({ gap: _, ...n }) => n));
+    }
+  });
+
+  it('has no gaps at any other level', () => {
+    for (const tune of TUNES) expect(makeSong(ANIMALS.slice(0, 3), tune).some((n) => n.gap)).toBe(false);
+  });
+
+  it('draws its tune from the seed, the same for the same seed, and every gap tune turns up', () => {
+    expect(pickGapTune(new Rng(5)).id).toBe(pickGapTune(new Rng(5)).id);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) seen.add(pickGapTune(new Rng(seed)).id);
+    expect([...seen].sort()).toEqual(['buns', 'itsy', 'rain', 'twinkle']);
+  });
+
+  it('describes the level for grown-ups', () => {
+    expect(singAlongBarn.describeLevel(7)).toMatch(/stops before the last word/);
   });
 });

@@ -57,6 +57,39 @@ async function singBarnPlay() {
     log('Sing-Along Barn tunes: a Wheels on the Bus round at level 1 (friend named mid-line, three sounds), ten cards in two rows upright at level 5, Twinkle chosen and sung through three verses, one sticker each, no misses or hints');
   }
   if (process.env.SING_ONLY === 'tunes') return tunesPlay();
+  // Level 7 *Finish the line* (batch sing-along-barn 2) at toddler, upright: the song stops before each friend's last word
+  // and its picture waits by the door; mashing through the pause wobbles the picture, then a touch sings the word.
+  // `SING_ONLY=finish` runs only this part.
+  async function finishPlay() {
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+    await launch('sing-along-barn', 7, 'Mia', 'toddler');
+    const game = () => page.evaluate(() => { const g = neo.scene.game; return { idx: g.idx, paused: g.pausedAt !== null, picture: g.picture.visible, tune: g.tune.id, gap: g.plan.gap }; });
+    const gaps = await page.evaluate(() => neo.scene.game.song.flatMap((n, i) => (n.gap ? [i] : [])));
+    let g = await game();
+    assert.ok(['buns', 'rain', 'itsy', 'twinkle'].includes(g.tune) && g.gap, `level 7 sings a gap tune: ${g.tune}`);
+    assert.equal(gaps.length, 2, 'a gap in each of the two verses');
+    await tapNotes(gaps[0]);
+    g = await game();
+    assert.deepEqual([g.idx, g.paused, g.picture], [gaps[0], true, true], 'the song waits before the first word, its picture out');
+    // Mashing: three fast taps inside the pause only wobble the picture; the taps after it sing the word and go on.
+    await tapNotes(3);
+    assert.equal((await game()).idx, gaps[0], 'a tap the moment the song stops does not skip the word');
+    await tapNotes(6);
+    g = await game();
+    assert.ok(g.idx > gaps[0] && g.idx < gaps[1] && !g.paused, `mashing sings the word and carries on (at ${g.idx})`);
+    await tapNotes(gaps[1] - g.idx); await page.waitForTimeout(600);
+    g = await game();
+    assert.deepEqual([g.idx, g.paused], [gaps[1], true], 'the second friend\'s verse waits too');
+    const box = await page.evaluate(() => { const b = neo.scene.game.picture.getBounds(); return { x: b.x, y: b.y, r: b.x + b.width, b: b.y + b.height, w: neo.view.w, h: neo.view.h }; });
+    assert.ok(box.x >= 0 && box.r <= box.w && box.y >= 0 && box.b <= box.h, `the picture is on screen: ${JSON.stringify(box)}`);
+    await screenshot('sing-along-barn-7-picture-portrait');
+    await tapNotes(1); await finished('sing-along-barn');
+    assert.deepEqual(await roundResult(), [0, 0]);
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    assert.deepEqual(errors, []);
+    log(`Sing-Along Barn level 7 at toddler upright (${g.tune}): a pause before each friend's last word with its picture on screen, three fast taps held, then mashing sang through, one sticker, no misses or hints`);
+  }
+  if (process.env.SING_ONLY === 'finish') return finishPlay();
   // Level 1: the farm picks one animal; every tap is the next note, mashing fast still sings it, and nothing can be wrong.
   await launchTune(1, 'macdonald');
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);
