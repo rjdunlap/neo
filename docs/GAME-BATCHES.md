@@ -1381,6 +1381,8 @@ Proof: new-interaction tier: typecheck, unit tests, one filtered `readdo` play o
 
 ### read-do 3: Make the sign
 
+Built 2026-11-04, [PR #1241](https://github.com/rjdunlap/neo/pull/1241); [build note](archive/COMPLETED-2026-10-09.md#read--do-make-the-sign-level-7-read-do-batch-3-2026-11-04). No longer eligible for dispatch.
+
 - **`read-do`, level 7 *Make the sign* (dive slice 3; WC3)**, after batch read-do 2 (new interaction): a friend's wish card, a tray of word tiles dragged into the sign row, Show it and Send. [Dive](deep-dives/read-do.md#build-slices-in-order), [definition](definitions/read-do-make-the-sign.md#build-order-and-check-tier)
 
 Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, a `readdo` case in the browser check script, the README row and `docs/GAMES.md`.
