@@ -245,8 +245,10 @@ export function techniqueSolve(start: Grid, shape: Shape, maxTier: Tier = 4, sto
     for (let i = 0; i < grid.length; i++) if (!grid[i] && popcount(cand[i]) === 1) return { tech: 'lone', cell: i, digit: digitsOf(cand[i])[0] };
     return null;
   };
+  // On a patchwork bed the patches are looked at first, so a hint names a patch whenever one has a number with one place left.
+  const onlyOrder = g.patches ? [...g.houses.slice(2 * size), ...g.houses.slice(0, 2 * size)] : g.houses;
   const only = (): Step | null => {
-    for (const h of g.houses) {
+    for (const h of onlyOrder) {
       let placed = 0;
       for (const c of h.cells) if (grid[c]) placed |= bit(grid[c]);
       for (let d = 1; d <= size; d++) {

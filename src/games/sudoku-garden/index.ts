@@ -23,7 +23,7 @@ const LEVELS: BandLevels = { grownup: { min: 1, max: 9, order: [7, 1, 2, 3, 9, 4
 
 /** One soft color for each number, so a bed can be read at a glance as well as by its digits. */
 const DIGIT_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white'];
-/** A patchwork bed's soil tints, laid at a quarter strength over the squares. */
+/** A patchwork bed's soil tints, laid at a little under half strength over the squares (a quarter did not read on the brown soil). */
 const PATCH_TINTS = [swatch.green.fill, swatch.yellow.fill, swatch.brown.fill];
 const ENTERED = 0x2f78c9;
 const CLASH = 0xc23a40;
@@ -279,7 +279,7 @@ class SudokuGarden implements Game {
       const x = geo.colOf[i] * cell + 3, y = geo.rowOf[i] * cell + 3, s = cell - 6;
       g.roundRect(x, y, s, s, 12).fill(this.given[i] ? cream : swatch.brown.light).stroke({ width: 2, color: swatch.brown.line });
       // Each patch's soil is faintly tinted so the patches read without counting borders.
-      if (tints) g.roundRect(x, y, s, s, 12).fill({ color: PATCH_TINTS[tints[geo.boxOf[i]]], alpha: 0.25 });
+      if (tints) g.roundRect(x, y, s, s, 12).fill({ color: PATCH_TINTS[tints[geo.boxOf[i]]], alpha: 0.45 });
       if (bad.has(i)) g.roundRect(x, y, s, s, 12).fill({ color: swatch.red.light, alpha: 0.75 });
       else if (geo.peers[this.cursor].includes(i) || i === this.cursor) g.roundRect(x, y, s, s, 12).fill({ color: 0xffffff, alpha: 0.3 });
       if (stuck.has(i)) g.roundRect(x + 2, y + 2, s - 4, s - 4, 11).stroke({ width: 5, color: swatch.orange.fill });
