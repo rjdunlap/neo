@@ -62,6 +62,8 @@ class SingAlongBarn implements Game {
   private readonly picture = new Container();
   private pausedAt: number | null = null;
   private wobble = 0;
+  /** Counts the pauses, so a finished word's leftover hide never touches the next pause's picture. */
+  private pauses = 0;
 
   constructor(private readonly ctx: GameContext) {
     // The card's demonstration of choosing a friend for each verse sings two of them: three Old MacDonald verses
@@ -447,6 +449,7 @@ class SingAlongBarn implements Game {
   /** *Finish the line*: the song stops before the verse's last word, and the word's picture pops up beside the door. */
   private pauseForWord() {
     this.pausedAt = this.clock;
+    this.pauses++;
     const pic = this.picture;
     const p = this.pictureSpot();
     this.ctx.tw.kill(pic.scale);
@@ -463,12 +466,14 @@ class SingAlongBarn implements Game {
     this.ctx.particles.burst(pic.x, pic.y, { kind: 'star', colors: RAINBOW.map((n) => swatch[n].fill), count: 8, speed: [120, 240], gravity: 200, life: [0.5, 0.9] });
     void this.ctx.say('barn.finish', { word: GAPS[this.tune.id]?.word ?? note.syllable });
     this.ctx.tw.kill(pic.scale);
+    const pause = this.pauses;
+    const current = () => pause === this.pauses;
     void this.ctx.tw
       .to(pic.scale, { x: 0.85, y: 0.85 }, { duration: 0.18, ease: ease.outBack })
       .then(() => this.ctx.tw.wait(0.7))
-      .then(() => this.ctx.tw.to(pic.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack }))
+      .then(() => (current() ? this.ctx.tw.to(pic.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack }) : undefined))
       .then(() => {
-        if (this.pausedAt === null) pic.visible = false;
+        if (current()) pic.visible = false;
       });
   }
 
