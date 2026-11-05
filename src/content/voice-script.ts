@@ -2363,6 +2363,7 @@ export const SCRIPT = {
   'rhyme.makeBoth': ['Give me both clues! One sound and one meaning.'],
   'rhyme.makeHint': ['Try the glowing clues.'],
   'rhyme.scene': ['Who goes {prep} the {place}? Find the one that rhymes with {place}: {list}.'],
+  'rhyme.scene2': ['The {place}… {place}. Who rhymes with {place}? {list}?'],
   'rhyme.sceneYes': ['A {rider} {prep} a {place}! {rider}, {place}. They rhyme!'],
   'rhyme.sceneNo': ['Hee hee! A {word} {prep} a {place}? {word} and {place} do not rhyme. Listen to the ends of the words.'],
   'rhyme.baskets': ['Here are the {keys} baskets. Put each picture in the basket it rhymes with.'],

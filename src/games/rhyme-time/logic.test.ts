@@ -254,6 +254,57 @@ describe('Silly pairs (level 8)', () => {
   });
 });
 
+describe('Silly pairs, two to choose (level 9, the preschool opening)', () => {
+  const plan = planFor(9);
+
+  it('is level 8\'s scenes with two pictures and three scenes', () => {
+    expect(plan).toBe(PLANS[8]);
+    expect(plan.mode).toBe('scene');
+    expect(plan.choices).toBe(2);
+    expect(plan.questions).toBe(3);
+    expect(rhymeTime.describeLevel(9)).toMatch(/two to choose/);
+  });
+
+  it('offers the rider and one picture that does not rhyme with the place, three different places a round', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const qs = makeQuestions(plan, new Rng(seed));
+      expect(qs).toHaveLength(3);
+      expect(new Set(qs.map((q) => q.prompt)).size).toBe(3);
+      for (const q of qs) {
+        const scene = sceneFor(q.prompt!);
+        expect(q.answer).toEqual([scene.rider]);
+        expect(q.words).toHaveLength(2);
+        expect(q.words).toContain(scene.rider);
+        const other = q.words.find((w) => w !== scene.rider)!;
+        expect(familyOf(other)).not.toBe(familyOf(q.prompt!));
+        expect(wordToTap(plan, q, null)).toBe(scene.rider);
+      }
+    }
+  });
+
+  it('puts the rider first and second across seeds', () => {
+    const at = new Set<number>();
+    for (let seed = 1; seed <= 50; seed++) for (const q of makeQuestions(plan, new Rng(seed))) at.add(q.words.indexOf(q.answer[0]));
+    expect([...at].sort()).toEqual([0, 1]);
+  });
+
+  it('opens preschool and steps up to level 8; the older ladders skip it as an entry level', () => {
+    const pre = rhymeTime.levels('preschool');
+    expect(rhymeTime.bands).toContain('preschool');
+    expect(levelsInOrder(pre)).toEqual([9, 8]);
+    expect(stepLevel(9, 1, pre)).toBe(8);
+    expect(stepLevel(8, -1, pre)).toBe(9);
+    expect(rhymeTime.entryLevels).toEqual([9]);
+    expect(levelsInOrder(rhymeTime.levels('prek'))).not.toContain(9);
+    expect(levelsInOrder(rhymeTime.levels('school'))).not.toContain(9);
+  });
+
+  it('says the place twice and lists both pictures', () => {
+    expect(SCRIPT['rhyme.scene2'][0]).toMatch(/\{place\}… \{place\}\. Who rhymes with \{place\}\? \{list\}/);
+    expect(spokenList(['duck', 'cat'])).toBe('the duck or the cat');
+  });
+});
+
 describe('Rhyme baskets (level 10)', () => {
   it('is level 10 on its own ID, two trays of six; level 9 is not baskets', () => {
     expect(planFor(10)).toBe(BASKETS);
