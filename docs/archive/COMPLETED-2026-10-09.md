@@ -2523,7 +2523,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--rhyme-time-l
 
 [PR #1242](https://github.com/rjdunlap/neo/pull/1242), `claude/rhyme-time-preschool`: [dive slice 3](../deep-dives/rhyme-time.md#build-slices-in-order), the chunk 18 preschool opening. Level 8's scenes with two pictures (the rider and one non-rhyming picture) and three scenes per round; new voice line `rhyme.scene2` says the place twice ("The truck… truck. Who rhymes with truck? The duck or the cat?"). Preschool range `{ min: 8, max: 9, order: [9, 8] }`, `entryLevels: [9]`; prek and school ladders unchanged. Rhyme Time is now on Story Grove's preschool page (page 1 of 2). Same accounting: a wrong picture is a miss, the glow after two. How-to card: a level 9 step and finish line, and the miss note covers 8–9. The `woods` rhyme loop now includes level 9 (preschool, portrait 820x1180) and honors `TO_LEVEL`. Reviewer note: with two choices a guessing child rarely reaches the step-down threshold.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--rhyme-time-level-9-silly-pairs-two-to-choose-rhyme-time-batch-3).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--rhyme-time-level-9-silly-pairs-two-to-choose-rhyme-time-batch-3).
 
 ## Secret Code, fair rows, a hint that keeps up and three doors (secret-code batch 1, 2026-11-03)
 
@@ -2552,6 +2552,10 @@ Branch `claude/sing-along-barn-finish-line`, PR #1259: [dive slice 2](../deep-di
 Branch `claude/sink-float-fresh-things`, PR #1147: [dive slice 1](../deep-dives/sink-float.md#build-slices-in-order). `THINGS` grew from nine to fourteen (feather and marble obvious; log, ice cube and paper clip surprises), each with code-drawn `thingArt`, a journal entry and voice line (the journal now holds thirty-six game observations), and `thingWord` for the two-word names. The pinned-draws test became property tests. No new level; bot, couch, bands and how-to card unchanged.
 
 Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sink-or-float-fresh-things-sink-float-batch-1).
+
+## Sink or Float, level 9 Big and small (batch sink-float 2, 2026-11-05)
+
+Branch `claude/sink-float-big-small`, PR #1261: [dive slice 2](../deep-dives/sink-float.md#build-slices-in-order). `SINK_PLANS` became a table keyed by level ID (1-7 and 9; 8 reserved for Garden Raft; `sinkPlan` falls to the nearest built ID below) and the bands moved to `order` (pre-K 4, 5, 9, 6; school 5, 6, 9, 7). Level 9 plays three seeded pairs (log and twig, rock and pebble, big and little ball): watch the big one, guess the small one, test it, always the material line. New twig and pebble art; the little ball reuses the ball. Guesses are never misses and nothing is filed in the journal. Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sink-or-float-level-9-big-and-small-sink-float-batch-2).
 
 ## Sudoku Garden, a 4 by 4 bed to start (batch sudoku-garden 1, 2026-11-03)
 

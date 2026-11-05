@@ -1591,7 +1591,7 @@ Proof: existing-interaction tier plus art: typecheck, the game's rule tests and 
 
 ### sink-float 2: Big and small
 
-- **`sink-float`, Level 9 *Big and small* (dive slice 2)**, after batch sink-float 1 (the log and pebble art; converts the plans to a table keyed by level ID and moves the bands to `order`; level ID 8 stays reserved for Garden Raft; new level): three pairs of one material at two sizes; the big one is tested, then she guesses the small one, then tests it; guesses are never misses. [Dive](deep-dives/sink-float.md#build-slices-in-order)
+- **`sink-float`, Level 9 *Big and small* (dive slice 2)** (**built 2026-11-05**, branch `claude/sink-float-big-small`, PR #1261), after batch sink-float 1 (the log and pebble art; converts the plans to a table keyed by level ID and moves the bands to `order`; level ID 8 stays reserved for Garden Raft; new level): three pairs of one material at two sizes; the big one is tested, then she guesses the small one, then tests it; guesses are never misses. [Dive](deep-dives/sink-float.md#build-slices-in-order)
 
 Files expected: `src/games/sink-float/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the lands and registry tests only if their expectations change.
 
