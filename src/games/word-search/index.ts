@@ -184,7 +184,7 @@ class WordSearch implements Game {
     if (this.touch) return this.resizeTouch(v);
     const n = this.n;
     // The controller reminder covers the bottom of the screen for the first ten seconds, so the grid stays above it.
-    this.cell = Math.max(34, Math.min(66, Math.floor((v.h - 100 - 200) / n)));
+    this.cell = Math.max(34, Math.min(66, Math.floor((v.h - 100 - 200 - (this.grid.message ? MSG_H : 0)) / n)));
     const w = n * this.cell, left = Math.max(160, (v.w - w - 320) / 2);
     this.board.position.set(left, 104);
     this.list.position.set(left + w + 44, 104);
@@ -332,7 +332,9 @@ class WordSearch implements Game {
     const message = this.grid.message, g = this.messageLines.clear();
     if (!message) return;
     this.messageRow.position.set(x, y);
-    const lines = message.length * MSG_MIN_SLOT <= w ? [message] : wrapWords(message, Math.floor(w / MSG_MIN_SLOT));
+    // Two lines at most, so the row stays inside its strip: on a narrow view the blanks shrink instead.
+    let per = Math.floor(w / MSG_MIN_SLOT), lines = message.length <= per ? [message] : wrapWords(message, per);
+    while (lines.length > 2) lines = wrapWords(message, ++per);
     const slot = Math.min(36, Math.floor(w / Math.max(...lines.map((l) => l.length)))), rowH = lines.length > 1 ? 32 : 44;
     let k = 0;
     lines.forEach((line, row) => {
