@@ -525,6 +525,7 @@ class SecretCode implements Game {
     if (this.busy || this.finished || this.phase !== 'mark') return;
     this.marks[i] = nextMark(this.marks[i]);
     this.drawDisc(i);
+    this.drawGlow();
     sfx.pop(this.marks[i] === 'green' ? 6 : this.marks[i] === 'yellow' ? 5 : 3);
   }
 
@@ -534,7 +535,7 @@ class SecretCode implements Game {
     if (!this.plan.maker || !this.hinted || this.phase !== 'mark') return;
     const right = score(this.code, this.petStones, true);
     for (const i of wrongMarks(this.code, this.petStones, this.marks)) {
-      const fill = right[i] === 'green' ? swatch.green.fill : right[i] === 'yellow' ? swatch.yellow.fill : 0xc9ccd6;
+      const fill = right[i] === 'green' ? swatch.green.fill : right[i] === 'yellow' ? swatch.yellow.fill : 0x8a8f9e;
       g.circle(this.slotX(i), this.doorY() + 134, 54).stroke({ width: 10, color: fill, alpha: 0.9 });
     }
   }
