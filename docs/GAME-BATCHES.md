@@ -1491,6 +1491,8 @@ Proof: new-level tier with a layout check: typecheck, rule tests (uniqueness and
 
 ### secret-code 6: Couch course The Code Doors
 
+Built 2026-11-05, [PR #1255](https://github.com/rjdunlap/neo/pull/1255); [build note](archive/COMPLETED-2026-10-09.md#secret-code-couch-course-the-code-doors-secret-code-batch-6-2026-11-05). No longer eligible for dispatch.
+
 - **`secret-code`, Couch course *The Code Doors* (dive slice 6)**, after batch secret-code 1 (couch catalog): five frozen codes at levels 4–6, par from the fixed reference solver (`nextMove`) per the October 23 rule. [Dive](deep-dives/secret-code.md#build-slices-in-order)
 
 Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/couch/course.ts`, the couch catalog, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.

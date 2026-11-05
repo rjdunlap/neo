@@ -258,3 +258,10 @@
 - [PR #1238](https://github.com/rjdunlap/neo/pull/1238) (tested commit `57ff4cb2`, base `d1baafaf`; Vite `http://localhost:5364`): school level 8, four slots and five colors with a repeat in every code; same miss rule as levels 1–6; `code.repeat` reused; level-scoped how-to steps for 7 and 8; couch unchanged.
 - Ran: typecheck; `npx vitest run src/games/secret-code src/content src/games/registry` 20 files, 214 tests pass (new rule test: 300 seeds, every code repeats, reasoning bot cracks each within six tries, max 5); `BROWSER_SUITE=woods WOODS_ONLY=code FROM_LEVEL=8` pass (two misses from repeated wrong tries, one hint, both doors, score [2,1], sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=secret-code FINGER_LEVELS=8` pass in 51.5 s. `game-reviewer` found no defects (one wording nit taken).
 - Not run: `npm run build` (no shared assets or voice lines; CI builds), a portrait screenshot, levels 1–7 regression play, `couchgames` (couch unchanged), an iPad or a child ([device check](../DEVICE-CHECKS.md)).
+
+## 2026-11-04 — Secret Code level 11 A bigger detective door (secret-code batch 5)
+
+- [PR #1243](https://github.com/rjdunlap/neo/pull/1243) (base `fa4a69f0` plus the branch; local Vite dev server): school level 11, four slots, five colors, three shown clues leaving one code; level 7's miss rule; no new voice lines; couch unchanged.
+- Ran: typecheck; `npx vitest run src/games/secret-code src/content src/games/registry` 20 files, 216 tests pass; `BROWSER_SUITE=woods WOODS_ONLY=code FROM_LEVEL=11` pass (two contradicting tries: misses 2, hint 1, both doors, sticker; portrait screenshot of three full-strength clue rows); `BROWSER_SUITE=fingerdemo FINGER_ONLY=secret-code FINGER_LEVELS=11` pass in 17.8 s.
+- Gap: the clue cap then changed from four to three, which gave identical doors (all 300 seeds already gave three); rule tests were rerun, the browser checks were not.
+- Not run: `npm run build`, full `npm test`, `couchgames` (couch unchanged), levels 1–8 regression play, an iPad or a child ([device check](../DEVICE-CHECKS.md)).
