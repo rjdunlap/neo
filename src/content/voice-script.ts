@@ -4989,6 +4989,9 @@ export const SCRIPT = {
   'brain.next': ['Now find {n}.'],
   'brain.hint': ['Find {n}. Its stone has a golden outline.'],
   'brain.done': ['All {n} stones are lit! You found them in order.'],
+  'brain.sums.start': ['Find the sums in order, from the one that makes one up to {n}. Take your time.'],
+  'brain.sums.try': ['That one makes {m}. Look for the one that makes {n}.'],
+  'brain.sums.hint': ['The one that makes {n} has a golden outline.'],
 
   'mn.title': ['Movie Night'],
   'mn.instruction1': ['Choose sounds for the pictures. Watch your show, then take a bow.'],
