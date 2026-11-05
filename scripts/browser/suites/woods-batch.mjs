@@ -1068,8 +1068,10 @@ async function woodsBatch() {
     log(`Beat Builder ${level} (${plan.mode}): squares toggled on the grid, ${plan.mode === 'free' ? 'free play and the green check' : 'copying, misses, hints'}, saved score and sticker passed`);
   }
 
-  if (!only || only === 'rhyme') for (const level of [1, 2, 3, 4, 8].filter((l) => l >= fromLevel)) {
-    await launch('rhyme-time', level);
+  // Level 9 (the preschool opening) plays at preschool in portrait: two pictures, three scenes, the one wrong picture tapped twice for the glow.
+  if (!only || only === 'rhyme') for (const level of [1, 2, 3, 4, 8, 9].filter((l) => l >= fromLevel && l <= Number(process.env.TO_LEVEL || 99))) {
+    if (level === 9) await page.setViewportSize({ width: 820, height: 1180 });
+    await launch('rhyme-time', level, 'Mia', level === 9 ? 'preschool' : undefined);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const card = async (word) => {
       await tap(`neo.scene.game.cards.find((c) => c.word === '${word}').node`);
@@ -1077,7 +1079,8 @@ async function woodsBatch() {
       await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
       await page.waitForTimeout(380);
     };
-    for (let n = 0; n < 4; n++) {
+    const rounds = await page.evaluate(() => neo.scene.game.questions.length);
+    for (let n = 0; n < rounds; n++) {
       await idle(n);
       const q = await page.evaluate(() => neo.scene.game.questions[neo.scene.game.index]);
       const others = q.words.filter((w) => !q.answer.includes(w));
@@ -1086,11 +1089,12 @@ async function woodsBatch() {
           // Two pairs that don't rhyme: a word from the pair with a distractor, then the two distractors.
           await card(q.answer[0]); await card(others[0]);
           await card(others[0]); await card(others[1]);
-        } else { await card(others[0]); await card(others[1]); }
+        } else { await card(others[0]); await card(others[1] ?? others[0]); }
         assert.deepEqual(await counts(), [2, 1]);
         if (level === 3) await screenshot('rhyme-time-3-hint');
         if (level === 4) await screenshot('rhyme-time-4-hint');
         if (level === 8) await screenshot('rhyme-time-8-hint');
+        if (level === 9) await screenshot('rhyme-time-9-hint-portrait');
       }
       for (const w of q.answer) await card(w);
     }
@@ -1100,7 +1104,7 @@ async function woodsBatch() {
   }
 
   // Level 10, Rhyme baskets (school only): drag pictures into baskets by rhyme; a wrong basket, a free drop on empty grass, a second wrong basket for the glow.
-  if ((!only || only === 'rhyme') && fromLevel <= 10) {
+  if ((!only || only === 'rhyme') && fromLevel <= 10 && Number(process.env.TO_LEVEL || 99) >= 10) {
     await page.setViewportSize({ width: 768, height: 1024 });
     await launch('rhyme-time', 10, 'Mia', 'school');
     assert.equal(await page.evaluate(() => neo.scene.game.plan.mode), 'baskets');

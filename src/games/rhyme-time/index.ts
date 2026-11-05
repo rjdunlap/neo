@@ -19,9 +19,11 @@ import { picture, tagGlyph } from './pictures';
 /**
  * Pre-K plays the first riddle (5) after pairs; odd one out (4) and the meaning-first and make-it riddles (6–7) stay school.
  * Silly pairs (8) is a single rhyme judgment with a place to say it in, so it sits second on both ladders. Rhyme baskets (10)
- * holds three families at once, so it tops the school ladder only; level 9 (the preschool opening) is not built yet.
+ * holds three families at once, so it tops the school ladder only. Level 9 is level 8 with two pictures and three scenes, the
+ * place's word said twice: recognising a rhyme between two pictures is the preschool opening, an entry level the older ladders skip.
  */
 const LEVELS: BandLevels = {
+  preschool: { min: 8, max: 9, order: [9, 8] },
   prek: { min: 1, max: 8, order: [1, 8, 2, 3, 5] },
   school: { min: 2, max: 10, order: [2, 8, 3, 4, 5, 6, 7, 10] },
 };
@@ -313,6 +315,7 @@ class RhymeTime implements Game {
     const q = this.q;
     if (!q || this.finished) return;
     const list = q.words.join(', ');
+    if (this.plan.mode === 'scene' && this.plan.choices === 2) return this.ctx.instruct('rhyme.scene2', { place: q.prompt!, list: spokenList(q.words) });
     if (this.plan.mode === 'scene') return this.ctx.instruct('rhyme.scene', { place: q.prompt!, prep: sceneFor(q.prompt!).prep, list: spokenList(q.words) });
     if (this.plan.mode === 'match') return this.ctx.instruct('rhyme.match', { prompt: q.prompt!, list });
     if (this.plan.mode === 'pair') return this.ctx.instruct('rhyme.pair', { list });
@@ -775,8 +778,9 @@ export const rhymeTime: GameModule = {
   region: 'story-grove',
   challenge: 'words',
   skills: ['rhyming', 'listening', 'phonological-awareness', 'words'],
-  bands: ['prek', 'school'],
+  bands: ['preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [9],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'Say the words slowly and stretch the ends: "caaat, haaat". Then make up a silly rhyme together, or ask the pet\'s riddle back: it rhymes with cat and you wear it. What is it?',

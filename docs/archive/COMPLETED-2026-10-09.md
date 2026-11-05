@@ -2519,6 +2519,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--rhyme-time-level-8-s
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--rhyme-time-level-10-rhyme-baskets-rhyme-time-batch-4).
 
+## Rhyme Time level 9, Silly pairs, two to choose (rhyme-time batch 3, 2026-11-04)
+
+[PR #1242](https://github.com/rjdunlap/neo/pull/1242), `claude/rhyme-time-preschool`: [dive slice 3](../deep-dives/rhyme-time.md#build-slices-in-order), the chunk 18 preschool opening. Level 8's scenes with two pictures (the rider and one non-rhyming picture) and three scenes per round; new voice line `rhyme.scene2` says the place twice ("The truck… truck. Who rhymes with truck? The duck or the cat?"). Preschool range `{ min: 8, max: 9, order: [9, 8] }`, `entryLevels: [9]`; prek and school ladders unchanged. Rhyme Time is now on Story Grove's preschool page (page 1 of 2). Same accounting: a wrong picture is a miss, the glow after two. How-to card: a level 9 step and finish line, and the miss note covers 8–9. The `woods` rhyme loop now includes level 9 (preschool, portrait 820x1180) and honors `TO_LEVEL`. Reviewer note: with two choices a guessing child rarely reaches the step-down threshold.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--rhyme-time-level-9-silly-pairs-two-to-choose-rhyme-time-batch-3).
+
 ## Secret Code, fair rows, a hint that keeps up and three doors (secret-code batch 1, 2026-11-03)
 
 [PR #1144](https://github.com/rjdunlap/neo/pull/1144), `claude/secret-code-1`: [dive slice 1](../deep-dives/secret-code.md#build-slices-in-order). No new level; bot, couch, levels and bands unchanged. Misses on levels 1-6 count only from past tries still drawn above the door (`visibleRows`/`rowsThatFit` in `logic.ts`; 1024 by 768 landscape shows four rows), and level 7 uses only the friend's shown clues. The faint-stone hint is redrawn after every later try on a hinted door, with no new hint counted. `code.yellow`, `code.detective` and the level-3+ how-to step now say gray means "no more of that stone". Each door is a seeded wooden door, garden gate or treasure chest (`doorKinds`, read from an Rng clone so codes never change). The two-miss-rules and automatic-hint notes in the dive stay as design notes.

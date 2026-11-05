@@ -1419,6 +1419,8 @@ Proof: new-interaction tier: typecheck, unit tests including order and entry, on
 
 ### rhyme-time 3: Level 9, the preschool opening
 
+Built 2026-11-04, [PR #1242](https://github.com/rjdunlap/neo/pull/1242); [build note](archive/COMPLETED-2026-10-09.md#rhyme-time-level-9-silly-pairs-two-to-choose-rhyme-time-batch-3-2026-11-04). No longer eligible for dispatch.
+
 - **`rhyme-time`, Level 9, *Silly pairs, two to choose* (dive slice 3; chunk 18 preschool entry)**, after batch rhyme-time 2 (new band): level 8's scenes with two choices and three scenes per round; preschool `{ min: 8, max: 9, order: [9, 8] }`, `entryLevels: [9]`; Rhyme Time joins Story Grove's preschool page. [Dive](deep-dives/rhyme-time.md#build-slices-in-order)
 
 Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the lands and registry band tests, the README row and `docs/GAMES.md`.

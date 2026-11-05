@@ -24,9 +24,10 @@ export const PLANS: RhymePlan[] = [
   { mode: 'riddle2', choices: 4, questions: 4, name: 'Riddle: meaning clue first, a fourth decoy' },
   { mode: 'make', choices: 3, questions: 3, name: 'Your turn: make the riddle' },
   { mode: 'scene', choices: 3, questions: 4, name: 'Silly pairs: who rides in the truck? The rider that rhymes hops in' },
+  { mode: 'scene', choices: 2, questions: 3, name: 'Silly pairs, two to choose: three scenes, the rider or one other picture' },
 ];
 
-/** Level 10 sits on its own ID: level 9 (the preschool opening) is not built yet, and takes the ninth place in `PLANS` when it is. */
+/** Level 10 sits on its own ID, after level 9 (the preschool opening). */
 export const BASKETS: RhymePlan = { mode: 'baskets', choices: 6, questions: 2, name: 'Rhyme baskets: drag six pictures into three baskets by rhyme, two trays' };
 
 export const planFor = (level: number) => (level >= 10 ? BASKETS : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1]);
@@ -96,7 +97,7 @@ export function wordToTap(plan: RhymePlan, q: RhymeQuestion, picked: string | nu
   return q.answer[0];
 }
 
-// Silly pairs (level 8) -----------------------------------------------------------------
+// Silly pairs (levels 8 and 9) --------------------------------------------------------------
 
 /**
  * A place and the rider that rhymes with it: "a duck in a truck". `anchor` is where the rider sits, in the place picture's
