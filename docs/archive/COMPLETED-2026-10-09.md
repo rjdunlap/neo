@@ -2941,7 +2941,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--secret-code-
 
 [PR #1255](https://github.com/rjdunlap/neo/pull/1255), `claude/secret-code-code-doors`: [dive slice 6](../deep-dives/secret-code.md#build-slices-in-order). `src/games/secret-code/course.ts` freezes five codes (levels 4, 4, 5, 5, 6; the four-colour door hides its fifth stone), each door played under its own level's plan. Par is computed by the fixed reference solver `solverTries` (`nextMove` until the door opens): 2, 3, 3, 4, 4, so 16. A turn of the key is a try, taking a stone back is free; the game's hint marks the run helped; a reload restarts the door and keeps the tries. Badges Finished and On par. New `CourseInfo.reference` flag so the shelf, course page, HUD and result say par (under, on or above) for a par that can be beaten. Voice line `couch.course.codedoors`; suite `couchcodedoors`.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--secret-code-couch-course-the-code-doors-secret-code-batch-6).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--secret-code-couch-course-the-code-doors-secret-code-batch-6).
 
 ## Secret Code level 12 Swap seats (secret-code batch 7, 2026-11-05)
 
@@ -2978,3 +2978,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--shape-buddies-level-
 [PR #1266](https://github.com/rjdunlap/neo/pull/1266), `claude/sudoku-garden-patchwork-beds`: [dive slice 4](../deep-dives/sudoku-garden.md#build-slices-in-order). Level 9: a 6 by 6 bed (tier 2, 20 blanks) whose boxes are irregular six-square patches from eight authored `PATCH_LAYOUTS` (six connected patches of six, none a line, at most one plain 2 by 3, each admits a full bed); grown-up `order` `[7, 1, 2, 3, 9, 4, 5, 6, 8]`. Logic functions take a `Shape` (a `Size` or a `patchGeometry(layout)`), `Puzzle.patchwork` carries it, patches are `box` houses with the spoken word `patch`, the only-place step scans patches first on patchwork beds (so hints name a patch) and such beds skip `shuffleBed`. The scene draws a 6-unit `wood.line` along each edge between patches and tints each patch's soil (alpha 0.45; 0.25 did not read on the brown soil). Voice lines `sudoku.go-patch` and `sudoku.go-patch-touch`, a how-to step (the goal says "box (or patch)") and a co-play hint. Courses and the couch trip are unchanged. The game-reviewer found no defects.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sudoku-garden-level-9-patchwork-beds-sudoku-garden-batch-4).
+
+### Far Lights levels 1–4 (astronomy slice 2, built 2026-11-05)
+
+[PR #1273](https://github.com/rjdunlap/neo/pull/1273), `claude/far-lights-1-4`: [astronomy slice 2](../deep-dives/subjects/astronomy.md#build-slices-in-order), [definition](../definitions/far-lights.md). A new game `far-lights` in Tinker Lab (now 25 games), built with the definition's defaults: no shell change for levels 1–2 accounting, two boards at level 4, no journal. Bands lap 1, toddler 1–2, preschool 2–3, pre-K 3–4, school 4; challenge `noticing`, music `STYLES.hub`. Rules and layout in `src/games/far-lights/logic.ts` (33 rule tests); one arrangement (strip above the window) in every view. Title clip `game.far-lights` rendered with Kokoro (`scripts/voice-clips`). The land-count tests moved with Tinker Lab to 25 (the land-pages test pages 8, 8, 8 at school; the example-express capacity test expects 25 entries). New suite `farlights` (`scripts/browser/suites/far-lights-play.mjs`). Review fixed a hint glide that could leave the game busy and lights draggable during the level-2 finish. Levels 5–8 stay unbuilt ([Define Far Lights 5–8](../READY.md)).
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--far-lights-levels-14-astronomy-slice-2).
