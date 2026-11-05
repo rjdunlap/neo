@@ -1611,7 +1611,7 @@ Proof: existing-game fix tier: typecheck, rule tests, one filtered regression pl
 
 ### treasure-map 2: Write the card
 
-- **`treasure-map`, Level 6 *Write the card* (dive slice 2, after batch 1)** (new interaction; school): a two-slot card of number and arrow tiles beside the map, footprints as she sets it, Go walks it and a miss names the leg that was off; shares the footprints and the step hint with batch 1. Not on the couch.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
+- **`treasure-map`, Level 6 *Write the card* (dive slice 2, after batch 1)** (built 2026-11-04; new interaction; school): a two-slot card of number and arrow tiles beside the map, footprints as she sets it, Go walks it and a miss names the leg that was off; shares the footprints and the step hint with batch 1. Not on the couch.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
 
 Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 
