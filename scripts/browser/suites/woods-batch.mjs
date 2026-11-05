@@ -382,9 +382,9 @@ async function woodsBatch() {
         // Detective doors already have evidence: both wrong tries contradict it. Other doors teach on the first try.
         const wrong = await page.evaluate(() => { const g = neo.scene.game; return Array(g.plan.slots).fill((g.code[0] + 1) % g.plan.colors); });
         if (level === 11) {
-          // The bigger detective door: three clues (never more than four), every one drawn at full strength.
+          // The bigger detective door: three clues, every one drawn at full strength.
           const rows = await page.evaluate(() => neo.scene.game.past.children.map((r) => [r.visible, r.alpha]));
-          assert.ok(rows.length >= 3 && rows.length <= 4, `clue rows: ${rows.length}`);
+          assert.equal(rows.length, 3, `clue rows: ${rows.length}`);
           assert.ok(rows.every(([v, a]) => v && a === 1), JSON.stringify(rows));
         }
         for (let k = 0; k < (level === 7 || level === 11 ? 2 : 3); k++) await enter(wrong);

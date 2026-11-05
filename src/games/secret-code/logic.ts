@@ -34,7 +34,7 @@ export const PLANS: Readonly<Record<number, CodePlan>> = {
   6: { slots: 3, colors: 4, yellow: true, repeats: true, codes: 2, name: 'A color can be used twice in the code' },
   7: { slots: 3, colors: 4, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 2, max: 3 }, name: 'Detective door: work out the one code that fits the shown guesses' },
   8: { slots: 4, colors: 5, yellow: true, repeats: true, codes: 2, name: 'Four slots, five colors, and one color used twice' },
-  11: { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 3, max: 4 }, name: 'A bigger detective door: four slots, five colors, and three shown guesses' },
+  11: { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 3, max: 3 }, name: 'A bigger detective door: four slots, five colors, and three shown guesses' },
 };
 
 /** The plan for a level; an unbuilt or out-of-range ID falls back to the nearest built one below it (above 11, to 11). */

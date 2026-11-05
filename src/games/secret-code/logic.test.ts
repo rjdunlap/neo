@@ -134,9 +134,9 @@ describe('Detective doors', () => {
     }
   });
 
-  it('level 11: four slots, five colors, three distinct shown guesses (never more than four) that leave exactly one code, generated quickly', () => {
+  it('level 11: four slots, five colors, three distinct shown guesses that leave exactly one code, generated quickly', () => {
     const plan = planFor(11);
-    expect(plan).toMatchObject({ slots: 4, colors: 5, repeats: false, detective: true, clues: { min: 3, max: 4 } });
+    expect(plan).toMatchObject({ slots: 4, colors: 5, repeats: false, detective: true, clues: { min: 3, max: 3 } });
     let slowest = 0;
     for (let seed = 1; seed <= 300; seed++) {
       const t0 = performance.now();
@@ -144,8 +144,7 @@ describe('Detective doors', () => {
       slowest = Math.max(slowest, performance.now() - t0);
       expect(door).toEqual(detectiveDoor(plan, new Rng(seed)));
       expect(new Set(door.code).size).toBe(4);
-      expect(door.history.length).toBeGreaterThanOrEqual(3);
-      expect(door.history.length).toBeLessThanOrEqual(4);
+      expect(door.history).toHaveLength(3);
       expect(new Set(door.history.map((h) => h.stones.join())).size).toBe(door.history.length);
       for (const h of door.history) {
         expect(h.marks).toEqual(score(door.code, h.stones, plan.yellow));
@@ -163,8 +162,8 @@ describe('Detective doors', () => {
   });
 
   it('shows every detective clue at full view on the smallest screen', () => {
-    // The 1024 by 768 design area always fits, so the door is never above 0.6 × 768.
-    for (const plan of Object.values(PLANS).filter((p) => p.detective)) expect(rowsThatFit(768 * 0.6)).toBeGreaterThanOrEqual(plan.clues!.max);
+    // Even at the door's highest place (430), every shown clue fits, so none is hidden or left out of the miss rule.
+    for (const plan of Object.values(PLANS).filter((p) => p.detective)) expect(rowsThatFit(430)).toBeGreaterThanOrEqual(plan.clues!.max);
   });
 
   it('never charges a miss for a mark that has scrolled out of sight, but still does for one on screen', () => {
