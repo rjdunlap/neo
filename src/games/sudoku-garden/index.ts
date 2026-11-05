@@ -19,7 +19,7 @@ import {
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
 /** Level 7, a 4 by 4 bed, is the easy entry played first; the ladder then climbs 1 to 6. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 7, order: [7, 1, 2, 3, 4, 5, 6] } };
+const LEVELS: BandLevels = { grownup: { min: 1, max: 8, order: [7, 1, 2, 3, 4, 5, 6, 8] } };
 
 /** One soft color for each number, so a bed can be read at a glance as well as by its digits. */
 const DIGIT_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white'];
@@ -403,6 +403,7 @@ class SudokuGarden implements Game {
     if (this.hinted) {
       const h = this.hinted, pulse = 6 + 2 * Math.sin(this.clock * 6);
       if (h.kind === 'place') for (const c of h.house.cells) { const m = this.center(c); g.roundRect(m.x - cell / 2 + 6, m.y - cell / 2 + 6, cell - 12, cell - 12, 10).stroke({ width: 3, color: swatch.yellow.line, alpha: 0.9 }); }
+      if (h.kind === 'rules-out') for (const line of h.via.lines ?? []) for (const c of line.cells) { const m = this.center(c); g.roundRect(m.x - cell / 2 + 6, m.y - cell / 2 + 6, cell - 12, cell - 12, 10).stroke({ width: 3, color: swatch.yellow.line, alpha: 0.9 }); }
       if (h.kind === 'rules-out') for (const c of h.via.pattern ?? []) { const m = this.center(c); g.roundRect(m.x - cell / 2 + 4, m.y - cell / 2 + 4, cell - 8, cell - 8, 12).stroke({ width: 6, color: swatch.blue.fill }); }
       const m = this.center(h.cell);
       g.roundRect(m.x - cell / 2 - 3, m.y - cell / 2 - 3, cell + 6, cell + 6, 16).stroke({ width: pulse, color: h.kind === 'fix' ? swatch.red.fill : swatch.yellow.fill });
@@ -772,6 +773,7 @@ class SudokuGarden implements Game {
       case 'few': return ['sudoku.hint-few', {}];
       default: {
         const via = h.via, house = houseName(via.house!);
+        if (via.tech === 'xwing') return ['sudoku.hint-xwing', { lines: `${house}s`, n: via.digits![0], across: house === 'row' ? 'columns' : 'rows', m: h.digit }];
         return via.tech === 'pair'
           ? ['sudoku.hint-pair', { a: via.digits![0], b: via.digits![1], house, n: h.digit }]
           : ['sudoku.hint-locked', { n: via.digits![0], house, m: h.digit }];

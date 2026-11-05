@@ -1623,7 +1623,7 @@ Proof: new interaction: typecheck, unit tests (marks equal candidates; button on
 
 ### sudoku-garden 3: A crossing pair of rows
 
-- **`sudoku-garden`, level 8 A crossing pair of rows (dive slice 3)** (new rule on the existing tap; grown-up): shares the `order` with the built level 7 (batch 1); tier 4, the `xwing` step, generator or authored list, the hint and its lines. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
+- **`sudoku-garden`, level 8 A crossing pair of rows (dive slice 3)** (built 2026-11-05; new rule on the existing tap; grown-up): shares the `order` with the built level 7 (batch 1); tier 4, the `xwing` step, generator or authored list, the hint and its lines. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
 
 Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 

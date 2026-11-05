@@ -152,19 +152,23 @@ export const randomBed = (size: Size, rng: Rng): number[] => search(emptyGrid(si
  * `lone`: only one number fits a square. `place`: a number has only one square left in a row, column or box.
  * `pair`: two squares in a house can only hold the same two numbers, so no other square there can.
  * `locked`: a number's squares in a house all lie along one line (or one box), which rules it out of the rest of that line (or box).
+ * `xwing`: in two rows a number has only two places each, in the same two columns (or the same with rows and columns
+ * swapped), so it sits in two opposite corners of that rectangle and is ruled out of the rest of those two columns.
  */
-export type Tech = 'lone' | 'place' | 'pair' | 'locked';
-export type Tier = 1 | 2 | 3;
-export const TIER: Record<Tech, Tier> = { lone: 1, place: 2, pair: 3, locked: 3 };
+export type Tech = 'lone' | 'place' | 'pair' | 'locked' | 'xwing';
+export type Tier = 1 | 2 | 3 | 4;
+export const TIER: Record<Tech, Tier> = { lone: 1, place: 2, pair: 3, locked: 3, xwing: 4 };
 
 export interface Step {
   tech: Tech;
   /** The square a number goes in, or -1 for a step that only rules numbers out. */
   cell: number;
   digit: number;
-  /** `place`: the house the number has only one place in. `pair` and `locked`: the house the pattern lives in. */
+  /** `place`: the house the number has only one place in. `pair` and `locked`: the house the pattern lives in. `xwing`: the first of its two lines. */
   house?: House;
-  /** `pair`: the two squares. `locked`: the squares holding the number's remaining places. */
+  /** `xwing`: the two rows (or columns) whose places line up. */
+  lines?: House[];
+  /** `pair`: the two squares. `locked`: the squares holding the number's remaining places. `xwing`: the four corners. */
   pattern?: number[];
   /** `pair`: the two numbers. `locked`: the one number. */
   digits?: number[];
@@ -184,7 +188,7 @@ export interface TechResult {
  * Work a grid out with the techniques up to `maxTier`, always taking the easiest step first. `stopAtPlacement`
  * ends as soon as one number has been placed, which is what a hint needs.
  */
-export function techniqueSolve(start: Grid, size: Size, maxTier: Tier = 3, stopAtPlacement = false): TechResult {
+export function techniqueSolve(start: Grid, size: Size, maxTier: Tier = 4, stopAtPlacement = false): TechResult {
   const g = geometry(size), full = fullMask(size);
   const grid = start.slice();
   const cand = Array<number>(grid.length).fill(0);
@@ -264,10 +268,33 @@ export function techniqueSolve(start: Grid, size: Size, maxTier: Tier = 3, stopA
     return null;
   };
 
+  const xwing = (): Step | null => {
+    for (const kind of ['row', 'column'] as const) {
+      const base = g.houses.filter((h) => h.kind === kind), across = (c: number) => (kind === 'row' ? g.colOf[c] : g.rowOf[c]);
+      for (let d = 1; d <= size; d++) {
+        const spots = base.map((h) => h.cells.filter((c) => !grid[c] && cand[c] & bit(d)));
+        for (let a = 0; a < size; a++) {
+          if (spots[a].length !== 2) continue;
+          for (let b = a + 1; b < size; b++) {
+            if (spots[b].length !== 2 || across(spots[a][0]) !== across(spots[b][0]) || across(spots[a][1]) !== across(spots[b][1])) continue;
+            const corners = [...spots[a], ...spots[b]], removed: { cell: number; digit: number }[] = [];
+            for (const k of [across(spots[a][0]), across(spots[a][1])]) {
+              const cover = g.houses[(kind === 'row' ? size : 0) + k];
+              for (const c of cover.cells) if (!grid[c] && !corners.includes(c) && cand[c] & bit(d)) removed.push({ cell: c, digit: d });
+            }
+            if (removed.length) return { tech: 'xwing', cell: -1, digit: d, house: base[a], lines: [base[a], base[b]], pattern: corners, digits: [d], removed };
+          }
+        }
+      }
+    }
+    return null;
+  };
+
   while (empties()) {
     let step = lone();
     if (!step && maxTier >= 2) step = only();
     if (!step && maxTier >= 3) step = pair() ?? locked();
+    if (!step && maxTier >= 4) step = xwing();
     if (!step) return result(false);
     steps.push(step);
     tier = Math.max(tier, TIER[step.tech]) as Tier;
@@ -281,9 +308,9 @@ export function techniqueSolve(start: Grid, size: Size, maxTier: Tier = 3, stopA
   return result(true);
 }
 
-/** The easiest set of techniques that finishes the grid by itself: 1, 2 or 3, or 0 if these are not enough. */
+/** The easiest set of techniques that finishes the grid by itself: 1 to 4, or 0 if these are not enough. */
 export function gradeOf(grid: Grid, size: Size): 0 | Tier {
-  for (const tier of [1, 2, 3] as const) if (techniqueSolve(grid, size, tier).solved) return tier;
+  for (const tier of [1, 2, 3, 4] as const) if (techniqueSolve(grid, size, tier).solved) return tier;
   return 0;
 }
 
@@ -307,7 +334,8 @@ export interface SudokuPlan {
  * The ladder: two 6 by 6 beds that lone numbers solve (the second with far fewer to start from), a 6 by 6 bed that
  * needs the only-place-left trick, then the same climb on a 9 by 9 bed, ending with one that needs a pair or a pointing
  * line. (A 6 by 6 bed almost never needs a pair, so it has no third rung.) Level 7 is the easy entry appended above them: a 4 by 4
- * bed of 2 by 2 boxes that lone numbers finish, played first by `order`.
+ * bed of 2 by 2 boxes that lone numbers finish, played first by `order`. Level 8 is the top, played last: a 9 by 9 bed that
+ * needs a crossing pair of rows (an X-Wing).
  */
 export const PLANS: SudokuPlan[] = [
   { name: 'A 6 by 6 bed with a few numbers to find', size: 6, tier: 1, blanks: 14, beds: 1 },
@@ -317,6 +345,7 @@ export const PLANS: SudokuPlan[] = [
   { name: 'A 9 by 9 bed that needs the only-place-left trick', size: 9, tier: 2, blanks: 52, beds: 1 },
   { name: 'A 9 by 9 bed with a pair or a pointing line to find', size: 9, tier: 3, blanks: 55, beds: 1 },
   { name: 'A 4 by 4 bed to start', size: 4, tier: 1, blanks: 10, beds: 1 },
+  { name: 'A 9 by 9 bed with a crossing pair of rows', size: 9, tier: 4, blanks: 55, beds: 1 },
 ];
 
 export const planFor = (level: number): SudokuPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -348,8 +377,10 @@ export interface Puzzle {
  * A bed with exactly one solution that techniques up to the plan's tier can finish, with as many empty squares as the
  * plan asks for. A random full bed has numbers taken out in random order, each kept out only if the bed stays unique and
  * workable. Beds that do not reach the plan's blanks, or are easier than its tier, are thrown away and grown again.
+ * Tier 4 (level 8) is too rare to grow this way, so it comes from `WING_BEDS`.
  */
 export function makePuzzle(plan: SudokuPlan, rng: Rng): Puzzle {
+  if (plan.tier === 4) return shuffleBed(rng.pick(WING_BEDS), rng);
   const n = plan.size * plan.size;
   let best: Puzzle | null = null;
   for (let attempt = 0; attempt < 400; attempt++) {
@@ -372,6 +403,42 @@ export function makePuzzle(plan: SudokuPlan, rng: Rng): Puzzle {
   }
   if (!best) throw new Error(`could not make a bed for ${plan.name}`);
   return best;
+}
+
+/**
+ * Level 8's beds. Random beds need a crossing pair of rows only a few times in a thousand, too slowly to grow on a tablet,
+ * so these were grown once by `makePuzzle`'s own removal (55 blanks, grade 4) and are checked by the solver in the tests.
+ */
+export const WING_BEDS: readonly (readonly string[])[] = [
+  ['29.4..37.', '.....31..', '.1......5', '...6..93.', '....4....', '.563...2.', '371..9.5.', '.8...5...', '......8.2'],
+  ['...8.....', '6..2...5.', '..7.....9', '....3....', '31.....7.', '.9.7...4.', '48..71.95', '9...2.3..', '..5.6..81'],
+  ['.1.9....8', '5....8...', '...54...7', '..8.7.9..', '6.3....2.', '..9.53...', '.9.8...65', '..5...379', '......2..'],
+  ['...1.4..6', '....29...', '..17..9..', '..2...7.8', '.7..5..6.', '.......39', '.56.3.21.', '78...2...', '.1......3'],
+  ['....5.1..', '.....2.7.', '6....82..', '.4..89..6', '...4..9..', '8.5......', '9...3..81', '.62...3..', '4.3..7..2'],
+  ['..7..53..', '.2..6....', '6...13..2', '....52..6', '4.....1..', '.5..4178.', '..5......', '.42......', '.3...751.'],
+  ['.2..9..8.', '..12..579', '4........', '8....2.3.', '..95....4', '.4..8...7', '2..3..1..', '....2..93', '.1.8.....'],
+  ['...9..7..', '.........', '3.1.2.6.9', '65..1....', '2..8...5.', '1.9.7.2.6', '..7..38..', '..216.4..', '.......3.'],
+  ['61..384..', '....2....', '.5..9..18', '......54.', '..758...3', '1.53.....', '..6....71', '..2.7.9..', '3........'],
+  ['.5..1...7', '.........', '6.3.824..', '...5...34', '.4.8.1..5', '..6...28.', '.3.....9.', '.....68..', '.69..4..3'],
+  ['...7.9..3', '...265...', '..8.4.25.', '.5.93...7', '91...7..8', '..3......', '.3.5..9..', '.....2...', '.2.4...7.'],
+  ['.6.....17', '2.8......', '..5..39..', '.......5.', '....71..2', '75.4.6..3', '..98..4..', '5.....3..', '.31.67...'],
+];
+
+/**
+ * The same bed seen another way: its numbers relabelled, its bands and stacks reordered, the rows inside each band and
+ * the columns inside each stack reordered, and maybe turned on its diagonal. Each of these keeps every row, column and
+ * box a row, column or box, so the one solution, the blanks and the techniques it needs are all unchanged.
+ */
+export function shuffleBed(rows: readonly string[], rng: Rng): Puzzle {
+  const grid = parseGrid(rows), n = rows.length, b = Math.sqrt(n);
+  const lines = () => rng.shuffle(Array.from({ length: b }, (_, k) => k)).flatMap((band) => rng.shuffle(Array.from({ length: b }, (_, k) => band * b + k)));
+  const rowAt = lines(), colAt = lines(), turn = rng.chance(0.5);
+  const label = [0, ...rng.shuffle(Array.from({ length: n }, (_, k) => k + 1))];
+  const start = Array.from({ length: n * n }, (_, i) => {
+    const r = Math.floor(i / n), c = i % n, [from, to] = turn ? [colAt[c], rowAt[r]] : [rowAt[r], colAt[c]];
+    return label[grid[from * n + to]];
+  });
+  return parsePuzzle(formatGrid(start, n as Size));
 }
 
 export const makeBeds = (plan: SudokuPlan, rng: Rng): Puzzle[] => Array.from({ length: plan.beds }, () => makePuzzle(plan, rng));
@@ -397,7 +464,7 @@ export type Hint =
   | { kind: 'lone'; cell: number; digit: number }
   /** A number with only one place left in a house. */
   | { kind: 'place'; cell: number; digit: number; house: House }
-  /** After a pair or a pointing line rules numbers out, one number is left for this square. */
+  /** After a pair, a pointing line or a crossing pair of rows rules numbers out, one number is left for this square. */
   | { kind: 'rules-out'; cell: number; digit: number; via: Step }
   /** Nothing simple is left (only if she has put the bed in a state no technique reads): the square with fewest choices. */
   | { kind: 'few'; cell: number; digit: number };
@@ -412,12 +479,16 @@ export function hintFor(grid: Grid, given: Grid, solution: Grid, size: Size): Hi
     const clashing = new Set(conflicts(grid, size));
     return { kind: 'fix', cell: wrong.find((i) => clashing.has(i)) ?? wrong[0] };
   }
-  const work = techniqueSolve(grid, size, 3, true);
+  const work = techniqueSolve(grid, size, 4, true);
   const last = work.steps[work.steps.length - 1];
   if (last && last.cell >= 0) {
     // Easier steps are always taken first, so a pair or a pointing line only shows up when nothing simpler was left.
-    // The step that ruled numbers out last is the one that made this number the only one left.
-    const via = [...work.steps].reverse().find((s) => s.cell < 0);
+    // The step that ruled numbers out last is the one that made this number the only one left, unless a crossing pair
+    // of rows ruled another number out of this square, or this number out of its row, column or box, on the way: that is the
+    // step the level is about.
+    const outs = work.steps.filter((s) => s.cell < 0), peers = geometry(size).peers[last.cell];
+    const freed = (r: { cell: number; digit: number }) => r.cell === last.cell || (r.digit === last.digit && peers.includes(r.cell));
+    const via = outs.find((s) => s.tech === 'xwing' && s.removed!.some(freed)) ?? outs[outs.length - 1];
     if (via) return { kind: 'rules-out', cell: last.cell, digit: last.digit, via };
     if (last.tech === 'lone') return { kind: 'lone', cell: last.cell, digit: last.digit };
     return { kind: 'place', cell: last.cell, digit: last.digit, house: last.house! };
