@@ -3,8 +3,8 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
   alongVine, ANCHOR_Y, angleAt, BAND, beat, BOARD_H, BOARD_W, boardOrigin, cornerButtons, cutBy, fallbacksUsed, FRIEND_MAX, FRIEND_MIN, FRUIT_R, G, GROW, growAt,
-  landing, level3Fair, linesFor, longest, makeLine, MAX_LEVEL, MIN_WINDOW, MOUTH_Y, nearestVine, overlaps, petCorner, planFor, posAt, solve, startSwing,
-  STEP, swingFrom, TAP_R, velocityAt, windows, type Box, type Line,
+  KEEP_GAP, keepFor, landing, level3Fair, linesFor, longest, makeLine, MAX_LEVEL, MIN_WINDOW, MOUTH_Y, nearestVine, overlaps, pairsOf, petCorner, planFor,
+  plans, posAt, solve, solvePair, startSwing, STEP, swingFrom, TAP_R, velocityAt, vineGap, windows, type Box, type Line,
 } from './logic';
 
 const seeds = Array.from({ length: 500 }, (_, i) => i + 1);
@@ -14,13 +14,13 @@ const levels = Array.from({ length: MAX_LEVEL }, (_, i) => i + 1);
 const allLines = (level: number) => seeds.flatMap((seed) => linesFor(planFor(level), new Rng(seed)));
 
 describe('plans', () => {
-  it('names levels 1–3 and clamps beyond', () => {
-    expect(levels.map((l) => planFor(l).name)).toEqual(['Snip!', 'Two vines', 'Wait for the swing']);
+  it('names levels 1–5 and clamps beyond', () => {
+    expect(levels.map((l) => planFor(l).name)).toEqual(['Snip!', 'Two vines', 'Wait for the swing', 'Which vine stays?', 'Two friends']);
     expect(planFor(9).level).toBe(MAX_LEVEL);
     expect(planFor(0).level).toBe(1);
   });
   it('counts a missed drop only from level 3', () => {
-    expect(levels.map((l) => planFor(l).counts)).toEqual([false, false, true]);
+    expect(levels.map((l) => planFor(l).counts)).toEqual([false, false, true, true, true]);
   });
 });
 
@@ -28,7 +28,7 @@ describe('the model', () => {
   it('keeps every vine taut: the rest point is exactly each length from its anchor', () => {
     for (const level of levels) {
       for (const l of allLines(level)) {
-        for (const v of l.fruit.vines) expect(Math.abs(Math.hypot(l.fruit.rest.x - v.ax, l.fruit.rest.y - ANCHOR_Y) - v.len)).toBeLessThan(0.5);
+        for (const { fruit } of pairsOf(l)) for (const v of fruit.vines) expect(Math.abs(Math.hypot(fruit.rest.x - v.ax, fruit.rest.y - ANCHOR_Y) - v.len)).toBeLessThan(0.5);
       }
     }
   });
@@ -124,6 +124,104 @@ describe('levels', () => {
   });
 });
 
+/** Every landing x of a fruit kept on `keep`, over one beat. */
+const landingsOf = (l: { fruit: Line['fruit'] }, keep: number) => {
+  const s = swingFrom(l.fruit.rest, l.fruit.vines[keep]);
+  const out: number[] = [];
+  for (let t = 0; t < beat(s.len); t += STEP) out.push(landing(s, t, l.fruit.rest, 0).x);
+  return out;
+};
+
+describe('which vine stays (levels 4–5)', () => {
+  it('level 4: exactly one keep has a window of at least 0.4 s, the one on the friend\'s side; the straight-above vine hangs still and never feeds', () => {
+    for (const seed of seeds) {
+      const round = linesFor(planFor(4), new Rng(seed));
+      expect(round.some((l) => l.fruit.vines.length === 3)).toBe(true);
+      const sides = new Set(round.map((l) => Math.sign(l.friend.x - l.fruit.rest.x)));
+      expect([...sides].sort()).toEqual([-1, 1]);
+      for (const l of round) {
+        expect(l.second).toBeUndefined();
+        expect([2, 3]).toContain(l.fruit.vines.length);
+        const ks = plans(l);
+        expect(ks.filter((k) => k.window > 0)).toHaveLength(1);
+        const keep = keepFor(l);
+        expect(ks[keep].window).toBeGreaterThanOrEqual(MIN_WINDOW);
+        expect(Math.sign(l.fruit.vines[keep].ax - l.fruit.rest.x)).toBe(Math.sign(l.friend.x - l.fruit.rest.x));
+        const above = l.fruit.vines.findIndex((v) => v.ax === l.fruit.rest.x);
+        if (l.fruit.vines.length === 3) {
+          expect(above).toBe(1);
+          expect(swingFrom(l.fruit.rest, l.fruit.vines[1]).amp).toBe(0);
+          expect(ks[1].window).toBe(0);
+        }
+        // Dropping it from rest (every vine at once, or the still vine last) misses.
+        expect(landing(null, 0, l.fruit.rest, l.friend.x).caught).toBe(false);
+        // A snip where the kept swing starts misses; the top on the friend's side feeds it.
+        const s = swingFrom(l.fruit.rest, l.fruit.vines[keep]);
+        expect(landing(s, 0, l.fruit.rest, l.friend.x).caught).toBe(false);
+        expect(landing(s, beat(s.len) / 2, l.fruit.rest, l.friend.x).caught).toBe(true);
+      }
+    }
+  });
+  it('level 4: the authored first line is a lemon on left, straight-above and right vines with Pig on the right', () => {
+    const l = makeLine(planFor(4), new Rng(7), 0);
+    expect([l.fruit.kind, l.friend.kind, l.fruit.vines.length]).toEqual(['lemon', 'pig', 3]);
+    expect(l.friend.x).toBeGreaterThan(l.fruit.rest.x);
+    expect(keepFor(l)).toBe(2);
+    expect(plans(l).map((k) => k.window > 0)).toEqual([false, false, true]);
+  });
+  it('level 5: each fruit has one working keep, sending the two fruits to different friends; no fruit can reach the other friend', () => {
+    for (const l of allLines(5)) {
+      const [a, b] = pairsOf(l);
+      expect(b).toBeDefined();
+      expect(a.friend.x).toBeLessThan(b.friend.x);
+      expect(b.friend.x - a.friend.x).toBeGreaterThanOrEqual(BAND * 2);
+      for (const [p, other] of [[a, b], [b, a]] as const) {
+        expect(p.fruit.vines).toHaveLength(2);
+        expect(plans(p).filter((k) => k.window > 0)).toHaveLength(1);
+        expect(plans(p)[keepFor(p)].window).toBeGreaterThanOrEqual(MIN_WINDOW);
+        for (const keep of [0, 1]) for (const x of landingsOf(p, keep)) expect(Math.abs(x - other.friend.x)).toBeGreaterThan(BAND / 2);
+        expect(Math.abs(p.fruit.rest.x - other.friend.x)).toBeGreaterThan(BAND / 2);
+      }
+      // The left fruit keeps its left vine, the right fruit its right.
+      expect(keepFor(a)).toBe(0);
+      expect(keepFor(b)).toBe(1);
+    }
+    const first = makeLine(planFor(5), new Rng(7), 0);
+    expect([first.fruit.kind, first.second!.fruit.kind, first.friend.kind, first.second!.friend.kind]).toEqual(['apple', 'apple', 'dog', 'cat']);
+  });
+  it('level 5: the two fruits\' swings, kept either way, never meet each other or the other fruit\'s hanging vines', () => {
+    for (const l of allLines(5).slice(0, 200)) {
+      const [a, b] = pairsOf(l);
+      const arc = (f: Line['fruit']) => f.vines.flatMap((v) => {
+        const s = swingFrom(f.rest, v);
+        return Array.from({ length: 40 }, (_, k) => posAt(s, (beat(s.len) * k) / 40));
+      });
+      for (const p of arc(a.fruit)) for (const q of arc(b.fruit)) expect(Math.hypot(p.x - q.x, p.y - q.y)).toBeGreaterThanOrEqual(2 * FRUIT_R);
+    }
+  });
+  it('levels 4–5: every swing stays on the board, and neighbouring vines are at least 100 apart where a finger reaches them', () => {
+    for (const level of [4, 5]) {
+      for (const l of allLines(level)) {
+        expect(vineGap(l)).toBeGreaterThanOrEqual(KEEP_GAP);
+        for (const p of pairsOf(l)) {
+          for (const v of p.fruit.vines) {
+            const s = swingFrom(p.fruit.rest, v);
+            for (let t = 0; t < beat(s.len); t += 0.05) {
+              const q = posAt(s, t);
+              expect(q.x - FRUIT_R).toBeGreaterThanOrEqual(0);
+              expect(q.x + FRUIT_R).toBeLessThanOrEqual(BOARD_W);
+            }
+          }
+          // A tap near a vine resolves to that vine.
+          p.fruit.vines.forEach((v, i) => {
+            for (const f of [0.15, 0.3]) expect(nearestVine(alongVine(v, p.fruit.rest, f), p.fruit.vines, p.fruit.rest)).toBe(i);
+          });
+        }
+      }
+    }
+  });
+});
+
 describe('generation', () => {
   it('is seeded, well formed, and never needs the fallback', () => {
     for (const level of levels) {
@@ -154,6 +252,16 @@ describe('the hint', () => {
   it('following solve at the middle of its window always feeds the friend', () => {
     for (const level of levels) {
       for (const l of allLines(level)) {
+        if (level >= 4) {
+          for (const p of pairsOf(l)) {
+            const plan = solvePair(p, l);
+            expect(plan.order.at(-1)).toBe(plan.keep);
+            expect([...plan.order].sort()).toEqual(p.fruit.vines.map((_, i) => i));
+            const s = swingFrom(p.fruit.rest, p.fruit.vines[plan.keep]);
+            expect(landing(s, plan.at!, p.fruit.rest, p.friend.x).caught).toBe(true);
+          }
+          continue;
+        }
         const plan = solve(l);
         const s = startSwing(l);
         if (s) {
@@ -217,9 +325,9 @@ describe('layout', () => {
       for (const c of [...cornerButtons(v), petCorner(v)]) expect(overlaps(grow, c)).toBe(false);
       // Catch bands, mouths and every swing stay on the board.
       for (const level of levels) {
-        for (const l of allLines(level).slice(0, 50)) {
-          expect(l.friend.x - BAND / 2).toBeGreaterThanOrEqual(0);
-          expect(l.friend.x + BAND / 2).toBeLessThanOrEqual(BOARD_W);
+        for (const { friend } of allLines(level).slice(0, 50).flatMap(pairsOf)) {
+          expect(friend.x - BAND / 2).toBeGreaterThanOrEqual(0);
+          expect(friend.x + BAND / 2).toBeLessThanOrEqual(BOARD_W);
           expect(MOUTH_Y).toBeLessThan(BOARD_H);
         }
       }
