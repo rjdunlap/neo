@@ -11,14 +11,14 @@ Two paper friends start plain in their parking spots. She taps one, taps **Flat*
 | 1 | One gap, one seed | pre-K, school | Which shape bridges and which catches | Flat or Slope at the bridge dock, Cup at the catching dock; either friend in either role (4) |
 | 2 | A step down | pre-K, school | The far bank is 50 lower: only a slope reaches | Slope at the bridge, Cup at the catch (2) |
 | 3 | Two make one | pre-K, school | The gap is too wide for one: a flat near half and a cup far half hold hands as a spoon | Flat at the near half, Cup at the far half (2) |
+| 4 | Down and catch | pre-K, school | Level 3's wide gap with the near half raised 50: the handle must slope down to the cup | Slope at the near half, Cup at the far half (2) |
 
 **Content pools.** None beyond the two seeded friend colours (two of teal, purple, pink, blue). Geometry, the seed, the pot and the sprout are fixed, so every replay of a level is the same puzzle in different colours. The trace is a finite rule in `trace()`; the state space is tiny (four shapes, three places per friend, docks never shared), which makes exhaustive rule tests cheap.
 
 **Accounting.** Misses are always 0: every Try is an experiment. Help, or two failed Tries for the same role, glows the useful friend, tool and dock; each role is charged at most one hint, so a round charges at most two. Adaptation therefore steps up after two unhinted rounds and steps down only after two rounds that needed both roles hinted.
 
 **Known gaps found in the source (not fixed here):**
-- The "guidance reaches caught at every level" test iterates a hard-coded `[1, 2, 3]`, not `PLANS`; a new level is silently untested until it is added there.
-- `failureLine`'s joined branch assumes the path is flat: `buddies.joinPath` says "make the first friend flat" and `buddies.joinSlope` calls any slope wrong. `run()` chooses its animation path by those line IDs, and the joined scenery branch ignores the step `d`.
+- Fixed: the "guidance reaches caught at every level" test now iterates `PLANS`, and `failureLine`'s joined branch takes the step into account at level 4 (`downFlat`, `downPath`), as do `run()`'s paths and the joined scenery.
 - `guidance()` suggests `bridges[0]` and always a Cup at the catch, so a level with more than one family of answers needs a guidance rule of its own.
 - The heading "A bridge, a cup, a little sprout" stays at level 2 (only level 3 changes it); harmless, since nothing requires reading.
 - **Person checks open** ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): iPad drag comfort, device speech, whether a child understands changing a shape to bridge or catch, whether she notices the flat bridge stopping short, and whether the join reads as one spoon.
@@ -95,7 +95,7 @@ None blocking. Under the [October 23 delegation](../archive/DECISIONS-2026-10-23
 ## Build slices, in order
 
 1. **What grows: three seeds and sprouts (batch shape-buddies 1; built 2026-11-03, PR #1145).** Seeded bean, sunflower or acorn with its own sprout; guidance test over every `PLANS` level. *Check:* existing-interaction tier: typecheck, the game's rule tests, one filtered regression play of level 1 to its sticker, one portrait screenshot of a non-bean sprout; bot unchanged, no `fingerdemo`.
-2. **Level 4 Down and catch (batch shape-buddies 2).** *Check:* new-level tier: typecheck, rule tests (the exact accepted set, the step-aware joined lines), one play of level 4 with a flat path first then to its sticker, one portrait screenshot of the raised near half, `fingerdemo` at 4, one build for the voice lines.
+2. **Level 4 Down and catch (batch shape-buddies 2).** Built 2026-11-04 ([PR #1244](https://github.com/rjdunlap/neo/pull/1244); [checks](../VERIFICATION.md#2026-11-04--shape-buddies-level-4-down-and-catch-shape-buddies-batch-2)). *Check:* new-level tier: typecheck, rule tests (the exact accepted set, the step-aware joined lines), one play of level 4 with a flat path first then to its sticker, one portrait screenshot of the raised near half, `fingerdemo` at 4, one build for the voice lines.
 3. **Level 5 A cup on the ledge (batch shape-buddies 3),** after batch 2 (shares `PLANS`, `LEVELS` and the joined-line changes). *Check:* new-rule tier: typecheck, rule tests (both families, guidance keeps a working friend, the carry from either dock), one play of level 5 solved with the cup on the ledge and a replay solved with bridge and cup, one portrait screenshot of the ledge, `fingerdemo` at 5, one build.
 4. **Level 6 Which way round? (batch shape-buddies 4),** after batch 3. *Check:* new-interaction tier: typecheck, unit tests including the four-view layout with Turn, one scripted play with an unturned slope then Turn to the sticker, one portrait screenshot of the mirrored stream, `fingerdemo` at 6, one build.
 5. **Level 7 One friend, one job, the preschool opening (batch shape-buddies 5),** after batch 2 (shares `LEVELS`). *Check:* new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests, one play of level 7 at preschool with a Flat friend at the catch first, `fingerdemo` at 7, the preschool Tinker Lab page screenshot.
@@ -103,4 +103,4 @@ None blocking. Under the [October 23 delegation](../archive/DECISIONS-2026-10-23
 
 ## What was built in this session
 
-Slice 1 (batch shape-buddies 1, 2026-11-03): art only. Build note in [the archive](../archive/COMPLETED-2026-10-09.md#shape-buddies-what-grows-three-seeds-and-sprouts-shape-buddies-batch-1-2026-11-03). Slices 2–6 are not built.
+Slice 1 (batch shape-buddies 1, 2026-11-03): art only. Build note in [the archive](../archive/COMPLETED-2026-10-09.md#shape-buddies-what-grows-three-seeds-and-sprouts-shape-buddies-batch-1-2026-11-03). Slice 2 (batch shape-buddies 2, 2026-11-04): level 4 *Down and catch*; [build note](../archive/COMPLETED-2026-10-09.md#shape-buddies-level-4-down-and-catch-shape-buddies-batch-2-2026-11-04). Slices 3–6 are not built.

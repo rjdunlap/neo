@@ -197,3 +197,9 @@
 - Ran: typecheck; full `npm test` 303 files, 4910 tests pass before the final reviewer fixes, then the game's 19 rule tests after them; `BROWSER_SUITE=next NEXT_ONLY=tricks FROM_LEVEL=7` passed (portrait 768×1024, 3 misses / 2 hints, one saved sticker, screenshot `test-results/browser/next/quick-tricks-two-at-once.png`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=quick-tricks FINGER_LEVELS=7` PASS 27.9 s.
 - The game-reviewer findings (hidden small leaf, rain unchanged below 7, plank spacing) were fixed.
 - Not run: `npm run build` (no shared assets; CI runs it), landscape, an iPad, a child's reaction.
+
+## 2026-11-04 — Quick Tricks level 8 A tiny show (quick-tricks batch 3)
+
+- [PR #1232](https://github.com/rjdunlap/neo/pull/1232) at the branch head (`claude/quick-tricks-tiny-show`, dev server http://localhost:5893): level 8, the two-trick toddler entry (nothing counts); toddler order 8, 1, preschool order 8, 1–4, `entryLevels: [8]`.
+- Ran: typecheck; full `npm test` 303 files, 4939 tests pass; `BROWSER_SUITE=next NEXT_ONLY=tricks FROM_LEVEL=8` passed (toddler, portrait 768×1024: leaf in front kept the friend dry and floated up, short stretch free, past-halfway snapped, 0/0 saved, bow, one sticker, screenshot `test-results/browser/next/quick-tricks-tiny-show-bow.png`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=quick-tricks FINGER_LEVELS=8 FINGER_BAND=toddler` finished in 13.3 s; `npm run build` passed (new voice line). The game-reviewer found no defects.
+- Not run: an iPad, the ten-quiet-seconds re-say in the browser, landscape, a rendered voice clip for `tricks.start-two` (device speech is the fallback), a child's reaction.
