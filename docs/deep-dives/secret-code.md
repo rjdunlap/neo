@@ -1,6 +1,6 @@
 # Secret Code deep dive
 
-*ID `secret-code` · bands pre-K, school · levels 1–7 on 2026-11-01 · session `claude/dive-secret-code`, [PR #1096](https://github.com/rjdunlap/neo/pull/1096)*
+*ID `secret-code` · bands pre-K, school · levels 1–8 on 2026-11-04 · session `claude/dive-secret-code`, [PR #1096](https://github.com/rjdunlap/neo/pull/1096)*
 
 ## The game today
 
@@ -15,8 +15,9 @@ A gentle Mastermind in Puzzle Peaks (after Mastermind and Neopets' Time Tunnel).
 | 5 | Four slots and five colors | school | Four slots | 120 codes; 2 doors |
 | 6 | A color can be used twice in the code | school | Whether a repeat explains the marks (every code has one) | 64 codes, 40 with a repeat; 2 doors |
 | 7 | Detective door: work out the one code that fits the shown guesses | school | The one code that fits two or three shown tries | 24 codes; 2 doors |
+| 8 | Four slots, five colors, and one color used twice | school | Whether a repeat explains the marks, with four slots (every code has one) | repeat codes only; 2 doors |
 
-Bands (`LEVELS` in `index.ts`): pre-K 1–3, school 2–7. Codes are seeded (`makeCode`); level 6 always draws a real repeat; level 7's clues are chosen greedily to leave one candidate (`detectiveDoor`).
+Bands (`LEVELS` in `index.ts`): pre-K 1–3, school 2–8. Codes are seeded (`makeCode`); levels 6 and 8 always draw a real repeat; level 7's clues are chosen greedily to leave one candidate (`detectiveDoor`).
 
 **Accounting.** A try is an experiment and never a miss in itself. On levels 1–6 the miss is reading one mark and ignoring it: a stone put in a slot where an earlier mark already ruled it out (`ruledOut`/`ignoredClues`; at yellow levels without repeats a gray also rules the colour out everywhere unless the same try showed it green or yellow elsewhere). Several ignored slots in one try count as one miss. Level 7 checks full consistency instead: a try that no code fitting all the shown clues could be is one miss (`contradictsClues`). Two misses on a door, or `slots + 4` tries, bring faint stones in the empty slots, a code that fits every clue so far (`suggestion`), counted as one hint per door.
 
@@ -120,7 +121,7 @@ None. Placement, band openings and accounting follow the stated leans (S8); the 
 ## Build slices, in order
 
 1. **Fair rows, a hint that keeps up and three doors (batch secret-code 1).** Built 2026-11-03 ([PR #1144](https://github.com/rjdunlap/neo/pull/1144); [checks](../archive/VERIFICATION-2026-11-03.md#2026-11-03--secret-code-fair-rows-a-hint-that-keeps-up-and-three-doors-secret-code-batch-1)): misses only from tries on screen, the refreshed hint, the "no more of that stone" line, three seeded doors. *Check (passed as planned):* existing-game fix tier: typecheck, the game's rule tests (the hidden-row case, the refreshed hint fits), one filtered regression play of level 5 in landscape with seven tries and a stone ruled out only by a hidden row (no miss), one portrait screenshot of the gate; bot unchanged, no `fingerdemo`.
-2. **Level 8 Four slots, a repeat (batch secret-code 2),** after batch 1 (shares the plan table and the visible-rows rule). *Check:* new-level tier: typecheck, rule tests, one play of level 8 to its sticker, `fingerdemo` at 8. Claimed 2026-11-04 on branch `claude/secret-code-four-repeat`.
+2. **Level 8 Four slots, a repeat (batch secret-code 2),** after batch 1 (shares the plan table and the visible-rows rule). *Check:* new-level tier: typecheck, rule tests, one play of level 8 to its sticker, `fingerdemo` at 8. Built 2026-11-04 ([PR #1238](https://github.com/rjdunlap/neo/pull/1238); [checks](../VERIFICATION.md#2026-11-04--secret-code-level-8-four-slots-a-repeat-secret-code-batch-2)): one new plan, the same miss rule as levels 1–6, the `code.repeat` line reused, no new voice lines; couch unchanged. *Check (passed as planned).*
 3. **Level 9 Be the door (batch secret-code 3),** after batch 1. *Check:* new-interaction tier: typecheck, unit tests including `order`, one scripted play of level 9 with a made code, one wrong mark, a second for the glow, then to the sticker; one portrait screenshot with the mark discs; `fingerdemo` at 9.
 4. **Level 10 One slot, the preschool opening (batch secret-code 4),** after batch 1. *Check:* new-band tier: typecheck, unit tests including the lands and registry band tests, one play of level 10 at preschool with one crossed-out stone tried, `fingerdemo` at 10, the preschool Puzzle Peaks page screenshot.
 5. **Level 11 A bigger detective door (batch secret-code 5),** after batch 2 (shares the order). *Check:* new-level tier with a layout check: typecheck, rule tests (uniqueness and the time bound), one play of level 11 with one contradicting try, one portrait screenshot of four shown rows, `fingerdemo` at 11.
