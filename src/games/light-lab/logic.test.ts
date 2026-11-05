@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { rangeFor, stepLevel } from '../../progress/difficulty';
-import { beamEnd, hintThing, LEVELS, materialPuzzle, materialsRound, MATERIALS, meetsGoal, outcome, owlCell, POOLS, shadowCells, whyNotMaterial, type MaterialBoard, type Stuff, boardWith, cloudCells, DROP_TILT, fewestPlaced, findLines, fits, mirrorAt, flowerCount, freeCells, nearestPlacement, placeHint, hintMirror, makePuzzle, minTurns, mirrorPuzzle, nearestSolutions, planFor, PLANS, predictionChoices, reflect, solved, tiltFor, trace, type Dir, type LightPuzzle, type Placed, type Tilt } from './logic';
+import { SCRIPT } from '../../content/voice-script';
+import { anySolution, flowersOnTwoArms, replaceThing, tiltable, traceAll, whyNot, DX, DY, beamEnd, hintThing, LEVELS, materialPuzzle, materialsRound, MATERIALS, meetsGoal, outcome, owlCell, POOLS, shadowCells, whyNotMaterial, type MaterialBoard, type Stuff, boardWith, cloudCells, DROP_TILT, fewestPlaced, findLines, fits, mirrorAt, flowerCount, freeCells, nearestPlacement, placeHint, hintMirror, makePuzzle, minTurns, mirrorPuzzle, nearestSolutions, planFor, PLANS, predictionChoices, reflect, solved, tiltFor, trace, type Dir, type LightPuzzle, type Placed, type Tilt } from './logic';
 
 /** Levels 1–10: the mirror boards `makePuzzle` builds (level 11's come from `materialsRound`; level 12's split boards have their own tests). */
 const BOARD_PLANS = PLANS.filter((p) => p.mode !== 'materials' && !p.split);
@@ -429,5 +430,205 @@ describe('Light Lab', () => {
       expect(stepLevel(5, -1, rangeFor(LEVELS, 'school'))).toBe(11);
       expect(PLANS).toHaveLength(12);
     });
+  });
+});
+
+describe('level 12, Split the sunbeam', () => {
+  const plan = planFor(12);
+  const seeds = (n: number) => Array.from({ length: n }, (_, i) => i + 1);
+  const boards = (n: number) => seeds(n).map((seed) => ({ seed, p: makePuzzle(plan, new Rng(seed)) }));
+  const randomTilts = (p: LightPuzzle, rng: Rng) => p.things.map((_, i) => (tiltable(p).includes(i) ? (rng.chance(0.5) ? 1 : 0) : p.solution[i])) as Tilt[];
+  const flip = (tilts: Tilt[]) => tilts.map((t) => (1 - t) as Tilt) as Tilt[];
+
+  it('traceAll on a board with no half-mirror is one arm equal to trace, step = index + 1 (levels 1–10)', () => {
+    for (const pl of BOARD_PLANS) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const p = makePuzzle(pl, new Rng(seed));
+        for (const tilts of [p.start, p.solution]) {
+          const t = trace(p, tilts);
+          const all = traceAll(p, tilts);
+          expect(all.arms, `${pl.name} ${seed}`).toHaveLength(1);
+          expect(all.arms[0].cells.map(({ step, ...c }) => c)).toEqual(t.cells);
+          expect(all.arms[0].cells.map((c) => c.step)).toEqual(t.cells.map((_, i) => i + 1));
+          expect(all.arms[0].end).toBe(t.end);
+          expect([...all.woken].sort()).toEqual([...t.woken].sort());
+          expect(all.split).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('a half-mirror passes the beam straight on and also turns it, for every direction and tilt', () => {
+    // The sun shines right or left along a row; a mirror first turns it down or up to reach each direction.
+    const cases: { sunCol: number; sunRow: number; sunDir: 0 | 2; pre?: { x: number; y: number; tilt: Tilt }; dir: Dir }[] = [
+      { sunCol: 0, sunRow: 2, sunDir: 0, dir: 0 },
+      { sunCol: 6, sunRow: 2, sunDir: 2, dir: 2 },
+      { sunCol: 0, sunRow: 0, sunDir: 0, pre: { x: 3, y: 0, tilt: 1 }, dir: 1 },
+      { sunCol: 0, sunRow: 4, sunDir: 0, pre: { x: 3, y: 4, tilt: 0 }, dir: 3 },
+    ];
+    for (const c of cases) {
+      for (const tilt of [0, 1] as Tilt[]) {
+        const things: LightPuzzle['things'] = [{ kind: 'half', x: 3, y: 2 }];
+        const tilts: Tilt[] = [tilt];
+        if (c.pre) (things.push({ kind: 'mirror', x: c.pre.x, y: c.pre.y }), tilts.push(c.pre.tilt));
+        const p: LightPuzzle = { cols: 7, rows: 5, sunRow: c.sunRow, sunCol: c.sunCol, sunDir: c.sunDir, things, solution: tilts, start: tilts, pathMirrors: [], tray: [] };
+        const all = traceAll(p, tilts);
+        const turned = reflect(c.dir, tilt);
+        expect(all.split).toBe(true);
+        expect(all.arms.length).toBe(2);
+        const [straight, bounced] = all.arms;
+        expect(straight.parent).toBe(-1);
+        expect(bounced.parent).toBe(0);
+        expect(bounced.from).toBe(0);
+        const halfIdx = straight.cells.findIndex((k) => k.x === 3 && k.y === 2);
+        expect(halfIdx).toBeGreaterThanOrEqual(0);
+        const after = straight.cells[halfIdx + 1];
+        expect(after && { x: after.x, y: after.y }).toEqual({ x: 3 + DX[c.dir], y: 2 + DY[c.dir] });
+        expect({ x: bounced.cells[0].x, y: bounced.cells[0].y }).toEqual({ x: 3 + DX[turned], y: 2 + DY[turned] });
+        // Both arms leave the half-mirror at the same step, and the bounced arm is dim.
+        expect(bounced.cells[0].step).toBe(after.step);
+        expect(bounced.cells.every((k) => k.dim)).toBe(true);
+        expect(straight.cells.slice(halfIdx + 1).every((k) => k.dim)).toBe(true);
+      }
+    }
+  });
+
+  it('a rock stops only the arm that meets it, and an arm that leaves the board ends there', () => {
+    const things: LightPuzzle['things'] = [{ kind: 'half', x: 2, y: 2 }, { kind: 'rock', x: 4, y: 2 }, { kind: 'flower', x: 2, y: 0, wants: 'sun' }];
+    const p: LightPuzzle = { cols: 7, rows: 5, sunRow: 2, sunCol: 0, sunDir: 0, things, solution: [0, 0, 0], start: [0, 0, 0], pathMirrors: [], tray: [] };
+    const all = traceAll(p, [0, 0, 0]);
+    expect(all.arms[0].end).toBe('rock');
+    expect(all.arms[1].end).toBe('edge');
+    expect(all.woken).toEqual([2]);
+  });
+
+  it('an arm that returns the way another has gone ends as a loop, and the walk finishes', () => {
+    // A square of mirrors around a half-mirror feeds the bounced beam back into the half-mirror.
+    const things: LightPuzzle['things'] = [
+      { kind: 'half', x: 2, y: 2 }, { kind: 'mirror', x: 2, y: 0 }, { kind: 'mirror', x: 4, y: 0 },
+      { kind: 'mirror', x: 4, y: 2 }, { kind: 'mirror', x: 4, y: 4 }, { kind: 'mirror', x: 2, y: 4 },
+    ];
+    let loops = 0;
+    for (let mask = 0; mask < 2 ** things.length; mask++) {
+      const tilts = things.map((_, i) => ((mask >> i) & 1) as Tilt);
+      const p: LightPuzzle = { cols: 7, rows: 5, sunRow: 2, sunCol: 0, sunDir: 0, things, solution: tilts, start: tilts, pathMirrors: [], tray: [] };
+      const all = traceAll(p, tilts);
+      expect(all.arms.length).toBeLessThanOrEqual(p.cols * p.rows * 4);
+      if (all.arms.some((a) => a.end === 'loop')) loops++;
+    }
+    expect(loops).toBeGreaterThan(0);
+  });
+
+  it('level 12 is a split plan with two flowers, seven or fewer tiltables, and every seed makes a board', () => {
+    expect(plan.split).toBe(true);
+    expect(plan.flowers).toBe(2);
+    for (const { seed, p } of boards(300)) {
+      expect(p, `seed ${seed}`).toBeTruthy();
+      expect(p.things.filter((t) => t.kind === 'half'), `seed ${seed}`).toHaveLength(1);
+      expect(flowerCount(p)).toBe(2);
+      expect(tiltable(p).length).toBeLessThanOrEqual(7);
+    }
+  });
+
+  it('the known answer wakes both flowers, one on each arm, with no loop, and nothing sits in the sun column', () => {
+    for (const { seed, p } of boards(400)) {
+      const all = traceAll(p, p.solution);
+      expect(all.woken, `seed ${seed}`).toHaveLength(2);
+      expect(all.split).toBe(true);
+      expect(flowersOnTwoArms(p, p.solution), `seed ${seed}`).toBe(true);
+      expect(all.arms.some((a) => a.end === 'loop'), `seed ${seed}`).toBe(false);
+      expect(solved(p, p.solution)).toBe(true);
+      expect(new Set(p.things.map((t) => `${t.x},${t.y}`)).size).toBe(p.things.length);
+      for (const t of p.things) {
+        expect(t.x).not.toBe(p.sunCol);
+        expect(t.x).toBeGreaterThanOrEqual(0);
+        expect(t.x).toBeLessThan(p.cols);
+        expect(t.y).toBeGreaterThanOrEqual(0);
+        expect(t.y).toBeLessThan(p.rows);
+      }
+      expect(p.sunDir).toBe(p.sunCol === 0 ? 0 : 2);
+      expect(p.solution).toHaveLength(p.things.length);
+      expect(p.start).toHaveLength(p.things.length);
+    }
+  });
+
+  it('the half-mirror is required: as a mirror of either tilt, or taken away, no arrangement wakes both flowers', () => {
+    for (const { seed, p } of boards(300)) {
+      const h = p.things.findIndex((t) => t.kind === 'half');
+      expect(anySolution(p), `seed ${seed}`).toBe(true);
+      expect(anySolution(replaceThing(p, h, 'mirror')), `mirror ${seed}`).toBe(false);
+      expect(anySolution(replaceThing(p, h, null)), `none ${seed}`).toBe(false);
+    }
+  });
+
+  it('the start is fair: unsolved, at least two turns from an answer, and no flower awake', () => {
+    for (const { seed, p } of boards(400)) {
+      expect(solved(p, p.start), `seed ${seed}`).toBe(false);
+      expect(minTurns(p, p.start), `seed ${seed}`).toBeGreaterThanOrEqual(2);
+      expect(traceAll(p, p.start).woken, `seed ${seed}`).toHaveLength(0);
+    }
+  });
+
+  it('following the hint reaches an answer in exactly minTurns taps, from the start and from random arrangements', () => {
+    const walk = (p: LightPuzzle, from: Tilt[], label: string) => {
+      const tilts = [...from];
+      const want = minTurns(p, tilts);
+      let taps = 0;
+      while (!solved(p, tilts)) {
+        const i = hintMirror(p, tilts);
+        expect(i, label).toBeGreaterThanOrEqual(0);
+        expect(tiltable(p), label).toContain(i);
+        tilts[i] = (1 - tilts[i]) as Tilt;
+        expect(++taps, label).toBeLessThanOrEqual(8);
+      }
+      expect(taps, label).toBe(want);
+    };
+    for (const { seed, p } of boards(60)) {
+      walk(p, p.start, `start ${seed}`);
+      const rng = new Rng(seed * 7919);
+      for (let k = 0; k < 20; k++) walk(p, randomTilts(p, rng), `random ${seed}.${k}`);
+    }
+  });
+
+  it('the mirror image of a split board solves exactly when the original does, with mirrored tilts', () => {
+    for (const { seed, p } of boards(100)) {
+      const m = mirrorPuzzle(p);
+      expect(solved(m, flip(p.solution)), `seed ${seed}`).toBe(true);
+      expect(solved(m, flip(p.start))).toBe(solved(p, p.start));
+      const rng = new Rng(seed);
+      for (let k = 0; k < 10; k++) {
+        const t = randomTilts(p, rng);
+        expect(solved(m, flip(t)), `seed ${seed}.${k}`).toBe(solved(p, t));
+      }
+    }
+  });
+
+  it('whyNot says unsplit, sleeping or split, and each has a voice line', () => {
+    const seen = new Set<string>();
+    for (const { seed, p } of boards(200)) {
+      expect(whyNot(p, p.solution)).toBe('none');
+      const rng = new Rng(seed * 31);
+      for (let k = 0; k < 20; k++) {
+        const t = randomTilts(p, rng);
+        const all = traceAll(p, t);
+        const why = whyNot(p, t);
+        seen.add(why);
+        if (all.woken.length === 2) expect(why).toBe('none');
+        else if (!all.split) expect(why, `seed ${seed}.${k}`).toBe('unsplit');
+        else expect(why, `seed ${seed}.${k}`).toBe(all.woken.length ? 'sleeping' : 'split');
+      }
+    }
+    expect([...seen].sort()).toEqual(expect.arrayContaining(['unsplit', 'sleeping', 'split']));
+    for (const id of ['light.miss.unsplit', 'light.miss.sleeping', 'light.miss.split'] as const) expect(SCRIPT[id].length).toBeGreaterThan(0);
+  });
+
+  it('ladder: school ends [..., 10, 12], stepping up from 10 reaches 12, and pre-K is unchanged', () => {
+    const school = rangeFor(LEVELS, 'school');
+    expect(school.order).toEqual([2, 3, 4, 11, 5, 6, 7, 8, 9, 10, 12]);
+    expect(school.order!.slice(-2)).toEqual([10, 12]);
+    expect(stepLevel(10, 1, school)).toBe(12);
+    expect(stepLevel(12, -1, school)).toBe(10);
+    expect(rangeFor(LEVELS, 'prek').order).toEqual([1, 2, 3, 4, 11]);
+    expect(rangeFor(LEVELS, 'prek').max).toBe(11);
   });
 });
