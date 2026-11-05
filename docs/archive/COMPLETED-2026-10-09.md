@@ -2785,7 +2785,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--light-lab-co
 
 [PR #1225](https://github.com/rjdunlap/neo/pull/1225), `claude/light-lab-materials`: [dive slice 5](../deep-dives/light-lab.md#build-slices-in-order), [definition](../definitions/light-lab-materials.md). Light Lab level 11 *Through, bounce or stop?* for pre-K and school: three free guesses (through, bounce or stop picture cards, never a miss) of a clear, cloudy, blocking or shiny thing on a stand in a straight beam, then two judged choices from a three-thing tray (wake the far flower, shade a sleepy owl, bounce to the flower); a wrong pick is one miss with a teaching line, two raise the glow on the right thing (one hint). Orders pre-K [1,2,3,4,11] and school [2,3,4,11,5..10] (`LEVELS` moved to `logic.ts`); voice lines `light.materials` and `light.mat.*`; the how-to goal is neutral and level 11 has its own steps; couch unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--light-lab-level-11-through-bounce-or-stop-light-lab-batch-5).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--light-lab-level-11-through-bounce-or-stop-light-lab-batch-5).
 
 ## Light Lab, level 12 Split the sunbeam (light-lab batch 6, 2026-11-04)
 
@@ -2828,3 +2828,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--treasure-map-level-6
 [PR #1238](https://github.com/rjdunlap/neo/pull/1238), `claude/secret-code-four-repeat`: [dive slice 2](../deep-dives/secret-code.md#build-slices-in-order). `PLANS[7]` is four slots, five colors, `yellow` and `repeats` on, two doors, named "Four slots, five colors, and one color used twice"; school now spans levels 2–8 (pre-K 1–3 unchanged). Every code holds a repeat. The miss rule is levels 1–6's repeat-level `ruledOut` with no colour-wide gray rule, faint stones come after two misses or eight tries, and `code.repeat` is reused (no new voice lines). The how-to card scopes the level 7 step and note `to: 7` and adds a level 8 step and note. A new rule test (300 seeds) checks every code repeats and the reasoning bot cracks each within six tries (measured maximum 5) without ignoring a visible clue. The woods case for Secret Code now runs up to level 8. Couch unchanged.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--secret-code-level-8-four-slots-a-repeat-secret-code-batch-2).
+
+## Word Search level 5 A small grid to start (word-search batch 2, 2026-11-04)
+
+[PR #1240](https://github.com/rjdunlap/neo/pull/1240), `claude/word-search-small-grid`: [dive slice 2](../deep-dives/word-search.md#build-slices-in-order). `SMALL_GRID` plan in `logic.ts`: 6 by 6, four words of three to six letters, across and down, always in view; `ORDER` `[5, 1, 2, 3, 4]`, `entryLevels: [5]`, `planFor` of a level past the top plays level 4. Squares are 98 units at 1024 by 768 (word list column narrowed from 262 to 222) and 132 at 1024 by 1365 (small-grid squares at least 96, capped at 132). *Words that carry* can be drawn at level 5; *Words that look* cannot. How-to card has a level-5 line. Couch trip and courses unchanged.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--word-search-level-5-a-small-grid-to-start-word-search-batch-2).
