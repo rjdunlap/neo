@@ -4,9 +4,9 @@ import type { Rng } from '../../engine/random';
  * Treasure Map: a grid map where things are found by row and column. First rows and columns
  * are pictures (the red column, the apple row); then letters and numbers ("B3"); then the child
  * places something at a named square; then directions from a square ("3 right, 1 up"); then she writes
- * the directions card herself.
+ * the directions card herself; then she hunts a hidden chest by how far away each dig says it is.
  */
-export type MapMode = 'pictures' | 'letters' | 'place' | 'steps' | 'clues' | 'write';
+export type MapMode = 'pictures' | 'letters' | 'place' | 'steps' | 'clues' | 'write' | 'far';
 
 export interface MapPlan {
   mode: MapMode;
@@ -22,6 +22,7 @@ export const PLANS: MapPlan[] = [
   { mode: 'steps', size: 5, finds: 4, name: 'Follow directions from the start: "3 right, then 1 up"' },
   { mode: 'clues', size: 5, finds: 4, name: 'Use two landmark clues to find the square where they meet' },
   { mode: 'write', size: 5, finds: 4, name: 'Write the card: set how far across and which way, then up or down, to walk the pet to the chest' },
+  { mode: 'far', size: 4, finds: 3, name: 'How far? A hidden chest: each dig says how many steps away it is, across plus up, and she digs where every distance still fits' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -269,4 +270,55 @@ export function cardReason(c: Card, f: Find): { line: 'map.cardacross' | 'map.ca
   const leg = f.up! > 0 ? 'up' : 'down';
   if (across && upDown) return { line: 'map.cardboth', slots: { across, leg, why: upDown } };
   return across ? { line: 'map.cardacross', slots: { across, leg, why: across } } : { line: 'map.cardupdown', slots: { across: '', leg, why: upDown! } };
+}
+
+/** Level 7: how many steps from one square to another, across plus up or down, as the pet would walk it. */
+export const distance = (a: Square, b: Square) => Math.abs(a.col - b.col) + Math.abs(a.row - b.row);
+
+/** A dig at level 7 and the distance it told her. */
+export interface FarDig {
+  square: Square;
+  said: number;
+}
+
+const same = (a: Square, b: Square) => a.col === b.col && a.row === b.row;
+
+/** The squares that still fit every dig so far: the chest could be on any of them, and on no other. */
+export function stillFits(digs: readonly FarDig[], size: number): Square[] {
+  const out: Square[] = [];
+  for (let row = 0; row < size; row++) for (let col = 0; col < size; col++) {
+    const s = { col, row };
+    if (digs.every((d) => distance(s, d.square) === d.said)) out.push(s);
+  }
+  return out;
+}
+
+/** The earliest dig a guess disagrees with, or null if the guess still fits. A square already dug is not asked here. */
+export const ruledOutBy = (guess: Square, digs: readonly FarDig[]): FarDig | null => digs.find((d) => distance(guess, d.square) !== d.said) ?? null;
+
+/** The dig already made on this square, if any: digging there again only repeats what it said. */
+export const dugAt = (guess: Square, digs: readonly FarDig[]): FarDig | null => digs.find((d) => same(d.square, guess)) ?? null;
+
+/** "1 step" or "3 steps", for the voice. */
+export const stepsWord = (n: number) => `${n} ${n === 1 ? 'step' : 'steps'}`;
+
+/**
+ * The ghost finger's next dig: the bottom-left corner first, then the square that still fits and best splits what
+ * still fits (the fewest left after the worst answer), so it never digs a square the evidence rules out.
+ */
+export function bestDig(digs: readonly FarDig[], size: number): Square {
+  if (!digs.length) return { col: 0, row: 0 };
+  const fits = stillFits(digs, size);
+  let best = fits[0];
+  let bestWorst = Infinity;
+  for (const c of fits) {
+    const groups = new Map<number, number>();
+    for (const t of fits) if (!same(t, c)) groups.set(distance(c, t), (groups.get(distance(c, t)) ?? 0) + 1);
+    const worst = Math.max(0, ...groups.values());
+    if (worst < bestWorst) {
+      best = c;
+      bestWorst = worst;
+    }
+  }
+  return best;
 }

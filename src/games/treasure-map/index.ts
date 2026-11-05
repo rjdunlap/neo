@@ -15,11 +15,11 @@ import { finish, spring, squash } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { cardDone, cardFor, cardReason, CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, EMPTY_CARD, firstDirection, firstLeg, headersFor, makeFinds, name, nextCount, nextWay, planFor, squareAt, walkCard, type Card, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
+import { bestDig, distance, dugAt, ruledOutBy, stepsWord, stillFits, type FarDig, cardDone, cardFor, cardReason, CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, EMPTY_CARD, firstDirection, firstLeg, headersFor, makeFinds, name, nextCount, nextWay, planFor, squareAt, walkCard, type Card, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 1, max: 6 },
+  school: { min: 1, max: 7 },
 };
 
 const PARCHMENT = 0xf3e2b8;
@@ -156,6 +156,8 @@ class TreasureMap implements Game {
   private atEdge = false;
   /** The pet is walking a route, so a resize leaves it where it is. */
   private walking = false;
+  /** Level 7: the digs so far and the distance each one said. */
+  digs: FarDig[] = [];
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -259,6 +261,14 @@ class TreasureMap implements Game {
       }
       return;
     }
+    if (this.plan.mode === 'far') {
+      // The squares that still fit every dig, so she picks among them and the search stays hers.
+      for (const sq of stillFits(this.digs, n)) {
+        const c = this.cellAt(sq);
+        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: pulse });
+      }
+      return;
+    }
     if ((this.plan.mode === 'steps' || this.plan.mode === 'write') && this.find.from) {
       // The first leg lights up from the pet to the turning square, so she still counts the walk.
       for (const sq of firstLeg(this.find)) {
@@ -281,7 +291,8 @@ class TreasureMap implements Game {
       const kind: TileKind = c.across !== want.across ? 'across' : c.acrossWay !== want.acrossWay ? 'acrossWay' : c.upDown !== want.upDown ? 'upDown' : c.upDownWay !== want.upDownWay ? 'upDownWay' : 'go';
       return { tap: { on: this.tiles.get(kind)!, x: 0, y: 0 } };
     }
-    const at = digSpot(this.find, this.plan.size);
+    // Level 7's finger hunts honestly: a corner, then the square that best splits what still fits.
+    const at = this.plan.mode === 'far' ? cellCenter(bestDig(this.digs, this.plan.size), this.plan.size) : digSpot(this.find, this.plan.size);
     return { tap: { on: this.grid, x: at.x, y: at.y } };
   }
 
@@ -334,8 +345,9 @@ class TreasureMap implements Game {
     if (f.from) this.cursor = { ...f.from };
     this.card = { ...EMPTY_CARD };
     this.atEdge = false;
-    // The card names one chest, so the last find's chest and tries are cleared.
-    if (this.plan.mode === 'write') this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.digs = [];
+    // The card names one chest, and each hunt hides a new one, so the last find's chest and tries are cleared.
+    if (this.plan.mode === 'write' || this.plan.mode === 'far') this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.resize(this.view);
     this.drawCard();
     this.drawLandmarks(f);
@@ -346,6 +358,7 @@ class TreasureMap implements Game {
     if (mode === 'letters') return this.ctx.instruct('map.letters', { sq: name(f.square), col: String.fromCharCode(65 + f.square.col), row: f.square.row + 1 });
     if (mode === 'place') return this.ctx.instruct('map.place', { thing: f.thing!, sq: name(f.square) });
     if (mode === 'write') return this.ctx.instruct('map.write');
+    if (mode === 'far') return this.ctx.instruct('map.far');
     if (mode === 'clues') return this.ctx.instruct('map.clues', { first: clueDirection(f.clues![0]), firstThing: f.clues![0].thing, second: clueDirection(f.clues![1]), secondThing: f.clues![1].thing });
     return this.ctx.instruct('map.steps', { dirs: directions(f) });
   }
@@ -381,6 +394,12 @@ class TreasureMap implements Game {
       const color = swatch[this.headers.cols[f.square.col]];
       const dot = new Graphics().circle(40, 0, 24).fill(color.fill).stroke({ width: 3, color: color.line });
       this.sign.addChild(pic, dot);
+    } else if (mode === 'far') {
+      // A hidden chest and a question mark: nothing on the sign points to a square.
+      const chest = chestArt();
+      chest.position.set(-45, 4);
+      chest.scale.set(0.9);
+      this.sign.addChild(chest, Object.assign(label('?', 56, ink), { x: 45 }));
     } else if (mode === 'steps') {
       this.sign.addChild(label(directions(f).replace(', then ', '  ·  '), 28, ink));
     } else if (mode === 'clues') {
@@ -416,6 +435,7 @@ class TreasureMap implements Game {
   /** A dig at a square, from a finger or the couch's ring. */
   private async dig(guess: Square) {
     if (this.busy || this.finished) return;
+    if (this.plan.mode === 'far') return this.digFar(guess);
     const { col, row } = guess;
     const want = this.find.square;
     const result = compare(guess, want);
@@ -437,6 +457,58 @@ class TreasureMap implements Game {
       else void this.ctx.say(mode === 'clues' ? 'map.cluehint' : 'map.hint');
     }
     this.busy = false;
+  }
+
+  /**
+   * Level 7's dig: the chest, or a distance. A dig that fits every distance so far is exploring and leaves a stack
+   * of footprints, one per step; only a dig the distances already rule out is a miss, and it names the dig it disagrees with.
+   */
+  private async digFar(guess: Square) {
+    const f = this.find;
+    if (compare(guess, f.square) === 'right') return void this.found();
+    this.busy = true;
+    const again = dugAt(guess, this.digs);
+    const against = again ? null : ruledOutBy(guess, this.digs);
+    if (again) {
+      sfx.tick();
+      await this.ctx.say('map.faragain', { steps: stepsWord(again.said) });
+    } else if (!against) {
+      const said = distance(guess, f.square);
+      this.digs.push({ square: guess, said });
+      this.drawStack(guess, said);
+      sfx.pop();
+      await this.ctx.say('map.farsteps', { steps: stepsWord(said) });
+    } else {
+      this.misses++;
+      this.wrongs++;
+      sfx.boing();
+      const at = this.cellAt(guess);
+      this.marks.addChild(new Graphics().moveTo(at.x - 14, at.y - 14).lineTo(at.x + 14, at.y + 14).moveTo(at.x + 14, at.y - 14).lineTo(at.x - 14, at.y + 14).stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }));
+      await this.ctx.say('map.farout', { got: stepsWord(distance(guess, against.square)), said: stepsWord(against.said) });
+      if (this.wrongs >= 2 && !this.hinting) {
+        this.hinting = true;
+        this.hints++;
+        void this.ctx.say('map.farhint');
+      }
+    }
+    this.busy = false;
+  }
+
+  /** A dug patch with a stack of footprints, one per step to the chest, and the number: a distance, never a direction. */
+  private drawStack(s: Square, n: number) {
+    const at = this.cellAt(s);
+    const g = new Graphics().ellipse(at.x, at.y + 4, 42, 40).fill({ color: wood.fill, alpha: 0.22 });
+    for (let i = 0; i < n; i++) {
+      // Two columns, filled from the bottom, every print with its toes up.
+      const x = at.x - 32 + (i % 2) * 20;
+      const y = at.y + 30 - Math.floor(i / 2) * 25;
+      g.ellipse(x, y, 6, 8).fill({ color: wood.line, alpha: 0.6 }).circle(x, y - 12, 3.5).fill({ color: wood.line, alpha: 0.6 });
+    }
+    const words = label(String(n), 46, ink);
+    words.position.set(at.x + 22, at.y);
+    const stack = new Container();
+    stack.addChild(g, words);
+    this.marks.addChild(stack);
   }
 
   private async found() {
