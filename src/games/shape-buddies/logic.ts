@@ -12,19 +12,23 @@ export type Failure = Dock;
 export const initial = (): Construction => ({ friends: [{ shape: 'plain', place: 'park', facing: 1 }, { shape: 'plain', place: 'park', facing: 1 }], selected: 0 });
 export const copy = (s: Construction): Construction => ({ friends: s.friends.map(f => ({ ...f })) as [Friend, Friend], selected: s.selected });
 /** Which bridge shapes reach the far bank, how far below the chute's bank it sits, whether the two docks join over a wide gap,
- * whether a rocky ledge inside the gap holds up a cup at the bridge dock, and which way the stream runs (`flow` -1: chute on the right, pot on the left). */
-export const PLANS: Record<number, { bridges: readonly Shape[]; drop: number; joined?: boolean; ledge?: boolean; flow?: 1 | -1 }> = {
+ * whether a rocky ledge inside the gap holds up a cup at the bridge dock, which way the stream runs (`flow` -1: chute on the right, pot on the left),
+ * and whether a fixed wooden plank already spans the gap (`plank`: level 7 has one friend, whose only job is the cup). */
+export const PLANS: Record<number, { bridges: readonly Shape[]; drop: number; joined?: boolean; ledge?: boolean; flow?: 1 | -1; plank?: boolean }> = {
   1: { bridges: ['flatten', 'slope'], drop: 0 },
   2: { bridges: ['slope'], drop: 50 },
   3: { bridges: ['flatten'], drop: 0, joined: true },
   4: { bridges: ['slope'], drop: 50, joined: true },
   5: { bridges: ['flatten', 'slope'], drop: 0, ledge: true },
   6: { bridges: ['slope'], drop: 50, flow: -1 },
+  7: { bridges: [], drop: 0, plank: true },
 };
 export const planFor = (level: number) => PLANS[level] ?? PLANS[1];
 const flowOf = (level: number) => planFor(level).flow ?? 1;
+/** How many friends she can use: one over level 7's plank (the second stays parked and hidden), otherwise two. */
+export const friendCount = (level: number) => planFor(level).plank ? 1 : 2;
 /** A friend at the bridge dock carries the seed when its shape suits the plan and, if it is a slope, it runs down the way the stream goes. */
-const bridges = (f: Friend | undefined, level: number) => !!f && planFor(level).bridges.includes(f.shape) && (f.shape !== 'slope' || (f.facing ?? 1) === flowOf(level));
+const bridges = (f: Friend | undefined, level: number) => !!planFor(level).plank || !!f && planFor(level).bridges.includes(f.shape) && (f.shape !== 'slope' || (f.facing ?? 1) === flowOf(level));
 /** What grows: a round's seed is a bean, a sunflower seed or an acorn. Only the art changes; the rules never read it. */
 export const SEEDS = ['bean', 'sunflower', 'acorn'] as const;
 export type SeedKind = typeof SEEDS[number];
@@ -55,7 +59,8 @@ export function guidance(s: Construction, level = 1): { friend: number; shape: S
   const shape = failure === 'receiver' || planFor(level).ledge ? 'scoop' : planFor(level).bridges[0];
   return planFor(level).flow && failure === 'bridge' ? { friend, shape, dock: failure, facing: flowOf(level) } : { friend, shape, dock: failure };
 }
-/** The spoken explanation of a failing construction, or null once the seed is caught. Levels 3 and 4 name how the joined spoon failed; over level 4's step the handle must slope down. */
+/** The spoken explanation of a failing construction, or null once the seed is caught. Levels 3 and 4 name how the joined spoon failed; over level 4's step the handle must slope down.
+ * Over level 7's plank, a flat or slope friend at the catch lets the seed roll off its end. */
 export function failureLine(s: Construction, level = 1): LineId | null {
   const failure = trace(s, level);
   if (failure === 'caught') return null;
@@ -65,6 +70,7 @@ export function failureLine(s: Construction, level = 1): LineId | null {
     if (failure === 'bridge') return bridge?.shape === 'slope' ? 'buddies.joinSlope' : 'buddies.joinPath';
     return s.friends.some(f => f.place === 'receiver') ? 'buddies.joinCup' : 'buddies.joinShort';
   }
+  if (plan.plank) return ['flatten', 'slope'].includes(s.friends.find(f => f.place === 'receiver')?.shape ?? '') ? 'buddies.oneRoll' : 'buddies.cup';
   if (failure === 'receiver') return 'buddies.cup';
   if (plan.ledge) return 'buddies.ledgeNeed';
   if (!plan.drop) return 'buddies.bridge';
@@ -82,10 +88,11 @@ export class SeedRound {
   misses = 0;
   constructor(readonly level = 1) {}
   get editable() { return this.phase === 'edit' || this.phase === 'caught'; }
-  select(i: number) { if (this.editable && (i === 0 || i === 1)) this.state.selected = i; }
+  select(i: number) { if (this.editable && Number.isInteger(i) && i >= 0 && i < friendCount(this.level)) this.state.selected = i; }
   edit(shape?: Shape, place?: Place): boolean {
     if (!this.editable) return false;
     const i = this.state.selected;
+    if (place === 'bridge' && planFor(this.level).plank) return false;
     if (place && place !== 'park' && this.state.friends.some((f, j) => j !== i && f.place === place)) return false;
     if ((!shape || shape === this.state.friends[i].shape) && (!place || place === this.state.friends[i].place)) return false;
     this.previous = copy(this.state);

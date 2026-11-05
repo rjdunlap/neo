@@ -193,6 +193,8 @@ export const SCRIPT = {
   'buddies.start4': ['The far bank is lower, and the gap is too wide for one friend. Make them hold hands: a slope down, then a cup at the end. Choose a friend, change its shape, and drag it to a dock.'],
   'buddies.start5': ['The gap is a rocky crack with a ledge inside. Make a bridge and a cup, or make one cup that sits on the ledge. Choose a friend, change its shape, and drag it to a dock.'],
   'buddies.start6': ['The stream runs the other way, and the low bank is on this side now. Make a slope that goes down to it, and a cup. Tap Turn to turn a friend around.'],
+  'buddies.start7': ['A plank already crosses the stream. Make your friend a cup to catch the seed. Tap Cup, then drag your friend to the catching dock.'],
+  'buddies.oneRoll': ['The seed rolled off the end. Make your friend a cup.'],
   'buddies.turnSlope': ['The slope goes up the wrong way. Choose the slope friend and tap Turn.'],
   'buddies.turn': ['Turned around!'],
   'buddies.ledgeNeed': ['The seed falls into the crack. Make a bridge over it, or a cup that sits on the ledge.'],

@@ -52,6 +52,20 @@ describe('game registry', () => {
     expect(landing(10, g.levels('school'), g.entryLevels)).toBe(3);
   });
 
+  it('opens Shape Buddies at preschool with One friend, one job (7), which pre-K plays first and school never reaches', () => {
+    const g = gameById('shape-buddies')!;
+    expect(g.bands).toEqual(['preschool', 'prek', 'school']);
+    expect(g.levels('preschool')).toEqual({ min: 7, max: 7 });
+    expect(g.levels('prek')).toEqual({ min: 1, max: 7, order: [7, 1, 2, 3, 4, 5] });
+    expect(g.levels('school')).toEqual({ min: 1, max: 6 });
+    expect(g.entryLevels).toEqual([7]);
+    expect(stepLevel(7, 1, g.levels('prek'))).toBe(1);
+    expect(stepLevel(1, -1, g.levels('prek'))).toBe(7);
+    expect(landing(7, g.levels('prek'), g.entryLevels)).toBe(7);
+    expect(landing(7, g.levels('school'), g.entryLevels)).toBe(1);
+    for (const level of [1, 2, 3, 4, 5]) expect(landing(level, g.levels('prek'), g.entryLevels)).toBe(level);
+  });
+
   it('opens Picture Graph at pre-K with Line them up (8), an entry school plays after level 2, then A key of five (9), Two pictures, one meadow (10) and What the graph can say (11) at the top of school, without moving levels 1–7', () => {
     const g = gameById('picture-graph')!;
     expect(g.levels('prek')).toEqual({ min: 1, max: 8, order: [8, 1, 2] });

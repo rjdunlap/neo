@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { catcher, copy, failureLine, guidance, initial, layout, looks, PLANS, SeedRound, SEEDS, SHAPES, trace, type Construction, type Place } from './logic';
+import { catcher, copy, failureLine, friendCount, guidance, initial, layout, looks, PLANS, SeedRound, SEEDS, SHAPES, trace, type Construction, type Place } from './logic';
 
 describe('Shape Buddies', () => {
   it('accepts both identities and both bridge shapes, with exactly the functional roles required', () => {
@@ -342,6 +342,47 @@ describe('Shape Buddies', () => {
         // Drop radii (90 at the bridge, 70 at the catch) never overlap.
         expect(l.bridge.x - l.receiver.x).toBeGreaterThan(160);
       }
+    });
+  });
+  describe('level 7, one friend, one job', () => {
+    /** The only legal states: the first friend in any shape, parked or at the catch; the second plain and parked. */
+    const legal = () => SHAPES.flatMap(shape => (['park', 'receiver'] as const).map(place => {
+      const s = initial(); s.friends[0] = { shape, place, facing: 1 }; return s;
+    }));
+    it('over the plank, only a cup at the catch is caught; a flat or slope rolls off, plain or empty needs a cup', () => {
+      for (const s of legal()) {
+        const f = s.friends[0], cup = f.place === 'receiver' && f.shape === 'scoop';
+        expect(trace(s, 7)).toBe(cup ? 'caught' : 'receiver');
+        expect(catcher(s, 7)).toBe(cup ? 'receiver' : null);
+        expect(failureLine(s, 7)).toBe(cup ? null : f.place === 'receiver' && (f.shape === 'flatten' || f.shape === 'slope') ? 'buddies.oneRoll' : 'buddies.cup');
+      }
+      expect(friendCount(7)).toBe(1); for (const level of [1, 2, 3, 4, 5, 6]) expect(friendCount(level)).toBe(2);
+    });
+    it('guidance names the one friend, a Cup and the catch, and reaches caught within two edits from every state', () => {
+      for (const s of legal()) {
+        let edits = 0;
+        for (let n = 0; n < 2; n++) {
+          const g = guidance(s, 7); if (!g) break;
+          expect(g).toEqual({ friend: 0, shape: 'scoop', dock: 'receiver' });
+          if (s.friends[0].shape !== g.shape) { s.friends[0].shape = g.shape; edits++; }
+          if (s.friends[0].place !== g.dock) { s.friends[0].place = g.dock; edits++; }
+        }
+        expect(trace(s, 7)).toBe('caught'); expect(edits).toBeLessThanOrEqual(2);
+      }
+    });
+    it('the plank is not a friend: the bridge dock refuses her friend and the second friend cannot be chosen', () => {
+      const r = new SeedRound(7);
+      expect(r.edit('scoop', 'bridge')).toBe(false); expect(r.state).toEqual(initial());
+      r.select(1); expect(r.state.selected).toBe(0);
+      expect(r.edit('scoop', 'receiver')).toBe(true); expect(r.state.friends[1]).toEqual({ shape: 'plain', place: 'park', facing: 1 });
+      const two = new SeedRound(1); two.select(1); expect(two.state.selected).toBe(1);
+    });
+    it('a flat friend at the catch first charges one hint at most, never a miss, and a Cup finishes it', () => {
+      const r = new SeedRound(7); r.edit('flatten', 'receiver');
+      for (let n = 0; n < 3; n++) { expect(r.trySeed()).toBe('receiver'); r.settle('receiver'); }
+      expect(r.hints).toBe(1); r.help(); expect(r.hints).toBe(1);
+      r.edit('scoop'); expect(r.trySeed()).toBe('caught'); r.settle('caught');
+      expect(r.carry()).toBe(true); expect(r.finish()).toBe(true); expect(r.misses).toBe(0);
     });
   });
   it('draws the seed kind after the friend colours, so every seed keeps its colours, and over seeds grows all three kinds', () => {
