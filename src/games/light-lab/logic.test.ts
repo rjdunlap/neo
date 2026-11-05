@@ -3,8 +3,8 @@ import { Rng } from '../../engine/random';
 import { rangeFor, stepLevel } from '../../progress/difficulty';
 import { beamEnd, hintThing, LEVELS, materialPuzzle, materialsRound, MATERIALS, meetsGoal, outcome, owlCell, POOLS, shadowCells, whyNotMaterial, type MaterialBoard, type Stuff, boardWith, cloudCells, DROP_TILT, fewestPlaced, findLines, fits, mirrorAt, flowerCount, freeCells, nearestPlacement, placeHint, hintMirror, makePuzzle, minTurns, mirrorPuzzle, nearestSolutions, planFor, PLANS, predictionChoices, reflect, solved, tiltFor, trace, type Dir, type LightPuzzle, type Placed, type Tilt } from './logic';
 
-/** Levels 1–10: the mirror boards `makePuzzle` builds (level 11's come from `materialsRound`). */
-const BOARD_PLANS = PLANS.filter((p) => p.mode !== 'materials');
+/** Levels 1–10: the mirror boards `makePuzzle` builds (level 11's come from `materialsRound`; level 12's split boards have their own tests). */
+const BOARD_PLANS = PLANS.filter((p) => p.mode !== 'materials' && !p.split);
 /** Levels 1–7: every mirror is already on the board, for her to turn. */
 const TILT_PLANS = BOARD_PLANS.filter((p) => !p.tray && p.mode !== 'find');
 
@@ -417,17 +417,17 @@ describe('Light Lab', () => {
       expect(meetsGoal(b, 'shade', { material: 'solid', name: 'book' })).toBe(true);
     });
 
-    it('sits after level 4 in both bands: pre-K [1, 2, 3, 4, 11], school [2, 3, 4, 11, 5 … 10]', () => {
+    it('sits after level 4 in both bands: pre-K [1, 2, 3, 4, 11], school [2, 3, 4, 11, 5 … 10, 12]', () => {
       expect(planFor(11).mode).toBe('materials');
       expect(planFor(11).eitherSide).toBe(false);
       expect(() => makePuzzle(planFor(11), new Rng(1))).toThrow();
       expect(rangeFor(LEVELS, 'prek').order).toEqual([1, 2, 3, 4, 11]);
-      expect(rangeFor(LEVELS, 'school').order).toEqual([2, 3, 4, 11, 5, 6, 7, 8, 9, 10]);
+      expect(rangeFor(LEVELS, 'school').order).toEqual([2, 3, 4, 11, 5, 6, 7, 8, 9, 10, 12]);
       expect(stepLevel(4, 1, rangeFor(LEVELS, 'prek'))).toBe(11);
       expect(stepLevel(4, 1, rangeFor(LEVELS, 'school'))).toBe(11);
       expect(stepLevel(11, 1, rangeFor(LEVELS, 'school'))).toBe(5);
       expect(stepLevel(5, -1, rangeFor(LEVELS, 'school'))).toBe(11);
-      expect(PLANS).toHaveLength(11);
+      expect(PLANS).toHaveLength(12);
     });
   });
 });
