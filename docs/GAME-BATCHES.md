@@ -1425,6 +1425,8 @@ Proof: new-band tier: typecheck, unit tests including the lands and registry ban
 
 ### rhyme-time 4: Level 10 Rhyme baskets
 
+Built 2026-11-04, [PR #1239](https://github.com/rjdunlap/neo/pull/1239); [build note](archive/COMPLETED-2026-10-09.md#rhyme-time-level-10-rhyme-baskets-rhyme-time-batch-4-2026-11-04). No longer eligible for dispatch.
+
 - **`rhyme-time`, Level 10 *Rhyme baskets* (dive slice 4)**, after batch rhyme-time 1 (new interaction): drag each picture into the basket whose key picture it rhymes with; school range 2–10. [Dive](deep-dives/rhyme-time.md#build-slices-in-order)
 
 Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the browser harness's Rhyme Time case, the README row and `docs/GAMES.md`.
