@@ -1675,6 +1675,14 @@ Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, 
 
 Proof: new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests; one play of level 9 at preschool with one wrong line then two right; `fingerdemo` at 9; the preschool Rainbow Meadow page screenshot.
 
+### treasure-map 6: Across the river
+
+- **`treasure-map`, Levels 10–11 *Across the river* and *Mirror twin* (dive slice 7, after batches 1–5)** (defined 2026-11-05; new interaction; school): a river and a road as the axes with squares named in words, then the mirror across either; IDs follow 9. [Dive](deep-dives/treasure-map.md#levels-1011-across-the-river-defined-2026-11-05)
+
+Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, the README row.
+
+Proof: new-interaction tier: typecheck, rule, registry, lands and how-to tests; one school play of level 10 with one wrong-side and one wrong-count dig, then right, to the sticker; one play of level 11 with one same-side tap; screenshots of level 10 at 1024 by 768 and 1024 by 1365; `fingerdemo` at 10 and 11; one build for the voice lines; no `couchgames`.
+
 ### word-search 1: Fresh themes and root families
 
 - **`word-search`, Fresh themes and root families (dive slice 1)** (built 2026-11-03; existing-game content; the root line became `wordsearch.root-port` and `wordsearch.root-spect`, SPECTATE and ASPECT replaced EXPECT): six new everyday themes of at least twelve plain words, two root-family themes (*Words that carry*, *Words that look*) drawn only for plans they can fill, the pet's one-line root meaning (`wordsearch.root`), and RAIN removed from `weather`. [Dive](deep-dives/word-search.md#build-slices-in-order)
