@@ -2847,11 +2847,17 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--treasure-map-level-7
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--treasure-map-level-8-slide-it-treasure-map-batch-4).
 
+## Treasure Map level 9 One line (treasure-map batch 5, 2026-11-05)
+
+[PR #1254](https://github.com/rjdunlap/neo/pull/1254), [dive slice 5](../deep-dives/treasure-map.md#build-slices-in-order). Appended as ID 9: `LEVELS` preschool 1-9 (`order` 9, 1), pre-K 1-9 (`order` 9, 1, 2), school unchanged 1-8; `entryLevels: [9]`, so the game's bands are now preschool, pre-K and school and Treasure Map sits on the preschool Rainbow Meadow page. A 3 by 3 map with picture rows and shuffled colour columns, squares 120 units on screen (grid scaled 1.2); the pet asks for a column or a row by name and any square in that line is right (the whole line shines, then a chest). Four finds a round, rows and columns alternating from a seeded first axis, no line twice. A wrong dig is a miss that names the line dug (`map.linecolwrong`, `map.linerowwrong`); two misses on a find glow the line and count one hint (`map.linehint`). The sign shows the one header with an arrow along its line. Voice lines `map.linecol`, `map.linerow` and the three above; a how-to step and finish line scoped to level 9 (level 8's step now `scoped to:8`). Couch unchanged. Voice clips for the new lines are not rendered (device speech is the fallback).
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--treasure-map-level-9-one-line-treasure-map-batch-5).
+
 ## Secret Code level 8 Four slots, a repeat (secret-code batch 2, 2026-11-04)
 
 [PR #1238](https://github.com/rjdunlap/neo/pull/1238), `claude/secret-code-four-repeat`: [dive slice 2](../deep-dives/secret-code.md#build-slices-in-order). `PLANS[7]` is four slots, five colors, `yellow` and `repeats` on, two doors, named "Four slots, five colors, and one color used twice"; school now spans levels 2–8 (pre-K 1–3 unchanged). Every code holds a repeat. The miss rule is levels 1–6's repeat-level `ruledOut` with no colour-wide gray rule, faint stones come after two misses or eight tries, and `code.repeat` is reused (no new voice lines). The how-to card scopes the level 7 step and note `to: 7` and adds a level 8 step and note. A new rule test (300 seeds) checks every code repeats and the reasoning bot cracks each within six tries (measured maximum 5) without ignoring a visible clue. The woods case for Secret Code now runs up to level 8. Couch unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--secret-code-level-8-four-slots-a-repeat-secret-code-batch-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--secret-code-level-8-four-slots-a-repeat-secret-code-batch-2).
 
 ## Secret Code level 11 A bigger detective door (secret-code batch 5, 2026-11-04)
 

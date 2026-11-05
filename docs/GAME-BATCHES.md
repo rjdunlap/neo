@@ -1665,7 +1665,7 @@ Proof: new-interaction tier: typecheck, rule tests; one play with one wrong squa
 
 ### treasure-map 5: One line
 
-- **`treasure-map`, Level 9 *One line*, the preschool opening (dive slice 5, after batches 1–4)** (new band; preschool): a 3 by 3 map where any square in the named row or column is right; `order` 9, 1, 2, …, 8 and `entryLevels: [9]`, Treasure Map on the preschool Rainbow Meadow page. Shares the headers with batch 1 and follows ID 8 (IDs stay contiguous).** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
+- **`treasure-map`, Level 9 *One line*, the preschool opening (dive slice 5, after batches 1–4)** (built 2026-11-05; new band; preschool): a 3 by 3 map where any square in the named row or column is right; `order` 9, 1, 2, …, 8 and `entryLevels: [9]`, Treasure Map on the preschool Rainbow Meadow page. Shares the headers with batch 1 and follows ID 8 (IDs stay contiguous).** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
 
 Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, the README row, and the lands and registry tests.
 
