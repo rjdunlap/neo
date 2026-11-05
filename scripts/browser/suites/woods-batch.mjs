@@ -1068,7 +1068,7 @@ async function woodsBatch() {
     log(`Beat Builder ${level} (${plan.mode}): squares toggled on the grid, ${plan.mode === 'free' ? 'free play and the green check' : 'copying, misses, hints'}, saved score and sticker passed`);
   }
 
-  if (!only || only === 'rhyme') for (let level = fromLevel; level <= 4; level++) {
+  if (!only || only === 'rhyme') for (const level of [1, 2, 3, 4, 8].filter((l) => l >= fromLevel)) {
     await launch('rhyme-time', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const card = async (word) => {
@@ -1090,6 +1090,7 @@ async function woodsBatch() {
         assert.deepEqual(await counts(), [2, 1]);
         if (level === 3) await screenshot('rhyme-time-3-hint');
         if (level === 4) await screenshot('rhyme-time-4-hint');
+        if (level === 8) await screenshot('rhyme-time-8-hint');
       }
       for (const w of q.answer) await card(w);
     }

@@ -12,14 +12,21 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { chipsFor, FAMILIES, guessFor, makeQuestions, makeRiddles, makeTap, planFor, rhymes, spokenList, TAGS, wordToTap, type Riddle, type RhymePlan, type RhymeQuestion, type Tag } from './logic';
+import { chipsFor, FAMILIES, guessFor, makeQuestions, makeRiddles, makeTap, planFor, rhymes, sceneFor, spokenList, TAGS, wordToTap, type Riddle, type RhymePlan, type RhymeQuestion, type Tag } from './logic';
 import { picture, tagGlyph } from './pictures';
 
-/** Pre-K plays the first riddle (5) after pairs; odd one out (4) and the meaning-first and make-it riddles (6–7) stay school. */
+/**
+ * Pre-K plays the first riddle (5) after pairs; odd one out (4) and the meaning-first and make-it riddles (6–7) stay school.
+ * Silly pairs (8) is a single rhyme judgment with a place to say it in, so it sits second on both ladders.
+ */
 const LEVELS: BandLevels = {
-  prek: { min: 1, max: 5, order: [1, 2, 3, 5] },
-  school: { min: 2, max: 7 },
+  prek: { min: 1, max: 8, order: [1, 8, 2, 3, 5] },
+  school: { min: 2, max: 8, order: [2, 8, 3, 4, 5, 6, 7] },
 };
+
+/** Level 8's place is drawn this much larger than a card picture, its rider this much smaller inside it. */
+const PLACE_SCALE = 1.6;
+const RIDER_SCALE = 0.6;
 
 const RIDDLE_MODES: readonly RhymePlan['mode'][] = ['riddle', 'riddle2', 'make'];
 
@@ -75,6 +82,8 @@ class RhymeTime implements Game {
 
   private readonly backdrop: Backdrop;
   private readonly prompt = new Container();
+  /** Level 8: the place, scaled up, holding the rider once one hops in. */
+  private place: Container | null = null;
   private readonly glow = new Graphics();
   private view: View;
   private wrongs = 0;
@@ -117,7 +126,8 @@ class RhymeTime implements Game {
     // Starts right of the corner pet, which the bottom row would otherwise reach.
     const cx = spread(row.length, 240, v.w - 50, 165);
     row.forEach((n, i) => n.position.set(cx[i], Math.min(v.h - 90, v.h * 0.42 + 250)));
-    this.prompt.position.set(v.w / 2, Math.max(170, v.h * 0.27));
+    // Level 8's place stands just above the riders, its top clear of the corner buttons.
+    this.prompt.position.set(v.w / 2, this.plan.mode === 'scene' ? Math.max(250, v.h * 0.64 - 230) : Math.max(170, v.h * 0.27));
     this.replay.position.set(v.w - 80, 90);
   }
 
@@ -167,15 +177,22 @@ class RhymeTime implements Game {
     for (const c of this.cards.splice(0)) {
       this.ctx.tw.kill(c.node);
       this.ctx.tw.kill(c.node.scale);
+      this.ctx.tw.kill(c.bg);
       c.node.destroy({ children: true });
     }
     for (const c of this.chips.splice(0)) c.node.destroy({ children: true });
     this.guessButton?.destroy({ children: true });
     this.guessButton = null;
+    if (this.place) {
+      this.ctx.tw.kill(this.place);
+      this.ctx.tw.kill(this.place.scale);
+    }
+    this.place = null;
     this.prompt.removeChildren().forEach((c) => c.destroy({ children: true }));
     const q = this.q;
     const words = this.riddle?.words ?? q.words;
-    if (q?.prompt) {
+    if (q?.prompt && this.plan.mode === 'scene') this.drawPlace(q.prompt);
+    else if (q?.prompt) {
       const bubble = new Graphics().roundRect(-95, -95, 190, 190, 40).fill(0xffffff).stroke({ width: 6, color: swatch.pink.line });
       const art = picture(q.prompt);
       this.prompt.addChild(bubble, art);
@@ -211,6 +228,7 @@ class RhymeTime implements Game {
     const q = this.q;
     if (!q || this.finished) return;
     const list = q.words.join(', ');
+    if (this.plan.mode === 'scene') return this.ctx.instruct('rhyme.scene', { place: q.prompt!, prep: sceneFor(q.prompt!).prep, list: spokenList(q.words) });
     if (this.plan.mode === 'match') return this.ctx.instruct('rhyme.match', { prompt: q.prompt!, list });
     if (this.plan.mode === 'pair') return this.ctx.instruct('rhyme.pair', { list });
     return this.ctx.instruct('rhyme.odd', { list });
@@ -243,18 +261,20 @@ class RhymeTime implements Game {
       if (rhymes(a.word, c.word)) return void this.right(a, c);
       return void this.wrong('rhyme.nopair', { a: a.word, b: c.word });
     }
+    if (this.plan.mode === 'scene') return void (q.answer.includes(c.word) ? this.rightScene(c) : this.wrongScene(c));
     if (q.answer.includes(c.word)) return void this.right(c, null);
     if (this.plan.mode === 'match') return void this.wrong('rhyme.no', { word: c.word, prompt: q.prompt! });
     const other = this.cards.find((x) => x !== c && rhymes(x.word, c.word))!;
     return void this.wrong('rhyme.noodd', { word: c.word, other: other.word });
   }
 
-  private async wrong(line: 'rhyme.no' | 'rhyme.nopair' | 'rhyme.noodd', vars: Record<string, string>) {
+  private async wrong(line: 'rhyme.no' | 'rhyme.nopair' | 'rhyme.noodd' | 'rhyme.sceneNo', vars: Record<string, string>, after?: () => Promise<void>) {
     this.busy = true;
     this.misses++;
     this.wrongs++;
     sfx.boing();
     await this.ctx.say(line, vars);
+    await after?.();
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints++;
       this.glowing = this.cards.find((x) => x.word === this.q.answer[0]) ?? null;
@@ -278,6 +298,93 @@ class RhymeTime implements Game {
     else await this.ctx.say('rhyme.oddyes', { word: a.word });
     await this.ctx.tw.wait(0.3);
     await this.next();
+  }
+
+  // Silly pairs (level 8) ----------------------------------------------------------
+
+  /** The place in the middle, on a road (the truck) or a soft shadow, scaled up so a rider fits. */
+  private drawPlace(word: string) {
+    const art = picture(word);
+    const bottom = art.getLocalBounds().maxY * PLACE_SCALE;
+    const ground = new Graphics();
+    if (word === 'truck') {
+      ground.roundRect(-190, bottom - 14, 380, 34, 14).fill(0x8d8f99);
+      for (let x = -160; x < 160; x += 56) ground.roundRect(x, bottom - 1, 30, 7, 3).fill(0xffffff);
+    } else ground.ellipse(0, bottom - 4, 120, 16).fill({ color: ink, alpha: 0.12 });
+    this.place = new Container();
+    this.place.scale.set(PLACE_SCALE);
+    this.place.addChild(art);
+    this.prompt.addChild(ground, this.place);
+  }
+
+  /** Where a rider sits, in stage units. */
+  private anchorPoint(place: string) {
+    const { anchor } = sceneFor(place);
+    return { x: this.prompt.x + anchor.x * PLACE_SCALE, y: this.prompt.y + anchor.y * PLACE_SCALE };
+  }
+
+  /** The card's picture hops up to the place, its card fading away. */
+  private async hopIn(c: Card, place: string) {
+    const { tw } = this.ctx;
+    const to = this.anchorPoint(place);
+    sfx.pop(7);
+    void tw.to(c.bg, { alpha: 0 }, { duration: 0.2 });
+    void tw.to(c.node.scale, { x: PLACE_SCALE * RIDER_SCALE, y: PLACE_SCALE * RIDER_SCALE }, { duration: 0.4 });
+    await tw.to(c.node, { x: (c.node.x + to.x) / 2, y: Math.min(c.node.y, to.y) - 90 }, { duration: 0.2, ease: ease.outQuad });
+    await tw.to(c.node, { x: to.x, y: to.y }, { duration: 0.2, ease: ease.inQuad });
+  }
+
+  /** A rider that does not rhyme: in it hops, the pet giggles at the silly sight, and back it hops to its slot. */
+  private async wrongScene(c: Card) {
+    this.busy = true;
+    const place = this.q.prompt!;
+    await this.hopIn(c, place);
+    const scene = sceneFor(place);
+    await this.wrong('rhyme.sceneNo', { word: c.word, prep: scene.prep, place }, async () => {
+      const { tw } = this.ctx;
+      const xs = spread(this.cards.length, 180, this.view.w - 60, 200);
+      const home = { x: xs[this.cards.indexOf(c)], y: this.view.h * 0.64 };
+      void tw.to(c.bg, { alpha: 1 }, { duration: 0.3 });
+      void tw.to(c.node.scale, { x: 1, y: 1 }, { duration: 0.4 });
+      await tw.to(c.node, { x: (c.node.x + home.x) / 2, y: c.node.y - 70 }, { duration: 0.2, ease: ease.outQuad });
+      await tw.to(c.node, home, { duration: 0.22, ease: ease.inQuad });
+    });
+  }
+
+  /** The rider that rhymes hops in and stays; the place does its thing (the truck drives off and back), and on to the next scene. */
+  private async rightScene(c: Card) {
+    this.busy = true;
+    this.glowing = null;
+    const place = this.q.prompt!;
+    const scene = sceneFor(place);
+    await this.hopIn(c, place);
+    c.node.visible = false;
+    const rider = picture(c.word);
+    rider.scale.set(RIDER_SCALE);
+    rider.position.set(scene.anchor.x, scene.anchor.y);
+    if (this.place) {
+      if (scene.behind) this.place.addChildAt(rider, 0);
+      else this.place.addChild(rider);
+    }
+    sfx.sparkle();
+    this.ctx.pet.cheer();
+    void this.actScene(place);
+    await this.ctx.say('rhyme.sceneYes', { rider: c.word, prep: scene.prep, place });
+    await this.ctx.tw.wait(0.4);
+    await this.next();
+  }
+
+  private async actScene(place: string) {
+    const p = this.place;
+    if (!p) return;
+    const { tw } = this.ctx;
+    if (place === 'truck') {
+      await tw.to(p, { x: this.view.w / 2 + 160 }, { duration: 0.6, ease: ease.inQuad });
+      p.x = -this.view.w / 2 - 160;
+      return tw.to(p, { x: 0 }, { duration: 0.7, ease: ease.outBack });
+    }
+    await tw.to(p.scale, { y: PLACE_SCALE * 0.85 }, { duration: 0.15 });
+    return tw.to(p.scale, { y: PLACE_SCALE }, { duration: 0.4, ease: ease.outElastic });
   }
 
   // Rhyme Riddles (levels 5–7) ----------------------------------------------------

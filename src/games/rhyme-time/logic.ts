@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * that rhyme with each other, then the odd one out of a rhyming group. Rhymes are grouped by
  * sound family, so a distractor is never accidentally a rhyme.
  */
-export type RhymeMode = 'match' | 'pair' | 'odd' | 'riddle' | 'riddle2' | 'make';
+export type RhymeMode = 'match' | 'pair' | 'odd' | 'riddle' | 'riddle2' | 'make' | 'scene';
 
 export interface RhymePlan {
   mode: RhymeMode;
@@ -23,6 +23,7 @@ export const PLANS: RhymePlan[] = [
   { mode: 'riddle', choices: 3, questions: 4, name: 'Riddle: sound clue, then meaning clue' },
   { mode: 'riddle2', choices: 4, questions: 4, name: 'Riddle: meaning clue first, a fourth decoy' },
   { mode: 'make', choices: 3, questions: 3, name: 'Your turn: make the riddle' },
+  { mode: 'scene', choices: 3, questions: 4, name: 'Silly pairs: who rides in the truck? The rider that rhymes hops in' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -59,6 +60,7 @@ export interface RhymeQuestion {
 }
 
 export function makeQuestions(plan: RhymePlan, rng: Rng): RhymeQuestion[] {
+  if (plan.mode === 'scene') return makeScenes(plan, rng);
   const out: RhymeQuestion[] = [];
   const families = rng.shuffle(Object.keys(FAMILIES));
   const big = families.filter((f) => FAMILIES[f].length >= 3);
@@ -89,6 +91,47 @@ export function makeQuestions(plan: RhymePlan, rng: Rng): RhymeQuestion[] {
 export function wordToTap(plan: RhymePlan, q: RhymeQuestion, picked: string | null): string {
   if (plan.mode === 'pair' && picked) return q.answer.find((w) => w !== picked)!;
   return q.answer[0];
+}
+
+// Silly pairs (level 8) -----------------------------------------------------------------
+
+/**
+ * A place and the rider that rhymes with it: "a duck in a truck". `anchor` is where the rider sits, in the place picture's
+ * own units (before the scene's scale); `behind` riders sit inside, drawn behind the place so only their top shows (the jar's star sits in front, so the jam does not hide it).
+ * Boat and goat would make a scene, but there is no goat to draw.
+ */
+export interface Scene {
+  place: string;
+  rider: string;
+  prep: 'in' | 'on';
+  anchor: { x: number; y: number };
+  behind?: boolean;
+}
+
+export const SCENES: readonly Scene[] = [
+  { place: 'truck', rider: 'duck', prep: 'in', anchor: { x: -24, y: -62 }, behind: true },
+  { place: 'log', rider: 'frog', prep: 'on', anchor: { x: -6, y: -48 } },
+  { place: 'chair', rider: 'bear', prep: 'on', anchor: { x: 0, y: -26 } },
+  { place: 'hat', rider: 'cat', prep: 'in', anchor: { x: 0, y: -68 }, behind: true },
+  { place: 'dish', rider: 'fish', prep: 'in', anchor: { x: 0, y: -16 }, behind: true },
+  { place: 'jar', rider: 'star', prep: 'in', anchor: { x: 0, y: 2 } },
+  { place: 'tree', rider: 'bee', prep: 'in', anchor: { x: 14, y: -20 } },
+  { place: 'spoon', rider: 'moon', prep: 'on', anchor: { x: 0, y: -40 } },
+  { place: 'cake', rider: 'snake', prep: 'on', anchor: { x: 0, y: -26 } },
+  { place: 'rug', rider: 'bug', prep: 'on', anchor: { x: 0, y: 0 } },
+  { place: 'pail', rider: 'snail', prep: 'in', anchor: { x: 0, y: -62 }, behind: true },
+  { place: 'rock', rider: 'sock', prep: 'on', anchor: { x: 0, y: -62 } },
+];
+
+export const sceneFor = (place: string) => SCENES.find((s) => s.place === place)!;
+
+/** A round of scenes, each a different place; the rider and one picture from each of two other families, none rhyming with the place or each other. */
+function makeScenes(plan: RhymePlan, rng: Rng): RhymeQuestion[] {
+  return rng.shuffle([...SCENES]).slice(0, plan.questions).map((s) => {
+    const fam = familyOf(s.place);
+    const others = rng.shuffle(Object.keys(FAMILIES).filter((f) => f !== fam)).slice(0, plan.choices - 1).map((f) => rng.pick(FAMILIES[f]));
+    return { prompt: s.place, words: rng.shuffle([s.rider, ...others]), answer: [s.rider] };
+  });
 }
 
 // Rhyme Riddles (levels 5–7) -----------------------------------------------------------
