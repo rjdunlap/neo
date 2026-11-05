@@ -1311,7 +1311,7 @@ Proof: new-interaction tier: typecheck, unit tests (order, entry, no movement wi
 
 ### pond-conga 4: A long conga
 
-- **`pond-conga`, Level 9, *A long conga* (dive slice 4)**, after batch pond-conga 2 (shares the level table and `order`) (new level; grown-up): a longer tail on a pond that rewards planning. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
+- **`pond-conga`, Level 9, *A long conga* (dive slice 4)** (**built 2026-11-04**, [PR #1230](https://github.com/rjdunlap/neo/pull/1230)), after batch pond-conga 2 (shares the level table and `order`) (new level; grown-up): a longer tail on a pond that rewards planning. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
 
 Files expected: `src/games/pond-conga/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
