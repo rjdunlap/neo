@@ -26,7 +26,14 @@ export interface WordGrid {
   letters: readonly string[];
   words: readonly Placed[];
   theme: string;
+  /** Level 6: the sentence the letters no word uses spell, top row first, left to right (with its spaces). */
+  message?: string;
 }
+
+/** A stone: an open square the message does not need. It is never part of a word or the message, and it breaks any line through it. */
+export const STONE = '#';
+/** At most this many stones in a grid, so it stays a search and not a scatter of pebbles. */
+export const MAX_STONES = 8;
 
 export const cellOf = (size: number, r: number, c: number) => r * size + c;
 
@@ -76,6 +83,8 @@ export interface WordPlan {
   dirs: readonly Dir[];
   /** Grids in one round. */
   grids: number;
+  /** Level 6: the letters left over spell a message, revealed when the last word is found. */
+  message?: boolean;
 }
 
 /**
@@ -89,12 +98,15 @@ export const PLANS: WordPlan[] = [
   { name: 'A 12 by 12 grid with nine words, in every direction, even backwards', size: 12, words: 9, dirs: ALL_DIRS, grids: 1 },
   { name: 'A 14 by 14 grid with twelve words, in every direction', size: 14, words: 12, dirs: ALL_DIRS, grids: 1 },
   { name: 'A small 6 by 6 grid with four words, across and down, big letters', size: 6, words: 4, dirs: ALL_DIRS.slice(0, 2), grids: 1 },
+  { name: 'An 8 by 8 grid with nine words, across, down and slanting; the letters left over spell a message', size: 8, words: 9, dirs: ALL_DIRS.slice(0, 3), grids: 1, message: true },
 ];
 
 /** The small grid that starts the ladder, by its ID. */
 export const SMALL_GRID = 5;
-/** The levels easiest first: the small grid, then 1 to 4. */
-export const ORDER = [SMALL_GRID, 1, 2, 3, 4];
+/** The message grid, by its ID. */
+export const MESSAGE_GRID = 6;
+/** The levels easiest first: the small grid, then 1 to 4, then the message in the leftovers. */
+export const ORDER = [SMALL_GRID, 1, 2, 3, 4, MESSAGE_GRID];
 
 /** A level's plan; a level past the top plays the hardest grid, not the small one. */
 export const planFor = (level: number): WordPlan => PLANS[(level > PLANS.length ? ORDER[ORDER.length - 1] : Math.max(1, level)) - 1];
@@ -103,34 +115,44 @@ export const planFor = (level: number): WordPlan => PLANS[(level > PLANS.length 
 const FILL = 'EEEEAAAIIOOUTTNNSSRRLLDDGGBCMPHFWYKV';
 
 /**
- * A grid for a theme: the plan's number of its words (the longest first, since they are the hardest to fit), each placed
- * somewhere it fits without breaking another, the rest filled with letters. A grid is kept only if every listed word occurs in
+ * The plan's number of a theme's words (the longest first, since they are the hardest to fit), each placed somewhere it fits
+ * without breaking another, the other squares left empty; null when one does not fit.
+ */
+function placeWords(plan: WordPlan, theme: Theme, rng: Rng): { letters: string[]; placed: Placed[] } | null {
+  const { size } = plan;
+  const picked = rng.shuffle([...theme.words].filter((w) => w.length <= size)).slice(0, plan.words).sort((a, b) => b.length - a.length);
+  const letters: string[] = Array<string>(size * size).fill('');
+  const placed: Placed[] = [];
+  for (const word of picked) {
+    const spots: Placed[] = [];
+    for (let r = 0; r < size; r++)
+      for (let c = 0; c < size; c++)
+        for (const [dr, dc] of plan.dirs) {
+          const er = r + dr * (word.length - 1), ec = c + dc * (word.length - 1);
+          if (er < 0 || er >= size || ec < 0 || ec >= size) continue;
+          if ([...word].every((ch, k) => { const have = letters[cellOf(size, r + dr * k, c + dc * k)]; return have === '' || have === ch; })) spots.push({ word, r, c, dr, dc });
+        }
+    if (!spots.length) return null;
+    // Prefer a spot that crosses a word already there, now and then, so the words tangle a little.
+    const crossing = spots.filter((s) => [...word].some((_, k) => letters[cellOf(size, s.r + s.dr * k, s.c + s.dc * k)] !== ''));
+    const spot = crossing.length && rng.chance(0.5) ? rng.pick(crossing) : rng.pick(spots);
+    [...word].forEach((ch, k) => { letters[cellOf(size, spot.r + spot.dr * k, spot.c + spot.dc * k)] = ch; });
+    placed.push(spot);
+  }
+  return { letters, placed };
+}
+
+/**
+ * A grid for a theme: its words placed (`placeWords`), the rest filled with letters. A grid is kept only if every listed word occurs in
  * it exactly once, so a line that spells a word is always the one the puzzle meant.
  */
 export function makeGrid(plan: WordPlan, theme: Theme, rng: Rng): WordGrid {
+  if (plan.message) return makeMessageGrid(plan, theme, rng);
   const { size } = plan;
   for (let attempt = 0; attempt < 200; attempt++) {
-    const picked = rng.shuffle([...theme.words].filter((w) => w.length <= size)).slice(0, plan.words).sort((a, b) => b.length - a.length);
-    const letters: string[] = Array<string>(size * size).fill('');
-    const placed: Placed[] = [];
-    let ok = true;
-    for (const word of picked) {
-      const spots: Placed[] = [];
-      for (let r = 0; r < size; r++)
-        for (let c = 0; c < size; c++)
-          for (const [dr, dc] of plan.dirs) {
-            const er = r + dr * (word.length - 1), ec = c + dc * (word.length - 1);
-            if (er < 0 || er >= size || ec < 0 || ec >= size) continue;
-            if ([...word].every((ch, k) => { const have = letters[cellOf(size, r + dr * k, c + dc * k)]; return have === '' || have === ch; })) spots.push({ word, r, c, dr, dc });
-          }
-      if (!spots.length) { ok = false; break; }
-      // Prefer a spot that crosses a word already there, now and then, so the words tangle a little.
-      const crossing = spots.filter((s) => [...word].some((_, k) => letters[cellOf(size, s.r + s.dr * k, s.c + s.dc * k)] !== ''));
-      const spot = crossing.length && rng.chance(0.5) ? rng.pick(crossing) : rng.pick(spots);
-      [...word].forEach((ch, k) => { letters[cellOf(size, spot.r + spot.dr * k, spot.c + spot.dc * k)] = ch; });
-      placed.push(spot);
-    }
-    if (!ok) continue;
+    const laid = placeWords(plan, theme, rng);
+    if (!laid) continue;
+    const { letters, placed } = laid;
     // Fill the rest, and if a listed word turns up a second time, or a blocked one, by accident, fill it again: only the filler is
     // redrawn, so the placed words stay where they are.
     const fixed = letters.map((l) => l !== '');
@@ -142,8 +164,44 @@ export function makeGrid(plan: WordPlan, theme: Theme, rng: Rng): WordGrid {
   throw new Error(`could not make a grid for ${plan.name}`);
 }
 
+/** A message's letters, in the order they fill the open squares. */
+export const lettersOf = (message: string) => message.replace(/[^A-Z]/g, '');
+
+/**
+ * Level 6's grid: the words placed as in `makeGrid`, then a message picked whose letters
+ * fit the squares left open, with a stone on each open square it does not need. The message fills the rest top row first, left
+ * to right. Its letters are fixed, so a grid where a listed word turns up twice, or a blocked word can be read, is redrawn by
+ * moving the stones, then by placing the words again.
+ */
+export function makeMessageGrid(plan: WordPlan, theme: Theme, rng: Rng): WordGrid {
+  const { size } = plan, messages = theme.messages ?? [];
+  if (!messages.length) throw new Error(`${theme.id} has no messages`);
+  for (let attempt = 0; attempt < 400; attempt++) {
+    const laid = placeWords(plan, theme, rng);
+    if (!laid) continue;
+    const { letters, placed } = laid;
+    const open = letters.flatMap((l, i) => (l === '' ? [i] : []));
+    const fits = messages.filter((m) => lettersOf(m).length <= open.length && open.length - lettersOf(m).length <= MAX_STONES);
+    if (!fits.length) continue;
+    const message = rng.pick(fits), text = lettersOf(message), words = placed.map((p) => p.word);
+    for (let tries = 0; tries < 12; tries++) {
+      const stones = new Set(rng.shuffle([...open]).slice(0, open.length - text.length));
+      let k = 0;
+      for (const i of open) letters[i] = stones.has(i) ? STONE : text[k++];
+      if (placed.every((p) => occurrences(size, letters, p.word).length === 1) && !hasBlocked(size, letters, words)) return { size, letters, words: placed, theme: theme.id, message };
+    }
+  }
+  throw new Error(`could not make a message grid for ${theme.id}`);
+}
+
+/** The letters no word uses, top row first, left to right: the message, once every word is found. Stones are skipped. */
+export function leftovers(grid: Pick<WordGrid, 'size' | 'letters' | 'words'>): string {
+  const used = new Set(grid.words.flatMap((p) => cellsOfWord(grid.size, p)));
+  return grid.letters.filter((l, i) => !used.has(i) && l !== STONE).join('');
+}
+
 /** The themes a plan can draw: those with enough words that fit its grid. Every everyday theme fits every plan; a root family fits only the small ones. */
-export const themesFor = (plan: Pick<WordPlan, 'size' | 'words'>): Theme[] => THEMES.filter((t) => t.words.filter((w) => w.length <= plan.size).length >= plan.words);
+export const themesFor = (plan: Pick<WordPlan, 'size' | 'words' | 'message'>): Theme[] => THEMES.filter((t) => t.words.filter((w) => w.length <= plan.size).length >= plan.words && (!plan.message || !!t.messages?.length));
 
 export const makeGrids = (plan: WordPlan, rng: Rng): WordGrid[] => Array.from({ length: plan.grids }, () => makeGrid(plan, rng.pick(themesFor(plan)), rng));
 

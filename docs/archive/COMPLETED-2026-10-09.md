@@ -2899,13 +2899,19 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--shape-buddie
 
 [PR #1248](https://github.com/rjdunlap/neo/pull/1248), `claude/shape-buddies-cup-on-ledge`: [dive slice 3](../deep-dives/shape-buddies.md#build-slices-in-order). `PLANS[5] = { bridges: ['flat', 'slope'], drop: 0, ledge: true }`. A new `catcher(s, level)` returns which dock caught: caught when a Flat or Slope at the gap and a Cup at the catch, or a Cup at the gap with the other friend anything (two cups catch in the gap first); level 1's cup over open water still fails. `failureLine`: a plain or empty gap gives `buddies.ledgeNeed`, a missing cup `buddies.cup`. Guidance finishes what she started (bridge at the gap gets a Cup at the catch, otherwise a Cup goes to the gap) and never changes a friend already in a working role; the carry starts from the catching dock. New lines `buddies.start5`, `buddies.ledgeNeed` and `buddies.otherWay` (spoken once after planting, either family). The scene draws grey crack walls and a wooden ledge under the gap dock, labelled "Gap"; heading "A bridge, or a cup on the ledge". `LEVELS` pre-K and school are now 1-5, `DESCRIPTIONS[5]`, a how-to step `{ from: 5, to: 5 }` and an extended co-play hint. Misses 0, hints once per role. Rule tests: 27 in shape-buddies (5 new for level 5).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--shape-buddies-level-5-a-cup-on-the-ledge-shape-buddies-batch-3).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--shape-buddies-level-5-a-cup-on-the-ledge-shape-buddies-batch-3).
 
 ## Word Search level 5 A small grid to start (word-search batch 2, 2026-11-04)
 
 [PR #1240](https://github.com/rjdunlap/neo/pull/1240), `claude/word-search-small-grid`: [dive slice 2](../deep-dives/word-search.md#build-slices-in-order). `SMALL_GRID` plan in `logic.ts`: 6 by 6, four words of three to six letters, across and down, always in view; `ORDER` `[5, 1, 2, 3, 4]`, `entryLevels: [5]`, `planFor` of a level past the top plays level 4. Squares are 98 units at 1024 by 768 (word list column narrowed from 262 to 222) and 132 at 1024 by 1365 (small-grid squares at least 96, capped at 132). *Words that carry* can be drawn at level 5; *Words that look* cannot. How-to card has a level-5 line. Couch trip and courses unchanged.
 
 Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--word-search-level-5-a-small-grid-to-start-word-search-batch-2).
+
+## Word Search level 6 A message in the leftovers (word-search batch 3, 2026-11-05)
+
+[PR #1269](https://github.com/rjdunlap/neo/pull/1269), `claude/word-search-message`: [dive slice 3](../deep-dives/word-search.md#build-slices-in-order). Level 6 appended: `ORDER` `[5, 1, 2, 3, 4, 6]`, `LEVELS` grownup max 6; plan 8 by 8, nine words across, down and down-right (forwards only). `makeMessageGrid` places the words, then picks one of the theme's authored `messages` (3-4 on each of the 15 everyday themes in `words.ts`, 13-24 letters, none holding a theme or blocked word) whose letter count fits the open squares with at most eight stones (`STONE` `#`, `MAX_STONES`); the leftovers in reading order equal the message. Levels 1-5 grids are byte-identical to before (proved once by a temporary comparison over levels 1-5 and 60 seeds), so the couch trip and courses are unchanged. UI: pebble-drawn stones, a row of blanks under the grid (at most two lines); on the last word the leftover squares light in order and fill the blanks, and the pet says `wordsearch.message` ("The letters left over say: {message}.", slotted, device speech), held 2.5 s. New instruct lines `wordsearch.go-message` and `go-message-keys`; the how-to demo grid drops the message; the how-to slide step now covers levels 2-6 and a level 6 step was added. Not built: shaped grids on the stones (notebook only).
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--word-search-level-6-a-message-in-the-leftovers-word-search-batch-3).
 
 ## Read & Do levels 8–9 Mend the sign (read-do batch 4, 2026-11-05)
 
@@ -2917,7 +2923,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--read--do-lev
 
 [PR #1249](https://github.com/rjdunlap/neo/pull/1249), `claude/secret-code-one-slot`: [dive slice 4](../deep-dives/secret-code.md#build-slices-in-order). Plan 10: one slot, three stones, yes/no marks, three doors (`oneSlot`). A gray crosses that stone out: it dims in the tray under a small gray cross. Tapping a crossed-out stone is the level's only miss (the stone wobbles, a boing and `code.crossed`, and it stays in the tray); after two such misses on a door comes one hint: the hidden stone glows in the tray, a faint stone shows in the slot and `code.onehint` plays (the glow is cleared when the round ends). A gray try says `code.notthis`; the first instruction is `code.oneslot`. Secret Code now has a preschool band: `order` [10, 1] (min 1, max 10), `entryLevels` [10]; a carried 10 lands on 1 at pre-K and on 2 at school; `planFor` falls back below 1 to 1 and above 11 to 11. The how-to card has level-10 step, finish and note entries and the yellow step now reads 3–9 and 11. Couch unchanged (`level(stop)` still 4–6). Secret Code shows on the preschool Puzzle Peaks page. Open: whether a three-to-four-year-old reads the gray cross without the card (DEVICE-CHECKS).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--secret-code-level-10-one-slot-secret-code-batch-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--secret-code-level-10-one-slot-secret-code-batch-4).
 
 ## Secret Code couch course The Code Doors (secret-code batch 6, 2026-11-05)
 
@@ -2941,7 +2947,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sudoku-garden-fill-m
 
 [PR #1253](https://github.com/rjdunlap/neo/pull/1253), `claude/shape-buddies-which-way-round`: [dive slice 4](../deep-dives/shape-buddies.md#build-slices-in-order). School only (school window 1–6; pre-K stays 1–5). Level 2 mirrored: chute on the right, pot on the left, far bank one step lower. `Friend` gains a facing; a fourth button **Turn ↔** (level 6 only) turns the selected friend; only a Slope turned to run down toward the low bank plus a Cup at the catch is caught (4 constructions). An unturned slope says `buddies.turnSlope`, a flat one `buddies.stepFlat`; new lines `buddies.start6`, `buddies.turnSlope`, `buddies.turn`. A Turn is free and undoable, misses stay 0, the hint glow rings Turn instead of the Slope tool when only a turn is needed, and the bot taps Turn. How-to step `{from:6,to:6}` added and the Undo step mentions turns; the `buddies` browser suite gained `BUDDIES_ONLY=6`. A review fix tips the cup toward the pot on the mirrored stream.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--shape-buddies-level-6-which-way-round-shape-buddies-batch-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--shape-buddies-level-6-which-way-round-shape-buddies-batch-4).
 
 ## Shape Buddies level 7 One friend, one job (shape-buddies batch 5, 2026-11-05)
 

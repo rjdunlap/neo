@@ -1721,7 +1721,7 @@ Proof: new-level tier: typecheck, rule tests including order and entry; one play
 
 ### word-search 3: A message in the leftovers
 
-- **`word-search`, Level 6 *A message in the leftovers* (dive slice 3, after batch 2)**: an 8 by 8 grid of nine words with at most eight stones; the unused letters spell a short themed sentence revealed when the last word is found. Appends ID 6; `order` becomes `[5, 1, 2, 3, 4, 6]`. [Dive](deep-dives/word-search.md#build-slices-in-order)
+- **`word-search`, Level 6 *A message in the leftovers* (dive slice 3, after batch 2)** (built 2026-11-05): an 8 by 8 grid of nine words with at most eight stones; the unused letters spell a short themed sentence revealed when the last word is found. Appends ID 6; `order` becomes `[5, 1, 2, 3, 4, 6]`. [Dive](deep-dives/word-search.md#build-slices-in-order)
 
 Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`. `makeGrid` changes, so the couch suite follows.
 
