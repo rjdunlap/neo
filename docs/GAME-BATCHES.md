@@ -1547,7 +1547,7 @@ Proof: new-interaction tier: typecheck, unit tests including the four-view layou
 
 ### shape-buddies 5: Level 7 One friend, one job, the preschool opening
 
-- **`shape-buddies`, Level 7 *One friend, one job*, the preschool opening (dive slice 5)** (batch shape-buddies 2 built; shares `LEVELS`; new band): one friend, a fixed plank over the gap and a cup at the catch; Shape Buddies joins Tinker Lab's preschool page and pre-K gains `order: [7, 1, 2, 3, 4, 5]` with `entryLevels: [7]`. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
+- **`shape-buddies`, Level 7 *One friend, one job*, the preschool opening (dive slice 5)** (**claimed 2026-11-05**, branch `claude/shape-buddies-one-friend`; batch shape-buddies 2 built; shares `LEVELS`; new band): one friend, a fixed plank over the gap and a cup at the catch; Shape Buddies joins Tinker Lab's preschool page and pre-K gains `order: [7, 1, 2, 3, 4, 5]` with `entryLevels: [7]`. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
 
 Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the lands and registry band tests only if their expectations change.
 
