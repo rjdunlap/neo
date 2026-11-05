@@ -11,12 +11,13 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ANIMALS, VOICES, farmAnimals, makeSong, nextInvite, phraseMidi, pickTune, planFor, tunesFor, type Animal, type Note, type SingPlan, type Tune } from './logic';
+import { ANIMALS, GAP_HOLD, GAPS, VOICES, farmAnimals, makeSong, nextInvite, phraseMidi, pickGapTune, pickTune, planFor, tunesFor, type Animal, type Note, type Picture, type SingPlan, type Tune } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
-  toddler: { min: 1, max: 3 },
-  preschool: { min: 2, max: 3 },
+  // *Finish the line* (7) sits after choosing friends (3) for the younger bands; pre-K does not play it.
+  toddler: { min: 1, max: 7, order: [1, 2, 3, 7] },
+  preschool: { min: 2, max: 7, order: [2, 3, 7] },
   prek: { min: 3, max: 6 },
 };
 
@@ -57,6 +58,12 @@ class SingAlongBarn implements Game {
   private placed: Animal[] = [];
   private clock = 0;
   private bounce = 0;
+  /** *Finish the line*: the word's picture beside the door, when the pause began (null when the song is not paused), and its wobble. */
+  private readonly picture = new Container();
+  private pausedAt: number | null = null;
+  private wobble = 0;
+  /** Counts the pauses, so a finished word's leftover hide never touches the next pause's picture. */
+  private pauses = 0;
 
   constructor(private readonly ctx: GameContext) {
     // The card's demonstration of choosing a friend for each verse sings two of them: three Old MacDonald verses
@@ -64,7 +71,7 @@ class SingAlongBarn implements Game {
     // one friend), so the demonstration sings the short form with one friend.
     const plan = planFor(ctx.level);
     this.plan = ctx.demo && plan.each ? { ...plan, verses: plan.full ? 1 : 2, full: false } : plan;
-    this.tune = this.plan.chooseTune ? tunesFor(this.plan)[0] : pickTune(ctx.rng);
+    this.tune = this.plan.chooseTune ? tunesFor(this.plan)[0] : this.plan.gap ? pickGapTune(ctx.rng) : pickTune(ctx.rng);
     this.view = ctx.view;
     this.phase = this.plan.chooseTune ? 'tune' : this.plan.invite && !this.plan.each ? 'invite' : 'sing';
     this.order = this.plan.invite ? [] : farmAnimals(this.plan, ctx.rng);
@@ -78,7 +85,11 @@ class SingAlongBarn implements Game {
       c.visible = false;
       this.friends.set(a, c);
     }
-    ctx.stage.addChild(this.backdrop, this.barnWrap, this.windows, this.beads, ...this.friends.values(), this.tapLayer);
+    const gap = this.plan.gap ? GAPS[this.tune.id] : undefined;
+    if (gap) this.picture.addChild(drawPicture(gap.picture));
+    this.picture.visible = false;
+    this.picture.eventMode = 'none';
+    ctx.stage.addChild(this.backdrop, this.barnWrap, this.windows, this.beads, this.picture, ...this.friends.values(), this.tapLayer);
     // Sound and movement answer in the same frame: nothing here waits on speech.
     this.tapLayer.eventMode = 'none';
     onTap(this.tapLayer, (e) => this.tapScene(e.global.x, e.global.y), { cooldown: 90 });
@@ -106,7 +117,7 @@ class SingAlongBarn implements Game {
     }
     // A round that chooses all its friends first builds the song once the barn is full; the others start singing now
     // (choosing one at a time starts with the opening, which nobody answers).
-    if (!this.plan.invite || this.plan.each) this.song = makeSong(this.order, this.tune);
+    if (!this.plan.invite || this.plan.each) this.song = makeSong(this.order, this.tune, this.plan.gap);
   }
 
   start() {
@@ -143,6 +154,8 @@ class SingAlongBarn implements Game {
     this.drawWindows();
     this.drawBeads();
     this.layoutCards();
+    const pic = this.pictureSpot();
+    this.picture.position.set(pic.x, pic.y);
     // Re-seat friends that are standing still.
     ANIMALS.forEach((a, k) => {
       const c = this.friends.get(a);
@@ -168,6 +181,9 @@ class SingAlongBarn implements Game {
     }
     // The next bead breathes, so the eye knows where the song is.
     if (this.phase === 'sing') this.drawBeads();
+    // While the song waits for the word, its picture sways; a touch too soon shakes it harder.
+    this.wobble = Math.max(0, this.wobble - dt * 2.5);
+    this.picture.rotation = this.pausedAt === null ? 0 : Math.sin(this.clock * 3) * 0.06 + Math.sin(this.clock * 16) * 0.16 * this.wobble;
   }
 
   /** The ghost finger on the how-to card: invite the friends one by one, then tap anywhere for each note of the song. */
@@ -179,7 +195,10 @@ class SingAlongBarn implements Game {
     }
     if (this.phase === 'tune') return { tap: { on: this.tuneCards[0] }, pause: 0.7 };
     if (this.phase !== 'sing') return null;
-    return { tap: { on: this.tapLayer, x: this.view.w / 2, y: this.view.h * 0.4 }, pause: 0.25 };
+    const tap = { tap: { on: this.tapLayer, x: this.view.w / 2, y: this.view.h * 0.4 }, pause: 0.25 };
+    // At the pause the hand waits a moment with the picture (the time a grown-up leaves for the word), then sings it.
+    if (this.pausedAt !== null) return { ...tap, when: () => this.pausedAt === null || this.clock - this.pausedAt >= GAP_HOLD + 1.2 };
+    return tap;
   }
 
   destroy() {}
@@ -198,6 +217,11 @@ class SingAlongBarn implements Game {
   /** Where a friend who has sung waits: when she chooses each verse, in its own place in the row, so the ones still to choose never crowd it. */
   private restSpotOf(a: Animal) {
     return this.plan.each ? this.choiceSpot(ANIMALS.indexOf(a)) : this.restSpot(this.order.indexOf(a));
+  }
+
+  /** The picture of the word waits beside the barn, under the eave of its roof: clear of the wall and the friend at the door. */
+  private pictureSpot() {
+    return { x: this.view.w / 2 + 262, y: this.backdrop.groundY - 200 };
   }
 
   private choiceSpot(k: number) {
@@ -248,7 +272,7 @@ class SingAlongBarn implements Game {
         card.eventMode = 'none';
         void this.ctx.tw.to(card.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack }).then(() => (card.visible = false));
       }
-      this.song = makeSong(this.order, this.tune);
+      this.song = makeSong(this.order, this.tune, this.plan.gap);
       this.beginSong();
     });
   }
@@ -288,7 +312,7 @@ class SingAlongBarn implements Game {
   private async gather() {
     await this.ctx.tw.wait(1.1);
     this.order = [...this.invited];
-    this.song = makeSong(this.order, this.tune);
+    this.song = makeSong(this.order, this.tune, this.plan.gap);
     for (const a of ANIMALS) {
       const c = this.friends.get(a)!;
       const i = this.order.indexOf(a);
@@ -308,7 +332,7 @@ class SingAlongBarn implements Game {
   /** One friend at a time: the song grows by that friend's verse, the others step back, and the friend trots to the door. */
   private singNext(a: Animal) {
     this.order = [...this.invited];
-    this.song = makeSong(this.order, this.tune);
+    this.song = makeSong(this.order, this.tune, this.plan.gap);
     this.phase = 'sing';
     this.tapLayer.eventMode = 'static';
     for (const x of ANIMALS) {
@@ -350,13 +374,24 @@ class SingAlongBarn implements Game {
     this.phase = 'sing';
     this.tapLayer.eventMode = 'static';
     this.drawBeads();
-    void this.ctx.instruct(this.tune.id === 'macdonald' ? 'barn.sing' : (`barn.sing.${this.tune.id}` as const));
+    if (this.plan.gap) void this.ctx.instruct('barn.finish.how', { song: SONG_NAMES[this.tune.id] });
+    else void this.ctx.instruct(this.tune.id === 'macdonald' ? 'barn.sing' : (`barn.sing.${this.tune.id}` as const));
   }
 
   /** Any touch anywhere moves the tune on one note. Always music, never a mistake. */
   private tapScene(gx: number, gy: number) {
     if (this.phase !== 'sing' || this.idx >= this.song.length) return;
     const note = this.song[this.idx];
+    if (this.pausedAt !== null) {
+      // The song is waiting for the word. A touch the moment it stopped (a fast tapper) meets the picture: it wobbles
+      // and hums the word's note softly. After that, any touch sings the word.
+      if (this.clock - this.pausedAt < GAP_HOLD) {
+        this.wobble = 1;
+        sfx.marimbaMidi(note.midi, 0.15);
+        return;
+      }
+      this.finishLine(note);
+    }
     this.idx++;
     sfx.marimbaMidi(note.midi, 0.5);
     this.bounce = 1;
@@ -407,7 +442,39 @@ class SingAlongBarn implements Game {
       if (note.answers) void this.ctx.tw.wait(0.7).then(change);
       else change();
     }
+    if (next.gap) this.pauseForWord();
     this.drawBeads();
+  }
+
+  /** *Finish the line*: the song stops before the verse's last word, and the word's picture pops up beside the door. */
+  private pauseForWord() {
+    this.pausedAt = this.clock;
+    this.pauses++;
+    const pic = this.picture;
+    const p = this.pictureSpot();
+    this.ctx.tw.kill(pic.scale);
+    pic.position.set(p.x, p.y);
+    pic.visible = true;
+    pic.scale.set(0);
+    void this.ctx.tw.to(pic.scale, { x: 0.7, y: 0.7 }, { duration: 0.35, ease: ease.outBack });
+  }
+
+  /** Her touch after the pause sings the word: the picture jumps, the pet says the word, and the picture goes until the next verse. */
+  private finishLine(note: Note) {
+    this.pausedAt = null;
+    const pic = this.picture;
+    this.ctx.particles.burst(pic.x, pic.y, { kind: 'star', colors: RAINBOW.map((n) => swatch[n].fill), count: 8, speed: [120, 240], gravity: 200, life: [0.5, 0.9] });
+    void this.ctx.say('barn.finish', { word: GAPS[this.tune.id]?.word ?? note.syllable });
+    this.ctx.tw.kill(pic.scale);
+    const pause = this.pauses;
+    const current = () => pause === this.pauses;
+    void this.ctx.tw
+      .to(pic.scale, { x: 0.85, y: 0.85 }, { duration: 0.18, ease: ease.outBack })
+      .then(() => this.ctx.tw.wait(0.7))
+      .then(() => (current() ? this.ctx.tw.to(pic.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack }) : undefined))
+      .then(() => {
+        if (current()) pic.visible = false;
+      });
   }
 
   /** A friend trots out of the barn to the door for its verse (or hops up there from the bottom row). */
@@ -501,7 +568,8 @@ class SingAlongBarn implements Game {
     for (let k = 0; k < note.of; k++) {
       const c = swatch[RAINBOW[k % RAINBOW.length]];
       const next = k === sung;
-      const r = 24 + (next ? 5 + Math.sin(this.clock * 6) * 4 : 0);
+      // At the pause the beads stop: the next one is big and still.
+      const r = 24 + (next ? 5 + (this.pausedAt === null ? Math.sin(this.clock * 6) * 4 : 0) : 0);
       if (next) g.circle(xs[k], y, r + 12).fill({ color: c.fill, alpha: 0.25 });
       g.circle(xs[k], y, r).fill(k < sung || next ? c.fill : 0xffffff).stroke({ width: 5, color: k <= sung ? c.line : 0xcfd8e6 });
     }
@@ -534,11 +602,7 @@ function drawTuneCard(t: Tune): Container {
     spider.circle(-9, 14, 5).circle(9, 14, 5).fill(0xffffff);
     c.addChild(web, spider);
   } else if (t.id === 'bounce') {
-    // A red ball over its shadow, with two lines for the bounce.
-    const shadow = new Graphics().ellipse(0, 74, 50, 10).fill(0xd9c9a8);
-    const ball = new Graphics().circle(0, 12, 44).fill(0xe8604c).stroke(line(0xa83a2a, 5)).moveTo(-42, 12).lineTo(42, 12).stroke(line(0xfff4d6, 7));
-    const lines = new Graphics().moveTo(-78, 30).lineTo(-60, 52).moveTo(78, 30).lineTo(60, 52).stroke(line(0x8a9db5, 5));
-    c.addChild(shadow, ball, lines);
+    c.addChild(ballArt());
   } else if (t.id === 'ring') {
     // A ring of pink roses, a puff for each friend holding hands.
     const ring = new Graphics();
@@ -587,21 +651,76 @@ function drawTuneCard(t: Tune): Container {
       .fill(0x4a3a30);
     c.addChild(lamb);
   } else {
-    const bun = new Graphics()
-      .ellipse(0, 10, 84, 52)
-      .fill(0xe0a458)
-      .stroke(line(0xa86a2a))
-      .moveTo(-40, 10)
-      .lineTo(40, 10)
-      .moveTo(0, -22)
-      .lineTo(0, 42)
-      .stroke(line(0xfff4d6, 10));
-    c.addChild(bun);
+    c.addChild(bunArt());
   }
   const notes = t.opening[0].steps.slice(0, 4);
   notes.forEach((_, i) => c.addChild(new Graphics().circle(-(notes.length - 1) * 18 + i * 36, -66, 12).fill(swatch[RAINBOW[i % RAINBOW.length]].fill)));
   return c;
 }
+
+/** A hot cross bun. */
+const bunArt = () =>
+  new Graphics()
+    .ellipse(0, 10, 84, 52)
+    .fill(0xe0a458)
+    .stroke(line(0xa86a2a))
+    .moveTo(-40, 10)
+    .lineTo(40, 10)
+    .moveTo(0, -22)
+    .lineTo(0, 42)
+    .stroke(line(0xfff4d6, 10));
+
+/** A red ball over its shadow, with two lines for the bounce. */
+function ballArt(): Container {
+  const c = new Container();
+  const shadow = new Graphics().ellipse(0, 74, 50, 10).fill(0xd9c9a8);
+  const ball = new Graphics().circle(0, 12, 44).fill(0xe8604c).stroke(line(0xa83a2a, 5)).moveTo(-42, 12).lineTo(42, 12).stroke(line(0xfff4d6, 7));
+  const lines = new Graphics().moveTo(-78, 30).lineTo(-60, 52).moveTo(78, 30).lineTo(60, 52).stroke(line(0x8a9db5, 5));
+  c.addChild(shadow, ball, lines);
+  return c;
+}
+
+/** The picture of the word at *Finish the line*, on a card like a song's: the bun, the ball, a night sky, a water spout. */
+function drawPicture(kind: Picture): Container {
+  const c = new Container();
+  c.addChild(new Graphics().roundRect(-110, -100, 220, 200, 28).fill(0xfff4d6).stroke(line(BARN_DARK, 8)));
+  if (kind === 'bun') c.addChild(bunArt());
+  else if (kind === 'ball') c.addChild(ballArt());
+  else if (kind === 'sky') {
+    // A round of night sky with a moon and four twinkles.
+    const sky = new Graphics().circle(0, 0, 78).fill(0x3b4a8c).stroke(line(0x26305e, 5));
+    sky.circle(-30, -26, 22).fill(0xffe9a0).circle(-20, -34, 20).fill(0x3b4a8c);
+    for (const [x, y, r] of [[30, -36, 9], [44, 18, 7], [-8, 40, 8], [-50, 22, 6]]) sky.star(x, y, 4, r, r * 0.45).fill(0xffd54a);
+    c.addChild(sky);
+  } else {
+    // A grey drainpipe down a wall, its elbow at the foot, and three drops of water coming out.
+    const pipe = new Graphics()
+      .roundRect(-30, -84, 44, 120, 10)
+      .fill(0xb9c4d0)
+      .stroke(line(0x6f7f91, 5))
+      .roundRect(-30, 22, 92, 40, 14)
+      .fill(0xb9c4d0)
+      .stroke(line(0x6f7f91, 5));
+    const drops = new Graphics();
+    for (const [x, y] of [[78, 50], [88, 72], [74, 84]]) drops.ellipse(x, y, 6, 9).fill(0x6ab0e8);
+    c.addChild(pipe, drops);
+  }
+  return c;
+}
+
+/** The song as a grown-up would name it, for the spoken instruction. */
+const SONG_NAMES: Record<Tune['id'], string> = {
+  macdonald: 'Old MacDonald',
+  buns: 'Hot Cross Buns',
+  mary: 'Mary Had a Little Lamb',
+  clair: 'Au Clair de la Lune',
+  rain: 'Rain, Rain, Go Away',
+  itsy: 'The Itsy Bitsy Spider',
+  bounce: 'Bounce High, Bounce Low',
+  ring: 'Ring Around the Rosie',
+  twinkle: 'Twinkle, Twinkle, Little Star',
+  wheels: 'The Wheels on the Bus',
+};
 
 class BarnIcon extends Container {
   private readonly note = new Graphics();
@@ -672,13 +791,14 @@ export const singAlongBarn: GameModule = {
   describeLevel: (level) => {
     const p = planFor(level);
     const friends = p.verses === 1 ? '1 friend' : `${p.verses} friends`;
+    if (p.gap) return `Hot Cross Buns, Rain, Rain, Go Away, The Itsy Bitsy Spider or Twinkle, Twinkle; the song stops before the last word of each verse and a tap sings it (${friends})`;
     if (p.full) return `Choose the whole Old MacDonald verse (with the moo-moo lines), Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, then choose who sings next after each verse (${friends})`;
     if (p.chooseTune) return `Choose Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, then choose who sings next after each verse (${friends})`;
     if (p.each) return `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie; after each verse, choose who sings next (${friends})`;
     return p.invite ? `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie; choose ${friends} to join the song` : `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie; tap to sing, ${friends} visit`;
   },
   music: silenced(STYLES.quiet),
-  coplayHint: 'Sing along while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse. At the top level, sing the whole Old MacDonald verse, with the moo-moo lines.',
+  coplayHint: 'Sing along while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse. At the top level, sing the whole Old MacDonald verse, with the moo-moo lines. When the song stops before a word, wait for {name} to say it, then sing it together.',
   offScreen: 'Sing Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie with stuffed animals: bring out one for each verse and make its sound together.',
   hubIcon: () => new BarnIcon(),
   touchDemo: true,

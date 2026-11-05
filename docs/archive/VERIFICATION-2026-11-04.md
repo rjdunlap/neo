@@ -277,3 +277,9 @@
 - [PR #1239](https://github.com/rjdunlap/neo/pull/1239) (base `8fc0c5aa` plus the branch; Vite `http://localhost:5464`, `VITE_SPEECH=off`): school level 10, three family baskets and six pictures dragged to the nearest basket within 180 units, two trays; 4 new voice lines, level-scoped how-to step, bot drags to the right basket.
 - Ran: typecheck; full `npm test` 304 files, 4,995 tests pass; `npm run build`; `BROWSER_SUITE=woods WOODS_ONLY=rhyme FROM_LEVEL=10` pass (wrong basket, free grass drop, second wrong for the glow, two trays, score [2,1], `rhyme-time-10-hint` screenshot in school portrait); `BROWSER_SUITE=fingerdemo FINGER_ONLY=rhyme-time FINGER_LEVELS=10` pass in 38.6 s at school. `game-reviewer`: no change needed.
 - Not run: other Rhyme Time levels (unchanged), device speech of the new lines, an iPad or a child ([device check](../DEVICE-CHECKS.md)).
+
+## 2026-11-04 — Word Search level 5 A small grid to start (word-search batch 2)
+
+- [PR #1240](https://github.com/rjdunlap/neo/pull/1240) (branch tip; Vite `http://localhost:5983`, `VITE_SPEECH=off`): level 5, a 6 by 6 grid of four words across and down, always in view; squares 98 units landscape and 132 portrait; `order` `[5, 1, 2, 3, 4]`, `entryLevels: [5]`; how-to line.
+- Ran: typecheck; full `npm test` 304 files, 4,996 tests pass; `BROWSER_SUITE=wordsearchtouch` (new level-5 block: square sizes, no sliding, four words, title in view, one wrong line = 1 miss, one hint, a drag, to the sticker, history [5,1,1]; then levels 1 and 4) pass; `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-search FINGER_LEVELS=5` pass in 11.3 s. Screenshots `wordsearch-touch-5-{landscape,portrait}.png`. `game-reviewer`: no defects.
+- Not run: build (no shared files or assets), `couchgames` (`makeGrid` unchanged), an iPad or a person ([device check](../DEVICE-CHECKS.md)).

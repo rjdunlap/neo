@@ -274,10 +274,12 @@ export interface Note {
   answers: boolean;
   /** True on the last note of a verse (and of the opening), where the next animal may come in. */
   verseEnd: boolean;
+  /** At *Finish the line*: the song pauses before this note, a friend's verse's last word, and her touch sings it. */
+  gap: boolean;
 }
 
-/** The whole song as a flat list of notes: the opening, then a verse for each animal. */
-export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD): Note[] {
+/** The whole song as a flat list of notes: the opening, then a verse for each animal. With `gaps`, each verse's last note is a gap. */
+export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD, gaps = false): Note[] {
   const notes: Note[] = [];
   let phrase = 0;
   const add = (p: Phrase, animal: Animal | null, closes: boolean) => {
@@ -297,6 +299,7 @@ export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD)
         animal,
         answers,
         verseEnd: closes && last,
+        gap: gaps && animal !== null && closes && last,
       });
     });
     phrase++;
@@ -309,6 +312,31 @@ export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD)
 /** Which tune a round sings: a seeded draw, so both turn up and a replay of the same seed sings the same one. */
 export const pickTune = (rng: Rng): Tune => rng.pick([...TUNES]);
 
+/** What waits beside the barn door while the song pauses before the word: the song cards' bun and ball, a night sky, a spout. */
+export type Picture = 'bun' | 'ball' | 'sky' | 'spout';
+
+/**
+ * *Finish the line* (level 7): the word each friend's verse ends on, and its picture. The song pauses before it, as a
+ * grown-up pauses before a familiar word (the PC TALK "fill in" strategy), and any touch sings it. Only tunes whose verse
+ * ends on a word a picture can show: "buns", "play" (a ball), "sky" and "spout". Old MacDonald ends on "O", Mary on
+ * "snow", Ring on "down", Wheels on "town" and Bounce on the friend's own name; Au Clair is French, so it is left out.
+ */
+export const GAPS: Partial<Record<TuneId, { word: string; picture: Picture }>> = {
+  buns: { word: 'buns', picture: 'bun' },
+  rain: { word: 'play', picture: 'ball' },
+  itsy: { word: 'spout', picture: 'spout' },
+  twinkle: { word: 'sky', picture: 'sky' },
+};
+
+/** The tunes *Finish the line* sings, in `TUNES` order. */
+export const GAP_TUNES: readonly Tune[] = TUNES.filter((t) => GAPS[t.id]);
+
+/** Which tune a *Finish the line* round sings: a seeded draw among the tunes with a picture for their last word. */
+export const pickGapTune = (rng: Rng): Tune => rng.pick([...GAP_TUNES]);
+
+/** At the pause, a touch this soon after it began only wobbles the picture (a fast tapper meets it before it is sung). */
+export const GAP_HOLD = 0.8;
+
 export interface SingPlan {
   /** How many animals come to the farm. */
   verses: number;
@@ -320,15 +348,19 @@ export interface SingPlan {
   chooseTune: boolean;
   /** Old MacDonald is the whole verse, moo-moo lines included, instead of the short form. */
   full: boolean;
+  /** *Finish the line*: the song pauses before each verse's last word, its picture waits by the door, and a touch sings it. */
+  gap: boolean;
 }
 
 export const PLANS: readonly SingPlan[] = [
-  { verses: 1, invite: false, each: false, chooseTune: false, full: false },
-  { verses: 2, invite: false, each: false, chooseTune: false, full: false },
-  { verses: 2, invite: true, each: false, chooseTune: false, full: false },
-  { verses: 3, invite: true, each: true, chooseTune: false, full: false },
-  { verses: 3, invite: true, each: true, chooseTune: true, full: false },
-  { verses: 2, invite: true, each: true, chooseTune: true, full: true },
+  { verses: 1, invite: false, each: false, chooseTune: false, full: false, gap: false },
+  { verses: 2, invite: false, each: false, chooseTune: false, full: false, gap: false },
+  { verses: 2, invite: true, each: false, chooseTune: false, full: false, gap: false },
+  { verses: 3, invite: true, each: true, chooseTune: false, full: false, gap: false },
+  { verses: 3, invite: true, each: true, chooseTune: true, full: false, gap: false },
+  { verses: 2, invite: true, each: true, chooseTune: true, full: true, gap: false },
+  // Level 7 sits between 3 and 4 for toddler and preschool (by `order`): two seeded friends, a pause before each one's last word.
+  { verses: 2, invite: false, each: false, chooseTune: false, full: false, gap: true },
 ];
 
 /** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */

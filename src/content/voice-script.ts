@@ -3998,6 +3998,8 @@ export const SCRIPT = {
   'barn.sing.ring': ['Tap, tap, tap to sing Ring Around the Rosie!'],
   'barn.sing.rain': ['Tap, tap, tap to sing Rain, Rain, Go Away!'],
   'barn.tune': ['Which song shall we sing? Tap one!'],
+  'barn.finish.how': ['Tap, tap, tap to sing {song}! When the song stops, what comes next? Tap to finish the line!'],
+  'barn.finish': ['{word}!'],
   'barn.sing.mary': ['Tap, tap, tap to sing Mary Had a Little Lamb!'],
   'barn.sing.twinkle': ['Tap, tap, tap to sing Twinkle, Twinkle, Little Star!'],
   'barn.sing.wheels': ['Tap, tap, tap to sing The Wheels on the Bus!'],

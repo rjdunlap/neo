@@ -2543,6 +2543,10 @@ Branch `claude/sing-along-barn-1`, PR #1146: [dive slice 1](../deep-dives/sing-a
 
 Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sing-along-barn-twinkle-and-wheels-on-the-bus-sing-along-barn-batch-1).
 
+## Sing-Along Barn, level 7 Finish the line (batch sing-along-barn 2, 2026-11-05)
+
+Branch `claude/sing-along-barn-finish-line`, PR #1259: [dive slice 2](../deep-dives/sing-along-barn.md#build-slices-in-order). `GAPS` in `logic.ts` names the last word and picture for Hot Cross Buns, Rain, Itsy Bitsy and Twinkle; level 7 draws one of them, pauses before each friend's last note and waits for a touch after a 0.8 s hold (`GAP_HOLD`); `order` toddler [1,2,3,7], preschool [2,3,7]. A pause counter keeps a finished word's hide from collapsing the next pause's picture. Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sing-along-barn-level-7-finish-the-line-sing-along-barn-batch-2).
+
 ## Sink or Float, fresh things (batch sink-float 1, 2026-11-03)
 
 Branch `claude/sink-float-fresh-things`, PR #1147: [dive slice 1](../deep-dives/sink-float.md#build-slices-in-order). `THINGS` grew from nine to fourteen (feather and marble obvious; log, ice cube and paper clip surprises), each with code-drawn `thingArt`, a journal entry and voice line (the journal now holds thirty-six game observations), and `thingWord` for the two-word names. The pinned-draws test became property tests. No new level; bot, couch, bands and how-to card unchanged.
@@ -2887,7 +2891,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--shape-buddies-level-
 
 [PR #1240](https://github.com/rjdunlap/neo/pull/1240), `claude/word-search-small-grid`: [dive slice 2](../deep-dives/word-search.md#build-slices-in-order). `SMALL_GRID` plan in `logic.ts`: 6 by 6, four words of three to six letters, across and down, always in view; `ORDER` `[5, 1, 2, 3, 4]`, `entryLevels: [5]`, `planFor` of a level past the top plays level 4. Squares are 98 units at 1024 by 768 (word list column narrowed from 262 to 222) and 132 at 1024 by 1365 (small-grid squares at least 96, capped at 132). *Words that carry* can be drawn at level 5; *Words that look* cannot. How-to card has a level-5 line. Couch trip and courses unchanged.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--word-search-level-5-a-small-grid-to-start-word-search-batch-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--word-search-level-5-a-small-grid-to-start-word-search-batch-2).
 
 ## Read & Do levels 8–9 Mend the sign (read-do batch 4, 2026-11-05)
 
