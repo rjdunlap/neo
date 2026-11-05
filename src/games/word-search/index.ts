@@ -11,11 +11,11 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseGrids, courseMinimum, isWordCourse } from './course';
-import { cellsOfWord, hintFor, lineBetween, makeGrids, ORDER, planFor, SMALL_GRID, wordAt, type WordGrid, type WordPlan } from './logic';
+import { cellsOfWord, hintFor, lineBetween, makeGrids, ORDER, planFor, SMALL_GRID, STONE, wordAt, type WordGrid, type WordPlan } from './logic';
 import { themeById } from './words';
 
-/** Grown-up play only: the island's Lantern Lake holds it, with touch or a controller. The small grid (5) comes first. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 5, order: ORDER } };
+/** Grown-up play only: the island's Lantern Lake holds it, with touch or a controller. The small grid (5) comes first, the message grid (6) last. */
+const LEVELS: BandLevels = { grownup: { min: 1, max: 6, order: ORDER } };
 
 const PAPER = 0xfffdf6;
 const BAND_COLORS: ColorName[] = ['pink', 'blue', 'green', 'orange', 'purple', 'teal', 'yellow', 'red'];
@@ -30,6 +30,9 @@ const PAD = 24;
 const EDGE = PAD / 2;
 /** A finger that travels this far (logical units) between touching and lifting is sliding the grid, not tapping a letter. */
 const SLIDE = 14;
+/** Level 6: the strip under the grid kept for the message's blanks, and the narrowest a blank may be before the row wraps. */
+const MSG_H = 76;
+const MSG_MIN_SLOT = 24;
 /** Touch play's two buttons, each a target of its own. */
 type SlotKind = 'hint' | 'again';
 interface Slot { kind: SlotKind; x: number; y: number; w: number; h: number }
@@ -38,6 +41,17 @@ interface Viewport { x: number; y: number; w: number; h: number }
 
 /** "FROG" read aloud and shown in the list as "frog". */
 const spoken = (w: string) => w.charAt(0) + w.slice(1).toLowerCase();
+
+/** A message's words in lines of at most `per` characters (spaces counted), as few lines as it takes. */
+function wrapWords(message: string, per: number): string[] {
+  const lines: string[] = [];
+  for (const w of message.split(' ')) {
+    const last = lines.length - 1;
+    if (last >= 0 && lines[last].length + 1 + w.length <= per) lines[last] += ` ${w}`;
+    else lines.push(w);
+  }
+  return lines;
+}
 
 class WordSearch implements Game {
   readonly plan: WordPlan;
@@ -89,6 +103,12 @@ class WordSearch implements Game {
   private readonly bands = new Graphics();
   private readonly letters = new Container();
   private readonly glow = new Graphics();
+  /** Level 6: the stones, the leftover letters lit as the message is read out, and the message's row of blanks under the grid. */
+  private readonly stones = new Graphics();
+  private readonly reveal = new Graphics();
+  private readonly messageRow = new Container();
+  private readonly messageLines = new Graphics();
+  private messageSlots: Text[] = [];
   private readonly list = new Container();
   private readonly listMarks = new Graphics();
   private readonly title = label('', 28, ink);
@@ -124,15 +144,17 @@ class WordSearch implements Game {
       this.assisted = run.resume.assisted;
     } else {
       // The how-to card's demonstration shows the taps, not a whole list of words.
-      this.grids = makeGrids(ctx.demo ? { ...this.plan, words: Math.min(this.plan.words, 3) } : this.plan, ctx.rng);
+      // Three words leave too many squares open for a message, so the demonstration's grid has none.
+      this.grids = makeGrids(ctx.demo ? { ...this.plan, words: Math.min(this.plan.words, 3), message: false } : this.plan, ctx.rng);
       this.course = null;
     }
-    for (const part of [this.board, this.paper, this.bands, this.letters, this.glow, this.list, this.listMarks, this.title, this.tally]) part.eventMode = 'none';
-    this.board.addChild(this.paper, this.bands, this.letters, this.glow);
+    for (const part of [this.board, this.paper, this.bands, this.letters, this.glow, this.list, this.listMarks, this.title, this.tally, this.stones, this.reveal, this.messageRow, this.messageLines]) part.eventMode = 'none';
+    this.board.addChild(this.paper, this.stones, this.reveal, this.bands, this.letters, this.glow);
+    this.messageRow.addChild(this.messageLines);
     this.list.addChild(this.listMarks);
     for (const part of [this.frame, this.clip, this.clipMask, this.edges, this.buttonsG, this.buttonText, this.slideNote]) part.eventMode = 'none';
     this.clip.addChild(this.board, this.clipMask);
-    ctx.stage.addChild(this.frame, this.clip, this.edges, this.list, this.title, this.tally, this.slideNote);
+    ctx.stage.addChild(this.frame, this.clip, this.edges, this.list, this.title, this.tally, this.slideNote, this.messageRow);
     this.touch = !ctx.couch;
     if (this.touch) {
       // One layer over the grid decides what a finger meant: a short touch is a tap on a letter, a longer one slides the grid.
@@ -173,6 +195,7 @@ class WordSearch implements Game {
     this.listBox = { cols: 1, step: Math.min(38, Math.floor((n * this.cell - 96) / this.grid.words.length)), top: 96, colW: 260 };
     this.layoutLetters();
     this.layoutList();
+    this.layoutMessage(left, 104 + w + 24, w + 300);
     this.dirty = true;
   }
 
@@ -190,7 +213,7 @@ class WordSearch implements Game {
       const listW = small ? 222 : 262;
       listX = v.w - listW - 16;
       listY = top + 4;
-      vp = { x: left, y: top, w: listX - gap - left, h: v.h - top - 24 };
+      vp = { x: left, y: top, w: listX - gap - left, h: v.h - top - 24 - (this.grid.message ? MSG_H : 0) };
       const bw = (listW - 10) / 2, by = v.h - 24 - 72;
       btn = [{ kind: 'hint', x: listX, y: by, w: bw, h: 72 }, { kind: 'again', x: listX + bw + 10, y: by, w: bw, h: 72 }];
       this.listBox = { cols: 1, step: Math.min(36, Math.floor((by - 12 - (listY + 102)) / words)), top: 102, colW: listW };
@@ -201,7 +224,7 @@ class WordSearch implements Game {
       const panel = 280;
       listX = 160;
       listY = v.h - panel;
-      vp = { x: 24, y: top, w: v.w - 48, h: listY - 12 - top };
+      vp = { x: 24, y: top, w: v.w - 48, h: listY - 12 - top - (this.grid.message ? MSG_H : 0) };
       const by = v.h - 24 - 72, bw = 200;
       btn = [{ kind: 'hint', x: 160, y: by, w: bw, h: 72 }, { kind: 'again', x: 160 + bw + 12, y: by, w: bw, h: 72 }];
       const colW = Math.floor((v.w - 160 - 24) / 3);
@@ -251,6 +274,7 @@ class WordSearch implements Game {
     this.slideNote.style.fontSize = 18;
     this.layoutLetters();
     this.layoutList();
+    this.layoutMessage(vp.x, vp.y + vp.h + 14, vp.w);
     this.paintButtons();
     this.edgesDirty = true;
     this.dirty = true;
@@ -290,7 +314,38 @@ class WordSearch implements Game {
 
   private buildLetters() {
     this.letters.removeChildren().forEach((c) => c.destroy());
-    this.texts = this.grid.letters.map((ch) => { const t = label(ch, 36, ink); t.eventMode = 'none'; this.letters.addChild(t); return t; });
+    // A stone keeps its square's place in `texts`, with no letter on it.
+    this.texts = this.grid.letters.map((ch) => { const t = label(ch === STONE ? '' : ch, 36, ink); t.eventMode = 'none'; this.letters.addChild(t); return t; });
+  }
+
+  /** Level 6: a blank for each of the message's letters, its words apart; empty on the other levels. */
+  private buildMessage() {
+    for (const c of this.messageRow.removeChildren()) if (c !== this.messageLines) c.destroy();
+    this.messageRow.addChild(this.messageLines);
+    this.messageLines.clear();
+    const message = this.grid.message ?? '';
+    this.messageSlots = [...message.replace(/ /g, '')].map(() => { const t = label('', 24, ink); t.eventMode = 'none'; this.messageRow.addChild(t); return t; });
+  }
+
+  /** The blanks in a row (two when the row would be too narrow) across `w`, from `x`, `y` (the top of the first row). */
+  private layoutMessage(x: number, y: number, w: number) {
+    const message = this.grid.message, g = this.messageLines.clear();
+    if (!message) return;
+    this.messageRow.position.set(x, y);
+    const lines = message.length * MSG_MIN_SLOT <= w ? [message] : wrapWords(message, Math.floor(w / MSG_MIN_SLOT));
+    const slot = Math.min(36, Math.floor(w / Math.max(...lines.map((l) => l.length)))), rowH = lines.length > 1 ? 32 : 44;
+    let k = 0;
+    lines.forEach((line, row) => {
+      const left = (w - line.length * slot) / 2, base = row * rowH + rowH - 6;
+      [...line].forEach((ch, i) => {
+        if (ch === ' ') return;
+        const cx = left + i * slot + slot / 2;
+        g.moveTo(cx - slot * 0.36, base).lineTo(cx + slot * 0.36, base).stroke({ width: 3, color: 0x7a746a, cap: 'round' });
+        const t = this.messageSlots[k++];
+        t.style.fontSize = Math.round(Math.min(28, slot * 0.8));
+        t.position.set(cx, base - t.style.fontSize * 0.6);
+      });
+    });
   }
 
   private layoutLetters() {
@@ -337,6 +392,13 @@ class WordSearch implements Game {
     // Touch play has the window's own paper; the grid slides over it.
     if (this.touch) this.paper.clear();
     else this.paper.clear().roundRect(-14, -14, w + 28, w + 28, 18).fill(PAPER).stroke({ width: 5, color: 0x9c6b3c });
+    const s = this.stones.clear();
+    this.grid.letters.forEach((ch, i) => {
+      if (ch !== STONE) return;
+      const c = this.center(i), rx = this.cell * 0.3, ry = this.cell * 0.22;
+      s.ellipse(c.x, c.y + 2, rx, ry).fill(0xb9b0a0).stroke({ width: 2, color: 0x8f8676 });
+      s.ellipse(c.x - rx * 0.3, c.y - ry * 0.25, rx * 0.35, ry * 0.25).fill({ color: 0xffffff, alpha: 0.45 });
+    });
     const g = this.bands.clear();
     this.found.forEach((idx) => {
       const cells = cellsOfWord(this.n, this.grid.words[idx]), a = this.center(cells[0]), b = this.center(cells[cells.length - 1]);
@@ -437,16 +499,20 @@ class WordSearch implements Game {
     this.scrollY = 0;
     this.drag = null;
     this.title.text = themeById(this.grid.theme).name;
+    this.reveal.clear();
     this.buildLetters();
     this.buildList();
+    this.buildMessage();
     this.resize(this.view);
     this.board.alpha = 0;
     this.list.alpha = 0;
-    await Promise.all([this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.list, { alpha: 1 }, { duration: 0.3 })]);
+    this.messageRow.alpha = 0;
+    await Promise.all([this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.list, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.messageRow, { alpha: 1 }, { duration: 0.3 })]);
     this.busy = false;
     this.report();
     if (this.spokenGo) return;
     this.spokenGo = true;
+    if (this.grid.message) return this.ctx.instruct(this.touch ? 'wordsearch.go-message' : 'wordsearch.go-message-keys');
     return this.ctx.instruct(!this.touch ? 'wordsearch.go' : this.maxX > 0 || this.maxY > 0 ? 'wordsearch.go-slide' : 'wordsearch.go-touch');
   }
 
@@ -488,6 +554,7 @@ class WordSearch implements Game {
       this.done.push(this.guesses);
       this.report(true);
     }
+    if (this.grid.message) await this.readMessage();
     const n = this.n;
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
@@ -502,9 +569,32 @@ class WordSearch implements Game {
     this.ctx.pet.cheer();
     sfx.sparkle();
     if (this.course) await this.gridScore();
-    else await this.ctx.say('wordsearch.cleared');
-    await Promise.all([this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 }), this.ctx.tw.to(this.list, { alpha: 0 }, { duration: 0.3 })]);
+    else if (!this.grid.message) await this.ctx.say('wordsearch.cleared');
+    await Promise.all([this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 }), this.ctx.tw.to(this.list, { alpha: 0 }, { duration: 0.3 }), this.ctx.tw.to(this.messageRow, { alpha: 0 }, { duration: 0.3 })]);
     await this.next();
+  }
+
+  /**
+   * Level 6's ending: the squares no word uses light one by one, top row first, left to right, each letter dropping into its
+   * blank, then the pet reads the message out and it stays a moment to be read. Reading it is never checked.
+   */
+  private async readMessage() {
+    const message = this.grid.message!, used = new Set(this.grid.words.flatMap((p) => cellsOfWord(this.n, p)));
+    const cells = this.grid.letters.flatMap((ch, i) => (used.has(i) || ch === STONE ? [] : [i]));
+    const g = this.reveal.clear(), r = this.cell * 0.42;
+    for (const [k, i] of cells.entries()) {
+      const c = this.center(i), slot = this.messageSlots[k];
+      g.circle(c.x, c.y, r).fill({ color: swatch.yellow.fill, alpha: 0.6 });
+      if (slot) {
+        slot.text = this.grid.letters[i];
+        slot.scale.set(1.4);
+        void this.ctx.tw.to(slot.scale, { x: 1, y: 1 }, { duration: 0.15 });
+      }
+      sfx.bell(3 + (k % 7), 0.12);
+      await this.ctx.tw.wait(0.09);
+    }
+    await this.ctx.say('wordsearch.message', { message: spoken(message) });
+    await this.ctx.tw.wait(2.5);
   }
 
   private async finale() {

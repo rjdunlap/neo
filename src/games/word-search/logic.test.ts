@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  ALL_DIRS, cellOf, cellsOfWord, hasBlocked, hintFor, lineBetween, makeGrid, makeGrids, occurrences, ORDER, parseGrid, planFor, PLANS, rowsOf, SMALL_GRID, textOf, themesFor, wordAt,
+  ALL_DIRS, cellOf, cellsOfWord, hasBlocked, hintFor, leftovers, lettersOf, lineBetween, makeGrid, makeGrids, MAX_STONES, MESSAGE_GRID, occurrences, ORDER, parseGrid, planFor, PLANS, rowsOf, SMALL_GRID, STONE,
+  textOf, themesFor, wordAt,
 } from './logic';
 import { BLOCKED } from './blocked';
 import { THEMES, themeById } from './words';
@@ -102,7 +103,7 @@ describe('making grids', () => {
         const label = `${plan.name} seed ${s}`;
         expect(grid.size, label).toBe(plan.size);
         expect(grid.letters, label).toHaveLength(plan.size * plan.size);
-        expect(grid.letters.every((l) => /^[A-Z]$/.test(l)), label).toBe(true);
+        expect(grid.letters.every((l) => /^[A-Z]$/.test(l) || (!!plan.message && l === STONE)), label).toBe(true);
         expect(grid.words, label).toHaveLength(plan.words);
         expect(new Set(grid.words.map((w) => w.word)).size, label).toBe(plan.words);
         for (const p of grid.words) {
@@ -133,10 +134,10 @@ describe('making grids', () => {
   });
 
   it('climbs in play order: the small grid first, then bigger grids with more words', () => {
-    expect(ORDER).toEqual([5, 1, 2, 3, 4]);
+    expect(ORDER).toEqual([5, 1, 2, 3, 4, 6]);
     expect([...ORDER].sort()).toEqual(PLANS.map((_, i) => i + 1));
-    expect(ORDER.map((l) => planFor(l).size)).toEqual([6, 8, 10, 12, 14]);
-    expect(ORDER.map((l) => planFor(l).words)).toEqual([4, 5, 7, 9, 12]);
+    expect(ORDER.map((l) => planFor(l).size)).toEqual([6, 8, 10, 12, 14, 8]);
+    expect(ORDER.map((l) => planFor(l).words)).toEqual([4, 5, 7, 9, 12, 9]);
     expect(planFor(0)).toBe(PLANS[0]);
     // A level past the top plays the hardest grid, never the small entry.
     expect(planFor(99)).toBe(planFor(ORDER[ORDER.length - 1]));
@@ -209,3 +210,58 @@ describe('words that must not appear', () => {
   });
 });
 
+describe('a message in the leftovers (level 6)', () => {
+  const plan = planFor(MESSAGE_GRID);
+  const back = (w: string) => [...w].reverse().join('');
+
+  it('is an 8 by 8 grid of nine words, across, down and slanting, forwards only, drawn from the everyday themes', () => {
+    expect(plan).toMatchObject({ size: 8, words: 9, grids: 1, message: true });
+    expect(plan.dirs).toEqual([[0, 1], [1, 0], [1, 1]]);
+    expect(themesFor(plan)).toEqual(THEMES.filter((t) => !t.root));
+    // Only level 6 has a message.
+    expect(PLANS.filter((p) => p.message)).toEqual([plan]);
+  });
+
+  it('has plain messages of different lengths for every theme it draws, none holding a word of its theme or a blocked one', () => {
+    for (const t of themesFor(plan)) {
+      const ms = t.messages!;
+      expect(ms.length, t.id).toBeGreaterThanOrEqual(3);
+      expect(new Set(ms.map((m) => lettersOf(m).length)).size, `${t.id} lengths`).toBeGreaterThanOrEqual(3);
+      for (const m of ms) {
+        expect(m, t.id).toMatch(/^[A-Z]+( [A-Z]+)+$/);
+        const text = lettersOf(m);
+        // A theme word inside its message could be read twice; a blocked one could be read at all.
+        for (const w of t.words) expect(text.includes(w) || back(text).includes(w), `${t.id}: ${w} in "${m}"`).toBe(false);
+        for (const b of BLOCKED) expect(text.includes(b) || back(text).includes(b), `"${m}" holds ${b}`).toBe(false);
+      }
+    }
+  });
+
+  it('every theme makes a message grid over two dozen seeds: the leftovers in reading order are the message, stones few and never in a word', () => {
+    for (const t of themesFor(plan)) for (let s = 1; s <= 24; s++) {
+      const g = makeGrid(plan, t, new Rng(s * 7919 + t.id.length));
+      const label = `${t.id} seed ${s}`;
+      expect(t.messages, label).toContain(g.message);
+      expect(leftovers(g), label).toBe(lettersOf(g.message!));
+      const stones = g.letters.flatMap((l, i) => (l === STONE ? [i] : []));
+      expect(stones.length, label).toBeLessThanOrEqual(MAX_STONES);
+      const inWords = new Set(g.words.flatMap((p) => cellsOfWord(g.size, p)));
+      for (const i of stones) expect(inWords.has(i), `${label} stone ${i}`).toBe(false);
+      expect(g.words, label).toHaveLength(9);
+      for (const p of g.words) expect(occurrences(g.size, g.letters, p.word), `${label} ${p.word}`).toHaveLength(1);
+      expect(hasBlocked(g.size, g.letters, g.words.map((p) => p.word)), label).toBe(false);
+      // Every square is a word's letter, the message's, or a stone.
+      expect(inWords.size + lettersOf(g.message!).length + stones.length, label).toBe(64);
+    }
+  });
+
+  it('draws many messages over the seeds, and a line through a stone is never a word', () => {
+    const grids = Array.from({ length: 40 }, (_, s) => makeGrids(plan, new Rng(s + 1))[0]);
+    expect(new Set(grids.map((g) => g.message)).size).toBeGreaterThan(10);
+    const g = grids.find((x) => x.letters.includes(STONE))!, stone = g.letters.indexOf(STONE);
+    for (let to = 0; to < 64; to++) {
+      const line = lineBetween(8, stone, to);
+      if (line && to !== stone) expect(wordAt(g, line, new Set()), `stone to ${to}`).toBe(-1);
+    }
+  });
+});
