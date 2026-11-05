@@ -2493,6 +2493,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--peekaround-island-le
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--read--do-capital-and-stop-levels-46-read-do-batch-2).
 
+## Read & Do, Make the sign, level 7 (read-do batch 3, 2026-11-04)
+
+[PR #1241](https://github.com/rjdunlap/neo/pull/1241), `claude/read-do-make-the-sign`: [dive slice 3](../deep-dives/read-do.md#build-slices-in-order), [definition](../definitions/read-do-make-the-sign.md). School only (school range 1–7; pre-K unchanged). A pictured wish card (never spoken) shows what a friend wants; the sign is a locked *The*, an empty row and a locked stop. She drags word tiles (both sizes, the stage animal, a decoy animal, jumps, sleeps) into the row; insert, move and take-out are free; Show it acts the sign; Send judges `act()` (act, which, none, unreadable) against the wish. Three seeded signs: one solo, then two big/small pairs that need a size word. A failed non-empty Send is one miss; two on a sign glow the `hintFor` step (one hint); an empty Send is free. Show it and Send sit in a right-hand 150-by-100 column at level 7 only. Tile taps speak the word (a tap is judged by finger travel under 30 units, not the lifted tile); tiles stay disabled until the instruction ends (both fixed after `game-reviewer`). The bot follows `hintFor` and never fails a Send. Known open: a pointercancel over the sign commits the drop (shared `drag.ts` behaviour).
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--read--do-level-7-make-the-sign-read-do-batch-3).
+
 
 ## Rhyme Time, fresh families: bug, sock and snail (rhyme-time batch 1, 2026-11-03)
 
