@@ -10,12 +10,14 @@ export interface Construction { friends: [Friend, Friend]; selected: number }
 export type Failure = Dock;
 export const initial = (): Construction => ({ friends: [{ shape: 'plain', place: 'park' }, { shape: 'plain', place: 'park' }], selected: 0 });
 export const copy = (s: Construction): Construction => ({ friends: s.friends.map(f => ({ ...f })) as [Friend, Friend], selected: s.selected });
-/** Which bridge shapes reach the far bank, how far below the chute's bank it sits, and whether the two docks join over a wide gap. */
-export const PLANS: Record<number, { bridges: readonly Shape[]; drop: number; joined?: boolean }> = {
+/** Which bridge shapes reach the far bank, how far below the chute's bank it sits, whether the two docks join over a wide gap,
+ * and whether a rocky ledge inside the gap holds up a cup at the bridge dock. */
+export const PLANS: Record<number, { bridges: readonly Shape[]; drop: number; joined?: boolean; ledge?: boolean }> = {
   1: { bridges: ['flatten', 'slope'], drop: 0 },
   2: { bridges: ['slope'], drop: 50 },
   3: { bridges: ['flatten'], drop: 0, joined: true },
   4: { bridges: ['slope'], drop: 50, joined: true },
+  5: { bridges: ['flatten', 'slope'], drop: 0, ledge: true },
 };
 export const planFor = (level: number) => PLANS[level] ?? PLANS[1];
 /** What grows: a round's seed is a bean, a sunflower seed or an acorn. Only the art changes; the rules never read it. */
@@ -26,17 +28,26 @@ export function looks(rng: Rng): { colors: ColorName[]; seed: SeedKind } {
   const colors = rng.shuffle(['teal', 'purple', 'pink', 'blue'] as ColorName[]).slice(0, 2);
   return { colors, seed: rng.pick(SEEDS) };
 }
-export function trace(s: Construction, level = 1): Failure | 'caught' {
+/** Which dock holds the caught seed, or null if it is not caught. Level 5's ledge holds a cup in the gap, which the seed meets first. */
+export function catcher(s: Construction, level = 1): Dock | null {
   const bridge = s.friends.find(f => f.place === 'bridge');
-  if (!bridge || !planFor(level).bridges.includes(bridge.shape)) return 'bridge';
-  return s.friends.find(f => f.place === 'receiver')?.shape === 'scoop' ? 'caught' : 'receiver';
+  if (planFor(level).ledge && bridge?.shape === 'scoop') return 'bridge';
+  if (!bridge || !planFor(level).bridges.includes(bridge.shape)) return null;
+  return s.friends.find(f => f.place === 'receiver')?.shape === 'scoop' ? 'receiver' : null;
+}
+export function trace(s: Construction, level = 1): Failure | 'caught' {
+  if (catcher(s, level)) return 'caught';
+  const bridge = s.friends.find(f => f.place === 'bridge');
+  return !bridge || !planFor(level).bridges.includes(bridge.shape) ? 'bridge' : 'receiver';
 }
 export function guidance(s: Construction, level = 1): { friend: number; shape: Shape; dock: Dock } | null {
   const failure = trace(s, level);
   if (failure === 'caught') return null;
   const occupant = s.friends.findIndex(f => f.place === failure);
   const friend = occupant >= 0 ? occupant : s.friends.findIndex(f => f.place === 'park');
-  return { friend, shape: failure === 'bridge' ? planFor(level).bridges[0] : 'scoop', dock: failure };
+  // On the ledge an empty or plain gap is finished by a cup there; a bridge already at the gap leads to a cup at the catch instead.
+  const shape = failure === 'receiver' || planFor(level).ledge ? 'scoop' : planFor(level).bridges[0];
+  return { friend, shape, dock: failure };
 }
 /** The spoken explanation of a failing construction, or null once the seed is caught. Levels 3 and 4 name how the joined spoon failed; over level 4's step the handle must slope down. */
 export function failureLine(s: Construction, level = 1): LineId | null {
@@ -49,6 +60,7 @@ export function failureLine(s: Construction, level = 1): LineId | null {
     return s.friends.some(f => f.place === 'receiver') ? 'buddies.joinCup' : 'buddies.joinShort';
   }
   if (failure === 'receiver') return 'buddies.cup';
+  if (plan.ledge) return 'buddies.ledgeNeed';
   if (!plan.drop) return 'buddies.bridge';
   return bridge?.shape === 'flatten' ? 'buddies.stepFlat' : 'buddies.stepBridge';
 }

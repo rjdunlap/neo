@@ -2827,7 +2827,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--quick-tricks-level-9
 
 [PR #1233](https://github.com/rjdunlap/neo/pull/1233), [dive slice 5](../deep-dives/pond-conga.md#build-slices-in-order), [definition](../definitions/pond-conga-school-opening.md). `school` joins `bands`: level 10 (6 by 4, no pads, 3 bites) and level 11 (7 by 4, 2 pads, 4 bites), both step by step at 100-unit cells with 210 by 100 Hint and Start over buttons, `entryLevels` `[8, 10, 11]`. A tap steps toward the touch (the leader or straight back does nothing); a bump is a refused step (line stays, boing, leader shake, `conga.bonk-school` once a pond, one miss) and the second bump on a pond shows the hint dots without counting a hint; the line turns about only when every way but back is shut. New voice lines `conga.go-school` and `conga.bonk-school` (device speech until the next render), level-scoped how-to steps, a co-play hint and a duckling-walk off-screen suggestion; the home land stays Lantern Lake. Real-time steering for 6 to 8 stays open.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--pond-conga-school-opening-levels-10-and-11-pond-conga-batch-5).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--pond-conga-school-opening-levels-10-and-11-pond-conga-batch-5).
 
 ## Treasure Map level 6 Write the card (treasure-map batch 2, 2026-11-04)
 
@@ -2864,6 +2864,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--secret-code-level-9-
 [PR #1244](https://github.com/rjdunlap/neo/pull/1244), `claude/shape-buddies-down-and-catch`: [dive slice 2](../deep-dives/shape-buddies.md#build-slices-in-order). `PLANS[4] = { bridges: ['slope'], drop: 50, joined: true }`: level 3's wide gap with the near half raised 50 like level 2. Accepted: exactly Slope at the near half and Cup at the far half, either friend. `failureLine` takes the step into account: a flat near half gives `buddies.downFlat`, no near half or a plain or cup one gives `buddies.downPath`, and the far half reuses `joinShort` and `joinCup`; new lines `buddies.start4`, `downPath`, `downFlat`. The scene draws the raised near bank, a stepped dashed outline, a sloped clasp and step-aware seed paths, with the carried handle staying up the step; heading "A spoon that slopes down". `LEVELS` pre-K and school are now 1-4, `DESCRIPTIONS[4]`, a how-to step `{ from: 4, to: 4 }`. Misses stay 0, two failed Tries for a role charge one hint, and the bot is unchanged (it follows guidance). The browser suite `buddies` gained `BUDDIES_ONLY=4`.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--shape-buddies-level-4-down-and-catch-shape-buddies-batch-2).
+
+## Shape Buddies level 5 A cup on the ledge (shape-buddies batch 3, 2026-11-05)
+
+[PR #1248](https://github.com/rjdunlap/neo/pull/1248), `claude/shape-buddies-cup-on-ledge`: [dive slice 3](../deep-dives/shape-buddies.md#build-slices-in-order). `PLANS[5] = { bridges: ['flat', 'slope'], drop: 0, ledge: true }`. A new `catcher(s, level)` returns which dock caught: caught when a Flat or Slope at the gap and a Cup at the catch, or a Cup at the gap with the other friend anything (two cups catch in the gap first); level 1's cup over open water still fails. `failureLine`: a plain or empty gap gives `buddies.ledgeNeed`, a missing cup `buddies.cup`. Guidance finishes what she started (bridge at the gap gets a Cup at the catch, otherwise a Cup goes to the gap) and never changes a friend already in a working role; the carry starts from the catching dock. New lines `buddies.start5`, `buddies.ledgeNeed` and `buddies.otherWay` (spoken once after planting, either family). The scene draws grey crack walls and a wooden ledge under the gap dock, labelled "Gap"; heading "A bridge, or a cup on the ledge". `LEVELS` pre-K and school are now 1-5, `DESCRIPTIONS[5]`, a how-to step `{ from: 5, to: 5 }` and an extended co-play hint. Misses 0, hints once per role. Rule tests: 27 in shape-buddies (5 new for level 5).
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--shape-buddies-level-5-a-cup-on-the-ledge-shape-buddies-batch-3).
 
 ## Word Search level 5 A small grid to start (word-search batch 2, 2026-11-04)
 

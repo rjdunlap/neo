@@ -1515,6 +1515,8 @@ Proof: new-level tier: typecheck, rule tests (the exact accepted set, the step-a
 
 ### shape-buddies 3: Level 5 A cup on the ledge
 
+Built 2026-11-05, [PR #1248](https://github.com/rjdunlap/neo/pull/1248); [build note](archive/COMPLETED-2026-10-09.md#shape-buddies-level-5-a-cup-on-the-ledge-shape-buddies-batch-3-2026-11-05). No longer eligible for dispatch.
+
 - **`shape-buddies`, Level 5 *A cup on the ledge* (dive slice 3)** (batch shape-buddies 2 built; shares `PLANS`, `LEVELS` and the joined-line changes; new rule): a rocky crack with a ledge, solved by a bridge plus a cup or by one cup on the ledge. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
 
 Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.

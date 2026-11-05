@@ -171,6 +171,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: 'Drag one friend to the bridge dock and one to the catching dock. The far bank is lower: only a slope reaches it.' },
       { from: 3, to: 3, text: 'Drag one friend to each half of the wide gap. A flat path and a cup at the end make a spoon.' },
       { from: 4, to: 4, text: 'Drag one friend to each half of the wide gap. The far half is lower: a slope and a cup make a spoon.' },
+      { from: 5, to: 5, text: 'The gap is a rocky crack: a bridge and a cup at the catch work, or one cup on its ledge.' },
       'Tap Try to release the seed. After it is caught, tap the pot to carry and plant it.',
       'Use Replay to return a caught seed to the chute. Undo restores the last shape or placement edit. Drag a friend to its own parking spot to free a dock.',
     ],

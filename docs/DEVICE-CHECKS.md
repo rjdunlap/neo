@@ -100,7 +100,7 @@
 ## Shape Buddies (dive, 2026-11-01; proposed, levels not yet built)
 
 - [ ] Once level 6 is built: does a pre-K child choose Turn without prompting?
-- [ ] Once level 5 is built: does the ledge read as "something under the cup"?
+- [ ] Level 5 is built (2026-11-05): does the ledge read as "something under the cup"?
 - [ ] Once level 7 is built: does a preschooler link "Cup" to "catch" without the bridge role?
 - [ ] On the iPad: does device speech read the new Shape Buddies lines clearly?
 - [ ] On the iPad: do the bean, sunflower seed and acorn (and their sprouts) read as different at a glance (built 2026-11-03)?
