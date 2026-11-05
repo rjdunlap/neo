@@ -33,6 +33,8 @@ export interface CongaPlan {
   group?: number;
   /** False: no pace at all. The line waits, and each swipe, touch or press takes one step (level 8, Step by step). */
   paced?: false;
+  /** True: the line starts long, `LONG_START` ducklings in an L along the bottom bank, so the tail is the obstacle (level 9, A long conga). */
+  long?: true;
   name: string;
 }
 
@@ -46,6 +48,7 @@ export const PLANS: CongaPlan[] = [
   { cols: 15, rows: 9, pads: 20, crumbs: 12, minLeg: 5, maxLeg: 13, speed: 3.4, name: 'A crowded pond: twenty lily pads, twelve crumbs' },
   { cols: 13, rows: 9, pads: 6, crumbs: 9, minLeg: 3, maxLeg: 8, speed: 2.8, group: 3, name: 'Choose the order: three bites show at once, nine in all' },
   { cols: 11, rows: 7, pads: 2, crumbs: 5, minLeg: 3, maxLeg: 7, speed: 2.4, paced: false, name: 'Step by step: the line waits, one step a swipe' },
+  { cols: 11, rows: 7, pads: 6, crumbs: 8, minLeg: 3, maxLeg: 7, speed: 2.6, long: true, name: 'A long conga: seven ducklings from the start, so the tail is in the way' },
 ];
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -389,12 +392,23 @@ export function makePond(plan: CongaPlan, rng: Rng): Pond {
   throw new Error('no pond');
 }
 
+/** How many ducklings a long conga starts with (level 9). */
+export const LONG_START = 7;
+
+/** A long line's start, leader first: along the bottom bank heading right, its tail turning up the left bank. */
+export function longStart(rows: number): Cell[] {
+  const y = rows - 1, along = 4;
+  const bottom = Array.from({ length: along }, (_, k) => ({ x: along - 1 - k, y }));
+  const up = Array.from({ length: LONG_START - along }, (_, k) => ({ x: 0, y: y - 1 - k }));
+  return [...bottom, ...up];
+}
+
 function tryPond(plan: CongaPlan, rng: Rng): Pond | null {
   const { cols, rows } = plan;
-  const y = Math.floor(rows / 2);
-  const start: Cell[] = [{ x: 3, y }, { x: 2, y }, { x: 1, y }];
-  // A clear runway in front of the leader, so the line can get going before anything is in the way.
-  const keep = new Set<string>();
+  const y = plan.long ? rows - 1 : Math.floor(rows / 2);
+  const start: Cell[] = plan.long ? longStart(rows) : [{ x: 3, y }, { x: 2, y }, { x: 1, y }];
+  // A clear runway in front of the leader, so the line can get going before anything is in the way; a long line's own cells stay clear too.
+  const keep = new Set<string>(start.map((c) => `${c.x},${c.y}`));
   for (let x = 0; x <= 7; x++) keep.add(`${x},${y}`);
   const free: Cell[] = [];
   for (let cy = 0; cy < rows; cy++) for (let cx = 0; cx < cols; cx++) if (!keep.has(`${cx},${cy}`)) free.push({ x: cx, y: cy });
@@ -427,7 +441,39 @@ function tryPond(plan: CongaPlan, rng: Rng): Pond | null {
   const route = solveRoute(board);
   if (!route || route.length !== lowerBound(board)) return null;
   if (groupOf(board) > 1 && !orderMatters(board, route)) return null;
+  if (plan.long && tailLegs(board, route) < TAIL_LEGS) return null;
   return { ...board, route, par: route.length };
+}
+
+/** How many legs of a long conga must have the tail on a shortest way through open water, so it really is in the way. */
+export const TAIL_LEGS = 4;
+
+/**
+ * Whether the line is in the way of the shortest open-water way to `to`: some duckling stands on a cell of a fewest-steps
+ * way and is still there when the leader would get to it (the tail moves off one cell a step, the leader on one). The
+ * duckling right behind the leader does not count: straight back is never a way.
+ */
+export function tailInWay(b: Board, s: Conga, to: Cell): boolean {
+  const fromHead = distances(b, s.body[0]), toAim = distances(b, to);
+  const total = toAim[s.body[0].y * b.cols + s.body[0].x];
+  return s.body.some((c, i) => {
+    const k = c.y * b.cols + c.x;
+    return i > 1 && fromHead[k] >= 0 && fromHead[k] + toAim[k] === total && fromHead[k] < s.body.length - i;
+  });
+}
+
+/** How many legs of a route start with the line in the way of the next bite's shortest open-water way. */
+export function tailLegs(b: Board, route: readonly Dir[]): number {
+  let s = startState(b), count = 0, aim = nextCrumb(b, s);
+  if (aim && tailInWay(b, s, aim)) count++;
+  for (const d of route) {
+    const next = step(b, s, d);
+    s = next.state;
+    if (next.event !== 'crumb') continue;
+    aim = nextCrumb(b, s);
+    if (aim && tailInWay(b, s, aim)) count++;
+  }
+  return count;
 }
 
 /** The steps each order of a group takes from `at`, by the open-water distances (`orders` order). */

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  DX, DY, FOODS, PLANS, STEP_GLIDE, stepDue, bestStarts, groupCosts, groupOf, openCrumbs, orderMatters, restBound, SWIPE, distances, foodAt, firstCrumbs, headAfter, hintDir, hintPath, lowerBound, makePond, pondLook, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, swipeDir, turnsIn,
+  DX, DY, FOODS, LONG_START, PLANS, TAIL_LEGS, longStart, tailInWay, tailLegs, STEP_GLIDE, stepDue, bestStarts, groupCosts, groupOf, openCrumbs, orderMatters, restBound, SWIPE, distances, foodAt, firstCrumbs, headAfter, hintDir, hintPath, lowerBound, makePond, pondLook, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, swipeDir, turnsIn,
   type Board, type Cell, type Conga, type Dir,
 } from './logic';
 
@@ -124,7 +124,7 @@ describe('ponds from a picture', () => {
 describe('the plans', () => {
   it('grow in crumbs and lily pads, and never in speed by much', () => {
     // Levels 1–6 are the arcade ladder; level 7 changes the rule instead, at level 3's pace.
-    const ladder = PLANS.filter((p) => !p.group && p.paced !== false);
+    const ladder = PLANS.filter((p) => !p.group && p.paced !== false && !p.long);
     for (let i = 1; i < ladder.length; i++) {
       expect(ladder[i].crumbs).toBeGreaterThanOrEqual(ladder[i - 1].crumbs);
       expect(ladder[i].pads).toBeGreaterThanOrEqual(ladder[i - 1].pads);
@@ -133,6 +133,7 @@ describe('the plans', () => {
     }
     expect(planFor(7)).toMatchObject({ group: 3, crumbs: 9, speed: 2.8 });
     expect(planFor(8)).toMatchObject({ paced: false, cols: 11, rows: 7, pads: 2, crumbs: 5 });
+    expect(planFor(9)).toMatchObject({ long: true, cols: 11, rows: 7, pads: 6, crumbs: 8, speed: 2.6 });
     expect(Math.max(...PLANS.map((p) => p.speed))).toBeLessThanOrEqual(3.6);
     expect(planFor(0)).toBe(PLANS[0]);
     expect(planFor(99)).toBe(PLANS.at(-1));
@@ -529,8 +530,55 @@ describe('level 8, step by step', () => {
   });
   it('is the first rung and a new player\'s entry', async () => {
     const { pondConga } = await import('./index');
-    expect(pondConga.levels('grownup')).toMatchObject({ min: 1, max: 8, order: [8, 1, 2, 3, 4, 5, 6, 7] });
+    expect(pondConga.levels('grownup')).toMatchObject({ min: 1, max: 9, order: [8, 1, 2, 3, 4, 5, 6, 7, 9] });
     expect(pondConga.entryLevels).toEqual([8]);
     expect(pondConga.describeLevel(8)).toMatch(/Step by step/);
+  });
+});
+
+describe('level 9, a long conga', () => {
+  const plan = planFor(9);
+  const seeds = [1, 2, 3, 7, 21, 99, 404, 2026];
+  it('starts seven ducklings long in an L along the bottom bank, every one inside the pond on open water', () => {
+    const start = longStart(plan.rows);
+    expect(start).toHaveLength(LONG_START);
+    expect(start[0]).toEqual({ x: 3, y: plan.rows - 1 });
+    for (let i = 1; i < start.length; i++) expect(Math.abs(start[i].x - start[i - 1].x) + Math.abs(start[i].y - start[i - 1].y)).toBe(1);
+    expect(new Set(start.map(at)).size).toBe(start.length);
+    for (const seed of seeds) {
+      const p = makePond(plan, new Rng(seed));
+      expect(p.start).toEqual(start);
+      expect(p.heading).toBe(0);
+      for (const c of p.start) expect(c.x >= 0 && c.y >= 0 && c.x < p.cols && c.y < p.rows && !p.pads.some((q) => q.x === c.x && q.y === c.y), at(c)).toBe(true);
+      // The leader can set off straight on: the bottom bank ahead of it is open.
+      for (let x = 4; x <= 7; x++) expect(p.pads.some((q) => q.x === x && q.y === plan.rows - 1)).toBe(false);
+    }
+  });
+  it('par is the fewest steps the open water allows, and the route meets it with no bonk', () => {
+    for (const seed of seeds) {
+      const p = makePond(plan, new Rng(seed));
+      expect(p.par).toBe(lowerBound(p));
+      let s = startState(p);
+      for (const d of p.route) { const r = step(p, s, d); expect(r.event).not.toBe('bonk'); s = r.state; }
+      expect(s.eaten).toBe(plan.crumbs);
+      expect(s.body).toHaveLength(LONG_START + plan.crumbs);
+    }
+  });
+  it('makes the tail the obstacle: on at least half the legs the line stands on a fewest-steps way to the next bite', () => {
+    expect(TAIL_LEGS * 2).toBeGreaterThanOrEqual(plan.crumbs);
+    for (const seed of seeds) {
+      const p = makePond(plan, new Rng(seed));
+      expect(tailLegs(p, p.route)).toBeGreaterThanOrEqual(TAIL_LEGS);
+    }
+  });
+  it('knows when the tail is in the way, and when it moves off in time', () => {
+    // Heading right with the tail up the left bank: the way back to (0, 1) runs up the bank the tail is on.
+    const p = parsePond(['.......', '1......', 's......', 's......', 'sssS...']);
+    expect(tailInWay(p, startState(p), { x: 0, y: 1 })).toBe(true);
+    // Straight ahead the line is never in the way.
+    expect(tailInWay(p, startState(p), { x: 6, y: 4 })).toBe(false);
+    // The last duckling leaves its cell before the leader could get there: not in the way.
+    const short = parsePond(['1..', 's..', 'sS.']);
+    expect(tailInWay(short, startState(short), { x: 0, y: 0 })).toBe(false);
   });
 });

@@ -10,7 +10,8 @@ async function congaTouchPlay() {
   const touchPond = () => page.evaluate(() => { const g = neo.scene.game, p = g.tapLayer.toGlobal({ x: g.pond.cols * g.cell / 2, y: g.pond.rows * g.cell / 2 }); kit.tap(p.x, p.y); });
   /** Swipe steering for a whole round, in the page so the timing follows the game's own steps: after each step, swipe the way the next one has to turn. */
   /** `first`: a route to follow from the start until the first group is eaten (level 7's longer order), then the hint's way. */
-  const drive = (first = null) => page.evaluate(async (first) => {
+  /** `bonk`: follow `first` only until the first bump, then stop (level 9's tail bonk). */
+  const drive = (first = null, bonk = false) => page.evaluate(async ([first, bonk]) => {
     const { hintPath } = await import('/src/games/pond-conga/logic.ts');
     const DX = [1, 0, -1, 0], DY = [0, 1, 0, -1];
     const swipe = async (g, dir) => {
@@ -21,7 +22,8 @@ async function congaTouchPlay() {
     for (let guard = 0; guard < 4000 && !neo.scene.finished; guard++) {
       const g = neo.scene.game;
       if (!g?.pond || g.busy || g.finished) { await kit.sleep(40); continue; }
-      const plan = first && g.state.eaten < 3 ? first.slice(g.tries) : g.onRoute ? g.pond.route.slice(g.routeAt) : hintPath(g.pond, g.state);
+      if (bonk && g.misses >= 1) return;
+      const plan = first && (bonk || g.state.eaten < 3) ? first.slice(g.tries) : g.onRoute ? g.pond.route.slice(g.routeAt) : hintPath(g.pond, g.state);
       if (g.waiting) {
         if (plan[0] !== undefined && plan[0] !== g.state.heading) await swipe(g, plan[0]);
         else { const p = g.tapLayer.toGlobal({ x: 10, y: 10 }); kit.tap(p.x, p.y); }
@@ -33,9 +35,9 @@ async function congaTouchPlay() {
         if (plan[0] !== undefined && plan[0] !== g.state.heading) await swipe(g, plan[0]);
       }
       await kit.sleep(15);
-      if (first && g.state.eaten >= 3) return;
+      if (first && !bonk && g.state.eaten >= 3) return;
     }
-  }, first);
+  }, [first, bonk]);
   /** The pond is one target; Hint and Start over at least 64 logical units, on screen, apart from each other and the water. */
   const targets = (label) => page.evaluate((label) => {
     const g = neo.scene.game, out = [], pond = { x: g.board.x, y: g.board.y, w: g.pond.cols * g.cell, h: g.pond.rows * g.cell };
@@ -160,6 +162,45 @@ async function congaTouchPlay() {
     assert.deepEqual(errors, []);
     log('Pond Conga level 8: still without input (2 s, and after a bump), a touch a step straight on, a swipe a step that way, one bump, one sticker, a pad press a step, portrait passed');
   }
+  /** Level 9: the line starts seven long in an L; steer the leader into its own tail once (one miss), then swipe through to the sticker. */
+  async function longConga() {
+    await launch('pond-conga', 9); await ready();
+    const stickers = await page.evaluate(() => kit.store.data.stickers.length);
+    const start = await page.evaluate(() => { const g = neo.scene.game; return { len: g.state.body.length, of: g.pond.crumbs.length, ducks: g.ducks.filter((d) => d.visible).length }; });
+    assert.deepEqual(start, { len: 7, of: 8, ducks: 7 }, 'seven ducklings from the start, eight bites');
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+    assert.deepEqual(await targets('level 9 portrait'), []);
+    await screenshot('conga-touch-9-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+    // The shortest turns from the start whose last step runs into the line itself (not a pad or the bank), every step before it a plain move.
+    const into = await page.evaluate(async () => {
+      const { step, startState, opposite } = await import('/src/games/pond-conga/logic.ts');
+      const p = neo.scene.game.pond, DX = [1, 0, -1, 0], DY = [0, 1, 0, -1];
+      let frontier = [{ dirs: [], s: startState(p) }];
+      for (let depth = 0; depth < 6; depth++) {
+        const next = [];
+        for (const { dirs, s } of frontier) for (const d of [0, 1, 2, 3]) {
+          if (d === opposite(s.heading)) continue;
+          const r = step(p, s, d), to = { x: s.body[0].x + DX[d], y: s.body[0].y + DY[d] };
+          if (r.event === 'bonk' && s.body.some((c) => c.x === to.x && c.y === to.y)) return { dirs: [...dirs, d], to };
+          if (r.event === 'move') next.push({ dirs: [...dirs, d], s: r.state });
+        }
+        frontier = next;
+      }
+      return null;
+    });
+    assert.ok(into, 'a short way into the tail exists');
+    await drive(into.dirs, true);
+    let st = await state();
+    assert.deepEqual([st.misses, st.hints, st.eaten], [1, 0, 0], `one bump into the tail at ${into.to.x},${into.to.y}, nothing lost`);
+    assert.equal(await page.evaluate(() => neo.scene.game.state.body.length), 7, 'the bump keeps every duckling');
+    await drive(); await finished('pond-conga');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers + 1, 'one sticker');
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('pond-conga').history.at(-1); return [r.misses, r.hints]; }), [1, 0]);
+    assert.deepEqual(errors, []);
+    log(`Pond Conga level 9: seven ducklings in an L, one bump into the tail (${into.dirs.length} steps), swiped through to one sticker, portrait passed`);
+  }
+  if (process.env.CONGA_LEVELS === '9') return longConga();
   if (process.env.CONGA_LEVELS === '8') return stepByStep();
   if (process.env.CONGA_LEVELS === '7') return chooseTheOrder();
   // Level 1: the line waits for a touch, a bump into the bank is one miss, a hint counts once, Start over keeps the steps, then the pond is cleared.
