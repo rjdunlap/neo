@@ -581,6 +581,25 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 4, text: 'Too far and too close are both misses; turning the dial never is. Show a hint turns the dial for her and counts as a hint, once per question.' },
     ],
   },
+  'far-lights': {
+    goal: 'See how a light looks brighter when it is nearer.',
+    steps: [
+      { from: 1, to: 1, text: 'Tap a light; it floats close to the window and glows up, then drifts back.' },
+      { from: 2, to: 2, text: 'Drag each light along its path to the window.' },
+      { from: 3, to: 3, text: 'Tap the light that looks brighter in the window.' },
+      { from: 4, to: 4, text: 'Drag the loose light until both look the same in the window, then press the tick.' },
+    ],
+    finish: [
+      { from: 1, to: 1, text: 'Three taps.' },
+      { from: 2, to: 2, text: 'Both lights at the window.' },
+      { from: 3, to: 3, text: 'Two pairs.' },
+      { from: 4, to: 4, text: 'Two lights matched.' },
+    ],
+    note: [
+      { from: 1, to: 2, text: "Every light here is the same; the halo shows how bright it looks, not how big it is. Nothing here is ever wrong: this is for looking, not a sign of what she knows. A toy model: real stars also differ in their own brightness." },
+      { from: 3, to: 4, text: 'Every light here is the same; the halo shows how bright it looks, not how big it is. Moving a light is never wrong; only a tap on the dimmer light, or a tick that does not match, counts. Show a hint counts once per pair or board. A toy model: real stars also differ in their own brightness.' },
+    ],
+  },
   'bond-beads': {
     goal: 'Link beads together hand to hand, and see that the same beads can make different shapes.',
     steps: [

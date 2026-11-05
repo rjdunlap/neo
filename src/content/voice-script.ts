@@ -1556,6 +1556,24 @@ export const SCRIPT = {
   'lens.hint': ["Let's look here!"],
   'lens.done': ['We looked so closely!', 'What a lot to see!'],
 
+  // Far Lights: the same light looks brighter near the window and dimmer far away.
+  'game.far-lights': ['Far lights!'],
+  'far.instruct.glow': ['Tap a little light!'],
+  'far.instruct.closer': ['Bring the lights close to the window!'],
+  'far.instruct.brighter': ['Which light looks brighter from the window? Tap it!'],
+  'far.instruct.match': ['Move the light until both look the same, then press the check!'],
+  'far.so-bright': ['Ooh, so bright!'],
+  'far.brighter': ['Brighter!'],
+  'far.dimmer': ['Dimmer.'],
+  'far.not-bigger': ['It looks brighter, not bigger.'],
+  'far.right-brighter': ["That one's nearer, so it looks brighter!"],
+  'far.wrong-brighter': ["That one looks dimmer. It's farther away."],
+  'far.same': ['They look the same!'],
+  'far.too-bright': ['This one looks brighter. Move it farther away.'],
+  'far.too-dim': ['This one looks dimmer. Move it closer.'],
+  'far.hint': ["Let's look at this one!"],
+  'far.done': ['Near looks bright, far looks dim!', 'What lovely lights!'],
+
   // Melt and Freeze: a sun that warms, a snowflake that cools, and the same thing either way.
   'tl.instruct.1': ['Pull the sea up the sand, then let it go!'],
   'tl.instruct.2': ["Put the pail where the sea won't reach. Look for the seaweed line!"],
