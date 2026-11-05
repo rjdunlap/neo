@@ -129,3 +129,10 @@
 - [PR #1217](https://github.com/rjdunlap/neo/pull/1217), base `04576c7c`: level 9 with a lily-pad mask through the rules, four authored shapes, pad art with a free tap, `lantern.pads`, how-to step, `LANTERN_ONLY=9` case.
 - Ran (branch head): typecheck; full `npm test` 302 files pass; rule tests with a brute force on every shape and the free-dimension cap; `GAME_URL=http://localhost:5869 BROWSER_SUITE=lanterntouch LANTERN_ONLY=9` PASS (rerun after the pad-tap fix; portrait screenshot `test-results/browser/lanterntouch/lantern-lights-9-portrait.png`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=lantern-lights FINGER_LEVELS=9` PASS (22.8 s); `BROWSER_SUITE=couchgames COUCH_ONLY=lantern-lights` PASS.
 - Not run: build (no shared assets), the other `lanterntouch` cases, offline, iPad or a child playing; pad art and the tap feel are unchecked on a device.
+
+## 2026-11-04 — Light Lab couch course Sunbeam Run (light-lab batch 2)
+
+- [PR #1218](https://github.com/rjdunlap/neo/pull/1218), commit `d80a8246` on base `92e3bfae`: a Light Lab puzzle-shelf course (`sunbeams`, five frozen boards, par [2, 2, 3, 4, 4] from the solver, minimum 15, played at level 6); new suite `couchsunbeams`; the other couch suites' course lists gained `sunbeams`.
+- Ran (Vite dev `http://localhost:5797/classic/`): typecheck; `npm test` 303 files pass (a first run had four failing files under load from a parallel session, the rerun passed all 303 and the couch, light-lab and content subset passed alone); `BROWSER_SUITE=couchsunbeams` PASS (shelf par 15, course page, a counted turn and turn-back, two missed shines with the glow and run helped, reload resume with tries kept, a perfect bot run of 15 with one sticker and both badges); `BROWSER_SUITE=couchgames COUCH_ONLY=light-lab` PASS.
+- Not run: the other couch course suites (only their list assertion changed), `npm run build` (no shared assets), offline, a TV or real controller.
+- Open: no "Start this board again" or "Watch the best routes" in Sunbeam Run (possible follow-ups).

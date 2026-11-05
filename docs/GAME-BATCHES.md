@@ -1321,7 +1321,7 @@ Proof: new-level tier: typecheck, rule tests, one play of level 9 with a tail bo
 
 Defined 2026-11-04; after batch pond-conga 3 (shares `index.ts`, `PLANS`, `LEVELS` and `entryLevels` with batches 2–4, so whichever lands later rebases).
 
-- **`pond-conga`, school opening: levels 10 and 11 step by step (dive slice 5, defined 2026-11-04)** (new band entry with a layout change and a school-only input rule; school): `school` joins `bands` playing two 4-row step-by-step ponds (7 by 4 at 100-unit cells), a swipe or tap-toward step moves the line one cell and it waits otherwise, a bump leaves the line in place with `conga.bonk-school`, the dots appear on the second bump without counting a hint, home stays Lantern Lake, a child's instruction, level-scoped how-to steps and co-play. [Definition](definitions/pond-conga-school-opening.md)
+- **`pond-conga`, school opening: levels 10 and 11 step by step (dive slice 5, defined 2026-11-04)** (**built 2026-11-04**, [PR #1233](https://github.com/rjdunlap/neo/pull/1233)) (new band entry with a layout change and a school-only input rule; school): `school` joins `bands` playing two 4-row step-by-step ponds (7 by 4 at 100-unit cells), a swipe or tap-toward step moves the line one cell and it waits otherwise, a bump leaves the line in place with `conga.bonk-school`, the dots appear on the second bump without counting a hint, home stays Lantern Lake, a child's instruction, level-scoped how-to steps and co-play. [Definition](definitions/pond-conga-school-opening.md)
 
 Files expected: `src/games/pond-conga/index.ts`, `logic.ts`, `logic.test.ts`, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 

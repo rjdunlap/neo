@@ -49,6 +49,9 @@ export const PLANS: CongaPlan[] = [
   { cols: 13, rows: 9, pads: 6, crumbs: 9, minLeg: 3, maxLeg: 8, speed: 2.8, group: 3, name: 'Choose the order: three bites show at once, nine in all' },
   { cols: 11, rows: 7, pads: 2, crumbs: 5, minLeg: 3, maxLeg: 7, speed: 2.4, paced: false, name: 'Step by step: the line waits, one step a swipe' },
   { cols: 11, rows: 7, pads: 6, crumbs: 8, minLeg: 3, maxLeg: 7, speed: 2.6, long: true, name: 'A long conga: seven ducklings from the start, so the tail is in the way' },
+  // School only (levels 10 and 11): small 4-row ponds step by step, so the cells and buttons are 100 units on a 768-unit side.
+  { cols: 6, rows: 4, pads: 0, crumbs: 3, minLeg: 2, maxLeg: 5, speed: 2.4, paced: false, name: 'A little pond, one step at a time' },
+  { cols: 7, rows: 4, pads: 2, crumbs: 4, minLeg: 3, maxLeg: 6, speed: 2.4, paced: false, name: 'Round the lily pads, one step at a time' },
 ];
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -135,6 +138,28 @@ export function step(b: Board, s: Conga, want: Dir | null): { state: Conga; even
   }
   const grown = [target, ...body];
   return { state: { body: grown, heading, eaten: s.eaten + (eats ? 1 : 0), got: eats ? s.got | (1 << eatsAt) : s.got }, event: eats ? 'crumb' : 'move' };
+}
+
+/**
+ * A step at school, where a bump is a refused step: the line stays exactly where it was (`held`). Only when every way but
+ * straight back would bump does it turn about as `step` does, so she can never be stuck.
+ */
+export function schoolStep(b: Board, s: Conga, want: Dir | null): { state: Conga; event: Event; held: boolean } {
+  const r = step(b, s, want);
+  if (r.event !== 'bonk') return { ...r, held: false };
+  const shut = ([0, 1, 2, 3] as Dir[]).every((d) => d === opposite(s.heading) || step(b, s, d).event === 'bonk');
+  return shut ? { ...r, held: false } : { state: s, event: 'bonk', held: true };
+}
+
+/**
+ * The step a tap at school asks for: toward the point (`x`, `y`, in board units with `cell`-unit cells), along whichever
+ * axis it is further from the leader's centre. A tap on the leader's own cell, or one that points straight back, asks nothing.
+ */
+export function tapToward(leader: Cell, x: number, y: number, cell: number, heading: Dir): Dir | null {
+  const dx = x - (leader.x + 0.5) * cell, dy = y - (leader.y + 0.5) * cell;
+  if (Math.abs(dx) < cell / 2 && Math.abs(dy) < cell / 2) return null;
+  const d: Dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 0 : 2) : (dy > 0 ? 1 : 3);
+  return d === opposite(heading) ? null : d;
 }
 
 /** Steps to every open cell from `from`, going round lily pads, or -1 where it cannot be reached. */
