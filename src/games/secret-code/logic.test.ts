@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { contradictsClues, detectiveDoor, candidates, DOORS, doorKinds, ignoredClues, makeCode, nextMove, PLANS, planFor, rowsThatFit, ruledOut, score, suggestion, visibleRows, type Guess } from './logic';
+import { stepLevel } from '../../progress/difficulty';
+import { secretCode } from './index';
+import { contradictsClues, detectiveDoor, candidates, DOORS, doorKinds, ignoredClues, demoCode, madeCode, makeCode, nextMark, nextMove, petTries, petTry, PLANS, planFor, rowsThatFit, ruledOut, score, suggestion, visibleRows, wrongMarks, type Guess, type Mark } from './logic';
 
 describe('Secret Code', () => {
   it('marks right places green, misplaced stones yellow (never more than are missing), and the rest gray', () => {
@@ -217,5 +219,67 @@ describe('Detective doors', () => {
       }
     }
     expect(seen.size).toBe(DOORS.length);
+  });
+
+  it('level 9: the right marks are score(), any wrong or missing mark is caught, and the disc cycles gray, yellow, green', () => {
+    expect(nextMark(null)).toBe('gray');
+    expect(nextMark('gray')).toBe('yellow');
+    expect(nextMark('yellow')).toBe('green');
+    expect(nextMark('green')).toBe('gray');
+    const plan = planFor(9);
+    expect(plan.maker).toBe(true);
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      const code = madeCode(plan, rng);
+      const stones = madeCode(plan, rng);
+      const right = score(code, stones, true);
+      expect(wrongMarks(code, stones, right)).toEqual([]);
+      expect(wrongMarks(code, stones, [null, ...right.slice(1)])).toEqual([0]);
+      const flipped: Mark[] = right.map((m, i) => (i === 2 ? nextMark(m) : m));
+      expect(wrongMarks(code, stones, flipped)).toEqual([2]);
+    }
+    // Repeats are fine in her code; the second red earns gray when the code has only one.
+    expect(wrongMarks([0, 1, 1], [0, 0, 1], ['green', 'gray', 'green'])).toEqual([]);
+  });
+
+  it('level 9: with right marks the pet cracks every code she could make within six tries, each try fitting every mark so far', () => {
+    const plan = planFor(9);
+    const codes = candidates(plan, []);
+    expect(codes).toHaveLength(4 ** 3);
+    let worst = 0;
+    for (const code of codes) {
+      for (let seed = 1; seed <= 40; seed++) {
+        const rng = new Rng(seed * 7919 + code.join('').length);
+        const history: Guess[] = [];
+        for (;;) {
+          const stones = petTry(plan, history, rng);
+          expect(candidates(plan, history).map((c) => c.join())).toContain(stones.join());
+          const marks = score(code, stones, true);
+          history.push({ stones, marks });
+          if (marks.every((m) => m === 'green')) break;
+          expect(history.length).toBeLessThan(10);
+        }
+        worst = Math.max(worst, history.length);
+      }
+    }
+    expect(worst).toBeLessThanOrEqual(6);
+    // The ghost finger's code is one the pet cracks in at most three tries, without moving the round's generator.
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed);
+      const code = demoCode(plan, rng);
+      expect(petTries(plan, code, rng.clone())).toBeLessThanOrEqual(3);
+      expect(rng.int(0, 1000)).toBe(new Rng(seed).int(0, 1000));
+    }
+    // Seeded: the same marks and seed give the same try.
+    expect(petTry(plan, [], new Rng(5))).toEqual(petTry(plan, [], new Rng(5)));
+  });
+
+  it('places level 9 after 4 in school\'s order and keeps pre-K at 1 to 3', () => {
+    expect(secretCode.levels('school')).toEqual({ min: 2, max: 11, order: [2, 3, 4, 9, 5, 6, 7, 8, 11] });
+    expect(secretCode.levels('prek')).toEqual({ min: 1, max: 3 });
+    expect(stepLevel(4, 1, secretCode.levels('school'))).toBe(9);
+    expect(stepLevel(9, 1, secretCode.levels('school'))).toBe(5);
+    expect(stepLevel(5, -1, secretCode.levels('school'))).toBe(9);
+    expect(secretCode.describeLevel(9)).toMatch(/Be the door/);
   });
 });
