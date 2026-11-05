@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { type Card, cardDone, cardFor, cardReason, EMPTY_CARD, nextCount, nextWay, planFor, walkCard, CELL, cellCenter, clueDirection, clueEnd, COLUMN_COLORS, compare, digSpot, directions, DOODLES, dressingFor, firstDirection, firstLeg, headersFor, makeFinds, name, PLANS, ROW_PICTURES, squareAt, TINTS } from './logic';
+import { bestDig, distance, dugAt, type FarDig, ruledOutBy, stillFits, stepsWord, type Square, type Card, cardDone, cardFor, cardReason, EMPTY_CARD, nextCount, nextWay, planFor, walkCard, CELL, cellCenter, clueDirection, clueEnd, COLUMN_COLORS, compare, digSpot, directions, DOODLES, dressingFor, firstDirection, firstLeg, headersFor, makeFinds, name, PLANS, ROW_PICTURES, squareAt, TINTS } from './logic';
 
 describe('Treasure Map', () => {
   it('names squares by column letter and row number, counting rows from the bottom', () => {
@@ -261,5 +261,77 @@ describe('Treasure Map level 6, write the card', () => {
     expect(nextWay(0)).toBe(1);
     expect(nextWay(1)).toBe(-1);
     expect(nextWay(-1)).toBe(1);
+  });
+
+  describe('level 7, How far?', () => {
+    const plan = planFor(7);
+    const all: Square[] = [];
+    for (let col = 0; col < plan.size; col++) for (let row = 0; row < plan.size; row++) all.push({ col, row });
+    const eq = (a: Square, b: Square) => a.col === b.col && a.row === b.row;
+
+    it('is a 4 by 4 hunt with chests on the map', () => {
+      expect(plan.mode).toBe('far');
+      expect(plan.size).toBe(4);
+      for (let seed = 1; seed <= 100; seed++) for (const f of makeFinds(plan, new Rng(seed))) expect(f.square.col).toBeLessThan(4);
+    });
+
+    it('counts the distance across plus up, as the pet walks', () => {
+      expect(distance({ col: 0, row: 0 }, { col: 3, row: 3 })).toBe(6);
+      expect(distance({ col: 2, row: 1 }, { col: 0, row: 3 })).toBe(4);
+      expect(distance({ col: 1, row: 1 }, { col: 1, row: 1 })).toBe(0);
+      expect(stepsWord(1)).toBe('1 step');
+      expect(stepsWord(3)).toBe('3 steps');
+    });
+
+    it('always keeps the chest among the squares that still fit, and shrinks the set after every fitting dig', () => {
+      for (const chest of all) {
+        let digs: FarDig[] = [];
+        // Any fitting order: dig the still-fitting squares from the far end of the list.
+        while (true) {
+          const fits = stillFits(digs, 4);
+          expect(fits.some((s) => eq(s, chest))).toBe(true);
+          const g = fits[fits.length - 1];
+          if (eq(g, chest)) break;
+          digs = [...digs, { square: g, said: distance(g, chest) }];
+          const after = stillFits(digs, 4);
+          expect(after.length).toBeLessThan(fits.length);
+          expect(after.some((s) => eq(s, g))).toBe(false);
+        }
+      }
+    });
+
+    it('finds every hiding square within five digs, whichever fitting square each dig picks', () => {
+      const worst = (digs: FarDig[], chest: Square): number => {
+        let most = 0;
+        for (const g of stillFits(digs, 4)) most = Math.max(most, eq(g, chest) ? 1 : 1 + worst([...digs, { square: g, said: distance(g, chest) }], chest));
+        return most;
+      };
+      for (const chest of all) expect(worst([], chest)).toBeLessThanOrEqual(5);
+    });
+
+    it('finds every hiding square within three digs with the bot\'s play, and the bot only digs squares that fit', () => {
+      for (const chest of all) {
+        const digs: FarDig[] = [];
+        let n = 0;
+        while (true) {
+          const g = bestDig(digs, 4);
+          n++;
+          expect(ruledOutBy(g, digs)).toBeNull();
+          if (eq(g, chest)) break;
+          digs.push({ square: g, said: distance(g, chest) });
+        }
+        expect(n).toBeLessThanOrEqual(3);
+      }
+    });
+
+    it('names the earliest dig a ruled-out square disagrees with, and remembers squares already dug', () => {
+      const digs: FarDig[] = [{ square: { col: 0, row: 0 }, said: 3 }, { square: { col: 3, row: 0 }, said: 2 }];
+      expect(stillFits(digs, 4)).toEqual([{ col: 2, row: 1 }, { col: 1, row: 2 }].filter((s) => distance(s, { col: 3, row: 0 }) === 2));
+      expect(ruledOutBy({ col: 3, row: 3 }, digs)).toBe(digs[0]);
+      expect(ruledOutBy({ col: 0, row: 3 }, digs)).toBe(digs[1]);
+      expect(ruledOutBy({ col: 2, row: 1 }, digs)).toBeNull();
+      expect(dugAt({ col: 3, row: 0 }, digs)).toBe(digs[1]);
+      expect(dugAt({ col: 2, row: 1 }, digs)).toBeNull();
+    });
   });
 });

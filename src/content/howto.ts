@@ -3027,7 +3027,8 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'Find the square, like D2, and tap it to put the thing there.' },
       { from: 4, to: 4, text: 'Follow the directions from the start, like "3 right, then 1 up", and tap the square where you end up.' },
       { from: 5, to: 5, text: 'Read both landmark clues. Follow each line to the square where they meet, then tap it.' },
-      { from: 6, text: 'Write the card that walks the pet to the chest: tap the number and the arrow on each line until the footprints reach it, then press Go.' },
+      { from: 6, to: 6, text: 'Write the card that walks the pet to the chest: tap the number and the arrow on each line until the footprints reach it, then press Go.' },
+      { from: 7, text: 'The chest is hidden. Dig anywhere: the footprints and the number say how many steps away it is, across plus up. Dig where every number still fits.' },
     ],
     finish: [
       { to: 2, text: 'The round ends when the treasure is found.' },

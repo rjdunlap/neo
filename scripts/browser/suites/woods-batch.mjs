@@ -1823,6 +1823,58 @@ async function woodsBatch() {
     log('Treasure Map 6 (write): an unfinished Go free, an up line one off and a wrong-way across as misses, the across glow, the pet walking each card, saved score and sticker passed');
   }
 
+  if ((!only || only === 'map') && fromLevel <= 7 && Number(process.env.TO_LEVEL || 7) >= 7) {
+    // Level 7, How far?: a hidden chest; digs that fit every distance are free, a ruled-out dig is a miss.
+    await launch('treasure-map', 7);
+    const dig = async (s) => {
+      await page.evaluate((s) => { const g = neo.scene.game; const p = g.grid.toGlobal(g.cellAt(s)); kit.tap(p.x, p.y); }, s);
+      await page.waitForTimeout(250);
+      await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+      await page.waitForTimeout(300);
+    };
+    const dist = (a, b) => Math.abs(a.col - b.col) + Math.abs(a.row - b.row);
+    const squares = [];
+    for (let col = 0; col < 4; col++) for (let row = 0; row < 4; row++) squares.push({ col, row });
+    const same = (a, b) => a.col === b.col && a.row === b.row;
+    const fits = (s, digs) => digs.every((d) => dist(s, d.square) === dist(d.square, d.chest));
+    for (let n = 0; n < 3; n++) {
+      await idle(n);
+      const chest = await page.evaluate(() => ({ ...neo.scene.game.find.square }));
+      if (n === 0) {
+        // Two fitting digs (not the chest), then two squares they rule out.
+        let plan = null;
+        for (const a of squares) for (const b of squares) {
+          if (plan || same(a, chest) || same(b, chest) || same(a, b) || dist(b, a) !== dist(chest, a)) continue;
+          const digs = [{ square: a, chest }, { square: b, chest }];
+          const out = squares.filter((s) => !same(s, a) && !same(s, b) && !same(s, chest) && !fits(s, digs));
+          if (out.length >= 2) plan = { a, b, out };
+        }
+        await dig(plan.a);
+        await dig(plan.b);
+        const state = await page.evaluate(() => ({ digs: neo.scene.game.digs.map((d) => d.said), busy: neo.scene.game.busy }));
+        assert.equal(state.digs.length, 2, 'two fitting digs recorded');
+        assert.deepEqual(await counts(), [0, 0], 'fitting digs are exploring, never misses');
+        await dig(plan.out[0]);
+        assert.deepEqual(await counts(), [1, 0], 'a ruled-out dig is a miss');
+        await dig(plan.out[0]);
+        assert.deepEqual(await counts(), [1, 0], 'a second tap on a crossed-out square repeats the reason, not a second miss');
+        await dig(plan.a);
+        assert.deepEqual(await counts(), [1, 0], 'digging a dug square again only repeats its distance');
+        await dig(plan.out[1]);
+        assert.deepEqual(await counts(), [2, 1], 'the second ruled-out dig lights what still fits');
+        await page.setViewportSize({ width: 768, height: 1024 });
+        await page.waitForTimeout(400);
+        await screenshot('treasure-map-7-footprints-portrait');
+        await page.setViewportSize({ width: 1024, height: 768 });
+        await page.waitForTimeout(400);
+      }
+      await dig(chest);
+    }
+    await finished('treasure-map');
+    assert.deepEqual(await score('treasure-map'), [2, 1]);
+    log('Treasure Map 7 (far): two fitting digs free with their footprint stacks, a re-dig free, two ruled-out digs as misses, the still-fits glow, saved score and sticker passed');
+  }
+
   if (!only || only === 'opp') for (let level = fromLevel; level <= 5; level++) {
     await launch('opposites', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);

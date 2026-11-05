@@ -1631,7 +1631,7 @@ Proof: new-interaction tier: typecheck, rule tests; one scripted play with one c
 
 ### treasure-map 3: How far?
 
-- **`treasure-map`, Level 7 *How far?* (dive slice 3, after batch 1)** (new rule on the same tap; school): footprint stacks and a spoken distance after each dig on a 4 by 4 map; the still-fits set; ruled-out digs are misses with a reason. Shares the footprints with batch 1. Not on the couch.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
+- **`treasure-map`, Level 7 *How far?* (dive slice 3, after batch 1)** (built 2026-11-05; new rule on the same tap; school): footprint stacks and a spoken distance after each dig on a 4 by 4 map; the still-fits set; ruled-out digs are misses with a reason. Shares the footprints with batch 1. Not on the couch.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
 
 Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 
