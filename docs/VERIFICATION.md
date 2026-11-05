@@ -7,6 +7,12 @@
 - **Follow-up, same day:** the developer asked for the recommendations to be made without waiting. Six defined new games were admitted on their October 23 defaults (Far Lights, Seed Travelers, Rain Garden, Playdate Workshop, Circuit Garden, Measuring Post). Next ten was filled to ten.
 - **Open:** waves 6–7 dives queue only through the tracker; Weights Case still waits on Box Balance; each new game's source check and lands test run at build time.
 
+## 2026-11-05 — Sink or Float level 10 Salty or fresh, definition (docs only)
+
+- [PR #1267](https://github.com/rjdunlap/neo/pull/1267): new [definition](definitions/salty-or-fresh.md) for level 10 (school, salt mode, two tanks); READY, dive, batch plan and study backlog updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs only).
+- Open: the build (batch sink-float 3) is queued; no play or device check yet.
+
 ## 2026-11-05 — Sudoku Garden level 9 Patchwork beds (sudoku-garden batch 4)
 
 - [PR #1266](https://github.com/rjdunlap/neo/pull/1266) (branch `claude/sudoku-garden-patchwork-beds`): grown-up level 9, a 6 by 6 bed of irregular six-square patches from eight authored `PATCH_LAYOUTS`, with outlined and tinted patches, patch-first only-place hints, voice lines `sudoku.go-patch` and `sudoku.go-patch-touch`, and a how-to step; order now `[7, 1, 2, 3, 9, 4, 5, 6, 8]`.
