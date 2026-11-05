@@ -1,6 +1,6 @@
 # Quick Tricks deep dive
 
-*ID `quick-tricks` · bands toddler, preschool, pre-K, school · levels 1–6 on 2026-11-01 · session `claude/dive-quick-tricks` ([PR #1092](https://github.com/rjdunlap/neo/pull/1092))*
+*ID `quick-tricks` · bands toddler, preschool, pre-K, school · levels 1–6 on 2026-11-01, 7 and 8 on 2026-11-04 · session `claude/dive-quick-tricks` ([PR #1092](https://github.com/rjdunlap/neo/pull/1092))*
 
 ## The game today
 
@@ -8,7 +8,7 @@ A little show after WarioWare: Touched!, made calm. Each round is one show of th
 
 The learning purpose is spatial and comparison words in action: *above* and *cover*, *same* (colour, then colour and pattern), *long enough*, then turning a shape to fit, one-to-one correspondence and making a quantity from a visible start.
 
-Ranges (`LEVELS` in `index.ts`): toddler 1–1, preschool 1–4, pre-K 2–7, school 5–7. No `order`, no `entryLevels`.
+Ranges (`LEVELS` in `index.ts`): toddler order 8, 1; preschool order 8, 1, 2, 3, 4 with `entryLevels: [8]`; pre-K 2–7; school 5–7 (level 8 built 2026-11-04).
 
 | Level | Plan name | Band windows | What she decides |
 | --- | --- | --- | --- |
@@ -93,7 +93,7 @@ Seeded cast for both shows (slice 1): the friend under the leaf and its pair at 
 
 | Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 8 | *A tiny show* | toddler (placed before 1 by `order`, `entryLevels: [8]`), preschool start | Two tricks only: the leaf (any drop over Bunny's column succeeds, above or in front) and the bridge stretch (any let-go past halfway snaps across) | Where to put the leaf; how far to pull | Nothing counts: no misses, no hints; the pet re-says the instruction after a quiet ten seconds | `misses` stays 0 for every drop; the bot finishes; `order` puts 8 first for toddler and the toddler range is 8 then 1 | A two-trick plan entry in `PLANS` with a `tricks` list (the show currently runs all of `TRICKS`); toddler `order`; how-to step for 8; `fingerdemo` at 8 |
+| 8 | *A tiny show* (**built 2026-11-04**) | toddler (placed before 1 by `order`, `entryLevels: [8]`), preschool start | Two tricks only: the leaf (any drop over Bunny's column succeeds, above or in front) and the bridge stretch (any let-go past halfway snaps across) | Where to put the leaf; how far to pull | Nothing counts: no misses, no hints; the pet re-says the instruction after a quiet ten seconds | `misses` stays 0 for every drop; the bot finishes; `order` puts 8 first for toddler and the toddler range is 8 then 1 | A two-trick plan entry in `PLANS` with a `tricks` list (the show currently runs all of `TRICKS`); toddler `order`; how-to step for 8; `fingerdemo` at 8 |
 
 The numbering (7 the remix, 8 the tiny show) is fixed here so both slices can be built in either order without renumbering.
 
@@ -116,7 +116,7 @@ Both are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
 
 1. **Truthful accounting, a seeded cast and a bow for the second show** (**built 2026-11-03**, [PR #1141](https://github.com/rjdunlap/neo/pull/1141); existing-game fix tier: typecheck, the game's rule tests, one filtered regression play of level 1 with a leaf dropped below Bunny (no miss) and of level 4 to its sticker, `fingerdemo` at 4 only if the bot's play changes; one build if voice lines are added). Contents: level-1 leaf-below drop is free (reuse `countShort` or a `countBelow` plan field); show two hides the yellow arrow during Picnic Places (the last bowl already wins) so no submit miss is possible there; show two's waiting arrow repeats `tricks.next` after ten quiet seconds; show two ends with a cast bow and `tricks.done`; show two's friends are `Critter`s; the mailbox flag, friend wiggle and berry gulp payoffs; seeded friend, crosser and monster colour in show one with per-critter instruction lines.
 2. **Level 7, *Two at once*** (**built 2026-11-04**, [PR #1228](https://github.com/rjdunlap/neo/pull/1228); new-rule tier: typecheck, rule tests, one play of level 7 with one leaf over only two friends (kept, no miss), one wrong sock and the glow, then to the sticker, one portrait screenshot of the three friends, `fingerdemo` at 7). After slice 1 (shares `index.ts` and the cast).
-3. **Level 8, *A tiny show*, the toddler entry** (new-level tier with `order`: typecheck, unit tests including the registry, lands and order/entry tests, one play of level 8 at toddler with a leaf in front of Bunny (succeeds) and a short pull past halfway, `fingerdemo` at 8). After slice 1.
+3. **Level 8, *A tiny show*, the toddler entry** (**built 2026-11-04**, [PR #1232](https://github.com/rjdunlap/neo/pull/1232); new-level tier with `order`: typecheck, unit tests including the registry, lands and order/entry tests, one play of level 8 at toddler with a leaf in front of Bunny (succeeds) and a short pull past halfway, `fingerdemo` at 8). After slice 1.
 4. **Define the third show** (**defined 2026-11-04**, [definition](../definitions/quick-tricks-third-show.md), [PR #1210](https://github.com/rjdunlap/neo/pull/1210); docs only): Wind the Music Box, Fill the Cups and Loop the Fireflies as level 9, the crank's pointer handling, which built pour and loop handling it reuses, named amounts per band, accounting (overfill spills and is never a miss), voice lines and check tier. From [IDEAS](../IDEAS.md#a-third-show-new-gestures).
 5. **Level 9, *The third show*** (new-interaction tier: typecheck, unit tests, one scripted play of level 9 at pre-K with a crank released mid-turn, one overfilled cup tipped out (no miss), two wrong loops then the glow, to the sticker, one portrait screenshot of the music box mid-turn, `fingerdemo` at 9, one build for the voice lines). After slice 1; independent of slices 2 and 3. See the [definition](../definitions/quick-tricks-third-show.md).
 
