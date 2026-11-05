@@ -438,11 +438,13 @@ export class CouchScene extends Scene {
     const mine = this.alone() ? '' : `${who(o.player)} · `, kind = o.assisted ? 'with help' : 'no help';
     const big = node('p', '', 'couch-big');
     big.append(node('b', String(o.total)), document.createTextNode(` ${o.total === 1 ? info.unit : unitsOf(info)}`));
-    const line = o.total <= o.minimum ? `The fewest ${unitsOf(info)} possible: perfect!`
+    const line = info.reference && o.total < o.minimum ? `Under par by ${countOf(info, o.minimum - o.total)}!`
+      : info.reference && o.total === o.minimum ? 'Right on par!'
+      : o.total <= o.minimum ? `The fewest ${unitsOf(info)} possible: perfect!`
       : o.previous === null ? `Your first finish (${kind}). That is your mark to beat.`
       : o.improved ? `A new best (${kind})! It was ${o.previous}.`
       : `Your best (${kind}) is still ${o.previous}.`;
-    panel.append(big, node('p', `${mine}${mine ? 'course' : 'Course'} minimum ${o.minimum}. ${line}`, 'couch-outcome-line'));
+    panel.append(big, node('p', `${mine}${mine ? 'course' : 'Course'} ${info.reference ? 'par' : 'minimum'} ${o.minimum}. ${line}`, 'couch-outcome-line'));
     const earned = o.earned.map(b => info.badges[b].title);
     if (earned.length) { const tag = node('p', '', 'couch-new-badges'); tag.append(node('em', 'NEW BADGE'), document.createTextNode(` ${earned.join(' and ')}`)); panel.append(tag); }
     const parts = node('ol', '', 'couch-pond-scores');
@@ -481,7 +483,7 @@ export class CouchScene extends Scene {
     const info = courseInfo(id), spec = courseSpec(id);
     const saved = this.couch.data.courses[id] ?? courseDefaults(spec);
     const run = saved.run;
-    const sheet = this.shell(info.name, outcome ? info.rule : `${info.blurb} The fewest ${unitsOf(info)} the whole course can take is ${spec.minimum}.`);
+    const sheet = this.shell(info.name, outcome ? info.rule : info.reference ? `${info.blurb} Par for the whole course is ${countOf(info, spec.minimum)}, a careful solver's count: it can be beaten.` : `${info.blurb} The fewest ${unitsOf(info)} the whole course can take is ${spec.minimum}.`);
     sheet.classList.add('couch-course');
     const progress = node('div', '', 'couch-lanterns');
     const finished = outcome ? spec.boards : run?.slides.length ?? 0;
@@ -495,7 +497,7 @@ export class CouchScene extends Scene {
     for (const player of alone ? [0] as const : [0, 1] as const) players.append(this.playerCard(info, player, saved.players[player], outcome));
     if (alone) {
       const entry = shelfEntry(this.couch.data, id);
-      players.append(node('p', `Par is ${entry.minimum} ${unitsOf(info)}${info.par ? `, every ${info.part} by its ${info.par}` : ''}. ${standing(entry, info)}.`, 'couch-standing'));
+      players.append(node('p', `Par is ${entry.minimum} ${unitsOf(info)}${info.reference ? ', a careful solver\'s count' : info.par ? `, every ${info.part} by its ${info.par}` : ''}. ${standing(entry, info)}.`, 'couch-standing'));
     }
     if (!outcome) sheet.append(node('p', info.note, 'couch-keys'));
     const actions = node('div', '', 'couch-actions'); sheet.append(actions);
@@ -576,7 +578,7 @@ export class CouchScene extends Scene {
     noteProgress(courseOf(this.couch.data, run.spec), run.spec, run.token, { slides: p.done, attempts: p.attempts, assisted: p.assisted });
     this.couch.save();
     const total = p.done.reduce((n, s) => n + s, 0) + p.attempts, info = run.info, cap = info.part[0].toUpperCase() + info.part.slice(1);
-    this.stats.textContent = `${cap} ${Math.min(p.board + 1, p.boards)} of ${p.boards} · ${countOf(info, total)} so far${info.par ? ` · this ${info.part}'s ${info.par} ${p.par}` : ''} · course minimum ${p.minimum}${p.assisted ? ' · helped' : ''}`;
+    this.stats.textContent = `${cap} ${Math.min(p.board + 1, p.boards)} of ${p.boards} · ${countOf(info, total)} so far${info.par ? ` · this ${info.part}'s ${info.par} ${p.par}` : ''} · course ${info.reference ? 'par' : 'minimum'} ${p.minimum}${p.assisted ? ' · helped' : ''}`;
   }
 
   /** A chosen game: explain it the first time, then just introduce it by name. */

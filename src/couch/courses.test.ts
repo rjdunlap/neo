@@ -48,6 +48,9 @@ describe('the couch courses', () => {
     expect(courseInfo('joined').level).toBe(6);
     expect(courseSpec('conga')).toMatchObject({ game: 'pond-conga', boards: 4, minimum: 259 });
     expect(courseSpec('sunbeams')).toMatchObject({ game: 'light-lab', boards: 5, minimum: 15 });
+    expect(courseSpec('codedoors')).toMatchObject({ game: 'secret-code', boards: 5, minimum: 16 });
+    expect(courseInfo('codedoors').reference).toBe(true);
+    expect(courseInfo('sunbeams').reference).toBeUndefined();
   });
 
   it("is played by a game that is on the couch, at a level its band really has", () => {
@@ -88,5 +91,7 @@ describe('the couch courses', () => {
     expect(isCourseId('sunbeams')).toBe(true);
     expect(countOf(courseInfo('sunbeams'), 1)).toBe('1 turn');
     expect(countOf(courseInfo('sunbeams'), 15)).toBe('15 turns');
+    expect(countOf(courseInfo('codedoors'), 1)).toBe('1 try');
+    expect(countOf(courseInfo('codedoors'), 16)).toBe('16 tries');
   });
 });

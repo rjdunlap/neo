@@ -36,7 +36,9 @@ export const shelf = (save: CouchSave, player: 0 | 1 = 0): ShelfEntry[] => COURS
 /** "14 slides · 3 above par (11)", the line under a puzzle on the shelf. */
 export function standing(entry: ShelfEntry, info: CourseInfo = courseInfo(entry.id)): string {
   if (entry.best === null || entry.over === null) return `Not finished yet · par ${entry.minimum}`;
-  const gap = entry.over === 0 ? 'par: the fewest possible' : `${entry.over} above par (${entry.minimum})`;
+  const under = entry.minimum - entry.best;
+  const gap = info.reference && under > 0 ? `${under} under par (${entry.minimum})` : info.reference && under === 0 ? `right on par (${entry.minimum})`
+    : entry.over === 0 ? 'par: the fewest possible' : `${entry.over} above par (${entry.minimum})`;
   return `${countOf(info, entry.best)} · ${gap}${entry.helped ? ' · with help' : ''}`;
 }
 

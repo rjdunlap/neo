@@ -10,6 +10,7 @@ import { COURSES as LANTERNS, courseBest as lanternBest, courseMinimum as lanter
 import { COURSES as BEDS, courseBest as bedBest, courseMinimum as bedMinimum, type BedCourseId } from '../games/sudoku-garden/course';
 import { COURSES as TYPING, courseBest as typingBest, courseMinimum as typingMinimum, type TypingCourseId } from '../games/pond-typing/course';
 import { COURSES as SUNBEAMS, courseBest as lightBest, courseMinimum as lightMinimum, type LightCourseId } from '../games/light-lab/course';
+import { COURSES as CODES, courseBest as codeBest, courseMinimum as codeMinimum, type CodeCourseId } from '../games/secret-code/course';
 import type { CouchId } from './party';
 
 /**
@@ -18,9 +19,9 @@ import type { CouchId } from './party';
  * speaks about them and how many there are. Adding a course means a game that can play one, an entry
  * here, and a save for it (`couch/course.ts` is generic over all of them).
  */
-export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId | WordCourseId | BridgeCourseId | CongaCourseId | TypingCourseId | LightCourseId;
+export type CourseId = PondCourseId | 'clouds' | BedCourseId | LanternCourseId | PictureCourseId | HarborCourseId | WordCourseId | BridgeCourseId | CongaCourseId | TypingCourseId | LightCourseId | CodeCourseId;
 /** In the order the Challenges menu shows them: a gentle one first. */
-export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing', 'sunbeams'];
+export const COURSE_IDS: readonly CourseId[] = ['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing', 'sunbeams', 'codedoors'];
 export const isCourseId = (v: unknown): v is CourseId => COURSE_IDS.includes(v as CourseId);
 
 export interface CourseInfo {
@@ -43,6 +44,11 @@ export interface CourseInfo {
   routes: boolean;
   /** The fewest tries for each part, in order, and in all. */
   best: readonly number[];
+  /**
+   * Set when a part has no exact fewest (a lucky first guess opens any door): `best` and `minimum` are then a fixed
+   * reference solver's count (the October 23 par rule), which a run can beat, and the screens say "par", never "fewest possible".
+   */
+  reference?: true;
   minimum: number;
   /** The sentence under the result's title, and what the course page says about help and leaving. */
   rule: string;
@@ -165,6 +171,19 @@ const build: Record<CourseId, () => CourseInfo> = {
     badges: {
       finish: { title: 'Finished', how: 'Wake every flower on every board, with or without help.' },
       minimum: { title: 'Fewest turns', how: 'Wake every flower with the fewest turns possible, no missed shine and no hint.' },
+    },
+  }),
+  codedoors: () => ({
+    id: 'codedoors', game: 'secret-code', level: 4, version: CODES.codedoors.version, name: CODES.codedoors.name, blurb: CODES.codedoors.blurb,
+    card: 'Secret Code, five locked doors in a row. Read the marks and open each door in as few tries as you can; par is a careful solver\'s count, and you can beat it.',
+    part: 'door', unit: 'try', par: 'par', routes: false, best: codeBest('codedoors'), minimum: codeMinimum('codedoors'), reference: true,
+    rule: 'Open every door in the fewest tries you can. Each turn of the key is a try; taking a stone back is free. Par is how many tries a careful solver takes, trying a code that fits every mark so far.',
+    note: 'Trying a stone where a mark already ruled it out is a missed clue; two on a door, or four more tries than the door has slots, show faint stones that fit every mark. Once shown, a hint marks the whole run as helped, and helped and unhelped bests are kept apart. Leaving in the middle of a door starts it again with no tries on it, and the tries you made still count.',
+    leaving: 'Leaving or refreshing starts the door you are on again, and the tries you made on it still count. Opened doors stay saved.',
+    done: 'couch.course.codedoors',
+    badges: {
+      finish: { title: 'Finished', how: 'Open every door, with or without help.' },
+      minimum: { title: 'On par', how: 'Open every door in par or fewer tries, with no hint.' },
     },
   }),
   words: () => words('words', 'Word Search, three themed grids in a row. Find every word with as few guesses as you can, then beat your own best.', 'couch.course.words'),
