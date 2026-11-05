@@ -2809,7 +2809,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--light-lab-level-12-s
 
 [PR #1228](https://github.com/rjdunlap/neo/pull/1228), [dive slice 2](../deep-dives/quick-tricks.md#build-slices-in-order). New level 7 in show one, doubled: three rain friends and two leaves (200 and 300 wide), where a partial cover stays up (no miss) and the pet names who is still wet; a leaf adding nothing floats home; with both up and someone wet, `tricks.leaf-move` and the glow (the trick's one hint). The monster holds two different socks from five (3-over-2 grid, one partner each, `tricks.one-pair`); one river with a narrow (160) and wide (260) gap and planks 130, 220, 330, where only middle-on-narrow plus long-on-wide works (`tricks.plank-move` if long lies on the narrow gap). Placed pieces lift off freely. Rain unchanged below 7. Pre-K range 2–7, school 5–7, no `order`; two level-7 how-to steps; the ghost finger plays it. Reviewer fixes: a hidden small leaf, rain below level 7, plank spacing.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--quick-tricks-level-7-two-at-once-quick-tricks-batch-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--quick-tricks-level-7-two-at-once-quick-tricks-batch-2).
 
 ## Quick Tricks level 8 A tiny show (quick-tricks batch 3, 2026-11-04)
 
@@ -2840,6 +2840,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--treasure-map-level-6
 [PR #1238](https://github.com/rjdunlap/neo/pull/1238), `claude/secret-code-four-repeat`: [dive slice 2](../deep-dives/secret-code.md#build-slices-in-order). `PLANS[7]` is four slots, five colors, `yellow` and `repeats` on, two doors, named "Four slots, five colors, and one color used twice"; school now spans levels 2–8 (pre-K 1–3 unchanged). Every code holds a repeat. The miss rule is levels 1–6's repeat-level `ruledOut` with no colour-wide gray rule, faint stones come after two misses or eight tries, and `code.repeat` is reused (no new voice lines). The how-to card scopes the level 7 step and note `to: 7` and adds a level 8 step and note. A new rule test (300 seeds) checks every code repeats and the reasoning bot cracks each within six tries (measured maximum 5) without ignoring a visible clue. The woods case for Secret Code now runs up to level 8. Couch unchanged.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--secret-code-level-8-four-slots-a-repeat-secret-code-batch-2).
+
+## Secret Code level 11 A bigger detective door (secret-code batch 5, 2026-11-04)
+
+[PR #1243](https://github.com/rjdunlap/neo/pull/1243), `claude/secret-code-bigger-detective`: [dive slice 5](../deep-dives/secret-code.md#build-slices-in-order). Four slots, five colors, no repeats, three seeded shown clues (greedy; exactly three on all 300 tested seeds; the cap is three so every row fits at `doorY` 430) that leave one code. The miss rule is level 7's (`contradictsClues`, one miss per inconsistent try), faint stones after two misses or once history including the clues reaches `slots + 4` (five own tries), and the clue rows never fade. `PLANS` is now keyed by level ID (9 and 10 reserved); school spans 2–11 with `order` 2–8 then 11. No new voice lines (`code.detective`, `code.contradiction` reused). The how-to card scopes level 8's step and note `to: 8` and adds a level 11 step and note. Rule tests: 12 in secret-code (new: level-11 uniqueness and a time bound under 250 ms over 300 seeds, the bot opens it first try, clue rows fit at 430). The woods case for Secret Code now covers level 11. Couch unchanged.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--secret-code-level-11-a-bigger-detective-door-secret-code-batch-5).
 
 ## Word Search level 5 A small grid to start (word-search batch 2, 2026-11-04)
 

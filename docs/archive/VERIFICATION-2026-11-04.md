@@ -190,3 +190,10 @@
 - [PR #1227](https://github.com/rjdunlap/neo/pull/1227) at 58742a8e: new `view` mode (pre-K 3–7, school 4–7): three friends right, behind and left of the tree, one named; three picture cards (270×220, live mini scenes in Containers) show each friend's side; a wrong card turns the island to that friend (miss), the glow rings the right card after two misses. The island sits lower at this level (y = max(0.6h, 586)).
 - Ran (base origin/main bb34f9b0, `GAME_URL` http://localhost:5789): typecheck; full `npm test` 303 files, 4902 tests pass; a one-off Playwright probe at school level 7, portrait (two wrong cards with turns, glow and hint on the second, three right cards, finished with 2 misses and 1 hint, no page errors) and a 1024×768 landscape screenshot (cards end at y≈236, crown top ≈250); `BROWSER_SUITE=fingerdemo FINGER_ONLY=peekaround-island FINGER_LEVELS=7` PASS (prek, 9.7 s); `npm run build` OK.
 - Not run: device speech of the new lines, an iPad, a child's reaction.
+
+## 2026-11-04 — Quick Tricks level 7 Two at once (quick-tricks batch 2)
+
+- [PR #1228](https://github.com/rjdunlap/neo/pull/1228) at d85087b2 (base 22bfabfc): level 7 in show one doubled (three friends and two leaves, two socks from five, narrow and wide gaps with three planks); pre-K 2–7, school 5–7.
+- Ran: typecheck; full `npm test` 303 files, 4910 tests pass before the final reviewer fixes, then the game's 19 rule tests after them; `BROWSER_SUITE=next NEXT_ONLY=tricks FROM_LEVEL=7` passed (portrait 768×1024, 3 misses / 2 hints, one saved sticker, screenshot `test-results/browser/next/quick-tricks-two-at-once.png`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=quick-tricks FINGER_LEVELS=7` PASS 27.9 s.
+- The game-reviewer findings (hidden small leaf, rain unchanged below 7, plank spacing) were fixed.
+- Not run: `npm run build` (no shared assets; CI runs it), landscape, an iPad, a child's reaction.

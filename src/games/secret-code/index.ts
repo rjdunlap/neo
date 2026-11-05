@@ -16,7 +16,8 @@ import { contradictsClues, detectiveDoor, doorKinds, ignoredClues, makeCode, nex
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 8 },
+  // IDs 9 and 10 are reserved for levels not built yet; level 11, the bigger detective door, follows 8.
+  school: { min: 2, max: 11, order: [2, 3, 4, 5, 6, 7, 8, 11] },
 };
 
 /** Each stone has a shape as well as a color, so colors never have to be told apart by hue alone. */
@@ -364,7 +365,8 @@ class SecretCode implements Game {
     rows.forEach((r, i) => {
       const fromEnd = rows.length - 1 - i;
       r.visible = fromEnd < fit;
-      r.alpha = fromEnd === fit - 1 && fit > 1 ? 0.5 : 1;
+      // A detective door's clues are all needed at once, so none fades.
+      r.alpha = !this.plan.detective && fromEnd === fit - 1 && fit > 1 ? 0.5 : 1;
       r.position.set(this.view.w / 2 - 40 - ((this.plan.slots - 1) * 76) / 2, bottom - fromEnd * 62);
     });
   }
