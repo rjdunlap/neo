@@ -514,7 +514,7 @@ class TreasureMap implements Game {
     this.part = 'flag';
     this.tried.clear();
     // The card names one chest, each hunt hides a new one and each raft is a new raft, so the last find's marks are cleared.
-    if (this.plan.mode === 'write' || this.plan.mode === 'far' || this.plan.mode === 'slide' || this.plan.mode === 'line' || this.plan.mode === 'mirror') this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (this.plan.mode === 'write' || this.plan.mode === 'far' || this.plan.mode === 'slide' || this.plan.mode === 'line' || this.crossed) this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.resize(this.view);
     this.drawCard();
     this.drawLandmarks(f);
