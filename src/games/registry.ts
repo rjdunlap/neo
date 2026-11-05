@@ -162,6 +162,7 @@ import { waterRoad } from './water-road';
 import { keepHouse } from './keep-house';
 import { puddleLens } from './puddle-lens';
 import { farLights } from './far-lights';
+import { seedTravelers } from './seed-travelers';
 import { adventureWalk } from './adventure-walk';
 import { readyForAdventure } from './ready-for-adventure';
 import { senseDetective } from './sense-detective';
@@ -316,6 +317,7 @@ export const GAMES: GameModule[] = [
   keepHouse,
   puddleLens,
   farLights,
+  seedTravelers,
   adventureWalk,
   readyForAdventure,
   senseDetective,

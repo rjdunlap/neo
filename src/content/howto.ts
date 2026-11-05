@@ -600,6 +600,18 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 4, text: 'Every light here is the same; the halo shows how bright it looks, not how big it is. Moving a light is never wrong; only a tap on the dimmer light, or a tick that does not match, counts. Show a hint counts once per pair or board. A toy model: real stars also differ in their own brightness.' },
     ],
   },
+  'seed-travelers': {
+    goal: 'Send each seed across to the tray, and find out how each one travels.',
+    steps: [
+      { from: 1, to: 1, text: 'Tap the bellows to blow the fluffy seed.' },
+      { from: 1, to: 1, text: "Tap the basket when you're done." },
+      { from: 2, to: 2, text: 'Tap the hooky seed, then tap the critter.' },
+      { from: 3, to: 3, text: 'Choose a seed and a helper, in either order.' },
+      { from: 3, to: 3, text: 'If it stays, try another helper.' },
+    ],
+    finish: 'Every seed in the tray earns a sticker.',
+    note: 'A seed that stays is a good test, not a mistake. This is a toy model: real seeds travel in many ways.',
+  },
   'bond-beads': {
     goal: 'Link beads together hand to hand, and see that the same beads can make different shapes.',
     steps: [
