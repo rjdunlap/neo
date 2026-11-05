@@ -902,16 +902,19 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'The big letter is already there. Drag the full stop onto the dotted square at the end, or tap the stop then the square, then press Send.' },
       { from: 6, to: 6, text: 'Both are missing: tap the first word for a big letter and put the full stop on the dotted square, in either order, then press Send.' },
       { from: 4, to: 6, text: 'Show it lets the animal act the sign as it stands, with no verdict.' },
+      { from: 7, to: 7, text: 'The card shows the pet\'s wish. Drag words into the sign, along it or off it; Show it acts the sign, then Send when it matches.' },
     ],
     finish: [
       { from: 1, to: 1, text: 'Choose all three color words to finish.' },
       { from: 2, to: 2, text: 'Choose all three signs, each with a different animal, to finish.' },
       { from: 3, to: 3, text: 'Act out all four sentences to finish.' },
       { from: 4, to: 6, text: 'Send all three signs to finish.' },
+      { from: 7, to: 7, text: 'Send all three signs: one animal, then two pairs needing a size word.' },
     ],
     note: [
       { from: 1, to: 3, text: 'A wrong picture plays out its meaning, then the sign is read word by word. After two misses on a sign, its answer glows. Listening support does not establish independent reading.' },
       { from: 4, to: 6, text: 'Only a Send without the big letter or full stop this sign asks for counts as a miss, and the pet names where a sentence starts or stops. After two on a sign, the control she needs glows (one hint); Show a hint in the pause sheet does the same. Toggling, moving the stop, listening and Show it are never counted.' },
+      { from: 7, to: 7, text: 'A Send the animals do not act as the wish is a miss (wrong act, two that fit, nobody, or a jumble); the pet says why. After two, the word to add or take out glows (one hint). Edits, listening, Show it and an empty Send are free. The wish is never spoken.' },
     ],
   },
   'number-trails': {

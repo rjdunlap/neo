@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
 import { WORD_LINES, readDo } from './index';
+import { computeView } from '../../engine/view';
+import { accepts, acceptedSigns, act, type Actor, follow, hintFor, makeWishes, MAX_SLOTS, type SlotWord, signLayout, type Box } from './logic';
 import { actionOf, ANIMALS, answerIndex, COLORS, makeSigns, makeTasks, type Marks, matches, meaning, missing, PLANS, planFor, printed, stepFor, VERBS, WORDS } from './logic';
 
 describe('Read & Do', () => {
@@ -67,7 +69,7 @@ describe('Read & Do', () => {
   it('replays every printed word through the voice script and opens gently at pre-K', () => {
     for (const word of WORDS) expect(SCRIPT[WORD_LINES[word]]).toEqual([word]);
     expect(readDo.levels('prek')).toEqual({ min: 1, max: 5, order: [1, 2, 4, 5] });
-    expect(readDo.levels('school')).toEqual({ min: 1, max: 6 });
+    expect(readDo.levels('school')).toEqual({ min: 1, max: 7 });
   });
 });
 
@@ -75,7 +77,7 @@ describe('Read & Do capital and stop (levels 4–6)', () => {
   const states: Marks[] = [false, true].flatMap(capital => [false, true].map(stop => ({ capital, stop })));
   it('names each level and fixes the step it asks for', () => {
     expect([1, 2, 3].map(stepFor)).toEqual([null, null, null]);
-    expect([4, 5, 6].map(stepFor)).toEqual(['cap', 'stop', 'both']);
+    expect([4, 5, 6, 7].map(stepFor)).toEqual(['cap', 'stop', 'both', null]);
     for (let level = 4; level <= 6; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
   });
   it('Send accepts exactly the requested convention: A ignores the stop, B the capital, C needs both in either order', () => {
@@ -133,6 +135,111 @@ describe('Read & Do capital and stop (levels 4–6)', () => {
   });
   it('has every new spoken line', () => {
     for (const id of ['read.cap.instruction', 'read.stop.instruction', 'read.both.instruction', 'read.cap.missing', 'read.stop.missing', 'read.ready', 'read.stamp', 'read.jumps', 'read.sleeps'] as const)
+      expect(SCRIPT[id]).toBeDefined();
+  });
+});
+
+describe('Read & Do, Make the sign (level 7)', () => {
+  const big = (animal: Actor['animal']): Actor => ({ animal, size: 'big' });
+  const small = (animal: Actor['animal']): Actor => ({ animal, size: 'small' });
+  const pair = (animal: Actor['animal']) => [big(animal), small(animal)];
+  it('reads the sign literally: act, which, none and unreadable', () => {
+    expect(act(['pig', 'jumps'], [big('pig')])).toEqual({ kind: 'act', actor: big('pig'), verb: 'jumps' });
+    expect(act(['big', 'pig', 'jumps'], [big('pig')])).toEqual({ kind: 'act', actor: big('pig'), verb: 'jumps' });
+    expect(act(['small', 'pig', 'jumps'], [big('pig')])).toEqual({ kind: 'none', size: 'small', animal: 'pig' });
+    expect(act(['dog', 'jumps'], [big('pig')])).toEqual({ kind: 'none', size: null, animal: 'dog' });
+    expect(act(['cat', 'sleeps'], pair('cat'))).toEqual({ kind: 'which', animal: 'cat' });
+    expect(act(['small', 'cat', 'sleeps'], pair('cat'))).toEqual({ kind: 'act', actor: small('cat'), verb: 'sleeps' });
+    for (const bad of [[], ['pig'], ['jumps'], ['jumps', 'pig'], ['big', 'small', 'cat'], ['big', 'cat'], ['pig', 'cat', 'jumps'], ['pig', 'jumps', 'sleeps'], ['cat', 'big', 'sleeps'], ['big', 'jumps', 'cat']] as SlotWord[][])
+      expect(act(bad, pair('cat')), bad.join(' ')).toEqual({ kind: 'unreadable' });
+  });
+  it('makes three seeded wishes: three animals, both verbs, both pair sizes, a decoy never on stage', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const signs = makeWishes(new Rng(seed));
+      expect(signs).toEqual(makeWishes(new Rng(seed)));
+      expect(signs).toHaveLength(PLANS[6].rounds);
+      expect(new Set(signs.map(s => s.wish.actor.animal)).size).toBe(3);
+      expect(new Set(signs.map(s => s.wish.verb))).toEqual(new Set(VERBS));
+      expect(signs[0].stage).toHaveLength(1);
+      expect(signs[0].stage[0]).toEqual(signs[0].wish.actor);
+      expect(new Set([signs[1].wish.actor.size, signs[2].wish.actor.size])).toEqual(new Set(['big', 'small']));
+      for (const s of signs) {
+        expect(s.tray).toHaveLength(6);
+        expect(new Set(s.tray).size).toBe(6);
+        expect(s.tray).toEqual(expect.arrayContaining(['big', 'small', 'jumps', 'sleeps', s.wish.actor.animal]));
+        const decoy = s.tray.find(w => ANIMALS.includes(w as Actor['animal']) && w !== s.wish.actor.animal)!;
+        expect(s.stage.some(a => a.animal === decoy)).toBe(false);
+        expect(act([decoy, 'jumps'], s.stage).kind).toBe('none');
+        if (s.stage.length === 2) {
+          expect(s.stage.map(a => a.size).sort()).toEqual(['big', 'small']);
+          expect(act([s.wish.actor.animal, s.wish.verb], s.stage).kind).toBe('which');
+        }
+      }
+    }
+  });
+  it('accepts every sign a reader would act as the wish, from words in the tray, and nothing else', () => {
+    for (let seed = 1; seed <= 200; seed++) for (const s of makeWishes(new Rng(seed))) {
+      const ok = acceptedSigns(s);
+      expect(ok.length).toBe(s.stage.length === 1 ? 2 : 1);
+      for (const sign of ok) { expect(accepts(sign, s)).toBe(true); expect(sign.every(w => s.tray.includes(w))).toBe(true); }
+      if (s.stage.length === 1) {
+        const other = s.wish.actor.size === 'big' ? 'small' : 'big';
+        expect(accepts([other, s.wish.actor.animal, s.wish.verb], s)).toBe(false);
+      }
+      const wrongVerb = s.wish.verb === 'jumps' ? 'sleeps' : 'jumps';
+      expect(accepts([...ok[0].slice(0, -1), wrongVerb], s)).toBe(false);
+    }
+  });
+  it('follows the glow from every sign she can build to an accepted one, within six steps and three slots, using tray words', () => {
+    const signsFrom = (tray: SlotWord[]): SlotWord[][] => {
+      const out: SlotWord[][] = [[]];
+      const grow = (sign: SlotWord[]) => {
+        if (sign.length === MAX_SLOTS) return;
+        for (const w of tray) if (!sign.includes(w)) { out.push([...sign, w]); grow([...sign, w]); }
+      };
+      grow([]);
+      return out;
+    };
+    for (let seed = 1; seed <= 40; seed++) for (const s of makeWishes(new Rng(seed))) for (const start of signsFrom(s.tray)) {
+      let sign = start;
+      let steps = 0;
+      for (let hint = hintFor(sign, s); hint.kind !== 'send'; hint = hintFor(sign, s)) {
+        if (hint.kind === 'add') { expect(s.tray).toContain(hint.word); expect(sign).not.toContain(hint.word); }
+        sign = follow(sign, hint);
+        expect(sign.length).toBeLessThanOrEqual(MAX_SLOTS);
+        expect(++steps, start.join(' ')).toBeLessThanOrEqual(6);
+      }
+      expect(accepts(sign, s)).toBe(true);
+    }
+  });
+  it('builds the shortest accepted sign from an empty one, in order', () => {
+    for (let seed = 1; seed <= 50; seed++) for (const s of makeWishes(new Rng(seed))) {
+      let sign: SlotWord[] = [];
+      for (let hint = hintFor(sign, s); hint.kind !== 'send'; hint = hintFor(sign, s)) { expect(hint.kind).toBe('add'); sign = follow(sign, hint); }
+      expect(sign).toEqual(acceptedSigns(s)[0]);
+    }
+    const s = makeWishes(new Rng(1))[1];
+    const other = s.wish.actor.size === 'big' ? 'small' : 'big';
+    expect(hintFor([other, s.wish.actor.animal, s.wish.verb], s)).toEqual({ kind: 'out', index: 0 });
+  });
+  it('lays level 7 out at the four views: 100-unit targets, no overlaps, inside the view, clear of home, help and the pet', () => {
+    const views = [computeView(1024, 768), computeView(1024, 1365), computeView(1662, 768), computeView(1561, 768, { top: 0, right: 47, bottom: 21, left: 47 })];
+    const hit = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    for (const v of views) {
+      const L = signLayout(v);
+      const targets = [...L.row, L.speaker, L.wish, L.show, L.send, ...L.tray];
+      const shell: Box[] = [{ x: 12, y: 12, w: 100, h: 100 }, { x: 12, y: 110, w: 100, h: 100 }, { x: 0, y: v.h - 160, w: 150, h: 160 }];
+      for (const b of targets) {
+        expect(b.w).toBeGreaterThanOrEqual(100);
+        expect(b.h).toBeGreaterThanOrEqual(100);
+        expect(b.x >= 0 && b.y >= 0 && b.x + b.w <= v.w && b.y + b.h <= v.h).toBe(true);
+        for (const s of shell) expect(hit(b, s)).toBe(false);
+      }
+      for (const [i, a] of [...targets, L.stage].entries()) for (const b of [...targets, L.stage].slice(i + 1)) expect(hit(a, b)).toBe(false);
+    }
+  });
+  it('has every Make the sign line', () => {
+    for (const id of ['read.make.instruction', 'read.make.yes', 'read.make.other', 'read.make.which', 'read.make.none', 'read.make.mixed', 'read.make.full', 'read.make.hint.add', 'read.make.hint.out', 'read.make.wish'] as const)
       expect(SCRIPT[id]).toBeDefined();
   });
 });
