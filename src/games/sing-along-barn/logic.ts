@@ -274,13 +274,20 @@ export interface Note {
   answers: boolean;
   /** True on the last note of a verse (and of the opening), where the next animal may come in. */
   verseEnd: boolean;
-  /** At *Finish the line*: the song pauses before this note, a friend's verse's last word, and her touch sings it. */
+  /**
+   * At *Finish the line*: the song pauses before this note, a friend's verse's last word, and her touch sings it. At
+   * *Which one finishes it?*: the first note of the rhyming word (in each verse, or once in the opening), where she picks its picture.
+   */
   gap: boolean;
 }
 
-/** The whole song as a flat list of notes: the opening, then a verse for each animal. With `gaps`, each verse's last note is a gap. */
-export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD, gaps = false): Note[] {
+/**
+ * The whole song as a flat list of notes: the opening, then a verse for each animal. With `gaps` true, each verse's last
+ * note is a gap (*Finish the line*); with `'rhyme'`, the first note of the tune's rhyming word is (*Which one finishes it?*).
+ */
+export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD, gaps: boolean | 'rhyme' = false): Note[] {
   const notes: Note[] = [];
+  const rhyme = gaps === 'rhyme' ? RHYMES[tune.id] : undefined;
   let phrase = 0;
   const add = (p: Phrase, animal: Animal | null, closes: boolean) => {
     p.steps.forEach((step, at) => {
@@ -299,7 +306,10 @@ export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD,
         animal,
         answers,
         verseEnd: closes && last,
-        gap: gaps && animal !== null && closes && last,
+        gap:
+          gaps === true
+            ? animal !== null && closes && last
+            : rhyme !== undefined && closes && (rhyme.where === 'verse') === (animal !== null) && at === p.steps.length - rhyme.syllables.length,
       });
     });
     phrase++;
@@ -312,8 +322,11 @@ export function makeSong(animals: readonly Animal[], tune: Tune = OLD_MACDONALD,
 /** Which tune a round sings: a seeded draw, so both turn up and a replay of the same seed sings the same one. */
 export const pickTune = (rng: Rng): Tune => rng.pick([...TUNES]);
 
-/** What waits beside the barn door while the song pauses before the word: the song cards' bun and ball, a night sky, a spout. */
-export type Picture = 'bun' | 'ball' | 'sky' | 'spout';
+/**
+ * What waits beside the barn door while the song pauses before the word: the song cards' bun and ball, a night sky, a
+ * spout; at *Which one finishes it?* also a posy of flowers, and an apple and the moon that do not rhyme.
+ */
+export type Picture = 'bun' | 'ball' | 'sky' | 'spout' | 'posies' | 'apple' | 'moon';
 
 /**
  * *Finish the line* (level 7): the word each friend's verse ends on, and its picture. The song pauses before it, as a
@@ -337,6 +350,63 @@ export const pickGapTune = (rng: Rng): Tune => rng.pick([...GAP_TUNES]);
 /** At the pause, a touch this soon after it began only wobbles the picture (a fast tapper meets it before it is sung). */
 export const GAP_HOLD = 0.8;
 
+/**
+ * *Which one finishes it?* (level 8): the song stops before a word that rhymes with one sung just before it ("go away,
+ * we want to play"), and two pictures wait by the door. Touching one says its word; only the rhyming one finishes the line.
+ * Rain and Twinkle rhyme inside each friend's verse; Ring rhymes once, in its opening ("rosie", "posies").
+ */
+export interface Rhyme {
+  /** In each friend's verse, or once at the end of the opening. */
+  where: 'verse' | 'opening';
+  /** The word sung just before that it rhymes with, as its sung syllables (they end the section's first phrase). */
+  earlier: { word: string; syllables: readonly string[] };
+  /** The word that finishes the line: its sung syllables (the section's last notes), and its picture, which says this word when touched. */
+  word: string;
+  syllables: readonly string[];
+  picture: Picture;
+  /** The other picture and its word, which does not rhyme. */
+  decoy: { word: string; picture: Picture };
+}
+
+export const RHYMES: Partial<Record<TuneId, Rhyme>> = {
+  rain: { where: 'verse', earlier: { word: 'away', syllables: ['a', 'way'] }, word: 'play', syllables: ['play'], picture: 'ball', decoy: { word: 'apple', picture: 'apple' } },
+  twinkle: { where: 'verse', earlier: { word: 'high', syllables: ['high'] }, word: 'sky', syllables: ['sky'], picture: 'sky', decoy: { word: 'moon', picture: 'moon' } },
+  ring: { where: 'opening', earlier: { word: 'rosie', syllables: ['ro', 'sie'] }, word: 'posies', syllables: ['po', 'sies'], picture: 'posies', decoy: { word: 'bun', picture: 'bun' } },
+};
+
+/**
+ * How each word in `RHYMES` sounds from its stressed vowel to the end, in the CMU Pronouncing Dictionary's ARPAbet
+ * (written by hand: "high" and "sky" share a sound but no spelling). Two words rhyme when these match.
+ */
+export const RIMES: Record<string, string> = {
+  away: 'EY',
+  play: 'EY',
+  high: 'AY',
+  sky: 'AY',
+  rosie: 'OW Z IY',
+  posies: 'OW Z IY Z',
+  apple: 'AE P AH L',
+  moon: 'UW N',
+  bun: 'AH N',
+};
+
+/** Whether two words rhyme: the same sound from the stressed vowel on, letting one end in a plural "s" (rosie, posies). */
+export function rhymes(a: string, b: string): boolean {
+  const x = RIMES[a];
+  const y = RIMES[b];
+  if (x === undefined || y === undefined) return false;
+  return x === y || x === `${y} Z` || y === `${x} Z`;
+}
+
+/** The tunes *Which one finishes it?* sings, in `TUNES` order. */
+export const RHYME_TUNES: readonly Tune[] = TUNES.filter((t) => RHYMES[t.id]);
+
+/** Which tune a *Which one finishes it?* round sings: a seeded draw among the tunes with a rhyme to finish. */
+export const pickRhymeTune = (rng: Rng): Tune => rng.pick([...RHYME_TUNES]);
+
+/** Which side the rhyming picture stands on at each of a round's gaps (0 left, 1 right): drawn from the seed after the tune and friends. */
+export const rhymeSides = (rng: Rng, gaps: number): (0 | 1)[] => Array.from({ length: gaps }, () => (rng.chance(0.5) ? 1 : 0));
+
 export interface SingPlan {
   /** How many animals come to the farm. */
   verses: number;
@@ -350,17 +420,21 @@ export interface SingPlan {
   full: boolean;
   /** *Finish the line*: the song pauses before each verse's last word, its picture waits by the door, and a touch sings it. */
   gap: boolean;
+  /** *Which one finishes it?*: the song pauses before the rhyming word, and she picks its picture from two. */
+  rhyme: boolean;
 }
 
 export const PLANS: readonly SingPlan[] = [
-  { verses: 1, invite: false, each: false, chooseTune: false, full: false, gap: false },
-  { verses: 2, invite: false, each: false, chooseTune: false, full: false, gap: false },
-  { verses: 2, invite: true, each: false, chooseTune: false, full: false, gap: false },
-  { verses: 3, invite: true, each: true, chooseTune: false, full: false, gap: false },
-  { verses: 3, invite: true, each: true, chooseTune: true, full: false, gap: false },
-  { verses: 2, invite: true, each: true, chooseTune: true, full: true, gap: false },
+  { verses: 1, invite: false, each: false, chooseTune: false, full: false, gap: false, rhyme: false },
+  { verses: 2, invite: false, each: false, chooseTune: false, full: false, gap: false, rhyme: false },
+  { verses: 2, invite: true, each: false, chooseTune: false, full: false, gap: false, rhyme: false },
+  { verses: 3, invite: true, each: true, chooseTune: false, full: false, gap: false, rhyme: false },
+  { verses: 3, invite: true, each: true, chooseTune: true, full: false, gap: false, rhyme: false },
+  { verses: 2, invite: true, each: true, chooseTune: true, full: true, gap: false, rhyme: false },
   // Level 7 sits between 3 and 4 for toddler and preschool (by `order`): two seeded friends, a pause before each one's last word.
-  { verses: 2, invite: false, each: false, chooseTune: false, full: false, gap: true },
+  { verses: 2, invite: false, each: false, chooseTune: false, full: false, gap: true, rhyme: false },
+  // Level 8 follows 7 for preschool and tops pre-K's ladder (by `order`): two seeded friends, a rhyming picture to pick.
+  { verses: 2, invite: false, each: false, chooseTune: false, full: false, gap: false, rhyme: true },
 ];
 
 /** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */

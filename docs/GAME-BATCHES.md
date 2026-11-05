@@ -1583,7 +1583,7 @@ Proof: new-level tier with `order`: typecheck, unit tests including order, lands
 
 ### sing-along-barn 3: Level 8 Which one finishes it?
 
-- **`sing-along-barn`, Level 8 *Which one finishes it?* (dive slice 3)**, after batch sing-along-barn 2 (shares `LEVELS` and the gap table; new interaction): two pictures at the pause, only the rhyming word finishes the line, a non-rhyming pick is a miss. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
+- **`sing-along-barn`, Level 8 *Which one finishes it?* (dive slice 3)** (**built 2026-11-05**, branch `claude/sing-along-which-finishes`, PR #1264), after batch sing-along-barn 2 (shares `LEVELS` and the gap table; new interaction): two pictures at the pause, only the rhyming word finishes the line, a non-rhyming pick is a miss. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
 
 Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
 

@@ -468,9 +468,13 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'Tap the song you want, from ten cards in two rows. Then tap anywhere to sing the opening; at the end of each verse, tap the friend you want to sing next. The friends who have sung wait in the row and only say hello.' },
       { from: 6, to: 6, text: 'Tap a song from ten cards (Old MacDonald sings its whole verse). Tap anywhere to sing; after each verse, tap who sings next. Old MacDonald adds "With a moo-moo here and a moo-moo there" and the first line again.' },
       { from: 7, to: 7, text: 'Tap anywhere to sing. Before the last word of each friend\'s verse the song stops and the word\'s picture (a bun, a ball, a spout, a night sky) waits by the barn door; then any tap sings the word. With a grown-up, let her say it first.' },
+      { from: 8, to: 8, text: 'Tap anywhere to sing. Before the rhyming word the song stops, two pictures wait by the barn and the pet says the line. Tap the one that rhymes ("away … play": the ball) to sing it; a tap elsewhere repeats the line.' },
     ],
     finish: 'The round ends after the last verse of the last friend. Each round sings one song.',
-    note: 'There is no wrong tap. Tapping fast or slowly only changes how the song is sung, and the animals answer on their own.',
+    note: [
+      { from: 1, to: 7, text: 'There is no wrong tap. Tapping fast or slowly only changes how the song is sung, and the animals answer on their own.' },
+      { from: 8, to: 8, text: 'The other picture bounces back with a boing and the pet says the rhyme; it counts a miss. A second at one stop glows the rhyming picture (a hint).' },
+    ],
   },
   'jelly-drums': {
     goal: 'Tap the jelly drums to make music, then copy tunes.',
