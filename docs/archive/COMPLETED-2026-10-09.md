@@ -2965,7 +2965,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--shape-buddie
 
 [PR #1256](https://github.com/rjdunlap/neo/pull/1256), `claude/shape-buddies-one-friend`: [dive slice 5](../deep-dives/shape-buddies.md#build-slices-in-order). The preschool opening: one friend, a fixed wooden plank already spanning the gap (scenery, not selectable or draggable) and a cup at the catch. Flat or Slope at the catch says `buddies.oneRoll`; plain or empty says `buddies.cup`; the start line is `buddies.start7`. Misses always 0, at most one hint. Bands are now preschool `{7, 7}`, pre-K `{min 1, max 7, order [7, 1, 2, 3, 4, 5]}` with `entryLevels [7]`, school 1–6 unchanged; Shape Buddies joins Tinker Lab's preschool page (page 2, fits). The how-to card's goal reads "Change paper friends…" with a from-7-to-7 step and the note "Two friends can swap jobs." Four rule tests for level 7 and a registry test for bands, order, entry and landing.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--shape-buddies-level-7-one-friend-one-job-shape-buddies-batch-5).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--shape-buddies-level-7-one-friend-one-job-shape-buddies-batch-5).
 
 ## Shape Buddies level 8 Your friend, my friend (shape-buddies batch 6, 2026-11-05)
 
