@@ -607,7 +607,7 @@ Proof: new-interaction tier: typecheck, unit tests, one scripted play of level 1
 
 ### light-lab 6: Level 12 Split the sunbeam
 
-- **`light-lab`, level 12 *Split the sunbeam* (dive slice 6)**, after batch 5 (school order [2,3,4,11,5..10,12]; school top only): a half-mirror sends the beam both straight on and turned, so she tilts mirrors to light both arms. [Definition](definitions/light-lab-split.md), [dive](deep-dives/light-lab.md#build-slices-in-order)
+- **`light-lab`, level 12 *Split the sunbeam* (dive slice 6)** (built 2026-11-04, [PR #1229](https://github.com/rjdunlap/neo/pull/1229)), after batch 5 (school order [2,3,4,11,5..10,12]; school top only): a half-mirror sends the beam both straight on and turned, so she tilts mirrors to light both arms. [Definition](definitions/light-lab-split.md), [dive](deep-dives/light-lab.md#build-slices-in-order)
 
 Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
