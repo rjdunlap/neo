@@ -107,8 +107,8 @@
 
 ## Secret Code (dive, 2026-11-01; proposed, levels not yet built)
 
-- [ ] Once level 10 is built: does a four-year-old read the gray cross as "not this one" without the card?
-- [ ] Once level 9 is built: does marking the pet's try feel like being the boss of the door, or like a test?
+- [ ] Level 10 is built (2026-11-05): does a three-to-four-year-old read the gray cross as "not this one" without the card?
+- [ ] Level 9 is built: does marking the pet's try feel like being the boss of the door, or like a test?
 - [ ] On an iPad in daylight: are the faint hint stones noticed?
 
 ## Rhyme Time (dive, 2026-11-01; proposed, nothing built)

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { stepLevel } from '../../progress/difficulty';
+import { landing, stepLevel } from '../../progress/difficulty';
 import { secretCode } from './index';
-import { contradictsClues, detectiveDoor, candidates, DOORS, doorKinds, ignoredClues, demoCode, madeCode, makeCode, nextMark, nextMove, petTries, petTry, PLANS, planFor, rowsThatFit, ruledOut, score, suggestion, visibleRows, wrongMarks, type Guess, type Mark } from './logic';
+import { contradictsClues, crossedOut, detectiveDoor, candidates, DOORS, doorKinds, ignoredClues, demoCode, madeCode, makeCode, nextMark, nextMove, petTries, petTry, PLANS, planFor, rowsThatFit, ruledOut, score, suggestion, visibleRows, wrongMarks, type Guess, type Mark } from './logic';
 
 describe('Secret Code', () => {
   it('marks right places green, misplaced stones yellow (never more than are missing), and the rest gray', () => {
@@ -281,5 +281,54 @@ describe('Detective doors', () => {
     expect(stepLevel(9, 1, secretCode.levels('school'))).toBe(5);
     expect(stepLevel(5, -1, secretCode.levels('school'))).toBe(9);
     expect(secretCode.describeLevel(9)).toMatch(/Be the door/);
+  });
+
+  it('level 10 opens preschool: one slot, three stones, and every door opens within three tries', () => {
+    const plan = planFor(10);
+    expect(plan).toMatchObject({ slots: 1, colors: 3, yellow: false, codes: 3, oneSlot: true });
+    for (let seed = 1; seed <= 200; seed++) {
+      const code = makeCode(plan, new Rng(seed));
+      // The reasoning bot, and any child who never retries a crossed-out stone, opens it within three tries.
+      const history: Guess[] = [];
+      for (;;) {
+        const move = nextMove(plan, history, code, [null]);
+        expect('stone' in move).toBe(true);
+        const stone = (move as { stone: number }).stone;
+        expect(crossedOut(plan, history).has(stone)).toBe(false);
+        const marks = score(code, [stone], false);
+        history.push({ stones: [stone], marks });
+        if (marks[0] === 'green') break;
+      }
+      expect(history.length).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it('level 10: a gray crosses out exactly that stone, and only on One slot', () => {
+    const plan = planFor(10);
+    for (const code of [[0], [1], [2]]) {
+      const history: Guess[] = [];
+      for (const stone of [0, 1, 2]) {
+        if (stone === code[0]) continue;
+        history.push({ stones: [stone], marks: score(code, [stone], false) });
+        const out = crossedOut(plan, history);
+        expect([...out].sort()).toEqual(history.map((h) => h.stones[0]).sort());
+        expect(out.has(code[0])).toBe(false);
+      }
+      // The hidden stone is never crossed out, so the glowing hint always leads to the door.
+      expect(candidates(plan, history)).toEqual([code]);
+    }
+    expect(crossedOut(planFor(1), [{ stones: [0, 1], marks: ['gray', 'gray'] }]).size).toBe(0);
+  });
+
+  it('preschool plays 10 then 1; pre-K and school leave 10 out and a carried 10 lands on their first level', () => {
+    const pre = secretCode.levels('preschool');
+    expect(pre).toEqual({ min: 1, max: 10, order: [10, 1] });
+    expect(secretCode.bands).toContain('preschool');
+    expect(secretCode.entryLevels).toEqual([10]);
+    expect(stepLevel(10, 1, pre)).toBe(1);
+    expect(stepLevel(1, -1, pre)).toBe(10);
+    expect(landing(10, secretCode.levels('prek'), secretCode.entryLevels)).toBe(1);
+    expect(landing(10, secretCode.levels('school'), secretCode.entryLevels)).toBe(2);
+    expect(secretCode.describeLevel(10)).toMatch(/One slot/);
   });
 });

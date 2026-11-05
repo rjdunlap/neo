@@ -23,10 +23,12 @@ export interface CodePlan {
   codes: number;
   /** *Be the door*: she makes the code and marks the pet's tries; the pet does the cracking. */
   maker?: boolean;
+  /** *One slot*: a gray crosses that stone out in the tray, and trying a crossed-out stone is the only miss. */
+  oneSlot?: boolean;
   name: string;
 }
 
-/** Plans by level ID. ID 10 is reserved for the preschool *One slot* (not built yet). */
+/** Plans by level ID. ID 10, *One slot*, is the preschool opening, easier than level 1. */
 export const PLANS: Readonly<Record<number, CodePlan>> = {
   1: { slots: 2, colors: 3, yellow: false, repeats: false, codes: 3, name: 'Two slots, three colors; each slot says yes or no' },
   2: { slots: 3, colors: 4, yellow: false, repeats: false, codes: 3, name: 'Three slots, four colors; each slot says yes or no' },
@@ -37,11 +39,12 @@ export const PLANS: Readonly<Record<number, CodePlan>> = {
   7: { slots: 3, colors: 4, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 2, max: 3 }, name: 'Detective door: work out the one code that fits the shown guesses' },
   8: { slots: 4, colors: 5, yellow: true, repeats: true, codes: 2, name: 'Four slots, five colors, and one color used twice' },
   9: { slots: 3, colors: 4, yellow: true, repeats: true, codes: 2, maker: true, name: 'Be the door: she makes a code and marks the pet’s tries green, yellow or gray' },
+  10: { slots: 1, colors: 3, yellow: false, repeats: false, codes: 3, oneSlot: true, name: 'One slot, three stones: which stone is behind the door? A gray cross rules a stone out' },
   11: { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 3, max: 3 }, name: 'A bigger detective door: four slots, five colors, and three shown guesses' },
 };
 
-/** The plan for a level; an unbuilt or out-of-range ID falls back to the nearest built one below it (above 11, to 11). */
-export const planFor = (level: number): CodePlan => PLANS[level] ?? (level > 11 ? PLANS[11] : level < 1 ? PLANS[1] : PLANS[8]);
+/** The plan for a level; an out-of-range ID falls back to the nearest end (below 1, to 1; above 11, to 11). */
+export const planFor = (level: number): CodePlan => PLANS[level] ?? (level > 11 ? PLANS[11] : PLANS[1]);
 
 export const STONES: ColorName[] = ['red', 'blue', 'yellow', 'green', 'purple'];
 
@@ -119,6 +122,9 @@ export const visibleRows = (history: Guess[], fit: number) => history.slice(Math
 export function ignoredClues(plan: CodePlan, history: Guess[], guess: number[]): number[] {
   return guess.map((s, i) => (ruledOut(plan, history, i).has(s) ? i : -1)).filter((i) => i >= 0);
 }
+
+/** *One slot*: the tray stones a gray has crossed out on this door (tapping one is the level's only miss). */
+export const crossedOut = (plan: CodePlan, history: Guess[]): Set<number> => (plan.oneSlot ? ruledOut(plan, history, 0) : new Set());
 
 /** Every code still possible after these guesses. */
 export function candidates(plan: CodePlan, history: Guess[]): number[][] {
