@@ -158,6 +158,8 @@ class TreasureMap implements Game {
   private walking = false;
   /** Level 7: the digs so far and the distance each one said. */
   digs: FarDig[] = [];
+  /** Level 7: squares already crossed out, so a second tap there repeats the reason and is not a second miss. */
+  private ruledOut: Square[] = [];
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -346,6 +348,7 @@ class TreasureMap implements Game {
     this.card = { ...EMPTY_CARD };
     this.atEdge = false;
     this.digs = [];
+    this.ruledOut = [];
     // The card names one chest, and each hunt hides a new one, so the last find's chest and tries are cleared.
     if (this.plan.mode === 'write' || this.plan.mode === 'far') this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.resize(this.view);
@@ -478,13 +481,17 @@ class TreasureMap implements Game {
       this.drawStack(guess, said);
       sfx.pop();
       await this.ctx.say('map.farsteps', { steps: stepsWord(said) });
+    } else if (this.ruledOut.some((s) => s.col === guess.col && s.row === guess.row)) {
+      sfx.tick();
+      await this.ctx.say('map.farout', { got: stepsWord(distance(guess, against.square)), sq: name(against.square), said: stepsWord(against.said) });
     } else {
+      this.ruledOut.push(guess);
       this.misses++;
       this.wrongs++;
       sfx.boing();
       const at = this.cellAt(guess);
       this.marks.addChild(new Graphics().moveTo(at.x - 14, at.y - 14).lineTo(at.x + 14, at.y + 14).moveTo(at.x + 14, at.y - 14).lineTo(at.x - 14, at.y + 14).stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }));
-      await this.ctx.say('map.farout', { got: stepsWord(distance(guess, against.square)), said: stepsWord(against.said) });
+      await this.ctx.say('map.farout', { got: stepsWord(distance(guess, against.square)), sq: name(against.square), said: stepsWord(against.said) });
       if (this.wrongs >= 2 && !this.hinting) {
         this.hinting = true;
         this.hints++;

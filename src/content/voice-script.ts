@@ -2226,7 +2226,7 @@ export const SCRIPT = {
   'map.far': ['The chest is hidden! Dig anywhere, and I will tell you how many steps away it is, across and up.'],
   'map.farsteps': ['{steps} away.', 'That one is {steps} away.'],
   'map.faragain': ['You dug there already. It said {steps}.'],
-  'map.farout': ['That square is {got} from the dig that said {said}. The chest cannot be there.'],
+  'map.farout': ['That square is {got} from your dig at {sq}, and that dig said {said}. The chest cannot be there.'],
   'map.farhint': ['The glowing squares fit every dig so far. Try one of them!'],
   'map.found': ['Treasure!', 'You found it!', 'X marks the spot!'],
   'map.placed': ['There it is!', 'Right on the map!'],

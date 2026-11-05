@@ -1856,6 +1856,8 @@ async function woodsBatch() {
         assert.deepEqual(await counts(), [0, 0], 'fitting digs are exploring, never misses');
         await dig(plan.out[0]);
         assert.deepEqual(await counts(), [1, 0], 'a ruled-out dig is a miss');
+        await dig(plan.out[0]);
+        assert.deepEqual(await counts(), [1, 0], 'a second tap on a crossed-out square repeats the reason, not a second miss');
         await dig(plan.a);
         assert.deepEqual(await counts(), [1, 0], 'digging a dug square again only repeats its distance');
         await dig(plan.out[1]);
