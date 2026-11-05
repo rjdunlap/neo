@@ -1407,6 +1407,8 @@ Proof: existing-interaction tier: typecheck, the game's rule tests with the re-p
 
 ### rhyme-time 2: Level 8 Silly pairs
 
+Built 2026-11-04, [PR #1236](https://github.com/rjdunlap/neo/pull/1236); [build note](archive/COMPLETED-2026-10-09.md#rhyme-time-level-8-silly-pairs-rhyme-time-batch-2-2026-11-04). No longer eligible for dispatch.
+
 - **`rhyme-time`, Level 8 *Silly pairs* (dive slice 2)**, after batch rhyme-time 1 (its three new pairs; new interaction): a place in the middle and three riders below, the one that rhymes hops in; pre-K `order: [1, 8, 2, 3, 5]`, school `order: [2, 8, 3, 4, 5, 6, 7]`. [Dive](deep-dives/rhyme-time.md#build-slices-in-order)
 
 Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the browser harness's Rhyme Time case, the README row and `docs/GAMES.md`.
