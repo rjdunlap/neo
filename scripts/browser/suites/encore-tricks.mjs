@@ -37,7 +37,9 @@ async function encoreTricks() {
     assert.deepEqual(await page.evaluate(()=>{const r=kit.store.stats('quick-tricks').history.at(-1);return [r.level,r.misses,r.hints];}),[level,4,2]);
     await page.setViewportSize({width:1024,height:768});log(`Quick Tricks ${level}: parcel turns, picnic places with no yellow arrow, berry totals, undo, hints, the bow and one saved sticker passed`);
   }
-  if(Number(process.env.TO_LEVEL||7)>=7)await twoAtOnce();
+  const from=Number(process.env.FROM_LEVEL||1),to=Number(process.env.TO_LEVEL||8);
+  if(from<=7&&to>=7)await twoAtOnce();
+  if(to>=8)await tinyShow();
 }
 
 // Level 7, Two at once (portrait): leaves kept partly up, both up with someone wet (the move line and the glow, one hint), the fix;
@@ -99,6 +101,41 @@ async function twoAtOnce() {
   assert.deepEqual(await page.evaluate(()=>{const r=kit.store.stats('quick-tricks').history.at(-1);return [r.level,r.misses,r.hints];}),[7,3,2]);
   await page.setViewportSize({width:1024,height:768});
   log('Quick Tricks 7: leaves kept partly up, the move line and glow, two wrong socks and the glow, a plank lifted to the other gap, the bow and one saved sticker passed');
+}
+
+// Level 8, A tiny show (toddler, portrait): two tricks only; a leaf dropped in front of the friend floats up and keeps them dry,
+// a stretch let go short springs back free, one let go just past halfway snaps across; nothing counts; the bow without the monster.
+async function tinyShow() {
+  await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);
+  await launch('quick-tricks',8,'Mia','toddler');
+  await page.evaluate(async()=>{
+    const g=neo.scene.game;
+    const drop=async(node,x,y)=>{await kit.dragTo(node,g.layer.toGlobal({x,y:y+40}),18);await kit.sleep(500);};
+    const next=async()=>{await kit.until(()=>g.waiting,8000);kit.tapOn(g.next);await kit.sleep(600);};
+    await kit.until(()=>g.trick==='umbrella'&&!g.busy,10000);
+    if(g.tricks.join()!=='umbrella,bridge'||g.leaves.length!==1)throw new Error(`Tiny show tricks ${g.tricks}`);
+    // In front of the friend, well below their head: dry at once.
+    await drop(g.leaves[0].node,g.friends[0].x+30,g.rainSpan.top+90);
+    if(!await kit.until(()=>g.waiting,8000))throw new Error('A leaf in front of the friend did not keep them dry');
+    if(Math.abs(g.leaves[0].node.x-g.friends[0].x)>2)throw new Error('The leaf did not float up over the friend');
+    await next();
+    await kit.until(()=>g.trick==='bridge'&&!g.busy,10000);
+    const [l]=g.banks,y=g.bankY;
+    // Short of halfway: springs back, free.
+    await drop(g.handle.node,l+100,y);await kit.until(()=>!g.springing,3000);
+    if(g.waiting||g.misses!==0)throw new Error(`Short stretch: waiting ${g.waiting}, misses ${g.misses}`);
+    // Just past halfway: it snaps across.
+    await drop(g.handle.node,l+200,y);
+    if(!await kit.until(()=>g.waiting,8000))throw new Error(`A stretch past halfway did not snap across (length ${g.bridgeLength})`);
+    if(g.misses!==0||g.hints!==0)throw new Error(`Tiny show scores ${g.misses}/${g.hints}`);
+  });
+  await page.waitForFunction(()=>neo.scene.game.waiting,null,{timeout:10000});await tap('neo.scene.game.next');
+  await page.waitForFunction(()=>neo.scene.game.finished&&neo.scene.game.friends.length===1);
+  await page.waitForTimeout(700);await screenshot('quick-tricks-tiny-show-bow');
+  await finished('quick-tricks');
+  assert.deepEqual(await page.evaluate(()=>{const r=kit.store.stats('quick-tricks').history.at(-1);return [r.level,r.misses,r.hints];}),[8,0,0]);
+  await page.setViewportSize({width:1024,height:768});
+  log('Quick Tricks 8: a leaf dropped in front of the friend kept them dry, a short stretch sprang back free, one past halfway snapped across, no misses, the bow and one saved sticker passed');
 }
 
 return { encoreTricks };

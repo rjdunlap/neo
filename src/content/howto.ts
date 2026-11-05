@@ -1995,6 +1995,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       'Do each trick as it appears: drag, tap or turn what is shown.',
       'Tap the green arrow to move on to the next trick.',
+      { from: 8, to: 8, text: 'A tiny show of two tricks: a leaf dropped anywhere over the friend, even in front, floats up and keeps them dry, and the bridge snaps across once it is stretched past halfway. Nothing counts as a miss; the pet says the trick again after a quiet moment.' },
       { from: 1, to: 1, text: 'A leaf dropped below the friend is a free try: the rain shows it is too low.' },
       { from: 4, to: 6, text: 'At the picnic the last bowl finishes that trick by itself; only the berries are checked with the yellow arrow.' },
       { from: 7, to: 7, text: 'Two of each: two leaves for three friends, two lost socks, two gaps to bridge. A leaf over only some friends stays up, and a leaf or plank already placed can be dragged off again for free.' },

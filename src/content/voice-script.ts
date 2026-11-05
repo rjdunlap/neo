@@ -1993,6 +1993,7 @@ export const SCRIPT = {
   'bumper.done': ['The whole garden is blooming!'],
   'game.quick-tricks': ['Quick tricks!'],
   'tricks.start': ['Welcome to the show! Three quick tricks.'],
+  'tricks.start-two': ['Welcome to the show! Two quick tricks.'],
   'tricks.umbrella-bunny': ['Rain! Keep Bunny dry. Hold the leaf up high!'],
   'tricks.umbrella-duck': ['Rain! Keep Duck dry. Hold the leaf up high!'],
   'tricks.umbrella-cat': ['Rain! Keep Cat dry. Hold the leaf up high!'],

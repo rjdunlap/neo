@@ -25,6 +25,13 @@ export interface TricksPlan {
   countBelow: boolean;
   /** Two at once (level 7): two leaves, two lost socks and two gaps, each trick done in two steps that are kept as they land. */
   two?: boolean;
+  /** The tricks in this show, when not all three (A tiny show plays the leaf and the bridge only). */
+  tricks?: Trick[];
+  /**
+   * A tiny show (level 8): a leaf anywhere over the friend's column keeps them dry, above or in front, and a stretch let go past
+   * halfway snaps across, so nothing she does can count as a miss.
+   */
+  tiny?: boolean;
   name: string;
 }
 
@@ -33,10 +40,14 @@ export const PLANS: TricksPlan[] = [
   { friends: 1, socks: 3, patterns: false, bridge: 'stretch', countShort: true, countBelow: true, name: 'Leaf up high, three socks to choose from, stretch all the way across' },
   { friends: 2, socks: 4, patterns: true, bridge: 'choose', countShort: true, countBelow: true, name: 'Which leaf covers two, socks with the same color and pattern, a plank long enough' },
   { friends: 3, socks: 5, patterns: true, bridge: 'two', countShort: true, countBelow: true, two: true, name: 'Two at once: two leaves for three friends, two lost socks, two gaps to bridge' },
+  { friends: 1, socks: 2, patterns: false, bridge: 'stretch', countShort: false, countBelow: false, tricks: ['umbrella', 'bridge'], tiny: true, name: 'A tiny show: a leaf over a friend, a bridge stretched past halfway' },
 ];
 
-/** The first show's levels: 1 to 3, then the remix at level 7 (levels 4 to 6 are the second show). */
-export const planFor = (level: number) => (level >= 7 ? PLANS[3] : PLANS[Math.min(3, Math.max(1, level)) - 1]);
+/** The first show's levels: 1 to 3, the remix at level 7 and the tiny show at level 8 (levels 4 to 6 are the second show). */
+export const planFor = (level: number) => (level === 8 ? PLANS[4] : level >= 7 ? PLANS[3] : PLANS[Math.min(3, Math.max(1, level)) - 1]);
+
+/** The tricks a show plays, in order. */
+export const tricksFor = (plan: TricksPlan): Trick[] => plan.tricks ?? TRICKS;
 
 // ----- Umbrella Up -----
 
@@ -76,6 +87,9 @@ export function judgeLeaf(leaf: Leaf, x: number, y: number, friends: readonly nu
  * some friends), a leaf too low only once the plan says so.
  */
 export const leafMiss = (plan: TricksPlan, drop: LeafDrop) => (drop === 'partly' ? !plan.two : drop === 'below' && plan.countBelow);
+
+/** A tiny show takes a leaf in front of the friend as keeping them dry (it floats up over them); every other plan judges as it lands. */
+export const leafLands = (plan: TricksPlan, drop: LeafDrop): LeafDrop => (plan.tiny && drop === 'below' ? 'dry' : drop);
 
 /** Two at once: a leaf held up at an x offset (or not up yet). */
 export type LeafUp = number | null;
@@ -167,6 +181,8 @@ export const plankLengths = (rng: Rng): number[] => rng.shuffle([GAP * 0.55, GAP
 /** A plank (or a stretched one's end) reaches when it lands on the far bank, with a little to rest on. */
 export const reaches = (length: number) => reachesGap(length, GAP);
 export const reachesGap = (length: number, gap: number) => length >= gap + 30;
+/** Whether a stretched plank let go at this length snaps across: all the way over, or at a tiny show past halfway. */
+export const stretchReaches = (plan: TricksPlan, length: number) => (plan.tiny ? length > GAP / 2 : reaches(length));
 
 /**
  * Two at once: one river with a narrow and a wide gap either side of a little island. The long plank reaches either gap, the middle
