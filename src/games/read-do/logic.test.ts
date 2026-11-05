@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
 import { WORD_LINES, readDo } from './index';
-import { ANIMALS, answerIndex, COLORS, makeTasks, matches, meaning, PLANS, WORDS } from './logic';
+import { actionOf, ANIMALS, answerIndex, COLORS, makeSigns, makeTasks, type Marks, matches, meaning, missing, PLANS, planFor, printed, stepFor, VERBS, WORDS } from './logic';
 
 describe('Read & Do', () => {
   it('offers one unambiguous answer and every meaning once, in a seeded fresh arrangement', () => {
@@ -66,7 +66,73 @@ describe('Read & Do', () => {
   });
   it('replays every printed word through the voice script and opens gently at pre-K', () => {
     for (const word of WORDS) expect(SCRIPT[WORD_LINES[word]]).toEqual([word]);
-    expect(readDo.levels('prek')).toEqual({ min: 1, max: 2 });
-    expect(readDo.levels('school')).toEqual({ min: 1, max: 3 });
+    expect(readDo.levels('prek')).toEqual({ min: 1, max: 5, order: [1, 2, 4, 5] });
+    expect(readDo.levels('school')).toEqual({ min: 1, max: 6 });
+  });
+});
+
+describe('Read & Do capital and stop (levels 4–6)', () => {
+  const states: Marks[] = [false, true].flatMap(capital => [false, true].map(stop => ({ capital, stop })));
+  it('names each level and fixes the step it asks for', () => {
+    expect([1, 2, 3].map(stepFor)).toEqual([null, null, null]);
+    expect([4, 5, 6].map(stepFor)).toEqual(['cap', 'stop', 'both']);
+    for (let level = 4; level <= 6; level++) expect(planFor(level)).toBe(PLANS[level - 1]);
+  });
+  it('Send accepts exactly the requested convention: A ignores the stop, B the capital, C needs both in either order', () => {
+    for (const marks of states) {
+      expect(missing('cap', marks)).toBe(marks.capital ? null : 'cap');
+      expect(missing('stop', marks)).toBe(marks.stop ? null : 'stop');
+      expect(missing('both', marks)).toBe(!marks.capital ? 'cap' : !marks.stop ? 'stop' : null);
+    }
+    // C: either order of edits reaches the accepted state, and each intermediate state names a control still needed.
+    for (const order of [['capital', 'stop'], ['stop', 'capital']] as const) {
+      const marks: Marks = { capital: false, stop: false };
+      for (const edit of order) {
+        const gap = missing('both', marks);
+        expect(gap).not.toBeNull();
+        marks[edit] = true;
+      }
+      expect(missing('both', marks)).toBeNull();
+    }
+  });
+  it('opens each sign with only its convention missing, and every sign is completable by one or two edits', () => {
+    for (let level = 4; level <= 6; level++) for (let seed = 1; seed <= 100; seed++) {
+      const step = stepFor(level)!;
+      for (const sign of makeSigns(level, new Rng(seed))) {
+        expect(missing(step, sign.start)).not.toBeNull();
+        expect(sign.start).toEqual({ capital: step === 'stop', stop: step === 'cap' });
+        expect(missing(step, { capital: true, stop: true })).toBeNull();
+      }
+    }
+  });
+  it('draws three clauses from the eight-clause table, never repeating one, with both actions and every animal reachable', () => {
+    const clauses = new Set<string>(), firsts = new Set<string>();
+    for (let level = 4; level <= 6; level++) for (let seed = 1; seed <= 200; seed++) {
+      const signs = makeSigns(level, new Rng(seed));
+      expect(signs).toEqual(makeSigns(level, new Rng(seed)));
+      expect(signs).toHaveLength(PLANS[level - 1].rounds);
+      expect(new Set(signs.map(s => s.animal)).size).toBe(3);
+      expect(new Set(signs.map(s => s.verb))).toEqual(new Set(VERBS));
+      firsts.add(signs[0].words.join(' '));
+      for (const sign of signs) {
+        expect(sign.words).toEqual(['the', sign.animal, sign.verb]);
+        expect(ANIMALS).toContain(sign.animal);
+        expect(sign.words.every(w => WORDS.includes(w))).toBe(true);
+        clauses.add(sign.words.join(' '));
+        expect(actionOf(sign)).toEqual({ kind: 'action', animal: sign.animal, action: sign.verb === 'jumps' ? 'jump' : 'sleep' });
+      }
+    }
+    expect(clauses.size).toBe(8);
+    expect(firsts.size).toBe(8);
+  });
+  it('prints the sign with its case and stop and changes no other word', () => {
+    const [sign] = makeSigns(6, new Rng(3));
+    const rest = sign.words.slice(1).join(' ');
+    expect(printed(sign, { capital: false, stop: false })).toBe(`the ${rest}`);
+    expect(printed(sign, { capital: true, stop: true })).toBe(`The ${rest}.`);
+  });
+  it('has every new spoken line', () => {
+    for (const id of ['read.cap.instruction', 'read.stop.instruction', 'read.both.instruction', 'read.cap.missing', 'read.stop.missing', 'read.ready', 'read.stamp', 'read.jumps', 'read.sleeps'] as const)
+      expect(SCRIPT[id]).toBeDefined();
   });
 });

@@ -897,13 +897,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 1, to: 1, text: 'Choose the hat whose color matches the printed word.' },
       { from: 2, to: 2, text: 'Both pictures show the same animal; choose the big or small one the two-word sign names.' },
       { from: 3, to: 3, text: 'Choose both the animal and its action: the arrow means jump, and Z means sleep.' },
+      { from: 4, to: 4, text: 'The full stop is already on the sign. Tap the first word to give it a big letter, then press Send.' },
+      { from: 5, to: 5, text: 'The big letter is already there. Drag the full stop onto the dotted square at the end, or tap the stop then the square, then press Send.' },
+      { from: 6, to: 6, text: 'Both are missing: tap the first word for a big letter and put the full stop on the dotted square, in either order, then press Send.' },
+      { from: 4, to: 6, text: 'Show it lets the animal act the sign as it stands, with no verdict.' },
     ],
     finish: [
       { from: 1, to: 1, text: 'Choose all three color words to finish.' },
       { from: 2, to: 2, text: 'Choose all three signs, each with a different animal, to finish.' },
       { from: 3, to: 3, text: 'Act out all four sentences to finish.' },
+      { from: 4, to: 6, text: 'Send all three signs to finish.' },
     ],
-    note: 'A wrong picture plays out its meaning, then the sign is read word by word. After two misses on a sign, its answer glows. Listening support does not establish independent reading.',
+    note: [
+      { from: 1, to: 3, text: 'A wrong picture plays out its meaning, then the sign is read word by word. After two misses on a sign, its answer glows. Listening support does not establish independent reading.' },
+      { from: 4, to: 6, text: 'Only a Send without the big letter or full stop this sign asks for counts as a miss, and the pet names where a sentence starts or stops. After two on a sign, the control she needs glows (one hint); Show a hint in the pause sheet does the same. Toggling, moving the stop, listening and Show it are never counted.' },
+    ],
   },
   'number-trails': {
     goal: 'Draw a numeral by following the firefly, then meet that many things and count them.',

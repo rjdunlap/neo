@@ -1,6 +1,6 @@
 # Read & Do — Capital and stop A–C: get a sign ready for a reader
 
-SS1 definition, 2026-10-22, [PR #839](https://github.com/rjdunlap/neo/pull/839), branch `claude/define-read-do-capital-stop`. Based on the [spelling-sentences study](../deep-dives/subjects/spelling-sentences.md#first-modes-proposed-ladder-ss1-capital-and-stop) and the [keyboarding study's KE3 handoff](../deep-dives/subjects/keyboarding-editing.md#candidates). **Docs only; no game change, registration, code or device evidence.** The rules below are a proposal for developer review. Build waits on the gates listed under [Settled and open](#settled-and-open).
+SS1 definition, 2026-10-22, [PR #839](https://github.com/rjdunlap/neo/pull/839), branch `claude/define-read-do-capital-stop`. Based on the [spelling-sentences study](../deep-dives/subjects/spelling-sentences.md#first-modes-proposed-ladder-ss1-capital-and-stop) and the [keyboarding study's KE3 handoff](../deep-dives/subjects/keyboarding-editing.md#candidates). **Built 2026-11-04 as levels 4–6 of Read & Do ([PR #1234](https://github.com/rjdunlap/neo/pull/1234), [build note](../archive/COMPLETED-2026-10-09.md#read--do-capital-and-stop-levels-46-read-do-batch-2-2026-11-04)); device speech and child comprehension remain unjudged.** The rest of this paragraph describes the definition as written: docs only; no game change, registration, code or device evidence.** The rules below are a proposal for developer review. Build waits on the gates listed under [Settled and open](#settled-and-open).
 
 ## Scope and identity
 
