@@ -322,6 +322,7 @@ class FarLights implements Game {
 
   private async finishWalk() {
     this.busy = true;
+    this.hold(true);
     const e = this.epoch;
     await this.ctx.tw.wait(1);
     if (!this.alive || e !== this.epoch) return;
@@ -414,15 +415,23 @@ class FarLights implements Game {
     this.tally.hint();
     void this.say('far.hint');
     if (this.stops[lane] === to) return void this.pulse(light);
+    // The glide holds the lights: a finger cannot grab one (and kill the glide) until it lands.
     this.busy = true;
+    this.hold(true);
     const e = this.epoch;
     void this.ctx.tw.to(light, { x: l.stopX[to - 1] }, { duration: 0.8, ease: ease.inOutSine }).then(() => {
       if (!this.alive || e !== this.epoch) return;
       this.cross(lane, this.live[lane], to);
       this.busy = false;
+      this.hold(false);
       this.rest(lane, to);
       if (!this.busy) this.settle();
     });
+  }
+
+  /** Hold every draggable light still (a hint's glide, the finish). */
+  private hold(on: boolean) {
+    for (const d of this.drags) d.enabled = !on;
   }
 
   private pulse(c: Container) {
@@ -453,6 +462,7 @@ class FarLights implements Game {
     if (this.finished) return;
     this.finished = true;
     this.busy = true;
+    this.hold(true);
     sfx.tada();
     this.ctx.pet.cheer();
     for (const c of [...Object.values(this.stripLights), ...this.windowLights]) if (c) this.bob(c);
