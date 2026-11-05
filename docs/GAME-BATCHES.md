@@ -1679,7 +1679,7 @@ Proof: new-band tier: typecheck, unit tests including the lands, registry band a
 
 ### treasure-map 6: Across the river
 
-- **`treasure-map`, Levels 10–11 *Across the river* and *Mirror twin* (dive slice 7, after batches 1–5)** (defined 2026-11-05; new interaction; school): a river and a road as the axes with squares named in words, then the mirror across either; IDs follow 9. [Dive](deep-dives/treasure-map.md#levels-1011-across-the-river-defined-2026-11-05)
+- **`treasure-map`, Levels 10–11 *Across the river* and *Mirror twin* (dive slice 7, after batches 1–5)** (built 2026-11-05; new interaction; school): a river and a road as the axes with squares named in words, then the mirror across either; IDs follow 9. [Dive](deep-dives/treasure-map.md#levels-1011-across-the-river-defined-2026-11-05)
 
 Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, the README row.
 
