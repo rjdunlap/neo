@@ -2517,7 +2517,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--rhyme-time-l
 
 [PR #1239](https://github.com/rjdunlap/neo/pull/1239), `claude/rhyme-time-baskets`: [dive slice 4](../deep-dives/rhyme-time.md#build-slices-in-order). New mode as level 10, school only. School range is now `{ min: 2, max: 10, order: [2, 8, 3, 4, 5, 6, 7, 10] }`; level 9 (the preschool opening) is still unbuilt, and `planFor(10)` is a separate `BASKETS` plan so level 9 can later take `PLANS[8]`. Three woven baskets with a key picture on a badge and six pictures (two per family, three-word families only, no family repeated across the round's two trays) dragged through `src/engine/drag.ts` to the nearest basket within 180 units. Wrong basket: the picture floats home, a miss, "{word} does not rhyme with {key}"; the second miss on a picture glows its basket and that picture (one hint per picture). A drop elsewhere and tapping a basket (says its key) are free; picking a picture up says its word. Right: the picture shrinks in, "{key}, {word}! They rhyme!"; an empty tray has each basket sing its family. Two trays per round. New voice lines `rhyme.baskets` (instruct, lists the keys), `rhyme.basketNo`, `rhyme.basketHint`, `rhyme.basketSong`; level-10 how-to step, finish and note; the bot drags the next picture to its basket. The `woods` case (`WOODS_ONLY=rhyme FROM_LEVEL=10`) plays school portrait: a wrong basket, a free grass drop, a second wrong for the glow, two trays, score [2,1] and the `rhyme-time-10-hint` screenshot.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--rhyme-time-level-10-rhyme-baskets-rhyme-time-batch-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--rhyme-time-level-10-rhyme-baskets-rhyme-time-batch-4).
 
 ## Rhyme Time level 9, Silly pairs, two to choose (rhyme-time batch 3, 2026-11-04)
 
@@ -2906,6 +2906,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--secret-code-level-10
 [PR #1255](https://github.com/rjdunlap/neo/pull/1255), `claude/secret-code-code-doors`: [dive slice 6](../deep-dives/secret-code.md#build-slices-in-order). `src/games/secret-code/course.ts` freezes five codes (levels 4, 4, 5, 5, 6; the four-colour door hides its fifth stone), each door played under its own level's plan. Par is computed by the fixed reference solver `solverTries` (`nextMove` until the door opens): 2, 3, 3, 4, 4, so 16. A turn of the key is a try, taking a stone back is free; the game's hint marks the run helped; a reload restarts the door and keeps the tries. Badges Finished and On par. New `CourseInfo.reference` flag so the shelf, course page, HUD and result say par (under, on or above) for a par that can be beaten. Voice line `couch.course.codedoors`; suite `couchcodedoors`.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--secret-code-couch-course-the-code-doors-secret-code-batch-6).
+
+## Secret Code level 12 Swap seats (secret-code batch 7, 2026-11-05)
+
+[PR #1258](https://github.com/rjdunlap/neo/pull/1258), `claude/secret-code-swap-seats`: [dive slice 8](../deep-dives/secret-code.md#build-slices-in-order). School only: a seat question (Two of us / Just me), she makes a code and marks the other seat's tries under a lid, then swaps and breaks the other seat's code with levels 3–6 rules; Just me puts the pet in seat 2. Two-seat rounds finish through `swapResult` (never smooth, at least one hint). School `order` [2, 3, 4, 9, 12, 5, 6, 7, 8, 11]; new logic exports `swapResult` and `quickCode`. Deviations from the definition: in Two of us the code panel and lid sit at the upper right (center `v.w-224`, `doorY-210`, full size kept) because the tray and the lidded code show together; `code.sure` and `code.markall` were reworded to fit a pet or a grown-up, plus seven new lines; no spoken cue between seat-2 tries. Side fix: level 9's tray stays hidden while she marks (a resize used to re-show it); Just me's second half instructs `code.repeat`.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--secret-code-level-12-swap-seats-secret-code-batch-7).
 
 ## Sudoku Garden, Fill marks on big beds (batch sudoku-garden 2, 2026-11-05)
 

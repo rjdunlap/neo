@@ -271,3 +271,9 @@
 - [PR #1244](https://github.com/rjdunlap/neo/pull/1244) (tested at the branch head, `claude/shape-buddies-down-and-catch`; Vite `http://localhost:5812`): pre-K and school level 4, level 3's wide gap with a raised near half, only a slope-then-cup spoon catches; three new voice lines; `game-reviewer` found no defects.
 - Ran: typecheck; `npx vitest run src/games/shape-buddies src/content src/games/registry` 226 pass; `BROWSER_SUITE=buddies BUDDIES_ONLY=4` pass (flat path explained with `buddies.downFlat` twice, near half glows, slope catches, one sticker, misses 0, hints 1; portrait screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-buddies FINGER_LEVELS=4` pass in 14.3 s (pre-K).
 - Also ran `npm run build` (passed). Not run: the buddies suite at levels 1–3 (unchanged; level 3 paths reduce to the old values at drop 0), an iPad, device speech or a child ([device check](../DEVICE-CHECKS.md)).
+
+## 2026-11-04 — Rhyme Time level 10 Rhyme baskets (rhyme-time batch 4)
+
+- [PR #1239](https://github.com/rjdunlap/neo/pull/1239) (base `8fc0c5aa` plus the branch; Vite `http://localhost:5464`, `VITE_SPEECH=off`): school level 10, three family baskets and six pictures dragged to the nearest basket within 180 units, two trays; 4 new voice lines, level-scoped how-to step, bot drags to the right basket.
+- Ran: typecheck; full `npm test` 304 files, 4,995 tests pass; `npm run build`; `BROWSER_SUITE=woods WOODS_ONLY=rhyme FROM_LEVEL=10` pass (wrong basket, free grass drop, second wrong for the glow, two trays, score [2,1], `rhyme-time-10-hint` screenshot in school portrait); `BROWSER_SUITE=fingerdemo FINGER_ONLY=rhyme-time FINGER_LEVELS=10` pass in 38.6 s at school. `game-reviewer`: no change needed.
+- Not run: other Rhyme Time levels (unchanged), device speech of the new lines, an iPad or a child ([device check](../DEVICE-CHECKS.md)).

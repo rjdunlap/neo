@@ -14,14 +14,14 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBest, courseDoors, courseMinimum, isCodeCourse } from './course';
-import { contradictsClues, crossedOut, detectiveDoor, demoCode, doorKinds, ignoredClues, makeCode, nextMark, nextMove, petTry, planFor, rowsThatFit, score, STONES, suggestion, visibleRows, wrongMarks, type CodePlan, type DoorKind, type Guess, type Mark } from './logic';
+import { contradictsClues, crossedOut, detectiveDoor, demoCode, doorKinds, ignoredClues, makeCode, nextMark, nextMove, petTry, planFor, quickCode, rowsThatFit, score, STONES, suggestion, swapResult, visibleRows, wrongMarks, type CodePlan, type DoorKind, type Guess, type Mark } from './logic';
 
 const LEVELS: BandLevels = {
   // Level 10, One slot, opens preschool before level 1's two slots.
   preschool: { min: 1, max: 10, order: [10, 1] },
   prek: { min: 1, max: 3 },
-  // Level 9, Be the door, marks yellow before four slots.
-  school: { min: 2, max: 11, order: [2, 3, 4, 9, 5, 6, 7, 8, 11] },
+  // Level 9, Be the door, marks yellow before four slots; level 12, Swap seats, uses 9's plan, so it follows it.
+  school: { min: 2, max: 12, order: [2, 3, 4, 9, 12, 5, 6, 7, 8, 11] },
 };
 
 /** Each stone has a shape as well as a color, so colors never have to be told apart by hue alone. */
@@ -71,6 +71,28 @@ function discArt(mark: Mark | null, r: number): Graphics {
   if (mark) return markArt(mark, r);
   const g = new Graphics().circle(0, 0, r).fill(0xffffff).stroke({ width: 5, color: 0xc9ccd6 });
   return g.circle(0, 0, r * 0.12).fill(0xc9ccd6);
+}
+
+/** Swap seats: the "Two of us" button, a grown-up and a child side by side. */
+function twoArt(): Graphics {
+  const g = new Graphics();
+  g.circle(-14, -20, 11).fill(swatch.blue.fill).roundRect(-28, -6, 28, 34, 12).fill(swatch.blue.fill);
+  return g.circle(16, -6, 9).fill(swatch.green.fill).roundRect(5, 6, 22, 22, 10).fill(swatch.green.fill);
+}
+
+/** Swap seats: the "Just me" button, the pet's face. */
+function petFaceArt(): Graphics {
+  const g = new Graphics().circle(-18, -18, 10).fill(swatch.brown.fill).circle(18, -18, 10).fill(swatch.brown.fill);
+  g.circle(0, 0, 25).fill(swatch.brown.light).stroke({ width: 4, color: swatch.brown.line });
+  g.circle(-9, -4, 4).fill(ink).circle(9, -4, 4).fill(ink);
+  return g.moveTo(-9, 8).quadraticCurveTo(0, 16, 9, 8).stroke({ width: 3, color: ink, cap: 'round' });
+}
+
+/** Swap seats: the wooden lid over a hidden code, the size of the code panel. */
+function lidArt(): Graphics {
+  const g = new Graphics().roundRect(-200, -62, 400, 124, 30).fill(wood.fill).stroke({ width: 5, color: wood.line });
+  g.moveTo(-180, -20).lineTo(180, -20).moveTo(-180, 20).lineTo(180, 20).stroke({ width: 3, color: wood.line, alpha: 0.5 });
+  return g.roundRect(-32, -11, 64, 22, 11).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
 }
 
 function checkArt(): Graphics {
@@ -131,7 +153,8 @@ class SecretCode implements Game {
   private readonly ring = new Graphics();
   private botWait = 1;
   // Be the door: she makes the code, the pet tries, she marks each of its stones.
-  private phase: 'make' | 'mark' | null = null;
+  // Swap seats adds the seat question, seat 2 breaking her code ('break') and seat 2 making one ('make2').
+  private phase: 'seats' | 'make' | 'mark' | 'break' | 'make2' | null = null;
   readonly ready: RoundButton;
   readonly show: RoundButton;
   readonly discs: Container[] = [];
@@ -141,6 +164,14 @@ class SecretCode implements Game {
   private readonly mine = new Container();
   private readonly bubble = new Graphics();
   private readonly glow = new Graphics();
+  /** Whether the stone tray shows (Be the door hides it while she marks). */
+  private trayOn = true;
+  // Swap seats: who plays seat 2, which half (1: she makes and marks; 2: she breaks), and the lid over a hidden code.
+  private seats: 'two' | 'solo' | null = null;
+  private half = 0;
+  readonly together: RoundButton;
+  readonly alone: RoundButton;
+  private readonly lid = lidArt();
   /** One slot: the gray crosses over ruled-out tray stones. */
   private readonly crosses = new Container();
 
@@ -158,10 +189,15 @@ class SecretCode implements Game {
       this.plan = doors[Math.max(0, this.index + 1)]?.plan ?? doors[0].plan;
     }
     // Before any code is drawn; it reads a clone, so the codes are the same with or without it.
-    this.doors = doorKinds(ctx.rng, this.course?.doors.length ?? this.plan.codes);
+    this.doors = doorKinds(ctx.rng, this.course?.doors.length ?? (this.plan.swap ? 2 : this.plan.codes));
     this.key = new RoundButton(keyArt(), swatch.white, 56, () => void this.tryKey());
     this.ready = new RoundButton(checkArt(), swatch.white, 56, () => void this.madeIt());
     this.show = new RoundButton(arrowArt(), swatch.white, 56, () => void this.showPet());
+    this.together = new RoundButton(twoArt(), swatch.white, 56, () => void this.choose('two'));
+    this.alone = new RoundButton(petFaceArt(), swatch.white, 56, () => void this.choose('solo'));
+    this.together.visible = this.alone.visible = false;
+    this.lid.eventMode = 'none';
+    this.lid.visible = false;
     this.ghost.eventMode = 'none';
     this.ring.eventMode = 'none';
     this.mine.eventMode = 'none';
@@ -172,7 +208,8 @@ class SecretCode implements Game {
     this.key.visible = !this.plan.maker;
     this.ready.visible = this.show.visible = false;
     if (this.plan.maker) {
-      ctx.stage.addChild(this.mine, this.bubble, this.glow, this.ready, this.show);
+      ctx.stage.addChild(this.mine, this.lid, this.bubble, this.glow, this.ready, this.show);
+      if (this.plan.swap) ctx.stage.addChild(this.together, this.alone);
       for (let i = 0; i < this.plan.slots; i++) {
         const d = new Container();
         d.hitArea = new Circle(0, 0, 56);
@@ -211,20 +248,27 @@ class SecretCode implements Game {
     const y = this.doorY();
     const w = this.plan.slots * 124 + 60;
     const x0 = this.slotX(0) - 92;
-    drawDoor(this.door, this.doors[Math.min(this.doors.length - 1, Math.max(0, this.index))], x0, y, w);
+    drawDoor(this.door, this.doors[Math.min(this.doors.length - 1, Math.max(0, this.plan.swap ? this.half - 1 : this.index))], x0, y, w);
     this.slots.forEach((s, i) => s.position.set(this.slotX(i), y));
     this.ghost.children.forEach((s, i) => s.position.set(this.slotX(i), y));
     this.key.position.set(x0 + w + 80, y);
     this.ready.position.copyFrom(this.key.position);
     this.show.position.copyFrom(this.key.position);
     this.discs.forEach((d, i) => d.position.set(this.slotX(i), y + 134));
-    this.mine.children.forEach((s, i) => s.position.set(i === 0 ? this.view.w / 2 - 40 : this.slotX(i - 1), v.h - 90));
+    if (this.seats === 'two') {
+      // Two of us shows the tray and the hidden code together, so the code sits up at the right, clear of the tries above the door.
+      this.mine.position.set(v.w - 224, y - 210);
+      this.mine.children.forEach((s, i) => s.position.set(i === 0 ? 0 : (i - 1 - (this.plan.slots - 1) / 2) * 124, 0));
+      this.lid.position.copyFrom(this.mine.position);
+    } else this.mine.children.forEach((s, i) => s.position.set(i === 0 ? this.view.w / 2 - 40 : this.slotX(i - 1), v.h - 90));
+    this.together.position.set(v.w / 2 - 40 - 110, y);
+    this.alone.position.set(v.w / 2 - 40 + 110, y);
     this.bubble.position.set(x0 + w + 60, y - 150);
     this.drawGlow();
     const xs = spread(this.plan.colors, 190, v.w - 110, 124);
     this.tray.forEach((b, i) => {
-      b.visible = i < this.plan.colors;
-      if (b.visible) b.position.set(xs[i], v.h - 90);
+      b.visible = this.trayOn && i < this.plan.colors;
+      if (i < this.plan.colors) b.position.set(xs[i], v.h - 90);
     });
     this.drawCrosses();
     this.layoutPast();
@@ -299,7 +343,8 @@ class SecretCode implements Game {
   /** The ghost finger on the how-to card: tap the stone the clues point to, slot by slot, then the key. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
-    if (this.plan.maker) return this.makerTouch();
+    if (this.phase === 'seats') return { tap: { on: this.together }, pause: 0.6 };
+    if (this.plan.maker || this.phase === 'make2') return this.makerTouch();
     const move = nextMove(this.plan, this.history, this.code, this.guess);
     return 'key' in move ? { tap: { on: this.key }, pause: 0.9 } : { tap: { on: this.tray[move.stone] }, pause: 0.3 };
   }
@@ -310,6 +355,7 @@ class SecretCode implements Game {
     this.wrongs = 0;
     this.hinted = false;
     if (this.index >= (this.course?.doors.length ?? this.plan.codes)) return void this.finale();
+    if (this.plan.swap) return this.askSeats();
     if (this.plan.maker) return this.startMaking();
     const frozen = this.course?.doors[this.index];
     if (frozen) {
@@ -320,26 +366,7 @@ class SecretCode implements Game {
       this.doorTries = 0;
     }
     const door = frozen ? { code: [...frozen.code], history: [] } : this.plan.detective ? detectiveDoor(this.plan, this.ctx.rng) : { code: makeCode(this.plan, this.ctx.rng), history: [] };
-    this.code = door.code;
-    this.history = door.history;
-    this.past.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.shown = [];
-    this.ghost.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.history.forEach((g) => this.addPast(g));
-    this.leaf.clear();
-    this.guess = Array(this.plan.slots).fill(null);
-    this.slotLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.slots.length = 0;
-    for (let i = 0; i < this.plan.slots; i++) {
-      const s = new Container();
-      s.addChild(new Graphics().circle(0, 0, 50).fill(wood.line).circle(0, 0, 44).fill(0x7a5230));
-      s.hitArea = new Circle(0, 0, 58);
-      onTap(s, () => this.clear(i), { cooldown: 150 });
-      this.slots.push(s);
-      this.slotLayer.addChild(s);
-    }
-    this.resize(this.view);
-    this.busy = false;
+    this.setDoor(door.code, door.history);
     if (this.course) {
       this.report();
       return this.courseInstruction();
@@ -351,9 +378,24 @@ class SecretCode implements Game {
     return this.ctx.instruct(this.plan.yellow ? 'code.yellow' : 'code.yesno');
   }
 
+  /** A door to break: its code, any shown clues, empty slots. */
+  private setDoor(code: number[], history: Guess[]) {
+    this.code = code;
+    this.history = history;
+    this.past.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.shown = [];
+    this.ghost.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.history.forEach((g) => this.addPast(g));
+    this.leaf.clear();
+    this.guess = Array(this.plan.slots).fill(null);
+    this.newSlots();
+    this.resize(this.view);
+    this.busy = false;
+  }
+
   /** Tap a stone in the tray: it goes into the first empty slot. */
   private add(color: number) {
-    if (this.busy || this.finished || this.phase === 'mark' || color >= this.plan.colors) return;
+    if (this.busy || this.finished || this.phase === 'mark' || this.phase === 'seats' || color >= this.plan.colors) return;
     if (crossedOut(this.plan, this.history).has(color)) return void this.crossed(color);
     const i = this.guess.indexOf(null);
     if (i < 0) {
@@ -371,13 +413,14 @@ class SecretCode implements Game {
 
   /** Tap a filled slot: the stone goes back. */
   private clear(i: number) {
-    if (this.busy || this.finished || this.phase === 'mark' || this.guess[i] === null) return;
+    if (this.busy || this.finished || this.phase === 'mark' || this.phase === 'seats' || this.guess[i] === null) return;
     this.guess[i] = null;
     this.slots[i].removeChildAt(1).destroy({ children: true });
     sfx.pop(3);
   }
 
   private async tryKey() {
+    if (this.phase === 'break') return void this.seat2Try();
     if (this.busy || this.finished || this.plan.maker) return;
     if (this.guess.includes(null)) {
       sfx.boing();
@@ -521,13 +564,15 @@ class SecretCode implements Game {
     this.guess = Array(this.plan.slots).fill(null);
     this.newSlots();
     this.discs.forEach((d) => (d.visible = false));
-    this.tray.forEach((b) => (b.visible = true));
+    this.trayOn = true;
     this.ready.visible = true;
     this.show.visible = false;
     // The ghost finger's code reads copies of the generator, so the pet's tries are the same with or without it.
-    this.botCode = demoCode(this.plan, this.ctx.rng);
+    // With two seats, seat 2 plays the reasoning player's tries, so the ghost finger makes a code those crack quickly.
+    this.botCode = this.seats === 'two' ? quickCode(this.plan, this.ctx.rng, 0x51) : demoCode(this.plan, this.ctx.rng);
     this.resize(this.view);
     this.busy = false;
+    if (this.seats === 'two') return this.ctx.instruct('code.lookaway');
     if (this.index === 0) return this.ctx.instruct('code.maker');
     return this.ctx.say('code.another');
   }
@@ -547,7 +592,7 @@ class SecretCode implements Game {
 
   /** The check: her code is set (never wrong), it moves down where only she can see it, and the pet takes its first try. */
   private async madeIt() {
-    if (this.busy || this.finished || this.phase !== 'make') return;
+    if (this.busy || this.finished || (this.phase !== 'make' && this.phase !== 'make2')) return;
     if (this.guess.includes(null)) {
       sfx.boing();
       return void this.ctx.say('code.makefill');
@@ -556,11 +601,20 @@ class SecretCode implements Game {
     this.code = [...(this.guess as number[])];
     sfx.sparkle();
     this.ready.visible = false;
-    this.tray.forEach((b) => (b.visible = false));
+    this.trayOn = false;
     const panel = new Graphics().roundRect(-200, -62, 400, 124, 30).fill({ color: 0xfff3a0, alpha: 0.9 }).stroke({ width: 5, color: wood.line });
     panel.circle(-170, -40, 12).fill(wood.line);
     this.mine.addChild(panel);
     this.code.forEach((c) => this.mine.addChild(stoneArt(c, 40)));
+    if (this.seats === 'two') {
+      // The lid shuts over the code in the same frame and the door empties, so the other seat never sees it.
+      this.guess.forEach((_, i) => this.clear0(i));
+      this.lid.visible = true;
+      this.lid.scale.set(1, 0.2);
+      void this.ctx.tw.to(this.lid.scale, { y: 1 }, { duration: 0.2, ease: ease.outBack });
+      if (this.phase === 'make2') return this.crackIt();
+      return void this.seat2Turn(true);
+    }
     this.resize(this.view);
     await this.petTurn();
   }
@@ -667,14 +721,20 @@ class SecretCode implements Game {
       this.phase = null;
       return void this.open();
     }
-    // Her marks move up beside the try; the pet's next try follows straight away.
+    // Her marks move up beside the try; the next try follows straight away.
     await this.ctx.tw.wait(0.3);
+    if (this.seats === 'two') return void this.seat2Turn(false);
     await this.petTurn();
   }
 
   /** The ghost finger on Be the door: make a seeded code, tap the check, then give each stone its right mark and tap the arrow. */
   private makerTouch(): TouchIntent | null {
-    if (this.phase === 'make') {
+    if (this.phase === 'break') {
+      // Seat 2 (Swap seats): the reasoning player's tries against her code.
+      const move = nextMove(this.plan, this.history, this.code, this.guess);
+      return 'key' in move ? { tap: { on: this.key }, pause: 0.9 } : { tap: { on: this.tray[move.stone] }, pause: 0.3 };
+    }
+    if (this.phase === 'make' || this.phase === 'make2') {
       const empty = this.guess.indexOf(null);
       return empty < 0 ? { tap: { on: this.ready }, pause: 0.6 } : { tap: { on: this.tray[this.botCode[empty]] }, pause: 0.25 };
     }
@@ -695,13 +755,130 @@ class SecretCode implements Game {
     await this.ctx.tw.to(this.leaf, { alpha: 1 }, { duration: 0.35 });
     this.ctx.particles.burst(this.view.w / 2, y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 24, speed: [150, 380], gravity: 0, life: [0.6, 1] });
     this.ctx.pet.cheer();
+    // Swap seats: the lid lifts to show the grown-up's code she cracked.
+    if (this.lid.visible) void this.ctx.tw.to(this.lid, { alpha: 0 }, { duration: 0.3 }).then(() => (this.lid.visible = false));
     // A course moves straight on after a short score; ordinary play praises.
     if (this.course) await this.doorScore();
     else {
-      await this.ctx.say(this.plan.maker ? 'code.cracked' : 'code.open');
+      await this.ctx.say(this.plan.maker && this.seats !== 'two' ? 'code.cracked' : 'code.open');
       await this.ctx.tw.wait(0.5);
     }
+    if (this.plan.swap && this.half === 1) return void this.secondHalf();
     await this.next();
+  }
+
+  /** Swap seats: who is playing? Two round buttons on the empty door; the choice lasts for the round. */
+  private askSeats() {
+    this.phase = 'seats';
+    this.trayOn = false;
+    this.key.visible = this.ready.visible = this.show.visible = false;
+    this.together.visible = this.alone.visible = true;
+    this.resize(this.view);
+    this.busy = false;
+    return this.ctx.instruct('code.seats');
+  }
+
+  private choose(seats: 'two' | 'solo') {
+    if (this.busy || this.finished || this.phase !== 'seats') return;
+    this.seats = seats;
+    this.half = 1;
+    this.together.visible = this.alone.visible = false;
+    return this.startMaking();
+  }
+
+  /** Swap seats, first half: seat 2 puts stones in the door and turns the key while the lid hides her code. */
+  private async seat2Turn(first: boolean) {
+    this.phase = 'break';
+    this.guess.forEach((_, i) => this.clear0(i));
+    this.discs.forEach((d) => (d.visible = false));
+    this.show.visible = false;
+    this.lid.visible = true;
+    this.lid.alpha = 1;
+    this.trayOn = true;
+    this.key.visible = true;
+    this.resize(this.view);
+    // After many tries, faint stones show seat 2 a code that fits her marks. They are not hers, so nothing is counted.
+    if (this.history.length >= this.plan.slots + 4) this.showIdea();
+    this.busy = false;
+    if (first) await this.ctx.say('code.grownupbreak');
+  }
+
+  /** Seat 2 turned the key: no island marks. The lid lifts so she can see her code, and she gives each stone its mark. */
+  private async seat2Try() {
+    if (this.busy || this.finished) return;
+    if (this.guess.includes(null)) {
+      sfx.boing();
+      return void this.ctx.say('code.fill');
+    }
+    this.busy = true;
+    sfx.knock();
+    this.petStones = [...(this.guess as number[])];
+    this.ghost.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.trayOn = false;
+    this.key.visible = false;
+    this.lid.visible = false;
+    this.phase = 'mark';
+    this.marks = Array(this.plan.slots).fill(null);
+    this.wrongs = 0;
+    this.hinted = false;
+    this.discs.forEach((d, i) => {
+      d.visible = true;
+      this.drawDisc(i);
+    });
+    this.show.visible = true;
+    this.resize(this.view);
+    this.busy = false;
+    if (this.history.length > 0) return;
+    await this.ctx.instruct('code.markgrownup');
+    await this.ctx.say('code.nopeek');
+  }
+
+  /** Swap seats, second half: with two seats, seat 2 makes a code while she looks away; playing alone, a seeded door. */
+  private secondHalf() {
+    this.half = 2;
+    this.phase = null;
+    this.history = [];
+    this.past.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.shown = [];
+    this.mine.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.lid.visible = false;
+    this.bubble.clear();
+    this.discs.forEach((d) => (d.visible = false));
+    this.show.visible = false;
+    this.wrongs = 0;
+    this.hinted = false;
+    if (this.seats !== 'two') {
+      this.breakDoor(makeCode(this.plan, this.ctx.rng));
+      return this.ctx.instruct('code.repeat');
+    }
+    this.phase = 'make2';
+    this.leaf.clear();
+    this.guess = Array(this.plan.slots).fill(null);
+    this.newSlots();
+    this.trayOn = true;
+    this.ready.visible = true;
+    this.key.visible = false;
+    // Salted differently from the first half's, so the ghost finger's two codes differ.
+    this.botCode = quickCode(this.plan, this.ctx.rng, 0x2b);
+    this.resize(this.view);
+    this.busy = false;
+    return this.ctx.say('code.swap');
+  }
+
+  /** Seat 2's code is under the lid: she breaks it with levels 3–6's rules and the island's marks. */
+  private crackIt() {
+    this.breakDoor(this.code);
+    return this.ctx.instruct('code.crackit');
+  }
+
+  /** The second half's door, broken as on levels 3–6: the plan stops being a maker plan, so the key, misses and hints are the breaker's. */
+  private breakDoor(code: number[]) {
+    this.plan = { ...this.plan, maker: false };
+    this.phase = null;
+    this.trayOn = true;
+    this.ready.visible = false;
+    this.key.visible = true;
+    this.setDoor(code, []);
   }
 
   /** A course's doors differ: say the rule whenever it changes (yellow marks, then a color used twice). */
@@ -754,7 +931,9 @@ class SecretCode implements Game {
     sfx.tada();
     await this.ctx.say('code.done');
     await this.ctx.tw.wait(0.5);
-    this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.guesses });
+    // Swap seats with two seats is supported completion (never smooth); every other round passes her result unchanged.
+    const result = this.plan.swap ? swapResult(this.seats === 'two', this.misses, this.hints) : { misses: this.misses, hints: this.hints };
+    this.ctx.finish({ ...result, score: this.guesses });
   }
 }
 

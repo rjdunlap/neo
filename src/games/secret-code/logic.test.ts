@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { landing, stepLevel } from '../../progress/difficulty';
 import { secretCode } from './index';
-import { contradictsClues, crossedOut, detectiveDoor, candidates, DOORS, doorKinds, ignoredClues, demoCode, madeCode, makeCode, nextMark, nextMove, petTries, petTry, PLANS, planFor, rowsThatFit, ruledOut, score, suggestion, visibleRows, wrongMarks, type Guess, type Mark } from './logic';
+import { contradictsClues, crossedOut, detectiveDoor, candidates, DOORS, doorKinds, ignoredClues, demoCode, madeCode, makeCode, nextMark, nextMove, petTries, petTry, PLANS, planFor, rowsThatFit, ruledOut, quickCode, score, solverTries, suggestion, swapResult, visibleRows, wrongMarks, type Guess, type Mark } from './logic';
 
 describe('Secret Code', () => {
   it('marks right places green, misplaced stones yellow (never more than are missing), and the rest gray', () => {
@@ -274,12 +274,13 @@ describe('Detective doors', () => {
     expect(petTry(plan, [], new Rng(5))).toEqual(petTry(plan, [], new Rng(5)));
   });
 
-  it('places level 9 after 4 in school\'s order and keeps pre-K at 1 to 3', () => {
-    expect(secretCode.levels('school')).toEqual({ min: 2, max: 11, order: [2, 3, 4, 9, 5, 6, 7, 8, 11] });
+  it('places level 9 after 4 and 12 after 9 in school\'s order and keeps pre-K at 1 to 3', () => {
+    expect(secretCode.levels('school')).toEqual({ min: 2, max: 12, order: [2, 3, 4, 9, 12, 5, 6, 7, 8, 11] });
     expect(secretCode.levels('prek')).toEqual({ min: 1, max: 3 });
     expect(stepLevel(4, 1, secretCode.levels('school'))).toBe(9);
-    expect(stepLevel(9, 1, secretCode.levels('school'))).toBe(5);
-    expect(stepLevel(5, -1, secretCode.levels('school'))).toBe(9);
+    expect(stepLevel(9, 1, secretCode.levels('school'))).toBe(12);
+    expect(stepLevel(12, 1, secretCode.levels('school'))).toBe(5);
+    expect(stepLevel(5, -1, secretCode.levels('school'))).toBe(12);
     expect(secretCode.describeLevel(9)).toMatch(/Be the door/);
   });
 
@@ -330,5 +331,87 @@ describe('Detective doors', () => {
     expect(landing(10, secretCode.levels('prek'), secretCode.entryLevels)).toBe(1);
     expect(landing(10, secretCode.levels('school'), secretCode.entryLevels)).toBe(2);
     expect(secretCode.describeLevel(10)).toMatch(/One slot/);
+  });
+
+  describe('level 12, Swap seats', () => {
+    const plan = planFor(12);
+    const all: number[][] = [];
+    for (let a = 0; a < 4; a++) for (let b = 0; b < 4; b++) for (let c = 0; c < 4; c++) all.push([a, b, c]);
+
+    it('is never smooth when two seats are played, and leaves the pet game alone', () => {
+      for (let m = 0; m <= 6; m++) {
+        for (let h = 0; h <= 3; h++) {
+          const r = swapResult(true, m, h);
+          expect(r.misses).toBe(m);
+          expect(r.hints).toBeGreaterThanOrEqual(1);
+          expect(r.hints).toBeGreaterThanOrEqual(h);
+          expect(r.misses <= 1 && r.hints === 0).toBe(false);
+          expect(swapResult(false, m, h)).toEqual({ misses: m, hints: h });
+        }
+      }
+    });
+
+    it('has the plan and all 64 codes', () => {
+      expect(plan).toMatchObject({ slots: 3, colors: 4, yellow: true, repeats: true, maker: true, swap: true, codes: 1 });
+      expect(candidates(plan, [])).toHaveLength(64);
+      for (let seed = 1; seed <= 200; seed++) {
+        const code = madeCode(plan, new Rng(seed));
+        expect(code).toHaveLength(3);
+        for (const c of code) { expect(c).toBeGreaterThanOrEqual(0); expect(c).toBeLessThanOrEqual(3); }
+      }
+    });
+
+    it('is cracked by the reasoning player within a small bound, every try fitting the marks so far', () => {
+      let worst = 0;
+      for (const code of all) {
+        const tries = solverTries(plan, code);
+        worst = Math.max(worst, tries);
+        const history: Guess[] = [];
+        for (let t = 0; t < tries; t++) {
+          const guess: (number | null)[] = [null, null, null];
+          for (let m = nextMove(plan, history, code, guess); 'stone' in m; m = nextMove(plan, history, code, guess)) guess[guess.indexOf(null)] = m.stone;
+          const stones = guess as number[];
+          if (t > 0) expect(contradictsClues(plan, history, stones)).toBe(false);
+          history.push({ stones, marks: score(code, stones, true) });
+        }
+        expect(history[history.length - 1].marks.every((m) => m === 'green')).toBe(true);
+      }
+      expect(worst).toBeLessThanOrEqual(6);
+    });
+
+    it('accepts her right marks for every code and stones, and catches a changed mark', () => {
+      for (const code of all) {
+        for (const stones of all) {
+          const right = score(code, stones, true);
+          expect(wrongMarks(code, stones, right)).toEqual([]);
+          const changed = right.map((m, i) => (i === 0 ? nextMark(m) : m));
+          expect(wrongMarks(code, stones, changed)).toEqual([0]);
+        }
+      }
+    });
+
+    it('quickCode picks a quick, seeded code without moving the round\'s generator', () => {
+      let differ = 0;
+      for (let seed = 1; seed <= 100; seed++) {
+        const rng = new Rng(seed);
+        const twin = rng.clone();
+        const code = quickCode(plan, rng, 1);
+        expect(rng.int(0, 1000000)).toBe(twin.int(0, 1000000));
+        expect(quickCode(plan, new Rng(seed), 1)).toEqual(code);
+        expect(code).toHaveLength(3);
+        for (const c of code) { expect(c).toBeGreaterThanOrEqual(0); expect(c).toBeLessThanOrEqual(3); }
+        const other = quickCode(plan, new Rng(seed), 2);
+        if (other.join() !== code.join()) differ++;
+        const draw = new Rng(new Rng(seed).int(1, 2 ** 31 - 1) ^ 1);
+        expect(solverTries(plan, code)).toBeLessThanOrEqual(solverTries(plan, madeCode(plan, draw)));
+      }
+      expect(differ).toBeGreaterThan(50);
+    });
+
+    it('never lands out-of-range levels in the two-seat mode', () => {
+      expect(planFor(13)).toBe(PLANS[11]);
+      expect(planFor(13).swap).toBeFalsy();
+      expect(planFor(12).swap).toBe(true);
+    });
   });
 });

@@ -107,6 +107,7 @@
 
 ## Secret Code (dive, 2026-11-01; proposed, levels not yet built)
 
+- [ ] Level 12 *Swap seats* is built (2026-11-05): does a six-year-old mark a grown-up's tries honestly and enjoy it, and do the look-away moments feel like a game or a chore?
 - [ ] Level 10 is built (2026-11-05): does a three-to-four-year-old read the gray cross as "not this one" without the card?
 - [ ] Level 9 is built: does marking the pet's try feel like being the boss of the door, or like a test?
 - [ ] On an iPad in daylight: are the faint hint stones noticed?

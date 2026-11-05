@@ -363,8 +363,93 @@ async function woodsBatch() {
     log(`Peekaround Island ${level} (${mode}): turning, hiding, picture card, placing by direction, misses, hints, saved score and sticker passed`);
   }
 
-  if (!only || only === 'code') for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 11].filter((l) => l >= fromLevel && l <= Number(process.env.TO_LEVEL || 11))) {
+  if (!only || only === 'code') for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12].filter((l) => l >= fromLevel && l <= Number(process.env.TO_LEVEL || 12))) {
     await launch('secret-code', level);
+    if (level === 12) {
+      // Swap seats, Two of us, in portrait: she makes a code under a lid and marks seat 2's tries (one wrong mark), then breaks seat 2's code (one ignored clue).
+      await page.setViewportSize({ width: 768, height: 1024 });
+      const at = (phase) => page.waitForFunction((phase) => neo.scene.finished || (neo.scene.game.phase === phase && !neo.scene.game.busy), phase, { timeout: 20000 }).then(() => page.waitForTimeout(150));
+      const right = () => page.evaluate(async () => {
+        const g = neo.scene.game; const C = await import('/src/games/secret-code/logic.ts'); return C.score(g.code, g.petStones, true);
+      });
+      const markAs = async (want) => {
+        for (let i = 0; i < want.length; i++) for (let k = 0; k < 4; k++) {
+          if (await page.evaluate((i) => neo.scene.game.marks[i], i) === want[i]) break;
+          await tap(`neo.scene.game.discs[${i}]`);
+        }
+      };
+      const enter = async (stones) => {
+        const filled = await page.evaluate(() => neo.scene.game.guess.map((g) => g !== null));
+        for (let i = 0; i < filled.length; i++) if (filled[i]) await tap(`neo.scene.game.slots[${i}]`);
+        for (const c of stones) await tap(`neo.scene.game.tray[${c}]`);
+        await tap('neo.scene.game.key');
+        await page.waitForTimeout(300);
+        await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+        await page.waitForTimeout(150);
+      };
+      const markRight = async () => {
+        await markAs(await right());
+        await tap('neo.scene.game.show');
+        await page.waitForTimeout(300);
+        await page.waitForFunction(() => neo.scene.finished || (!neo.scene.game.busy && neo.scene.game.phase !== 'mark'), null, { timeout: 20000 });
+        await page.waitForTimeout(150);
+      };
+      await at('seats');
+      await screenshot('secret-code-12-seats-portrait');
+      await tap('neo.scene.game.together');
+      await at('make');
+      for (const c of [1, 1, 3]) await tap(`neo.scene.game.tray[${c}]`);
+      await tap('neo.scene.game.ready');
+      await at('break');
+      assert.deepEqual(await page.evaluate(() => neo.scene.game.code), [1, 1, 3], 'her code is the one she made');
+      assert.ok(await page.evaluate(() => neo.scene.game.lid.visible && neo.scene.game.slots.every((s) => s.children.length === 1)), 'the lid hides her code and the door is empty');
+      await screenshot('secret-code-12-lid-portrait');
+      // Seat 2's first try; she gives one wrong mark (a miss), then the right ones.
+      await enter([0, 0, 0]);
+      await at('mark');
+      const r = await right();
+      await markAs([r[0] === 'green' ? 'gray' : 'green', ...r.slice(1)]);
+      await tap('neo.scene.game.show');
+      await page.waitForTimeout(300);
+      await at('mark');
+      assert.deepEqual(await counts(), [1, 0], 'a wrong mark is her miss');
+      await markRight();
+      // Seat 2 ignores a clue (red again in slot 1): seat 2's tries never count.
+      await enter([0, 1, 2]);
+      await at('mark');
+      assert.deepEqual(await counts(), [1, 0], 'seat 2 ignoring a clue is not a miss');
+      await markRight();
+      for (let k = 0; k < 10 && await page.evaluate(() => neo.scene.game.half === 1); k++) {
+        const idea = await page.evaluate(async () => { const g = neo.scene.game; const C = await import('/src/games/secret-code/logic.ts'); return C.suggestion(g.plan, g.history, g.code); });
+        await enter(idea);
+        await at('mark');
+        await markRight();
+      }
+      // Swap: seat 2 makes a code; she breaks it with the island's marks, ignoring one clue.
+      await at('make2');
+      for (const c of [2, 0, 2]) await tap(`neo.scene.game.tray[${c}]`);
+      await tap('neo.scene.game.ready');
+      await page.waitForFunction(() => neo.scene.game.half === 2 && neo.scene.game.phase === null && !neo.scene.game.busy, null, { timeout: 20000 });
+      await page.waitForTimeout(150);
+      assert.ok(await page.evaluate(() => neo.scene.game.lid.visible && neo.scene.game.key.visible), 'the lid hides the grown-up code');
+      await enter([3, 3, 3]);
+      await enter([3, 1, 1]);
+      assert.deepEqual(await counts(), [2, 0], 'an ignored clue in her half is a miss');
+      for (let k = 0; k < 12; k++) {
+        const idea = await page.evaluate(async () => {
+          const g = neo.scene.game; if (neo.scene.finished || g.index !== 0) return null;
+          const C = await import('/src/games/secret-code/logic.ts'); return C.suggestion(g.plan, g.history, g.code);
+        });
+        if (!idea) break;
+        await enter(idea);
+      }
+      await finished('secret-code');
+      const saved = await score('secret-code');
+      assert.ok(saved[0] >= 2 && saved[1] >= 1, `a two-seat round is supported completion: ${saved}`);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log(`Secret Code 12: seat question, her code under the lid, a wrong mark (miss), seat 2's ignored clue (not a miss), swap, an ignored clue (miss), saved ${saved} and sticker passed`);
+      continue;
+    }
     if (level === 9) {
       // Be the door, in portrait: she makes a code with a repeat (an unfilled check is only a reminder), then marks the pet's tries.
       await page.setViewportSize({ width: 768, height: 1024 });

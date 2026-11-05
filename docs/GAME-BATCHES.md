@@ -1501,6 +1501,8 @@ Proof: couch catalog tier: course tests, `BROWSER_SUITE=couchgames` filtered to 
 
 ### secret-code 7: Level 12 Swap seats
 
+Built 2026-11-05, [PR #1258](https://github.com/rjdunlap/neo/pull/1258); [build note](archive/COMPLETED-2026-10-09.md#secret-code-level-12-swap-seats-secret-code-batch-7-2026-11-05). No longer eligible for dispatch.
+
 - **`secret-code`, Level 12 *Swap seats* (dive slice 8)**, after batch secret-code 3 (built; reuses level 9's mark discs; new interaction): school only; a seat question (Two of us / Just me), she makes a code and marks a grown-up's tries under a lid, then swaps and breaks the grown-up's code with levels 3–6 rules; Just me puts the pet in seat 2; two-seat rounds finish through `swapResult` with at least one hint (supported completion); school `order` becomes [2,3,4,9,12,5,6,7,8,11]; seven new `code.*` voice lines. [Dive](deep-dives/secret-code.md#level-12-swap-seats-maker-and-breaker-defined-2026-11-05)
 
 Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
